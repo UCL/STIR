@@ -1,6 +1,8 @@
 CXX = g++
+RM = /bin/rm -f 
 # KT 18/12/97 removed Para++ related CFLAGS
-CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include
+CFLAGS = -O3 -I${HOME}/PPhead/include
+#CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include
 #CXX = xlC
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEMPLATE_ARG
 
@@ -16,7 +18,7 @@ all:	libbuildblock.a #libinterfile.a
 
 
 
-libbuildblock.a: sinodata.o convert.o PETScannerInfo.o Tensor1D.o
+libbuildblock.a: sinodata.o convert.o PETScannerInfo.o Tensor1D.o viewdata.o
 	ar r $@ $?
 	ranlib $@
 libinterfile.a: KeyParser.o line.o pet_string.o
@@ -44,3 +46,7 @@ line.o:  line.cxx
 
 pet_string.o:  pet_string.cxx
 #	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+clean: 
+	$(RM) *.o
+	$(RM) *.a
