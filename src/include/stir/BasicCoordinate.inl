@@ -308,7 +308,11 @@ template <int num_dimensions, class coordT>
 double
 norm (const BasicCoordinate<num_dimensions, coordT>& p1)
 {
-  return sqrt(static_cast<double>(inner_product<num_dimensions,coordT>(p1,p1)));
+#ifdef _MSC_VER
+  return sqrt(static_cast<double>(std::inner_product(p1.begin(), p1.end(), p1.begin(), coordT(0))));
+#else
+	return sqrt(static_cast<double>(inner_product<num_dimensions,coordT>(p1,p1)));
+#endif
 }
 
 template <int num_dimensions, class coordT>
