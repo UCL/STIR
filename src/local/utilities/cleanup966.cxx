@@ -49,13 +49,13 @@ int main(int argc, char **argv)
 
   // apply 
   cleanup966ImageProcessor<float> image_processor;
-  if (image_processor.set_up(*density_ptr) == false)
+  if (image_processor.set_up(*density_ptr) == Succeeded::no)
     {
       warning("%s: cannot handle non-zero offset in x or y in file %s\n",
 	      argv[0], input_filename);
       return EXIT_FAILURE;
     }
-  image_processor.apply(density);
+  image_processor.apply(*density_ptr);
   // write image
   DefaultOutputFileFormat output_file_format;
   Succeeded res = 
