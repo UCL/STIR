@@ -51,6 +51,10 @@ public:
   // Destructor closes the file and destroys various structures
   ~CListModeDataLMF();
 
+  virtual std::time_t 
+    get_scan_start_time_in_secs_since_1970() const
+  { return std::time_t(-1); } // TODO
+
   virtual 
     shared_ptr <CListRecord> get_empty_record_sptr() const;
 

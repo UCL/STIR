@@ -13,6 +13,8 @@
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This software is distributed under the terms 
+    of the GNU Lesser General  Public Licence (LGPL)
     See STIR/LICENSE.txt for details
 */
 
@@ -61,6 +63,9 @@ public:
       \todo Maybe allow for passing e.g. something_2.lm in case the first lm file is missing.
   */
   CListModeDataECAT(const string& listmode_filename_prefix);
+
+  virtual
+    std::time_t get_scan_start_time_in_secs_since_1970() const;
 
   virtual 
     shared_ptr <CListRecord> get_empty_record_sptr() const;

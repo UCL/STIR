@@ -98,6 +98,14 @@ CListModeDataFromStream(const string& listmode_filename,
   num_chars_left_in_buffer = 0;
 }
 
+std::time_t 
+CListModeDataFromStream::
+get_scan_start_time_in_secs_since_1970() const
+{
+  error("CListModeDataFromStream::get_scan_start_time_in_secs_since_1970() should never be called");
+  return std::time_t(-1);
+}
+
 Succeeded
 CListModeDataFromStream::
 get_next_record(CListRecord& record_of_general_type) const
