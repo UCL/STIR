@@ -32,6 +32,7 @@
 #include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/SegmentByView.h"
+#include "stir/thresholding.h"
 #include "stir/Succeeded.h"
 #include <iostream>
 #include <math.h>
@@ -139,13 +140,28 @@ stir_mathTests::run_tests()
       check_if_equal( calc_data, *out_data_ptr,"test on multiplying");    
     }
     // add with power etc
-    if (run_stir_math("--add-scalar 3.1 --power 2 --times-scalar 3.2 STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
+    // range for rand() is 0 to RAND_MAX
+    const float min_threshold = RAND_MAX/5.F;
+    const float max_threshold = RAND_MAX/2.F;
     {
-      out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
-      calc_data.fill(0);
-      calc_data += data1 + (data2*data2)*3.2F + 3.1F + (data3*data3)*3.2F + 3.1F;
-      
-      check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication and addition");    
+      char cmd_args[1000];
+      sprintf(cmd_args, "--add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
+	      "STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv",
+	      min_threshold, max_threshold);
+      if (run_stir_math(cmd_args))
+	{
+	  out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
+	  calc_data.fill(0);
+	  VoxelsOnCartesianGrid<float>  data2_thresholded(data2);
+	  VoxelsOnCartesianGrid<float>  data3_thresholded(data3);
+	  threshold_upper_lower( data2_thresholded.begin_all(),  data2_thresholded.end_all(),
+				 min_threshold, max_threshold);
+	  threshold_upper_lower( data3_thresholded.begin_all(),  data3_thresholded.end_all(),
+				 min_threshold, max_threshold);
+	  calc_data += data1 + (data2_thresholded*data2_thresholded)*3.2F + 3.1F + (data3_thresholded*data3_thresholded)*3.2F + 3.1F;
+	  
+	  check_if_equal( calc_data, *out_data_ptr,"test with thresholding, power and scalar multiplication and addition");    
+	}
     }
     // add with power etc and including-first
     if (run_stir_math("--power 2 --times-scalar 3.2 --including-first STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
@@ -249,15 +265,31 @@ stir_mathTests::run_tests()
 		      "test on multiplying");    
     }
     // add with power etc
-    if (run_stir_math("-s --power 2 --times-scalar 3.2 STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs"))
+    // range for rand() is 0 to RAND_MAX
+    const float min_threshold = RAND_MAX/5.F;
+    const float max_threshold = RAND_MAX/2.F;
     {
-      out_data_ptr = ProjData::read_from_file("STIRtmpout.hs");
-      calc_data.fill(0);
-      calc_data += data1 + (data2*data2 + data3*data3)*3.2F;
-      
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
-		      "test with power and scalar multiplication");    
+      char cmd_args[1000];
+      sprintf(cmd_args, "-s --add-scalar 3.1 --power 2 --times-scalar 3.2 --min-threshold %g --max-threshold %g "
+	      "STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs",
+	      min_threshold, max_threshold);
+      if (run_stir_math(cmd_args))
+	{
+	  out_data_ptr =  ProjData::read_from_file("STIRtmpout.hs");
+	  calc_data.fill(0);
+	  SegmentByView<float>  data2_thresholded(data2);
+	  SegmentByView<float>  data3_thresholded(data3);
+	  threshold_upper_lower( data2_thresholded.begin_all(),  data2_thresholded.end_all(),
+				 min_threshold, max_threshold);
+	  threshold_upper_lower( data3_thresholded.begin_all(),  data3_thresholded.end_all(),
+				 min_threshold, max_threshold);
+	  calc_data += data1 + (data2_thresholded*data2_thresholded)*3.2F + 3.1F + (data3_thresholded*data3_thresholded)*3.2F + 3.1F;
+	  
+	  check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+			  "test with thresholding, power and scalar multiplication and addition");    
+	}
     }
+
     // add with power etc and including-first
     if (run_stir_math("-s --power 2 --times-scalar 3.2 --including-first STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs"))
     {
