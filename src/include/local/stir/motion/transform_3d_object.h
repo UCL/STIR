@@ -1,6 +1,10 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    For internal GE use only
+*/
 /*!
 
   \file
@@ -12,10 +16,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/common.h"
