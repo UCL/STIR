@@ -24,7 +24,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/CartesianCoordinate3D.h"
 
-#include "local/stir/listmode/LmToProjData.h"
+#include "stir/listmode/LmToProjData.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
@@ -41,6 +41,9 @@
 #else
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
+#endif
+#ifdef ROT_INT
+#include "local/stir/motion/bin_interpolate.h"
 #endif
 
 // set elem_type to what you want to use for the sinogram elements
@@ -62,8 +65,9 @@ typedef SegmentByView<elem_type> segment_type;
 // used for allocating segments.
 // TODO replace by ProjDataInMemory
 
+typedef VectorWithOffset<shared_ptr<segment_type > > all_segments_type;
 static void 
-allocate_segments(VectorWithOffset<segment_type *>& segments,
+allocate_segments(all_segments_type& segments,
                        const int start_segment_index, 
 	               const int end_segment_index,
                        const ProjDataInfo* proj_data_info_ptr);
@@ -72,7 +76,7 @@ allocate_segments(VectorWithOffset<segment_type *>& segments,
  */         
 static void 
 save_and_delete_segments(shared_ptr<iostream>& output,
-			      VectorWithOffset<segment_type *>& segments,
+			      all_segments_type& segments,
 			      const int start_segment_index, 
 			      const int end_segment_index, 
 			      ProjData& proj_data);
@@ -364,8 +368,11 @@ FindMCNormFactors::process_data()
 #else
   cerr << "Using original ROT\n";
 #endif
+#ifdef ROT_INT
+  warning("with linear interpolation");
+#endif
 
-  VectorWithOffset<segment_type *> 
+  all_segments_type 
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
 
@@ -468,29 +475,31 @@ FindMCNormFactors::process_data()
 			     ++in_tangential_pos_num)
 			  {
 			    const Bin original_bin(in_segment_num,in_view_num,in_ax_pos_num, in_tangential_pos_num, 1);
+
+#ifndef ROT_INT
 			    // find new bin position
 			    Bin bin = original_bin;
 			 
 			    ro3dtrans.transform_bin(bin, 
-						      *out_proj_data_info_ptr,
-						      *proj_data_info_cyl_uncompressed_ptr);
+						    *out_proj_data_info_ptr,
+						    *proj_data_info_cyl_uncompressed_ptr);
 #if 0
-			      if ((bin.axial_pos_num()-original_bin.axial_pos_num())> 0.0001 ||  
-				  (bin.segment_num()-original_bin.segment_num())> 0.0001 ||
-				   (bin.tangential_pos_num()-original_bin.tangential_pos_num()) > 0.0001||
-				   (bin.view_num() -original_bin.view_num())> 0.0001) 
+			    if ((bin.axial_pos_num()-original_bin.axial_pos_num())> 0.0001 ||  
+				(bin.segment_num()-original_bin.segment_num())> 0.0001 ||
+				(bin.tangential_pos_num()-original_bin.tangential_pos_num()) > 0.0001||
+				(bin.view_num() -original_bin.view_num())> 0.0001) 
 
-  {
-    Quaternion<float> quat = ro3dtrans.get_quaternion();
-    cerr << quat[1] << "   " << quat[2]<<  "   " << quat[3]<< "   " << quat[4]<< endl;
-    CartesianCoordinate3D<float> trans=ro3dtrans.get_translation();
-    cerr <<  trans.z() << "    " <<  trans.y() << "   " << trans.x() << endl;
-    cerr << " Start" << endl;
-cerr << " Original bin is " << original_bin.segment_num() << "   " << original_bin.axial_pos_num() << "   " << original_bin.view_num() << "    "  << original_bin.tangential_pos_num() << endl;
-cerr << " Transformed  bin is " << bin.segment_num() << "   " << bin.axial_pos_num() << "   " << bin.view_num() << "    "  << bin.tangential_pos_num() << endl;
+			      {
+				Quaternion<float> quat = ro3dtrans.get_quaternion();
+				cerr << quat[1] << "   " << quat[2]<<  "   " << quat[3]<< "   " << quat[4]<< endl;
+				CartesianCoordinate3D<float> trans=ro3dtrans.get_translation();
+				cerr <<  trans.z() << "    " <<  trans.y() << "   " << trans.x() << endl;
+				cerr << " Start" << endl;
+				cerr << " Original bin is " << original_bin.segment_num() << "   " << original_bin.axial_pos_num() << "   " << original_bin.view_num() << "    "  << original_bin.tangential_pos_num() << endl;
+				cerr << " Transformed  bin is " << bin.segment_num() << "   " << bin.axial_pos_num() << "   " << bin.view_num() << "    "  << bin.tangential_pos_num() << endl;
 
- cerr << " End" << endl;
-  }
+				cerr << " End" << endl;
+			      }
 #endif
 			    if (bin.get_bin_value()>0
 				&& bin.tangential_pos_num()>= out_proj_data_ptr->get_min_tangential_pos_num()
@@ -509,23 +518,37 @@ cerr << " Transformed  bin is " << bin.segment_num() << "   " << bin.axial_pos_n
 				    // it's there to compensate what we have in LmToProjDataWithMC
 				    if (do_pre_normalisation)
 				      {
-				    (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-				      1.F/
-				      (out_proj_data_info_ptr->
-				       get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-										    bin.axial_pos_num())*
-				       out_proj_data_info_ptr->get_view_mashing_factor());
+					(*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
+					  1.F/
+					  (out_proj_data_info_ptr->
+					   get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
+											bin.axial_pos_num())*
+					   out_proj_data_info_ptr->get_view_mashing_factor());
 				      }
 				    else
 				      {
-				      (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-				      normalisation_ptr->
-					get_bin_efficiency(original_bin,start_time,end_time);
+					(*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
+					  normalisation_ptr->
+					  get_bin_efficiency(original_bin,start_time,end_time);
 
 				      }
-				    
 				  }
 			      }
+#else
+				const float value =
+				  do_pre_normalisation 
+				  ? 1 
+				  : normalisation_ptr->get_bin_efficiency(original_bin,start_time,end_time);
+				LORInAxialAndNoArcCorrSinogramCoordinates<float> transformed_lor;
+				if (get_transformed_LOR(transformed_lor,
+							ro3dtrans,
+							original_bin,
+							*proj_data_info_uncompressed_ptr) 
+				    == Succeeded::yes)
+				  bin_interpolate(segments, transformed_lor, 
+						  *out_proj_data_info_ptr, 
+						  *proj_data_info_uncompressed_ptr, value);
+#endif
 			  }
 		      }
 		  }
@@ -558,7 +581,7 @@ cerr << " Transformed  bin is " << bin.segment_num() << "   " << bin.axial_pos_n
 
 
 void 
-allocate_segments( VectorWithOffset<segment_type *>& segments,
+allocate_segments( all_segments_type& segments,
 		  const int start_segment_index, 
 		  const int end_segment_index,
 		  const ProjDataInfo* proj_data_info_ptr)
@@ -581,7 +604,7 @@ allocate_segments( VectorWithOffset<segment_type *>& segments,
 
 void 
 save_and_delete_segments(shared_ptr<iostream>& output,
-			 VectorWithOffset<segment_type *>& segments,
+			 all_segments_type& segments,
 			 const int start_segment_index, 
 			 const int end_segment_index, 
 			 ProjData& proj_data)
@@ -595,7 +618,8 @@ save_and_delete_segments(shared_ptr<iostream>& output,
 #else
       write_data(*output, (*segments[seg]));
 #endif
-      delete segments[seg];      
+      //delete segments[seg];      
+      segments[seg]=0; // deallocate for shared_ptr
     }
     
   }

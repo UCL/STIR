@@ -27,8 +27,9 @@
 #include "stir/round.h"
 #include "stir/Succeeded.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
-
-
+#ifdef ROT_INT
+#include "local/stir/motion/bin_interpolate.h"
+#endif
 START_NAMESPACE_STIR
 
 Succeeded 
@@ -181,9 +182,12 @@ transform_3d_object(ProjData& out_proj_data,
   const int out_min_segment_num = out_proj_data.get_min_segment_num();
   const int out_max_segment_num = out_proj_data.get_max_segment_num();
 
-#if 0
+#if 1
 
   warning("Using push interpolation");
+#ifdef ROT_INT
+  warning("with linear interpolation");
+#endif
   VectorWithOffset<shared_ptr<SegmentByView<float> > > out_seg_ptr(out_min_segment_num, out_max_segment_num);
   for (int segment_num = out_min_segment_num;
        segment_num <= out_max_segment_num;
@@ -211,21 +215,25 @@ transform_3d_object(ProjData& out_proj_data,
 		      in_segment[view_num][ax_pos_num][tang_pos_num]);
 	      if (bin.get_bin_value()==0)
 		continue;
+#ifndef ROT_INT
 	      rigid_object_transformation.transform_bin(bin,
-#ifndef NEW_ROT
-							*out_proj_data_info_noarccor_ptr,
-							*in_proj_data_info_noarccor_ptr
-#else
 							out_proj_data_info,
 							in_proj_data_info
-#endif
 							);
-
 	      if (bin.get_bin_value()>0)
 		(*out_seg_ptr[bin.segment_num()])[bin.view_num()]
 						 [bin.axial_pos_num()]
 						 [bin.tangential_pos_num()] +=
 		  bin.get_bin_value();
+#else
+	      LORInAxialAndNoArcCorrSinogramCoordinates<float> transformed_lor;
+	      if (get_transformed_LOR(transformed_lor,
+				      rigid_object_transformation,
+				      bin,
+				      in_proj_data_info) == Succeeded::yes)
+		bin_interpolate(out_seg_ptr, transformed_lor, out_proj_data_info, in_proj_data_info, bin.get_bin_value());
+#endif
+
 	    }
     }
   Succeeded succes = Succeeded::yes;
