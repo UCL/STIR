@@ -10,6 +10,7 @@ $(dir)_SOURCES = \
 	lm_fansums.cxx \
 	generate_headcurve.cxx \
 	list_time_events.cxx \
+	get_singles_info.cxx \
 	change_lm_time_tags.cxx
 
 include $(WORKSPACE)/exe.mk

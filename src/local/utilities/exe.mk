@@ -27,7 +27,6 @@ $(dir)_SOURCES = \
 	find_maximum_in_image.cxx \
 	find_sinogram_rescaling_factors.cxx \
         find_fwhm_in_image.cxx \
-	get_singles_info.cxx \
 	calculate_attenuation_coefficients.cxx
 
 #	CoG.cxx \
