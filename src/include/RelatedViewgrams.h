@@ -91,7 +91,9 @@ public:
   //! get 'basic' segment_num
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline int get_basic_segment_num() const;
-
+  //! get 'basic' view_segment_num
+  /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
+  inline ViewSegmentNumbers get_basic_view_segment_num() const;
 
   //! returns the number of viewgrams in this object
   inline int get_num_viewgrams() const;
@@ -102,8 +104,10 @@ public:
   inline int get_min_tangential_pos_num() const;
   inline int get_max_tangential_pos_num() const;
 
+  //! Get a pointer to the ProjDataInfo of this object
   inline const ProjDataInfo * get_proj_data_info_ptr() const;
-
+  //! Get a pointer to the symmetries used in constructing this object
+  inline const DataSymmetriesForViewSegmentNumbers * get_symmetries_ptr() const;
   // -- members which modify the structure ---
 
   //! Grow each viewgram

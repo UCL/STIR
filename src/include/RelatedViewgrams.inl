@@ -63,6 +63,13 @@ int RelatedViewgrams<elemT>::get_basic_segment_num() const
 }
 
 template <typename elemT>
+ViewSegmentNumbers RelatedViewgrams<elemT>::
+get_basic_view_segment_num() const
+{
+  return ViewSegmentNumbers(get_basic_view_num(), get_basic_segment_num());
+}
+
+template <typename elemT>
 int RelatedViewgrams<elemT>::get_num_axial_poss() const
 {
   assert(viewgrams.size()>0);
@@ -111,11 +118,20 @@ int RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
 }
 
 template <typename elemT>
-const ProjDataInfo * RelatedViewgrams<elemT>::get_proj_data_info_ptr() const
+const ProjDataInfo * 
+RelatedViewgrams<elemT>::
+get_proj_data_info_ptr() const
 {
   assert(viewgrams.size()>0);
   check_state();
   return viewgrams[0].get_proj_data_info_ptr();
+}
+
+template <typename elemT>
+const DataSymmetriesForViewSegmentNumbers * 
+RelatedViewgrams<elemT>::get_symmetries_ptr() const
+{
+  return symmetries_used.get();
 }
 
 template <typename elemT>
