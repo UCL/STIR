@@ -1,6 +1,9 @@
 //
-// $Id$: $Date$
+// $Id$
 //
+  //MJ 15/05/2000 made post_processing() return bool
+
+
 
 // KT 01/08/98 removed ! from keywords
 // KT 14/12 changed <> to "" in next 3 includes
@@ -86,7 +89,7 @@ bool KeyParser::parse(istream& f)
 {
   //KT 26/10/98 removed init_keys();
   input=&f;
-  return (parse_header()==0 && post_processing()==0);
+  return (parse_header()==0 && post_processing()==false);
 }
 
 
@@ -108,7 +111,7 @@ void KeyParser::add_key(const string& keyword,
   kmap[keyword.c_str()] = 
     map_element(t, &KeyParser::set_variable, variable, list_of_values);
 }
-
+  
 int KeyParser::parse_header()
 {
     
