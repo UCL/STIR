@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __ZOOM_H__
-#define  __ZOOM_H__
+#ifndef __stir_ZOOM_H__
+#define  __stir_ZOOM_H__
 
 /*!
   \file 
@@ -74,7 +74,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -89,9 +89,14 @@ template <typename elemT> class PixelsOnCartesianGrid;
 template <typename elemT> class CartesianCoordinate3D;
 
 /*!
+ \ingroup buildblock
+  \name Functions for interpolating data to new pixel/bin sizes
+*/
+//@{
+
+/*!
   \brief zoom a RelatedViewgrams object, replacing it with the new data
-  \ingroup buildblock
- \see zoom.h for parameter info
+   \see zoom.h for parameter info
 */
 void
 zoom_viewgrams (RelatedViewgrams<float>& viewgrams, 
@@ -101,8 +106,7 @@ zoom_viewgrams (RelatedViewgrams<float>& viewgrams,
 
 /*!
   \brief zoom \a viewgram, replacing it with the new data
-  \ingroup buildblock
- \see zoom.h for parameter info
+  \see zoom.h for parameter info
 */
 void
 zoom_viewgram (Viewgram<float>& viewgram, 
@@ -111,8 +115,7 @@ zoom_viewgram (Viewgram<float>& viewgram,
 	       const float x_offset_in_mm = 0, const float y_offset_in_mm = 0);
 /*!
   \brief zoom \a in_viewgram, replacing \a out_viewgram with the new data
-  \ingroup buildblock
-
+  
   This version of zoom_viewgram gets the info on the new sizes, sampling etc. 
   from \a out_viewgram.
  \see zoom.h for parameter info
@@ -125,8 +128,7 @@ zoom_viewgram (Viewgram<float>& out_viewgram,
 
 /*!
   \brief zoom \a image, replacing the first argument with the new data
-  \ingroup buildblock
- \see zoom.h for parameter info
+  \see zoom.h for parameter info
 */
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image,
@@ -138,7 +140,6 @@ zoom_image(VoxelsOnCartesianGrid<float> &image,
   \brief 
   zoom \a image, replacing the first argument with the new data. 
   Full 3D shifts and zooms. 
-  \ingroup buildblock
   \see zoom.h for parameter info.
 */
 void
@@ -149,7 +150,6 @@ zoom_image(VoxelsOnCartesianGrid<float> &image,
 
 /*!
  \brief zoom \a image_in according to dimensions, origin and voxel_size of \a image_out.
-  \ingroup buildblock
   \see zoom.h for parameter info
 */
 void 
@@ -160,12 +160,13 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 \brief 
 zoom \a image2D_in according to dimensions, origin and pixel_size of 
 \a image2D_out.
-  \ingroup buildblock
-  \see zoom.h for parameter info
+   \see zoom.h for parameter info
 */
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
            const PixelsOnCartesianGrid<float> &image2D_in);
+
+//@}
 
 END_NAMESPACE_STIR
 

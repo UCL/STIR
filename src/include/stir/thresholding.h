@@ -27,9 +27,13 @@ using std::fill;
 #endif
 
 START_NAMESPACE_STIR
+/*!  \ingroup buildblock
+   \name Functions for thresholding numbers and sequences
+*/
+//@{
 
 //! Threshold a sequence from above and below
-/*! \ingroup buildblock
+/*!
   \par Type requirements:
     
     <ul>
@@ -54,7 +58,7 @@ threshold_upper_lower(forw_iterT begin, forw_iterT end,
 }
 
 //! Threshold a sequence from above
-/*! \ingroup buildblock
+/*! 
   \see threshold_upper_lower for type requirements */
 template <typename forw_iterT, typename elemT>
 inline void
@@ -69,7 +73,7 @@ threshold_upper(forw_iterT begin, forw_iterT end,
 }
 
 //! Threshold a sequence from below
-/*! \ingroup buildblock
+/*! 
  \see threshold_upper_lower for type requirements */
 template <typename forw_iterT, typename elemT>
 inline void
@@ -85,9 +89,9 @@ threshold_lower(forw_iterT begin, forw_iterT end,
 
 //! sets non-positive values in the sequence to small positive ones
 /*!
-  \ingroup buildblock
+  
   Thresholds the sequence from below to  
-  <tt> *min_positive_element()*small_number</tt>
+  <tt> *min_positive_element()*small_number</tt>.
   However, if all values are less than or equal to 0, they are 
   set to \a small_number.
 
@@ -112,6 +116,8 @@ threshold_min_to_small_positive_value(ForwardIter_t begin, ForwardIter_t end,
   else
     fill(begin, end, small_number);
 }
+
+//@}
 
 END_NAMESPACE_STIR
 
