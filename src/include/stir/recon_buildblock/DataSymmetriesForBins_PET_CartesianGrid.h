@@ -85,9 +85,8 @@ public:
 
 
   virtual 
-    inline 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    DataSymmetriesForBins 
+    DataSymmetriesForBins_PET_CartesianGrid
 #else
     DataSymmetriesForViewSegmentNumbers
 #endif
