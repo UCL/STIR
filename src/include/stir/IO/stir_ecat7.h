@@ -4,7 +4,6 @@
 /*!
   \file
   \ingroup ECAT
-  \ingroup IO
 
   \brief Declaration of routines which convert CTI things into our 
   building blocks and vice versa.
@@ -53,17 +52,6 @@ using std::string;
 using std::iostream;
 #endif
 
-//*************** namespace macros
-#if !defined(STIR_NO_NAMESPACE)
-# define START_NAMESPACE_ECAT7 namespace ecat7 {
-# define END_NAMESPACE_ECAT7 }
-# define USING_NAMESPACE_ECAT7 using namespace ecat7;
-#else
-# define START_NAMESPACE_ECAT7 
-# define END_NAMESPACE_ECAT7 
-# define USING_NAMESPACE_ECAT7 
-#endif
-
 START_NAMESPACE_STIR
 
 class NumericType;
@@ -77,11 +65,12 @@ class ProjData;
 class ProjDataInfo;
 class ProjDataFromStream;
 
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
 /*!
   \brief checks if the file is in ECAT7 format
-
+  \ingroup ECAT
   This partly relies on the implementation of matrix_open in the LLN matrix library.
   Additional checks are made on the main header. Current checks are:
   <ol>
@@ -91,21 +80,37 @@ START_NAMESPACE_ECAT7
   </ol>
   \warning When the file is not readable, error() is called.
 */
-bool is_ecat7_file(const string& filename);
-//! Checks in addition if the file contains images
-bool is_ecat7_image_file(const string& filename);
-//! Checks in addition if the file contains emission sinograms (or blank/transmision)
-bool is_ecat7_emission_file(const string& filename);
-//! Checks in addition if the file contains attenuation correction factors
-bool is_ecat7_attenuation_file(const string& filename);
+bool is_ECAT7_file(const string& filename);
+/*!
+  \brief checks if the file is in ECAT6 format and if the file contains images
+  \ingroup ECAT
+*/
+bool is_ECAT7_image_file(const string& filename);
+/*!
+  \brief checks if the file is in ECAT6 format and
+  if the file contains emission sinograms (or blank/transmision)
+  \ingroup ECAT
+*/
+bool is_ECAT7_emission_file(const string& filename);
+/*!
+  \brief checks if the file is in ECAT6 format and 
+  if the file contains attenuation correction factors
+  \ingroup ECAT
+*/
+bool is_ECAT7_attenuation_file(const string& filename);
 
 
 //! determine scanner type from the main_header
-/*! Returns a Unknown_Scanner if it does not recognise it. */
+/*! 
+  \ingroup ECAT
+  Returns a Unknown_Scanner if it does not recognise it. */
 void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead);
 
 
 //! Create a new ECAT7 image file and write the data in there
+/*!
+  \ingroup ECAT
+*/
 Succeeded 
 DiscretisedDensity_to_ECAT7(DiscretisedDensity<3,float> const & density, 
                             string const & cti_name, string const& orig_name,
@@ -115,6 +120,7 @@ DiscretisedDensity_to_ECAT7(DiscretisedDensity<3,float> const & density,
 
 //! Write an (extra) image to an existing ECAT7 file 
 /*! 
+  \ingroup ECAT
   Some consistency checks are performed between the image and the data in the main header
   \warning This does NOT write the main header.
   */
@@ -133,6 +139,7 @@ Succeeded ProjData_to_ECAT7(ProjData const& proj_data,
 
 //! Write an (extra) set of sinograms to an existing ECAT7 file 
 /*! 
+  \ingroup ECAT
    Some consistency checks are performed between the proj_data and the data in the main header
   \warning This does NOT write the main header.
 */
@@ -143,13 +150,18 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
 
 
 //! Fill in most of the main header given a Scanner object and orig_name.
+/*!
+  \ingroup ECAT
+*/
 void make_ECAT7_main_header(Main_header&, 
 			    const Scanner&,
                             const string& orig_name                     
                             );
 
 //! Fill in most of the main header given a Scanner object and orig_name and an image
-/*! Sets num_planes, plane_separation as well*/
+/*!
+  \ingroup ECAT
+  Sets num_planes, plane_separation as well*/
 void make_ECAT7_main_header(Main_header& mhead,
 			    Scanner const& scanner,
                             const string& orig_name,
@@ -157,30 +169,37 @@ void make_ECAT7_main_header(Main_header& mhead,
                             );
 
 //! Fill in most of the main header given an orig_name and a proj_data_info
-/*! It gets the scanner from the proj_data_info object.
-    Sets num_planes, plane_separation as well*/
+/*! 
+  \ingroup ECAT
+  It gets the scanner from the proj_data_info object.
+  Sets num_planes, plane_separation as well*/
 void make_ECAT7_main_header(Main_header& mhead,
 			    const string& orig_name,
                             ProjDataInfo const & proj_data_info
                             );
 
 //! Fill in most of the subheader
-/*! \warning data_type and volume_mode has still to be set */
+/*! 
+  \ingroup ECAT
+  \warning data_type and volume_mode has still to be set */
 void
-make_subheader_for_ecat7(Attn_subheader& shead, 
+make_subheader_for_ECAT7(Attn_subheader& shead, 
                          const Main_header& mhead,
                          const ProjDataInfo& proj_data_info
                          );
 //! Fill in most of the subheader
-/*! \warning data_type and volume_mode has still to be set */
+/*!
+  \ingroup ECAT
+  \warning data_type and volume_mode has still to be set */
 void
-make_subheader_for_ecat7(Scan3D_subheader& shead, 
+make_subheader_for_ECAT7(Scan3D_subheader& shead, 
                          const Main_header& mhead,
                          const ProjDataInfo& proj_data_info
                          );
 
 //! Make a ProjDataFromStream object that 'points' into an ECAT7 file
 /*! 
+  \ingroup ECAT
     \arg mptr is the LLN structure that has the file pointer etc for the ECAT7 file
     \arg matrix encodes frame, gate, data, bed numbers
     \arg stream_ptr is a pointer to a stream object corresponding to the SAME file as the
@@ -198,22 +217,25 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
                       const shared_ptr<iostream>&  stream_ptr);
 
 //! Writes an Interfile header that 'points' into an ECAT7 file
-/*! Only data types AttenCor, Byte3dSinogram, Short3dSinogram, Float3dSinogram,
-    ByteVolume, PetVolume can be handled.
+/*! 
+  \ingroup ECAT
+  Only data types AttenCor, Byte3dSinogram, Short3dSinogram, Float3dSinogram,
+  ByteVolume, PetVolume can be handled.
 
     \a interfile_header_name will be set to the header name used. It will be of the form
-    ecat7_filename_extension_f1g1d0b0.h?. For example, for ecat7_filename test.S, and
+    ECAT7_filename_extension_f1g1d0b0.hs or .hv. For example, for ECAT7_filename test.S, and
     frame=2, gate=3, data=4, bed=5, the header name will be test_S_f2g3d4b5.hs
 */
 Succeeded 
-write_basic_interfile_header_for_ecat7(string& interfile_header_name,
-                                       const string& ecat7_filename,
+write_basic_interfile_header_for_ECAT7(string& interfile_header_name,
+                                       const string& ECAT7_filename,
                                        int frame, int gate, int data,
                                        int bed);
 
 #if 0
 /*
   \brief Convert image data
+  \ingroup ECAT
 */
 VoxelsOnCartesianGrid<float> * 
 ECAT7_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const int data_num, const int bed_num,
@@ -230,7 +252,7 @@ void ECAT7_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 #endif
 
 END_NAMESPACE_ECAT7
-
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 #endif
