@@ -326,7 +326,14 @@ Succeeded write_basic_interfile(const string&  filename,
   char * header_name = new char[filename.size() + 5];
 
   strcpy(data_name, filename.c_str());
-  add_extension(data_name, ".v");
+  // KT 29/06/2001 make sure that a filename ending on .hv is treated correctly
+  {
+   const char * const extension = strchr(find_filename(data_name),'.');
+   if (extension!=NULL && strcmp(extension, ".hv")==0)
+     replace_extension(data_name, ".v");
+   else
+     add_extension(data_name, ".v");
+  }
   strcpy(header_name, data_name);
   replace_extension(header_name, ".hv");
 
