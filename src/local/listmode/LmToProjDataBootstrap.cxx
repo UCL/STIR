@@ -13,12 +13,12 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/listmode/LmToProjDataBootstrap.h"
-#include "local/stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
 #include <iostream>
 #include <algorithm>
@@ -28,12 +28,6 @@ using std::cerr;
 using std::endl;
 #endif
 
-#ifdef _MSC_VER
-// Current version of boost::random breaks on VC6 and 7 because of 
-// compile time asserts. I'm disabling them for now by defining the following.
-//TODO remove when upgrading to next version
-//#define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS 
-#endif
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
