@@ -35,7 +35,6 @@
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
-#include <time.h> // for localtime
 
 START_NAMESPACE_STIR
 
@@ -64,8 +63,6 @@ protected:
   string output_filename_prefix;
   string frame_definition_filename;
 
-  double scan_start_time;
-
   bool do_move_to_reference;
 
   int frame_num_to_process;     
@@ -74,8 +71,6 @@ private:
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
 
   shared_ptr<OutputFileFormat> output_file_format_sptr;  
-
-  int scan_start_time_secs_since_1970_UTC;
 };
 
 void 
@@ -85,7 +80,6 @@ MoveImage::set_defaults()
   frame_num_to_process = -1;
   output_file_format_sptr = new DefaultOutputFileFormat;
   do_move_to_reference = true;
-  scan_start_time_secs_since_1970_UTC=-1;
 }
 
 void 
@@ -95,8 +89,6 @@ MoveImage::initialise_keymap()
   parser.add_start_key("MoveImage Parameters");
 
   parser.add_key("input file",&input_filename);
-  parser.add_key("scan_start_time_secs_since_1970_UTC", 
-		 &scan_start_time_secs_since_1970_UTC);
   parser.add_key("time frame definition filename",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_key("move_to_reference", &do_move_to_reference);
@@ -124,31 +116,6 @@ bool
 MoveImage::
 post_processing()
 {
-
-  if (scan_start_time_secs_since_1970_UTC==-1)
-    {
-      warning("scan_start_time_secs_since_1970_UTC not set. Will use relative time");
-      scan_start_time = 0;
-    }
-  else 
-    {
-      if (scan_start_time_secs_since_1970_UTC<1000)
-	{
-	  warning("scan_start_time_secs_since_1970_UTC too small");
-	  return true;
-	}
-      {
-	// convert to time_in_secs since midnight
-	time_t sec_time = scan_start_time_secs_since_1970_UTC;
-	
-	struct tm* ScanTime = localtime( &sec_time  ) ;
-	scan_start_time = 
-	  ( ScanTime->tm_hour * 3600.0 ) + 
-	  ( ScanTime->tm_min * 60.0 ) +
-	  ScanTime->tm_sec ;
-      }
-    }
-
   
   if (output_filename_prefix.size()==0)
     {
@@ -229,9 +196,9 @@ process_data()
        ++current_frame_num)
     {
       const double start_time = 
-	frame_defs.get_start_time(current_frame_num) + scan_start_time;
+	frame_defs.get_start_time(current_frame_num);
       const double end_time = 
-	frame_defs.get_end_time(current_frame_num) +  scan_start_time;
+	frame_defs.get_end_time(current_frame_num);
       cerr << "\nDoing frame " << current_frame_num
 	   << ": from " << start_time << " to " << end_time << endl;
 
@@ -239,9 +206,7 @@ process_data()
       out_density_sptr->fill(0);
 
       RigidObject3DTransformation rigid_object_transformation =
-	scan_start_time_secs_since_1970_UTC==-1 
-	? ro3d_ptr->compute_average_motion_rel_time(start_time, end_time)
-	: ro3d_ptr->compute_average_motion(start_time, end_time);
+	ro3d_ptr->compute_average_motion_rel_time(start_time, end_time);
       
       rigid_object_transformation = 
 	compose(ro3d_ptr->get_transformation_to_scanner_coords(),
