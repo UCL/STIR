@@ -18,6 +18,7 @@
 
 #include "tomo/Object.h"
 #include "tomo/FactoryRegistry.h"
+#include "tomo/interfile_keyword_functions.h"
 #include <iostream>
 #include <string>
 
@@ -62,16 +63,30 @@ public:
   */
   inline static Root* read_registered_object(istream* in, const string& registered_name);
 
+  //! \brief ask the user for which type, and then calls read_registered_object(0, type)
+  /*! 
+    \warning Relies on read_registered_object to be interactive when its first argument is 0.
+
+    Sadly, this function cannot be called ask_parameters() because of conflicts with
+    ParsingObject::ask_parameters() in the derived classes.
+  */
+  inline static Root* ask_type_and_parameters();
+
+  //! List all possible registered names to the stream
+  /*! Names are separated with newlines. */
   inline static void list_registered_names(ostream& stream);
 
+  
 protected:
   //! The type of a root factory is a function, taking an istream* as argument, and returning a Root*
   typedef Root * (*RootFactory)(istream*);
   //! The type of the registry
-  typedef FactoryRegistry<string, RootFactory> RegistryType;
+  typedef FactoryRegistry<string, RootFactory, interfile_less> RegistryType;
   //! Static function returning the registry
-  /*! \warning This function is non inline when using Visual C++. */
-  //TODOdoc more
+  /*! \warning This function is non inline when using Visual C++ because of
+      a compiler limitation. This means that when using this compiler,
+      RegisteredObject will need explicit instantiations for all derived classes.
+  */
 #ifndef _MSC_VER
   inline 
 #endif
