@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -371,12 +371,13 @@ string Scanner::list_names() const
 Scanner* Scanner::ask_parameters() 
 {
 
-  cout << list_all_names();
+  cerr << list_all_names();
 
-  cout<<"Enter the name of the scanner (exact match!)"<<endl;
-  char str [100];
-  cin.getline(str,100);
-  const string name = str;
+  //cout<<"Enter the name of the scanner (exact match!)"<<endl;
+  //char str [100];
+  //cin.getline(str,100);
+  //const string name = str;
+  const string name=ask_string("Enter the name of the scanner (exact match!)");
 
   //get the type from the name itself
   Scanner* scanner_ptr = 
