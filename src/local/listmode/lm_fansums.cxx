@@ -442,6 +442,7 @@ write_fan_sums(const Array<2,float>& data_fan_sums,
   filename += txt;
   ofstream out(filename.c_str());
   out << data_fan_sums;
+  cerr << "Frame " << current_frame_num << " finished" << endl;
 }
 
 END_NAMESPACE_STIR
