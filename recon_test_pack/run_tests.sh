@@ -21,6 +21,9 @@ else
   echo
 fi
 
+# first delete any files remaining from a previous run
+rm -f my_*v my_*s
+
 INSTALL_DIR=$1
 
 ThereWereErrors=0
