@@ -25,6 +25,7 @@
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/Array.h"
 #include "stir/IndexRange4D.h"
+#include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/round.h"
 #include "stir/shared_ptr.h"
