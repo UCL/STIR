@@ -16,7 +16,19 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -113,6 +125,9 @@ public:
   inline const ProjDataInfo * get_proj_data_info_ptr() const;
   //! Get a pointer to the symmetries used in constructing this object
   inline const DataSymmetriesForViewSegmentNumbers * get_symmetries_ptr() const;
+  //! Get a shared pointer to the symmetries used in constructing this object
+  /*! \warning It is dangerous to modify the shared symmetries object */
+  inline shared_ptr<DataSymmetriesForViewSegmentNumbers> get_symmetries_sptr() const;
   // -- members which modify the structure ---
 
   //! Grow each viewgram
