@@ -33,7 +33,7 @@ class ProjData;
 class ProjDataInfo;
 class DataSymmetriesForViewSegmentNumbers;
 
-const int rim_truncation_sino  = 4; // This MUST be const, otherwise it will need
+const int rim_truncation_sino  = 0; // This MUST be const, otherwise it will need
                                     // to be distributed to the slaves
 const int rim_truncation_image = 2;
 
