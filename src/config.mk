@@ -63,7 +63,7 @@ LINK=$(CXX)
 IS_MS_VC:=$(shell $(CXX) 2>&1  |grep Microsoft)
 
 ifneq ("$(IS_MS_VC)","")
-$(warning Enabling Visual C++ specific fixes)
+#$(warning Enabling Visual C++ specific fixes)
 endif
 
 #******* compiler and linker extra options
