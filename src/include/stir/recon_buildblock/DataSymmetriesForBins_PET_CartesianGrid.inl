@@ -94,10 +94,15 @@ find_sym_op_bin0(
                  int view_num, 
                  int axial_pos_num) const
 {
-    // KT 27/09/2000 pass 0 instead of axial_pos_num
-  const int transform_z = find_transform_z(abs(segment_num), 0);
+  // note: if do_symmetry_shift_z==true, then basic axial_pos_num will be 0
+  const int transform_z = 
+	find_transform_z(abs(segment_num), 
+	do_symmetry_shift_z ? 0 : axial_pos_num);
 
-  const int z_shift = num_planes_per_axial_pos[segment_num]*axial_pos_num;
+  const int z_shift = 
+	do_symmetry_shift_z ?
+	num_planes_per_axial_pos[segment_num]*axial_pos_num
+	: 0;
   
   const int view180 = num_views;
 
@@ -115,19 +120,19 @@ find_sym_op_bin0(
   const int view45  = view180/4;
 
   if (  do_symmetry_90degrees_min_phi && view_num > view90 && view_num <= view135) {  //(90, 135 ]
-    if ( segment_num >= 0)	
+    if ( !do_symmetry_swap_segment || segment_num >= 0)	
       return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift);          
     else               
       return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_num, z_shift, transform_z);		   // seg < 0    				 			 
   } 
   else if ( do_symmetry_90degrees_min_phi && view_num > view45 && view_num <= view90  ) { // [ 45,  90] 		 
-    if ( segment_num >= 0)  
+    if ( !do_symmetry_swap_segment || segment_num >= 0)  
       return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_num, z_shift, transform_z);  					 			  			 
     else
       return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift); // seg < 0   //KT????????????  different for view90, TODO				  
   }  
   else if( do_symmetry_180degrees_min_phi && view_num > view90/* && view_num <= view180 */){   // (135, 180) but (90,180) for reduced symmetry case
-    if( segment_num >= 0)   
+    if( !do_symmetry_swap_segment || segment_num >= 0)   
       return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_num, z_shift, transform_z);  
     else 	            
       return new SymmetryOperation_PET_CartesianGrid_swap_xmx(view180, axial_pos_num, z_shift);	  // seg < 0        				
@@ -136,7 +141,7 @@ find_sym_op_bin0(
   {
     assert( !do_symmetry_90degrees_min_phi || (view_num >= view0 && view_num <= view45));
     assert( !do_symmetry_180degrees_min_phi || (view_num >= view0 && view_num <= view90));
-    if ( segment_num < 0) 
+    if ( do_symmetry_swap_segment && segment_num < 0) 
       return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z);                              
     else
     {
@@ -157,10 +162,15 @@ find_sym_op_general_bin(
                         int view_num, 
                         int axial_pos_num) const
 { 
-  // KT 27/09/2000 pass 0 instead of axial_pos_num
-  const int transform_z = find_transform_z(abs(segment_num), 0);
+  // note: if do_symmetry_shift_z==true, then basic axial_pos_num will be 0
+  const int transform_z = 
+	find_transform_z(abs(segment_num), 
+	do_symmetry_shift_z ? 0 : axial_pos_num);
 
-  const int z_shift = num_planes_per_axial_pos[segment_num]*axial_pos_num;
+  const int z_shift = 
+	do_symmetry_shift_z ?
+	num_planes_per_axial_pos[segment_num]*axial_pos_num
+	: 0;
   
 // TODO get rid of next 2 restrictions
   assert(!do_symmetry_180degrees_min_phi || view_num>=0);
@@ -179,8 +189,8 @@ find_sym_op_general_bin(
   
   
   if (  do_symmetry_90degrees_min_phi && view_num > view90 && view_num <= view135) {  //(90, 135 ]
-    if ( segment_num >  0) {	 // pos_plus90		 
-      if ( s > 0 ) 
+    if ( !do_symmetry_swap_segment || segment_num > 0) {	 // pos_plus90		 
+      if ( !do_symmetry_swap_s || s > 0 ) 
         return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift);           				    			   
       else 
         return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq(view180, axial_pos_num, z_shift, transform_z); // s < 0  					 
@@ -188,13 +198,13 @@ find_sym_op_general_bin(
     else // neg_plus90
       /////
       if ( segment_num < 0 )	{   
-        if ( s > 0 )  
+        if ( !do_symmetry_swap_s || s > 0 )  
           return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_num, z_shift, transform_z);   
         else     
           return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_num, z_shift);	     						  
       }   
       else { // segment_num == 0 							      
-        if ( s > 0 ) 
+        if ( !do_symmetry_swap_s || s > 0 ) 
           return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift); 
         else         
           return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_num, z_shift);			 
@@ -202,14 +212,14 @@ find_sym_op_general_bin(
   }    
   else   if ( do_symmetry_90degrees_min_phi && view_num > view45 && view_num <= view90  )  // [ 45,  90] 
   {		   
-    if ( segment_num > 0){  
-      if ( s > 0 ) 	   
+    if ( !do_symmetry_swap_segment || segment_num > 0){  
+      if ( !do_symmetry_swap_s || s > 0 ) 	   
         return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_num, z_shift, transform_z); 					 				  
       else             
         return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_num, z_shift);	 			   
     }
     else if ( segment_num < 0 ) { // {//101   segment_num < 0
-      if ( s > 0 )     
+      if ( !do_symmetry_swap_s || s > 0 )     
         return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift);			   
       else    
         return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq(view180, axial_pos_num, z_shift, transform_z);     
@@ -217,7 +227,7 @@ find_sym_op_general_bin(
     } 
     else // segment_num == 0
     {
-      if ( s > 0 ) 
+      if ( !do_symmetry_swap_s || s > 0 ) 
         return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift);		
       else           
         return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_num, z_shift);				       
@@ -225,28 +235,28 @@ find_sym_op_general_bin(
   }  
   else if( do_symmetry_180degrees_min_phi && view_num > view90/* && view_num <= view180 */)   // (135, 180) but (90,180) for reduced symmetry case    
   {
-    if( segment_num > 0){				    
-      if ( s > 0 )     
+    if( !do_symmetry_swap_segment || segment_num > 0){				    
+      if ( !do_symmetry_swap_s || s > 0 )     
         return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_num, z_shift, transform_z);  					
       else             
         return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_num, z_shift);     //  s <= 0  						
     }
     else //if ( segment_num < 0 )
     {// segment_num <= 0
-      if ( s > 0 ) 
+      if ( !do_symmetry_swap_s || s > 0 ) 
         return new SymmetryOperation_PET_CartesianGrid_swap_xmx(view180, axial_pos_num, z_shift);    				    
       else 	         
         return new SymmetryOperation_PET_CartesianGrid_swap_ymy_zq(view180, axial_pos_num, z_shift, transform_z);	 					     				   
     }// segment_num == 0
-    // /*else{   if ( s > 0 ) return new SymmetryOperation_PET_CartesianGrid_swap_xmx();	else 	return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_num, z_shift);}*/
+    // /*else{   if ( !do_symmetry_swap_s || s > 0 ) return new SymmetryOperation_PET_CartesianGrid_swap_xmx();	else 	return new SymmetryOperation_PET_CartesianGrid_swap_ymy(view180, axial_pos_num, z_shift);}*/
   }  
   else 
   {    
     assert( !do_symmetry_90degrees_min_phi || (view_num >= view0 && view_num <= view45));
     assert( !do_symmetry_180degrees_min_phi || (view_num >= view0 && view_num <= view90));
-    if ( segment_num > 0) 
+    if ( !do_symmetry_swap_segment || segment_num > 0) 
     {   
-      if ( s < 0) 
+      if ( do_symmetry_swap_s && s < 0) 
         return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq(view180, axial_pos_num, z_shift, transform_z);   									    						   
       else
       {
@@ -262,14 +272,14 @@ find_sym_op_general_bin(
         /*KT if ( s == 0)   					 
           return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z); 										
         else*/  
-          if ( s < 0) 
+          if ( do_symmetry_swap_s && s < 0) 
             return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_num, z_shift);  
           else        
             return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z);   // s > 0  						      						      						                         					
       }  
       else // segment_num = 0 
       {
-        if ( s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_num, z_shift); 
+        if ( do_symmetry_swap_s && s < 0) return new SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy(view180, axial_pos_num, z_shift); 
         else
         {
           if (z_shift==0)
@@ -296,7 +306,7 @@ find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const
    const int view45  =  view90>>1;
    const int view135 =  view90+view45;
 
-   if ( v_s.segment_num() < 0    )  { v_s.segment_num() = -v_s.segment_num(); change=true;}
+   if ( do_symmetry_swap_segment && v_s.segment_num() < 0    )  { v_s.segment_num() = -v_s.segment_num(); change=true;}
 
    if (do_symmetry_90degrees_min_phi)
    {
@@ -329,8 +339,8 @@ find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangent
   view_num = v_s.view_num();
   segment_num = v_s.segment_num();
 
-  if ( tangential_pos_num < 0      )  { tangential_pos_num   = - tangential_pos_num ; change=true;};
-  if ( axial_pos_num != 0    )  { axial_pos_num  =  0;     change = true; }   
+  if ( do_symmetry_swap_s && tangential_pos_num < 0      )  { tangential_pos_num   = - tangential_pos_num ; change=true;};
+  if ( do_symmetry_shift_z && axial_pos_num != 0    )  { axial_pos_num  =  0;     change = true; }   
   
   return change;
 }
@@ -367,7 +377,7 @@ num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const
   int num = do_symmetry_180degrees_min_phi  && (vs.view_num() % (num_views/2)) != 0 ? 2 : 1;
   if (do_symmetry_90degrees_min_phi && (vs.view_num() % (num_views/2)) != num_views/4)
     num *= 2;
-  if (vs.segment_num() != 0)
+  if (do_symmetry_swap_segment && vs.segment_num() != 0)
     num *= 2;
  return num;
 }
@@ -380,13 +390,14 @@ num_related_bins(const Bin& b) const
   int num = do_symmetry_180degrees_min_phi  && (b.view_num() % (num_views/2)) != 0 ? 2 : 1;
   if (do_symmetry_90degrees_min_phi && (b.view_num() % (num_views/2)) != num_views/4)
     num *= 2;
-  if (b.segment_num() != 0)
+  if (do_symmetry_swap_segment && b.segment_num() != 0)
     num *= 2;
 
-  if (b.tangential_pos_num() != 0)
+  if (do_symmetry_swap_s && b.tangential_pos_num() != 0)
     num *= 2;
   
-  num *= proj_data_info_ptr->get_num_axial_poss(b.segment_num());
+  if (do_symmetry_shift_z)
+    num *= proj_data_info_ptr->get_num_axial_poss(b.segment_num());
   return num;
 }
 
@@ -396,14 +407,14 @@ get_related_bins_factorised(vector<AxTangPosNumbers>& ax_tang_poss, const Bin& b
                             const int min_axial_pos_num, const int max_axial_pos_num,
                             const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  for (int axial_pos_num=min_axial_pos_num;
-       axial_pos_num <= max_axial_pos_num;
+  for (int axial_pos_num=do_symmetry_shift_z?min_axial_pos_num:b.axial_pos_num();
+       axial_pos_num <= (do_symmetry_shift_z?max_axial_pos_num:b.axial_pos_num());
        ++axial_pos_num)
   {
      if (b.tangential_pos_num() >= min_tangential_pos_num &&
          b.tangential_pos_num() <= max_tangential_pos_num)
         ax_tang_poss.push_back(AxTangPosNumbers(axial_pos_num, b.tangential_pos_num()));
-     if (b.tangential_pos_num()!=0 &&
+     if (do_symmetry_swap_s && b.tangential_pos_num()!=0 &&
          -b.tangential_pos_num() >= min_tangential_pos_num &&
          -b.tangential_pos_num() <= max_tangential_pos_num)
         ax_tang_poss.push_back(AxTangPosNumbers(axial_pos_num, -b.tangential_pos_num()));
@@ -425,7 +436,7 @@ get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewS
   const int view_num = vs.view_num();
 
   const bool symz = 
-    (segment_num != 0);
+    do_symmetry_swap_segment && (segment_num != 0);
 
   rel_vs.reserve(num_related_view_segment_numbers(vs));
   rel_vs.resize(0);
