@@ -102,12 +102,13 @@ CListModeData::SavedPosition
 CListModeDataECAT::
 save_get_position() 
 {
+  saved_get_positions.resize(num_saved_get_positions+1);
   saved_get_positions[num_saved_get_positions].first = 
     current_lm_file;
   saved_get_positions[num_saved_get_positions].second = 
      current_lm_data_ptr->get_stream_ptr()->tellg();
   assert(num_saved_get_positions+1 != 0);
-  return ++num_saved_get_positions;
+  return num_saved_get_positions++;
 } 
 
 Succeeded
