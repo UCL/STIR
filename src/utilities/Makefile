@@ -1,6 +1,5 @@
-# AIX Makefile for PPhead/utilities directory
 #
-# @(#)Makefile	1.13 99/07/20
+# $Id$
 #
 
 WORKSPACE = ${HOME}/PPhead
