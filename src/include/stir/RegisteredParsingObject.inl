@@ -36,7 +36,14 @@ RegisteredParsingObject<Derived,Base,Parent>::read_from_stream(istream* in)
 {
   Derived * der_ptr = new Derived;
   if (in != NULL)
-    der_ptr->parse(*in);
+  {
+    if(der_ptr->parse(*in)==false)
+    {
+      //parsing failed, return 0 pointer
+      delete der_ptr;
+      return 0;
+    }
+  }
   else
     der_ptr->ask_parameters();
   return der_ptr;
