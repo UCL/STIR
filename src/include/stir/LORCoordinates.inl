@@ -126,6 +126,7 @@ LORInCylinderCoordinates(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>
   _p2.z() = na_coords.z2();
   _p1.psi() = to_0_2pi(na_coords.phi() + na_coords.beta());
   _p2.psi() = to_0_2pi(na_coords.phi() - na_coords.beta() + static_cast<coordT>(_PI));
+  check_state();
 }
 
 template <class coordT>
@@ -137,6 +138,7 @@ LORInCylinderCoordinates(const LORInAxialAndSinogramCoordinates<coordT>& coords)
   _p2.z() = coords.z2();
   _p1.psi() = to_0_2pi(coords.phi() + coords.beta());
   _p2.psi() = to_0_2pi(coords.phi() - coords.beta() + static_cast<coordT>(_PI));
+  check_state();
 }
 
 template <class coordT>
@@ -147,10 +149,13 @@ get_sino_coords(  coordT& _z1,
 		  coordT& _beta,
 		  const LORInCylinderCoordinates<coordT>& cyl_coords)
 {
-  // TODO check
   _beta = to_0_2pi((cyl_coords.p1().psi() - cyl_coords.p2().psi() +  static_cast<coordT>(_PI))/2);
+  if (_beta>_PI)
+    _beta -= static_cast<coordT>(2*_PI);
   _phi =  to_0_2pi((cyl_coords.p1().psi() + cyl_coords.p2().psi() - static_cast<coordT>( _PI))/2);
-  /* Now bring into standard range and set z accordingly */
+
+  /* beta is now between -Pi and Pi, phi between 0 and 2Pi
+     Now bring into standard range and set z accordingly */
   if (_phi <  static_cast<coordT>(_PI))
     {
       if (_beta >=  static_cast<coordT>(_PI)/2)
@@ -159,7 +164,14 @@ get_sino_coords(  coordT& _z1,
 	  _z2 = cyl_coords.p1().z();
 	  _z1 = cyl_coords.p2().z();
         }
+      else if (_beta <  -static_cast<coordT>(_PI)/2)
+        {
+          _beta = -static_cast<coordT>(_PI) - _beta;
+	  _z2 = cyl_coords.p1().z();
+	  _z1 = cyl_coords.p2().z();
+        }
       else
+
 	{
 	  _z1 = cyl_coords.p1().z();
 	  _z2 = cyl_coords.p2().z();
@@ -175,6 +187,12 @@ get_sino_coords(  coordT& _z1,
 	  _z1 = cyl_coords.p1().z();
 	  _z2 = cyl_coords.p2().z();
         }
+      else if (_beta <  -static_cast<coordT>(_PI)/2)
+        {
+          _beta += static_cast<coordT>(_PI);
+	  _z1 = cyl_coords.p1().z();
+	  _z2 = cyl_coords.p2().z();
+        }
       else
         {
           _beta *= -1;
@@ -182,7 +200,10 @@ get_sino_coords(  coordT& _z1,
 	  _z1 = cyl_coords.p2().z();
         }
     }
-
+  assert(_phi>=0);
+  assert(_phi<=_PI);
+  assert(_beta>=-_PI/2);
+  assert(_beta<=_PI/2);    
 }
 
 template <class coordT>
@@ -197,6 +218,7 @@ LORInAxialAndNoArcCorrSinogramCoordinates(const LORInCylinderCoordinates<coordT>
 #endif
   get_sino_coords(z1(), z2(), _phi, _beta,
 		  cyl_coords);
+  check_state();
 }
 
 template <class coordT>
@@ -213,6 +235,7 @@ LORInAxialAndSinogramCoordinates(const LORInCylinderCoordinates<coordT>& cyl_coo
   get_sino_coords(z1(), z2(), _phi, beta,
 		  cyl_coords);
   _s = this->_radius*sin(beta);
+  check_state();
 }
 
 template <class coordT>
