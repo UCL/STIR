@@ -25,29 +25,58 @@
 
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
-//#include "stir/utilities.h"
-//#include <iostream>
-
-#ifndef STIR_NO_NAMESPACES
-//using std::cout;
-//using std::endl;
-#endif
 
 
 START_NAMESPACE_STIR
 
+void ProjMatrixByBin::set_defaults()
+{
+  cache_disabled=false;
+  cache_stores_only_basic_bins=true;
+}
+
+void 
+ProjMatrixByBin::initialise_keymap()
+{
+  parser.add_key("disable caching", &cache_disabled);
+  parser.add_key("store_only_basic_bins_in_cache", &cache_stores_only_basic_bins);
+}
+
+bool
+ProjMatrixByBin::post_processing()
+{
+  return false;
+}
+
 ProjMatrixByBin::ProjMatrixByBin()
 { 
-  cache_disabled=false;
+  set_defaults();
 }
  
+void 
+ProjMatrixByBin::
+enable_cache(const bool v)
+{ cache_disabled = v;}
+
+void 
+ProjMatrixByBin::
+store_only_basic_bins_in_cache(const bool v) 
+{ cache_stores_only_basic_bins=v;}
+
+bool 
+ProjMatrixByBin::
+is_cache_enabled() const
+{ return !cache_disabled; }
+
+bool 
+ProjMatrixByBin::
+does_cache_store_only_basic_bins() const
+{ return cache_stores_only_basic_bins; }
+
 Succeeded 
 ProjMatrixByBin::
 get_cached_proj_matrix_elems_for_one_bin(
                                          ProjMatrixElemsForOneBin& probabilities) const
-
-                                                         
-                                                     
 {  
   if ( cache_disabled ) 
     return Succeeded::no;
@@ -55,9 +84,12 @@ get_cached_proj_matrix_elems_for_one_bin(
   const Bin bin = probabilities.get_bin();
 
 #ifndef NDEBUG
-  // Check that this is a 'basic' coordinate
-  Bin bin_copy = bin; 
-  assert ( symmetries_ptr->find_basic_bin(bin_copy) == 0);     
+  if (cache_stores_only_basic_bins)
+  {
+    // Check that this is a 'basic' coordinate
+    Bin bin_copy = bin; 
+    assert ( symmetries_ptr->find_basic_bin(bin_copy) == 0);     
+  }
 #endif         
   
 	 
