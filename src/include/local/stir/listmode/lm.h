@@ -1,41 +1,29 @@
-/*
-  version 0.4 of preliminary code to handle CTI listmode data
-  and sinograms.
+//
+// $Id$
+//
+/*!
 
-  Kris Thielemans,
-  31/05/98
-
-  Included functions convert between
-   - CTI 966 listmode event word <-> detector numbers, ring_a, ring_b
-   - CTI 966 listmode event word <-> bin,view, ring_a, ring_b
+  \file
+  \ingroup buildblock  
+  \brief Preliminary code to handle listmode events for the 966 scanner
+    
+  \author Kris Thielemans
+      
+  $Date$
+  $Revision$
 */
 /*
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
-/*
-
-   Changes version 0.4:
-   -detectors->sinogram conversion now works properly in 3D
-    (see detectors_to_sinogram below)
-    this removed a bug in detectors_to_clist as well
-   -'num_views' is now a parameter to the routines
-   -added clist_to_sinogram and its inverse
-*/
-
 #ifndef __stir_listmode_lm_H__
 #define __stir_listmode_lm_H__
 
-#include "stir/common.h"
-#include "stir/round.h"
+
+#include "stir/ByteOrderDefine.h"
 #include <iostream>
 
-// TODO get rid of _SWAPEM_ and use ByteOrder
-// currently checked by asserts()
-#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
-#define   _SWAPEM_           // bigendian
-#endif
 
 #ifndef STIR_NO_NAMESPACES
 using std::istream;
@@ -45,21 +33,23 @@ START_NAMESPACE_STIR
 class Bin;
 class ProjDataInfoCylindrical;
 
+#define STIRListmodeFileFormatIsBigEndian
 
-/**********************************************************************
- CTI 966 listmode event word.
- Normally you should never need to use this, use
- clist_to_detectors and clist_to_sinogram instead
- **********************************************************************/
-typedef unsigned int            BITS;
+//typedef unsigned int            BITS;
 
-  /* the event word is 32 bit. To save 1 bit in size, a 2d sinogram
+//! Class for storing and using a coincidence event from a listmode file
+/*! The private definition is specific to the 966. Public members are generic
+    though.
+
+  For the 966 the event word is 32 bit. To save 1 bit in size, a 2d sinogram
      encoding is used (as opposed to a detector number on the ring
      for both events).
      Both bin and view use 9 bits, so their maximum range is
      512 values, which is fine for the 966 (which needs only 288).
-     */
-class CLIST_EVENT
+
+  \todo use DetectionPosition etc.
+*/
+class CListEvent
 {
 public:  
   static bool has_delayeds() { return true; }
@@ -70,16 +60,16 @@ public:
 void get_detectors(
 		   int& det_num_a, int& det_num_b, int& ring_a, int& ring_b) const;
 
-/* This routine constructs a (prompt) coincidence event */
+/*! This routine constructs a (prompt) coincidence event */
 void set_detectors(
 			const int det_num_a, const int det_num_b,
 			const int ring_a, const int ring_b);
 
-/* This routine returns the corresponding tangential_pos_num,view_num,ring_a and ring_b
+/*! This routine returns the corresponding tangential_pos_num,view_num,ring_a and ring_b
    */
 void get_sinogram_and_ring_coordinates(int& view, int& tangential_pos_num, int& ring_a, int& ring_b) const;
 
-/* This routine constructs a coincidence event */
+/*! This routine constructs a coincidence event */
 void set_sinogram_and_ring_coordinates(
 			const int view_num, const int tangential_pos_num, 
 			const int ring_a, const int ring_b);
@@ -105,60 +95,58 @@ private:
          if ( bin > NumProjBinsBy2 ) bin -= NumProjBins ;
 	 */
 
-#ifdef _SWAPEM_
-  // definition for bigendian machines.
-  BITS    type    : 1; /* 0-coincidence event, 1-time tick */
-  BITS    block_B_ring : 3;
-  BITS    block_A_ring : 3;
-  BITS    block_B_detector : 3;
-  BITS    block_A_detector : 3;
-  BITS    random  : 1;
-  BITS    bin : 9;
-  BITS    view : 9;
+#ifdef STIRByteOrderIsBigEndian
+  unsigned    type    : 1; /* 0-coincidence event, 1-time tick */
+  unsigned    block_B_ring : 3;
+  unsigned    block_A_ring : 3;
+  unsigned    block_B_detector : 3;
+  unsigned    block_A_detector : 3;
+  unsigned    random  : 1;
+  unsigned    bin : 9;
+  unsigned    view : 9;
 #else
-  // definition for littleendian machines. 
   // Do byteswapping first before using this bit field.
-  BITS    view : 9;
-  BITS    bin : 9;
-  BITS    random  : 1;
-  BITS    block_A_detector : 3;
-  BITS    block_B_detector : 3;
-  BITS    block_A_ring : 3;
-  BITS    block_B_ring : 3;
-  BITS    type    : 1; /* 0-coincidence event, 1-time tick */
+  unsigned    view : 9;
+  unsigned    bin : 9;
+  unsigned    random  : 1;
+  unsigned    block_A_detector : 3;
+  unsigned    block_B_detector : 3;
+  unsigned    block_A_ring : 3;
+  unsigned    block_B_ring : 3;
+  unsigned    type    : 1; /* 0-coincidence event, 1-time tick */
 
 #endif
   }; /*-coincidence event*/
 
-class CLIST_RECORD;
+class CListRecord;
 
-class CLIST_TIME 
+//! A class for storing and using a timing 'event' from a listmode file
+class CListTime
 {
 public:
   inline double get_time_in_secs() const
   { return time/1000.;  }
   inline void set_time_in_secs(const double time_in_secs)
-  { time = ((1U<<28)-1) & round(time_in_secs * 1000); }
+  { time = ((1U<<28)-1) & static_cast<unsigned>(round(time_in_secs * 1000)); }
   inline unsigned int get_gating() const
   { return gating; }
 private:
-  friend class CLIST_RECORD; // to give access to type field
-#ifdef _SWAPEM_
-  // definition for bigendian machines.
-  BITS    type : 1;    /* 0-coincidence event, 1-time tick */
-  BITS    gating : 4;  /* some info about the gating signals */
-  BITS    time : 27 ;  /* since scan start */
+  friend class CListRecord; // to give access to type field
+#ifdef STIRByteOrderIsBigEndian
+  unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
+  unsigned    gating : 4;  /* some info about the gating signals */
+  unsigned    time : 27 ;  /* since scan start */
 #else
-  // definition for littleendian machines. 
   // Do byteswapping first before using this bit field.
-  BITS    time : 27 ;  /* since scan start */
-  BITS    gating : 4;  /* some info about the gating signals */
-  BITS    type : 1;    /* 0-coincidence event, 1-time tick */
+  unsigned    time : 27 ;  /* since scan start */
+  unsigned    gating : 4;  /* some info about the gating signals */
+  unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
 #endif
 };
 
-
-class CLIST_RECORD
+//! A class for a general element of a listmode file
+/*! For the 966 it's either a coincidence event, or a timing flag.*/
+class CListRecord
 {
 public:
   bool is_time() const
@@ -166,11 +154,11 @@ public:
   bool is_event() const
   { return time.type == 0U; }
   union {
-    CLIST_EVENT  event;
-    CLIST_TIME   time; 
+    CListEvent  event;
+    CListTime   time; 
     long         raw;
   };
-  bool operator==(const CLIST_RECORD& e2) const
+  bool operator==(const CListRecord& e2) const
   {
     return raw == e2.raw;
   }	    
@@ -178,7 +166,7 @@ public:
 };
 
 
-int get_next_event(istream&in, CLIST_RECORD& event);
+int get_next_event(istream&in, CListRecord& event);
 
 END_NAMESPACE_STIR
 

@@ -127,9 +127,9 @@ int main(int argc, char * argv[])
 #endif
 
   const bool store_prompts = 
-    CLIST_EVENT::has_delayeds() ? ask("Store 'prompts' ?",true) : true;
+    CListEvent::has_delayeds() ? ask("Store 'prompts' ?",true) : true;
   const int delayed_increment = 
-    CLIST_EVENT::has_delayeds() 
+    CListEvent::has_delayeds() 
     ? 
     ( store_prompts ?
       (ask("Subtract 'delayed' coincidences ?",true) ? -1 : 0)
@@ -149,7 +149,7 @@ int main(int argc, char * argv[])
     input.seekg(0, ios::end);
     const streampos end_stream_position = input.tellg();
     
-    max_num_events = (long)(end_stream_position - start_of_stream) / sizeof(CLIST_EVENT);
+    max_num_events = (long)(end_stream_position - start_of_stream) / sizeof(CListEvent);
   }
 
 
@@ -213,7 +213,7 @@ int main(int argc, char * argv[])
   
   {      
     // loop over all events in the listmode file
-    CLIST_RECORD event;
+    CListRecord event;
     double current_time = 0;
     while (more_events)
       {

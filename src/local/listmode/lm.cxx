@@ -42,7 +42,7 @@ using std::streampos;
 START_NAMESPACE_STIR
 
 // TODO this is appropriate for the 966 only
-const int CLIST_EVENT ::num_views = 288;
+const int CListEvent ::num_views = 288;
 
 /* Go from sinograms to detectors.
 
@@ -150,7 +150,7 @@ const int  MAXPROJBIN = 512;
 const int CRYSTALRINGSPERDETECTOR = 8;
 
 void
-CLIST_EVENT::
+CListEvent::
 get_sinogram_and_ring_coordinates(
 		   int& view_num, int& tangential_pos_num, int& ring_a, int& ring_b) const
 {
@@ -168,7 +168,7 @@ get_sinogram_and_ring_coordinates(
 }
 
 void 
-CLIST_EVENT::
+CListEvent::
 set_sinogram_and_ring_coordinates(
 			const int view_num, const int tangential_pos_num, 
 			const int ring_a, const int ring_b)
@@ -186,7 +186,7 @@ set_sinogram_and_ring_coordinates(
 
 
 void 
-CLIST_EVENT::
+CListEvent::
 get_detectors(
 		   int& det_num_a, int& det_num_b, int& ring_a, int& ring_b) const
 {
@@ -198,7 +198,7 @@ get_detectors(
 }
 
 void 
-CLIST_EVENT::
+CListEvent::
 set_detectors(
 			const int det_num_a, const int det_num_b,
 			const int ring_a, const int ring_b)
@@ -236,7 +236,7 @@ sinogram_coordinates_to_bin(Bin& bin, const int view_num, const int tang_pos_num
 }
 
 void 
-CLIST_EVENT::
+CListEvent::
 get_bin(Bin& bin, const ProjDataInfoCylindrical& proj_data_info) const
 {
   int tangential_pos_num;
@@ -250,7 +250,7 @@ get_bin(Bin& bin, const ProjDataInfoCylindrical& proj_data_info) const
 
 
 #if 0
-int get_next_event(istream&in, CLIST_RECORD& event)
+int get_next_event(istream&in, CListRecord& event)
 {
   
   in.read(reinterpret_cast<char *>(&event), sizeof(event));
@@ -267,17 +267,17 @@ int get_next_event(istream&in, CLIST_RECORD& event)
 }
 #else
 // this will skip last event in file
-int get_next_event(istream&in, CLIST_RECORD& event)
+int get_next_event(istream&in, CListRecord& event)
 {
   // TODO this is appropriate only for 966
-#ifdef _SWAPEM_
+#ifdef STIRByteOrderIsBigEndian
   assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
 #else
   assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
 #endif
   
   const unsigned int buf_size = 100000;
-  static CLIST_RECORD buffer[buf_size];
+  static CListRecord buffer[buf_size];
   static unsigned int current_pos = buf_size;
   static streamsize num_events_in_buffer = 0;
   static streampos stream_position  = 0;
@@ -305,10 +305,9 @@ int get_next_event(istream&in, CLIST_RECORD& event)
   if (current_pos != static_cast<unsigned int>(num_events_in_buffer))
   {
     event = buffer[current_pos++];
-#ifndef _SWAPEM_
-    // TODO only appropriate for 966
-    assert(sizeof(CLIST_RECORD) == sizeof(unsigned int));
-    ByteOrder::swap_order(*reinterpret_cast<unsigned int*>(&event));
+#if (defined(STIRByteOrderIsBigEndian) && !defined(STIRListmodeFileFormatIsBigEndian)) \
+    || (defined(STIRByteOrderIsLittleEndian) && defined(STIRListmodeFileFormatIsBigEndian)) 
+    ByteOrder::swap_order(event);
 #endif
     return 1;
   }
