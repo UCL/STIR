@@ -19,9 +19,7 @@
 */
 
 
-#include "stir/utilities.h"
-#include "stir/interfile.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjData.h"
 #include "stir/SegmentByView.h"
 #include "stir/Succeeded.h"
 
