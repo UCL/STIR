@@ -57,7 +57,8 @@ template <typename elemT>
 class FilterRootPrior:  public 
       RegisteredParsingObject<
 	      FilterRootPrior<elemT>,
-              GeneralisedPrior<elemT>
+              GeneralisedPrior<elemT>,
+	      GeneralisedPrior<elemT>
 	       >
 {
 public:
@@ -74,7 +75,7 @@ public:
   //! compute gradient by applying the filter
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
 			const DiscretisedDensity<3,elemT> &current_image_estimate);
-
+  
   
 private:
   // TODO should be shared_ptr
