@@ -1,0 +1,3 @@
+#! /bin/sh
+echo "stir_math --add --times-scalar -1 $*"
+stir_math --add --times-scalar -1 $*
