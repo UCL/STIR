@@ -48,8 +48,64 @@ using std::ends;
 
 START_NAMESPACE_STIR
 
-//! max length of Interfile line
-const int MAX_LINE_LENGTH=512;
+/* function that reads a line upto \n
+
+   It allows for \r at the end of the line (as in files
+   originating in DOS/Windows).
+   When the line ends with continuation_char, the next line
+   will just be appended to the current one.
+
+   The continuation_char HAS to be the last character. Even
+   spaces after it will stop the 'continuation'.
+
+   This function should be moved somewhere else as it
+   might be useful to someone else as well. (TODO)
+*/
+static void read_line(istream& input, string& line, 
+		      const char continuation_char = '\\')
+{
+  string thisline;
+  line.resize(0);
+  while(true)
+    {
+      getline(input, thisline, '\n');
+      // check if last character is \r, 
+      // in case this is a DOS file, but not a DOS/Windows host
+      if (thisline.size() != 0)
+	{
+	  string::size_type position_of_last_char = 
+	    thisline.size()-1;
+	  if (thisline[position_of_last_char] == '\r')
+	    thisline.erase(position_of_last_char, 1);
+	}
+      // TODO handle the case of a Mac file on a non-Mac host (EOL on Mac is \r)
+
+      line += thisline;
+
+      // check for continuation
+      if (line.size() != 0)
+	{
+	  string::size_type position_of_last_char = 
+	    line.size()-1;
+	  if (line[position_of_last_char] == continuation_char)
+	    {
+	      line.erase(position_of_last_char, 1);
+	      // now the while loop will keep on reading
+	    }
+	  else
+	    {
+	      // exit the loop
+	      break;
+	    }
+	}
+      else
+	{
+	  // exit the loop
+	  break;
+	}
+    }
+
+}
 
 // map_element implementation;
 
@@ -313,6 +369,8 @@ int KeyParser::read_and_parse_line(const bool write_warning)
     stop_parsing();
     return 0;
   }
+ 
+#if 0
   {
     char buf[MAX_LINE_LENGTH];
     input->getline(buf,MAX_LINE_LENGTH,'\n');
@@ -328,6 +386,11 @@ int KeyParser::read_and_parse_line(const bool write_warning)
 
     line=buf;
   }
+#else
+  read_line(*input, line);
+
+#endif
+
 		// gets keyword
   keyword=standardise_keyword(line.get_keyword());
   return parse_value_in_line(line, write_warning);
@@ -755,10 +818,16 @@ void KeyParser::ask_parameters()
 
       cout << keyword << " := ";
       {
+#if 0
         char buf[MAX_LINE_LENGTH];
         strcpy(buf, ":= ");
         cin.getline(buf+strlen(buf),MAX_LINE_LENGTH-strlen(buf),'\n');    
         line=buf;
+#else
+	read_line(cin, line);
+	// prepend ":=" such that parse_value_in_line can work properly
+	line.insert(0, ":= ");
+#endif
       }
 
       parse_value_in_line(line, false);
