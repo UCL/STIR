@@ -132,9 +132,8 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
       return false;
     }  
     string data_name = filename;
-    data_name += ".av";
-    ofstream output_data;
-    open_write_binary(output_data, data_name.c_str());
+    // KT 13/10/98 point to same binary data as above
+    data_name += ".v";
     
     output_header << "!INTERFILE  :=\n";
     output_header << "!name of data file := " << data_name << endl;
