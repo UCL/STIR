@@ -3,18 +3,6 @@
 //
 #ifndef __stir_analytic_FBP2D_FBP2DReconstruction_H__
 #define __stir_analytic_FBP2D_FBP2DReconstruction_H__
-/*!
-  \file 
-  \ingroup FBP2D
- 
-  \brief declares the FBP2DReconstruction class
-
-  \author Kris Thielemans
-  \author PARAPET project
-
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -31,6 +19,18 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+/*!
+  \file 
+  \ingroup FBP2D
+ 
+  \brief declares the FBP2DReconstruction class
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  $Date$
+  $Revision$
 */
 
 #include "stir/recon_buildblock/Reconstruction.h"
@@ -50,6 +50,40 @@ class ProjData;
 
 /*! \ingroup FBP2D
  \brief Reconstruction class for 2D Filtered Back Projection
+
+  \par Parameters
+  \verbatim
+fbp2dparameters :=
+
+input file := input.hs
+output filename prefix := output
+
+; output image parameters
+; zoom defaults to 1
+zoom := 1
+; image size defaults to whole FOV
+xy output image size (in pixels) := 180
+
+; can be used to call SSRB first
+; default means: call SSRB only if no axial compression is already present
+;num segments to combine with ssrb := -1
+
+; filter parameters, default to pure ramp
+alpha parameter for ramp filter := 1
+cut-off for ramp filter (in cycles) := 0.5
+
+; allow less padding. DO NOT USE 
+; (unless you're sure that the object occupies only half the FOV)
+;Transaxial extension for FFT:=1
+
+; back projector that could be used (defaults to interpolating backprojector)
+; Back projector type:= some type
+
+; display data during processing for debugging purposes
+; Display level := 0
+end := 
+  \endverbatim
+ 
 */
 class FBP2DReconstruction : public Reconstruction
 {
