@@ -68,10 +68,12 @@ post_processing()
     ro3d_ptr->synchronise(*lm_data_ptr);
 
   cerr << "Time offset is set to "<< ro3d_ptr->get_time_offset() << endl;
-  move_from_scanner =
+  move_from_scanner = ro3d_ptr->get_transformation_from_scanner_coords();
+  /* 966 transformation:
     RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
                                CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
-  move_to_scanner = move_from_scanner.inverse();
+  */
+  move_to_scanner = ro3d_ptr->get_transformation_to_scanner_coords();
 
 #ifdef FRAME_BASED_DT_CORR
   cerr << "LmToProjDataWithMC Using FRAME_BASED_DT_CORR\n";

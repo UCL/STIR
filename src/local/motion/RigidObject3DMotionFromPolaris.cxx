@@ -24,6 +24,8 @@
 #include "stir/listmode/CListRecord.h"
 #include "local/stir/motion/Polaris_MT_File.h"
 #include "stir/utilities.h"
+#include "stir/stream.h"
+#include "stir/CartesianCoordinate3D.h"
 
 #include <fstream>
 #define MAX_STRING_LENGTH 512
@@ -43,12 +45,28 @@ RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris()
   set_defaults();
 }
 
-RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris(const string mt_filename_v,shared_ptr<Polaris_MT_File> mt_file_ptr_v)
+RigidObject3DMotionFromPolaris::
+RigidObject3DMotionFromPolaris(const string mt_filename_v,
+			       shared_ptr<Polaris_MT_File> mt_file_ptr_v)
 {
   mt_file_ptr = mt_file_ptr_v;
   mt_filename = mt_filename_v;
+  // TODO
+  error("constructor does not work yet");
 
 }
+
+const RigidObject3DTransformation& 
+RigidObject3DMotionFromPolaris::
+get_transformation_to_scanner_coords() const
+{ return move_to_scanner_coords; }
+
+
+const RigidObject3DTransformation& 
+RigidObject3DMotionFromPolaris::
+get_transformation_from_scanner_coords() const
+{ return move_from_scanner_coords; }
+
 
 RigidObject3DTransformation
 RigidObject3DMotionFromPolaris::
@@ -433,6 +451,7 @@ RigidObject3DMotionFromPolaris::set_defaults()
 {
   RigidObject3DMotion::set_defaults();
   mt_filename = "";
+  transformation_from_scanner_coordinates_filename = "";
 }
 
 
@@ -442,6 +461,8 @@ RigidObject3DMotionFromPolaris::initialise_keymap()
   RigidObject3DMotion::initialise_keymap();
   parser.add_start_key("Rigid Object 3D Motion From Polaris Parameters");
   parser.add_key("mt filename", &mt_filename);
+  parser.add_key("transformation_from_scanner_coordinates_filename",
+		 &transformation_from_scanner_coordinates_filename);
   parser.add_stop_key("End Rigid Object 3D Motion From Polaris");
 }
 
@@ -453,6 +474,34 @@ bool RigidObject3DMotionFromPolaris::post_processing()
       warning("Error initialising mt file \n");
       return true;
     }
+  {
+    std::ifstream move_from_scanner_file(transformation_from_scanner_coordinates_filename.c_str());
+    if (!move_from_scanner_file.good())
+      {
+	warning("Error reading transformation_from_scanner_coordinates_filename: '%s'",
+		transformation_from_scanner_coordinates_filename.c_str());
+	return true;
+      }
+    Quaternion<float> quat;
+    CartesianCoordinate3D<float> trans;
+    move_from_scanner_file >> quat;
+    
+    move_from_scanner_file >> trans;
+    if (!move_from_scanner_file.good())
+      {
+	warning("Error reading transformation_from_scanner_coordinates_filename: '%s'",
+		transformation_from_scanner_coordinates_filename.c_str());
+	return true;
+      }
+
+    move_from_scanner_coords = 
+      RigidObject3DTransformation(quat, trans);
+    cerr << "'Move_from_scanner' quaternion  " << move_from_scanner_coords.get_quaternion()<<endl;
+    cerr << "'Move_from_Scanner' translation  " << move_from_scanner_coords.get_translation()<<endl;
+    move_to_scanner_coords = move_from_scanner_coords.inverse();
+  }
+
+
   if (RigidObject3DMotion::post_processing()==true)
     return true;
   return false;

@@ -77,9 +77,6 @@ private:
   shared_ptr<ProjData >  in_proj_data_sptr; 
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
 
-  RigidObject3DTransformation move_to_scanner;
-  RigidObject3DTransformation move_from_scanner;
- 
   // shared_ptr<OutputFileFormat> output_file_format_sptr;  
 };
 
@@ -179,11 +176,6 @@ post_processing()
       return true;
     }
 
-  move_from_scanner =
-    RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
-                               CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
-  move_to_scanner = move_from_scanner.inverse();
-
   return false;
 }
 
@@ -237,11 +229,12 @@ process_data()
       RigidObject3DTransformation rigid_object_transformation =
 	ro3d_ptr->compute_average_motion_rel_time(start_time, end_time);
       
+      
       rigid_object_transformation = 
-	compose(move_to_scanner,
+	compose(ro3d_ptr->get_transformation_to_scanner_coords(),
 		compose(ro3d_ptr->get_transformation_to_reference_position(),
 			compose(rigid_object_transformation,
-				move_from_scanner)));
+				ro3d_ptr->get_transformation_from_scanner_coords())));
       if (!do_move_to_reference)
 	rigid_object_transformation = 
 	  rigid_object_transformation.inverse();

@@ -49,6 +49,11 @@ public:
 
   //! Synchronise motion tracking file and listmode file
   virtual Succeeded synchronise(CListModeData& listmode_data);
+
+  virtual const RigidObject3DTransformation& 
+    get_transformation_to_scanner_coords() const;
+  virtual const RigidObject3DTransformation& 
+    get_transformation_from_scanner_coords() const;
   
 //private: 
   //! Find and store gating values in a vector from lm_file  
@@ -62,6 +67,7 @@ public:
   void find_offset(CListModeData& listmode_data);
 
 
+
   shared_ptr<Polaris_MT_File> mt_file_ptr;
   string mt_filename;  
   //string lm_filename;
@@ -71,6 +77,11 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing();
 #endif
+
+ private:
+  string transformation_from_scanner_coordinates_filename;
+  RigidObject3DTransformation move_to_scanner_coords;
+  RigidObject3DTransformation move_from_scanner_coords;
 
 };
 

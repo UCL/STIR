@@ -55,6 +55,11 @@ public:
   const RigidObject3DTransformation& 
     get_transformation_to_reference_position() const;
 
+  virtual const RigidObject3DTransformation& 
+    get_transformation_to_scanner_coords() const = 0;
+  virtual const RigidObject3DTransformation& 
+    get_transformation_from_scanner_coords() const = 0;
+
 protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
