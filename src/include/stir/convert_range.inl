@@ -772,16 +772,19 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
    T1=T2 : short, unsigned short, float, scaleT: float
 ***************************************************************/
 
-
+// KT 05/07/2000 added explicit instantiation of void convert_array() version
+// It is needed for VC in Release mode (and others?), because it inlines the 
+// the definition of the 2nd version.
 #define INSTANTIATE(dim, type_in, type_out) \
+   template \
+   void convert_array<>(Array<dim,type_out>& data_out, \
+	      float& scale_factor, \
+	      const Array<dim,type_in>& data_in); \
    template \
    Array<dim,type_out> convert_array<>( \
 			      float& scale_factor, \
 		              const Array<dim,type_in>& data_in, \
 			      const NumericInfo<type_out> info2);
-
-
-
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
 INSTANTIATE(1, short, float);
@@ -816,12 +819,30 @@ INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
+#ifdef ARRAY4
+
+INSTANTIATE(4, float, short);
+INSTANTIATE(4, float, unsigned short);
+INSTANTIATE(4, short, float);
+INSTANTIATE(4, unsigned short, float);
+INSTANTIATE(4, unsigned short, short);
+INSTANTIATE(4, short, unsigned short);
+
+INSTANTIATE(4, short, short);
+INSTANTIATE(4, unsigned short, unsigned short);
+INSTANTIATE(4, float, float);
+#endif
+
 
 #undef INSTANTIATE
 
 // TODO remove
 #if defined(ARRAY_FULL) && defined(ARRAY_CONST_IT)
 #define INSTANTIATE(dim, type_in, type_out) \
+   template \
+   void convert_array_FULL<>(Array<dim,type_out>& data_out, \
+	      float& scale_factor, \
+	      const Array<dim,type_in>& data_in); \
    template \
    Array<dim,type_out> convert_array_FULL<>( \
 			      float& scale_factor, \
@@ -863,6 +884,20 @@ INSTANTIATE(3, short, unsigned short);
 INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
+
+#ifdef ARRAY4
+
+INSTANTIATE(4, float, short);
+INSTANTIATE(4, float, unsigned short);
+INSTANTIATE(4, short, float);
+INSTANTIATE(4, unsigned short, float);
+INSTANTIATE(4, unsigned short, short);
+INSTANTIATE(4, short, unsigned short);
+
+INSTANTIATE(4, short, short);
+INSTANTIATE(4, unsigned short, unsigned short);
+INSTANTIATE(4, float, float);
+#endif
 
 
 #undef INSTANTIATE
