@@ -16,9 +16,15 @@ SOURCES = \
   InterfileOutputFileFormat.cxx \
   interfile.cxx InterfileHeader.cxx \
   ECAT6OutputFileFormat.cxx \
+  stir_ecat_common.cxx \
   stir_ecat6.cxx ecat6_utils.cxx
  
 
+ifeq ($(HAVE_LLN_MATRIX),1)
+  SOURCES += ECAT7OutputFileFormat.cxx stir_ecat7.cxx
+endif
+	
+	
 
 
 
@@ -27,9 +33,12 @@ LOBJS = $(DEST)libIO.a($(OBJS))
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(ADVANCED_DEPENDENCIES),1)
   include $(SOURCES:%.cxx=$(DEST)%.d)
+else
+  -include $(SOURCES:%.cxx=$(DEST)%.P)
 endif
-
+endif
 
 .PRECIOUS:  $(DEST)*.a $(DEST)*.o
 
