@@ -34,10 +34,10 @@ float scatter_estimate_for_one_scatter_point(
 	  const unsigned det_num_B)
 {	
 	// TODO hard-wired for now
-//	static const lower_energy_threshold = 350;
-//	static const upper_energy_threshold = 650;
-	static const float lower_energy_threshold = 375;
-	static const float upper_energy_threshold = 600;
+//	static const float lower_energy_threshold = 375;
+//	static const float upper_energy_threshold = 600;
+	static const float lower_energy_threshold = 350;
+	static const float upper_energy_threshold = 650;
 
 	const CartesianCoordinate3D<float>& scatter_point =
 		scatt_points_vector[scatter_point_num].coord;
