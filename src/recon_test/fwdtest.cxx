@@ -117,7 +117,7 @@ main(int argc, char *argv[])
 
   if (argc<3)
     {
-      switch (const int choice = ask_num("Start image is cuboid (1) or cylinder (2) or on file (3)",1,3,2))
+      switch (int choice = ask_num("Start image is cuboid (1) or cylinder (2) or on file (3)",1,3,2))
 	{
 	case 1: 
 	case 2:
