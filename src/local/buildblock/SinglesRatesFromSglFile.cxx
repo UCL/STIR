@@ -112,6 +112,10 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filname)
     times.push_back(singles_str.time*0.001);
     ++singles_record_num;
   }
+  
+  assert(times.size()!=0);
+  singles_time_interval = times[1] - times[0];
+      
   if (singles_record_num!= number_of_elements)
   {
     warning("\nCouldn't read all records in the .sgl file %s. Read %d of %d. Exiting\n",
@@ -135,6 +139,8 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
 					   const double end_time) const
 { 
   assert(end_time >= start_time);
+  //cerr << start_time << "   ";
+  // cerr << end_time << "   ";
   
   const int denom = trans_blocks_per_bucket*angular_crystals_per_block;
   const int axial_pos = det_pos.axial_coord();
@@ -142,86 +148,61 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
   const int axial_bucket_num = axial_pos/(2*axial_crystals_per_block);//axialCrystalsPerBlock);
   const int transaxial_bucket_num = (transaxial_pos/denom) ;
 
-  // find out the index in the times vector (time samples are every 2sec, hence divide with 2)
-  // TODO get rid of hard-wired factor of 2 here
-  const int start_index = (int)start_time/2;
-  const int end_index = (int)end_time/2;
+  // SM this is pretty ugly but since sgl file has times from 2.008 all times less than this 
+  // do not get assigned a value. In this case we take singles[0][ax][tang] for all times <2.008
+  if ( start_time==end_time && start_time <=2.1)
+    { 
+     return  singles[0][axial_bucket_num][transaxial_bucket_num]/4;       
+    }
+    
+#if 1
+  // find out the index in the times vector (assumes almost constant sampling in time)
+
+  /* The funny ranges below are made to reproduce Peter Bloomfield's code.
+
+     For a given frame, the last singles to consider is found by
+     taking the maximum index such that
+       singles[last].time <  end_time_for_that_frame
+     So, to find the first index, you have to find the last index in the previous frame,
+     and then add 1.
+
+     Instead of walking through the whole array to find the first index, we jump 
+     to start_time/singles_time_interval (which is about 2 secs for the 966)
+     which should get us pretty close. However, to be safe, we go a bit earlier,
+     and then loop till we find the actual start.
+  */
+  //  const int min_index = singles.get_min_index();
+  //const double singles_time_interval = singles[min_index+1].time - singles[min_index].time;
+  const int min_index = 0;
+  
+  int start_index = max(static_cast<int>(start_time/singles_time_interval) - 3, min_index);
+  while (start_index<times.size() && times[start_index+1]<start_time)
+  //while (start_index<times.get_max_index() && singles[start_index+1].time<start_time)
+    ++start_index;
 
   float singles_average =0;
-  for ( int i = start_index; i<=end_index; i++)
-  {
-    singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];   
-    
-  }
-  //cerr << singles_average/(4*(end_index-start_index+1))<< "        ";
-    //cerr <<" Start index is :" << start_index << endl;
-    // cerr << "singles_average  " << singles_average << endl;
+  int i;
+  //for (i = start_index; i<=singles.get_max_index() && singles[i].time<end_time; i++)
+  // SM correced upper range as times[i]<end_time is incorrect
+  for (i = start_index; i<=times.size() && times[i]<end_time; i++)
+    {
+    singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];       
+    }
     // TODO division by far probably is to get from singles_rate_per_bucket to singles_rate_per_block
-  return singles_average/(4*(end_index-start_index+1));  // divide by 4.0 to be consistant with CTIs
+    return singles_average/(4*(i-start_index));  // divide by 4.0 to be consistant with CTIns
+#else
 
+    int i= (int)start_time/2;
+    
+    return  singles[i][axial_bucket_num][transaxial_bucket_num]/4;       
 
-}
-#if 0
-float 
-SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
-					   const double start_time,  
-					   const double end_time) const
-{ 
-  static int start_time_counter=0;
-  static int beginning;
-  static int ending;
-  start_time_counter ++;
-  static double tmp;
-  if (start_time_counter ==1)
-  {
-    tmp = start_time;
-  }
-
-  const int denom = trans_blocks_per_bucket*angular_crystals_per_block;
-  const int axial_pos = det_pos.axial_coord();
-  const int transaxial_pos = det_pos.tangential_coord();
-  const int axial_bucket_num = axial_pos/(2*axial_crystals_per_block);//axialCrystalsPerBlock);
-  const int transaxial_bucket_num = (transaxial_pos/denom) ;
-
-  static int start_index;
-  static int end_index;
-  
-  if (fabs(tmp-start_time) <.0000001 && start_time_counter==1)
-  {
-  for ( int i = 0; i<times.size(); i++)
-  {
-    double ttt= times[i];
-    //sampling in the sgl file is ~ 2.0
-    if (fabs(start_time-times[i]) < 2.05F)
-    {
-      start_index = i;
-      beginning=i;
-    }
-    if (fabs(end_time-times[i]) < 2.05F)
-    {
-      end_index = i;
-      ending =i;
-    }
-  }
-  //start_time_counter =0;
-  }
-  
-
-  static float singles_average =0;
-  int count=0;
-  if (beginning !=start_index && ending!=end_index)
-  {
-  for ( int i = start_index; i<=end_index; i++)
-  {
-    singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];
-    count ++;
-  }
-  }
-    return singles_average/4.0*count;  // divide by 4.0 to be consistant with CTIs
-
-}
 
 #endif
+   
+
+}
+
+
 void 
 SinglesRatesFromSglFile::
 initialise_keymap()
