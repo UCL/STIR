@@ -56,6 +56,7 @@ public:
 private:
   Array <3, float>  filter_coefficients;
   void do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const;
+  void do_it_2d(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const;
 
 };
 
