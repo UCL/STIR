@@ -220,15 +220,6 @@ void check_geo_data()
 }
 
 #endif
-  
-float KL(const DetPairData& d1, const DetPairData& d2, const float threshold = 0)
-{
-  float sum=0;
-  for (int a = d1.get_min_index(); a <= d1.get_max_index(); ++a)
-    for (int b = d1.get_min_index(a); b <= d1.get_max_index(a); ++b)      
-      sum += KL(d1(a,b), d2(a,b), threshold);
-  return sum;
-}
 
 
 
