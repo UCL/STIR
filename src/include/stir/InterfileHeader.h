@@ -74,6 +74,9 @@ private:
   // Extra private variables which will be translated to something more useful
   int bytes_per_pixel;
 
+  // Louvain la Neuve style of 'image scaling factors'
+  double lln_quantification_units;
+
   void read_matrix_info();
   void read_frames_info();
 
