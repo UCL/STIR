@@ -50,8 +50,11 @@ post_processing()
   if (OutputFileFormat::post_processing())
     return true;
   if (!file_byte_order.is_native_order())
-    warning("InterfileOutputFileFormat: byte_order is currently fixed to the native order\n");
-  return true;
+    {
+      warning("InterfileOutputFileFormat: byte_order is currently fixed to the native order\n");
+      file_byte_order = ByteOrder::native;
+    }
+  return false;
 }
 
 
