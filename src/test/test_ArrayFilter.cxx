@@ -151,7 +151,7 @@ ArrayFilterTests::run_tests()
   Array<1,float> test(IndexRange<1>(100));
   // initialise to some arbitrary values
   for (int i=test.get_min_index(); i<=test.get_max_index(); ++i)
-    test[i]=i*i*2-i-100;
+    test[i]=i*i*2-i-100.F;
 
   {
     const int kernel_half_length=30;
@@ -162,7 +162,7 @@ ArrayFilterTests::run_tests()
     Array<1,float> kernel_for_conv(IndexRange<1>(-kernel_half_length,kernel_half_length));
     for (int i=-kernel_half_length; i<kernel_half_length; ++i)
       {
-	kernel_for_conv[i] = i*i-3*i+1;
+	kernel_for_conv[i] = i*i-3*i+1.F;
 	kernel_for_DFT[modulo(i,DFT_kernel_size)] =
 	  kernel_for_conv[i];
       }
@@ -189,14 +189,14 @@ ArrayFilterTests::run_tests()
       {
 	kernel_for_symconv[i] =
 	  kernel_for_conv[i] = 
-	  kernel_for_conv[-i] = i*i-3*i+1;
+	  kernel_for_conv[-i] = i*i-3*i+1.F;
       }
 
     // symmetric convolution currently requires equal in and out range
     Array<1,float> test(IndexRange<1>(100));
     // initialise to some arbitrary values
     for (int i=test.get_min_index(); i<=test.get_max_index(); ++i)
-      test[i]=i*i*2-i-100;
+      test[i]=i*i*2-i-100.F;
     
   
   
