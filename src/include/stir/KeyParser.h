@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup buildblock
 
-  \brief Declaration of class KeyParser
+  \brief Declaration of class stir::KeyParser
 
   \author Patrick Valente
   \author Kris Thielemans
@@ -13,11 +30,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -78,9 +90,11 @@ public:
 };
 
 /*!
+  \ingroup buildblock
  \brief Class to store the Interfile keywords and their actions.
 
  \warning These should not be used outside of the KeyParser implementation.
+ \todo make private class in KeyParser
 */
 class map_element
 {
@@ -169,6 +183,8 @@ public:
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const string& keyword, int * variable_ptr);
+  //! add a keyword. When parsing, parse its value as an unsigned long and put it in *variable_ptr
+  void add_key(const string& keyword, unsigned long * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int  and put the bool value in *variable_ptr
   /*! The integer should be 0 or 1, corresponding to false and true resp. */
