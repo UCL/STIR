@@ -220,6 +220,9 @@ public:
     VectorWithOffset(const VectorWithOffset &il) 
 #endif
     {
+      // KT&AZ 29/10/98 new
+      pointer_access = false;
+
       Init();
       *this = il;		// Uses assignment operator (above)
     };
@@ -305,6 +308,7 @@ public:
      reimplementation more difficult), NO manipulation with
      the vector is allowed between the pairs
      get_data_ptr() and update_data() 
+     get_data_ptr() and release_data_ptr()
      get_const_data_ptr() and release_data_ptr().
      */
 
