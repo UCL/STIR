@@ -4,11 +4,6 @@
 
 WORKSPACE=$(CURDIR)/..
 
-# variables used only for ecat7
-# local/Makefile_common can override these defaults
-LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
-LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
-
 include $(WORKSPACE)/Makefile_common
 
 
@@ -24,15 +19,11 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
 	stir_math.cxx \
 	list_projdata_info.cxx
 
-# check if we find the Louvain la Neuve distribution by looking for matrix.h
-ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
+
+ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
   # ifheaders_for_ecat7 as well
-  SOURCES += ifheaders_for_ecat7.cxx
-  CFLAGS +=  -I $(LLN_INCLUDE_DIR)
-  ifeq ($(SYSTEM),SUN)
-     EXTRA_LIBS += -lnsl -lsocket
-  endif
+  SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx
 endif
 
 
@@ -46,7 +37,11 @@ all: $(EXES)
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(ADVANCED_DEPENDENCIES),1)
   include $(SOURCES:%.cxx=$(DEST)%.d)
+else
+  -include $(SOURCES:%.cxx=$(DEST)%.P)
+endif
 endif
 
 
@@ -57,20 +52,6 @@ install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
 
 include $(WORKSPACE)/Makefile_bblibs
-
-#$(DEST)libcti.a: $(DEST)cti_utils.o  $(DEST)stir_cti.o
-#	$(AR) r $@ $?
-#	ranlib $@
-
-
-
-$(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
-     $(LLN_LIB_DIR)/libecat.a \
-     ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS) -I $(LLN_INCLUDE_DIR) -o $@ $<  \
-		$(LLN_LIB_DIR)/libecat.a ${LIB_BUILDINGBLOCK} \
-		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
-
 
 
 
