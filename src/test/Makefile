@@ -36,7 +36,7 @@ tensor: tensor.cxx ${INCLUDE}/Tensor1D.h ${INCLUDE}/Tensor2D.h \
 
 #KT The -I${WORKSPACE}/display flag is only necessary because I used gen.h
 #(part of my old library). 
-display: display.cxx ${DISPLAYLIB} ${BUILDBLOCKLIB}
+display: display.cxx ${DISPLAYLIB} 
 	$(CXX) $(CFLAGS) -I${WORKSPACE}/display -o $@ $< $(LDFLAGS) 
 
 sinodata: sinodata.cxx ${DISPLAYLIB} ${BUILDBLOCKLIB} 
@@ -45,5 +45,5 @@ sinodata: sinodata.cxx ${DISPLAYLIB} ${BUILDBLOCKLIB}
 
 VectorWithOffset: VectorWithOffset.cxx ${INCLUDE}/VectorWithOffset.h
 
-convert: convert.cxx
+convert: convert.cxx ${BUILDBLOCKLIB}
 	$(CXX) $(CFLAGS) -o $@ $< 
