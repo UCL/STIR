@@ -13,13 +13,14 @@
 
   \author Matthew Jacobson
   \author Kris Thielemans
-   \author PARAPET project
+  \author PARAPET project
 
   \date    $Date$
   \version $Revision$
 */
 
-#include "imagedata.h"
+#include "Tomography_common.h"
+
 
 
 // MJ 02/03/2000 ftype ---> kernels_built
@@ -33,6 +34,7 @@ Currently, only a separable Metz filter appropriate for Cartesian images has bee
 
 */
 
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class ImageFilter
 {
 
@@ -55,10 +57,10 @@ class ImageFilter
  //MJ 05/03/2000 got rid of scanner dependence, changed defaults
 
   //! generates the filter kernels
-  void build(const PETImageOfVolume& representative_image,double fwhmx_dir=0,double fwhmz_dir=0,float Nx_dir=0.0,float Nz_dir=0.0);
+  void build(const DiscretisedDensity<3,float>& representative_image,double fwhmx_dir=0,double fwhmz_dir=0,float Nx_dir=0.0,float Nz_dir=0.0);
 
   //! does 3D convolution with the 
-  void apply(PETImageOfVolume& input_image);
+  void apply(DiscretisedDensity<3,float>& input_image);
 
   //! constructor
    ImageFilter();
