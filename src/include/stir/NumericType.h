@@ -18,7 +18,7 @@
   */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /*
@@ -35,6 +35,8 @@
   removed inlining. Gave troubles with gcc on NT.
   added method that returns Interfile info
 
+  - KT 15/07/04
+  added TypeForNumericType
 */
 
 #include "stir/common.h"
@@ -75,10 +77,12 @@ public:
   inline NumericType(Type t = UNKNOWN_TYPE);
 
   //! A constructor to work from named types a la Interfile
-  // TODOdoc
-  // Possible names are "bit, "signed integer", "signed integer", "float"
-  // Exact types are determined via the size_in_bytes parameter.
-  NumericType(const string number_format, const size_t size_in_bytes);
+  /*!
+   Possible values for \a number_format are 
+   "bit, "signed integer", "signed integer", "float"
+   Exact types are determined via the size_in_bytes parameter.
+  */
+  NumericType(const string& number_format, const size_t size_in_bytes);
 
   //! comparison operator
   inline bool operator==(NumericType type) const;
@@ -96,9 +100,56 @@ public:
   bool integer_type() const;
 
 
-  //! returns the names and size a la Interfile. see NumericType(const string,const size_t)
+  //! returns the names and size a la Interfile. see NumericType(const string&,const size_t)
   void get_Interfile_info(string& number_format, size_t& size_in_bytes) const;
 };
+
+/*!
+  \ingroup buildblock
+  \brief A helper class that specifies the C++ type for a particular NumericType.
+
+  Use as follows:
+  \code
+  typedef TypeForNumericType<NumericType::SHORT>::type current_type;
+  \endcode
+  This is useful when writing code depending on the value of a NumericType enum.
+*/
+template <int numeric_type_enum>
+struct TypeForNumericType {};
+
+
+#ifndef DOXYGEN_SKIP // disable definitions when running doxygen to avoid having all of this in the doc
+template <>
+struct TypeForNumericType<NumericType::SCHAR> 
+{ typedef signed char type; };
+template <>
+struct TypeForNumericType<NumericType::UCHAR> 
+{ typedef unsigned char type; };
+template <>
+struct TypeForNumericType<NumericType::SHORT> 
+{ typedef signed short type; };
+template <>
+struct TypeForNumericType<NumericType::USHORT> 
+{ typedef unsigned short type; };
+template <>
+struct TypeForNumericType<NumericType::INT> 
+{ typedef signed int type; };
+template <>
+struct TypeForNumericType<NumericType::UINT> 
+{ typedef unsigned int type; };
+template <>
+struct TypeForNumericType<NumericType::LONG> 
+{ typedef signed long type; };
+template <>
+struct TypeForNumericType<NumericType::ULONG> 
+{ typedef unsigned long type; };
+template <>
+struct TypeForNumericType<NumericType::FLOAT> 
+{ typedef float type; };
+template <>
+struct TypeForNumericType<NumericType::DOUBLE> 
+{ typedef double type; };
+#endif
 
 END_NAMESPACE_STIR
 
