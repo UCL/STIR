@@ -69,6 +69,7 @@ public:
 				  DiscretisedDensity<3,float>* initial_image,
 				  DiscretisedDensity<3,float>* sensitivity_image,
 				  DiscretisedDensity<3,float>* precomputed_coefficients_image,
+				  DiscretisedDensity<3,float>* normalised_bck_image,
 				  int mask_size, 
 				  int num_dim);
 			     
@@ -94,6 +95,9 @@ private:
 
   DiscretisedDensity<3,float>* precomputed_coefficients_image ;
   string precomputed_coefficients_filename;
+
+  DiscretisedDensity<3,float>* normalised_bck_image ;
+  string normalised_bck_filename;
   int num_dim;
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
