@@ -1,4 +1,4 @@
-// $Id: 
+// $Id$
 //
 /*!
 \file
@@ -7,8 +7,8 @@
 
   \author Sanida Mustafovic  
   \author Kris Thielemans
-  $Date: 
-  $Revision $
+  $Date$
+  $Revision$
 */
 /*
 Copyright (C) 2000 PARAPET partners
@@ -16,9 +16,8 @@ Copyright (C) 2000- $Date$, IRSL
 See STIR/LICENSE.txt for details
 */
 
-
 #include "local/stir/OSSPS/OSSPSParameters.h"
-
+#include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
 #include "stir/is_null_ptr.h"
@@ -31,8 +30,6 @@ using std::ends;
 #endif
 
 START_NAMESPACE_STIR
-
-
 
 OSSPSParameters::OSSPSParameters(const string& parameter_filename)
 : LogLikelihoodBasedAlgorithmParameters()
@@ -52,12 +49,10 @@ OSSPSParameters::set_defaults()
   minimum_relative_change = 0;
   write_update_image = 0;
   precomputed_denominator_filename = "1";
-  //inter_update_filter_interval = 0;
-  //inter_update_filter_ptr = 0;
   //MAP_model="additive"; 
   prior_ptr = 0;
   relaxation_parameter = 0;
-  relaxation_gamma = 0.1;
+  relaxation_gamma = 0.1F;
 }
 
 void
@@ -99,24 +94,6 @@ void OSSPSParameters::ask_parameters()
   precomputed_denominator_filename=precomputed_denominator_filename_char;
   
 
-#if 0
- inter_update_filter_interval=
-  ask_num("Do inter-update filtering at sub-iteration intervals of: ",0, num_subiterations, 0);
-  
-    if(inter_update_filter_interval>0)
-    {       
-    
-      cerr<<endl<<"Supply inter-update filter type:\nPossible values:\n";
-      ImageProcessor<3,float>::list_registered_names(cerr);
-      
-	const string inter_update_filter_type = ask_string("");
-	
-	  inter_update_filter_ptr = 
-	  ImageProcessor<3,float>::read_registered_object(0, inter_update_filter_type);      
-	  
-}
-  
-#endif
 
   if(ask("Include prior?",false))
   {       
@@ -139,7 +116,8 @@ void OSSPSParameters::ask_parameters()
     0.,1.,0.);
   
   write_update_image = ask_num("write update image", 0,1,0);
-  
+
+  // TODO some more parameters here (relaxation et al)
 }
 
 
@@ -149,26 +127,18 @@ bool OSSPSParameters::post_processing()
 {
   if (LogLikelihoodBasedAlgorithmParameters::post_processing())
     return true;
-  
-  
-    /* if (inter_update_filter_interval<0)
-    { warning("Range error in inter-update filter interval \n"); return true; }
     
-      if (!is_null_ptr(prior_ptr))
-      {
-      if (MAP_model != "additive" && MAP_model != "multiplicative")
-      {
-      warning("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'\n",
-      MAP_model.c_str());
-      return true;
-      }
-}*/
-  
   if (precomputed_denominator_filename.length() == 0)
-  { warning("You need to specify a precomputed denominator \n"); 
-  return true; 
+  { 
+    warning("You need to specify a precomputed denominator \n"); 
+    return true; 
   }
-  
+  // KT 09/12/2002 one more check
+  if (!is_null_ptr(prior_ptr) && dynamic_cast<PriorWithParabolicSurrogate<float>*>(prior_ptr.get())==0)
+  {
+    warning("Prior must be of a type derived from PriorWithParabolicSurrogate\n");
+    return true;
+  }
   
   return false;
 }
