@@ -33,6 +33,7 @@ $(dir)_SOURCES = \
 	find_sinogram_rescaling_factors.cxx \
 	move_image.cxx \
 	move_projdata.cxx \
+	sync_polaris.cxx \
         find_fwhm_in_image.cxx \
 	get_singles_info.cxx \
 	calculate_attenuation_coefficients.cxx
