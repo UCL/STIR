@@ -214,7 +214,7 @@ public:
     struct SomeReconstruction 
     {
       SomeReconstruction();
-      ImageFilter<3,float>* filter_ptr;
+      ImageProcessor<3,float>* filter_ptr;
       double beta;     
       KeyParser parser;
     };      
