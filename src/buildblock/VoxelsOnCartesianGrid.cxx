@@ -1,11 +1,26 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup densitydata 
-  \brief Implementations of VoxelsOnCartesianGrid 
+  \brief Implementations of stir::VoxelsOnCartesianGrid 
 
   \author Sanida Mustafovic 
   \author Kris Thielemans (with help from Alexey Zverovich)
@@ -14,11 +29,6 @@
   $Date$
   $Revision$
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -95,7 +105,7 @@ static void find_sampling_and_z_size(
   // now do s_sampling
   // TODO make this independent on segment etc.
     s_sampling = 
-      proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,1));
+      proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
 
 }
 
