@@ -7,6 +7,7 @@
   \brief   
 
   \author Charalampos Tsoumpas
+  \author Pablo Aguiar
   \author Kris Thielemans
   
   $Date$
@@ -27,13 +28,10 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-//#include <algorithm>  
 #include <string>
-//#include "stir/shared_ptr.h" // 
-//#include "stir/DiscretisedDensity.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
-//#include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/utilities.h"
 //#include "stir/Timer.h"
 //#include "stir/CPUTimer.h"
 #include "local/stir/Scatter.h"
@@ -49,22 +47,23 @@ using std::cerr;
 int main(int argc, char *argv[])                                  
 {         
   USING_NAMESPACE_STIR
-  using namespace std;          //   output_proj_data_filename                                                       
-  if (argc< 2 || argc>6)
+  using namespace std;
+  if (argc< 3 || argc>6)
   {
-    cerr << "Usage:" << argv[0] << "[input_image]\n"
-		 << "\t[transmission_image]\n"
+    cerr << "Usage:" << argv[0] << "\n"
+     << "\t[activity_image]\n"
+		 << "\t[attenuation_image]\n"
 		 <<	"\t[proj_data_filename]\n" 
 		 << "\t[attenuation_threshold]\n"
 		 <<	"\t[maximum_scatter_points]\n"
 		 << "\t[maximum_LoRs]\n"
-	     << "\t[attenuation_threshold] defaults to 1000\n" 
-         << "\t[maximum_scatter_points] defaults to 1000\n" ; 
-      // << "\tmaximum_LoRs defaults to 1000\n"           
+	   << "\t[attenuation_threshold] defaults to .09 cm^-1\n"
+     << "\t[maximum_scatter_points] defaults to 1000\n" ;
+      // << "\tmaximum_LoRs defaults to 1000\n"
     return EXIT_FAILURE;            
   }      
-  const float attenuation_threshold = argc>=5 ? atoi(argv[4]) : 1000 ;  
-  int max_scat_points = argc>=6 ? atoi(argv[5]) : 1000 , 
+  float attenuation_threshold = argc>=5 ? atof(argv[4]) : 0.09 ;
+  int max_scat_points = argc>=6 ? atoi(argv[5]) : 1000 ,
       maximum_LoRs = argc>=7 ? atoi(argv[6]) : 1000 ;  
     
   shared_ptr< DiscretisedDensity<3,float> >  
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
     "\tMax in attenuation image: %g\n" ,
     density_image_sptr->find_max());
 #ifndef NORESCALE
-    /*
+  /*
     cerr << "WARNING: multiplying attenuation image by x-voxel size "
     << " to correct for scale factor in forward projectors...\n";
   */
@@ -93,6 +92,8 @@ int main(int argc, char *argv[])
     10.F;
 #endif
   *density_image_sptr *= rescale;
+  attenuation_threshold *= rescale;
+  cout << "\nAtt_thresh = " << attenuation_threshold << "  "<<  rescale << endl;
 
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
   const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr =
@@ -101,8 +102,7 @@ int main(int argc, char *argv[])
 
   if (proj_data_info_ptr==0 || density_image_sptr==0 || activity_image_sptr==0)
 	  error("Check the input files\n");
-  
-  
+
   const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
     dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
 	(*activity_image_sptr.get());
@@ -112,25 +112,18 @@ int main(int argc, char *argv[])
 	(*density_image_sptr.get());
  
     string output_proj_data_filename;
-    string input_string(argv[1]);    
-
-/*    string:: iterator string_iter;
-    for(string_iter=input_string.begin(); 
-        string_iter!=input_string.end() && *string_iter!='.' ;
-        ++string_iter)  
-    output_proj_data_filename.push_back(*string_iter); 
+    string input_string(argv[1]);
+    replace_extension(input_string,"");
+	
 	if (argc>=6)
-	{ */
+	{
 		string max_scat_points_string(argv[5]);             
 		output_proj_data_filename =  input_string + '_' +  max_scat_points_string ;	
-/*	}
-    else
-    output_proj_data_filename +=  '_' + "100" ;  
-*/
-  ProjDataInterfile output_proj_data(proj_data_info_ptr->clone(),
-		                             output_proj_data_filename);
+	}
 
-  cout << "\nwriting the single scatter contribution into << output_proj_data_filename <<".s ...\n";		
+  ProjDataInterfile output_proj_data(proj_data_info_ptr->clone(),output_proj_data_filename);
+
+  cout << "\nwriting the single scatter contribution into the file: " << output_proj_data_filename <<".s ...\n";		
 
   scatter_viewgram(output_proj_data,
 	  activity_image, density_image,
