@@ -30,7 +30,7 @@ if the files are identical or not.
 #include "recon_array_functions.h"
 
 #include <numeric>
-#inlcude <stdlib.h>
+#include <stdlib.h>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
