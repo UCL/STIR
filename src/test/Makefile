@@ -1,18 +1,17 @@
 # $Id$ : $Date$
 CXX = g++
 CC = gcc
+PXCXX = px g++
 #KT 28/11 some new defines
 WORKSPACE = ${HOME}/PPhead
 INCLUDE = ${WORKSPACE}/include
 DISPLAYLIB = ${WORKSPACE}/display/libdisplay.a
 BUILDBLOCKLIB = ${WORKSPACE}/buildblock/libbuildblock.a
 PARAPLUSLIB = ${WORKSPACE}/paraplus/libparaplus.a
-PXLINK = px g++ -e preMain -I/epx/epx/include -L/epx/epx/lib
-PXLIB = -lpx -lparix -lVT -lhslink -lpthreads
 
 #KT added the last -I option for Solaris, doesn't harm anyone if it's
 # not necessary
-CFLAGS = -g -D_DEBUG -I${INCLUDE} -I/usr/openwin/include
+CFLAGS = -g -D_DEBUG -I${INCLUDE} -I/usr/openwin/include -DTEST
 #KT 28/11 added buildblock library
 #KT 28/11 added the last -L option for Solaris
 LDFLAGS = -g -L${WORKSPACE}/display  -L${WORKSPACE}/buildblock \
@@ -52,11 +51,12 @@ VectorWithOffset: VectorWithOffset.cxx ${INCLUDE}/VectorWithOffset.h
 convert: convert.cxx ${BUILDBLOCKLIB}
 	$(CXX) $(CFLAGS) -o $@ $< 
 
-pplusdummy: pplusdummy.cxx ${PARAPLUSLIB}
-	$(CXX) -c $(CFLAGS)  $< 
-	$(PXLINK) -o $@ $@.o $(LDFLAGS) $(PXLIB)
+pplusdummy: pplusdummy.cxx 
+	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
 
-pplustiny: pplustiny.cxx ${PARAPLUSLIB}
-	$(CXX) -c $(CFLAGS)  $@ $< 
-	$(PXLINK) -o $@ $@.o $(LDFLAGS) $(PXLIB)
+pplustiny: pplustiny.cxx  /usr/local/lib/libparaplus.a
+	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
+
+ParaEPXtest: ParaEPXtest.cxx /usr/local/lib/libparaplus.a
+	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
 
