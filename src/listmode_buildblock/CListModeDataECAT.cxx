@@ -12,14 +12,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 
-#include "local/stir/listmode/CListModeDataECAT.h"
-#include "local/stir/listmode/CListRecordECAT966.h"
-#include "local/stir/listmode/CListRecordECAT962.h"
+#include "stir/listmode/CListModeDataECAT.h"
+#include "stir/listmode/CListRecordECAT966.h"
+#include "stir/listmode/CListRecordECAT962.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #ifdef HAVE_LLN_MATRIX
