@@ -5,7 +5,7 @@
 #define __Coordinate4D_H__
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup Coordinate 
   \brief defines the Coordinate4D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -29,7 +29,7 @@
 
 START_NAMESPACE_STIR
 /*!
-  \ingroup buildblock 
+  \ingroup Coordinate 
   \brief a templated class for 4-dimensional coordinates.
 
    The only new method is a constructor Coordinate4D<coordT>(c1,c2,c3,c4)

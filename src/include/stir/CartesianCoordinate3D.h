@@ -5,7 +5,7 @@
 //
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup Coordinate 
   \brief defines the CartesianCoordinate3D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -37,7 +37,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Coordinate
   \brief a templated class for 3-dimensional coordinates.
 
   It is derived from Coordinate3D<coordT>. The only new methods are

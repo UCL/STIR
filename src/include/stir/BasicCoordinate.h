@@ -6,7 +6,7 @@
 
 /*!
   \file 
-  \ingroup buildblock
+  \ingroup Coordinate
  
   \brief This file declares class BasicCoordinate<num_dimensions, coordT> and 
   some functions acting on BasicCoordinate objects.
@@ -24,7 +24,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -40,7 +40,7 @@ using std::random_access_iterator_tag;
 
 START_NAMESPACE_STIR
 /*!
-  \ingroup buildblock
+  \ingroup Coordinate
   \brief class BasicCoordinate<\c int \c num_dimensions, \c typename \c coordT> defines \c num_dimensions -dimensional coordinates.
 
 
@@ -49,7 +49,7 @@ START_NAMESPACE_STIR
 
    Access to the individual coordinates is through operator[].
    
-   \warning  Indices run from 1 to \ num_dimensions
+   \warning  Indices run from 1 to \c num_dimensions
 
 */
 template <int num_dimensions, typename coordT>
