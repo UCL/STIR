@@ -830,7 +830,7 @@ bool InterfilePDFSHeader::post_processing()
                                         sorted_max_ring_diff,
                                         num_views,num_bins);
   
-  cerr << data_info_ptr->parameter_info() << endl;
+  //cerr << data_info_ptr->parameter_info() << endl;
   
   return false;
 }
