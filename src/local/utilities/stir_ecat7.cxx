@@ -537,9 +537,9 @@ void make_ECAT7_main_header(Main_header& mhead,
                             const string& orig_name                     
                             )
 {
-  // first set to default (nonsensical) values
+  // first set to default (sometimes nonsensical) values
   strcpy(mhead.magic_number, "MATRIX7.0"); // TODO check
-  fill_string(mhead.original_file_name, 20);
+  fill_string(mhead.original_file_name, 32);
   mhead.sw_version= V7;
   mhead.system_type= -1;
   mhead.file_type= -1;
@@ -550,7 +550,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   fill_string(mhead.radiopharmaceutical, 32);
   mhead.gantry_tilt= 0.F;
   mhead.gantry_rotation= 0.F;
-  mhead.bed_elevation= -1.F;
+  mhead.bed_elevation= 0.F;
   mhead.intrinsic_tilt = 0;
   mhead.wobble_speed= 0;
   mhead.transm_source_type= -1;
@@ -566,34 +566,35 @@ void make_ECAT7_main_header(Main_header& mhead,
   fill_string(mhead.patient_name, 32);
   mhead.patient_sex[0] = '.';
   mhead.patient_dexterity[0] = '.';
-  mhead.patient_age = -1.F;
-  mhead.patient_height = -1.F;
-  mhead.patient_weight = -1.F;
+  mhead.patient_age = 0.F;
+  mhead.patient_height = 0.F;
+  mhead.patient_weight = 0.F;
+  mhead.patient_birth_date=1;
   fill_string(mhead.physician_name,32);
   fill_string(mhead.operator_name,32);
   fill_string(mhead.study_description,32);
   mhead.acquisition_type = 0; 
   mhead.coin_samp_mode = 0; // default to net_trues
   mhead.axial_samp_mode= 0;
-  mhead.patient_orientation = -1;
+  mhead.patient_orientation = 0;
   fill_string(mhead.facility_name, 20);
   mhead.num_planes= 0;
   mhead.num_frames= 1; // used for matnum, so set coherent default values
   mhead.num_gates= 1;
   mhead.num_bed_pos= 0;
   mhead.init_bed_position= -1.F;
-  for (int i=0; i<16; i++) mhead.bed_offset[i]= -1.F;
+  for (int i=0; i<15; i++) mhead.bed_offset[i]= 0.F;
   mhead.plane_separation= -1.F;
-  mhead.lwr_sctr_thres= -1;
-  mhead.lwr_true_thres= -1;
-  mhead.upr_true_thres= -1;  
+  mhead.lwr_sctr_thres= 0; // WARNING: default setup for the 966  
+  mhead.lwr_true_thres= 350; // WARNING: default setup for the 966  
+  mhead.upr_true_thres= 650; // WARNING: default setup for the 966  
   fill_string(mhead.user_process_code, 10);
   mhead.acquisition_mode= 0; // default to NORMAL
   mhead.bin_size = -1.F;
   mhead.branching_fraction = -1.F;
   mhead.dose_start_time = 0;
-  mhead.dosage = -1.F;
-  mhead.well_counter_factor = -1.F;
+  mhead.dosage = 0.F;
+  mhead.well_counter_factor = 1.F;
   fill_string(mhead.data_units,32);
   mhead.septa_state= -1;
   
@@ -601,8 +602,9 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.calibration_factor = 1.F;
   mhead.well_counter_factor=1.F;
 
-  strncpy(mhead.original_file_name, orig_name.c_str(), 20);
-  mhead.num_frames= 1; //hdr.num_time_frames;
+  strncpy(mhead.original_file_name, orig_name.c_str(), 31);
+  mhead.original_file_name[31]='\0';
+  mhead.num_frames= 1; 
   
   mhead.system_type= find_cti_system_type(scanner);
   mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
