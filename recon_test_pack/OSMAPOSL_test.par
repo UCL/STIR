@@ -28,6 +28,9 @@ z-dir filter FWHM (in mm):= 8
 x-dir filter Metz power:= 1.0
 y-dir filter Metz power:= 1.0
 z-dir filter Metz power:=1.0
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
 END Separable Cartesian Metz Filter Parameters :=
 
 inter-iteration filter subiteration interval:= 4
@@ -39,6 +42,9 @@ z-dir filter FWHM (in mm):= 6.0
 x-dir filter Metz power:= 2.0
 y-dir filter Metz power:= 2.0
 z-dir filter Metz power:= 2.0
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
 END Separable Cartesian Metz Filter Parameters :=
 
 start at subiteration number:=2
