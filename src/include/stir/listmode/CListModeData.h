@@ -1,21 +1,31 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup listmode
-  \brief Declaration of class CListModeData
+  \brief Declaration of class stir::CListModeData
     
   \author Kris Thielemans
       
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    This software is distributed under the terms 
-    of the GNU Lesser General  Public Licence (LGPL)
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_listmode_CListModeData_H__
@@ -148,14 +158,14 @@ public:
       <code>CListModeData::read_from_file(lm_data_ptr-\>get_name())</code> would read 
       the same list mode data.
 
-      The reason this cannot be guaranteed is largely in code the list mode data is 
+      The reason this cannot be guaranteed is largely in case the list mode data is 
       not really on disk, but the object corresponds for instance to a Monte Carlo simulator.
   */
   virtual std::string
     get_name() const = 0;
 
   //! Scan start time
-  /*! In secs since midnight (UTC) 1/1/1970 (as returned by time()).
+  /*! In secs since midnight (UTC) 1/1/1970 (as returned by std::time()).
 
      Should return <tt>std::time_t(-1)</tt> if unknown or invalid.
   */
