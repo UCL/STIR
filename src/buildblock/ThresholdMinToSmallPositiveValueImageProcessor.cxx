@@ -32,7 +32,7 @@ virtual_build_filter(const DiscretisedDensity<3,elemT>& density)
 template <typename elemT>
 void
 TruncateMinToSmallPositiveValueImageProcessor<elemT>::
-filter_it(DiscretisedDensity<3,elemT>& density) const
+virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {     
   truncate_min_to_small_positive_value(density, rim_truncation_image);
@@ -42,7 +42,7 @@ filter_it(DiscretisedDensity<3,elemT>& density) const
 template <typename elemT>
 void
 TruncateMinToSmallPositiveValueImageProcessor<elemT>::
-filter_it(DiscretisedDensity<3,elemT>& out_density, 
+virtual_apply(DiscretisedDensity<3,elemT>& out_density, 
 	  const DiscretisedDensity<3,elemT>& in_density) const
 {
   out_density = in_density;

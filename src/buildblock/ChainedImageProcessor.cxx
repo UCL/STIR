@@ -44,19 +44,19 @@ virtual_build_filter(const DiscretisedDensity<num_dimensions, elemT>& density)
 template <int num_dimensions, typename elemT>
 void
 ChainedImageProcessor<num_dimensions, elemT>::
-filter_it(DiscretisedDensity<num_dimensions, elemT>& density) const
+virtual_apply(DiscretisedDensity<num_dimensions, elemT>& density) const
 {  
   if (apply_first != 0)
-    apply_first->build_and_filter(density);
+    apply_first->apply(density);
   if (apply_second != 0)
-    apply_second->build_and_filter(density);
+    apply_second->apply(density);
 }
 
 
 template <int num_dimensions, typename elemT>
 void
 ChainedImageProcessor<num_dimensions, elemT>::
-filter_it(DiscretisedDensity<num_dimensions, elemT>& out_density, 
+virtual_apply(DiscretisedDensity<num_dimensions, elemT>& out_density, 
 	  const DiscretisedDensity<num_dimensions, elemT>& in_density) const
 {
   if (apply_first != 0)
@@ -68,15 +68,15 @@ filter_it(DiscretisedDensity<num_dimensions, elemT>& out_density,
 	    auto_ptr< DiscretisedDensity<num_dimensions, elemT> >(
 		   in_density.get_empty_discretised_density()
 		   );      
-	  apply_first->build_and_filter(*temp_density_ptr, in_density);
-	  apply_second->build_and_filter(out_density, *temp_density_ptr);
+	  apply_first->apply(*temp_density_ptr, in_density);
+	  apply_second->apply(out_density, *temp_density_ptr);
 	}
       else
-	apply_first->build_and_filter(out_density, in_density);
+	apply_first->apply(out_density, in_density);
     }
   else
       if (apply_second != 0)
-	apply_second->build_and_filter(out_density, in_density);
+	apply_second->apply(out_density, in_density);
 
 }
 

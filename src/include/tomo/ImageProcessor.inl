@@ -48,29 +48,29 @@ build_filter(const DiscretisedDensity< num_dimensions,elemT>& image)
 template <int num_dimensions, typename elemT>
 void 
 ImageProcessor<num_dimensions,elemT>::
-build_and_filter(DiscretisedDensity<num_dimensions,elemT>& density)
+apply(DiscretisedDensity<num_dimensions,elemT>& density)
   {
     //assert(consistency_check(density) == Succeeded::yes);
     if (!filter_built )
       build_filter(density);
-    filter_it(density);
+    virtual_apply(density);
   }
 
 
 template <int num_dimensions, typename elemT>
 void 
 ImageProcessor<num_dimensions,elemT>::
-build_and_filter(DiscretisedDensity<num_dimensions,elemT>& density,
+apply(DiscretisedDensity<num_dimensions,elemT>& density,
 		 const DiscretisedDensity<num_dimensions,elemT>& in_density)
   {
     //assert(consistency_check(in_density) == Succeeded::yes);
     if (!filter_built )
       if (build_filter(in_density) == Succeeded::no)
       {
-	warning("ImageProcessor::build_and_filter: Building filter was unsuccesfull. No filtering done.\n");
+	warning("ImageProcessor::apply: Building filter was unsuccesfull. No filtering done.\n");
 	return;
       }
-    filter_it(density, in_density);
+    virtual_apply(density, in_density);
   }
 
 #if 0

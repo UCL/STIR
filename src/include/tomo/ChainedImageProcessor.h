@@ -30,7 +30,7 @@ START_NAMESPACE_TOMO
   
   As it is derived from RegisteredParsingObject, it implements all the 
   necessary things to parse parameter files etc.
-  \warning The 2 argument version of  ChainedImageProcessor::build_and_filter
+  \warning The 2 argument version of  ChainedImageProcessor::apply
   calls the first image processor with a temporary output density with 
   the same characteristics as the input density. 
   
@@ -42,7 +42,7 @@ START_NAMESPACE_TOMO
   ranges or so), so it is impossible to build the 2nd image 
   processor without actually letting the first image processor 
   process the iamge (which might be far too expensive). This is not a real
-  problem however, as  ChainedImageProcessor::build_and_filter is
+  problem however, as  ChainedImageProcessor::apply is
   fine.
  */
 
@@ -75,8 +75,8 @@ private:
   
   Succeeded virtual_build_filter(const DiscretisedDensity<num_dimensions,elemT>& image);
 
-  void  filter_it(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
-  void  filter_it(DiscretisedDensity<num_dimensions,elemT>& density) const ;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
   
 };
 
