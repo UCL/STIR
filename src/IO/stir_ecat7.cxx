@@ -46,6 +46,7 @@
 #include "stir/Bin.h" 
 #include "stir/Succeeded.h" 
 #include "stir/convert_array.h"
+#include "stir/NumericInfo.h"
 #include "stir/IO/stir_ecat7.h"
 
 #include <iostream>
