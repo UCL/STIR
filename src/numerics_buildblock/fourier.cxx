@@ -19,6 +19,7 @@
 #include "stir/numerics/fourier.h"
 #include "stir/round.h"
 #include "stir/modulo.h"
+#include "stir/norm.h"
 #include "stir/array_index_functions.h"
 START_NAMESPACE_STIR
 
@@ -95,7 +96,6 @@ void fourier_1d(T& c, const int sign)
   const int nn=round(log(static_cast<double>(c.size()))/log(2.));
   if (c.get_length()!= round(pow(2,nn)))
     error ("fourier_1d called with array length %d which is not 2^%d\n", c.size(), nn);
-
 
   int k=0;
   int pow2k = 1; // will be updated to be round(pow(2,k))
@@ -266,12 +266,14 @@ inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
   assert(c.get_min_index()==0);
   assert(sign==1 || sign ==-1);
   const int n = c.get_length()-1;
+  if (n%2!=0)
+    error("inverse_fourier_1d_of_real_data can only handle arrays of even length.\n");
 
-  // somewhat problematic asserts to check that the imaginary part of c[0] and c[n] is 0
+  // asserts to check that the imaginary part of c[0] and c[n] is 0
   // trouble is that it could be only approximately 0 (e.g. when calling 
   // inverse_fourier_real_data on multi-dimensional arrays)
-  assert(fabs(c[0].imag())<=.01*fabs(c[0].real()));
-  assert(fabs(c[n].imag())<=.01*fabs(c[n].real()));
+  assert(fabs(c[0].imag())<=.001*norm(c.begin_all(),c.end_all())/sqrt(n+1.)); // note divide by n+1 to avoid division by 0
+  assert(fabs(c[n].imag())<=.001*norm(c.begin_all(),c.end_all())/sqrt(n+1.));
   for (int i=1; i<=n/2; ++i)
     {
       const complex_t t1 = (c[i]+std::conj(c[n-i]));
