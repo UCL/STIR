@@ -21,7 +21,9 @@
 #include "stir/Succeeded.h"
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
+#include "stir/array_index_functions.h"
 #include "stir/modulo.h"
+//#include "stir/stream.h"//XXX
 #include <algorithm>
 
 START_NAMESPACE_STIR
@@ -42,7 +44,7 @@ ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filt
 template <int num_dimensions, typename elemT>
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, 
-				               std::complex<elemT> >& complex_filter_kernel)
+				   std::complex<elemT> >& complex_filter_kernel)
 { 
   if (set_kernel(complex_filter_kernel) == Succeeded::no) 
     error("Error constructing ArrayFilterUsingRealDFTWithPadding\n");
@@ -57,13 +59,16 @@ set_padding_range()
 
   if (!complex_filter_kernel.get_regular_range(min_indices, max_indices))
     return Succeeded::no;
+  // check if complex_filter_kernel is 0-based, as currently required by fourier
+  // TODO we could wrap-around if not
   for (int d=1; d<=num_dimensions; ++d)
     {
-      if (min_indices[d]!=0) // TODO currently required by fourier
+      if (min_indices[d]!=0) 
 	return Succeeded::no;
-      max_indices[d] = 2*max_indices[d] - 1;
     }
+  max_indices[num_dimensions] = 2*max_indices[num_dimensions] - 1;
   padding_range = IndexRange<num_dimensions>(min_indices, max_indices);
+  padded_sizes = max_indices - min_indices +1;
   return Succeeded::yes;
 }
 
@@ -72,25 +77,34 @@ Succeeded
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel)  
 {
+  BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+  if (!real_filter_kernel.get_regular_range(min_indices, max_indices))
+    return Succeeded::no;
   // check if we need to use wrap-around
-  // note: this check only works in 1D (TODO)
-  if (real_filter_kernel.get_min_index()==0)
+  if (norm(min_indices)<.01) // i.e. min_indices==0
     {
       complex_filter_kernel =
-	fourier_1d_for_real_data(real_filter_kernel);
+	fourier_for_real_data(real_filter_kernel);
     }
   else
     {
-      Array<num_dimensions, elemT> real_filter_kernel_from_0(real_filter_kernel.get_index_range());
-      const int length=static_cast<int>(real_filter_kernel.size());
-      real_filter_kernel_from_0.set_min_index(0);
-      for (int i=real_filter_kernel.get_min_index(); i<= real_filter_kernel.get_max_index(); ++i)
-	real_filter_kernel_from_0[modulo(i,length)] =
-	  real_filter_kernel[i];
-      complex_filter_kernel =
-	fourier_1d_for_real_data(real_filter_kernel_from_0);
-    }
+      // copy data to new kernel using wrap-around
+      const BasicCoordinate<num_dimensions, int> sizes = 
+	max_indices - min_indices + 1;
+      const IndexRange<num_dimensions> range(sizes);
+      Array<num_dimensions, elemT> real_filter_kernel_from_0(range);
+      BasicCoordinate<num_dimensions, int> index = min_indices;
+      do
+	{
+	  real_filter_kernel_from_0[modulo(index, sizes)] =
+	    real_filter_kernel[index];
+	}
+      while(next(index, real_filter_kernel));
 
+      // do DFT on this array
+      complex_filter_kernel =
+	fourier_for_real_data(real_filter_kernel_from_0);
+    }
 
   return set_padding_range();
 }
@@ -113,7 +127,6 @@ is_trivial() const
     complex_filter_kernel.size_all()==0 ||
     (complex_filter_kernel.size_all()==1 && 
      (*complex_filter_kernel.begin_all()) == std::complex<elemT>(1,0));
-
 }
 
 
@@ -122,43 +135,47 @@ void
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const
 {
-  Array<num_dimensions, elemT> padded_array(padding_range);
-  // TODO this code only works for 1D at present
-  if (in_array.size()>padded_array.size())
-    error("ArrayFilterUsingRealDFTWithPadding called with in_array which is too long for the filter kernel");
-  std::copy(in_array.begin(), in_array.end(), padded_array.begin());
-
-  {
-    Array<num_dimensions,std::complex<elemT> > tmp =
-      fourier_1d_for_real_data(padded_array);
-    tmp *= complex_filter_kernel;
-    padded_array = inverse_fourier_1d_for_real_data(tmp);
-  }
-  // Now copy result in out_array
-  // Note that padded_array[0] corresponds to out_array[in_array.get_min_index()].
-  // In case out_array is longer at the 'left' or 'right', use wrap-around in padded_array
-  assert(padded_array.get_min_index()==0);
-#if 0
-  // For padded_array, 0 corresponds to corresponds to padded_array.get_max_index()+1
-  // this probably works, but assumes that out_array is not too much longer than in_array
-  for (int i=out_array.get_min_index(); i<in_array.get_min_index() && i<=out_array.get_max_index(); ++i)
-    out_array[i] = padded_array[padded_array.get_max_index()+1+(i-in_array.get_min_index())];
-  for (int i=in_array.get_min_index(); i<out_array.get_min_index(); ++i)
-    out_array[i] = padded_array[i-in_array.get_min_index()];
-#else
-  const int length= static_cast<int>(padded_array.size());
-  for (int i=out_array.get_min_index(), 
-	 i_padded=out_array.get_min_index()-in_array.get_min_index(); 
-       i<=out_array.get_max_index(); 
-       ++i, ++i_padded)
+  if (in_array.get_index_range() == padding_range &&
+      out_array.get_index_range() == padding_range)
     {
-      out_array[i] = padded_array[modulo(i_padded, length)];
+      // convolution using DFT
+      {
+	Array<num_dimensions,std::complex<elemT> > tmp =
+	  fourier_for_real_data(in_array);
+	tmp *= complex_filter_kernel;
+	out_array = inverse_fourier_for_real_data(tmp);
+      }
     }
-#endif
+    else
+    {
+      // copy input into padded_array using wrap-around
+      Array<num_dimensions, elemT> padded_array(padding_range);
+      assert(norm(get_min_indices(padded_array))<.01);// check padded_array is 0-based
+      {
+	BasicCoordinate<num_dimensions, int> index = get_min_indices(in_array);
+	do
+	  {
+	    padded_array[modulo(index, padded_sizes)] = in_array[index];
+	  }
+	while(next(index, in_array));
+      }
+      // call do_it with padded_array
+      do_it(padded_array, padded_array);
+      // Now copy result in out_array using wrap-around
+      {
+	BasicCoordinate<num_dimensions, int> index = get_min_indices(out_array);
+	do
+	  {
+	    out_array[index] = padded_array[modulo(index, padded_sizes)];
+	  }
+	while(next(index, out_array));
+      }
+    }
 }
 
 template class ArrayFilterUsingRealDFTWithPadding<1,float>;
-
+template class ArrayFilterUsingRealDFTWithPadding<2,float>;
+template class ArrayFilterUsingRealDFTWithPadding<3,float>;
 END_NAMESPACE_STIR
 
 
