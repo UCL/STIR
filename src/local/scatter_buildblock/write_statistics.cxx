@@ -73,7 +73,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 	fstream mystream("statistics.txt", ios::out | ios::app); //output file //
 	if(!mystream)    
 		warning("Cannot open text file.\n") ;	              
-	mystream << " Output_proj_data_filename is:" << argv[4]
+	mystream << "Output_proj_data_filename is:" << argv[4]
 		<< "\nActivity image: " << argv[1]
 		<< "\nwith SIZE: " 
 		<< activity_image.get_z_size() << " * " 
@@ -97,7 +97,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 		<< "\n - Scatter Points are taken all above the threshold";
 		
 	if (random)
-		mystream << " and have picked randomly\n ";
+		mystream << " and have picked randomly\n";
 	if (!random)
 		mystream << " and have picked in the center of the Voxel\n";
 	if(use_cosphi)
@@ -107,7 +107,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 	if(use_cache)
 		mystream << " - Use of caching\n";
 	if(!use_cache)
-		mystream << " - No use of caching\n";
+		mystream << " - No use of caching for SS - Use of caching for the LoRs in DS\n";
 
 
     mystream <<"\n\n\t ****************** END ****************\n\n\n\n\n\a";
@@ -115,7 +115,8 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 
 void writing_time(const double simulation_time, 
 				  const int scatt_points_vector_size, 
-				  const int scatter_level)
+				  const int scatter_level,
+				  const float total_scatter)
 {
 		{
 			fstream mystream("statistics.txt", ios::out | ios::app); //output file //
@@ -128,10 +129,11 @@ void writing_time(const double simulation_time,
 						mystream << "ONLY DOUBLE ";
 					if(scatter_level==1)
 						mystream << "ONLY SINGLE ";
-				mystream  << "SCATTER SIMULATION ******\nn"
-			   	    << "\tTotal simulation time elapsed: "				  
+				mystream  << "SCATTER SIMULATION ******\n\n"
+			   	    << "Total simulation time elapsed: "				  
 					<<   simulation_time/60 
-					<< "\nTotal Scatter Points : " << scatt_points_vector_size << endl;
+					<< "\nTotal Scatter Points : " << scatt_points_vector_size 
+					<< "\nScatter Estimation : " << total_scatter << endl;
 			}
 		}
 }
