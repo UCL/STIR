@@ -29,6 +29,10 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	find_ML_normfactors.cxx \
 	apply_normfactors.cxx \
 	create_normfactors.cxx \
+	find_ML_normfactors3D.cxx \
+	apply_normfactors3D.cxx \
+	create_normfactors3D.cxx \
+	find_ML_singles_from_delayed.cxx \
 	threshold_norm_data.cxx \
 	zero_projdata_from_norm.cxx \
 	SSRB.cxx \
