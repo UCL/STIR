@@ -42,6 +42,8 @@ VC\test_ByteOrder\%1\test_ByteOrder
 VC\test_ROIs\%1\test_ROIs
 @pause
 VC\test_Scanner\%1\test_Scanner
+@pause
+VC\test_VAXfloat\%1\test_VAXfloat test\input\test_VAXfloat.in
 @pause 
 @echo Executing test_stir_math 
 @echo This relies on having stir_math compiled (in the utilities workspace).
