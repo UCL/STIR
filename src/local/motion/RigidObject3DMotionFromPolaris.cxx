@@ -87,7 +87,7 @@ compute_average_motion(const double start_time, const double end_time) const
       return RigidObject3DTransformation(Quaternion<float>(1,0,0,0), CartesianCoordinate3D<float>(0,0,0));
     }
   
-  total_q /=samples;
+  total_q /=static_cast<float>(samples);
   total_q.normalise();
   total_tx /= samples; 
   total_ty /= samples;
@@ -352,8 +352,8 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
   //int NumTag = 0 ;
  
   
-  // TODO make sure that enough events is read for synchronisation
-  unsigned long max_num_events = 1UL << 8*sizeof(unsigned long)-1;
+  // TODO make sure that enough events are read for synchronisation
+  unsigned long max_num_events = 1UL << (8*sizeof(unsigned long)-1);
   //unsigned long max_num_events = 100000;
   long more_events = max_num_events;
   
@@ -379,7 +379,7 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
 	if ( PulseWidth > 5 ) //TODO get rid of number 5
 	{
 	  lm_random_number.push_back(ChState);
-	  lm_time.push_back(StartPulseTime);
+	  lm_time.push_back(static_cast<float>(StartPulseTime));
 	  //NumTag += 1 ;
 	}
 	LastChannelState = CurrentChannelState ;
