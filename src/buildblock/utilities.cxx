@@ -30,6 +30,58 @@ using std::endl;
 
 START_NAMESPACE_TOMO
 
+// KT 01/05/2000 moved here from .inl, after getting rid of CHARP template
+bool ask (const string& str, bool default_value)
+{   
+  char input[30];
+  
+  cerr << "\n" << str 
+       << " [Y/N D:" 
+       << (default_value ? 'Y' : 'N') 
+       << "]: ";
+  fgets(input,30,stdin);
+  if (strlen(input)==0)
+    return default_value;
+  char answer = input[0];
+  if (default_value==true)
+  {
+    if (answer=='N' || answer == 'n')
+      return false;
+    else
+      return true;
+  }
+  else
+  {
+    if (answer=='Y' || answer == 'y')
+      return true;
+    else
+      return false;
+    
+  }
+}
+
+
+// KT 01/05/2000 new
+string ask_string (const string& str, const string& default_value)
+{   
+  // TODO not nice to have a maximum length here
+  char input[1000];
+  
+  cerr << "\n" << str 
+       << "\n(Maximum string length is 1000)\n[default_value : \"" 
+       << default_value
+       << "\"]: \n";
+  fgets(input,1000,stdin);
+  if (strlen(input)==0)
+    return default_value;
+  else
+  {
+    // remove trailing newline
+    if (strlen(input) < 1000)
+	input[strlen(input)-1] = '\0';
+    return input;
+  }
+}
 
 const char * const 
 find_filename(const char * const filename_with_directory)
@@ -248,110 +300,6 @@ ask_filename_and_open(fstream& s,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 
-//#endif // NEWONLY
-
-#if 0
-
-VoxelsOnCartesianGrid<float> ask_image_details()
-{
- 
-
-  // Open file with data
-  ifstream input;
-  // KT 21/10/98 use new function
-  ask_filename_and_open(
-    input, "Enter filename for input image", ".v", 
-    ios::in | ios::binary);
-
-  int scanner_num = 
-      ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);
- 
-  PETScannerInfo scanner;
-  switch( scanner_num )
-    {
-    case 0:
-      scanner = (PETScannerInfo::RPT); 
-      break;
-    case 1:
-      scanner = (PETScannerInfo::E953); 
-      break;
-    case 2:
-      scanner = (PETScannerInfo::E966); 
-      break;
-    case 3:
-      scanner = (PETScannerInfo::Advance); 
-      break;
-        case 4:// CL 061298 Add ART scanner
-      scanner = (PETScannerInfo::ART); 
-      break;
-    default:
-      PETerror("Wrong scanner number\n"); Abort();
-    }
-
-  NumericType data_type;
-  {
-    int data_type_sel = ask_num("Type of data :\n\
-0: signed 16bit int, 1: unsigned 16bit int, 2: 4bit float ", 0,2,2);
-    switch (data_type_sel)
-      { 
-      case 0:
-	data_type = NumericType::SHORT;
-	break;
-      case 1:
-	data_type = NumericType::USHORT;
-	break;
-      case 2:
-	data_type = NumericType::FLOAT;
-	break;
-      }
-  }
-
-
-  {
-    // find offset 
-
-    input.seekg(0L, ios::beg);   
-    unsigned long file_size = find_remaining_size(input);
-
-    unsigned long offset_in_file = ask_num("Offset in file (in bytes)", 
-			     0UL,file_size, 0UL);
-    input.seekg(offset_in_file, ios::beg);
-  }
-
-  
-  CartesianCoordinate3D<float> 
-    origin(0,0,0);
-  CartesianCoordinate3D<float>
-    voxel_size(scanner.ring_spacing/2,
-               scanner.bin_size,
-               scanner.bin_size); 
-
-  int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
-  if (scanner.num_bins % 2 == 0 &&
-      ask("Make x,y size odd ?", true))
-    max_bin++;
-   
-
-  VoxelsOnCartesianGrid<float> 
-    input_image(IndexRange3D(
-				0, 2*scanner.num_rings-2,
-				(-scanner.num_bins/2), max_bin,
-				(-scanner.num_bins/2), max_bin),
-		origin,
-		voxel_size);
-
-
-  float scale = float(1);
-  input_image.read_data(input, data_type, scale);  
-  assert(scale==1);
-
-  return input_image; 
-
-}
-
-#endif
-
-//#if NEWONLY
 // find number of remaining characters
 streamsize find_remaining_size (istream& input)
 {
