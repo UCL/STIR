@@ -23,7 +23,7 @@
 
 START_NAMESPACE_TOMO
 
-template <class coordT> class Coordinate3D;
+template <int num_dimensions, class coordT> class BasicCoordinate3D;
 class ViewSegmentNumbers;
 class ProjMatrixElemsForOneBin;
 class Bin;
@@ -51,11 +51,11 @@ public:
   virtual void 
     transform_view_segment_indices(ViewSegmentNumbers&) const = 0;
   virtual void
-    transform_image_coordinates(Coordinate3D<int>&) const = 0;
+    transform_image_coordinates(BasicCoordinate<3,int>&) const = 0;
 #if 0
   // would be useful at some point
   virtual void 
-    transform_incremental_image_coordinates(Coordinate3D<int>&) const = 0;
+    transform_incremental_image_coordinates(BasicCoordinate<3,int>&) const = 0;
 #endif
 
 #ifdef PROJMATRIX
@@ -88,7 +88,7 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers& n) const {}
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const {}
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const {}
   inline void 
     transform_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin& lor) const {}
