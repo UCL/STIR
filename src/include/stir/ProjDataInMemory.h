@@ -23,11 +23,12 @@
 #include "stir/ProjDataFromStream.h" 
 #include <string>
 #ifdef BOOST_NO_STRINGSTREAM
-#include <memory>
+//#include <memory>
+#include "stir/shared_ptr.h"
 
 #ifndef STIR_NO_NAMESPACES
 #ifndef TOMO_NO_AUTOPTR
-using std::auto_ptr;
+//using std::auto_ptr;
 #endif
 #endif
 #endif // BOOST_NO_STRINGSTREAM
@@ -74,7 +75,9 @@ public:
     
 private:
 #ifdef BOOST_NO_STRINGSTREAM
-  auto_ptr<char> buffer;
+  // TODO an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems
+  // auto_ptr<char> buffer;
+  shared_ptr<char> buffer;
 #else
 #endif
   
