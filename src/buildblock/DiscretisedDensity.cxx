@@ -142,13 +142,19 @@ DiscretisedDensity<num_dimensions,elemT>::
         ECAT6_Main_header mhead;
         FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
         if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
-          error ("error reading main header in ECAT 6 file %s\n", filename.c_str());
+	  {
+	    if (cti_fptr!=NULL)
+	      fclose(cti_fptr);
+	    error ("error reading main header in ECAT 6 file %s\n", filename.c_str());
+	  }
         
 	warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
 		filename.c_str());
-        return
+        VoxelsOnCartesianGrid<float> * tmp =
           ECAT6_to_VoxelsOnCartesianGrid(/*frame_num, gate_num, data_num, bed_num*/1,1,0,0,
           cti_fptr, mhead);
+	fclose(cti_fptr);
+	return tmp;
       }
   }
 
