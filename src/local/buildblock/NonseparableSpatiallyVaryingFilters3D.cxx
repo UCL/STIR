@@ -58,74 +58,100 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 //// IMPLEMENTATION /////
 /**********************************************************************************************/
 
-
-
-
-
 void
 construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_3D_array,   
 					Array<3,float>& kernel_3d,const float kapa0_over_kapa1,
 					int number_of_coefficients_before_padding)
-					
 {
-//#if 1
+
+  /**************************************************************************************/
   if (kapa0_over_kapa1!=0)
   {
+   // in the case where sq_kappas=1 --- scaled_filter == original template filter 
+   Array<3,float> filter_coefficients(IndexRange3D(kernel_3d.get_min_index(), kernel_3d.get_max_index(),
+   kernel_3d[0].get_min_index(), kernel_3d[0].get_max_index(),
+   kernel_3d[0][0].get_min_index(), kernel_3d[0][0].get_max_index()));
     
-    // in the case where sq_kappas=1 --- scaled_filter == original template filter 
-    Array<3,float> filter_coefficients(IndexRange3D(kernel_3d.get_min_index(), kernel_3d.get_max_index(),
-      kernel_3d[0].get_min_index(), kernel_3d[0].get_max_index(),
-
-      kernel_3d[0][0].get_min_index(), kernel_3d[0][0].get_max_index()));
     filter_coefficients = kernel_3d;
-    
-    // create_kernel_2d (filter_coefficients, kernel_1d);
-    
-    
-#if 1
-    // STUFF FOR THE FFT SIZE 
-    /****************** *********************************************************************/
-    
-    const int length_of_size_array = 16;
-    const float kapa0_over_kapa1_interval_size=10.F;
-    static VectorWithOffset<int> size_for_kapa0_over_kapa1;
-    if (size_for_kapa0_over_kapa1.get_length()==0)
-    {
-      size_for_kapa0_over_kapa1.grow(0,length_of_size_array-1);
-      size_for_kapa0_over_kapa1.fill(64);
-    }
-    
+  const int length_of_size_array = 16;
+  const float kapa0_over_kapa1_interval_size=10.F;
+  static VectorWithOffset<int> size_for_kapa0_over_kapa1;
+  if (size_for_kapa0_over_kapa1.get_length()==0)
+  {
+    size_for_kapa0_over_kapa1.grow(0,length_of_size_array-1);
+    size_for_kapa0_over_kapa1.fill(64);
+  }
+  
+  
+  float sq_kapas = kapa0_over_kapa1; 
+  /******************************************************************************************/
+  
+  if ( sq_kapas > 10000)
+  {
+    new_filter_coefficients_3D_array.grow(IndexRange3D(0,0,0,0,0,0));
+  }
+  else if (sq_kapas!=1.F)
+  {
     const int kapa0_over_kapa1_interval = 
       min(static_cast<int>(floor(kapa0_over_kapa1/kapa0_over_kapa1_interval_size)),
-      length_of_size_array-1);
-    
-    float sq_kapas = kapa0_over_kapa1; 
-    /******************************************************************************************/
-    
-    if ( sq_kapas > 10000)
+          length_of_size_array-1);
+
+    while(true)
     {
-      new_filter_coefficients_3D_array.grow(IndexRange3D(0,0,0,0,0,0));
-    }
-    else if (sq_kapas!=1.F)
-    {
+      const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
+      const int size_z = size;
+      const int size_y = size; 
+      const int size_x = size;
+
+      int filter_length_z = static_cast<int>(floor(kernel_3d.get_length()/2));
+      int filter_length_y = static_cast<int>(floor(kernel_3d[0].get_length()/2));
+      int filter_length_x = static_cast<int>(floor(kernel_3d[0][0].get_length()/2));
+	
+      cerr << "Now doing size " << size << std::endl;
       
-      while(true)
+      
+      float inverse_sq_kapas;
+      if (fabs((double)sq_kapas ) >0.000000000001)
+	inverse_sq_kapas = 1/sq_kapas;
+      else 
+	inverse_sq_kapas = 0;
+      
+      static Array<1,float> fft_filter_1D_array_64(1,2*(size_z==1?1:64)*64*64);
+      static Array<1,float> fft_filter_1D_array_128(1,2*(size_z==1?1:128)*128*128);
+      static Array<1,float> fft_filter_1D_array_256(1,2*(size_z==1?1:256)*256*256);
+      
+      Array<1,float>* fft_filter_1D_array_ptr = 0;
+      switch (size)
       {
-	const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
-	
-	int filter_length_z = static_cast<int>(floor(kernel_3d.get_length()/2));
-	int filter_length_y = static_cast<int>(floor(kernel_3d[0].get_length()/2));
-	int filter_length_x = static_cast<int>(floor(kernel_3d[0][0].get_length()/2));
-	
-	//cerr << "Now doing size " << size << std::endl;
-	
-	// FIRST PADD 2D FILTER COEFFICIENTS AND MAKE THEM SYMMETRIC 
+      case 64:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_64;
+	break;
+      case 128:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_128;
+	break;
+      case 256:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_256;
+	break;
+      default:
+	error("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");
+	break;
+      }
+      Array<1,float>& fft_filter_1D_array = *fft_filter_1D_array_ptr;
+           
+      Array<1, int> array_lengths(1,3);
+      array_lengths[1] = size_z;
+      array_lengths[2] = size_y;
+      array_lengths[3] = size_x;
+      
+      if ( fft_filter_1D_array[1] == 0.F)
+      {
+	// we have to compute it
+	// FIRST PADD 1D FILTER COEFFICIENTS AND MAKE THEM SYMMETRIC 
 	// ( DO NOT TAKE IMAGINARY PART INTO ACCOUNT YET)
 	/**********************************************************************************/
 	
-	Array<3,float> filter_coefficients_padded_3D_array(IndexRange3D(1,size,1,size,1,size));
-	//int number_of_coefficients_before_padding = 15;
-	
+        Array<3,float> filter_coefficients_padded_3D_array(IndexRange3D(1,size,1,size,1,size));
+
 	
 	int min_kernel_3d_y = kernel_3d[1].get_min_index();
 	int min_kernel_3d_x = kernel_3d[1][1].get_min_index();
@@ -164,284 +190,196 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	      }
 	      k_n++;
 	    }
-	    
-#if 0	    
-	 for ( int k = 1;k<=64;k++)
-	 {
-	    for ( int j = 1;j<=64;j++)
-	    {
-	      for ( int i = 1;i<=64;i++)
-	      {
-		cerr <<  filter_coefficients_padded_3D_array[k][j][i] << "   " ;
-	      }
-	      cerr << endl;
-	    }
-	 }
-#endif	    
-	    /*************************************************************************************/
-	    
-	    Array<3,float> filter_coefficients_padded(IndexRange3D(1,size,1,size,1,size));
-	    filter_coefficients_padded = filter_coefficients_padded_3D_array;
-	    
-	    
-	    // rescale to DC=1
-	    float tmp = filter_coefficients_padded.sum();
-	    filter_coefficients_padded /= filter_coefficients_padded.sum();
-	    /*  for ( int j = filter_coefficients_padded.get_min_index(); j<=filter_coefficients_padded.get_max_index();j++)
-	    for ( int i = 	filter_coefficients_padded.get_min_index(); i<=	filter_coefficients_padded.get_max_index();i++)
-	    cerr << filter_coefficients_padded[j][i] << "     ";*/
-	    
-	    Array<3,float>& fft_filter = filter_coefficients_padded;
-	    float inverse_sq_kapas;
-	    if (fabs((double)sq_kapas ) >0.000000000001)
-	      inverse_sq_kapas = 1/sq_kapas;
-	    else 
-	      inverse_sq_kapas = 0;
-	    
-	    
-	    // Array<1,float> fft_1_1D_array (1, 2*fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length() *fft_filter[fft_filter.get_min_index()][fft_filter.get_min_index()].get_length());
-	    Array<1,float> fft_filter_1D_array(1, 2*fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length() *fft_filter[fft_filter.get_min_index()][fft_filter.get_min_index()].get_length());
-	    
-	    static shared_ptr <Array<1,float> > fft_filter_1D_array_64 = 
-	      new Array<1,float>(1,2*64*64*64);
-	    static shared_ptr <Array<1,float> > fft_filter_1D_array_128 =
-	      new  Array<1,float> (1,2*128*128*128);
-	    static shared_ptr <Array<1,float> > fft_filter_1D_array_256 = 
-	      new  Array<1,float> (1,2*256*256*256);
-	    
-	    convert_array_3D_into_1D_array(fft_filter_1D_array,fft_filter);
-	    Array<1, int> array_lengths(1,3);	
-	    array_lengths[1] = fft_filter.get_length();
-	    array_lengths[2] = fft_filter[fft_filter.get_min_index()].get_length();
-	    array_lengths[3] = fft_filter[fft_filter.get_min_index()][fft_filter.get_min_index()].get_length();
-	    Array<3,float> new_filter_coefficients_3D_array_tmp (IndexRange3D(1,filter_coefficients_padded.get_length(),1,filter_coefficients_padded.get_length(),1,filter_coefficients_padded.get_length()));
-	    
-	    // initialise to 0 to prevent from warnings
-	    float  fft_1_1D_array  = 0; 
-	    
-	    if (size == 64)
-	    {
-	      if ( (*fft_filter_1D_array_64)[1] == 0.F)
-	      {
-		fourn(fft_filter_1D_array, array_lengths, 3,1);
-		fft_filter_1D_array /= sqrt(static_cast<double>(size *size*size));      
-		*fft_filter_1D_array_64 = fft_filter_1D_array;
-	      }
-	      else
-	      {
-		fft_filter_1D_array = *fft_filter_1D_array_64;
-		
-	      }
-	    }
-	    else if (size ==128)
-	    {
-	      if ( (*fft_filter_1D_array_128)[1] == 0.F)
-	      {
-		fourn(fft_filter_1D_array, array_lengths, 3,1);
-		fft_filter_1D_array /= sqrt(static_cast<double>(size *size*size));      
-		*fft_filter_1D_array_128 = fft_filter_1D_array;
-	      }
-	      else
-	      {
-		fft_filter_1D_array = *fft_filter_1D_array_128;
-		
-	      }
-	    }
-	    else if ( size == 256)
-	    {
-	      if ( (*fft_filter_1D_array_256)[1] == 0.F)
-	      {
-		fourn(fft_filter_1D_array, array_lengths, 3,1);
-		fft_filter_1D_array /= sqrt(static_cast<double>(size *size*size));      
-		*fft_filter_1D_array_256 = fft_filter_1D_array;
-	      }
-	      else
-	      {
-		fft_filter_1D_array = *fft_filter_1D_array_256;
-		
-	      }
-	    }
-	    else          
-	    {
-	      warning("\nNonseparableSpatiallyVaryingFilters3D: Cannot do this at the moment -- size is too big'.\n");
-	      
-	    }
-	    
-	    // fourn(fft_filter_1D_array, array_lengths, 3,1);
-	    
-	    // WARNING  -- this only works for the FFT where the convention is that the final result
-	    // obtained from the FFT is divided with sqrt(N*N*N)
-	    switch (size)
-	    {
-	    case 64:
-	      fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(64*64*64)));
-	      break;
-	    case 128:
-	      fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(128*128*128)));
-	      break;
-	    case 256:
-	      fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(256*256*256)));
-	      break;
-	      
-	    default:
-	      warning("\nNonseparableSpatiallyVaryingFilters3D: Cannot do this at the moment -- size is too big'.\n");;
-	      break;
-	    }
-	    
-	    // to check the outputs make the fft consistant with mathematica
-	    // divide 1/sqrt(size)
-	    //fft_1_1D_array /= sqrt(static_cast<double> (size *size*size));
-	    // fft_filter_1D_array /= sqrt(static_cast<double>(size *size*size));
-	    {        
-	      Array<1,float> fft_filter_num_1D_array(1, 2*fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length() *fft_filter[fft_filter.get_min_index()][fft_filter.get_min_index()].get_length());
-	      //Array<1,float> div_1D_array(1, 2*fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length() *fft_filter[fft_filter.get_min_index()][fft_filter.get_min_index()].get_length());    
-	      
-	      //mulitply_complex_arrays(fft_filter_num_1D_array,fft_filter_1D_array,fft_1_1D_array);
-	      
-	      fft_filter_num_1D_array = fft_filter_1D_array* fft_1_1D_array;
-	      for ( int k = fft_filter_1D_array.get_min_index(); k<=fft_filter_1D_array.get_max_index();k++)
-	      {
-		fft_filter_1D_array[k] *= (sq_kapas-1);
-		fft_filter_1D_array[k] += fft_1_1D_array;
-		fft_filter_1D_array[k] /= sq_kapas;
-		
-	      }
-	      
-	      //divide_complex_arrays(div_1D_array,fft_filter_num_1D_array,fft_filter_1D_array);        
-	      
-	      divide_complex_arrays(fft_filter_num_1D_array,fft_filter_1D_array);              
-	      fourn(fft_filter_num_1D_array, array_lengths,3,-1);
-	      
-	      // make it consistent with mathemematica -- the output of the       
-	      fft_filter_num_1D_array  /= sqrt(static_cast<double>(size *size*size));
-	      
-	      
-	      {
-		Array<1,float> real_div_1D_array(1,fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length() *fft_filter[fft_filter.get_min_index()][fft_filter.get_min_index()].get_length());
-		
-		for (int i=0;i<=(size*size*size)-1;i++)
-		  real_div_1D_array[i+1] = fft_filter_num_1D_array[2*i+1];
-		
-		/*********************************************************************************/
-		
-		
-		convert_array_1D_into_3D_array(new_filter_coefficients_3D_array_tmp,real_div_1D_array);
-	      }
-	    }
-	    int kernel_length_x=0;
-	    int kernel_length_y=0;
-	    int kernel_length_z=0;
-	    
-	    // to prevent form aliasing limit the new range for the coefficients to 
-	    // filter_coefficients_padded.get_length()/2
-	    
-	    
-	    // do the x -direction first -- fix y and z to the min and look for the max index in x
-	    int kx = new_filter_coefficients_3D_array_tmp.get_min_index();
-	    int jx = new_filter_coefficients_3D_array_tmp[kx].get_min_index();
-	    for (int i=new_filter_coefficients_3D_array_tmp[kx][jx].get_min_index();i<=filter_coefficients_padded[kx][jx].get_max_index()/2;i++)
-	    {
-	      if (fabs((double)new_filter_coefficients_3D_array_tmp[kx][jx][i])
-		<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
-	      else (kernel_length_x)++;
-	    }
-	    
-	    /******************************* Y DIRECTION ************************************/
-	    
-	    
-	    int ky = new_filter_coefficients_3D_array_tmp.get_min_index();
-	    int iy = new_filter_coefficients_3D_array_tmp[ky][new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index();
-	    for (int j=new_filter_coefficients_3D_array_tmp[ky].get_min_index();j<=filter_coefficients_padded[ky].get_max_index()/2;j++)
-	    {
-	      if (fabs((double)new_filter_coefficients_3D_array_tmp[ky][j][iy])
-		//= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()]*1/100000000) break;
-		<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
-	      else (kernel_length_y)++;
-	    }
-	    
-	    /********************************************************************************/
-	    
-	    /******************************* z DIRECTION ************************************/
-	    
-	    
+	
+	// rescale to DC=1
+	filter_coefficients_padded_3D_array /= filter_coefficients_padded_3D_array.sum();
+	
+	convert_array_3D_into_1D_array(fft_filter_1D_array,filter_coefficients_padded_3D_array);
+	
+	// TODO remove probably
+	if (size_z==1)
+	{
+	  Array<1,int> array_lengths_2d(1,2);
+	  array_lengths_2d[1]=array_lengths[2];
+	  array_lengths_2d[2]=array_lengths[3];
+	  fourn(fft_filter_1D_array, array_lengths_2d, 2,1);
+	}
+	else
+	  fourn(fft_filter_1D_array, array_lengths, 3,1);
+	fft_filter_1D_array /= sqrt(static_cast<float>(size_z *size_y*size_x));   
+      }	
+
+    
+      Array<3,float> new_filter_coefficients_3D_array_tmp (IndexRange3D(1,size_z,1,size_y,1,size_x));           
+      
+      // WARNING  -- this only works for the FFT where the convention is that the final result
+      // obtained from the FFT is divided with sqrt(N*N*N)   
+      // initialise to 0 to prevent from warnings
+      //fourn(fft_1_1D_array, array_lengths, 3,1); 
+      float  fft_1_1D_array = 1/sqrt(static_cast<float>(size_z*size_y*size_x));
+
+      
+      {        
+	Array<1,float> fft_filter_num_1D_array = fft_filter_1D_array;	
+	fft_filter_num_1D_array *= fft_1_1D_array;	
+	// TODO we make a copy for the denominator here, which isn't necessary
+	Array<1,float> fft_filter_denom_1D_array = fft_filter_1D_array;	
+	fft_filter_denom_1D_array*= (sq_kapas-1);
+	// add fft of 1 (but that's a real constant)
+	for ( int i = fft_filter_1D_array.get_min_index(); i<=fft_filter_1D_array.get_max_index(); i+=2)
+	{
+	  fft_filter_denom_1D_array[i] += fft_1_1D_array;
+	}
+	fft_filter_denom_1D_array /= sq_kapas;
+
+
+	divide_complex_arrays(fft_filter_num_1D_array,fft_filter_denom_1D_array);              
+	// TODO remove probably
+	if (size_z==1)
+	{
+	  Array<1,int> array_lengths_2d(1,2);
+	  array_lengths_2d[1]=array_lengths[2];
+	  array_lengths_2d[2]=array_lengths[3];
+	  fourn(fft_filter_num_1D_array, array_lengths_2d, 2,-1);
+	}
+	else
+	  fourn(fft_filter_num_1D_array, array_lengths, 3,-1);
+	
+	
+	// make it consistent with mathemematica -- the output of the       
+	fft_filter_num_1D_array  /= sqrt(static_cast<double>(size_z *size_y*size_x));
+	
+	
+	// take the real part only 
+	/*********************************************************************************/
+	{
+	  Array<1,float> real_div_1D_array(1,size_z *size_y*size_x);
+	  
+	  for (int i=0;i<=(size_z *size_y*size_x)-1;i++)
+	    real_div_1D_array[i+1] = fft_filter_num_1D_array[2*i+1];
+	  
+	  /*********************************************************************************/
+	 	  
+	  
+	  convert_array_1D_into_3D_array(new_filter_coefficients_3D_array_tmp,real_div_1D_array);
+
+	}
+      }
+      	    
+	  int kernel_length_x=0;
+	  int kernel_length_y=0;
+	  int kernel_length_z=0;
+	  
+	  // to prevent form aliasing limit the new range for the coefficients to 
+	  // filter_coefficients_padded.get_length()/4
+	  
+	  
+	  // do the x -direction first -- fix y and z to the min and look for the max index in x
+	  int kx = new_filter_coefficients_3D_array_tmp.get_min_index();
+	  int jx = new_filter_coefficients_3D_array_tmp[kx].get_min_index();
+	  for (int i=new_filter_coefficients_3D_array_tmp[kx][jx].get_min_index();
+	       i<=new_filter_coefficients_3D_array_tmp[kx][jx].get_max_index()/4;i++)
+	  {
+	    if (fabs((double)new_filter_coefficients_3D_array_tmp[kx][jx][i])
+	      <= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
+	    else (kernel_length_x)++;
+	  }
+	  
+	  /******************************* Y DIRECTION ************************************/
+	  
+	  
+	  int ky = new_filter_coefficients_3D_array_tmp.get_min_index();
+	  int iy = new_filter_coefficients_3D_array_tmp[ky][new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index();
+	  for (int j=new_filter_coefficients_3D_array_tmp[ky].get_min_index();j<=new_filter_coefficients_3D_array_tmp[ky].get_max_index()/4;j++)
+	  {
+	    if (fabs((double)new_filter_coefficients_3D_array_tmp[ky][j][iy])
+	      //= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()]*1/100000000) break;
+	      <= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
+	    else (kernel_length_y)++;
+	  }
+	  
+	  /********************************************************************************/
+	  
+	  /******************************* z DIRECTION ************************************/
+	  
+	 
 	    int jz = new_filter_coefficients_3D_array_tmp.get_min_index();
 	    int iz = new_filter_coefficients_3D_array_tmp[jz][new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index();
-	    for (int k=new_filter_coefficients_3D_array_tmp.get_min_index();k<=filter_coefficients_padded.get_max_index()/2;k++)
+	    for (int k=new_filter_coefficients_3D_array_tmp.get_min_index();k<=new_filter_coefficients_3D_array_tmp.get_max_index()/2;k++)
 	    {
 	      if (fabs((double)new_filter_coefficients_3D_array_tmp[k][jz][iz])
 		//<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()]*1/100000000) break;
 		<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
 	      else (kernel_length_z)++;
 	    }
+	  /********************************************************************************/
+	  
+	  if (kernel_length_x == size_x/2)
+	  {
+	    warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_x reached maximum length %d. "
+	      "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	      "Increasing length of FFT array to resolve this problem\n",
+	      kernel_length_x, new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][kernel_length_x],
+	      kapa0_over_kapa1);
+	    size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	    for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	      size_for_kapa0_over_kapa1[i]=
+	      max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
+	  }
+	  else if (kernel_length_y == size_y/2)
+	  {
+	    warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_y reached maximum length %d. "
+	      "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	      "Increasing length of FFT array to resolve this problem\n",
+	      kernel_length_y, new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][kernel_length_y][new_filter_coefficients_3D_array_tmp.get_min_index()],
+	      kapa0_over_kapa1);
+	    size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	    for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	      size_for_kapa0_over_kapa1[i]=
+	      max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
+	  }
+	  else if (kernel_length_z == size_z/2)
+	  {
+	    warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_z reached maximum length %d. "
+	      "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	      "Increasing length of FFT array to resolve this problem\n",
+	      kernel_length_z, 
+	      new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[kernel_length_z][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()],
+	      kapa0_over_kapa1);
+	    size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	    for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	      size_for_kapa0_over_kapa1[i]=
+	      max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
+	  }
+	  else
+	  {	 
+	    new_filter_coefficients_3D_array.grow(IndexRange3D(-(kernel_length_z-1),kernel_length_z-1,
+	      -(kernel_length_y-1),kernel_length_y-1,
+	      -(kernel_length_x-1),kernel_length_x-1));
+
 	    
-	    /********************************************************************************/
+	    for (int  k = 0;k<= kernel_length_z-1;k++)
+	      for (int  j = 0;j<= kernel_length_y-1;j++)	  
+		for (int  i = 0;i<= kernel_length_x-1;i++)	  
+		{
+		  new_filter_coefficients_3D_array[k][j][i]=
+		    new_filter_coefficients_3D_array[k][j][-i]=
+		    new_filter_coefficients_3D_array[k][-j][-i]=
+		    new_filter_coefficients_3D_array[k][-j][i]=
+		    new_filter_coefficients_3D_array[-k][j][i]=
+		    new_filter_coefficients_3D_array[-k][-j][i]=
+		    new_filter_coefficients_3D_array[-k][j][-i]=
+		    new_filter_coefficients_3D_array[-k][-j][-i]=
+		    new_filter_coefficients_3D_array_tmp[k+1][j+1][i+1];		  
+		}
 	    
-	    if (kernel_length_x == filter_coefficients_padded.get_length()/2)
-	    {
-	      warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_x reached maximum length %d. "
-		"First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
-		"Increasing length of FFT array to resolve this problem\n",
-		kernel_length_x, new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][kernel_length_x],
-		kapa0_over_kapa1);
-	      size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
-	      for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
-		size_for_kapa0_over_kapa1[i]=
-		max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
-	    }
-	    else if (kernel_length_y == filter_coefficients_padded.get_length()/2)
-	    {
-	      warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_y reached maximum length %d. "
-		"First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
-		"Increasing length of FFT array to resolve this problem\n",
-		kernel_length_y, new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][kernel_length_y][new_filter_coefficients_3D_array_tmp.get_min_index()],
-		kapa0_over_kapa1);
-	      size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
-	      for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
-		size_for_kapa0_over_kapa1[i]=
-		max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
-	    }
-	    else if (kernel_length_z == filter_coefficients_padded.get_length()/2)
-	    {
-	      warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_z reached maximum length %d. "
-		"First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
-		"Increasing length of FFT array to resolve this problem\n",
-		kernel_length_z, 
-		new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[kernel_length_z][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()],
-		kapa0_over_kapa1);
-	      size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
-	      for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
-		size_for_kapa0_over_kapa1[i]=
-		max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
-	    }
-	    else
-	    {	 
-	      new_filter_coefficients_3D_array.grow(IndexRange3D(-(kernel_length_z-1),kernel_length_z,
-		-(kernel_length_y-1),kernel_length_y,
-		-(kernel_length_x-1),kernel_length_x));
-	      
-	      new_filter_coefficients_3D_array[0][0][0] = new_filter_coefficients_3D_array_tmp[1][1][1];
-	      new_filter_coefficients_3D_array[kernel_length_z][kernel_length_y][kernel_length_x] = new_filter_coefficients_3D_array_tmp[kernel_length_z][kernel_length_y][kernel_length_x];
-	      
-	      
-	      for (int  k = 1;k<= kernel_length_z-1;k++)
-		for (int  j = 1;j<= kernel_length_y-1;j++)	  
-		  for (int  i = 1;i<= kernel_length_x-1;i++)	  
-		    
-		  {
-		    new_filter_coefficients_3D_array[k][j][i]=new_filter_coefficients_3D_array_tmp[k+1][j+1][i+1];
-		    new_filter_coefficients_3D_array[-k][-j][-i]=new_filter_coefficients_3D_array_tmp[k+1][j+1][i+1];
-		    
-		  }
-		  
-		  break; // out of while(true)
-	    }
+  	break; // out of while(true)
+	  }
     } // this bracket is for the while loop
     }
     else //sq_kappas == 1
     {
-      //cerr << " assinging" << endl;
-      //new_filter_coefficients_3D_array = filter_coefficients;
-	new_filter_coefficients_3D_array.grow(IndexRange3D(
+      new_filter_coefficients_3D_array.grow(IndexRange3D(
 	    -number_of_coefficients_before_padding+1,number_of_coefficients_before_padding-1,
 	    -number_of_coefficients_before_padding+1,number_of_coefficients_before_padding-1,
 	    -number_of_coefficients_before_padding+1,number_of_coefficients_before_padding-1));
@@ -464,37 +402,18 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	      
 	    }
 	  
-
+      
     }
-    
-    
-#endif 
-    
-    
+
+ 
+         
     // rescale to DC=1
-    float sum_new_coefficients =0;  
-    for (int k=new_filter_coefficients_3D_array.get_min_index();k<=new_filter_coefficients_3D_array.get_max_index();k++)
-      for (int j=new_filter_coefficients_3D_array[k].get_min_index();j<=new_filter_coefficients_3D_array[k].get_max_index();j++)	  
-	for (int i=new_filter_coefficients_3D_array[k][j].get_min_index();i<=new_filter_coefficients_3D_array[k][j].get_max_index();i++)
-	  sum_new_coefficients += new_filter_coefficients_3D_array[k][j][i];  
-
-	
-	for (int k=new_filter_coefficients_3D_array.get_min_index();k<=new_filter_coefficients_3D_array.get_max_index();k++)
-	  for (int j=new_filter_coefficients_3D_array[k].get_min_index();j<=new_filter_coefficients_3D_array[k].get_max_index();j++)	  
-	    for (int i=new_filter_coefficients_3D_array[k][j].get_min_index();i<=new_filter_coefficients_3D_array[k][j].get_max_index();i++)
-	      new_filter_coefficients_3D_array[k][j][i] /=sum_new_coefficients;  
-	    
-	    
-	    
+    new_filter_coefficients_3D_array /= new_filter_coefficients_3D_array.sum();	
+   
+}
 }
 
-else
-{
-   new_filter_coefficients_3D_array.grow(IndexRange3D(0,0,0,0,0,0));
-   new_filter_coefficients_3D_array[0][0][0] =0;
-  }
-		    
-}
+
 #if 1
 
 
