@@ -120,17 +120,18 @@ struct ResolutionIndex
    sources and a boolean nema which enables the calculation based on the NEMA Standards Publication 
    NU 2-2001. The implementation calculates and returns in a list container the maximum_value and its 
    location per slice for line sources, sorted by minimum to maximum slice of the using dimension, or per 
-   whole image for point sources, sorted by maximum to minimum value. It calculates, as well, the resolution at the same location in the size 
-   of units that is used (usually mm). If the dimension is set to 0 it finds the resolution of each one 
-   point sources, else it finds the algorithm for the line sources giving its direction (z=1, y=2, x=3), 
-   respectively. If given as [num_maxima] less than the total slices it returns the results for some slices 
-   by sampling with the same step the total slices of the wanted dimension. (Only 3D implementation). 
-   In case it is not needed to be followed to the NEMA standard, for better approximation could be achieved 
-   by setting the nema to 0. (In this case the interpolated_line function is used). 
+   whole image for point sources, sorted by maximum to minimum value. It calculates, as well, the resolution 
+   at the same location in the size of units that is used (usually mm). If the dimension is set to 0 it finds 
+   the resolution of each one point sources, else it finds the algorithm for the line sources giving its 
+   direction (z=1, y=2, x=3), respectively. If given as [num_maxima] less than the total slices it returns 
+   the results for some slices by sampling with the same step the total slices of the wanted dimension. 
+   (Only 3D implementation). In case it is not needed to be followed to the NEMA standard, for better 
+   approximation could be achieved by setting the nema to 0. 
+   (In this case the interpolated_line function is used). 
 */
 
 template <int num_dimensions, class elemT>           
-list<ResolutionIndex<num_dimensions,float> > 
+std::list<ResolutionIndex<num_dimensions,float> > 
 find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
                    const unsigned int num_maxima, const float level, 
                    const int dimension, const bool nema);
@@ -150,6 +151,36 @@ flexible_mask(Array<num_dimensions,elemT>& input_array,
               const BasicCoordinate<num_dimensions,int>& max_location,
               const BasicCoordinate<num_dimensions,elemT>& resolution,
               const float level);
+/*!  
+   \ingroup resolution
+   \brief     
+   Calculates the maximum point (x0,y0) of a parabola that passes through 3 points.
+
+   As input it takes the Begin and End Iterators of a sequence of numbers (e.g. vector). 
+   The three points are the maximum (x2,y2) of this sequence and the two neihbour points 
+   (x1,y1) and (x3,y3).  
+
+  It returns the maximum point value y0. 
+*/           
+//@{
+
+/*!
+   \ingroup resolution
+   \brief     
+   It returns the maximum point value y0. 
+*/
+template <class RandomAccessIterType>
+   float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
+   const RandomAccessIterType& end_iter);
+/*!
+   \ingroup resolution
+   \brief     
+   It returns the maximum point location x0 in (-1,1). 
+*/
+template <class RandomAccessIterType>
+float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter,
+							   const RandomAccessIterType& end_iter);
+//@}
 
 
 END_NAMESPACE_STIR
