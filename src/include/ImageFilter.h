@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __ImageFilter_h_
@@ -12,7 +12,7 @@
   \brief declares the ImageFilter class
 
   \author Matthew Jacobson (some help by Kris Thielemans)
-  \author based on C-code by Roni Lefkowitz
+  \author based on C-code by Roni Levkowitz
   \author PARAPET project
 
   \date    $Date$
@@ -42,7 +42,7 @@ class ImageFilter
   void build(const DiscretisedDensity<3,float>& representative_image,double fwhmx_dir=0,double fwhmz_dir=0,float Nx_dir=0.0,float Nz_dir=0.0);
 
   //! does 3D convolution with the filter
-  void apply(DiscretisedDensity<3,float>& input_image);
+  void apply(DiscretisedDensity<3,float>& input_image, bool applying_threshold=false);
 
   //! constructor
    ImageFilter();
