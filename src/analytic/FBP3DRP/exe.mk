@@ -2,14 +2,14 @@
 # $Id$
 #
 
-dir:=local/analytic/FBP3DRP
+dir:=analytic/FBP3DRP
 
 $(dir)_SOURCES = \
-	FBP3DRPMain.cxx
+	FBP3DRP.cxx
 
 include $(WORKSPACE)/exe.mk
 
-${DEST}$(dir)/FBP3DRPMain: ${DEST}$(dir)/FBP3DRPMain$(O_SUFFIX) \
+${DEST}$(dir)/FBP3DRP: ${DEST}$(dir)/FBP3DRP$(O_SUFFIX) \
    $(STIR_LIB) \
    $(filter %recon_buildblock_registries$(O_SUFFIX) %IO_registries$(O_SUFFIX),$(STIR_REGISTRIES))
 	$(LINK) $(EXE_OUTFLAG)$@ $< \
