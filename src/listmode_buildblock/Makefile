@@ -12,6 +12,8 @@ LIB_SOURCES = \
 	CListModeData.cxx \
 	CListModeDataFromStream.cxx \
 	CListModeDataECAT.cxx \
+	LmToProjData.cxx \
+	LmToProjDataWithMC.cxx \
 	TimeFrameDefinitions.cxx
 
 SOURCES = \
@@ -26,7 +28,6 @@ EXES = $(SOURCES:%.cxx=${DEST}%)
 
 all: $(EXES)
 
-
 include $(WORKSPACE)/Makefile_bblibs
 
 # include dependency files (but only when not doing 'make clean')
@@ -39,13 +40,17 @@ endif
 endif
 
 
-${DEST}lm_to_projdata : ${DEST}lm_to_projdata.o ${LIB_OBJS} $(BB_LIBS) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(LIB_OBJS) \
-	$(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS)
+#${DEST}lm_to_projdata : ${DEST}lm_to_projdata.o ${LIB_OBJS} $(BB_LIBS) 
+#	$(CXX) $(CFLAGS)  -o $@ $< $(LIB_OBJS) \
+#	$(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS)
 
-${DEST}lm_fansums : ${DEST}lm_fansums.o ${LIB_OBJS} $(BB_LIBS) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(LIB_OBJS) \
-	$(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS)
+#${DEST}lm_fansums : ${DEST}lm_fansums.o ${LIB_OBJS} $(BB_LIBS) 
+#	$(CXX) $(CFLAGS)  -o $@ $< $(LIB_OBJS) \
+#	$(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS)
+
+$(LOCAL_LIB_LISTMODE): $(LIB_OBJS)
+	ar r $@ $?
+	ranlib $@
 
 
 clean :
