@@ -468,7 +468,8 @@ process_data()
 		     if (do_time_frame && new_time >= end_time)
 		       break; // get out of while loop
 		     current_time = new_time;
-		     process_new_time_event(record.time());
+		     if (current_time>=start_time)
+		       process_new_time_event(record.time());
 		   }
 		 else if (record.is_event() && start_time <= current_time)
 		   {
