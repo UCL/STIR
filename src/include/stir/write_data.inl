@@ -17,11 +17,29 @@
 #include "stir/convert_array.h"
 #include "stir/NumericType.h"
 #include "stir/NumericInfo.h"
+#include "stir/ByteOrder.h"
 #include "stir/Succeeded.h"
 #include "stir/detail/test_if_1d.h"
+#include "stir/write_data_1d.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR
+
+/* This file is made a bit more complicated because of various 
+   work-arounds for older compilers.
+
+  __STIR_WORKAROUND_TEMPLATES==1
+  The first is probably specific for VC 6.0 where we need to define
+  parameters for byte_order etc. in these definitions.
+  In contrast, for the normal case, the defaults are in the .h file,
+  and cannot be repeated here.
+  I do this with some more preprocessor macros. Sigh.
+
+  __STIR_WORKAROUND_TEMPLATES==2
+  The 2nd work-around no longer templates in num_dimensions. 
+  For the least amount of pain, we also make the inlines here serve as 
+  declarations, so use the first work-around for this.
+*/
 
 #ifndef __STIR_WORKAROUND_TEMPLATES
 /* the normal case */
@@ -32,28 +50,28 @@ START_NAMESPACE_STIR
 
 #else
 
-/* horrible work-around for VC 6.0 (and other deficient compilers)
-
-   For some reason, VC 6.0 cannot figure out the template arguments
-   with the normal code. As a work-around, we disable the 
-   num_dimensions template, and replace it by #defines.
-
-   A complication are the default parameters for byte_order etc.
-   For the least amount of pain, these inlines serve as declarations
-   as well. So, we have to provide the defaults for the parameters here.
-   In contrast, for the normal case, the defaults are in the .h file,
-   and should not be repeated here.
-   I do this with some more preprocessor macros. Sigh.
-*/
-
-#  ifndef num_dimensions
-#    error num_dimensions should be defined
-#  endif
-
 #  define ___BYTEORDER_DEFAULT 	=ByteOrder::native
 #  define ___CAN_CORRUPT_DATA_DEFAULT =false
-#  define INT_NUM_DIMENSIONS
 
+#  if   __STIR_WORKAROUND_TEMPLATES==1
+
+#    define INT_NUM_DIMENSIONS int num_dimensions,
+   /* This case is for VC 6.0.
+      Note that the order of the template arguments is important for VC 6.0.
+      The "int num_dimensions" template argument has to be first in the
+      template list, otherwise it chokes on it.
+     */
+#  else
+/* horrible work-around for very deficient compilers
+   We disable the num_dimensions template, and replace it by #defines.
+*/
+
+#    ifndef num_dimensions
+#      error num_dimensions should be defined
+#    endif
+
+#    define INT_NUM_DIMENSIONS
+#  endif
 #endif
 
 namespace detail
@@ -61,9 +79,9 @@ namespace detail
   /* Generic implementation of write_data_with_fixed_scale_factor(). 
      See test_if_1d.h for info why we do this this way.
   */  
-#if !defined(__STIR_WORKAROUND_TEMPLATES) || num_dimensions!=1
+#if !defined(__STIR_WORKAROUND_TEMPLATES) || __STIR_WORKAROUND_TEMPLATES<2 || num_dimensions!=1
 
-  template <class OStreamT, INT_NUM_DIMENSIONS
+  template < INT_NUM_DIMENSIONS class OStreamT,
 	    class elemT, class OutputType, class ScaleT>
   inline Succeeded 
   write_data_with_fixed_scale_factor_help(
@@ -88,7 +106,7 @@ namespace detail
   }
 #endif
 
-#if !defined(__STIR_WORKAROUND_TEMPLATES) || num_dimensions==1
+#if !defined(__STIR_WORKAROUND_TEMPLATES) || __STIR_WORKAROUND_TEMPLATES<2 || num_dimensions==1
   // specialisation for 1D case
   template <class OStreamT, class elemT, class OutputType, class ScaleT>
   inline Succeeded 
@@ -121,7 +139,7 @@ namespace detail
 
 } // end of namespace detail
 
-template <class OStreamT, INT_NUM_DIMENSIONS
+template < INT_NUM_DIMENSIONS class OStreamT,
 	  class elemT, class OutputType, class ScaleT>
 Succeeded 
 write_data_with_fixed_scale_factor(OStreamT& s, const Array<num_dimensions,elemT>& data, 
@@ -140,7 +158,7 @@ write_data_with_fixed_scale_factor(OStreamT& s, const Array<num_dimensions,elemT
 					    can_corrupt_data);
 }
 
-template <class OStreamT, INT_NUM_DIMENSIONS
+template < INT_NUM_DIMENSIONS class OStreamT,
 	  class elemT, class OutputType, class ScaleT>
 Succeeded 
 write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
@@ -158,9 +176,9 @@ write_data(OStreamT& s, const Array<num_dimensions,elemT>& data,
 				       can_corrupt_data);
 }
 
-template <class OStreamT, INT_NUM_DIMENSIONS
+template < INT_NUM_DIMENSIONS class OStreamT,
 	  class elemT>
-Succeeded 
+inline Succeeded 
 write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
 	   const ByteOrder byte_order ___BYTEORDER_DEFAULT,
 	   const bool can_corrupt_data ___CAN_CORRUPT_DATA_DEFAULT)
@@ -171,7 +189,7 @@ write_data(OStreamT& s, const Array<num_dimensions,elemT>& data,
 				       can_corrupt_data);
 }
 
-template <class OStreamT, INT_NUM_DIMENSIONS
+template < INT_NUM_DIMENSIONS class OStreamT,
 	  class elemT, class ScaleT>
 Succeeded 
 write_data(OStreamT& s, 
@@ -213,10 +231,9 @@ write_data(OStreamT& s,
 
 }
 
-#ifdef __STIR_WORKAROUND_TEMPLATES
-#  undef ___BYTEORDER_DEFAULT
-#  undef ___CAN_CORRUPT_DATA_DEFAULT
-#endif
+#undef ___BYTEORDER_DEFAULT
+#undef ___CAN_CORRUPT_DATA_DEFAULT
+#undef INT_NUM_DIMENSIONS
 
 END_NAMESPACE_STIR
 
