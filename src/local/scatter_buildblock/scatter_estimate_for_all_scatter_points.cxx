@@ -81,7 +81,8 @@ float scatter_estimate_for_all_scatter_points(
 			for(std::size_t scatter_point_2_num =0;
 			scatter_point_2_num < scatt_points_vector.size() ;
 			++scatter_point_2_num)			
-				if(scatter_point_2_num!=scatter_point_num)
+			{
+					if(scatter_point_2_num!=scatter_point_num)
 					double_scatter_ratio +=
 					scatter_estimate_for_two_scatter_points(
 					image_as_activity, image_as_density, 
@@ -91,9 +92,14 @@ float scatter_estimate_for_all_scatter_points(
 					lower_energy_threshold, 
 					upper_energy_threshold,		
 					use_cache);
+			}
 	}	
-	return 0.75*rAB_squared*scatter_volume/total_cross_section_511keV/detection_efficiency_no_scatter*
-		(single_scatter_ratio+double_scatter_ratio*scatter_volume/total_cross_section_511keV)
+		//0.75 is due to the volume of the pyramid approximation!
+	return 0.75*rAB_squared*scatter_volume/total_cross_section_511keV
+		/detection_efficiency_no_scatter*
+		(single_scatter_ratio+double_scatter_ratio
+		//*scatter_volume
+		/total_cross_section_511keV)/2/3.1459
 		/(cos_incident_angle_A*cos_incident_angle_A*cos_incident_angle_B*cos_incident_angle_B);
 }
 
