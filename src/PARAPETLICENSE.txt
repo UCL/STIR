@@ -1,0 +1,42 @@
+Parapet Project Software Distribution Agreement 
+
+This agreement regulates the distribution of the software developed in
+the Parapet project. Under this agreement and by downloading the
+Parapet Software, the recipient of the software agrees to the
+following principles and conditions:
+
+1. The software is copyright the Parapet Consortium comprising the
+   partners of the Parapet Esprit Long Term Research Project Number
+   23493 (Parapet Project).
+
+2. The software may be used for any purpose provided the partners in
+   the Parapet Project are individually acknowledged in that use.
+
+3. The software and accompanying documentation are supplied without
+   warranty, without maintenance and without acceptance by any of the
+   partners in the Parapet Project of any liability for any outcomes
+   of their use. The Parapet software is provided as is and with no
+   guarantees as to its performance or its appropriateness for any
+   specific situation. The partners of the Parapet Project are not
+   responsible for any data loss, equipment damage, property loss, or
+   injury to subjects or patients resulting from the use or misuse the
+   Parapet software. Diagnoses drawn from using the Parapet software
+   are at the users full responsibility. Special care should be taken
+   in a setting where misinterpretations could injure a patient or
+   subject. The Parapet Partners make no warranty that the Parapet
+   software is free of programming or conceptual errors. Provision of
+   the Parapet software does not imply or ensure any additional
+   support especially after changes in operating software releases for
+   the platforms used. There is also no guarantee that the user will
+   be notified of any programming errors that are discovered or that
+   the user will be provided with future updated versions of this
+   tool. The partners of the Parapet Project disclaim all liability
+   for direct or indirect damage resulting from the use of the Parapet
+   software.
+
+4. Licensing of third party software embedded in the software is the
+   responsibility of the recipient organisation who agrees to obtain
+   appropriate licences.
+
+
+
