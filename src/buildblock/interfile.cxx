@@ -9,14 +9,18 @@
   First version: Kris Thielemans
    */
 
+// KT 19/10/98 use new class
+#include "InterfileHeader.h"
+
 #include "interfile.h"
 #include "utilities.h"
 
 // KT 14/10/98 make arg istream
 PETImageOfVolume read_interfile_image(istream& input)
 {
-  KeyParser kp(input);
-  if(kp.StartParsing())
+  // KT 19/10/98 use new class
+  InterfileImageHeader kp(input);
+  if (!kp.parse())
     {
       PETerror("\nError parsing interfile header, \n\
                I am going to ask you lots of questions...\n");
@@ -51,6 +55,7 @@ PETImageOfVolume read_interfile_image(istream& input)
      image(Tensor3D<float>(kp.matrix_size[2][0], kp.matrix_size[1][0], kp.matrix_size[0][0]),
 		      origin,
 		      voxel_size);
+    // TODO set file offset
     Real scale = Real(1);
     image.read_data(*(kp.in_stream), kp.type_of_numbers, scale, kp.file_byte_order);
     assert(scale == 1);    
