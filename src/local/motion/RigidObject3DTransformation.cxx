@@ -64,11 +64,15 @@ matrix_multiply( Array<2,float>&matrix, Array<1,float>& vec)
   
 
 
-RigidObject3DTransformation::RigidObject3DTransformation ()
+RigidObject3DTransformation::
+RigidObject3DTransformation ()
+: quat(Quaternion<float>(1,0,0,0)), 
+  translation(CartesianCoordinate3D<float>(0,0,0))
 {}
 
 
-RigidObject3DTransformation::RigidObject3DTransformation (const Quaternion<float>& quat_v, const CartesianCoordinate3D<float>& translation_v)
+RigidObject3DTransformation::
+RigidObject3DTransformation (const Quaternion<float>& quat_v, const CartesianCoordinate3D<float>& translation_v)
 : quat(quat_v), translation(translation_v)
 {
   // test if quaternion normalised
