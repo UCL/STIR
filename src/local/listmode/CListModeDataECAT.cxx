@@ -61,6 +61,10 @@ Succeeded
 CListModeDataECAT::
 open_lm_file(unsigned int new_lm_file) const
 {
+  // current_lm_file and new_lm_file are 1-based
+  assert(current_lm_file>0);
+  assert(new_lm_file>0);
+
   if (is_null_ptr(current_lm_data_ptr) || new_lm_file != current_lm_file)
     {
       // first store saved_get_positions
@@ -69,7 +73,7 @@ open_lm_file(unsigned int new_lm_file) const
 	  if (current_lm_file>=saved_get_positions_for_each_lm_data.size())
 	    saved_get_positions_for_each_lm_data.resize(current_lm_file);
 
-	  saved_get_positions_for_each_lm_data[current_lm_file] =
+	  saved_get_positions_for_each_lm_data[current_lm_file-1] =
 	    current_lm_data_ptr->get_saved_get_positions();
 	}
 
@@ -96,7 +100,7 @@ open_lm_file(unsigned int new_lm_file) const
       if (!is_null_ptr(current_lm_data_ptr) && 
 	  current_lm_file<saved_get_positions_for_each_lm_data.size())
 	current_lm_data_ptr->
-	  set_saved_get_positions(saved_get_positions_for_each_lm_data[current_lm_file]);
+	  set_saved_get_positions(saved_get_positions_for_each_lm_data[current_lm_file-1]);
 
       return Succeeded::yes;
     }
