@@ -7,7 +7,7 @@
 */
 /*!
   \file
-  \ingroup utilities
+  \ingroup motion_utilities
   \brief A utility to perform a rigid object transformation on projection data.
 
   Basic program for moving projection data given 1 rigid object transformation,
