@@ -1,19 +1,20 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
   \file
-  \ingroup local_buildblock
+  \ingroup motion
 
   \brief Declaration of class Polaris_MT_File
 
-  \author  Sanida Mustafovic and Kris Thielemans
-  $Date: 
-  $Revision: 
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  $Date$
+  $Revision$ 
 */
 
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -55,7 +56,7 @@ public:
   struct Record
   {
    float sample_time;
-   int rand_num;
+   unsigned int rand_num;
    char total_num;
    Quaternion<float> quat;
    CartesianCoordinate3D<float> trans;
@@ -68,15 +69,11 @@ public:
 
    void read_mt_file (const string& filename);
    
-   Succeeded get_next(Record&);
-   Succeeded is_end_file();
    
    Record operator[](unsigned int) const;
    const_iterator begin() const { return vector_of_records.begin();}
    const_iterator end() const { return vector_of_records.end();}
-#if 0
-   std::ifstream get_stream();
-#endif
+   unsigned long num_samples() const { return vector_of_records.size(); }
 
    Succeeded reset();
   
@@ -84,6 +81,8 @@ private:
   ifstream mt_stream;
   std::vector<Record> vector_of_records;
 
+   Succeeded get_next(Record&);
+   Succeeded is_end_file();
 };
 
 END_NAMESPACE_STIR
