@@ -60,6 +60,35 @@ do_it(Array<num_dim,elemT>& array) const
     }
 }
 
+#if 0
+// TODO insert
+template <int num_dimensions, typename elemT>
+void 
+SeparableArrayFunctionObject<num_dimensions, elemT>::
+do_it(Array<num_dimensions,elemT>& out_array, const Array<num_dimensions,elemT>& in_array) const
+{
+   
+  //if (!is_trivial())
+  {
+#ifndef NDEBUG
+    // currently apply_array_functions_on_each_index doesn't handle 0 
+    // pointers gracefully, so we check here that there aren't any
+    for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator
+	    iter=all_1d_array_filters.begin();
+	  iter!=all_1d_array_filters.end();
+	    ++iter)
+      assert(iter->use_count()>0);
+#endif
+    apply_array_functions_on_each_index(out_array, in_array,
+					all_1d_array_filters.begin(), 
+					all_1d_array_filters.end());
+  }
+  //else somehow copy in_array into out_array but keeping index ranges
+   //TODO
+
+}
+#endif
+
 template <int num_dim, typename elemT>
 bool 
 SeparableArrayFunctionObject<num_dim, elemT>::
