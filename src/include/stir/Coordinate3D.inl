@@ -37,9 +37,9 @@ Coordinate3D<coordT>::Coordinate3D(const coordT& c1,
 				   const coordT& c3)
   : base_type()
 {
-  this->coords[1] = c1;
-  this->coords[2] = c2;
-  this->coords[3] = c3;
+  (*this)[1] = c1;
+  (*this)[2] = c2;
+  (*this)[3] = c3;
 }
 
 template <class coordT>
