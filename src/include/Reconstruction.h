@@ -1,4 +1,4 @@
-// $Id$
+// @(#)Reconstruction.h	1.11 98/10/19
 
 #ifndef __RECONSTRUCTION_H__
 #define __RECONSTRUCTION_H__
@@ -10,10 +10,7 @@
 #include "imagedata.h"
 #include "Filter.h"
 
-//   reconstruction methods are also defined as classes.
-//   use as follows:
-//
-//  	PETPROMISReconstruction recon(/* appropriate parameters*/);
+
 //	PETSinogramOfVolume s(/* appropriate parameters*/);
 //	PETImageVolume v(/* appropriate parameters*/);
 //		
@@ -98,56 +95,6 @@ inline PETIterativeReconstruction::PETIterativeReconstruction
 (int max) :max_iterations(max)
 {    
 }
-
-class PETPROMISReconstruction : public PETAnalyticReconstruction
-{
-private:
-    int PadS; /* Transaxial extension for FFT */
-    int PadZ;/* Axial extension for FFT */
-    int disp; /* Switch on or off displaying */
-    int save; /* Switch on or off saving */
-    bool process_by_view; /* Run on" by segment" or "by view" process
-                             int already_2Drecon; /* Trick for not redoing 2DFBP if is already done */
-    int num_average_views;  /* Mashing option */
-    float Xoff, Yoff, zoom; /* Zooming options */
-    float alpha; /* ALpha parameter for Hamming filter */
-    float fc; /* Cut-off frequency for Colsher filter */
-
-        //  const Filter1D<float> &filter; /* Ramp filter */
-    
-public:
-        //CL 051098 Default for PETPROMISREconstruction
- 
-    PETPROMISReconstruction (Filter1D<float> &f,
-                             int min=1,
-                             int max=1,
-                             int PadS_v = 0,
-                             int PadZ_v = 1,
-                             bool process_by_view_v = true,
-                             int disp_v = 0,
-                             int save_v = 0,
-                             int already_2Drecon_v = 0,
-                             int num_average_views_v=0,
-                             float Xoff_v = 0.F,
-                             float Yoff_v = 0.F,
-                             float zoom_v = 1.F,
-                             float alpha_v = 0.5F,
-                             float fc_v = 0.5F);
-  
-    
-    virtual  string parameter_info();
-  
-    string parameter_info_analytic(){
-        return PETAnalyticReconstruction::parameter_info();
-    }
- 
- 
-        // KT 02/06/98 changed from method() to method_info()
-    string method_info()
-        { return("PROMIS"); }
-  
-    void reconstruct(const PETSinogramOfVolume &s, PETImageOfVolume &v);
-};
 
 
 
