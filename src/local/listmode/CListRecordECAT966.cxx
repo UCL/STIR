@@ -47,12 +47,12 @@ START_NAMESPACE_STIR
 
 // static members
 
-const shared_ptr<Scanner> 
+shared_ptr<Scanner> 
 CListRecordECAT966::
 scanner_sptr =
-  new Scanner(Scanner::ECAT966);
+  new Scanner(Scanner::E966);
 
-const shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<ProjDataInfoCylindricalNoArcCorr>
 CListRecordECAT966::
 uncompressed_proj_data_info_sptr =
    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
@@ -273,7 +273,7 @@ get_uncompressed_bin(Bin& bin) const
 {
   int ring_a;
   int ring_b;
-  get_sinogram_and_ring_coordinates(bin.view_num(), bin.tangential_pos_num(), ring_a, ring_b);
+  event_data.get_sinogram_and_ring_coordinates(bin.view_num(), bin.tangential_pos_num(), ring_a, ring_b);
   uncompressed_proj_data_info_sptr->
     get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), 
 					    ring_a, ring_b);
