@@ -112,6 +112,8 @@ void OutputFileFormatTests::run_tests()
   cerr << "Now writing to file and reading it back." << endl; 
   // construct density and write to file
   {
+    USING_NAMESPACE_ECAT
+    USING_NAMESPACE_ECAT6
     // TODO get next info from OutputFileFormat class instead of hard-wiring
     // this in here
     const bool supports_different_xy_pixel_sizes =
