@@ -486,6 +486,23 @@ void KeyParser::set_shared_parsing_object()
     (*current->parser)(input, par_ascii);	    
 }
 
+// local function to be used in set_variable below
+template <typename T1, typename T2>
+void static
+assign_to_list(T1& list, const T2& value, const int current_index, 
+	       const string& keyword)
+{
+  if(list.size() < static_cast<unsigned>(current_index))
+    {
+      // this is based on a suggestion by Dylan Togane [dtogane@camhpet.on.ca]
+      warning("KeyParser: the list corresponding to the keyword \"%s\" has to be resized "
+	      "to size %d. This might mean you have a problem in the keyword values.\n",
+	      keyword.c_str(), current_index);
+      list.resize(current_index);
+    }
+  list[current_index-1] = value;
+}
+
 void KeyParser::set_variable()
 {
   // TODO this does not handle the vectored key convention
@@ -575,53 +592,46 @@ void KeyParser::set_variable()
 	{
 	case KeyArgument::INT :
 	  {
-	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
-	    p_vnumber->operator[](current_index-1)=par_int;
+	    assign_to_list(*(IntVect*)current->p_object_variable, par_int, current_index, keyword);
 	    break;
 	  }
 	case KeyArgument::ULONG :
 	  {
-	    UlongVect* p_vnumber=(UlongVect*)current->p_object_variable;	// performs the required casting
-	    p_vnumber->operator[](current_index-1)=par_ulong;
+	    assign_to_list(*(UlongVect*)current->p_object_variable, par_ulong, current_index, keyword);
 	    break;
 	  }
 	  
 	case KeyArgument::DOUBLE :
 	  {
-	    DoubleVect* p_vnumber=(DoubleVect*)current->p_object_variable;	// performs the required casting
-	    p_vnumber->operator[](current_index-1)=par_double;
+	    assign_to_list(*(DoubleVect*)current->p_object_variable, par_double, current_index, keyword);
 	    break;
 	  }
 	case KeyArgument::ASCII :
 	  {
-	    vector<string>* p_vstring=(vector<string>*)current->p_object_variable;	// performs the required casting
-	    p_vstring->operator[](current_index-1)=par_ascii;
+	    assign_to_list(*(vector<string>*)current->p_object_variable, par_ascii, current_index, keyword);
 	    break;
 	  }
 	  
 	case KeyArgument::ASCIIlist :
 	  {
-	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
-	    p_vnumber->operator[](current_index-1) =
-	      find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    assign_to_list(*(IntVect*)current->p_object_variable, 
+			   find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values)), 
+			   current_index, keyword);
 	    break;
 	  }
 	case KeyArgument::LIST_OF_INTS :
 	  {
-	    vector<IntVect>* p_matrixint=(vector<IntVect>*)current->p_object_variable;
-	    p_matrixint->operator[](current_index-1)=par_intlist;
+	    assign_to_list(*(vector<IntVect>*)current->p_object_variable, par_intlist, current_index, keyword);
 	    break;
 	  }
 	case KeyArgument::LIST_OF_DOUBLES :
 	  {
-	    vector<DoubleVect>* p_matrixdouble=(vector<DoubleVect>*)current->p_object_variable;
-	    p_matrixdouble->operator[](current_index-1)=par_doublelist;
+	    assign_to_list(*(vector<DoubleVect>*)current->p_object_variable, par_doublelist, current_index, keyword);
 	    break;
 	  }
-	  /*	case LIST_OF_ASCII :
+	/*	case LIST_OF_ASCII :
 		{
-		vector<string>* p_vectstring=(vector<string>*)current->p_object_variable;
-		*p_vectstring=par_asciilist;
+		assign_to_list(*(vector<string>*)current->p_object_variable, par_asciilist, current_index, keyword);
 		break;
 		}*/
 	default :
