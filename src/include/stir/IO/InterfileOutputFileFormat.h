@@ -44,10 +44,10 @@ public :
   InterfileOutputFileFormat(const NumericType& = NumericType::SHORT, 
                    const ByteOrder& = ByteOrder::native);
 
-  template <int num_dimensions, typename elemT>
+
   Succeeded  
     write_to_file(const string& filename, 
-                  const DiscretisedDensity< num_dimensions,elemT>& density);
+                  const DiscretisedDensity<3,float>& density);
 
 private:
   void initialise_keymap();
