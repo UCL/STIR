@@ -19,6 +19,14 @@
 
  */
 
+
+/*! \namespace stir::ecat7
+  \brief Namespace for the ECAT7 IO part of the STIR library (and some/most of its applications)
+  */
+
+/*! \namespace stir::ecat6
+  \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
+  */
 /*!
 \defgroup buildblock Basic building blocks
 Library with things that are not not specific to reconstructions.
@@ -30,14 +38,9 @@ projection data,...
 Library with classes and functions to read and write images and projection 
 from/to file.
 */
-
-/*! \namespace stir::ecat7
-  \brief Namespace for the ECAT7 IO part of the STIR library (and some/most of its applications)
-  */
-
-/*! \namespace stir::ecat6
-  \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
-  */
+/*!
+\defgroup ECAT Everything related to the ECAT6 and ECAT7 file format.
+*/
 /*!
 \defgroup recon_buildblock Reconstruction building blocks
 Library with 'general' reconstruction building blocks
