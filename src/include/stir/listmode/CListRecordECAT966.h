@@ -19,7 +19,7 @@
 #ifndef __stir_listmode_CListRecordECAT966_H__
 #define __stir_listmode_CListRecordECAT966_H__
 
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecordUsingUnion.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Succeeded.h"
@@ -67,7 +67,6 @@ class CListEventDataECAT966
 			const int ring_a, const int ring_b);
 
  private:
-  const static int num_views;
   
   /* ring encoding. use as follows:
        #define CRYSTALRINGSPERDETECTOR 8
@@ -84,7 +83,7 @@ class CListEventDataECAT966
          if ( bin > NumProjBinsBy2 ) bin -= NumProjBins ;
 	 */
 
-#ifdef STIRByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
   unsigned    type    : 1; /* 0-coincidence event, 1-time tick */
   unsigned    block_B_ring : 3;
   unsigned    block_A_ring : 3;
@@ -127,7 +126,7 @@ class CListTimeDataECAT966
   { gating = g & 0xf; return gating==g ? Succeeded::yes : Succeeded::no;}
 private:
   friend class CListRecordECAT966; // to give access to type field
-#ifdef STIRByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
   unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
   unsigned    gating : 4;  /* some info about the gating signals */
   unsigned    time : 27 ;  /* since scan start */
@@ -141,7 +140,7 @@ private:
 
 //! A class for a general element of a listmode file
 /*! For the 966 it's either a coincidence event, or a timing flag.*/
-  class CListRecordECAT966 : public CListRecord, public CListTime, public CListEvent
+  class CListRecordECAT966 : public CListRecordUsingUnion
 {
 private:
   static shared_ptr<Scanner> 
@@ -202,11 +201,11 @@ public:
 
   void get_uncompressed_bin(Bin& bin) const;
 
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr>
-    get_uncompressed_proj_data_info_sptr() const
+  static shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+    get_uncompressed_proj_data_info_sptr()
     { return uncompressed_proj_data_info_sptr; }
 
-  // private:
+private:
   union {
     CListEventDataECAT966  event_data;
     CListTimeDataECAT966   time_data; 
