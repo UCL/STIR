@@ -56,11 +56,6 @@
    (source files should still include <algorithm> though). Actually, this is now
    done in boost/config.hpp.
 
- <LI> general definitions of operator !=, >, <= and >= in terms of == and < (if not provided)
- 
- <LI> a feable attempt to be able to use the old strstream and 
-   the new stringstream classes in the same way
-
  <LI> a trick to get ANSI C++ 'for' scoping rules work, even for compilers
    which do not follow the new standard
 
@@ -247,7 +242,8 @@ inline const T& max(const T& a, const T& b)
 
 
 //*************** !=, >, <= and >= 
-
+#if 0
+// KT 30/08/2001 disabled these according to discussion in gcc 3.0 library
 #if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
 // general definitions of operator !=, >, <= and >= in terms of == and <
 // (copied from SGI stl_relops.h)
@@ -272,7 +268,7 @@ inline bool operator>=(const T& x, const T& y) {
 }
 
 #endif // !=,>,<=,>=
-
+#endif // 0
 //*************** overload std::copy for built-in types
 
 #include <algorithm>
@@ -342,25 +338,6 @@ copy(const bool * first, const bool * last, bool * to)
 
 END_NAMESPACE_STD
 
-
-//*************** strstream stuff
-
-// some trickery to make strstreams work most of the time. 
-// gcc 2.95.2 has still only the old strstream libraries.
-// TODO These macros should really work the other way around: old in terms of new
-#if defined(_MSC_VER) || defined(__MSL__)
-#  include <sstream>
-#  define strstream stringstream
-#  define istrstream istringstream
-#  define ostrstream ostringstream
-
-using std::stringstream;
-using std::istringstream;
-using std::ostringstream;
-
-#else
-#  include <strstream>
-#endif
 
 //*************** for() scope trick
 
