@@ -13,7 +13,11 @@ LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/IO \
 	$(WORKSPACE)/recon_buildblock \
 	$(WORKSPACE)/display \
-	$(WORKSPACE)/iterative/LogLik_buildblock 
+	$(WORKSPACE)/iterative/LogLik_buildblock \
+	$(WORKSPACE)/Shape_buildblock \
+	$(WORKSPACE)/eval_buildblock \
+	$(WORKSPACE)/listmode_buildblock
+
 
 EXESUBDIRECTORIES= \
         $(WORKSPACE)/iterative/sensitivity \
