@@ -38,7 +38,12 @@ int main(int argc, char **argv)
   if(reconstruction_object.get_parameters().initial_image_filename=="1")
   {
     target_image_ptr =
-      new VoxelsOnCartesianGrid<float> (*reconstruction_object.get_parameters().proj_data_ptr->get_proj_data_info_ptr());
+      new VoxelsOnCartesianGrid<float> (*reconstruction_object.get_parameters().proj_data_ptr->get_proj_data_info_ptr(),
+					reconstruction_object.get_parameters().zoom,
+					CartesianCoordinate3D<float>(reconstruction_object.get_parameters().Zoffset,
+								     reconstruction_object.get_parameters().Yoffset,
+								     reconstruction_object.get_parameters().Xoffset),
+					reconstruction_object.get_parameters().output_image_size);
     target_image_ptr->fill(1.0);
   }
   else
