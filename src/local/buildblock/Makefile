@@ -11,13 +11,7 @@ all: $(DEST)libbuildblock.a $(DEST)local_buildblock_registries.o
 
 clean:
 	$(RM) $(DEST)*
-# now removed from SOURCES
-	#SeparableLowPassArrayFilter.cxx \
-	#SeparableLowPassImageFilter.cxx \
-	#ModifiedInverseAverigingArrayFilter.cxx \
-	#ModifiedInverseAverigingImageFilter.cxx \
-	#SeparableGaussianImageFilter.cxx \
-	#SeparableGaussianArrayFilter.cxx \
+
 SOURCES = \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
@@ -25,9 +19,16 @@ SOURCES = \
 	SSRB.cxx \
 	ArrayFilter3DUsingConvolution.cxx \
 	ArrayFilter2DUsingConvolution.cxx \
-	ModifiedInverseAverigingImageFilterAll.cxx \
+	ModifiedInverseAveragingImageFilterAll.cxx \
 	fwd_and_bck_manipulation_for_SAF.cxx \
-	ML_norm.cxx
+	ML_norm.cxx \
+	SeparableLowPassArrayFilter.cxx \
+	SeparableLowPassImageFilter.cxx \
+	ModifiedInverseAverigingArrayFilter.cxx \
+	ModifiedInverseAverigingImageFilter.cxx \
+	SeparableGaussianImageFilter.cxx \
+	SeparableGaussianArrayFilter.cxx 
+
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
