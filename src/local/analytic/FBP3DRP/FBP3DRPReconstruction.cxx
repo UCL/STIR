@@ -88,7 +88,7 @@
 
 #include "local/stir/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"
-#include "stir/interfile.h" 
+#include "stir/IO/interfile.h" 
 #include "stir/recon_buildblock/distributable.h"
 //#include "local/stir/FBP3DRP/process_viewgrams.h"
 
@@ -96,7 +96,7 @@
 #include "local/stir/FBP2D/FBP2DReconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 
-#include "local/stir/SSRB.h"
+#include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
