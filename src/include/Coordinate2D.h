@@ -1,20 +1,30 @@
-#ifndef __Coordinate2D_H__
-#define __Coordinate2D_H__
 //
 // $Id$: $Date$
 //
-/*
-   This file declares class Coordinate2D<coordT>: 
-   a templated class for 2-dimensional coordinates.
-   It is derived from BasicCoordinate<2, coordT>. 
+#ifndef __Coordinate2D_H__
+#define __Coordinate2D_H__
+/*!
+  \file 
+ 
+  \brief defines the Coordinate2D<coordT> class 
+
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
+
+/*!
+   \brief a templated class for 2-dimensional coordinates.
+
    The only new method is a constructor Coordinate2D<coordT>(c1,c2)
 
-   Warning : 
-   - Indices run from 1 to 2 
+   \warning Indices run from 1 to 2. 
 
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
 */
 
 #include "BasicCoordinate.h"

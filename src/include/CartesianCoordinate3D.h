@@ -3,22 +3,31 @@
 //
 // $Id$: $Date$
 //
+/*!
+  \file 
+ 
+  \brief defines the CartesianCoordinate3D<coordT> class 
 
-/*
-   This file declares class CartesianCoordinate3D<coordT>: 
-   a templated class for 3-dimensional coordinates.
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
+
+/*!
+   \brief a templated class for 3-dimensional coordinates.
+
    It is derived from Coordinate3D<coordT>. The only new methods are
    z(),y(),x(), corresponding resp. to 
    operator[](1), operator[](2), operator[](3)
 
-   Warning : 
-   - Indices run from 1 to 3, 
-   - constructor uses the order CartesianCoordinate3D<coordT>(z,y,x)
-
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+   \warning The constructor uses the order CartesianCoordinate3D<coordT>(z,y,x)
 */
+
 
 #include "Coordinate3D.h"
 

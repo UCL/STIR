@@ -1,26 +1,36 @@
-#ifndef __Coordinate4D_H__
-#define __Coordinate4D_H__
 //
 // $Id$: $Date$
 //
-/*
-   This file declares class Coordinate4D<coordT>: 
-   a templated class for 4-dimensional coordinates.
-   It is derived from BasicCoordinate<4, coordT>. 
-   The only new method is a constructor Coordinate4D<coordT>(c1,c2,c3,c4)
+#ifndef __Coordinate4D_H__
+#define __Coordinate4D_H__
+/*!
+  \file 
+ 
+  \brief defines the Coordinate4D<coordT> class 
 
-   Warning : 
-   - Indices run from 1 to 4 
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
 
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+  \date    $Date$
+
+  \version $Revision$
+
 */
+
+
 
 #include "BasicCoordinate.h"
 
 START_NAMESPACE_TOMO
+/*!
+   \brief a templated class for 4-dimensional coordinates.
 
+   The only new method is a constructor Coordinate4D<coordT>(c1,c2,c3,c4)
+
+   \warning Indices run from 1 to 4. 
+
+*/
 template <typename coordT>
 class Coordinate4D : public BasicCoordinate<4, coordT>
 {
