@@ -523,6 +523,9 @@ fourier<>(VectorWithOffset<std::complex<float> >& c, const int sign);
  fourier_for_real_data<>(const Array<d,type>& v, const int sign); \
  template  \
  Array<d,type> \
+  inverse_fourier_for_real_data_corrupting_input<>(Array<d,std::complex<type> >& c, const int sign); \
+ template  \
+ Array<d,type> \
   inverse_fourier_for_real_data<>(const Array<d,std::complex<type> >& c, const int sign); \
  template \
  Array<d, std::complex<type> > \
