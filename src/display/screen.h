@@ -1,4 +1,6 @@
 /*
+   $Id$: $Date$
+
    This is part of a library by Kris Thielemans, mainly written in 1991.
    It provides macros (and a few functions) for displaying stuff on a screen.
    It works in XWindows, DOS (upto SVGA resolution, or using a PGA) and 
@@ -103,13 +105,8 @@ extern SC_pixel_t *read_buffer(char *dev,int size);
                         *outptr++=(SC_pixel_t)(((short)w)/256)
 #define OUTDW(w1,w2)    OUTW(w1); OUTW(w2)
 #define OUTS(str)       strncpy(outptr,str,strlen(str));    outptr += strlen(str)
-/* Change 13/02/98 */
-#ifndef MSDOS16BIT
+/* KT 12/01/2000 forget about fmemcpy (old compilers) */
 #define OUTM(buf,nr)    memcpy(outptr,buf,nr); outptr += nr
-#else
-#define OUTM(buf,nr)    fmemcpy((out_t far *)outptr,(void far *)(buf),nr);\
-                        outptr += nr
-#endif
 
 
 #define SC_START() SC_INIT(HEX)
