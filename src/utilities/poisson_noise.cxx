@@ -5,7 +5,8 @@
 /*!
   \file
   \ingroup utilities 
-  \brief Adding of Poisson noise to projection data
+  \brief Generates a noise realisation according to Poisson statistics for  
+  some projection data
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -13,35 +14,58 @@
   $Date$
   $Revision$
 
+  Usage:
+  \code
+  poisson_noise [-p | --preserve-mean] \
+        output_filename input_projdata_filename \
+        scaling_factor seed-unsigned-int
+  \endcode
+  The scaling_Factor is used to multiply the input data before generating
+  the Poisson random number. This means that a scaling_factor larger than 1
+  will result in less noisy data.<br>
+  The seed value for the random number generator has to be strictly positive.<br>
+  Without the -p option, the mean of the output data will
+  be equal to\nscaling_factor*mean_of_input, otherwise it
+  will be equal to mean_of_input.<br>
+  The options -p and --preserve-mean are identical.
 */
 /*
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
-#include "stir/interfile.h"
-#include "stir/ProjDataFromStream.h"
-#include "stir/SegmentByView.h"
 
-#include <iostream> 
-#include <fstream>
+#include "stir/ProjDataInterfile.h"
+#include "stir/SegmentByView.h"
+#include "stir/Succeeded.h"
+
+/* Originally there were 2 versions of this code. One using the 
+   rand() function available in the C library, and another one
+   using boost/random.hpp. However, it is never recommended to 
+   use rand() for any serious work, as it might be very unreliable on
+   some systems. So, we now use the 2nd version all the time.
+   In fact, the version using rand() was never adapted to use
+   a Gaussian distributino for high mean values, so won't even compile
+   at present.
+   If you really can't use boost/random.hpp, you could define RAND
+   and do extra coding. Not recommended...
+*/
+#ifdef RAND
+#undef RAND
+#endif
+
 #ifndef RAND
 #include <boost/random.hpp>
 #endif
 #include "stir/round.h"
 
 #ifndef STIR_NO_NAMESPACES
-using std::iostream;
-using std::ofstream;
-using std::ifstream;
-using std::fstream;
-using std::ios;
 using std::cerr;
 using std::endl;
 using std::cout;
 #endif
 
 
-USING_NAMESPACE_STIR
+START_NAMESPACE_STIR
 
 
 #ifndef RAND
@@ -56,6 +80,8 @@ USING_NAMESPACE_STIR
 inline double random01() { return static_cast<double>(rand()) / RAND_MAX; }
 #endif
 
+// Generate a random number according to a Poisson distribution
+// with mean mu
 int generate_poisson_random(const float mu)
 {  
   // check if mu is large. If so, use the normal distribution
@@ -64,7 +90,11 @@ int generate_poisson_random(const float mu)
   {
     boost::normal_distribution<base_generator_type> randomnormal(generator, mu, sqrt(mu));
     const double random = randomnormal();
-    return random<0 ? 0 : stir::round(random);// needs namespace as there's a global round on gcc on Linux
+    return random<0 ? 0 : 
+      //#ifndef STIR_NO_NAMESPACES
+      //stir::  // needs namespace as there's a global round on gcc on Linux
+      //#endif
+      round(random);
   }
   else
   {
@@ -94,7 +124,7 @@ int generate_poisson_random(const float mu)
 
 
 void 
-add_poisson(ProjData& output_projdata, 
+poisson_noise(ProjData& output_projdata, 
 	    const ProjData& input_projdata, 
 	    const float scaling_factor,
 	    const bool preserve_mean)
@@ -137,16 +167,19 @@ add_poisson(ProjData& output_projdata,
 
 
 
+END_NAMESPACE_STIR
 
+USING_NAMESPACE_STIR
 
 
 void usage()
 {
-    cerr <<"Usage: add_poisson [-p | --preserve-mean] <output_filename (no extension)> <input_file_name> scaling_factor seed-unsigned-int\n"
+    cerr <<"Usage: poisson_noise [-p | --preserve-mean] <output_filename (no extension)> <input_projdata_filename> scaling_factor seed-unsigned-int\n"
          <<"The seed value for the random number generator has to be strictly positive.\n"
          << "Without the -p option, the mean of the output data will"
-	 << " be equal to scaling_factor*mean_of_input\n."
-	 << "The options -o and --preserve-mean are identical.\n";
+	 << " be equal to\nscaling_factor*mean_of_input, otherwise it"
+	 << "will be equal to mean_of_input.\n"
+	 << "The options -p and --preserve-mean are identical.\n";
 }
 
 int
@@ -186,26 +219,17 @@ main (int argc,char *argv[])
   generator.seed(seed);
 #else
   unsigned int seed = atoi(argv[4]);
-  // check seed!=0 as Darren Hogg observed strange statistics on Linux
+  // check seed!=0 as Darren Hogg observed strange statistics on Linux with a zero seed
   if (seed==0)
    error("Seed value has to be non-zero.\n");
   srand(seed);
 #endif
 
 
-  string filename_san =filename;
-  filename_san += ".s";
+  ProjDataInterfile new_data(in_data->get_proj_data_info_ptr()->clone(), filename);
+
   
-  iostream * sino_stream = new fstream (filename_san.c_str(), ios::out| ios::binary);
-  if (!sino_stream->good())
-  {
-    error("add_poisson: error opening file %s\n",filename_san.c_str());
-  }
-  
-  ProjDataFromStream new_data(in_data->get_proj_data_info_ptr()->clone(),sino_stream); 
-  write_basic_interfile_PDFS_header(filename_san, new_data);
-  
-  add_poisson(new_data,*in_data, scaling_factor, preserve_mean);
+  poisson_noise(new_data,*in_data, scaling_factor, preserve_mean);
   
   return EXIT_SUCCESS;
 }
