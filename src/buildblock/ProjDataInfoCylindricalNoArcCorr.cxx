@@ -289,8 +289,8 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
   assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
 
-  det1 = stir::round(((2.*_PI)+atan2(-coord_det1.x(),coord_det1.y()))/(2.*_PI/num_detectors))% num_detectors;
-  det2 = stir::round(((2.*_PI)+atan2(-coord_det2.x(),coord_det2.y()))/(2.*_PI/num_detectors))% num_detectors;
+  det1 = stir::round(((2.*_PI)+atan2(coord_det1.x(),-coord_det1.y()))/(2.*_PI/num_detectors))% num_detectors;
+  det2 = stir::round(((2.*_PI)+atan2(coord_det2.x(),-coord_det2.y()))/(2.*_PI/num_detectors))% num_detectors;
   ring1 = round(coord_det1.z()/ring_spacing);
   ring2 = round(coord_det2.z()/ring_spacing);
 
@@ -361,12 +361,12 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   float z2 = Ring_B*get_scanner_ptr()->get_ring_spacing();
   // make sure the return values are in STIR coordinates
   coord_1.z() = z1;
-  coord_1.y() = x1;
-  coord_1.x() = -y1;
+  coord_1.y() = -x1;
+  coord_1.x() = y1;
 
   coord_2.z() = z2;
-  coord_2.y() = x2;
-  coord_2.x() = -y2; 
+  coord_2.y() = -x2;
+  coord_2.x() = y2; 
 }
 
 
