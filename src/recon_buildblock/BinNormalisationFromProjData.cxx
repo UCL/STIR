@@ -105,6 +105,13 @@ undo(RelatedViewgrams<float>& viewgrams) const
 
   }
 
-  
+float 
+BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin) const
+{
+  //TODO
+  return 1;
+
+}
+ 
 END_NAMESPACE_STIR
 
