@@ -42,22 +42,47 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   Currently, the LOIs are divided by voxel_size.x(), unless NEWSCALE is
   #defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx. 
 
+  It is possible to use multiple LORs in tangential direction. The result
+  will then be the average of the various contributions. Currently all these
+  LORs are parallel. For a very high number of LORs, the result approximates
+  a strip integral (in tangential direction).
+
   If the z voxel size is exactly twice the sampling in axial direction,
-  multiple LORs are used, to avoid missing voxels. (TODOdoc describe how).
+  2 or 3 LORs are used, to avoid missing voxels. (TODOdoc describe how).
+
+  If use_actual_detector_boundaries is set (currently only possible
+  for non-arccorrected data, without mashing and/or axial compression), 
+  the detectors are assumed to be on a cylinder. If only a single LOR 
+  in tangential direction is used for ray tracing, 
+  the centre of those detectors is used, which is slightly different from
+  the 'usual' LOR (due to interleaving of the sinogram). When multiple
+  LORs are used, the actual detector sizes are used, such that the resulting
+  strip is twice as wide.
 
   It is possible to use a cylindrical or cuboid FOV (in the latter case it
   is going to be square in transaxial direction). In both cases, the FOV is 
   slightly 'inside' the image (i.e. it is about 1 voxel at each side
   smaller than the maximum possible).
 
+  For the azimuthal angle phi, the following angles are symmetry related for a square grid:
+      {phi, 180-phi, 90-phi, 90+phi}.
+      The boolean parameters allow to select if all 4 angles should be considered as related 
+      (\a do_symmetry_90degrees_min_phi=1), or only {phi, 180-phi} 
+      (\a do_symmetry_90degrees_min_phi=0, \a do_symmetry_180degrees_min_phi = 1), or none.
+      The symmetry in phi is automatically reduced for non-square grids or when the number of
+      views is not a multiple of 4.
+  
   \par Parsing parameters
 
   The following parameters can be set (default values are indicated):
   \verbatim
   Ray Tracing Matrix Parameters :=
   ; any parameters appropriate for class ProjMatrixByBin
-  restrict to cylindrical FOV := true
+  restrict to cylindrical FOV := 1
   number of rays in tangential direction to trace for each bin := 1
+  use actual detector boundaries := 0
+  do symmetry 90degrees min phi := 1
+  do symmetry 180degrees min phi := 1
   End Ray Tracing Matrix Parameters :=
   \endverbatim
                   
@@ -101,6 +126,10 @@ private:
   bool restrict_to_cylindrical_FOV;
   //! variable that determines how many rays will be traced in tangential direction for one bin
   int num_tangential_LORs;
+  //! variable that determines if interleaved sinogram coordinates are used or not.
+  bool use_actual_detector_boundaries;
+  bool do_symmetry_90degrees_min_phi;
+  bool do_symmetry_180degrees_min_phi;
 
   // explicitly list necessary members for image details (should use an Info object instead)
   CartesianCoordinate3D<float> voxel_size;
