@@ -190,6 +190,7 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       shared_ptr<ProjData> proj_data_to_FBP_ptr = 
         new ProjDataInMemory (SSRB(proj_data_info_cyl, 
 				   num_segments_to_combine,
+				   1, 0,
 				   (num_segments_to_combine-1)/2 ));
       SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
       proj_data_ptr = proj_data_to_FBP_ptr;
