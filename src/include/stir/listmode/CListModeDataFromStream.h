@@ -38,7 +38,8 @@ using std::vector;
 START_NAMESPACE_STIR
 
 //! A class that reads the listmode data from a (presumably binary) stream 
-/*! This class is really a helper class for implementing different types
+/*! \ingroup listmode
+    This class is really a helper class for implementing different types
     of CListModeData types. It is useful when all types of records (e.g.
     timing and detected-event) have the same size. In that case, all IO
     handling is completely generic and is implemented in this class.
