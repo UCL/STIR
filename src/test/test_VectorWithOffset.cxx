@@ -391,6 +391,38 @@ VectorWithOffsetTests::run_tests()
 		     "check resize with shrink at left and grow at right (capacity_min_index)");
       check_if_equal(test.get_capacity_max_index(), ref.get_max_index()+4, 
 		     "check resize with shrink at left and grow at right (capacity_max_index)");
+      // check resize with resize non-overlapping to right
+      test.recycle();
+      check_if_equal(test.capacity(), size_t(0), "test recycle");
+      test = ref;
+      // not: test new size is smaller than original size, so no reallocation should occur
+      test.resize(test.get_max_index()+20,test.get_max_index()+20+ref.size()-3);
+      check_if_equal(test.size(), size_t(ref.size()-2), 
+		     "check resize with resize non-overlapping to right (size)");
+      check_if_equal(test.get_min_index(), ref.get_max_index()+20, 
+		     "check resize with resize non-overlapping to right (get_min_index)");
+      check_if_equal(test.capacity(), ref.size(), 
+		     "check resize with resize non-overlapping to right (capacity)");
+      check_if_equal(test.get_capacity_min_index(), test.get_min_index(), 
+		     "check resize with resize non-overlapping to right (capacity_min_index)");
+      check_if_equal(test.get_capacity_max_index(), test.get_min_index()+static_cast<int>(test.capacity())-1, 
+		     "check resize with resize non-overlapping to right (capacity_max_index)");
+      // check resize with resize non-overlapping to left
+      test.recycle();
+      check_if_equal(test.capacity(), size_t(0), "test recycle");
+      test = ref;
+      // not: test new size is larger than original size, so reallocation should occur
+      test.resize(test.get_min_index()-300,test.get_min_index()-300+ref.size()+4);
+      check_if_equal(test.size(), size_t(ref.size()+5), 
+		     "check resize with resize non-overlapping to left (size)");
+      check_if_equal(test.get_min_index(), ref.get_min_index()-300, 
+		     "check resize with resize non-overlapping to left (get_min_index)");
+      check_if_equal(test.capacity(), test.size(), 
+		     "check resize with resize non-overlapping to left (capacity)");
+      check_if_equal(test.get_capacity_min_index(), test.get_min_index(), 
+		     "check resize with resize non-overlapping to left (capacity_min_index)");
+      check_if_equal(test.get_capacity_max_index(), test.get_max_index(), 
+		     "check resize with resize non-overlapping to left (capacity_max_index)");
     }
   }  
 
