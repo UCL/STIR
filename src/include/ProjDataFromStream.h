@@ -124,6 +124,10 @@ public:
   Succeeded set_segment(const SegmentBySinogram<float>&);
   //! Set all viewgrams for the given segment
   Succeeded set_segment(const SegmentByView<float>&);
+
+  //! Get scale factor
+  float get_scale_factor() const;  
+
     
 private:
   //! the file with the data
