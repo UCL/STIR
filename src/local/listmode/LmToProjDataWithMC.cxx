@@ -62,12 +62,12 @@ post_processing()
     warning("Invalid Rigid Object 3D Motion object\n");
     return true;
   }
-
-  // TODO move to RigidObject3DMotion
-  if (!ro3d_ptr->is_time_offset_set())
+#if 0
+  // TODO move to RigidObject3DMotion, bu tit does not necessarily have the list mode data
+  if (!ro3d_ptr->is_synchronised())
     ro3d_ptr->synchronise(*lm_data_ptr);
+#endif
 
-  cerr << "Time offset is set to "<< ro3d_ptr->get_time_offset() << endl;
   move_from_scanner = ro3d_ptr->get_transformation_from_scanner_coords();
   /* 966 transformation:
     RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
@@ -94,7 +94,7 @@ LmToProjDataWithMC::
 process_new_time_event(const CListTime& time_event)
 {
   assert(fabs(current_time - time_event.get_time_in_secs())<.0001);     
-  ro3d_ptr->get_motion(ro3dtrans,current_time);
+  ro3d_ptr->get_motion_rel_time(ro3dtrans,current_time);
 
          ro3dtrans = compose(move_to_scanner,
 			     compose(ro3d_ptr->get_transformation_to_reference_position(),
