@@ -3,7 +3,7 @@
 //
 // This file is for doxygen only. It does not contain any code.
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -40,14 +40,10 @@
  Although doxygen is a wonderful tool, it does have a few problems. For
  example:
  <ul>
- <li>the #include statements do not always contain the correct path of the 
-     files
- <li>Class hierarchies based on RegisteredObject et al are unfortunately not
-   always listed correctly. However, with the current hierarchies, this 
-   problem shows up in only a few places.  For example, the class
-   hierarchies of most of the ImageProcessor classes are incomplete on their
-   own documentation page. However, they are fine in the main
-   'class hierarchy' page.
+ <li>the #include statements does not contain the correct path of the 
+     files. 
+ <li>In previous versions of doxygen, class hierarchies based on RegisteredObject 
+   et al were unfortunately not always listed correctly. This now seems to be fixed.
  </ul>
 
 */
