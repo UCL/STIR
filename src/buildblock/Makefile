@@ -43,14 +43,15 @@ $(DEST)%.o : %.cxx
 # KT 22/10/98 added InterfileHeader.o
 # KT 04/11/98 added Tensors.o
 # KT 06/11/98 added imagedata.o
-# KT 22/02/98 added PETDataSymmetries.o PETSinogramOfVolume.o RelatedViewgrams.o
+# KT 22/02/99 added PETDataSymmetries.o PETSinogramOfVolume.o RelatedViewgrams.o
+# KT 17/03/99 changed Related... to PETRelated...
 $(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
   $(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
   $(DEST)Tensor1D.o $(DEST)Tensors.o \
   $(DEST)viewdata.o $(DEST)imagedata.o \
   $(DEST)PETDataSymmetries.o \
   $(DEST)PETSinogramOfVolume.o \
-  $(DEST)RelatedViewgrams.o \
+  $(DEST)PETRelatedViewgrams.o \
   $(DEST)utilities.o $(DEST)NumericInfo.o \
   ${DEST}KeyParser.o ${DEST}line.o \
   ${DEST}interfile.o ${DEST}InterfileHeader.o \
