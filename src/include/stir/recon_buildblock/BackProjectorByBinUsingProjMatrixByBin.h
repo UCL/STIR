@@ -86,6 +86,7 @@ protected:
 private:
   virtual void set_defaults();
   virtual void initialise_keymap();
+  virtual bool post_processing();
 
 };
 
