@@ -23,7 +23,7 @@ include $(WORKSPACE)/Makefile_bblibs
 
 ${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o \
 	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK} $(BB_REGISTRIES)
-	$(CXX) $(CFLAGS)-o $@ $< \
+	$(CXX) $(CFLAGS) -o $@ $< \
 	  ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o \
 	  $(BB_REGISTRIES) \
 	  ${LIB_LOGLIK_BUILDINGBLOCK} \
