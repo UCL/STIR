@@ -32,6 +32,10 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	rigid_object_transform_image.cxx \
 	find_maximum_in_image.cxx \
 	remove_corrupted_sinograms.cxx \
+	fwd_image_and_fill_missing_data.cxx \
+	get_frame_info_from_fdef.cxx \
+	add_planes_to_image.cxx \
+	find_sinogram_rescaling_factors.cxx \
 	move_image.cxx \
   find_fwhm_in_image.cxx
 
@@ -42,8 +46,6 @@ ifeq ($(HAVE_LLN_MATRIX),1)
   # ecat7 stuff as well
   SOURCES += change_mhead_file_type.cxx copy_ecat7_header.cxx
 endif
-	
-	
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
