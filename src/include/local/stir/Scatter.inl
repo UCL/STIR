@@ -105,21 +105,16 @@ float detection_efficiency( const float low, const float high,
 						    const float energy, 
 							const float reference_energy, const float resolution)
 {
-	// factor 2.35 is used to convert FWHM to sigma
+	// factor 2.35482 is used to convert FWHM to sigma
 	const float sigma_times_sqrt2= 
-		sqrt(2.*energy*reference_energy)*resolution/2.35;
+		sqrt(2.*energy*reference_energy)*resolution/2.35482;
 	
 	const float efficiency =
 		0.5*( erf((high-energy)/sigma_times_sqrt2) 
 		      - erf((low-energy)/sigma_times_sqrt2 ));	
-        const float efficiency_threshold = .01F;
-        /* Maximum efficiency is 1. If the efficiency is too small, 
-           we will ignore the event anyway to save some time.*/
-	return efficiency < efficiency_threshold ? 0 : efficiency;
+                /* Maximum efficiency is 1.*/
+	return efficiency;
 }
-/*!	\ingroup scatter
-   \brief detection efficiency for BGO  for a given energy window
-   */
 inline 
 float detection_efficiency_BGO( const float low, const float high, 
 						        const float energy)
@@ -127,5 +122,31 @@ float detection_efficiency_BGO( const float low, const float high,
 	return
 		detection_efficiency(low, high, energy, 511, .25); //SET resolution to 0.22
 }
+inline
+float max_cos_angle(const float low, const float approx, const float resolution)
+{
+	return
+	2 - (8176*log(2))/(square(approx*resolution)*(511 + (16*low*log(2))/square(approx*resolution) - 
+	sqrt(511)*sqrt(511 + (32*low*log(2))/square(approx*resolution)))) ;
+}
+inline
+float max_cos_angle_BGO(const float low, const float approx)
+{
+	return
+		max_cos_angle(low,approx,.25);
+}
+inline 
+float energy_lower_limit(const float low, const float approx, const float resolution)
+{
+  return
+  low + (approx*resolution)*(approx*resolution)*(46.0761 - 2.03829*sqrt(22.1807*low/((approx*resolution)*(approx*resolution))+511.));
+}
+inline
+float energy_lower_limit_BGO(const float low, const float approx)
+{
+	return
+		energy_lower_limit(low, approx, .25);
+}
+
 END_NAMESPACE_STIR
 

@@ -62,6 +62,7 @@ sample_scatter_points(
 		int & scatt_points,
         const float att_threshold, 
 		const bool random);
+
 /*!	
    \ingroup scatter
    \brief detection efficiency for a given energy window   
@@ -77,8 +78,16 @@ sample_scatter_points(
    determined by requiring that FWHM(reference_energy)=resolution*reference_energy.
    This formula is the same as the one used by SIMSET for Simple_PET detector.
 */
+//@{
 inline 
-float calc_efficiency( float low, float high, float energy, float resolution );
+float detection_efficiency( const float low, const float high, 
+						    const float energy, 
+							const float reference_energy, const float resolution);
+inline 
+float detection_efficiency_BGO( const float low, const float high, 
+						        const float energy);
+//@}
+
 /*!						  
   \ingroup scatter
   \brief Implementations of functions defined in Scatter.h
@@ -184,8 +193,24 @@ inline
 float total_cross_section_relative_to_511keV(const float energy);
 //@}
 
-/*!
-  \ingroup scatter
+/*!	\ingroup scatter
+   \brief lower accepting limit of the energy and corresponding scattering angle to speed up the process. 
+   
+	 These functions return the limit of the Detected Energy or its scattering angle 
+	 in order to spped up the simulation. It is set at approx*sigma lower than the lower energy threshold 
+	 (low). This means that we keep the 95.45% of the distribution integral.
+   */
+//@{
+inline
+float max_cos_angle(const float low, const float approx, const float resolution);
+inline
+float max_cos_angle_BGO(const float low, const float approx);
+inline 
+float energy_lower_limit(const float low, const float approx, const float resolution);
+inline
+float energy_lower_limit_BGO(const float low, const float approx);
+//@}
+/*!  \ingroup scatter
   \brief uses the given proj_data writes the scatter viewgram 
 */
 void scatter_viewgram( 
@@ -200,7 +225,7 @@ void scatter_viewgram(
 /* !\ingroup scatter
      \brief Temporary implementation of the error function for Visual C++
 */
-extern "C"  double erf(const double x);
+extern "C" double erf(const double x);
 #endif
 
 /* !\ingroup scatter
