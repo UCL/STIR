@@ -21,6 +21,10 @@
 using namespace std;
 
 START_NAMESPACE_STIR
+
+static const float total_cross_section_511keV = 
+  total_cross_section(511.); 
+
 float scatter_estimate_for_all_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -32,6 +36,10 @@ float scatter_estimate_for_all_scatter_points(
 	  const bool use_cache)	
 {	
 	float scatter_ratio = 0; 
+		
+	const VoxelsOnCartesianGrid<float>& image =
+		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
+	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 	
 	for(std::size_t scatter_point_num =0;
 		scatter_point_num < scatt_points_vector.size();
@@ -47,7 +55,8 @@ float scatter_estimate_for_all_scatter_points(
 			  use_cosphi, use_cache);
 	  }
     
-	return scatter_ratio;
+	return voxel_size[1]*voxel_size[2]*voxel_size[3]*
+						scatter_ratio/total_cross_section_511keV;
 }
 
 
