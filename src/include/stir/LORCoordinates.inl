@@ -212,7 +212,7 @@ LORInAxialAndSinogramCoordinates(const LORInCylinderCoordinates<coordT>& cyl_coo
 #endif
   get_sino_coords(z1(), z2(), _phi, beta,
 		  cyl_coords);
-  _s = _radius*sin(beta);
+  _s = this->_radius*sin(beta);
 }
 
 template <class coordT>
