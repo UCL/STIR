@@ -43,7 +43,7 @@ else
 endif
 
 
-ifneq ($(SYSTEM),CYGWIN)
+ifeq ("$(IS_MS_VC)","")
 run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math$(EXE_SUFFIX) PHONY_TARGET
 	$< $(DEST)/utilities/stir_math$(EXE_SUFFIX) 
 else
