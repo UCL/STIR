@@ -81,7 +81,7 @@ initialise_keymap()
 }
 
 
-
+template <>
 const char * const 
 ThresholdMinToSmallPositiveValueImageProcessor<float>::registered_name =
   "Threshold Min To Small Positive Value";

@@ -24,7 +24,7 @@
 
 START_NAMESPACE_STIR
 
-
+template<>
 const char * const 
 SeparableConvolutionImageFilter<float>::registered_name =
   "Separable Convolution";

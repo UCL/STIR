@@ -116,7 +116,7 @@ initialise_keymap()
 }
 
 
-
+template <>
 const char * const 
 ChainedImageProcessor<3,float>::registered_name =
   "Chained Image Processor";
