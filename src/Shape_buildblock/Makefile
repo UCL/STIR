@@ -1,8 +1,8 @@
 #
-# $Id:
+# $Id$
 #
 
-WORKSPACE=$(CURDIR)/../..
+WORKSPACE=$(CURDIR)/..
 
 include $(WORKSPACE)/Makefile_common
 
