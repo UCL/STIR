@@ -14,6 +14,8 @@
   time frame_definition filename := frame_definition_filename
   output filename prefix := output_filename_prefix
   ;move_to_reference := 1
+  ; next can be set to do only 1 frame, defaults means all frames
+  ;frame_num_to_process := -1
   Rigid Object 3D Motion Type := type
   ;Output file format := interfile
   END :=
@@ -47,7 +49,7 @@ public:
   virtual void process_data();
 
   void move_to_reference(const bool);
-
+  void set_frame_num_to_process(const int);
 protected:
 
   
@@ -62,7 +64,8 @@ protected:
   string frame_definition_filename;
  
   bool do_move_to_reference;
-     
+
+  int frame_num_to_process;     
 private:
   shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr; 
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
@@ -77,6 +80,7 @@ void
 MoveImage::set_defaults()
 {
   ro3d_ptr = 0;
+  frame_num_to_process = -1;
   output_file_format_sptr = new DefaultOutputFileFormat;
   do_move_to_reference = true;
 }
@@ -91,6 +95,7 @@ MoveImage::initialise_keymap()
   parser.add_key("time frame definition filename",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_key("move_to_reference", &do_move_to_reference);
+  parser.add_key("frame_num_to_process", &frame_num_to_process);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_parsing_key("Output file format",&output_file_format_sptr);
   parser.add_stop_key("END");
@@ -141,6 +146,14 @@ post_processing()
     return true;
   }
 
+  if (frame_num_to_process!=-1 &&
+      (frame_num_to_process<1 || 
+       static_cast<unsigned>(frame_num_to_process)>frame_defs.get_num_frames()))
+    {
+      warning("Frame number should be between 1 and %d\n",
+	      frame_defs.get_num_frames());
+      return true;
+    }
 
   // TODO move to RigidObject3DMotion
   if (!ro3d_ptr->is_time_offset_set())
@@ -166,6 +179,13 @@ move_to_reference(const bool value)
   do_move_to_reference=value;
 }
 
+void
+MoveImage::
+set_frame_num_to_process(const int value)
+{
+  frame_num_to_process=value;
+}
+
 void 
 MoveImage::
 process_data()
@@ -173,8 +193,13 @@ process_data()
   shared_ptr< DiscretisedDensity<3,float> > out_density_sptr =
     in_density_sptr->get_empty_discretised_density();
 
-  for (unsigned int current_frame_num = 1;
-       current_frame_num<=frame_defs.get_num_frames();
+  const unsigned int min_frame_num =
+    frame_num_to_process==-1 ? 1 : frame_num_to_process;
+  const unsigned int max_frame_num =
+    frame_num_to_process==-1 ? frame_defs.get_num_frames() : frame_num_to_process;
+
+  for (unsigned int current_frame_num = min_frame_num;
+       current_frame_num<=max_frame_num;
        ++current_frame_num)
     {
       const double start_time = frame_defs.get_start_time(current_frame_num);
@@ -229,20 +254,41 @@ int main(int argc, char * argv[])
 {
   bool move_to_reference=true;
   bool set_move_to_reference=false;
-  if (argc>2 && strcmp(argv[1],"--move-to-reference")==0)
+  bool set_frame_num_to_process=false;
+  int frame_num_to_process=-1;
+  while (argc>=2 && argv[1][1]=='-')
     {
-      set_move_to_reference=true;
-      move_to_reference=atoi(argv[2]);
-      argc+=2; argv-=2;
+      if (strcmp(argv[1],"--move-to-reference")==0)
+	{
+	  set_move_to_reference=true;
+	  move_to_reference=atoi(argv[2]);
+	  argc-=2; argv+=2;
+	}
+      else if (strcmp(argv[1], "--frame_num_to_process")==0)
+	{
+	  set_frame_num_to_process=true;
+	  frame_num_to_process=atoi(argv[2]);
+	  argc-=2; argv+=2;
+	}
+      else
+	{
+	  warning("Wrong option\n");
+	  exit(EXIT_FAILURE);
+	}
     }
+
   if (argc!=1 && argc!=2) {
-    cerr << "Usage: " << argv[0] << " [--move-to-reference 0|1] [par_file]\n";
+    cerr << "Usage: " << argv[0] << " \\\n"
+	 << "\t[--move-to-reference 0|1] \\\n"
+	 << "\t[--frame_num_to_process number]\\\n"
+	 << "\t[par_file]\n";
     exit(EXIT_FAILURE);
   }
   MoveImage application(argc==2 ? argv[1] : 0);
   if (set_move_to_reference)
     application.move_to_reference(move_to_reference);
-
+  if (set_frame_num_to_process)
+    application.set_frame_num_to_process(frame_num_to_process);
   application.process_data();
 
   return EXIT_SUCCESS;
