@@ -51,34 +51,55 @@ public:
 
   /********** static members **************/
 
-//! Ask for the details and return ProjDataInfo
-static ProjDataInfo* ask_parameters();
+  //! Ask for the details and return ProjDataInfo
+  static ProjDataInfo* 
+  ask_parameters();
 
-static ProjDataInfo*  ProjDataInfoGE(const shared_ptr<Scanner> scanner, int max_delta,int num_views, int num_tangential_poss);
+  //! Construct a ProjDataInfo suitable for GE Advance data
+  static ProjDataInfo*  
+  ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
+		 int max_delta,
+		 int num_views, int num_tangential_poss);
 
-static ProjDataInfo* ProjDataInfoCTI(const shared_ptr<Scanner> scanner,int span, int max_delta,int num_views,int num_tangential_poss);
+  //! Construct a ProjDataInfo suitable for CTI data
+  /*! \c span is used to denote the amount of axial compression (see CTI doc).
+     It has to be an odd number. 
+     */
+  static ProjDataInfo* 
+  ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+		  int span, int max_delta,
+		  int num_views,int num_tangential_poss);
   
   
   /************ constructors ***********/
-  //! Construct an empty constructor
+  // TODO should probably be protected
+
+  //! Construct an empty object
   inline  ProjDataInfo();
   
+  //! Constructor setting all relevant info for a ProjDataInfo
   inline ProjDataInfo(const shared_ptr<Scanner> scanner_ptr,
-    const VectorWithOffset<int>& num_axial_pos_per_segment, 
-    const int num_views, 
-    const int num_tangential_poss);
+		      const VectorWithOffset<int>& num_axial_pos_per_segment, 
+		      const int num_views, 
+		      const int num_tangential_poss);
 
+
+  //! Standard trick for a 'virtual copy-constructor' 
   virtual ProjDataInfo* clone() const = 0;
+
   //! Destructor
   virtual ~ProjDataInfo() {}
 
+  /**************** member functions *********/
+
   //  ProjDataInfo& operator=(const ProjDataInfo&);
+
   //! Set a new range of segment numbers
   /*! \warning the new range has to be 'smaller' than the old one. */
   void reduce_segment_range(const int min_segment_num, const int max_segment_num);
   //! Set number of views 
   inline void set_num_views(const int num_views);
-  //! Set number of tangntial positions
+  //! Set number of tangential positions
   inline void set_num_tangential_poss(const int num_tang_poss);
   //! Set number of axial positions per segment
   inline void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_pos_per_segment); 
