@@ -7,6 +7,16 @@
 # Alexey Zverovich
 # Kris Thielemans
 
+# first check on cygwin
+ifdef OSTYPE
+ifeq ($(findstring cygwin, $(OSTYPE)), cygwin)
+SYSTEM = CYGWIN
+endif
+endif
+
+# if SYSTEM wasn't set, check using uname
+ifndef SYSTEM
+ 
 __TEST_OS = $(shell uname)
 ifeq ($(__TEST_OS),Linux)
 SYSTEM = LINUX
@@ -18,10 +28,6 @@ SYSTEM = CC
 else
 SYSTEM = AIX
 endif
-else
-ifeq ($(__TEST_OS),CYGWIN_NT-4.0)
-# TODO just check CYGWIN prefix
-SYSTEM = CYGWIN
 else
 ifeq ($(__TEST_OS),SunOS)
 # test if this as the Fujitsu parallel processor
@@ -35,4 +41,5 @@ endif
 endif
 endif
 endif
-endif
+
+endif # ifndef SYSTEM
