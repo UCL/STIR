@@ -4,8 +4,7 @@
 
 /*! 
   \file
-  \ingroup utilities
-  \ingroup ECAT
+  \ingroup ECAT_utilities
   \brief Conversion from ECAT 6 cti to interfile (image and sinogram data)
   \author Kris Thielemans
   \author Damien Sauge
@@ -15,12 +14,19 @@
   $Date$
 
   Usage: 
-  <pre>convecat6_if [output_file_name_without_extension cti_data_file_name]
+  <pre>convecat6_if [output_file_name_without_extension cti_data_file_name [scanner_name]]
   </pre>
+  The optional \a scanner_name can be used to force to a particular scanner"
+  (ignoring the system_type in the main header).
+  \a scanner_name has to be recognised by the Scanner class.
+  Examples are : ECAT 953, RPT, ECAT HR+, Advance etc. If the \a scanner_name 
+  contains a space, the scanner name has to be surrounded by double quotes 
+  (&quot;) when used as a command line argument.
+  <br>
   The programme asks if all frames should be written or not. If so, all 
   sinograms/images are converted for a fixed 'data' number. For each data set,
   a suffix is added to the output_filename of the form "_f#g#b#d#" where the # 
-  are replaced by the corresponding nunmber of the frame, gate, bed, data.
+  are replaced by the corresponding number of the frame, gate, bed, data.
 
   \warning CTI ECAT files seem to have a peculiarity that frames and gates are 
   numbered from 1, while bed positions are numbered from 0. Similarly, the number
@@ -62,6 +68,7 @@ using std::max;
 
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT6
 
 int
