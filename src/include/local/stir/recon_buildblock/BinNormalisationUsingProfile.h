@@ -42,11 +42,11 @@ public:
 
   BinNormalisationUsingProfile(const string& filename);
 
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin) const { return 1;}
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
  
 private:
   mutable Array<1,float> profile;
