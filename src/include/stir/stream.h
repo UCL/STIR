@@ -18,8 +18,8 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
-#ifndef __stream_H__
-#define __stream_H__
+#ifndef __stir_stream_H__
+#define __stir_stream_H__
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
@@ -95,7 +95,7 @@ operator<<(ostream& str, const vector<elemT>& v);
   trailing '}' is not found. The size of the vector will be the number of 
   correctly read elemT elements.
   
-  For each element of the vector istream::operator>>() will be called.
+  For each element of the vector istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
@@ -111,6 +111,12 @@ operator>>(istream& str, vector<elemT>& v);
   \verbatim
   {1, 2, 3}
   \endverbatim
+  As Array<>'s are constructed from nested VectorWithOffset objects, you can input
+  say a 2d array as
+  \verbatim
+  {{1,2}, {2,4,5}, {5}}
+  \endverbatim
+  
   
   Input is stopped when either the beginning '{', an intermediate ',' or the 
   trailing '}' is not found.  The size of the vector will be the number of 
@@ -118,7 +124,7 @@ operator>>(istream& str, vector<elemT>& v);
   
   v.get_min_index() will be 0 at the end of the call.
 
-  For each element of the vector istream::operator>>() will be called.
+  For each element of the vector istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
@@ -136,10 +142,10 @@ operator>>(istream& str, VectorWithOffset<elemT>& v);
   \endverbatim
   
   Input is stopped when either the beginning '{', an intermediate ',' or the 
-  trailing '}' is not found. The size of the vector will be the number of 
-  correctly read elemT elements.
+  trailing '}' is not found. If the number of correctly read elements is not \a num_dimensions,
+  the last few will have undefined values.
   
-  For each element of the vector istream::operator>>() will be called.
+  For each element of the vector istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
@@ -153,3 +159,4 @@ END_NAMESPACE_STIR
 #include "stir/stream.inl"
 
 #endif
+
