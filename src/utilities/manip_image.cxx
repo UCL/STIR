@@ -131,7 +131,7 @@ main(int argc, char *argv[]){
 
 
   PETImageOfVolume 
-    main_buffer = ask_interfile_image("File to load in buffer? ");
+    main_buffer = ask_interfile_image("File to load in main buffer? ");
 
 
 
