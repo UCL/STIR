@@ -1,8 +1,19 @@
 //
-// $Id$: $Date$
+// $Id$ : $Date$
 //
 
-// convecat6_if - conversion from ecat 6 cti to interfile (image and sinogram data)
+/*! 
+  \file
+  \brief Conversion from ecat 6 cti to interfile (image and sinogram data)
+  \author Damien Sauge
+  \author PARAPET project
+  \version $Revision$
+  \date  $Date$
+
+  This program performs: <BR>
+  - read and write the main header parameters <BR>
+  - depending on the data type (scan-image): read and write the subheader parameters and the data
+*/
 
 #include <iostream>
 #include <fstream>
@@ -14,12 +25,40 @@
 #include "CTI/cti_types.h"
 #include "CTI/cti_utils.h"
 
-// for both image or sinogram data
+/*! 
+  \brief Copy the CTI parameters into the interfile header
+  \param scanner   Interfile scanner (scanner type, ring spacing, number of rings and views, ring radius, bin size, ...)
+  \param camera    CTI scanner (camera type)
+  \param v_mhead   CTI data header (file type, number of planes and frames, ...)
+  \param ihead     CTI image subheader (dimensions, pixel size, reconstruction scale, ...)
+  \param shead     CTI scan subheader (dimensions, pixel size, ...)
+*/
 void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr);
-// convert image data
+/*!
+  \brief Convert image data
+  \param data_file    output file
+  \param v_data_name  name of the output file
+  \param cti_data     1D array for CTI data (by planes)
+  \param if_data      1D array for interfile data (by planes)
+
+  For each planes: <BR>
+  - read 1D CTI data <BR>
+  - swab the bytes <BR>
+  - write 1D interfile data into output file
+*/
 void ecat6cti_to_PIOV(char *v_data_name, FILE *cti_fptr, Main_header v_mhead, 
                       Image_subheader v_ihead, CameraType camera);
-// convert sinogram data
+/*! 
+  \brief Convert sinogram data
+  \param data_file    output file
+  \param v_data_name  name of the output file
+  \param cti_data     1D array for CTI data (by ring difference)
+  \param if_data      1D array for interfile data (by ring difference)
+
+  For each segment: (segment order: 0,1,-1,2,-2,...,15,-15) <BR>
+  - copy CTI data into interfile data for \b positive ring difference <BR>
+  - copy CTI data into interfile data for \b negative ring difference
+*/
 void ecat6cti_to_PSOV(char *v_data_name, FILE *cti_fptr, Main_header v_mhead, 
                       Scan_subheader v_shead, CameraType camera);
 

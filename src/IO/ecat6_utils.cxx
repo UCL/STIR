@@ -3,7 +3,14 @@
 //
 
 
-// cti_utils.cxx - ECAT 6 CTI matrix file access routines.
+/*! 
+  \file
+  \brief Implementation of ECAT 6 CTI functions to access data
+  \author Larry Byars
+  \author PARAPET project
+  \version $Revision$
+  \date  $Date$
+*/
 
 #include <limits.h>
 #include <float.h>
@@ -30,14 +37,6 @@
 
 int get_scanheaders (FILE *fptr, long matnum, Main_header *mhead, 
                      Scan_subheader *shead, ScanInfoRec *scanParams)
-// read main header and subheader from scan file
-// returns EXIT_SUCCESS if no error.
-
-// fptr - pointer to scan file
-// matnum - matnum for scan       
-// mhead - where to put the main header
-// shead - where to put the subheader
-// scanParams - where to put the scan parameters
 {
     int status;
     MatDir entry;
@@ -80,12 +79,6 @@ Using value from subheader\n", mhead->data_type, shead->data_type);
 }
 
 int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
-// read scan data from file; 
-// returns EXIT_FAILURE if the data could not be read.
-
-// fptr - scan file
-// scan - buffer for the data;  caller must provide
-// scanParams - data parameters
 {
     int status;
 
@@ -118,7 +111,6 @@ int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
 }
 
 long cti_numcod (CameraType scanner, int frame, int plane, int gate, int data, int bed)
-// encode scan information into a single, incomprehensible number.
 {
 
     switch (scanner) {
@@ -139,11 +131,6 @@ long cti_numcod (CameraType scanner, int frame, int plane, int gate, int data, i
 }
 
 void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
-// unpack encoded data into a nice struct.
-// reverse of cti_numcod ().
-
-// matnum - the thingy to decode
-// matval - struct containing the decoded values from matnum
 {
     switch (scanner) {
         case camRPT: // Same for both ECAT 953 RTS1 and ECAT 953 RTS2 
@@ -165,10 +152,7 @@ void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
 }
 
 int cti_rings2plane (short nrings, short ring0, short ring1) 
-// get sinogram plane from ring pair.
 
-// ring0 - first ring in ring pair
-// ring1 - second ring in ring pair
 {
     int d = (int) (ring0 / (nrings/2)); 
 
@@ -177,12 +161,6 @@ int cti_rings2plane (short nrings, short ring0, short ring1)
 }
 
 int cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
-// read from a matrix file starting at the given block.
-// returns EXIT_SUCCESS if all went well.
-	
-// fptr - file pointer
-// blkno - first block to read
-// nblks - number of blocks to read
 {
     int n, err;
 
@@ -191,7 +169,6 @@ int cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
     err = fseek (fptr, (long) (blkno - 1) * MatBLKSIZE, 0);
     if (err) return (EXIT_FAILURE);
    
-// ERROR: file pointer changed
     n = fread (bufr, sizeof (char), nblks * MatBLKSIZE, fptr);
     if (n != nblks * MatBLKSIZE) return (EXIT_FAILURE);
 
@@ -199,12 +176,6 @@ int cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
 }
 
 int cti_wblk (FILE *fptr, int blkno, void *bufr, int nblks)
-// write blocks from buffer into file. 
-// returns EXIT_SUCCESS if successful.
-
-// fptr - pointer to file.
-// blkno - position in file of first block to write.
-// nblks - number of blocks to write.
 {
     int err;
 
@@ -221,11 +192,6 @@ int cti_wblk (FILE *fptr, int blkno, void *bufr, int nblks)
 }
 
 int cti_read_main_header (FILE *fptr, Main_header *h)
-// read header data from a file and place it into a Main_header struct.
-// returns EXIT_SUCCESS if no error.
-
-// fptr - file containing the header data
-// h - struct to fill with header info
 {
     short *b;    
     char *bb;
@@ -236,7 +202,6 @@ int cti_read_main_header (FILE *fptr, Main_header *h)
     bb = (char *) b;
 
         // read main header at block 1 into buf
-// ERROR: file pointer changed !!!
     status = cti_rblk (fptr, 1,  bb, 1);
 
     if (status != EXIT_SUCCESS) return EXIT_FAILURE;
@@ -309,12 +274,6 @@ int cti_read_main_header (FILE *fptr, Main_header *h)
 }
 
 int cti_read_scan_subheader (FILE *fptr, int blknum, Scan_subheader *h)
-// read header data from a file and place it into a Scan_subheader struct.  
-// returns EXIT_SUCCESS if no error.
-
-// fptr - file containing the header data
-// blknum - block number at which to begin reading
-// h - struct to fill
 {
     short *b;        
     int status ;
@@ -364,9 +323,6 @@ int cti_read_scan_subheader (FILE *fptr, int blknum, Scan_subheader *h)
 }
 
 int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
-// fill in various parts of the image subheader
-
-// header - header to fill in
 {
     int status;
     short *b;
@@ -439,11 +395,6 @@ int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
 }
 
 FILE *cti_create (const char *fname, const Main_header *mhead)
-// open a file and write main header to it. 
-// returns a pointer to the file, or 0 if unsuccessful.
-
-// fname - name of file to open
-// mhead - pointer to main header struct to copy into the file
 {
     FILE *fptr;
     int status;
@@ -485,12 +436,6 @@ FILE *cti_create (const char *fname, const Main_header *mhead)
 }
 
 int cti_enter (FILE *fptr, long matnum, int nblks)
-// create entry in file corresponding to matnum, and return offset of next block. Or some such.
-// Returns 0 if there was an error.
-
-// fptr - pointer to file.
-// matnum - desired matnum.
-// nblks - number of blocks
 {
     int i, dirblk, nxtblk, busy, oldsize;
     long *dirbufr;           // buffer for directory block
@@ -621,14 +566,6 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
 }
 
 int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
-/* 
-look up a "matrix number" in the file and return the MatDir entry for it.
-returns 0 if the lookup was NOT successful.
-
-fptr - file containing all the tabulated information.
-matnum - index.
-entry - where to put the result.
-*/
 {
     int blk, status;
     int nfree, nxtblk, prvblk, nused, matnbr, strtblk, endblk, matstat;
@@ -698,14 +635,6 @@ entry - where to put the result.
 }
 
 int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
-/*
-write data in blocks from buffer into file.
-
-fptr - pointer to file.
-blk - offset (in blocks) in file of first block to write.
-data - buffer to write
-ibytes - number of bytes to write.  (should be multiple of MatBLKSIZE)
-*/
 {
     unsigned int nblks;
     char *dataptr;
@@ -749,14 +678,6 @@ ibytes - number of bytes to write.  (should be multiple of MatBLKSIZE)
 }
 
 int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *header)
-/*
-write an image subheader into a matrix file.
-returns 0 if successful.
-
-fptr - pointer to file.
-blknum - offset (in blocks) in file of first block to write.
-header - header to write
-*/
 {
     int status;
     char *bbufr;
@@ -820,13 +741,6 @@ header - header to write
 }
 
 int cti_write_main_header (FILE *fptr, const Main_header *header)
-/*
-write an image main header into a matrix file.  
-returns 0 if successful.
-	
-fptr - pointer to file.
-header - header to write
-*/
 {
     char *bbufr;
     short *bufr;
@@ -910,13 +824,6 @@ header - header to write
 }
 
 int cti_write_scan_subheader (FILE *fptr, int blknum, const Scan_subheader *header)
-/* 
-write a scan subheader into a matrix file.
-
-fptr - pointer to file.
-blknum - block offset at which to begin writing
-header - header to write
-*/
 {
     int status;
     short *bufr;
@@ -982,15 +889,6 @@ header - header to write
 
 int cti_write_image (FILE *fptr, long matnum, const Image_subheader *header,
                      const short *data, int data_size)
-/*
-write an image, including headers, into a matrix file.
-
-fptr - pointer to file.
-matnum - matnum to use
-header - header to write
-data - data buffer containing image
-data_size - number of bytes in image
-*/
 {
     int nxtblk, nblocks;
     int status;
@@ -1008,15 +906,6 @@ data_size - number of bytes in image
 
 int cti_write_scan (FILE *fptr, long matnum, const Scan_subheader *header,
 		    const short *data, int data_size)
-/*
-write a scan, including headers, into a matrix file.
-
-fptr - pointer to file.
-matnum - matnum to use
-header - header to write
-data - data buffer containing image
-data_size - number of bytes in image
-*/
 {
     int nxtblk, nblocks;
     int status;
@@ -1033,14 +922,6 @@ data_size - number of bytes in image
 }
 
 void sfind_minmax (short *buf, short *min, short *max, int bufsize)
-/* 
-find minimum and maximum values in a buffer of shorts
-	
-buf - array of bufsize shorts
-min - will be set to the smallest positive short in buf
-max - will be set to the largest short contained in buf
-bufsize - number of elements in array
-*/
 {
     register short  *b, foundmax, foundmin;
 	
@@ -1055,22 +936,8 @@ bufsize - number of elements in array
     *min = foundmin;
     *max = foundmax;
 }
-/*}}}  */
 
-/*{{{  ffind_minmax*/
-/*******************************************************************************
-	ffind_minmax - 
-	
-*******************************************************************************/
 void ffind_minmax (float *buf, float *min, float *max, int count)
-/*    
-find minimum and maximum values in a buffer of floats
-	
-buf - array of count floats
-min - will be set to the smallest positive float in buf
-max - will be set to the largest float contained in buf
-count - number of elements in buf
-*/
 {
     float foundmax, foundmin, *b;
 	
@@ -1087,13 +954,6 @@ count - number of elements in buf
 }
 
 void swab (char *from, char *to, int length)
-/*
-copy array, swapping bytes as we go
-	
-from - input array
-to - output array (may be same as input array)ibytes
-length - total number of bytes to copy
-*/
 {
     register char temp;
 
@@ -1106,13 +966,6 @@ length - total number of bytes to copy
 }
 
 void swaw (short *from, short *to, int length)
-/*
-copy array, swapping 16-bit words as we go.  
-	
-from - data buffer to copy.
-to - where to copy the data.  may be same as (or overlap) from.
-length - number of 16-bit words to swap
-*/
 {
     register short temp;
 
@@ -1124,12 +977,6 @@ length - number of 16-bit words to swap
 }
 
 float get_vax_float (const unsigned short *bufr, int off)
-/*
-get indexed value from buffer, a vax float, and return it as an IEEE float.
-
-bufr - input data buffer.
-off - offset into buffer of first 16-bit half of the 32-bit value to convert.
-*/
 {
 	unsigned short t1, t2;
 	union {unsigned long t3; float t4;} test;
@@ -1144,14 +991,6 @@ off - offset into buffer of first 16-bit half of the 32-bit value to convert.
 }
 
 long get_vax_long (const unsigned short *bufr, int off)
-/* 
-get the indexed value from a buffer, a 32-bit vax long, 
-and convert it by swapping the words.
-(vax int = vax long int = 32 bits; vax short = 16 bits)
-
-bufr - input data buffer.
-off - index into buffer of first 16-bit word of the 32-bit value to convert.
-*/
 {
 #ifdef _SWAPEM_
     return ((bufr [off + 1] << 16) + bufr [off]);
@@ -1161,14 +1000,6 @@ off - index into buffer of first 16-bit word of the 32-bit value to convert.
 }
 
 void sunltovaxl (const long in, unsigned short out [2])
-/*
-convert a sun long int to a vax long int
-i.e. swap the 16-bit words of the 32-bit long. 
-(sun long = sun int = 32 bits)
-
-in - value to convert.
-out - result.
-*/
 {
 #ifdef _SWAPEM_
     out [0] = (in & 0x0000FFFF);
@@ -1180,12 +1011,6 @@ out - result.
 }
 
 void sunftovaxf (const float in, unsigned short out [2])
-/*
-convert a sun float to a vax float
-
-in - value to convert.
-out - result.
-*/
 {
     union {
         unsigned short t [2];
@@ -1210,12 +1035,6 @@ out - result.
 }
 
 void dump_main_header (FILE *fptr, const Main_header *mhead)
-/*
-dump various parts of a main subheader into file
-
-fptr - file to write into
-shead - header to view
-*/
 {
     FILE *dptr;
 	
@@ -1301,7 +1120,7 @@ void fill_string (char *str, int len)
     str[len-2]='\0';
 }
 
-Main_header main_zero_fill() // fill main header with negative or default values
+Main_header main_zero_fill() 
 {
     Main_header v_mhead;
 
@@ -1367,7 +1186,7 @@ Main_header main_zero_fill() // fill main header with negative or default values
     return(v_mhead);
 }
 
-Scan_subheader scan_zero_fill() // fill scan subheader with negative or default values
+Scan_subheader scan_zero_fill() 
 { 
     Scan_subheader v_shead;
 
@@ -1401,7 +1220,7 @@ Scan_subheader scan_zero_fill() // fill scan subheader with negative or default 
     return(v_shead);
 }
 
-Image_subheader img_zero_fill() // fill image subheader with negative or default values
+Image_subheader img_zero_fill() 
 {
     Image_subheader v_ihead;
 
