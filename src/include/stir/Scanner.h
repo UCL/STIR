@@ -70,27 +70,35 @@ class Scanner
 	 int max_num_non_arccorrected_bins,
 	 int default_num_arccorrected_bins,
 	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v);
+         float BinSize_v, float intrTilt_v,
+	 int trans_blocks_per_bucket=0, int axial_blocks_per_bucket=0,
+         int axial_crystals_per_block=0,int angular_crystals_per_block=0);
  //! construcor - max_num_non_arccorrected bins and default_num_arccorrected_bins ( a single name)
   Scanner(Type type_v,const string names,
          int num_detectors_per_ring, int NoRings_v, 
 	 int max_num_non_arccorrected_bins,
 	 int default_num_arccorrected_bins,
 	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v);
+         float BinSize_v, float intrTilt_v,
+	 int trans_blocks_per_bucket=0, int axial_blocks_per_bucket=0,
+         int axial_crystals_per_block=0,int angular_crystals_per_block=0);
 
   //! constructor with list of names and max_num_non_arccorrected bins only
   Scanner(Type type_v,const list<string>& list_of_names,
          int num_detectors_per_ring, int NoRings_v, 
 	 int max_num_non_arccorrected_bins,
 	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v);
+         float BinSize_v, float intrTilt_v,
+	 int trans_blocks_per_bucket=0, int axial_blocks_per_bucket=0,
+	 int axial_crystals_per_block=0,int angular_crystals_per_block=0);
  //! constructor - one name given and max_num_non_arccorrected bins only
   Scanner(Type type_v,const string names,
          int num_detectors_per_ring, int NoRings_v, 
 	 int max_num_non_arccorrected_bins, 
 	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v);
+         float BinSize_v, float intrTilt_v,
+	 int trans_blocks_per_bucket=0, int axial_blocks_per_bucket=0,
+         int axial_crystals_per_block=0,int angular_crystals_per_block=0);
 
   //! get scanner parameters as a string
   string parameter_info() const;
@@ -127,6 +135,14 @@ class Scanner
   inline float get_default_bin_size() const;
   //! in degrees
   inline float get_default_intrinsic_tilt() const;
+  //! get number of transaxial blocks per bucket
+  inline int get_trans_blocks_per_bucket() const;
+  //! get number of axial blocks per bucket
+  inline int get_axial_blocks_per_bucket() const;	
+  //! get number of crystals in the axial direction
+  inline int get_axial_crystals_per_block() const;	
+  //! get number of transaxial crystals 
+  inline int get_angular_crystals_per_block()const;
 
 
 private:
@@ -141,6 +157,11 @@ private:
   float bin_size;		/* arc-corrected bin size in mm (spacing of transaxial elements) */
   float intrinsic_tilt;		/* intrinsic tilt in degrees*/
 
+  int trans_blocks_per_bucket;	/* transaxial blocks per bucket */
+  int axial_blocks_per_bucket;	/* axial blocks per bucket */
+  int axial_crystals_per_block;	/* number of crystals in the axial direction */
+  int angular_crystals_per_block;/* number of transaxial crystals */
+
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v,const list<string>& list_of_names,
                   int NoRings_v, 
@@ -148,7 +169,9 @@ private:
 		  int num_detectors_per_ring,
 		  float RingRadius_v,
 		  float RingSpacing_v,
-		  float BinSize_v, float intrTilt_v);
+		  float BinSize_v, float intrTilt_v,
+		  int trans_blocks_per_bucket, int axial_blocks_per_bucket,
+		  int axial_crystals_per_block,int angular_crystals_per_block);
 
   // ! set all parameters
   void set_params(Type type_v,const list<string>& list_of_names,
@@ -158,7 +181,9 @@ private:
 		  int num_detectors_per_ring,
 		  float RingRadius_v,
 		  float RingSpacing_v,
-		  float BinSize_v, float intrTilt_v);
+		  float BinSize_v, float intrTilt_v,
+		  int trans_blocks_per_bucket, int axial_blocks_per_bucket,
+		  int axial_crystals_per_block,int angular_crystals_per_block);
 
 };
 

@@ -70,4 +70,30 @@ float
 Scanner::get_default_intrinsic_tilt() const
 {
   return intrinsic_tilt;}
+
+int 
+Scanner::get_trans_blocks_per_bucket() const
+{ 
+  return trans_blocks_per_bucket;
+}
+
+int
+Scanner::get_axial_blocks_per_bucket() const
+{
+  return axial_blocks_per_bucket;
+}
+
+int
+Scanner::get_axial_crystals_per_block() const
+{
+  return axial_crystals_per_block;
+}
+
+int
+Scanner::get_angular_crystals_per_block()const
+{
+  return angular_crystals_per_block;
+}
+
 END_NAMESPACE_STIR
+
