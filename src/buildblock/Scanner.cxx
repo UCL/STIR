@@ -77,11 +77,14 @@ Scanner::Scanner(Type scanner_type)
     set_params(ART,string_list("ECAT ART", "ART"), 24, 192,2*192 , 410,  6.75F, 2.439F,   0);
   else if (scanner_type == RPT)
     set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0);
-  // Advance option
-  // 283 bins (non-uniform sampling) 
-  // 281 bins (uniform sampling)
   else if (scanner_type == Advance)
-    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,2*336,281,469.5F, 8.5F, 1.96F, 0);
+  {
+    // Advance option
+    // 283 bins (non-uniform sampling) 
+    // 281 bins (uniform sampling)
+    // KT 24/08/2000 ordered parameters correctly
+    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,469.5F, 8.5F, 1.96F, 0);
+  }
   else if (scanner_type == HZLR)
     set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0);
   else
