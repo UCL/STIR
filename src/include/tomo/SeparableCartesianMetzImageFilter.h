@@ -61,7 +61,7 @@ public:
   //! Default constructor
   SeparableCartesianMetzImageFilter();
   
-  //! Construct metz filter given parameters 
+  // Construct metz filter given parameters 
   //SeparableCartesianMetzImageFilter(const double fwhm_x,const double fwhm_y, const double fwhm_z,const int metz_power_x,const int metz_power_y, const int metz_power_z);
   
   //Succeeded consistency_check( const DiscretisedDensity<num_dimensions,elemT>& image) const;  
@@ -93,7 +93,8 @@ private:
 
 #undef num_dimensions
 
+END_NAMESPACE_TOMO
+
 #endif
 
-END_NAMESPACE_TOMO
 
