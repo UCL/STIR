@@ -4,11 +4,11 @@
 
 #include "InterfileHeader.h"
 
-void InterfileHeader::init_keys()
+//KT 26/10/98 changed from init_keys
+InterfileHeader::InterfileHeader(istream& f)
+     : KeyParser(f)
 {
-  map_element m;
-  
-
+ 
   // KT 20/06/98 new, unfortunate syntax...
   number_format_values.push_back("bit");
   number_format_values.push_back("ascii");
@@ -39,52 +39,75 @@ void InterfileHeader::init_keys()
   file_byte_order = ByteOrder::big_endian;
   type_of_data_index = 6; // PET
   // KT 19/10/98 added new ones
-  in_stream = 0;
+  //KT 26/10/98 removed in_stream = 0;
   num_dimensions = 0;
   num_time_frames = 1;
   image_scaling_factor.resize(num_time_frames, 1);
   data_offset.resize(num_time_frames, 0);
 
 
-  // KT 09/10/98 replaced NULL arguments with the DoNothing function
+  // KT 09/10/98 replaced NULL arguments with the do_nothing function
   // as gcc cannot convert 0 to a 'pointer to member function'  
-  kmap["INTERFILE"]=			m(KeyArgument::NONE,	&KeyParser::DoNothing);
+  add_key("INTERFILE", 
+    KeyArgument::NONE,	&KeyParser::start_parsing);
   // KT 01/08/98 just set data_file_name variable now
-  kmap["name of data file"]=		m(KeyArgument::ASCII,	&KeyParser::SetVariable, &data_file_name);
-  kmap["GENERAL DATA"]=			m(KeyArgument::NONE,	&KeyParser::DoNothing);
-  kmap["GENERAL IMAGE DATA"]=		m(KeyArgument::NONE,	&KeyParser::DoNothing);
-  kmap["type of data"]=			m(KeyArgument::ASCIIlist,&KeyParser::SetVariable,
+  add_key("name of data file", 
+    KeyArgument::ASCII,	&data_file_name);
+  add_key("GENERAL DATA", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("GENERAL IMAGE DATA", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("type of data", 
+    KeyArgument::ASCIIlist,
     &type_of_data_index, 
     &type_of_data_values);
   
   // KT 08/10/98 removed space in keyword
-  kmap["imagedata byte order"]=		m(KeyArgument::ASCIIlist,&KeyParser::SetVariable,
+  add_key("imagedata byte order", 
+    KeyArgument::ASCIIlist,
     &byte_order_index, 
     &byte_order_values);
-  kmap["PET STUDY (General)"]=		m(KeyArgument::NONE,	&KeyParser::DoNothing);
-  kmap["PET data type"]=		m(KeyArgument::ASCIIlist,&KeyParser::SetVariable,
+  add_key("PET STUDY (General)", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("PET data type", 
+    KeyArgument::ASCIIlist,
     &PET_data_type_index, 
     &PET_data_type_values);
   
-  kmap["data format"]=			m(KeyArgument::ASCII,	&KeyParser::DoNothing);
+  add_key("data format", 
+    KeyArgument::ASCII,	&KeyParser::do_nothing);
   // KT 20/06/98 use ASCIIlist
-  kmap["number format"]=		m(KeyArgument::ASCIIlist,&KeyParser::SetVariable,
+  add_key("number format", 
+    KeyArgument::ASCIIlist,
     &number_format_index,
     &number_format_values);
-  kmap["number of bytes per pixel"]=	m(KeyArgument::INT,	&KeyParser::SetVariable,&bytes_per_pixel);
-  kmap["number of dimensions"]=		m(KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::ReadMatrixInfo,&num_dimensions);
-  kmap["matrix size"]=			m(KeyArgument::LIST_OF_INTS,&KeyParser::SetVariable,&matrix_size);
-  kmap["matrix axis label"]=		m(KeyArgument::ASCII,	&KeyParser::SetVariable,&matrix_labels);
-  kmap["scaling factor (mm/pixel)"]=	m(KeyArgument::DOUBLE,	&KeyParser::SetVariable,&pixel_sizes);
-  kmap["number of time frames"]=	m(KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::ReadFramesInfo,&num_time_frames);
-  kmap["PET STUDY (Emission data)"]=	m(KeyArgument::NONE,	&KeyParser::DoNothing);
-  kmap["PET STUDY (Image data)"]=	m(KeyArgument::NONE,	&KeyParser::DoNothing);
+  add_key("number of bytes per pixel", 
+    KeyArgument::INT,	&bytes_per_pixel);
+  add_key("number of dimensions", 
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_matrix_info,&num_dimensions);
+  add_key("matrix size", 
+    KeyArgument::LIST_OF_INTS,&matrix_size);
+  add_key("matrix axis label", 
+    KeyArgument::ASCII,	&matrix_labels);
+  add_key("scaling factor (mm/pixel)", 
+    KeyArgument::DOUBLE,	&pixel_sizes);
+  add_key("number of time frames", 
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_frames_info,&num_time_frames);
+  add_key("PET STUDY (Emission data)", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("PET STUDY (Image data)", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
   // TODO
-  kmap["process status"] =		m(KeyArgument::NONE,	&KeyParser::DoNothing);
-  kmap["IMAGE DATA DESCRIPTION"]=	m(KeyArgument::NONE,	&KeyParser::DoNothing);
-  kmap["image scaling factor"]=		m(KeyArgument::DOUBLE,	&KeyParser::SetVariable,&image_scaling_factor);
-  kmap["data offset in bytes"]=		m(KeyArgument::ULONG,	&KeyParser::SetVariable,&data_offset);
-  kmap["END OF INTERFILE"]=		m(KeyArgument::NONE,	&KeyParser::SetEndStatus);
+  add_key("process status", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("IMAGE DATA DESCRIPTION", 
+    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("image scaling factor", 
+    KeyArgument::DOUBLE,	&image_scaling_factor);
+  add_key("data offset in bytes", 
+    KeyArgument::ULONG,	&data_offset);
+  add_key("END OF INTERFILE", 
+    KeyArgument::NONE,	&KeyParser::stop_parsing);
   
 }
 
@@ -98,11 +121,9 @@ int InterfileHeader::post_processing()
   file_byte_order = byte_order_index==0 ? 
     ByteOrder::little_endian : ByteOrder::big_endian;
   
-  // This has to be here to be able to differentiate between
-  // binary open or text open (for ASCII type).
-  // TODO we don't support ASCII yet.
-  in_stream = new fstream;
-  open_read_binary(*in_stream, data_file_name.c_str());
+  //KT 26/10/98 removed
+  //in_stream = new fstream;
+  //open_read_binary(*in_stream, data_file_name.c_str());
   if(type_of_data_values[type_of_data_index] != "PET")
     cerr << "Interfile Warning: only 'type of data := PET' supported." << endl;
   
@@ -110,9 +131,9 @@ int InterfileHeader::post_processing()
 
 }
 
-void InterfileHeader::ReadMatrixInfo()
+void InterfileHeader::read_matrix_info()
 {
-  SetVariable();
+  set_variable();
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
   // KT 19/10/98 added default values
@@ -120,9 +141,9 @@ void InterfileHeader::ReadMatrixInfo()
   
 }
 
-void InterfileHeader::ReadFramesInfo()
+void InterfileHeader::read_frames_info()
 {
-  SetVariable();
+  set_variable();
   // KT 19/10/98 added default values
   image_scaling_factor.resize(num_time_frames, 1);
   data_offset.resize(num_time_frames, 0);
@@ -157,7 +178,111 @@ int InterfileImageHeader::post_processing()
   return 0;
 }
 /**********************************************************************/
-#if 0
+#if 1
+//KT 26/10/98
+InterfilePSOVHeader::InterfilePSOVHeader(istream& f)
+     : InterfileHeader(f)
+{
+  num_segments = -1;
+
+  //KT 26/10/98 changed INT->LIST_OF_INTS
+  add_key("segment sequence", 
+    KeyArgument::LIST_OF_INTS, 
+    (KeywordProcessor)&InterfilePSOVHeader::resize_segments_and_set, 
+    &segment_sequence);
+  //KT 26/10/98 added 'per segment'
+  add_key("minimum ring difference per segment",
+    KeyArgument::LIST_OF_INTS, 
+    (KeywordProcessor)&InterfilePSOVHeader::resize_segments_and_set, 
+    &min_ring_difference);
+  add_key("maximum ring difference per segment",
+    KeyArgument::LIST_OF_INTS, 
+    (KeywordProcessor)&InterfilePSOVHeader::resize_segments_and_set, 
+    &max_ring_difference);
+}
+
+void InterfilePSOVHeader::resize_segments_and_set()
+{
+  //KT 26/10/98 find_storage_order returns 1 if already found (or error)
+  if (num_segments < 0 && !find_storage_order())
+  {
+    segment_sequence.resize(num_segments);
+    min_ring_difference.resize(num_segments);
+    max_ring_difference.resize(num_segments);
+  }
+
+  if (num_segments >= 0)
+    set_variable();
+
+}
+
+int InterfilePSOVHeader::find_storage_order()
+{
+
+  if (num_dimensions != 4)
+  { 
+    PETerror("Interfile error: expecting 4D structure "); 
+    stop_parsing();
+    return 1; 
+  }
+  
+  if (matrix_labels[3] != "bin")
+  { 
+    PETerror("Interfile error: expecting 'matrix axis label[4] := bin'"); 
+    stop_parsing();
+    return 1; 
+  }
+  num_bins = matrix_size[3][0];
+
+  if (matrix_labels[0] == "segment")
+  {
+    num_segments = matrix_size[0][0];
+
+    if (matrix_labels[1] == "z" && matrix_labels[2] == "view")
+    {
+      storage_order = PETSinogramOfVolume::SegmentRingViewBin;
+      num_views = matrix_size[2][0];
+#ifdef _MSC_VER
+      num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+#else
+      num_rings_per_segment = matrix_size[1];
+#endif
+    }
+    else if (matrix_labels[1] == "view" && matrix_labels[2] == "z")
+    {
+      storage_order = PETSinogramOfVolume::SegmentViewRingBin;
+      num_views = matrix_size[1][0];
+#ifdef _MSC_VER
+      num_rings_per_segment.assign(matrix_size[2].begin(), matrix_size[2].end());
+#else
+      num_rings_per_segment = matrix_size[2];
+#endif
+    }
+
+  }
+  else if (matrix_labels[0] == "view" && 
+    matrix_labels[1] == "segment" && matrix_labels[2] == "z")
+  {
+    storage_order = PETSinogramOfVolume::ViewSegmentRingBin;
+    num_segments = matrix_size[1][0];
+    num_views = matrix_size[0][0];
+#ifdef _MSC_VER
+    num_rings_per_segment.assign(matrix_size[2].begin(), matrix_size[2].end());
+#else
+    num_rings_per_segment = matrix_size[2];
+#endif
+  }
+  else
+  { 
+    PETerror("Interfile error: matrix labels not in expected (or supported) format\n"); 
+    stop_parsing();
+    return 1; 
+  }
+
+  return 0;
+
+}
+
 int InterfilePSOVHeader::post_processing()
 {
 
@@ -165,29 +290,26 @@ int InterfilePSOVHeader::post_processing()
     return 1;
 
   if (PET_data_type_values[PET_data_type_index] != "Emission")
-    { PETerror("Interfile error: expecting emission data");  return 1; }
+    { PETerror("Interfile error: expecting emission data\n");  return 1; }
   
-  if (num_dimensions != 4)
-    { PETerror("Interfile error: expecting 4D structure "); return 1; }
-  
-  if (matrix_labels[3] != "bin")
-  { PETerror("Interfile error: expecting 'matrix axis label[4] := bin'"); return 1; }
-
-  if (matrix_labels[0] == "segment")
-  {
-    if (matrix_labels[1] == "z" && matrix_labels[2] == "view")
-      storage_order = PETSinogramOfVolume::SegmentRingViewBin;
-    else if (matrix_labels[1] == "view" && matrix_labels[2] == "z")
-      storage_order = PETSinogramOfVolume::SegmentViewRingBin;
-  }
-  else if (matrix_labels[0] == "view" && 
-    matrix_labels[1] == "segment" && matrix_labels[2] == "z")
-     storage_order = PETSinogramOfVolume::ViewSegmentRingBin;
-  else
-  { PETerror("Interfile error: matrix labels not in expected format"); return 1; }
-      
- 
-  // TODO
+  //KT 26/10/98
+  int i;  
+  cerr << "Segment sequence :";
+  for (i=0; i<segment_sequence.size(); i++)
+    cerr << segment_sequence[i] << "  ";
+  cerr << endl;
+  cerr << "RingDiff minimum :";
+  for (i=0; i<min_ring_difference.size(); i++)
+    cerr << min_ring_difference[i] << "  ";  cerr << endl;
+  cerr << "RingDiff maximum :";
+  for (i=0; i<max_ring_difference.size(); i++)
+    cerr << max_ring_difference[i] << "  ";  cerr << endl;
+  cerr << "Nbplanes/segment :";
+  for (i=0; i<num_rings_per_segment.size(); i++)
+    cerr << num_rings_per_segment[i] << "  ";  cerr << endl;
+  cerr << "Total number of planes :" 
+       << accumulate(num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
+       << endl;
 
   return 0;
 }
