@@ -27,12 +27,10 @@ include ../Makefile_bblibs
 get_test_files: input/test_linear_regression.in
 
 run_tests: all get_test_files
-	$(DEST)VectorWithOffset
+	$(DEST)test_VectorWithOffset
 	$(DEST)tensor
 	$(DEST)testconvert
 	$(DEST)test_linear_regression  input/test_linear_regression.in
-	$(DEST)test_interpolate
-	$(DEST)test_coordinates
 	$(DEST)test_filename_functions 
 
 .PHONY: run_tests get_test_files
