@@ -22,6 +22,8 @@
 
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/DetectionPositionPair.h"
+#include "stir/VectorWithOffset.h"
+
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -116,8 +118,8 @@ public:
 
       \arg tang_pos_num is centred around 0, where 0 corresponds
       to opposing detectors. The maximum range of tangential positions for any
-      scanner is (-(num_detectors)/2,-(num_detectors)/2+num_detectors) , but 
-      this range is never used (as the 'last' tang_pos_num would be a LOR 
+      scanner is -(num_detectors)/2<tang_pos_num<=-(num_detectors)/2+num_detectors, 
+      but this range is never used (as the 'last' tang_pos_num would be a LOR 
       between two adjacent detectors).
 
       \arg det_num1, \a det_num2 run from 0 to num_detectors-1
@@ -133,8 +135,8 @@ public:
   inline bool 
      get_view_tangential_pos_num_for_det_num_pair(int& view_num,
 						 int& tang_pos_num,
-						 const int det_num1,
-						 const int det_num2) const;
+						 const int det1_num,
+						 const int det2_num) const;
   //! This routine gets \a det_num1 and \a det_num2
   /*! 
       It sets the detectors in a particular order (i.e. it fixes the 
@@ -150,8 +152,8 @@ public:
    */
   inline void
     get_det_num_pair_for_view_tangential_pos_num(
-						 int& det_num1,
-						 int& det_num2,
+						 int& det1_num,
+						 int& det2_num,
 						 const int view_num,
 						 const int tang_pos_num) const;
 
@@ -193,8 +195,8 @@ public:
   */		       
   inline Succeeded 
     get_bin_for_det_pair(Bin&,
-			 const int det_num1, const int ring_num1,
-			 const int det_num2, const int ring_num2) const;
+			 const int det1_num, const int ring1_num,
+			 const int det2_num, const int ring2_num) const;
 
 
   //! This routine gets the detector pair corresponding to a bin.
@@ -206,15 +208,27 @@ public:
   */
   inline void
     get_det_pair_for_bin(
-			 int& det_num1, int& ring_num1,
-			 int& det_num2, int& ring_num2,
+			 int& det1_num, int& ring1_num,
+			 int& det2_num, int& ring2_num,
 			 const Bin&) const;
 
 private:
   
   float ring_radius;
   float angular_increment;
-  
+
+  // used in get_view_tangential_pos_num_for_det_num_pair()
+  struct Det1Det2 { int det1_num; int det2_num; };
+  mutable VectorWithOffset< VectorWithOffset<Det1Det2> > view_tangpos_to_det1det2;
+  mutable bool view_tangpos_to_det1det2_initialised;
+  void initialise_view_tangpos_to_det1det2() const;
+
+  // used in get_view_tangential_pos_num_for_det_num_pair()
+  // we prestore a lookup-table in terms for unmashed view/tangpos
+  struct ViewTangPosSwap { int view_num; int tang_pos_num; bool swap_detectors; };
+  mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_view_tangpos;
+  mutable bool det1det2_to_view_tangpos_initialised;
+  void initialise_det1det2_to_view_tangpos() const;
 
 };
 
