@@ -15,11 +15,13 @@
         
   \version $Revision$
 
-  \warning These classes should onlyy be used by the DataSymmetriesForBins_PET_CartesianGrid
+  \warning These classes should only be used by the 
+  DataSymmetriesForBins_PET_CartesianGrid
   and DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid classes.
 */          
 
 // TODOdoc
+
 #ifndef __SymmetryOperations_PET_CartesianGrid_H__
 #define __SymmetryOperations_PET_CartesianGrid_H__
 
@@ -41,10 +43,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int axial_pos_shift;
@@ -65,10 +69,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -94,10 +100,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -121,10 +129,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -147,10 +157,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -173,10 +185,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -200,10 +214,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -225,10 +241,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -250,10 +268,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -276,10 +296,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -302,10 +324,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -328,10 +352,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -353,10 +379,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -378,10 +406,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -404,10 +434,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
@@ -429,10 +461,12 @@ public:
   inline void 
     transform_view_segment_indices(ViewSegmentNumbers&) const;
   inline void
-    transform_image_coordinates(Coordinate3D<int>& c) const;
+    transform_image_coordinates(BasicCoordinate<3,int>& c) const;
+#ifdef PROJMATRIX
   void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
 
 private:
   int view180;
