@@ -168,9 +168,9 @@ bool InterfileHeader::post_processing()
   }
   // KT 07/10/2002 new
   // check if bytes_per_pixel is set if the data type is not 'bit'
-  if (number_format_index!=0 && bytes_per_pixel<0)
+  if (number_format_index!=0 && bytes_per_pixel<=0)
   {
-    warning("Interfile error: 'number of bytes per pixel' keyword should be set\n");
+    warning("Interfile error: 'number of bytes per pixel' keyword should be set\n to a number > 0");
     return true;
   }
 
