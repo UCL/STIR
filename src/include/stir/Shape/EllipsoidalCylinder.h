@@ -47,6 +47,15 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup Shape
+  \brief Three-dimensional ellipsoidal cylinder
+  
+   Ellipsoidal cylinder with the dimensions 
+  (radius_x,radius_y,length), where radius_x assumed to be
+   in x direction, radius_y in y direction, length in z-direction,
+   before any rotation with Euler angles.
+*/
 class EllipsoidalCylinder: 
    public RegisteredParsingObject<EllipsoidalCylinder, Shape3D, Shape3DWithOrientation>
 {
@@ -80,6 +89,8 @@ public:
   /*! \todo This cannot handle a rotated cylinder yet. Instead, it will call error(). */
   void scale(const CartesianCoordinate3D<float>& scale3D);
   float get_geometric_volume() const;
+  float get_geometric_area() const;
+
   bool is_inside_shape(const CartesianCoordinate3D<float>&) const;
   
 protected:
