@@ -24,7 +24,8 @@ $(dir)_SOURCES:=manip_image.cxx \
 	get_time_frame_info.cxx \
 	generate_image.cxx \
 	list_ROI_values.cxx \
-	zoom_image.cxx
+	zoom_image.cxx \
+  	rebin_projdata.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
