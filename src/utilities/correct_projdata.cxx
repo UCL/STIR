@@ -79,6 +79,7 @@ END:=
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
+#include "local/stir/listmode/TimeFrameDefinitions.h"
 #ifndef USE_PMRT
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #else
@@ -115,8 +116,9 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 			shared_ptr<DiscretisedDensity<3,float> >& attenuation_image_ptr,
 			const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
 			BinNormalisation& normalisation,
-                        const shared_ptr<ProjData>& randoms_projdata_ptr
-                        )
+                        const shared_ptr<ProjData>& randoms_projdata_ptr, 
+			const int correct_all_frames_or_single_frame,
+			TimeFrameDefinitions& frame_def)
 {
 
   const bool do_attenuation = attenuation_image_ptr.use_count() != 0;
@@ -178,17 +180,39 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
           randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
 	                                              symmetries_ptr, false);
       }
-
-      // ** normalisation **
-      if (apply_or_undo_correction)
+      
+      if (correct_all_frames_or_single_frame==-1)
       {
-	normalisation.apply(viewgrams);
+	int num_frames = frame_def.get_num_frames();
+	for ( int i = 1; i<=num_frames; i++)
+	{
+	  const double start_frame = frame_def.get_start_time(i);
+	  const double end_frame = frame_def.get_end_time(i);
+	  // ** normalisation **
+	  if (apply_or_undo_correction)
+	  {
+	    normalisation.apply(viewgrams,start_frame,end_frame);
+	  }
+	  else
+	  {
+	    normalisation.undo(viewgrams,start_frame,end_frame);
+	  }
+	}
       }
       else
       {
-        normalisation.undo(viewgrams);
-      }
-
+	const double start_frame = frame_def.get_start_time(correct_all_frames_or_single_frame);
+	const double end_frame = frame_def.get_end_time(correct_all_frames_or_single_frame);
+	if (apply_or_undo_correction)
+	{
+	  normalisation.apply(viewgrams,start_frame,end_frame);
+	}
+	else
+	{
+	  normalisation.undo(viewgrams,start_frame,end_frame);
+	}    
+     }
+       
 
       // ** attenuation ** 
       if (do_attenuation)
@@ -255,8 +279,9 @@ public:
   bool apply_or_undo_correction;
   bool use_data_or_set_to_1;  
   int max_segment_num_to_process;
-
-private:
+  int correct_all_frames_or_single_frame;
+  TimeFrameDefinitions frame_defs;
+  private:
 
   virtual void set_defaults();
   virtual void initialise_keymap();
@@ -267,6 +292,9 @@ private:
   string atten_image_filename;
   string norm_filename;  
   string randoms_projdata_filename;
+  
+  string frame_definition_filename;
+  
 };
 
 void 
@@ -284,6 +312,7 @@ set_defaults()
   normalisation_ptr = new TrivialBinNormalisation;
   randoms_projdata_filename = "";
   attenuation_image_ptr = 0;
+  correct_all_frames_or_single_frame =-1;
 
 #ifndef USE_PMRT
   forward_projector_ptr =
@@ -312,6 +341,9 @@ initialise_keymap()
   parser.add_key("attenuation image filename", &atten_image_filename);
   parser.add_parsing_key("forward projector type", &forward_projector_ptr);
   parser.add_key("scatter_projdata_filename", &scatter_projdata_filename);
+  // TODO
+  parser.add_key("correct all frames (-1) or a single frame (frame number) ", &correct_all_frames_or_single_frame);
+  parser.add_key("frame definition filename", &frame_definition_filename); 
   parser.add_stop_key("END");
 }
 
@@ -360,6 +392,15 @@ CorrectProjDataParameters(const char * const par_filename)
                                             max_segment_num_to_process);
      output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename);
   }
+  // read time frame def 
+   if (frame_definition_filename.size()!=0)
+    frame_defs = TimeFrameDefinitions(frame_definition_filename);
+   else
+    {
+      // make a single frame starting from 0. End value will be ignored.
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      frame_defs = TimeFrameDefinitions(frame_times);
+    }
 
   // set up normalisation object
   if (
@@ -430,7 +471,9 @@ int main(int argc, char *argv[])
 			  parameters.attenuation_image_ptr,  
 			  parameters.forward_projector_ptr,  
 			  *parameters.normalisation_ptr,
-                          parameters.randoms_projdata_ptr);
+                          parameters.randoms_projdata_ptr,
+			  parameters.correct_all_frames_or_single_frame,
+			  parameters.frame_defs);
  
   timer.stop();
   cerr << "CPU time : " << timer.value() << "secs" << endl;
