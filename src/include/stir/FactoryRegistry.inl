@@ -61,7 +61,7 @@ FactoryRegistry<Key, Factory, Compare>::
 add_to_registry(const Key& key, Factory const & factory)
 {
   //cerr << "Adding "<< key << "to registry\n";
-#ifndef _NDEBUG
+#ifndef NDEBUG
   FactoryMap::iterator iter = m.find(key);
   if (iter != m.end())
   {
