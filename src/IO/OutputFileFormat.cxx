@@ -18,7 +18,7 @@
 
 
 #include "stir/IO/OutputFileFormat.h"
-
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -140,6 +140,16 @@ post_processing()
   return false;
 }
 
+
+Succeeded  
+OutputFileFormat::
+    write_to_file(const string& filename, 
+                  const DiscretisedDensity<3,float>& density) const
+{
+  string filename_to_use = filename;
+  return 
+    write_to_file(filename_to_use, density);
+};
  
 
 END_NAMESPACE_STIR
