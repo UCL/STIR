@@ -55,10 +55,9 @@ auto_ptr<ProjDataFromStream> ask_parameters();
 
 static void 
 do_segments(const VoxelsOnCartesianGrid<float>& image, ProjDataFromStream& s3d,
-	    const int abs_segment_num, 
+	    const int start_segment_num, const int end_segment_num,
 	    const int start_view, const int end_view,
-	    ForwardProjectorByBin*,
-	    const int disp, const int save);
+	    ForwardProjectorByBin*);
 static void 
 fill_cuboid(VoxelsOnCartesianGrid<float>& image);
 static void 
@@ -72,75 +71,58 @@ main(int argc, char *argv[])
 {
 
   // TODO a lot of cleaning up here
-/*  if(argc!=2) 
+  if(argc!=2) 
   {
     cerr<<"Usage: " << argv[0] << " [PSOV-file]\n"
         <<"The PSOV-file will be used to get the scanner, mashing etc. details" 
 	<< endl; 
   }
-  if (argc>2)
+  if (argc<2)
     exit(EXIT_FAILURE);
-*/
 
- // if(argc==2)
- // {
-   shared_ptr<ProjData> proj_data_ptr = 
-     ProjData::read_from_file(argv[1]);
-  //}
- // else
-// {
- //   proj_data_ptr = ask_parameters();
-  //}
 
- // auto_ptr<ProjDataFromStream> proj_data_ptr(ProjDataFromStream::ask_parameters());
- // }
-
-#if 1
-  const ProjDataInfo* data_info = proj_data_ptr->get_proj_data_info_ptr();
-  string header_name = argv[1];
-  header_name += "_copy.hs"; 
-  string raw_data = argv[1];
-   raw_data+=" _copy.s";
-  ProjDataInfo* new_data_info= data_info->clone();
- 
-  
-  fstream *sino_stream = new fstream (raw_data.c_str(), ios::out|ios::binary);
-  if (!sino_stream->good())
+  ProjDataInfo* new_data_info_ptr;
+  if(argc==2)
   {
-    error("fwdtest: error opening file %s\n",raw_data.c_str());
+    shared_ptr<ProjData> proj_data_ptr = 
+      ProjData::read_from_file(argv[1]);
+    new_data_info_ptr= proj_data_ptr->get_proj_data_info_ptr()->clone();
   }
-
+  else
+  {
+    new_data_info_ptr= ProjDataInfo::ask_parameters();
+  }
   
-   ProjDataFromStream new_data(new_data_info,sino_stream);
- 
-#endif
-
-#if 1
-
   // make num_bins odd (TODO remove)
   {
-    int num_tangential_poss = new_data.get_proj_data_info_ptr()->get_num_tangential_poss();
+    int num_tangential_poss = new_data_info_ptr->get_num_tangential_poss();
     if (num_tangential_poss%2 == 0)
       num_tangential_poss++;
-    new_data_info->set_num_tangential_poss(num_tangential_poss);
+    new_data_info_ptr->set_num_tangential_poss(num_tangential_poss);
   }
-#endif
 
-  const int fwdproj_method = ask_num("Which method (0: Approximate, 1: Accurate)",0,1,0);
+  const string output_file_name = "fwdtest_out.s";
+  shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
+  if (!sino_stream->good())
+  {
+    error("fwdtest: error opening file %s\n",output_file_name.c_str());
+  }
 
-  int disp = 
-    ask_num("Display images ? no (0), end result only (1), start image as well (2)", 
-    0,2,1);
-
-  int save = 
-    ask_num("Save  images ? no (0), end result only (1), start image as well (2)", 
-    0,2,1);
-
-   
-
+  shared_ptr<ProjDataFromStream> proj_data_ptr =
+    new ProjDataFromStream(new_data_info_ptr,sino_stream);
+  write_basic_interfile_PDFS_header(output_file_name, *proj_data_ptr);
+  cerr << "Output will be written to " << output_file_name 
+       << " and its Interfile header\n";
   
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr; 
+  const int disp = 
+    ask_num("Display start image ? no (0), yes (1)", 
+    0,1,0);
+
+  const int save = 
+    ask_num("Save  start images ? no (0), yes (1)",
+    0,1,0);   
   
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr;   
   VoxelsOnCartesianGrid<float> * vox_image_ptr;
      
 
@@ -161,11 +143,11 @@ main(int argc, char *argv[])
   
    char filename[max_filename_length];
    
-    ask_filename_with_extension(filename, "Input file name ?", ".hv");
-
-    image_sptr =
-      DiscretisedDensity<3,float>::read_from_file(filename);
-    vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
+   ask_filename_with_extension(filename, "Input file name ?", ".hv");
+   
+   image_sptr =
+     DiscretisedDensity<3,float>::read_from_file(filename);
+   vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
 
     // TODO remove whenever we don't need odd sizes anymore
     if (vox_image_ptr->get_x_size() %2 == 0)
@@ -182,45 +164,42 @@ main(int argc, char *argv[])
         image_sptr);
     
   
-  if (disp==2)
+  if (disp)
     {
       cerr << "Displaying start image";
-      display(*vox_image_ptr);
+      display(*image_sptr);
     }
   
 
-  if (save==2)
+  if (save)
   {
     cerr << "Saving start image to 'test_image'" << endl;
-    write_basic_interfile("test_image", *vox_image_ptr);
+    write_basic_interfile("test_image", *image_sptr);
   }
     
+  list<ViewSegmentNumbers> already_processed;
+
   if (ask("Do full forward projection ?", true))
   {
     const int max_segment_num_to_process = 
-      ask_num("max_segment_num_to_process",0,  proj_data_ptr->get_max_segment_num(),  proj_data_ptr->get_max_segment_num());
+      ask_num("max_segment_num_to_process",
+               0,  proj_data_ptr->get_max_segment_num(),  proj_data_ptr->get_max_segment_num());
     
 
     CPUTimer timer;
     timer.reset();
     timer.start();
 
-    for (int abs_segment_num=0; 
-         abs_segment_num<= max_segment_num_to_process; 
-         abs_segment_num++)
-    {
-      cerr << "  - Processing segment num " << abs_segment_num << endl;
-          
-      do_segments(*vox_image_ptr, new_data/*,proj_data_ptr*/,
-                  abs_segment_num, 0, proj_data_ptr->get_proj_data_info_ptr()->get_num_views()-1,
-                  forw_projector_ptr, disp, save);
-			   
-
-
-    }
+    
+    do_segments(*vox_image_ptr, *proj_data_ptr,
+      -max_segment_num_to_process, max_segment_num_to_process, 
+      proj_data_ptr->get_min_view_num(), 
+      proj_data_ptr->get_max_view_num(),
+      forw_projector_ptr);
+    
     timer.stop();
     cerr << timer.value() << " s CPU time"<<endl;
-
+    
 
   }
   else
@@ -231,20 +210,20 @@ main(int argc, char *argv[])
       timer.reset();
       timer.start();
       
-      int abs_segment_num = ask_num("Segment<float> number to forward project",
-				    0, proj_data_ptr->get_max_segment_num(), 0);
+      int segment_num = ask_num("Segment number to forward project",
+				 proj_data_ptr->get_min_segment_num(),
+                                 proj_data_ptr->get_max_segment_num(), 
+                                 0);
+      const int min_view = proj_data_ptr->get_min_view_num();
+      const int max_view = proj_data_ptr->get_max_view_num();
+
+      const int start_view = ask_num("Start view", min_view, max_view, min_view);
+      const int end_view = ask_num("End   view", start_view, max_view, max_view);
       
-      const int nviews = proj_data_ptr->get_proj_data_info_ptr()->get_num_views();
-      cerr << "Special views are at 0, "
-	<< nviews/4 <<", " << nviews/2 <<", " << nviews/4*3 << endl;
-      int start_view = ask_num("Start view", 0, nviews-1, 0);
-      int end_view = ask_num("End   view", 0, nviews-1, start_view);
-      
-      do_segments(*vox_image_ptr,new_data,/*proj_data_ptr*/ 
-	          abs_segment_num, 
+      do_segments(*vox_image_ptr,*proj_data_ptr, 
+	          segment_num,segment_num, 
 	          start_view, end_view,
-	          forw_projector_ptr,
-	          disp, save);
+	          forw_projector_ptr);
       
 
       timer.stop();
@@ -262,48 +241,44 @@ main(int argc, char *argv[])
 void
 do_segments(const VoxelsOnCartesianGrid<float>& image, 
             ProjDataFromStream& proj_data,
-	    const int abs_segment_num, 
+	    const int start_segment_num, const int end_segment_num,
 	    const int start_view, const int end_view,
-	    ForwardProjectorByBin* forw_projector_ptr,
-	    const int disp, const int save)
+	    ForwardProjectorByBin* forw_projector_ptr)
 {
-  const int nviews = proj_data.get_num_views();
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    forw_projector_ptr->get_symmetries_used()->clone();
-
-  {       
-    
-    Array<1,int> processed_views(0, nviews/4);
-    
-    for (int view= start_view; view<=end_view; view++)
-      { 
-	int view_to_process = view % (nviews/2);
-	if (view_to_process > nviews/4)
-	  view_to_process = nviews/2 - view_to_process;
-	if (processed_views[view_to_process])
-	  continue;
-	processed_views[view_to_process] = 1;
-      
-	cerr << "Processing view " << view_to_process 
-	     << " of segment-pair " <<abs_segment_num
-	     << endl;
-
-	const ViewSegmentNumbers view_segmnet_num(view_to_process,abs_segment_num);
-	RelatedViewgrams<float> viewgrams = 
-	  proj_data.get_proj_data_info_ptr()->
-	  get_empty_related_viewgrams(view_segmnet_num,
-	    symmetries_sptr);
-         forw_projector_ptr->forward_project(viewgrams, image);	  
-	if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-	  error("Error set_related_viewgrams\n");
-
-	
-      }
-    
-    
-    
-  }
+    forw_projector_ptr->get_symmetries_used()->clone();  
   
+  list<ViewSegmentNumbers> already_processed;
+  
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+    for (int view= start_view; view<=end_view; view++)
+      
+    {       
+      ViewSegmentNumbers vs(view, segment_num);
+      symmetries_sptr->find_basic_view_segment_numbers(vs);
+      if (find(already_processed.begin(), already_processed.end(), vs)
+        != already_processed.end())
+        continue;
+      
+      already_processed.push_back(vs);
+      
+      cerr << "Processing view " << vs.view_num() 
+        << " of segment " <<vs.segment_num()
+        << endl;
+      
+      RelatedViewgrams<float> viewgrams = 
+        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
+      forw_projector_ptr->forward_project(viewgrams, image);	  
+      if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+        error("Error set_related_viewgrams\n");
+      
+      
+      
+      
+      
+      
+    }
+    
 }
 
 
