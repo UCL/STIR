@@ -26,6 +26,8 @@
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "local/stir/FBP3DRP/ColsherFilter.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -34,7 +36,7 @@ template <typename elemT> class Sinogram;
 template <typename elemT> class SegmentBySinogram;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
-template <typename T> class shared_ptr;
+class Succeeded;
 
 /* KT 180899 forget about PETAnalyticReconstruction for the moment
  TODO Derive from PETAnalyticReconstruction when it makes any sense
@@ -226,6 +228,9 @@ private:
 
 
   ProjDataInfoCylindricalArcCorr proj_data_info_cyl;
+  //! Size info for the projection data with missing data filled in
+  shared_ptr<ProjDataInfo> proj_data_info_with_missing_data_sptr;
+
   shared_ptr<DiscretisedDensity<3,float> > image_estimate_density_ptr;
   // convenience access functions to the above member
   inline VoxelsOnCartesianGrid<float>&  estimated_image();
@@ -233,7 +238,9 @@ private:
 
   shared_ptr<ForwardProjectorByBin> forward_projector_sptr; 
   shared_ptr<BackProjectorByBin> back_projector_sptr;
-
+#ifndef NRFFT
+  ColsherFilter colsher_filter;
+#endif
   float alpha_fit;
   float beta_fit;
 };
