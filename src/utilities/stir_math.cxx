@@ -42,8 +42,9 @@ used for input AND output. Note that when using this option together with
 first filename will first be manipulated according to '--power' and '--times-scalar'.<br>
 The '-s' option is necessary if the arguments are projection data.
 Otherwise, it is assumed the data are images.<br>
-Power is taken before multiplication with the scalar.
-
+Multiple occurences of '--times-scalar' and '--divide-scalar' are
+allowed and will just result in a cumulation of the factors.<br>
+Power is taken before multiplication with the scalar.<br>
 \par Examples
 <ul>
 <li> subtracting 2 files<br>
@@ -58,7 +59,7 @@ Power is taken before multiplication with the scalar.
 </ul>
 \warning There is no check that the data sizes and other info are compatible 
 	and the output will have the largest data size in the input, 
-	and the charachteristics (like voxel-size or so) are taken from the first input data. 
+	and the characteristics (like voxel-size or so) are taken from the first input data. 
 	Hence, lots of funny effects can happen if data are not compatible.
 
 \warning When '--accumulate' is not used, the output file HAS to be different from all
@@ -129,22 +130,30 @@ main(int argc, char **argv)
 {
   if(argc<4)
   {
-    cerr<< "Usage: " << argv[0] << " [-s] [--accumulate] [--add | --mult] [--times-scalar mult_scalar_float] [--power power_float] [--including-first] [--verbose] output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n"
+    cerr<< "Usage: " << argv[0] << "\n\t"
+	<< "[-s] [--accumulate] [--add | --mult]\n\t"
+	<< "[--times-scalar mult_scalar_float] [--divide-scale div_scalar_float]\n\t"
+	<< "[--power power_float] [--including-first] [--verbose]\n\t"
+	<< "output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n\n"
+	<< "(but everything on 1 line).\n"
 	<< "'--add' is default, and outputs the sum of the result of processed data.\n"
 	<< "'--mult' outputs the multiplication of the result of processed data.\n"
-	<< "The '--include-first' option can be used such that power and scalar "
-	<< "multiplication are done on the first input argument as well. "
+	<< "The '--include-first' option can be used such that power and\n\t"
+	<< "scalar multiplication are done on the first input argument\n\t"
+	<< "as well. "
 	<< "Otherwise these manipulations are done only on the 2nd, 3rd,.. argument.\n"
         << "The '--accumulate' option can be used to say that the first filename given will be "
            "used for input AND output. Note that when using this option together with "
            "'--including-first', the data in the first filename will first be manipulated "
-           "according to '--power' and '--times-scalar'.\n"
+           "according to '--power', '--times-scalar' and '--divide-scalar'.\n"
+	<< "Multiple occurences of '--times-scalar' and '--divide-scalar' are\n"
+	<<"allowed and will just result in a cumulation of the factors.\n"
         << "Power is taken before multiplication with the scalar.\n"
 	<< "The '-s' option is necessary if the arguments are projection data."
 	<< " Otherwise, it is assumed the data are images.\n\n"
 	<< "WARNING: there is no check that the data sizes and other info are compatible "
 	<< "and the output will have the largest data size in the input, "
-	<< "and the charachteristics (like voxel-size or so) are taken from the first input data. "
+	<< "and the characteristics (like voxel-size or so) are taken from the first input data. "
 	<< "Hence, lots of funny effects can happen if data are not compatible.\n";
     exit(EXIT_FAILURE);
   }
@@ -170,7 +179,14 @@ main(int argc, char **argv)
     {
       if (argc<2)
       { cerr << "Option '--times-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-      mult_scalar = atof(argv[1]);
+      mult_scalar *= atof(argv[1]);
+      argc-=2; argv+=2;
+    } else
+    if (strcmp(argv[0], "--divide-scalar")==0)
+    {
+      if (argc<2)
+      { cerr << "Option '--divide-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
+      mult_scalar /= atof(argv[1]);
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--power")==0)
