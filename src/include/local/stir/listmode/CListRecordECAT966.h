@@ -21,7 +21,7 @@
 
 #include "local/stir/listmode/CListRecord.h"
 #include "stir/ProjDataInfoCylindrical.h"
-//#include "stir/ByteOrderDefine.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/round.h"
 
 START_NAMESPACE_STIR
@@ -160,7 +160,7 @@ private:
   static shared_ptr<Scanner> 
     scanner_sptr;
 
-  static shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
+  static shared_ptr<ProjDataInfoCylindricalNoArcCorr>
     uncompressed_proj_data_info_sptr;
 
 public:
@@ -207,7 +207,7 @@ public:
     }
   void get_uncompressed_bin(Bin& bin) const;
 
-  shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
     { return uncompressed_proj_data_info_sptr; }
 
