@@ -1,5 +1,5 @@
 //
-// $Id$ : $Date$
+// $Id$
 //
 
 /*!
@@ -10,8 +10,8 @@
 \author Matthew Jacobson
 \author PARAPET project
 
-\date    $Date$
-\version $Revision$
+\date    00/03/11
+\version 1.3
 
 This utility programme processes (interfile) sinogram data 
 (maximum number of segments as input). It can
@@ -36,9 +36,9 @@ This utility programme processes (interfile) sinogram data
 START_NAMESPACE_TOMO
 
 // in relation with show_math_menu()
-enum options { _quit, _display_view, _display_segm, _absdiff, _add_sino, _subtract_sino, 
+enum options { _quit, _display_view, _display_sino, _absdiff, _add_sino, _subtract_sino, 
                _mult_sino, _div_sino, _add_scalar, _mult_scalar, _div_scalar, _stats,
-               _pos_ind, _trunc_neg, _trim, _zero_ends, _restart, _menu};
+               _pos_ind, _trunc_neg, _trim, _zero_ends, _pad_ends, _restart, _menu};
 
 //*********************** prototypes
 
@@ -47,11 +47,11 @@ void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &s
              float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized);
 
 // display, operations with a scalar, others
-void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& segment, float &accum_max, 
-             float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar=0.0);
+void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar=0.0);
 
 void make_buffer_header(const char *data_filename,const char *header_filename, 
-                        PETSinogramOfVolume& input_sino, int limit_segments);
+                        PETSinogramOfVolume& input_sino, int limit_segments, 
+			NumericType::Type output_type=NumericType::FLOAT);
 
 void show_math_menu();
 
@@ -75,8 +75,8 @@ void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &s
                 accumulators_initialized=true;
             }
             else {
-                if (accum_max>sino1.find_max()) accum_max= sino1.find_max();
-                if (accum_min<sino1.find_min()) accum_max= sino1.find_min();
+                if (accum_max<sino1.find_max()) accum_max= sino1.find_max();
+                if (accum_min>sino1.find_min()) accum_min= sino1.find_min();
                 accum_sum+=sino1.sum();
             }
             break;
@@ -105,8 +105,8 @@ void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &s
     } // end switch
 }
 
-void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& segment, float &accum_max,
-             float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
+
+void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
 {
     switch(operation) {
         case _display_view: { //display math buffer by View
@@ -122,8 +122,8 @@ void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogr
             break;
         }
 
-        case _display_segm: { //display math buffer by Segment
-            display(segment, segment.find_max());
+        case _display_sino: { //display math buffer by sinogram
+            display(seg_sinogram, seg_sinogram.find_max());
             break;
         }
 
@@ -150,8 +150,8 @@ void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogr
                 accumulators_initialized=true;
             }
             else {
-                if (accum_max>sino1.find_max()) accum_max= sino1.find_max();
-                if (accum_min<sino1.find_min()) accum_max= sino1.find_min();
+                if (accum_max<sino1.find_max()) accum_max= sino1.find_max();
+                if (accum_min>sino1.find_min()) accum_min= sino1.find_min();
                 accum_sum+=sino1.sum();
             }
             break;
@@ -181,8 +181,8 @@ void show_math_menu()
     cerr<<"\n\
 BINMATH MENU:\n\
 0. Quit \n\
-1. Display by View\n\
-2. Display by Segment\n\
+1. Display viewgrams\n\
+2. Display sinograms\n\
 3. Absolute difference\n\
 4. Add sinogram\n\
 5. Subtract sinogram\n\
@@ -196,13 +196,15 @@ BINMATH MENU:\n\
 13. Truncate negatives \n\
 14. Trim end bins\n\
 15. Zero end planes of segment 0 \n\
-16. Restart\n\
-17. Redisplay menu"<<endl;
+16. Pad end planes of segment 0 \n\
+17. Restart\n\
+18. Redisplay menu"<<endl;
 }
 
 
 void make_buffer_header(const char *data_filename,const char *header_filename,
-                        PETSinogramOfVolume& input_sino, int limit_segments)
+                        PETSinogramOfVolume& input_sino, int limit_segments,
+			NumericType::Type output_type)
 {
     // TODO replace by write_interfile_PSOV_header
 
@@ -218,16 +220,20 @@ void make_buffer_header(const char *data_filename,const char *header_filename,
     header<<"name of data file := "<<data_filename;
     header<<"\n";
     header<<"originating system := ";
-//Get the Scanner name
+    //Get the Scanner name
+    //TODO From PETScannerInfo
     if(input_sino.scan_info.get_scanner().type==PETScannerInfo::RPT) header<<"PRT-1 \n";
     else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) header<<"Advance \n";
     else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E953) header<<"ECAT 953 \n";
     else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E951) header<<"ECAT 951 \n";
     else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E966) header<<"EXACT3D \n";
+    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::HZLR) header<<"Positron HZL/R \n";
     else { 
         error("Tried to create header for unsupported scanner type");
     }
 
+    bool merges_seg0=(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance ||
+		      input_sino.scan_info.get_scanner().type==PETScannerInfo::HZLR )? true:false;
 
     header<<"!GENERAL DATA := \n";
     header<<"!GENERAL IMAGE DATA := \n";
@@ -238,16 +244,16 @@ void make_buffer_header(const char *data_filename,const char *header_filename,
        : "BIGENDIAN")<< "\n";
     header<<"!PET STUDY (General) := \n";
     header<<"!PET data type := Emission \n";
-    header<<"!number format := float \n";
-    header<<"!number of bytes per pixel := 4 \n"; 
+    header<<"!number format := "<<((output_type==NumericType::FLOAT)?"float":"signed integer") <<" \n";
+    header<<"!number of bytes per pixel := "<<((output_type==NumericType::FLOAT)? "4":"2") <<" \n"; 
     header<<"number of dimensions := 4 \n";
     header<<"!matrix size [1] := " <<2*limit_segments+1<<"\n"; 
     header<<"matrix axis label [1] := segment \n"; 
     header<<"!matrix size [2] := "<<input_sino.scan_info.get_num_views()<<"\n"; 
     header<<"matrix axis label [2] := view \n";
 //number of rings per segment
-    header<<"!matrix size [3] := { ";
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
+    header<<"!matrix size [3] := {";
+    if(merges_seg0) {
         header<<2*nrings-1;
         for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-(i+1)<<", "<<nrings-(i+1);
     }
@@ -262,7 +268,7 @@ void make_buffer_header(const char *data_filename,const char *header_filename,
     header<<"matrix axis label [4] := bin \n";
 //min ring differences per segment
     header<<"minimum ring difference per segment := {";
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
+    if(merges_seg0) {
         header<<"-1";
         for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
     }
@@ -275,7 +281,7 @@ void make_buffer_header(const char *data_filename,const char *header_filename,
 
 //max ring differences per segment
     header<<"maximum ring difference per segment := {";
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
+    if(merges_seg0) {
         header<<"1";
         for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
     }
@@ -328,18 +334,39 @@ int main(int argc, char *argv[])
         char output_buffer_filename[max_filename_length];
         bool buffer_opened=false;
 
-        if (reload) {
-            first_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Input sinogram"));
-            reload=false;
-        }
-        else if(argc>1) first_operand= new PETSinogramOfVolume(read_interfile_PSOV(argv[1]));
-        else {
-            cerr<<endl<<"Usage: binmath <header file name> (*.hs)"<<endl<<endl;
-            first_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Input sinogram"));
-        }
+        if (first_operand==NULL) 
+	  {
 
-        int limit_segments=(argc>2)? atoi(argv[2]):ask_num("Maximum absolute segment number to process: ", 
-                                                           0, first_operand->get_max_segment(), first_operand->get_max_segment() );
+	    if (reload)  
+	      first_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Input sinogram"));
+
+	    else // just starting
+	      { 
+		if(argc<2)
+		  {
+		    cerr<<endl<<"Usage: binmath <header file name> (*.hs)"<<endl<<endl;
+		    first_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Input sinogram"));
+		  }
+		else first_operand= new PETSinogramOfVolume(read_interfile_PSOV(argv[1]));
+	  
+		reload=false;
+
+	      }
+
+	  }
+	 
+
+	int limit_segments=ask_num("Maximum absolute segment number to process: ", 0, first_operand->get_max_segment(), first_operand->get_max_segment() );
+
+	NumericType::Type output_type=NumericType::FLOAT;
+	float scale_factor;
+
+	if(ask("Output in signed integers?",false))
+	  {
+	    output_type=NumericType::SHORT;
+	    scale_factor = ask_num("Scale Factor",0.F,10000.F,1.F);
+	  }
+
 
         do { //math operations loop
             float accum_max, accum_min, accum_sum;
@@ -349,20 +376,22 @@ int main(int argc, char *argv[])
             operation= (enum options) ask_num("Choose Operation: ",0,17,17);
             if (operation==_menu) continue; //redisplay menu
             if (operation==_restart || operation==_quit) { //restart or quit
-                new_sino.close();
-                assert(first_operand != NULL);
-                delete first_operand;
-                if(operation==_restart) reload=true;
-                if(operation==_quit) quit=true;
-                break;
+	   
+	      if(new_sino!=NULL) new_sino.close();
+              assert(first_operand != NULL);
+	      delete first_operand; 
+	      first_operand=NULL;
+	      if(operation==_restart) reload=true;
+	      if(operation==_quit) quit=true;
+	      break;
             }
   
-            if (operation!= _display_view && operation!= _display_segm 
+            if (operation!= _display_view && operation!= _display_sino 
                 && operation!= _stats &&!buffer_opened) {  //operation result is a sinogram
                 ask_filename_with_extension(output_buffer_root, "Output to which file (without extension)?", "");
                 sprintf(output_buffer_filename, "%s.%s",output_buffer_root , "s");
                 sprintf(output_buffer_header, "%s.%s",output_buffer_root , "hs");
-                make_buffer_header(output_buffer_filename, output_buffer_header, *first_operand, limit_segments); 
+                make_buffer_header(output_buffer_filename, output_buffer_header, *first_operand, limit_segments, output_type); 
                 // first_operand->get_max_segment()
                 open_write_binary(new_sino, output_buffer_filename);
                 buffer_opened=true;
@@ -399,9 +428,23 @@ int main(int argc, char *argv[])
 // first do segment 0
             { 
                 PETSegmentByView seg1=first_operand->get_segment_view_copy(0);
-                PETSegmentBySinogram segment=first_operand->get_segment_sino_copy(0);
-                
-                    // PETSegmentByView *seg2 =NULL;
+                PETSegmentBySinogram seg_sinogram=first_operand->get_segment_sino_copy(0);
+            
+		if(operation == _pad_ends)
+		  {
+
+		    bool merges_seg0=(seg1.scan_info.get_scanner().type==PETScannerInfo::Advance || seg1.scan_info.get_scanner().type==PETScannerInfo::HZLR )? true:false;
+
+		    if((merges_seg0 &&seg1.get_num_rings() == 2*(first_operand->scan_info.get_scanner().num_rings)-3) || (!merges_seg0 && seg1.get_num_rings() == first_operand->scan_info.get_scanner().num_rings))
+		      {
+			seg1.grow_height(seg1.get_min_ring()-1,seg1.get_max_ring()+1);
+		      }
+		    else
+		      {
+			cerr<<"Number of rings is consistent. Operation had no effect"<<endl<<endl;
+		      }
+		  }
+
                 if(second_operand != NULL)  {
                     PETSegmentByView seg2=second_operand->get_segment_view_copy(0);
                     do_math(operation,seg1,seg2,accum_max,accum_min,accum_sum,false);
@@ -414,21 +457,21 @@ int main(int argc, char *argv[])
                                 seg1[i][seg1.get_min_ring()+j].fill(0);
                                 seg1[i][seg1.get_max_ring()-j].fill(0);
                             }
-                    else  do_math(operation,seg1,segment,accum_max,accum_min,accum_sum,false,*scalar);
+                    else  do_math(operation,seg1,seg_sinogram,accum_max,accum_min,accum_sum,false,*scalar);
                 }
-                else do_math(operation,seg1,segment,accum_max,accum_min,accum_sum,false);
+                else do_math(operation,seg1,seg_sinogram,accum_max,accum_min,accum_sum,false);
 
                     //Write sinogram result to file
-                if(operation!= _display_view && operation!= _display_segm && operation!= _stats && buffer_opened) seg1.write_data(new_sino);
+                if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) seg1.write_data(new_sino,output_type,scale_factor);
             }
 //Now do other segments
             if(limit_segments>0)
                 for (int segment_num = 1; segment_num <= limit_segments ; segment_num++) {
-                    if((operation==_display_view || operation==_display_segm) && ask("Abort display",false)) break;
+                    if((operation==_display_view || operation==_display_sino) && ask("Abort display",false)) break;
                     PETSegmentByView  seg1_pos=first_operand->get_segment_view_copy(segment_num);
                     PETSegmentByView  seg1_neg=first_operand->get_segment_view_copy(-segment_num);
-                    PETSegmentBySinogram  segment_pos=first_operand->get_segment_sino_copy(segment_num);
-                    PETSegmentBySinogram  segment_neg=first_operand->get_segment_sino_copy(-segment_num);
+                    PETSegmentBySinogram  seg_sinogram_pos=first_operand->get_segment_sino_copy(segment_num);
+                    PETSegmentBySinogram  seg_sinogram_neg=first_operand->get_segment_sino_copy(-segment_num);
                       
                     if(second_operand != NULL) {
                         PETSegmentByView seg2_pos=second_operand->get_segment_view_copy(segment_num);
@@ -437,27 +480,27 @@ int main(int argc, char *argv[])
                         do_math(operation,seg1_neg,seg2_neg,accum_max,accum_min,accum_sum,true);
                     }
                     else if(scalar != NULL) {
-                        do_math(operation,seg1_pos,segment_pos,accum_max,accum_min,accum_sum,true,*scalar);
-                        do_math(operation,seg1_neg,segment_neg,accum_max,accum_min,accum_sum,true,*scalar);
+                        do_math(operation,seg1_pos,seg_sinogram_pos,accum_max,accum_min,accum_sum,true,*scalar);
+                        do_math(operation,seg1_neg,seg_sinogram_neg,accum_max,accum_min,accum_sum,true,*scalar);
                     }
                     else {
-                        do_math(operation,seg1_pos,segment_pos,accum_max,accum_min,accum_sum,true);
-                        if((operation==_display_view || operation==_display_segm) 
+                        do_math(operation,seg1_pos,seg_sinogram_pos,accum_max,accum_min,accum_sum,true);
+                        if((operation==_display_view || operation==_display_sino) 
                            && ask("Abort display",false)) break;
-                        do_math(operation,seg1_neg,segment_neg,accum_max,accum_min,accum_sum,true);
-                        if((operation==_display_view || operation==_display_segm)
+                        do_math(operation,seg1_neg,seg_sinogram_neg,accum_max,accum_min,accum_sum,true);
+                        if((operation==_display_view || operation==_display_sino)
                            && segment_num<limit_segments && ask("Abort display",false)) break;
                     }
 
 //Write sinogram result to file
-                    if(operation!= _display_view && operation!= _display_segm  && operation!= _stats && buffer_opened) {
-                        seg1_neg.write_data(new_sino);  
-                        seg1_pos.write_data(new_sino);
+                    if(operation!= _display_view && operation!= _display_sino  && operation!= _stats && buffer_opened) {
+                        seg1_neg.write_data(new_sino,output_type,scale_factor);  
+                        seg1_pos.write_data(new_sino,output_type,scale_factor);
                     }
                 }
 
 //if buffer changed, reinitialize put pointer and update first operand
-            if(operation!= _display_view && operation!= _display_segm && operation!= _stats && buffer_opened) {
+            if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) {
                 new_sino.seekp(0,ios::beg);
                 assert(first_operand != NULL);
                 delete first_operand;
@@ -474,7 +517,8 @@ int main(int argc, char *argv[])
         } while(!quit); // end math operations do-while loop
     } while(!quit); // restart do-while loop
 
-    assert(first_operand != NULL);
+
+
     delete first_operand;
     return EXIT_SUCCESS;
 } //end main
