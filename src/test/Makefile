@@ -19,7 +19,8 @@ SOURCES = test_Array.cxx \
 	test_proj_data_info.cxx \
 	test_display.cxx \
 	test_stir_math.cxx \
-	test_OutputFileFormat.cxx
+	test_OutputFileFormat.cxx \
+ 	test_ByteOrder.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
@@ -59,6 +60,7 @@ run_tests: all get_test_files make_stir_math run_tests_ecat7
 	$(DEST)test_OutputFileFormat input/test_InterfileOutputFileFormat.in 
 	$(DEST)test_OutputFileFormat input/test_InterfileOutputFileFormat_short.in 
 	$(DEST)test_OutputFileFormat input/test_ECAT6OutputFileFormat.in
+	$(DEST)test_ByteOrder
 
 ifeq ($(HAVE_LLN_MATRIX),1)
 run_tests_ecat7:
