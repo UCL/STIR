@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -388,7 +388,9 @@ void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math)
 
                 math_buffer-=aux_image;
                 in_place_abs(math_buffer);
-                trim_edges(math_buffer);
+
+		//MJ 07/10/2000 removed trimming
+                //trim_edges(math_buffer);
 
                 cerr <<endl<< "Min and Max absolute difference " << math_buffer.find_min() 
                      << " " << math_buffer.find_max() << endl;
