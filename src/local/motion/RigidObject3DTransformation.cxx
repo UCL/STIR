@@ -137,10 +137,10 @@ RigidObject3DTransformation::get_translation() const
   return translation;
 }
     
-CartesianCoordinate3D<float> 
+Coordinate3D<float> 
 RigidObject3DTransformation::get_euler_angles() const
 {
-  CartesianCoordinate3D<float> euler_angles;
+  Coordinate3D<float> euler_angles;
   quaternion_2_euler(euler_angles, (*this).get_quaternion());
   
   return euler_angles;
@@ -244,11 +244,17 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
 
 void 
 RigidObject3DTransformation::
+#ifndef NEW_ROT
 transform_bin(Bin& bin, 
 	      const ProjDataInfoCylindricalNoArcCorr& out_proj_data_info,
 	      const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const
+#else
+ transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
+	             const ProjDataInfo& in_proj_data_info) const
+#endif  
 {
 
+  const float value = bin.get_bin_value();
 #ifndef NEW_ROT
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
@@ -276,6 +282,8 @@ transform_bin(Bin& bin,
 			      transform_point(lor_as_points.p2()));
   bin = out_proj_data_info.get_bin(transformed_lor_as_points);
 #endif
+  if (bin.get_bin_value()>0)
+    bin.set_bin_value(value);
 }
   
 
@@ -297,7 +305,8 @@ RigidObject3DTransformation::get_relative_transformation(RigidObject3DTransforma
 
 
 void 
-RigidObject3DTransformation::quaternion_2_euler(CartesianCoordinate3D<float>& Euler_angles, const Quaternion<float>& quat)
+RigidObject3DTransformation::
+quaternion_2_euler(Coordinate3D<float>& Euler_angles, const Quaternion<float>& quat)
 {
     Array<2,float> matrix = Array<2,float>(IndexRange2D(0,2,0,2));
     quaternion_2_m3(matrix,quat);
@@ -343,7 +352,7 @@ RigidObject3DTransformation::quaternion_2_m3(Array<2,float>& mat, const Quaterni
 }
 
 void 
-RigidObject3DTransformation::m3_2_euler(CartesianCoordinate3D<float>& Euler_angles, const Array<2,float>& mat)      /* 3x3 non-homogeneous rotation matrix to Euler angles */
+RigidObject3DTransformation::m3_2_euler(Coordinate3D<float>& Euler_angles, const Array<2,float>& mat)      /* 3x3 non-homogeneous rotation matrix to Euler angles */
 { 
     //assert ( mat.get_min_index() ==0 && mat.get_max_inedx()==2)
 
@@ -370,15 +379,15 @@ RigidObject3DTransformation::m3_2_euler(CartesianCoordinate3D<float>& Euler_angl
 	//Euler_angles[0] = uatan2(sx, cx);
 	//Euler_angles[1] = uatan2(sy, cy);
 	//Euler_angles[2] = uatan2(sz, cz);
-	  Euler_angles.x() = uatan2(sx, cx);
-	  Euler_angles.y() = uatan2(sy, cy);
-	  Euler_angles.z() = uatan2(sz, cz);
+	  Euler_angles[3] = uatan2(sx, cx);
+	  Euler_angles[2] = uatan2(sy, cy);
+	  Euler_angles[1] = uatan2(sz, cz);
 
 
 }
 
 void 
-RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const CartesianCoordinate3D<float>& Euler_angles)		/* Euler angles to a Quaternion */
+RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const Coordinate3D<float>& Euler_angles)		/* Euler angles to a Quaternion */
 {
 	float cx, cy, cz;
 	float sx, sy, sz;
@@ -386,9 +395,9 @@ RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const Ca
 	//cx = ucos(Euler_angles[0]/2.0);  sx = usin(Euler_angles[0]/2.0);
 	//cy = ucos(Euler_angles[1]/2.0);  sy = usin(Euler_angles[1]/2.0);
 	//cz = ucos(Euler_angles[2]/2.0);  sz = usin(Euler_angles[2]/2.0);
-	cx = ucos(Euler_angles.x()/2.0);  sx = usin(Euler_angles.x()/2.0);
-	cy = ucos(Euler_angles.y()/2.0);  sy = usin(Euler_angles.y()/2.0);
-	cz = ucos(Euler_angles.z()/2.0);  sz = usin(Euler_angles.z()/2.0);
+	cx = ucos(Euler_angles[3]/2.0);  sx = usin(Euler_angles[3]/2.0);
+	cy = ucos(Euler_angles[2]/2.0);  sy = usin(Euler_angles[2]/2.0);
+	cz = ucos(Euler_angles[1]/2.0);  sz = usin(Euler_angles[1]/2.0);
 
 	quat[1] = cx*cy*cz+sx*sy*sz;
 	quat[2] = sx*cy*cz-cx*sy*sz;
