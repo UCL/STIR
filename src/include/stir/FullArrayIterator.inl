@@ -35,19 +35,30 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
-  FullArrayIterator(const topleveliterT& top_level_iter,
-                    const topleveliterT& last_top_level_iter,
-                  const restiterT& rest_iter)
-  : current_top_level_iter(top_level_iter),
-    last_top_level_iter(last_top_level_iter),
-    current_rest_iter(rest_iter)  
+  FullArrayIterator(unsigned 
+#ifndef NDEBUG
+                    param // only give the parameter a name in debug mode to avoid compiler warning
+#endif
+                    )
+  : current_top_level_iter(0),
+    last_top_level_iter(0),
+    current_rest_iter(0),
+    last_rest_iter(0)
 {
-  if (top_level_iter == last_top_level_iter)
-    last_rest_iter = restiterT();
-  else
-    last_rest_iter = (*top_level_iter).end_all();
+  assert(param==0);
 }
 
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
+  FullArrayIterator(const topleveliterT& top_level_iter,
+                    const topleveliterT& last_top_level_iter,
+                    const restiterT& rest_iter,
+                    const restiterT& last_rest_iter)
+  : current_top_level_iter(top_level_iter),
+    last_top_level_iter(last_top_level_iter),
+    current_rest_iter(rest_iter),  
+    last_rest_iter(last_rest_iter)
+{}
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr> 
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
@@ -70,8 +81,8 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
 
   /* alternative:
      comparing rest_iter is only necessary when the first iterator is not 
-     at the end. However, this is the most common case, so the actual
-     implementation is faster as it has one test less.
+     at the end. However, this is the most common case, so the 
+     implementation above is faster as it has one test less.
      However, the above relies on the fact that incrementing the iterator
      ends up exactly in end_all().
 
@@ -103,8 +114,8 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator->() con
 }
 
 /*! We make sure that incrementing the full_iterator ends up in
-    (last_top_level_iter - 1, *(last_top_level_iter - 1).end_all()).
-    This <b>has to</b> represent end_all() of this full_iterator.
+    (last_top_level_iter, last_top_level_iter, 0, 0).
+    This <b>has to</b> represent \c end_all() of this full_iterator.
 */
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& 
@@ -112,13 +123,19 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++()
 {
   assert(current_top_level_iter < last_top_level_iter);
   ++current_rest_iter;
-
-  if (current_rest_iter == last_rest_iter
-      && current_top_level_iter != (last_top_level_iter - 1))
+  if (current_rest_iter == last_rest_iter)
   {
-    ++current_top_level_iter;
-    current_rest_iter = (*current_top_level_iter).begin_all();
-    last_rest_iter = (*current_top_level_iter).end_all();
+    ++current_top_level_iter;        
+    if (current_top_level_iter != (last_top_level_iter))
+    {
+      current_rest_iter = (*current_top_level_iter).begin_all();
+      last_rest_iter = (*current_top_level_iter).end_all();
+    }
+    else
+    {
+      current_rest_iter = 0;
+      last_rest_iter = 0;
+    }
   }
   return *this;
 }
