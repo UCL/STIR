@@ -1,0 +1,8 @@
+Test OutputFileFormat Parameters:=
+output file format type := ecat6
+ecat6 Output File Format Parameters:=
+number format := float
+number_of_bytes_per_pixel:=4
+default scanner := ECAT 953
+End ecat6 Output File Format Parameters:=
+End:=
