@@ -32,10 +32,11 @@ using std::endl;
 // Current version of boost::random breaks on VC6 and 7 because of 
 // compile time asserts. I'm disabling them for now by defining the following.
 //TODO remove when upgrading to next version
-#define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS 
+//#define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS 
 #endif
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
 
 
 
@@ -194,12 +195,14 @@ start_new_time_frame(const unsigned int new_frame_num)
       // now initialise num_times_to_replicate
 
   typedef boost::mt19937 base_generator_type;
-  base_generator_type generator;
-    
+  base_generator_type generator;    
   generator.seed(static_cast<boost::uint32_t>(seed));
-  boost::uniform_int<base_generator_type, unsigned> 
+
+  boost::uniform_int<unsigned> 
+    uniform_int_distribution(0U, total_num_events_in_this_frame-1);
+  boost::variate_generator<base_generator_type, boost::uniform_int<unsigned> > 
     random_int(generator,
-	       0U, total_num_events_in_this_frame-1);
+	       uniform_int_distribution);
     
   num_times_to_replicate.resize(total_num_events_in_this_frame);
     
