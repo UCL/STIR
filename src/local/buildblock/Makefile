@@ -19,7 +19,8 @@ SOURCES = \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
-	fft.cxx
+	fft.cxx \
+	SSRB.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
