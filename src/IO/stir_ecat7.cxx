@@ -973,7 +973,8 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 {
   shared_ptr<Scanner> scanner_ptr;
   find_scanner(scanner_ptr, *(mptr->mhptr)); 
-  if (scanner_ptr->get_type() == Scanner::Unknown_Scanner)
+  if (scanner_ptr->get_type() == Scanner::Unknown_scanner ||
+      scanner_ptr->get_type() == Scanner::User_defined_scanner)
   {
     warning("ECAT7 IO: Couldn't determine the scanner \n"
       "(Main_header.system_type=%d), defaulting to 962.\n"

@@ -175,7 +175,7 @@ Scanner* find_scanner_from_ECAT_system_type(const short system_type)
   case 42:
     return new Scanner(Scanner::RATPET);
   default :  
-    return new Scanner(Scanner::Unknown_Scanner);
+    return new Scanner(Scanner::Unknown_scanner);
   }
 }
 
