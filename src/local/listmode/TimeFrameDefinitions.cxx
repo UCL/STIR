@@ -5,7 +5,7 @@
   \file 
   \ingroup utilities
 
-  \brief Implementaiton of class TimeFrameDefinitions
+  \brief Implementation of class TimeFrameDefinitions
  
   \author Kris Thielemans
   
@@ -90,10 +90,15 @@ TimeFrameDefinitions(const string& fdef_filename)
     in >> num >> duration;
     if (!in || in.eof())
       break;
-    if (num<=0 || duration<=0)
+    if (num<0 || duration<=0)
         error("Reading frame_def file %s: encountered negative numbers (%d, %g)\n",
 	      fdef_filename.c_str(), num, duration);
 
+    if (num==0)
+      {
+	// special case to allow us to skip a time period without storing it
+	previous_end_time+=duration;
+      }
     while (num--)
     {
       frame_times.push_back(make_pair(previous_end_time, previous_end_time+duration));
