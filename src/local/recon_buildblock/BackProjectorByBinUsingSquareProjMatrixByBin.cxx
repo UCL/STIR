@@ -9,9 +9,9 @@
 
   \brief non-inline implementations for BackProjectorByBinUsingSquareProjMatrixByBin
   
-  \author Mustapha Sadki
+  \author Sanida Mustafovic
   \author Kris Thielemans
-  \author PARAPET project
+
     
   \date $Date: 
   \version $Revision: 
@@ -29,7 +29,7 @@ START_NAMESPACE_TOMO
 
 const char * const 
 BackProjectorByBinUsingSquareProjMatrixByBin::registered_name =
-  "Matrix";
+  "Matrix Square";
 
 
 void
@@ -65,14 +65,9 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 {
   ProjMatrixElemsForOneBin proj_matrix_row;
   
- // ProjMatrixElemsForOneBin::iterator element_ptr = 
-  //proj_matrix_row.begin();
-
-  VoxelsOnCartesianGrid<float>& image_cast =
-    dynamic_cast<VoxelsOnCartesianGrid<float>& > (image);
   
   RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
-  float sum = 0;
+
   
   while( r_viewgrams_iter!=viewgrams.end())
   {
@@ -83,34 +78,21 @@ actual_back_project(DiscretisedDensity<3,float>& image,
     for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
       for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
       { 
-	sum = 0;
+
 	Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
 	proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
-	// divide all proccesed pixels in the image with proj_matrix_row.square_sum() and take 
-	// a sqrt
 	ProjMatrixElemsForOneBin::iterator element_ptr = 
 	  proj_matrix_row.begin();
-	sum = proj_matrix_row.square_sum();
-	// square stuff
-	float val=0;
+
+	// square matrix elements
 	while (element_ptr != proj_matrix_row.end())
 	{	  
-	  val=element_ptr->get_value();
+	  const float val=element_ptr->get_value();
 	  *element_ptr *=val;	  
 	   element_ptr++;
 	}
 
 	proj_matrix_row.back_project(image, bin);	
-	while (element_ptr != proj_matrix_row.end())
-	{
-	  const BasicCoordinate<3,int> coords = element_ptr->get_coords();
-	  if (coords[1] >= image_cast.get_min_index() && coords[1] <= image_cast.get_max_index())
-	  image_cast[coords[1]][coords[2]][coords[3]] /= sum;
-	  image_cast[coords[1]][coords[2]][coords[3]] = sqrt(image_cast[coords[1]][coords[2]][coords[3]]);
-	  element_ptr++;
-	  
-	}
-	//++r_viewgrams_iter;   
       }
       ++r_viewgrams_iter;
   }
