@@ -71,7 +71,17 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
             sprintf(out_filename, "MLresult_subiter_eff_1_%d.out", 
 		    sub_iter_num++);
             ofstream out(out_filename);
+	    if (!out)
+	      {
+		warning("Error opening output file %s\n", out_filename);
+		exit(EXIT_FAILURE);
+	      }
             out << efficiencies;
+	    if (!out)
+	      {
+		warning("Error writing data to output file %s\n", out_filename);
+		exit(EXIT_FAILURE);
+	      }
           }
 #endif
     }
@@ -148,7 +158,17 @@ int main(int argc, char **argv)
 			   fan_sum_name.end());
 	fan_sum_name += ".dat"; 
 	ofstream out(fan_sum_name.c_str());
+	if (!out)
+	  {
+	    warning("Error opening output file %s\n", fan_sum_name.c_str());
+	    exit(EXIT_FAILURE);
+	  }
 	out << data_fan_sums;
+	if (!out)
+	  {
+	    warning("Error writing data to output file %s\n", fan_sum_name.c_str());
+	    exit(EXIT_FAILURE);
+	  }
       }
     }
   else
@@ -156,17 +176,40 @@ int main(int argc, char **argv)
       max_ring_diff = atoi(argv[5]);
       fan_size = atoi(argv[6]);
       ifstream in(argv[3]);
+      if (!in)
+	{
+	  warning("Error opening input file %s\n", argv[3]);
+	  exit(EXIT_FAILURE);
+	}
       in >> data_fan_sums;
       num_rings = data_fan_sums.get_length();
+      if (num_rings==0)
+	{
+	  warning("input file %s should be a  2d list of numbers but I found "
+		  "a list of length 0 (or no list at all).\n", argv[3]);
+	  exit(EXIT_FAILURE);
+	}
       assert(data_fan_sums.get_min_index()==0);
       num_detectors_per_ring = data_fan_sums[0].get_length();
       if (!data_fan_sums.is_regular())
-	error("Error reading fan-sum file (not a square matrix)\n");
+	{
+	  warning("input file %s should be a (rectangular) matrix of numbers\n", argv[3]);
+	  exit(EXIT_FAILURE);
+	}
 
-      if (num_rings==0 || num_detectors_per_ring==0)
-	error("Error reading fan-sum file (0 size)\n");
+      if (num_detectors_per_ring==0)
+	{
+	  warning("input file %s should be a 2d list of numbers but I found something else (zero number of columns?)\n", argv[3]);
+	  exit(EXIT_FAILURE);
+	}
       if (num_rings<max_ring_diff || num_detectors_per_ring<fan_size)
-	error("Error reading fan-sum file (sizes too small compared to max_ring_diff and/or fan_size)\n");
+	{
+	  warning("input file %s is a matrix with sizes %dx%d, but this is "
+		  "too small compared to max_ring_diff (%d) and/or fan_size (%d)\n", 
+		  argv[3],num_rings,num_detectors_per_ring,
+		  max_ring_diff, fan_size);
+	  exit(EXIT_FAILURE);
+	}
     }
   const int half_fan_size = fan_size/2;
 
@@ -197,7 +240,18 @@ int main(int argc, char **argv)
             sprintf(out_filename, "%s_%s_%d_%d.out", 
 		    out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
             ofstream out(out_filename);
+	    if (!out)
+	      {
+		warning("Error opening output file %s\n", out_filename);
+		exit(EXIT_FAILURE);
+	      }
             out << efficiencies;
+	    if (!out)
+	      {
+		warning("Error writing data to output file %s\n", out_filename);
+		exit(EXIT_FAILURE);
+	      }
+
             delete out_filename;
           }
           if (eff_iter_num==num_eff_iterations || (do_KL_interval>0 && eff_iter_num%do_KL_interval==0))
