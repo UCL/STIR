@@ -1,10 +1,9 @@
 //
 // $Id$: $Date$
 //
-
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief Implementation of inline methods of class NumericType.
 
   \author Kris Thielemans 

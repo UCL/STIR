@@ -3,15 +3,21 @@
 //
 //  $Id$: $Date$
 //
+/*! 
+  \file
+ 
+  \brief  This file declares the class NumericInfo.
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+*/
+// TODO some of these members could be made static
 
 /*
-  class NumericInfo<NUMBER> defines properties for the type NUMBER.
-     Lot's of expansion is possible here.
-     The idea comes from the Modena C++ (and VC++) library where they have a 
-     similar class numeric_limits. I have no idea if this is a part of the new
-     ANSI C++ standard, but g++ doesn't have it yet.. However, if so,
-     I should probably rename a few things. (TODO)
-
   History : 
   first version by Kris Thielemans
 
@@ -24,9 +30,9 @@
 
 #include "NumericType.h"
 
-// this code uses' #define's  as specified by the ANSI C standard
-#include <limits.h>
-#include <float.h>
+// this code uses #define's  as specified by the ANSI C standard
+#include <climits>
+#include <cfloat>
 #ifndef __MSL__
 #include <sys/types.h>
 #else
@@ -35,19 +41,30 @@
 
 START_NAMESPACE_TOMO
 
-// the general framework of NumericInfo
-// This declaration is essentially empty, but needed to use template syntax.
-// It could be better to have some error in here, flagging (at compile time)
-// when you use it for a type which is not yet in our list. With the code 
-// below, you'll see a linker error only, something like
-// 'undefined reference NumericInfo<complex>::signed_type()'
+/*!
+  \ingroup buildblock
+  \brief class NumericInfo<NUMBER> defines properties for the type NUMBER.
+
+     
+  The idea comes the ANSI C++ class \c std::numeric_limits, but 
+  g++ doesn't have this yet.
+  This current class should disappear at some point.
+
+  Note that this general template is essentially empty, but it is needed to use
+  template syntax.
+ \warning It could be better to have some error in here, flagging (at compile
+  time) when you use it for a type which is not yet in our list. With the 
+  current implementation, you will see a linker error only, something like
+ 'undefined reference NumericInfo<complex>::signed_type()'
+*/
 template <class NUMBER>
 class NumericInfo
 {
 public:
   inline bool signed_type() const;
+
   inline bool integer_type() const;
-  // as reported by sizeof(), so really size_in_sizeof_char
+  //! Size in 'bytes' as reported by sizeof(), so really size_in_sizeof_char
   inline size_t size_in_bytes() const;
   inline size_t size_in_bits() const;
 
@@ -60,6 +77,8 @@ public:
 
 
 // Below are the actual details filled in.
+
+//! Basic properties of signed char
 template<>
 class NumericInfo<signed char>
 {
@@ -81,6 +100,7 @@ public:
     { return NumericType::SCHAR; }
 };
 
+//! Basic properties of unsigned char
 template<>
 class NumericInfo<unsigned char>
 {
@@ -102,6 +122,7 @@ public:
     { return NumericType::UCHAR; }
 };
 
+//! Basic properties of signed short
 template<>
 class NumericInfo<signed short>
 {
@@ -123,7 +144,7 @@ public:
     { return NumericType::SHORT; }
 };
 
-
+//! Basic properties of unsigned short
 template<>
 class NumericInfo<unsigned short>
 {
@@ -146,6 +167,7 @@ public:
 };
 
 
+//! Basic properties of signed int
 template<>
 class NumericInfo<signed int>
 {
@@ -167,6 +189,7 @@ public:
     { return NumericType::INT; }
 };
 
+//! Basic properties of unsigned int
 template<>
 class NumericInfo<unsigned int>
 {
@@ -189,6 +212,7 @@ public:
 };
 
 
+//! Basic properties of signed long
 template<>
 class NumericInfo<signed long>
 {
@@ -210,6 +234,7 @@ public:
     { return NumericType::LONG; }
 };
 
+//! Basic properties of unsigned long
 template<>
 class NumericInfo<unsigned long>
 {
@@ -232,6 +257,7 @@ public:
 
 };
 
+//! Basic properties of float
 template<>
 class NumericInfo<float>
 {
@@ -253,6 +279,7 @@ public:
     { return NumericType::FLOAT; }
 };
 
+//! Basic properties of double
 template<>
 class NumericInfo<double>
 {
