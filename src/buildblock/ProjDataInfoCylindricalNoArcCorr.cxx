@@ -332,6 +332,7 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
      R^2*(d.x^2+d.y^2)-(d.x*c1.y-d.y*c1.x)^2
   */
   const float dxy2 = (square(d.x())+square(d.y()));
+  assert(dxy2>0); // otherwise parallel to z-axis, which is gives ill-defined bin-coordinates
   const float argsqrt=
     (square(ring_radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
   if (argsqrt<=0)
