@@ -758,9 +758,6 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
         blk = nxtblk;       // point to next block
 	if (blk <= MatFirstDirBlk) break;
     }
-#ifdef _SWAPEM_
-    free (bytebufr);
-#endif
     free (dirbufr);
     return 0;       // we were unsuccessful
 }
