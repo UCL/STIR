@@ -20,7 +20,16 @@ main()
   VectorWithOffset<int> v(-3, 40);
 
 #ifdef DEFINE_ITERATORS
+#ifndef __MSL__
   iota(v.begin(), v.end(), -3);
+#else
+  { int value = -3;
+    for (VectorWithOffset<int>::iterator iter = v.begin();
+       iter != v.end();
+       iter++, value++)
+       *iter = value;
+  }
+#endif
   assert(v[4] == 4);
 
   {
