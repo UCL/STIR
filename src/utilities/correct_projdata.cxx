@@ -361,7 +361,7 @@ CorrectProjDataParameters(const char * const par_filename)
 
   // set up normalisation object
   if (
-      normalisation_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone()
+      normalisation_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone())
       != Succeeded::yes)
     error("correct_projdata: set-up of normalisation failed\n");
  
