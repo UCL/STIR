@@ -1,0 +1,504 @@
+/*!
+  \file
+  \ingroup listmode
+  \brief Utility to compute norm factors for motion corrected data
+
+  \author Kris Thielemans
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjDataInterfile.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/CartesianCoordinate3D.h"
+
+#include "local/stir/listmode/LmToProjData.h"
+#include "local/stir/motion/RigidObject3DMotion.h"
+#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
+
+
+#define USE_SegmentByView
+
+#ifdef USE_SegmentByView
+#include "stir/SegmentByView.h"
+#else
+#include "stir/Array.h"
+#include "stir/IndexRange3D.h"
+#endif
+
+// set elem_type to what you want to use for the sinogram elements
+// we need a signed type, as randoms can be subtracted. However, signed char could do.
+
+#if defined(USE_SegmentByView) 
+   typedef float elem_type;
+#  define OUTPUTNumericType NumericType::FLOAT
+#else
+   typedef short elem_type;
+#  define OUTPUTNumericType NumericType::SHORT
+#endif
+
+START_NAMESPACE_STIR
+
+#ifdef USE_SegmentByView
+typedef SegmentByView<elem_type> segment_type;
+#endif
+/******************** Prototypes  for local routines ************************/
+
+
+
+static void 
+allocate_segments(VectorWithOffset<segment_type *>& segments,
+                       const int start_segment_index, 
+	               const int end_segment_index,
+                       const ProjDataInfo* proj_data_info_ptr);
+/* last parameter only used if USE_SegmentByView
+   first parameter only used when not USE_SegmentByView
+ */         
+static void 
+save_and_delete_segments(shared_ptr<iostream>& output,
+			      VectorWithOffset<segment_type *>& segments,
+			      const int start_segment_index, 
+			      const int end_segment_index, 
+			      ProjData& proj_data);
+
+// In the next 3 functions, the 'output' parameter needs to be passed 
+// because save_and_delete_segments needs it when we're not using SegmentByView
+static
+shared_ptr<ProjData>
+construct_proj_data(shared_ptr<iostream>& output,
+                    const string& output_filename, 
+                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+
+
+
+class FindMCNormFactors : public ParsingObject
+{
+public:
+  FindMCNormFactors(const char * const par_filename);
+
+  TimeFrameDefinitions frame_defs;
+
+  virtual void process_data();
+  
+protected:
+
+  
+  //! parsing functions
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+
+  //! parsing variables
+  string input_filename;
+  string output_filename_prefix;
+  string template_proj_data_name;
+  string frame_definition_filename;
+  int max_segment_num_to_process;
+
+  shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<Scanner> scanner_ptr;
+  
+
+  bool do_time_frame;
+
+     
+private:
+
+  shared_ptr<RigidObject3DMotion> ro3d_ptr;
+
+  RigidObject3DTransformation move_to_scanner;
+  RigidObject3DTransformation move_from_scanner;
+  RigidObject3DTransformation ro3dtrans; // actual Polaris  motion for current_time
+ 
+  double time_interval;
+  
+};
+
+void 
+FindMCNormFactors::set_defaults()
+{
+  max_segment_num_to_process = -1;
+  ro3d_ptr = 0;
+  time_interval=1; 
+}
+
+void 
+FindMCNormFactors::initialise_keymap()
+{
+
+  parser.add_start_key("FindMCNormFactors Parameters");
+
+  parser.add_key("input file",&input_filename);
+  parser.add_key("template_projdata", &template_proj_data_name);
+  parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
+  parser.add_key("frame_definition file",&frame_definition_filename);
+  parser.add_key("output filename prefix",&output_filename_prefix);
+  parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
+
+  parser.add_key("time interval", &time_interval);
+  parser.add_stop_key("END");
+}
+
+FindMCNormFactors::
+FindMCNormFactors(const char * const par_filename)
+{
+  set_defaults();
+  if (par_filename!=0)
+    parse(par_filename) ;
+  else
+    ask_parameters();
+
+}
+
+bool
+FindMCNormFactors::
+post_processing()
+{
+   
+
+  if (output_filename_prefix.size()==0)
+    {
+      warning("You have to specify an output_filename_prefix\n");
+      return true;
+    }
+
+
+  if (template_proj_data_name.size()==0)
+    {
+      warning("You have to specify template_projdata\n");
+      return true;
+    }
+  shared_ptr<ProjData> template_proj_data_ptr =
+    ProjData::read_from_file(template_proj_data_name);
+
+  template_proj_data_info_ptr = 
+    template_proj_data_ptr->get_proj_data_info_ptr()->clone();
+
+  // initialise segment_num related variables
+
+  if (max_segment_num_to_process==-1)
+    max_segment_num_to_process = 
+      template_proj_data_info_ptr->get_max_segment_num();
+  else
+    {
+      max_segment_num_to_process =
+	min(max_segment_num_to_process, 
+	    template_proj_data_info_ptr->get_max_segment_num());
+      template_proj_data_info_ptr->
+	reduce_segment_range(-max_segment_num_to_process,
+			     max_segment_num_to_process);
+    }
+
+
+    scanner_ptr = 
+    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
+
+  // TODO this won't work for the HiDAC or so
+  proj_data_info_cyl_uncompressed_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
+                  1, scanner_ptr->get_num_rings()-1,
+                  scanner_ptr->get_num_detectors_per_ring()/2,
+                  scanner_ptr->get_default_num_arccorrected_bins(), 
+                  false));
+
+  // handle time frame definitions etc
+
+  do_time_frame = true;
+
+  if (do_time_frame && frame_definition_filename.size()==0)
+    {
+      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'\n");
+      return true;
+    }
+
+  if (frame_definition_filename.size()!=0)
+    frame_defs = TimeFrameDefinitions(frame_definition_filename);
+  else
+    {
+      // make a single frame starting from 0. End value will be ignored.
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      frame_defs = TimeFrameDefinitions(frame_times);
+    }
+
+  if (is_null_ptr(ro3d_ptr))
+  {
+    warning("Invalid Rigid Object 3D Motion object\n");
+    return true;
+  }
+
+
+  // TODO move to RigidObject3DMotion
+  if (!ro3d_ptr->is_time_offset_set())
+    {
+      if (input_filename.size()==0)
+	{
+	  warning("You have to specify an input_filename (or an explcit time offset)\n");
+	  return true;
+	}
+      shared_ptr<CListModeData> lm_data_ptr =
+       CListModeData::read_from_file(input_filename);
+
+      ro3d_ptr->synchronise(*lm_data_ptr);
+    }
+
+  move_from_scanner =
+    RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
+                               CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
+  move_to_scanner = move_from_scanner;
+  move_to_scanner.inverse();
+
+  return false;
+}
+
+ 
+
+void 
+FindMCNormFactors::process_data()
+{
+
+  VectorWithOffset<segment_type *> 
+    segments (template_proj_data_info_ptr->get_min_segment_num(), 
+	      template_proj_data_info_ptr->get_max_segment_num());
+
+
+  for (unsigned int current_frame_num = 1;
+       current_frame_num<=frame_defs.get_num_frames();
+       ++current_frame_num)
+    {
+      const double start_time = frame_defs.get_start_time(current_frame_num);
+      const double end_time = frame_defs.get_end_time(current_frame_num);
+      cerr << "\nDoing frame " << current_frame_num
+	   << ": from " << start_time << " to " << end_time << endl;
+
+
+      //*********** open output file
+	shared_ptr<iostream> output;
+	shared_ptr<ProjData> out_proj_data_ptr;
+
+	{
+	  char rest[50];
+	  sprintf(rest, "_f%dg1b0d0", current_frame_num);
+	  const string output_filename = output_filename_prefix + rest;
+      
+	  out_proj_data_ptr = 
+	    construct_proj_data(output, output_filename, template_proj_data_info_ptr);
+	}
+
+	allocate_segments(segments, 
+			  template_proj_data_info_ptr->get_min_segment_num(), 
+			  template_proj_data_info_ptr->get_max_segment_num(),
+			  template_proj_data_info_ptr.get());
+
+	const int start_segment_index = template_proj_data_info_ptr->get_min_segment_num();
+	const int end_segment_index = template_proj_data_info_ptr->get_max_segment_num();
+
+	 
+	const ProjDataInfoCylindricalNoArcCorr * const out_proj_data_info_ptr =
+	  dynamic_cast<ProjDataInfoCylindricalNoArcCorr const * >
+	  (out_proj_data_ptr->get_proj_data_info_ptr());
+	if (out_proj_data_info_ptr== NULL)
+	  {
+	    error("works only on  proj_data_info of "
+		  "type ProjDataInfoCylindricalNoArcCorr\n");
+	  }
+
+	unsigned num_time_samples=0; 
+	for (double current_time = start_time;
+	     current_time<=end_time; 
+	     current_time+=time_interval)
+	  {
+	    cerr << "\nDoing time " << current_time << endl;
+	    ++num_time_samples;
+	    ro3d_ptr->get_motion(ro3dtrans,current_time);
+            
+	    ro3dtrans = compose(move_to_scanner,
+				compose(ro3d_ptr->get_transformation_to_reference_position(),
+					compose(ro3dtrans,move_from_scanner)));
+
+	    for (int in_segment_num = proj_data_info_cyl_uncompressed_ptr->get_min_segment_num(); 
+		 in_segment_num <= proj_data_info_cyl_uncompressed_ptr->get_max_segment_num();
+		 ++in_segment_num)
+	      {
+
+
+		for (int in_ax_pos_num = proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(in_segment_num); 
+		     in_ax_pos_num  <= proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(in_segment_num);
+		     ++in_ax_pos_num )
+		  {
+	      
+		    for (int in_view_num=proj_data_info_cyl_uncompressed_ptr->get_min_view_num();
+			 in_view_num <= proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
+			 ++in_view_num)
+		      {
+		  
+			for (int in_tangential_pos_num=proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num();
+			     in_tangential_pos_num <= proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num();
+			     ++in_tangential_pos_num)
+			  {
+			    Bin bin(in_segment_num,in_view_num,in_ax_pos_num, in_tangential_pos_num, 1);
+			    ro3dtrans.transform_bin(bin, 
+						    *out_proj_data_info_ptr,
+						    *proj_data_info_cyl_uncompressed_ptr);
+     
+			    if (bin.get_bin_value()>0
+				&& bin.tangential_pos_num()>= out_proj_data_ptr->get_min_tangential_pos_num()
+				&& bin.tangential_pos_num()<= out_proj_data_ptr->get_max_tangential_pos_num()
+				&& bin.axial_pos_num()>=out_proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
+				&& bin.axial_pos_num()<=out_proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
+				) 
+			      {
+				assert(bin.view_num()>=out_proj_data_ptr->get_min_view_num());
+				assert(bin.view_num()<=out_proj_data_ptr->get_max_view_num());
+				
+				// now check if we have its segment in memory
+				if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
+				  {
+				    // TODO remove scale factor
+				    // it's there to compensate what we have in LmToProjDataWithMC
+				    (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
+				      1/
+				      (out_proj_data_info_ptr->
+				       get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
+										    bin.axial_pos_num())*
+				       out_proj_data_info_ptr->get_view_mashing_factor());
+				    
+				  }
+			      }
+			  }
+		      }
+		  }
+	      }
+	  }
+
+	for (int segment_num=start_segment_index; segment_num<=end_segment_index; ++segment_num)
+	  {
+	    if (num_time_samples>0)
+	      (*(segments[segment_num])) /= num_time_samples;
+	    // add constant to avoid division by 0 later.
+	    (*(segments[segment_num])) +=.00001;
+	  }
+	save_and_delete_segments(output, segments, 
+				 start_segment_index, end_segment_index, 
+				 *out_proj_data_ptr);  
+		   
+    }
+  
+}
+
+
+
+/************************* Local helper routines *************************/
+
+
+void 
+allocate_segments( VectorWithOffset<segment_type *>& segments,
+		  const int start_segment_index, 
+		  const int end_segment_index,
+		  const ProjDataInfo* proj_data_info_ptr)
+{
+  
+  for (int seg=start_segment_index ; seg<=end_segment_index; seg++)
+  {
+#ifdef USE_SegmentByView
+    segments[seg] = new SegmentByView<elem_type>(
+    	proj_data_info_ptr->get_empty_segment_by_view (seg)); 
+#else
+    segments[seg] = 
+      new Array<3,elem_type>(IndexRange3D(0, proj_data_info_ptr->get_num_views()-1, 
+				      0, proj_data_info_ptr->get_num_axial_poss(seg)-1,
+				      -(proj_data_info_ptr->get_num_tangential_poss()/2), 
+				      proj_data_info_ptr->get_num_tangential_poss()-(proj_data_info_ptr->get_num_tangential_poss()/2)-1));
+#endif
+  }
+}
+
+void 
+save_and_delete_segments(shared_ptr<iostream>& output,
+			 VectorWithOffset<segment_type *>& segments,
+			 const int start_segment_index, 
+			 const int end_segment_index, 
+			 ProjData& proj_data)
+{
+  
+  for (int seg=start_segment_index; seg<=end_segment_index; seg++)
+  {
+    {
+#ifdef USE_SegmentByView
+      proj_data.set_segment(*segments[seg]);
+#else
+      (*segments[seg]).write_data(*output);
+#endif
+      delete segments[seg];      
+    }
+    
+  }
+}
+
+
+
+static
+shared_ptr<ProjData>
+construct_proj_data(shared_ptr<iostream>& output,
+                    const string& output_filename, 
+                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+{
+  vector<int> segment_sequence_in_stream(proj_data_info_ptr->get_num_segments());
+  { 
+#ifndef STIR_NO_NAMESPACES
+    std:: // explcitly needed by VC
+#endif
+    vector<int>::iterator current_segment_iter =
+      segment_sequence_in_stream.begin();
+    for (int segment_num=proj_data_info_ptr->get_min_segment_num();
+         segment_num<=proj_data_info_ptr->get_max_segment_num();
+         ++segment_num)
+      *current_segment_iter++ = segment_num;
+  }
+#ifdef USE_SegmentByView
+  // don't need output stream in this case
+  return new ProjDataInterfile(proj_data_info_ptr, output_filename, ios::out, 
+                               segment_sequence_in_stream,
+                               ProjDataFromStream::Segment_View_AxialPos_TangPos,
+		               OUTPUTNumericType);
+#else
+  // this code would work for USE_SegmentByView as well, but the above is far simpler...
+  output = new fstream (output_filename.c_str(), ios::out|ios::binary);
+  if (!*output)
+    error("Error opening output file %s\n",output_filename.c_str());
+  shared_ptr<ProjDataFromStream> proj_data_ptr = 
+    new ProjDataFromStream(proj_data_info_ptr, output, 
+                           /*offset=*/0, 
+                           segment_sequence_in_stream,
+                           ProjDataFromStream::Segment_View_AxialPos_TangPos,
+		           OUTPUTNumericType);
+  write_basic_interfile_PDFS_header(output_filename, *proj_data_ptr);
+  return proj_data_ptr;  
+#endif
+}
+
+
+END_NAMESPACE_STIR
+
+
+
+USING_NAMESPACE_STIR
+
+int main(int argc, char * argv[])
+{
+  
+  if (argc!=1 && argc!=2) {
+    cerr << "Usage: " << argv[0] << " [par_file]\n";
+    exit(EXIT_FAILURE);
+  }
+  FindMCNormFactors application(argc==2 ? argv[1] : 0);
+  application.process_data();
+
+  return EXIT_SUCCESS;
+}
