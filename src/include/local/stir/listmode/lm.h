@@ -24,6 +24,7 @@
 #include "stir/ByteOrderDefine.h"
 #include "stir/round.h"
 #include <iostream>
+#include "stir/round.h"
 
 
 #ifndef STIR_NO_NAMESPACES
@@ -76,6 +77,9 @@ void set_sinogram_and_ring_coordinates(
 			const int ring_a, const int ring_b);
 
 void get_bin(Bin&, const ProjDataInfoCylindrical&) const;
+
+void set_random( int random);
+void set_type( int type);
 
 
 private:
