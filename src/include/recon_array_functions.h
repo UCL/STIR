@@ -25,9 +25,12 @@ void divide_and_truncate(PETImageOfVolume& numerator,
 			 const int rim_truncation,
 			 int & count);
 
+void divide_and_truncate_den(const PETImageOfVolume& numerator, 
+			 PETImageOfVolume& denominator,
+			 const int rim_truncation,
+			 int & count);
 
-
-
+void truncate_end_planes(PETImageOfVolume &input_image);
 
 #endif // __recon_array_functions_h_
 

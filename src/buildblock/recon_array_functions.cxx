@@ -126,11 +126,12 @@ float neg_trunc(float x){
 
 }
 
+
+
 void divide_and_truncate(PETImageOfVolume& numerator, 
 			 const PETImageOfVolume& denominator,
 			 const int rim_truncation,
 			 int & count)
-
 {      
   const int zs=numerator.get_min_z();
   const int ys=numerator.get_min_y();
@@ -168,7 +169,63 @@ void divide_and_truncate(PETImageOfVolume& numerator,
 	} 
 
       }
+
 }
 
+void divide_and_truncate_den(const PETImageOfVolume& numerator, 
+			 PETImageOfVolume& denominator,
+			 const int rim_truncation,
+			 int & count)
+{
+
+  const int zs=numerator.get_min_z();
+  const int ys=numerator.get_min_y();
+  const int xs=numerator.get_min_x(); 
+  
+  const int ze=numerator.get_max_z();  
+  const int ye=numerator.get_max_y(); 
+  const int xe=numerator.get_max_x();
+  
+  const int zm=(zs+ze)/2;
+  const int ym=(ys+ye)/2;
+  const int xm=(xs+xe)/2;
+  
+  const float truncated_radius = (xe-xs)/2 - rim_truncation;
+
+ for (int z=zs; z<=ze; z++)
+    for (int y=ys; y <= ye; y++)
+      for (int x=xs; x<= xe; x++)
+      {
+
+	if(square(xm-x)+square(ym-y)>=square(truncated_radius))
+	{
+	  denominator[z][y][x]=0;
+	}
+	else
+	{ 
+	  if(denominator[z][y][x]<=ZERO_TOL) 
+	  {
+	    if(numerator[z][y][x]>ZERO_TOL) count++;	
+	    denominator[z][y][x]=0;
+	  }	      
+	  else 
+	    denominator[z][y][x]=numerator[z][y][x]/denominator[z][y][x];
+	} 
+
+      }
 
 
+}
+
+void truncate_end_planes(PETImageOfVolume &input_image)
+{
+
+const int zs=input_image.get_min_z();
+const int ze=input_image.get_max_z();
+
+input_image[zs].fill(0.0);
+input_image[ze].fill(0.0);
+
+
+
+}
