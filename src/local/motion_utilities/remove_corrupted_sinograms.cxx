@@ -166,7 +166,7 @@ main(int argc, char* argv[])
   shared_ptr<ProjDataInfo> proj_data_info_ptr =
     in_projdata_ptr->get_proj_data_info_ptr()->clone();
 
-  if (proj_data_info_ptr->get_max_segment_num()>max_segment_num_to_process)
+  if (proj_data_info_ptr->get_max_segment_num()<max_segment_num_to_process)
     max_segment_num_to_process = proj_data_info_ptr->get_max_segment_num();
   {
     
