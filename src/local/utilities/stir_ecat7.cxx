@@ -9,7 +9,6 @@
   building blocks and vice versa.
 
   \author Kris Thielemans
-  \author Cristina de Oliveira (ecat_offset_in_file)
 
   $Date$
   $Revision$
@@ -72,6 +71,35 @@ using std::auto_ptr;
 START_NAMESPACE_STIR
 
 START_NAMESPACE_ECAT7
+/* ------------------------------------
+ *	print_debug
+ * ------------------------------------*/
+static int print_debug (char const * const fname, char *format, ...) 
+{
+    va_list ap;
+    char *fmt;
+    int len;
+
+
+    if (0)//flagged (fname) != NULL)
+    {
+
+	len = strlen (fname) + strlen (format) + 5;
+	if ((fmt = (char *)calloc ((long)len, sizeof (char))) == NULL)
+		return (1);
+	sprintf (fmt, "%s%s%s", fname, " :: ", format);
+
+    	va_start (ap, format);
+	vfprintf (stderr, fmt, ap);
+
+	free (fmt);
+        va_end (ap);
+    
+    }
+
+    return (0);
+
+}
 
 short find_cti_system_type(const Scanner& scanner)
 {
@@ -230,43 +258,8 @@ short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order)
   return short(0);
 }
 
-/* ------------------------------------
- *	print_debug
- * Written by Cristina de Oliveira, MRC Cyclotron Unit, London
- * not used currently
- * ------------------------------------*/
-static int print_debug (char const * const fname, char *format, ...) 
-{
-#if 0
-    va_list ap;
-    char *fmt;
-    int len;
-
-    if (flagged (fname) != NULL)
-    {
-
-	len = strlen (fname) + strlen (format) + 5;
-	if ((fmt = (char *)calloc ((long)len, sizeof (char))) == NULL)
-		return (1);
-	sprintf (fmt, "%s%s%s", fname, " :: ", format);
-
-    	va_start (ap, format);
-	vfprintf (stderr, fmt, ap);
-
-	free (fmt);
-        va_end (ap);
-    
-    }
-#endif
-    return (0);
-
-}
 /* -------------------------------------------
 *	o f f s e t
-* Written by Cristina de Oliveira, MRC Cyclotron Unit, London
-* determines offset of data in ECAT file
-* returns -1 when an error occured
-* TODO should really a proper offset type (unsigned long or streamoff_t or something).
 * -------------------------------------------
 */
 static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int data,
@@ -519,9 +512,8 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
     }
   case Norm3d:
     {
-      fprintf (stderr, "Not implemented yet for 3d normalisation files\n");
-      // KT 14/05/2002 return -1 instead of 1
-      off = -1;
+      fprintf (stderr, "Not implemented yet\n");
+      off = 1;
       break;
     }
   }
@@ -554,10 +546,10 @@ void make_ECAT7_main_header(Main_header& mhead,
   fill_string(mhead.serial_number,10);
   mhead.scan_start_time= 0;
   fill_string(mhead.isotope_code, 8);
-  mhead.isotope_halflife= -1.F;
+  mhead.isotope_halflife= 0.F;
   fill_string(mhead.radiopharmaceutical, 32);
-  mhead.gantry_tilt= -1.F;
-  mhead.gantry_rotation= -1.F;
+  mhead.gantry_tilt= 0.F;
+  mhead.gantry_rotation= 0.F;
   mhead.bed_elevation= -1.F;
   mhead.intrinsic_tilt = 0;
   mhead.wobble_speed= 0;
@@ -565,10 +557,10 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.distance_scanned = -1.F;
   mhead.transaxial_fov= -1.F;
   mhead.angular_compression = -1;
-  mhead.calibration_factor= -1.F;
-  mhead.calibration_units = -1;
-  mhead.calibration_units_label = -1;
-  mhead.compression_code = -1;
+  mhead.calibration_factor= 0.F;
+  mhead.calibration_units = 0;
+  mhead.calibration_units_label = 0;
+  mhead.compression_code = 0;
   fill_string(mhead.study_name, 12);
   fill_string(mhead.patient_id, 16);
   fill_string(mhead.patient_name, 32);
@@ -580,12 +572,14 @@ void make_ECAT7_main_header(Main_header& mhead,
   fill_string(mhead.physician_name,32);
   fill_string(mhead.operator_name,32);
   fill_string(mhead.study_description,32);
-  mhead.acquisition_type = -1;
+  mhead.acquisition_type = 0; 
+  mhead.coin_samp_mode = 0; // default to net_trues
+  mhead.axial_samp_mode= 0;
   mhead.patient_orientation = -1;
   fill_string(mhead.facility_name, 20);
   mhead.num_planes= 0;
   mhead.num_frames= 1; // used for matnum, so set coherent default values
-  mhead.num_gates= 0;
+  mhead.num_gates= 1;
   mhead.num_bed_pos= 0;
   mhead.init_bed_position= -1.F;
   for (int i=0; i<16; i++) mhead.bed_offset[i]= -1.F;
@@ -594,7 +588,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.lwr_true_thres= -1;
   mhead.upr_true_thres= -1;  
   fill_string(mhead.user_process_code, 10);
-  mhead.acquisition_mode= -1;
+  mhead.acquisition_mode= 0; // default to NORMAL
   mhead.bin_size = -1.F;
   mhead.branching_fraction = -1.F;
   mhead.dose_start_time = 0;
@@ -615,7 +609,10 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
   mhead.bin_size = scanner.get_default_bin_size();
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
+  mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
   
+  mhead.distance_scanned=
+    mhead.plane_separation * scanner.get_num_rings()*2;
 }
 
 void make_ECAT7_main_header(Main_header& mhead,
@@ -634,41 +631,71 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.file_type= PetVolume;
   mhead.num_planes=image.get_z_size();
   mhead.plane_separation=image.get_grid_spacing()[1]/10; // convert to cm
+
 }
 
 static short find_angular_compression(const ProjDataInfo& proj_data_info)
 {
-  int angular_compression = 0;
   // try to convert to cylindrical ProjDataInfo
   // use pointer such that we can check if it worked (without catching exceptions)
   ProjDataInfoCylindrical const * const proj_data_info_cyl_ptr =
     dynamic_cast<ProjDataInfoCylindrical const *>(&proj_data_info);
   if (proj_data_info_cyl_ptr!=0)
   {
-    angular_compression =
+    const int mash_factor =
+      proj_data_info_cyl_ptr->get_view_mashing_factor();
+    if (mash_factor>1 && mash_factor%2==1)
+      {
+	warning("ECAT7::find_angular_compression: odd mash factor %d is not supported by CTI header. "
+		"Using a value of 0\n", mash_factor);
+	return static_cast<short>(0);
+      }
+    else
+      return static_cast<short>(mash_factor/2);
+  }
+  else
+    {
+      warning("ECAT7::find_angular_compression: proj data info does not correspond to a cylindrical scanner. "
+	      "Using a value of 0\n");
+      return static_cast<short>(0);
+    }
+
+}
+
+static short find_axial_compression(const ProjDataInfo& proj_data_info)
+{
+  int axial_compression = 0;
+  // try to convert to cylindrical ProjDataInfo
+  // use pointer such that we can check if it worked (without catching exceptions)
+  ProjDataInfoCylindrical const * const proj_data_info_cyl_ptr =
+    dynamic_cast<ProjDataInfoCylindrical const *>(&proj_data_info);
+  if (proj_data_info_cyl_ptr!=0)
+  {
+    axial_compression =
       proj_data_info_cyl_ptr->get_max_ring_difference(0) - 
       proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
     for (int segment_num = proj_data_info.get_min_segment_num();
          segment_num <= proj_data_info.get_max_segment_num();
          ++segment_num)
     {
-      const int this_segments_angular_compression =
+      const int this_segments_axial_compression =
           proj_data_info_cyl_ptr->get_max_ring_difference(segment_num) - 
           proj_data_info_cyl_ptr->get_min_ring_difference(segment_num) + 1;
-      if (angular_compression != this_segments_angular_compression)
+      if (axial_compression != this_segments_axial_compression)
         error("ECAT 7 file format does not support data with non-uniform angular compression. "
               "Segment %d has angular compression %d while segment 0 has %d\n",
-              segment_num, this_segments_angular_compression, angular_compression);
+              segment_num, this_segments_axial_compression, axial_compression);
     }
   }
   else
   {
-    angular_compression = 1;
+    axial_compression = 1;
     warning("ECAT 7 file format used with non-cylindrical ProjDataInfo type. "
-            "I set angular_compression to 1, but who knows what will happen?");
+            "I set axial_compression to 1, but who knows what will happen?");
   }
-  return static_cast<short>(angular_compression);
+  return static_cast<short>(axial_compression);
 }
+
 
 // mhead.file_type is set to Float3dSinogram. WARNING maybe you have to adjust file_type
 void make_ECAT7_main_header(Main_header& mhead,
@@ -688,10 +715,27 @@ void make_ECAT7_main_header(Main_header& mhead,
       ++segment_num)
     mhead.num_planes+= proj_data_info.get_num_axial_poss(segment_num);
   
-  mhead.plane_separation=proj_data_info.get_scanner_ptr()->get_ring_spacing()/10/2;
+
   mhead.bin_size =proj_data_info.get_sampling_in_s(Bin(0,0,0,0))/10;
 
   mhead.angular_compression = find_angular_compression(proj_data_info);
+  // guess septa state
+  // assume that if it has more than 1 segment, it's a 3D scan...
+  // except for some scanners without septa
+  switch(proj_data_info.get_scanner_ptr()->get_type())
+    {
+    case Scanner::E966:
+    case Scanner::E925:
+    case Scanner::RATPET:
+      mhead.septa_state= NoSeptaInstalled;
+      break;
+    default:
+      mhead.septa_state= 
+	proj_data_info.get_num_segments()==1 
+	? SeptaExtended
+	: SeptaRetracted;
+    }
+
 }
 
 // A utility function only called by scan_subheader_zero_fill
@@ -748,7 +792,7 @@ void scan_subheader_zero_fill(Scan3D_subheader& shead)
 
 void scan_subheader_zero_fill(Attn_subheader& shead) 
 {
-  shead.attenuation_type = -1;
+  shead.attenuation_type = 1; // default to measured
   shead.num_z_elements = -1;
   for (int i=0; i<64; ++i) shead.z_elements[i] = -1;
   shead.span = -1;
@@ -773,9 +817,9 @@ void img_subheader_zero_fill(Image_subheader & ihead)
   ihead.x_dimension= -1;
   ihead.y_dimension= -1;
   ihead.z_dimension= -1;
-  ihead.x_offset= -1.F;
-  ihead.y_offset= -1.F;
-  ihead.z_offset= -1.F;
+  ihead.x_offset= 0.F;
+  ihead.y_offset= 0.F;
+  ihead.z_offset= 0.F;
   ihead.recon_zoom= -1.F;                    
   ihead.scale_factor= -1.F;
   ihead.image_min= -1;
@@ -861,7 +905,7 @@ make_subheader_for_ecat7_aux(SUBHEADERPTR sub_header_ptr,
   if (proj_data_info.get_max_segment_num() != 
       -proj_data_info.get_min_segment_num())
     error("ECAT 7 file format can only handle data with max_segment_num == -min_segment_num\n");
-  span = find_angular_compression(proj_data_info);
+  span = find_axial_compression(proj_data_info);
   
   if (proj_data_info.get_max_segment_num() > 64)
     error("ECAT 7 file format supports only a maximum segment number of 64 while this data has %d\n",
@@ -892,27 +936,6 @@ make_subheader_for_ecat7_aux(SUBHEADERPTR sub_header_ptr,
   sub_header_ptr->x_resolution = proj_data_info.get_sampling_in_s(Bin(0,0,0,0))/10;
   sub_header_ptr->storage_order = ElAxVwRd;
 
-#if 0
- // this belongs in part for writing sinogram data or so
-  sub_header_ptr->scale_factor = proj_data_info.get_scale_factor();  
-  ProjDataFromStream::StorageOrder storage_order;
-  switch (proj_data_info.get_storage_order)
-  {
-  case ProjDataFromStream::Segment_AxialPos_View_TangPos:
-    sub_header_ptr->storage_order = ElVwAxRd;
-    break;
-    
-  case ProjDataFromStream::Segment_View_AxialPos_TangPos:
-    sub_header_ptr->storage_order = ElAxVwRd;
-    break;
-  default:
-    error("ECAT 7 file format supports only 'view' or 'volume' mode for projection data\n");
-  }
-  sub_header_ptr->data_type =
-    find_cti_data_type(proj_data_info.get_data_type(), proj_data_info.get_byte_order());
-  
-  // ECAT 7 always stores segments as 0, -1, +1, ... check this somehow  
-#endif
   
 }
 
@@ -1311,7 +1334,13 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   ihead.x_offset= image.get_origin().x()/10;
   ihead.y_offset= image.get_origin().y()/10;
   ihead.z_offset= image.get_origin().z()/10;
-  ihead.recon_zoom= 1;//TODO
+  shared_ptr<Scanner> scanner_ptr;
+  find_scanner(scanner_ptr, mhead);
+
+  ihead.recon_zoom= 
+    mhead.bin_size/voxel_size_x *
+    scanner_ptr->get_default_num_arccorrected_bins()/128;
+
   ihead.decay_corr_fctr= 1;
 
 #if 0  
@@ -1407,10 +1436,10 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
                   const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
   const Main_header& mhead = *(mptr->mhptr);
-  if (mhead.file_type!= Float3dSinogram)
+  if (mhead.file_type!= Float3dSinogram && mhead.file_type != AttenCor)
   {
     warning("ProjData_to_ECAT7: converting (f%d, g%d, d%d, b%d)\n"
-            "Main header.file_type should be Float3dSinogram\n",
+            "Main header.file_type should be Float3dSinogram or AttenCor\n",
             frame_num, gate_num, data_num, bed_num);
     return Succeeded::no;
   }
@@ -1430,21 +1459,35 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
     }
   }
   
-  Scan3D_subheader shead; 
-  make_subheader_for_ecat7(shead, mhead, *proj_data.get_proj_data_info_ptr());
-  
-  
+  Scan3D_subheader scan3d_shead; 
+  Attn_subheader attn_shead;
 
-  // Setup subheader params
-  shead.data_type= IeeeFloat;
-  shead.loss_correction_fctr= 1.F; 
-  shead.scale_factor= 1.F; 
-  shead.storage_order = ElAxVwRd;
+  if (mhead.file_type == AttenCor)
+  {
+    make_subheader_for_ecat7(attn_shead, mhead, *proj_data.get_proj_data_info_ptr());
+    // Setup remaining subheader params
+    attn_shead.data_type= IeeeFloat;
+    attn_shead.scale_factor= 1.F; 
+    attn_shead.storage_order = ElAxVwRd;
+  }
+  else
+  {
+    make_subheader_for_ecat7(scan3d_shead, mhead, *proj_data.get_proj_data_info_ptr());
+    // Setup remaining subheader params
+    scan3d_shead.data_type= IeeeFloat;
+    scan3d_shead.loss_correction_fctr= 1.F; 
+    scan3d_shead.scale_factor= 1.F; 
+    scan3d_shead.storage_order = ElAxVwRd;
+  }
+
+  // allocate space in file, and write subheader
   {
     const int ERROR=-1;
     const int plane_size= proj_data.get_num_tangential_poss() * proj_data.get_num_views();
     
-    int nblks = (mhead.num_planes*plane_size+511)/512;//TODO only ok if main_header.num_planes is set as above
+    // TODO relies on writing floats
+    // TODO only ok if main_header.num_planes is set as above
+    int nblks = (mhead.num_planes*plane_size*sizeof(float)+511)/512;
     
     /* 3D sinograms subheader use one more block */
     if (mptr->mhptr->file_type == Byte3dSinogram  ||
@@ -1464,14 +1507,25 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
       insert_mdir(matdir, mptr->dirlist) ;
     }
     
-    if (mat_write_Scan3D_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
-                                   &shead) == ERROR) 
-       return  Succeeded::no;
+    if (mhead.file_type == AttenCor)
+    {
+      if (mat_write_attn_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+                                   &attn_shead) == ERROR) 
+         return  Succeeded::no;
+    }
+    else
+    {
+      if (mat_write_Scan3D_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+                                   &scan3d_shead) == ERROR) 
+         return  Succeeded::no;
+    }
+    
   }
   
   NumericType data_type;
   ByteOrder byte_order;
-  find_data_type(data_type, byte_order, shead.data_type);  
+  find_data_type(data_type, byte_order, 
+                 mhead.file_type == AttenCor?attn_shead.data_type:scan3d_shead.data_type);
 
   cout<<endl<<"Processing segment number:";
   
@@ -1530,7 +1584,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
         if (size_written != size_to_write)
         {
           warning("ProjData_to_ECAT7: error in writing for segment %d (f%d, g%d, d%d, b%d)\n"
-            "No data written for this segment and all remaining segments\n",
+            "Not all data written for this segment and none for all remaining segments\n",
             segment_num, frame_num, gate_num, data_num, bed_num);
           return Succeeded::no;
         }
@@ -1545,11 +1599,15 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
 
 Succeeded 
 ProjData_to_ECAT7(ProjData const& proj_data, string const & cti_name, string const & orig_name,
-                  const int frame_num, const int gate_num, const int data_num, const int bed_num)
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num,
+                  const bool write_as_attenuation)
 {  
   Main_header mhead;
   make_ECAT7_main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
-  
+  if (write_as_attenuation)
+    mhead.file_type = AttenCor;
+  else
+    mhead.file_type = Float3dSinogram;
   
   MatrixFile *mptr= matrix_create(cti_name.c_str(), MAT_CREATE, &mhead);   
   Succeeded result =
