@@ -1,5 +1,6 @@
+# AIX Makefile for PPhead/utilities directory
 #
-# $Id$ %E
+# $Id$ 
 #
 
 WORKSPACE = ${HOME}/PPhead
@@ -43,14 +44,14 @@ endif
 
 # KT 09/10/98 use OBJS,EXES to prevent repetition, add displayIF
 #CL 10/10/98 Add readsino
-# KT 23/10/98 add in vox again
-SOURCES = readsino.cxx displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx 
-
+#CL 12/11/98 Remove readsino as now it is obsolete, use either displayPSOV or vox
+SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx 
+#readsino.cxx 
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
 
 #CL 12/10/98 ADd the utility to convert bitmap en CTI format
-SOURCES_CTI = conv2cti.cxx saveImageCTI.cxx reconstruction.cxx voxelphantom.cxx cti_utils.cxx
+SOURCES_CTI = conv2cti.cxx saveImageCTI.cxx recon_tools.cxx voxelphantom.cxx cti_utils.cxx
 OBJS_CTI= $(SOURCES_CTI:%.cxx=$(DEST)%.o)
 
 # KT 09/10/98 changed to OBJS
@@ -75,7 +76,7 @@ $(DEST)ecat6bysegmspan: ecat6bysegmspan.cxx $(DEST)libcti.a
 	$(CXX) $(CFLAGS)  -o $@ ecat6bysegmspan.cxx -L$(DEST)  -lcti -lm 
 
 #CTI Libraries $(LIB_CTI) have been built
-$(DEST)libcti.a: $(DEST)cti_utils.o $(DEST)reconstruction.o $(DEST)fft.o
+$(DEST)libcti.a: $(DEST)cti_utils.o $(DEST)recon_tools.o $(DEST)fft.o
 	$(AR) r $@ $?
 	$(RANLIB) $@
 
@@ -123,19 +124,19 @@ $(DEST)readsino.o: readsino.cxx ../include/pet_common.h \
 
 $(DEST)swap_byteorder.o: swap_byteorder.cxx ../include/pet_common.h
 
-# KT 23/10.98 added some and removed others
 $(DEST)/vox.o: vox.cxx ../include/pet_common.h ../include/sinodata.h \
  ../include/Tensor1D.h ../include/NumericInfo.h \
  ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
  ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
  ../include/PETScannerInfo.h ../include/imagedata.h \
- ../include/Point3D.h ../include/debug.h \
- ../include/interfile.h \
- ../include/display.h
+ ../include/Point3D.h ../include/debug.h ../include/TensorFunction.h \
+ ../include/display.h ../include/recon_buildblock/bckproj.h \
+ ../include/Tensor4D.h ../include/recon_buildblock/fwdproj.h \
+ ../include/recon_buildblock/zoom.h
 
 
 $(DEST)conv2cti.o: conv2cti.cxx ../include/CTI/camera.h \
- ../include/CTI/reconstruction.h ../include/CTI/rcn_config.h \
+ ../include/CTI/recon_tools.h ../include/CTI/rcn_config.h \
  ../include/CTI/rcn_types.h ../include/CTI/cti_types.h \
  ../include/CTI/pet_utils.h ../include/CTI/cti_utils.h \
  ../include/CTI/voxelphantom.h
@@ -143,9 +144,9 @@ $(DEST)conv2cti.o: conv2cti.cxx ../include/CTI/camera.h \
 $(DEST)saveImageCTI.o: saveImageCTI.cxx ../include/CTI/pet_utils.h \
  ../include/CTI/cti_utils.h ../include/CTI/rcn_config.h \
  ../include/CTI/camera.h ../include/CTI/cti_types.h \
- ../include/CTI/rcn_types.h ../include/CTI/reconstruction.h
+ ../include/CTI/rcn_types.h ../include/CTI/recon_tools.h
 
-$(DEST)reconstruction.o: reconstruction.cxx ../include/CTI/reconstruction.h \
+$(DEST)recon_tools.o: recon_tools.cxx ../include/CTI/recon_tools.h \
  ../include/CTI/rcn_config.h ../include/CTI/camera.h \
  ../include/CTI/rcn_types.h ../include/CTI/pet_utils.h \
  ../include/CTI/cti_utils.h ../include/CTI/cti_types.h
@@ -157,12 +158,12 @@ cti_utils.o: cti_utils.cxx ../include/CTI/cti_utils.h \
 
 ecat6bysegm.o: ecat6bysegm.cxx ../include/CTI/rcn_types.h \
  ../include/CTI/rcn_config.h ../include/CTI/camera.h \
- ../include/CTI/reconstruction.h ../include/CTI/cti_utils.h \
+ ../include/CTI/recon_tools.h ../include/CTI/cti_utils.h \
  ../include/CTI/cti_types.h
 
 ecat6bysegmspan.o: ecat6bysegmspan.cxx ../include/CTI/rcn_types.h \
  ../include/CTI/rcn_config.h ../include/CTI/camera.h \
- ../include/CTI/reconstruction.h ../include/CTI/cti_utils.h \
+ ../include/CTI/recon_tools.h ../include/CTI/cti_utils.h \
  ../include/CTI/cti_types.h
 
 $(DEST)%.o : %.cxx
