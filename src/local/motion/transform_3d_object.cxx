@@ -187,6 +187,8 @@ transform_3d_object(ProjData& out_proj_data,
   const int out_max_segment_num = out_proj_data.get_max_segment_num();
 
 #if 0
+
+  warning("Using push interpolation");
   VectorWithOffset<shared_ptr<SegmentByView<float> > > out_seg_ptr(out_min_segment_num, out_max_segment_num);
   for (int segment_num = out_min_segment_num;
        segment_num <= out_max_segment_num;
@@ -245,7 +247,8 @@ transform_3d_object(ProjData& out_proj_data,
 
 #else
 
-
+  warning("Using pull interpolation");
+  
   const RigidObject3DTransformation 
     inverse_rigid_object_transformation = 
     rigid_object_transformation.inverse();
