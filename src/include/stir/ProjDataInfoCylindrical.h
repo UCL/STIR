@@ -116,6 +116,10 @@ public:
   //! Get the mashing factor, i.e. how many 'original' views are combined
   /*! This gets the result by comparing the number of detectors in the scanner_ptr
       with the actual number of views.
+
+      \warning In the debug version, it is checked with an assert() that the number of 
+      detectors is an even multiple of the number of views. This is not checked in 
+      the normal version though.
    */
   inline int get_view_mashing_factor() const;
 

@@ -65,8 +65,6 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
   ring_radius = get_scanner_ptr()->get_ring_radius();
   ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
 
-  assert(get_scanner_ptr()->get_num_detectors_per_ring() % (2*num_views) == 0);
-
   // TODO this info should probably be provided via the constructor, or at
   // least by Scanner.
   sampling_corresponds_to_physical_rings =
