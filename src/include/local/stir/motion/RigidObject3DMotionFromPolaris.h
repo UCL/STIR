@@ -23,7 +23,9 @@
 #include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
-
+/*! \ingroup motion
+  A class for handling motion information from the Polaris tracker
+*/
 class RigidObject3DMotionFromPolaris: 
   public 
   RegisteredParsingObject< RigidObject3DMotionFromPolaris,
@@ -37,8 +39,6 @@ public:
 
   // only need this to enable LmToProjDataWithMC(const char * const par_filename) function
   RigidObject3DMotionFromPolaris();
-
-  RigidObject3DMotionFromPolaris(const string mt_filename,shared_ptr<Polaris_MT_File> mt_file_ptr);
 
   //! Find average motion from the Polaris file 
   virtual RigidObject3DTransformation 
@@ -57,21 +57,18 @@ public:
   
 private: 
 
-  void find_offset(CListModeData& listmode_data);
-
+  void do_synchronisation(CListModeData& listmode_data);
 
 
   shared_ptr<Polaris_MT_File> mt_file_ptr;
   string mt_filename;  
-  //string lm_filename;
  
-#if 1
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-#endif
 
  private:
+  // TODO this should probably be moved to RigidObject3DMotion
   string transformation_from_scanner_coordinates_filename;
   RigidObject3DTransformation move_to_scanner_coords;
   RigidObject3DTransformation move_from_scanner_coords;
