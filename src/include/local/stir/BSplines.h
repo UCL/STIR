@@ -1,19 +1,8 @@
 //
 // $Id$
 //
-/*!
-  \file 
-  \ingroup numerics_buildblock
-  \brief Implementation of the (cubic) B-Splines Interpolation 
-
-  \author Charalampos Tsoumpas
-  \author Kris Thielemans
-
-  $Date$
-  $Revision$
-*/
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,6 +17,17 @@
 
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file 
+  \ingroup numerics_buildblock
+  \brief Implementation of the (cubic) B-Splines Interpolation 
+
+  \author Charalampos Tsoumpas
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
+*/
 
 #include "stir/shared_ptr.h"
 #include <vector>
@@ -38,12 +38,13 @@
 
 START_NAMESPACE_STIR
 
+typedef double pos_type;
+
 template <typename out_elemT, typename in_elemT>
 class BSplines1DRegularGrid
 {
 private:
-	typedef std::vector<in_elemT>::const_iterator RandIterIn; 
-	typedef std::vector<out_elemT>::iterator RandIterOut; 
+	typedef typename std::vector<out_elemT>::iterator RandIterOut; 
 	int input_size; // create in the constructor 
 	
   
@@ -71,14 +72,6 @@ BSplines1DRegular();
  //! destructor
 inline ~BSplines1DRegularGrid();
 
-inline 
-out_elemT 
-BSplines_weight(const out_elemT relative_position);
-
-inline 
-out_elemT 
-BSplines_1st_der_weight(const out_elemT abs_relative_position) ;
-
   // sadly,VC6.0 needs definition of template members in the class definition
   template <class IterT>
 inline
@@ -94,19 +87,19 @@ inline
 
 inline 
 out_elemT
-BSpline(const out_elemT relative_position) ;
+BSpline(const pos_type relative_position) ;
 
 inline 
 out_elemT
-BSpline_1st_der(const out_elemT relative_position) ;
+BSpline_1st_der(const pos_type relative_position) ;
 
 inline
 const out_elemT 
-operator() (const out_elemT relative_position) const;
+operator() (const pos_type relative_position) const;
 
 inline
 out_elemT 
-operator() (const out_elemT relative_position);
+operator() (const pos_type relative_position);
 
 inline
 const std::vector<out_elemT> 
@@ -114,17 +107,17 @@ BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //
 						RandIterOut output_relative_position_end_iterator);
 inline
 const std::vector<out_elemT> 
-BSpline_output_sequence(std::vector<out_elemT> output_relative_position);
+BSpline_output_sequence(std::vector<pos_type> output_relative_position);
 
 };
 
 
 template <class IterT>
 inline 
-#if _MSC_VER<=1300
+#if defined(_MSC_VER) && _MSC_VER<=1300
   float
 #else
-  std::iterator_traits<IterT>::value_type
+  typename std::iterator_traits<IterT>::value_type
 #endif
 		cplus0(const IterT input_iterator,  
 		const IterT input_end_iterator,
@@ -139,6 +132,17 @@ BSplines_coef(RandIterOut c_begin_iterator,
 			   RandIterOut c_end_iterator,
 			   IterT input_begin_iterator, 
 			   IterT input_end_iterator);
+
+
+template <typename pos_type>
+inline 
+pos_type 
+BSplines_weight(const pos_type relative_position);
+
+template <typename pos_type>
+inline 
+pos_type 
+BSplines_1st_der_weight(const pos_type abs_relative_position) ;
 
 //*/
 END_NAMESPACE_STIR
