@@ -85,9 +85,24 @@ public:
                   const DiscretisedDensity<3,float>& density) const;
 
 
+  //! get type used for outputing numbers 
+  NumericType get_type_of_numbers() const;
+  //! get byte order used for output 
+  ByteOrder get_byte_order();
+  //! set type used for outputing numbers 
+  /*! Returns type actually used. 
+     Calls warning() with some text if the requested type is not supported.*/
+  virtual NumericType set_type_of_numbers(const NumericType&, const bool warn = false);
+  //! set byte order used for output
+  /*! Returns type actually used.
+    Calls warning() with some text if the requested type is not supported. 
+  */ 
+  virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
+
+
 protected:
   //! type used for outputing numbers 
-  NumericType           type_of_numbers;
+  NumericType type_of_numbers;
   //! byte order used for output 
   ByteOrder file_byte_order;
 
