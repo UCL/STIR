@@ -1,4 +1,6 @@
+//
 // $Id$
+//
 
 #include "utilities.h"
 
@@ -10,33 +12,155 @@ find_filename(const char * const filename_with_directory)
 {
   char *name;
 
-#if __OS__ == __VAX__
+#if defined(__OS_VAX__)
  name = strrchr(filename_with_directory,']');
  if (name==NULL)
    name = strrchr(filename_with_directory,':');
-#elif __OS__ == __WIN__
+#elif defined(__OS_WIN__)
  name = strrchr(filename_with_directory,'\\');
  if (name==NULL)
    name = strrchr(filename_with_directory,'/');
  if (name==NULL)
    name = strrchr(filename_with_directory,':');
-#elif __OS__ == __MAC__
+#elif defined(__OS_MAC__)
  name = strrchr(filename_with_directory,':');
-#else __OS__ == __UNIX__
+#else defined(__OS_UNIX__)
  name = strrchr(filename_with_directory,'/');
-#endif /* VAX */
+#endif 
  if (name!=NULL)
-   return name++;
+   // KT 10/01/2000 name++ changed to name+1
+   return name+1;
  else
    return filename_with_directory;
 }
 
+// KT 14/01/2000 new
+char *
+get_directory_name(char *directory_name, 
+		   const char * const filename_with_directory)
+{
+  size_t num_chars_in_directory_name =
+    find_filename(filename_with_directory) - filename_with_directory;
+  strncpy(directory_name, filename_with_directory, num_chars_in_directory_name);
+  directory_name[num_chars_in_directory_name] = '\0';
+  return directory_name;
+}
+
 char *add_extension(char *file_in_directory_name, 
 		    const char * const extension)
+
 {
   if (strchr(find_filename(file_in_directory_name),'.') == NULL)
     strcat (file_in_directory_name,extension);
   return file_in_directory_name;
+}
+
+// SM&KT 18/01/2000 new
+char *replace_extension(char *file_in_directory_name, 
+		        const char * const extension)
+{
+  char * location_of_dot = 
+    strchr(find_filename(file_in_directory_name),'.');
+
+  // first truncate at extension
+  if (location_of_dot!= NULL)
+    *(location_of_dot) = '\0';
+
+  strcat (file_in_directory_name,extension);
+  return file_in_directory_name;
+}
+
+// KT 10/01/2000 new
+bool
+is_absolute_pathname(const char * const filename_with_directory)
+{
+#if defined(__OS_VAX__)
+  // relative names either contain no '[', or have '[.'
+  char * ptr = strchr(filename_with_directory,'[');
+  if (ptr==NULL)
+    return false;
+  else
+    return *(ptr+1) != '.';
+#elif defined(__OS_WIN__)
+  // relative names do not start with '\' or '?:\'
+  if (filename_with_directory[0] == '\\' ||
+      filename_with_directory[0] == '/')
+    return true;
+  else
+    return (strlen(filename_with_directory)>3 &&
+            filename_with_directory[1] == ':' &&
+ 	    (filename_with_directory[2] == '\\' ||
+ 	     filename_with_directory[2] == '/')
+ 	    );
+#elif defined(__OS_MAC__)
+  // relative names either have no ':' or do not start with ':'
+  char * ptr = strchr(filename_with_directory,':');
+  if (ptr == NULL)
+    return false;
+  else
+    return ptr != filename_with_directory;
+#else defined(__OS_UNIX__)
+  // absolute names start with '/'
+  return filename_with_directory[0] == '/';
+#endif 
+}
+
+
+// KT 10/01/2000 new
+// Warning: this function assumes that filename_with_directory 
+// points to sufficient allocated space to contain the new string
+char *
+prepend_directory_name(char * filename_with_directory, 
+		       const char * const directory_name)
+{
+  if (is_absolute_pathname(filename_with_directory) ||
+      directory_name == 0 ||
+      strlen(directory_name) == 0)
+    return filename_with_directory;
+
+  char * new_name = 
+    new char[strlen(filename_with_directory) + strlen(directory_name) + 4];
+  strcpy(new_name, directory_name);
+  char * end_of_new_name = new_name + strlen(directory_name)-1;
+
+
+#if defined(__OS_VAX__)
+  // relative names either contain no '[', or have '[.'
+  if (filename_with_directory[0] != '[' || 
+      *end_of_new_name != ']')
+    strcat(new_name, filename_with_directory);
+  else
+  {
+    // peel of the ][ pair
+    *end_of_new_name = '\0';
+    strcat(new_name, filename_with_directory+1);
+  }
+#elif defined(__OS_WIN__)
+  // append \ if necessary
+  if (*end_of_new_name != ':' && *end_of_new_name != '\\' &&
+      *end_of_new_name != '/')
+    strcat(new_name, "\\");
+  strcat(new_name, filename_with_directory);
+#elif defined(__OS_MAC__)
+  // relative names either have no ':' or do not start with ':'
+  // append : if necessary
+  if (*end_of_new_name != ':')
+    strcat(new_name, ":");
+  // do not copy starting ':' of filename
+  if (filename_with_directory[0] == ':')
+    strcat(new_name, filename_with_directory+1);
+  else
+    strcat(new_name, filename_with_directory);
+#else defined(__OS_UNIX__)
+  // append / if necessary
+  if (*end_of_new_name != '/')
+    strcat(new_name, "/");
+  strcat(new_name, filename_with_directory);
+#endif 
+
+  strcpy(filename_with_directory, new_name);
+  delete[] new_name;
+  return filename_with_directory;
 }
 
 char *ask_filename_with_extension(char *file_in_directory_name,
@@ -403,4 +527,3 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
   }
   return memory;
 }
-
