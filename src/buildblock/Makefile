@@ -1,10 +1,11 @@
 #
-# $Id$: $Date$
+# $Id$
 #
 
 include ../Makefile_common
 
-all: $(DEST)libbuildblock.a
+
+all: $(DEST)libbuildblock.a $(DEST)registrystuff.o
 
 clean:
 	$(RM) $(DEST)*
@@ -12,6 +13,7 @@ clean:
 # KT 25/10/2000
 # removed   DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.cxx 
 # added   ProjDataInfoCylindrical.cxx 
+# KT 25/04/2001 added new filter stuff, removed ImageFilter.cxx
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
@@ -33,10 +35,19 @@ SOURCES = \
   zoom.cxx \
   NumericType.cxx ByteOrder.cxx \
   KeyParser.cxx line.cxx \
-  ImageFilter.cxx recon_array_functions.cxx \
+  recon_array_functions.cxx \
   linear_regression.cxx overlap_interpolate.cxx \
-  error.cxx warning.cxx  
-  
+  error.cxx warning.cxx  \
+	ParsingObject.cxx \
+	ArrayFilter1DUsingConvolutionSymmetricKernel.cxx \
+	SeparableArrayFunctionObject.cxx \
+	SeparableMetzArrayFilter.cxx \
+	MedianArrayFilter3D.cxx \
+	MedianImageFilter3D.cxx \
+	SeparableCartesianMetzImageFilter.cxx \
+ 
+
+$(DEST)registrystuff.o: registrystuff.cxx 
 
 
 

@@ -1,5 +1,5 @@
 //
-// $Id$
+// @(#)ReconstructionParameters.h	1.4 00/07/10
 //
  
 #ifndef __ReconstructionParameters_h__
@@ -16,12 +16,12 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date   $Date$
-  \version $Revision$
+  \date   00/07/10
+  \version 1.4
 */
 
 
-#include "KeyParser.h"
+#include "tomo/ParsingObject.h"
 #include "shared_ptr.h"
 #include "ProjData.h"
 #include <string>
@@ -36,7 +36,7 @@ START_NAMESPACE_TOMO
   \brief base class for all external reconstruction parameter objects
   \ingroup recon_buildblock
 */
-class ReconstructionParameters : public KeyParser
+class ReconstructionParameters : public ParsingObject
 {
 public:
 
@@ -75,7 +75,7 @@ public:
    
   //! lists the parameter values
   /*! has to be called by derived classes to show current parameters*/
-  virtual string parameter_info() const;
+  virtual string parameter_info();
 
 
   //! prompts the user to enter parameter values manually
@@ -103,6 +103,9 @@ protected:
   function, such that questions are asked for all parameters.
   */
   void initialise(const string& parameter_filename);
+  
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
 };
  

@@ -10,17 +10,18 @@
     
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Sanida Mustafovic
   \author PARAPET project
       
-  \date $Date$
-        
+  \date $Date$        
   \version $Revision$
 */
 
 
 #include "recon_buildblock/IterativeReconstruction.h"
 #include "DiscretisedDensity.h"
-#include "ImageFilter.h"
+#include "tomo/ImageProcessor.h"
+#include "interfile.h"
 #include <iostream>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -30,11 +31,6 @@ using std::endl;
 
 START_NAMESPACE_TOMO
 
-//
-//
-//---------------IterativeReconstruction definitions-----------------
-//
-//
 
 IterativeReconstruction::IterativeReconstruction()
 {
@@ -87,27 +83,24 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
   if(get_parameters().num_views_to_add!=1)
     warning("Warning: No mashing will be used\n");
 
-  if(get_parameters().inter_iteration_filter_interval>0 && !get_parameters().inter_iteration_filter.kernels_built )
+  // Building filters
+  // This is not really necessary, as build_and_filter would call this anyway.
+  // However, we have it here such that any errors in building the filters would
+  // be caught before doing any projections or so done.
+  
+  if(get_parameters().inter_iteration_filter_interval>0 && get_parameters().inter_iteration_filter_ptr != 0 )
     {
       cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
-
-      get_parameters().inter_iteration_filter.build(*target_image_ptr,
-					    get_parameters().inter_iteration_filter_fwhmxy_dir, 
-					    get_parameters().inter_iteration_filter_fwhmz_dir,
-					    (float) get_parameters().inter_iteration_filter_Nxy_dir,
-					    (float) get_parameters().inter_iteration_filter_Nz_dir);
+      get_parameters().inter_iteration_filter_ptr->build_filter(*target_image_ptr);
     }
 
  
-  if(get_parameters().do_post_filtering && !get_parameters().post_filter.kernels_built)
-    {
+  if(get_parameters().post_filter_ptr != 0) 
+  {
     cerr<<endl<<"Building post filter kernel"<<endl;
-
-    get_parameters().post_filter.build(*target_image_ptr,get_parameters().post_filter_fwhmxy_dir,
-			       get_parameters().post_filter_fwhmz_dir,
-			       (float) get_parameters().post_filter_Nxy_dir,
-			       (float) get_parameters().post_filter_Nz_dir);
-    }
+    
+    get_parameters().post_filter_ptr->build_filter(*target_image_ptr);
+  }
 
 }
 
@@ -117,29 +110,48 @@ void IterativeReconstruction::end_of_iteration_processing(DiscretisedDensity<3,f
 
 
   
-  if(get_parameters().inter_iteration_filter_interval>0 && subiteration_num%get_parameters().inter_iteration_filter_interval==0)
+  if(get_parameters().inter_iteration_filter_interval>0 && 
+     get_parameters().inter_iteration_filter_ptr != 0 &&
+     subiteration_num%get_parameters().inter_iteration_filter_interval==0)
     {
       cerr<<endl<<"Applying inter-iteration filter"<<endl;
-      get_parameters().inter_iteration_filter.apply(current_image_estimate);
+      get_parameters().inter_iteration_filter_ptr->build_and_filter(current_image_estimate);
     }
-
-
  
 
   cerr<< method_info()
       << " subiteration #"<<subiteration_num<<" completed"<<endl;
- 
   cerr << "  min and max in image " << current_image_estimate.find_min() 
-       << " " << current_image_estimate.find_max() << endl;
+    << " " << current_image_estimate.find_max() << endl;
+  
+  if(subiteration_num==get_parameters().num_subiterations &&
+     get_parameters().post_filter_ptr!=0 )
+  {
+    cerr<<endl<<"Applying post-filter"<<endl;
+    get_parameters().post_filter_ptr->build_and_filter(current_image_estimate);
+    
+    cerr << "  min and max after post-filtering " << current_image_estimate.find_min() 
+      << " " << current_image_estimate.find_max() << endl <<endl;
+  }
+  
+    // Save intermediate (or last) iteration      
+  if((!(subiteration_num%get_parameters().save_interval)) || subiteration_num==get_parameters().num_subiterations ) 
+    {      	         
+      // allocate space for the filename assuming that
+      // we never have more than 10^49 subiterations ...
+      char * fname = new char[get_parameters().output_filename_prefix.size() + 50];
+      sprintf(fname, "%s_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
 
+     // Write it to file
+      write_basic_interfile(fname, current_image_estimate);
+      delete fname; 
+    }
 }
 
 
 VectorWithOffset<int> IterativeReconstruction::randomly_permute_subset_order()
 {
 
-// KTxxx
-//int temp_array[get_parameters().num_subsets];
   VectorWithOffset<int> temp_array(get_parameters().num_subsets),final_array(get_parameters().num_subsets);
   int index;
 

@@ -1,5 +1,5 @@
 #
-# %W:% $Date$
+# $Id$
 #
 
 include ../Makefile_common
@@ -9,6 +9,8 @@ all: $(DEST)librecon_buildblock.a
 
 clean:
 	$(RM) $(DEST)*
+
+# SM 20/05/2001 added FilterRootPrior.cxx
 
 SOURCES= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingRayTracing.cxx \
@@ -30,7 +32,8 @@ SOURCES= ForwardProjectorByBin.cxx \
 	ProjMatrixByBinUsingRayTracing.cxx \
 	ForwardProjectorByBinUsingProjMatrixByBin.cxx \
 	BackProjectorByBinUsingProjMatrixByBin.cxx \
-	RayTraceVoxelsOnCartesianGrid.cxx
+	RayTraceVoxelsOnCartesianGrid.cxx \
+	FilterRootPrior.cxx
 
 ifdef PROJSMOOTH
 SOURCES = $(SOURCES) PostsmoothingForwardProjectorByBin.cxx 

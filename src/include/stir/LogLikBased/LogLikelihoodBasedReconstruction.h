@@ -11,13 +11,12 @@
  
   \brief declares the LogLikelihoodBasedReconstruction class
 
-
   \author Matthew Jacobson
   \author Kris Thielemans
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
+  \date   $Date$
   \version $Revision$
 */
 
@@ -35,9 +34,7 @@ START_NAMESPACE_TOMO
 
 
 class LogLikelihoodBasedReconstruction: public IterativeReconstruction
-{
- 
-
+{ 
  protected:
 
 
@@ -49,8 +46,8 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
   void recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr);
   //void loglikelihood_common_recon_set_up(const DiscretisedDensity<3,float> &target_image);
 
-  //! operations for the end of the iteration common to all loglikelihood based algorithms
-  void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate);
+  // KT 25/05/2001 moved everything which was in here to IterativeReconstruction
+  //void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate);
  
 
 
@@ -60,8 +57,9 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
 			    const DiscretisedDensity<3,float>& current_image_estimate,
 			    const int magic_number=1);
 
+ // KT 25/05/2001 added const
  //! adds up the projection data
- float sum_projection_data();
+ float sum_projection_data() const;
 
  //! accessor for the external parameters
  LogLikelihoodBasedAlgorithmParameters& get_parameters()
@@ -76,8 +74,7 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
     }
 
 
- // TODO move to parameters (KT thinks)
-
+ 
  //! points to the additive projection data
  shared_ptr<ProjData> additive_projection_data_ptr;
 

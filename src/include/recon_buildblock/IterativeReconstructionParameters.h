@@ -1,5 +1,5 @@
 //
-// $Id$
+// @(#)IterativeReconstructionParameters.h	1.4 00/07/05
 //
 
 #ifndef __IterativeReconstructionParameters_h__
@@ -16,14 +16,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  \date    00/07/05
+  \version 1.4
 
 */
 
 
 
-#include "ImageFilter.h"
+#include "tomo/ImageProcessor.h"
 #include "recon_buildblock/ReconstructionParameters.h"
 
 START_NAMESPACE_TOMO
@@ -48,9 +48,6 @@ public:
 
   //! constructor
   IterativeReconstructionParameters();
-
-  //! lists the parameter values
-  virtual string parameter_info() const;
 
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
@@ -87,49 +84,24 @@ public:
   //! signals whether to randomise the subset order in each iteration
   int randomise_subset_order;
 
+
+  //! inter-iteration filter
+  //shared_ptr<
+    ImageProcessor<3,float>* inter_iteration_filter_ptr;
+
+   //! post-filter
+  //shared_ptr<
+    ImageProcessor<3,float>*  post_filter_ptr;
+
+
+  
   //! subiteration interval at which to apply inter-iteration filters 
   int inter_iteration_filter_interval;
 
-  //! inter-iteration filter type name
-  string inter_iteration_filter_type;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
-  //! inter-iteration filter FWHM for transaxial direction filtering
-  double inter_iteration_filter_fwhmxy_dir;
 
-  //! inter-iteration filter FWHM for axial direction filtering
-  double inter_iteration_filter_fwhmz_dir;
-
-  //! inter-iteration filter Metz power for transaxial direction filtering
-  double inter_iteration_filter_Nxy_dir;
-
-  //! inter-iteration filter Metz power for axial direction filtering
-  double inter_iteration_filter_Nz_dir;
-
-  //! signals whether or not to apply post-filtering
-  int do_post_filtering;
-
-  //! post-filter type name
-  string post_filter_type;
-
-  //! post-filter FWHM for transaxial direction filtering
-  double post_filter_fwhmxy_dir;
-
-  //! post-filter FWHM for axial direction filtering
-  double post_filter_fwhmz_dir;
-
-  //! post-filter Metz power for transaxial direction filtering
-  double post_filter_Nxy_dir;
-
-  //! post-filter Metz power for axial direction filtering
-  double post_filter_Nz_dir;
-
-  // TODO make shared_ptr
-
-  //! inter-iteration filter object
-  ImageFilter inter_iteration_filter;
-
-  //!post-filter object
-  ImageFilter post_filter;
 
 
 };

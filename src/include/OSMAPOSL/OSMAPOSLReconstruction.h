@@ -1,5 +1,5 @@
 //
-// $Id$
+// @(#)OSMAPOSLReconstruction.h	1.2 00/06/15
 //
 /*!
 
@@ -11,15 +11,16 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  \date 00/06/15
 
-  \version $Revision$
+  \version 1.2
 */
 
 #ifndef __OSMAPOSLReconstruction_h__
 #define __OSMAPOSLReconstruction_h__
 
-#include "LogLikBased/MAPBasedReconstruction.h"
+//#include "LogLikBased/MAPBasedReconstruction.h"
+#include "LogLikBased/LogLikelihoodBasedReconstruction.h"
 #include "OSMAPOSL/OSMAPOSLParameters.h"
 
 START_NAMESPACE_TOMO
@@ -30,11 +31,32 @@ START_NAMESPACE_TOMO
 
   When no prior info is specified, this reduces to 'standard' OSEM.
 
-  TODO more doc
+
+  When MAP_model == "additive" this implements the standard form of OSL
+  (with a small modification for allowing subsets):
+  \code
+   lambda_new = lambda / ((p_v + beta*prior_gradient)/ num_subsets) *
+                   sum_subset backproj(measured/forwproj(lambda))
+   \endcode
+   with \f$p_v = sum_b p_{bv}\f$.   
+   actually, we restrict 1 + beta*prior_gradient/p_v between .1 and 10
+
+  On the other hand, when MAP_model == "multiplicative" it implements
+  \code
+   lambda_new = lambda / (p_v*(1 + beta*prior_gradient)/ num_subsets) *
+                  sum_subset backproj(measured/forwproj(lambda))
+  \endcode
+   with \f$p_v = sum_b p_{bv}\f$.
+   actually, we restrict 1 + beta*prior_gradient between .1 and 10
+  
+
+  Note that all this assumes 'balanced subsets', i.e. 
+  
+    \f[\sum_{b \elem subset} p_{bv} = \sum_b p_{bv} \over numsubsets \f]
 
   \warning This class should be the last in a Reconstruction hierarchy.
 */
-class OSMAPOSLReconstruction: public MAPBasedReconstruction
+class OSMAPOSLReconstruction: public LogLikelihoodBasedReconstruction//MAPBasedReconstruction
 {
 public:
 
@@ -63,7 +85,7 @@ public:
   virtual string method_info() const;
 
   //! lists the parameters
-  virtual string parameter_info() const
+  virtual string parameter_info() 
     {return parameters.parameter_info();}
  
 private:

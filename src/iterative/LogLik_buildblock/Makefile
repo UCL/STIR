@@ -1,5 +1,5 @@
 #
-# $Id$
+# @(#)Makefile	1.1 6/15/00
 #
 
 
@@ -7,15 +7,15 @@ include ../../Makefile_common
 
 all: $(DEST)libLogLik_buildblock.a 
 
+vpath %.cxx ../LogLik_buildblock
 clean:
 	$(RM) $(DEST)*
 
 SOURCES= \
-ConjugateSpaceAlgorithmParameters.cxx \
 LogLikelihoodBasedAlgorithmParameters.cxx \
 LogLikelihoodBasedReconstruction.cxx \
-MAPBasedReconstruction.cxx \
-common.cxx
+common.cxx \
+
 
 
 

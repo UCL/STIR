@@ -1,4 +1,4 @@
-// $Id$
+// @(#)Reconstruction.h	1.4 00/06/15
 #ifndef __Reconstruction_H__
 #define __Reconstruction_H__
 /*!
@@ -12,8 +12,8 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  \date    00/06/15
+  \version 1.4
 */
 
 
@@ -48,7 +48,7 @@ public:
   virtual string method_info() const = 0;
   
   //! lists the parameters
-  virtual string parameter_info() const = 0;
+  virtual string parameter_info()  = 0;
   
   //! executes the reconstruction
   /*!

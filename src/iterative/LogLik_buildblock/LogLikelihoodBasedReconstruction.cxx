@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,6 +10,7 @@
     
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Sanida Mustafovic
   \author PARAPET project
       
   \date $Date$
@@ -33,7 +34,6 @@
 #include "recon_buildblock/PostsmoothingForwardProjectorByBin.h"
 #endif
 
-#include "interfile.h"
 #include "Viewgram.h"
 #include "recon_array_functions.h"
 #include <iostream>
@@ -48,12 +48,8 @@ START_NAMESPACE_TOMO
 
 LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction()
 {
-
-
   sensitivity_image_ptr=NULL;
   additive_projection_data_ptr = NULL;
-
-
 }
 
 
@@ -123,40 +119,6 @@ void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensi
 
 
 
-void LogLikelihoodBasedReconstruction::end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate)
-{
-
-  IterativeReconstruction::end_of_iteration_processing(current_image_estimate);
-
-    // Save intermediate (or last) iteration      
-  if((!(subiteration_num%get_parameters().save_interval)) || subiteration_num==get_parameters().num_subiterations ) 
-    {      	       
-      if(get_parameters().do_post_filtering && subiteration_num==get_parameters().num_subiterations)
-	{
-	  cerr<<endl<<"Applying post-filter"<<endl;
-	  get_parameters().post_filter.apply(current_image_estimate);
-
-	  cerr << "  min and max after post-filtering " << current_image_estimate.find_min() 
-	       << " " << current_image_estimate.find_max() << endl <<endl;
-	}
- 
-      // allocate space for the filename assuming that
-      // we never have more than 10^49 subiterations ...
-      char * fname = new char[get_parameters().output_filename_prefix.size() + 50];
-      sprintf(fname, "%s_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
-
-     // Write it to file
-      write_basic_interfile(fname, current_image_estimate);
-      delete fname;
- 
-    }
-
-
-}
-
-
-
-
 //MJ 03/01/2000 computes the negative of the loglikelihood function (minimization).
 float LogLikelihoodBasedReconstruction::compute_loglikelihood(
 						       const DiscretisedDensity<3,float>& current_image_estimate,
@@ -186,7 +148,7 @@ float LogLikelihoodBasedReconstruction::compute_loglikelihood(
 }
 
 
-float LogLikelihoodBasedReconstruction::sum_projection_data()
+float LogLikelihoodBasedReconstruction::sum_projection_data() const
 {
   
   float counts=0.0F;
