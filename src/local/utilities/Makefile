@@ -16,19 +16,12 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	zoom_image.cxx \
 	compute_plane_rescale_factors.cxx \
 	apply_plane_rescale_factors.cxx \
-	rescale_image.cxx \
 	swap_corners.cxx \
 	prepare_projdata.cxx \
-	add_images.cxx \
-	mult_images.cxx \
 	normalizedbckproj.cxx \
-	add_projections.cxx \
 	inverse_proj_data.cxx 	\
 	make_cylinder.cxx \
 	CoG.cxx \
-	find_ML_normfactors.cxx \
-	apply_normfactors.cxx \
-	create_normfactors.cxx \
 	find_ML_normfactors3D.cxx \
 	apply_normfactors3D.cxx \
 	create_normfactors3D.cxx \
@@ -37,9 +30,7 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	zero_projdata_from_norm.cxx \
 	SSRB.cxx \
 	attenuation_coefficients_to_projections.cxx \
-	compute_sum_images_to_random_power.cxx \
-	add_images_and_rescale.cxx \
-  	calculate_variance_on_variance_estimate.cxx \
+	construct_randoms_from_singles.cxx
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
