@@ -49,8 +49,8 @@ is_trivial() const
 {
   return
     filter_coefficients.get_length() == 0 ||
-    (filter_coefficients.get_length()==1 &&
-     filter_coefficients[filter_coefficients.get_min_index()] == 1);
+    (filter_coefficients.get_length()==1 && filter_coefficients.get_min_index()==0 &&
+     filter_coefficients[0] == 1);
 }
 
 
