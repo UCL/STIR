@@ -328,7 +328,7 @@ FindMCNormFactors::process_data()
 
 	{
 	  char rest[50];
-	  sprintf(rest, "_f%dg1b0d0", current_frame_num);
+	  sprintf(rest, "_f%dg1d0b0", current_frame_num);
 	  const string output_filename = output_filename_prefix + rest;
       
 	  out_proj_data_ptr = 
