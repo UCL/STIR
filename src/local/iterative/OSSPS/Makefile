@@ -36,7 +36,7 @@ include $(WORKSPACE)/Makefile_bblibs
 
 ${DEST}OSSPS: ${DEST}OSSPS.o $(LIB_OBJS) \
 	  $(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}  $(BB_REGISTRIES)
-	  $(CXX) $(CFLAGS)-o $@ $< \
+	  $(CXX) $(CFLAGS) -o $@ $< \
           $(LIB_OBJS) \
 	  $(BB_REGISTRIES) \
 	  ${LIB_LOGLIK_BUILDINGBLOCK}  $(BB_LIBS) \
