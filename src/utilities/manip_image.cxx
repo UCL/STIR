@@ -4,43 +4,40 @@
 
 
 #include "pet_common.h" 
-#include <iostream.h> 
-#include <fstream.h>
+#include <iostream> 
+#include <fstream>
 
 #include <numeric>
-#include "sinodata.h"
 #include "imagedata.h"
 
-#include "TensorFunction.h" 
 
 #include "display.h"
-//#include "Reconstruction.h"
-
-#include "recon_buildblock/bckproj.h" 
-#include "recon_buildblock/fwdproj.h" 
-#include "recon_buildblock/zoom.h" 
+// KT 13/10/98 include interfile
+#include "interfile.h"
 
 
 #define ZERO_TOL 0.000001
 #define ROOF 40000000.0
 
-void display_halo(const PETImageOfVolume& input_image, const PETScannerInfo& scanner);
+void display_halo(const PETImageOfVolume& input_image);
 
-void clean_rim(PETImageOfVolume& input_image, const PETScannerInfo& scanner);
-void get_plane(PETImageOfVolume& input_image, const PETScannerInfo& scanner);
-void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner);
+void clean_rim(PETImageOfVolume& input_image);
+void get_plane(PETImageOfVolume& input_image);
+void get_plane_row(PETImageOfVolume& input_image);
 
 main(int argc, char *argv[]){
 
-  if(argc<2 || argc>3) {
-    cout<<"Usage: vox <input filename> [c]";
+  if(argc<2) {
+    cout<<"Usage: vox <input filename>";
     exit(1);
   }
 
 
   //  PETScannerInfo::Scanner_type scanner_type = PETScannerInfo::RPT;
   // PETScannerInfo scanner(scanner_type);
- 
+// KT 13/10/98 include interfile
+
+#if 0
   int scanner_num = 0;
   PETScannerInfo scanner;
   char scanner_char[200];
@@ -117,7 +114,18 @@ main(int argc, char *argv[]){
   ifstream input;
   open_read_binary(input, argv[1]);
   input_image.read_data(input);   
- 
+#endif // now interfile
+
+  ifstream input(argv[1]);
+  if (!input)
+    { 
+      PETerror("Couldn't open file");
+      exit(1);
+    }
+
+  PETImageOfVolume 
+    input_image = read_interfile_image(input);
+   
   int zs,ys,xs, ze,ye,xe,choice;
 
   zs=input_image.get_min_z();
@@ -160,88 +168,101 @@ main(int argc, char *argv[]){
     switch(choice){
 
     case 1:
-  
-
-      display(Tensor3D<float> (input_image), input_image.find_max());  
- 
-      break;
-
-    case 2:
-
-      for (int z=zs; z<=ze; z++)
-	for (int y=ys; y <= ye; y++)
-	  for (int x=xs; x<= xe; x++){
-	    cerr<<input_image[z][y][x]<<" ";
+      {  
+	// KT 13/10/98 add text to images
+	VectorWithOffset<float> 
+	  scale_factors(input_image.get_min_index3(), 
+			input_image.get_max_index3());
+	scale_factors.fill(1.F);
+	VectorWithOffset<char *> 
+	  text(input_image.get_min_index3(),
+	       input_image.get_max_index3());
+	for (int i=input_image.get_min_index3(); 
+	     i<= input_image.get_max_index3(); 
+	     i++)
+	  {
+	    char *str = new char [15];
+	    sprintf(str, "image %d", i);
+	    text[i] = str;
 	  }
+	display(input_image, scale_factors, text, 
+		input_image.find_max(), 0, 0);
+ 
+	break;
+      }
+    case 2:
+      {
+	for (int z=zs; z<=ze; z++)
+	  for (int y=ys; y <= ye; y++)
+	    for (int x=xs; x<= xe; x++){
+	      cerr<<input_image[z][y][x]<<" ";
+	    }
 
-      break;
+	break;
+      }
 
     case 3:
-    
-       plane=1;
- 
-      while(plane>0 && plane <=ze-zs+1 ){
-	cerr<<endl<<"\nInput plane # (0 to exit):  ";
-	cin>>plane;
-	cerr<<endl<<endl;
-
-	if(!(plane>0 && plane <=ze-zs+1 )) break;
-
-
-
-	for (int y=ys; y <= ye; y++)
-	  for (int x=xs; x<= xe; x++){
-	    cerr<<input_image[zs+plane-1][y][x]<<" ";
-	    // pause
-	  }
-
-
+      {
+	plane=1;
+	
+	while(plane>0 && plane <=ze-zs+1 ){
+	  cerr<<endl<<"\nInput plane # (0 to exit):  ";
+	  cin>>plane;
+	  cerr<<endl<<endl;
+	  
+	  if(!(plane>0 && plane <=ze-zs+1 )) break;	  	 
+	  
+	  for (int y=ys; y <= ye; y++)
+	    for (int x=xs; x<= xe; x++){
+	      cerr<<input_image[zs+plane-1][y][x]<<" ";
+	      // pause
+	    }
+	}
+	break;
 
       }
-      break;
  
     case 4:
-      
-      plane=1;
-
-      while(plane>0 && plane <=ze-zs+1 ){
-	cerr<<endl<<"\nInput plane # (0 to exit):  ";
-	cin>>plane;
-	cerr<<endl<<endl;
-
-	if(!(plane>0 && plane <=ze-zs+1 )) break;
-	cerr << "Min and Max in plane " << input_image[zs+plane-1].find_min() 
-	     << " " << input_image[zs+plane-1].find_max() << endl;
-
+      {
+	plane=1;
+	
+	while(plane>0 && plane <=ze-zs+1 ){
+	  cerr<<endl<<"\nInput plane # (0 to exit):  ";
+	  cin>>plane;
+	  cerr<<endl<<endl;
+	  
+	  if(!(plane>0 && plane <=ze-zs+1 )) break;
+	  cerr << "Min and Max in plane " << input_image[zs+plane-1].find_min() 
+	       << " " << input_image[zs+plane-1].find_max() << endl;
+	  
+	}
+	break;
       }
-      break;
-
 
 
     case 5:
-
- 
-      display_halo(input_image,scanner);
-   
-      break;
+      {
+	display_halo(input_image);
+	break;
+      }
 
     case 6:
+      {
+	clean_rim(input_image);
+	break;
+      }
 
-      clean_rim(input_image,scanner);
- 
-
-      break;
-
-
-   
     case 7:
-      get_plane(input_image,scanner);
-      break;
+      {
+	get_plane(input_image);
+	break;
+      }
 
     case 8:
-      get_plane_row(input_image,scanner);
-      break;
-
+     {
+       get_plane_row(input_image);
+       break;
+     }
 
     case 9:
       break;
@@ -249,12 +270,11 @@ main(int argc, char *argv[]){
   
   }while(!(choice==9));
 
-
+  return 0;
 
 }
 
-void display_halo(const PETImageOfVolume& input_image, const PETScannerInfo& scanner){
-
+void display_halo(const PETImageOfVolume& input_image){
 
   static int flag_halo=0;
   static PETImageOfVolume halo=input_image;
@@ -271,9 +291,9 @@ void display_halo(const PETImageOfVolume& input_image, const PETScannerInfo& sca
     xe=input_image.get_max_x();
 
   
-    int zm=(zs+ze)/2;
-    int ym=(ys+ye)/2;
-    int xm=(xs+xe)/2;
+    float zm=(zs+ze)/2.;
+    float ym=(ys+ye)/2.;
+    float xm=(xs+xe)/2.;
   
     float d;
  
@@ -282,12 +302,12 @@ void display_halo(const PETImageOfVolume& input_image, const PETScannerInfo& sca
 	for (int x=xs; x<= xe; x++){
 
 
-	  d=sqrt(pow(xm-x,2)+pow(ym-y,2))*input_image.get_voxel_size().y;
+	  d=sqrt(pow(xm-x,2)+pow(ym-y,2));
 
-	  if(halo[z][y][x]>ZERO_TOL && d>scanner.FOV_radius ) {
+	  if(halo[z][y][x]>ZERO_TOL && d>(xe-xm) ) 
 	    halo[z][y][x]=1.0;   
-	  }
-	  else  halo[z][y][x]=0.0;
+	  else
+	    halo[z][y][x]=0.0;
 	
 	}
  
@@ -295,12 +315,12 @@ void display_halo(const PETImageOfVolume& input_image, const PETScannerInfo& sca
     flag_halo=1;
   }
 
-  display(Tensor3D<float> (halo), halo.find_max());     
+  display(halo, halo.find_max());     
 
 }
 
 
-void clean_rim(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
+void clean_rim(PETImageOfVolume& input_image){
 
   int zs,ys,xs, ze,ye,xe,plane;
 
@@ -312,22 +332,19 @@ void clean_rim(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
   ye=input_image.get_max_y(); 
   xe=input_image.get_max_x();
 
+  float zm=(zs+ze)/2.;
+  float ym=(ys+ye)/2.;
+  float xm=(xs+xe)/2.;
   
-  int zm=zs+(ze-zs+2)/2;
-  int ym=ys+(ye-ys+2)/2;
-  int xm=xs+(xe-xs+2)/2;
-
   float d;
  
   for (int z=zs; z<=ze; z++)
     for (int y=ys; y <= ye; y++)
       for (int x=xs; x<= xe; x++){
 
+	d=sqrt(pow(xm-x,2)+pow(ym-y,2));
 
-
-	d=sqrt(pow(xm-x,2)+pow(ym-y,2))*input_image.get_voxel_size().y;
-
-	if(d>scanner.FOV_radius-4*input_image.get_voxel_size().y) {
+	if(d>(xe-xm)-4) {
 	  input_image[z][y][x]=0.0;   
 	}
 
@@ -336,21 +353,17 @@ void clean_rim(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
   //MJ 07/09/98 added output feature
 
   if(ask_num("Write trimmed image to file ? (0: No, 1: Yes)",0,1,0)){
-  char outfile[200],fname[200];
-  cout << endl << "Output filename : ";
-  cin >> outfile;
-  sprintf(fname, "%s.dat",outfile);
-
-  	ofstream image_data;
-	open_write_binary(image_data, fname);
-	input_image.write_data(image_data);
+    char outfile[200];
+    cout << endl << "Output filename (without extension) : ";
+    cin >> outfile;
+    write_basic_interfile( outfile, input_image);
 
   }
 
 
 }
 
-void get_plane(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
+void get_plane(PETImageOfVolume& input_image){
 
   char filename[200];
   int zs,ys,xs, ze,ye,xe;
@@ -363,11 +376,12 @@ void get_plane(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
   ye=input_image.get_max_y(); 
   xe=input_image.get_max_x();
 
-  int zm=(ze+zs)/2;
+  float zm=(zs+ze)/2.;
+  float ym=(ys+ye)/2.;
+  float xm=(xs+xe)/2.;
 
 
-
-  int plane=ask_num("Which plane?",1,ze-zs+1,zm-zs+1);
+  int plane=ask_num("Which plane?",1,ze-zs+1,(int)zm-zs+1);
 
   cerr<<endl<<"Output to what file:  ";
   cin>>filename;
@@ -384,7 +398,7 @@ void get_plane(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
 
 }
 
-void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
+void get_plane_row(PETImageOfVolume& input_image){
 
   char filename[200];
   int zs,ys,xs, ze,ye,xe;
@@ -397,18 +411,18 @@ void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner)
   ye=input_image.get_max_y(); 
   xe=input_image.get_max_x();
 
-  int zm=(ze+zs)/2;
-  int ym=(ye+ys)/2;
-  int xm=(xe+xs)/2;
+  float zm=(zs+ze)/2.;
+  float ym=(ys+ye)/2.;
+  float xm=(xs+xe)/2.;
+  
 
-
- cerr<<endl<<"Output to what file:  ";
+  cerr<<endl<<"Output to what file:  ";
   cin>>filename;
   cerr<<endl;
 
   ofstream profile(filename);
-      if (!profile)
-      { cerr << "Couldn't open " << filename; }
+  if (!profile)
+    { cerr << "Couldn't open " << filename; return; }
 
   int axdir=ask_num("Which axis direction (z=0,y=1,x=2)?",0,2,2);
 
@@ -417,13 +431,12 @@ void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner)
   if (axdir==0){
 
 
-  int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,xm-xs+1);
-  int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,ym-ys+1);
-
+    int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,(int)xm-xs+1);
+    int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,(int)ym-ys+1);
 
  
-  for (int z=zs; z<= ze; z++)
-    profile<<input_image[z][ycoord+ys-1][xcoord+xs-1]<<" ";
+    for (int z=zs; z<= ze; z++)
+      profile<<input_image[z][ycoord+ys-1][xcoord+xs-1]<<" ";
 
   }
 
@@ -431,13 +444,11 @@ void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner)
   else if (axdir==1){
 
 
-  int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,zm-zs+1);
-  int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,ym-ys+1);
+    int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,(int)zm-zs+1);
+    int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,(int)ym-ys+1);
 
-
- 
-  for (int x=xs; x<= xe; x++)
-    profile<<input_image[zcoord+zs-1][ycoord+ys-1][x]<<" ";
+    for (int x=xs; x<= xe; x++)
+      profile<<input_image[zcoord+zs-1][ycoord+ys-1][x]<<" ";
 
 
 
@@ -445,12 +456,11 @@ void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner)
 
   else{ //axdir=2
 
-  int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,zm-zs+1);
-  int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,xm-xs+1);
-
+    int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,(int)zm-zs+1);
+    int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,(int)xm-xs+1);
  
-  for (int y=ys; y<= ye; y++)
-    profile<<input_image[zcoord+zs-1][y][xcoord+xs-1]<<" ";
+    for (int y=ys; y<= ye; y++)
+      profile<<input_image[zcoord+zs-1][y][xcoord+xs-1]<<" ";
 
   }
 
