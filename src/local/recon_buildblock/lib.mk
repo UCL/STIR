@@ -19,7 +19,8 @@ $(dir)_LIB_SOURCES:= \
 	QuadraticPrior.cxx \
 	BinNormalisationUsingProfile.cxx \
 	BinNormalisationSinogramRescaling.cxx \
-	ProjMatrixByBinSinglePhoton.cxx 
+	ProjMatrixByBinSinglePhoton.cxx \
+	ProjMatrixByBinFromFile.cxx
 ifeq ($(HAVE_LLN_MATRIX),1)
 $(dir)_LIB_SOURCES += \
 	BinNormalisationFromECAT7.cxx
