@@ -1,7 +1,6 @@
 //
 // $Id$
 //
-
 /*!
   \file
   \ingroup utilities 
@@ -20,7 +19,7 @@
         output_filename input_projdata_filename \
         scaling_factor seed-unsigned-int
   \endcode
-  The scaling_Factor is used to multiply the input data before generating
+  The scaling_factor is used to multiply the input data before generating
   the Poisson random number. This means that a scaling_factor larger than 1
   will result in less noisy data.<br>
   The seed value for the random number generator has to be strictly positive.<br>
@@ -44,7 +43,7 @@
    use rand() for any serious work, as it might be very unreliable on
    some systems. So, we now use the 2nd version all the time.
    In fact, the version using rand() was never adapted to use
-   a Gaussian distributino for high mean values, so won't even compile
+   a Gaussian distribution for high mean values, so won't even compile
    at present.
    If you really can't use boost/random.hpp, you could define RAND
    and do extra coding. Not recommended...
@@ -54,7 +53,16 @@
 #endif
 
 #ifndef RAND
-#include <boost/random.hpp>
+#ifdef _MSC_VER
+// Current version of boost::random breaks on VC6 and 7 because of 
+// compile time asserts. I'm disabling them for now by defining the following.
+#define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS 
+#endif
+
+//#include <boost/random.hpp>
+#include <boost/random/uniform_01.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #endif
 #include "stir/round.h"
 
@@ -80,6 +88,7 @@ START_NAMESPACE_STIR
 inline double random01() { return static_cast<double>(rand()) / RAND_MAX; }
 #endif
 
+
 // Generate a random number according to a Poisson distribution
 // with mean mu
 int generate_poisson_random(const float mu)
@@ -90,17 +99,13 @@ int generate_poisson_random(const float mu)
   {
     boost::normal_distribution<base_generator_type> randomnormal(generator, mu, sqrt(mu));
     const double random = randomnormal();
-    return random<0 ? 0 : 
-      //#ifndef STIR_NO_NAMESPACES
-      //stir::  // needs namespace as there's a global round on gcc on Linux
-      //#endif
-      round(random);
+    return random<=0 ? 0 : round(random);
   }
   else
   {
     double u = random01();
   
-    // prevent problems if n growing too large (or even to infinity) 
+    // prevent problems of n growing too large (or even to infinity) 
     // when u is very close to 1
     if (u>1-1.E-6)
       u = 1-1.E-6;
@@ -128,9 +133,7 @@ poisson_noise(ProjData& output_projdata,
 	    const ProjData& input_projdata, 
 	    const float scaling_factor,
 	    const bool preserve_mean)
-{
-  
-  
+{  
   for (int seg= input_projdata.get_min_segment_num(); 
        seg<=input_projdata.get_max_segment_num();
        seg++)  
@@ -143,25 +146,18 @@ poisson_noise(ProjData& output_projdata,
 
     for(int view=seg_input.get_min_view_num();view<=seg_input.get_max_view_num();view++)    
       for(int ax_pos=seg_input.get_min_axial_pos_num();ax_pos<=seg_input.get_max_axial_pos_num();ax_pos++)
-	//for(int tang_pos=-5;tang_pos<5;tang_pos++)	
-      for(int tang_pos=seg_input.get_min_tangential_pos_num();tang_pos<=seg_input.get_max_tangential_pos_num();tang_pos++)
+        for(int tang_pos=seg_input.get_min_tangential_pos_num();tang_pos<=seg_input.get_max_tangential_pos_num();tang_pos++)
       { 
-	/*	cerr << "View " << view << endl;
-	cerr << "Ax_Pos" << ax_pos << endl;
-	cerr << "Tang Poss" << tang_pos << endl;
-	*/
-
 	const float bin = seg_input[view][ax_pos][tang_pos];
-	//cerr << "bin" << bin << endl;
 	const int random_poisson = generate_poisson_random(bin*scaling_factor);
-	//cerr << "done " << random_poisson << endl;
 	seg_output[view][ax_pos][tang_pos] = 
 	  preserve_mean ?
 	  random_poisson / scaling_factor
 	  :
 	  static_cast<float>(random_poisson);		
       }           
-      output_projdata.set_segment(seg_output);      
+    if (output_projdata.set_segment(seg_output) == Succeeded::no)
+      exit(EXIT_FAILURE);
   }
 }
 
