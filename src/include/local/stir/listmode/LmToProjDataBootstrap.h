@@ -39,16 +39,22 @@ public:
   LmToProjDataBootstrap(const char * const par_filename);
   LmToProjDataBootstrap(const char * const par_filename, const unsigned int seed);
 
+protected:
+  //! will be called when a new time frame starts
+  /*! Initialises a vector with the number of times each event has to be replicated */
+  virtual void start_new_time_frame(const unsigned int new_frame_num);
+
   virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
 
 
 private:
   typedef LmToProjData base_type;
+  typedef vector<unsigned char> replication_type;
 
   unsigned int seed;
 
-  vector<unsigned char> num_times_to_replicate;
-  mutable vector<unsigned char>::const_iterator num_times_to_replicate_iter;
+  replication_type num_times_to_replicate;
+  mutable replication_type::const_iterator num_times_to_replicate_iter;
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
