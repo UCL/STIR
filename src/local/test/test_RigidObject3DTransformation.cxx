@@ -310,22 +310,26 @@ RigidObject3DTransformationTests::run_tests()
 		    if (transformed_bin.get_bin_value()>0) // only check when the transformed_bin is within the range
 		      {
 			ro3dtrans_inverse.transform_bin(transformed_bin, proj_data_info, proj_data_info);
+
 			const int diff_segment_num =
 			  std::abs(org_bin.segment_num() - transformed_bin.segment_num());
-			if (diff_segment_num>max_diff_segment_num)
-			  max_diff_segment_num=diff_segment_num;
 			const int diff_view_num = 
 			  std::abs(org_bin.view_num() - transformed_bin.view_num());
-			if (diff_view_num>max_diff_view_num)
-			  max_diff_view_num=diff_view_num;
 			const int diff_axial_pos_num = 
 			  std::abs(org_bin.axial_pos_num() - transformed_bin.axial_pos_num());
-			if (diff_axial_pos_num>max_diff_axial_pos_num)
-			  max_diff_axial_pos_num=diff_axial_pos_num;
 			const int diff_tangential_pos_num = 
 			  std::abs(org_bin.tangential_pos_num() - transformed_bin.tangential_pos_num());
-			if (diff_tangential_pos_num>max_diff_tangential_pos_num)
-			  max_diff_tangential_pos_num=diff_tangential_pos_num;
+			if (transformed_bin.get_bin_value()>0)
+			  {
+			    if (diff_segment_num>max_diff_segment_num)
+			      max_diff_segment_num=diff_segment_num;
+			    if (diff_view_num>max_diff_view_num)
+			      max_diff_view_num=diff_view_num;
+			    if (diff_axial_pos_num>max_diff_axial_pos_num)
+			      max_diff_axial_pos_num=diff_axial_pos_num;
+			    if (diff_tangential_pos_num>max_diff_tangential_pos_num)
+			      max_diff_tangential_pos_num=diff_tangential_pos_num;
+			  }
 			if (!check(org_bin.get_bin_value() == transformed_bin.get_bin_value(), "transform_bin_with_inverse: value") ||
 			    !check(diff_segment_num<=1, "transform_bin_with_inverse: segment") ||
 			    !check(diff_view_num<=1, "transform_bin_with_inverse: view") ||
