@@ -115,10 +115,18 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
     singles_file.read((char*)&singles_str,sizeof(singles_str));
     if (!singles_file)
       break;
-    const int num_buckets =
+
+    const int num_singles_units =
       scanner_sptr->get_num_transaxial_buckets() *
-      scanner_sptr->get_num_axial_buckets();
-    for ( int i = 0; i<num_buckets;i++, ++array_iter)
+      (scanner_sptr->get_num_axial_blocks()/num_axial_blocks_per_singles_unit);
+
+    if (ByteOrder::native != ByteOrder::big_endian)
+      ByteOrder::swap_order(singles_str.num_sgl);
+    if (singles_str.num_sgl != num_singles_units)
+      error("Number of singles units should be %d, but is %d in singles file",
+	    num_singles_units,  singles_str.num_sgl);
+    
+    for ( int i = 0; i<num_singles_units;i++, ++array_iter)
     {
       assert(array_iter !=singles.end_all());
       if (ByteOrder::native != ByteOrder::big_endian)
