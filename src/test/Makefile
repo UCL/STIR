@@ -53,7 +53,8 @@ run_tests: all get_test_files make_stir_math
 	$(DEST)test_filename_functions 
 	$(DEST)test_VoxelsOnCartesianGrid
 	$(DEST)test_proj_data_info
-	$(DEST)test_stir_math ../utilities/$(DEST)stir_math
+	$(DEST)test_stir_math ../utilities/$(DEST)stir_math \
+        $(DEST)test_InterfileOutputFileFormat input/test_InterfileOutputFileFormat.in
 
 # running test_stir_math depends on the stir_math executable itself
 make_stir_math:
@@ -73,9 +74,10 @@ run_interactive_tests: all
 ${DEST}%: ${DEST}%.o $(BB_LIBS) $(BB_REGISTRIES)
 
 
-${DEST}%: ${DEST}%.o ${LIB_BUILDINGBLOCK} ${LIB_DISPLAY}
+${DEST}%: ${DEST}%.o ${LIB_BUILDINGBLOCK} ${LIB_IO} ${LIB_DISPLAY} ${IO_REGISTRIES}
 	$(CXX) $(CFLAGS)  -o $@ $<  \
-          ${LIB_DISPLAY} ${LIB_BUILDINGBLOCK} \
+          $(IO_REGISTRIES) \
+          ${LIB_DISPLAY} ${LIB_IO} ${LIB_BUILDINGBLOCK} \
 	  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
 
 
