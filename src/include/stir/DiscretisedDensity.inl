@@ -4,7 +4,7 @@
 
 /*!
   \file 
- 
+  \ingroup densitydata! 
   \brief  inline implementation for DiscretisedDensity
 
   \author Sanida Mustafovic 

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Implementation of inline functions of class 
   ProjDataInfoCylindricalNoArcCorr

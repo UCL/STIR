@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class ProjDataInterfile
 
   \author Kris Thielemans
@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class which reads/writes projection data from/to a (binary) stream, but creates the
   corresponding Interfile header.
 

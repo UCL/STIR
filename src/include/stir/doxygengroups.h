@@ -60,16 +60,27 @@ The whole collection of libraries in STIR.
 Library with things that are not not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
+\todo Define more submodules in the doxygen documentation such that this
+looks a lot neater.
+*/
+/*!
+\defgroup projdata Items related to projection data
+\ingroup buildblock
+Basic support for projection data. This is the term generally used in STIR
+for data obtained by the scanner or immediate post-processing.
+*/
+/*!
+\defgroup densitydata Items related to image data
+\ingroup buildblock
+Basic support for image (or discretised density) data. 
 */
 /*!
 \defgroup ImageProcessor Image processors
-\ingroup buildblock
+\ingroup densitydata
 A hierarchy of classes for performing image processing. Mechanisms
 for parsing are provided such that different image processors can
 be selected at run-time.
 
-\todo Define more submodules in the doxygen documentation such that this
-looks a lot neater.
 */
 
 

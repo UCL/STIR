@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup densitydata 
   \brief defines the VoxelsOnCartesianGrid class 
 
   \author Sanida Mustafovic 
@@ -32,7 +32,7 @@ class ProjDataInfo;
 template <typename elemT> class PixelsOnCartesianGrid;
 
 /*!
-  \ingroup buildblock
+  \ingroup densitydata
   \brief This class is used to represent voxelised densities on a cuboid
   grid (3D).
 

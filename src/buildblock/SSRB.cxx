@@ -4,7 +4,7 @@
 /*!
 
   \file
-
+  \ingroup projdata
   \brief Implementation of SSRB
 
   \author Kris Thielemans

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock 
+  \ingroup projdata 
   \brief Implementations for class DataSymmetriesForViewSegmentNumbers
 
   \author Kris Thielemans

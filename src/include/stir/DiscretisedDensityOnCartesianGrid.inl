@@ -3,7 +3,8 @@
 //
 /*!
   \file 
- 
+  \ingroup densitydata 
+! 
   \brief  inline implementations for DiscretisedDensityOnCartesianGrid
 
   \author Sanida Mustafovic 

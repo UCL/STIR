@@ -6,7 +6,7 @@
 
 /*!
   \file 
- 
+  \ingroup densitydata 
   \brief defines the DiscretisedDensity class 
 
   \author Sanida Mustafovic 
@@ -38,7 +38,7 @@ using std::string;
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup densitydata
   \brief This abstract class is the basis for all image representations.
   
   This class is templated with the number of dimensions (should be 2 or 3) 

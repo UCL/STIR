@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Implementation of class ProjDataInterfile
 
   \author Kris Thielemans

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class ProjDataInfoCylindrical
 
   \author Sanida Mustafovic
@@ -30,7 +30,7 @@ START_NAMESPACE_STIR
 class Succeeded;
 
 /*!
-  \ingroup buildblock 
+  \ingroup projdata 
   \brief projection data info for data corresponding to a 
   'cylindrical' sampling.
 

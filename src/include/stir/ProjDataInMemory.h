@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class ProjDataInMemory
 
   \author Kris Thielemans
@@ -53,7 +53,7 @@ START_NAMESPACE_STIR
 class Succeeded;
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class which reads/writes projection data from/to memory.
 
   Mainly useful for temporary storage of projection data.

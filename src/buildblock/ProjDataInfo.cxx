@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Implementation of non-inline functions of class ProjDataInfo
 

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class ProjDataFromStream
 
   \author Sanida Mustafovic
@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class which reads/writes projection data from/to a (binary) stream.
 
   Mainly useful for Interfile data.

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief implementation of inline functions of class Segment
 
   \author Kris Thielemans

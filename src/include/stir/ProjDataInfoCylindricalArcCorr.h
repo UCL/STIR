@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class ProjDataInfoCylindricalArcCorr
 
@@ -30,7 +30,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock 
+  \ingroup projdata 
   \brief Projection data info for arc-corrected data
 
   This means that 'tangential_pos_num' actually indexes a linear coordinate

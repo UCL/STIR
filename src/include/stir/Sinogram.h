@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class Sinogram
 
@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
 class PMessage;
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class for 2d projection data.
 
   This represents a subset of the full projection. segment_num and axial_pos_num 

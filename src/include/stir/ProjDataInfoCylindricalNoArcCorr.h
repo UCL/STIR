@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class ProjDataInfoCylindricalNoArcCorr
 
@@ -28,7 +28,7 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 /*!
-  \ingroup buildblock 
+  \ingroup projdata 
   \brief Projection data info for data which are not arc-corrected.
 
   For this class, 'tangential_pos_num' actually indexes an angular coordinate

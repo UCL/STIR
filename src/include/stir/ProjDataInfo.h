@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class ProjDataInfo
 
@@ -44,7 +44,7 @@ class Bin;
 class PMessage;
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief An (abstract base) class that contains information on the 
   projection data.
 

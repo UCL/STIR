@@ -1,10 +1,10 @@
-//
+!//
 // $Id$
 //
 
 /*!
   \file 
-  \buildblock 
+  \ingroup densitydata 
   \brief Implementations of VoxelsOnCartesianGrid 
 
   \author Sanida Mustafovic 

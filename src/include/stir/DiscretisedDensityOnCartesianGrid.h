@@ -6,6 +6,7 @@
 
 /*!
   \file 
+  \ingroup densitydata 
  
   \brief defines the DiscretisedDensityOnCartesianGrid class 
 
@@ -29,7 +30,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup densitydata
   \brief This abstract class is the basis for images on a Cartesian grid.
 
   The only new information compared to DiscretisedDensity is the grid_spacing.

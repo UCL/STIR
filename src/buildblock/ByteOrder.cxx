@@ -3,6 +3,7 @@
 //
 /*!
   \file  
+  \ingroup buildblock
   \brief This file initialises ByteOrder::native_order.
 
   \author Kris Thielemans
