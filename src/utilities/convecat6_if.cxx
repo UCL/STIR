@@ -114,6 +114,7 @@ main(int argc, char *argv[])
       }
     case matScanFile:
     case matAttenFile:
+    case matNormFile:
       {            
         const int max_ring_diff= 
            ask_num("Max ring diff to store (-1 == num_rings-1)",-1,100,-1);

@@ -388,7 +388,15 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
         {
           Attn_subheader shead;        
           if(get_attnheaders (cti_fptr, matnum, &mhead, 
-            &shead, &scanParams)!= EXIT_SUCCESS)
+			      &shead, &scanParams)!= EXIT_SUCCESS)
+            error("Error reading matnum %d\n", matnum);
+          break;
+        }
+      case matNormFile:
+        {
+          Norm_subheader shead;        
+          if(get_normheaders (cti_fptr, matnum, &mhead, 
+			      &shead, &scanParams)!= EXIT_SUCCESS)
             error("Error reading matnum %d\n", matnum);
           break;
         }
@@ -529,6 +537,17 @@ void read_sinogram(Sinogram<float>& sino_2D,
         Attn_subheader shead;
         
         if(get_attnheaders (fptr, matnum, &mhead, 
+                            &shead, &scanParams)!= EXIT_SUCCESS)
+          error("Error reading matnum %d\n", matnum);
+        
+        scale_factor = shead.scale_factor;
+        break;
+      }
+    case matNormFile:
+      {
+        Norm_subheader shead;
+        
+        if(get_normheaders (fptr, matnum, &mhead, 
                             &shead, &scanParams)!= EXIT_SUCCESS)
           error("Error reading matnum %d\n", matnum);
         
