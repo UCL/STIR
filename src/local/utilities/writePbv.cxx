@@ -18,7 +18,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -28,7 +28,8 @@
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"
-
+#include "stir/is_null_ptr.h"
+#include "stir/stream.h"
 #include "stir/utilities.h"
 
 #include <iostream>
@@ -45,19 +46,34 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  // TODO parse these?
+  const char * const prog_name = argv[0];
   // set when you want to see only coords in plane 0
-
   bool only_plane_zero = false;
+  // TODO parse these?
   int start_segment_num=0;
   int end_segment_num=0;
   int start_axial_pos_num=0;
   int end_axial_pos_num=45;
-  if (argc!=3)
+  if (argc>1 && strcmp(argv[1], "--plane0")==0)
+    {
+      only_plane_zero=true;
+      --argc; ++argv;
+    }
+  if (argc<3 || argc>4)
   {
-    cerr << "Usage : " << argv[0] << "out_filename sample_proj_data_filename\n";
+    cerr << "Usage : " << prog_name << " [--plane0] out_filename sample_proj_data_filename [ projmatrix.par ]\n";
     exit(EXIT_FAILURE);
   }
+
+  shared_ptr<ProjMatrixByBin> projmatrix_sptr;
+  if (argc>3)
+    {
+      KeyParser parser;
+      parser.add_start_key("ProjMatrixByBin parameters");
+      parser.add_parsing_key("type", &projmatrix_sptr);
+      parser.add_stop_key("END"); 
+      parser.parse(argv[3]);
+    }
 
 #ifdef TOSCREEN
   ostream& output = cout;
@@ -86,19 +102,18 @@ int main(int argc, char **argv)
 				     Coordinate3D<int>(z_size,xy_size,xy_size));
   const float z_origin = 
     ask_num("Shift z-origin (in pixels)", 
-	    -density_info_ptr->get_length()/2,
-	    density_info_ptr->get_length()/2,
+	    -2*density_info_ptr->get_length(),
+	    2*density_info_ptr->get_length(),
              0)*
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*density_info_ptr).get_voxel_size().z();
   density_info_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
 
-  shared_ptr<ProjMatrixByBin> projmatrix_sptr;
-  do 
+  while (is_null_ptr(projmatrix_sptr))
     {
       projmatrix_sptr =
 	ProjMatrixByBin::ask_type_and_parameters();
     }
-  while (projmatrix_sptr.use_count()==0);
+
   projmatrix_sptr->set_up(proj_data_info_ptr, density_info_ptr);
 
   CartesianCoordinate3D<int> min_range, max_range;
@@ -143,6 +158,7 @@ int main(int argc, char **argv)
       ProjMatrixElemsForOneBin lor;
 
       projmatrix_sptr->get_proj_matrix_elems_for_one_bin(lor,Bin(segment_num,view_num, axial_pos_num, tang_pos_num));
+      lor.sort();
       // cout << lor.get_number_of_elements() << endl;
 
 #ifdef PBV3D
@@ -162,8 +178,8 @@ int main(int argc, char **argv)
            continue;
           ++elem_count;
 #ifdef TOSCREEN
-         cout << lor_elem_iter->coord3() << ", " << lor_elem_iter->coord2() << ", " << lor_elem_iter->coord1()
-            << " : " << lor_elem_iter->get_value() << endl;
+         cout << lor_elem_iter->get_coords()
+	      << " : " << lor_elem_iter->get_value() << '\n';
 #else
 	 // TODO plane offset
          const int column_num = (lor_elem_iter->coord3() - xmin)*xsize+(lor_elem_iter->coord2() - ymin);
