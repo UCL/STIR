@@ -1236,7 +1236,7 @@ float get_vax_float (const unsigned short *bufr, int off)
   memcpy(&Va, tmpbufr, sizeof(VAXfloat));
   return VAXfl_to_fl(Va);  
 # else
-  float Va;
+  VAXfloat Va;
   memcpy(&Va, bufr+off, sizeof(VAXfloat));
   return VAXfl_to_fl(Va);
 # endif	  
