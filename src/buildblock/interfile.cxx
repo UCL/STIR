@@ -377,7 +377,8 @@ write_basic_interfile(const string& filename,
 
 ProjDataFromStream* 
 read_interfile_PDFS(istream& input,
-		    const string& directory_for_data)
+		    const string& directory_for_data,
+		    const ios::openmode open_mode)
 {
   
   InterfilePDFSHeader hdr;  
@@ -414,8 +415,12 @@ at the moment. Using the first scale factor only.\n");
   
    assert(hdr.data_info_ptr !=0);
 
-  fstream *data_in =  new fstream;  
-  open_read_binary(*data_in,full_data_file_name);
+   fstream *data_in = 
+     new fstream (full_data_file_name, open_mode | ios::binary);
+   if (!data_in->good())
+     {
+       error("error opening file %s\n",full_data_file_name);
+     }
 
   return new ProjDataFromStream(hdr.data_info_ptr,			    
 			        data_in,
@@ -431,7 +436,8 @@ at the moment. Using the first scale factor only.\n");
 
 
 ProjDataFromStream*
-read_interfile_PDFS(const string& filename)
+read_interfile_PDFS(const string& filename,
+		    const ios::openmode open_mode)
 {
   ifstream image_stream(filename.c_str());
   if (!image_stream)
@@ -442,7 +448,7 @@ read_interfile_PDFS(const string& filename)
   char directory_name[max_filename_length];
   get_directory_name(directory_name, filename.c_str());
   
-  return read_interfile_PDFS(image_stream, directory_name);
+  return read_interfile_PDFS(image_stream, directory_name, open_mode);
 }
 
 // TODO add directory capability

@@ -153,13 +153,19 @@ write_basic_interfile(const string& filename,
 /*!
   If there is trouble interpreting the header, 
   ProjDataFromStream::ask_parameters() is called instead
-  If the name for the data file is not an absolute pathname,
-  \c directory_for_data is prepended (if not NULL).
+
+  \param input A stream giving the Interfile header.
+
+  \param directory_for_data If the name for the data file is not an absolute pathname,
+  this string is prepended.
+  
+  \param openmode Mode for opening the data file. ios::binary will be added by the code.
 
   \warning it is up to the caller to deallocate the object  
 */
 ProjDataFromStream* read_interfile_PDFS(istream& input,
- 				        const string& directory_for_data = "");
+ 				        const string& directory_for_data = "",
+					const ios::openmode openmode = ios::in);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a filename
 /*! This first opens a stream and then calls the previous function
@@ -169,7 +175,8 @@ ProjDataFromStream* read_interfile_PDFS(istream& input,
 
   This should normally never be used. Use ProjData::read_from_file() instead.
 */
-ProjDataFromStream* read_interfile_PDFS(const string& filename);
+ProjDataFromStream* read_interfile_PDFS(const string& filename,
+					const ios::openmode open_mode);
 
 //! This writes an Interfile header appropriate for the ProjDataFromStream object.
 /*! A .hs extension will be added to the header_file_name if none is present.
