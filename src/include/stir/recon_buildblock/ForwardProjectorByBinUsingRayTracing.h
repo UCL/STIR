@@ -22,7 +22,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
-
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 START_NAMESPACE_STIR
 
 //template <typename T> class shared_ptr;
@@ -32,8 +32,7 @@ template <typename elemT> class VoxelsOnCartesianGrid;
 template <int num_dimensions, typename elemT> class Array;
 class ProjDataInfo;
 class ProjDataInfoCylindrical;
-class DataSymmetriesForViewSegmentNumbers;
-class DataSymmetriesForBins_PET_CartesianGrid;
+
 
 /*!
   \ingroup recon_buildblock
