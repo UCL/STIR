@@ -56,13 +56,13 @@ public:
 				  string attenuation_proj_data_filename,
 				  const VectorWithOffset<elemT>& filter_coefficients,
 				  shared_ptr<ProjData> proj_data_ptr,
-				  shared_ptr<ProjData> attenuation_proj_data_ptr);
+				  shared_ptr<ProjData> attenuation_proj_data_ptr, int mask_size);
 			     
   
   				  
 private: 
 
-  
+  int mask_size;
   vector<double> filter_coefficients_for_parsing;
   VectorWithOffset<float> filter_coefficients;
   
