@@ -2,14 +2,21 @@
 // $Id$: $Date$
 //
 
-/*
-  implementations for CartesianCoordinate3D methods
+/*!
+  \file 
+ 
+  \brief inline implementations for the CartesianCoordinate3D<coordT> class 
 
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
 
 */
+
 
 START_NAMESPACE_TOMO
 

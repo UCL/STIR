@@ -1,14 +1,21 @@
 //
-// $Id$: $Date$
+//$Id$: $Date$
 //
 
 
-/*
-  inline implementations for Coordinate4D methods
-  
-  History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+/*!
+  \file 
+ 
+  \brief inline implementations for the Coordinate4D<coordT> class 
+
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
 */
 
 

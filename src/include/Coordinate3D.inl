@@ -2,14 +2,21 @@
 // $Id$: $Date$
 //
 
+/*!
+  \file 
+ 
+  \brief inline implementations for the Coordinate3D<coordT> class 
 
-/*
-  inline implementations for Coordinate3D methods
-  
-  History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
 */
+
 
 
 START_NAMESPACE_TOMO

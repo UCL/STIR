@@ -1,7 +1,7 @@
 #ifndef __NUMERICINFO_H_
 #define __NUMERICINFO_H_
 //
-// $Id$: $Date$
+//  $Id$: $Date$
 //
 
 /*
@@ -18,6 +18,8 @@
   KT 15/12/99
   reordered member function declarations to allow easier inlining
   moved NumericType and ByteOrder to separate files
+
+  KT 18/02/2000 use new syntax for template specialisations: template<> {class blabla};
  */ 
 
 #include "NumericType.h"
@@ -31,7 +33,7 @@
 #include <size_t.h>
 #endif
 
-
+START_NAMESPACE_TOMO
 
 // the general framework of NumericInfo
 // This declaration is essentially empty, but needed to use template syntax.
@@ -58,6 +60,7 @@ public:
 
 
 // Below are the actual details filled in.
+template<>
 class NumericInfo<signed char>
 {
   typedef signed char type;
@@ -78,6 +81,7 @@ public:
     { return NumericType::SCHAR; }
 };
 
+template<>
 class NumericInfo<unsigned char>
 {
   typedef unsigned char type;
@@ -98,6 +102,7 @@ public:
     { return NumericType::UCHAR; }
 };
 
+template<>
 class NumericInfo<signed short>
 {
   typedef signed short type;
@@ -119,6 +124,7 @@ public:
 };
 
 
+template<>
 class NumericInfo<unsigned short>
 {
   typedef unsigned short type;
@@ -140,6 +146,7 @@ public:
 };
 
 
+template<>
 class NumericInfo<signed int>
 {
   typedef signed int type;
@@ -160,6 +167,7 @@ public:
     { return NumericType::INT; }
 };
 
+template<>
 class NumericInfo<unsigned int>
 {
   typedef unsigned int type;
@@ -181,6 +189,7 @@ public:
 };
 
 
+template<>
 class NumericInfo<signed long>
 {
   typedef signed long type;
@@ -201,6 +210,7 @@ public:
     { return NumericType::LONG; }
 };
 
+template<>
 class NumericInfo<unsigned long>
 {
   typedef unsigned long type;
@@ -222,6 +232,7 @@ public:
 
 };
 
+template<>
 class NumericInfo<float>
 {
   typedef float type;
@@ -242,6 +253,7 @@ public:
     { return NumericType::FLOAT; }
 };
 
+template<>
 class NumericInfo<double>
 {
   typedef double type;
@@ -262,6 +274,6 @@ public:
     { return NumericType::DOUBLE; }
 };
 
-
+END_NAMESPACE_TOMO
 
 #endif

@@ -3,23 +3,34 @@
 //
 // $Id$: $Date$
 //
-/*
-   This file declares class Coordinate3D<coordT>: 
-   a templated class for 3-dimensional coordinates.
-   It is derived from BasicCoordinate<3, coordT>. 
-   The only new method is a constructor Coordinate3D<coordT>(c1,c2,c3)
+/*!
+  \file 
+ 
+  \brief defines the Coordinate3D<coordT> class 
 
-   Warning : 
-   - Indices run from 1 to 3, 
+  \author Sanida Mustafovic 
+  \author Kris Thielemans 
+  \author PARAPET project
 
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+  \date    $Date$
+
+  \version $Revision$
+
 */
+
 
 #include "BasicCoordinate.h"
 
 START_NAMESPACE_TOMO
+
+/*!
+   \brief a templated class for 3-dimensional coordinates.
+
+   The only new method is a constructor Coordinate3D<coordT>(c1,c2,c3)
+
+   \warning Indices run from 1 to 3.
+
+*/
 
 template <typename coordT>
 class Coordinate3D : public BasicCoordinate<3, coordT>
