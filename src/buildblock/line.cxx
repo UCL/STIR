@@ -141,7 +141,8 @@ int Line::get_param(double& i)
 int Line::get_param(vector<int>& v)
 {
 	String s;
-	int r=LINE_OK;
+	// KT 02/11/98 don't use temporary variable anymore
+	//int r=LINE_OK;
 	int cp;
 	int eop;
 	bool end=false;
@@ -172,18 +173,64 @@ int Line::get_param(vector<int>& v)
 			// KT 09/08/98 replaced Mid by substr
 			s=substr(cp,eop-cp);
 			// TODO use strstream, would allow templates
-			r=atoi(s.c_str());
-			v.push_back(r);
+			// KT 02/11/98 don't use temporary variable anymore
+			v.push_back(atoi(s.c_str()));
 			cp=eop+1;
 		}
 	}
-	return r;
+	return LINE_OK;
+}
+
+// KT 29/10/98 new
+int Line::get_param(vector<double>& v)
+{
+	String s;
+	// KT 02/11/98 don't use temporary variable anymore
+	//int r=LINE_OK;
+	int cp;
+	int eop;
+	bool end=false;
+
+	cp=find_first_of('=',0)+1;
+	// KT 20/06/98 has to be here now as I removed space from the list later on
+	// skip white space
+	cp=find_first_not_of(" \t",cp);
+	// TODO? this does not check if brackets are balanced
+	while (!end)
+	{
+		// KT 20/06/98 removed space from the list, as this allowed numbers separated by spaces
+		cp=find_first_not_of("{},",cp);
+
+		if(cp==String::npos)
+		{
+			end=true;
+		}
+		else
+		{
+			// KT 20/06/98 removed space from the list, as this allowed numbers separated by spaces
+		        eop=find_first_of(",}",cp);
+			if(eop==String::npos)
+			{
+				end=true;
+				eop=length();
+			}
+			// KT 09/08/98 replaced Mid by substr
+			s=substr(cp,eop-cp);
+			// TODO use strstream, would allow templates
+			// KT 02/11/98 don't use temporary variable anymore
+			v.push_back(atof(s.c_str()));
+			cp=eop+1;
+		}
+	}
+	return LINE_OK;
 }
 
 int Line::get_param(vector<String>& v)
 {
 	String s;
-	int r=LINE_OK;
+
+	// KT 02/11/98 don't use temporary variable anymore
+	//int r=LINE_OK;
 	int cp;
 	int eop;
 	bool end=false;
@@ -232,7 +279,7 @@ int Line::get_param(vector<String>& v)
 			cp=eop+1;
 		}
 	}
-	return r;
+	return LINE_OK;
 }
 
 Line& Line::operator=(const char* ch)
