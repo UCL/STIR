@@ -26,7 +26,6 @@
 #include "stir/ProjData.h"
 #include <vector>
 #include <cmath>
-//#define point_sample_step 1
 
 START_NAMESPACE_STIR
 
@@ -50,7 +49,6 @@ struct ScatterPoint
 extern std::vector< ScatterPoint> scatt_points_vector;
 extern std::vector<CartesianCoordinate3D<float> > detection_points_vector;
 extern int total_detectors;
-
 /*!
    \ingroup scatter
    \brief samples the scatters points randomly in the attenuation_map
@@ -117,10 +115,14 @@ float scatter_estimate_for_one_scatter_point(
 
 	theta:	azimuthal angle between incident and scattered photon
 	energy:	energy of incident photon ( in keV )
+	photon energy set to 511keV instead 510.99906keV
 */ 
 //@{
 inline
-float dif_cross_section_511keV(const float cos_theta);
+float dif_cross_section_511keV(const float cos_theta); 
+
+inline
+float dif_cross_section(const float cos_theta, float energy);
  	
 inline
 float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,

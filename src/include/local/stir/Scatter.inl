@@ -36,29 +36,26 @@ BasicCoordinate<num_dimensions,float> convert_int_to_float(const BasicCoordinate
 	  return cfloat;
 	}
 
-
+inline
+float dif_cross_section(const float cos_theta, float energy)
+{ 
+  const float sin_theta2= 1-cos_theta*cos_theta ;
+  const float P= 1/(1+(energy/511.0)*(1-cos_theta));
+  return(  Re*Re/2*P* (1 - P*sin_theta2 + P*P) );
+}
 inline
 float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
 	  const CartesianCoordinate3D<float>& detector_coord_A,
 	  const CartesianCoordinate3D<float>& detector_coord_B, float energy)
 {
-  const CartesianCoordinate3D<float> scatter_point_det_A = detector_coord_A - scatter_point ;  //vector from detector_A to scatter_point
-  const CartesianCoordinate3D<float> scatter_point_det_B = detector_coord_B - scatter_point ;  //vector from detector_B to scatter_point
-
-  const float scalar_product = 
-	inner_product(scatter_point_det_A, scatter_point_det_B);
-
-  const float dASsq = normsq(detector_coord_A-scatter_point); // the distance of the detector_A to scatter_point S
-  const float dBSsq = normsq(detector_coord_B-scatter_point); // the distance of the detector_B to scatter_point S
-
-  const float cos_theta = scalar_product/sqrt(dASsq*dBSsq) ;
-  const float sin_theta2= 1-cos_theta*cos_theta ;
-  const float P= 1/(1+(energy/511.0)*(1-cos_theta));
-
-
-  return(  Re*Re/2* (P - P*P*sin_theta2 + P*P*P) );
+  /* the scatter angle theta  should be 0 when the 2 detectors 
+     are at opposite sides of the scatter point. So, we need
+	 to set cos_theta equal to the following (with a minus sign!)
+	 */
+  return
+	  dif_cross_section(-cos_angle(detector_coord_A - scatter_point,
+		                                  detector_coord_B - scatter_point), energy);
 }
-
 inline
 float
 energy_after_scatter(const float cos_theta, const float energy)
@@ -146,7 +143,7 @@ float detection_efficiency_BGO( const float low, const float high,
 						        const float energy)
 {
 	return
-		detection_efficiency(low, high, energy, 512, .25);
+		detection_efficiency(low, high, energy, 511, .25);
 }
 
 END_NAMESPACE_STIR
