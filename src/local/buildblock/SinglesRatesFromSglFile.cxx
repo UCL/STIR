@@ -46,39 +46,39 @@ SinglesRatesFromSglFile()
 {}
 
 Array<3,float> 
-SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filname)
+SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
 {
 #ifndef HAVE_LLN_MATRIX
   error("Compiled without ECAT7 support\n");
 #else
-  ifstream singles_file(sgl_filname.c_str(), ios::binary);
+  ifstream singles_file(sgl_filename.c_str(), ios::binary);
   if (!singles_file)
   {
-    warning("\nCouldn't open %s.\n", sgl_filname.c_str());
+    error("\nSinglesRatesFromSglFile: Couldn't open \"%s\".\n", sgl_filename.c_str());
   }
   
   sgl_str singles_str;
   vector<sgl_str> vector_of_records;
   
   //first find out the size of the file
-  streampos current  = singles_file.tellg(); 
   singles_file.seekg(0, ios::end);
-  streampos end_stream_position = singles_file.tellg();
+  const streampos end_stream_position = singles_file.tellg();
+  if (!singles_file)
+  {
+    error("\nSinglesRatesFromSglFile: Couldn't seek to end of file %s.",sgl_filename.c_str());
+  }
 
   // go to the beginning and read the singles header
   singles_file.seekg(0, ios::beg);
  
   if (!singles_file)
-  {
-    warning("\nCouldn't read main_header from %s.",sgl_filname.c_str());
-  }
-  else
+    error("\nSinglesRatesFromSglFile: Couldn't seek to start of file %s.",sgl_filename.c_str());
   {
     char buffer[sizeof(Main_header)];
     singles_file.read(buffer,sizeof(singles_main_header));
     if (!singles_file)
     {
-      warning("\nCouldn't read main_header from %s.",sgl_filname.c_str());
+      error("\nSinglesRatesFromSglFile: Couldn't read main_header from %s.",sgl_filename.c_str());
     }
     else
     {
@@ -94,6 +94,7 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filname)
   int number_of_elements = 
     static_cast<int>((end_stream_position-static_cast<streampos>(512))/sizeof(singles_str));
 
+  // TODO replace hard-wired sizes by fields from scanner
   singles = Array<3,float>(IndexRange3D(0,number_of_elements-1,0,2,0,35)); 
   Array<3,float>::full_iterator array_iter  = singles.begin_all();
  
@@ -123,8 +124,8 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filname)
       
   if (singles_record_num!= number_of_elements)
   {
-    warning("\nCouldn't read all records in the .sgl file %s. Read %d of %d. Exiting\n",
-	  sgl_filname.c_str(), singles_record_num, number_of_elements);
+    error("\nSinglesRatesFromSglFile: Couldn't read all records in the .sgl file %s. Read %d of %d. Exiting\n",
+	  sgl_filename.c_str(), singles_record_num, number_of_elements);
     //TODO resize singles to return array with new sizes
   }
 #endif
@@ -155,6 +156,7 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
 
   // SM this is pretty ugly but since sgl file has times from 2.008 all times less than this 
   // do not get assigned a value. In this case we take singles[0][ax][tang] for all times <2.008
+  //TODO
   if ( start_time==end_time && start_time <=2.1)
     { 
      return  singles[0][axial_bucket_num][transaxial_bucket_num]/4;       
@@ -180,20 +182,21 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
   //const double singles_time_interval = singles[min_index+1].time - singles[min_index].time;
   const int min_index = 0;
   
-  int start_index = max(static_cast<int>(start_time/singles_time_interval) - 3, min_index);
+  std::size_t start_index = 
+    static_cast<std::size_t>(max(static_cast<int>(start_time/singles_time_interval) - 3, min_index));
   while (start_index<times.size() && times[start_index+1]<start_time)
   //while (start_index<times.get_max_index() && singles[start_index+1].time<start_time)
     ++start_index;
 
   float singles_average =0;
-  int i;
+  std::size_t i;
   //for (i = start_index; i<=singles.get_max_index() && singles[i].time<end_time; i++)
   // SM correced upper range as times[i]<end_time is incorrect
   for (i = start_index; i<=times.size() && times[i]<end_time; i++)
     {
     singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];       
     }
-    // TODO division by far probably is to get from singles_rate_per_bucket to singles_rate_per_block
+    // TODO division by 4 probably is to get from singles_rate_per_bucket to singles_rate_per_block
     return singles_average/(4*(i-start_index));  // divide by 4.0 to be consistant with CTIns
 #else
 
