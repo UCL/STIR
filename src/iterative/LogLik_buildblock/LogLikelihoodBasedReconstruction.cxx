@@ -136,12 +136,13 @@ float LogLikelihoodBasedReconstruction::compute_loglikelihood(
   float accum=0.F;  
 
   // KT 25/05/2000 subset_num -> 0 (was 1)
+  // KT 05/07/2000 made parameters.zero_seg0_end_planes int
   distributable_accumulate_loglikelihood(current_image_estimate,
                                          get_parameters().proj_data_ptr,
 					 0,1,
 					 -get_parameters().max_segment_num_to_process, 
 					 get_parameters().max_segment_num_to_process, 
-					 get_parameters().zero_seg0_end_planes, &accum,
+					 get_parameters().zero_seg0_end_planes != 0, &accum,
 					 additive_projection_data_ptr);
 
   accum/=magic_number;
@@ -171,7 +172,8 @@ float LogLikelihoodBasedReconstruction::sum_projection_data()
       
       //first adjust data
       
-      if(segment_num==0 && get_parameters().zero_seg0_end_planes)
+      // KT 05/07/2000 made parameters.zero_seg0_end_planes int
+      if(segment_num==0 && get_parameters().zero_seg0_end_planes!=0)
       {
         viewgram[viewgram.get_min_axial_pos_num()].fill(0);
         viewgram[viewgram.get_max_axial_pos_num()].fill(0);
