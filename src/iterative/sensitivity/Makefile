@@ -15,7 +15,7 @@ clean:
 	$(RM) $(DEST)*
 
 install: $(EXES)
-        cp $(EXES) $(INSTALL_DIR)
+	cp $(EXES) $(INSTALL_DIR)
 
 include ../../Makefile_bblibs
 
