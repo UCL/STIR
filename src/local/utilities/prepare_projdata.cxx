@@ -18,17 +18,15 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/utilities.h"
-#include "stir/interfile.h"
 #include "stir/CPUTimer.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ParsingObject.h"
+#include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 
-#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 
 #include <string>
@@ -51,26 +49,6 @@ START_NAMESPACE_STIR
 
 
 
-
-ProjDataFromStream *
-make_new_ProjDataFromStream(const string& output_filename, shared_ptr<ProjDataInfo>& proj_data_info_sptr)
-{
-  
-  iostream * output_stream_ptr = 
-    new fstream (output_filename.c_str(), ios::out| ios::binary);
-  if (!output_stream_ptr->good())
-  {
-    error("error opening file %s\n",output_filename.c_str());
-  }  
-  
-  ProjDataFromStream*  output_projdata_ptr = 
-    new ProjDataFromStream(proj_data_info_sptr,output_stream_ptr);
-  
-  write_basic_interfile_PDFS_header(output_filename.c_str(), *output_projdata_ptr);
-
-  return output_projdata_ptr;
-}
-
 class PrepareProjData : public ParsingObject
 {
 public:
@@ -84,7 +62,6 @@ private:
   shared_ptr<ProjData> precorrected_projdata_ptr;
   shared_ptr<ProjData> randoms_projdata_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
-  shared_ptr<ProjData> attenuation_projdata_ptr;
   
   
   shared_ptr<ProjData> normatten_projdata_ptr;
@@ -94,15 +71,18 @@ private:
   shared_ptr<ProjData> prompts_denominator_projdata_ptr;
   
   int max_segment_num_to_process;
+private:
   bool do_Shifted_Poisson;
   bool do_prompts;
-private:
+  bool do_scatter;
+
+  // used to create new viewgrams etc
+  shared_ptr<ProjDataInfo>  output_data_info_ptr;
+  shared_ptr<ProjData> template_projdata_ptr;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
 
-  string attenuation_projdata_filename;
-  string norm_filename;
   string trues_projdata_filename;
   string precorrected_projdata_filename;
   string randoms_projdata_filename;
@@ -123,14 +103,12 @@ set_defaults()
   precorrected_projdata_ptr = 0;
   randoms_projdata_ptr = 0;
   normalisation_ptr = 0;
-  attenuation_projdata_ptr = 0;
+  scatter_projdata_ptr=0;
   max_segment_num_to_process = -1;
-  attenuation_projdata_filename = "";
-  norm_filename = "";
   trues_projdata_filename = "";
   precorrected_projdata_filename = "";
   randoms_projdata_filename = "";
-  
+
   normatten_projdata_filename = "";
   scatter_projdata_filename = "";
   Shifted_Poisson_numerator_projdata_filename = "";
@@ -143,8 +121,7 @@ PrepareProjData::
 initialise_keymap()
 {
   parser.add_start_key("Prepare projdata Parameters");
-  parser.add_key("attenuation_projdata_filename", &attenuation_projdata_filename);
-  parser.add_key("Normalisation projdata filename", &norm_filename);
+  parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("trues_projdata_filename", &trues_projdata_filename);
   parser.add_key("precorrected_projdata_filename", &precorrected_projdata_filename);
   parser.add_key("randoms_projdata_filename", &randoms_projdata_filename);
@@ -169,14 +146,19 @@ PrepareProjData(const char * const par_filename)
   else
     ask_parameters();
 
-  if (norm_filename!="")
-    normalisation_ptr = new BinNormalisationFromProjData(norm_filename);
-  else
+  if (is_null_ptr(normalisation_ptr))
     normalisation_ptr = new TrivialBinNormalisation;
 
-  trues_projdata_ptr = ProjData::read_from_file(trues_projdata_filename.c_str());
-  precorrected_projdata_ptr = ProjData::read_from_file(precorrected_projdata_filename.c_str());
-  attenuation_projdata_ptr = ProjData::read_from_file(attenuation_projdata_filename.c_str());
+  do_scatter = 
+    trues_projdata_filename.size()!=0 && 
+    precorrected_projdata_filename.size()!=0;
+
+  if (trues_projdata_filename.size()!=0)
+    trues_projdata_ptr = ProjData::read_from_file(trues_projdata_filename);
+
+  if (precorrected_projdata_filename.size()!=0)
+    precorrected_projdata_ptr = ProjData::read_from_file(precorrected_projdata_filename);
+
   do_Shifted_Poisson = 
     randoms_projdata_filename.size()!=0 &&
     Shifted_Poisson_numerator_projdata_filename.size() != 0;
@@ -185,7 +167,13 @@ PrepareProjData(const char * const par_filename)
     prompts_denominator_projdata_filename.size() != 0;
 
   if (do_Shifted_Poisson || do_prompts)
-     randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename.c_str());
+     randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename);
+  if (!do_scatter)
+     scatter_projdata_ptr = 
+       scatter_projdata_filename.size()==0 ?
+       0 :
+       ProjData::read_from_file(scatter_projdata_filename);
+
   const int max_segment_num_available =
     trues_projdata_ptr->get_max_segment_num();
   if (max_segment_num_to_process<0 ||
@@ -194,22 +182,29 @@ PrepareProjData(const char * const par_filename)
 
   // construct output projdata
   {
-    shared_ptr<ProjDataInfo>  new_data_info_ptr= 
+    output_data_info_ptr= 
       trues_projdata_ptr->get_proj_data_info_ptr()->clone();
-    new_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
+    output_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
                                             max_segment_num_to_process);
     
 
-    normatten_projdata_ptr = make_new_ProjDataFromStream(normatten_projdata_filename, new_data_info_ptr);
-    scatter_projdata_ptr = make_new_ProjDataFromStream(scatter_projdata_filename, new_data_info_ptr);
+    if (normatten_projdata_filename.size()!=0)
+      normatten_projdata_ptr = 
+	new ProjDataInterfile(output_data_info_ptr, normatten_projdata_filename);
+    if (do_scatter)
+      scatter_projdata_ptr = 
+	new ProjDataInterfile(output_data_info_ptr, scatter_projdata_filename);
     if (do_Shifted_Poisson)
     {
-      Shifted_Poisson_numerator_projdata_ptr = make_new_ProjDataFromStream(Shifted_Poisson_numerator_projdata_filename, new_data_info_ptr);
-      Shifted_Poisson_denominator_projdata_ptr = make_new_ProjDataFromStream(Shifted_Poisson_denominator_projdata_filename, new_data_info_ptr);
+      Shifted_Poisson_numerator_projdata_ptr = 
+	new ProjDataInterfile(output_data_info_ptr, Shifted_Poisson_numerator_projdata_filename);
+      Shifted_Poisson_denominator_projdata_ptr = 
+	new ProjDataInterfile(output_data_info_ptr, Shifted_Poisson_denominator_projdata_filename);
     }
     if (do_prompts)
     {
-      prompts_denominator_projdata_ptr = make_new_ProjDataFromStream(prompts_denominator_projdata_filename, new_data_info_ptr);
+      prompts_denominator_projdata_ptr = 
+	new ProjDataInterfile(output_data_info_ptr, prompts_denominator_projdata_filename);
     }
   }
 
@@ -232,7 +227,7 @@ doit()
   RelatedViewgrams<float> Shifted_Poisson_denominator_viewgrams;
   RelatedViewgrams<float> prompts_denominator_viewgrams;
 
-  // TODO somehow find basic range for loop, in this case there are no symmetries used
+
   for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; segment_num++)
   {
     cerr<<endl<<"Processing segment #"<<segment_num<<endl;
@@ -240,39 +235,48 @@ doit()
     {    
       const ViewSegmentNumbers view_seg_num(view_num,segment_num);
 
+      if (!symmetries_ptr->is_basic(view_seg_num))
+	continue;
+
       // ** first fill in  normatten **
       
       /*RelatedViewgrams<float>*/ normatten_viewgrams = 
-        normatten_projdata_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr, false);
+        output_data_info_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr);
 
       {
         normatten_viewgrams.fill(1.F);
         normalisation_ptr->apply(normatten_viewgrams);
         
-        normatten_viewgrams *= 
-          attenuation_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
-        
-        normatten_projdata_ptr->set_related_viewgrams(normatten_viewgrams);
+        if (!is_null_ptr(normatten_projdata_ptr))
+	  normatten_projdata_ptr->set_related_viewgrams(normatten_viewgrams);
       }
 
       // ** now compute scatter **
-      
       /*RelatedViewgrams<float>*/ scatter_viewgrams = normatten_viewgrams;
+      if (do_scatter)
       {
         // scatter = trues_emission * norm * atten - fully_precorrected_emission
 
         scatter_viewgrams *= 
-          trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+          trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
         scatter_viewgrams -= 
-          precorrected_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+          precorrected_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
         
         scatter_projdata_ptr->set_related_viewgrams(scatter_viewgrams);
+      }
+      else
+      {
+	if (is_null_ptr(scatter_projdata_ptr))
+	  scatter_viewgrams.fill(0);
+	else
+	  scatter_viewgrams = 
+	    scatter_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
       }
 
       if (do_Shifted_Poisson)
       {
         /*RelatedViewgrams<float>*/ randoms_viewgrams =
-          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
         // multiply with 2 for Shifted Poisson
         randoms_viewgrams *= 2;
 
@@ -280,9 +284,9 @@ doit()
           // numerator of Shifted_Poisson is trues+ 2*randoms
 
           /*RelatedViewgrams<float>*/ Shifted_Poisson_numerator_viewgrams =
-            Shifted_Poisson_numerator_projdata_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr, false);
+            Shifted_Poisson_numerator_projdata_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr);
           Shifted_Poisson_numerator_viewgrams += 
-            trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+            trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
           Shifted_Poisson_numerator_viewgrams += randoms_viewgrams;
           Shifted_Poisson_numerator_projdata_ptr->set_related_viewgrams(Shifted_Poisson_numerator_viewgrams);
         }
@@ -299,7 +303,7 @@ doit()
       if (do_prompts)
       {
         /*RelatedViewgrams<float>*/ randoms_viewgrams =
-          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
                
         {
           // denominator of prompts is scatter+ randoms*norm*atten
