@@ -35,7 +35,6 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	set_blocks_to_value.cxx \
 	shift_projdata_along_axis.cxx \
 	remove_sinograms.cxx \
-	lm_to_projdata_with_MC.cxx \
 	generate_image.cxx
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
