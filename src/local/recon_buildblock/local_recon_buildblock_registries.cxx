@@ -16,7 +16,11 @@
     See STIR/LICENSE.txt for details
 */
 #ifdef HAVE_LLN_MATRIX
+#ifndef _MSC_VER 
+// can't use it yet for VC because of conflict between matrix.h's ntohs and winsock2.h's ntohs
+// TODO
 #include "local/stir/recon_buildblock/BinNormalisationFromECAT7.h"
+#endif
 #endif
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
@@ -42,9 +46,11 @@ static QuadraticPrior<float>::RegisterIt dummy21;
 
 static BinNormalisationUsingProfile::RegisterIt dummy101;
 #ifdef HAVE_LLN_MATRIX
+#ifndef _MSC_VER // TODO
 START_NAMESPACE_ECAT7
 static BinNormalisationFromECAT7::RegisterIt dummy102;
 END_NAMESPACE_ECAT7
+#endif
 #endif
 
 END_NAMESPACE_STIR
