@@ -21,7 +21,9 @@
 #include "local/stir/find_fwhm_in_image.h"
 #include <algorithm>  
 #include <list>
+
 using namespace std;
+
 START_NAMESPACE_STIR
 
 /*
@@ -43,7 +45,7 @@ static float find_NEMA_level(const Array<1,elemT>& column, const float level)
   return find_level_width(column.begin(),column.end(),real_maximum_value/level) ;      
 }
 template <int num_dimensions, class elemT>
-list<ResolutionIndex<num_dimensions,float> > 
+std::list<ResolutionIndex<num_dimensions,float> > 
 find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image, 
                    const unsigned int num_maxima, 
                    const float level, 
@@ -51,7 +53,7 @@ find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
                    const bool nema)
 {                      
   ResolutionIndex<3,float> res_index;
-  list<ResolutionIndex<3,float> > list_res_index;    
+  std::list<ResolutionIndex<3,float> > list_res_index;    
  
   const DiscretisedDensityOnCartesianGrid <3,float>* input_image_cartesian_ptr =
   dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*> (&input_image);
@@ -346,14 +348,8 @@ flexible_mask(Array<num_dimensions,elemT>& input_array,
 }        
     
 template <class RandomAccessIterType>
-static float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
-                                   const RandomAccessIterType& end_iter)  
-/* 
-   This function calculates the maximum point (x0,y0) of a parabola that passes through 3 points.
-   As input it takes the Begin and End Iterators of a sequence of numbers (e.g. vector). 
-   The three points are the maximum (x2,y2) of this sequence and the two neihbour points 
-   (x1,y1) and (x3,y3). It returns the maximum point value y0. 
-*/           
+float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
+                                   const RandomAccessIterType& end_iter)    
 { 
   float real_max_value;                    
   const RandomAccessIterType max_iter = std::max_element(begin_iter,end_iter);
@@ -386,14 +382,8 @@ y'(x0) = 0 =>  x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2
 }     
 
 template <class RandomAccessIterType>
-static float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter,
+float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter,
                                       const RandomAccessIterType& end_iter)  
-/* 
-   This function calculates the maximum point (x0,y0) of a parabola that passes through 3 points.
-   As input it takes the Begin and End Iterators of a sequence of numbers (e.g. vector). 
-   The three points are the maximum (x2,y2) of this sequence and the two neihbour points 
-   (x1,y1) and (x3,y3). It returns the maximum point value y0. 
-*/           
 { 
 //  float real_max_value;                    
   const RandomAccessIterType max_iter = std::max_element(begin_iter,end_iter);
@@ -426,11 +416,12 @@ y'(x0) = 0 =>  x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2
                  instantiations
 ***************************************************/
 template 
-list<ResolutionIndex<3,float> > 
+std:: list<ResolutionIndex<3,float> > 
 find_fwhm_in_image<>(DiscretisedDensity<3,float> & input_image, 
                      const unsigned int num_maxima, 
                      const float level, 
                      const int dimension,
                      const bool nema);
 
-  END_NAMESPACE_STIR
+  
+END_NAMESPACE_STIR
