@@ -376,7 +376,7 @@ display_pgm (const Array<3,elemT>& plane_stack,
     int X = max_indices[3] - min_indices[3] + 1;    
     // for Y take into account we add 1 white line below every image
     int Y = (max_indices[2] - min_indices[2] + 2)*plane_stack.get_length();    
-    fprintf ( pgm, "P5\n#created by PARAPET display \n%d %d\n256\n", X , Y);
+    fprintf ( pgm, "P5\n#created by PARAPET display \n%d %d\n255\n", X , Y);
   }
   
   double scaled_max;
