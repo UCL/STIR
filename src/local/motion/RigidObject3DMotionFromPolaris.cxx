@@ -339,10 +339,12 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
   else
     {
       if (list_mode_filename != listmode_data.get_name())
-	warning("RigidObject3DMotionFromPolaris list_mode_filename (%s) does not match "
-		"name from list mode data (%s). Please correct.",
-		list_mode_filename.c_str(), listmode_data.get_name().c_str());
-      return Succeeded::no;
+	{
+	  warning("RigidObject3DMotionFromPolaris list_mode_filename (%s) does not match "
+	  	  "name from list mode data (%s). Please correct.",
+		  list_mode_filename.c_str(), listmode_data.get_name().c_str());
+          return Succeeded::no;
+        }
     }
 
   if (list_mode_filename.size() == 0)
