@@ -1,23 +1,20 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
-  \file 
- 
+  \file  
   \brief This file initialises ByteOrder::native_order.
 
   \author Kris Thielemans
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 /*
   Modification history:
   -first version(s) Kris Thielemans
-
   -KT&AZ 08/12/99 avoid using ntohs()
 */
 
@@ -25,9 +22,7 @@
 
 START_NAMESPACE_TOMO
 
-#if 1
 
-// KT&AZ 08/12/99 new 
 /* A somewhat complicated way to determine the byteorder.
    The advantage is that it doesn't need ntohs (and so any
    compiler specific definitions, libraries or whatever).
@@ -52,45 +47,5 @@ const ByteOrder::Order ByteOrder::native_order =
   *(reinterpret_cast<const unsigned char*>(&magic) ) == 1 ?
       little_endian : big_endian;
 
-#else
-// old implementation of byte-order stuff
-// this uses ntohs, which is standard on Unix, but you have to fiddle around on 
-// NT systems
-
-// includes for ntohs
-#ifdef _WIN32
-
-#ifdef __GNUG__ // Cygwin32
-#include <asm/byteorder.h>
-#else           // Other Windows compilers
-// Unfortunately, the definition of ntohs is in an Import Library 
-// Windows NT, Windows 95: ws2_32.lib; Win32s: wsock32.lib 
-// The relevant library has to be added to your project. 
-#include <winsock2.h>
-#endif
-
-#else // !_WIN32
-
-#include <sys/types.h>
-#include <netinet/in.h>
-
-#endif
-
-#if defined(_WIN32) && defined (__GNUG__)
-// Cygwin32 does define ntohs(), but it's in some library which
-// KT couldn not locate. However, __ntohs is defined as inline asm.
-// so we just use that one.
-
-const ByteOrder::Order ByteOrder::native_order = 
-   (__ntohs(1) != 1) ? little_endian : big_endian;
-
-#else // !Cygwin32
-
-const ByteOrder::Order ByteOrder::native_order = 
-   (ntohs(1) != 1) ? little_endian : big_endian;
-
-#endif // Cygwin32
-
-#endif // old implementation of byte order stuff
 
 END_NAMESPACE_TOMO
