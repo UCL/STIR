@@ -141,10 +141,11 @@ get_next_record(CListRecord& record_of_general_type) const
   return Succeeded::no;
   
 #else
-  // cache the records in a 8 MB buffer
+  // cache the records in a  buffer
 
   // TODO this might skip last record in file
-  static char buffer[8683520];
+  const unsigned int buf_size_in_bytes = 8683520;
+  static char buffer[buf_size_in_bytes];
   static char *current_position_in_buffer = 0;
 
   // first check if we need to refill the buffer
@@ -152,7 +153,7 @@ get_next_record(CListRecord& record_of_general_type) const
   {
     //cerr << "Reading from listmode file \n";
     // read some more data
-    const unsigned int buf_size = (8683520/size_of_record)*size_of_record;
+    const unsigned int buf_size = (buf_size_in_bytes/size_of_record)*size_of_record;
     stream_ptr->read(buffer, buf_size);
     current_position_in_buffer = buffer;
     num_chars_left_in_buffer = static_cast<unsigned int>(stream_ptr->gcount());
