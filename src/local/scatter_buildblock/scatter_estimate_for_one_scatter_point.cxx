@@ -56,6 +56,12 @@ float scatter_estimate_for_one_scatter_point(
 	exp(-atten_integral_to_detA); // * dmue/dw(Klein-Nishina) * efficiencies, for the E'
 	
 	return scatter_point_to_detA_ratio+scatter_point_to_detB_ratio;
+
+	cerr << endl << emiss_integral_to_detA;
+	cerr << endl <<exp(-atten_integral_to_detA);
+	cerr << endl << emiss_integral_to_detB;
+	cerr << endl << exp(-atten_integral_to_detB);
+
 }
 
 END_NAMESPACE_STIR
