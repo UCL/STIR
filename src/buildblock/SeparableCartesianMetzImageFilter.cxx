@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Implementations for class SeparableCartesianMetzImageFilter
 
   \author Sanida Mustafovic
@@ -128,6 +128,7 @@ void
 SeparableCartesianMetzImageFilter<elemT>::
 set_defaults()
 {
+  ImageProcessor<3, elemT>::set_defaults();
   fwhms.fill(0);
   metz_powers.fill(0);  
   max_kernel_sizes.fill(-1);
@@ -138,6 +139,7 @@ void
 SeparableCartesianMetzImageFilter<elemT>::
 initialise_keymap()
 {
+  ImageProcessor<3, elemT>::initialise_keymap();
   parser.add_start_key("Separable Cartesian Metz Filter Parameters");
 
   parser.add_key("x-dir filter FWHM (in mm)", &fwhms[3]);

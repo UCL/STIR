@@ -4,8 +4,8 @@
 /*!
 
   \file
-  \ingroup buildblock
-  \brief 
+  \ingroup ImageProcessor
+  \brief Declaration of class MedianImageFilter3D.h
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -34,7 +34,7 @@ template <typename coordT> class CartesianCoordinate3D;
 
 
 /*!
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief A class in the ImageProcessor hierarchy that implements median 
   filtering.
   
@@ -46,6 +46,7 @@ class MedianImageFilter3D:
   public 
       RegisteredParsingObject<
 	      MedianImageFilter3D<elemT>,
+              ImageProcessor<3,elemT>,
               ImageProcessor<3,elemT>
 	       >
 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Implementations for class MedianImageFilter3D
 
   \author Sanida Mustafovic
@@ -72,6 +72,8 @@ template <typename elemT>
 void
 MedianImageFilter3D<elemT>::set_defaults()
 {
+  ImageProcessor<3, elemT>::set_defaults();
+
   mask_radius_x = 0;
   mask_radius_y = 0;
   mask_radius_z = 0;
@@ -81,6 +83,7 @@ template <typename elemT>
 void 
 MedianImageFilter3D<elemT>::initialise_keymap()
 {
+  ImageProcessor<3, elemT>::initialise_keymap();
   parser.add_start_key("Median Filter Parameters");
   parser.add_key("mask radius x", &mask_radius_x);
   parser.add_key("mask radius y", &mask_radius_y);

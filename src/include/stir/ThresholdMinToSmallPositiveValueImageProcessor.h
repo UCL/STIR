@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup ImageProcessor  
   \brief Declaration of class ThresholdMinToSmallPositiveValueImageProcessor
     
   \author Kris Thielemans
@@ -32,8 +32,10 @@ START_NAMESPACE_STIR
 #define num_dimensions 3
 
 /*!
-  \brief A class in the ImageProcessor hierarchy that calls
-   threshold_min_to_small_positive_value().
+  \ingroup ImageProcessor  
+  \brief A class in the ImageProcessor hierarchy for making sure all elements are strictly positive.
+
+  Works by calling threshold_min_to_small_positive_value().
   
   As it is derived from RegisteredParsingObject, it implements all the 
   necessary things to parse parameter files etc.
@@ -44,6 +46,8 @@ START_NAMESPACE_STIR
   \warning This class is currently restricted to 3d. This is mainly because of
   the difficulty to do the rim_truncation
   in n dimensions.
+  \todo Remove the rim_truncation stuff. If necessary, this could be moved to
+  a separate ImageProcessor
  */
 
 template <typename elemT>
@@ -51,7 +55,8 @@ class ThresholdMinToSmallPositiveValueImageProcessor :
   public 
     RegisteredParsingObject<
         ThresholdMinToSmallPositiveValueImageProcessor<elemT>,
-        ImageProcessor<num_dimensions,elemT>
+        ImageProcessor<3,elemT>,
+        ImageProcessor<3,elemT>
     >
 {
 public:

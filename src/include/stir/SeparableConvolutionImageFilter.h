@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup ImageProcessor  
   \brief Declaration of class SeparableConvolutionImageFilter
     
   \author Kris Thielemans
@@ -40,7 +40,9 @@ START_NAMESPACE_STIR
 //
 #define num_dimensions 3
 
-/*! \brief A class derived from ImageProcessor for performing separable
+/*!
+  \ingroup ImageProcessor  
+  \brief A class derived from ImageProcessor for performing separable
     non-periodic convolutions.
 
     This filter applies a 1D convolution in all directions (z,y,x)
@@ -83,7 +85,8 @@ class SeparableConvolutionImageFilter :
   public 
     RegisteredParsingObject<
         SeparableConvolutionImageFilter<elemT>,
-        ImageProcessor<num_dimensions,elemT>
+        ImageProcessor<3,elemT>,
+        ImageProcessor<3,elemT>
     >
 {
 public:

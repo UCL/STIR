@@ -48,7 +48,7 @@ do_it(Array<num_dim,elemT>& array) const
 #ifndef NDEBUG
       // currently in_place_apply_array_functions_on_each_index doesn't handle 0 
       // pointers gracefully, so we check here that there aren't any
-      for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator
+      for (typename VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator
 	      iter=all_1d_array_filters.begin();
 	    iter!=all_1d_array_filters.end();
 	    ++iter)
@@ -94,7 +94,7 @@ bool
 SeparableArrayFunctionObject<num_dim, elemT>::
 is_trivial() const
 {
-  for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator 
+  for (typename VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator 
 	  iter=all_1d_array_filters.begin();
         iter!=all_1d_array_filters.end();
 	++iter)

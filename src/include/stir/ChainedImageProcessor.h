@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup ImageProcessor  
   \brief Declaration of class ChainedImageProcessor
     
   \author Kris Thielemans
@@ -29,6 +29,7 @@ START_NAMESPACE_STIR
 
 
 /*!
+  \ingroup ImageProcessor  
   \brief A class in the ImageProcessor hierarchy that calls
    2 ImageProcessors in sequence.
   
@@ -56,6 +57,7 @@ class ChainedImageProcessor :
   public 
     RegisteredParsingObject<
         ChainedImageProcessor<num_dimensions,elemT>,
+        ImageProcessor<num_dimensions,elemT>,
         ImageProcessor<num_dimensions,elemT>
     >
 {
