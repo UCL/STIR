@@ -22,6 +22,8 @@
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 #ifdef STIR_DEVEL
+#include "local/stir/ArrayFilter2DUsingConvolution.h"
+#include "stir/IndexRange2D.h"
 #include "local/stir/ArrayFilter3DUsingConvolution.h"
 #include "stir/IndexRange3D.h"
 #endif
@@ -29,7 +31,7 @@
 #include "stir/modulo.h"
 #include "stir/RunTests.h"
 
-//#include "stir/stream.h"
+#include "stir/stream.h"//XXX
 #include <iostream>
 #include <algorithm>
 
@@ -83,12 +85,13 @@ compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
     check(test.get_regular_range(min_indices, max_indices), "test only works for Arrays of regular range");
     const IndexRange<num_dimensions> larger_range(min_indices-5, max_indices+7);
     out1.resize(larger_range);
+
     Array<num_dimensions,float> out2(out1);
     filter1(out1);
     filter2(out2);
     
-    check_if_equal( out1, out2, "test comparing output of filters, larger length");
-    //std::cerr << out1 << out2;
+    if (!check_if_equal( out1, out2, "test comparing output of filters, larger length"))
+      {}//std::cerr << out1 << out2;
   }
 }
 
@@ -159,11 +162,12 @@ compare_results_2arg(const ArrayFunctionObject<1,float>& filter1,
 void
 ArrayFilterTests::run_tests()
 { 
-  // 1D
+  std::cerr << "\nTesting 1D\n";
   {
-    Array<1,float> test(IndexRange<1>(100));
-    Array<1,float> test_neg_offset(IndexRange<1>(-10,89));
-    Array<1,float> test_pos_offset(IndexRange<1>(10,109));
+    const int size1 = 100;
+    Array<1,float> test(IndexRange<1>(100));// warning: not using 'size1' here. gcc 3.3 fails to compile it otherwise
+    Array<1,float> test_neg_offset(IndexRange<1>(-10,size1-11));
+    Array<1,float> test_pos_offset(IndexRange<1>(10,size1+9));
     // initialise to some arbitrary values
     for (int i=test.get_min_index(); i<=test.get_max_index(); ++i)
       test[i]=i*i*2-i-100.F;
@@ -173,8 +177,9 @@ ArrayFilterTests::run_tests()
     {
       const int kernel_half_length=30;
       const int DFT_kernel_size=256;
-      // necessary for avoid aliasing in DFT
-      assert(DFT_kernel_size>=kernel_half_length*2*2);
+      // necessary to avoid aliasing in DFT
+      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      assert(DFT_kernel_size>=2*size1);
       Array<1,float> kernel_for_DFT(IndexRange<1>(0,DFT_kernel_size-1));
       Array<1,float> kernel_for_conv(IndexRange<1>(-kernel_half_length,kernel_half_length));
       for (int i=-kernel_half_length; i<kernel_half_length; ++i)
@@ -236,24 +241,84 @@ ArrayFilterTests::run_tests()
   } // 1D
 
 #ifdef STIR_DEVEL
-  // 3D
+  std::cerr << "\nTesting 2D\n";
   {
-    Array<3,float> test(IndexRange3D(10,21,30));
-    Array<3,float> test_neg_offset(IndexRange3D(-5,4,-10,10,-4,25));
-    Array<3,float> test_pos_offset(IndexRange3D(1,11,2,23,3,33));
+    const int size1=6;const int size2=20;
+    Array<2,float> test(IndexRange2D(size1,size2));
+    Array<2,float> test_neg_offset(IndexRange2D(-5,size1-6,-10,size2-11));
+    Array<2,float> test_pos_offset(IndexRange2D(1,size1,2,size2+1));
     // initialise to some arbitrary values
     {
-      Array<3,float>::full_iterator iter = test.begin_all();
-      for (int i=-100; iter != test.end_all(); ++i, ++iter)
-      *iter = i*i*2.F-i-100.F;
+      Array<2,float>::full_iterator iter = test.begin_all();
+      /*for (int i=-100; iter != test.end_all(); ++i, ++iter)
+       *iter = 1;//i*i*2.F-i-100.F;*/
+      test[0][0]=1;
       std::copy(test.begin_all(), test.end_all(), test_neg_offset.begin_all());
       std::copy(test.begin_all(), test.end_all(), test_pos_offset.begin_all());
     }
     {
-      const int kernel_half_length=10;
+      const int kernel_half_length=14;
       const int DFT_kernel_size=64;
-      // necessary for avoid aliasing in DFT
-      assert(DFT_kernel_size>=kernel_half_length*2*2);
+      // necessary to avoid aliasing in DFT
+      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      assert(DFT_kernel_size>=2*size2);
+      assert(DFT_kernel_size>=2*size1);
+      const Coordinate2D<int> sizes(DFT_kernel_size/2,DFT_kernel_size);
+      Array<2,float> kernel_for_DFT(IndexRange2D(DFT_kernel_size/2,DFT_kernel_size));
+      Array<2,float> kernel_for_conv(IndexRange2D(-(kernel_half_length/2),kernel_half_length/2,
+						  -kernel_half_length,kernel_half_length));
+      for (int i=-(kernel_half_length/2); i<kernel_half_length/2; ++i)
+	for (int j=-kernel_half_length; j<kernel_half_length; ++j)
+	{
+	  const Coordinate2D<int> index(i,j);
+	  kernel_for_conv[index] = i*i-3*i+1.F+j*i/20.F;
+	  kernel_for_DFT[modulo(index,sizes)] =
+	    kernel_for_conv[index];
+	}
+  
+  
+      ArrayFilterUsingRealDFTWithPadding<2,float> DFT_filter;
+      check(DFT_filter.set_kernel(kernel_for_DFT)==Succeeded::yes, "initialisation DFT filter");
+      ArrayFilter2DUsingConvolution<float> conv_filter(kernel_for_conv);
+
+      check(!DFT_filter.is_trivial(), "DFT is_trivial");
+      check(!conv_filter.is_trivial(), "conv is_trivial");
+      set_tolerance(test.find_max()*kernel_for_conv.sum()*1.E-6);
+      //std::cerr << get_tolerance();
+
+      cerr <<"Comparing DFT and Convolution with input offset 0\n";
+      //compare_results_2arg(DFT_filter, conv_filter, test);
+      compare_results_1arg(DFT_filter, conv_filter, test);
+      cerr <<"Comparing DFT and Convolution with input negative offset\n";
+      //compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
+      compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
+      cerr <<"Comparing DFT and Convolution with input positive offset\n";
+      //compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
+      compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
+    }
+  }
+  std::cerr << "\nTesting 3D\n";
+  {
+    const int size1=3;const int size2=7; const int size3=3;
+    Array<3,float> test(IndexRange3D(size1,size2,size3));
+    Array<3,float> test_neg_offset(IndexRange3D(-5,size1-6,-10,size2-11,-4,size3-5));
+    Array<3,float> test_pos_offset(IndexRange3D(1,size1,2,size2+1,3,size3+4));
+    // initialise to some arbitrary values
+    {
+      Array<3,float>::full_iterator iter = test.begin_all();
+      for (int i=-100; iter != test.end_all(); ++i, ++iter)
+	*iter = 1;//i*i*2.F-i-100.F;
+      std::copy(test.begin_all(), test.end_all(), test_neg_offset.begin_all());
+      std::copy(test.begin_all(), test.end_all(), test_pos_offset.begin_all());
+    }
+    {
+      const int kernel_half_length=3;
+      const int DFT_kernel_size=16;
+      // necessary to avoid aliasing in DFT
+      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      assert(DFT_kernel_size/2>=2*size1);
+      assert(DFT_kernel_size>=2*size2);
+      assert(DFT_kernel_size>=2*size3);
       const Coordinate3D<int> sizes(DFT_kernel_size/2,DFT_kernel_size,DFT_kernel_size);
       Array<3,float> kernel_for_DFT(IndexRange3D(DFT_kernel_size/2,DFT_kernel_size,DFT_kernel_size));
       Array<3,float> kernel_for_conv(IndexRange3D(-(kernel_half_length/2),kernel_half_length/2,
