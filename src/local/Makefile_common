@@ -38,15 +38,16 @@ endif
 else
 
 ifeq ($(SYSTEM),CYGWIN)
-ifeq (,$(findstring petnt1,$(host-name)))
+ifneq (,$(findstring petnt1,$(host-name)))
 # this NT system has Pentium II processors
 EXTRA_OPT+=-march=pentium2
 else
-ifeq (,$(findstring thiefob,$(host-name)))
+ifneq (,$(findstring thiefob,$(host-name)))
 # this NT system has Pentium II processors
 EXTRA_OPT+=-march=pentium2
 else
-EXTRA_OPT+=-march=pentium3 -mfpmath=sse
+EXTRA_OPT+=-march=pentium3 
+#-mfpmath=sse
 endif
 endif
 # cygwin can't find X include files by default
