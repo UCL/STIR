@@ -286,11 +286,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
       }
 
       float scale_factor = ihead.quant_scale;
-      if (ihead.loss_corr_fctr>0)
-	scale_factor *= ihead.loss_corr_fctr;
-      else
-	warning("\nread_plane warning: loss_corr_fctr invalid, using 1\n");
-
+      
       if(cti_rblk (cti_fptr, entry.strtblk+1, cti_data, entry.endblk-entry.strtblk)!=EXIT_SUCCESS) { // get data
 	error("\nUnable to read data\n");            
       }
