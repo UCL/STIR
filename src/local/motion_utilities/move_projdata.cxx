@@ -13,6 +13,9 @@
   input file:= input_filename
   time frame_definition filename := frame_definition_filename
   output filename prefix := output_filename_prefix
+  ;; next defaults to input file
+  ;output template filename:=
+
   ;max_out_segment_num_to_process:=-1
   ;max_out_segment_num_to_process:=-1
   ;move_to_reference := 1
@@ -64,6 +67,7 @@ protected:
   //! parsing variables
   string input_filename;
   string output_filename_prefix;
+  string output_template_filename;
   string frame_definition_filename;
  
   bool do_move_to_reference;
@@ -76,7 +80,7 @@ protected:
 private:
   shared_ptr<ProjData >  in_proj_data_sptr; 
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
-
+  shared_ptr<ProjDataInfo> proj_data_info_ptr; // template for output
   // shared_ptr<OutputFileFormat> output_file_format_sptr;  
 };
 
@@ -100,6 +104,7 @@ MoveProjData::initialise_keymap()
 
   parser.add_key("input file",&input_filename);
   parser.add_key("time frame definition filename",&frame_definition_filename);
+  parser.add_key("output template filename",&output_template_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_key("max_out_segment_num_to_process", &max_out_segment_num_to_process);
   parser.add_key("max_in_segment_num_to_process", &max_in_segment_num_to_process);
@@ -138,17 +143,32 @@ post_processing()
     }
   in_proj_data_sptr = 
     ProjData::read_from_file(input_filename);
-
   if (max_in_segment_num_to_process<0)
     max_in_segment_num_to_process = in_proj_data_sptr->get_max_segment_num();
+
+  if (output_template_filename.size() != 0)
+    {
+      shared_ptr<ProjData> template_proj_data_sptr = 
+	ProjData::read_from_file(output_template_filename);
+      proj_data_info_ptr =
+	template_proj_data_sptr->get_proj_data_info_ptr()->clone();
+    }
+  else
+    {
+      proj_data_info_ptr =
+	in_proj_data_sptr->get_proj_data_info_ptr()->clone();
+    }
   if (max_out_segment_num_to_process<0)
-    max_out_segment_num_to_process = max_in_segment_num_to_process;
+    max_out_segment_num_to_process = 
+      proj_data_info_ptr->get_max_segment_num();
+  else
+    proj_data_info_ptr->reduce_segment_range(-max_out_segment_num_to_process,max_out_segment_num_to_process);
 
   // handle time frame definitions etc
 
   if (frame_definition_filename.size()==0)
     {
-      warning("Have to specify either 'frame_definition_filename'\n");
+      warning("Have to specify either 'time frame_definition_filename'\n");
       return true;
     }
 
@@ -201,9 +221,6 @@ Succeeded
 MoveProjData::
 process_data()
 {
-  shared_ptr<ProjDataInfo> proj_data_info_ptr =
-    in_proj_data_sptr->get_proj_data_info_ptr()->clone();
-  proj_data_info_ptr->reduce_segment_range(-max_out_segment_num_to_process,max_out_segment_num_to_process);
   shared_ptr<ProjData> out_proj_data_sptr;
 
   const unsigned int min_frame_num =
