@@ -144,6 +144,7 @@ CListModeDataFromStream::
 reset()
 {
   stream_ptr->seekg(starting_stream_position, ios::beg);
+  // TODO -- I think here it shlue be !stream_ptr->bad() and there is one misplaced bracket
   if (stream_ptr->bad())
     { 
       if (stream_ptr->eof()) 
