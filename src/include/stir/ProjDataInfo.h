@@ -106,24 +106,43 @@ public:
   //  ProjDataInfo& operator=(const ProjDataInfo&);
 
   //! Set a new range of segment numbers
-  /*! \warning the new range has to be 'smaller' than the old one. */
-  void reduce_segment_range(const int min_segment_num, const int max_segment_num);
+  /*! 
+    This function is virtual in case a derived class needs to know the 
+    segment range changed.
+
+    \warning the new range has to be 'smaller' than the old one. */
+  virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
   //! Set number of views 
-  void set_num_views(const int num_views);
+  /*! This function is virtual in case a derived class needs to know the 
+    number of views changed. */
+  virtual void set_num_views(const int num_views);
   //! Set number of tangential positions
-  void set_num_tangential_poss(const int num_tang_poss);
+  /*! This function is virtual in case a derived class needs to know the 
+    number of tangential positions changed. */
+  virtual void set_num_tangential_poss(const int num_tang_poss);
   //! Set number of axial positions per segment
-  void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_pos_per_segment); 
+  /*! 
+    \param num_axial_poss_per_segment is a vector with the new numbers,
+    where the index into the vector is the segment_num (i.e. it is not
+    related to the storage order of the segments or so).
+
+    This function is virtual in case a derived class needs to know the 
+    number of axial positions changed. */
+  virtual void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment); 
 
   //! Set minimum axial position number for 1 segment
-  void set_min_axial_pos_num(int min_ax_pos_num, const int segment_num);
+  /*! This function is virtual in case a derived class needs to know the number changed. */
+  virtual void set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num);
   //! Set maximum axial position number for 1 segment
-  void set_max_axial_pos_num(int min_ax_pos_num, const int segment_num);
+  /*! This function is virtual in case a derived class needs to know the number changed. */
+  virtual void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num);
   
   //! Set minimum tangential position number
-  void set_min_tangential_pos_num(int min_tang_poss);
+  /*! This function is virtual in case a derived class needs to know the number changed. */
+  virtual void set_min_tangential_pos_num(const int min_tang_poss);
   //! Set maximum tangential position number
-  void set_max_tangential_pos_num(int max_tang_poss);
+  /*! This function is virtual in case a derived class needs to know the number changed. */
+  virtual void set_max_tangential_pos_num(const int max_tang_poss);
   
   //! Get number of segments
   inline int get_num_segments() const;
@@ -154,6 +173,10 @@ public:
   /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
   virtual float get_tantheta(const Bin&) const =0;
   
+  //! Get cosine of the co-polar angle of the normal to the projection plane
+  /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
+  inline float get_costheta(const Bin&) const;
+  
   //! Get azimuthal angle phi of the normal to the projection plane
   /*! phi=0 when the normal vector has no component along the horizontal axis */
   virtual float get_phi(const Bin&) const =0;
@@ -162,6 +185,21 @@ public:
   /*! t-axis is defined to be orthogonal to the s-axis (and to the vector
       normal to the projection plane */
   virtual float get_t(const Bin&) const =0;
+
+  //! Return z-coordinate of the middle of the LOR (in mm)
+  /*!
+    The middle is defined as follows: imagine a cylinder centred around
+    the scanner axis. The LOR will intersect the cylinder at 2 opposite
+    ends. The middle of the LOR is exactly halfway those 2 points.
+
+    The 0 of the z-axis is chosen in the middle of the scanner.
+
+    Default implementation is equivalent to
+    \code
+    get_t(bin)/get_costheta(bin)
+    \endcode
+  */  
+  virtual inline float get_m(const Bin&) const;
 
   //! Get value of the tangential coordinate in the projection plane (in mm)
   /*! s-axis is defined to be orthogonal to the scanner axis (and to the vector
@@ -176,6 +214,15 @@ public:
       \endcode
   */
   virtual float get_sampling_in_t(const Bin&) const;
+
+  //! Get sampling distance in the \c m coordinate
+  /*! For some coordinate systems, this might depend on the Bin. The 
+      default implementation computes it as 
+      \code
+      1/2(get_m(..., ax_pos+1,...)-get_m(..., ax_pos-1,...)))
+      \endcode
+  */
+  virtual float get_sampling_in_m(const Bin&) const;
 
   //! Get sampling distance in the \c s coordinate
   /*! For some coordinate systems, this might depend on the Bin. The 
