@@ -80,14 +80,6 @@ void do_block(vector<Bin>& list_of_bins_in_block,
 						  other_det, other_ring);
             if (success == Succeeded::yes)
               list_of_bins_in_block.push_back(bin);
-            if (ring == other_ring)
-              continue;
-            success =
-              proj_data_info.get_bin_for_det_pair(bin, 
-              other_det, other_ring,
-              det, ring);
-            if (success == Succeeded::yes)
-              list_of_bins_in_block.push_back(bin);
           }
       }
     }
@@ -200,28 +192,38 @@ int main(int argc, char **argv)
 	if (ax_pos_num >max_ax_pos_num || 
 	    ax_pos_num <min_ax_pos_num)
 	  continue;
-	const int first_tang_pos_num = 
-	  max(bin_iter->tangential_pos_num(), min_tang_pos_num);
-        std::vector<Bin>::const_iterator last_bin_in_this_line_iter = bin_iter;
+	int first_tang_pos_num = bin_iter->tangential_pos_num();
+	int last_tang_pos_num = first_tang_pos_num;
+	++bin_iter;
         for (; bin_iter != list_of_bins.end(); ++bin_iter)
         {
           if (segment_num != bin_iter->segment_num() ||
               view_num != bin_iter->view_num() ||
-              ax_pos_num != bin_iter->axial_pos_num())
+              ax_pos_num != bin_iter->axial_pos_num() ||
+	      last_tang_pos_num+1 != bin_iter->tangential_pos_num())
 	    break;
-	  last_bin_in_this_line_iter = bin_iter;
+	  ++last_tang_pos_num;
 	}
-	const int last_tang_pos_num = 
-	  min(last_bin_in_this_line_iter->tangential_pos_num(),
-	      max_tang_pos_num);
+	first_tang_pos_num =
+	  max(first_tang_pos_num, min_tang_pos_num);
+	last_tang_pos_num = 
+	  min(last_tang_pos_num, max_tang_pos_num);
         if (first_tang_pos_num > last_tang_pos_num)
 	  continue;
+#if 0
+	cerr << "s "<< segment_num 
+	     << " v " << view_num
+	     << " a " << ax_pos_num
+	     << " ft " << first_tang_pos_num 
+	     << " lt " << last_tang_pos_num
+	     << std::endl;
+#endif
         const float previous_value =
-	   first_tang_pos_num-1 > min_tang_pos_num
+	   first_tang_pos_num-1 >= min_tang_pos_num
 	   ? viewgram[ax_pos_num][first_tang_pos_num-1]
 	   : 0;
         const float next_value =
-	   last_tang_pos_num+1 < max_tang_pos_num
+	   last_tang_pos_num+1 <= max_tang_pos_num
 	   ? viewgram[ax_pos_num][last_tang_pos_num+1]
 	   : 0;
 	const float increment = 
