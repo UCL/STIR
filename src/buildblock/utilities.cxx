@@ -100,7 +100,7 @@ find_filename(const char * const filename_with_directory)
    name = strrchr(filename_with_directory,':');
 #elif defined(__OS_MAC__)
  name = strrchr(filename_with_directory,':');
-#else defined(__OS_UNIX__)
+#else // defined(__OS_UNIX__)
  name = strrchr(filename_with_directory,'/');
 #endif 
  if (name!=NULL)
@@ -175,7 +175,7 @@ is_absolute_pathname(const char * const filename_with_directory)
     return false;
   else
     return ptr != filename_with_directory;
-#else defined(__OS_UNIX__)
+#else // defined(__OS_UNIX__)
   // absolute names start with '/'
   return filename_with_directory[0] == '/';
 #endif 
@@ -227,7 +227,7 @@ prepend_directory_name(char * filename_with_directory,
     strcat(new_name, filename_with_directory+1);
   else
     strcat(new_name, filename_with_directory);
-#else defined(__OS_UNIX__)
+#else // defined(__OS_UNIX__)
   // append / if necessary
   if (*end_of_new_name != '/')
     strcat(new_name, "/");
