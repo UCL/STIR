@@ -2,6 +2,10 @@
 #include "local/stir/SeparableLowPassImageFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 START_NAMESPACE_STIR
 
 template <typename elemT>
@@ -32,10 +36,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
   {
    filter_coeff[i] =  static_cast<elemT>(filter_coefficients[i]); 
   }*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
+
 
  const VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
