@@ -82,11 +82,9 @@ START_NAMESPACE_STIR
   // try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
   typedef boost::mt19937 base_generator_type;
   // initialize by reproducible seed
-  static base_generator_type generator(boost::uint32_t(42));
-  boost::uniform_01<base_generator_type> random01(generator);
+  static base_generator_type generator(boost::uint32_t(43));
 #else
 #error can not do normal distribution
-
 inline double random01() { return static_cast<double>(rand()) / RAND_MAX; }
 #endif
 
@@ -95,15 +93,35 @@ inline double random01() { return static_cast<double>(rand()) / RAND_MAX; }
 // with mean mu
 int generate_poisson_random(const float mu)
 {  
+  static boost::uniform_01<base_generator_type> random01(generator);
+  // normal distribution with mean=0 and sigma=1
+  static boost::normal_distribution<double> normal_distrib01(0., 1.);
+
   // check if mu is large. If so, use the normal distribution
   // note: the threshold must be such that exp(threshold) is still a floating point number
   if (mu > 60.F)
   {
+    // get random number of normal distribution of mean=mu and sigma=sqrt(mu)
+#if 0
     boost::normal_distribution<double> normal_distrib(mu, sqrt(mu));
-    boost::variate_generator<base_generator_type, boost::normal_distribution<double> >
+#  if 0
+    // this works, but sligthly more involved syntax
+    boost::variate_generator<base_generator_type&, boost::normal_distribution<double> >
     randomnormal(generator,
 		 normal_distrib);
     const double random = randomnormal();
+#  else
+    const double random=normal_distrib(random01);
+#  endif
+
+#else
+    // get random with mean=0, sigma=1 and use scaling with sqrt(mu) and addition of mu
+    // this has the advantage that we don't have to construct a normal_distrib
+    // object every time. This will speed things up, especially because the
+    // normal_distribution is implemented using with a polar method that calls
+    // generator::operator() twice only on 'odd'- number of invocations
+    const double random=normal_distrib01(random01)*sqrt(mu) + mu;
+#endif
     return random<=0 ? 0 : round(random);
   }
   else
@@ -234,4 +252,6 @@ main (int argc,char *argv[])
   
   return EXIT_SUCCESS;
 }
+
+
 
