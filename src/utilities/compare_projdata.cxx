@@ -105,6 +105,12 @@ int main(int argc, char *argv[])
   shared_ptr<ProjData> first_operand=ProjData::read_from_file(argv[1]);
   shared_ptr<ProjData> second_operand=ProjData::read_from_file(argv[2]);
 
+  if (*first_operand->get_proj_data_info_ptr() !=
+      *second_operand->get_proj_data_info_ptr())
+    {
+      cout << "\nProjection data sizes or other data characteristics are not identical. \n"
+	   << "Use list_projdata_info to investigate.\n";
+      return EXIT_FAILURE;    }
   int max_segment=first_operand->get_max_segment_num();
   if(argc==4 && atoi(argv[3])>=0 && atoi(argv[3])<max_segment) 
     max_segment=atoi(argv[3]);
