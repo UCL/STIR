@@ -44,7 +44,8 @@ $(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
   $(DEST)utilities.o $(DEST)NumericInfo.o \
   ${DEST}KeyParser.o ${DEST}line.o \
   ${DEST}interfile.o ${DEST}InterfileHeader.o \
-  ${DEST}bbfilters.o ${DEST}recon_array_functions.o
+  ${DEST}bbfilters.o ${DEST}recon_array_functions.o \
+  ${DEST}sparsedata.o
 	ar r $@ $?
 	ranlib $@
 
@@ -155,3 +156,12 @@ $(DEST)recon_array_functions.o: recon_array_functions.cxx \
  ../include/imagedata.h ../include/Point3D.h ../include/debug.h \
  ../include/TensorFunction.h
 
+#PV 24/11/98 Add the sparsedata.o
+$(DEST)sparsedata.o: sparsedata.cxx \
+ ../include/sparsedata.h \
+ ../include/Tensor1D.h ../include/NumericInfo.h \
+ ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
+ ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
+ ../include/PETScanInfo.h ../include/PETScannerInfo.h \
+ ../include/imagedata.h ../include/Point3D.h ../include/debug.h \
+ ../include/TensorFunction.h
