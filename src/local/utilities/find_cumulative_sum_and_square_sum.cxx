@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
   VoxelsOnCartesianGrid<float> cum_square;
   VoxelsOnCartesianGrid<float> square;
   
-  if (argc!= 2)
+  if (argc!= 4)
   {
-   cerr << "Usage: lists of images <list>"<<endl<<endl;    
+   cerr << "Usage: lists of images <list> output filename output filename-square"<<endl<<endl;    
    return EXIT_FAILURE;
   }
   ifstream in (argv[1]);  
@@ -78,8 +78,8 @@ int main(int argc, char *argv[])
   }
 
   cum_image/=counter;
-  write_basic_interfile("cum_image", cum_image);
-  write_basic_interfile("cum_square", cum_square);
+  write_basic_interfile(argv[3], cum_image);
+  write_basic_interfile(argv[4], cum_square);
 
 
   
