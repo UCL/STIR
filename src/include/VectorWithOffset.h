@@ -82,10 +82,10 @@ protected:
 	      (length == 0 && start == 0 &&
 	       num == 0 && mem == 0)));
     
+#endif
       // KT 26/10/98 new
       // check if data is being access via a pointer (see get_data_ptr())
       assert(pointer_access == false);
-#endif
     }
 
 public:  
@@ -296,7 +296,7 @@ public:
     { return iter - num; }
 #endif // DEFINE_ITERATORS
 
-private:
+  // KT&AZ 29/10/98 made public
   
   // KT&AZ 26/10/98 new
 
@@ -313,6 +313,9 @@ private:
 
   T* get_data_ptr()
     {
+      // KT&AZ 29/10/98 added assert
+      assert(!pointer_access);
+
       pointer_access = true;
       return mem;
 
@@ -322,12 +325,18 @@ private:
 
   void update_data()
     {
+      // KT&AZ 29/10/98 added assert
+      assert(pointer_access);
+
       pointer_access = false;
       // do nothing now
     };
 
   const T * get_const_data_ptr()
     {
+      // KT&AZ 29/10/98 added assert
+      assert(!pointer_access);
+
       pointer_access = true;
       return mem;
 
@@ -337,6 +346,9 @@ private:
 
   void release_data_ptr()
     {
+      // KT&AZ 29/10/98 added assert
+      assert(pointer_access);
+
       pointer_access = false;
     }
 };
