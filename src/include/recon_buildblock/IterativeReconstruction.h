@@ -19,7 +19,11 @@
   \date    00/06/15
   \version 1.4
 */
+/* Modification history
 
+   KT 10122001
+   - added get_initial_image_ptr and 0 argument reconstruct()
+*/
 #include "recon_buildblock/Reconstruction.h"
 #include "recon_buildblock/IterativeReconstructionParameters.h"
 
@@ -28,6 +32,8 @@ START_NAMESPACE_TOMO
 /*! 
   \brief base class for iterative reconstruction objects
   \ingroup recon_buildblock
+
+  \todo move subset things somewhere else
  */
 
 class IterativeReconstruction : public Reconstruction
@@ -40,7 +46,31 @@ public:
   int get_subiteration_num() const
     {return subiteration_num;}
 
+  //! Gets a pointer to the initial image
+  /*! This is either read from file, or constructed by construct_target_image_ptr(). 
+      In the latter case, its values are set to 0 or 1, depending on the value
+      of IterativeReconstructionParameters::initial_image_filename.
+
+      \todo Dependency on explicit strings "1" or "0" in 
+      IterativeReconstructionParameters::initial_image_filename is not nice. 
+  */
+  virtual DiscretisedDensity<3,float> *
+    get_initial_image_ptr() const; // KT 10122001 new
+
   //! executes the reconstruction
+  /*!
+    Calls get_initial_image_ptr() and then 1 argument reconstruct().
+    See end_of_iteration_processing() for info on saving to file.
+
+    \return Succeeded::yes if everything was alright.
+   */     
+  virtual Succeeded 
+    reconstruct();  // KT 10122001 new
+
+  //! executes the reconstruction with \a target_image_ptr as initial value
+  /*! After calling recon_set_up(), repeatedly calls update_image_estimate(); end_of_iteration_processing();
+      See end_of_iteration_processing() for info on saving to file.
+  */
   virtual Succeeded 
     reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr);
 
@@ -55,7 +85,19 @@ protected:
   virtual void update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate)=0;
 
   //! operations for the end of the iteration
-  virtual void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate)=0;
+  /*! At specific subiteration numbers, this 
+      <ul>
+      <li>applies the inter-filtering and/or post-filtering image processor,
+      <li>writes the current image to file at the designated subiteration numbers 
+      (including the final one). Filenames used are determined by
+      ReconstructionParameters::output_filename_prefix
+      </ul>
+      If your derived class redefines this virtual function, you will
+      probably want to call 
+      IterativeReconstruction::end_of_iteration_processing() in there anyway.
+  */
+  // KT 14/12/2001 remove =0 as it's not a pure virtual and the default implementation is usually fine.
+  virtual void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate);
 
   //! used to randomly generate a subset sequence order for the current iteration
   VectorWithOffset<int> randomly_permute_subset_order();
