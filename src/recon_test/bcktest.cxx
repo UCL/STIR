@@ -307,6 +307,8 @@ main(int argc, char **argv)
     
     CPUTimer timer;
     timer.reset();
+    back_projector_ptr->reset_timers();
+    back_projector_ptr->start_timers();
     timer.start();
 
     do_segments(*image_sptr, 
@@ -319,7 +321,9 @@ main(int argc, char **argv)
       fill);  
     
     timer.stop();
-    cerr << timer.value() << " s CPU time"<<endl;
+    cerr << timer.value() << " s total CPU time\n";
+    cerr << "of which " << back_projector_ptr->get_CPU_timer_value()
+	 << " s is reported by backprojector\n";
     cerr << "min and max in image " << image_sptr->find_min()
       << ", " << image_sptr->find_max() << endl;
     
