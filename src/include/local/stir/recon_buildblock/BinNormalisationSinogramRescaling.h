@@ -1,18 +1,18 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
   \file
-  \ingroup local recon_buildblock
+  \ingroup recon_buildblock
 
-  \brief
+  \brief Declaration of class BinNormalisationSinogramRescaling
 
   \author Sanida Mustafovic
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$ 
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -41,8 +41,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup recon_buildblock
-  \ingroup ECAT
-  \brief A BinNormalisationSinogramRescaling class gets normaliastion factors by dividing 
+  \brief The BinNormalisationSinogramRescaling class gets normaliastion factors by dividing 
    forward projection of the fitted cyl. to the precorrecred data
  
 */
@@ -61,39 +60,36 @@ public:
   */
   BinNormalisationSinogramRescaling();
 
-  //! Constructor that reads the projdata from a file
+  //! Constructor that reads the scale factors from a file
   BinNormalisationSinogramRescaling(const string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
   //! Normalise some data
   /*! 
-    This means \c multiply with the data in the projdata object 
-    passed in the constructor. 
+    This means \c multiply with the data in the scale factors file.
   */
   virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*! 
-    This means \c divide with the data in the projdata object 
-    passed in the constructor. 
+    This means \c divide with the data in th scale factors file.
   */
   virtual void undo(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
 
 private:
-  // the proj data used for obtaining axial position num, segment num
-  shared_ptr<ProjData> template_proj_data_sptr;
+  // the proj data info used for obtaining axial position num, segment num
+  // will be set by set_up()
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
   Array<2,float> rescaling_factors;
 
-  void read_rescaling_factors (const string& filename);
   // parsing stuff
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
 
   string sinogram_rescaling_factors_filename;
-  string template_proj_data_filename;
-  ifstream instream;
 };
 
 
