@@ -22,7 +22,8 @@ SOURCES = manip_image.cxx \
 	list_projdata_info.cxx \
 	SSRB.cxx \
 	ecat_swap_corners.cxx \
-	poisson_noise.cxx
+	poisson_noise.cxx \
+	get_frame_info.cxx
 
 
 ifeq ($(HAVE_LLN_MATRIX),1)
