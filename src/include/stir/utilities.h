@@ -229,13 +229,19 @@ const int max_filename_length = 1000;
 
   These functions work on different platforms, i.e. Unix, VAX, Windows. Also on 
   older MacOS versions.
+
+  \warning Functions that work on char* might be removed at some point.
 */
 //@{
 
 //! return a pointer to the start of the filename (i.e. after directory specifications)
 /*! The returned pointer is between filename_with_directory and 
     (filename_with_directory+strlen(filename_with_directory)+1). This
-    highest value is used when it's a directory name.
+    highest value is used when it looks like a directory name.
+
+    \deprecated
+    \warning This function works only with string manipulations. There is no check
+    if the 'filename' part actually corresponds to a directory on disk.
 */
 extern const char * const 
 find_filename(const char * const filename_with_directory);
@@ -243,24 +249,39 @@ find_filename(const char * const filename_with_directory);
 //! return the position of the start of the filename (i.e. after directory specifications)
 /*! The returned number is between 0 and filename_with_directory.size()+1. This
     highest value is used when it's a directory name.
+    \warning This function works only with string manipulations. There is no check
+    if the 'filename' part actually corresponds to a directory on disk.
 */
 string::size_type
 find_pos_of_filename(const string& filename_with_directory);
 
+//! return a std::string containing only the filename (i.e. after directory specifications)
+/*!
+    \warning This function works only with string manipulations. There is no check
+    if the 'filename' part actually corresponds to a directory on disk.
+*/
+string
+get_filename(const string& filename_with_directory);
 
 /*! 
  \brief
  Copies the directory part from 'filename_with_directory'
  into 'directory_name' and returns the 'directory_name' pointer.
+ \warning This function works only with string manipulations. There is no check
+ if the 'filename' part actually corresponds to a directory on disk.
 
-\warning assumes that directory_name points to enough allocated space
-\deprecated
+ \warning assumes that directory_name points to enough allocated space
+ \deprecated
 */
 char *
 get_directory_name(char *directory_name, 
 		   const char * const filename_with_directory);
 
 //! Returns a string with the directory part from 'filename_with_directory'.
+/*!
+    \warning This function works only with string manipulations. There is no check
+    if the 'filename' part actually corresponds to a directory on disk.
+*/
 string
 get_directory_name(const string& filename_with_directory);
 
@@ -319,6 +340,7 @@ find_pos_of_extension(const string& file_in_directory_name);
    results in 'filename' pointing to "dir.name/filename.img"
 
  On Windows systems, both forward and backslash can be used.
+ \deprecated
  */
 extern char *
 add_extension(char * file_in_directory_name, 
@@ -343,6 +365,7 @@ add_extension(string& file_in_directory_name,
      replace_extension(filename, ".img");
  \endcode
   results in 'filename' pointing to "dir.name/filename.img"
+  \deprecated
   */
 extern char *
 replace_extension(char *file_in_directory_name, 
