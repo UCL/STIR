@@ -20,7 +20,8 @@
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
-#include "stir/Bin.h" 
+#include "stir/Bin.h"
+//#include "stir/Timer.h"
 #include "stir/CPUTimer.h"
 #include "stir/Viewgram.h"
 
@@ -38,20 +39,28 @@ void scatter_viewgram(
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
 		(*proj_data.get_proj_data_info_ptr());
-		
-			
-			//proj_data.get_proj_data_info_ptr());
-
+	
 	std::vector<CartesianCoordinate3D<float> > scatter_points_vector =  
 		sample_scatter_points(image_as_density,max_scatt_points,att_threshold);
-	
+
 	CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     Bin bin;
 
-	CPUTimer t;
-	t.start();
-	//cerr << t.value();
-
+/////////////////// SCATTER ESTIMATION TIME /////////////////	
+	CPUTimer bin_timer;
+	bin_timer.start();
+	int segment_bins = 0 ;
+	for (bin.segment_num()=proj_data_info.get_min_segment_num();
+	bin.segment_num()<=proj_data_info.get_max_segment_num();
+	++bin.segment_num())	
+	segment_bins += proj_data_info.get_max_axial_pos_num(bin.segment_num()) - proj_data_info.get_min_axial_pos_num(bin.segment_num())+1;	
+  int total_bins = (proj_data_info.get_max_segment_num() - proj_data_info.get_min_segment_num()+1)*
+	                 (proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num()+1) * segment_bins *
+	                 (proj_data_info.get_max_tangential_pos_num() - proj_data_info.get_min_tangential_pos_num()+1) ;
+	cerr << "\nTotal Scatter Points : " << max_scatt_points << "\tTotal bins : " << total_bins << endl ;
+	
+/////////////////// end SCATTER ESTIMATION TIME /////////////////
+	
 	for (bin.segment_num()=proj_data_info.get_min_segment_num();
 	bin.segment_num()<=proj_data_info.get_max_segment_num();
 	++bin.segment_num())
@@ -60,8 +69,7 @@ void scatter_viewgram(
 		++bin.view_num())
 			{
 			Viewgram<float> viewgram =
-				proj_data.get_empty_viewgram(bin.view_num(), bin.segment_num());
-			
+				proj_data.get_empty_viewgram(bin.view_num(), bin.segment_num());			
 			for (bin.axial_pos_num()=
 				proj_data_info.get_min_axial_pos_num(bin.segment_num());
 			bin.axial_pos_num()<=proj_data_info.get_max_axial_pos_num(bin.segment_num());
@@ -82,16 +90,27 @@ void scatter_viewgram(
 						scatter_points_vector, 
 						detector_coord_A, 
 						detector_coord_B));
-                    
-					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
-						bin.get_bin_value();				
-					}			    	
-                    cerr << "segment_num = " << bin.segment_num() << ", view_num = " 
-						 << bin.view_num() << " time elapsed  "<< t.value() << endl;
 					
+					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
+						bin.get_bin_value();	
+						
+/////////////////// SCATTER ESTIMATION TIME /////////////////						
+						 						
+						static int bin_counter = 0;
+						++bin_counter;
+						if(bin_counter%10==0)
+						{				
+     					 static double previous_timer = 0 ;		
+						   cerr << bin_counter << ". bin\tTotal time elapsed "
+						        << bin_timer.value() << "sec\tTime remaining about"
+						        << (bin_timer.value()-previous_timer)*(total_bins - bin_counter)/(10*3600) << "hours\n";
+						   previous_timer = bin_timer.value() ;
+						}
+/////////////////// end SCATTER ESTIMATION TIME /////////////////
+					}			    	
 				proj_data.set_viewgram(viewgram);
 			}
-		t.stop();		
+			bin_timer.stop();		
 	}
 END_NAMESPACE_STIR
 
