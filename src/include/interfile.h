@@ -17,7 +17,7 @@ PETImageOfVolume read_interfile_image(istream& input);
 
 // KT 13/11/98 new
 // This first opens a stream and then calls the previous function
-PETImageOfVolume read_interfile_image(char *filename);
+PETImageOfVolume read_interfile_image(const char *const filename);
 
 // This outputs an Interfile header and data for a Tensor3D object.
 // Extensions .hv and .v will be added to the parameter 'filename' 
@@ -64,7 +64,7 @@ PETSinogramOfVolume read_interfile_PSOV(istream& input);
 
 // KT 13/11/98 new
 // This first opens a stream and then calls the previous function
-PETSinogramOfVolume read_interfile_PSOV(char *filename);
+PETSinogramOfVolume read_interfile_PSOV(const char *const filename);
 
 #endif // __Interfile_h__
 
