@@ -22,7 +22,7 @@
 
 
 #include "stir/RegisteredParsingObject.h"
-#include "stir/recon_buildblock/GeneralisedPrior.h"
+#include "stir/recon_buildblock/ParabolicSurrogatePrior.h"
 #include "stir/Array.h"
 
 START_NAMESPACE_STIR
@@ -38,11 +38,11 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   \todo make weights used flexible
 */
 template <typename elemT>
-class QuadraticPrior:  public 
-      RegisteredParsingObject<
-	      QuadraticPrior<elemT>,
-              GeneralisedPrior<elemT>
-	       >
+class QuadraticPrior:  public  
+		       RegisteredParsingObject< QuadraticPrior<elemT>,
+      		       			        GeneralisedPrior<elemT>,  			      	   
+						ParabolicSurrogatePrior<elemT>
+	                                      >
 {
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
@@ -57,6 +57,13 @@ public:
   //! compute gradient by applying the filter
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
 			const DiscretisedDensity<3,elemT> &current_image_estimate);
+
+  //! compute normalised gradient by applying the filter
+  // in the case of quadratic priors this will just be the sum of weighting coefficients
+  void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature, 
+			const DiscretisedDensity<3,elemT> &current_image_estimate);
+
+
 
   
 private:
