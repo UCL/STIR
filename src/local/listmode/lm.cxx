@@ -249,6 +249,18 @@ get_bin(Bin& bin, const ProjDataInfoCylindrical& proj_data_info) const
 
 
 
+void 
+CListEvent::set_random(int random_v)
+{
+  random = random_v;
+}
+
+void 
+CListEvent::set_type(int type_v)
+{
+  type = type_v;
+}
+
 #if 0
 int get_next_event(istream&in, CListRecord& event)
 {
