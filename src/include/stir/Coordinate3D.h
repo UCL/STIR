@@ -1,11 +1,11 @@
-#ifndef __Coordinate3D_H__
+!#ifndef __Coordinate3D_H__
 #define __Coordinate3D_H__
 //
 // $Id$
 //
 /*!
   \file 
- 
+  \ingroup Coordinate 
   \brief defines the Coordinate3D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -28,7 +28,7 @@
 
 START_NAMESPACE_STIR
 
-/*!
+/*!  \ingroup Coordinate 
    \brief a templated class for 3-dimensional coordinates.
 
    The only new method is a constructor Coordinate3D<coordT>(c1,c2,c3)

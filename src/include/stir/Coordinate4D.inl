@@ -5,7 +5,7 @@
 
 /*!
   \file 
-  \ingroup buildblock  
+  \ingroup Coordinate  
   \brief inline implementations for the Coordinate4D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

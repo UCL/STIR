@@ -5,7 +5,7 @@
 //
 /*!
   \file 
- 
+  \ingroup Coordinate  
   \brief defines the CartesianCoordinate2D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -30,7 +30,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Coordinate
    \brief a templated class for 2-dimensional coordinates.
 
    It is derived from Coordinate2D<coordT>. The only new methods are
