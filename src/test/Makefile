@@ -50,13 +50,8 @@ RM = /bin/rm -f
 LIBS1 = -lm
 
 #KT 22/05/98 use GNU make specific syntax to differentiate between systems (sorry)
-ifdef CYGROOT
-#Cygwin32 doesn't have curses
-LIBS = $(LIBS1) -L/usr/X11R6.3/lib -lX11 
-else
+# KT 10/12/99 removed CYGROOT dependency
 LIBS = $(LIBS1)  -lX11 -lcurses
-endif
-#LIBS_SOL = -L/usr/openwin/lib -L../../../LIBECAT/SOL2  -lm -lecat -lnsl -lsocket
 
 # From here specific to this Makefile
 
@@ -68,9 +63,10 @@ createdir:
 
 libs: $(LIB_BUILDINGBLOCK) $(LIB_DISPLAY)
 
-#CL 12/11/98 Remove $(DEST)sinodata.cxx  as it is a very old version and rename sinodata.cxx
+# KT 101299 added test_linear_regression
 nopara: $(DEST)tensor $(DEST)display2 \
-	$(DEST)VectorWithOffset $(DEST)testconvert
+	$(DEST)VectorWithOffset $(DEST)testconvert \
+	$(DEST)test_linear_regression
 
 #$(DEST)sinodata
 
