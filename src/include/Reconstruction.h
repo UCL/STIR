@@ -1,4 +1,4 @@
-// @(#)Reconstruction.h	1.16: 00/03/02
+// $Id$: $Date$
 //
 #ifndef __RECONSTRUCTION_H__
 #define __RECONSTRUCTION_H__
@@ -10,6 +10,7 @@
 #include "imagedata.h"
 #include "Filter.h"
 
+START_NAMESPACE_TOMO
 
 //	PETSinogramOfVolume s(/* appropriate parameters*/);
 //	PETImageVolume v(/* appropriate parameters*/);
@@ -238,5 +239,6 @@ public:
 
 
 
-    
+END_NAMESPACE_TOMO    
+
 #endif
