@@ -85,7 +85,7 @@ public:
     find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;
 
   //! find out how many image planes there are for every scanner ring
-  inline int get_num_planes_per_scanner_ring() const;
+  inline float get_num_planes_per_scanner_ring() const;
 
 
 
@@ -95,7 +95,7 @@ public:
       compute the offset by matching up the centre of the scanner 
       in the 2 coordinate systems
       */
-  inline int get_num_planes_per_axial_pos(const int segment_num) const;
+  inline float get_num_planes_per_axial_pos(const int segment_num) const;
   inline float get_axial_pos_to_z_offset(const int segment_num) const;
   
 private:
