@@ -918,7 +918,10 @@ void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &imag
             << "Total CPU time : " << get_CPU_timer_value() << '\n' 
             << "forward projection CPU time : " << forward_projector_sptr->get_CPU_timer_value() << '\n' 
             << "back projection CPU time : " << back_projector_sptr->get_CPU_timer_value() << '\n'
-	    << "Colsher filter set-up CPU time : " << colsher_filter.get_CPU_timer_value() << '\n';
+#ifndef NRFFT
+	    << "Colsher filter set-up CPU time : " << colsher_filter.get_CPU_timer_value() << '\n'
+#endif
+      ;
 #endif    
 }
 
