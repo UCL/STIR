@@ -13,8 +13,6 @@
 
   $Date$
   $Revision$
-  
-  
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -23,12 +21,8 @@
 */
 
 
-#ifndef __KEYPARSER_H__
-#define __KEYPARSER_H__
-
-#ifdef OLDDESIGN
-#include "stir/pet_common.h"
-#endif
+#ifndef __stir_KEYPARSER_H__
+#define __stir_KEYPARSER_H__
 
 #include "stir/shared_ptr.h"
 
@@ -63,6 +57,16 @@ class Object;
   \brief A class to parse Interfile headers
 
   Currently, Interfile 3.3 parsing rules are hard-coded. 
+
+  KeyParser reads input line by line and parses each line separately.
+  It allows for \r at the end of the line (as in files
+  originating in DOS/Windows).
+  When the line ends with a backslash '\', the next line
+  will just be appended to the current one. That is, '\'
+  acts as continuation marker.
+
+  \warning The backslash HAS to be the last character. Even
+  spaces after it will stop the 'continuation'.
   
   \warning Vectored keys are treated very dangerously: when a keyword
   is assumed to be vectored, run-time errors occur when it is used without [].
@@ -269,7 +273,9 @@ protected :
   ////// work horses
 
   //! This will be called at the end of the parsing
-  /*! \return false if everything OK, true if not */
+  /*! \return false if everything OK, true if not 
+    \todo return Succeeded instead.
+  */
   virtual bool post_processing() 
    { return false; }
 	
