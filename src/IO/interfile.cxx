@@ -35,6 +35,7 @@
 */
 
 #include "stir/interfile.h"
+#include "stir/interfile_keyword_functions.h"
 #include "stir/InterfileHeader.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
@@ -57,9 +58,21 @@ using std::fstream;
 
 START_NAMESPACE_STIR
 
+bool 
+is_interfile_signature(const char * const signature)
+{
+  const char * pos_of_colon = strchr(signature, ':');
+  string keyword(signature, pos_of_colon-signature);
+  return (pos_of_colon != NULL &&
+	  standardise_interfile_keyword(keyword) == 
+	  standardise_interfile_keyword("interfile"));
+}
 
-VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
-				      const string&  directory_for_data)
+
+
+VoxelsOnCartesianGrid<float>* 
+read_interfile_image(istream& input, 
+		     const string&  directory_for_data)
 {
   InterfileImageHeader hdr;
   if (!hdr.parse(input))
