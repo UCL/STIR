@@ -1,3 +1,24 @@
+/* 
+ $Id$: $Date$
+*/
+/*!
+ \file
+  
+ \brief very basic display routines for bitmaps (internal use only)
+  
+ \author Kris Thielemans
+ \author PARAPET project
+ 
+ \date    $Date$
+  
+ \version $Revision$
+
+ see screen.h for a few details
+  
+ \internal
+ 
+*/
+
 #include "gen.h"
 #include <string.h>
 #define SCreen_compiling 1
@@ -397,11 +418,7 @@ struct
 static Colormap SCX_Colormap;
 static int CurrentColormap;
 
-int SetColormap(mydisplay, mywindow, x, size)
-Display *mydisplay;
-Window  mywindow;
-struct color_info *x;
-int size;
+int SetColormap(Display *mydisplay, Window  mywindow, struct color_info *x, int size)
 {
   Colormap nmap;
   XColor cc;
@@ -504,7 +521,8 @@ void SCX_START()
 
   SCX_window = XCreateSimpleWindow (
         SCX_display, DefaultRootWindow (SCX_display),
-        SCX_hint.x, SCX_hint.y, SCX_hint.width, SCX_hint.height, 5, 0, 1);
+        SCX_hint.x, SCX_hint.y, 
+        (unsigned)SCX_hint.width, (unsigned)SCX_hint.height, 5, 0, 1);
 
   XSetStandardProperties (SCX_display, SCX_window,
         "Display", "Display", None, 0, 0, &SCX_hint);
@@ -564,7 +582,8 @@ void SCX_START_BIG()
 
   SCX_window = XCreateSimpleWindow (
         SCX_display, DefaultRootWindow (SCX_display),
-        SCX_hint.x, SCX_hint.y, SCX_hint.width, SCX_hint.height, 5, 0, 1);
+        SCX_hint.x, SCX_hint.y, 
+        (unsigned)SCX_hint.width,  (unsigned)SCX_hint.height, 5, 0, 1);
 
   XSetStandardProperties (SCX_display, SCX_window,
         "Display", "Display", None, 0, 0, &SCX_hint);
@@ -745,11 +764,12 @@ int x_begin,y_begin, lengthX,lengthY;
 
   myimage = XCreateImage (SCX_display,
       XDefaultVisual (SCX_display, DefaultScreen (SCX_display)),
-      DefaultDepthOfScreen(DefaultScreenOfDisplay(SCX_display)),
-      ZPixmap, 0, (char *)image, lengthX, lengthY, 8, 0);
+      (unsigned)DefaultDepthOfScreen(DefaultScreenOfDisplay(SCX_display)),
+      ZPixmap, 0, (char *)image, 
+      (unsigned)lengthX, (unsigned)lengthY, (unsigned)8, (unsigned)0);
 
   XPutImage (SCX_display, SCX_window, SCX_gc, myimage,
-         0, 0, x_begin, y_begin, lengthX, lengthY);
+         0, 0, x_begin, y_begin, (unsigned)lengthX, (unsigned)lengthY);
 }
 
 void SCX_SAVE_TO_FILE
@@ -768,7 +788,7 @@ void SCX_SAVE_TO_FILE
   myimage = XGetImage(SCX_display, SCX_window,x_begin,y_begin,
                 width,height, AllPlanes,ZPixmap);
   fwrite_check(proc,(void *)myimage->data,
-        (long)sizeof(SC_pixel_t)*width*height,outfile);
+        (unsigned long)sizeof(SC_pixel_t)*width*height,outfile);
 }
 
 #endif /* SC_XWINDOWS */
@@ -2108,7 +2128,7 @@ int pos_x, pos_y, size_x, size_y;
       p<pos_y, par<=SC_C_MAX;
       p+=(size_y) / (SC_C_MAX-SC_C_BACKGROUND), par++)
     { SC_COLOR(par);
-    SC_RECT(pos_x+size_x,p);
+      SC_RECT(pos_x+size_x,p);
     }
   SC_PRMFIL(0);
   /* change November 1997: added rectangle around the color scale */
