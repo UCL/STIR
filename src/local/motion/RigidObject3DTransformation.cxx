@@ -51,7 +51,7 @@ RigidObject3DTransformation::RigidObject3DTransformation (const Quaternion<float
 : quat(quat_v), translation(translation_v)
 {
   // test if quaternion normalised
-  assert(fabs(square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]) - 1)>1E-3);
+  assert(fabs(square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]) - 1)<1E-3);
   // alternatively wwe could just normalise it here
 }
 
