@@ -1,17 +1,32 @@
-// VectorWithOffset.h 
-// like vector.h, but with indices starting not from 0
-// by KT, based on Tensor1D.h by DH
-// TODO, add iterators a la STL
-
 // $Id$ : $Date$
 
-#ifndef VECTORWITHOFFSET_H
-#define  VECTORWITHOFFSET_H
+#ifndef __VECTORWITHOFFSET_H__
+#define __VECTORWITHOFFSET_H__
+// like vector.h, but with indices starting not from 0
+// by KT, based on Tensor1D.h by DH
+
+// KT 26/11 added iterator things
+
 
 #include "pet_common.h"
+#include <iterator.h>
 
 template <class T>
 class VectorWithOffset {
+public:
+  // like in vector.h and defalloc.h
+  typedef T value_type;
+  typedef T * pointer;
+  typedef T * iterator;
+  typedef const T * const_iterator;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef size_t size_type;
+  typedef ptrdiff_t difference_type;
+  typedef reverse_iterator<const_iterator, value_type, const_reference, 
+    difference_type>  const_reverse_iterator;
+  typedef reverse_iterator<iterator, value_type, reference, difference_type>
+     reverse_iterator;
 
 protected:
 
@@ -197,6 +212,89 @@ public:
     check_state();
   };
   
+  // KT 26/11 added iterator things here
+  iterator begin() { return mem; }
+  const_iterator begin() const { return mem; }
+  iterator end() { return mem+length; }
+  const_iterator end() const { return mem+length; }
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const { 
+    return const_reverse_iterator(end()); 
+  }
+  reverse_iterator rend() { return reverse_iterator(begin()); }
+  const_reverse_iterator rend() const { 
+    return const_reverse_iterator(begin()); 
+  }
+
+  // returns the index such that &v[v.get_index(iter)]  == iter
+  Int get_index(iterator iter)
+    { return iter - num; }
+
 };
+
+
+#ifdef __GNUG__
+// TODO should really check on version number here
+// Work arounds from vector.h for G++ 2.7
+// sort() etc. use value_type(), which needs the lines below.
+// Note that value_type() of a reverse_iterator does not work (also not
+// in vector.h
+template <class T>
+struct VectorWithOffset_iterator {
+    VectorWithOffset<T>::iterator it;
+    VectorWithOffset_iterator(VectorWithOffset<T>::iterator i) : it(i) {}
+    operator VectorWithOffset<T>::iterator() {
+	return it;
+    }
+};
+
+template <class T>
+inline T* value_type(const VectorWithOffset_iterator<T>&) {
+    return (T*)(0);
+}
+
+
+template <class T>
+struct VectorWithOffset_const_iterator {
+    VectorWithOffset<T>::const_iterator it;
+    VectorWithOffset_const_iterator(VectorWithOffset<T>::const_iterator i) : it(i) {}
+    operator VectorWithOffset<T>::const_iterator() {
+	return it;
+    }
+};
+
+// KT: I included these to make things work with rend() and so on. 
+// For some reason it's not enough. Here is an illustration:
+/* 
+ VectorWithOffset<int> v(1,10);
+ value_type(v.begin());
+ value_type( VectorWithOffset_reverse_iterator<int>(v.rbegin()));
+ // next line doesn't compile. Missing an automatic conversion.
+ value_type(v.rbegin());
+ */
+template <class T>
+struct VectorWithOffset_reverse_iterator {
+    VectorWithOffset<T>::reverse_iterator it;
+    VectorWithOffset_reverse_iterator(VectorWithOffset<T>::reverse_iterator i) : it(i) {}
+    operator VectorWithOffset<T>::reverse_iterator() {
+	return it;
+    }
+};
+
+template <class T>
+inline T* value_type(const VectorWithOffset_reverse_iterator<T>&) {
+    return (T*)(0);
+}
+
+
+template <class T>
+struct VectorWithOffset_const_reverse_iterator {
+    VectorWithOffset<T>::const_reverse_iterator it;
+    VectorWithOffset_const_reverse_iterator(VectorWithOffset<T>::const_reverse_iterator i) : it(i) {}
+    operator VectorWithOffset<T>::const_reverse_iterator() {
+	return it;
+    }
+};
+#endif
 
 #endif
