@@ -58,11 +58,19 @@ START_NAMESPACE_STIR
 
   ; see TimeFrameDefinitions
   time frame_definition filename := frame_definition_filename
+  
+  ; next parameter is optional (and not normally necessary)
+  ; it can be used if the frame definitions are relative to another scan as what 
+  ; is used to for the rigid object motion (i.e. currently the list mode data used
+  ;  for the Polaris synchronisation)
+  ; scan_start_time_secs_since_1970_UTC
 
-  ; next defines
+  ; next parameter defines transformation 'direction', defaults to 1
   ;move_to_reference := 1
+
   ; next can be set to do only 1 frame, defaults means all frames
   ;frame_num_to_process := -1
+
   Rigid Object 3D Motion Type := type
 
   ; Change output file format, defaults to Interfile. See OutputFileFormat.
@@ -157,7 +165,8 @@ post_processing()
 
   if (scan_start_time_secs_since_1970_UTC==-1)
     {
-      warning("scan_start_time_secs_since_1970_UTC not set. Will use relative time");
+      warning("scan_start_time_secs_since_1970_UTC not set.\n"
+	      "Will use relative time (to RigidObjectMotion object, which for Polaris means relative to the list mode data).");
       scan_start_time = 0;
     }
   else 
