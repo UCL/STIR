@@ -1,8 +1,9 @@
 
 #include <fstream.h>
-#include <KeyParser.h>
-#include <line.h>
-#include <pet_string.h>
+// KT 14/12 changed <> to "" in next 3 includes
+#include "KeyParser.h"
+#include "line.h"
+#include "pet_string.h"
 
 #pragma warning(disable: 4786)
 
@@ -74,8 +75,9 @@ void KeyParser::Init()
 	kmap["!name of data file"]=			m(ASCII,		&KeyParser::OpenFileStream);
 	kmap["image data byte order"]=		m(ASCII,		&KeyParser::SetVariable,&image_data_byte_order);
 	kmap["!PET STUDY (General)"]=		m(NONE,			NULL);
-	kmap["PET data type"]=				m(ASCIIlist,	&KeyParser::SetVariable,&pettype);
-	kmap["data format"]=				m(ASCIIlist,	NULL);
+// KT 14/122 changed next 2 types from ASCIIlist to ASCII
+	kmap["PET data type"]=				m(ASCII,	&KeyParser::SetVariable,&pettype);
+	kmap["data format"]=				m(ASCII,	NULL);
 	kmap["!number format"]=				m(ASCII,		&KeyParser::SetVariable,&number_format);
 	kmap["!number of bytes per pixel"]=	m(NUMBER,		&KeyParser::SetVariable,&bytes_per_pixel);
 	kmap["Number of dimensions"]=		m(NUMBER,		&KeyParser::ReadMatrixInfo,&number_of_dimensions);
