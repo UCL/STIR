@@ -105,7 +105,8 @@ ReconstructionParameters::initialise(const string& parameter_filename)
 
 else
   {
-  if(!parse(parameter_filename.c_str()))
+    set_defaults();
+    if(!parse(parameter_filename.c_str()))
     {
       error("Error parsing input file %s, exiting\n", parameter_filename.c_str());
     }
