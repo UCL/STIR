@@ -20,12 +20,16 @@
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/listmode/TimeFrameDefinitions.h"
 #include "stir/shared_ptr.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/Scanner.h"
+#include "stir/Bin.h"
 #ifdef DO_TIMINGS
 #include "stir/CPUTimer.h"
 #endif
 
-#include "local/stir/motion/Polaris_MT_File.h"
-#include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
+//#include "local/stir/motion/Polaris_MT_File.h"
+//#include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
@@ -43,6 +47,7 @@ public:
 void
 RigidObject3DTransformationTests::run_tests()
 {
+  // testing inverse
   {
     Quaternion<float> quat(1,-2,3,8);
     quat.normalise();
@@ -187,6 +192,84 @@ RigidObject3DTransformationTests::run_tests()
     cerr << " Individual multiplications: " <<  timer.value() << " s CPU time"<<endl;
     cerr << "Combined: " <<  compose_timer.value() << " s CPU time"<<endl;
 #endif
+  }
+
+  // testing transform_lor
+  {
+    shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+    shared_ptr<ProjDataInfo> proj_data_info_ptr =
+      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+				    /*span*/1, scanner_ptr->get_num_rings()-1,
+				    /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
+				    /*tang_pos*/scanner_ptr->get_num_detectors_per_ring()/2, 
+				    /*arc_corrected*/ false);
+    ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+      dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr);
+
+    Quaternion<float> quat(1,-2,3,8);
+    quat.normalise();
+    const CartesianCoordinate3D<float> translation(11,-12,15);
+    
+    const RigidObject3DTransformation ro3dtrans(quat, translation);
+    
+    RigidObject3DTransformation ro3dtrans_inverse =ro3dtrans;
+    ro3dtrans_inverse =ro3dtrans_inverse.inverse();
+
+    unsigned num_bins_checked = 0;
+
+    for (int segment_num=proj_data_info.get_min_segment_num();
+	 segment_num<=proj_data_info.get_max_segment_num();
+	 ++segment_num)
+      {
+	for (int view_num=proj_data_info.get_min_view_num();
+	     view_num<=proj_data_info.get_max_view_num();
+	     view_num+=5)
+	  {
+	    // loop over axial_positions. Avoid using first and last position, as 
+	    // the discretisation error can easily bring the transformed_bin back
+	    // outside the range. We could test for that, but it would make
+	    // the code much more complicated, and not give anything useful back.
+	    for (int axial_pos_num=proj_data_info.get_min_axial_pos_num(segment_num)+1;
+		 axial_pos_num<=proj_data_info.get_max_axial_pos_num(segment_num)-1;
+		 axial_pos_num+=3)
+	      {
+		for (int tangential_pos_num=proj_data_info.get_min_tangential_pos_num()+1;
+		     tangential_pos_num<=proj_data_info.get_max_tangential_pos_num()-1;
+		     tangential_pos_num+=17)
+		  {
+		    ++num_bins_checked;
+
+		    const Bin org_bin(segment_num,view_num,axial_pos_num,tangential_pos_num, /* value*/1);
+	
+		    Bin transformed_bin = org_bin;
+		    ro3dtrans.transform_bin(transformed_bin, proj_data_info, proj_data_info);
+	    
+		    if (transformed_bin.get_bin_value()>0) // only check when the transformed_bin is within the range
+		      {
+			ro3dtrans_inverse.transform_bin(transformed_bin, proj_data_info, proj_data_info);
+			if (!check(org_bin.get_bin_value() == transformed_bin.get_bin_value(), "transform_bin_with_inverse: value") ||
+			    !check(std::abs(org_bin.segment_num() - transformed_bin.segment_num())<=1, "transform_bin_with_inverse: segment") ||
+			    !check(std::abs(org_bin.view_num() - transformed_bin.view_num())<=1, "transform_bin_with_inverse: view") ||
+			    !check(std::abs(org_bin.axial_pos_num() - transformed_bin.axial_pos_num())<=1, "transform_bin_with_inverse: axial_pos") ||
+			    !check(std::abs(org_bin.tangential_pos_num() - transformed_bin.tangential_pos_num())<=1, "transform_bin_with_inverse: tangential_pos"))
+			  {
+			    cerr << "Problem at  segment = " << org_bin.segment_num() 
+				 << ", axial pos " << org_bin.axial_pos_num()
+				 << ", view = " << org_bin.view_num() 
+				 << ", tangential_pos_num = " << org_bin.tangential_pos_num() << "\n";
+			    cerr << "round-trip to  segment = " << transformed_bin.segment_num() 
+				 << ", axial pos " << transformed_bin.axial_pos_num()
+				 << ", view = " << transformed_bin.view_num() 
+				 << ", tangential_pos_num = " << transformed_bin.tangential_pos_num() 
+				 << " value=" << transformed_bin.get_bin_value()
+				 <<"\n";
+			  }
+		      }
+		  } // tangential_pos
+	      } // axial_pos
+	  } // view
+      } //segment
+    cerr << num_bins_checked << " num_bins checked\n";
   }
 }
 
