@@ -151,7 +151,7 @@ float
 EllipsoidalCylinder:: 
 get_geometric_volume()const
  {
-   return (radius_x*radius_y*_PI*length);
+   return static_cast<float>(radius_x*radius_y*_PI*length);
  }
 
 Shape3D* 
