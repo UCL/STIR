@@ -53,7 +53,7 @@ CListModeDataLMF(const string& listmode_filename)
   //opening file.ccs
   pfCCS = open_CCS_file2(listmode_filename.c_str());  /* open the LMF binary file */    
   if(pfCCS==NULL) 
-    error("Cannot open list mode file %s",listmode_filename.c_str();
+    error("Cannot open list mode file %s",listmode_filename.c_str());
 
   fseek(pfCCS,0L,0);                      /* find the begin of file */
   //allocate and fill in the encoding header structure 
