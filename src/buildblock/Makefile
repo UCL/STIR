@@ -1,5 +1,5 @@
 #
-# @(#)Makefile	1.11: 98/07/02
+# $Id$: $Date$
 #
 
 
@@ -35,13 +35,15 @@ ${DEST}%.o : %.cxx
 
 
 # KT 30/07/98 added utilities
+# KT 03/09/98 added NumericInfo
 ${DEST}libbuildblock.a: ${DEST}sinodata.o ${DEST}convert.o \
    ${DEST}PETScannerInfo.o ${DEST}Tensor1D.o ${DEST}viewdata.o \
-   $(DEST)utilities.o
+   $(DEST)utilities.o $(DEST)NumericInfo.o
 	ar r $@ $?
 	ranlib $@
 
-${DEST}libinterfile.a: ${DEST}KeyParser.o ${DEST}line.o ${DEST}pet_string.o
+# KT 03/09/98 removed pet_string
+${DEST}libinterfile.a: ${DEST}KeyParser.o ${DEST}line.o 
 
 #KT 30/07/98 added DEST
 clean: 
