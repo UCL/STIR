@@ -13,8 +13,7 @@ clean:
 
 # KT 08/02/2002
 # added ProjDataInMemory.cxx
-# KT 10/08/2002
-# added ProjDataInterfile.cxx
+# KT 07/05/2001 added ArrayFilter1DUsingConvolution.cxx and SeparableConvolutionImageFilter.cxx
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
@@ -25,8 +24,8 @@ SOURCES = \
   ProjDataInfoCylindricalNoArcCorr.cxx \
   ProjDataFromStream.cxx \
   ProjDataGEAdvance.cxx \
-  ProjDataInterfile.cxx \
   ProjDataInMemory.cxx \
+  ProjDataInterfile.cxx \
   Scanner.cxx \
   SegmentBySinogram.cxx \
   SegmentByView.cxx \
@@ -53,8 +52,7 @@ SOURCES = \
 	ThresholdMinToSmallPositiveValueImageProcessor.cxx \
 	ChainedImageProcessor.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
-	SeparableConvolutionImageFilter.cxx \
-	DataSymmetriesForViewSegmentNumbers.cxx
+	SeparableConvolutionImageFilter.cxx
  
 
 
