@@ -306,11 +306,11 @@ write_to_file(const string& output_filename_prefix,
       (*proj_matrix.get_symmetries_ptr());
     header << "symmetries type := PET_CartesianGrid\n"
 	   << " PET_CartesianGrid symmetries parameters:=\n"
-	   << "  do_symmetry_90degrees_min_phi:= " << (symmetries.do_symmetry_90degrees_min_phi ? 1 : 0) << '\n'
-	   << "  do_symmetry_180degrees_min_phi:= " << (symmetries.do_symmetry_180degrees_min_phi ? 1 : 0) << '\n'
-	   << "  do_symmetry_swap_segment:= " << (symmetries.do_symmetry_swap_segment ? 1 : 0) << '\n'
-	   << "  do_symmetry_swap_s:= " << (symmetries.do_symmetry_swap_s ? 1 : 0) << '\n'
-	   << "  do_symmetry_shift_z:= " << (symmetries.do_symmetry_shift_z ? 1 : 0) << '\n'
+	   << "  do_symmetry_90degrees_min_phi:= " << (symmetries.using_symmetry_90degrees_min_phi() ? 1 : 0) << '\n'
+	   << "  do_symmetry_180degrees_min_phi:= " << (symmetries.using_symmetry_180degrees_min_phi() ? 1 : 0) << '\n'
+	   << "  do_symmetry_swap_segment:= " << (symmetries.using_symmetry_swap_segment() ? 1 : 0) << '\n'
+	   << "  do_symmetry_swap_s:= " << (symmetries.using_symmetry_swap_s() ? 1 : 0) << '\n'
+	   << "  do_symmetry_shift_z:= " << (symmetries.using_symmetry_shift_z() ? 1 : 0) << '\n'
 	   << " End PET_CartesianGrid symmetries parameters:=\n";
 
     header << "template proj data filename:=" << template_proj_data_filename << '\n';
