@@ -28,7 +28,7 @@
 
 START_NAMESPACE_STIR
 
-/*!
+/*! \ingroup OSMAPOSL
   \brief Implementation of the Ordered Subsets version of Green's 
   MAP One Step Late algorithm.
   
@@ -60,7 +60,7 @@ START_NAMESPACE_STIR
   Note that all this assumes 'balanced subsets', i.e. 
   
     \f[\sum_{b \in \rm{subset}} p_{bv} = 
-       \sum_b p_{bv} \over \rm{numsubsets} \f]
+       { \sum_b p_{bv} \over \rm{numsubsets} } \f]
 
   \warning This class should be the last in a Reconstruction hierarchy.
 */
