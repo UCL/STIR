@@ -38,6 +38,7 @@
 #include "stir/utilities.h"
 
 #include <iostream>
+#include <typeinfo>
 #include <vector>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -512,6 +513,7 @@ bool
 ProjDataInfo::operator ==(const ProjDataInfo& proj) const
 {  
   return
+    (typeid (*this) == typeid(proj)) &&
    (get_min_view_num()==proj.get_min_view_num()) &&
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
