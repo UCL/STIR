@@ -48,16 +48,18 @@ LIBS = $(LIBS1)  -lX11 -lcurses
 endif
 #LIBS_SOL = -L/usr/openwin/lib -L../../../LIBECAT/SOL2  -lm -lecat -lnsl -lsocket
 
+# KT 09/10/98 use OBJS,EXES to prevent repetition, add displayIF
+SOURCES = vox.cxx displayPSOV.cxx swap_byteorder.cxx displayIF.cxx
+OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
+EXES=$(SOURCES:%.cxx=$(DEST)%)
 
 
-# KT 09/10/98 changed to *.o
-.PRECIOUS: $(DEST)*.o
-
-# KT 09/10/98 use EXECS to prevent repetition, add displayIF
-EXECS =  $(DEST)vox $(DEST)displayPSOV $(DEST)swap_byteorder $(DEST)displayIF
+# KT 09/10/98 changed to OBJS
+.PRECIOUS: $(OBJS)
 
 
-all: createdir libs $(EXECS)
+
+all: createdir libs $(EXES)
 
 createdir:
 	-mkdir -p $(DEST)
@@ -75,4 +77,4 @@ FORCE:
 
 
 clean: 
-	$(RM) $(DEST)*.o $(EXECS)
+	$(RM) $(DEST)*.o $(EXES)
