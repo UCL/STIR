@@ -1,7 +1,5 @@
-
 //
-//
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,6 +10,7 @@
     
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Sanida Mustafovic  
   \author PARAPET project
       
   \date $Date$
@@ -39,12 +38,16 @@ START_NAMESPACE_TOMO
 //
 
 LogLikelihoodBasedAlgorithmParameters::LogLikelihoodBasedAlgorithmParameters()
-  :IterativeReconstructionParameters()
+:IterativeReconstructionParameters()
 {
+}
 
- 
-  sensitivity_image_filename = "1";
-  
+void
+LogLikelihoodBasedAlgorithmParameters::set_defaults()
+{
+  IterativeReconstructionParameters::set_defaults();
+
+  sensitivity_image_filename = "1";  
   additive_projection_data_filename = "0"; // all zeroes by default
 
 #ifdef PROJSMOOTH
@@ -53,26 +56,28 @@ LogLikelihoodBasedAlgorithmParameters::LogLikelihoodBasedAlgorithmParameters()
   forward_proj_postsmooth_ax_kernel_double.resize(0);
   forward_proj_postsmooth_ax_kernel = VectorWithOffset<float>();
   forward_proj_postsmooth_smooth_segment_0_axially = false;
-
-  add_key("Forward projector postsmoothing kernel",
-    KeyArgument::LIST_OF_DOUBLES, &forward_proj_postsmooth_tang_kernel_double);
-  add_key("Forward projector postsmoothing tangential kernel",
-    KeyArgument::LIST_OF_DOUBLES, &forward_proj_postsmooth_tang_kernel_double);
-  add_key("Forward projector postsmoothing axial kernel",
-    KeyArgument::LIST_OF_DOUBLES, &forward_proj_postsmooth_ax_kernel_double);
-  add_key("Forward projector postsmoothing smooth segment 0 axially",
-    KeyArgument::INT, &forward_proj_postsmooth_smooth_segment_0_axially);
 #endif
-
-  add_key("sensitivity image",
-    KeyArgument::ASCII, &sensitivity_image_filename);
-
-  // AZ 04/10/99 added
-  add_key("additive sinogram",
-    KeyArgument::ASCII, &additive_projection_data_filename);
 
 }
 
+void
+LogLikelihoodBasedAlgorithmParameters::initialise_keymap()
+{
+
+  IterativeReconstructionParameters::initialise_keymap();
+#ifdef PROJSMOOTH
+  parser.add_key("Forward projector postsmoothing kernel", &forward_proj_postsmooth_tang_kernel_double);
+  parser.add_key("Forward projector postsmoothing tangential kernel", &forward_proj_postsmooth_tang_kernel_double);
+  parser.add_key("Forward projector postsmoothing axial kernel", &forward_proj_postsmooth_ax_kernel_double);
+  parser.add_key("Forward projector postsmoothing smooth segment 0 axially", &forward_proj_postsmooth_smooth_segment_0_axially);
+#endif
+
+  parser.add_key("sensitivity image", &sensitivity_image_filename);
+
+  // AZ 04/10/99 added
+  parser.add_key("additive sinogram",&additive_projection_data_filename);
+
+}
 void LogLikelihoodBasedAlgorithmParameters::ask_parameters()
 {
 
@@ -137,36 +142,6 @@ bool LogLikelihoodBasedAlgorithmParameters::post_processing()
   return false;
 }
 
-// KT&MJ 230899 changed return-type to string
-string LogLikelihoodBasedAlgorithmParameters::parameter_info() const
-{
-  
-  // TODO dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-  char str[10000];
-  ostrstream s(str, 10000);
 
-  s << IterativeReconstructionParameters::parameter_info();
-
-#ifdef PROJSMOOTH
-  s << "Forward projector postsmoothing tangential kernel :="
-    << forward_proj_postsmooth_tang_kernel  << endl;
-  s << "Forward projector postsmoothing axial kernel := "
-    << forward_proj_postsmooth_ax_kernel  << endl;
-  s << "Forward projector postsmoothing smooth segment 0 axially := "
-    << forward_proj_postsmooth_smooth_segment_0_axially << endl;
-#endif
-
-  s << "sensitivity image := "
-    << sensitivity_image_filename << endl;
-
- // AZ 04/10/99 added
-
-  s << "additive sinogram := "
-    << additive_projection_data_filename << endl<<endl;
-
-  s<<ends;
-  
-  return s.str();
-}
 
 END_NAMESPACE_TOMO

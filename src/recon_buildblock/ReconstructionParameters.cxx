@@ -1,5 +1,4 @@
 //
-//
 // $Id$
 //
 
@@ -12,10 +11,10 @@
     
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Sanida Mustafovic
   \author PARAPET project
       
-  \date $Date$
-        
+  \date $Date$       
   \version $Revision$
 */
 
@@ -33,11 +32,18 @@ START_NAMESPACE_TOMO
 
 // KT&CL 160899 added arguments
 
-ReconstructionParameters::ReconstructionParameters(): KeyParser()
+ReconstructionParameters::ReconstructionParameters()
+: ParsingObject()
 {
-  // remove set-up of default values
-  //MJ 25/03/2000 put them back
 
+  set_defaults();
+  initialise_keymap();
+
+}
+  
+void 
+ReconstructionParameters::set_defaults()
+{
   input_filename="";
   output_filename_prefix="";
   output_image_size=-1;
@@ -45,37 +51,30 @@ ReconstructionParameters::ReconstructionParameters(): KeyParser()
   Xoffset=0.F;
   Yoffset=0.F;
   max_segment_num_to_process=-1;
-  num_views_to_add=1;
-
-  
+  num_views_to_add=1;  
   proj_data_ptr=NULL; //MJ added
+}
 
-  add_key("input file", 
-    KeyArgument::ASCII, &input_filename);
-  // TODO remove next key
-  add_key("output prefix", 
-    KeyArgument::ASCII, &output_filename_prefix);// KT 160899 changed name of variable
-  add_key("output filename prefix", 
-    KeyArgument::ASCII, &output_filename_prefix);// KT 160899added duplicate key
-  add_key("zoom",         
-    KeyArgument::DOUBLE, &zoom);
+
+void 
+ReconstructionParameters::initialise_keymap()
+{
+  parser.add_key("input file",&input_filename);
+  // KT 03/05/2001 removed
+  //parser.add_key("output prefix", &output_filename_prefix);// KT 160899 changed name of variable
+  parser.add_key("output filename prefix",&output_filename_prefix);// KT 160899added duplicate key
+  parser.add_key("zoom", &zoom);
   // KT 160899 renamed key
-  add_key("output image size",
-    KeyArgument::INT, &output_image_size);
-  add_key("Xoffset (in mm)",
-    KeyArgument::DOUBLE, &Xoffset);
-  add_key("Yoffset (in mm)",          
-    KeyArgument::DOUBLE, &Yoffset);
+  parser.add_key("output image size",&output_image_size);
+  parser.add_key("Xoffset (in mm)", &Xoffset);
+  parser.add_key("Yoffset (in mm)", &Yoffset);
  
   // KT 180899 new
-  add_key("mash x views",
-    KeyArgument::INT, &num_views_to_add);
+  parser.add_key("mash x views", &num_views_to_add);
 
-  add_key("maximum absolute segment number to process",
-    KeyArgument::INT, &max_segment_num_to_process);
+  parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
  
-  add_key("END", 
-    KeyArgument::NONE, &KeyParser::stop_parsing);
+//  parser.add_key("END", &KeyParser::stop_parsing);
  
 }
 
@@ -87,12 +86,13 @@ ReconstructionParameters::initialise(const string& parameter_filename)
     cerr << "Next time, try passing the executable a parameter file"
 	 << endl;
 
+    set_defaults();
     ask_parameters();
   }
 
 else
   {
-  if (!parse(parameter_filename.c_str()))
+  if(!parse(parameter_filename.c_str()))
     {
       error("Error parsing input file %s, exiting\n", parameter_filename.c_str());
     }
@@ -148,29 +148,9 @@ bool ReconstructionParameters::post_processing()
  
  
 
-//CL 01/08/99 Change into string
-// KT 160899 added const to method
-string ReconstructionParameters::parameter_info() const
+string ReconstructionParameters::parameter_info() 
 {
-    char str[10000];
-    ostrstream s(str, 10000);
-    
-
-    //MJ 01/02/2000 Got rid of annoying spaces
-    s << "input file := " << input_filename  << endl;
-    // KT 25/05/2000 file -> filename
-    s << "output filename prefix := " << output_filename_prefix << endl;
-// KT 160899 changed name of variable
-    s << "zoom := " << zoom << endl;
-    s << "Xoffset (in mm) := " << Xoffset << endl;
-    s << "Yoffset (in mm) := " << Yoffset << endl;
-    s << "mash x views := " << num_views_to_add << endl;
-    s << "output image size := " << output_image_size  << endl;
-    s << "maximum absolute segment number to process := "
-      << max_segment_num_to_process << endl<<endl;
-    s << ends;
-    
-    return s.str();    
+  return ParsingObject::parameter_info();
 }
 
 

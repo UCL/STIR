@@ -49,6 +49,11 @@
 
 #include <cmath>
 
+#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#include <vector>
+#include "tomo/ArrayFunctionObject.h"
+#endif
+
 START_NAMESPACE_TOMO
 
 //----------------------------------------------------------------------
@@ -201,7 +206,7 @@ in_place_apply_function(Array<num_dimensions, elemT>& v, FUNCTION f)
   \endcode
 */
 template <int num_dim, typename elemT, typename FunctionObject> 
-void
+inline void
 in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, FunctionObject f)
 {
   assert(array.is_regular());
@@ -251,7 +256,7 @@ in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, Functio
 */
 // TODO add specialisation that uses ArrayFunctionObject::is_trivial
 template <int num_dim, typename elemT, typename FunctionObjectIter> 
-void 
+inline void 
 in_place_apply_array_functions_on_each_index(Array<num_dim, elemT>& array, 
                                              FunctionObjectIter start, 
                                              FunctionObjectIter stop)
@@ -283,7 +288,8 @@ typedef void (*floatarrayfunctionptr)(Array<1,float>&);
 #else
 template <typename elemT, typename FunctionObjectIter> 
 #endif
-void in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObjectIter start, FunctionObjectIter stop)
+inline void 
+in_place_apply_array_functions_on_each_index(Array<1, elemT>& array, FunctionObjectIter start, FunctionObjectIter stop)
 {
   assert(start != stop);
   (**start)(array);
@@ -308,7 +314,7 @@ inner_product (const Array<1,elemT> & v1, const Array<1,elemT> &v2)
 }
 
 template<class elemT>
-double 
+inline double 
 norm (const Array<1,elemT> & v1)
 {
   return sqrt((double)inner_product(v1,v1));

@@ -1,7 +1,13 @@
 //
-// $Id$: $Date$
+// $Id$
 //
-
+#ifdef _MSC_VER
+#ifdef PROJSMOOTH
+#pragma message("PROJSMOOTH defined")
+#else
+#pragma message("PROJSMOOTH NOT defined")
+#endif
+#endif
 #ifndef __LogLikelihoodBasedAlgorithmParameters_h__
 #define __LogLikelihoodBasedAlgorithmParameters_h__
 
@@ -46,9 +52,6 @@ public:
   //! constructor
   LogLikelihoodBasedAlgorithmParameters();
 
-  //! lists the parameter values
-  virtual string parameter_info() const;
-
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
 
@@ -68,6 +71,10 @@ public:
 
   //! name of file in which loglikelihood measurements are stored
   string loglikelihood_data_filename;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+
 
 
 // AZ 04/10/99 added

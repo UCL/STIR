@@ -4,12 +4,20 @@
 include ../../Makefile_common
 
 
-SOURCES =  \
+LIB_SOURCES =  \
          OSMAPOSLParameters.cxx \
-         OSMAPOSLReconstruction.cxx OSEMMain.cxx
+         OSMAPOSLReconstruction.cxx 
 
-EXES = \
-	$(DEST)OSEMMain
+MAIN_SOURCES = OSMAPOSL.cxx
+
+LIB_OBJS = $(LIB_SOURCES:%.cxx=$(DEST)%.o)
+
+MAIN_OBJS = $(MAIN_SOURCES:%.cxx=$(DEST)%.o)
+
+EXES = $(MAIN_SOURCES:%.cxx=$(DEST)%)
+
+.PRECIOUS: $(LIB_OBJS) $(MAIN_OBJS) $(EXES)
+
 
 all: $(EXES)
 
@@ -24,12 +32,12 @@ install: $(EXES)
 include ../../Makefile_bblibs
 
 
-${DEST}OSEMMain: ${DEST}OSEMMain.o \
-          ${DEST}OSMAPOSLParameters.o ${DEST}OSMAPOSLReconstruction.o \
-	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
+${DEST}OSMAPOSL: ${DEST}OSMAPOSL.o $(LIB_OBJS) \
+	  ../../buildblock/${DEST}registrystuff.o\
+	  $(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
 	$(CXX) $(CFLAGS)-o $@ $< \
-        ${DEST}OSMAPOSLParameters.o \
-	${DEST}OSMAPOSLReconstruction.o \
+        $(LIB_OBJS) \
+	../../buildblock/${DEST}registrystuff.o \
 	${LIB_LOGLIK_BUILDINGBLOCK} \
 	$(LIB_RECON_BUILDINGBLOCK) \
 	$(LIB_BUILDINGBLOCK) \
@@ -37,9 +45,9 @@ ${DEST}OSEMMain: ${DEST}OSEMMain.o \
 
 
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+include $(MAIN_SOURCES:%.cxx=$(DEST)%.d)
 
-.PRECIOUS: $(SOURCES:%.cxx=$(DEST)%.o) $(SOURCES:%.cxx=$(DEST)%)
+include $(LIB_SOURCES:%.cxx=$(DEST)%.d)
 
 
 

@@ -1,5 +1,5 @@
 //
-// $Id$
+// @(#)IterativeReconstruction.h	1.4 00/06/15
 //
 #ifndef __IterativeReconstruction_h__
 #define __IterativeReconstruction_h__
@@ -16,8 +16,8 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  \date    00/06/15
+  \version 1.4
 */
 
 #include "recon_buildblock/Reconstruction.h"

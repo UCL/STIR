@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// %W%: %E%
 //
  
 #ifndef __OSMAPOSLParameters_h__
@@ -15,15 +15,17 @@
   \author Matthew Jacobson
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  \date %E%
+  \version %I%
 
   
 */
 
 
-#include "LogLikBased/MAPParameters.h"
-
+//#include "LogLikBased/MAPParameters.h"
+#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
+#include "tomo/recon_buildblock/GeneralisedPrior.h"
+//#include "tomo/ImageProcessor.h"
 
 START_NAMESPACE_TOMO
 
@@ -34,7 +36,7 @@ START_NAMESPACE_TOMO
   This class is supposed to be the last in the Parameter hierarchy.
  */
 
-class OSMAPOSLParameters : public MAPParameters
+class OSMAPOSLParameters : public LogLikelihoodBasedAlgorithmParameters
 {
 
 public:
@@ -46,7 +48,7 @@ public:
   explicit OSMAPOSLParameters(const string& parameter_filename = "");
  
   //! lists the parameter values
-  virtual string parameter_info() const;
+  //virtual string parameter_info();
 
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
@@ -56,7 +58,7 @@ public:
 
   //! subiteration interval at which to apply inter-update filters 
   int inter_update_filter_interval;
-
+/*
   //! inter-update filter type name
   string inter_update_filter_type;
 
@@ -70,10 +72,11 @@ public:
   double inter_update_filter_Nxy_dir;
 
   //! inter-update filter Metz power for axial direction filtering
-  double inter_update_filter_Nz_dir;
+  double inter_update_filter_Nz_dir;*/
 
   //! inter-update filter object
-  ImageFilter inter_update_filter;
+  //ImageProcessor inter_update_filter;
+  ImageProcessor<3,float>* inter_update_filter_ptr;
 
   // KT 17/08/2000 3 new parameters
 
@@ -85,6 +88,17 @@ public:
   
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
+
+  //KT&SM 02/05/2001 new
+  //! the prior that will be used
+  GeneralisedPrior<float>* prior_ptr;
+
+   //! should be either additive or multiplicative
+   string MAP_model; 
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+
+
 private:
 
   //! used to check acceptable parameter ranges, etc...

@@ -1,0 +1,113 @@
+//
+// $Id$
+//
+/*!
+
+  \file
+  \ingroup buildblock
+  \brief Declaration of class FactoryRegistry
+
+  \author Kris Thielemans
+
+  \date $Date$
+  \version $Revision$
+*/
+
+#ifndef __Tomo_FactoryRegistry_H__
+#define __Tomo_FactoryRegistry_H__
+
+
+#include "tomo/common.h"
+#include <iostream>
+#include <map>
+#include <functional>
+
+#ifndef TOMO_NO_NAMESPACE
+using std::ostream;
+using std::map;
+using std::less;
+#endif
+
+
+START_NAMESPACE_TOMO
+
+/*!
+  \ingroup buildblock
+  \brief This class can be used to store 'factories' and their corresponding
+   keys. It is essentially a map, but with some extra embelishments.
+
+  A factory is supposed to be an object which can create another object, 
+  although this is not really enfored by the implementation of 
+  FactoryRegistry.
+
+  \par Type requirements
+
+  Key,Factory,Compare must be suitable as defined for std::map. In addition,
+  FactoryRegistry::list_keys() requires that operator<<(ostream&, const Key&)
+  is defined.
+
+  \todo Probably it would be better to store pointers to factories. However,
+  in that case, the destructor of FactoryRegistry would have to deallocate
+  these factory objects. This would mean that factories have to be allocated
+  with new, and hence would prevent using simple function pointers.
+*/
+template <typename Key, typename Factory, 
+	  typename Compare = less<Key> > 
+class FactoryRegistry
+{
+
+public:
+  // sadly, all of these have to be inline to prevent problems
+  // with instantiation
+
+
+  //! Default constructor without defaults (see find_factory())
+  inline FactoryRegistry(); 
+  /*! \brief
+    constructor with default values which will be returned when no 
+    match is found (see find_factory())
+  */
+  inline FactoryRegistry(const Key& default_key,
+			 const Factory& default_factory);
+
+  inline ~FactoryRegistry();
+			 
+
+  /*! \brief 
+    Add a pair to the registry
+
+    Adding the same key twice will overwrite the first value.
+  */
+  inline void add_to_registry(const Key& key,Factory const & factory);
+  
+  //! Remove a pair from the registry
+  inline void remove_from_registry(const Key& key);
+
+  //! List all keys to an ostream, separated by newlines.
+  inline void list_keys(ostream& s) const;
+  
+  //! Find a factory corresponding to a key
+  /*! If the key is not found, the behaviour depends on which constructor
+      was used. If the (default) no-argument constructor is used, an 
+      error message is printed, and the program aborts. 
+      If the 2nd constructor with default values, the default_factory is 
+      returned.
+  */
+  inline Factory const & find_factory(const Key& key) const;
+
+private:
+  typedef map<Key, Factory, Compare > FactoryMap;
+  FactoryMap m;	  
+  const bool has_defaults;
+  const Key default_key;
+  const Factory default_factory;
+
+};
+
+
+END_NAMESPACE_TOMO
+
+#include "tomo/FactoryRegistry.inl"
+
+
+#endif
