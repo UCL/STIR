@@ -1,6 +1,6 @@
 # AIX Makefile for PPhead/utilities directory
 #
-# @(#)Makefile	1.9 11/13/98 
+# $Id$
 #
 
 WORKSPACE = ${HOME}/PPhead
@@ -49,7 +49,7 @@ endif
 #CL 10/10/98 Add readsino
 #CL 12/11/98 Remove readsino as now it is obsolete, use either displayPSOV or vox
 # KT 09/02/98 added correctPSOV
-SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx correctPSOV.cxx
+SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx correctPSOV.cxx postfilter.cxx
 #readsino.cxx 
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
@@ -181,6 +181,18 @@ ecat6bysegmspan.o: ecat6bysegmspan.cxx ../include/CTI/rcn_types.h \
  ../include/CTI/rcn_config.h ../include/CTI/camera.h \
  ../include/CTI/recon_tools.h ../include/CTI/cti_utils.h \
  ../include/CTI/cti_types.h
+
+
+$(DEST)postfilter.o: postfilter.cxx ../include/pet_common.h \
+ ../include/imagedata.h ../include/Tensor2D.h ../include/Tensorbase.h \
+ ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
+ ../include/NumericInfo.h ../include/Tensor1D.h ../include/Tensor3D.h \
+ ../include/Point3D.h ../include/PETScanInfo.h \
+ ../include/PETScannerInfo.h ../include/debug.h \
+ ../include/TensorFunction.h ../include/display.h \
+ ../include/sinodata.h ../include/interfile.h ../include/KeyParser.h \
+ ../include/utilities.h ../include/recon_array_functions.h \
+ ../include/bbfilters.h
 
 $(DEST)%.o : %.cxx
 	$(CXX) $(CFLAGS) -o $@ -c $< 
