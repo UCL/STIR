@@ -107,11 +107,11 @@ public:
   inline vector<int> get_segment_sequence_in_stream() const;
     
   //! Get & set viewgram 
-  Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=true) const;
+  Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
   Succeeded set_viewgram(const Viewgram<float>& v);
     
   //! Get & set sinogram 
-  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd=true) const; 
+  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const; 
   Succeeded set_sinogram(const Sinogram<float>& s);
     
   //! Get all sinograms for the given segment
