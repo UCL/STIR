@@ -1,5 +1,20 @@
 // $Id$
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup test
@@ -26,22 +41,6 @@
   $Revision$
 
 */
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-    This file is part of STIR.
-
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/ByteOrderDefine.h"
 #include "stir/IO/ecat6_utils.h"
 #include <math.h>
@@ -61,7 +60,6 @@ static float test_input[10] =
 int main(int argc, char **argv)
 {
   using namespace stir;
-  using namespace stir::ecat::ecat6;
 
   if (argc!=3)
     {
@@ -100,12 +98,12 @@ int main(int argc, char **argv)
 	  exit(EXIT_FAILURE);
 	}
 #if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read ints and floats */
-      swab ((char *) bufr, (char *) bufr, size*sizeof(float));
+      stir::ecat::ecat6::swab ((char *) bufr, (char *) bufr, size*sizeof(float));
 #endif
       unsigned int i;
       for ( i=0; i!=size; ++i)
 	{
-	  const float f= get_vax_float(bufr, 2*i);
+	  const float f= stir::ecat::ecat6::get_vax_float(bufr, 2*i);
 	  if (fabs(f/test_input[i]-1)>.001)
 	    {
 	      fprintf(stderr,"get_vax_float error at %g, found %g\n", test_input[i], f);
@@ -123,8 +121,8 @@ int main(int argc, char **argv)
 	  for (i=0; i!=size; ++i)
 	    {
 	      unsigned short local_bufr[2];
-	      hostftovaxf(test_input[i], local_bufr);
-	      const float f= get_vax_float(local_bufr, 0);
+	      stir::ecat::ecat6::hostftovaxf(test_input[i], local_bufr);
+	      const float f= stir::ecat::ecat6::get_vax_float(local_bufr, 0);
 	      if (fabs(f/test_input[i]-1)>.001)
 		{
 		  fprintf(stderr,"hostftovaxf error at %g, found %g\n", test_input[i], f);
@@ -138,10 +136,10 @@ int main(int argc, char **argv)
       unsigned int i;
       for (i=0; i!=size; ++i)
 	{
-	  hostftovaxf(test_input[i], (unsigned short*)(bufr+2*i));
+	  stir::ecat::ecat6::hostftovaxf(test_input[i], (unsigned short*)(bufr+2*i));
 	}
 #if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read ints and floats */
-      swab ((char *) bufr, (char *) bufr, size*sizeof(float));
+      stir::ecat::ecat6::swab ((char *) bufr, (char *) bufr, size*sizeof(float));
 #endif
       if(!fwrite(bufr, /*sizeof(VAXfloat)*/4, size, fptr))
 	{
