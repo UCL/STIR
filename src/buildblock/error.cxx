@@ -23,6 +23,12 @@
 #include <cstdarg>
 #include <stdlib.h>
 #include <iostream>
+/* Warning: vsnprintf is only ISO C99. So your compiler might not have it.
+   Visual Studio can be accomodated with the following work-around
+*/
+#ifdef BOOST_MSVC
+#define vsnprintf _vsnprintf
+#endif
 
 START_NAMESPACE_STIR
 
