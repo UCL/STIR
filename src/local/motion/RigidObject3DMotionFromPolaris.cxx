@@ -71,6 +71,8 @@ RigidObject3DMotionFromPolaris::compute_average_motion(const float start_time, c
   total_ty /= samples;
   total_tz /= samples;
   
+  cerr<< " Reference quaternion is " << total_q[1] << "   "<< total_q[2]<< "    " << total_q[3]<< "   "<< total_q[4]<<endl;
+  cerr<< " Reference translation is " << total_tz << "   "<< total_ty << "    " << total_tx<<endl;
   return RigidObject3DTransformation(total_q,
 				     CartesianCoordinate3D<float>(total_tz,total_ty,total_tx));  
 }
@@ -158,6 +160,8 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
   int mt_offset = ZeroOffSet;
   Polaris_time_offset = (*mt_file_ptr)[mt_offset].sample_time;
 
+  cerr<< " Polaris time offset is:  " <<  Polaris_time_offset << endl;
+
 #if 0
   cerr << endl;
   cerr << "mt_offset    " << mt_offset<< endl;
@@ -198,7 +202,7 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
   
   // TODO make sure that enough events is read for synchronisation
   //unsigned long max_num_events = 1UL << 8*sizeof(unsigned long)-1;
-  unsigned long max_num_events = 100000000;
+  unsigned long max_num_events = 100000000000000000;
   long more_events = max_num_events;
   
   // reset listmode to the beginning 
