@@ -215,7 +215,7 @@ void make_ECAT6_main_header(Main_header& mhead,
 
 VoxelsOnCartesianGrid<float> *
 ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const int data_num, const int bed_num,
-                      FILE *cti_fptr, Main_header & mhead)
+                      FILE *cti_fptr, const Main_header & mhead)
 {
   MatDir entry;
   Image_subheader ihead;
@@ -314,7 +314,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 
 void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		   int max_ring_diff, bool arccorrected,
-                      char *v_data_name, FILE *cti_fptr, Main_header &mhead)
+                   const string& data_name, FILE *cti_fptr, const Main_header &mhead)
 {
   shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_main_header(mhead);
   cout << "Scanner determined from main_header: " << scanner_ptr->get_name() << endl;
@@ -376,24 +376,26 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
   shared_ptr<ProjDataFromStream>  proj_data =  NULL;
   ScanInfoRec scanParams;
 
-  {
-    
+  { 
     // read first subheader for dimensions
     {     
+      // use temporary copy to avoid overwriting mhead argument
+      Main_header mhead_copy;
+
       long matnum= cti_numcod(frame_num, 1,gate_num, data_num, bed_num);
       switch(mhead.file_type)
       {
       case matScanFile:
         {
           Scan_subheader shead;
-          if (get_scanheaders(cti_fptr, matnum, &mhead, &shead, &scanParams)!= EXIT_SUCCESS)
+          if (get_scanheaders(cti_fptr, matnum, &mhead_copy, &shead, &scanParams)!= EXIT_SUCCESS)
             error("Error reading matnum %d\n", matnum);
           break;
         }   
       case matAttenFile:
         {
           Attn_subheader shead;        
-          if(get_attnheaders (cti_fptr, matnum, &mhead, 
+          if(get_attnheaders (cti_fptr, matnum, &mhead_copy, 
 			      &shead, &scanParams)!= EXIT_SUCCESS)
             error("Error reading matnum %d\n", matnum);
           break;
@@ -401,7 +403,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       case matNormFile:
         {
           Norm_subheader shead;        
-          if(get_normheaders (cti_fptr, matnum, &mhead, 
+          if(get_normheaders (cti_fptr, matnum, &mhead_copy, 
 			      &shead, &scanParams)!= EXIT_SUCCESS)
             error("Error reading matnum %d\n", matnum);
           break;
@@ -422,20 +424,30 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     ProjDataFromStream::StorageOrder  storage_order=
       ProjDataFromStream::Segment_AxialPos_View_TangPos;
     
-    add_extension(v_data_name, ".s");
+    // TODO replace these char* things with string based extension stuff
+    shared_ptr<char> actual_data_name = new char[data_name.size() + 4];
+    strcpy(actual_data_name.get(), data_name.c_str());
+    // KT 30/05/2002 make sure that a filename ending on .hs is treated correctly
+    {
+      const char * const extension = strchr(find_filename(actual_data_name.get()),'.');
+      if (extension!=NULL && strcmp(extension, ".hs")==0)
+        replace_extension(actual_data_name.get(), ".s");
+      else
+        add_extension(actual_data_name.get(), ".s");
+    }
     iostream * sino_stream =
-      new fstream (v_data_name, ios::out| ios::binary);
+      new fstream (actual_data_name.get(), ios::out| ios::binary);
     
     if (!sino_stream->good())
     {
-      error("ECAT6cti_to_PDFS: error opening file %s\n",v_data_name);
+      error("ECAT6cti_to_PDFS: error opening file %s\n",actual_data_name.get());
     }
     
     
     proj_data = 
       new ProjDataFromStream(p_data_info,sino_stream, streamoff(0), storage_order);
     
-    write_basic_interfile_PDFS_header(v_data_name, *proj_data);
+    write_basic_interfile_PDFS_header(actual_data_name.get(), *proj_data);
   }
 
 
