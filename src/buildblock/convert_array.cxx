@@ -38,6 +38,8 @@
 // Try to read only the 'modern' stuff.
 
 #include "stir/convert_array.h"
+#include "stir/NumericInfo.h"
+#include "stir/Array.h"
 #include <algorithm>
 // for floor
 #include <math.h>
