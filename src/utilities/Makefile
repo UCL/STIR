@@ -43,7 +43,8 @@ endif
 
 # KT 09/10/98 use OBJS,EXES to prevent repetition, add displayIF
 #CL 10/10/98 Add readsino
-SOURCES = readsino.cxx displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx #displayIF.cxx vox.cxx CL 20/10/98 Disable vox as Interfile library not compiled properly
+# KT 23/10/98 add in vox again
+SOURCES = readsino.cxx displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx 
 
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
@@ -122,15 +123,15 @@ $(DEST)readsino.o: readsino.cxx ../include/pet_common.h \
 
 $(DEST)swap_byteorder.o: swap_byteorder.cxx ../include/pet_common.h
 
+# KT 23/10.98 added some and removed others
 $(DEST)/vox.o: vox.cxx ../include/pet_common.h ../include/sinodata.h \
  ../include/Tensor1D.h ../include/NumericInfo.h \
  ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
  ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
  ../include/PETScannerInfo.h ../include/imagedata.h \
- ../include/Point3D.h ../include/debug.h ../include/TensorFunction.h \
- ../include/display.h ../include/recon_buildblock/bckproj.h \
- ../include/Tensor4D.h ../include/recon_buildblock/fwdproj.h \
- ../include/recon_buildblock/zoom.h
+ ../include/Point3D.h ../include/debug.h \
+ ../include/interfile.h \
+ ../include/display.h
 
 
 $(DEST)conv2cti.o: conv2cti.cxx ../include/CTI/camera.h \
