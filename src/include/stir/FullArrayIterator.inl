@@ -24,7 +24,7 @@
 
 START_NAMESPACE_STIR
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
   FullArrayIterator()
   : current_top_level_iter(0),
@@ -33,7 +33,7 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
     last_rest_iter()
 {}
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
   FullArrayIterator(const topleveliterT& top_level_iter,
                     const topleveliterT& last_top_level_iter,
@@ -49,7 +49,7 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
 }
 
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr> 
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr> 
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
 FullArrayIterator(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2)
   : current_top_level_iter(iter2.current_top_level_iter),
@@ -62,7 +62,7 @@ FullArrayIterator(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref,
     (last_top_level_iter - 1, *(last_top_level_iter - 1).end_all()).
     This SHOULD represent end_all() of this full_iterator.
 */
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& 
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++()
 {
@@ -79,7 +79,7 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++()
   return *this;
 }
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr> 
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++(int)
 {
@@ -88,7 +88,7 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++(int)
   return was;
 }
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 bool 
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
   ::operator==(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
@@ -109,7 +109,7 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
         current_rest_iter == iter2.current_rest_iter); 
     */
 }  
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 bool 
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
   ::operator!=(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
@@ -117,15 +117,15 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
   return !(*this == iter2);
 }
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::reference
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
+typename FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::reference
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator*() const
 {
   return *current_rest_iter;
 }
 
-template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::pointer
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
+typename FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::pointer
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator->() const
 {
   return &(operator*());

@@ -107,7 +107,7 @@ VectorWithOffset<T>::operator[] (int i) const
 }
 
 template <class T>
-VectorWithOffset<T>::iterator 
+typename VectorWithOffset<T>::iterator 
 VectorWithOffset<T>::begin() 
 { 
   check_state();
@@ -115,7 +115,7 @@ VectorWithOffset<T>::begin()
 }
 
 template <class T>
-VectorWithOffset<T>::const_iterator 
+typename VectorWithOffset<T>::const_iterator 
 VectorWithOffset<T>::begin() const 
 {
   check_state();
@@ -123,7 +123,7 @@ VectorWithOffset<T>::begin() const
 }
 
 template <class T>
-VectorWithOffset<T>::iterator 
+typename VectorWithOffset<T>::iterator 
 VectorWithOffset<T>::end() 
 {
   check_state();
@@ -131,7 +131,7 @@ VectorWithOffset<T>::end()
 }
 
 template <class T>
-VectorWithOffset<T>::const_iterator 
+typename VectorWithOffset<T>::const_iterator 
 VectorWithOffset<T>::end() const 
 { 
   check_state();

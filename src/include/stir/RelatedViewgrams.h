@@ -66,11 +66,11 @@ public:
  typedef size_t size_type;
 
 #ifndef STIR_NO_NAMESPACES
-  typedef std::vector<Viewgram<elemT> >::iterator iterator;
-  typedef std::vector<Viewgram<elemT> >::const_iterator const_iterator;
+  typedef typename std::vector<Viewgram<elemT> >::iterator iterator;
+  typedef typename std::vector<Viewgram<elemT> >::const_iterator const_iterator;
 #else
-  typedef vector<Viewgram<elemT> >::iterator iterator;
-  typedef vector<Viewgram<elemT> >::const_iterator const_iterator;
+  typedef typename vector<Viewgram<elemT> >::iterator iterator;
+  typedef typename vector<Viewgram<elemT> >::const_iterator const_iterator;
 #endif
 
 

@@ -45,7 +45,7 @@ class CartesianCoordinate2D : public Coordinate2D<coordT>
 {
 protected:
   typedef Coordinate2D<coordT> base_type;
-  typedef base_type::base_type basebase_type;
+  typedef typename base_type::base_type basebase_type;
 
 public:
   inline CartesianCoordinate2D();

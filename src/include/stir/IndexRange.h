@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
   The next level of indices again runs over such an interval, but
   which interval can depend on the value of the outer index.
 
-  For instance for a 2D range of indices \a i, \j, the outer index
+  For instance for a 2D range of indices \a i, \a j, the outer index
   \a i could run from 1 to 2, and for \a i=1, \a j could run from 4 to 6,
   while for \a i=2, \a j could run from 6 to 8.
 
@@ -70,6 +70,10 @@ protected:
   typedef VectorWithOffset<IndexRange<num_dimensions-1> > base_type;
 
 public:
+  //! typedefs such that we do not need to have \a typename wherever we use iterators 
+  typedef typename base_type::iterator iterator;
+  typedef typename base_type::const_iterator const_iterator;
+
   //! Empty range
   inline IndexRange();
   

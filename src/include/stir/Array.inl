@@ -41,8 +41,8 @@ void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   base_type::grow(range.get_min_index(), range.get_max_index());
-  base_type::iterator iter = begin();
-  IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
+  typename base_type::iterator iter = begin();
+  typename IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
   for (;
   iter != end(); 
   iter++, range_iter++)
@@ -75,7 +75,7 @@ Array<num_dimensions, elemT>::~Array()
 
 #ifdef ARRAY_FULL 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::full_iterator 
+typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::begin_all()
 {
   if (begin() == end())
@@ -89,7 +89,7 @@ Array<num_dimensions, elemT>::begin_all()
   
 #ifdef ARRAY_CONST_IT
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::const_full_iterator 
+typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::begin_all() const
 {
   if (begin() == end())
@@ -103,7 +103,7 @@ Array<num_dimensions, elemT>::begin_all() const
 #endif
 
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::full_iterator 
+typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::end_all()
 {
   if (begin() == end())
@@ -117,7 +117,7 @@ Array<num_dimensions, elemT>::end_all()
 
 #ifdef ARRAY_CONST_IT
 template <int num_dimensions, typename elemT>
-Array<num_dimensions, elemT>::const_full_iterator 
+typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::end_all() const
 {
   if (begin() == end())
@@ -143,7 +143,7 @@ Array<num_dimensions, elemT>::get_index_range() const
   VectorWithOffset<IndexRange<num_dimensions-1> > 
     range(get_min_index(), get_max_index());
 
-  VectorWithOffset<IndexRange<num_dimensions-1> >::iterator range_iter =
+  typename VectorWithOffset<IndexRange<num_dimensions-1> >::iterator range_iter =
     range.begin();
   const_iterator array_iter = begin();
 
@@ -360,21 +360,21 @@ Array<1, elemT>::~Array()
 {}
 
 template <typename elemT>
-Array<1, elemT>::full_iterator 
+typename Array<1, elemT>::full_iterator 
 Array<1, elemT>::begin_all()
 {
   return begin();
 }
   
 template <typename elemT>
-Array<1, elemT>::const_full_iterator 
+typename Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all() const
 {
   return begin();
 }
 
 template <typename elemT>
-Array<1, elemT>::full_iterator 
+typename Array<1, elemT>::full_iterator 
 Array<1, elemT>::end_all()
 {
   return end();
@@ -382,7 +382,7 @@ Array<1, elemT>::end_all()
 
 
 template <typename elemT>
-Array<1, elemT>::const_full_iterator 
+typename Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
 {
    return end();

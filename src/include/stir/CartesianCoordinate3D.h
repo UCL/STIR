@@ -24,9 +24,14 @@
 
 
 #include "stir/Coordinate3D.h"
-#ifdef OLDDESIGN
-#include "stir/pet_common.h"
-#include "stir/Point3D.h"
+
+#ifdef STIR_USE_NO_TYPENAME
+/* horrible work-around for compilers that do not handle 'typename'
+   correctly.
+   This work-around relies on the fact that you do not use 'typename'
+   in the template parameters (use 'class' instead)
+*/
+#define typename
 #endif
 
 START_NAMESPACE_STIR
@@ -43,12 +48,12 @@ START_NAMESPACE_STIR
 */
 
 
-template <typename coordT>
+template <class coordT>
 class CartesianCoordinate3D : public Coordinate3D<coordT>
 {
 protected:
   typedef Coordinate3D<coordT> base_type;
-  typedef base_type::base_type basebase_type;
+  typedef typename base_type::base_type basebase_type;
 
 public:
   inline CartesianCoordinate3D();
@@ -74,3 +79,6 @@ END_NAMESPACE_STIR
 
 #endif
 
+#ifdef STIR_USE_NO_TYPENAME
+#undef typename
+#endif
