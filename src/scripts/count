@@ -1,0 +1,19 @@
+#! /bin/csh -fe
+if ($#argv != 2 && $#argv != 3) then
+  echo "usage: count minimum maximum [increment]"
+  exit 1
+endif
+
+if ($#argv == 3) then
+    set increment = $3
+else
+    set increment = 1
+endif
+
+set all =
+set frame = $1
+while ($frame <= $2 )
+  set all = "$all $frame"
+  @ frame+= $increment
+end
+echo $all
