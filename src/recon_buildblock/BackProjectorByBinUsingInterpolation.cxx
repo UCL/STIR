@@ -17,6 +17,18 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -175,8 +187,6 @@ actual_back_project(DiscretisedDensity<3,float>& density,
   VoxelsOnCartesianGrid<float>& image = 
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(density);
   // TODO somehow check symmetry object in RelatedViewgrams
-  assert(viewgrams.get_num_viewgrams() >= 2);
-
 
   const float zoom = 
     proj_data_info_cyl_ptr->get_tangential_sampling()/
@@ -210,48 +220,88 @@ actual_back_project(DiscretisedDensity<3,float>& density,
       zoomed_viewgrams_ptr = &viewgrams;
     }
 
-#ifndef NDEBUG
-  // This variable is only used in assert() at the moment, so avoid compiler 
-  // warning by defining it only when in debug mode
   const int num_views = viewgrams.get_proj_data_info_ptr()->get_num_views();
-#endif
   RelatedViewgrams<float>::const_iterator r_viewgrams_iter = zoomed_viewgrams_ptr->begin();
   if (zoomed_viewgrams_ptr->get_basic_segment_num() == 0)
     {
       // no segment symmetry
       const Viewgram<float> & pos_view =*r_viewgrams_iter;
-      r_viewgrams_iter++;
-      const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;
-
       const Viewgram<float> neg_view = pos_view.get_empty_copy(); 
-      const Viewgram<float> neg_plus90 = pos_plus90.get_empty_copy(); 
-      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 2)
+
+      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 1)
 	{
+	  const Viewgram<float> pos_plus90 =  pos_view.get_empty_copy();
+	  const Viewgram<float>& neg_plus90 = pos_plus90; 
 	  back_project_view_plus_90_and_delta(
 					      image,
 					      pos_view, neg_view, pos_plus90, neg_plus90, 
 					      min_axial_pos_num, max_axial_pos_num,
 					      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
-
 	}
       else
 	{
-	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
-	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != num_views/4);
-	  r_viewgrams_iter++;//2 
-	  const Viewgram<float> & pos_min180 =*r_viewgrams_iter;
-	  r_viewgrams_iter++;//3
-	  const Viewgram<float> & pos_min90 =*r_viewgrams_iter;
-	  const Viewgram<float> neg_min180 = pos_min180.get_empty_copy(); 
-	  const Viewgram<float> neg_min90 = pos_min90.get_empty_copy();     
+	  r_viewgrams_iter++;
+	  if (zoomed_viewgrams_ptr->get_num_viewgrams() == 2)
+	    {
+	      if (r_viewgrams_iter->get_view_num() == pos_view.get_view_num() + num_views/2)
+		{
+		  const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;
+		  const Viewgram<float> neg_plus90 = pos_plus90.get_empty_copy(); 
+		  assert(pos_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
+		  back_project_view_plus_90_and_delta(
+						      image,
+						      pos_view, neg_view, pos_plus90, neg_plus90, 
+						      min_axial_pos_num, max_axial_pos_num,
+						      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+		}
+	      else if (r_viewgrams_iter->get_view_num() == num_views-pos_view.get_view_num())
+		{
+		  assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
+		  const Viewgram<float> & pos_min180 =*r_viewgrams_iter;
+		  const Viewgram<float> neg_min180 = pos_min180.get_empty_copy(); 
+		  const Viewgram<float>& pos_plus90 =neg_min180;// anything 0 really
+		  const Viewgram<float>& neg_plus90 = pos_plus90;
+		  const Viewgram<float>& pos_min90 =neg_min180;// anything 0 really
+		  const Viewgram<float>& neg_min90 = pos_min90;
 
-	  back_project_all_symmetries(
-				      image,
-				      pos_view, neg_view, pos_plus90, neg_plus90, 
-				      pos_min180, neg_min180, pos_min90, neg_min90,
-				      min_axial_pos_num, max_axial_pos_num,
-				      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+		  assert(pos_min180.get_view_num() == num_views - pos_view.get_view_num());
 
+		  back_project_all_symmetries(
+					      image,
+					      pos_view, neg_view, pos_plus90, neg_plus90, 
+					      pos_min180, neg_min180, pos_min90, neg_min90,
+					      min_axial_pos_num, max_axial_pos_num,
+					      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+		}
+	      else
+		{
+		  error("BackProjectorByBinUsingInterpolation: back_project called with RelatedViewgrams with inconsistent views");
+		}
+	    }
+	  else
+	    {
+	      assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
+	      assert(zoomed_viewgrams_ptr->get_basic_view_num() != num_views/4);
+	      const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;
+	      const Viewgram<float> neg_plus90 = pos_plus90.get_empty_copy(); 
+	      r_viewgrams_iter++;//2 
+	      const Viewgram<float> & pos_min180 =*r_viewgrams_iter;
+	      r_viewgrams_iter++;//3
+	      const Viewgram<float> & pos_min90 =*r_viewgrams_iter;
+	      const Viewgram<float>& neg_min180 = neg_plus90;//pos_min180.get_empty_copy(); 
+	      const Viewgram<float>& neg_min90 = neg_plus90;//pos_min90.get_empty_copy();     
+
+	      assert(pos_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
+	      assert(pos_min90.get_view_num() == num_views / 2 - pos_view.get_view_num());
+	      assert(pos_min180.get_view_num() == num_views - pos_view.get_view_num());
+
+	      back_project_all_symmetries(
+					  image,
+					  pos_view, neg_view, pos_plus90, neg_plus90, 
+					  pos_min180, neg_min180, pos_min90, neg_min90,
+					  min_axial_pos_num, max_axial_pos_num,
+					  zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+	    }
 	}
     }
   else
@@ -267,6 +317,10 @@ actual_back_project(DiscretisedDensity<3,float>& density,
       const Viewgram<float> & neg_plus90 =*r_viewgrams_iter;//3
       if (zoomed_viewgrams_ptr->get_num_viewgrams() == 4)
 	{
+	  assert(pos_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
+	  assert(neg_view.get_view_num() == pos_view.get_view_num());
+	  assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
+
 	  back_project_view_plus_90_and_delta(
 					      image,
 					      pos_view, neg_view, pos_plus90, neg_plus90, 
@@ -286,6 +340,14 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 	  const Viewgram<float> & pos_min90 =*r_viewgrams_iter;
 	  r_viewgrams_iter++;//7
 	  const Viewgram<float> & neg_min90 =*r_viewgrams_iter;
+
+	  assert(pos_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
+	  assert(pos_min90.get_view_num() == num_views / 2 - pos_view.get_view_num());
+	  assert(pos_min180.get_view_num() == num_views - pos_view.get_view_num());
+	  assert(neg_view.get_view_num() == pos_view.get_view_num());
+	  assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
+	  assert(neg_min90.get_view_num() == pos_min90.get_view_num());
+	  assert(neg_min180.get_view_num() == pos_min180.get_view_num());
 
 	  back_project_all_symmetries(
 				      image,
@@ -477,17 +539,13 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   
   assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
   assert(pos_view.get_view_num() > 0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/4);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/4 ||
+	 (!symmetries_ptr->using_symmetry_90degrees_min_phi() &&
+	  pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2 &&
+	  pos_plus90.find_max()==0 && neg_plus90.find_max()==0 && 
+	  pos_min90.find_max()==0 && neg_min90.find_max()==0) );
 
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views();
-
-  assert(pos_plus90.get_view_num() == nviews / 2 + pos_view.get_view_num());
-  assert(pos_min90.get_view_num() == nviews / 2 - pos_view.get_view_num());
-  assert(pos_min180.get_view_num() == nviews - pos_view.get_view_num());
-  assert(neg_view.get_view_num() == pos_view.get_view_num());
-  assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
-  assert(neg_min90.get_view_num() == pos_min90.get_view_num());
-  assert(neg_min180.get_view_num() == pos_min180.get_view_num());
 
   //KTxxx not necessary anymore 
   //assert(image.get_min_x() == -image.get_max_x());
@@ -499,9 +557,14 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   // KTxxx not necessary anymore
   //assert(image.get_min_z() == 0);
 
-  if (pos_view.get_view_num() == 0 || pos_view.get_view_num() == nviews/4)
+  if (pos_view.get_view_num() == 0)
     {
-      error("BackProjectorByBinUsingInterpolation: back_project_all_symmetries called with view 0 or 45 degrees.\n");
+      error("BackProjectorByBinUsingInterpolation: back_project_all_symmetries called with view 0 degrees.\n");
+    }
+  if (symmetries_ptr->using_symmetry_90degrees_min_phi() &&
+       pos_view.get_view_num() == nviews/4)
+    {
+      error("BackProjectorByBinUsingInterpolation: back_project_all_symmetries called with view 45 degrees.\n");
     }
 
   // KT XXX
@@ -670,13 +733,13 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 /*
 This function projects 4 viewgrams related by symmetry.
 It will be used for view=0 or 45 degrees 
-(or all others if the above version is not implemented in 
-the derived class)
+(or others if the 90degrees_min_phi symmetry is not used).
+
 Here 0<=view < num_views/2 (= 90 degrees)
 */
-
 void 
-BackProjectorByBinUsingInterpolation::back_project_view_plus_90_and_delta(
+BackProjectorByBinUsingInterpolation::
+back_project_view_plus_90_and_delta(
 				         VoxelsOnCartesianGrid<float>& image,
 					 const Viewgram<float> & pos_view, 
 					 const Viewgram<float> & neg_view, 
@@ -707,18 +770,15 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   // These variables are only used in assert() at the moment, so avoid compiler 
   // warning by defining it only when in debug mode
   const int segment_num = pos_view.get_segment_num();
-  const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views();
 #endif
 
   assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
 
   assert(pos_view.get_view_num()>=0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2 ||
+	 (pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views() &&
+	  pos_plus90.find_max()==0 && neg_plus90.find_max()==0) );
 
-
-  assert(pos_plus90.get_view_num() == nviews / 2 + pos_view.get_view_num());
-  assert(neg_view.get_view_num() == pos_view.get_view_num());
-  assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
 
 
   // KTXXX not necessary anymore
