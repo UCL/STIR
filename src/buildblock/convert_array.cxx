@@ -29,7 +29,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -40,18 +40,19 @@
 #include "stir/convert_array.h"
 #include <algorithm>
 // for floor
-#include <cmath>
+#include <math.h>
 
 START_NAMESPACE_STIR
 
-//! A local helper function to find that scale factor
-template <class ArrayT, class T1, class T2, class scaleT>
+
+template <int num_dimensions, class T1, class T2, class scaleT>
 void
-find_scale_factor(const ArrayT& data_in, 
-		  const NumericInfo<T1> info1, 
-		  const NumericInfo<T2> info2, 
-		  scaleT& scale_factor)
+find_scale_factor(scaleT& scale_factor,
+		  const Array<num_dimensions,T1>& data_in, 
+		  const NumericInfo<T2> info2)
 {
+  NumericInfo<T1> info1;
+
   if (info1.type_id() == info2.type_id())
   {
     // TODO could use different scale factor in this case as well, but at the moment we don't)
@@ -99,10 +100,9 @@ public:
                   const Array<num_dimensions,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
     NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -147,10 +147,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
     NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -241,10 +240,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
-    NumericInfo<T2> info2;
+    const NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -302,10 +300,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
-    NumericInfo<T2> info2;
+    const NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -363,10 +360,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
-    NumericInfo<T2> info2;
+    const NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -424,10 +420,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
-    NumericInfo<T2> info2;
+    const NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -485,10 +480,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
-    NumericInfo<T2> info2;
+    const NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -546,10 +540,9 @@ public:
                   const Array<1,T1>& data_in)
   {
     
-    NumericInfo<T1> info1;
-    NumericInfo<T2> info2;
+    const NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -703,7 +696,7 @@ convert_array(Array<num_dimensions, T2>& data_out,
 }
 #endif
 
-#if defined(ARRAY_FULL) && defined(ARRAY_CONST_IT)
+#if defined(ARRAY_FULL)
 //TODO specialise for T1==T2
 #if 1
 template <int num_dimensions, class T1, class T2, class scaleT>
@@ -727,10 +720,9 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
 {
     assert(data_in.get_index_range() == data_out.get_index_range());
 
-    NumericInfo<T1> info1;
     NumericInfo<T2> info2;
     
-    find_scale_factor(data_in, info1, info2, scale_factor);
+    find_scale_factor(scale_factor, data_in, info2);
     if (scale_factor == 0)
     {
       // data_in contains only 0
@@ -791,7 +783,11 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
    Array<dim,type_out> convert_array<>( \
 			      float& scale_factor, \
 		              const Array<dim,type_in>& data_in, \
-			      const NumericInfo<type_out> info2);
+			      const NumericInfo<type_out> info2); \
+   template \
+   void find_scale_factor<>(float& scale_factor, \
+                            const Array<dim,type_in>& data_in, \
+			    const NumericInfo<type_out> info_out);
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
 INSTANTIATE(1, short, float);
@@ -826,8 +822,6 @@ INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
-#ifdef ARRAY4
-
 INSTANTIATE(4, float, short);
 INSTANTIATE(4, float, unsigned short);
 INSTANTIATE(4, short, float);
@@ -838,13 +832,12 @@ INSTANTIATE(4, short, unsigned short);
 INSTANTIATE(4, short, short);
 INSTANTIATE(4, unsigned short, unsigned short);
 INSTANTIATE(4, float, float);
-#endif
 
 
 #undef INSTANTIATE
 
 // TODO remove
-#if defined(ARRAY_FULL) && defined(ARRAY_CONST_IT)
+#if defined(ARRAY_FULL)
 #define INSTANTIATE(dim, type_in, type_out) \
    template \
    void convert_array_FULL<>(Array<dim,type_out>& data_out, \
@@ -854,7 +847,7 @@ INSTANTIATE(4, float, float);
    Array<dim,type_out> convert_array_FULL<>( \
 			      float& scale_factor, \
 		              const Array<dim,type_in>& data_in, \
-			      const NumericInfo<type_out> info2);
+			      const NumericInfo<type_out> info2); 
 
 
 
@@ -892,8 +885,6 @@ INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
-#ifdef ARRAY4
-
 INSTANTIATE(4, float, short);
 INSTANTIATE(4, float, unsigned short);
 INSTANTIATE(4, short, float);
@@ -904,7 +895,6 @@ INSTANTIATE(4, short, unsigned short);
 INSTANTIATE(4, short, short);
 INSTANTIATE(4, unsigned short, unsigned short);
 INSTANTIATE(4, float, float);
-#endif
 
 
 #undef INSTANTIATE
