@@ -24,7 +24,7 @@
 #include "recon_buildblock/ProjMatrixByBin.h"
 #include "recon_buildblock/ForwardProjectorByBin.h"
 #include "shared_ptr.h"
-#include "DataSymmetriesForBins.h"
+
 
 
 START_NAMESPACE_TOMO
