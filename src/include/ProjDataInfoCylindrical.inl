@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,9 +12,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 // for sqrt
@@ -28,25 +27,23 @@ float
 ProjDataInfoCylindrical::get_phi(const Bin& bin)const
 { return bin.view_num()*azimuthal_angle_sampling;}
 
+
+float
+ProjDataInfoCylindrical::get_m(const Bin& bin) const
+{ 
+  if (!ring_diff_arrays_computed)
+    initialise_ring_diff_arrays();
+  return 
+    bin.axial_pos_num()*get_axial_sampling(bin.segment_num())
+    - m_offset[bin.segment_num()];
+}
+
 float
 ProjDataInfoCylindrical::get_t(const Bin& bin) const
 {
   return 
     get_m(bin)/
     sqrt(1+square(get_tantheta(bin)));
-}
-
-/*!
-  The 0 of the z-axis is chosen in the middle of the scanner.
-
-  \warning Current implementation assumes that the axial positions are always 'centred',
-  i.e. get_m(Bin(..., min_axial_pos_num,...)) == - get_m(Bin(..., max_axial_pos_num,...))
-*/  
-float
-ProjDataInfoCylindrical::get_m(const Bin& bin) const
-{ return 
-    bin.axial_pos_num()*get_axial_sampling(bin.segment_num())
-    - m_offset[bin.segment_num()];
 }
 
 
@@ -56,44 +53,36 @@ ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
   return
     get_average_ring_difference(bin.segment_num())*
     ring_spacing/ 
-    (2*sqrt(square(ring_radius)-square(get_s(bin))));
-  
+    (2*sqrt(square(ring_radius)-square(get_s(bin))));  
 }
 
 
-
-#ifdef SET
-void
-ProjDataInfoCylindrical::set_azimuthal_angle_sampling(const float angle_v)
-{azimuthal_angle_sampling =  angle_v;}
-#endif
-//void
-//ProjDataInfoCylindrical::set_axial_sampling(const float samp_v, int segment_num)
-//{axial_sampling = samp_v;}
+int 
+ProjDataInfoCylindrical::
+get_num_rings_per_axial_pos(const int segment_num) const
+{
+  return
+    max_ring_diff[segment_num] != min_ring_diff[segment_num] ?
+    2 : 1;
+}
 
 float
 ProjDataInfoCylindrical::get_azimuthal_angle_sampling() const
 {return azimuthal_angle_sampling;}
 
-/*! 
-   The implementation of this function currently assumes that the axial
-   sampling is equal to the ring spacing for non-spanned data 
-   (i.e. no axial compression), while it is half the 
-   ring spacing for spanned data.
- */
 float
 ProjDataInfoCylindrical::get_axial_sampling(int segment_num) const
 {
-  if (max_ring_diff[segment_num] != min_ring_diff[segment_num])
-    return ring_spacing/2;
-  else
-    return ring_spacing;
+  return ring_spacing/get_num_rings_per_axial_pos(segment_num);
 }
 
 float 
 ProjDataInfoCylindrical::get_average_ring_difference(int segment_num) const
 {
-  return (min_ring_diff[segment_num] + max_ring_diff[segment_num])/2;
+  // KT 05/07/2001 use float division here. 
+  // In any reasonable case, min+max_ring_diff will be even.
+  // But some day, an unreasonable case will walk in.
+  return (min_ring_diff[segment_num] + max_ring_diff[segment_num])/2.F;
 }
 
 
@@ -113,27 +102,41 @@ float
 ProjDataInfoCylindrical::get_ring_spacing() const
 { return ring_spacing;}
 
-
-void
-ProjDataInfoCylindrical::set_min_ring_difference( int min_ring_diff_v, int segment_num)
+int 
+ProjDataInfoCylindrical::
+get_segment_num_for_ring_difference(const int ring_diff) const
 {
- min_ring_diff[segment_num] = min_ring_diff_v;
+  if (!ring_diff_arrays_computed)
+    initialise_ring_diff_arrays();
+  return ring_diff_to_segment_num[ring_diff];
+}
+
+int
+ProjDataInfoCylindrical::
+get_view_mashing_factor() const
+{
+  return view_mashing_factor;
 }
 
 void
-ProjDataInfoCylindrical::set_max_ring_difference( int max_ring_diff_v, int segment_num)
+ProjDataInfoCylindrical::
+get_segment_axial_pos_num_for_ring_pair(int& segment_num,
+                                        int& ax_pos_num,
+                                        const int ring1,
+                                        const int ring2) const
 {
-  max_ring_diff[segment_num] = max_ring_diff_v;
+  assert(0<=ring1);
+  assert(ring1<get_scanner_ptr()->get_num_rings());
+  assert(0<=ring2);
+  assert(ring2<get_scanner_ptr()->get_num_rings());
+
+  segment_num = get_segment_num_for_ring_difference(ring1-ring2);
+  // see initialise_ring_diff_arrays() for some info
+  if (get_num_rings_per_axial_pos(segment_num)==1)
+    ax_pos_num = (ring1 + ring2 - ax_pos_num_offset[segment_num])/2;
+  else
+    ax_pos_num = (ring1 + ring2 - ax_pos_num_offset[segment_num]);
 }
-
-void
-ProjDataInfoCylindrical::set_ring_spacing(float ring_spacing_v)
-{
-  ring_spacing = ring_spacing_v;
-}
-
-
-
 
 END_NAMESPACE_TOMO
 
