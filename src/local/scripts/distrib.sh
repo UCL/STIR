@@ -1,23 +1,30 @@
 #! /bin/sh
 set -e
 # rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
-
 VERSION=1.3
+cd $WORKSPACE/../..
+DISTRIB=`pwd`/distrib
+
 destination=krthie@shell.sf.net:stir/htdocs/
 RSYNC_OPTS=--progress
 #destination=web@wren:htdocs/STIR/
-#RSYNC_OPTS=z  --progress --rsync-path=/home/kris/bin/rsync 
-mkdir -p ~/distrib
-cd ~/distrib
+#RSYNC_OPTS=  --progress --rsync-path=/home/kris/bin/rsync 
+mkdir -p ${DISTRIB}
+cd ${DISTRIB}
 echo somehow make release_${VERSION}.htm
 
+echo LLN stuff
 # ecat.tar.gz
 #tar --exclude VC --exclude CVS -czf ecat.tar.gz ecat
-if [ -r parapet ]; then
+if [ ! -r parapet ]; then
   cvs -d parapet:/usr/local/cvsroot checkout parapet
+  cd parapet
+else
+  cd parapet
+  cvs up -dP
 fi
-cd parapet
-cvs up -dP
+rm -f STIR
+ln -s PPhead STIR
 cd PPhead
 
 # update VERSION.txt
@@ -27,46 +34,36 @@ cvs commit -m "- updated for release of version $VERSION" VERSION.txt
 #check directories etc
 #first remove list of files at the end
 #then
-#find . -name "*[xhlc]" -print | xargs grep -l PARAPET >>LICENSE.txt 
+# find . -path ./local -prune -path ./include/local -prune -name "*[xhlc]" -o -print|grep -v CVS | grep -v .dsp| xargs grep -l PARAPET >>LICENSE.txt 
 #cvs commit  -m "- updated for release of version $VERSION" LICENSE.txt
 
-rm -rf local include/local
-cvs2cl.pl -F trunk
-cp ChangeLog ~/distrib
-mv  ChangeLog ~/parapet/documentation/distrib
+# make ChangeLog file
+# maybe use --accum
+mv local xxlocal
+cvs2cl.pl -I 'xxlocal/' -I 'include/local'  --no-indent -F trunk
+mv xxlocal local
+cp ChangeLog ${DISTRIB}
 
 # make doxygen
-dox
-rm -rf ~/parapet/documentation/distrib/doxy
-mv ../documentation/distrib/doxy ~/parapet/documentation/distrib
+doxygen
 # make documentation PDFs BY HAND
+cd ../documentation
+make
+zip -ur ${DISTRIB}/STIR_doc_${VERSION}.zip *.pdf  doxy
 
-cd ~/parapet/documentation/distrib
-zip -r STIR_doc_${VERSION}.zip *.pdf ChangeLog doxy
-mv STIR_doc_${VERSION}.zip ~/distrib/
-
-cd ~/distrib
+cd ${DISTRIB}
 rm -f parapet/all.zip parapet/VCprojects.zip
-WORKSPACE=~/distrib/parapet/PPhead zipit
-WORKSPACE=~/distrib/parapet/PPhead zipproj
-rm -rf PPhead STIR
-unzip parapet/VCprojects.zip
-rm parapet/VCprojects.zip
-mv PPhead STIR
-zip -r VCprojects_${VERSION}.zip STIR
-rm -rf STIR
-unzip parapet/all.zip
-rm parapet/all.zip
-mv PPhead STIR
-cp ~/distrib/ChangeLog STIR
-zip -r -l STIR_${VERSION}.zip STIR
+WORKSPACE=${DISTRIB}/parapet/PPhead zipit --distrib
+WORKSPACE=${DISTRIB}/parapet/PPhead zipproj --distrib
+mv parapet/VCprojects.zip VCprojects_${VERSION}.zip 
+mv parapet/all.zip STIR_${VERSION}.zip 
 
 
 # recon_test_pack
  cd parapet/
-rm -rf recon_test_pack/CVS
-zip -ur ../recon_test_pack_${VERSION}.zip recon_test_pack
-tar zcvf ../recon_test_pack_${VERSION}.tar.gz recon_test_pack
+#rm -rf recon_test_pack/CVS
+zip -ulr ../recon_test_pack_${VERSION}.zip recon_test_pack -i CVS/ CVS/*
+#tar zcvf ../recon_test_pack_${VERSION}.tar.gz recon_test_pack
 cd ..
 
 chmod go+r *${VERSION}* ChangeLog
@@ -75,7 +72,7 @@ chmod go-wx *${VERSION}* ChangeLog
 # put it all there
 rsync --progress -uavz ${RSYNC_OPTS}  ~/lln/ecat/VC/ecat.dsp ~/lln/ecat.tar.gz \
     STIR_${VERSION}.zip VCprojects_${VERSION}.zip \
-    recon_test_pack_${VERSION}.tar.gz recon_test_pack_${VERSION}.zip \
+    recon_test_pack_${VERSION}.zip \
     ${destination}registered
 rsync --progress -uavz ${RSYNC_OPTS} ChangeLog release_${VERSION}.htm STIR_doc_${VERSION}.zip  \
     ${destination}documentation
