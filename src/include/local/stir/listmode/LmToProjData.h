@@ -24,7 +24,7 @@
 #include "stir/ProjDataInfo.h"
 #include "local/stir/listmode/CListModeData.h"
 #include "stir/ParsingObject.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 
 #include "stir/recon_buildblock/BinNormalisation.h"
 
