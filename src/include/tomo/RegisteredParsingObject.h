@@ -100,7 +100,7 @@ public:
     }
   };
   // RegisterIt needs to be a friend to have access to registry()
-  friend RegisterIt;
+  friend struct RegisterIt;
   
 };
 
