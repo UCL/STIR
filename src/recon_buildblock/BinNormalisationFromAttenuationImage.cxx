@@ -74,7 +74,7 @@ post_processing()
     "\tReference: water has mu .096 cm^-1\n" 
     "\tMax in attenuation image: %g\n" ,
     attenuation_image_ptr->find_max());
-#ifndef NORESCALE
+#ifndef NEWSCALE
     /*
     cerr << "WARNING: multiplying attenuation image by x-voxel size "
     << " to correct for scale factor in forward projectors...\n";
@@ -86,7 +86,7 @@ post_processing()
     get_grid_spacing()[3]/10;
 #else
   const float rescale = 
-    10.F;
+    0.1F;
 #endif
   *attenuation_image_ptr *= rescale;
 
