@@ -20,6 +20,8 @@
 #include "recon_array_functions.h"
 #include "DiscretisedDensity.h"
 #include "LogLikBased/common.h"
+#include "tomo/TruncateMinToSmallPositiveValueImageProcessor.h"
+#include "tomo/ChainedImageProcessor.h"
 #include <memory>
 #include <iostream>
 
@@ -89,11 +91,26 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
      parameters.inter_update_filter_ptr != 0)
     {
       cerr<<endl<<"Building inter-update filter kernel"<<endl;
-
       parameters.inter_update_filter_ptr->build_filter(*target_image_ptr);
-      
-    }
 
+      // ensure that the result image of the filter is positive
+      parameters.inter_update_filter_ptr =
+	new ChainedImageProcessor<3,float>(
+				  parameters.inter_update_filter_ptr,
+				  new  TruncateMinToSmallPositiveValueImageProcessor<float>
+);
+
+    }
+  if (parameters.inter_iteration_filter_interval>0 && 
+      parameters.inter_iteration_filter_ptr!=0)
+    {
+      // ensure that the result image of the filter is positive
+      parameters.inter_iteration_filter_ptr =
+	new ChainedImageProcessor<3,float>(
+					   parameters.inter_iteration_filter_ptr,
+					   new  TruncateMinToSmallPositiveValueImageProcessor<float>
+);
+    }
 }
 
 
@@ -291,9 +308,6 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
     static_cast<float>(parameters.maximum_relative_change));
   
   current_image_estimate *= *multiplicative_update_image_ptr; 
-  
-  // KT 24/4/2001 enabled this because we removed it from the filter    
-  truncate_min_to_small_positive_value(current_image_estimate);
   
   
 #ifndef PARALLEL
