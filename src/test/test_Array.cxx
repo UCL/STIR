@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,6 +31,9 @@
 #include "stir/Coordinate3D.h"
 #include "stir/Coordinate4D.h"
 #include "stir/convert_array.h"
+#include "stir/Succeeded.h"
+#include "stir/write_data.h"
+#include "stir/read_data.h"
 
 #include "stir/RunTests.h"
 
@@ -41,7 +44,7 @@
 #include "stir/utilities.h"
 
 // for 'remove'
-#include <cstdio>
+#include <stdio.h>
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -58,11 +61,143 @@ START_NAMESPACE_STIR
   \brief Tests Array functionality
   \ingroup test
   \warning Running this will create and delete 2 files with names 
-  output.flt and output.short. Existing files with these names will be overwritten.
+  output.flt and output.other. Existing files with these names will be overwritten.
 
 */
 class ArrayTests : public RunTests
 {
+private:
+  // function that runs IO tests for array of arbitrary dimension
+  // sadly needs to be declared in the class for VC 6.0
+  template <int num_dimensions>
+  void run_IO_tests(const Array<num_dimensions, float>&t1)
+  {
+    {
+      ofstream os;
+      open_write_binary(os, "output.flt");
+      check(write_data(os,t1)==Succeeded::yes, "write_data could not write float array");
+      os.close();
+    }
+    Array<num_dimensions,float> t2(t1.get_index_range());
+    {
+      ifstream is;
+      open_read_binary(is, "output.flt");
+      read_data(is, t2);
+    }
+    check_if_equal(t1  ,t2, "test out/in" );
+    remove("output.flt");
+
+    {
+      ofstream os;
+      open_write_binary(os, "output.flt");
+      check(write_data(os,t1,ByteOrder::swapped)==Succeeded::yes, "write_data could not write float array with swapped byte order");
+      os.close();
+    }
+    {
+      ifstream is;
+      open_read_binary(is, "output.flt");
+      read_data(is, t2,ByteOrder::swapped);
+    }
+    check_if_equal(t1  ,t2, "test out/in (swapped byte order)" );
+    remove("output.flt");
+
+    cerr <<"\tTests writing floats as shorts\n";
+    run_IO_tests(t1, NumericInfo<short>());
+    cerr <<"\tTests writing floats as floats\n";
+    run_IO_tests(t1, NumericInfo<float>());
+#if !defined(_MSC_VER) || (_MSC_VER > 1200)
+    cerr <<"\tTests writing floats as signed chars\n";
+    run_IO_tests(t1, NumericInfo<signed char>());
+#endif
+  }
+
+  // function that runs IO tests with mixed types for array of arbitrary dimension
+  // sadly needs to be declared in the class for VC 6.0
+  template <int num_dimensions, class output_type>
+  void run_IO_tests(const Array<num_dimensions, float>&floats, NumericInfo<output_type> output_type_info)
+    {
+      {
+	ofstream os;
+	open_write_binary(os, "output.flt");
+	float scale = 1;
+	check(write_data(os, floats, NumericInfo<float>(), scale)==Succeeded::yes, "write_data could not write float array");
+	check_if_equal(scale ,1., "test out/in: floats written as floats" );
+    }
+      float scale = 1;
+      {
+	ofstream os;
+	open_write_binary(os, "output.other");
+	check(write_data(os,floats, output_type_info, scale)==Succeeded::yes, "write_data could not write float array as other_type");
+      }
+
+      Array<num_dimensions,output_type> data_read_back(floats.get_index_range());
+      {
+	ifstream is;
+	open_read_binary(is, "output.other");
+	read_data(is, data_read_back);
+      }
+
+      // compare write_data of floats as other_type with convert()
+      {
+	float newscale = scale;
+	Array<num_dimensions,output_type> floatsconverted = 
+	  convert_array(newscale, floats, NumericInfo<output_type>());
+	check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
+	check_if_equal(floatsconverted ,data_read_back, "test read_data <-> convert : data");
+      }
+
+      // compare floats with data_read_back*scale
+      {
+	Array<num_dimensions,float> diff = floats;
+	diff /= scale;
+	{
+	  typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
+	  typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back.begin_all_const();
+	  while(diff_iter!=diff.end_all())
+	    {
+	      *diff_iter++ -= *data_read_back_iter++;
+	    }
+	}
+	 
+	// difference should be maximum .5
+	// the next test relies on how check_if_zero works
+	diff *= float(2*get_tolerance());
+	check_if_zero(diff, "test out/in: floats written as other_type" );
+      }
+
+
+      // compare read_data of floats as other_type with above
+      {
+	Array<num_dimensions,output_type> data_read_back2(floats.get_index_range());
+	
+	ifstream is;
+	open_read_binary(is, "output.flt");
+	
+	float in_scale = 0;
+	read_data(is, data_read_back2, NumericType::FLOAT, in_scale);
+	// compare floats with data_read_back2*scale
+	{
+	  Array<num_dimensions,float> diff = floats;
+	  diff /= in_scale;
+	  {
+	    typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
+	    typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back2.begin_all_const();
+	    while(diff_iter!=diff.end_all())
+	      {
+		*diff_iter++ -= *data_read_back_iter++;
+	      }
+	  }
+	 
+	  // difference should be maximum .5
+	  // the next test relies on how check_if_zero works
+	  diff *= float(2*get_tolerance());
+	  check_if_zero(diff, "test out/in: floats written as other_type" );
+	}
+      }
+      remove("output.flt");
+      remove("output.other");
+    }
+
 public:
   void run_tests();
 };
@@ -229,38 +364,31 @@ ArrayTests::run_tests()
     }
 
     // full iterator
-#ifdef FULL
     {
       IndexRange<2> range(Coordinate2D<int>(0,0),Coordinate2D<int>(2,2));
       Array<2,float> test2(range);
-      test2.fill(1);
+      {
+	float value = 1.2F;
+	for (Array<2,float>::full_iterator iter = test2.begin_all();
+	     iter != test2.end_all(); 
+	     )
+	  *iter++ = value++;
+      }
+      {
+	float value = 1.2F;
+	Array<2,float>::const_full_iterator iter = test2.begin_all_const();
+	for (int i=test2.get_min_index(); i<= test2.get_max_index(); ++i)
+	  for (int j=test2[i].get_min_index(); j<= test2[i].get_max_index(); ++j)
+	    {
+	      check(iter != test2.end_all_const(), "test on 2D full iterator");
+	      check_if_equal(*iter++, test2[i][j], "test on 2D full iterator vs. index");
+	      check_if_equal(test2[i][j], value++, "test on 2D full iterator value");
+	    }
+      }
 
-      
-      for (Array<2,float>::full_iterator iter = test2.begin_all();
-           iter != test2.end_all(); 
-	   ++iter)
-	cerr << *iter <<" ";
-      cerr << endl;
-
-      float value = 1.2F;
-      for (Array<2,float>::full_iterator iter = test2.begin_all();
-           iter != test2.end_all(); 
-	   )
-	 *iter++ = value++;
-	   
-      for (Array<2,float>::full_iterator iter = test2.begin_all();
-           iter != test2.end_all(); 
-	   ++iter)
-	cerr << *iter <<" ";
-      cerr << endl;
-
-
-      Array<2,float> empty;
-      if (empty.begin_all() != empty.end_all())
-	cerr << "Not equal"<<endl;
-
+      const Array<2,float> empty;
+      check(empty.begin_all() == empty.end_all(), "test on 2D full iterator for empty range");
     }
-#endif
   }
 
   {
@@ -310,29 +438,13 @@ ArrayTests::run_tests()
       check_if_zero( test3.sum() - 2*tmp2.sum() - tmp.sum(), "test operator-(float)");
     }
 
-#if !defined(_MSC_VER)
-    // VC cannot compile this
+#if !defined(_MSC_VER) || _MSC_VER>1300
+    // VC 6.0 cannot compile this
     in_place_apply_function(test3ter, bind2nd(plus<float>(), 4.F));
     test3quat += 4.F;
     check_if_equal(test3quat  , test3ter, 
 		  "test in_place_apply_function and operator+=(NUMBER)");
 #endif
-
-    // full iterator
-#ifdef FULL
-    {
-      IndexRange<3> range(Coordinate3D<int>(0,0,0),Coordinate3D<int>(1,1,1));
-      Array<3,float> test3(range);
-      test3.fill(1);
-
-      
-      for (Array<3,float>::full_iterator iter = test3.begin_all();
-           iter != test3.end_all(); 
-	   ++iter)
-	cerr << *iter <<" ";
-      cerr << endl;
-    }
-#endif    
   }
 
 
@@ -441,6 +553,38 @@ ArrayTests::run_tests()
     }
   }
 
+#if 1
+  {
+    cerr << "Testing 1D IO" << endl;
+    Array<1,float> t1(IndexRange<1>(-1,10));
+    for (int i=-1; i<=10; i++)
+      t1[i] = sin(i* _PI/ 15.);
+        run_IO_tests(t1);
+  }
+  {
+    cerr << "Testing 2D IO" << endl;
+    IndexRange<2> range(Coordinate2D<int>(-1,11),Coordinate2D<int>(10,20));
+    Array<2,float> t1(range);
+    for (int i=-1; i<=10; i++)
+      for (int j=11; j<=20; j++)
+	t1[i][j] = sin(i*j* _PI/ 15.);
+    run_IO_tests(t1);
+  }
+  {
+    cerr << "Testing 3D IO in different data types" << endl;
+
+    // construct test array which has rows of very different magnitudes,
+    // numbers in last rows do not fit into short integers
+    IndexRange<3> range(Coordinate3D<int>(-1,11,21),Coordinate3D<int>(10,20,30));
+    Array<3,float> t1(range);
+    for (int i=-1; i<=10; i++)
+      for (int j=11; j<=20; j++)
+	for (int k=21; k<=30; k++)
+	  t1[i][j][k] = static_cast<float>(20000.*k*sin(i*j*k* _PI/ 3000.));
+    run_IO_tests(t1);
+  }
+
+#else
   {
     cerr << "Testing 1D IO" << endl;
     Array<1,float> t1(IndexRange<1>(-1,10));
@@ -449,13 +593,13 @@ ArrayTests::run_tests()
 
     ofstream os;
     open_write_binary(os, "output.flt");
-    t1.write_data(os);
+    check(write_data(os,t1)==Succeeded::yes, "write_data could not write 1D float array");
     os.close();
 
     Array<1,float> t2(IndexRange<1>(-1,10));
     ifstream is;
     open_read_binary(is, "output.flt");
-    t2.read_data(is);
+    read_data(is, t2);
 
     check_if_equal(t1  ,t2 , "test 1D out/in" );    
 
@@ -464,13 +608,13 @@ ArrayTests::run_tests()
     {
       ofstream os;
       open_write_binary(os, "output.flt");
-      t1.write_data(os, ByteOrder::swapped);
+      check(write_data(os,t1, ByteOrder::swapped)==Succeeded::yes, "write_data could not write 1D float array byte-swapped");
       os.close();
       
-      Array<1,float> t2(IndexRange<1>(-1,10));
+      Array<1,float> t2(t1.get_index_range());
       ifstream is;
       open_read_binary(is, "output.flt");
-      t2.read_data(is, ByteOrder::swapped);
+      read_data(is, t2, ByteOrder::swapped);
       
       check_if_equal(t1  ,t2 , "test 1D out/in with byte-swapping" );    
     }
@@ -487,13 +631,13 @@ ArrayTests::run_tests()
 
     ofstream os;
     open_write_binary(os, "output.flt");
-    t1.write_data(os);
+    check(write_data(os, t1)==Succeeded::yes, "write_data could not write 2D float array");
     os.close();
 
     Array<2,float> t2(range);
     ifstream is;
     open_read_binary(is, "output.flt"); 
-    t2.read_data(is);
+    read_data(is, t2);
 
     check_if_equal(t1  ,t2, "test 2D out/in" );
   }
@@ -509,13 +653,13 @@ ArrayTests::run_tests()
 
     ofstream os;
     open_write_binary(os, "output.flt");
-    t1.write_data(os);
+    check(write_data(os,t1)==Succeeded::yes, "write_data could not write 3D float array");
     os.close();
 
     Array<3,float> t2(range);
     ifstream is;
     open_read_binary(is, "output.flt");
-    t2.read_data(is);
+    read_data(is, t2);
 
     check_if_equal(t1  ,t2, "test 3D out/in" );
   }
@@ -524,7 +668,7 @@ ArrayTests::run_tests()
   {
     cerr << "Testing 3D IO in different data types" << endl;
 
-    // construct test tensor which has rows of very different magnitudes,
+    // construct test array which has rows of very different magnitudes,
     // numbers in last rows do not fit into short integers
     IndexRange<3> range(Coordinate3D<int>(-1,11,21),Coordinate3D<int>(10,20,30));
     Array<3,float> floats(range);
@@ -537,7 +681,7 @@ ArrayTests::run_tests()
       ofstream os;
       open_write_binary(os, "output.flt");
       float scale = 1;
-      floats.write_data(os, NumericType::FLOAT, scale);
+      check(write_data(os, floats, NumericInfo<float>(), scale)==Succeeded::yes, "write_data could not write 3D float array");
       check_if_equal(scale ,1., "test 3D out/in: floats written as floats" );
     }
 
@@ -546,7 +690,7 @@ ArrayTests::run_tests()
     {
       ofstream os;
       open_write_binary(os, "output.short");
-      floats.write_data(os, NumericType::SHORT, scale);
+      check(write_data(os,floats, NumericType::SHORT, scale)==Succeeded::yes, "write_data could not write 3D float array as shorts");
     }
     assert(scale>1);
     
@@ -555,7 +699,7 @@ ArrayTests::run_tests()
     {
       ifstream is;
       open_read_binary(is, "output.short");
-      shorts.read_data(is);
+      read_data(is, shorts);
     }
 
     // compare write_data of floats as shorts with convert()
@@ -570,10 +714,14 @@ ArrayTests::run_tests()
     {
       Array<3,float> diff = floats;
       diff /= scale;
-      for (int i1=floats.get_min_index(); i1<= floats.get_max_index(); i1++)
-        for (int i2=floats[i1].get_min_index(); i2<= floats[i1].get_max_index(); i2++)
-          for (int i3=floats[i1][i2].get_min_index(); i3<= floats[i1][i2].get_max_index(); i3++)
-             diff[i1][i2][i3] -= shorts[i1][i2][i3];
+      {
+	Array<3,float>::full_iterator diff_iter = diff.begin_all();
+	Array<3,short>::const_full_iterator shorts_iter = shorts.begin_all_const();
+	while(diff_iter!=diff.end_all())
+	  {
+	    *diff_iter++ -= *shorts_iter++;
+	  }
+      }
 	 
       // difference should be maximum .5
       // the next test relies on how check_if_zero works
@@ -590,7 +738,7 @@ ArrayTests::run_tests()
       open_read_binary(is, "output.flt");
 
       float in_scale = 0;
-      shorts2.read_data(is, NumericType::FLOAT, in_scale);
+      read_data(is, shorts2, NumericType::FLOAT, in_scale);
       check_if_equal(scale ,in_scale, "test 3D out/in: floats read as shorts: scale" );
       check_if_equal(shorts ,shorts2, "test 3D out/in: floats read as shorts: data" );
     }
@@ -604,7 +752,7 @@ ArrayTests::run_tests()
       {
 	ofstream os;
 	open_write_binary(os, "output.schar");
-	floats.write_data(os, NumericType::SCHAR, scale);
+	check(write_data(os, floats, NumericType::SCHAR, scale)==Succeeded::yes, "write_data could not write 3D float array as signed chars");
       }
       assert(scale>1);
     
@@ -613,7 +761,7 @@ ArrayTests::run_tests()
       {
 	ifstream is;
 	open_read_binary(is, "output.schar");
-	schars.read_data(is);
+	read_data(is, schars);
       }
 
       // compare write_data of floats as signed chars with convert()
@@ -628,10 +776,14 @@ ArrayTests::run_tests()
       {
 	Array<3,float> diff = floats;
 	diff /= scale;
-	for (int i1=floats.get_min_index(); i1<= floats.get_max_index(); i1++)
-	  for (int i2=floats[i1].get_min_index(); i2<= floats[i1].get_max_index(); i2++)
-	    for (int i3=floats[i1][i2].get_min_index(); i3<= floats[i1][i2].get_max_index(); i3++)
-	      diff[i1][i2][i3] -= schars[i1][i2][i3];
+	{
+	  Array<3,float>::full_iterator diff_iter = diff.begin_all();
+	  Array<3,signed char>::const_full_iterator shorts_iter = schars.begin_all_const();
+	  while(diff_iter!=diff.end_all())
+	    {
+	      *diff_iter++ -= *shorts_iter++;
+	    }
+	}
 	 
 	// difference should be maximum .5
 	// the next test relies on how check_if_zero works
@@ -648,7 +800,7 @@ ArrayTests::run_tests()
 	open_read_binary(is, "output.flt");
 
 	float in_scale = 0;
-	schars2.read_data(is, NumericType::FLOAT, in_scale);
+	read_data(is, schars2, NumericType::FLOAT, in_scale);
 	check_if_equal(scale ,in_scale, "test 3D out/in: floats read as signed chars: scale" );
 	check_if_equal(schars ,schars2, "test 3D out/in: floats read as signed chars: data" );
       }
@@ -660,6 +812,7 @@ ArrayTests::run_tests()
   // clean up test files
   remove("output.flt");
   remove("output.short");
+#endif
 }
 
 END_NAMESPACE_STIR
