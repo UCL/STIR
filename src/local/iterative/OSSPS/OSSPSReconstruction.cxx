@@ -1,7 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 \file
 \ingroup OSSPS  
@@ -14,11 +29,6 @@
 $Date$
 $Revision$
 */
-/*
-Copyright (C) 2000 PARAPET partners
-Copyright (C) 2000- $Date$, IRSL
-See STIR/LICENSE.txt for details
-*/
 
 #include "local/stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/min_positive_element.h"
@@ -26,11 +36,16 @@ See STIR/LICENSE.txt for details
 #include "stir/LogLikBased/common.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
 #include "local/stir/recon_buildblock/QuadraticPrior.h" // necessary for recompute_penalty_term_in_denominator
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
+#include "stir/recon_array_functions.h"
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
+#include "stir/ViewSegmentNumbers.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+#include "stir/RelatedViewgrams.h"
 #include <iostream>
 
 #include <memory>
@@ -63,7 +78,11 @@ OSSPSReconstruction::set_defaults()
   maximum_relative_change = NumericInfo<float>().max_value();
   minimum_relative_change = 0;
   write_update_image = 0;
-  precomputed_denominator_filename = "1";
+  precomputed_denominator_filename = "";
+  forward_projection_of_all_ones_filename = "";
+
+  normalisation_sptr = new TrivialBinNormalisation;
+
   //MAP_model="additive"; 
   prior_ptr = 0;
   relaxation_parameter = 0;
@@ -87,6 +106,10 @@ OSSPSReconstruction::initialise_keymap()
   parser.add_key("minimum relative change",&minimum_relative_change);
   parser.add_key("write update image",&write_update_image);   
   parser.add_key("precomputed denominator", &precomputed_denominator_filename);
+  parser.add_key("forward_projection of all ones", &forward_projection_of_all_ones_filename);
+
+  parser.add_parsing_key("Normalisation type", &normalisation_sptr);
+
   parser.add_key("relaxation parameter", &relaxation_parameter);
   parser.add_key("relaxation gamma", &relaxation_gamma);
   
@@ -95,7 +118,8 @@ OSSPSReconstruction::initialise_keymap()
 
 void OSSPSReconstruction::ask_parameters()
 {
-  
+  error("Currently incomplete code. Use a parameter file. Sorry.");
+
   LogLikelihoodBasedReconstruction::ask_parameters();
   
   // KT 05/07/2000 made enforce_initial_positivity int
@@ -143,18 +167,19 @@ bool OSSPSReconstruction::post_processing()
   if (LogLikelihoodBasedReconstruction::post_processing())
     return true;
     
-  if (precomputed_denominator_filename.length() == 0)
-  { 
-    warning("You need to specify a precomputed denominator \n"); 
-    return true; 
-  }
   // KT 09/12/2002 one more check
   if (!is_null_ptr(prior_ptr) && dynamic_cast<PriorWithParabolicSurrogate<float>*>(prior_ptr.get())==0)
   {
     warning("Prior must be of a type derived from PriorWithParabolicSurrogate\n");
     return true;
   }
-  
+
+  if (is_null_ptr(normalisation_sptr))
+  {
+    warning("bin normalisation object invalid");
+    return true;
+  }
+
   return false;
 }
 
@@ -179,25 +204,116 @@ string OSSPSReconstruction::method_info() const
   // TODO add prior name?
   
 #ifdef BOOST_NO_STRINGSTREAM
-  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[10000];
   ostrstream s(str, 10000);
 #else
   std::ostringstream s;
 #endif
   
-  //if(inter_update_filter_interval>0) s<<"IUF-";
-  //if(num_subsets>1) s<<"OS";
-  //if (prior_ptr == 0 || 
-  //   prior_ptr->get_penalisation_factor() == 0)
-  // s<<"EM";
-  //else
-  //  s << "MAPOSL";
-  if(inter_iteration_filter_interval>0) s<<"S";
-  s<<ends;
-  
+  // if(inter_update_filter_interval>0) s<<"IUF-";
+  if (!is_null_ptr(prior_ptr) && prior_ptr->get_penalisation_factor() != 0)
+    s << "MAP-";
+  if(num_subsets>1) 
+    s<<"OS-";
+  s << "SPS";
+  if(inter_iteration_filter_interval>0) s<<"S";  
+
   return s.str();
+}
+
+Succeeded 
+OSSPSReconstruction::
+precompute_denominator_of_conditioner_without_penalty()
+{
+            
+  CPUTimer timer;
+  timer.reset();
+  timer.start();
+
+  assert(precomputed_denominator_ptr->find_min() == 0);
+  assert(precomputed_denominator_ptr->find_max() == 0);
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
+    projector_pair_ptr->get_symmetries_used()->clone();
+
+  // TODO replace by boost::scoped_ptr
+  std::auto_ptr<DiscretisedDensity<3,float> > image_full_of_ones_aptr;
+  if (is_null_ptr(fwd_ones_sptr))
+    {
+      image_full_of_ones_aptr =
+	std::auto_ptr<DiscretisedDensity<3,float> >
+	( precomputed_denominator_ptr->clone());
+      image_full_of_ones_aptr->fill(1);
+    }
+
+  for (int segment_num = -max_segment_num_to_process;
+       segment_num<= max_segment_num_to_process;
+       ++segment_num) 
+    {      
+      for (int view = proj_data_ptr->get_min_view_num(); 
+	   view <= proj_data_ptr->get_max_view_num(); 
+	   ++view)
+	{
+	  const ViewSegmentNumbers view_segment_num(view, segment_num);
+	  
+	  if (!symmetries_sptr->is_basic(view_segment_num))
+	    continue;
+
+	  // first compute data-term: y/norm^2
+	  RelatedViewgrams<float> viewgrams =
+	    proj_data_ptr->get_related_viewgrams(view_segment_num, symmetries_sptr);
+
+	  // TODO insert sensible frame start and end times
+	  normalisation_sptr->apply(viewgrams, 0,1);
+
+	  // smooth TODO
+
+	  // TODO insert sensible frame start and end times
+	  normalisation_sptr->apply(viewgrams, 0,1);
+
+	  RelatedViewgrams<float> tmp_viewgrams;
+	  // set tmp_viewgrams to geometric forward projection of all ones
+	  if (is_null_ptr(fwd_ones_sptr))
+	    {
+	      tmp_viewgrams = proj_data_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+	      projector_pair_ptr->get_forward_projector_sptr()->
+		forward_project(tmp_viewgrams, *image_full_of_ones_aptr);
+	    }
+	  else
+	    {
+	      tmp_viewgrams = fwd_ones_sptr->get_related_viewgrams(view_segment_num, symmetries_sptr);
+	    }
+	  
+	  // now divide by the data term
+	  {
+	    int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
+	    divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2);
+	  }
+
+	  // back-project
+	  projector_pair_ptr->get_back_projector_sptr()->back_project(*precomputed_denominator_ptr, tmp_viewgrams);
+      }
+
+  } // end of loop over segments
+
+  timer.stop();
+  cerr << "Precomputing denominator took " << timer.value() << " s CPU time\n";
+  cerr << "min and max in precomputed denominator " << precomputed_denominator_ptr->find_min()
+       << ", " << precomputed_denominator_ptr->find_max() << endl;
   
+
+  // Write it to file
+  {
+    std::string fname =  
+      get_parameters().output_filename_prefix +
+      "_precomputed_denominator";
+    
+      cerr <<"  - Saving " << fname << endl;
+      get_parameters().output_file_format_ptr->
+	write_to_file(fname, *precomputed_denominator_ptr);
+  }
+
+  return Succeeded::yes;
 }
 
 void OSSPSReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr)
@@ -213,7 +329,15 @@ void OSSPSReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> >
 					  target_image_ptr->end_all(),
 					  10.E-6F);
   
-  if(get_parameters().precomputed_denominator_filename=="1")
+  if (get_parameters().forward_projection_of_all_ones_filename!="")
+    fwd_ones_sptr = ProjData::read_from_file(forward_projection_of_all_ones_filename);
+
+  if(get_parameters().precomputed_denominator_filename=="")
+  {
+    precomputed_denominator_ptr=target_image_ptr->get_empty_discretised_density();
+    precompute_denominator_of_conditioner_without_penalty();
+  }
+  else if(get_parameters().precomputed_denominator_filename=="1")
   {
     precomputed_denominator_ptr=target_image_ptr->get_empty_discretised_density();
     precomputed_denominator_ptr->fill(1.0);  
@@ -225,8 +349,8 @@ void OSSPSReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> >
     if (precomputed_denominator_ptr->get_index_range() != 
         target_image_ptr->get_index_range())
     {
-      warning("OSSPS: precomputed_denominator should have same index range as target image\n");
-      exit(EXIT_FAILURE);// TODO use error(), but that doesn't flush stderr
+      error("OSSPS: precomputed_denominator should have same index range as target image.");
+      // TODO return Succeeded::no;
     }    
   }  
 }
@@ -386,23 +510,18 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   }  
   current_image_estimate += *numerator_ptr; 
  
-  // SM 22/01/2002 truncated rim for ML, e.g. for beta = 0
-  // KT 09/12/2002 removed, as it should be caught now by the lines below
-  //truncate_rim(current_image_estimate,0);
-  
   // set all voxels to 0 for which the sensitivity is 0. These cannot be estimated.
   // Any such nonzero voxel results from a 0 backprojection, but non-zero prior gradient.
   {
     DiscretisedDensity<3,float>::full_iterator image_iter = current_image_estimate.begin_all();
-    // TODO SHOULD USE CONST_FULL_ITERATOR
-    DiscretisedDensity<3,float>::full_iterator sens_iter = sensitivity_image_ptr->begin_all();
+    DiscretisedDensity<3,float>::const_full_iterator sens_iter = sensitivity_image_ptr->begin_all_const();
        
     for (;
        image_iter != current_image_estimate.end_all();
        ++image_iter, ++sens_iter)
       if (*sens_iter == 0)
         *image_iter = 0;
-    assert(sens_iter == sensitivity_image_ptr->end_all());
+    assert(sens_iter == sensitivity_image_ptr->end_all_const());
   }
   // now threshold image
   {
