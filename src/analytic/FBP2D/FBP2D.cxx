@@ -3,6 +3,7 @@
 //
 /*! 
   \file 
+  \ingroup FBP2D
   \ingroup reconstructors
   \brief Main program for FBP2D reconstruction 
   \author Kris Thielemans
@@ -14,7 +15,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/Succeeded.h"
 #ifndef PARALLEL
 #define Main  main
