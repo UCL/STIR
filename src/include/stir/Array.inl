@@ -135,7 +135,10 @@ Array<num_dimensions, elemT>::end_all()
 		    Array<num_dimensions-1, elemT>::full_iterator());
   }
   else
-    return full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
+    {
+      // note this value is fixed by the current convention in full_iterator::operator++()
+      return full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
+    }
 }
 
 template <int num_dimensions, typename elemT>
@@ -152,11 +155,10 @@ Array<num_dimensions, elemT>::end_all() const
 			       Array<num_dimensions-1, elemT>::const_full_iterator());
   }
   else
-  { // TODO
-  const_iterator last = ((this->end()-1));
-  const_iterator really_the_end = this->end();
-  return const_full_iterator(this->end()-1, really_the_end/*this->end()*/, /*(*(this->end()-1))*/last->end_all());
-  }
+    {
+      // note this value is fixed by the current convention in full_iterator::operator++()
+      return const_full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
+    }
 }
 
 template <int num_dimensions, typename elemT>
@@ -367,7 +369,7 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
 {   
   this->check_state();
   const int oldstart = this->get_min_index();
-  const int oldlength = this->size();
+  const unsigned int oldlength = this->size();
   
   base_type::resize(min_index, max_index);
   if (oldlength == 0)
