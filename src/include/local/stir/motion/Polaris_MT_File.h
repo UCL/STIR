@@ -25,15 +25,9 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
 
-#include <fstream>
 #include <vector>
 
 #ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-using std::ofstream;
-using std::ifstream;
-using std::fstream;
 using std::vector;
 #endif
 
@@ -63,26 +57,32 @@ public:
    float rms ;
    };
 
+  typedef std::vector<Record>::const_iterator const_iterator;
+
    ~Polaris_MT_File () {};
    typedef std::vector<Record>::const_iterator const_iterator;
-   Polaris_MT_File(const string& filename);
+   Polaris_MT_File(const string& filename);   
+   
+   //! get the \a n-th complete record
+   /*! This skips the 'missing data' records*/
+   Record operator[](unsigned int n) const;
 
-   void read_mt_file (const string& filename);
-   
-   
-   Record operator[](unsigned int) const;
+   //! iterators that go through complete records
    const_iterator begin() const { return vector_of_records.begin();}
    const_iterator end() const { return vector_of_records.end();}
    unsigned long num_samples() const { return vector_of_records.size(); }
 
-   Succeeded reset();
+   //! iterators that go through all tags recorded by the Polaris
+   const_iterator begin_all_tags() const { return vector_of_tags.begin();}
+   const_iterator end_all_tags() const { return vector_of_tags.end();}
+   unsigned long num_tags() const { return vector_of_tags.size(); }
+
   
 private:
-  ifstream mt_stream;
-  std::vector<Record> vector_of_records;
 
-   Succeeded get_next(Record&);
-   Succeeded is_end_file();
+  vector<Record> vector_of_records;
+  // this contains all tags and times (even those with 'missing data')
+  vector<Record> vector_of_tags;
 };
 
 END_NAMESPACE_STIR
