@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
   \brief A class used by the Interfile parser.
   \warning This will be removed soon. Do NOT USE.
 */
-class Line : private string
+class Line : public string
 {
 
 public :
