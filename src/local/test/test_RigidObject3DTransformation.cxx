@@ -1,19 +1,20 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    For GE Internal use only
+*/
 /*!
   \file
-  \ingroup test
+  \ingroup motion_test
   \brief Test program for RigidObject3DTransformation functions
+  \see stir::RigidObject3DTransformationTests
   \author Kris Thielemans
   \author Sanida Mustafovic
   
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
-    For GE Internal use only
 */
 #include "stir/RunTests.h"
 #include "local/stir/Quaternion.h"
@@ -253,6 +254,8 @@ RigidObject3DTransformationTests::run_tests()
     test_transform_bin_with_inverse(proj_data_info);
     // TODO ProjMatrixByDensel cannot do span=1 yet 
     // test_transform_bin_vs_transform_point(proj_data_info_sptr);
+#ifdef NEW_ROT
+    // old get_bin() cannot handle spanned data, so tests disabled ifndef NEW_ROT
     std::cerr << "\nTests with proj_data_info with mashing and axial compression, no arc-correction\n";
     proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
@@ -263,7 +266,6 @@ RigidObject3DTransformationTests::run_tests()
     test_transform_bin_with_inverse(*proj_data_info_sptr);
     test_transform_bin_vs_transform_point(proj_data_info_sptr);
 
-#ifdef NEW_ROT
     std::cerr << "\nTests with proj_data_info without mashing and axial compression, arc-correction\n";
     proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
