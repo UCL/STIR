@@ -676,7 +676,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	{
 #if 1	
 	  const int new_k_ctr = 
-	    z_direction_trivial==1?0:(round(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2.);
+	    z_direction_trivial==1?0:(round((in_density_cast->get_max_z()-in_density_cast->get_min_z())/2.));
 	  const int mask_size_z = 
 	    z_direction_trivial==1?0:mask_size;
 
