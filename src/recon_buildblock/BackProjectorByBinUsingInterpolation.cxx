@@ -96,7 +96,42 @@ void
 BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
 {
-  symmetries_ptr = new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr);
+  symmetries_ptr = 
+    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr);
+
+   // check if data are according to what we can handle
+
+  const VoxelsOnCartesianGrid<float> * vox_image_info_ptr =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>*> (image_info_ptr.get());
+
+  if (vox_image_info_ptr == NULL)
+    error("BackProjectorByBinUsingInterpolation initialised with a wrong type of DiscretisedDensity\n");
+
+  const CartesianCoordinate3D<float> voxel_size = vox_image_info_ptr->get_voxel_size();
+
+  // z_origin_in_planes should be an integer
+  const float z_origin_in_planes =
+    image_info_ptr->get_origin().z()/voxel_size.z();
+  if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-4)
+    error("BackProjectorByBinUsingInterpolation: the shift in the "
+          "z-direction of the origin (which is %g) should be a multiple of the plane "
+          "separation (%g)\n",
+          image_info_ptr->get_origin().z(), voxel_size.z());
+
+  // num_planes_per_axial_pos should currently be an integer
+  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+       segment_num <= proj_data_info_ptr->get_max_segment_num();
+       ++segment_num)
+  {
+    const float num_planes_per_axial_pos =
+      symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
+    if (fabs(round(num_planes_per_axial_pos) - num_planes_per_axial_pos) > 1.E-4)
+      error("BackProjectorByBinUsingInterpolation: the number of image planes "
+            "per axial_pos (which is %g for segment %d) should be an integer\n",
+             num_planes_per_axial_pos, segment_num);
+  }
+  
+
 }
 
 void
@@ -596,22 +631,22 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
         Proj2424 *= jacobian(delta, s+ 0.5);
 
 	// find correspondence between ax_pos coordinates and image coordinates:
-	// z = num_planes_per_virtual_ring * ring + virtual_ring_offset
+	// z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset
 	// KT 20/06/2001 rewrote using saymmetries_ptr
-	const float num_planes_per_virtual_ring =
+	const float num_planes_per_axial_pos =
           symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
-	const float virtual_ring_offset = 
+	const float axial_pos_to_z_offset = 
 	  symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
 
-        if (use_piecewise_linear_interpolation_now && num_planes_per_virtual_ring>1)
+        if (use_piecewise_linear_interpolation_now && num_planes_per_axial_pos>1)
           piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
           (Proj2424,
           image,
           proj_data_info_cyl_ptr, 
           delta, 
           cphi, sphi, s, ax_pos, 
-          num_planes_per_virtual_ring,
-          virtual_ring_offset);
+          num_planes_per_axial_pos,
+          axial_pos_to_z_offset);
         else
           linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
           (Proj2424,
@@ -619,8 +654,8 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
           proj_data_info_cyl_ptr, 
           delta, 
           cphi, sphi, s, ax_pos, 
-          num_planes_per_virtual_ring,
-          virtual_ring_offset);
+          num_planes_per_axial_pos,
+          axial_pos_to_z_offset);
       }
     }
   stop_timers();
@@ -789,27 +824,27 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
         Proj2424 *= jacobian(delta, s+ 0.5);
         
 	// find correspondence between ax_pos coordinates and image coordinates:
-	// z = num_planes_per_virtual_ring * ring + virtual_ring_offset
+	// z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset
 	// KT 20/06/2001 rewrote using symmetries_ptr
-	const float num_planes_per_virtual_ring =
-          symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
-	const float virtual_ring_offset = 
+	const int num_planes_per_axial_pos =
+          round(symmetries_ptr->get_num_planes_per_axial_pos(segment_num));
+	const float axial_pos_to_z_offset = 
 	  symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
 
-        if (use_piecewise_linear_interpolation_now && num_planes_per_virtual_ring>1)
+        if (use_piecewise_linear_interpolation_now && num_planes_per_axial_pos>1)
           piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90( Proj2424, image, 
 									 proj_data_info_cyl_ptr, 
 									 delta, 
 									 cphi, sphi, s, ax_pos, 
-									 num_planes_per_virtual_ring,
-									 virtual_ring_offset);
+									 num_planes_per_axial_pos,
+									 axial_pos_to_z_offset);
         else
           linear_interpolation_backproj3D_Cho_view_viewplus90( Proj2424, image, 
 							       proj_data_info_cyl_ptr, 
 							       delta, 
 							       cphi, sphi, s, ax_pos, 
-							       num_planes_per_virtual_ring,
-							       virtual_ring_offset);
+							       num_planes_per_axial_pos,
+							       axial_pos_to_z_offset);
       }
     }
   stop_timers();

@@ -38,6 +38,9 @@ START_NAMESPACE_TOMO
   See M. Egger's thesis for details.
   In addition to the symmetries is segment and view, it also uses s,-s symmetry 
   (while being careful when s=0 to avoid self-symmetric cases)
+
+  For historical reasons, 'axial_pos_num' is here called 'ring'. rmin,rmax are
+  min_axial_pos_num and max_axial_pos_num.
   */
 
 
@@ -49,8 +52,8 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
             float s_in_mm, 
 	    const float R, const int rmin, const int rmax, const float offset, 
 	    const int Siddon,
-	    const float num_planes_per_virtual_ring,
-	    const float virtual_ring_offset)
+	    const int num_planes_per_axial_pos,
+	    const float axial_pos_to_z_offset)
 {
   float x1, y1, z1, x2, y2, z2, xmin, ymin, zmin,    xmax, ymax, zmax;
   float           a, a0, axend, ayend, azend, amax;
@@ -64,7 +67,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
    * Siddon == 3 => Symall_r0ab 
    * Siddon == 4 => s0_r0ab
    */
-  //CL&KT 21/12/99 changed ring_unit to num_planes_per_virtual_ring
+  //CL&KT 21/12/99 changed ring_unit to num_planes_per_axial_pos
  
   int             xdim = Bild.get_x_size(); //CL 100298  scanner->num_bins;
   // KT 19/05/2000 use other voxel sizes instead of relying on nrings
@@ -78,10 +81,6 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   const int num_planes_per_physical_ring = 2;
   assert(fabs(Bild.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
-  // KT&CL 28/01/98 removed as never used
-  // float           d_p = scanner->bin_size;
-  // KT 18/11 removed as it is a parameter now
-  //int             delta = (int) segment_pos.get_average_ring_difference() + D;
 
   int maxplane = Bild.get_z_size()-1; // CL 180298 Change the assignement //nrings + nrings - 2;
   MAXDIM2 = (xdim > ydim) ? xdim + 2 : ydim + 2;
@@ -105,31 +104,9 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   x1 = s * cphi + sphi * TMP;
   y2 = s * sphi + cphi * TMP;
   y1 = s * sphi - cphi * TMP;
-  /*
-  if (Siddon == 2) {
-    TMP = R / d_xy;
-    x2 = -sphi * TMP;
-    x1 = sphi * TMP;
-    y2 = cphi * TMP;
-    y1 = -cphi * TMP;
-  } else {
-    float R2pix = R*R/d_xy/d_xy;
-    if (Siddon == 4)
-      TMP = R / d_xy;
-    else if (Siddon == 3)
-      TMP = sqrt(R2pix - s * s);
-    else if (Siddon == 1)
-      TMP = sqrt(R2pix - s * s);
 
-    x2 = s * cphi - sphi * TMP;
-    x1 = s * cphi + sphi * TMP;
-    y2 = s * sphi + cphi * TMP;
-    y1 = s * sphi - cphi * TMP;
-  }
-  */
-
-  // CL&KT 21/12/99 added virtual_ring_offset
-  z1 = num_planes_per_virtual_ring * (rmin + offset) + virtual_ring_offset;//SPAN
+  // CL&KT 21/12/99 added axial_pos_to_z_offset
+  z1 = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset;//SPAN
   // CL&KT 21/12/99 introduced num_planes_per_physical_ring
   z2 = z1 + num_planes_per_physical_ring * delta;
 
@@ -167,7 +144,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   /* We compute here X1f, Y1f, Z1f, X2f, Y2f, Z2f in voxelcoordinates. */
 
 
-  // KT 20/06/2001 change calculation of FOV such that even sized Bilds will work
+  // KT 20/06/2001 change calculation of FOV such that even sized images will work
   const float fovrad_in_mm   = 
     min((min(Bild.get_max_x(), -Bild.get_min_x())-1)*Bild.get_voxel_size().x(),
 	(min(Bild.get_max_y(), -Bild.get_min_y())-1)*Bild.get_voxel_size().y()); 
@@ -180,13 +157,13 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   X1f = s * cphi + sphi * TMP2;
   Y2f = s * sphi + cphi * TMP2;
   Y1f = s * sphi - cphi * TMP2;
-  // CL&KT 21/12/99 added virtual_ring_offset and num_planes_per_physical_ring
-  Z1f = num_planes_per_virtual_ring * (rmin + offset) 
+  // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
+  Z1f = num_planes_per_axial_pos * (rmin + offset) 
         + num_planes_per_physical_ring * delta/2 * (1 - TMP2 / TMP) 
-	+ virtual_ring_offset;//SPAN
-  Z2f = num_planes_per_virtual_ring * (rmin + offset)
+	+ axial_pos_to_z_offset;//SPAN
+  Z2f = num_planes_per_axial_pos * (rmin + offset)
         + num_planes_per_physical_ring * delta/2 * (1 + TMP2 / TMP) 
-	+ virtual_ring_offset;//SPAN
+	+ axial_pos_to_z_offset;//SPAN
 
 
   /* intersection points with  intra-voxel planes : */
@@ -260,12 +237,12 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
   // Z+Q = 2*centre_of_LOR_in_image_coordinates
   // original  Q = (int) (4 * (rmin + offset) + 2 * delta - Z);
-  // CL&KT 21/12/99 added virtual_ring_offset and num_planes_per_physical_ring
+  // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
   {
     // first compute it as floating point (although it has to be an int really)
-    const float Qf = (2*num_planes_per_virtual_ring*(rmin + offset) 
+    const float Qf = (2*num_planes_per_axial_pos*(rmin + offset) 
                       + num_planes_per_physical_ring*delta
-	              + 2*virtual_ring_offset
+	              + 2*axial_pos_to_z_offset
 	              - Z); 
     // now use rounding to be safe
     Q = (int)floor(Qf + 0.5);
@@ -309,10 +286,10 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	d = ax[ix] - a;
 	Zdup = Z;
 	Qdup = Q;
-        //CL&KT 21/12/99 used num_planes_per_virtual_ring
+        //CL&KT 21/12/99 used num_planes_per_axial_pos
         for (ring0 = rmin; 
 	     ring0 <= rmax; 
-	     ring0++, Zdup += num_planes_per_virtual_ring, Qdup +=num_planes_per_virtual_ring )
+	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	{
 	  /* Alle Symetrien ausser s */
 	  if (Zdup >= 0 && Zdup <= maxplane) {
@@ -355,10 +332,10 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	d = az[iz] - a;
 	Zdup = Z;
 	Qdup = Q;
-        //CL&KT 21/12/99 used num_planes_per_virtual_ring
+        //CL&KT 21/12/99 used num_planes_per_axial_pos
         for (ring0 = rmin; 
 	     ring0 <= rmax; 
-	     ring0++, Zdup += num_planes_per_virtual_ring, Qdup +=num_planes_per_virtual_ring )
+	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	{
 	  /* all symmetries except in 's'*/
 	  if (Zdup >= 0 && Zdup <= maxplane) {
@@ -404,10 +381,10 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
       d = ay[iy] - a;
       Zdup = Z;
       Qdup = Q;
-      //CL&KT 21/12/99 used num_planes_per_virtual_ring
+      //CL&KT 21/12/99 used num_planes_per_axial_pos
       for (ring0 = rmin; 
            ring0 <= rmax; 
-	   ring0++, Zdup += num_planes_per_virtual_ring, Qdup +=num_planes_per_virtual_ring )
+	   ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	   {
 	/*   all symmetries except in 's' */
 	if (Zdup >= 0 && Zdup <= maxplane) {
@@ -450,10 +427,10 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
       d = az[iz] - a;
       Zdup = Z;
       Qdup = Q;
-        //CL&KT 21/12/99 used num_planes_per_virtual_ring
+        //CL&KT 21/12/99 used num_planes_per_axial_pos
         for (ring0 = rmin; 
 	     ring0 <= rmax; 
-	     ring0++, Zdup += num_planes_per_virtual_ring, Qdup +=num_planes_per_virtual_ring )
+	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	{
 	/*   all symmetries except in 's' */
 	if (Zdup >= 0 && Zdup <= maxplane) {
@@ -496,36 +473,6 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
     }
 
   }		/* Ende while (a<amax) */
-
-  /* Normalisation of the projection elements */
-  // KT&CL 30/01/98 simplify normalisation (doing a bit too much work sometimes)
-  // KT 16/02/98 removed normalisation here, as it now done in the initialisation of the a's
-  // Projptr *= d12;
-  /*
-  for (ring0 = rmin; ring0 <= rmax; ring0++)
-    if (Siddon == 2) {
-      for (i = 0; i <= 1; i++) {
-	Projptr[ring0][i][0][0] *= d12;
-	Projptr[ring0][i][0][2] *= d12;
-      }
-    } else if (Siddon == 4) {
-
-      for (i = 0; i <= 1; i++)
-	for (k = 0; k <= 3; k++)
-	  Projptr[ring0][i][0][k] *= d12;
-    } else if (Siddon == 1) {
-      for (i = 0; i <= 1; i++)
-	for (j = 0; j <= 1; j++) {
-	  Projptr[ring0][i][j][0] *= d12;
-	  Projptr[ring0][i][j][2] *= d12;
-	}
-    } else if (Siddon == 3) {
-      for (i = 0; i <= 1; i++)
-	for (j = 0; j <= 1; j++)
-	  for (k = 0; k <= 3; k++)
-	    Projptr[ring0][i][j][k] *= d12;
-    }
-    */
 
 	
 }
