@@ -33,6 +33,7 @@ SOURCES = \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
+	SinglesRatesFromSglFile.cxx \
 	SinglesRatesFromECAT7.cxx
 
 
