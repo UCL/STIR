@@ -21,7 +21,9 @@
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/shared_ptr.h"
 #include <numeric>
+#include <boost/limits.hpp> // <limits> but also for old compilers
 
 
 START_NAMESPACE_STIR
@@ -43,9 +45,7 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
   // initialise correct size
   values = VectorWithOffset<ROIValues>(min_z, max_z);
 
-  
-  // KT 14/11/2000 made pointer to prevent memory leak
-  VoxelsOnCartesianGrid<float> *
+  shared_ptr<VoxelsOnCartesianGrid<float> >
     discretised_shape_ptr=image.get_empty_voxels_on_cartesian_grid();
 
 
@@ -53,6 +53,7 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
 
   for (int z=min_z; z<=max_z; z++)
   {
+#if 0
     const float volume = (*discretised_shape_ptr)[z].sum() * voxel_volume;
     (*discretised_shape_ptr)[z] *= image[z];
     // TODO incorrect: picks up the values outside the ROI, which are 0
@@ -61,11 +62,43 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
     const float integral = (*discretised_shape_ptr)[z].sum() * voxel_volume;
     (*discretised_shape_ptr)[z] *= image[z];
     const float integral_square =(*discretised_shape_ptr)[z].sum() * voxel_volume;
+#else
+    float ROI_min = std::numeric_limits<float>::max();
+    float ROI_max = std::numeric_limits<float>::min();
+    float integral = 0;
+    float integral_square = 0;
+    float volume = 0;
+    {
+      Array<2,float>::const_full_iterator 
+	discr_shape_iter = (*discretised_shape_ptr)[z].begin_all_const();
+      const Array<2,float>::const_full_iterator 
+	discr_shape_end = (*discretised_shape_ptr)[z].end_all_const();
+      Array<2,float>::const_full_iterator 
+	image_iter = image[z].begin_all_const();
+      for (; discr_shape_iter != discr_shape_end; ++discr_shape_iter, ++image_iter)
+	{
+	  const float weight = *discr_shape_iter;
+	  if (weight ==0)
+	    continue;
+	  volume += weight;
+	  const float value = weight * (*image_iter);
+	  if (value<ROI_min) ROI_min=value;
+	  if (value>ROI_max) ROI_max=value;
+	  if (value==0)
+	    continue;
+	  integral += value;
+	  integral_square += value * (*image_iter);
+	}
+      integral *= voxel_volume;
+      integral_square *= voxel_volume;
+      volume *= voxel_volume;
+    }
+#endif
     values[z] =
       ROIValues(volume, integral, integral_square, 
                 ROI_min, ROI_max);
   }
-  delete discretised_shape_ptr;
+
 }
 
 ROIValues
@@ -97,7 +130,10 @@ compute_total_ROI_values(const DiscretisedDensity<3,float>& image,
 
 // Function that calculate the totals over a certain plane-range
  
-
+/* TODO this function isn't used at present, but it's almost the same as 
+   compare_ROI_values_per_plane(), so rewrite the latter in terms of this one
+   (after updating it)
+*/
 
 void
 compute_plane_range_ROI_values_per_plane(VectorWithOffset<ROIValues>& values, 
