@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
@@ -35,7 +35,7 @@ using std::string;
 START_NAMESPACE_STIR
 
 
-/*!
+/*! \ingroup buildblock
   \brief reads data into memory, returning a pointer to the memory
 
  If the file_size parameter is zero, the stream is read till EOF
@@ -48,7 +48,8 @@ START_NAMESPACE_STIR
  */
 void * read_stream_in_memory(istream& input, unsigned long& file_size);
 
-/*! \brief Find number of remaining characters in the stream
+/*! \ingroup buildblock
+ \brief Find number of remaining characters in the stream
 
  At the end of this function, the 'input' stream will be positioned 
  at the original_position.
@@ -61,6 +62,8 @@ streamsize find_remaining_size (istream& input);
 *****************************************************/
 
 //! A function to ask a number from the user 
+/*!  \ingroup buildblock  
+*/
 template <class NUMBER>
 inline NUMBER 
 ask_num (const string& prompt,
@@ -69,26 +72,33 @@ ask_num (const string& prompt,
 	 NUMBER default_value);
 
 //! A function to ask a string from the user 
+/*!  \ingroup buildblock
+ */
 string
 ask_string(const string& prompt, const string& default_value = "");
 
-/*! \brief A function to ask a yes/no question from the user
-
-  \param prompt a text string 
-  \param default_value==true means the default is Yes.
+/*!  \ingroup buildblock
+  \brief A function to ask a yes/no question from the user
+  
+  \param prompt a text string which is supposed to be a question
+  \param default_value When set to \c true , the default is Yes.
   */
 bool 
-ask (const string& str, bool default_value);
+ask (const string& prompt, bool default_value);
 
 /*****************************************************
  functions for opening binary streams
 *****************************************************/
 
 //! opens a stream for reading. Calls error() when it does not succeed.
+/*!  \ingroup buildblock
+ */
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
 				  const char * const name);
 //! opens a stream for writing. Calls error() when it does not succeed.
+/*!  \ingroup buildblock
+ */
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
 				  const char * const name);
@@ -99,11 +109,14 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
  Some functions to manipulate (and ask for) filenames.
 ***************************************************************************/
 
-//! some large value to say how long filenames can be in the non-string functions below
+//! some large value to say how long filenames can be in ask_filename_with_extension() and ask_filename_and_open
+/*!  \ingroup buildblock
+ */
 const int max_filename_length = 1000;
 
 //! return a pointer to the start of the filename (i.e. after directory specifications)
-/*! The returned pointer is between filename_with_directory and 
+/*! \ingroup buildblock
+    The returned pointer is between filename_with_directory and 
     (filename_with_directory+strlen(filename_with_directory)+1). This
     highest value is used when it's a directory name.
 */
@@ -111,14 +124,16 @@ extern const char * const
 find_filename(const char * const filename_with_directory);
 
 //! return the position of the start of the filename (i.e. after directory specifications)
-/*! The returned number is between 0 and filename_with_directory.size()+1. This
+/*! \ingroup buildblock
+    The returned number is between 0 and filename_with_directory.size()+1. This
     highest value is used when it's a directory name.
 */
 string::size_type
 find_pos_of_filename(const string& filename_with_directory);
 
 
-/*! \brief
+/*! \ingroup buildblock
+ \brief
  Copies the directory part from 'filename_with_directory'
  into 'directory_name' and returns the 'directory_name' pointer.
 
@@ -129,17 +144,21 @@ get_directory_name(char *directory_name,
 		   const char * const filename_with_directory);
 
 //! Returns a string with the directory part from 'filename_with_directory'.
+/*! \ingroup buildblock
+ */
 string
 get_directory_name(const string& filename_with_directory);
 
-/*! \brief
+/*! \ingroup buildblock
+ \brief
  Checks if the filename points to an absolute location, or is
  a relative (e.g. to current directory) pathname.
  */
 extern bool
 is_absolute_pathname(const string& filename_with_directory);
 
-/*! \brief
+/*! \ingroup buildblock
+ \brief
  Checks if the filename points to an absolute location, or is
  a relative (e.g. to current directory) pathname.
  */
@@ -147,9 +166,10 @@ extern bool
 is_absolute_pathname(const char * const filename_with_directory);
 
 
-/*! \brief
+/*! \ingroup buildblock
+ \brief
  Prepend directory_name to the filename, but only
- if !is_absolute_pathname(filename_with_directory)
+ if <tt>!is_absolute_pathname(filename_with_directory)</tt>
 
  If necessary, a directory separator is inserted.
  If 'directory_name' == 0, nothing happens.
@@ -162,17 +182,19 @@ prepend_directory_name(char * filename_with_directory,
 		       const char * const directory_name);
 
 //! find the position of the '.' of the extension
-/*! If no '.' is found in the filename part (i.e. ignoring the
-    directory name), the function returns string::npos
+/*! \ingroup buildblock
+  If no '.' is found in the filename part (i.e. ignoring the
+    directory name), the function returns \c string::npos
 */
 string::size_type
 find_pos_of_extension(const string& file_in_directory_name);
 
-/*! \brief
- Append 'extension' to 'filename_with_directory'
- if no '.' is found in 'filename_with_directory'
+/*! \ingroup buildblock
+\brief
+ Append \a extension to \a filename_with_directory
+ if no '.' is found in \a filename_with_directory
  (excluding the directory part)
- Returns the 'filename_with_directory' pointer.
+ \return the \a filename_with_directory pointer.
 
  Example (on Unix):
  \code
@@ -188,12 +210,15 @@ add_extension(char * file_in_directory_name,
 	      const char * const extension);
 
 //! Append extension when input parameters are strings
+/*! \ingroup buildblock
+ */
 string& 
 add_extension(string& file_in_directory_name, 
 	      const string& extension);
 
-/*! \brief
-  Replace extension in 'filename_with_directory' with 'extension'.
+/*! \ingroup buildblock
+  \brief
+  Replace extension in \a filename_with_directory with \a extension.
 
   if no extension is found in 'filename_with_directory',
  'extension' is appended.
@@ -211,12 +236,15 @@ replace_extension(char *file_in_directory_name,
  	          const char * const extension);
 
 //! Replace extension when input parameters are strings
+/*! \ingroup buildblock
+ */
 string& 
 replace_extension(string& file_in_directory_name, 
 		  const string& extension);
 		   
 
-/*! \brief
+/*! \ingroup buildblock
+ \brief
  Asks for a filename (appending an extension if none is provided)
  and stores the string where file_in_directory_name points to.
 
@@ -225,8 +253,8 @@ replace_extension(string& file_in_directory_name,
      char filename[max_filename_length];
      ask_filename_with_extension(filename, "Input file name ?", ".img");
  \endcode
- \warning 'file_in_directory_name' has to be preallocated 
-       (with size max_filename_length)
+ \warning \a file_in_directory_name has to be preallocated 
+       (with size \c max_filename_length)
  \bug the filename cannot contain spaces
  */
 extern char *
@@ -234,7 +262,8 @@ ask_filename_with_extension(char *file_in_directory_name,
   		            const char * const prompt,
 			    const char * const default_extension);
 
-/*! \brief
+/*! \ingroup buildblock
+  \brief
  Asks for a filename (with default extension) and opens the stream 's'
  with 'mode' giving the specifics. 
 
@@ -257,6 +286,8 @@ ask_filename_and_open(FSTREAM& s,
 		      bool abort_if_failed);
 
 //! as above, but with default \c abort_if_failed = true
+/*! \ingroup buildblock
+ */
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,
@@ -273,6 +304,8 @@ ask_filename_and_open(FSTREAM& s,
 #ifndef _MSC_VER
 
 //! make C-string uppercase
+/*! \ingroup buildblock
+*/
 inline char *strupr(char * const str);
 #else
 #define strupr _strupr
