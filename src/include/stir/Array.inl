@@ -35,22 +35,6 @@ START_NAMESPACE_STIR
 /**********************************************
  inlines for Array<num_dimensions, elemT>
  **********************************************/
-#ifndef ARRAY4
-template <int num_dimensions, typename elemT>
-void 
-Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
-{
-  base_type::grow(range.get_min_index(), range.get_max_index());
-  typename base_type::iterator iter = this->begin();
-  typename IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
-  for (;
-  iter != this->end(); 
-  iter++, range_iter++)
-    (*iter).grow(*range_iter);
-
-  is_regular_range = range.is_regular();
-}
-#endif
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array()
