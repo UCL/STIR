@@ -13,7 +13,9 @@ $(dir)_LIB_SOURCES:= \
 	cleanup966ImageProcessor.cxx \
 	SinglesRatesFromSglFile.cxx \
 	SinglesRatesFromECAT7.cxx  \
-  find_fwhm_in_image.cxx
+  find_fwhm_in_image.cxx \
+        AbsTimeIntervalFromECAT7ACF.cxx \
+        AbsTimeIntervalWithParsing.cxx
 
 currently_disabled:=	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \

@@ -15,7 +15,10 @@
 #include "local/stir/cleanup966ImageProcessor.h"
 #include "local/stir/multiply_plane_scale_factorsImageProcessor.h"
 
+
+#include "local/stir/AbsTimeIntervalWithParsing.h"
 #ifdef HAVE_LLN_MATRIX
+#include "local/stir/AbsTimeIntervalFromECAT7ACF.h"
 #include "local/stir/SinglesRateFromECAT7.h"
 #include "local/stir/SinglesRatesFromSglFile.h"
 #endif
@@ -35,7 +38,9 @@ static NonseparableSpatiallyVaryingFilters3D<float>::RegisterIt dummy8;
 static cleanup966ImageProcessor<float>::RegisterIt dummy100;
 static multiply_plane_scale_factorsImageProcessor<float>::RegisterIt dummy101;
 
+static AbsTimeIntervalWithParsing::RegisterIt dummy200;
 #ifdef HAVE_LLN_MATRIX
+static AbsTimeIntervalFromECAT7ACF::RegisterIt dummy201;
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 static SinglesRatesFromECAT7::RegisterIt dummy100;
