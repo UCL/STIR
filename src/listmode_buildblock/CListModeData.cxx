@@ -12,12 +12,12 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/listmode/CListModeDataFromStream.h"
-#include "local/stir/listmode/CListModeDataECAT.h"
+#include "stir/listmode/CListModeDataFromStream.h"
+#include "stir/listmode/CListModeDataECAT.h"
 
 START_NAMESPACE_STIR
 
