@@ -44,13 +44,17 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CTI/stir_cti.h"
 #include "stir/CTI/cti_utils.h"
+#include "stir/Scanner.h"
 #include <stdio.h>
 #include <iostream>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::min;
+using std::max;
 #endif
 
 
@@ -61,17 +65,27 @@ int
 main(int argc, char *argv[])
 {
   char cti_name[max_filename_length], out_name[max_filename_length];
+  char * scanner_name_ptr = 0;
   FILE *cti_fptr;
  
-  if(argc==3)
+  if(argc==3 || argc==4)
     { 
       strcpy(cti_name, argv[2]);
       strcpy(out_name, argv[1]);
+      if (argc>3)
+        scanner_name_ptr = argv[3];
     }
   else 
     {
       cerr<<"\nConversion from ECAT6 CTI data to interfile.\n";
-      cerr<<"Usage: convecat6_if [output_file_name_without_extension cti_data_file_name]\n"<<endl;
+      cerr<<"Usage: convecat6_if [output_file_name_without_extension cti_data_file_name [scanner_name]]\n"
+          <<"The optional scanner_name can be used to force to a particular scanner"
+          <<" (ignoring the system_type in the main header).\n"
+          << "scanner_name has to be recognised by the Scanner class\n"
+	  << "Examples are : \"ECAT 953\", \"RPT\" etc.\n"
+	  << "(the quotes are required when used as a command line argument)\n"
+          << endl;
+	
       if (argc!=1)
 	exit(EXIT_FAILURE);
 
@@ -91,19 +105,20 @@ main(int argc, char *argv[])
     error("\nUnable to read main header in file: %s\n",cti_name);
   }
 
+  if (scanner_name_ptr != 0)
+  {
+    // force scanner
+    shared_ptr<Scanner> scanner_ptr = 
+      Scanner::get_scanner_from_name(scanner_name_ptr);
+    mhead.system_type = find_CTI_system_type(*scanner_ptr);
+  }
+
   // funnily enough, num_bed_pos seems to be offset with 1
   // (That's to say, in a singled bed study, num_bed_pos==0) 
   // TODO maybe not true for multi-bed studies
-#ifndef STIR_NO_NAMESPACES
-  // VC needs this std::
-  const int num_frames = std::max(static_cast<int>( mhead.num_frames),1);
-  const int num_bed_poss = std::max(static_cast<int>( mhead.num_bed_pos) + 1,1);
-  const int num_gates = std::max(static_cast<int>( mhead.num_gates),1);
-#else
   const int num_frames = max(static_cast<int>( mhead.num_frames),1);
-  const int num_bed_poss = std::max(static_cast<int>( mhead.num_bed_pos) + 1,1);
+  const int num_bed_poss = max(static_cast<int>( mhead.num_bed_pos) + 1,1);
   const int num_gates = max(static_cast<int>( mhead.num_gates),1);
-#endif
 
 
   int min_frame_num = 1;
