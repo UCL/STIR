@@ -4,45 +4,82 @@
 #ifndef __ByteOrder_H__
 #define __ByteOrder_H__
 
-/*
-   class ByteOrder provdes member functions to 
-   - find out what byte order your machine is
-   - swap numbers around
+/*!
+  \file 
+ 
+  \brief This file declares the ByteOrder class.
 
-   In a little-endian architecture within a given 16- or 32-bit word, 
+  \author Kris Thielemans 
+  \author Alexey Zverovich
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+  Modification History:
+
+  - First version by KT
+
+  - AZ&KT 15/12/99 rewrote swap_order using revert_region
+*/
+
+#include "Tomography_common.h"
+
+START_NAMESPACE_TOMO
+
+/*!
+  \class ByteOrder
+
+  \brief This class provides member functions to 
+  find out what byte-order your machine is and to swap numbers.
+
+  \par Some machine architectures:
+  -Little endian processors: Intel, Alpha, VAX, PDP-11, ...
+  -Big endian processors: Sparc, PowerPC, Motorola 68???, ...
+
+  In a little-endian architecture, within a given 16- or 32-bit word, 
    bytes at lower addresses have lower significance 
    (the word is stored `little-end-first').
    (Quoted from http://www.techfak.uni-bielefeld.de/~joern/jargon/)
-
-    Little endian processors: Intel, Alpha, VAX, PDP-11, ...
-    Big endian processors: Sparc, PowerPC, Motorola 68???, ...
-
-
-  History:
-  First version by Kris Thielemans
-
-  AZ&KT 15/12/99 moved inlines to separate file, rewrote swap_order
 */
 
-/* 
-  A class which should not be used anywhere else, except in the 
-  swap_order implementation below.
-  It really shouldn't be in this include file, but we have to because
-  of a compiler bug in VC++ (member templates have to be defined in the
-  class).
+/*!
+  \brief Internal class to swap bytes.
 
   This defines a revert function that swaps the outer elements of an
   array, and then calls itself recursively. 
   Due to the use of templates, the recursion gets resolved at compile 
   time.
+  (We have to use a class for this, as we rely on
+  template specialisation, which is unavailable for functions).
+    
+  \warning This class should not be used anywhere, except in the 
+  ByteOrder::swap_order implementation.
+
+  \internal
 */
+/* 
+  It really shouldn't be in this include file, but we have to because
+  of a compiler bug in VC++ (member templates have to be defined in the
+  class).
+*/
+//TODO put revert_region in own namespace
+
+// for swap
+#include <algorithm>
+
 template <int size>
 class revert_region
 {
 public:
   inline static void revert(unsigned char* ptr)
   {
+#ifndef TOMO_NO_NAMESPACES
+    std::swap(ptr[0], ptr[size - 1]);
+#else
     swap(ptr[0], ptr[size - 1]);
+#endif
     revert_region<size - 2>::revert(ptr + 1);
   }
 };
@@ -67,34 +104,52 @@ public:
 class ByteOrder
 {
 public: 
-  // 'little_endian' is like x86, MIPS
-  // 'big_endian' is like PowerPC, Sparc
-  // 'native' means the same order as the machine the program is running on
-  // 'swapped' means the opposite order
-  enum Order { little_endian, big_endian, native, swapped };
+  //! enum for specifying the byte-order
+  enum Order {
+    little_endian, /*!< is like x86, MIPS*/
+    big_endian, /*!< is like PowerPC, Sparc.*/
+    native, /*!< means the same order as the machine the programme is running on*/
+    swapped /*!<  means the opposite order of \e native*/
+  };
 
-  // static methods (i.e. not using 'this')
+  //******* static members (i.e. not using 'this')
 
+  //! returns the byte-order native to the machine the programme is running on.
   inline static Order get_native_order();
 
   // Note: this uses member templates. If your compiler cannot handle it,
   // you will have to write lots of lines for the built-in types
   // Note: Implementation has to be inside the class definition to get 
-  // this compiled by VC++ 5.0
+  // this compiled by VC++ 5.0 and 6.0
+  //! swap the byteorder of the argument
   template <class NUMBER>
   inline static void swap_order(NUMBER& value)
   {
 	revert_region<sizeof(NUMBER)>::revert(reinterpret_cast<unsigned char*>(&value));
   }
 
-  // constructor, defaulting to 'native' byte order
-  inline ByteOrder(Order byte_order = native);
-  inline bool operator==(ByteOrder order2) const;
+  //********* non-static members
 
+  //! constructor, defaulting to 'native' byte order
+  inline ByteOrder(Order byte_order = native);
+
+  //! comparison operator
+  inline bool operator==(const ByteOrder order2) const;
+
+  //! check if the object refers to the native order.
   inline bool is_native_order() const;
 
-  // this swaps only when the order != native order
-  template <class NUMBER> inline void swap_if_necessary(NUMBER& a) const;
+  // Note: this uses member templates. If your compiler cannot handle it,
+  // you will have to write lots of lines for the built-in types
+  // Note: Implementation has to be inside the class definition to get 
+  // this compiled by VC++ 5.0 and 6.0
+  //! this swaps only when the order != native order
+  template <class NUMBER> inline void swap_if_necessary(NUMBER& a) const
+  {
+    if (!is_native_order())
+      swap_order(a);
+  }
+
 
 private:
   // This static member has to be initialised somewhere (in file scope).
@@ -103,6 +158,8 @@ private:
   Order byte_order;
 
 };
+
+END_NAMESPACE_TOMO
 
 #include "ByteOrder.inl"
 
