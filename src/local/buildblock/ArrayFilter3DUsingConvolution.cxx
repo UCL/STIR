@@ -19,10 +19,23 @@
 */
 
 #include "local/stir/ArrayFilter3DUsingConvolution.h"
+//#include "local/stir/ArrayFilter2DUsingConvolution.h"
 #include "stir/IndexRange.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IndexRange2D.h"
+
+#include <iostream>
+#include <fstream>
+
+#ifndef STIR_NO_NAMESPACES
+using std::iostream;
+using std::fstream;
+using std::cerr;
+using std::endl;
+#endif
+
 
 START_NAMESPACE_STIR
 
@@ -89,6 +102,7 @@ void
 ArrayFilter3DUsingConvolution<elemT>::
 do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
 {
+
   const int in_min_z = in_array.get_min_index();
   const int in_max_z = in_array.get_max_index();
   const int in_min_y = in_array[in_min_z].get_min_index();
@@ -104,20 +118,6 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
   const int out_min_x = out_array[out_min_z][out_min_y].get_min_index();
   const int out_max_x = out_array[out_min_z][out_min_y].get_max_index();
   
-
-  
-  if (is_trivial())
-  {    
-    for (int z=out_min_z; z<=out_max_z; z++) 
-      for (int y=out_min_y; y<=out_max_y; y++) 
-	for (int x=out_min_x; x<=out_max_x; x++) 
-	  
-	{
-	  out_array[z][y][x] = ((z>=in_min_z && z <= in_max_z ) && (y>=in_min_y && y <= in_max_y ) && 
-	    (x>=in_min_x && x <= in_max_x ) ? in_array[z][y][x] : 0);   
-	}
-	return;
-  }
   const int k_min = filter_coefficients.get_min_index();
   const int k_max = filter_coefficients.get_max_index();
   const int j_min = filter_coefficients[k_min].get_min_index();
@@ -125,38 +125,44 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
   const int i_min = filter_coefficients[k_min][j_min].get_min_index();
   const int i_max = filter_coefficients[k_min][j_min].get_max_index();
   
-  Array <3,float> filter_tmp (IndexRange3D(0,k_max-1,0,j_max-1,0,i_max-1));
-
-  for ( int k =k_min; k<=k_max; k++)
-    for ( int j =j_min; j<=j_max; j++)
-      for ( int i =i_min; i<=i_max; i++)
-      {
-	filter_tmp[k-1][j-1][i-1]  = filter_coefficients[k][j][i];
-
-      }
   
-  const int k_min_tmp = filter_tmp.get_min_index();
-  const int k_max_tmp = filter_tmp.get_max_index();
-  const int j_min_tmp = filter_tmp[k_min].get_min_index();
-  const int j_max_tmp = filter_tmp[k_min].get_max_index();
-  const int i_min_tmp = filter_tmp[k_min][j_min].get_min_index();
-  const int i_max_tmp = filter_tmp[k_min][j_min].get_max_index();
-
- 
-  for (int z=out_min_z; z<=out_max_z; z++) 
-    for (int y=out_min_y; y<=out_max_y; y++) 
-      for (int x=out_min_x; x<=out_max_x; x++) 
-      {
-	out_array[z][y][x] = 0;
+  if (k_min != k_max)
+  {  
+    if (is_trivial())
+    {    
+      for (int z=out_min_z; z<=out_max_z; z++) 
+	for (int y=out_min_y; y<=out_max_y; y++) 
+	  for (int x=out_min_x; x<=out_max_x; x++) 
+	    
+	  {
+	    out_array[z][y][x] = ((z>=in_min_z && z <= in_max_z ) && (y>=in_min_y && y <= in_max_y ) && 
+	      (x>=in_min_x && x <= in_max_x ) ? in_array[z][y][x] : 0);   
+	  }
+	  return;
+    }
+  
+    
+    for (int z=out_min_z; z<=out_max_z; z++) 
+      for (int y=out_min_y; y<=out_max_y; y++) 
+	for (int x=out_min_x; x<=out_max_x; x++) 
+	{
+	  out_array[z][y][x] = 0;
+	  
+	  for (int k=max(k_min, z-in_max_z); k<=min(k_max, z-in_min_z); k++) 
+	    for (int j=max(j_min, y-in_max_y); j<=min(j_max, y-in_min_y); j++)  
+	      for (int i=max(i_min, x-in_max_x); i<=min(k_max, x-in_min_x); i++) 
+		
+		out_array[z][y][x] += filter_coefficients[k][j][i]*in_array[z-k][y-j][x-i];   
+	}
+  }
+  else
+  {
+    Array<2,float> array_out_tmp (IndexRange2D(out_min_y,out_max_y,out_min_x,out_max_x));
+    do_it_2d(array_out_tmp, in_array[out_min_z]);
+    out_array[out_min_z][out_min_y][out_min_x] =  array_out_tmp[out_min_y][out_min_x];
 	
-	for (int k=max(k_min_tmp, z-in_max_z); k<=min(k_max_tmp, z-in_min_z); k++) 
-	  for (int j=max(j_min_tmp, y-in_max_y); j<=min(j_max_tmp, y-in_min_y); j++)  
-	    for (int i=max(i_min_tmp, x-in_max_x); i<=min(k_max_tmp, x-in_min_x); i++) 
-	      
-	      out_array[z][y][x] += filter_tmp[k][j][i]*in_array[z-k][y-j][x-i];   
-      }
-      
-      
+  }
+
 }
 
 #endif
@@ -222,6 +228,62 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
 }
 
 #endif
+
+
+template <typename elemT>
+void
+ArrayFilter3DUsingConvolution<elemT>::
+do_it_2d(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
+{
+  const int in_min_y = in_array.get_min_index();
+  const int in_max_y = in_array.get_max_index();
+  const int in_min_x = in_array[in_min_y].get_min_index();
+  const int in_max_x = in_array[in_min_y].get_max_index();
+  
+  
+  const int out_min_y = out_array.get_min_index();
+  const int out_max_y = out_array.get_max_index();
+  const int out_min_x = out_array[out_min_y].get_min_index();
+  const int out_max_x = out_array[out_min_y].get_max_index();
+  
+  
+  
+  if (is_trivial())
+  {    
+    for (int y=out_min_y; y<=out_max_y; y++) 
+      for (int x=out_min_x; x<=out_max_x; x++) 
+	
+      {
+	out_array[y][x] = ((y>=in_min_y && y <= in_max_y ) && 
+	  (x>=in_min_x && x <= in_max_x ) ? in_array[y][x] : 0);   
+      }
+      return;
+  }
+  
+ 
+  const int k_min = filter_coefficients.get_min_index();
+  const int k_max = filter_coefficients.get_max_index();
+  const int j_min = filter_coefficients[k_min].get_min_index();
+  const int j_max = filter_coefficients[k_min].get_max_index();
+  const int i_min = filter_coefficients[k_min][j_min].get_min_index();
+  const int i_max = filter_coefficients[k_min][j_min].get_max_index();
+  
+  
+  
+  for (int y=out_min_y; y<=out_max_y; y++) 
+    for (int x=out_min_x; x<=out_max_x; x++) 
+    {
+      out_array[y][x] = 0;
+      
+      for (int j=max(j_min, y-in_max_y); j<=min(j_max, y-in_min_y); j++)  
+	for (int i=max(i_min, x-in_max_x); i<=min(i_max, x-in_min_x); i++) 
+	  
+	  out_array[y][x] += filter_coefficients[filter_coefficients.get_min_index()][j][i]*in_array[y-j][x-i];   
+    }
+    
+    
+}
+
 
 // instantiation
 
