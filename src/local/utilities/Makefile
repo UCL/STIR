@@ -11,12 +11,11 @@ LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
 include $(WORKSPACE)/Makefile_common
 
-SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
+SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	list_ROI_values.cxx \
 	zoom_image.cxx \
 	compute_plane_rescale_factors.cxx \
 	apply_plane_rescale_factors.cxx \
-	swap_corners.cxx \
 	prepare_projdata.cxx \
 	normalizedbckproj.cxx \
 	inverse_proj_data.cxx 	\
@@ -28,7 +27,6 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	find_ML_singles_from_delayed.cxx \
 	threshold_norm_data.cxx \
 	zero_projdata_from_norm.cxx \
-	SSRB.cxx \
 	attenuation_coefficients_to_projections.cxx \
 	construct_randoms_from_singles.cxx \
 	interpolate_blocks.cxx \
