@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
   \file
@@ -213,95 +213,6 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
 
 
 
-
-#if 0
- // not needed anymore
-
-// AZ&KT 04/10/99: removed view45, added rim_truncation_sino
-void divide_and_truncate(const int view, // const int view45,
-			 SegmentBySinogram<float>& numerator, 
-			 const SegmentBySinogram<float>& denominator,
-			 const int rim_truncation_sino,
-			 int& count, int& count2, float* log_likelihood_ptr /* = NULL */)
-{
-  assert(numerator.get_num_views() == denominator.get_num_views());
-
-  const int view45 = numerator.get_num_views() / 4;
-
-  const int view90 = view45*2;
-  const int plus90 = view90+view;
-  const int min180 = view45*4-view;
-  const int min90  = view90-view;
-	
-  int v[4],max_index;
-
-  if (view != 0 /* && view != globals.view45 */ ){
-    max_index=3;
-    v[0]=view;v[1]=plus90;v[2]=min90;v[3]=min180;
-  }
-	
-  else{
-    max_index=3;
-    v[0]=view;v[1]=plus90;
-    v[2]=view45;v[3]=view90+view45; 
-  }
-
-  const int rs=denominator.get_min_axial_pos_num();
-  const int re=denominator.get_max_axial_pos_num();
-  const int vs=denominator.get_min_view_num();
-  const int ve=denominator.get_max_view_num();
-  const int bs=denominator.get_min_tangential_pos_num();
-  const int be=denominator.get_max_tangential_pos_num();
-
-  float small_value= (float) numerator.find_max()*SMALL_NUM;
-  small_value=(small_value>0.0)?small_value:0.0;
-
-
-  for(int r=rs;r<=re;r++)
-    for(int i=0;i<=max_index;i++)
-      for(int b=bs;b<=be;b++) {
-
-      // MJ 12/04/2000 removed SMALL_NUM and changed other bad truncation rules.
-      /* 	      
-	if(denominator[r][v[i]][b]<=SMALL_NUM ||
-	   numerator[r][v[i]][b]<0.0|| 
-	   b<bs+rim_truncation_sino || b>be-rim_truncation_sino) {
-	  if(numerator[r][v[i]][b]>SMALL_NUM && denominator[r][v[i]][b]<=SMALL_NUM ) count++;
-	  else if( numerator[r][v[i]][b]<0.0) count2++;
-	  numerator[r][v[i]][b]=0.0;
-	}
-
-	*/
-
-
-	if(denominator[r][v[i]][b]<=small_value ||
-	   numerator[r][v[i]][b]<=0.0 || 
-	   b<bs+rim_truncation_sino ||
-	   b>be-rim_truncation_sino)
-	  {
-	    if(numerator[r][v[i]][b]>small_value && denominator[r][v[i]][b]<=small_value ) count++;
-	    else if( numerator[r][v[i]][b]<0.0) count2++;
-	    numerator[r][v[i]][b]=0.0;
-	  }
-
-	else 
-	  {
-	  //MJ 28/10/99 corrected - moved above the sinogram division
-	  if (log_likelihood_ptr != NULL) {
-	    *log_likelihood_ptr -= numerator[r][v[i]][b]*log(denominator[r][v[i]][b]); //Check the validity of this
-	  };
-
-	  numerator[r][v[i]][b]/=denominator[r][v[i]][b];
-
-	
-	};
-      }
-
-	
-}
-
-#endif
-
 // AZ&KT 04/10/99: added rim_truncation_sino
 void divide_and_truncate(Viewgram<float>& numerator, 
 			 const Viewgram<float>& denominator,
@@ -315,26 +226,17 @@ void divide_and_truncate(Viewgram<float>& numerator,
   const int be=numerator.get_max_tangential_pos_num();
 
 
-  float small_value= (float) numerator.find_max()*SMALL_NUM;
-  small_value=(small_value>0.0)?small_value:0.0;
+  const float small_value= 
+    max(numerator.find_max()*SMALL_NUM, 0.F);
   
   for(int r=rs;r<=re;r++)
     for(int b=bs;b<=be;b++){      
  
-      // MJ 12/04/2000 removed SMALL_NUM and changed other bad truncation rules.
-      /* 
-       if(denominator[r][b]<=SMALL_NUM ||
-	 numerator[r][b]<0.0 ||
-	 b<bs+rim_truncation_sino ||
-	 b>be-rim_truncation_sino ) {
-	if(numerator[r][b]>SMALL_NUM && denominator[r][b]<=SMALL_NUM ) count++;
-	else if( numerator[r][b]<0.0) count2++;
-	numerator[r][b]=0.0;
-      }
-	 */
-
-
-
+      // KT&SM&MJ 21/05/2001 changed truncation strategy
+      // before singularities (non-zero divided by zero) were set to 0
+      // now they are set to max_quotient
+#if 0
+      // old version
       if(denominator[r][b]<=small_value ||
 	 numerator[r][b]<=0.0 ||
 	 b<bs+rim_truncation_sino ||
@@ -342,21 +244,60 @@ void divide_and_truncate(Viewgram<float>& numerator,
 	if(numerator[r][b]>small_value && denominator[r][b]<=small_value) count++;
 	else if( numerator[r][b]<0.0) count2++;
 	numerator[r][b]=0.0;
-      }
-      
+      }     
       else {
-
 	//MJ 28/10/99 corrected - moved above the sinogram division
 	if (log_likelihood_ptr != NULL) {
 	      *log_likelihood_ptr -= numerator[r][b]*log(denominator[r][b]);
 	};
-
 	numerator[r][b]/=denominator[r][b];
-
-
       };
-    }
 
+#else
+      if(b<bs+rim_truncation_sino ||
+	 b>be-rim_truncation_sino ) 
+	{
+	  numerator[r][b] = 0;
+	}
+      else
+	{
+	  float& num = numerator[r][b];
+	  if (num<small_value)
+	    { 
+	      // we think num was really 0 
+	      // (we compare with small_value due to rounding errors)
+	      // this case includes 0/0, but also num<0	     
+	      num = 0;
+	      if (num<0) count2++;
+	    }
+	  else
+	    {
+	      const float max_quotient = 10000.F;
+	      const float denom = denominator[r][b];
+	      // set quotient to min(numerator/denominator, max_quotient)
+	      // a bit tricky to avoid division by 0	  
+	      // we do this by effectively using
+	      // new_denom = max(denominator[r][b], max_quotient/num)
+	      // Note that this includes the case if a negative denominator
+	      // (in case somebody forward projects an image with negatives)
+	      if (num > max_quotient*denom)
+		{
+		  // cancel singularity
+		  count++;
+		  if (log_likelihood_ptr != NULL) 
+		    *log_likelihood_ptr -= num*log(num/max_quotient);
+		  num = max_quotient;
+		}
+	      else
+		{
+		  if (log_likelihood_ptr != NULL) 
+		    *log_likelihood_ptr -= num*log(denom);
+		  num = num/denom;
+		}
+	    }
+	}
+#endif
+    }
 
 }
 
@@ -481,6 +422,7 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 }
 
 //  MJ 03/01/2000 for loglikelihood computation
+// KT 21/05/2001 make sure it returns same result as divide_and_truncate above
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
 			 const int rim_truncation_sino,
@@ -492,25 +434,23 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   const int bs=projection_data.get_min_tangential_pos_num();
   const int be=projection_data.get_max_tangential_pos_num();
 
-   // MJ 12/04/2000 removed SMALL_NUM and changed other bad exception rules.
-      /*  
-	  for(int r=rs;r<=re;r++)
-	  for(int b=bs;b<=be;b++)  
-	  if(!(estimated_projections[r][b]<=SMALL_NUM ||
-	  projection_data[r][b]<0.0 ||
-	  b<bs+rim_truncation_sino ||
-	  b>be-rim_truncation_sino ))
-
-	 */
-
   
+  const float small_value= 
+    max(projection_data.find_max()*SMALL_NUM, 0.F);
+  const float max_quotient = 10000.F;
+
   for(int r=rs;r<=re;r++)
     for(int b=bs;b<=be;b++)  
-      if(!(estimated_projections[r][b]<=0.0 ||
-	 projection_data[r][b]<=0.0 ||
-	 b<bs+rim_truncation_sino ||
-	 b>be-rim_truncation_sino ))
-	      *accum -= projection_data[r][b]*log(estimated_projections[r][b]);
+      if(!(
+	   projection_data[r][b]<=small_value ||
+	   b<bs+rim_truncation_sino ||
+	   b>be-rim_truncation_sino ))
+	{
+	  const float new_estimate =
+	    max(estimated_projections[r][b], 
+		max_quotient/projection_data[r][b]);
+	  *accum -= projection_data[r][b]*log(new_estimate);
+	}
 
 }
 
