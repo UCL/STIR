@@ -13,7 +13,10 @@ clean:
 
 SOURCES = \
   OutputFileFormat.cxx \
-  InterfileOutputFileFormat.cxx
+  InterfileOutputFileFormat.cxx \
+  interfile.cxx InterfileHeader.cxx \
+  ECAT6OutputFileFormat.cxx \
+  stir_ecat6.cxx ecat6_utils.cxx
  
 
 
