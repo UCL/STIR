@@ -249,17 +249,13 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
     return Succeeded::no;
   }
 
+  // KT 03/07/2001 modified handling of scale_factor etc.
   if (on_disk_data_type.id != NumericType::FLOAT)
   {
-    warning("ProjDataFromStream::set_viewgram: can only handle float output\n"); 
-    return Succeeded::no;
+    warning("ProjDataFromStream::set_viewgram: non-float output uses original "
+	    "scale factor %g which might not be appropriate for the current data\n",
+	    scale_factor); 
   }
-  if (scale_factor != 1.F)
-  {
-    warning("ProjDataFromStream::set_viewgram: can only handle scale factor==1\n"); 
-    return Succeeded::no;
-  }
- 
 
    if (get_num_tangential_poss() != v.get_proj_data_info_ptr()->get_num_tangential_poss())
   {
@@ -297,7 +293,7 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
     warning("ProjDataFromStream::set_viewgram: error after seekg\n");
     return Succeeded::no;
   }  
-  float scale = float(1);
+  float scale = scale_factor;
   
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   {
@@ -305,7 +301,14 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
     {
       
       v[ax_pos_num].write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      assert(scale == 1);
+      if (scale != scale_factor)
+	{
+	  warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+		  " corrupted due to problems with the scale factor \n",
+		  view_num, segment_num);
+	  return Succeeded::no;
+    }
+      
       sino_stream->seekp(intra_views_offset, ios::cur);
     }
     return Succeeded::yes;
@@ -313,7 +316,13 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
   else if (get_storage_order() == Segment_View_AxialPos_TangPos)
   {
     v.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    assert(scale == 1);
+    if (scale != scale_factor)
+      {
+	warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+		" corrupted due to problems with the scale factor \n",
+		view_num, segment_num);
+	return Succeeded::no;
+      }
     return Succeeded::yes;
   }
   else
@@ -470,16 +479,12 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
     warning("ProjDataFromStream::set_sinogram: error in stream state before writing\n");
     return Succeeded::no;
   }
-  
+  // KT 03/07/2001 modified handling of scale_factor etc.
   if (on_disk_data_type.id != NumericType::FLOAT)
   {
-    warning("ProjDataFromStream::set_sinogram: can only handle float output\n"); 
-    return Succeeded::no;
-  }
-  if (scale_factor != 1.F)
-  {
-    warning("ProjDataFromStream::set_sinogram: can only handle scale factor==1\n"); 
-    return Succeeded::no;
+    warning("ProjDataFromStream::set_viewgram: non-float output uses original "
+	    "scale factor %g which might not be appropriate for the current data\n",
+	    scale_factor); 
   }
   
   if (*get_proj_data_info_ptr() != *(s.get_proj_data_info_ptr()))
@@ -504,14 +509,21 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
     warning("ProjDataFromStream::set_sinogram: error after seekg\n");
     return Succeeded::no;
   }  
-  float scale = float(1);
+  float scale = scale_factor;
   
   
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   
     {
       s.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      assert(scale == 1);
+      if (scale != scale_factor)
+	{
+	  warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
+		  " corrupted due to problems with the scale factor \n",
+		  ax_pos_num, segment_num);
+	  return Succeeded::no;
+    }
+
       return Succeeded::yes;
     }
     
@@ -520,7 +532,14 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
       for (int view = get_min_view_num();view <= get_max_view_num(); view++)
       {
 	s[view].write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-	assert(scale == 1);
+	if (scale != scale_factor)
+	  {
+	    warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
+		    " corrupted due to problems with the scale factor \n",
+		    ax_pos_num, segment_num);
+	    return Succeeded::no;
+	  }
+  
 	sino_stream->seekp(intra_ax_pos_offset, ios::cur);
       }
       return Succeeded::yes;
@@ -573,8 +592,7 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
   {
     error("ProjDataFromStream::get_segment_by_sinogram: error in stream state before reading\n");
   }
-  
-  
+    
   streamoff segment_offset = get_offset_segment(segment_num);
   sino_stream->seekg(segment_offset, ios::beg);
   if (! *sino_stream)
@@ -682,9 +700,23 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
   
   if (get_storage_order() == Segment_AxialPos_View_TangPos)    
   {
-    float scale = float(1);
+    // KT 03/07/2001 handle scale_factor appropriately
+    if (on_disk_data_type.id != NumericType::FLOAT)
+      {
+	warning("ProjDataFromStream::set_segment: non-float output uses original "
+		"scale factor %g which might not be appropriate for the current data\n",
+		scale_factor); 
+      }
+    float scale = scale_factor;
     segmentbysinogram_v.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    assert(scale == 1);
+    if (scale != scale_factor)
+      {
+	warning("ProjDataFromStream::set_segment: segment (%d)"
+		" corrupted due to problems with the scale factor \n",
+	        segment_num);
+	return Succeeded::no;
+      }
+
     return Succeeded::yes;
   }
   else 
@@ -736,9 +768,23 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
   
   if (get_storage_order() == Segment_View_AxialPos_TangPos)    
   {
-    float scale = float(1);
+    // KT 03/07/2001 handle scale_factor appropriately
+    if (on_disk_data_type.id != NumericType::FLOAT)
+      {
+	warning("ProjDataFromStream::set_segment: non-float output uses original "
+		"scale factor %g which might not be appropriate for the current data\n",
+		scale_factor); 
+      }
+    float scale = scale_factor;
     segmentbyview_v.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    assert(scale == 1);
+    if (scale != scale_factor)
+      {
+	warning("ProjDataFromStream::set_segment: segment (%d)"
+		" corrupted due to problems with the scale factor \n",
+	        segment_num);
+	return Succeeded::no;
+      }
+
     return Succeeded::yes;
   }
   else 
@@ -769,8 +815,9 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       "Enter file name of 3D sinogram data : ", ".scn");
 
 
-    int  open_mode; 
-      switch(ask_num("Read (1), Create and write(2), Read/Write (3) : ", 1,3,1))
+    // KT 03/07/2001 initialise to avoid compiler warnings
+    int  open_mode=ios::in; 
+    switch(ask_num("Read (1), Create and write(2), Read/Write (3) : ", 1,3,1))
     {
       case 1: open_mode=ios::in; break;
       case 2: open_mode=ios::out; break;
@@ -820,11 +867,10 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       
     } // else 'on_disk' 
 
-
-
-    
-    
-    ProjDataFromStream::StorageOrder storage_order;
+   
+    // KT 03/07/2001 initialise to avoid compiler warnings    
+    ProjDataFromStream::StorageOrder storage_order =
+      Segment_AxialPos_View_TangPos;
     {
     int data_org = ask_num("Type of data organisation:\n\
       0: Segment_AxialPos_View_TangPos, 1: Segment_View_AxialPos_TangPos", 
@@ -905,10 +951,10 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     ProjDataFromStream* proj_data_ptr =
       new 
       ProjDataFromStream (data_info_ptr,
-      p_in_stream, offset_in_file, 
-      segment_sequence_in_stream,
-      storage_order,data_type,byte_order,  
-      scale_factor);
+			  p_in_stream, offset_in_file, 
+			  segment_sequence_in_stream,
+			  storage_order,data_type,byte_order,  
+			  scale_factor);
 
     cerr << "writing Interfile header for "<< filename << endl;
     write_basic_interfile_PDFS_header(filename, *proj_data_ptr);
