@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stir/AVW.h"
-#include "stir/AVW_ObjectMap.h"
-#include "stir/AVW_ImageFile.h"
+#include "AVW.h"
+#include "AVW_ObjectMap.h"
+#include "AVW_ImageFile.h"
 
-#define ARRAY_FULL
 #include "stir/IndexRange3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 
 #ifndef STIR_NO_NAMESPACES
