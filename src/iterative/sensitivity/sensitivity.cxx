@@ -154,16 +154,16 @@ main(int argc, char *argv[])
   result+=(float)ZERO_TOL;
 
   // Write it to file
-  ofstream sensitivity_data("sensitivity.dat", ios::bin |ios::out);
-  if (!sensitivity_data)
-    { cerr << "problem creating output file" << endl; Abort(); }
-
+  ofstream sensitivity_data;
+  open_write_binary(sensitivity_data, "sensitivity.dat");
   result.write_data(sensitivity_data);
 
   cerr << "min and max in image " << result.find_min() 
        << " " << result.find_max() << endl;
   display(Tensor3D<float> (result), result.find_max());
 #endif
+
+return 0;
 
 }
 
@@ -241,8 +241,9 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 
   for (int segment_num = 1; segment_num < scanner.num_rings ; segment_num++){
 
+#ifdef TEST
     image_result.fill(0);
- 
+#endif 
     //     num_processed_segments += 2; // + 2 as we do a positive and negative segment here
 
 
