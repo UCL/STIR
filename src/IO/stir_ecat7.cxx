@@ -35,14 +35,7 @@
 #include "stir/Scanner.h" 
 #include "stir/Bin.h" 
 #include "stir/Succeeded.h" 
-
-#ifdef STIR_NO_NAMESPACES
-// terrible trick to avoid conflict between our Sinogram and matrix::Sinogram
-// when we do have namespaces, the conflict can be resolved by using ::Sinogram
-#define Sinogram CTISinogram
-#endif
-#include "matrix.h"
-#include "local/stir/CTI/stir_ecat7.h"
+#include "stir/IO/stir_ecat7.h"
 
 #include <iostream>
 #include <fstream>
