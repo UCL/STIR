@@ -165,6 +165,45 @@ static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_da
                               double& ds, double& dz, double& dzhor, double& dzvert,
                               const float num_planes_per_axial_pos,
 			      const float axial_pos_to_z_offset);
+
+
+inline void 
+check_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+	     const float delta, const float cphi, const float sphi, 
+	     const int s, const int ring0,
+	     const int X1, const int Y1, const int Z1,
+	     const double ds, const double dz,
+	     const float num_planes_per_axial_pos,
+	     const float axial_pos_to_z_offset)
+{
+#ifdef BPINT_CHECK
+  const double d_xy = proj_data_info_ptr->get_tangential_sampling();
+    
+  const double R2 =square(proj_data_info_ptr->get_ring_radius());
+  /* Radius of scanner squared in Pixel^2 */
+  const double R2p = R2 / d_xy / d_xy;
+  // TODO remove assumption
+  const int num_planes_per_physical_ring = 2;
+
+  const double t = s + 0.5;		/* In a beam, not on a ray */
+  //t=X1*cphi+Y1*sphi;
+  //ds=t-s;
+
+  const double new_ds=X1*cphi+Y1*sphi-s;// Eq 6.13 in Egger thsis
+  const double root=sqrt(R2p-t*t);//CL 26/10/98 Put it back the original formula as before it was root=sqrt(R2p-s*s)
+  // Eq 6.15 from Egger Thesis
+  const double z=( Z1-num_planes_per_physical_ring*delta/2*( (-X1*sphi+Y1*cphi)/root + 1 ) -
+                     axial_pos_to_z_offset)/num_planes_per_axial_pos;
+  const double new_dz=z-ring0; 
+
+  if (fabs(ds-new_ds)>.005 || fabs(dz - new_dz)>.005)
+    {
+      warning("Difference ds (%g,%g) dz (%g,%g) at X=%d,Y=%d,Z=%d\n",
+	      ds,new_ds,dz,new_dz,X1,Y1,Z1);
+    }
+#endif //BPINT_CHECK
+}
+
 /****************************************************************************
 
    backproj3D_Cho_view_viewplus90 backprojects 4 beams related by
@@ -960,7 +999,12 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	P2na1+=DP2na1;
 #endif // PIECEWISE_INTERPOLATION
       }
-
+      check_values(proj_data_info_ptr, 
+		   delta, cphi, sphi, s, ring0,
+		   X, Y, Z,
+		   ds, dz, 
+		   num_planes_per_axial_pos,
+		   axial_pos_to_z_offset);
     }
   while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=minplane));
 
@@ -2175,6 +2219,12 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 #endif // PIECEWISE_INTERPOLATION       
                 
       }
+      check_values(proj_data_info_ptr, 
+		   delta, cphi, sphi, s, ring0,
+		   X, Y, Z,
+		   ds, dz, 
+		   num_planes_per_axial_pos,
+		   axial_pos_to_z_offset);
 
     }
   while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=minplane));
