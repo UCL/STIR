@@ -137,8 +137,10 @@ private:
   // members that will be used to set scan_info
   int num_rings;
   int num_detectors_per_ring;
-  // these 3 distances are in cm
+  // these 4 distances are in cm
   double transaxial_FOV_diameter_in_cm;
+  // KT 31/03/99 new
+  double ring_diameter_in_cm;
   double distance_between_rings_in_cm;
   double bin_size_in_cm;
   // this is in degrees
