@@ -25,7 +25,9 @@
 
 #include "stir/recon_buildblock/ReconstructionParameters.h" 
 #include "stir/utilities.h"
+#include "stir/is_null_ptr.h"
 #include <iostream>
+#include "stir/IO/DefaultOutputFileFormat.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -57,6 +59,7 @@ ReconstructionParameters::set_defaults()
   // KT 20/06/2001 disabled
   //num_views_to_add=1;  
   proj_data_ptr=NULL; //MJ added
+  output_file_format_ptr = new DefaultOutputFileFormat;
 }
 
 
@@ -76,6 +79,8 @@ ReconstructionParameters::initialise_keymap()
   //parser.add_key("Y offset (in mm)", &Yoffset);
   // KT 20/06/2001 new
   // parser.add_key("Z offset (in mm)", &Zoffset);
+
+  parser.add_parsing_key("output file format", &output_file_format_ptr);
  
   // KT 20/06/2001 disabled
   //parser.add_key("mash x views", &num_views_to_add);
@@ -120,7 +125,8 @@ void ReconstructionParameters::ask_parameters()
 
   input_filename=input_filename_char;
 
-  proj_data_ptr = ProjData::read_from_file(input_filename_char);
+  // KT 22/05/2003 disabled, as this is done in post_processing
+  // proj_data_ptr = ProjData::read_from_file(input_filename_char);
 
   // KT 28/01/2002 moved here from IterativeReconstruction
   max_segment_num_to_process=
@@ -153,6 +159,10 @@ void ReconstructionParameters::ask_parameters()
     Xoffset = ask_num("   X offset  ",-old_size/2, old_size/2, 0);
     Yoffset = ask_num("   Y offset  ",-old_size/2, old_size/2, 0);
 #endif
+    
+    cout << "\n    Enter output file format type :\n";
+    output_file_format_ptr = OutputFileFormat::ask_type_and_parameters();
+
 #if 0
     // The angular compression consists of an average pairs of sinograms rows
     // in order to reduce the number of views by a factor of 2
@@ -185,6 +195,8 @@ bool ReconstructionParameters::post_processing()
   if (output_image_size_z!=-1 && output_image_size_z<1) // KT 10122001 new
   { warning("output image size z must be positive (or -1 as default)\n"); return true; }
 
+  if (is_null_ptr(output_file_format_ptr))
+    { warning("output file format has to be set to valid value\n"); return true; }
 
   // KT 20/06/2001 disabled as not functional yet
 #if 0
