@@ -202,8 +202,10 @@ VectorWithOffset<T>::grow(const int min_index, const int max_index)
   assert(length == 0 || (min_index <= start && new_length >= length));
   T *newnum = new T[new_length];
   newnum -= min_index;
-  // TODO hopefully replace by using when not using pet_common.h
-  std::copy(begin(), end(), newnum+start);
+#ifndef TOMO_NO_NAMESPACES  
+  std::
+#endif
+  copy(begin(), end(), newnum+start);
   // Check on length probably not really necessary
   // as begin() is == 0 in that case, and delete[] 0 doesn't do anything
   // (I think). Anyway, we're on the safe side now...
@@ -242,8 +244,10 @@ VectorWithOffset<T>::operator= (const VectorWithOffset &il)
       start = 0;
     }
     set_offset(il.get_min_index());
-
-    std::copy(il.begin(), il.end(), begin());
+#ifndef TOMO_NO_NAMESPACES  
+  std::
+#endif
+    copy(il.begin(), il.end(), begin());
   }
   
     
