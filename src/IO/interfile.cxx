@@ -149,8 +149,39 @@ compute_file_offsets(int number_of_time_frames,
   }
   return temp;
 }
+
+/* A function that finds the appropriate filename for the binary data
+   to write in the header. It tries to cut the directory part of
+   data_file_name if it's the same as the directory part of the header.
+*/
+static
+string 
+interfile_get_data_file_name_in_header(const string& header_file_name, 
+				    const string& data_file_name)
+{
+  const string dir_name_of_binary_data =
+    get_directory_name(data_file_name);
+  if (dir_name_of_binary_data.size() == 0 ||
+      is_absolute_pathname(data_file_name))
+    {
+      // data_dirname is empty or it's an absolute path
+      return data_file_name;
+    }
+  const string dir_name_of_header =
+    get_directory_name(header_file_name);
+  if (dir_name_of_header == dir_name_of_binary_data)
+    {
+      // dirnames are the same, so strip from data_file_name
+      return string(data_file_name,
+		    find_pos_of_filename(data_file_name));
+    }
+  else
+    {
+      // just copy, what else to do?
+      return data_file_name;
+    }
+}
  
-// KT 05/09/2001 added directory capability
 Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
@@ -160,46 +191,23 @@ write_basic_interfile_image_header(const string& header_file_name,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
 				   const VectorWithOffset<unsigned long>& file_offsets)
-{ 
- 
-  char *header_name = new char[header_file_name.size() +5];
-  strcpy(header_name, header_file_name.c_str());
+{
+  string header_name = header_file_name;
   add_extension(header_name, ".hv");
-  ofstream output_header(header_name, ios::out);
+  ofstream output_header(header_name.c_str(), ios::out);
   if (!output_header.good())
     {
-      cerr << "Error opening Interfile header '" 
-	   << header_name << " for writing" << endl;
+      warning("Error opening Interfile header '%s' for writing\n",
+	      header_name.c_str());
       return Succeeded::no;
     }  
-  delete header_name;
-
+ 
   // handle directory names
-  string binary_data_file_name;
-  {
-    char dir_name_of_header[max_filename_length];
-    char dir_name_of_binary_data[max_filename_length];
-    get_directory_name(dir_name_of_header, header_file_name.c_str());
-    get_directory_name(dir_name_of_binary_data, image_file_name.c_str());
-    if (strlen(dir_name_of_binary_data) == 0 ||
-	is_absolute_pathname(image_file_name.c_str()))
-      {
-	// image_dirname is empty or it's an absolute path
-	binary_data_file_name = image_file_name;
-      }
-    else if (strcmp(dir_name_of_header, dir_name_of_binary_data)==0)
-      {
-	// dirnames are the same, so strip from image_file_name
-	binary_data_file_name = find_filename(image_file_name.c_str());
-      }
-    else
-      {
-	// just copy, what else to do?
-	binary_data_file_name = image_file_name;
-      }
-  }
+  const string data_file_name_in_header =
+    interfile_get_data_file_name_in_header(header_file_name, image_file_name);
+ 
   output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " << binary_data_file_name << endl;
+  output_header << "name of data file := " << data_file_name_in_header << endl;
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
@@ -273,18 +281,16 @@ write_basic_interfile_image_header(const string& header_file_name,
   
   // temporary copy to make an old-style header to satisfy Analyze
   {
-    char *header_name = new char[header_file_name.size() +5];
-    strcpy(header_name, header_file_name.c_str());
+    string header_name = header_file_name;
     replace_extension(header_name, ".ahv");
 
-    ofstream output_header(header_name, ios::out);
+    ofstream output_header(header_name.c_str(), ios::out);
     if (!output_header.good())
       {
 	cerr << "Error opening old-style Interfile header '" 
 	     << header_name << " for writing" << endl;
         return Succeeded::no;
       }  
-    delete header_name;
     
     output_header << "!INTERFILE  :=\n";
     output_header << "!name of data file := " << image_file_name << endl;
@@ -532,47 +538,24 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const ProjDataFromStream& pdfs)
 {
 
-  char *header_name = new char[header_file_name.size() +5];
-  strcpy(header_name, header_file_name.c_str());
+  string header_name = header_file_name;
   add_extension(header_name, ".hs");
-  ofstream output_header(header_name, ios::out);
+  ofstream output_header(header_name.c_str(), ios::out);
   if (!output_header.good())
     {
       cerr << "Error opening Interfile header '" 
 	   << header_name << " for writing" << endl;
       return Succeeded::no;
     }  
-  delete header_name;
-
 
   // handle directory names
-  string binary_data_file_name;
-  {
-    char dir_name_of_header[max_filename_length];
-    char dir_name_of_binary_data[max_filename_length];
-    get_directory_name(dir_name_of_header, header_file_name.c_str());
-    get_directory_name(dir_name_of_binary_data, data_file_name.c_str());
-    if (strlen(dir_name_of_binary_data) == 0 ||
-	is_absolute_pathname(data_file_name.c_str()))
-      {
-	// data_dirname is empty or it's an absolute path
-	binary_data_file_name = data_file_name;
-      }
-    else if (strcmp(dir_name_of_header, dir_name_of_binary_data)==0)
-      {
-	// dirnames are the same, so strip from data_file_name
-	binary_data_file_name = find_filename(data_file_name.c_str());
-      }
-    else
-      {
-	// just copy, what else to do?
-	binary_data_file_name = data_file_name;
-      }
-  }
+  const string data_file_name_in_header =
+    interfile_get_data_file_name_in_header(header_file_name, data_file_name);
+
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
   output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " << binary_data_file_name << endl;
+  output_header << "name of data file := " << data_file_name_in_header << endl;
 
   output_header << "originating system := ";
   output_header <<pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_name() << endl;
