@@ -80,7 +80,7 @@ template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_max_tangential_pos_num() const
 {
-return get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_max_index();
+return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_max_index();
 }
  
 template <typename elemT>
