@@ -80,7 +80,8 @@ int main(int argc, char **argv)
   shared_ptr< DiscretisedDensity<3,float> > out_density_sptr =
     in_density_sptr->get_empty_discretised_density();
 
-  const Quaternion<float> quat(atof(argv[3]),atof(argv[4]),atof(argv[5]),atof(argv[6]));
+  Quaternion<float> quat(atof(argv[3]),atof(argv[4]),atof(argv[5]),atof(argv[6]));
+  quat.normalise();
   const CartesianCoordinate3D<float> translation(atof(argv[9]),atof(argv[8]),atof(argv[7]));
 
   const RigidObject3DTransformation rigid_object_transformation(quat, translation);

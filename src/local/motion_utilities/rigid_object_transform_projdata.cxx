@@ -40,7 +40,8 @@ int main(int argc, char **argv)
   const std::string  output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);  
   //const float angle_around_x =  atof(argv[3]) *_PI/180;
-  const Quaternion<float> quat(atof(argv[3]),atof(argv[4]),atof(argv[5]),atof(argv[6]));
+  Quaternion<float> quat(atof(argv[3]),atof(argv[4]),atof(argv[5]),atof(argv[6]));
+  quat.normalise();
   const CartesianCoordinate3D<float> translation(atof(argv[9]),atof(argv[8]),atof(argv[7]));
   const int max_in_segment_num_to_process = argc <=10 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[10]);
   const int max_out_segment_num_to_process = argc <=11 ? max_in_segment_num_to_process : atoi(argv[11]);
