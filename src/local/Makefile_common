@@ -29,8 +29,13 @@ ifeq ($(SYSTEM),CC)
 # and have to set the template depth
 EXTRA_OPT+= -ftemplate-depth-25
 else
+ifeq ($(SYSTEM),SUN)
+LLN_INCLUDE_DIR=/home/kris/lln/ecat
+INSTALL_DIR=/home/kris/bin/SOL2
+else
 # default
 EXTRA_OPT+=-g -Wall
+endif
 endif
 endif
 endif
