@@ -11,7 +11,6 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 
 */
@@ -71,7 +70,7 @@ _destruct_and_deallocate()
   // Check on capacity probably not really necessary
   // as begin_allocated_memory is == 0 in that case, and delete[] 0 doesn't do anything
   // (I think). Anyway, we're on the safe side now...
-  if (capacity() != 0)
+  if (this->capacity() != 0)
     delete[] begin_allocated_memory; 
 }
 
@@ -79,11 +78,11 @@ template <class T>
 void 
 VectorWithOffset<T>::recycle() 
 {
-  check_state();
+  this->check_state();
   if (length > 0)
   {
     _destruct_and_deallocate();
-    init();
+    this->init();
   }
 }
 
@@ -104,9 +103,9 @@ template <class T>
 T& 
 VectorWithOffset<T>::operator[] (int i) 
 {
-  check_state();
-  assert(i>=get_min_index());
-  assert(i<=get_max_index());
+  this->check_state();
+  assert(i>=this->get_min_index());
+  assert(i<=this->get_max_index());
   
   return num[i];
 }
@@ -116,9 +115,9 @@ template <class T>
 const T& 
 VectorWithOffset<T>::operator[] (int i) const 
 { 
-  check_state();
-  assert(i>=get_min_index());
-  assert(i<=get_max_index());
+  this->check_state();
+  assert(i>=this->get_min_index());
+  assert(i<=this->get_max_index());
   
   return num[i];
 }
@@ -127,32 +126,32 @@ template <class T>
 typename VectorWithOffset<T>::iterator 
 VectorWithOffset<T>::begin() 
 { 
-  check_state();
-  return num+get_min_index(); 
+  this->check_state();
+  return num+this->get_min_index(); 
 }
 
 template <class T>
 typename VectorWithOffset<T>::const_iterator 
 VectorWithOffset<T>::begin() const 
 {
-  check_state();
-  return num+get_min_index(); 
+  this->check_state();
+  return num+this->get_min_index(); 
 }
 
 template <class T>
 typename VectorWithOffset<T>::iterator 
 VectorWithOffset<T>::end() 
 {
-  check_state();
-  return num+get_max_index()+1; 
+  this->check_state();
+  return num+this->get_max_index()+1; 
 }
 
 template <class T>
 typename VectorWithOffset<T>::const_iterator 
 VectorWithOffset<T>::end() const 
 { 
-  check_state();
-  return num+get_max_index()+1; 
+  this->check_state();
+  return num+this->get_max_index()+1; 
 }
 
 template <class T>
@@ -160,7 +159,7 @@ template <class T>
 VectorWithOffset<T>::VectorWithOffset()
 { 
   pointer_access = false;  
-  init();
+  this->init();
 }
 
 template <class T>
@@ -176,8 +175,8 @@ VectorWithOffset<T>::VectorWithOffset(const int hsz)
     end_allocated_memory = num + length;
   }
   else 
-    init();
-  check_state();
+    this->init();
+  this->check_state();
 }			
 
 template <class T>
@@ -195,8 +194,8 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
     num -= min_index;
   } 
   else 
-    init(); 
-  check_state();
+    this->init(); 
+  this->check_state();
 }
 
 template <class T>
@@ -211,7 +210,7 @@ template <class T>
 void 
 VectorWithOffset<T>::set_offset(const int min_index) 
 {
-  check_state();
+  this->check_state();
   //  only do something when non-zero length
   if (length == 0) return;  
   num += start - min_index;
@@ -223,7 +222,7 @@ void
 VectorWithOffset<T>::
 set_min_index(const int min_index) 
 {
-  set_offset(min_index);
+  this->set_offset(min_index);
 }
 
 template <class T>
@@ -261,35 +260,35 @@ void
 VectorWithOffset<T>::
 reserve(const int new_capacity_min_index, const int new_capacity_max_index)
 { 
-  check_state();
+  this->check_state();
   const int actual_capacity_min_index = 
     length==0 
     ? new_capacity_min_index
-    : std::min(get_capacity_min_index(), new_capacity_min_index);
+    : std::min(this->get_capacity_min_index(), new_capacity_min_index);
   const int actual_capacity_max_index = 
     length==0 
     ? new_capacity_max_index
-    : std::max(get_capacity_max_index(), new_capacity_max_index);
+    : std::max(this->get_capacity_max_index(), new_capacity_max_index);
   if (actual_capacity_min_index > actual_capacity_max_index)
     return;
     
   const unsigned int new_capacity = 
     static_cast<unsigned>(actual_capacity_max_index - actual_capacity_min_index) + 1;
-  if (new_capacity <= capacity())
+  if (new_capacity <= this->capacity())
     return;
   // TODO use allocator here instead of new
   T *newmem = new T[new_capacity];
   const unsigned extra_at_the_left =
     length==0 
     ? 0U
-    : std::max(0, get_min_index() - actual_capacity_min_index);
-  std::copy(begin(), end(), 
+    : std::max(0, this->get_min_index() - actual_capacity_min_index);
+  std::copy(this->begin(), this->end(), 
 	    newmem + extra_at_the_left);
-  _destruct_and_deallocate();
+  this->_destruct_and_deallocate();
   begin_allocated_memory = newmem;
   end_allocated_memory = begin_allocated_memory + new_capacity;
   num = begin_allocated_memory + extra_at_the_left - (length>0?start:0); 
-  check_state();
+  this->check_state();
 }
 
 template <class T>
@@ -309,7 +308,7 @@ void
 VectorWithOffset<T>::
 resize(const int min_index, const int max_index) 
 { 
-  check_state();
+  this->check_state();
   if (min_index > max_index)
     {
       length = 0; start = 0; num = begin_allocated_memory;
@@ -318,11 +317,11 @@ resize(const int min_index, const int max_index)
   const unsigned old_length = length;
   if (old_length>0)
     {
-      if (min_index == get_min_index() && max_index == get_max_index())
+      if (min_index == this->get_min_index() && max_index == this->get_max_index())
 	return;
       // determine overlapping range to avoid copying too much data when calling reserve()
-      const int overlap_min_index = std::max(get_min_index(), min_index);
-      const int overlap_max_index = std::min(get_max_index(), max_index);
+      const int overlap_min_index = std::max(this->get_min_index(), min_index);
+      const int overlap_max_index = std::min(this->get_max_index(), max_index);
       // TODO when using non-initialised memory, call delete here on elements that go out of range
       length = 
 	overlap_max_index - overlap_min_index < 0 ?
@@ -339,7 +338,7 @@ resize(const int min_index, const int max_index)
 	}
     } // end if (length>0)
   const unsigned overlapping_length = length;
-  reserve(min_index, max_index);
+  this->reserve(min_index, max_index);
   // TODO when using allocator, call default constructor for new elements here
   // (and delete the ones that go out of range!)
   length = 
@@ -354,7 +353,7 @@ resize(const int min_index, const int max_index)
       // we have reallocated the whole array, so set num correctly
       num = begin_allocated_memory - min_index;
     }
-  check_state();
+  this->check_state();
 }
 
 template <class T>
@@ -366,7 +365,7 @@ VectorWithOffset<T>::resize(const unsigned new_size)
       length = 0; start = 0; num = begin_allocated_memory;
     }
   else
-    resize(0,static_cast<int>(new_size-1));
+    this->resize(0,static_cast<int>(new_size-1));
 }
 
 //the new members will be initialised with the default constructor for T
@@ -376,43 +375,43 @@ VectorWithOffset<T>::
 grow(const int min_index, const int max_index) 
 { 
   // allow grow arbitrary when it's zero length
-  assert(length == 0 || (min_index <= get_min_index() && max_index >= get_max_index()));
-  resize(min_index, max_index);
+  assert(length == 0 || (min_index <= this->get_min_index() && max_index >= this->get_max_index()));
+  this->resize(min_index, max_index);
 }
 
 template <class T>
 void 
 VectorWithOffset<T>::grow(const unsigned new_size) 
 {
-  grow(0,static_cast<int>(new_size-1));
+  this->grow(0,static_cast<int>(new_size-1));
 }
 
 template <class T>
 VectorWithOffset<T> & 
 VectorWithOffset<T>::operator= (const VectorWithOffset &il) 
 {
-  check_state();
+  this->check_state();
   if (this == &il) return *this;		// in case of x=x
   if (il.size() == 0)
   {
-    recycle();
+    this->recycle();
   }
   else
   {		
-    if (capacity() < il.size())
+    if (this->capacity() < il.size())
     {
       // first truncate current and then reserve space
       length = 0;
       start = 0; 
       num = begin_allocated_memory;
-      reserve(il.get_min_index(), il.get_max_index());
+      this->reserve(il.get_min_index(), il.get_max_index());
     }
     length = il.length;
-    set_offset(il.get_min_index());
-    std::copy(il.begin(), il.end(), begin());
+    this->set_offset(il.get_min_index());
+    std::copy(il.begin(), il.end(), this->begin());
   }
 
-  check_state();
+  this->check_state();
   return *this;
 }
 
@@ -421,21 +420,21 @@ template <class T>
 VectorWithOffset<T>::VectorWithOffset(const VectorWithOffset &il) 
   : pointer_access(false)
 {
-  init();
+  this->init();
   *this = il;		// Uses assignment operator (above)
 }
 
 template <class T>
 int VectorWithOffset<T>::get_length() const 
 { 
-  check_state(); 
+  this->check_state(); 
   return static_cast<int>(length); 
 }
 
 template <class T>
 size_t VectorWithOffset<T>::size() const 
 { 
-  check_state(); 
+  this->check_state(); 
   return size_t(length); 
 }
 
@@ -443,9 +442,9 @@ template <class T>
 bool 
 VectorWithOffset<T>::operator== (const VectorWithOffset &iv) const
 {
-  check_state();
+  this->check_state();
   if (length != iv.length || start != iv.start) return false;
-  return std::equal(begin(), end(), iv.begin());
+  return std::equal(this->begin(), this->end(), iv.begin());
 }
 
 template <class T>
@@ -457,12 +456,12 @@ template <class T>
 void 
 VectorWithOffset<T>::fill(const T &n) 
 {
-  check_state();
+  this->check_state();
   //TODO use std::fill() if we can use namespaces (to avoid name conflicts)
   //std::fill(begin(), end(), n);
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
     num[i] = n;
-  check_state();
+  this->check_state();
 }
 
 
@@ -565,22 +564,22 @@ template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator+= (const VectorWithOffset &v) 
 {
-  check_state();
+  this->check_state();
 #if 1
-  if (get_min_index() != v.get_min_index() &&
-      get_max_index() != v.get_max_index())
+  if (this->get_min_index() != v.get_min_index() &&
+      this->get_max_index() != v.get_max_index())
     error("VectorWithOffset::+= with non-matching range");
 #else
   // first check if *this is empty
-  if (get_length() == 0)
+  if (this->get_length() == 0)
   {
     return *this = v;
   }
-  grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
+  this->grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     num[i] += v.num[i];
-  check_state();
+  this->check_state();
   return *this; 
 }
 
@@ -589,10 +588,10 @@ template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator-= (const VectorWithOffset &v)
 {
-  check_state();
+  this->check_state();
 #if 1
-  if (get_min_index() != v.get_min_index() &&
-      get_max_index() != v.get_max_index())
+  if (this->get_min_index() != v.get_min_index() &&
+      this->get_max_index() != v.get_max_index())
     error("VectorWithOffset::-= with non-matching range");
 #else
   // first check if *this is empty
@@ -605,7 +604,7 @@ VectorWithOffset<T>::operator-= (const VectorWithOffset &v)
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     num[i] -= v.num[i];
-  check_state();
+  this->check_state();
   return *this; 
 }
 
@@ -614,10 +613,10 @@ template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator*= (const VectorWithOffset &v)
 {
-  check_state();
+  this->check_state();
 #if 1
-  if (get_min_index() != v.get_min_index() &&
-      get_max_index() != v.get_max_index())
+  if (this->get_min_index() != v.get_min_index() &&
+      this->get_max_index() != v.get_max_index())
     error("VectorWithOffset::*= with non-matching range");
 #else
   // first check if *this is empty
@@ -631,7 +630,7 @@ VectorWithOffset<T>::operator*= (const VectorWithOffset &v)
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     num[i] *= v.num[i];
-  check_state();
+  this->check_state();
   return *this; 
 }
 
@@ -640,10 +639,10 @@ template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator/= (const VectorWithOffset &v)
 {
-  check_state();
+  this->check_state();
 #if 1
-  if (get_min_index() != v.get_min_index() &&
-      get_max_index() != v.get_max_index())
+  if (this->get_min_index() != v.get_min_index() &&
+      this->get_max_index() != v.get_max_index())
     error("VectorWithOffset::/= with non-matching range");
 #else
   // first check if *this is empty
@@ -657,7 +656,7 @@ VectorWithOffset<T>::operator/= (const VectorWithOffset &v)
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     num[i] /= v.num[i];
-  check_state();
+  this->check_state();
   return *this; 
 }
 
@@ -669,7 +668,7 @@ template <class T>
 inline VectorWithOffset<T>
 VectorWithOffset<T>::operator+ (const VectorWithOffset &v) const 
 {
-  check_state();
+  this->check_state();
   VectorWithOffset retval(*this);
   return retval += v; 
 }
@@ -679,7 +678,7 @@ template <class T>
 inline VectorWithOffset<T> 
 VectorWithOffset<T>::operator- (const VectorWithOffset &v) const 
 {
-  check_state();
+  this->check_state();
   VectorWithOffset retval(*this);
   return retval -= v; 
 }
@@ -689,7 +688,7 @@ template <class T>
 inline VectorWithOffset<T> 
 VectorWithOffset<T>::operator* (const VectorWithOffset &v) const
 {
-  check_state();
+  this->check_state();
   VectorWithOffset retval(*this);
   return retval *= v; 
 }
@@ -699,7 +698,7 @@ template <class T>
 inline VectorWithOffset<T> 
 VectorWithOffset<T>::operator/ (const VectorWithOffset &v) const
 {
-  check_state();
+  this->check_state();
   VectorWithOffset retval(*this);
   return retval /= v;
 }
