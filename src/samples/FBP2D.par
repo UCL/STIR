@@ -1,0 +1,19 @@
+fbp2dparameters :=
+input file := input.hs
+output filename prefix := output
+; output image parameters
+zoom := 1
+xy output image size (in pixels) := 180
+
+; can be used to call SSRB first
+; default means: call SSRB only if no axial compression is already present
+num segments to combine with ssrb := -1
+
+; filter parameters, default to pure ramp
+alpha parameter for ramp filter := 1
+cut-off for ramp filter (in cycles) := 0.5
+
+; allow less padding. DO NOT USE
+; transaxial extension for fft := 2
+end := 
+
