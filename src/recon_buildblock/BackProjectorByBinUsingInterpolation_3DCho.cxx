@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
 
@@ -23,13 +23,10 @@
 
   \version $Revision$
 */
+// enable this variable if you need to handle very oblique LORs
 #define MOREZ
 //#define ALTERNATIVE
 /* 
-  
-  (They should not be used anywhere else.)
-  backproj3D_Cho_view_viewplus90
-  backproj3D_Cho_view_viewplus90_180minview_90minview
 
   These functions use a 3D version of Cho's algorithm for backprojecting 
   incrementally.
@@ -69,6 +66,7 @@
 #include "ProjDataInfo.h"
 #include "VoxelsOnCartesianGrid.h"
 #include "ProjDataInfoCylindricalArcCorr.h"
+#include "VoxelsOnCartesianGrid.h"
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 
 /*
@@ -112,6 +110,11 @@ speed-up
   
   KT&CL 22/12/99 
 span works now by introducing offsets
+ 
+  KT&SM 
+introduced MOREZ to handle very oblique segments. This handles the case where Z
+needs to be incremented more than once to find the next voxel in the beam
+
 
 TODO: 
 solve remaining issues of rounding errors (see backproj2D)
@@ -134,14 +137,14 @@ START_NAMESPACE_TOMO
    associated ds,dz etc.
    It is implemented at the end of the file.
 
-   fovrad: half the image size (in pixels)
+   image_rad: half the image size (in pixels)
    d_sl  : z-voxel size (in mm)
    */
 
 static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
-                              const int fovrad,
+                              const int image_rad,
 			      //const float d_sl,
 			      const double d_sl,
                               int&X1, int&Y1, int& Z1,
@@ -208,28 +211,26 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   int X,Y,Z,Q;
 
   const float ring_unit = 1./num_planes_per_virtual_ring;
-  // CL&KT 21/12/99 new
+  
   // in our current coordinate system, the following constant is always 2
+  // TODO remove assumption
   const int num_planes_per_physical_ring = 2;
   assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
-  // KT 22/05/98 do not substract 1 here as we need it in the loop later on
-  // KTTODO use minimum of this one and scan_info.get_num_bins() to cover case 
-  // that the image is too large for the number of bins we have
   /* FOV radius in voxel units */
-  const int fovrad = (int)((image.get_x_size()-1)/2);
+  const int image_rad = (int)((image.get_x_size()-1)/2);
   const int maxplane =  image.get_max_z(); 
    
 
   find_start_values(proj_data_info_ptr, 
 		    delta, cphi, sphi, s, ring0,
-		    fovrad, image.get_voxel_size().z(),
+		    image_rad, image.get_voxel_size().z(),
 		    X, Y, Z,
 		    ds, dz, dzhor, dzvert,
                     num_planes_per_virtual_ring,
 		    virtual_ring_offset);
 
-    /* KT 26/09/98 new comment
+    /* 
      The formulas below give the values to update a pixel.
      Things are then complicated by optimising this backprojection
      by 'incrementalising' the formulas.
@@ -572,11 +573,9 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       // Update voxel values for this X,Y,Z
       // For 1 given (X,Y)-position, there are always 2 voxels along the z-axis 
       // in this beam
-      // TODO when using CTI span!=1 data, there is only 1 voxel per beam
       const int Zplus=Z+1;
       const int Qmin=Q-1;
-      // KT 14/05/98 changed X!=-Y to s!=0 || ds!=0 to make it work for view != view45
-
+      
 #if PIECEWISE_INTERPOLATION
       //KT&MJ 07/08/98 new
 
@@ -937,7 +936,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       }
 
     }
-  while ((X*X + Y*Y <= fovrad*fovrad) && (Z<=maxplane || Q>=image.get_min_z()));
+  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=image.get_min_z()));
 
 }
 
@@ -1009,15 +1008,13 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   int X,Y,Z,Q;
 
   /* FOV radius in voxel units */
-  // KT 22/05/98 do not substract 1 here as we need it in the loop later on
-  // KTTODO use minimum of this one and proj_data_info_ptr.get_num_bins() to cover case that the image is too large 
-  const int fovrad = (int)((image.get_x_size()-1)/2);
+  const int image_rad = (int)((image.get_x_size()-1)/2);
   const int maxplane =  image.get_max_z(); 
    
 
   find_start_values(proj_data_info_ptr, 
 		    delta, cphi, sphi, s, ring0,
-		    fovrad, image.get_voxel_size().z(),
+		    image_rad, image.get_voxel_size().z(),
 		    X, Y, Z,
 		    ds, dz, dzhor, dzvert,                    
                     num_planes_per_virtual_ring,
@@ -1565,14 +1562,12 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       // Update voxel values for this X,Y,Z
       // For 1 given (X,Y)-position, there are always 2 voxels along the z-axis 
       // in this beam. 
-      // TODO when using CTI span!=1 data, there is only 1 voxel per beam
       const int Zplus=Z+1;
       const int Qmin=Q-1;
 
-      // KT 22/05/98 the checks to avoid the selfsymmetric case for s==0 are new
+      
 #if PIECEWISE_INTERPOLATION
-      //KT&MJ 07/08/98 new
-
+      
       const double twodsdz=2*ds*dz;
       const double twodsdz2=2*ds*(dz+0.5);
       // KT 16/06/98 changed check ds!=0 to fabs(ds)>epsilon for better rounding control
@@ -2145,7 +2140,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       }
 
     }
-  while ((X*X + Y*Y <= fovrad*fovrad) && (Z<=maxplane || Q>=image.get_min_z()));
+  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=image.get_min_z()));
 
 }
   
@@ -2156,7 +2151,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
-                              const int fovrad, const double d_sl,
+                              const int image_rad, const double d_sl,
                               int&X1, int&Y1, int& Z1,
                               double& ds, double& dz, double& dzhor, double& dzvert,			      
                               const int num_planes_per_virtual_ring,
@@ -2180,17 +2175,17 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
   
   /* KT 16/06/98 
      This code should select a pixel inside the FOV.
-     I tried to set rpix=fovrad, and
+     I tried to set rpix=image_rad, and
       X1 = (int)(X1f<0 ? ceil(X1f) : floor(X1f));
       Y1 = (int)(Y1f<0 ? ceil(Y1f) : floor(Y1f));
      Up to this point it is fine. However, it would also require (messy?) 
      modifications of the 'push back into beam' code, so I gave up.
      
-     So, now we simply take rpix=fovrad-1. This means that sometimes a
+     So, now we simply take rpix=image_rad-1. This means that sometimes a
      pixel close to the border is not selected.
      Not that anyone cares...
   */
-  int rpix = (fovrad-1);		 /* Radius of target image in voxel units */
+  int rpix = (image_rad-1);		 /* Radius of target image in voxel units */
   const double r2 = rpix * rpix * d_xy * d_xy; /* Radius squared of target image in mm^2 */
    
  
@@ -2199,6 +2194,7 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
   // KT 16/06/98 added const
   const double t = s + 0.5;		/* In a beam, not on a ray */
   { 
+    assert(t <= rpix);
     const double root = sqrt(rpix * rpix - t * t);// Eq 6.12 in EGger Thesis
     const double X1f = t * cphi + sphi * root;	/* Only valid if d_xy = d_p from Eq 6.12 in EGger Thesis  */
     //const double X2f = t * cphi - sphi * root;
@@ -2308,15 +2304,16 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
     // As the difference between X1f, Y1f, Z1f and X1,Y1,Y2 is at most 1 in every coordinate,
     //   -1/2 - delta/root/2 <= z - zf <= delta/root/2, so
     // -delta/root/2 <= dz <= 0.5 + delta/root/2
-    // TODO change comment
-    // As delta < Rpix for any reasonable scanner, -1/num_planes_per_virtual_ring < dz < 1
+    // As delta < Rpix for most scanners, -1/num_planes_per_virtual_ring < dz < 1
+    // For some scanners though (e.g. HiDAC) this is not true, so we keep on checking if
+    // dz is in the appropriate range
+
 
     /* Push voxel back into beam */
     // KT 01/06/98 added 'else' here for the case when dz=1/num_planes_per_virtual_ring, the first step puts it to 0,
     // the 2nd step shouldn't do anything (dz<0), but because we compare with epsilon, 
     // it got back to .5
-
-    // KT&CL 22/12/99 changed ring_unit
+    
     //  MOREZ: if ->while
     if (dz>=1./num_planes_per_virtual_ring) 
     {
