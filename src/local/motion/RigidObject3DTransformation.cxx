@@ -85,7 +85,7 @@ RigidObject3DTransformation::inverse() const
   const Quaternion<float>
     qtrans(0,translation.x(),translation.y(),translation.z());
   const Quaternion<float> qinvtrans =
-    conjugate(invq) * qtrans * invq;
+    conjugate(quat) * qtrans * quat;
   const CartesianCoordinate3D<float>
     invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
   return RigidObject3DTransformation(invq, invtrans*(-1));
