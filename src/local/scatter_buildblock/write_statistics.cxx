@@ -97,7 +97,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 		<< "\n - Scatter Points are taken all above the threshold";
 		
 	if (random)
-		mystream << "\n and have picked randomly ";
+		mystream << " and have picked randomly\n ";
 	if (!random)
 		mystream << " and have picked in the center of the Voxel\n";
 	if(use_cosphi)
@@ -110,10 +110,12 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 		mystream << " - No use of caching\n";
 
 
-    mystream <<"\n\n\t ****************** END ****************\n\a";
+    mystream <<"\n\n\t ****************** END ****************\n\n\n\n\n\a";
 }
 
-void writing_time(const double simulation_time, const int scatt_points_vector_size)
+void writing_time(const double simulation_time, 
+				  const int scatt_points_vector_size, 
+				  const bool find_DS)
 {
 		{
 			fstream mystream("statistics.txt", ios::out | ios::app); //output file //
@@ -121,7 +123,12 @@ void writing_time(const double simulation_time, const int scatt_points_vector_si
 				warning("Cannot open statistics.txt file.\n") ;
 			else
 			{
-				mystream  << "\n\t ********* NEW STATISTIC DATA *********\n" 
+				mystream  << "\n  ****** NEW STATISTIC DATA FOR ";
+					if(find_DS)
+						mystream << "DOUBLE ";
+					if(!find_DS)
+						mystream << "SINGLE ";
+				mystream  << "SCATTER SIMULATION ******\nn"
 			   	    << "\tTotal simulation time elapsed: "				  
 					<<   simulation_time/60 
 					<< "\nTotal Scatter Points : " << scatt_points_vector_size << endl;
