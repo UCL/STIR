@@ -30,6 +30,7 @@
 */
   
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
 #include "stir/RunTests.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -111,8 +112,20 @@ void OutputFileFormatTests::run_tests()
   cerr << "Now writing to file and reading it back." << endl; 
   // construct density and write to file
   {
-    CartesianCoordinate3D<float> origin (0,0,0);  // TODO origin shift currently not supported by Interfile IO
-    CartesianCoordinate3D<float> grid_spacing (3,4,5); 
+    // TODO get next info from OutputFileFormat class instead of hard-wiring
+    // this in here
+    const bool supports_different_xy_pixel_sizes =
+      dynamic_cast<ECAT6OutputFileFormat const * const>(output_file_format_ptr.get()) == 0
+      ? true : false;
+    const bool supports_origin_xy_shift =
+      dynamic_cast<ECAT6OutputFileFormat const * const>(output_file_format_ptr.get()) == 0
+      ? false: true;
+
+    CartesianCoordinate3D<float> origin (0,0,0);
+    if (supports_origin_xy_shift)
+      {  origin.x()=2.4F; origin.y() = -3.5F; }
+
+    CartesianCoordinate3D<float> grid_spacing (3,4,supports_different_xy_pixel_sizes?5:4); 
   
     IndexRange<3> 
       range(CartesianCoordinate3D<int>(0,-15,-14),
