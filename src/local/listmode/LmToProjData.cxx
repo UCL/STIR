@@ -49,7 +49,7 @@ USE_SegmentByView
 
 
 #include "stir/utilities.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "local/stir/listmode/LmToProjData.h"
 #ifdef HIDACREBINNER
 #include "local/stir/QHidac/lm_qhidac.h"
