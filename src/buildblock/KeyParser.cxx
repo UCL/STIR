@@ -183,23 +183,22 @@ int KeyParser::StartParsing()
   keyword=line.get_keyword();	
   
   if(keyword!="INTERFILE")
-		{
-    printf("This is not an Interfile");
-    return 1;
-		}
+    {
+      return 1;
+    }
   
   // initializes keyword map
   Init();
   
   while(status)
-  {
-    if(ParseLine())	
-      ProcessKey();
-    // KT 01/08/98 added warning message
-    else
-      cerr << "Interfile Warning: unrecognized keyword: " << keyword << endl;
+    {
+      if(ParseLine())	
+	ProcessKey();
+      // KT 01/08/98 added warning message
+      else
+	cerr << "Interfile Warning: unrecognized keyword: " << keyword << endl;
     
-  }
+    }
   
   // KT 20/06/98 new
   type_of_numbers = NumericType(number_format_values[number_format_index], bytes_per_pixel);
@@ -217,47 +216,51 @@ int KeyParser::StartParsing()
     cerr << "Interfile Warning: only 'type of data := PET' supported." << endl;
   
   if (PET_data_type_values[PET_data_type_index] != "Image")
-  { cerr << "Interfile error: handling images only now." << endl;  return 1; }
+    { cerr << "Interfile error: handling images only now." << endl;  return 1; }
   
   if (num_dimensions != 3)
-  { cerr << "Interfile error: expecting 3D image " << endl; return 1; }
+    { cerr << "Interfile error: expecting 3D image " << endl; return 1; }
   
   // KT 09/10/98 changed order z,y,x->x,y,z
   // KT 09/10/98 allow no labels at all
   if (matrix_labels[0].length()>0 
       && (matrix_labels[0]!="x" || matrix_labels[1]!="y" ||
 	  matrix_labels[2]!="z"))
-  { cerr << "Interfile: only supporting x,y,z order of coordinates now."
-  << endl; return 1; }
+    {
+      cerr << "Interfile: only supporting x,y,z order of coordinates now."
+	   << endl; 
+      return 1; 
+    }
   
   /*
-  // prepares data for PETSinogramOfVolume Constructor
+    // prepares data for PETSinogramOfVolume Constructor
   
     
-      // KT 28/07/98 stop if not there
-      while(i<matrix_labels.size() && matrix_labels[i]!="segment")
-      i++;
-      if (i==matrix_labels.size())
-      {
-      cerr << "Matrix labels not in expected format.\n";
-      return 0;
-      }
+    // KT 28/07/98 stop if not there
+    while(i<matrix_labels.size() && matrix_labels[i]!="segment")
+    i++;
+    if (i==matrix_labels.size())
+    {
+    cerr << "Matrix labels not in expected format.\n";
+    return 0;
+    }
       
-	max_r_index=i;
-	i=0;
+    max_r_index=i;
+    i=0;
 	
-	  while(matrix_labels[i]!="z" && matrix_labels[i]!="angle")
-	  i++;
-	  if(matrix_labels[i]=="z")
-	  storage_order=BYSINO;
-	  else
-	  storage_order=BYVIEW;
+    while(matrix_labels[i]!="z" && matrix_labels[i]!="angle")
+    i++;
+    if(matrix_labels[i]=="z")
+    storage_order=BYSINO;
+    else
+    storage_order=BYVIEW;
   */
 
   printf("---------- End parsing Interfile ----------------\n");    
   return 0;
   
 }	
+
 void KeyParser::ChangeStatus(int value)
 {
   status=value;
@@ -356,116 +359,116 @@ void KeyParser::SetVariable()
   
   // current_index is set to 0 when there was no index
   if(!current_index)
-  {
-    switch(current->type)
     {
-      // KT 01/08/98 NUMBER->INT
-    case INT :
-      {
-	int* p_int=(int*)current->p_object_variable;	// performs the required casting
-	*p_int=par_int;
-	break;
-      }
-      // KT 01/08/98 new
-    case ULONG :
-      {
-	unsigned long* p_ulong=(unsigned long*)current->p_object_variable;	// performs the required casting
-	*p_ulong=par_ulong;
-	break;
-      }
-      // KT 01/08/98 new
-    case DOUBLE :
-      {
-	double* p_double=(double*)current->p_object_variable;	// performs the required casting
-	*p_double=par_double;
-	break;
-      }
-    case ASCII :
-      {
-	String* p_string=(String*)current->p_object_variable;	// performs the required casting
-	*p_string=par_ascii;
-	break;
-      }
-      // KT 20/06/98 new
-    case ASCIIlist :
-      {
-	*((int *)current->p_object_variable) =
-	  find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
-	break;
-      }
-    case LIST_OF_INTS :
-      {
-	IntVect* p_vectint=(IntVect*)current->p_object_variable;
-	*p_vectint=par_intlist;
-	break;
-      }
-    case LIST_OF_ASCII :
-      {
-	vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
-	*p_vectstring=par_asciilist;
-	break;
-      }
-    default :
-      break;
+      switch(current->type)
+	{
+	  // KT 01/08/98 NUMBER->INT
+	case INT :
+	  {
+	    int* p_int=(int*)current->p_object_variable;	// performs the required casting
+	    *p_int=par_int;
+	    break;
+	  }
+	  // KT 01/08/98 new
+	case ULONG :
+	  {
+	    unsigned long* p_ulong=(unsigned long*)current->p_object_variable;	// performs the required casting
+	    *p_ulong=par_ulong;
+	    break;
+	  }
+	  // KT 01/08/98 new
+	case DOUBLE :
+	  {
+	    double* p_double=(double*)current->p_object_variable;	// performs the required casting
+	    *p_double=par_double;
+	    break;
+	  }
+	case ASCII :
+	  {
+	    String* p_string=(String*)current->p_object_variable;	// performs the required casting
+	    *p_string=par_ascii;
+	    break;
+	  }
+	  // KT 20/06/98 new
+	case ASCIIlist :
+	  {
+	    *((int *)current->p_object_variable) =
+	      find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    break;
+	  }
+	case LIST_OF_INTS :
+	  {
+	    IntVect* p_vectint=(IntVect*)current->p_object_variable;
+	    *p_vectint=par_intlist;
+	    break;
+	  }
+	case LIST_OF_ASCII :
+	  {
+	    vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
+	    *p_vectstring=par_asciilist;
+	    break;
+	  }
+	default :
+	  break;
+	}
     }
-  }
   else														// Sets vector elements using current_index
-  {
-    // KT 09/10/98 replaced vector::at with vector::operator[] 
-    // KT 09/10/98 as SGI STL does not have at()
-    switch(current->type)
     {
-      // KT 01/08/98 NUMBER->INT
-    case INT :
-      {
-	IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->operator[](current_index-1)=par_int;
-	break;
-      }
-      // KT 01/08/98 new
-    case ULONG :
-      {
-	UlongVect* p_vnumber=(UlongVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->operator[](current_index-1)=par_ulong;
-	break;
-      }
-      // KT 01/08/98 new
-    case DOUBLE :
-      {
-	DoubleVect* p_vnumber=(DoubleVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->operator[](current_index-1)=par_double;
-	break;
-      }
-    case ASCII :
-      {
-	vector<String>* p_vstring=(vector<String>*)current->p_object_variable;	// performs the required casting
-	p_vstring->operator[](current_index-1)=par_ascii;
-	break;
-      }
-      // KT 20/06/98 new
-    case ASCIIlist :
-      {
-	IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->operator[](current_index-1) =
-	  find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
-	break;
-      }
-    case LIST_OF_INTS :
-      {
-	vector<IntVect>* p_matrixint=(vector<IntVect>*)current->p_object_variable;
-	p_matrixint->operator[](current_index-1)=par_intlist;
-	break;
-      }
-      /*	case LIST_OF_ASCII :
-      {
-      vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
-      *p_vectstring=par_asciilist;
-      break;
-    }*/
-    default :
-      break;
+      // KT 09/10/98 replaced vector::at with vector::operator[] 
+      // KT 09/10/98 as SGI STL does not have at()
+      switch(current->type)
+	{
+	  // KT 01/08/98 NUMBER->INT
+	case INT :
+	  {
+	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
+	    p_vnumber->operator[](current_index-1)=par_int;
+	    break;
+	  }
+	  // KT 01/08/98 new
+	case ULONG :
+	  {
+	    UlongVect* p_vnumber=(UlongVect*)current->p_object_variable;	// performs the required casting
+	    p_vnumber->operator[](current_index-1)=par_ulong;
+	    break;
+	  }
+	  // KT 01/08/98 new
+	case DOUBLE :
+	  {
+	    DoubleVect* p_vnumber=(DoubleVect*)current->p_object_variable;	// performs the required casting
+	    p_vnumber->operator[](current_index-1)=par_double;
+	    break;
+	  }
+	case ASCII :
+	  {
+	    vector<String>* p_vstring=(vector<String>*)current->p_object_variable;	// performs the required casting
+	    p_vstring->operator[](current_index-1)=par_ascii;
+	    break;
+	  }
+	  // KT 20/06/98 new
+	case ASCIIlist :
+	  {
+	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
+	    p_vnumber->operator[](current_index-1) =
+	      find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    break;
+	  }
+	case LIST_OF_INTS :
+	  {
+	    vector<IntVect>* p_matrixint=(vector<IntVect>*)current->p_object_variable;
+	    p_matrixint->operator[](current_index-1)=par_intlist;
+	    break;
+	  }
+	  /*	case LIST_OF_ASCII :
+		{
+		vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
+		*p_vectstring=par_asciilist;
+		break;
+		}*/
+	default :
+	  break;
+	}
     }
-  }
 }
 
 // KT 20/06/98 new
@@ -480,9 +483,9 @@ int KeyParser::find_in_ASCIIlist(const String& par_ascii, const ASCIIlist_type& 
   }
   // it was not in the list
   cerr << "Interfile warning : value of keyword \""
-    << keyword << "\" is \""
-    << par_ascii
-    << "\"\n\tshould have been one of:";
+       << keyword << "\" is \""
+       << par_ascii
+       << "\"\n\tshould have been one of:";
   {
     for (int i=0; i<list_of_values.size(); i++)
       cerr << "\n\t" << list_of_values[i];
