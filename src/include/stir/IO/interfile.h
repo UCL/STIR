@@ -5,7 +5,7 @@
 #define __stir_Interfile_h__
 /*!
   \file 
-  \ingroup buildblock
+  \ingroup InterfileIO
  
   \brief  Declarations of functions which read/write Interfile data
 
@@ -49,7 +49,9 @@ template <typename elemT> class VoxelsOnCartesianGrid;
 class ProjDataFromStream;
 
 //! Checks if the signature corresponds to the start of an interfile header 
-/*! The first line of an Interfile header should contain the 
+/*! 
+  \ingroup InterfileIO
+  The first line of an Interfile header should contain the 
     \verbatim 
     INTERFILE :=
     \endverbatim
@@ -64,6 +66,7 @@ bool is_interfile_signature(const char * const signature);
 
 //! This reads the first 3d image in an Interfile header file, given as a stream
 /*!
+  \ingroup InterfileIO
  If there is trouble interpreting the header, 
  VoxelsOnCartesianGrid<float>::ask_parameters() is called instead
  If the name for the data file is not an absolute pathname,
@@ -78,6 +81,7 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input,
 
 //! This reads the first 3d image in an Interfile header file, given as a filename.
 /*!
+  \ingroup InterfileIO
  The function first opens a stream from 'filename' and then calls the previous function
  with 'directory_for_data' set to the directory part of 'filename'.
 
@@ -89,6 +93,7 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
 
 //! This outputs an Interfile header for an image.
 /*!
+  \ingroup InterfileIO
  A .hv extension will be added to the header_file_name if none is present.
  \return Succeeded::yes when succesful, Succeeded::no otherwise.
  
@@ -112,6 +117,9 @@ write_basic_interfile_image_header(const string& header_file_name,
 
 
 //! a utility function that computes the file offsets of subsequent images
+/*!
+   \ingroup InterfileIO
+*/
 const VectorWithOffset<unsigned long> 
 compute_file_offsets(int number_of_time_frames,
 		 const NumericType output_type,
@@ -121,6 +129,7 @@ compute_file_offsets(int number_of_time_frames,
 
 //! This outputs an Interfile header and data for a Array<3,elemT> object.
 /*!
+  \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
  \return 'true' when succesful, 'false' otherwise.
@@ -135,6 +144,7 @@ write_basic_interfile(const string&filename,
 
 //! This outputs an Interfile header and data for a Array<3,elemT> object, assuming unit voxel sizes
 /*!
+  \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
  \return 'true' when succesful, 'false' otherwise.
@@ -158,6 +168,7 @@ write_basic_interfile(const string& filename,
 
 //! This outputs an Interfile header and data for a VoxelsOnCartesianGrid<float> object
 /*!
+  \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
  \return 'true' when succesful, 'false' otherwise.
@@ -170,6 +181,7 @@ write_basic_interfile(const string& filename,
 
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
 /*!
+  \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
  \return 'true' when succesful, 'false' otherwise.
@@ -184,6 +196,7 @@ write_basic_interfile(const string& filename,
 
 //! This reads the first 3D sinogram from an Interfile header, given as a stream
 /*!
+  \ingroup InterfileIO
   If there is trouble interpreting the header, 
   ProjDataFromStream::ask_parameters() is called instead
 
@@ -201,7 +214,9 @@ ProjDataFromStream* read_interfile_PDFS(istream& input,
 					const ios::openmode openmode = ios::in);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a filename
-/*! This first opens a stream and then calls the previous function
+/*!
+  \ingroup InterfileIO
+  This first opens a stream and then calls the previous function
   with 'directory_for_data' set to the directory part of 'filename'.
 
   \warning it is up to the caller to deallocate the object
@@ -212,7 +227,9 @@ ProjDataFromStream* read_interfile_PDFS(const string& filename,
 					const ios::openmode open_mode);
 
 //! This writes an Interfile header appropriate for the ProjDataFromStream object.
-/*! A .hs extension will be added to the header_file_name if none is present.
+/*!
+  \ingroup InterfileIO
+  A .hs extension will be added to the header_file_name if none is present.
  \return Succeeded::yes when succesful, Succeeded::no otherwise.
 */
  Succeeded write_basic_interfile_PDFS_header(const string& header_filename,
@@ -220,7 +237,9 @@ ProjDataFromStream* read_interfile_PDFS(const string& filename,
 				        const ProjDataFromStream& pdfs);
 
 //! This function writes an Interfile header for the pdfs object.
-/*! The header_filename is found by replacing the extension in the 
+/*! 
+  \ingroup InterfileIO
+  The header_filename is found by replacing the extension in the 
    data_filename with .hs
    \return Succeeded::yes when succesful, Succeeded::no otherwise.
  */
@@ -230,6 +249,3 @@ Succeeded write_basic_interfile_PDFS_header(const string& data_filename,
 END_NAMESPACE_STIR
 
 #endif // __Interfile_h__
-
-
-

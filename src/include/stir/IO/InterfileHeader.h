@@ -3,7 +3,7 @@
 //
 /*! 
   \file
-  \ingroup buildblock 
+  \ingroup InterfileIO
   \brief  This file declares the classes InterfileHeader,
           InterfileImageHeader, InterfilePDFSHeader  
 
@@ -43,7 +43,7 @@ class ProjDataInfo;
 /*!
   \brief a class for Interfile keywords (and parsing) common to 
   all types of data
-  \ingroup buildblock
+  \ingroup InterfileIO
   */
 class InterfileHeader : public KeyParser
 {
@@ -112,7 +112,7 @@ public :
 
 /*!
   \brief a class for Interfile keywords (and parsing) specific to images
-  \ingroup buildblock
+  \ingroup InterfileIO
   */
 class InterfileImageHeader : public InterfileHeader
 {
@@ -131,7 +131,7 @@ protected:
 /*!
   \brief a class for Interfile keywords (and parsing) specific to 
   projection data (i.e. ProjDataFromStream)
-  \ingroup buildblock
+  \ingroup InterfileIO
   */
 class InterfilePDFSHeader : public InterfileHeader
 {
