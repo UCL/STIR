@@ -37,6 +37,8 @@ namespace std { using ::time_t; using ::tm; using ::localtime; }
 
 START_NAMESPACE_STIR
 
+static const double time_not_yet_determined=-1234567.8;
+
 // Find and store gating values in a vector from lm_file  
 static  void 
 find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_times_in_millisecs, 
@@ -49,6 +51,7 @@ RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris";
 RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris()
 {
   set_defaults();
+  time_offset = time_not_yet_determined;
 }
 
 const RigidObject3DTransformation& 
@@ -65,7 +68,7 @@ get_transformation_from_scanner_coords() const
 
 RigidObject3DTransformation
 RigidObject3DMotionFromPolaris::
-compute_average_motion(const double start_time, const double end_time) const
+compute_average_motion_polaris_time(const double start_time, const double end_time) const
 {
   // CartesianCoordinate3D<float> euler_angles;
   int samples = 0 ;
@@ -110,22 +113,41 @@ compute_average_motion(const double start_time, const double end_time) const
 				     CartesianCoordinate3D<float>(total_tz,total_ty,total_tx));  
 }
 
+double 
+RigidObject3DMotionFromPolaris::
+rel_time_to_polaris_time(const double time) const
+{
+  return time*time_drift + time_offset;
+}
+
+
+RigidObject3DTransformation 
+RigidObject3DMotionFromPolaris::
+compute_average_motion_rel_time(const double start_time, const double end_time) const
+{
+  return compute_average_motion_polaris_time(rel_time_to_polaris_time(start_time),
+					     rel_time_to_polaris_time(end_time));
+}
+
 void 
 RigidObject3DMotionFromPolaris::
 get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const
 {
+  const double polaris_time =
+    rel_time_to_polaris_time(time);
+
   Polaris_MT_File::const_iterator iterator_for_record_just_after_this_time =
     mt_file_ptr->begin();
 
   while (iterator_for_record_just_after_this_time!= mt_file_ptr->end() &&
-         iterator_for_record_just_after_this_time->sample_time < time + time_offset)
+         iterator_for_record_just_after_this_time->sample_time < polaris_time)
     ++iterator_for_record_just_after_this_time;
 
   if (iterator_for_record_just_after_this_time == mt_file_ptr->end())
   {
     error("RigidObject3DMotionFromPolaris: motion asked for time %g which is "
 	  "beyond the range of data (time in Polaris units: %g)\n",
-	  time, time + time_offset);
+	  time, polaris_time);
   }
   else
   {
@@ -141,28 +163,6 @@ void
 RigidObject3DMotionFromPolaris::
 do_synchronisation(CListModeData& listmode_data)
 {
-  std::time_t sec_time = 
-    listmode_data.get_scan_start_time_in_secs_since_1970();
-
-  if (sec_time==std::time_t(-1))
-    {
-      warning("Scan start time could not be found from list mode data");
-    }
-  else
-    {
-      // Polaris times are currently in localtime since midnight
-      // This relies on TZ though: bad! (TODO)
-      struct std::tm* lm_start_time_tm = std::localtime( &sec_time  ) ;
-      const unsigned long lm_start_time = 
-	( lm_start_time_tm->tm_hour * 3600L ) + 
-	( lm_start_time_tm->tm_min * 60 ) + 
-	lm_start_time_tm->tm_sec ;
-
-      cerr << "\nListmode file says that listmode start time is " 
-	   << lm_start_time 
-	   << " in secs after midnight local time"<< endl;
-    }
-
   VectorWithOffset<unsigned long> lm_times_in_millisecs;
   VectorWithOffset<unsigned> lm_random_numbers;
   find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
@@ -255,15 +255,17 @@ do_synchronisation(CListModeData& listmode_data)
 			  /* use_estimated_variance = */true
                        );
 
-	std::cout << "scale = " << scale << " +- " << sqrt(variance_of_scale)
+	std::cout << "\tscale = " << scale << " +- " << sqrt(variance_of_scale)
 		  << ", cst = " << constant << " +- " << sqrt(variance_of_constant)
-		  << "\nchi_square = " << chi_square
-		  << "\ncovariance = " << covariance_of_constant_with_scale
+		  << "\n\tchi_square = " << chi_square
+		  << "\n\tcovariance = " << covariance_of_constant_with_scale
        << endl;
 
       }
-      constant += time_offset;
+      time_offset += constant;
+      time_drift = scale*1000.;
 
+      std::cout << "\n\tTime offset " <<  time_offset << " drift " << time_drift << '\n';
       // do some reporting of time discrepancies 
       {
 	// Find average period between Polaris samples. 
@@ -291,7 +293,7 @@ do_synchronisation(CListModeData& listmode_data)
 	    (mt_tag_time - previous_mt_tag_time);	 
 	  if (elapsed_mt_tag_time > 1.3F * expected_tag_period)
 	    {
-	      warning("MT file contains a time interval (%g) that is larger than expected after time %g\n",
+	      warning("MT file contains a time interval (%g) that is larger than expected after time %g",
 		      elapsed_mt_tag_time, previous_mt_tag_time);
 	    }
 	  previous_mt_tag_time = mt_tag_time;
@@ -299,7 +301,8 @@ do_synchronisation(CListModeData& listmode_data)
 	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
 	  ++lm_tag_num;
 
-	  const double deviation = fabs(mt_tag_time - (lm_tag_time_in_millisecs*scale+constant));
+	  const double deviation = 
+	    fabs(mt_tag_time - rel_time_to_polaris_time(lm_tag_time_in_millisecs/1000.));
 	  if (deviation>max_deviation)
 	    {
 	      max_deviation = deviation;
@@ -307,33 +310,6 @@ do_synchronisation(CListModeData& listmode_data)
 	    }
 	}
 	warning("Max deviation between Polaris and listmode is:\n"
-		"\t%g, at %g secs (in list mode time)",
-		max_deviation, time_of_max_deviation);
-      }
-      // check if times match (old)
-      {
-	double max_deviation = 0;
-	double time_of_max_deviation = 0;
-	Polaris_MT_File::const_iterator mt_iter =
-	  mt_file_ptr->begin_all_tags() + mt_offset;	
-	unsigned int lm_tag_num = 0;
-	while (mt_iter!= mt_file_ptr->end_all_tags() && 
-	       lm_tag_num < num_lm_tags)
-	{
-	  const float mt_tag_time = 
-	    mt_iter->sample_time;
-	  ++mt_iter;
-	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
-	  ++lm_tag_num;
-
-	  const double deviation = fabs(mt_tag_time-time_offset - lm_tag_time_in_millisecs/1000.);
-	  if (deviation>max_deviation)
-	    {
-	      max_deviation = deviation;
-	      time_of_max_deviation = lm_tag_time_in_millisecs/1000.;
-	    }
-	}
-	warning("Original Max deviation between Polaris and listmode is:\n"
 		"\t%g, at %g secs (in list mode time)",
 		max_deviation, time_of_max_deviation);
       }
@@ -350,18 +326,45 @@ do_synchronisation(CListModeData& listmode_data)
 Succeeded 
 RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 {
-  // TODO add CListModeData::get_filename() or so to avoid the problem below
+  listmode_data_start_time_in_secs = 
+    listmode_data.get_scan_start_time_in_secs_since_1970();
+
+  if (listmode_data_start_time_in_secs==std::time_t(-1))
+    {
+      warning("Scan start time could not be found from list mode data");
+    }
+
+  if (list_mode_filename.size() == 0)
+    list_mode_filename = listmode_data.get_name();
+  else
+    {
+      if (list_mode_filename != listmode_data.get_name())
+	warning("RigidObject3DMotionFromPolaris list_mode_filename (%s) does not match "
+		"name from list mode data (%s). Please correct.",
+		list_mode_filename.c_str(), listmode_data.get_name().c_str());
+      return Succeeded::no;
+    }
+
   if (list_mode_filename.size() == 0)
     {
-      cerr << "\nCould not open synchronisation file as listmode filename missing."
-	   << "\nSynchronising..." << endl;
+      warning("Could not open synchronisation file as listmode filename missing."
+	      "\nSynchronising...");
       
       do_synchronisation(listmode_data);
     }
   else
     {      
-      warning("Looking for synchronisation file: Assuming that listmode corresponds to  \"%s\".\n",
+      warning("Looking for synchronisation file: Assuming that listmode corresponds to  \"%s\".",
 	      list_mode_filename.c_str());
+
+      int sync_version;
+      const int current_sync_version = 2;
+      KeyParser parser;
+      parser.add_start_key("Polaris vs. list mode synchronisation file");
+      parser.add_stop_key("end");
+      parser.add_key("version", &sync_version);
+      parser.add_key("time offset", &time_offset);
+      parser.add_key("time drift", &time_drift);
 
       const string sync_filename =
 	list_mode_filename + "_" + 
@@ -371,41 +374,116 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
       std::ifstream sync_file(sync_filename.c_str());
       if (sync_file)
 	{
-	  char line[1000];
-	  sync_file.getline(line, 1000);
-	  double time_offset_read;
-	  if (!sync_file || 
-	      sscanf(line, "time offset := %lf", &time_offset_read)!=1)
+	  time_offset =time_not_yet_determined;
+	  time_drift = 1;
+	  sync_version=-1;
+	  if (parser.parse(sync_file) == false || 
+	      sync_version!=current_sync_version ||
+	      time_offset == time_not_yet_determined)
 	    {
-	      warning("Error while reading synchronisation file \"%s\".\n"
-		      "Remove file and start again\n",
+	      warning("RigidObject3DMotionFromPolaris: Error while reading synchronisation file \"%s\".\n"
+		      "Remove file and start again.",
 		      sync_filename.c_str());
+	      if (sync_version!=current_sync_version)
+		warning("Reason: version should be %d", current_sync_version);
+	      if (time_offset == time_not_yet_determined)
+		warning("Reason: time_offset not set");
 	      return Succeeded::no;
 	    }
-	  set_time_offset(time_offset_read);
-	  cerr << "\nsynchronisation time offset read from sync file: " << get_time_offset() << endl;
 	}
       else
 	{
-	  cerr << "\nCould not open synchronisation file " << sync_filename
-	       << " for reading.\nSynchronising..." << endl;
+	  warning("Could not open synchronisation file %s  for reading.\nSynchronising...",
+		  sync_filename.c_str());
   
 	  do_synchronisation(listmode_data);
-	  cerr << "\nsynchronisation time offset  " << get_time_offset() << endl;
 	  std::ofstream out_sync_file(sync_filename.c_str());
 	  if (!out_sync_file)
 	    warning("Could not open synchronisation file %s for writing. Proceeding...\n",
 		    sync_filename.c_str());
 	  else
 	    {
-	      out_sync_file << "time offset := " << get_time_offset() << endl;
-	      cerr << "\n(written to file " << sync_filename << ")\n";
-	    }
+	      // set variable such that the correct number will be written to file
+	      sync_version=current_sync_version;
+	      out_sync_file << parser.parameter_info();
+	      warning("Synchronisation written to file %s", sync_filename.c_str());
+	    }	  
+	}
+      std::cerr << parser.parameter_info();
+    }
+  if (time_drift<.99 || time_drift>1.01)
+    {
+      warning("RigidObject3DMotionFromPolaris: time_drift %g is out-of-bounds",
+	      time_drift);
+      return Succeeded::no;
+    }
+  if (listmode_data_start_time_in_secs!=std::time_t(-1))
+    {
+      // Polaris times are currently in localtime since midnight
+      // This relies on TZ though: bad! (TODO)
+      struct std::tm* lm_start_time_tm = std::localtime( &listmode_data_start_time_in_secs  ) ;
+      const double lm_start_time = 
+	( lm_start_time_tm->tm_hour * 3600. ) + 
+	( lm_start_time_tm->tm_min * 60. ) + 
+	lm_start_time_tm->tm_sec ;
+
+      cerr << "\nListmode file says that listmode start time is " 
+	   << lm_start_time 
+	   << " in secs after midnight local time"<< endl;
+
+      if (fabs(time_offset - lm_start_time) > 3)
+	{
+	  warning("RigidObject3DMotionFromPolaris: time_offset %g is out-of-bounds",
+	      time_offset);
+	  return Succeeded::no;
 	}
     }
+  else
+    {
+      listmode_data_start_time_in_secs =
+	mt_file_ptr->get_start_time_in_secs_since_1970() +
+	round(time_offset - mt_file_ptr->begin_all_tags()->sample_time);
+      warning("Used first line of Polaris to get absolute time info of\n"
+	      "start of list mode data (ignoring time-drift):\n"
+	      "estimated at %ld secs since 1970 UTC",
+	      listmode_data_start_time_in_secs);
+    }
+
+  if (fabs(secs_since_1970_to_rel_time(listmode_data_start_time_in_secs))>.1)
+    {
+      warning("RigidObject3DMotionFromPolaris: internal problem with time_offsets. Sorry");
+       return Succeeded::no;
+    } 
+  if (fabs(rel_time_to_polaris_time(secs_since_1970_to_rel_time(mt_file_ptr->get_start_time_in_secs_since_1970())) - 
+	   mt_file_ptr->begin_all_tags()->sample_time) > 5)
+    {
+      warning("Polaris start of data (%g secs since midnight) does not seem to match \n"
+	      "with its first time tag (%g),\n" 
+	      "or there's a very large time drift. I'm stopping anyway.\n",
+	      rel_time_to_polaris_time(secs_since_1970_to_rel_time(mt_file_ptr->get_start_time_in_secs_since_1970())),
+	   mt_file_ptr->begin_all_tags()->sample_time);
+      return Succeeded::no;
+    }
+	   
   return Succeeded::yes;
 
 }
+
+double 
+RigidObject3DMotionFromPolaris::
+secs_since_1970_to_rel_time(std::time_t secs) const
+{
+  // TODO WARNING assumes that list mode data starts at rel_time 0 (which is ok for 962 and 966)
+
+  // somewhat tricky as time_t might be an unsigned type, and potentially longer than 'long'
+  if (secs>listmode_data_start_time_in_secs)
+    return
+      static_cast<double>(secs-listmode_data_start_time_in_secs);
+  else
+    return
+      -static_cast<double>(listmode_data_start_time_in_secs-secs);
+}
+  
 
 template <class T>
 static inline 
@@ -491,6 +569,14 @@ find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time,
  
 }
 
+
+bool 
+RigidObject3DMotionFromPolaris::
+is_synchronised() const
+{
+  return time_offset!=time_not_yet_determined;
+}  
+
 void 
 RigidObject3DMotionFromPolaris::set_defaults()
 {
@@ -513,8 +599,7 @@ RigidObject3DMotionFromPolaris::initialise_keymap()
 
 bool RigidObject3DMotionFromPolaris::post_processing()
 {
-  mt_file_ptr = new Polaris_MT_File(mt_filename);
-  if (is_null_ptr(mt_file_ptr))
+  if (set_mt_file(mt_filename) == Succeeded::no)
     {
       warning("Error initialising mt file \n");
       return true;
@@ -551,6 +636,16 @@ bool RigidObject3DMotionFromPolaris::post_processing()
     return true;
   return false;
 }
+
+Succeeded 
+RigidObject3DMotionFromPolaris::
+set_mt_file(const string& mt_filename_v)
+{
+  mt_filename = mt_filename_v;
+  mt_file_ptr = new Polaris_MT_File(mt_filename);
+  return is_null_ptr(mt_file_ptr) ? Succeeded::no : Succeeded::yes;
+}
+
 
 END_NAMESPACE_STIR
 

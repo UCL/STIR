@@ -40,24 +40,32 @@ public:
   // only need this to enable LmToProjDataWithMC(const char * const par_filename) function
   RigidObject3DMotionFromPolaris();
 
-  //! Find average motion from the Polaris file 
   virtual RigidObject3DTransformation 
-    compute_average_motion(const double start_time, const double end_time) const;
+    compute_average_motion_rel_time(const double start_time, const double end_time) const;
 
   //! Given the time obtain motion info, i.e. RigidObject3DTransformation
   virtual void get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const;
 
   //! Synchronise motion tracking file and listmode file
   virtual Succeeded synchronise(CListModeData& listmode_data);
+  virtual double secs_since_1970_to_rel_time(std::time_t) const;
 
   virtual const RigidObject3DTransformation& 
     get_transformation_to_scanner_coords() const;
   virtual const RigidObject3DTransformation& 
     get_transformation_from_scanner_coords() const;
-  
+
+  Succeeded set_mt_file(const string& mt_filename);
+
 private: 
 
   void do_synchronisation(CListModeData& listmode_data);
+  virtual bool is_synchronised() const;
+
+  double rel_time_to_polaris_time(const double time) const;
+
+ RigidObject3DTransformation 
+  compute_average_motion_polaris_time(const double start_time, const double end_time)const;
 
 
   shared_ptr<Polaris_MT_File> mt_file_ptr;
@@ -73,6 +81,9 @@ private:
   RigidObject3DTransformation move_to_scanner_coords;
   RigidObject3DTransformation move_from_scanner_coords;
 
+  double time_offset;
+  double time_drift;
+  std::time_t listmode_data_start_time_in_secs;
 };
 
 
