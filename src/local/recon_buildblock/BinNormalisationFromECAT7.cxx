@@ -9,14 +9,18 @@
   \brief Implementation for class BinNormalisationFromECAT7
 
   \author Kris Thielemans
+  \author Sanida Mustafovic
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
+// enable if you want results identical to Peter Bloomfield's normalisation code
+// (and hence old versions of Bkproj_3d)
+// #define SAME_AS_PETER
 
 #include "local/stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #include "stir/DetectionPosition.h"
@@ -128,7 +132,7 @@ read_norm_data(const string& filename)
     find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
   
   MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 
-				    Norm3d/*= read data as well */);
+				    Norm3d /*= read data as well */);
   if (matrix == 0)
     error("BinNormalisationFromECAT7: error reading data in  %s\n", filename.c_str());
 
@@ -235,7 +239,7 @@ read_norm_data(const string& filename)
   
   free_matrix_data(matrix);
   matrix_close(mptr);
-#if 1
+#if 0
    // to test pipe the obtained values into file
   // char out_name[max_filename_length];
     char name[80];
@@ -385,7 +389,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	     efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()] * 
 	     get_deadtime_efficiency(pos1, start_time, end_time) * get_deadtime_efficiency(pos2, start_time, end_time)
 
-#if 1	     // this is the same as peter's
+#ifdef SAME_AS_PETER
 	     ;
 #else	    // this is 3dbkproj (at the moment)
 	     * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
@@ -398,7 +402,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
       /* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
       // for oblique plaanes use the single radial profile from segment 0 
 
-#if 1 // this is the same as peter's
+#ifdef SAME_AS_PETER
      const int geo_plane_num = /* TODO septa_in ? (z=)bin.get_axial_pos_num() : */0;
       total_efficiency += view_efficiency * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * geo_Z_corr;            
 #else
