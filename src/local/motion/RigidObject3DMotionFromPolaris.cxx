@@ -36,6 +36,19 @@ using std::streampos;
 #endif
 
 START_NAMESPACE_STIR
+#define  NEWOFFSET
+
+// Find and store gating values in a vector from lm_file  
+static  void 
+find_and_store_gate_tag_values_from_lm(vector<unsigned long>& lm_times_in_millisecs, 
+				       vector<unsigned>& lm_random_number,
+				       CListModeData& listmode_data);
+#ifndef NEWOFFSET
+// Find and store random numbers from mt_file
+static void 
+find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers,
+					   Polaris_MT_File& mt_file);
+#endif
 
 const char * const 
 RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris"; 
@@ -146,10 +159,17 @@ void
 RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 {
 #ifdef NEWOFFSET
-  vector<float> lm_times;
+  vector<unsigned long> lm_times_in_millisecs;
   vector<unsigned> lm_random_numbers;
-  find_and_store_gate_tag_values_from_lm(lm_times,lm_random_numbers,listmode_data); 
+  find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
   cerr << "done find and store gate tag values" << endl;
+  // TODO remove
+  {
+    std::ofstream lmtimes("lmtimes.txt");
+    lmtimes << lm_times_in_millisecs;
+    std::ofstream lmtags("lmtags.txt");
+    lmtags << lm_random_numbers;
+  }
   const vector<unsigned>::size_type num_lm_tags = lm_random_numbers.size() ;
   // Peter has size-1 for some reason
 
@@ -173,7 +193,7 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 
     float previous_mt_tag_time = iterator_for_random_num->sample_time;
     ++iterator_for_random_num;
-    float previous_lm_tag_time = lm_times[0];
+    unsigned long previous_lm_tag_time_in_millisecs = lm_times_in_millisecs[0];
     unsigned int lm_tag_num = 1;
     while (iterator_for_random_num!= mt_file_ptr->end())
       {
@@ -184,7 +204,7 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 #if 0
 	    cerr << "skipping 'missing data' after MT time " << previous_mt_tag_time << '\n' ;
 	    while (lm_tag_num < num_lm_tags &&
-		   lm_times[lm_tag_num] - previous_lm_tag_time < elapsed_mt_tag_time)
+		   lm_times_in_millisecs[lm_tag_num] - previous_lm_tag_time_in_millisecs < elapsed_mt_tag_time)
 	      ++lm_tag_num;
 #else
 	    warning("MT file contains a too large time interval (%g) after time %g\n",
@@ -193,14 +213,6 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 	  }
 	if (lm_tag_num >= num_lm_tags)
 	  break; // get out of while loop
-
-	// check time consistency
-	const float elapsed_lm_tag_time =
-	  lm_times[lm_tag_num] - previous_lm_tag_time;
-
-	if (fabs((elapsed_lm_tag_time - elapsed_mt_tag_time)/expected_tag_period) >= 1.F)
-	  error ("Time desynchronisation between mt file and lm file after MT time %g\n",
-		 previous_mt_tag_time);
 
 	if (iterator_for_random_num->rand_num != lm_random_numbers[lm_tag_num])
 	  {
@@ -212,7 +224,7 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 	++num_matched_tags;	
 	previous_mt_tag_time = iterator_for_random_num->sample_time;
 	++iterator_for_random_num;
-	previous_lm_tag_time = lm_times[lm_tag_num];
+	previous_lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
 	++lm_tag_num;
       } // end of loop that checks current offset
     
@@ -220,8 +232,47 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
     {
       // yes, they match
       cerr << "\n\tFound " << num_matched_tags << " matching tags between mt file and listmode data\n";
-      cerr << "\tEntry " << mt_offset << " in .mt file corresponds to Time 0 \n";
-      time_offset = (*mt_file_ptr)[mt_offset].sample_time;
+      cerr << "\tEntry " << mt_offset << " (not counting missing data) in .mt file corresponds to Time 0 \n";
+      time_offset = 
+	(mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
+
+      // check if times match 
+      {
+	double max_deviation = 0;
+	double time_of_max_deviation = 0;
+	Polaris_MT_File::const_iterator iterator_for_random_num =
+	  mt_file_ptr->begin_all_tags() + mt_offset;	
+	unsigned int lm_tag_num = 0;
+	while (iterator_for_random_num!= mt_file_ptr->end() && 
+	       lm_tag_num < num_lm_tags)
+	{
+	  const float mt_tag_time = 
+	    iterator_for_random_num->sample_time;
+	  ++iterator_for_random_num;
+	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
+	  ++lm_tag_num;
+
+#if 0
+	// check time consistency
+	const float elapsed_lm_tag_time_in_millisecs =
+	  lm_times_in_millisecs[lm_tag_num] - previous_lm_tag_time_in_millisecs;
+
+	if (fabs((elapsed_lm_tag_time_in_millisecs - elapsed_mt_tag_time)/expected_tag_period) >= 1.F)
+	  warning("Time desynchronisation between mt file and lm file after MT time %g",
+		 previous_mt_tag_time);
+
+#endif
+	  const double deviation = fabs(mt_tag_time-time_offset - lm_tag_time_in_millisecs/1000.);
+	  if (deviation>max_deviation)
+	    {
+	      max_deviation = deviation;
+	      time_of_max_deviation = lm_tag_time_in_millisecs/1000.;
+	    }
+	}
+	warning("Max deviation between Polaris and listmode is:\n"
+		"\t%g, at %g secs (in list mode time)",
+		max_deviation, time_of_max_deviation);
+      }
       return;
     }
   }
@@ -235,18 +286,18 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
   long int nTags = 0;
   long int nMT_Rand = 0;
   
-  vector<float> lm_times;
+  vector<float> lm_times_in_millisecs;
   vector<unsigned> lm_random_numbers;
   vector<unsigned> mt_random_numbers;
   // LM_file tags + times
-  find_and_store_gate_tag_values_from_lm(lm_times,lm_random_numbers,listmode_data); 
+  find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
   cerr << "done find and store gate tag values" << endl;
   nTags = lm_random_numbers.size();
   // to be consistent with Peter's code
   nTags -=1;
   //MT_file random numbers
   //cerr << " Reading mt file" << endl;    
-  find_and_store_random_numbers_from_mt_file(mt_random_numbers);
+  find_and_store_random_numbers_from_mt_file(mt_random_numbers, *mt_file_ptr);
   //cerr << " Done reading mt file" << endl;
   nMT_Rand = mt_random_numbers.size();
    //cerr << "Random_num" << nMT_Rand;
@@ -356,18 +407,15 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 
 
 void
-RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<float>& lm_time, 
-								       vector<unsigned>& lm_random_number, 
-								       CListModeData& listmode_data/*const string& lm_filename*/)
+find_and_store_gate_tag_values_from_lm(vector<unsigned long>& lm_time, 
+				       vector<unsigned>& lm_random_number, 
+				       CListModeData& listmode_data/*const string& lm_filename*/)
 {
   
   unsigned  LastChannelState=0;
   unsigned  ChState;
   int PulseWidth = 0 ;
-  //long int CurrentTime;
-  //long int StartPulseTime;
-  double StartPulseTime=0;
-  //int NumTag = 0 ;
+  unsigned long StartPulseTime=0;
  
   
   // TODO make sure that enough events are read for synchronisation
@@ -389,16 +437,15 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
     }
     if (record.is_time())
     {
-      unsigned CurrentChannelState =  record.time().get_gating() ;
-      double CurrentTime = record.time().get_time_in_secs();
+      unsigned CurrentChannelState =  record.time().get_gating();
+      unsigned long CurrentTime = record.time().get_time_in_millisecs();
       
       if ( LastChannelState != CurrentChannelState && CurrentChannelState )
       {
 	if ( PulseWidth > 5 ) //TODO get rid of number 5
 	{
 	  lm_random_number.push_back(ChState);
-	  lm_time.push_back(static_cast<float>(StartPulseTime));
-	  //NumTag += 1 ;
+	  lm_time.push_back(StartPulseTime);
 	}
 	LastChannelState = CurrentChannelState ;
 	PulseWidth = 0 ;
@@ -431,20 +478,21 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
  
 }
 
-  
+#ifdef NEWOFFSET  
 void 
-RigidObject3DMotionFromPolaris::find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers)
+find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers,
+					   Polaris_MT_File& mt_file)
 {
-  //Polaris_MT_File::Record mt_record;
   Polaris_MT_File::const_iterator iterator_for_random_num =
-    mt_file_ptr->begin_all_tags();
-  while (iterator_for_random_num!= mt_file_ptr->end_all_tags())
+    mt_file.begin_all_tags();
+  while (iterator_for_random_num!= mt_file.end_all_tags())
   {
     mt_random_numbers.push_back(iterator_for_random_num->rand_num);
     ++iterator_for_random_num;
   }
   
 }
+#endif
 
 void 
 RigidObject3DMotionFromPolaris::set_defaults()
