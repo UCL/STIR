@@ -25,6 +25,7 @@ SOURCES = \
 	ProjMatrixByDenselUsingRayTracing.cxx \
 	QuadraticPrior.cxx \
 	BinNormalisationUsingProfile.cxx \
+	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx 
 ifeq ($(HAVE_LLN_MATRIX),1)
 SOURCES += \
