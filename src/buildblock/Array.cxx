@@ -59,13 +59,11 @@ Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, float& sca
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	read_and_convert(signed char);
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	read_and_convert(signed short);	
@@ -132,13 +130,11 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
 
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	convert_and_write(signed char);
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	convert_and_write(signed short);	
@@ -216,13 +212,11 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	data.write_data(s, NumericInfo<signed char>(), scale, byte_order);
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -355,7 +349,6 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	typedef signed char type;
@@ -364,7 +357,6 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 	operator=( convert_array(scale, data, NumericInfo<elemT>()) );
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -420,7 +412,6 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	typedef signed char type;
@@ -429,7 +420,6 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 	data.write_data(s, byte_order);
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -519,14 +509,12 @@ void Array<1,elemT>::read_data(ostream& s,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	typedef signed char type;
 	data.read_data(s, NumericInfo<type>(), scale, byte_order);
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -602,14 +590,12 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
     case NumericType::SCHAR:
       {
 	typedef signed char type;
 	data.write_data(s, NumericInfo<type>(), scale, byte_order);
 	break;
       }
-#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -643,633 +629,27 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 
 #else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
-/************************** 2 arg version *******************************/
 
-/************** float ******************/
-
-void
-Array<1, float>::read_data(istream& s, 
-			   const ByteOrder byte_order)
-{
-  base_type::check_state();
-  
-  if (!s)
-  { error("Error before reading from stream in read_data\n");  }
-  if (s.eof())
-  { error("Reading past EOF in read_data\n");  }
-  
-  const std::streamsize num_to_read =
-    static_cast<std::streamsize>(base_type::size())* sizeof(elemT);
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
-  base_type::release_data_ptr();
-  
-  if (!s)
-  { error("Error after reading from stream in read_data\n");  }
-  base_type::check_state();
-  
-  if (!byte_order.is_native_order())
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-    
-}
-
-void
-Array<1, float>::write_data(ostream& s,
-			    const ByteOrder byte_order) const
-{
-  base_type::check_state();
-  
-  // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
-  // While writing, the tensor is byte-swapped.
-  // Safe way: (but involves creating an extra copy of the data)
-  /*
-  if (!byte_order.is_native_order())
-  {
-  Array<1, T> a_copy(*this);
-  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-    ByteOrder::swap_order(a_copy[i]);
-  a_copy.write_data(s);
-  return;
-  }
+/* 
+  If the compiler does not support partial template specialisation, 
+  we resort to multiple definitions of the class, for specific
+  types of elemT.
+  This of course means that if you want to use Array<n,elemT> for 'elemT'
+  anything else then the types used defined here, you'll have to add 
+  similar repetitions yourself...
+  Currently supported for signed char, float, short, unsigned short
   */
-  if (!byte_order.is_native_order())
-  {
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-  }
-  
-  if (!s)
-  { error("Array::write_data: error before writing to stream.\n");  }
-  
-  // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
-  
-  if (!s)
-  { error("Array::write_data: error after writing to stream.\n");  }
-  
-  if (!byte_order.is_native_order())
-  {
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-  }
-  
-  base_type::check_state();
-}
-
-/************** short ******************/
-
-void
-Array<1, short>::read_data(istream& s, 
-			   const ByteOrder byte_order)
-{
-  base_type::check_state();
-  
-  if (!s)
-  { error("Error before reading from stream in read_data\n");  }
-  if (s.eof())
-  { error("Reading past EOF in read_data\n");  }
-  
-  const std::streamsize num_to_read =
-    static_cast<std::streamsize>(base_type::size())* sizeof(elemT);
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
-  base_type::release_data_ptr();
-  
-  if (!s)
-  { error("Error after reading from stream in read_data\n");  }
-  base_type::check_state();
-  
-  if (!byte_order.is_native_order())
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-    
-}
-
-void
-Array<1, short>::write_data(ostream& s,
-			    const ByteOrder byte_order) const
-{
-  base_type::check_state();
-  
-  // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
-  // While writing, the tensor is byte-swapped.
-  // Safe way: (but involves creating an extra copy of the data)
-  /*
-  if (!byte_order.is_native_order())
-  {
-  Array<1, T> a_copy(*this);
-  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-  ByteOrder::swap_order(a_copy[i]);
-  a_copy.write_data(s);
-  return;
-  }
-  */
-  if (!byte_order.is_native_order())
-  {
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-  }
-  
-  if (!s)
-  { error("Array::write_data: error before writing to stream.\n");  }
-  
-  // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
-  
-  if (!s)
-  { error("Array::write_data: error after writing to stream.\n");  }
-  
-  if (!byte_order.is_native_order())
-  {
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-  }
-  
-  base_type::check_state();
-
-}/************** unsigned short ******************/
-
-
-void
-Array<1, unsigned short>::read_data(istream& s, 
-			   const ByteOrder byte_order)
-{
-  base_type::check_state();
-  
-  if (!s)
-  { error("Error before reading from stream in read_data\n");  }
-  if (s.eof())
-  { error("Reading past EOF in read_data\n");  }
-  
-  const std::streamsize num_to_read =
-    static_cast<std::streamsize>(base_type::size())* sizeof(elemT);
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
-  base_type::release_data_ptr();
-  
-  if (!s)
-  { error("Error after reading from stream in read_data\n");  }
-  base_type::check_state();
-  
-  if (!byte_order.is_native_order())
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-    
-}
-
-void
-Array<1, unsigned short>::write_data(ostream& s,
-			    const ByteOrder byte_order) const
-{
-  base_type::check_state();
-  
-  // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
-  // While writing, the tensor is byte-swapped.
-  // Safe way: (but involves creating an extra copy of the data)
-  /*
-  if (!byte_order.is_native_order())
-  {
-  Array<1, T> a_copy(*this);
-  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-  ByteOrder::swap_order(a_copy[i]);
-  a_copy.write_data(s);
-  return;
-  }
-  */
-  if (!byte_order.is_native_order())
-  {
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-  }
-  
-  if (!s)
-  { error("Array::write_data: error before writing to stream.\n");  }
-  
-  // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
-  
-  if (!s)
-  { error("Array::write_data: error after writing to stream.\n");  }
-  
-  if (!byte_order.is_native_order())
-  {
-    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
-      ByteOrder::swap_order(base_type::num[i]);
-  }
-  
-  base_type::check_state();
-}
-
-#if !defined(_MSC_VER) || (_MSC_VER > 1100)
-
-/************************** 4 arg version *******************************/
-/*
- VC 5.0 has a bug that it cannot resolve the num_dimensions template-arg
- when using convert_array. You have to specify all template args explicitly.
- I do this here with macros to prevent other compilers breaking on it
- (notably VC 6.0...)
- These macros depend on the exact lines used below. Sorry.
- */
-
-#if defined(_MSC_VER) && (_MSC_VER < 1200)
-#define CONVERT_ARRAY_WRITE convert_array<1,elemT,type,float>
-#define CONVERT_ARRAY_READ convert_array<1,type,elemT,float>
-#else
-#define CONVERT_ARRAY_WRITE convert_array
-#define CONVERT_ARRAY_READ convert_array
-#endif
-
-/* following are copies of the template definitions above except
-  - there's a work-around for the VC 5.00 bug
-  - the template <class elemT> lines are deleted, and replaced
-    by #define elemT sometype, #undef elemT pairs
-*/
-/******************* float *********************/
-
-#define elemT float
-
-void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
-				  const ByteOrder byte_order) const
-{
-  base_type::check_state();
-  if (NumericInfo<elemT>().type_id() == type)
-    {
-      write_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
-      // but at the moment we don't
-      scale = float(1);
-
-      return;
-    }
-
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-  switch(type.id)
-    {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-    case NumericType::SCHAR:
-      {
-	typedef signed char type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this, NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-#endif
-    case NumericType::SHORT:
-      {
-	typedef signed short type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this, NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    case NumericType::USHORT:
-      {
-	typedef unsigned short type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this, NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    case NumericType::FLOAT:
-      {
-	typedef float type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this, NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    default:
-      // TODO
-      error("Array::write_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); 
-      
-    }
-
-  base_type::check_state();
-}
-
-void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
-				 const ByteOrder byte_order)
-{
-  base_type::check_state();
-  if (NumericInfo<elemT>().type_id() == type)
-    {
-      read_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
-      // but at the moment we don't
-      scale = float(1);
-
-      return;
-    }
-
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-  switch(type.id)
-    {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-    case NumericType::SCHAR:
-      {
-	typedef signed char type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-#endif
-    case NumericType::SHORT:
-      {
-	typedef signed short type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    case NumericType::USHORT:
-      {
-	typedef unsigned short type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    case NumericType::FLOAT:
-      {
-	typedef float type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    default:
-      // TODO
-      error("Array::read_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); 
-      
-    }
-
-  base_type::check_state();
-}
-
-#undef elemT
-
-
-
-/******************** short ********************/
-
+#define elemT signed char
+#include "Array1d.cxx"
 #define elemT short
-
-void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
-				  const ByteOrder byte_order) const
-{
-  base_type::check_state();
-  if (NumericInfo<elemT>().type_id() == type)
-    {
-      write_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
-      // but at the moment we don't
-      scale = float(1);
-
-      return;
-    }
-
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-  switch(type.id)
-    {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-    case NumericType::SCHAR:
-      {
-	typedef signed char type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-#endif
-    case NumericType::SHORT:
-      {
-	typedef signed short type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    case NumericType::USHORT:
-      {
-	typedef unsigned short type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    case NumericType::FLOAT:
-      {
-	typedef float type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    default:
-      // TODO
-      error("Array::write_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); 
-      
-    }
-
-  base_type::check_state();
-}
-
-void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
-				 const ByteOrder byte_order)
-{
-  base_type::check_state();
-  if (NumericInfo<elemT>().type_id() == type)
-    {
-      read_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
-      // but at the moment we don't
-      scale = float(1);
-
-      return;
-    }
-
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-  switch(type.id)
-    {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-    case NumericType::SCHAR:
-      {
-	typedef signed char type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-#endif
-    case NumericType::SHORT:
-      {
-	typedef signed short type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    case NumericType::USHORT:
-      {
-	typedef unsigned short type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    case NumericType::FLOAT:
-      {
-	typedef float type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    default:
-      // TODO
-      error("Array::read_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); 
-      
-    }
-
-  base_type::check_state();
-}
-
-#undef elemT
-
-
-/************** unsigned short ******************/
-
+#include "Array1d.cxx"
 #define elemT unsigned short
+#include "Array1d.cxx"
+#define elemT float
+#include "Array1d.cxx"
 
-void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
-				  const ByteOrder byte_order) const
-{
-  base_type::check_state();
-  if (NumericInfo<elemT>().type_id() == type)
-    {
-      write_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
-      // but at the moment we don't
-      scale = float(1);
 
-      return;
-    }
 
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-  switch(type.id)
-    {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-    case NumericType::SCHAR:
-      {
-	typedef signed char type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-#endif
-    case NumericType::SHORT:
-      {
-	typedef signed short type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    case NumericType::USHORT:
-      {
-	typedef unsigned short type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    case NumericType::FLOAT:
-      {
-	typedef float type;
-	Array<1,type> data = 
-	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
-	data.write_data(s, byte_order);
-	break;
-      }
-    default:
-      // TODO
-      error("Array::write_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); 
-      
-    }
-
-  base_type::check_state();
-}
-
-void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
-				 const ByteOrder byte_order)
-{
-  base_type::check_state();
-  if (NumericInfo<elemT>().type_id() == type)
-    {
-      read_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
-      // but at the moment we don't
-      scale = float(1);
-
-      return;
-    }
-
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-  switch(type.id)
-    {
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-    case NumericType::SCHAR:
-      {
-	typedef signed char type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-#endif
-    case NumericType::SHORT:
-      {
-	typedef signed short type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    case NumericType::USHORT:
-      {
-	typedef unsigned short type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    case NumericType::FLOAT:
-      {
-	typedef float type;
-	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
-	data.read_data(s, byte_order);
-	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
-	break;
-      }
-    default:
-      // TODO
-      error("Array::read_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); 
-      
-    }
-
-  base_type::check_state();
-}
-
-#undef elemT
-
-#endif  // VC 5
 
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
@@ -1279,24 +659,18 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 
 // add any other types you need
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<1,signed char>;
-#endif
 template class Array<1,short>;
 template class Array<1,unsigned short>;
 template class Array<1,float>;
 #endif
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<2,signed char>;
-#endif
 template class Array<2,short>;
 template class Array<2,unsigned short>;
 template class Array<2,float>;
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<3, signed char>;
-#endif
 template class Array<3, short>;
 template class Array<3,unsigned short>;
 template class Array<3,float>;
