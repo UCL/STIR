@@ -3,7 +3,7 @@
 #
 
 #******* type of build, if BUILD is not 'debug', we make the optimised version
-BUILD=debug
+BUILD=opt
 
 #******** location of files
 
