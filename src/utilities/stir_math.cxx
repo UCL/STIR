@@ -7,10 +7,11 @@
 \ingroup utilities
 \brief add or multiply data, with some other basic math manipulations 
 
-This is a command line utility for adding or multiplying data, with a
-somewhat awkward syntax. 
+This is a command line utility for adding, multiplying, thresholding ... data, 
+with a somewhat awkward syntax. 
 The command line arguments are as follows (but everything has to fit on 1 line):
 \code
+  [--output-format parameter-filename ]
   [-s] 
   [--add | --mult] 
   [--power power_float] 
@@ -25,6 +26,7 @@ The command line arguments are as follows (but everything has to fit on 1 line):
 \endcode
 or
 \code
+  [--output-format parameter-filename ]
   --accumulate
   [-s] 
   [--add | --mult] 
@@ -54,6 +56,17 @@ Multiple occurences of '--times-scalar' and '--divide-scalar' are
 allowed and will just result in accumulation of the factors.<P>
 The order of the manipulations is as follows:<br>
 (1) thresholding (2) power (3) scalar multiplication (4) scalar addition.
+
+The '--output-format' option can be used to write the output in 
+a different file format then the default (although this currently only
+works for images). The parameter file should have the following format:
+\verbatim
+output file format parameters:=
+output file format type:= <sometype>
+END:=
+\endverbatim
+See the stir::OutputFileFormat hierarchy for possible values.
+
 \par Examples
 <ul>
 <li> subtracting 2 files<br>
@@ -78,7 +91,6 @@ The order of the manipulations is as follows:<br>
 \warning For future compatibility, it is recommended to put the command line arguments
          in the order that they will be executed (i.e. as listed above). It might be 
 	 that we take the order into account in a future release.
-\todo allow different output file formats, currently uses DefaultOutputFileFormat
 \author Kris Thielemans 
 
 $Date$
@@ -89,6 +101,7 @@ $Revision$
     See STIR/LICENSE.txt for details
 */
 
+#include "stir/ArrayFunction.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/SegmentByView.h"
@@ -96,7 +109,6 @@ $Revision$
 #include "stir/Succeeded.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
-#include "stir/ArrayFunction.h"
 #include "stir/Succeeded.h"
 #include "stir/NumericInfo.h"
 #include "stir/KeyParser.h"
@@ -118,7 +130,7 @@ using std::transform;
 #ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 #define	in_place_apply_function(A, B) \
         transform((A).begin_all(), (A).end_all(), \
-                  (A).begin_all(), pow_times_object)
+                  (A).begin_all(), B)
 #endif
 
 
