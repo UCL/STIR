@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -12,7 +12,7 @@
   \author (with help from Kris Thielemans)
   \author PARAPET project
 
-  \date    $Date$
+  \date $Date$  
   \version $Revision$
 
   \warning It only supports VoxelsOnCartesianGrid type of images.
@@ -65,6 +65,7 @@ int
 main(int argc, char *argv[])
 {
 
+ 
   VoxelsOnCartesianGrid<float> input_image;
   if (argc>1)
   {
@@ -81,7 +82,14 @@ main(int argc, char *argv[])
    
   //TODO Only require header file?
 
-  if(ask("Output Filter PSF function (instead of filtered image)?",false))
+
+
+  // MJ 10/07/2000 Made thresholding optional
+
+  bool applying_threshold=false;
+
+
+  if(ask("Output filter PSF (instead of filtered image)?",false))
     {
 
    
@@ -105,6 +113,7 @@ main(int argc, char *argv[])
 
     }
 
+  else applying_threshold=ask("Truncate mininum to small (relative to image max) positive value?",false);
  
 
   double fwhmx_dir=ask_num(" Full-width half-maximum (x,y-dir) (in mm)?", 0.0,20.0,0.5);
@@ -115,7 +124,7 @@ main(int argc, char *argv[])
   ImageFilter filter;
 
   filter.build(input_image,fwhmx_dir,fwhmz_dir,Nx_dir,Nz_dir);
-  filter.apply(input_image);
+  filter.apply(input_image, applying_threshold);
 
   char outfile[max_filename_length];
   ask_filename_with_extension(outfile,
