@@ -10,15 +10,18 @@
    */
 
 #include "interfile.h"
+#include "utilities.h"
 
-PETImageOfVolume read_interfile_image(fstream& input)
+// KT 14/10/98 make arg istream
+PETImageOfVolume read_interfile_image(istream& input)
 {
-  KeyParser kp(&input);
+  KeyParser kp(input);
   if(kp.StartParsing())
-  {
-    PETerror("Error parsing interfile header");
-    Abort();
-  }
+    {
+      PETerror("\nError parsing interfile header, \n\
+               I am going to ask you lots of questions...\n");
+      return ask_image_details();
+    }
   
   
     printf("byte order : %s_endian\n",
@@ -52,6 +55,11 @@ PETImageOfVolume read_interfile_image(fstream& input)
     image.read_data(*(kp.in_stream), kp.type_of_numbers, scale, kp.file_byte_order);
     assert(scale == 1);    
 
+    if(kp.in_stream!=0)
+      {
+	kp.in_stream->close();
+	delete kp.in_stream;
+      }
     /*
     // look at the KeyParser class for retrieving 
     // values for the PETSinog. constructor.
