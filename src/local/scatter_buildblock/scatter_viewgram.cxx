@@ -34,9 +34,6 @@ std::vector< ScatterPoint> scatt_points_vector;
 std::vector<CartesianCoordinate3D<float> > detection_points_vector;
 int total_detectors;
 
-static const float total_cross_section_511keV = 
-  total_cross_section(511.); 
-
 static
 unsigned 
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
@@ -65,7 +62,7 @@ void scatter_viewgram(
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 					  int& scatt_points, const float att_threshold, 
 					  const float lower_energy_threshold, const float upper_energy_threshold,		
-					  const bool use_cosphi,const bool use_cache, const bool random)
+					  const bool use_cosphi,const bool use_cache, const bool find_DS, const bool random)
 {		
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
@@ -80,10 +77,6 @@ void scatter_viewgram(
 	   proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring ();
 	// reserve space to avoid reallocation, but the actual size will grow dynamically
 	detection_points_vector.reserve(total_detectors);
-		
-	const VoxelsOnCartesianGrid<float>& image =
-		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
-	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 
 #if 0
 	{
@@ -156,8 +149,7 @@ void scatter_viewgram(
 					  find_in_detection_points_vector(detector_coord_A + shift_detector_coordinates_to_origin);
 					const unsigned det_num_B =
 					  find_in_detection_points_vector(detector_coord_B + shift_detector_coordinates_to_origin);
-					bin.set_bin_value(10E9*
-						voxel_size[1]*voxel_size[2]*voxel_size[3]*
+					bin.set_bin_value(
 						scatter_estimate_for_all_scatter_points(
 						image_as_activity,
 						image_as_density,
@@ -165,7 +157,7 @@ void scatter_viewgram(
 						det_num_B,
 						lower_energy_threshold,
 						upper_energy_threshold,
-						use_cosphi,use_cache)/total_cross_section_511keV);
+						use_cosphi,use_cache,find_DS));
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();
@@ -188,9 +180,9 @@ void scatter_viewgram(
 				/////////////////// end SCATTER ESTIMATION TIME /////////////////
 		}
 		bin_timer.stop();		
-		writing_time(bin_timer.value(), scatt_points_vector.size());
+		writing_time(bin_timer.value(), scatt_points_vector.size(),	find_DS);
 
-		if (detection_points_vector.size() != static_cast<int>(total_detectors))
+		if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
 		  warning("Expected num detectors: %d, but found %d\n",
 			  total_detectors, detection_points_vector.size());
 }
