@@ -4,9 +4,10 @@
 
 #include "InterfileHeader.h"
 
-//KT 26/10/98 changed from init_keys
-InterfileHeader::InterfileHeader(istream& f)
-     : KeyParser(f)
+// KT 26/10/98 changed from init_keys
+// KT 13/11/98 moved stream arg from constructor to parse()
+InterfileHeader::InterfileHeader()
+     : KeyParser()
 {
 
   // KT 20/06/98 new, unfortunate syntax...
@@ -228,8 +229,9 @@ int InterfileImageHeader::post_processing()
 /**********************************************************************/
 
 //KT 26/10/98
-InterfilePSOVHeader::InterfilePSOVHeader(istream& f)
-     : InterfileHeader(f)
+// KT 13/11/98 moved stream arg from constructor to parse()
+InterfilePSOVHeader::InterfilePSOVHeader()
+     : InterfileHeader()
 {
   num_segments = -1;
 
