@@ -14,8 +14,8 @@
   $Date$
   $Revision$
 */
-#ifndef __ProjDataInfo_H__
-#define __ProjDataInfo_H__
+#ifndef __Tomo_ProjDataInfo_H__
+#define __Tomo_ProjDataInfo_H__
 
 #include "VectorWithOffset.h"
 #include "Scanner.h"
@@ -84,7 +84,7 @@ public:
        num_axial_pos_per_segment[segment_num] gives you the appropriate value 
        for a particular segment_num
        */
-  ProjDataInfo(const shared_ptr<Scanner> scanner_ptr,
+  ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr,
 		      const VectorWithOffset<int>& num_axial_pos_per_segment, 
 		      const int num_views, 
 		      const int num_tangential_poss);
