@@ -532,6 +532,8 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	new  Array<1,float> (1,2*128*128);
       static shared_ptr <Array<1,float> > fft_filter_1D_array_256 = 
 	new  Array<1,float> (1,2*256*256);
+      static shared_ptr <Array<1,float> > fft_filter_1D_array_512 = 
+	new  Array<1,float> (1,2*512*512);
       
       
       convert_array_2D_into_1D_array(fft_filter_1D_array,fft_filter);
@@ -587,6 +589,20 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 
 	}
       }
+      else if ( size == 512)
+      {
+	if ( (*fft_filter_1D_array_512)[1] == 0.F)
+	{
+	  fourn(fft_filter_1D_array, array_lengths, 2,1);
+          fft_filter_1D_array /= sqrt(static_cast<double>(size *size));      
+	  *fft_filter_1D_array_512 = fft_filter_1D_array;
+	}
+	else
+	{
+	  fft_filter_1D_array = *fft_filter_1D_array_512;
+
+	}
+      }      
       else     
       {
 	warning("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");
@@ -608,6 +624,9 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
       case 256:
 	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(256*256)));
 	break;
+      case 512:
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(512*512)));
+	break;      
       
       default:
 	warning("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");;
@@ -629,15 +648,6 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	//mulitply_complex_arrays(fft_filter_num_1D_array,fft_filter_1D_array,fft_1_1D_array);
 	
 	fft_filter_num_1D_array = fft_filter_1D_array* fft_1_1D_array;
-
-  
-/*	for ( int k = fft_filter_1D_array.get_min_index(); k<=fft_filter_1D_array.get_max_index();k++)
-	{
-	  fft_filter_1D_array[k] *= (sq_kapas-1);
-	  fft_filter_1D_array[k] += fft_1_1D_array;
-	  fft_filter_1D_array[k] /= sq_kapas;
-	  
-	}*/
 
 	  fft_filter_1D_array *= (sq_kapas-1);
 	  // this is necesssery since the imagainary part is stored in the odd indices
@@ -766,17 +776,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 		}
         
 
-/*	cerr << " now assigned symmetric coeff " << endl;
-	 for (int j=-4;j<=4;j++)	  
-	  for (int i=-4;i<=4;i++)
-	   {
-	     cerr << new_filter_coefficients_2D_array[j][i] << "   " ;
-
-	   }*/
-
-
-
-	   break; // out of while(true)
+      break; // out of while(true)
 	  }
     } // this bracket is for the while loop
     }
@@ -798,6 +798,15 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	  for (int j=new_filter_coefficients_2D_array.get_min_index();j<=new_filter_coefficients_2D_array.get_max_index();j++)	  
 	    for (int i=new_filter_coefficients_2D_array[j].get_min_index();i<=new_filter_coefficients_2D_array[j].get_max_index();i++)
 	      new_filter_coefficients_2D_array[j][i] /=sum_new_coefficients;  
+
+    /*	cerr << " now assigned symmetric coeff " << endl;
+	   for (int  j = new_filter_coefficients_2D_array.get_min_index();j<= new_filter_coefficients_2D_array.get_max_index();j++)	  
+		for (int  i = new_filter_coefficients_2D_array[j].get_min_index();i<=new_filter_coefficients_2D_array[j].get_max_index();i++)
+	   {
+	     cerr << new_filter_coefficients_2D_array[j][i] << "   " ;
+
+	   }*/
+    
 	
 
 		    
@@ -1193,7 +1202,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 {
  
   VectorWithOffset < shared_ptr <ArrayFilter2DUsingConvolution <float> > > filter_lookup;
-  const int num_elements_in_interval = 500;
+  const int num_elements_in_interval = 1000;
   filter_lookup.grow(1,num_elements_in_interval);
   const int k_min =1;
   const float k_interval = 0.01F; //0.01F;
@@ -1330,9 +1339,11 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	}
 	if (true) //attenuation_proj_data_filename !="1")
 	{
+
+#if 1
 	   shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
 	   new VoxelsOnCartesianGrid<float>
-	    (IndexRange3D(0,0,
+	    (IndexRange3D(k,k,
 	    //-mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
 	    // mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
 	    -mask_size+6,mask_size+6,
@@ -1346,8 +1357,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	  timer.start();
 	  
 	  	// SM 23/05/2002 mask now 3D
-	  const int min_k = in_density_cast->get_min_z(); //max(in_density_cast->get_min_z(),k-mask_size);
-	  const int max_k = in_density_cast->get_max_z(); // min(in_density_cast->get_max_z(),k+mask_size);			
+	  //const int min_k = in_density_cast->get_min_z(); //max(in_density_cast->get_min_z(),k-mask_size);
+	  //const int max_k = in_density_cast->get_max_z(); // min(in_density_cast->get_max_z(),k+mask_size);			
 	  const int min_j = max(in_density_cast->get_min_y(),j-mask_size);
 	  const int max_j = min(in_density_cast->get_max_y(),j+mask_size);
 	  const int min_i = max(in_density_cast->get_min_x(),i-mask_size);
@@ -1355,11 +1366,11 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	  
 	  // the mask size is in 2D only
 	  // SM mask now 3D 
-	 for (int k_in =min_k;k_in<=max_k;k_in++)
+	 //for (int k_in =min_k;k_in<=max_k;k_in++)
 	  for (int j_in =min_j;j_in<=max_j;j_in++)
 	    for (int i_in =min_i;i_in<=max_i;i_in++)	
 	    {
-	      (*in_density_cast_tmp)[k_in-k+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2)][j_in-j +6][i_in-i+6] = (*in_density_cast)[k_in][j_in][i_in];
+	      (*in_density_cast_tmp)[k][j_in-j +6][i_in-i+6] = (*in_density_cast)[k][j_in][i_in];
 	      //(*in_density_cast_tmp)[k][j_in-j +6][i_in-i+6] = (*in_density_cast)[k][j_in][i_in];
 	    }
 	    
@@ -1371,13 +1382,13 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	    
 	    find_inverse_and_bck_densels(*kappa0_ptr_bck,all_segments_for_kappa0,
 	      all_attenuation_segments,
-	     //k,k,
-	      (ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2,ceil((vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z())/2),
+	     k,k,
+	      //(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2,ceil((vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z())/2),
 	      //0,0,0,0,
 	      6,6,6,6,
 	      *proj_matrix_ptr,false,threshold, false) ;//true);	  
-	    (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2][6][6];
-	    //(*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
+	    //(*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2][6][6];
+	    (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
 	    
 	    timer.stop();
 	    //cerr << "kappa0 time "<< timer.value() << endl;
@@ -1405,12 +1416,28 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	  
 	}
 	float sq_kapas;
+	float multiply_with_sensitivity;
 	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	{ 
 	  sq_kapas =((*kappa0_ptr_bck)[k][j][i]*(*kappa0_ptr_bck)[k][j][i])/((*kappa1_ptr_bck)[k][j][i]*(*kappa1_ptr_bck)[k][j][i]);
+
+	    
+	/*  multiply_with_sensitivity = (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
+	  if ((*sensitivity_image)[k][j][i] >0.0000001 || (*sensitivity_image)[k][j][i] <-0.0000001)
+	  {
+	  multiply_with_sensitivity /= (*sensitivity_image)[k][j][i];
+	  }
+	  else
+	  {
+	    multiply_with_sensitivity /= 0.000001F;
+	  }
 	  
-	  (*kappa_coefficients)[k][j][i] = sq_kapas;
+	  sq_kapas *= multiply_with_sensitivity;  */
+#else
+	 float sq_kapas = 1.0F;
+#endif
+	 (*kappa_coefficients)[k][j][i] = sq_kapas;
 	   //sq_kapas = 2;
 
 	  int k_index ;
@@ -1426,11 +1453,11 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	  {
 	    Array <2,float> new_coeffs;
 	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
-	  construct_scaled_filter_coefficients_2D(new_coeffs, filter_coefficients,sq_kapas);
-		  filter_lookup[k_index] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
-		  all_filter_coefficients[k][j][i] = filter_lookup[k_index];
-		  //new ArrayFilter3DUsingConvolution<float>(new_coeffs);	
-		  
+	    construct_scaled_filter_coefficients_2D(new_coeffs, filter_coefficients,sq_kapas);    
+	    filter_lookup[k_index] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
+	    all_filter_coefficients[k][j][i] = filter_lookup[k_index];
+	    //new ArrayFilter3DUsingConvolution<float>(new_coeffs);	
+	    
 	  }
 	  else 
 	  {
@@ -1438,16 +1465,11 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 		  
 	  }
 		  
-	
-	//  all_filter_coefficients[k][j][i] = 
-	  //  new ModifiedInverseAverigingArrayFilter<3,float>(inverse_filter);		
-	  
 	}
 	else
 	{	
-	  sq_kapas = 0;
-	//  inverse_filter = 
-	  //  ModifiedInverseAverigingArrayFilter<3,float>();	  
+
+
 	  all_filter_coefficients[k][j][i] =
 	    new  ArrayFilter2DUsingConvolution<float>();
 	  
@@ -1468,6 +1490,279 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
       
       
 }
+
+
+
+template <typename elemT>
+void 
+ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_separable(VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ModifiedInverseAverigingArrayFilter <3, float> >  > > >& all_filter_coefficients,
+									      DiscretisedDensity<3,elemT>* in_density) const
+{
+ 
+  VectorWithOffset < shared_ptr <ModifiedInverseAverigingArrayFilter <3, float> > > filter_lookup;
+  const int num_elements_in_interval = 1000;
+  filter_lookup.grow(1,num_elements_in_interval);
+  const int k_min =1;
+  const float k_interval = 0.01F; //0.01F;
+  
+
+  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
+  VoxelsOnCartesianGrid<float>* in_density_cast =
+    dynamic_cast< VoxelsOnCartesianGrid<float>* >(in_density); 
+  
+
+  VoxelsOnCartesianGrid<float> *  vox_image_ptr_1 =
+    new VoxelsOnCartesianGrid<float> (IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
+    in_density_cast->get_min_y(),in_density_cast->get_max_y(),
+    in_density_cast->get_min_x(),in_density_cast->get_max_x()),
+    in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
+  
+  int start_segment_num = proj_data_ptr->get_min_segment_num();
+  int end_segment_num = proj_data_ptr->get_max_segment_num();
+  
+  VectorWithOffset<SegmentByView<float> *> all_segments(start_segment_num, end_segment_num);
+  VectorWithOffset<SegmentByView<float> *> all_segments_for_kappa0(start_segment_num, end_segment_num);   
+  VectorWithOffset<SegmentByView<float> *> all_attenuation_segments(start_segment_num, end_segment_num);
+  
+  
+  // first initialise to false
+  bool do_attenuation = false;
+
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+  {
+    all_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
+    all_segments_for_kappa0[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
+    
+    if (attenuation_proj_data_filename!="1")
+    {
+      do_attenuation = true;
+      all_attenuation_segments[segment_num] = 
+	new SegmentByView<float>(attenuation_proj_data_ptr->get_segment_by_view(segment_num));
+    }
+    else 
+    {
+      do_attenuation = false;
+      all_attenuation_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));		 
+      (*all_attenuation_segments[segment_num]).fill(1);
+    }
+    
+  }
+  
+  vox_image_ptr_1->set_origin(Coordinate3D<float>(0,0,0));   
+  
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr =  vox_image_ptr_1;
+  
+  shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = 
+    new ProjMatrixByDenselUsingRayTracing;
+  
+  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+    image_sptr);
+  cerr << proj_matrix_ptr->parameter_info();
+  
+  fwd_densels_all(all_segments,proj_matrix_ptr, proj_data_ptr,
+    in_density_cast->get_min_z(), in_density_cast->get_max_z(),
+    in_density_cast->get_min_y(), in_density_cast->get_max_y(),
+    in_density_cast->get_min_x(), in_density_cast->get_max_x(),
+    *in_density);
+  
+  VoxelsOnCartesianGrid<float> *  vox_image_ptr_kappa0 =
+    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
+    in_density_cast->get_min_y(),in_density_cast->get_max_y(),
+    in_density_cast->get_min_x(),in_density_cast->get_max_x()),
+    in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
+  
+  VoxelsOnCartesianGrid<float> *  vox_image_ptr_kappa1 =
+    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
+    in_density_cast->get_min_y(),in_density_cast->get_max_y(),
+    in_density_cast->get_min_x(),in_density_cast->get_max_x()),
+    in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
+
+   VoxelsOnCartesianGrid<float> *  kappa_coefficients =
+    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
+    in_density_cast->get_min_y(),in_density_cast->get_max_y(),
+    in_density_cast->get_min_x(),in_density_cast->get_max_x()),
+    in_density_cast->get_origin(),in_density_cast->get_voxel_size());
+  
+  
+  shared_ptr<DiscretisedDensity<3,float> > kappa0_ptr_bck =  vox_image_ptr_kappa0;       
+  shared_ptr<DiscretisedDensity<3,float> > kappa1_ptr_bck =  vox_image_ptr_kappa1;   
+  
+  // WARNING - find a way of finding max in the sinogram
+  // TODO - include other segments as well
+  float max_in_viewgram =0.F;
+  
+  for (int segment_num = start_segment_num; segment_num<= end_segment_num; segment_num++) 
+  {
+    SegmentByView<float> segment_by_view = 
+      proj_data_ptr->get_segment_by_view(segment_num);
+    const float current_max_in_viewgram = segment_by_view.find_max();
+    if ( current_max_in_viewgram >= max_in_viewgram)
+      max_in_viewgram = current_max_in_viewgram ;
+    else
+      continue;
+  }
+  const float threshold = 0.0001F*max_in_viewgram;  
+  
+  cerr << " THRESHOLD IS" << threshold; 
+  cerr << endl;
+  
+  find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
+    all_attenuation_segments,
+    vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
+    vox_image_ptr_kappa1->get_min_y(),vox_image_ptr_kappa1->get_max_y(),
+    vox_image_ptr_kappa1->get_min_x(),vox_image_ptr_kappa1->get_max_x(),
+    *proj_matrix_ptr, do_attenuation,threshold, false); //true);
+  
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+  { 
+    delete all_segments[segment_num];
+    delete all_attenuation_segments[segment_num];
+  }   
+  
+  cerr << "min and max in image - kappa1 " <<kappa1_ptr_bck->find_min()
+    << ", " << kappa1_ptr_bck->find_max() << endl;   
+  
+  for (int k=in_density_cast->get_min_z();k<=in_density_cast->get_max_z();k++)   
+    for (int j =in_density_cast->get_min_y();j<=in_density_cast->get_max_y();j++)
+      for (int i =in_density_cast->get_min_x();i<=in_density_cast->get_max_x();i++)	
+      {
+	
+	// WARNING - only works for segment zero at the moment
+	// do the calculation of kappa0 here
+	kappa0_ptr_bck->fill(0); 
+	for (int segment_num = start_segment_num; 
+	segment_num <= end_segment_num; ++segment_num)
+	{  
+	  (*all_segments_for_kappa0[segment_num]).fill(0);	    
+	}
+	if (true) //attenuation_proj_data_filename !="1")
+	{
+#if 1
+	   shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
+	   new VoxelsOnCartesianGrid<float>
+	    (IndexRange3D(0,0,
+	    -mask_size+6,mask_size+6,
+	    -mask_size+6,mask_size+6),in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
+	 
+	   
+
+	  	// SM 23/05/2002 mask now 3D
+	  const int min_k = in_density_cast->get_min_z(); //max(in_density_cast->get_min_z(),k-mask_size);
+	  const int max_k = in_density_cast->get_max_z(); // min(in_density_cast->get_max_z(),k+mask_size);			
+	  const int min_j = max(in_density_cast->get_min_y(),j-mask_size);
+	  const int max_j = min(in_density_cast->get_max_y(),j+mask_size);
+	  const int min_i = max(in_density_cast->get_min_x(),i-mask_size);
+	  const int max_i = min(in_density_cast->get_max_x(),i+mask_size);
+	  
+	  // the mask size is in 2D only
+	  // SM mask now 3D 
+	 //for (int k_in =min_k;k_in<=max_k;k_in++)
+	  for (int j_in =min_j;j_in<=max_j;j_in++)
+	    for (int i_in =min_i;i_in<=max_i;i_in++)	
+	    {
+	      (*in_density_cast_tmp)[k][j_in-j +6][i_in-i+6] = (*in_density_cast)[k][j_in][i_in];
+	      //(*in_density_cast_tmp)[k][j_in-j +6][i_in-i+6] = (*in_density_cast)[k][j_in][i_in];
+	    }
+	    
+	    fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
+	      in_density_cast_tmp->get_min_z(), in_density_cast_tmp->get_max_z(),
+	      in_density_cast_tmp->get_min_y(),in_density_cast_tmp->get_max_y(),
+	      in_density_cast_tmp->get_min_x(),in_density_cast_tmp->get_max_x(),
+	      *in_density_cast_tmp);
+	    
+	    find_inverse_and_bck_densels(*kappa0_ptr_bck,all_segments_for_kappa0,
+	      all_attenuation_segments,
+	     k,k,
+	      //(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2,ceil((vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z())/2),
+	      //0,0,0,0,
+	      6,6,6,6,
+	      *proj_matrix_ptr,false,threshold, false) ;//true);	  
+	    //(*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2][6][6];
+	    (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
+	    
+	}
+	else
+	{
+	  const int min_j = max(in_density_cast->get_min_y(),j-mask_size);
+	  const int max_j = min(in_density_cast->get_max_y(),j+mask_size);
+	  const int min_i = max(in_density_cast->get_min_x(),i-mask_size);
+	  const int max_i = min(in_density_cast->get_max_x(),i+mask_size);
+	  
+	  fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
+	    in_density_cast->get_min_z(), in_density_cast->get_max_z(),
+	    min_j,max_j,
+	    min_i,max_i,
+	    *in_density_cast);
+	  
+	  find_inverse_and_bck_densels(*kappa0_ptr_bck,all_segments_for_kappa0,
+	    all_attenuation_segments,
+	    vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
+	    j,j,i,i,
+	    *proj_matrix_ptr,false,threshold, true);
+	  
+	}
+	float sq_kapas;
+	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
+	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
+	{ 
+	  sq_kapas =((*kappa0_ptr_bck)[k][j][i]*(*kappa0_ptr_bck)[k][j][i])/((*kappa1_ptr_bck)[k][j][i]*(*kappa1_ptr_bck)[k][j][i]);
+  
+#else
+	 float sq_kapas = 10.0F;
+#endif
+	 (*kappa_coefficients)[k][j][i] = sq_kapas;
+
+	  int k_index ;
+          k_index = round(((float)sq_kapas- k_min)/k_interval);
+	   if (k_index < 1) 
+	   {k_index = 1;}
+	    
+	   if ( k_index > num_elements_in_interval)
+	   { k_index  = num_elements_in_interval;}
+	  
+	  
+	  if ( filter_lookup[k_index]==NULL )
+	  {
+	   // Array <1,float> new_coeffs;
+	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
+	   // construct_scaled_filter_coefficients_1D(new_coeffs, filter_coefficients,sq_kapas);    
+	    filter_lookup[k_index] = 
+	      new ModifiedInverseAverigingArrayFilter <3, float>(filter_coefficients,sq_kapas);  
+	    all_filter_coefficients[k][j][i] = filter_lookup[k_index];
+	    //new ArrayFilter3DUsingConvolution<float>(new_coeffs);	
+	    
+	  }
+	  else 
+	  {
+	    all_filter_coefficients[k][j][i] = filter_lookup[k_index];
+		  
+	  }
+		  
+	}
+	else
+	{	
+
+
+	  all_filter_coefficients[k][j][i] =
+	    new  ModifiedInverseAverigingArrayFilter <3, float>(); //ArrayFilter2DUsingConvolution<float>();
+	  
+	}
+	
+      }   
+
+      
+  delete kappa_coefficients ;
+
+      
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+  {
+    delete  all_segments_for_kappa0[segment_num];
+  }
+    
+      
+      
+}
+
 
 // densel stuff - > apply
 #if 1
@@ -1509,7 +1804,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	}
      precalculate_filter_coefficients(all_filter_coefficients,initial_image);
       }
-      else
+      else if ( num_dim ==2)
       {
 	all_filter_coefficients_nonseparable_2D.grow(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z());    
 	for (int k = in_density_cast_0.get_min_z(); k<=in_density_cast_0.get_max_z();k++)
@@ -1523,6 +1818,21 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	precalculate_filter_coefficients_2D(all_filter_coefficients_nonseparable_2D,initial_image);
 	
       }   
+      else
+      {
+	all_filter_coefficients_separable.grow(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z());    
+	for (int k = in_density_cast_0.get_min_z(); k<=in_density_cast_0.get_max_z();k++)
+	{
+	  all_filter_coefficients_separable[k].grow(in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y());
+	  for (int j = in_density_cast_0.get_min_y(); j<=in_density_cast_0.get_max_y();j++)      
+	  {
+	    (all_filter_coefficients_separable[k])[j].grow(in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()); 
+	  }
+	}
+     precalculate_filter_coefficients_separable(all_filter_coefficients_separable,initial_image);
+	
+
+      }
     }
    // else 
    // {
@@ -1854,7 +2164,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	}   
      }
      }
-     if ( initial_image_filename =="1" )
+     if ( initial_image_filename =="1" || num_dim ==1)
      {
      for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
        for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
