@@ -1,5 +1,5 @@
 //
-// $Id$ :$Date$
+// $Id$
 //
 /*!
 
@@ -12,18 +12,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#ifndef __LINE_H__
-#define __LINE_H__
+#ifndef __Tomo_LINE_H__
+#define __Tomo_LINE_H__
 
-#ifdef OLDDESIGN
-#include "pet_common.h"
-#endif
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 #include <string>
 #include <vector>

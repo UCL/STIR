@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -14,14 +14,14 @@
   \author Mustapha Sadki
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#ifndef __Bin_H__
-#define __Bin_H__
+#ifndef __Tomo_Bin_H__
+#define __Tomo_Bin_H__
 
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 
 START_NAMESPACE_TOMO

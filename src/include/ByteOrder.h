@@ -1,8 +1,8 @@
 //
-// $Id$: $Date$
+// $Id$
 //
-#ifndef __ByteOrder_H__
-#define __ByteOrder_H__
+#ifndef __Tomo_ByteOrder_H__
+#define __Tomo_ByteOrder_H__
 
 /*!
   \file 
@@ -13,10 +13,10 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
-
+  $Date$
+  $Revision$
+*/
+/*
   Modification History:
 
   - First version by KT
@@ -24,7 +24,7 @@
   - AZ&KT 15/12/99 rewrote swap_order using revert_region
 */
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 

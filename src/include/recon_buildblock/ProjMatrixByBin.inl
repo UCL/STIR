@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,11 +12,10 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-
+#include "tomo/Succeeded.h"
 #include "recon_buildblock/SymmetryOperation.h"
 
 START_NAMESPACE_TOMO

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -12,15 +12,14 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
-
+  $Date$
+  $Revision$
 */
 
-#ifndef __SCANNER_H__
-#define __SCANNER_H__
+#ifndef __Tomo_SCANNER_H__
+#define __Tomo_SCANNER_H__
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 #include <string>
 #include <list>
 

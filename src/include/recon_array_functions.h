@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __recon_array_functions_h_
-#define __recon_array_functions_h_
+#ifndef __Tomo_recon_array_functions_h_
+#define __Tomo_recon_array_functions_h_
 
 /*!
   \file 
@@ -15,12 +15,12 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date   $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 

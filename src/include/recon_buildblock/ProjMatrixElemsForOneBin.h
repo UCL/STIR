@@ -1,9 +1,9 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
-#ifndef __ProjMatrixElemsForOneBin__
-#define __ProjMatrixElemsForOneBin__
+#ifndef __Tomo_recon_buildblock_ProjMatrixElemsForOneBin__
+#define __Tomo_recon_buildblock_ProjMatrixElemsForOneBin__
 
 /*!
 
@@ -16,9 +16,8 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$
-        
-  \version $Revision$
+  $Date$       
+  $Revision$
 */
 
 
@@ -38,6 +37,7 @@ using std::random_access_iterator_tag;
 
 START_NAMESPACE_TOMO
 
+class Succeeded;
 class RelatedBins;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
