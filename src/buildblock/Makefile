@@ -53,7 +53,8 @@ SOURCES = \
 	ThresholdMinToSmallPositiveValueImageProcessor.cxx \
 	ChainedImageProcessor.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
-	SeparableConvolutionImageFilter.cxx
+	SeparableConvolutionImageFilter.cxx \
+	SSRB.cxx
  
 
 
