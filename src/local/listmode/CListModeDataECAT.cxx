@@ -21,6 +21,10 @@
 #include "local/stir/listmode/CListRecordECAT966.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#ifdef HAVE_LLN_MATRIX
+#include "stir/IO/stir_ecat7.h"
+#endif
+#include <time.h>
 #include <iostream>
 #include <fstream>
 #ifndef STIR_NO_NAMESPACES
@@ -28,6 +32,7 @@ using std::cerr;
 using std::endl;
 using std::ios;
 using std::fstream;
+using std::ifstream;
 #endif
 
 START_NAMESPACE_STIR
@@ -41,8 +46,47 @@ CListModeDataECAT(const string& listmode_filename_prefix)
   : listmode_filename_prefix(listmode_filename_prefix)    
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
-  // TODO get scanner from .sgl
+
+#ifdef HAVE_LLN_MATRIX
+  // attempt to read the .sgl file
+  {
+    const string singles_filename = listmode_filename_prefix + "_1.sgl";
+    ifstream singles_file(singles_filename.c_str(), ios::binary);
+    if (!singles_file)
+      {
+	warning("\nCouldn't open %s. We forge ahead anyway.\n", singles_filename.c_str());
+	scanner_ptr = new Scanner(Scanner::E966);
+      }
+    else
+      {
+	singles_file.read(reinterpret_cast<char *>(&singles_main_header), 
+			  sizeof(singles_main_header));
+	if (!singles_file)
+	  {
+	    warning("\nCouldn't read main_header from %s. We forge ahead anyway.\n", singles_filename.c_str());
+	    scanner_ptr = new Scanner(Scanner::E966);
+	  }
+	else
+	  {
+	    ecat::ecat7::find_scanner(scanner_ptr, singles_main_header);
+	    
+	    time_t sec_time = singles_main_header.scan_start_time;
+	    struct tm* lm_start_time_tm = localtime( &sec_time  ) ;
+	    // currently use same formula as Peter
+	    // it relies on TZ though: bad! (TODO)
+	    lm_start_time = ( lm_start_time_tm->tm_hour * 3600.0 ) + ( lm_start_time_tm->tm_min * 60.0 ) + lm_start_time_tm->tm_sec ;
+	    
+	    // TODO get lm_duration from singles
+
+	    cerr << '\n' << singles_filename << " file says that listmode start time is " << lm_start_time << endl;
+	  }
+      }
+  }
+
+#else
+  warning("\n.sgl file not read! Assuming ECAT 966\n");
   scanner_ptr = new Scanner(Scanner::E966);
+#endif
 
   if (open_lm_file(1) == Succeeded::no)
     error("CListModeDataECAT: error opening the first listmode file for filename %s\n",
@@ -64,7 +108,6 @@ CListModeDataECAT::
 open_lm_file(unsigned int new_lm_file) const
 {
   // current_lm_file and new_lm_file are 1-based
-  assert(current_lm_file>0);
   assert(new_lm_file>0);
 
   if (is_null_ptr(current_lm_data_ptr) || new_lm_file != current_lm_file)
@@ -72,6 +115,7 @@ open_lm_file(unsigned int new_lm_file) const
       // first store saved_get_positions
       if (!is_null_ptr(current_lm_data_ptr))
 	{
+	  assert(current_lm_file>0);
 	  if (current_lm_file>=saved_get_positions_for_each_lm_data.size())
 	    saved_get_positions_for_each_lm_data.resize(current_lm_file);
 
@@ -138,6 +182,8 @@ Succeeded
 CListModeDataECAT::
 reset()
 {
+  // current_lm_file and new_lm_file are 1-based
+  assert(current_lm_file>0);
   if (current_lm_file!=1)
     {
       return open_lm_file(1);
