@@ -42,8 +42,10 @@ OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(ADVANCED_DEPENDENCIES),1)
   include $(SOURCES:%.cxx=$(DEST)%.d)
+  include $(DEST)local_recon_buildblock_registries.d
 else
   -include $(SOURCES:%.cxx=$(DEST)%.P)
+  -include $(DEST)local_recon_buildblock_registries.P
 endif
 endif
 
