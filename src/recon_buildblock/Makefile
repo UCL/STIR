@@ -5,7 +5,7 @@
 include ../Makefile_common
 
 
-all: $(DEST)librecon_buildblock.a 
+all: $(DEST)librecon_buildblock.a  $(DEST)recon_buildblock_registries.o
 
 clean:
 	$(RM) $(DEST)*
@@ -44,7 +44,10 @@ endif
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
+endif
 
 ${DEST}librecon_buildblock.a: $(OBJS)
 	ar r $@ $?
