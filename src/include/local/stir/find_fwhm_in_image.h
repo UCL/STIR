@@ -20,19 +20,8 @@
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
-#include <iostream>
-#include <iomanip>
 #include <list>
-#include <algorithm>  
-#ifndef STIR_NO_NAMESPACES
-using std::endl;
-using std::cout;
-using std::cin;
-using std::cerr;
-using std::min;
-using std::max;
-using std::setw;
-#endif
+
 using namespace std;
 
 START_NAMESPACE_STIR
@@ -48,8 +37,7 @@ template <class RandomAccessIterType>
 float find_level_width(const RandomAccessIterType& begin_iterator,
                        const RandomAccessIterType& current_max_iterator,
                        const RandomAccessIterType& end_iterator,
-                       const float level_height )  ; 
- 
+                       const float level_height)  ;  
 /*!
    \ingroup resolution
    \brief 
@@ -60,9 +48,7 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
 template <class RandomAccessIterType>
 float find_level_width(const RandomAccessIterType& begin_iterator,
                        const RandomAccessIterType& end_iterator,
-                       const float level_height)  ;   
-                                              
-                        
+                       const float level_height)  ;  
 /*!
    \ingroup resolution
    \brief 
@@ -83,7 +69,6 @@ template<int num_dimensions,class elemT>
 BasicCoordinate<num_dimensions,int>
 maximum_location_per_slice(const Array<num_dimensions,elemT>& input_array,
                            const int slice, const int dimension);
-
 /*!
    \ingroup resolution
    \brief
@@ -95,8 +80,7 @@ template <int num_dimensions, class elemT>
 Array<1,elemT>
 extract_line(const Array<num_dimensions,elemT> &,   
              BasicCoordinate<num_dimensions,int>, 
-             const int dimension);  
-
+             const int dimension); 
 /*!
    \ingroup resolution
    \brief
@@ -114,8 +98,8 @@ Array<1,elemT>
 interpolated_line(const Array<num_dimensions,elemT>& input_array,    
                   const BasicCoordinate<num_dimensions,int>& max_location,
                   const BasicCoordinate<num_dimensions,bool>& do_direction, 
-                  const int dimension);      
-     
+                  const int dimension);     
+
 /*!
    \ingroup resolution
    \brief a structure that is used to hold the output of the function find_fwhm_in_image.
@@ -125,27 +109,46 @@ struct ResolutionIndex
 {
    elemT voxel_value;
    BasicCoordinate<num_dimensions, int> voxel_location;
-   BasicCoordinate<num_dimensions, elemT> resolution;  
-   BasicCoordinate<num_dimensions, elemT> real_maximum_value;      
+   BasicCoordinate<num_dimensions, elemT> resolution;        
 };       
 /*!
    \ingroup resolution
-   \brief Finds FWHM for a number of point sources
- 
-   find_fwhm_in_image function 
-   is the the basic function that the utility is based on. 
-   It takes the 3D input_image, the number of maxima, the level of the maximum and 
-   the dimension used for line sources.
-   The implementation calculates and returns in a list container the maximum_value and its location per slice 
-   for line sources or per the whole image for point sources. It calculates, as well, the resolution at the 
-   same location, and the real_maximum_value linear 3D interpolation after 3 points parabolic fit.
-   If the num_maximum>10, it uses the algorithm for line sources along the wanted dimension (z=1, y=2, x=3), 
-   else for point sources. 
+   \brief Finds FWHM in pixel size units for a number of point sources or a line source   
+  
+   is the basic function that the utility is based on. It takes the 3D input_image, the number of maxima, 
+   the level of the maximum (2 as half maximum, 10 as tenth maximum etc.), the dimension used for line 
+   sources and a boolean nema which enables the calculation based on the NEMA Standards Publication 
+   NU 2-2001. The implementation calculates and returns in a list container the maximum_value and its 
+   location per slice for line sources, sorted by minimum to maximum slice of the using dimension, or per 
+   whole image for point sources, sorted by maximum to minimum value. It calculates, as well, the resolution at the same location in the size 
+   of units that is used (usually mm). If the dimension is set to 0 it finds the resolution of each one 
+   point sources, else it finds the algorithm for the line sources giving its direction (z=1, y=2, x=3), 
+   respectively. If given as [num_maxima] less than the total slices it returns the results for some slices 
+   by sampling with the same step the total slices of the wanted dimension. (Only 3D implementation). 
+   In case it is not needed to be followed to the NEMA standard, for better approximation could be achieved 
+   by setting the nema to 0. (In this case the interpolated_line function is used). 
 */
+
 template <int num_dimensions, class elemT>           
 list<ResolutionIndex<num_dimensions,float> > 
 find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
-                   const unsigned int num_maxima, const float level,const int dimension); 
+                   const unsigned int num_maxima, const float level, 
+                   const int dimension, const bool nema);
+/*!  
+   \ingroup resolution
+   \brief                              
+  it Masks the input_array.
 
+  it masks the input_array at the location of a point source with a mask size depending on the resolution 
+  of the previous point (in pixel units), at each of the directions. In the code there is a scale factor 
+  to change easily the size of the mask (mask_size(z,y,x)=int(6*resolution(z,y,x)/level)). 
+*/
+template <int num_dimensions, class elemT>   
+void 
+flexible_mask(Array<num_dimensions,elemT>& input_array, 
+              const BasicCoordinate<num_dimensions,int>& max_location,
+              const BasicCoordinate<num_dimensions,elemT>& resolution,
+              const float level);
+     
 
 END_NAMESPACE_STIR
