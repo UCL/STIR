@@ -8,7 +8,9 @@ WORKSPACE=$(CURDIR)/../..
 include $(WORKSPACE)/Makefile_common
 
 LIB_SOURCES = \
-	lm.cxx
+	lm.cxx \
+	CListmodeData.cxx \
+	CListmodeDataFromStream.cxx
 
 SOURCES = \
 	lm_to_projdata.cxx \
