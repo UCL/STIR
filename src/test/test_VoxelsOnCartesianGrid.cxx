@@ -18,8 +18,10 @@
 
 #include "VoxelsOnCartesianGrid.h"
 #include "ProjDataInfo.h"
+#include "ProjDataInfoCylindricalArcCorr.h"
 #include "Scanner.h"
 #include "IndexRange.h"
+#include "tomo/round.h"
 
 #include <iostream>
 #include "RunTests.h"
@@ -91,13 +93,17 @@ VoxelsOnCartesianGridTests::run_tests()
   
   shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
   shared_ptr<ProjDataInfo> proj_data_info_ptr = 
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 1, 5, 8, 16);
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
+				  /*span=*/1, 
+				  /*max_delta=*/5,
+				  /*num_views=*/8,
+				  /*num_tang_poss=*/16);
   
   {
     cerr << "Tests with 4th constructor with ProjDataInfo\n";
     
-    float zoom=2.3F;
-    bool make_xy_size_odd = false;
+    const float zoom=2.3F;
+    const bool make_xy_size_odd = false;
     
     VoxelsOnCartesianGrid<float>
       ob4(*proj_data_info_ptr,zoom,origin,make_xy_size_odd);
@@ -106,8 +112,19 @@ VoxelsOnCartesianGridTests::run_tests()
     CartesianCoordinate3D<int> low_bound, high_bound;
     check(obtained_range.get_regular_range(low_bound, high_bound), "test regular range");
     
-    check_if_equal(low_bound, CartesianCoordinate3D<int>(0,-8,-8),"test on index range: lower bounds");
-    check_if_equal(high_bound, CartesianCoordinate3D<int>(30,+7,+7),"test on index range: higher bounds");
+    // KT 11/09/2001 adapted as this constructor now takes zoom into account
+    const bool is_arccorrected =
+      dynamic_cast<ProjDataInfoCylindricalArcCorr const *>(proj_data_info_ptr.get()) != 0;
+    check(is_arccorrected, "ProjDataInfoCTI should have returned arc-corrected data");
+    if (is_arccorrected)
+    {
+      const int radius_int = 
+	round(proj_data_info_ptr->get_num_tangential_poss() * zoom/2.F);
+      check_if_equal(low_bound, CartesianCoordinate3D<int>(0,-radius_int,-radius_int),
+		     "test on index range: lower bounds");
+      check_if_equal(high_bound, CartesianCoordinate3D<int>(30,+radius_int,+radius_int),
+		     "test on index range: higher bounds");
+    }
     check_if_equal(ob4.get_grid_spacing(), 
                    CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing()/2,
                                                 scanner_ptr->get_default_bin_size()/zoom,
