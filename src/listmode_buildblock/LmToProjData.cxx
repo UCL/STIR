@@ -320,6 +320,13 @@ post_processing()
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
       frame_defs = TimeFrameDefinitions(frame_times);
     }
+
+#ifdef FRAME_BASED_DT_CORR
+  cerr << "LmToProjData Using FRAME_BASED_DT_CORR\n";
+#else
+  cerr << "LmToProjData NOT Using FRAME_BASED_DT_CORR\n";
+#endif
+
   return false;
 }
 

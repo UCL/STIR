@@ -73,6 +73,11 @@ post_processing()
                                CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
   move_to_scanner = move_from_scanner.inverse();
 
+#ifdef FRAME_BASED_DT_CORR
+  cerr << "LmToProjDataWithMC Using FRAME_BASED_DT_CORR\n";
+#else
+  cerr << "LmToProjDataWithMC NOT Using FRAME_BASED_DT_CORR\n";
+#endif
   return false;
 }
 
