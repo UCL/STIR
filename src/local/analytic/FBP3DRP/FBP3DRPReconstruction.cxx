@@ -90,7 +90,7 @@
 #include "stir/display.h"
 #include "stir/interfile.h" 
 #include "stir/recon_buildblock/distributable.h"
-#include "local/stir/FBP3DRP/process_viewgrams.h"
+//#include "local/stir/FBP3DRP/process_viewgrams.h"
 
 #include "local/stir/FBP3DRP/FBP3DRPReconstruction.h"
 #include "local/stir/FBP2D/FBP2DReconstruction.h"
@@ -123,7 +123,6 @@ START_NAMESPACE_STIR
 // should be private member, TODO
 static ofstream full_log;
 
-// should be private member I guess, TODO
 static void find_rmin_rmax(int& rmin, int& rmax, 
                            const ProjDataInfoCylindricalArcCorr& proj_data_info_cyl,
                            const int seg_num, 
@@ -140,7 +139,8 @@ static void find_rmin_rmax(int& rmin, int& rmax,
   // z = num_planes_per_virtual_ring * ring + virtual_ring_offset
   // compute the offset by matching up the centre of the scanner 
   // in the 2 coordinate systems
-  // TODO get this from ScanInfo or so
+  // TODO get all this from ProjDataInfo or so
+
   const int num_planes_per_virtual_ring =
     (proj_data_info_cyl.get_max_ring_difference(seg_num) == proj_data_info_cyl.get_min_ring_difference(seg_num)) ? 2 : 1;
   const int num_virtual_rings_per_physical_ring =
@@ -155,7 +155,7 @@ static void find_rmin_rmax(int& rmin, int& rmax,
   
   
   // we first consider the LOR at s=0, phi=0 which goes through z=0,y=0, x=fovrad
-  // later on, we will shift it such that to the 'left'most edge of the FOV.
+  // later on, we will shift it to the 'left'most edge of the FOV.
   
   // find z position of intersection of this LOR with the detector radius 
   // (i.e. y=0, x=-ring_radius)
@@ -177,9 +177,6 @@ static void find_rmin_rmax(int& rmin, int& rmax,
   
   // rmax is determined by using symmetry: at both ends there are just as many missing rings 
   rmax =  proj_data_info_cyl.get_max_axial_pos_num(seg_num) + (proj_data_info_cyl.get_min_axial_pos_num(seg_num) - rmin);
-#if 0  
-  cerr << "new values for rmin,rmax : " << rmin << ", " << rmax << endl;
-#endif
 }
 
 FBP3DRPReconstruction::~FBP3DRPReconstruction()
@@ -244,6 +241,8 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
   {
     // set projectors to be used for the calculations
     // TODO get type and parameters for projectors from *Parameters
+    // TODO this really should take a proj_data_info which has more axial positions 
+    // (for the 'missing projections')
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
       new ForwardProjectorByBinUsingRayTracing(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
 					       target_image_ptr);
