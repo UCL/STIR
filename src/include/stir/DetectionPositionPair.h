@@ -4,14 +4,14 @@
 
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class DetectionPositionPair
   \author Kris Thielemans
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_DetectionPositionPair_H__
@@ -21,7 +21,8 @@
 
 START_NAMESPACE_STIR
 /*!
- \brief
+  \ingroup projdata
+  \brief
  A class for storing 2 coordinates-sets of a detection, as suitable for PET. 
  
  \see DetectionPosition for details on what we mean with a Detector Position
