@@ -48,6 +48,20 @@ template <typename elemT> class Coordinate3D;
 template <typename elemT> class VoxelsOnCartesianGrid;
 class ProjDataFromStream;
 
+//! Checks if the signature corresponds to the start of an interfile header 
+/*! The first line of an Interfile header should contain the 
+    \verbatim 
+    INTERFILE :=
+    \endverbatim
+    (potentially preceded by an exclamation mark, and maybe in 
+    mixed or lower case).
+    This function checks if the list of characters pointed to by
+    \a signature satifies these requirements.
+
+    \warning \a signature should be '\0' terminated.
+*/
+bool is_interfile_signature(const char * const signature);
+
 //! This reads the first 3d image in an Interfile header file, given as a stream
 /*!
  If there is trouble interpreting the header, 
