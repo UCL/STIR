@@ -29,7 +29,7 @@
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Sinogram.h"

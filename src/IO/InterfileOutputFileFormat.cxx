@@ -18,7 +18,7 @@
 */
 
 #include "stir/IO/InterfileOutputFileFormat.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 
 START_NAMESPACE_STIR
 

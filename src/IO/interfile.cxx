@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup IO
+  \ingroup InterfileIO
  
   \brief  Implementation of functions which read/write Interfile data
 
@@ -34,7 +34,7 @@
                 write applied corrections keyword for arc-correction	  
 */
 
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/InterfileHeader.h"
 #include "stir/IndexRange3D.h"
