@@ -22,6 +22,7 @@
 
 
 #include "stir/ByteOrderDefine.h"
+#include "stir/round.h"
 #include <iostream>
 
 
