@@ -32,8 +32,7 @@ $(dir)_SOURCES = \
 	add_planes_to_image.cxx \
 	find_sinogram_rescaling_factors.cxx \
 	move_image.cxx \
-        find_fwhm_in_image.cxx \
-        estimate_single_scatter.cxx
+        find_fwhm_in_image.cxx 
 
 #	CoG.cxx \
 #	make_cylinder.cxx 
