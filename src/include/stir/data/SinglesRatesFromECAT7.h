@@ -28,7 +28,7 @@
 #include "stir/Array.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/IO/stir_ecat7.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
@@ -54,9 +54,10 @@ public:
   virtual float get_singles_rate (const DetectionPosition<>& det_pos, 
 				  const double start_time,
 				  const double end_time) const;
-  
+   int get_frame_number (const double start_time, const double end_time) const;
   
 private:
+ 
   Array<3,float> singles;
   string ECAT7_filename;
   virtual void set_defaults();
@@ -66,6 +67,9 @@ private:
   int trans_blocks_per_bucket;
   int angular_crystals_per_block;
   int axial_crystals_per_block;
+  
+  TimeFrameDefinitions time_frame_defs;
+
   
   
 };
