@@ -12,13 +12,13 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 
-#include "local/stir/listmode/CListModeDataFromStream.h"
-#include "local/stir/listmode/CListRecord.h"
+#include "stir/listmode/CListModeDataFromStream.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
@@ -140,7 +140,7 @@ get_next_record(CListRecord& record) const
   {
     //cerr << "Reading from listmode file \n";
     // read some more data
-    const unsigned int buf_size = 8683520/size_of_record;
+    const unsigned int buf_size = (8683520/size_of_record)*size_of_record;
     stream_ptr->read(buffer, buf_size);
     current_position_in_buffer = buffer;
     num_chars_left_in_buffer = static_cast<unsigned int>(stream_ptr->gcount());
