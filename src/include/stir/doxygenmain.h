@@ -2,6 +2,10 @@
 // $Id$
 //
 // This file is for doxygen only. It does not contain any code.
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
  \mainpage
@@ -39,14 +43,11 @@
  <li>the #include statements do not always contain the correct path of the 
      files
  <li>Class hierarchies based on RegisteredObject et al are unfortunately not
-   listed correctly. For example, doxygen does not show that
-   MedianImageFilter3D is derived from ImageProcessor (through 
-   RegisteredObject). This is because the derivation is done via templates.
-
+   always listed correctly. However, with the current hierarchies, this 
+   problem shows up in only a few places.  For example, the class
+   hierarchies of most of the ImageProcessor classes are incomplete on their
+   own documentaiton page. However, they are fine in the main
+   'class hierarchy' page.
  </ul>
 
-*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
