@@ -60,7 +60,7 @@ public:
    inline void conjugate();
    inline void normalise();
    inline void inverse();
-   inline float dot_product (Quaternion&, Quaternion&);
+   inline static coordT dot_product (const Quaternion&, const Quaternion&);
 
 private:
   
