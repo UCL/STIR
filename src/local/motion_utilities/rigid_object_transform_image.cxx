@@ -137,7 +137,7 @@ int main(int argc, char **argv)
         const CartesianCoordinate3D<float> current_point =
           CartesianCoordinate3D<float>(z,y,x) * in_image.get_voxel_size() +
           in_image.get_origin();
-#if 1
+#if 0
         // go to Polaris
         const CartesianCoordinate3D<float> 
           current_point_Polaris(current_point.z(),
