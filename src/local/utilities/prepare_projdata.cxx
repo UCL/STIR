@@ -24,6 +24,8 @@
 #include "tomo/ParsingObject.h"
 #include "tomo/Succeeded.h"
 
+#include "tomo/recon_buildblock/BinNormalisationFromProjData.h"
+#include "tomo/recon_buildblock/TrivialBinNormalisation.h"
 
 #include <string>
 #include <iostream> 
@@ -43,103 +45,6 @@ START_NAMESPACE_TOMO
 
 
 
-// A do-nothing class for normalisation
-class Normalisation
-{
-public:
-  virtual ~Normalisation() {}
-  virtual void apply(RelatedViewgrams<float>&) const= 0;
-  virtual void undo(RelatedViewgrams<float>&) const = 0; 
-};
-
-class NoNormalisation : public Normalisation
-{
-public:
-  virtual void apply(RelatedViewgrams<float>&) const {}
-  virtual void undo(RelatedViewgrams<float>&) const {}
-};
-
-class ProfileNormalisation : public Normalisation
-{
-public:
-  ProfileNormalisation(const string& filename)
-    : profile(  Array<1,float>(-40,39) )
-  {
-    ifstream profile_data(filename.c_str());
-    for (int i=profile.get_min_index(); i<=profile.get_max_index(); ++i)
-      profile_data >> profile[i];
-    if (!profile_data)
-      error("Error reading profile %s\n", filename.c_str());
-  }
-
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const 
-  {
-    RelatedViewgrams<float>::iterator viewgrams_iter = 
-      viewgrams.begin();
-    for (; 
-	 viewgrams_iter != viewgrams.end();
-	 ++viewgrams_iter)
-      {
-	for (int ax_pos_num=viewgrams_iter->get_min_index();
-	     ax_pos_num<=viewgrams_iter->get_max_index();
-	     ++ax_pos_num)
-	  {
-	    (*viewgrams_iter)[ax_pos_num] *= profile;
-	  }
-      }
-  }
-
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const 
-    {
-    RelatedViewgrams<float>::iterator viewgrams_iter = 
-      viewgrams.begin();
-    for (; 
-	 viewgrams_iter != viewgrams.end();
-	 ++viewgrams_iter)
-      {
-	for (int ax_pos_num=viewgrams_iter->get_min_index();
-	     ax_pos_num<=viewgrams_iter->get_max_index();
-	     ++ax_pos_num)
-	  {
-	    (*viewgrams_iter)[ax_pos_num] /= profile;
-	  }
-      }
-    }
-  private:
-  Array<1,float> profile;
-};
-
-class NormalisationFromProjData : public Normalisation
-{
-public:
-  NormalisationFromProjData(const string& filename)
-    : norm_proj_data_ptr(ProjData::read_from_file(filename.c_str()))
-  {}
-  NormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
-    : norm_proj_data_ptr(norm_proj_data_ptr)
-  {}
-
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const 
-  {
-    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
-      viewgrams.get_symmetries_ptr();
-    viewgrams *= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
-  }
-
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const 
-  {
-    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
-      viewgrams.get_symmetries_ptr();
-    viewgrams /= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
-
-  }
-private:
-  shared_ptr<ProjData> norm_proj_data_ptr;
-};
 
 
 
@@ -171,10 +76,10 @@ public:
 
 private:
   // shared_ptr's such that they clean up automatically at exit
-  shared_ptr<ProjData> raw_projdata_ptr;
+  shared_ptr<ProjData> trues_projdata_ptr;
   shared_ptr<ProjData> precorrected_projdata_ptr;
   shared_ptr<ProjData> randoms_projdata_ptr;
-  shared_ptr<Normalisation> normalisation_ptr;
+  shared_ptr<BinNormalisation> normalisation_ptr;
   shared_ptr<ProjData> attenuation_projdata_ptr;
   
   
@@ -182,9 +87,11 @@ private:
   shared_ptr<ProjData> scatter_projdata_ptr;
   shared_ptr<ProjData> Shifted_Poisson_numerator_projdata_ptr;
   shared_ptr<ProjData> Shifted_Poisson_denominator_projdata_ptr;
+  shared_ptr<ProjData> prompts_denominator_projdata_ptr;
   
   int max_segment_num_to_process;
   bool do_Shifted_Poisson;
+  bool do_prompts;
 private:
 
   virtual void set_defaults();
@@ -192,7 +99,7 @@ private:
 
   string attenuation_projdata_filename;
   string norm_filename;
-  string raw_projdata_filename;
+  string trues_projdata_filename;
   string precorrected_projdata_filename;
   string randoms_projdata_filename;
   
@@ -200,6 +107,7 @@ private:
   string scatter_projdata_filename;
   string Shifted_Poisson_numerator_projdata_filename;
   string Shifted_Poisson_denominator_projdata_filename;
+  string prompts_denominator_projdata_filename;
   
 };
 
@@ -207,7 +115,7 @@ void
 PrepareProjData::
 set_defaults()
 {
-  raw_projdata_ptr = 0;
+  trues_projdata_ptr = 0;
   precorrected_projdata_ptr = 0;
   randoms_projdata_ptr = 0;
   normalisation_ptr = 0;
@@ -215,7 +123,7 @@ set_defaults()
   max_segment_num_to_process = -1;
   attenuation_projdata_filename = "";
   norm_filename = "";
-  raw_projdata_filename = "";
+  trues_projdata_filename = "";
   precorrected_projdata_filename = "";
   randoms_projdata_filename = "";
   
@@ -233,7 +141,7 @@ initialise_keymap()
   parser.add_start_key("Prepare projdata Parameters");
   parser.add_key("attenuation_projdata_filename", &attenuation_projdata_filename);
   parser.add_key("Normalisation projdata filename", &norm_filename);
-  parser.add_key("raw_projdata_filename", &raw_projdata_filename);
+  parser.add_key("trues_projdata_filename", &trues_projdata_filename);
   parser.add_key("precorrected_projdata_filename", &precorrected_projdata_filename);
   parser.add_key("randoms_projdata_filename", &randoms_projdata_filename);
   
@@ -242,6 +150,7 @@ initialise_keymap()
   parser.add_key("scatter_projdata_filename", &scatter_projdata_filename);
   parser.add_key("Shifted_Poisson_numerator_projdata_filename", &Shifted_Poisson_numerator_projdata_filename);
   parser.add_key("Shifted_Poisson_denominator_projdata_filename", &Shifted_Poisson_denominator_projdata_filename);
+  parser.add_key("prompts_denominator_projdata_filename", &prompts_denominator_projdata_filename);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
  
   parser.add_stop_key("END Prepare projdata Parameters");
@@ -257,18 +166,24 @@ PrepareProjData(const char * const par_filename)
     ask_parameters();
 
   if (norm_filename!="")
-    normalisation_ptr = new NormalisationFromProjData(norm_filename);
+    normalisation_ptr = new BinNormalisationFromProjData(norm_filename);
   else
-    normalisation_ptr = new NoNormalisation;
+    normalisation_ptr = new TrivialBinNormalisation;
 
-  raw_projdata_ptr = ProjData::read_from_file(raw_projdata_filename.c_str());
+  trues_projdata_ptr = ProjData::read_from_file(trues_projdata_filename.c_str());
   precorrected_projdata_ptr = ProjData::read_from_file(precorrected_projdata_filename.c_str());
   attenuation_projdata_ptr = ProjData::read_from_file(attenuation_projdata_filename.c_str());
-  do_Shifted_Poisson  = randoms_projdata_filename.size()!=0;
-  if (do_Shifted_Poisson)
+  do_Shifted_Poisson = 
+    randoms_projdata_filename.size()!=0 &&
+    Shifted_Poisson_numerator_projdata_filename.size() != 0;
+  do_prompts =
+    randoms_projdata_filename.size()!=0 &&
+    prompts_denominator_projdata_filename.size() != 0;
+
+  if (do_Shifted_Poisson || do_prompts)
      randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename.c_str());
   const int max_segment_num_available =
-    raw_projdata_ptr->get_max_segment_num();
+    trues_projdata_ptr->get_max_segment_num();
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
@@ -276,7 +191,7 @@ PrepareProjData(const char * const par_filename)
   // construct output projdata
   {
     shared_ptr<ProjDataInfo>  new_data_info_ptr= 
-      raw_projdata_ptr->get_proj_data_info_ptr()->clone();
+      trues_projdata_ptr->get_proj_data_info_ptr()->clone();
     new_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
                                             max_segment_num_to_process);
     
@@ -287,6 +202,10 @@ PrepareProjData(const char * const par_filename)
     {
       Shifted_Poisson_numerator_projdata_ptr = make_new_ProjDataFromStream(Shifted_Poisson_numerator_projdata_filename, new_data_info_ptr);
       Shifted_Poisson_denominator_projdata_ptr = make_new_ProjDataFromStream(Shifted_Poisson_denominator_projdata_filename, new_data_info_ptr);
+    }
+    if (do_prompts)
+    {
+      prompts_denominator_projdata_ptr = make_new_ProjDataFromStream(prompts_denominator_projdata_filename, new_data_info_ptr);
     }
   }
 
@@ -307,6 +226,7 @@ doit()
   RelatedViewgrams<float> randoms_viewgrams;
   RelatedViewgrams<float> Shifted_Poisson_numerator_viewgrams;
   RelatedViewgrams<float> Shifted_Poisson_denominator_viewgrams;
+  RelatedViewgrams<float> prompts_denominator_viewgrams;
 
   // TODO somehow find basic range for loop, in this case there are no symmetries used
   for (int segment_num = -max_segment_num_to_process; segment_num <= max_segment_num_to_process; segment_num++)
@@ -335,10 +255,10 @@ doit()
       
       /*RelatedViewgrams<float>*/ scatter_viewgrams = normatten_viewgrams;
       {
-        // scatter = raw_emission * norm * atten - fully_precorrected_emission
+        // scatter = trues_emission * norm * atten - fully_precorrected_emission
 
         scatter_viewgrams *= 
-          raw_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+          trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
         scatter_viewgrams -= 
           precorrected_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
         
@@ -353,12 +273,12 @@ doit()
         randoms_viewgrams *= 2;
 
         {
-          // numerator of Shifted_Poisson is raw+ 2*randoms
+          // numerator of Shifted_Poisson is trues+ 2*randoms
 
           /*RelatedViewgrams<float>*/ Shifted_Poisson_numerator_viewgrams =
             Shifted_Poisson_numerator_projdata_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr, false);
           Shifted_Poisson_numerator_viewgrams += 
-            raw_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+            trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
           Shifted_Poisson_numerator_viewgrams += randoms_viewgrams;
           Shifted_Poisson_numerator_projdata_ptr->set_related_viewgrams(Shifted_Poisson_numerator_viewgrams);
         }
@@ -368,10 +288,25 @@ doit()
           randoms_viewgrams *= normatten_viewgrams;
           /*RelatedViewgrams<float>*/ Shifted_Poisson_denominator_viewgrams = scatter_viewgrams;
           Shifted_Poisson_denominator_viewgrams += randoms_viewgrams;
-         Shifted_Poisson_denominator_projdata_ptr->set_related_viewgrams(Shifted_Poisson_denominator_viewgrams);
+          Shifted_Poisson_denominator_projdata_ptr->set_related_viewgrams(Shifted_Poisson_denominator_viewgrams);
         }
       }
     
+      if (do_prompts)
+      {
+        /*RelatedViewgrams<float>*/ randoms_viewgrams =
+          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr, false);
+               
+        {
+          // denominator of prompts is scatter+ randoms*norm*atten
+
+          randoms_viewgrams *= normatten_viewgrams;
+          /*RelatedViewgrams<float>*/ prompts_denominator_viewgrams = scatter_viewgrams;
+          prompts_denominator_viewgrams += randoms_viewgrams;
+          prompts_denominator_projdata_ptr->set_related_viewgrams(prompts_denominator_viewgrams);
+        }
+      }
+
     }
         
   }
