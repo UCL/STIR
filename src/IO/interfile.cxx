@@ -602,12 +602,14 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
        output_header << "number of detectors per ring := " 
 		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_max_num_views()*2 << endl;
 
+       // KT 18/01/2001 use data from proj_data_info instead of scanner
        output_header << "ring diameter (cm) := "
-		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_radius()*2/10. << endl;
+		     << proj_data_info_ptr->get_ring_radius()*2/10. << endl;
        output_header << "distance between rings (cm) := " 
-		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_spacing()/10. << endl;
+		     << proj_data_info_ptr->get_ring_spacing()/10. << endl;
        output_header << "bin size (cm) := " 
-		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
+		     << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
+		     //pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
 
        //output_header << "view offset (degrees) := "
        //		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->view_offset<< endl;
