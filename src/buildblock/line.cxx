@@ -4,6 +4,7 @@
 
 // KT 01/08/98 removed ! from keywords
 
+// KT 12/11/98 changed String->string
 
 // KT 14/12 changed <> to "" in next include
 #include "line.h"
@@ -16,9 +17,9 @@
 #pragma warning(once: 4786)
 #endif
 
-String Line::get_keyword()
+string Line::get_keyword()
 {
-	String kw;
+	string kw;
 	int sok,eok;		//start & end pos. of keyword
 	int cp =0;		//current index
 	
@@ -27,7 +28,7 @@ String Line::get_keyword()
 	cp=find_first_not_of(" \t",0);
 
 
-	if(cp!=String::npos)
+	if(cp!=string::npos)
 	{
 		// skip first !, as this is not strictly part of the keyword
 		// KT 01/08/98 skip first ! now instead of space
@@ -49,10 +50,10 @@ int Line::get_index()
 	int cp,sok,eok;
 	// we take 0 as a default value for the index
 	int in=0;
-	String sin;
+	string sin;
 	// KT 20/06/98 make sure that the index is part of the key (i.e. before :=)
 	cp=find_first_of(":[",0);
-	if(cp!=String::npos && operator[](cp) == '[')
+	if(cp!=string::npos && operator[](cp) == '[')
 	{
 		sok=cp+1;
 		eok=find_first_of(']',cp);
@@ -72,18 +73,18 @@ int Line::get_index()
 	return in;
 }
 
-int Line::get_param(String& s)
+int Line::get_param(string& s)
 {
 	int sok,eok;		//start & end pos. of keyword
 	int cp =0;		//current index
 	
 	cp=find('=',0);
 
-	if(cp!=String::npos)
+	if(cp!=string::npos)
 	{
 		cp++;
 		sok=find_first_not_of(' ',cp);
-		if(sok!=String::npos)
+		if(sok!=string::npos)
 		{
 			cp=length();
 			// KT 09/08/98 added tab to list
@@ -99,7 +100,7 @@ int Line::get_param(String& s)
 
 int Line::get_param(int& i)
 {
-	String s;
+	string s;
 	int r;
 
 	r=get_param(s);
@@ -112,7 +113,7 @@ int Line::get_param(int& i)
 // KT 01/08/98 new
 int Line::get_param(unsigned long& i)
 {
-	String s;
+	string s;
 	int r;
 
 	r=get_param(s);
@@ -126,7 +127,7 @@ int Line::get_param(unsigned long& i)
 // KT 01/08/98 new
 int Line::get_param(double& i)
 {
-	String s;
+	string s;
 	int r;
 
 	r=get_param(s);
@@ -140,7 +141,7 @@ int Line::get_param(double& i)
 
 int Line::get_param(vector<int>& v)
 {
-	String s;
+	string s;
 	// KT 02/11/98 don't use temporary variable anymore
 	//int r=LINE_OK;
 	int cp;
@@ -157,7 +158,7 @@ int Line::get_param(vector<int>& v)
 		// KT 20/06/98 removed space from the list, as this allowed numbers separated by spaces
 		cp=find_first_not_of("{},",cp);
 
-		if(cp==String::npos)
+		if(cp==string::npos)
 		{
 			end=true;
 		}
@@ -165,7 +166,7 @@ int Line::get_param(vector<int>& v)
 		{
 			// KT 20/06/98 removed space from the list, as this allowed numbers separated by spaces
 		        eop=find_first_of(",}",cp);
-			if(eop==String::npos)
+			if(eop==string::npos)
 			{
 				end=true;
 				eop=length();
@@ -184,7 +185,7 @@ int Line::get_param(vector<int>& v)
 // KT 29/10/98 new
 int Line::get_param(vector<double>& v)
 {
-	String s;
+	string s;
 	// KT 02/11/98 don't use temporary variable anymore
 	//int r=LINE_OK;
 	int cp;
@@ -201,7 +202,7 @@ int Line::get_param(vector<double>& v)
 		// KT 20/06/98 removed space from the list, as this allowed numbers separated by spaces
 		cp=find_first_not_of("{},",cp);
 
-		if(cp==String::npos)
+		if(cp==string::npos)
 		{
 			end=true;
 		}
@@ -209,7 +210,7 @@ int Line::get_param(vector<double>& v)
 		{
 			// KT 20/06/98 removed space from the list, as this allowed numbers separated by spaces
 		        eop=find_first_of(",}",cp);
-			if(eop==String::npos)
+			if(eop==string::npos)
 			{
 				end=true;
 				eop=length();
@@ -225,9 +226,9 @@ int Line::get_param(vector<double>& v)
 	return LINE_OK;
 }
 
-int Line::get_param(vector<String>& v)
+int Line::get_param(vector<string>& v)
 {
-	String s;
+	string s;
 
 	// KT 02/11/98 don't use temporary variable anymore
 	//int r=LINE_OK;
@@ -247,7 +248,7 @@ int Line::get_param(vector<String>& v)
 		// KT 09/08/98 skip white space now
 		cp=find_first_not_of(" \t",cp);
 
-		if(cp==String::npos)
+		if(cp==string::npos)
 		{
 			end=true;
 		}
@@ -255,7 +256,7 @@ int Line::get_param(vector<String>& v)
 		{
 			// KT 20/06/98 removed space from the list
 			eop=find_first_of(",}",cp);
-			if(eop==String::npos)
+			if(eop==string::npos)
 			{
 				end=true;
 				eop=length();
@@ -284,6 +285,6 @@ int Line::get_param(vector<String>& v)
 
 Line& Line::operator=(const char* ch)
 {
-	String::operator=(ch);
+	string::operator=(ch);
 	return *this;
 }
