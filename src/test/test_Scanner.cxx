@@ -81,7 +81,9 @@ test_scanner(const Scanner& scanner)
      To avoid warnings/errors, we exclude some scanners where we know the bin-size for sure
      from the test.
   */
-  if (scanner.get_type() != Scanner::Advance/* &&
+  if (scanner.get_type() != Scanner::Advance &&
+      scanner.get_type() != Scanner::DiscoveryLS &&
+      scanner.get_type() != Scanner::DiscoveryST/* &&
       scanner.get_type() != Scanner::HZLR*/)
   {
     const float natural_bin_size =
