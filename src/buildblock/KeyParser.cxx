@@ -8,6 +8,8 @@
 #include "line.h"
 // KT 20/06/98 needed for PETerror
 #include "pet_common.h"
+// KT 13/11/98 needed for new parse()
+#include <fstream>
 
 // KT 20/06/98 do this pragma only for VC++
 #ifdef _MSC_VER
@@ -54,22 +56,11 @@ map_element& map_element::operator=(const map_element& me)
 
 // KeyParser implementation
 
-// KT 19/10/98 removed default constructor as unused at the moment
-#if 0
+
+// KT 13/11/98 moved istream arg to parse()
 KeyParser::KeyParser()
 {
-  // KT 15/10/98 added initialisation of input
-  input=0;
-  status=STATUS_PARSING;
-  current_index=-1;
-  current=new map_element();
-}
-#endif // 0
-
-// KT 16/10/98 changed to istream&
-KeyParser::KeyParser(istream& f)
-{
-  input=&f;
+  
   current_index=-1;
   status=end_parsing;
   current=new map_element();
@@ -79,9 +70,23 @@ KeyParser::~KeyParser()
 {
 }
 
-bool KeyParser::parse()
+// KT 13/11/98 new
+bool KeyParser::parse(const char * const filename)
+{
+   ifstream hdr_stream(filename);
+   if (!hdr_stream)
+    { 
+      PETerror("KeyPraser::parse: couldn't open file %s\n", filename);
+      return false;
+    }
+    return parse(hdr_stream);
+}
+
+// KT 13/11/98 moved istream arg from constructor
+bool KeyParser::parse(istream& f)
 {
   //KT 26/10/98 removed init_keys();
+  input=&f;
   return (parse_header()==0 && post_processing()==0);
 }
 
