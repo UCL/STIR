@@ -30,7 +30,6 @@
 */
 #include "stir/NumericVectorWithOffset.h"
 #include "stir/ByteOrder.h"
-#include "stir/NumericType.h"
 #include "stir/IndexRange.h"   
 
 #include <iostream>
@@ -42,6 +41,8 @@ using std::ostream;
 
 
 START_NAMESPACE_STIR
+class NumericType;
+
 #ifdef ARRAY_FULL
 #ifndef ARRAY_FULL2
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
@@ -129,10 +130,14 @@ public:
   inline full_iterator begin_all();
   //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator begin_all_const() const;
   //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
   //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator end_all_const() const;
   //@}
 
   inline IndexRange<num_dimensions> get_index_range() const;
@@ -278,17 +283,21 @@ public:
   //! virtual destructor
   inline virtual ~Array();
 
-  //! start value for iterating through all elements in the array
+  /*! @name functions returning full_iterators*/
+  //@{
+  //! start value for iterating through all elements in the array, see full_iterator
   inline full_iterator begin_all();
-
-  //! start value for iterating through all elements in the (const) array
+  //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
-
-  //! end value for iterating through all elements in the array
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator begin_all_const() const;
+  //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
-
-  //! end value for iterating through all elements in the (const) array
+  //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator end_all_const() const;
+  //@}
 
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
@@ -460,17 +469,21 @@ public:
   //! virtual destructor
   inline virtual ~Array();
 
-  //! start value for iterating through all elements in the array
+  /*! @name functions returning full_iterators*/
+  //@{
+  //! start value for iterating through all elements in the array, see full_iterator
   inline full_iterator begin_all();
-
-  //! start value for iterating through all elements in the (const) array
+  //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
-
-  //! end value for iterating through all elements in the array
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator begin_all_const() const;
+  //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
-
-  //! end value for iterating through all elements in the (const) array
+  //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator end_all_const() const;
+  //@}
 
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
@@ -623,17 +636,21 @@ public:
   //! virtual destructor
   inline virtual ~Array();
 
-  //! start value for iterating through all elements in the array
+  /*! @name functions returning full_iterators*/
+  //@{
+  //! start value for iterating through all elements in the array, see full_iterator
   inline full_iterator begin_all();
-
-  //! start value for iterating through all elements in the (const) array
+  //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
-
-  //! end value for iterating through all elements in the array
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator begin_all_const() const;
+  //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
-
-  //! end value for iterating through all elements in the (const) array
+  //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator end_all_const() const;
+  //@}
 
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
@@ -785,17 +802,21 @@ public:
   //! virtual destructor
   inline virtual ~Array();
 
-  //! start value for iterating through all elements in the array
+  /*! @name functions returning full_iterators*/
+  //@{
+  //! start value for iterating through all elements in the array, see full_iterator
   inline full_iterator begin_all();
-
-  //! start value for iterating through all elements in the (const) array
+  //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
-
-  //! end value for iterating through all elements in the array
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator begin_all_const() const;
+  //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
-
-  //! end value for iterating through all elements in the (const) array
+  //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator end_all_const() const;
+  //@}
 
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
@@ -945,17 +966,21 @@ public:
   //! virtual destructor
   inline virtual ~Array();
 
-  //! start value for iterating through all elements in the array
+  /*! @name functions returning full_iterators*/
+  //@{
+  //! start value for iterating through all elements in the array, see full_iterator
   inline full_iterator begin_all();
-
-  //! start value for iterating through all elements in the (const) array
+  //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
-
-  //! end value for iterating through all elements in the array
+  //! start value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator begin_all_const() const;
+  //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
-
-  //! end value for iterating through all elements in the (const) array
+  //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
+  //! end value for iterating through all elements in the array, see full_iterator
+  inline const_full_iterator end_all_const() const;
+  //@}
 
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
