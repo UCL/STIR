@@ -208,7 +208,8 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
   
   // KT 21/10/98 use new function
   ask_filename_with_extension(
-    "Enter file name of 3D sinogram data : ", ".scn", filename);
+    filename, 
+    "Enter file name of 3D sinogram data : ", ".scn");
 
   if (on_disk)
     {
