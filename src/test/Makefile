@@ -37,8 +37,9 @@ LDFLAGS = -g -L${WORKSPACE}/display/$(SYS)  -L${WORKSPACE}/buildblock/$(SYS) \
 
 #KT GNU make would allow $+ in the rule below to include all dependents, 
 #but Solaris make doesn't...
-
-all: tensor display sinodata createsino VectorWithOffset convert pplusdummy pplustiny ecat6bysegm
+#CL 18/10/98 Remove ecat6bysegm as it has been moved to utilities
+#directory
+all: tensor display sinodata createsino VectorWithOffset convert pplusdummy pplustiny #ecat6bysegm
 
 #KT added .h dependencies
 tensor: tensor.cxx ${INCLUDE}/Tensor1D.h ${INCLUDE}/Tensor2D.h \
