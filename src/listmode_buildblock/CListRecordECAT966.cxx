@@ -4,8 +4,8 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes CListEventECAT966w for listmode events for the 
-   ECAT 966 (aka Exact 3d).
+  \brief Implementation of classes CListEventECAT966 and CListRecordECAT966 
+  for listmode events for the ECAT 966 (aka Exact 3d).
     
   \author Kris Thielemans
       
@@ -13,27 +13,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 1998- $Date$, IRSL
+    Copyright (C) 1998- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
+// TODO add check on size of event
 
-/*
-   Warning:
-   this code makes use of an implementation dependent feature:
-   bit shifting negative ints to the right.
-    -1 >> 1 should be -1
-    -2 >> 1 should be -1
-   This is ok on SUNs (gcc, but probably SUNs cc as well), Parsytec (gcc),
-   Pentium (gcc, VC++) and probably every other system which uses
-   the 2-complement convention.
-
-  TODO insert assert
-*/
-
-#include "local/stir/listmode/CListRecordECAT966.h"
+#include "stir/listmode/CListRecordECAT966.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
-#include "stir/ByteOrder.h"
 #include "stir/Succeeded.h"
 
 #include <algorithm>
@@ -62,112 +49,11 @@ uncompressed_proj_data_info_sptr =
 				 scanner_sptr->get_default_num_arccorrected_bins(), 
 				 false));
 
-const int CListEventDataECAT966 ::num_views = 288;
-
-/* Go from sinograms to detectors.
-
-   TODO remove duplication of ProjDataInfoCylindricalNoArcCorr::
-   get_det_num_pair_for_view_tangential_pos_num().
-
-   Because sinograms are not arc-corrected, bin number corresponds
-   to an angle as well. Before interleaving (see LM.h) we have that
-   det_angle_a = LOR_angle + bin_angle
-   det_angle_b = LOR_angle + (Pi - bin_angle)
-
-   (Hint: understand this first at LOR_angle=0, then realise that
-    other LOR_angles follow just by rotation)
-
-   Code gets slightly intricate because:
-   - angles have to be defined modulo 2 Pi (so 2*num_views)
-   - interleaving
- */
-static void sinogram_to_detectors(
-			   int& det_num_a, int& det_num_b,
-			   const int bin, const int view,
-			   const int num_views)
-{
-  /*
-     this uses code from CTI
-     Note for implementation: avoid using % with negative numbers
-     so add 2*nv before doing modulo 2*nv)
-  */
-
-#define ve_to_det1( e, v, nv )  \
-     ( ( v + ( e >> 1 ) + 2 * nv ) % (2 * nv ) )
-#define ve_to_det2( e, v, nv )  \
-     ( ( v - ( ( e + 1 ) >> 1 ) + 3 * nv ) % (2 * nv ) )
-
-  det_num_a = ve_to_det1( bin, view, num_views );
-  det_num_b = ve_to_det2( bin, view, num_views );
-}
-
-/* TODO remove duplication of ProjDataInfoCylindricalNoArcCorr::
-get_view_tangential_pos_num_for_det_num_pair*/
-
-static int detectors_to_sinogram(
-			   const int det_num_a, const int det_num_b,
-			   int& bin, int& view,
-			   const int num_views)
-{
-  int swap_detectors;
-
-  /*
-     Note for implementation: avoid using % with negative numbers
-     so add 2*nv before doing modulo 2*nv
-
-     This somewhat obscure formula was obtained by inverting the CTI code above
- */
-
-  bin = (det_num_a - det_num_b +  3*num_views) % (2* num_views);
-  view = (det_num_a - (bin >> 1) +  2*num_views) % (2* num_views);
-
-  /* Now adjust ranges for view, bin.
-     The next lines go only wrong in the singular (and irrelevant) case
-     det_num_a == det_num_b (when bin == num_views == 2*num_views - bin)
-
-     We use the combinations of the following 'symmetries' of
-     sinogram_to_detectors():
-     (bin, view) == (bin+2*num_views, view + num_views)
-                 == (-bin, view + num_views)
-     Using the latter interchanges det_num_a and det_num_b, and this leaves
-     the LOR the same the 2D case. However, in 3D this interchanges the rings
-     as well. So, we keep track of this in swap_detectors, and return its final
-     value (see LM.h).
-     */
-  if (view <  num_views)
-    {
-      if (bin >=  num_views)
-      {
-	bin = 2* num_views - bin;
-	swap_detectors = 1;
-      }
-      else
-      {
-        swap_detectors = 0;
-      }
-    }
-  else
-    {
-      view -= num_views;
-      if (bin >=  num_views)
-      {
-	bin -= 2* num_views;
-        swap_detectors = 0;
-      }
-      else
-      {
-	bin *= -1;
-	swap_detectors = 1;
-      }
-    }
-
-  return swap_detectors;
-}
 
 /*	Global Definitions */
-const int  MAXPROJBIN = 512;
+static const int  MAXPROJBIN = 512;
 /* data for the 966 scanner */
-const int CRYSTALRINGSPERDETECTOR = 8;
+static const int CRYSTALRINGSPERDETECTOR = 8;
 
 void
 CListEventDataECAT966::
@@ -214,7 +100,10 @@ get_detectors(
   int view_num;
   get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
 
-  sinogram_to_detectors(det_num_a, det_num_b, tangential_pos_num, view_num, num_views);
+  CListRecordECAT966::
+    get_uncompressed_proj_data_info_sptr()->
+    get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, 
+						 tangential_pos_num, view_num);
 }
 
 void 
@@ -225,10 +114,13 @@ set_detectors(
 {
   int tangential_pos_num;
   int view_num;
-  int swap_detectors =
-    detectors_to_sinogram(det_num_a, det_num_b, tangential_pos_num, view_num, num_views);
+  const bool swap_rings =
+  CListRecordECAT966::
+    get_uncompressed_proj_data_info_sptr()->
+    get_view_tangential_pos_num_for_det_num_pair(view_num, tangential_pos_num,
+						 det_num_a, det_num_b);
 
-  if (swap_detectors != 1)
+  if (swap_rings)
   {
     set_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
   }
@@ -256,15 +148,32 @@ sinogram_coordinates_to_bin(Bin& bin, const int view_num, const int tang_pos_num
 }
 
 void 
-CListEventDataECAT966::
-get_bin(Bin& bin, const ProjDataInfoCylindrical& proj_data_info) const
+CListRecordECAT966::
+get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
+  assert (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(&proj_data_info)!=0);
+
   int tangential_pos_num;
   int view_num;
   int ring_a;
   int ring_b;
-  get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
-  sinogram_coordinates_to_bin(bin, view_num, tangential_pos_num, ring_a, ring_b, proj_data_info);
+  event_data.get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
+  sinogram_coordinates_to_bin(bin, view_num, tangential_pos_num, ring_a, ring_b, 
+			      static_cast<const ProjDataInfoCylindrical&>(proj_data_info));
+}
+
+void
+CListRecordECAT966::
+get_detection_coordinates(CartesianCoordinate3D<float>& coord_1,
+			  CartesianCoordinate3D<float>& coord_2) const
+{
+  int det_num_a, det_num_b, ring_a, ring_b;
+  event_data.get_detectors(det_num_a, det_num_b, ring_a, ring_b);
+
+  uncompressed_proj_data_info_sptr->
+    find_cartesian_coordinates_given_scanner_coordinates(coord_1, coord_2,
+							 ring_a, ring_b,
+							 det_num_a, det_num_b);
 }
 
 void 
@@ -278,7 +187,6 @@ get_uncompressed_bin(Bin& bin) const
     get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), 
 					    ring_a, ring_b);
 }  
-
 
 
 
