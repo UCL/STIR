@@ -80,26 +80,26 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 
 
 void 
-ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams) const 
+ChainedBinNormalisation::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
   if (!is_null_ptr(apply_first))
-    apply_first->apply(viewgrams);
+    apply_first->apply(viewgrams,start_time,end_time);
   if (!is_null_ptr(apply_second))
-    apply_second->apply(viewgrams);
+    apply_second->apply(viewgrams,start_time,end_time);
 }
 
 void 
 ChainedBinNormalisation::
-undo(RelatedViewgrams<float>& viewgrams) const 
+undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
   if (!is_null_ptr(apply_first))
-    apply_first->undo(viewgrams);
+    apply_first->undo(viewgrams,start_time,end_time);
   if (!is_null_ptr(apply_second))
-    apply_second->undo(viewgrams);
+    apply_second->undo(viewgrams,start_time,end_time);
 }
 
 float
-ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin) const
+ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
   // TODO
   return 1;

@@ -129,7 +129,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 
 
 void 
-BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams) const 
+BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
   forward_projector_ptr->forward_project(attenuation_viewgrams, *attenuation_image_ptr);
@@ -147,7 +147,7 @@ BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams) 
 
 void 
 BinNormalisationFromAttenuationImage::
-undo(RelatedViewgrams<float>& viewgrams) const 
+undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
   forward_projector_ptr->forward_project(attenuation_viewgrams, *attenuation_image_ptr);
@@ -164,7 +164,7 @@ undo(RelatedViewgrams<float>& viewgrams) const
 }
 
 float 
-BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin) const
+BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
   //TODO
   return 1;

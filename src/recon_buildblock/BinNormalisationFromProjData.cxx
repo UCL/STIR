@@ -84,7 +84,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 
 
 void 
-BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const 
+BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
@@ -95,7 +95,7 @@ BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const
 
 void 
 BinNormalisationFromProjData::
-undo(RelatedViewgrams<float>& viewgrams) const 
+undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
@@ -106,7 +106,7 @@ undo(RelatedViewgrams<float>& viewgrams) const
   }
 
 float 
-BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin) const
+BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
   //TODO
   return 1;
