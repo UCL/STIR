@@ -11,12 +11,11 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
 
 #include "tomo/interfile_keyword_functions.h"
-#include "ctype.h"
+#include <ctype.h>
 
 START_NAMESPACE_TOMO
 
