@@ -52,7 +52,7 @@ bool
 SeparableArrayFunctionObject<num_dim, elemT>::
 is_trivial() const
 {
-  for ( std::vector< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator iter=all_1d_array_filters.begin();
+  for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator iter=all_1d_array_filters.begin();
         iter!=all_1d_array_filters.end();++iter)
    {
      if (!(*iter)->is_trivial())
