@@ -1,86 +1,201 @@
-# 
+#
 # $Id$
 #
+# Author Kris Thielemans
+# Copyright 2004- $Date$ Hammersmith Imanet Ltd
+# This file is part of STIR, and is distributed under the 
+# terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
+#
+# This makefile defines dependencies and rules for the 
+# following targets:
+#	all clean lib install 
+#	clean_tests clean_lib clean_exes 
+#	run_tests run_interactive_tests 
+#
+# It works by using the 'recursive makefile' scheme.
+# It is set-up to recurse into $(LIBDIRS), $(EXEDIRS), $(TESTDIRS)
+# from where it imports lib.mk, exe.mk and test.mk respectively.
+# These  'sub'makefiles will define other targets such as 
+# EXESUBDIR, clean_exes_EXESUBDIR, install_EXESUBDIR
+# build_tests_TESTSUBDIR, clean_tests_TESTSUBDIR, 
+#                   run_tests_TESTSUBDIR, 
+#                   run_interactive_tests_TESTSUBDIR
+# build_lib_LIBSUBDIR, clean_lib_LIBSUBDIR
+# See lib.mk, exe.mk and test.mk in this directory for more details.
+#
+.PHONY: all clean lib install \
+	clean_tests clean_lib clean_exes \
+	run_tests run_interactive_tests all_test_exes \
+	default_target
 
-WORKSPACE=$(CURDIR)
+WORKSPACE := $(CURDIR)
 
-include $(WORKSPACE)/Makefile_common
+# make sure that 'all' is also the first target and hence the default
+default_target: all
 
-
-LIBSUBDIRECTORIES_FIRST = \
-	$(WORKSPACE)/eval_buildblock \
-	$(WORKSPACE)/Shape_buildblock
-
-LIBSUBDIRECTORIES = \
-	$(WORKSPACE)/buildblock \
-	$(WORKSPACE)/IO \
-	$(WORKSPACE)/recon_buildblock \
-	$(WORKSPACE)/display \
-	$(WORKSPACE)/iterative/LogLik_buildblock \
-	$(WORKSPACE)/listmode_buildblock
+# first make a variable that allows us to test if we have gcc 3.0 or later
+# If so, this will allow us to simplify life a lot!
+IS_GCC_3:=$(shell $(CXX) -v 2>&1 |grep "gcc version [3456789]")
 
 
-EXESUBDIRECTORIES= \
-        $(WORKSPACE)/iterative/sensitivity \
-	$(WORKSPACE)/iterative/OSMAPOSL \
-	$(WORKSPACE)/utilities \
-	$(WORKSPACE)/recon_test \
-	$(WORKSPACE)/test 
+include config.mk
 
-SUBDIRECTORIES = $(LIBSUBDIRECTORIES_FIRST) $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
+LIBDIRS :=
+EXEDIRS :=
+TESTDIRS:=
+-include local/extra_dirs.mk
 
-ifeq ($(wildcard local/Makefile), local/Makefile)
-__TEST_local_Makefile:=1
+LIBDIRS += buildblock recon_buildblock display IO \
+	eval_buildblock Shape_buildblock \
+	listmode_buildblock \
+	iterative/LogLik_buildblock \
+	iterative/OSMAPOSL
+
+EXEDIRS += utilities recon_test \
+	listmode_utilities \
+	iterative/OSMAPOSL \
+	iterative/sensitivity
+
+TESTDIRS += test recon_test
+
+
+include $(addsuffix /lib.mk, $(LIBDIRS))
+include $(addsuffix /exe.mk, $(EXEDIRS))
+include $(addsuffix /test.mk, $(TESTDIRS))
+
+
+all: $(EXEDIRS)
+
+clean_tests: $(addprefix clean_tests_, $(TESTDIRS)) 
+
+clean_lib:  $(addprefix clean_lib_, $(LIBDIRS)) 
+	rm -f $(DEST)libSTIR.a
+
+clean_exes:  $(addprefix clean_exes_, $(EXEDIRS)) 
+
+clean: clean_tests clean_lib clean_exes
+#	rm -rf $(DEST)
+
+install: $(addprefix install_, $(EXEDIRS))
+
+run_tests: $(addprefix run_tests_, $(TESTDIRS)) 
+
+run_interactive_tests: $(addprefix run_interactive_tests_, $(TESTDIRS)) 
+
+# next target is necessary to get $(dir)_run_tests to compile/link all its files first
+all_test_exes: $(foreach dir, $(TESTDIRS), $($(dir)_TEST_EXES))
+
+.PRECIOUS:  $(DEST)*.a
+
+STIR_LIB:=$(DEST)libstir.a
+
+lib: $(STIR_LIB)
+
+
+$(STIR_LIB): $(foreach dir, $(LIBDIRS), $($(dir)_LIB_OBJS))
+	$(AR) $(ARFLAGS)  $@ $?
+	ranlib $@
+
+
+
+
+# STIR_REGISTRIES should be set to all object files we want to 
+# explicitly link with (i.e. in addition to the library).
+# In particular, this should include all files with
+# global variables of type 
+# RegisteredParsingObject::RegisterIt
+STIR_REGISTRIES:=$(foreach dir, $(LIBDIRS), $($(dir)_REGISTRY_OBJS))
+
+#********* default rules
+
+# These are the rules for compiling and linking.
+
+# There is some complicated trickery to get automatic dependency checking on
+# .h and .inl files. This means that if you change only a .h file, make will 
+# still rebuild all .c and .cxx files that include this .h file (even indirectly).
+
+.SUFFIXES: .c .o .cxx .a .P 
+
+# To generate dependencies, we use -MM for gcc (or g++) and -M for other compilers
+ifeq ($(CXX),g++)
+MAKE_DEPEND_FLAG=-MM
+else
+ifeq ($(CC),gcc)
+MAKE_DEPEND_FLAG=-MM
+else
+MAKE_DEPEND_FLAG=-M
+endif
 endif
 
+# default rule for making 'mini-Makefiles' with the dependency info 
+# for a single source file
+# See http://make.paulandlesley.org/autodep.html
 
-.PHONY: $(LIBSUBDIRECTORIES_FIRST) $(EXESUBDIRECTORIES) all install clean alllocal alldistrib
+ifneq ("$(IS_GCC_3)","")
 
-# all is the default target (becomes it comes first)
-# it depends 2 targets: the files in the distribution, and any local files
-all: alldistrib alllocal
+#$(warning Using rules for gcc 3 or later)
 
-# alldistrib target makes all files in the distribution (and any local
-# libraries that are linked in by local/Makefile_bblibs). It depends
-# on the directories whose dependency rules will just 
-# execute make in their relevant subdirectory.
-# This way, when make fails in one subdirectory, this make will fail 
-# as well
-alldistrib: $(LIBSUBDIRECTORIES_FIRST) $(EXESUBDIRECTORIES)
+# use  gcc -MD -MP flags to obtain the .P files at the same time as the 
+# ordinary compilation
 
-$(LIBSUBDIRECTORIES_FIRST):
-	$(MAKE) -C $@ all
+${DEST}%.o : %.cxx
+	@ -mkdir -p $(dir $@); 	
+	$(CXX) $(CFLAGS) -o $@ ${MAKE_DEPEND_FLAG}D -MP -c $< 
+	@ mv $(DEST)$(*).d $(DEST)$(*).P
 
-alllocal:
-ifeq ($(__TEST_local_Makefile),1)
-	(cd local; $(MAKE) all);
-endif
+${DEST}%.o : %.c
+	@ -mkdir -p $(dir $@); 
+	$(CC) $(CFLAGS) -o $@ ${MAKE_DEPEND_FLAG}D -MP  -c $< ;
+	@ mv $(DEST)$(*).d $(DEST)$(*).P
 
+else
 
-$(EXESUBDIRECTORIES):
-	$(MAKE) -C $@ all
+#$(warning Using rules for non-gcc compilers (or gcc 2.*))
 
+# we have to follow the original scheme of Paul D. Smith
+# Modifications by KT:
+# - handle DEST (in definition of df and by replacing the line "cp $(df.d) $(df.P)"
+#   to a sed line that inserts $(DEST) before the name of the .o file
+# - declare a variable dotD2dotP with all the sed stuff to create the .P file.
+#   Note that to get this to work, I had to escape (i.e. put a backslash in front of)
+#  the # sign in Paul's sed pattern. Otherwise, make interpretes it as the start
+# of a comment.
 
+df = $(DEST)$*
 
-# install depends on all, such that the recursive make process
-# fails if there's a problem in any of the subdirectories
-install: all
-	for subdir in $(EXESUBDIRECTORIES); do   \
-	   echo "-------------------"; $(MAKE) -C $$subdir install; \
-	done
-ifeq ($(__TEST_local_Makefile),1)
-	(cd local; $(MAKE) install);
-endif
+# alternative choices  for MAKEDEPEND
+#MAKEDEPENDCXX = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
+#MAKEDEPENDC = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
+MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
+MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS)  > $(df).d $<
 
-
-clean: 
-	for subdir in $(SUBDIRECTORIES); do \
-	   echo "-------------------"; $(MAKE) -C $$subdir clean; \
-	done;
-ifeq ($(__TEST_local_Makefile),1)
-	$(MAKE) -C local clean;
-endif
-
-
+#cp $(df).d $(df).P; 
+dotD2dotP = sed -e 's&$(*F)\.o&$(DEST)$(*).o&' < $(df).d > $(df).P; \
+	sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
+	rm -f $(df).d
 
 
+${DEST}%.o : %.cxx
+	@ -mkdir -p $(dir $@); \
+	$(MAKEDEPENDCXX);  \
+	$(dotD2dotP);
+	$(CXX) $(CFLAGS) -o $@ -c $< 
+
+${DEST}%.o : %.c
+	@ -mkdir -p $(dir $@); \
+	$(MAKEDEPENDC); \
+	$(dotD2dotP); 
+	$(CC) $(CFLAGS) -o $@ -c $< 
+
+
+endif # GCC3
+
+# Default rule for making executables
+# Note: this rule has to occur AFTER the definition of the macros
+# occuring in the dependencies.
+# Otherwise the value of the macros is empty when 
+# checking the dependencies (even when they are alright when
+# executing the corresponding command)
+${DEST}%: ${DEST}%.o $(STIR_LIB) $(STIR_REGISTRIES)
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_REGISTRIES) $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
