@@ -164,6 +164,43 @@ void make_ECAT6_main_header(Main_header& mhead,
   //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
 }
 
+void make_ECAT6_main_header(Main_header& mhead,
+			    Scanner const& scanner,
+                            const string& orig_name,
+                            DiscretisedDensity<3,float> const & density
+                            )
+{
+  make_ECAT6_main_header(mhead, scanner, orig_name);
+  
+  DiscretisedDensityOnCartesianGrid<3,float> const & image =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
+
+  
+  // extra main parameters that depend on data type
+  mhead.file_type= matImageFile;
+  mhead.num_planes=image.get_z_size();
+  mhead.plane_separation=image.get_grid_spacing()[1]/10; // convert to cm
+}
+
+void make_ECAT6_main_header(Main_header& mhead,
+			    const string& orig_name,
+                            ProjDataInfo const & proj_data_info
+                            )
+{
+  
+  make_ECAT6_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
+  
+  // extra main parameters that depend on data type
+  mhead.file_type= matScanFile;
+  
+  mhead.num_planes = 0;
+  for(int segment_num=proj_data_info.get_min_segment_num();
+      segment_num <= proj_data_info.get_max_segment_num();
+      ++segment_num)
+    mhead.num_planes+= proj_data_info.get_num_axial_poss(segment_num);
+  
+  mhead.plane_separation=proj_data_info.get_scanner_ptr()->get_ring_spacing()/10/2;
+}
 
 VoxelsOnCartesianGrid<float> *
 ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const int data_num, const int bed_num,
@@ -193,8 +230,6 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
   const int y_size = ihead.dimension_2;
   const int z_size = mhead.num_planes;
   const int min_z = 0; 
-  const int min_y = -y_size/2;
-  const int min_x = -x_size/2;
   
   IndexRange3D range_3D (0,z_size-1,
 			 -y_size/2,(-y_size/2)+y_size-1,
@@ -587,26 +622,41 @@ short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order)
 }
 
 Succeeded 
-DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, 
-			    string const & cti_name, string const&orig_name,
-			    const Scanner& scanner,
+DiscretisedDensity_to_ECAT6(FILE *fptr,
+                            DiscretisedDensity<3,float> const & density, 
+			    const Main_header& mhead,
                             const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
   
 
-  VoxelsOnCartesianGrid<float> const & image =
-    dynamic_cast<VoxelsOnCartesianGrid<float> const&>(density);
-  
-  Main_header mhead;
-  make_ECAT6_main_header(mhead, scanner, orig_name);
+  DiscretisedDensityOnCartesianGrid<3,float> const & image =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
 
-  
-  // extra main parameters that depend on data type
-  mhead.file_type= matImageFile;
-  mhead.num_planes=image.get_z_size();
-  mhead.plane_separation=image.get_voxel_size().z()/10; // convert to cm
-  
-  FILE *fptr= cti_create (cti_name.c_str(), &mhead);
+   
+  if (mhead.file_type!= matImageFile)
+  {
+    warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
+            "Main header.file_type should be ImageFile\n",
+            frame_num, gate_num, data_num, bed_num);
+    return Succeeded::no;
+  }
+  if (mhead.num_planes!=image.get_z_size())
+  {
+    warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
+            "Main header.num_planes should be %d\n",
+            frame_num, gate_num, data_num, bed_num,image.get_z_size());
+    return Succeeded::no;
+  }
+  const float voxel_size_z = image.get_grid_spacing()[1]/10;// convert to cm
+  //const float voxel_size_y = image.get_grid_spacing()[2]/10;
+  const float voxel_size_x = image.get_grid_spacing()[3]/10;
+  if (mhead.plane_separation!=voxel_size_z) 
+  {
+    warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
+            "Main header.plane_separation should be %g\n",
+            frame_num, gate_num, data_num, bed_num,voxel_size_z);
+    return Succeeded::no;
+  }
   
   
   Image_subheader ihead= img_zero_fill();
@@ -626,7 +676,7 @@ DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density,
   ihead.dimension_1= x_size;
   ihead.dimension_2= y_size;
   ihead.slice_width= mhead.plane_separation;
-  ihead.pixel_size= image.get_voxel_size().x()/10; // convert to cm
+  ihead.pixel_size= voxel_size_x;
   
   ihead.num_dimensions= 2;
   ihead.x_origin= image.get_origin().x()/10;
@@ -656,153 +706,185 @@ DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density,
     // write data
     long matnum= cti_numcod(frame_num, z-min_z+1, gate_num, data_num, bed_num);
     if(cti_write_image(fptr, matnum, &ihead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) {
-      warning("Unable to write image plane %d to file, exiting.\n",z-min_z+1);
-      delete[] cti_data;
-      fclose(fptr);    
+      warning("Unable to write image plane %d at (f%d, g%d, d%d, b%d) to file, exiting.\n",
+               z-min_z+1, frame_num, gate_num, data_num, bed_num);
+      delete[] cti_data;      
       return Succeeded::no;
     }
   } // end of loop on planes
-  delete[] cti_data;
-  fclose(fptr);    
+  delete[] cti_data;  
   return Succeeded::yes;
 }
+
+
+Succeeded 
+DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, 
+			    string const & cti_name, string const&orig_name,
+			    const Scanner& scanner,
+                            const int frame_num, const int gate_num, const int data_num, const int bed_num)
+{  
+  Main_header mhead;
+  make_ECAT6_main_header(mhead, scanner, orig_name, density);
+
+  
+  FILE *fptr= cti_create (cti_name.c_str(), &mhead);
+  Succeeded result =
+    DiscretisedDensity_to_ECAT6(fptr,
+                            density, 
+			    mhead,
+                            frame_num, gate_num,data_num, bed_num);
+  
+  fclose(fptr);    
+  return result;
+}
+
+Succeeded 
+ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhead,
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num)
+{
+  if (mhead.file_type!= matScanFile)
+  {
+    warning("ProjData_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
+            "Main header.file_type should be ImageFile\n",
+            frame_num, gate_num, data_num, bed_num);
+    return Succeeded::no;
+  }
+  {
+    int num_planes = 0;
+    for(int segment_num=proj_data.get_min_segment_num();
+        segment_num <= proj_data.get_max_segment_num();
+        ++segment_num)
+     num_planes+= proj_data.get_num_axial_poss(segment_num);
+  
+    if (mhead.num_planes!=num_planes)
+    {
+      warning("ProjData_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
+              "Main header.num_planes should be %d\n",
+              frame_num, gate_num, data_num, bed_num,num_planes);
+      return Succeeded::no;
+    }
+  }
+  
+  Scan_subheader shead= scan_zero_fill();
+  
+  const int min_view= proj_data.get_min_view_num();
+  const int min_bin= proj_data.get_min_tangential_pos_num();
+  
+  const int num_view= proj_data.get_num_views();
+  const int num_bin= proj_data.get_num_tangential_poss();
+  
+  const int plane_size= num_view * num_bin;
+  
+  // Setup subheader params
+  shead.data_type= mhead.data_type;
+  shead.dimension_1= num_bin;
+  shead.dimension_2= num_view;
+  shead.loss_correction_fctr= 1; 
+  // find sample_distance
+  {
+    ProjDataInfoCylindricalArcCorr const * const
+      proj_data_info_cyl_ptr =
+      dynamic_cast<ProjDataInfoCylindricalArcCorr const * const>
+      (proj_data.get_proj_data_info_ptr());
+    if (proj_data_info_cyl_ptr==NULL)
+    {
+      warning("This is not arc-corrected data. Filling in default_bin_size from scanner \n");
+      shead.sample_distance= 
+        proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size();
+    }
+    else
+    {
+      shead.sample_distance= 
+        proj_data_info_cyl_ptr->get_tangential_sampling();
+    }
+  }
+  
+  short *cti_data= new short[plane_size];
+  Array<2,short> short_sinogram(IndexRange2D(min_view,proj_data.get_max_view_num(),
+    min_bin,proj_data.get_max_tangential_pos_num()));
+  
+  const int num_rings = proj_data.get_num_axial_poss(0);
+  if (num_rings != proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings())
+    warning("Expected %d num_rings from scanner while segment 0 has %d planes\n",
+            proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings(), num_rings);
+  
+  
+  cout<<endl<<"Processing segment number:";
+  
+  for(int segment_num=proj_data.get_min_segment_num();
+      segment_num <= proj_data.get_max_segment_num();
+      ++segment_num)
+  {    
+    cout<<"  "<<segment_num;
+    
+    
+    const int num_axial_poss= proj_data.get_num_axial_poss(segment_num);
+    const int min_axial_poss= proj_data.get_min_axial_pos_num(segment_num);
+    
+    if (num_axial_poss != num_rings - abs(segment_num))
+    {
+      warning("Can only handle span==1 data. Exiting\n");
+      return Succeeded::no;
+    }
+    
+    for(int z=0; z<num_axial_poss; z++) 
+    { // loop on planes
+      Sinogram<float> float_sinogram= proj_data.get_sinogram(z+min_axial_poss,segment_num,false);
+      
+      float scale_factor = 0;
+      convert_array(short_sinogram, scale_factor, float_sinogram);
+      
+      
+      shead.scan_min= short_sinogram.find_min();
+      shead.scan_max= short_sinogram.find_max();
+      shead.scale_factor= scale_factor==0 ? 1.F : scale_factor;
+      
+      for(int y=0; y<num_view; y++)
+      {
+        for(int x=0; x<num_bin; x++)
+          cti_data[y*num_bin+x]= short_sinogram[y+min_view][x+min_bin];
+      }         
+      
+      // write data
+      int ring1, ring2;
+      if (segment_num>=0)
+      { ring1= z; ring2= z+segment_num; }
+      else
+      { ring1= z+abs(segment_num); ring2= z; }
+      
+      const int indexcod= cti_rings2plane( num_rings, ring1, ring2); // change indexation into CTI
+      const long matnum= cti_numcod(frame_num, indexcod, gate_num, data_num, bed_num);
+      if(cti_write_scan(fptr, matnum, &shead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) 
+      {
+        warning("Unable to write short_sinogram for rings %d,%d to file, exiting.\n",ring1,ring2);
+        delete[] cti_data;
+        return Succeeded::no;
+      }
+    } // end of loop on planes
+  } // end of loop on segments
+  cout<<endl;
+  delete[] cti_data;
+  
+  return Succeeded::yes;
+}
+
 
 Succeeded 
 ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string const & orig_name,
                   const int frame_num, const int gate_num, const int data_num, const int bed_num)
-{
-
-    Scanner const * const scanner_ptr =
-      proj_data.get_proj_data_info_ptr()->get_scanner_ptr();
-
-    Main_header mhead;
-    make_ECAT6_main_header(mhead, *scanner_ptr, orig_name);
-
-    // extra main parameters that depend on data type
-    mhead.file_type= matScanFile;
-
-    mhead.num_planes = 0;
-    for(int segment_num=proj_data.get_min_segment_num();
-        segment_num <= proj_data.get_max_segment_num();
-        ++segment_num)
-      mhead.num_planes+= proj_data.get_num_axial_poss(segment_num);
-
-    FILE *fptr= cti_create(cti_name.c_str(), &mhead);   
-
-
-    Scan_subheader shead= scan_zero_fill();
-
-    const int min_view= proj_data.get_min_view_num();
-    const int min_bin= proj_data.get_min_tangential_pos_num();
-    
-    const int num_view= proj_data.get_num_views();
-    const int num_bin= proj_data.get_num_tangential_poss();
-    
-    const int plane_size= num_view * num_bin;
-    
-    // Setup subheader params
-    shead.data_type= mhead.data_type;
-    shead.dimension_1= num_bin;
-    shead.dimension_2= num_view;
-    shead.loss_correction_fctr= 1; 
-    // find sample_distance
-    {
-      ProjDataInfoCylindricalArcCorr const * const
-        proj_data_info_cyl_ptr =
-        dynamic_cast<ProjDataInfoCylindricalArcCorr const * const>
-        (proj_data.get_proj_data_info_ptr());
-      if (proj_data_info_cyl_ptr==NULL)
-      {
-        warning("This does not seem to be arc-corrected data. Filling in default_bin_size from scanner \n");
-        shead.sample_distance= scanner_ptr->get_default_bin_size();
-      }
-      else
-      {
-        shead.sample_distance= proj_data_info_cyl_ptr->get_tangential_sampling();
-      }
-    }
-    
-    short *cti_data= new short[plane_size];
-    Array<2,short> short_sinogram(IndexRange2D(min_view,proj_data.get_max_view_num(),
-      min_bin,proj_data.get_max_tangential_pos_num()));
-    
-    const int num_rings = proj_data.get_num_axial_poss(0);
-    if (num_rings != scanner_ptr->get_num_rings())
-      warning("Expected %d num_rings from scanner while segment 0 has %d planes\n",
-      scanner_ptr->get_num_rings(), num_rings);
-    
-    
-    cout<<endl<<"Processing segment number:";
-    
-    for(int segment_num=proj_data.get_min_segment_num();
-        segment_num <= proj_data.get_max_segment_num();
-        ++segment_num)
-    {
-      
-      
-      cout<<"  "<<segment_num;
-      
-      
-      const int num_axial_poss= proj_data.get_num_axial_poss(segment_num);
-      const int min_axial_poss= proj_data.get_min_axial_pos_num(segment_num);
-      
-      if (num_axial_poss != num_rings - abs(segment_num))
-        error("Can only handle span==1 data. Exiting\n");
-      
-      for(int z=0; z<num_axial_poss; z++) 
-      { // loop on planes
-        Sinogram<float> float_sinogram= proj_data.get_sinogram(z+min_axial_poss,segment_num,false);
-        
-        float scale_factor = 0;
-        convert_array(short_sinogram, scale_factor, float_sinogram);
-
-#if 0
-        {
-          Sinogram<float> diff = float_sinogram;
-          for(int y=0; y<num_view; y++)
-          {
-            for(int x=0; x<num_bin; x++)
-              diff[y+min_view][x+min_bin]-= scale_factor*short_sinogram[y+min_view][x+min_bin];
-          }         
-          cout << "plane "<< z << " scalef "<< scale_factor << " min " << diff.find_min() 
-            << " max " << diff.find_max() << endl;
-        }
-#endif
-
-        shead.scan_min= short_sinogram.find_min();
-        shead.scan_max= short_sinogram.find_max();
-        shead.scale_factor= scale_factor==0 ? 1.F : scale_factor;
-        
-        for(int y=0; y<num_view; y++)
-        {
-          for(int x=0; x<num_bin; x++)
-            cti_data[y*num_bin+x]= short_sinogram[y+min_view][x+min_bin];
-        }         
-        
-        // write data
-        int ring1, ring2;
-        if (segment_num>=0)
-        { ring1= z; ring2= z+segment_num; }
-        else
-        { ring1= z+abs(segment_num); ring2= z; }
-        
-        const int indexcod= cti_rings2plane( num_rings, ring1, ring2); // change indexation into CTI
-        const long matnum= cti_numcod(frame_num, indexcod, gate_num, data_num, bed_num);
-        if(cti_write_scan(fptr, matnum, &shead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) 
-        {
-          warning("Unable to write short_sinogram for rings %d,%d to file, exiting.\n",ring1,ring2);
-          delete[] cti_data;
-          fclose(fptr);    
-          return Succeeded::no;
-        }
-      } // end of loop on planes
-    } // end of loop on segments
-    cout<<endl;
-    delete[] cti_data;
-    fclose(fptr);  
-    return Succeeded::yes;
+{  
+  Main_header mhead;
+  make_ECAT6_main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
+  
+  
+  FILE *fptr= cti_create(cti_name.c_str(), &mhead);   
+  Succeeded result =
+    ProjData_to_ECAT6(fptr, proj_data, mhead, 
+    frame_num, gate_num,data_num, bed_num);
+  
+  fclose(fptr);    
+  return result;
 }
-
 
 void cti_data_to_float_Array(Array<2,float>&out, 
                              char const * const buffer, const float scale_factor, int dtype)
