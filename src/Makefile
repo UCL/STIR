@@ -119,8 +119,9 @@ lib: $(STIR_LIB)
 
 $(STIR_LIB): $(foreach dir, $(LIBDIRS), $($(dir)_LIB_OBJS))
 	$(AR) $(ARFLAGS)  $@ $?
+ifeq ("$(IS_GNU_AR)","")
 	ranlib $@
-
+endif
 
 
 
