@@ -16,13 +16,13 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date   $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
 #include "recon_buildblock/IterativeReconstruction.h"
-#include "LogLikelihoodBasedAlgorithmParameters.h"
+#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
 #include "DiscretisedDensity.h"
 
 START_NAMESPACE_TOMO
