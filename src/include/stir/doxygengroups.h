@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -81,6 +81,12 @@ Basic support for projection data. This is the term generally used in STIR
 for data obtained by the scanner or immediate post-processing.
 */
 /*!
+\defgroup LOR Items related to Line Of Responses (preliminary)
+\ingroup projdata
+Classes for LORs.
+\warning Preliminary and likely to change in the next release
+*/
+/*!
 \defgroup densitydata Items related to image data
 \ingroup buildblock
 Basic support for image (or discretised density) data. 
@@ -113,6 +119,17 @@ from/to file.
 
 /*! 
 \defgroup listmode Support classes for reading list mode data
+\ingroup STIR_library
+*/
+
+/*! 
+\defgroup Shape Classes for describing geometric shapes such as cylinders etc.
+\ingroup STIR_library
+*/
+
+/*! 
+\defgroup evaluation Classes for computing ROI values and other simple 
+   Figures of Merits for image evaluation
 \ingroup STIR_library
 */
 
