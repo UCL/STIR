@@ -118,28 +118,6 @@ const ProjDataInfo * RelatedViewgrams<elemT>::get_proj_data_info_ptr() const
   return viewgrams[0].get_proj_data_info_ptr();
 }
 
-#if 0
-template <typename elemT>
-const Viewgram<elemT>&  RelatedViewgrams<elemT>::get_viewgram_reference(const int n) const
-{
-  assert(viewgrams.size()>static_cast<unsigned>(n) && n>=0);
-  check_state();
-  return viewgrams[n];
-}
-
-// a non-const access
-// Only the data itself should be modified.
-// sizes and scan_info should remain identical
-template <typename elemT>
-Viewgram<elemT>&  RelatedViewgrams<elemT>::get_viewgram_reference(const int n)
-{
-  assert(viewgrams.size() > static_cast<unsigned>(n) && n>=0);
-  check_state();
-  return viewgrams[n];
-}
-
-#endif
-
 template <typename elemT>
 RelatedViewgrams<elemT>::iterator 
 RelatedViewgrams<elemT>::begin()
