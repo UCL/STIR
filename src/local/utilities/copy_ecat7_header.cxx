@@ -89,9 +89,9 @@ void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
   STIR_DO_IT(filter_order);
   STIR_DO_IT(filter_scatter_fraction);
   STIR_DO_IT(filter_scatter_slope);
-  STIR_DO_IT(x_resolution);
-  STIR_DO_IT(y_resolution);
-  STIR_DO_IT(z_resolution);
+  //STIR_DO_IT(x_resolution);
+  //STIR_DO_IT(y_resolution);
+  //STIR_DO_IT(z_resolution);
   for (int i=0; i<40; ++i)
     STIR_DO_IT(annotation[i]);
   STIR_DO_IT(mt_1_1);
@@ -252,10 +252,10 @@ void copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
 	float scale_factor;
 	short z_elements[64];
   */
-  STIR_DO_IT(x_resolution);
-  STIR_DO_IT(y_resolution);
-  STIR_DO_IT(z_resolution);
-  STIR_DO_IT(w_resolution);
+  //STIR_DO_IT(x_resolution);
+  //STIR_DO_IT(y_resolution);
+  //STIR_DO_IT(z_resolution);
+  //STIR_DO_IT(w_resolution);
   STIR_DO_IT(x_offset);
   STIR_DO_IT(y_offset);
   STIR_DO_IT(x_radius);
