@@ -40,11 +40,26 @@ class ProjDataInfo;
   \param max_in_segment_num_to_process rebinned in_proj_data only upto this segment.
   Default value -1 means 'do all segments'.
 
+  The original SSRB algorithm was developed in M.E. Daube-Witherspoon and 
+  G. Muehllehner, (1987) <i>Treatment of axial data in three-dimensional PET</i>,
+  J. Nucl. Med. 28, 171-1724. It essentially ignores the obliqueness of a 
+  Line of Response and moves data to the axial position in segment 0 such 
+  that z-resolution on the axis of the scanner is preserved.
+
+The STIR implementation of SSRB is a generalisation that applies the same
+ idea while still allowing preserving some of the obliqueness. For instance, 
+for a dataset with 9 segments, SSRB can produce a new dataset with only 3 
+segments. This essentially increases the axial compression (or span in CTI 
+terminology), see the STIR Glossary on axial compression. In addition, SSRB 
+can introduce extra mashing (see the STIR Glossary) of the data, i.e. add 
+views together.
+
+
   \warning in_proj_data_info has to be (at least) of type ProjDataInfoCylindrical
   \warning This function can only handle in_proj_data_info where all segments have 
       identical 'num_segments_to_combine'. So it cannot handle standard 
       GE Advance data.
-  \todo get rid of both resttrictions flagged as warnings in the documentation for this function.
+  \todo get rid of both restrictions flagged as warnings in the documentation for this function.
 */
 ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
