@@ -18,9 +18,11 @@
    */
 
 
-#include <iostream.h>
-#include <fstream.h>
 #include "pet_common.h"
+// KT 04/11/98 2 new
+#include "utilities.h"
+#include "interfile.h"
+
 #include "PETScannerInfo.h"
 #include "sinodata.h"
 #include "imagedata.h"
@@ -34,13 +36,16 @@
 
 #include "display.h"
 
-#define ZERO_TOL 0.000001
-#define ROOF 40000000.0
+// KT 04/11/98 not used anymore
+//#define ZERO_TOL 0.000001
+//#define ROOF 40000000.0
 
 
 class parameters{
   public:
  int limit_segments, MAP_mode, num_subsets, view45, phase_offset, iteration_num;   
+  // KT 04/11/98 new
+  bool zero_seg0_end_planes;
 } globals;
 
 
@@ -121,11 +126,17 @@ int main(int argc, char *argv[])
 
  globals.limit_segments++;
 
+ // KT 04/11/98 new
+ globals.zero_seg0_end_planes =
+   ask("Zero end planes of segment 0 ?", true);
+
   // KT 14/08/98 added conditional
 #ifndef TEST
-  char out_filename[200];
-  cout << endl << "Output to which file ?";
-  cin >> out_filename;
+ // KT 04/11/98 nicer
+  char out_filename[max_filename_length];
+  ask_filename_with_extension(out_filename,
+			      "Output to which file (without extension)?",
+			      "");
 #endif
 
 
@@ -189,16 +200,23 @@ int main(int argc, char *argv[])
   PETImageOfVolume result =
     compute_sensitivity_image(scanner, attenuation_image,  do_attenuation, Normalisation (), globals);
 #ifndef TEST
-  result+=(float)ZERO_TOL;
+  // KT 04/11/98 removed on request by MJ
+  //result+=(float)ZERO_TOL;
 
   // Write it to file
-  ofstream sensitivity_data;
-  open_write_binary(sensitivity_data, out_filename);
-  result.write_data(sensitivity_data);
+  // KT 04/11/98 use interfile output
+  /*
+   ofstream sensitivity_data;
+   open_write_binary(sensitivity_data, out_filename);
+   result.write_data(sensitivity_data);
+   */
+  write_basic_interfile(out_filename, result);
 
   cerr << "min and max in image " << result.find_min() 
        << " " << result.find_max() << endl;
-  display(Tensor3D<float> (result), result.find_max());
+
+  // KT 04/11/98 disabled
+  // display(Tensor3D<float> (result), result.find_max());
 #endif
 
   return 0;
@@ -257,6 +275,14 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
     }
       
     normalisation.apply(segment);
+
+    // KT 04/11/98 new
+    if (globals.zero_seg0_end_planes)
+      {
+	cerr << "\nZeroing end-planes of segment 0" << endl;
+	segment[segment.get_min_ring()].fill(0);
+	segment[segment.get_max_ring()].fill(0);
+      }
 
 
     cerr<<endl<<"Starting backproject"<<endl;
