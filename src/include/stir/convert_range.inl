@@ -788,6 +788,12 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
    void find_scale_factor<>(float& scale_factor, \
                             const Array<dim,type_in>& data_in, \
 			    const NumericInfo<type_out> info_out);
+INSTANTIATE(1, float, signed char);
+INSTANTIATE(1, signed char, float);
+INSTANTIATE(1, short, signed char);
+INSTANTIATE(1, signed char, short);
+INSTANTIATE(1, unsigned short, signed char);
+INSTANTIATE(1, signed char, unsigned short);
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
 INSTANTIATE(1, short, float);
@@ -795,11 +801,18 @@ INSTANTIATE(1, unsigned short, float);
 INSTANTIATE(1, unsigned short, short);
 INSTANTIATE(1, short, unsigned short);
 
+INSTANTIATE(1, signed char, signed char);
 INSTANTIATE(1, short, short);
 INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
 
+INSTANTIATE(2, float, signed char);
+INSTANTIATE(2, signed char, float);
+INSTANTIATE(2, short, signed char);
+INSTANTIATE(2, signed char, short);
+INSTANTIATE(2, unsigned short, signed char);
+INSTANTIATE(2, signed char, unsigned short);
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
 INSTANTIATE(2, short, float);
@@ -807,10 +820,17 @@ INSTANTIATE(2, unsigned short, float);
 INSTANTIATE(2, unsigned short, short);
 INSTANTIATE(2, short, unsigned short);
 
+INSTANTIATE(2, signed char, signed char);
 INSTANTIATE(2, short, short);
 INSTANTIATE(2, unsigned short, unsigned short);
 INSTANTIATE(2, float, float);
 
+INSTANTIATE(3, float, signed char);
+INSTANTIATE(3, signed char, float);
+INSTANTIATE(3, short, signed char);
+INSTANTIATE(3, signed char, short);
+INSTANTIATE(3, unsigned short, signed char);
+INSTANTIATE(3, signed char, unsigned short);
 INSTANTIATE(3, float, short);
 INSTANTIATE(3, float, unsigned short);
 INSTANTIATE(3, short, float);
@@ -818,6 +838,7 @@ INSTANTIATE(3, unsigned short, float);
 INSTANTIATE(3, unsigned short, short);
 INSTANTIATE(3, short, unsigned short);
 
+INSTANTIATE(3, signed char, signed char);
 INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
@@ -851,6 +872,12 @@ INSTANTIATE(4, float, float);
 
 
 
+INSTANTIATE(1, float, signed char);
+INSTANTIATE(1, signed char, float);
+INSTANTIATE(1, short, signed char);
+INSTANTIATE(1, signed char, short);
+INSTANTIATE(1, unsigned short, signed char);
+INSTANTIATE(1, signed char, unsigned short);
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
 INSTANTIATE(1, short, float);
@@ -863,6 +890,12 @@ INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
 
+INSTANTIATE(2, float, signed char);
+INSTANTIATE(2, signed char, float);
+INSTANTIATE(2, short, signed char);
+INSTANTIATE(2, signed char, short);
+INSTANTIATE(2, unsigned short, signed char);
+INSTANTIATE(2, signed char, unsigned short);
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
 INSTANTIATE(2, short, float);
@@ -874,6 +907,12 @@ INSTANTIATE(2, short, short);
 INSTANTIATE(2, unsigned short, unsigned short);
 INSTANTIATE(2, float, float);
 
+INSTANTIATE(3, float, signed char);
+INSTANTIATE(3, signed char, float);
+INSTANTIATE(3, short, signed char);
+INSTANTIATE(3, signed char, short);
+INSTANTIATE(3, unsigned short, signed char);
+INSTANTIATE(3, signed char, unsigned short);
 INSTANTIATE(3, float, short);
 INSTANTIATE(3, float, unsigned short);
 INSTANTIATE(3, short, float);
