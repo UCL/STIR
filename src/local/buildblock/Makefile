@@ -34,7 +34,8 @@ SOURCES = \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
 	SinglesRatesFromSglFile.cxx \
-	SinglesRatesFromECAT7.cxx
+	SinglesRatesFromECAT7.cxx  \
+  find_fwhm_in_image.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
