@@ -256,16 +256,13 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
   {
     error( "\n\n\t\tNo matching data found\n" ) ;
   }
-  else
-  {
-   printf( "\t\tEntry %6d in .mt file Corresponds to Time 0 \n", ZeroOffSet) ;
-  }
-  
+ 
   
   int mt_offset = ZeroOffSet;
   time_offset = 
     (mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
-
+  cerr << "\t\tEntry " << mt_offset << "(ignoring missing data lines) in .mt file Corresponds to Time 0 \n"
+       << "\t\tTime offset:= " << time_offset << endl;
 #endif
 
 #if 0
