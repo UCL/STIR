@@ -8,7 +8,6 @@ WORKSPACE=$(CURDIR)/../..
 include $(WORKSPACE)/Makefile_common
 
 LIB_SOURCES = \
-	lm.cxx \
 	CListModeData.cxx \
 	CListModeDataFromStream.cxx \
 	CListModeDataECAT.cxx \
