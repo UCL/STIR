@@ -22,7 +22,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
 
-#include "stir/interfile.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
 
 START_NAMESPACE_STIR
 
@@ -295,7 +295,9 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     {
       char *filename = new char[gradient_filename.size()+100];
       sprintf(filename, "%s%d.v", gradient_filename.c_str(), count);
-      write_basic_interfile(filename, prior_gradient);
+      DefaultOutputFileFormat output_file_format;
+      output_file_format.
+	write_to_file(filename, prior_gradient);
       delete filename;
     }
 }
