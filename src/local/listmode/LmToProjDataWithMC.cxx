@@ -149,7 +149,7 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
 
   ro3d_ptr->get_motion(ro3dtrans,current_time);
    
-#if 0
+#if 1
   const CartesianCoordinate3D<float> coord_1_transformed = 
     ro3d_move_to_reference_position.transform_point(ro3dtrans.transform_point(coord_1));
 

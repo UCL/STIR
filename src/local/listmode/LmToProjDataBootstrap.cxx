@@ -17,8 +17,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/listmode/LmToProjDataBootStrap.h"
-#include "stir/Succeeded.h"
+#include "local/stir/listmode/LmToProjDataBootstrap.h"
+//#include "stir/Succeeded.h"
 
 #ifdef _MSC_VER
 // Current version of boost::random breaks on VC6 and 7 because of 
