@@ -1,8 +1,11 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    For internal GE use only.
+*/
 /*!
-
   \file
   \ingroup motion
   \brief Functions to re-interpolate an image or projection data to a new coordinate system.
@@ -11,10 +14,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "local/stir/motion/transform_3d_object.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -29,10 +28,6 @@
 #include "stir/Succeeded.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
 
-
-#ifndef STIR_NO_NAMESPACES
-using std::min;
-#endif
 
 START_NAMESPACE_STIR
 
