@@ -53,6 +53,7 @@ public:
 private:
   vector<double> filter_coefficients_for_parsing;
   VectorWithOffset<float> filter_coefficients;
+  int z_trivial ;
   
    
   
