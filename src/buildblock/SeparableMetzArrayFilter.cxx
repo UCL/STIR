@@ -87,7 +87,7 @@ SeparableMetzArrayFilter
       else printf ("%d-dir Gauss[%d]=%f\n",i,j,kernel[j]);
       
       
-      all_1d_array_filters[i-1] = new ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>(kernel);
+      this->all_1d_array_filters[i-1] = new ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>(kernel);
       
   }
 }
@@ -352,7 +352,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
 
 
 
-template SeparableMetzArrayFilter<3, float>;
+template class SeparableMetzArrayFilter<3, float>;
 
 END_NAMESPACE_STIR
 
