@@ -3,6 +3,7 @@
 //
 /*!
   \file 
+  \ingroup buildblock
  
   \brief inline implementations for CPUTimer
 
@@ -23,9 +24,8 @@
    1.2 by Kris Thielemans
      moved inlines to separate file
 */
-START_NAMESPACE_TOMO
 
-// KT 12/01/2000 use for all unixes
+
 #if defined(__OS_UNIX__)
 // use times() instead of clock() for Unix. (Higher resolution)
 // Only tested for AIX, sun, OSF, but it is probably POSIX
@@ -33,6 +33,8 @@ START_NAMESPACE_TOMO
 
 #include <sys/times.h>
 #include <unistd.h>
+
+START_NAMESPACE_TOMO
 
 double CPUTimer::get_current_value() const
 {  
@@ -49,6 +51,7 @@ double CPUTimer::get_current_value() const
 // This breaks on Win95 though
 #include <windows.h>
 
+START_NAMESPACE_TOMO
 
 // undefine the min,max macros again (we did this already in Tomography_common.h)
 #ifdef max
@@ -87,6 +90,8 @@ double CPUTimer::get_current_value() const
 #else // all other systems
 
 #include <time.h>
+
+START_NAMESPACE_TOMO
 
 double CPUTimer::get_current_value() const
 {  
