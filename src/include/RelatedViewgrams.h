@@ -4,7 +4,7 @@
 /*!
 
   \file
-
+  \ingroup buildblock
   \brief Declaration of class RelatedViewgrams
 
   \author Kris Thielemans
@@ -57,12 +57,10 @@ public:
  typedef Viewgram<elemT> value_type;
  typedef value_type& reference;
  typedef const value_type& const_reference;
- typedef value_type* iterator;
- typedef const value_type* const_iterator;
  typedef ptrdiff_t difference_type;
  typedef size_t size_type;
 
-  #ifndef TOMO_NO_NAMESPACES
+#ifndef TOMO_NO_NAMESPACES
   typedef std::vector<Viewgram<elemT> >::iterator iterator;
   typedef std::vector<Viewgram<elemT> >::const_iterator const_iterator;
 #else
