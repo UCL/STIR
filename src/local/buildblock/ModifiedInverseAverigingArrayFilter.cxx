@@ -183,6 +183,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   fft_filter_denom =fft_filter*(sq_kapas-1) + fft_1;
   fft_filter_denom *= inverse_sq_kapas;
   
+  
   four1(fft_filter_denom,fft_filter_denom.get_length()/2,1);
   four1(fft_1,fft_1.get_length()/2,1);
   four1(fft_filter,fft_filter.get_length()/2,1);  
@@ -210,19 +211,54 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   for (int i=1;i<=(size/2)-1;i++)
     real_div[i+1] = div[2*i+1];
   
-   // new
-  for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
+   // new - to prevent form aliasing limit the new range for the coefficients to 
+   // filter_coefficients_padded.get_length()/4
+   // for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
+   for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
   { 
-    if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
+    //sm 16/11/2001 try the new threshold
+  if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
+   //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
     else (kernel_length)++;
   }  
 
-  new_filter_coefficients.grow(-kernel_length,kernel_length);    
+  // new
+  if (kernel_length == real_div.get_length())
+     new_filter_coefficients.grow(-(kernel_length-1),kernel_length);    
+  else
+    new_filter_coefficients.grow(-kernel_length,kernel_length);    
+  
   new_filter_coefficients[0] = real_div[1];
-   for (int  i = 1;i<=kernel_length;i++)
+
+   for (int  i = 1;i<= min(15,kernel_length);i++)
    {
      new_filter_coefficients[i]=real_div[i+1];
      new_filter_coefficients[-i]=real_div[i+1];
+
+   }
+
+  }
+    else
+   {
+    new_filter_coefficients = filter_coefficients;
+   }
+
+// this is insane
+#if 0
+  // TODO this s not the best way of limiting ranges
+  if (kernel_length == real_div.get_length())
+     new_filter_coefficients.grow(-(kernel_length-1),kernel_length-1);    
+  else
+     new_filter_coefficients.grow(-(kernel_length-1),kernel_length-1);    
+
+  new_filter_coefficients.grow(-kernel_length,kernel_length);    
+  new_filter_coefficients[0] = real_div[1];
+
+   for (int  i = 1;i<= min(15,kernel_length);i++)
+   {
+     new_filter_coefficients[i]=real_div[i+1];
+     new_filter_coefficients[-i]=real_div[i+1];
+
    }
 
   }
@@ -231,10 +267,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     new_filter_coefficients = filter_coefficients;
    }
    
-   // new_filter_coefficients[0] =real_div[1];
-  //  new_filter_coefficients[-1] =real_div[2];
-  //  new_filter_coefficients[1] =real_div[2];
-  
+#endif
 
 #endif 
    cerr << " COEFF PRINT NOW" << endl;
@@ -242,18 +275,18 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     cerr << new_filter_coefficients[i] << "   ";   
 
   const string filename ="coeff_SA_2D_pf_new";
-  shared_ptr<iostream> output = new fstream (filename.c_str(), ios::out|ios::binary);
+  shared_ptr<iostream> output = new fstream (filename.c_str(), ios::ate|ios::out|ios::binary);
   if (!*output)
     error("Error opening output file %s\n",filename.c_str()); 
 
   // now rescaled the calculated coefficients to DC gain 1
   
-  //float sum_new_coefficients =0.F;  
-  //for (int i=-1;i<=1;i++)
-   // sum_new_coefficients += new_filter_coefficients[i];  
+ /* float sum_new_coefficients =0.F;  
+  for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+    sum_new_coefficients += new_filter_coefficients[i];  
   
- // for (int i=-1;i<=1;i++)
-   // new_filter_coefficients[i] /=sum_new_coefficients;  
+ for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+     new_filter_coefficients[i] /=sum_new_coefficients;  */
 
   *output << "coeff" << endl;
   *output << endl;  
@@ -462,12 +495,12 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 
   // now rescaled the calculated coefficients to DC gain 1
   
-  float sum_new_coefficients =0.F;  
+  /*float sum_new_coefficients =0.F;  
   for (int i=-1;i<=1;i++)
     sum_new_coefficients += new_filter_coefficients[i];  
   
   for (int i=-1;i<=1;i++)
-    new_filter_coefficients[i] /=sum_new_coefficients;  
+    new_filter_coefficients[i] /=sum_new_coefficients;  */
 
   *output << "coeff" << endl;
   *output << endl;  
