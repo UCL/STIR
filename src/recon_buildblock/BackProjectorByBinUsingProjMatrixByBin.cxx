@@ -194,7 +194,11 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 	      
 	      auto_ptr<SymmetryOperation> symm_op_ptr = 
 		symmetries->find_symmetry_operation_from_basic_bin(bin);
-	      assert(bin == basic_bin);
+	      // TODO replace with Bin::compare_coordinates or so
+	      assert(bin.segment_num() == basic_bin.segment_num());
+	      assert(bin.view_num() == basic_bin.view_num());
+	      assert(bin.axial_pos_num() == basic_bin.axial_pos_num());
+	      assert(bin.tangential_pos_num() == basic_bin.tangential_pos_num());
 	      
 	      symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
 	      proj_matrix_row_copy.back_project(image, bin);
