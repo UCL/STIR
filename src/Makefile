@@ -9,7 +9,7 @@ LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/display \
 	$(WORKSPACE)/iterative/LogLik_buildblock 
 
-EXESUBDIRECTORIES=
+EXESUBDIRECTORIES= \
         $(WORKSPACE)/iterative/sensitivity \
 	$(WORKSPACE)/iterative/OSMAPOSL \
 	$(WORKSPACE)/utilities \
