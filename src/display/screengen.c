@@ -230,12 +230,14 @@ screen_image_t sc_image[];
   LENGTH_X = max_x-min_x;               /* size in pixels of the region */
   LENGTH_Y = max_y-min_y;
 
-  // KT&CL 3/12 changed the test of fitting 1 iamge to the window
+  /* KT&CL 3/12/97 changed the test if 1 image fits in the window */
   if (LENGTH_X < SIZE_X || LENGTH_Y < SIZE_Y+15)
   { message("\nEven one image of this size doesn't fit in the window");
     return(0);
   }
-  // KT&CL 3/12 start form 1 now
+
+  /* Now we find the maximum scale of the images */
+  /* KT&CL 3/12/97 start from 1 now */
   scale = 1;
   do
   {
@@ -252,11 +254,21 @@ screen_image_t sc_image[];
   /* we want to center the images in the region
      eg: we have now computed that a maximum of 4x3 images fits
          but we have only 7 images ...                                  */
-  if (nr_y==1) nr_x=nr_sc;
+  /* KT 11/12/97 added first if to check if all images fit or not, and the else
+     case to change nr_sc */
+  if (nr_x*nr_y > nr_sc)
+    {
+      if (nr_y==1) nr_x=nr_sc;
+      else
+	{
+	  nr_y = nr_sc / nr_x;
+	  if (nr_x*nr_y < nr_sc) nr_y++;
+	}
+    }
   else
-  { nr_y = nr_sc / nr_x;
-    if (nr_x*nr_y < nr_sc) nr_y++;
-  }
+    {
+      nr_sc = nr_x*nr_y;
+    }
 
   if (*Pscale!=0 && scale>*Pscale)
       scale = *Pscale;
