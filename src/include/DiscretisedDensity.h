@@ -89,7 +89,7 @@ class DiscretisedDensity : public Array<num_dimensions,elemT>
 { 
 public:
   //! A static member to read an image from file
-  static shared_ptr<DiscretisedDensity> read_from_file(const string& filename);
+  static DiscretisedDensity * read_from_file(const string& filename);
 
   //! Construct an empty DiscretisedDensity
   inline DiscretisedDensity();
