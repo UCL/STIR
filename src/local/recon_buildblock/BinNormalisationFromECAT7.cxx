@@ -365,7 +365,7 @@ get_bin_efficiency(const Bin& bin) const
 	 detection_position_pair.pos2().axial_coord() = ring2;
 #ifndef NDEBUG
 	   Bin check_bin;
-	   check_bin.set_bin_value(0);
+	   check_bin.set_bin_value(bin.get_bin_value());
 	   assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin, detection_position_pair) ==
 	     Succeeded::yes);
 	   assert(check_bin == bin);
