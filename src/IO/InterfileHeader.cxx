@@ -268,6 +268,10 @@ InterfilePSOVHeader::InterfilePSOVHeader()
   transaxial_FOV_diameter_in_cm = -1;
   add_key("transaxial FOV diameter (cm)",
     KeyArgument::DOUBLE, &transaxial_FOV_diameter_in_cm);
+  // KT 31/03/99 new
+  ring_diameter_in_cm = -1;
+  add_key("ring diameter (cm)",
+    KeyArgument::DOUBLE, &ring_diameter_in_cm);
   distance_between_rings_in_cm = -1;
   add_key("distance between rings (cm)",
     KeyArgument::DOUBLE, &distance_between_rings_in_cm);
@@ -545,6 +549,9 @@ originating_system or 'number of detectors per ring'.\n");;
       PETerror("Interfile warning: 'num_detectors_per_ring' invalid.\n");
     if (transaxial_FOV_diameter_in_cm < 1)
       PETerror("Interfile warning: 'transaxial FOV diameter (in cm)' invalid.\n");
+    // KT 31/03/99 new
+    if (ring_diameter_in_cm < 1)
+      PETerror("Interfile warning: 'ring diameter (in cm)' invalid.\n");
     if (distance_between_rings_in_cm < 1)
       PETerror("Interfile warning: 'distance between rings (in cm)' invalid.\n");
     if (bin_size_in_cm < 1)
@@ -554,25 +561,51 @@ originating_system or 'number of detectors per ring'.\n");;
   {
     PETScannerInfo full_scanner(scanner);
 
+   
     if (num_rings < 1)
       num_rings = full_scanner.num_rings;
     if (num_detectors_per_ring < 1)
       num_detectors_per_ring = full_scanner.num_views*2;
     if (transaxial_FOV_diameter_in_cm < 1)
       transaxial_FOV_diameter_in_cm = full_scanner.FOV_radius*2/10.;
+    // KT 31/03/99 new
+    if (ring_diameter_in_cm < 1)
+      ring_diameter_in_cm = full_scanner.ring_radius*2/10.;
     if (distance_between_rings_in_cm < 1)
       distance_between_rings_in_cm = full_scanner.ring_spacing/10;
     if (bin_size_in_cm < 1)
       bin_size_in_cm = full_scanner.bin_size/10;
     
-    // TODO consistency check with full_scanner values ?
+
+    // consistency check with full_scanner values 
+    // KT 31/03/99 new
+    if (num_rings != full_scanner.num_rings)
+      PETerror("Interfile warning: 'number of rings' (%d) is expected to be %d\n",
+	       num_rings, full_scanner.num_rings);
+    if (num_detectors_per_ring != full_scanner.num_views*2)
+      PETerror("Interfile warning: 'number of detectors per ring' (%d) is expected to be %d\n",
+	       num_detectors_per_ring, full_scanner.num_views*2);
+    if (transaxial_FOV_diameter_in_cm != full_scanner.FOV_radius*2/10.)
+       PETerror("Interfile warning: 'transaxial FOV diameter (in cm)' (%f) is expected to be %f.\n",
+		transaxial_FOV_diameter_in_cm, full_scanner.FOV_radius*2/10.);
+    if (ring_diameter_in_cm != full_scanner.ring_radius*2/10.)
+       PETerror("Interfile warning: 'ring diameter (in cm)' (%f) is expected to be %f.\n",
+		ring_diameter_in_cm, full_scanner.ring_radius*2/10.);
+    if (distance_between_rings_in_cm != full_scanner.ring_spacing/10)
+       PETerror("Interfile warning: 'distance between rings (in cm)' (%f) is expected to be %f.\n",
+		distance_between_rings_in_cm, full_scanner.ring_spacing/10);
+    if (bin_size_in_cm != full_scanner.bin_size/10)
+      PETerror("Interfile warning: 'bin size (in cm)' (%f) is expected to be %f.\n",
+	       bin_size_in_cm, full_scanner.bin_size/10);
+
   }
+  // KT 31/03/99 use ring_diameter, not FOV_diameter !
   scan_info = PETScanInfo(scanner, 
-	      num_rings, num_bins, num_views, 
-	      float(transaxial_FOV_diameter_in_cm/2*10.),
-	      float(distance_between_rings_in_cm*10.), 
-	      float(bin_size_in_cm*10.), 
-	      float(view_offset));
+			  num_rings, num_bins, num_views, 
+			  float(ring_diameter_in_cm/2*10.),
+			  float(distance_between_rings_in_cm*10.), 
+			  float(bin_size_in_cm*10.), 
+			  float(view_offset));
   
   scan_info.show_params();
 
