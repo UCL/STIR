@@ -99,10 +99,20 @@ Scanner::Scanner(Type scanner_type)
 	       0,1,0,8,7, 1); // HR block
   else if (scanner_type == Advance)
   {
-    // Advance option
     // 283 bins (non-uniform sampling) 
     // 281 bins (uniform sampling)
     set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,469.5F, 8.5F, 1.96F, 0,0,0,0,0, 1);
+  }
+  else if (scanner_type == DiscoveryLS)
+  {
+    // identical to Advance
+    set_params(DiscoveryLS,string_list("GE Discovery LS", "Discovery LS"), 18, 283,281,2*336,469.5F, 8.5F, 1.96F, 0,0,0,0,0, 1);
+  }
+  else if (scanner_type == DiscoveryST)
+  {
+    // 249 bins (non-uniform sampling) 
+    // 221 bins (uniform sampling)
+    set_params(DiscoveryST,string_list("GE Discovery ST", "Discovery ST"), 24, 249,221,2*210,451.5F, 6.3F, 3.19F, 0,0,0,0,0, 1);// TODO check sizes
   }
   else if (scanner_type == HZLR)
     set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0,0,0,0,0, 1);
