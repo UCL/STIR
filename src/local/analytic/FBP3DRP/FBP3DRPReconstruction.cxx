@@ -391,8 +391,8 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
       }
 #ifndef NRFFT
     const float theta_max =
-      proj_data_ptr->get_proj_data_info_ptr()->
-      get_tantheta(Bin(max_segment_num_to_process,0,0,0));
+      atan(proj_data_ptr->get_proj_data_info_ptr()->
+	   get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
 
     colsher_filter = 
       ColsherFilter(theta_max, 
@@ -816,6 +816,7 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
     
     
 #ifdef NRFFT
+
     assert(fabs(proj_data_info_cyl.get_axial_sampling(seg_num)*cos(theta) /
 		proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)) - 1) < .0001);
     colsher_filter = 
@@ -916,7 +917,8 @@ void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &imag
     logfile << "\n\n TIMING RESULTS :\n"    
             << "Total CPU time : " << get_CPU_timer_value() << '\n' 
             << "forward projection CPU time : " << forward_projector_sptr->get_CPU_timer_value() << '\n' 
-            << "back projection CPU time : " << back_projector_sptr->get_CPU_timer_value() << '\n';
+            << "back projection CPU time : " << back_projector_sptr->get_CPU_timer_value() << '\n'
+	    << "Colsher filter set-up CPU time : " << colsher_filter.get_CPU_timer_value() << '\n';
 #endif    
 }
 
