@@ -19,6 +19,9 @@ Z output image size (in pixels):=95
 X voxel size (in mm):= 2.05941
 Y voxel size (in mm):= 2.05941
 Z voxel size (in mm) :=2.425
+
+value := 1
+
 EOF
 
 startline=`grep -i -n "shape type" $ROIfile | head -n 1 | awk -F: '{ print $1 }'`
