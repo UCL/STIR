@@ -1,73 +1,73 @@
-# AIX and SOLARIS Makefile for PPhead/display directory
 #
 # $Id$
 #
 
-# DB 1/2/99 Add WORKSPACE and INCLUDE_DIR directory
-WORKSPACE = ${HOME}/PPhead
-INCLUDE_DIR = ${WORKSPACE}/include
-
-CXX = g++
-CC = gcc
-DEBUG= -D_DEBUG
-DEST=debug/
-#KT added the last -I option for Solaris, doesn't harm anyone if it's
-# not necessary
-#CL 030698 Move debug flags to DEBUG
-#__unix__ has to be defined for gen.h 
-# DB 1/2/99 change CFLAGS to include -I$(INCLUDE_DIR)
-# KT 11/11/99 removed /usr/openwin/include. It actually stopped things
-# compiling on gcc 2.95.2 as it was getting old include files
-CFLAGS =  -g $(DEBUG) -I$(INCLUDE_DIR) -D__unix__ 
-# -I/usr/openwin/include
-
-#KT 010798 removed as we do not link in this makefile
-#LDFLAGS = -g -L${HOME}/PPhead/display -lX11 -lcurses
-
-.KEEP_STATE:
-
-#CL060798 Add createdir for automtaically create directories
-
-all: createdir ${DEST}libdisplay.a 
+include ../Makefile_common
 
 
-createdir: 
-	-mkdir -p $(DEST)
+all: ${DEST}libdisplay.a 
+
+clean:
+	$(RM) $(DEST)*
+
+#******* first find out which files we need
+
+ifeq "$(GRAPHICS)" "X"
+GRAPHOPT = -DTOMO_SIMPLE_BITMAPS -DSC_XWINDOWS
+SOURCES_CXX = display.cxx 
+SOURCES_C = gen.c screengen.c screen.c
+else
+ifeq "$(GRAPHICS)" "PGM"
+GRAPHOPT = -DTOMO_PGM
+SOURCES_CXX = display.cxx
+SOURCES_C = 
+else
+ifeq "$(GRAPHICS)" "MATHLINK"
+GRAPHOPT = -DTOMO_MATHLINK
+SOURCES_CXX = display.cxx 
+SOURCES_C = mathlinkhelp.c
+else
+GRAPHOPT =
+SOURCES_CXX= display.cxx
+SOURCES_C = 
+endif
+endif
+endif
 
 
+#******* now set dependencies
 
+OBJS = $(SOURCES_CXX:%.cxx=$(DEST)%.o) $(SOURCES_C:%.c=$(DEST)%.o)
 
-${DEST}%.o: %.cxx
-	$(CXX)  $(CFLAGS) -o $@ -c $< 
+include $(SOURCES_CXX:%.cxx=$(DEST)%.d) $(SOURCES_C:%.c=$(DEST)%.d)
 
-${DEST}%.o: %.cc
-	$(CXX)  $(CFLAGS) -o $@ -c $< 
+.PRECIOUS: $(DEST)*.o $(DEST)*.a
 
-${DEST}%.o: %.c 
-	$(CC)  $(CFLAGS) -o $@ -c $< 
-
-#CL 09/10/98 ADd the header file dependencies for all object files
-#I agree that this Makefile become big but it is the only way to update correctly 
-#all the object files
-
-$(DEST)display.o: display.cxx ../include/VectorWithOffset.h \
- ../include/pet_common.h ../include/Tensor2D.h ../include/Tensorbase.h \
- ../include/NumericVectorWithOffset.h ../include/NumericInfo.h \
- ../include/Tensor1D.h ../include/Tensor3D.h ../include/display.h \
- gen.h screen.h
-
-$(DEST)gen.o: gen.c gen.h
-
-$(DEST)screen.o: screen.c gen.h screen.h
-
-$(DEST)screengen.o: screengen.c gen.h screen.h
-
-.PRECIOUS: ${DEST}*.a ${DEST}*.o
-
-
-
-${DEST}libdisplay.a: \
-    ${DEST}display.o ${DEST}gen.o ${DEST}screengen.o ${DEST}screen.o
+${DEST}libdisplay.a:  $(OBJS)
 	ar r $@ $?
 	ranlib $@
+
+
+#******* default rules
+# disable default rules from Makefile_common
+
+${DEST}%.o: %.cxx 
+
+${DEST}%.o: %.c
+
+
+# new rules use GRAPHOPT
+
+${DEST}%.o: %.cxx 
+	-mkdir -p $(DEST)
+	$(CXX) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
+
+${DEST}%.o: %.c
+	-mkdir -p $(DEST)
+	$(CC) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
+
+
+
+
+
 
