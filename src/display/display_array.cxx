@@ -4,12 +4,12 @@
  \file 
  \ingroup display
   
- \brief  Functions to display Array objects (2d and 3d)
+ \brief  Functions to display Array objects (2d and 3d) and RelatedViewgrams
   
  \author Kris Thielemans
  \author PARAPET project
  
- \date    $Date$
+ \date $Date$
   
  \version $Revision$
 
@@ -40,6 +40,7 @@
 #include "display.h"
 #include "IndexRange3D.h"
 #include "utilities.h"
+#include "RelatedViewgrams.h"
   
 // First we define the different implementations. 
 // See end of file for display() itself.
@@ -457,35 +458,51 @@ void display(const Array<3,elemT>& plane_stack,
 #endif
 }
 
-
-#if 0
-// TODO?
-#include "PETViewgram.h"
-void display_8_views(const PETViewgram& v1, const PETViewgram& v2, 
-                     const PETViewgram& v3, const PETViewgram& v4,
-                     const PETViewgram& v5, const PETViewgram& v6, 
-                     const PETViewgram& v7, const PETViewgram& v8)
+template <class elemT>
+void display(const RelatedViewgrams<elemT>& vs,
+             double maxi,
+	     const char * const title,
+             int zoom)
 {        
-    Array<3,float> 
-      all_of_them(IndexRange3D(0,7,
-                               v1.get_min_ring(),v1.get_max_ring(), 
-			       v1.get_min_bin(), v1.get_max_bin()));
-//CL 290798 BUG: Change the size as display seems never to go out of loop
-// in the function of center_sc_images(Pscale,min_x,max_x,min_y,max_y, SIZE_X,SIZE_Y,sc_image,nr_sc)
-// due to SIZE_X and SIZE_Y which are set to 1 (8,1,1);  
-    // TODO?
-    all_of_them[0] = v1;
-    all_of_them[1] = v2;
-    all_of_them[2] = v3;
-    all_of_them[3] = v4;
-    all_of_them[4] = v5;
-    all_of_them[5] = v6;
-    all_of_them[6] = v7;
-    all_of_them[7] = v8;
-    display(all_of_them, all_of_them.find_max());
+  Array<3,float> 
+    all_of_them(IndexRange3D(0,vs.get_num_viewgrams()-1,
+                             vs.get_min_axial_pos_num(),vs.get_max_axial_pos_num(), 
+      	                     vs.get_min_tangential_pos_num(),vs.get_max_tangential_pos_num()));
+#ifndef TOMO_NO_NAMESPACES
+    std::
+#endif
+      copy(vs.begin(), vs.end(), all_of_them.begin());
+    
+  VectorWithOffset<char *> text(all_of_them.get_min_index(), 
+				all_of_them.get_max_index());
+  
+  VectorWithOffset<char *>::iterator text_iter = text.begin();
+  RelatedViewgrams<elemT>::const_iterator vs_iter = vs.begin();
+
+  while(vs_iter != vs.end())
+  {
+    *text_iter=new char[100];
+    sprintf(*text_iter,"v %d, s %d", vs_iter->get_view_num(), vs_iter->get_segment_num());
+    ++text_iter;
+    ++vs_iter;
+  }
+
+  VectorWithOffset<float> scale_factors(all_of_them.get_min_index(), 
+				        all_of_them.get_max_index());
+  scale_factors.fill(1.);
+  
+  display(all_of_them, scale_factors, text,maxi, title, zoom);
+
+  text_iter = text.begin();
+
+  while(text_iter != text.end())
+  {
+    delete[] *text_iter;
+    ++text_iter;
+  }
 }
 
-#endif
+
 
 /***********************************************
  instantiations
@@ -522,5 +539,11 @@ void display<>(const Array<3,float>& plane_stack,
 	     const VectorWithOffset<const char *>& text,
 	     double maxi, const char * const title, int scale);
 
+
+template
+void display(const RelatedViewgrams<float>& vs,
+             double maxi,
+	     const char * const title,
+             int zoom);
 
 END_NAMESPACE_TOMO
