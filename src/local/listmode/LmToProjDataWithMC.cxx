@@ -1,4 +1,16 @@
-
+/*!
+  \file
+  \ingroup listmode
+  \brief Implementation of class LmToProjDataWithMC
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  $Date$
+  $Revision $
+*/
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 #include "local/stir/listmode/LmToProjDataWithMC.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "local/stir/listmode/CListRecordECAT966.h"
@@ -6,8 +18,6 @@
 #include "stir/Succeeded.h"
 #include <time.h>
 #include "stir/is_null_ptr.h"
-
-
 
 
 START_NAMESPACE_STIR
@@ -88,6 +98,12 @@ post_processing()
     dynamic_cast<RigidObject3DMotionFromPolaris* >(ro3d_ptr.get())->set_polaris_time_offset(polaris_time_offset);
   }
 
+  move_from_scanner =
+    RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
+                               CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
+  move_to_scanner = move_from_scanner;
+  move_to_scanner.inverse();
+
   return false;
 }
 
@@ -123,25 +139,17 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
     static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
 
 
-  //event.get_bin(bin, static_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr));
   record.get_uncompressed_bin(bin);
   const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
    
   //Do the motion correction
   
-  // find detectors
-  int det_num_a;
-  int det_num_b;
-  int ring_a;
-  int ring_b;
-  event.get_detectors(det_num_a,det_num_b,ring_a,ring_b);
-
-  // find corresponding cartesian coordinates
+  // find cartesian coordinates on LOR
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
 
-  find_cartesian_coordinates_given_scanner_coordinates(coord_1,coord_2,
-    ring_a,ring_b,det_num_a,det_num_b,*scanner_ptr);
+  record.get_uncompressed_proj_data_info_sptr()->
+    find_cartesian_coordinates_of_detection(coord_1,coord_2, bin);
   
   // now do the movement
   
@@ -149,39 +157,31 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
 
   ro3d_ptr->get_motion(ro3dtrans,current_time);
    
-#if 1
-  const CartesianCoordinate3D<float> coord_1_transformed = 
-    ro3d_move_to_reference_position.transform_point(ro3dtrans.transform_point(coord_1));
 
-  const CartesianCoordinate3D<float> coord_2_transformed = 
-    ro3d_move_to_reference_position.transform_point(ro3dtrans.transform_point(coord_2));
-#else
- const CartesianCoordinate3D<float> coord_1_transformed = 
-    ro3dtrans.transform_point(ro3d_move_to_reference_position.transform_point(coord_1));
+  
+  const CartesianCoordinate3D<float> coord_1_transformed =
+     move_to_scanner.
+     transform_point(ro3d_move_to_reference_position.
+                   transform_point(
+                                  ro3dtrans.
+                                   transform_point(move_from_scanner.
+                                                   transform_point(coord_1))));
+  const CartesianCoordinate3D<float> coord_2_transformed =
+     move_to_scanner.
+     transform_point(ro3d_move_to_reference_position.
+                   transform_point(
+                                  ro3dtrans.
+                                   transform_point(move_from_scanner.
+                                                   transform_point(coord_2))));
 
-  const CartesianCoordinate3D<float> coord_2_transformed = 
-    ro3dtrans.transform_point(ro3d_move_to_reference_position.transform_point(coord_2));
-#endif
-  int det_num_a_trans;
-  int det_num_b_trans;
-  int ring_a_trans;
-  int ring_b_trans;
+
+  proj_data_info.
+    find_bin_given_cartesian_coordinates_of_detection(bin,
+                                                      coord_1_transformed,
+					              coord_2_transformed);
 
   // given two CartesianCoordinates find the intersection     
-  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a_trans,det_num_b_trans,
-							   ring_a_trans, ring_b_trans,
-							   coord_1_transformed,
-							   coord_2_transformed, 
-							   *scanner_ptr) ==
-      Succeeded::no ||
-      proj_data_info.
-       get_bin_for_det_pair(bin,
-			    det_num_a_trans, ring_a_trans,
-			    det_num_b_trans, ring_b_trans) == Succeeded::no)
-  {
-    bin.set_bin_value(-1);
-  }
-  else
+  if (bin.get_bin_value() > 0)
   {
     // now normalise event taking into account the
     // normalisation factor before motion correction and the number of
@@ -196,126 +196,6 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   }
 
   
-}
-
-
-void
-LmToProjDataWithMC::find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
-				 CartesianCoordinate3D<float>& coord_2,
-				 const int Ring_A,const int Ring_B, 
-				 const int det1, const int det2, 
-				 const Scanner& scanner) const
-{
-//  assert(Ring_A >=0 && Ring_A<scanner.get_num_rings());
-  //assert(Ring_B >=0 && Ring_B<scanner.get_num_rings());
-  //assert(det1 >=0 && det1<scanner.get_num_detectors_per_ring());
-  //assert(det2 >=0 && det2<scanner.get_num_detectors_per_ring());
-
-  int num_detectors = scanner.get_num_detectors_per_ring();
-
-  float df1 = (2.*_PI/num_detectors)*(det1);
-  float df2 = (2.*_PI/num_detectors)*(det2);
-  float x1 = scanner.get_ring_radius()*cos(df1);
-  float y1 = scanner.get_ring_radius()*sin(df1);
-  float x2 = scanner.get_ring_radius()*cos(df2);
-  float y2 = scanner.get_ring_radius()*sin(df2);
-  float z1 = Ring_A*scanner.get_ring_spacing();
-  float z2 = Ring_B*scanner.get_ring_spacing();
-#if 1
-  coord_1.z() = z1;
-  coord_1.y() = x1;
-  coord_1.x() = -y1;
-
-  coord_2.z() = z2;
-  coord_2.y() = x2;
-  coord_2.x() = -y2; 
-#else
-  coord_1.z() = z1;
-  coord_1.y() = y1;
-  coord_1.x() = x1;
-
-  coord_2.z() = z2;
-  coord_2.y() = y2;
-  coord_2.x() = x2; 
-#endif
-
-}
-
-
-Succeeded
-LmToProjDataWithMC::
-find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
-							  const CartesianCoordinate3D<float>& c1,
-							  const CartesianCoordinate3D<float>& c2,
-							  const Scanner& scanner) const
-{
-  //CartesianCoordinate3D<float> c1_swapped = c1;
-  //CartesianCoordinate3D<float> c2_swapped = c2;
-						 
-  const int num_detectors=scanner.get_num_detectors_per_ring();
-  const float ring_spacing=scanner.get_ring_spacing();
-  const float ring_radius=scanner.get_ring_radius();
-
-  const CartesianCoordinate3D<float> d = c2 - c1;
-  /* parametrisation of LOR is 
-     c = l*d+c1
-     l has to be such that c.x^2 + c.y^2 = R^2
-     i.e.
-     (l*d.x+c1.x)^2+(l*d.y+c1.y)^2==R^2
-     l^2*(d.x^2+d.y^2) + 2*l*(d.x*c1.x + d.y*c1.y) + c1.x^2+c2.y^2-R^2==0
-     write as a*l^2+2*b*l+e==0
-     l = (-b +- sqrt(b^2-a*e))/a
-     argument of sqrt simplifies to
-     R^2*(d.x^2+d.y^2)-(d.x*c1.y-d.y*c1.x)^2
-  */
-  const float dxy2 = (square(d.x())+square(d.y()));
-  const float argsqrt=
-    (square(ring_radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
-  if (argsqrt<=0)
-    return Succeeded::no; // LOR is outside detector radius
-  const float root = sqrt(argsqrt);
-
-  const float l1 = (- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2;
-  const float l2 = (- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2;
-  const CartesianCoordinate3D<float> coord_det1 = d*l1 + c1;
-  const CartesianCoordinate3D<float> coord_det2 = d*l2 + c1;
-  assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
-  assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
-
-#if 0
-  det1 = stir::round(((2.*_PI)+atan2(coord_det1.y(),coord_det1.x()))/(2.*_PI/num_detectors))% num_detectors;
-  det2 = stir::round(((2.*_PI)+atan2(coord_det2.y(),coord_det2.x()))/(2.*_PI/num_detectors))% num_detectors;
-  ring1 = round(coord_det1.z()/ring_spacing);
-  ring2 = round(coord_det2.z()/ring_spacing);
-#endif
-#if 1
-  // swapped here x and y and change the sign 
-  det1 = stir::round(((2.*_PI)+atan2(-coord_det1.x(),coord_det1.y()))/(2.*_PI/num_detectors))% num_detectors;
-  det2 = stir::round(((2.*_PI)+atan2(-coord_det2.x(),coord_det2.y()))/(2.*_PI/num_detectors))% num_detectors;
-  ring1 = round(coord_det1.z()/ring_spacing);
-  ring2 = round(coord_det2.z()/ring_spacing);
-#endif
-
-
-#ifndef NDEBUG
-  {
-
-    CartesianCoordinate3D<float> check1, check2;
-    find_cartesian_coordinates_given_scanner_coordinates (check1, check2,
-							  ring1,ring2, 
-							  det1, det2, 
-							  scanner);
-    assert(norm(coord_det1-check1)<ring_spacing);
-    assert(norm(coord_det2-check2)<ring_spacing);
-  }
-#endif
-  assert(det1 >=0 && det1<scanner.get_num_detectors_per_ring());
-  assert(det2 >=0 && det2<scanner.get_num_detectors_per_ring());
-
-  return 
-    (ring1 >=0 && ring1<scanner.get_num_rings() &&
-     ring2 >=0 && ring2<scanner.get_num_rings()) 
-     ? Succeeded::yes : Succeeded::no;
 }
 
 
