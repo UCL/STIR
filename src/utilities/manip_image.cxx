@@ -1,7 +1,6 @@
 //
-// @(#)vox.cxx	1.17: 99/02/11
+// $Id$
 //
-
 
 //MJ 9/11/98 Introduced math mode
 
