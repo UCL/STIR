@@ -73,8 +73,13 @@ public:
 	
   //! default constructor. NO initialisation
   inline BasicCoordinate();
+#if 0
+  /* disabled. It overlaps with the constructor below and VC 6.0 can't sort it out.
+    We don't seem to need it anyway
+  */
   //! copy constructor
   inline BasicCoordinate(const BasicCoordinate& c);
+#endif
   //! constructor from different type of \c coordT
   /*! Uses assignment after <pre>static_cast<coordT></pre> */
   // Note implementation here for VC 6.0
@@ -96,8 +101,13 @@ public:
 
   //! comparison
   inline bool operator==(const BasicCoordinate& c) const;
+  
+#if !defined(_MSC_VER) || _MSC_VER>1200
   //! less-than (using lexical ordering)
   inline bool operator<(const BasicCoordinate& c) const;
+#else
+  // needs to be a global function to have the overloading to work. sigh.
+#endif
 
   // access to elements
   inline coordT& operator[](const int d);
