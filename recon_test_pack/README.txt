@@ -1,5 +1,5 @@
 $Id$
-README file for STIR recon_test_pack version 1.2 (and later versions?)
+README file for STIR recon_test_pack version 1.2 and 1.3 (and later versions?)
 ------------------------------------------------
 
 This test pack runs some simple tests to check if convecat6_if,
