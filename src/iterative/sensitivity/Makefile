@@ -28,7 +28,7 @@ ${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o
 	  $(BB_REGISTRIES) \
 	  ${LIB_LOGLIK_BUILDINGBLOCK} \
 	  $(BB_LIBS) \
-	  $(LINK_OPT) $(SYS_LIBS)
+	  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
 
 ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o:
 	cd ../OSMAPOSL; $(MAKE) all
