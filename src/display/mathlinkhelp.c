@@ -1,6 +1,21 @@
-//
-// $Id$: $Date$
-//
+/*
+ $Id$: $Date$
+*/
+
+/*!
+\file 
+  
+ \brief  Functions to write data to MathLink
+  
+ \author Kris Thielemans
+ \author PARAPET project
+ 
+ \date    $Date$
+  
+ \version $Revision$
+
+ \internal
+*/
 
 #ifdef TOMO_MATHLINK
 
