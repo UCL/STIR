@@ -78,7 +78,7 @@ private:
   int trans_blocks_per_bucket;
   int angular_crystals_per_block;
   int axial_crystals_per_block;
-
+  double singles_time_interval;
 };
 
 END_NAMESPACE_ECAT7
