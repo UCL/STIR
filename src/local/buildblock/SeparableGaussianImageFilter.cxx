@@ -13,7 +13,7 @@ SeparableGaussianImageFilter()
 }
 
 template <typename elemT>
-VectorWithOffset<float>
+float
 SeparableGaussianImageFilter<elemT>::
 get_standard_deviation()
 {
