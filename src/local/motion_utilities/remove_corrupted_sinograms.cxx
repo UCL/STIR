@@ -228,8 +228,8 @@ main(int argc, char* argv[])
       int num_axial_poss_to_remove_at_min_side = *iter_record_of_number_of_planes_to_remove_min;
       int num_axial_poss_to_remove_at_max_side = *iter_record_of_number_of_planes_to_remove_max;
 
-      // cerr << " Number of planes to remove on the min side is " << num_axial_poss_to_remove_at_min_side << endl;
-      // cerr << " Number of planes to remove on the max side is " << num_axial_poss_to_remove_at_max_side << endl;
+      cerr << " Number of planes to remove on the min side is " << num_axial_poss_to_remove_at_min_side << endl;
+      cerr << " Number of planes to remove on the max side is " << num_axial_poss_to_remove_at_max_side << endl;
 
 
       int ax_pos_num_out = out_segment.get_min_axial_pos_num();
@@ -238,7 +238,10 @@ main(int argc, char* argv[])
        ++ax_pos_num)
        {
 	 // cerr << ax_pos_num << "  ";
-	  out_segment[ax_pos_num_out] = in_segment[ax_pos_num];
+	 // note: the next line is ok even with different proj_data_info's
+	 // for each segment. The reason is that Array::operator[] 
+	 // and assignment is used, which ignores proj_data_info
+	 out_segment[ax_pos_num_out] = in_segment[ax_pos_num];
 	  ax_pos_num_out++;
 	
        }
@@ -256,3 +259,4 @@ main(int argc, char* argv[])
 
   return succes == Succeeded::no ? EXIT_FAILURE : EXIT_SUCCESS;
 }
+
