@@ -6,8 +6,9 @@
   \file
   \ingroup OSMAPOSL
 
-  \brief This is a program to compute the 'sensitivity' image (detection probabilities per voxel). When no input attenuation file is specified, 
-  the result is just the backprojection of all 1's.
+  \brief This is a program to compute the 'sensitivity' image (detection probabilities per voxel). 
+  When no input attenuation file is specified, attenuation factors are supposed to be 1.
+
 
   \author Matthew Jacobson
   \author Kris Thielemans
@@ -20,7 +21,7 @@
 
 /* 
 
-   if TEST is defined, results of different ring differences (i.e. the profiles   through the centres of all planes) are
+   if TEST is #defined, results of different ring differences (i.e. the profiles   through the centres of all planes) are
    stored as separate files (seg_x.dat) and the sensitivity image is
    not computed.
    if TEST is not defined, output is written to a user-specified output file
@@ -45,8 +46,14 @@
 #include "LogLikBased/common.h"
 
 #include "recon_buildblock/distributable.h"
+#ifndef USE_PMRT
 #include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#else
+#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#endif
 
 #ifndef TOMO_NO_NAMESPACES
 using std::endl;
@@ -80,7 +87,9 @@ shared_ptr< DiscretisedDensity<3,float> >
  compute_sensitivity_image(shared_ptr<ProjData> const& proj_data_ptr,
 			   shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr,
 			   const bool do_attenuation,
-			   const Normalisation& normalisation,
+                           shared_ptr<ProjData> const& atten_proj_data_ptr, 
+			   shared_ptr<ProjData> const& norm_proj_data_ptr, 
+			   //const Normalisation& normalisation,
 			   const parameters &globals)
 {
 
@@ -104,6 +113,8 @@ shared_ptr< DiscretisedDensity<3,float> >
 
 #endif
 
+    //warning("Currently ignoring attenuation factors (but not the attenuation image)\n");
+    // TODO norm
     distributable_compute_sensitivity_image(*result,
 					    proj_data_ptr->get_proj_data_info_ptr()->clone(),
                                             do_attenuation ? attenuation_image_ptr.get() : NULL,
@@ -112,7 +123,7 @@ shared_ptr< DiscretisedDensity<3,float> >
 					    min_segment,
 					    max_segment,
 					    globals.zero_seg0_end_planes,
-					    NULL); //TODO: multiplicative_sinogram goes here
+					    norm_proj_data_ptr);
 
 #ifdef TEST
 
@@ -222,10 +233,11 @@ int main(int argc, char **argv)
   {
     char atten_name[max_filename_length];
     ask_filename_with_extension(atten_name, 
-				"Get attenuation image from which file (0 = 0's): (use .hv if you can)",
+				"Get attenuation image from which file (0 = 0's): ",
 				"");    
     
-    if(atten_name[0]=='0')
+    // KT 18/08/2000 compare whole string instead of only first character
+    if(strcmp(atten_name,"0")==0)
     {
       do_attenuation = false;
     }
@@ -262,14 +274,54 @@ int main(int argc, char **argv)
 
   }
 
+  shared_ptr<ProjData> atten_proj_data_ptr = 0;
+#if 0
+  // TODO
+  if (!do_attenuation)
+  {
+    char atten_name[max_filename_length];
+    ask_filename_with_extension(atten_name, 
+				"Get attenuation factors from which file (1 = 1's):",
+				"");    
+    
+    if(strcmp(atten_name,"1")!=0)
+    {
+      atten_proj_data_ptr = ProjData::read_from_file(atten_name);
+    }
+  }
+#endif
+
+  shared_ptr<ProjData> norm_proj_data_ptr = 0;
+#if 1
+  {
+    char norm_name[max_filename_length];
+    ask_filename_with_extension(norm_name, 
+				"Get normalisation factors from which file (1 = 1's):",
+				"");    
+    
+    if(strcmp(norm_name,"1")!=0)
+    {
+      norm_proj_data_ptr = ProjData::read_from_file(norm_name);
+    }
+  }
+#endif
 
   // TODO replace
+#ifndef USE_PMRT
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
     new ForwardProjectorByBinUsingRayTracing(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
                                              attenuation_image_ptr);
   shared_ptr<BackProjectorByBin> back_projector_ptr =
     new BackProjectorByBinUsingInterpolation(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
                                              attenuation_image_ptr);
+#else
+  shared_ptr<ProjMatrixByBin> PM = 
+    new  ProjMatrixByBinUsingRayTracing( attenuation_image_ptr , proj_data_ptr->get_proj_data_info_ptr()->clone()); 	
+  ForwardProjectorByBin* forward_projector_ptr =
+    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
+  BackProjectorByBin* back_projector_ptr =
+    new BackProjectorByBinUsingProjMatrixByBin(PM); 
+#endif
   set_projectors_and_symmetries(forward_projector_ptr, 
                                 back_projector_ptr, 
                                 back_projector_ptr->get_symmetries_used()->clone());
@@ -277,7 +329,12 @@ int main(int argc, char **argv)
 
   // Compute the sensitivity image  
   shared_ptr<DiscretisedDensity<3,float> > result =
-    compute_sensitivity_image(proj_data_ptr, attenuation_image_ptr,  do_attenuation, Normalisation (), globals);
+    compute_sensitivity_image(proj_data_ptr, 
+                              attenuation_image_ptr,  do_attenuation, 
+                              atten_proj_data_ptr,
+                              norm_proj_data_ptr,
+                              //Normalisation (), 
+                              globals);
 #ifndef TEST
   write_basic_interfile(out_filename, *result, NumericType::FLOAT);
 
