@@ -1,0 +1,270 @@
+//
+// $Id$: $Date$
+//
+
+/*
+  (inline) implementations for BasicCoordinate
+
+  
+   History:
+   1.0 (25/01/2000)
+     Kris Thielemans and Alexey Zverovich
+*/
+
+#include <cassert>
+
+// Note: includes have to be outside the namespace for gcc 2.95.2
+// (as it does not put the STL library in std).
+
+// for std:: inner_product
+#include <numeric>
+// for sqrt and acos
+#include <cmath>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::inner_product;
+# ifndef BOOST_NO_STDC_NAMESPACE
+using std::acos;
+using std::sqrt;
+# endif
+#endif
+
+START_NAMESPACE_TOMO
+
+/*
+  iterators
+*/
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>::iterator BasicCoordinate<num_dimensions, coordT>::begin() 
+{
+  return coords + 1; 
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>::const_iterator 
+BasicCoordinate<num_dimensions, coordT>::begin() const 
+{ 
+  return coords + 1; 
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>::iterator BasicCoordinate<num_dimensions, coordT>::end() 
+{
+  return coords + num_dimensions + 1; 
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>::const_iterator 
+BasicCoordinate<num_dimensions, coordT>::end() const 
+{ 
+  return coords + num_dimensions + 1; 
+}
+
+
+/*
+  operator[]
+*/
+template <int num_dimensions, typename coordT>
+coordT& 
+BasicCoordinate<num_dimensions, coordT>::operator[](const int d) 
+{
+  assert(d>0);
+  assert(d<=num_dimensions);
+  return coords[d]; 
+}
+ 
+template <int num_dimensions, typename coordT>
+coordT
+BasicCoordinate<num_dimensions, coordT>::operator[](const int d) const
+{
+  assert(d>0);
+  assert(d<=num_dimensions);
+  return coords[d]; 
+}
+
+
+/*
+  (numerical) assignments
+*/
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>&
+BasicCoordinate<num_dimensions, coordT>::operator=(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] = c[i];
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>::BasicCoordinate()
+{}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>::BasicCoordinate(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  operator=(c);
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator+=(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] += c[i];
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator-=(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] -= c[i];
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator*=(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] *= c[i];
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator+=(const coordT& a)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] += a;
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator-=(const coordT& a)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] -= a;
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator*=(const coordT& a)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] *= a;
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator/=(const coordT& a)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] /= a;
+  return *this;
+}
+
+
+/*
+  numerical operators
+*/
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator+(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp += c;
+  return tmp;
+}
+
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator-(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp -= c;
+  return tmp;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator*(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp *= c;
+  return tmp;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator/(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp /= c;
+  return tmp;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator+(const coordT& a) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp += a;
+  return tmp;
+}
+
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator-(const coordT& a) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp -= a;
+  return tmp;
+}
+
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator*(const coordT& a) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp *= a;
+  return tmp;
+}
+
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator/(const coordT& a) const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(*this);
+  tmp /= a;
+  return tmp;
+}
+
+
+
+/*
+   External functions
+*/
+
+template <int num_dimensions, typename coordT>
+coordT
+inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
+	       const BasicCoordinate<num_dimensions, coordT>& p2)
+{
+#ifdef TOMO_NO_NAMESPACES
+  return inner_product(p1.begin(), p1.end(), p2.begin(), 0);
+#else
+  return std::inner_product(p1.begin(), p1.end(), p2.begin(), 0);
+#endif
+}
+
+// TODO specialise for complex coordTs if you need them
+template <int num_dimensions, typename coordT>
+double
+norm (const BasicCoordinate<num_dimensions, coordT>& p1)
+{
+  return sqrt(static_cast<double>(inner_product<num_dimensions,coordT>(p1,p1)));
+}
+
+template <int num_dimensions, typename coordT>
+double 
+angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
+       const BasicCoordinate<num_dimensions, coordT>& p2)
+{
+  return acos(inner_product(p1,p2)/norm(p1)/ norm(p2));
+}
+
+END_NAMESPACE_TOMO
