@@ -40,6 +40,7 @@ START_NAMESPACE_STIR
 // This is slightly funny as it does work in ProjData.cxx. 
 // Maybe because here it's in a template?
 #   if __GNUC__ == 2 
+USING_NAMESPACE_ECAT
 #ifdef HAVE_LLN_MATRIX
 USING_NAMESPACE_ECAT7
 #endif
@@ -106,14 +107,15 @@ DiscretisedDensity<num_dimensions,elemT>::
 #ifndef NDEBUG
     warning("DiscretisedDensity::read_from_file trying to read %s as ECAT7\n", filename.c_str());
 #endif
+    USING_NAMESPACE_ECAT
     USING_NAMESPACE_ECAT7
 
-    if (is_ecat7_image_file(filename))
+    if (is_ECAT7_image_file(filename))
     {
       warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
 	      filename.c_str());
       string interfile_header_name;
-      if (write_basic_interfile_header_for_ecat7(interfile_header_name, filename, 1,1,0,0) ==
+      if (write_basic_interfile_header_for_ECAT7(interfile_header_name, filename, 1,1,0,0) ==
         Succeeded::no)
         return 0;
 #ifndef NDEBUG
@@ -125,7 +127,7 @@ DiscretisedDensity<num_dimensions,elemT>::
     }
     else
     {
-      if (is_ecat7_file(filename))
+      if (is_ECAT7_file(filename))
 	warning("DiscretisedDensity::read_from_file ECAT7 file %s is of unsupported file type\n", filename.c_str());
     }
 
@@ -134,12 +136,13 @@ DiscretisedDensity<num_dimensions,elemT>::
 
   {
     // Try ECAT6
-    // ecat6  does not have a signature
+    // ECAT6  does not have a signature
 #ifndef NDEBUG
     warning("DiscretisedDensity::read_from_file trying to read %s as ECAT6\n", filename.c_str());
 #endif
+    USING_NAMESPACE_ECAT;
     USING_NAMESPACE_ECAT6;
-      if (is_ecat6_image_file(filename))
+      if (is_ECAT6_image_file(filename))
       {
         ECAT6_Main_header mhead;
         FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
