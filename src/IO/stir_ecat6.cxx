@@ -745,12 +745,12 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
     {
       warning("This is not arc-corrected data. Filling in default_bin_size from scanner \n");
       shead.sample_distance= 
-        proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size();
+        proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10;
     }
     else
     {
       shead.sample_distance= 
-        proj_data_info_cyl_ptr->get_tangential_sampling();
+        proj_data_info_cyl_ptr->get_tangential_sampling()/10;
     }
   }
     
