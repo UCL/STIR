@@ -1,4 +1,5 @@
-// $Id$ : $Date$
+// $Id$
+
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
@@ -58,10 +59,11 @@ template <class NUMBER, class SCALE, class CHARP>
 extern 
 #endif
 void display(const Tensor3D<NUMBER>& plane_stack,
-		    const VectorWithOffset<SCALE>& scale_factors,
-		    const VectorWithOffset<CHARP>& text,
-		    double maxi = 0, int zoom = 0,
-		    int num_in_window = 0);
+             const VectorWithOffset<SCALE>& scale_factors,
+             const VectorWithOffset<CHARP>& text,
+             double maxi = 0,
+             int zoom = 0,
+             int num_in_window = 0);
 
 
 
@@ -117,4 +119,19 @@ inline void display(const Tensor2D<NUMBER>& plane,
   display(plane, Real(0), "", maxi, zoom, num_in_window);
 }
 
+/* CL 061098 Move two function from main_promis, promis_span... to here */
+#if 1
+template <class NUMBER, class CHARP>
+void my_display(const Tensor3D<NUMBER> &image, CHARP text); 
+
+template <class NUMBER>
+void display2D(const Tensor2D<NUMBER> &plane);
+
+
+#include "sinodata.h"
+void display_8_views(const PETViewgram& v1, const PETViewgram& v2, 
+                     const PETViewgram& v3, const PETViewgram& v4,
+                     const PETViewgram& v5, const PETViewgram& v6, 
+                     const PETViewgram& v7, const PETViewgram& v8);
+#endif 
 #endif 
