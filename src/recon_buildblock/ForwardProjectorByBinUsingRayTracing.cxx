@@ -19,6 +19,9 @@
   \version $Revision$
 */
 
+// this file still needs some cleaning. Sorry.
+// and more DOC of course
+
 #include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "Viewgram.h"
@@ -165,7 +168,7 @@ forward_project_all_symmetries(
 			       Viewgram<float> & pos_min90, 
 			       Viewgram<float> & neg_min90, 
 			       const VoxelsOnCartesianGrid<float>& image,
-			       const int min_ring_num, const int max_ring_num,
+			       const int min_ax_pos_num, const int max_ax_pos_num,
 			       const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
 
@@ -239,7 +242,6 @@ forward_project_all_symmetries(
   // z = num_planes_per_virtual_ring * ring + virtual_ring_offset
   // compute the offset by matching up the centre of the scanner 
   // in the 2 coordinate systems
-  const float num_planes_per_physical_ring = num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring;
     
   const float virtual_ring_offset = 
     (image.get_max_z() + image.get_min_z())/2.F
@@ -247,27 +249,24 @@ forward_project_all_symmetries(
     *(proj_data_info_ptr->get_max_axial_pos_num(segment_num) + num_virtual_rings_per_physical_ring*delta 
       + proj_data_info_ptr->get_min_axial_pos_num(segment_num))/2;
    
-// CL 180298 Change the assignment as it is not exact due to symetries
-// DB 24/4/98 changed to pos_view
-    const int   projrad = (int) (pos_view.get_num_tangential_poss() / 2) - 1;  // CL 180298 SHould be smaller due to symetries test
+    const int   projrad = (int) (pos_view.get_num_tangential_poss() / 2) - 1;  
  
     start_timers();
 
  
-        // CL 200398 Move down to the case of other's phi some declarations
-    Array <4,float> Projall(IndexRange4D(min_ring_num, max_ring_num, 0, 1, 0, 1, 0, 3));
-        // KT 21/05/98 removed as now automatically zero 
-        // Projall.fill(0);
+    Array <4,float> Projall(IndexRange4D(min_ax_pos_num, max_ax_pos_num, 0, 1, 0, 1, 0, 3));
+    // KT 21/05/98 removed as now automatically zero 
+    // Projall.fill(0);
 
-    // TODO change comments
-        // A loop which takes into account that axial ring size = 2*voxel z_size
-        // TODO this will have to be changed when using CTI span!=1 data
-        // This loop runs over 2 values offset = -0.25 and +0.25
-        //CL 010399 Add two variables offset_start and offset_incr in order to change the
-        //2 offset values in case of span!=1
+    // In the case that axial sampling for the projection data = 2*voxel_size.z()
+    // we draw 2 LORs, at -1/4 and +1/4 of the centre of the bin
+    // If we don't do this, we will miss voxels in the forward projection step.
+
+    // When the axial sampling is the same as the voxel size, we take just
+    // 1 LOR.    
     float offset_start = -.25F;
     float offset_incr = .5F;
-    // CL&KT 21/12/99 new variable
+
     int num_lors_per_virtual_ring = 2;
     
     if (num_planes_per_virtual_ring == 1)
@@ -275,9 +274,8 @@ forward_project_all_symmetries(
         offset_start = 0;
         offset_incr=1;
 	num_lors_per_virtual_ring = 1;
-            //    cout << " Forwrad projection in case of span=1 " << endl;
     }
-        //else cout << " Forwrad projection in case of span=1 " << endl;
+
     
     
     for (float offset = offset_start; offset < 0.3; offset += offset_incr)//SPAN
@@ -287,11 +285,11 @@ forward_project_all_symmetries(
                     /* Here s=0 and phi=0 or 45*/
 
                 proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-                            delta + D, 0, R,min_ring_num, max_ring_num,
+                            delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
                             offset, 2, num_planes_per_virtual_ring, virtual_ring_offset );
-                for (ax_pos0 = min_ring_num; ax_pos0 <= max_ring_num; ax_pos0++) {
+                for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                     my_ax_pos0 = C * ax_pos0 + D;
-                        //CL 071099 Remove 0.5* and replace by num_lors_per_virtual_ring
+
                     pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
                     pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
                     neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
@@ -300,9 +298,9 @@ forward_project_all_symmetries(
                     /* Now s!=0 and phi=0 or 45 */
                 for (s = 1; s <= projrad; s++) {
                     proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-                                delta + D, s, R,min_ring_num, max_ring_num,
+                                delta + D, s, R,min_ax_pos_num, max_ax_pos_num,
                                 offset, 1, num_planes_per_virtual_ring, virtual_ring_offset);
-                    for (ax_pos0 = min_ring_num; ax_pos0 <= max_ring_num; ax_pos0++) {
+                    for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                         my_ax_pos0 = C * ax_pos0 + D;
                         pos_view[my_ax_pos0][s] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
                         pos_plus90[my_ax_pos0][s] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
@@ -321,9 +319,9 @@ forward_project_all_symmetries(
             for (D = 0; D < C; D++) {
                     /* Here s==0 and phi!=k*45 */
                 proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi, 
-                            delta + D, 0, R,min_ring_num, max_ring_num,
+                            delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
                             offset, 4, num_planes_per_virtual_ring, virtual_ring_offset );
-                for (ax_pos0 = min_ring_num; ax_pos0 <= max_ring_num; ax_pos0++) {
+                for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                     my_ax_pos0 = C * ax_pos0 + D;
                     pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
                     pos_min90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][1]/ num_lors_per_virtual_ring; 
@@ -338,9 +336,9 @@ forward_project_all_symmetries(
                     /* Here s!=0 and phi!=k*45. */
                 for (s = 1; s <= projrad; s++) {
                     proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-                                delta + D, s, R,min_ring_num, max_ring_num,
+                                delta + D, s, R,min_ax_pos_num, max_ax_pos_num,
                                 offset, 3, num_planes_per_virtual_ring, virtual_ring_offset );
-                    for (ax_pos0 = min_ring_num; ax_pos0 <= max_ring_num; ax_pos0++) {
+                    for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                         my_ax_pos0 = C * ax_pos0 + D;
                         pos_view[my_ax_pos0][s] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
                         pos_min90[my_ax_pos0][s] +=  Projall[ax_pos0][0][0][1]/ num_lors_per_virtual_ring; 
@@ -791,7 +789,6 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   // z = num_planes_per_virtual_ring * ring + virtual_ring_offset
   // compute the offset by matching up the centre of the scanner 
   // in the 2 coordinate systems
-  const float num_planes_per_physical_ring = num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring;
     
   const float virtual_ring_offset = 
     (image.get_max_z() + image.get_min_z())/2.F
@@ -799,9 +796,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
     *(proj_data_info_ptr->get_max_axial_pos_num(segment_num) + num_virtual_rings_per_physical_ring*delta 
       + proj_data_info_ptr->get_min_axial_pos_num(segment_num))/2;
   
-  // CL 180298 Change the assignment as it is not exact due to symetries
-  // DB 24/4/98 changed to pos_view
-  const int   projrad = (int) (pos_view.get_num_tangential_poss() / 2) - 1;  // CL 180298 SHould be smaller due to symetries test
+  const int   projrad = (int) (pos_view.get_num_tangential_poss() / 2) - 1;  
   
   start_timers();
   
@@ -834,7 +829,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
         for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
         {
           my_ax_pos0 = C * ax_pos0 + D;
-          //CL 071099 Remove 0.5* and replace by num_lors_per_virtual_ring
+          
           pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
           pos_plus90[my_ax_pos0][0] +=Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
           //neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
