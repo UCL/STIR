@@ -162,16 +162,13 @@ endif
 
 #******** targets
 
-.PHONY: all clean $(BB_LIBS) #createdir depend
+.PHONY: all clean install  # depend
 
 .PRECIOUS: $(BB_LIBS)
 
 #depend:
 #	@echo \*\*\* Rebuilding dependencies...
 #	makedepend -Y -- $(CFLAGS) -- -fMakefile -p${DEST} $(wildcard *.cxx) 2> /dev/null
-
-#createdir: 
-#	-mkdir -p $(DEST)
 
 #********* vpath
 # trickery to find relevant files
