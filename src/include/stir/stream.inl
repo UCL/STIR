@@ -138,24 +138,24 @@ operator>>(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
   str >> ws >> c;
   if (!str || c != '{')
   {
-    warning("\nreading a coordinate of dimension %d, expected opening {, found %c instead.\n"
-              "Elements will be undefined\n", c);
+    warning("reading a coordinate of dimension %d, expected opening {, found %c instead.\n"
+              "Elements will be undefined", num_dimensions, c);
     return str;
   }
-  for (int i=1; i<num_dimensions; i++)
+  for (int i=1; i<=num_dimensions; i++)
   { 
     c = '\0';
     str >> v[i];
     str >> ws >> c;
     if (i<num_dimensions && (!str || c!=','))
     {
-      warning("\nreading a coordinate of dimension %d, expected comma, found %c instead.\n"
-              "Remaining elements will be undefined\n", c);
+      warning("reading a coordinate of dimension %d, expected comma, found %c instead.\n"
+              "Remaining elements will be undefined", num_dimensions, c);
       return str;
     }
     if (i==num_dimensions && (!str || c!='}'))
     {
-      warning("\nreading a coordinate of dimension %d, expected closing }, found %c instead.\n", c);
+      warning("reading a coordinate of dimension %d, expected closing }, found %c instead.",num_dimensions, c);
       return str;
     }
   }
