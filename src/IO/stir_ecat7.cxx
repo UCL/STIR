@@ -1015,9 +1015,26 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
     //scanner_ptr->set_bin_size(bin_size);
   }
   // TODO more checks on FOV etc.
+
+  int span_to_use = span;
+  if (span == 0)
+    {
+      if (num_z_elements[0] == scanner_ptr->get_num_rings())
+	{
+	  warning("\nECAT7 subheader says span=0, while span should be odd.\n"
+		  "However, num_z_elements[0]==num_rings, so we'll asssume it's span=1\n");
+	  span_to_use = 1;
+	}
+      else
+	{
+	  error("\nECAT7 subheader says span=0, while span should be odd.\n"
+		"Moreover,  num_z_elements[0] (%d)!=num_rings (%d), so, I give up.\n",
+		num_z_elements[0], scanner_ptr->get_num_rings());
+	}
+    }
   
   shared_ptr<ProjDataInfo> pdi_ptr =
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span, max_delta, 
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span_to_use, max_delta, 
 				  num_views, num_tangential_poss,  
 				  arc_corrected);
   
