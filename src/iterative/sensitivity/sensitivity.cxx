@@ -2,10 +2,9 @@
 // $Id$: $Date$
 //
 
+
 /* This is a preliminary program to compute the 'sensitivity' image
    (backprojection of all 1's).
-   if ATTENUATION is #defined, it will read an attenuation file
-   atten.dat, and take that into account.
    if TEST is defined, results of different ring differences are
    stored as separated files (seg_x.dat) and the sensitivity image is
    not computed.
@@ -13,11 +12,11 @@
 
    By Matthew Jacobson and Kris Thielemans
 
+   //KT&MJ 11/08/98 introduce do_attenuation
    TODO:
-   - find good 'per segment' normalisation. Currently the resulting
-     image has ring artefacts.
    - implement the Normalisation class
    */
+
 
 #include <iostream.h>
 #include <fstream.h>
@@ -48,6 +47,7 @@ public:
 PETImageOfVolume
 compute_sensitivity_image(const PETScannerInfo& scanner,
 			  const PETImageOfVolume& attenuation_image,
+			  const bool do_attenuation,
 			  const Normalisation& normalisation);
 
 int main(int argc, char *argv[])
@@ -91,14 +91,25 @@ int main(int argc, char *argv[])
  
   if(argc==2)
     {
-      scanner.num_bins /= 4; 
-      scanner.num_views /= 4; 
-      scanner.num_rings /= 1;
+      // KT&MJ 11/08/98 allow for higher sampling in z
+
+      //scanner.num_bins /= 4; 
+      //scanner.num_views /= 4; 
+      cerr << "Warning, using 3 times more rings";
+      scanner.num_rings *= 3;
   
     
       scanner.bin_size = 2* scanner.FOV_radius / scanner.num_bins;
       scanner.ring_spacing = scanner.FOV_axial / scanner.num_rings;
     }
+
+  // KT 14/08/98 added conditional
+#ifndef TEST
+  char out_filename[200];
+  cout << endl << "Output to which file ?";
+  cin >> out_filename;
+#endif
+
 
   Point3D origin(0,0,0);
 
@@ -119,6 +130,7 @@ int main(int argc, char *argv[])
   if (scanner.num_bins % 2 == 0)
     max_bin++;
 
+  bool do_attenuation;
   PETImageOfVolume 
     attenuation_image(Tensor3D<float>(
 				      0, 2*scanner.num_rings-2,
@@ -127,34 +139,43 @@ int main(int argc, char *argv[])
 		      origin,
 		      voxel_size);
 
-#ifdef ATTENUATION
+  {
+    char atten_name[100];
+    
+    // if(batch) strcpy(filename2,argv[4]);
+    //else{
+    cout<<endl;
+    
+    cout << endl << "Get attenuation image from which file (* = 0's): ";
+    cin >> atten_name;
+    //}
+    
+    if(atten_name[0]=='*')
+    {
+      do_attenuation = false;
+    }
+    else
+    {
+      do_attenuation = true;
 
-  // Open file with data (should be in floats and with the same sizes as above)
-  { 
-    ifstream attenuation_data;
-    open_read_binary(attenuation_data, "atten.dat");
-    attenuation_image.read_data(attenuation_data);
-  
-
-    /* some code to read different data type
-       {
-       Real scale = Real(1);
-       attenuation_data.read_data(sino_stream, NumericType::SHORT, scale);
-       assert(scale == 1);
-       }
-    */
+      ifstream atten_img;
+      open_read_binary(atten_img, atten_name);
+      attenuation_image.read_data(atten_img);   
+    }
   }
-#endif
+
+
+
 
   // Compute the sensitivity image  
   PETImageOfVolume result =
-    compute_sensitivity_image(scanner, attenuation_image,  Normalisation ());
+    compute_sensitivity_image(scanner, attenuation_image,  do_attenuation, Normalisation ());
 #ifndef TEST
   result+=(float)ZERO_TOL;
 
   // Write it to file
   ofstream sensitivity_data;
-  open_write_binary(sensitivity_data, "sensitivity.dat");
+  open_write_binary(sensitivity_data, out_filename);
   result.write_data(sensitivity_data);
 
   cerr << "min and max in image " << result.find_min() 
@@ -162,13 +183,14 @@ int main(int argc, char *argv[])
   display(Tensor3D<float> (result), result.find_max());
 #endif
 
-return 0;
+  return 0;
 
 }
 
 
 PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 					   const PETImageOfVolume& attenuation_image,
+					   const bool do_attenuation,
 					   const Normalisation& normalisation)
 {
   int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
@@ -192,24 +214,25 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 	      &scanner,
 	      0);
 
+    
+    if (do_attenuation)
+    {
+      //KT&MJ 11/08/98 use 2D forward projector
+      forward_project_2D(attenuation_image, segment);	  
       
-#ifdef ATTENUATION
-    forward_project(attenuation_image, segment, segment, 
-		    segment.min_ring(), segment.max_ring());	  
-    segment /= 2;
-
-    //display(Tensor3D<float>(segment), segment.find_max());
-
-    segment *= -1;
-    in_place_exp(segment);
-
-
- 
+      //display(Tensor3D<float>(segment), segment.find_max());
+      
+      segment *= -1;
+      in_place_exp(segment);
+    }
+    else
+    {
+      segment.fill(1); 
+    }
       
     normalisation.apply(segment);
-#else
-    segment.fill(1);
-#endif
+
+
 
     Backprojection_2D(segment, image_result);
       
@@ -219,32 +242,41 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
     */
 #ifdef TEST
     {
+      // KT&MJ 12/08/98 output only profiles
       char fname[20];
+/*
       sprintf(fname, "seg_%d.dat", 0);
-    
       // Write it to file
       ofstream segment_data;
       open_write_binary(segment_data, fname);
       image_result.write_data(segment_data);
+*/
+      sprintf(fname, "seg_%d.prof", 0);
+      cerr << "Writing horizontal profiles to " << fname << endl;
+      ofstream profile(fname);
+      if (!profile)
+      { cerr << "Couldn't open " << fname; }
+
+      for (int z=image_result.get_min_z(); z<= image_result.get_max_z(); z++) 
+      { 
+	for (int x=image_result.get_min_x(); x<= image_result.get_max_x(); x++)
+          profile<<image_result[z][0][x]<<" ";
+        profile << "\n";
+      }
     }
 #endif
 
-
-
   }
 
-  // int num_processed_segments = 1; 
-  
+
   // now do a loop over the other segments
-  // do not use last segment, as I think backprojector needs 2 sinograms
+  // now doing all segments
 
   for (int segment_num = 1; segment_num < scanner.num_rings ; segment_num++){
 
 #ifdef TEST
     image_result.fill(0);
 #endif 
-    //     num_processed_segments += 2; // + 2 as we do a positive and negative segment here
-
 
     PETSegmentByView 
       segment_pos(
@@ -262,29 +294,39 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 		  -segment_num);
 
 
-#ifdef ATTENUATION
-
-    forward_project(attenuation_image, segment_pos, segment_neg, 
-		    segment_pos.min_ring(), segment_pos.max_ring());	  
-
-     
-
-    // display(Tensor3D<float>(segment_pos), segment_pos.find_max());
+    if (do_attenuation)
+    {
+      forward_project(attenuation_image, segment_pos, segment_neg);	       
       
-    segment_pos *= -1;
-    segment_neg *= -1;
-    in_place_exp(segment_pos);
-    in_place_exp(segment_neg);
+      // display(Tensor3D<float>(segment_pos), segment_pos.find_max());
       
+      segment_pos *= -1;
+      segment_neg *= -1;
+      in_place_exp(segment_pos);
+      in_place_exp(segment_neg);
+      
+    }
+    else
+    {
+      segment_pos.fill(1);
+      segment_neg.fill(1);
+    }
+
     normalisation.apply(segment_pos);
     normalisation.apply(segment_neg);
-#else
 
-    segment_pos.fill(1);
-    segment_neg.fill(1);
-#endif
-
+    //KT TODO use by view versions (but also for forward projection)
     back_project(segment_pos, segment_neg, image_result);
+    
+    /*const int nviews = segment_pos.get_num_views();
+    const int view90 = nviews / 2;
+    for (int view=0; view < segment_pos.get_num_views()/2; view++)
+      back_project(segment_pos.get_viewgram(view), 
+		 segment_neg.get_viewgram(view),
+		 segment_pos.get_viewgram(view90 + view),
+		 segment_neg.get_viewgram(view90 + view),
+		 image_result);
+    */
       
     
     /*
@@ -296,23 +338,34 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 
     {
       char fname[20];
+      // KT&MJ 12/08/98 write profiles only
+      /*
       sprintf(fname, "seg_%d.dat", segment_num);
-    
       // Write it to file
       ofstream segment_data;
       open_write_binary(segment_data, fname);
       image_result.write_data(segment_data);
+
+      */
+      sprintf(fname, "seg_%d.prof", segment_num);
+      cerr << "Writing horizontal profiles to " << fname << endl;
+      ofstream profile(fname);
+      if (!profile)
+      { cerr << "Couldn't open " << fname; }
+
+      for (int z=image_result.get_min_z(); z<= image_result.get_max_z(); z++) 
+      { 
+	for (int x=image_result.get_min_x(); x<= image_result.get_max_x(); x++)
+          profile<<image_result[z][0][x]<<" ";
+        profile << "\n";
+      }
     }
 #endif
      
   }
    
-  // image_result/=float(num_processed_segments * scanner.num_views);
+  // image_result/=float(scanner.num_views);
  
-
-
-
-
   return image_result;
 }
 
