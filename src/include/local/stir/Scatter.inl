@@ -112,10 +112,10 @@ float detection_efficiency( const float low, const float high,
 	const float efficiency =
 		0.5*( erf((high-energy)/sigma_times_sqrt2) 
 		      - erf((low-energy)/sigma_times_sqrt2 ));	
-        const float effficiency_threshold = .0F;
+        const float efficiency_threshold = .01F;
         /* Maximum efficiency is 1. If the efficiency is too small, 
            we will ignore the event anyway to save some time.*/
-	return efficiency < effficiency_threshold ? 0 : efficiency;
+	return efficiency < efficiency_threshold ? 0 : efficiency;
 }
 /*!	\ingroup scatter
    \brief detection efficiency for BGO  for a given energy window
