@@ -102,6 +102,9 @@ private:
    void precalculate_filter_coefficients_2D (VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ArrayFilter2DUsingConvolution<float> >  > > >& all_filter_coefficients,
 					  DiscretisedDensity<3,elemT>* in_density) const;
 
+   void precalculate_filter_coefficients_separable(VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ModifiedInverseAverigingArrayFilter <3, float> >  > > >& all_filter_coefficients,
+					  DiscretisedDensity<3,elemT>* in_density) const;
+	
 
   virtual void set_defaults();
   virtual void initialise_keymap();
