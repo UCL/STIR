@@ -1,21 +1,21 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    For internal GE use only.
+*/
 /*!
   \file 
   \ingroup motion
 
-  \brief Implementation of class RigidObject3DMotionFromPolaris
+  \brief Implementation of class stir::RigidObject3DMotionFromPolaris
  
   \author Sanida Mustafovic
   \author Kris Thielemans
   
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
