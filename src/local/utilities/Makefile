@@ -13,7 +13,9 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	apply_plane_rescale_factors.cxx \
 	rescale_image.cxx \
 	swap_corners.cxx \
-	prepare_projdata.cxx
+	prepare_projdata.cxx \
+	add_images.cxx \
+	mult_images.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
