@@ -13,7 +13,6 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
 #include "line.h"
@@ -28,7 +27,7 @@ string Line::get_keyword()
 {
 	string kw;
 	int sok,eok;		//start & end pos. of keyword
-	int cp =0;		//current index
+	size_type cp =0;		//current index
 	
 	// skip white space
 	// KT 01/08/98 added \t for skippings tabs
@@ -54,7 +53,7 @@ string Line::get_keyword()
 }
 int Line::get_index()
 {
-	int cp,sok,eok;
+	size_type cp,sok,eok;
 	// we take 0 as a default value for the index
 	int in=0;
 	string sin;
@@ -82,8 +81,8 @@ int Line::get_index()
 
 int Line::get_param(string& s)
 {
-	int sok,eok;		//start & end pos. of keyword
-	int cp =0;		//current index
+	size_type sok,eok;		//start & end pos. of keyword
+	size_type cp =0;		//current index
 	
 	cp=find('=',0);
 
@@ -151,8 +150,8 @@ int Line::get_param(vector<int>& v)
 	string s;
 	// KT 02/11/98 don't use temporary variable anymore
 	//int r=LINE_OK;
-	int cp;
-	int eop;
+	size_type cp;
+	size_type eop;
 	bool end=false;
 
 	cp=find_first_of('=',0)+1;
@@ -195,8 +194,8 @@ int Line::get_param(vector<double>& v)
 	string s;
 	// KT 02/11/98 don't use temporary variable anymore
 	//int r=LINE_OK;
-	int cp;
-	int eop;
+	size_type cp;
+	size_type eop;
 	bool end=false;
 
 	cp=find_first_of('=',0)+1;
@@ -239,8 +238,8 @@ int Line::get_param(vector<string>& v)
 
 	// KT 02/11/98 don't use temporary variable anymore
 	//int r=LINE_OK;
-	int cp;
-	int eop;
+	size_type cp;
+	size_type eop;
 	bool end=false;
 
 	cp=find_first_of('=',0)+1;
