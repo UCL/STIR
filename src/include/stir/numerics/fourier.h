@@ -81,7 +81,7 @@ inline void inverse_fourier(T& c, const int sign=1)
   The type \a T has to be such that \a T::value_type, \a T::reference and 
   <tt> T::reference T::operator[](const int)</tt> exist. Moreover, numerical
   operations
-  <tt>operator*=(T::reference, std::complex&lt;float&gt;)</tt>,
+  <tt>operator*=(T::reference, std::complex\<float\>)</tt>,
   <tt>operator+=(T::reference, T::value_type)</tt> and
   <tt>operator*=(T::reference, int)</tt>,
    have to be defined as well.
