@@ -1,6 +1,10 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    For GE Internal use only
+*/
 /*!
 \file
 \ingroup test
@@ -9,10 +13,6 @@
 \author Sanida Mustafovic    
 $Date$
 $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/RunTests.h"
 #include "local/stir/Quaternion.h"
@@ -25,6 +25,10 @@ using std::endl;
 
 
 START_NAMESPACE_STIR
+/*!
+  \ingroup test
+  \brief Test class for Quaternion
+*/
 class QuaternionTests: public RunTests
 {
 public:  
