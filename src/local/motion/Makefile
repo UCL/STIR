@@ -15,6 +15,7 @@ clean:
 SOURCES = \
 	Polaris_MT_File.cxx \
 	RegisteredObject.cxx \
+	RigidObject3DMotion.cxx\
 	RigidObject3DMotionFromPolaris.cxx \
 	RigidObject3DTransformation.cxx 
 
