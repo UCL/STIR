@@ -54,7 +54,7 @@ int main(int argc, const char *argv[])
 {         
 	USING_NAMESPACE_STIR
 		using namespace std;
-	if (argc< 3 || argc>7)
+	if (argc< 3 || argc>8)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[activity_image]\n"
@@ -63,16 +63,16 @@ int main(int argc, const char *argv[])
 			<< "\t[output_proj_data_filename]\n"
 			<< "\t[attenuation_threshold]\n"
 			<< "\t[maximum_scatter_points]\n"
-			<< "\t[random points]\n" 
-			<< "\t[attenuation_threshold] defaults to .05 cm^-1\n"
-			<< "\t[maximum_scatter_points] defaults to 1000\n" 
-			<< "\t[random points] defaults to true\n";
+			<< "\t[random points]\n\n" 
+			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
+			<< "\tmaximum_scatter_points defaults to 1000\n" 
+			<< "\trandom points defaults to true, use 0 to set to false\n";
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
 	int scatt_points = argc>=7 ? atoi(argv[6]) : 1000 ;
 	bool random = true;
-	if (argc>=8 && atoi(argv[7])!=0)
+	if (argc>=8 && atoi(argv[7])==0)
 		random = false;
 	
 	shared_ptr< DiscretisedDensity<3,float> >  
