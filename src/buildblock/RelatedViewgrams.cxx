@@ -73,6 +73,148 @@ RelatedViewgrams<elemT> RelatedViewgrams<elemT>::get_empty_copy() const
                           symmetries_used);
 }
 
+/*! \warning: this uses multiplication according to elemT (careful for overflow for integer types!) */
+template <typename elemT>
+RelatedViewgrams<elemT>& 
+RelatedViewgrams<elemT>::
+operator*= (const elemT f)
+{
+  for (iterator iter = begin(); iter != end(); ++iter)
+    *iter *= f;
+  return *this;
+}
+
+/*! \warning: this uses division according to elemT (i.e. no rounding or so) */
+template <typename elemT>   
+RelatedViewgrams<elemT>&
+RelatedViewgrams<elemT>::
+operator/= (const elemT f)
+{
+  assert(f!=0);
+
+  for (iterator iter = begin(); iter != end(); ++iter)
+    *iter /= f;
+  return *this;
+}
+
+/*! \warning: this uses addition according to elemT (careful with overflow with integer types!) */
+template <typename elemT>
+RelatedViewgrams<elemT>& 
+RelatedViewgrams<elemT>::
+operator+= (const elemT f)
+{
+  for (iterator iter = begin(); iter != end(); ++iter)
+    *iter += f;
+  return *this;
+}
+
+/*! \warning: this uses subtraction according to elemT (careful with unsigned types!) */
+template <typename elemT>
+RelatedViewgrams<elemT>& 
+RelatedViewgrams<elemT>::
+operator-= (const elemT f)
+{
+  for (iterator iter = begin(); iter != end(); ++iter)
+    *iter -= f;
+  return *this;
+}
+
+
+
+template <typename elemT>
+elemT 
+RelatedViewgrams<elemT>::
+find_max() const
+{
+  Array<1,elemT> max_per_viewgram(get_num_viewgrams());
+  Array<1,elemT>::iterator max_iter = max_per_viewgram.begin();
+  const_iterator iter = begin(); 
+  while (iter != end())
+  {
+    *max_iter = iter->find_max();
+    ++iter; ++ max_iter;
+  }
+  return max_per_viewgram.find_max();
+}
+
+template <typename elemT>
+elemT 
+RelatedViewgrams<elemT>::
+find_min() const
+{
+  Array<1,elemT> min_per_viewgram(get_num_viewgrams());
+  Array<1,elemT>::iterator min_iter = min_per_viewgram.begin();
+  const_iterator iter = begin(); 
+  while (iter != end())
+  {
+    *min_iter = iter->find_min();
+    ++iter; ++ min_iter;
+  }
+  return min_per_viewgram.find_min();
+}
+
+
+template <typename elemT>
+void 
+RelatedViewgrams<elemT>::fill(const elemT &n)
+{
+ for (iterator iter = begin(); iter != end(); ++iter)
+    iter->fill(n);
+}
+
+/*! 
+   This function is necessary because it modifies the size of
+   each viewgram sequentially. This is not allowed by an external 
+   function, and leads to different proj_data_info_ptrs anyway.
+   So, it would be caught by an assert at some point.
+   */
+template <typename elemT>
+void RelatedViewgrams<elemT>::
+grow(const IndexRange<2>& range)
+{
+  check_state();
+
+  if (begin()==end())
+    return;
+
+  if (range == begin()->get_index_range())
+    return;
+
+  assert(range.is_regular()==true);
+
+  // first construct a new appropriate ProjDataInfo object
+
+  const int ax_min = range.get_min_index();
+  const int ax_max = range.get_max_index();
+  
+  ProjDataInfo* pdi_ptr = get_proj_data_info_ptr()->clone();
+
+  // set axial_pos range for all segments
+  for (const_iterator iter= begin();
+       iter != end();
+       ++iter)
+  {
+    pdi_ptr->set_min_axial_pos_num(ax_min, iter->get_segment_num());
+    pdi_ptr->set_max_axial_pos_num(ax_max, iter->get_segment_num());
+  }
+  pdi_ptr->set_min_tangential_pos_num(range[ax_min].get_min_index());
+  pdi_ptr->set_max_tangential_pos_num(range[ax_min].get_max_index());
+  shared_ptr<ProjDataInfo> pdi_shared_ptr = pdi_ptr;
+
+  // now resize each viewgram 
+  // this will not set their respective proj_data_info_ptr correctly though,
+  // so, we have to construct new viewgrams for this
+  for (iterator iter= begin();
+       iter != end();
+       ++iter)
+  {
+    iter->grow(range);
+    *iter = Viewgram<elemT>(*iter, pdi_shared_ptr, 
+                            iter->get_view_num(), iter->get_segment_num());
+  }
+
+  check_state();
+}
 /* 
   TODO
 #include "zoom.h"
