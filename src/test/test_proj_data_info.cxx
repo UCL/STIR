@@ -43,6 +43,11 @@ using std::size_t;
 #endif
 
 START_NAMESPACE_STIR
+
+static inline
+int intabs(const int x)
+{ return x>=0?x:-x; }
+
 // prints a michelogram to the screen
 #if 0
 // TODO move somewhere else
@@ -132,13 +137,13 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 		      const Bin new_bin = proj_data_info.get_bin(lor);
 #if 1
 		      const int diff_segment_num =
-			std::abs(org_bin.segment_num() - new_bin.segment_num());
+			intabs(org_bin.segment_num() - new_bin.segment_num());
 		      const int diff_view_num = 
-			  std::abs(org_bin.view_num() - new_bin.view_num());
+			intabs(org_bin.view_num() - new_bin.view_num());
 		      const int diff_axial_pos_num = 
-			std::abs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
+			intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
 		      const int diff_tangential_pos_num = 
-			std::abs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
+			intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
 		      if (new_bin.get_bin_value()>0)
 			{
 			  if (diff_segment_num>max_diff_segment_num)
@@ -179,13 +184,13 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 		      const Bin new_bin = proj_data_info.get_bin(lor_as_points);
 #if 1
 		      const int diff_segment_num =
-			std::abs(org_bin.segment_num() - new_bin.segment_num());
+			intabs(org_bin.segment_num() - new_bin.segment_num());
 		      const int diff_view_num = 
-			  std::abs(org_bin.view_num() - new_bin.view_num());
+			  intabs(org_bin.view_num() - new_bin.view_num());
 		      const int diff_axial_pos_num = 
-			std::abs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
+			intabs(org_bin.axial_pos_num() - new_bin.axial_pos_num());
 		      const int diff_tangential_pos_num = 
-			std::abs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
+			intabs(org_bin.tangential_pos_num() - new_bin.tangential_pos_num());
 		      if (new_bin.get_bin_value()>0)
 			{
 			  if (diff_segment_num>max_diff_segment_num)
