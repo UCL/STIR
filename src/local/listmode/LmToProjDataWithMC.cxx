@@ -22,6 +22,7 @@ LmToProjDataWithMC::set_defaults()
   attenuation_filename ="";
   ro3d_ptr = 0;
   transmission_duration = 300; // default value 5 min.
+  polaris_time_offset =-1234567.F; // note: do not change constant unless changing it below as well
 }
 
 void 
@@ -33,6 +34,7 @@ LmToProjDataWithMC::initialise_keymap()
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_key("attenuation_filename", &attenuation_filename);
   parser.add_key("transmission_duration", &transmission_duration);
+  parser.add_key("polaris_time_offset", &polaris_time_offset);
   parser.add_stop_key("END");
 }
 
@@ -86,8 +88,13 @@ post_processing()
     ro3d_move_to_reference_position =av_motion.inverse();
   }
 
-  
+  if (polaris_time_offset==-1234567.F)
   ro3d_ptr->synchronise(*lm_data_ptr);
+  else
+  {
+    cerr << " Polaris time offset is: " << polaris_time_offset << endl;
+    dynamic_cast<RigidObject3DMotionFromPolaris* >(ro3d_ptr.get())->set_polaris_time_offset(polaris_time_offset);
+  }
 
   return false;
 }
@@ -112,6 +119,9 @@ find_ref_pos_from_att_file (float& att_start_time, float& att_end_time,
 			    const string attenuation_filename)
 {
 	MatrixFile* AttnFile = matrix_open(attenuation_filename.c_str(), MAT_READ_ONLY, AttenCor );
+	if (AttnFile==NULL)
+	  error("Error opening attenuation file %s\n", attenuation_filename.c_str());
+
 		/* Acquisition date and time - main head */
 	time_t sec_time = AttnFile->mhptr->scan_start_time;
 
@@ -165,13 +175,16 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
   int det_num_b_trans;
   int ring_a_trans;
   int ring_b_trans;
-  
+
   // given two CartesianCoordinates find the intersection     
-  find_scanner_coordinates_given_cartesian_coordinates(det_num_a_trans,det_num_b_trans,
-    ring_a_trans, ring_b_trans,
-    coord_1_transformed,
-    coord_2_transformed, 
-    *scanner_ptr);
+  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a_trans,det_num_b_trans,
+							   ring_a_trans, ring_b_trans,
+							   coord_1_transformed,
+							   coord_2_transformed, 
+							   *scanner_ptr) ==
+      Succeeded::no)
+    bin.set_bin_value(-1);
+
 #if 1  
   if ( ring_a_trans > scanner_ptr->get_num_rings() 
 	|| ring_a_trans <0 || ring_b_trans <0 || 
@@ -191,7 +204,10 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
     bin.set_bin_value(-1);
   }
   else
+  {
+    //cerr << " here" << endl;
     bin.set_bin_value(1/bin_efficiency);
+  }
 
 #else
   int view_t,elem_t; 
