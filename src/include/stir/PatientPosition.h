@@ -24,7 +24,9 @@
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
-
+/*! \ingroup buildblock
+  Class for encoding patient position
+*/
 class PatientPosition
 {
  public:
