@@ -86,7 +86,7 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
       }
   }
 
-  initialise_ring_diff_arrays();
+  initialise_ring_diff_arrays();    
 }
 
 void
@@ -231,6 +231,33 @@ initialise_ring_diff_arrays() const
       }
     }
   }
+  // initialise segment_axial_pos_to_ring1_plus_ring2
+  if (sampling_corresponds_to_physical_rings)
+  {
+    segment_axial_pos_to_ring1_plus_ring2 =
+      VectorWithOffset<VectorWithOffset<int> >(get_min_segment_num(), get_max_segment_num());
+    for (int s_num=get_min_segment_num(); s_num<=get_max_segment_num(); ++s_num)
+    {
+      const int min_ax_pos_num = get_min_axial_pos_num(s_num);
+      const int max_ax_pos_num = get_max_axial_pos_num(s_num);
+      segment_axial_pos_to_ring1_plus_ring2[s_num].grow(min_ax_pos_num, max_ax_pos_num);
+      for (int ax_pos_num=min_ax_pos_num; ax_pos_num<=max_ax_pos_num; ++ax_pos_num)
+      {
+         // see documentation above for formulas
+        const float ring1_plus_ring2_float =
+          2*ax_pos_num/get_num_axial_poss_per_ring_inc(s_num)
+          -2*m_offset[s_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1);
+        const int ring1_plus_ring2 =
+          round(ring1_plus_ring2_float);
+        // check that it was integer
+        assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4) ;
+        segment_axial_pos_to_ring1_plus_ring2[s_num][ax_pos_num] = ring1_plus_ring2;
+      }
+    }
+  }
+
+  if (sampling_corresponds_to_physical_rings)
+    allocate_segment_axial_pos_to_ring_pair();
 
   ring_diff_arrays_computed = true;
 }
@@ -248,40 +275,11 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
   if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
     error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression\n");
 
-  static VectorWithOffset<VectorWithOffset<int> > seg_axpos_to_ring1_plus_ring2;
-  static bool seg_axpos_to_ring1_plus_ring2_computed = false;
   if (!ring_diff_arrays_computed)
-  {
     initialise_ring_diff_arrays();
-    seg_axpos_to_ring1_plus_ring2_computed = false;
-  }
-  if (!seg_axpos_to_ring1_plus_ring2_computed)
-  {
-    seg_axpos_to_ring1_plus_ring2_computed = true;
-    seg_axpos_to_ring1_plus_ring2 =
-      VectorWithOffset<VectorWithOffset<int> >(get_min_segment_num(), get_max_segment_num());
-    for (int s_num=get_min_segment_num(); s_num<=get_max_segment_num(); ++s_num)
-    {
-      const int min_ax_pos_num = get_min_axial_pos_num(s_num);
-      const int max_ax_pos_num = get_max_axial_pos_num(s_num);
-      seg_axpos_to_ring1_plus_ring2[s_num].grow(min_ax_pos_num, max_ax_pos_num);
-      for (int ax_pos_num=min_ax_pos_num; ax_pos_num<=max_ax_pos_num; ++ax_pos_num)
-      {
-         // see documentation above for formulas
-        const float ring1_plus_ring2_float =
-          2*ax_pos_num/get_num_axial_poss_per_ring_inc(s_num)
-          -2*m_offset[s_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1);
-        const int ring1_plus_ring2 =
-          round(ring1_plus_ring2_float);
-        // check that it was integer
-        assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4) ;
-        seg_axpos_to_ring1_plus_ring2[s_num][ax_pos_num] = ring1_plus_ring2;
-      }
-    }
-  }
 
   const int ring_diff = get_max_ring_difference(segment_num);
-  const int ring1_plus_ring2= seg_axpos_to_ring1_plus_ring2[segment_num][axial_pos_num];
+  const int ring1_plus_ring2= segment_axial_pos_to_ring1_plus_ring2[segment_num][axial_pos_num];
 
   // KT 01/08/2002 swapped rings
   ring1 = (ring1_plus_ring2 - ring_diff)/2;
@@ -326,7 +324,118 @@ set_ring_spacing(float ring_spacing_v)
   ring_spacing = ring_spacing_v;
 }
 
+void
+ProjDataInfoCylindrical::
+allocate_segment_axial_pos_to_ring_pair() const
+{
+  segment_axial_pos_to_ring_pair = 
+    VectorWithOffset<VectorWithOffset<shared_ptr<RingNumPairs> > >
+    (get_min_segment_num(), get_max_segment_num());
 
+  for (int segment_num = get_min_segment_num();
+       segment_num <= get_max_segment_num();
+       ++segment_num)
+    {
+      segment_axial_pos_to_ring_pair[segment_num].grow(get_min_axial_pos_num(segment_num),
+						       get_max_axial_pos_num(segment_num));
+    }
+}
+
+void
+ProjDataInfoCylindrical::
+compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_pos_num) const
+{
+  segment_axial_pos_to_ring_pair[segment_num][axial_pos_num] =
+    new RingNumPairs;
+ 
+  RingNumPairs& table = 
+    *segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];
+  table.reserve(get_max_ring_difference(segment_num) -
+		get_min_ring_difference(segment_num) + 1);
+
+  /* We compute the lookup-table in a fancy way.
+     We could just as well have a simple loop over all ring pairs and check 
+     if it belongs to this segment/axial_pos. 
+     The current way is a lot faster though.
+  */
+  const int min_ring_diff = get_min_ring_difference(segment_num);
+  const int max_ring_diff = get_max_ring_difference(segment_num);
+  const int num_rings = get_scanner_ptr()->get_num_rings();
+
+  /* ring1_plus_ring2 is the same for any ring pair that contributes to 
+     this particular segment_num, axial_pos_num.
+  */
+  const int ring1_plus_ring2= 
+    segment_axial_pos_to_ring1_plus_ring2[segment_num][axial_pos_num];
+
+  /*
+    The ring_difference increments with 2 as the other ring differences do
+    not give a ring pair with this axial_position. This is because
+    ring1_plus_ring2%2 == ring_diff%2
+    (which easily follows by plugging in ring1+ring2 and ring1-ring2).
+    The starting ring_diff is determined such that the above condition
+    is satisfied. You can check it by noting that the
+      start_ring_diff%2
+        == (min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2)%2
+	== (2*min_ring_diff+ring1_plus_ring2)%2
+	== ring1_plus_ring2%2
+  */
+  for(int ring_diff = min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2; 
+      ring_diff <= max_ring_diff; 
+      ring_diff+=2 )
+    {
+      const int ring1 = (ring1_plus_ring2 - ring_diff)/2;
+      const int ring2 = (ring1_plus_ring2 + ring_diff)/2;
+      if (ring1<0 || ring2 < 0 || ring1>=num_rings || ring2 >= num_rings)
+	continue;
+      assert((ring1_plus_ring2 + ring_diff)%2 == 0);
+      assert((ring1_plus_ring2 - ring_diff)%2 == 0);
+      table.push_back(pair<int,int>(ring1, ring2));
+#ifndef NDEBUG
+      int check_segment_num = 0, check_axial_pos_num = 0;
+      assert(get_segment_axial_pos_num_for_ring_pair(check_segment_num,
+						     check_axial_pos_num,
+						     ring1,
+						     ring2) ==
+	     Succeeded::yes);
+      assert(check_segment_num == segment_num);
+      assert(check_axial_pos_num == axial_pos_num);
+#endif
+    }
+}
+
+void 
+ProjDataInfoCylindrical::
+set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment)
+{
+  ProjDataInfo::set_num_axial_poss_per_segment(num_axial_poss_per_segment);
+  ring_diff_arrays_computed = false;
+}
+
+void 
+ProjDataInfoCylindrical::
+set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num)
+{
+  ProjDataInfo::set_min_axial_pos_num(min_ax_pos_num, segment_num);
+  ring_diff_arrays_computed = false;
+}
+
+
+void ProjDataInfoCylindrical::
+set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num)
+{
+  ProjDataInfo::set_max_axial_pos_num(max_ax_pos_num, segment_num);
+  ring_diff_arrays_computed = false;
+}
+
+void
+ProjDataInfoCylindrical::
+reduce_segment_range(const int min_segment_num, const int max_segment_num)
+{
+  ProjDataInfo::reduce_segment_range(min_segment_num, max_segment_num);
+  ring_diff_arrays_computed = false;
+}
+  
 string
 ProjDataInfoCylindrical::parameter_info()  const
 {
