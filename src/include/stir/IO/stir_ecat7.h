@@ -27,6 +27,7 @@
 
 
 #include "stir/IO/stir_ecat_common.h"
+#include "stir/NumericType.h"
 
 #ifdef HAVE_LLN_MATRIX
 #ifdef STIR_NO_NAMESPACES
@@ -54,7 +55,6 @@ using std::iostream;
 START_NAMESPACE_STIR
 
 class Succeeded;
-class NumericType;
 class ByteOrder;
 class Scanner;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -131,22 +131,33 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 			    const int data_num = 0, const int bed_num = 0);
 
 //! Create a new ECAT7  sinogram file and write the data in there
+/*! 
+  \ingroup ECAT
+  Note that not all \a output_type are supported by the ECAT7 format.
+  If a wrong type is used, it will be forced to floats.
+*/
 Succeeded 
-ProjData_to_ECAT7(ProjData const& proj_data, 
-                            string const & cti_name, string const & orig_name,
-                            const int frame_num = 1, const int gate_num = 1, 
-			    const int data_num = 0, const int bed_num = 0,
-                            const bool write_as_attenuation = false);
+ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
+		  string const & cti_name, string const & orig_name,
+		  const int frame_num = 1, const int gate_num = 1, 
+		  const int data_num = 0, const int bed_num = 0,
+		  const bool write_as_attenuation = false);
 
 //! Write an (extra) set of sinograms to an existing ECAT7 file 
 /*! 
   \ingroup ECAT
-   Some consistency checks are performed between the proj_data and the data in the main header
+   Some consistency checks are performed between the proj_data and the data
+   in the main header pointer of \a mptr.
+
+   For ECAT7, the data type for the output is determined by the \c file_type field
+   of the main header.
+
   \warning This does NOT write the main header.
 */
 Succeeded 
-ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data, 
-                  const int frame_num = 1, const int gate_num = 1, 
+ProjData_to_ECAT7(MatrixFile *mptr, 
+		  ProjData const& proj_data, 
+		  const int frame_num = 1, const int gate_num = 1, 
                   const int data_num = 0, const int bed_num = 0);
 
 
@@ -173,11 +184,27 @@ void make_ECAT7_main_header(Main_header& mhead,
 /*! 
   \ingroup ECAT
   It gets the scanner from the proj_data_info object.
-  Sets num_planes, plane_separation as well*/
-void make_ECAT7_main_header(Main_header& mhead,
-			    const string& orig_name,
-                            ProjDataInfo const & proj_data_info
-                            );
+  Sets num_planes, plane_separation as well and attempts septa_state.
+
+  \return the actual NumericType that should be used for further IO.
+  This is necessary because the file_type in the ECAT7 main header  
+  depends on the \a output_type (sign).
+
+  Defaults mean that it will set to file_type Float3dSinogram.
+
+  \warning   Note that not all \a output_type are supported by the ECAT7 format.
+  If a wrong type is used, it will be forced to floats.
+  \warning   The \c acquisition_type field will be set to either 
+  \c TransmissionScan or \c StaticEmission, depending on \a write_as_attenuation. This is not necessarily correct.
+
+*/
+NumericType 
+make_ECAT7_main_header(Main_header& mhead,
+		       const string& orig_name,
+		       ProjDataInfo const & proj_data_info,
+		       const bool write_as_attenuation = false,
+		       NumericType output_type = NumericType::FLOAT
+		       );
 
 //! Fill in most of the subheader
 /*! 
