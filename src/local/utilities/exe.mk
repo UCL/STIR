@@ -34,7 +34,8 @@ $(dir)_SOURCES = \
 	move_image.cxx \
 	move_projdata.cxx \
         find_fwhm_in_image.cxx \
-	get_singles_info.cxx
+	get_singles_info.cxx \
+	calculate_attenuation_coefficients.cxx
 
 #	CoG.cxx \
 #	make_cylinder.cxx 
