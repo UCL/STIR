@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*! 
   \file
@@ -11,13 +11,12 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
-  \warning Keywords have to match identically
   \warning Different datasets in 1 header are not yet supported.
 
-  See http://cu.rpms.ac.uk/~kris for a description of the full
+  See http://www.irsl.org/~kris for a description of the full
   proposal for Interfile headers for 3D PET.
 */
 
@@ -28,12 +27,13 @@
 #include "NumericInfo.h"
 #include "KeyParser.h"
 
-#include "ProjDataInfoCylindricalArcCorr.h"
 #include "ProjDataFromStream.h"
 
 
 
 START_NAMESPACE_TOMO
+
+class ProjDataInfo;
 
 /*!
   \brief a class for Interfile keywords (and parsing) common to 
@@ -142,6 +142,7 @@ public:
   vector<int> max_ring_difference; 
   vector<int> num_rings_per_segment;
 
+  vector<string> applied_corrections;
  
   // derived values
   int num_segments;
@@ -165,6 +166,8 @@ private:
   // this is in degrees
   double view_offset;
 
+
+  bool is_arccorrected;
 };
 
 END_NAMESPACE_TOMO
