@@ -29,7 +29,11 @@ ${DEST}sensitivity: ${DEST}sensitivity.o \
 	$(LINK_OPT) $(SYS_LIBS)
 
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
+endif
+
 
 .PRECIOUS: $(SOURCES:%.cxx=$(DEST)%.o) $(SOURCES:%.cxx=$(DEST)%)
 

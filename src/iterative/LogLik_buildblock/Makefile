@@ -7,14 +7,14 @@ include ../../Makefile_common
 
 all: $(DEST)libLogLik_buildblock.a 
 
-vpath %.cxx ../LogLik_buildblock
+
 clean:
 	$(RM) $(DEST)*
 
 SOURCES= \
 LogLikelihoodBasedAlgorithmParameters.cxx \
 LogLikelihoodBasedReconstruction.cxx \
-common.cxx \
+common.cxx 
 
 
 
@@ -22,7 +22,11 @@ common.cxx \
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES_CXX:%.cxx=$(DEST)%.d)
+endif
+
 
 ${DEST}libLogLik_buildblock.a: $(OBJS)
 	ar r $@ $?
