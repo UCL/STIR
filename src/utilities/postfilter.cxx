@@ -99,25 +99,38 @@ main(int argc, char *argv[])
   PostFiltering post_filtering;
   string out_filename;
   
-  if (argc==4)
-  {
-    out_filename = argv[1];
-    input_image_ptr = 
-      DiscretisedDensity<3,float>::read_from_file(argv[2]);
-
-    post_filtering.parser.parse(argv[3]);
-  }
+  if (argc!=4)
+    {
+      cerr<<"\nUsage: postfilter <output filename > <input header file name> <filter .par filename>\n"<<endl;
+    }
+  if (argc>1)
+    {
+      out_filename = argv[1];
+    }
   else
-  {
-    cerr<<endl<<"Usage: postfilter <output filename > <input header file name> <filter .par filename>"<<endl<<endl;
-    input_image_ptr= ask_image("Image to process?");
-    char outfile[max_filename_length];
-    ask_filename_with_extension(outfile,
-      "Output to which file: ", "");
-    out_filename = outfile;
-  
-    post_filtering.parser.ask_parameters();    
-  }
+    {
+      char outfile[max_filename_length];
+      ask_filename_with_extension(outfile,
+				  "Output to which file: ", "");
+      out_filename = outfile;
+    }
+  if (argc>2)
+    {
+      input_image_ptr = 
+	DiscretisedDensity<3,float>::read_from_file(argv[2]);
+    }
+  else
+    {
+      input_image_ptr= ask_image("Image to process?");
+    }
+  if (argc>3)
+    {
+      post_filtering.parser.parse(argv[3]);
+    }
+  else
+    {     
+      post_filtering.parser.ask_parameters();    
+    }
 
   cerr << "PostFilteringParameters:\n" << post_filtering.parser.parameter_info();
 
@@ -137,7 +150,7 @@ main(int argc, char *argv[])
   write_basic_interfile(out_filename.c_str(),*input_image_ptr);
 
   delete input_image_ptr;
-  
+
   return EXIT_SUCCESS;
 }
 
