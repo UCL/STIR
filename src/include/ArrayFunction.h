@@ -27,8 +27,8 @@
    <li>
    Analoguous functions that take out_array and in_array
    <ul>
-      <li>in_place_apply_array_function_on_1st_index
-      <li>in_place_apply_array_functions_on_each_index
+      <li>apply_array_function_on_1st_index
+      <li>apply_array_functions_on_each_index
    </ul>
    <li>
    functions specific to Array<1,elemT>:
