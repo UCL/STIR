@@ -1,4 +1,6 @@
 OSMAPOSLParameters :=
+; example file for running OSEM with interfiltering
+; filter specific things are at the end
 
 input file := test.hs
 output filename prefix := test_osem
@@ -20,11 +22,14 @@ sensitivity image:= sens.hv
 ; see User's Guide for more info
 additive sinogram := 0
 
+; Number of subsets should be a divisor of num_views/4
 number of subsets:= 12
-start at subset:= 1
+; Use for starting the numbering from something else than 1
+;start at subiteration number:=1
+; Use if you want to start from another subset than 0 (but why?)
+;start at subset:= 0
 number of subiterations:= 24
 save images at subiteration intervals:= 12
-start at subiteration number:=0
 
 ; enable this when you read an initial image with negative data
 enforce initial positivity condition:=0
