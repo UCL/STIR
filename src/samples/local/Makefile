@@ -1,14 +1,16 @@
 # 
 # $Id$: 
 #
+# Example Makefile for use in the local subdirectory
+# This is nearly identical to the $(WORKSPACE)/Makefile
 
 WORKSPACE=$(CURDIR)/..
 
 include $(WORKSPACE)/Makefile_common
 
 LIBSUBDIRECTORIES = \
-	$(WORKSPACE)/local/buildblock \
-	$(WORKSPACE)/local/QH_library
+	$(WORKSPACE)/local/buildblock 
+
 
 EXESUBDIRECTORIES= \
         $(WORKSPACE)/local/QH_utilities
@@ -27,12 +29,15 @@ install: all
 	for subdir in $(EXESUBDIRECTORIES); do   \
 	   echo "-------------------"; $(MAKE) -C $$subdir install; \
 	done
-ifeq ($(__TEST_local_Makefile),1)
-	(cd local; $(MAKE) install);
-endif
 
 
 clean: 
 	for subdir in $(SUBDIRECTORIES); do \
 	   echo "-------------------"; $(MAKE) -C $$subdir clean; \
 	done;
+
+
+
+
+
+
