@@ -54,25 +54,32 @@ void ProjMatrixElemsForOneBin::erase()
 
 ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator*=(const float d)
 {
-  iterator element_ptr = begin();
-  while (element_ptr != end())
+  // KT 21/02/2002 added check on 1
+  if (d != 1.F)
   {
-    *element_ptr *= d;        
-    ++element_ptr;
-  }	 
+    iterator element_ptr = begin();
+    while (element_ptr != end())
+    {
+      *element_ptr *= d;        
+      ++element_ptr;
+    }
+  } 
   return *this;
 }
 
 ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator/=(const float d)
 {
   assert( d != 0);
-  
-  iterator element_ptr = begin();
-  while (element_ptr != end())
-  { 
-    *element_ptr /= d;
-    ++element_ptr;
-  }	 
+  // KT 21/02/2002 added check on 1
+  if (d != 1.F)
+  {
+    iterator element_ptr = begin();
+    while (element_ptr != end())
+    { 
+      *element_ptr /= d;
+      ++element_ptr;
+    }	 
+  }
   return *this;
 }
 
@@ -240,6 +247,10 @@ back_project(DiscretisedDensity<3,float>& density,
 {   
   {  
     const float data = single.get_bin_value() ;     
+    // KT 21/02/2002 added check on 0
+    if (data == 0)
+      return;
+    
     const_iterator element_ptr = 
       begin();
     while (element_ptr != end())
@@ -289,8 +300,11 @@ back_project(DiscretisedDensity<3,float>& density,
     row_copy = *this;
     
     Bin symmetric_bin = *r_bins_iterator;
+    // KT 21/02/2002 added check on 0
+    if (symmetric_bin.get_bin_value() == 0)
+      return;
     auto_ptr<SymmetryOperation> symm_ptr = 
-      symmetries->find_symmetry_operation_to_basic_bin(symmetric_bin);
+      symmetries->find_symmetry_operation_from_basic_bin(symmetric_bin);
     symm_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
     row_copy.back_project(density,symmetric_bin);
   }  
@@ -313,7 +327,7 @@ forward_project(RelatedBins& r_bins,
     row_copy = *this;
     
     auto_ptr<SymmetryOperation> symm_op_ptr = 
-      symmetries->find_symmetry_operation_to_basic_bin(*r_bins_iterator);
+      symmetries->find_symmetry_operation_from_basic_bin(*r_bins_iterator);
     symm_op_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
     row_copy.forward_project(*r_bins_iterator,density);
   }  
