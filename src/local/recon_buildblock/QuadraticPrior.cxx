@@ -80,6 +80,12 @@ QuadraticPrior<elemT>::QuadraticPrior(const bool only_2D_v, float penalisation_f
 static void 
 compute_weights(Array<3,float>& weights, const CartesianCoordinate3D<float>& grid_spacing)
 {
+  static bool already_computed = false;
+
+  if (already_computed)
+    return;
+
+  already_computed = true;
   weights = Array<3,float>(IndexRange3D(-1,1,-1,1,-1,1));
   for (int z=-1;z<=1;++z)
     for (int y=-1;y<=1;++y)
@@ -185,6 +191,77 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     write_basic_interfile(filename, prior_gradient);
   }*/
 }
+
+template <typename elemT>
+void 
+QuadraticPrior<elemT>::
+compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
+		const BasicCoordinate<3,int>& coords,
+		const DiscretisedDensity<3,elemT> &current_image_estimate)
+{
+  assert(  prior_Hessian_for_single_densel.get_index_range() == current_image_estimate.get_index_range());  
+  prior_Hessian_for_single_densel.fill(0);
+  if (penalisation_factor==0)
+  {
+    return;
+  }
+  
+  
+  const DiscretisedDensityOnCartesianGrid<3,float>& current_image_cast =
+    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> &>(current_image_estimate);
+  
+  DiscretisedDensityOnCartesianGrid<3,float>& prior_Hessian_for_single_densel_cast =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_Hessian_for_single_densel);
+
+  compute_weights(weights, current_image_cast.get_grid_spacing());
+   
+  const bool do_kappa = kappa_ptr.use_count() != 0;
+  
+  if (do_kappa && kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
+    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
+
+  const int z = coords[1];
+  const int y = coords[2];
+  const int x = coords[3];
+  int min_dz, max_dz;
+  if (only_2D)
+  {
+    min_dz = max_dz = 0;
+  }
+  else
+  {
+    min_dz = max(-1, prior_Hessian_for_single_densel_cast.get_min_z()-z);
+    max_dz = min(1, prior_Hessian_for_single_densel_cast.get_max_z()-z);
+  }
+  int min_dy, max_dy;
+  {
+    min_dy = max(-1, prior_Hessian_for_single_densel_cast.get_min_y()-y);
+    max_dy = min(1, prior_Hessian_for_single_densel_cast.get_max_y()-y);
+  }
+  int min_dx, max_dx;
+  {
+    min_dx = max(-1, prior_Hessian_for_single_densel_cast.get_min_x()-x);
+    max_dx = min(1, prior_Hessian_for_single_densel_cast.get_max_x()-x);
+  }
+  elemT diagonal = 0;
+  for (int dz=min_dz;dz<=max_dz;++dz)
+    for (int dy=min_dy;dy<=max_dy;++dy)
+      for (int dx=min_dx;dx<=max_dx;++dx)
+      {
+	// dz==0,dy==0,dx==0 will have weight 0, so we can just include it in the loop
+	elemT current =
+	  weights[dz][dy][dx];
+	
+	if (do_kappa)
+	  current *= 
+	  (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+	
+	diagonal += current;
+	prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*penalisation_factor;
+      }
+      
+      prior_Hessian_for_single_densel[z][y][x]= diagonal * penalisation_factor;
+}              
 
 template <typename elemT>
 void 
