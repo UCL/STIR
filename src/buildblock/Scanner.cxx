@@ -112,9 +112,12 @@ Scanner::Scanner(Type scanner_type)
   else if (scanner_type == DiscoveryST)
   {
     // 249 bins (non-uniform sampling) 
-    // 221 ? bins (uniform sampling)
+    // 223 bins (uniform sampling)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
-    set_params(DiscoveryST,string_list("GE Discovery ST", "Discovery ST"), 24, 249,221,2*210,451.5F, 6.52916F, 3.1695F, 0,0,0,6,6, 1);// TODO check sizes
+    set_params(DiscoveryST,string_list("GE Discovery ST", "Discovery ST"), 
+	       24, 249,223,2*210,451.5F, 6.52916F, 3.1695F,
+	       static_cast<float>(-4.54224*_PI/180),
+	       0,0,6,6, 1);// TODO not sure about sign of view_offset
   }
   else if (scanner_type == HZLR)
     set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0,0,0,0,0, 1);
