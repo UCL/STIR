@@ -36,7 +36,7 @@ int main(int argc, char * argv[])
     exit(EXIT_FAILURE);
   }
   LmToProjData application(argc==2 ? argv[1] : 0);
-  application.compute();
+  application.process_data();
 
   return EXIT_SUCCESS;
 }

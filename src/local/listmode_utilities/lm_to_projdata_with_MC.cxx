@@ -145,7 +145,7 @@ int main(int argc, char * argv[])
     exit(EXIT_FAILURE);
   }
   LmToProjDataWithMC application(argc==2 ? argv[1] : 0);
-  application.compute();
+  application.process_data();
 
   return EXIT_SUCCESS;
 }
