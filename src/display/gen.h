@@ -94,6 +94,7 @@ extern  char getch(void);
 #include <search.h>             /* for qsort */
 #endif
 #endif
+
 /* Macro's for using the arrowkeys. For explanation see above.
   Replace "escape code" with "extended charcode"
 */
@@ -130,11 +131,14 @@ void qsort();
 #endif
 
 #ifdef ultrix
+#ifndef sun/*CL 150898 Add this for solaris as it already existed in curses.h*/
 #include <curses.h>             /* for getch */
+#endif
   /* Change November 1997: added 7 lines
      work-around a 'bug'. screen.h includes curses.h which #defines some
      symbols which conflict in other C++ includes
   */
+
 #ifdef clear
 #undef clear
 #endif
