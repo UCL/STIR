@@ -36,6 +36,8 @@ QuadraticPrior<elemT>::initialise_keymap()
   parser.add_key("kappa filename", &kappa_filename);
   parser.add_key("precomputed weights", &precomputed_weights);
   parser.add_key ("precomputed weights 3D", &precomputed_weights_3D);
+
+  parser.add_key("gradient filename", &gradient_filename);
   parser.add_stop_key("END Quadratic Prior Parameters");
 }
 
@@ -203,25 +205,21 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 	
 	for (int y=prior_gradient_cast.get_min_y();y<= prior_gradient_cast.get_max_y();y++)
 	  {
-	    int min_dy, max_dy;
-	    {
-	      
-	      
-		
-	      min_dy = max(weights[0].get_min_index(), prior_gradient_cast.get_min_y()-y);
-	      max_dy = min(weights[0].get_max_index(), prior_gradient_cast.get_max_y()-y);
-	    }
+	    const int min_dy = max(weights[0].get_min_index(), prior_gradient_cast.get_min_y()-y);
+	    const int max_dy = min(weights[0].get_max_index(), prior_gradient_cast.get_max_y()-y);	    
 
 	    for (int x=prior_gradient_cast.get_min_x();x<= prior_gradient_cast.get_max_x();x++)       
 	      {
-	        
+		const int min_dx = max(weights[0][0].get_min_index(), prior_gradient_cast.get_min_x()-x);
+		const int max_dx = min(weights[0][0].get_max_index(), prior_gradient_cast.get_max_x()-x);
 		
-		
-		int min_dx, max_dx;
-		{
-		  min_dx = max(weights[0][0].get_min_index(), prior_gradient_cast.get_min_x()-x);
-		  max_dx = min(weights[0][0].get_max_index(), prior_gradient_cast.get_max_x()-x);
-		}
+		/* formula:
+		  sum_dx,dy,dz
+		   weights[dz][dy][dx] *
+		   (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
+		   (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+		*/
+#if 1
 		elemT gradient = 0;
 		for (int dz=min_dz;dz<=max_dz;++dz)
 		  for (int dy=min_dy;dy<=max_dy;++dy)
@@ -237,7 +235,52 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
 			gradient += current;
 		      }
-		
+#else
+		// attempt to speed up by precomputing the sum of weights.
+		// The current code gives identical results but is actually slower
+		// than the above, at least when kappas are present.
+
+
+		// precompute sum of weights
+		// TODO without kappas, this is just weights.sum() most of the time, 
+		// but not near edges
+		float sum_of_weights = 0;
+		{
+		  if (do_kappa)
+		    {		     
+		      for (int dz=min_dz;dz<=max_dz;++dz)
+			for (int dy=min_dy;dy<=max_dy;++dy)
+			  for (int dx=min_dx;dx<=max_dx;++dx)
+			    sum_of_weights +=  weights[dz][dy][dx]*(*kappa_ptr)[z+dz][y+dy][x+dx];
+		    }
+		  else
+		    {
+		      for (int dz=min_dz;dz<=max_dz;++dz)
+			for (int dy=min_dy;dy<=max_dy;++dy)
+			  for (int dx=min_dx;dx<=max_dx;++dx)
+			    sum_of_weights +=  weights[dz][dy][dx];
+		    }
+		}
+		// now compute contribution of central term
+		elemT gradient = sum_of_weights * current_image_estimate[z][y][x] ;
+
+		// subtract the rest
+		for (int dz=min_dz;dz<=max_dz;++dz)
+		  for (int dy=min_dy;dy<=max_dy;++dy)
+		    for (int dx=min_dx;dx<=max_dx;++dx)
+		      {
+			elemT current =
+			  weights[dz][dy][dx] * current_image_estimate[z+dz][y+dy][x+dx];
+
+			if (do_kappa)
+			  current *= (*kappa_ptr)[z+dz][y+dy][x+dx];
+
+			gradient -= current;
+		      }
+		// multiply with central kappa
+		if (do_kappa)
+		  gradient *= (*kappa_ptr)[z][y][x];
+#endif
 		prior_gradient[z][y][x]= gradient * penalisation_factor;
 	      }              
 	  }
@@ -245,13 +288,16 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
   std::cerr << "Prior gradient max " << prior_gradient.find_max()
     << ", min " << prior_gradient.find_min() << std::endl;
- /* {
-    static int count = 0;
-    ++count;
-    char filename[20];
-    sprintf(filename, "gradient%d.v",count);
-    write_basic_interfile(filename, prior_gradient);
-  }*/
+
+  static int count = 0;
+  ++count;
+  if (gradient_filename.size()>0)
+    {
+      char *filename = new char[gradient_filename.size()+100];
+      sprintf(filename, "%s%d.v", gradient_filename.c_str(), count);
+      write_basic_interfile(filename, prior_gradient);
+      delete filename;
+    }
 }
 
 template <typename elemT>
@@ -299,22 +345,13 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel_cast.get_min_z()-z);
     max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel_cast.get_max_z()-z);
   }
-  int min_dy, max_dy;
-  {
-    
-    
-	
-    min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_y()-y);
-    max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_y()-y);
-  }
-  int min_dx, max_dx;
-  {
-    
-    
-	
-    min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_x()-x);
-    max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_x()-x);
-  }
+  // TODO use z,y,x
+  const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_y()-y);
+  const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_y()-y);
+  
+  const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_x()-x);
+  const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_x()-x);
+  
   elemT diagonal = 0;
   for (int dz=min_dz;dz<=max_dz;++dz)
     for (int dy=min_dy;dy<=max_dy;++dy)
@@ -380,25 +417,14 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 	
 	for (int y=parabolic_surrogate_curvature_cast.get_min_y();y<= parabolic_surrogate_curvature_cast.get_max_y();y++)
 	  {
-	    int min_dy, max_dy;
-	    {
-	      
-	      
-	      
-	      min_dy = max(weights[0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_y()-y);
-	      max_dy = min(weights[0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_y()-y);
-	    }
+	    const int min_dy = max(weights[0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_y()-y);
+	    const int max_dy = min(weights[0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_y()-y);
 
 	    for (int x=parabolic_surrogate_curvature_cast.get_min_x();x<= parabolic_surrogate_curvature_cast.get_max_x();x++)       
-	      {  
-	        
+	      {  	        	     
+		const int min_dx = max(weights[0][0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_x()-x);
+		const int max_dx = min(weights[0][0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_x()-x);
 		
-
-		int min_dx, max_dx;
-		{
-		  min_dx = max(weights[0][0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_x()-x);
-		  max_dx = min(weights[0][0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_x()-x);
-		}
 		elemT gradient = 0;
 		for (int dz=min_dz;dz<=max_dz;++dz)
 		  for (int dy=min_dy;dy<=max_dy;++dy)
