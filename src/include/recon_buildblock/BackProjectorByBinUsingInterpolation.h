@@ -18,27 +18,32 @@
 #define __BackProjectorByBinUsingInterpolation_h_
 
 #include "recon_buildblock/BackProjectorByBin.h" 
-#include "Array.h"
-#include "DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-
 
 
 START_NAMESPACE_TOMO
 
-template <typename elemT> class Segment;
+template <typename T> class shared_ptr;
+template <typename elemT> class Viewgram;
+template <typename elemT> class RelatedViewgrams;
 template <typename elemT> class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT> class Array;
+class ProjDataInfo;
+class ProjDataInfoCylindricalArcCorr;
+class DataSymmetriesForViewSegmentNumbers;
 
 /*!
   \brief
-  The next class is used in backprojection to take geometric things
-  into account. It also includes normalisation. (internal use only).
-  */
-  /*
-  Use as follows:
+  The next class is used in BackProjectorByBinUsingInterpolation 
+  to take geometric things
+  into account. It also includes some normalisation. (internal use only).
   
+  \internal 
+
+  Use as follows:
+  \code
     const JacobianForIntBP jacobian(*(segment.scanner));
     jacobian(segment.get_average_delta(), s+ 0.5);
+  \endcode
  */
 
 
@@ -59,17 +64,7 @@ private:
   const bool use_exact_Jacobian_now;
 
 public:
-   explicit JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact)
-     
-     : R2(square(proj_data_info_ptr->get_ring_radius())),
-       dxy2(square(proj_data_info_ptr->get_tangential_sampling())),
-       ring_spacing2 (square(proj_data_info_ptr->get_ring_spacing())),
-       backprojection_normalisation 
-      (proj_data_info_ptr->get_ring_spacing()/2/proj_data_info_ptr->get_num_views()),
-      use_exact_Jacobian_now(exact)
-      
-
-   {}
+   explicit JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact);
 
    float operator()(const float delta, const float s) const
    {
@@ -141,7 +136,7 @@ public:
 private:
  
   //shared_ptr<DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid> symmetries;
-  DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid symmetries;
+  const DataSymmetriesForViewSegmentNumbers * symmetries_ptr;
   
   bool use_piecewise_linear_interpolation_now;
 
