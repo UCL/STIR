@@ -1,0 +1,3750 @@
+
+\batchmode
+\documentclass{article}
+\usepackage{a4wide}
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{hyperref}
+\def\R2Lurl#1#2{\mbox{\href{#1}{\tt #2}}}                                              
+\newcommand{\tab}{\hspace{5mm}}
+% attempt to define lower levels than subsubsections
+% This does not work very well as you need to put them in extra {}
+% to avoid the fonts being messed up etc.
+% However, it does work for automatic numbering
+\newtheorem{subsubsubsection}{{}}[subsubsection] 
+\newtheorem{subsubsubsubsection}{{}}[subsubsubsection] 
+
+% a simple definition for formatting command lines
+\newcommand{\cmdline}[1]{\par \noindent $>$ \texttt{#1}\par}
+
+\begin{document}
+
+
+\begin{spacing}{2}
+\begin{center}
+
+\textbf{
+{\Huge  STIR} 
+\huge
+\\[1cm]
+\textit{ Software for  Tomographic \\ Image Reconstruction}
+}
+\\[3cm]
+
+\textbf{{\huge User's Guide\\
+ Version 1.3}}
+\end{center}
+
+\end{spacing}
+
+\large 
+
+\noindent 
+K. Thielemans (Hammersmith Imanet)\\
+D. Sauge, C. Labb\'e, C. Morel (Hopital Cantonal Gen\`eve)\\
+M. Jacobson (Technion University)\\
+A. Zverovich (Brunel University)
+
+
+
+\newpage
+
+\tableofcontents
+
+
+\section{
+Introduction}
+
+The objective of this document is to give practical information 
+about the use of the object-oriented library for 3D Reconstruction 
+of PET data, called \textit{STIR}. The most recent version of this 
+document (and the library) can be found on \\
+\R2Lurl{http://stir.HammersmithImanet.com}{http://stir.HammersmithImanet.com}, 
+mirrored at\\
+\R2Lurl{http://stir.sourceforge.net}{http://stir.sourceforge.net}.
+
+
+This library was originally developed by the (now finished) PARAPET 
+project (funded by the European Union), extended by Hammersmith 
+Imanet and made into an Open Source project. \\
+The current library has different license restrictions than the 
+original PARAPET distribution. Details on licensing are to be 
+found during the registration process, and the file \textbf{STIR/LICENSE.txt} 
+that comes with the distribution. 
+
+
+Pending a publication on the current library, please put references 
+to [Lab99a], [Lab99b] in your own publications.
+
+
+
+This guide attempts to give end users the shortest pathway to 
+perform 3D reconstructions using \textit{STIR}. It mainly provides 
+procedures for downloading and installing the necessary gnu g++ 
+compiler tools and the \textit{STIR} reconstruction building blocks. 
+Then a brief explanation is given about how to run reconstruction 
+algorithms as well as additional utilities. A description of 
+the reconstruction building block library can be found on our 
+web site (section \textit{documentation}). A short review of analytic 
+and iterative reconstruction methods is available in [PAR1.3] 
+(section \textit{Dissemination}).
+
+\section{
+A general note on documentation in STIR}
+
+Although we attempt to keep all documentation up-to-date, we 
+recommend to read documentation in the following order:\\
+1.\tab 
+general overview documents, such as this User's Guide\\
+2.\tab 
+online generated documentation (produced by doxygen). This is 
+probably more up-to-date than the previous category, as it is 
+produced from comments and (partly) code in the source files.\\
+3.\tab 
+check the source itself if in any doubt
+
+
+Any comments on documentation, and especially contributions are 
+always welcome. Please use the stir-users mailing list.
+
+\section{
+Installation}
+
+\subsection{
+Installing source files}
+
+Download the source at the \textit{STIR} site: 
+\begin{center}
+\R2Lurl{http://stir.HammersmithImanet.com }{http://stir.HammersmithImanet.com} 
+\end{center}
+\noindent (Section \textbf{Registered Users}).\\
+Download the source files in the zip format and use unzip from \\
+\R2Lurl{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
+Extract using
+\cmdline{unzip -a file.zip}
+
+
+The \texttt{-a} option makes sure that files are extracted using the 
+end-of-line convention appropriate for your system. Note that 
+other programs that can handle zip files (such as WinZip) should 
+work as well, although you might have problems with the EOL convention.
+
+
+Note that you can put the distribution in any location (it does 
+not have to be your home directory).
+
+
+The result is a STIR directory and subdirectories, described 
+in the annex section.
+
+
+\subsection{
+C++ Compiler and make}
+
+In order to compile and run the STIR programs, we currently recommend 
+using a recent version of the GNU gcc compiler, at least version 
+3.0.1. Version 2.95.2 might still work for the current STIR release 
+but has not been tested. In addition, later versions will give 
+you better functionality in some STIR executables\footnote{{\small Specifically, 
+some programs that take a parameter file as input also list the 
+actual parameters used on stdout. This is especially useful if 
+you used the interactive version and want to copy this output 
+to a file. There is a bug in gcc 2.95.2 though such that this 
+info cannot be listed correctly for the hierarchies based on 
+registries (pretty much everything in section 
+\ref{sec:user-selectablecomponents}). 
+Aside from this, 
+everything works fine with gcc 2.95.2.}}. 
+
+
+\textbf{Warning} Please note that many Linux distributions come with 
+gcc 2.96, which was never an official release of gcc, and has 
+some known bugs. We discourage using this version for STIR (check 
+with gcc -v).
+
+
+
+Other recent C++ compilers should be ok as well. We would love 
+to hear from any attempts of using another compiler. See Section 
+\ref{sec:VC}
+on how to use Visual Studio's C++ compiler.
+
+
+Additionally, you need GNU make as well. Other versions of \textit{make} 
+will NOT work with our Makefiles.
+
+
+If you do not have \textbf{gcc} or \textbf{make} you will need to 
+install them. Most systems use a package management system to install software. 
+If you cannot use that, or you are not the administrator, you 
+could follow the instructions given at \R2Lurl{http://gcc.gnu.org/ }{http://gcc.gnu.org/.}
+
+
+
+\subsection{
+Compilation}
+
+\subsubsection{
+Normal Compilation}
+\label{sec:normalcompilation}
+Use the GNU make utility to compile the program to be run\footnote{{\small Again, 
+a non-GNU version of make will not work. It might be that on 
+your system GNU make is launched with \texttt{gmake}.}}. The \textbf{Makefile} 
+is written for most Unix flavours: we tried it on AIX, Solaris, 
+Linux. It can also be used on Windows versions using cygwin (\R2Lurl{http://cygwin.com/}{http://cygwin.com/}). 
+Since release 1.2 there is only one \textbf{Makefile}, which is in \textbf{STIR/}.
+
+
+In addition, the distribution includes a file \textbf{STIR/samples/local/config.mk} 
+which you might copy to \textbf{STIR/local/config.mk} and modify according 
+to your own needs. See section \ref{sec:local_config.mk}.
+
+
+The default compilation (BUILD=opt) is optimised and is achieved 
+by simply typing:
+\cmdline{make all}
+
+
+It results in the creation of subdirectories in \textbf{STIR/opt} 
+with object and executable files (one for each of the subdirectories 
+of \textbf{STIR} that contain code).
+
+
+The 'debug' compilation can be obtained by typing the following 
+command:
+\cmdline{make BUILD=debug all}
+\noindent
+This switches off any optimisations and allows the debugging 
+of the programs, and results in the creation of subdirectories 
+in \textbf{STIR/debug} with object and executable files. Various assert 
+statements are enabled in the code, resulting in very slow execution. 
+If you experience problems with our software, we recommend running 
+the debug version to see if any of these asserts flags the reason.
+
+
+If you want to copy the executables to a location in your path, 
+use
+\cmdline{make install INSTALL\_EXE\_DIR=/here}
+
+\noindent
+\texttt{INSTALL\_EXE\_DIR} defaults to \texttt{\$(INSTALL\_PREFIX)/bin}, which 
+in turns defaults to \textbf{\$\{HOME\}/bin}.
+
+
+If you want to remove all generated files (such as object files 
+and executables), use
+\cmdline{make clean}
+
+
+If you want to remove the installed files, do
+\cmdline{make uninstall INSTALL\_EXE\_DIR=/here}
+
+These are only the most basic options. For more targets, 
+type
+\cmdline{make how}
+
+
+
+You might see numerous warnings when \textbf{buildblock/convert\_array.cxx} 
+and the \textbf{display/*.c} files are compiled. These are harmless. 
+One should normally not see warnings when compiling other files 
+(except possibly 'variable not used' type of warnings).
+
+
+The following table gives a summary of all available build options. 
+In this table, the notation \$(VAR) means: substitute the value of the
+(make) variable VAR.
+
+
+\newlength{\MakeTableFirstCol}
+\newlength{\MakeTableSecondCol}
+\setlength{\MakeTableFirstCol}{2.5in}
+\setlength{\MakeTableSecondCol}{\textwidth}
+\addtolength{\MakeTableSecondCol}{-\MakeTableFirstCol}
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+% ROW 1
+
+{\raggedright
+\textit{BUILD=build}} & 
+
+{\raggedright
+Specifies whether the debugging or optimised version of the 
+binaries will be produced. 'BUILD=debug' builds the debugging 
+version, 'BUILD=opt' builds the optimised version (default).} \\
+\hline
+% ROW 2
+
+{\raggedright
+\textit{DEST=dir/}} & 
+
+{\raggedright
+Put the compilation files in an alternative place} \\
+\hline
+% ROW 3
+
+{\raggedright
+\textit{WORKSPACE= \linebreak
+/absolutedir}} & 
+
+{\raggedright
+\textit{Use not recommended} \linebreak
+Can be used to tell \textit{make} where the \textit{STIR} subdirectory is, 
+but it should find out by itself. The path given should include 
+STIR as well.} \\
+\hline
+% ROW 4
+
+{\raggedright
+\textit{INSTALL\_EXE\_DIR= \linebreak
+/absolutedir}} & 
+
+{\raggedright
+Can be used to change the location for executables when using 
+'make install'. Defaults to \$(INSTALL\_PREFIX)/bin} \\
+\hline
+% ROW 5
+
+{\raggedright
+\textit{INSTALL\_LIB\_DIR= \linebreak
+/absolutedir}} & 
+
+{\raggedright
+Can be used to change the location for the library and registry 
+object files when using 'make install-all'. Defaults to \$(INSTALL\_PREFIX)/lib} \\
+\hline
+% ROW 6
+
+{\raggedright
+\textit{INSTALL\_INCLUDE\_DIR= \linebreak
+/absolutedir}} & 
+
+{\raggedright
+Can be used to change the location for the include files when 
+using 'make install'. Defaults to \$(INSTALL\_PREFIX)/include} \\
+\hline
+% ROW 7
+
+{\raggedright
+\textit{INSTALL\_PREFIX=/absolutedir}} & 
+
+{\raggedright
+See above. It defaults to \$(HOME) which should be your home 
+directory. You could set it to /usr/local (if you have write 
+permissions there).} \\
+\hline
+% ROW 8
+
+{\raggedright
+\textit{EXTRA\_CFLAGS= \linebreak
+'some options'}} & 
+
+{\raggedright
+Use to pass extra options to the compiler} \\
+\hline
+% ROW 9
+
+{\raggedright
+\textit{EXTRA\_LINKFLAGS= \linebreak
+'some options'}} & 
+
+{\raggedright
+Use to pass extra options to the compiler when linking} \\
+\hline
+% ROW 10
+
+{\raggedright
+\textit{CXX=compiler}} & 
+
+{\raggedright
+Use if you want another C++ compiler then g++} \\
+\hline
+% ROW 11
+
+{\raggedright
+\textit{CC=compiler}} & 
+
+{\raggedright
+Use if you want another C compiler then gcc} \\
+\hline
+% ROW 12
+
+{\raggedright
+\textit{LINK=compiler}} & 
+
+{\raggedright
+Program used for producing the executable, defaults to \$(CXX)} \\
+\hline
+% ROW 13
+
+{\raggedright
+\textit{INSTALL=program}} & 
+
+{\raggedright
+This is used by the install targets to copy the files. It defaults 
+to cp, but could be set to 'install -m 755 -s' (if you have GNU 
+install).} \\
+\hline
+% ROW 14
+
+{\raggedright
+\textit{RM=program}} & 
+
+{\raggedright
+This is used by the uninstall targets. It defaults to \texttt{rm -f}.} \\
+\hline
+% ROW 15
+
+{\raggedright
+\textit{DISABLE\_DEPENDENCY\_\linebreak
+GENERATION=1}} & 
+
+{\raggedright
+By default, the makefile is set-up to generate dependencies 
+on the include files. This means that if an include file is changed, 
+the relevant.cxx files will be recompiled. This feature is really 
+only necessary when you are modifying the STIR source files, 
+so you could switch it off.} \\
+\hline
+\end{longtable}
+
+
+Note that if the \textit{BUILD, DEST, WORKSPACE} options are used at 
+compilation time, they also have to be used when using different 
+targets (such as \textit{install, clean}).
+\subsubsection{
+Additional options available for non-parallel code}
+\label{sec:compilationgraphics}
+The following option can be given to the make command in addition 
+to what is specified above
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+% ROW 1
+{\raggedright \textit{GRAPHICS=value}} & 
+{\raggedright Possible values: X, PGM, MATHLINK, NONE. X (default) uses basic 
+X windows graphics, PGM writes the graphics to a.pgm file, MATHLINK 
+uses the (external) MathLink library which could be used to send 
+data directly to Mathematica, NONE switches off all graphics.} \\
+\hline
+\end{longtable}
+
+
+If you have problems, you might have to change \textbf{STIR/local/config.mk}
+(or in extreme circumstances \textbf{STIR/config.mk}) and introduce options 
+specific for your system.
+
+
+See also section \ref{sec:display}..
+
+\subsubsection{
+Additional options available for parallel code}
+
+[ The current distribution does not contain any parallel functionality. 
+So, skip this section]
+
+
+The following compiler options can be specified when building 
+a parallel executable. Please note that these should not be passed 
+to the Makefile\_parallel directly, but rather included in the 
+EXTRA\_CFLAGS='\dots ' parameter. For example, to enable high-level 
+tracing of the interprocess communications, use:
+
+
+\textit{\texttt{>} make -f Makefile\_parallel EXTRA\_CFLAGS='-DP\_INFO' all}
+
+
+\textit{-DP\_PVM} and --\textit{DP\_EPX}
+These options can be passed to Makefile\_parallel in order to 
+choose which message passing environment should be used. If neither 
+is defined, an automatic choice is made (EPX is used if detected, 
+otherwise PVM is used)
+
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+% ROW 2
+{\raggedright \textit{-DP\_TRACE}} & 
+{\raggedright P\_TRACE displays detailed trace of the internal operations of 
+the parallel library; when this option is defined, huge amounts 
+of output are produced. Useful for debugging the parallel library.} \\
+\hline
+% ROW 3
+{\raggedright \textit{-DP\_INFO}} & 
+{\raggedright P\_INFO prints a higher-level debug trace. Useful for debugging 
+high-level parallel code.} \\
+\hline
+% ROW 4
+{\raggedright \textit{-DP\_MEMDEBUG}} & 
+{\raggedright P\_MEMDEBUG activates internal memory debugger; useful only for 
+debugging memory problems within the parallel library.} \\
+\hline
+% ROW 5
+{\raggedright \textit{-DP\_MT\_COMM}} & 
+{\raggedright P\_MT\_COMM enables multithreaded communications under EPX; this 
+is an experimental feature and may cause some algorithms to exhibit 
+erratic behaviour.} \\
+\hline
+% ROW 6
+{\raggedright \textit{-DP\_NO\_TREE\_BCAST}} & 
+{\raggedright Specifying P\_NO\_TREE\_BCAST disables the default binary-tree 
+based implementation of broadcast and multicast operations under 
+EPX; a less efficient algorithm is used instead. \linebreak
+} \\
+\hline
+\end{longtable}
+
+
+The above options are described here for completeness. Most of 
+them are only useful for tracking problems or debugging new features 
+in the parallel library.
+\subsubsection{
+Usage of STIR/local/config.mk}
+\label{sec:local_config.mk}
+
+Having to type in the above options at every make is quite painful. 
+Luckily, the file STIR/local/config.mk comes to your rescue. 
+This file is imported (if it exists) by every make (after reading 
+STIR/config.mk), and hence can be used to override the defaults 
+of all of the above make flags, \textit{except} the \textit{WORKSPACE} flag. 
+The distribution contains a sample file STIR/samples/local/config.mk, 
+but check it out if it is appropriate for you before copying 
+it to STIR/local/.
+
+\subsubsection{
+Enabling ECAT7 support}
+\label{sec:ECAT7support}
+At present, STIR uses parts of the Louvain la Neuve ecat library, 
+which is now available on the STIR web-site thanks to Merence 
+Sibomana. However, the most recent version is available at \R2Lurl{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z_matrix_70/ }{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z\_matrix\_70/}. 
+In any case, use only a version dated after 20 July 2004. You 
+have to download that library and issue 'make --f Makefile.unix' 
+(or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
+in the new ecat directory first. Please get a recent version 
+of this library (dated 20 July 2004 or later) as Merence Sibomana 
+has introduced various bug fixes, some of which solve problems 
+that you would otherwise experience when using STIR and ECAT7 
+files.
+
+
+To compile and link ifheaders\_for\_ecat7.cxx and the other files 
+that enable ECAT7 support, \textit{STIR} needs to know the location 
+of the LLN files. The following 2 \textit{make} options allow you 
+to set this:
+
+
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+% ROW 1
+\raggedright
+\textit{LLN\_INCLUDE\_DIR=\linebreak
+/loc/of/includes} &
+This needs to point to the path of the LLN include files. Default 
+value is \textit{\$(WORKSPACE)/../lln/ecat}, which by default expands 
+to \textbf{STIR/../lln/ecat}\\
+\hline
+% ROW 2
+{\raggedright \textit{LLN\_LIB\_DIR= \linebreak
+/loc/of/lib}} & 
+{\raggedright This needs to point to the directory where libecat.a is produced. 
+Default value for \textit{LLN\_LIB\_DIR} is \textit{\$(LLN\_INCLUDE\_DIR).}} \\
+\hline
+\end{longtable}
+
+
+Once these options are set correctly (for example in STIR/local/config.mk), 
+ECAT7 support will be automatically enabled after issuing \textit{make}. 
+If the file ifheaders\_for\_ecat7 is not compiled, it probably 
+means that the above flags point to an incorrect location.
+
+\subsubsection{
+Compilation using Visual C++}
+\label{sec:VC}
+
+You need Visual C++ 6.0, service pack 5. Oliver Nix (Heidelberg) 
+has done a few preliminary tests that indicate that 7.0 also 
+works. Version 7.1 (i.e. 2003) seems to be fine as well. Note 
+however that since release 1.3, certain features do not work 
+with versions prior to 7.1.
+
+
+There are two different ways to build using Visual C++. Both 
+are somewhat fiddly and largely unsupported (but so is the rest 
+of STIR).
+
+{ \subsubsubsection{Using make}
+}
+
+
+If you have a Unix compatible \textbf{make} program and possibly some 
+other Unix-like programs such as \textbf{sh}, then life could be as 
+simple as typing
+\cmdline{make CXX=cl}
+
+
+KT has tested this with the make program included in the CYGWIN 
+distribution (\R2Lurl{http://cygwin.com }{http://cygwin.com}). 
+
+
+
+See section \ref{sec:normalcompilation} et al. for general info on the make parameters. 
+Specific information to VC follows now.
+
+
+
+You have to make sure that the location of the Visual C++ files 
+is known. In particular, you will need to set the path and the 
+environment variables \textbf{LIB} and \textbf{INCLUDE}. This is normally 
+done by running the file \textbf{vcvars32.bat} supplied with Visual 
+C++. Note that when using CYGWIN, the easiest way to do this 
+is to include a line 
+\begin{verbatim}
+call vcvars32.bat
+\end{verbatim} 
+in your  \textbf{cygwin.bat}.
+
+
+
+Where we rely on external programs such as \textbf{cp}, it is generally 
+possibly to either replace these by setting a \textit{make} variable, 
+or by switching the relevant lines off. Do some investigation, 
+and let the mailing list know. So, if you do not have cygwin, 
+a possibly more realistic line is
+\cmdline{make CXX=cl DISABLE\_DEPENDENCY\_GENERATION=1 {\textbackslash}\\
+ INSTALL=copy 
+RM=del GRAPHICS=PGM install}
+
+
+Getting ECAT7 support is even more of an adventure, as it requires 
+some changes to the Makefile supplied with the LLN Matrix library. 
+See the mailing lists.
+
+{ \subsubsubsection{Using the Visual Studio interface}
+}
+
+Note that since STIR 1.3, the Visual Studio projects might be 
+out of date.
+
+
+In addition to the source files, you will need to download VCprojects.zip. 
+Extract it in the same place as you extracted the source files. 
+You will find several workspaces in the \textbf{STIR{\textbackslash}VC} subdirectory. 
+In particular, \textit{reconstructors.dsw} contains all reconstruction 
+programs.
+
+
+
+\textbf{Note:} The distribution enables ECAT7 support by default. 
+If you do not want ECAT7 support (i.e. if you do not (want to) 
+have the LLN ecat library), you probably have to remove the \textit{HAVE\_LLN\_MATRIX} preprocessor 
+define, and remove dependencies on the ecat project. This might 
+all be avoidable, but we didn't do this for you. Please feel 
+free to find a neat way around all this ugly stuff and let us 
+know.
+
+
+
+At present, STIR uses parts of the Louvain la Neuve ecat library, 
+which is now available on the STIR web-site thanks to Merence 
+Sibomana. However, the most recent version is available at\\
+ \R2Lurl{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z_matrix_70/ }{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z\_matrix\_70/}. \\
+In any case, use only a version dated after 20 July 2004. Extract 
+the library in the following subdirectory of your home directory: \textbf{lln{\textbackslash}ecat}.\footnote{{\small You 
+no longer have to issue 'nmake /f Makefile.win32' in the ecat 
+directory first. The ecat.dsp project takes care of that. Using 
+the project has the advantage that you don't get error messages 
+anymore when trying to build a debug version.}} .In addition, get 
+the \textbf{ecat.dsp} file from the same source and put it in a new 
+subdirectory \textbf{lln{\textbackslash}ecat{\textbackslash}VC}.
+
+
+
+When opening the workpackages the first time, Visual Studio will 
+not find 2 projects called local\_buildblock and local\_recon\_buildblock. 
+You will have to delete these manually from the workspace. In 
+addition, if you want ECAT7 support, you will need to tell Visual 
+Studio the location of the \textbf{ecat.dsp} project file (which should 
+be in the VC subdirectory of the ecat distribution).
+
+
+There are various graphical display modes supported. To set them:\\
+1.\tab 
+Choose Settings in the Project menu\\
+2.\tab 
+Select all projects you want to modify (for the libraries, this 
+is only necessary for the \textit{display} project)\\
+3.\tab 
+Choose C/C++ tab and go to Preprocessor options\\
+4.\tab 
+Add a predefined preprocessor value appropriate to the display 
+mode you want. Supported values are: 
+
+
+STIR\_SIMPLE\_BITMAPS uses X Windows (simple display, no menus).
+
+
+STIR\_MATHLINK sends the image information over a MathLink connection 
+to Mathematica (or any other MathLink program) where it can be 
+displayed anyway you like.
+
+
+STIR\_PGM puts all images in a single PGM file.
+
+
+Multiple preprocessor symbols may be defined. The distributed 
+version uses STIR\_PGM.
+
+
+If your mode selection requires an additional library (STIR\_MATHLINK 
+needs the ml32iw.lib library distributed with Mathematica, STIR\_SIMPLE\_BITMAPS 
+needs X windows libraries which you would have to get from somewhere 
+else), set the environment variable to PARAPETGRAPHLIB to the 
+name of the library you want. Note that this has to be done BEFORE 
+you start Visual Studio. In Windows NT, 2000 or XP, environment 
+variables can be set using the System Control Panel. On Windows 
+9?, you have to modify autoexec.bat. 
+
+
+
+When creating new projects, make sure that RTTI is enabled (Settings, 
+C/C++ tab, General). 
+
+
+
+Some more info on using these projects might be available in 
+the archive of the stir\_users mailing list.
+
+
+\subsubsection{
+Operating system specifics}
+
+{ \subsubsubsection{All Unix flavours}
+}
+
+If you want to use the X windows display routines, the Makefile 
+supplied should work out-of-the-box. If you experience compilation 
+or linking problems mentioning X11, you have to check if the 
+X development libraries are installed on your system. You can 
+check this by doing
+\cmdline{find /usr -name Xlib.h -print}
+
+
+If this file is not found, you'll have to install these libraries 
+somehow. If after this, Xlib.h is not found while compiling, 
+either set the environment variable C\_INCLUDE\_PATH (when using 
+gcc) or use \\
+\texttt{EXTRA\_CFLAGS='-I /usr/X11R6/include' }\\
+or whatever suitable path (the quotes are necessary when setting 
+EXTRA\_CFLAGS on the command line, not when setting it in 
+STIR/local/config.mk).\\
+If while linking the libX11.a library is not found, it is not 
+in the default path of your linker. First find out where it is:
+\cmdline{find /usr -name libX11.a --print}
+
+
+Then either set the environment variable LIBRARY\_PATH or use \\
+\texttt{EXTRA\_LINKFLAGS='-L /usr/X11R6/lib/'}\\
+ or a suitable path.
+
+
+\textit{STIR} version 1.0 required that your Xserver worked in 8bit 
+mode (or Pseudocolor mode in X terminology). This is no longer 
+necessary. However, if you are experiencing problems with the 
+display, you could try 8bit mode anyway.
+
+{ \subsubsubsection{Linux}
+}
+
+If you want to use the X windows display routines, read the previous 
+section. The X development libraries are generally available 
+as an RPM package (depends on your Linux flavour). You also need 
+to install the ncurses package (for some reason, KT experienced 
+a linking error when trying to uses the curses library).
+
+{ \subsubsubsection{Cygwin on Windows}
+}
+
+Cygwin is a must-have if you are using Windows but would like 
+to have nearly everything that Linux/Unix has to offer (at least 
+from a user's point of view). Check out http://cygwin.com.
+
+{ \subsubsubsubsection{Using X windows on cygwin}
+}
+\begin{itemize}
+\item Install the Xorg-x11 packages using the cygwin setup utility 
+(you need the devel package).
+\item 
+install ncurses-devel if you don't have it yet (use the cygwin 
+Net setup).
+\item make sure that /usr/X11R6/bin is in your PATH (necessary 
+for DLLs)
+\item
+make sure gcc will find the X11 files, either by setting the 
+environment variables C\_INCLUDE\_PATH and LIBRARY\_PATH, or by 
+doing
+\cmdline{make GRAPHICS=X EXTRA\_CFLAGS='-I /usr/X11R6/include' 
+{\textbackslash} \\
+EXTRA\_LINKFLAGS='-L 
+/usr/X11R6/lib/'}
+\end{itemize}
+
+You can start the Xorg X server by executing the startxwin.sh 
+script (you might want to modify this a bit to suit your taste). 
+
+
+
+Other decent X servers should work as well (KT used Exceed at 
+some point).
+
+
+\subsubsection{
+Running tests}
+
+We highly recommend running test programs after building. Change 
+to your \textbf{STIR} directory, and type
+\cmdline{make run\_tests}
+
+
+This will compile all test programs, and run those which do not 
+require user input. You should see a sequence of messages, all 
+ending with \texttt{All tests ok}. (The make process will fail 
+when any of the tests fails.). You may also wish to run \texttt{make 
+run\_interactive\_tests}. It is recommended to do these tests 
+also with the version compiled in debug mode (as that implies 
+more tests). 
+\cmdline{make run\_tests BUILD=debug}
+
+
+If everything is all right, you can free up some disk space by 
+using
+\cmdline{make clean\_tests}
+\cmdline{make clean\_tests BUILD=debug}
+
+We also provide \textbf{STIR/test/run\_tests.bat} for running the automatic 
+tests on Windows when using Visual Studio and the VCprojects.zip 
+files. This will currently not run any tests in \textbf{STIR/recon\_test} though.
+
+
+On our Web page, we also provide test reconstructions, with an 
+automated procedure to see if you can reproduce the correct results. 
+You really should download this and run it.
+
+
+Also, you might want to run one reconstruction on your data with 
+the debug version of the reconstruction program, to see if everything 
+works as intended. You'll probably want to choose a small value 
+for the `maximum absolute segment number to process' parameter 
+in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf{\textit{very}} 
+slow.
+
+
+\section{
+Running \textit{STIR} programs}
+
+Here we describe:\\
+{\textbullet} documentation and program conventions\\
+{\textbullet} supported file formats \\
+{\textbullet} rebinning algorithms\\
+{\textbullet} reconstruction programs\\
+{\textbullet} utility programs\\
+{\textbullet} user-selectable components\\
+{\textbullet} display properties
+
+
+\subsection{
+Conventions}
+\label{sec:conventions}
+When discussing command line parameters of the \textit{STIR} executables, 
+the following format is used in this documentation (and the usage messages):
+\cmdline{executable\_name parameter1 parameter2 {\textbackslash}\\
+{[}optional\_parameter3 [optional\_parameter4 etc]]}
+
+
+This means that the first 2 parameters are mandatory, but a 3$^{rd}$ 
+parameter can be given, or 4 parameters. A single parameter is 
+usually given as one word, but sometimes as a string between 
+\texttt{<} \texttt{>}. 
+
+
+All parameters have to be on a single command line. This is indicated 
+by the backslash {\textbackslash}, as in Unix this is the standard way 
+of continuing a command line on the next line.
+
+
+All executables are supposed to be located in the path of the 
+command shell used.
+
+
+Most \textit{STIR} programs accept a single parameter on the command 
+line, which is usually optional
+\cmdline{executable\_name [parameter\_filename]}
+
+
+The parameter file is a text file which uses an Interfile-like 
+syntax. It is composed of keywords, corresponding to the names 
+of the various parameters, with the values entered next to them. 
+Spaces and tabs are normally irrelevant. Parameters omitted from 
+the parameter file are assigned a default value. 
+
+
+If a parameter file is not passed to the executable, the user 
+is prompted for the required information. For questions that 
+ask for a number, the format is as follows:
+
+
+\tab What number do you want to enter today \\
+\tab [minimum, maximum, D: default]:
+
+
+If a simple Carriage Return is entered, the default value is 
+selected.
+
+
+Sample parameter files for particular programs (or part of a 
+parameter file relevant to a particular common component) are 
+presented in subsequent sections. See also the files in \textbf{STIR}/\textbf{samples}.
+
+
+
+All \textit{STIR} executables returns a status value to signify success 
+or failure. What value this is depends on your Operating System. 
+On Unix, Linux and Windows variations, success is indicated by 
+a status of 0, and failure by anything else. There is currently 
+no differentiation between the reasons for failure.
+
+
+\subsection{
+File formats}
+
+The STIR utility and reconstruction programs frequently need 
+to read and write files of image and projection data. Files formats 
+are encountered in which data and header information are maintained 
+in separate files (e.g. interfile). In other formats, data files 
+carry header information (e.g. the native GE Advance sinogram 
+format).
+
+
+
+The most comprehensively supported file format in the library 
+is a newly proposed version of interfile. More details about 
+this type can be found on\\
+\R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}. 
+It is currently the only format supported for writing projection 
+data (except by the \textit{conv\_to\_ecat?} utilities\textit{)}. Projection 
+data files are written in pairs:\\
+\textit{projdata\_filename.hs, 
+projdata\_filename.s}\\
+where \textit{projdata\_filename.hs} is the header text file and \textit{projdata\_filename.s} 
+is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
+images written by \textit{STIR} in Interfile.
+
+
+
+The native GE Advance sinogram format is supported for reading, 
+however data files must have a single data set, maximum ring 
+difference 11 and contain 281 bins * 256 segments * 336 views. 
+We currently do not read the GE header in great detail. Contributions 
+welcome.
+
+
+ 
+ECAT6 images can be read without conversion. However, only the 
+first frame (ECAT matrix 1,1,1,0,0) will be read.
+
+
+
+When ECAT7 support is enabled during compilation of \textit{STIR}, 
+ECAT7 sinograms, attenuation files and images can be read without 
+conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
+will be read.
+
+
+
+Currently supported list mode formats are specific to the ECAT 
+HR+ and ECAT EXACT 3D scanners.
+
+
+
+See section \ref{sec:outputfileformats} for supported output file formats. In addition, 
+utilities are available for converting ECAT6 and ECAT7 to/from 
+interfile (see Section \ref{sec:convertingdata}). 
+These should be used for dynamic 
+or gated scans.
+
+
+\subsection{
+List mode processing}
+
+Some scanners produce list mode data, which is essentially a 
+list of events. Although it is possible to reconstruct this data 
+directly, this is currently not supported by STIR. 
+
+
+\subsubsection{
+lm\_to\_projdata}
+
+This utility can be used to bin (or sort) the list mode data 
+into 'projection data' (also known as \textbf{3D sinograms}. 
+This can then be processed further by other STIR utilities. It 
+needs to be run as follows:
+\cmdline{lm\_to\_projdata par\_filename}
+
+
+See \textbf{STIR/samples/lm\_to\_projdata.par} for an example file. Please 
+check out the online documentation (as generated by doxygen) 
+for more info.
+
+
+\subsection{
+Rebinning algorithms}
+
+In 3D PET, the name \textit{rebinning} is used for the 
+process of manipulating the 3D projection data set to the equivalent 
+of 2D projection data. This reduces the number of segments (see 
+STIR Glossary) to 1. Popular rebinning algorithms are SSRB, FORE 
+and variations such as FOREX, and FOREJ. Rebinning is often used 
+before reconstruction to decrease total reconstruction time.
+
+
+\subsubsection{
+SSRB}
+\label{sec:SSRB}
+The \textit{Single Slice Rebinning} algorithm [Dau87] is the oldest 
+and simplest rebinning algorithm. It essentially ignores the 
+obliqueness of a Line of Response and moves data to the axial 
+position in segment 0 such that z-resolution on the axis of the 
+scanner is preserved.
+
+
+The STIR implementation of SSRB is a generalisation that applies 
+the same idea while still allowing preserving some of the obliqueness. 
+For instance, for a dataset with 9 segments, \textbf{SSRB} can produce 
+a new dataset with only 3 segments. This essentially increases 
+the axial compression (or \textit{span} in CTI terminology), see the 
+STIR Glossary on axial compression. In addition, \textbf{SSRB} can 
+introduce extra \textit{mashing} (see the STIR Glossary) of the data, 
+i.e. add views together.
+
+
+\textit{Usage:}
+\cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
+num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
+{[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
+
+\begin{description}
+\item[num\_segments\_to\_combine] has to be odd. It is used as the 
+number of segments in the original data to combine.
+\item[num\_views\_to\_combine] has to be at least 1 (which 
+is the default). It is used as the number of views in the original 
+data to combine.
+\item[do\_normalisation] has to be 1 (default) or 0. When it is 1, 
+the result is normalised, i.e. divided by \textit{num\_segments\_to\_combine*num\_views\_to\_combine}. 
+This is appropriate for rebinning data where normalisation has 
+already been applied, but inappropriate otherwise.
+
+\item[max\_in\_segment\_num\_to\_process] defaults to all segments. 
+Can be used to ignore the most oblique segments in the input 
+data. Note that the most oblique segments that cannot be rebinned 
+completely will be ignored automatically. For instance, when 
+the input data has 7 segments, and \textit{num\_segments\_to\_combine} is 
+3, only 3 segments are used from the input (and 1 output segment 
+produced), as 9 input segments would be necessary to produce 
+3 'complete' output segments.
+\end{description}
+
+\textbf{Restriction}: Currently, the input data needs to have the 
+same number of ring differences in each segment. This is not 
+the case for GE Advance data, which has ring differences --1 to 
+1 in segment 0, but only 1 ring difference in all other segments.
+
+
+\subsection{
+Image reconstruction programs}
+
+
+
+
+\subsubsection{
+Maximum Likelihood Estimation algorithms}
+
+The Maximum Likelihood Estimation (MLE) type reconstruction algorithm 
+currently supported is called \textbf{OSMAPOSL}. It is an implementation 
+of the OSEM-One Step Late algorithm with various additional refinements 
+and capabilities.\\
+All MLE algorithms supported require the pre-computation of the 
+sensitivity image of the scanner. The program \textbf{sensitivity} 
+ implements this computation 
+as described in [Jac00], currently attenuation and/or normalisation 
+may be incorporated into the computation.
+
+{ \subsubsubsection{Sensitivity image pre-computation}
+}
+\label{sec:sensitivity}
+Currently, the \textbf{sensitivity} program is run by passing the \textbf{OSMAPOSL} parameter 
+file (see next section) on the command line:
+\cmdline{sensitivity myOSMAPOSLparameter\_filename}
+
+
+This file is used to get information on the projection data, \textit{i.e.} about 
+the sizes, the scanner and data reduction (e.g. mashing), name 
+and size of the output image, and the projectors to use. Unfortunately, 
+this means that currently the forward projector used in the reconstruction 
+will also be used to compute the attenuation factors (unless 
+the parameter files for the reconstruction and sensitivity are 
+not identical). While this is usually not a problem, it does 
+mean that when a single projection matrix is used (see section 
+\ref{sec:projmatrix}), 
+attenuation image and output image must have identical sizes 
+and voxel sizes.
+
+
+The user is also prompted for the following input:
+
+
+\texttt{>}\textit{Get attenuation from which file (0=0's) :}
+
+
+The file name for the input attenuation image. If ``0'' is entered, 
+the program assumes zero attenuation. Attenuation image data 
+have to be in units cm$^{-1}$.
+
+
+\textit{\texttt{>}Get normalisation factors from which file (1 = 1's):}
+
+
+The file name for the normalisation data. These have to be stored 
+as a projection data file of \textit{exactly} the same dimensions 
+as the input projection data. (So, for example, CTI's ECAT7 component 
+based normalisation files are \textit{not} supported). Note that this 
+can also be used to pass attenuation factors.
+
+
+If you have the attenuation factors already (produced by some 
+other program), you could multiply them with the normalisation 
+factors (for instance by using the \textit{stir\_math} program (see 
+section \ref{sec:stir_math}), and give the resulting file as 'normalisation 
+factors'. This is because both are multiplicative corrections.
+
+
+Note that when the attenuation is specified as 0 and the normalisation 
+as 1, the sensitivity program computes the geometrically based 
+sensitivity image. The latter should be used when reconstructing 
+from pre-corrected projection data.
+
+{ \subsubsubsection{Running OSMAPOSL}
+}
+\label{sec:OSMAPOSL}
+
+The program \textbf{OSMAPOSL} executes the IF-OSEM-OSL algorithm. 
+This is a generalisation of the One Step Late algorithm [Gre90]. In 
+particular, the prior can be set to the Median Root Prior [Ale97]. \textbf{OSMAPOSL} 
+allows \\
+-\tab 
+the use of subsets, similar to the OSEM algorithm [Hud94]. However, 
+this implementation \textit{assumes} balanced subsets. That is, for 
+every subset it assumes that the subsensitivity image is proportional 
+to the total sensitivity image.\\
+-\tab 
+inter-update filtering (applying a filter to the image before 
+it is multiplied with the update image) [Jac00]\\
+-\tab 
+inter-iteration filtering (applying a filter after the rest of 
+the image update is performed), sometimes called EMS [Sil90], 
+see also [Mus04].\\
+-\tab 
+post-filtering (apply a filter after the last subiteration)\\
+-\tab 
+applying the prior information in an additive or multiplicative 
+way [Mus01]\\
+-\tab 
+random permutation of the order of the subsets in each iteration
+
+
+See [Jac00] for more information, and also the online documentation 
+for the class \textbf{OSMAPOSLReconstruction.}
+
+
+The successive image iterates of the algorithm are saved at pre-specified 
+subiteration intervals in a sequence of image files. The files 
+are named with a pre-specified output file prefix with the subiteration 
+number appended after an underscore.
+
+
+The first step in running \textbf{OSMAPOSL} is to compute an appropriate 
+sensitivity image file (see Section \ref{sec:sensitivity}). This file is required 
+input for the \textbf{OSMAPOSL} program.
+
+
+As described in Section \ref{sec:conventions}, 
+the recommended manner of running \textbf{OSMAPOSL} 
+is to pass the executable a parameter file argument which specifies 
+the relevant parameters of the reconstruction. Parameters omitted 
+from the file are assigned a default value. If a parameter file 
+is not used, the program prompts the user for the required information. 
+
+
+
+The form of a typical parameter file is as follows:
+
+\begin{verbatim}
+OSMAPOSLParameters :=
+;lines starting with semicolons are comments
+
+input file := projection_data_filename.hs
+output filename prefix := out_file
+zoom := 1
+
+; use --1 for default sizes that cover the whole field of view
+XY output image size (in pixels) := -1
+
+; set output file format, if omitted a default value will be used
+Output file format := Interfile 
+Interfile Output File Format Parameters := 
+; byte order := little-endian 
+; number format := signed integer 
+; number of bytes per pixel := 2 
+End Interfile Output File Format Parameters :=
+
+; use --1 to use the maximum available
+maximum absolute segment number to process := 4
+
+initial image:= initial_image_filename.hv
+enforce initial positivity condition:=0
+number of subsets:= 6
+start at subset:= 0
+number of subiterations:= 30
+start at subiteration number:=1
+save images at subiteration intervals:= 2
+uniformly randomise subset order:= 1
+
+zero end planes of segment 0 := 1
+
+additive sinogram := 0
+
+sensitivity image:= sensitivity_image_filename
+
+; keywords that specify the filtering that occurs after every 
+subiteration
+inter-iteration filter subiteration interval := 4
+inter-iteration filter type := Separable Cartesian Metz
+ ; keywords below will depend on the filter type (see text)
+ separable cartesian metz filter parameters := 
+   x-dir filter fwhm (in mm) := 6 
+   y-dir filter fwhm (in mm) := 6 
+   z-dir filter fwhm (in mm) := 6 
+   x-dir filter metz power := 2 
+   y-dir filter metz power := 2 
+   z-dir filter metz power := 2 
+ end separable cartesian metz filter parameters := 
+
+
+; keywords that specify the filtering that occurs at the end
+; of the reconstruction
+post-filter type := None
+
+; keywords that specify the filtering that occurs before 
+; multiplying with the update image
+
+inter-update filter subiteration interval := 4
+inter-update filter type := None
+
+; keywords that specify the projectors to be used
+Projector pair type := Matrix 
+ Projector Pair Using Matrix Parameters := 
+   Matrix type := Ray Tracing
+     Ray Tracing Matrix Parameters:=
+   End Ray Tracing Matrix Parameters:= 
+ End Projector Pair Using Matrix Parameters :=
+
+; keywords for specifying the prior information
+prior type := None
+map model := additive
+
+; keywords for preventing too drastic (multiplicative) updates
+; below just set to their default values
+maximum relative change := 3.40282e+38
+minimum relative change := 0
+
+; enabling this will write the multiplicative update images 
+; every sub-iteration
+write update image := 0
+
+END :=
+\end{verbatim}
+
+See \textbf{STIR/samples/} for example parameter files.
+
+The following gives a brief explanation of the parameters. Where 
+appropriate, the notation \textit{[min, max, default]} is used to 
+specify allowable numeric ranges. Values of \textit{\ensuremath{\infty}} indicate 
+that the largest value possible for the numeric type of the parameter 
+value is allowed.
+
+\begin{description}
+\item[input file]
+The name of the file for the measured projection data (e.g. .hs 
+for Interfile,.scn for GE Advance). 
+
+
+\item[output filename prefix]
+ The output filename prefix. When image iterates are saved, subiteration 
+numbers are appended to this prefix after an underscore.
+
+
+\item[zoom]
+The zoom factor. Defaults to 1 which gives x,y voxel size equal 
+to the bin size of the projection data\footnote{{\small This is different 
+from the CTI convention which involves some factors like the 
+number of elements and 128.}}. Larger than 1 means smaller voxel 
+size. This parameter is ignored when an \textit{initial image} is specified.
+
+
+\item[XY output image size (in pixels)]
+Number of pixels to use in x,y direction. Default (-1) covers 
+the whole FOV as determined from the projection data and gives 
+an odd number of pixels. This parameter is ignored when an \textit{initial 
+image} is specified.
+
+
+\item[output file format]
+Set output file format, if omitted a default value will be used. 
+Subsequent parameters will depend on the type of output file 
+format. See section \ref{sec:outputfileformats}..
+
+
+\item[maximum absolute segment number to process]
+Denoting the input value by \textit{num\_segments}, this indicates 
+that the reconstruction will be carried out using segment numbers 
+--\textit{num\_segments} through +\textit{num\_segments} of the measured 
+projection data. Defaults to use all segments in the input data.
+
+
+\item[initial image]
+The name of the image file with which the algorithm is initialised. 
+The default is an image which is uniformly 1 over all voxels. 
+The default can be specified by giving the parameter an input 
+of 1. Using an input of 0 will use a uniformly 0 image, but this 
+is inappropriate for OSMAPOSL.
+
+
+\item[enforce initial positivity condition]
+If this parameter is not set to 0, the program will set all non-positive 
+voxel values in the initial image to small positive ones.
+
+
+\item[number of subsets] [1, num\_views/4, 1 {]}
+The number of subsets. For symmetric balancing among subsets, 
+it is advisable to select a number which divides evenly into \textit{num\_views/4.}
+
+
+\item[uniformly randomise subset order]
+When set to 1, the order of the subsets for each full iteration 
+is randomly permuted (uniformly).
+
+
+\item[start at subset] [0, num\_subsets-1, 0{]}
+Specifies with which subset in the ordered subset sequence to 
+start, where the subsets are enumerated from \textit{0} to \textit{num\_subsets-1}. 
+
+\item[number of subiterations] [1,\ensuremath{\infty}, 1{]}
+The number of subiterations to run.
+
+
+\item[start at subiteration number] [1,\ensuremath{\infty}, 1 {]}
+Initializes the subiteration counter to the input value. Useful 
+for resuming reconstructions (for example, the continuity of 
+output image file numbering may be preserved).
+
+
+\item[save images at subiteration intervals] [1, num\_subiterations,0{]} 
+Specifies at what intervals (in subiterations) the iterates of 
+the algorithm are saved. The final iteration is always saved.
+
+
+\item[zero end planes of segment 0]
+If this is set to 1, the reconstruction pretends that the projection 
+data measured in the extreme-most rings of the scanner (the end 
+planes of segment 0) are zero. See also the discussion in Section 
+\ref{sec:OSMAPOSLtechnotes}.
+
+
+\item[inter-iteration filter subiteration interval] [0, num\_subiterations, 0{]}
+Specifies at what intervals (in subiterations) inter-iteration 
+filtering is carried out. A value of 0 disables inter-iteration 
+filtering.
+
+
+\item[inter-iteration filter type]
+The type name of the inter-iteration filter. See Section \ref{sec:filters}
+for the list of possible values.
+
+
+\item[post-filter type]
+The type name of the post filter. See Section \ref{sec:filters} for the list 
+of possible values.
+
+
+\item[sensitivity image]
+The name of the file containing the sensitivity image. The 
+default is an image which is uniformly 1 over all voxels. The 
+default can be specified by giving the parameter an input of 
+1. Using this default is generally a bad idea however. It is 
+only somewhat appropriate when using fully precorrected data 
+in 2D PET. Even in that case, you will get an image with the 
+wrong scale factor.
+
+
+\item[inter-update filter subiteration interval] [0, num\_subiterations, 0{]}
+Specifies at what intervals (in subiterations) inter-update filtering 
+is carried out. A value of 0 disables inter-update filtering.
+
+
+\item[inter-update filter type]
+The type name of the inter-update filter. See Section \ref{sec:filters} for 
+the list of possible values.
+
+
+
+\item[Projector pair type]
+Specifies the back/forward projector pair to be used in the reconstruction. 
+See Section \ref{sec:projectorpairs} for possible values. We recommend using matching
+projectors (\textit{e.g.} based on a single projection matrix).
+
+
+\item[additive\_sinogram]
+This parameter can be used to take randoms or scatter into account. 
+It is a constant background term that will be added to the forward 
+projected data in the denominator of the MAP-OSL algorithm. Please 
+note that currently the forward projector produces 'geometric' 
+data. This is because the normalisation and attenuation coefficients 
+can be cancelled out between the forward and backprojector. They 
+then remain only in the sensitivity image and the background 
+term. This means that in effect, a normalised and attenuation 
+corrected randoms sinogram would have to be passed as 'additive 
+sinogram'. By suitably adding a term to the input projection 
+data, the Shifted Poisson version of OSL can be run as well.
+
+\item[prior type]
+The type of prior information. See Section \ref{sec:priors} for the list 
+of possible values.
+
+
+\item[map model : additive{\textbar}multiplicative]
+The default choice \textit{additive} applies the prior on the image 
+as is, the other choice \textit{multiplicative} applies it essentially 
+on the image times the sensitivity image. See [Mus01] for more 
+details.
+
+
+\item[maximum relative change] [0, 3.40282e+38, 3.40282e+38{]}
+The multiplicative update image will be thresholded from above 
+with this value (at every subiteration except the first) \textit{i.e.}, 
+before multiplying it with the old image to get the new one. 
+The default value does not impose any thresholding (as in strict 
+OSMAPOSL). However, we find that when subsets are used, a value 
+of about 10 is beneficial.
+
+
+\item[minimum relative change] [0, 3.40282e+38, 0{]}
+The multiplicative update image will be thresholded from below 
+with this value (at every subiteration except the first).
+
+
+\item[write update image] [0, 1, 0{]}
+When this is set to 1, OSMAPOSL will write the multiplicative 
+update images every sub-iteration.
+
+\end{description}
+
+
+{
+\subsubsubsection{
+Notes and technical issues regarding the selection of parameters}
+}
+\label{sec:OSMAPOSLtechnotes}
+
+\textbf{\textit{Application of filters:}} \\
+In addition to the remarks in section \ref{sec:filters} on filtering, 
+one should 
+note the following
+
+
+(i) Inter-iteration filtering (or inter-update filtering) generally 
+results in resolution that is object dependent and space varying. 
+This is probably not what you want. See [Mus04,Mus02] for more 
+details.
+
+
+
+(ii) If a strictly positive Metz power parameter is chosen, a 
+non-trivial Metz filter results whose frequency response possesses 
+an amplifying middle frequency band. In this case, it is potentially 
+hazardous to choose too small a corresponding FWHM parameter. 
+For then, the amplifying mid-band may coincide with the high 
+frequencies of the noise components of the image and hence strengthen 
+these components. Empirically, we have found that good lesion 
+detectability is obtained by IMF-OSEM with Metz powers of 1, 
+together with FWHMs of 40\%-75\% the relevant dimensions of the 
+lesion (see also [Jac00]).
+
+
+
+(iii) All filtering operations in all iterative algorithms currently 
+implemented in the library apply post-thresholding 
+to ensure positivity at each iteration. Future 
+releases may allow users to vary the thresholding rule or de-activate 
+it.
+
+
+\textbf{\textit{Zeroing end planes of segment 0}}: 
+
+
+The ``zero end planes of segment 0'' option is made available 
+to help users of the \textit{STIR} reconstruction software overcome 
+a modelling difficulty created by an awkward image discretisation 
+convention. So that images reconstructed using the \textit{STIR} software 
+can be compared to those of other reconstruction software, the \textit{STIR} 
+library defaults to an image discretisation scheme that has become 
+common among most commercial analytic reconstruction software 
+packages. In this scheme, images are discretised on a voxel grid 
+in which there are 2*num\_rings-1 transaxial slices of voxels, 
+num\_rings denoting the number of rings in the scanner. The axial 
+extent of each slice is half that of the detector rings and the 
+extreme-most voxel slices are centered about the mid-plane of 
+the extreme-most detector rings. A consequence of this set-up 
+is that the voxel grid does not cover the entire length of the 
+scanner, but rather leaves a gap at each end of the scanner whose 
+axial extent is half the axial length of a detector ring.
+
+
+
+We have discovered that this creates a problem for iterative 
+MLE algorithms when reconstructing activity distributions that 
+extend into these ``end gaps''. For the activity present in the 
+gaps is surely detected by the scanner. However, the restricted 
+extent of the voxel grid imposes a model of the projection data 
+statistics in which the activity in the gaps is zero. As a result, 
+the algorithm assigns an excess of activity to the end planes 
+of the image grid, seemingly because they are the next most likely 
+origins of the annihilations in the end gaps. In turn, the reconstructed 
+images exhibit excessively bright end planes.
+
+
+
+From a theoretical point of view, there is nothing ``wrong'' with 
+such reconstruction results. The image observed approximates 
+a maximum likelihood estimate consistent with the parametric 
+model assumed. From a practical point of view, however, it is 
+obvious that the parametric model assumed is an inferior one, 
+since it does not reflect the physical reality that activity 
+is present in the end gaps. In turn, poor quantification of the 
+end plane activity results. 
+
+
+
+We have found that using the ``zero end planes of segment 0'' 
+option can often remedy this problem. This causes the reconstruction 
+to pretend that the detector pairs in the extreme-most detector 
+rings detected no counts. For the scanners currently supported 
+by the library, we have verified that only the measurements of 
+these detector pairs can be influenced by the end gap activity. 
+For consistency, we further advise that in the pre-computation 
+of the sensitivity image (see section \ref{sec:sensitivity}), one also selects 
+the ``zero end planes of segment 0'' option. Doing so, one models 
+the acquisition as one where the end ring detector pairs had 
+zero efficiency. This provides a more realistic model for the 
+truncated projection data. Note also that the acquisition software 
+of some scanners (e.g. the Positron HZL/R) automatically discards 
+the end plane data. For the same reasons, it is advisable to 
+use the ``zero end planes of segment 0'' in these cases as well.
+
+
+
+The method of zeroing end planes, unfortunately, does not apply 
+well to scanners whose 2D projection data includes merged cross-planes 
+(e.g. the GE Advance). This is because the currently supported 
+projectors yield a relatively poor model of the detection probabilities 
+associated with the end planes of such scanners. Excluding the 
+end detector pairs from the computation degrades the model still 
+further. Consequently, some of the voxel values in the end planes 
+may blow up with increasing iterations. For such scanners, we 
+advise that users forego the ``zero end planes of segment 0'' 
+option. Doing so still yields very reasonable results in the 
+interior part of the reconstructed image. Moreover, future development 
+of the \textit{STIR} library's suite of projector functions will remedy 
+most of the problems discussed in this section.
+
+
+Finally, for phantom studies in which the activity is known to 
+lie within the space covered by the voxel grid, the end plane 
+phenomenon does not arise.
+
+
+
+\subsubsection{
+Filtered back projection (FBP2D)}
+
+This implements SSRB+FBP. Currently, data have to be completely 
+precorrected before-hand. In particular, only arc-corrected data 
+are supported.\\
+The implementation is careful about the implementation of the 
+ramp-filter to avid problems with the DC component (see RampFilter.cxx 
+for more details).
+
+
+
+As described in Section \ref{sec:conventions}, the recommended manner of running \textbf{FBP2D}  
+is to pass the executable a parameter file argument which specifies 
+the relevant parameters of the reconstruction. Parameters omitted 
+from the file are assigned a default value. If a parameter file 
+is not used, the program prompts the user for the required information.
+
+
+A sample.par file can be found in the \textbf{samples/} directory. 
+Below are the parameters you probably need.
+
+
+\begin{verbatim}
+fbp2dparameters :=
+
+input file := input.hs
+output filename prefix := output
+
+; output image parameters
+; zoom defaults to 1
+zoom := 1
+; image size defaults to whole FOV
+xy output image size (in pixels) := 180
+
+; can be used to call SSRB first
+; default means: 
+; if no axial compression, use 3 
+; otherwise, use 1
+;num segments to combine with ssrb := -1
+
+; filter parameters, default to pure ramp
+alpha parameter for ramp filter := 1
+cut-off for ramp filter (in cycles) := 0.5
+
+end := 
+\end{verbatim}
+
+\textbf{Warning:} the current version of the interpolating backprojector, 
+the default backprojector used by FBP2D, has a central artefact 
+on some systems (including Sparc and Opterons). 
+
+
+\subsubsection{
+3D Reprojection Algorithm (FBP3DRP)}
+
+This implements Kinahan and Rogers FBP algorithm with reprojection 
+of the missing data [Kin89]. The implementation is fairly generic 
+and should be able to handle non-standard data (e.g. with less 
+or more sinograms in a segment than you would normally have). 
+Also, the Colsher filter is numerically computed at a finer grid 
+in an initial stage to avoid DC problems.
+
+
+The current implementation is somewhat preliminary, so the parameters 
+are likely to change. A sample.par file can be found in the \textbf{samples/} 
+directory. See the doxygen documentation (or the source) for 
+more info.\\
+\textbf{Warning:} the current version of the interpolating backprojector, 
+the default backprojector used by FBP3DRP, has a central artefact 
+on some systems (including Sparc and Opterons).
+
+
+\subsection{
+Utilities}
+
+Programs are given in the \textbf{STIR/utilities} directory, that 
+allow the user to display, manipulate and convert \textbf{interfile} 
+data, either image or projection data.
+
+\subsubsection{
+Displaying and performing operations on data}
+
+The programs are \textbf{manip\_image} for image data and \textbf{manip\_projdata}, 
+ \textbf{display\_projdata}, \textbf{extract\_segments}, 
+\textbf{list\_projdata\_info} for 
+projection data and \textbf{stir\_math} for both. Run them with the 
+name of the image or projection data file as an argument. For 
+example, for \textbf{manip\_image}:
+\cmdline{manip\_image file\_name.hv}
+
+
+See also section \ref{sec:SSRB} for the use of \textbf{SSRB} to manipulate projection 
+data.
+
+
+The program \textbf{get\_time\_frame\_info} is STIR's first (small!) 
+step into supporting dynamic data.
+
+
+\textbf{Note}: The displaying functionality is \textit{really} basic, and 
+only intended for a quick check how your data looks like. For 
+any serious work, use a decent viewer. For example, \textit{AMIDE} 
+is a free viewer that can read STIR data
+\footnote{\R2Lurl{http://amide.sourceforge.net }{http://amide.sourceforge.net}}. Alternatively, 
+convert your \textit{STIR} data to another format using (X)medcon
+\footnote{\R2Lurl{http://xmedcon.sourceforge.net }{http://xmedcon.sourceforge.net}}.
+
+{ \subsubsubsection{manip\_image}
+}
+
+This program works on two modes. Additionally to the display 
+possibility, the main mode allows to retrieve information about 
+the image:
+
+\begin{itemize}
+\item the minimum and maximum values; either for a plane or for an 
+entire 3D image.
+\item the number of counts.
+\item the voxel value profile; either for an image slice or for any 
+row 1D row through the image.
+\end{itemize}
+Within this mode, a truncation (here called trim) of the data 
+can be performed; it results in the circular resetting to zero 
+of pixels at the image edges.
+
+
+The other mode (math mode) lets one perform arithmetic operations 
+between two images, or between an image and a scalar. The result 
+of each calculation is kept in a math mode buffer which becomes 
+the input to the next calculation. Hence, a sequence of mathematical 
+operations can be carried out on the input image within math 
+mode. The math buffer contents can also be displayed inside the 
+mode.
+
+{ \subsubsubsection{manip\_projdata}
+}
+
+This utility is the counterpart of manip\_image for projection 
+data. A menu is displayed with the following options:
+
+\begin{itemize}
+\item viewgram-wise / sinogram-wise display.
+\item computation of minimum and maximum values and total counts.
+\item arithmetic operations between two projection data arrays or 
+between a projection data array and a scalar.
+\item binarisation of the sinogram, positive values are set to 1, 
+negative values to 0.
+\item truncation of the negative values.
+\item application of a tangential truncating window (e.g. all data 
+for bins greater than a specified distance from the scanner axis 
+may be set to 0).
+\item application of an axial truncating window to segment 0 (e.g. 
+end plane data may be set to zero).
+\end{itemize}
+
+Each time an operation results in a new projection data array, 
+the user is prompted for the name of an output file, to which 
+the result is written. This output file then automatically becomes 
+the input file to the next selected operation. Similar to manip\_image, 
+this allows new projection data files to be generated from a 
+sequence of operations.
+
+
+\textbf{Warning}: the user must ensure that all input and output projection 
+data arrays in a given operation are read from / written to separate 
+files.
+
+{ \subsubsubsection{display\_projdata}
+}
+
+This utility should be preferred to \textbf{manip\_projdata} when the 
+goal is to display the data by view or by segment for a defined 
+segment number (ring difference).
+
+{ \subsubsubsection{list\_projdata\_info}
+}
+
+A utility that lists size info of the projection data on stdout. 
+Use this if you think there is something wrong with how STIR 
+reads your projection data.
+
+{ \subsubsubsection{create\_projdata\_template}
+}
+
+This utility is mainly useful to create a template that can then 
+be used for other STIR utilities (such as fwdtest, lm\_to\_projdata 
+etc.).
+\cmdline{create\_projdata\_template output\_filename}
+
+This will ask questions to the user about the scanner, the data 
+size, etc. It will then output new projection data (in Interfile 
+format). However, the binary file will not contain any data.
+
+{ \subsubsubsection{extract\_segments}
+}
+
+This utility extracts projection data by segment into a sequence 
+of 3d image files. It is mainly useful to import segments into 
+external image display/manipulation programs which do not understand 
+3D-PET projection data, but can read Interfile images.
+
+
+The user will be asked if the images should correspond to SegmentByView 
+or SegmentBySinogram data. In the first, data are stored as a 
+stack of viewgrams (one for each view), in the second as a stack 
+of sinograms (one for each axial position). (See the STIR glossary).
+
+{ \subsubsubsection{stir\_math}
+}
+\label{sec:stir_math}
+
+This is a command line utility for adding or multiplying data 
+and other numerical operations, with a somewhat awkward syntax. 
+The command line arguments are as follows (but everything has 
+to fit on 1 line):
+\begin{verbatim}
+stir_math \
+[-s] \
+[--add {\textbar} --mult] \
+[--min-threshold min_threshold] \
+[--max-threshold max_threshold] \
+[--power power_float] \
+[--times-scalar mult_scalar_float] \
+[--divide-scalar div_scalar_float] \
+[--add-scalar add_scalar_float] \
+[--including-first] \
+[--verbose]\
+output_filename_with_extension in_data1 \
+[in_data2 [in_data3...]]
+\end{verbatim}
+
+or
+
+\begin{verbatim}
+stir_math \
+--accumulate \
+[-s] \
+[--add {\textbar} --mult] \
+[--min-threshold min_threshold] \
+[--max-threshold max_threshold] \
+[--power power_float] \
+[--times-scalar mult_scalar_float] \
+[--divide-scalar div_scalar_float] \
+[--add-scalar add_scalar_float] \
+[--including-first] \
+[--verbose]\
+out_and_input_filename in_data2 [in_data3 [in_data4...]]
+\end{verbatim}
+
+\noindent
+\texttt{'--add'} is default, and outputs the sum of the result of 
+processed data.\\
+\texttt{'--mult'} outputs the multiplication of the result of processed 
+data.
+
+
+The \texttt{'--include-first'} option can be used such that power and 
+scalar operations such as multiplication/division are done on 
+the first input argument as well. Otherwise these manipulations 
+are done only on the 2nd, 3rd,.. argument.
+
+
+The \texttt{'--accumulate'} option can be used to say that the first filename 
+given will be used for input AND output. Note that when using 
+this option together with \texttt{'--including-first'}, the data in the 
+first filename will first be manipulated according to \texttt{'--power'}, 
+\texttt{'--times-scalar'} and \texttt{'--divide-scalar'}.
+
+
+The \texttt{'-s'} option is necessary if the arguments are projection 
+data. Otherwise, it is assumed the data are images.\\
+Multiple occurrences of \texttt{'--times-scalar'} and \texttt{'--divide-scalar'} 
+are allowed and will just result in accumulation of the factors.
+
+
+The order of the manipulations is as follows:\\
+(1) thresholding (2) power (3) scalar multiplication (4) scalar 
+addition.\\
+
+\textit{Examples}
+\begin{itemize}
+\item
+Adding 3 files
+\cmdline{stir\_math output in1 in2 in3}
+
+
+Sets \textit{output=in1+in2+in3}\\
+\item
+Subtracting 2 files
+\cmdline{stir\_math --times-scalar -1 output in1 in2}
+
+
+Sets \textit{output=in1-in2}\\
+\item
+Sum the square of each file
+\cmdline{stir\_math --power 2 --including-first output in1 in2}
+
+
+Sets \textit{output=in1}$^{\mathit{2}}$ \textit{+ in2}$^{\mathit{2}}$\\
+\item
+Dividing 2 projection data files
+\cmdline{stir\_math -s --mult --power -1 output in1 in2}
+
+
+Sets \textit{output=in1/in2}\\
+\item
+Dividing 2 projection data files avoiding division by 0 by thresholding 
+the 2$^{nd}$ data-set.
+\cmdline{stir\_math -s --mult --min-threshold.1 --power -1 {\textbackslash}\\
+output in1 in2}
+
+
+Sets \textit{output=in1/max(in2,.1)}\\
+\item
+Dividing 2 files, with first file set to the quotient
+\cmdline{stir\_math --accumulate --mult --power -1 in1 in2}
+
+
+Sets \textit{in1=in1/in2}\\
+\item
+Linear combination of 3 files
+\cmdline{stir\_math --times-scalar 5 --divide-scalar 2.5 output {\textbackslash}\\
+in1 in2 in3}
+
+
+Sets \textit{output=in1+2*in2+2*in3}
+\end{itemize}
+
+\textbf{Warning} There is no check that the data sizes and other info 
+are compatible and the output will have the largest data size 
+in the input, and the characteristics (like voxel-size or so) 
+are taken from the first input data. Hence, lots of funny effects 
+can happen if data are not compatible.
+
+
+\textbf{Warning} When \texttt{'--accumulate'} is not used, the output file 
+HAS to be different from all the input files.
+
+\textbf{Warning} The result of using non-integral powers on negative 
+numbers is probably system-dependent.
+
+{ \subsubsubsection{generate\_image}
+}
+
+This is a test-release of a program that can be used to generate 
+images containing geometric shapes such as cylinders, spheres 
+etc. See the online documentation generated by doxygen for more 
+info.
+
+{ \subsubsubsection{zoom\_image}
+}
+
+This is a test-release of a program that can be used to reinterpolate 
+images to different voxel sizes and/or dimensions. See the online 
+documentation generated by doxygen for more info.
+
+{ \subsubsubsection{get\_time\_frame\_info}
+}
+\label{sec:get_time_frame_info}
+This simple program allows display of time frame info for a given 
+file. The specified file can be an ECAT6 or an ECAT7 file, or 
+a simple text file specifying the number of time frames and their 
+durations. See the class documentation for \textit{TimeFrameDefinitions} 
+for the format of this text file.
+
+
+\noindent
+Basic Usage:
+\cmdline{get\_time\_frame\_info filename frame\_number}
+
+
+Using no arguments will give a more extensive usage message showing 
+some options to select which data to print.
+
+{ \subsubsubsection{list\_ROI\_values}
+}
+
+This is a test-release of a program that can be used to find 
+ROI values for an image. See the online documentation generated 
+by doxygen for more info.
+
+
+\subsubsection{
+Converting data}
+\label{sec:convertingdata}
+This program is used to convert CTI ECAT 6 data (either image 
+or projection data) into interfile data. It normally should be 
+run as follows
+\cmdline{convecat6\_if output\_file\_name\_without\_extension {\textbackslash}\\
+cti\_data\_file\_name [scanner\_name]}
+
+
+The optional \textit{scanner\_name} can be used to force to a particular 
+scanner (ignoring the system\_type in the main header). \textit{scanner\_name} 
+has to be recognised by the Scanner class (see STIR/buildblock/Scanner.cxx). 
+Examples are: ECAT 953, ART, ECAT HR+, Advance etc. If the \textit{scanner\_name} 
+contains a space, the scanner name has to be surrounded by double 
+quotes  when used as a command line argument.
+
+
+If there are no command line parameters, the user is asked for 
+these parameters instead. 
+
+
+The program asks if all frames should be written or not. If so, 
+all sinograms/images are converted for a fixed 'data' number. 
+For each data set, a suffix is added to the output\_filename 
+of the form \texttt{\_f\#g\#b\#d\#} where the \# are replaced 
+by the corresponding number of the frame, gate, bed, data.
+
+
+
+\textbf{Warning} CTI ECAT 6 files seem to have a peculiarity that 
+frames and gates are numbered from 1, while bed positions are 
+numbered from 0. Similarly, the number of bed positions in the 
+main header seems to be 1 less than the actual number present. 
+This is at least the case for single bed studies. If this is 
+not true for multi-bed studies, the code would have to be adapted.
+
+
+\textbf{Warning} Most of the data in the ECAT 6 headers is ignored 
+(except dimensions)
+
+
+\textbf{Warning} Data are multiplied with the subheader.scale\_factor, 
+In addition, for emission sinograms, the data are multiplied 
+with subheader.loss\_correction\_fctr (unless the loss correction 
+factor is \texttt{<} 0, in which case it is assumed to be 1).
+
+
+\textbf{Warning} Currently, the decay correction factor is ignored 
+
+\textbf{Warning} Note that sinogram data have to be 'corner-swapped', 
+see section \ref{sec:ecat_swap_corners}.
+
+{ \subsubsubsection{conv\_to\_ecat6}
+}
+
+This program is used to convert image or projection data into 
+CTI ECAT 6 data (input can be any format currently supported 
+by the library). It normally should be run as follows:
+
+
+for images:
+\cmdline{conv\_to\_ecat6 [-k] [-i] outputfilename.img {\textbackslash}\\
+input\_filename1 [input\_filename2 \dots ] scanner}
+
+
+for projection data:
+\cmdline{conv\_to\_ecat6 -s[2] [-k] [-i] outputfilename.scn {\textbackslash}\\
+input\_filename1 [input\_filename2 \dots ]}
+
+
+If there are no command line parameters, the user is asked for 
+the filenames and options instead. Unless the --\textit{i} option is 
+used, the data will be assigned a frame number in the order that 
+they occur on the command line.
+
+
+See \textbf{STIR/buildblock/Scanner.cxx} for supported scanner names, 
+but examples are ``ECAT 953'', ``ART'', 
+``Advance''. 
+
+
+{ \subsubsubsubsection{Command line options}
+}\begin{description}
+\item[-s2] This option forces output to 2D sinograms (ignoring higher 
+segments).
+\item[-k] the existing ECAT6 file will NOT be overwritten, but added 
+to. Any existing data in the ECAT6 file with the same \texttt{<}frame,gate,data,bed\texttt{>} 
+specification will be overwritten.
+\item[-i] ask for \texttt{<} frame,gate,data,bed\texttt{>} for each dataset
+\end{description}
+
+Note that to store projection data in ECAT6, a 3D sinogram cannot 
+be axially compressed (CTI \textit{span}=1).\\
+\textbf{Warning} This utility does \textit{not} corner-swap 3D projection 
+data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
+
+{ \subsubsubsection{conv\_to\_ecat7}
+}
+
+This program is used to convert image or projection data into 
+CTI ECAT7 data (input can be any format currently supported by 
+the library). \textbf{conv\_to\_ecat7} uses the Louvain la Neuve ecat 
+library, see section \ref{sec:ECAT7support}. This means it will only work on those 
+systems supported by that library. It normally should be run 
+as follows
+
+
+for images:
+\cmdline{conv\_to\_ecat7 output\_ECAT7\_name input\_filename1 {\textbackslash}\\
+{[}input\_filename2 \dots ] scanner}
+
+
+for emission projection data
+\cmdline{conv\_to\_ecat7 --s output\_ECAT7\_name input\_filename1 {\textbackslash}\\
+{[}input\_filename2 \dots ]\tab  }
+
+
+for sinogram-attenuation data
+\cmdline{conv\_to\_ecat7 -a output\_ECAT7\_name orig\_filename1 {\textbackslash}\\
+{[}orig\_filename2...]}
+
+
+If there are no command line parameters, the user is asked for 
+the filenames and options instead. The data will be assigned 
+a frame number in the order that they occur on the command line.
+
+
+See \textbf{buildblock/Scanner.cxx} for supported scanner names, but 
+examples are ``ECAT 953'', ``ART'', ``Advance''. 
+
+
+{ \subsubsubsection{ifheaders\_for\_ecat7: ECAT7 support for reading}
+}
+
+The current release includes some support for making Interfile 
+headers that point towards and ECAT 7 file. This is possible 
+because ECAT7 normally stores the data with single subheaders 
+per frame/gate/bed/data. \textbf{ifheaders\_for\_ecat} uses the Louvain 
+la Neuve ecat library, see section \ref{sec:ECAT7support}. 
+This means it will only work on those systems 
+supported by that library. \\
+This program writes Interfile headers that 'point into' an ECAT 
+7 file. That is, the binary data are NOT rewritten. So, the result 
+of this program is a collection of Interfile headers for every 
+data set in the ECAT 7 file. They are called \textit{ecat7\_filename\_extension\_f1g1d0b0.* 
+etc}, indicating which frame, gate, bed, data number the dataset 
+corresponds to. Run the program as follows
+\cmdline{ifheaders\_for\_ecat7 ecat7\_filename.extension}
+
+
+This only works with some CTI file\_types. In particular, it 
+does NOT work with the ECAT6-like file\_types, as then there 
+are subheaders 'in' the datasets.\\
+\textbf{Warning} This utility does \textit{not} take corner-swapping of 
+3D projection data into account, see section \ref{sec:ecat_swap_corners}.\\
+Note that you do not have to use this utility if you want to 
+read only ``frame 1, gate 1, data 0, bed 0''. In this case, you 
+can pass the ECAT7 file directly to any STIR program.
+
+{ \subsubsubsection{ecat\_swap\_corners}
+}
+\label{sec:ecat_swap_corners}
+
+{ \subsubsubsubsection{Usage}
+}
+\cmdline{ecat\_swap\_corners out\_name in\_name}
+
+{ \subsubsubsubsection{What does it do?}
+}
+
+For some historical reason, CTI scanners store 3D sinograms sometimes 
+in a 'corner-swapped' mode. What happens is that some corners 
+of the positive and negative segments are interchanged. (As a 
+consequence, segment 0 is never affected).\\
+Below is a summary of what Kris Thielemans understood about corner-swapping 
+from various emails with CTI people. However, he might have totally 
+misunderstood this, so beware!
+
+
+
+For ECAT6 data, corner-swapped mode occurs \textbf{\textit{always}} for 
+data straight from the scanner. However, data which have been 
+normalised using the import\_3dscan utility from CTI are already 
+corner-swapped correctly. Unfortunately, there is no field in 
+the ECAT6 header that allows you to find out which mode it is 
+in.
+
+
+
+For ECAT7 data, the situation is even more confusing. Data acquired 
+directly in projection data have to be corner-swapped when the 
+acquisition was in 'volume-mode' (i.e. stored by sinograms), 
+but NOT when acquired in 'view-mode' (i.e. stored by view). It 
+seems that bkproj\_3D\_sun follows this convention by assuming 
+that any ECAT7 projection data stored in 'volume-mode' has to 
+be corner swapped, and when it writes projection data in 'view-mode', 
+it does the corner swapping for you. So, although there is strictly 
+speaking no field in the ECAT7 header concerning corner swapping, 
+it seems that the `storage mode' field determines the corner swapping 
+as well.\\
+When the data is acquired in listmode, this changes somewhat. 
+Apparently, there is a parameter in the set-up of listmode scans 
+that allows you to put the ACS in 'volume-mode' or 'view-mode'. 
+The resulting listmode files encode the sinogram coordinates 
+then with corner-swapping or without. After the acquisition, 
+the listmode data has then to be binned into projection data. 
+It is then up to the binning program to take this corner-swapping 
+into account. This is easiest to do by generating 'volume-mode' 
+projection data when a 'volume-mode' when the listmode setup 
+was in 'volume-mode', and similar for 'view-mode'.
+
+
+If this sounds confusing to you, KT would agree. Here seems to 
+be the best thing to do:
+
+
+\textit{Do all acquisitions in 'view-mode', set-up your listmode 
+scan in 'view-mode', bin the data in 'view-mode'. Forget about 
+corner-swapping.}
+
+
+If you cannot do this, then this utility will corner-swap the 
+projection data for you.
+
+{ \subsubsubsubsection{Who implemented this and how was it tested?}
+}
+
+The actual corner swapping code was supplied by Christian Michel, 
+based on code by Larry Byars. KT has tested it by performing 
+a very long cylinder scan in 'volume-mode' on the ECAT 966, and 
+looking at the delayeds. The oblique segments had obvious discontinuities 
+in the efficiency patterns. After applying this utility, these 
+discontinuities appeared.
+
+
+
+\textbf{Warning} This utility does not (and cannot) check for you 
+if the data has to be corner-swapped or not. So, it can do the 
+wrong thing.
+
+
+\subsubsection{
+Filtering image data}
+
+The \textbf{postfilter.cxx} program allows one to apply any available 
+image processor on an input image. \footnote{{\small The current version 
+does no longer allow to compute the impulse response (i.e. point 
+spread function) of a discretised filter. This is largely because 
+the image processors can be non-linear, in which case the PSF 
+concept does not apply. For linear filters, it would still be 
+possible to obtain the PSF by using as input image an image with 
+all 0s except a single pixel in the middle of the image.}} Review 
+Section \ref{sec:filters} for info on which filters you can apply.
+
+
+The program is run as follows:
+\cmdline{postfilter [\texttt{<}output filename\texttt{>} [\texttt{<}input file 
+name\texttt{>} {\textbackslash}\\
+{[}\texttt{<}postfilter.par filename\texttt{>}]]]}
+
+
+where the square brackets denote optional parameters (their value 
+will be asked interactively). Example postfilter.par files can 
+be found in the STIR/samples directory.
+
+
+\subsubsection{
+Comparing files}
+
+The two utilities \textbf{compare\_image} and \textbf{compare\_projdata} 
+can be used to see if 2 files are identical up to rounding errors. 
+(Note that running reconstructions on a different architecture, 
+or even when using different compilers will almost certainly 
+give rounding error differences.) They should be run with 2 command 
+line arguments, specifying the 2 filenames. Optional arguments 
+are as follows:
+\cmdline{compare\_projdata file1 file1 
+[maximum\_segment\_number\_to\_process]}
+\cmdline{compare\_image [-r rim\_truncation\_in\_pixels] file1 file1}
+
+
+where the \texttt{rim\_truncation} argument to \textbf{compare\_image}  says 
+how many pixels it should ignore at the radial rim of the image.
+
+
+
+\subsubsection{
+Precorrecting (or uncorrecting) projection data}
+
+The \textbf{correct\_projdata} utility located in STIR/\textbf{utilities} 
+is useful to perform precorrections such as randoms and/or scatter 
+subtraction, normalisation and attenuation correction. It can 
+also be used to 'uncorrect' the data which might be useful if 
+you get completely precorrected data out from the scanner (or 
+FORE) and want to reverse some of the corrections.
+
+
+It is run as
+\cmdline{correct\_projdata \texttt{<}correct\_projdata.par filename\texttt{>}}
+
+
+A sample parameter file is given in \textbf{STIR}/\textbf{samples} and 
+is more or less as follows
+
+\begin{verbatim}
+correct_projdata Parameters := 
+input file := trues.hs
+
+; Current way of specifying time frames, pending modifications to
+; STIR to read time info directly from the headers
+
+; The specified file can be an ECAT6 or an ECAT7 file, or a simple
+; text file. See also section \ref{sec:get_time_frame_info}. 
+time frame definition filename := frames.fdef
+
+; if a frame definition file is specified, you can say that 
+; the input data corresponds to a specific time frame
+; the number should be between 1 and num\_frames and defaults to 1
+; this is currently only used to pass the relevant time 
+; to the normalisation 
+time frame number := 1
+
+; output file
+; for future compatibility, do not use an extension in the name of 
+; the output file. It will be added automatically 
+output filename := precorrected
+
+; default value for next is -1, meaning 'all segments' 
+; maximum absolute segment number to process :=  
+
+; use data (1) or set to one (0) := 
+
+; apply (1) or undo (0) correction := 
+
+; parameters specifying correction factors 
+; if no value is given, the corresponding correction will
+; not be performed
+
+; random coincidences estimate, subtracted before anything else 
+; is done
+; randoms projdata filename := random.hs 
+
+; normalisation (or binwise multiplication) 
+Bin Normalisation type := from projdata 
+Bin Normalisation From ProjData := 
+normalisation projdata filename:= norm.hs 
+End Bin Normalisation From ProjData:=
+
+; scatter term to be subtracted AFTER norm(+atten correction)
+; defaults to 0 
+;scatter projdata filename := scatter.hs
+END:=
+\end{verbatim}
+
+
+Time frame definition is only necessary when the normalisation 
+type uses this time info for dead-time correction (which is not 
+supported yet in the current (public) version of \textit{STIR}).
+
+
+The following gives a brief explanation of the non-obvious parameters. 
+
+\begin{description}
+
+\item[use data (1) or set to one (0)]
+Use the data in the input file, or substitute data with all 1's. 
+This is useful to get correction factors only. Its value defaults 
+to 1.
+
+\item[apply (1) or undo (0) correction]
+Precorrect data, or undo precorrection. Its value defaults to 
+1.
+
+\item[Bin Normalisation type]
+Normalisation (or binwise multiplication, so can contain attenuation 
+factors as well). See Section \ref{sec:binnormalisation}.
+
+
+\item[attenuation image filename] \textbf{obsolete}
+Specify the attenuation image, which will be forward projected 
+to get attenuation factors. Has to be in units \textit{cm}$^{\mathit{-1}}$.
+
+
+This parameter will be removed. Use instead a \textit{chained} 
+bin normalisation (section \ref{sec:chainedbinnormalisation}) 
+with a bin normalisation 
+\textit{from attenuation image} (section \ref{sec:binnormalisationfromattenuationimage}).
+
+
+\item[forward\_projector type] \textbf{obsolete}
+Forward projector used to estimate attenuation factors, defaults 
+to Ray Tracing. See Section \ref{sec:forwardprojectors}.
+
+This parameter will be removed.
+\end{description}
+
+
+\subsubsection{
+Generating Poisson noise}
+
+For simulation purposes, it is often useful to be able to generate 
+multiple noise realisations given the `true' mean projection data. 
+For PET and SPECT, the appropriate statistics is very closely 
+Poisson\footnote{{\small For a given scan, the actual distribution of 
+the detected raw counts is binomial. However, for acquisition 
+times that are shorter than the half life of the radio-isotope, 
+the Poisson approximation is very good. For more details, see 
+the PET Basics section on http://www.HammersmithImanet.com/\ensuremath{\sim}kris.}}, 
+at least for uncorrected counts. \textit{STIR} includes the following 
+utility to find a noise realisation given the mean projection 
+data.
+
+
+Usage:
+\cmdline{poisson\_noise [-p {\textbar} --preserve-mean] output\_filename 
+{\textbackslash}\\
+mean\_projdata\_filename scaling\_factor seed-unsigned-int}
+
+
+The \textit{scaling\_factor} is used to multiply the input data before 
+generating the Poisson random number. This means that a \textit{scaling\_factor} 
+larger than 1 will result in less noisy data.
+
+
+The seed value for the random number generator has to be strictly 
+positive. Passing different seeds will result in different noise 
+realisations.\\
+Without the -p option, the mean of the output data will be equal 
+to \textit{scaling\_factor*mean\_of\_input}, otherwise it will be equal 
+to \textit{mean\_of\_input}.
+
+
+The options -p and --preserve-mean are identical.
+
+
+\subsubsection{
+Testing (or using) projectors}
+
+The \textbf{fwdtest} and \textbf{bcktest} programs located in \textbf{STIR/recon\_test/} can 
+be used to examine forward or back projectors. They allow to 
+project only subregions of the data, but can also do the whole 
+projection in one go. 
+
+
+\subsection{
+User-selectable components}
+\label{sec:user-selectablecomponents}
+The software design of \textit{STIR} has a heavy emphasis on object-oriented 
+programming. For the user, the main benefit of this is that it 
+is possible to select at \textit{run-time} what particular type of 
+e.g. forward projector to use. The following is a list of all 
+available components where this type of run-time selection is 
+currently available. In the doxygen documentation, look at the 
+class documentation for \textbf{RegisteredObject}.
+
+
+For each component, there are different types, each with its 
+own unique name. Each type has its specific set of parameters. 
+\\
+Each component has its own section, and each type has its subsection. 
+The name of the subsection is the unique identifier of the type.
+
+
+In a parameter file, the selection of the type would look for 
+instance as
+
+\begin{verbatim}
+This Program Parameters:=
+some parameter:=
+filter type := my preferred filter type 
+my preferred filter type parameters:= ; REQUIRED keyword 
+par 1:= 
+... 
+end my preferred filter type parameters := ; REQUIRED keyword
+another program parameter :=
+;etc
+end :=
+\end{verbatim}
+
+
+Please note that the first and last keywords of a particular 
+type \textit{have} to be included in the parameter file, even if no 
+additional parameters are given.
+
+
+\subsubsection{
+Available output file formats}
+\label{sec:outputfileformats}
+
+\textit{STIR} can write images in a number of different formats. Currently, 
+a single 3D image is written per file, \textit{i.e.} no multi-frame 
+or gate files yet. The only exceptions to this rule are the \textbf{conv\_to\_ecat6} 
+and \textbf{conv\_to\_ecat7} utilities.\\
+Currently, the default output file format is Interfile (see below), 
+although this could be changed (for most \textit{STIR} programs) by 
+editing the file\\
+ \textbf{include/stir/IO/DefaultOutputFileFormat.h}\\ 
+(not recommended).
+
+{ \subsubsubsection{Common parameters}
+}
+\label{ref:outputcommonparameters}
+The following parameters are common to all file formats. However, 
+the implementation for a particular file format could ignore 
+the value of these parameters if it does not support it. These 
+parameters follow the Interfile 3.3 syntax, \textit{except} that the 
+``short float'' and ``long float'' values for ``number format'' 
+keyword are not supported. Use ``float'' instead.
+
+
+\begin{description}
+\item[byte order] \texttt{<}string\texttt{>}\linebreak
+\raggedright
+ values: littleendian {\textbar} bigendian\linebreak
+ default: native byte order
+
+\item[number format] \texttt{<}string\texttt{>}\linebreak
+\raggedright
+ values: bit {\textbar} ascii 
+{\textbar} signed integer {\textbar} 
+ unsigned integer {\textbar} float;\linebreak
+default: float
+\item[number of bytes per pixel] \texttt{<}integer\texttt{>}\linebreak
+ default: 4
+\end{description}
+
+
+If ``byte order'' is omitted, the default value corresponds to 
+the native byte order of the computer the program runs on.\\
+Summarising: if none of these keywords is specified, data are 
+written as 4-byte floats in the native byte order, unless the 
+specific file format has another default.
+
+
+
+\textbf{Warning:} Note that only essential information is written 
+in the headers. In particular, frame duration etc are currently \textit{not} 
+filled in.
+
+{ \subsubsubsection{Interfile}
+}
+\label{sec:outputinterfile}
+The most comprehensively supported file format in the library 
+is a newly proposed version of interfile. More details about 
+this type can be found on \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}. 
+Interfile image files are written as a pair of files
+\textit{image\_filename.hv,
+image\_filename.v}\\
+where \textit{image\_filename.hv} is the header text file and \textit{image\_filename.v} 
+is the data file. In addition, we currently write a \textit{.ahv} 
+file which uses Interfile 3.3 conventions, with a tweak for the 
+\texttt{slice thickness} keyword to work-around an Analyze$^{TM}$ 
+bug (see the comments for write\_basic\_interfile\_image\_header() 
+in \textbf{STIR}/\textbf{IO/interfile.cxx}). The \textit{.ahv} file is probably 
+also readable by other programs capable of reading Interfile 
+3.3.
+
+
+If this output file format is used, and a filename without extension 
+is specified for output, or when the filename has an extension \textit{.hv}, 
+the above naming conventions hold. If a filename with another 
+extension is specified, this name is used for the name of the 
+binary file. 
+
+
+When a file must be specified for reading as a parameter for 
+a \textit{STIR} utility or reconstruction program, the name of the \textit{.hv} 
+header file should be given. 
+
+
+
+\textbf{Warning} The interfile 3.3 standard does not allow to specify 
+scale factors for the data. Hence, the \textit{.ahv} file has no scale 
+factors. This means that any program that reads the \textit{.ahv} 
+file \textbf{will have improperly scaled images}, unless the scale 
+factor is 1. However, when using float output, \textit{STIR} automatically 
+writes data with scale factor equal to 1, so as long as your 
+non-\textit{STIR} program knows about float data, everything will 
+be all right. The newly proposed Interfile standard does use 
+a scale factor, and the \textit{.hv} file follows this convention. 
+However, currently probably only \textit{STIR} programs know about 
+this convention.\footnote{{\small The utilities distributed by the UCL, 
+Louvain-la-Neuve, Belgium on \R2Lurl{ftp://ftp.topo.ucl.ac.be }{ftp://ftp.topo.ucl.ac.be} 
+follow a different convention of reading the scale factor. Currently, \textit{STIR} 
+writes \textit{.hv} files that can be read correctly by those utilities, 
+including the \textit{mediman} image viewer and (x)medcon. Note however 
+that \textit{mediman} cannot read float data.}}
+
+{ \subsubsubsubsection{Parameters}
+}
+
+This file format currently has no extra parameters, except for 
+the start and stop keywords.
+
+\begin{verbatim}
+Interfile Output File Format Parameters :=
+; any parameters common to all file formats
+End Interfile Output File Format Parameters :=
+\end{verbatim}
+
+Currently, data is written always in the native byte order, and 
+only signed short, unsigned short or float data are supported 
+(although this could easily be extended to 1 or 4 byte integers 
+or doubles).
+
+{ \subsubsubsection{ECAT6}
+}
+
+If this output file format is used, and a filename without extension 
+is specified for output, \textit{.img} will be added to the filename.
+
+{ \subsubsubsubsection{Parameters}
+}
+
+This file format currently has only 1 extra parameter, except 
+for the start and stop keywords.
+
+\begin{verbatim}
+ECAT6 Output File Format Parameters :=
+; any parameters common to all file formats
+default scanner name := <string>
+End ECAT6 Output File Format Parameters :=
+\end{verbatim}
+
+The scanner name has to be one of the values listed in \textbf{buildblock/Scanner.cxx}, 
+but generally follows the format \textit{ECAT 953} (this is the default). 
+Currently, the value of this keyword is \textit{always} used, even 
+for other images reconstructed from data from other scanners.
+
+Currently, data is written always in the little-endian byte order, 
+and only signed short data are supported.
+
+{ \subsubsubsection{ECAT7}
+}
+
+The file format is only available when the ECAT7 support is enabled 
+during compilation, see section \ref{sec:ECAT7support}.\\
+If this output file format is used, and a filename without extension 
+is specified for output, \textit{.img} will be added to the filename.
+
+{ \subsubsubsubsection{Parameters}
+}
+
+This file format currently has only 1 extra parameter, except 
+for the start and stop keywords.
+
+\begin{verbatim}
+ECAT7 Output File Format Parameters :=
+; any parameters common to all file formats
+default scanner name := <string>
+End ECAT7 Output File Format Parameters :=
+\end{verbatim}
+
+The scanner name has to be one of the values listed in \textbf{buildblock/Scanner.cxx}, 
+but generally follows the format \textit{ECAT 962} (this is the default). 
+Currently, the value of this keyword is \textit{always} used, even 
+for other images reconstructed from data from other scanners.
+
+
+Currently, data is written always in the big-endian byte order, 
+and only signed short data are supported.
+
+
+
+\subsubsection{
+Available filters or image processors}
+\label{sec:filters}
+The type of filters (or in general any image processing algorithm) 
+available to programs is fully extendable (at compile time). 
+How to do this is beyond the scope of this document. Here we 
+only discuss how to specify a particular image processor at run-time, 
+and list the currently available ones. Samples of their parameters 
+should be available in \textbf{STIR/samples}.
+
+
+
+Each image processor has a unique name associated to it (given 
+as the head of its subsection below). This name has to be used 
+as value of a filter type keyword (or interactive question). 
+Depending on the filter type, different parameters have to be 
+given in the.par file (or will be asked interactively).
+
+
+In addition, it is possible to specify the name \textit{None}. This 
+is the default for all image processor keywords.
+
+
+See also the online documentation for the class \textbf{ImageProcessor}.
+
+{ \subsubsubsection{Separable Convolution}
+}
+
+This implements spatial non-periodic convolution with a 3D separable 
+filter. The kernel is given in voxel units (\textit{not} in Fourier 
+space).\\
+This filter applies a 1D convolution in all directions (z,y,x) 
+with potentially a different filter kernel for every direction.\\
+When parsing, the filter coefficients are read as a list of numbers 
+for each direction. The following conventions is used:\\
+{\textbullet}\tab 
+A list of 0 length (which is the default) corresponds to no filtering.\\
+{\textbullet}\tab When the list contains an even number of data, a 0 is 
+appended (at the end).\\
+{\textbullet}\tab 
+After this, the central element of the list corresponds to the 
+0-th element in the kernel, see below.
+
+
+Convolution is non-periodic. In each direction, the following 
+is applied: 
+\[
+\mathrm{out}_i = \sum_{j} \mathrm{kernelforthisdirection}_{j} \mathrm{in}_{i-j}
+\]
+
+Note that for most kernels, the above convention means that the 
+zero-index of the kernel corresponds to the peak in the kernel. 
+
+
+
+Elements of the input array that are outside its index range 
+are considered to be 0. 
+
+
+\textbf{Warning} There is NO check if the kernel coefficients add 
+up to 1. This is because not all filters need this (e.g. edge 
+enhancing filters).
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Separable Convolution Filter Parameters:=
+x-dir filter coefficients:= list_of_numbers
+y-dir filter coefficients:= list_of_numbers
+z-dir filter coefficients:= list_of_numbers
+END Separable Convolution Filter Parameters:=
+\end{verbatim}
+
+{ \subsubsubsubsection{Example input for a low-pass filter in x,y, no filtering 
+in z}
+}
+\begin{verbatim}
+Separable Convolution Parameters := 
+x-dir filter coefficients := {0.25,.5,.25} 
+y-dir filter coefficients := {0.25,.5,.25} 
+;z-dir filter coefficients :=
+END Separable Convolution Parameters :=
+\end{verbatim}
+
+{ \subsubsubsection{Separable Cartesian Metz}
+}
+
+This is a separable 3D Metz filter for images discretised on 
+a Cartesian voxel grid. These filters are composed of 3 1D filter 
+kernels, one for the x,y and z directions each. Each 1D filter 
+is specified by a Full Width at Half Maximum (FWHM) parameter 
+(in millimetres), Metz power parameter and maximum spatial kernel 
+width. 
+
+
+
+With each triple of parameters, one can associate a 1D continuous 
+Metz filter kernel whose frequency response \textit{M(f)} is given 
+by the formula
+
+\[
+M(f)=
+{1-(1-G(f)^2)^{N+1}
+\over
+G(f)
+}
+\]
+
+Where \textit{G(f)} is the frequency response (\textit{G(0)} =1) of a zero-mean 
+Gaussian distribution function with the associated FWHM and \textit{N} 
+is the associated Metz power parameter. Note that in the special 
+case \textit{N}=0, the filter reduces to the Gaussian filter \textit{G(f)}. 
+If a strictly positive Metz power parameter is chosen, a non-trivial 
+Metz filter results whose frequency response possesses an amplifying 
+middle frequency band (see also [Jac00]).
+
+
+
+The filtering routines apply the filter by computing discretised 
+versions of the 1D continuous filter kernels in the space domain 
+and convolving with the image in the appropriate direction. The 
+following rules apply to the construction and application of 
+filters:
+
+
+
+(i) The value 0.0 mm is permissible for the filter FWHM parameter. 
+Selecting a FWHM of 0.0 mm produces trivial filter kernels, i.e. 
+impulse functions, enabling one to disable the filter in any 
+direction. 
+
+
+
+(ii) In accordance with sampling theory, the routine that constructs 
+the 1D filter kernels bandlimits the continuous filter to the 
+hypothesized Nyquist frequency of the image (i.e. 1/(2*voxel\_size) 
+of the image in the associated direction). Note that this is 
+equivalent to convolving with a sinc function in the space domain 
+and may yield negative kernel values where unexpected (e.g. in 
+a Gaussian filter kernel). In general, when reasonably large 
+FWHMs are selected (a few multiples of the voxel dimension), 
+the bandlimiting has no effect on the filter construction.
+
+
+
+(iii) The spatial kernel width can be limited, which will set 
+any other values to 0. If this is not done, the kernel width 
+is determined by the first value which is smaller in absolute 
+value than 10{\textasciicircum}-6 times the central kernel value.
+
+
+
+(iv) Filter kernels computed by the software may contain non-positive 
+values. This is partly because, in general, a 1D continuous Metz 
+filter response function may contain non-positive value and so 
+also will its samples. In addition, non-positive kernel values 
+may arise due to the bandlimiting operations described in (ii). 
+
+
+
+Consequently, filtered positive images may likewise contain non-positive 
+values. 
+
+{ \subsubsubsubsection{Parameters}
+}
+
+Sample parameters are given below
+
+\begin{verbatim}
+separable cartesian metz filter parameters :=
+x-dir filter fwhm (in mm) := 6
+y-dir filter fwhm (in mm) := 6
+z-dir filter fwhm (in mm) := 6
+x-dir filter metz power := 2
+y-dir filter metz power := 2
+z-dir filter metz power := 2
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
+end separable cartesian metz filter parameters := 
+\end{verbatim}
+
+
+An explanation of these parameters is given here for the x-direction 
+(others are obvious extensions)
+\begin{description}
+\item[x-dir filter FWHM (in mm)]
+The Full Width at Half Maximum of the Gaussian filter kernel 
+from which the \textit{x} direction Metz filter kernel are derived.
+
+\item[x-dir filter Metz power]
+The exponent parameter for the \textit{x} direction Metz filter kernel.
+
+\item[x-dir maximum kernel size]
+The maximum width of the kernel (in pixels). Prior to version 
+0.93 of the PARAPET library this was fixed to the number of pixels 
+in the input image (in that direction).
+\end{description}
+
+{ \subsubsubsection{Median}
+}
+\label{sec:median}
+This applies a straightforward 3D (or 2D) median filter on the 
+image.
+
+{ \subsubsubsubsection{Parameters}
+}
+
+Sample parameters are given below
+
+\begin{verbatim}
+Median Filter Parameters := 
+mask radius x := 1  
+mask radius y := 1 
+mask radius z := 1 
+End Median Filter Parameters:=
+\end{verbatim}
+
+
+A radius of 0 means no filtering in that direction, a radius 
+of 1 means the median will be computed over a mask of 3 pixels, 
+and so on.
+
+{ \subsubsubsection{Threshold Min To Small Positive Value}
+}
+
+Since strict positivity is a preferred property of images in 
+many circumstances, a post-thresholding of the filtered image 
+is sometimes applied to truncate non-positive values. The thresholding 
+rule currently used is:\\
+(1)\tab 
+If the entire filtered image is non-positive, the image is uniformly 
+set to a hard-coded strictly positive parameter SMALL\_NUM\texttt{<}\texttt{<}1.\\
+(2)\tab 
+Otherwise, all non-positive entries in the image are set to SMALL\_NUM 
+times the minimum strictly positive image value.
+
+
+In addition, this image processor allows truncating the outer 
+(cylindrical) rim of the image, potentially to get rid of rim 
+artefacts. This currently works by specifying a number of pixels 
+(0 means truncation to the cylinder of maximum radius that fits 
+in the image). 
+
+{ \subsubsubsection{Chained Image Processor}
+}
+
+This image processor allows subsequent application of 2 other 
+image processors on the image. It can for example be used to 
+first Metz filter an image and then threshold it.
+
+{ \subsubsubsubsection{Parameters}
+}
+
+Example parameters are given by
+
+\begin{verbatim}
+Chained Image Processor Parameters :=
+Image Processor to apply first := None
+Image Processor to apply second := None
+END Chained Image Processor Parameters :=
+\end{verbatim}
+
+Obviously, in normal practice the Image Processor keywords will 
+have values given by any of the listed image processors in this 
+section (including Chained Image Processor again).
+
+
+
+\subsubsection{
+Incorporating prior information}
+\label{sec:priors}
+Some iterative reconstruction algorithms allow the incorporation 
+of \textit{a priori} information, for instance the One Step Late algorithm 
+(implemented as OSMAPOSL). At the moment, 'generalised' priors 
+are used, where we mean that we need to know only the gradient 
+of the actual (log of the) prior function.\\
+Which priors are available to programs is fully extendable (at 
+compile time). How to do this is beyond the scope of this document. 
+Here we only discuss how to specify a particular prior, and list 
+the currently available ones. Samples of their parameters should 
+be available in STIR/samples.
+
+
+
+Each prior has a unique name associated to it (given as the head 
+of its subsection below). This name has to be used as value of 
+a prior type keyword (or interactive question). Depending on 
+the prior type, different parameters have to be given in the.par 
+file (or will be asked interactively).
+
+
+In addition, it is possible to specify the name \textit{None}. This 
+is the default for all prior keywords.
+
+
+See also the online documentation for the class \textbf{GeneralisedPrior}.
+
+{ \subsubsubsection{FilterRootPrior}
+}
+
+This prior is an extension of the idea first developed for the 
+Median Root Prior [Ale97]. The prior takes any Image Processor 
+(i.e. a filter), and computes the prior 'gradient' as 
+\[
+G_{v\,} =\lambda _{v} /F_{v}  -1
+\]
+\noindent where 
+$\lambda _{v} $
+ is the image where to compute the gradient, and 
+$F_{v} $ is the image obtained by filtering $\lambda $.
+
+Note that for nearly all filters, this is not really a prior, as 
+this 'gradient' is \textit{not} the gradient of a function. This can 
+be checked by computing the 'Hessian' (i.e. the partial derivatives 
+of the components of the gradient). For most (interesting) filters, 
+the Hessian will not be symmetric.
+
+
+The Median Root Prior is obtained by using Median (see \ref{sec:median}) 
+as Image Processor.
+
+
+\subsubsection{
+Selecting different projector pairs}
+\label{sec:projectorpairs}
+Many algorithms use both a forward and a back projector. The 
+first step to select which one will be used is to say what kind 
+of projector pair you want to use, of which there are only 2 
+candidates as given below. 
+
+
+Each projector pair has a unique name associated to it (given 
+as the head of its subsection below). This name has to be used 
+as value of a 'projector pair type' keyword (or interactive question). 
+Depending on the projector pair type, different parameters have 
+to be given in the.par file (or will be asked interactively).
+
+
+Samples of OSMAPOSL reconstruction parameter files selecting 
+different types of projectors should be available in STIR/samples.\\
+\textbf{Warning:} for most iterative algorithms, it is recommended 
+to use matching forward and back-projector. This is unfortunately 
+not the default due to historical reasons.
+
+{ \subsubsubsection{Matrix}
+}
+\label{sec:projmatrix}
+Both projectors are based on a single projection matrix, as given 
+in Section \ref{sec:projmatrix}.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Matrix Parameters:=
+Matrix type := some value
+; parameters relevant to this type of matrix
+End Projector Pair Using Matrix Parameters:=
+\end{verbatim}
+
+See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
+
+{ \subsubsubsection{Separate Projectors }
+}
+
+Forward and back projectors are completely independent of each 
+other. In some programs this is necessary to handle images or 
+projection data of different sizes. \\
+Even if the projectors are used that both use the same type of 
+projection matrix, that matrix will not share the same cache 
+or memory.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using Separate Projectors Parameters:=
+Forward projector type:= some value
+Back projector type:= some value
+End Projector Pair Using Separate Projectors Parameters:=
+\end{verbatim}
+
+
+See Section \ref{sec:forwardprojectors} for possible values for the 'forward projector 
+type' keyword and Section \ref{sec:backprojectors} for the 'back projector type' 
+keyword.
+
+
+\subsubsection{
+Selecting a forward projector}
+\label{sec:forwardprojectors}
+It is possible to select the forward projector used at run-time, 
+and extend the available ones at compile time. The mechanism 
+is exactly the same as for the ImageProcessor hierarchy.
+
+
+Each projector has a unique name associated to it (given as the 
+head of its subsection below). This name has to be used as value 
+of a 'forward projector type' keyword (or interactive question). 
+Depending on the projector type, different parameters have to 
+be given in the.par file (or will be asked interactively).
+
+{ \subsubsubsection{Matrix}
+}
+
+This forward projector uses a projection matrix to compute its 
+result.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Matrix Parameters:=
+Matrix type := some value
+End Forward Projector Pair Using Matrix Parameters:=
+\end{verbatim}
+
+See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
+
+{ \subsubsubsection{Ray Tracing}
+}
+
+This forward projector uses an optimisation of Siddon's algorithm 
+to compute its result. That is, it uses Length of Intersection. 
+As it avoids storing the matrix elements, it is currently faster 
+than using a forward projector using a ray tracing matrix (see 
+Section \ref{sec:projmatrixusingraytracing}). The result is identical though (up to rounding 
+errors and possibly the voxels at the edge of the FOV).
+
+
+See also online documentation for class ForwardProjectorUsingRayTracing.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using Ray Tracing Parameters:=
+End Forward Projector Using Ray Tracing Parameters:=
+\end{verbatim}
+
+This projector currently has no user-selectable parameters. Nevertheless, 
+the 2 keywords given above have to follow the 'forward projector 
+type' keyword in a parameter file.
+
+
+\subsubsection{
+Selecting a back projector}
+\label{sec:backprojectors}
+It is possible to select the type of back projector. The mechanism 
+is exactly the same as for the ForwardProjector hierarchy.
+
+{ \subsubsubsection{Matrix}
+}
+
+This back projector uses a projection matrix to compute its result.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Matrix Parameters:=
+Matrix type := some value
+Back Forward Projector Pair Using Matrix Parameters:=
+\end{verbatim}
+
+See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
+
+{ \subsubsubsection{Interpolation}
+}
+
+This back projector uses incremental (piecewise)-linear interpolation 
+to compute its result. It can \textit{only} handle arc-corrected data.
+
+
+\textbf{Warning:} The current implementation has problems (noticeable 
+at 45 and 135 degrees and at the centre of the image) on Sun 
+Sparc, HP and Opteron processors (when compiled using gcc).
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using Interpolation Parameters:=
+Use piecewise linear interpolation := 1
+Use exact Jacobian := 1
+End Back Projector Using Interpolation Parameters:=
+\end{verbatim}
+
+The 'piecewise linear' keyword allows the user to choose between 
+ordinary linear interpolation or piecewise linear interpolation 
+[Thi99] in axial direction. The latter approximates Volume of 
+Intersection for axially uncompressed data. The piecewise linear 
+interpolation is only used when the axial voxel size is half 
+the axial\_sampling of the projection data (for the segment in 
+question), otherwise linear interpolation is used anyway.
+
+
+The 'exact Jacobian' keyword selects if the exact or an approximate 
+version of the Jacobian is used. The approximation consists in 
+taking the value for the central tangential position and is often 
+used in analytic algorithms in the literature.
+
+
+Even when all default values are used, the start and end keywords 
+given above have to follow the 'back projector type' keyword 
+in a parameter file.
+
+
+See also online documentation for class BackProjectorByBinUsingInterpolation.
+
+
+
+\subsubsection{
+Selecting a projection matrix}
+\label{sec:projmatrix}
+It is possible to select these independently at run-time, and 
+extend the available ones at compile time. The mechanism is exactly 
+the same as for the ForwardProjector hierarchy.
+
+{ \subsubsubsection{Common parameters to all projection matrices}
+}
+\label{sec:projmatrixcommon}
+The following parameters can be used for all types of projection 
+matrices. There default values are indicated below.
+
+\begin{verbatim}
+disable caching:= 0
+store only basic bins in cache:=1
+\end{verbatim}
+
+Here is an explanation of these parameters.
+
+\begin{description}
+\item[disable caching] [0,1,0{]}
+Normally the elements of the matrix are stored in memory (or 
+at least parts of it, see next keyword) after the first use. 
+This can be disabled, but this should normally only be done if 
+not enough RAM memory is available such that heavy swapping occurs. 
+The current procedure is an all-or-nothing cache. In the future, 
+it might become possible that an upper memory limit can be given.
+
+
+\item[store only basic bins in cache] [0,1,1{]}
+Most projectors use symmetries to reduce the number of elements 
+that need to be computed. For example, if the ring spacing of 
+the scanner is an integer multiple of the voxel size in z-direction, 
+it is only necessary to compute the matrix elements only for 
+1 ring(pair). When caching is enabled, by default only the independent 
+elements are cached. If you have plenty of RAM memory, you can 
+store all (non-zero) elements. If your system does not start 
+swapping, this will speed-up the computation.
+\end{description}
+
+{ \subsubsubsection{Ray Tracing}
+}
+\label{sec:projmatrixusingraytracing}
+This projection matrix uses an optimisation of Siddon's algorithm 
+to compute its result. That is, it uses Length of Intersection.\\
+Currently, the LOIs are divided by voxel\_size.x(), unless NEWSCALE 
+is \#defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx. 
+
+It is possible to use multiple LORs in tangential direction. 
+The result will then be the average of the various contributions. 
+Currently all these LORs are parallel. For a very high number 
+of LORs, the result approximates a strip integral (in tangential 
+direction).
+
+If the z voxel size is exactly twice the sampling in axial direction, 
+2 or 3 LORs are used, to avoid missing voxels. 
+
+It is possible to use a cylindrical or cuboid FOV (in the latter 
+case it is going to be square in transaxial direction). In both 
+cases, the FOV is slightly 'inside' the image (i.e. it is about 
+1 voxel at each side smaller than the maximum possible).
+
+It is possible to reduce the number of symmetries used by this 
+matrix. This might be useful if you have plenty of RAM and want 
+to speed up the calculations. See also the discussion on caching 
+in section \ref{sec:projmatrixcommon}.
+
+\textbf{Warning} Care should be taken to select the number of rays 
+in tangential direction such that the sampling is not greater 
+than the x,y voxel sizes.
+
+\textbf{Warning} The current implementation assumes that z voxel size 
+is either smaller than or exactly twice the sampling in axial 
+direction of the segments.
+
+{ \subsubsubsubsection{Parameters}
+}
+
+The following parameters can be set (default values are indicated):
+
+\begin{verbatim}
+Ray Tracing Matrix Parameters := 
+; any parameters appropriate for all matrices
+restrict to cylindrical FOV := 1
+
+number of rays in tangential direction to trace for each bin := 1
+
+do symmetry 90degrees min phi := 1 
+do symmetry 180degrees min phi := 1
+End Ray Tracing Matrix Parameters :=
+\end{verbatim}
+
+For the azimuthal angle $\phi$, the following angles are symmetry 
+related for a square grid: \\
+$\{\phi, 180^{o}-\phi, 90^{o}-\phi, 90^{o}+\phi\}$.\\
+Two boolean parameters allow to select which angles should be 
+considered as related:
+\begin{description}
+\item[all 4]
+(do\_symmetry\_90degrees\_min\_phi=true)
+\item[only $\{ \phi, 180- \phi \}$]
+(do\_symmetry\_90degrees\_min\_phi=false,  \\
+do\_symmetry\_180degrees\_min\_phi = true)
+\item[none]
+(do\_symmetry\_90degrees\_min\_phi=false, \\
+do\_symmetry\_180degrees\_min\_phi = false)
+\end{description}
+
+Note that when \texttt{do\_symmetry\_90degrees\_min\_phi=true}, 
+it is irrelevant what the value is 
+of \texttt{do\_symmetry\_180degrees\_min\_phi}. This is because 
+otherwise a non-consecutive range in $\phi$ would have to be used.
+
+
+The symmetry in $\phi$ is automatically reduced for non-square grids 
+or when the number of views is not a multiple of 4.
+
+
+
+In addition, there is a keyword \texttt{use actual detector boundaries}. 
+However, changing its default value is currently not recommended. 
+
+
+
+
+Note that even when all default values are used, the start and 
+stop keywords given above have to follow the 'matrix type' keyword 
+in a parameter file.
+
+
+See also online documentation for class ProjMatrixByBinUsingRayTracing. 
+
+
+
+\subsubsection{
+Selecting a bin normalisation procedure}
+\label{sec:binnormalisation}
+In PET, a procedure called 'normalisation' is used which is essentially 
+a calibration procedure for every detector pair. It provides 
+a multiplicative factor for every bin, or element of the projection 
+data.\\
+The library can provide different types of normalisation procedures. 
+It is possible to select these independently at run-time, and 
+extend the available ones at compile time. The mechanism is exactly 
+the same as for the ForwardProjector hierarchy.
+
+
+In addition to the types listed below, you can also enter 'None', 
+which means that the data won't normalised at all.
+
+{ \subsubsubsection{From Projdata}
+}
+
+This can be used when the normalisation factors are stored simply 
+as projection data. Currently, these data have to have exactly 
+the same characteristics (size etc.) as the projection data which 
+are going to be normalised. Note that the stored factors have 
+to be the ones you'd apply to normalise the data (and not their 
+reciprocal).
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation From ProjData :=
+normalisation projdata filename:= norm.hs
+End Bin Normalisation From ProjData:=
+\end{verbatim}
+
+See also online documentation for class BinNormalisationFromProjData.
+
+{ \subsubsubsection{From Attenuation Image}
+}
+\label{sec:binnormalisationfromattenuationimage}
+This can be used for attenuation correction factors (ACFs) if 
+you do not have the ACFs but an attenuation image (or mu-map). 
+The ACFs are found by forward projecting the attenuation image, 
+multiplying the result with -1, and exponentiating, i.e. using 
+Beer's law.
+
+
+
+\textbf{Warning} Attenuation image data are supposed to be in units \textit{cm}$^{-1}$. 
+(Reference: water has $\mu=.096 \mathit{cm}^{-1}$.)
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation From Attenuation Image:=
+attenuation_image_filename := <string>
+forward projector type := <string>
+End Bin Normalisation From Attenuation Image :=
+\end{verbatim}
+
+
+Default forward projector is ForwardProjectorByBinUsingRayTracing 
+(see section \ref{sec:forwardprojectors}).
+
+
+See also online documentation for class BinNormalisationFromAttenuationImage.
+
+{ \subsubsubsection{Chained }
+}
+\label{sec:chainedbinnormalisation}
+This can be used to apply two normalisation one after the other. 
+For example, a first one could be the 'usual' normalisation factor, 
+while a second one could be the attenuation factors.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Chained Bin Normalisation Parameters:=
+Bin Normalisation to apply first:= some_bin_normalisation_type
+; parameters for this type
+
+Bin Normalisation to apply second:= some_bin_normalisation_type
+; parameters for this type
+
+END Chained Bin Normalisation Parameters:=
+\end{verbatim}
+
+See also online documentation for class ChainedBinNormalisation.
+
+
+
+\subsection{
+Display}
+
+Some of the programs (e.g. in utilities/, recon\_tests/) use 
+the display routines. Which version is actually used depends 
+on the compilation settings (in particular the \textit{GRAPHICS} make 
+flag), see section \ref{sec:compilationgraphics}. 
+
+
+\subsubsection{
+X Windows display}
+\label{sec:display}
+This provides a (very basic) way of displaying bitmaps when using 
+X windows. This works by creating a new window where some of 
+the bitmaps are displayed. To proceed, you have to make this 
+window the 'focus' (how to do this depends on your window manager 
+but usually you have to move the cursor over it, or click the 
+title bar) and then press any key. In your original terminal 
+window you will then be asked if you want to continue with the 
+next set of bitmaps until no more are left.
+
+
+In addition, when your X server supports the Pseudocolor visual, 
+you can cycle between 4 different colour scales by pressing Mouse 
+button 2 while the 'bitmap' window is selected.
+
+
+\textbf{Note:} When you are using cygwin on Windows with the XFree86 
+X server, there is currently a somewhat strange problem. If you 
+forget to switch focus to the 'bitmap' window and press a key 
+(which will end up in the terminal window you started the program 
+in), you might not be able to continue the display in the usual 
+way and have to abort the program by pressing Ctrl-C. 
+
+
+\textbf{Warning} In the current implementation, it seems to happen 
+occasionally that not all colours in the colour scale have been 
+allocated properly. This can be seen by looking at the side bar 
+displaying the colour scale. Unfortunately, this effect might 
+give you wrongly coloured regions (usually spots) in the image.
+
+
+\subsubsection{
+PGM display}
+
+This 'display' mode actually writes out a file in the Portable 
+Greyscale Map format, which can be read by various graphics programs 
+(like Paint Shop Pro or xv).
+
+
+\subsubsection{
+MathLink display}
+
+This mode is (somewhat) useful if you have \textit{Mathematica}$^{\mathit{TM}}$, 
+and want to pipe the data into \textit{Mathematica}. (It is probably 
+easier to read the binary data from file though using the \textit{Mathematica} command \texttt{Experimental\`{}BinaryImport\`{}}). 
+Sample \textit{Mathematica} statements:
+
+\begin{verbatim}
+(* create link before starting the (first) display in your STIR 
+program*)
+
+link=LinkCreate[``STIR''];
+
+(* read data from link *)
+data3d=LinkRead[link];
+
+
+(* display the 3rd image *)
+ListPlot3D[data3d[[3]], Mesh->}False];
+(* read data from link from next display *)
+nextdata3d=LinkRead[link];
+(* and so on *)
+
+(* close link at end of STIR program *)
+LinkClose[link];
+\end{verbatim}
+
+
+\section{
+Directories in the STIR tree}
+STIR can roughly be split into a library applications and applications.
+\footnote{The distinction is is not complete as some applications are implemented
+in terms of classes that actually end up in the library.}
+Below gives a rough overview of what is in which directory.
+\subsection{STIR library}
+\begin{description}
+\item[include]
+Files that declare classes and functions
+  \begin{description}
+  \item[include/boost] Files from the Boost project
+  \item[include/stir] Files from STIR
+  \end{description}
+
+\item[buildblock]
+  Basic building blocks such as arrays, images, projection data, filters etc.
+\item[display]
+  Functions for simple display of arrays and images  
+\item[eval\_buildblock]
+  Classes/functions for computing numbers on ROIs
+\item[IO]
+  Classes/functions for IO 
+\item[listmode\_buildblock]
+  Classes/functions for handling list mode data
+\item[numerics\_buildblock]
+  Classes/functions for numerical calculations
+\item[recon\_buildblock]
+  Building block classes/functions for reconstructions
+\item[Shape\_buildblock]
+  Classes/functions for 3D shapes
+\end{description}
+
+\subsection{applications}
+\begin{description}
+\item[analytic]
+  Analytic reconstruction algorithms
+\item[iterative]
+  Iterative reconstruction algorithms
+\item[utilities]
+  Utilities for image and data manipulations
+\item[listmode\_utilities]
+  Utilities for processing list mode data
+\item[recon\_test]
+  Applications that test reconstruction building blocks
+\end{description}
+
+\subsection{Remaining directories}
+\begin{description}
+\item[test]
+  Applications that test various parts of STIR
+\item[VC]
+  Workspaces for Visual Studio
+\item[examples]
+  Example programs to get you started in programming with STIR
+\item[samples]
+  Sample parameter files
+\end{description}
+
+
+\section{
+Future developments and Support}
+
+The \textit{STIR} library, in its current state, possesses many capabilities. 
+The developers, however, look forward to still further increases 
+in the flexibility and power of the software. Some of the developments 
+being discussed are:
+
+\begin{itemize}
+\item
+expanded library of polymorphic classes (e.g. image grids, and 
+ordered subsets)
+\item 
+scatter estimation for PET data
+\item
+additional scanners and modalities: HiDAC, DHCI, SPECT
+\item
+additional data formats support, without conversion to Interfile.
+\item
+Dynamic/gated scans support.
+\item
+listmode reconstruction algorithms
+\end{itemize}
+
+
+While support for the library is on a voluntary basis, users 
+of the library are encouraged to subscribe to relevant \textit{STIR} 
+mailing lists (see the `Mailing Lists' section of the STIR website 
+\R2Lurl{http://stir.HammersmithImanet.com/ }{http://stir.HammersmithImanet.com}) 
+where they can follow developments of the software and obtain 
+helpful information from other users. Questions will ONLY be 
+answered (if at all) when directed to the mailing list.
+
+
+
+Below, we list of some of the features planned for the next releases. 
+However, which feature is actually finalised/implemented depends 
+on the needs of the developers. If you want one of these features 
+and are willing to help, let us know.
+\begin{itemize}
+\item
+More automatic testing programs
+\item
+More algorithms: 3DRP, OSSPS (potentially ART, FORE [Def95], 
+OSCB [Ben99b] )
+\item
+More projectors
+\item
+More priors
+\item
+Parallelisation (using PVM or EPX)
+\item
+Compatibility of the interpolating backprojector with SPARC and opteron 
+processors.
+\end{itemize}
+
+
+
+
+
+\section{
+References}
+
+{[}Ale97] Alenius S and Ruotsalainen U \textbf{(1997)} Bayesian image 
+reconstruction for emission tomography based on median root prior. \textit{European 
+Journal of Nuclear Medicine} , Vol. 24 No. 3: 258-265.
+
+
+{[}Ben99] Ben-Tal A, Margalit T and Nemirovski A \textbf{(1999)} The 
+ordered subsets mirror descent optimization method with application 
+to tomography. \textit{Research report \#2/99, March 1999, MINERVA 
+Optimization Center, Faculty of Industrial Engineering and Management, 
+Technion -- Israel Institute of Technology}.
+
+{[}Ben99b] Ben-Tal A and Nemirovski A \textbf{(1999)} The conjugate 
+barrier method for non-smooth, convex optimization. \textit{Research 
+report \#5/99, October 1999, MINERVA Optimization Center, Faculty 
+of Industrial Engineering and Management, Technion -- Israel Institute 
+of Technology.}
+
+
+{[}Bou97] Boudraa \textsc{A E O} \textbf{(1997)} Automated detection of the 
+left ventricular region in magnetic resonance images by Fuzzy 
+C-Means model. \textit{Int J of Cardiac Imag} ; 13: 347-355.
+
+{[}Dau86] Daube-Witherspoon M E and Muehllener G \textbf{(1986)} An 
+iterative space reconstruction algorithm suitable for volume 
+ECT. \textit{IEEE Trans. Med. Imaging}, vol. MI-5: 61-66.
+
+
+{[}Dau97] M.E. Daube-Witherspoon and G. Muehllehner, \textbf{(1987)} 
+Treatment of axial data in three-dimensional PET, 
+J. Nucl. Med. 28, 171-1724.
+
+{[}Def95] Defrise M. \textbf{(1995)} ``A factorization method for the 
+3D X-ray transform'' \textit{Inverse Problems,} \textbf{11} pp. 983-994.
+
+
+{[}Def97] Defrise M, Kinahan P E, Townsend D W, Michel C, Sibomana 
+M and Newport D F \textbf{(1997)} Exact and approximate rebinning 
+algorithms for 3-D PET data. \textit{IEEE Trans. Med. Imaging}, MI-16: 
+145-158.
+
+{[}Egg98] Egger M L, Joseph C and Morel C \textbf{(1998)} Incremental 
+beamwise backprojection using geometrical symmetries for 3D PET 
+reconstruction in a cylindrical scanner geometry. \textit{Phys Med. 
+Biol.}, 43: 3009-3024.
+
+
+{[}Gem84] Geman S and Geman D \textbf{(1984)} Stochastic relaxation, 
+Gibbs distributions, and the Bayesian restoration of images. \textit{IEEE 
+Trans PAMI}, 6: 721-741.
+
+
+{[}Gem85] Geman S. and McClure D \textbf{(1985)} Bayesian image analysis: 
+an application to single photon emission tomography. \textit{in Proc. 
+American Statistical Society, Statistical Computing Section (Washington, 
+DC)} 12-18.
+
+
+ {[}Gre90] Green P J \textbf{(1990)} Bayesian reconstruction from emission 
+tomography data using a modified EM algorithm. \textit{IEEE Trans. 
+Med. Imaging}, MI-9: 84-93.
+
+
+{[}Heb89] Hebert T J and Leahy R M \textbf{(1989)} A generalized EM 
+algorithm for 3-D Bayesian reconstruction from Poisson data using 
+Gibbs priors. \textit{IEEE Trans. Med. Imaging}, MI-8: 194-202.
+
+
+{[}Her80] Herman G T \textbf{(1980)} Image Reconstruction from Projections: 
+The fundamentals of Computational Tomography. \textit{Academic Press, 
+New York}.
+
+{[}Hud94] Hudson H M and Larkin R S \textbf{(1994)} Accelerated image 
+reconstruction using ordered subsets of projection data. \textit{IEEE 
+Trans. Med. Imaging}, MI-13: 601-609.
+
+
+{[}Jac00] Jacobson M, Levkovitz R, Ben-Tal A, Thielemans K, Spinks 
+T, Belluzzo D, Pagani E, Bettinardi V, Gilardi M C, Zverovich 
+A and Mitra G \textbf{(2000)} Enhanced 3D PET OSEM Reconstruction 
+using inter-update Metz filters. \textit{Phys. Med. Biol}. \textbf{45} No.8 
+(2000) 2417-2439\textit{l.}
+
+
+{[}Kin89] Kinahan P E and Rogers J G \textbf{(1989)} Analytic 3D image 
+reconstruction using all detected events. \textit{IEEE Trans. Nucl. 
+Sci.}, 36: 964-968.
+
+
+{[}Lab97] Labbe C, Ashburner J, Koepp M, Spinks T, Richardson M 
+and Cunningham V \textbf{(1997)} Accurate PET quantification using 
+correction for partial volume effects within cerebral structures. \textit{Neuroimage}, 
+5: B12.
+
+
+{[}Lab99a] Labb\'{e} C, Thielemans K, Belluzzo D, Bettinardi V, Gilardi 
+MC, Hague DS, Jacobson MW, Kaiser S, Levkovitz R, Margalit T, 
+Mitra G, Morel C, Spinks T, Valente P, Zaidi H, Zverovich A\textit{: 
+An object-Oriented Library for 3D PET Reconstruction using Parallel 
+Computing}, Proceedings of Bildverarbeitung fuer die Medizin 
+1999, Algorithmen-Systeme-Anwendungen, \textit{Informatik} 
+\textit{aktuell, Springer}, Eds. H. Evers, G. Glombitza, T. Lehmann, 
+H.-P. Meinzer, pp 268-272. 
+
+
+{[}Lab99b] Labb\'{e} C, Thielemans K, Zaidi H, Morel C: An object-oriented 
+library incorporating efficient projection/backprojection operators 
+for volume reconstruction in 3D PET\textit{. Proc. of 3D99 Conference}, 
+June 1999, Egmond aan Zee, The Netherlands 
+
+
+{[}Lal93] Lalush D S and Tsui M W \textbf{(1993)} A general Gibbs prior 
+for Maximum a posteriori reconstruction in SPET. \textit{Phys. Med. 
+Biol.}, 38: 729-741.
+
+{[}Lan90] Lang K \textbf{(1990)} Convergence of EM Image reconstruction 
+algorithms with Gibbs smoothing. \textit{IEEE Trans. Med. Imaging}, 
+MI-9: 4.
+
+
+{[}Man97] Manders Jones H \textbf{(1997)} A Computational Investigation 
+of the solution of large scale Optimization problems. \textit{Ph.D 
+Thesis, Department of Mathematics and Statistics. Brunel, The 
+University of West London. Oct 1997}.
+
+
+{[}Mar99] Margalit T, Gordon E, Jacobson M, Ben-Tal A, Nemirovski 
+A, Levkovitz R \textbf{(1999)} The ordered sets mirror descent and 
+conjugate barrier optimization algorithms adapted to the 3D PET 
+reconstruction problem. Submitted to \textit{IEEE Trans. Med. Im}.
+
+{[}Mus01] Mustafovic S, Thielemans K, \textbf{(2001)} Additive and Multiplicative 
+versions of the Maximum A Posteriori Algorithm with the Median 
+Root Prior. poster at \textit{IEEE Med. Img. Conf. 2001.} \\
+Available 
+at \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/ } 
+
+
+
+{[}Mus04] S. Mustafovic, K.Thielemans, \textbf{(200}\textbf{4}\textbf{)} \textit{Object 
+Dependency of Resolution in Reconstruction Algorithms with Inter-Iteration 
+Filtering Applied to PET} , IEEE Trans. Med. Im. 23 (4): (2004) 
+433-446\\
+Available at \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/ }
+
+
+{[}Mus02] S. Mustafovic, K.Thielemans\textit{,} \textbf{(2002)}  Comparison 
+of Unconventional Inter-Filtering Methods to Penalised-likelihood 
+for Space-invariant Tomographs, poster at \textit{IEEE Medical Imaging 
+Conf. 2002}. \\
+Available at \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/ }
+
+
+{[}Nem78] Nemirovski A and Yudin D \textbf{(1978)} Problem complexity 
+and method efficiency in optimization. \textit{Nauka Publishers, 
+Moscow, 1978 (in Russian); English translation: John Wiley \& 
+Sons, 1983}.
+
+
+ {[}PAR1.3] Levkovitz R, Zibulevsky M, Labbe C, Zaidi H and Morel 
+C \textbf{(1997)} Determination of a Set of Existing Algorithms for 
+Comparative Evaluation. \textit{PARAPET documentation for D1.3, Geneva 
+University Hospital and Technion}. \\
+Available at \R2Lurl{http://stir.HammersmithImanet.com }{http://stir.HammersmithImanet.com}. 
+
+
+
+ {[}Rea98] Reader A J, Visvikis A, Erlandsson K, Ott R J, and Flower 
+M A \textbf{(1998)} Intercomparison of four reconstruction techniques 
+for positron volume imaging with rotating planar detectors. \textit{Phys. 
+Med. Biol.}, 43: 823-34.
+
+
+{[}She82] Shepp L A and Vardi Y \textbf{(1982)} Maximum likelihood reconstruction 
+for emission tomography. \textit{IEEE Trans. Med. Imaging}, 1: 113-122.
+
+
+{[}Sil90] Silverman B W, Jones M C, Wilson J D, and Nychka D W \textbf{(1990)} 
+A smoothed EM approach to indirect estimation problems, with 
+particular reference to stereology and emission tomography. \textit{J. 
+Roy. Stat. Soc}., 52: 271-324. 
+
+
+\end{document}
+
