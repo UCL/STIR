@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
   \file
@@ -89,7 +89,7 @@ public :
   map_element();
 
   map_element(KeyArgument::type t, void (KeyParser::*pom)(),
-	      void* pov= 0, const ASCIIlist_type *list = 0);
+	      void* pov= 0, const ASCIIlist_type *list_of_valid_keywords = 0);
 
   ~map_element();
 	
