@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -11,10 +11,8 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
-
+  $Date$
+  $Revision$
 */
 
 
@@ -22,13 +20,14 @@
 #include <numeric>
 // for sqrt and acos
 #include <cmath>
+// for equal
+#include <algorithm>
 
 #ifndef TOMO_NO_NAMESPACES
 # ifndef BOOST_NO_STDC_NAMESPACE
 using std::acos;
 using std::sqrt;
 # endif
-using std::equal;
 #endif
 
 START_NAMESPACE_TOMO
@@ -91,7 +90,11 @@ template <int num_dimensions, typename coordT>
 bool
 BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
-  return equal(begin(), end(), c.begin());
+  return 
+#ifndef TOMO_NO_NAMESPACES
+    std:: // VC needs this explicitly
+#endif
+    equal(begin(), end(), c.begin());
 }
 
 /*
