@@ -13,10 +13,14 @@
   \author PARAPET project
 
   \date    $Date$
-
   \version $Revision$
 
 */
+
+#include "BasicCoordinate.h"
+
+START_NAMESPACE_TOMO
+
 
 /*!
   \ingroup buildblock 
@@ -27,10 +31,6 @@
    \warning Indices run from 1 to 2. 
 
 */
-
-#include "BasicCoordinate.h"
-
-START_NAMESPACE_TOMO
 
 template <typename coordT>
 class Coordinate2D : public BasicCoordinate<2, coordT>
