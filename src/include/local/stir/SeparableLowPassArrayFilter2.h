@@ -97,7 +97,7 @@ bool
 SeparableArrayFunctionObject2<num_dim, elemT>::
 is_trivial() const
 {
-  for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator iter=all_1d_array_filters.begin();
+  for (typename  VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator iter=all_1d_array_filters.begin();
         iter!=all_1d_array_filters.end();++iter)
    {
      // TODO insert condition on use_count here (see SeparableArrayFunctionObject)
