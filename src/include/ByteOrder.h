@@ -25,6 +25,8 @@
 */
 
 #include "tomo/common.h"
+// for swap
+#include <algorithm>
 
 START_NAMESPACE_TOMO
 
@@ -44,7 +46,7 @@ START_NAMESPACE_TOMO
    (Quoted from http://www.techfak.uni-bielefeld.de/~joern/jargon/)
 */
 
-/*!
+/*
   \brief Internal class to swap bytes.
 
   This defines a revert function that swaps the outer elements of an
@@ -64,10 +66,8 @@ START_NAMESPACE_TOMO
   of a compiler bug in VC++ (member templates have to be defined in the
   class).
 */
-//TODO put revert_region in own namespace
+//TODO put revert_region in own namespace or as private class of ByteOrder
 
-// for swap
-#include <algorithm>
 
 template <int size>
 class revert_region
