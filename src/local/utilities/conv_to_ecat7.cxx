@@ -1,0 +1,201 @@
+//
+// $Id$
+//
+
+/*! 
+\file
+\ingroup utilities
+\brief Conversion from interfile (or any format that we can read) 
+  to ECAT 7 cti (image and sinogram data)
+\author Kris Thielemans
+\author PARAPET project
+$Date$
+$Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+
+
+#include "stir/DiscretisedDensity.h"
+#include "stir/ProjData.h"
+#include "stir/shared_ptr.h"
+#include "stir/utilities.h"
+#include "stir/Succeeded.h"
+
+#ifdef STIR_NO_NAMESPACES
+// terrible trick to avoid conflict between our Sinogram and matrix::Sinogram
+// when we do have namespaces, the conflict can be resolved by using ::Sinogram
+#define Sinogram CTISinogram
+#endif
+
+#include "matrix.h"
+#include "local/stir/CTI/stir_ecat7.h"
+
+#include <iostream>
+#include <vector>
+#include <string>
+
+#ifndef STIR_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::vector;
+using std::string;
+#endif
+
+USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT7
+
+
+
+int main(int argc, char *argv[])
+{
+  char cti_name[1000], scanner_name[1000] = "";
+  vector<string> filenames;
+  bool its_an_image = true;
+  
+  if(argc>=4)
+  {
+    if (strcmp(argv[1],"-s")==0)
+      {
+	its_an_image = false;
+        strcpy(cti_name,argv[2]);
+        int num_files = argc-3;
+        argv+=3;
+        filenames.reserve(num_files);
+        for (; num_files>0; --num_files, ++argv)
+          filenames.push_back(*argv);	
+      }
+    else 
+      {
+	its_an_image = true;
+	strcpy(cti_name,argv[1]);	
+        int num_files = argc-3;
+        argv+=2;
+        filenames.reserve(num_files);
+        for (; num_files>0; --num_files, ++argv)
+          filenames.push_back(*argv);	
+	strcpy(scanner_name,*argv);
+      }
+  }  
+  else 
+  {
+    cerr<< "\nConversion from data to ECAT7 CTI.\n"
+	<< "Multiples files can be written to a single ECAT 7 file.\n"
+        << "The data will be assigned a frame number in the "
+        << "order that they occur on the command line.\n\n"
+        << "Usage: 2 possible forms depending on data type\n"
+	<< "For sinogram data:\n"
+	<< "\tconv_to_ecat7 -s output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
+	<< "For image data:\n"
+	<< "\tconv_to_ecat7 output_ECAT7_name orig_filename1 [orig_filename2 ...] scanner_name\n"
+	<< "scanner_name has to be recognised by the Scanner class\n"
+	<< "Examples are : \"ECAT 953\", \"RPT\" etc.\n"
+	<< "(the quotes are required when used as a command line argument)\n\n"
+	<< "I will now ask you the same info interactively...\n\n";
+    
+    its_an_image = ask("Converting images?",true);
+    int num_files = ask_num("Number of files",1,10000,1);
+    filenames.reserve(num_files);
+    char cur_name[max_filename_length];
+    for (; num_files>0; --num_files)
+    {
+      ask_filename_with_extension(cur_name,"Name of the input file? ",its_an_image?".hv":".hs");
+      filenames.push_back(cur_name);
+    }
+    
+    ask_filename_with_extension(cti_name,"Name of the ECAT7 file? ",
+      its_an_image ? ".img" : ".scn");
+  }
+
+  if (its_an_image)
+  {
+
+    shared_ptr<Scanner> scanner_ptr = 
+      strlen(scanner_name)==0 ?
+      Scanner::ask_parameters() :
+      Scanner::get_scanner_from_name(scanner_name);
+
+    // read first image
+    cerr << "Reading " << filenames[0] << endl;
+    shared_ptr<DiscretisedDensity<3,float> > density_ptr =
+      DiscretisedDensity<3,float>::read_from_file(filenames[0]);
+  
+    Main_header mhead;
+    make_ECAT7_main_header(mhead, *scanner_ptr, filenames[0], *density_ptr);
+    mhead.num_frames = filenames.size();
+
+    MatrixFile* mptr= matrix_create (cti_name, MAT_CREATE, &mhead);
+    if (mptr == 0)
+    {
+      warning("conv_to_ecat7: error opening output file %s\n", cti_name);
+      return EXIT_FAILURE;
+    }
+    unsigned int frame_num = 1;
+
+    while (1)
+    {
+      if (DiscretisedDensity_to_ECAT7(mptr,
+                                      *density_ptr, 
+                                      frame_num)
+                                      == Succeeded::no)
+      {
+        matrix_close(mptr);
+        return EXIT_FAILURE;
+      }
+      if (++frame_num > filenames.size())
+      {
+        matrix_close(mptr);
+        return EXIT_SUCCESS;
+      }
+      cerr << "Reading " << filenames[frame_num-1] << endl;
+      density_ptr =
+        DiscretisedDensity<3,float>::read_from_file(filenames[frame_num-1]);
+    }
+  }
+  else 
+  {
+ 
+    // read first data set
+    cerr << "Reading " << filenames[0] << endl;
+    shared_ptr<ProjData > proj_data_ptr =
+      ProjData::read_from_file(filenames[0]);
+  
+    Main_header mhead;
+    make_ECAT7_main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
+    mhead.num_frames = filenames.size();
+
+    MatrixFile* mptr= matrix_create (cti_name, MAT_CREATE, &mhead);
+    if (mptr == 0)
+    {
+      warning("conv_to_ecat7: error opening output file %s\n", cti_name);
+      return EXIT_FAILURE;
+    }
+
+    unsigned int frame_num = 1;
+
+    while (1)
+    {
+      if (ProjData_to_ECAT7(mptr,
+                            *proj_data_ptr, 
+                            frame_num)
+                            == Succeeded::no)
+      {
+        matrix_close(mptr);
+        return EXIT_FAILURE;
+      }
+      if (++frame_num > filenames.size())
+      {
+        matrix_close(mptr);
+        return EXIT_SUCCESS;
+      }
+      cerr << "Reading " << filenames[frame_num-1] << endl;
+      proj_data_ptr =
+        ProjData::read_from_file(filenames[frame_num-1]);
+    }
+  }  
+}
+
+
