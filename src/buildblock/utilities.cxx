@@ -114,7 +114,7 @@ PETImageOfVolume ask_image_details()
     ios::in | ios::binary);
 
   int scanner_num = 
-    ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
+    ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);// CL Add ART scanner
  
   PETScannerInfo scanner;
   switch( scanner_num )
@@ -130,6 +130,9 @@ PETImageOfVolume ask_image_details()
       break;
     case 3:
       scanner = (PETScannerInfo::Advance); 
+      break;
+    case 4:
+      scanner = (PETScannerInfo::ART);
       break;
     default:
       PETerror("Wrong scanner number\n"); Abort();
