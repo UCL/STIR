@@ -105,15 +105,17 @@ float detection_efficiency( const float low, const float high,
 						    const float energy, 
 							const float reference_energy, const float resolution)
 {
-	if (energy<=low || energy >= high)
-	   return 0;
 	// factor 2.35 is used to convert FWHM to sigma
 	const float sigma_times_sqrt2= 
 		sqrt(2.*energy*reference_energy)*resolution/2.35;
 	
-	return
+	const float efficiency =
 		0.5*( erf((high-energy)/sigma_times_sqrt2) 
 		      - erf((low-energy)/sigma_times_sqrt2 ));	
+        const float effficiency_threshold = .0F;
+        /* Maximum efficiency is 1. If the efficiency is too small, 
+           we will ignore the event anyway to save some time.*/
+	return efficiency < effficiency_threshold ? 0 : efficiency;
 }
 /*!	\ingroup scatter
    \brief detection efficiency for BGO  for a given energy window
