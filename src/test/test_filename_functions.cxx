@@ -62,6 +62,26 @@ void FilenameTests::run_tests()
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   
+  {
+    // same checks but with string versions
+    string filename_with_directory = "[dir.name]filename";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory == "[dir.name]filename.img");
+    filename_with_directory = "[dir.name]filename.v";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory == "[dir.name]filename.v");
+    
+    filename_with_directory = "[dir.name]filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+    filename_with_directory = "filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+  }
   check(is_absolute_pathname("da0:[bladi.b]bla.v") == true);
   check(is_absolute_pathname("[.bladi]bla.v") == false);
   check(is_absolute_pathname("bla.v") == false);
@@ -104,7 +124,49 @@ void FilenameTests::run_tests()
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
-  
+
+  {
+    // same checks with string versions
+    string filename_with_directory =  "dir.name\\filename";
+
+    check(get_directory_name(filename_with_directory) == "dir.name\\");
+
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name\\filename.img");
+    filename_with_directory =  "dir.name\\filename.v";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name\\filename.v");
+    filename_with_directory =  "dir.name/filename";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name/filename.img");
+    filename_with_directory =  "dir.name/filename.v";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name/filename.v");
+
+    filename_with_directory =  "dir.name\\filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+    filename_with_directory =  "dir.name/filename.v";
+
+    check(get_directory_name(filename_with_directory) == "dir.name/");
+
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+    filename_with_directory =  "a:filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+    filename_with_directory =  "filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+  }  
   check(is_absolute_pathname("\\bladi\\bla.v") == true);
   check(is_absolute_pathname("a:\\bladi\\bla.v") == true);
   check(is_absolute_pathname("bladi\\bla.v") == false);
@@ -161,7 +223,31 @@ void FilenameTests::run_tests()
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
-  
+
+
+  {
+    // same checks with string versions
+    string filename_with_directory =  "dir.name:filename";
+
+    check(get_directory_name(filename_with_directory) == "dir.name:");
+    
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name:filename.img");
+    filename_with_directory =  "dir.name:filename.v";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name:filename.v");
+
+    filename_with_directory =  "dir.name:filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+    filename_with_directory =  "filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+  }  
   check(is_absolute_pathname("bladi:bla.v") == true);
   check(is_absolute_pathname(":bladi:bla.v") == false);
   check(is_absolute_pathname("bla.v") == false);
@@ -198,6 +284,31 @@ void FilenameTests::run_tests()
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   
+
+  {
+    // same checks with string versions
+    string filename_with_directory =  "dir.name/filename";
+    check(get_directory_name(filename_with_directory) == "dir.name/");
+
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name/filename.img");
+    filename_with_directory =  "dir.name/filename.v";
+    add_extension(filename_with_directory, ".img");
+    check(filename_with_directory ==  "dir.name/filename.v");
+
+    filename_with_directory =  "dir.name/filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+    filename_with_directory =  "filename.v";
+    check(filename_with_directory.substr(
+					 find_pos_of_filename(filename_with_directory),
+					 string::npos)
+	  ==  "filename.v");
+
+  }
+
   check(is_absolute_pathname("/bladi/bla.v") == true);
   check(is_absolute_pathname("bladi/bla.v") == false);
   check(is_absolute_pathname("bla.v") == false);

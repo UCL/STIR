@@ -99,12 +99,23 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
  Some functions to manipulate (and ask for) filenames.
 ***************************************************************************/
 
-//! some large value to say how long filenames can be in the functions below
+//! some large value to say how long filenames can be in the non-string functions below
 const int max_filename_length = 1000;
 
 //! return a pointer to the start of the filename (i.e. after directory specifications)
+/*! The returned pointer is between filename_with_directory and 
+    (filename_with_directory+strlen(filename_with_directory)+1). This
+    highest value is used when it's a directory name.
+*/
 extern const char * const 
 find_filename(const char * const filename_with_directory);
+
+//! return the position of the start of the filename (i.e. after directory specifications)
+/*! The returned number is between 0 and filename_with_directory.size()+1. This
+    highest value is used when it's a directory name.
+*/
+string::size_type
+find_pos_of_filename(const string& filename_with_directory);
 
 
 /*! \brief
@@ -116,6 +127,17 @@ find_filename(const char * const filename_with_directory);
 char *
 get_directory_name(char *directory_name, 
 		   const char * const filename_with_directory);
+
+//! Returns a string with the directory part from 'filename_with_directory'.
+string
+get_directory_name(const string& filename_with_directory);
+
+/*! \brief
+ Checks if the filename points to an absolute location, or is
+ a relative (e.g. to current directory) pathname.
+ */
+extern bool
+is_absolute_pathname(const string& filename_with_directory);
 
 /*! \brief
  Checks if the filename points to an absolute location, or is
@@ -139,6 +161,12 @@ extern char *
 prepend_directory_name(char * filename_with_directory, 
 		       const char * const directory_name);
 
+//! find the position of the '.' of the extension
+/*! If no '.' is found in the filename part (i.e. ignoring the
+    directory name), the function returns string::npos
+*/
+string::size_type
+find_pos_of_extension(const string& file_in_directory_name);
 
 /*! \brief
  Append 'extension' to 'filename_with_directory'
@@ -159,6 +187,10 @@ extern char *
 add_extension(char * file_in_directory_name, 
 	      const char * const extension);
 
+//! Append extension when input parameters are strings
+string& 
+add_extension(string& file_in_directory_name, 
+	      const string& extension);
 
 /*! \brief
   Replace extension in 'filename_with_directory' with 'extension'.
@@ -177,6 +209,11 @@ add_extension(char * file_in_directory_name,
 extern char *
 replace_extension(char *file_in_directory_name, 
  	          const char * const extension);
+
+//! Replace extension when input parameters are strings
+string& 
+replace_extension(string& file_in_directory_name, 
+		  const string& extension);
 		   
 
 /*! \brief

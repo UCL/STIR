@@ -115,7 +115,32 @@ find_filename(const char * const filename_with_directory)
    return filename_with_directory;
 }
 
-// KT 14/01/2000 new
+string::size_type
+find_pos_of_filename(const string& filename_with_directory)
+{
+  string::size_type pos;
+
+#if defined(__OS_VAX__)
+  pos = filename_with_directory.find_last_of( ']');
+  if (pos==string::npos)
+    pos = filename_with_directory.find_last_of( ':');
+#elif defined(__OS_WIN__)
+  pos = filename_with_directory.find_last_of( '\\');
+  if (pos==string::npos)
+    pos = filename_with_directory.find_last_of( '/');
+  if (pos==string::npos)
+    pos = filename_with_directory.find_last_of( ':');
+#elif defined(__OS_MAC__)
+  pos = filename_with_directory.find_last_of( ':');
+#else // defined(__OS_UNIX__)
+  pos = filename_with_directory.find_last_of( '/');
+#endif 
+  if (pos != string::npos)
+    return pos+1;
+  else
+    return 0;
+}
+
 char *
 get_directory_name(char *directory_name, 
 		   const char * const filename_with_directory)
@@ -127,6 +152,26 @@ get_directory_name(char *directory_name,
   return directory_name;
 }
 
+string
+get_directory_name(const string& filename_with_directory)
+{
+  return 
+    filename_with_directory.substr(0, find_pos_of_filename(filename_with_directory));
+}
+
+string::size_type
+find_pos_of_extension(const string& file_in_directory_name)
+{
+  string::size_type pos_of_dot =
+    file_in_directory_name.find_last_of('.');
+  string::size_type pos_of_filename =
+    find_pos_of_filename(file_in_directory_name);
+  if (pos_of_dot >= pos_of_filename)
+    return pos_of_dot;
+  else
+    return string::npos;
+}
+ 
 char *add_extension(char *file_in_directory_name, 
 		    const char * const extension)
 
@@ -136,7 +181,19 @@ char *add_extension(char *file_in_directory_name,
   return file_in_directory_name;
 }
 
-// SM&KT 18/01/2000 new
+string& 
+add_extension(string& file_in_directory_name, 
+	      const string& extension)
+{
+  string::size_type pos =
+    find_pos_of_extension(file_in_directory_name);
+  if (pos == string::npos)
+    file_in_directory_name += extension;
+  return file_in_directory_name;
+}
+
+
+
 char *replace_extension(char *file_in_directory_name, 
 		        const char * const extension)
 {
@@ -151,7 +208,19 @@ char *replace_extension(char *file_in_directory_name,
   return file_in_directory_name;
 }
 
-// KT 10/01/2000 new
+string& 
+replace_extension(string& file_in_directory_name, 
+	      const string& extension)
+{
+  string::size_type pos =
+    find_pos_of_extension(file_in_directory_name);
+  if (pos != string::npos)
+    file_in_directory_name.erase(pos);
+  file_in_directory_name += extension;
+      
+  return file_in_directory_name;
+}
+
 bool
 is_absolute_pathname(const char * const filename_with_directory)
 {
@@ -186,8 +255,13 @@ is_absolute_pathname(const char * const filename_with_directory)
 #endif 
 }
 
+bool
+is_absolute_pathname(const string& filename_with_directory)
+{
+  return 
+    is_absolute_pathname(filename_with_directory.c_str());
+}
 
-// KT 10/01/2000 new
 // Warning: this function assumes that filename_with_directory 
 // points to sufficient allocated space to contain the new string
 char *
