@@ -1,29 +1,19 @@
 //
-// $Id$ :$Date$
+// $Id$: $Date$
 //
-/*!
-  \file 
- 
-  \brief implementations for the KeyParser class
 
-  \author Kris Thielemans
-  \author Patrick Valente
-  \author PARAPET project
-
-  \date    $Date$
-
-  \version $Revision$
-
-*/
-
-#include "Tomography_common.h"
+// KT 01/08/98 removed ! from keywords
+// KT 14/12 changed <> to "" in next 3 includes
+#include "pet_common.h"
 #include "KeyParser.h"
 #include "line.h"
-
-
+// KT 13/11/98 needed for new parse()
 #include <fstream>
 
-START_NAMESPACE_TOMO
+// KT 20/06/98 do this pragma only for VC++
+#ifdef _MSC_VER
+#pragma warning(disable: 4786)
+#endif
 
 // map_element implementation;
 
@@ -124,7 +114,6 @@ int KeyParser::parse_header()
     
   if (parse_line(false))	
     process_key();
-  // TODO skip white space ?
   if (status != parsing)
   { warning("KeyParser error: required first keyword not found\n");  return 1; }
 
@@ -146,7 +135,7 @@ int KeyParser::parse_line(const bool write_warning)
   if (!input->good())
   {
     // KT 22/10/98 added warning
-    PETerror("KeyParser warning: early EOF or bad file");
+    warning("KeyParser warning: early EOF or bad file");
     stop_parsing();
     return 0;
   }
@@ -200,7 +189,7 @@ int KeyParser::parse_line(const bool write_warning)
   // KT 22/10/98 warning message moved here
   // skip empty lines and comments
   if (keyword.length() != 0 && keyword[0] != ';' && write_warning)
-    PETerror("KeyParser warning: unrecognized keyword: %s\n", keyword.c_str());
+    warning("KeyParser warning: unrecognized keyword: %s\n", keyword.c_str());
 
   // do no processing of this key
   return 0;
@@ -280,7 +269,7 @@ void KeyParser::set_variable()
 	  }
 	default :
 	  // KT 29/10/98 added
-	  PETerror("KeyParser error: unknown type. Implementation error");
+	  warning("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
     }
@@ -345,7 +334,7 @@ void KeyParser::set_variable()
 		}*/
 	default :
 	  // KT 29/10/98 added
-	  PETerror("KeyParser error: unknown type. Implementation error");
+	  warning("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
     }
@@ -399,5 +388,3 @@ void KeyParser::process_key()
     (this->*(current->p_object_member))();	//calls appropriate member function
   }
 }
-
-END_NAMESPACE_TOMO
