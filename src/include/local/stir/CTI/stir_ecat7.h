@@ -92,7 +92,8 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 Succeeded ProjData_to_ECAT7(ProjData const& proj_data, 
                             string const & cti_name, string const & orig_name,
                             const int frame_num = 1, const int gate_num = 1, 
-			    const int data_num = 0, const int bed_num = 0);
+			    const int data_num = 0, const int bed_num = 0,
+                            const bool write_as_attenuation = false);
 
 //! Write an (extra) set of sinograms to an existing ECAT7 file 
 /*! 
