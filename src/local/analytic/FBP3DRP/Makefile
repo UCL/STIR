@@ -10,7 +10,7 @@ WORKSPACE=$(CURDIR)/../../..
 include $(WORKSPACE)/Makefile_common
 
 SOURCES_FBP3DRP= ColsherFilter.cxx  FBP3DRPReconstruction.cxx FBP3DRPParameters.cxx FBP3DRPMain.cxx \
-fft.cxx merge_direct_sinos.cxx RampFilter.cxx FBP2DReconstruction.cxx
+fft.cxx  RampFilter.cxx FBP2DReconstruction.cxx
 
 OBJS_FBP3DRP = $(SOURCES_FBP3DRP:%.cxx=$(DEST)%.o)
 
