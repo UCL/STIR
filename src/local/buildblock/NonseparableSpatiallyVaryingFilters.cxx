@@ -55,7 +55,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 					int number_of_coefficients_before_padding);
 					
 
-//// IMPLEMENTATION /////
+
 /**********************************************************************************************/
 
 
@@ -1010,7 +1010,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	Array<3,elemT> tmp_out(IndexRange3D(k,k,j,j,i,i));
 	Array<2,elemT> single_pixel(IndexRange2D(j,j,i,i));
 	       if ( k==in_density_cast_0.get_min_z() && j==in_density_cast_0.get_min_y() 
-		 && i==in_density_cast_0.get_min_x() && count == 300)
+		 && i==in_density_cast_0.get_min_x() && count == 300 && precomputed_coefficients_filename!="1" )
 	       { 
 		 cerr <<  " IN the LOOP "  << k << "   " << j << "  " <<i << "   " << endl;
 		 for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
