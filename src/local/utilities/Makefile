@@ -4,11 +4,6 @@
 
 WORKSPACE=$(CURDIR)/../..
 
-# variables used only for ecat7
-# local/Makefile_common can override these defaults
-LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
-LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
-
 include $(WORKSPACE)/Makefile_common
 
 SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
@@ -19,7 +14,6 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	prepare_projdata.cxx \
 	normalizedbckproj.cxx \
 	inverse_proj_data.cxx 	\
-	make_cylinder.cxx \
 	CoG.cxx \
 	find_ML_normfactors3D.cxx \
 	apply_normfactors3D.cxx \
@@ -36,15 +30,12 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	generate_image.cxx \
 	rigid_object_transform_projdata.cxx
 
-# check if we find the Louvain la Neuve distribution by looking for matrix.h
-ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
+#	make_cylinder.cxx 
+
+ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
   # ecat7 stuff as well
   SOURCES += change_mhead_file_type.cxx copy_ecat7_header.cxx
-  CFLAGS +=  -I $(LLN_INCLUDE_DIR)
-  ifeq ($(SYSTEM),SUN)
-     EXTRA_LIBS += -lnsl -lsocket
-  endif
 endif
 	
 	
