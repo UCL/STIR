@@ -3,7 +3,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/interfile.h"
+#include "stir/io/interfile.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
 
