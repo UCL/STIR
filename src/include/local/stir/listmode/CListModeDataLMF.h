@@ -19,11 +19,11 @@
 #ifndef __stir_listmode_CListModeDataLMF_H__
 #define __stir_listmode_CListModeDataLMF_H__
 
-#include "local/stir/listmode/CListModeData.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/shared_ptr.h"
-#include "/opt/lmf/includes/lmf.h" // TODO adjust location
-#include "local/stir/ClearPET/LMF_ClearPET.h" // TODO don't know which is needed
-#include "local/stir/ClearPET/LMF_Interfile.h" 
+#include "lmf.h" // TODO adjust location
+//#include "local/stir/ClearPET/LMF_ClearPET.h" // TODO don't know which is needed
+//#include "local/stir/ClearPET/LMF_Interfile.h" 
 
 #include <stdio.h>
 #include <string>
@@ -56,9 +56,6 @@ public:
   virtual bool has_delayeds() const 
     { return true; } // TODO always?
 
-  virtual size_t get_size_of_record() const
-    { return size_of_record; }// TODO
-
   virtual 
     Succeeded get_next_record(CListRecord& event) const;
 
@@ -78,7 +75,8 @@ private:
   struct LMF_ccs_encodingHeader *pEncoH;
   FILE *pfCCS;                                
 
-  SCANNER_CHECK_LIST scanCheckList;
+  // possibly use this from LMF2Projection
+  // SCANNER_CHECK_LIST scanCheckList;
   vector<unsigned long> saved_get_positions;
 
 };
