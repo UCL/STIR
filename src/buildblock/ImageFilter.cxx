@@ -1,14 +1,14 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
-
   \file
   \ingroup buildblock
 
   \brief Metz and Gaussian Filter Routines for iterative filtering 
 
   \author Matthew Jacobson (some help by Kris Thielemans)
+  \author based on C-code by Roni Lefkowitz
   \author PARAPET project
 
   \date $Date$
@@ -36,11 +36,10 @@ const float ZERO_TOL= 0.000001F; //MJ 12/05/98 Made consistent with other files
 #define IMGC(a) 2*(a)+1
 
 #include "ImageFilter.h"
-//#include "ArrayFunction.h" 
-#include <iostream> 
 
+#include <iostream> 
 #include <numeric>
-//#include "utilities.h"
+
 #include "VoxelsOnCartesianGrid.h"
 #include "recon_array_functions.h"
 
@@ -53,27 +52,27 @@ using std::endl;
 
 START_NAMESPACE_TOMO
 
-// KT 30/05/2000 made axdir from long to int
+// KT 30/05/2000 made axdir from int to int
 
 //MJ 22/04/99  KT wants the declarations here and not in bbfilters.h
 
 // MJ 17/12/98 added the next three functions
 
-void build_gauss(float *kernel, long res,float s2,  float sampling_interval);
+void build_gauss(VectorWithOffset<float>&kernel, int res,float s2,  float sampling_interval);
 /*
 
  build Gaussian kernel according to the full width half maximum 
 
 */
 
-void discrete_fourier_transform(float *data, unsigned long nn, int isign);
+void discrete_fourier_transform(VectorWithOffset<float>&data, unsigned int nn, int isign);
 
 
 
-float *build_metz(long *kerlen, long res, float N,float fwhm, float MmPerVoxel);
+VectorWithOffset<float> build_metz(int *kerlen, int res, float N,float fwhm, float MmPerVoxel);
 
 
-void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<float>& input_image);
+void extract_row(VectorWithOffset<float>&onerow,int axdir,int row_num,VoxelsOnCartesianGrid<float>& input_image);
 /* 
 
 extract a row from the input_image
@@ -82,9 +81,9 @@ extract a row from the input_image
 
                  
  
-void convolution_1D(float *outrow,long res,long kerlen,float *onerow,float *cfilter);
+void convolution_1D(VectorWithOffset<float>&outrow,int res,int kerlen,VectorWithOffset<float>&onerow,VectorWithOffset<float>&cfilter);
 
-void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,long row_num,float *outrow);
+void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,int row_num,VectorWithOffset<float>&outrow);
 
 /* 
 
@@ -94,7 +93,7 @@ put back the filtered row into the input_image
  
 
 
-void separable_cartesian_3Dfilter(long kerlx,long kerlz, VoxelsOnCartesianGrid<float> &input_image,float *kernelX,float *kernelZ,float *onerow, float *outrow);
+void separable_cartesian_3Dfilter(int kerlx,int kerlz, VoxelsOnCartesianGrid<float> &input_image,VectorWithOffset<float>&kernelX,VectorWithOffset<float>&kernelZ,VectorWithOffset<float>&onerow, VectorWithOffset<float>&outrow);
 
 /* Perform 3D filtering on a input_image with the possiblility of 
    different filters in the XY and Z directions
@@ -105,9 +104,9 @@ void separable_cartesian_3Dfilter(long kerlx,long kerlz, VoxelsOnCartesianGrid<f
 */
 
 
-void discrete_fourier_transform(float *data, unsigned long nn, int isign)
+void discrete_fourier_transform(VectorWithOffset<float>&data, unsigned int nn, int isign)
 {
-	unsigned long n,mmax,m,j,istep,i;
+	unsigned int n,mmax,m,j,istep,i;
 	double wtemp,wr,wpr,wpi,wi,theta;
 	float tempr,tempi;
 	n=nn << 1;
@@ -152,13 +151,13 @@ void discrete_fourier_transform(float *data, unsigned long nn, int isign)
 
 
 
-void build_gauss(float *kernel, long res,float s2,  float sampling_interval)
+void build_gauss(VectorWithOffset<float>&kernel, int res,float s2,  float sampling_interval)
 {
 
  
  float sum;
  int cutoff=0;
- long j,hres;
+ int j,hres;
 
 
 
@@ -195,14 +194,14 @@ void build_gauss(float *kernel, long res,float s2,  float sampling_interval)
 
 //MJ 19/04/99  Used KT's solution to the shifted index problem. Also build_metz now allocates the kernel.
 
-float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
+VectorWithOffset<float> build_metz(int *kerlen,int res ,float N,float fwhm, float MmPerVox)
  {    
 
   if(fwhm>0.0F){
 
  
       // KT 30/05/2000 dropped unsigned
-     long i;
+     int i;
      float xreal,ximg,zabs2;                                        
 
 //MJ 12/05/98 compute parameters relevant to DFT/IDFT
@@ -215,8 +214,8 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
      const float sampling_interval=MmPerVox/samples_per_voxel;
      float stretch= (samples_per_voxel>1)?sinc_length:0.0;
 
-     long Res=(long)(log((sqrt(8*n*log(10)*s2)+stretch)/sampling_interval)/log(2)+1);
-     Res=(long) pow(2.0,(double) Res); //MJ 12/05/98 made adaptive 
+     int Res=(int)(log((sqrt(8*n*log(10)*s2)+stretch)/sampling_interval)/log(2)+1);
+     Res=(int) pow(2.0,(double) Res); //MJ 12/05/98 made adaptive 
 
 
 
@@ -228,13 +227,11 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
  
      
 /* allocate memory to metz arrays */
-     // MJ made internal      
-     float *filter= new float[Res]; 
+     VectorWithOffset<float> filter(Res);
 
      //MJ 05/03/2000 padded 1 more element to fftdata and pre-increment
      //The former technique was illegal.
-     float *fftdata = new float[2*Res+1];
-     fftdata++;
+     VectorWithOffset<float> fftdata(0,2*Res);
      for (i=0;i<Res ;i++ ) filter[i]=0.0;
      for (i=0;i<2*Res ; i++ ) fftdata[i]=0.0;     
    
@@ -259,9 +256,9 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
 
 
 /* FFT to frequency space */
-    
-     discrete_fourier_transform(fftdata-1,Res,FORWARDFFT); 
-
+    fftdata.set_offset(1);
+     discrete_fourier_transform(fftdata/*-1*/,Res,FORWARDFFT); 
+    fftdata.set_offset(0);
    
 
 
@@ -304,11 +301,10 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
       }
 /* return to the spatial space */               
  
-
-
-  
-
-    discrete_fourier_transform(fftdata-1,Res,INVERSEFFT);
+     fftdata.set_offset(1);
+     discrete_fourier_transform(fftdata/*-1*/,Res,INVERSEFFT); 
+     fftdata.set_offset(0);
+    
 
  
 
@@ -344,20 +340,18 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
  }
 
 
- float *kernel=new float[(*kerlen)];
+ VectorWithOffset<float> kernel(*kerlen);//=new float[(*kerlen)];
 
  for (i=0;i<(*kerlen);i++) kernel[i]=filter[i];
-
- fftdata--;
- delete[] filter;
- delete[] fftdata;
   
  return kernel;
   }
 
   else{
-    float *kernel=new float[1];
-    *kernel=1.0F;
+    VectorWithOffset<float> kernel(1);//=new float[1];
+    //*kernel=1.0F;
+    //*kerlen=1L;
+    kernel[0] = 1.F;
     *kerlen=1L;
 
  return kernel;
@@ -368,7 +362,7 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
 }
 
 
-void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<float>& input_image){
+void extract_row(VectorWithOffset<float>&onerow,int axdir,int row_num,VoxelsOnCartesianGrid<float>& input_image){
 
 
   int zs,ys,xs, ze,ye,xe;
@@ -386,14 +380,14 @@ void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<floa
   if(axdir==2){
     
     int  res=input_image.get_x_size();
-    memset(onerow,0,res*2*sizeof(float));
+    onerow.fill(0);    
     int hres=res/2;
 
     int z_0=row_num/res;
     int y_0=row_num-z_0*res;
 
     for (int x=xs; x<= xe; x++){
-
+     
       onerow[hres+x-xs]= input_image[zs+z_0][ys+y_0][x];
 
     }
@@ -403,7 +397,7 @@ void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<floa
   else if(axdir==1){
     
     int  res=input_image.get_y_size();
-    memset(onerow,0,res*2*sizeof(float));
+    onerow.fill(0);    
     int hres=res/2;
 
     int z_0=row_num/res;
@@ -420,7 +414,7 @@ void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<floa
   else if(axdir==0){
     
     int  res=input_image.get_z_size();
-    memset(onerow,0,res*2*sizeof(float));
+    onerow.fill(0);    
     int hres=res/2;
 
     int y_0=row_num/input_image.get_y_size();
@@ -443,9 +437,9 @@ void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<floa
                   
                   
                   
-void convolution_1D(float *outrow,long res,long kerlen,float *onerow,float *cfilter){
+void convolution_1D(VectorWithOffset<float>&outrow,int res,int kerlen,VectorWithOffset<float>&onerow,VectorWithOffset<float>&cfilter){
 
-  long i,j,hres;
+  int i,j,hres;
   hres =res/2;                  
   if (kerlen>hres) kerlen = hres;
   /* convolve the filter (res/2) with the padded row (res*2) 
@@ -460,7 +454,7 @@ void convolution_1D(float *outrow,long res,long kerlen,float *onerow,float *cfil
 }  
 
 
-void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,long row_num,float *outrow){
+void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,int row_num,VectorWithOffset<float>&outrow){
 
 
   int zs,ys,xs, ze,ye,xe;
@@ -535,10 +529,10 @@ void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,long row_num,
 
                  
 
-void separable_cartesian_3Dfilter(long kerlx,long kerlz, VoxelsOnCartesianGrid<float> &input_image,float *kernelX,float *kernelZ,float *onerow, float *outrow){
+void separable_cartesian_3Dfilter(int kerlx,int kerlz, VoxelsOnCartesianGrid<float> &input_image,VectorWithOffset<float>&kernelX,VectorWithOffset<float>&kernelZ,VectorWithOffset<float>&onerow, VectorWithOffset<float>&outrow){
 
   int axdir;
-  long i,pres;
+  int i,pres;
 
   int resx=input_image.get_x_size();
   int resz=input_image.get_z_size();
@@ -611,16 +605,9 @@ void ImageFilter::build(const DiscretisedDensity<3,float>& representative_densit
   int Resx=representative_image.get_x_size();
   int Resz=representative_image.get_z_size();
 
+  onerow.grow(0,2*max(Resx,Resz)-1);
+  outrow.grow(0,max(Resx,Resz)-1);
 
-  onerow = new float[2*Resx];
-  outrow =  new float[Resx];
-
-
-  // MJ 14/04/98 Moved allocation of kernels to build_metz
-
-  // kernelX = new float [Res/2];
-  // kernelZ = new float[Res/2];
- 
    kernelX=build_metz(&kerlx,Resx,Nx,fwhmx,representative_image.get_voxel_size().x());
 
    for (int i=0;i<kerlx;i++)
@@ -651,16 +638,10 @@ kerlx=kerlz=0;
 }
 
 
-ImageFilter::~ImageFilter(){
+ImageFilter::~ImageFilter()
+{}
 
-  if (kernels_built){//MJ only de-allocate memory if filter was built
-  delete[] onerow;
-  delete[] outrow;
-  delete[] kernelX;
-  delete[] kernelZ;
-  }
 
-}
 
 
 void ImageFilter::apply(DiscretisedDensity<3,float>& input_image){
