@@ -63,7 +63,7 @@ DAVImageFilter3D<elemT>::virtual_build_filter (const DiscretisedDensity<3,elemT>
 
 template <typename elemT>
 void
-DAVImageFilter3D<elemT>::filter_it(DiscretisedDensity<3, elemT>& density) const
+DAVImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
 {
   //assert(consistency_check(density) == Succeeded::yes);
   dav_filter(density);
@@ -72,7 +72,7 @@ DAVImageFilter3D<elemT>::filter_it(DiscretisedDensity<3, elemT>& density) const
 
 template <typename elemT>
 void
-DAVImageFilter3D<elemT>::filter_it(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
+DAVImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
 {
   //assert(consistency_check(in_density) == Succeeded::yes);
  // cerr << mask_radius_x << "   "  << mask_radius_y << endl;

@@ -54,8 +54,8 @@ private:
   virtual void initialise_keymap();
 
   Succeeded virtual_build_filter (const DiscretisedDensity< 3,elemT>& density);
-  void filter_it(DiscretisedDensity<3,elemT>& density, const DiscretisedDensity<3,elemT>& in_density) const; 
-  void filter_it(DiscretisedDensity<3,elemT>& density) const; 
+  void virtual_apply(DiscretisedDensity<3,elemT>& density, const DiscretisedDensity<3,elemT>& in_density) const; 
+  void virtual_apply(DiscretisedDensity<3,elemT>& density) const; 
 };
 
 

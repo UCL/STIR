@@ -144,7 +144,7 @@ main(int argc, char *argv[])
       error("postfilter: No input image. Not writing any output.\n");
     }
     
-  post_filtering.filter_ptr->build_and_filter(*input_image_ptr);
+  post_filtering.filter_ptr->apply(*input_image_ptr);
   
   
   write_basic_interfile(out_filename.c_str(),*input_image_ptr);

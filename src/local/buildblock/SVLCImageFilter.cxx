@@ -64,7 +64,7 @@ SVLCImageFilter<elemT>::virtual_build_filter (const DiscretisedDensity<3,elemT>&
 
 template <typename elemT>
 void
-SVLCImageFilter<elemT>::filter_it(DiscretisedDensity<3, elemT>& density) const
+SVLCImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
 {
   assert(consistency_check(density) == Succeeded::yes);
   svlc_filter(density);
@@ -73,7 +73,7 @@ SVLCImageFilter<elemT>::filter_it(DiscretisedDensity<3, elemT>& density) const
 
 template <typename elemT>
 void
-SVLCImageFilter<elemT>::filter_it(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
+SVLCImageFilter<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
 {
   assert(consistency_check(in_density) == Succeeded::yes);
   svlc_filter(out_density,in_density);
