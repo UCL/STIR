@@ -5,9 +5,9 @@
 /*! 
   \file 
   \ingroup FBP3DRP
-  \brief serial FBP3DRP reconstruction implementation
-  \author Claire LABBE
+  \brief  FBP3DRP reconstruction implementation
   \author Kris Thielemans
+  \author Claire LABBE
   \author PARAPET project
   $Date$
   $Revision$
@@ -15,13 +15,30 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
+
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details.
 */
 
 /*
- Modification history: (anti-chronological order)
+ Modification history: (highlights in anti-chronological order)
+ KT Oct 2004
+ - no longer use Numerical Recipes fourier
+ - option to 'stretch' the colsher filter during definition for better results
+
  KT 05/10/2003
- - decrease dependency on symmetries by using symetries_ptr->is_basic().
+ - decrease dependency on symmetries by using symmetries_ptr->is_basic().
    Before this, we relied explicitly on the range 
    0<=segment_num, 0<=view_num<=num_views()/4
    This range was fine when using the interpolating backprojector 
@@ -38,18 +55,12 @@
  - make sure that everything works when there are no missing projections 
    in the data (i.e. rmin>rmin_orig)
  KT 11/04/2000
- - always use rmin,rmax, and not rmin-1, rmax+1. 
-   Previously, the larger range was used only in forward projection,
-   but not in backprojection -> waste of CPU time
  - removed (old!) bug by adjusting range for rmin (and hence rmax)
    to use 'floor' instead of 'ceil'. Result was that sometimes 1 
    missing projection was not filled in. So, better axial uniformity now.
  - moved rmin,rmax determination to a separate function, as this is now more complicated
    They are now determined in virtual_ring_units, even for the span case. span case
    works now correctly !
- - made 'already 2D images' case work again (aside from fitting)
- - replaced output to cout,cerr with full_log
- - flagged some things that won't work with calls to error()
 
  KT&CL 160899
  3 changes that solve the dependency of the global normalisation
@@ -58,13 +69,6 @@
  - add scaling factors according to num_ring_differences_in_this_segment
  - approximate analytic integral over delta by having a 1/2 in the
  backprojection of the last segment
- other:
-  
- allow a max_segment_num_to_process
- getting things ready for fitting estimated sinograms
- various renaming of variables, reordering of parameters in constructor etc.
- update use of parameter_info()
- various other smaller changes
 */
 //CL 1st June 1999
 // DIstinguish the alpha and Nyquist parameters from RAmp and Colsher filter
@@ -81,24 +85,19 @@
 //    Colsher filter is done out of the view loop. This will speed up the
 //    FBP3DRP implementation
 
-
-
-
-
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Sinogram.h"
-//#include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Coordinate3D.h"
 #include "stir/Succeeded.h"
 
-#include "local/stir/FBP3DRP/ColsherFilter.h" 
+#include "stir/analytic/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"
 //#include "stir/recon_buildblock/distributable.h"
-//#include "local/stir/FBP3DRP/process_viewgrams.h"
+//#include "stir/FBP3DRP/process_viewgrams.h"
 
-#include "local/stir/FBP3DRP/FBP3DRPReconstruction.h"
+#include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/utilities.h"
@@ -209,7 +208,7 @@ set_defaults()
   colsher_stretch_factor_planar=2;
   colsher_stretch_factor_axial=2;
     
-  disp=0;
+  display_level=0;
   save_intermediate_files=0;
 
   forward_projector_sptr =
@@ -257,7 +256,7 @@ FBP3DRPReconstruction::initialise_keymap()
   parser.add_parsing_key("Forward projector type", &forward_projector_sptr);
 
   parser.add_key("Save intermediate images", &save_intermediate_files);
-  parser.add_key("Display level",&disp);
+  parser.add_key("Display level",&display_level);
 }
 
 
@@ -272,9 +271,9 @@ FBP3DRPReconstruction::ask_parameters()
 // TODO move to Reconstruction
 
     
-// PARAMETERS => DISP
+// PARAMETERS => DISPLAY_LEVEL
     
-    disp = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: intermediate, 3: after each view) ? ", 0,3,0);
+    display_level = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: intermediate, 3: after each view) ? ", 0,3,0);
 
     save_intermediate_files =ask_num("Would you like to save all the intermediate images ? ",0,1,0 );
 
@@ -357,7 +356,6 @@ FBP3DRPReconstruction(const string& parameter_filename)
     error("FBP3DRP currently needs arc-corrected data. Sorry\n");
 
   proj_data_info_cyl = *proj_data_info_cyl_ptr;
-  cerr<<parameter_info() << endl;
 }
 
 FBP3DRPReconstruction::FBP3DRPReconstruction()
@@ -429,6 +427,7 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
       error("Couldn't open full_log file %s", file.c_str());
   }
 
+  full_log << parameter_info();
   full_log << "\n\n********** PROCESSING FBP3DRP RECONSTRUCTION *************" << endl;
   
   const int old_max_segment_num_to_process = max_segment_num_to_process;
@@ -536,6 +535,8 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
       warning("\nOutput image will NOT be zoomed.\n");
       image = estimated_image();
     }
+  if(display_level>0) 
+    display(image, image.find_max(), "Final image");
 
   stop_timers();
   do_log_file(image);
@@ -575,7 +576,7 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
   full_log << "  - min and max in SSRB+FBP image " << estimated_image().find_min()
 	   << " " << estimated_image().find_max() << " SUM= " << estimated_image().sum() << endl;
       
-  if(disp>1) {
+  if(display_level>1) {
     full_log << "  - Displaying estimated image" << endl;
     display(estimated_image(),estimated_image().find_max(), "Image estimate"); 
   }
@@ -798,7 +799,7 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
     }
 #endif
 
-  if(disp>2) {
+  if(display_level>2) {
     display( viewgrams,viewgrams.find_max(),"Original+Forward projected");
   }
 }
@@ -892,7 +893,7 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 	}
       
       }
-    if(disp>2) {
+    if(display_level>2) {
       display( viewgrams,viewgrams.find_max(), "Colsher filtered");
     }
 }
