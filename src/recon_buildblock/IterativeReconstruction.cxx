@@ -22,6 +22,7 @@
 #include "DiscretisedDensity.h"
 #include "tomo/ImageProcessor.h"
 #include "tomo/Succeeded.h"
+#include "shared_ptr.h"
 #include "interfile.h"
 #include <iostream>
 
@@ -39,7 +40,36 @@ IterativeReconstruction::IterativeReconstruction()
   terminate_iterations=false;
 }
 
+DiscretisedDensity<3,float> *
+IterativeReconstruction::get_initial_image_ptr() const
+{
+  if(get_parameters().initial_image_filename=="0")
+  {
+    return construct_target_image_ptr();    
+  }
+  else if(get_parameters().initial_image_filename=="1")
+  {
+    DiscretisedDensity<3,float> * target_image_ptr =
+      construct_target_image_ptr();    
+    target_image_ptr->fill(1.F);
+    return target_image_ptr;
+  }
+  else
+    {
+      return 
+        DiscretisedDensity<3,float>::read_from_file(get_parameters().initial_image_filename);
+    }
+}
 
+// KT 10122001 new
+Succeeded 
+IterativeReconstruction::
+reconstruct() 
+{
+  shared_ptr<DiscretisedDensity<3,float> > target_image_ptr =
+    get_initial_image_ptr();
+  return reconstruct(target_image_ptr);
+}
 
 Succeeded 
 IterativeReconstruction::
