@@ -27,23 +27,44 @@
 
 #include <vector>
 #include <string>
+#include <ctime>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
+# ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::time_t; using ::tm; using ::localtime; }
 #endif
 
-/* The acquired motion tracking data is formatted
-				Sample Time (sec since midnight)
-				Random #
-				Tool Number
-				Q0, Qx, Qy, Qz
-				Tx, Ty, Tz
-				RMS Error 
-				*/
 
 START_NAMESPACE_STIR
 
+/*! \brief a class for parsing .mt files output by the Polaris software
 
+  At present, the acquired motion tracking data is formatted as
+  \verbatim
+    23/5/2003 18:18:32 - 11 1 966_IRSL_II
+    record
+    record
+    ...
+  \endverbatim
+  where each record is a line containing the following numbers
+  \verbatim
+      Sample Time (secs since midnight in local time)
+      Random #
+      Tool Number (as a character)
+      Q0, Qx, Qy, Qz
+      Tx, Ty, Tz
+      RMS Error 
+  \endverbatim
+  or something like
+  \verbatim
+  67820.806  2 A : ---- Missing ----
+  \endverbatim
+  when the Polaris was not able to find the position of the tool.
+
+  \warning All times are in local time, and are hence subject to the
+  settings of your TZ environment variable. This means that if the
+  data is processed in a different time zone, you will run into 
+  trouble.
+*/
 class Polaris_MT_File
 {
 
@@ -65,7 +86,7 @@ public:
    Polaris_MT_File(const std::string& filename);   
    
    //! get the \a n-th complete record
-   /*! This skips the 'missing data' records*/
+   /*! \warning This skips the 'missing data' records*/
    Record operator[](unsigned int n) const;
 
    //! iterators that go through complete records
@@ -78,12 +99,14 @@ public:
    const_iterator end_all_tags() const { return vector_of_tags.end();}
    unsigned long num_tags() const { return vector_of_tags.size(); }
 
-  
+   //! start of acquisition as would have been returned by std::time()
+   std::time_t get_start_time_in_secs_since_1970();
 private:
+   std::time_t start_time_in_secs_since_1970;
 
-  vector<Record> vector_of_records;
-  // this contains all tags and times (even those with 'missing data')
-  vector<Record> vector_of_tags;
+   std::vector<Record> vector_of_records;
+   // this contains all tags and times (even those with 'missing data')
+   std::vector<Record> vector_of_tags;
 };
 
 END_NAMESPACE_STIR
