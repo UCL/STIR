@@ -18,20 +18,11 @@
 */
 
 #include "local/stir/Scatter.h"
+#include <cmath>
 
 using namespace std;
 
 START_NAMESPACE_STIR
-
-// Function that will be in the BasicCoordinate Class
-BasicCoordinate<3,float> convert_int_to_float(const BasicCoordinate<3,int>& cint)
-	{	  
-	  BasicCoordinate<3,float> cfloat;
-	  cfloat[1]=(float)cint[1];
-	  cfloat[2]=(float)cint[2];
-	  cfloat[3]=(float)cint[3];
-	  return cfloat;
-	}
 
 std::vector<CartesianCoordinate3D<float> > 
 sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
@@ -41,12 +32,9 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
    const DiscretisedDensityOnCartesianGrid<3,float>* attenuation_map_cartesian_ptr=
 	     &attenuation_map;   
    if (attenuation_map_cartesian_ptr == 0)
-   {
-      warning("Didn't take an attenuation map as input");
-      return EXIT_FAILURE;
-   }
+	   warning("Didn't take an attenuation map as input");
 
-   BasicCoordinate<3,int> min_index, max_index ;
+      BasicCoordinate<3,int> min_index, max_index ;
    CartesianCoordinate3D<int> coord;
    
    if(!attenuation_map_cartesian_ptr->get_regular_range(min_index, max_index))
@@ -54,9 +42,13 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
     
    int total_points=1;
 
+   const VoxelsOnCartesianGrid<float>& image =
+  dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
+   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size(); 
 
    std::vector<CartesianCoordinate3D<int> > points; 
-            
+     
+   // coord[] is voxels units       
    for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
 	   for(coord[2]=min_index[2];coord[2]<=max_index[2];++coord[2])
 		   for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])
@@ -64,14 +56,14 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
  
    std::random_shuffle(points.begin(),points.end()); 
    std::vector<CartesianCoordinate3D<int> >:: iterator current_iter;
-   
-   std::vector<CartesianCoordinate3D<float> > scatt_points; 
+   std::vector<CartesianCoordinate3D<float> > scatt_points;
+
    for(current_iter=points.begin(); 
        current_iter!=points.end() && total_points<=max_scatt_points;
 	   ++current_iter)			   
 		   if(attenuation_map[(*current_iter)]>=att_threshold)
-		   {				   
-			   scatt_points.push_back(convert_int_to_float(*current_iter));
+		   {			
+			   scatt_points.push_back(voxel_size*convert_int_to_float(*current_iter));
 			   ++total_points;
 		   }	
     if (total_points <= max_scatt_points) 
@@ -79,6 +71,7 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 		warning("The att_threshold or the max_scatt_points are set too high!");	
 		max_scatt_points = total_points-1; 
 	}	
+	// in mm units 
     return scatt_points;
 }
 
