@@ -270,7 +270,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image,
     voxel_size = image.get_grid_spacing() / zooms;
   
   CartesianCoordinate3D<float>
-    origin = image.get_origin() / offsets_in_mm;
+    origin = image.get_origin() + offsets_in_mm;
   
   VoxelsOnCartesianGrid<float> 
     new_image(IndexRange3D(-new_sizes.z()/2, -new_sizes.z()/2+new_sizes.z()-1,
