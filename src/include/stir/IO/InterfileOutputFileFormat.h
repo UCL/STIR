@@ -46,11 +46,12 @@ public :
 
 
   Succeeded  
-    write_to_file(const string& filename, 
-                  const DiscretisedDensity<3,float>& density);
+    write_to_file(string& output_filename,
+		  const DiscretisedDensity<3,float>& density) const;
 
 private:
-  void initialise_keymap();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
 
 };
 
