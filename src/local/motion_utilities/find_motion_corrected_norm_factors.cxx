@@ -20,6 +20,7 @@
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/write_data.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
 
@@ -517,7 +518,7 @@ save_and_delete_segments(shared_ptr<iostream>& output,
 #ifdef USE_SegmentByView
       proj_data.set_segment(*segments[seg]);
 #else
-      (*segments[seg]).write_data(*output);
+      write_data(*output, (*segments[seg]));
 #endif
       delete segments[seg];      
     }
