@@ -39,6 +39,8 @@ SOURCES = \
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
+all: $(DEST)libbuildblock.a
+
 include $(SOURCES:%.cxx=$(DEST)%.d)
 
 .PRECIOUS: $(DEST)*.o $(DEST)*.a
