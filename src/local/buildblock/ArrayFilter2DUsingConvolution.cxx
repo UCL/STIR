@@ -139,7 +139,7 @@ do_it(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
 
 // instantiation
 
-template ArrayFilter2DUsingConvolution<float>;
+template class ArrayFilter2DUsingConvolution<float>;
 
 END_NAMESPACE_STIR
 

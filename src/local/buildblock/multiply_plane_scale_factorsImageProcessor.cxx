@@ -28,7 +28,7 @@ using std::copy;
 
 START_NAMESPACE_STIR
 
-
+template <>
 const char * const 
 multiply_plane_scale_factorsImageProcessor<float>::registered_name =
   "multiply_plane_scale_factors";
@@ -133,7 +133,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density,
 #  pragma warning(disable:4660)
 #  endif
 
-template multiply_plane_scale_factorsImageProcessor<float>;
+template class multiply_plane_scale_factorsImageProcessor<float>;
 
 END_NAMESPACE_STIR
 
