@@ -38,8 +38,11 @@ SOURCES= ForwardProjectorByBin.cxx \
 	ProjectorByBinPair.cxx \
 	ProjectorByBinPairUsingProjMatrixByBin.cxx \
 	ProjectorByBinPairUsingSeparateProjectors.cxx \
+    BinNormalisation.cxx \
+	ChainedBinNormalisation.cxx \
 	BinNormalisationFromProjData.cxx \
 	TrivialBinNormalisation.cxx \
+    BinNormalisationFromAttenuationImage.cxx \
 	GeneralisedPrior.cxx
 
 
