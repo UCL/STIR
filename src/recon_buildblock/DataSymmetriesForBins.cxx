@@ -12,7 +12,6 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
 /*
@@ -28,6 +27,10 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 
 START_NAMESPACE_STIR
+
+DataSymmetriesForBins::
+~DataSymmetriesForBins()
+{}
 
 DataSymmetriesForBins::
 DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
@@ -51,6 +54,14 @@ bool DataSymmetriesForBins::find_basic_bin(Bin& b) const
   return sym_op->is_trivial();
 }
 
+
+bool
+DataSymmetriesForBins::
+is_basic(const Bin& b) const
+{
+  Bin copy = b;
+  return !find_basic_bin(copy);
+}
 
 /*! default implementation in terms of get_related_bins_factorised */
 void
