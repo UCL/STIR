@@ -196,7 +196,7 @@ SegmentByView<float> ProjData::get_segment_by_view(const int segment_num) const
 }
 
 Succeeded 
-ProjData::set_segment_by_sinogram(SegmentBySinogram<float>& segment)
+ProjData::set_segment(const SegmentBySinogram<float>& segment)
 {
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
   {
@@ -208,7 +208,7 @@ ProjData::set_segment_by_sinogram(SegmentBySinogram<float>& segment)
 }
 
 Succeeded 
-ProjData::set_segment_by_view(SegmentByView<float>& segment)
+ProjData::set_segment(const SegmentByView<float>& segment)
 {
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
   {
