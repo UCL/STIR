@@ -1,11 +1,10 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __ForwardProjectorByBin_h_
 #define __ForwardProjectorByBin_h_
 /*!
-
   \file
   \ingroup recon_buildblock
 
@@ -16,11 +15,11 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+   $Date$
+   $Revision$
 */
 
+#include "tomo/RegisteredObject.h"
 #include "TimedObject.h"
 #include <iostream>
 
@@ -35,21 +34,38 @@ START_NAMESPACE_TOMO
 
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, class elemT> class DiscretisedDensity;
+class ProjDataInfo;
 class DataSymmetriesForViewSegmentNumbers;
-
+template <typename T> class shared_ptr;
 
 
 /*!
   \ingroup recon_buildblock
   \brief Abstract base class for all forward projectors
 */
-class ForwardProjectorByBin : public TimedObject
+class ForwardProjectorByBin : 
+  public TimedObject,
+  public RegisteredObject<ForwardProjectorByBin> 
 { 
 public:
 
   //! Default constructor calls reset_timers()
   //inline
     ForwardProjectorByBin();
+
+  //! Stores all necessary geometric info
+ /*! 
+  If necessary, set_up() can be called more than once.
+
+  Derived classes can assume that forward_project()  will be called
+  with input corresponding to the arguments of the last call to set_up(). 
+
+  \warning there is currently no check on this.
+  */
+virtual void set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    ) =0;
 
   //! Informs on which symmetries the projector handles
   /*! It should get data related by at least those symmetries.
@@ -88,7 +104,5 @@ protected:
 };
 
 END_NAMESPACE_TOMO
-
-//#include "new_recon_buildblock/ForwardProjectorByBin.inl"
 
 #endif // __ForwardProjectorByBin_h_
