@@ -13,7 +13,7 @@
 #    it must have a target run_tests_$(dir) (that depends on all_test_exes)
 #    it must have a target run_interactive_tests_$(dir) (that depends on all_test_exes)
 # Result:
-# targets   $build_tests_(dir), clean_tests_$(dir)
+# targets   build_tests_$(dir), clean_tests_$(dir)
 # variables $(dir)_TEST_SOURCES (with $dir)/ prepended)
 #           $(dir)_TEST_EXES, $(dir)_TEST_EXE_FILENAMES
 # 
