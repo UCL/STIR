@@ -48,7 +48,7 @@ using std::endl;
 
 #include "stir/NumericInfo.h"
 // for write_update_image
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 
 START_NAMESPACE_STIR
 
