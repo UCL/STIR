@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -131,7 +131,8 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 			    const int data_num = 0, const int bed_num = 0);
 
 //! Create a new ECAT7  sinogram file and write the data in there
-Succeeded ProjData_to_ECAT7(ProjData const& proj_data, 
+Succeeded 
+ProjData_to_ECAT7(ProjData const& proj_data, 
                             string const & cti_name, string const & orig_name,
                             const int frame_num = 1, const int gate_num = 1, 
 			    const int data_num = 0, const int bed_num = 0,
@@ -229,27 +230,28 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 Succeeded 
 write_basic_interfile_header_for_ECAT7(string& interfile_header_name,
                                        const string& ECAT7_filename,
-                                       int frame, int gate, int data,
-                                       int bed);
+				       const int frame_num, const int gate_num, const int data_num, const int bed_num);
 
-#if 0
 /*
-  \brief Convert image data
+  \brief Read an image from an ECAT7 file.
   \ingroup ECAT
+  \warning do not use directly, but use DiscretisedDensity<3,float>::read_from_file().
+
+  \return a pointer to a newly allocated image, or 0 if it failed.
 */
 VoxelsOnCartesianGrid<float> * 
-ECAT7_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const int data_num, const int bed_num,
-                      MatrixFile *mptr, const Main_header & v_mhead);
+ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
+			       const int frame_num, const int gate_num, const int data_num, const int bed_num);
 /* 
-  \brief Convert sinogram data
-  \param max_ring_diff if less than 0, the maximum is used (i.e. num_rings-1)
-  \param arccorrected tells the function if the data is (assumed to be) arc-corrected. Note 
-         that the ECAT7 file format does not have any flag to indicate this.
+  \brief Read projection data from an ECAT7 file
+  \ingroup ECAT
+  \warning do not use directly, but use ProjData::read_from_file().
+
+  \return a pointer to a newly allocated ProjDataFromStream object, or 0 if it failed.
 */
-void ECAT7_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
-		   int max_ring_diff, bool arccorrected,
-		   char *v_data_name, MatrixFile *mptr, const Main_header & v_mhead);
-#endif
+ProjDataFromStream*
+ECAT7_to_PDFS(const string& ECAT7_filename,
+		   const int frame_num, const int gate_num, const int data_num, const int bed_num);
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
