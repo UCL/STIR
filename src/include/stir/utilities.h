@@ -20,7 +20,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
-
+#include <stdio.h>
 #include <iostream>
 #include <string>
 
@@ -96,22 +96,52 @@ bool
 ask (const string& prompt, bool default_value);
 
 /*****************************************************
- functions for opening binary streams
+ functions for opening/closing (binary) streams
 *****************************************************/
 
-//! opens a stream for reading. Calls error() when it does not succeed.
+//! opens a stream for reading binary data. Calls error() when it does not succeed.
 /*!  \ingroup buildblock
  */
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
 				  const string& name);
-//! opens a stream for writing. Calls error() when it does not succeed.
+//! opens a FILE for reading binary data. Calls error() when it does not succeed.
 /*!  \ingroup buildblock
+  Templated such that it works on std::ifstream and std::fstream.
+ */
+FILE*& open_read_binary(FILE*& fptr, 
+                              const string& name);
+
+//! opens a stream for writing binary data. Calls error() when it does not succeed.
+/*!  \ingroup buildblock
+   Templated such that it works on std::ofstream and std::fstream.
  */
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
-				  const string& name);
+                                   const string& name);
+//! opens a FILE for writing binary data. Calls error() when it does not succeed.
+/*!  \ingroup buildblock
+ */
+FILE*& open_write_binary(FILE*& fptr, 
+                        const string& name);
 
+
+//! closes a stream without error checking.
+/*!  \ingroup buildblock
+   Templated such that it works on std::ofstream, std::ifstream and std::fstream.
+
+   This function is only provided in case you need to write code that works with 
+   both std::fstream and stdio FILE.
+ */
+template <class FSTREAM>
+inline void close_file(FSTREAM& s);
+
+//! closes a stream without error checking.
+/*!  \ingroup buildblock
+   This function is only provided in case you need to write code that works with 
+   both std::fstream and stdio FILE.
+ */
+void close_file(FILE*& fptr);
 
 
 /**************************************************************************
