@@ -8,6 +8,7 @@
 \brief compare 2 files with sinogram data
 
 \author Matthew Jacobson
+\author Kris Thielemans
 \author PARAPET project
 
 $Date$
@@ -17,12 +18,14 @@ This utility compares two input projection data sets.
 The input data are deemed identical if their maximum absolute difference 
 is less than a hard-coded tolerance value.
 Diagnostic output is written to stdout, and the return value indicates
-if the files are identical or not.
+if the files are identical or not. Note however that a non-success return
+value (which is 1 on most systems) might also indicate an error reading
+the data.
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -31,15 +34,16 @@ if the files are identical or not.
 
 #include "stir/ProjData.h"
 #include "stir/SegmentByView.h"
-#include "stir/ArrayFunction.h" 
 #include "stir/shared_ptr.h"
 
-#include <numeric>
+#include <iostream>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::max;
 #endif
 
 
@@ -47,31 +51,28 @@ using std::endl;
 START_NAMESPACE_STIR
 
 
-//*********************** prototypes
-
-void compare(SegmentByView<float>& sino1,SegmentByView<float> &sino2,
-	     float &max_error, float &amplitude);
-
-
 //*********************** functions
 
+// WARNING: modifies input1
 void 
-update_comparison(SegmentByView<float>& input1,SegmentByView<float> &input2,
-		  float &max_error, float &amplitude)
+update_comparison(SegmentByView<float>& input1, const SegmentByView<float> &input2,
+		  float &max_pos_error, float& max_neg_error, float &amplitude)
 {
-  float reference_max=input1.find_max();
-  float reference_min=input1.find_min();
+  const float reference_max=input1.find_max();
+  const float reference_min=input1.find_min();
 
-  float local_amplitude=fabs(reference_max)>fabs(reference_min)?
+  const float local_amplitude=
+    fabs(reference_max)>fabs(reference_min)?
     fabs(reference_max):fabs(reference_min);
 
   amplitude=local_amplitude>amplitude?local_amplitude:amplitude;
 
   input1-=input2;
-  in_place_abs(input1);
-  float max_local_error=input1.find_max();
+  const float max_local_pos_error=input1.find_max();
+  const float max_local_neg_error=input1.find_min();
 
-  max_error=max_local_error>max_error? max_local_error:max_error;
+  max_pos_error=max_local_pos_error>max_pos_error? max_local_pos_error:max_pos_error;
+  max_neg_error=max_local_neg_error<max_neg_error? max_local_neg_error:max_neg_error;
   
 }
 
@@ -84,15 +85,12 @@ END_NAMESPACE_STIR
 
 
 
-USING_NAMESPACE_STIR
 
 
 int main(int argc, char *argv[])
 {
 
-  const float tolerance=0.0001F;
-
-  float max_error=0.F, amplitude=0.F;
+  USING_NAMESPACE_STIR;
 
   if(argc<3)
   {
@@ -115,28 +113,36 @@ int main(int argc, char *argv[])
   if(argc==4 && atoi(argv[3])>=0 && atoi(argv[3])<max_segment) 
     max_segment=atoi(argv[3]);
 
+
+  const float tolerance=0.0001F;
+
+  float max_pos_error=0.F, max_neg_error=0.F, amplitude=0.F;
   for (int segment_num = -max_segment; segment_num <= max_segment ; segment_num++) 
     {
-
       SegmentByView<float> input1=first_operand->get_segment_by_view(segment_num);
-      SegmentByView<float> input2=second_operand->get_segment_by_view(segment_num);
+      const SegmentByView<float> input2=second_operand->get_segment_by_view(segment_num);
 
-      update_comparison(input1,input2,max_error,amplitude);
-
+      update_comparison(input1,input2,max_pos_error,max_neg_error, amplitude);
     }
 
-  bool same=(max_error/amplitude<=tolerance)?true:false;
+  const float max_abs_error=max(max_pos_error, -max_neg_error);
+  bool same=(max_abs_error/amplitude<=tolerance)?true:false;
 
+  cout << "\nMaximum absolute error = "<<max_abs_error
+       << "\nMaximum in (1st - 2nd) = "<<max_pos_error
+       << "\nMinimum in (1st - 2nd) = "<<max_neg_error<<endl;
+  cout <<"Error relative to sup-norm of first data-set = "<<(max_abs_error/amplitude)*100<<" %"<<endl;
 
-  cout<<endl<<"Maximum absolute error = "<<max_error<<endl;
-  cout<<"Error relative to sup-norm of first array = "<<(max_error/amplitude)*100<<" %"<<endl;
-
-  cout<<"Projection arrays deemed ";
-
+  cout<<"Projection arrays ";
   if(same)
-    cout<<"identical";
-  else cout<<"different";
-  cout<<endl;
+  {
+    cout << (max_abs_error == 0 ? "are " : "deemed ")
+         << "identical\n";
+  }
+  else 
+  {
+    cout<<"deemed different\n";
+  }
 
   return same?EXIT_SUCCESS:EXIT_FAILURE;
 
