@@ -24,6 +24,7 @@
 #include "local/stir/fft.h"
 #include "stir/CPUTimer.h"
 #include "stir/IndexRange2D.h"
+#include "stir/IndexRange3D.h"
 #include "stir/norm.h"
 #include "stir/numerics/stir_NumericalRecipes.h"
 #include "stir/numerics/fourier.h"
@@ -41,7 +42,10 @@ START_NAMESPACE_STIR
 #ifdef DOARRAY
   typedef Array<1,std::complex<float> > ArrayC1;
   typedef Array<1,float> ArrayF1;
+  typedef Array<2,float> ArrayF2;
   typedef Array<2,std::complex<float> > ArrayC2;
+  typedef Array<3,float> ArrayF3;
+  typedef Array<3,std::complex<float> > ArrayC3;
 #else
   typedef VectorWithOffset<std::complex<float> > ArrayC1;
   typedef VectorWithOffset<float> ArrayF1;
@@ -103,6 +107,11 @@ void discrete_fourier_transform(VectorWithOffset<elemT>&data, int isign)
 }
 
 
+inline float rand1() 
+{
+  return 2*(rand()-RAND_MAX/2.F)/RAND_MAX;
+}
+
 END_NAMESPACE_STIR
 
 using namespace stir;
@@ -129,7 +138,7 @@ int main()
       cin >> length;
       c.grow(0,length-1);
       for (int i=0; i<c.get_length(); ++i)
-	c[i]= std::complex<float>(rand(), rand());
+	c[i]= std::complex<float>(rand1(), rand1());
     }
 #endif
     const ArrayC1 c_copy = c;
@@ -202,14 +211,14 @@ int main()
 	{
 	  c2d[i].grow(0,columns-1);
 	  for (int j=0; j<c2d[i].get_length(); ++j)
-	    c2d[i][j]= std::complex<float>(rand(), rand());
+	    c2d[i][j]= std::complex<float>(rand1(), rand1());
 	}
 #else
       c2d.grow(IndexRange2D(length, columns));
       for (ArrayC2::full_iterator iter= c2d.begin_all();
 	   iter!=c2d.end_all();
 	   ++iter)
-	    *iter= std::complex<float>(rand(), rand());
+	    *iter= std::complex<float>(rand1(), rand1());
 #endif
     }
 
@@ -266,8 +275,8 @@ int main()
       cin >> length;
       v.grow(0,length-1);
       for (int i=0; i<v.get_length(); ++i)
-	v[i]= rand();
-      v[0]=rand();
+	v[i]= rand1();
+      v[0]=rand1();
     }
     ArrayC1 pos_frequencies =
       fourier_1d_for_real_data(v,sign);
@@ -288,6 +297,85 @@ int main()
     again_v -= v;
     cout << "\ninverse Real FT Residual norm "  <<
       norm(again_v.begin(), again_v.end())/norm(v.begin(), v.end());
+
+  }
+  {
+    ArrayF2 v;
+    { 
+      int length=0;
+      cout << "Enter number of rows of array:";
+      cin >> length;
+      int columns=0;
+      cout << "Enter number of columns of array:";
+      cin >> columns;
+      v.grow(IndexRange2D(length, columns));
+      for (ArrayF2::full_iterator iter= v.begin_all();
+	   iter!=v.end_all();
+	   ++iter)
+	*iter= rand1();
+    }
+    ArrayC2 pos_frequencies =
+      fourier_for_real_data(v,sign);
+    const ArrayC2 all_frequencies =
+      pos_frequencies_to_all(pos_frequencies);
+
+    ArrayC2 c(v.get_index_range());
+    std::copy(v.begin_all(), v.end_all(), c.begin_all());
+    fourier(c,sign);
+    //cout << pos_frequencies;
+    //cout << all_frequencies << c;
+    //cout << '\n' << c-all_frequencies;
+    c -= all_frequencies;
+    cout << "\nReal FT Residual norm "  <<
+      norm(c.begin_all(), c.end_all())/norm(v.begin_all(), v.end_all());
+
+    ArrayF2 again_v =
+      inverse_fourier_for_real_data(pos_frequencies,sign);
+    //cout <<"\nv,test "<< v << again_v << again_v/v;
+    again_v -= v;
+    cout << "\ninverse Real FT Residual norm "  <<
+      norm(again_v.begin_all(), again_v.end_all())/norm(v.begin_all(), v.end_all());
+
+  }
+  {
+    ArrayF3 v;
+    { 
+      int length=0;
+      cout << "Enter number of rows of array:";
+      cin >> length;
+      int columns=0;
+      cout << "Enter number of columns of array:";
+      cin >> columns;
+      int planes=0;
+      cout << "Enter number of planes of array:";
+      cin >> planes;
+      v.grow(IndexRange3D(planes,length, columns));
+      for (ArrayF3::full_iterator iter= v.begin_all();
+	   iter!=v.end_all();
+	   ++iter)
+	*iter= rand1();
+    }
+    ArrayC3 pos_frequencies =
+      fourier_for_real_data(v,sign);
+    const ArrayC3 all_frequencies =
+      pos_frequencies_to_all(pos_frequencies);
+
+    ArrayC3 c(v.get_index_range());
+    std::copy(v.begin_all(), v.end_all(), c.begin_all());
+    fourier(c,sign);
+    //cout << pos_frequencies;
+    //cout << all_frequencies << c;
+    //cout << '\n' << c-all_frequencies;
+    c -= all_frequencies;
+    cout << "\nReal FT Residual norm "  <<
+      norm(c.begin_all(), c.end_all())/norm(v.begin_all(), v.end_all());
+
+    ArrayF3 again_v =
+      inverse_fourier_for_real_data(pos_frequencies,sign);
+    //cout <<"\nv,test "<< v << again_v << again_v/v;
+    again_v -= v;
+    cout << "\ninverse Real FT Residual norm "  <<
+      norm(again_v.begin_all(), again_v.end_all())/norm(v.begin_all(), v.end_all());
 
   }
   return EXIT_SUCCESS;
