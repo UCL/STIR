@@ -63,7 +63,7 @@ IndexRange<num_dimensions>::IndexRange(
   copy(min_v.begin()+1, min_v.end(), new_min.begin());
   copy(max_v.begin()+1, max_v.end(), new_max.begin());
 #endif
-  for(iterator iter=begin(); iter != end(); iter++)
+  for(iterator iter=this->begin(); iter != this->end(); iter++)
     *iter = IndexRange<num_dimensions-1>(new_min, new_max);
 }
 
@@ -74,13 +74,13 @@ IndexRange<num_dimensions>::
   operator==(const IndexRange<num_dimensions>& range2) const
 {
   return 
-    get_min_index() == range2.get_min_index() &&
-    get_length() == range2.get_length() &&
+    this->get_min_index() == range2.get_min_index() &&
+    this->get_length() == range2.get_length() &&
 #ifndef STIR_NO_NAMESPACES  
     // "using std::equal" didn't work for VC 6...
-    std::equal(begin(), end(), range2.begin());
+    std::equal(this->begin(), this->end(), range2.begin());
 #else
-    equal(begin(), end(), range2.begin());
+    equal(this->begin(), this->end(), range2.begin());
 #endif
 }
 
