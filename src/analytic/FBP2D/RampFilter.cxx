@@ -31,9 +31,7 @@
 #include <sstream>
 #endif
 
-#ifndef STIR_NO_NAMESPACE
-using std::ends;
-#endif
+/* Note: #ifdef NRFFT, then the Numerical Recipes version is used (if you have it...) */
 
 START_NAMESPACE_STIR
 
@@ -43,7 +41,8 @@ START_NAMESPACE_STIR
 // by computing the analytic inverse Fourier transform of a cut-off ramp
 // times a Hamming window.
 
-inline float ramp_filter_in_space(const int n, 
+static inline float 
+ramp_filter_in_space(const int n, 
 			   const float sampledist, 
 			   const int length, 
 			   const float alpha, 
@@ -88,7 +87,13 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
   if (length==0) 
     return;
 #ifdef OLDRAMP
-  // KT&DH 17/05/2000 TODO: highly suspect that we shouldn't divide by sampledist, but didn't check it yet
+  /* This is the straightforward implementation:
+     define it in complex space as abs(frequency).
+     This has a well-known problem that DC values are wrong. This is essentially because
+     the ramp filter is a continuous filter. Discrete convolution should be done
+     with the samples of the continuous fourier transform of the ramp.
+  */
+  // KT&DH 17/05/2000 TODO: highly suspect that the scale factor is inappropriate
 #error check scale factor in ramp filter!
 /* As realft uses only positive frequencies, the filter needs to be defined
    only for those frequencies, so it has length/2 elements. 
@@ -99,19 +104,18 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
 
   for (Int i = 1; i <= length - 1; i += 2) {
     f = (float) ((float) 0.5 * (i - 1) / length);
-    float nu_a = f / sampledist;
+    float nu_a = f ;
     if (f <= fc)
       filter[i] = nu_a * (alpha + (1. - alpha) * cos(_PI * f / fc));
     else
       filter[i] = 0.0;
-		filter[i + 1] = 0.0;	/* imaginary part */
+    filter[i + 1] = 0.0;	/* imaginary part */
   }
   if (0.5 <= fc)		/* see realft for an explanation:data[2]=last real */
-    filter[2] = (0.5 / sampledist) * (alpha + (1. - alpha) * cos(_PI * f / fc));
+    filter[2] = (0.5) * (alpha + (1. - alpha) * cos(_PI * f / fc));
   else
     filter[2] = 0.;
 #else
-  // KT&CL 03/08/99 new
   /* This computes the ramp filter in frequency space in 2 steps:
      - sample the filter in real space
      - perform a discrete FT to find values in the frequency domain
@@ -131,25 +135,26 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
   Array<1,float> filter(length);
 #endif
 
-  // KT&DH 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
-  filter[0] = 
-    static_cast<float>((2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */));
-
-  // note: filter[length/2] is set twice for even n
+  filter[0] = ramp_filter_in_space(0, sampledist, length, alpha, fc);
+  // note: filter[length/2] is set twice for even length, but that's fine
   for (int n = 1; n <= length/2; n += 1)
   {
     filter[n] = ramp_filter_in_space(n, sampledist, length, alpha, fc);
-
     filter[length-n] = filter[n];
   }
 
+  //std::cerr <<"Ramp filter in real space = " <<filter;
 #ifdef NRFFT
   filter.set_offset(1);
 
   realft(filter, length/2, 1);
+
+  //std::cerr <<"Ramp filter in Fourier space = "<<filter;
 #else
   if (set_kernel(filter) == Succeeded::no)
     error("Error initialisation ramp filter\n");
+
+  //std::cerr <<"Ramp filter in Fourier space = " <<complex_kernel;
 #endif
 #endif
   stop_timers();
