@@ -64,8 +64,22 @@ private:
 void BSplines_Tests::run_tests()
 {  
   cerr << "Testing BSplines set of functions..." << endl;
-  set_tolerance(0.001); 
+  set_tolerance(0.001);
   typedef double elemT;   
+  static std::vector<elemT>  pre_input_sample;
+	  
+ 	  pre_input_sample.push_back(-14); pre_input_sample.push_back(8);  pre_input_sample.push_back(-1);
+	  pre_input_sample.push_back(13);  pre_input_sample.push_back(-1); pre_input_sample.push_back(-2);
+	  pre_input_sample.push_back(11);  pre_input_sample.push_back(1);  pre_input_sample.push_back(-8);
+	  pre_input_sample.push_back(6);   pre_input_sample.push_back(11); pre_input_sample.push_back(-14);
+	  pre_input_sample.push_back(6);   pre_input_sample.push_back(-3); pre_input_sample.push_back(10);
+	  pre_input_sample.push_back(1);   pre_input_sample.push_back(7);  pre_input_sample.push_back(-2);
+	  pre_input_sample.push_back(-5);  pre_input_sample.push_back(-9); pre_input_sample.push_back(-9);
+	  pre_input_sample.push_back(6);   pre_input_sample.push_back(-5); pre_input_sample.push_back(2);
+	  pre_input_sample.push_back(-10); pre_input_sample.push_back(6);  pre_input_sample.push_back(-3);
+	  pre_input_sample.push_back(11);  pre_input_sample.push_back(11); pre_input_sample.push_back(3);
+
+  
   {
 	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTests;
 	  cerr << "Testing BSplines_weight function..." << endl;
@@ -87,6 +101,28 @@ void BSplines_Tests::run_tests()
 		    ++cur_iter_stir_out, ++cur_iter_test)			  
 				check_if_equal(*cur_iter_stir_out, *cur_iter_test,
 				"check BSplines_weight implementation");    		  		  		  
+  }
+   {
+	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTests;
+	  cerr << "Testing oMoms_weight function..." << endl;
+	  std::vector<elemT> oMoms_weight_STIR_vector, oMoms_weight_correct_vector;
+	  oMoms_weight_STIR_vector.push_back(oMoms_weight(0.));
+  
+	  for(elemT i=0.3; i<=3 ;++i)
+		  oMoms_weight_STIR_vector.push_back(oMoms_weight(i));
+	  
+	  oMoms_weight_correct_vector.push_back(0.619048);//1
+	  oMoms_weight_correct_vector.push_back(0.563976);//2
+	  oMoms_weight_correct_vector.push_back(0.0738333);//3	  
+	  oMoms_weight_correct_vector.push_back(0.); //4
+	  
+	  std::vector<elemT>:: iterator cur_iter_stir_out= oMoms_weight_STIR_vector.begin()
+		  , 	  cur_iter_test= oMoms_weight_correct_vector.begin()		  ;
+	  for (; cur_iter_stir_out!= oMoms_weight_STIR_vector.end() &&
+		  cur_iter_test!= oMoms_weight_correct_vector.end();	  
+		    ++cur_iter_stir_out, ++cur_iter_test)			  
+				check_if_equal(*cur_iter_stir_out, *cur_iter_test,
+				"check oMoms_weight implementation");    		  		  		  
   }
   {  
 	  cerr << "Testing BSplines_1st_der_weight function..." << endl;
@@ -142,41 +178,7 @@ void BSplines_Tests::run_tests()
 				"check BSplines_1st_der_est implementation"); 		  		 
   }
   {
-	  cerr << "Testing BSplines values and constructor using a vector as input..." << endl;	  
-	  std::vector<elemT>  pre_input_sample/*(30,1)*/;
-	  
- 	  pre_input_sample.push_back(-14);
-	  pre_input_sample.push_back(8);
-	  pre_input_sample.push_back(-1);	  
-	  pre_input_sample.push_back(13);
-	  pre_input_sample.push_back(-1);
-	  pre_input_sample.push_back(-2);
-	  pre_input_sample.push_back(11);
-	  pre_input_sample.push_back(1);
-	  pre_input_sample.push_back(-8);
-	  pre_input_sample.push_back(6);
-	  pre_input_sample.push_back(11);
-	  pre_input_sample.push_back(-14);
-	  pre_input_sample.push_back(6);
-	  pre_input_sample.push_back(-3);
-	  pre_input_sample.push_back(10);
-	  pre_input_sample.push_back(1);
-	  pre_input_sample.push_back(7);
-	  pre_input_sample.push_back(-2);
-	  pre_input_sample.push_back(-5);
-	  pre_input_sample.push_back(-9);
-	  pre_input_sample.push_back(-9);
-	  pre_input_sample.push_back(6);	  
-	  pre_input_sample.push_back(-5);
-	  pre_input_sample.push_back(2);
-	  pre_input_sample.push_back(-10);
-	  pre_input_sample.push_back(6);
-	  pre_input_sample.push_back(-3);
-	  pre_input_sample.push_back(11);
-	  pre_input_sample.push_back(11);
-	  pre_input_sample.push_back(3);
-	  
-
+	  cerr << "Testing BSplines values and constructor using a vector as input..." << endl;	  	  
 #if 0
 	  typedef Array<2,float>  input_type;
 	  typedef Array<1,float> out_elemT;
@@ -189,18 +191,51 @@ void BSplines_Tests::run_tests()
 	  std::vector<out_elemT> STIR_output_sample;
 	  
 	  std::copy(pre_input_sample.begin(), pre_input_sample.end(), input_sample.begin_all());
-
+	  //linear_extrapolation(pre_input_sample);
 	  BSplines1DRegularGrid<out_elemT, elemT> BSplines1DRegularGridTests(
 		  input_sample.begin(), input_sample.end());
-	    for (elemT i=0, imax=30; i<imax ;++i)
-	  	  STIR_output_sample.push_back(BSplines1DRegularGridTests(i));
-	  
+	    for (elemT i=0, imax=30; i<imax ;++i)		
+			STIR_output_sample.push_back(BSplines1DRegularGridTests(i));
+			cout << STIR_output_sample; 
+		
 	  std::vector<out_elemT>:: iterator cur_iter_stir_out= STIR_output_sample.begin();
 	  input_type::const_iterator cur_iter_input= input_sample.begin();
-
-	  cout << STIR_output_sample;
+	 
 	  for (int i=0; cur_iter_stir_out!=STIR_output_sample.end() &&
 		  cur_iter_input!=input_sample.end();	 
+	  		    ++cur_iter_stir_out, ++cur_iter_input, ++i)			  
+		check_if_equal(*cur_iter_stir_out, *cur_iter_input,
+				"check BSplines implementation");    	
+  }  
+  {
+	  cerr << "Testing o-Moms values and constructor using a vector as input..." << endl;	  
+	  const std::vector<elemT>  const_input_sample(10,1);	  
+	  std::vector<elemT> STIR_const_output_sample, STIR_output_sample;	
+
+	  linear_extrapolation(pre_input_sample);
+	  std::vector<elemT>:: iterator cur_iter_stir_out= STIR_const_output_sample.begin();
+	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTestOMOMs1(
+		  const_input_sample.begin(), const_input_sample.end(), 20),
+		  BSplines1DRegularGridTestOMOMs(pre_input_sample, 20);
+	  
+	  /* Testing if output is the same to the input (1) */
+	  for (int i=0; cur_iter_stir_out!=STIR_const_output_sample.end();		  
+	  		    ++cur_iter_stir_out, ++i)			  
+		check_if_equal(*cur_iter_stir_out, (elemT)1,
+				"check BSplines implementation");    	
+
+	    for (elemT i=0, imax=10; i<imax ;++i)		
+			STIR_const_output_sample.push_back(BSplines1DRegularGridTestOMOMs1.BSpline(i,20));
+		for (elemT i=0, imax=31; i<imax ;++i)		
+			STIR_output_sample.push_back(BSplines1DRegularGridTestOMOMs.BSpline(i,20));
+	//	    cout << STIR_output_sample; 
+		
+		
+      std::vector<elemT>:: iterator cur_iter_input= pre_input_sample.begin();
+	  cur_iter_stir_out= STIR_output_sample.begin();
+	 
+	  for (int i=0; cur_iter_stir_out!=STIR_output_sample.end() &&
+		  cur_iter_input!=pre_input_sample.end();	 
 	  		    ++cur_iter_stir_out, ++cur_iter_input, ++i)			  
 		check_if_equal(*cur_iter_stir_out, *cur_iter_input,
 				"check BSplines implementation");    	
@@ -276,6 +311,18 @@ void BSplines_Tests::run_tests()
 		  check_if_equal(*cur_iter_stir_out, (elemT)1,	
 						  "check BSplines implementation");  							
   }		
+  {
+	  cerr << "Testing Linear Extrapolation giving a vector as input..." << endl;	  
+	  std::vector<elemT>  input_sample(9,1);
+	  *input_sample.begin()=10;
+	  input_sample.push_back(10);	  
+	  linear_extrapolation(input_sample);
+	  check_if_equal(*input_sample.begin() *(*(input_sample.end()-1)) , (elemT)361, 
+		  "check BSplines implementation");    	
+
+  }		
+
+
 }
 END_NAMESPACE_STIR
 

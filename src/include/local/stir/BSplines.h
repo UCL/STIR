@@ -46,9 +46,10 @@ class BSplines1DRegularGrid
 private:
 	typedef typename std::vector<out_elemT>::iterator RandIterOut; 
 	int input_size; // create in the constructor 
-	std::vector<out_elemT> BSplines_coef_vector;  
+
 public:
-	
+	std::vector<out_elemT> BSplines_coef_vector;  
+		
 /*
 void
 inline  
@@ -67,6 +68,15 @@ BSplines1DRegular();
   {
 	 set_coef(input_begin_iterator, input_end_iterator);
   }
+  //! constructor given a begin_ and end_ iterator as input, estimates the Coefficients 
+  template <class IterT>
+  inline BSplines1DRegularGrid(const IterT input_begin_iterator, 
+				  const IterT input_end_iterator, const int deriv)
+  {
+	 set_coef(input_begin_iterator, input_end_iterator, deriv);
+  }  
+  inline
+	  BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector, const int spline_type); 
 
  //! destructor
 inline ~BSplines1DRegularGrid();
@@ -83,9 +93,20 @@ inline
 			input_begin_iterator, input_end_iterator);				
   }
 
+  template <class IterT>
+inline
+  void
+  set_coef(IterT input_begin_iterator, IterT input_end_iterator, const int spline_type)
+  {	
+	input_size = input_end_iterator - input_begin_iterator;
+	BSplines_coef_vector.resize(input_size);
+	BSplines_coef(BSplines_coef_vector.begin(),BSplines_coef_vector.end(), 
+	input_begin_iterator, input_end_iterator, spline_type);				
+  }
+
 inline 
 out_elemT
-BSpline(const pos_type relative_position, const bool deriv) ;
+BSpline(const pos_type relative_position, const int deriv) ;
 
 inline 
 out_elemT
@@ -93,7 +114,7 @@ BSpline_1st_der(const pos_type relative_position) ;
 
 inline
 out_elemT
-BSpline_product(const int index, const pos_type relative_position, const bool deriv);
+BSpline_product(const int index, const pos_type relative_position, const int deriv);
 
 inline
 const out_elemT 
@@ -124,6 +145,14 @@ inline
 		unsigned int Nmax,
 		double pole, // to be complex as well?
 		const double precision, const bool periodicity);
+template <class RandIterOut, class IterT>
+inline 
+void
+BSplines_coef(RandIterOut c_begin_iterator, 
+			   RandIterOut c_end_iterator,
+			   IterT input_begin_iterator, 
+			   IterT input_end_iterator, 
+			   const int spline_type); //For cubic spline 0, For o-Moms 20 
 
 template <class RandIterOut, class IterT>
 inline  
@@ -142,6 +171,10 @@ template <typename pos_type>
 inline 
 pos_type 
 BSplines_1st_der_weight(const pos_type relative_position) ;
+
+template <typename in_elemT>
+inline
+linear_extrapolation(std::vector<in_elemT> &input_vector);
 
 //*/
 END_NAMESPACE_STIR
