@@ -56,7 +56,7 @@ CListModeDataECAT(const string& listmode_filename_prefix)
     if (!singles_file)
       {
 	warning("\nCouldn't open %s. We forge ahead anyway.\n", singles_filename.c_str());
-	scanner_ptr = new Scanner(Scanner::E966);
+	scanner_ptr = new Scanner(Scanner::E962);
       }
     else
       {
