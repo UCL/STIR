@@ -3,6 +3,10 @@
 # $Id$
 #
 
+# DB 1/2/99 Add WORKSPACE and INCLUDE_DIR directory
+WORKSPACE = ${HOME}/PPhead
+INCLUDE_DIR = ${WORKSPACE}/include
+
 CXX = g++
 CC = gcc
 DEBUG= -D_DEBUG
@@ -10,8 +14,10 @@ DEST=debug/
 #KT added the last -I option for Solaris, doesn't harm anyone if it's
 # not necessary
 #CL 030698 Move debug flags to DEBUG
-#__unix__ has to be defined for gen.h
-CFLAGS =  -g $(DEBUG) -I${HOME}/PPhead/include -D__unix__ \
+#__unix__ has to be defined for gen.h 
+# DB 1/2/99 change CFLAGS to include -I$(INCLUDE_DIR)
+
+CFLAGS =  -g $(DEBUG) -I$(INCLUDE_DIR) -D__unix__ \
 -I/usr/openwin/include
 
 #KT 010798 removed as we do not link in this makefile
