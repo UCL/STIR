@@ -12,12 +12,13 @@ all: $(DEST)libbuildblock.a $(DEST)local_buildblock_registries.o
 clean:
 	$(RM) $(DEST)*
 SOURCES = \
-	SeparableLowPassImageFilter.cxx \
 	SeparableLowPassArrayFilter.cxx \
-	ModifiedInverseAverigingImageFilter.cxx \
+	SeparableLowPassImageFilter.cxx \
 	ModifiedInverseAverigingArrayFilter.cxx \
+	ModifiedInverseAverigingImageFilter.cxx \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
+	ArrayFilter1DUsingConvolution.cxx \
 	fft.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
