@@ -56,8 +56,8 @@ RigidObject3DMotion::set_defaults()
 { 
   transmission_duration = 300;
   attenuation_filename ="";
-  reference_start_time=0;
-  reference_end_time=0;
+  reference_start_time=time_offset_not_yet_determined;
+  reference_end_time=time_offset_not_yet_determined*10;
   time_offset=time_offset_not_yet_determined;
 }
 
@@ -68,6 +68,8 @@ RigidObject3DMotion::initialise_keymap()
   parser.add_key("transmission_duration", &transmission_duration);
   parser.add_key("reference_quaternion", &reference_quaternion);
   parser.add_key("reference_translation", &reference_translation);
+  parser.add_key("reference_start_time", &reference_start_time);
+  parser.add_key("reference_end_time", &reference_end_time);
   parser.add_key("time_offset", &time_offset);  
 }
 
@@ -75,6 +77,10 @@ bool
 RigidObject3DMotion::
 post_processing()
 {
+  /* complicated way of setting reference motion:
+     First try attenuation file. If that fails, try values from 
+     reference_start_time/reference_end_time keywords. As a last resort,
+     try values from reference_quaternion/reference_translation keywords. */
   if (attenuation_filename !="")
     {
       find_ref_start_end_from_att_file (reference_start_time, reference_end_time,
@@ -82,6 +88,10 @@ post_processing()
 					attenuation_filename);
       cerr << "reference times from attenuation file: "
 	   <<  reference_start_time << " till " << reference_end_time << '\n';
+    }
+  if (reference_start_time != time_offset_not_yet_determined && 
+      reference_start_time < reference_end_time)
+    {
       RigidObject3DTransformation av_motion = 
 	compute_average_motion(reference_start_time,reference_end_time);
       cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
@@ -93,7 +103,7 @@ post_processing()
     {
       if (reference_translation.size()!=3 || reference_quaternion.size() !=4)
 	{
-	  warning ("Invalid reference quaternion or translation\n");
+	  warning ("Invalid reference quaternion or translation. Give either attenuation, reference_start/end_time or quaternion/translation\n");
 	  return true;
 	}
       const CartesianCoordinate3D<float>ref_trans(static_cast<float>(reference_translation[0]),
@@ -104,8 +114,8 @@ post_processing()
 				      static_cast<float>(reference_quaternion[2]),
 				      static_cast<float>(reference_quaternion[3]));
       RigidObject3DTransformation av_motion(ref_quat, ref_trans);
-      cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
-      cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
+      cerr << "Reference quaternion from par file:  " << av_motion.get_quaternion()<<endl;
+      cerr << "Reference translation from par file:  " << av_motion.get_translation()<<endl;
       transformation_to_reference_position =av_motion.inverse();
     }
   return false;
