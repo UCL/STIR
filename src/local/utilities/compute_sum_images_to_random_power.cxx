@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   VoxelsOnCartesianGrid<float> image_to_power;
   VoxelsOnCartesianGrid<float> cum_image;
   
-  if (argc!= 3)
+  if (argc!= 4)
   {
     cerr << "Usage: lists of images <list> output_filename power"<<endl<<endl;    
    return EXIT_FAILURE;
