@@ -40,11 +40,11 @@ get_det_num_pair_for_view_tangential_pos_num(
 					     const int tang_pos_num) const
 {
   assert(get_view_mashing_factor() == 1);
-  if (!view_tangpos_to_det1det2_initialised)
-    initialise_view_tangpos_to_det1det2();
+  if (!uncompressed_view_tangpos_to_det1det2_initialised)
+    initialise_uncompressed_view_tangpos_to_det1det2();
 
-  det1_num = view_tangpos_to_det1det2[view_num][tang_pos_num].det1_num;
-  det2_num = view_tangpos_to_det1det2[view_num][tang_pos_num].det2_num;
+  det1_num = uncompressed_view_tangpos_to_det1det2[view_num][tang_pos_num].det1_num;
+  det2_num = uncompressed_view_tangpos_to_det1det2[view_num][tang_pos_num].det2_num;
 }
 
 
@@ -56,15 +56,15 @@ get_view_tangential_pos_num_for_det_num_pair(int& view_num,
 					     const int det2_num) const
 {
   assert(det1_num!=det2_num);
-  if (!det1det2_to_view_tangpos_initialised)
-    initialise_det1det2_to_view_tangpos();
+  if (!det1det2_to_uncompressed_view_tangpos_initialised)
+    initialise_det1det2_to_uncompressed_view_tangpos();
 
   view_num = 
-    det1det2_to_view_tangpos[det1_num][det2_num].view_num/get_view_mashing_factor();
+    det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].view_num/get_view_mashing_factor();
   tang_pos_num = 
-    det1det2_to_view_tangpos[det1_num][det2_num].tang_pos_num;
+    det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].tang_pos_num;
   return
-    det1det2_to_view_tangpos[det1_num][det2_num].swap_detectors;
+    det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].swap_detectors;
 }
 
 
