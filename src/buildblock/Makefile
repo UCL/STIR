@@ -1,7 +1,9 @@
 CXX = g++
 RM = /bin/rm -f 
 # KT 18/12/97 removed Para++ related CFLAGS
-CFLAGS = -O3 -I${HOME}/PPhead/include
+#CL030698 Move debug flags to DEBUG
+DEBUG=-D_DEBUG
+CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include
 #CXX = xlC
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEMPLATE_ARG
@@ -14,7 +16,7 @@ all:	libbuildblock.a #libinterfile.a
 
 #KT 27/02/98 use default rules now
 .cxx.o:
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 
 
@@ -25,27 +27,27 @@ libinterfile.a: KeyParser.o line.o pet_string.o
 
 #KT 27/02/98 use default rules now, so all this can go
 #convert.o: convert.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 #Tensor1D.o: Tensor1D.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 #sinodata.o: sinodata.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 #PETScannerInfo.o:  PETScannerInfo.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 #KT 16/12 added next 3
 
 KeyParser.o:  KeyParser.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 line.o:  line.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 pet_string.o:  pet_string.cxx
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 clean: 
 	$(RM) *.o
