@@ -1,3 +1,21 @@
+//
+// $Id$
+//
+
+/*!
+  \file 
+  \ingroup tests
+  \brief Tests for function in the DFT group
+
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
 #include <complex>
@@ -5,404 +23,32 @@
 #include "stir/round.h"
 #include "local/stir/fft.h"
 #include "stir/CPUTimer.h"
+#include "stir/IndexRange2D.h"
+#include "stir/norm.h"
+#include "stir/numerics/stir_NumericalRecipes.h"
+#include "stir/numerics/fourier.h"
 #include <iostream>
 #include <algorithm>
 
 
 using std::cin;
 using std::cout;
-using std::complex;
-using std::swap;
 using std::endl;
 
 START_NAMESPACE_STIR
+#define DOARRAY
 
-template <typename elemT>
-void fourier(VectorWithOffset<elemT>& c, const int sign);
-template <typename elemT>
-void fourier_1d(VectorWithOffset<elemT>& c, const int sign);
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#define elemT1 complex<float>
-#define elemT2 complex<float>
-#endif
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT1, typename elemT2>
-#endif
-VectorWithOffset<elemT1>&
-operator -= (VectorWithOffset<elemT1>& lhs, const VectorWithOffset<elemT2>& rhs)
-{
-  assert(lhs.get_min_index() == rhs.get_min_index());
-  assert(lhs.get_max_index() == rhs.get_max_index());
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  VectorWithOffset<elemT1>::const_iterator iter2= rhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ -= *iter2++;
-  return lhs;
-}
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT1
-#undef elemT2
-#define elemT1 VectorWithOffset<complex<float> >
-#define elemT2 VectorWithOffset<complex<float> >
-VectorWithOffset<elemT1>&
-operator -= (VectorWithOffset<elemT1>& lhs, const VectorWithOffset<elemT2>& rhs)
-{
-  assert(lhs.get_min_index() == rhs.get_min_index());
-  assert(lhs.get_max_index() == rhs.get_max_index());
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  VectorWithOffset<elemT1>::const_iterator iter2= rhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ -= *iter2++;
-  return lhs;
-}
-
-#undef elemT1
-#undef elemT2
-#define elemT1 complex<float>
-#define elemT2 complex<float>
-
-#endif
-
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT1, typename elemT2>
-#endif
-VectorWithOffset<elemT1>&
-operator += (VectorWithOffset<elemT1>& lhs, const VectorWithOffset<elemT2>& rhs)
-{
-  assert(lhs.get_min_index() == rhs.get_min_index());
-  assert(lhs.get_max_index() == rhs.get_max_index());
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  VectorWithOffset<elemT1>::const_iterator iter2= rhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ += *iter2++;
-  return lhs;
-}
-
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT2
-#define elemT2 float
-#undef elemT1
-#define elemT1 complex<float>
-#endif
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT1, typename elemT2>
-#endif
-VectorWithOffset<elemT1>&
-operator /= (VectorWithOffset<elemT1>& lhs, const elemT2& rhs)
-{
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ /= rhs;
-  return lhs;
-}
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT2
-#define elemT2 float
-#undef elemT1
-#define elemT1 float
-VectorWithOffset<elemT1>&
-operator /= (VectorWithOffset<elemT1>& lhs, const elemT2& rhs)
-{
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ /= rhs;
-  return lhs;
-}
-#undef elemT2
-#define elemT2 float
-#undef elemT1
-#define elemT1 VectorWithOffset<complex<float> >
-VectorWithOffset<elemT1>&
-operator /= (VectorWithOffset<elemT1>& lhs, const elemT2& rhs)
-{
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ /= rhs;
-  return lhs;
-}
-#endif
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT2
-#define elemT2 float
-#undef elemT1
-#define elemT1 complex<float>
-#endif
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT1, typename elemT2>
-#endif
-VectorWithOffset<elemT1>&
-operator *= (VectorWithOffset<elemT1>& lhs, const elemT2& rhs)
-{
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ *= rhs;
-  return lhs;
-}
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT2
-#define elemT2 complex<float>
-VectorWithOffset<elemT1>&
-operator *= (VectorWithOffset<elemT1>& lhs, const elemT2& rhs)
-{
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ *= rhs;
-  return lhs;
-}
-#endif
-
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT1, typename elemT2>
-#endif
-VectorWithOffset<elemT1>&
-operator += (VectorWithOffset<elemT1>& lhs, const elemT2& rhs)
-{
-  VectorWithOffset<elemT1>::iterator iter1= lhs.begin();
-  while (iter1!= lhs.end())
-    *iter1++ *= rhs;
-  return lhs;
-}
-
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT1
-#undef elemT2
-#endif
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT>
+#ifdef DOARRAY
+  typedef Array<1,std::complex<float> > ArrayC1;
+  typedef Array<1,float> ArrayF1;
+  typedef Array<2,std::complex<float> > ArrayC2;
 #else
-#define elemT float
-#endif
-inline elemT 
-norm (const VectorWithOffset<complex<elemT> > & v)
-{
-  elemT res=0;
-  for (VectorWithOffset<complex<elemT> >::const_iterator iter= v.begin(); iter != v.end(); ++iter)
-    res+= square(iter->real())+square(iter->imag());
-  return sqrt(res);
-}
-#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-#undef elemT
+  typedef VectorWithOffset<std::complex<float> > ArrayC1;
+  typedef VectorWithOffset<float> ArrayF1;
+  typedef VectorWithOffset<ArrayC1 > ArrayC2;
 #endif
 
-template <typename elemT>
-inline elemT 
-norm (const VectorWithOffset<VectorWithOffset<complex<elemT> > > & v)
-{
-  elemT res=0;
-  for (VectorWithOffset<VectorWithOffset<complex<elemT> > >::const_iterator iter= v.begin(); iter != v.end(); ++iter)
-    res+= square(norm(*iter));
-  return sqrt(res);
-}
 
-template <typename T>
-void bitreversal(VectorWithOffset<T>& data)
-{
-  const int n=data.get_length();
-  int   j=1;
-  for (int i=0;i<n;++i) {
-    if (j/2 > i) {
-      swap(data[j/2],data[i]);
-    }
-    int m=n;
-    while (m >= 2 && j > m) {
-      j -= m;
-      m >>= 1;
-    }
-    j += m;
-  }
-}
-
-// exparray[k][i] = exp(i*_PI/pow(2,k))
-static   VectorWithOffset<VectorWithOffset<complex<float> > > exparray;
-
-void init_exparray(const int k, const int pow2k)
-{
-  if (exparray.get_max_index() >= k && exparray[k].get_length()>0)
-    return;
-
-  if (exparray.get_max_index() <k)
-    exparray.grow(0, k);
-  exparray[k].grow(0,pow2k-1);
-  for (int i=0; i< pow2k; ++i)
-    exparray[k][i]= std::exp(complex<float>(0, (i*_PI)/pow2k));
-}
-
-// expminarray[k][i] = exp(-i*_PI/pow(2,k))
-static   VectorWithOffset<VectorWithOffset<complex<float> > > expminarray;
-
-void init_expminarray(const int k, const int pow2k)
-{
-  if (expminarray.get_max_index() >= k && expminarray[k].get_length()>0)
-    return;
-
-  if (expminarray.get_max_index() <k)
-    expminarray.grow(0, k);
-  expminarray[k].grow(0,pow2k-1);
-  for (int i=0; i< pow2k; ++i)
-    expminarray[k][i]= std::exp(complex<float>(0, -(i*_PI)/pow2k));
-}
-
-#if 0
-template <typename elemT>
-void fourier(VectorWithOffset<VectorWithOffset<elemT> >& c, const int sign = 1)
-{
-  fourier_1d(c, sign);
-  for (VectorWithOffset<VectorWithOffset<elemT> >::iterator iter = c.begin();
-       iter != c.end();
-       ++iter)
-    fourier(*iter, sign);
-}
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT>
-void fourier(VectorWithOffset<elemT>& c, const int sign = 1)
-{
-  fourier_1d(c, sign);
-}
-#else
-void fourier(VectorWithOffset<complex<float> >& c, const int sign)
-{
-  fourier_1d(c, sign);
-}
-
-void fourier(VectorWithOffset<complex<double> >& c, const int sign)
-{
-  fourier_1d(c, sign);
-}
-#endif
-
-#else
-
-template <typename elemT>
-struct fourier_auxiliary
-{
-static  
-void fourier(VectorWithOffset<elemT >& c, const int sign = 1);
-};
-
-
-
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename elemT>
-struct fourier_auxiliary<VectorWithOffset<elemT> >
-{
-  static void 
-fourier(VectorWithOffset<VectorWithOffset<elemT> >& c, const int sign)
-{
-  fourier_1d(c, sign);
-  for (VectorWithOffset<VectorWithOffset<elemT> >::iterator iter = c.begin();
-       iter != c.end();
-       ++iter)
-         stir::fourier(*iter, sign);
-}
-};
-
-template <typename elemT>
-void 
-fourier_auxiliary<elemT>::
-fourier(VectorWithOffset<elemT>& c, const int sign = 1)
-{
-  fourier_1d(c, sign);
-}
-#else
-
-template <typename elemT>
-void 
-fourier_auxiliary<elemT>::
-fourier(VectorWithOffset<elemT>& c, const int sign)
-{
-  fourier_1d(c, sign);
-  for (VectorWithOffset<elemT>::iterator iter = c.begin();
-       iter != c.end();
-       ++iter)
-         stir::fourier(*iter, sign);
-}
-
-void 
-fourier_auxiliary<complex<float> >::
-fourier(VectorWithOffset<complex<float> >& c, const int sign)
-{
-  fourier_1d(c, sign);
-}
-
-void 
-fourier_auxiliary<complex<double> >::
-fourier(VectorWithOffset<complex<double> >& c, const int sign)
-{
-  fourier_1d(c, sign);
-}
-#endif
-
-template <typename elemT>
-void 
-fourier(VectorWithOffset<elemT>& c, const int sign = 1)
-{
-  fourier_auxiliary<elemT>::fourier(c,sign);
-}
-
-
-
-#endif
-
-// elemT has to be such that you can operator*=(elemT&, complex<float>) exist, i.e. 
-// it has to be a complex type, or potentially a (multi-dimensional) array of complex numbers
-template <typename elemT>
-void fourier_1d(VectorWithOffset<elemT>& c, const int sign)
-{
-  if (c.get_length()==0) return;
-  assert(c.get_min_index()==0);
-  assert(sign==1 || sign ==-1);
-  bitreversal(c);
-  const int nn=stir::round(log(static_cast<double>(c.get_length()))/log(2.));
-  if (c.get_length()!= stir::round(pow(2,nn)))
-    error ("Fourier called with array length %d which is not 2^%d\n", c.get_length(), nn);
-
-
-  int k=0;
-  int pow2k = 1; // will be updated to be round(pow(2,k))
-  const int pow2nn=c.get_length(); // ==round(pow(2,nn)); 
-  for (; k<nn; ++k, pow2k*=2)
-  {
-    if (sign==1)
-      init_exparray(k,pow2k);
-    else
-      init_expminarray(k,pow2k);
-    for (int j=0; j< pow2nn;j+= pow2k*2) 
-      for (int i=0; i< pow2k; ++i)
-      {
-        elemT& c1= c[i + j];
-        elemT& c2= c[i + j + pow2k];
-        
-        const elemT t1 = c1; 
-        //const complex<float> t2 = 
-        //  sign==1? c2*exparray[k][i] : c2*expminarray[k][i];
-        //c1 = t1+t2; c2 = t1-t2;
-        c2 *= sign==1? exparray[k][i] : expminarray[k][i];
-        c1 += c2;
-        c2 *= -1;
-        c2 += t1;
-      }
-  }
-}
-
-void inline inverse_fourier(VectorWithOffset<complex<float> >& c, const int sign = 1)
-{
-  fourier(c,-sign);
-  c /= c.get_length();
-}
-//TODO multidim inverse_fourier
 
 const int  FORWARDFFT=1;
 const int INVERSEFFT=-1;
@@ -420,8 +66,8 @@ void discrete_fourier_transform(VectorWithOffset<elemT>&data, int isign)
   j=1;
   for (i=1;i<n;i+=2) {
     if (j > i) {
-      swap(data[j],data[i]);
-      swap(data[j+1],data[i+1]);
+      std::swap(data[j],data[i]);
+      std::swap(data[j+1],data[i+1]);
     }
     m=n >> 1;
     while (m >= 2 && j > m) {
@@ -463,196 +109,187 @@ using namespace stir;
 
 int main()
 {
+  cout << "Sign: ";
+  int sign;
+  cin >> sign;
   
-  int repeat=0;
+#if 1
+  int repeat=1;
   cout << "Enter repeat:";
   cin >> repeat;
   {
 
-  VectorWithOffset<complex<float> > c;
+    ArrayC1 c;
 #if 0
-  cin >> c;
+    cin >> c;
 #else
-  { 
-    int length=0;
-    cout << "Enter length of array:";
-    cin >> length;
-    c.grow(0,length-1);
-    for (int i=0; i<c.get_length(); ++i)
-      c[i]= complex<float>(rand(), rand());
-  }
-#endif
-  VectorWithOffset<complex<float> > c_copy = c;
-  VectorWithOffset<float> nr_data(1,2*c.get_length());
-  for (int i=0; i<c.get_length(); ++i)
-  {
-    nr_data[2*i+1] = c[i].real();
-    nr_data[2*i+2] = c[i].imag();
-  }
-
-  {
-    CPUTimer timer;
-    timer.start();
-    for (int i=repeat; i; --i)
-    {fourier(c); c/=sqrt(static_cast<float>(c.get_length()));}
-    timer.stop();
-    
-    cout << "fourier " << timer.value() << '\n';
-    
-    timer.reset();
-    timer.start();
-    for (int i=repeat; i; --i)
-    {discrete_fourier_transform(nr_data, FORWARDFFT); nr_data/=sqrt(static_cast<float>(c.get_length()));}
-    timer.stop();
-    cout << "NR " << timer.value() << '\n';
-  }
-
-  VectorWithOffset<complex<float> > nr_c(0,c.get_length()-1);
-  for (int i=0; i<c.get_length(); ++i)
-  {
-    nr_c[i]=complex<float>(nr_data[2*i+1], nr_data[2*i+2]);
-  }
-
-  nr_c -= c;
-
-  cout << "\nResidual norm " <<  norm(nr_c)/norm(c) << std::endl;
-
-  for (int i=0; i<c.get_length(); ++i)
-  {
-    nr_data[2*i+1] = c[i].real();
-    nr_data[2*i+2] = c[i].imag();
-  }
-
-  {
-    CPUTimer timer;
-    timer.start();
-    for (int i=repeat; i; --i)
-    {inverse_fourier(c);c*=sqrt(c.get_length());}
-    timer.stop();    
-    cout << "inverse fourier " << timer.value() << '\n';
-    timer.reset();
-    timer.start();
-    for (int i=repeat; i; --i)
-    {discrete_fourier_transform(nr_data, INVERSEFFT);nr_data /= c.get_length();nr_data/=1/sqrt(c.get_length());}
-    
-    timer.stop();
-    cout << "NR " << timer.value() << '\n';
-  }
-  for (int i=0; i<c.get_length(); ++i)
-  {
-    nr_c[i]=complex<float>(nr_data[2*i+1], nr_data[2*i+2]);
-  }
-
-  nr_c -= c;
-  cout << "\nResidual norm " << norm(nr_c)/norm(c) << std::endl;
-
-  c -= c_copy;
-  cout << "\nResidual norm inverse " << norm(c)<<','<<norm(c_copy)<<','<<norm(c)/norm(c_copy) << std::endl;
-}
-  
-  {
-    VectorWithOffset<VectorWithOffset<complex<float> > >  c2d;
-     //Array<2,complex<float> > c2d;
-  { 
-    int length=0;
-    cout << "Enter number of rows of array:";
-    cin >> length;
-    int columns=0;
-    cout << "Enter number of columns of array:";
-    cin >> columns;
-    c2d.grow(0,length-1);
-    for (int i=0; i<c2d.get_length(); ++i)
-    {
-      c2d[i].grow(0,columns-1);
-      for (int j=0; j<c2d[i].get_length(); ++j)
-        c2d[i][j]= complex<float>(rand(), rand());
+    { 
+      int length=0;
+      cout << "Enter length of array:";
+      cin >> length;
+      c.grow(0,length-1);
+      for (int i=0; i<c.get_length(); ++i)
+	c[i]= std::complex<float>(rand(), rand());
     }
-  }
-   
-    VectorWithOffset<VectorWithOffset<complex<float> > >  nr_c2d(c2d);
-    //Array<2,complex<float> > nr_c2d(c2d);
-    Array<1,float> nr_data(1,2*c2d.get_length()*c2d[0].get_length());
-    {
-      VectorWithOffset<float>::iterator nr_iter = nr_data.begin_all();
-      
-#if 0
-      Array<2,complex<float> >::const_full_iterator iter=
-        c2d.begin_all();
-      while(iter != c2d.end_all())
-      {
-        *nr_iter++ = iter->real();
-        *nr_iter++ = iter->imag();
-        ++iter;
-      }
-#else
-      VectorWithOffset<VectorWithOffset<complex<float> > >::const_iterator iter = 
-        c2d.begin();
-      while(iter != c2d.end())
-      {
-        VectorWithOffset<complex<float> >::const_iterator row_iter = iter->begin();
-        while(row_iter != iter->end())
-        {
-          *nr_iter++ = row_iter->real();
-          *nr_iter++ = row_iter->imag();
-          ++row_iter;
-        }
-        ++iter;
-      }
 #endif
-    }
+    const ArrayC1 c_copy = c;
+    ArrayF1 nr_data(1,2*c.get_length());
+    stir_to_nr(c, nr_data);
+
     {
       CPUTimer timer;
       timer.start();
       for (int i=repeat; i; --i)
-      {fourier(c2d);c2d/=sqrt(c2d.get_length()*c2d[0].get_length());}
+	{fourier(c); c/=sqrt(static_cast<float>(c.get_length()));}
       timer.stop();
-      cout  << "fourier 2D " << timer.value() << '\n';
+    
+      cout << "fourier " << timer.value() << '\n';
+    
+      timer.reset();
+      timer.start();
+      for (int i=repeat; i; --i)
+	{discrete_fourier_transform(nr_data, FORWARDFFT); nr_data/=sqrt(static_cast<float>(c.get_length()));}
+      timer.stop();
+      cout << "NR " << timer.value() << '\n';
     }
-      CPUTimer timer;
-    timer.reset();
-    timer.start();
-    Array<1,int> dims(1,2);
-    dims[1]=c2d.get_length();
-    dims[2]=c2d[0].get_length();
-    for (int i=repeat; i; --i)
-    {fourn(nr_data, dims, 2, 1);nr_data/=sqrt(c2d.get_length()*c2d[0].get_length());}
-    timer.stop();
-    cout << "NR " << timer.value() << '\n';
+    // cout << '\n' << c << nr_c;
+
+    ArrayC1 nr_c(0,c.get_length()-1);
+    nr_to_stir(nr_data, nr_c);
+    nr_c -= c;
+
+    cout << "\nResidual norm " <<  norm(nr_c.begin(), nr_c.end())/norm(c.begin(), c.end()) << std::endl;
+
+    stir_to_nr(c, nr_data);
 
     {
-      VectorWithOffset<float>::const_iterator nr_iter = nr_data.begin_all();
-#if 0
-      Array<2,complex<float> >::full_iterator iter=
-        nr_c2d.begin_all();
-      while(iter != nr_c2d.end_all())
-      {
-        *iter = complex<float>(*nr_iter, *(nr_iter+1));
-        nr_iter+= 2;
-        ++iter;
-      }      
+      CPUTimer timer;
+      timer.start();
+      for (int i=repeat; i; --i)
+	{inverse_fourier(c);c*=sqrt(static_cast<float>(c.get_length()));}
+      timer.stop();    
+      cout << "inverse fourier " << timer.value() << '\n';
+      timer.reset();
+      timer.start();
+      for (int i=repeat; i; --i)
+	{discrete_fourier_transform(nr_data, INVERSEFFT);nr_data /= c.get_length();nr_data/=1/sqrt(static_cast<float>(c.get_length()));}
+    
+      timer.stop();
+      cout << "NR " << timer.value() << '\n';
+    }
+    nr_to_stir(nr_data, nr_c);
+
+    nr_c -= c;
+    cout << "\nResidual norm " << norm(nr_c.begin(), nr_c.end())/norm(c.begin(), c.end()) << std::endl;
+
+    c -= c_copy;
+    cout << "\nResidual norm inverse (relative)" <</* norm(c.begin(), c.end())<<','<<norm(c_copy.begin(), c_copy.end())<<','<<*/norm(c.begin(), c.end())/norm(c_copy.begin(), c_copy.end()) << std::endl;
+  }
+  
+  {
+
+    ArrayC2 c2d;
+    { 
+      int length=0;
+      cout << "Enter number of rows of array:";
+      cin >> length;
+      int columns=0;
+      cout << "Enter number of columns of array:";
+      cin >> columns;
+#ifndef DOARRAY
+      c2d.grow(0,length-1);
+      for (int i=0; i<c2d.get_length(); ++i)
+	{
+	  c2d[i].grow(0,columns-1);
+	  for (int j=0; j<c2d[i].get_length(); ++j)
+	    c2d[i][j]= std::complex<float>(rand(), rand());
+	}
 #else
-      VectorWithOffset<VectorWithOffset<complex<float> > >::iterator iter = 
-        nr_c2d.begin();
-      while(iter != nr_c2d.end())
-      {
-        VectorWithOffset<complex<float> >::iterator row_iter = iter->begin();
-        while(row_iter != iter->end())
-        {
-          *row_iter = complex<float>(*nr_iter, *(nr_iter+1));
-          nr_iter+= 2;
-          ++row_iter;
-        }
-        ++iter;
-      }
+      c2d.grow(IndexRange2D(length, columns));
+      for (ArrayC2::full_iterator iter= c2d.begin_all();
+	   iter!=c2d.end_all();
+	   ++iter)
+	    *iter= std::complex<float>(rand(), rand());
 #endif
     }
 
-  nr_c2d -= c2d;
+    //cout << c2d;
 
-  cout << "\nResidual norm " << norm(nr_c2d)/norm(c2d) << std::endl;
+    ArrayC2 nr_c2d(c2d);
+    Array<1,float> nr_data(1,2*c2d.get_length()*c2d[0].get_length());
+    stir_to_nr(nr_c2d, nr_data);
+
+    const float 
+      normfactor =sqrt(static_cast<float>(c2d.get_length()*c2d[0].get_length()));
+    {
+      CPUTimer timer;
+      timer.start();
+      for (int i=repeat; i; --i)
+	{fourier(c2d);
+	c2d/= normfactor;}
+      timer.stop();
+      cout  << "fourier 2D " << timer.value() << '\n';
+    }
+    {
+      CPUTimer timer;
+      timer.reset();
+      timer.start();
+      Array<1,int> dims(1,2);
+      dims[1]=c2d.get_length();
+      dims[2]=c2d[0].get_length();
+      for (int i=repeat; i; --i)
+	{fourn(nr_data, dims, 2, 1);nr_data/=normfactor;}
+      timer.stop();
+      cout << "NR " << timer.value() << '\n';
+    }
+
+    //cout << '\n' << c2d << '\n' << nr_data;
+    ArrayF1 nr_data_stir_fourier(1,2*c2d.get_length()*c2d[0].get_length());
+    stir_to_nr(c2d, nr_data_stir_fourier);
+    nr_data -= nr_data_stir_fourier;  
+
+
+    cout << "\nResidual norm " 
+	 << norm(nr_data.begin(), nr_data.end())/
+      norm(nr_data_stir_fourier.begin(), nr_data_stir_fourier.end()) 
+	 << std::endl;
 
   }
+#endif
 
+  // ********** REAL ************
+  {
+    ArrayF1 v;
+    { 
+      int length=0;
+      cout << "Enter length of array:";
+      cin >> length;
+      v.grow(0,length-1);
+      for (int i=0; i<v.get_length(); ++i)
+	v[i]= rand();
+      v[0]=rand();
+    }
+    ArrayC1 pos_frequencies =
+      fourier_1d_for_real_data(v,sign);
+    const ArrayC1 all_frequencies =
+      pos_frequencies_to_all(pos_frequencies);
+
+    ArrayC1 c(v.get_length());
+    std::copy(v.begin(), v.end(), c.begin());
+    fourier(c,sign);
+    //cout << all_frequencies << c;
+    c -= all_frequencies;
+    cout << "\nReal FT Residual norm "  <<
+      norm(c.begin(), c.end())/norm(v.begin(), v.end());
+
+    ArrayF1 again_v =
+      inverse_fourier_1d_for_real_data(pos_frequencies,sign);
+    //cout <<"\nv,test "<< v << again_v << again_v/v;
+    again_v -= v;
+    cout << "\ninverse Real FT Residual norm "  <<
+      norm(again_v.begin(), again_v.end())/norm(v.begin(), v.end());
+
+  }
   return EXIT_SUCCESS;
 }
 
