@@ -67,16 +67,16 @@ class CListRecordLMF;
 class CListTimeDataLMF
 {
  public:
-  inline double get_time_in_secs() const
-    { return time/1000.;  }// TODO
-  inline Succeeded set_time_in_secs(const double time_in_secs)//TODO
+  inline unsigned long get_time_in_millisecs() const
+    { return time;  }// TODO
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)//TODO
   { return Succeeded::no; }
   inline unsigned int get_gating() const //TODO
   { return gating; }
   inline Succeeded set_gating(unsigned int g)//TODO
   { return Succeeded::no;}
 private:
-  double time; // in millisecs TODO
+  unsigned long time; // in millisecs TODO
   unsigned    gating;
 };
 

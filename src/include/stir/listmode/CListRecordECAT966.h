@@ -112,11 +112,11 @@ class CListRecordECAT966;
 class CListTimeDataECAT966
 {
  public:
-  inline double get_time_in_secs() const
-  { return time/1000.;  }
-  inline Succeeded set_time_in_secs(const double time_in_secs)
+  inline unsigned long get_time_in_millisecs() const
+  { return static_cast<unsigned long>(time);  }
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
   { 
-    time = ((1U<<28)-1) & static_cast<unsigned>(round(time_in_secs * 1000)); 
+    time = ((1U<<28)-1) & static_cast<unsigned>(time_in_millisecs); 
     // TODO return more useful value
     return Succeeded::yes;
   }
@@ -175,10 +175,10 @@ public:
     { return reinterpret_cast<char *>(&raw); }
 
   // time 
-  inline double get_time_in_secs() const 
-    { return time_data.get_time_in_secs(); }
-  inline Succeeded set_time_in_secs(const double time_in_secs)
-    { return time_data.set_time_in_secs(time_in_secs); }
+  inline unsigned long get_time_in_millisecs() const 
+    { return time_data.get_time_in_millisecs(); }
+  inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
+    { return time_data.set_time_in_millisecs(time_in_millisecs); }
   inline unsigned int get_gating() const
     { return time_data.get_gating(); }
   inline Succeeded set_gating(unsigned int g) 
