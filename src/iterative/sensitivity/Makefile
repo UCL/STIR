@@ -25,7 +25,7 @@ vpath %.cxx ../OSMAPOSL
 ${DEST}sensitivity: ${DEST}sensitivity.o $(DEST)OSMAPOSLReconstruction.o \
 	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK} $(BB_REGISTRIES)
 	$(CXX) $(CFLAGS) -o $@ $< \
-	  ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o \
+	  $(DEST)OSMAPOSLReconstruction.o \
 	  $(BB_REGISTRIES) \
 	  ${LIB_LOGLIK_BUILDINGBLOCK} \
 	  $(BB_LIBS) \
