@@ -47,8 +47,20 @@ class DataSymmetriesForBins_PET_CartesianGrid : public DataSymmetriesForBins
 {
 public:
 
+  //! Constructor with optional selection of symmetries
+  /*! For the azimuthal angle phi, the following angles are symmetry related for a square grid:
+      {phi, 180-phi, 90-phi, 90+phi}.
+      The boolean parameters allow to select if all 4 angles should be considered as related 
+      (\a do_symmetry_90degrees_min_phi_v=true), or only {phi, 180-phi} 
+      (\a do_symmetry_90degrees_min_phi_v=false, \a do_symmetry_180degrees_min_phi_v = true), or none.
+
+      The symmetry in phi is automatically reduced for non-square grids or when the number of
+      views is not a multiple of 4.
+  */    
   DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                                            const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr);
+                                          const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+                                          const bool do_symmetry_90degrees_min_phi_v = true,
+                                          const bool do_symmetry_180degrees_min_phi_v = true);
 
 
   virtual 
@@ -104,6 +116,8 @@ public:
   inline float get_axial_pos_to_z_offset(const int segment_num) const;
   
 private:
+  bool do_symmetry_90degrees_min_phi;
+  bool do_symmetry_180degrees_min_phi;
   //const shared_ptr<ProjDataInfo>& proj_data_info_ptr;
   int num_views;
   int num_planes_per_scanner_ring;

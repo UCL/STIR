@@ -108,9 +108,13 @@ DataSymmetriesForBins_PET_CartesianGrid::
 DataSymmetriesForBins_PET_CartesianGrid
 (
  const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
- const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr
+ const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+ const bool do_symmetry_90degrees_min_phi_v,
+ const bool do_symmetry_180degrees_min_phi_v
 )
-  : DataSymmetriesForBins(proj_data_info_ptr)
+  : DataSymmetriesForBins(proj_data_info_ptr),
+    do_symmetry_90degrees_min_phi(do_symmetry_90degrees_min_phi_v),
+    do_symmetry_180degrees_min_phi(do_symmetry_90degrees_min_phi_v || do_symmetry_180degrees_min_phi_v)
 {
   if(dynamic_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get()) == NULL)
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
@@ -130,20 +134,25 @@ DataSymmetriesForBins_PET_CartesianGrid
   const float z_origin_in_planes =
     image_info_ptr->get_origin().z()/cartesian_grid_info_ptr->get_grid_spacing()[1];
   // z_origin_in_planes should be an integer
-  if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-4)
+  if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-4F)
     error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
           "z-direction of the origin (which is %g) should be a multiple of the plane "
           "separation (%g)\n",
           image_info_ptr->get_origin().z(), cartesian_grid_info_ptr->get_grid_spacing()[1]);
 
 
+  // check if unequal voxel size in x,y, if so, use less symmetry
+  if (fabs(cartesian_grid_info_ptr->get_grid_spacing()[2]-
+           cartesian_grid_info_ptr->get_grid_spacing()[3])>1.E-3F)
+    do_symmetry_90degrees_min_phi = false;
 
   num_views= proj_data_info_ptr->get_num_views();
 
   if (num_views%4!=0)
-    error("DataSymmetriesForBins_PET_CartesianGrid can only handle projection data "
-	  "with the number of views a multiple of 4, while it is %d\n",
-	  num_views);
+    do_symmetry_90degrees_min_phi = false;
+
+  if (num_views%2!=0)
+    do_symmetry_180degrees_min_phi = false;
 
   // check on segment symmetry
   if (proj_data_info_ptr->get_tantheta(Bin(0,0,0,0)) != 0)
