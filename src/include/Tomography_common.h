@@ -4,11 +4,30 @@
 
 #ifndef __Tomography_common_H__
 #define __Tomography_common_H__
-/*
+
+/*!
+  \file 
+ 
+  \brief basic configuration include file 
+
+  \author Kris Thielemans
+  \author Alexey Zverovich
+  \author Darren Hague
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+
+
  This include file defines some commonly used macros, templates 
  and functions in an attempt to smooth out some system dependencies.
- It includes:
- - namespace support: 
+ It also defines some functions which are used very often.
+
+ Macros and system depedencies:
+
+ - macros for namespace support: 
    #defines TOMO_NO_NAMESPACES if the compiler does not support namespaces
    #defines START_NAMESPACE_TOMO etc.
 
@@ -22,19 +41,39 @@
    out on __OS_AIX__, __OS_SUN__, __OS_OSF__, __OS_LINUX__.
    (If the attempts fail to determine the correct OS, you can pass
     the correct value as a preprocessor definition to the compiler)
- - #includes cstdio, cstdlib, cstring, cmath, algorithm
+ 
+ - #includes cstdio, cstdlib, cstring, cmath
+
  - templates const T& std::min(const T& x, const T& y) and std::max (if not provided)
+   (source files should still include <algorithm> though)
+
  - general definitions of operator !=, >, <= and >= in terms of == and < (if not provided)
- - overloading of std::copy for built-in types to use memcpy (so it's faster)
- - const double _PI
- - char *strupr(char *a);
- - error(const char * const format_string, ...)
-   writes error information a la printf.
- - template <class NUMBER> NUMBER square(const NUMBER &x)
+ 
  - a feable attempt to be able to use the old strstream and 
    the new stringstream classes in the same way
+
  - a trick to get ANSI C++ 'for' scoping rules work, even for compilers
    which do not follow the new standard
+
+ - #ifdef TOMO_ASSERT, then define our own assert, else include <cassert>
+
+
+Speeding up std::copy
+
+ - overloads of std::copy for built-in types to use memcpy (so it's faster)
+
+
+In addition, the following are defined in the Tomography namespace
+  
+ - const double _PI
+ 
+ - inline char *strupr(char *a);
+
+ - declares error(const char * const format_string, ...)
+   writes error information a la printf.
+
+ - inline template <class NUMBER> NUMBER square(const NUMBER &x)
+
  */
 
 #ifdef _MSC_VER
@@ -57,9 +96,16 @@
 #endif
 
 #ifndef TOMO_NO_NAMESPACES
+//TODO remove
+#ifdef TOMO
 # define START_NAMESPACE_TOMO namespace Tomography {
 # define END_NAMESPACE_TOMO }
 # define USING_NAMESPACE_TOMO using namespace Tomography;
+#else
+# define USING_NAMESPACE_TOMO 
+# define START_NAMESPACE_TOMO 
+# define END_NAMESPACE_TOMO 
+#endif
 # define START_NAMESPACE_STD namespace std {
 # define END_NAMESPACE_STD }
 # define USING_NAMESPACE_STD using namespace std;
@@ -116,10 +162,7 @@
 
 #endif // !defined(__OS_xxx_)
 
-// include for min,max
-#include <algorithm>
-
-// STL should have min,max in <numeric>, 
+// STL should have min,max in <algorithm>, 
 // but vanilla VC++ has a conflict between std::min and some preprocessor defs
 #if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
 #undef min
@@ -139,7 +182,9 @@ inline const T& max(const T& a, const T& b)
 }
 
 }
+#endif // min,max defs
 
+#if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
 // general definitions of operator !=, >, <= and >= in terms of == and <
 // (copied from SGI stl_relops.h)
 template <class T>
@@ -162,7 +207,11 @@ inline bool operator>=(const T& x, const T& y) {
   return !(x < y);
 }
 
-#endif /* _MSC_VER */
+#endif // !=,>,<=,>=
+
+// overload std::copy for built-in types
+
+#include <algorithm>
 
 START_NAMESPACE_STD
 template <>
@@ -228,20 +277,6 @@ copy(const bool * first, const bool * last, bool * to)
 
 END_NAMESPACE_STD
 
-#ifndef _MSC_VER
-
-inline char *strupr(char * const str)
-{
-  for (char *a = str; *a; a++)
-  {
-    if ((*a >= 'a')&&(*a <= 'z')) *a += 'A'-'a';
-  };
-  return str;
-}
-#else
-#define strupr _strupr
-#endif
-
 
 
 //  some trickery to make strstreams work most of the time. 
@@ -271,6 +306,22 @@ inline char *strupr(char * const str)
 #	endif
 #endif
 
+#ifndef TOMO_ASSERT
+#  include <cassert>
+#else
+  // use our own assert
+#  ifdef assert
+#    undef assert
+#  endif
+#  if !defined(NDEBUG)
+#    define assert(x) {if (!(x)) { \
+      fprintf(stderr,"Assertion \"%s\" failed in file %s:%d\n", # x,__FILE__, __LINE__); \
+      abort();} }
+#  else 
+#     define assert(x)
+#  endif
+#endif // TOMO_ASSERT
+
 START_NAMESPACE_TOMO
 
 typedef float Real;
@@ -281,6 +332,20 @@ void error(char *s, ...);
 
 template <class NUMBER> 
 inline NUMBER square(const NUMBER &x) { return x*x; }
+
+#ifndef _MSC_VER
+
+inline char *strupr(char * const str)
+{
+  for (char *a = str; *a; a++)
+  {
+    if ((*a >= 'a')&&(*a <= 'z')) *a += 'A'-'a';
+  };
+  return str;
+}
+#else
+#define strupr _strupr
+#endif
 
 END_NAMESPACE_TOMO
 
