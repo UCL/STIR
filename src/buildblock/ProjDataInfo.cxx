@@ -199,7 +199,9 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet
 /****************** static members **********************/
 
 ProjDataInfo*
-ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner> scanner,int span, int max_delta, int num_views,int num_tangential_poss)
+ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
+			      int span, int max_delta, 
+			      int num_views,int num_tangential_poss)
 {
   
   
@@ -281,7 +283,9 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner> scanner,int span, int ma
 }
 
 ProjDataInfo*
-ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner> scanner,int max_delta,int num_views, int num_tangential_poss)
+ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
+			     int max_delta,
+			     int num_views, int num_tangential_poss)
 	       
 	       
 {
