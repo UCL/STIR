@@ -29,12 +29,13 @@
 using std::vector;
 #endif
 
+START_NAMESPACE_STIR
+
 /*!
   \ingroup Shape
   \brief Class for shapes with orientation
    
 */
-START_NAMESPACE_STIR
 
 class Shape3DWithOrientation: public Shape3D
 {

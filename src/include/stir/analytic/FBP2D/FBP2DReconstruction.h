@@ -59,7 +59,7 @@ public:
 		      const int num_segments_to_combine=-1
 		      );
   
-  Succeeded reconstruct(shared_ptr<DiscretisedDensity<3,float> > const &);
+  Succeeded reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
   
    //! Reconstruction that gets target_image info from the parameters
    /*! sadly have to repeat that here, as Reconstruct::reconstruct() gets hidden by the 

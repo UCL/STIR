@@ -19,12 +19,12 @@
         output_filename input_projdata_filename \
         scaling_factor seed-unsigned-int
   \endcode
-  The scaling_factor is used to multiply the input data before generating
-  the Poisson random number. This means that a scaling_factor larger than 1
+  The \c scaling_factor is used to multiply the input data before generating
+  the Poisson random number. This means that a \c scaling_factor larger than 1
   will result in less noisy data.<br>
   The seed value for the random number generator has to be strictly positive.<br>
   Without the -p option, the mean of the output data will
-  be equal to\nscaling_factor*mean_of_input, otherwise it
+  be equal to <tt>scaling_factor*mean_of_input</tt>, otherwise it
   will be equal to mean_of_input.<br>
   The options -p and --preserve-mean are identical.
 */

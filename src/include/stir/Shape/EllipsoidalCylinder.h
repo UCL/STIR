@@ -91,7 +91,7 @@ public:
   float get_geometric_volume() const;
   float get_geometric_area() const;
 
-  bool is_inside_shape(const CartesianCoordinate3D<float>&) const;
+  bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
   
 protected:
 

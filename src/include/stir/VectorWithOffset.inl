@@ -556,10 +556,6 @@ const
 }
 
 /********************** arithmetic operators ****************/
-
-/*! This will grow the vector automatically if the 2nd argument has
-    smaller min_index and/or larger max_index.
-    New elements are first initialised with T() before adding.*/
 template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator+= (const VectorWithOffset &v) 
@@ -583,7 +579,6 @@ VectorWithOffset<T>::operator+= (const VectorWithOffset &v)
   return *this; 
 }
 
-/*! See operator+= (const VectorWithOffset&) for growing behaviour */ 
 template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator-= (const VectorWithOffset &v)
@@ -608,7 +603,6 @@ VectorWithOffset<T>::operator-= (const VectorWithOffset &v)
   return *this; 
 }
 
-/*! See operator+= (const VectorWithOffset&) for growing behaviour */ 
 template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator*= (const VectorWithOffset &v)
@@ -634,7 +628,6 @@ VectorWithOffset<T>::operator*= (const VectorWithOffset &v)
   return *this; 
 }
 
-/*! See operator+= (const VectorWithOffset&) for growing behaviour */ 
 template <class T>
 inline VectorWithOffset<T>& 
 VectorWithOffset<T>::operator/= (const VectorWithOffset &v)

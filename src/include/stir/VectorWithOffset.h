@@ -175,14 +175,16 @@ public:
   //! array access, read-only
   inline const T& operator[] (int i) const;
   
-  //! comparison
+  //! \name comparison operators
+  //@{
   inline bool operator== (const VectorWithOffset &iv) const;
   inline bool operator!= (const VectorWithOffset &iv) const;
-  
+  //@}
+
   //! fill elements with value \a n
   inline void fill(const T &n);
 
-  //! \name access to the data  
+  //! \name access to the data via a pointer
   //@{
   //! member function for access to the data via a T*
   inline T* get_data_ptr();
@@ -205,8 +207,6 @@ public:
 #endif
   //@}
 
-  //@}
-
   //!\name basic iterator support
   //@{
   //! use to initialise an iterator to the first element of the vector
@@ -219,10 +219,9 @@ public:
   inline const_iterator end() const;
   //@}
 
-  //! \name arithmetic operations with objects of the same type
-  /*! \warning Arguments must have matching index ranges. Otherwise error() is called. */
-  //@{
-  //!\name  assignment operators
+  /*! \name arithmetic assignment operators with objects of the same type
+      \warning Arguments must have matching index ranges. Otherwise error() is called. 
+   */
   //@{
   //! adding elements of \c v to the current vector
   inline VectorWithOffset & operator+= (const VectorWithOffset &v);
@@ -236,7 +235,12 @@ public:
   //! dividing all elements of the current vector by elements of \c v
   inline VectorWithOffset & operator/= (const VectorWithOffset &v);
   //@}
-  //!\name non-assignment operators
+  /*! \name arithmetic operators with objects of the same type
+   
+     \warning Arguments must have matching index ranges. Otherwise error() is called. 
+     \warning current implementation involves a temporary copy of the data,
+        unless you have a really smart compiler.
+   */
   //@{
   //! adding vectors, element by element
   inline VectorWithOffset operator+ (const VectorWithOffset &v) const;
@@ -250,7 +254,7 @@ public:
   //! dividing vectors, element by element
   inline VectorWithOffset operator/ (const VectorWithOffset &v) const;
   //@}
-  //@}
+ 
 protected:
   
   //! pointer to (*this)[0] (taking get_min_index() into account that is).

@@ -3,7 +3,7 @@
 //
 /*!
   \file 
- 
+  \ingroup Array
   \brief implementation of convert_array
 
   \author Kris Thielemans

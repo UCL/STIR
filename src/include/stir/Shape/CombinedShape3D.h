@@ -42,12 +42,17 @@ struct logical_and : public std::binary_function<T, T, bool>
 	 { return x || y; }
     };
 
+/*! \ingroup Shape
+    \brief A class that allows combining several shapes using logical operations
+    \todo document more
+    \todo Parsing cannot work yet because of template (can be solved by explicit instantiation)
+
+*/
 template<class operation=logical_and<bool> >
 class CombinedShape3D : 
    public RegisteredParsingObject<CombinedShape3D, Shape3D, Shape3D>
 {
 public:
-  // TODO cannot work yet because of template
   // Name which will be used when parsing a Shape3D object
   //static const char * const registered_name; 
 
