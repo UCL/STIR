@@ -94,6 +94,11 @@ projection data,...
 \ingroup buildblock
 */
 /*!
+\defgroup geometry Items related to simple geometric calculations
+\ingroup buildblock
+Functions to compute distances between lines etc.
+*/
+/*!
 \defgroup projdata Items related to projection data
 \ingroup buildblock
 Basic support for projection data. This is the term generally used in STIR
