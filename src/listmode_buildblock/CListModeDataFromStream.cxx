@@ -229,8 +229,28 @@ save_get_position()
 {
   assert(!is_null_ptr(stream_ptr));
   // TODO should somehow check if tellg() worked and return an error if it didn't
-  streampos pos = stream_ptr->tellg();
-  pos -= num_chars_left_in_buffer;
+  streampos pos;
+  if (!stream_ptr->eof())
+    {
+      pos = stream_ptr->tellg();
+      pos -= num_chars_left_in_buffer;
+    }
+  else
+    {
+      // special handling for eof
+      stream_ptr->clear();
+      if (num_chars_left_in_buffer!=0)
+	{
+	  stream_ptr->seekg(-num_chars_left_in_buffer, std::ios::end);
+	  pos = stream_ptr->tellg();
+	}
+      else
+	{
+	  // use -1 to signify eof 
+	  // (this is probably the behaviour of tellg anyway, but this way we're sure).
+	  pos = streampos(-1); 
+	}
+    }
   saved_get_positions.push_back(pos);
   return saved_get_positions.size()-1;
 } 
@@ -243,7 +263,11 @@ set_get_position(const CListModeDataFromStream::SavedPosition& pos)
     return Succeeded::no;
 
   assert(pos < saved_get_positions.size());
-  stream_ptr->seekg(saved_get_positions[pos]);
+  if (saved_get_positions[pos] == streampos(-1))
+    stream_ptr->seekg(0, std::ios::end); // go to eof
+  else
+    stream_ptr->seekg(saved_get_positions[pos]);
+    
   num_chars_left_in_buffer = 0;
   if (!stream_ptr->good())
     return Succeeded::no;
