@@ -23,53 +23,51 @@
 
 START_NAMESPACE_STIR
 
-/* This is the function that does the actual writing to std::ostream.
-  \internal
- */
-template <class elemT>
-inline Succeeded
-write_data_1d(std::ostream& s, const Array<1, elemT>& data,
-	      const ByteOrder byte_order,
-	      const bool can_corrupt_data);
+#ifndef __STIR_WORKAROUND_TEMPLATES
+/* the normal case */
 
-template <class OStreamT, int num_dimensions, class elemT, class OutputType, class ScaleT>
-Succeeded 
-write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
-	   NumericInfo<OutputType> output_type, 
-	   ScaleT& scale_factor,
-	   const ByteOrder byte_order,
-	   const bool can_corrupt_data)
-{
-  find_scale_factor(scale_factor,
-		    data, 
-		    NumericInfo<OutputType>());
-  return
-    write_data_with_fixed_scale_factor(s, data, output_type, 
-				       scale_factor, byte_order,
-				       can_corrupt_data);
-}
+#  define ___BYTEORDER_DEFAULT
+#  define ___CAN_CORRUPT_DATA_DEFAULT
+#  define INT_NUM_DIMENSIONS int num_dimensions,
 
-template <class OStreamT, int num_dimensions, class elemT>
-Succeeded 
-write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
-	   const ByteOrder byte_order,
-	   const bool can_corrupt_data)
-{
-  return
-    write_data_with_fixed_scale_factor(s, data, NumericInfo<elemT>(),
-				       1.F, byte_order,
-				       can_corrupt_data);
-}
-  
+#else
+
+/* horrible work-around for VC 6.0 (and other deficient compilers)
+
+   For some reason, VC 6.0 cannot figure out the template arguments
+   with the normal code. As a work-around, we disable the 
+   num_dimensions template, and replace it by #defines.
+
+   A complication are the default parameters for byte_order etc.
+   For the least amount of pain, these inlines serve as declarations
+   as well. So, we have to provide the defaults for the parameters here.
+   In contrast, for the normal case, the defaults are in the .h file,
+   and should not be repeated here.
+   I do this with some more preprocessor macros. Sigh.
+*/
+
+#  ifndef num_dimensions
+#    error num_dimensions should be defined
+#  endif
+
+#  define ___BYTEORDER_DEFAULT 	=ByteOrder::native
+#  define ___CAN_CORRUPT_DATA_DEFAULT =false
+#  define INT_NUM_DIMENSIONS
+
+#endif
+
 namespace detail
 {
   /* Generic implementation of write_data_with_fixed_scale_factor(). 
      See test_if_1d.h for info why we do this this way.
   */  
+#if !defined(__STIR_WORKAROUND_TEMPLATES) || num_dimensions!=1
 
-  template <class OStreamT, int num_dimensions, class elemT, class OutputType, class ScaleT>
-  Succeeded 
-  write_data_with_fixed_scale_factor_help(is_not_1d,
+  template <class OStreamT, INT_NUM_DIMENSIONS
+	    class elemT, class OutputType, class ScaleT>
+  inline Succeeded 
+  write_data_with_fixed_scale_factor_help(
+                                          is_not_1d,
 					  OStreamT& s, const Array<num_dimensions,elemT>& data, 
 					  NumericInfo<OutputType> output_type, 
 					  const ScaleT scale_factor,
@@ -88,11 +86,14 @@ namespace detail
       }
     return Succeeded::yes;
   }
+#endif
 
+#if !defined(__STIR_WORKAROUND_TEMPLATES) || num_dimensions==1
   // specialisation for 1D case
   template <class OStreamT, class elemT, class OutputType, class ScaleT>
-  Succeeded 
-  write_data_with_fixed_scale_factor_help(is_1d,
+  inline Succeeded 
+  write_data_with_fixed_scale_factor_help(
+                                          is_1d,
 					  OStreamT& s, const Array<1,elemT>& data, 
 					  NumericInfo<OutputType>, 
 					  const ScaleT scale_factor,
@@ -108,7 +109,7 @@ namespace detail
 	if (new_scale_factor!=scale_factor)
 	  return Succeeded::no;
 	return 
-	  write_data_1d(s, data_tmp, byte_order, /*can_corrupt_data*/ true);
+          write_data_1d(s, data_tmp, byte_order, /*can_corrupt_data*/ true);
       }
     else
       {
@@ -116,85 +117,68 @@ namespace detail
 	  write_data_1d(s, data, byte_order, can_corrupt_data);
       }
   }
+#endif
 
 } // end of namespace detail
 
-template <class OStreamT, int num_dimensions, class elemT, class OutputType, class ScaleT>
+template <class OStreamT, INT_NUM_DIMENSIONS
+	  class elemT, class OutputType, class ScaleT>
 Succeeded 
 write_data_with_fixed_scale_factor(OStreamT& s, const Array<num_dimensions,elemT>& data, 
 				   NumericInfo<OutputType> output_type, 
 				   const ScaleT scale_factor,
-				   const ByteOrder byte_order,
-				   const bool can_corrupt_data)
+				   const ByteOrder byte_order ___BYTEORDER_DEFAULT,
+				   const bool can_corrupt_data ___CAN_CORRUPT_DATA_DEFAULT)
 {
   return 
     detail::
-    write_data_with_fixed_scale_factor_help(detail::test_if_1d<num_dimensions>(),
-					    s, data,
+    write_data_with_fixed_scale_factor_help(
+                                            detail::test_if_1d<num_dimensions>(),
+                                            s, data,
 					    output_type, 
 					    scale_factor, byte_order,
 					    can_corrupt_data);
 }
 
-
-template <class elemT>
-Succeeded
-write_data_1d(std::ostream& s, const Array<1, elemT>& data,
-	   const ByteOrder byte_order,
-	   const bool can_corrupt_data)
+template <class OStreamT, INT_NUM_DIMENSIONS
+	  class elemT, class OutputType, class ScaleT>
+Succeeded 
+write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
+	   NumericInfo<OutputType> output_type, 
+	   ScaleT& scale_factor,
+	   const ByteOrder byte_order ___BYTEORDER_DEFAULT,
+	   const bool can_corrupt_data ___CAN_CORRUPT_DATA_DEFAULT)
 {
-  if (!s)
-    { warning("write_data: error before writing to stream.\n"); return Succeeded::no; }
-  
-  // TODO handling of byte-swapping is unsafe if s.write() can throw. Check!
-  // While writing, the array is byte-swapped.
-  // Safe way: (but involves creating an extra copy of the data)
-  /*
-  if (!byte_order.is_native_order())
-  {
-  Array<1, elemT> a_copy(data);
-  for(int i=data.get_min_index(); i<=data.get_max_index(); i++)
-  ByteOrder::swap_order(a_copy[i]);
-  return write_data(s, a_copy, ByteOrder::native, true);
-  }
-  */
-  if (!byte_order.is_native_order())
-  {
-    Array<1,elemT>& data_ref =
-      const_cast<Array<1,elemT>&>(data);
-    for(int i=data.get_min_index(); i<=data.get_max_index(); ++i)
-      ByteOrder::swap_order(data_ref[i]);
-  }
-  
-  // note: find num_to_write (using size()) outside of s.write() function call
-  // otherwise Array::check_state() in size() might abort if
-  // get_const_data_ptr() is called before size() (which is compiler dependent)
-  const std::streamsize num_to_write =
-    static_cast<std::streamsize>(data.size())* sizeof(elemT);
-  s.write(reinterpret_cast<const char *>(data.get_const_data_ptr()), num_to_write);
-  data.release_const_data_ptr();	    
-
-  if (!s)
-  { warning("write_data: error after writing to stream.\n"); return Succeeded::no; }
-
-  if (!can_corrupt_data && !byte_order.is_native_order())
-  {
-    Array<1,elemT>& data_ref =
-      const_cast<Array<1,elemT>&>(data);
-    for(int i=data.get_min_index(); i<=data.get_max_index(); ++i)
-      ByteOrder::swap_order(data_ref[i]);
-  }
-
-  return Succeeded::yes;
+  find_scale_factor(scale_factor,
+		    data, 
+		    NumericInfo<OutputType>());
+  return
+    write_data_with_fixed_scale_factor(s, data, output_type, 
+				       scale_factor, byte_order,
+				       can_corrupt_data);
 }
 
-template <class OStreamT, int num_dimensions, class elemT, class ScaleT>
+template <class OStreamT, INT_NUM_DIMENSIONS
+	  class elemT>
+Succeeded 
+write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
+	   const ByteOrder byte_order ___BYTEORDER_DEFAULT,
+	   const bool can_corrupt_data ___CAN_CORRUPT_DATA_DEFAULT)
+{
+  return
+    write_data_with_fixed_scale_factor(s, data, NumericInfo<elemT>(),
+				       1.F, byte_order,
+				       can_corrupt_data);
+}
+
+template <class OStreamT, INT_NUM_DIMENSIONS
+	  class elemT, class ScaleT>
 Succeeded 
 write_data(OStreamT& s, 
 	   const Array<num_dimensions,elemT>& data, 
 	   NumericType type, ScaleT& scale,
-	   const ByteOrder byte_order,
-	   const bool can_corrupt_data) 
+	   const ByteOrder byte_order ___BYTEORDER_DEFAULT,
+	   const bool can_corrupt_data ___CAN_CORRUPT_DATA_DEFAULT) 
 {
   if (NumericInfo<elemT>().type_id() == type)
     {
@@ -215,9 +199,7 @@ write_data(OStreamT& s,
 		   scale, byte_order, can_corrupt_data)
 
       // now list cases that we want
-#if !defined(_MSC_VER) || _MSC_VER>=1300
       CASE(NumericType::SCHAR);
-#endif
       CASE(NumericType::SHORT);
       CASE(NumericType::USHORT);
       CASE(NumericType::FLOAT);
@@ -230,6 +212,11 @@ write_data(OStreamT& s,
     }
 
 }
+
+#ifdef __STIR_WORKAROUND_TEMPLATES
+#  undef ___BYTEORDER_DEFAULT
+#  undef ___CAN_CORRUPT_DATA_DEFAULT
+#endif
 
 END_NAMESPACE_STIR
 
