@@ -16,8 +16,6 @@ void
 LmToProjDataWithMC::set_defaults()
 {
   LmToProjData::set_defaults();
- //mt_file_ptr = 0;
-  norm_filename = "";
   attenuation_filename ="";
   ro3d_ptr = 0;
   transmission_duration = 300; // default value 5 min.
@@ -36,7 +34,6 @@ LmToProjDataWithMC::initialise_keymap()
   parser.add_stop_key("END");
 }
 
-#if 1
 LmToProjDataWithMC::
 LmToProjDataWithMC(const char * const par_filename)
 {
@@ -47,7 +44,6 @@ LmToProjDataWithMC(const char * const par_filename)
     ask_parameters();
 
 }
-#endif
 
 bool
 LmToProjDataWithMC::
@@ -62,9 +58,6 @@ post_processing()
     return true;
   }
 
-  //shared_ptr<Scanner> scanner_ptr = 
-    //new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
-  
    // compute average motion in respect to the transmission scan
   float att_start_time, att_end_time;
   if (attenuation_filename !="")
@@ -98,18 +91,6 @@ post_processing()
   return false;
 }
 
-#if 0
-LmToProjDataWithMC::
-LmToProjDataWithMC(const char * const par_filename)
-{
-  set_defaults();
-  if (par_filename!=0)
-    parse(par_filename) ;
-  else
-    ask_parameters();
-}
-
-#endif
 
 void 
 LmToProjDataWithMC::
@@ -139,9 +120,10 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   const CListEventDataECAT966& event = 
     static_cast<CListRecordECAT966 const&>(event_of_general_type).event_data;// TODO get rid of this
 
-  //  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-  //  static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
-  //first do the normalisation
+  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+    static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
+
+
   //event.get_bin(bin, static_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr));
   record.get_uncompressed_bin(bin);
   const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
@@ -158,8 +140,6 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   // find corresponding cartesian coordinates
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
-  //  const Scanner * const scanner_ptr = 
-  //  template_proj_data_info_ptr->get_scanner_ptr();
 
   find_cartesian_coordinates_given_scanner_coordinates(coord_1,coord_2,
     ring_a,ring_b,det_num_a,det_num_b,*scanner_ptr);
@@ -195,7 +175,7 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
 							   coord_2_transformed, 
 							   *scanner_ptr) ==
       Succeeded::no ||
-      static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr).
+      proj_data_info.
        get_bin_for_det_pair(bin,
 			    det_num_a_trans, ring_a_trans,
 			    det_num_b_trans, ring_b_trans) == Succeeded::no)
@@ -204,8 +184,16 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   }
   else
   {
-    //cerr << " here" << endl;
-    bin.set_bin_value(1/bin_efficiency);
+    // now normalise event taking into account the
+    // normalisation factor before motion correction and the number of
+    // uncompressed bins that contribute to this bin
+    // TODO this normalisation is not really correct
+    bin.set_bin_value(1/ 
+		      (bin_efficiency*
+		       proj_data_info.
+		         get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
+								    bin.axial_pos_num())*
+		       proj_data_info.get_view_mashing_factor()));
   }
 
   
