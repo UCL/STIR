@@ -5,7 +5,7 @@
 
 /*
   A simple programme to test the linear_regression function.
-  It relies on the existence of a file "test_linear_regression.in"
+  There should be a command line argument with the name of a file.
   This should contain a number of test cases for the fit.
   File contents should as follows:
     1 line with some general text
@@ -50,20 +50,29 @@ bool check_if_equal(double a, double b, char *str = "Should be equal")
     return true;
 }
 
-#include <string>
 
 int main(int argc, char **argv)
 {
-  ifstream in("test_linear_regression.in");
+  if (argc != 2)
+  {
+    cerr << "Usage : " << argv[0] << " filename\n"
+         << "See source file for the format of this file.\n"
+	 << endl;
+    return 1;
+  }
 
+
+  ifstream in(argv[1]);
   if (!in)
   {
     cerr << argv[0] 
-         << ": Error opening input file test_linear_regression.in\nExiting."
+         << ": Error opening input file " << argv[1] << "\nExiting."
 	 << endl;
     return 1;
   }
   
+  cerr << "Testing linear_regression function..." << endl;
+
   char text[200];
   in.get(text,200);
   cerr << text << endl;
@@ -124,22 +133,25 @@ int main(int argc, char **argv)
       weights);
     
     if (
-      !check_if_equal(expected_constant, constant, 
-      "for parameter constant, should be equal") || 
-      !check_if_equal(expected_scale, scale, 
-      "for parameter scale, should be equal") ||
-      !check_if_equal(expected_chi_square, chi_square, 
-      "for parameter chi_square, should be equal") ||
-      !check_if_equal(expected_variance_of_constant, variance_of_constant, 
-      "for parameter variance_of_constant, should be equal") ||
-      !check_if_equal(expected_variance_of_scale, variance_of_scale, 
-      "for parameter variance_of_scale, should be equal") ||
-      !check_if_equal(expected_covariance_of_constant_with_scale, 
-      covariance_of_constant_with_scale, 
-      "for parameter covariance_of_constant_with_scale should be equal")
-      )
+	!check_if_equal(expected_constant, constant, 
+			"for parameter constant, should be equal") || 
+	!check_if_equal(expected_scale, scale, 
+			"for parameter scale, should be equal") ||
+	!check_if_equal(expected_chi_square, chi_square, 
+			"for parameter chi_square, should be equal") ||
+	!check_if_equal(expected_variance_of_constant, variance_of_constant, 
+			"for parameter variance_of_constant, should be equal") ||
+	!check_if_equal(expected_variance_of_scale, variance_of_scale, 
+			"for parameter variance_of_scale, should be equal") ||
+	!check_if_equal(expected_covariance_of_constant_with_scale, 
+			covariance_of_constant_with_scale, 
+			"for parameter covariance_of_constant_with_scale should be equal")
+	)
       exit(1);
   }
+
+  cerr << "Everything fine" << endl;
+
   return 0;
 }
 
