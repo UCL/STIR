@@ -3,7 +3,6 @@
 #
 # Author Kris Thielemans
 # Copyright 2004- $Date$ Hammersmith Imanet Ltd
-# This file is part of STIR, and is di $ Hammersmith Imanet Ltd
 # This file is part of STIR, and is distributed under the 
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 #
@@ -13,7 +12,7 @@
 #    dir must be set to the subdirectory name (relative to the location of Makefile)
 #    $(dir)_SOURCES must be set to a list of .cxx and/or .c files (without path)
 # Result:
-# targets $(dir) clean_exes_$(dir) install_$(dir)
+# targets $(dir) clean_exes_$(dir) install_exes_$(dir), uninstall_exes_$(dir)
 # variables $(dir)_SOURCES (with $dir)/ prepended)
 #           $(dir)_EXES, $(dir)_EXE_FILENAMES
 #
@@ -23,17 +22,15 @@
 # make clean_exes_SUBDIR will remove all generated files
 # make install_SUBDIR will install all executables
 
-#$(warning including exe.mk from $(dir))
-
 $(dir)_SOURCES:= $(addprefix $(dir)/, $($(dir)_SOURCES))
 $(dir)_EXES:= \
 	$(patsubst %.cxx, $(DEST)%, $(filter %.cxx, $($(dir)_SOURCES))) \
 	$(patsubst %.c, $(DEST)%, $(filter %.c, $($(dir)_SOURCES)))
 
-.PHONY: $(dir) clean_exes_$(dir) install_exes_$(dir)
+.PHONY: $(dir) clean_exes_$(dir) install_exes_$(dir) uninstall_exes_$(dir)
 
-# make sure make keeps the .o file
-# otherwise it will be deleted
+# make sure make keeps the .o files
+# otherwise they will be deleted
 .PRECIOUS: $(patsubst %.cxx, $(DEST)%.o, $(filter %.cxx, $($(dir)_SOURCES))) 
 
 $(dir):  $($(dir)_EXES)
@@ -51,6 +48,9 @@ clean_exes_$(dir):
 install_exes_$(dir): $(dir)
 	mkdir -p $(INSTALL_EXE_DIR)
 	$(INSTALL) $($(@:install_exes_%=%)_EXE_FILENAMES) $(INSTALL_EXE_DIR)
+
+uninstall_exes_$(dir):
+	$(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_EXE_FILENAMES)))
 
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
   -include \
