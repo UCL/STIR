@@ -51,7 +51,7 @@ only work on systems where this library works properly.
 #define Sinogram CTISinogram
 #endif
 
-#include "stir/matrix.h"
+#include "matrix.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
