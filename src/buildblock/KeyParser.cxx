@@ -21,7 +21,7 @@
 #include "KeyParser.h"
 #include "tomo/Object.h"
 #include "line.h"
-
+#include "stream.h"
 
 #include <fstream>
 #include <cstring>
@@ -667,21 +667,17 @@ string KeyParser::parameter_info() const
 	    s << "None";
           break;	 
         }
-#if 1
-      default:
-        s << "KeyParser::parameter_info TODO"; break;
-#else
-      // TODO these lines need modifying stream.h such that << works also for vectors
+
       case KeyArgument::LIST_OF_DOUBLES:
         s << *reinterpret_cast<DoubleVect*>(i->second.p_object_variable); break;	  	  
-      case KeyArgument::LIST_OF_INT:
+      case KeyArgument::LIST_OF_INTS:
         s << *reinterpret_cast<IntVect*>(i->second.p_object_variable); break;	  	  
       case KeyArgument::LIST_OF_ASCII:
         s << *reinterpret_cast<vector<string>*>(i->second.p_object_variable); break;	  	  
       default :
 	  warning("KeyParser error: unknown type. Implementation error\n");
 	  break;
-#endif
+
       }
       s << endl;
     }
