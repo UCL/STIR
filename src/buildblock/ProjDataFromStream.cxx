@@ -24,10 +24,10 @@
 #include "IndexRange2D.h"
 #include "IndexRange3D.h"
 #include "utilities.h"
+#include "interfile.h"
 #include <numeric>
 #include <iostream>
 #include <fstream>
-#include "interfile.h"
 
 #ifndef TOMO_NO_NAMESPACES
 using std::find;
@@ -816,7 +816,7 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 
 
     // KT 03/07/2001 initialise to avoid compiler warnings
-    int  open_mode=ios::in; 
+    ios::openmode  open_mode=ios::in; 
     switch(ask_num("Read (1), Create and write(2), Read/Write (3) : ", 1,3,1))
     {
       case 1: open_mode=ios::in; break;
@@ -846,7 +846,7 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 	memory = (char *)read_stream_in_memory(input, file_size);
       }
       
-#ifdef __GNUG__
+#ifdef BOOST_NO_STRINGSTREAM
       // This is the old implementation of the strstream class.
       // The next constructor should work according to the doc, but it doesn't in gcc 2.8.1.
       //strstream in_stream(memory, file_size, ios::in | ios::binary);
@@ -859,8 +859,8 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 #else
       // TODO this does allocate and copy 2 times
 
-      p_in_stream = new stringstream (string(memory, file_size), 
-	open_mode | ios::binary);
+      p_in_stream = new std::stringstream (string(memory, file_size), 
+ 	                                   open_mode | ios::binary);
 	
       delete[] memory;
 #endif
