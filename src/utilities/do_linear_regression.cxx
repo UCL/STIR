@@ -38,6 +38,8 @@ using std::endl;
 using std::ifstream;
 #endif
 
+USING_NAMESPACE_TOMO
+
 
 int main(int argc, char **argv)
 {
