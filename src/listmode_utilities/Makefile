@@ -10,6 +10,7 @@ include $(WORKSPACE)/Makefile_common
 
 SOURCES = \
 	lm_to_projdata.cxx \
+	lm_to_projdata_bootstrap.cxx \
 	lm_to_projdata_with_MC.cxx \
 	lm_fansums.cxx
 
