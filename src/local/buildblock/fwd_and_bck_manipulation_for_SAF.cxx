@@ -30,7 +30,7 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 	proj_matrix.get_proj_matrix_elems_for_one_densel(probs, densel);
 	
 	float denominator = 0;
-	//float sensitivity= 0;
+	float sensitivity= 0;
 	for (ProjMatrixElemsForOneDensel::const_iterator element_ptr = probs.begin();
 	element_ptr != probs.end();++element_ptr)
 	{  
@@ -49,16 +49,16 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 	    float bin_attenuation= 
 	      (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  	    
 	    image[z][y][x] += (bin_attenuation/bin) * square(val);
-	    //sensitivity+=bin_attenuation*val;
+	    sensitivity+=bin_attenuation*val;
 	  }
 	  else
 	  {
 	    image[z][y][x] += (1.F/bin) * square(val);
-	    //sensitivity+=val;
+	    sensitivity+=val;
 	  }
 	 }
 	}
-//	image[z][y][x]/= square(sensitivity);
+	image[z][y][x]/= square(sensitivity);
 	if (normalize_result)      
 	  image[z][y][x]/= denominator;
 
