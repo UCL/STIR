@@ -153,7 +153,9 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 {
 
   // WARNING - find a way of finding max in the sinogram
-  const float max_in_viewgram = 33.52F;
+  // TODO - include other segments as well
+  const float max_in_viewgram = (*all_segments[0]).find_max();
+    //33.52F;
   const float threshold = 0.0001F*max_in_viewgram;    
 
   ProjMatrixElemsForOneDensel probs;
@@ -171,20 +173,26 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 	{
 	  const float val=element_ptr->get_value();
 	  
-	  float bin_attenuation= 
-	   (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
 	  float bin= 
 	    (*all_segments[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];
 	  if (bin >= threshold)
 	  {
 	    if (do_attenuation)
-	     image[z][y][x] += (square(bin_attenuation)/bin) * square(val);
-	      else
+		{
+	    	 float bin_attenuation= 
+	     (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
+	
+		 image[z][y][x] += (square(bin_attenuation)/bin) * square(val);}
+		 else
 	    image[z][y][x] += (1.F/bin) * square(val);
 	  }
 	  else
 	    if(do_attenuation)
-	      image[z][y][x] += (square(bin_attenuation)/threshold) * square(val);
+		{
+	    	float bin_attenuation= 
+	   (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
+	    image[z][y][x] += (square(bin_attenuation)/threshold) * square(val);
+		}
 	      else
 	    image[z][y][x] += (1.F/threshold) * square(val);
 	  
@@ -302,8 +310,13 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 {
     proj_data_ptr = 
        ProjData::read_from_file( proj_data_filename); 
+    
+    if (attenuation_proj_data_filename !="1")
     attenuation_proj_data_ptr =
-      ProjData::read_from_file( proj_data_filename); 
+    ProjData::read_from_file(attenuation_proj_data_filename); 
+	else 
+    attenuation_proj_data_ptr = NULL;
+
    
     return Succeeded::yes;
   
@@ -363,18 +376,26 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     
     VectorWithOffset<SegmentByView<float> *> all_segments(start_segment_num, end_segment_num);
     VectorWithOffset<SegmentByView<float> *> all_attenuation_segments(start_segment_num, end_segment_num);
+
+    bool do_attenuation;
     
     for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     {
-      all_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
-      if (attenuation_proj_data_filename !="1")
-	all_attenuation_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_segment_by_view(segment_num));
-      else 
-      {
-	all_attenuation_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
-	(*all_attenuation_segments[segment_num]).fill(1);
-      }
-      
+		all_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
+
+		if (attenuation_proj_data_filename !="1")
+		{
+		  do_attenuation = true;
+		  all_attenuation_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
+		 *all_attenuation_segments[segment_num] =  attenuation_proj_data_ptr->get_segment_by_view(segment_num);
+		 }
+		else 
+		{
+		do_attenuation = false;
+		all_attenuation_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));		 
+		(*all_attenuation_segments[segment_num]).fill(1);
+		}
+		
     }
     
     
@@ -419,13 +440,15 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
       in_density.get_origin(),in_density_cast_0.get_voxel_size());  
     
     shared_ptr<DiscretisedDensity<3,float> > kappa1_ptr_bck =  vox_image_ptr_kappa1;   
+
+
     
     find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
       all_attenuation_segments,
       vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
       vox_image_ptr_kappa1->get_min_y(),vox_image_ptr_kappa1->get_max_y(),
       vox_image_ptr_kappa1->get_min_x(),vox_image_ptr_kappa1->get_max_x(),
-      *proj_matrix_ptr, true);
+      *proj_matrix_ptr, do_attenuation);
     
     for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     { 
