@@ -44,9 +44,9 @@ ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filt
 template <int num_dimensions, typename elemT>
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, 
-				   std::complex<elemT> >& complex_filter_kernel)
+				   std::complex<elemT> >& kernel_in_frequency_space)
 { 
-  if (set_kernel(complex_filter_kernel) == Succeeded::no) 
+  if (set_kernel_in_frequency_space(kernel_in_frequency_space) == Succeeded::no) 
     error("Error constructing ArrayFilterUsingRealDFTWithPadding\n");
 }
 #endif
@@ -58,9 +58,9 @@ set_padding_range()
 {
   BasicCoordinate<num_dimensions, int> min_indices, max_indices;
 
-  if (!complex_filter_kernel.get_regular_range(min_indices, max_indices))
+  if (!kernel_in_frequency_space.get_regular_range(min_indices, max_indices))
     return Succeeded::no;
-  // check if complex_filter_kernel is 0-based, as currently required by fourier
+  // check if kernel_in_frequency_space is 0-based, as currently required by fourier
   // TODO we could wrap-around if not
   for (int d=1; d<=num_dimensions; ++d)
     {
@@ -84,7 +84,7 @@ set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel)
   // check if we need to use wrap-around
   if (norm(min_indices)<.01) // i.e. min_indices==0
     {
-      complex_filter_kernel =
+      kernel_in_frequency_space =
 	fourier_for_real_data(real_filter_kernel);
     }
   else
@@ -103,32 +103,30 @@ set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel)
       while(next(index, real_filter_kernel));
 
       // do DFT on this array
-      complex_filter_kernel =
+      kernel_in_frequency_space =
 	fourier_for_real_data(real_filter_kernel_from_0);
     }
 
   return set_padding_range();
 }
 
-#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
 template <int num_dimensions, typename elemT>
 Succeeded
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
-set_kernel(const Array<num_dimensions, std::complex<elemT> >& complex_filter_kernel_v)
+set_kernel_in_frequency_space(const Array<num_dimensions, std::complex<elemT> >& kernel_in_frequency_space_v)
 {
-  complex_filter_kernel = complex_filter_kernel_v;
+  kernel_in_frequency_space = kernel_in_frequency_space_v;
   return set_padding_range();
 }
-#endif
 
 template <int num_dimensions, typename elemT>
 bool ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 is_trivial() const
 {
   return
-    complex_filter_kernel.size_all()==0 ||
-    (complex_filter_kernel.size_all()==1 && 
-     (*complex_filter_kernel.begin_all()) == std::complex<elemT>(1,0));
+    kernel_in_frequency_space.size_all()==0 ||
+    (kernel_in_frequency_space.size_all()==1 && 
+     (*kernel_in_frequency_space.begin_all()) == std::complex<elemT>(1,0));
 }
 
 
@@ -144,7 +142,7 @@ do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT
       {
 	Array<num_dimensions,std::complex<elemT> > tmp =
 	  fourier_for_real_data(in_array);
-	tmp *= complex_filter_kernel;
+	tmp *= kernel_in_frequency_space;
 	out_array = inverse_fourier_for_real_data_corrupting_input(tmp);
       }
     }
