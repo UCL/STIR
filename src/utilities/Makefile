@@ -63,17 +63,6 @@ include $(WORKSPACE)/Makefile_bblibs
 #	ranlib $@
 
 
-$(DEST)conv_to_ecat6: $(DEST)conv_to_ecat6.o \
-    $(DEST)cti_utils.o $(DEST)stir_cti.o ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)stir_cti.o \
-		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
-
-
-$(DEST)convecat6_if: $(DEST)convecat6_if.o \
-    $(DEST)cti_utils.o $(DEST)stir_cti.o ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)stir_cti.o \
-		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
-
 
 $(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
      $(LLN_LIB_DIR)/libecat.a \
