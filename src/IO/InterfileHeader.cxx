@@ -856,15 +856,15 @@ bool InterfilePDFSHeader::post_processing()
       bin_size_in_cm = 
          guessed_scanner_ptr->get_default_bin_size()/10;
     if (num_axial_blocks_per_bucket<=0)
-      num_axial_blocks_per_bucket = guessed_scanner_ptr->num_axial_blocks_per_bucket();
+      num_axial_blocks_per_bucket = guessed_scanner_ptr->get_num_axial_blocks_per_bucket();
     if (num_transaxial_blocks_per_bucket<=0)
-      num_transaxial_blocks_per_bucket = guessed_scanner_ptr->num_transaxial_blocks_per_bucket();
+      num_transaxial_blocks_per_bucket = guessed_scanner_ptr->get_num_transaxial_blocks_per_bucket();
     if (num_axial_crystals_per_block<=0)
-      num_axial_crystals_per_block = guessed_scanner_ptr->num_axial_crystals_per_block();
+      num_axial_crystals_per_block = guessed_scanner_ptr->get_num_axial_crystals_per_block();
     if (num_transaxial_crystals_per_block<=0)
-      num_transaxial_crystals_per_block = guessed_scanner_ptr->num_transaxial_crystals_per_block();
+      num_transaxial_crystals_per_block = guessed_scanner_ptr->get_num_transaxial_crystals_per_block();
     if (num_detector_layers<=0)
-      num_detector_layers = guessed_scanner_ptr->num_detector_layers();
+      num_detector_layers = guessed_scanner_ptr->get_num_detector_layers();
     
     // consistency check with values of the guessed_scanner_ptr we guessed above
 
