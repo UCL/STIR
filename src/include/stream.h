@@ -16,9 +16,10 @@
   \version $Revision$
 */
 #include <iostream>
-
+#include <vector>
 #ifndef TOMO_NO_NAMESPACES
 using  std::ostream;
+using  std::vector;
 #endif
 
 #include "VectorWithOffset.h"
@@ -76,4 +77,34 @@ operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
       str << '}';
       return str;
 }
+
+
+/*!
+  \brief Outputs a vector to a stream.
+
+  Output is of the form 
+  \verbatim
+  {1, 2, 3}
+  \endverbatim
+  with an endl at the end. 
+  
+  For each element of the vector ostream::operator<<() will be called.
+*/
+template <typename elemT>
+ostream& 
+operator<<(ostream& str, const vector<elemT>& v)
+{
+      str << '{';
+      // slightly different from above because vector::size() is unsigned
+      // so 0-1 == 0xFFFFFFFF (and not -1)
+      if (v.size()>0)
+      {
+        for (unsigned int i=0; i<v.size()-1; i++)
+	  str << v[i] << ", ";      
+	str << v[v.size()-1];
+      }
+      str << '}' << endl;
+      return str;
+}
+
 END_NAMESPACE_TOMO
