@@ -86,7 +86,7 @@ class PointOnCylinder
   void check_state() const
   {
     assert(0<=_psi);
-    assert(_psi<2*_PI);
+    assert(_psi<static_cast<coordT>(2*_PI));
   }
  public:
   coordT psi() const { check_state(); return _psi; }
@@ -322,7 +322,7 @@ class LORInAxialAndSinogramCoordinates
     assert(_radius>0);
     assert(_s>-_radius);
     assert(_s<_radius);
-    assert(_phi<_PI);
+    assert(_phi<static_cast<coordT>(_PI));
     assert(_phi>=0);
   }
 
@@ -429,9 +429,9 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   void check_state() const
   {
     assert(_radius>0);
-    assert(_beta>=-_PI/2);
-    assert(_beta<_PI/2);
-    assert(_phi<_PI);
+    assert(_beta>=static_cast<coordT>(-_PI/2));
+    assert(_beta<static_cast<coordT>(_PI/2));
+    assert(_phi<static_cast<coordT>(_PI));
     assert(_phi>=0);
   }
  public:
