@@ -1,8 +1,8 @@
 // $Id$
 /*!
   \file 
-  \ingroup Array_detail 
-  \brief Classes for use in implementation of Array to test if it's a 1D array.
+  \ingroup buildblock_detail 
+  \brief Classes for use in implementation of Array, BasicCoordinate etc to test if it's a 1D array.
 
   \author Kris Thielemans
 
@@ -18,18 +18,18 @@
 #define __stir_detail_test_if_1d_H__
 namespace stir {
   namespace detail {
-    /*! \ingroup Array_detail
+    /*! \ingroup buildblock_detail
        \brief a class used to signify it's a 1D array
        \see test_if_1d
     */
     struct is_1d{};
-    /*! \ingroup Array_detail
+    /*! \ingroup buildblock_detail
        \brief a class used to signify it's not a 1D array
        \see test_if_1d
     */
     struct is_not_1d{};
 
-    /*! \ingroup Array_detail
+    /*! \ingroup buildblock_detail
        \brief a templated class used to check if it's a 1D array or not
        This class only exists to allow a work-around for older compilers 
        (such as VC 6.0) that do not implement partial ordering of
@@ -61,7 +61,7 @@ namespace stir {
     // because for old compilers, num_dimensions is sometimes #defined (sigh)
     template <int Num_dimensions>
       struct test_if_1d : is_not_1d {};
-    /*! \ingroup Array_detail
+    /*! \ingroup buildblock_detail
        \brief 1D specialisation of a templated class used to check if it's a 1D array or not
     */
     template <>
