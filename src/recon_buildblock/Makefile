@@ -39,7 +39,8 @@ SOURCES= ForwardProjectorByBin.cxx \
 	ProjectorByBinPairUsingProjMatrixByBin.cxx \
 	ProjectorByBinPairUsingSeparateProjectors.cxx \
 	BinNormalisationFromProjData.cxx \
-	TrivialBinNormalisation.cxx
+	TrivialBinNormalisation.cxx \
+	GeneralisedPrior.cxx
 
 
 
