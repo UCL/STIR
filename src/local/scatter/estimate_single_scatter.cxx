@@ -81,8 +81,9 @@ int main(int argc, const char *argv[])
 			<< "\tlower_energy_threshold defaults to 350 keV\n"
 			<< "\tupper_energy_threshold defaults to 650 keV\n"			
 			<< "\tmaximum_scatter_points defaults to 1000\n" 
+			<< "\trandom points defaults to true, use 0 to set to false\n"
 			<< "\tuse_cache defaults to true, use 0 to set to false\n"
-			<< "\tscatter_level simulation defaults to 10 finds the simulated acquired sinogram\n"
+			<< "\tscatter_level defaults to 10 finds the no scatter + SSS sinogram\n"
 			<< "\tscatter_level to 12 finds the SSS+DSS\n"
 			<< "\tuse 1 for only SSS\n"
 			<< "\t    2 for only DSS\n" 
@@ -97,9 +98,9 @@ int main(int argc, const char *argv[])
 	if (argc>=10 && atoi(argv[9])==0)
 		random = false;
 	bool use_cache = true;
-	if (argc>=12 && atoi(argv[11])==0)
+	if (argc>=11 && atoi(argv[10])==0)
 		use_cache = false;
-	const int scatter_level = argc>= 13 ? atoi(argv[12]) : 10 ;
+	const int scatter_level = argc>= 12 ? atoi(argv[11]) : 10 ;
 	
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
