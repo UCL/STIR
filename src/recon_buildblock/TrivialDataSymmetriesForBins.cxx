@@ -16,8 +16,8 @@
     Copyright (C) 2003- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_Coordinate/TrivialDataSymmetriesForBins.h"
-#include "stir/recon_Coordinate/SymmetryOperation.h"
+#include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/ViewSegmentNumbers.h"
 
 START_NAMESPACE_STIR

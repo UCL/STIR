@@ -20,11 +20,11 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_Coordinate/DataSymmetriesForBins.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
 #include "stir/Bin.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/BasicCoordinate.h"
-#include "stir/recon_Coordinate/SymmetryOperation.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
 
 START_NAMESPACE_STIR
 

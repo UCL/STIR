@@ -18,7 +18,7 @@
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_Coordinate/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/shared_ptr.h"
