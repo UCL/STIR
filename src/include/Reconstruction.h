@@ -152,5 +152,71 @@ public:
 };
 
 
+
+//08/07 MS add ParaReconstruct2DFBP class & parallel code
+#ifdef PARALLEL
+#include "Para.h"
+#include "parablocks.h"
+#include "PTimer.h"
+#include "PMsgHandlerReg.h"
+#include "PDispatch.h"
+
+
+extern PEnvironment PEnv;
+
+void 
+zoom_segment (PETSegmentBySinogram& segment, 
+	      const float zoom, const float Xoffp, const float Yoffp, 
+	      const int size, const float itophi);
+
+void Backprojection_2D(const PETSegment &sinos, 
+		       PETImageOfVolume &image,
+                       const int rmin, 
+		       const int rmax);
+void Backprojection_2D(const PETSegment &sinos, PETImageOfVolume &image, 
+		       const int view, const int rmin, const int rmax);
+
+void
+zoom_image(PETImageOfVolume &image,
+                       const float zoom,
+                       const float Xoff, const float Yoff, 
+                       const int new_size )     ;
+
+
+////////////////////////////////////////////////////
+class ParaReconstruct2DFBP : public  PETAnalyticReconstruction2D
+{
+public:
+
+   friend  PMessage& operator<<(PMessage& msg, ParaReconstruct2DFBP& recon);
+   friend  PMessage& operator>>(PMessage& msg, ParaReconstruct2DFBP& recon);
+
+    virtual string method_info()
+        { return("Parallel 2DFBP"); }
+    
+    ParaReconstruct2DFBP(const Filter1D<float>& f): PETAnalyticReconstruction2D(f) 
+    {
+            cout << "  - Parallel 2D FBP processing" << endl;
+    }    
+
+    void reconstruct(const PETSinogram &sino2D, PETPlane &image2D);
+    void reconstruct(const PETSegment &sino, PETImageOfVolume &image);
+
+   public :
+       static ParaReconstruct2DFBP  *SlaveRecon;
+   //    static PETPlane** Image2D;
+       static int *Index;
+       static int  SlaveIndex,x1,x2,y1,y2;
+       static int Estimate_number;
+       static Point3D Origine;
+       static Point3D VoxelSize;
+};
+
+
+#endif
+
+
+
+
     
 #endif
