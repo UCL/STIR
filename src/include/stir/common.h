@@ -52,10 +52,6 @@
  
  <LI> #includes cstdio, cstdlib, cstring, cmath
 
- <LI> templates const T& std::min(const T& x, const T& y) and std::max (if not provided)
-   (source files should still include &lt;algorithm&gt; though). Actually, this is now
-   done in boost/config.hpp.
-
  <LI> a trick to get ANSI C++ 'for' scoping rules work, even for compilers
    which do not follow the new standard
 
