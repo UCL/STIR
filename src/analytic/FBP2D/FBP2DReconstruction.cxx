@@ -56,7 +56,7 @@ set_defaults()
 
   alpha_ramp = 1;
   fc_ramp = 0.5;
-  pad_in_s=2;
+  pad_in_s=1;
   display_level=0; // no display
   num_segments_to_combine = -1;
   back_projector_sptr =
@@ -92,7 +92,7 @@ ask_parameters()
   num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
   alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);    
   fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
-  pad_in_s = ask_num("  Transaxial extension for FFT : ",0,2, 2); 
+  pad_in_s = ask_num("  Transaxial extension for FFT : ",0,1, 1); 
   display_level = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: filtered viewgrams) ? ", 0,2,0);
 
 #if 0
@@ -131,6 +131,10 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
       warning("padding factor has to be between 0 and 2 but is %d\n", pad_in_s);
       return true;
     }
+  if (pad_in_s<1))
+      warning("Transaxial extension for FFT:=0 should ONLY be used when the non-zero data\n"
+	      "occupy only half of the FOV. Otherwise aliasing will occur!");
+
   if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
     {
       warning("num_segments_to_combine has to be odd (or -1), but is %d\n", num_segments_to_combine);
