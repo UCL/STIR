@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock  
+  \ingroup listmode
   \brief Implementation of class CListModeData 
     
   \author Kris Thielemans
