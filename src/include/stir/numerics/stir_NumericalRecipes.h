@@ -25,6 +25,12 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup numerics
+  \name functions to convert from data in Numerical Recipes format to STIR arrays.
+*/
+//@{
+
 inline void stir_to_nr(const VectorWithOffset< std::complex<float> >& c,
 		VectorWithOffset<float>& nr_data)
 {
@@ -136,6 +142,8 @@ void real_to_complex(const VectorWithOffset< std::complex<float> >& c,
   }
 }
 #endif
+
+//@}
 
 END_NAMESPACE_STIR
 #endif

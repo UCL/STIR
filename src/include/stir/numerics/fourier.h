@@ -27,7 +27,7 @@ START_NAMESPACE_STIR
 /*! \ingroup DFT
   \brief Compute multi-dimensional discrete fourier transform.
 
-  \param[in,out] c The type of \a c should normally be \verbatim Array<n,std::complex<T> > \endverbatim.
+  \param[in,out] c The type of \a c should normally be <code> Array<n,std::complex<T> > </code>.
   The function will then compute the \a n- dimensional fourier transform of the data,
   and store the result in \a c.
 
@@ -61,11 +61,11 @@ inline void inverse_fourier(T& c, const int sign=1)
 
   \brief Compute one-dimensional discrete fourier transform of an array.
 
-  \param[in,out] c The type of \a c should normally be \verbatim Array<n,std::complex<T> > \endverbatim (but see below).
+  \param[in,out] c The type of \a c should normally be <code> Array<n,std::complex<T> > </code> (but see below).
   The function will then compute the one-dimensional fourier transform (i.e. on the
   'outer' index) of the data, and store the result in \a c.
 
-  \param sign This can be used to implement a different convention for the DFT
+  \param[in] sign This can be used to implement a different convention for the DFT
 
   \warning Currently, the array has to be indexed from 0.
   \warning Currently, the length of the array has to be a power of 2.
@@ -107,7 +107,7 @@ inline void inverse_fourier_1d(T& c, const int sign=1)
 
   \brief Compute one-dimensional discrete fourier transform of a real array (of even size).
 
-  \param[in] c The type of \a c should normally be \verbatim Array<1,float > \endverbatim 
+  \param[in] c The type of \a c should normally be <code> Array<1,float > </code> 
           (or \c double).
   \param[in] sign  This can be used to implement a different convention for the DFT.
   \return The positive frequencies of the DFT as an array of complex numbers. That is,
@@ -167,7 +167,7 @@ Array<1,T>
 
   \brief Compute discrete fourier transform of a real array (with the last dimensions of even size).
 
-  \param[in] c The type of \a c should normally be \verbatim Array<d,float > \endverbatim 
+  \param[in] c The type of \a c should normally be <code> Array<d,float > </code> 
           (or \c double).
   \param[in] sign  This can be used to implement a different convention for the DFT.
   \return The positive frequencies of the DFT as an array of complex numbers. That is,
@@ -182,7 +182,7 @@ Array<1,T>
 
   This can be used to compute only the 'positive' half of the frequencies. For this 
   implementation, this means that only results for frequencies <tt>(k1,k2,...,kd)</tt>
-  with <pre>0<=kd<=(nd/2)</pre>, i.e. the 'last' dimension has positive frequencies.
+  with <code>0<=kd<=(nd/2)</code>, i.e. the 'last' dimension has positive frequencies.
 
   \warning At present, \c c has to be a regular array with all indices starting from 0.
   \see pos_frequencies_to_all()
