@@ -52,6 +52,9 @@ START_NAMESPACE_STIR
 
    If more than 1 projection data set is in the file, only the first is read.
 
+   When the file is not readable for some reason, the program is aborted
+   by calling error().
+
    Currently supported:
    <ul>
    <li> ProjDataGEAdvance
@@ -73,13 +76,20 @@ read_from_file(const string& filename,
   char signature[max_length];
   input->read(signature, max_length);
 
+  shared_ptr<ProjData> result = 0;
+
   if (strncmp(signature, "2D3D", 4) == 0)
-    return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
+    result = shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
   else
   {
     delete input;
-    return shared_ptr<ProjData>(read_interfile_PDFS(filename, openmode));
+    result = shared_ptr<ProjData>(read_interfile_PDFS(filename, openmode));
   }
+
+  if (result.use_count() == 0)
+    error("\nProjData::read_from_file could not read projection data %s. Aborting.\n",
+	  filename.c_str());
+  return result;
 }
 
 
