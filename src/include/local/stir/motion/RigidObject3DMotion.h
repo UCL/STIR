@@ -22,6 +22,11 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
+#include <ctime>
+
+# ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::time_t; }
+#endif
 
 
 START_NAMESPACE_STIR
@@ -58,24 +63,32 @@ class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>,
 public:
   virtual ~RigidObject3DMotion() {}
 
-  virtual RigidObject3DTransformation 
-    compute_average_motion(const double start_time, const double end_time)const=0;
+  //virtual RigidObject3DTransformation 
+  //  compute_average_motion(const double start_time, const double end_time)const=0;
 
-  RigidObject3DTransformation 
-    compute_average_motion_rel_time(const double start_time, const double end_time)const;
+  virtual RigidObject3DTransformation 
+    compute_average_motion_rel_time(const double start_time, const double end_time)const = 0;
 
   virtual void get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const =0;
 
-  //! Has to set \a time_offset and will be used to synchronise listmode time and motion tracking time
+  //! Has to be called and will be used to synchronise listmode time and motion tracking time
+  /*! This should make sure that a 'rel_time' of 0 corresponds to the start of the list mode data
+   */
   virtual Succeeded synchronise(CListModeData&) =0;
+
+
+  virtual double secs_since_1970_to_rel_time(std::time_t) const = 0;
+
  protected:
+#if 0
   //!  Option to set  time offset manually in case synchronisation cannot be performed
   void
     set_time_offset(const double time_offset);
   double 
     get_time_offset() const;
-  //! Temporary function to allow others to see if they should call synchronise or not
-  bool is_synchronised() const;
+#endif
+  //! Temporary (?) function to allow base class to see if synchronised was called or not
+  virtual bool is_synchronised() const = 0;
  public:
 
   const RigidObject3DTransformation& 
@@ -91,22 +104,15 @@ protected:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  double time_offset;
   // next member is protected in case it's needed by synchronise()
   string list_mode_filename;
 
 private:
-
-  static void 
-    find_ref_start_end_from_att_file (double& att_start_time, double& att_end_time, 
-				      const double transmission_duration, 
-				      const string& attnuation_filename);
- 
   
   string attenuation_filename; 
   double transmission_duration;
-  double reference_start_time;
-  double reference_end_time;
+  std::time_t  reference_start_time_in_secs_since_1970;
+  std::time_t reference_end_time_in_secs_since_1970;
   vector<double> reference_translation;
   vector<double> reference_quaternion;
   RigidObject3DTransformation transformation_to_reference_position;
