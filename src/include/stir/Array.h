@@ -25,20 +25,25 @@
   the file and removing the #define ARRAY_FULL. Lots of other things in the library 
   won't work then.
 */
-#include "NumericVectorWithOffset.h"
-#include "ByteOrder.h"
-#include "NumericType.h"
-#include "IndexRange.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/NumericVectorWithOffset.h"
+#include "stir/ByteOrder.h"
+#include "stir/NumericType.h"
+#include "stir/IndexRange.h"
 
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::istream;
 using std::ostream;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 #ifdef ARRAY_FULL
 #ifndef ARRAY_FULL2
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
@@ -207,7 +212,7 @@ private:
 //! The 1-dimensional (partial) specialisation of Array. 
 template <class elemT>
 class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
-#ifdef TOMO_USE_BOOST
+#ifdef STIR_USE_BOOST
                          ,
 			 boost::operators<Array<1, elemT>, NumericVectorWithOffset<elemT, elemT> >,
 			 boost::operators<Array<1, elemT> >,
@@ -289,7 +294,7 @@ public:
      BasicCoordinate<1, int>& min,
      BasicCoordinate<1, int>& max) const;
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
   in NumericVectorWithOffset already.
@@ -375,7 +380,7 @@ public:
 
 template<>
 class Array<1, float> : public NumericVectorWithOffset<float, float>
-#ifdef TOMO_USE_BOOST
+#ifdef STIR_USE_BOOST
                          ,
 			 boost::operators<Array<1, float>, NumericVectorWithOffset<float, float> >,
 			 boost::operators<Array<1, float> >,
@@ -444,7 +449,7 @@ public:
   //! return minimum value of all elements
   inline elemT find_min() const;
   
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
   in NumericVectorWithOffset already.
@@ -517,7 +522,7 @@ public:
 
 template<>
 class Array<1, int> : public NumericVectorWithOffset<int, int>
-#ifdef TOMO_USE_BOOST
+#ifdef STIR_USE_BOOST
                          ,
 			 boost::operators<Array<1, int>, NumericVectorWithOffset<int, int> >,
 			 boost::operators<Array<1, int> >,
@@ -588,7 +593,7 @@ public:
   //! return minimum value of all elements
   inline elemT find_min() const;
   
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
   in NumericVectorWithOffset already.
@@ -661,7 +666,7 @@ public:
 
 template<>
 class Array<1, short> : public NumericVectorWithOffset<short, short>
-#ifdef TOMO_USE_BOOST
+#ifdef STIR_USE_BOOST
                          ,
 			 boost::operators<Array<1, short>, NumericVectorWithOffset<short, short> >,
 			 boost::operators<Array<1, short> >,
@@ -732,7 +737,7 @@ public:
   //! return minimum value of all elements
   inline elemT find_min() const;
   
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
   in NumericVectorWithOffset already.
@@ -804,7 +809,7 @@ public:
 /***************************** unsigned short ******************/
 template<>
 class Array<1, unsigned short> : public NumericVectorWithOffset<unsigned short, unsigned short>
-#ifdef TOMO_USE_BOOST
+#ifdef STIR_USE_BOOST
                          ,
 			 boost::operators<Array<1, unsigned short>, NumericVectorWithOffset<unsigned short, unsigned short> >,
 			 boost::operators<Array<1, unsigned short> >,
@@ -873,7 +878,7 @@ public:
   //! return minimum value of all elements
   inline elemT find_min() const;
   
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
   in NumericVectorWithOffset already.
@@ -946,7 +951,7 @@ public:
 
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #ifdef ARRAY_FULL
 #  ifndef ARRAY_FULL2
@@ -959,7 +964,7 @@ END_NAMESPACE_TOMO
 #  endif
 #endif
 
-#include "Array.inl"
+#include "stir/Array.inl"
 
 
 #endif // __Array_H__

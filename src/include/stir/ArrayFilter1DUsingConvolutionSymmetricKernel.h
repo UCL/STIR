@@ -10,17 +10,21 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
-#define __Tomo_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
+#ifndef __stir_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
+#define __stir_ArrayFilter1DUsingConvolutionSymmetricKernel_H__
 
 
-#include "tomo/ArrayFunctionObject_2ArgumentImplementation.h"
+#include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class VectorWithOffset;
 
@@ -67,7 +71,7 @@ private:
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif //ArrayFilter1DUsingConvolutionSymmetricKernel

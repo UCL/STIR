@@ -16,8 +16,13 @@
   $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::
@@ -127,4 +132,4 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator->() con
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,16 +11,21 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __linear_regression_h__
 #define __linear_regression_h__
 
-#include "VectorWithOffset.h"
+#include "stir/VectorWithOffset.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -75,7 +80,7 @@ void linear_regression(Value& constant, Value& scale,
 		       const bool use_estimated_variance = true
                        );
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __linear_regression_h__
 

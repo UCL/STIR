@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -10,10 +10,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 /*
@@ -34,7 +39,7 @@
 #include <sys/times.h>
 #include <unistd.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 double CPUTimer::get_current_value() const
 {  
@@ -51,7 +56,7 @@ double CPUTimer::get_current_value() const
 // This breaks on Win95 though
 #include <windows.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // undefine the min,max macros again (we did this already in Tomography_common.h)
 #ifdef max
@@ -91,7 +96,7 @@ double CPUTimer::get_current_value() const
 
 #include <time.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 double CPUTimer::get_current_value() const
 {  
@@ -100,4 +105,4 @@ double CPUTimer::get_current_value() const
 #endif
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -15,8 +15,13 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "ProjDataInfoCylindrical.h"
+#include "stir/ProjDataInfoCylindrical.h"
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
@@ -24,10 +29,10 @@
 #include <sstream>
 #endif
 
-#include "tomo/round.h"
+#include "stir/round.h"
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::min_element;
 using std::max_element;
 using std::min;
@@ -37,7 +42,7 @@ using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ProjDataInfoCylindrical::
 ProjDataInfoCylindrical()
@@ -313,4 +318,4 @@ ProjDataInfoCylindrical::parameter_info()  const
   return s.str();
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

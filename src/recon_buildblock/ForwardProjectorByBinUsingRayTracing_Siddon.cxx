@@ -18,19 +18,24 @@
   $Revision$
 */
 /*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+/*
   Modification history
 
   TODOdoc fill in
 */
 
 #include <cmath>
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 // KT 20/06/2001 should now work for non-arccorrected data as well
-#include "ProjDataInfoCylindrical.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "tomo/round.h"
+#include "stir/ProjDataInfoCylindrical.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/round.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -477,4 +482,4 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,20 +13,25 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stream_H__
 #define __stream_H__
 
-#include "VectorWithOffset.h"
-#include "BasicCoordinate.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/BasicCoordinate.h"
 #include <iostream>
 #include <vector>
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::istream;
 using std::ostream;
 using std::vector;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief Outputs a VectorWithOffset to a stream.
@@ -143,8 +148,8 @@ inline
 istream& 
 operator<<(istream& str, BasicCoordinate<num_dimensions, coordT>& v);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "stream.inl"
+#include "stir/stream.inl"
 
 #endif

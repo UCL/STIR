@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -15,19 +15,24 @@
   \author Claire Labbe  
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __SegmentByView_H__
 #define __SegmentByView_H__
 
 
-#include "Segment.h"
-#include "Array.h"
-#include "Viewgram.h"
+#include "stir/Segment.h"
+#include "stir/Array.h"
+#include "stir/Viewgram.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class SegmentBySinogram;
 template <typename elemT> class Sinogram;
@@ -98,8 +103,8 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "SegmentByView.inl"
+#include "stir/SegmentByView.inl"
 
 #endif

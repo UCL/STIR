@@ -14,16 +14,21 @@
   $Date$  
   $Revision$
 */
-#include "tomo/Succeeded.h"
-#include "recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "DiscretisedDensity.h"
-#include "recon_buildblock/SymmetryOperation.h"
-#include "recon_buildblock/DataSymmetriesForBins.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/Succeeded.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
 
-#include "recon_buildblock/RelatedBins.h"
+#include "stir/recon_buildblock/RelatedBins.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 ProjMatrixElemsForOneBin::
@@ -101,7 +106,7 @@ void ProjMatrixElemsForOneBin::sort()
 {
   // need explicit std:: here to resolve possible name conflict
   // this might give you trouble if your compiler does not support namespaces
-#if !defined(TOMO_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
+#if !defined(STIR_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
   std::
 #endif                                           
   sort(begin(), end(), value_type::coordinates_less);
@@ -316,4 +321,4 @@ forward_project(RelatedBins& r_bins,
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

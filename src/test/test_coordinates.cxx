@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -11,24 +11,29 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "CartesianCoordinate3D.h"
-#include "RunTests.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/RunTests.h"
 #include <iostream>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief Class with tests for BasicCoordinate, Coordinate3D et al.
@@ -95,7 +100,7 @@ coordinateTests::run_tests()
 
     // basic iterator tests
     { 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       float *p=std::find(b.begin(), b.end(), -3);
 #else
       float *p=find(b.begin(), b.end(), -3);
@@ -103,7 +108,7 @@ coordinateTests::run_tests()
       check_if_equal(p - b.begin(), 1, "iterator test");
       BasicCoordinate<3, float> b_sorted;
       b_sorted[1]=-3;b_sorted[2]=-1;b_sorted[3]=5;
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       std::sort(b.begin(), b.end()); 
 #else
       sort(b.begin(), b.end()); 
@@ -239,11 +244,11 @@ coordinateTests::run_tests()
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 

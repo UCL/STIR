@@ -14,12 +14,16 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "Bin.h"
-#include "tomo/Succeeded.h"
+#include "stir/Bin.h"
+#include "stir/Succeeded.h"
 #include <math.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 float
 ProjDataInfoCylindricalNoArcCorr::get_s(const Bin& bin) const
@@ -173,5 +177,5 @@ get_det_pair_for_bin(
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

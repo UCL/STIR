@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,17 +11,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "RelatedViewgrams.h"
-//#include "DiscretisedDensity.h"
-#include "VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/RelatedViewgrams.h"
+//#include "stir/DiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 ForwardProjectorByBin::ForwardProjectorByBin()
@@ -67,4 +72,4 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,18 +11,23 @@
   \author Kris Thielemans (with suggestions by Alexey Zverovich)
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #if defined(OLDDESIGN)
-#include "pet_common.h"
+#include "stir/pet_common.h"
 #endif
 
-#include "interpolate.h"
+#include "stir/interpolate.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
 
@@ -327,12 +332,12 @@ overlap_interpolate<>(VectorWithOffset<double>& out_data,
 		      const float zoom, 
 		      const float offset, 
 		      const bool assign_rest_with_zeroes);
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
  // TODO remove
 #if defined(OLDDESIGN)
 
-#include "Tensor2D.h"
+#include "stir/Tensor2D.h"
 
 template
 void 
@@ -353,9 +358,9 @@ overlap_interpolate<>(VectorWithOffset<Tensor2D<float> >& out_data,
 
 #else 
 
-#include "Array.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template
 void 
@@ -374,4 +379,4 @@ overlap_interpolate<>(VectorWithOffset<Array<2,float> >& out_data,
 		      const bool assign_rest_with_zeroes);
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

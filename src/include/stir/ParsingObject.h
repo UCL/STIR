@@ -10,16 +10,20 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#ifndef __Tomo_ParsingObject_H__
-#define __Tomo_ParsingObject_H__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_ParsingObject_H__
+#define __stir_ParsingObject_H__
 
 
-#include "KeyParser.h"
+#include "stir/KeyParser.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -85,7 +89,7 @@ protected:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

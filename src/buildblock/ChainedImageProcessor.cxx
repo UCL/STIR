@@ -12,16 +12,20 @@
   $Date$
   $Revision$
 */
-#include "tomo/ChainedImageProcessor.h"
-#include "DiscretisedDensity.h"
-#include "tomo/is_null_ptr.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ChainedImageProcessor.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/is_null_ptr.h"
 #include <memory>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::auto_ptr;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
   
 template <int num_dimensions, typename elemT>
@@ -128,7 +132,7 @@ ChainedImageProcessor<3,float>::registered_name =
 
 template ChainedImageProcessor<3,float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

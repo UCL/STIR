@@ -14,15 +14,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __OSMAPOSLReconstruction_h__
-#define __OSMAPOSLReconstruction_h__
+#ifndef __stir_OSMAPOSL_OSMAPOSLReconstruction_h__
+#define __stir_OSMAPOSL_OSMAPOSLReconstruction_h__
 
-//#include "LogLikBased/MAPBasedReconstruction.h"
-#include "LogLikBased/LogLikelihoodBasedReconstruction.h"
-#include "OSMAPOSL/OSMAPOSLParameters.h"
+//#include "stir/LogLikBased/MAPBasedReconstruction.h"
+#include "stir/LogLikBased/LogLikelihoodBasedReconstruction.h"
+#include "stir/OSMAPOSL/OSMAPOSLParameters.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief Implementation of the Ordered Subsets version of Green's 
@@ -105,7 +110,7 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

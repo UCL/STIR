@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,19 +10,24 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "IndexRange.h"
-#include "IndexRange2D.h"
-#include "IndexRange3D.h"
-#include "Coordinate3D.h"
-#include "RunTests.h"
+#include "stir/IndexRange.h"
+#include "stir/IndexRange2D.h"
+#include "stir/IndexRange3D.h"
+#include "stir/Coordinate3D.h"
+#include "stir/RunTests.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief Class with tests for IndexRange, IndexRange3D.
@@ -97,11 +102,11 @@ IndexRange_Tests::run_tests()
 
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main()

@@ -16,22 +16,27 @@
   $Date$        
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "recon_buildblock/IterativeReconstruction.h"
-#include "DiscretisedDensity.h"
-#include "tomo/ImageProcessor.h"
-#include "tomo/Succeeded.h"
-#include "shared_ptr.h"
-#include "interfile.h"
+#include "stir/recon_buildblock/IterativeReconstruction.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ImageProcessor.h"
+#include "stir/Succeeded.h"
+#include "stir/shared_ptr.h"
+#include "stir/interfile.h"
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 IterativeReconstruction::IterativeReconstruction()
@@ -201,7 +206,7 @@ VectorWithOffset<int> IterativeReconstruction::randomly_permute_subset_order()
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

@@ -17,21 +17,26 @@
 
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
 #include <sstream>
 #endif
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr()
 {}
 
@@ -80,5 +85,5 @@ ProjDataInfoCylindricalArcCorr::parameter_info()  const
   return s.str();
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

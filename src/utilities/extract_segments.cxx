@@ -1,5 +1,5 @@
 //
-//$Id$: $Date$
+//$Id$
 //
 /*!
   \file 
@@ -11,26 +11,31 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
   This utility extracts projection data by segment into a sequence of
   3d image files. It is mainly useful to import segments into external
   image display/manipulation programmes which do not understand 3D-PET
   data, but can read Interfile images.
 */
-#include "ProjData.h"
-#include "SegmentByView.h"
-#include "SegmentBySinogram.h"
-#include "interfile.h"
-#include "utilities.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjData.h"
+#include "stir/SegmentByView.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char *argv[])

@@ -13,8 +13,8 @@
   \author Matthew Jacobson
   \author PARAPET project
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
   This programme enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:
@@ -38,22 +38,27 @@
   \endverbatim
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "interfile.h"
-#include "utilities.h"
-#include "KeyParser.h"
-#include "DiscretisedDensity.h"
-#include "tomo/ImageProcessor.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
+#include "stir/KeyParser.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ImageProcessor.h"
 
 #include <iostream> 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 DiscretisedDensity<3,float>* ask_image(char *input_query)
 {
@@ -87,9 +92,9 @@ PostFiltering::PostFiltering()
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int
 main(int argc, char *argv[])

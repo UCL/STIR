@@ -9,17 +9,21 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_recon_buildblock_GeneralisedPrior_H__
-#define __Tomo_recon_buildblock_GeneralisedPrior_H__
+#ifndef __stir_recon_buildblock_GeneralisedPrior_H__
+#define __stir_recon_buildblock_GeneralisedPrior_H__
 
 
-#include "tomo/RegisteredObject.h"
+#include "stir/RegisteredObject.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -52,8 +56,8 @@ protected:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "tomo/recon_buildblock/GeneralisedPrior.inl"
+#include "stir/recon_buildblock/GeneralisedPrior.inl"
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,29 +11,34 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
   
   To run the test, you should use a command line argument with the name of a file.
   This should contain a number of test cases for the fit.
   See linear_regressionTests for file contents.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
   
-#include "linear_regression.h"
-#include "RunTests.h"
+#include "stir/linear_regression.h"
+#include "stir/RunTests.h"
 
 #include <fstream>
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 using std::istream;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup test
@@ -159,9 +164,9 @@ void linear_regressionTests::run_tests()
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {

@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __Tomo_recon_buildblock_ProjMatrixElemsForOneBin__
-#define __Tomo_recon_buildblock_ProjMatrixElemsForOneBin__
+#ifndef __stir_recon_buildblock_ProjMatrixElemsForOneBin__
+#define __stir_recon_buildblock_ProjMatrixElemsForOneBin__
 
 /*!
 
@@ -19,15 +19,20 @@
   $Date$       
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "recon_buildblock/ProjMatrixElemsForOneBinValue.h"
-#include "Bin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBinValue.h"
+#include "stir/Bin.h"
 #include <vector>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::fstream;
 using std::random_access_iterator_tag;
@@ -35,7 +40,7 @@ using std::random_access_iterator_tag;
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class Succeeded;
 class RelatedBins;
@@ -192,8 +197,8 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/ProjMatrixElemsForOneBin.inl"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.inl"
 
 #endif

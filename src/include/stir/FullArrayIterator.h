@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_FullArrayIterator__H__
-#define __Tomo_FullArrayIterator__H__
+#ifndef __stir_FullArrayIterator__H__
+#define __stir_FullArrayIterator__H__
 
 /*!
   \file 
@@ -16,16 +16,21 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/common.h"
+#include "stir/common.h"
 #include <iterator>
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::ptrdiff_t;
 using std::forward_iterator_tag;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -94,8 +99,8 @@ private:
   restiterT last_rest_iter;
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "FullArrayIterator.inl"
+#include "stir/FullArrayIterator.inl"
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,13 +12,18 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#include "Bin.h"
-#include "recon_buildblock/DataSymmetriesForBins.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/Bin.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 
@@ -79,5 +84,5 @@ RelatedBins::end() const
 {return related_bins.end();}
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

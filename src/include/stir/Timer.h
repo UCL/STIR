@@ -13,13 +13,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_TIMER_H__
-#define __Tomo_TIMER_H__
+#ifndef __stir_TIMER_H__
+#define __stir_TIMER_H__
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -66,14 +71,14 @@ protected:
   virtual double get_current_value() const = 0;
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-#include "Timer.inl"
+#include "stir/Timer.inl"
 
 // TODO remove
 #ifdef OLDDESIGN
-#include "CPUTimer.h"
+#include "stir/CPUTimer.h"
 #endif
 
 #endif // __TIMER_H__

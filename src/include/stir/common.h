@@ -1,9 +1,9 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
-#ifndef __Tomo_common_H__
-#define __Tomo_common_H__
+#ifndef __stir_common_H__
+#define __stir_common_H__
 
 /*!
   \file 
@@ -15,9 +15,9 @@
   \author Darren Hague
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 
 
@@ -29,16 +29,16 @@
 
 <UL>
  <LI> macros for namespace support: 
-   #defines TOMO_NO_NAMESPACES if the compiler does not support namespaces
-   #defines START_NAMESPACE_TOMO etc.
+   #defines STIR_NO_NAMESPACES if the compiler does not support namespaces
+   #defines START_NAMESPACE_STIR etc.
 
  <LI> includes boost/config.hpp
 
- <LI> #defines TOMO_NO_COVARIANT_RETURN_TYPES when the compiler does not
+ <LI> #defines STIR_NO_COVARIANT_RETURN_TYPES when the compiler does not
    support virtual functions of a derived class differing only in the return
    type.
 
- <LI> #defines TOMO_NO_AUTO_PTR when the compiles has no std::auto_ptr support.
+ <LI> #defines STIR_NO_AUTO_PTR when the compiles has no std::auto_ptr support.
  In that case, we #define auto_ptr to shared_ptr
    
  <LI> preprocessor definitions which attempt to determine the 
@@ -59,7 +59,7 @@
  <LI> a trick to get ANSI C++ 'for' scoping rules work, even for compilers
    which do not follow the new standard
 
- <LI> #ifdef TOMO_ASSERT, then define our own assert, else include <cassert>
+ <LI> #ifdef STIR_ASSERT, then define our own assert, else include <cassert>
 
 </UL>
 
@@ -84,6 +84,11 @@
 
  </UL>
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 #ifdef _MSC_VER
 // disable warnings on very long identifiers for debugging information
@@ -103,17 +108,17 @@
 
 #if defined __GNUC__
 # if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
-#  define TOMO_NO_NAMESPACES
+#  define STIR_NO_NAMESPACES
 # endif
 #endif
 
-//**** TOMO_NO_COVARIANT_RETURN_TYPES
+//**** STIR_NO_COVARIANT_RETURN_TYPES
 /* Define when your compiler does not handle the following:
    class A { virtual A* f();}
    class B:A { virtual B* f(); }
 */
 #ifdef _MSC_VER
-#define TOMO_NO_COVARIANT_RETURN_TYPES
+#define STIR_NO_COVARIANT_RETURN_TYPES
 #endif
 
 
@@ -126,25 +131,25 @@
   This has the effect that conflicts with any other library is
   impossible (except if that library uses the same namespace...).
  */
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 
 // TODO remove conditional
 #if !defined(OLDDESIGN)
-# define START_NAMESPACE_TOMO namespace Tomo {
-# define END_NAMESPACE_TOMO }
-# define USING_NAMESPACE_TOMO using namespace Tomo;
+# define START_NAMESPACE_STIR namespace Tomo {
+# define END_NAMESPACE_STIR }
+# define USING_NAMESPACE_STIR using namespace Tomo;
 #else
-# define USING_NAMESPACE_TOMO 
-# define START_NAMESPACE_TOMO 
-# define END_NAMESPACE_TOMO 
+# define USING_NAMESPACE_STIR 
+# define START_NAMESPACE_STIR 
+# define END_NAMESPACE_STIR 
 #endif
 # define START_NAMESPACE_STD namespace std {
 # define END_NAMESPACE_STD }
 # define USING_NAMESPACE_STD using namespace std;
 #else
-# define START_NAMESPACE_TOMO 
-# define END_NAMESPACE_TOMO 
-# define USING_NAMESPACE_TOMO 
+# define START_NAMESPACE_STIR 
+# define END_NAMESPACE_STIR 
+# define USING_NAMESPACE_STIR 
 # define START_NAMESPACE_STD
 # define END_NAMESPACE_STD 
 # define USING_NAMESPACE_STD 
@@ -198,19 +203,19 @@
 //************** auto_ptr
 #if defined __GNUC__
 # if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
-#  define TOMO_NO_AUTO_PTR
+#  define STIR_NO_AUTO_PTR
 # endif
 #endif
-#if defined(BOOST_NO_AUTO_PTR) && !defined(TOMO_NO_AUTO_PTR)
-#  define TOMO_NO_AUTO_PTR
+#if defined(BOOST_NO_AUTO_PTR) && !defined(STIR_NO_AUTO_PTR)
+#  define STIR_NO_AUTO_PTR
 #endif
 
-#ifdef TOMO_NO_AUTO_PTR
+#ifdef STIR_NO_AUTO_PTR
 // first include memory, just in case there is a (supposedly flawed) auto_ptr in there
 #include <memory>
 // now include our own shared_ptr (somewhat tricky, as this will 
 // include this file again...)
-#include "shared_ptr.h"
+#include "stir/shared_ptr.h"
 #define auto_ptr shared_ptr
 #endif
 
@@ -359,7 +364,7 @@ END_NAMESPACE_STD
 
 //*************** assert
 
-#ifndef TOMO_ASSERT
+#ifndef STIR_ASSERT
 #  include <cassert>
 #else
   // use our own assert
@@ -373,10 +378,10 @@ END_NAMESPACE_STD
 #  else 
 #     define assert(x)
 #  endif
-#endif // TOMO_ASSERT
+#endif // STIR_ASSERT
 
 //*************** 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! The constant pi to high precision.
 const double _PI = 3.14159265358979323846264338327950288419716939937510;
@@ -392,7 +397,7 @@ template <class NUMBER>
 inline NUMBER square(const NUMBER &x) { return x*x; }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif 

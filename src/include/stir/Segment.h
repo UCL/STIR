@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,18 +10,23 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __Segment_H__
 #define __Segment_H__
 
 
-#include "ProjDataInfo.h" 
-#include "shared_ptr.h"
+#include "stir/ProjDataInfo.h" 
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 template <typename elemT> class Sinogram;
 template <typename elemT> class Viewgram;
 
@@ -86,9 +91,9 @@ protected:
   inline Segment(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,const int s_num);
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "Segment.inl"
+#include "stir/Segment.inl"
 
 #endif
 

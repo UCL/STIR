@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_recon_buildblock_Reconstruction_H__
-#define __Tomo_recon_buildblock_Reconstruction_H__
+#ifndef __stir_recon_buildblock_Reconstruction_H__
+#define __stir_recon_buildblock_Reconstruction_H__
 /*!
   \file 
   \ingroup recon_buildblock
@@ -17,6 +17,11 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /* Modification history
 
    KT 10122001
@@ -24,15 +29,15 @@
 */
 
 
-#include "TimedObject.h"
+#include "stir/TimedObject.h"
 #include <string>
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ReconstructionParameters;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -112,7 +117,7 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
     
 #endif

@@ -15,20 +15,25 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_SCANNER_H__
-#define __Tomo_SCANNER_H__
+#ifndef __stir_SCANNER_H__
+#define __stir_SCANNER_H__
 
-#include "tomo/common.h"
+#include "stir/common.h"
 #include <string>
 #include <list>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::list;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -155,9 +160,9 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include"Scanner.inl"
+#include "stir/Scanner.inl"
 
 #endif
  

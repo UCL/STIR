@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 
 /*!
   \file 
@@ -9,10 +9,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 // set to high level of debugging
@@ -21,32 +26,32 @@
 #endif
 #define _DEBUG 2
 
-#include "Array.h"
-#include "Coordinate2D.h"
-#include "Coordinate3D.h"
-#include "Coordinate4D.h"
-#include "convert_array.h"
+#include "stir/Array.h"
+#include "stir/Coordinate2D.h"
+#include "stir/Coordinate3D.h"
+#include "stir/Coordinate4D.h"
+#include "stir/convert_array.h"
 
-#include "RunTests.h"
+#include "stir/RunTests.h"
 
-#include "ArrayFunction.h"
+#include "stir/ArrayFunction.h"
 #include <functional>
 
 // for open_read/write_binary
-#include "utilities.h"
+#include "stir/utilities.h"
 
 // for 'remove'
 #include <cstdio>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::ifstream;
 using std::plus;
 using std::bind2nd;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -539,9 +544,9 @@ ArrayTests::run_tests()
   remove("output.short");
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main()
 {

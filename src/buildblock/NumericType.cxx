@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,10 +10,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 /* 
   History:
@@ -21,10 +26,10 @@
 
   - KT 15/12/99 added get_Interfile_info
  */
-#include "NumericType.h"
-#include "NumericInfo.h"
+#include "stir/NumericType.h"
+#include "stir/NumericInfo.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 NumericType::NumericType(const string number_format, const size_t size_in_bytes)
 { 
@@ -214,4 +219,4 @@ bool NumericType::integer_type() const
       // we never get here, but VC++ wants a return nevertheless
       return false;
     }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -10,23 +10,27 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_RegisteredParsingObject_H__
-#define __Tomo_RegisteredParsingObject_H__
+#ifndef __stir_RegisteredParsingObject_H__
+#define __stir_RegisteredParsingObject_H__
 
 
-#include "tomo/ParsingObject.h"
+#include "stir/ParsingObject.h"
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::string;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <typename Base>
@@ -105,9 +109,9 @@ public:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "tomo/RegisteredParsingObject.inl"
+#include "stir/RegisteredParsingObject.inl"
 
 #endif
 

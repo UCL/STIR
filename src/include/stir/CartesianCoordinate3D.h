@@ -1,7 +1,7 @@
 #ifndef __CartesianCoordinate3D_H__
 #define __CartesianCoordinate3D_H__
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -12,19 +12,24 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "Coordinate3D.h"
+#include "stir/Coordinate3D.h"
 #ifdef OLDDESIGN
-#include "pet_common.h"
-#include "Point3D.h"
+#include "stir/pet_common.h"
+#include "stir/Point3D.h"
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -63,9 +68,9 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "CartesianCoordinate3D.inl"
+#include "stir/CartesianCoordinate3D.inl"
 
 #endif
 

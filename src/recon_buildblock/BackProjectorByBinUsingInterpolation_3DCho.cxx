@@ -22,6 +22,11 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 // enable this variable if you need to handle very oblique LORs
 #define MOREZ
 //#define ALTERNATIVE
@@ -64,13 +69,13 @@
 
 
 #include <math.h>
-#include "ProjDataInfo.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "tomo/round.h"
-#include "tomo/Succeeded.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/round.h"
+#include "stir/Succeeded.h"
 /*
   KT 22/05/98 drastic revision
 
@@ -135,7 +140,7 @@ So, it could be more expensive to construct the Projptr and fill it in from the
 viewgrams, compared to use the viewgrams directly.
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 static const double epsilon = 1e-10;
 
@@ -2384,4 +2389,4 @@ find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
   return Succeeded::yes;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,19 +13,24 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /* History:
    KT 08/12/2000 corrected cases in operator<< for 0 length
    KT 29/08/2001 added operator>>
 */
 
 #include <algorithm>
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::ws;
 using std::copy;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 ostream& 
@@ -140,4 +145,4 @@ operator<<(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
   
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

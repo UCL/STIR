@@ -14,15 +14,19 @@
   $Date$       
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "recon_buildblock/Reconstruction.h"
-#include "recon_buildblock/ReconstructionParameters.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "CartesianCoordinate3D.h"
-#include "interfile.h"
-#include "tomo/Succeeded.h"
+#include "stir/recon_buildblock/Reconstruction.h"
+#include "stir/recon_buildblock/ReconstructionParameters.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/interfile.h"
+#include "stir/Succeeded.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 DiscretisedDensity<3,float>* 
 Reconstruction::
@@ -57,4 +61,4 @@ reconstruct()
   return success;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

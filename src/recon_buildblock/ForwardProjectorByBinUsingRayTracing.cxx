@@ -16,6 +16,11 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /* 
   History:
   * Matthias Egger: C version 
@@ -34,19 +39,19 @@
 // this file still needs some cleaning. Sorry.
 // and more DOC of course
 
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 // KT 20/06/2001 should now work for non-arccorrected data as well
-#include "ProjDataInfoCylindrical.h"
-#include "Viewgram.h"
-#include "RelatedViewgrams.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "IndexRange4D.h"
-#include "Array.h"
-#include "tomo/round.h"
+#include "stir/ProjDataInfoCylindrical.h"
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/IndexRange4D.h"
+#include "stir/Array.h"
+#include "stir/round.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const char * const 
 ForwardProjectorByBinUsingRayTracing::registered_name =
@@ -1135,4 +1140,4 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __Coordinate2D_H__
 #define __Coordinate2D_H__
@@ -12,14 +12,19 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "BasicCoordinate.h"
+#include "stir/BasicCoordinate.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -45,9 +50,9 @@ public:
   inline Coordinate2D& operator=(const base_type& c);
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "Coordinate2D.inl"
+#include "stir/Coordinate2D.inl"
 
 #endif
 

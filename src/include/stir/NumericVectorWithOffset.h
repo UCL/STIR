@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __NumericVectorWithOffset_H__
@@ -12,16 +12,21 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "VectorWithOffset.h"
+#include "stir/VectorWithOffset.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*! 
   \ingroup buildblock
   \brief like VectorWithOffset, but with various numeric operations defined
@@ -107,8 +112,8 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "NumericVectorWithOffset.inl"
+#include "stir/NumericVectorWithOffset.inl"
 
 #endif // __NumericVectorWithOffset_H__

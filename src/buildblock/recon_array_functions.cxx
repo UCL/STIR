@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -10,29 +10,34 @@
   \author Kris Thielemans
   \author PARAPET project
   
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 //some miscellaneous operators for sinograms and images
 
-#include "recon_array_functions.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "RelatedViewgrams.h"
-#include "Viewgram.h"
-#include "SegmentByView.h"
-#include "SegmentBySinogram.h"
+#include "stir/recon_array_functions.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/Viewgram.h"
+#include "stir/SegmentByView.h"
+#include "stir/SegmentBySinogram.h"
 
 #include <numeric>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const float SMALL_NUM = 0.000001F;
 
@@ -569,4 +574,4 @@ float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

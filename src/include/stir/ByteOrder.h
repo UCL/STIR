@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_ByteOrder_H__
-#define __Tomo_ByteOrder_H__
+#ifndef __stir_ByteOrder_H__
+#define __stir_ByteOrder_H__
 
 /*!
   \file 
@@ -17,6 +17,11 @@
   $Revision$
 */
 /*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+/*
   Modification History:
 
   - First version by KT
@@ -24,11 +29,11 @@
   - AZ&KT 15/12/99 rewrote swap_order using revert_region
 */
 
-#include "tomo/common.h"
+#include "stir/common.h"
 // for swap
 #include <algorithm>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \class ByteOrder
@@ -75,7 +80,7 @@ class revert_region
 public:
   inline static void revert(unsigned char* ptr)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     std::swap(ptr[0], ptr[size - 1]);
 #else
     swap(ptr[0], ptr[size - 1]);
@@ -160,8 +165,8 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ByteOrder.inl"
+#include "stir/ByteOrder.inl"
 
 #endif

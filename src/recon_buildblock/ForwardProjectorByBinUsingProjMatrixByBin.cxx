@@ -14,23 +14,28 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "Viewgram.h"
-#include "RelatedViewgrams.h"
-#include "IndexRange2D.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/IndexRange2D.h"
 #include <algorithm>
 #include <vector>
 #include <list>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::find;
 using std::vector;
 using std::list;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //////////////////////////////////////////////////////////
 const char * const 
@@ -152,7 +157,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 	                                    min_tangential_pos_num, max_tangential_pos_num);
     
     for (
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
          std::
 #endif
            vector<AxTangPosNumbers>::iterator r_ax_poss_iter = r_ax_poss.begin();
@@ -200,4 +205,4 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

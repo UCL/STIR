@@ -15,25 +15,30 @@
   $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "VoxelsOnCartesianGrid.h"
-#include "PixelsOnCartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/PixelsOnCartesianGrid.h"
 
-#include "IndexRange3D.h"
-#include "CartesianCoordinate3D.h"
-#include "utilities.h"
-#include "ProjDataInfoCylindrical.h"
-#include "Scanner.h"
-#include "Bin.h"
+#include "stir/IndexRange3D.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/utilities.h"
+#include "stir/ProjDataInfoCylindrical.h"
+#include "stir/Scanner.h"
+#include "stir/Bin.h"
 #include <fstream>
 #include <algorithm>
 #include <math.h>
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // a local help function to find appropriate sizes etc.
 
@@ -189,7 +194,7 @@ VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 
 template<class elemT>
-#ifdef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
 DiscretisedDensity<3,elemT>*
 #else
 VoxelsOnCartesianGrid<elemT>*
@@ -351,4 +356,4 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
  **********************************************/
 template VoxelsOnCartesianGrid<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

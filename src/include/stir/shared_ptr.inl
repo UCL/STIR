@@ -7,13 +7,18 @@
   \author Mustapha Sadki (minor modifications by Kris Thielemans)
   \author PARAPET project
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
 */         
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
 
 template <class T>
 T*
@@ -44,7 +49,7 @@ shared_ptr<T>::
 shared_ptr(const shared_ptr<T> & cp):ptr(cp.ptr)
 { if (ptr)  ++(ptr->count);  }
 
-#ifndef TOMO_NO_AUTO_PTR
+#ifndef STIR_NO_AUTO_PTR
 template <class T>
 shared_ptr<T>::
 shared_ptr(auto_ptr<T>& r) 
@@ -151,6 +156,6 @@ use_count() const
   return ptr==NULL ? 0 : ptr->count;
 }
 
-#endif // TOMO_USE_BOOST
+#endif // STIR_USE_BOOST
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

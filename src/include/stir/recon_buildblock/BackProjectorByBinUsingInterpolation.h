@@ -14,14 +14,19 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __BackProjectorByBinUsingInterpolation_h_
 #define __BackProjectorByBinUsingInterpolation_h_
 
-#include "recon_buildblock/BackProjectorByBin.h" 
-#include "tomo/RegisteredParsingObject.h"
-#include "shared_ptr.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h" 
+#include "stir/RegisteredParsingObject.h"
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class Viewgram;
 template <typename elemT> class RelatedViewgrams;
@@ -292,7 +297,7 @@ static void   backproj2D_Cho_view_viewplus90( PETPlane & image,
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif // __BackProjectorByBinUsingInterpolation_h_

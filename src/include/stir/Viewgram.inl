@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,14 +12,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "IndexRange2D.h"
+#include "stir/IndexRange2D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 int
@@ -118,4 +123,4 @@ Viewgram(const shared_ptr<ProjDataInfo>& pdi_ptr,
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

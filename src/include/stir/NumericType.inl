@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -9,12 +9,17 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 NumericType::NumericType(Type t)
 : id(t)
@@ -30,4 +35,4 @@ bool NumericType::operator!=(NumericType type) const
   return !(*this == type); 
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

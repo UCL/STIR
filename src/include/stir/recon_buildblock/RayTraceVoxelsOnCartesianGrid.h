@@ -13,9 +13,14 @@
   $Date$
   $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ProjMatrixElemsForOneBin;
 template <typename elemT> class CartesianCoordinate3D;
@@ -68,4 +73,4 @@ RayTraceVoxelsOnCartesianGrid(ProjMatrixElemsForOneBin& lor,
                               const CartesianCoordinate3D<float>& voxel_size,
                               const float normalisation_constant = 1.F);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

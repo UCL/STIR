@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,28 +10,33 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #ifndef __RelatedViewgrams_h__
 #define __RelatedViewgrams_h__
 
-#include "Viewgram.h"
-#include "DataSymmetriesForViewSegmentNumbers.h"
+#include "stir/Viewgram.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include <vector>
 
 #include <iterator>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::ptrdiff_t;
 using std::random_access_iterator_tag;
 using std::vector;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class PMessage;
 
@@ -60,7 +65,7 @@ public:
  typedef ptrdiff_t difference_type;
  typedef size_t size_type;
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   typedef std::vector<Viewgram<elemT> >::iterator iterator;
   typedef std::vector<Viewgram<elemT> >::const_iterator const_iterator;
 #else
@@ -189,9 +194,9 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "RelatedViewgrams.inl"
+#include "stir/RelatedViewgrams.inl"
 
 
 #endif // __RelatedViewgrams_h__

@@ -14,11 +14,16 @@
    $Date$
    $Revision$
 */
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "tomo/RegisteredParsingObject.h"
-#include "shared_ptr.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //template <typename T> class shared_ptr;
 template <typename elemT> class Viewgram;
@@ -162,4 +167,4 @@ forward_project_view_plus_90_and_delta_2D(Viewgram<float> & pos_view,
   virtual void set_defaults();
   virtual void initialise_keymap();
 };
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

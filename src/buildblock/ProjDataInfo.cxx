@@ -14,23 +14,28 @@
   $Date$
   $Revision$
 */
-#include "ProjDataInfo.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "ProjDataInfoCylindricalNoArcCorr.h"
-#include "Scanner.h"
-#include "Viewgram.h"
-#include "Sinogram.h"
-#include "SegmentBySinogram.h"
-#include "SegmentByView.h"
-#include "RelatedViewgrams.h"
-#include "ViewSegmentNumbers.h"
-#include "Coordinate2D.h"
-#include "Coordinate3D.h"
-#include "IndexRange2D.h"
-#include "IndexRange3D.h"
-#include "Bin.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/Scanner.h"
+#include "stir/Viewgram.h"
+#include "stir/Sinogram.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/SegmentByView.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/ViewSegmentNumbers.h"
+#include "stir/Coordinate2D.h"
+#include "stir/Coordinate3D.h"
+#include "stir/IndexRange2D.h"
+#include "stir/IndexRange3D.h"
+#include "stir/Bin.h"
 // include for ask and ask_num
-#include "utilities.h"
+#include "stir/utilities.h"
 
 #include <iostream>
 #include <vector>
@@ -42,7 +47,7 @@
 #endif
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::cerr;
 using std::cout;
@@ -51,7 +56,7 @@ using std::ends;
 using std::equal;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 float 
@@ -516,5 +521,5 @@ ProjDataInfo::operator ==(const ProjDataInfo& proj) const
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

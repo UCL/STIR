@@ -13,24 +13,28 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/recon_buildblock/FilterRootPrior.h"
+#include "stir/recon_buildblock/FilterRootPrior.h"
 
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
-#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 
-#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 
-#include "recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
-#include "recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
-#include "tomo/recon_buildblock/TrivialBinNormalisation.h"
-#include "tomo/recon_buildblock/BinNormalisationFromProjData.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 static FilterRootPrior<float>::RegisterIt dummy4;
 
@@ -48,4 +52,4 @@ static ProjectorByBinPairUsingSeparateProjectors::RegisterIt dummy72;
 static TrivialBinNormalisation::RegisterIt dummy91;
 static BinNormalisationFromProjData::RegisterIt dummy92;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

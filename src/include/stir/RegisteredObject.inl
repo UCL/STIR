@@ -10,17 +10,21 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "utilities.h"
+#include "stir/utilities.h"
 #include <iostream>
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::cout;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
  
 
 template <typename Root>
@@ -66,4 +70,4 @@ list_registered_names(ostream& stream)
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,14 +13,19 @@
   $Revision$
 */
 /*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+/*
   Modification history:
   -first version(s) Kris Thielemans
   -KT&AZ 08/12/99 avoid using ntohs()
 */
 
-#include "ByteOrder.h"
+#include "stir/ByteOrder.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /* A somewhat complicated way to determine the byteorder.
@@ -48,4 +53,4 @@ const ByteOrder::Order ByteOrder::native_order =
       little_endian : big_endian;
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

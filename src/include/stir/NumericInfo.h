@@ -1,7 +1,7 @@
 #ifndef __NUMERICINFO_H_
 #define __NUMERICINFO_H_
 //
-//  $Id$: $Date$
+//  $Id$
 //
 /*! 
   \file
@@ -11,9 +11,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 // TODO some of these members could be made static
 
@@ -28,7 +33,7 @@
   KT 18/02/2000 use new syntax for template specialisations: template<> {class blabla};
  */ 
 
-#include "NumericType.h"
+#include "stir/NumericType.h"
 
 // this code uses #define's  as specified by the ANSI C standard
 #include <climits>
@@ -39,7 +44,7 @@
 #include <size_t.h>
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -301,6 +306,6 @@ public:
     { return NumericType::DOUBLE; }
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*! 
@@ -10,16 +10,21 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
  */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 // include for min,max definitions
 #include <algorithm>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset()
@@ -133,7 +138,7 @@ NumericVectorWithOffset<T, NUMBER>::operator+= (const NumericVectorWithOffset &v
   {
     return *this = v;
   }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
 #else
   grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
@@ -156,7 +161,7 @@ NumericVectorWithOffset<T, NUMBER>::operator-= (const NumericVectorWithOffset &v
     *this = v;
     return *this *= -1;
   }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
 #else
   grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
@@ -180,7 +185,7 @@ NumericVectorWithOffset<T, NUMBER>::operator*= (const NumericVectorWithOffset &v
     *this =v;
     return *this *= 0;
   }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
 #else
   grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
@@ -204,7 +209,7 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NumericVectorWithOffset &v
     *this =v;
     return *this *= 0;
   }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
 #else
   grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
@@ -259,4 +264,4 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NUMBER &v)
   return *this;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

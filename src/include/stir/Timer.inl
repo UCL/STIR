@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,10 +11,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 Timer::Timer()
 {  
@@ -68,4 +73,4 @@ double Timer::value() const
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

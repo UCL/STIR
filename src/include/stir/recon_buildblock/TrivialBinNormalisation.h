@@ -11,14 +11,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_recon_buildblock_TrivialBinNormalisation_H__
-#define __Tomo_recon_buildblock_TrivialBinNormalisation_H__
+#ifndef __stir_recon_buildblock_TrivialBinNormalisation_H__
+#define __stir_recon_buildblock_TrivialBinNormalisation_H__
 
-#include "tomo/recon_buildblock/BinNormalisation.h"
-#include "tomo/RegisteredParsingObject.h"
+#include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/RegisteredParsingObject.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup recon_buildblock
@@ -42,6 +46,6 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

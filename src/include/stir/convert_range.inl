@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -9,9 +9,9 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
   This file contains explicit instantiations. If you experience
   linking problems with convert_array, you might need to instantiate
@@ -27,17 +27,22 @@
   supported by all compilers. Also, it is somewhat slower at the moment.
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 // Because of support for compilers which cannot do partial
 // template specialisation, this file is terribly messy.
 // Try to read only the 'modern' stuff.
 
-#include "convert_array.h"
+#include "stir/convert_array.h"
 #include <algorithm>
 // for floor
 #include <cmath>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! A local helper function to find that scale factor
 template <class ArrayT, class T1, class T2, class scaleT>
@@ -903,4 +908,4 @@ INSTANTIATE(4, float, float);
 #undef INSTANTIATE
 
 #endif
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

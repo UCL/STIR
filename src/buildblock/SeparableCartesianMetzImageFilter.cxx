@@ -10,14 +10,18 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#include "tomo/SeparableCartesianMetzImageFilter.h"
-#include "VoxelsOnCartesianGrid.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/SeparableCartesianMetzImageFilter.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
   
 template <typename elemT>
@@ -167,7 +171,7 @@ SeparableCartesianMetzImageFilter<float>::registered_name =
 
 template SeparableCartesianMetzImageFilter<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

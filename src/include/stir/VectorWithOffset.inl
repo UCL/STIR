@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,20 +10,25 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::equal;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <class T>
 void 
@@ -206,7 +211,7 @@ VectorWithOffset<T>::grow(const int min_index, const int max_index)
   assert(length == 0 || (min_index <= start && new_length >= length));
   T *newnum = new T[new_length];
   newnum -= min_index;
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
   std::
 #endif
   copy(begin(), end(), newnum+start);
@@ -248,7 +253,7 @@ VectorWithOffset<T>::operator= (const VectorWithOffset &il)
       start = 0;
     }
     set_offset(il.get_min_index());
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
   std::
 #endif
     copy(il.begin(), il.end(), begin());
@@ -343,7 +348,7 @@ VectorWithOffset<T>::get_data_ptr()
 template <class T>
 const T *  
 VectorWithOffset<T>::get_const_data_ptr()
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
 const
 #endif
 {
@@ -372,4 +377,4 @@ VectorWithOffset<T>::release_data_ptr()
   pointer_access = false;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

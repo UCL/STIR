@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,32 +12,37 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
 
-#include "ProjDataGEAdvance.h"
-#include "tomo/Succeeded.h"
-#include "Viewgram.h"
-#include "Sinogram.h"
-#include "Scanner.h"
+#include "stir/ProjDataGEAdvance.h"
+#include "stir/Succeeded.h"
+#include "stir/Viewgram.h"
+#include "stir/Sinogram.h"
+#include "stir/Scanner.h"
 
 #include <vector>
 #include <algorithm>
 #include <numeric>
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::ios;
 using std::accumulate;
 using std::find;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
   :
@@ -308,4 +313,4 @@ Succeeded ProjDataGEAdvance::set_sinogram(const Sinogram<float>& s)
   return Succeeded::no;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

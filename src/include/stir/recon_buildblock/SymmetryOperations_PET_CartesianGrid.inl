@@ -15,6 +15,11 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /* History:
    KT 07/10/2001:
    made sure that the resulting view_num is in the allowed range
@@ -22,11 +27,11 @@
    TODO, didn't do it for the _zq symmetries, as I don't need it there yet
    */
 
-#include "BasicCoordinate.h"
-#include "ViewSegmentNumbers.h"
-#include "Bin.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/ViewSegmentNumbers.h"
+#include "stir/Bin.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void 
 SymmetryOperation_PET_CartesianGrid_z_shift::
@@ -594,4 +599,4 @@ void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_image_coordi
   c[1] = q - c[1] + z_shift;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

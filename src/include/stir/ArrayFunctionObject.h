@@ -13,16 +13,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_ArrayFunctionObject_H__
-#define __Tomo_ArrayFunctionObject_H__
+#ifndef __stir_ArrayFunctionObject_H__
+#define __stir_ArrayFunctionObject_H__
 
 
-#include "tomo/Succeeded.h"
+#include "stir/Succeeded.h"
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class Array;
 template <int num_dimensions> class IndexRange;
@@ -82,6 +86,6 @@ public:
 
 
 
-END_NAMESPACE_TOMO 
+END_NAMESPACE_STIR 
 
 #endif 

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,14 +10,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #include <algorithm>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /***************************************
  n-D version
@@ -50,7 +55,7 @@ IndexRange<num_dimensions>::IndexRange(
 {
   BasicCoordinate<num_dimensions-1, int> new_min;
   BasicCoordinate<num_dimensions-1, int> new_max; 
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
   // "using std::copy" didn't work for VC 6...
   std::copy(min_v.begin()+1, min_v.end(), new_min.begin());
   std::copy(max_v.begin()+1, max_v.end(), new_max.begin());
@@ -71,7 +76,7 @@ IndexRange<num_dimensions>::
   return 
     get_min_index() == range2.get_min_index() &&
     get_length() == range2.get_length() &&
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
     // "using std::equal" didn't work for VC 6...
     std::equal(begin(), end(), range2.begin());
 #else
@@ -113,7 +118,7 @@ IndexRange<num_dimensions>::
   return true;
 }
 
-#ifdef TOMO_NO_MUTABLE
+#ifdef STIR_NO_MUTABLE
 
 template <int num_dimensions>
 bool
@@ -139,7 +144,7 @@ IndexRange<num_dimensions>::
   assert(false);
   return true;
 }
-#endif // TOMO_NO_MUTABLE
+#endif // STIR_NO_MUTABLE
 /***************************************
  1D version
  ***************************************/
@@ -201,4 +206,4 @@ IndexRange<1>::get_regular_range(
   return true;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -9,20 +9,25 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 //  TODO remove FULL stuff
 
 #include <iostream>
 #include <cmath>
 
-#include "convert_array.h"
-#include "IndexRange3D.h"
-#include "CPUTimer.h"
-#include "RunTests.h"
+#include "stir/convert_array.h"
+#include "stir/IndexRange3D.h"
+#include "stir/CPUTimer.h"
+#include "stir/RunTests.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! tests  convert_array functionality
 class convert_array_Tests : public RunTests
@@ -245,11 +250,11 @@ convert_array_Tests::run_tests()
 #endif  
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 

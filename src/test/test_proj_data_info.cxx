@@ -15,22 +15,27 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "ProjDataInfoCylindricalNoArcCorr.h"
-#include "RunTests.h"
-#include "Scanner.h"
-#include "Bin.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/RunTests.h"
+#include "stir/Scanner.h"
+#include "stir/Bin.h"
 #include <iostream>
 #include <iomanip>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::setw;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 // prints a michelogram to the screen
 // TODO move somewhere else
 void michelogram(const ProjDataInfoCylindrical& proj_data_info)
@@ -386,10 +391,10 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
   }
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main()
 {

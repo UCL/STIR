@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,13 +12,18 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "RelatedViewgrams.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/RelatedViewgrams.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 #if 0
@@ -66,4 +71,4 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

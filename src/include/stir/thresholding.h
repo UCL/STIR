@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_thresholding_H__
-#define  __Tomo_thresholding_H__
+#ifndef __stir_thresholding_H__
+#define  __stir_thresholding_H__
 /*!
   \file
   \ingroup buildblock
@@ -15,9 +15,13 @@
   $Date$
   $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! Threshold a sequence from above and below
 /*! \par Type requirements:
@@ -71,7 +75,7 @@ threshold_lower(forw_iterT begin, forw_iterT end,
     }
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

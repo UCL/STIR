@@ -2,8 +2,8 @@
 // $Id$
 //
  
-#ifndef __Tomo_recon_buildblock_ReconstructionParameters_h__
-#define __Tomo_recon_buildblock_ReconstructionParameters_h__
+#ifndef __stir_recon_buildblock_ReconstructionParameters_h__
+#define __stir_recon_buildblock_ReconstructionParameters_h__
 
 /*!
   \file 
@@ -19,18 +19,23 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "tomo/ParsingObject.h"
-#include "shared_ptr.h"
-#include "ProjData.h"
+#include "stir/ParsingObject.h"
+#include "stir/shared_ptr.h"
+#include "stir/ProjData.h"
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief base class for all external reconstruction parameter objects
@@ -117,7 +122,7 @@ protected:
 };
  
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

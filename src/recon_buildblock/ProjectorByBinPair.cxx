@@ -12,11 +12,15 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 ProjectorByBinPair::
@@ -50,4 +54,4 @@ get_back_projector_sptr() const
   return back_projector_ptr;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

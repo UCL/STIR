@@ -9,13 +9,17 @@
 
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #include <utility>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::pair;
 using std::cerr;
 using std::endl;
@@ -23,7 +27,7 @@ using std::endl;
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename Key, typename Factory, typename Compare> 
 FactoryRegistry<Key, Factory, Compare>::FactoryRegistry()
@@ -132,6 +136,6 @@ find_factory(const Key& key) const /*throw(unknown_typename)*/
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 

@@ -12,18 +12,22 @@
   $Date$
   $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
 
 #include <string>
 #include <functional>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::string;
 using std::binary_function;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! Put a (Interfile) keyword into a standard form
 /*!
@@ -56,4 +60,4 @@ struct interfile_less : public binary_function<string, string, bool>
   }
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

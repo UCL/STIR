@@ -13,14 +13,19 @@
   $Date$
   $Revision$
 */
-#include "recon_buildblock/SymmetryOperation.h"
-#include "recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "Coordinate3D.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/recon_buildblock/SymmetryOperation.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/Coordinate3D.h"
 #ifdef ENABLE_DENSEL 
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void 
 SymmetryOperation::
@@ -63,4 +68,4 @@ transform_proj_matrix_elems_for_one_densel(
 } 
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

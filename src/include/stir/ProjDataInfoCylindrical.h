@@ -14,13 +14,18 @@
   $Date$
   $Revision$
   */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __ProjDataInfoCylindrical_H__
 #define __ProjDataInfoCylindrical_H__
 
 
-#include "ProjDataInfo.h"
+#include "stir/ProjDataInfo.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class Succeeded;
 
@@ -201,8 +206,8 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ProjDataInfoCylindrical.inl"
+#include "stir/ProjDataInfoCylindrical.inl"
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,12 +12,17 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 Bin 
 ProjMatrixElemsForOneBin::
@@ -84,4 +89,4 @@ unsigned int  ProjMatrixElemsForOneBin::make_key(int X,int Y,int Z)
   return ( ((unsigned int)X<<20) | ((unsigned int)Y<<10) | (unsigned int)Z );
 }
 #endif
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

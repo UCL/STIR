@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,12 +12,17 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 int
@@ -105,4 +110,4 @@ void
 SegmentByView<elemT>::set_viewgram(const Viewgram<elemT> &v/*, int view_num*/)
 { Array<3,elemT>::operator[](v.get_view_num()) = v; }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

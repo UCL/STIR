@@ -14,19 +14,24 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_ProjDataInfo_H__
-#define __Tomo_ProjDataInfo_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_ProjDataInfo_H__
+#define __stir_ProjDataInfo_H__
 
-#include "VectorWithOffset.h"
-#include "Scanner.h"
-#include "shared_ptr.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/Scanner.h"
+#include "stir/shared_ptr.h"
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class Sinogram;
 template <typename elemT> class Viewgram;
@@ -224,9 +229,9 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ProjDataInfo.inl"
+#include "stir/ProjDataInfo.inl"
 
 #endif //  __ProjDataInfo_H__
 

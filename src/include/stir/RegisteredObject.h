@@ -10,24 +10,28 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#ifndef __Tomo_RegisteredObject_H__
-#define __Tomo_RegisteredObject_H__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_RegisteredObject_H__
+#define __stir_RegisteredObject_H__
 
-#include "tomo/Object.h"
-#include "tomo/FactoryRegistry.h"
-#include "tomo/interfile_keyword_functions.h"
+#include "stir/Object.h"
+#include "stir/FactoryRegistry.h"
+#include "stir/interfile_keyword_functions.h"
 #include <iostream>
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::istream;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 
@@ -95,8 +99,8 @@ protected:
 };
 
 
-END_NAMESPACE_TOMO
-#include "tomo/RegisteredObject.inl"
+END_NAMESPACE_STIR
+#include "stir/RegisteredObject.inl"
 
 #endif
 

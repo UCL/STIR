@@ -16,18 +16,23 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    00/06/15
-  \version 1.4
+  00/06/15
+  1.4
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 /* Modification history
 
    KT 10122001
    - added get_initial_image_ptr and 0 argument reconstruct()
 */
-#include "recon_buildblock/Reconstruction.h"
-#include "recon_buildblock/IterativeReconstructionParameters.h"
+#include "stir/recon_buildblock/Reconstruction.h"
+#include "stir/recon_buildblock/IterativeReconstructionParameters.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
   \brief base class for iterative reconstruction objects
@@ -138,7 +143,7 @@ protected:
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,18 +10,23 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "Sinogram.h"
+#include "stir/Sinogram.h"
 
 #ifdef _MSC_VER
 // disable warning that not all functions have been implemented when instantiating
 #pragma warning(disable: 4661)
 #endif // _MSC_VER
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -59,4 +64,4 @@ grow(const IndexRange<2>& range)
 
 template Sinogram<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

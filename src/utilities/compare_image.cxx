@@ -20,19 +20,24 @@ value.
 Diagnostic output is written to stdout, and the return value indicates
 if the files are identical or not.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /* Modification History:
   
   KT 12/09/2001 added rim_truncation option
 */
 
-#include "DiscretisedDensity.h"
-#include "ArrayFunction.h"
-#include "recon_array_functions.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ArrayFunction.h"
+#include "stir/recon_array_functions.h"
 
 #include <numeric>
 #include <stdlib.h>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -44,7 +49,7 @@ using std::endl;
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char *argv[])

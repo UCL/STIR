@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,23 +11,28 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "interpolate.h"
-#include "Array.h"
-#include "IndexRange2D.h"
-#include "utilities.h"
-#include "stream.h"
+#include "stir/interpolate.h"
+#include "stir/Array.h"
+#include "stir/IndexRange2D.h"
+#include "stir/utilities.h"
+#include "stir/stream.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int 
 main(int argc, char *argv[])

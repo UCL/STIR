@@ -12,16 +12,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_ChainedImageProcessor_H__
-#define __Tomo_ChainedImageProcessor_H__
+#ifndef __stir_ChainedImageProcessor_H__
+#define __stir_ChainedImageProcessor_H__
 
 
-#include "tomo/RegisteredParsingObject.h"
-#include "tomo/ImageProcessor.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/ImageProcessor.h"
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -89,7 +93,7 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

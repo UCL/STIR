@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,18 +11,23 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "recon_buildblock/DataSymmetriesForBins.h"
-#include "Bin.h"
-#include "ViewSegmentNumbers.h"
-#include "BasicCoordinate.h"
-#include "recon_buildblock/SymmetryOperation.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
+#include "stir/Bin.h"
+#include "stir/ViewSegmentNumbers.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 DataSymmetriesForBins::
 DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
@@ -117,4 +122,4 @@ find_symmetry_operation_to_basic_view_segment_numbers(ViewSegmentNumbers& vs) co
   return sym_op;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

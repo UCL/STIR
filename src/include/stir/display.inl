@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*! 
   \file
@@ -10,15 +10,20 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "IndexRange3D.h"
+#include "stir/IndexRange3D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*!
    \see display(const Array<3,elemT>&,
              const VectorWithOffset<scaleT>& ,
@@ -147,4 +152,4 @@ void display(const Array<2,elemT>& plane)
 
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

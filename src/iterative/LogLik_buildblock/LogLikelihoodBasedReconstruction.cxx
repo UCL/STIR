@@ -17,28 +17,33 @@
         
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "LogLikBased/LogLikelihoodBasedReconstruction.h"
-#include "LogLikBased/common.h"
-#include "recon_buildblock/ProjectorByBinPair.h"
-#include "shared_ptr.h"
+#include "stir/LogLikBased/LogLikelihoodBasedReconstruction.h"
+#include "stir/LogLikBased/common.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
+#include "stir/shared_ptr.h"
 // for checks between sensitivity and target_image
-#include "DiscretisedDensityOnCartesianGrid.h"
+#include "stir/DiscretisedDensityOnCartesianGrid.h"
 // for set_projectors_and_symmetries
-#include "recon_buildblock/distributable.h"
+#include "stir/recon_buildblock/distributable.h"
 // for get_symmetries_ptr()
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "Viewgram.h"
-#include "recon_array_functions.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/Viewgram.h"
+#include "stir/recon_array_functions.h"
 #include <iostream>
 #include <typeinfo>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction()
@@ -173,4 +178,4 @@ float LogLikelihoodBasedReconstruction::sum_projection_data() const
   
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -9,11 +9,15 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <typename elemT>
@@ -35,5 +39,5 @@ GeneralisedPrior<elemT>::
 set_penalisation_factor(const float new_penalisation_factor)
 { penalisation_factor = new_penalisation_factor; }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

@@ -12,11 +12,15 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const char * const 
@@ -52,4 +56,4 @@ ProjectorByBinPairUsingSeparateProjectors(const shared_ptr<ForwardProjectorByBin
   back_projector_ptr = back_projector_ptr_v;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,26 +11,31 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForViewSegmentNumbers_H__
 #define __DataSymmetriesForViewSegmentNumbers_H__
 
-#include "ViewSegmentNumbers.h"
+#include "stir/ViewSegmentNumbers.h"
 #include <vector>
 #include <memory>
-#include "ProjDataInfo.h"
+#include "stir/ProjDataInfo.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
-#ifndef TOMO_NO_AUTO_PTR
+#ifndef STIR_NO_AUTO_PTR
 using std::auto_ptr;
 #endif
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 #if 0
 class ViewSegmentIndexRange;
@@ -96,9 +101,9 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "DataSymmetriesForViewSegmentNumbers.inl"
+#include "stir/DataSymmetriesForViewSegmentNumbers.inl"
 
 #endif
 

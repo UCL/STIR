@@ -10,13 +10,17 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_is_null_ptr_H__
-#define __Tomo_is_null_ptr_H__
+#ifndef __stir_is_null_ptr_H__
+#define __stir_is_null_ptr_H__
 
-#include "shared_ptr.h"
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 //! a utility function that checks if a shared_ptr is null
 template <typename T>
 bool 
@@ -38,6 +42,6 @@ bool
 is_null_ptr(T const * const ptr)
 { return ptr==0; }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

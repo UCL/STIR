@@ -2,8 +2,8 @@
 // $Id$
 //
  
-#ifndef __OSMAPOSLParameters_h__
-#define __OSMAPOSLParameters_h__
+#ifndef __stir_OSMAPOSL_OSMAPOSLParameters_h__
+#define __stir_OSMAPOSL_OSMAPOSLParameters_h__
 
 /*!
   \file 
@@ -18,14 +18,19 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-//#include "LogLikBased/MAPParameters.h"
-#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
-#include "tomo/recon_buildblock/GeneralisedPrior.h"
-#include "tomo/ImageProcessor.h"
+//#include "stir/LogLikBased/MAPParameters.h"
+#include "stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
+#include "stir/recon_buildblock/GeneralisedPrior.h"
+#include "stir/ImageProcessor.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
 
@@ -104,6 +109,6 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __OSMAPOSLParameters_h__

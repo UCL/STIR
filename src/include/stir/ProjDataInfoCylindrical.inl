@@ -15,13 +15,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 // for sqrt
 #include <math.h>
-#include "Bin.h"
-#include "tomo/Succeeded.h"
+#include "stir/Bin.h"
+#include "stir/Succeeded.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 float
@@ -147,7 +152,7 @@ get_segment_axial_pos_num_for_ring_pair(int& segment_num,
   return Succeeded::yes;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
   

@@ -15,6 +15,11 @@
   $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /* Modification history:
    - First versions by CL and KT (sinogram version based on C code by Matthias Egger (using linear interpolation).
    - CL introduced overlap interpolation.
@@ -24,17 +29,17 @@
  */
    
 #include <cmath>
-#include "interpolate.h"
-#include "zoom.h"
-#include "VoxelsOnCartesianGrid.h" 
-#include "PixelsOnCartesianGrid.h" 
-#include "Viewgram.h"
-#include "RelatedViewgrams.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "IndexRange3D.h"
-#include "IndexRange2D.h"
+#include "stir/interpolate.h"
+#include "stir/zoom.h"
+#include "stir/VoxelsOnCartesianGrid.h" 
+#include "stir/PixelsOnCartesianGrid.h" 
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/IndexRange3D.h"
+#include "stir/IndexRange2D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // TODO all these are terribly wasteful with memory allocations
 // main reason: we cannot have segments with viewgrams of different sizes (et al)
@@ -403,4 +408,4 @@ zoom_image(PixelsOnCartesianGrid<float> &image2D_out,
   overlap_interpolate(image2D_out, temp, zoom_y, y_offset);   
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

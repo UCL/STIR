@@ -17,14 +17,19 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_Bin_H__
-#define __Tomo_Bin_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_Bin_H__
+#define __stir_Bin_H__
 
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*!
  \brief
  A class for storing coordinates and value of a single projection bin.
@@ -84,9 +89,9 @@ private :
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-#include "Bin.inl"
+#include "stir/Bin.inl"
 
 #endif //__Bin_H__

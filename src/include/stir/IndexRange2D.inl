@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*! 
   \file
@@ -9,14 +9,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "Coordinate2D.h"
+#include "stir/Coordinate2D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 IndexRange2D::IndexRange2D()
 : base_type()
@@ -38,4 +43,4 @@ IndexRange2D::IndexRange2D(const int length_1, const int length_2)
 	    Coordinate2D<int>(length_1-1,length_2-1))
 {}
 
-END_NAMESPACE_TOMO 
+END_NAMESPACE_STIR 

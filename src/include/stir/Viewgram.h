@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,21 +12,26 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __Viewgram_h__
 #define __Viewgram_h__
 
 
-#include "Array.h"
-#include "ProjDataInfo.h" 
-#include "IndexRange.h"
-#include "shared_ptr.h"
+#include "stir/Array.h"
+#include "stir/ProjDataInfo.h" 
+#include "stir/IndexRange.h"
+#include "stir/shared_ptr.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class PMessage;
 
@@ -91,8 +96,8 @@ private:
   int segment_num;  
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "Viewgram.inl"
+#include "stir/Viewgram.inl"
 
 #endif

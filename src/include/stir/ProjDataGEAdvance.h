@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,28 +12,33 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __ProjDataGEAdvance_H__
 #define __ProjDataGEAdvance_H__
 
-#include "ProjData.h" 
-#include "NumericType.h"
-#include "ByteOrder.h"
-#include "Array.h"
+#include "stir/ProjData.h" 
+#include "stir/NumericType.h"
+#include "stir/ByteOrder.h"
+#include "stir/Array.h"
 
 #include <iostream>
 #include <vector>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::streamoff;
 using std::vector;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -91,7 +96,7 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif

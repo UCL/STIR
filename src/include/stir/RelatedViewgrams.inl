@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,11 +10,16 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 template <typename elemT>
 RelatedViewgrams<elemT>::RelatedViewgrams() :
@@ -155,4 +160,4 @@ RelatedViewgrams<elemT>::end() const
 {return viewgrams.end();}
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

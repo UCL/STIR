@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 /*!
 
   \file
@@ -9,20 +9,25 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "VectorWithOffset.h"
-#include "RunTests.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/RunTests.h"
 #include <algorithm>
 #include <numeric>
 #include <functional>
 
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::sort;
@@ -30,7 +35,7 @@ using std::find;
 using std::greater;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -97,9 +102,9 @@ VectorWithOffsetTests::run_tests()
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main()
 {

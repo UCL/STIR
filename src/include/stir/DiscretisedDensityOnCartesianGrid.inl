@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -11,21 +11,26 @@
   \author (help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template<int num_dimensions, typename elemT>
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 DiscretisedDensityOnCartesianGrid()
 : DiscretisedDensity<num_dimensions, elemT>(),grid_spacing()
 {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   std::fill(grid_spacing.begin(), grid_spacing.end(), 0.F);
 #else
   // hopefully your compiler understands this.
@@ -117,4 +122,4 @@ get_max_z() const
 { return get_max_index(); }
 
 
-END_NAMESPACE_TOMO					 
+END_NAMESPACE_STIR					 

@@ -1,5 +1,10 @@
 /* 
- $Id$: $Date$
+ $Id$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 /*!
  \file
@@ -9,11 +14,11 @@
  \author Kris Thielemans
  \author PARAPET project
  
- \date    $Date$
+ $Date$
   
- \version $Revision$
+ $Revision$
 
- see screen.h for a few details
+ \see screen.h for a few details
   
  \internal
  

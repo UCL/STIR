@@ -10,14 +10,18 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "tomo/SeparableArrayFunctionObject.h"
-#include "ArrayFunction.h"
+#include "stir/SeparableArrayFunctionObject.h"
+#include "stir/ArrayFunction.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dim, typename elemT>
 SeparableArrayFunctionObject<num_dim, elemT>::
@@ -65,7 +69,7 @@ is_trivial() const
 // instantiation
 template SeparableArrayFunctionObject<3, float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

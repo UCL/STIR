@@ -8,15 +8,19 @@
     
   \author Kris Thielemans
   \author Sanida Mustafovic      
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "tomo/recon_buildblock/FilterRootPrior.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "tomo/ImageProcessor.h"
+#include "stir/recon_buildblock/FilterRootPrior.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ImageProcessor.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 FilterRootPrior<elemT>::FilterRootPrior()
@@ -114,5 +118,5 @@ static FilterRootPrior<float>::RegisterIt dummy;
 
 template FilterRootPrior<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

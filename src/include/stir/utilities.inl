@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -9,9 +9,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #include <iostream>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -20,11 +25,11 @@
 #include <sstream>
 #endif
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*!
   The question is currently presented as
   \verbatim
@@ -109,4 +114,4 @@ char *strupr(char * const str)
 }
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -9,22 +9,26 @@
 
   \author Kris Thielemans
   
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
 #include <string>
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::string;
 #endif
 
 #ifndef __Object_H__
 #define __Object_H__
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! \brief Base class for all classes that can parse .par files (and more?) */
 
@@ -37,6 +41,6 @@ public:
   virtual string parameter_info()  = 0;
   virtual string get_registered_name() const= 0;
 };
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 #endif
 

@@ -14,12 +14,16 @@
 
    $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __TrivialDataSymmetriesForViewSegmentNumbers_H__
 #define __TrivialDataSymmetriesForViewSegmentNumbers_H__
 
-#include "DataSymmetriesForViewSegmentNumbers.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief A class for encoding/finding NO symmetries. Works only on
@@ -59,9 +63,9 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "TrivialDataSymmetriesForViewSegmentNumbers.inl"
+#include "stir/TrivialDataSymmetriesForViewSegmentNumbers.inl"
 
 #endif
 

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __DiscretisedDensityOnCartesianGrid_H__
 #define __DiscretisedDensityOnCartesianGrid_H__
@@ -14,14 +14,19 @@
   \author (help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
-#include "DiscretisedDensity.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/DiscretisedDensity.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -76,7 +81,7 @@ private:
   BasicCoordinate<num_dimensions,float> grid_spacing;
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "DiscretisedDensityOnCartesianGrid.inl"
+#include "stir/DiscretisedDensityOnCartesianGrid.inl"
 #endif

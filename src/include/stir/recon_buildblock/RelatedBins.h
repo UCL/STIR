@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,24 +12,29 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __RelatedBins_H__
 #define __RelatedBins_H__
 
-#include "shared_ptr.h"
+#include "stir/shared_ptr.h"
 #include <vector>
 #include <iterator>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::ptrdiff_t;
 using std::random_access_iterator_tag;
 using std::vector;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ProjData;
 class Bin;
@@ -54,7 +59,7 @@ public:
   typedef size_t size_type;
 
   //! typedefs to make it partly comply with STL requirements
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   typedef std::vector<Bin>::iterator iterator;
   typedef std::vector<Bin>::const_iterator const_iterator;
 #else
@@ -102,9 +107,9 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/RelatedBins.inl"
+#include "stir/recon_buildblock/RelatedBins.inl"
 
 #endif //__RelatedBins_H__
 

@@ -14,20 +14,24 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
 #include <sstream>
 #endif
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 ProjDataInfoCylindricalNoArcCorr:: 
 ProjDataInfoCylindricalNoArcCorr()
 
@@ -91,5 +95,5 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

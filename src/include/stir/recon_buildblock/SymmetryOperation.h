@@ -13,13 +13,18 @@
   $Date$
   $Revision$
 */
-#ifndef __tomo_recon_buildblock_SymmetryOperation_H__
-#define __tomo_recon_buildblock_SymmetryOperation_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_recon_buildblock_SymmetryOperation_H__
+#define __stir_recon_buildblock_SymmetryOperation_H__
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, class coordT> class BasicCoordinate;
 class ViewSegmentNumbers;
@@ -110,8 +115,8 @@ public:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-//#include "recon_buildblock/SymmetryOperation.inl"
+//#include "stir/recon_buildblock/SymmetryOperation.inl"
 
 #endif

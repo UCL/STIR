@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,10 +11,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
   
   
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
@@ -22,10 +27,10 @@
 #define __KEYPARSER_H__
 
 #ifdef OLDDESIGN
-#include "pet_common.h"
+#include "stir/pet_common.h"
 #endif
 
-#include "shared_ptr.h"
+#include "stir/shared_ptr.h"
 
 //#include <map>
 #include <list>
@@ -34,7 +39,7 @@
 #include <iostream>
 #include <vector>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::string;
 //using std::map;
@@ -44,7 +49,7 @@ using std::istream;
 using std::ostream;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 typedef vector<int> IntVect;
 typedef vector<unsigned long> UlongVect;
@@ -374,7 +379,7 @@ private :
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

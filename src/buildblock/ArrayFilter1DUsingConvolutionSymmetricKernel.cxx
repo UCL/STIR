@@ -13,12 +13,16 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-#include "VectorWithOffset.h"
-#include "Array.h"
+#include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 template <typename elemT>
 ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::
 ArrayFilter1DUsingConvolutionSymmetricKernel(const VectorWithOffset<elemT> &filter_coefficients_v)
@@ -162,5 +166,5 @@ cir_shift_to_right(VectorWithOffset<elemT>&output,const VectorWithOffset<elemT>&
 
 template ArrayFilter1DUsingConvolutionSymmetricKernel<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

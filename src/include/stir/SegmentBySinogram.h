@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -13,18 +13,23 @@
   \author Claire Labbe  
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __SegmentBySinogram_H__
 #define __SegmentBySinogram_H__
 
-#include "Segment.h"
-#include "Array.h"
-#include "Sinogram.h"
+#include "stir/Segment.h"
+#include "stir/Array.h"
+#include "stir/Sinogram.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //forward declaration for use in convertion 
 template <typename elemT> class SegmentByView;
@@ -92,7 +97,7 @@ public:
   void grow(const IndexRange<3>& range);
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "SegmentBySinogram.inl"
+#include "stir/SegmentBySinogram.inl"
 #endif

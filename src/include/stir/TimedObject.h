@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 #ifndef __TimedObject_H__
 #define __TimedObject_H__
 /*!
@@ -10,13 +10,18 @@
   \author Kris Thielemans  
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "CPUTimer.h"
+#include "stir/CPUTimer.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*!
   \ingroup buildblock
   \brief base class for all objects which need timers. 
@@ -47,8 +52,8 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "TimedObject.inl"
+#include "stir/TimedObject.inl"
 
 #endif

@@ -19,13 +19,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "recon_buildblock/IterativeReconstruction.h"
-#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
-#include "DiscretisedDensity.h"
+#include "stir/recon_buildblock/IterativeReconstruction.h"
+#include "stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
+#include "stir/DiscretisedDensity.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*! \brief base class for loglikelihood function related reconstruction objects
@@ -94,7 +99,7 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif 

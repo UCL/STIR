@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __IndexRange3D_H__
@@ -14,14 +14,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "IndexRange.h"
+#include "stir/IndexRange.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*! 
@@ -47,8 +52,8 @@ public:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "IndexRange3D.inl"
+#include "stir/IndexRange3D.inl"
 
 #endif

@@ -14,17 +14,22 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __DataSymmetriesForBins_PET_CartesianGrid_H__
 #define __DataSymmetriesForBins_PET_CartesianGrid_H__
 
 
-#include "recon_buildblock/DataSymmetriesForBins.h"
-//#include "SymmetryOperations_PET_CartesianGrid.h"
-//#include "ViewSegmentNumbers.h"
-//#include "VoxelsOnCartesianGrid.h"
-#include "Bin.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
+//#include "stir/SymmetryOperations_PET_CartesianGrid.h"
+//#include "stir/ViewSegmentNumbers.h"
+//#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/Bin.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
@@ -48,7 +53,7 @@ public:
 
   virtual 
     inline 
-#ifndef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins 
 #else
     DataSymmetriesForViewSegmentNumbers
@@ -141,8 +146,8 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.inl"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.inl"
 
 #endif
