@@ -74,12 +74,12 @@ RigidObject3DTransformation::inverse() const
     fixed order of first translation and then rotation
 
      tr_point= transform(point) =
-		 conj(q)*(point+trans)*q
+		 conj(q)*(point-trans)*q
 	invtransform(tr_point) = 
 	          conj(invq)*(tr_point + invtrans)*invq
-		= conj(invq)*(conj(q)*(point+trans)*q + invtrans)*invq
+		= conj(invq)*(conj(q)*(point-trans)*q + invtrans)*invq
             = point
-	so conj(q)*(trans)*q + invtrans==0
+	so -conj(q)*(trans)*q + invtrans==0
    */
   const Quaternion<float> invq = stir::inverse(quat);
   const Quaternion<float>
@@ -88,7 +88,7 @@ RigidObject3DTransformation::inverse() const
     conjugate(quat) * qtrans * quat;
   const CartesianCoordinate3D<float>
     invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
-  return RigidObject3DTransformation(invq, invtrans*(-1));
+  return RigidObject3DTransformation(invq, invtrans*(+1));
 #endif
 }
 
@@ -126,7 +126,8 @@ RigidObject3DTransformation::set_euler_angles()
 CartesianCoordinate3D<float> 
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
-  CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
+  CartesianCoordinate3D<float> swapped_point(-point.z(), point.y(), -point.x());
+
   Quaternion<float> quat_norm_tmp = quat;
    
   //cerr << quat << endl;
@@ -160,9 +161,9 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   // swapped
   // SM include the point tmp =point+q
   Quaternion<float> tmp1=point_q;
-  tmp1[2] += translation.x();
-  tmp1[3] += translation.y();
-  tmp1[4] += translation.z();
+  tmp1[2] -= translation.x();
+  tmp1[3] -= translation.y();
+  tmp1[4] -= translation.z();
   
   const Quaternion<float> tmp =  conjugate(quat_norm_tmp) * tmp1 *quat_norm_tmp ;
 
@@ -200,7 +201,7 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   const CartesianCoordinate3D<float> transformed_point(out[out.get_max_index()],out[out.get_min_index()+1],out[out.get_min_index()]);
 
 #endif
-  return CartesianCoordinate3D<float> (transformed_point.z(), transformed_point.x(), transformed_point.y());
+  return CartesianCoordinate3D<float> (-transformed_point.z(), transformed_point.y(), -transformed_point.x());
 }
 
 
