@@ -11,10 +11,9 @@
   
   \author Sanida Mustafovic
   \author Kris Thielemans
-
     
-  \date $Date: 
-  \version $Revision: 
+  $Date$
+  $Revision$
 */
 
 
