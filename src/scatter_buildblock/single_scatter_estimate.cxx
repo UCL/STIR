@@ -92,10 +92,9 @@ float scatter_estimate_for_all_scatter_points(
 					upper_energy_threshold,		
 					use_cache);
 	}	
-	return 0.75*rAB_squared/detection_efficiency_no_scatter*scatter_volume/total_cross_section_511keV*
-		((single_scatter_ratio+double_scatter_ratio*scatter_volume)
-		/(cos_incident_angle_A*cos_incident_angle_A*cos_incident_angle_B*cos_incident_angle_B)
-		/total_cross_section_511keV);
+	return 0.75*rAB_squared*scatter_volume/total_cross_section_511keV/detection_efficiency_no_scatter*
+		(single_scatter_ratio+double_scatter_ratio*scatter_volume/total_cross_section_511keV)
+		/(cos_incident_angle_A*cos_incident_angle_A*cos_incident_angle_B*cos_incident_angle_B);
 }
 
 END_NAMESPACE_STIR
