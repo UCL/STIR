@@ -1,17 +1,6 @@
 //
 // $Id$
 //
-
-/*! 
-  \file 
-  \ingroup FBP3DRP
-  \brief Class for serial FBP3DRP reconstruction
-  \author Claire LABBE
-  \author Kris Thielemans
-  \author PARAPET project
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -30,6 +19,16 @@
 
     See STIR/LICENSE.txt for details
 */
+/*! 
+  \file 
+  \ingroup FBP3DRP
+  \brief Class for serial FBP3DRP reconstruction
+  \author Claire LABBE
+  \author Kris Thielemans
+  \author PARAPET project
+  $Date$
+  $Revision$
+*/
 
 #ifndef __FBP3DRPRECONSTRUCTION_H__
 #define __FBP3DRPRECONSTRUCTION_H__
@@ -37,10 +36,11 @@
 
 
 #include "stir/recon_buildblock/Reconstruction.h"
-#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
+#include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -154,6 +154,9 @@ protected:
     
 //!  3D reconstruction implementation.       
   void do_3D_Reconstruction(  VoxelsOnCartesianGrid<float> &image);
+
+//!  Arc-correction viewgrams
+  void do_arc_correction(RelatedViewgrams<float> & viewgrams) const;
    
 //!  Growing 8 viewgrams in both ring and bin directions.
     void do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams, 
@@ -247,7 +250,8 @@ private:
   virtual void initialise_keymap();
 
 
-  ProjDataInfoCylindricalArcCorr proj_data_info_cyl;
+  //! access to input proj_data_info cast to cylindrical type
+  const ProjDataInfoCylindrical& input_proj_data_info_cyl() const;
   //! Size info for the projection data with missing data filled in
   shared_ptr<ProjDataInfo> proj_data_info_with_missing_data_sptr;
 
@@ -263,6 +267,8 @@ private:
 #endif
   float alpha_fit;
   float beta_fit;
+  
+  shared_ptr<ArcCorrection> arc_correction_sptr;
 };
 
 END_NAMESPACE_STIR
