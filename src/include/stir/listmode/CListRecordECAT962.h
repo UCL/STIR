@@ -37,6 +37,8 @@
 #include "stir/Succeeded.h"
 #include "stir/ByteOrderDefine.h"
 #include "stir/round.h"
+#include "boost/static_assert.hpp"
+#include "boost/cstdint.hpp"
 
 START_NAMESPACE_STIR
 
@@ -230,8 +232,11 @@ private:
   union {
     CListEventDataECAT962  event_data;
     CListTimeDataECAT962   time_data; 
-    long         raw;
+    boost::int32_t         raw;
   };
+  BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
+  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT962)==4); 
+  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT962)==4); 
 
 };
 
