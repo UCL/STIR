@@ -75,7 +75,30 @@ template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::~Array()
 {}
 
-#ifdef ARRAY_FULL 
+
+template <int num_dimensions, typename elemT>
+typename Array<num_dimensions, elemT>::full_iterator 
+Array<num_dimensions, elemT>::end_all()
+{
+  // note this value is fixed by the current convention in full_iterator::operator++()
+  return  full_iterator(this->end(), this->end(), 0,0);
+}
+
+template <int num_dimensions, typename elemT>
+typename Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::end_all() const
+{
+  // note this value is fixed by the current convention in full_iterator::operator++()
+  return  const_full_iterator(this->end(), this->end(), 0,0);
+}
+
+template <int num_dimensions, typename elemT>
+typename Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::end_all_const() const
+{
+  return static_cast<const Array<num_dimensions, elemT>&>(*this).end_all();
+}
+
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::begin_all()
@@ -110,32 +133,6 @@ Array<num_dimensions, elemT>::begin_all_const() const
 {
   return static_cast<const Array<num_dimensions, elemT>&>(*this).begin_all();
 }
-
-
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::full_iterator 
-Array<num_dimensions, elemT>::end_all()
-{
-  // note this value is fixed by the current convention in full_iterator::operator++()
-  return  full_iterator(this->end(), this->end(), 0,0);
-}
-
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator 
-Array<num_dimensions, elemT>::end_all() const
-{
-  // note this value is fixed by the current convention in full_iterator::operator++()
-  return  const_full_iterator(this->end(), this->end(), 0,0);
-}
-
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator 
-Array<num_dimensions, elemT>::end_all_const() const
-{
-  return static_cast<const Array<num_dimensions, elemT>&>(*this).end_all();
-}
-
-#endif // ARRAY_FULL
 
 template <int num_dimensions, class elemT>
 IndexRange<num_dimensions>
