@@ -157,7 +157,11 @@ in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, Functio
   const int outer_max_index = array.get_max_index();
 
   // construct a vector with a full_iterator for every array[i]
-  VectorWithOffset<typename Array<num_dim-1, elemT>::full_iterator > 
+  VectorWithOffset<
+#ifndef _MSC_VER
+    typename 
+#endif
+      Array<num_dim-1, elemT>::full_iterator > 
     full_iterators (outer_min_index, outer_max_index);  
   for (int i=outer_min_index; i<=outer_max_index; ++i)
     full_iterators[i] = array[i].begin_all();
