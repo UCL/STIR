@@ -27,6 +27,7 @@
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
 #include "stir/LORCoordinates.h"
+#include "stir/round.h"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -100,12 +101,24 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 	     view_num<=proj_data_info.get_max_view_num();
 	     view_num+=3)
 	  {
-	    // loop over axial_positions. Avoid using first and last position, as 
-	    // the discretisation error can easily bring the transformed_bin back
-	    // outside the range. We could test for that, but it would make
-	    // the code much more complicated, and not give anything useful back.
-	    for (int axial_pos_num=proj_data_info.get_min_axial_pos_num(segment_num)+1;
-		 axial_pos_num<=proj_data_info.get_max_axial_pos_num(segment_num);
+	    // loop over axial_positions. Avoid using first and last positions, as 
+	    // if there is axial compression, the central LOR of a bin might actually not
+	    // fall within the scanner. In this case, the get_bin(get_LOR(org_bin)) code 
+	    // will return an out-of-range bin (i.e. value<0).
+	    int axial_pos_num_margin=0;
+	    const ProjDataInfoCylindrical* const proj_data_info_cyl_ptr =
+	      dynamic_cast<const ProjDataInfoCylindrical* const>(&proj_data_info);
+	    if (proj_data_info_cyl_ptr!=0)
+	      {
+		axial_pos_num_margin =
+		  std::max(
+			   round(ceil(proj_data_info_cyl_ptr->get_average_ring_difference(segment_num) -
+				      proj_data_info_cyl_ptr->get_min_ring_difference(segment_num))),
+			   round(ceil(proj_data_info_cyl_ptr->get_max_ring_difference(segment_num) -
+				      proj_data_info_cyl_ptr->get_average_ring_difference(segment_num))));		
+	      }
+	    for (int axial_pos_num=proj_data_info.get_min_axial_pos_num(segment_num)+axial_pos_num_margin ;
+		 axial_pos_num<=proj_data_info.get_max_axial_pos_num(segment_num)-axial_pos_num_margin;
 		 axial_pos_num+=3)
 	      {
 		for (int tangential_pos_num=proj_data_info.get_min_tangential_pos_num()+1;
@@ -151,11 +164,8 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 			       << ", axial pos " << org_bin.axial_pos_num()
 			       << ", view = " << org_bin.view_num() 
 			       << ", tangential_pos_num = " << org_bin.tangential_pos_num() << "\n";
-			  cerr << "\tround-trip to ";
-			  if (new_bin.get_bin_value()<0)
-			    cerr << "out-of-range\n";
-			  else
-			    cerr << "segment = " << new_bin.segment_num() 
+			  if (new_bin.get_bin_value()>0)
+			    cerr << "\tround-trip to segment = " << new_bin.segment_num() 
 				 << ", axial pos " << new_bin.axial_pos_num()
 				 << ", view = " << new_bin.view_num() 
 				 << ", tangential_pos_num = " << new_bin.tangential_pos_num() 
@@ -201,22 +211,12 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 			       << ", axial pos " << org_bin.axial_pos_num()
 			       << ", view = " << org_bin.view_num() 
 			       << ", tangential_pos_num = " << org_bin.tangential_pos_num() << "\n";
-			  cerr << "\tround-trip to ";
-			  if (new_bin.get_bin_value()<0)
-			    cerr << "out-of-range\n";
-			  else
-			    {
-			    cerr << "segment = " << new_bin.segment_num() 
+			  if (new_bin.get_bin_value()>0)
+			    cerr << "\tround-trip to segment = " << new_bin.segment_num() 
 				 << ", axial pos " << new_bin.axial_pos_num()
 				 << ", view = " << new_bin.view_num() 
 				 << ", tangential_pos_num = " << new_bin.tangential_pos_num() 
 				 <<'\n';
-			    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor2;
-			    proj_data_info.get_LOR(lor2, new_bin);
-			    LORAs2Points<float> lor2_as_points;
-			    lor2.get_intersections_with_cylinder(lor2_as_points, lor2.radius());
-			    
-			    }
 			}
 		    }
 		  }
@@ -273,7 +273,8 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 		   "cross check get_costheta and get_tantheta");
 
     // try the same with a non-standard ring spacing
-    proj_data_info.set_ring_spacing(2);
+    const float old_ring_spacing = proj_data_info.get_ring_spacing();
+    proj_data_info.set_ring_spacing(2.1F);
 
     check_if_equal(proj_data_info.get_sampling_in_m(bin),
 		   proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
@@ -293,6 +294,8 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
     check_if_equal(proj_data_info.get_costheta(bin),
 		   cos(atan(proj_data_info.get_tantheta(bin))),
 		   "cross check get_costheta and get_tantheta");
+    // set back to usual value
+    proj_data_info.set_ring_spacing(old_ring_spacing);
   }
 
   if (proj_data_info.get_max_ring_difference(0) == proj_data_info.get_min_ring_difference(0)
