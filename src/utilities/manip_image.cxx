@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 
 //MJ 9/11/98 Introduced math mode
@@ -12,17 +12,14 @@
 #include <numeric>
 #include "imagedata.h"
 
-
-//MJ 2/11/98 include Tensor functions
 #include "TensorFunction.h"
 
 #include "display.h"
-// KT 13/10/98 include interfile 
 #include "interfile.h"
-// KT 23/10/98 use ask_* version all over the place
 #include "utilities.h"
-//MJ 17/11/98 include new functions
 #include "recon_array_functions.h"
+  // KT 17/01/2000 added zoom
+#include "zoom.h"
 
 #define ZERO_TOL 0.000001
 
@@ -35,16 +32,18 @@ void trim_edges(PETImageOfVolume& main_buffer);
 void get_plane(PETImageOfVolume& main_buffer);
 void get_plane_row(PETImageOfVolume& main_buffer);
 
-PETImageOfVolume ask_interfile_image(char *input_query);
-PETImageOfVolume get_interfile_image(char *filename);
+// KT 17/01/2000 added consts
+PETImageOfVolume ask_interfile_image(const char *const input_query);
+// KT 17/01/2000 removed get_interfile_image
 
 void show_menu();
 void show_math_menu();
 void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math);
 
 
-main(int argc, char *argv[]){
-
+int
+main(int argc, char *argv[])
+{
 
 
 //  PETScannerInfo::Scanner_type scanner_type = PETScannerInfo::RPT;
@@ -130,12 +129,11 @@ main(int argc, char *argv[]){
   main_buffer.read_data(input);   
 #endif // now interfile
 
-//MJ 13/09/98 restored command line input capability (as requested by KT)
 
-  PETImageOfVolume 
-    main_buffer = (argc>1) ? get_interfile_image(argv[1]):ask_interfile_image("File to load in main buffer? ");
-
-
+  // KT 17/01/2000 replace get_interfile_image with read_interfile_image
+  PETImageOfVolume main_buffer = 
+    (argc>1) ? read_interfile_image(argv[1])
+             : ask_interfile_image("File to load in main buffer? ");
 
    
   int zs,ys,xs, ze,ye,xe,choice;
@@ -332,7 +330,7 @@ main(int argc, char *argv[]){
 
   }while(choice>0 && choice<=13 && (!quit_from_math));
 
-  return 0;
+  return EXIT_SUCCESS;
 
 }
 
@@ -513,49 +511,21 @@ void get_plane_row(PETImageOfVolume& input_image){
 
   }
 
- 
-
-
 }
 
-PETImageOfVolume ask_interfile_image(char *input_query){
-
+PETImageOfVolume ask_interfile_image(const char *const input_query)
+{
 
     char filename[max_filename_length];
+    // KT 17/01/2000 added extension
     ask_filename_with_extension(filename, 
 				input_query,
-				"");
+				".hv");
 
-    ifstream image_stream(filename);
-    if (!image_stream)
-    { 
-      PETerror("Couldn't open file %s", filename);
-      cerr<<endl;
-      exit(1);
-    }
-
-return read_interfile_image(image_stream);
+    // KT 17/01/2000 use new version with char *
+    return read_interfile_image(filename);
 
 }
-
-//MJ 12/9/98 added for command line input capability
-
-PETImageOfVolume get_interfile_image(char *filename){
-
-
-    ifstream image_stream(filename);
-    if (!image_stream)
-    { 
-      PETerror("Couldn't open file %s", filename);
-      cerr<<endl;
-      exit(1);
-    }
-
-return read_interfile_image(image_stream);
-
-}
-
-
 
 
 void show_menu(){
@@ -578,7 +548,7 @@ void show_menu(){
     13. Redisplay menu"<<endl;
 }
 
-
+// KT 17/01/2000 added zoom
 void show_math_menu(){
   cerr<<"\n\
     MATH MODE:\n\
@@ -592,28 +562,31 @@ void show_math_menu(){
     7. Add scalar\n\
     8. Multiply scalar\n\
     9. Divide scalar \n\
-    10. Min/Max in image\n\
-    11. Main buffer --> Math buffer\n\
-    12. Math buffer --> Main Buffer\n\
-    13. Reload main buffer\n\
-    14. Redisplay menu\n\
-    15. Main mode"<<endl;
+    10. Zoom image \n\
+    11. Min/Max in image\n\
+    12. Main buffer --> Math buffer\n\
+    13. Math buffer --> Main Buffer\n\
+    14. Reload main buffer\n\
+    15. Redisplay menu\n\
+    16. Main mode"<<endl;
    
 }
 
 
-void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
-
-
+void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
+{
+  
+  
   PETImageOfVolume math_buffer=main_buffer; //initialize math buffer
-
-	int operation;
-	show_math_menu();
-	
-	do{
-
-	operation=ask_num("Choose Operation: ",0,15,14);
-
+  
+  int operation;
+  show_math_menu();
+  
+  do{
+    
+    // KT 17/01/2000 added zoom
+    operation=ask_num("Choose Operation: ",0,16,15);
+    
        
 
     switch(operation){ //math mode
@@ -774,7 +747,39 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
       }
 
+  // KT 17/01/2000 added zoom
     case 10:
+      {
+	const float zoom_x = ask_num("Zoom factor x",0.1F,5.F,1.F);
+	const float zoom_y = ask_num("Zoom factor y",0.1F,5.F,zoom_x);
+	const float zoom_z = ask_num("Zoom factor z",0.1F,5.F,1.F);
+	const float offset_x = ask_num("Offset x (in mm)",
+	  0.F,math_buffer.get_x_size()*math_buffer.get_voxel_size().x/2,0.F);
+	const float offset_y = ask_num("Offset y (in mm)",
+	  0.F,math_buffer.get_y_size()*math_buffer.get_voxel_size().y/2,0.F);
+	const float offset_z = ask_num("Offset z (in mm)",
+	  0.F,math_buffer.get_y_size()*math_buffer.get_voxel_size().z/2,0.F);
+	const int new_size_x = ask_num("New x size (pixels)",
+	  1, 
+	  static_cast<int>(math_buffer.get_x_size()/zoom_x * 2), 
+	  static_cast<int>(math_buffer.get_x_size()/zoom_x));
+	const int new_size_y = ask_num("New y size (pixels)",
+	  1, 
+	  static_cast<int>(math_buffer.get_y_size()/zoom_y * 2), 
+	  new_size_x);
+	const int new_size_z = ask_num("New z size (pixels)",
+	  1, 
+	  static_cast<int>(math_buffer.get_z_size()/zoom_z * 2), 
+	  static_cast<int>(math_buffer.get_z_size()/zoom_z));
+	zoom_image(math_buffer, 
+	           Coordinate3D<float>(zoom_x, zoom_y, zoom_z),
+		   Coordinate3D<float>(offset_x, offset_y, offset_z),
+		   Coordinate3D<int>(new_size_x, new_size_y, new_size_z));
+
+	break;
+      }
+
+    case 11:
       {
   cerr << "Min and Max in image " << math_buffer.find_min() 
        << " " << math_buffer.find_max() << endl;
@@ -782,7 +787,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 	break;
       }
 
-    case 11:
+    case 12:
       {//reinitialize math buffer
 
 	math_buffer=main_buffer;
@@ -791,7 +796,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 	break;
       }
 
-    case 12:
+    case 13:
       {//dump math buffer to main buffer
 
 	main_buffer=math_buffer;
@@ -803,7 +808,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
 
 
-    case 13:
+    case 14:
       {//reload main buffer in math mode
 
 	main_buffer = ask_interfile_image("File to load in buffer? ");
@@ -814,7 +819,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
 
 
-    case 14:
+    case 15:
       {//redisplay menu
 
 	show_math_menu();
@@ -822,7 +827,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
       }
 
 
-    case 15:
+    case 16:
       {//go back to main mode
 
 	show_menu();
@@ -833,7 +838,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
      }// end switch math mode
 
 
-      }while(operation>0 && operation<15);
+      }while(operation>0 && operation<16);
 
 
 }
