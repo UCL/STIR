@@ -16,7 +16,8 @@ $(dir)_TEST_SOURCES := test_Array.cxx \
 	test_proj_data_info.cxx \
 	test_stir_math.cxx \
 	test_OutputFileFormat.cxx \
-	test_ByteOrder.cxx
+	test_ByteOrder.cxx \
+	test_Scanner.cxx
 
 $(dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \
