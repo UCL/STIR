@@ -30,6 +30,8 @@
 #ifndef TOMO_NO_NAMESPACES
 using std::min_element;
 using std::max_element;
+using std::min;
+using std::max;
 using std::swap;
 using std::endl;
 using std::ends;
@@ -181,8 +183,14 @@ initialise_ring_diff_arrays() const
       *min_element(min_ring_diff.begin(), min_ring_diff.end());
     const int max_ring_difference = 
       *max_element(max_ring_diff.begin(), max_ring_diff.end());
+
+    // set ring_diff_to_segment_num to appropriate size
+    // in principle, the max ring difference would be scanner.num_rings-1, but 
+    // in case someone is up to strange things, we take the max of this value 
+    // with the max_ring_difference as given in the file
     ring_diff_to_segment_num =
-      VectorWithOffset<int>(-(get_scanner_ptr()->get_num_rings()-1), get_scanner_ptr()->get_num_rings()-1);
+      VectorWithOffset<int>(min(min_ring_difference, -(get_scanner_ptr()->get_num_rings()-1)),
+                            max(max_ring_difference, get_scanner_ptr()->get_num_rings()-1));
     // first set all to impossible value
     // warning: get_segment_num_for_ring_difference relies on the fact that this value
     // is larger than get_max_segment_num()
