@@ -1,35 +1,46 @@
 CXX = g++
-CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -I/epx/epx/include -D_CR_LIB_
+# KT 18/12/97 removed Para++ related CFLAGS
+CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include
 #CXX = xlC
-#CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -DTEMPLATE_ARG
+#CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEMPLATE_ARG
 
-all:	libbuildblock.a
+#KT 27/02/98 use default rules now, .cxx does not work without next line
+.SUFFIXES: .cc .o .cxx .a
 
-#%.o:	%.cxx
-#.o.cxx:
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-#%.o:	%.cc
-#.o.cc:
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-#%:	%.o
-#..o:
-#	$(CXX) $(DEBUG) $(CFLAGS) -o $@  $< 
+#KT 16/12 wanted to add interfile...
+all:	libbuildblock.a #libinterfile.a
+
+#KT 27/02/98 use default rules now
+.cxx.o:
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
 
 
 libbuildblock.a: sinodata.o convert.o PETScannerInfo.o Tensor1D.o
 	ar r $@ $?
 	ranlib $@
+libinterfile.a: KeyParser.o line.o pet_string.o
 
-convert.o: convert.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#KT 27/02/98 use default rules now, so all this can go
+#convert.o: convert.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
-Tensor1D.o: Tensor1D.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#Tensor1D.o: Tensor1D.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
-sinodata.o: sinodata.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#sinodata.o: sinodata.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
-PETScannerInfo.o:  PETScannerInfo.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#PETScannerInfo.o:  PETScannerInfo.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
+#KT 16/12 added next 3
 
+KeyParser.o:  KeyParser.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+line.o:  line.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+pet_string.o:  pet_string.cxx
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
