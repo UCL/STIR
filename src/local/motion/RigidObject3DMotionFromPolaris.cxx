@@ -34,11 +34,10 @@ RigidObject3DMotionFromPolaris::compute_average_motion(const float start_time, c
 {
   // CartesianCoordinate3D<float> euler_angles;
   int samples = 0 ;
-  float total_tx=0.;
-  float total_ty=0.;
-  float total_tz=0.; 
+  float total_tx=0.F;
+  float total_ty=0.F;
+  float total_tz=0.F; 
   Quaternion<float> total_q(0,0,0,0);
-  RigidObject3DTransformation ro3dtrans;
  
   Polaris_MT_File::const_iterator iter=mt_file_ptr->begin();
 
@@ -47,9 +46,7 @@ RigidObject3DMotionFromPolaris::compute_average_motion(const float start_time, c
     /* Accept motions recorded during trasnmission acquisition */
     if ((iter->sample_time >= start_time ) && ( iter->sample_time<= end_time))
     {
-      Quaternion<float> quater(iter->quat[1], iter->quat[2], iter->quat[3], iter->quat[4]);	/* Sets the quaternion matrix */
-      RigidObject3DTransformation ro3dtrans_tmp(quater,CartesianCoordinate3D<float>(iter->trans.z(),iter->trans.y(),iter->trans.x()));
-      ro3dtrans= ro3dtrans_tmp;
+      const Quaternion<float> quater(iter->quat[1], iter->quat[2], iter->quat[3], iter->quat[4]);	/* Sets the quaternion matrix */
       /* Maintain running total euler angles and translations */
       total_tx += iter->trans.x();
       total_ty += iter->trans.y() ;
@@ -61,17 +58,21 @@ RigidObject3DMotionFromPolaris::compute_average_motion(const float start_time, c
   }
   /* Average quat and translation */
  
+  if (samples==0)
+    {
+      warning("Start-end range does not seem to overlap with MT info.\n"
+	      "Reference transformation set to identity, but this is WRONG.\n");
+      return RigidObject3DTransformation(Quaternion<float>(1,0,0,0), CartesianCoordinate3D<float>(0,0,0));
+    }
+  
+  total_q /=samples;
   total_q.normalise();
-  total_q /=(float)samples;
-  total_tx /= (float)samples; 
-  total_ty /= (float)samples;
-  total_tz /= (float)samples;
+  total_tx /= samples; 
+  total_ty /= samples;
+  total_tz /= samples;
   
-  RigidObject3DTransformation ro3dtrans_av(total_q,CartesianCoordinate3D<float>(total_tz,total_ty,total_tx));
-  
-  return ro3dtrans_av;
-  
-  
+  return RigidObject3DTransformation(total_q,
+				     CartesianCoordinate3D<float>(total_tz,total_ty,total_tx));  
 }
 
 void 
