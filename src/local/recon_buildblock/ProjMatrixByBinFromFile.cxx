@@ -346,7 +346,7 @@ write_to_file(const string& output_filename_prefix,
 	  {
 	    Bin  bin(segment_num,view_num, axial_pos_num, tang_pos_num);
 	    proj_matrix.get_symmetries_ptr()->find_basic_bin(bin);
-	    if (find(already_processed.begin(), already_processed.end(), bin)
+            if (std::find(already_processed.begin(), already_processed.end(), bin)
 		!= already_processed.end())
 	      continue;
 
@@ -396,7 +396,7 @@ read_data()
 	    Bin  bin(segment_num,view_num, axial_pos_num, tang_pos_num);
 	    bin.set_bin_value(0);
 	    get_symmetries_ptr()->find_basic_bin(bin);
-	    if (find(already_processed.begin(), already_processed.end(), bin)
+            if (std::find(already_processed.begin(), already_processed.end(), bin)
 		!= already_processed.end())
 	      continue;
 
