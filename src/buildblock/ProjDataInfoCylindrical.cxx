@@ -248,19 +248,40 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
   if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
     error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression\n");
 
-  // see documentation above for formulas
-        
-  const int ring1_plus_ring2 =
-    round(2*axial_pos_num/get_num_axial_poss_per_ring_inc(segment_num)
-	  -2*m_offset[segment_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1));
-  // check that it was integer
-  assert(fabs(
-	      ring1_plus_ring2 -
-	      (2*axial_pos_num/get_num_axial_poss_per_ring_inc(segment_num)
-	       -2*m_offset[segment_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1))
-	      ) < 1E-4) ;
+  static VectorWithOffset<VectorWithOffset<int> > seg_axpos_to_ring1_plus_ring2;
+  static bool seg_axpos_to_ring1_plus_ring2_computed = false;
+  if (!ring_diff_arrays_computed)
+  {
+    initialise_ring_diff_arrays();
+    seg_axpos_to_ring1_plus_ring2_computed = false;
+  }
+  if (!seg_axpos_to_ring1_plus_ring2_computed)
+  {
+    seg_axpos_to_ring1_plus_ring2_computed = true;
+    seg_axpos_to_ring1_plus_ring2 =
+      VectorWithOffset<VectorWithOffset<int> >(get_min_segment_num(), get_max_segment_num());
+    for (int s_num=get_min_segment_num(); s_num<=get_max_segment_num(); ++s_num)
+    {
+      const int min_ax_pos_num = get_min_axial_pos_num(s_num);
+      const int max_ax_pos_num = get_max_axial_pos_num(s_num);
+      seg_axpos_to_ring1_plus_ring2[s_num].grow(min_ax_pos_num, max_ax_pos_num);
+      for (int ax_pos_num=min_ax_pos_num; ax_pos_num<=max_ax_pos_num; ++ax_pos_num)
+      {
+         // see documentation above for formulas
+        const float ring1_plus_ring2_float =
+          2*ax_pos_num/get_num_axial_poss_per_ring_inc(s_num)
+          -2*m_offset[s_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1);
+        const int ring1_plus_ring2 =
+          round(ring1_plus_ring2_float);
+        // check that it was integer
+        assert(fabs(ring1_plus_ring2 - ring1_plus_ring2_float) < 1E-4) ;
+        seg_axpos_to_ring1_plus_ring2[s_num][ax_pos_num] = ring1_plus_ring2;
+      }
+    }
+  }
 
   const int ring_diff = get_max_ring_difference(segment_num);
+  const int ring1_plus_ring2= seg_axpos_to_ring1_plus_ring2[segment_num][axial_pos_num];
 
   // KT 01/08/2002 swapped rings
   ring1 = (ring1_plus_ring2 - ring_diff)/2;
