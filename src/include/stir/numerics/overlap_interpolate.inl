@@ -26,6 +26,7 @@
   $Date$
   $Revision$
 */
+#include <algorithm>
 
 START_NAMESPACE_STIR
 template <typename out_iter_t, typename out_coord_iter_t,
