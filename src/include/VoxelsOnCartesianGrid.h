@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __VoxelsOnCartesianGrid_H__
@@ -14,9 +14,8 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
 #include "PixelsOnCartesianGrid.h"
@@ -55,12 +54,20 @@ inline VoxelsOnCartesianGrid(const IndexRange<3>& range,
 		      const BasicCoordinate<3,float>& grid_spacing);
 
 //! use ProjDataInfo to obtain the size information
+/*!
+   A default xy_size is found by taking the diameter 
+   of the FOV spanned by the projection data 
+*/
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const float zoom = 1.F, 
 		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F) ,
 		      const bool make_xy_size_odd = true);
 
-//! use ProjDataInfo to obtain the size information, but use non-default size for x,y
+//! use ProjDataInfo to obtain the size information, but use non-default size for x,y (unless it's -1)
+/*!
+   When xy_size is -1, a default size is found by taking the diameter 
+   of the FOV spanned by the projection data 
+*/
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const float zoom,
 		      const CartesianCoordinate3D<float>& origin, 
