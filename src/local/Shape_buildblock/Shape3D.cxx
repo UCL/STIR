@@ -82,19 +82,14 @@ void
 Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image, 
                           const CartesianCoordinate3D<int>& num_samples) const
 { 
-  // TODO
-  //CartesianCoordinate3D<float> voxel_size= image.get_voxel_size();
+  CartesianCoordinate3D<float> voxel_size= image.get_voxel_size();
   
-  //Point3D pre_voxel_size= image.get_voxel_size();
-  CartesianCoordinate3D<float> pre_voxel_size= image.get_voxel_size();
-  CartesianCoordinate3D<float> voxel_size(pre_voxel_size.x(), pre_voxel_size.y(), pre_voxel_size.y());
-  
-  int min_z = image.get_min_z();
-  int min_y = image.get_min_y();
-  int min_x = image.get_min_x();
-  int max_z = image.get_max_z();
-  int max_y = image.get_max_y();
-  int max_x = image.get_max_x();
+  const int min_z = image.get_min_z();
+  const int min_y = image.get_min_y();
+  const int min_x = image.get_min_x();
+  const int max_z = image.get_max_z();
+  const int max_y = image.get_max_y();
+  const int max_x = image.get_max_x();
 
   CartesianCoordinate3D<int> crude_num_samples(1,1,1);
 
@@ -104,7 +99,7 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image,
       for(int x=min_x;x<=max_x;x++)
 	
       {
-   CartesianCoordinate3D<float> current_point(x,y,z);
+        CartesianCoordinate3D<float> current_point(x,y,z);
 	
 	image[z][y][x] = get_voxel_weight(current_point,voxel_size,crude_num_samples);
       }
