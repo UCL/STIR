@@ -44,19 +44,46 @@ START_NAMESPACE_STIR
 //************** 3D
 void make_fan_sum_data(Array<2,float>& data_fan_sums, const FanProjData& fan_data)
 {
-  for (int ra = fan_data.get_min_index(); ra <= fan_data.get_max_index(); ++ra)
+  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
       data_fan_sums[ra][a] = fan_data.sum(ra,a);
+}
+
+void make_block_data(BlockData3D& block_data, const FanProjData& fan_data)
+{
+  const int num_axial_detectors = fan_data.get_num_rings();
+  const int num_tangential_detectors = fan_data.get_num_detectors_per_ring();
+  const int num_axial_blocks = block_data.get_num_rings();
+  const int num_tangential_blocks = block_data.get_num_detectors_per_ring();
+  const int num_axial_crystals_per_block = num_axial_detectors/num_axial_blocks;
+  assert(num_axial_blocks * num_axial_crystals_per_block == num_axial_detectors);
+  const int num_tangential_crystals_per_block = num_tangential_detectors/num_tangential_blocks;
+  assert(num_tangential_blocks * num_tangential_crystals_per_block == num_tangential_detectors);
+  
+  block_data.fill(0);
+  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+    for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
+      // loop rb from ra to avoid double counting
+      for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
+        {
+          block_data(ra/num_axial_crystals_per_block,a/num_tangential_crystals_per_block,
+                     rb/num_axial_crystals_per_block,b/num_tangential_crystals_per_block) +=
+	  fan_data(ra,a,rb,b);
+        }  
 }
 
 void iterate_efficiencies(DetectorEfficiencies& efficiencies,
 			  const Array<2,float>& data_fan_sums,
 			  const FanProjData& model)
 {
-#if 0
-  const int num_detectors = model.get_num_detectors();
-
-  for (int ra = model.get_min_index(); ra <= model.get_max_index(); ++ra)
+  const int num_detectors_per_ring = model.get_num_detectors_per_ring();
+  
+  assert(model.get_min_ra() == data_fan_sums.get_min_index());
+  assert(model.get_max_ra() == data_fan_sums.get_max_index());
+  assert(model.get_min_a() == data_fan_sums[data_fan_sums.get_min_index()].get_min_index());
+  assert(model.get_max_a() == data_fan_sums[data_fan_sums.get_min_index()].get_max_index());
+  for (int ra = model.get_min_ra(); ra <= model.get_max_ra(); ++ra)
     for (int a = model.get_min_a(); a <= model.get_max_a(); ++a)
     {
       if (data_fan_sums[ra][a] == 0)
@@ -66,36 +93,57 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
      	  float denominator = 0;
            for (int rb = model.get_min_rb(ra); rb <= model.get_max_rb(ra); ++rb)
              for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
-  	       denominator += efficiencies[rb][b%num_detectors]*model(ra,a,rb,b);
+  	       denominator += efficiencies[rb][b%num_detectors_per_ring]*model(ra,a,rb,b);
 	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
 	}
     }
-#else
-  FanProjData estimate = model;
-  Array<2,float> estimate_fan_sums(data_fan_sums.get_index_range());
-  for (int ra = model.get_min_index(); ra <= model.get_max_index(); ++ra)
-    for (int a = model.get_min_a(); a <= model.get_max_a(); ++a)
-      {
-	estimate= model;
-	apply_efficiencies(estimate, efficiencies);
-	make_fan_sum_data(estimate_fan_sums, estimate);
-	efficiencies[ra][a] *= data_fan_sums[ra][a];
-	// TODO this has problems with div through 0
-	efficiencies[ra][a] /= estimate_fan_sums[ra][a];
-      }
-#endif
 }
 
-float KL(const FanProjData& d1, const FanProjData& d2, const float threshold = 0)
+// version without model
+void iterate_efficiencies(DetectorEfficiencies& efficiencies,
+			  const Array<2,float>& data_fan_sums,
+			  const int max_ring_diff, const int half_fan_size)
 {
-  float sum=0;
-  for (int ra = d1.get_min_index(); ra <= d1.get_max_index(); ++ra)
-    for (int a = d1.get_min_a(); a <= d1.get_max_a(); ++a)
-      for (int rb = d1.get_min_rb(ra); rb <= d1.get_max_rb(ra); ++rb)
-        for (int b = d1.get_min_b(a); b <= d1.get_max_b(a); ++b)      
-          sum += KL(d1(ra,a,rb,b), d2(ra,a,rb,b), threshold);
-  return sum;
+  const int num_rings = data_fan_sums.get_length();
+  const int num_detectors_per_ring = data_fan_sums[data_fan_sums.get_min_index()].get_length();
+  for (int ra = data_fan_sums.get_min_index(); ra <= data_fan_sums.get_max_index(); ++ra)
+    for (int a = data_fan_sums[ra].get_min_index(); a <= data_fan_sums[ra].get_max_index(); ++a)
+    {
+      if (data_fan_sums[ra][a] == 0)
+	efficiencies[ra][a] = 0;
+      else
+	{
+     	  float denominator = 0;
+           for (int rb = max(ra-max_ring_diff, 0); rb <= min(ra+max_ring_diff, num_rings-1); ++rb)
+             for (int b = a+num_detectors_per_ring/2-half_fan_size; b <= a+num_detectors_per_ring/2+half_fan_size; ++b)
+  	       denominator += efficiencies[rb][b%num_detectors_per_ring];
+	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
+	}
+    }
 }
+
+void iterate_block_norm(BlockData3D& norm_block_data,
+		      const BlockData3D& measured_block_data,
+		      const FanProjData& model)
+{
+  make_block_data(norm_block_data, model);
+  //norm_block_data = measured_block_data / norm_block_data;
+  const float threshold = measured_block_data.find_max()/10000.F;
+  for (int ra = norm_block_data.get_min_ra(); ra <= norm_block_data.get_max_ra(); ++ra)
+    for (int a = norm_block_data.get_min_a(); a <= norm_block_data.get_max_a(); ++a)
+      // loop rb from ra to avoid double counting
+      for (int rb = max(ra,norm_block_data.get_min_rb(ra)); rb <= norm_block_data.get_max_rb(ra); ++rb)
+        for (int b = norm_block_data.get_min_b(a); b <= norm_block_data.get_max_b(a); ++b)      
+      {
+	norm_block_data(ra,a,rb,b) =
+	  (measured_block_data(ra,a,rb,b)>=threshold ||
+	   measured_block_data(ra,a,rb,b) < 10000*norm_block_data(ra,a,rb,b))
+	  ? measured_block_data(ra,a,rb,b) / norm_block_data(ra,a,rb,b)
+	  : 0;
+      }
+}
+
+
 
 END_NAMESPACE_STIR
 
@@ -120,107 +168,162 @@ int main(int argc, char **argv)
   const string out_filename_prefix = argv[1];
   const int num_rings = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
-  const int num_detectors = 
+  const int num_detectors_per_ring = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
-  const int num_crystals_per_block = 8;
-  const int num_blocks = num_detectors/num_crystals_per_block;
+  const int num_tangential_crystals_per_block = 8;
+  const int num_tangential_blocks = num_detectors_per_ring/num_tangential_crystals_per_block;
+  const int num_axial_crystals_per_block = num_rings/2;
+  warning("TODO num_axial_crystals_per_block == num_rings/2\n");
+  const int num_axial_blocks = num_rings/num_axial_crystals_per_block;
 
   CPUTimer timer;
   timer.start();
 
   FanProjData model_fan_data;
-  Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors));
-  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors));
-
+  FanProjData fan_data;
+  Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
+  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
+  BlockData3D measured_block_data(num_axial_blocks, num_tangential_blocks,
+                                  num_axial_blocks-1, num_tangential_blocks-1);
+  BlockData3D norm_block_data(num_axial_blocks, num_tangential_blocks,
+                              num_axial_blocks-1, num_tangential_blocks-1);
     {
-      // next could be local if KL is not computed below
-      FanProjData measured_fan_data;
-      float threshold_for_KL;
-      // compute factors dependent on the data
-      {
-	make_fan_data(measured_fan_data, *measured_data);
-	threshold_for_KL = measured_fan_data.find_max()/100000.F;
-	//display(measured_fan_data, "measured data");
-	
-	make_fan_sum_data(data_fan_sums, measured_fan_data);
-	/*{
-	  char *out_filename = new char[20];
-	  sprintf(out_filename, "%s_%d.out", 
-	  "fan", ax_pos_num);
-	  ofstream out(out_filename);
-	  out << data_fan_sums;
-	  delete out_filename;
-	  }
-	*/
-      }
-
-      make_fan_data(model_fan_data, *model_data);
-      //cerr << "model min " << model_fan_data.find_min() << " ,max " << model_fan_data.find_max() << endl; 		   
-      if (do_display)
-	display(model_fan_data, "model");
-#if 0
-      {
-	const string output_file_name = "testfan.s";
-	shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
-	if (!sino_stream->good())
-	  {
-	    error("%s: error opening file %s\n",argv[0],output_file_name.c_str());
-	  }
-  
-	shared_ptr<ProjDataFromStream> out_proj_data_ptr =
-	  new ProjDataFromStream(model_data->get_proj_data_info_ptr()->clone(),sino_stream);
-  
-	write_basic_interfile_PDFS_header(output_file_name, *out_proj_data_ptr);
+    // next could be local if KL is not computed below
+    FanProjData measured_fan_data;
+    float threshold_for_KL;
+    // compute factors dependent on the data
+    {
+      make_fan_data(measured_fan_data, *measured_data);
+      threshold_for_KL = measured_fan_data.find_max()/100000.F;
+      //display(measured_fan_data, "measured data");
       
-	set_fan_data(*out_proj_data_ptr, model_fan_data);
-      }
-#endif
-
-      for (int iter_num = 1; iter_num<=max(num_iterations, 1); ++iter_num)
-	{
-	  if (iter_num== 1)
-	    {
-	      efficiencies.fill(sqrt(data_fan_sums.sum()/model_fan_data.sum()));
-	    }
-	  // efficiencies
-	  {
-	    //fan_data = model_fan_data;
-	    //if (do_display)
-	    //  display(fan_data,  "model");
-	    for (int eff_iter_num = 1; eff_iter_num<=num_eff_iterations; ++eff_iter_num)
-	      {
-		iterate_efficiencies(efficiencies, data_fan_sums, model_fan_data);
-		{
-		  char *out_filename = new char[out_filename_prefix.size() + 30];
-		  sprintf(out_filename, "%s_%s_%d_%d.out", 
-			  out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
-		  ofstream out(out_filename);
-		  out << efficiencies;
-		  delete out_filename;
-		}
-		if (do_KL)
-		  {
-		    FanProjData model_times_norm = model_fan_data;
-		    apply_efficiencies(model_times_norm, efficiencies);
-		    //cerr << "model*norm min " << model_times_norm.find_min() << " ,max " << model_times_norm.find_max() << endl; 
-		    if (do_display)
-		      display( model_times_norm, "model_times_norm");
-
-		    cerr << "KL " << KL(measured_fan_data, model_times_norm, threshold_for_KL) << endl;		  
-		  }
-		if (do_display)		 
-		  {
-		    FanProjData norm = model_fan_data;
-		    norm.fill(1);
-		    apply_efficiencies(norm, efficiencies);
-		    display(norm, "eff norm");
-		  }
-		  
-	    }
-	  }
-	}
+      make_fan_sum_data(data_fan_sums, measured_fan_data);
+      make_block_data(measured_block_data, measured_fan_data);
+      if (do_display)
+        display(measured_block_data, "raw block data from measurements");	
+      
+        /*{
+        char *out_filename = new char[20];
+        sprintf(out_filename, "%s_%d.out", 
+        "fan", ax_pos_num);
+        ofstream out(out_filename);
+        out << data_fan_sums;
+        delete out_filename;
+        }
+      */
     }
-
+    
+    make_fan_data(model_fan_data, *model_data);
+    //cerr << "model min " << model_fan_data.find_min() << " ,max " << model_fan_data.find_max() << endl; 		   
+    if (do_display)
+      display(model_fan_data, "model");
+#if 0
+    {
+      const string output_file_name = "testfan.s";
+      shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
+      if (!sino_stream->good())
+      {
+        error("%s: error opening file %s\n",argv[0],output_file_name.c_str());
+      }
+      
+      shared_ptr<ProjDataFromStream> out_proj_data_ptr =
+        new ProjDataFromStream(model_data->get_proj_data_info_ptr()->clone(),sino_stream);
+      
+      write_basic_interfile_PDFS_header(output_file_name, *out_proj_data_ptr);
+      
+      set_fan_data(*out_proj_data_ptr, model_fan_data);
+    }
+#endif
+    
+    for (int iter_num = 1; iter_num<=max(num_iterations, 1); ++iter_num)
+    {
+      if (iter_num== 1)
+      {
+        efficiencies.fill(sqrt(data_fan_sums.sum()/model_fan_data.sum()));
+        norm_block_data.fill(1);
+      }
+      // efficiencies
+      {
+        fan_data = model_fan_data;
+        //apply_geo_norm(fan_data, norm_geo_data);
+        apply_block_norm(fan_data, norm_block_data);
+        if (do_display)
+          display(fan_data,  "model*geo*block");
+        for (int eff_iter_num = 1; eff_iter_num<=num_eff_iterations; ++eff_iter_num)
+        {
+          iterate_efficiencies(efficiencies, data_fan_sums, fan_data);
+          {
+            char *out_filename = new char[out_filename_prefix.size() + 30];
+            sprintf(out_filename, "%s_%s_%d_%d.out", 
+              out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
+            ofstream out(out_filename);
+            out << efficiencies;
+            delete out_filename;
+          }
+          if (do_KL)
+          {
+            apply_efficiencies(fan_data, efficiencies);
+            //cerr << "model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << endl; 
+            if (do_display)
+              display( fan_data, "model_times_norm");
+            cerr << "KL " << KL(measured_fan_data, fan_data, threshold_for_KL) << endl;
+            // now restore for further iterations
+            fan_data = model_fan_data;
+            //apply_geo_norm(fan_data, norm_geo_data);
+            apply_block_norm(fan_data, norm_block_data);
+          }
+          if (do_display)		 
+          {
+            fan_data.fill(1);
+            apply_efficiencies(fan_data, efficiencies);
+            display(fan_data, "eff norm");
+            // now restore for further iterations
+            fan_data = model_fan_data;
+            //apply_geo_norm(fan_data, norm_geo_data);
+            apply_block_norm(fan_data, norm_block_data);
+          }
+          
+        }
+      } // end efficiencies
+      // block norm
+      {
+        fan_data = model_fan_data;
+        apply_efficiencies(fan_data, efficiencies);
+        //apply_geo_norm(fan_data, norm_geo_data);
+        iterate_block_norm(norm_block_data, measured_block_data, fan_data);
+#if 0
+        { // check 
+          for (int a=0; a<measured_block_data.get_length(); ++a)
+            for (int b=0; b<measured_block_data[0].get_length(); ++b)
+              if (norm_block_data[a][b]==0 && measured_block_data[a][b]!=0)
+                warning("block norm 0 at a=%d b=%d measured value=%g\n",
+                a,b,measured_block_data[a][b]);
+        }
+#endif
+        {
+          char *out_filename = new char[out_filename_prefix.size() + 30];
+          sprintf(out_filename, "%s_%s_%d.out", 
+            out_filename_prefix.c_str(), "block", iter_num);
+          ofstream out(out_filename);
+          out << norm_block_data;
+          delete out_filename;
+        }
+        if (do_KL)
+        {
+          apply_block_norm(fan_data, norm_block_data);
+          cerr << "KL " << KL(measured_fan_data, fan_data, threshold_for_KL) << endl;
+        }
+        if (do_display)		 
+        {
+          fan_data.fill(1);
+          apply_block_norm(fan_data, norm_block_data);
+          display(norm_block_data, "raw block norm");
+          display(fan_data, "block norm");
+        }
+      } // end block
+    
+    }
+  }    
   timer.stop();
   cerr << "CPU time " << timer.value() << " secs" << endl;
   return EXIT_SUCCESS;
