@@ -56,6 +56,7 @@ TESTDIRS:=
 -include local/extra_dirs.mk
 
 LIBDIRS += buildblock recon_buildblock display IO \
+	numerics_buildblock \
 	eval_buildblock Shape_buildblock \
 	listmode_buildblock \
 	iterative/LogLik_buildblock \
