@@ -58,7 +58,8 @@ void
 OSMAPOSLReconstruction::set_defaults()
 {
   LogLikelihoodBasedReconstruction::set_defaults();
-  enforce_initial_positivity = 1;
+  enforce_initial_positivity = true;
+  do_rim_truncation = true;
   // KT 17/08/2000 3 new parameters
   maximum_relative_change = NumericInfo<float>().max_value();
   minimum_relative_change = 0;
@@ -75,8 +76,9 @@ OSMAPOSLReconstruction::initialise_keymap()
   LogLikelihoodBasedReconstruction::initialise_keymap();
   parser.add_start_key("OSMAPOSLParameters");
   parser.add_stop_key("End");
-  
+
   parser.add_key("enforce initial positivity condition",&enforce_initial_positivity);
+  parser.add_key("do_rim_truncation",&do_rim_truncation);
   parser.add_key("inter-update filter subiteration interval",&inter_update_filter_interval);
   //add_key("inter-update filter type", KeyArgument::ASCII, &inter_update_filter_type);
   parser.add_parsing_key("inter-update filter type", &inter_update_filter_ptr);
@@ -93,9 +95,11 @@ void OSMAPOSLReconstruction::ask_parameters()
 
   LogLikelihoodBasedReconstruction::ask_parameters();
 
-  // KT 05/07/2000 made enforce_initial_positivity int
   enforce_initial_positivity=
-    ask("Enforce initial positivity condition?",true) ? 1 : 0;
+    ask("Enforce initial positivity condition?",true);
+
+  do_rim_truncation  =
+    ask("Do rim truncation to curcilar FOV?",true);
 
   inter_update_filter_interval=
     ask_num("Do inter-update filtering at sub-iteration intervals of: ",0, num_subiterations, 0);
@@ -317,10 +321,15 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
     
     if(get_parameters().prior_ptr == 0 || get_parameters().prior_ptr->get_penalisation_factor() == 0)     
     {
-      divide_and_truncate(*multiplicative_update_image_ptr, 
-	*sensitivity_image_ptr, 
-	rim_truncation_image,
-	count);
+      if (do_rim_truncation)
+	divide_and_truncate(*multiplicative_update_image_ptr, 
+			    *sensitivity_image_ptr, 
+			    rim_truncation_image,
+			    count);
+      else
+	divide_array(*multiplicative_update_image_ptr, 
+		     *sensitivity_image_ptr);
+	
     }
     else
     {
@@ -375,10 +384,14 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
 	
       }		
 	
-      divide_and_truncate(*multiplicative_update_image_ptr,  
-	*denominator_ptr, 
-	rim_truncation_image,
-	count);
+      if (do_rim_truncation)
+	divide_and_truncate(*multiplicative_update_image_ptr, 
+			    *denominator_ptr, 
+			    rim_truncation_image,
+			    count);
+      else
+	divide_array(*multiplicative_update_image_ptr, 
+		     *denominator_ptr);
     }
     
     cerr<<"Number of (cancelled) singularities in Sensitivity division: "

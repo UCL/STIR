@@ -15,7 +15,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -92,7 +92,13 @@ public:
   virtual void ask_parameters();
 
   //! determines whether non-positive values in the initial image will be set to small positive ones
-  int enforce_initial_positivity;
+  bool enforce_initial_positivity;
+
+  //! determines wether voxels outside a circular FOV will be set to 0 or not
+  /*! Currently this circular FOV is slightly smaller than the actual image size (1 pixel at each end or so).
+      \deprecated
+  */
+  bool do_rim_truncation;
 
   //! subiteration interval at which to apply inter-update filters 
   int inter_update_filter_interval;
