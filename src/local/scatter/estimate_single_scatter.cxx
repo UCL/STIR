@@ -23,52 +23,77 @@
     Copyright (C) 2004- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <algorithm>  
+//#include <algorithm>  
 #include <string>
-#include "stir/shared_ptr.h" // nedded?
-#include "stir/DiscretisedDensity.h" // nedded?
-#include "stir/DiscretisedDensityOnCartesianGrid.h" // nedded?
+//#include "stir/shared_ptr.h" // 
+//#include "stir/DiscretisedDensity.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
-#include "local/stir/Scatter.h"
-#include "stir/ProjDataInfo.h"
+//#include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInterfile.h"
-#include "stir/ProjData.h"
+//#include "stir/Timer.h"
+//#include "stir/CPUTimer.h"
+#include "local/stir/Scatter.h"
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::cout;
 using std::cerr;
-using std::setw;
+//using std::setw;
 #endif
 
 /***********************************************************/     
+
 int main(int argc, char *argv[])                                  
 {         
   USING_NAMESPACE_STIR
   using namespace std;          //   output_proj_data_filename                                                       
   if (argc< 2 || argc>6)
   {
-    cerr << "Usage:" << argv[0] << " input_image transmission_image"
-		 <<	"proj_data_filename [attenuation_threshold]"
-		 <<	"[maximum_scatter_points][maximum_LoRs]\n"
-	     << "\tattenuation_threshold defaults to 1000\n" 
-         << "\tmaximum_scatter_points defaults to 100\n"  
-         << "\tmaximum_LoRs defaults to 1000\n"  
-         << "returns a sinogram file with the single scatter contribution\n\n";		
+    cerr << "Usage:" << argv[0] << "[input_image]\n"
+		 << "\t[transmission_image]\n"
+		 <<	"\t[proj_data_filename]\n" 
+		 << "\t[attenuation_threshold]\n"
+		 <<	"\t[maximum_scatter_points]\n"
+		 << "\t[maximum_LoRs]\n"
+	     << "\t[attenuation_threshold] defaults to 1000\n" 
+         << "\t[maximum_scatter_points] defaults to 1000\n" ; 
+      // << "\tmaximum_LoRs defaults to 1000\n"           
     return EXIT_FAILURE;            
-  } 
+  }      
   const float attenuation_threshold = argc>=5 ? atoi(argv[4]) : 1000 ;  
   int max_scat_points = argc>=6 ? atoi(argv[5]) : 1000 , 
       maximum_LoRs = argc>=7 ? atoi(argv[6]) : 1000 ;  
-  
+    
   shared_ptr< DiscretisedDensity<3,float> >  
 	  activity_image_sptr= 
   DiscretisedDensity<3,float>::read_from_file(argv[1]), 
       density_image_sptr= 
   DiscretisedDensity<3,float>::read_from_file(argv[2]);
   
+  warning("\nWARNING:\n"
+    "\tattenuation image data are supposed to be in units cm^-1\n"
+    "\tReference: water has mu .096 cm^-1\n" 
+    "\tMax in attenuation image: %g\n" ,
+    density_image_sptr->find_max());
+#ifndef NORESCALE
+    /*
+    cerr << "WARNING: multiplying attenuation image by x-voxel size "
+    << " to correct for scale factor in forward projectors...\n";
+  */
+  // projectors work in pixel units, so convert attenuation data 
+  // from cm^-1 to pixel_units^-1
+  const float rescale = 
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> *>(density_image_sptr.get())->
+    get_grid_spacing()[3]/10;
+#else
+  const float rescale = 
+    10.F;
+#endif
+  *density_image_sptr *= rescale;
+
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
   const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr =
 	  dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(
@@ -87,8 +112,7 @@ int main(int argc, char *argv[])
 	(*density_image_sptr.get());
  
     string output_proj_data_filename;
-    string input_string(argv[1]);
-    
+    string input_string(argv[1]);    
 
 /*    string:: iterator string_iter;
     for(string_iter=input_string.begin(); 
@@ -105,9 +129,12 @@ int main(int argc, char *argv[])
 */
   ProjDataInterfile output_proj_data(proj_data_info_ptr->clone(),
 		                             output_proj_data_filename);
+
+  cout << "\nwriting the single scatter contribution into << output_proj_data_filename <<".s ...\n";		
+
   scatter_viewgram(output_proj_data,
 	  activity_image, density_image,
 	  max_scat_points,attenuation_threshold);        
-   
+     
   return EXIT_SUCCESS;
 }                 
