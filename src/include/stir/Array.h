@@ -12,7 +12,7 @@
 
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup Array 
   \brief defines the Array class for multi-dimensional (numeric) arrays
 
   \author Kris Thielemans (with help from Alexey Zverovich)
@@ -27,7 +27,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/NumericVectorWithOffset.h"
@@ -58,7 +58,7 @@ class FullArrayConstIterator;
 #endif
 
 /*! 
-  \ingroup buildblock
+  \ingroup Array
   \brief This class defines multi-dimensional (numeric) arrays.
 
   This class implements multi-dimensional arrays which can have
@@ -355,7 +355,9 @@ public:
   //! division with an 'elemT'
   inline self operator/ (const elemT a) const;
 
-  //! allow array-style access, read/write
+#endif // boost
+
+    //! allow array-style access, read/write
   inline elemT&	operator[] (int i);
 
   //! array access, read-only
@@ -367,8 +369,7 @@ public:
   //! array access giving its BasicCoordinate, read-only
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
-#endif // boost
-  
+
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
     const ByteOrder byte_order = ByteOrder::native);
@@ -523,7 +524,20 @@ public:
   inline self operator/ (const elemT a) const;
   
 #endif // boost
+
+    //! allow array-style access, read/write
+  inline elemT&	operator[] (int i);
+
+  //! array access, read-only
+  inline const elemT&	operator[] (int i) const;
+    
+  //! allow array-style access giving its BasicCoordinate, read/write  
+  inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
+
+  //! array access giving its BasicCoordinate, read-only
+  inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
+
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
     const ByteOrder byte_order = ByteOrder::native);
@@ -667,6 +681,18 @@ public:
   inline self operator/ (const elemT a) const; 
 
 #endif // boost
+  
+  //! allow array-style access, read/write
+  inline elemT&	operator[] (int i);
+
+  //! array access, read-only
+  inline const elemT&	operator[] (int i) const;
+    
+  //! allow array-style access giving its BasicCoordinate, read/write  
+  inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
+
+  //! array access giving its BasicCoordinate, read-only
+  inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
@@ -831,7 +857,20 @@ public:
     write_data(ostream& s, NumericInfo<elemT2> info2, scaleT& scale,
                const ByteOrder byte_order = ByteOrder::native) const;
 #endif
+
+    //! allow array-style access, read/write
+  inline elemT&	operator[] (int i);
+
+  //! array access, read-only
+  inline const elemT&	operator[] (int i) const;
+    
+  //! allow array-style access giving its BasicCoordinate, read/write  
+  inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
+
+  //! array access giving its BasicCoordinate, read-only
+  inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
+
   //! read data of different type from stream
   void 
     read_data(istream& s, NumericType type, float& scale,
@@ -952,7 +991,20 @@ public:
   inline self operator/ (const elemT a) const;
 
 #endif // boost
+
+    //! allow array-style access, read/write
+  inline elemT&	operator[] (int i);
+
+  //! array access, read-only
+  inline const elemT&	operator[] (int i) const;
+    
+  //! allow array-style access giving its BasicCoordinate, read/write  
+  inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
+
+  //! array access giving its BasicCoordinate, read-only
+  inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
+
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
     const ByteOrder byte_order = ByteOrder::native);
