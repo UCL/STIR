@@ -12,7 +12,7 @@ LIB_DISPLAY= \
 LIB_LOGLIK_BUILDINGBLOCK= \
    ${WORKSPACE}/iterative/LogLik_buildblock/${DEST}libLogLik_buildblock.a
 
-BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
+BB_LIBS = $(LIB_DISPLAY)  $(LIB_RECON_BUILDINGBLOCK) $(LIB_BUILDINGBLOCK)
 
 $(LIB_DISPLAY) : FORCE 
 	cd $(WORKSPACE)/display; mkdir -p $(DEST); $(MAKE) all;
@@ -30,6 +30,7 @@ ${LIB_LOGLIK_BUILDINGBLOCK} : FORCE
 FORCE:
 
 
+# default rule for making an executable
 
 ${DEST}%: ${DEST}%.o $(BB_LIBS)
 	$(CXX) $(CFLAGS)  -o $@ $< $(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
