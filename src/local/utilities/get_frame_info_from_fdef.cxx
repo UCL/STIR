@@ -1,4 +1,22 @@
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+//
+// $Id$
+//
+
+/*!
+  \file
+  \ingroup utilities
+
+  \brief Prints start time and duration of a frame to stdout
+  \author Sanida Mustafovic
+
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/TimeFrameDefinitions.h"
 #include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
