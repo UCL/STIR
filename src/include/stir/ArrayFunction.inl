@@ -157,7 +157,7 @@ in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, Functio
   const int outer_max_index = array.get_max_index();
 
   // construct a vector with a full_iterator for every array[i]
-  VectorWithOffset< typename Array<num_dim-1, elemT>::full_iterator > 
+  VectorWithOffset< Array<num_dim-1, elemT>::full_iterator > 
     full_iterators (outer_min_index, outer_max_index);  
   for (int i=outer_min_index; i<=outer_max_index; ++i)
     full_iterators[i] = array[i].begin_all();
@@ -196,12 +196,12 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array,
   const int out_max_index = out_array.get_max_index();
 
   // construct a vector with a full_iterator for every in_array[i]
-  VectorWithOffset< typename Array<num_dim-1, elemT>::const_full_iterator > 
+  VectorWithOffset< Array<num_dim-1, elemT>::const_full_iterator > 
     in_full_iterators (in_min_index, in_max_index);  
   for (int i=in_min_index; i<=in_max_index; ++i)
     in_full_iterators[i] = in_array[i].begin_all();
   // same for out_array[i]
-  VectorWithOffset< typename Array<num_dim-1, elemT>::full_iterator > 
+  VectorWithOffset<  Array<num_dim-1, elemT>::full_iterator > 
     out_full_iterators (out_min_index, out_max_index);  
   for (int i=out_min_index; i<=out_max_index; ++i)
     out_full_iterators[i] = out_array[i].begin_all();
