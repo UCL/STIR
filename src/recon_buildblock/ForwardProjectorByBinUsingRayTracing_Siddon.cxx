@@ -25,15 +25,23 @@
 /*
   Modification history
 
-  TODOdoc fill in
+  KT 25/11/2003 :
+  - passed normalisation factor such that we don't have to post-multiply
+  - convert Siddon argument to a template argument. This allows the compiler
+    to resolve all if (Siddon==...) statements at compiler time, and hence
+    speeds up the code.
 */
 
-#include <cmath>
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-// KT 20/06/2001 should now work for non-arccorrected data as well
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/round.h"
+#include <math.h>
+#include <algorithm>
+#ifndef STIR_NO_NAMESPACE
+using std::min;
+using std::max;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -46,6 +54,8 @@ START_NAMESPACE_STIR
 
   For historical reasons, 'axial_pos_num' is here called 'ring'. rmin,rmax are
   min_axial_pos_num and max_axial_pos_num.
+
+  See RayTraceVoxelsOnCartesianGrid for a shorter and clearer version of the Siddon algorithm.
   */
 
 
@@ -61,10 +71,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	    const float axial_pos_to_z_offset,
 	    const float norm_factor)
 {
-  float x1, y1, z1, x2, y2, z2, xmin, ymin, zmin,    xmax, ymax, zmax;
-  float           a, a0, axend, ayend, azend, amax;
-  float           TMP, TMP2, X1f, Y1f, Z1f, X2f, Y2f, Z2f;
-  float           Iddx12, Iddy12, Iddz12, d;
+  float           a, a0;
   int             MAXDIM2, X, Y, Z, Q, Zdup, Qdup, k, ix, iy, iz, kmax, ring0;
 
   /*
@@ -103,22 +110,21 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 
   // KT&CL 30/01/98 simplify formulas by not handling s=0 seperately
       // {
-    float R2pix = R*R/d_xy/d_xy;
-    TMP = sqrt(R2pix - s * s);
+  const  float R2pix = R*R/d_xy/d_xy;
+  const float TMP = sqrt(R2pix - s * s);
 //  }
-  x2 = s * cphi - sphi * TMP;
-  x1 = s * cphi + sphi * TMP;
-  y2 = s * sphi + cphi * TMP;
-  y1 = s * sphi - cphi * TMP;
+  const float x2 = s * cphi - sphi * TMP;
+  const float x1 = s * cphi + sphi * TMP;
+  const float y2 = s * sphi + cphi * TMP;
+  const float y1 = s * sphi - cphi * TMP;
 
   // CL&KT 21/12/99 added axial_pos_to_z_offset
-  z1 = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset;//SPAN
+  const float z1 = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset;//SPAN
   // CL&KT 21/12/99 introduced num_planes_per_physical_ring
-  z2 = z1 + num_planes_per_physical_ring * delta;
+  const float z2 = z1 + num_planes_per_physical_ring * delta;
 
 
-  {
-    // KT 16/02/98 made local 
+  // { KT 25/11/2003 no longer local as we need d12 below
     const float dx12 = x1 - x2;
     const float dy12 = y2 - y1;
     const float dz12 = z2 - z1;
@@ -134,15 +140,11 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
     const float d12 = sqrt((dx12 * dx12 + dy12 * dy12) * d_xy * d_xy +
 	     dz12 * dz12 * d_sl * d_sl) / d_xy * norm_factor;
 #endif
-    // KT 16/02/98 moved slightly up
     // KT 16/02/98 multiply with d12 to get normalisation right from the start
-    // Iddx12 = ((x1 == x2) ? 1000. : 1 / dx12);
-    // Iddy12 = ((y1 == y2) ? 1000. : 1 / dy12);
-    // Iddz12 = ((z1 == z2) ? 1000. : 1 / dz12);
-    Iddx12 = (x1 == x2) ? 1000000.F*norm_factor : d12 / dx12;
-    Iddy12 = (y1 == y2) ? 1000000.F*norm_factor : d12 / dy12;
-    Iddz12 = (z1 == z2) ? 1000000.F*norm_factor : d12 / dz12;
-  }
+    const float Iddx12 = (x1 == x2) ? 1000000.F*d12 : d12 / dx12;
+    const float Iddy12 = (y1 == y2) ? 1000000.F*d12 : d12 / dy12;
+    const float Iddz12 = (z1 == z2) ? 1000000.F*d12 : d12 / dz12;
+    // }
 
    
 
@@ -158,27 +160,27 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   //const int fovradold  = (int) (xdim / 2) - 1;
   //if (Bild.get_x_size()%2==1 && fovradold!=fovrad)
   //  warning("fovrad old %d, new %g\n", fovradold, fovrad);
-  TMP2 = sqrt(fovrad * fovrad - s * s);
-  X2f = s * cphi - sphi * TMP2;
-  X1f = s * cphi + sphi * TMP2;
-  Y2f = s * sphi + cphi * TMP2;
-  Y1f = s * sphi - cphi * TMP2;
+  const float TMP2 = sqrt(fovrad * fovrad - s * s);
+  const float X2f = s * cphi - sphi * TMP2;
+  const float X1f = s * cphi + sphi * TMP2;
+  const float Y2f = s * sphi + cphi * TMP2;
+  const float Y1f = s * sphi - cphi * TMP2;
   // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
-  Z1f = num_planes_per_axial_pos * (rmin + offset) 
+  const float Z1f = num_planes_per_axial_pos * (rmin + offset) 
         + num_planes_per_physical_ring * delta/2 * (1 - TMP2 / TMP) 
 	+ axial_pos_to_z_offset;//SPAN
-  Z2f = num_planes_per_axial_pos * (rmin + offset)
+  const float Z2f = num_planes_per_axial_pos * (rmin + offset)
         + num_planes_per_physical_ring * delta/2 * (1 + TMP2 / TMP) 
 	+ axial_pos_to_z_offset;//SPAN
 
 
   /* intersection points with  intra-voxel planes : */
-  xmin = (int) (floor(X1f + 0.5)) + 0.5;
-  ymin = (int) (floor(Y1f - 0.5)) + 0.5;
-  zmin = (int) (floor(Z1f - 0.5)) + 0.5;
-  xmax = (int) (floor(X2f - 0.5)) + 0.5;
-  ymax = (int) (floor(Y2f + 0.5)) + 0.5;
-  zmax = (int) (floor(Z2f + 0.5)) + 0.5;
+  const float xmin = (int) (floor(X1f + 0.5)) + 0.5;
+  const float ymin = (int) (floor(Y1f - 0.5)) + 0.5;
+  const float zmin = (int) (floor(Z1f - 0.5)) + 0.5;
+  const float xmax = (int) (floor(X2f - 0.5)) + 0.5;
+  const float ymax = (int) (floor(Y2f + 0.5)) + 0.5;
+  const float zmax = (int) (floor(Z2f + 0.5)) + 0.5;
 
 
   /* intersection point of the LOR with the previous xy-plane  (z smaller) : */
@@ -201,10 +203,44 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
     a0 = ay[0];
 
   /* The smallest a?[0] value, gives the end of the alpha-row */
-  // KT 16/02/98 changed 1000->1000000 because of d12, TODO get rid of this
-  axend = (x2 == x1) ? 1000000.F : (x1 - xmax) * Iddx12;
-  ayend = (y2 == y1) ? 1000000.F : (ymax - y1) * Iddy12;
-  azend = (z2 == z1) ? 1000000.F : (zmax - z1) * Iddz12;
+  /* (Note: doc is copied from RayTraceVoxelsOnCartesianGrid. Would need to be adapted a bit)
+
+     Find a?end for the last intersections with the coordinate planes. 
+     amax will then be the smallest of all these a?end.
+
+     If the LOR is parallel to a plane, take care that its a?end is larger than all the others.
+     Note that axend <= d12 (difference.x()+1)/difference.x()
+
+     In fact, we will take a?end slightly smaller than the actual last value (i.e. we multiply
+     with a factor .9999). This is to avoid rounding errors in the loop below. In this loop,
+     we try to detect the end of the LOR by comparing a (which is either ax,ay or az) with
+     aend. With exact arithmetic, a? would have been incremented exactly to 
+       a?_end_actual = a?start + (?max-?end)*inc_?*sign_?, 
+     so we could loop until a==aend_actual. However, because of numerical precision,
+     a? might turn out be a tiny bit smaller then a?_end_actual. So, we set aend a tiny bit 
+     smaller than aend_actual.
+  */
+#if 1
+  const float axend = (x2 == x1) ? 1000000.F : (x1 - xmax) * Iddx12/*.9999F*/;
+  const float ayend = (y2 == y1) ? 1000000.F : (ymax - y1) * Iddy12/*.9999F*/;
+  const float azend = (z2 == z1) ? 1000000.F : (zmax - z1) * Iddz12/*.9999F*/;
+#else
+  const float axend = (x2 == x1) ? d12*1000000.F : (x1 - xmax) * Iddx12/*.9999F*/;
+  const float ayend = (y2 == y1) ? d12*1000000.F : (ymax - y1) * Iddy12/*.9999F*/;
+  const float azend = (z2 == z1) ? d12*1000000.F : (zmax - z1) * Iddz12/*.9999F*/;
+#endif
+#if 0
+  const float amax = min(axend, min(ayend, azend));
+# if 0
+  const float newaxend = (x2 == x1) ? d12*1000000.F : (x1 - xmax) * Iddx12/*.9999F*/;
+  const float newayend = (y2 == y1) ? d12*1000000.F : (ymax - y1) * Iddy12/*.9999F*/;
+  const float newazend = (z2 == z1) ? d12*1000000.F : (zmax - z1) * Iddz12/*.9999F*/;
+  const float newamax = min(newaxend, min(newayend, newazend));
+  if (amax != newamax)
+    cerr << '\n' << amax << ' ' << newamax << ' ' << newamax-amax;
+# endif
+#else
+  float amax;
   if (azend < axend)
     if (azend < ayend)
       amax = azend;
@@ -214,7 +250,12 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
     amax = axend;
   else
     amax = ayend;
-
+# if 0
+  const float newamax = min(axend, min(ayend, azend));
+  if (amax != newamax)
+    cerr << '\n' << amax << ' ' << newamax << ' ' << newamax-amax;
+# endif  
+#endif
   /* Computation of ax[], ay[] und az[] : */
   k = 1;
   kmax =(int) (1 + xmin - xmax);
@@ -289,7 +330,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   while (a < amax) {
     if (ax[ix] < ay[iy])
       if (ax[ix] < az[iz]) {	/* LOR leaves voxel through yz-plane */
-	d = ax[ix] - a;
+	const float d = ax[ix] - a;
 	Zdup = Z;
 	Qdup = Q;
         //CL&KT 21/12/99 used num_planes_per_axial_pos
@@ -335,7 +376,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	a = ax[ix++];
 	X--;
       } else {	/* LOR leaves voxel through xy-plane */
-	d = az[iz] - a;
+	const float d = az[iz] - a;
 	Zdup = Z;
 	Qdup = Q;
         //CL&KT 21/12/99 used num_planes_per_axial_pos
@@ -384,7 +425,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	Q--;
       }
     else if (ay[iy] < az[iz]) {	/* LOR leaves voxel through xz-plane */
-      d = ay[iy] - a;
+      const float d = ay[iy] - a;
       Zdup = Z;
       Qdup = Q;
       //CL&KT 21/12/99 used num_planes_per_axial_pos
@@ -430,7 +471,7 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
       a = ay[iy++];
       Y++;
     } else {/* LOR leaves voxel through xy-plane */
-      d = az[iz] - a;
+      const float d = az[iz] - a;
       Zdup = Z;
       Qdup = Q;
         //CL&KT 21/12/99 used num_planes_per_axial_pos
