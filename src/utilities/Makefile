@@ -20,6 +20,7 @@ SOURCES = manip_image.cxx \
 	correct_projdata.cxx \
 	stir_math.cxx \
 	list_projdata_info.cxx \
+	create_projdata_template.cxx \
 	SSRB.cxx \
 	ecat_swap_corners.cxx \
 	poisson_noise.cxx \
