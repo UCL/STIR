@@ -51,7 +51,7 @@ public:
   virtual void ask_parameters();
 
   //! determines whether non-positive values in the initial image will be set to small positive ones
-  bool enforce_initial_positivity;
+  int enforce_initial_positivity;
 
   //! subiteration interval at which to apply inter-update filters 
   int inter_update_filter_interval;
