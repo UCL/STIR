@@ -177,6 +177,8 @@ endif
 
 .PRECIOUS: $(BB_LIBS)
 
+# 'depend' target is commented out as dependency checking is handled by the 
+# default rules below
 #depend:
 #	@echo \*\*\* Rebuilding dependencies...
 #	makedepend -Y -- $(CFLAGS) -- -fMakefile -p${DEST} $(wildcard *.cxx) 2> /dev/null
@@ -184,7 +186,16 @@ endif
 
 #********* default rules
 
-.SUFFIXES: .c .o .cxx .a .d
+# These are the rules for compiling (linking rules are in Makefile_bblibs).
+
+# There is some complicated trickery to get automatic dependency checking on
+# .h and .inl files. This means that if you change only a .h file, make will 
+# still rebuild all .c and .cxx files that include this .h file (even indirectly).
+
+# Warning: if you change these, you should check display/Makefile where
+# they are substituted by something appropriate for that directory.
+
+.SUFFIXES: .c .o .cxx .a .d 
 
 # To generate dependencies, we use -MM for gcc (or g++) and -M for other compilers
 ifeq ($(CXX),g++)
@@ -226,12 +237,23 @@ ${DEST}%.o: %.c
 	-mkdir -p $(DEST)
 	$(CC) $(CFLAGS) -o $@ -c $< 
 
-else
+else # ADVANCED_DEPENDENCIES==1
 
-# more advanced way for handling mini-Makefiles. See http://make.paulandlesley.org/autodep.html
+# More advanced way for handling mini-Makefiles. 
+# See http://make.paulandlesley.org/autodep.html
+# Main advantages:
+# - No more errors when a .d file exists, but the .h file not anymore.
+# - Slightly faster building (less recursive make calls)
+
+# Modifications by KT:
+# - handle DEST (in definition of df and by replacing the line "cp $(df.d) $(df.P)"
+#   to a sed line that inserts $(DEST) before the name of the .o file
+# - declare a variable dotD2dotP with all the sed stuff to create the .P file.
+#   Note that to get this to work, I had to escape (i.e. put a backslash in front of)
+#  the # sign in Paul's sed pattern. Otherwise, make interpretes it as the start
+# of a comment.
 
 df = $(DEST)$(*F)
-
 
 # alternative choices  for MAKEDEPEND
 #MAKEDEPENDCXX = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
@@ -239,26 +261,25 @@ df = $(DEST)$(*F)
 MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
 MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
 
+dotD2dotP = sed -e 's&\($*\)\.o[ :]*&$(DEST)\1.o &' < $(df).d > $(df).P; \
+	sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
+	rm -f $(df).d
+
 
 ${DEST}%.o : %.cxx
 	@ -mkdir -p $(DEST); 
 	$(MAKEDEPENDCXX);  
-	@ cp $(df).d $(df).P;  \
-	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
-	rm -f $(df).d;
+	$(dotD2dotP);
 	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 ${DEST}%.o : %.c
 	@ -mkdir -p $(DEST); 
-	$(MAKEDEPENDC); 
-	@ cp $(df).d $(df).P; \
-            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
-            rm -f $(df).d;
+	$(MAKEDEPENDC);
+	$(dotD2dotP); 
 	$(CC) $(CFLAGS) -o $@ -c $< 
 
-endif
+endif # end if (ADVANCED_DEPENDENCIES...)
 
 # default rule for making an executable has to be in Makefile_bblibs
 # BB_LIBS and BB_REGISTRIES are defined in Makefile_bblibs
