@@ -284,7 +284,7 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
   {
     
     cerr<<endl<<"Applying inter-update filter"<<endl;
-    parameters.inter_update_filter_ptr->build_and_filter(current_image_estimate); 
+    parameters.inter_update_filter_ptr->apply(current_image_estimate); 
     
   }
   
