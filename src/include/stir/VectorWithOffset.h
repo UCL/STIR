@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup buildblock  
+  \ingroup Array  
   \brief defines the VectorWithOffset class
 
   \author Kris Thielemans
@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -36,7 +36,7 @@ START_NAMESPACE_STIR
 
 
 /*! 
-  \ingroup buildblock
+  \ingroup Array
   \brief A templated class for vectors, but with indices starting not from 0
 
   Elements are guaranteed to be stored contiguously. (Emergency) methods
@@ -45,8 +45,8 @@ START_NAMESPACE_STIR
   \warning This class does not satisfy full Container requirements.
   \warning Current implementation relies on shifting a \c T* outside the range
   of allocated data. This is not guaranteed to be valid by ANSI C++. It is fine
-  however as long as the min_index is negative and such that abs(min_index) is
-  smaller than max_index.
+  however as long as the \c min_index is negative and such that \c abs(min_index) is
+  smaller than \c max_index.
 */
 
 template <class T>

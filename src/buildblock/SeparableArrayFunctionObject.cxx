@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup Array
   \brief Implementations for SeparableArrayFunctionObject
 
   \author Kris Thielemans
@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

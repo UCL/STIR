@@ -3,7 +3,7 @@
 //
 /*! 
   \file
-  \ingroup buildblock
+  \ingroup Array
  
   \brief  This file declares the class IndexRange4D.
 
@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -28,7 +28,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief A convenience class for 4D index ranges
 
   This class is derived from IndexRange<4>. It just provides some 

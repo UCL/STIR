@@ -27,7 +27,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief A convenience class for children of ArrayFunctionObject. It
   implements the 2 argument operator() in terms of the in-place version.
 

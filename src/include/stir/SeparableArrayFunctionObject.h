@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup Array
   \brief Declaration of class SeparableArrayFunctionObject
 
   \author Kris Thielemans
@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -36,7 +36,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief This class implements an \c n -dimensional ArrayFunctionObject whose operation
   is separable.
 

@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -33,7 +33,7 @@ using std::forward_iterator_tag;
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief Class FullArrayIterator implements (forward) iterators that go 
   through all elements of an Array.
 

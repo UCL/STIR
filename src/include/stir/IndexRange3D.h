@@ -6,7 +6,7 @@
 #define __IndexRange3D_H__
 /*! 
   \file
-  \ingroup buildblock
+  \ingroup Array
   
   \brief This file declares the class IndexRange3D.
 
@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -30,7 +30,7 @@ START_NAMESPACE_STIR
 
 
 /*! 
-   \ingroup buildblock
+   \ingroup Array
    \brief a 'convenience' class for 3D index ranges.
    Provides an easier constructor for regular ranges.
 */
