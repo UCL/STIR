@@ -17,8 +17,8 @@
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/listmode/CListModeData.h"
-#include "local/stir/listmode/CListRecord.h"
+#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
