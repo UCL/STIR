@@ -99,7 +99,7 @@ post_processing()
   if (!is_synchronised())
     {
       warning("RigidObject3DMotion object not synchronised.");
-      return false;
+      return true;
     }
   /* complicated way of setting reference motion:
      First try attenuation file. If that fails, try values from 
