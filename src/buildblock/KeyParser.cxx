@@ -330,6 +330,12 @@ KeyParser::add_key(const string& keyword, Array<2,float>* variable)
   }
 
 void
+KeyParser::add_key(const string& keyword, Array<3,float>* variable)
+  {
+    add_key(keyword, KeyArgument::ARRAY3D_OF_FLOATS, variable);
+  }
+
+void
 KeyParser::add_key(const string& keyword, string * variable)
   {
     add_key(keyword, KeyArgument::ASCII, variable);
@@ -641,6 +647,10 @@ Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_wa
       par_array2d_of_floats = Array<2,float>();
       keyword_has_a_value = get_vparam_from_string(par_array2d_of_floats, line) == Succeeded::yes; 
       break;
+    case KeyArgument::ARRAY3D_OF_FLOATS:
+      par_array3d_of_floats = Array<3,float>();
+      keyword_has_a_value = get_vparam_from_string(par_array3d_of_floats, line) == Succeeded::yes; 
+      break;
     default :
       // KT 07/10/2002 now exit with error
       error ("KeyParser internal error: keyword '%s' has unsupported type of parameters\n",
@@ -810,6 +820,12 @@ void KeyParser::set_variable()
 	  {
 	    *reinterpret_cast<Array<2,float>*>(current->p_object_variable) =
 	      par_array2d_of_floats;
+	    break;
+	  }
+	  case KeyArgument::ARRAY3D_OF_FLOATS:
+	  {
+	    *reinterpret_cast<Array<3,float>*>(current->p_object_variable) =
+	      par_array3d_of_floats;
 	    break;
 	  }
 	case KeyArgument::LIST_OF_ASCII :
@@ -1012,8 +1028,10 @@ string KeyParser::parameter_info() const
         s << *reinterpret_cast<DoubleVect*>(i->second.p_object_variable); break;	  	  
       case KeyArgument::LIST_OF_INTS:
         s << *reinterpret_cast<IntVect*>(i->second.p_object_variable); break;	  
-	case KeyArgument::ARRAY2D_OF_FLOATS:
+      case KeyArgument::ARRAY2D_OF_FLOATS:
 	s << *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable); break;
+      case KeyArgument::ARRAY3D_OF_FLOATS:
+	s << *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable); break;
       case KeyArgument::LIST_OF_ASCII:
         s << *reinterpret_cast<vector<string>*>(i->second.p_object_variable); break;	  	  
       default :
