@@ -186,21 +186,18 @@ FBP2DReconstruction::FBP2DReconstruction()
 
 FBP2DReconstruction::
 FBP2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v, 
-		    const double alpha_ramp,
-		    const double fc_ramp,
-		    const int pad_in_s,
-		    const int num_segments_to_combine
+		    const double alpha_ramp_v,
+		    const double fc_ramp_v,
+		    const int pad_in_s_v,
+		    const int num_segments_to_combine_v
 )
-:		    alpha_ramp(alpha_ramp),
- 		    fc_ramp(fc_ramp),
-		    pad_in_s(pad_in_s),
-		    num_segments_to_combine(num_segments_to_combine)
 {
-  // TODO bad to have this repeated from set_defaults()
-  back_projector_sptr =
-    new BackProjectorByBinUsingInterpolation(
-					     /*use_piecewise_linear_interpolation = */true, 
-					     /*use_exact_Jacobian = */ false);
+  set_defaults();
+
+  alpha_ramp = alpha_ramp_v;
+  fc_ramp = fc_ramp_v;
+  pad_in_s = pad_in_s_v;
+  num_segments_to_combine = num_segments_to_combine_v;
   proj_data_ptr = proj_data_ptr_v;
   // have to check here because we're not parsing
   if (post_processing_only_FBP2D_parameters() == true)
