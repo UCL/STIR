@@ -97,6 +97,13 @@ BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_di
     equal(begin(), end(), c.begin());
 }
 
+template <int num_dimensions, typename coordT>
+bool
+BasicCoordinate<num_dimensions, coordT>::operator!=(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  return !(*this==c);
+}
+
 /*
   (numerical) assignments
 */

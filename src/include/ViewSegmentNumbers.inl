@@ -57,4 +57,10 @@ operator==(const ViewSegmentNumbers& other) const
   return (view == other.view) && (segment == other.segment);
 }
 
+bool 
+ViewSegmentNumbers::
+operator!=(const ViewSegmentNumbers& other) const
+{
+  return !(*this == other);
+}
 END_NAMESPACE_TOMO

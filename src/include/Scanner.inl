@@ -16,6 +16,12 @@
 */
 START_NAMESPACE_TOMO
 
+bool 
+Scanner::operator !=(const Scanner& scanner) const
+{
+  return !(*this == scanner);
+}
+
 Scanner::Type
 Scanner::get_type() const
 {return type;}
@@ -38,8 +44,7 @@ Scanner::get_max_num_views() const
 int
 Scanner::get_default_num_arccorrected_bins() const
 {
-  return default_num_arccorrected_bins;
-   
+  return default_num_arccorrected_bins;   
 }
 
 float

@@ -79,6 +79,7 @@ public:
 
   // comparison
   inline bool operator==(const BasicCoordinate& c) const;
+  inline bool operator!=(const BasicCoordinate& c) const;
 
   // access to elements
   inline coordT& operator[](const int d);

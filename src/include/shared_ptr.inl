@@ -116,6 +116,15 @@ operator== (const shared_ptr<T> & cp) const {
   return (ptr == cp.ptr);
 }
 
+template <class T>
+bool  
+shared_ptr<T>::
+operator!= (const shared_ptr<T> & cp) const {
+  return !(*this == cp);
+}
+
+
+
 // KT 10/05/2000 removed as not in boost::shared_ptr
 #if 0
 template <class T>

@@ -54,6 +54,7 @@ public:
 
   //! test for equality
   inline bool operator==(const ViewSegmentNumbers& other) const;
+  inline bool operator!=(const ViewSegmentNumbers& other) const;
 
 private:
   int segment;

@@ -25,4 +25,9 @@ bool NumericType::operator==(NumericType type) const
   return id == type.id; 
 }
 
+bool NumericType::operator!=(NumericType type) const
+{ 
+  return !(*this == type); 
+}
+
 END_NAMESPACE_TOMO

@@ -66,7 +66,9 @@ public:
   //! accumulate voxel's contribution during forward projection 
   inline Bin&  operator+=(const float dx);
   
+  //! comparison operators
   inline bool operator==(const Bin&) const;
+  inline bool operator!=(const Bin&) const;
   
 private :
   // shared_ptr<ProjDataInfo> proj_data_info_ptr; 
@@ -87,4 +89,4 @@ END_NAMESPACE_TOMO
 
 #include "Bin.inl"
 
-#endif __Bin_H__
+#endif //__Bin_H__

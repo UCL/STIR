@@ -135,6 +135,7 @@ public:
 
   //! comparison operator
   inline bool operator==(const ByteOrder order2) const;
+  inline bool operator!=(const ByteOrder order2) const;
 
   //! check if the object refers to the native order.
   inline bool is_native_order() const;

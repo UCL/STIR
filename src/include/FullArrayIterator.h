@@ -73,6 +73,7 @@ public:
 
   //! comparison operator
   inline bool operator==(const FullArrayIterator&) const;
+  inline bool operator!=(const FullArrayIterator&) const;
   
   //! dereferencing operator
   inline reference operator*() const;
