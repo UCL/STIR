@@ -191,9 +191,9 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   // divide 1/sqrt(size/2)
   for (int i=1; i<=size; i++)
   {
-    fft_filter[i] =fft_filter[i]/sqrt(size/2);
-    fft_1[i] =fft_1[i]/sqrt(size/2);
-    fft_filter_denom[i] = fft_filter_denom[i]/sqrt(size/2);
+    fft_filter[i] =fft_filter[i]/sqrt(static_cast<double> (size/2));
+    fft_1[i] =fft_1[i]/sqrt(static_cast<double> (size/2));
+    fft_filter_denom[i] = fft_filter_denom[i]/sqrt(static_cast<double>(size/2));
   }
   
   mulitply_complex_arrays(fft_filter_num,fft_filter,fft_1);
@@ -202,7 +202,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   
   for (int i = div.get_min_index();i<=div.get_max_index();i++)
   {
-    div[i] = div[i]/sqrt(div.get_length()/2);
+    div[i] = div[i]/sqrt(static_cast<double> (div.get_length()/2));
   }
   
   Array<1,float> real_div(1,filter_coefficients_padded.get_length()/2);
