@@ -30,10 +30,10 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc > 6 || argc < 4 )
+  if (argc > 7 || argc < 4 )
     {
       cerr << "Usage:\n"
-	   << argv[0] << " output_filename input_projdata_name span [ do_norm [max_in_segment_num_to_process ]]\n"
+	   << argv[0] << " output_filename input_projdata_name extra_span [ extra_mash [do_norm [max_in_segment_num_to_process ]]]\n"
 	   << "do_norm has to be 1 (normalise the result) or 0\n"
 	   << "max_in_segment_num_to_process defaults to all segments\n";
       exit(EXIT_FAILURE);
@@ -41,15 +41,16 @@ int main(int argc, char **argv)
   const string  output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);
   const int span = atoi(argv[3]);
-
-  const bool do_norm = argc<=4 ? true : atoi(argv[4]) != 0;
-  const int max_segment_num_to_process = argc <=5 ? -1 : atoi(argv[5]);
+  const int num_views_to_combine = argc<=4 ? 1 : atoi(argv[4]);
+  const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
+  const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[5]);
 
   SSRB(output_filename,
        *in_projdata_ptr,
        span,
-       max_segment_num_to_process,
-       do_norm
+       num_views_to_combine,
+       do_norm,
+       max_segment_num_to_process
        );
   return EXIT_SUCCESS;
 }

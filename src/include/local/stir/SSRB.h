@@ -43,15 +43,16 @@ class ProjDataInfo;
   \warning This function can only handle in_proj_data_info where all segments have 
       identical 'num_segments_to_combine'. So it cannot handle standard 
       GE Advance data.
-  \todo get rid of both warnings in the documentation for this function.
+  \todo get rid of both resttrictions flagged as warnings in the documentation for this function.
 */
 ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
+     const int num_views_to_combine = 1,
      const int max_in_segment_num_to_process=-1
      );
 
-//! Perform Single Slice Rebinning and write output ot file
+//! Perform Single Slice Rebinning and write output to file
 /*!
   \param output_filename filename to write output projection data (will be in 
   Interfile format)
@@ -71,8 +72,9 @@ void
 SSRB(const string& output_filename,
      const ProjData& in_projdata,
      const int num_segments_to_combine,
-     const int max_segment_num_to_process = -1,
-     const bool do_normalisation = true
+     const int num_views_to_combine = 1,
+     const bool do_normalisation = true,
+     const int max_segment_num_to_process = -1
      );
 
 //! Perform Single Slice Rebinning and write output to ProjData
