@@ -28,35 +28,7 @@ GRAPHICS=X
 
 #****** find out which system we're on
 
-__TEST_OS = $(shell uname)
-ifeq ($(__TEST_OS),Linux)
-SYSTEM = LINUX
-else
-ifeq ($(__TEST_OS),AIX)
-__TEST_EPX =$(shell csh -f -c "if (-e /epx) echo 1")
-ifeq ($(__TEST_EPX),1)
-SYSTEM = CC
-else
-SYSTEM = AIX
-endif
-else
-ifeq ($(__TEST_OS),CYGWIN_NT-4.0)
-# TODO just check CYGWIN prefix
-SYSTEM = CYGWIN
-else
-ifeq ($(__TEST_OS),SunOS)
-# test if this as the Fujitsu parallel processor
-# TODO
-__TEST_AP = 0# $(shell csh -f -c "if (-e `which aprun`) echo 1")
-ifeq ($(__TEST_AP),1)
-SYSTEM = AP3000
-else
-SYSTEM = SUN
-endif
-endif
-endif
-endif
-endif
+include $(WORKSPACE)/Makefile_common_system_type
 
 #******** type of parallel library
 # PARALIB can be EPX or PVM
@@ -74,29 +46,95 @@ CXX=g++
 CC=gcc
 
 
+#******* compiler and linker extra options
+
+
+#** EXTRA_OPT: for compiler
+# allow the user to get some extra options by using make EXTRA_OPT=bla 
+ifeq ($(CC),gcc)
+EXTRA_OPT =-Wall
+endif
+
+#** EXTRA_LINK_OPT: for linker
+#allow the user to get extra options for link time
+EXTRA_LINK_OPT=
+#** compiler options
+
+#** CURSES: which curses library to use when having GRAPHICS=X
+ifeq ($(SYSTEM),LINUX)
+CURSES=ncurses
+else
+ifeq ($(SYSTEM),CYGWIN)
+CURSES=curses
+else
+CURSES=curses
+endif
+endif
+
+#********  customisation
+# include local configuration file, possibly overriding any of the above
+# use -include to not warn when it does not exist
+
+-include $(WORKSPACE)/Makefile_common.local
+
+
+
+#***********************************************************************
+# from here on, things are noncustomisable anymore 
+# (except by editing this file)
+#***********************************************************************
+
+
+
+
+
+#******* compiler and linker options
+
+ifeq ($(SYSTEM),LINUX)
+# note for gcc 2.95.2:
+# do not use -malign-double as it crashes in iostream stuff
+OPTIM_OPT=-O3  -ffast-math -malign-functions=2 -malign-loops=2 -DNDEBUG
+else
+ifeq ($(SYSTEM),CYGWIN)
+OPTIM_OPT=-O3  -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
+else
+OPTIM_OPT=-O3 -DNDEBUG
+endif
+endif
+
+DEBUG_OPT=-D_DEBUG -g
+
+
+
+ifeq ($(BUILD),debug)
+CFLAGS = $(DEBUG_OPT)  $(EXTRA_OPT)  -I$(INCLUDE_DIR) 
+else # release version
+CFLAGS = $(OPTIM_OPT)  $(EXTRA_OPT)  -I$(INCLUDE_DIR) 
+endif # BUILD ?
+
+
+
+#** LINK_OPT:  add specific libraries and switches depending on platforms
+# possibly this should check on AIX as well
+# if so, we should additionally check on ifeq($(CC),gcc)
+# as -Xlinker is only appropriate for gcc
+ifeq ($(SYSTEM),CC)
+LINK_OPT=-Xlinker -bbigtoc $(EXTRA_LINK_OPT) $(LIBS)
+else
+LINK_OPT=$(EXTRA_LINK_OPT) $(LIBS) 
+endif
+
+
 #******** libraries
 
 #** system libraries
 
 SYS_LIBS = -lm
 
-#** building block libraries
-
-#These libraries will be used as dependencies
-LIB_RECON_BUILDINGBLOCK= \
-   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
-LIB_BUILDINGBLOCK= \
-   ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
-LIB_DISPLAY= \
-   ${WORKSPACE}/display/${DEST}libdisplay.a
-
-BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
-
-
 #** graphics libraries
  
 ifeq "$(GRAPHICS)" "X"
-GRAPH_LIBS = -lcurses -lX11
+GRAPH_LIBS = -l$(CURSES) -lX11 -L /usr/X11/lib -L /usr/X11R6/lib
 else
 ifeq "$(GRAPHICS)" "PGM"
 GRAPH_LIBS =
@@ -110,57 +148,20 @@ endif
 endif
 endif
 
-
 # add any others specific to your system using the SYSTEM macros
 
-#******* compiler and linker options
 
+#********** building block libraries
 
-#** EXTRA_OPT: for compiler
-# allow the user to get some extra options by using make EXTRA_OPT=bla 
-EXTRA_OPT =-Wall
+#These libraries will be used as dependencies
+LIB_RECON_BUILDINGBLOCK= \
+   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
+LIB_BUILDINGBLOCK= \
+   ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
+LIB_DISPLAY= \
+   ${WORKSPACE}/display/${DEST}libdisplay.a
 
-#** EXTRA_LINK_OPT: for linker
-#allow the user to get extra options for link time
-EXTRA_LINK_OPT=
-#** compiler options
-
-ifeq ($(SYSTEM),LINUX)
-# note for gcc 2.95.2:
-# do not use -malign-double as it crashes in iostream stuff
-OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-functions=2 -malign-loops=2 -DNDEBUG
-else
-ifeq ($(SYSTEM),CYGWIN)
-OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
-else
-OPTIM_OPT=-O3 -DNDEBUG
-endif
-endif
-
-ifeq ($(SYSTEM),LINUX)
-# enable -pg to do profiling
-DEBUG_OPT=-D_DEBUG -g -pg
-else
-DEBUG_OPT=-D_DEBUG -g
-endif
-
-# TODO, do not use DEBUG here
-ifeq ($(BUILD),debug)
-DEBUG = $(DEBUG_OPT)  $(EXTRA_OPT) 
-else # release version
-DEBUG = $(OPTIM_OPT)  $(EXTRA_OPT) 
-endif # BUILD ?
-
-CFLAGS= -g $(DEBUG) -I$(INCLUDE_DIR) 
-
-
-#** LINK_OPT:  add specific libraries and switches depending on platforms
-# possibly this should check on AIX as well
-ifeq ($(SYSTEM),CC)
-LINK_OPT=-Xlinker -bbigtoc $(EXTRA_LINK_OPT) $(LIBS)
-else
-LINK_OPT=$(EXTRA_LINK_OPT) $(LIBS) 
-endif
+BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
 
 #******** targets
 
@@ -186,12 +187,11 @@ vpath %.inl = ${INCLUDE_DIR} ${INCLUDE_DIR}/FORE ${INCLUDE_DIR}/OSEM ${INCLUDE_D
 
 .SUFFIXES: .c .o .cxx .a .d
 
-# TODO it's always using -M at the moment, don't know why...
 # To generate dependencies, we use -MM for gcc (or g++) and -M for other compilers
 ifeq ($(CXX),g++)
 MAKE_DEPEND_FLAG=-MM
 else
-ifeq ($(CXX),gcc)
+ifeq ($(CC),gcc)
 MAKE_DEPEND_FLAG=-MM
 else
 MAKE_DEPEND_FLAG=-M
