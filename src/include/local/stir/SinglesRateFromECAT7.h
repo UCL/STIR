@@ -40,13 +40,7 @@ public RegisteredParsingObject<SinglesRatesFromECAT7, SinglesRates>
 { 
 public:
 
- struct sgl_str {
-	  long int  time;
-	  long int  num_sgl;
-	  long int  sgl[126];
- };
-
-  //! Name which will be used when parsing a SinglesRatesFromECAT7 object 
+   //! Name which will be used when parsing a SinglesRatesFromECAT7 object 
   static const char * const registered_name; 
 
   //! Default constructor 
@@ -55,14 +49,11 @@ public:
   //!  The function that reads singles from ECAT7 file
   Array<3,float> read_singles_from_file(const string& ECAT7_filename,
 					const ios::openmode open_mode = ios::in);
-  //! The function that reads singles from *.sgl file 
-  Array<3,float> read_singles_from_sgl_file (const string& filename,
-					     TimeFrameDefinitions& time_def);
   
   //! Given the detection position get the singles rate   
   virtual float get_singles_rate (const DetectionPosition<>& det_pos, 
-				  const float start_time,
-				  const float end_time) const;
+				  const double start_time,
+				  const double end_time) const;
   
   
 private:
@@ -71,12 +62,11 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-  //TODO 
-  int transBlocksPerBucket;
-  int angularCrystalsPerBlock;
-  int axialCrystalsPerBlock;
-  //TimeFrameDefinitions time_def;
-
+  
+  int trans_blocks_per_bucket;
+  int angular_crystals_per_block;
+  int axial_crystals_per_block;
+  
   
 };
 
