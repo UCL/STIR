@@ -53,7 +53,11 @@
    If you need other types, you'll have to recompile display.cxx
    */
 template <class NUMBER, class SCALE, class CHARP>
-extern void display(const Tensor3D<NUMBER>& plane_stack,
+#ifndef __MSL__
+// KT 17/02/98 for some reason CodeWarrior Pro protests to the extern
+extern 
+#endif
+void display(const Tensor3D<NUMBER>& plane_stack,
 		    const VectorWithOffset<SCALE>& scale_factors,
 		    const VectorWithOffset<CHARP>& text,
 		    double maxi = 0, int zoom = 0,
@@ -87,7 +91,10 @@ inline void display(const Tensor2D<NUMBER>& plane,
 		    double maxi = 0, int zoom = 0,
 		    int num_in_window = 0)
 { 
-  Tensor3D<NUMBER> stack(1);
+  // KT 06/02/98 added more size parameters
+  Tensor3D<NUMBER> stack(0,0,
+			 plane.get_min_index2(),plane.get_max_index2(),
+			 plane.get_min_index1(),plane.get_max_index1());
   stack[0] = plane;
   VectorWithOffset<SCALE> scale_factors(1);
   scale_factors[0] = scale_factor;
@@ -105,7 +112,9 @@ inline void display(const Tensor2D<NUMBER>& plane,
 	     double maxi = 0, int zoom = 0,
 	     int num_in_window = 0)
 {
-  display(plane, 0, "", maxi, zoom, num_in_window);
+  // KT 06/02/98 added Real conversion to 0, to avoid calling a new 
+  // template with SCALE=int
+  display(plane, Real(0), "", maxi, zoom, num_in_window);
 }
 
 #endif 
