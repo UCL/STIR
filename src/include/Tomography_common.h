@@ -25,7 +25,7 @@
  and functions in an attempt to smooth out some system dependencies.
  It also defines some functions which are used very often.
 
- Macros and system depedencies:
+ \par Macros and system dependencies:
 
  - macros for namespace support: 
    #defines TOMO_NO_NAMESPACES if the compiler does not support namespaces
@@ -62,18 +62,16 @@
  - #ifdef TOMO_ASSERT, then define our own assert, else include <cassert>
 
 
-Speeding up std::copy
+\par Speeding up std::copy
 
  - overloads of std::copy for built-in types to use memcpy (so it's faster)
 
 
-In addition, the following are defined in the Tomography namespace
+\par Tomography namespace members declared here
   
  - const double _PI
  
- - inline char *strupr(char *a);
-
- - declares error(const char * const format_string, ...)
+ - error(const char * const format_string, ...)
    writes error information a la printf.
 
  - inline template <class NUMBER> NUMBER square(const NUMBER &x)
@@ -356,33 +354,19 @@ END_NAMESPACE_STD
 //*************** 
 START_NAMESPACE_TOMO
 
-//TODO remove
-typedef float Real;
-
-//! \f$\pi\f$
+//! The constant pi to high precision.
 const double _PI = 3.14159265358979323846264338327950288419716939937510;
 
 //! Print error with format string a la \c printf and abort
-void error(char *s, ...);
+void error(const char *const s, ...);
+
+//! Print warning with format string a la \c printf
+void warning(const char *const s, ...);
 
 //! returns the square of a number, templated.
 template <class NUMBER> 
 inline NUMBER square(const NUMBER &x) { return x*x; }
 
-#ifndef _MSC_VER
-
-//! make string uppercase
-inline char *strupr(const char * const str)
-{
-  for (char *a = str; *a; a++)
-  {
-    if ((*a >= 'a')&&(*a <= 'z')) *a += 'A'-'a';
-  };
-  return str;
-}
-#else
-#define strupr _strupr
-#endif
 
 END_NAMESPACE_TOMO
 
