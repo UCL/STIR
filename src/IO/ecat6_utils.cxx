@@ -14,14 +14,13 @@
   $Revision$
   $Date$
 
-  \warning This file relies on preprocessor defines to find out if it 
-  has to byteswap. This needs to be changed. (TODO). It does check this
-  by asserts using ByteOrder. In addition, cti_read_ECAT6_Main_header checks
-  this even when NDEBUG is defined.
+  \warning This file relies on ByteOrderDefine.h to find out if it 
+  has to byteswap. This needs to be changed to use the class ByteOrder. (TODO).
 */
 /*
   Copyright (C) CTI PET Inc.
   Copyright (C) 2000 PARAPET partners
+  Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
   See STIR/LICENSE.txt for details
   */
 
@@ -320,12 +319,12 @@ int cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
     char *bb;
     int status;
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
   if(ByteOrder::get_native_order() != ByteOrder::big_endian)
 #else
   if(ByteOrder::get_native_order() != ByteOrder::little_endian)
 #endif
-    error("Error in File %s: STIRNativeByteOrderIsBigEndian preprocessor define is determined incorrectly. Correct please. \n", __FILE__);
+    error("Error in File %s: STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly. Correct please. \n", __FILE__);
 
     b = (short *) malloc (MatBLKSIZE);
     if (!b) return EXIT_FAILURE;
@@ -359,7 +358,7 @@ int cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
     strncpy (h->facility_name, bb + 356, 20);
     strncpy (h->user_process_code, bb + 462, 10);
 
-#ifdef STIRNativeByteOrderIsBigEndian // we have to swap bytes in order to read ints and floats */
+#if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read ints and floats */
     swab ((char *) b, (char *) b, MatBLKSIZE);
 #endif
     h->sw_version = b [24];
@@ -421,7 +420,7 @@ int cti_read_scan_subheader (FILE *fptr, int blknum, Scan_subheader *h)
 	return (EXIT_FAILURE);
     }
 
-#ifdef STIRNativeByteOrderIsBigEndian // we have to swap bytes in order to read the ints
+#if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read the ints
     swab ((char *) b, (char *) b, MatBLKSIZE);
 #endif
 
@@ -465,7 +464,7 @@ int cti_read_attn_subheader(FILE* fptr, int blknum, Attn_subheader *header)
   err = cti_rblk( fptr, blknum, bufr, 1);
   if (err) return(err);
   
-#ifdef STIRNativeByteOrderIsBigEndian // we have to swap bytes in order to read the ints
+#if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read the ints
   swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
 #endif
   
@@ -493,7 +492,7 @@ int cti_read_norm_subheader(FILE* fptr, int blknum, Norm_subheader *header)
   err = cti_rblk( fptr, blknum, bufr, 1);
   if (err) return(err);
   
-#ifdef STIRNativeByteOrderIsBigEndian // we have to swap bytes in order to read the ints
+#if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read the ints
   swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
 #endif
   
@@ -532,7 +531,7 @@ int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
     bb = (char *) b;
     strncpy (ihead->annotation, bb + 420, 40);
 
-#ifdef STIRNativeByteOrderIsBigEndian // we have to swap bytes in order to read the ints
+#if STIRIsNativeByteOrderBigEndian // we have to swap bytes in order to read the ints
     swab ((char *) b, (char *) b, MatBLKSIZE);
 #endif
 	
@@ -610,7 +609,7 @@ FILE *cti_create (const char *fname, const ECAT6_Main_header *mhead)
     bufr [0] = 31;          // mystery number
     bufr [1] = 2;           // next block
 	
-#ifdef STIRNativeByteOrderIsBigEndian // we must do some swapping about */
+#if STIRIsNativeByteOrderBigEndian // we must do some swapping about */
     swaw ((short *) bufr, (short *) bufr, MatBLKSIZE/2);
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
 #endif
@@ -644,7 +643,7 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
 	return 0;
     }
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
     swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
     swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / 2);
 #endif
@@ -670,14 +669,14 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
 		if (oldsize < nblks) { // delete old entry and create new one
                     dirbufr [i] = 0xFFFFFFFF;
 		    
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 		    swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / sizeof (short));
 		    swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
 #endif
 		    
                     status = cti_wblk (fptr, dirblk, (char *) dirbufr, 1);
 		    
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 		    swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
 		    swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / sizeof (short));
 #endif
@@ -704,7 +703,7 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
 		status = EXIT_FAILURE;     // get out
 		break;
 	    }
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 	    swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
 	    swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / 2);
 #endif
@@ -715,7 +714,7 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
 	    dirbufr [1] = nxtblk;
 	    
                 // do some swapping for good measure
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 	    swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE/2);
 	    swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
 #endif
@@ -740,7 +739,7 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
         dirbufr [0] --;
         dirbufr [3] ++;
 	 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
         swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE/2);
         swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
 #endif
@@ -774,7 +773,7 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
             // read a block and examine the matrix numbers in it
 	status = cti_rblk (fptr, blk, dirbufr, 1);
 	if (status != EXIT_SUCCESS) break;
-#ifdef STIRNativeByteOrderIsBigEndian   // read into byte buffer and swap
+#if STIRIsNativeByteOrderBigEndian   // read into byte buffer and swap
         swab ((char *) dirbufr, (char *) dirbufr, MatBLKSIZE);
         swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / sizeof(short));
 #endif
@@ -815,7 +814,7 @@ int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
     char *dataptr;
     int status;
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
     char *bufr;
 
         // allocate intermediate buffer
@@ -902,7 +901,7 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
     for (int i=0; i<6; i++)
         hostftovaxf (header->filter_params [i], (unsigned short *) &bufr [198+2*i]);
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
 #endif
 
@@ -967,7 +966,7 @@ int cti_write_ECAT6_Main_header (FILE *fptr, const ECAT6_Main_header *header)
     bufr [228] = header->upr_true_thres;
     hostftovaxf (header->collimator, (unsigned short *) &bufr [229]);
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
 #endif
 
@@ -1052,7 +1051,7 @@ int cti_write_scan_subheader (FILE *fptr, int blknum, const Scan_subheader *head
     hostltovaxl (header->frame_duration,(unsigned short *)  &bufr[230]);
     hostftovaxf (header->loss_correction_fctr, (unsigned short *) &bufr[232]);
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
 #endif
 
@@ -1162,7 +1161,7 @@ VAXfloat fl_to_VAXfl(float a) { return a; }
 
 #else
 
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 /* definition for bigendian machines.
    Do swab, swaw first before using this bit field.
 */
@@ -1246,17 +1245,11 @@ VAXfloat fl_to_VAXfl(float a)
 
 float get_vax_float (const unsigned short *bufr, int off)
 {
-#ifdef STIRNativeByteOrderIsBigEndian
-  assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
-#else
-  assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
-#endif
-
 #ifdef VAX
   return *(float *) (&bufr[off]));
 #else
 
-# ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
   short int tmpbufr[2];
   swaw((short int*) &bufr[off],(short int *) tmpbufr, 2);
   return VAXfl_to_fl(*(VAXfloat *) (&tmpbufr));
@@ -1269,15 +1262,10 @@ float get_vax_float (const unsigned short *bufr, int off)
 
 void hostftovaxf (const float in, unsigned short out [2])
 {
-#ifdef STIRNativeByteOrderIsBigEndian
-  assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
-#else
-  assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
-#endif
 
   const VAXfloat tmp = fl_to_VAXfl(in);
 
-#ifdef STIRNativeByteOrderIsBigEndian         
+#if STIRIsNativeByteOrderBigEndian         
   swaw ((short *) &tmp,(short int *) &out[0], 2);
   // swab is necessary by caller
 #else
@@ -1303,7 +1291,7 @@ void hostftovaxf (const float in, unsigned short out [2])
 *******************************************************************************/
 long get_vax_long (const unsigned short *bufr, int off)
 {
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 	return ((bufr [off + 1] << 16) + bufr [off]);
 #else
 	return *(long *) (&bufr[off]);
@@ -1319,7 +1307,7 @@ long get_vax_long (const unsigned short *bufr, int off)
 *******************************************************************************/
 void hostltovaxl (const long in, unsigned short out [2])
 {  
-#ifdef STIRNativeByteOrderIsBigEndian
+#if STIRIsNativeByteOrderBigEndian
 	out [0] = (in & 0x0000FFFF);
 	out [1] = (in & 0xFFFF0000) >> 16;
 #else
