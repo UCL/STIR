@@ -22,6 +22,21 @@
   Copyright (C) 2000 PARAPET partners
   See STIR/LICENSE.txt for details
   */
+
+/* History
+
+  based on files by Larry Byars
+  converted to C++ etc by PARAPET project
+
+  KT 10/11/2000
+  - added support for attenuation files
+  - added support for data types different from 16 bit ints.
+  - added a bit more diagonistics for file IO errors
+
+  KT 11/01/2001 
+  - added cti_read_norm_subheader,get_normheaders and removed get_attndata 
+    as it was identical to get_scandata
+*/
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
@@ -103,27 +118,6 @@ int get_scandata (FILE *fptr, char *scan, ScanInfoRec *scanParams)
       return EXIT_FAILURE;
     return 
       file_data_to_host(scan, scanParams->nblks,scanParams->data_type);
-#if 0
-
-#ifdef _SWAPEM_ // we have to swap bytes in order to read the ints
-        if (scanParams->data_type == matI2Data)
-            swab ((char *) scan, (char *) scan, scanParams->nblks * MatBLKSIZE);
-        else if (scanParams->data_type != matSunShort) {
-            printf("\nget_scandata: unsupported data_type %d\n", 
-                   scanParams->data_type);
-            return(EXIT_FAILURE);
-        }
-#else
-        if (scanParams->data_type == matSunShort)
-            swab ((char *) scan, (char *) scan, scanParams->nblks * MatBLKSIZE);
-        else if (scanParams->data_type != matI2Data) {
-            printf("\nget_scandata: unsupported data_type %d\n", 
-                   scanParams->data_type);
-            return(EXIT_FAILURE);
-        }
-
-#endif
-#endif
 }
 
 
@@ -170,42 +164,51 @@ Using value from subheader\n", mhead->data_type, shead->data_type);
     return EXIT_SUCCESS;
 }
 
-int get_attndata (FILE *fptr, char *attn, ScanInfoRec *attnParams)
+
+
+int get_normheaders (FILE *fptr, long matnum, Main_header *mhead, 
+                     Norm_subheader *shead, ScanInfoRec *normParams)
 {
     int status;
+    MatDir entry;
 
-        // read data from attn file
-    if (!attn) return EXIT_FAILURE;
+        // check the header
+    status = cti_read_main_header (fptr, mhead);
+    if (status != EXIT_SUCCESS) return EXIT_FAILURE;
+    
+    if (mhead->file_type != matNormFile) {
+	printf ("\n- file is not a norm file, type = %d\n", mhead->file_type);
+	dump_main_header (0, mhead);
+	return EXIT_FAILURE;
+    }
 
-    status= cti_rblk(fptr, attnParams->strtblk, (char *) attn, attnParams->nblks);
+        // look up matnum in norm file
+    if (!cti_lookup (fptr, matnum, &entry)) {
+	printf ("\n- specified matrix not in norm file\n");
+	dump_main_header (0, mhead);
+	return EXIT_FAILURE;
+    }
 
-    if (status != EXIT_SUCCESS) 
-      return EXIT_FAILURE;
-    return 
-      file_data_to_host(attn, attnParams->nblks,attnParams->data_type);
-#if 0
+        // read norm subheader
+    status = cti_read_norm_subheader (fptr, entry.strtblk, shead);
+    if (status != EXIT_SUCCESS) {
+	printf ("\n- error reading norm subheader\n");
+	return EXIT_FAILURE;
+    }
 
-#ifdef _SWAPEM_ // we have to swap bytes in order to read the ints
-        if (attnParams->data_type == matI2Data)
-            swab ((char *) attn, (char *) attn, attnParams->nblks * MatBLKSIZE);
-        else if (attnParams->data_type != matSunShort) {
-            printf("\nget_attndata: unsupported data_type %d\n", 
-                   attnParams->data_type);
-            return(EXIT_FAILURE);
-        }
-#else
-        if (attnParams->data_type == matSunShort)
-            swab ((char *) attn, (char *) attn, attnParams->nblks * MatBLKSIZE);
-        else if (attnParams->data_type != matI2Data) {
-            printf("\nget_attndata: unsupported data_type %d\n", 
-                   attnParams->data_type);
-            return(EXIT_FAILURE);
-        }
+    normParams->strtblk = entry.strtblk + 1;
+    normParams->nblks = entry.endblk - entry.strtblk;
+    normParams->nprojs = shead->dimension_1;
+    normParams->nviews = shead->dimension_2;
+    normParams->data_type = shead->data_type;
+    if (shead->data_type != mhead->data_type)
+        printf("\nget_normheader warning: \n\
+data types differ between main header (%d) and subheader (%d)\n\
+Using value from subheader\n", mhead->data_type, shead->data_type);
 
-#endif
-#endif    
     return EXIT_SUCCESS;
 }
+
 
 long cti_numcod (int frame, int plane, int gate, int data, int bed)
 {
@@ -470,6 +473,35 @@ int cti_read_attn_subheader(FILE* fptr, int blknum, Attn_subheader *header)
   header->sample_distance = get_vax_float((unsigned short *)bufr, 105);
   return EXIT_SUCCESS;
 }
+
+
+int cti_read_norm_subheader(FILE* fptr, int blknum, Norm_subheader *header)
+{
+  short int bufr[256];
+  int  err;
+  
+  err = cti_rblk( fptr, blknum, bufr, 1);
+  if (err) return(err);
+  
+#ifdef _SWAPEM_ // we have to swap bytes in order to read the ints
+  swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
+#endif
+  
+  header->data_type = bufr[63];
+  header->dimension_1 = bufr[66];
+  header->dimension_2 = bufr[67];
+  header->scale_factor = get_vax_float((unsigned short *)bufr, 91);
+  header->norm_hour = bufr[93];
+  header->norm_minute = bufr[94];
+  header->norm_second = bufr[95];
+  header->norm_day = bufr[96];
+  header->norm_month = bufr[97];
+  header->norm_year = bufr[98];
+  header->fov_source_width = get_vax_float((unsigned short *)bufr, 99);
+
+  return EXIT_SUCCESS;
+}
+
 int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
 {
     int status;
