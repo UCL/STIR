@@ -25,8 +25,8 @@
   weights
 */
 
-#include "Tomography_common.h"
 #include "linear_regression.h"
+#include "VectorWithOffset.h"
 
 #include <fstream>
 #include <iostream>
