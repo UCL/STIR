@@ -1,5 +1,6 @@
 ROIValues Parameters :=
-
+  ; give the ROI an (optional) name. Defaults to the empty string.              
+  ROI name := some name
   ; see Shape3D hierarchy for possible values of shapes
   ROI Shape type:=ellipsoidal cylinder
      Ellipsoidal Cylinder Parameters:=
@@ -11,6 +12,11 @@ ROIValues Parameters :=
    origin-z (in mm):=152.775
    END:=
 
+  ; if more than 1 ROI is desired, you can uncomment this                              
+  ; next shape := 
+  ; ROI Shape type:=ellipsoid
+  ; etc
+
   ; the next parameters are used to determine if you want 
   ; to subsample the ROI template to get smoother edges
   ; defaults to no subsampling
@@ -18,3 +24,4 @@ ROIValues Parameters :=
   number of samples to take for ROI template-y:=1
   number of samples to take for ROI template-x:=1
 End:=
+
