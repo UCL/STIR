@@ -13,6 +13,7 @@ clean:
 
 # KT 08/02/2002
 # added ProjDataInMemory.cxx
+# KT 07/05/2001 added ArrayFilter1DUsingConvolution.cxx and SeparableConvolutionImageFilter.cxx
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
@@ -48,7 +49,9 @@ SOURCES = \
 	MedianImageFilter3D.cxx \
 	SeparableCartesianMetzImageFilter.cxx \
 	ThresholdMinToSmallPositiveValueImageProcessor.cxx \
-	ChainedImageProcessor.cxx
+	ChainedImageProcessor.cxx \
+	ArrayFilter1DUsingConvolution.cxx \
+	SeparableConvolutionImageFilter.cxx
  
 
 
