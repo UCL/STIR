@@ -178,7 +178,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const bool random, 
 				 const char *argv[]);
 
-void writing_time(const int simulation_time, const int scatt_points_vector_size);
+void writing_time(const double simulation_time, const int scatt_points_vector_size);
 
 
 
