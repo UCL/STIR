@@ -39,7 +39,7 @@ public:
   virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
 
 
-private:
+//private:
 
   void find_ref_pos_from_att_file (float& att_start_time, float& att_end_time, 
 	const float transmission_duration, const string attnuation_filename);
