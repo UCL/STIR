@@ -34,8 +34,8 @@ ECAT6OutputFileFormat::
 ECAT6OutputFileFormat(const NumericType& type, 
                    const ByteOrder& byte_order) 
 {
-  type_of_numbers = type;
-  file_byte_order = byte_order;
+  set_type_of_numbers(type);
+  set_byte_order(byte_order);
 }
 
 void 
@@ -73,20 +73,40 @@ post_processing()
       return true;
     }
 
-  if (file_byte_order != ByteOrder::little_endian)
-  {
-    warning("ECAT6OutputFileFormat: byte_order is currently fixed to little-endian\n");
-    file_byte_order = ByteOrder::little_endian;
-  }
-  const NumericType supported_type_of_numbers = 
+  return false;
+}
+
+NumericType 
+ECAT6OutputFileFormat::
+set_type_of_numbers(const NumericType& new_type, const bool warn)
+{
+ const NumericType supported_type_of_numbers = 
      NumericType("signed integer", 2);
-  if (type_of_numbers != supported_type_of_numbers)
+  if (new_type != supported_type_of_numbers)
   {
-    warning("ECAT6OutputFileFormat: output type of numbers is currently fixed to short (2 byte signed integers)\n");
+    if (warn)
+      warning("ECAT6OutputFileFormat: output type of numbers is currently fixed to short (2 byte signed integers)\n");
     type_of_numbers = supported_type_of_numbers;
   }
+  else
+    type_of_numbers = new_type;
+  return type_of_numbers;
 
-  return false;
+}
+
+ByteOrder 
+ECAT6OutputFileFormat::
+set_byte_order(const ByteOrder& new_byte_order, const bool warn)
+{
+  if (new_byte_order != ByteOrder::little_endian)
+  {
+    if (warn)
+      warning("ECAT6OutputFileFormat: byte_order is currently fixed to little-endian\n");
+    file_byte_order = ByteOrder::little_endian;
+  }
+  else
+    file_byte_order = new_byte_order;
+  return file_byte_order;
 }
 
 Succeeded  

@@ -137,9 +137,31 @@ post_processing()
         return true;
   }
 
+  set_byte_order(file_byte_order, true);
+  set_type_of_numbers(type_of_numbers, true);
+
   return false;
 }
 
+NumericType 
+OutputFileFormat::
+get_type_of_numbers() const
+{ return type_of_numbers; }
+
+ByteOrder 
+OutputFileFormat::
+get_byte_order()
+{ return file_byte_order; }
+
+NumericType 
+OutputFileFormat::
+set_type_of_numbers(const NumericType& new_type, const bool warn)
+{ return type_of_numbers =  new_type; }
+
+ByteOrder 
+OutputFileFormat::
+set_byte_order(const ByteOrder& new_byte_order, const bool warn)
+{ return file_byte_order = new_byte_order; }
 
 Succeeded  
 OutputFileFormat::
