@@ -66,11 +66,9 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
   For the azimuthal angle phi, the following angles are symmetry related for a square grid:
       {phi, 180-phi, 90-phi, 90+phi}.
-      The boolean parameters allow to select if all 4 angles should be considered as related 
-      (\a do_symmetry_90degrees_min_phi=1), or only {phi, 180-phi} 
-      (\a do_symmetry_90degrees_min_phi=0, \a do_symmetry_180degrees_min_phi = 1), or none.
-      The symmetry in phi is automatically reduced for non-square grids or when the number of
-      views is not a multiple of 4.
+  The boolean parameters &quot;do symmetry 90degrees min phi&quot;, &quot;do symmetry 180degrees min phi&quot;
+  allow to select if all 4 angles should be considered as related
+  \see DataSymmetriesForBins_PET_CartesianGrid.
   
   \par Parsing parameters
 
