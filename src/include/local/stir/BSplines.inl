@@ -1,19 +1,8 @@
 //
 // $Id$
 //
-/*!
-  \file 
-  \ingroup numerics_buildblock
-  \brief Implementation of the (cubic) B-Splines Interpolation 
-
-  \author Charalampos Tsoumpas
-  \author Kris Thielemans
-
-  $Date$
-  $Revision$
-*/
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,10 +17,44 @@
 
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file 
+  \ingroup numerics_buildblock
+  \brief Implementation of the (cubic) B-Splines Interpolation 
+
+  \author Charalampos Tsoumpas
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
+*/
 
 using namespace std;
 
 START_NAMESPACE_STIR
+
+template <class T>
+static inline 
+void set_to_zero(T& v)
+{
+	v=0;
+}
+
+template <class T, int num_dimensions>
+static inline 
+void set_to_zero(Array<num_dimensions,T>& v)
+{
+	v.fill(0);
+}
+
+template <class T>
+static inline 
+void set_to_zero(std::vector<T>& v)
+{
+	for (typename std::vector<T>::iterator iter = v.begin(); 
+		iter != v.end(); ++iter)
+		set_to_zero(*iter);
+}
 
 template <typename out_elemT, typename in_elemT>
 BSplines1DRegularGrid<out_elemT,in_elemT>::
@@ -63,20 +86,20 @@ BSplines1DRegularGrid<out_elemT,in_elemT>::
 {}
 
 template <class IterT>
-#if _MSC_VER<=1300
+#if defined(_MSC_VER) && _MSC_VER<=1300
   float
 #else
-  std::iterator_traits<IterT>::value_type
+typename  std::iterator_traits<IterT>::value_type
 #endif
 cplus0(const IterT input_begin_iterator,
 	   const IterT input_end_iterator,
 	   unsigned int Nmax,  double pole, // to be complex as well?
 	   const double precision, const bool periodicity)
 {
-#if _MSC_VER<=1300
+#if defined(_MSC_VER) && _MSC_VER<=1300
   typedef float out_elemT;
 #else
-  typedef std::iterator_traits<IterT>::value_type out_elemT;
+  typedef typename std::iterator_traits<IterT>::value_type out_elemT;
 #endif
 	
 	const int input_size = input_end_iterator - input_begin_iterator;
@@ -105,7 +128,7 @@ BSplines_coef(RandIterOut c_begin_iterator,
 			   IterT input_end_iterator)
 {
 
-#if _MSC_VER<=1300
+#if defined(_MSC_VER) && _MSC_VER<=1300
 	typedef float out_elemT;
 	typedef float in_elemT;
 	//typedef typename _Val_Type(c_begin_iterator) out_elemT;
@@ -123,10 +146,13 @@ BSplines_coef(RandIterOut c_begin_iterator,
 	const int input_size = c_end_iterator-c_begin_iterator ;//-1; //!!!
 
 	typedef std::vector<out_elemT> c_vector_type;
-	c_vector_type cplus(c_end_iterator-c_begin_iterator, out_elemT(0)), 
-		cminus(c_end_iterator-c_begin_iterator, out_elemT(0)), 
+	c_vector_type cplus(c_end_iterator-c_begin_iterator), 
+		cminus(c_end_iterator-c_begin_iterator);
+	std::vector<double>
 		input_factor_for_cminus(1, -z1), pole_for_cplus(1, -z1), pole_for_cminus(1,-z1);
-	std::vector<in_elemT> input_factor_for_cplus(1, (out_elemT)1);
+	set_to_zero(cplus);
+	set_to_zero(cminus);
+	std::vector<double> input_factor_for_cplus(1, (double)1);
 		
 	const int k=2*input_size-3;
 	assert(k>=0);
@@ -138,14 +164,14 @@ BSplines_coef(RandIterOut c_begin_iterator,
 		input_factor_for_cplus.begin(), input_factor_for_cplus.end(),
 		pole_for_cplus.begin(), pole_for_cplus.end(), 1);
 
-	*(cminus.end()-1) = z1*(*(cplus.end()-1) + z1*(*(cplus.end()-2)))/(z1*z1-1);
+	*(cminus.end()-1) = (*(cplus.end()-1) + (*(cplus.end()-2))*z1)*z1/(z1*z1-1);
 	IIR_filter(cminus.rbegin(), cminus.rend(),
 		cplus.rbegin(), cplus.rend(),
 		input_factor_for_cminus.begin(), input_factor_for_cminus.end(),
 		pole_for_cminus.begin(), pole_for_cminus.end(), 1);
 	
 	RandIterOut current_iterator=c_begin_iterator;
-	c_vector_type::const_iterator current_cminus_iterator=cminus.begin();
+	typename c_vector_type::const_iterator current_cminus_iterator=cminus.begin();
 	for(;
          current_iterator!=c_end_iterator &&	current_cminus_iterator!=cminus.end(); 
 		++current_iterator,++current_cminus_iterator)
@@ -154,10 +180,9 @@ BSplines_coef(RandIterOut c_begin_iterator,
 		}	
 }
 
-template <typename out_elemT, typename in_elemT>
-out_elemT 
-BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSplines_weight(const out_elemT abs_relative_position
+template <typename pos_type>
+pos_type 
+BSplines_weight(const pos_type abs_relative_position
 					//, enum enum_spline_level
 					) 
 {
@@ -173,10 +198,9 @@ BSplines_weight(const out_elemT abs_relative_position
 //	-100;
 }
 
-template <typename out_elemT, typename in_elemT>
-out_elemT 
-BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSplines_1st_der_weight(const out_elemT abs_relative_position) 
+template <typename pos_type>
+pos_type 
+BSplines_1st_der_weight(const pos_type abs_relative_position) 
 {
 	if (abs_relative_position>=2)
 		return 0;
@@ -210,18 +234,18 @@ void
 template <typename out_elemT, typename in_elemT>
 out_elemT 
 BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline(const out_elemT relative_position) 
+BSpline(const pos_type relative_position) 
 {	
-	out_elemT BSpline_value=0;
+	out_elemT BSpline_value;
+	set_to_zero(BSpline_value);
 	//assert(relative_position<static_cast<out_elemT>(input_size));
 //		warning("New sampling position out of range");
 	for (int k=(int)relative_position-2; k<(int)(relative_position+3) && k<=input_size; ++k)		
 	{
 		if (k<0) continue;
 		BSpline_value += 
-			BSplines1DRegularGrid<out_elemT,in_elemT>::
-			BSplines_weight(fabs((out_elemT)k-relative_position))* //fabs for double and float
-		BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k];
+			BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k] *
+			BSplines_weight(fabs((pos_type)k-relative_position));
 	}
 	return BSpline_value;
 }
@@ -229,31 +253,31 @@ BSpline(const out_elemT relative_position)
 template <typename out_elemT, typename in_elemT>
 out_elemT 
 BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline_1st_der(const out_elemT relative_position) 
+BSpline_1st_der(const pos_type relative_position) 
 {	
-//	assert(relative_position<static_cast<out_elemT>(input_size));
-	out_elemT BSpline_value=0;
+//	assert(relative_position<static_cast<pos_type>(input_size));
+	out_elemT BSpline_value;
+	set_to_zero(BSpline_value);
 	for (int k=(int)relative_position-2; k<(int)(relative_position+3) && k<=input_size; ++k)		
 	{
 		if (k<0) continue;
 		BSpline_value += 
-			BSplines1DRegularGrid<out_elemT,in_elemT>::
-			BSplines_1st_der_weight(fabs((out_elemT)k-relative_position))* //fabs for double and float
-		BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k];
+			BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k] *
+			BSplines_1st_der_weight(fabs((pos_type)k-relative_position));
 	}
 	return BSpline_value;
 }
 
 template <typename out_elemT, typename in_elemT>
 const out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
-operator() (const out_elemT relative_position) const 
+operator() (const pos_type relative_position) const 
 {
 	return BSplines1DRegularGrid<out_elemT,in_elemT>::
 		BSpline(relative_position);		
 };
 template <typename out_elemT, typename in_elemT>
 out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
-operator() (const out_elemT relative_position)
+operator() (const pos_type relative_position)
 {
 	return BSplines1DRegularGrid<out_elemT,in_elemT>::
 		BSpline(relative_position);		
@@ -264,7 +288,7 @@ const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
 BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
 						RandIterOut output_relative_position_end_iterator)
 {
-	std::vector<out_elemT> output_vector(output_relative_position_end_iterator-
+	std::vector<pos_type> output_vector(output_relative_position_end_iterator-
 		output_relative_position_begin_iterator);	
 	
 	for(RandIterOut current_iterator=output_vector.begin(), 
@@ -279,7 +303,7 @@ BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //
 }
 template <typename out_elemT, typename in_elemT>
 const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline_output_sequence(std::vector<out_elemT> output_relative_position)
+BSpline_output_sequence(std::vector<pos_type> output_relative_position)
 {
 	return BSpline_output_sequence(output_relative_position.begin(),
 						output_relative_position.end());
