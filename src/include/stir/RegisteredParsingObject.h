@@ -113,8 +113,6 @@ public:
   //! Returns a string with all parameters and their values, in a form suitable for parsing again
   inline string parameter_info();
 
-protected:
-#ifdef _MSC_VER
 public:
 #endif
   //! A helper class to allow automatic registration.
