@@ -15,7 +15,7 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  \date   $Date$
   \version $Revision$
 */
 
@@ -114,6 +114,8 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 			 const Viewgram<float>& estimated_projections,
 			 const int rim_truncation_sino,
 			 float* accum);
+
+float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image);
 
 END_NAMESPACE_TOMO
 #endif // __recon_array_functions_h_
