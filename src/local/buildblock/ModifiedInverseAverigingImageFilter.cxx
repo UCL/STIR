@@ -362,12 +362,30 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     {
       all_filter_coefficients[k].grow(in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y());
       for (int j = in_density_cast_0.get_min_y(); j<=in_density_cast_0.get_max_y();j++)      
+      {
         (all_filter_coefficients[k])[j].grow(in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()); 
+    
+        for (int  i = in_density_cast_0.get_min_x(); i<=in_density_cast_0.get_max_x();i++)      
+	{
+	 const float sq_kapas = 1000000;
+	  //VectorWithOffset<float> filter_coefficients_tmp;
+	  //filter_coefficients_tmp.grow(0,0);
+	  //filter_coefficients_tmp[0] =1;
+
+	  //inverse_filter = 
+	    //  ModifiedInverseAverigingArrayFilter<3,elemT>(filter_coefficients,sq_kapas);
+	  all_filter_coefficients[k][j][i] =     
+            new ModifiedInverseAverigingArrayFilter<3,elemT>;
+	  //(inverse_filter);
+	 
+	}
+      }
     }
     
   }
   
-  if ( (count % 5) ==0 || count == 1 ) 
+  
+  if ( (count % 20) ==0  /*|| count == 1 */) 
   {
     
     shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
@@ -455,11 +473,19 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 
  // WARNING - find a way of finding max in the sinogram
   // TODO - include other segments as well
-  const float max_in_viewgram = 33.52;
-    //(proj_data_ptr->get_segment_by_view(0)).find_max();
-  //cerr <<  max_in_viewgram ;
-  //cerr << endl;
-  //33.52F;
+ float max_in_viewgram =0.F;
+  
+  for (int segment_num = 0; segment_num<= 0;
+  segment_num++) 
+  {
+    SegmentByView<float> segment_by_view = 
+      proj_data_ptr->get_segment_by_view(segment_num);
+    const float current_max_in_viewgram = segment_by_view.find_max();
+    if ( current_max_in_viewgram >= max_in_viewgram)
+     max_in_viewgram = current_max_in_viewgram ;
+      else
+      continue;
+  }
   const float threshold = 0.0001F*max_in_viewgram;  
 
   cerr << " THRESHOLD IS" << threshold; 
@@ -533,7 +559,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  // do the calculation of kappa0 here
 	  kappa0_ptr_bck->fill(0); 
 	  (*all_segments_for_kappa0[all_segments.get_min_index()]).fill(0);	    
-	  if (true)//attenuation_proj_data_filename !="1")
+	  if (true) //attenuation_proj_data_filename !="1")
 	  {
 	   
 	    shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
@@ -631,6 +657,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    *output << sq_kapas;
 	    *output <<endl;
 	    
+	    //sq_kapas = 1000000;
 	    inverse_filter = 
 	      ModifiedInverseAverigingArrayFilter<3,elemT>(filter_coefficients,sq_kapas);	  
 	    
