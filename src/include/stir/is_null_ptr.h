@@ -11,7 +11,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -21,26 +21,31 @@
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
-//! a utility function that checks if a shared_ptr is null
+/*! \ingroup buildblock
+  \name testing of (smart) pointers
+  
+  A utility function that checks if an ordinary or smart pointer is null
+  with identical syntax for all types.
+*/
+//@{
 template <typename T>
 bool 
 is_null_ptr(shared_ptr<T> const& sptr)
 { return is_null_ptr(sptr.get()); }
 
 #if 0
-// TODO check before enable
-//! a utility function that checks if an auto_ptr is null
 template <typename T>
 bool 
 is_null_ptr(auto_ptr<T> const& aptr)
 { return is_null_ptr(aptr.get()); }
 #endif
 
-//! a utility function that checks if an ordinary_ptr is null
 template <typename T>
 bool 
 is_null_ptr(T const * const ptr)
 { return ptr==0; }
+
+//@}
 
 END_NAMESPACE_STIR
 
