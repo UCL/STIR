@@ -32,6 +32,11 @@
    call ProjMatrixByBin's new parsing functions
    KT 28/06/02 
    added option to take actual detector boundaries into account
+   KT 25/09/03
+   allow disabling more symmetries
+   allow smaller z- voxel sizes (but z-sampling in the projdata still has to 
+   be an integer multiple of the z-voxel size).
+
  */
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -41,6 +46,7 @@
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/round.h"
+#include "stir/stream.h"
 #include <algorithm>
 #include <math.h>
 
@@ -72,6 +78,9 @@ ProjMatrixByBinUsingRayTracing::initialise_keymap()
   parser.add_key("use actual detector boundaries", &use_actual_detector_boundaries);
   parser.add_key("do_symmetry_90degrees_min_phi", &do_symmetry_90degrees_min_phi);
   parser.add_key("do_symmetry_180degrees_min_phi", &do_symmetry_180degrees_min_phi);
+  parser.add_key("do_symmetry_swap_segment", &do_symmetry_swap_segment);
+  parser.add_key("do_symmetry_swap_s", &do_symmetry_swap_s);
+  parser.add_key("do_symmetry_shift_z", &do_symmetry_shift_z);
   parser.add_stop_key("End Ray Tracing Matrix Parameters");
 }
 
@@ -85,6 +94,9 @@ ProjMatrixByBinUsingRayTracing::set_defaults()
   use_actual_detector_boundaries = false;
   do_symmetry_90degrees_min_phi = true;
   do_symmetry_180degrees_min_phi = true;
+  do_symmetry_swap_segment = true;
+  do_symmetry_swap_s = true;
+  do_symmetry_shift_z = true;
 }
 
 
@@ -133,7 +145,10 @@ set_up(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,
-                                                do_symmetry_180degrees_min_phi);
+                                                do_symmetry_180degrees_min_phi,
+						do_symmetry_swap_segment,
+						do_symmetry_swap_s,
+						do_symmetry_shift_z);
   const float sampling_distance_of_adjacent_LORs_xy =
     proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
   
@@ -188,7 +203,7 @@ set_up(
   it adds two  adjacents z with their half value
   */
 static void 
-add_adjacent_z(ProjMatrixElemsForOneBin& lor);
+add_adjacent_z(ProjMatrixElemsForOneBin& lor, const int num_LORs=2);
 
 /* Complicated business to add the same values at z+1
    while taking care that the (x,y,z) coordinates remain unique in the LOR.
@@ -274,13 +289,26 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
     stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
   
+    // find out in which direction we should do the ray tracing to obtain a sorted lor
+    // we want to go from small z to large z, 
+    // or if z are equal, from small y to large y and so on
+    const bool from_start_to_stop =
+      start_point.z() < stop_point.z() ||
+      (start_point.z() == stop_point.z() &&
+       (start_point.y() < stop_point.y() ||
+	(start_point.y() == stop_point.y() &&
+	 (start_point.x() <= stop_point.x()))));
+
     // do actual ray tracing for this LOR
     
-    RayTraceVoxelsOnCartesianGrid(lor, start_point, stop_point, voxel_size,
+    RayTraceVoxelsOnCartesianGrid(lor, 
+				  from_start_to_stop? start_point : stop_point,
+				  !from_start_to_stop? start_point : stop_point,
+				  voxel_size,
 #ifdef NEWSCALE
-           1.F/num_LORs // normalise to mm
+				  1.F/num_LORs // normalise to mm
 #else
-           1/voxel_size.x()/num_LORs // normalise to some kind of 'pixel units'
+				  1/voxel_size.x()/num_LORs // normalise to some kind of 'pixel units'
 #endif
            );
 
@@ -309,6 +337,9 @@ calculate_proj_matrix_elems_for_one_bin(
      (probably due to different floating point rounding errors), at least
      on Linux on x86.
      A bit of a mistery that.
+
+     TODO this is maybe solved now by having more decent handling of 
+     start and end voxels.
   */
   if (!use_actual_detector_boundaries)
   {
@@ -362,20 +393,46 @@ calculate_proj_matrix_elems_for_one_bin(
     static_cast<int>(ceil(sampling_distance_of_adjacent_LORs_z / voxel_size.z() - 1.E-3));
 
   assert(num_lors_per_axial_pos>0);
-  // code below is currently restricted to 2 LORs
-  assert(num_lors_per_axial_pos<=2);
+  // theta=0 assumes that centre of 1 voxel coincides with centre of bin.
+  // TODO test
+  //if (num_lors_per_axial_pos>1 && tantheta==0 num_lors_per_axial_pos%2==0);
 
   // merging code assumes integer multiple
-  assert(fabs(sampling_distance_of_adjacent_LORs_z 
-              - num_lors_per_axial_pos*voxel_size.z()) <= 1E-4);
+  assert(fabs(sampling_distance_of_adjacent_LORs_z/voxel_size.z()
+              - num_lors_per_axial_pos) <= 1E-4);
 
 
-  // find offset in z, taking into account if there are 1 or 2 LORs
+  // find offset in z, taking into account if there are 1 or more LORs
   // KT 20/06/2001 take origin.z() into account
   // KT 15/05/2002 move +(max_index.z()+min_index.z())/2.F offset here instead of in formulas for Z1f,Z2f
+  /* Here is how we find the offset of the first ray:
+     for only 1 ray, it is simply found by refering to the middle of the image
+     minus the origin.z().
+     For multiple rays, the following reasoning is followed.
+
+     First we look at oblique rays.
+     All rays should be the same distance from eachother, which is
+     dz = sampling_distance_of_adjacent_LORs_z/num_lors_per_axial_pos.
+     Then you have to make sure that the middle of the set of rays for this
+     bin corresponds to the middle of the TOR, i.e. the offset given above for 1 ray.
+     So, we put the rays from 
+     -dz*(num_lors_per_axial_pos-1)/2
+     to
+     +dz*(num_lors_per_axial_pos-1)/2
+
+     Now we look at direct rays (tantheta=0).We have to choose rays which
+     do not go exactly on the edge of 2 planes as this would give unreliable 
+     results due to rounding errors.
+     In addition, we can give a weight to the rays according to how much the 
+     voxel overlaps with the TOR (in axial direction).
+     TODO sort this out for arbitrary origin.z() and adjust code in add_adjacent_z
+  */
   const float offset_in_z = 
     (num_lors_per_axial_pos == 1 || tantheta == 0 ? 
-     0.F : -sampling_distance_of_adjacent_LORs_z/4)
+     0.F :
+     (-sampling_distance_of_adjacent_LORs_z/(2*num_lors_per_axial_pos)*
+      (num_lors_per_axial_pos-1))
+     )
     - origin.z()
     +(max_index.z()+min_index.z())/2.F * voxel_size.z();
 
@@ -422,55 +479,131 @@ calculate_proj_matrix_elems_for_one_bin(
   // now add on other LORs in axial direction
   if ( num_lors_per_axial_pos>1 && lor.size()>0)
   {          
-    assert(num_lors_per_axial_pos==2);
     if (tantheta==0 ) 
-    { 
-      assert(lor.begin()->coord1() == -origin.z()/voxel_size.z());
-      add_adjacent_z(lor);
-    }
+      { 
+	add_adjacent_z(lor, num_lors_per_axial_pos);
+      }
     else
-    { 
-      merge_zplus1(lor);
-    }
-
+      {
+#if 0
+	if (num_lors_per_axial_pos==2)
+	  {	    
+	    merge_zplus1(lor);
+	  }
+	else
+#endif
+	  { 
+	    // make copy of LOR that will be used to add adjacent z
+	    ProjMatrixElemsForOneBin lor_with_next_z = lor;
+	    // reserve enough memory to avoid reallocations
+	    lor.reserve(lor.size()*num_lors_per_axial_pos);
+	    // now add adjacent z
+	    for (int z_index=1; z_index<num_lors_per_axial_pos; z_index+=1)
+	      {
+		// add 1 to each z in the LOR
+		ProjMatrixElemsForOneBin::iterator element_ptr = lor_with_next_z.begin();
+		const ProjMatrixElemsForOneBin::iterator element_end = lor_with_next_z.end();
+		while (element_ptr != element_end)
+		  {
+		    *element_ptr = 
+		      ProjMatrixElemsForOneBin::
+		      value_type(
+				 Coordinate3D<int>(element_ptr->coord1()+1,
+						   element_ptr->coord2(),
+						   element_ptr->coord3()),
+				 element_ptr->get_value());
+		    ++element_ptr;
+		  }
+		// now merge it into the original
+		lor.merge(lor_with_next_z);
+	      }
+	  }
+      }
   } // if( num_lors_per_axial_pos>1)
   
 }
 
 // TODO these currently do NOT follow the requirement that
 // after processing lor.sort() == lor
-
+// assumes that centre of 1 voxel coincides with centre of bin.
 static void 
-add_adjacent_z(ProjMatrixElemsForOneBin& lor)
+add_adjacent_z(ProjMatrixElemsForOneBin& lor, const int num_LORs)
 {
   // KT&SM 15/05/2000 bug fix !
   // first reserve enough memory for the whole vector
   // otherwise the iterators can be invalidated by memory allocation
-  lor.reserve(lor.size() * 3);
+  lor.reserve(lor.size() * (num_LORs+1));
   
   ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+
   ProjMatrixElemsForOneBin::const_iterator element_end = lor.end();
   
   while (element_ptr != element_end)
   {      
-    lor.push_back( 
-      ProjMatrixElemsForOneBin::value_type(
-        Coordinate3D<int>(element_ptr->coord1()+1,element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()/2));		 
-    lor.push_back( 
-      ProjMatrixElemsForOneBin::value_type(
-        Coordinate3D<int>(element_ptr->coord1()-1,element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()/2));
-	   	   
+    if (num_LORs % 2 == 0)
+      {
+	lor.push_back( 
+		      ProjMatrixElemsForOneBin::
+		      value_type(
+				 Coordinate3D<int>(element_ptr->coord1()-(num_LORs/2),element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()/2));
+      }
+    for (int z_index= -(num_LORs/2)+1; z_index<=+(num_LORs/2)-1; ++z_index)
+      {
+	if (z_index==0)
+	  continue; // don't repeat elements which are already there from the start
+	lor.push_back(
+		      ProjMatrixElemsForOneBin::
+		      value_type(
+				 Coordinate3D<int>(element_ptr->coord1()+z_index,element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()));
+      }
+    if (num_LORs % 2 == 0)
+      {
+	lor.push_back( 
+		      ProjMatrixElemsForOneBin::
+		      value_type(
+				 Coordinate3D<int>(element_ptr->coord1()+(num_LORs/2),element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()/2));
+      }
     ++element_ptr;
   }
 }
 
+/*
+  This function add another image row (with z+1) to the LOR, with the
+  same x,y and value.
+  However, it only works properly if the original LOR is such that
+  any voxels with identical x,y but z'-z=1 are adjacent in the LOR.
+  A sufficient condition for this is
+  - the z-coord is in ascending order
+  - only one of x,y,z changes to go to the next voxel
+  (the latter happens presumably for a single ray tracing, but not necessarily
+   in general. Take for instance a TOR wider than the voxel.)
 
+  If the above condition is not satisfied, the current implementation can end
+  up with 1 voxel occuring more than once in the end result.
+  
+  This could easily be solved by checkin gthis at the end (after a sort()).
+  However, as we don't do this yet, we currently no longer call this function.
+*/
 static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
 {
   // first reserve enough memory to keep everything. 
   // Otherwise iterators might be invalidated.
+
   lor.reserve(lor.size()*2);
- 
+
+  cerr << "before merge\n";
+#if 0
+      ProjMatrixElemsForOneBin::const_iterator iter = lor.begin();
+      while (iter!= lor.end())
+	{
+	  std::cerr << iter->get_coords() 
+		    << ':' << iter->get_value()
+		    << '\n';
+	  ++iter;
+	}
+#endif
+
+
   float next_value;
   float current_value = lor.begin()->get_value();
   ProjMatrixElemsForOneBin::const_iterator lor_old_end = lor.end();
@@ -481,13 +614,13 @@ static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
     // save value before we potentially modify it below
     next_value = (lor_iter+1 == lor_old_end) ? 0.F : (lor_iter+1)->get_value();
     // check if we are the end, or the coordinates of the next voxel are
-    // (x,y,z+1)
+    // not (x,y,z+1)
     if ((lor_iter+1 == lor_old_end) ||
       (lor_iter->coord3() != (lor_iter+1)->coord3()) || 
       (lor_iter->coord2() != (lor_iter+1)->coord2()) ||
       (lor_iter->coord1() + 1 != (lor_iter+1)->coord1()))
     {
-      // if not, we can just push_back a new voxel
+      // if so, we can just push_back a new voxel (but LOR won't be sorted though)
       lor.push_back(
          ProjMatrixElemsForOneBin::value_type(
            Coordinate3D<int>(lor_iter->coord1()+1, lor_iter->coord2(), lor_iter->coord3()), 
@@ -500,7 +633,9 @@ static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
     }
     
   }
-  
+  cerr << "after merge\n";  
+  lor.check_state();
+  cerr << "after check_St\n";
 }
 
 END_NAMESPACE_STIR
