@@ -1,7 +1,7 @@
 
 //
 //
-//ConjugateSpaceAlgorithmParameters
+// $Id$
 //
 //
 #include "recon_buildblock/ConjugateSpaceAlgorithmParameters.h"
