@@ -18,8 +18,10 @@
 	  estimate_single_scatter [activity_image]
 	                          [attenuation_image]
 							  [proj_data_filename]
+							  [scatter_viewgram_filename]
 							  [attenuation_threshold]
 							  [maximum_scatter_points]	
+							  [random points]
 	  
 	  Output: Viewgram with name activity_image_maximum_scatter_points
               statistics.txt
@@ -48,24 +50,30 @@ using std::cerr;
 
 /***********************************************************/     
 
-int main(int argc, char *argv[])                                  
+int main(int argc, const char *argv[])                                  
 {         
 	USING_NAMESPACE_STIR
 		using namespace std;
-	if (argc< 3 || argc>6)
+	if (argc< 3 || argc>7)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[activity_image]\n"
 			<< "\t[attenuation_image]\n"
 			<< "\t[proj_data_filename]\n" 
+			<< "\t[output_proj_data_filename]\n"
 			<< "\t[attenuation_threshold]\n"
 			<< "\t[maximum_scatter_points]\n"
-			<< "\t[attenuation_threshold] defaults to .09 cm^-1\n"
-			<< "\t[maximum_scatter_points] defaults to 1000\n" ;
+			<< "\t[random points]\n" 
+			<< "\t[attenuation_threshold] defaults to .05 cm^-1\n"
+			<< "\t[maximum_scatter_points] defaults to 1000\n" 
+			<< "\t[random points] defaults to true\n";
 		return EXIT_FAILURE;            
 	}      
-	float attenuation_threshold = argc>=5 ? atof(argv[4]) : 0.09 ;
-	const int scatt_points = argc>=6 ? atoi(argv[5]) : 1000 ;
+	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
+	int scatt_points = argc>=7 ? atoi(argv[6]) : 1000 ;
+	bool random = true;
+	if (argc>=8 && atoi(argv[7])!=0)
+		random = false;
 	
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
@@ -105,70 +113,23 @@ int main(int argc, char *argv[])
 		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
 		(*density_image_sptr.get());
 	
-    string output_proj_data_filename;
-    string input_string(argv[1]);
-    replace_extension(input_string,"");
-	
-	if (argc>=6)
-	{
-		string scatt_points_string(argv[5]);             
-		output_proj_data_filename =  input_string + '_' +  scatt_points_string ;	
-	}   
-	
+    string output_proj_data_filename(argv[4]);    		
 	ProjDataInterfile output_proj_data(proj_data_info_ptr->clone(),output_proj_data_filename);
 	
 	cout << "\nwriting the single scatter contribution into the file: " 
-		 << output_proj_data_filename <<".s ...\n"
-		 << "and the statistics into the statistics.txt\n";	
-
-	/***************************************/ 
-	/* WRITING THE STATISTIC DATA IN A FILE*/
-    /***************************************/ 
-
-	Bin bin;
-	int axial_bins = 0 ;
-	for (bin.segment_num()=proj_data_info_ptr->get_min_segment_num();
-	bin.segment_num()<=proj_data_info_ptr->get_max_segment_num();
-	++bin.segment_num())	
-		axial_bins += proj_data_info_ptr->get_num_axial_poss(bin.segment_num());	
-    const int total_bins = proj_data_info_ptr->get_num_views() * axial_bins *
-		proj_data_info_ptr->get_num_tangential_poss()	;
+		 << output_proj_data_filename <<".s\n"
+		 << "and the statistics into the statistics.txt\n"
+		 << "***********************************************************\n"
+		 << "The simulation has started...";	
 	
-	cerr << "\n Total bins : " << total_bins << " = " 
-		 << proj_data_info_ptr->get_num_views() 
-		 << " view_bins * " 
-		 << axial_bins << " axial_bins * "
-		 << proj_data_info_ptr->get_num_tangential_poss() 
-		 << " tangential_bins\n"   ;		
-	
-	fstream mystream("statistics.txt", ios::out | ios::app); //output file //
-	if(!mystream)    
-		error("Cannot open text file.\n") ;	              
-	
-	mystream << "\nActivity image: " << argv[1]
-		<< "\nSIZE: " 
-		<< activity_image.get_z_size() << " * " 
-		<< activity_image.get_y_size() << " * " 
-		<< activity_image.get_x_size()
-		<< "\nAttenuation image: " << replace_extension(argv[2],"")
-		<< "\nSIZE: " 
-		<< density_image.get_z_size() << " * "
-		<< density_image.get_y_size() << " * " 
-		<< density_image.get_x_size()
-		<< "\n\nTemplate proj_data: " << replace_extension(argv[3],"")
-		<< "\nTotal bins : " << total_bins << " = " 
-		<< proj_data_info_ptr->get_num_views() 		 
-		<< " view_bins * " 
-		<< axial_bins << " axial_bins * "
-		<< proj_data_info_ptr->get_num_tangential_poss() 
-		<< " tangential_bins\n"  
-		<< "\nOutput name: " << replace_extension(argv[1],"")
-		<< "_" << argv[5]
-	    << "\n\n\t ****************** END ****************\n";
-				
 	scatter_viewgram(output_proj_data,
 		activity_image, density_image,
-		scatt_points,attenuation_threshold);        
-	
+		scatt_points,attenuation_threshold,random);  
+
+	writing_log(activity_image,
+		density_image,
+		proj_data_info_ptr,
+		attenuation_threshold/rescale,
+		scatt_points, random, argv);
 	return EXIT_SUCCESS;
 }                 
