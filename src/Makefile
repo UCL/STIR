@@ -7,11 +7,6 @@
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 #
 # This makefile defines dependencies and rules for the 
-# followin $ Hammersmith Imanet Ltd
-# This file is part of STIR, and is distributed under the 
-# terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
-#
-# This makefile defines dependencies and rules for the 
 # following targets:
 #	how (gives brief usage info)	
 #	all clean lib install install-all uninstall uninstall-all
