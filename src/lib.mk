@@ -14,7 +14,7 @@
 # Result:
 # targets clean_lib_$(dir) build_lib_$(dir)
 # variables $(dir)_LIB_SOURCES, $(dir)_REGISTRY_OBJS (both with $dir)/ prepended)
-#           $(dir)_LIB_OBJS, $(dir)_TEST_EXE_FILENAMES
+#           $(dir)_LIB_OBJS
 
 
 #$(warning including lib.mk from $(dir))
