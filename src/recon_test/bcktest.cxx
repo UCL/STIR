@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -12,14 +12,16 @@
   \author Sanida Mustafovic
   \author PARAPET project
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+//#include "recon_buildblock/ProjMatrixByBin.h"
+#include "recon_buildblock/BackProjectorByBin.h"
 #include "display.h"
 #include "interfile.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
 #include "ProjDataFromStream.h"
 #include "ProjDataInfo.h"
 // for ask_filename...
@@ -45,7 +47,7 @@ using std::endl;
 #endif
 
 
-//USING_NAMESPACE_STD
+
 
 START_NAMESPACE_TOMO
 
@@ -193,13 +195,29 @@ main(int argc, char **argv)
   const ProjDataInfo * proj_data_info_ptr =
     proj_data_ptr->get_proj_data_info_ptr();
   
+  const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,100.F,1.F);
+  int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
+  xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
   VoxelsOnCartesianGrid<float> * vox_image_ptr =
-    new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr);
+    new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr,
+				     zoom,
+				     Coordinate3D<float>(0,0,0),
+				     xy_size);
+  const float z_origin = 
+    ask_num("Shift z-origin (in pixels)", 
+	    -vox_image_ptr->get_length()/2,
+	    vox_image_ptr->get_length()/2,
+             0)
+    *vox_image_ptr->get_voxel_size().z();
+  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
+
   shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
   
-  
-  BackProjectorByBinUsingInterpolation * bck_projector_ptr = 
-    new BackProjectorByBinUsingInterpolation(proj_data_info_ptr->clone(), image_sptr);
+
+  shared_ptr<BackProjectorByBin> back_projector_ptr;
+    BackProjectorByBin::ask_type_and_parameters();
+  back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+			     image_sptr);
  
   do
   {    
@@ -249,11 +267,17 @@ main(int argc, char **argv)
     int start_view = ask_num("Start view", 0, nviews-1, 0);
     int end_view = ask_num("End   view", 0, nviews-1, nviews-1);
     
-    //const int start_tang_pos_num = 
-    //  ask_num("Start tang_pos", proj_data_info_ptr->get_min_tangential_pos_num(), proj_data_info_ptr->get_max_tangential_pos_num(),proj_data_info_ptr->get_min_tangential_pos_num());
+    const int start_tang_pos_num = 
+      ask_num("Start tang_pos", 
+	      proj_data_info_ptr->get_min_tangential_pos_num(), 
+	      proj_data_info_ptr->get_max_tangential_pos_num(),
+	      proj_data_info_ptr->get_min_tangential_pos_num());
     const int end_tang_pos_num = 
-      ask_num("Max  tang_pos", 0, proj_data_info_ptr->get_max_tangential_pos_num(),proj_data_info_ptr->get_max_tangential_pos_num());
-    const int start_tang_pos_num = -end_tang_pos_num;
+      ask_num("End  tang_pos", 
+	      start_tang_pos_num, 
+	      proj_data_info_ptr->get_max_tangential_pos_num(),
+	      proj_data_info_ptr->get_max_tangential_pos_num());
+    //const int start_tang_pos_num = -end_tang_pos_num;
 
     if (!ask("Add this backprojection to image of previous run ?", false))
       image_sptr->fill(0);
@@ -268,7 +292,7 @@ main(int argc, char **argv)
       start_axial_pos_num,end_axial_pos_num,
       start_tang_pos_num,end_tang_pos_num,
       start_view, end_view,
-      bck_projector_ptr,
+      back_projector_ptr.get(),
       fill);  
     
     timer.stop();
@@ -277,7 +301,7 @@ main(int argc, char **argv)
       << ", " << image_sptr->find_max() << endl;
     
     if (disp)
-      display(*image_sptr);
+      display(*image_sptr, image_sptr->find_max());
     
     if (save)
     {
