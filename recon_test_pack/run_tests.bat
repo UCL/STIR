@@ -4,7 +4,7 @@ rem see README.txt
 rem Author: Kris Thielemans
 
 
-echo This script should work with PARAPET software 0.93. If you have
+echo This script should work with PARAPET software 0.94. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 
@@ -26,10 +26,10 @@ set ThereWereErrors=1
 
 echo.
 echo ------------- Running sensitivity ------------- 
-%INSTALL_DIR%sensitivity Utahscat600k_ca_seg4.hs 1> sensitivity.log 2> sensitivity_stderr.log < sensitivity.inp
+%INSTALL_DIR%sensitivity OSMAPOSL_test_for_sensitivity.par 1> sensitivity.log 2> sensitivity_stderr.log < sensitivity.inp
 
 echo ---- Comparing output of sensitivity (should be identical up to tolerance)
-%INSTALL_DIR%compare_image RPTsens_seg4.hv my_RPTsens_seg4.hv
+%INSTALL_DIR%compare_image  RPTsens_seg4.hv my_RPTsens_seg4.hv
 if ERRORLEVEL 1 goto sens_problem
 echo ---- This test seems to be ok !
 goto run_OSEM
