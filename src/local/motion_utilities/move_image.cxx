@@ -184,12 +184,14 @@ post_processing()
       return true;
     }
 
+#if 0
   // TODO move to RigidObject3DMotion
   if (!ro3d_ptr->is_time_offset_set())
     {
       warning("You have to specify a time_offset (or some other way to synchronise the time\n");
       return true;
     }
+#endif
 
   return false;
 }
