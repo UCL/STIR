@@ -27,6 +27,14 @@ class NumericType;
 template <class T> class NumericInfo;
 template <int num_dimensions, class elemT> class Array;
 
+#if defined(_MSC_VER) && _MSC_VER==1200
+#  define __STIR_WORKAROUND_TEMPLATES
+/* A compiler deficiency needs some horrible work-arounds.
+   See write_data.inl for more info.
+*/
+#endif
+
+#ifndef __STIR_WORKAROUND_TEMPLATES
 /*! \ingroup Array
   \brief Write the data of an Array to file.
 
@@ -34,7 +42,7 @@ template <int num_dimensions, class elemT> class Array;
   Hence, this should only used for low-level IO.
 
   \a OStreamT is supposed to be stream or file type (see implementations for 
-  write_data_1d()).
+  detail::write_data_1d()).
 
   If \a can_corrupt_data = \c true, the data in the array can be 
   byte-swapped after writing, and hence should no longer be used.
@@ -42,6 +50,11 @@ template <int num_dimensions, class elemT> class Array;
 
   \warning When an error occurs, the function immediately returns. 
   However, the data might have been partially written to \a s.
+
+  \warning For deficient compilers (e.g. VC 6.0), work-arounds are
+  necessary to get this to compile. In particular, this function
+  is then not templated in \c num_dimensions, but explicitly
+  defined for a few dimensions (see the source).
 */
 template <class OStreamT, int num_dimensions, class elemT>
 inline Succeeded 
@@ -60,6 +73,10 @@ write_data(OStreamT& s, const Array<num_dimensions,elemT>& data,
 	   const ByteOrder, const bool)
 
   \see find_scale_factor() for the meaning of \a scale_factor.
+  \warning For deficient compilers (e.g. VC 6.0), work-arounds are
+  necessary to get this to compile. In particular, this function
+  is then not templated in \c num_dimensions, but explicitly
+  defined for a few dimensions (see the source).
 */
 template <class OStreamT, int num_dimensions, class elemT, class OutputType, class ScaleT>
 inline Succeeded 
@@ -81,6 +98,10 @@ write_data(OStreamT& s, const Array<num_dimensions,elemT>& data,
 	   ScaleT&,
 	   const ByteOrder,
 	   const bool)
+  \warning For deficient compilers (e.g. VC 6.0), work-arounds are
+  necessary to get this to compile. In particular, this function
+  is then not templated in \c num_dimensions, but explicitly
+  defined for a few dimensions (see the source).
 */
 template <class OStreamT, int num_dimensions, class elemT, class OutputType, class ScaleT>
 inline Succeeded 
@@ -99,7 +120,13 @@ write_data_with_fixed_scale_factor(OStreamT& s, const Array<num_dimensions,elemT
 	   const ByteOrder,
 	   const bool)
   The only difference is that the output type is now specified using NumericType.
+
+  \warning For deficient compilers (e.g. VC 6.0), work-arounds are
+  necessary to get this to compile. In particular, this function
+  is then not templated in \c num_dimensions, but explicitly
+  defined for a few dimensions (see the source).
 */
+
 template <class OStreamT, int num_dimensions, class elemT, class ScaleT>
 inline Succeeded 
 write_data(OStreamT& s, 
@@ -107,9 +134,61 @@ write_data(OStreamT& s,
 	   NumericType type, ScaleT& scale,
 	   const ByteOrder byte_order=ByteOrder::native,
 	   const bool can_corrupt_data=false);
+#endif
+
+
+namespace detail {
+/*! \ingroup Array
+  \brief This is an internal function called by \c write_data(). It does the actual writing
+   to \c std::ostream.
+
+  This function does not throw any exceptions. Exceptions thrown by std::ostream::write 
+  are caught.
+ */
+template <class elemT>
+inline Succeeded
+write_data_1d(std::ostream& s, const Array<1, elemT>& data,
+	      const ByteOrder byte_order,
+	      const bool can_corrupt_data);
+/*! \ingroup Array
+  \brief This is an internal function called by \c write_data(). It does the actual writing
+   to \c FILE* suing stdio functions.
+
+  This function does not throw any exceptions. 
+  
+ */
+template <class elemT>
+inline Succeeded
+write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
+	   const ByteOrder byte_order,
+	   const bool can_corrupt_data);
+}
 
 END_NAMESPACE_STIR
 
+#include "stir/write_data_1d.inl"
+#if !defined(__STIR_WORKAROUND_TEMPLATES)
+
 #include "stir/write_data.inl"
+
+#else
+
+#define num_dimensions 1
+#include "stir/write_data.inl"
+#undef num_dimensions
+#define num_dimensions 2
+#include "stir/write_data.inl"
+#undef num_dimensions
+#define num_dimensions 3
+#include "stir/write_data.inl"
+#undef num_dimensions
+//#define num_dimensions 4
+//#include "stir/write_data.inl"
+//#undef num_dimensions
+
+#undef __STIR_WORKAROUND_TEMPLATES
+
+#endif
+
 
 #endif
