@@ -23,6 +23,7 @@ SOURCES = \
 	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
 	ProjMatrixByDensel.cxx \
 	ProjMatrixElemsForOneDensel.cxx \
+	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx
 
 
