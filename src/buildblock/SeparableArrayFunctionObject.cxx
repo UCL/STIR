@@ -52,12 +52,12 @@ do_it(Array<num_dim,elemT>& array) const
 	      iter=all_1d_array_filters.begin();
 	    iter!=all_1d_array_filters.end();
 	    ++iter)
-	assert(iter->is_null());
+	assert(iter->use_count()>0);
 #endif
        in_place_apply_array_functions_on_each_index(array, 
 						    all_1d_array_filters.begin(), 
 						    all_1d_array_filters.end());
-
+    }
 }
 
 template <int num_dim, typename elemT>
@@ -70,7 +70,7 @@ is_trivial() const
         iter!=all_1d_array_filters.end();
 	++iter)
    {
-     if (!iter->is_null() && !(*iter)->is_trivial())
+     if (iter->use_count()>0 && !(*iter)->is_trivial())
        return false;
    }
    return true;
