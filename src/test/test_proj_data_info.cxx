@@ -37,6 +37,7 @@ using std::setw;
 using std::endl;
 using std::min;
 using std::max;
+using std::size_t;
 #endif
 
 START_NAMESPACE_STIR
@@ -174,7 +175,7 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 	    get_all_ring_pairs_for_segment_axial_pos_num(segment_num,
 							 axial_pos_num);
 
-	  check_if_equal(ring_pairs.size(), 1,
+	  check_if_equal(ring_pairs.size(), static_cast<size_t>(1),
 			 "test total number of ring-pairs for 1 segment/ax_pos should be 1 for span=1\n");
 	  check_if_equal(ring1, ring_pairs[0].first,
 			 "test ring1 equal after going to segment/ax_pos and returning (version with all ring_pairs)\n");
