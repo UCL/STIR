@@ -36,6 +36,85 @@ USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT7
 #define STIR_DO_IT(x) out_sh.x =in_sh.x;
 
+void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
+{
+  /*
+	short data_type;
+	short num_dimensions;
+	short x_dimension;
+	short y_dimension;
+	short z_dimension;
+	short align_0;
+	float z_offset;
+	float x_offset;
+	float y_offset;
+	float scale_factor;
+	short image_min;
+	short image_max;
+	float x_pixel_size;
+	float y_pixel_size;
+	float z_pixel_size;
+	short align_1;
+	float x_resolution;
+	float y_resolution;
+	float z_resolution;
+	short align_2;
+	short align_3;
+  */
+  if (out_sh.recon_zoom==0)
+    {
+      warning("Filling in recon_zoom as well\n");
+      STIR_DO_IT(recon_zoom);
+    }
+  else
+    {
+      warning("Keeping recon_zoom\n");
+    }
+
+  STIR_DO_IT(frame_duration);
+  STIR_DO_IT(frame_start_time);
+  STIR_DO_IT(filter_code);
+  STIR_DO_IT(num_r_elements);
+  STIR_DO_IT(num_angles);
+  STIR_DO_IT(z_rotation_angle);
+  STIR_DO_IT(decay_corr_fctr);
+  STIR_DO_IT(processing_code);
+  STIR_DO_IT(gate_duration);
+  STIR_DO_IT(r_wave_offset);
+  STIR_DO_IT(num_accepted_beats);
+  STIR_DO_IT(filter_cutoff_frequency);
+  STIR_DO_IT(filter_resolution);
+  STIR_DO_IT(filter_ramp_slope);
+  STIR_DO_IT(filter_order);
+  STIR_DO_IT(filter_scatter_fraction);
+  STIR_DO_IT(filter_scatter_slope);
+  for (int i=0; i<40; ++i)
+    STIR_DO_IT(annotation[i]);
+  STIR_DO_IT(mt_1_1);
+  STIR_DO_IT(mt_1_2);
+  STIR_DO_IT(mt_1_3);
+  STIR_DO_IT(mt_2_1);
+  STIR_DO_IT(mt_2_2);
+  STIR_DO_IT(mt_2_3);
+  STIR_DO_IT(mt_3_1);
+  STIR_DO_IT(mt_3_2);
+  STIR_DO_IT(mt_3_3);
+  STIR_DO_IT(rfilter_cutoff);
+  STIR_DO_IT(rfilter_resolution);
+  STIR_DO_IT(rfilter_code);
+  STIR_DO_IT(rfilter_order);
+  STIR_DO_IT(zfilter_cutoff);
+  STIR_DO_IT(zfilter_resolution);
+  STIR_DO_IT(zfilter_code);
+  STIR_DO_IT(zfilter_order);
+  STIR_DO_IT(mt_1_4);
+  STIR_DO_IT(mt_2_4);
+  STIR_DO_IT(mt_3_4);
+  STIR_DO_IT(scatter_type);
+  STIR_DO_IT(recon_type);
+  STIR_DO_IT(recon_views);
+}
+
 void copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
 {
   /*
@@ -118,6 +197,12 @@ void copy_subheader(MatrixData * data_out,
            *reinterpret_cast<Scan_subheader *>(data_out->shptr),
            *reinterpret_cast<Scan_subheader *>(data_in->shptr));
 	break;
+    case Normalization:
+	copy_subheader(
+           *reinterpret_cast<Norm_subheader *>(data_out->shptr),
+           *reinterpret_cast<Norm_subheader *>(data_in->shptr));
+	break;
+#endif
     case PetImage:
     case ByteVolume:
     case PetVolume:
@@ -125,12 +210,6 @@ void copy_subheader(MatrixData * data_out,
            *reinterpret_cast<Image_subheader *>(data_out->shptr),
            *reinterpret_cast<Image_subheader *>(data_in->shptr));
 	break;
-    case Normalization:
-	copy_subheader(
-           *reinterpret_cast<Norm_subheader *>(data_out->shptr),
-           *reinterpret_cast<Norm_subheader *>(data_in->shptr));
-	break;
-#endif
     case AttenCor:   		
 	copy_subheader(
            *reinterpret_cast<Attn_subheader *>(data_out->shptr),
