@@ -1,0 +1,7 @@
+Test OutputFileFormat Parameters:=
+output file format type := interfile
+interfile Output File Format Parameters:=
+number format := signed integer
+number_of_bytes_per_pixel:=2
+End Interfile Output File Format Parameters:=
+End:=
