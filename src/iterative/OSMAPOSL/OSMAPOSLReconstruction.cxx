@@ -12,8 +12,8 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 #include "OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -22,8 +22,15 @@
 #include "LogLikBased/common.h"
 #include "tomo/TruncateMinToSmallPositiveValueImageProcessor.h"
 #include "tomo/ChainedImageProcessor.h"
+#include "tomo/Succeeded.h"
+#include "tomo/thresholding.h"
 #include <memory>
 #include <iostream>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
+#include <sstream>
+#endif
 
 #ifndef TOMO_NO_NAMESPACES
 using std::auto_ptr;
@@ -43,7 +50,7 @@ OSMAPOSLReconstruction::
 OSMAPOSLReconstruction(const OSMAPOSLParameters& parameters_v)
 : parameters(parameters_v)
 {
-  cerr<<parameters.parameter_info();
+   cerr<<parameters.parameter_info();
 }
 
 
@@ -52,7 +59,7 @@ OSMAPOSLReconstruction(const string& parameter_filename)
 : parameters(parameter_filename)
 {  
 
-  cerr<<parameters.parameter_info();
+   cerr<<parameters.parameter_info();
 }
 
 string OSMAPOSLReconstruction::method_info() const
@@ -60,13 +67,15 @@ string OSMAPOSLReconstruction::method_info() const
 
   // TODO add prior name?
 
-  // TODO dangerous for out-of-range, but 'old-style' ostrstream seems to need this
-
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[10000];
   ostrstream s(str, 10000);
+#else
+  std::ostringstream s;
+#endif
 
-
-  if(parameters.inter_update_filter_interval>0) s<<"IMF-";
+  if(parameters.inter_update_filter_interval>0) s<<"IUF-";
   if(parameters.num_subsets>1) s<<"OS";
   if (parameters.prior_ptr == 0 || 
       parameters.prior_ptr->get_penalisation_factor() == 0)
@@ -84,6 +93,10 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
 {
   LogLikelihoodBasedReconstruction::recon_set_up(target_image_ptr);
 
+  if (parameters.max_segment_num_to_process==-1)
+    parameters.max_segment_num_to_process =
+      parameters.proj_data_ptr->get_max_segment_num();
+
   if(parameters.enforce_initial_positivity) 
     truncate_min_to_small_positive_value(*target_image_ptr);
 
@@ -91,7 +104,9 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
      parameters.inter_update_filter_ptr != 0)
     {
       cerr<<endl<<"Building inter-update filter kernel"<<endl;
-      parameters.inter_update_filter_ptr->set_up(*target_image_ptr);
+      if (parameters.inter_update_filter_ptr->set_up(*target_image_ptr)
+          == Succeeded::no)
+	error("Error building inter-update filter\n");
 
       // ensure that the result image of the filter is positive
       parameters.inter_update_filter_ptr =
@@ -114,37 +129,6 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
 }
 
 
-
-
-// KT 17/08/2000 limit update, new static function, will be moved somewhere else
-static void
-truncate_min_max(DiscretisedDensity<3,float>& image, 
-                    const float new_min, const float new_max)
-{
-  float current_max = NumericInfo<float>().min_value();
-  float current_min = NumericInfo<float>().max_value();
-
-  for (int c1 = image.get_min_index(); c1 <= image.get_max_index(); ++c1)
-    for (int c2 = image[c1].get_min_index(); c2 <= image[c1].get_max_index(); ++c2)
-      for (int c3 = image[c1][c2].get_min_index(); c3 <= image[c1][c2].get_max_index(); ++c3)
-      {
-         const float current_value = image[c1][c2][c3];
-         if (current_value > current_max)
-           current_max = current_value;
-         if (current_value < current_min)
-           current_min = current_value;
-         if (current_value > new_max)
-           image[c1][c2][c3] = new_max;
-         if (current_value < new_min)
-           image[c1][c2][c3] = new_min;
-      }
-
-  cerr << "Update image old min,max: " 
-       << current_min << ", " << current_max
-       << ", new min,max " 
-       << max(current_min, new_min) << ", " << min(current_max, new_max)
-       << endl;
-}
 
 
 void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate)
@@ -303,10 +287,28 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
   }
   
   if (subiteration_num != 1)
-    truncate_min_max(*multiplicative_update_image_ptr, 
-    static_cast<float>(parameters.minimum_relative_change), 
-    static_cast<float>(parameters.maximum_relative_change));
-  
+    {
+      const float current_min =
+	multiplicative_update_image_ptr->find_min();
+      const float current_max = 
+	multiplicative_update_image_ptr->find_max();
+      const float new_min = 
+	static_cast<float>(parameters.minimum_relative_change);
+      const float new_max = 
+	static_cast<float>(parameters.maximum_relative_change);
+      cerr << "Update image old min,max: " 
+	   << current_min
+	   << ", " 
+	   << current_max
+	   << ", new min,max " 
+	   << max(current_min, new_min) << ", " << min(current_max, new_max)
+	   << endl;
+
+      threshold_upper_lower(multiplicative_update_image_ptr->begin_all(),
+			    multiplicative_update_image_ptr->end_all(), 
+			    new_min, new_max);      
+    }  
+
   current_image_estimate *= *multiplicative_update_image_ptr; 
   
   
