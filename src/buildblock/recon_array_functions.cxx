@@ -34,7 +34,7 @@ using std::endl;
 
 START_NAMESPACE_TOMO
 
-const float ZERO_TOL = 0.000001F;
+const float SMALL_NUM = 0.000001F;
 
 void truncate_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image){
 
@@ -59,13 +59,12 @@ void truncate_min_to_small_positive_value(DiscretisedDensity<3,float>& input_ima
   
   // TODO check what happens with even-sized images (i.e. where is the centre?)
  
-  //const int zm=(zs+ze)/2;
   const int ym=(ys+ye)/2;
   const int xm=(xs+xe)/2;
 
 
-  float small_value= (float) (input_image.find_max()*ZERO_TOL);
-  small_value=(small_value>0.0)?small_value:(float) ZERO_TOL;
+  float small_value=min_positive_value(input_image,rim_truncation_image);
+  small_value=(small_value>0.F)?small_value*SMALL_NUM:SMALL_NUM;
 
   const float truncated_radius = (xe-xs)/2 - rim_truncation_image;
 
@@ -77,8 +76,9 @@ void truncate_min_to_small_positive_value(DiscretisedDensity<3,float>& input_ima
 
 	//MJ 12/104/2000 '<0.0' ---> '<=0.0'and limit to FOV
 	//KT&MJ 23/05/2000 changed comparison with 0 to small_value
+	//MJ 13/07/2000 changed it back, equivalent under new thresholding strategy 
 	if(square(xm-x)+square(ym-y)<=square(truncated_radius) && 
-	   input_image[z][y][x]<small_value)
+	   input_image[z][y][x]<=0.F)
 	  {
 	    if (input_image[z][y][x]<Minneg) Minneg = input_image[z][y][x];
 	    nuneg++;       
@@ -253,7 +253,7 @@ void divide_and_truncate(const int view, // const int view45,
   const int bs=denominator.get_min_tangential_pos_num();
   const int be=denominator.get_max_tangential_pos_num();
 
-  float small_value= (float) numerator.find_max()*ZERO_TOL;
+  float small_value= (float) numerator.find_max()*SMALL_NUM;
   small_value=(small_value>0.0)?small_value:0.0;
 
 
@@ -261,12 +261,12 @@ void divide_and_truncate(const int view, // const int view45,
     for(int i=0;i<=max_index;i++)
       for(int b=bs;b<=be;b++) {
 
-      // MJ 12/04/2000 removed ZERO_TOL and changed other bad truncation rules.
+      // MJ 12/04/2000 removed SMALL_NUM and changed other bad truncation rules.
       /* 	      
-	if(denominator[r][v[i]][b]<=ZERO_TOL ||
+	if(denominator[r][v[i]][b]<=SMALL_NUM ||
 	   numerator[r][v[i]][b]<0.0|| 
 	   b<bs+rim_truncation_sino || b>be-rim_truncation_sino) {
-	  if(numerator[r][v[i]][b]>ZERO_TOL && denominator[r][v[i]][b]<=ZERO_TOL ) count++;
+	  if(numerator[r][v[i]][b]>SMALL_NUM && denominator[r][v[i]][b]<=SMALL_NUM ) count++;
 	  else if( numerator[r][v[i]][b]<0.0) count2++;
 	  numerator[r][v[i]][b]=0.0;
 	}
@@ -315,19 +315,19 @@ void divide_and_truncate(Viewgram<float>& numerator,
   const int be=numerator.get_max_tangential_pos_num();
 
 
-  float small_value= (float) numerator.find_max()*ZERO_TOL;
+  float small_value= (float) numerator.find_max()*SMALL_NUM;
   small_value=(small_value>0.0)?small_value:0.0;
   
   for(int r=rs;r<=re;r++)
     for(int b=bs;b<=be;b++){      
  
-      // MJ 12/04/2000 removed ZERO_TOL and changed other bad truncation rules.
+      // MJ 12/04/2000 removed SMALL_NUM and changed other bad truncation rules.
       /* 
-       if(denominator[r][b]<=ZERO_TOL ||
+       if(denominator[r][b]<=SMALL_NUM ||
 	 numerator[r][b]<0.0 ||
 	 b<bs+rim_truncation_sino ||
 	 b>be-rim_truncation_sino ) {
-	if(numerator[r][b]>ZERO_TOL && denominator[r][b]<=ZERO_TOL ) count++;
+	if(numerator[r][b]>SMALL_NUM && denominator[r][b]<=SMALL_NUM ) count++;
 	else if( numerator[r][b]<0.0) count2++;
 	numerator[r][b]=0.0;
       }
@@ -408,7 +408,7 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
   
   const float truncated_radius = (xe-xs)/2 - rim_truncation;
 
-  float small_value= (float) numerator.find_max()*ZERO_TOL;
+  float small_value= (float) numerator.find_max()*SMALL_NUM;
   small_value=(small_value>0.0)?small_value:0.0;   
 
   for (int z=zs; z<=ze; z++)
@@ -492,11 +492,11 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   const int bs=projection_data.get_min_tangential_pos_num();
   const int be=projection_data.get_max_tangential_pos_num();
 
-   // MJ 12/04/2000 removed ZERO_TOL and changed other bad exception rules.
+   // MJ 12/04/2000 removed SMALL_NUM and changed other bad exception rules.
       /*  
 	  for(int r=rs;r<=re;r++)
 	  for(int b=bs;b<=be;b++)  
-	  if(!(estimated_projections[r][b]<=ZERO_TOL ||
+	  if(!(estimated_projections[r][b]<=SMALL_NUM ||
 	  projection_data[r][b]<0.0 ||
 	  b<bs+rim_truncation_sino ||
 	  b>be-rim_truncation_sino ))
@@ -567,5 +567,66 @@ void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int input_num
 
 
 }
+
+//MJ 13/07/2000 new
+//TODO template? generalize to other Arrays?
+
+float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image)
+{
+
+
+  DiscretisedDensityOnCartesianGrid<3,float>& input_image_cartesian =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(input_image);
+
+  const int zs=input_image_cartesian.get_min_z();
+  const int ys=input_image_cartesian.get_min_y();
+  const int xs=input_image_cartesian.get_min_x(); 
+  
+  const int ze=input_image_cartesian.get_max_z();  
+  const int ye=input_image_cartesian.get_max_y(); 
+  const int xe=input_image_cartesian.get_max_x();
+  
+  const int ym=(ys+ye)/2;
+  const int xm=(xs+xe)/2;
+
+  const float truncated_radius = (xe-xs)/2 - rim_truncation_image;
+
+  float current_estimate=0.F;
+
+  bool found_positive_value=false;
+
+  for (int z=zs; z<=ze; z++)
+    for (int y=ys; y <= ye; y++)
+      for (int x=xs; x<= xe; x++)
+	{
+    
+	  if(square(xm-x)+square(ym-y)<=square(truncated_radius))
+	    {
+
+	      if(found_positive_value)
+		{
+		  if(input_image[z][y][x]>0.F && input_image[z][y][x]<current_estimate)
+		    current_estimate=input_image[z][y][x];
+		}
+
+	      else if (input_image[z][y][x]>0.F)
+		{
+
+		found_positive_value=true;
+		current_estimate=input_image[z][y][x];
+
+		}
+
+	    }
+
+	}
+
+  return current_estimate;
+	
+
+}
+
+
+
 
 END_NAMESPACE_TOMO
