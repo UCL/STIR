@@ -70,8 +70,8 @@ inline float ramp_filter_in_space(const int n,
 }
 
 // KT&CL 03/08/99 insert max value for fc
-RampFilter::RampFilter(float sampledist_v, int length_v , float alpha_v, float fc_v)
-  :Filter1D <float>(length_v), fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)// KT 230899 added F suffix to .5
+RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_v)
+  :Filter1D <float>(length), fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)// KT 230899 added F suffix to .5
 {
 
   start_timers();
@@ -153,7 +153,7 @@ string RampFilter:: parameter_info() const
   std::ostringstream s;
 #endif  
     s << "RampFilter :="
-      << "\nFilter length := "<< length 
+      << "\nFilter length := "<< filter.get_length()
       << "\nCut-off in cycles := "<< fc
       << "\nAlpha parameter := "<<alpha
       << "\nSample dist := "<< sampledist
