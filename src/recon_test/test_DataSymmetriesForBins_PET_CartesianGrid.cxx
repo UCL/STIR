@@ -570,18 +570,40 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
   run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
 
   cerr << "\tTests with shifted origin\n";
-    
   density_sptr->set_origin(image.get_grid_spacing()*
 			   CartesianCoordinate3D<float>(3,0,0));
-
   run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
 
-  cerr << "\tTests with usual z voxel size 3 times smaller\n";
-    
+  const int org_z_length =
+    density_sptr->get_length();
+
+  cerr << "\tTests with non-standard range of planes (larger)\n";    
+  density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+  density_sptr->grow(IndexRange3D(-2, org_z_length+3,
+				  image.get_min_y(), image.get_max_y(),
+				  image.get_min_x(), image.get_max_x()));
+  run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+
+#if 0
+  // this test currently fails with the ray tracing projmatrix 
+  // (but not with the interpolation projmatrix)
+  // TODO check why!
+  if (org_z_length>2)
+    {
+      cerr << "\tTests with non-standard range of planes (smaller)\n";    
+      density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+      density_sptr->resize(IndexRange3D(1, org_z_length-1,
+					image.get_min_y(), image.get_max_y(),
+					image.get_min_x(), image.get_max_x()));
+      run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+    }
+#endif
+
+  cerr << "\tTests with usual z voxel size 3 times smaller\n";    
   density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
   image.set_grid_spacing(image.get_grid_spacing()/
 			 CartesianCoordinate3D<float>(2,1,1));
-  density_sptr->grow(IndexRange3D(0, density_sptr->get_length()*2,
+  density_sptr->grow(IndexRange3D(0, org_z_length*2,
 				  image.get_min_y(), image.get_max_y(),
 				  image.get_min_x(), image.get_max_x()));
   run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
