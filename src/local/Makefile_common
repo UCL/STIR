@@ -1,5 +1,5 @@
-# Sample file (by Kris Thielemans)
-# Use this file to modify defaults for some variables in Makefile_common
+# $Id$
+# Use this file to modify defaults for some variables in config.mk
 # Modify according to your own needs
 
 # find hostname
@@ -51,7 +51,7 @@ EXTRA_OPT+=-march=pentium3
 endif
 endif
 # cygwin can't find X include files by default
-EXTRA_OPT+=-g -Wall -I /usr/X11R6/include
+EXTRA_OPT+=-Wall
 else
 
 ifeq ($(SYSTEM),CC)
@@ -61,8 +61,8 @@ EXTRA_OPT+= -ftemplate-depth-25
 else
 
 ifeq ($(SYSTEM),SUN)
-LLN_INCLUDE_DIR=/home/kris/lln/ecat
-INSTALL_DIR=/home/kris/bin/SOL2
+#LLN_INCLUDE_DIR=/home/kris/lln/ecat
+#INSTALL_DIR=/home/kris/bin/SOL2
 else
 
 # default
@@ -72,3 +72,4 @@ endif
 endif
 endif
 
+-include local/config_$(USER).mk
