@@ -357,8 +357,8 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
       == Succeeded::no)
     return Succeeded::no;
 
-  det1 = round(cyl_coords.p1().psi()/(2.*_PI/num_detectors));
-  det2 = round(cyl_coords.p2().psi()/(2.*_PI/num_detectors));
+  det1 = round(cyl_coords.p1().psi()/(2.*_PI/num_detectors)) % num_detectors;
+  det2 = round(cyl_coords.p2().psi()/(2.*_PI/num_detectors)) % num_detectors;
   ring1 = round(cyl_coords.p1().z()/ring_spacing);
   ring2 = round(cyl_coords.p2().z()/ring_spacing);
 
