@@ -2,19 +2,14 @@
 # $Id$
 #
 
-WORKSPACE=$(CURDIR)/../..
+WORKSPACE=$(CURDIR)/..
 
 
 include $(WORKSPACE)/Makefile_common
 
 
 SOURCES = \
-	lm_to_projdata.cxx \
-	lm_to_projdata_bootstrap.cxx \
-	lm_to_projdata_with_MC.cxx \
-	lm_fansums.cxx \
-	find_motion_corrected_norm_factors.cxx \
-    	generate_headcurve.cxx
+	lm_to_projdata.cxx 
 
 OBJS = $(SOURCES:%.cxx=${DEST}%.o)
 
@@ -39,5 +34,18 @@ clean :
 
 install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
+
+
+# Disable default rule
+# as executables here do not depend on recon_buildblock or the registries
+${DEST}%: ${DEST}%.o $(BB_LIBS) $(BB_REGISTRIES)
+
+
+${DEST}%: ${DEST}%.o ${LIB_BUILDINGBLOCK} ${LIB_RECON_BUILDINGBLOCK} \
+		${LIB_IO} $(LIB_LISTMODE_BUILDINGBLOCK) # ${IO_REGISTRIES}
+	$(CXX) $(CFLAGS)  -o $@ $<  \
+          $(LIB_LISTMODE_BUILDINGBLOCK)  ${LIB_RECON_BUILDINGBLOCK} \
+	  ${LIB_BUILDINGBLOCK}  ${LIB_IO}  ${LIB_BUILDINGBLOCK} \
+	  $(LINK_OPT) $(SYS_LIBS) 
 
 
