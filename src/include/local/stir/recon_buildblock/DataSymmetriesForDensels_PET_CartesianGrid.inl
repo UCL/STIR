@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "stir/ProjDataInfoCylindrical.h"
@@ -110,9 +110,9 @@ find_basic_densel(Densel& c) const
   int& z = c[1];
   int& y = c[2];
   int& x = c[3];
-  if (z==0 && x>=0 && y>=0 && y<=x)
+  if (z==z%num_independent_planes && x>=0 && y>=0 && y<=x)
     return false;
-  z = 0;
+  z = z%num_independent_planes;
   if (x<0) x = -x;
   if (y<0) y = -y;
   if (y>x) swap(x,y);
@@ -123,13 +123,21 @@ find_basic_densel(Densel& c) const
 // TODO, optimise
 auto_ptr<SymmetryOperation>
 DataSymmetriesForDensels_PET_CartesianGrid::
-  find_symmetry_operation_to_basic_densel(Densel& c) const
+  find_symmetry_operation_from_basic_densel(Densel& c) const
 {
   auto_ptr<SymmetryOperation> 
     sym_op(
         find_sym_op_general_densel(c[1], c[2], c[3])
       ); 
+#ifndef NDEBUG
+  const Densel copy_original = c;
+#endif
   find_basic_densel(c);
+#ifndef NDEBUG
+  Densel copy = c;
+  sym_op->transform_image_coordinates(copy);
+  assert(copy_original==copy);
+#endif
   return sym_op;
 }
 
