@@ -197,8 +197,8 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   
   //relaxation_parameter ~1/n where n is iteration number 
 
-  const float relaxation_parameter = get_parameters().relaxation_parameter*10.F/
-	      (10+subiteration_num/parameters.num_subsets);
+  const float relaxation_parameter = get_parameters().relaxation_parameter*1.F/
+	      (1+get_parameters().relaxation_gamma*subiteration_num/parameters.num_subsets);
     
   //float relaxation_parameter = get_parameters().relaxation_parameter;
   //relaxation_parameter /= (subiteration_num+parameters.num_subsets)/parameters.num_subsets;
@@ -222,14 +222,14 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   // although it never happens in practice because fo the penalty term that is != 0
   //if (*work_image_ptr !=0)
 
-  int co =0;
+  //int co =0;
   *numerator_ptr /= *work_image_ptr;
   /*divide_and_truncate(*numerator_ptr, 
 		      *work_image_ptr, 
 		      rim_truncation_image,
 		      co);*/
   
-  
+  if ( relaxation_parameter>0)
   *numerator_ptr *= relaxation_parameter;
   
   
