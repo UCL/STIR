@@ -4,6 +4,7 @@
 /*!
 
   \file
+  \ingroup ECAT
   \ingroup IO
   \brief Declaration of class ECAT6OutputFileFormat
 
