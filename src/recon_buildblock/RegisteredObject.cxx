@@ -18,7 +18,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifdef _MSC_VER
+#ifdef __STIR_REGISTRY_NOT_INLINE
+
 #pragma message("instantiating RegisteredObject<GeneralisedPrior<float> >")
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 

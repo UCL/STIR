@@ -31,7 +31,7 @@ RegisteredObject<Root>::RegisteredObject()
 {}
 
 
-#ifndef _MSC_VER
+#ifndef __STIR_REGISTRY_NOT_INLINE
 template <class Root>
 typename RegisteredObject<Root>::RegistryType& 
 RegisteredObject<Root>::registry ()

@@ -7,7 +7,7 @@
 
   \brief Instantiations of RegisteredObject
 
-  Currently only necessary for VC
+  Currently only necessary for VC 6.0
 
   \author Kris Thielemans
 
@@ -15,11 +15,12 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#ifdef _MSC_VER
+#ifdef __STIR_REGISTRY_NOT_INLINE
+
 #pragma message("instantiating RegisteredObject<OutputFileFormat >")
 #include "stir/IO/OutputFileFormat.h"
 // add here all roots of hierarchies based on RegisteredObject

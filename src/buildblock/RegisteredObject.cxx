@@ -19,7 +19,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifdef _MSC_VER
+#ifdef __STIR_REGISTRY_NOT_INLINE
 #pragma message("instantiating RegisteredObject<ImageProcessor<3,float> >")
 #include "stir/ImageProcessor.h"
 // add here all roots of hierarchies based on RegisteredObject
