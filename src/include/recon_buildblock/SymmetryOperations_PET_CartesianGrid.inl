@@ -17,7 +17,7 @@
   \version $Revision$
 */
 
-#include "Coordinate3D.h"
+#include "BasicCoordinate.h"
 #include "ViewSegmentNumbers.h"
 #include "Bin.h"
 
@@ -36,7 +36,7 @@ SymmetryOperation_PET_CartesianGrid_z_shift::
 {
 }
  
-void SymmetryOperation_PET_CartesianGrid_z_shift::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_z_shift::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {			
   c[1] += z_shift;
 }
@@ -57,7 +57,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
   vs.view_num() = view180 - vs.view_num();
 }
  
-void SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {			
   c[3] = -c[3];		 
   c[1] = q - c[1] + z_shift;
@@ -83,7 +83,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {
   const int tmp = c[3];
   c[3] = -c[2];
@@ -107,7 +107,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
   vs.view_num() = view180/2 - vs.view_num();
 }
  
-void SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {    
   const int tmp = c[3];
   c[3] = c[2];
@@ -132,7 +132,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
   vs.view_num() += view180/2;
 }
  
-void SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {   
   const int tmp = c[3];
   c[3] = -c[2];
@@ -158,7 +158,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xy_yx::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xy_yx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {  
   const int tmp = c[3];
   c[3] = c[2];
@@ -186,7 +186,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {   
   c[3] = -c[3];		
   c[1] += z_shift;
@@ -211,7 +211,7 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_ymy::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_ymy::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {   		 	    
   c[2] = -c[2];
   c[1] += z_shift;
@@ -235,7 +235,7 @@ SymmetryOperation_PET_CartesianGrid_swap_zq::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {   		 
   c[1] = q - c[1] + z_shift;     
   
@@ -259,7 +259,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 { 
   c[3] = -c[3];
   c[2] = -c[2];	
@@ -285,7 +285,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {  
   const int tmp = c[3];
   c[3] = c[2];
@@ -313,7 +313,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
   vs.view_num()+= view180/2;
 }
  
-void SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {
   const int tmp = c[3];
   c[3] = c[2];	
@@ -340,7 +340,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {  
   const int tmp = c[3];
   c[3] = -c[2];	
@@ -369,7 +369,7 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {  		   
   c[2] = -c[2];		
   c[1] = q - c[1] + z_shift;     	
@@ -393,7 +393,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
   vs.segment_num() *= -1;
 }
  
-void SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {    
   c[3] = -c[3];	
   c[2] = -c[2];	
@@ -421,7 +421,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
 }
  
 
-void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_image_coordinates(Coordinate3D<int>&c) const
+void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {
   const int tmp = c[3];
   c[3] = -c[2];
