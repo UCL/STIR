@@ -170,7 +170,7 @@ main(int argc, char **argv)
   shared_ptr<ProjData> proj_data_ptr;
   bool fill;
 
-  if (argc>=2)
+  if (argc>2)
     { 
       proj_data_ptr = ProjData::read_from_file(argv[2]); 
       fill = ask("Do you want to backproject all 1s (Y) or the data (N) ?", true);
@@ -192,7 +192,7 @@ main(int argc, char **argv)
     
   const bool save_profiles = ask("Save  horizontal profiles ?", false);
 
-  if (argc>=3)
+  if (argc>3)
     {
       KeyParser parser;
       parser.add_start_key("Back Projector parameters");
@@ -206,7 +206,7 @@ main(int argc, char **argv)
  
   shared_ptr<DiscretisedDensity<3,float> > image_sptr;
 
-  if (argc>=4)
+  if (argc>4)
     {
       image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[4]);
     }
