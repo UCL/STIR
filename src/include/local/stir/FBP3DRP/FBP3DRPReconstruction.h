@@ -22,7 +22,6 @@
 
 
 
-#include "local/stir/FBP2D/RampFilter.h"
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "local/stir/FBP3DRP/FBP3DRPParameters.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -63,58 +62,8 @@ template <typename T> class shared_ptr;
 class FBP3DRPReconstruction: public Reconstruction, public FBP3DRPParameters 
 {
 
-
-protected:
-
-   // because of the interplay of FBP3DRPReconstruction and
-   // FBP3DRPParameters, I had to change the type from Filter1D<float> to RampFilter
-   // TODO switch back to Filter1D<float>
-   RampFilter ramp_filter; 
-
 public:
-#if 0
-    /*!
-      \brief This constructor takes as input the list of parameters needed for the FBP3DRP reconstruction (i.e. common parameters being used for filtering and the specific parameters set for FBP3DRP).
-      \param f  Ramp filter 
-      \param min  Lower bound ring
-      \param max  Upper bound ring
-      \param PadS_v   Single transaxial extension for FFT
-      \param PadZ_v  Single axial extension for FFT
-      \param process_by_view_v  processing  by segment 
-      \param disp_v  Displaying only final data
-      \param save_v  Saving data
-      \param already_2Drecon_v  2D images are not yet saved after 2D reconstrcution
-      \param num_average_views_v  No mashing views by num_average_views_v
-      \param Xoff_v  Offset along X axis
-      \param Yoff_v  Offset along Y axis
-      \param zoom_v  Zooming factor
-      \param alpha_v  Alpha value set to 0.5 for Hamming filter
-      \param fc_v  Nyquist parameters or cut-off frequency set to 0.5
-    */
-   FBP3DRPReconstruction (
-                              // fill ramp filter with junk binsize and length
-                              const RampFilter &ramp_filter = RampFilter(1.F,0),
-			      const double alpha_colsher_axial_v = 0.5,
-                              const double fc_colsher_axial_v = 0.5,
-                              const double alpha_colsher_planar_v = 0.5,
-                              const double fc_colsher_planar_v = 0.5,
-			      const int PadS_v = 0, // Transaxial and axial extension for FFT
-                              const int PadZ_v = 1,
 
-                              const double zoom_v=1.,
-                              const double Xoffset_v=0.,
-                              const double Yoffset_v=0.,
-
-                              const int max_segment_num_to_process=-1,
-                              
-			      const int num_views_to_add_v=1,
-                              const int already_2Drecon_v = 0,// option for not redoing 2D reconstruction
-                                                     // if 2D images are already saved
-                             
-                              const int disp_v=0,
-                              const int save_intermediate_files_v=0,
-			      const string output_filename_prefix = ""); 
-#endif
 
 //! This constructor takes as input parameters, the list of parameters needed for the FBP3DRP reconstruction 
    explicit 
@@ -164,10 +113,8 @@ protected:
     void do_best_fit(const Sinogram<float> &sino_measured, const Sinogram<float> &sino_calculated);
 
 
-//!  Merge sinograms with direct planes (delta=0) and cross planes (delta = ±1) to get segment 0.
-  SegmentBySinogram<float>* do_merging_for_direct_planes();
 //!  2D FBP implementation.
-    void do_2D_reconstruction(SegmentBySinogram<float> &direct_sinos);
+    void do_2D_reconstruction();
     
 //!  Save image data.
     void do_save_img(const char *file, const VoxelsOnCartesianGrid<float> &data);
