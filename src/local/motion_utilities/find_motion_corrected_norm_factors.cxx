@@ -9,7 +9,8 @@
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
+
+    This file is for internal GE use only
 */
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -35,7 +36,6 @@
 #endif
 
 // set elem_type to what you want to use for the sinogram elements
-// we need a signed type, as randoms can be subtracted. However, signed char could do.
 
 #if defined(USE_SegmentByView) 
    typedef float elem_type;
@@ -161,7 +161,10 @@ FindMCNormFactors(const char * const par_filename)
 {
   set_defaults();
   if (par_filename!=0)
-    parse(par_filename) ;
+    {
+      if (parse(par_filename) == false)
+	error("Please correct parameter file");
+    }
   else
     ask_parameters();
 
@@ -255,9 +258,10 @@ post_processing()
       frame_defs = TimeFrameDefinitions(frame_times);
     }
   if (frame_num != -1 && 
-      (frame_num<1 && unsigned(frame_num)> frame_defs.get_num_frames()))
+      (frame_num<1 || unsigned(frame_num)> frame_defs.get_num_frames()))
     {
-      warning("'time frame num should be either -1 or between 1 and the number of frames\n");
+      warning("'time frame num (%u) should be either -1 or between 1 and the number of frames (%u)",
+	      frame_num, frame_defs.get_num_frames());
       return true;
     }
 	
