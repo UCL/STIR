@@ -573,7 +573,6 @@ int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
     return (EXIT_SUCCESS);
 }
 
-typedef int int32;
 BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
 
 FILE *cti_create (const char *fname, const ECAT6_Main_header *mhead)
