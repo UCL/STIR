@@ -53,9 +53,14 @@ class CListModeDataECAT : public CListModeData
 public:
   //! Constructor taking a prefix for the filename
   /*! If the listmode files are called something_1.lm, something_2.lm etc.
-      Then this constructor should be aclled with the argument "something" 
+      Then this constructor should be called with the argument "something" 
+
+      \todo Maybe allow for passing e.g. something_2.lm in case the first lm file is missing.
   */
   CListModeDataECAT(const string& listmode_filename_prefix);
+
+  virtual 
+    shared_ptr <CListRecord> get_empty_record_sptr() const;
 
   virtual 
     Succeeded get_next_record(CListRecord& record) const;
@@ -68,6 +73,9 @@ public:
 
   virtual
     Succeeded set_get_position(const SavedPosition&);
+
+  //! ECAT listmode data stores delayed events as well (as opposed to prompts)
+  virtual bool has_delayeds() const { return true; }
 
 private:
   string listmode_filename_prefix;

@@ -25,6 +25,7 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
+using std::size_t;
 #endif
 
 START_NAMESPACE_STIR
@@ -45,6 +46,13 @@ public:
 
   virtual
     ~CListModeData();
+
+  //! Get a pointer to an empty record
+  /*! This is mainly useful to get a record of the correct derived type, that can then be
+      passed to get_next_record().
+  */
+  virtual
+    shared_ptr <CListRecord> get_empty_record_sptr() const = 0;
 
   //! Gets the next record in the listmode sequence
   virtual 
@@ -69,9 +77,13 @@ public:
     Succeeded set_get_position(const SavedPosition&) = 0;
 
   //! Get scanner pointer  
-  virtual const Scanner* get_scanner_ptr() const;
-  
+  const Scanner* get_scanner_ptr() const;
+
+  //! Return if the file stores delayed events as well (as opposed to prompts)
+  virtual bool has_delayeds() const = 0;
+
 protected:
+  //! Has to be set by the derived class
   shared_ptr<Scanner> scanner_ptr;
 };
 
