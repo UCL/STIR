@@ -23,13 +23,22 @@ using namespace std;
 
 START_NAMESPACE_STIR
 
-template <class elemT>
-std::vector<CartesianCoordinate3D<int> > 
-sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,elemT>& attenuation_map,
+// Function that will be in the BasicCoordinate Class
+BasicCoordinate<3,float> convert_int_to_float(const BasicCoordinate<3,int>& cint)
+	{	  
+	  BasicCoordinate<3,float> cfloat;
+	  cfloat[1]=(float)cint[1];
+	  cfloat[2]=(float)cint[2];
+	  cfloat[3]=(float)cint[3];
+	  return cfloat;
+	}
+
+std::vector<CartesianCoordinate3D<float> > 
+sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
 					  int & max_scatt_points, 
-					  elemT att_threshold)
+					  float att_threshold)
 { 
-   const DiscretisedDensityOnCartesianGrid <3,elemT>* attenuation_map_cartesian_ptr=
+   const DiscretisedDensityOnCartesianGrid<3,float>* attenuation_map_cartesian_ptr=
 	     &attenuation_map;   
    if (attenuation_map_cartesian_ptr == 0)
    {
@@ -38,7 +47,7 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,elemT>& attenuat
    }
 
    BasicCoordinate<3,int> min_index, max_index ;
-   CartesianCoordinate3D<int> scatt_coord, att_map_size;
+   CartesianCoordinate3D<int> coord;
    
    if(!attenuation_map_cartesian_ptr->get_regular_range(min_index, max_index))
 	   error("scatter points sampling works only on regular ranges, at the moment\n");
@@ -46,9 +55,8 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,elemT>& attenuat
    int total_points=1;
 
 
-   std::vector<CartesianCoordinate3D<int> > points, scatt_points ;
-    
-   CartesianCoordinate3D<int> coord;
+   std::vector<CartesianCoordinate3D<int> > points; 
+            
    for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
 	   for(coord[2]=min_index[2];coord[2]<=max_index[2];++coord[2])
 		   for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])
@@ -56,14 +64,14 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,elemT>& attenuat
  
    std::random_shuffle(points.begin(),points.end()); 
    std::vector<CartesianCoordinate3D<int> >:: iterator current_iter;
-
+   
+   std::vector<CartesianCoordinate3D<float> > scatt_points; 
    for(current_iter=points.begin(); 
        current_iter!=points.end() && total_points<=max_scatt_points;
-	   ++current_iter)	 			  	      
-		   
-		   if(attenuation_map[*current_iter]>=att_threshold)
-		   {
-			   scatt_points.push_back(*current_iter);
+	   ++current_iter)			   
+		   if(attenuation_map[(*current_iter)]>=att_threshold)
+		   {				   
+			   scatt_points.push_back(convert_int_to_float(*current_iter));
 			   ++total_points;
 		   }	
     if (total_points <= max_scatt_points) 
@@ -73,13 +81,5 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,elemT>& attenuat
 	}	
     return scatt_points;
 }
-/***************************************************
-                 instantiations
-***************************************************/
-template
-std::vector<CartesianCoordinate3D<int> > 
-sample_scatter_points<>(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
-					  int & max_scatt_points, 
-					  float att_threshold) ;
 
 END_NAMESPACE_STIR 
