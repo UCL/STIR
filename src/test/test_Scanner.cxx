@@ -20,6 +20,7 @@
 
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
+#include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "ecat_model.h"
@@ -63,15 +64,36 @@ void
 ScannerTests::
 test_scanner(const Scanner& scanner)
 {
+  set_tolerance(.01);
   cerr << "Tests for scanner model " << scanner.get_name()<<'\n';
+
+  check(scanner.check_consistency() == Succeeded::yes, "check_consistency");
+
+  /* check if number of non-arccorrected tangential positions is smaller than the maximum
+     allowed for a full-ring tomograph 
+  */
+  {
+    check(scanner.get_max_num_non_arccorrected_bins() < scanner.get_num_detectors_per_ring(),
+	  "too large max_num_non_arccorrected_bins compared to num_detectors_per_ring");
+  }
+  /* check if default_bin_size is close to the central bin size. This is especially true
+     for CTI scanners.
+     To avoid warnings/errors, we exclude some scanners where we know the bin-size for sure
+     from the test.
+  */
+  if (scanner.get_type() != Scanner::Advance/* &&
+      scanner.get_type() != Scanner::HZLR*/)
   {
     const float natural_bin_size =
       scanner.get_ring_radius()*float(_PI)/scanner.get_num_detectors_per_ring();
-    set_tolerance(.1);
-    check_if_equal(natural_bin_size, scanner.get_default_bin_size(),
-		   "comparing bin size derived from ring radius and num detectors with given");
-    set_tolerance(.01);
+    if (fabs(natural_bin_size - scanner.get_default_bin_size())> .1)
+      warning("central bin size (derived from ring radius and num detectors) %g\n"
+	      "differs from given default bin size %g\n"
+	      "(unequal values do not necessarily mean there's an error as "
+	      "it's a convention used by the scanner manufacturer)\n",
+	      natural_bin_size, scanner.get_default_bin_size());
   }
+  // (weak) test on get_scanner_from_name
   {
     string name = scanner.get_name();
     name += " ";
@@ -81,7 +103,10 @@ test_scanner(const Scanner& scanner)
 		   "get_scanner_from_name");
   }
 #ifdef HAVE_LLN_MATRIX
+  if (scanner.get_type() <= Scanner::E966)
   {
+    // compare with info from ecat_model
+
     short ecat_type = ecat::find_ECAT_system_type(scanner);
     if (ecat_type==0)
       return;
@@ -108,7 +133,7 @@ test_scanner(const Scanner& scanner)
 		   "number of transaxial crystals");
     check_if_equal(scanner.get_ring_radius(), ecat_scanner_info->crystalRad*10,
 		   "detector radius");
-    check_if_equal(scanner.get_ring_spacing(), ecat_scanner_info->planesep*5,
+    check_if_equal(scanner.get_ring_spacing()/2, ecat_scanner_info->planesep*10,
 		   "plane separation");
     check_if_equal(scanner.get_default_bin_size(), ecat_scanner_info->binsize*10,
 		   "bin size (spacing of transaxial elements)");
