@@ -22,7 +22,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \def  STIRByteOrderIsBigEndian
+  \def  STIRNativeByteOrderIsBigEndian
   \brief A macro that is defined \e only when the compilation is on
   a big endian machine.
 
@@ -43,18 +43,18 @@ START_NAMESPACE_STIR
 */
 
 /*!
-  \def  STIRByteOrderIsLittleEndian
+  \def  STIRNativeByteOrderIsLittleEndian
   \brief A macro that is defined \e only when the compilation is on
   a little endian machine.
 
-  \see STIRByteOrderIsBigEndian for details.
+  \see STIRNativeByteOrderIsBigEndian for details.
 */
 
 // currently checked by asserts()
 #if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__) && !defined(__k6__) && !defined(__athlon__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
-#define STIRByteOrderIsBigEndian
+#define STIRNativeByteOrderIsBigEndian
 #else
-#define STIRByteOrderIsLittleEndian
+#define STIRNativeByteOrderIsLittleEndian
 #endif
 END_NAMESPACE_STIR
 
