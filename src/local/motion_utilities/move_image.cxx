@@ -163,7 +163,7 @@ post_processing()
 
   if (frame_definition_filename.size()==0)
     {
-      warning("Have to specify either 'frame_definition_filename'\n");
+      warning("Have to specify 'time frame_definition_filename'\n");
       return true;
     }
 
