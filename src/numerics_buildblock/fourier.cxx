@@ -5,7 +5,7 @@
 /*!
   \file 
   \ingroup DFT
-  \brief Functions for computing FFTs
+  \brief Functions for computing discrete fourier transforms
 
   \author Kris Thielemans
 
@@ -19,7 +19,6 @@
 #include "stir/numerics/fourier.h"
 #include "stir/round.h"
 #include "stir/modulo.h"
-#include "stir/norm.h"
 #include "stir/array_index_functions.h"
 START_NAMESPACE_STIR
 
@@ -135,6 +134,7 @@ void fourier_1d(T& c, const int sign)
   }
 }
 
+namespace detail {
 
 /* A class that does the recursion for multi-dimensional arrays.
 
@@ -189,12 +189,15 @@ do_fourier(VectorWithOffset<std::complex<double> >& c, const int sign)
 }
 #endif
 
+} // end of namespace detail
+
+
 // now the fourier function is easy to define in terms of the class above
 template <typename T>
 void 
 fourier(T& c, const int sign)
 {
-  fourier_auxiliary<typename T::value_type>::do_fourier(c,sign);
+  detail::fourier_auxiliary<typename T::value_type>::do_fourier(c,sign);
 }
 
 
@@ -259,7 +262,7 @@ fourier_1d_for_real_data(const Array<1,T>& v, const int sign)
 
 template <typename T>
 Array<1,T>
-inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
+inverse_fourier_1d_for_real_data_corrupting_input(Array<1,std::complex<T> >& c, const int sign)
 {
   typedef std::complex<T> complex_t;
   if (c.size()==0) return Array<1,T>();
@@ -269,11 +272,17 @@ inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
   if (n%2!=0)
     error("inverse_fourier_1d_of_real_data can only handle arrays of even length.\n");
 
-  // asserts to check that the imaginary part of c[0] and c[n] is 0
-  // trouble is that it could be only approximately 0 (e.g. when calling 
-  // inverse_fourier_real_data on multi-dimensional arrays)
-  assert(fabs(c[0].imag())<=.001*norm(c.begin_all(),c.end_all())/sqrt(n+1.)); // note divide by n+1 to avoid division by 0
-  assert(fabs(c[n].imag())<=.001*norm(c.begin_all(),c.end_all())/sqrt(n+1.));
+  /* Problematic asserts to check that the imaginary part of c[0] and c[n] is 0
+     Trouble is that it could be only approximately 0 (e.g. when calling 
+     inverse_fourier_real_data on multi-dimensional arrays).
+     The version below tries to circumvent this problem by comparing with the
+     norm of c. That fails however when c is zero (up to numerical precision).
+     We can only know this by looking at the higher dimensional array, but
+     we don't have that one to our disposal in this function.
+     So, I disabled the asserts.
+  */
+  //assert(fabs(c[0].imag())<=.001*norm(c.begin_all(),c.end_all())/sqrt(n+1.)); // note divide by n+1 to avoid division by 0
+  //assert(fabs(c[n].imag())<=.001*norm(c.begin_all(),c.end_all())/sqrt(n+1.));
   for (int i=1; i<=n/2; ++i)
     {
       const complex_t t1 = (c[i]+std::conj(c[n-i]));
@@ -305,8 +314,17 @@ inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
   return v;
 }
 
+template <typename T>
+Array<1,T>
+inverse_fourier_1d_for_real_data(const Array<1,std::complex<T> >& c, const int sign)
+{
+  Array<1,std::complex<T> > tmp(c);
+  return inverse_fourier_1d_for_real_data_corrupting_input(tmp, sign);
+}
+
 // multi-dimensional case
 
+namespace detail {
 /* A class that does the recursion for multi-dimensional arrays.
 
    This is done with a class because partial template specialisation is
@@ -333,7 +351,7 @@ struct fourier_for_real_data_auxiliary
     return array;
   }
   static Array<num_dimensions,elemT>
-  do_inverse_fourier_for_real_data(Array<num_dimensions,std::complex<elemT> >& c, const int sign)
+  do_inverse_fourier_for_real_data_corrupting_input(Array<num_dimensions,std::complex<elemT> >& c, const int sign)
   {
     inverse_fourier_1d(c, sign);
     // complicated business to get index range which is as follows:
@@ -347,7 +365,7 @@ struct fourier_for_real_data_auxiliary
     Array<num_dimensions, elemT> array(IndexRange<num_dimensions>(min_index, max_index));
 
     for (int i=c.get_min_index(); i<=c.get_max_index(); ++i)
-      array[i] = inverse_fourier_for_real_data(c[i], sign);
+      array[i] = inverse_fourier_for_real_data_corrupting_input(c[i], sign);
     return array;
   }
 };
@@ -365,10 +383,10 @@ struct fourier_for_real_data_auxiliary<1,elemT>
       fourier_1d_for_real_data(c, sign);
   }
   static Array<1,elemT>
-  do_inverse_fourier_for_real_data(Array<1,std::complex<elemT> >& c, const int sign)
+  do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<elemT> >& c, const int sign)
   {
     return
-      inverse_fourier_1d_for_real_data(c, sign);
+      inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
   }
 };
 
@@ -387,10 +405,10 @@ do_fourier_for_real_data(Array<1,float>& c, const int sign)
 
 Array<1,float>
 fourier_for_real_data_auxiliary<float>::
-do_inverse_fourier_for_real_data(Array<1,std::complex<float> >& c, const int sign)
+do_inverse_fourier_for_real_data_corrupting_input(Array<1,std::complex<float> >& c, const int sign)
 {
   return
-    inverse_fourier_1d_for_real_data(c, sign);
+    inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
 }
 
 Array<1,std::complex<double> >
@@ -403,12 +421,15 @@ do_fourier_for_real_data(Array<1,double>& c, const int sign)
 
 Array<1,double>
 fourier_for_real_data_auxiliary<double>::
-do_inverse_fourier_for_real_data(Array<1,std::complex<double> >& c, const int sign)
+do_inverse_fourier_for_real_data_corrupting_input_corrupting_input(Array<1,std::complex<double> >& c, const int sign)
 {
   return
-    inverse_fourier_1d_for_real_data(c, sign);
+    inverse_fourier_1d_for_real_data_corrupting_input(c, sign);
 }
 #endif
+
+} // end of namespace detail
+
 
 // now the fourier_for_real_data function is easy to define in terms of the class above
 template <int num_dimensions, typename T>
@@ -416,18 +437,26 @@ Array<num_dimensions,std::complex<T> >
 fourier_for_real_data(const Array<num_dimensions,T>& c, const int sign)
 {
   return
-    fourier_for_real_data_auxiliary<num_dimensions,T>::
+    detail::fourier_for_real_data_auxiliary<num_dimensions,T>::
     do_fourier_for_real_data(c,sign);
 }
 
 
 template <int num_dimensions, typename T>
 Array<num_dimensions,T >
-inverse_fourier_for_real_data(Array<num_dimensions,std::complex<T> >& c, const int sign)
+inverse_fourier_for_real_data_corrupting_input(Array<num_dimensions,std::complex<T> >& c, const int sign)
 {
   return
-  fourier_for_real_data_auxiliary<num_dimensions,T>::
-    do_inverse_fourier_for_real_data(c,sign);
+  detail::fourier_for_real_data_auxiliary<num_dimensions,T>::
+    do_inverse_fourier_for_real_data_corrupting_input(c,sign);
+}
+
+template <int num_dimensions, typename T>
+Array<num_dimensions,T>
+inverse_fourier_for_real_data(const Array<num_dimensions,std::complex<T> >& c, const int sign)
+{
+  Array<num_dimensions,std::complex<T> > tmp(c);
+  return inverse_fourier_for_real_data_corrupting_input(tmp, sign);
 }
 
 template <int num_dimensions, typename T>
@@ -479,7 +508,7 @@ fourier<>(VectorWithOffset<std::complex<float> >& c, const int sign);
  fourier_for_real_data<>(const Array<d,type>& v, const int sign); \
  template  \
  Array<d,type> \
-  inverse_fourier_for_real_data<>(Array<d,std::complex<type> >& c, const int sign); \
+  inverse_fourier_for_real_data<>(const Array<d,std::complex<type> >& c, const int sign); \
  template \
  Array<d, std::complex<type> > \
  pos_frequencies_to_all<>(const Array<d, std::complex<type> >& c);
