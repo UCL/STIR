@@ -64,6 +64,18 @@ protected:
   virtual bool post_processing() 
    { return false; }
 
+  //! This will be called before parsing or parameter_info is called
+  /*! 
+    This virtual function should be overloaded when the values for the keywords 
+    depend on other variables in the derived class that can be set independently 
+    of the parsing.
+
+  \par Example: 
+
+  A derived class has a public member angle_in_radians, while a keyword sets a 
+  private member angle_in_degrees.
+  */
+  virtual void set_key_values() {}
 
 private:
   bool keymap_is_initialised;  
