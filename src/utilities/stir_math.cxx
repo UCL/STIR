@@ -14,6 +14,7 @@ The command line arguments are as follows (but everything has to fit on 1 line):
   [-s] 
   [--add | --mult] 
   [--times-scalar mult_scalar_float] 
+  [--divide-scalar divide_scalar_float] 
   [--power power_float] 
   [--including-first] 
   [--verbose]
@@ -25,6 +26,7 @@ or
   [-s] 
   [--add | --mult] 
   [--times-scalar mult_scalar_float] 
+  [--divide-scalar divide_scalar_float] 
   [--power power_float] 
   [--including-first] 
   [--verbose]
@@ -133,7 +135,7 @@ main(int argc, char **argv)
   {
     cerr<< "Usage: " << argv[0] << "\n\t"
 	<< "[-s] [--accumulate] [--add | --mult]\n\t"
-	<< "[--times-scalar mult_scalar_float] [--divide-scale div_scalar_float]\n\t"
+	<< "[--times-scalar mult_scalar_float] [--divide-scalar div_scalar_float]\n\t"
 	<< "[--power power_float] [--including-first] [--verbose]\n\t"
 	<< "output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n\n"
 	<< "(but everything on 1 line).\n"
