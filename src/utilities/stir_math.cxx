@@ -13,9 +13,10 @@ The command line arguments are as follows (but everything has to fit on 1 line):
 \code
   [-s] 
   [--add | --mult] 
+  [--power power_float] 
   [--times-scalar mult_scalar_float] 
   [--divide-scalar divide_scalar_float] 
-  [--power power_float] 
+  [--add-scalar add_scalar_float] 
   [--including-first] 
   [--verbose]
   output_filename_with_extension in_data1 [in_data2 [in_data3...]]
@@ -25,9 +26,10 @@ or
   --accumulate
   [-s] 
   [--add | --mult] 
+  [--power power_float] 
   [--times-scalar mult_scalar_float] 
   [--divide-scalar divide_scalar_float] 
-  [--power power_float] 
+  [--add-scalar add_scalar_float] 
   [--including-first] 
   [--verbose]
   out_and_input_filename in_data2 [in_data3 [in_data4...]]
@@ -45,8 +47,8 @@ first filename will first be manipulated according to '--power' and '--times-sca
 The '-s' option is necessary if the arguments are projection data.
 Otherwise, it is assumed the data are images.<br>
 Multiple occurences of '--times-scalar' and '--divide-scalar' are
-allowed and will just result in a cumulation of the factors.<br>
-Power is taken before multiplication with the scalar.<br>
+allowed and will just result in accumulation of the factors.<br>
+Power is taken before multiplication with the scalar, which is done before addition of the scalar.<br>
 \par Examples
 <ul>
 <li> subtracting 2 files<br>
@@ -68,6 +70,9 @@ Power is taken before multiplication with the scalar.<br>
           the input files.
 \warning The result of using non-integral powers on  negative numbers is probably 
          system-dependent.
+\warning For future compatibility, it is recommended to put the command line arguments
+         in the order that they will be executed (i.e. as listed above). It might be 
+	 that we take the order into account in a future release.
 \todo allow different output file formats, currently uses DefaultOutputFileFormat
 \author Kris Thielemans 
 
@@ -111,21 +116,22 @@ using std::transform;
 
 USING_NAMESPACE_STIR
 
-// a function object that takes a power of a float, and then multiplies with a float
-class pow_times: public unary_function<float,float>
+// a function object that takes a power of a float, and then multiplies with a float, and finally adds a float
+class pow_times_add: public unary_function<float,float>
 {
 public:
-  pow_times(const float mult_scalar, const float power)
-    : mult(mult_scalar), power(power)
+  pow_times_add(const float add_scalar, const float mult_scalar, const float power)
+    : add(add_scalar), mult(mult_scalar), power(power)
   {}
 
-  float operator()(float const arg)
+  float operator()(float const arg) const
   {
-    return mult*(power==1?arg : pow(arg,power));
+    return add+mult*(power==1?arg : pow(arg,power));
   }
 private:
-  float mult;
-  float power;
+  const float add;
+  const float mult;
+  const float power;
 };
 
 int 
@@ -135,8 +141,11 @@ main(int argc, char **argv)
   {
     cerr<< "Usage: " << argv[0] << "\n\t"
 	<< "[-s] [--accumulate] [--add | --mult]\n\t"
-	<< "[--times-scalar mult_scalar_float] [--divide-scalar div_scalar_float]\n\t"
-	<< "[--power power_float] [--including-first] [--verbose]\n\t"
+	<< "[--power power_float]\n\t"
+	<< "[--times-scalar mult_scalar_float]\n\t"
+	<< "[--divide-scalar div_scalar_float]\n\t"
+	<< "[--add-scalar add_scalar_float]\n\t"
+	<< "[--including-first] [--verbose]\n\t"
 	<< "output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n\n"
 	<< "(but everything on 1 line).\n"
 	<< "'--add' is default, and outputs the sum of the result of processed data.\n"
@@ -150,14 +159,19 @@ main(int argc, char **argv)
            "'--including-first', the data in the first filename will first be manipulated "
            "according to '--power', '--times-scalar' and '--divide-scalar'.\n"
 	<< "Multiple occurences of '--times-scalar' and '--divide-scalar' are\n"
-	<<"allowed and will just result in a cumulation of the factors.\n"
-        << "Power is taken before multiplication with the scalar.\n"
+	<< "allowed and will just result in accumulation of the factors.\n"
+        << "Power is taken before multiplication with the scalar, which is\n"
+	<< "done before addition of the scalar.\n\n"
 	<< "The '-s' option is necessary if the arguments are projection data."
 	<< " Otherwise, it is assumed the data are images.\n\n"
 	<< "WARNING: there is no check that the data sizes and other info are compatible "
 	<< "and the output will have the largest data size in the input, "
 	<< "and the characteristics (like voxel-size or so) are taken from the first input data. "
-	<< "Hence, lots of funny effects can happen if data are not compatible.\n";
+	<< "Hence, lots of funny effects can happen if data are not compatible.\n\n"
+	<< "WARNING: For future compatibility, it is recommended to put \n"
+	<< "the command line arguments in the order that they will be\n"
+	<< "executed (i.e. as listed above). It might be that\n"
+	<< "we take the order into account in a future release.\n";
     exit(EXIT_FAILURE);
   }
   const char * const program_name = argv[0];
@@ -167,6 +181,7 @@ main(int argc, char **argv)
 
   bool do_add = true;
   bool accumulate=false;
+  float add_scalar = 0.F;
   float mult_scalar = 1.F;
   float power = 1;
   bool except_first = true;
@@ -178,6 +193,13 @@ main(int argc, char **argv)
 
   while (argc>0 && argv[0][0]=='-')
   {
+    if (strcmp(argv[0], "--add-scalar")==0)
+    {
+      if (argc<2)
+      { cerr << "Option '--add-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
+      add_scalar += atof(argv[1]);
+      argc-=2; argv+=2;
+    } else
     if (strcmp(argv[0], "--times-scalar")==0)
     {
       if (argc<2)
@@ -249,7 +271,7 @@ main(int argc, char **argv)
   if (num_files==0)
   { cerr << "No input files on command line\n"; exit(EXIT_FAILURE); }
 
-  const bool no_math_on_data = power==1 && mult_scalar==1;
+  const bool no_math_on_data = power==1 && mult_scalar==1 && add_scalar==0;
 
   if (verbose)
     {
@@ -258,15 +280,16 @@ main(int argc, char **argv)
 	   << num_files;
       if (!no_math_on_data)
 	cout <<" files after taking a power of "
-	     << power << " and then multiplying with "
-	     << mult_scalar
-	     << (except_first?" except for" : " including")
+	     << power << "\n and then multiplying with "
+	     << mult_scalar << "\n and then adding  "
+	     << add_scalar
+	     << (except_first?"\n except for" : " including")
 	     <<" the first file";
       cout << endl;
     }
 
   // construct function object that does the manipulations on each data
-  pow_times pow_times_object(mult_scalar, power);
+  pow_times_add pow_times_add_object(add_scalar, mult_scalar, power);
 
   // start the main processing
   if (!do_projdata)
@@ -275,7 +298,7 @@ main(int argc, char **argv)
       shared_ptr< DiscretisedDensity<3,float> >  image_ptr = 
 	DiscretisedDensity<3,float>::read_from_file(*argv);
       if (!no_math_on_data && !except_first )
-	in_place_apply_function(*image_ptr, pow_times_object);
+	in_place_apply_function(*image_ptr, pow_times_add_object);
 
       shared_ptr< DiscretisedDensity<3,float> >  current_image_ptr;
 
@@ -286,7 +309,7 @@ main(int argc, char **argv)
 	  current_image_ptr = 
 	    DiscretisedDensity<3,float>::read_from_file(argv[i]);
 	  if (!no_math_on_data)
-	    in_place_apply_function(*current_image_ptr, pow_times_object);
+	    in_place_apply_function(*current_image_ptr, pow_times_add_object);
 	  if (do_add)
 	    *image_ptr += *current_image_ptr;
 	  else
@@ -330,13 +353,13 @@ main(int argc, char **argv)
 	  SegmentByView<float> segment_by_view = 
 	    (*all_proj_data[0]).get_segment_by_view(segment_num);
 	  if (!no_math_on_data && !except_first )
-	    in_place_apply_function(segment_by_view, pow_times_object);
+	    in_place_apply_function(segment_by_view, pow_times_add_object);
 	  for (int i=1; i<num_files; ++i)
 	    {
 	      SegmentByView<float> current_segment_by_view = 
 		(*all_proj_data[i]).get_segment_by_view(segment_num);
 	      if (!no_math_on_data)
-		in_place_apply_function(current_segment_by_view, pow_times_object);
+		in_place_apply_function(current_segment_by_view, pow_times_add_object);
 	      if(do_add)
 		segment_by_view += current_segment_by_view;
 	      else
