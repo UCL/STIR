@@ -1,0 +1,167 @@
+//
+// $Id$
+//
+/*!
+
+  \file
+
+  \brief Implementation of class RampFilter
+
+  \author Kris Thielemans
+  \author Claire Labbe
+  \author Darren Hogg
+  \author PARAPET project
+
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+
+#include "local/stir/FBP2D/RampFilter.h"
+#include <math.h>
+#include <iostream>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
+#include <sstream>
+#endif
+
+#ifndef STIR_NO_NAMESPACE
+using std::ends;
+#endif
+
+START_NAMESPACE_STIR
+
+// This function computes the samples of the ramp filter in real space
+// (as opposed to frequency space)
+// The formulas are complicated, but derived in Mathematica
+// by computing the analytic inverse Fourier transform of a cut-off ramp
+// times a Hamming window.
+
+inline float ramp_filter_in_space(const int n, 
+			   const float sampledist, 
+			   const int length, 
+			   const float alpha, 
+			   const float fc)
+{
+  const double x = n*2*fc;
+  // KT&Darren Hogg 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
+  if (n==0)
+    return
+        (2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */);
+  else if (fabs(fabs(x)-1) < 1E-6)
+    return
+        -(square(2*fc)*(8*alpha + (-1 + alpha)*square(_PI)))/
+          (4*_PI/* *square(sampledist) */);
+  else
+    return
+        square(2*fc)*(
+	   -alpha - square(x) + 3*alpha*square(x) - square(square(x)) + 
+           _PI*x*sin(_PI*x)*(-1 + square(x))*
+                  (-alpha + (-1 + 2*alpha)*square(x)) + 
+           cos(_PI*x)*(alpha - (1 + alpha)*square(x) + 
+                      (-1 + 2*alpha)*square(square(x)))
+        )/
+        (_PI/* *square(sampledist) */*square(-1 + x)*square(x)*square(1 + x));
+}
+
+// KT&CL 03/08/99 insert max value for fc
+RampFilter::RampFilter(float sampledist_v, int length_v , float alpha_v, float fc_v)
+  :Filter1D <float>(length_v), fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)// KT 230899 added F suffix to .5
+{
+
+  start_timers();
+
+  // Necessary exit for the silly case when length==0
+  if (length==0) 
+    return;
+#ifdef OLDRAMP
+  // KT&DH 17/05/2000 TODO: highly suspect that we shouldn't divide by sampledist, but didn't check it yet
+#error check scale factor in ramp filter!
+/* As realft uses only positive frequencies, the filter needs to be defined
+   only for those frequencies, so it has length/2 elements. 
+   However, in general the values are complex, so the numbers of 
+   real numbers is 2*length/2==length.
+   */
+  float           f = 0.0;
+
+  for (Int i = 1; i <= length - 1; i += 2) {
+    f = (float) ((float) 0.5 * (i - 1) / length);
+    float nu_a = f / sampledist;
+    if (f <= fc)
+      filter[i] = nu_a * (alpha + (1. - alpha) * cos(_PI * f / fc));
+    else
+      filter[i] = 0.0;
+		filter[i + 1] = 0.0;	/* imaginary part */
+  }
+  if (0.5 <= fc)		/* see realft for an explanation:data[2]=last real */
+    filter[2] = (0.5 / sampledist) * (alpha + (1. - alpha) * cos(_PI * f / fc));
+  else
+    filter[2] = 0.;
+#else
+  // KT&CL 03/08/99 new
+  /* This computes the ramp filter in frequency space in 2 steps:
+     - sample the filter in real space
+     - perform a discrete FT to find values in the frequency domain
+     This gives better agreement with the filtering of a band-limited
+     function with the analytic ramp (with cut-off).
+     In particular, it solves a problem with the DC component of the 
+     filter. Sampling the ramp in the frequency domain gives 0 for 
+     DC component, resulting in images with negative tails.
+     */
+
+  assert(length%2==0);
+
+  // first construct filter in 'real' space
+
+  filter.set_offset(0);
+
+  // KT&DH 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
+  filter[0] = 
+    (2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */);
+
+  // note: filter[length/2] is set twice for even n
+  for (int n = 1; n <= length/2; n += 1)
+  {
+    filter[n] = ramp_filter_in_space(n, sampledist, length, alpha, fc);
+
+    filter[length-n] = filter[n];
+  }
+
+  filter.set_offset(1);
+
+  realft(filter, length/2, 1);
+
+#endif
+  stop_timers();
+
+
+};
+
+
+string RampFilter:: parameter_info() const
+{
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+  char str[1000];
+  ostrstream s(str, 1000);
+#else
+  std::ostringstream s;
+#endif  
+    s << "RampFilter :="
+      << "\nFilter length := "<< length 
+      << "\nCut-off in cycles := "<< fc
+      << "\nAlpha parameter := "<<alpha
+      << "\nSample dist := "<< sampledist
+      << ends;
+    
+   return s.str();
+}
+
+
+
+END_NAMESPACE_STIR
