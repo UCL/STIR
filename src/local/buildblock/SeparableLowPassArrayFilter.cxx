@@ -13,6 +13,10 @@ using std::iostream;
 using std::cerr;
 using std::endl;
 #endif
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 START_NAMESPACE_STIR
@@ -40,13 +44,13 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
     cerr  << i<<"   "<< filter_coefficients_v[i] <<"   " << endl;
 
 
-   all_1d_array_filters[2] = 	 
+  /* all_1d_array_filters[2] = 	 
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
 
    all_1d_array_filters[0] = 	 
        new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
    all_1d_array_filters[1] = 	 
-       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
+       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);*/
   
    /*all_1d_array_filters[0] = 	 
        new ArrayFilter1DUsingConvolutionSymmetricKernel<float>();
@@ -54,13 +58,10 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
        new ArrayFilter1DUsingConvolutionSymmetricKernel<float>();
    all_1d_array_filters[2] = 	 
       new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
+
   
   
- /*for (int i=2;i<=num_dimensions;i++)
+ for (int i=2;i<=num_dimensions;i++)
   {
     all_1d_array_filters[i-1] = 	 
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
@@ -68,7 +69,7 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
   }
 
    all_1d_array_filters[0] = 	 
-      new ArrayFilter1DUsingConvolution<float>();*/
+      new ArrayFilter1DUsingConvolution<float>();
     
 }
 
