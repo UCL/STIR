@@ -759,18 +759,19 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
 	  0.F,math_buffer.get_y_size()*math_buffer.get_voxel_size().y/2,0.F);
 	const float offset_z = ask_num("Offset z (in mm)",
 	  0.F,math_buffer.get_y_size()*math_buffer.get_voxel_size().z/2,0.F);
+	// KT 04/02/2000 corrected default sizes
 	const int new_size_x = ask_num("New x size (pixels)",
 	  1, 
-	  static_cast<int>(math_buffer.get_x_size()/zoom_x * 2), 
-	  static_cast<int>(math_buffer.get_x_size()/zoom_x));
+	  static_cast<int>(math_buffer.get_x_size()*zoom_x * 2), 
+	  static_cast<int>(math_buffer.get_x_size()*zoom_x));
 	const int new_size_y = ask_num("New y size (pixels)",
 	  1, 
-	  static_cast<int>(math_buffer.get_y_size()/zoom_y * 2), 
+	  static_cast<int>(math_buffer.get_y_size()*zoom_y * 2), 
 	  new_size_x);
 	const int new_size_z = ask_num("New z size (pixels)",
 	  1, 
-	  static_cast<int>(math_buffer.get_z_size()/zoom_z * 2), 
-	  static_cast<int>(math_buffer.get_z_size()/zoom_z));
+	  static_cast<int>(math_buffer.get_z_size()*zoom_z * 2), 
+	  static_cast<int>(math_buffer.get_z_size()*zoom_z));
 	zoom_image(math_buffer, 
 	           Coordinate3D<float>(zoom_x, zoom_y, zoom_z),
 		   Coordinate3D<float>(offset_x, offset_y, offset_z),
