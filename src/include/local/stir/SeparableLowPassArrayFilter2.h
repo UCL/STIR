@@ -265,10 +265,12 @@ SeparableArrayFunctionObject2<num_dimensions, elemT>::
 do_it(Array<num_dimensions,elemT>& out_array, const Array<num_dimensions,elemT>& in_array) const
 {
    
-  if (!is_trivial())
+  //if (!is_trivial())
    apply_array_functions_on_each_index(out_array, in_array,
                                              all_1d_array_filters.begin(), 
                                              all_1d_array_filters.end());
+  //else somehow copy in_array into out_array but keeping index ranges
+   //TODO
 
 }
 
