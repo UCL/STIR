@@ -77,7 +77,7 @@ fwd_project(ProjData& proj_data,VoxelsOnCartesianGrid<float>* vox_image_ptr,
 void 
 fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 			      VoxelsOnCartesianGrid<float>* vox_image_ptr_bck,
-			      VoxelsOnCartesianGrid<float>* vox_image_ptr,
+			      //VoxelsOnCartesianGrid<float>* vox_image_ptr,
 			      const int start_segment_num, const int end_segment_num,
 			      const int start_axial_pos_num, const int end_axial_pos_num,		
 			      const int start_view, const int end_view,
@@ -106,7 +106,7 @@ fwd_project_individual_pixels(ProjData& proj_data,VoxelsOnCartesianGrid<float>* 
 void 
 fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 			      VoxelsOnCartesianGrid<float>* vox_image_ptr_bck,
-			      VoxelsOnCartesianGrid<float>* vox_image_ptr,
+			      //VoxelsOnCartesianGrid<float>* vox_image_ptr,
 			      const int start_segment_num, const int end_segment_num,
 			      const int start_axial_pos_num, const int end_axial_pos_num,		
 			      const int start_view, const int end_view,
@@ -115,13 +115,16 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 {
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
     dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
-  
+   VoxelsOnCartesianGrid<float> *  in_density_ptr =
+     in_density_cast_0.get_empty_voxels_on_cartesian_grid();
+
   const float z_origin = 0;
   
   vox_image_ptr_bck->set_origin(Coordinate3D<float>(z_origin,0,0));  
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
-  
-  // use shared_ptr such that it cleans up automatically
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr =  in_density_ptr;
+    //vox_image_ptr_bck;
+  // in_density_ptr;
+ 
   string name = "Ray Tracing";
   
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
@@ -133,26 +136,27 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
   cerr << forw_projector_ptr->parameter_info();
   list<ViewSegmentNumbers> already_processed;  
   
+ 
   VoxelsOnCartesianGrid<float> * in_density_extracted_ptr =
     new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-    -26,26,-26,26),
+    //line source + cylinder filtered
+    -26,26,-13,13),
+    //-10,10,-10,10),
     in_density.get_origin(),in_density_cast_0.get_voxel_size());  
-  in_density_extracted_ptr ->fill(0);
+  
+    in_density_extracted_ptr ->fill(0);
   
   in_density_extracted_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));    
   
-  int counter;
+  //int counter;
   for ( int k = 40;k<=60;k+=20)
     // to do all pixels where the cyl and the line source are
-   // for ( int j =-23;j<=23;j++)
-    // for ( int i =-10;i<=10;i++) 
+    for ( int j =-23;j<=23;j++)
+     for ( int i =-10;i<=10;i++) 
 
     //test the line source filtering only
-    for ( int j =-3;j<=3;j++)
-      for ( int i =-3;i<=3;i++)         
-    
-    //for ( int j =-1;j<=0;j++)
-     // for ( int i =-1;i<=0;i++)      
+    //for ( int j =-3;j<=3;j++)
+     // for ( int i =-3;i<=3;i++)         
       {
 	in_density_extracted_ptr->fill(0);	
 	for (int mask_j = -2; mask_j<=2; mask_j++)
@@ -190,7 +194,7 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 	      start_segment_num,  end_segment_num,	
 	      start_axial_pos_num,end_axial_pos_num,
 	      start_view, end_view,
-	      -6,6,
+	      -13,13,
 	      *forw_projector_ptr);   
 	  }	  
 	  
@@ -211,10 +215,10 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 	    error("SV filters: error opening files %s\n",output_file_name_kappa0.c_str());
 	  }
 	  
-	  DiscretisedDensity<3,float>* in_density_tmp_0 =  in_density.clone();  
+	  //DiscretisedDensity<3,float>* in_density_tmp_0 =  in_density.clone();  
 	  
-	  VoxelsOnCartesianGrid<float> * vox_image_ptr_1 =
-	    new VoxelsOnCartesianGrid<float>(*new_data_info_ptr);   
+	  //VoxelsOnCartesianGrid<float> * vox_image_ptr_1 =
+	    //new VoxelsOnCartesianGrid<float>(*new_data_info_ptr);   
 	  
 	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0 =
 	    new ProjDataFromStream(new_data_info_ptr,sino_stream_kappa0);
@@ -237,11 +241,14 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 	  
 	  // now do the back_projection
 	  
+	  // sm 05/10/2001 - > use the same image_sptr as for fwd:
+
 	  VoxelsOnCartesianGrid<float> * vox_image_ptr_kappa0 =
-	    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
+	    in_density_cast_0.get_empty_voxels_on_cartesian_grid();
+	    /*new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
 	    in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y(),
 	    in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()),
-	    in_density.get_origin(),in_density_cast_0.get_voxel_size());  
+	    in_density.get_origin(),in_density_cast_0.get_voxel_size());  */
 	  
 	  //vox_image_ptr_kappa0 = &in_density_cast_0 ;
 	  shared_ptr<DiscretisedDensity<3,float> > image_sptr_0 =  vox_image_ptr_kappa0;   
@@ -266,10 +273,16 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
 	    proj_data_ptr->get_min_tangential_pos_num(), 
 	    proj_data_ptr->get_max_tangential_pos_num(),
 	    bck_projector_ptr_0, fill_with_1);    
-	  (*vox_image_ptr_bck ) [k][j][i] = (*image_sptr_0)[k][j][i];  
+	  (*vox_image_ptr_bck) [k][j][i] = (*image_sptr_0)[k][j][i];  
 	  
+	  //delete vox_image_ptr_1 ;
+      delete bck_projector_ptr_0 ;
       }
-      
+
+    //  delete  in_density_ptr ;
+      delete in_density_extracted_ptr;    
+     
+     
 }
 
 
@@ -310,10 +323,10 @@ fwd_project_individual_pixels(ProjData& proj_data,VoxelsOnCartesianGrid<float>* 
   
   in_density_extracted_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));    
   
-  int counter;
+  //int counter;
   for ( int k = 40;k<=40;k+=20)
-    for ( int j =-3;j<=3;j++)
-      for ( int i =-3;i<=3;i++)     
+    for ( int j =-1;j<=1;j++)
+      for ( int i =-1;i<=1;i++)     
      {
 	in_density_extracted_ptr->fill(0);	
 	for (int mask_j = -2; mask_j<=2; mask_j++)
@@ -828,7 +841,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
   // * SM - 25/09/2001
   // * TODO - somehow find out the range of the object itself
   // ********************************************************//
-  VoxelsOnCartesianGrid<float> * in_density_extracted_ptr_cyl =
+  /*VoxelsOnCartesianGrid<float> * in_density_extracted_ptr_cyl =
     new VoxelsOnCartesianGrid<float>
     (IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
 		  -26,26,-26,26),
@@ -847,10 +860,10 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
       {
 
 	(*in_density_extracted_ptr_cyl)[k][j][i] = in_density[k][j][i];      
-      } 
+      } */
       
       
-      VoxelsOnCartesianGrid<float> * in_density_extracted_ptr_old =
+      /*VoxelsOnCartesianGrid<float> * in_density_extracted_ptr_old =
 	new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
 	-10,10,-10,10),
 	in_density.get_origin(),in_density_cast_0.get_voxel_size());  
@@ -861,7 +874,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  for ( int i = -3;i<=3;i++)
 	  {
 	    (*in_density_extracted_ptr_old)[k][j][i] = in_density[k][j][i];      
-	  } 
+	  } */
 	  
 	  
 	  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
@@ -869,28 +882,28 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  int limit_segments= 0;
 	  new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
 	  
-	  const string output_file_name_kappa0 = "fwd_kappa0.s";
+	 // const string output_file_name_kappa0 = "fwd_kappa0.s";
 	  const string output_file_name_kappa0_individual_pixels = "fwd_kappa0_individual_pixels.s";
-	  const string output_file_name_kappa0_cyl = "fwd_kappa0_cyl.s";
+	 // const string output_file_name_kappa0_cyl = "fwd_kappa0_cyl.s";
 	  const string output_file_name_kappa1 = "fwd_kappa1.s";
 	  
-	  shared_ptr<iostream> sino_stream_kappa0 = 
-	    new fstream (output_file_name_kappa0.c_str(),ios::out|ios::in|ios::binary);
+	  //shared_ptr<iostream> sino_stream_kappa0 = 
+	   // new fstream (output_file_name_kappa0.c_str(),ios::out|ios::in|ios::binary);
 	   
 	  shared_ptr<iostream> sino_stream_kappa0_individual_pixels = 
 	    new fstream (output_file_name_kappa0_individual_pixels.c_str(),ios::trunc|ios::out|ios::in|ios::binary);
 	  	  
-	  shared_ptr<iostream> sino_stream_kappa0_cyl = 
-	    new fstream (output_file_name_kappa0_cyl.c_str(),ios::trunc|ios::out|ios::in|ios::binary);
+	 // shared_ptr<iostream> sino_stream_kappa0_cyl = 
+	    //new fstream (output_file_name_kappa0_cyl.c_str(),ios::trunc|ios::out|ios::in|ios::binary);
 	  
 	  shared_ptr<iostream> sino_stream_kappa1 = 
 	    new fstream (output_file_name_kappa1.c_str(), ios::out|ios::in|ios::binary);
 	  
 	  
-	  if (!sino_stream_kappa0->good())
+/*	  if (!sino_stream_kappa0->good())
 	  {
 	    error("SV filters: error opening files %s\n",output_file_name_kappa0.c_str());
-	  }
+	  }*/
 
 	   if (!sino_stream_kappa0_individual_pixels->good())
 	  {
@@ -901,32 +914,35 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  {
 	    error("SV filters: error opening files %s\n",output_file_name_kappa1.c_str());
 	  }  
-	  if (!sino_stream_kappa0_cyl->good())
+	  /*if (!sino_stream_kappa0_cyl->good())
 	  {
 	    error("SV filters: error opening files %s\n",output_file_name_kappa0_cyl.c_str());
-	  }  
+	  } */ 
 	  
 	  
-	  DiscretisedDensity<3,elemT>* in_density_tmp_0 =  in_density.clone();
+	 // DiscretisedDensity<3,elemT>* in_density_tmp_0 =  in_density.clone();
 	  DiscretisedDensity<3,elemT>* in_density_tmp_1 =  in_density.clone();
 	  
 	  
-	  VoxelsOnCartesianGrid<float> * vox_image_ptr_1 =
-	    new VoxelsOnCartesianGrid<float>(*new_data_info_ptr); 
-	  
-	  //vox_image_ptr_0 = 
-	  //dynamic_cast<VoxelsOnCartesianGrid<float> *>(in_density_tmp_0);
-	  vox_image_ptr_1 = 
+	  // sm 05/10/2001 -> made shared
+	  VoxelsOnCartesianGrid<float> *  vox_image_ptr_1 =
 	    dynamic_cast<VoxelsOnCartesianGrid<float> *>(in_density_tmp_1);  
+	    //in_density_cast_0.get_empty_voxels_on_cartesian_grid();
+	    //new VoxelsOnCartesianGrid<float>(*new_data_info_ptr); 
 	  
-	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0_individual_pixels =
-	    new ProjDataFromStream(new_data_info_ptr,sino_stream_kappa0);
+	 // vox_image_ptr_0 = 
+	 //dynamic_cast<VoxelsOnCartesianGrid<float> *>(in_density_tmp_0);
+	  //vox_image_ptr_1 = 
+	    //dynamic_cast<VoxelsOnCartesianGrid<float> *>(in_density_tmp_1);  
+	  
+	  //shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0_individual_pixels =
+	   // new ProjDataFromStream(new_data_info_ptr,sino_stream_kappa0);
 
-	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0 =
+	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0_individual_pixels =
 	    new ProjDataFromStream(new_data_info_ptr, sino_stream_kappa0_individual_pixels);
 	  
-	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0_cyl =
-	    new ProjDataFromStream(new_data_info_ptr,sino_stream_kappa0_cyl);
+	 // shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0_cyl =
+	   // new ProjDataFromStream(new_data_info_ptr,sino_stream_kappa0_cyl);
 	  
 	  
 	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa1 =
@@ -944,22 +960,30 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	      proj_data_ptr_kappa0->get_min_view_num(),proj_data_ptr_kappa0->get_max_view_num(),
 	  -6,6,in_density);*/
 
-	VoxelsOnCartesianGrid<float>* vox_image_ptr_bck = 
-	    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-		  -26,26,-26,26),
-		  in_density.get_origin(),in_density_cast_0.get_voxel_size());  
-   VoxelsOnCartesianGrid<float>* vox_image_ptr = 
+	  // NEW  - > changed to share - 04/0902001
+	  shared_ptr< VoxelsOnCartesianGrid<float> > vox_image_ptr_bck = 
+	//VoxelsOnCartesianGrid<float>* vox_image_ptr_bck = 
 	    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
 		  -26,26,-26,26),
 		  in_density.get_origin(),in_density_cast_0.get_voxel_size());  
 
+      /*  VoxelsOnCartesianGrid<float>* vox_image_ptr = 
+	    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
+		  -26,26,-26,26),
+		  in_density.get_origin(),in_density_cast_0.get_voxel_size());  */
+
     fwd_inverse_bck_individual_pixels(proj_data_ptr_kappa0_individual_pixels,
-	    vox_image_ptr_bck,vox_image_ptr,
+	    vox_image_ptr_bck.get(),
+	    //vox_image_ptr,
 	    proj_data_ptr_kappa0_individual_pixels->get_min_segment_num(), proj_data_ptr_kappa0_individual_pixels->get_max_segment_num(),     
 	    proj_data_ptr_kappa0_individual_pixels->get_min_axial_pos_num(0),proj_data_ptr_kappa0_individual_pixels->get_max_axial_pos_num(0),
 	    proj_data_ptr_kappa0_individual_pixels->get_min_view_num(),proj_data_ptr_kappa0_individual_pixels->get_max_view_num(),    
-	    proj_data_ptr_kappa0_individual_pixels->get_min_tangential_pos_num(),proj_data_ptr_kappa0_individual_pixels->get_max_tangential_pos_num(),in_density);
+	      -13,13,in_density);
+	  // LINE SOURCE ONLY
+	    //-6,6,in_density);
+	   // proj_data_ptr_kappa0_individual_pixels->get_min_tangential_pos_num(),proj_data_ptr_kappa0_individual_pixels->get_max_tangential_pos_num(),in_density);
 
+  cerr<< " DONE " << endl;
 	  const string filename3 ="kapa0_div_kapa1_RT_2D_NEW";
 
 	  shared_ptr<iostream> output_new1 = 
@@ -1069,7 +1093,8 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()),
 	    in_density.get_origin(),in_density_cast_0.get_voxel_size());  */
 	  
-	  VoxelsOnCartesianGrid<float> * vox_image_ptr_kappa1 =
+	  // made shared
+	 VoxelsOnCartesianGrid<float> *  vox_image_ptr_kappa1 =
 	    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
 	    in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y(),
 	    in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()),
@@ -1078,7 +1103,9 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  //vox_image_ptr_kappa0 = &in_density_cast_0 ;
 	  //shared_ptr<DiscretisedDensity<3,float> > image_sptr_0 =  vox_image_ptr_kappa0;   
 	  //shared_ptr<DiscretisedDensity<3,float> > image_sptr_0_cyl =  vox_image_ptr_kappa0_cyl;     
-	  shared_ptr<DiscretisedDensity<3,float> > image_sptr_1 =  vox_image_ptr_kappa1;   
+	 // VoxelsOnCartesianGrid<elemT>* vox_empty_ptr = 
+	   // in_density_cast_0.get_empty_voxels_on_cartesian_grid();
+	  shared_ptr<DiscretisedDensity<3,float> > image_sptr =  vox_image_ptr_kappa1;    
 	  
 	  // JUST TO CHECK IT -> BY HAND
 	  const ProjDataInfo * proj_data_info_ptr = 
@@ -1091,11 +1118,12 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  BackProjectorByBin*  bck_projector_ptr_0  =
 	    new BackProjectorByBinUsingSquareProjMatrixByBin(PM_0);*/
 	  
-	  shared_ptr<ProjMatrixByBin> PM_1 = 
+	  shared_ptr<ProjMatrixByBin> PM = 
 	    ProjMatrixByBin::read_registered_object(0, name);
-	  PM_1->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),image_sptr_1); 
-	  BackProjectorByBin*  bck_projector_ptr_1  =
-	    new BackProjectorByBinUsingSquareProjMatrixByBin(PM_1); 
+	  PM->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),image_sptr); 
+
+	  BackProjectorByBin*  bck_projector_ptr =
+	    new BackProjectorByBinUsingSquareProjMatrixByBin(PM); 
 	  
 	  
 	  bool fill_with_1 = false;
@@ -1119,19 +1147,19 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    proj_data_ptr->get_max_tangential_pos_num(),
 	    bck_projector_ptr_0, fill_with_1);    */
 	  
-	  do_segments_bck(*image_sptr_1, 
+	  do_segments_bck(*image_sptr, 
 	    *proj_data_ptr_inv_kappa1,   
 	    proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 
 	    proj_data_ptr->get_min_axial_pos_num(0),proj_data_ptr->get_max_axial_pos_num(0),
 	    proj_data_ptr->get_min_view_num(),proj_data_ptr->get_max_view_num(),
 	    proj_data_ptr->get_min_tangential_pos_num(), 
 	    proj_data_ptr->get_max_tangential_pos_num(),
-	    bck_projector_ptr_1, fill_with_1); 
+	    bck_projector_ptr, fill_with_1); 
 	  
 	  /*cerr << "min and max in image - kappa0" <<vox_image_ptr_kappa0 ->find_min()
 	    << ", " << vox_image_ptr_kappa0 ->find_max() << endl;   */
 	  
-	  cerr << "min and max in image - kappa1 " <<vox_image_ptr_kappa1->find_min()
+	  cerr << "min and max in image - kappa1 " <<image_sptr->find_min()
 	    << ", " << vox_image_ptr_kappa1->find_max() << endl;   
 	  
 	  //cerr << "min and max in image - kappa1 " <<vox_image_ptr_kappa0_cyl->find_min()
@@ -1195,13 +1223,13 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  
 	  for (int k=40;k<=60;k+=20)   
 	    // first do the line source
-	    //for (int j = -3;j<=3;j++)
-	      //for (int i =-3;i<=3;i++)
+	   // for (int j = -3;j<=3;j++)
+	    //  for (int i =-3;i<=3;i++)
 	      //  all the objects in the image
-	      //for (int j = -23;j<=23;j++)
-	        //for (int i =-10;i<=10;i++)
-	      for (int j = -3;j<=3;j++)
-	        for (int i =-3;i<=3;i++)
+	      for (int j = -23;j<=23;j++)
+	        for (int i =-10;i<=10;i++)
+	      //for (int j = -1;j<=1;j++)
+	       // for (int i =-1;i<=1;i++)
 	      {
 		Array<3,elemT> tmp_out(IndexRange3D(k,k,j,j,i,i));
 		// sm 07/09/2001
@@ -1209,10 +1237,10 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		float sq_kapas;
 		
 		if ( fabs((double)(*vox_image_ptr_bck)[k][j][i]) > 0.00000000000001 && 
-		  fabs((double)(*image_sptr_1)[k][j][i]) > 0.00000000000001 )
+		  fabs((double)(*image_sptr)[k][j][i]) > 0.00000000000001 )
 		{ 
 		  //sq_kapas =((*image_sptr_0)[k][j][i]*(*image_sptr_0)[k][j][i])/((*image_sptr_1)[k][j][i]*(*image_sptr_1)[k][j][i]);
-		  sq_kapas =((*vox_image_ptr_bck)[k][j][i]*(*vox_image_ptr_bck)[k][j][i])/((*image_sptr_1)[k][j][i]*(*image_sptr_1)[k][j][i]);
+		  sq_kapas =((*vox_image_ptr_bck)[k][j][i]*(*vox_image_ptr_bck)[k][j][i])/((*image_sptr)[k][j][i]*(*image_sptr)[k][j][i]);
 		  
 		  *output1 << " Values of kapa0 and kapa1" << endl;
 		  *output1<< "for k   "<< k;
@@ -1224,7 +1252,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		  //*output1 <<(*image_sptr_0)[k][j][i];
 		  *output1 <<(*vox_image_ptr_bck)[k][j][i];
 		  *output1 << "     ";
-		  *output1 <<(*image_sptr_1)[k][j][i];
+		  *output1 <<(*image_sptr)[k][j][i];
 		  *output1 << endl;
 		  *output<< "for k   "<< k;
 		  *output <<":";
@@ -1248,7 +1276,13 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		inverse_filter(tmp_out,in_density);
 		out_density[k][j][i] = tmp_out[k][j][i];	
 	      }       
-	      
+        //delete vox_image_ptr_1;
+	//delete vox_image_ptr_kappa1;
+//	delete vox_image_ptr_bck;
+//	delete vox_image_ptr;
+//	delete	vox_image_ptr_1;
+	//delete in_density_tmp_1;
+	delete bck_projector_ptr;
 	      //  now do the cylinders 
 /*	      for (int k=40;k<=40;k+=20)    
 	      {
