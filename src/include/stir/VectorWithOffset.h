@@ -196,6 +196,15 @@ public:
 
   //! signal end of access to T*
   inline void release_data_ptr();
+
+  //! signal end of access to const T*
+#ifndef STIR_NO_MUTABLE
+  inline void release_const_data_ptr() const;
+#else
+  inline void release_const_data_ptr();
+#endif
+  //@}
+
   //@}
 
   //!\name basic iterator support
