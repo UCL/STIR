@@ -3,13 +3,13 @@
 //
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief implementations for the InterfileHeader class
 
   \author Kris Thielemans
   \author PARAPET project
 
-  \date   $Date$
+  \date   $Id$
   \version $Revision$
 
 */
@@ -30,7 +30,6 @@ InterfileHeader::InterfileHeader()
      : KeyParser()
 {
 
-  // KT 20/06/98 new, unfortunate syntax...
   number_format_values.push_back("bit");
   number_format_values.push_back("ascii");
   number_format_values.push_back("signed integer");
@@ -345,7 +344,7 @@ int InterfilePDFSHeader::find_storage_order()
     
     if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view")
     {
-      storage_order =ProjDataFromStream::Segment_AxialPos_View_TangPos;
+      storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
       num_views = matrix_size[2][0];
 #ifdef _MSC_VER
       num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
@@ -355,7 +354,7 @@ int InterfilePDFSHeader::find_storage_order()
     }
     else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate")
     {
-      storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
+      storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
       num_views = matrix_size[1][0];
 #ifdef _MSC_VER
       
@@ -368,16 +367,16 @@ int InterfilePDFSHeader::find_storage_order()
     
   }
   /*
-  else if (matrix_labels[0] == "view" && 
-  matrix_labels[1] == "segment" && matrix_labels[2] == "z")
+  else if (matrix_labels[3] == "view" && 
+  matrix_labels[2] == "segment" && matrix_labels[1] == "axial coordinate")
   {
-  storage_order = SinogramOfVolume::ViewSegmentRingBin;
-  num_segments = matrix_size[1][0];
-  num_views = matrix_size[0][0];
+  storage_order = ProjDataFromStream::View_Segment_AxialPos_TangPos;
+  num_segments = matrix_size[2][0];
+  num_views = matrix_size[3][0];
   #ifdef _MSC_VER
-  num_rings_per_segment.assign(matrix_size[2].begin(), matrix_size[2].end());
+  num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
   #else
-  num_rings_per_segment = matrix_size[2];
+  num_rings_per_segment = matrix_size[1];
   #endif
   
    }
