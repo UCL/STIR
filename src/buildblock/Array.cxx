@@ -32,8 +32,6 @@
 
 START_NAMESPACE_STIR
 
-#ifdef ARRAY4
-
 template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
@@ -48,8 +46,6 @@ Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 
   is_regular_range = range.is_regular();
 }
-#endif
-
 
 /*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT>
@@ -1172,20 +1168,24 @@ template class Array<1,unsigned short>;
 template class Array<1,float>;
 #endif
 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<2,signed char>;
+#endif
 template class Array<2,short>;
 template class Array<2,unsigned short>;
 template class Array<2,float>;
 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<3, signed char>;
+#endif
 template class Array<3, short>;
 template class Array<3,unsigned short>;
 template class Array<3,float>;
 
-#ifdef ARRAY4
+
 template class Array<4, short>;
 template class Array<4,unsigned short>;
 template class Array<4,float>;
-#endif
+
 
 END_NAMESPACE_STIR
