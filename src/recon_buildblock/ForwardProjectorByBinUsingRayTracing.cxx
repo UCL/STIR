@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 /* 
@@ -35,9 +35,20 @@
     - release restriction to arc-corrected data
     - base on RegisteredParsingObject to allow user-selection of projector
     - replace some code with calls to methods of DataSymmetriesForBins_PET_CartesianGrid
+
+  * KT 25/11/2003 :
+    - handle cases with less symmetries, e.g. when num_views%4!=0
+    - Proj_Siddon has now a slightly different calling interface
+      (templating should speed it up a tiny bit)
 */
-// this file still needs some cleaning. Sorry.
-// and more DOC of course
+/* this file still needs some cleaning. Sorry.
+   and more DOC of course
+
+   Most of the ugly stuff is because Proj_Siddon is a translation of M Egger's code, and
+   hence does not know about RelatedViewgrams etc. So, there is a step that
+   gets data from a 4D Array and sticks it into the RelatedViewgrams.
+   Ugly though.
+*/
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
@@ -164,8 +175,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
   const int num_views = viewgrams.get_proj_data_info_ptr()->get_num_views();
 
   if (viewgrams.get_basic_segment_num() == 0)
-  {
-    
+  {    
     if (viewgrams.get_num_viewgrams() == 1)
     {
       Viewgram<float> & pos_view = *viewgrams.begin();
@@ -390,8 +400,6 @@ forward_project_all_symmetries(
     error("ForwardProjectorByBinUsingRayTracing::forward_project called with wrong type of ProjDataInfo\n");
     
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
-  const int view90 = nviews / 2;
-  const int view45 = view90 / 2;
   
   const int segment_num = pos_view.get_segment_num();
   const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
@@ -487,24 +495,25 @@ forward_project_all_symmetries(
     }
 
 
-    for (float offset = offset_start; offset < 0.3; offset += offset_incr)//SPAN
+    for (float offset = offset_start; offset < 0.3; offset += offset_incr)
     {
-        if (view == 0 || view == view45 ) {	/* phi=0 or 45 */
+        if (view == 0 || 4*view == nviews ) {	/* phi=0 or 45 */
             for (D = 0; D < C; D++) {
 	      if (min_abs_tangential_pos_num==0)
 		{
 		  /* Here tang_pos_num=0 and phi=0 or 45*/
 
-		  proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-			      delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
-			      offset, 2, num_planes_per_axial_pos, axial_pos_to_z_offset );
+		  proj_Siddon< 2>(Projall, image, proj_data_info_ptr, cphi, sphi,
+				  delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
+				  offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
+				  1.F / num_lors_per_virtual_ring);
 		  for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                     my_ax_pos0 = C * ax_pos0 + D;
 		    
-                    pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-                    pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-                    neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-                    neg_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
+                    pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]; 
+                    pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]; 
+                    neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]; 
+                    neg_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][2]; 
 		  }
 		}
                     /* Now tang_pos_num!=0 and phi=0 or 45 */
@@ -518,24 +527,25 @@ forward_project_all_symmetries(
 		                        
 		    if (s_in_mm >= fovrad_in_mm) 
 		      break;
-                    proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-                                delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
-                                offset, 1, num_planes_per_axial_pos, axial_pos_to_z_offset);
+                    proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
+				   delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
+				   offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
+				   1.F/num_lors_per_virtual_ring);
                     for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                         my_ax_pos0 = C * ax_pos0 + D;
                         if (tang_pos_num<=max_tangential_pos_num)
 			  {
-			    pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-			    pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-			    neg_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-			    neg_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
+			    pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]; 
+			    pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]; 
+			    neg_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][0]; 
+			    neg_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][2]; 
 			  }
 			if (-tang_pos_num>=min_tangential_pos_num)
 			  {
-			    pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]/ num_lors_per_virtual_ring; 
-			    pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]/ num_lors_per_virtual_ring; 
-			    neg_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][0]/ num_lors_per_virtual_ring; 
-			    neg_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][2]/ num_lors_per_virtual_ring; 
+			    pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]; 
+			    pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]; 
+			    neg_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][0]; 
+			    neg_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][2]; 
 			  }
                     }
                 }
@@ -547,19 +557,20 @@ forward_project_all_symmetries(
 	      if (min_abs_tangential_pos_num==0)
 		{             
 		  /* Here tang_pos_num==0 and phi!=k*45 */
-		  proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi, 
-			      delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
-			      offset, 4, num_planes_per_axial_pos, axial_pos_to_z_offset );
+		  proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
+				 delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
+				 offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+				 1.F/num_lors_per_virtual_ring);
 		  for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                     my_ax_pos0 = C * ax_pos0 + D;
-                    pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-                    pos_min90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][1]/ num_lors_per_virtual_ring; 
-                    pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-                    pos_min180[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][3]/ num_lors_per_virtual_ring; 
-                    neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-                    neg_min90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][1]/ num_lors_per_virtual_ring; 
-                    neg_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
-                    neg_min180[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][3]/ num_lors_per_virtual_ring; 
+                    pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]; 
+                    pos_min90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][1]; 
+                    pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]; 
+                    pos_min180[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][3]; 
+                    neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]; 
+                    neg_min90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][1]; 
+                    neg_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][2]; 
+                    neg_min180[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][3]; 
 		  }
 		}
 		
@@ -575,33 +586,34 @@ forward_project_all_symmetries(
 		    if (s_in_mm >= fovrad_in_mm) 
 		      break;
 
-                    proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-                                delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
-                                offset, 3, num_planes_per_axial_pos, axial_pos_to_z_offset );
+                    proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
+				   delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
+				   offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+				   1.F/num_lors_per_virtual_ring);
                     for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) 
 		      {
 			my_ax_pos0 = C * ax_pos0 + D;
 			if (tang_pos_num<=max_tangential_pos_num)
 			  {
-			    pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-			    pos_min90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][1]/ num_lors_per_virtual_ring; 
-			    pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-			    pos_min180[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][3]/ num_lors_per_virtual_ring; 
-			    neg_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-			    neg_min90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][1]/ num_lors_per_virtual_ring; 
-			    neg_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
-			    neg_min180[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][3]/ num_lors_per_virtual_ring; 
+			    pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]; 
+			    pos_min90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][1]; 
+			    pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]; 
+			    pos_min180[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][3]; 
+			    neg_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][0]; 
+			    neg_min90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][1]; 
+			    neg_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][2]; 
+			    neg_min180[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][3]; 
 			  }
 			if (-tang_pos_num>=min_tangential_pos_num)
 			  {
-			    pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]/ num_lors_per_virtual_ring; 
-			    pos_min90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][1]/ num_lors_per_virtual_ring; 
-			    pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]/ num_lors_per_virtual_ring; 
-			    pos_min180[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][3]/ num_lors_per_virtual_ring; 
-			    neg_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][0]/ num_lors_per_virtual_ring; 
-			    neg_min90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][1]/ num_lors_per_virtual_ring; 
-			    neg_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][2]/ num_lors_per_virtual_ring; 
-			    neg_min180[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][3]/ num_lors_per_virtual_ring; 
+			    pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]; 
+			    pos_min90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][1]; 
+			    pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]; 
+			    pos_min180[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][3]; 
+			    neg_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][0]; 
+			    neg_min90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][1]; 
+			    neg_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][2]; 
+			    neg_min180[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][3]; 
 			  }
 		      }   
                 }     
@@ -635,18 +647,18 @@ ForwardProjectorByBinUsingRayTracing::
   Viewgram<float> dummy = pos_view;
 
 
-    forward_project_all_symmetries(
-                    pos_view, 
-                    neg_view, 
-                    dummy,
-		    dummy,
-                    dummy,
-                    dummy,
-                    dummy,
-                    dummy,
-                    image,
-                    min_axial_pos_num, max_axial_pos_num,
-                    min_tangential_pos_num, max_tangential_pos_num);
+  forward_project_all_symmetries(
+				 pos_view, 
+				 neg_view, 
+				 dummy,
+				 dummy,
+				 dummy,
+				 dummy,
+				 dummy,
+				 dummy,
+				 image,
+				 min_axial_pos_num, max_axial_pos_num,
+				 min_tangential_pos_num, max_tangential_pos_num);
 }
 
 
@@ -665,25 +677,25 @@ ForwardProjectorByBinUsingRayTracing::
 				         const int min_axial_pos_num, const int max_axial_pos_num,
 				         const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_segment_num() > 0);
   assert(pos_view.get_view_num() >= 0);
   assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
 
-    forward_project_all_symmetries(
-                    pos_view, 
-                    neg_view, 
-                    pos_plus90, 
-                    neg_plus90, 
-                    dummy,
-                    dummy,
-                    dummy,
-                    dummy,
-                    image,
-                    min_axial_pos_num, max_axial_pos_num,
-                    min_tangential_pos_num, max_tangential_pos_num);
+  forward_project_all_symmetries(
+				 pos_view, 
+				 neg_view, 
+				 pos_plus90, 
+				 neg_plus90, 
+				 dummy,
+				 dummy,
+				 dummy,
+				 dummy,
+				 image,
+				 min_axial_pos_num, max_axial_pos_num,
+				 min_tangential_pos_num, max_tangential_pos_num);
 }
 
 
@@ -697,26 +709,24 @@ ForwardProjectorByBinUsingRayTracing::
 				         const int min_axial_pos_num, const int max_axial_pos_num,
 				         const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_segment_num() > 0);
   assert(pos_view.get_view_num() >= 0);
   assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
-
-    forward_project_all_symmetries(
-                    pos_view, 
-                    neg_view, 
-                    dummy,
-                    dummy,
-                    pos_min180, 
-                    neg_min180, 
-                    dummy,
-                    dummy,
-                    image,
-                    min_axial_pos_num, max_axial_pos_num,
-                    min_tangential_pos_num, max_tangential_pos_num);
-
+  forward_project_all_symmetries(
+				 pos_view, 
+				 neg_view, 
+				 dummy,
+				 dummy,
+				 pos_min180, 
+				 neg_min180, 
+				 dummy,
+				 dummy,
+				 image,
+				 min_axial_pos_num, max_axial_pos_num,
+				 min_tangential_pos_num, max_tangential_pos_num);
 }
 
 #if 0
@@ -890,9 +900,10 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	for (D = 0; D < C; D++) {
 	  /* Here tang_pos_num=0 and phi=0 or 45*/
 	  
-	  // CL&KT 05/11/98 use scan_info
-	  proj_Siddon( Projall,image,proj_data_cyl_ptr, cphi, sphi,
-	    delta + D, 0, R,min_ax_pos, max_ax_pos, offset, 2, num_planes_per_axial_pos, 0);//KT&CL 21/12/99 changed last 2 parameters
+	  proj_Siddon<2>( Projall,image,proj_data_cyl_ptr, 
+			  cphi, sphi, delta + D, 0, R,min_ax_pos, max_ax_pos, 
+			  offset, num_planes_per_axial_pos, 0,
+			  1.F/num_lors_per_virtual_ring);
 	  for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
 	    my_ax_pos0 = C * ax_pos0 + D;
 	    sino[view][0] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos; 
@@ -900,8 +911,10 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	  }
 	  /* Now tang_pos_num!=0 and phi=0 or 45 */
 	  for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
-	    proj_Siddon(Projall,image,proj_data_cyl_ptr, cphi, sphi,
-	      delta + D, tang_pos_num, R,min_ax_pos,max_ax_pos, offset, 1, num_planes_per_axial_pos, 0);//KT&CL 21/12/99 changed last 2 parameters
+	    proj_Siddon<1>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+			   delta + D, tang_pos_num, R,min_ax_pos,max_ax_pos, 
+			   offset, num_planes_per_axial_pos, 0,
+			   1.F/num_lors_per_virtual_ring);
 	    for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
 	      ax_pos0 = C * ax_pos0 + D;
 	      sino[view][tang_pos_num] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
@@ -916,8 +929,10 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	
 	for (D = 0; D < C; D++) {
 	  /* Here tang_pos_num==0 and phi!=k*45 */
-	  proj_Siddon(Projall,image,proj_data_cyl_ptr, cphi, sphi,
-	    delta + D, 0, R,min_ax_pos,max_ax_pos, offset, 4, num_planes_per_axial_pos, 0);//KT&CL 21/12/99 changed last 2 parameters
+	  proj_Siddon<4>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+			 delta + D, 0, R,min_ax_pos,max_ax_pos, 
+			 offset, num_planes_per_axial_pos, 0,
+			 1.F/num_lors_per_virtual_ring);
 	  for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
 	    my_ax_pos0 = C * ax_pos0 + D;
 	    sino[view][0] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
@@ -928,8 +943,10 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	  
 	  /* Here tang_pos_num!=0 and phi!=k*45. */
 	  for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
-	    proj_Siddon(Projall,image,proj_data_cyl_ptr, cphi, sphi,
-	      delta + D, tang_pos_num, R,min_ax_pos, max_ax_pos, offset, 3, num_planes_per_axial_pos, 0);//KT&CL 21/12/99 changed last 2 parameters
+	    proj_Siddon<3>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+			   delta + D, tang_pos_num, R,min_ax_pos, max_ax_pos, 
+			   offset, num_planes_per_axial_pos, 0,
+			   1.F/num_lors_per_virtual_ring);
 	    for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
 	      my_ax_pos0 = C * ax_pos0 + D;
 	      sino[view][tang_pos_num] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
@@ -948,18 +965,11 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
       }// end of } else {
     }// end of test for offset loop
     
-    
-    
     stop_timers();
     
 }
 
-
-
-
-
 #endif // old 2D versions
-
 
 void 
 ForwardProjectorByBinUsingRayTracing::
@@ -968,47 +978,45 @@ forward_project_view_2D(Viewgram<float> & pos_view,
 			const int min_axial_pos_num, const int max_axial_pos_num,
 			const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_segment_num() == 0);
   assert(pos_view.get_view_num() >= 0);
   assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views());
 
   Viewgram<float> dummy = pos_view;
 
   forward_project_all_symmetries_2D(
-                    pos_view, 
-                    dummy, 
-                    dummy,
-                    dummy,             
-                    image,
-                    min_axial_pos_num, max_axial_pos_num,
-                    min_tangential_pos_num, max_tangential_pos_num);
+				    pos_view, 
+				    dummy, 
+				    dummy,
+				    dummy,             
+				    image,
+				    min_axial_pos_num, max_axial_pos_num,
+				    min_tangential_pos_num, max_tangential_pos_num);
 
 }
 
 void 
 ForwardProjectorByBinUsingRayTracing::
 forward_project_view_plus_90_2D(Viewgram<float> & pos_view, 
-				          Viewgram<float> & pos_plus90, 
-                                          const VoxelsOnCartesianGrid<float> & image,
-                                          const int min_axial_pos_num, const int max_axial_pos_num,
-                                          const int min_tangential_pos_num, const int max_tangential_pos_num) const
+				Viewgram<float> & pos_plus90, 
+				const VoxelsOnCartesianGrid<float> & image,
+				const int min_axial_pos_num, const int max_axial_pos_num,
+				const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_segment_num() == 0);
   assert(pos_view.get_view_num() >= 0);
   assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
 
   Viewgram<float> dummy = pos_view;
 
-
-    forward_project_all_symmetries_2D(
-                    pos_view, 
-                    pos_plus90, 
-                    dummy,
-                    dummy,             
-                    image,
-                    min_axial_pos_num, max_axial_pos_num,
-                    min_tangential_pos_num, max_tangential_pos_num);
-
+  forward_project_all_symmetries_2D(
+				    pos_view, 
+				    pos_plus90, 
+				    dummy,
+				    dummy,             
+				    image,
+				    min_axial_pos_num, max_axial_pos_num,
+				    min_tangential_pos_num, max_tangential_pos_num);
 }
 
 
@@ -1020,7 +1028,7 @@ forward_project_view_min_180_2D(Viewgram<float> & pos_view,
 			       const int min_axial_pos_num, const int max_axial_pos_num,
 			       const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
-  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_segment_num() == 0);
   assert(pos_view.get_view_num() >= 0);
   assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
 
@@ -1033,8 +1041,7 @@ forward_project_view_min_180_2D(Viewgram<float> & pos_view,
 				    dummy,             
 				    image,
 				    min_axial_pos_num, max_axial_pos_num,
-                    min_tangential_pos_num, max_tangential_pos_num);
-  
+				    min_tangential_pos_num, max_tangential_pos_num);
 }
 
 
@@ -1059,17 +1066,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
     error("ForwardProjectorByBinUsingRayTracing::forward_project called with wrong type of ProjDataInfo\n");
     
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
-  const int view90 = nviews / 2;
-  const int view45 = view90 / 2;
   
   const int segment_num = pos_view.get_segment_num();
   const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
   const int view = pos_view.get_view_num();
 
   assert(delta == 0);
-  // relax 2 assertions to not break the temporary 4 parameter forward_project below
   assert(view >= 0);
-  assert(view <= view90);
   
 
   /* remove assertions which would break the temporary 1,2 parameter forward_project.
@@ -1150,7 +1153,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   
   
   
-  if (view == 0 || view == view45 ) 
+  if (view == 0 || 4*view == nviews ) 
   {	/* phi=0 or 45 */
     for (D = 0; D < C; D++)       
     { 
@@ -1158,31 +1161,30 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	{
 	  /* Here tang_pos_num=0 and phi=0 or 45*/     
 	  {        
-	    proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-			delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
-			0.F /*==offset*/, 2, num_planes_per_axial_pos, axial_pos_to_z_offset );
+	    proj_Siddon<2>(Projall, image, proj_data_info_ptr, cphi, sphi,
+			   delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
+			   0.F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			   1.F/num_lors_per_virtual_ring);
 	    for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
 	      {
 		my_ax_pos0 = C * ax_pos0 + D;
 		
-		pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-		pos_plus90[my_ax_pos0][0] +=Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-		//neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-		//neg_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
+		pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]; 
+		pos_plus90[my_ax_pos0][0] +=Projall[ax_pos0][0][0][2]; 
 	      }
 	  }
 	  
 	  if (num_planes_per_axial_pos == 2)
 	    {	 	  
-	      proj_Siddon(Projall2, image, proj_data_info_ptr, cphi, sphi,
-			  delta + D, 0, R, min_axial_pos_num,  max_axial_pos_num+1,
-			  -0.5F /*==offset*/, 2, num_planes_per_axial_pos, axial_pos_to_z_offset );
+	      proj_Siddon<2>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+			      delta + D, 0, R, min_axial_pos_num,  max_axial_pos_num+1,
+			      -0.5F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			      1.F/4);
 	      for (int ax_pos0 =  min_axial_pos_num; ax_pos0 <=  max_axial_pos_num; ax_pos0++) 
 		{
 		  my_ax_pos0 = C * ax_pos0 + D;
-		  //CL 071099 Remove 0.5* and replace by num_lors_per_virtual_ring
-		  pos_view[my_ax_pos0][0] += (Projall2[ax_pos0+1][0][0][0]+ Projall2[ax_pos0][0][0][0])/4; 
-		  pos_plus90[my_ax_pos0][0] += (Projall2[ax_pos0+1][0][0][2]+ Projall2[ax_pos0][0][0][2])/4; //CL 0710		  
+		  pos_view[my_ax_pos0][0] += (Projall2[ax_pos0+1][0][0][0]+ Projall2[ax_pos0][0][0][0]); 
+		  pos_plus90[my_ax_pos0][0] += (Projall2[ax_pos0+1][0][0][2]+ Projall2[ax_pos0][0][0][2]);
 		}	      
 	    }
 	}
@@ -1200,45 +1202,43 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	  break;
 
         {                              
-          proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-            delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
-            0.F, 1, num_planes_per_axial_pos, axial_pos_to_z_offset);
+          proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
+			 delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
+			 0.F, num_planes_per_axial_pos, axial_pos_to_z_offset,
+			 1.F/num_lors_per_virtual_ring);
           for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
           {
             my_ax_pos0 = C * ax_pos0 + D;
 	    if (tang_pos_num<=max_tangential_pos_num)
 	      {
-		pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-		pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-		//neg_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-		//neg_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
+		pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]; 
+		pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]; 
 	      }
 	    if (-tang_pos_num>=min_tangential_pos_num)
 	      {
-		pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]/ num_lors_per_virtual_ring; 
-		pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]/ num_lors_per_virtual_ring; 
-		//neg_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][0]/ num_lors_per_virtual_ring; 
-		//neg_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][1][1][2]/ num_lors_per_virtual_ring; 
+		pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]; 
+		pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]; 
 	      }
           }
         }
         if (num_planes_per_axial_pos == 2)
         {                            
-          proj_Siddon(Projall2, image, proj_data_info_ptr, cphi, sphi,
-            delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
-            -0.5F, 1, num_planes_per_axial_pos, axial_pos_to_z_offset);
+          proj_Siddon<1>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+			 delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
+			 -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset,
+			 1.F/4);
           for (int ax_pos0 =min_axial_pos_num; ax_pos0 <=max_axial_pos_num; ax_pos0++) 
           {
             my_ax_pos0 = C * ax_pos0 + D;
 	    if (tang_pos_num<=max_tangential_pos_num)
 	      {
-		pos_view[my_ax_pos0][tang_pos_num] +=(Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0])/4; 
-		pos_plus90[my_ax_pos0][tang_pos_num] += (Projall2[ax_pos0][0][0][2]+Projall2[ax_pos0+1][0][0][2])/4; 
+		pos_view[my_ax_pos0][tang_pos_num] +=(Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0]); 
+		pos_plus90[my_ax_pos0][tang_pos_num] += (Projall2[ax_pos0][0][0][2]+Projall2[ax_pos0+1][0][0][2]); 
 	      }
 	    if (-tang_pos_num>=min_tangential_pos_num)
 	      {
-		pos_view[my_ax_pos0][-tang_pos_num] +=(Projall2[ax_pos0][0][1][0]+Projall2[ax_pos0+1][0][1][0])/4; 
-		pos_plus90[my_ax_pos0][-tang_pos_num] +=(Projall2[ax_pos0][0][1][2]+Projall2[ax_pos0+1][0][1][2])/4;
+		pos_view[my_ax_pos0][-tang_pos_num] +=(Projall2[ax_pos0][0][1][0]+Projall2[ax_pos0+1][0][1][0]); 
+		pos_plus90[my_ax_pos0][-tang_pos_num] +=(Projall2[ax_pos0][0][1][2]+Projall2[ax_pos0+1][0][1][2]);
 	      }            
           }
         }
@@ -1254,36 +1254,33 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	{
 	  /* Here tang_pos_num==0 and phi!=k*45 */
 	  {
-	    proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi, 
-			delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
-			0.F, 4, num_planes_per_axial_pos, axial_pos_to_z_offset );
+	    proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
+			   delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
+			   0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			   1.F/num_lors_per_virtual_ring);
 	    for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
 	      {
 		my_ax_pos0 = C * ax_pos0 + D;
-		pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-		pos_min90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][1]/ num_lors_per_virtual_ring; 
-		pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-		pos_min180[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][3]/ num_lors_per_virtual_ring; 
-		// neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
-          // neg_min90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][1]/ num_lors_per_virtual_ring; 
-          // neg_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][2]/ num_lors_per_virtual_ring; 
-          // neg_min180[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][3]/ num_lors_per_virtual_ring; 
+		pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]; 
+		pos_min90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][1]; 
+		pos_plus90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][2]; 
+		pos_min180[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][3]; 
 	      }
 	  }
 	  
 	  if (num_planes_per_axial_pos == 2)        
 	    {         
-	      proj_Siddon(Projall2, image, proj_data_info_ptr, cphi, sphi, 
-			  delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
-			  -0.5F, 4, num_planes_per_axial_pos, axial_pos_to_z_offset );
+	      proj_Siddon<4>(Projall2, image, proj_data_info_ptr, cphi, sphi, 
+			     delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
+			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			     1.F/4);
 	      for (int ax_pos0 = min_axial_pos_num; ax_pos0 <=max_axial_pos_num; ax_pos0++) 
 		{
 		  my_ax_pos0 = C * ax_pos0 + D;
-		  pos_view[my_ax_pos0][0] +=  (Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0])/4; 
-		  pos_min90[my_ax_pos0][0] += (Projall2[ax_pos0][0][0][1]+Projall2[ax_pos0+1][0][0][1])/4; 
-		  pos_plus90[my_ax_pos0][0] +=(Projall2[ax_pos0][0][0][2]+Projall2[ax_pos0+1][0][0][2])/4; 
-		  pos_min180[my_ax_pos0][0] +=(Projall2[ax_pos0][0][0][3]+Projall2[ax_pos0+1][0][0][3])/4; 
-		  // neg_view[my_ax_pos0][0] +=  Projall[ax_pos0][1][0][0]/ num_lors_per_virtual_ring; 
+		  pos_view[my_ax_pos0][0] +=  (Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0]); 
+		  pos_min90[my_ax_pos0][0] += (Projall2[ax_pos0][0][0][1]+Projall2[ax_pos0+1][0][0][1]); 
+		  pos_plus90[my_ax_pos0][0] +=(Projall2[ax_pos0][0][0][2]+Projall2[ax_pos0+1][0][0][2]); 
+		  pos_min180[my_ax_pos0][0] +=(Projall2[ax_pos0][0][0][3]+Projall2[ax_pos0+1][0][0][3]); 
 		}
 	    }
 	}
@@ -1301,49 +1298,51 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	  break;
 
         {          
-          proj_Siddon(Projall, image, proj_data_info_ptr, cphi, sphi,
-            delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
-            0.F, 3, num_planes_per_axial_pos, axial_pos_to_z_offset );
+          proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
+		       delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
+		       0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+		       1.F/num_lors_per_virtual_ring);
           for (int ax_pos0 = min_axial_pos_num; ax_pos0<= max_axial_pos_num; ax_pos0++) 
           {
             my_ax_pos0 = C * ax_pos0 + D;
 	    if (tang_pos_num<=max_tangential_pos_num)
 	      {
-		pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]/ num_lors_per_virtual_ring; 
-		pos_min90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][1]/ num_lors_per_virtual_ring; 
-		pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]/ num_lors_per_virtual_ring; 
-		pos_min180[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][3]/ num_lors_per_virtual_ring; 
+		pos_view[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][0]; 
+		pos_min90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][1]; 
+		pos_plus90[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][2]; 
+		pos_min180[my_ax_pos0][tang_pos_num] +=  Projall[ax_pos0][0][0][3]; 
 	      }
 	    if (-tang_pos_num>=min_tangential_pos_num)
 	      {
-		pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]/ num_lors_per_virtual_ring; 
-		pos_min90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][1]/ num_lors_per_virtual_ring; 
-		pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]/ num_lors_per_virtual_ring; 
-		pos_min180[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][3]/ num_lors_per_virtual_ring; 
+		pos_view[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][0]; 
+		pos_min90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][1]; 
+		pos_plus90[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][2]; 
+		pos_min180[my_ax_pos0][-tang_pos_num] +=  Projall[ax_pos0][0][1][3]; 
 	      }
           }   
         } 
         if (num_planes_per_axial_pos == 2)
         {
-	  proj_Siddon(Projall2, image, proj_data_info_ptr, cphi, sphi,
-		      delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
-		      -0.5F, 3, num_planes_per_axial_pos, axial_pos_to_z_offset );
+	  proj_Siddon<3>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+			  delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
+			  -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			 1.F/4);
 	  for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
 	    {
 	      my_ax_pos0 = C * ax_pos0 + D;
 	      if (tang_pos_num<=max_tangential_pos_num)
 		{
-		  pos_view[ my_ax_pos0][tang_pos_num] +=(Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0])/4; 
-		  pos_min90[my_ax_pos0][tang_pos_num] += (Projall2[ax_pos0][0][0][1]+Projall2[ax_pos0+1][0][0][1])/4; 
-		  pos_plus90[ my_ax_pos0][tang_pos_num] +=(Projall2[ax_pos0][0][0][2]+Projall2[ax_pos0+1][0][0][2])/4; 
-		  pos_min180[ my_ax_pos0][tang_pos_num] += (Projall2[ax_pos0][0][0][3]+Projall2[ax_pos0+1][0][0][3])/4; 
+		  pos_view[ my_ax_pos0][tang_pos_num] +=(Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0]); 
+		  pos_min90[my_ax_pos0][tang_pos_num] += (Projall2[ax_pos0][0][0][1]+Projall2[ax_pos0+1][0][0][1]); 
+		  pos_plus90[ my_ax_pos0][tang_pos_num] +=(Projall2[ax_pos0][0][0][2]+Projall2[ax_pos0+1][0][0][2]); 
+		  pos_min180[ my_ax_pos0][tang_pos_num] += (Projall2[ax_pos0][0][0][3]+Projall2[ax_pos0+1][0][0][3]); 
 		}
 	      if (-tang_pos_num>=min_tangential_pos_num)
 		{
-		  pos_view[ my_ax_pos0][-tang_pos_num] +=  (Projall2[ax_pos0][0][1][0] +Projall2[ax_pos0+1][0][1][0])/4; 
-		  pos_min90[ my_ax_pos0][-tang_pos_num] +=(Projall2[ax_pos0][0][1][1]+Projall2[ax_pos0+1][0][1][1])/4; 
-		  pos_plus90[ my_ax_pos0][-tang_pos_num] += (Projall2[ax_pos0][0][1][2]+ Projall2[ax_pos0+1][0][1][2])/4; 
-		  pos_min180[ my_ax_pos0][-tang_pos_num] += ( Projall2[ax_pos0][0][1][3]+ Projall2[ax_pos0+1][0][1][3])/4; 
+		  pos_view[ my_ax_pos0][-tang_pos_num] +=  (Projall2[ax_pos0][0][1][0] +Projall2[ax_pos0+1][0][1][0]); 
+		  pos_min90[ my_ax_pos0][-tang_pos_num] +=(Projall2[ax_pos0][0][1][1]+Projall2[ax_pos0+1][0][1][1]); 
+		  pos_plus90[ my_ax_pos0][-tang_pos_num] += (Projall2[ax_pos0][0][1][2]+ Projall2[ax_pos0+1][0][1][2]); 
+		  pos_min180[ my_ax_pos0][-tang_pos_num] += ( Projall2[ax_pos0][0][1][3]+ Projall2[ax_pos0+1][0][1][3]); 
 		}
 	    }   
         }     
@@ -1352,15 +1351,9 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
       
     }// end loop over D
   }// end of else
-  
-  
-  
+    
   stop_timers();
-  
 }
-
-
-
 
 
 END_NAMESPACE_STIR
