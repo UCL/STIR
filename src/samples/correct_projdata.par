@@ -1,6 +1,23 @@
 correct_projdata Parameters := 
+
   input file := trues.hs
-  output filename := precorrected.s
+
+  ; Current way of specifying time frames, pending modifications to
+  ; STIR to read time info from the headers
+  ; see class documentation for TimeFrameDefinitions for the format of this file
+  ; time frame definition filename :=  frames.fdef
+
+  ; if a frame definition file is specified, you can say that the input data
+  ; corresponds to a specific time frame
+  ; the number should be between 1 and num_frames and defaults to 1
+  ; this is currently only used to pass the relevant time to the normalisation
+  ; time frame number := 1
+  
+  ; output file
+  ; for future compatibility, do not use an extension in the name of the
+  ; output file. It will be added automatically
+  output filename := precorrected
+
   ; default value for next is -1, meaning 'all segments'
   ; maximum absolute segment number to process := 
  
@@ -24,13 +41,17 @@ correct_projdata Parameters :=
     Bin Normalisation From ProjData :=
     normalisation projdata filename:= norm.hs
     End Bin Normalisation From ProjData:=
+
   ; attenuation image, will be forward projected to get attenuation factors
+  ; OBSOLETE
   ;attenuation image filename := attenuation_image.hv
   
   ; forward projector used to estimate attenuation factors, defaults to Ray Tracing
+  ; OBSOLETE
   ;forward_projector type := Ray Tracing
 
   ; scatter term to be subtracted AFTER norm+atten correction
   ; defaults to 0
   ;scatter projdata filename := scatter.hs
+
 END:= 
