@@ -97,8 +97,9 @@ public:
     */
   bool is_trivial() const;
 
-private:
+protected:
   Array<num_dimensions, std::complex<elemT> > complex_filter_kernel;
+private:
   IndexRange<num_dimensions> padding_range;
   void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const;
   Succeeded set_padding_range();
