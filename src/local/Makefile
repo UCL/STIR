@@ -9,7 +9,6 @@ include $(WORKSPACE)/Makefile_common
 LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/local/buildblock \
 	$(WORKSPACE)/local/recon_buildblock \
-	$(WORKSPACE)/local/Shape_buildblock \
 	$(WORKSPACE)/local/eval_buildblock \
 	$(WORKSPACE)/local/QH_library \
 	$(WORKSPACE)/local/motion \
