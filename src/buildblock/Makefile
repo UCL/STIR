@@ -57,9 +57,7 @@ createdir:
 $(DEST)%.o : %.cxx 
 	$(CXX) $(CFLAGS) -o $@ -c $< 
 
-# KT 17/03/99 changed Related... to PETRelated...
-#KT 18/03/99 use SOURCES macro for reuse below
-
+# KT 10/12/99 added linear_regression.cxx
 SOURCES = \
   sinodata.cxx convert.cxx \
   PETScannerInfo.cxx PETScanInfo.cxx \
@@ -72,7 +70,8 @@ SOURCES = \
   KeyParser.cxx line.cxx \
   interfile.cxx InterfileHeader.cxx \
   bbfilters.cxx recon_array_functions.cxx \
-  sparsedata.cxx
+  sparsedata.cxx \
+  linear_regression.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
