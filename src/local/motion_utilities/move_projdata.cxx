@@ -33,6 +33,7 @@
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/transform_3d_object.h"
 #include "stir/TimeFrameDefinitions.h"
+#include "local/stir/AbsTimeInterval.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
@@ -68,7 +69,12 @@ START_NAMESPACE_STIR
   ;move_to_reference := 1
   ; next can be set to do only 1 frame, defaults means all frames
   ;frame_num_to_process := -1
+
+  ; specify motion, see stir::RigidObject3DMotion
   Rigid Object 3D Motion Type := type
+
+  ; specify reference position, see stir::AbsTimeInterval
+  time interval for reference position type:= type
 
   END :=
 \endverbatim
@@ -108,6 +114,9 @@ protected:
 private:
   shared_ptr<ProjData >  in_proj_data_sptr; 
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
+  shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;  
+  RigidObject3DTransformation _transformation_to_reference_position;
+
   shared_ptr<ProjDataInfo> proj_data_info_ptr; // template for output
   // shared_ptr<OutputFileFormat> output_file_format_sptr;  
 };
@@ -116,6 +125,7 @@ void
 MoveProjData::set_defaults()
 {
   ro3d_ptr = 0;
+  _reference_abs_time_sptr = 0;
   frame_num_to_process = -1;
   //output_file_format_sptr = new DefaultOutputFileFormat;
   do_move_to_reference = true;
@@ -137,6 +147,7 @@ MoveProjData::initialise_keymap()
   parser.add_key("max_out_segment_num_to_process", &max_out_segment_num_to_process);
   parser.add_key("max_in_segment_num_to_process", &max_in_segment_num_to_process);
 
+  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
   parser.add_key("move_to_reference", &do_move_to_reference);
   parser.add_key("frame_num_to_process", &frame_num_to_process);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
@@ -225,6 +236,17 @@ post_processing()
       return true;
     }
 #endif
+  // set transformation_to_reference_position
+  if (is_null_ptr(_reference_abs_time_sptr))
+    {
+      warning("time interval for reference position is not set");
+      return true;
+    }
+    {
+      RigidObject3DTransformation av_motion = 
+	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+      _transformation_to_reference_position =av_motion.inverse();    
+    }
 
   return false;
 }
@@ -279,7 +301,7 @@ process_data()
       
       rigid_object_transformation = 
 	compose(ro3d_ptr->get_transformation_to_scanner_coords(),
-		compose(ro3d_ptr->get_transformation_to_reference_position(),
+		compose(_transformation_to_reference_position,
 			compose(rigid_object_transformation,
 				ro3d_ptr->get_transformation_from_scanner_coords())));
       if (!do_move_to_reference)

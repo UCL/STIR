@@ -24,7 +24,7 @@
 
 #include "stir/listmode/LmToProjData.h"
 #include "stir/CartesianCoordinate3D.h"
-
+#include "local/stir/AbsTimeInterval.h"
 #include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
 
 START_NAMESPACE_STIR
@@ -48,6 +48,9 @@ private:
 
   RigidObject3DTransformation move_to_scanner;
   RigidObject3DTransformation move_from_scanner;
+  shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;
+  
+  RigidObject3DTransformation _transformation_to_reference_position;
   RigidObject3DTransformation ro3dtrans; // actual Polaris  motion for current_time
   
 

@@ -24,7 +24,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/CartesianCoordinate3D.h"
 
-#include "stir/listmode/LmToProjData.h"
+#include "local/stir/AbsTimeInterval.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
@@ -190,6 +190,8 @@ protected:
 private:
   int frame_num;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
+  shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;  
+  RigidObject3DTransformation _transformation_to_reference_position;
   shared_ptr<BinNormalisation> normalisation_ptr;
  
   double time_interval;
@@ -202,6 +204,7 @@ FindMCNormFactors::set_defaults()
 {
   max_segment_num_to_process = -1;
   ro3d_ptr = 0;
+  _reference_abs_time_sptr = 0;
   normalisation_ptr = 0;
   do_pre_normalisation = true;
   time_interval=1; 
@@ -223,6 +226,7 @@ FindMCNormFactors::initialise_keymap()
 
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
+  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("do pre normalisation", &do_pre_normalisation);
   parser.add_key("default time interval", &time_interval);
@@ -355,6 +359,18 @@ post_processing()
     }
 #endif
 
+  // set transformation_to_reference_position
+  if (is_null_ptr(_reference_abs_time_sptr))
+    {
+      warning("time interval for reference position is not set");
+      return true;
+    }
+    {
+      RigidObject3DTransformation av_motion = 
+	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+      _transformation_to_reference_position =av_motion.inverse();    
+    }
+
   return false;
 }
 
@@ -450,7 +466,7 @@ FindMCNormFactors::process_data()
 	      ro3d_ptr->compute_average_motion_rel_time(current_time, current_time+time_interval_this_frame);
 	    ro3dtrans = 
 	      compose(ro3d_ptr->get_transformation_to_scanner_coords(),
-		      compose(ro3d_ptr->get_transformation_to_reference_position(),
+		      compose(_transformation_to_reference_position,
 			      compose(ro3dtrans,
 				ro3d_ptr->get_transformation_from_scanner_coords())));
             

@@ -28,6 +28,7 @@ void
 LmToProjDataWithMC::set_defaults()
 {
   LmToProjData::set_defaults();
+  _reference_abs_time_sptr = 0;
   ro3d_ptr = 0; 
 }
 
@@ -36,6 +37,7 @@ LmToProjDataWithMC::initialise_keymap()
 {
   LmToProjData::initialise_keymap();
   parser.add_start_key("LmToProjDataWithMC Parameters");
+  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
 }
 
@@ -68,6 +70,20 @@ post_processing()
     ro3d_ptr->synchronise(*lm_data_ptr);
 #endif
 
+  // set transformation_to_reference_position
+  if (is_null_ptr(_reference_abs_time_sptr))
+    {
+      warning("time interval for reference position is not set");
+      return true;
+    }
+    {
+      RigidObject3DTransformation av_motion = 
+	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+      cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
+      cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
+      _transformation_to_reference_position =av_motion.inverse();    
+    }
+
   move_from_scanner = ro3d_ptr->get_transformation_from_scanner_coords();
   /* 966 transformation:
     RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
@@ -96,9 +112,9 @@ process_new_time_event(const CListTime& time_event)
   assert(fabs(current_time - time_event.get_time_in_secs())<.0001);     
   ro3d_ptr->get_motion_rel_time(ro3dtrans,current_time);
 
-         ro3dtrans = compose(move_to_scanner,
-			     compose(ro3d_ptr->get_transformation_to_reference_position(),
-				     compose(ro3dtrans,move_from_scanner)));
+  ro3dtrans = compose(move_to_scanner,
+		      compose(_transformation_to_reference_position,
+			      compose(ro3dtrans,move_from_scanner)));
 
 }
 

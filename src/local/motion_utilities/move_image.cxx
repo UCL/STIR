@@ -33,6 +33,7 @@
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/transform_3d_object.h"
+#include "local/stir/AbsTimeInterval.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
@@ -71,7 +72,11 @@ START_NAMESPACE_STIR
   ; next can be set to do only 1 frame, defaults means all frames
   ;frame_num_to_process := -1
 
+  ; specify motion, see stir::RigidObject3DMotion
   Rigid Object 3D Motion Type := type
+
+  ; specify reference position, see stir::AbsTimeInterval
+  time interval for reference position type:= type
 
   ; Change output file format, defaults to Interfile. See OutputFileFormat.
   ;Output file format := interfile
@@ -110,7 +115,9 @@ protected:
 private:
   shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr; 
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
-
+  shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;
+  
+  RigidObject3DTransformation _transformation_to_reference_position;
   shared_ptr<OutputFileFormat> output_file_format_sptr;  
 
   int scan_start_time_secs_since_1970_UTC;
@@ -120,6 +127,7 @@ void
 MoveImage::set_defaults()
 {
   ro3d_ptr = 0;
+  _reference_abs_time_sptr = 0;
   frame_num_to_process = -1;
   output_file_format_sptr = new DefaultOutputFileFormat;
   do_move_to_reference = true;
@@ -137,6 +145,7 @@ MoveImage::initialise_keymap()
 		 &scan_start_time_secs_since_1970_UTC);
   parser.add_key("time frame definition filename",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
+  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
   parser.add_key("move_to_reference", &do_move_to_reference);
   parser.add_key("frame_num_to_process", &frame_num_to_process);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
@@ -229,6 +238,17 @@ post_processing()
     }
 #endif
 
+  // set transformation_to_reference_position
+  if (is_null_ptr(_reference_abs_time_sptr))
+    {
+      warning("time interval for reference position is not set");
+      return true;
+    }
+    {
+      RigidObject3DTransformation av_motion = 
+	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+      _transformation_to_reference_position =av_motion.inverse();    
+    }
   return false;
 }
 
@@ -279,7 +299,7 @@ process_data()
       
       rigid_object_transformation = 
 	compose(ro3d_ptr->get_transformation_to_scanner_coords(),
-		compose(ro3d_ptr->get_transformation_to_reference_position(),
+		compose(_transformation_to_reference_position,
 			compose(rigid_object_transformation,
 				ro3d_ptr->get_transformation_from_scanner_coords())));
       if (!do_move_to_reference)

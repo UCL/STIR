@@ -5,6 +5,8 @@
     Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
     For internal GE use only
 */
+#ifndef __stir_motion_RigidObject3DMotion__H__
+#define __stir_motion_RigidObject3DMotion__H__
 /*!
   \file
   \ingroup motion
@@ -20,14 +22,11 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
-#include <ctime>
-
-# ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::time_t; }
-#endif
 
 
 START_NAMESPACE_STIR
+
+class AbsTimeInterval;
 
 /*! \ingroup motion
 
@@ -44,14 +43,9 @@ START_NAMESPACE_STIR
 
   - synchronisation: currently uses a list mode file
 
-  - motion parameters are w.r.t. a tracker dependend coordinate system. There is then
-    some stuff to go to scanner systems etc. But it's laregly left up to the application to 
+  - motion parameters are w.r.t. a tracker dependent coordinate system. There is then
+    some stuff to go to scanner systems etc. But it's largely left up to the application to 
     do this properly.
-
-  - stuff to get the 'reference position' is in here, but maybe it shouldn't. At present, 
-  there are various parameters that can be used to set this. For example, it can use an
-  attenuation scan, although that's half-broken (because the ECAT7 header for a .a file 
-  does not record the scan duration (as it wouldn't make a lot of sense anyway).
     
 */
 class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>,
@@ -68,6 +62,9 @@ public:
     compute_average_motion_rel_time(const double start_time, const double end_time)const = 0;
 
   virtual void get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const =0;
+
+  RigidObject3DTransformation
+  compute_average_motion(const AbsTimeInterval&) const;
 
   //! Has to be called and will be used to synchronise listmode time and motion tracking time
   /*! This should make sure that a 'rel_time' of 0 corresponds to the start of the list mode data
@@ -89,9 +86,6 @@ public:
   virtual bool is_synchronised() const = 0;
  public:
 
-  const RigidObject3DTransformation& 
-    get_transformation_to_reference_position() const;
-
   virtual const RigidObject3DTransformation& 
     get_transformation_to_scanner_coords() const = 0;
   virtual const RigidObject3DTransformation& 
@@ -105,16 +99,8 @@ protected:
   // next member is protected in case it's needed by synchronise()
   string list_mode_filename;
 
-private:
-  
-  string attenuation_filename; 
-  double transmission_duration;
-  std::time_t  reference_start_time_in_secs_since_1970;
-  std::time_t reference_end_time_in_secs_since_1970;
-  vector<double> reference_translation;
-  vector<double> reference_quaternion;
-  RigidObject3DTransformation transformation_to_reference_position;
-
 };
 
 END_NAMESPACE_STIR
+
+#endif

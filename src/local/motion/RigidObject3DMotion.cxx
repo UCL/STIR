@@ -23,12 +23,8 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/stream.h"
 #include "stir/round.h"
-
-#include <ctime>
-
-# ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::time_t; using ::tm; using ::localtime; }
-#endif
+#include "stir/is_null_ptr.h"
+#include "local/stir/AbsTimeInterval.h"
 
 #include <iostream>
 #ifndef STIR_NO_NAMESPACES
@@ -38,49 +34,22 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-static const std::time_t time_not_yet_determined=0;
 
-static
-void 
-find_ref_start_end_from_att_file (std::time_t& att_start_time, std::time_t& att_end_time, 
-				  double transmission_duration,
-				  const string& attenuation_filename)
-{
-#ifdef HAVE_LLN_MATRIX
-  MatrixFile* AttnFile = matrix_open(attenuation_filename.c_str(), MAT_READ_ONLY, AttenCor );
-  if (AttnFile==NULL)
-    error("Error opening attenuation file %s\n", attenuation_filename.c_str());
-
-  /* Acquisition date and time - main head */
-  att_start_time = AttnFile->mhptr->scan_start_time;
-  att_end_time = att_start_time + round(floor(transmission_duration));
-#else
-    error("Error opening attenuation file %s: compiled without ECAT7 support\n", attenuation_filename.c_str());
-#endif
-}
 
 void 
 RigidObject3DMotion::set_defaults()
 { 
-  transmission_duration = 300;
-  attenuation_filename ="";
   list_mode_filename="";
-  reference_start_time_in_secs_since_1970=time_not_yet_determined;
-  reference_end_time_in_secs_since_1970=time_not_yet_determined+10;// has to be larger than start
   //time_offset=time_not_yet_determined;
 }
 
 void 
 RigidObject3DMotion::initialise_keymap()
 { 
-  parser.add_key("attenuation_filename", &attenuation_filename);
-  parser.add_key("transmission_duration", &transmission_duration);
+#if 0
   parser.add_key("reference_quaternion", &reference_quaternion);
   parser.add_key("reference_translation", &reference_translation);
-  // TODO cannot do this yet as there's no add_key(std::time_t)
-  //parser.add_key("reference_start_time_in_secs_since_1970_UTC", &reference_start_time_in_secs_since_1970);
-  //parser.add_key("reference_end_time_in_secs_since_1970_UTC", &reference_end_time_in_secs_since_1970);
-  //parser.add_key("time_offset", &time_offset);  
+#endif
   parser.add_key("list_mode_filename",&list_mode_filename);
 }
 
@@ -101,29 +70,7 @@ post_processing()
       warning("RigidObject3DMotion object not synchronised.");
       return true;
     }
-  /* complicated way of setting reference motion:
-     First try attenuation file. If that fails, try values from 
-     reference_start_time_in_secs_since_1970/reference_end_time_in_secs_since_1970 keywords. As a last resort,
-     try values from reference_quaternion/reference_translation keywords. */
-  if (attenuation_filename !="")
-    {
-      find_ref_start_end_from_att_file (reference_start_time_in_secs_since_1970, reference_end_time_in_secs_since_1970,
-					transmission_duration,
-					attenuation_filename);
-      cerr << "reference times from attenuation file: "
-	   <<  reference_start_time_in_secs_since_1970 << " till " << reference_end_time_in_secs_since_1970 << '\n';
-    }
-  if (reference_start_time_in_secs_since_1970 != time_not_yet_determined && 
-      reference_start_time_in_secs_since_1970 < reference_end_time_in_secs_since_1970)
-    {
-      RigidObject3DTransformation av_motion = 
-	compute_average_motion_rel_time(secs_since_1970_to_rel_time(reference_start_time_in_secs_since_1970),
-					secs_since_1970_to_rel_time(reference_end_time_in_secs_since_1970));
-      cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
-      cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
-      transformation_to_reference_position =av_motion.inverse();
-    
-    }
+#if 0
   else 
     {
       if (reference_translation.size()!=3 || reference_quaternion.size() !=4)
@@ -143,6 +90,7 @@ post_processing()
       cerr << "Reference translation from par file:  " << av_motion.get_translation()<<endl;
       transformation_to_reference_position =av_motion.inverse();
     }
+#endif
 
   return false;
 }
@@ -156,10 +104,12 @@ compute_average_motion_rel_time(const double start_time, const double end_time) 
 }
 #endif
 
-const RigidObject3DTransformation &
-RigidObject3DMotion::get_transformation_to_reference_position() const
-{ 
- return transformation_to_reference_position;
+RigidObject3DTransformation
+RigidObject3DMotion::
+compute_average_motion(const AbsTimeInterval& interval) const
+{
+  return compute_average_motion_rel_time(secs_since_1970_to_rel_time(interval.get_start_time_in_secs_since_1970()),
+					 secs_since_1970_to_rel_time(interval.get_end_time_in_secs_since_1970()));
 }
 
 #if 0
