@@ -24,87 +24,68 @@
 
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
-#include <algorithm>
 
 START_NAMESPACE_STIR
 
+#if !defined(_MSC_VER) || _MSC_VER>1200
+// VC 6.0 needs ugly work-arounds. We'll put these in the .inl file
+
+/* \ingroup Array
+   \name Functions for writing generic code with indexing of multi-dimensional arrays
+   */
+//@{ 
+
+//! \name get(), an alternative for array indexing using BasicCoordinate objects
+//{@
+
+//! Case where the index has lower dimension than the array
 template <int num_dimensions, int num_dimensions2, typename elemT>
 inline
 const Array<num_dimensions-num_dimensions2,elemT>&
-get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions2,int> &c) 
-{
-  return get(a[c[1]],cut_first_dimension(c)); 
-}
+get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions2,int> &c);
 
+//! Case where the index has the same dimension as the array
 template <int num_dimensions, typename elemT>
 inline
 const elemT&
-get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions,int> &c) 
-{
-  return a[c];
-}			
-template <int num_dimensions, typename elemT>
-inline
-const Array<num_dimensions-1,elemT>&
-get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<1,int> &c) 
-{
-  return a[c[1]]; 
-}			
+get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions,int> &c);
 
+//@}
 
-
+//! Get the first multi-dimensional index of the array
 template <int num_dimensions, typename T>
 inline
 BasicCoordinate<num_dimensions, int>
-get_min_indices(const Array<num_dimensions, T>& a)
-{
-  if (a.get_min_index()<=a.get_max_index())
-    return join(a.get_min_index(), get_min_indices(*a.begin()));
-  else
-    { 
-      BasicCoordinate<num_dimensions, int> tmp;
-      return tmp;
-    }
-}
+get_min_indices(const Array<num_dimensions, T>& a);
 
-template <typename T>
-inline
-BasicCoordinate<1, int>
-get_min_indices(const Array<1, T>& a)
-{
-  BasicCoordinate<1, int> result;
-  result[1] = a.get_min_index();
-  return result;
-}
 
-template <int num_dimensions2, typename T>
+//! Given an index into an array, increment it to the next one
+/*!
+    \return \c true if the next index was still within the array,\x false otherwise
+
+    This can be used to iterate through an array using code such as
+    \code
+    Array<num_dimensions2, T> array = ...;
+    BasicCoordinate<num_dimensions, int> indices =
+       get_min_indices(array);
+    do 
+    { something with indices }
+    while (next(indices, array));
+    \endcode
+    \warning The above loop will fail for empty arrays
+*/
+template <int num_dimensions, typename T, int num_dimensions2>
 inline
 bool 
-next(BasicCoordinate<1, int>& index, 
-     const Array<num_dimensions2, T>& a)
-{
-  if (a.get_min_index()>a.get_max_index())
-    return false;
-  index[1]++;
-  return index[1]<=a.get_max_index();
-}
-template <int num_dimensions, int num_dimensions2, typename T>
-inline
-bool 
-next(BasicCoordinate<num_dimensions, int>& index, 
-     const Array<num_dimensions2, T>& a)
-{
-  if (a.get_min_index()>a.get_max_index())
-    return false;
-  index[num_dimensions]++;
-  BasicCoordinate<num_dimensions-1, int> upper_index= cut_last_dimension(index);
-  if (index[num_dimensions]<=get(a,cut_last_dimension(index)).get_max_index())
-    return true;
-  if (!next(upper_index, a))
-    return false;
-  index=join(upper_index, get(a,cut_last_dimension(index)).get_min_index());
-  return true;
-}
+next(BasicCoordinate<num_dimensions, int>& indices, 
+     const Array<num_dimensions2, T>& a);
+
+//@}
+#endif // end of VC 6.0 conditional
+
 
 END_NAMESPACE_STIR
+
+#include "stir/array_index_functions.inl"
+
 #endif
