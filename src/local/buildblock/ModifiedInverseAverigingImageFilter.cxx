@@ -385,8 +385,8 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		if (attenuation_proj_data_filename !="1")
 		{
 		  do_attenuation = true;
-		  all_attenuation_segments[segment_num] = new SegmentByView<float>(proj_data_ptr->get_empty_segment_by_view(segment_num));
-		 *all_attenuation_segments[segment_num] =  attenuation_proj_data_ptr->get_segment_by_view(segment_num);
+		  all_attenuation_segments[segment_num] = 
+		    new SegmentByView<float>(attenuation_proj_data_ptr->get_segment_by_view(segment_num));
 		 }
 		else 
 		{
@@ -514,18 +514,16 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	      new VoxelsOnCartesianGrid<float>
 	      (IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
 	      -2,2,-2,2),in_density.get_origin(),in_density_cast_0.get_voxel_size());  
-	    
+	   
+	     const int min_j = max(in_density_cast_0.get_min_y(),j-2);
+	    const int max_j = min(in_density_cast_0.get_max_y(),j+2);
+	    const int min_i = max(in_density_cast_0.get_min_x(),i-2);
+	    const int max_i = min(in_density_cast_0.get_max_x(),i+2);
+	   
 	    // the mask size is in 2D only
-	    // to do - find a better way of handeling boarders
-	    for (int j_in =-2;j_in<=0;j_in++)
-	      for (int i_in =-2;i_in<=0;i_in++)	
-		    (*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][max(j,j_in+j)][max(i,i_in+i)];
-
-	  for (int j_in =1;j_in<=2;j_in++)
-	      for (int i_in =1;i_in<=2;i_in++)	
-		    (*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][min(j,j_in+j)][min(i,i_in+i)];
-
-		//(*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][j_in+j][i_in+i];
+	    for (int j_in =min_j;j_in<=max_j;j_in++)
+	      for (int i_in =min_i;i_in<=max_i;i_in++)	
+		    (*in_density_cast_tmp)[k][j_in-j][i_in-i] = in_density_cast_0[k][j_in][i_in];
 	      
 	      fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
 		in_density_cast_0.get_min_z(), in_density_cast_0.get_max_z(),
@@ -544,10 +542,10 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  }
 	  else
 	  {
-	    int min_j = max(j,j-2);
-	    int max_j = min(j,j+2);
-	    int min_i = max(i,i-2);
-	    int max_i = min(i,i+2);
+	    const int min_j = max(in_density_cast_0.get_min_y(),j-2);
+	    const int max_j = min(in_density_cast_0.get_max_y(),j+2);
+	    const int min_i = max(in_density_cast_0.get_min_x(),i-2);
+	    const int max_i = min(in_density_cast_0.get_max_x(),i+2);
 	    
 	    fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
 	      in_density_cast_0.get_min_z(), in_density_cast_0.get_max_z(),
