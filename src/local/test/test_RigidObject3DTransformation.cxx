@@ -27,11 +27,11 @@
 #include "stir/Bin.h"
 #include "stir/stream.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-#include "local/stir/Densel.h"
+#include "stir/Densel.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "local/stir/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.h" // necessary for shared_ptr in ProjMatrixElemsForOneDensel.h
