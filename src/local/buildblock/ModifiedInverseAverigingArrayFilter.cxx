@@ -7,6 +7,8 @@
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
 #include "local/stir/fft.h"
+
+#include "local/stir/local_helping_functions.h"
 #include <iostream>
 #include <fstream>
 
@@ -22,57 +24,7 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-// divide complex arrays where elements are stored as follows:
-// A = array[ a(1), a(2), a(3), a(4), a(5), a(6), a(7), a(8), a(9),a(10)]
-// Re[A] = even coeff
-// Im[A] = odd coeff 
 
-void mulitply_complex_arrays(Array<1,float>& out_array, const Array<1,float>& array_nom,
-			      const Array<1,float>& array_denom);
-
-void divide_complex_arrays( Array<1,float>& out_array, const Array<1,float>& array_nom,
-			      const Array<1,float>& array_denom);
-
-# if 1
-void divide_complex_arrays(Array<1,float>& out_array, const Array<1,float>& array_nom,
-			     const Array<1,float>& array_denom)
-{
-  assert(array_nom.get_length()== array_denom.get_length());
-  assert(out_array.get_length()== array_denom.get_length());
-  out_array.fill(0);
-  
-  int i = 1;
-  int j = 2;
-  while (j <=array_nom.get_max_index())
-  {
-    float tmp =  (array_denom[i]*array_denom[i])+(array_denom[j]*array_denom[j]);
-    out_array[i] = (array_nom[i]*array_denom[i] + array_nom[j]*array_denom[j])/tmp;
-    out_array[j] =(array_nom[j]*array_denom[i]-array_nom[i]*array_denom[j])/tmp;
-    i=i+2;
-    j=j+2;
-    
-  }
-}
-
-void mulitply_complex_arrays(Array<1,float>& out_array, const Array<1,float>& array_nom,
-			      const Array<1,float>& array_denom)
-{
-  assert(array_nom.get_length()== array_denom.get_length());
-  assert(out_array.get_length()== array_denom.get_length());
-  out_array.fill(0);
-  
-  int i = 1;
-  int j = 2;
-  while (j <=array_nom.get_max_index())
-  {
-    out_array[i] = (array_nom[i]*array_denom[i] - array_nom[j]*array_denom[j]);
-    out_array[j] =(array_nom[j]*array_denom[i]+ array_nom[i]*array_denom[j]);
-    i=i+2;
-    j=j+2;
-    
-  }
-}
-#endif
 
 void 
 FFT_routines::find_fft_filter(Array<1,float>& filter_coefficients)
@@ -367,7 +319,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 	  new ArrayFilter1DUsingConvolution<float>(new_filter_coefficients);
       }
       
-     // all_1d_array_filters[0] = 	 
+      //all_1d_array_filters[0] = 	 
 //	new ArrayFilter1DUsingConvolution<float>();
       
 }
