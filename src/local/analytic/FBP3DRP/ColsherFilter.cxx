@@ -108,13 +108,14 @@ set_up(int height, int width, float theta,
   start_timers();
 
   /*
-   * The Colsher filter is real-valued. It is arranged in wrap-around order
-   * in both dimensions
+   * The Colsher filter is real-valued and symmetric. As we use fourier_for_real_data,
+   * it is arranged in wrap-around order in the axial dimension, but we we need only the
+   * positive frequencies in tangential direction.
    */
   Array<2,std::complex<float> > filter(IndexRange2D(height,width/2+1));
 
   // KT&Darren Hogg 03/07/2001 inserted correct scale factor 
-  // TODO this assumes current value for the magic_number in bakcprojector
+  // TODO this assumes current value for the magic_number in backprojector
   const float scale_factor = static_cast<float>(4*_PI*d_a);
  
   for (int j = 0; j <=  height/2; ++j) 
@@ -141,7 +142,7 @@ set_up(int height, int width, float theta,
 	      /* Apodizing Hanning window */;
 	      fil *= 
 		static_cast<float>(
-				   fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
+				   (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
 				   *(alpha_axial + (1. - alpha_axial)* cos(_PI * fb / fc_axial)));
 	      fil *= scale_factor;
 	    }
