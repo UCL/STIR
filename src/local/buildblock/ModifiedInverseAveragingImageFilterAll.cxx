@@ -232,13 +232,13 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
       switch (size)
       {
       case 64:
-	fft_1_1D_array = static_cast<float>(1/sqrt(64*64*64));
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(64*64*64)));
 	break;
       case 128:
-	fft_1_1D_array = static_cast<float>(1/sqrt(128*128*128));
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(128*128*128)));
 	break;
       case 256:
-	fft_1_1D_array = static_cast<float>(1/sqrt(256*256*256));
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(256*256*256)));
 	break;
       
       default:
@@ -600,13 +600,13 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
       switch (size)
       {          
       case 64:
-	fft_1_1D_array = static_cast<float>(1/sqrt(64*64));
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(64*64)));
 	break;
       case 128:
-	fft_1_1D_array = static_cast<float>(1/sqrt(128*128));
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(128*128)));
 	break;
       case 256:
-	fft_1_1D_array = static_cast<float>(1/sqrt(256*256));
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(256*256)));
 	break;
       
       default:
