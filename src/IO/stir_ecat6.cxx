@@ -76,6 +76,8 @@ static void cti_data_to_float_Array(Array<2,float>&out,
   \param buffer is supposed to be a pre-allocated buffer (which will be modified)
 
   It applies all scale factors.
+  \warning \a buffer has to be allocated with a size at least as large as the
+  multiple of MatBLKSIZE that fits the whole sinogram (because it uses cti_wblk).
   */
 static void read_sinogram(Sinogram<float>& sino_2D,
                    char *buffer, 
@@ -646,7 +648,11 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   ihead.ecat_calibration_fctr= 1;
   ihead.well_counter_cal_fctr=1;
   
-  short *cti_data= new short[plane_size];
+  // make sure we have a large enough multiple of MatBLKSIZE
+  int cti_data_size = plane_size*2;
+  if (cti_data_size%MatBLKSIZE != 0)
+    cti_data_size = ((cti_data_size/MatBLKSIZE)+1)*MatBLKSIZE;
+  short *cti_data= new short[cti_data_size/2];
   Array<2,short> plane(image[min_z].get_index_range());
   
   for(int z=0; z<z_size; z++) { // loop on planes
@@ -664,7 +670,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
     
     // write data
     long matnum= cti_numcod(frame_num, z-min_z+1, gate_num, data_num, bed_num);
-    if(cti_write_image(fptr, matnum, &ihead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) {
+    if(cti_write_image(fptr, matnum, &ihead, cti_data, cti_data_size)!=EXIT_SUCCESS) {
       warning("Unable to write image plane %d at (f%d, g%d, d%d, b%d) to file, exiting.\n",
                z-min_z+1, frame_num, gate_num, data_num, bed_num);
       delete[] cti_data;      
