@@ -21,9 +21,9 @@
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
 #include "stir/ParsingObject.h"
-#include "local/stir/listmode/CListRecord.h"
-#include "local/stir/listmode/CListRecordECAT966.h"// TODO get rid of this
-#include "local/stir/listmode/CListModeData.h"
+#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecordECAT966.h"// TODO get rid of this
+#include "stir/listmode/CListModeData.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
 #include "stir/Array.h"
@@ -193,6 +193,9 @@ compute()
     shared_ptr<CListRecord> record_sptr =
       lm_data_ptr->get_empty_record_sptr();
     CListRecord& record = *record_sptr;
+
+    if (dynamic_cast<const CListRecordECAT966 *>(&record) == 0)
+      error("Currently only works on 966 data. Code needs fixing.");
 
     double current_time = 0;
     while (true)
