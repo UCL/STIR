@@ -13,14 +13,13 @@
 class InterfileHeader : public KeyParser
 {
 public:
-   InterfileHeader(istream& f)
-     : KeyParser(f)
-   {}
+  //KT 26/10/98 moved to .cxx file
+  InterfileHeader(istream& f);
 
 protected:
 
-  // If you override the next two functions, call these first
-  virtual void init_keys();
+  //KT 26/10/98 removed virtual void init_keys();
+  // If you override the next function, call this one first
   // Returns 0 of OK, 1 of not.
   virtual int post_processing();
 
@@ -41,13 +40,10 @@ private:
   int type_of_data_index;
 
   // Extra private variables which will be translated to something more useful
-  int	bytes_per_pixel;
-  String data_file_name;
+  int bytes_per_pixel;
 
-
-  void ReadMatrixInfo();
-  void ReadFramesInfo();
-  void OpenFileStream();
+  void read_matrix_info();
+  void read_frames_info();
 
 public :
 
@@ -57,9 +53,11 @@ public :
   // TODO these shouldn't be here, but in PETStudy or something
 
   // 'Final' variables
-  fstream*		in_stream;
-  int			max_r_index;
-  int			storage_order;
+
+  //KT 26/10/98 moved here
+  string data_file_name;
+
+  //KT 26/10/98 removed   fstream*		in_stream;
   // KT 20/06/98 new
   // This will be determined from number_format_index and bytes_per_pixel
   NumericType		type_of_numbers;
@@ -71,7 +69,7 @@ public :
   // KT 01/08/98 changed name to num_dimensions and num_time_frames
   int			num_dimensions;
   int			num_time_frames;
-  vector<String>	matrix_labels;
+  vector<string>	matrix_labels;
   vector<IntVect>	matrix_size;
   DoubleVect		pixel_sizes;
   IntVect		sqc;
@@ -96,21 +94,37 @@ protected:
 
 };
 
-#if 0
+#if 1
+#include "sinodata.h"
+
 class InterfilePSOVHeader : public InterfileHeader
 {
 public:
-   InterfilePSOVHeader(istream& f)
-     : InterfileHeader(f)
-   {}
+   //KT 26/10/98 
+  InterfilePSOVHeader(istream& f);
 
 protected:
 
+  //KT 26/10/98 virtual void init_keys();
   // Returns 0 of OK, 1 of not.
   virtual int post_processing();
 
 public:
+  vector<int> segment_sequence;
+  vector<int> min_ring_difference; 
+  vector<int> max_ring_difference; 
+  vector<int> num_rings_per_segment;
+  
+  // derived values
+  int num_segments;
+  int num_views;
+  int num_bins;
   PETSinogramOfVolume::StorageOrder storage_order;
+
+private:
+  void resize_segments_and_set();
+  int find_storage_order();
+
 };
 	
 #endif
