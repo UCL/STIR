@@ -576,6 +576,8 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 
   const int org_z_length =
     density_sptr->get_length();
+  const CartesianCoordinate3D<float> org_voxel_size =
+    image.get_voxel_size();
 
   cerr << "\tTests with non-standard range of planes (larger)\n";    
   density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
@@ -584,14 +586,36 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 				  image.get_min_x(), image.get_max_x()));
   run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
 
-#if 0
-  // this test currently fails with the ray tracing projmatrix 
-  // (but not with the interpolation projmatrix)
-  // TODO check why!
   if (org_z_length>2)
     {
       cerr << "\tTests with non-standard range of planes (smaller)\n";    
       density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+      density_sptr->resize(IndexRange3D(1, org_z_length-2,
+					image.get_min_y(), image.get_max_y(),
+					image.get_min_x(), image.get_max_x()));
+      run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+    }
+#if 1
+  // this test currently fails with the ray tracing projmatrix 
+  // (but not with the interpolation projmatrix)
+  if (org_z_length>1)
+    {
+      cerr << "\tTests with non-standard range of planes (smaller (even))\n";    
+      density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+      density_sptr->resize(IndexRange3D(1, org_z_length-1,
+					image.get_min_y(), image.get_max_y(),
+					image.get_min_x(), image.get_max_x()));
+      run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+    }
+  // this test currently fails with the ray tracing projmatrix 
+  // because the symmetries do not work yet with origin shifted over half a voxel
+  // (but not with the interpolation projmatrix)
+  if (org_z_length>1)
+    {
+      cerr << "\tTests with non-standard range of planes (smaller (even and shifted origin))\n";    
+      //      density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+      density_sptr->set_origin(org_voxel_size*
+			   CartesianCoordinate3D<float>(.5F,0,0));
       density_sptr->resize(IndexRange3D(1, org_z_length-1,
 					image.get_min_y(), image.get_max_y(),
 					image.get_min_x(), image.get_max_x()));
@@ -599,14 +623,36 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
     }
 #endif
 
-  cerr << "\tTests with usual z voxel size 3 times smaller\n";    
-  density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
-  image.set_grid_spacing(image.get_grid_spacing()/
-			 CartesianCoordinate3D<float>(2,1,1));
-  density_sptr->grow(IndexRange3D(-2, org_z_length*2, // note: -2 because grow doesn't allow shrinking!
-				  image.get_min_y(), image.get_max_y(),
-				  image.get_min_x(), image.get_max_x()));
-  run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+  {
+    cerr << "\tTests with z voxel size 3 times smaller than usual\n";    
+    density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+    image.set_grid_spacing(org_voxel_size/
+			   CartesianCoordinate3D<float>(2,1,1));
+    density_sptr->grow(IndexRange3D(-2, org_z_length*2, // note: -2 because grow doesn't allow shrinking!
+				    image.get_min_y(), image.get_max_y(),
+				    image.get_min_x(), image.get_max_x()));
+    run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+  }
+  {
+    cerr << "\tTests with z voxel size 2 times larger than usual\n";    
+    density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+    image.set_grid_spacing(org_voxel_size*
+			   CartesianCoordinate3D<float>(2,1,1));
+    density_sptr->grow(IndexRange3D(0, (org_z_length+1)/2-1,
+				    image.get_min_y(), image.get_max_y(),
+				    image.get_min_x(), image.get_max_x()));
+    run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+  }
+  {
+    cerr << "\tTests with usual z voxel size 2 times larger, 1 extra plane\n";    
+    density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+    image.set_grid_spacing(org_voxel_size*
+			   CartesianCoordinate3D<float>(2,1,1));
+    density_sptr->grow(IndexRange3D(0, (org_z_length+1)/2,
+				    image.get_min_y(), image.get_max_y(),
+				    image.get_min_x(), image.get_max_x()));
+    run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+  }
 }
 
 void
