@@ -80,7 +80,7 @@ DiscretisedDensity<num_dimensions,elemT>::
   {
     fstream input(filename.c_str(), ios::in | ios::binary);
     if (!input)
-      error("ProjData::read_from_file: error opening file %s\n", filename.c_str());
+      error("DiscretisedDensity::read_from_file: error opening file %s\n", filename.c_str());
     
     input.read(signature, max_length);
     signature[max_length-1]='\0';
