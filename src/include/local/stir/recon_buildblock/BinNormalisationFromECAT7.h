@@ -68,20 +68,20 @@ public:
   BinNormalisationFromECAT7(const string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin) const;
+  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
   //! Normalise some data
   /*! 
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
 
 private:
   Array<1,float> axial_t1_array;
@@ -100,7 +100,8 @@ private:
   int mash;
 
   void read_norm_data(const string& filename);
-  float get_deadtime_efficiency ( const DetectionPosition<>& det_pos) const;
+  float get_deadtime_efficiency ( const DetectionPosition<>& det_pos,
+				  const double start_time, const double end_time) const;
 
   // parsing stuff
   virtual void set_defaults();
