@@ -4,30 +4,24 @@
 /*!
 \file
 \ingroup scatter
-\brief Implementations of functions defined in scatter.h
-Function calculates the integral along LOR in a 
-image (attenuation or emission). 
+\brief Implementations of functions defined in Scatter.h
+Function calculates the integral along LOR in an image (attenuation or emission). 
 (From scatter point to detector coordinate)
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
-	
-	  
+  	  
 		$Date$
 		$Revision$
 		
 		  Copyright (C) 2004- $Date$, Hammersmith Imanet
 		  See STIR/LICENSE.txt for details
 */
-
-
 #include "local/stir/Scatter.h"
 #include "stir/IndexRange.h" 
 #include "stir/Array.h"
 #include "stir/Coordinate3D.h"
 #include "stir/CartesianCoordinate2D.h" 
-
 START_NAMESPACE_STIR
 
 float cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,

@@ -4,7 +4,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementations of functions defined in scatter.h
+  \brief Implementations of functions defined in Scatter.h
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
@@ -17,11 +17,8 @@
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/Scatter.h"
-
 using namespace std;
-
 START_NAMESPACE_STIR
-
 static const float total_cross_section_511keV = 
   total_cross_section(511.); 
 
