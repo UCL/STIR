@@ -1,9 +1,40 @@
 //
 // $Id$
 //
-  /***************** Miscellaneous Functions  *******/
+/*!
+  \file 
+  \ingroup utilities
+ 
+  \brief This program computes the centre of gravity in each plane and
+  writes its coordinates to file, together with a weight for each plane.
+  
+  \par Usage
+  \code
+   CoG output_filename_prefix image_input_filename
+  \endcode
+  Output will be in files \c output_filename_prefix.x and 
+  \c output_filename_prefix.y.
+  Each will contain a list of all z coordinates (in mm),
+  then all x/y coordinates (in mm), then all weights.
+
+  \par Details
+  The result can be used to find the central line of an (uniform) object, for
+  instance a cylinder. The output of this program can by used by
+  do_linear_regression.
+
+  The weight is currently simply the sum of the voxel values in that plane,
+  thresholded to be at least 0. If the weight is 0, the x,y coordinates are
+  simply set to 0.
+
+  All coordinates are in mm and in the standard STIR coordinate system,
+  except that the origin in z is shifted to the centre of the planes.
+
+  \author Kris Thielemans
+  $Date$
+  $Revision$
+*/
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -13,11 +44,13 @@
 #include "stir/shared_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/CartesianCoordinate2D.h"
+#include "stir/centre_of_gravity.h"
 #include <iostream>
 #include <iomanip>
 #include <numeric>
 #include <fstream>
 #include <algorithm>
+#include <string>
 
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
@@ -26,61 +59,50 @@ using std::setw;
 using std::cerr;
 using std::endl;
 using std::min;
+using std::max;
+using std::string;
 #endif
-
-USING_NAMESPACE_STIR
-
-template <class T> CartesianCoordinate3D<T> 
-find_centre_of_gravity(const Array<2,T>& plane);
-
 
 int
 main(int argc, char *argv[])
 {
- if (argc!=2)
+  USING_NAMESPACE_STIR;
+  if (argc!=3)
    {
-      cerr <<"Usage: " << argv[0] << "  inputfile_name\n";
-      cerr <<"WARNING: output will be in files CoG.x, CoG.y\n";
+      cerr <<"Usage: " << argv[0] << "  output_filename_prefix image_input_filename\n";
+      cerr <<"output will be in files output_filename_prefix.x, output_filename_prefix.y\n"
+	   << "Each will contain\n"
+	"\ta list of all z coordinates (in mm),\n"
+	"\tthen all x/y coordinates (in mm),\n"
+	"\tthen all weights\n";
       return (EXIT_FAILURE);
    }
 
-  shared_ptr<DiscretisedDensity<3,float> > 
-    density_ptr =  DiscretisedDensity<3,float>::read_from_file(argv[1]);
+  const string output_filename_prefix = argv[1];
+  const shared_ptr<DiscretisedDensity<3,float> > 
+    density_ptr =  DiscretisedDensity<3,float>::read_from_file(argv[2]);
   VoxelsOnCartesianGrid<float> * const image_ptr =
     dynamic_cast<VoxelsOnCartesianGrid<float> * const>(density_ptr.get());
+  if (image_ptr == 0)
+    {
+      warning("Can only handle images of type VoxelsOnCartesianGrid\n");
+      exit(EXIT_FAILURE);
+    }
 
-
-  const CartesianCoordinate3D<float> voxel_size = image_ptr->get_voxel_size();
-
-#if 0
-  cout << setw(5) <<"Plane" << setw(12) << "x" << setw(12) << "y\n";
-  for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
+  VectorWithOffset< CartesianCoordinate3D<float> > allCoG;
+  VectorWithOffset<float> weights;
+  find_centre_of_gravity_in_mm_per_plane(allCoG,
+				   weights,
+				   *image_ptr);
+  const float centre_z = 
+    (image_ptr->get_min_index()+image_ptr->get_max_index())/2.F*
+    image_ptr->get_voxel_size().z();
   {
-    CartesianCoordinate3D<float> CoG = find_centre_of_gravity((*image_ptr)[z]);
-    cout << setw(5) << z << setw(12) << CoG.x() << setw(12) << CoG.y() << endl;
-  }
-#else
-  VectorWithOffset< CartesianCoordinate3D<float> > 
-    allCoG(image_ptr->get_min_index(), image_ptr->get_max_index());
-  VectorWithOffset<float> 
-    weights(image_ptr->get_min_index(), image_ptr->get_max_index());
-
-  const float centre_z = image_ptr->get_length()*voxel_size.z()/2;
-
-  for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-  {
-    allCoG[z] = find_centre_of_gravity((*image_ptr)[z]);
-    allCoG[z].z() = z;
-    allCoG[z] *= voxel_size;
-    // shift towards centre of image
-    allCoG[z].z() -= centre_z;
-    weights[z] = max((*image_ptr)[z].sum(), 0.F);
-  }
-  {
-    ofstream xout("CoG.x");
+    const string filename = output_filename_prefix + ".x";
+    ofstream xout(filename.c_str());
     xout << image_ptr->get_length() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-      xout << allCoG[z].z() << "\n";
+      xout << allCoG[z].z()-centre_z  << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       xout << allCoG[z].x() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
@@ -88,11 +110,12 @@ main(int argc, char *argv[])
   }
 
   {
-    ofstream yout("CoG.y");
+    const string filename = output_filename_prefix + ".y";
+    ofstream yout(filename.c_str());
 
     yout << image_ptr->get_length() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-      yout << allCoG[z].z() << "\n";
+      yout << allCoG[z].z() -centre_z << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       yout << allCoG[z].y() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
@@ -100,61 +123,11 @@ main(int argc, char *argv[])
   }
   
 
-#endif
-
+  cout << "output written in \""
+       <<output_filename_prefix + ".x"
+       << "\" and \""
+       << output_filename_prefix + ".y" << '\"'
+       << endl;
   return EXIT_SUCCESS;
-
-}
-
-
-
-template <class T>
-T
-find_unweighted_centre_of_gravity(const Array<1,T>& row)
-{
-  T CoG = 0;
-  for (int x=row.get_min_index(); x<=row.get_max_index(); x++)
-    CoG += x*row[x];
-  return CoG;
-}
-
-template <class T>
-CartesianCoordinate3D<T> find_unweighted_centre_of_gravity(const Array<2,T>& plane)
-{
-  CartesianCoordinate3D<T> CoG(0,0,0);
-  
-  CartesianCoordinate2D<int> min_indices, max_indices;
-  if (!plane.get_regular_range(min_indices, max_indices))
-    error("Can handle only square arrays\n");
-
-  Array<1,T> sum_over_y(min_indices.x(), max_indices.x());
-  Array<1,T> sum_over_x(min_indices.y(), max_indices.y());
-
-
-  for (int x=min_indices.x(); x<=max_indices.x(); x++)
-    for (int y=min_indices.y(); y<=max_indices.y(); y++)
-    {
-      sum_over_y[x] += plane[y][x];
-      sum_over_x[y] += plane[y][x];
-    }
-
-  CoG.x() = find_unweighted_centre_of_gravity(sum_over_y);
-  CoG.y() = find_unweighted_centre_of_gravity(sum_over_x);
-  
-  return CoG;
-}
-
-template <class T>
-CartesianCoordinate3D<T> find_centre_of_gravity(const Array<2,T>& plane)
-{
-  T sum = plane.sum();
-  // TODO different way of error checking 
-  if (sum == 0)
-    error("Warning: find_centre_of_gravity cannot properly normalise, as data sum to 0\n");
-  CartesianCoordinate3D<T> CoG = find_unweighted_centre_of_gravity(plane);
-  CoG.x() /= sum;
-  CoG.y() /= sum;
-  CoG.z() /= sum;
-  return CoG;
 
 }
