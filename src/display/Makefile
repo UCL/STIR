@@ -67,6 +67,8 @@ ${DEST}%.o: %.c
 
 # new rules use GRAPHOPT
 
+ifneq ($(ADVANCED_DEPENDENCIES),1)
+
 ${DEST}%.o: %.cxx 
 	-mkdir -p $(DEST)
 	$(CXX) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
@@ -75,8 +77,28 @@ ${DEST}%.o: %.c
 	-mkdir -p $(DEST)
 	$(CC) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
 
+else
 
 
+${DEST}%.o: %.cxx 
+	@ -mkdir -p $(DEST)
+	$(MAKEDEPENDCXX);  
+	@ cp $(df).d $(df).P;  \
+	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
+	rm -f $(df).d;
+	$(CXX) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
 
+${DEST}%.o: %.c
+	@ -mkdir -p $(DEST); 
+	$(MAKEDEPENDC); 
+	@ cp $(df).d $(df).P; \
+            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
+            rm -f $(df).d;
+	$(CC) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
+
+
+endif
 
 
