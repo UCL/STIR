@@ -1,19 +1,18 @@
 //
-// @(#)OSMAPOSLReconstruction.h	1.2 00/06/15
+// $Id$
 //
 /*!
-
   \file
-
+  \ingroup reconstructors
+  \ingroup OSMAPOSL
   \brief Declaration of class OSMAPOSLReconstruction
 
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
 
-  \date 00/06/15
-
-  \version 1.2
+  $Date$
+  $Revision$
 */
 
 #ifndef __OSMAPOSLReconstruction_h__
@@ -72,9 +71,6 @@ public:
   explicit 
     OSMAPOSLReconstruction(const string& parameter_filename="");
 
-  //! virtual destructor
-  virtual ~OSMAPOSLReconstruction(){};
-
   //! accessor for the external parameters
   OSMAPOSLParameters& get_parameters(){return parameters;}
 
@@ -106,11 +102,6 @@ private:
   //! the principal operations for updating the image iterates at each iteration
   virtual void update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate);
 
-  //! operations for the end of the iteration
-  virtual void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate)
-	{
-	  LogLikelihoodBasedReconstruction::end_of_iteration_processing(current_image_estimate);
-	}
 
 };
 
