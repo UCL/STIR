@@ -90,6 +90,11 @@ float  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discreti
 	  				  const unsigned scatter_point_num, 
 					  const unsigned det_num,
 					  const image_type input_image_type);
+
+float cached_factors_2(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
+					   const unsigned scatter_point_1_num, 
+					   const unsigned scatter_point_2_num,
+					   const image_type input_image_type);
 /*!
   \ingroup scatter
  \brief 
@@ -232,7 +237,8 @@ void writing_time(const int simulation_time,
 
 void writing_time(const double simulation_time, 
 				  const int scatt_points_vector_size,
-				  const int scatter_level);
+				  const int scatter_level, 
+				  const float total_scatter);
 
 
 END_NAMESPACE_STIR
