@@ -70,7 +70,8 @@ public:
 private:
   Quaternion<float> quat;
   CartesianCoordinate3D<float> translation;
-
+  friend RigidObject3DTransformation compose ( const RigidObject3DTransformation& apply_last,
+					       const RigidObject3DTransformation& apply_first);
 };
 
 END_NAMESPACE_STIR
