@@ -25,12 +25,13 @@
   run-time switch to not run that part of the tests.
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
   
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
+#include "stir/IO/InterfileOutputFileFormat.h" // need this for test on pixel_size
 #include "stir/RunTests.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -68,6 +69,8 @@ START_NAMESPACE_STIR
   \endverbatim
 
   \warning Overwrites files STIRtmp.* in the current directory
+  \todo Delete STIRtmp.* files, but that's a bit difficult as we don't know which ones 
+  are written.
 */
 class OutputFileFormatTests : public RunTests
 {
@@ -94,7 +97,7 @@ OutputFileFormatTests(istream& in) :
 void OutputFileFormatTests::run_tests()
 {  
   cerr << "Testing OutputFileFormat parsing function..." << endl;
-  cerr << "WARNING: will overwite (and then delete) files called STIRtmp*\n";
+  cerr << "WARNING: will overwite files called STIRtmp*\n";
 
   if (!check(parser.parse(in), "parsing failed"))
     return;
@@ -102,13 +105,13 @@ void OutputFileFormatTests::run_tests()
   if (!check(!is_null_ptr(output_file_format_ptr), 
         "parsing failed to set output_file_format_ptr"))
     return;
- 
+#if 0 
   cerr << "Output parameters after reading from input file:\n"
        << "-------------------------------------------\n";
   cerr << static_cast<ParsingObject&>(*output_file_format_ptr).parameter_info();
 
   cerr << "-------------------------------------------\n\n";
-
+#endif
   cerr << "Now writing to file and reading it back." << endl; 
   // construct density and write to file
   {
@@ -120,8 +123,8 @@ void OutputFileFormatTests::run_tests()
       dynamic_cast<ECAT6OutputFileFormat const * const>(output_file_format_ptr.get()) == 0
       ? true : false;
     const bool supports_origin_xy_shift =
-      dynamic_cast<ECAT6OutputFileFormat const * const>(output_file_format_ptr.get()) == 0
-      ? false: true;
+      dynamic_cast<InterfileOutputFileFormat const * const>(output_file_format_ptr.get()) == 0
+      ? true : false;
 
     CartesianCoordinate3D<float> origin (0,0,0);
     if (supports_origin_xy_shift)
