@@ -187,7 +187,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
            tang_pos_tmp);
          
          auto_ptr<SymmetryOperation> symm_op_ptr = 
-           symmetries->find_symmetry_operation_to_basic_bin(bin);
+           symmetries->find_symmetry_operation_from_basic_bin(bin);
          assert(bin == basic_bin);
                   
          symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);

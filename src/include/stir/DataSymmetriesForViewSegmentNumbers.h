@@ -88,7 +88,7 @@ public:
   Note that the symmetry operation is not completely defined by giving only view/segment.
   */
   virtual auto_ptr<SymmetryOperation>
-    find_symmetry_operation_to_basic_view_segment_numbers(ViewSegmentNumbers&) const = 0;
+    find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const = 0;
 #endif
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
