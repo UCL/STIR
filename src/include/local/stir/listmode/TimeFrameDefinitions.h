@@ -44,7 +44,11 @@ public:
   \verbatim
     num_frames_of_this_duration   duration_in_secs
   \endverbatim
-  This duration is a double number
+  This duration is a double number.
+
+  This class in fact allows an extension of the above. Setting 
+  \a num_frames_of_this_duration to 0 allows skipping
+  a time period of the corresponding \a duration_in_secs.
   */
   explicit TimeFrameDefinitions(const string& fdef_filename);
   
