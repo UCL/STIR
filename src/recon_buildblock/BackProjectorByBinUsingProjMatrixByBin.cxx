@@ -21,8 +21,14 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
-
-
+/* History:
+   20/09/2001 KT
+   - added registry and parsing 
+   22/01/2002 KT
+   - used new implementation for actual_backproject that takes 
+     symmetries into account for faster performance. Essentially copied
+     from ForwardProjectorByBinUsingProjMatrixByBin
+*/
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
@@ -80,6 +86,10 @@ BackProjectorByBinUsingProjMatrixByBin::get_symmetries_used() const
   return proj_matrix_ptr->get_symmetries_ptr();
 }
 
+#if 0
+// straightforward version which relies on ProjMatrixByBin to sort out all 
+// symmetries
+// will be slow if there's no caching
 void 
 BackProjectorByBinUsingProjMatrixByBin::
 actual_back_project(DiscretisedDensity<3,float>& image,
@@ -108,5 +118,90 @@ actual_back_project(DiscretisedDensity<3,float>& image,
   }
 	   
 }
+#else
+// complicated version which handles the symmetries explicitly
+// faster when no caching is performed, about just as fast when there is caching
+void 
+BackProjectorByBinUsingProjMatrixByBin::
+actual_back_project(DiscretisedDensity<3,float>& image,
+		    const RelatedViewgrams<float>& viewgrams,
+		    const int min_axial_pos_num, const int max_axial_pos_num,
+		    const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+  ProjMatrixElemsForOneBin proj_matrix_row;
+  ProjMatrixElemsForOneBin proj_matrix_row_copy;
+  const DataSymmetriesForBins* symmetries = proj_matrix_ptr->get_symmetries_ptr(); 
+
+  Array<2,int> 
+    already_processed(IndexRange2D(min_axial_pos_num, max_axial_pos_num,
+		                   min_tangential_pos_num, max_tangential_pos_num));
+
+  vector<AxTangPosNumbers> related_ax_tang_poss;
+  for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
+    for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
+    {       
+      if (already_processed[ax_pos][tang_pos])
+        continue;          
+
+      Bin basic_bin(viewgrams.get_basic_segment_num(),
+		    viewgrams.get_basic_view_num(),
+		    ax_pos,
+		    tang_pos);
+      symmetries->find_basic_bin(basic_bin);
+    
+      proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
+      
+      related_ax_tang_poss.resize(0);
+      symmetries->get_related_bins_factorised(related_ax_tang_poss,basic_bin,
+					      min_axial_pos_num, max_axial_pos_num,
+					      min_tangential_pos_num, max_tangential_pos_num);
+    
+      for (
+#ifndef STIR_NO_NAMESPACES
+	   std::
+#endif
+	     vector<AxTangPosNumbers>::const_iterator r_ax_tang_poss_iter = related_ax_tang_poss.begin();
+	   r_ax_tang_poss_iter != related_ax_tang_poss.end();
+	   ++r_ax_tang_poss_iter)
+	{
+	  const int axial_pos_tmp = (*r_ax_tang_poss_iter)[1];
+	  const int tang_pos_tmp = (*r_ax_tang_poss_iter)[2];
+	  
+	  // symmetries might take the ranges out of what the user wants
+	  if ( !(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
+		 min_tangential_pos_num <=tang_pos_tmp  && tang_pos_tmp <= max_tangential_pos_num))
+	    continue;
+	  
+	  already_processed[axial_pos_tmp][tang_pos_tmp] = 1;
+       
+	  
+	  for (RelatedViewgrams<float>::const_iterator viewgram_iter = viewgrams.begin();
+	       viewgram_iter != viewgrams.end();
+	       ++viewgram_iter)
+	    {
+	      proj_matrix_row_copy = proj_matrix_row;
+	      Bin bin(viewgram_iter->get_segment_num(),
+		      viewgram_iter->get_view_num(),
+		      axial_pos_tmp,
+		      tang_pos_tmp,
+		      (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
+	      
+	      auto_ptr<SymmetryOperation> symm_op_ptr = 
+		symmetries->find_symmetry_operation_to_basic_bin(bin);
+	      assert(bin == basic_bin);
+	      
+	      symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
+	      proj_matrix_row_copy.back_project(image, bin);
+	    }
+	}  
+    }      
+  assert(already_processed.sum() 
+	 == (
+	     (max_axial_pos_num - min_axial_pos_num + 1) *
+	     (max_tangential_pos_num - min_tangential_pos_num + 1)));
+  
+}
+
+#endif
 
 END_NAMESPACE_STIR
