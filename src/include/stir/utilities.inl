@@ -100,6 +100,11 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
     return s;
 }
 
+template <class FSTREAM>
+inline void close_file(FSTREAM& s)
+{
+  s.close();
+}
 
 
 #ifndef _MSC_VER
