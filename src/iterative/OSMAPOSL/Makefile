@@ -1,18 +1,28 @@
 #
 # $Id$
-
+#
 include ../../Makefile_common
 
-all: ${DEST}OSEMMain
-
-clean:
-	$(RM) $(DEST)*
-
-include ../../Makefile_bblibs
 
 SOURCES =  \
          OSMAPOSLParameters.cxx \
          OSMAPOSLReconstruction.cxx OSEMMain.cxx
+
+EXES = \
+	$(DEST)OSEMMain
+
+all: $(EXES)
+
+clean:
+	$(RM) $(DEST)*
+
+
+install: $(EXES)
+	cp $(EXES) $(INSTALL_DIR)
+
+
+include ../../Makefile_bblibs
+
 
 ${DEST}OSEMMain: ${DEST}OSEMMain.o \
           ${DEST}OSMAPOSLParameters.o ${DEST}OSMAPOSLReconstruction.o \
@@ -21,9 +31,10 @@ ${DEST}OSEMMain: ${DEST}OSEMMain.o \
         ${DEST}OSMAPOSLParameters.o \
 	${DEST}OSMAPOSLReconstruction.o \
 	${LIB_LOGLIK_BUILDINGBLOCK} \
+	$(LIB_RECON_BUILDINGBLOCK) \
 	$(LIB_BUILDINGBLOCK) \
-  	$(LIB_RECON_BUILDINGBLOCK) \
-	 $(LINK_OPT) $(SYS_LIBS)
+	$(LINK_OPT) $(SYS_LIBS)
+
 
 
 include $(SOURCES:%.cxx=$(DEST)%.d)
