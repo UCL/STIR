@@ -9,6 +9,8 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
         convecat6_if.cxx \
 	do_linear_regression.cxx \
 	postfilter.cxx \
+	compare_projdata.cxx \
+	compare_image.cxx
         #convif_ecat6.cxx \
 	#correctPSOV.cxx 
 
