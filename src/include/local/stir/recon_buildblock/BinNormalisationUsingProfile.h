@@ -45,6 +45,9 @@ public:
   virtual void apply(RelatedViewgrams<float>& viewgrams) const;
 
   virtual void undo(RelatedViewgrams<float>& viewgrams) const;
+
+  virtual float get_bin_efficiency(const Bin& bin) const { return 1;}
+ 
 private:
   mutable Array<1,float> profile;
   string profile_filename;
