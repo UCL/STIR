@@ -72,7 +72,8 @@ protected:
   int delayed_increment;
   int current_frame;
   int num_segments_in_memory;
-  long num_events_to_store;
+  // TODO make long (or even unsigned long) but can't do this yet because we can't parse longs yet
+  int num_events_to_store;
   int max_segment_num_to_process;
 
   bool interactive;
