@@ -69,8 +69,9 @@ $(DEST)conv2cti:  $(OBJS_CTI)
 
 #CL 09/03/98 NEW SECTION for conversion of an ECAT6 file to ECAT6 file organized by segment (0, +1, -1, +2, -2,...)
 
-$(DEST)ecat6bysegm:  ecat6bysegm.cxx $(DEST)libcti.a 
-	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST) -lcti -lm 
+# KT 27/11/98 added buildblock for PETScannerInfo.o
+$(DEST)ecat6bysegm:  ecat6bysegm.cxx $(DEST)libcti.a  ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST) -lcti -lm  ${LIB_BUILDINGBLOCK}
 
 $(DEST)ecat6bysegmspan: ecat6bysegmspan.cxx $(DEST)libcti.a 
 	$(CXX) $(CFLAGS)  -o $@ ecat6bysegmspan.cxx -L$(DEST)  -lcti -lm 
