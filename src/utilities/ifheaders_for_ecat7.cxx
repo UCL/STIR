@@ -1,0 +1,650 @@
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <stdarg.h>
+
+#include "ProjDataInfo.h"
+#include "ProjDataFromStream.h"
+#include "interfile.h"
+#include "utilities.h"
+#include "CartesianCoordinate3D.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#ifdef TOMO_NO_NAMESPACES
+// terrible trick to avoid conflict between our Sinogram and matrix::Sinogram
+// when we do have namespaces, the conflict can be resolved by using ::Sinogram
+#define Sinogram CTISinogram
+#endif
+
+#include "matrix.h"
+
+#ifndef TOMO_NO_NAMESPACES
+using std::string;
+using std::ios;
+using std::iostream;
+using std::fstream;
+using std::cerr;
+using std::endl;
+#endif
+
+START_NAMESPACE_TOMO
+
+/* ------------------------------------
+ *	print_debug
+ * ------------------------------------*/
+int print_debug (char const * const fname, char *format, ...) 
+{
+    va_list ap;
+    char *fmt;
+    int len;
+
+
+    if (0)//flagged (fname) != NULL)
+    {
+
+	len = strlen (fname) + strlen (format) + 5;
+	if ((fmt = (char *)calloc ((long)len, sizeof (char))) == NULL)
+		return (1);
+	sprintf (fmt, "%s%s%s", fname, " :: ", format);
+
+    	va_start (ap, format);
+	vfprintf (stderr, fmt, ap);
+
+	free (fmt);
+        va_end (ap);
+    
+    }
+
+    return (0);
+
+}
+
+
+void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
+{
+  switch(mhead.system_type)
+  {
+  case 128 : 
+    //camera = camRPT; 
+    scanner_ptr = new Scanner(Scanner::RPT); 
+    printf("Scanner : RPT\n"); 
+    break;
+  case 931 : 
+    //camera = cam931; 
+    scanner_ptr = new Scanner(Scanner::E931); 
+    printf("Scanner : ECAT 931\n"); break;
+  case 951 : 
+    //camera = cam951; 
+    scanner_ptr = new Scanner(Scanner::E951); 
+    printf("Scanner : ECAT 951\n"); break;
+  case 953 : 
+    //camera = cam953; 
+    scanner_ptr = new Scanner(Scanner::E953); 
+    printf("Scanner : ECAT 953\n"); 
+    break;
+  case 921 : 
+    //camera = cam953; 
+    scanner_ptr = new Scanner(Scanner::E921); 
+    printf("Scanner : ECAT 921\n"); 
+    break;
+  case 961 : 
+    //camera = cam953; 
+    scanner_ptr = new Scanner(Scanner::E961); 
+    printf("Scanner : ECAT 961\n"); 
+    break;
+  case 966 : 
+    //camera = cam953; 
+    scanner_ptr = new Scanner(Scanner::E966); 
+    printf("Scanner : ECAT 966\n"); 
+    break;
+  default :  
+    
+    {	
+      // camera = camRPT; 
+      scanner_ptr = new Scanner(Scanner::E966); 
+      printf("main_header.system_type unknown, defaulting to 966 \n"); 
+    }
+    break;
+  }
+}
+
+void find_data_type(NumericType& data_type, ByteOrder& byte_order, const short ecat_data_type)
+{
+  switch(ecat_data_type)
+  {
+  case ByteData:
+    data_type = NumericType::SCHAR; byte_order = ByteOrder::native; return;
+    
+  case VAX_Ix2:
+    data_type = NumericType("signed integer", 2); byte_order = ByteOrder::little_endian; return;
+    
+  case SunShort:
+    data_type = NumericType("signed integer", 2); byte_order = ByteOrder::big_endian; return;
+    
+  case VAX_Ix4:
+    data_type = NumericType("signed integer", 4); byte_order = ByteOrder::little_endian; return;
+    
+  case VAX_Rx4:
+    data_type = NumericType("float", 4); byte_order = ByteOrder::little_endian; return;
+    
+  case IeeeFloat:
+    data_type =NumericType("float", 4); byte_order = ByteOrder::big_endian; return;
+    
+  case SunLong:
+    data_type = NumericType("signed integer", 4); byte_order = ByteOrder::big_endian; return;
+    
+  default:
+    warning("header.data_type unknown: %d\nAssuming VaxShort\n", ecat_data_type); 
+    data_type = NumericType("signed integer", 2); byte_order = ByteOrder::little_endian; return;
+    return;
+  }
+}
+
+/* -------------------------------------------
+*	o f f s e t
+* -------------------------------------------
+*/
+int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int data,
+            int bed, int segment, int *plane_size_ptr = NULL)
+{
+  
+  int el_size[15], matnum, strtblk, group = abs(segment),
+    plane_size, i, off;
+  struct MatDir matdir;
+  Scan_subheader scansub;
+  Image_subheader imagesub;
+  Norm_subheader normsub;
+  Attn_subheader attnsub;
+  Scan3D_subheader scan3dsub;
+  char *prog = "offset_in_ecat_file";
+  /*
+  set_debug (prog);
+  */
+  el_size[ByteData] = 1;
+  el_size[VAX_Ix2] = el_size[SunShort] = 2;
+  el_size[VAX_Ix4] = el_size[VAX_Rx4] = el_size[IeeeFloat] = el_size[SunLong] = 4;
+  
+  if (mptr->mhptr->sw_version < V7)
+    matnum = mat_numcod (frame, plane, gate, data, bed);
+  else
+    matnum = mat_numcod (frame, 1, gate, data, bed);
+  print_debug (prog, "matnum = %d\n", matnum);
+  
+  if (matrix_find (mptr, matnum, &matdir) != 0)
+    return -1;
+  
+  strtblk = matdir.strtblk;
+  print_debug (prog, "strtblk = %d\n", strtblk);
+  
+  
+  off = (strtblk + 1) * MatBLKSIZE;
+  
+  switch (mptr->mhptr->file_type)
+  {
+#ifndef TOMO_NO_NAMESPACES
+  case ::Sinogram:
+#else
+  case CTISinogram:
+#endif
+
+    {
+      mat_read_scan_subheader (mptr->fptr, mptr->mhptr, strtblk, &scansub);
+      plane_size = scansub.num_r_elements *
+        scansub.num_angles *
+        el_size[scansub.data_type];
+      
+      if (mptr->mhptr->sw_version < V7)
+        off = strtblk*MatBLKSIZE;
+      else	   
+        off = (strtblk + 1) * MatBLKSIZE + (plane-1) * plane_size;
+      break;
+    }
+  case PetImage:
+  case ByteVolume:
+  case PetVolume:
+    {
+      
+      mat_read_image_subheader (mptr->fptr, mptr->mhptr, strtblk, &imagesub);
+      off = strtblk*MatBLKSIZE;
+      plane_size = imagesub.x_dimension *
+        imagesub.y_dimension *
+        el_size[imagesub.data_type];
+      
+      if (mptr->mhptr->sw_version >= V7)
+        off += (plane-1) * plane_size;
+      break;
+      
+    }
+    
+  case AttenCor:   		
+    {
+      off = strtblk  * MatBLKSIZE;
+      print_debug (prog, "off = %d\n", off);
+      
+      if (mptr->mhptr->sw_version >= V7)
+      {
+        print_debug (prog, "AttenCor\n");
+        mat_read_attn_subheader (mptr->fptr, mptr->mhptr, strtblk, &attnsub);
+        
+        
+        switch (attnsub.storage_order)
+        {
+        case ElVwAxRd:
+          plane_size = attnsub.num_r_elements *
+            attnsub.num_angles *
+            el_size[attnsub.data_type];
+          
+          if (group)
+            for (i = 0; i < group; i++)
+              off += plane_size * attnsub.z_elements[i];
+            
+            if (segment < 0)
+              off += plane_size * attnsub.z_elements[group]/2;
+            off += (plane - 1) * plane_size;
+            break;
+            
+        case ElAxVwRd:
+          print_debug (prog, "group %d, plane %d\n", group, plane);
+          if (group)
+            for (i = 0; i < group; i++)
+            {
+              plane_size = attnsub.num_r_elements *
+                attnsub.z_elements[i] *
+                el_size[attnsub.data_type];			    
+              off += plane_size * attnsub.num_angles;
+            }
+            plane_size = attnsub.num_r_elements *
+              attnsub.z_elements[group] *
+              el_size[attnsub.data_type];
+            if (group)
+              plane_size /=2;
+            
+            if (segment < 0)
+              off += plane_size*attnsub.num_angles;
+            
+            off += (plane - 1) *plane_size;
+            
+            break;
+        }
+        
+      }
+      break;
+    }
+    
+    
+  case Normalization:
+    {
+      mat_read_norm_subheader (mptr->fptr, mptr->mhptr, strtblk, &normsub);
+      off = strtblk*MatBLKSIZE;
+      plane_size = normsub.num_r_elements *
+        normsub.num_angles *
+        el_size[normsub.data_type];
+      if (mptr->mhptr->sw_version >= V7)
+        off += (plane-1) * plane_size;
+      break;
+    }
+  case ByteProjection:
+  case PetProjection:
+  case PolarMap:
+    {
+      fprintf (stderr, "Not implemented for this file type\n");
+      off = -1;
+      break;
+    }
+  case Byte3dSinogram:
+  case Short3dSinogram:
+  case Float3dSinogram :
+    {
+      off = (strtblk+1) * MatBLKSIZE;
+      print_debug (prog, "off = %d\n", off);
+      
+      mat_read_Scan3D_subheader (mptr->fptr, mptr->mhptr, strtblk, &scan3dsub);
+      
+      switch (scan3dsub.storage_order)
+      {
+      case ElVwAxRd:
+        plane_size = scan3dsub.num_r_elements *
+          scan3dsub.num_angles *
+          el_size[scan3dsub.data_type];
+        print_debug (prog, "xdim = %d (num_r_elements)\n", scan3dsub.num_r_elements);
+        print_debug (prog, "ydim = %d (num_angles)    \n", scan3dsub.num_angles);
+        print_debug (prog, "plane_size = %d \n", plane_size);
+        if (group)
+          for (i = 0; i < group; i++)
+            off += (plane_size * scan3dsub.num_z_elements[i]);
+          
+          if (segment < 0)
+            off += plane_size * scan3dsub.num_z_elements[group]/2;
+          
+          
+          print_debug (prog, "num_z_elements[group] = %d\n", scan3dsub.num_z_elements[group]);
+          print_debug (prog, "plane-1 = %d\n", plane-1);
+          
+          off += ((plane - 1) * plane_size);
+          print_debug (prog, "off = %d\n", off);
+          break;
+          
+      case ElAxVwRd:
+        if (group)
+          for (i = 0; i < group; i++)
+          {
+            plane_size = scan3dsub.num_r_elements *
+              scan3dsub.num_z_elements[i] *
+              el_size[scan3dsub.data_type];
+            off += plane_size * scan3dsub.num_angles;
+          }
+          plane_size = scan3dsub.num_r_elements *
+            scan3dsub.num_z_elements[group] *
+            el_size[scan3dsub.data_type];
+          if (group)
+          {
+            plane_size /=2;
+            if (segment < 0)
+              off += plane_size;
+            off += (plane - 1) *plane_size * 2;
+          }
+          else
+            off += (plane - 1) *plane_size;
+          break;
+      }
+      break;
+    }
+  case Norm3d:
+    {
+      fprintf (stderr, "Not implemented yet\n");
+      off = 1;
+      break;
+    }
+        }
+        
+        if (plane_size_ptr != NULL)
+          *plane_size_ptr = plane_size;
+        
+        return (off);
+
+}
+
+
+ProjDataFromStream * 
+make_pdfs_from_matrix(MatrixFile * const mptr, 
+                      MatrixData * const matrix, 
+                      const shared_ptr<iostream>&  stream_ptr)
+{
+  Scan3D_subheader *sub_header_ptr= 
+    reinterpret_cast<Scan3D_subheader*>(matrix->shptr);
+  
+  
+  shared_ptr<Scanner> scanner_ptr;
+  find_scanner(scanner_ptr, *(mptr->mhptr));
+  
+  if(sub_header_ptr->num_dimensions != 4)
+    warning("Expected subheader.num_dimensions==3. Continuing...\n");
+  const int num_tangential_poss = sub_header_ptr->num_r_elements;
+  const int num_views = sub_header_ptr->num_angles;
+  // find maximum segment
+  int max_segment_num = 0;
+  while(max_segment_num<64 && sub_header_ptr->num_z_elements[max_segment_num+1] != 0)
+    ++max_segment_num;
+  
+  VectorWithOffset<int> num_axial_poss_per_seg(-max_segment_num,max_segment_num);
+  
+  num_axial_poss_per_seg[0] = sub_header_ptr->num_z_elements[0];
+  for (int segment_num=1; segment_num<=max_segment_num; ++segment_num)
+  {
+    num_axial_poss_per_seg[-segment_num] =
+      num_axial_poss_per_seg[segment_num] = 
+      sub_header_ptr->num_z_elements[segment_num]/2;
+  }
+  
+  const int max_delta = sub_header_ptr->ring_difference;
+  const int span = sub_header_ptr->axial_compression;
+  const float bin_size = sub_header_ptr->x_resolution * 10; // convert to mm
+  const float scale_factor = sub_header_ptr->scale_factor;
+  
+  ProjDataFromStream::StorageOrder storage_order;
+  switch (sub_header_ptr->storage_order)
+  {
+  case ElVwAxRd:
+    storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+    break;
+    
+  case ElAxVwRd:
+    storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
+    break;
+  default:
+    warning("Funny value for subheader.storage_order. Assuming ElVwAxRd\n");
+    storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+  }
+  NumericType data_type;
+  ByteOrder byte_order;
+  find_data_type(data_type, byte_order, sub_header_ptr->data_type);
+  
+  
+  if (bin_size != scanner_ptr->get_default_bin_size())
+  {
+    warning("Bin size from header (%g) does not agree with expected value for scanner %s (%g%).\nUsing expected value\n",
+      bin_size, scanner_ptr->get_name().c_str(), scanner_ptr->get_default_bin_size());
+    // TODO
+    //scanner_ptr->set_bin_size(bin_size);
+  }
+  // TODO more checks on FOV etc.
+  
+  shared_ptr<ProjDataInfo> pdi_ptr =
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span, max_delta, num_views, num_tangential_poss);
+  
+  pdi_ptr->set_num_axial_poss_per_segment(num_axial_poss_per_seg);
+    
+  vector<int> segment_sequence_in_stream(2*max_segment_num+1);
+  // ECAT 7 always stores segments as 0, 1, -1, ...
+  segment_sequence_in_stream[0] = 0;
+  for (int segment_num = 1; segment_num<=max_segment_num; ++segment_num)
+  {
+    segment_sequence_in_stream[2*segment_num-1] = segment_num;
+    segment_sequence_in_stream[2*segment_num] = -segment_num;
+  }
+  
+  Matval matval;
+  mat_numdoc(matrix->matnum, &matval);
+
+   const long offset_in_file =
+    offset_in_ecat_file(mptr, matval.frame, 1, matval.gate, matval.data, matval.bed, 0, NULL);
+
+ 
+  
+  return new ProjDataFromStream (pdi_ptr, stream_ptr, offset_in_file, 
+    segment_sequence_in_stream,
+    storage_order,
+    data_type,
+    byte_order,
+    scale_factor);
+}
+
+
+
+Succeeded 
+write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
+                                       int frame, int gate, int data,
+                                       int bed)
+{
+  
+
+  
+  MatrixFile * const mptr = matrix_open( ecat7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if (!mptr) {
+    matrix_perror( ecat7_filename.c_str());
+    return Succeeded::no;
+  }
+  if (mptr->mhptr->sw_version < V7)
+  { 
+    warning("This seems to be an ECAT 6 file. I'm not writing any header...\n"); 
+    return Succeeded::no; 
+  }
+  
+
+  const int matnum = mat_numcod (frame, 1, gate, data, bed);
+  MatrixData* matrix = matrix_read( mptr, matnum, MAT_SUB_HEADER);
+  
+  if (matrix==NULL)
+  { 
+    warning("Matrix not found at \"%d,1,%d,%d,%d\". I'm not writing any header...\n",
+       frame, 1, gate, data, bed);
+    return Succeeded::no;
+  }
+  
+  char *header_filename = new char[ecat7_filename.size() + 100];
+  strcpy(header_filename, ecat7_filename.c_str());
+  // get rid of extension
+  replace_extension(header_filename, "");
+  sprintf(header_filename+strlen(header_filename), "_f%dg%db%dd%d", 
+    frame, gate, bed, data);
+  
+  
+  switch (mptr->mhptr->file_type)
+  {
+  case PetImage:
+  case ByteVolume:
+  case PetVolume:
+    {
+      Image_subheader *sub_header_ptr=
+        reinterpret_cast<Image_subheader*>(matrix->shptr);
+      
+      if(sub_header_ptr->num_dimensions != 3)
+        warning("Expected subheader_ptr->num_dimensions==3\n");
+      const Coordinate3D<int> dimensions(matrix->zdim,
+        matrix->ydim,
+        matrix->xdim);
+      const CartesianCoordinate3D<float> voxel_size(matrix->z_size * 10,
+        matrix->y_size * 10,
+        matrix->pixel_size * 10); // convert to mm
+      /* not used yet
+      const Coordinate3D<float> origin(matrix->z_origin * 10,
+        matrix->y_origin * 10,
+        matrix->x_origin * 10); // convert to mm
+      */
+      const float scale_factor = matrix->scale_factor;
+      
+      NumericType data_type;
+      ByteOrder byte_order;
+      find_data_type(data_type, byte_order, matrix->data_type);
+      
+      const long offset_in_file =
+        offset_in_ecat_file(mptr, frame, 1, gate, data, bed, 0, NULL);
+      
+      
+      VectorWithOffset<float> scaling_factors(1);
+      VectorWithOffset<unsigned long> file_offsets(1);
+      scaling_factors[0] = scale_factor;
+      file_offsets[0] = static_cast<unsigned long>(offset_in_file);
+      write_basic_interfile_image_header(header_filename, ecat7_filename,
+        dimensions, voxel_size, data_type,byte_order,
+        scaling_factors,
+        file_offsets);
+      break;
+    }
+          
+#if 0           
+  case AttenCor:   		
+    {
+      Attn_subheader  *sub_header_ptr=
+        reinterpret_cast<Attn_subheader*>(matrix->shptr);;
+      
+      print_debug (prog, "AttenCor\n");
+      //printf("span                        : %d\n",ah->span);
+      
+      break;
+
+    }   
+#endif    
+    case Byte3dSinogram:
+    case Short3dSinogram:
+    case Float3dSinogram :
+      {
+        shared_ptr<iostream> stream_ptr = 
+          new fstream(ecat7_filename.c_str(), ios::in | ios::binary);
+
+        shared_ptr<ProjDataFromStream> pdfs_ptr = 
+          make_pdfs_from_matrix(mptr, matrix, stream_ptr);
+
+        write_basic_interfile_PDFS_header(header_filename, ecat7_filename, *pdfs_ptr);
+
+        break;
+      }
+
+        
+      default:
+        warning("File type not handled. I'm not writing any headers...\n");
+        return Succeeded::no;
+  }
+  
+  delete header_filename;
+  return Succeeded::yes;
+}
+
+END_NAMESPACE_TOMO
+
+USING_NAMESPACE_TOMO
+
+int	
+main( int argc, char **argv)
+{
+  MatrixFile *mptr;
+  
+  if (argc<2)
+  {
+    cerr << "usage    : "<< argv[0] << " filename\n";
+    exit(EXIT_FAILURE);
+  }
+
+  mptr = matrix_open( argv[1], MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if (!mptr) {
+    matrix_perror(argv[1]);
+    exit(EXIT_FAILURE);
+  }
+  
+  const int num_frames = std::max(static_cast<int>( mptr->mhptr->num_frames),1);
+  // funnily enough, num_bed_pos seems to be offset with 1
+  // (That's to say, in a singled bed study, num_bed_pos==0) 
+  // TODO maybe not true for multi-bed studies
+  const int num_bed_poss = static_cast<int>( mptr->mhptr->num_bed_pos) + 1;
+  const int num_gates = std::max(static_cast<int>( mptr->mhptr->num_gates),1);
+
+  fclose(mptr->fptr);
+  delete mptr;
+
+  if (ask("Attempt all data-sets (Y) or single data-set (N)", true))
+  {
+    const int data_num=ask_num("Data number ? ",0,8, 0);
+
+    for (int frame_num=1; frame_num<=num_frames;++frame_num)
+      for (int bed_num=0; bed_num<num_bed_poss;++bed_num)
+        for (int gate_num=1; gate_num<=num_gates;++gate_num)
+          if(write_basic_interfile_header_for_ecat7( argv[1], 
+                                                     frame_num, gate_num, data_num, bed_num)
+                                                     == Succeeded::no)
+          {
+            warning("Assuming rest of file has problems. Exiting...\n");
+            return EXIT_FAILURE;
+          }
+  }
+  else
+  {
+    const int frame_num=ask_num("Frame number ? ",1,num_frames, 1);
+    const int bed_num=ask_num("Bed number ? ",0,num_bed_poss-1, 0);
+    const int gate_num=ask_num("Gate number ? ",1,num_gates, 1);
+    const int data_num=ask_num("Data number ? ",0,8, 0);
+    /*
+    const int plane_num=ask_num("Plane num ?",1,100,1);
+    const int segment_num=ask_num("Segment num ?",-100,100,1);
+    
+     std::cerr <<
+     offset_in_ecat_file (mptr, frame_num, plane_num, gate_num, data_num,
+     bed_num,  segment_num, NULL) << std::endl;
+    */
+    write_basic_interfile_header_for_ecat7( argv[1], frame_num, gate_num, data_num,
+      bed_num);
+  }
+  return EXIT_SUCCESS;
+}
