@@ -47,7 +47,7 @@ Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
 	error("Polaris_MT_File: error reading Line 1 of file %s", 
 	      mt_filename.c_str());
       }
-#if 0
+
     int v1, v2;
     char toolkit[MAX_STRING_LENGTH];
     std::tm start_time_tm;
@@ -63,15 +63,24 @@ Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
 	   toolkit) != 9)
       error("Polaris_MT_File: error parsing first line of file %s",
 	    mt_filename.c_str());
-  
+
+    start_time_tm.tm_mon -= 1;
+    start_time_tm.tm_year -= 1900;
+    start_time_tm.tm_isdst = -1;
+
     start_time_in_secs_since_1970 = 
 	mktime(&start_time_tm);
 
+    if (start_time_in_secs_since_1970 == std::time_t(-1))
+      error("Polaris_MT_File: error interpreting data/time in first line of mt file %s",
+	    mt_filename.c_str());
+
     std::cout << "\nPolaris .mt file info:"
-	      << "\n\tDate: " << asctime(&start_time_tm)
+	      << "\n\tDate: " << asctime(&start_time_tm) 
+	      << "\t\twhich is " << start_time_in_secs_since_1970 << " secs since 1970 UTC" 
 	      << "\n\tToolkit: " << toolkit
-	      << "\n\tVersion info (?) " << v1 << ' ' << v2 << std::endl;
-#endif
+	      << "\n\tVersion info (?): " << v1 << ' ' << v2 << std::endl;
+
   }
   Record record; 
   while (!mt_stream.eof() &&
