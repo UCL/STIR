@@ -20,7 +20,7 @@ $(dir)_LIB_SOURCES:= \
 	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx 
 ifeq ($(HAVE_LLN_MATRIX),1)
-SOURCES += \
+$(dir)_LIB_SOURCES += \
 	BinNormalisationFromECAT7.cxx
 endif
   
