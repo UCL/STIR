@@ -21,24 +21,31 @@
   \file
   \ingroup array
 
-  \brief Declaration of stir:index_at_maximum()
+  \brief Declaration of stir:index_at_maximum() and stir::indices_at_maximum()
 
+  \todo move implementations to .cxx
   \author Kris Thielemans
+  \author Charalampos Tsoumpas
 
   $Date$
   $Revision$
 */
 
 #include "stir/VectorWithOffset.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/Array.h"
 
 START_NAMESPACE_STIR
 
 /*! \ingroup array
-  \brief Finds the index where the maximum occurs.
+  \brief Finds the index where the maximum occurs in a (1-dimensional) vector.
 
-  If the maximum occurs more than once, the smallest index is returned.
+ If the maximum occurs more than once, the smallest index is returned.
 
- If the vector is empty, the function returns 0;
+ If the vector is empty, the function returns 0.
+
+ \todo make iterator version, or something that works on std::vector
+
 */
 
 template <class elemT>
@@ -60,5 +67,45 @@ int index_at_maximum(const VectorWithOffset<elemT>& v)
     }
   return index_at_max;
 }
+
+/*! \ingroup array
+  \brief Finds the first (3-dimensional) index where the maximum occurs 
+  in a (3-dimensional) array.
+
+  \todo generalise to arbitrary dimensions
+  \todo implementation currently cycles through the data twice
+*/
+template<class elemT>                         
+BasicCoordinate<3,int> 
+indices_at_maximum(const Array<3,elemT>& input_array)
+{
+  const elemT current_maximum = input_array.find_max();
+  BasicCoordinate<3,int>  max_location, min_index, max_index; 
+  
+  bool found=false;    
+  min_index[1] = input_array.get_min_index();
+  max_index[1] = input_array.get_max_index();
+	for ( int k = min_index[1]; k<= max_index[1] && !found; ++k)
+	{
+	  min_index[2] = input_array[k].get_min_index();
+	  max_index[2] = input_array[k].get_max_index();
+	  for ( int j = min_index[2]; j<= max_index[2] && !found; ++j)
+	  {
+	    min_index[3] = input_array[k][j].get_min_index();
+	    max_index[3] = input_array[k][j].get_max_index();
+	    for ( int i = min_index[3]; i<= max_index[3] && !found; ++i)
+	      {
+		if (input_array[k][j][i] == current_maximum)
+		   {
+		     max_location[1] = k;
+		     max_location[2] = j;
+		     max_location[3] = i;
+		   }
+	      }
+	  }
+	}
+  found = true;		
+  return max_location;	
+}                            
 
 END_NAMESPACE_STIR
