@@ -24,11 +24,10 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
 #include "stir/Array.h"
+#include "stir/DiscretisedDensity.h
 
 START_NAMESPACE_STIR
 
-
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
   \ingroup recon_buildblock
