@@ -63,7 +63,7 @@ class FullArrayConstIterator;
   This class implements multi-dimensional arrays which can have
 'irregular' ranges. See IndexRange for a description of the ranges. Normal
 numeric operations are defined. In addition, two types of iterators are
-defined, one which iterators through the outer index, an done which
+defined, one which iterators through the outer index, and one which
 iterates through all elements of the array.
 
 Array inherits its numeric operators from NumericVectorWithOffset.
@@ -142,6 +142,9 @@ public:
 
   inline IndexRange<num_dimensions> get_index_range() const;
 
+  //! return the total number of elements in this array
+  inline size_t size_all() const;	
+
   /* Implementation note: grow() and resize() are inline such that they are
      defined for any type you happen to use for elemT. Otherwise, we would
      need instantiation in Array.cxx.
@@ -170,9 +173,16 @@ public:
   inline void fill(const elemT &n);
 
   //! checks if the index range is 'regular'
+  /*! Implementation note: this works by calling get_index_range().is_regular().
+      We cannot rely on remembering if it was a regular range at construction (or
+      even resizing) time as resize() could have been called on an element of the 
+      array. Checking for this would involve a performance penalty on operator[],
+      which is definitely not a good idea.
+  */
   inline bool is_regular() const;
 
-  //! find regular range, returns false if the range is not regular
+  //! find regular range, returns \c false if the range is not regular
+  /*! \see class IndexRange for a definition of (ir)regular ranges */
   bool get_regular_range(
      BasicCoordinate<num_dimensions, int>& min,
      BasicCoordinate<num_dimensions, int>& max) const;
@@ -221,11 +231,6 @@ public:
   void 
     write_data(ostream& s, NumericType type, float& scale,
 	       const ByteOrder byte_order = ByteOrder::native) const;
-
-private:
- 
-  //! variable storing info on regularity
-  bool is_regular_range;
 };
 
 
@@ -302,6 +307,9 @@ public:
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
 
+  //! return the total number of elements in this array
+  inline size_t size_all() const;	
+
   //! Array::grow initialises new elements to 0
   inline virtual void grow(const IndexRange<1>& range);
   
@@ -326,10 +334,10 @@ public:
   //! return minimum value of all elements
   inline elemT find_min() const;
   
-  //! checks if the index range is 'regular' (always true)
+  //! checks if the index range is 'regular' (always \c true as this is the 1D case)
   inline bool is_regular() const;
   
-  //! find regular range                                     
+  //! find regular range, returns \c false if the range is not regular
   bool get_regular_range(
      BasicCoordinate<1, int>& min,
      BasicCoordinate<1, int>& max) const;
@@ -487,6 +495,9 @@ public:
 
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
+
+  //! return the total number of elements in this array
+  inline size_t size_all() const;	
 
   //! Array::grow initialises new elements to 0
   inline virtual void grow(const IndexRange<1>& range);
@@ -655,6 +666,9 @@ public:
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
 
+  //! return the total number of elements in this array
+  inline size_t size_all() const;	
+
   //! Array::grow initialises new elements to 0
   inline virtual void grow(const IndexRange<1>& range);
   
@@ -821,6 +835,9 @@ public:
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
 
+  //! return the total number of elements in this array
+  inline size_t size_all() const;	
+
   //! Array::grow initialises new elements to 0
   inline virtual void grow(const IndexRange<1>& range);
   
@@ -985,6 +1002,9 @@ public:
   //! return the range of indices used
   inline IndexRange<1> get_index_range() const;
   
+  //! return the total number of elements in this array
+  inline size_t size_all() const;	
+
   //! Array::grow initialises new elements to 0
   inline virtual void grow(const IndexRange<1>& range);
   

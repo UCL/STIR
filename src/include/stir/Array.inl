@@ -47,8 +47,6 @@ resize(const IndexRange<num_dimensions>& range)
        iter != this->end(); 
        iter++, range_iter++)
     (*iter).resize(*range_iter);
-
-  is_regular_range = range.is_regular();
 }
 
 template <int num_dimensions, typename elemT>
@@ -192,6 +190,16 @@ Array<num_dimensions, elemT>::get_index_range() const
   }
   return IndexRange<num_dimensions>(range);
 }
+template <int num_dimensions, typename elemT>
+size_t
+Array<num_dimensions, elemT>::size_all() const 
+{
+  this->check_state();
+  size_t acc=0;
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    acc += this->num[i].size_all();
+  return acc; 
+}
 
 
 template <int num_dimensions, typename elemT>
@@ -280,7 +288,7 @@ template <int num_dimensions, typename elemT>
 bool
 Array<num_dimensions, elemT>::is_regular() const
 {
-  return is_regular_range;
+  return get_index_range().is_regular();
 }
 
 //TODO terribly inefficient at the moment
@@ -290,7 +298,7 @@ Array<num_dimensions, elemT>::get_regular_range(
      BasicCoordinate<num_dimensions, int>& min,
      BasicCoordinate<num_dimensions, int>& max) const
 {
-  IndexRange<num_dimensions> range = get_index_range();
+  const IndexRange<num_dimensions> range = get_index_range();
   return range.get_regular_range(min,max);
 }
 
@@ -483,6 +491,13 @@ IndexRange<1>
 Array<1, elemT>::get_index_range() const
 {
   return IndexRange<1>(this->get_min_index(), this->get_max_index());
+}
+
+template <typename elemT>
+size_t
+Array<1, elemT>::size_all() const 
+{
+  return size();
 }
 
 template <class elemT>
@@ -781,13 +796,13 @@ Array<1, elemT>::end_all() const
    return this->end();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all_const() const
 {
   return this->begin();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all_const() const
 {
    return this->end();
@@ -797,6 +812,12 @@ IndexRange<1>
 Array<1, float>::get_index_range() const
 {
   return IndexRange<1>(this->get_min_index(), this->get_max_index());
+}
+
+size_t
+Array<1, elemT>::size_all() const 
+{
+  return size();
 }
 
 float
@@ -1066,13 +1087,13 @@ Array<1, elemT>::end_all() const
    return this->end();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all_const() const
 {
   return this->begin();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all_const() const
 {
    return this->end();
@@ -1082,6 +1103,12 @@ IndexRange<1>
 Array<1, int>::get_index_range() const
 {
   return IndexRange<1>(this->get_min_index(), this->get_max_index());
+}
+
+size_t
+Array<1, elemT>::size_all() const 
+{
+  return size();
 }
 
 int
@@ -1357,13 +1384,13 @@ Array<1, elemT>::end_all() const
    return this->end();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all_const() const
 {
   return this->begin();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all_const() const
 {
    return this->end();
@@ -1374,6 +1401,12 @@ IndexRange<1>
 Array<1, unsigned short>::get_index_range() const
 {
   return IndexRange<1>(this->get_min_index(), this->get_max_index());
+}
+
+size_t
+Array<1, elemT>::size_all() const 
+{
+  return size();
 }
 
 unsigned short
@@ -1644,13 +1677,13 @@ Array<1, elemT>::end_all() const
    return this->end();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all_const() const
 {
   return this->begin();
 }
 
-typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all_const() const
 {
    return this->end();
@@ -1660,6 +1693,12 @@ IndexRange<1>
 Array<1, short>::get_index_range() const
 {
   return IndexRange<1>(this->get_min_index(), this->get_max_index());
+}
+
+size_t
+Array<1, elemT>::size_all() const 
+{
+  return size();
 }
 
 short
