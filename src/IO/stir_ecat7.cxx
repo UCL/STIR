@@ -114,6 +114,7 @@ static bool is_ecat7_file(Main_header& mhead, const string& filename)
     }
   else
     {
+      mhead = *mptr->mhptr;
       // do some checks on the main header
       return 
 	mhead.sw_version>=70 && mhead.sw_version<=79  &&
@@ -156,51 +157,8 @@ bool is_ecat7_attenuation_file(const string& filename)
 
 
 void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
-{
-  switch(mhead.system_type)
-  {
-  case 128 : 
-    //camera = camRPT; 
-    scanner_ptr = new Scanner(Scanner::RPT); 
-    printf("Scanner : RPT\n"); 
-    break;
-  case 931 : 
-    //camera = cam931; 
-    scanner_ptr = new Scanner(Scanner::E931); 
-    printf("Scanner : ECAT 931\n"); break;
-  case 951 : 
-    //camera = cam951; 
-    scanner_ptr = new Scanner(Scanner::E951); 
-    printf("Scanner : ECAT 951\n"); break;
-  case 953 : 
-    //camera = cam953; 
-    scanner_ptr = new Scanner(Scanner::E953); 
-    printf("Scanner : ECAT 953\n"); 
-    break;
-  case 921 : 
-    //camera = cam953; 
-    scanner_ptr = new Scanner(Scanner::E921); 
-    printf("Scanner : ECAT 921\n"); 
-    break;
-  case 961 : 
-    //camera = cam953; 
-    scanner_ptr = new Scanner(Scanner::E961); 
-    printf("Scanner : ECAT 961\n"); 
-    break;
-  case 966 : 
-    //camera = cam953; 
-    scanner_ptr = new Scanner(Scanner::E966); 
-    printf("Scanner : ECAT 966\n"); 
-    break;
-  default :  
-    
-    {	
-      // camera = camRPT; 
-      scanner_ptr = new Scanner(Scanner::E966); 
-      printf("main_header.system_type unknown, defaulting to 966 \n"); 
-    }
-    break;
-  }
+{  
+  scanner_ptr = find_scanner_from_ECAT_system_type(mhead.system_type);
 }
 
 
@@ -996,6 +954,14 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 {
   shared_ptr<Scanner> scanner_ptr;
   find_scanner(scanner_ptr, *(mptr->mhptr)); 
+  if (scanner_ptr->get_type() == Scanner::Unknown_Scanner)
+  {
+    warning("ECAT7 IO: Couldn't determine the scanner \n"
+      "(Main_header.system_type=%d), defaulting to 962.\n"
+      "This might give dramatic problems.\n",
+	    mptr->mhptr->system_type); 
+    scanner_ptr = new Scanner(Scanner::E962);
+  }
  
   if(sub_header_ptr->num_dimensions != 4)
     warning("Expected subheader.num_dimensions==4. Continuing...\n");

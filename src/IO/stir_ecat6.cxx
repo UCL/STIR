@@ -131,43 +131,9 @@ Scanner* find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
   // we could do more effort here by checking some values of other fields than system_type.
   // TODO
 
-  Scanner * scanner_ptr = 0;
-  switch(mhead.system_type)
-  {
-  case 128 : 
-    //camera = camRPT; 
-    scanner_ptr = new Scanner(Scanner::RPT); 
-    break;
-
-  case 931 :
-  case 12 : 
-    //camera = cam931; 
-    scanner_ptr = new Scanner(Scanner::E931); 
-    break;
-  case 951 : 
-    //camera = cam951; 
-    scanner_ptr = new Scanner(Scanner::E951); 
-  case 953 : 
-    //camera = cam953; 
-    scanner_ptr = new Scanner(Scanner::E953); 
-    break;
-  case 42:
-    scanner_ptr = new Scanner(Scanner::RATPET);
-    break;
-  default :  
-    // enable our support for ECAT6 data for GE Advance
-    if (mhead.num_planes == 324)
-    {
-      //camera = camAdvance; 
-      scanner_ptr = new Scanner(Scanner::Advance); 
-      break;
-    }
-    else
-    {	
-      scanner_ptr = new Scanner(Scanner::Unknown_Scanner); 
-    }
-    break;
-  }
+  
+  Scanner * scanner_ptr = 
+    find_scanner_from_ECAT_system_type(mhead.system_type);
   return scanner_ptr;
 }
 
@@ -335,9 +301,10 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
   cout << "Scanner determined from ECAT6_Main_header: " << scanner_ptr->get_name() << endl;
   if (scanner_ptr->get_type() == Scanner::Unknown_Scanner)
   {
-    warning("ECAT6_to_PDFS: Couldn't determine the scanner from the \n"
-      "ECAT6_Main_header.system_type, defaulting to 953.\n"
-      "This will give dramatic problems when the number of rings of your scanner is NOT 16.\n"); 
+    warning("ECAT6_to_PDFS: Couldn't determine the scanner \n"
+      "(Main_header.system_type=%d), defaulting to 953.\n"
+      "This will give dramatic problems when the number of rings of your scanner is NOT 16.\n",
+	    mhead.system_type); 
     scanner_ptr = new Scanner(Scanner::E953);
   }
 
