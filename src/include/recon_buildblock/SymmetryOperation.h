@@ -1,8 +1,7 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
-
   \file
   \ingroup recon_buildblock
 
@@ -11,14 +10,13 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#ifndef __SymmetryOperation_H__
-#define __SymmetryOperation_H__
+#ifndef __tomo_recon_buildblock_SymmetryOperation_H__
+#define __tomo_recon_buildblock_SymmetryOperation_H__
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 
 START_NAMESPACE_TOMO
@@ -26,6 +24,7 @@ START_NAMESPACE_TOMO
 template <int num_dimensions, class coordT> class BasicCoordinate;
 class ViewSegmentNumbers;
 class ProjMatrixElemsForOneBin;
+class ProjMatrixElemsForOneDensel;
 class Bin;
 
 
@@ -75,11 +74,10 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
-#if 0
+#ifdef ENABLE_DENSEL 
   virtual void 
-    transform_proj_matrix_elems_for_voxel(
-      ProjMatrixElemsForOneVoxel& out,
-      const ProjMatrixElemsForOneVoxel& in) const = 0;
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
 #endif
 };
 
@@ -103,11 +101,17 @@ public:
   inline void 
     transform_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin& lor) const {}
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const {}
+#endif
 };
 
 
 END_NAMESPACE_TOMO
 
-//#include "SymmetryOperation.inl"
+//#include "recon_buildblock/SymmetryOperation.inl"
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -28,8 +28,8 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
 
 */          
 
@@ -61,6 +61,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel& ) const;
+#endif
+
 
 private:
   int axial_pos_shift;
@@ -87,6 +93,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
 
 private:
   int view180;
@@ -119,6 +131,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -148,6 +166,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -176,6 +200,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -203,6 +233,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
 
 private:
   int view180;
@@ -233,6 +269,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -260,6 +302,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -286,6 +334,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
 
 private:
   int view180;
@@ -315,6 +369,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -342,6 +402,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
 
 private:
   int view180;
@@ -371,6 +437,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -398,6 +470,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -424,6 +502,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
 
 private:
   int view180;
@@ -453,6 +537,12 @@ public:
       ProjMatrixElemsForOneBin& lor) const;
 
 
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
+
 private:
   int view180;
   int axial_pos_shift;
@@ -479,6 +569,12 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
+
+#ifdef ENABLE_DENSEL 
+  virtual void 
+    transform_proj_matrix_elems_for_one_densel(
+      ProjMatrixElemsForOneDensel&) const;
+#endif
 
 private:
   int view180;
