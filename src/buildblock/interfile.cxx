@@ -122,6 +122,7 @@ compute_file_offsets(int number_of_time_frames,
   return temp;
 }
  
+// KT 05/09/2001 added directory capability
 Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
@@ -145,8 +146,32 @@ write_basic_interfile_image_header(const string& header_file_name,
     }  
   delete header_name;
 
+  // handle directory names
+  string binary_data_file_name;
+  {
+    char dir_name_of_header[max_filename_length];
+    char dir_name_of_binary_data[max_filename_length];
+    get_directory_name(dir_name_of_header, header_file_name.c_str());
+    get_directory_name(dir_name_of_binary_data, image_file_name.c_str());
+    if (strlen(dir_name_of_binary_data) == 0 ||
+	is_absolute_pathname(image_file_name.c_str()))
+      {
+	// image_dirname is empty or it's an absolute path
+	binary_data_file_name = image_file_name;
+      }
+    else if (strcmp(dir_name_of_header, dir_name_of_binary_data)==0)
+      {
+	// dirnames are the same, so strip from image_file_name
+	binary_data_file_name = find_filename(image_file_name.c_str());
+      }
+    else
+      {
+	// just copy, what else to do?
+	binary_data_file_name = image_file_name;
+      }
+  }
   output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " << image_file_name << endl;
+  output_header << "name of data file := " << binary_data_file_name << endl;
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
@@ -326,7 +351,14 @@ Succeeded write_basic_interfile(const string&  filename,
   char * header_name = new char[filename.size() + 5];
 
   strcpy(data_name, filename.c_str());
-  add_extension(data_name, ".v");
+  // KT 29/06/2001 make sure that a filename ending on .hv is treated correctly
+  {
+   const char * const extension = strchr(find_filename(data_name),'.');
+   if (extension!=NULL && strcmp(extension, ".hv")==0)
+     replace_extension(data_name, ".v");
+   else
+     add_extension(data_name, ".v");
+  }
   strcpy(header_name, data_name);
   replace_extension(header_name, ".hv");
 
@@ -458,7 +490,7 @@ read_interfile_PDFS(const string& filename,
   return read_interfile_PDFS(image_stream, directory_name, open_mode);
 }
 
-// TODO add directory capability
+// KT 05/09/2001 added directory capability
 Succeeded 
 write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const string& data_file_name,
@@ -477,10 +509,35 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     }  
   delete header_name;
 
+
+  // handle directory names
+  string binary_data_file_name;
+  {
+    char dir_name_of_header[max_filename_length];
+    char dir_name_of_binary_data[max_filename_length];
+    get_directory_name(dir_name_of_header, header_file_name.c_str());
+    get_directory_name(dir_name_of_binary_data, data_file_name.c_str());
+    if (strlen(dir_name_of_binary_data) == 0 ||
+	is_absolute_pathname(data_file_name.c_str()))
+      {
+	// data_dirname is empty or it's an absolute path
+	binary_data_file_name = data_file_name;
+      }
+    else if (strcmp(dir_name_of_header, dir_name_of_binary_data)==0)
+      {
+	// dirnames are the same, so strip from data_file_name
+	binary_data_file_name = find_filename(data_file_name.c_str());
+      }
+    else
+      {
+	// just copy, what else to do?
+	binary_data_file_name = data_file_name;
+      }
+  }
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
   output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " <<data_file_name << endl;
+  output_header << "name of data file := " << binary_data_file_name << endl;
 
   output_header << "originating system := ";
   output_header <<pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_name() << endl;
@@ -633,7 +690,7 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
       // TODO something here
     }
 
-  output_header <<"scale_factor"
+  output_header <<"image scaling factor[1] := "
 		<<pdfs.get_scale_factor()<<endl;
 
   output_header<<"data offset in bytes[1] := "
@@ -652,11 +709,24 @@ write_basic_interfile_PDFS_header(const string& data_filename,
 
 {
   char header_file_name[max_filename_length];
+  // KT 26/08/2001 make sure that a data_filename ending on .hs is treated correctly
+  char new_data_file_name[max_filename_length];
   strcpy(header_file_name,data_filename.c_str());
+  strcpy(new_data_file_name,data_filename.c_str());
+
+  {
+   const char * const extension = strchr(find_filename(new_data_file_name),'.');
+   if (extension!=NULL && strcmp(extension, ".hs")==0)
+     replace_extension(new_data_file_name, ".s");
+   else
+     add_extension(new_data_file_name, ".s");
+  }
   replace_extension(header_file_name,".hs");
+
   return 
     write_basic_interfile_PDFS_header(header_file_name,
-				    data_filename,pdfs);
+				      new_data_file_name,
+				      pdfs);
 }
 
 /**********************************************************************
