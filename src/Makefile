@@ -31,7 +31,13 @@
 	run_tests run_interactive_tests all_test_exes \
 	default_target
 
-WORKSPACE := $(CURDIR)
+# WORKSPACE macro should be set to the root of the source files
+# it is now (largely?) irrelevant is make is only
+# executed in 1 directory.
+# WORKSPACE default to the current directory
+# this can be done simply using . (as it's no longer a recursive make)
+# Using . instead of $(CURDIR) avoids problems with spaces in filename
+WORKSPACE := . #$(CURDIR)
 
 # make sure that 'all' is also the first target and hence the default
 default_target: all
