@@ -37,6 +37,8 @@ using std::string;
 #endif
 START_NAMESPACE_STIR
 
+// temporary stuff to write results every subiteration
+//#define WRITE_ALL
 
 //************** 3D
 
@@ -47,6 +49,9 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
 {
   const int num_rings = data_fan_sums.get_length();
   const int num_detectors_per_ring = data_fan_sums[data_fan_sums.get_min_index()].get_length();
+#ifdef WRITE_ALL
+  static int sub_iter_num = 0;
+#endif
   for (int ra = data_fan_sums.get_min_index(); ra <= data_fan_sums.get_max_index(); ++ra)
     for (int a = data_fan_sums[ra].get_min_index(); a <= data_fan_sums[ra].get_max_index(); ++a)
     {
@@ -60,6 +65,15 @@ void iterate_efficiencies(DetectorEfficiencies& efficiencies,
   	       denominator += efficiencies[rb][b%num_detectors_per_ring];
 	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
 	}
+#ifdef WRITE_ALL
+          {
+            char out_filename[100];
+            sprintf(out_filename, "MLresult_subiter_eff_1_%d.out", 
+		    sub_iter_num++);
+            ofstream out(out_filename);
+            out << efficiencies;
+          }
+#endif
     }
 }
 
