@@ -4,15 +4,21 @@
 #
 
 
+# DB 1/2/99 Add WORKSPACE and INCLUDE_DIR directory
+WORKSPACE = ${HOME}/PPhead
+INCLUDE_DIR = ${WORKSPACE}/include
+
+
 CXX = g++
 RM = /bin/rm -f 
 # KT 18/12/97 removed Para++ related CFLAGS
 #CL030698 Move debug flags to DEBUG
+# DB 1/2/99 change CFLAGS
 DEBUG=-D_DEBUG
 DEST=debug/
-CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
+CFLAGS = -g $(DEBUG) -I$(INCLUDE_DIR)
 #CXX = xlC
-#CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEMPLATE_ARG
+#CFLAGS = -g -D_DEBUG -I$(INCLUDE_DIR) -DTEMPLATE_ARG
 
 #KT 27/02/98 use default rules now, .cxx does not work without next line
 .SUFFIXES: .cc .o .cxx .a
