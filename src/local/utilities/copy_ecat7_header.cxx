@@ -79,7 +79,6 @@ void copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
   /*
 	short data_type;
 	short num_dimensions;
-	short attenuation_type;
 	short num_r_elements;
 	short num_angles;
 	short num_z_elements;
@@ -97,6 +96,7 @@ void copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
   STIR_DO_IT(y_radius);
   STIR_DO_IT(tilt_angle);
   STIR_DO_IT(attenuation_coeff);
+  STIR_DO_IT(attenuation_type);
   STIR_DO_IT(attenuation_min);
   STIR_DO_IT(attenuation_max);
   STIR_DO_IT(skull_thickness);
