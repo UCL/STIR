@@ -1,6 +1,7 @@
 
 
 #include "local/stir/local_helping_functions.h"
+#include "stir/IndexRange2D.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -113,20 +114,41 @@ void divide_complex_arrays( Array<1,float>& array_nom,
  
 
 
-void create_kernel_3d ( Array<3,float>& kernel_3d, VectorWithOffset < float>& kernel_1d)
+void create_kernel_3d ( Array<3,float>& kernel_3d, const VectorWithOffset < float>& kernel_1d)
 {
 
-  for ( int k = kernel_3d.get_min_index(); k<=kernel_3d.get_max_index();k++)
-    for ( int j = kernel_3d[k].get_min_index(); j<=kernel_3d[k].get_max_index();j++)
-      for ( int i = kernel_3d[k][j].get_min_index(); i<=kernel_3d[k][j].get_max_index();i++)
+  if (kernel_3d.get_min_index() ==kernel_3d.get_max_index())
+  {
+      cerr << " In the right loop" << endl;
+      Array<2,float> kernel_2d(IndexRange2D(kernel_1d.get_min_index(), kernel_1d.get_max_index(),
+      kernel_1d.get_min_index(), kernel_1d.get_max_index()));
+  
+    for ( int j = kernel_3d[kernel_3d.get_min_index()].get_min_index(); j<=kernel_3d[kernel_3d.get_min_index()].get_max_index();j++)
+      for ( int i = kernel_3d[kernel_3d.get_min_index()][j].get_min_index(); i<=kernel_3d[kernel_3d.get_min_index()][j].get_max_index();i++)
       {
-       kernel_3d[k][j][i] = kernel_1d[k]*kernel_1d[j]*kernel_1d[i];
+	kernel_2d[j][i] = kernel_1d[j]*kernel_1d[i];
       }
-
-
+      for ( int k = kernel_3d.get_min_index(); k<=kernel_3d.get_max_index();k++)
+	for ( int j = kernel_3d[k].get_min_index(); j<=kernel_3d[k].get_max_index();j++)
+	  for ( int i = kernel_3d[k][j].get_min_index(); i<=kernel_3d[k][j].get_max_index();i++)
+	  {
+	    kernel_3d[k][j][i] = kernel_2d[j][i];
+	  }
+        }
+      else
+      {
+	for ( int k = kernel_3d.get_min_index(); k<=kernel_3d.get_max_index();k++)
+	  for ( int j = kernel_3d[k].get_min_index(); j<=kernel_3d[k].get_max_index();j++)
+	    for ( int i = kernel_3d[k][j].get_min_index(); i<=kernel_3d[k][j].get_max_index();i++)
+	    {
+	      kernel_3d[k][j][i] = kernel_1d[k]*kernel_1d[j]*kernel_1d[i];
+	    }
+      }
+     
+  
 }
 
-void create_kernel_2d ( Array<2, float> & kernel_2d, VectorWithOffset < float>& kernel_1d)
+void create_kernel_2d ( Array<2, float> & kernel_2d, const VectorWithOffset < float>& kernel_1d)
 {
 
     for ( int j = kernel_2d.get_min_index(); j<=kernel_2d.get_max_index();j++)
@@ -190,16 +212,22 @@ void padd_filter_coefficients_3D_and_make_them_symmetric(VectorWithOffset < Vect
 
 // convert 3d array into 1d where the output size is (x_size*y_size*z_size)*2. the faactor 2
 // is used for the imaginary part in FT.
-void convert_array_3D_into_1D_array( Array<1,float>& out_array,Array<3,float>& in_array)
+void convert_array_3D_into_1D_array( Array<1,float>& out_array,const Array<3,float>& in_array)
 {
+  // check the sizes -- the outsput array should be twice the size of the input array because
+  // the data is stored as multidimesional complex array with real nad imaginary part 
+  assert ( out_array.get_length() == (2 *in_array.get_length()*in_array[in_array.get_min_index()].get_length()* in_array[in_array.get_min_index()][in_array.get_min_index()].get_length()));
+  
+#if 1
+  assert(out_array.get_min_index()==1);
+  assert(in_array.get_min_index()==1);
+  assert(in_array[1].get_min_index()==1);
+  assert(in_array[1][1].get_min_index()==1);
   
   Array<1,float> tmp_out_array(out_array.get_min_index(), out_array.get_max_index());					    
 
   int y_size = in_array[in_array.get_min_index()].get_length();
   int x_size = in_array[in_array.get_min_index()][in_array.get_min_index()].get_length();
-  // check the sizes -- the outsput array should be twice the size of the input array because
-  // the data is stored as multidimesional complex array with real nad imaginary part 
-//  assert ( out_array.get_length() == (2 *in_array.get_length()*in_array[in_array_get_min_index()].get_length()* in_array[in_array_get_min_index()][in_array_get_min_index()].get_length()));
   for ( int k = in_array.get_min_index(); k<=in_array.get_max_index(); k++)
     for ( int j = in_array[k].get_min_index(); j<=in_array[k].get_max_index(); j++)
       for ( int i = in_array[k][j].get_min_index(); i<=in_array[k][j].get_max_index(); i++) 
@@ -218,12 +246,25 @@ void convert_array_3D_into_1D_array( Array<1,float>& out_array,Array<3,float>& i
 	out_array[r] = tmp_out_array[k];      
 	r +=2;
       }
-
+#else
+  Array<1,float>::iterator iter_1d = out_array.begin();
+  Array<3,float>::const_full_iterator iter_3d = in_array.begin_all();
+  while(iter_1d != out_array.end())
+  {
+    *iter_1d++ = *iter_3d++; // real part
+    *iter_1d++ = 0; // imaginary part
+  }
+#endif
 }
 
 // real part only -> into 3D ( complex parta already separated)
-void convert_array_1D_into_3D_array( Array<3,float>& out_array,Array<1,float>& in_array)
+void convert_array_1D_into_3D_array( Array<3,float>& out_array,const Array<1,float>& in_array)
 {
+#if 1
+  assert(in_array.get_min_index()==1);
+  assert(out_array.get_min_index()==1);
+  assert(out_array[1].get_min_index()==1);
+  assert(out_array[1][1].get_min_index()==1);
 
  int z_size = out_array.get_length();
  int y_size = out_array[out_array.get_min_index()].get_length();
@@ -236,6 +277,16 @@ void convert_array_1D_into_3D_array( Array<3,float>& out_array,Array<1,float>& i
       {
 	out_array[k][j][i] = in_array[((j-1)*y_size+i)+(k-1)*(y_size*x_size)];
       }
+#else
+  Array<3,float>::full_iterator iter_3d = out_array.begin_all();
+  Array<1,float>::const_iterator iter_1d = in_array.begin();
+  while(iter_1d != in_array.end())
+  {
+    *iter_3d++ = *iter_1d++; // real part
+    iter_1d++; // skip imaginary part
+  }
+#endif
+
 }
 
  
