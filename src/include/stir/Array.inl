@@ -285,8 +285,33 @@ Array<num_dimensions, elemT>::write_data(ostream& s, const ByteOrder byte_order)
   for(int i=get_min_index(); i<=get_max_index(); i++)
     num[i].write_data(s, byte_order);
   check_state();
-}			
+}		
 
+template <int num_dimension, typename elemT>
+Array<num_dimension-1,elemT>& 
+Array<num_dimension,elemT>::operator[](int i)
+{
+  return base_type::operator[](i);                                   
+}                                                  
+
+template <int num_dimension, typename elemT>
+const Array<num_dimension-1,elemT>& 
+Array<num_dimension,elemT>::operator[](int i) const 
+{ 
+  return base_type::operator[](i);
+}      
+template <int num_dimensions, typename elemT>
+elemT&
+Array<num_dimensions,elemT>::operator[](const BasicCoordinate<num_dimensions,int> &c) 
+{
+  return (*this)[c[1]][cut_first_dimension(c)]; 
+}			
+template <int num_dimensions, typename elemT>
+const elemT&
+Array<num_dimensions,elemT>::operator[](const BasicCoordinate<num_dimensions,int> &c) const
+{ 
+  return (*this)[c[1]][cut_first_dimension(c)] ; 
+}				    
 
 /**********************************************
  inlines for Array<1, elemT>
@@ -478,7 +503,7 @@ Array<1, elemT>::get_regular_range(
      BasicCoordinate<1, int>& min,
      BasicCoordinate<1, int>& max) const
 {
-  IndexRange<1> range = get_index_range();
+  const IndexRange<1> range = get_index_range();
   return range.get_regular_range(min,max);
 }
 
@@ -562,10 +587,34 @@ Array<1, elemT>::operator/ (const elemT a) const
   check_state();
   Array<1, elemT> retval(*this);
   return (retval /= a);
+};  
+
+template <typename elemT>    
+const elemT& Array<1,elemT>:: operator[] (int i) const
+{
+   return base_type::operator[](i);
 };
 
-#endif // boost
+template <typename elemT>    
+elemT& Array<1,elemT>:: operator[] (int i)
+{
+   return base_type::operator[](i);
+};
 
+template <typename elemT>    
+const elemT& Array<1,elemT>:: operator[] (const BasicCoordinate<1,int>& c) const
+{
+  return (*this)[c[1]];
+}; 
+                             
+template <typename elemT>    
+elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c) 
+{
+  return (*this)[c[1]];
+};   
+               
+
+#endif // boost   
 
 #else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
@@ -806,8 +855,29 @@ Array<1, float>::operator/ (const float a) const
   return (retval /= a);
 };
 
+
 #endif // boost
 
+const elemT& Array<1,elemT>:: operator[] (int i) const
+{
+   return base_type::operator[](i);
+};
+
+elemT& Array<1,elemT>:: operator[] (int i)
+{
+   return base_type::operator[](i);
+};
+  
+const elemT& Array<1,elemT>:: operator[] (const BasicCoordinate<1,int>& c) const
+{
+  return (*this)[c[1]];
+}; 
+                             
+elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c) 
+{
+  return (*this)[c[1]];
+};   
+ 
 #undef elemT
 
 /************************** int ************************/
@@ -1049,10 +1119,31 @@ Array<1, int>::operator/ (const int a) const
   check_state();
   Array<1, int> retval(*this);
   return (retval /= a);
-};
+};  
+ 
 
 #endif // boost
 
+const elemT& Array<1,elemT>:: operator[] (int i) const
+{
+   return base_type::operator[](i);
+};
+
+elemT& Array<1,elemT>:: operator[] (int i)
+{
+   return base_type::operator[](i);
+};
+  
+const elemT& Array<1,elemT>:: operator[] (const BasicCoordinate<1,int>& c) const
+{
+  return (*this)[c[1]];
+}; 
+                             
+elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c) 
+{
+  return (*this)[c[1]];
+};   
+ 
 #undef elemT
 
 /********************** unsigned short ***************************/
@@ -1295,6 +1386,26 @@ Array<1, unsigned short>::operator/ (const unsigned short a) const
 
 #endif // boost
 
+const elemT& Array<1,elemT>:: operator[] (int i) const
+{
+   return base_type::operator[](i);
+};
+
+elemT& Array<1,elemT>:: operator[] (int i)
+{
+   return base_type::operator[](i);
+};
+  
+const elemT& Array<1,elemT>:: operator[] (const BasicCoordinate<1,int>& c) const
+{
+  return (*this)[c[1]];
+}; 
+                             
+elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c) 
+{
+  return (*this)[c[1]];
+};   
+ 
 #undef elemT
 
 /********************** short ***************************/
@@ -1412,7 +1523,7 @@ Array<1, short>::sum_positive() const
   return acc; 
 };
 
-
+                   
 short
 Array<1, short>::find_max() const 
 {		
@@ -1534,8 +1645,29 @@ Array<1, short>::operator/ (const short a) const
   return (retval /= a);
 };
 
+
 #endif // boost
 
+const elemT& Array<1,elemT>:: operator[] (int i) const
+{
+   return base_type::operator[](i);
+};
+
+elemT& Array<1,elemT>:: operator[] (int i)
+{
+   return base_type::operator[](i);
+};
+  
+const elemT& Array<1,elemT>:: operator[] (const BasicCoordinate<1,int>& c) const
+{
+  return (*this)[c[1]];
+}; 
+                             
+elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c) 
+{
+  return (*this)[c[1]];
+};   
+ 
 #undef elemT
 
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
