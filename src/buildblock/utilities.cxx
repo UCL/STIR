@@ -70,7 +70,7 @@ string ask_string (const string& str, const string& default_value)
   string input;
   
   cerr << "\n" << str 
-       << "\n(Maximum string length is 1000)\n[default_value : \"" 
+       << "\n[default_value : \"" 
        << default_value
        << "\"]: \n";
   std::getline(std::cin, input);
