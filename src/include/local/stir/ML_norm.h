@@ -95,7 +95,7 @@ class FanProjData : private Array<4,float>
 public:
 
   FanProjData();
-  FanProjData(const IndexRange<4>& range);
+  FanProjData(const int num_rings, const int num_detectors, const int max_ring_diff, const int fan_size);
   FanProjData& operator=(const FanProjData&);
 
   float& operator()(const int ra, const int a, const int rb, const int b);
@@ -119,12 +119,14 @@ public:
   float find_min() const;
   int get_num_detectors() const;
   int get_num_rings() const;
-  void grow(const IndexRange<4>&);
+
 
 private:
   typedef Array<4,float> base_type;
-  int num_detectors;
+  FanProjData(const IndexRange<4>& range);
+  void grow(const IndexRange<4>&);
   int num_rings;
+  int num_detectors;
 };
 
 void display(const FanProjData&,const char * const);
