@@ -82,8 +82,9 @@ LORInAxialAndSinogramCoordinates(const coordT z1,
 				 const coordT phi,
 				 const coordT s,
 				 const coordT radius)
-  : _phi(phi), _s(s), 
-  LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius)
+  :
+  LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius),
+   _phi(phi), _s(s)
 {
   check_state();
 }
@@ -105,8 +106,9 @@ LORInAxialAndNoArcCorrSinogramCoordinates(const coordT z1,
 				   const coordT phi,
 				   const coordT beta,
 				   const coordT radius)
-  : _phi(phi), _beta(beta), 
-  LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius)
+  : LORCylindricalCoordinates_z_and_radius<coordT>(z1, z2, radius),
+   _phi(phi), _beta(beta)
+  
 {
   check_state();
 }
