@@ -300,6 +300,8 @@ inline size_t NumericType::size_in_bytes() const
       default:
 	// TODO
 	PETerror("type not yet supported"); Abort();
+		// DH added following line to satisfy VC++
+		return 0;
       }
     }
 
