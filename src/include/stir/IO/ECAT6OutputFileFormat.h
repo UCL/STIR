@@ -5,7 +5,6 @@
 
   \file
   \ingroup ECAT
-  \ingroup IO
   \brief Declaration of class ECAT6OutputFileFormat
 
   \author Kris Thielemans
@@ -14,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000-2$Date$, IRSL
+    Copyright (C) 2000-$Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -23,6 +22,8 @@
 
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/RegisteredParsingObject.h"
+// include for namespace macros
+#include "stir/IO/stir_ecat_common.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
@@ -30,10 +31,12 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT6
 
 
 /*!
-  \ingroup IO
+  \ingroup ECAT
   \brief 
   Implementation of OutputFileFormat paradigm for the ECAT6 format.
  */
@@ -65,8 +68,8 @@ private:
 
 };
 
-
-
+END_NAMESPACE_ECAT6
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 
