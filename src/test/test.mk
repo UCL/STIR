@@ -18,7 +18,8 @@ $(dir)_TEST_SOURCES := test_Array.cxx \
 	test_OutputFileFormat.cxx \
 	test_ByteOrder.cxx \
 	test_Scanner.cxx \
-	test_ROIs.cxx
+	test_ROIs.cxx \
+	test_VAXfloat.cxx
 
 $(dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \
@@ -49,6 +50,9 @@ else
 run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math PHONY_TARGET
 	$< `cygpath -w $(DEST)/utilities/stir_math.exe`
 endif
+
+run_$(dir)/test_VAXfloat:  $(DEST)$(dir)/test_VAXfloat PHONY_TARGET
+	$< --read test/input/test_VAXfloat.in
 
 ##################################################
 # rules to ignore registries
