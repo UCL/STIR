@@ -19,6 +19,7 @@
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "RunTests.h"
 #include "Scanner.h"
+#include "Bin.h"
 #include <iostream>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -93,34 +94,43 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
     check_if_equal( ob2.get_axial_sampling(0), scanner_ptr->get_ring_spacing()/2, "test on axial_sampling for segment0");
     
     {
+      // KT 25/10/2000 use bin
       // segment 0
-      float theta = ob2.get_tantheta(0,10,10,20);
-      float phi = ob2.get_phi(0,10,10,20); 
+      Bin bin(0,10,10,20);
+      float theta = ob2.get_tantheta(bin);
+      float phi = ob2.get_phi(bin); 
       // Get t
-      float t = ob2.get_t(0,10,10,20);
+      float t = ob2.get_t(bin);
       //! Get s
-      float s = ob2.get_s(0,10,10,20);
+      float s = ob2.get_s(bin);
       
       check_if_equal( theta, 0.F,"test on get_tantheta, seg 0");
       check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 0");
-      check_if_equal( t, 10*ob2.get_axial_sampling(0) , "get_t, seg 0");
+      // KT 25/10/2000 adjust to new convention
+      const float ax_pos_origin =
+	(ob2.get_min_axial_pos_num(0) + ob2.get_max_axial_pos_num(0))/2.F;
+      check_if_equal( t, (10-ax_pos_origin)*ob2.get_axial_sampling(0) , "get_t, seg 0");
       check_if_equal( s, 20*ob2.get_tangential_sampling() , "get_s, seg 0");
     }
     {
-      
+      // KT 25/10/2000 use bin      
       // Segment 1
-      float theta = ob2.get_tantheta(1,10,10,20);
-      float phi = ob2.get_phi(1,10,10,20); 
+      Bin bin (1,10,10,20);
+      float theta = ob2.get_tantheta(bin);
+      float phi = ob2.get_phi(bin); 
       // Get t
-      float t = ob2.get_t(1,10,10,20);
+      float t = ob2.get_t(bin);
       // Get s
-      float s = ob2.get_s(1,10,10,20);
+      float s = ob2.get_s(bin);
       
       float thetatest = 2*ob2.get_axial_sampling(1)/(2*sqrt(square(scanner_ptr->get_ring_radius())-square(s)));
       
       check_if_equal( theta, thetatest,"test on get_tantheta, seg 1");
       check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 1");
-      check_if_equal( t, 10*ob2.get_axial_sampling(1) , "get_t, seg 1");
+      // KT 25/10/2000 adjust to new convention
+      const float ax_pos_origin =
+	(ob2.get_min_axial_pos_num(1) + ob2.get_max_axial_pos_num(1))/2.F;
+      check_if_equal( t, (10-ax_pos_origin)/sqrt(1+square(thetatest))*ob2.get_axial_sampling(1) , "get_t, seg 1");
       check_if_equal( s, 20*ob2.get_tangential_sampling() , "get_s, seg 1");
     }
     
