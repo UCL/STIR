@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \ingroup IO 
+  \ingroup InterfileIO 
   \brief implementations for the InterfileHeader class
 
   \author Kris Thielemans
