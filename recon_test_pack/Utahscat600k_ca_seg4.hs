@@ -7,6 +7,7 @@ originating system := PRT-1
 imagedata byte order := LITTLEENDIAN
 !PET STUDY (General) :=
 !PET data type := Emission
+applied corrections:={arc correction}
 !number format := float
 !number of bytes per pixel := 4
 number of dimensions := 4
