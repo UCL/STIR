@@ -19,7 +19,6 @@
 */
 
 
-#include "Tomography_common.h"
 #include "interfile.h"
 #include "utilities.h"
 #include "DiscretisedDensity.h"
@@ -62,6 +61,7 @@ END_NAMESPACE_TOMO
 
 USING_NAMESPACE_TOMO
 
+int
 main(int argc, char *argv[])
 {
 
@@ -117,7 +117,7 @@ main(int argc, char *argv[])
   filter.build(input_image,fwhmx_dir,fwhmz_dir,Nx_dir,Nz_dir);
   filter.apply(input_image);
 
- char outfile[max_filename_length];
+  char outfile[max_filename_length];
   ask_filename_with_extension(outfile,
                                "Output to which file: ", "");
 
