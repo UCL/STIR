@@ -20,7 +20,7 @@ LLN_INCLUDE_DIR=$(WORKSPACE)/../../lln/ecat
 # so, set EXTRA_OPT=-g -Wall
 # for some systems, do more...
 
-EXTRA_OPT=-D ENABLE_DENSEL
+EXTRA_OPT+=-D ENABLE_DENSEL
 ifeq ($(SYSTEM),LINUX)
 # our Linux system has Pentium III processors
 EXTRA_OPT+=-g -Wall -march=i686
