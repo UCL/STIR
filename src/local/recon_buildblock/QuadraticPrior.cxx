@@ -20,6 +20,8 @@
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IndexRange2D.h"
+
 #include "stir/interfile.h"
 
 START_NAMESPACE_STIR
@@ -32,6 +34,7 @@ QuadraticPrior<elemT>::initialise_keymap()
   parser.add_start_key("Quadratic Prior Parameters");
   parser.add_key("only 2D", &only_2D); 
   parser.add_key("kappa filename", &kappa_filename);
+  parser.add_key("precomputed weights", &precomputed_weights);
   parser.add_stop_key("END Quadratic Prior Parameters");
 }
 
@@ -44,7 +47,22 @@ QuadraticPrior<elemT>::post_processing()
     return true;
   if (kappa_filename.size() != 0)
     kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
+
+  const unsigned int size_y = precomputed_weights.get_length();
+  const unsigned int size_x = precomputed_weights[1].get_length();  
+  const int min_index_y = -(size_y/2);
+  const int min_index_x = -(size_x/2);
+  weights.grow(IndexRange3D(0,0,min_index_y, min_index_y + size_y - 1,
+  				   min_index_x, min_index_x + size_x - 1 ));
+
+  for (int j = min_index_y; j<= weights[0].get_max_index(); ++j)
+    for (int i = min_index_x; i<= weights[0][j].get_max_index(); ++i)
+    {
+    weights[0][j][i] = 
+      static_cast<float>(precomputed_weights[j-min_index_y][i-min_index_x]);
+    }
   return false;
+
 }
 
 template <typename elemT>
@@ -54,6 +72,7 @@ QuadraticPrior<elemT>::set_defaults()
   GeneralisedPrior<elemT>::set_defaults();
   only_2D = false;
   kappa_ptr = 0;  
+  precomputed_weights.fill(0);
 }
 
 
@@ -74,6 +93,8 @@ QuadraticPrior<elemT>::QuadraticPrior(const bool only_2D_v, float penalisation_f
 {
   penalisation_factor = penalisation_factor_v;
 }
+
+
 
 // TODO move to set_up
 // initialise to 1/Euclidean distance
@@ -124,7 +145,11 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   DiscretisedDensityOnCartesianGrid<3,float>& prior_gradient_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_gradient);
 
-  compute_weights(weights, current_image_cast.get_grid_spacing());
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, current_image_cast.get_grid_spacing());
+  }
+ 
  
   
   const bool do_kappa = kappa_ptr.use_count() != 0;
@@ -141,24 +166,30 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 	  }
 	else
 	  {
-	    min_dz = max(-1, prior_gradient_cast.get_min_z()-z);
-	    max_dz = min(1, prior_gradient_cast.get_max_z()-z);
+	    min_dz = max(weights.get_min_index(), prior_gradient_cast.get_min_z()-z);
+	    max_dz = min(weights.get_max_index(), prior_gradient_cast.get_max_z()-z);
 	  }
 	
 	for (int y=prior_gradient_cast.get_min_y();y<= prior_gradient_cast.get_max_y();y++)
 	  {
 	    int min_dy, max_dy;
 	    {
-	      min_dy = max(-1, prior_gradient_cast.get_min_y()-y);
-	      max_dy = min(1, prior_gradient_cast.get_max_y()-y);
+	      
+	      
+		
+	      min_dy = max(weights[0].get_min_index(), prior_gradient_cast.get_min_y()-y);
+	      max_dy = min(weights[0].get_max_index(), prior_gradient_cast.get_max_y()-y);
 	    }
 
 	    for (int x=prior_gradient_cast.get_min_x();x<= prior_gradient_cast.get_max_x();x++)       
 	      {
+	        
+		
+		
 		int min_dx, max_dx;
 		{
-		  min_dx = max(-1, prior_gradient_cast.get_min_x()-x);
-		  max_dx = min(1, prior_gradient_cast.get_max_x()-x);
+		  min_dx = max(weights[0][0].get_min_index(), prior_gradient_cast.get_min_x()-x);
+		  max_dx = min(weights[0][0].get_max_index(), prior_gradient_cast.get_max_x()-x);
 		}
 		elemT gradient = 0;
 		for (int dz=min_dz;dz<=max_dz;++dz)
@@ -213,7 +244,11 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   DiscretisedDensityOnCartesianGrid<3,float>& prior_Hessian_for_single_densel_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_Hessian_for_single_densel);
 
-  compute_weights(weights, current_image_cast.get_grid_spacing());
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, current_image_cast.get_grid_spacing());
+  }
+ 
    
   const bool do_kappa = kappa_ptr.use_count() != 0;
   
@@ -230,18 +265,24 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   }
   else
   {
-    min_dz = max(-1, prior_Hessian_for_single_densel_cast.get_min_z()-z);
-    max_dz = min(1, prior_Hessian_for_single_densel_cast.get_max_z()-z);
+    min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel_cast.get_min_z()-z);
+    max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel_cast.get_max_z()-z);
   }
   int min_dy, max_dy;
   {
-    min_dy = max(-1, prior_Hessian_for_single_densel_cast.get_min_y()-y);
-    max_dy = min(1, prior_Hessian_for_single_densel_cast.get_max_y()-y);
+    
+    
+	
+    min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_y()-y);
+    max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_y()-y);
   }
   int min_dx, max_dx;
   {
-    min_dx = max(-1, prior_Hessian_for_single_densel_cast.get_min_x()-x);
-    max_dx = min(1, prior_Hessian_for_single_densel_cast.get_max_x()-x);
+    
+    
+	
+    min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_x()-x);
+    max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_x()-x);
   }
   elemT diagonal = 0;
   for (int dz=min_dz;dz<=max_dz;++dz)
@@ -283,8 +324,11 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
   DiscretisedDensityOnCartesianGrid<3,float>& parabolic_surrogate_curvature_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(parabolic_surrogate_curvature);
 
-  compute_weights(weights, current_image_cast.get_grid_spacing());
-  
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, current_image_cast.get_grid_spacing());
+  }  
+   
   const bool do_kappa = kappa_ptr.use_count() != 0;
   
   if (do_kappa && kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
@@ -299,31 +343,37 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 	  }
 	else
 	  {
-	    min_dz = max(-1, parabolic_surrogate_curvature_cast.get_min_z()-z);
-	    max_dz = min(1, parabolic_surrogate_curvature_cast.get_max_z()-z);
+	    min_dz = max(weights.get_min_index(), parabolic_surrogate_curvature_cast.get_min_z()-z);
+	    max_dz = min(weights.get_max_index(), parabolic_surrogate_curvature_cast.get_max_z()-z);
 	  }
 	
 	for (int y=parabolic_surrogate_curvature_cast.get_min_y();y<= parabolic_surrogate_curvature_cast.get_max_y();y++)
 	  {
 	    int min_dy, max_dy;
 	    {
-	      min_dy = max(-1, parabolic_surrogate_curvature_cast.get_min_y()-y);
-	      max_dy = min(1, parabolic_surrogate_curvature_cast.get_max_y()-y);
+	      
+	      
+	      
+	      min_dy = max(weights[0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_y()-y);
+	      max_dy = min(weights[0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_y()-y);
 	    }
 
 	    for (int x=parabolic_surrogate_curvature_cast.get_min_x();x<= parabolic_surrogate_curvature_cast.get_max_x();x++)       
-	      {
+	      {  
+	        
+		
+
 		int min_dx, max_dx;
 		{
-		  min_dx = max(-1, parabolic_surrogate_curvature_cast.get_min_x()-x);
-		  max_dx = min(1, parabolic_surrogate_curvature_cast.get_max_x()-x);
+		  min_dx = max(weights[0][0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_x()-x);
+		  max_dx = min(weights[0][0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_x()-x);
 		}
 		elemT gradient = 0;
 		for (int dz=min_dz;dz<=max_dz;++dz)
 		  for (int dy=min_dy;dy<=max_dy;++dy)
 		    for (int dx=min_dx;dx<=max_dx;++dx)
 		      {
-			// 1 comes form omega = psi'(t)/t = 2*t/2t =1		       
+			// 1 comes from omega = psi'(t)/t = 2*t/2t =1		       
 			elemT current =
 			  weights[dz][dy][dx] *1;
 
