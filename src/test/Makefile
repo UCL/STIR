@@ -6,6 +6,9 @@ WORKSPACE = ${HOME}/PPhead
 INCLUDE = ${WORKSPACE}/include
 DISPLAYLIB = ${WORKSPACE}/display/libdisplay.a
 BUILDBLOCKLIB = ${WORKSPACE}/buildblock/libbuildblock.a
+PARAPLUSLIB = ${WORKSPACE}/paraplus/libparaplus.a
+PXLINK = px g++ -e preMain -I/epx/epx/include -L/epx/epx/lib
+PXLIB = -lpx -lparix -lVT -lhslink -lpthreads
 
 #KT added the last -I option for Solaris, doesn't harm anyone if it's
 # not necessary
@@ -13,7 +16,8 @@ CFLAGS = -g -D_DEBUG -I${INCLUDE} -I/usr/openwin/include
 #KT 28/11 added buildblock library
 #KT 28/11 added the last -L option for Solaris
 LDFLAGS = -g -L${WORKSPACE}/display  -L${WORKSPACE}/buildblock \
-          -L/usr/openwin/lib \
+	  -L${WORKSPACE}/paraplus \
+          -L/usr/openwin/lib -lparaplus \
           -lbuildblock -ldisplay -lX11 -lcurses
 
 %.o:%.cxx
@@ -26,7 +30,7 @@ LDFLAGS = -g -L${WORKSPACE}/display  -L${WORKSPACE}/buildblock \
 	$(CXX) $(DEBUG) $(CFLAGS) -o $@ $< ${LDFLAGS}
 
 
-all: tensor display sinodata VectorWithOffset convert
+all: tensor display sinodata VectorWithOffset convert pplusdummy pplustiny
 
 #KT added .h dependencies
 tensor: tensor.cxx ${INCLUDE}/Tensor1D.h ${INCLUDE}/Tensor2D.h \
@@ -47,3 +51,12 @@ VectorWithOffset: VectorWithOffset.cxx ${INCLUDE}/VectorWithOffset.h
 
 convert: convert.cxx ${BUILDBLOCKLIB}
 	$(CXX) $(CFLAGS) -o $@ $< 
+
+pplusdummy: pplusdummy.cxx ${PARAPLUSLIB}
+	$(CXX) -c $(CFLAGS)  $< 
+	$(PXLINK) -o $@ $@.o $(LDFLAGS) $(PXLIB)
+
+pplustiny: pplustiny.cxx ${PARAPLUSLIB}
+	$(CXX) -c $(CFLAGS)  $@ $< 
+	$(PXLINK) -o $@ $@.o $(LDFLAGS) $(PXLIB)
+
