@@ -93,6 +93,7 @@
 //#include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Coordinate3D.h"
+#include "stir/Succeeded.h"
 
 #include "local/stir/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"
@@ -107,6 +108,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 //#include "stir/mash_views.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <numeric>
@@ -128,6 +130,7 @@ START_NAMESPACE_STIR
 // should be private member, TODO
 static ofstream full_log;
 
+// terribly ugly. can be replaced using LORCoordinates stuff (TODO)
 static void find_rmin_rmax(int& rmin, int& rmax, 
                            const ProjDataInfoCylindricalArcCorr& proj_data_info_cyl,
                            const int seg_num, 
@@ -228,6 +231,7 @@ FBP3DRPReconstruction::initialise_keymap()
   //    &on_disk );
   parser.add_key("image to be used for reprojection", &image_for_reprojection_filename);
   parser.add_key("Save intermediate images", &save_intermediate_files);
+  parser.add_key("Display level",&disp);
 
   // TODO move to 2D recon
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
@@ -269,24 +273,24 @@ FBP3DRPReconstruction::ask_parameters()
     save_intermediate_files =ask_num("Would you like to save all the intermediate images ? ",0,1,0 );
 
     image_for_reprojection_filename =
-      ask_string("filename of image to be reprojected (empty for using FBP)");
+      ask_string("filename of image to be reprojected (empty for using FBP):");
 
 // PARAMETERS => ZEROES-PADDING IN FFT (PADS, PADZ)
-    cout << "\nFilter parameters for 2D and 3D reconstruction";
+    cerr << "\nFilter parameters for 2D and 3D reconstruction";
     PadS = ask_num("  Transaxial extension for FFT : ",0,2, 2); 
     PadZ = ask_num(" Axial extension for FFT :",0,2, 2);
 
 // PARAMETERS => 2D RECONSTRUCTION RAMP FILTER (ALPHA, FC)
-    cout << endl << "For 2D reconstruction filtering (Ramp filter) : " ;
+    cerr << endl << "For 2D reconstruction filtering (Ramp filter) : " ;
 
-    num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
+    num_segments_to_combine = ask_num("num_segments_to_combine (must be odd).\nDefault means 1 or 3 depending on axial compression of input",-1,101,-1);
     // TODO check odd
     alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);
     
    fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
 
 // PARAMETERS => 3D RECONSTRUCTION COLSHER FILTER (ALPHA, FC)
-    cout << "\nFor 3D reconstruction filtering  (Colsher filter) : ";
+    cerr << "\nFor 3D reconstruction filtering  (Colsher filter) : ";
     
     alpha_colsher_axial =  ask_num(" Alpha parameter for Colsher filter in axial direction ? ",0.,1., 1.);
     
@@ -299,8 +303,7 @@ FBP3DRPReconstruction::ask_parameters()
 
 
 #if 0
-    // do not ask the user for the projectors to prevent them entering
-    // silly things
+    // do not ask the user for the projectors to prevent entering silly things
   do 
     {
       back_projector_sptr =
@@ -386,21 +389,15 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
 	warning("Forward projector not set.\n");
 	return Succeeded::no;
       }
-  }
-  // TODO move to initialise()
-  {
-    // set projectors to be used for the calculations
-    // TODO this really should take a proj_data_info which has more axial positions 
-    // (for the 'missing projections')
-    forward_projector_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-				  target_image_ptr);
-    back_projector_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-			       target_image_ptr);
-#if 0
-    do when enabling callbacks
-    set_projectors_and_symmetries(forward_projector_sptr, 
-                                  back_projector_sptr, 
-                                  back_projector_sptr->get_symmetries_used()->clone());
+#ifndef NRFFT
+    const float theta_max =
+      proj_data_ptr->get_proj_data_info_ptr()->
+      get_tantheta(Bin(max_segment_num_to_process,0,0,0));
+
+    colsher_filter = 
+      ColsherFilter(theta_max, 
+                    alpha_colsher_axial, fc_colsher_axial,
+                    alpha_colsher_planar, fc_colsher_planar);
 #endif
   }
   {
@@ -472,6 +469,44 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
   {      
     do_read_image2D();
     // TODO set fit parameters
+  }
+
+  {
+    // find proj_data_info with space for missing data
+    proj_data_info_with_missing_data_sptr = 
+      proj_data_ptr->get_proj_data_info_ptr()->clone();
+    proj_data_info_with_missing_data_sptr->
+      reduce_segment_range(-max_segment_num_to_process,
+			   max_segment_num_to_process);
+    for (int segment_num= proj_data_ptr->get_min_segment_num();
+	 segment_num<= proj_data_ptr->get_max_segment_num();
+	 ++segment_num)
+      {
+	// note: initialisation to 0 to avoid compiler warnings,
+	// but will be set by find_rmin_rmax
+	int new_min_axial_pos_num = 0;
+	int new_max_axial_pos_num = 0;
+	find_rmin_rmax(new_min_axial_pos_num, new_max_axial_pos_num,
+		       proj_data_info_cyl, segment_num, image); 
+	proj_data_info_with_missing_data_sptr->
+	  set_min_axial_pos_num(new_min_axial_pos_num, segment_num);
+	proj_data_info_with_missing_data_sptr->
+	  set_max_axial_pos_num(new_max_axial_pos_num, segment_num);
+      }
+  }
+
+  {
+    // set projectors to be used for the calculations
+    forward_projector_sptr->set_up(proj_data_info_with_missing_data_sptr,
+				   image_estimate_density_ptr);
+    back_projector_sptr->set_up(proj_data_info_with_missing_data_sptr,
+				target_image_ptr);
+#if 0
+    do when enabling callbacks
+    set_projectors_and_symmetries(forward_projector_sptr, 
+                                  back_projector_sptr, 
+                                  back_projector_sptr->get_symmetries_used()->clone());
+#endif
   }
 
   if(max_segment_num_to_process!=0)
@@ -576,22 +611,9 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
   for (int seg_num= -max_segment_num_to_process; seg_num <= max_segment_num_to_process; seg_num++) 
   {
 
-    // initialise variables to avoid compiler warnings 
-    // (correct values are set in the function call find_rmin_rmax below)
-    int rmin=0;
-    int rmax=0;
-
     // a bool value that will be used to determine if we are starting processing for this segment
     bool first_view_in_segment = true;
         
-    // KT 07/04/98 changed upper boundary of first forward projection from
-    // '-1' to proj_data_ptr->get_min_axial_pos_num(seg_num)-1
-    // this is to handle the fancy case that the segment contains more
-    // (or less) rings than expected
-    // KT 07/04/98 similarly, changed lower boundary for second forward
-    // projection from ' proj_data_info_ptr->get_num_axial_poss()-segment_pos.get_average_ring_difference()'
-    // to proj_data_ptr->get_max_axial_pos_num(seg_num)+1
-  
     const int orig_min_axial_pos_num = proj_data_ptr->get_min_axial_pos_num(seg_num);
     const int orig_max_axial_pos_num = proj_data_ptr->get_max_axial_pos_num(seg_num);
             
@@ -600,15 +622,19 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
       if (!symmetries_sptr->is_basic(vs_num))
 	continue;
 
+    const int new_min_axial_pos_num = 
+      proj_data_info_with_missing_data_sptr->get_min_axial_pos_num(seg_num);
+    const int new_max_axial_pos_num = 
+      proj_data_info_with_missing_data_sptr->get_max_axial_pos_num(seg_num);
+
       if (first_view_in_segment)
 	{
 	  full_log << "\n--------------------------------\n";
 	  full_log << "PROCESSING SEGMENT  No " << seg_num << endl ;
-	  find_rmin_rmax(rmin, rmax, proj_data_info_cyl, seg_num, image);        
 	  
 	  full_log << "Average delta= " <<  proj_data_info_cyl.get_average_ring_difference(seg_num)
 		   << " with span= " << proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) +1
-		   << " and extended axial position numbers: min= " << rmin << " and max= " << rmax  <<endl;
+		   << " and extended axial position numbers: min= " << new_min_axial_pos_num << " and max= " << new_max_axial_pos_num  <<endl;
 	  
 	  first_view_in_segment = false;
 	}
@@ -624,7 +650,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
         
       do_process_viewgrams(
 			   viewgrams,
-			   rmin, rmax, orig_min_axial_pos_num, orig_max_axial_pos_num,
+			   new_min_axial_pos_num, new_max_axial_pos_num, orig_min_axial_pos_num, orig_max_axial_pos_num,
 			   image);
  
                  
@@ -634,7 +660,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
     if (!first_view_in_segment)
       {
 	full_log << "\n*************************************************************";
-	full_log << "End if this segment. Current image values:\n"
+	full_log << "\nEnd of this segment. Current image values:\n"
 		 << "Min= " << image.find_min()
 		 << " Max = " << image.find_max()
 		 << " Sum = " << image.sum() << endl;
@@ -694,15 +720,15 @@ void FBP3DRPReconstruction::do_best_fit(const Sinogram<float> &sino_measured,con
 
           
 void FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams,
-                                                 int rmin, int rmax)
+                                                 int new_min_axial_pos_num, int new_max_axial_pos_num)
 {        
   // we have to grow the viewgrams along axial direction in the (normal) 
-  // case that rmin<get_min_axial_pos_num()
-  const int rmin_grow = min(rmin, viewgrams.get_min_axial_pos_num());
-  const int rmax_grow = max(rmax, viewgrams.get_max_axial_pos_num());
+  // case that new_min_axial_pos_num<get_min_axial_pos_num()
+  const int new_min_axial_pos_num_grow = min(new_min_axial_pos_num, viewgrams.get_min_axial_pos_num());
+  const int new_max_axial_pos_num_grow = max(new_max_axial_pos_num, viewgrams.get_max_axial_pos_num());
   const IndexRange2D 
-    new_range(rmin_grow, 
-	      rmax_grow, 
+    new_range(new_min_axial_pos_num_grow, 
+	      new_max_axial_pos_num_grow, 
 	      viewgrams.get_min_tangential_pos_num(),
 	      viewgrams.get_max_tangential_pos_num());
   viewgrams.grow(new_range);     
@@ -710,31 +736,31 @@ void FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float> & viewgra
 
 
 void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & viewgrams,
-                                                      int rmin, int rmax,
+                                                      int new_min_axial_pos_num, int new_max_axial_pos_num,
                                                       int orig_min_axial_pos_num, int orig_max_axial_pos_num) const 
 { 
 
   // do not forward project if we don't need to...
-  if (rmin <= orig_min_axial_pos_num-1)
+  if (new_min_axial_pos_num <= orig_min_axial_pos_num-1)
     {
       full_log << "  - Forward projection of missing data first from ring No " 
-	       << rmin
+	       << new_min_axial_pos_num
 	       << " to "
 	       << orig_min_axial_pos_num-1 << endl;
 
       forward_projector_sptr->forward_project(viewgrams, estimated_image(),
-					     rmin ,orig_min_axial_pos_num-1);	    
+					     new_min_axial_pos_num ,orig_min_axial_pos_num-1);	    
 
     }
 
-  if (orig_max_axial_pos_num+1 <= rmax)
+  if (orig_max_axial_pos_num+1 <= new_max_axial_pos_num)
     {
       full_log << "  - Forward projection from ring No "
 	       << orig_max_axial_pos_num+1
-	       << " to " << rmax << endl;
+	       << " to " << new_max_axial_pos_num << endl;
     
       forward_projector_sptr->forward_project(viewgrams, estimated_image(),
-					     orig_max_axial_pos_num+1, rmax);
+					     orig_max_axial_pos_num+1, new_max_axial_pos_num);
     
     }
 #if 0
@@ -746,7 +772,7 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
       
       full_log << "  - Adjusting all sinograms with alpha = " << alpha_fit << " and beta = " << beta_fit << endl;
       // TODO This is wrong: it adjusts the measured projections as well !!!
-      // It needs a loop over axial_poss from rmin to orig_min_axial_pos_num, etc.
+      // It needs a loop over axial_poss from new_min_axial_pos_num to orig_min_axial_pos_num, etc.
       error("This is not correctly implemented at the moment. disable fitting (recommended)\n");
       //viewgrams  *= alpha_fit ;
       //viewgrams += beta_fit;
@@ -761,8 +787,11 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 	
 void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & viewgrams)
 { 
+  // TODO make into object member instead of static
   static int prev_seg_num = viewgrams.get_proj_data_info_ptr()->get_min_segment_num()-1;  
+#ifdef NRFFT
   static ColsherFilter colsher_filter(0,0,0,0,0,0,0,0,0,0);
+#endif
   const int seg_num = viewgrams.get_basic_segment_num();
 
   if (prev_seg_num != seg_num)
@@ -778,25 +807,35 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
     
     const float theta_max = atan(proj_data_info_cyl.get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
     
-    const float gamma = 
-      static_cast<float>(_PI/2 - atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0))));
+    const float theta = 
+      static_cast<float>(atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0))));
     
-    full_log << "Colsher filter theta_max = " << theta_max << " theta = " << _PI/2-gamma
+    full_log << "Colsher filter theta_max = " << theta_max << " theta = " << theta
       << " d_a = " << proj_data_info_cyl.get_tangential_sampling()
-      << " d_b = " << proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma) << endl;
+	     << " d_b = " << proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)) << endl;
     
     
-    assert(fabs(proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma) /
+#ifdef NRFFT
+    assert(fabs(proj_data_info_cyl.get_axial_sampling(seg_num)*cos(theta) /
 		proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)) - 1) < .0001);
     colsher_filter = 
-      ColsherFilter(height, width, gamma, theta_max, 
+      ColsherFilter(height, width, _PI/2 - theta, theta_max, 
                     proj_data_info_cyl.get_tangential_sampling(), 
-                    proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma),// TODO replace with get_sampling_in_t()
+                    proj_data_info_cyl.get_axial_sampling(seg_num)*cos(theta),// TODO replace with get_sampling_in_t()
                     alpha_colsher_axial, fc_colsher_axial,
                     alpha_colsher_planar, fc_colsher_planar);
+#else
+    if (colsher_filter.set_up(height, width, 
+			      theta, 
+			      proj_data_info_cyl.get_tangential_sampling(), 
+			      proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)))
+	!= Succeeded::yes)
+      error("Exiting");
+#endif
   }
 
   full_log << "  - Apply Colsher filter to complete oblique sinograms" << endl;
+#ifdef NRFFT
 
   assert(viewgrams.get_num_viewgrams()%2 == 0);
     
@@ -807,7 +846,15 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
                         colsher_filter,
                         PadS, PadZ); 
 
+#else
 
+  //  std::for_each(viewgrams.begin(), viewgrams.end(), 
+  //		colsher_filter);
+  RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
+  for (; viewgram_iter != viewgrams.end(); ++viewgram_iter) 
+    colsher_filter(*viewgram_iter);
+
+#endif
   /* If the segment is really an amalgam of different ring differences,
      we have to multiply it with the number of ring differences 
      in the segment.
@@ -833,12 +880,11 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 
 void FBP3DRPReconstruction::do_3D_backprojection_view(const RelatedViewgrams<float> & viewgrams,
                                                         VoxelsOnCartesianGrid<float> &image,
-                                                        int rmin, int rmax)
+                                                        int new_min_axial_pos_num, int new_max_axial_pos_num)
 { 
     full_log << "  - Backproject the filtered Colsher complete sinograms" << endl;
-    // TODO drop rmin,rmax
 
-    back_projector_sptr->back_project(image, viewgrams,rmin, rmax);
+    back_projector_sptr->back_project(image, viewgrams,new_min_axial_pos_num, new_max_axial_pos_num);
         
 }
 
@@ -876,14 +922,14 @@ void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &imag
 
 
 void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewgrams, 
-                                                   int rmin, int rmax,
+                                                   int new_min_axial_pos_num, int new_max_axial_pos_num,
                                                    int orig_min_axial_pos_num, int orig_max_axial_pos_num,
                                                    VoxelsOnCartesianGrid<float> &image)
 {
-        do_grow3D_viewgram(viewgrams, rmin, rmax);
+        do_grow3D_viewgram(viewgrams, new_min_axial_pos_num, new_max_axial_pos_num);
         
 	do_forward_project_view(viewgrams,
-                                rmin, rmax, orig_min_axial_pos_num, orig_max_axial_pos_num); 
+                                new_min_axial_pos_num, new_max_axial_pos_num, orig_min_axial_pos_num, orig_max_axial_pos_num); 
         
         do_colsher_filter_view(viewgrams);
 
@@ -907,7 +953,7 @@ void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewg
    
         do_3D_backprojection_view(viewgrams,
                                   image,
-                                  rmin, rmax);
+                                  new_min_axial_pos_num, new_max_axial_pos_num);
     
 }
 
