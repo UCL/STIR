@@ -26,6 +26,7 @@
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
+#include "stir/LORCoordinates.h"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -42,6 +43,7 @@ using std::size_t;
 
 START_NAMESPACE_STIR
 // prints a michelogram to the screen
+#if 0
 // TODO move somewhere else
 void michelogram(const ProjDataInfoCylindrical& proj_data_info)
 {
@@ -69,13 +71,95 @@ void michelogram(const ProjDataInfoCylindrical& proj_data_info)
   }
   cerr << '}' << endl;
 }
+#endif
+
+/*!
+  \ingroup test
+  \brief Test class for ProjDataInfo
+*/
+class ProjDataInfoTests: public RunTests
+{
+protected:  
+  void test_generic_proj_data_info(ProjDataInfo& proj_data_info);
+};
+
+void
+ProjDataInfoTests::
+test_generic_proj_data_info(ProjDataInfo& proj_data_info)
+{
+  cerr << "\t\tTests on get_LOR/get_bin\n";
+  for (int segment_num=proj_data_info.get_min_segment_num();
+       segment_num<=proj_data_info.get_max_segment_num();
+	 ++segment_num)
+      {
+	for (int view_num=proj_data_info.get_min_view_num();
+	     view_num<=proj_data_info.get_max_view_num();
+	     view_num+=5)
+	  {
+	    // loop over axial_positions. Avoid using first and last position, as 
+	    // the discretisation error can easily bring the transformed_bin back
+	    // outside the range. We could test for that, but it would make
+	    // the code much more complicated, and not give anything useful back.
+	    for (int axial_pos_num=proj_data_info.get_min_axial_pos_num(segment_num)+1;
+		 axial_pos_num<=proj_data_info.get_max_axial_pos_num(segment_num)-1;
+		 axial_pos_num+=3)
+	      {
+		for (int tangential_pos_num=proj_data_info.get_min_tangential_pos_num()+1;
+		     tangential_pos_num<=proj_data_info.get_max_tangential_pos_num()-1;
+		     tangential_pos_num+=17)
+		  {
+		    const Bin org_bin(segment_num,view_num,axial_pos_num,tangential_pos_num, /* value*/1);
+		    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+		    proj_data_info.get_LOR(lor, org_bin);
+		    {
+		      const Bin new_bin = proj_data_info.get_bin(lor);
+
+		      if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
+			{
+			  cerr << "Problem at  segment = " << org_bin.segment_num() 
+			       << ", axial pos " << org_bin.axial_pos_num()
+			       << ", view = " << org_bin.view_num() 
+			       << ", tangential_pos_num = " << org_bin.tangential_pos_num() << "\n";
+			  cerr << "round-trip to  segment = " << new_bin.segment_num() 
+			       << ", axial pos " << new_bin.axial_pos_num()
+			       << ", view = " << new_bin.view_num() 
+			       << ", tangential_pos_num = " << new_bin.tangential_pos_num() 
+			       << " value=" << new_bin.get_bin_value()
+			       <<"\n";
+			}
+		    }
+		    // repeat test but with different type of LOR
+		    {
+		      LORAs2Points<float> lor_as_points;
+		      lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
+		      const Bin new_bin = proj_data_info.get_bin(lor_as_points);
+
+		      if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin (LORAs2Points)"))
+			{
+			  cerr << "Problem at  segment = " << org_bin.segment_num() 
+			       << ", axial pos " << org_bin.axial_pos_num()
+			       << ", view = " << org_bin.view_num() 
+			       << ", tangential_pos_num = " << org_bin.tangential_pos_num() << "\n";
+			  cerr << "round-trip to  segment = " << new_bin.segment_num() 
+			       << ", axial pos " << new_bin.axial_pos_num()
+			       << ", view = " << new_bin.view_num() 
+			       << ", tangential_pos_num = " << new_bin.tangential_pos_num() 
+			       << " value=" << new_bin.get_bin_value()
+			       <<"\n";
+			}
+		    }
+		  }
+	      }
+	  }
+      }
+}
+
 
 /*!
   \ingroup test
   \brief Test class for ProjDataInfoCylindrical
 */
-
-class ProjDataInfoCylindricalTests: public RunTests
+class ProjDataInfoCylindricalTests: public ProjDataInfoTests
 {
 protected:  
   void test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info);
@@ -186,14 +270,6 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 
   cerr << "\tTest ring pair to segment,ax_pos and vice versa (for any axial compression)\n";
   {
-#if 0
-    shared_ptr<ProjDataInfo> proj_data_info_ptr =
-      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-				    /*span*/5, 10,/*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
-    
-    ProjDataInfoCylindrical& proj_data_info =
-      dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
-#endif
     for (int segment_num=proj_data_info.get_min_segment_num(); 
 	 segment_num<=proj_data_info.get_max_segment_num(); 
 	 ++segment_num)
@@ -224,6 +300,8 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 	    }
 	}	      
   }
+
+  test_generic_proj_data_info(proj_data_info);
 }
 
 /*!
