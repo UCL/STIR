@@ -28,10 +28,6 @@ LIB_EVAL_BUILDINGBLOCK= \
    ${WORKSPACE}/eval_buildblock/${DEST}libeval_buildblock.a
 
 
-LIB_SHAPE_BUILDINGBLOCK= \
-   ${WORKSPACE}/Shape_buildblock/${DEST}libShape_buildblock.a
-
-
 # name definitions for all explicit object files
 BUILDBLOCK_REGISTRIES= \
     ${WORKSPACE}/buildblock/$(DEST)buildblock_registries.o
