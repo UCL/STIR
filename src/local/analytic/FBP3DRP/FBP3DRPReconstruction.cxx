@@ -100,7 +100,7 @@
 //#include "local/stir/FBP3DRP/process_viewgrams.h"
 
 #include "local/stir/FBP3DRP/FBP3DRPReconstruction.h"
-#include "local/stir/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/utilities.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"

@@ -2,9 +2,9 @@
 # $Id$
 #
 
-dir:=local/analytic/FBP2D
+dir:=analytic/FBP2D
 
 $(dir)_SOURCES = \
-	FBP2DMain.cxx
+	FBP2D.cxx
 
 include $(WORKSPACE)/exe.mk

@@ -4,6 +4,7 @@
 /*!
 
   \file
+  \ingroup FBP2D
 
   \brief Implementation of class RampFilter
 
@@ -17,11 +18,11 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/FBP2D/RampFilter.h"
+#include "stir/analytic/FBP2D/RampFilter.h"
 #include <math.h>
 #include <iostream>
 #ifdef BOOST_NO_STRINGSTREAM

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup reconstructors
+  \ingroup FBP2D
 
   \brief Implementation of class FBP2DReconstruction
 
@@ -20,12 +20,12 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "local/stir/FBP2D/RampFilter.h"
+#include "stir/analytic/FBP2D/RampFilter.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Bin.h"
