@@ -84,13 +84,11 @@ echo EDIT documentation/history.htm
 rm  recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
 ln -s STIR_${VERSION}.zip STIR.zip 
 ln -s VCprojects_${VERSION}.zip  VCprojects.zip
-ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
+#ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
 ln -s recon_test_pack_${VERSION}.zip recon_test_pack.zip
 cd ../documentation
 rm STIR_doc.zip
 ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
 rm -fr doxy
+unzip -u STIR_doc
 
-unzip STIR_doc
- chmod go+r STIR_doc_${VERSION}.zip
-R_doc.zip 
