@@ -170,8 +170,14 @@ main(int argc, char *argv[])
   
   vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
   // use shared_ptr such that it cleans up automatically
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    ForwardProjectorByBin::ask_type_and_parameters();
+  shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
+  do 
+    {
+    forw_projector_ptr=
+      ForwardProjectorByBin::ask_type_and_parameters();
+    }
+  while (forw_projector_ptr.use_count()==0);
+
   forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			     image_sptr);
   cerr << forw_projector_ptr->parameter_info();
