@@ -43,13 +43,30 @@ initialise_keymap()
   OutputFileFormat::initialise_keymap();
 }
 
+bool 
+InterfileOutputFileFormat::
+post_processing()
+{
+  if (OutputFileFormat::post_processing())
+    return true;
+  if (!file_byte_order.is_native_order())
+    warning("InterfileOutputFileFormat: byte_order is currently fixed to the native order\n");
+  return true;
+}
+
+
 Succeeded  
 InterfileOutputFileFormat::
-    write_to_file(const string& filename, 
-                  const DiscretisedDensity<3,float>& density)
+    write_to_file(string& filename, 
+                  const DiscretisedDensity<3,float>& density) const
 {
-  return 
-    write_basic_interfile(filename, density);
+  // TODO modify write_basic_interfile to return filename
+  
+  Succeeded success =
+    write_basic_interfile(filename, density, type_of_numbers);
+  if (success == Succeeded::yes)
+    replace_extension(filename, ".hv");
+  return success;
 };
 
 END_NAMESPACE_STIR
