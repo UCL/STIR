@@ -179,8 +179,6 @@ ProjDataInfo::parameter_info()  const
 #endif
   s << scanner_ptr->parameter_info();
 
-  s << "Parameters relating to this data :\n";
-
   s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
@@ -425,13 +423,18 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
 	       
 	       
 {
+  /* mixed span case:
+     segment 0 has ring diff -1,0,1,
+     other segments have no axial compression
+  */
   const int num_rings = scanner->get_num_rings();
   const float bin_size = scanner->get_default_bin_size();
   
-  if(max_delta<=0)
-    error("ProjDataInfo::ProjDataInfoGE: can only handle max_delta>0\n");
+  if(max_delta<1)
+    error("ProjDataInfo::ProjDataInfoGE: can only handle max_delta>=1\n");
 
-  const int max_segment_num = max_delta-1;
+  const int max_segment_num = 
+    max_delta==0? 0 : max_delta-1;
   
   VectorWithOffset<int> num_axial_pos_per_segment(-max_segment_num,max_segment_num);
   
@@ -477,36 +480,46 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
 ProjDataInfo* ProjDataInfo::ask_parameters()
 {
 
-  Scanner * scanner_ptr = 
+  shared_ptr<Scanner> scanner_ptr = 
     Scanner::ask_parameters();
   
+  const bool is_Advance =
+    scanner_ptr->get_type() == Scanner::Advance ||
+    scanner_ptr->get_type() == Scanner::DiscoveryLS; 
+  const bool is_DiscoveryST =
+    scanner_ptr->get_type() == Scanner::DiscoveryST; 
+  const bool is_GE =
+    is_Advance || is_DiscoveryST;
+
    const int num_views = scanner_ptr->get_max_num_views()/
      ask_num("Mash factor for views",1,16,1);
 
-   const int num_tangential_poss=ask_num("Number of tangential positions",1,
-     scanner_ptr->get_max_num_non_arccorrected_bins()+1,
-     scanner_ptr->get_default_num_arccorrected_bins());
+  const bool arc_corrected =
+    ask("Is the data arc-corrected?",true);
+
+   const int num_tangential_poss=
+     ask_num("Number of tangential positions",1,
+	     scanner_ptr->get_max_num_non_arccorrected_bins(),
+	     arc_corrected 
+	     ? scanner_ptr->get_default_num_arccorrected_bins()
+	     : scanner_ptr->get_max_num_non_arccorrected_bins());
   
-   int span = 0;
-   while(span%2==0)
+   int span = is_GE ? 0 : 1;
+   do
    {
      span = 
-       scanner_ptr->get_type() == Scanner::Advance 
-       ? 1 
-       : ask_num("Span value (must be odd) : ", 1,11,1);
+       ask_num("Span value (must be odd), but use 0 for mixed-span case of the Advance : ", 0,11,span);
    }
+   while(span!=0 && span%2==0);
   
    const int max_delta = ask_num("Max. ring difference acquired : ",
     0,
     scanner_ptr->get_num_rings()-1,
-    scanner_ptr->get_type() == Scanner::Advance 
-    ? 11 : scanner_ptr->get_num_rings()-1);
+    is_Advance ? 11 : scanner_ptr->get_num_rings()-1);
  
-  const bool arc_corrected =
-    ask("Is the data arc-corrected?",true);
 
   ProjDataInfo * pdi_ptr =
-    scanner_ptr->get_type() == Scanner::Advance 
+    span==0
     ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected)
     : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected);
 
