@@ -124,7 +124,8 @@ int     (*comp)(VOIDP ,VOIDP );
 }
 #endif /* VAX */
 
-#ifdef ultrix
+/* Change 05/02/98 */
+#if defined(ultrix) || defined(__GNUC__)
 
 #define STRNCPY(dest,source,n) strncpy(dest,source,n); dest[n]='\0';
 
@@ -780,6 +781,18 @@ char str[],dir[];
   return str;
 }
 
+/* Change 13/02/98: use ANSI function clock() now for computing CPU time 
+   The original Unix code was really specific for a Decstation.
+   The MSDOS code didn't allow for multitasking
+   */
+#include <time.h>
+unsigned long CPU_time()
+{
+  return( unsigned long) ((100.*clock())/ CLOCKS_PER_SEC);
+}
+/*****
+ all this removed
+
 #ifdef VAX
 #include <time.h>
 unsigned long CPU_time()
@@ -790,6 +803,7 @@ unsigned long CPU_time()
   return(buffer.proc_user_time);
 }
 #endif
+
 #ifdef ultrix
 #include <sys/types.h>
 #include <sys/times.h>
@@ -808,6 +822,8 @@ unsigned long CPU_time()
   return(100*(unsigned long)time(NULL));
 }
 #endif
+end 'all this removed'
+*****/
 
 #ifndef ANSI
 void message(va_alist)
