@@ -1,25 +1,35 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_round_H__
 #define __stir_round_H__
 /*!
   \file
   \ingroup buildblock
   
-  \brief Declaration of the round functions
+  \brief Declaration of the stir::round functions
     
   \author Kris Thielemans
   \author Charalampos Tsoumpas
       
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    This software is distributed under the terms of the GNU Lesser General 
-    Public Licence (LGPL).
-    See STIR/LICENSE.txt for details
 */
 #include "stir/BasicCoordinate.h"
 
@@ -37,12 +47,12 @@ START_NAMESPACE_STIR
    \code
    round(x) == -round(-x)
    \endcode
-   The usual <tt>(int)(x+.5)</tt> has machine dependent behaviour for 
+   The usual <code>(int)(x+.5)</code> has machine dependent behaviour for 
    negative numbers.
 
    .5 is rounded to 1 (and hence -.5 to -1).
 
-   \warning There is no check on overflow (i.e. if x is too 
+   \warning There is no check on overflow (i.e. if \a x is too 
    large to fit in an \c int).
 */
 inline int round(const float x);
@@ -65,7 +75,7 @@ round(const BasicCoordinate<num_dimensions,elemT>& x);
 /*!
    This function is templated in the output type for convenience of implementation.
 
-   \warning if an unsigned type is used for \x integerT, the result for negative \a x
+   \warning if an unsigned type is used for \c integerT, the result for negative \a x
    will be system dependent
 
    \see round(const float)

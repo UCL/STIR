@@ -1,21 +1,31 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup listmode
-  \brief Declaration of class CListModeDataECAT
+  \brief Declaration of class stir::CListModeDataECAT
     
   \author Kris Thielemans
       
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    This software is distributed under the terms 
-    of the GNU Lesser General  Public Licence (LGPL)
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_listmode_CListModeDataECAT_H__
@@ -45,8 +55,8 @@ START_NAMESPACE_STIR
     This file format is currently used by the HR+ and HR++. It stores
     the coincidence data in multiple .lm files, with a maximum filesize
     of about 2 GB (to avoid problems with OS limits on filesize).
-    In addition, there is a .sgl file with the singles per 'bucket' 
-    (every second or so). The .sgl also contains a 'main_header'
+    In addition, there is a .sgl file with the singles rate per 'bucket'-per-ring 
+    (roughly every 2 seconds). The .sgl also contains a 'main_header'
     with some scanner and patient info.
 
     \todo This class currently relies in the fact that
@@ -84,7 +94,8 @@ public:
   virtual
     Succeeded set_get_position(const SavedPosition&);
 
-  //! ECAT listmode data stores delayed events as well (as opposed to prompts)
+  //! returns \c true, as ECAT listmode data stores delayed events (and prompts)
+  /*! \todo this might depend on the acquisition parameters */
   virtual bool has_delayeds() const { return true; }
 
 private:
