@@ -93,11 +93,11 @@ RayTraceVoxelsOnCartesianGrid
   const float inc_z = zero_diff_in_z ? d12*1000000.F : d12 / fabs(difference.z());
   
   // intersection points with intra-voxel planes : 
-  // find voxel which contains the start_voxel, and go to its 'left' edge
+  // find voxel which contains the start_point, and go to its 'left' edge
   const float xmin = round(start_point.x()) - sign_x*0.5F;
   const float ymin = round(start_point.y()) - sign_y*0.5F;
   const float zmin = round(start_point.z()) - sign_z*0.5F;
-  // find voxel which contains the end_voxel, and go to its 'right' edge
+  // find voxel which contains the end_point, and go to its 'right' edge
   const float xmax = round(stop_point.x()) + sign_x*0.5F;
   const float ymax = round(stop_point.y()) + sign_y*0.5F;  
   const float zmax = round(stop_point.z()) + sign_z*0.5F;
@@ -128,8 +128,10 @@ const float axend = zero_diff_in_x ? d12*1000000.F : (xmax - start_point.x()) * 
   assert(fabs(difference.y())>small_difference || ayend>amax);
   assert(fabs(difference.z())>small_difference || azend>amax);
 
-  // coordinates of the first Voxel: 
-  CartesianCoordinate3D<int> current_voxel((int) (zmin + sign_z*0.5F), (int) (ymin + sign_y*0.5F), (int) (xmin + sign_x*0.5F));
+  // coordinates of the first Voxel: (same as round(start_point))
+  CartesianCoordinate3D<int> current_voxel(round(zmin + sign_z*0.5F), 
+					   round(ymin + sign_y*0.5F), 
+					   round(xmin + sign_x*0.5F));
   
   /* Find the a? values of the intersection points of the LOR with the planes between voxels.
 
