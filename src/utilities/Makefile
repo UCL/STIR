@@ -1,17 +1,28 @@
 #
-# $Id$ : $Date$
+# $Id$: $Date$
 #
 
 
 include ../Makefile_common
+
+# variables used only for ecat7
+LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
+LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
+
+
+ifeq ($(SYSTEM),SUN)
+EXTRA_LIBS = -lnsl -lsocket
+else
+EXTRA_LIBS = 
+endif
 
 SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
         convecat6_if.cxx \
 	do_linear_regression.cxx \
 	postfilter.cxx \
 	compare_projdata.cxx \
-	compare_image.cxx
-        #convif_ecat6.cxx \
+	compare_image.cxx \
+        conv_to_ecat6.cxx \
 	#correctPSOV.cxx 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
@@ -35,14 +46,28 @@ install: $(EXES)
 #	$(RANLIB) $@
 # before enabling this, define RANLIB in Makefile_common
 
-$(DEST)convif_ecat6: convif_ecat6.cxx $(DEST)cti_utils.o ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o \
+$(DEST)conv_to_ecat6: $(DEST)conv_to_ecat6.o \
+    $(DEST)cti_utils.o $(DEST)Tomo_cti.o ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)Tomo_cti.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
 
 
-$(DEST)convecat6_if: convecat6_if.cxx $(DEST)cti_utils.o ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o \
+$(DEST)convecat6_if: $(DEST)convecat6_if.o \
+    $(DEST)cti_utils.o $(DEST)Tomo_cti.o ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)Tomo_cti.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
 
+$(DEST)ifheaders_for_ecat7.o: ifheaders_for_ecat7.cxx
+	$(CXX) $(CFLAGS)  -I $(LLN_INCLUDE_DIR) -c -o $@ $< 
+
+
+$(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
+     $(LLN_LIB_DIR)/libecat.a \
+     ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $<  \
+		$(LLN_LIB_DIR)/libecat.a ${LIB_BUILDINGBLOCK} \
+		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
 
 include ../Makefile_bblibs
+
+
