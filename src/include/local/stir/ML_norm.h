@@ -71,6 +71,11 @@ private:
 
 void display(const DetPairData&,const char * const);
 
+//! Makes a DetPairData of appropriate dimensions and fills it with 0
+void make_det_pair_data(DetPairData& det_pair_data,
+			const ProjDataInfo& proj_data_info,
+			const int segment_num,
+			const int ax_pos_num);
 void make_det_pair_data(DetPairData& det_pair_data,
 			const ProjData& proj_data,
 			const int segment_num,
@@ -193,8 +198,8 @@ template <int num_dimensions, typename elemT>
 float KL(const Array<num_dimensions, elemT>& a, const Array<num_dimensions, elemT>& b, const float threshold_a = 0)
 {
   float sum = 0;
-  Array<num_dimensions, elemT>::const_full_iterator iter_a = a.begin_all();
-  Array<num_dimensions, elemT>::const_full_iterator iter_b = b.begin_all();
+  typename Array<num_dimensions, elemT>::const_full_iterator iter_a = a.begin_all();
+  typename Array<num_dimensions, elemT>::const_full_iterator iter_b = b.begin_all();
   while (iter_a != a.end_all())
     {
       sum += KL(*iter_a++, *iter_b++, threshold_a);
