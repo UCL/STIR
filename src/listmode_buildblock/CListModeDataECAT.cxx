@@ -58,36 +58,36 @@ CListModeDataECAT(const string& listmode_filename_prefix)
   {
     const string singles_filename = listmode_filename_prefix + "_1.sgl";
     ifstream singles_file(singles_filename.c_str(), ios::binary);
+    char buffer[sizeof(Main_header)];
     if (!singles_file)
       {
-	warning("\nCouldn't open %s. We forge ahead anyway.\n", singles_filename.c_str());
+	warning("CListModeDataECAT: Couldn't open %s.", singles_filename.c_str());
 	scanner_ptr = new Scanner(Scanner::E962);
       }
     else
       {
-	char buffer[sizeof(Main_header)];
 	singles_file.read(buffer,
 			  sizeof(singles_main_header));
-	if (!singles_file)
-	  {
-	    warning("Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 966 data).", singles_filename.c_str());
-	    scanner_ptr = new Scanner(Scanner::E966);
-	    // TODO invalid other fields in singles header
-	    singles_main_header.scan_start_time = std::time_t(-1);
-	  }
-	else
-	  {
-	    unmap_main_header(buffer, &singles_main_header);
-	    ecat::ecat7::find_scanner(scanner_ptr, singles_main_header);
-	    
-	    // TODO get lm_duration from singles
-	  }
+      }
+    if (!singles_file)
+      {
+	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
+	scanner_ptr = new Scanner(Scanner::E962);
+	// TODO invalidate other fields in singles header
+	singles_main_header.scan_start_time = std::time_t(-1);
+      }
+    else
+      {
+	unmap_main_header(buffer, &singles_main_header);
+	ecat::ecat7::find_scanner(scanner_ptr, singles_main_header);
+	
+	// TODO get lm_duration from singles
       }
   }
 
 #else
-  warning("\n.sgl file not read! Assuming ECAT 966\n");
-  scanner_ptr = new Scanner(Scanner::E966);
+  warning("CListModeDataECAT: .sgl file not read! Assuming ECAT 962");
+  scanner_ptr = new Scanner(Scanner::E962);
 #endif
 
   if (open_lm_file(1) == Succeeded::no)
@@ -154,7 +154,7 @@ open_lm_file(unsigned int new_lm_file) const
 	new fstream(filename.c_str(), ios::in | ios::binary);
       if (!(*stream_ptr))
       {
-	warning("Error opening file %s\n ", filename.c_str());
+	warning("CListModeDataECAT: cannot open file %s (probably this is perfectly ok)\n ", filename.c_str());
         return Succeeded::no;
       }
       current_lm_data_ptr =
