@@ -307,11 +307,9 @@ InterfilePDFSHeader::InterfilePDFSHeader()
 
 void InterfilePDFSHeader::resize_segments_and_set()
 {
-  //KT 26/10/98 find_storage_order returns 1 if already found (or error)
+  // find_storage_order returns true if already found (or error)
   if (num_segments < 0 && !find_storage_order())
   {
-    // KT 12/11/98 removed
-    // segment_sequence.resize(num_segments);
     min_ring_difference.resize(num_segments);
     max_ring_difference.resize(num_segments);
     
@@ -332,9 +330,10 @@ int InterfilePDFSHeader::find_storage_order()
     return true; 
   }
   
-  if (matrix_labels[0] != "tangential_pos")
+  if (matrix_labels[0] != "tangential coordinate")
   { 
-    warning("Interfile error: expecting 'matrix axis label[0] := tangetial_pos'\n"); 
+    // use error message with index [1] as that is what the user sees.
+    warning("Interfile error: expecting 'matrix axis label[1] := tangential coordinate'\n"); 
     stop_parsing();
     return true; 
   }
@@ -344,7 +343,7 @@ int InterfilePDFSHeader::find_storage_order()
   {
     num_segments = matrix_size[3][0];
     
-    if (matrix_labels[1] == "axial_pos" && matrix_labels[2] == "view")
+    if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view")
     {
       storage_order =ProjDataFromStream::Segment_AxialPos_View_TangPos;
       num_views = matrix_size[2][0];
@@ -354,7 +353,7 @@ int InterfilePDFSHeader::find_storage_order()
       num_rings_per_segment = matrix_size[1];
 #endif
     }
-    else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial_pos")
+    else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate")
     {
       storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
       num_views = matrix_size[1][0];
@@ -693,8 +692,10 @@ bool InterfilePDFSHeader::post_processing()
       warning("Interfile warning: 'number of rings' invalid.\n");
     if (num_detectors_per_ring < 1)
       warning("Interfile warning: 'num_detectors_per_ring' invalid.\n");
+#if 0
     if (transaxial_FOV_diameter_in_cm < 0)
       warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
+#endif
     if (ring_diameter_in_cm < 0)
       warning("Interfile warning: 'ring diameter (cm)' invalid.\n");
     if (distance_between_rings_in_cm < 0)
