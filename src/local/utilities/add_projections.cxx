@@ -1,23 +1,22 @@
 //
-// $Id: 
+// $Id$
 //
 
 /*!
 \file
 \ingroup utilities
-\brief process sinogram data
+\brief add sinogram data
+
+\warning There are no checks on compatibility of the projection data you are adding
 
 \author Sanida Mustafovic 
 \author Kris Thielemans 
-\author PARAPET project
 
-$Date: 
-$Revision: 
-
+$Date$
+$Revision$ 
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -25,17 +24,11 @@ $Revision:
 
 #include "stir/ProjDataFromStream.h"
 #include "stir/SegmentByView.h"
-#include "stir/SegmentBySinogram.h"
-#include "stir/Sinogram.h"
-#include "stir/Viewgram.h"
-#include "stir/ArrayFunction.h" 
-#include "stir/recon_array_functions.h"
-#include "stir/display.h"
 #include "stir/interfile.h"
 #include "stir/utilities.h"
-#include "stir/shared_ptr.h"
+#include "stir/Succeeded.h"
 
-#include <numeric>
+
 #include <fstream> 
 #include <iostream> 
 
@@ -53,50 +46,56 @@ int
 main(int argc, char **argv)
 
 {
-  ProjDataInfo* new_data_info_ptr;
-  shared_ptr<ProjData> proj_data_ptr_first;
-  shared_ptr<ProjData> proj_data_ptr_second;
-  
-  
-  if (argc!=4)
+  if(argc<4)
   {
-    cerr << " USAGE: add_projections: output projdata filename,first projdata filename, second projdata filename " << endl;
+    cerr<< "Usage: " << argv[0] << " out_projdata projdata1 projdata2 [projdata3...]\n";
+    exit(EXIT_FAILURE);
   }
-  else
-  { 
-    proj_data_ptr_first = ProjData::read_from_file(argv[2]); 
-    proj_data_ptr_second = ProjData::read_from_file(argv[3]); 
-  }
-  
-  const string output_file_name = argv[1];
-  const ProjDataInfo * proj_data_info_ptr = 
-    proj_data_ptr_first->get_proj_data_info_ptr();
+  const char * const program_name = argv[0];
 
-  new_data_info_ptr = proj_data_info_ptr->clone();
+  --argc;
+  ++argv;
+  const string output_file_name = *argv;
+
+  const int num_files = --argc;
+  ++argv;
+  vector< shared_ptr<ProjData> > all_proj_data(num_files);
+
+  // read all projection data headers
+  for (int i=0; i<num_files; ++i)
+    all_proj_data[i] =  ProjData::read_from_file(argv[i]); 
+
+  const ProjDataInfo * proj_data_info_ptr = 
+    (*all_proj_data[0]).get_proj_data_info_ptr();
+
+  // opening output file
   shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
   if (!sino_stream->good())
   {
-    error("fwdtest: error opening file %s\n",output_file_name.c_str());
+    error("%s: error opening output file %s\n",
+	  program_name, output_file_name.c_str());
   }
 
   shared_ptr<ProjDataFromStream> proj_data_ptr =
-    new ProjDataFromStream(new_data_info_ptr,sino_stream);
+    new ProjDataFromStream(proj_data_info_ptr->clone(),sino_stream);
+  write_basic_interfile_PDFS_header(output_file_name, *proj_data_ptr);
    
-  for (int segment_num = proj_data_ptr_first->get_min_segment_num();segment_num <=proj_data_ptr_first->get_max_segment_num();segment_num++)
+
+  // do reading/writing in a loop over segments
+  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+       segment_num <=proj_data_info_ptr->get_max_segment_num();
+       segment_num++)
   {   
-    SegmentByView<float> segment_by_view_1  = 
-      proj_data_ptr_first->get_segment_by_view(segment_num);
-    SegmentByView<float> segment_by_view_2  = 
-      proj_data_ptr_second->get_segment_by_view(segment_num);
+    SegmentByView<float> segment_by_view = 
+      (*all_proj_data[0]).get_segment_by_view(segment_num);
+    for (int i=1; i<num_files; ++i)
+       segment_by_view += 
+	 (*all_proj_data[i]).get_segment_by_view(segment_num);
 
     
-    segment_by_view_1 +=segment_by_view_2;
-    if (!(proj_data_ptr->set_segment(segment_by_view_1) == Succeeded::yes))
+    if (!(proj_data_ptr->set_segment(segment_by_view) == Succeeded::yes))
       warning("Error set_segment %d\n", segment_num);   
   }
   
-  
-  write_basic_interfile_PDFS_header(output_file_name, *proj_data_ptr);
-
   return EXIT_SUCCESS;
 }
