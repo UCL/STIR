@@ -93,7 +93,40 @@ Scanner::Scanner(Type scanner_type)
     // Advance option
     // 283 bins (non-uniform sampling) 
     // 281 bins (uniform sampling)
-    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,469.5F, 8.5F, 1.96F, 0);
+    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,471.875F, 8.5F, 1.970177F, 0);
+    /* Values for GE Advance set by Roman Krais [kraisr@pet.tyks.fi]
+       after communication with Chuck Stearns (GE).
+       They are derived from the VOLPET header of a corrected sinogram.
+
+       The 471.875 mm (943.75 mm) was calculated from the VOLPET-theta-header. In
+       the header there are the angles (theta) for each segments. If you know the
+       Detector Spacing (distance between detector rings, 8.5 mm for GE Advance)
+       then you can easily calculate the Detector Ring Diameter from that.
+
+       tan(alpha) = Ring Difference * Ring Spacing / Ring Diameter
+       
+       GE software uses the approximation tan(alpha) = alpha.
+
+       Example of VOLPET-theta header:
+       
+       Segment -0: theta angle:          +0.000000 rad
+       number of z-elements: 35 
+       z-element separation: 4.250000  mm
+       Segment +1: theta angle:          +0.018013265 rad
+       number of z-elements: 31 
+       z-element separation: 4.249310  mm
+       (...)
+       Segment +5: theta angle:          +0.090066329 rad
+       number of z-elements: 15 
+       z-element separation: 4.232774  mm
+
+       so: 
+       Segment +1: Ring Diameter = 2 * 8.5 mm * 1 / 0.018013265 = 943.7489539
+       Segment +5: Ring Diameter = 2 * 8.5 mm * 5 / 0.090066329 = 943.748912
+
+       Note by KT: VOLPET  z-element separation corresponds to
+       STIR's get_sampling_in_t() (for s=0) i.e. it is 4.25 * cos(theta)
+    */
   }
   else if (scanner_type == HZLR)
     set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0);
