@@ -32,7 +32,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 1.3}}
+ Version 1.4}}
 \end{center}
 
 \end{spacing}
@@ -562,16 +562,37 @@ means that the above flags point to an incorrect location.
 Compilation using Visual C++}
 \label{sec:VC}
 
-You need Visual C++ 6.0, service pack 5. Oliver Nix (Heidelberg) 
-has done a few preliminary tests that indicate that 7.0 also 
-works. Version 7.1 (i.e. 2003) seems to be fine as well. Note 
-however that since release 1.3, certain features do not work 
+You need at least Visual C++ 6.0, service pack 5. 
+Version 7.1 (i.e. 2003) seems to be fine as well. 
+Oliver Nix (Heidelberg) 
+has done a few preliminary tests that indicate that Visual Studio 2005 also 
+works. 
+Note however that since release 1.3, certain features do not work 
 with versions prior to 7.1.
 
-
 There are two different ways to build using Visual C++. Both 
-are somewhat fiddly and largely unsupported (but so is the rest 
-of STIR).
+are somewhat fiddly. Before we go there, we have to got a problem out-of-the-way.
+
+{ \subsubsubsection{CPUTimer problems}
+}
+At present, STIR uses some files available in the Windows API for 
+getting accurate CPU time estimates. If you do not have the Windows API
+installed, you will get compilation errors mentioning that 
+the file \texttt{windows.h} cannot be found. A work-around is to
+define the preprocessor symbol \texttt{STIR\_CPUTimer\_use\_clock}. 
+This does mean that \textbf{CPUTimer} will return wall-clock time.
+If you are using \textbf{make}, you can put a line
+\begin{verbatim}
+  EXTRA_CFLAGS=-DSTIR_CPUTimer_use_clock
+\end{verbatim}
+in your \textbf{STIR/local/config.mk}, see section \ref{sec:local_config.mk}.
+If you are using the Visual Studio GUI, you can either add this preprocessor
+variable to all projects, or you can put a line
+\begin{verbatim}
+  #define STIR_CPUTimer_use_clock
+\end{verbatim}
+at the start of \texttt{include/stir/CPUTimer.inl}.
+
 
 { \subsubsubsection{Using make}
 }
@@ -643,6 +664,9 @@ all be avoidable, but we didn't do this for you. Please feel
 free to find a neat way around all this ugly stuff and let us 
 know.
 
+\textbf{Note:} The projects and workspaces in the distribution contain references to
+files and projects called \texttt{local_*}. You will probably have to delete those
+maually from the projects.
 
 
 At present, STIR uses parts of the Louvain la Neuve ecat library, 
@@ -660,10 +684,8 @@ subdirectory \textbf{lln{\textbackslash}ecat{\textbackslash}VC}.
 
 
 
-When opening the workpackages the first time, Visual Studio will 
-not find 2 projects called local\_buildblock and local\_recon\_buildblock. 
-You will have to delete these manually from the workspace. In 
-addition, if you want ECAT7 support, you will need to tell Visual 
+When opening the workpackages the first time, and if you want
+ECAT7 support, you will need to tell Visual 
 Studio the location of the \textbf{ecat.dsp} project file (which should 
 be in the VC subdirectory of the ecat distribution).
 
