@@ -82,6 +82,15 @@ ask_string(const string& prompt, const string& default_value = "");
   
   \param prompt a text string which is supposed to be a question
   \param default_value When set to \c true , the default is Yes.
+
+  The question is currently presented as
+  \verbatim
+  prompt [Y/N D:default_value]: 
+  \endverbatim
+  Simply pressing 'enter' will select the default value. Otherwise, 
+  the first charachter of the response will be checked against 
+  y/Y/n/N to determine the return value. If it is none of these,
+  the question will be asked again.
   */
 bool 
 ask (const string& prompt, bool default_value);
@@ -95,13 +104,13 @@ ask (const string& prompt, bool default_value);
  */
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
-				  const char * const name);
+				  const string& name);
 //! opens a stream for writing. Calls error() when it does not succeed.
 /*!  \ingroup buildblock
  */
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
-				  const char * const name);
+				  const string& name);
 
 
 
@@ -109,8 +118,9 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
  Some functions to manipulate (and ask for) filenames.
 ***************************************************************************/
 
-//! some large value to say how long filenames can be in ask_filename_with_extension() and ask_filename_and_open
-/*!  \ingroup buildblock
+/*! \brief
+  some large value to say how long filenames can be in  ask_filename_with_extension() and ask_filename_and_open()
+  \ingroup buildblock
  */
 const int max_filename_length = 1000;
 
@@ -242,12 +252,28 @@ string&
 replace_extension(string& file_in_directory_name, 
 		  const string& extension);
 		   
+/*! \ingroup buildblock
+ \brief
+ Asks for a filename (appending an extension if none is provided).
+
+ Example:
+ \code
+     string filename =
+     ask_filename_with_extension("Input file name ?", ".img");
+ \endcode
+ \warning starting or ending spaces are NOT stripped.
+ */
+string
+ask_filename_with_extension(const string& prompt,
+			    const string& default_extension);
+
 
 /*! \ingroup buildblock
  \brief
  Asks for a filename (appending an extension if none is provided)
  and stores the string where file_in_directory_name points to.
 
+ \deprecated
  Example:
  \code
      char filename[max_filename_length];
@@ -255,12 +281,12 @@ replace_extension(string& file_in_directory_name,
  \endcode
  \warning \a file_in_directory_name has to be preallocated 
        (with size \c max_filename_length)
- \bug the filename cannot contain spaces
+ \warning starting or ending spaces are NOT stripped.
  */
 extern char *
 ask_filename_with_extension(char *file_in_directory_name, 
-  		            const char * const prompt,
-			    const char * const default_extension);
+  		            const string& prompt,
+			    const string& default_extension);
 
 /*! \ingroup buildblock
   \brief
@@ -280,8 +306,8 @@ ask_filename_with_extension(char *file_in_directory_name,
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,
-		      const char * const prompt,
-	              const char * const default_extension,
+		      const string& prompt,
+	              const string& default_extension,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 
@@ -291,8 +317,8 @@ ask_filename_and_open(FSTREAM& s,
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,
-		      const char * const prompt,
-	              const char * const default_extension,
+		      const string& prompt,
+	              const string& default_extension,
 		      ios::openmode mode)
 { 
   ask_filename_and_open(s, prompt, default_extension, mode, true);
