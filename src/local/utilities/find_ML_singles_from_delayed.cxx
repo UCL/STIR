@@ -96,7 +96,7 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
     }
   const int num_eff_iterations = atoi(argv[argc==4?3:4]);
-  const string out_filename_prefix = argv[1];
+  const string out_filename_prefix = argv[argc==4?1:2];
 
   const int do_display_interval = 
     ask_num("Display iterations which are a multiple of ",0,num_eff_iterations,0);
