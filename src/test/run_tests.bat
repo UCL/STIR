@@ -20,13 +20,21 @@ VC\test_filename_functions\%1\test_filename_functions
 @pause 
 VC\test_linear_regression\%1\test_linear_regression  input\test_linear_regression.in
 @pause 
-test_coordinates\%1\test_coordinates
-@pause 
-test_filename_functions\%1\test_filename_functions 
+VC\test_coordinates\%1\test_coordinates
 @pause 
 VC\test_VoxelsOnCartesianGrid\%1\test_VoxelsOnCartesianGrid
 @pause 
 VC\test_proj_data_info\%1\test_proj_data_info
+@pause 
+VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_InterfileOutputFileFormat.in 
+@pause 
+VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_InterfileOutputFileFormat_short.in 
+@pause 
+VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_ECAT6OutputFileFormat.in
+@pause 
+@echo Executing test_stir_math 
+@echo This relies on having stir_math compiled (in the utilities workspace).
+VC\test_stir_math\%1\test_stir_math ..\utilities\VC\stir_math\%1\stir_math 
 @echo.
 @echo End of tests !
 @echo.
