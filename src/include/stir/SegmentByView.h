@@ -101,6 +101,8 @@ public:
 
   //! Overloading Array::grow
   void grow(const IndexRange<3>& range);
+  //! Overloading Array::resize
+  void resize(const IndexRange<3>& range);
 
 };
 

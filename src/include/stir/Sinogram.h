@@ -82,6 +82,8 @@ public:
  
   //! Overloading Array::grow
   void grow(const IndexRange<2>& range);
+  //! Overloading Array::resize
+  void resize(const IndexRange<2>& range);
 
   //! Get the projection data info pointer
   /*! \warning Do not use this pointer after the Sinogram object is destructed.
