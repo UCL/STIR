@@ -1,6 +1,6 @@
 // $Id$
-#ifndef __stir_write_data_1d_H__
-#define __stir_write_data_1d_H__
+#ifndef __stir_IO_write_data_1d_H__
+#define __stir_IO_write_data_1d_H__
 /*!
   \file 
   \ingroup Array 
@@ -53,6 +53,6 @@ write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
 
 END_NAMESPACE_STIR
 
-#include "stir/write_data_1d.inl"
+#include "stir/IO/write_data_1d.inl"
 
 #endif

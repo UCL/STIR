@@ -20,7 +20,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/Succeeded.h"
 #include "stir/detail/test_if_1d.h"
-#include "stir/write_data_1d.h"
+#include "stir/IO/write_data_1d.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR
@@ -209,11 +209,16 @@ write_data(OStreamT& s,
   switch(type.id)
     {
       // define macro what to do with a specific NumericType
+#if !defined(_MSC_VER) || _MSC_VER>1300
+#define TYPENAME typename
+#else
+#define TYPENAME 
+#endif
 #define CASE(NUMERICTYPE)                                \
     case NUMERICTYPE :                                   \
       return                                             \
         write_data(s, data,				 \
-		   NumericInfo<typename TypeForNumericType<NUMERICTYPE >::type>(), \
+		   NumericInfo<TYPENAME TypeForNumericType<NUMERICTYPE >::type>(), \
 		   scale, byte_order, can_corrupt_data)
 
       // now list cases that we want
@@ -222,6 +227,7 @@ write_data(OStreamT& s,
       CASE(NumericType::USHORT);
       CASE(NumericType::FLOAT);
 #undef CASE
+#undef TYPENAME
     default:
       warning("write_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 

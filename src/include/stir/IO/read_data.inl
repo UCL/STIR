@@ -20,7 +20,7 @@
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
 #include "stir/detail/test_if_1d.h"
-#include "stir/read_data_1d.h"
+#include "stir/IO/read_data_1d.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR
