@@ -21,6 +21,7 @@
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/ViewSegmentNumbers.h"
 
 START_NAMESPACE_STIR
 
