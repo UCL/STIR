@@ -5,7 +5,7 @@
 #define __Coordinate2D_H__
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief defines the Coordinate2D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -19,7 +19,8 @@
 */
 
 /*!
-   \brief a templated class for 2-dimensional coordinates.
+  \ingroup buildblock 
+  \brief a templated class for 2-dimensional coordinates.
 
    The only new method is a constructor Coordinate2D<coordT>(c1,c2)
 
