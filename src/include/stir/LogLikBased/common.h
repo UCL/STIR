@@ -35,7 +35,7 @@ class DataSymmetriesForViewSegmentNumbers;
 
 const int rim_truncation_sino  = 0; // This MUST be const, otherwise it will need
                                     // to be distributed to the slaves
-const int rim_truncation_image = 2;
+const int rim_truncation_image = 0;
 
 
 //! computes gradient of (subset of ) loglikelihood 
