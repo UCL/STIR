@@ -12,13 +12,15 @@ LIB_SOURCES = \
 	CListModeData.cxx \
 	CListModeDataFromStream.cxx \
 	CListModeDataECAT.cxx \
+	CListRecordECAT962.cxx \
+	CListRecordECAT966.cxx \
 	LmToProjData.cxx 
 
 
 
 LIB_OBJS = $(LIB_SOURCES:%.cxx=${DEST}%.o)
 
-all: $(DEST)liblistmode.a
+all: $(DEST)liblistmode_buildblock.a
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
@@ -30,7 +32,7 @@ endif
 endif
 
 
-$(DEST)liblistmode.a: $(LIB_OBJS)
+$(DEST)liblistmode_buildblock.a: $(LIB_OBJS)
 	ar r $@ $?
 	ranlib $@
 

@@ -3,22 +3,24 @@
 //
 /*!
   \file 
-  \ingroup utilities
+  \ingroup listmode_utilities
 
   \brief Program to bin listmode data to 3d sinograms
- 
+
+  \see class LmToProjData for info on parameter file format
+
   \author Kris Thielemans
   \author Sanida Mustafovic
   
   $Date$
-  $Revision $
+  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/listmode/LmToProjData.h"
+#include "stir/listmode/LmToProjData.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
