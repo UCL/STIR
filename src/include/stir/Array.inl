@@ -42,7 +42,7 @@ resize(const IndexRange<num_dimensions>& range)
   typename IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
   for (;
        iter != this->end(); 
-       iter++, range_iter++)
+       ++iter, ++range_iter)
     (*iter).resize(*range_iter);
 }
 
@@ -83,15 +83,11 @@ Array<num_dimensions, elemT>::begin_all()
   if (this->begin() == this->end())
   {
     // empty array
-    return 
-        full_iterator(this->begin(), this->end(), 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-		      typename
-#endif
-		      Array<num_dimensions-1, elemT>::full_iterator());
+    return end_all(); 
   }
   else
-    return full_iterator(this->begin(), this->end(), this->begin()->begin_all());
+    return full_iterator(this->begin(), this->end(), 
+                         this->begin()->begin_all(), this->begin()->end_all());
 }
   
 template <int num_dimensions, typename elemT>
@@ -101,15 +97,11 @@ Array<num_dimensions, elemT>::begin_all() const
   if (this->begin() == this->end())
   {
     // empty array
-    return  
-      const_full_iterator(this->begin(), this->end(), 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-			  typename 
-#endif
-			  Array<num_dimensions-1, elemT>::const_full_iterator());
+    return end_all(); 
   }
   else
-    return const_full_iterator(this->begin(), this->end(), this->begin()->begin_all());
+    return const_full_iterator(this->begin(), this->end(), 
+                         this->begin()->begin_all(), this->begin()->end_all());
 }
 
 template <int num_dimensions, typename elemT>
@@ -124,41 +116,16 @@ template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::end_all()
 {
-  if (this->begin() == this->end())
-  {
-    // empty array
-    return 
-      full_iterator(this->begin(), this->end(), 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-		    typename 
-#endif
-		    Array<num_dimensions-1, elemT>::full_iterator());
-  }
-  else
-    {
-      // note this value is fixed by the current convention in full_iterator::operator++()
-      return full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
-    }
+  // note this value is fixed by the current convention in full_iterator::operator++()
+  return  full_iterator(this->end(), this->end(), 0,0);
 }
 
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::end_all() const
 {
-  if (this->begin() == this->end())
-  {
-    // empty array
-    return const_full_iterator(this->begin(), this->end(), 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
-			       typename 
-#endif
-			       Array<num_dimensions-1, elemT>::const_full_iterator());
-  }
-  else
-    {
-      // note this value is fixed by the current convention in full_iterator::operator++()
-      return const_full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
-    }
+  // note this value is fixed by the current convention in full_iterator::operator++()
+  return  const_full_iterator(this->end(), this->end(), 0,0);
 }
 
 template <int num_dimensions, typename elemT>
@@ -379,14 +346,10 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
   }
   else
   {
-    {
-      for (int i=this->get_min_index(); i<oldstart; i++)
-	this->num[i] = elemT(0);
-    }
-    {
-      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
-	this->num[i] = elemT(0);
-    }
+    for (int i=this->get_min_index(); i<oldstart && i<=this->get_max_index(); ++i)
+      this->num[i] = elemT(0);
+    for (int i=std::max(oldstart + oldlength, this->get_min_index()); i<=this->get_max_index(); ++i)
+      this->num[i] = elemT(0);
   }
   this->check_state();  
 }
