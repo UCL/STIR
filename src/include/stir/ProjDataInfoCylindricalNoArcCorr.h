@@ -2,7 +2,6 @@
 // $Id$
 //
 /*!
-
   \file
   \ingroup buildblock
 
@@ -22,11 +21,10 @@
 
 
 #include "stir/ProjDataInfoCylindrical.h"
-
+#include "stir/DetectionPositionPair.h"
 START_NAMESPACE_STIR
 
 class Succeeded;
-
 /*!
   \ingroup buildblock 
   \brief Projection data info for data which are not arc-corrected.
@@ -55,19 +53,25 @@ class Succeeded;
   is no LOR which goes through the origin.
 
 
-  Interchanging the 2 detectors:
-  ------------------------------
+  \par Interchanging the 2 detectors
+  
   When the ring difference = 0 (i.e. a 2D - or direct - sinogram),
   interchanging the 2 detectors does not change the LOR. This is why
   (in 2D) one gets away with a full sinogram size of
   num_views * 2 * num_views, where the size of 'detector-space' is
   twice as large.
   However, in 3D, interchanging the detectors, also interchanges the
-  rings, and we have a totally different LOR. One has 2 options:
+  rings. One has 2 options:
   - have 1 sinogram with twice as many views, together with the rings
     as 'unordered pair' (i.e. ring_difference is always >0)
   - have 2 sinograms of the same size as in 2D, together with the rings
     as 'ordered pair' (i.e. ring_difference can be positive and negative).
+  In STIR, we use the second convention.
+  
+  \todo The detector specific functions possibly do not belong in this class.
+  One can easily imagine a case where the theta,phi,s,t coordinates are as
+  described, but there is no real correspondence with detectors (for instance,
+  a rotating system). Maybe they should be moved somewhere else?
   */
 class ProjDataInfoCylindricalNoArcCorr : public ProjDataInfoCylindrical
 {
@@ -76,7 +80,7 @@ public:
   //! Default constructor (leaves object in ill-defined state)
   ProjDataInfoCylindricalNoArcCorr();
   //! Constructor completely specifying all parameters
-  /*! See class documentation for info on parameters */
+  /*! \see ProjDataInfoCylindrical class documentation for info on parameters */
   ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
     const float ring_radius, const float angular_increment,
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
@@ -85,7 +89,8 @@ public:
     const int num_views,const int num_tangential_poss);
 
   //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
-  /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring */
+  /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
+  \todo only suitable for full-ring PET scanners*/
    ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v, 
@@ -150,11 +155,41 @@ public:
 						 const int view_num,
 						 const int tang_pos_num) const;
 
+  //! This gets Bin coordinates for a particular detector pair
+  /*! 
+    Note that when axial compression and/or mashing is applied, this is a many-to-one relation, 
+    i.e. multiple detector pairs contribute to one bin.
 
-  //! This gets view_num and tang_pos_num for a particular detector pair
+    \return Succeeded::yes when a corresponding bin is found in the range of projection data. Currently,
+    the Bin value is always set to 1. 
+    \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
+    \todo It might be possible to set the bin value to
+    some weight factor in case there is no many-to-one correspondence
+    between detection positions and bins (for instance for
+    continuous detectors, or rotating scanners). However, those scanners are not
+    really supported yet.
+    \todo use member template for the coordT type to support continuous detectors.
+  */		       
+  inline Succeeded 
+    get_bin_for_det_pos_pair(Bin&,
+			 const DetectionPositionPair<>&) const;
+
+
+  //! This routine gets the detector pair corresponding to a bin.
+  /*! 
+    \see get_det_pair_for_view_tangential_pos_num() for
+    restrictions. In addition, this routine only works for span=1 data,
+    i.e. no axial compression.
+    \todo use member template for the coordT type to support continuous detectors.
+  */
+  inline void
+    get_det_pos_pair_for_bin(DetectionPositionPair<>&,
+	                 const Bin&) const;
+  //! This gets Bin coordinates for a particular detector pair
   /*! 
     \return Succeeded::yes when a corresponding segment is found
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
+    \obsolete
   */		       
   inline Succeeded 
     get_bin_for_det_pair(Bin&,
@@ -167,7 +202,8 @@ public:
     \see get_det_pair_for_view_tangential_pos_num() for
     restrictions. In addition, this routine only works for span=1 data,
     i.e. no axial compression.
-   */
+    \obsolete
+  */
   inline void
     get_det_pair_for_bin(
 			 int& det_num1, int& ring_num1,
