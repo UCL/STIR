@@ -63,8 +63,8 @@ public:
   static void euler_2_quaternion(Quaternion<float>& quat,const CartesianCoordinate3D<float>& Euler_angles);		/* Euler angles to a quaternion */
 
 private:
-  mutable Quaternion<float> quat;
-  mutable CartesianCoordinate3D<float> translation;
+  Quaternion<float> quat;
+  CartesianCoordinate3D<float> translation;
 
 };
 
