@@ -1,4 +1,3 @@
-# OSEM makefile
 #
 # $Id$ :$Date$
 #
@@ -51,9 +50,14 @@ endif
 
 
 
-.PRECIOUS: $(DEST)vox.o $(DEST)displayPSOV.o
+# KT 09/10/98 changed to *.o
+.PRECIOUS: $(DEST)*.o
 
-all: createdir libs $(DEST)vox $(DEST)displayPSOV $(DEST)swap_byteorder
+# KT 09/10/98 use EXECS to prevent repetition, add displayIF
+EXECS =  $(DEST)vox $(DEST)displayPSOV $(DEST)swap_byteorder $(DEST)displayIF
+
+
+all: createdir libs $(EXECS)
 
 createdir:
 	-mkdir -p $(DEST)
@@ -63,11 +67,12 @@ libs: $(LIB_BUILDINGBLOCK) $(LIB_DISPLAY)
 $(LIB_DISPLAY): FORCE
 	cd $(WORKSPACE)/display; $(MAKE);
 
-$(LIB_BUILDBLOCK): FORCE
+# KT 09/10/98 changed spelling mistake BUILD -> BUILDING
+$(LIB_BUILDINGBLOCK): FORCE
 	cd $(WORKSPACE)/buildblock; $(MAKE); 
 
 FORCE:
 
 
 clean: 
-	$(RM) $(DEST)*.o $(DEST)vox $(DEST)displayPSOV $(DEST)swap_byteorder
+	$(RM) $(DEST)*.o $(EXECS)
