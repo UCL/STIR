@@ -16,7 +16,6 @@ SOURCES = \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
 	fft.cxx \
-	SSRB.cxx \
 	ArrayFilter3DUsingConvolution.cxx \
 	ArrayFilter2DUsingConvolution.cxx \
 	ModifiedInverseAveragingImageFilterAll.cxx \
