@@ -23,6 +23,9 @@ using namespace std;
 
 START_NAMESPACE_STIR
 
+static const float total_cross_section_511keV = 
+  total_cross_section(511.); 
+
 float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
