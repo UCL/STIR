@@ -64,7 +64,7 @@ int generate_poisson_random(const float mu)
   {
     boost::normal_distribution<base_generator_type> randomnormal(generator, mu, sqrt(mu));
     const double random = randomnormal();
-    return random<0 ? 0 : Tomo::round(random);
+    return random<0 ? 0 : round(random);
   }
   else
   {
