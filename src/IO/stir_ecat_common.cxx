@@ -115,6 +115,8 @@ short find_ECAT_system_type(const Scanner& scanner)
   {
   case Scanner::E921:
     return 921; 
+  case Scanner::E925:
+    return 925; 
     
   case Scanner::E931:
     return 931; 
@@ -144,6 +146,36 @@ short find_ECAT_system_type(const Scanner& scanner)
     warning("\nfind_ecat_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", 
       scanner.get_name().c_str());
     return 0;
+  }
+}
+
+Scanner* find_scanner_from_ECAT_system_type(const short system_type)
+{
+  switch(system_type)
+  {
+  case 128 : 
+    return new Scanner(Scanner::RPT);
+  case 921 : 
+    return new Scanner(Scanner::E921);
+  case 925 : 
+    return new Scanner(Scanner::E925);
+  case 931 :
+  case 12 : 
+    return new Scanner(Scanner::E931);
+  case 951 : 
+    return new Scanner(Scanner::E951);
+  case 953 : 
+    return new Scanner(Scanner::E953);
+  case 961 : 
+    return new Scanner(Scanner::E961);
+  case 962 : 
+    return new Scanner(Scanner::E962);
+  case 966 : 
+    return new Scanner(Scanner::E966);
+  case 42:
+    return new Scanner(Scanner::RATPET);
+  default :  
+    return new Scanner(Scanner::Unknown_Scanner);
   }
 }
 
