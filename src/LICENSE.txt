@@ -67,6 +67,9 @@ Explicit list of files that carry the PARAPET license
 -------------------------------------------------------
 ./analytic/FBP2D/FBP2DReconstruction.cxx
 ./analytic/FBP2D/RampFilter.cxx
+./analytic/FBP3DRP/ColsherFilter.cxx
+./analytic/FBP3DRP/FBP3DRP.cxx
+./analytic/FBP3DRP/FBP3DRPReconstruction.cxx
 ./buildblock/Array.cxx
 ./buildblock/Array1d.cxx
 ./buildblock/ByteOrder.cxx
@@ -99,6 +102,7 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/VoxelsOnCartesianGrid.cxx
 ./buildblock/warning.cxx
 ./buildblock/zoom.cxx
+./CREDITS.txt
 ./display/display_array.cxx
 ./display/gen.c
 ./display/gen.h
@@ -107,8 +111,15 @@ Explicit list of files that carry the PARAPET license
 ./display/screen.h
 ./display/screengen.c
 ./eval_buildblock/ROIValues.cxx
+./include/local/stir/fft.h
+./include/local/stir/Filter.h
+./include/local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h
+./include/local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h
+./include/local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h
 ./include/stir/analytic/FBP2D/FBP2DReconstruction.h
 ./include/stir/analytic/FBP2D/RampFilter.h
+./include/stir/analytic/FBP3DRP/ColsherFilter.h
+./include/stir/analytic/FBP3DRP/FBP3DRPReconstruction.h
 ./include/stir/Array.h
 ./include/stir/Array.inl
 ./include/stir/Array1d.h
@@ -157,6 +168,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/IO/ecat6_utils.h
 ./include/stir/IO/interfile.h
 ./include/stir/IO/InterfileHeader.h
+./include/stir/IO/ProjDataVOLPET.h
 ./include/stir/IO/stir_ecat6.h
 ./include/stir/IO/stir_ecat7.h
 ./include/stir/IO/stir_ecat_common.h
@@ -251,6 +263,7 @@ Explicit list of files that carry the PARAPET license
 ./IO/ecat6_utils.cxx
 ./IO/interfile.cxx
 ./IO/InterfileHeader.cxx
+./IO/ProjDataVOLPET.cxx
 ./IO/stir_ecat6.cxx
 ./IO/stir_ecat_common.cxx
 ./iterative/LogLik_buildblock/common.cxx
@@ -258,6 +271,7 @@ Explicit list of files that carry the PARAPET license
 ./iterative/OSMAPOSL/OSMAPOSL.cxx
 ./iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
 ./iterative/sensitivity/sensitivity.cxx
+./LICENSE.txt
 ./recon_buildblock/BackProjectorByBin.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation_3DCho.cxx
