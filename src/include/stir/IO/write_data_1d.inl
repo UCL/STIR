@@ -124,7 +124,6 @@ write_data_1d(FILE* & fptr_ref, const Array<1, elemT>& data,
   // get_const_data_ptr() is called before size() (which is compiler dependent)
   const std::size_t num_to_write =
     static_cast<std::size_t>(data.size());
-  bool writing_ok=true;
   const std::size_t num_written =
     fwrite(reinterpret_cast<const char *>(data.get_const_data_ptr()), sizeof(elemT), num_to_write, fptr);
   
