@@ -119,19 +119,7 @@ do_it(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
   const int i_min = filter_coefficients[j_min].get_min_index();
   const int i_max = filter_coefficients[j_min].get_max_index();
   
-  /*Array <2,float> filter_tmp (IndexRange2D(0,j_max-1,0,i_max-1));
-
-    for ( int j =j_min; j<=j_max; j++)
-      for ( int i =i_min; i<=i_max; i++)
-      {
-	filter_tmp[j-1][i-1]  = filter_coefficients[j][i];
-
-      }
   
-  const int j_min_tmp = filter_tmp.get_min_index();
-  const int j_max_tmp = filter_tmp.get_max_index();
-  const int i_min_tmp = filter_tmp[j_min].get_min_index();
-  const int i_max_tmp = filter_tmp[j_min].get_max_index();*/
 
  
     for (int y=out_min_y; y<=out_max_y; y++) 
