@@ -107,22 +107,21 @@ grow(const IndexRange<3>& range)
   if (range == get_index_range())
     return;
 
-  const int ax_min = get_min_axial_pos_num();
-  const int ax_max = get_max_axial_pos_num();
+  assert(range.is_regular()==true);
+
+  const int ax_min = range.get_min_index();
+  const int ax_max = range.get_max_index();
 
   // can only handle min_view==0 at the moment
   // TODO
   assert(range[ax_min].get_min_index() == 0);
 
-  // can not set axial_pos_num of ProjDataInfo at the moment
-  // TODO
-  assert(range.get_min_index() == ax_min);
-  assert(range.get_max_index() == ax_max);
-
-  
   ProjDataInfo* pdi_ptr = proj_data_info_ptr->clone();
   
-  pdi_ptr->set_num_views(range.get_max_index() + 1);
+  pdi_ptr->set_min_axial_pos_num(ax_min, get_segment_num());
+  pdi_ptr->set_max_axial_pos_num(ax_max, get_segment_num());
+  
+  pdi_ptr->set_num_views(range[ax_min].get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[ax_min][0].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[ax_min][0].get_max_index());
 
