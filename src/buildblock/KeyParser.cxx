@@ -1,20 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup buildblock
-
-  \brief Implementations for class KeyParser
-
-  \author Patrick Valente
-  \author Kris Thielemans
-  \author PARAPET project
-
-  $Date$
-
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -31,6 +17,20 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup buildblock
+
+  \brief Implementations for class stir::KeyParser
+
+  \author Patrick Valente
+  \author Kris Thielemans
+  \author PARAPET project
+
+  $Date$
+
+  $Revision$
 */
 
 #include "stir/KeyParser.h"
@@ -320,6 +320,12 @@ void
 KeyParser::add_key(const string& keyword, int * variable)
   {
     add_key(keyword, KeyArgument::INT, variable);
+  }
+
+void
+KeyParser::add_key(const string& keyword, unsigned long * variable)
+  {
+    add_key(keyword, KeyArgument::ULONG, variable);
   }
 
 void
