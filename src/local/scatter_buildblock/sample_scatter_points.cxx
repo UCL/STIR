@@ -22,6 +22,7 @@
 
 using namespace std;
 
+
 START_NAMESPACE_STIR
 
 std::vector<CartesianCoordinate3D<float> > 

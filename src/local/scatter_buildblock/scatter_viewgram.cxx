@@ -31,7 +31,7 @@ void scatter_viewgram(
 	ProjData& proj_data,
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-    int max_scatt_points, const int att_threshold)
+    int max_scatt_points, const float att_threshold)
 	{	
 		  	  
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
@@ -87,3 +87,4 @@ void scatter_viewgram(
 		
 	}
 END_NAMESPACE_STIR
+
