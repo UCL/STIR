@@ -259,10 +259,10 @@ ArrayTests::run_tests()
     Array<3,float> test3ter = test3bis;
 
     test3ter += test3;
-    check_if_equal(test3ter[1][0][1] , .3, "test on operator+=(Tensor3D)");
+    check_if_equal(test3ter[1][0][1] , .3, "test on operator+=(Array3D)");
 
     Array<3,float> test3quat = test3 + test3bis;
-    check_if_equal(test3quat  , test3ter, "test summing Tensor3D");
+    check_if_equal(test3quat  , test3ter, "test summing Array3D");
 
     {
       Array<3,float> tmp= test3 - 2;
@@ -316,7 +316,7 @@ ArrayTests::run_tests()
     const IndexRange<4> larger_range(Coordinate4D<int>(-3,0,-1,1),Coordinate4D<int>(-1,3,3,3));
     test4.grow(larger_range);
     Array<4,float> test41 = test4;
-    check_if_equal(test4  , test41, "test Tensor4D copy constructor" );
+    check_if_equal(test4  , test41, "test Array4D copy constructor" );
     check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after grow");
 
     {
@@ -326,11 +326,11 @@ ArrayTests::run_tests()
       Array<4,float> test4ter = test4bis;
 
       test4ter += test4;
-      check_if_equal(test4ter[-3][1][0][1] ,2.3, "test on operator+=(Tensor4D)");
+      check_if_equal(test4ter[-3][1][0][1] ,2.3, "test on operator+=(Array4D)");
 
       // Note that test4 is bigger in size than test4bis.
       Array<4,float> test4quat = test4bis + test4;
-      check_if_equal(test4quat  ,test4ter, "test summing Tensor4D with grow");
+      check_if_equal(test4quat  ,test4ter, "test summing Array4D with grow");
     }
 
     // test on scalar multiplication, division
@@ -356,19 +356,19 @@ ArrayTests::run_tests()
       // new elements in test4bis will remain 0 because we're using multiplication
       test4[-1].fill(666);
       test4bis *= test4;
-      check_if_zero(test4bis[-1], "test operator *=(Tensor4D) grows ok");
+      check_if_zero(test4bis[-1], "test operator *=(Array4D) grows ok");
 
-      check(test4.get_index_range() == test4bis.get_index_range(), "test operator *=(Tensor4D) grows ok: range");
+      check(test4.get_index_range() == test4bis.get_index_range(), "test operator *=(Array4D) grows ok: range");
       // compute the new sum. 
       {
         float sum_check = 0;      
 	for (int i=test4.get_min_index(); i<= -2; i++)
 	  sum_check += test4[i].sum()*(i+10.F);
-	check_if_equal(test4bis.sum() ,sum_check, "test operator *=(Tensor4D)");
+	check_if_equal(test4bis.sum() ,sum_check, "test operator *=(Array4D)");
       }
       const Array<4,float> test4quat = test4bis / test4;
       test4ter.grow(test4.get_index_range());
-      check_if_equal(test4ter ,test4quat, "test operator /(Tensor4D)");
+      check_if_equal(test4ter ,test4quat, "test operator /(Array4D)");
     } 
   
     // test operator+(float)
@@ -378,7 +378,9 @@ ArrayTests::run_tests()
       Array<4,float> tmp2 = test4;
       tmp2.fill(1.F);
       
-      check_if_zero( test4.sum() + 2*tmp2.sum() - tmp.sum(), "test operator+(float)");
+      // KT 20/12/2001 made check_if_zero compare relative to 1 by dividing
+      check_if_zero( (test4.sum() + 2*tmp2.sum() - tmp.sum())/test4.sum(), 
+		     "test operator+(float)");
     }
   }
 
