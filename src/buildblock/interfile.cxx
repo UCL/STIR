@@ -23,7 +23,7 @@ PETImageOfVolume read_interfile_image(istream& input)
   if (!kp.parse())
     {
       PETerror("\nError parsing interfile header, \n\
-               I am going to ask you lots of questions...\n");
+      I am going to ask you lots of questions...\n");
       return ask_image_details();
     }
   
@@ -42,39 +42,46 @@ PETImageOfVolume read_interfile_image(istream& input)
       //printf("matrix_labels[%d] : %s\n",i+1, kp.matrix_labels[i].c_str());
     }
     */
+    // TODO move to ImageHeader post_processing
     assert(kp.num_dimensions == 3);
     assert(kp.matrix_size[0].size() == 1);
     assert(kp.matrix_size[1].size() == 1);
     assert(kp.matrix_size[2].size() == 1);
 
+    //KT 26/10/98 now here
+    ifstream data_in;
+    open_read_binary(data_in, kp.data_file_name.c_str());
+
     Point3D origin(0,0,0);
 
     Point3D voxel_size(kp.pixel_sizes[0], kp.pixel_sizes[1], kp.pixel_sizes[2]);
 
+    //TODO adjust x,y ranges to centre ?
     PETImageOfVolume 
      image(Tensor3D<float>(kp.matrix_size[2][0], kp.matrix_size[1][0], kp.matrix_size[0][0]),
 		      origin,
 		      voxel_size);
-    // TODO set file offset
-    Real scale = Real(1);
-    image.read_data(*(kp.in_stream), kp.type_of_numbers, scale, kp.file_byte_order);
-    assert(scale == 1);    
 
+    //KT 26/10/98 do file offset now
+    data_in.seekg(kp.data_offset[0]);
+
+    Real scale = Real(1);
+    //KT 26/10/98 use local stream data_in
+    image.read_data(data_in, kp.type_of_numbers, scale, kp.file_byte_order);
+    assert(scale == 1);  
+    
+    //KT 26/10/98 take scale factor into account
+    if (kp.image_scaling_factor[0]!= 1)
+      image *= kp.image_scaling_factor[0];
+
+    //KT 26/10/98 not necessary anymore
+    /*
     if(kp.in_stream!=0)
       {
 	kp.in_stream->close();
 	delete kp.in_stream;
       }
-    /*
-    // look at the KeyParser class for retrieving 
-    // values for the PETSinog. constructor.
-    //PETSinogramOfVolume sino;
-    vector<int> min_r(9,0);
-    
-     sino(scanmodel,min_r,kp.matrix_size[max_r_index],ecc);
-    */
-    
-  
+      */
   
   return image;
 }
@@ -176,6 +183,90 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
   }
   return true;
 }
+
+PETSinogramOfVolume read_interfile_PSOV(istream& input)
+{
+  //KT 26/10/98 new
+  // Horrible trick to keep the stream alive. At the moment, this pointer
+  // is never deleted
+  // TODO
+  fstream *data_in =  new fstream;
+  
+
+  InterfilePSOVHeader kp(input);
+  if (!kp.parse())
+    {
+      PETerror("\nError parsing interfile header, \n\
+     I am going to ask you lots of questions...\n");
+      return ask_PSOV_details(data_in);
+    }
+  
+  
+    printf("byte order : %s_endian\n",
+      kp.file_byte_order == ByteOrder::little_endian ? "Little" : "Big");
+    printf("Number type:  %d\n", kp.type_of_numbers);
+    /*
+    printf("num_dimensions : %d\n",kp.num_dimensions);
+    for(int i=0;i<kp.num_dimensions;i++)
+    {
+      vector<int> v;
+      v=kp.matrix_size[i];
+      for(int ii=0;ii<v.size();ii++)
+	printf("matrix_size[%d][%d] : %d\n",i+1,ii+1,v[ii]);
+      //printf("matrix_labels[%d] : %s\n",i+1, kp.matrix_labels[i].c_str());
+    }
+    */
+
+
+    open_read_binary(*data_in, kp.data_file_name.c_str());
+
+    vector<int> min_ring_num_per_segment(kp.num_segments);
+    vector<int> max_ring_num_per_segment(kp.num_segments);
+    for (int s=0; s<kp.num_segments; s++)
+    {
+      min_ring_num_per_segment[s] = 0;
+      max_ring_num_per_segment[s] = kp.num_rings_per_segment[s]-1;
+    }
+
+    // TODO Horrible trick to get the scanner right
+    PETScannerInfo scanner;
+    switch (kp.num_views)
+    {
+    case 96:
+      scanner = PETScannerInfo::RPT;
+      break;
+    case 192:
+      scanner = PETScannerInfo::E953;
+      break;
+    case 336:
+      scanner = PETScannerInfo::Advance;
+      break;
+    case 288:
+      scanner = PETScannerInfo::E966;
+      break;
+    default:
+      cerr << "Interfile warning: I did not recognise the scanner from num_views.\n\
+Defaulting to RPT" << endl;
+      scanner = PETScannerInfo::RPT;
+      break;
+    }
+    return PETSinogramOfVolume(
+                      scanner,
+		      kp.segment_sequence,
+		      kp.min_ring_difference, 
+		      kp.max_ring_difference, 
+		      min_ring_num_per_segment,
+		      max_ring_num_per_segment,
+		      0, kp.num_views-1,
+		      -kp.num_bins/2,
+		      (-kp.num_bins/2) + kp.num_bins-1,
+		      *data_in,
+		      kp.data_offset[0],
+		      kp.storage_order,
+		      kp.type_of_numbers,
+		      kp.image_scaling_factor[0]);
+}
+
 
 /**********************************************************************
  template instantiations
