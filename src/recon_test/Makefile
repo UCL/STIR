@@ -19,7 +19,7 @@ EXES = \
 
 
 install: $(EXES)
-        cp $(EXES) $(INSTALL_DIR)
+	cp $(EXES) $(INSTALL_DIR)
 
 include $(SOURCES:%.cxx=$(DEST)%.d)
 
