@@ -12,7 +12,6 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
 #ifndef __ProjDataInfo_H__
@@ -36,6 +35,7 @@ template <typename elemT> class SegmentBySinogram;
 template <typename elemT> class RelatedViewgrams;
 class DataSymmetriesForViewSegmentNumbers;
 class ViewSegmentNumbers;
+class Bin;
 class PMessage;
 
 /*!
@@ -75,10 +75,14 @@ public:
   // TODO should probably be protected
 
   //! Construct an empty object
-  inline  ProjDataInfo();
+   ProjDataInfo();
   
   //! Constructor setting all relevant info for a ProjDataInfo
-  inline ProjDataInfo(const shared_ptr<Scanner> scanner_ptr,
+   /*! The num_axial_pos_per_segment argument should be such that
+       num_axial_pos_per_segment[segment_num] gives you the appropriate value 
+       for a particular segment_num
+       */
+  ProjDataInfo(const shared_ptr<Scanner> scanner_ptr,
 		      const VectorWithOffset<int>& num_axial_pos_per_segment, 
 		      const int num_views, 
 		      const int num_tangential_poss);
@@ -98,16 +102,21 @@ public:
   /*! \warning the new range has to be 'smaller' than the old one. */
   void reduce_segment_range(const int min_segment_num, const int max_segment_num);
   //! Set number of views 
-  inline void set_num_views(const int num_views);
+  void set_num_views(const int num_views);
   //! Set number of tangential positions
-  inline void set_num_tangential_poss(const int num_tang_poss);
+  void set_num_tangential_poss(const int num_tang_poss);
   //! Set number of axial positions per segment
-  inline void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_pos_per_segment); 
-   
+  void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_pos_per_segment); 
+
+  //! Set minimum axial position number for 1 segment
+  void set_min_axial_pos_num(int min_ax_pos_num, const int segment_num);
+  //! Set maximum axial position number for 1 segment
+  void set_max_axial_pos_num(int min_ax_pos_num, const int segment_num);
+  
   //! Set minimum tangential position number
-  inline void set_min_tangential_pos_num(int min_tang_poss);
+  void set_min_tangential_pos_num(int min_tang_poss);
   //! Set maximum tangential position number
-  inline void set_max_tangential_pos_num(int max_tang_poss);
+  void set_max_tangential_pos_num(int max_tang_poss);
   
   //! Get number of segments
   inline int get_num_segments() const;
@@ -134,18 +143,42 @@ public:
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
 
-  // TODOdoc coordinate system
-  //! Get tangent of the co-polar angle, tan(theta)
-  virtual float get_tantheta(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const =0;
-  //! Get azimuthal angle phi
-  virtual float get_phi(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const =0;
+  //! Get tangent of the co-polar angle of the normal to the projection plane
+  /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
+  virtual float get_tantheta(const Bin&) const =0;
+  
+  //! Get azimuthal angle phi of the normal to the projection plane
+  /*! phi=0 when the normal vector has no component along the horizontal axis */
+  virtual float get_phi(const Bin&) const =0;
   
   //! Get value of the (roughly) axial coordinate in the projection plane (in mm)
-  virtual float get_t(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const =0;
+  /*! t-axis is defined to be orthogonal to the s-axis (and to the vector
+      normal to the projection plane */
+  virtual float get_t(const Bin&) const =0;
 
   //! Get value of the tangential coordinate in the projection plane (in mm)
-  virtual float get_s(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const =0;
-  
+  /*! s-axis is defined to be orthogonal to the scanner axis (and to the vector
+      normal to the projection plane */
+  virtual float get_s(const Bin&) const =0;
+
+  //! Get sampling distance in the \c t coordinate
+  /*! For some coordinate systems, this might depend on the Bin. The 
+      default implementation computes it as 
+      \code
+      1/2(get_t(..., ax_pos+1,...)-get_t(..., ax_pos-1,...)))
+      \endcode
+  */
+  virtual float get_sampling_in_t(const Bin&) const;
+
+  //! Get sampling distance in the \c s coordinate
+  /*! For some coordinate systems, this might depend on the Bin. The 
+      default implementation computes it as 
+      \code
+      1/2(get_s(..., tang_pos+1)-get_t(..., tang_pos_pos-1)))
+      \endcode
+  */
+  virtual float get_sampling_in_s(const Bin&) const;
+
   bool operator ==(const ProjDataInfo& proj) const; 
   
   //! Get empty viewgram
@@ -165,10 +198,10 @@ public:
 
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
-  RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-    //const int view_num,const int segment_num, 
-    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
+  RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers&,
+    const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = true) const;   
+
   //! Get scanner pointer  
   inline const Scanner* get_scanner_ptr() const;
   
@@ -176,7 +209,7 @@ public:
   virtual string parameter_info() const;
   
 private:
-   shared_ptr<Scanner> scanner_ptr;
+  shared_ptr<Scanner> scanner_ptr;
   int min_view_num;
   int max_view_num;
   int min_tangential_pos_num;
