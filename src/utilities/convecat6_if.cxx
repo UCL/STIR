@@ -10,8 +10,8 @@
   \author Damien Sauge
   \author Sanida Mustafovic
   \author PARAPET project
-  \version $Date$
-  \date    $Revision$
+  \version $Revision$
+  \date $Date$
 
   \warning Most of the data in the ECAT 6 headers is ignored (except dimensions)
   \warning Data are scaled using the subheader.scale_factor * subheader.loss_correction_fctr
@@ -108,6 +108,7 @@ main(int argc, char *argv[])
         break;
       }
     case matScanFile:
+    case matAttenFile:
       {            
         const int max_ring_diff= 
            ask_num("Max ring diff to store (-1 == num_rings-1)",-1,100,-1);
@@ -119,7 +120,7 @@ main(int argc, char *argv[])
       }
     default:
       {
-        error("\nSupporting only image or scan file type at the moment. Sorry.\n");            
+        error("\nSupporting only image, scan or atten file type at the moment. Sorry.\n");            
       }
     }    
     fclose(cti_fptr);
