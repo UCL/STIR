@@ -25,7 +25,7 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
 	compare_image.cxx \
         conv_to_ecat6.cxx \
 	extract_segments.cxx \
-	#correctPSOV.cxx 
+	correct_projdata.cxx 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
