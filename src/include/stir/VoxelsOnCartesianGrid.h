@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -70,8 +70,8 @@ VoxelsOnCartesianGrid(const IndexRange<3>& range,
 
    When sizes.z() is -1, a default size in z is found by taking the number of planes as
    <ul>
-   </li> $N_0$ when segment 0 is axially compressed,
-   </li> $2N_0-1$ when segment 0 is not axially compressed,
+   <li> $N_0$ when segment 0 is axially compressed,</li>
+   <li> $2N_0-1$ when segment 0 is not axially compressed,</li>
    </ul>
    where $N_0$ is the number of sinograms in segment 0.
 
