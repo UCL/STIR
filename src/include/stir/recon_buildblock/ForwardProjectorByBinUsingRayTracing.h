@@ -89,6 +89,10 @@ public:
 
   virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+ protected:
+  //! variable that determines if a cylindrical FOV or the whole image will be handled
+  bool restrict_to_cylindrical_FOV;
+
 
 private:
   void actual_forward_project(RelatedViewgrams<float>&, 
@@ -192,18 +196,19 @@ forward_project_view_2D(Viewgram<float> & pos_view,
  				          const int min_axial_pos_num, const int max_axial_pos_num,
 				          const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
-
-  // KT 20/06/2001 changed 'int s' parameter to 'float s_in_mm'
   //! The actual implementation of Siddon's algorithm 
+  /*! \return true if the LOR intersected the image, i.e. of Projptr (potentially) changed */ 
   template <int symmetry_type> 
-  static void proj_Siddon(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+  static bool 
+    proj_Siddon(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
 			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
 			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
 			  const int num_planes_per_axial_pos,
 			  const float axial_pos_to_z_offset,
-			  const float norm_factor);
+			  const float norm_factor,
+			  const bool restrict_to_cylindrical_FOV);
 
 
   virtual void set_defaults();
