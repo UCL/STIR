@@ -42,7 +42,11 @@ OBJS = $(SOURCES_CXX:%.cxx=$(DEST)%.o) $(SOURCES_C:%.c=$(DEST)%.o)
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(ADVANCED_DEPENDENCIES),1)
   include $(SOURCES_CXX:%.cxx=$(DEST)%.d) $(SOURCES_C:%.c=$(DEST)%.d)
+else
+  -include $(SOURCES_CXX:%.cxx=$(DEST)%.P) $(SOURCES_C:%.c=$(DEST)%.P)
+endif
 endif
 
 

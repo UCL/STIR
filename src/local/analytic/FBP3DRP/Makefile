@@ -24,7 +24,11 @@ include $(WORKSPACE)/Makefile_bblibs
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
-include $(SOURCES_FBP3DRP:%.cxx=${DEST}%.d)
+ifneq ($(ADVANCED_DEPENDENCIES),1)
+  include $(SOURCES_FBP3DRP:%.cxx=$(DEST)%.d)
+else
+  -include $(SOURCES_FBP3DRP:%.cxx=$(DEST)%.P)
+endif
 endif
 
 ${DEST}FBP3DRP : ${OBJS_FBP3DRP} $(BB_LIBS) 
