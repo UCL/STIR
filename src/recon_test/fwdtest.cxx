@@ -71,6 +71,7 @@ int
 main(int argc, char *argv[])
 {
 
+  // TODO a lot of cleaning up here
 /*  if(argc!=2) 
   {
     cerr<<"Usage: " << argv[0] << " [PSOV-file]\n"
@@ -99,14 +100,14 @@ main(int argc, char *argv[])
   string header_name = argv[1];
   header_name += "_copy.hs"; 
   string raw_data = argv[1];
-   raw_data+=" _copy.prj";
+   raw_data+=" _copy.s";
   ProjDataInfo* new_data_info= data_info->clone();
  
   
-  sino_stream = new fstream (raw_data.c_str(), ios::out|ios::binary);
+  fstream *sino_stream = new fstream (raw_data.c_str(), ios::out|ios::binary);
   if (!sino_stream->good())
   {
-    error("fwdtest: error opening file %s\n",raw_data);
+    error("fwdtest: error opening file %s\n",raw_data.c_str());
   }
 
   
@@ -118,10 +119,10 @@ main(int argc, char *argv[])
 
   // make num_bins odd (TODO remove)
   {
-    int num_bins = new_data.get_proj_data_info_ptr()->get_num_tangential_poss();
-    if (num_bins%2 == 0)
-      num_bins++;
-    new_data_info->set_num_tangential_poss(num_bins);
+    int num_tangential_poss = new_data.get_proj_data_info_ptr()->get_num_tangential_poss();
+    if (num_tangential_poss%2 == 0)
+      num_tangential_poss++;
+    new_data_info->set_num_tangential_poss(num_tangential_poss);
   }
 #endif
 
@@ -447,15 +448,15 @@ ask_parameters()
     }
 
   {
-    const int new_num_bins = 
-      proj_data_info_ptr->get_num_tangential_poss() / ask_num("Reduce num_bins by factor", 1,16,1);
+    const int new_num_tangential_poss = 
+      proj_data_info_ptr->get_num_tangential_poss() / ask_num("Reduce num_tangential_poss by factor", 1,16,1);
 
     // keep same radius of FOV
     proj_data_info_ptr->set_bin_size(
-      (proj_data_info_ptr->get_bin_size()*proj_data_info_ptr->get_num_tangential_poss()) / new_num_bins
+      (proj_data_info_ptr->get_bin_size()*proj_data_info_ptr->get_num_tangential_poss()) / new_num_tangential_poss
       );
 
-    proj_data_info_ptr->set_num_bins(new_num_bins); 
+    proj_data_info_ptr->set_num_tangential_poss(new_num_tangential_poss); 
 
     proj_data_info_ptr->set_num_views(
       proj_data_info_ptr->get_num_views()/ ask_num("Reduce num_views by factor", 1,16,1)
