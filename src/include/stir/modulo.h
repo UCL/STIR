@@ -28,7 +28,7 @@ START_NAMESPACE_STIR
 /*! \ingroup buildblock
     std::fmod(a,b) return a number of the same sign as \a a. This is often 
     inconvenient as the result of this is that the range of std::fmod(a,b) is
-    from \a -b to \a +b.
+    from \a -fabs(b) to \a +fabs(b).
 
     In contrast, modulo(a,b) always returns a nonnegative result. To be precise:
 
@@ -37,38 +37,93 @@ START_NAMESPACE_STIR
     less than the magnitude of \c b.
 
     Error handling (i.e. \a b=0) is as for std::fmod().
+
+    \warning When assigning the result to a float, the implied rounding might
+   give you float which is (a tiny bit) larger than fabs(b).
+
 */
 inline
 double
 modulo(const double a, const double b)
 {
-  double res = fmod(a,b);
-  return res<0 ? res + b : res;
+  const double res = fmod(a,b);
+  return res<0 ? res + fabs(b) : res;
+}
+
+//! modulo for floats
+/*!  \ingroup buildblock
+  \see modulo(double,double)
+  The reason for this function is that rounding from double to float
+  might make the result of the calcluation with doubles larger than b.
+
+  \warning Because of C++ promotion of floats to doubles, it is
+  very easy to call the module(double,double) version inadvertently.
+  So, you should probably not rely too much on the result being less than 
+  \a b.
+*/
+inline
+float
+modulo(const float a, const float b)
+{
+  float res = 
+    static_cast<float>(modulo(static_cast<double>(a),static_cast<double>(b)));
+  assert(res>=0);
+  const float abs_b = b>=0 ? b : -b;
+  if (res>=abs_b) res -= abs_b;
+  assert(res>=0);
+  return res;
+}
+
+//! Like the normal modulus operator (%) but with guaranteed nonnegative result
+/*! \ingroup buildblock
+
+   Result will be larger than or equal to 0, and (strictly) smaller than
+   \a abs(b).
+*/
+inline
+int
+modulo(const int a, const int b)
+{
+  const int res = a%b;
+  const int res2 = res<0 ? res + (b>=0 ? b : -b) : res;
+  assert(res2>=0);
+  assert(res2<(b>=0?b:-b));
+  return res2;
 }
 
 //! A function to convert an angle from one range to another
-/*! \ingroup bulidblock
+/*! \ingroup buildblock
     This is mainly useful for converting results from e.g. std::atan2 to 
     a range \f$\[0,2\pi)\f$.
 */
+template <typename FloatOrDouble>
 inline 
-double
-from_min_pi_plus_pi_to_0_2pi(const double phi)
+FloatOrDouble
+from_min_pi_plus_pi_to_0_2pi(const FloatOrDouble phi)
 {
-  assert(phi>= -2*_PI);
-  assert(phi< 2*_PI);
-  return 
-    phi<0? phi+2*_PI : phi;
+  static const FloatOrDouble two_pi =static_cast<FloatOrDouble>(2*_PI);
+  assert(phi>= -two_pi);
+  assert(phi< two_pi);
+  if (phi>=0)
+    return phi;
+  FloatOrDouble res = phi+two_pi;
+  // due to floating point finite precision, the following check is needed...
+  if (res>=two_pi)
+      res -= two_pi;
+  assert(res>=0);
+  assert(res<two_pi);
+  return res;
 }
 
 //! Convert angle to standard range
-/*! \ingroup bulidblock
+/*! \ingroup buildblock
     Identical to modulo(phi, 2*_PI) */
+template <typename FloatOrDouble>
 inline 
-double
-to_0_2pi(const double phi)
+FloatOrDouble
+to_0_2pi(const FloatOrDouble phi)
 {
-  return modulo(phi, 2*_PI);
+  return modulo(phi, static_cast<FloatOrDouble>(2*_PI));
 }
 
 END_NAMESPACE_STIR
