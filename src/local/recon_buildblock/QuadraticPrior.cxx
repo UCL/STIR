@@ -15,6 +15,7 @@
 #include "local/tomo/recon_buildblock/QuadraticPrior.h"
 #include "DiscretisedDensityOnCartesianGrid.h"
 #include "IndexRange3D.h"
+#include "interfile.h"
 
 START_NAMESPACE_TOMO
 
@@ -110,10 +111,11 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   DiscretisedDensityOnCartesianGrid<3,float>& prior_gradient_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_gradient);
 
-  const bool do_kappa = kappa_ptr.use_count() != 0;
   compute_weights(weights, current_image_cast.get_grid_spacing());
   
-  if (kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
+  const bool do_kappa = kappa_ptr.use_count() != 0;
+  
+  if (do_kappa && kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   for (int z=prior_gradient_cast.get_min_z();z<= prior_gradient_cast.get_max_z();z++)
@@ -157,13 +159,23 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 			  current *= 
 			    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
-			gradient += do_kappa;
+			gradient += current;
 		      }
 		
 		prior_gradient[z][y][x]= gradient * penalisation_factor;
 	      }              
 	  }
     }
+
+  std::cerr << "Prior gradient max " << prior_gradient.find_max()
+    << ", min " << prior_gradient.find_min() << std::endl;
+  {
+    static int count = 0;
+    ++count;
+    char filename[20];
+    sprintf(filename, "gradient%d.v",count);
+    write_basic_interfile(filename, prior_gradient);
+  }
 }
 
 
