@@ -17,7 +17,6 @@
   This has the effect that conflicts with any other library is
   impossible (except if that library uses the same namespace...).
 
-  In the future, we might use a hierarchy of namespaces, but we don't yet...
  */
 
 /*!
@@ -26,6 +25,19 @@ Library with things that are not not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
 */
+/*!
+\defgroup IO Input/Output Library
+Library with classes and functions to read and write images and projection 
+from/to file.
+*/
+
+/*! \namespace stir::ecat7
+  \brief Namespace for the ECAT7 IO part of the STIR library (and some/most of its applications)
+  */
+
+/*! \namespace stir::ecat6
+  \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
+  */
 /*!
 \defgroup recon_buildblock Reconstruction building blocks
 Library with 'general' reconstruction building blocks
