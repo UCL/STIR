@@ -3,22 +3,21 @@
 //
 /*!
   \file
-
+  \ingroup buildblock
   \brief implementations for functions declared in recon_array_functions.h
 
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
   
-  \date 00/06/15
+  \date $Date$
 
-  \version 1.8
+  \version $Revision$
 */
 
 //some miscellaneous operators for sinograms and images
 
 #include "recon_array_functions.h"
-//#include "TensorFunction.h" 
 #include "VoxelsOnCartesianGrid.h"
 #include "RelatedViewgrams.h"
 #include "Viewgram.h"
