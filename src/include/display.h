@@ -8,12 +8,12 @@
   \file
   \ingroup display
   
-  \brief   Functions to display 2D and 3D Array objects
+  \brief   Functions to display 2D and 3D Array and RelatedViewgrams objects
 
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  \date $Date$
 
   \version $Revision$
 
@@ -157,13 +157,16 @@ inline void display(const Array<2,elemT>& plane);
 #endif
 
 
-#if 0
-#include "sinodata.h"
-void display_8_views(const PETViewgram& v1, const PETViewgram& v2, 
-                     const PETViewgram& v3, const PETViewgram& v4,
-                     const PETViewgram& v5, const PETViewgram& v6, 
-                     const PETViewgram& v7, const PETViewgram& v8);
-#endif 
+
+template <typename elemT> class RelatedViewgrams;
+
+//! Convenience function to display all viewgrams in a RelatedViewgrams object
+template <class elemT>
+void display(const RelatedViewgrams<elemT>& v1,
+             double maxi = 0,
+	     const char * const title = 0,
+             int zoom = 0);
+
 
 
 END_NAMESPACE_TOMO
