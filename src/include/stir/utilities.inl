@@ -15,7 +15,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include <iostream>
@@ -48,16 +48,15 @@ ask_num (const string& str,
   
   while(1)
   { 
-    char input[30];
-
+    string input;
     cerr << "\n" << str 
          << "[" << minimum_value << "," << maximum_value 
 	 << " D:" << default_value << "]: ";
-    fgets(input,30,stdin);
+    std::getline(std::cin, input);
 #ifdef BOOST_NO_STRINGSTREAM
-    istrstream ss(input);
+    istrstream ss(input.c_str());
 #else
-    std::istringstream ss(input);
+    std::istringstream ss(input.c_str());
 #endif
     
     NUMBER value = default_value;
@@ -72,7 +71,7 @@ ask_num (const string& str,
 
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
-				  const char * const name)
+				  const string& name)
 {
 #if 0
   //KT 30/07/98 The next lines are only necessary (in VC 5.0) when importing 
@@ -80,24 +79,24 @@ inline IFSTREAM& open_read_binary(IFSTREAM& s,
 
   // Visual C++ does not complain when opening a nonexisting file for reading,
   // unless using ios::nocreate
-  s.open(name, ios::in | ios::binary | ios::nocreate); 
+  s.open(name.c_str(), ios::in | ios::binary | ios::nocreate); 
 #else
-  s.open(name, ios::in | ios::binary); 
+  s.open(name.c_str(), ios::in | ios::binary); 
 #endif
   // KT 14/01/2000 added name of file in error message
   if (s.fail() || s.bad())
-    { error("Error opening file %s\n", name);  }
+    { error("Error opening file %s\n", name.c_str());  }
   return s;
 }
 
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
-				  const char * const name)
+				  const string& name)
 {
-    s.open(name, ios::out | ios::binary); 
+    s.open(name.c_str(), ios::out | ios::binary); 
     // KT 14/01/2000 added name of file in error message
     if (s.fail() || s.bad())
-    { error("Error opening file %s\n", name); }
+    { error("Error opening file %s\n", name.c_str()); }
     return s;
 }
 
