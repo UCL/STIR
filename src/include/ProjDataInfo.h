@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,8 +11,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #ifndef __ProjDataInfo_H__
 #define __ProjDataInfo_H__
@@ -51,24 +51,26 @@ public:
 
   /********** static members **************/
 
-  //! Ask for the details and return ProjDataInfo
+  //! Ask for the details and return a ProjDataInfo pointer
   static ProjDataInfo* 
   ask_parameters();
 
   //! Construct a ProjDataInfo suitable for GE Advance data
   static ProjDataInfo*  
   ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
-		 int max_delta,
-		 int num_views, int num_tangential_poss);
+		 const int max_delta,
+		 const int num_views, const int num_tangential_poss, 
+                 const bool arc_corrected = true);
 
   //! Construct a ProjDataInfo suitable for CTI data
   /*! \c span is used to denote the amount of axial compression (see CTI doc).
      It has to be an odd number. 
      */
   static ProjDataInfo* 
-  ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
-		  int span, int max_delta,
-		  int num_views,int num_tangential_poss);
+    ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+		  const int span, const int max_delta,
+                  const int num_views, const int num_tangential_poss, 
+                  const bool arc_corrected = true);
   
   
   /************ constructors ***********/
@@ -179,28 +181,31 @@ public:
   */
   virtual float get_sampling_in_s(const Bin&) const;
 
-  bool operator ==(const ProjDataInfo& proj) const; 
+  //! check equality
+  virtual bool operator ==(const ProjDataInfo& proj) const; 
   
+  inline bool operator !=(const ProjDataInfo& proj) const; 
+
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
-    const bool make_num_tangential_poss_odd = true) const;
+    const bool make_num_tangential_poss_odd = false) const;
   
   //! Get empty_sinogram
   Sinogram<float> get_empty_sinogram(const int ax_pos_num, const int segment_num,
-    const bool make_num_tangential_poss_odd = true) const;
+    const bool make_num_tangential_poss_odd = false) const;
 
   //! Get empty segment sino
   SegmentByView<float> get_empty_segment_by_view(const int segment_num, 
-		  	   const bool make_num_tangential_poss_odd = true) const;
+		  	   const bool make_num_tangential_poss_odd = false) const;
   //! Get empty segment view
   SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num, 
-				   const bool make_num_tangential_poss_odd = true) const;
+				   const bool make_num_tangential_poss_odd = false) const;
 
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
-    const bool make_num_tangential_poss_odd = true) const;   
+    const bool make_num_tangential_poss_odd = false) const;   
 
   //! Get scanner pointer  
   inline const Scanner* get_scanner_ptr() const;
