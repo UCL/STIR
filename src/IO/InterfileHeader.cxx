@@ -62,6 +62,14 @@ InterfileHeader::InterfileHeader()
   type_of_data_values.push_back("PET");
   type_of_data_values.push_back("Other");
   
+  patient_orientation_values.push_back("head_in"); //default
+  patient_orientation_values.push_back("feet_in");
+  patient_orientation_values.push_back("other");
+
+  patient_rotation_values.push_back("supine"); //default
+  patient_rotation_values.push_back("prone");
+  patient_rotation_values.push_back("other");
+
   // default values
   // KT 07/10/2002 added 2 new ones
   number_format_index = 3; // unsigned integer
@@ -70,6 +78,8 @@ InterfileHeader::InterfileHeader()
   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
   type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
+  patient_orientation_index = 0; //head-in
+  int patient_rotation_index = 0; //supine
   num_dimensions = 0;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
@@ -96,7 +106,17 @@ InterfileHeader::InterfileHeader()
     KeyArgument::ASCIIlist,
     &type_of_data_index, 
     &type_of_data_values);
-  
+
+  add_key("patient orientation",
+	  KeyArgument::ASCIIlist,
+	  &patient_orientation_index,
+	  &patient_orientation_values);
+  add_key("patient rotation_index",
+	  KeyArgument::ASCIIlist,
+	  &patient_rotation_index,
+	  &patient_rotation_values);
+
+
   add_key("imagedata byte order", 
     KeyArgument::ASCIIlist,
     &byte_order_index, 
@@ -159,7 +179,12 @@ InterfileHeader::InterfileHeader()
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
 {
-  // KT 07/10/2002 new
+  if (patient_orientation_index<0 || patient_rotation_index<0)
+    return true;
+  // warning: relies on index taking same values as enums in PatientPosition
+  patient_position.set_rotation(static_cast<PatientPosition::RotationValues>(patient_rotation_index));
+  patient_position.set_orientation(static_cast<PatientPosition::OrientationValues>(patient_orientation_index));
+
   if (number_format_index<0 || 
       static_cast<ASCIIlist_type::size_type>(number_format_index)>=number_format_values.size())
   {
@@ -898,6 +923,6 @@ bool InterfilePDFSHeader::post_processing()
   //cerr << data_info_ptr->parameter_info() << endl;
   
   return false;
-}
+};
 
 END_NAMESPACE_STIR
