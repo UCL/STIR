@@ -91,5 +91,14 @@ Bin::operator+=(const float dx)
   return *this;}
 
 
+bool  
+Bin::operator==(const Bin& bin2) const
+{ 
+  return 
+    segment == bin2.segment && view == bin2.view && 
+    axial_pos == bin2.axial_pos && tangential_pos == bin2.tangential_pos &&
+    bin_value == bin2.bin_value;
+}
+
 
 END_NAMESPACE_TOMO

@@ -66,7 +66,7 @@ public:
   //! accumulate voxel's contribution during forward projection 
   inline Bin&  operator+=(const float dx);
   
-  
+  inline bool operator==(const Bin&) const;
   
 private :
   // shared_ptr<ProjDataInfo> proj_data_info_ptr; 
