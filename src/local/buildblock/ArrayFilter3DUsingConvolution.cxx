@@ -140,25 +140,27 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
   const int i_max = filter_coefficients[k_min][j_min].get_max_index();
   
   
-  if (k_min != k_max)
+  if (true)//k_min != k_max)
   {  
     
-    
-    for (int z=out_min_z; z<=out_max_z; z++) 
+   for (int z=out_min_z; z<=out_max_z; z++) 
       for (int y=out_min_y; y<=out_max_y; y++) 
 	for (int x=out_min_x; x<=out_max_x; x++) 
 	{
 	  out_array[z][y][x] = 0;
-	  
-	  for (int k=max(k_min, z-in_max_z); k<=min(k_max, z-in_min_z); k++) 
-	    for (int j=max(j_min, y-in_max_y); j<=min(j_max, y-in_min_y); j++)  
-	      for (int i=max(i_min, x-in_max_x); i<=min(k_max, x-in_min_x); i++) 
+ 	  
+   for (int k=max(k_min, z-in_max_z); k<=min(k_max, z-in_min_z); k++) 
+     for (int j=max(j_min, y-in_max_y); j<=min(j_max, y-in_min_y); j++)  
+       for (int i=max(i_min, x-in_max_x); i<=min(i_max, x-in_min_x); i++) 
 		
 		out_array[z][y][x] += filter_coefficients[k][j][i]*in_array[z-k][y-j][x-i];   
-	}
+    }
+    
   }
   else
   {
+    if (out_min_y!= out_max_y || out_min_x!=out_max_x)
+      error("3D convolution. check code\n");
     Array<2,float> array_out_tmp (IndexRange2D(out_min_y,out_max_y,out_min_x,out_max_x));
     do_it_2d(array_out_tmp, in_array[out_min_z]);
     out_array[out_min_z][out_min_y][out_min_x] =  array_out_tmp[out_min_y][out_min_x];
