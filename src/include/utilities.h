@@ -1,45 +1,59 @@
+//
 // $Id$: $Date$
-
+//
 #ifndef __UTILITIES_H__
 #define  __UTILITIES_H__
+/*!
+  \file 
+ 
+  \brief This file declares various utility functions.
 
+  \author Kris Thielemans
+  \author PARAPET project
 
-#include "pet_common.h"
+  \date    $Date$
+
+  \version $Revision$
+*/
 #include "sinodata.h"
 #include "imagedata.h"
 
-// KT 19/03/99 moved implementations to .inl
+START_NAMESPACE_TOMO
 
-// ask_image_details asks for filename etc, and returns an image
+//! ask_image_details asks for filename etc, and returns an image
 PETImageOfVolume ask_image_details();
 
 
-// ask_PSOV_details asks for filename etc. and returns a PSOV to play with.
+//! ask_PSOV_details asks for filename etc. and returns a PSOV to play with.
 PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
 				     const bool on_disk = true);
 
 
-// read_stream_in_memory
-// reads data into memory, returning a pointer to the memory
-// If the file_size parameter is zero, the stream is read till EOF
-// and 'file_size' is set to the number of bytes in the file. 
-// Otherwise 'file_size' bytes are read.
-// The data is read from the current position in the stream.
-// At the end of this function, the 'input' stream will be positioned 
-// at original_position + file_size.
+/*!
+  \brief reads data into memory, returning a pointer to the memory
+
+ If the file_size parameter is zero, the stream is read till EOF
+ and 'file_size' is set to the number of bytes in the file. 
+ Otherwise 'file_size' bytes are read.
+ The data is read from the current position in the stream.
+ At the end of this function, the 'input' stream will be positioned 
+ at original_position + file_size.
+ */
 void * read_stream_in_memory(istream& input, unsigned long& file_size);
 
-// Find number of remaining characters in the stream
-// (works only properly for binary streams)
-// At the end of this function, the 'input' stream will be positioned 
-// at the original_position
+/*! \brief Find number of remaining characters in the stream
+
+ At the end of this function, the 'input' stream will be positioned 
+ at the original_position.
+ \warning Works only properly for binary streams.
+ */
 streamsize find_remaining_size (istream& input);
 
 /*****************************************************
  ask*() functions for user input
 *****************************************************/
 
-// A function to ask a number from the user 
+//! A function to ask a number from the user 
 template <class CHARP, class NUMBER>
 inline NUMBER 
 ask_num (CHARP str,
@@ -47,8 +61,9 @@ ask_num (CHARP str,
 	 NUMBER maximum_value, 
 	 NUMBER default_value);
 
-// A function to ask a yes/no question from the user
-// default_value==true means the default is Yes.
+//! A function to ask a yes/no question from the user
+/*! \param default_value ==true means the default answer is Yes.
+ */
 template <class CHARP>
 inline bool 
 ask (CHARP str, bool default_value);
@@ -59,10 +74,12 @@ ask (CHARP str, bool default_value);
 
 #include <fstream>
 
-
+//! opens a stream for reading. Calls error() when it does not succeed.
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
 				  const char * const name);
+
+//! opens a stream for writing. Calls error() when it does not succeed.
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
 				  const char * const name);
@@ -73,90 +90,116 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
  Some functions to manipulate (and ask for) filenames.
 ***************************************************************************/
 
-// some large value to says how long filenames can be in the 
-// functions below
+//! some large value to say how long filenames can be in the functions below
 const int max_filename_length = 1000;
 
-// return a pointer to the start of the filename 
-// (i.e. after directory specifications)
+//! return a pointer to the start of the filename (i.e. after directory specifications)
 extern const char * const 
 find_filename(const char * const filename_with_directory);
 
-// KT 14/01/2000 new
-// Copies the directory part from 'filename_with_directory'
-// into 'directory_name' and returns the 'directory_name' pointer.
-// WARNING: assumes that directory_name points to enough allocated space
+
+/*! \brief
+ Copies the directory part from 'filename_with_directory'
+ into 'directory_name' and returns the 'directory_name' pointer.
+
+\warning assumes that directory_name points to enough allocated space
+*/
 char *
 get_directory_name(char *directory_name, 
 		   const char * const filename_with_directory);
 
-// KT 19/03/99 new
-// Checks if the filename points to an absolute location, or is
-// a relative (e.g. to current directory) pathname.
+/*! \brief
+ Checks if the filename points to an absolute location, or is
+ a relative (e.g. to current directory) pathname.
+ */
 extern bool
 is_absolute_pathname(const char * const filename_with_directory);
 
-// KT 19/03/99 new
-// Prepend directory_name to the filename, but only
-// if !is_absolute_pathname(filename_with_directory)
-// If necessary, a directory separator is inserted.
-// Return a pointer to the start of the new filename
-// Warning: this function assumes that filename_with_directory 
-// points to sufficient allocated space to contain the new string
-// KT 14/01/2000 new functionality
-// If 'directory_name' == 0, nothing happens
+
+/*! \brief
+ Prepend directory_name to the filename, but only
+ if !is_absolute_pathname(filename_with_directory)
+
+ If necessary, a directory separator is inserted.
+ If 'directory_name' == 0, nothing happens.
+ \return a pointer to the start of the new filename
+ \warning this function assumes that filename_with_directory 
+ points to sufficient allocated space to contain the new string.
+ */
 extern char *
 prepend_directory_name(char * filename_with_directory, 
 		       const char * const directory_name);
 
 
-// Append 'extension' to 'filename_with_directory'
-// if no '.' is found in 'filename_with_directory'
-// (excluding the directory part)
-// Returns the 'filename_with_directory' pointer.
-// Example (on Unix):
-//     char filename[max_filename_length] = "dir.name/filename";
-//     add_extension(filename, ".img");
-//   results in 'filename' pointing to "dir.name/filename.img"
+/*! \brief
+ Append 'extension' to 'filename_with_directory'
+ if no '.' is found in 'filename_with_directory'
+ (excluding the directory part)
+ Returns the 'filename_with_directory' pointer.
+
+ Example (on Unix):
+ \code
+     char filename[max_filename_length] = "dir.name/filename";
+     add_extension(filename, ".img");
+ \endcode
+   results in 'filename' pointing to "dir.name/filename.img"
+
+ On Windows systems, both forward and backslash can be used.
+ */
 extern char *
 add_extension(char * file_in_directory_name, 
 	      const char * const extension);
 
 
-// SM&KT 18/01/2000 new
-// Replace extension in 'filename_with_directory' with 'extension' 
-// if no extension is found in 'filename_with_directory',
-// 'extension' is appended.
-// Returns the 'filename_with_directory' pointer.
-// Example (on Unix):
-//     char filename[max_filename_length] = "dir.name/filename.v";
-//     replace_extension(filename, ".img");
-//   results in 'filename' pointing to "dir.name/filename.img"
+/*! \brief
+  Replace extension in 'filename_with_directory' with 'extension'.
+
+  if no extension is found in 'filename_with_directory',
+ 'extension' is appended.
+ \return  the 'filename_with_directory' pointer.
+
+ Example (on Unix):
+ \code
+     char filename[max_filename_length] = "dir.name/filename.v";
+     replace_extension(filename, ".img");
+ \endcode
+  results in 'filename' pointing to "dir.name/filename.img"
+  */
 extern char *
 replace_extension(char *file_in_directory_name, 
  	          const char * const extension);
 		   
 
-// Asks for a filename (appending an extension if none is provided)
-// and stores where file_in_directory_name points to.
-// Example:
-//     char filename[max_filename_length];
-//     ask_filename_with_extension(filename, "Input file name ?", ".img");
-// Note: 'file_in_directory_name' has to be preallocated 
-//       (with size max_filename_length)
-// Restriction: the filename cannot contain spaces
+/*! \brief
+ Asks for a filename (appending an extension if none is provided)
+ and stores the string where file_in_directory_name points to.
+
+ Example:
+ \code
+     char filename[max_filename_length];
+     ask_filename_with_extension(filename, "Input file name ?", ".img");
+ \endcode
+ \warning 'file_in_directory_name' has to be preallocated 
+       (with size max_filename_length)
+ \bug the filename cannot contain spaces
+ */
 extern char *
 ask_filename_with_extension(char *file_in_directory_name, 
   		            const char * const prompt,
 			    const char * const default_extension);
 
-// Asks for a filename (with default extension) and opens the stream 's'
-// with 'mode' giving the specifics. 
-// Example: open a binary input file, aborting if it is not found
-//    ifstream in;
-//    ask_filename_and_open(s, "Input file ?", ".hv", ios::in | ios::binary);
-// Note: this function is templated to allow 's to be of different
-//       types ifstream, ofstream, fstream
+/*! \brief
+ Asks for a filename (with default extension) and opens the stream 's'
+ with 'mode' giving the specifics. 
+
+ Example: open a binary input file, aborting if it is not found
+ \code
+    ifstream in;
+    ask_filename_and_open(s, "Input file ?", ".hv", ios::in | ios::binary);
+ \endcode
+ Note: this function is templated to allow 's to be of different
+       types ifstream, ofstream, fstream
+*/
 // Implementation note: gcc 2.8.1 seems to have problems with default
 // values when templates are around, so I overload the function
 template <class FSTREAM>
@@ -167,6 +210,7 @@ ask_filename_and_open(FSTREAM& s,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 
+//! as above, but with default \c abort_if_failed = \true
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,
@@ -177,6 +221,19 @@ ask_filename_and_open(FSTREAM& s,
   ask_filename_and_open(s, prompt, default_extension, mode, true);
 }
 
+
+/**********************************************************************
+ C-string manipulation function
+***********************************************************************/
+#ifndef _MSC_VER
+
+//! make C-string uppercase
+inline char *strupr(char * const str);
+#else
+#define strupr _strupr
+#endif
+
+END_NAMESPACE_TOMO
 
 #include "utilities.inl"
 
