@@ -282,16 +282,16 @@ int cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
     err = fseek (fptr, (long) (blkno - 1) * MatBLKSIZE, 0);
     if (err) 
     {
-      // KT 18/08/2000 more error diagnostics    
-      perror("cti_rblk: error in fseek");
+      // KT 11/03/2004 disabled diagnostics as sometimes we don't want to see it.
+      // perror("cti_rblk: error in fseek");
       return (EXIT_FAILURE);
     }
    
     n = fread (bufr, sizeof (char), nblks * MatBLKSIZE, fptr);
     if (n != nblks * MatBLKSIZE) 
     {
-      // KT 18/08/2000 more error diagnostics
-      perror("cti_rblk: error in fread");
+      // KT 11/03/2004 disabled diagnostics as sometimes we don't want to see it.
+      // perror("cti_rblk: error in fread");
       return (EXIT_FAILURE);
     }
 
@@ -334,7 +334,11 @@ int cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
         // read main header at block 1 into buf
     status = cti_rblk (fptr, 1,  bb, 1);
 
-    if (status != EXIT_SUCCESS) return EXIT_FAILURE;
+    if (status != EXIT_SUCCESS) 
+      {
+	free (bb);
+	return EXIT_FAILURE;
+      }
 
         // copy all the strings
     strncpy (h->original_file_name, bb + 28, 20);
