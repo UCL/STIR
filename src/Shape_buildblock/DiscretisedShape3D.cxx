@@ -17,13 +17,14 @@
 */
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/round.h"
-
+#include "stir/is_null_ptr.h"
 START_NAMESPACE_STIR
 
 void
 DiscretisedShape3D::
 translate(const CartesianCoordinate3D<float>& direction)
 { 
+  assert(origin == density_ptr->get_origin());
   origin += direction; 
   density_ptr->set_origin(origin);
 }
@@ -33,12 +34,14 @@ translate(const CartesianCoordinate3D<float>& direction)
 float 
 DiscretisedShape3D::
 get_voxel_weight(
-                 const CartesianCoordinate3D<float>& coord,
+                 const CartesianCoordinate3D<float>& voxel_centre,
                  const CartesianCoordinate3D<float>& voxel_size, 
                  const CartesianCoordinate3D<int>& num_samples) const
 {
+  assert(origin == density_ptr->get_origin());
+
   assert(voxel_size == image().get_voxel_size());
-  CartesianCoordinate3D<float> r = (coord - origin)/image().get_voxel_size();
+  const CartesianCoordinate3D<float> r = (voxel_centre - origin)/image().get_voxel_size();
   const int x = round(r.x());
   const int y = round(r.y());
   const int z = round(r.z());
@@ -58,6 +61,7 @@ bool
 DiscretisedShape3D::
 is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 {
+  assert(origin == density_ptr->get_origin());
   return 
     get_voxel_weight(coord, 
                      image().get_voxel_size(), 
@@ -82,6 +86,8 @@ Shape3D*
 DiscretisedShape3D::
 clone() const
 {
+  assert(origin == density_ptr->get_origin());
+
   return new DiscretisedShape3D(*this);
 }
 
@@ -138,7 +144,15 @@ post_processing()
     return true;
 
   density_ptr = DiscretisedDensity<3,float>::read_from_file(filename);
-  return density_ptr == 0;
+  if (!is_null_ptr(density_ptr))
+    {
+      if (origin != density_ptr->get_origin())
+	{
+	  warning("DiscretisedShape3D: Shape3D::origin and image origin are inconsistent. Don't know which to use\n");
+	  return true;
+	}
+    }
+  return is_null_ptr(density_ptr);
 }
 
 const char * const 
