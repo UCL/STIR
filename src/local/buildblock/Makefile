@@ -32,6 +32,7 @@ SOURCES = \
 	NonseparableSpatiallyVaryingFilters3D.cxx \
 	local_helping_functions.cxx \
 	multiply_plane_scale_factorsImageProcessor.cxx \
+	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx
 
 
