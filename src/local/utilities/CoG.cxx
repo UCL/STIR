@@ -1,6 +1,11 @@
 //
 // $Id$
 //
+  /***************** Miscellaneous Functions  *******/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 #include "stir/DiscretisedDensity.h"
@@ -12,7 +17,7 @@
 #include <iomanip>
 #include <numeric>
 #include <fstream>
-
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
@@ -20,6 +25,7 @@ using std::cout;
 using std::setw;
 using std::cerr;
 using std::endl;
+using std::min;
 #endif
 
 USING_NAMESPACE_STIR
@@ -56,23 +62,26 @@ main(int argc, char *argv[])
 #else
   VectorWithOffset< CartesianCoordinate3D<float> > 
     allCoG(image_ptr->get_min_index(), image_ptr->get_max_index());
+  VectorWithOffset<float> 
+    weights(image_ptr->get_min_index(), image_ptr->get_max_index());
+
 
   for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
   {
     allCoG[z] = find_centre_of_gravity((*image_ptr)[z]);
     allCoG[z].z() = z;
     allCoG[z] *= voxel_size;
+    weights[z] = min((*image_ptr)[z].sum(), 0);
   }
   {
     ofstream xout("CoG.x");
-    xout << "x\n";
     xout << image_ptr->get_length() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       xout << allCoG[z].z() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       xout << allCoG[z].x() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-    xout << 1 << "\n";
+    xout << weights[z] << "\n";
   }
 
   {
@@ -84,7 +93,7 @@ main(int argc, char *argv[])
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       yout << allCoG[z].y() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-      yout << 1 << "\n";
+      yout << weights[z] << "\n";
   }
   
 
@@ -95,11 +104,6 @@ main(int argc, char *argv[])
 }
 
 
-  /***************** Miscellaneous Functions  *******/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 template <class T>
 T
