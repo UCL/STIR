@@ -1,7 +1,10 @@
 # 
-# $Id$: 
+# $Id$
 #
-include Makefile_common
+
+WORKSPACE=$(CURDIR)
+
+include $(WORKSPACE)/Makefile_common
 
 
 

@@ -1,8 +1,9 @@
 #
 # $Id$
 #
+WORKSPACE=$(CURDIR)/../..
 
-include ../../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 SOURCES = sensitivity.cxx
 
@@ -17,7 +18,7 @@ clean:
 install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
 
-include ../../Makefile_bblibs
+include $(WORKSPACE)/Makefile_bblibs
 
 
 ${DEST}sensitivity: ${DEST}sensitivity.o \

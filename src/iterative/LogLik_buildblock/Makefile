@@ -1,7 +1,8 @@
 #
-# @(#)Makefile	1.1 6/15/00
+# $Id$
 #
 
+WORKSPACE=$(CURDIR)/../..
 
 include $(WORKSPACE)/Makefile_common
 

@@ -1,8 +1,9 @@
 #
 # $Id$
 #
+WORKSPACE=$(CURDIR)/..
 
-include ../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 
 all: ${DEST}libdisplay.a 

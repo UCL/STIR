@@ -1,8 +1,9 @@
 #
 # $Id$: $Date$
 # 
+WORKSPACE=$(CURDIR)/..
 
-include ../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 # TODO ? differentiate between those that need graphics and those that don't
 SOURCES = test_Array.cxx \
@@ -36,7 +37,7 @@ install:
 clean:
 	$(RM) $(DEST)*
 
-include ../Makefile_bblibs
+include $(WORKSPACE)/Makefile_bblibs
 
 get_test_files: input/test_linear_regression.in
 
@@ -61,8 +62,9 @@ run_interactive_tests: all
 .PRECIOUS:  $(OBJS) $(EXES)
 
 # Disable default rule
-# as executables here do not depend on recon_buildblock
-${DEST}%: ${DEST}%.o $(BB_LIBS)
+# as executables here do not depend on recon_buildblock or the registries
+${DEST}%: ${DEST}%.o $(BB_LIBS) $(BB_REGISTRIES)
+
 
 ${DEST}%: ${DEST}%.o ${LIB_BUILDINGBLOCK} ${LIB_DISPLAY}
 	$(CXX) $(CFLAGS)  -o $@ $<  \
