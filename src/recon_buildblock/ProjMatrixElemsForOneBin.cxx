@@ -100,9 +100,11 @@ Succeeded ProjMatrixElemsForOneBin::check_state() const
 
 void ProjMatrixElemsForOneBin::sort()
 {
-#ifndef TOMO_NO_NAMESPACES
+  // need explicit std:: here to resolve possible name conflict
+  // this might give you trouble if your compiler does not support namespaces
+#if !defined(TOMO_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
   std::
-#endif
+#endif                                           
   sort(begin(), end(), value_type::coordinates_less);
 }
 
