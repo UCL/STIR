@@ -5,6 +5,7 @@
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
+START_NAMESPACE_STIR // for doxygen
 /*!
   \file
   \ingroup motion_utilities
@@ -18,11 +19,16 @@
 		    const ProjData& in_proj_data,
 		    const RigidObject3DTransformation& rigid_object_transformation)
 
+  \par Usage
+  Run to get a usage message
+
   \author Kris Thielemans
 
   $Date$
   $Revision$
 */
+END_NAMESPACE_STIR
+
 #include "stir/ProjDataInterfile.h"
 #include "stir/Succeeded.h"
 #include "stir/CartesianCoordinate3D.h"

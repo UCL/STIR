@@ -1,37 +1,32 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Internal GE use only
+*/
 /*!
   \file
-  \ingroup listmode
-  \brief Utility to move a projection data set in several steps according to average motion in the frame.
+  \ingroup motion_utilities
+  \brief Utility to move projection data according to average motion in the frame.
 
   \author Kris Thielemans
   $Date$
   $Revision$
   
-  \par Example par file
-  \verbatim
-  MoveProjData Parameters:=
-  input file:= input_filename
-  time frame_definition filename := frame_definition_filename
-  output filename prefix := output_filename_prefix
-  ;; next defaults to input file
-  ;output template filename:=
-
-  ;max_out_segment_num_to_process:=-1
-  ;max_out_segment_num_to_process:=-1
-  ;move_to_reference := 1
-  ; next can be set to do only 1 frame, defaults means all frames
-  ;frame_num_to_process := -1
-  Rigid Object 3D Motion Type := type
-  
-  END :=
+  \par Usage
+\verbatim
+  move_projdata \\
+     [--move-to-reference 0|1] \\
+     [--frame_num_to_process number]\\
+     [par_file]
 \endverbatim
-}
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+  See class documentation for stir::MoveProjData for more info, including the format
+  of the par_file. 
 
+  Command line switches override any values in the par_file.
+
+*/
 #include "stir/ProjDataInterfile.h"
 //#include "stir/IO/DefaultOutputFileFormat.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
@@ -44,7 +39,40 @@
 
 START_NAMESPACE_STIR
 
+/*! \ingroup motion
+  \brief A class for moving projection data according to average motion in the frame.
 
+  Output is currently always in interfile format
+
+  \see transform_3d_object(ProjData& out_proj_data,
+		    const ProjData& in_proj_data,
+		    const RigidObject3DTransformation& rigid_object_transformation)
+  
+  \par Example par file
+  \verbatim
+  MoveProjData Parameters:=
+  input file:= input_filename
+  ; output name
+  ; filenames will be constructed by appending _f#g1d0b0 (and the extension)
+  ; where # is the frame number
+  output filename prefix:= output
+  ;; next defaults to input file
+  ;output template filename:=
+  ; alternative way to reduce number of segments (defaults to: use all)
+  ;max_out_segment_num_to_process:=-1
+
+  ; see TimeFrameDefinitions
+  time frame_definition filename := frame_definition_filename
+
+  ; next defines
+  ;move_to_reference := 1
+  ; next can be set to do only 1 frame, defaults means all frames
+  ;frame_num_to_process := -1
+  Rigid Object 3D Motion Type := type
+
+  END :=
+\endverbatim
+*/  
 class MoveProjData : public ParsingObject
 {
 public:

@@ -43,7 +43,10 @@ START_NAMESPACE_STIR
 /*! \ingroup motion
   \brief A class for moving an image according to average motion in the frame.
 
-  
+  \see transform_3d_object(DiscretisedDensity<3,float>& out_density, 
+		    const DiscretisedDensity<3,float>& in_density, 
+		    const RigidObject3DTransformation& rigid_object_transformation)
+
   \par Example par file
   \verbatim
   MoveImage Parameters:=

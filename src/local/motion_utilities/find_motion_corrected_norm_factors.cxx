@@ -1,16 +1,24 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is for internal GE use only
+*/
 /*!
   \file
-  \ingroup listmode
-  \brief Utility to compute norm factors for motion corrected data
+  \ingroup motion_utilities
+  \brief Utility to compute norm factors for motion corrected projection data
 
+  See class documentation for stir::FindMCNormFactors for more info.
+
+  \par Usage
+\verbatim
+  find_motion_corrected_norm_factors parameter_file
+\endverbatim
   \author Kris Thielemans
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-
-    This file is for internal GE use only
 */
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -25,7 +33,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
 
-
+// TODO currently necessary, but needs to be replaced by ProjDataInMemory
 #define USE_SegmentByView
 
 #ifdef USE_SegmentByView
@@ -51,8 +59,8 @@ START_NAMESPACE_STIR
 typedef SegmentByView<elem_type> segment_type;
 #endif
 /******************** Prototypes  for local routines ************************/
-
-
+// used for allocating segments.
+// TODO replace by ProjDataInMemory
 
 static void 
 allocate_segments(VectorWithOffset<segment_type *>& segments,
@@ -77,8 +85,69 @@ construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
                     const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
 
+/*! \ingroup motion
+  \brief Class to compute 'time-efficiency' factors for motino corrected projection data
+
+  When list mode data is binned into 3d sinograms using motion correction, (or
+  when a 3d sinograms is motion corrected), the resulting sinogram is not 
+  'consistent' due to some LORs not being measured during the whole frame.
+  This is discussed in some detail in<br>
+  K. Thielemans, S. Mustafovic, L. Schnorr, 
+  <i>Image Reconstruction of Motion Corrected Sinograms</i>, 
+  poster at IEEE Medical Imaging Conf. 2003,
+  available at http://www.hammersmithimanet.com/~kris/papers/.
+
+  This class computes these 'time-efficiency' factors.
+
+  \par Format of parameter file
+  \verbatim
+FindMCNormFactors Parameters :=
+; output name
+; filenames will be constructed by appending _f#g1d0b0.hs and .s
+; where # is the frame number
+output filename prefix:= output
+
+; file to get frame definitions (see doc for TimeFrameDefinitions)
+time frame_definition file:=some_ECAT7.S
+; file that will be used to get dimensions/scanner etc
+; can usually be the same ECAT7 file as above
+template_projdata:= projdata
+; frame to do in this run (if -1 all frames will be done)
+time frame number := 1
+
+; next allows you to do only a few segments (defaults to all in template)
+;maximum absolute segment number to process:=0
+
+; object specifying motion data
+; example given for Polaris
+; warning: the Polaris parameters might change
+; (see doc for RigidObject3DMotionFromPolaris for up-to-date info)
+Rigid Object 3D Motion Type:=Motion From Polaris
+Rigid Object 3D Motion From Polaris Parameters:=
+mt filename:=H02745.mt
+list_mode_filename:= H02745_lm1
+attenuation_filename:=H02745_tr.a
+transmission_duration:=300
+transformation_from_scanner_coordinates_filename:=966/transformation_from_scanner_to_polaris
+End Rigid Object 3D Motion From Polaris:=
+
+; experimental support for method where the usual detection efficiencies
+; are taken into account here, and not during the list mode binning
+; default is not to use this
+do pre normalisation := 0
+Bin Normalisation type := supported_normalisation_type
 
 
+; specify number of intervals that will be taken in this frame
+
+; default duration in secs
+default time interval:=5
+minimum number of time intervals per frame:= 1
+maximum number of time intervals per frame:=1
+
+END:=
+  \endverbatim
+*/
 class FindMCNormFactors : public ParsingObject
 {
 public:
