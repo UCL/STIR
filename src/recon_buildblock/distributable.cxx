@@ -122,7 +122,7 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
        const ViewSegmentNumbers view_segment_num(view, segment_num);
         y = new RelatedViewgrams<float>
 	  (proj_dat_ptr->get_related_viewgrams
-	  (view_segment_num.view_num(),view_segment_num.segment_num(), symmetries_ptr));
+	  (view_segment_num, symmetries_ptr));
 #else
         // workaround VC++ 6.0 bug
         const ViewSegmentNumbers view_segment_num(view, segment_num);
