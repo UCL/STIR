@@ -75,7 +75,7 @@ void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensi
       error("sensitivity image and target_image should be the same type of DiscretisedDensity. Sorry.\n");
 #if 0
     // disabled for now, as the origin info is not saved in the header
-    if (sensitivity_image_ptr->get_origin() != target_image_ptr->get_origin())
+    if (norm(sensitivity_image_ptr->get_origin() - target_image_ptr->get_origin()) < 1.E-4)
       error("Currently, sensitivity and target_image should have the same origin. Sorry.\n");
 #endif
     if (sensitivity_image_ptr->get_index_range() != target_image_ptr->get_index_range())
@@ -88,8 +88,17 @@ void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensi
 	// we can now check on grid_spacing
 	DiscretisedDensityOnCartesianGrid<3,float> const *image_ptr =
 	  dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const *>(target_image_ptr.get());
-	  if (sens_ptr->get_grid_spacing() != image_ptr->get_grid_spacing())
-	    error("Currently, sensitivity and target_image should have the same grid spacing. Sorry.\n");
+	// KT 14/01/2002 take floating point rounding into account
+	if (norm(sens_ptr->get_grid_spacing() - image_ptr->get_grid_spacing()) > 1.E-4F*norm(image_ptr->get_grid_spacing()))
+	    error("Currently, sensitivity and target_image should have the same grid spacing.\n"
+		  "Currently they are (%g,%g,%g) and (%g,%g,%g) resp.\n"
+		  "Sorry.\n",
+		  sens_ptr->get_grid_spacing()[1],
+		  sens_ptr->get_grid_spacing()[2],
+		  sens_ptr->get_grid_spacing()[3],
+		  image_ptr->get_grid_spacing()[1],
+		  image_ptr->get_grid_spacing()[2],
+		  image_ptr->get_grid_spacing()[3]);
       }
     }
     // TODO ensure compatible info for any type of DiscretisedDensity
