@@ -42,12 +42,6 @@ START_NAMESPACE_STIR
 
 
 //************** 3D
-void make_fan_sum_data(Array<2,float>& data_fan_sums, const FanProjData& fan_data)
-{
-  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
-    for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
-      data_fan_sums[ra][a] = fan_data.sum(ra,a);
-}
 
 void make_block_data(BlockData3D& block_data, const FanProjData& fan_data)
 {
