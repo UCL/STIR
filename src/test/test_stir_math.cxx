@@ -139,13 +139,13 @@ stir_mathTests::run_tests()
       check_if_equal( calc_data, *out_data_ptr,"test on multiplying");    
     }
     // add with power etc
-    if (run_stir_math("--power 2 --times-scalar 3.2 STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
+    if (run_stir_math("--add-scalar 3.1 --power 2 --times-scalar 3.2 STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
     {
       out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
       calc_data.fill(0);
-      calc_data += data1 + (data2*data2 + data3*data3)*3.2F;
+      calc_data += data1 + (data2*data2)*3.2F + 3.1F + (data3*data3)*3.2F + 3.1F;
       
-      check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication");    
+      check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication and addition");    
     }
     // add with power etc and including-first
     if (run_stir_math("--power 2 --times-scalar 3.2 --including-first STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
@@ -156,13 +156,13 @@ stir_mathTests::run_tests()
       check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication with --including-first");    
     }
     // add with power etc and accumulate 
-    if (run_stir_math("--accumulate --power 2 --times-scalar 3.2  --mult STIRtmp1.hv STIRtmp3.hv"))
+    if (run_stir_math("--accumulate --power 2 --times-scalar 3.2  --add-scalar 3.1 --divide-scalar 2.1 --mult STIRtmp1.hv STIRtmp3.hv"))
     {
       calc_data.fill(0);
       calc_data += data1;
-      calc_data += (data3*data3)*3.2F;      
+      calc_data += (data3*data3)*3.2F/2.1F + 3.1F;      
       out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmp1.hv");
-      check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication with --accumulate");    
+      check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication, division and addition with --accumulate");    
     }
     // add with power etc and accumulate and including-first
     if (run_stir_math("--accumulate --power 2 --times-scalar 3.2 --including-first STIRtmp2.hv STIRtmp3.hv"))
@@ -235,7 +235,8 @@ stir_mathTests::run_tests()
       calc_data = data1;
       calc_data += data2 + data3;
       
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),"test on adding");    
+      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+		      "test on adding");    
     }
     // mult
     if (run_stir_math("-s --mult STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs"))
@@ -244,7 +245,8 @@ stir_mathTests::run_tests()
       calc_data = data1;
       calc_data *= data2 * data3;
       
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),"test on multiplying");    
+      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+		      "test on multiplying");    
     }
     // add with power etc
     if (run_stir_math("-s --power 2 --times-scalar 3.2 STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs"))
@@ -253,7 +255,8 @@ stir_mathTests::run_tests()
       calc_data.fill(0);
       calc_data += data1 + (data2*data2 + data3*data3)*3.2F;
       
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),"test with power and scalar multiplication");    
+      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+		      "test with power and scalar multiplication");    
     }
     // add with power etc and including-first
     if (run_stir_math("-s --power 2 --times-scalar 3.2 --including-first STIRtmpout.hs STIRtmp1.hs STIRtmp2.hs STIRtmp3.hs"))
@@ -261,16 +264,18 @@ stir_mathTests::run_tests()
       out_data_ptr = ProjData::read_from_file("STIRtmpout.hs");
       calc_data.fill(0);
       calc_data += (data1*data1 + data2*data2 + data3*data3)*3.2F;      
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),"test with power and scalar multiplication with --including-first");    
+      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+		      "test with power and scalar multiplication with --including-first");    
     }
     // add with power etc and accumulate 
-    if (run_stir_math("-s --accumulate --power 2 --times-scalar 3.2  --mult STIRtmp1.hs STIRtmp3.hs"))
+    if (run_stir_math("-s --accumulate --power 2 --times-scalar 3.2 --divide-scalar 1.9 --add-scalar 3.1 --mult STIRtmp1.hs STIRtmp3.hs"))
     {
       calc_data.fill(0);
       calc_data += data1;
-      calc_data += (data3*data3)*3.2F;      
+      calc_data += (data3*data3)*3.2F/1.9F+3.1F;      
       out_data_ptr = ProjData::read_from_file("STIRtmp1.hs");
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),"test with power and scalar multiplication with --accumulate");    
+      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+		      "test with power and scalar multiplication, division and addition with --accumulate");    
     }
     // add with power etc and accumulate and including-first
     if (run_stir_math("-s --accumulate --power 2 --times-scalar 3.2 --including-first STIRtmp2.hs STIRtmp3.hs"))
@@ -280,7 +285,8 @@ stir_mathTests::run_tests()
       calc_data *= calc_data * 3.2F;
       calc_data += (data3*data3)*3.2F;      
       out_data_ptr = ProjData::read_from_file("STIRtmp2.hs");
-      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),"test with power and scalar multiplication with --including-first and --accumulate");    
+      check_if_equal( calc_data, out_data_ptr->get_segment_by_view(0),
+		      "test with power and scalar multiplication with --including-first and --accumulate");    
     }
 
     remove("STIRtmp1.hs");
