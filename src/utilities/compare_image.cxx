@@ -11,8 +11,8 @@
 \author Kris Thielemans
 \author PARAPET project
 
-\date    $Date$
-\version $Revision$
+$Date$
+$Revision$
 
 This utility compares two images. They are deemed identical if
 their maximum absolute relative difference is less than a hard-coded tolerance 
@@ -20,11 +20,17 @@ value.
 Diagnostic output is written to stdout, and the return value indicates
 if the files are identical or not.
 */
+/* Modification History:
+  
+  KT 12/09/2001 added rim_truncation option
+*/
 
 #include "DiscretisedDensity.h"
 #include "ArrayFunction.h"
+#include "recon_array_functions.h"
 
 #include <numeric>
+#inlcude <stdlib.h>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
@@ -45,18 +51,34 @@ int main(int argc, char *argv[])
 {
 
   const float tolerance=0.0005F;
-
-  if(argc!=3)
+  int rim_truncation_image = -1;
+  if(argc!=3 && argc!=5 || (argc==5 && strcmp(argv[1],"-r")!=0))
   {
-    cerr<< "Usage:" << argv[0] << "old_image new_image\n";
-    exit(EXIT_FAILURE);
+    cerr << "Usage: \n" << argv[0] << " [-r rimsize] old_image new_image\n"
+	 << "\t 'rimsize' has to be a nonnegative integer.\n"
+	 << "\t When the -r option is used, the (radial) rim of the\n"
+	 << "\t images will be set to 0, for 'rimsize' pixels.\n";
+    return(EXIT_FAILURE);
   }
+
+  if (argc==5)
+    {
+      // argv[1] already checked above
+      rim_truncation_image = atoi(argv[2]);
+      argv+=2;
+    }
 
   shared_ptr< DiscretisedDensity<3,float> >  first_operand= 
     DiscretisedDensity<3,float>::read_from_file(argv[1]);
 
   shared_ptr< DiscretisedDensity<3,float> >  second_operand= 
     DiscretisedDensity<3,float>::read_from_file(argv[2]);
+
+  if (rim_truncation_image>=0)
+  {
+    truncate_rim(*first_operand, rim_truncation_image);
+    truncate_rim(*second_operand, rim_truncation_image);
+  }
 
   float reference_max=first_operand->find_max();
   float reference_min=first_operand->find_min();
