@@ -160,6 +160,16 @@ endif
 # If so, this will allow us to simplify generating the dependencies a lot!
 IS_GCC_3:=$(shell $(CXX) -v 2>&1 |grep "gcc version [3456789]")
 
+# make a variable that allows us to test if we have GNU ar
+# If so, this we do not run ranlib but use the s option to save some time
+IS_GNU_AR:=$(shell $(AR) --version 2>&1 |grep "GNU ar")
+ifneq ("$(IS_GNU_AR)","")
+  # $(warning Using GNU ar)
+  ARFLAGS:=rvs
+else
+  # $(warning Not using GNU ar)
+endif
+
 # a variable that will be used to get the real name of an executable
 # this is necessary on Windows.
 # CYGWIN make automatically appends .exe to executable files in targets etc, but not
