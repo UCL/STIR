@@ -518,7 +518,8 @@ const
 };
 
 /*! 
-  This has to be used when access to the T* is finished. It updates
+  This has to be used when access to the T* returned by get_data_ptr() is 
+  finished. It updates
   the vector with any changes you made, and allows access to 
   the other member functions again.
 
@@ -527,6 +528,26 @@ const
 template <class T>
 void 
 VectorWithOffset<T>::release_data_ptr()
+{
+  assert(pointer_access);
+  
+  pointer_access = false;
+}
+
+/*! 
+  This has to be used when access to the const T* returned by get_const_data_ptr() is 
+  finished. It allows access to 
+  the other member functions again.
+
+  \see get_const_data_ptr()
+*/
+
+template <class T>
+void
+VectorWithOffset<T>::release_const_data_ptr()
+#ifndef STIR_NO_MUTABLE
+const
+#endif
 {
   assert(pointer_access);
   
