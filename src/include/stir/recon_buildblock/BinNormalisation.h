@@ -25,12 +25,14 @@
 START_NAMESPACE_STIR
 
 template <typename elemT> class RelatedViewgrams;
-
+class Succeeded;
+class ProjDataInfo;
+template <typename T> class shared_ptr;
 /*!
   \ingroup recon_buildblock
   \brief Abstract base class for implementing bin-wise normalisation of data.
 
-  As part of the measurement model, there is usually is some multiplicative 
+  As part of the measurement model in PET, there usually is some multiplicative 
   correction for every bin, as in 
   \f[ P^\mathrm{full}_{bv} = \mathrm{norm}_b P^\mathrm{normalised}_{bv} \f]
   This multiplicative correction is usually split in the \c normalisation 
@@ -42,7 +44,11 @@ template <typename elemT> class RelatedViewgrams;
 class BinNormalisation : public RegisteredObject<BinNormalisation>
 {
 public:
-  virtual ~BinNormalisation() {}
+  virtual ~BinNormalisation();
+
+  //! initialises the object and checks if it can handle such projection data
+  /*! Default version does nothing. */
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
   //! normalise some data
   /*! 
     This would be used for instance to precorrect unnormalised data. With the
