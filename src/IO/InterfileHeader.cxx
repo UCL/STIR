@@ -15,7 +15,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -388,11 +388,26 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("bin size (cm)",
     KeyArgument::DOUBLE, &bin_size_in_cm);
   // this is a good default value
-  view_offset = 0;
+  view_offset_in_degrees = 0;
   add_key("view offset (degrees)",
-    KeyArgument::DOUBLE, &view_offset);
+    KeyArgument::DOUBLE, &view_offset_in_degrees);
+  num_axial_blocks_per_bucket = 0;
+  add_key("number of blocks_per_bucket in axial direction",
+	  &num_axial_blocks_per_bucket);
+  num_transaxial_blocks_per_bucket = 0;
+  add_key("number of blocks_per_bucket in transaxial direction",
+	  &num_transaxial_blocks_per_bucket);
+  num_axial_crystals_per_block = 0;
+  add_key("number of crystals_per_block in axial direction",
+	  &num_axial_crystals_per_block);
+  num_transaxial_crystals_per_block = 0;
+  add_key("number of crystals_per_block in transaxial direction",
+	  &num_transaxial_crystals_per_block);
+  // sensible default
+  num_detector_layers = 1;
+  add_key("number of detector layers",
+	  &num_detector_layers);
 
-  // KT 05/07/2001 new
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
 
@@ -563,8 +578,8 @@ find_segment_sequence(vector<int>& segment_sequence,
   if (segment_zero_num == num_segments ||
     sum_and_location[segment_zero_num].first > 1E-3)
   {
-  error("This data does not seem to contain segment 0. \n\
-    We can't handle this at the moment. Sorry.");
+  error("This data does not seem to contain segment 0. \n"
+    "We can't handle this at the moment. Sorry.");
   }
   
   vector< pair<int, int> > location_and_segment_num(num_segments);
@@ -761,22 +776,22 @@ bool InterfilePDFSHeader::post_processing()
   
   // handle scanner
 
-  Scanner * guessed_scanner_ptr = Scanner::get_scanner_from_name(originating_system);
-  if (guessed_scanner_ptr->get_type() == Scanner::Unknown_Scanner)
+  shared_ptr<Scanner> guessed_scanner_ptr = Scanner::get_scanner_from_name(originating_system);
+  if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner)
   {
-    // attempt to guess the system by checking the num_views
+    // attempt to guess the system by checking the num_views etc
 
     char * warning_msg = 0;
     if (num_detectors_per_ring < 1)
     {
       num_detectors_per_ring = num_views*2;
-      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n\
-	\tI guessed %s from 'num_views' (note: this guess is wrong for mashed data)\n\n";
+      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n"
+	"\tI guessed %s from 'num_views' (note: this guess is wrong for mashed data)\n\n";
     }
     else
     {
-    warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n\
-      I guessed %s from 'number of detectors per ring'\n";
+    warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n"
+      "I guessed %s from 'number of detectors per ring'\n";
     }
     
     
@@ -796,27 +811,107 @@ bool InterfilePDFSHeader::post_processing()
  	guessed_scanner_ptr = new Scanner( Scanner::HRRT);
 	warning(warning_msg, "HRRT");
       }
-      else 
+      else if (num_rings == 48)
       {
 	guessed_scanner_ptr = new Scanner( Scanner::E966);
 	warning(warning_msg, "ECAT 966");
       }
+      else //if (num_rings == 32)
+      {
+	guessed_scanner_ptr = new Scanner( Scanner::E962);
+	warning(warning_msg, "ECAT 962");
+      }
       break; // Dylan Togane [dtogane@camhpet.on.ca] 30/07/2002 bug fix: added break
-      // KT 10/01/2000 added
     case 256*2:
       guessed_scanner_ptr = new Scanner( Scanner::E951);
       warning(warning_msg, "ECAT 951");
       break;
     default:
-    warning("\nInterfile warning: I did not recognise the scanner neither from \n\
-      originating_system or 'number of detectors per ring'.\n");;
-    guessed_scanner_ptr = new Scanner( Scanner::Unknown_Scanner);
+    warning("\nInterfile warning: I did not recognise the scanner neither from \n"
+	    "'originating_system' or 'number of detectors per ring'.\n");;
+    guessed_scanner_ptr = new Scanner( Scanner::Unknown_scanner);
     break;
     }
     
   }
  
-  if (guessed_scanner_ptr->get_type() == Scanner::Unknown_Scanner)
+  if (guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner &&
+      guessed_scanner_ptr->get_type() != Scanner::User_defined_scanner)
+  {
+     // fill in values which are not in the Interfile header
+    
+    if (num_rings < 1)
+      num_rings = guessed_scanner_ptr->get_num_rings();
+    if (num_detectors_per_ring < 1)
+      num_detectors_per_ring = guessed_scanner_ptr->get_max_num_views()*2;
+#if 0
+    if (transaxial_FOV_diameter_in_cm < 0)
+      transaxial_FOV_diameter_in_cm = guessed_scanner_ptr->FOV_radius*2/10.;
+#endif
+    if (ring_diameter_in_cm < 0)
+      ring_diameter_in_cm = guessed_scanner_ptr->get_ring_radius()*2/10.;
+    if (distance_between_rings_in_cm < 0)
+      distance_between_rings_in_cm = guessed_scanner_ptr->get_ring_spacing()/10;
+    if (bin_size_in_cm < 0)
+      bin_size_in_cm = 
+         guessed_scanner_ptr->get_default_bin_size()/10;
+    if (num_axial_blocks_per_bucket<=0)
+      num_axial_blocks_per_bucket = guessed_scanner_ptr->num_axial_blocks_per_bucket();
+    if (num_transaxial_blocks_per_bucket<=0)
+      num_transaxial_blocks_per_bucket = guessed_scanner_ptr->num_transaxial_blocks_per_bucket();
+    if (num_axial_crystals_per_block<=0)
+      num_axial_crystals_per_block = guessed_scanner_ptr->num_axial_crystals_per_block();
+    if (num_transaxial_crystals_per_block<=0)
+      num_transaxial_crystals_per_block = guessed_scanner_ptr->num_transaxial_crystals_per_block();
+    if (num_detector_layers<=0)
+      num_detector_layers = guessed_scanner_ptr->num_detector_layers();
+    
+    // consistency check with values of the guessed_scanner_ptr we guessed above
+
+    const double tolerance = 10E-4;
+    bool forget_guess = false;
+    if (num_rings != guessed_scanner_ptr->get_num_rings())
+      {
+	warning("Interfile warning: 'number of rings' (%d) is expected to be %d\n."
+		"Setting scanner_type to unknown (but what will happen?)\n",
+		num_rings, guessed_scanner_ptr->get_num_rings());
+	forget_guess = true;
+      }
+    if (!forget_guess && num_detectors_per_ring != guessed_scanner_ptr->get_num_detectors_per_ring())
+      {
+	warning("Interfile warning: 'number of detectors per ring' (%d) is expected to be %d\n."
+		"Setting scanner_type to unknown (but what will happen?)\n",
+		num_detectors_per_ring, guessed_scanner_ptr->get_num_detectors_per_ring());
+	forget_guess = true;
+      }
+    if (!forget_guess && fabs(ring_diameter_in_cm-guessed_scanner_ptr->get_ring_radius()*2/10.) > tolerance)
+      {
+	warning("Interfile warning: 'ring diameter (cm)' (%f) is expected to be %f.\n."
+		"Setting scanner_type to unknown (but what will happen?)\n",
+		ring_diameter_in_cm, guessed_scanner_ptr->get_ring_radius()*2/10.);
+	forget_guess = true;
+      }
+    if (!forget_guess && fabs(distance_between_rings_in_cm-guessed_scanner_ptr->get_ring_spacing()/10) > tolerance)
+      {
+	warning("Interfile warning: 'distance between rings (cm)' (%f) is expected to be %f.\n."
+		"Setting scanner_type to unknown (but what will happen?)\n",
+		distance_between_rings_in_cm, guessed_scanner_ptr->get_ring_spacing()/10);
+	forget_guess = true;
+      }
+    if (!forget_guess && fabs(bin_size_in_cm-guessed_scanner_ptr->get_default_bin_size()/10) > tolerance)
+      {
+	warning("Interfile warning: 'bin size (cm)' (%f) is expected to be %f.\n."
+		"Setting scanner_type to unknown (but what will happen?)\n",
+		bin_size_in_cm, guessed_scanner_ptr->get_default_bin_size()/10);
+	forget_guess = true;
+      }
+    if (forget_guess)
+      guessed_scanner_ptr = new Scanner( Scanner::Unknown_scanner);
+
+    }
+
+  if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner ||
+      guessed_scanner_ptr->get_type() == Scanner::User_defined_scanner)
   {
     // warn if the Interfile header does not provide enough info
 
@@ -836,53 +931,9 @@ bool InterfilePDFSHeader::post_processing()
       warning("Interfile warning: 'bin size (cm)' invalid.\n");
   }
 
-  else
-  {
-     // fill in values which are not in the Interfile header
-    
-    if (num_rings < 1)
-      num_rings = guessed_scanner_ptr->get_num_rings();
-    if (num_detectors_per_ring < 1)
-      num_detectors_per_ring = guessed_scanner_ptr->get_max_num_views()*2;
-    // KT&SM 26/01/2000 compare with 0 instead of 1 in the next few checks
-#if 0
-    if (transaxial_FOV_diameter_in_cm < 0)
-      transaxial_FOV_diameter_in_cm = guessed_scanner_ptr->FOV_radius*2/10.;
-#endif
-    if (ring_diameter_in_cm < 0)
-      ring_diameter_in_cm = guessed_scanner_ptr->get_ring_radius()*2/10.;
-    if (distance_between_rings_in_cm < 0)
-      distance_between_rings_in_cm = guessed_scanner_ptr->get_ring_spacing()/10;
-    // KT 01/05/2001 corrected default bin_size
-    if (bin_size_in_cm < 0)
-      bin_size_in_cm = 
-         guessed_scanner_ptr->get_default_bin_size()/10;
-    
- 
-    // consistency check with values of the guessed_scanner_ptr we guessed above
-
-    const double tolerance = 10E-4;
-    if (num_rings != guessed_scanner_ptr->get_num_rings())
-      warning("Interfile warning: 'number of rings' (%d) is expected to be %d\n",
-      num_rings, guessed_scanner_ptr->get_num_rings());
-    if (num_detectors_per_ring != guessed_scanner_ptr->get_max_num_views()*2)
-      warning("Interfile warning: 'number of detectors per ring' (%d) is expected to be %d\n",
-      num_detectors_per_ring, guessed_scanner_ptr->get_max_num_views()*2);
-    if (fabs(ring_diameter_in_cm-guessed_scanner_ptr->get_ring_radius()*2/10.) > tolerance)
-      warning("Interfile warning: 'ring diameter (cm)' (%f) is expected to be %f.\n",
-      ring_diameter_in_cm, guessed_scanner_ptr->get_ring_radius()*2/10.);
-    if (fabs(distance_between_rings_in_cm-guessed_scanner_ptr->get_ring_spacing()/10) > tolerance)
-      warning("Interfile warning: 'distance between rings (cm)' (%f) is expected to be %f.\n",
-      distance_between_rings_in_cm, guessed_scanner_ptr->get_ring_spacing()/10);
-    if (fabs(bin_size_in_cm-guessed_scanner_ptr->get_default_bin_size()/10) > tolerance)
-      warning("Interfile warning: 'bin size (cm)' (%f) is expected to be %f.\n",
-      bin_size_in_cm, guessed_scanner_ptr->get_default_bin_size()/10);
-
-    }
-
   // finally, we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
-  Scanner * scanner_ptr_from_file =
+  shared_ptr<Scanner> scanner_ptr_from_file =
     new Scanner(guessed_scanner_ptr->get_type(), originating_system,
 		num_detectors_per_ring, num_rings, 
 		guessed_scanner_ptr->get_max_num_non_arccorrected_bins(), 
@@ -890,11 +941,12 @@ bool InterfilePDFSHeader::post_processing()
 		static_cast<float>(ring_diameter_in_cm*10./2),
 		static_cast<float>(distance_between_rings_in_cm*10.),
 		static_cast<float>(bin_size_in_cm*10),
-		// TODO have keyword
-		guessed_scanner_ptr->get_default_intrinsic_tilt());
-
-
-  delete guessed_scanner_ptr;
+		static_cast<float>(view_offset_in_degrees*_PI/180),
+		num_axial_blocks_per_bucket, 
+		num_transaxial_blocks_per_bucket,
+		num_axial_crystals_per_block,
+		num_transaxial_crystals_per_block,
+		num_detector_layers);
  
   
   // float azimuthal_angle_sampling =_PI/num_views;
