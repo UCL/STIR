@@ -20,6 +20,8 @@
 
 /*! \namespace stir::detail
   \brief Namespace for the implementation details of the STIR library
+
+  You should never have to call one of these routines.
 */
 
 /*! \namespace stir::ecat
