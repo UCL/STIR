@@ -91,13 +91,27 @@ public:
   ByteOrder get_byte_order();
   //! set type used for outputing numbers 
   /*! Returns type actually used. 
-     Calls warning() with some text if the requested type is not supported.*/
+     Calls warning() with some text if the requested type is not supported.
+  
+     Default implementation accepts any type.
+  */
   virtual NumericType set_type_of_numbers(const NumericType&, const bool warn = false);
   //! set byte order used for output
   /*! Returns type actually used.
     Calls warning() with some text if the requested type is not supported. 
+  
+     Default implementation accepts any byte order.
   */ 
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
+  //! set byte order and data type used for output
+  /*! Changes parameters to the types actually used.
+   Calls warning() with some text if the requested type is not supported. 
+
+   This function is necessary in case a byte order for a particular data type is not supported.
+    
+   Default implementation calls set_byte_order() and set_type_of_numbers().
+  */ 
+  virtual void set_byte_order_and_type_of_numbers(ByteOrder&, NumericType&, const bool warn = false);
 
 
 protected:

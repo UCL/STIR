@@ -163,9 +163,17 @@ OutputFileFormat::
 set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 { return file_byte_order = new_byte_order; }
 
+void
+OutputFileFormat::
+set_byte_order_and_type_of_numbers(ByteOrder& new_byte_order, NumericType& new_type, const bool warn)
+{
+  new_byte_order = set_byte_order(new_byte_order, warn);
+  new_type = set_type_of_numbers(new_type, warn);
+}
+
 Succeeded  
 OutputFileFormat::
-    write_to_file(const string& filename, 
+write_to_file(const string& filename, 
                   const DiscretisedDensity<3,float>& density) const
 {
   string filename_to_use = filename;
