@@ -20,7 +20,8 @@
 #ifndef __stir_listmode_CListModeData_H__
 #define __stir_listmode_CListModeData_H__
 
-#include "stir/common.h"
+#include "stir/Scanner.h"
+#include "stir/shared_ptr.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
@@ -48,6 +49,12 @@ public:
   //! Call this function if you want to re-start reading at the beginning.
   virtual 
     Succeeded reset() = 0;
+
+  //! Get scanner pointer  
+  virtual const Scanner* get_scanner_ptr() const;
+  
+protected:
+  shared_ptr<Scanner> scanner_ptr;
 };
 
 END_NAMESPACE_STIR

@@ -29,6 +29,13 @@ CListModeData::
 read_from_file(const string& filename)
 {
   //return new CListModeDataFromStream(filename);
-return new CListModeDataECAT(filename);
+  return new CListModeDataECAT(filename);
+}
+
+const Scanner* 
+CListModeData::
+get_scanner_ptr() const
+{
+  return scanner_ptr.get();
 }
 END_NAMESPACE_STIR

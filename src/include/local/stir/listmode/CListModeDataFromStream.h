@@ -39,13 +39,15 @@ class CListModeDataFromStream : public CListModeData
 public:
   //! Constructor taking a stream
   /*! Data will be assumed to start at the current position reported by seekg().*/ 
-  CListModeDataFromStream(const shared_ptr<istream>& stream_ptr);
+  CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
+                          const shared_ptr<Scanner>& scanner_ptr);
 
   //! Constructor taking a filename
   /*! File will be opened in binary mode. ListMode data will be assumed to 
       start at \a start_of_data.
   */
   CListModeDataFromStream(const string& listmode_filename, 
+                          const shared_ptr<Scanner>& scanner_ptr,
                           const streampos start_of_data = 0);
 
   virtual 

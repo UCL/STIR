@@ -35,7 +35,8 @@ using std::streampos;
 
 START_NAMESPACE_STIR
 CListModeDataFromStream::
-CListModeDataFromStream(const shared_ptr<istream>& stream_ptr)
+CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
+                        const shared_ptr<Scanner>& scanner_ptr_v)
   : stream_ptr(stream_ptr)
 {
   if (is_null_ptr(stream_ptr))
@@ -44,10 +45,12 @@ CListModeDataFromStream(const shared_ptr<istream>& stream_ptr)
   if (!stream_ptr->good())
     error("CListModeDataFromStream: error in tellg()\n");
 
+  scanner_ptr = scanner_ptr_v;
 }
 
 CListModeDataFromStream::
 CListModeDataFromStream(const string& listmode_filename,
+                        const shared_ptr<Scanner>& scanner_ptr_v,
 			const streampos start_of_data)
   : listmode_filename(listmode_filename),
   starting_stream_position(start_of_data)  
@@ -58,6 +61,8 @@ CListModeDataFromStream(const string& listmode_filename,
   if (reset() == Succeeded::no)
     error("CListModeDataFromStream: error in reset() for filename %s\n",
 	  listmode_filename.c_str());
+
+  scanner_ptr = scanner_ptr_v;
 }
 
 Succeeded

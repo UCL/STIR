@@ -37,7 +37,11 @@ CListModeDataECAT(const string& listmode_filename_prefix)
   if (open_lm_file(1) == Succeeded::no)
     error("CListModeDataECAT: error opening the first listmode file for filename %s\n",
 	  listmode_filename_prefix.c_str());
+  // TODO get scanner from .sgl
+  scanner_ptr = new Scanner(Scanner::E966);
 }
+
+
 
 Succeeded
 CListModeDataECAT::
@@ -51,7 +55,7 @@ open_lm_file(unsigned int new_lm_file) const
       filename += rest;
       cerr << "CListModeDataECAT: opening file " << filename << endl;
       current_lm_data_ptr =
-	new CListModeDataFromStream(filename);
+	new CListModeDataFromStream(filename, scanner_ptr);
       current_lm_file = new_lm_file;
       return Succeeded::yes;
     }
