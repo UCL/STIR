@@ -22,7 +22,7 @@
 #ifndef __stir_Shape_Shape3DWithOrientation__H__
 #define __stir_Shape_Shape3DWithOrientation__H__
 
-#include "local/stir/Shape/Shape3D.h"
+#include "stir/Shape/Shape3D.h"
 #include <vector>
 
 #ifndef STIR_NO_NAMESPACES

@@ -43,7 +43,7 @@
 #define __stir_Shape_EllipsoidalCylinder_h__
 
 #include "stir/RegisteredParsingObject.h"
-#include "local/stir/Shape/Shape3DWithOrientation.h"
+#include "stir/Shape/Shape3DWithOrientation.h"
 
 START_NAMESPACE_STIR
 
