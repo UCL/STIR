@@ -49,7 +49,7 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-
+void
 construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_2D_array,   
 					Array<2,float>& kernel_2d,const float kapa0_over_kapa1,
 					int number_of_coefficients_before_padding);
@@ -62,7 +62,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 
 
 
-
+void
 construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_2D_array,   
 					Array<2,float>& kernel_2d,const float kapa0_over_kapa1,
 					int number_of_coefficients_before_padding)
@@ -471,7 +471,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	}	  cerr << endl;*/
 	  
 
-	  cerr << " IN THIS LOOP " << endl;
+	 // cerr << " IN THIS LOOP " << endl;
 	  new_filter_coefficients_2D_array.grow(IndexRange2D(
 	    -(kernel_length_y-1),kernel_length_y-1,
 	    -(kernel_length_x-1),kernel_length_x-1));
@@ -506,6 +506,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
     }
     else //sq_kappas == 1
     {
+	 
 	     new_filter_coefficients_2D_array.grow(IndexRange2D(
 	    -number_of_coefficients_before_padding-1,number_of_coefficients_before_padding-1,
 	    -number_of_coefficients_before_padding-1,number_of_coefficients_before_padding-1));
