@@ -44,7 +44,7 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
 
    all_1d_array_filters[0] = 	 
-       new ArrayFilter1DUsingConvolution<float>();
+       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
    all_1d_array_filters[1] = 	 
        new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
   
