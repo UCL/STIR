@@ -91,14 +91,19 @@ FFT_routines::find_fft_unity(Array<1,float>& unity)
 template <int num_dimensions, typename elemT>
 ModifiedInverseAverigingArrayFilter<num_dimensions,elemT>:: 
 ModifiedInverseAverigingArrayFilter()
-:filter_coefficients(0), kapa0_over_kapa1(0)
-{
-  //kapa0_over_kapa1=0;
-   
+: kapa0_over_kapa1(0), filter_coefficients(0)
+{ 
+  /*filter_coefficients.grow(0,2);
+  filter_coefficients[0] =0;  
+  filter_coefficients[1] =1;  
+  filter_coefficients[2] =0;  */
+  
+  
   for (int i=1;i<=num_dimensions;i++)
   {
+    
     all_1d_array_filters[i-1] = 	       
-	new ArrayFilter1DUsingConvolution<float>();
+	new ArrayFilter1DUsingConvolution<float>();//filter_coefficients);
   }
 
 }
@@ -114,6 +119,14 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 				    filter_coefficients(filter_coefficients_v)
 {
   
+  const string coeff="coeff";
+    shared_ptr<iostream> coeff_output =     
+      new fstream (coeff.c_str(),ios::out|ios::binary);
+
+  // pipe coefficients to the file to check if they were read correctely
+  for (int i=filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)
+  *coeff_output << filter_coefficients[i] << "   ";  
+  *coeff_output<< endl;
 
   //cerr <<kapa0_over_kapa1<< endl;
 #if 1
@@ -150,8 +163,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   
   if ( sq_kapas > 10000)
   {
-    new_filter_coefficients.grow(0,0);
-    new_filter_coefficients[0]=1;
+    new_filter_coefficients.grow(0,2);
+    new_filter_coefficients[0]=0;
+    new_filter_coefficients[1]=1;
+    new_filter_coefficients[2]=0;
   }
   else if (sq_kapas!=1.F)
   {
@@ -173,6 +188,11 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 	filter_coefficients_padded[size-(2*(i-1)+1)] = filter_coefficients[i];
       }
       
+
+      
+      /*for (int i=1;i<=size;i++)
+	  cerr << filter_coefficients_padded[i] << "   ";  
+      cerr << endl;*/
       // rescale to DC=1
       float sum =0;  
       for (int i=1;i<=size;i++)
@@ -251,8 +271,12 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
       for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
       { 
 	// SM TESTING SMALLER THRESHOLD - 24/03/2002
-	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000) break;
+	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/1000000000000000) break;
+	// SM TESTING SMALLER THRESHOLD - 17/04/2002
 	if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000000) break;
+	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000) break;
+     // if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/1000) break;
+
 	//sm 16/11/2001 try the new threshold
 	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
 	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
@@ -325,7 +349,8 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 	*output << new_filter_coefficients[i] << "   ";
       *output << endl;
       
-      /* cerr << " COEFF" << endl;
+     /* cerr << " PRINTING NOW" << endl;
+       cerr << " COEFF" << endl;
       for (int i=0;i<=new_filter_coefficients.get_max_index();i++)
       cerr << new_filter_coefficients[i] << "   ";*/
       
