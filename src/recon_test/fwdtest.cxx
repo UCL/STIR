@@ -15,12 +15,8 @@
 
   \version $Revision$
 
-  This (ugly) programme allows forward projection of a few segments/views
-  only. 
-  It can also be used to forward project into the full data set. 
-
-  \warning This is not intended as a user-friendly forward projector, although
-  it would be easy to make one starting from this code.
+  This programme allows forward projection of a few segments/views
+  only, or of the full data set. 
 
   Usage:
   \verbatim
@@ -40,18 +36,16 @@
 #include "utilities.h"
 #include "IndexRange3D.h"
 #include "RelatedViewgrams.h"
+#include "SegmentByView.h"
 #include <fstream>
 
 
-// for auto_ptr
-#include <memory>
 
 USING_NAMESPACE_TOMO
 USING_NAMESPACE_STD
 
 
 /******************* Declarations local functions *******************/
-auto_ptr<ProjDataFromStream> ask_parameters();
 
 static void 
 do_segments(const VoxelsOnCartesianGrid<float>& image, ProjDataFromStream& s3d,
@@ -70,11 +64,10 @@ int
 main(int argc, char *argv[])
 {
 
-  // TODO a lot of cleaning up here
   if(argc!=2) 
   {
-    cerr<<"Usage: " << argv[0] << " [PSOV-file]\n"
-        <<"The PSOV-file will be used to get the scanner, mashing etc. details" 
+    cerr<<"Usage: " << argv[0] << " [proj_data-file]\n"
+        <<"The projdata-file will be used to get the scanner, mashing etc. details" 
 	<< endl; 
   }
   if (argc<2)
@@ -101,6 +94,13 @@ main(int argc, char *argv[])
     new_data_info_ptr->set_num_tangential_poss(num_tangential_poss);
   }
 
+  int limit_segments=
+    ask_num("Maximum absolute segment number to process: ", 0, 
+    new_data_info_ptr->get_max_segment_num(), 
+    new_data_info_ptr->get_max_segment_num() );
+
+  new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
+
   const string output_file_name = "fwdtest_out.s";
   shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
   if (!sino_stream->good())
@@ -110,9 +110,11 @@ main(int argc, char *argv[])
 
   shared_ptr<ProjDataFromStream> proj_data_ptr =
     new ProjDataFromStream(new_data_info_ptr,sino_stream);
+
   write_basic_interfile_PDFS_header(output_file_name, *proj_data_ptr);
   cerr << "Output will be written to " << output_file_name 
        << " and its Interfile header\n";
+
   
   const int disp = 
     ask_num("Display start image ? no (0), yes (1)", 
@@ -180,11 +182,7 @@ main(int argc, char *argv[])
   list<ViewSegmentNumbers> already_processed;
 
   if (ask("Do full forward projection ?", true))
-  {
-    const int max_segment_num_to_process = 
-      ask_num("max_segment_num_to_process",
-               0,  proj_data_ptr->get_max_segment_num(),  proj_data_ptr->get_max_segment_num());
-    
+  {    
 
     CPUTimer timer;
     timer.reset();
@@ -192,7 +190,7 @@ main(int argc, char *argv[])
 
     
     do_segments(*vox_image_ptr, *proj_data_ptr,
-      -max_segment_num_to_process, max_segment_num_to_process, 
+      proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 
       proj_data_ptr->get_min_view_num(), 
       proj_data_ptr->get_max_view_num(),
       forw_projector_ptr);
@@ -204,21 +202,35 @@ main(int argc, char *argv[])
   }
   else
   {   
+    // first set all data to 0
+    cerr << "Filling output file with 0\n";
+    for (int segment_num = proj_data_ptr->get_min_segment_num(); 
+         segment_num <= proj_data_ptr->get_max_segment_num(); 
+         ++segment_num)
+    {
+      const SegmentByView<float> segment = 
+        proj_data_ptr->get_empty_segment_by_view(segment_num);
+      if (!(proj_data_ptr->set_segment(segment) == Succeeded::yes))
+        warning("Error set_segment %d\n", segment_num);            
+    }
     do
     {
       CPUTimer timer;
       timer.reset();
       timer.start();
       
-      int segment_num = ask_num("Segment number to forward project",
-				 proj_data_ptr->get_min_segment_num(),
-                                 proj_data_ptr->get_max_segment_num(), 
-                                 0);
+      const int segment_num = 
+        ask_num("Segment number to forward project (related segments will be done as well)",
+                proj_data_ptr->get_min_segment_num(),
+                proj_data_ptr->get_max_segment_num(), 
+                0);
       const int min_view = proj_data_ptr->get_min_view_num();
       const int max_view = proj_data_ptr->get_max_view_num();
 
-      const int start_view = ask_num("Start view", min_view, max_view, min_view);
-      const int end_view = ask_num("End   view", start_view, max_view, max_view);
+      const int start_view = 
+        ask_num("Start view  (related views will be done as well)", min_view, max_view, min_view);
+      const int end_view = 
+        ask_num("End   view  (related views will be done as well)", start_view, max_view, max_view);
       
       do_segments(*vox_image_ptr,*proj_data_ptr, 
 	          segment_num,segment_num, 
@@ -251,8 +263,7 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
   list<ViewSegmentNumbers> already_processed;
   
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
-    for (int view= start_view; view<=end_view; view++)
-      
+    for (int view= start_view; view<=end_view; view++)      
     {       
       ViewSegmentNumbers vs(view, segment_num);
       symmetries_sptr->find_basic_view_segment_numbers(vs);
@@ -270,15 +281,8 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
       forw_projector_ptr->forward_project(viewgrams, image);	  
       if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-        error("Error set_related_viewgrams\n");
-      
-      
-      
-      
-      
-      
-    }
-    
+        error("Error set_related_viewgrams\n");            
+    }   
 }
 
 
@@ -393,76 +397,3 @@ void fill_cylinder(VoxelsOnCartesianGrid<float>& image)
     
 }
 
-/*
-auto_ptr<ProjDataFromStream>
-ask_parameters()
-{
-    
-  ProjDataInfo scan_info;
- 
-  int scanner_num = 
-    ask_num("Enter scanner number (0: RPT, 1:1: 953, 2: 966, 3: GE, 4: ART) ? ", 
-            0,4,0);
-  switch( scanner_num )
-    {
-    case 0:
-      scan_info = (Scanner::RPT);
-      break;
-    case 1:
-      scan_info = (Scanner::E953);
-      break;
-    case 2:
-      scan_info = (Scanner::E966);
-      break;
-    case 3:
-      scan_info = (Scanner::Advance);
-      break;
-    case 4:
-      scan_info = (Scanner::ART);
-      break;
-    }
-
-  {
-    const int new_num_tangential_poss = 
-      proj_data_info_ptr->get_num_tangential_poss() / ask_num("Reduce num_tangential_poss by factor", 1,16,1);
-
-    // keep same radius of FOV
-    proj_data_info_ptr->set_bin_size(
-      (proj_data_info_ptr->get_bin_size()*proj_data_info_ptr->get_num_tangential_poss()) / new_num_tangential_poss
-      );
-
-    proj_data_info_ptr->set_num_tangential_poss(new_num_tangential_poss); 
-
-    proj_data_info_ptr->set_num_views(
-      proj_data_info_ptr->get_num_views()/ ask_num("Reduce num_views by factor", 1,16,1)
-      );  
-
-  }    
-
-  
-  int span = 1;
-  {
-    if ( proj_data_info_ptr->get_scanner().type != Scanner::Advance )
-      {
-	do 
-	  {
-	    span = ask_num("Span ", 1, proj_data_info_ptr->get_num_axial_poss()-1, 1);
-	  }
-	while (span%2==0);
-      }
-  }
-
-
-
-  fstream *out = 0;
-  
-  return new ProjDataFromStream(
-    scan_info, 
-    span, 
-    proj_data_info_ptr->get_scanner().type != Scanner::Advance ?
-    proj_data_info_ptr->get_num_axial_poss()-1 : 11,
-    *out, 0UL,
-    ProjDataFromStream::SegmentViewRingBin,
-    NumericType::FLOAT);
-}
-*/
