@@ -47,35 +47,31 @@ public
     >
 {
 public:  
-  static const char * const registered_name; 
-  
+  static const char * const registered_name;   
 
   //! Default constructor
    ModifiedInverseAverigingImageFilter();
  
    ModifiedInverseAverigingImageFilter(string proj_data_filename,
-//				       string filename_kapa0,
-//				       string filename_kapa1,
-				 const VectorWithOffset<elemT>& filter_coefficients,
-     shared_ptr<ProjData> proj_data_ptr);
-//			    DiscretisedDensity<num_dimensions,elemT>* kapa0,
-  //   DiscretisedDensity<num_dimensions,elemT>* kapa1);
- 
+				  string attenuation_proj_data_filename,
+				  const VectorWithOffset<elemT>& filter_coefficients,
+				  shared_ptr<ProjData> proj_data_ptr,
+				  shared_ptr<ProjData> attenuation_proj_data_ptr);
+			     
+  
   				  
 private: 
+
+  
   vector<double> filter_coefficients_for_parsing;
   VectorWithOffset<float> filter_coefficients;
   
   shared_ptr<ProjData> proj_data_ptr;
-  
-   // filenames for kapa0 and kapa1 that need to be parsed
-   //string filename_kapa0;
-   //string filename_kapa1;
+  string proj_data_filename;
 
-   string proj_data_filename;
+  shared_ptr<ProjData> attenuation_proj_data_ptr;
+  string attenuation_proj_data_filename;
 
-   //DiscretisedDensity<num_dimensions,elemT>* kapa0;
-   //DiscretisedDensity<num_dimensions,elemT>* kapa1;  
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
    // new
