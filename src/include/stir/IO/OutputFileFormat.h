@@ -51,14 +51,38 @@ public:
                    const ByteOrder& = ByteOrder::native);
 
   //! Write a single image to file
-  /*! \todo 
+  /*! 
+    \param filename desired output filename. If it does not have an extension,
+           a default extension will/should be added by the derived class.
+	   If there is an extension, the derived class should try to honour it.
+	   On return, the parameter will be overwritten with the actual filename
+	   used, such that the file can be read back using this string.
+    \param density the image to write to file.
+    \return Succeeded::yes if the file was successfully written.
+
+    \warning In the case of file formats that use a separate header file, the \a
+       filename argument at input is/should be used as a filename for the file
+       with the actual data. At output however, the name of the header file 
+       will/should be returned. This is all a bit messy, so it's recommended to 
+       not use an extension.
+
+
+  \todo 
       Unfortunately, C++ does not allow virtual member templates, so we'd need
       other versions of this for other data types or dimensions.
   */
   virtual
   Succeeded  
+    write_to_file(string& filename, 
+                  const DiscretisedDensity<3,float>& density) const = 0;
+		  
+  //! write a single image to file
+  /*! See the virtual version. This version does not return the 
+      filename as used.
+  */
+  Succeeded  
     write_to_file(const string& filename, 
-                  const DiscretisedDensity<3,float>& density) = 0;
+                  const DiscretisedDensity<3,float>& density) const;
 
 
 protected:
