@@ -34,7 +34,7 @@ correct_projdata Parameters :=
 
   ; Current way of specifying time frames, pending modifications to
   ; STIR to read time info from the headers
-  ; see class documentation for TimeFrameDefinitions for the format of this file
+  ; see class documentation for stir::TimeFrameDefinitions for the format of this file
   ; time frame definition filename :=  frames.fdef
 
   ; if a frame definition file is specified, you can say that the input data
@@ -107,7 +107,7 @@ Precorrect data, or undo precorrection. Its value defaults to 1.
 <li>
 Bin Normalisation type:<br>
 Normalisation (or binwise multiplication, so can contain attenuation factors 
-as well). \see BinNormalisation
+as well). \see stir::BinNormalisation
 </li>
 <li>
 attenuation image filename: obsolete<br>
@@ -115,13 +115,13 @@ Specify the attenuation image, which will be forward projected to get
 attenuation factors. Has to be in units cm^-1.
 This parameter will be removed. Use instead a "chained" bin normalisation 
 with a bin normalisation "from attenuation image" 
-\see ChainedBinNormalisation
-\see BinNormalisationFromAttenuationImage
+\see stir::ChainedBinNormalisation
+\see stir::BinNormalisationFromAttenuationImage
 </li>
 <li>
-forward_projector type: obsolete
+forward_projector type: obsolete<br>
 Forward projector used to estimate attenuation factors, defaults to 
-Ray Tracing. \see ForwardProjectorUsingRayTracing
+Ray Tracing. \see stir::ForwardProjectorUsingRayTracing
 This parameter will be removed.
 </li>
 </ul>
@@ -171,25 +171,70 @@ START_NAMESPACE_STIR
 
 
 
+// TODO most of this is identical to ReconstructionParameters, so make a common class
+/*! \ingroup utilities
+  \brief class to do precorrections
 
-
-// note: apply_or_undo_correction==true means: apply it
-static void
-correct_projection_data(ProjData& output_projdata, const ProjData& input_projdata,
-			const bool use_data_or_set_to_1,
-			const bool apply_or_undo_correction,
-                        const shared_ptr<ProjData>& scatter_projdata_ptr,
-			const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
-			BinNormalisation& normalisation,
-                        const shared_ptr<ProjData>& randoms_projdata_ptr, 
-			const shared_ptr<ArcCorrection>& arc_correction_sptr,
-			const int frame_num,
-			const TimeFrameDefinitions& frame_def)
+  \todo Preliminary class interface. At some point, this class should move to the
+  library, instead of being in correct_projdata.cxx.
+*/
+class CorrectProjDataApplication : public ParsingObject
 {
+public:
 
-  const bool do_scatter = scatter_projdata_ptr.use_count() != 0;
-  const bool do_randoms = randoms_projdata_ptr.use_count() != 0;
-  const bool do_arc_correction = arc_correction_sptr.use_count() != 0;
+  CorrectProjDataApplication(const char * const par_filename);
+
+  //! set-up variables before processing
+  Succeeded set_up();
+  //! do precorrection
+  /*! set_up() has to be run first */ 
+  Succeeded run() const;
+  
+  // shared_ptrs such that they clean up automatically at exit
+  shared_ptr<ProjData> input_projdata_ptr;
+  shared_ptr<ProjData> scatter_projdata_ptr;
+  shared_ptr<ProjData> randoms_projdata_ptr;
+  shared_ptr<ProjData> output_projdata_ptr;
+  shared_ptr<BinNormalisation> normalisation_ptr;
+  shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
+  //! apply_or_undo_correction==true means: apply it
+  bool apply_or_undo_correction;
+  //! use input data, or replace it with all 1's
+  /*! <code>use_data_or_set_to_1 == true</code> means: use the data*/
+  bool use_data_or_set_to_1;  
+  int max_segment_num_to_process;
+  int frame_num;
+  TimeFrameDefinitions frame_defs;
+
+  bool do_arc_correction;
+private:
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+  string input_filename;
+  string output_filename;
+  string scatter_projdata_filename;
+  string atten_image_filename;
+  string norm_filename;  
+  string randoms_projdata_filename;  
+  string frame_definition_filename;
+  
+  shared_ptr<ArcCorrection> arc_correction_sptr;
+
+};
+
+
+Succeeded
+CorrectProjDataApplication::
+run() const
+{
+  ProjData& output_projdata = *output_projdata_ptr;
+  const ProjData& input_projdata = *input_projdata_ptr;
+
+  const bool do_scatter = !is_null_ptr(scatter_projdata_ptr);
+  const bool do_randoms = !is_null_ptr(randoms_projdata_ptr);
 
 
   // TODO
@@ -257,11 +302,11 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 	  // ** normalisation **
 	  if (apply_or_undo_correction)
 	  {
-	    normalisation.apply(viewgrams,start_frame,end_frame);
+	    normalisation_ptr->apply(viewgrams,start_frame,end_frame);
 	  }
 	  else
 	  {
-	    normalisation.undo(viewgrams,start_frame,end_frame);
+	    normalisation_ptr->undo(viewgrams,start_frame,end_frame);
 	  }
 	}
       }
@@ -271,15 +316,15 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
       else
 #endif
       {      
-	const double start_frame = frame_def.get_start_time(frame_num);
-	const double end_frame = frame_def.get_end_time(frame_num);
+	const double start_frame = frame_defs.get_start_time(frame_num);
+	const double end_frame = frame_defs.get_end_time(frame_num);
 	if (apply_or_undo_correction)
 	{
-	  normalisation.apply(viewgrams,start_frame,end_frame);
+	  normalisation_ptr->apply(viewgrams,start_frame,end_frame);
 	}
 	else
 	{
-	  normalisation.undo(viewgrams,start_frame,end_frame);
+	  normalisation_ptr->undo(viewgrams,start_frame,end_frame);
 	}    
       }
       if (do_scatter && apply_or_undo_correction)
@@ -316,55 +361,21 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 	  output_viewgrams += viewgrams;
 
 	  if (!(output_projdata.set_related_viewgrams(viewgrams) == Succeeded::yes))
-	    error("Error set_related_viewgrams\n");            
+	    {
+	      warning("CorrectProjData: Error set_related_viewgrams\n");
+	      return Succeeded::no;
+	    }
       }
       
     }
         
   }
+  return Succeeded::yes;
 }    
 
-// TODO most of this is identical to ReconstructionParameters, so make a common class
-class CorrectProjDataParameters : public ParsingObject
-{
-public:
-
-  CorrectProjDataParameters(const char * const par_filename);
-
-  // shared_ptrs such that they clean up automatically at exit
-  shared_ptr<ProjData> input_projdata_ptr;
-  shared_ptr<ProjData> scatter_projdata_ptr;
-  shared_ptr<ProjData> randoms_projdata_ptr;
-  shared_ptr<ProjData> output_projdata_ptr;
-  shared_ptr<BinNormalisation> normalisation_ptr;
-  shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
-  bool apply_or_undo_correction;
-  bool use_data_or_set_to_1;  
-  int max_segment_num_to_process;
-  int frame_num;
-  TimeFrameDefinitions frame_defs;
-
-  bool do_arc_correction;
-  shared_ptr<ArcCorrection> arc_correction_sptr;
-private:
-
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
-  string input_filename;
-  string output_filename;
-  string scatter_projdata_filename;
-  string atten_image_filename;
-  string norm_filename;  
-  string randoms_projdata_filename;
-  
-  string frame_definition_filename;
-  
-};
 
 void 
-CorrectProjDataParameters::
+CorrectProjDataApplication::
 set_defaults()
 {
   input_projdata_ptr = 0;
@@ -394,7 +405,7 @@ set_defaults()
 }
 
 void 
-CorrectProjDataParameters::
+CorrectProjDataApplication::
 initialise_keymap()
 {
   parser.add_start_key("correct_projdata Parameters");
@@ -418,7 +429,7 @@ initialise_keymap()
 
 
 bool
-CorrectProjDataParameters::
+CorrectProjDataApplication::
 post_processing()
 {
   if (is_null_ptr(normalisation_ptr))
@@ -449,17 +460,6 @@ post_processing()
 	      frame_num, frame_defs.get_num_frames());
       return true;
     }
-  return false;
-}
-
-CorrectProjDataParameters::
-CorrectProjDataParameters(const char * const par_filename)
-{
-  set_defaults();
-  if (par_filename!=0)
-    parse(par_filename) ;
-  else
-    ask_parameters();
   input_projdata_ptr = ProjData::read_from_file(input_filename);
 
   if (scatter_projdata_filename!="" && scatter_projdata_filename != "0")
@@ -468,6 +468,13 @@ CorrectProjDataParameters(const char * const par_filename)
   if (randoms_projdata_filename!="" && randoms_projdata_filename != "0")
     randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename);
 
+  return false;
+}
+
+Succeeded
+CorrectProjDataApplication::
+set_up()
+{
   const int max_segment_num_available =
     input_projdata_ptr->get_max_segment_num();
   if (max_segment_num_to_process<0 ||
@@ -547,11 +554,25 @@ CorrectProjDataParameters(const char * const par_filename)
   if (
       normalisation_ptr->set_up(input_proj_data_info_sptr)
       != Succeeded::yes)
-    error("correct_projdata: set-up of normalisation failed\n");
- 
+    {
+      warning("correct_projdata: set-up of normalisation failed\n");
+      return Succeeded::no;
+    }
+
+  return Succeeded::yes;
   
 }
 
+CorrectProjDataApplication::
+CorrectProjDataApplication(const char * const par_filename)
+{
+  set_defaults();
+  if (par_filename!=0)
+    parse(par_filename) ;
+  else
+    ask_parameters();
+
+}
 
 END_NAMESPACE_STIR
 
@@ -565,30 +586,26 @@ int main(int argc, char *argv[])
     cerr<<"Usage: " << argv[0] << " par_file\n"
        	<< endl; 
   }
-  CorrectProjDataParameters parameters( argc==2 ? argv[1] : 0);
+  CorrectProjDataApplication correct_proj_data_application( argc==2 ? argv[1] : 0);
  
   if (argc!=2)
     {
       cerr << "Corresponding .par file input \n"
-	   << parameters.parameter_info() << endl;
+	   << correct_proj_data_application.parameter_info() << endl;
     }
     
 
   CPUTimer timer;
   timer.start();
 
-  correct_projection_data(*parameters.output_projdata_ptr, *parameters.input_projdata_ptr, 
-			  parameters.use_data_or_set_to_1, parameters.apply_or_undo_correction,
-                          parameters.scatter_projdata_ptr,
-			  parameters.forward_projector_ptr,  
-			  *parameters.normalisation_ptr,
-                          parameters.randoms_projdata_ptr,
-			  parameters.arc_correction_sptr,  
-			  parameters.frame_num,
-			  parameters.frame_defs);
- 
+  if (correct_proj_data_application.set_up() == Succeeded::no)
+    return EXIT_FAILURE;
+
+  Succeeded success =
+    correct_proj_data_application.run();
   timer.stop();
   cerr << "CPU time : " << timer.value() << "secs" << endl;
-  return EXIT_SUCCESS;
+  return success==Succeeded::yes ?
+    EXIT_SUCCESS : EXIT_FAILURE;
 
 }
