@@ -126,7 +126,9 @@ EXTRA_LINK_OPT=
 #** compiler options
 
 ifeq ($(SYSTEM),LINUX)
-OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
+# note for gcc 2.95.2:
+# do not use -malign-double as it crashes in iostream stuff
+OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-functions=2 -malign-loops=2 -DNDEBUG
 else
 ifeq ($(SYSTEM),CYGWIN)
 OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
