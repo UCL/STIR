@@ -44,5 +44,5 @@ endif
 
 .KEEP_STATE:
 
-all: bcktest fwdtest
+all: bcktest fwdtest zoomtest
 
