@@ -1,6 +1,6 @@
 
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -13,8 +13,8 @@
   \author Kris Thielemans
   \author PARAPET project
     
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
@@ -24,15 +24,50 @@
 
 START_NAMESPACE_TOMO
 
+const char * const 
+BackProjectorByBinUsingProjMatrixByBin::registered_name =
+  "Matrix";
+
+
+void
+BackProjectorByBinUsingProjMatrixByBin::
+set_defaults()
+{
+  proj_matrix_ptr = 0;
+}
+
+void
+BackProjectorByBinUsingProjMatrixByBin::
+initialise_keymap()
+{
+  parser.add_start_key("Back Projector Using Matrix Parameters");
+  parser.add_stop_key("End Back Projector Using Matrix Parameters");
+  parser.add_parsing_key("matrix type", &proj_matrix_ptr);
+}
+
+BackProjectorByBinUsingProjMatrixByBin::
+BackProjectorByBinUsingProjMatrixByBin()
+{
+  set_defaults();
+}
+
 BackProjectorByBinUsingProjMatrixByBin::
 BackProjectorByBinUsingProjMatrixByBin(  
     const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr
     )		   
     : proj_matrix_ptr(proj_matrix_ptr)
-  {
-     assert(proj_matrix_ptr.use_count()!=0);	 
-    
-  }
+{
+  assert(proj_matrix_ptr.use_count()!=0);	 
+}
+
+void
+BackProjectorByBinUsingProjMatrixByBin::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+       const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
+
+{    	   
+  proj_matrix_ptr->set_up(proj_data_info_ptr, image_info_ptr);
+}
 
 const DataSymmetriesForViewSegmentNumbers *
 BackProjectorByBinUsingProjMatrixByBin::get_symmetries_used() const

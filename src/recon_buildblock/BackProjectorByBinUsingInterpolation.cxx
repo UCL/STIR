@@ -44,9 +44,41 @@ JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool 
       use_exact_Jacobian_now(exact)      
    {}
 
+const char * const 
+BackProjectorByBinUsingInterpolation::registered_name =
+  "Interpolation";
+
+
+void
+BackProjectorByBinUsingInterpolation::
+set_defaults()
+{
+  use_piecewise_linear_interpolation_now = true;
+  use_exact_Jacobian_now = true;
+}
+
+void
+BackProjectorByBinUsingInterpolation::
+initialise_keymap()
+{
+  parser.add_start_key("Back Projector Using Interpolation Parameters");
+  parser.add_stop_key("End Back Projector Using Interpolation Parameters");
+  parser.add_key("use_piecewise_linear_interpolation", &use_piecewise_linear_interpolation_now);
+  parser.add_key("use_exact_Jacobian",&use_exact_Jacobian_now);
+}
+
 const DataSymmetriesForViewSegmentNumbers *
  BackProjectorByBinUsingInterpolation::get_symmetries_used() const
 { return symmetries_ptr.get(); }
+
+BackProjectorByBinUsingInterpolation::
+BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolation,
+                                     const bool use_exact_Jacobian)			   
+  :
+  use_piecewise_linear_interpolation_now(use_piecewise_linear_interpolation),
+  use_exact_Jacobian_now(use_exact_Jacobian)
+{
+}
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
@@ -57,7 +89,15 @@ BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_i
   symmetries_ptr(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr)),
   use_piecewise_linear_interpolation_now(use_piecewise_linear_interpolation),
   use_exact_Jacobian_now(use_exact_Jacobian)
-{}
+{
+}
+
+void
+BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
+{
+  symmetries_ptr = new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr);
+}
 
 void
 BackProjectorByBinUsingInterpolation::
