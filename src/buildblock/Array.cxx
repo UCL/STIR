@@ -32,21 +32,6 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT>
-void 
-Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
-{
-  base_type::grow(range.get_min_index(), range.get_max_index());
-  base_type::iterator iter = base_type::begin();
-  IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
-  for (;
-       iter != base_type::end(); 
-       iter++, range_iter++)
-    (*iter).grow(*range_iter);
-
-  is_regular_range = range.is_regular();
-}
-
 /*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT>
 void 
