@@ -7,6 +7,9 @@ WORKSPACE=$(CURDIR)
 include $(WORKSPACE)/Makefile_common
 
 
+LIBSUBDIRECTORIES_FIRST = \
+	$(WORKSPACE)/eval_buildblock \
+	$(WORKSPACE)/Shape_buildblock
 
 LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/buildblock \
@@ -14,8 +17,6 @@ LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/recon_buildblock \
 	$(WORKSPACE)/display \
 	$(WORKSPACE)/iterative/LogLik_buildblock \
-	$(WORKSPACE)/Shape_buildblock \
-	$(WORKSPACE)/eval_buildblock \
 	$(WORKSPACE)/listmode_buildblock
 
 
@@ -26,14 +27,14 @@ EXESUBDIRECTORIES= \
 	$(WORKSPACE)/recon_test \
 	$(WORKSPACE)/test 
 
-SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
+SUBDIRECTORIES = $(LIBSUBDIRECTORIES_FIRST) $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 
 ifeq ($(wildcard local/Makefile), local/Makefile)
 __TEST_local_Makefile:=1
 endif
 
 
-.PHONY: $(EXESUBDIRECTORIES) all install clean alllocal alldistrib
+.PHONY: $(LIBSUBDIRECTORIES_FIRST) $(EXESUBDIRECTORIES) all install clean alllocal alldistrib
 
 # all is the default target (becomes it comes first)
 # it depends 2 targets: the files in the distribution, and any local files
@@ -45,8 +46,10 @@ all: alldistrib alllocal
 # execute make in their relevant subdirectory.
 # This way, when make fails in one subdirectory, this make will fail 
 # as well
-alldistrib: $(EXESUBDIRECTORIES)
+alldistrib: $(LIBSUBDIRECTORIES_FIRST) $(EXESUBDIRECTORIES)
 
+$(LIBSUBDIRECTORIES_FIRST):
+	$(MAKE) -C $@ all
 
 alllocal:
 ifeq ($(__TEST_local_Makefile),1)
@@ -77,6 +80,7 @@ clean:
 ifeq ($(__TEST_local_Makefile),1)
 	$(MAKE) -C local clean;
 endif
+
 
 
 
