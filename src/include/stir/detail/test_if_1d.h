@@ -57,7 +57,9 @@ namespace stir {
        be <tt>f</tt>. However, it's best to hide these away from the user, as they
        should never be used explicitly.
     */
-    template <int num_dimensions>
+    // note: should be Num_dimensions and not num_dimensions 
+    // because for old compilers, num_dimensions is sometimes #defined (sigh)
+    template <int Num_dimensions>
       struct test_if_1d : is_not_1d {};
     /*! \ingroup Array_detail
        \brief 1D specialisation of a templated class used to check if it's a 1D array or not
