@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -9,11 +9,11 @@
  
   \author Kris Thielemans
   
-  \date $Date$
-  
-  \version $Revision$
+  $Date$  
+  $Revision$
 */
 #include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "tomo/Succeeded.h"
 #include "DiscretisedDensity.h"
 #include "recon_buildblock/SymmetryOperation.h"
 #include "local/tomo/recon_buildblock/DataSymmetriesForDensels.h"
