@@ -70,6 +70,10 @@ This includes multi-dimensional arrays, images, image processors,
 projection data,...
 */
 /*!
+\defgroup buildblock_detail Implementation details for block 
+\ingroup buildblock
+*/
+/*!
 \defgroup Array Items relating to vectors and (multi-dimensional) arrays
 \ingroup buildblock
 */
