@@ -59,7 +59,7 @@ static inline
 unsigned long int
 convert_4_bytes(unsigned char * buffer)
 {
-  if (ByteOrder::native == ByteOrder::big_endian)
+  if (ByteOrder::get_native_order() == ByteOrder::big_endian)
     return buffer[0] + 256UL*(buffer[1] + 256UL*(buffer[2] + 256UL*buffer[3]));
   else
     return buffer[3] + 256UL*(buffer[2] + 256UL*(buffer[1] + 256UL*buffer[0]));
