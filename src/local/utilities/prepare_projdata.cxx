@@ -107,7 +107,7 @@ set_defaults()
   trues_projdata_ptr = 0;
   precorrected_projdata_ptr = 0;
   randoms_projdata_ptr = 0;
-  normalisation_ptr = 0;
+  normalisation_ptr = new TrivialBinNormalisation;
   scatter_projdata_ptr=0;
   max_segment_num_to_process = -1;
   trues_projdata_filename = "";
@@ -131,6 +131,9 @@ initialise_keymap()
   parser.add_key("trues_projdata_filename", &trues_projdata_filename);
   parser.add_key("precorrected_projdata_filename", &precorrected_projdata_filename);
   parser.add_key("randoms_projdata_filename", &randoms_projdata_filename);
+
+  parser.add_key("time frame definition filename", &frame_definition_filename); 
+  parser.add_key("time frame number", &current_frame_num); 
   
   
   parser.add_key("normatten_projdata_filename", &normatten_projdata_filename);
@@ -139,10 +142,6 @@ initialise_keymap()
   parser.add_key("Shifted_Poisson_denominator_projdata_filename", &Shifted_Poisson_denominator_projdata_filename);
   parser.add_key("prompts_denominator_projdata_filename", &prompts_denominator_projdata_filename);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
-
-  parser.add_key("frame definition filename", &frame_definition_filename); 
-  parser.add_key("frame number", &current_frame_num); 
- 
  
   parser.add_stop_key("END Prepare projdata Parameters");
 }
@@ -157,7 +156,10 @@ PrepareProjData(const char * const par_filename)
     ask_parameters();
 
   if (is_null_ptr(normalisation_ptr))
-    normalisation_ptr = new TrivialBinNormalisation;
+    {
+      warning("Invalid normalisation type\n");
+      exit(EXIT_FAILURE);
+    }
 
   do_scatter = 
     trues_projdata_filename.size()!=0 && 
@@ -204,6 +206,7 @@ PrepareProjData(const char * const par_filename)
     }
 
   // construct output projdata
+  // and set_up normalisation
   {
     // get output_data_info_ptr from one of the input files
 
@@ -232,6 +235,13 @@ PrepareProjData(const char * const par_filename)
 
     output_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
 					       max_segment_num_to_process);
+
+
+    if (normalisation_ptr->set_up(output_data_info_ptr) != Succeeded::yes)
+      {
+	warning("Error initialisation normalisation\n");
+	exit(EXIT_FAILURE);
+      }
 
     // open other files
 
@@ -285,7 +295,7 @@ doit()
       if (!symmetries_ptr->is_basic(view_seg_num))
 	continue;
 
-      // ** first fill in  normatten **
+      // ** first do normalisation (and fill in  normatten) **
       
       /*RelatedViewgrams<float>*/ normatten_viewgrams = 
         output_data_info_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr);
