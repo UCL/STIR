@@ -18,11 +18,13 @@
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
+#ifndef NDEBUG
 // set to high level of debugging
 #ifdef _DEBUG
 #undef _DEBUG
 #endif
 #define _DEBUG 2
+#endif
 
 #include "stir/VectorWithOffset.h"
 #include "stir/RunTests.h"
