@@ -132,17 +132,7 @@ void RPC_process_related_viewgrams_gradient(DiscretisedDensity<3,float>* output_
 
   if (additive_binwise_correction_ptr != NULL)
   {
-    // TODO
-    //estimated_viewgrams += (*additive_binwise_correction_ptr);
-
-    RelatedViewgrams<float>::iterator est_viewgrams_iter = 
-      estimated_viewgrams.begin();
-    RelatedViewgrams<float>::const_iterator add_cor_viewgrams_iter = 
-      additive_binwise_correction_ptr->begin();
-    for (;
-         est_viewgrams_iter != estimated_viewgrams.end();
-         ++est_viewgrams_iter, ++add_cor_viewgrams_iter)
-      (*est_viewgrams_iter) += (*add_cor_viewgrams_iter);
+    estimated_viewgrams += (*additive_binwise_correction_ptr);
   }
 
   // for sinogram division
@@ -171,18 +161,7 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(DiscretisedDensity<3
 
   if (additive_binwise_correction_ptr != NULL)
   {
-    // TODO
-    //estimated_viewgrams += (*additive_binwise_correction_ptr);
-    RelatedViewgrams<float>::iterator est_viewgrams_iter = 
-		estimated_viewgrams.begin();
-	RelatedViewgrams<float>::const_iterator add_cor_viewgrams_iter = 
-		additive_binwise_correction_ptr->begin();
-    for (;
-         est_viewgrams_iter != estimated_viewgrams.end();
-         ++est_viewgrams_iter, ++add_cor_viewgrams_iter)
-    {
-      (*est_viewgrams_iter) += (*add_cor_viewgrams_iter);
-    }
+    estimated_viewgrams += (*additive_binwise_correction_ptr);
   };
   
   RelatedViewgrams<float>::iterator meas_viewgrams_iter = 
@@ -214,14 +193,14 @@ void RPC_process_related_viewgrams_sensitivity
     
     if (multiplicative_binwise_correction_ptr != NULL)
     {
-      *viewgrams_ptr = *multiplicative_binwise_correction_ptr;
+      //*viewgrams_ptr = *multiplicative_binwise_correction_ptr;
+      // KTXXX temporary (?) fix to divide instead of multiply
+      viewgrams_ptr->fill(1.F);
+      *viewgrams_ptr /= *multiplicative_binwise_correction_ptr;
     }
     else
     {
-      for (RelatedViewgrams<float>::iterator iter = viewgrams_ptr->begin(); 
-      iter != viewgrams_ptr->end();
-      ++iter)
-        iter->fill(1.F);
+      viewgrams_ptr->fill(1.F);
     }
   }
   else
@@ -233,8 +212,8 @@ void RPC_process_related_viewgrams_sensitivity
     RelatedViewgrams<float>::iterator viewgrams_iter = 
       viewgrams_ptr->begin();
     for (; 
-    viewgrams_iter != viewgrams_ptr->end();
-    ++viewgrams_iter)
+         viewgrams_iter != viewgrams_ptr->end();
+         ++viewgrams_iter)
     {
       Viewgram<float>& viewgram = *viewgrams_iter;
       viewgram *= -1;
@@ -243,16 +222,9 @@ void RPC_process_related_viewgrams_sensitivity
     }
     if (multiplicative_binwise_correction_ptr != NULL)
     {
-      RelatedViewgrams<float>::iterator viewgrams_iter = 
-        viewgrams_ptr->begin();
-      RelatedViewgrams<float>::const_iterator mult_viewgrams_iter = 
-        multiplicative_binwise_correction_ptr->begin();
-      for (; 
-           viewgrams_iter != viewgrams_ptr->end();
-           ++viewgrams_iter, ++mult_viewgrams_iter)
-      {
-        *viewgrams_iter *= *mult_viewgrams_iter;
-      }
+      // KTXXX temporary (?) fix to divide instead of multiply
+      *viewgrams_ptr /= *multiplicative_binwise_correction_ptr;
+
     }
   }  
 
