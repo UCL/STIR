@@ -151,18 +151,6 @@ endif
 # add any others specific to your system using the SYSTEM macros
 
 
-#********** building block libraries
-
-#These libraries will be used as dependencies
-LIB_RECON_BUILDINGBLOCK= \
-   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
-LIB_BUILDINGBLOCK= \
-   ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
-LIB_DISPLAY= \
-   ${WORKSPACE}/display/${DEST}libdisplay.a
-
-BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
-
 #******** targets
 
 .PHONY: all clean install  # depend
@@ -172,15 +160,6 @@ BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
 #depend:
 #	@echo \*\*\* Rebuilding dependencies...
 #	makedepend -Y -- $(CFLAGS) -- -fMakefile -p${DEST} $(wildcard *.cxx) 2> /dev/null
-
-#********* vpath
-# trickery to find relevant files
-# TODO only needed for sccs ?
-
-vpath %.cxx = ../../parallel
-#AZ 22/03/99 Added
-vpath %.h = ${INCLUDE_DIR} ${INCLUDE_DIR}/FORE ${INCLUDE_DIR}/OSEM ${INCLUDE_DIR}/PROMIS ${INCLUDE_DIR}/recon_buildblock
-vpath %.inl = ${INCLUDE_DIR} ${INCLUDE_DIR}/FORE ${INCLUDE_DIR}/OSEM ${INCLUDE_DIR}/PROMIS ${INCLUDE_DIR}/recon_buildblock
 
 
 #********* default rules
@@ -222,32 +201,9 @@ ${DEST}%.o: %.c
 	-mkdir -p $(DEST)
 	$(CC) $(CFLAGS) -o $@ -c $< 
 
+# default rule for making an executable has to be in Makefile_bblibs
+# BB_LIBS and BB_REGISTRIES are defined in Makefile_bblibs
 
-${DEST}%: ${DEST}%.o $(BB_LIBS)
-	$(CXX) $(CFLAGS)  -o $@ $< $(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
 
-#********** SCCS rules
-
-# get the latest version of the header from SCCS
-
-%.h: $(dir %.h)/SCCS/s.$(notdir %).h
-	@echo \*\*\* Getting $@ from SCCS...
-	(cd $(dir $@) ; sccs get $@)
-
-# get the latest version of the inline from SCCS
-
-%.inl: $(dir %.h)/SCCS/s.$(notdir %).inl
-	@echo \*\*\* Getting $@ from SCCS...
-	(cd $(dir $@) ; sccs get $@)
-
-# get the latest version of the source file from SCCS
-
-%.cxx: $(dir %.cxx)SCCS/s.$(notdir %).cxx
-	@echo \*\*\* Getting $@ from SCCS...
-	sccs get $@
-
-%.c: $(dir %.c)SCCS/s.$(notdir %).c
-	@echo \*\*\* Getting $@ from SCCS...
-	sccs get $@
 
 
