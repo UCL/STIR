@@ -41,14 +41,13 @@ START_NAMESPACE_STIR
 
 void make_fan_sum_data(Array<1,float>& data_fan_sums, const DetPairData& det_pair_data)
 {
-  const int num_detectors = det_pair_data.get_length();
-  for (int det_num_a = 0; det_num_a < num_detectors; ++det_num_a)
-    data_fan_sums[det_num_a] = det_pair_data[det_num_a].sum();
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    data_fan_sums[a] = det_pair_data.sum(a);
 }
 
 void make_geo_data(GeoData& geo_data, const DetPairData& det_pair_data)
 {
-  const int num_detectors = det_pair_data.get_length();
+  const int num_detectors = det_pair_data.get_num_detectors();
   const int num_crystals_per_block = geo_data.get_length()*2;
   const int num_blocks = num_detectors / num_crystals_per_block;
   assert(num_blocks * num_crystals_per_block == num_detectors);
@@ -57,25 +56,28 @@ void make_geo_data(GeoData& geo_data, const DetPairData& det_pair_data)
   DetPairData work = det_pair_data;
   work.fill(0);
 
-  for (int det_num_a = 0; det_num_a < num_detectors; ++det_num_a)
-    for (int det_num_b = 0; det_num_b < num_detectors; ++det_num_b)      
-      {
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)      
+        {
 	// mirror symmetry
-	work[det_num_a][det_num_b] = 
-	  det_pair_data[det_num_a][det_num_b] + 
-	  det_pair_data[num_detectors-1-det_num_a][num_detectors-1-det_num_b];
+	work(a,b) = 
+	  det_pair_data(a,b) + 
+	  det_pair_data(num_detectors-1-a,(2*num_detectors-1-b)%num_detectors);
       }
 
   geo_data.fill(0);
 
   for (int crystal_num_a = 0; crystal_num_a < num_crystals_per_block/2; ++crystal_num_a)
-    for (int det_num_b = 0; det_num_b < num_detectors; ++det_num_b)      
+    for (int det_num_b = det_pair_data.get_min_index(crystal_num_a); det_num_b <= det_pair_data.get_max_index(crystal_num_a); ++det_num_b)      
       {
 	for (int block_num = 0; block_num<num_blocks; ++block_num)
 	  {
 	    const int det_inc = block_num * num_crystals_per_block;
-	    geo_data[crystal_num_a][det_num_b] +=
-	      work[(crystal_num_a+det_inc)%num_detectors][(det_num_b+det_inc)%num_detectors];
+            const int new_det_num_a = (crystal_num_a+det_inc)%num_detectors;
+            const int new_det_num_b = (det_num_b+det_inc)%num_detectors;
+            if (det_pair_data.is_in_data(new_det_num_a,new_det_num_b))
+	      geo_data[crystal_num_a][det_num_b] +=
+	        work(new_det_num_a,new_det_num_b);
 	  }
       }
   geo_data /= 2*num_blocks;
@@ -84,17 +86,17 @@ void make_geo_data(GeoData& geo_data, const DetPairData& det_pair_data)
  
 void make_block_data(BlockData& block_data, const DetPairData& det_pair_data)
 {
-  const int num_detectors = det_pair_data.get_length();
+  const int num_detectors = det_pair_data.get_num_detectors();
   const int num_blocks = block_data.get_length();
   const int num_crystals_per_block = num_detectors/num_blocks;
   assert(num_blocks * num_crystals_per_block == num_detectors);
 
   block_data.fill(0);
-  for (int det_num_a = 0; det_num_a < num_detectors; ++det_num_a)
-    for (int det_num_b = 0; det_num_b < num_detectors; ++det_num_b)      
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)      
       {
-	block_data[det_num_a/num_crystals_per_block][det_num_b/num_crystals_per_block] += 
-	  det_pair_data[det_num_a][det_num_b];
+	block_data[a/num_crystals_per_block][(b/num_crystals_per_block)%num_blocks] += 
+	  det_pair_data(a,b);
       }
   
   block_data /= square(num_crystals_per_block);
@@ -107,17 +109,17 @@ void iterate_efficiencies(Array<1,float>& efficiencies,
 {
   const int num_detectors = efficiencies.get_length();
 
-  for (int det_num_a = 0; det_num_a < num_detectors; ++det_num_a)
+  for (int a = 0; a < num_detectors; ++a)
     {
-      if (data_fan_sums[det_num_a] == 0)
-	efficiencies[det_num_a] = 0;
+      if (data_fan_sums[a] == 0)
+	efficiencies[a] = 0;
       else
 	{
-          //const float denominator = inner_product(efficiencies,model[det_num_a]);
+          //const float denominator = inner_product(efficiencies,model[a]);
 	  float denominator = 0;
-	  for (int det_num_b = 0; det_num_b < num_detectors; ++det_num_b)      
-	    denominator += efficiencies[det_num_b]*model[det_num_a][det_num_b];
-	  efficiencies[det_num_a] = data_fan_sums[det_num_a] / denominator;
+           for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)      
+  	    denominator += efficiencies[b%num_detectors]*model(a,b);
+	  efficiencies[a] = data_fan_sums[a] / denominator;
 	}
     }
 }
@@ -128,7 +130,7 @@ void iterate_geo_norm(GeoData& norm_geo_data,
 {
   make_geo_data(norm_geo_data, model);
   //norm_geo_data = measured_geo_data / norm_geo_data;
-  const int num_detectors = model.get_length();
+  const int num_detectors = model.get_num_detectors();
   const int num_crystals_per_block = measured_geo_data.get_length()*2;
   const float threshold = measured_geo_data.find_max()/10000.F;
   for (int a = 0; a < num_crystals_per_block/2; ++a)
@@ -189,7 +191,7 @@ void check_geo_data()
     DetPairData model_det_pair_data = det_pair_data;
     for (int a = 0; a < num_detectors; ++a)
       for (int b = 0; b < num_detectors; ++b)      
-	model_det_pair_data[a][b]=square((a+b-2*num_detectors)/2.F);
+	model_det_pair_data(a,b)=square((a+b-2*num_detectors)/2.F);
     {
       det_pair_data = model_det_pair_data;
       apply_geo_norm(det_pair_data, norm_geo_data);
@@ -245,6 +247,15 @@ float KL(const Array<num_dimensions, elemT>& a, const Array<num_dimensions, elem
     {
       sum += KL(*iter_a++, *iter_b++, threshold_a);
     }
+  return sum;
+}
+
+float KL(const DetPairData& d1, const DetPairData& d2, const float threshold = 0)
+{
+  float sum=0;
+  for (int a = d1.get_min_index(); a <= d1.get_max_index(); ++a)
+    for (int b = d1.get_min_index(a); b <= d1.get_max_index(a); ++b)      
+      sum += KL(d1(a,b), d2(a,b), threshold);
   return sum;
 }
 
@@ -393,11 +404,11 @@ int main(int argc, char **argv)
 	    if (do_KL)
 	      {
 		apply_geo_norm(det_pair_data, norm_geo_data);
-		for (int a=0; a<num_detectors; ++a)
-		  for (int b=0; b<num_detectors; ++b)
-		    if (det_pair_data[a][b]==0 && measured_det_pair_data[a][b]!=0)
+                for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+                  for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)      
+		    if (det_pair_data(a,b)==0 && measured_det_pair_data(a,b)!=0)
 		      warning("geo 0 at a=%d b=%d measured value=%g\n",
-			      a,b,measured_det_pair_data[a][b]);
+			      a,b,measured_det_pair_data(a,b));
 		cerr << "KL " << KL(measured_det_pair_data, det_pair_data, threshold_for_KL) << endl;
 	      }
 	    if (do_display)		 
