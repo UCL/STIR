@@ -35,6 +35,7 @@
 #include <iostream> 
 #include <fstream>
 #include <numeric>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::iostream;
@@ -42,19 +43,60 @@ using std::ofstream;
 using std::ios;
 using std::cerr;
 using std::endl;
+using std::swap;
 #endif
 
 USING_NAMESPACE_STIR
 
-void trim_edges(VoxelsOnCartesianGrid<float>& main_buffer);
-void get_plane(VoxelsOnCartesianGrid<float>& main_buffer);
-void get_plane_row(VoxelsOnCartesianGrid<float>& main_buffer);
+static void trim_edges(VoxelsOnCartesianGrid<float>& main_buffer);
+static void get_plane(VoxelsOnCartesianGrid<float>& main_buffer);
+static void get_plane_row(VoxelsOnCartesianGrid<float>& main_buffer);
 
-VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query);
+static VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query);
 
-void show_menu();
-void show_math_menu();
-void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math);
+static void show_menu();
+static void show_math_menu();
+static void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math);
+
+static VoxelsOnCartesianGrid<float> 
+transpose_13(const VoxelsOnCartesianGrid<float> & image)
+{
+  CartesianCoordinate3D<float> origin = image.get_origin();
+  swap(origin.x(), origin.z());
+  CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
+  swap(voxel_size.x(), voxel_size.z());
+  VoxelsOnCartesianGrid<float> 
+    out(IndexRange3D(image.get_min_x(),image.get_max_x(),
+                     image.get_min_y(),image.get_max_y(),
+                     image.get_min_z(),image.get_max_z()),
+        origin,
+        voxel_size);
+  for (int x=image.get_min_x(); x<=image.get_max_x(); ++x)
+    for (int y=image.get_min_y(); y<=image.get_max_y(); ++y)
+      for (int z=image.get_min_z(); z<=image.get_max_z(); ++z)
+        out[x][y][z] = image[z][y][x];
+  return out;
+}
+
+static VoxelsOnCartesianGrid<float> 
+transpose_12(const VoxelsOnCartesianGrid<float> & image)
+{
+  CartesianCoordinate3D<float> origin = image.get_origin();
+  swap(origin.y(), origin.z());
+  CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
+  swap(voxel_size.y(), voxel_size.z());
+  VoxelsOnCartesianGrid<float> 
+    out(IndexRange3D(image.get_min_y(),image.get_max_y(),
+                     image.get_min_z(),image.get_max_z(),
+                     image.get_min_x(),image.get_max_x()),
+        origin,
+        voxel_size);
+  for (int y=image.get_min_y(); y<=image.get_max_y(); ++y)
+    for (int z=image.get_min_z(); z<=image.get_max_z(); ++z)
+      for (int x=image.get_min_x(); x<=image.get_max_x(); ++x)
+        out[y][z][x] = image[z][y][x];
+  return out;
+}
 
 int main(int argc, char *argv[])
 {
@@ -102,8 +144,13 @@ int main(int argc, char *argv[])
             {  
                 const float maxi =
                   ask_num("Maximum in color scale",0.F,main_buffer.find_max(),main_buffer.find_max());
-
-                display(main_buffer, maxi);
+ 
+                switch (ask_num("transaxial (0), coronal (1), sagital (2)",0,2,0))
+                {
+                case 0: display(main_buffer, maxi); break;
+                case 1: display(transpose_12(main_buffer), maxi); break;
+                case 2: display(transpose_13(main_buffer), maxi); break;
+                }
                 break;
             }
             case 2: // data total
