@@ -1,8 +1,24 @@
 //
 // $Id$
 //
-/*!
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
   \file
   \ingroup buildblock
 
@@ -12,20 +28,9 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-#if defined(OLDDESIGN)
-#include "stir/pet_common.h"
-#endif
-
 #include "stir/interpolate.h"
-
 
 START_NAMESPACE_STIR
 
@@ -56,13 +61,13 @@ START_NAMESPACE_STIR
   If \c true those data are set to 0. (The effect being the same as first
   doing \c out_data.fill(0) before calling overlap_interpolate).
 
-  \warning when T involves integral types, there is no rounding 
-  but truncation.
-
   For an index x_out (in \c out_data coordinates), the corresponding
-  \c in_data coordinates is x_in = x_out/zoom  + offset
+  \c in_data coordinates is <code>x_in = x_out/zoom  + offset</code>
   (The convention is used that the 'bins' are centered around the
   coordinate value.)
+
+  \warning when T involves integral types, there is no rounding 
+  but truncation.
 
   \par Examples:
 
@@ -218,7 +223,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
     
     const float inverse_zoom = 1/zoom;
     
+    // current coordinate in out_data
     int x2 = out_data.get_min_index();
+    // current coordinate in in_data
     int x1 = (int)floor((x2 - .5)*inverse_zoom  + offset + .5);
     
     // the next variable holds the difference between the coordinates
@@ -226,15 +233,20 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
     // in a coordinate system where the 'in' bins are unit distance apart
     double diff_between_right_edges = (x1-offset+.5) - (x2 + .5)*inverse_zoom;
     
+    // we will loop over x1 to update out_data[x2] from in_data[x1]
+    // however, we first check if the left edge of the first in_data is
+    // to the left of the left edge of the first out_data.
+    // If so, will first subtract the contribution of the 'in' bin that
+    // lies outside the 'out' bin. In the loop later, this part of the
+    // 'in' bin will be added again.
     {
-      const double diff_between_right1_and_left2 =
-	diff_between_right_edges+inverse_zoom;
-      if (diff_between_right1_and_left2 > 0 &&
-	x1 >= in_data.get_min_index() &&
-	x1 <= in_data.get_max_index() )
+      const double diff_between_left_edges =
+	diff_between_right_edges-1+inverse_zoom;
+      if (diff_between_left_edges < 0 &&
+	x1 >= in_data.get_min_index() && x1 <= in_data.get_max_index() )
       {
 	out_data[x2] = in_data[x1];
-	out_data[x2] *= static_cast<float>(-diff_between_right1_and_left2);
+	out_data[x2] *= static_cast<float>(diff_between_left_edges);
       }
       else
       {
