@@ -2,10 +2,14 @@
 #define __RECONSTRUCTION_H__
 
 //#include "PARAPET.h"
-#include <Filter.h>
+// CL 25/11 Change <> to ""
+
+#include "Filter.h"
 #include <String.h>
 #include <strstream.h>
-#include <PROMIS/glgtime.h>
+#include "PROMIS/glgtime.h"
+#include "sinodata.h"
+#include "imagedata.h"
 /*
    reconstruction methods are also defined as classes.
    use as follows:
@@ -24,15 +28,16 @@ extern PETSegmentBySinogram& CorrectForAttenuation(const PETSegmentBySinogram& s
 class PETReconstruction
 {
 public:
-  virtual String method_info()
+virtual String method_info()
     { return ""; }
-  virtual String parameter_info()
+virtual String parameter_info()
     { return ""; }
-  virtual void reconstruct(PETSinogramOfVolume, PETImageOfVolume) 
-    = 0;
-  virtual void reconstruct(PETSinogramOfVolume s, 
-			   PETSinogramOfVolume a, PETImageOfVolume v) 
-    { reconstruct(CorrectForAttenuation(s, a), v); }
+// CL 24/11 ADd reference
+virtual void reconstruct(const PETSinogramOfVolume&, PETImageOfVolume&)  = 0;
+virtual void  reconstruct(const PETSinogramOfVolume &s, const PETSinogramOfVolume &a, PETImageOfVolume &v) 
+    { 
+	reconstruct(CorrectForAttenuation(s, a), v); 
+    }
 };
 
 class PETAnalyticReconstruction: public PETReconstruction
@@ -41,13 +46,12 @@ public:
   int delta_min;
   int delta_max;
   Filter filter;
-  virtual String parameter_info();
-  PETAnalyticReconstruction(int min, int max, Filter f);
+virtual String parameter_info();
+PETAnalyticReconstruction(int min, int max, Filter f);
 };
 
 inline PETAnalyticReconstruction::PETAnalyticReconstruction
-     (int min, int max, Filter f)
-     :  delta_min(min), delta_max(max), filter(f)
+     (int min, int max, Filter f) :  delta_min(min), delta_max(max), filter(f)
 {};
 
 inline String PETAnalyticReconstruction::parameter_info()
@@ -63,21 +67,22 @@ class PETIterativeReconstruction: public PETReconstruction
 {
 public:
   int max_iterations;
-  PETIterativeReconstruction(int max);
+PETIterativeReconstruction(int max);
 };
 
 inline PETIterativeReconstruction::PETIterativeReconstruction
-     (int max)
-     :  max_iterations(max)
-{}
+     (int max) :max_iterations(max)
+{
+    /*Do something */
+}
 
 class PETPROMISReconstruction : public PETAnalyticReconstruction
 {
 public:
   String method()
     { return("PROMIS"); }
-  PETPROMISReconstruction(int min, int max, Filter f);
-  void reconstruct(PETSinogramOfVolume, PETImageOfVolume);
+PETPROMISReconstruction(int min, int max, Filter f);
+void reconstruct(const PETSinogramOfVolume &s, PETImageOfVolume &v);
 };
 
 inline PETPROMISReconstruction::PETPROMISReconstruction(int min, int max, Filter f)
@@ -90,14 +95,13 @@ inline PETPROMISReconstruction::PETPROMISReconstruction(int min, int max, Filter
 class PETReconstruction2D
 {
 public:
-  virtual String method_info()
+virtual String method_info()
     { return ""; }
-  virtual String parameter_info()
+virtual String parameter_info()
     { return ""; }
   //KT 17/11 added references and const
-  virtual void reconstruct(const PETSegmentBySinogram& , PETImageOfVolume&) 
-    = 0;
-  virtual void reconstruct(const PETSegmentBySinogram& s, 
+virtual  void reconstruct(const PETSegmentBySinogram& , PETImageOfVolume&) = 0;
+virtual void reconstruct(const PETSegmentBySinogram& s, 
 			   const PETSegmentBySinogram& a, PETImageOfVolume& v) 
     { reconstruct(CorrectForAttenuation(s, a), v); }
 };
@@ -106,8 +110,8 @@ class PETAnalyticReconstruction2D: public PETReconstruction2D
 {
   Filter1D<float> *filter;
 public:
-  virtual String parameter_info();
-  PETAnalyticReconstruction2D(Filter1D<float> *f);
+virtual String parameter_info();
+PETAnalyticReconstruction2D(Filter1D<float> *f);
 };
 
 inline PETAnalyticReconstruction2D::PETAnalyticReconstruction2D
@@ -132,7 +136,8 @@ class Reconstruct2DFBP : public PETAnalyticReconstruction2D
 
   // CL 27/10 Add virtual
   // KT 17/11 added references and const to args
-  virtual void reconstruct(const PETSegmentBySinogram& segment_0, PETImageOfVolume& direct_image);
+
+virtual void reconstruct(const PETSegmentBySinogram &segment_0, PETImageOfVolume &direct_image);
 };
 
 
