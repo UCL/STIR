@@ -80,6 +80,10 @@ Library with classes and functions to read and write images and projection
 from/to file.
 */
 /*!
+\defgroup InterfileIO Interfile support in the IO library
+\ingroup IO
+*/
+/*!
 \defgroup ECAT ECAT6 and ECAT7 support in the IO library
 \ingroup IO
 */
