@@ -23,11 +23,13 @@
 // and more DOC of course
 
 #include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "Viewgram.h"
 #include "RelatedViewgrams.h"
 #include "VoxelsOnCartesianGrid.h"
 #include "IndexRange4D.h"
+#include "Array.h"
 
 START_NAMESPACE_TOMO
 
@@ -35,14 +37,14 @@ ForwardProjectorByBinUsingRayTracing::
   ForwardProjectorByBinUsingRayTracing(
 				   const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
                                    const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
- : symmetries(proj_data_info_ptr, image_info_ptr)
+ : symmetries_ptr(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr))
 {}
 
 
 const DataSymmetriesForViewSegmentNumbers * 
 ForwardProjectorByBinUsingRayTracing::get_symmetries_used() const
 {
-  return &symmetries; 
+  return symmetries_ptr; 
 }
 
 void 
