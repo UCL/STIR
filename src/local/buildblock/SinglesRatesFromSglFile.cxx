@@ -1,5 +1,5 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
 
@@ -8,11 +8,11 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
