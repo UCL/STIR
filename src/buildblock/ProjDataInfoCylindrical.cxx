@@ -103,13 +103,15 @@ initialise_ring_diff_arrays() const
     for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
       if (min_ring_diff[segment_num]> max_ring_diff[segment_num])
       {
-        error("ProjDataInfoCylindrical: min_ring_difference %d is larger than max_ring_difference %d for segment %d.\n",
+        error("ProjDataInfoCylindrical: min_ring_difference %d is larger than "
+	      "max_ring_difference %d for segment %d.\n",
           min_ring_diff[segment_num], max_ring_diff[segment_num], segment_num);        
       }
   }
   // initialise m_offset 
   { 
-    m_offset.grow(get_min_segment_num(),get_max_segment_num());
+    m_offset = 
+      VectorWithOffset<float>(get_min_segment_num(),get_max_segment_num());
     
     /* m_offsets are found by requiring
     get_m(..., min_axial_pos_num,...) == - get_m(..., max_axial_pos_num,...)
@@ -118,7 +120,7 @@ initialise_ring_diff_arrays() const
     {
       m_offset[segment_num] =
         ((get_max_axial_pos_num(segment_num) + get_min_axial_pos_num(segment_num))
-        *get_axial_sampling(segment_num)
+	 *get_axial_sampling(segment_num)
         )/2;
     }
   }
