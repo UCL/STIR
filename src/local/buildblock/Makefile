@@ -12,6 +12,10 @@ all: $(DEST)libbuildblock.a $(DEST)local_buildblock_registries.o
 clean:
 	$(RM) $(DEST)*
 SOURCES = \
+	SeparableLowPassImageFilter.cxx \
+	SeparableLowPassArrayFilter.cxx \
+	ModifiedInverseAverigingImageFilter.cxx \
+	ModifiedInverseAverigingArrayFilter.cxx \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
 	fft.cxx
