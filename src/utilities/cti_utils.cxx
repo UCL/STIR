@@ -41,7 +41,7 @@
 
 /* KT 25/11/98 moved this after rcn_config, to allow this ifdef to work */
 #ifdef _PLATFORM_TRANSPUTER_
-#include <mathf.h>
+//#include <mathf.h>
 #endif
 #include <math.h>
 
@@ -310,37 +310,55 @@ void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
 	ring1 - second ring in ring pair
 ******************************************************************************/
 
-int cti_rings2plane (CameraType scanner, short ring0, short ring1) {
-
-	int d; /* div_t  d; */
-	
+//CL Change the 1rst argument to the number of rings
+//int cti_rings2plane (CameraType scanner, short ring0, short ring1) {
+int cti_rings2plane (short nrings, short ring0, short ring1) {
 	/* KT TODO this might have to be changed for other scanners as well */
-
+// CL 12/02/99 Now done, this function is generalized for any PET scanner
+   //for a PET scanner having "rings" rings
+  
+    
+        
+#if 0
 	switch (scanner) {
 	        /* KT 01/12/98 added 921 */
-	        case cam921:
-	                fprintf(stderr, "cti_rings2plane: 921 not supported\n");
-	                return 0;
-		case camRPT:
-		case cam953:
-		  /* KT 01/12/98 added 951 */
-		case cam951:
-			d = (int) (ring0 / 8); /*div (ring0, 8);*/
-
-			/* return (ring1 * 8
-				   + ring0 % 8 + 128 * d.quot + 1); */
-			return (ring1 * 8 + ring0 % 8 + 128 * d + 1);
-			 
-		break;
+            case cam921:
+                fprintf(stderr, "cti_rings2plane: 921 not supported\n");
+                return 0;
+            case camRPT:
+                nrings=16;
+                break;
+                
+            case cam953:
+                nrings=16;
+                break;
+                
+                    /* KT 01/12/98 added 951 */
+            case cam951:
+                nrings= 16;
+                break;
+                
+            case camGE://CL 150299 Add a new camera type in camera.h
+                    nrings= 18;
+                    break;
 		
 		default:
-		  /* KT 01/12/98 added  */
+                        /* Note, this case in particular includes 921.
+s                           Others scanners might not work, but we didn't check */
+/* KT 01/12/98 added  */
 		  /* New ACS numbering (2048 planes 0-2047) */
-		        return ((ring0&0x10)<<5)+((ring0&0x08)<<4)+(ring0&7)+
-			   ((ring1&0x10)<<4)+((ring1&15)<<3)+1;
-			
-		break;
+                        //   return ((ring0&0x10)<<5)+((ring0&0x08)<<4)+(ring0&7)+
+                        //  ((ring1&0x10)<<4)+((ring1&15)<<3)+1;
+                    fprintf(stderr,"cti_rings2plane: Scanner not supported\n");
+                    return 0;
+                    
+                    
 	}
+     #endif   
+//CL 15/02/99 A more generalized formula for any PET scanners
+        int d = (int) (ring0 / (nrings/2)); 
+        return (ring1 * nrings/2 + ring0 % (nrings/2) +
+                nrings/2 * nrings * d + 1);			 
 }
 /*}}}  */
 
