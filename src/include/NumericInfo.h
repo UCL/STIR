@@ -35,7 +35,8 @@ class NumericType
 public:
   enum Type { BIT, SCHAR, UCHAR, SHORT, USHORT, INT, UINT, LONG, ULONG, 
 	 FLOAT, DOUBLE, UNKNOWN_TYPE } id;
-  NumericType(Type t)
+  // KT 06/05/98 added default value
+  NumericType(Type t = UNKNOWN_TYPE)
     : id(t) 
     {}
 
