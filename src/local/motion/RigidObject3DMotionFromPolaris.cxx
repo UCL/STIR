@@ -35,12 +35,6 @@
 namespace std { using ::time_t; using ::tm; using ::localtime; }
 #endif
 
-
-#ifndef STIR_NO_NAMESPACES
-using std::iostream;
-using std::streampos;
-#endif
-
 START_NAMESPACE_STIR
 
 // Find and store gating values in a vector from lm_file  
@@ -55,17 +49,6 @@ RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris";
 RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris()
 {
   set_defaults();
-}
-
-RigidObject3DMotionFromPolaris::
-RigidObject3DMotionFromPolaris(const string mt_filename_v,
-			       shared_ptr<Polaris_MT_File> mt_file_ptr_v)
-{
-  mt_file_ptr = mt_file_ptr_v;
-  mt_filename = mt_filename_v;
-  // TODO
-  error("constructor does not work yet");
-
 }
 
 const RigidObject3DTransformation& 
@@ -106,15 +89,15 @@ compute_average_motion(const double start_time, const double end_time) const
       total_q +=quater;
       samples += 1;
     }
-    iter++;
+    ++iter;
   }
   /* Average quat and translation */
  
   if (samples==0)
     {
-      warning("Start-end range does not seem to overlap with MT info.\n"
-	      "Reference transformation set to identity, but this is WRONG.\n");
-      return RigidObject3DTransformation(Quaternion<float>(1,0,0,0), CartesianCoordinate3D<float>(0,0,0));
+      error("RigidObject3DMotionFromPolaris::compute_average_motion:\n"
+	    "\t Start-end range (%g-%g) does not seem to overlap with MT info.",
+	    start_time, end_time);	     
     }
   
   total_q /=static_cast<float>(samples);
@@ -155,7 +138,8 @@ get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) c
 
 
 void 
-RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
+RigidObject3DMotionFromPolaris::
+do_synchronisation(CListModeData& listmode_data)
 {
   std::time_t sec_time = 
     listmode_data.get_scan_start_time_in_secs_since_1970();
@@ -183,22 +167,18 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
   VectorWithOffset<unsigned> lm_random_numbers;
   find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
   cerr << "done find and store gate tag values" << endl;
-  // TODO remove
-  {
-    std::ofstream lmtimes("lmtimes.txt");
-    lmtimes << lm_times_in_millisecs;
-    std::ofstream lmtags("lmtags.txt");
-    lmtags << lm_random_numbers;
-  }
   const VectorWithOffset<unsigned>::size_type num_lm_tags = lm_random_numbers.size() ;
-  // Peter has size-1 for some reason
+  if (num_lm_tags==0)
+    error("RigidObject3DMotionFromPolaris: no time data in list mode file");
 
   const unsigned long num_mt_tags = mt_file_ptr->num_tags();
-  
-  const float expected_tag_period = .2F; // TODO move to Polaris_MT_File
+  if (num_mt_tags==0)
+    error("RigidObject3DMotionFromPolaris: no data in polaris file");
+
+
   /* Determine location of LM random numbers in Motion Tracking list 
 
-    WARNING: assumes that mt is started BEFORE lm, and stopped AFTER 
+    WARNING: assumes that mt is started BEFORE lm
   */
   for (long int mt_offset = 0; mt_offset + num_lm_tags <= num_mt_tags; ++mt_offset )
   {
@@ -213,20 +193,10 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 
     float previous_mt_tag_time = iterator_for_random_num->sample_time;
     ++iterator_for_random_num;
-    unsigned long previous_lm_tag_time_in_millisecs = lm_times_in_millisecs[0];
     unsigned int lm_tag_num = 1;
-    while (iterator_for_random_num!= mt_file_ptr->end_all_tags())
-      {
-	const float elapsed_mt_tag_time = 
-	  (iterator_for_random_num->sample_time - previous_mt_tag_time);
-	if (elapsed_mt_tag_time > 1.3F * expected_tag_period)
-	  {
-	    warning("MT file contains a too large time interval (%g) after time %g\n",
-		    elapsed_mt_tag_time, previous_mt_tag_time);
-	  }
-	if (lm_tag_num >= num_lm_tags)
-	  break; // get out of while loop
-
+    while (iterator_for_random_num!= mt_file_ptr->end_all_tags() &&
+	   lm_tag_num < num_lm_tags)
+      { 
 	if (iterator_for_random_num->rand_num != lm_random_numbers[lm_tag_num])
 	  {
 	    // no match
@@ -237,15 +207,14 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 	++num_matched_tags;	
 	previous_mt_tag_time = iterator_for_random_num->sample_time;
 	++iterator_for_random_num;
-	previous_lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
 	++lm_tag_num;
       } // end of loop that checks current offset
     
     if (num_matched_tags!=0)
     {
       // yes, they match
-      cerr << "\n\tFound " << num_matched_tags << " matching tags between mt file and listmode data\n";
-      cerr << "\tEntry " << mt_offset << " in .mt file corresponds to Time 0 \n";
+      cerr << "\n\tFound " << num_matched_tags << " matching tags between mt file and list mode data\n";
+      cerr << "\tEntry " << mt_offset << " in .mt file corresponds to start of list mode data \n";
       time_offset = 
 	(mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
 
@@ -294,21 +263,39 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 
       }
       constant += time_offset;
-      // check if times match 
+
+      // do some reporting of time discrepancies 
       {
+	// Find average period between Polaris samples. 
+	// Used for warning about anomalous differences between sample times.
+	const double expected_tag_period = 
+	  ((mt_file_ptr->end_all_tags()-1)->sample_time -
+	   mt_file_ptr->begin_all_tags()->sample_time)/
+	  ((mt_file_ptr->end_all_tags()-1) -
+	   mt_file_ptr->begin_all_tags());
+
 	double max_deviation = 0;
 	double time_of_max_deviation = 0;
 	Polaris_MT_File::const_iterator mt_iter =
 	  mt_file_ptr->begin_all_tags() + mt_offset;	
 	unsigned int lm_tag_num = 0;
+	double previous_mt_tag_time = mt_iter->sample_time;
 	// skip first
 	++mt_iter; ++lm_tag_num;
 	while (mt_iter!= mt_file_ptr->end_all_tags() && 
 	       lm_tag_num < num_lm_tags)
 	{
-	  const float mt_tag_time = 
-	    mt_iter->sample_time;
+	  const float mt_tag_time =  mt_iter->sample_time;
 	  ++mt_iter;
+	  const float elapsed_mt_tag_time = 
+	    (mt_tag_time - previous_mt_tag_time);	 
+	  if (elapsed_mt_tag_time > 1.3F * expected_tag_period)
+	    {
+	      warning("MT file contains a time interval (%g) that is larger than expected after time %g\n",
+		      elapsed_mt_tag_time, previous_mt_tag_time);
+	    }
+	  previous_mt_tag_time = mt_tag_time;
+
 	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
 	  ++lm_tag_num;
 
@@ -369,7 +356,7 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
       cerr << "\nCould not open synchronisation file as listmode filename missing."
 	   << "\nSynchronising..." << endl;
       
-      find_offset(listmode_data);
+      do_synchronisation(listmode_data);
     }
   else
     {      
@@ -403,7 +390,7 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 	  cerr << "\nCould not open synchronisation file " << sync_filename
 	       << " for reading.\nSynchronising..." << endl;
   
-	  find_offset(listmode_data);
+	  do_synchronisation(listmode_data);
 	  cerr << "\nsynchronisation time offset  " << get_time_offset() << endl;
 	  std::ofstream out_sync_file(sync_filename.c_str());
 	  if (!out_sync_file)
