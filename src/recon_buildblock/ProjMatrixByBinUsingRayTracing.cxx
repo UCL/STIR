@@ -27,6 +27,9 @@
    added registry things
    KT 21/02/2002
    added option for square FOV
+   KT 15/05/2002 
+   added possibility of multiple LORs in tangential direction
+   call ProjMatrixByBin's new parsing functions
  */
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -34,6 +37,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
+#include "stir/round.h"
 #include <algorithm>
 #include <math.h>
 
@@ -57,8 +61,11 @@ ProjMatrixByBinUsingRayTracing()
 void 
 ProjMatrixByBinUsingRayTracing::initialise_keymap()
 {
+  ProjMatrixByBin::initialise_keymap();
   parser.add_start_key("Ray Tracing Matrix Parameters");
   parser.add_key("restrict to cylindrical FOV", &restrict_to_cylindrical_FOV);
+  parser.add_key("number of rays in tangential direction to trace for each bin",
+                  &num_tangential_LORs);
   parser.add_stop_key("End Ray Tracing Matrix Parameters");
 }
 
@@ -66,7 +73,24 @@ ProjMatrixByBinUsingRayTracing::initialise_keymap()
 void
 ProjMatrixByBinUsingRayTracing::set_defaults()
 {
+  ProjMatrixByBin::set_defaults();
   restrict_to_cylindrical_FOV = true;
+  num_tangential_LORs = 1;
+}
+
+
+bool
+ProjMatrixByBinUsingRayTracing::post_processing()
+{
+  if (ProjMatrixByBin::post_processing() == true)
+    return true;
+  if (num_tangential_LORs<1)
+  { 
+    warning("ProjMatrixByBinUsingRayTracing: num_tangential_LORs should be at least 1, but is %d\n",
+            num_tangential_LORs);
+    return true;
+  }
+  return false;
 }
 
 #if 0
@@ -91,7 +115,6 @@ set_up(
 
   if (image_info_ptr == NULL)
     error("ProjMatrixByBinUsingRayTracing initialised with a wrong type of DiscretisedDensity\n");
-
  
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
@@ -103,16 +126,16 @@ set_up(
   const float sampling_distance_of_adjacent_LORs_xy =
     proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
   
-  if(sampling_distance_of_adjacent_LORs_xy > voxel_size.x() + 1.E-3 ||
-     sampling_distance_of_adjacent_LORs_xy > voxel_size.y() + 1.E-3)
+  if(sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.x() + 1.E-3 ||
+     sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.y() + 1.E-3)
      warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
-             "that is smaller than the bin size.\n"
+             "that is smaller than the bin size divided by num_tangential_LORs.\n"
              "This matrix will completely miss some voxels for some (or all) views.\n");
   if(sampling_distance_of_adjacent_LORs_xy < voxel_size.x() - 1.E-3 ||
      sampling_distance_of_adjacent_LORs_xy < voxel_size.y() - 1.E-3)
      warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
              "that is larger than the bin size.\n"
-             "Backprojecting with this matrix will have artefacts at views 0 and 90 degrees.\n");
+             "Backprojecting with this matrix might have artefacts at views 0 and 90 degrees.\n");
   
 };
 
@@ -228,14 +251,8 @@ calculate_proj_matrix_elems_for_one_bin(
                                         ProjMatrixElemsForOneBin& lor) const
 {
   const Bin bin = lor.get_bin();
-  //assert(bin.axial_pos_num() == 0);
-  assert(bin.tangential_pos_num() >= 0);
-  // KT 20/06/2001 removed assert as it might come from a related bin which has larger abs(tang_pos_num)
-  //assert(bin.tangential_pos_num() <= proj_data_info_ptr->get_max_tangential_pos_num());  
-  assert(bin.segment_num()  >= 0  );
+  assert(bin.segment_num() >= proj_data_info_ptr->get_min_segment_num());    
   assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
-  assert(bin.view_num() <= proj_data_info_ptr->get_num_views()/4);    
-  assert(bin.view_num()>=0);
 
   assert(lor.size() == 0);
      
@@ -275,24 +292,49 @@ calculate_proj_matrix_elems_for_one_bin(
     - origin.z()
     +(max_index.z()+min_index.z())/2.F * voxel_size.z();
 
-  // use FOV which is cylindrical, and is slightly 'inside' the image to avoid
+  // use FOV which is slightly 'inside' the image to avoid
   // index out of range
   const float fovrad_in_mm = 
     min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
         (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
 
-  const bool not_empty =
-    ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
-                      cphi, sphi, costheta, tantheta, 
-                      offset_in_z, fovrad_in_mm, 
-                      voxel_size,
-                      restrict_to_cylindrical_FOV,
-                      num_lors_per_axial_pos);
-  if (!not_empty)
-    return;
+  if (num_tangential_LORs == 1)
+  {
+    const bool not_empty =
+      ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
+                        cphi, sphi, costheta, tantheta, 
+                        offset_in_z, fovrad_in_mm, 
+                        voxel_size,
+                        restrict_to_cylindrical_FOV,
+                        num_lors_per_axial_pos);
+    if (!not_empty)
+      return;
+  }
+  else
+  {
+    ProjMatrixElemsForOneBin ray_traced_lor;
 
-  // now add on other LORs
-  if ( num_lors_per_axial_pos>1)
+    const float s_inc = proj_data_info_ptr->get_sampling_in_s(bin)/num_tangential_LORs;
+    float current_s_in_mm =
+        s_in_mm - s_inc*(num_tangential_LORs-1)/2.F;
+    for (int s_LOR_num=1; s_LOR_num<=num_tangential_LORs; ++s_LOR_num, current_s_in_mm+=s_inc)
+    {
+      ray_traced_lor.erase();
+      const bool not_empty =
+        ray_trace_one_lor(ray_traced_lor, current_s_in_mm, t_in_mm, 
+                          cphi, sphi, costheta, tantheta, 
+                          offset_in_z, fovrad_in_mm, 
+                          voxel_size,
+                          restrict_to_cylindrical_FOV,
+                          num_lors_per_axial_pos*num_tangential_LORs);
+      //std::cerr << "ray traced size " << ray_traced_lor.size() << std::endl;
+      if (not_empty)
+        lor.merge(ray_traced_lor);
+    }
+  }
+      
+  // now add on other LORs in axial direction
+  if ( num_lors_per_axial_pos>1 && lor.size()>0)
   {          
     assert(num_lors_per_axial_pos==2);
     if (tantheta==0 ) 
@@ -302,7 +344,6 @@ calculate_proj_matrix_elems_for_one_bin(
     }
     else
     { 
-      // lor.merge( lor2 );   
       merge_zplus1(lor);
     }
 
@@ -311,7 +352,7 @@ calculate_proj_matrix_elems_for_one_bin(
 }
 
 // TODO these currently do NOT follow the requirement that
-// after processing lor.sort() == before processing lor.sort()
+// after processing lor.sort() == lor
 
 static void 
 add_adjacent_z(ProjMatrixElemsForOneBin& lor)
