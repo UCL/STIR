@@ -285,7 +285,7 @@ SSRB(ProjData& out_proj_data,
 			       min(in_proj_data.get_max_tangential_pos_num(),
 				   out_proj_data.get_max_tangential_pos_num());
 			     ++tangential_pos_num)
-			  out_sino[in_view_num/num_views_to_combine][tangential_pos_num] = 
+			  out_sino[in_view_num/num_views_to_combine][tangential_pos_num] += 
 			      in_sino[in_view_num][tangential_pos_num];
 		  
 		      break; // out of loop over ax_pos as we found where to put it
