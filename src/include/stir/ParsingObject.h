@@ -60,13 +60,12 @@ public:
 
 protected:
   //! Set defaults before parsing
-  virtual void set_defaults()  {};
+  virtual void set_defaults();
   //! Initialise all keywords
-  virtual void initialise_keymap() {};
+  virtual void initialise_keymap();
     //! This will be called at the end of the parsing
   /*! \return false if everything OK, true if not */
-  virtual bool post_processing() 
-   { return false; }
+  virtual bool post_processing(); 
 
   //! This will be called before parsing or parameter_info is called
   /*! 
@@ -79,7 +78,7 @@ protected:
   A derived class has a public member angle_in_radians, while a keyword sets a 
   private member angle_in_degrees.
   */
-  virtual void set_key_values() {}
+   virtual void set_key_values();
 
 private:
   bool keymap_is_initialised;  
