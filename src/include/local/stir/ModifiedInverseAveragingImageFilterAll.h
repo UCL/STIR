@@ -68,6 +68,7 @@ public:
 				  shared_ptr<ProjData> attenuation_proj_data_ptr,
 				  DiscretisedDensity<3,float>* initial_image,
 				  DiscretisedDensity<3,float>* sensitivity_image,
+				  DiscretisedDensity<3,float>* precomputed_coefficients_image,
 				  int mask_size, 
 				  int num_dim);
 			     
@@ -90,6 +91,9 @@ private:
   
   DiscretisedDensity<3,float>* sensitivity_image;
   string sensitivity_image_filename;
+
+  DiscretisedDensity<3,float>* precomputed_coefficients_image ;
+  string precomputed_coefficients_filename;
   int num_dim;
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
