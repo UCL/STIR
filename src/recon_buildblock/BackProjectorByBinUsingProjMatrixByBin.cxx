@@ -32,6 +32,7 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -45,6 +46,7 @@ BackProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   proj_matrix_ptr = 0;
+  //BackProjectorByBin::set_defaults();
 }
 
 void
@@ -54,6 +56,22 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using Matrix Parameters");
   parser.add_stop_key("End Back Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
+  //BackProjectorByBin::initialise_keymap();
+}
+
+
+bool
+BackProjectorByBinUsingProjMatrixByBin::
+post_processing()
+{
+  //if (BackProjectorByBin::post_processing() == true)
+  //  return true;
+  if (is_null_ptr(proj_matrix_ptr))
+  { 
+    warning("BackProjectorByBinUsingProjMatrixByBin: matrix not set.\n");
+    return true;
+  }
+  return false;
 }
 
 BackProjectorByBinUsingProjMatrixByBin::

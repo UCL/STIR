@@ -25,6 +25,7 @@
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/IndexRange2D.h"
+#include "stir/is_null_ptr.h"
 #include <algorithm>
 #include <vector>
 #include <list>
@@ -48,6 +49,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   proj_matrix_ptr = 0;
+  //ForwardProjectorByBin::set_defaults();
 }
 
 void
@@ -57,6 +59,21 @@ initialise_keymap()
   parser.add_start_key("Forward Projector Using Matrix Parameters");
   parser.add_stop_key("End Forward Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
+  //ForwardProjectorByBin::initialise_keymap();
+}
+
+bool
+ForwardProjectorByBinUsingProjMatrixByBin::
+post_processing()
+{
+  //if (ForwardProjectorByBin::post_processing() == true)
+  //  return true;
+  if (is_null_ptr(proj_matrix_ptr))
+  { 
+    warning("ForwardProjectorByBinUsingProjMatrixByBin: matrix not set.\n");
+    return true;
+  }
+  return false;
 }
 
 ForwardProjectorByBinUsingProjMatrixByBin::
