@@ -68,7 +68,14 @@ nopara: $(DEST)tensor $(DEST)display2 \
 	$(DEST)VectorWithOffset $(DEST)testconvert \
 	$(DEST)test_linear_regression
 
-#$(DEST)sinodata
+get_test_files: input/test_linear_regression.in
+
+run_tests: all get_test_files
+	$(DEST)VectorWithOffset
+	$(DEST)testconvert
+	$(DEST)tensor
+	$(DEST)test_linear_regression  input/test_linear_regression.in
+
 
 $(LIB_DISPLAY): FORCE
 	cd $(WORKSPACE)/display; $(MAKE);
