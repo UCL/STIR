@@ -18,6 +18,8 @@
     See STIR/LICENSE.txt for details
 */
 
+#ifdef HAVE_LLN_MATRIX
+
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #include "stir/NumericType.h"
 #include "stir/IO/stir_ecat7.h"
@@ -143,3 +145,4 @@ ECAT7OutputFileFormat::
 END_NAMESPACE_STIR
 
 
+#endif // #ifdef HAVE_LLN_MATRIX

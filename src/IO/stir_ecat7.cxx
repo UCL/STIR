@@ -15,7 +15,7 @@
   work with the ECAT6-like files_types, as then there are subheaders 'in' the 
   datasets.
   
-    \warning Implementation uses the Louvain la Neuve Ecat library. So, it will
+  \warning Implementation uses the Louvain la Neuve Ecat library. So, it will
     only work on systems where this library works properly.
 
   $Date$
@@ -25,6 +25,8 @@
     Copyright (C) 2002- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
+
+#ifdef HAVE_LLN_MATRIX
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
@@ -1601,3 +1603,5 @@ ProjData_to_ECAT7(ProjData const& proj_data, string const & cti_name, string con
 END_NAMESPACE_ECAT7
 
 END_NAMESPACE_STIR
+
+#endif //#ifdef HAVE_LLN_MATRIX
