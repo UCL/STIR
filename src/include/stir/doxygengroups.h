@@ -16,8 +16,11 @@
   library. All classes, functions and symbols are in this namespace.
   This has the effect that conflicts with any other library is
   impossible (except if that library uses the same namespace...).
-
  */
+
+/*! \namespace stir::detail
+  \brief Namespace for the implementation details of the STIR library
+*/
 
 /*! \namespace stir::ecat
   \brief Namespace for the ECAT IO part of the STIR library (and some/most of its applications)
@@ -63,12 +66,14 @@ The whole collection of libraries in STIR.
 Library with things that are not not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
-\todo Define more submodules in the doxygen documentation such that this
-looks a lot neater.
 */
 /*!
 \defgroup Array Items relating to vectors and (multi-dimensional) arrays
 \ingroup buildblock
+*/
+/*!
+\defgroup Array_detail Implementation details used by Array classes
+\ingroup Array
 */
 /*!
 \defgroup Coordinate Items relating to coordinates
