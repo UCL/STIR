@@ -50,6 +50,7 @@ RigidObject3DTransformation::RigidObject3DTransformation (const Quaternion<float
 RigidObject3DTransformation 
 RigidObject3DTransformation::inverse() const
 {
+#ifdef FIRSTROT
   /* Formula for inverse is a bit complicated because of
     fixed order of first rotation and then translation
 
@@ -68,6 +69,27 @@ RigidObject3DTransformation::inverse() const
   const CartesianCoordinate3D<float>
     invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
   return RigidObject3DTransformation(invq, invtrans*(-1));
+#else
+    /* Formula for inverse is a bit complicated because of
+    fixed order of first translation and then rotation
+
+     tr_point= transform(point) =
+		 conj(q)*(point+trans)*q
+	invtransform(tr_point) = 
+	          conj(invq)*(tr_point + invtrans)*invq
+		= conj(invq)*(conj(q)*(point+trans)*q + invtrans)*invq
+            = point
+	so conj(q)*(trans)*q + invtrans==0
+   */
+  const Quaternion<float> invq = stir::inverse(quat);
+  const Quaternion<float>
+    qtrans(0,translation.x(),translation.y(),translation.z());
+  const Quaternion<float> qinvtrans =
+    conjugate(invq) * qtrans * invq;
+  const CartesianCoordinate3D<float>
+    invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
+  return RigidObject3DTransformation(invq, invtrans*(-1));
+#endif
 }
 
 Quaternion<float>
@@ -126,13 +148,27 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   //transformation with quaternions 
   const Quaternion<float> point_q (0,swapped_point.x(),swapped_point.y(),swapped_point.z());
   
+#ifdef FIRSTROT
   Quaternion<float> tmp = quat_norm_tmp * point_q * conjugate(quat_norm_tmp);
 
   tmp[2] += translation.x();
   tmp[3] += translation.y();
   tmp[4] += translation.z();
   const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
+#else  
+  // first include transation and then do the transfromation with quaternion where the other is now 
+  // swapped
+  Quaternion<float> tmp;
+  tmp[2] += translation.x();
+  tmp[3] += translation.y();
+  tmp[4] += translation.z();
   
+  tmp =  conjugate(quat_norm_tmp) * point_q *quat_norm_tmp ;
+
+  const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
+
+
+#endif
 #else
   //translation only
  
