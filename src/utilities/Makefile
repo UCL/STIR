@@ -34,13 +34,19 @@ EXES = $(SOURCES:%.cxx=$(DEST)%)
 
 all: $(EXES)
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
+endif
+
 
 clean:
 	$(RM) $(DEST)*
 
 install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
+
+include ../Makefile_bblibs
 
 #$(DEST)libcti.a: $(DEST)cti_utils.o
 #	$(AR) r $@ $?
@@ -70,14 +76,6 @@ $(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
 		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
 
 
-${DEST}postfilter: ${DEST}postfilter.o \
-	  ../buildblock/${DEST}registrystuff.o \
-	  $(BB_LIBS) #$(LIB_BUILDINGBLOCK) 
-	$(CXX) $(CFLAGS)-o $@ $< \
-	../buildblock/${DEST}registrystuff.o \
-	$(BB_LIBS) $(LIB_BUILDINGBLOCK) \
-	$(LINK_OPT) $(SYS_LIBS)
 
-include ../Makefile_bblibs
 
 
