@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup Array
   \brief Declaration of class SeparableMetzArrayFilter
 
   \author Sanida Mustafovic
@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -30,7 +30,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief Separable Metz filtering in \c n - dimensions
  
   The Metz filter is easiest defined in frequency space. For a \c fwhm \c s and

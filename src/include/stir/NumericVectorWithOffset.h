@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -28,7 +28,7 @@
 
 START_NAMESPACE_STIR
 /*! 
-  \ingroup buildblock
+  \ingroup Array
   \brief like VectorWithOffset, but with various numeric operations defined
 
   Extra operations compared to VectorWithOffset are all the numeric

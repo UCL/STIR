@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/VectorWithOffset.h"
@@ -29,7 +29,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief  This class defines ranges which can be 'irregular'.
 
   This class allows construction and basic manipulation of 'irregular'

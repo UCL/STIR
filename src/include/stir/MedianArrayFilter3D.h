@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup Array
   \brief Declaration of class MedianArrayFilter3D
 
   \author Sanida Mustafovic
@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -29,7 +29,7 @@ START_NAMESPACE_STIR
 template <typename coordT> class Coordinate3D;
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief Implements median filtering on 3D arrays.
 
   The median for a 1D array of 2n+1 elements is defined as the nth element

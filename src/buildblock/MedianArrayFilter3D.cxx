@@ -1,10 +1,10 @@
-//
+!//
 // $Id$
 //
 /*!
 
   \file
-
+  \ingroup Array
   \brief Implementations for class MedianArrayFilter3D
 
   \author Sanida Mustafovic
@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /* History:
