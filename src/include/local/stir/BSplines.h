@@ -31,80 +31,114 @@
 
 #include "stir/shared_ptr.h"
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include <cmath>
+#include "local/stir/IR_filters.h"
 
 START_NAMESPACE_STIR
 
-template <class RandIter1,
-		  class RandIter2,
-	      class RandIter3,
-		  class RandIter4>
-void 
-inline 
-IIR_filter(RandIter1 output_begin_iterator, 
-		   RandIter1 output_end_iterator,
-		   const RandIter2 input_begin_iterator, 
-		   const RandIter2 input_end_iterator,
-		   const RandIter3 input_factor_begin_iterator,
-		   const RandIter3 input_factor_end_iterator,
-		   const RandIter4 pole_begin_iterator,
-		   const RandIter4 pole_end_iterator,
-		   const bool if_initial_exists);
-
-template <class RandIter1,
-		  class RandIter2,
-	      class RandIter3>		 
-void 
-inline 
-FIR_filter(RandIter1 output_begin_iterator, 
-						   RandIter1 output_end_iterator,
-						   const RandIter2 input_begin_iterator, 
-						   const RandIter2 input_end_iterator,
-						   const RandIter3 input_factor_begin_iterator,
-						   const RandIter3 input_factor_end_iterator,
-						   const bool if_initial_exists);
-
-template <class RandIter>
-float
-inline
-sequence_sum(RandIter input_iterator,
-	   unsigned int Nmax,
-	   float pole, // to be complex as well?
-	   double precision 
-	   );
-
-template <class RandIter1, 
-		  class RandIter2>
+template <typename out_elemT, typename in_elemT>
+class BSplines1DRegularGrid
+{
+private:
+	typedef std::vector<in_elemT>::const_iterator RandIterIn; 
+	typedef std::vector<out_elemT>::iterator RandIterOut; 
+	int input_size; // create in the constructor 
+	
+  
+public:
+	std::vector<out_elemT> BSplines_coef_vector;//(input_size);
+/*
 void
+inline  
+BSplines1DRegular();
+				  */
+ //! default constructor: no input
+  inline BSplines1DRegularGrid();
+  
+  //! constructor given a vector as an input, estimates the Coefficients 
+  inline explicit BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector);
+  		
+  //! constructor given a begin_ and end_ iterator as input, estimates the Coefficients 
+  template <class IterT>
+  inline BSplines1DRegularGrid(const IterT input_begin_iterator, 
+				  const IterT input_end_iterator)
+  {
+	 set_coef(input_begin_iterator, input_end_iterator);
+  }
+
+ //! destructor
+inline ~BSplines1DRegularGrid();
+
 inline 
-BSplines_coef(RandIter1 c_begin_iterator, 
-			   RandIter1 c_end_iterator,
-			   RandIter2 input_signal_begin_iterator, 
-			   RandIter2 input_signal_end_iterator);
+out_elemT 
+BSplines_weight(const out_elemT relative_position);
 
-template <class elemT>
-elemT 
+inline 
+out_elemT 
+BSplines_1st_der_weight(const out_elemT abs_relative_position) ;
+
+  // sadly,VC6.0 needs definition of template members in the class definition
+  template <class IterT>
 inline
-BSpline(const elemT relative_position) ;
+  void
+  set_coef(IterT input_begin_iterator, IterT input_end_iterator)
+  {	
+	input_size = input_end_iterator - input_begin_iterator;
+	BSplines_coef_vector.resize(input_size);
+	BSplines_coef(BSplines_coef_vector.begin(),BSplines_coef_vector.end(), 
+			input_begin_iterator, input_end_iterator);				
+  }
 
-template <class elemT>
+
+inline 
+out_elemT
+BSpline(const out_elemT relative_position) ;
+
+inline 
+out_elemT
+BSpline_1st_der(const out_elemT relative_position) ;
+
 inline
-elemT BSplines_weight(elemT relative_position);
+const out_elemT 
+operator() (const out_elemT relative_position) const;
 
-template <class elemT>
-elemT 
 inline
-BSplines_1st_der_weight(const elemT abs_relative_position) ;
+out_elemT 
+operator() (const out_elemT relative_position);
 
-template <class RandIter1, 
-		  class RandIter2>
+inline
+const std::vector<out_elemT> 
+BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
+						RandIterOut output_relative_position_end_iterator);
+inline
+const std::vector<out_elemT> 
+BSpline_output_sequence(std::vector<out_elemT> output_relative_position);
+
+};
+
+
+template <class IterT>
+inline 
+#if _MSC_VER<=1300
+  float
+#else
+  std::iterator_traits<IterT>::value_type
+#endif
+		cplus0(const IterT input_iterator,  
+		const IterT input_end_iterator,
+		unsigned int Nmax,
+		double pole, // to be complex as well?
+		const double precision, const bool periodicity);
+
+template <class RandIterOut, class IterT>
+inline  
 void
-inline 
-BSplines1DRegular(RandIter1 c_begin_iterator, 
-				  RandIter1 c_end_iterator,
-				  RandIter2 input_signal_begin_iterator, 
-				  RandIter2 input_signal_end_iterator);
+BSplines_coef(RandIterOut c_begin_iterator, 
+			   RandIterOut c_end_iterator,
+			   IterT input_begin_iterator, 
+			   IterT input_end_iterator);
 
 //*/
 END_NAMESPACE_STIR

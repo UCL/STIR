@@ -33,172 +33,131 @@ using namespace std;
 
 START_NAMESPACE_STIR
 
-template <class RandIter1,
-		  class RandIter2,
-	      class RandIter3,
-		  class RandIter4>
-void 
-inline 
-IIR_filter(RandIter1 output_begin_iterator, 
-		   RandIter1 output_end_iterator,
-		   const RandIter2 input_begin_iterator, 
-		   const RandIter2 input_end_iterator,
-		   const RandIter3 input_factor_begin_iterator,
-		   const RandIter3 input_factor_end_iterator,
-		   const RandIter4 pole_begin_iterator,
-		   const RandIter4 pole_end_iterator,
-		   const bool if_initial_exists)
+template <typename out_elemT, typename in_elemT>
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSplines1DRegularGrid()
+{ }
+
+template <typename out_elemT, typename in_elemT>
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+ BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector)
+{ 
+	BSplines1DRegularGrid<out_elemT, in_elemT>::
+		set_coef(input_vector.begin(), input_vector.end());	
+}
+
+/*
+template <typename out_elemT, typename in_elemT>
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSplines1DRegularGrid(const RandIterIn input_begin_iterator, //explicit??
+				  const RandIterIn input_end_iterator)
 {
-	// The input should be initialised to 0
-//	if(output_begin_iterator==output_end_iterator)
-//		warning("No output signal is given./n");
+	BSplines1DRegularGrid<out_elemT, in_elemT>::
+		set_coef(input_begin_iterator, input_end_iterator);
+}
+*/
 
-	if(if_initial_exists==false) 
-	*output_begin_iterator=*input_factor_begin_iterator*(*input_begin_iterator);
+template <typename out_elemT, typename in_elemT>
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+~BSplines1DRegularGrid()
+{}
 
-	RandIter1 current_output_iterator = output_begin_iterator ;
-	RandIter2 current_input_iterator = input_begin_iterator ;
+template <class IterT>
+#if _MSC_VER<=1300
+  float
+#else
+  std::iterator_traits<IterT>::value_type
+#endif
+cplus0(const IterT input_begin_iterator,
+	   const IterT input_end_iterator,
+	   unsigned int Nmax,  double pole, // to be complex as well?
+	   const double precision, const bool periodicity)
+{
+#if _MSC_VER<=1300
+  typedef float out_elemT;
+#else
+  typedef std::iterator_traits<IterT>::value_type out_elemT;
+#endif
 	
-	for(++current_output_iterator, ++current_input_iterator; 
-	     current_output_iterator != output_end_iterator &&
-		 current_input_iterator != input_end_iterator;
-		 ++current_output_iterator,	++current_input_iterator)
-		{
-			RandIter2 current_current_input_iterator = current_input_iterator;
-			for(RandIter3 current_input_factor_iterator = input_factor_begin_iterator;				
-				current_input_factor_iterator != input_factor_end_iterator;
-				++current_input_factor_iterator,--current_current_input_iterator
-				)
-				{					
-					(*current_output_iterator) += (*current_input_factor_iterator)*
-												   (*current_current_input_iterator);
-				if (current_current_input_iterator==input_begin_iterator)
-					break;
-				}
-
-			RandIter4 current_pole_iterator = pole_begin_iterator;
-			RandIter1 current_feedback_iterator = current_output_iterator ;
-			
-			for(--current_feedback_iterator ;
-				current_pole_iterator != pole_end_iterator 			
-					;++current_pole_iterator,--current_feedback_iterator)
-				{							
-					(*current_output_iterator) -= (*current_pole_iterator)*
-													(*current_feedback_iterator);			
-					if(current_feedback_iterator==output_begin_iterator)
-					break;
-				}					
-		}
-}
-
-template <class RandIter1,
-		  class RandIter2,
-	      class RandIter3>		 
-void 
-inline 
-FIR_filter(RandIter1 output_begin_iterator, 
-		   RandIter1 output_end_iterator,
-		   const RandIter2 input_begin_iterator, 
-		   const RandIter2 input_end_iterator,
-		   const RandIter3 input_factor_begin_iterator,
-		   const RandIter3 input_factor_end_iterator,
-		   const bool if_initial_exists)
-{
-	IIR_filter(output_begin_iterator, output_end_iterator, 
-		   input_begin_iterator, input_end_iterator, 
-		   input_factor_begin_iterator, input_factor_end_iterator,
-		   output_begin_iterator, output_begin_iterator,if_initial_exists);
-}
-template <class RandIter>
-float
-inline
-sequence_sum(RandIter input_iterator,
-	   unsigned int Nmax,
-	   float pole, // to be complex as well?
-	   double precision 
-	   )
-{
-	const int Nmax_precision = 4;//(int)ceil(log(precision)/log(abs(pole)));
-	float sum=*input_iterator;
+	const int input_size = input_end_iterator - input_begin_iterator;
+	const int Nmax_precision = 
+		(periodicity==0? 2*input_size-2 : input_size);//(int)ceil(log(precision)/log(abs(pole)));
+//	std::cerr << " prec " << log(precision)/log(abs(pole));
+	out_elemT sum=*input_begin_iterator;
 	for(int i=1; 
-			i!=Nmax && i<=Nmax_precision //&& current_input_iterator!=end 
-				; 							 ++i)
-	  	  sum += *(++input_iterator)*pow(pole,i) ;
-	return sum;
+		i<Nmax_precision;
+		++i)
+	{
+		int index = i;
+		if (periodicity==0 && i >= input_size)
+			index = 2*input_size-2-i;
+	  	  sum += *(input_begin_iterator+index)*pow(pole,i) ;
+	}
+			//cerr << "SUM:" << sum << endl ;
+	return	sum;
 }   
 
-template <class RandIter1, 
-		  class RandIter2>
+template <class RandIterOut, class IterT>
 void
-inline //temporarily
-BSplines_coef(RandIter1 c_begin_iterator, 
-			   RandIter1 c_end_iterator,
-			   RandIter2 input_signal_begin_iterator, 
-			   RandIter2 input_signal_end_iterator)
+BSplines_coef(RandIterOut c_begin_iterator, 
+			   RandIterOut c_end_iterator,
+			   IterT input_begin_iterator, 
+			   IterT input_end_iterator)
 {
 
-#ifdef _MSC_VER<=1300
-
-	typedef float c_value_type;
-	typedef float input_value_type;
-	//typedef typename _Val_Type(c_begin_iterator) c_value_type;
-	//typedef typename _Val_Type(c_begin_iterator) input_value_type;
+#if _MSC_VER<=1300
+	typedef float out_elemT;
+	typedef float in_elemT;
+	//typedef typename _Val_Type(c_begin_iterator) out_elemT;
+	//typedef typename _Val_Type(c_begin_iterator) in_elemT;
 #else
-	typedef typename std::iterator_traits<RandIter1>::value_type c_value_type;
-	typedef typename std::iterator_traits<RandIter1>::value_type input_value_type;
+	typedef typename std::iterator_traits<RandIterOut>::value_type out_elemT;
+	typedef typename std::iterator_traits<RandIterOut>::value_type in_elemT;
 #endif
 	  	
-	std::vector<c_value_type> 
 /*		
 		cplus(c_end_iterator-c_begin_iterator, 0)
 		cminus(c_end_iterator-c_begin_iterator, 0),
 */
-		cplus, cminus, input_factor_for_cminus, pole_for_cplus, pole_for_cminus;
-	
-	std::vector<input_value_type> input_factor_for_cplus;
-  
 	float z1 = -2. + sqrt(3.);
-	pole_for_cplus.push_back(-z1);
-	pole_for_cminus.push_back(-z1);
-	input_factor_for_cplus.push_back(1);
-	input_factor_for_cminus.push_back(-z1);
-	RandIter1 cplus
-	
-	for(RandIter1 current_iterator=c_begin_iterator; 
-	    current_iterator!=c_end_iterator; 
-		++current_iterator)
-		{
-			cplus.push_back(0);
-			cminus.push_back(0);
-		}
-	
-	  
-	const int k=2*cplus.size()-3;
-    *(cplus.begin())=sequence_sum(input_signal_begin_iterator,k,z1,.0001)/(1-pow(z1,k+1)) ; //k or Nmax_precision
+	const int input_size = c_end_iterator-c_begin_iterator ;//-1; //!!!
+
+	typedef std::vector<out_elemT> c_vector_type;
+	c_vector_type cplus(c_end_iterator-c_begin_iterator, out_elemT(0)), 
+		cminus(c_end_iterator-c_begin_iterator, out_elemT(0)), 
+		input_factor_for_cminus(1, -z1), pole_for_cplus(1, -z1), pole_for_cminus(1,-z1);
+	std::vector<in_elemT> input_factor_for_cplus(1, (out_elemT)1);
+		
+	const int k=2*input_size-3;
+	assert(k>=0);
+    *(cplus.begin())=cplus0(
+		input_begin_iterator,input_end_iterator, k,z1,.00001,0)/(1-pow(z1,k+1)) ; //k or Nmax_precision
 	
 	IIR_filter(cplus.begin(), cplus.end(),
-		input_signal_begin_iterator, input_signal_end_iterator,
+		input_begin_iterator, input_end_iterator,
 		input_factor_for_cplus.begin(), input_factor_for_cplus.end(),
 		pole_for_cplus.begin(), pole_for_cplus.end(), 1);
 
-	*--cminus.end() = z1*(*--cplus.end() + z1*(*--(--cplus.end())))/(1-z1*z1);
+	*(cminus.end()-1) = z1*(*(cplus.end()-1) + z1*(*(cplus.end()-2)))/(z1*z1-1);
 	IIR_filter(cminus.rbegin(), cminus.rend(),
 		cplus.rbegin(), cplus.rend(),
 		input_factor_for_cminus.begin(), input_factor_for_cminus.end(),
 		pole_for_cminus.begin(), pole_for_cminus.end(), 1);
 	
-	for(RandIter1 current_iterator=c_begin_iterator, current_cminus_iterator=cminus.begin(); 
-	    current_iterator!=c_end_iterator &&	current_iterator!=cminus.end(); 
+	RandIterOut current_iterator=c_begin_iterator;
+	c_vector_type::const_iterator current_cminus_iterator=cminus.begin();
+	for(;
+         current_iterator!=c_end_iterator &&	current_cminus_iterator!=cminus.end(); 
 		++current_iterator,++current_cminus_iterator)
 		{
 			*current_iterator=*current_cminus_iterator*6;			
-		}
+		}	
 }
 
-template <class elemT>
-elemT 
-inline
-BSplines_weight(const elemT abs_relative_position
+template <typename out_elemT, typename in_elemT>
+out_elemT 
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSplines_weight(const out_elemT abs_relative_position
 					//, enum enum_spline_level
 					) 
 {
@@ -213,15 +172,16 @@ BSplines_weight(const elemT abs_relative_position
 		return EXIT_FAILURE;
 //	-100;
 }
-template <class elemT>
-elemT 
-inline
-BSplines_1st_der_weight(const elemT abs_relative_position) 
+
+template <typename out_elemT, typename in_elemT>
+out_elemT 
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSplines_1st_der_weight(const out_elemT abs_relative_position) 
 {
 	if (abs_relative_position>=2)
 		return 0;
 	if (abs_relative_position>=1)		
-		return -0.5*(-2. + abs_relative_position)*(-2. + abs_relative_position);
+		return -0.5*(abs_relative_position-2)*(abs_relative_position-2);
 	if (abs_relative_position>=0)		
 		return abs_relative_position*(1.5*abs_relative_position-2.);
 	else
@@ -230,47 +190,102 @@ BSplines_1st_der_weight(const elemT abs_relative_position)
 //	-100;
 }
 
+#if 0
+// needs to be in .h for VC 6.0
+template <typename out_elemT, typename in_elemT>
+void
+  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  set_coef(RandIterIn input_begin_iterator, RandIterIn input_end_iterator)
+  {	
+	input_size = input_end_iterator - input_begin_iterator;
+	for(int i=1; i<=input_size; ++i)
+		BSplines_coef_vector.push_back(-1); // Giving one more gives correct result for the last value // Now I give 2 at the end ?
+	
+			BSplines_coef(BSplines_coef_vector.begin(),BSplines_coef_vector.end(), 
+			input_begin_iterator, input_end_iterator);		
+		//assert (input_size==static_cast<int>(BSplines_coef_vector.size()-2));
+  }
+#endif
 
-template <class elemT>
-elemT 
-inline
-BSpline(const elemT relative_position) 
+template <typename out_elemT, typename in_elemT>
+out_elemT 
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSpline(const out_elemT relative_position) 
 {	
-	elemT BSpline_value;
-	const int max_size = BSpline1DRegularGrid::BSpline_coefficients.size();
-/*	assert(relative_position-max_size>0)
-	if (relative_position-max_size>0)
-		warning("New sampling position out of range");
-		*/
-	for (int k=(int)relative_position-1; k<(int)relative_position+2 && k<=max_size; ++k)		
+	out_elemT BSpline_value=0;
+	//assert(relative_position<static_cast<out_elemT>(input_size));
+//		warning("New sampling position out of range");
+	for (int k=(int)relative_position-2; k<(int)(relative_position+3) && k<=input_size; ++k)		
 	{
-		if (k==-1) continue;
-		BSpline_value += BSpline1DRegularGrid::BSplines_weight(fabs(k-position))* //fabs for double and float
-		BSpline1DRegularGrid::BSpline_coefficients_list[k];
+		if (k<0) continue;
+		BSpline_value += 
+			BSplines1DRegularGrid<out_elemT,in_elemT>::
+			BSplines_weight(fabs((out_elemT)k-relative_position))* //fabs for double and float
+		BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k];
 	}
 	return BSpline_value;
 }
 
+template <typename out_elemT, typename in_elemT>
+out_elemT 
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSpline_1st_der(const out_elemT relative_position) 
+{	
+//	assert(relative_position<static_cast<out_elemT>(input_size));
+	out_elemT BSpline_value=0;
+	for (int k=(int)relative_position-2; k<(int)(relative_position+3) && k<=input_size; ++k)		
+	{
+		if (k<0) continue;
+		BSpline_value += 
+			BSplines1DRegularGrid<out_elemT,in_elemT>::
+			BSplines_1st_der_weight(fabs((out_elemT)k-relative_position))* //fabs for double and float
+		BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k];
+	}
+	return BSpline_value;
+}
 
-/* recursively
-template <class RandIter>
-float
-inline
-sequence_sum(RandIter input_iterator,
-	   unsigned int Nmax,
-	   float pole // to be complex as well
-	   )
+template <typename out_elemT, typename in_elemT>
+const out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
+operator() (const out_elemT relative_position) const 
 {
-	  static float sum=0;
-	  if (Nmax=!0)
-	  {
-		  sum = *input_iterator*pole ;
-		  sum += sequence_sum(++input_iterator,--Nmax, pole);                                                      		  
-		  return sum;
-	  }
-	  else
-		  return sum;
-}   
-*/
+	return BSplines1DRegularGrid<out_elemT,in_elemT>::
+		BSpline(relative_position);		
+};
+template <typename out_elemT, typename in_elemT>
+out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
+operator() (const out_elemT relative_position)
+{
+	return BSplines1DRegularGrid<out_elemT,in_elemT>::
+		BSpline(relative_position);		
+}
+//*
+template <typename out_elemT, typename in_elemT>
+const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
+						RandIterOut output_relative_position_end_iterator)
+{
+	std::vector<out_elemT> output_vector(output_relative_position_end_iterator-
+		output_relative_position_begin_iterator);	
+	
+	for(RandIterOut current_iterator=output_vector.begin(), 
+		 current_relative_position_iterator=output_relative_position_begin_iterator; 
+	    current_iterator!=output_vector.end() && 
+			current_relative_position_iterator!=output_relative_position_end_iterator; 
+		++current_iterator,++current_relative_position_iterator)
+			*current_iterator = BSplines1DRegularGrid<out_elemT,in_elemT>:: 
+			BSpline(*current_relative_position_iterator);		
+
+	return output_vector;		
+}
+template <typename out_elemT, typename in_elemT>
+const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSpline_output_sequence(std::vector<out_elemT> output_relative_position)
+{
+	return BSpline_output_sequence(output_relative_position.begin(),
+						output_relative_position.end());
+}
+
+
+//*/
 
 END_NAMESPACE_STIR
