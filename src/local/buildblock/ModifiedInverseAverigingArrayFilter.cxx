@@ -3,8 +3,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/ModifiedInverseAverigingArrayFilter.h"
-#include "local/stir/ArrayFilter1DUsingConvolution.h"
-#include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
 #include "local/stir/fft.h"
@@ -91,7 +90,7 @@ FFT_routines::find_fft_unity(Array<1,float>& unity)
 template <int num_dimensions, typename elemT>
 ModifiedInverseAverigingArrayFilter<num_dimensions,elemT>:: 
 ModifiedInverseAverigingArrayFilter()
-: kapa0_over_kapa1(0), filter_coefficients(0)
+  : filter_coefficients(0), kapa0_over_kapa1(0)
 { 
   /*filter_coefficients.grow(0,2);
   filter_coefficients[0] =0;  
@@ -115,8 +114,9 @@ template <int num_dimensions, typename elemT>
 ModifiedInverseAverigingArrayFilter<num_dimensions,elemT>::
 ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v,
 				    const float kapa0_over_kapa1_v)
-				    :kapa0_over_kapa1(kapa0_over_kapa1_v),
-				    filter_coefficients(filter_coefficients_v)
+  :
+  filter_coefficients(filter_coefficients_v),
+  kapa0_over_kapa1(kapa0_over_kapa1_v)
 {
   
   const string coeff="coeff";
@@ -175,7 +175,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     {
       const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
       
-      int filter_length = floor(filter_coefficients.get_length()/2);
+      int filter_length = static_cast<int>(floor(filter_coefficients.get_length()/2));
       //cerr << " FILTER LENGTH IS " << filter_length << endl;
       
       VectorWithOffset<float> filter_coefficients_padded(1,size);
