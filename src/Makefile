@@ -1,6 +1,7 @@
 # 
 # $Id$: $Date$
 #
+include Makefile_common
 
 SUBDIRECTORY = \
 	$(WORKSPACE)/buildblock \
