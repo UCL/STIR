@@ -28,6 +28,9 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Scanner.h"
 #include "stir/round.h"
+#include "local/stir/motion/RigidObject3DTransformation.h"
+#include "local/stir/Quaternion.h"
+#include "stir/CPUTimer.h"
 #include <string>
 #include <algorithm>
 
@@ -130,10 +133,10 @@ class TF
 public:
   TF(const shared_ptr<ProjDataInfo>& out_proj_data_info_ptr,
      const shared_ptr<ProjDataInfo>& in_proj_data_info_ptr,
-     const float angleX)
+     const RigidObject3DTransformation& ro_transformation)
     : out_proj_data_info_ptr(out_proj_data_info_ptr),
       in_proj_data_info_ptr(in_proj_data_info_ptr),
-      cosa(cos(angleX)), sina(sin(angleX))
+      ro_transformation(ro_transformation)
   {
      out_proj_data_info_noarccor_ptr = 
        dynamic_cast<ProjDataInfoCylindricalNoArcCorr*>(out_proj_data_info_ptr.get());
@@ -191,7 +194,7 @@ public:
   
   // now do the movement
   
-   
+#if 0   
   const CartesianCoordinate3D<float> 
     coord_1_transformed(coord_1.z()*cosa-coord_1.y()*sina,
 			coord_1.y()*cosa+coord_1.z()*sina,
@@ -200,6 +203,16 @@ public:
     coord_2_transformed(coord_2.z()*cosa-coord_2.y()*sina,
 			coord_2.y()*cosa+coord_2.z()*sina,
 			coord_2.x());
+#else
+  const CartesianCoordinate3D<float> 
+    coord_1_transformed = 
+    ro_transformation.transform_point(coord_1);
+
+const CartesianCoordinate3D<float> 
+    coord_2_transformed = 
+    ro_transformation.transform_point(coord_2);
+
+#endif
   int det_num_a_trans;
   int det_num_b_trans;
   int ring_a_trans;
@@ -222,9 +235,11 @@ public:
       out_proj_data_info_noarccor_ptr->get_bin_for_det_pair(bin,
 							     det_num_a_trans, ring_a_trans,
 							     det_num_b_trans, ring_b_trans) ==
-      Succeeded::no)
+      Succeeded::no ||
+      bin.tangential_pos_num() < out_proj_data_info_ptr->get_min_tangential_pos_num() ||
+      bin.tangential_pos_num() > out_proj_data_info_ptr->get_max_tangential_pos_num())
     bin.set_bin_value(-1);
-      
+
   }
   
 private:
@@ -232,8 +247,7 @@ private:
   shared_ptr<ProjDataInfo> in_proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr *out_proj_data_info_noarccor_ptr;
   ProjDataInfoCylindricalNoArcCorr *in_proj_data_info_noarccor_ptr;
-  float cosa;
-  float sina;
+  RigidObject3DTransformation ro_transformation;
 #if 0
   int out_min_segment_num;
   int out_max_segment_num;
@@ -248,18 +262,21 @@ private:
 
 int main(int argc, char **argv)
 {
-  if (argc < 4 || argc > 6)
+  if (argc < 10 || argc > 12)
     {
       cerr << "Usage:\n"
-	   << argv[0] << " output_filename input_projdata_name rotation_angle_around_x_in_degrees [max_in_segment_num_to_process [max_in_segment_num_to_process ]]\n"
+	   << argv[0] << " output_filename input_projdata_name q0 qx qy qz tx ty tz [max_in_segment_num_to_process [max_in_segment_num_to_process ]]\n"
 	   << "max_in_segment_num_to_process defaults to all segments\n";
       exit(EXIT_FAILURE);
     }
   const string  output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);  
-  const float angle_around_x =  atoi(argv[3]) *_PI/180;
-  const int max_in_segment_num_to_process = argc <=4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[4]);
-  const int max_out_segment_num_to_process = argc <=5 ? max_in_segment_num_to_process : atoi(argv[5]);
+  //const float angle_around_x =  atof(argv[3]) *_PI/180;
+  const Quaternion<float> quat(atof(argv[3]),atof(argv[4]),atof(argv[5]),atof(argv[6]));
+  const CartesianCoordinate3D<float> translation(atof(argv[9]),atof(argv[8]),atof(argv[7]));
+  const int max_in_segment_num_to_process = argc <=10 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[10]);
+  const int max_out_segment_num_to_process = argc <=11 ? max_in_segment_num_to_process : atoi(argv[11]);
+
 
   ProjDataInfo * proj_data_info_ptr =
     in_projdata_ptr->get_proj_data_info_ptr()->clone();
@@ -269,7 +286,7 @@ int main(int argc, char **argv)
 
   TF move_lor(out_projdata.get_proj_data_info_ptr()->clone(),
 	      in_projdata_ptr->get_proj_data_info_ptr()->clone(),
-	      angle_around_x);
+	      RigidObject3DTransformation(quat, translation));
   const int out_min_segment_num = out_projdata.get_min_segment_num();
   const int out_max_segment_num = out_projdata.get_max_segment_num();
   VectorWithOffset<shared_ptr<SegmentByView<float> > > out_seg_ptr(out_min_segment_num, out_max_segment_num);
@@ -279,6 +296,8 @@ int main(int argc, char **argv)
     out_seg_ptr[segment_num] = 
       new SegmentByView<float>(out_projdata.get_empty_segment_by_view(segment_num));
 
+  CPUTimer timer;
+  timer.start();
   for (int segment_num = -max_in_segment_num_to_process;
        segment_num <= max_in_segment_num_to_process;
        ++segment_num)    
@@ -308,6 +327,9 @@ int main(int argc, char **argv)
 		  bin.get_bin_value();
 	    }
     }
+
+  timer.stop();
+  cerr << "CPU time " << timer.value() << endl;
 
   Succeeded succes = Succeeded::yes;
   for (int segment_num = out_projdata.get_min_segment_num();
