@@ -2,10 +2,28 @@
 // $Id$: $Date$
 //
 
-// inline implementations for Array
+/*!
+  \file 
+  \ingroup buildblock 
+  \brief inline implementations for the Array class 
 
+  \author Kris Thielemans (with help from Alexey Zverovich)
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+  For compilers that do not support partial template specialisation,
+  the 1D implementations are rather tedious: full specialisations
+  for a few common types. Result: lots of code repetition.
+*/
 // include for min,max definitions
 #include <algorithm>
+#ifndef TOMO_NO_NAMESPACES
+using std::max;
+using std::min;
+#endif
 
 START_NAMESPACE_TOMO
 
@@ -18,14 +36,14 @@ void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   base_type::grow(range.get_min_index(), range.get_max_index());
-  // TODO
-   int i = range.get_min_index();
-  for (base_type::iterator iter = begin()
-    //IndexRange<num_dimensions>::iterator range_iter = range.begin(); 
-   ;
+  base_type::iterator iter = begin();
+  IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
+  for (;
   iter != end(); 
-  iter++,i++)// range_iter++)
-    (*iter).grow(range[i]);//*range_iter);
+  iter++, range_iter++)
+    (*iter).grow(*range_iter);
+
+  is_regular_range = range.is_regular();
 }
 
 template <int num_dimensions, typename elemT>
@@ -48,6 +66,69 @@ Array<num_dimensions, elemT>::Array(const base_type& t)
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::~Array()
 {}
+
+#ifdef ARRAY_FULL 
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::full_iterator 
+Array<num_dimensions, elemT>::begin_all()
+{
+  if (begin() == end())
+  {
+    // empty array
+    return full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::full_iterator());
+  }
+  else
+    return full_iterator(begin(), end(), begin()->begin_all());
+}
+  
+#ifdef ARRAY_CONST_IT
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::begin_all() const
+{
+  if (begin() == end())
+  {
+    // empty array
+    return const_full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::const_full_iterator());
+  }
+  else
+    return const_full_iterator(begin(), end(), begin()->begin_all());
+}
+#endif
+
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::full_iterator 
+Array<num_dimensions, elemT>::end_all()
+{
+  if (begin() == end())
+  {
+    // empty array
+    return full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::full_iterator());
+  }
+  else
+    return full_iterator(end()-1, end(), (*(end()-1)).end_all());
+}
+
+#ifdef ARRAY_CONST_IT
+template <int num_dimensions, typename elemT>
+Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::end_all() const
+{
+  if (begin() == end())
+  {
+    // empty array
+    return const_full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::const_full_iterator());
+  }
+  else
+  { // TODO
+  const_iterator last = ((end()-1));
+  const_iterator really_the_end = end();
+  return const_full_iterator(end()-1, really_the_end/*end()*/, /*(*(end()-1))*/last->end_all());
+  }
+}
+#endif
+
+#endif // ARRAY_FULL
 
 template <int num_dimensions, class elemT>
 IndexRange<num_dimensions>
@@ -101,7 +182,13 @@ Array<num_dimensions, elemT>::find_max() const
   {
     elemT maxval= num[get_min_index()].find_max();
     for(int i=get_min_index()+1; i<=get_max_index(); i++)
+    {
+#ifndef TOMO_NO_NAMESPACES
+      maxval = std::max(num[i].find_max(), maxval);
+#else
       maxval = max(num[i].find_max(), maxval);
+#endif
+    }
     return maxval;
   } 
   else 
@@ -120,7 +207,13 @@ Array<num_dimensions, elemT>::find_min() const
   {
     elemT minval= num[get_min_index()].find_min();
     for(int i=get_min_index()+1; i<=get_max_index(); i++)
+    {
+#ifndef TOMO_NO_NAMESPACES
+      minval = std::min(num[i].find_min(), minval);
+#else
       minval = min(num[i].find_min(), minval);
+#endif
+    }
     return minval;
   } 
   else 
@@ -140,7 +233,29 @@ Array<num_dimensions, elemT>::fill(const elemT &n)
   check_state();
 }
 
+template <int num_dimensions, typename elemT>
+bool
+Array<num_dimensions, elemT>::is_regular() const
+{
+  return is_regular_range;
+}
 
+//TODO terribly inefficient at the moment
+template <int num_dimensions, typename elemT>
+bool
+Array<num_dimensions, elemT>::get_regular_range(
+     BasicCoordinate<num_dimensions, int>& min,
+     BasicCoordinate<num_dimensions, int>& max) const
+{
+  IndexRange<num_dimensions> range = get_index_range();
+  return range.get_regular_range(min,max);
+}
+
+/*! This member function reads binary data from the stream.
+  \warning The stream has to be opened with ios::binary.
+  \warning read_data only works properly if elemT is a 'simple' type whose objects
+  can be read using \c fread.
+*/
 template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::read_data(istream& s, const ByteOrder byte_order)
@@ -151,6 +266,11 @@ Array<num_dimensions, elemT>::read_data(istream& s, const ByteOrder byte_order)
   check_state();
 }
 
+/*! This member function writes binary data to the stream.
+  \warning The stream has to be opened with ios::binary.
+  \warning write_data only works properly if elemT is a 'simple' type whose objects
+  can be read using \c fwrite.
+*/
 template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::write_data(ostream& s, const ByteOrder byte_order) const
@@ -234,6 +354,35 @@ Array<1, elemT>::~Array()
 {}
 
 template <typename elemT>
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::begin_all()
+{
+  return begin();
+}
+  
+template <typename elemT>
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all() const
+{
+  return begin();
+}
+
+template <typename elemT>
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::end_all()
+{
+  return end();
+}
+
+
+template <typename elemT>
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all() const
+{
+   return end();
+}
+  
+template <typename elemT>
 IndexRange<1> 
 Array<1, elemT>::get_index_range() const
 {
@@ -274,7 +423,11 @@ Array<1, elemT>::find_max() const
   check_state();
   if (length > 0)
   {
-    return *max_element(begin(), end());	
+#ifndef TOMO_NO_NAMESPACES
+    return *std::max_element(begin(), end());	
+#else
+    return *max_element(begin(), end());
+#endif
   }
   else 
   { 
@@ -292,7 +445,11 @@ Array<1, elemT>::find_min() const
   check_state();
   if (length > 0)
   {
+#ifndef TOMO_NO_NAMESPACES
+    return *std::min_element(begin(), end());
+#else
     return *min_element(begin(), end());
+#endif
   } 
   else 
   {
@@ -301,6 +458,23 @@ Array<1, elemT>::find_min() const
   } 
   check_state();
 };  
+
+template <typename elemT>
+bool
+Array<1, elemT>::is_regular() const
+{
+  return true;
+}
+
+template <typename elemT>
+bool
+Array<1, elemT>::get_regular_range(
+     BasicCoordinate<1, int>& min,
+     BasicCoordinate<1, int>& max) const
+{
+  IndexRange<1> range = get_index_range();
+  return range.get_regular_range(min,max);
+}
 
 #ifndef TOMO_USE_BOOST
 
@@ -391,6 +565,7 @@ Array<1, elemT>::operator/ (const elemT a) const
 
 /********************** float ***************************/
 
+#define elemT float
 
 void
 Array<1, float>::grow(const int min_index, const int max_index) 
@@ -449,6 +624,31 @@ Array<1, float>::Array(const base_type &il)
 Array<1, float>::~Array()
 {}
 
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::begin_all()
+{
+  return begin();
+}
+  
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all() const
+{
+  return begin();
+}
+
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::end_all()
+{
+  return end();
+}
+
+
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all() const
+{
+   return end();
+}
+
 IndexRange<1>
 Array<1, float>::get_index_range() const
 {
@@ -485,7 +685,11 @@ Array<1, float>::find_max() const
   check_state();
   if (length > 0)
   {
-    return *max_element(begin(), end());	
+#ifndef TOMO_NO_NAMESPACES
+    return *std::max_element(begin(), end());	
+#else
+    return *max_element(begin(), end());
+#endif
   }
   else 
   { 
@@ -501,7 +705,11 @@ Array<1, float>::find_min() const
   check_state();
   if (length > 0)
   {
+#ifndef TOMO_NO_NAMESPACES
+    return *std::min_element(begin(), end());
+#else
     return *min_element(begin(), end());
+#endif
   } 
   else 
   {
@@ -517,7 +725,7 @@ Array<1, float>::find_min() const
 in NumericVectorWithOffset already.
 Reason: we allow addition (and similar operations) of tensors of 
 different sizes. This implies that operator+= can call a 'grow'
-on retval. For this to work, retval should be a Array, not 
+on retval. For this to work, retval should be an Array, not 
 its base_type (which happens if these function are not repeated
 in this class).
 Complicated...
@@ -594,9 +802,11 @@ Array<1, float>::operator/ (const float a) const
 
 #endif // boost
 
+#undef elemT
 
 /************************** int ************************/
 
+#define elemT int
 
 void
 Array<1, int>::grow(const int min_index, const int max_index) 
@@ -654,6 +864,31 @@ Array<1, int>::Array(const base_type &il)
 Array<1, int>::~Array()
 {}
 
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::begin_all()
+{
+  return begin();
+}
+  
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all() const
+{
+  return begin();
+}
+
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::end_all()
+{
+  return end();
+}
+
+
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all() const
+{
+   return end();
+}
+
 IndexRange<1>
 Array<1, int>::get_index_range() const
 {
@@ -693,7 +928,11 @@ Array<1, int>::find_max() const
   check_state();
   if (length > 0)
   {
-    return *max_element(begin(), end());	
+#ifndef TOMO_NO_NAMESPACES
+    return *std::max_element(begin(), end());	
+#else
+    return *max_element(begin(), end());
+#endif
   }
   else 
   { 
@@ -710,7 +949,11 @@ Array<1, int>::find_min() const
   check_state();
   if (length > 0)
   {
+#ifndef TOMO_NO_NAMESPACES
+    return *std::min_element(begin(), end());
+#else
     return *min_element(begin(), end());
+#endif
   } 
   else 
   {
@@ -804,8 +1047,11 @@ Array<1, int>::operator/ (const int a) const
 
 #endif // boost
 
+#undef elemT
+
 /********************** unsigned short ***************************/
 
+#define elemT unsigned short
 
 void
 Array<1, unsigned short>::grow(const int min_index, const int max_index) 
@@ -864,6 +1110,31 @@ Array<1, unsigned short>::Array(const base_type &il)
 Array<1, unsigned short>::~Array()
 {}
 
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::begin_all()
+{
+  return begin();
+}
+  
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all() const
+{
+  return begin();
+}
+
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::end_all()
+{
+  return end();
+}
+
+
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all() const
+{
+   return end();
+}
+
 IndexRange<1>
 Array<1, unsigned short>::get_index_range() const
 {
@@ -900,7 +1171,11 @@ Array<1, unsigned short>::find_max() const
   check_state();
   if (length > 0)
   {
-    return *max_element(begin(), end());	
+#ifndef TOMO_NO_NAMESPACES
+    return *std::max_element(begin(), end());	
+#else
+    return *max_element(begin(), end());
+#endif
   }
   else 
   { 
@@ -916,7 +1191,11 @@ Array<1, unsigned short>::find_min() const
   check_state();
   if (length > 0)
   {
+#ifndef TOMO_NO_NAMESPACES
+    return *std::min_element(begin(), end());
+#else
     return *min_element(begin(), end());
+#endif
   } 
   else 
   {
@@ -1007,8 +1286,14 @@ Array<1, unsigned short>::operator/ (const unsigned short a) const
   return (retval /= a);
 };
 
+
+#endif // boost
+
+#undef elemT
+
 /********************** short ***************************/
 
+#define elemT short
 
 void
 Array<1, short>::grow(const int min_index, const int max_index) 
@@ -1067,6 +1352,31 @@ Array<1, short>::Array(const base_type &il)
 Array<1, short>::~Array()
 {}
 
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::begin_all()
+{
+  return begin();
+}
+  
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all() const
+{
+  return begin();
+}
+
+Array<1, elemT>::full_iterator 
+Array<1, elemT>::end_all()
+{
+  return end();
+}
+
+
+Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all() const
+{
+   return end();
+}
+
 IndexRange<1>
 Array<1, short>::get_index_range() const
 {
@@ -1103,7 +1413,11 @@ Array<1, short>::find_max() const
   check_state();
   if (length > 0)
   {
-    return *max_element(begin(), end());	
+#ifndef TOMO_NO_NAMESPACES
+    return *std::max_element(begin(), end());	
+#else
+    return *max_element(begin(), end());
+#endif
   }
   else 
   { 
@@ -1119,7 +1433,11 @@ Array<1, short>::find_min() const
   check_state();
   if (length > 0)
   {
+#ifndef TOMO_NO_NAMESPACES
+    return *std::min_element(begin(), end());
+#else
     return *min_element(begin(), end());
+#endif
   } 
   else 
   {
@@ -1212,7 +1530,7 @@ Array<1, short>::operator/ (const short a) const
 
 #endif // boost
 
-#endif // boost
+#undef elemT
 
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
