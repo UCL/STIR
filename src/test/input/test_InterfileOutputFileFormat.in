@@ -1,0 +1,6 @@
+Test InterfileOutputFileFormat Parameters:=
+output file format type := interfile
+interfile Output File Format Parameters:=
+number_of_bytes_per_pixel:=4
+End Interfile Output File Format Parameters:=
+End:=
