@@ -69,8 +69,7 @@ protected:
   string output_filename_prefix;
   string template_proj_data_name;
   string frame_definition_filename;
-  bool pre_normalisation;
-  bool post_normalisation;
+  bool pre_or_post_normalisation;
   bool store_prompts;
   int delayed_increment;
   int current_frame;
