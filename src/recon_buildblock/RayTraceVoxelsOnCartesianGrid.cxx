@@ -29,6 +29,7 @@
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/round.h"
 #include <math.h>
 #include <algorithm>
 
@@ -88,24 +89,34 @@ RayTraceVoxelsOnCartesianGrid
   const float inc_y = (fabs(difference.y())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.y());
   const float inc_z = (fabs(difference.z())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.z());
   
-  // intersection points with  intra-voxel planes : 
-  const float xmin = (int) (floor(start_point.x() - sign_x*0.5F)) + 0.5F;
-  const float ymin = (int) (floor(start_point.y() - sign_y*0.5F)) + 0.5F;
-  const float zmin = (int) (floor(start_point.z() - sign_z*0.5F)) + 0.5F;
+  // intersection points with intra-voxel planes : 
+  // find voxel which contains the start_voxel, and go to its 'left' edge
+  const float xmin = round(start_point.x()) - sign_x*0.5F;
+  const float ymin = round(start_point.y()) - sign_y*0.5F;
+  const float zmin = round(start_point.z()) - sign_z*0.5F;
+  // find voxel which contains the end_voxel, and go to its 'right' edge
+  const float xmax = round(stop_point.x()) + sign_x*0.5F;
+  const float ymax = round(stop_point.y()) + sign_y*0.5F;  
+  const float zmax = round(stop_point.z()) + sign_z*0.5F;
 
-  const float xmax = (int) (floor(stop_point.x() + sign_x*0.5F)) + 0.5F;
-  const float ymax = (int) (floor(stop_point.y() + sign_y*0.5F)) + 0.5F;  
-  const float zmax = (int) (floor(stop_point.z() + sign_z*0.5F)) + 0.5F;
-  
   /* Find a?end for the last intersections with the coordinate planes. 
      amax will then be the smallest of all these a?end.
 
      If the LOR is parallel to a plane, take care that its a?end is larger than all the others.
      Note that axend <= d12 (difference.x()+1)/difference.x()
+
+     In fact, we will take a?end slightly smaller than the actual last value (i.e. we multiply
+     with a factor .9999). This is to avoid rounding errors in the loop below. In this loop,
+     we try to detect the end of the LOR by comparing a (which is either ax,ay or az) with
+     aend. With exact arithmetic, a? would have been incremented exactly to 
+       a?_end_actual = a?start + (?max-?end)*inc_?*sign_?, 
+     so we could loop until a==aend_actual. However, because of numerical precision,
+     a? might turn out be a tiny bit smaller then a?_end_actual. So, we set aend a tiny bit 
+     smaller than aend_actual.
   */
-  const float axend = (fabs(difference.x())<=small_difference) ? d12*1000000.F : (xmax - start_point.x()) * inc_x * sign_x;
-  const float ayend = (fabs(difference.y())<=small_difference) ? d12*1000000.F : (ymax - start_point.y()) * inc_y * sign_y;
-  const float azend = (fabs(difference.z())<=small_difference) ? d12*1000000.F : (zmax - start_point.z()) * inc_z * sign_z;
+  const float axend = (fabs(difference.x())<=small_difference) ? d12*1000000.F : (xmax - start_point.x()) * inc_x * sign_x *.9999F;
+  const float ayend = (fabs(difference.y())<=small_difference) ? d12*1000000.F : (ymax - start_point.y()) * inc_y * sign_y *.9999F;
+  const float azend = (fabs(difference.z())<=small_difference) ? d12*1000000.F : (zmax - start_point.z()) * inc_z * sign_z *.9999F;
   
   const float amax = min(axend, min(ayend, azend));
   
