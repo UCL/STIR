@@ -160,7 +160,6 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
     output_header << "matrix axis label [2] := y\n";
     output_header << "!END OF INTERFILE :=\n";
     
-    image.write_data(output_data);
   }
   return true;
 }
