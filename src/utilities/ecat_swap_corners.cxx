@@ -1,11 +1,103 @@
-#include "stir/ProjDataFromStream.h"
-#include "stir/interfile.h"
+//
+// $Id$
+//
+
+/*!
+  \file
+  \ingroup utilities
+  \ingroup ECAT
+  \brief A (slightly dangerous) utility to perform so-called corner-swapping
+  for ECAT6 projection data.
+
+  \author Christian Michel
+  \author CTI PET Inc
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
+
+  \par Usage
+  \code
+   ecat_swap_corners out_name in_name 
+  \endcode
+
+  \par What does it do?
+
+  For some historical reason, CTI scanners store 3D sinograms 
+  sometimes in a 'corner-swapped' mode. What happens is that some
+  corners of the positive and negative segments are interchanged.
+  (As a consequence, segment 0 is never affected).<p>
+
+  Below is a summary of what Kris Thielemans understood about
+  corner-swapping from various emails with CTI people. However, he
+  might have totally misunderstood this, so beware!<p>
+
+  Corner-swapped mode occurs ALWAYS for ECAT6 data straight
+  from the scanner. However, data which have been normalised using
+  the import_3dscan utility from CTI are already corner-swapped
+  correctly. Unfortunately, there is no field in the ECAT6 header
+  that allows you to find out which mode it is in.
+
+  For ECAT7 data, the situation is even more confusing. Data acquired
+  directly in projection data have to be corner-swapped when the 
+  acquisition was in 'volume-mode' (i.e. stored by sinograms), but
+  NOT when acquired in 'view-mode' (i.e. stored by view). It seems that
+  bkproj_3D_sun follows this convention by assuming that any ECAT7
+  projection data stored in 'volume-mode' has to be corner swapped, and
+  when it writes projection data in 'view-mode', it does the corner swapping
+  for you. 
+  So, although there is strictly speaking no field in the ECAT7 header 
+  concerning corner swapping, it seems that the storage mode field 
+  determines the corner swapping as well.
+  <br>
+  When the data is acquired in listmode, this changes somewhat.
+  Apparently, there is a parameter in the set-up of listmode scans
+  that allows you to put the ACS in 'volume-mode' or 'view-mode'. The
+  resulting listmode files encode the sinogram coordinates then with
+  corner-swapping or without. After the acquisition, the listmode data
+  has then to be binned into projection data. It is then up to the
+  binning program to take this corner-swapping into account. This is
+  easiest to do by generating 'volume-mode' projection data when a 
+  'volume-mode'  when the listmode setup was in 'volume-mode', and 
+  similar for 'view-mode'.<br>
+  If this sounds confusing to you, KT would agree. 
+  Here seems to be the best thing to do:<p>
+  <i>Do all acquisitions in 'view-mode', set-up your listmode scan
+  in 'view-mode', bin the data in 'view-mode'. Forget about 
+  corner-swapping.</i><p>
+  If you cannot do this, then this utility will corner-swap the 
+  projection data for you. 
+
+  \par Who implemented this and how was it tested?
+
+  The actual corner swapping code was supplied by Christian Michel,
+  based on code by Larry Byars.<br>
+  KT has tested it by performing a very long cylinder scan in 
+  'volume-mode' on the ECAT 966, and looking at the delayeds. The oblique
+  segments had obvious discontinuities in the efficiency patterns.
+  After applyying this utility, these discontinuities appeared.
+  
+  \warning This utility does not (and cannot) check for you if the
+  data has to be corner-swapped or not. So, it can do the wrong thing.
+
+*/
+/*
+    Copyright (C) CTI PET Inc
+    Copyright (C) 2002- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
 #include "stir/SegmentBySinogram.h"
-#include <fstream>
-
+#include "stir/Succeeded.h"
+#include <iostream>
+#include <algorithm>
 #ifndef STIR_NO_NAMESPACES
-using std::fstream;
+using std::cerr;
+using std::endl;
+using std::min;
+using std::max;
+using std::swap;
 #endif
 
 USING_NAMESPACE_STIR
@@ -15,8 +107,8 @@ void dets_to_ve( int da, int db, int *v, int *e, int ndets)
 	int h,x,y,a,b,te;
 
 	h=ndets/2;
-        x=std::max(da,db);
-        y=std::min(da,db);
+        x=max(da,db);
+        y=min(da,db);
 	a=((x+y+h+1)%ndets)/2;
 	b=a+h;
 	te=abs(x-y-h);
@@ -27,6 +119,8 @@ void dets_to_ve( int da, int db, int *v, int *e, int ndets)
 
 typedef unsigned char byte;
 
+// Magic stuff that computes which bins are in the wrong corner
+// A mistery to KT...
 int * 
 compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 {
@@ -43,11 +137,7 @@ compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 	/*static byte ring_18[8][3] = {
 		{0,7,0}, {0,8,0}, {0,9,1}, {1,8,1},
 		{11,17,0}, {10,17,0}, {10,16,2}, {9,17,2}};
-	*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
+	*/ 
 	int ndets, deta, detb, v, e, a, b, *list, i, j, n, m;
 	int db = 32, off, nodup;
 	byte *fixer;
@@ -59,7 +149,7 @@ compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 
 	n = 0;
 	ndets = nviews*2*nmash;
-        std::cerr<< "swap_corners: guessing "<< ndets << " detectors per ring\n";
+        cerr<< "swap_corners: guessing "<< ndets << " detectors per ring\n";
 	// KT guess
 	//if (nviews%9 == 0) fixer = (byte *)ring_18;
 	if (nviews%9 == 0) db = ndets/12;
@@ -90,47 +180,27 @@ compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 int main(int argc, char **argv)
 {
   
-  if (argc!=4 && argc!=3)
+  if (argc!=3)
   {
-    std::cerr << "Usage: " << argv[0] << " out_name in_name [mash]\n"
-              << "If the mash parameter is omitted, it will be computed from info in the data.\n"
-              << "A mash factor of 4 means 4 views have been combined into 1.\n";
+    cerr << "Usage: " << argv[0] << " out_name in_name \n";
     return EXIT_FAILURE;
   }
-  int mash = -1;
-  if (argc==4)
-      mash = atoi(argv[3]);
-
   
   shared_ptr<ProjData> org_proj_data_ptr = 
     ProjData::read_from_file(argv[2]);
-  char out_name[max_filename_length];
-  strcpy(out_name, argv[1]);
-  add_extension(out_name, ".s");
-  fstream *out = new fstream;
-  open_write_binary(*out, out_name);
-  ProjDataFromStream 
+  ProjDataInterfile 
     new_proj_data(org_proj_data_ptr->get_proj_data_info_ptr()->clone(),
-                  out);  
-  write_basic_interfile_PDFS_header(argv[1], new_proj_data);
+                  argv[1]);  
 
   
   const int num_tang_poss = org_proj_data_ptr->get_num_tangential_poss();
   const int min_tang_pos_num = org_proj_data_ptr->get_min_tangential_pos_num();
   const int min_view_num = org_proj_data_ptr->get_min_view_num();
 
-  const int mash_from_data =
+  const int mash =
     org_proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring() /
     org_proj_data_ptr->get_num_views() / 2;
-  std::cerr << "Mash factor determined from data is " << mash_from_data << std::endl;
-  if (mash == -1)  
-    mash = mash_from_data;
-  else if (mash != mash_from_data)
-  {
-    std::cerr << "This is different from the parameter on the command line : " << mash<< std::endl;
-    if (!ask("Continue with data from command line?",false))
-      return EXIT_FAILURE;
-  }
+  cerr << "Mash factor determined from data is " << mash << endl;
     
 
   int num_swapped = 0;
@@ -150,21 +220,23 @@ int main(int argc, char **argv)
          axial_pos_num<=org_proj_data_ptr->get_max_axial_pos_num(segment_num);
          ++axial_pos_num)
     {
-      Sinogram<float> sino1=org_proj_data_ptr->get_sinogram(axial_pos_num, segment_num, false);
-      Sinogram<float> sino2=org_proj_data_ptr->get_sinogram(axial_pos_num, -segment_num, false);
+      Sinogram<float> sino1=
+	org_proj_data_ptr->get_sinogram(axial_pos_num, segment_num, false);
+      Sinogram<float> sino2=
+	org_proj_data_ptr->get_sinogram(axial_pos_num, -segment_num, false);
 
       for (int i=0; i<num_swapped; i++)
       {
 	int offset = swap_lors[i];
         const int tang_pos_num = offset%num_tang_poss + min_tang_pos_num;
         const int view_num = offset/num_tang_poss + min_view_num;
-        std::swap(sino1[view_num][tang_pos_num], sino2[view_num][tang_pos_num]);
-        //sino1[view_num][tang_pos_num] = 1; sino2[view_num][tang_pos_num] = 2;
+        swap(sino1[view_num][tang_pos_num], sino2[view_num][tang_pos_num]);
       }
      
       new_proj_data.set_sinogram(sino1);
       new_proj_data.set_sinogram(sino2);
     }
   }
+  free (swap_lors);
   return EXIT_SUCCESS;
 }
