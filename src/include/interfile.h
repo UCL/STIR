@@ -66,5 +66,9 @@ PETSinogramOfVolume read_interfile_PSOV(istream& input);
 // This first opens a stream and then calls the previous function
 PETSinogramOfVolume read_interfile_PSOV(const char *const filename);
 
+// KT 15/03/98 new
+bool write_basic_interfile_PSOV_header(const char *outfile_name,
+				 const PETSinogramOfVolume& psov);
+
 #endif // __Interfile_h__
 
