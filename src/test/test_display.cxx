@@ -37,16 +37,19 @@ main()
 
   // provide a test example. This could easily be changed in reading 
   // something from file
-  Array<3,test_type> t(IndexRange3D(10,100,120));
+  // note: sizes are prime numbers to avoid having accidental matches 
+  // with 'word-boundaries' etc. This is especailly an issue 
+  // when using X windows.
+  Array<3,test_type> t(IndexRange3D(10,87,123));
 
   VectorWithOffset<float> scale_factors(10);
   scale_factors.fill(1.F);
   // make images 3 and 4 stand out
   scale_factors[3] = 1.3F;
   scale_factors[4] = 1.5F;
-  for (int i=0; i<10; i++)
-    for (int j=0; j<100; j++)
-      for (int k=0; k<120; k++)
+  for (int i=0; i<t.get_max_index(); i++)
+    for (int j=0; j<t[i].get_max_index(); j++)
+      for (int k=0; k<t[i][j].get_max_index(); k++)
 	t[i][j][k] = test_type(100*sin((i+1.)*j*k/100000. * _PI * 2));
  
   // from here do the real work
