@@ -22,7 +22,6 @@
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/interfile.h"
-#include "stir/interfile_keyword_functions.h"
 #include "stir/IO/ecat6_utils.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/stir_ecat7.h"
@@ -36,6 +35,16 @@ using std::fstream;
 #endif
 
 START_NAMESPACE_STIR
+
+// sadly, gcc 2.95.* does not support local namespaces as used below
+// This is slightly funny as it does work in ProjData.cxx. 
+// Maybe because here it's in a template?
+#   if __GNUC__ == 2 
+#ifdef HAVE_LLN_MATRIX
+USING_NAMESPACE_ECAT7
+#endif
+USING_NAMESPACE_ECAT6
+#endif
 
 /*! 
    This function will attempt to determine the type of image in the file,
@@ -77,8 +86,7 @@ DiscretisedDensity<num_dimensions,elemT>::
     signature[max_length-1]='\0';
   }
   // Interfile
-  if (standardise_interfile_keyword(signature) == 
-      standardise_interfile_keyword("interfile"))
+  if (is_interfile_signature(signature))
   {
 #ifndef NDEBUG
     warning("DiscretisedDensity::read_from_file trying to read %s as Interfile\n", 
@@ -98,10 +106,12 @@ DiscretisedDensity<num_dimensions,elemT>::
 #ifndef NDEBUG
     warning("DiscretisedDensity::read_from_file trying to read %s as ECAT7\n", filename.c_str());
 #endif
-    USING_NAMESPACE_ECAT7;
+    USING_NAMESPACE_ECAT7
 
     if (is_ecat7_image_file(filename))
     {
+      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
+	      filename.c_str());
       string interfile_header_name;
       if (write_basic_interfile_header_for_ecat7(interfile_header_name, filename, 1,1,0,0) ==
         Succeeded::no)
@@ -136,6 +146,8 @@ DiscretisedDensity<num_dimensions,elemT>::
         if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
           error ("error reading main header in ECAT 6 file %s\n", filename.c_str());
         
+	warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
+		filename.c_str());
         return
           ECAT6_to_VoxelsOnCartesianGrid(/*frame_num, gate_num, data_num, bed_num*/1,1,0,0,
           cti_fptr, mhead);
