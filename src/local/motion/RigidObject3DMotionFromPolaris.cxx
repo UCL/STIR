@@ -27,7 +27,7 @@
 #include "stir/utilities.h"
 #include "stir/stream.h"
 #include "stir/CartesianCoordinate3D.h"
-
+#include "stir/linear_regression.h"
 #include <fstream>
 #include <ctime>
 
@@ -42,19 +42,12 @@ using std::streampos;
 #endif
 
 START_NAMESPACE_STIR
-#define  NEWOFFSET
 
 // Find and store gating values in a vector from lm_file  
 static  void 
 find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_times_in_millisecs, 
 				       VectorWithOffset<unsigned>& lm_random_number,
 				       CListModeData& listmode_data);
-#ifndef NEWOFFSET
-// Find and store random numbers from mt_file
-static void 
-find_and_store_random_numbers_from_mt_file(VectorWithOffset<unsigned>& mt_random_numbers,
-					   Polaris_MT_File& mt_file);
-#endif
 
 const char * const 
 RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris"; 
@@ -166,20 +159,26 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 {
   std::time_t sec_time = 
     listmode_data.get_scan_start_time_in_secs_since_1970();
-  // Polaris times are currently in localtime since midnight
-  // This relies on TZ though: bad! (TODO)
-  struct std::tm* lm_start_time_tm = std::localtime( &sec_time  ) ;
-  const unsigned long lm_start_time = 
-    ( lm_start_time_tm->tm_hour * 3600L ) + 
-    ( lm_start_time_tm->tm_min * 60 ) + 
-    lm_start_time_tm->tm_sec ;
 
-  cerr << "\nListmode file says that listmode start time is " 
-       << lm_start_time 
-       << " in secs after midnight local time"<< endl;
-  
+  if (sec_time==std::time_t(-1))
+    {
+      warning("Scan start time could not be found from list mode data");
+    }
+  else
+    {
+      // Polaris times are currently in localtime since midnight
+      // This relies on TZ though: bad! (TODO)
+      struct std::tm* lm_start_time_tm = std::localtime( &sec_time  ) ;
+      const unsigned long lm_start_time = 
+	( lm_start_time_tm->tm_hour * 3600L ) + 
+	( lm_start_time_tm->tm_min * 60 ) + 
+	lm_start_time_tm->tm_sec ;
 
-#ifdef NEWOFFSET
+      cerr << "\nListmode file says that listmode start time is " 
+	   << lm_start_time 
+	   << " in secs after midnight local time"<< endl;
+    }
+
   VectorWithOffset<unsigned long> lm_times_in_millisecs;
   VectorWithOffset<unsigned> lm_random_numbers;
   find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
@@ -216,21 +215,14 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
     ++iterator_for_random_num;
     unsigned long previous_lm_tag_time_in_millisecs = lm_times_in_millisecs[0];
     unsigned int lm_tag_num = 1;
-    while (iterator_for_random_num!= mt_file_ptr->end())
+    while (iterator_for_random_num!= mt_file_ptr->end_all_tags())
       {
 	const float elapsed_mt_tag_time = 
 	  (iterator_for_random_num->sample_time - previous_mt_tag_time);
 	if (elapsed_mt_tag_time > 1.3F * expected_tag_period)
 	  {
-#if 0
-	    cerr << "skipping 'missing data' after MT time " << previous_mt_tag_time << '\n' ;
-	    while (lm_tag_num < num_lm_tags &&
-		   lm_times_in_millisecs[lm_tag_num] - previous_lm_tag_time_in_millisecs < elapsed_mt_tag_time)
-	      ++lm_tag_num;
-#else
 	    warning("MT file contains a too large time interval (%g) after time %g\n",
 		    elapsed_mt_tag_time, previous_mt_tag_time);
-#endif
 	  }
 	if (lm_tag_num >= num_lm_tags)
 	  break; // get out of while loop
@@ -253,27 +245,74 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
     {
       // yes, they match
       cerr << "\n\tFound " << num_matched_tags << " matching tags between mt file and listmode data\n";
-      cerr << "\tEntry " << mt_offset << " (not counting missing data) in .mt file corresponds to Time 0 \n";
+      cerr << "\tEntry " << mt_offset << " in .mt file corresponds to Time 0 \n";
       time_offset = 
 	(mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
 
+      // fit
+      // note: initialise to 0 to avoid compiler warnings
+      double constant = 0; double scale = 0;
+      {
+	VectorWithOffset<float> weights(num_matched_tags);
+	weights.fill(1.F);
+	// ignore first data point
+	// TODO explain why
+	weights[0]=0;
+
+	// copy mt times into a vector
+	VectorWithOffset<double> mt_times(num_matched_tags);
+	{
+	  Polaris_MT_File::const_iterator mt_iter =
+	       mt_file_ptr->begin_all_tags() + mt_offset;
+	  VectorWithOffset<double>::iterator mt_time_iter = mt_times.begin();
+	  for (;
+	       mt_time_iter != mt_times.end();
+	       ++mt_iter, ++mt_time_iter)
+	    *mt_time_iter =mt_iter->sample_time - time_offset;
+	}
+	// note: initialise to 0 to avoid compiler warnings
+	double chi_square = 0;
+	double variance_of_constant = 0;
+	double variance_of_scale = 0;
+	double covariance_of_constant_with_scale = 0;
+	linear_regression(constant, scale,
+			  chi_square,
+			  variance_of_constant,
+			  variance_of_scale,
+			  covariance_of_constant_with_scale,
+			  mt_times.begin(), mt_times.end(),
+			  lm_times_in_millisecs.begin(),
+			  weights.begin(),
+			  /* use_estimated_variance = */true
+                       );
+
+	std::cout << "scale = " << scale << " +- " << sqrt(variance_of_scale)
+		  << ", cst = " << constant << " +- " << sqrt(variance_of_constant)
+		  << "\nchi_square = " << chi_square
+		  << "\ncovariance = " << covariance_of_constant_with_scale
+       << endl;
+
+      }
+      constant += time_offset;
       // check if times match 
       {
 	double max_deviation = 0;
 	double time_of_max_deviation = 0;
-	Polaris_MT_File::const_iterator iterator_for_random_num =
+	Polaris_MT_File::const_iterator mt_iter =
 	  mt_file_ptr->begin_all_tags() + mt_offset;	
 	unsigned int lm_tag_num = 0;
-	while (iterator_for_random_num!= mt_file_ptr->end() && 
+	// skip first
+	++mt_iter; ++lm_tag_num;
+	while (mt_iter!= mt_file_ptr->end_all_tags() && 
 	       lm_tag_num < num_lm_tags)
 	{
 	  const float mt_tag_time = 
-	    iterator_for_random_num->sample_time;
-	  ++iterator_for_random_num;
+	    mt_iter->sample_time;
+	  ++mt_iter;
 	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
 	  ++lm_tag_num;
 
-	  const double deviation = fabs(mt_tag_time-time_offset - lm_tag_time_in_millisecs/1000.);
+	  const double deviation = fabs(mt_tag_time - (lm_tag_time_in_millisecs*scale+constant));
 	  if (deviation>max_deviation)
 	    {
 	      max_deviation = deviation;
@@ -284,74 +323,39 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 		"\t%g, at %g secs (in list mode time)",
 		max_deviation, time_of_max_deviation);
       }
+      // check if times match (old)
+      {
+	double max_deviation = 0;
+	double time_of_max_deviation = 0;
+	Polaris_MT_File::const_iterator mt_iter =
+	  mt_file_ptr->begin_all_tags() + mt_offset;	
+	unsigned int lm_tag_num = 0;
+	while (mt_iter!= mt_file_ptr->end_all_tags() && 
+	       lm_tag_num < num_lm_tags)
+	{
+	  const float mt_tag_time = 
+	    mt_iter->sample_time;
+	  ++mt_iter;
+	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
+	  ++lm_tag_num;
+
+	  const double deviation = fabs(mt_tag_time-time_offset - lm_tag_time_in_millisecs/1000.);
+	  if (deviation>max_deviation)
+	    {
+	      max_deviation = deviation;
+	      time_of_max_deviation = lm_tag_time_in_millisecs/1000.;
+	    }
+	}
+	warning("Original Max deviation between Polaris and listmode is:\n"
+		"\t%g, at %g secs (in list mode time)",
+		max_deviation, time_of_max_deviation);
+      }
       return;
     }
   }
 
   // if we get here, we didn't find a match
   error( "\n\n\t\tNo matching data found\n" ) ;  
-#else 
-  int Total;
-  int i1;
-  
-  long int nTags = 0;
-  long int nMT_Rand = 0;
-  
-  VectorWithOffset<float> lm_times_in_millisecs;
-  VectorWithOffset<unsigned> lm_random_numbers;
-  VectorWithOffset<unsigned> mt_random_numbers;
-  // LM_file tags + times
-  find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
-  cerr << "done find and store gate tag values" << endl;
-  nTags = lm_random_numbers.size();
-  // to be consistent with Peter's code
-  nTags -=1;
-  //MT_file random numbers
-  //cerr << " Reading mt file" << endl;    
-  find_and_store_random_numbers_from_mt_file(mt_random_numbers, *mt_file_ptr);
-  //cerr << " Done reading mt file" << endl;
-  nMT_Rand = mt_random_numbers.size();
-   //cerr << "Random_num" << nMT_Rand;
-  
-  /* Determine location of LM random numbers in Motion Tracking list */
-  long int OffSet = 0 ;
-  int ZeroOffSet = -1;
-  while ( OffSet + nTags < nMT_Rand )
-  {
-    for ( Total = 0 , i1 = 0 ; i1 < nTags ; i1++ )
-    {
-      if (mt_random_numbers[i1 + OffSet]!= lm_random_numbers[i1])
-      {
-	Total = 1 ;
-	break; // get out: no match
-      }
-    }
-    if ( !Total )
-    {
-      ZeroOffSet = OffSet ;
-      OffSet += nMT_Rand ;
-    }
-    OffSet += 1 ;
-  }
-  if ( ZeroOffSet < 0 )
-  {
-    error( "\n\n\t\tNo matching data found\n" ) ;
-  }
- 
-  
-  int mt_offset = ZeroOffSet;
-  time_offset = 
-    (mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
-  cerr << "\t\tEntry " << mt_offset << "(ignoring missing data lines) in .mt file Corresponds to Time 0 \n"
-       << "\t\tTime offset:= " << time_offset << endl;
-#endif
-
-#if 0
-  cerr << endl;
-  cerr << "MT random numbers" << "   ";
-  for ( int i = mt_offset; i<=mt_offset+10; i++)
-   cerr << (*mt_file_ptr)[i].rand_num << "   ";
-#endif
   
 }
 
@@ -499,22 +503,6 @@ find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time,
   listmode_data.reset();
  
 }
-
-#ifdef NEWOFFSET  
-void 
-find_and_store_random_numbers_from_mt_file(VectorWithOffset<unsigned>& mt_random_numbers,
-					   Polaris_MT_File& mt_file)
-{
-  Polaris_MT_File::const_iterator iterator_for_random_num =
-    mt_file.begin_all_tags();
-  while (iterator_for_random_num!= mt_file.end_all_tags())
-  {
-    push_back(mt_random_numbers,iterator_for_random_num->rand_num);
-    ++iterator_for_random_num;
-  }
-  
-}
-#endif
 
 void 
 RigidObject3DMotionFromPolaris::set_defaults()
