@@ -9,8 +9,8 @@
     
   \author Kris Thielemans
       
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 #ifndef __Tomo_ChainedImageProcessor_H__
@@ -19,7 +19,7 @@
 
 #include "tomo/RegisteredParsingObject.h"
 #include "tomo/ImageProcessor.h"
-
+#include "shared_ptr.h"
 
 START_NAMESPACE_TOMO
 
@@ -36,14 +36,15 @@ START_NAMESPACE_TOMO
   
 
   \warning ChainedImageProcessor::set_up builds only the image
-  processor of the first in the image processor in the chain. This 
+  processor of the first in the image processor chain. This 
   is because at this point, we do not really know what the first
   image processor will do to the image (it might change index 
   ranges or so), so it is impossible to build the 2nd image 
   processor without actually letting the first image processor 
-  process the iamge (which might be far too expensive). This is not a real
+  process the image (which might be far too expensive). This is not a real
   problem however, as  ChainedImageProcessor::apply is
-  fine.
+  fine as it will  call virtual_set_up for the 2nd
+  image processor anyway.
  */
 
 template <int num_dimensions, typename elemT>
@@ -57,18 +58,25 @@ class ChainedImageProcessor :
 public:
   static const char * const registered_name; 
   
-  //! Construct given parameters 
-  /*! \warning parameter type will be changed to shared_ptr
-   */
+  //! Construct given ImageProcessor parameters
+#ifndef _MSC_VER
   explicit
-  ChainedImageProcessor(ImageProcessor<num_dimensions,elemT> *const apply_first=0,
-			ImageProcessor<num_dimensions,elemT> *const apply_second=0);
-    
+  ChainedImageProcessor(shared_ptr<ImageProcessor<num_dimensions,elemT> > const& apply_first=0,
+			shared_ptr<ImageProcessor<num_dimensions,elemT> > const& apply_second=0);
+#else
+  // VC does not compile the above for some reason
+  // but gcc does not compile the work-around below...
+  explicit
+  ChainedImageProcessor(shared_ptr<ImageProcessor<num_dimensions,elemT> > const& apply_first=
+			  shared_ptr<ImageProcessor<num_dimensions,elemT> >(),
+			shared_ptr<ImageProcessor<num_dimensions,elemT> > const& apply_second=
+			  shared_ptr<ImageProcessor<num_dimensions,elemT> >());
+#endif    
   
 private:
   
-  ImageProcessor<num_dimensions,elemT> * apply_first;
-  ImageProcessor<num_dimensions,elemT> * apply_second;
+  shared_ptr<ImageProcessor<num_dimensions,elemT> > apply_first;
+  shared_ptr<ImageProcessor<num_dimensions,elemT> > apply_second;
   
   virtual void set_defaults();
   virtual void initialise_keymap();
