@@ -17,6 +17,7 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	add_images.cxx \
 	mult_images.cxx \
 	normalizedbckproj.cxx \
+	add_projections.cxx \
 	inverse_proj_data.cxx 	
 
 
