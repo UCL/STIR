@@ -108,15 +108,26 @@ static int print_debug (char const * const fname, char *format, ...)
 
 static bool is_ECAT7_file(Main_header& mhead, const string& filename)
 {
-  MatrixFile * const mptr = matrix_open( filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
-  if(!mptr) 
+  FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
+  // first check 'magic_number' before going into LLN routines 
+  // to avoid crashes and error messages there
+  // an ECAT7 file should start with MATRIX7
+  {
+    char magic[7];
+    if (! cti_fptr ||
+	fread(magic, 1, 7, cti_fptr) != 7 ||
+	strcmp(magic, "MATRIX7")!=0)
+      return false;
+  }
+  if(mat_read_main_header(cti_fptr, &mhead)!=0) 
     {
+      // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT7
       return false;
     }
   else
     {
-      mhead = *mptr->mhptr;
       // do some checks on the main header
+      fclose(cti_fptr);
       return 
 	mhead.sw_version>=70 && mhead.sw_version<=79  &&
 	( mhead.file_type >= 1 && mhead.file_type <= Float3dSinogram) &&
@@ -1152,6 +1163,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
   
   if (matrix==NULL)
   { 
+    matrix_close(mptr);
     warning("write_basic_interfile_header_for_ECAT7: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
             "I'm not writing any header...\n",
             frame, 1, gate, data, bed,  ECAT7_filename.c_str());
@@ -1204,6 +1216,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       // KT 14/05/2002 added error check
       if (offset_in_ECAT_file<0)
       { 
+	free_matrix_data(matrix);
+	matrix_close(mptr);
         warning("write_basic_interfile_header_for_ECAT7: Error in determining offset into ECAT7 file %s.\n"
                 "I'm not writing any header...\n",
                  ECAT7_filename.c_str()); 
@@ -1220,6 +1234,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
         dimensions, voxel_size, data_type,byte_order,
         scaling_factors,
         file_offsets);
+      free_matrix_data(matrix);
       break;
     }
           
@@ -1233,6 +1248,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       
       ProjDataFromStream* pdfs_ptr = 
 	make_pdfs_from_matrix(mptr, matrix, stream_ptr);
+      free_matrix_data(matrix);
      
       if (pdfs_ptr == NULL)
 	return Succeeded::no;
@@ -1247,13 +1263,16 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     
         
   default:
-    warning("write_basic_interfile_header_for_ECAT7: File type not handled for file %s.\n"
+      free_matrix_data(matrix);
+      matrix_close(mptr);
+      warning("write_basic_interfile_header_for_ECAT7: File type not handled for file %s.\n"
             "I'm not writing any Interfile headers...\n",
              ECAT7_filename.c_str());
     return Succeeded::no;
   }
   
   delete header_filename;
+  matrix_close(mptr);
   return Succeeded::yes;
 }
 
