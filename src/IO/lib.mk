@@ -1,0 +1,22 @@
+#
+# $Id$
+#
+dir := IO
+
+$(dir)_LIB_SOURCES := \
+  OutputFileFormat.cxx \
+  InterfileOutputFileFormat.cxx \
+  interfile.cxx InterfileHeader.cxx \
+  ECAT6OutputFileFormat.cxx \
+  stir_ecat_common.cxx \
+  stir_ecat6.cxx ecat6_utils.cxx
+ 
+
+ifeq ($(HAVE_LLN_MATRIX),1)
+  $(dir)_LIB_SOURCES += ECAT7OutputFileFormat.cxx stir_ecat7.cxx
+endif
+
+
+$(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
+
+include $(WORKSPACE)/lib.mk
