@@ -3,7 +3,7 @@
 #define __stir_IO_read_data_1d_H__
 /*!
   \file 
-  \ingroup Array 
+  \ingroup Array_IO_detail 
   \brief Declaration of read_data_1d() functions for reading Arrays to file
 
   \author Kris Thielemans
@@ -25,7 +25,7 @@ class ByteOrder;
 template <int num_dimensions, class elemT> class Array;
 
 namespace detail {
-/*! \ingroup Array
+/*! \ingroup Array_IO_detail
   \brief This is an internal function called by \c read_data(). It does the actual reading
    to \c std::istream.
 
@@ -37,7 +37,7 @@ read_data_1d(std::istream& s, Array<1, elemT>& data,
 	     const ByteOrder byte_order);
 
 
-/* \ingroup Array
+/* \ingroup Array_IO_detail
   \brief  This is the (internal) function that does the actual reading from a FILE*.
   \internal
  */

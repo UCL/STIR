@@ -60,7 +60,7 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   origin-z (in mm):= <float> ;defaults to 0
   origin-y (in mm):= <float> ;defaults to 0
   origin-x (in mm):= <float> ;defaults to 0
-  \endvarbatim
+  \endverbatim
 */
 class Shape3D :
    public RegisteredObject<Shape3D>,

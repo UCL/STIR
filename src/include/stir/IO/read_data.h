@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup Array 
+  \ingroup Array_IO 
   \brief declarations of read_data() functions for reading Arrays from file
 
   \author Kris Thielemans
@@ -35,7 +35,7 @@ template <int num_dimensions, class elemT> class Array;
 
 #ifndef __STIR_WORKAROUND_TEMPLATES
 
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Read the data of an Array from file.
 
   Only the data will be written, not the dimensions, start indices, nor byte-order.
@@ -52,7 +52,7 @@ inline Succeeded
 read_data(IStreamT& s, Array<num_dimensions,elemT>& data, 
 	  const ByteOrder byte_order=ByteOrder::native);
 
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Read the data of an Array from file as a different type.
 
   This function essentially first calls convert_data() to construct
@@ -71,7 +71,7 @@ read_data(IStreamT& s, Array<num_dimensions,elemT>& data,
 	  ScaleT& scale_factor,
 	  const ByteOrder byte_order=ByteOrder::native);
 
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Read the data of an Array from file as a different type.
 
   \see read_data(IStreamT&, const Array<num_dimensions,elemT>&, 

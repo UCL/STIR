@@ -1,7 +1,7 @@
 // $Id$
 /*!
   \file 
-  \ingroup Array 
+  \ingroup Array_IO 
   \brief Implementation of read_data() functions for reading Arrays from file
 
   \author Kris Thielemans

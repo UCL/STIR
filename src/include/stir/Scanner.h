@@ -101,7 +101,7 @@ class Scanner
 	  int max_num_non_arccorrected_bins,
 	  int default_num_arccorrected_bins,
 	  float RingRadius_v, float RingSpacing_v, 
-	  float BinSize_v, float intrTilt_v,
+	  float BinSize_v, float intrinsic_tilt,
 	  int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket,
 	  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
 	  int num_detector_layers);

@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup buildblock
+  \ingroup Array
  
   \brief a variety of useful functions for indexing Array objects
 
@@ -35,22 +35,20 @@ START_NAMESPACE_STIR
    */
 //@{ 
 
-//! \name get(), an alternative for array indexing using BasicCoordinate objects
-//{@
-
-//! Case where the index has lower dimension than the array
+//! an alternative for array indexing using BasicCoordinate objects
+/*! Case where the index has lower dimension than the array*/
 template <int num_dimensions, int num_dimensions2, typename elemT>
 inline
 const Array<num_dimensions-num_dimensions2,elemT>&
 get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions2,int> &c);
 
-//! Case where the index has the same dimension as the array
+//! an alternative for array indexing using BasicCoordinate objects
+/*! Case where the index has the same dimension as the array*/
 template <int num_dimensions, typename elemT>
 inline
 const elemT&
 get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions,int> &c);
 
-//@}
 
 //! Get the first multi-dimensional index of the array
 template <int num_dimensions, typename T>
@@ -61,7 +59,7 @@ get_min_indices(const Array<num_dimensions, T>& a);
 
 //! Given an index into an array, increment it to the next one
 /*!
-    \return \c true if the next index was still within the array,\x false otherwise
+    \return \c true if the next index was still within the array, \c false otherwise
 
     This can be used to iterate through an array using code such as
     \code

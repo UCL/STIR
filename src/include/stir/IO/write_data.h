@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup Array 
+  \ingroup Array_IO 
   \brief declarations of write_data() functions for writing Arrays to file
 
   \author Kris Thielemans
@@ -45,7 +45,7 @@ template <int num_dimensions, class elemT> class Array;
 */
 
 #ifndef __STIR_WORKAROUND_TEMPLATES
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Write the data of an Array to file.
 
   Only the data will be written, not the dimensions, start indices, nor byte-order.
@@ -71,7 +71,7 @@ inline Succeeded
 write_data(OStreamT& s, const Array<num_dimensions,elemT>& data, 
 	   const ByteOrder byte_order=ByteOrder::native,
 	   const bool can_corrupt_data=false);
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Write the data of an Array to file as a different type.
 
   This function essentially first calls convert_data() to construct
@@ -95,7 +95,7 @@ write_data(OStreamT& s, const Array<num_dimensions,elemT>& data,
 	   const ByteOrder byte_order=ByteOrder::native,
 	   const bool can_corrupt_data=false);
 
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Write the data of an Array to file as a different type but using a given scale factor.
   
   If \a scale_factor is such that the <tt>data/scale_factor</tt> does not fit in the
@@ -120,7 +120,7 @@ write_data_with_fixed_scale_factor(OStreamT& s, const Array<num_dimensions,elemT
 				   const ByteOrder byte_order=ByteOrder::native,
 				   const bool can_corrupt_data=false);
 
-/*! \ingroup Array
+/*! \ingroup Array_IO
   \brief Write the data of an Array to file as a different type.
 
   \see write_data(OStreamT&, const Array<num_dimensions,elemT>&, 

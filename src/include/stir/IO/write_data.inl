@@ -1,7 +1,7 @@
 // $Id$
 /*!
   \file 
-  \ingroup Array 
+  \ingroup Array_IO 
   \brief Implementation of write_data() functions for writing Arrays to file
 
   \author Kris Thielemans

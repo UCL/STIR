@@ -25,7 +25,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
-  \brief the cross-product 3-dimensional coordinates.
+  \brief the cross-product for 3-dimensional coordinates.
   \warning This implements <strong>minus</strong> the 'usual' definition 
   of the cross-product. This is done because STIR uses a left-handed 
   coordinate system. The definition of \a cross_product is such that 

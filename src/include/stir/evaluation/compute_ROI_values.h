@@ -2,10 +2,10 @@
 // $Id$
 //
 /*!
-  \file Declaration of various function that computes ROI values
+  \file 
   \ingroup evaluation
 
-  \brief 
+  \brief Declaration of various function that computes ROI values 
 
   \author Kris Thielemans
   $Date$
@@ -28,7 +28,9 @@ template <typename elemT> class VectorWithOffset;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Shape3D;
 
-//! \addtogroup evaluation
+/*! \ingroup evaluation
+    \name Functions to compute ROI values
+*/
 //@{
 
 // TODO doc

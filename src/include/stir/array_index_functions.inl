@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup buildblock
+  \ingroup Array
  
   \brief implementation of functions in stir/array_index_functions.h
 

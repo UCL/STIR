@@ -77,7 +77,7 @@ ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine = 1,
-     const int num_tang_poss_to_trim = 0,
+     const int num_tangential_poss_to_trim = 0,
      const int max_in_segment_num_to_process=-1
      );
 
@@ -105,9 +105,9 @@ SSRB(const string& output_filename,
      const ProjData& in_projdata,
      const int num_segments_to_combine,
      const int num_views_to_combine = 1,
-     const int num_tang_poss_to_trim = 0,
+     const int num_tangential_poss_to_trim = 0,
      const bool do_normalisation = true,
-     const int max_segment_num_to_process = -1
+     const int max_in_segment_num_to_process = -1
      );
 
 //! Perform Single Slice Rebinning and write output to ProjData
