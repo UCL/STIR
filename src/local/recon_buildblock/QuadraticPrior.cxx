@@ -68,9 +68,9 @@ QuadraticPrior<elemT>::post_processing()
      size_y = precomputed_weights.get_length();
      size_x = precomputed_weights[0].get_length();  
     }
-    const int min_index_z = -(size_z/2);
-    const int min_index_y = -(size_y/2);
-    const int min_index_x = -(size_x/2);
+    const int min_index_z = -static_cast<int>(size_z/2);
+    const int min_index_y = -static_cast<int>(size_y/2);
+    const int min_index_x = -static_cast<int>(size_x/2);
     
     weights.grow(IndexRange3D(min_index_z, min_index_z+size_z-1,
 			      min_index_y, min_index_y + size_y - 1,
