@@ -87,13 +87,13 @@ public:
 
     The denominator is given by a penalty term + a data-dependent term. The latter
     is given by :  
-    \f[ d_j = -\sum_i A_{ij} \gamma_i h_i''(y_i) \f]
+    \f[ d_j = -\sum_i P_{ij} \gamma_i h_i^{''}(y_i) \f]
     where
-    \f[ h_(l) = y_i log (l) - l; h_''(y_i) ~= -1/y_i; \f]
-    \f[gamma_i = sum_k A_{ik}\f]
-    and \f$A_{ij} \f$ is the probability matrix. 
+    \f[ h_(l) = y_i log (l) - l; h_i^{''}(y_i) ~= -1/y_i; \f]
+    \f[gamma_i = sum_k P_{ik}\f]
+    and \f$P_{ij} \f$ is the probability matrix. 
     Hence
-    \f[ d_j = \sum_i A_{ij}(1/y_i) \sum_k A_{ik} \f]
+    \f[ d_j = \sum_i P_{ij}(1/y_i) \sum_k P_{ik} \f]
 
     In the above, we've used the plug-in approximation by replacing 
     forward projection of the true image by the measured data. However, the
@@ -104,7 +104,7 @@ public:
     \f[ d_j = \sum_i G_{ij}{1 \over n_i \mathrm{smooth}( n_i y_i)} \sum_k G_{ik} \f]
     where the probability matrix is factorised in a detection efficiency part (i.e. the
     normalisation factors \f$n_i\f$) times a geometric part:
-    \f[ A_{ij} = {1 \over n_i } G_{ij}\f]
+    \f[ P_{ij} = {1 \over n_i } G_{ij}\f]
 */
   Succeeded 
     precompute_denominator_of_conditioner_without_penalty();
