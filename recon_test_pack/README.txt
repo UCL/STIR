@@ -1,3 +1,6 @@
+$Id$
+README file for STIR recon_test_pack version 1.1
+------------------------------------------------
 
 This test pack runs some simple tests to check if convecat6_if,
 sensitivity and OSMAPOSL work as expected. This works by checking
@@ -22,13 +25,20 @@ Run the tests as follows:
 
 On Unix:
 --------
-sh run_tests.sh
+(this also work on Windows if you installed CYGWIN)
+
+sh run_tests.sh [ --nointbp ]
 	(if all executables are in your path)
 
-sh run_tests.sh my_install_dir/  
+sh run_tests.sh [ --nointbp ] my_install_dir/  
 	(if you copied the executables to one directory, 
 	 but it isn't in your path)
 
+Use the --nointbp option (case is important) if you want to skip 
+reconstructions that use  the interpolating backprojector. You
+probably want to do this on Suns (and maybe HP stations ?), as that
+backprojector is known to have a problem on those processors
+in the centre of the image.
 
 On Windows:
 ----------
@@ -36,13 +46,14 @@ Open a command prompt window
 cd to where you extracted the test pack.
 type
 
-run_tests
+run_tests [ --nointbp ]
 	(if all executables are in your path)
 
-run_tests g:\my_install_dir\  
+run_tests [ --nointbp ] g:\my_install_dir\  
 	(if you copied the executables to one directory (on drive g), 
 	 but it isn't in your path)
 
+See above for the --nointbp option.
 
 Kris Thielemans
 Matthew Jacobson
