@@ -56,7 +56,7 @@ template <class NUMBER, class SCALE, class CHARP>
 extern void display(const Tensor3D<NUMBER>& plane_stack,
 		    const VectorWithOffset<SCALE>& scale_factors,
 		    const VectorWithOffset<CHARP>& text,
-		    double maxi = 0, int scale = 0,
+		    double maxi = 0, int zoom = 0,
 		    int num_in_window = 0);
 
 
@@ -64,7 +64,7 @@ extern void display(const Tensor3D<NUMBER>& plane_stack,
 /* A version without scale factors and text */
 template <class NUMBER>
 inline void display(const Tensor3D<NUMBER>& plane_stack,
-	     double maxi = 0, int scale = 0,
+	     double maxi = 0, int zoom = 0,
 	     int num_in_window = 0)
 {
   VectorWithOffset<Real> scale_factors(plane_stack.get_min_index3(), 
@@ -75,7 +75,7 @@ inline void display(const Tensor3D<NUMBER>& plane_stack,
   text.fill("");
 
   display(plane_stack, scale_factors, text,
-	  maxi, scale, num_in_window);
+	  maxi, zoom, num_in_window);
 }
 
 
@@ -84,7 +84,7 @@ template <class NUMBER, class SCALE, class CHARP>
 inline void display(const Tensor2D<NUMBER>& plane,
 		    const SCALE scale_factor,
 		    const CHARP& text,
-		    double maxi = 0, int scale = 0,
+		    double maxi = 0, int zoom = 0,
 		    int num_in_window = 0)
 { 
   Tensor3D<NUMBER> stack(1);
@@ -94,7 +94,7 @@ inline void display(const Tensor2D<NUMBER>& plane,
   VectorWithOffset<CHARP> texts(1);
   texts[0] = text;
   
-  display(stack, scale_factors, texts, maxi, scale, num_in_window);
+  display(stack, scale_factors, texts, maxi, zoom, num_in_window);
 }
 
 
@@ -102,10 +102,10 @@ inline void display(const Tensor2D<NUMBER>& plane,
 /* A version without scale factors and text */
 template <class NUMBER>
 inline void display(const Tensor2D<NUMBER>& plane,
-	     double maxi = 0, int scale = 0,
+	     double maxi = 0, int zoom = 0,
 	     int num_in_window = 0)
 {
-  display(plane, 0, "", maxi, scale, num_in_window);
+  display(plane, 0, "", maxi, zoom, num_in_window);
 }
 
 #endif 
