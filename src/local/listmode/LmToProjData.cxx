@@ -278,8 +278,7 @@ LmToProjData(const char * const par_filename)
 
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event,
-		   const double time) const
+get_bin_from_event(Bin& bin, const CListEvent& event) const
 {  
   if (pre_or_post_normalisation)
   {
@@ -342,34 +341,23 @@ get_bin_from_event(Bin& bin, const CListEvent& event,
 
 void
 LmToProjData::
-compute()
-{  
-  //*********** get proj_data_info for use in the rebinning below
+process_new_time_event(const CListTime&)
+{}
 
-#ifdef HIDACREBINNER
-  const ProjDataInfoCylindrical * proj_data_info_ptr =
-    dynamic_cast<const ProjDataInfoCylindrical *>
-    (template_proj_data_info_ptr.get());
-#else
-  const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>
-    (template_proj_data_info_ptr.get());
-#endif
-  assert(proj_data_info_ptr != NULL);  
+void
+LmToProjData::
+process_data()
+{ 
+  CPUTimer timer;
+  timer.start();
   
-
-  //*********** Finally, do the real work
-    
-    CPUTimer timer;
-    timer.start();
-    
-    double time_of_last_stored_event = 0;
-    long num_stored_events = 0;
-    VectorWithOffset<segment_type *> 
-      segments (template_proj_data_info_ptr->get_min_segment_num(), 
-		template_proj_data_info_ptr->get_max_segment_num());
-    
-    /* Here starts the main loop which will store the listmode data. */
+  double time_of_last_stored_event = 0;
+  long num_stored_events = 0;
+  VectorWithOffset<segment_type *> 
+    segments (template_proj_data_info_ptr->get_min_segment_num(), 
+	      template_proj_data_info_ptr->get_max_segment_num());
+  
+  /* Here starts the main loop which will store the listmode data. */
  VectorWithOffset<CListModeData::SavedPosition> 
    frame_start_positions(1, frame_defs.get_num_frames());
 
@@ -428,7 +416,7 @@ compute()
 	     shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
 	     CListRecord& record = *record_sptr;
 
-	     double current_time = start_time;
+	     current_time = start_time;
 	     while (more_events)
 	       {
 		 if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
@@ -442,6 +430,7 @@ compute()
 		     if (do_time_frame && new_time >= end_time)
 		       break; // get out of while loop
 		     current_time = new_time;
+		     process_new_time_event(record.time());
 		   }
 		 else if (record.is_event() && start_time <= current_time)
 		   {
@@ -449,7 +438,7 @@ compute()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-                     get_bin_from_event(bin, record.event(), current_time);
+                     get_bin_from_event(bin, record.event());
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
