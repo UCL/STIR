@@ -511,7 +511,9 @@ get_bin(const LOR<float>& lor) const
   if (ring1 >=0 && ring1<num_rings &&
       ring2 >=0 && ring2<num_rings &&
       get_bin_for_det_pair(bin,
-			   det1, ring1, det2, ring2) == Succeeded::yes)
+			   det1, ring1, det2, ring2) == Succeeded::yes &&
+      bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
+      bin.tangential_pos_num() <= get_max_tangential_pos_num())
     {
       bin.set_bin_value(1);
       return bin;
