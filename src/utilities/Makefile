@@ -5,8 +5,11 @@
 
 include ../Makefile_common
 
-SOURCES = vox.cxx binmath.cxx displayPSOV.cxx convif_ecat6.cxx convecat6_if.cxx \
-	correctPSOV.cxx postfilter.cxx #swap_byteorder.cxx
+SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
+        convecat6_if.cxx \
+	do_linear_regression.cxx \
+        #convif_ecat6.cxx \
+	#correctPSOV.cxx postfilter.cxx 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
