@@ -15,7 +15,7 @@
 
   \warning Most of the data in the ECAT 6 headers is ignored (except dimensions)
   \warning Data are scaled using the subheader.scale_factor * subheader.loss_correction_fctr
-  (unless the loss correctino factor is < 0, in which it is assumed to be 1).
+  (unless the loss correction factor is < 0, in which it is assumed to be 1).
   \warning Currently, the decay correction factor is ignored.
 */
 
@@ -417,15 +417,22 @@ main(int argc, char *argv[])
     char cti_name[max_filename_length], out_name[max_filename_length];
     FILE *cti_fptr;
  
-    if(argc==2) 
-      sprintf(cti_name,"%s",argv[1]);
+    if(argc==3)
+      { 
+	sprintf(cti_name,"%s",argv[2]);
+	sprintf(out_name,"%s", argv[1]);
+      }
     else {
         cerr<<"\nConversion from ECAT6 CTI data to interfile.\n";
-        cerr<<"Usage: convecat6_if <data_file_name> (*.img / *.scn / *.*cti)\n"<<endl;
+        cerr<<"Usage: convecat6_if <output_file_name cti_data_file_name>\n"<<endl;
+	if (argc!=1)
+	  exit(EXIT_FAILURE);
+
+	ask_filename_with_extension(out_name,"Name of the output file? (.hv/.hs and .v/.s will be added)","");    
         ask_filename_with_extension(cti_name,"Name of the input data file? ",".scn");
         
     }
-    ask_filename_with_extension(out_name,"Name of the output file? (.hv/.hs and .v/.s will be added)","");    
+
 
 // open input file, read main header
     cti_fptr=fopen(cti_name, "rb"); 
