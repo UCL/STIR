@@ -507,6 +507,7 @@ int main(int argc, char *argv[])
 	<< "To copy the main header (but keeping num_planes etc)\n"
 	<< "\t" << argv[0] << "  output_ECAT7_name input_ECAT7_name \n"
 	<< "or to copy a subheader (but keeping essential info)\n"
+
 	<< "\t" << argv[0] << "  output_ECAT7_name f,g,d,b input_ECAT7_name f,g,d,b\n\n";
     return EXIT_FAILURE; 
   }
@@ -522,16 +523,14 @@ int main(int argc, char *argv[])
       FILE * in_fptr = fopen(input_name.c_str(), "rb");
       if (!in_fptr) 
 	{
-	  char error_string[100000];
-	  sprintf(error_string, "Error opening %s for reading", input_name.c_str());
-	  perror(error_string);	
-	  exit(EXIT_FAILURE);
+	  error("Error opening '%s' for reading: %s", 
+		input_name.c_str(), strerror(errno));
 	}
       FILE * out_fptr = fopen(output_name.c_str(), "rb+");
       if (!out_fptr) 
 	{
-	  error("Error opening %s for reading and writing: %s", 
-		input_name.c_str(), strerror(errno));
+	  error("Error opening '%s' for reading and writing: %s", 
+		output_name.c_str(), strerror(errno));
 	}
       Main_header mh_in;
       if (mat_read_main_header(in_fptr, &mh_in)!=0)
