@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup Array
   \brief Declaration of class ArrayFunctionObject_2ArgumentImplementation
 
   \author Kris Thielemans
@@ -11,7 +11,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -25,7 +25,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief A convenience class for children of ArrayFunctionObject. It
   implements the in-place operator() in terms of the 2 argument version.
 
