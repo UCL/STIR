@@ -91,7 +91,7 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
      parameters.inter_update_filter_ptr != 0)
     {
       cerr<<endl<<"Building inter-update filter kernel"<<endl;
-      parameters.inter_update_filter_ptr->build_filter(*target_image_ptr);
+      parameters.inter_update_filter_ptr->set_up(*target_image_ptr);
 
       // ensure that the result image of the filter is positive
       parameters.inter_update_filter_ptr =
