@@ -37,10 +37,12 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Viewgram.h"
 #include "stir/ArrayFunction.h"
-#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#if 1
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#else
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-
+#endif
 #include <iostream>
 #include <list>
 #include <algorithm>
@@ -149,11 +151,15 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_ptr = 
     ProjData::read_from_file(argv[3]);
 
+#if 0
   shared_ptr<ProjMatrixByBin> PM = 
     new  ProjMatrixByBinUsingRayTracing();
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
     new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-  
+#else
+  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
+    new ForwardProjectorByBinUsingRayTracing();
+#endif
   forw_projector_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			       attenuation_density_ptr );
   cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
