@@ -296,7 +296,10 @@ LmToProjData(const char * const par_filename)
 {
   set_defaults();
   if (par_filename!=0)
-    parse(par_filename) ;
+    {
+      if (parse(par_filename)==false)
+	error("Exiting\n");
+    }
   else
     ask_parameters();
 }
