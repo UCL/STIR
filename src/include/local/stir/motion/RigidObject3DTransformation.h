@@ -8,12 +8,12 @@
   \brief Declaration of class RigidObject3DTransformation
 
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$
 */
 
 /*
-    Copyright (C) 2000- $Date: , IRSL
+    Copyright (C) 2000- $Date$ , Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -48,24 +48,27 @@ public:
   CartesianCoordinate3D<float> get_translation() const;
   
   //! Get Euler angles
-  CartesianCoordinate3D<float> get_euler_angles() const;
+  Coordinate3D<float> get_euler_angles() const;
   
   //! Set Euler angles
   //Succeeded set_euler_angles();
   
   //! Transform point 
   CartesianCoordinate3D<float> transform_point(const CartesianCoordinate3D<float>& point) const;
-
+#ifndef NEW_ROT
   void transform_bin(Bin& bin,const ProjDataInfoCylindricalNoArcCorr& out_proj_data_info,
 	             const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const;
-  
+#else
+  void transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
+	             const ProjDataInfo& in_proj_data_info) const;
+#endif  
   //! Get relative transformation
   void get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference);   
   
-  static void quaternion_2_euler(CartesianCoordinate3D<float>& Euler_angles, const Quaternion<float>& quat);
+  static void quaternion_2_euler(Coordinate3D<float>& Euler_angles, const Quaternion<float>& quat);
   static void quaternion_2_m3(Array<2,float>& mat, const Quaternion<float>& quat);
-  static void m3_2_euler(CartesianCoordinate3D<float>& Euler_angles, const Array<2,float>& mat); 
-  static void euler_2_quaternion(Quaternion<float>& quat,const CartesianCoordinate3D<float>& Euler_angles);		/* Euler angles to a quaternion */
+  static void m3_2_euler(Coordinate3D<float>& Euler_angles, const Array<2,float>& mat); 
+  static void euler_2_quaternion(Quaternion<float>& quat,const Coordinate3D<float>& Euler_angles);		/* Euler angles to a quaternion */
 
 private:
   Quaternion<float> quat;
