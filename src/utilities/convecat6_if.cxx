@@ -27,7 +27,8 @@
   present. This is at least the case for single bed studies. If this is not true
   for multi-bed studies, the code would have to be adapted.
   \warning Most of the data in the ECAT 6 headers is ignored (except dimensions)
-  \warning Data are scaled using the subheader.scale_factor * subheader.loss_correction_fctr
+  \warning Data are multiplied with the subheader.scale_factor, In addition, for
+  emission sinograms, the data are multiplied with subheader.loss_correction_fctr
   (unless the loss correction factor is < 0, in which case it is assumed to be 1).
   \warning Currently, the decay correction factor is ignored.
 */
