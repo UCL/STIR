@@ -9,12 +9,10 @@ include $(WORKSPACE)/Makefile_common
 all: $(DEST)libbuildblock.a $(DEST)buildblock_registries.o
 
 clean:
-	$(RM) $(DEST)*
+	$(RM) $(DEST)*.[oad]
 
-# KT 25/10/2000
-# removed   DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.cxx 
-# added   ProjDataInfoCylindrical.cxx 
-# KT 25/04/2001 added new filter stuff, removed ImageFilter.cxx
+# KT 08/02/2002
+# added ProjDataInMemory.cxx
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
@@ -25,6 +23,7 @@ SOURCES = \
   ProjDataInfoCylindricalNoArcCorr.cxx \
   ProjDataFromStream.cxx \
   ProjDataGEAdvance.cxx \
+  ProjDataInMemory.cxx \
   Scanner.cxx \
   SegmentBySinogram.cxx \
   SegmentByView.cxx \
@@ -67,8 +66,6 @@ endif
 .PRECIOUS:  $(DEST)*.a $(DEST)*.o
 
 
-test:
-	 echo "$(LOBJS)"
 
 $(DEST)libbuildblock.a: $(LOBJS)
 	ranlib $@
