@@ -1,8 +1,9 @@
-VERSION=1.2
+VERSION=1.3
+destination=krthie@shell.sf.net:stir/htdocs/
 mkdir -p ~/distrib
 cd ~/distrib
 # somehow make release_${VERSION}.htm
-cvs -d parapet:/usr/local/cvsroot checkout parapet
+#cvs -d parapet:/usr/local/cvsroot checkout parapet
 cd parapet
 cvs up -dP
 cd PPhead
@@ -24,7 +25,8 @@ mv  ChangeLog ~/parapet/documentation/distrib
 
 # make doxygen
 dox
-mv ../documentation/distrib/doxy ~/parapet/documentation
+rm -rf ~/parapet/documentation/distrib/doxy
+mv ../documentation/distrib/doxy ~/parapet/documentation/distrib
 # make documentation PDFs BY HAND
 
 cd ~/parapet/documentation/distrib
@@ -44,6 +46,7 @@ rm -rf STIR
 unzip parapet/all.zip
 rm parapet/all.zip
 mv PPhead STIR
+cp ~/distrib/ChangeLog STIR
 zip -r -l STIR_${VERSION}.zip STIR
 
 
@@ -54,14 +57,15 @@ zip -r ../recon_test_pack_${VERSION}.zip recon_test_pack
 tar zcvf ../recon_test_pack_${VERSION}.tar.gz recon_test_pack
 
 # put it all there
-scp  STIR_${VERSION}.zip VCprojects_${VERSION}.zip \
+rsync  ~/lln/ecat/VC/ecat.dsp ~/lln/ecat.tar.gz \
+    STIR_${VERSION}.zip VCprojects_${VERSION}.zip \
     recon_test_pack_${VERSION}.tar.gz recon_test_pack_${VERSION}.zip \
-    krthie@shell.sf.net:stir/htdocs/registered
-scp ChangeLog release_${VERSION}.htm STIR_doc_${VERSION}.zip  krthie@shell.sf.net:stir/htdocs/documentation
+    ${destination}registered
+rsync ChangeLog release_${VERSION}.htm STIR_doc_${VERSION}.zip  ${destination}documentation
 
-
+exit 
 # remote
-VERSION=1.2
+VERSION=1.3
 rm  recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
 ln -s STIR_${VERSION}.zip STIR.zip 
 ln -s VCprojects_${VERSION}.zip  VCprojects.zip
