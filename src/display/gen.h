@@ -10,7 +10,7 @@
      AIX on PowerPC
        #ifdef ultrix
        (for historical reasons, all unix machines)
-     MSDOS (assuming MSC -> ANSI C)
+     MSDOS (checking MSC, or gcc -> both ANSI C)
        #ifdef MSDOS
      PowerMAC (using Metroworks Codewarrior Pro-> ANSI C) [no keyboard and
 graphics yet]
@@ -78,15 +78,28 @@ extern  char getch(void);
 #ifdef MSDOS
 #define INT32 long
 #define ANSI
+  /* Change 05/02/98 */
+#ifdef __GNUC__
+  /* TODO */
+#define getch() getchar()
+#else
 #define PACKED_STRUCTS
 #include <conio.h>              /* for getch */
+  /* Change 13/02/98 for Visual C++ */
+#if _MSC_VER > 1000
+#define getch _getch
+#else
+  /* old version of MSC compiler */
+#define MSDOS16BIT
 #include <search.h>             /* for qsort */
+#endif
+#endif
 /* Macro's for using the arrowkeys. For explanation see above.
   Replace "escape code" with "extended charcode"
 */
 #define KB_DIRECTION(c) (c=='\0' && \
-                         ((c=(char)getch())==0x48 || c==0x4b ||c==0x4d ||
-c==0x50))
+                         ((c=(char)getch())==0x48 || c==0x4b ||c==0x4d || \
+			  c==0x50))
 #define KB_UPARROW 0x48
 #define KB_DNARROW 0x50
 #define KB_RTARROW 0x4d
@@ -275,7 +288,8 @@ typedef float VAXfloat;
   The _MAX_... constants are now given as reasonable values, not real
         restrictions. If you need them higher, Try it !
  ************************************************************************/
-#ifndef MSDOS
+/* Change 13/02/98 to allow for gcc on a PC */
+#ifndef _MSC_VER
 #define _MAX_DRIVE 20
 #define _MAX_DIR   90
 #define _MAX_FNAME 20
@@ -384,7 +398,11 @@ void error  (char *fmt, ...);
 void message();
 void error  ();
 #endif
-#ifdef MSDOS
+
+/* Change 13/02/98 */
+#ifndef MSDOS16BIT
+#define fmemcpy memcpy
+#else
 extern void far *fmemcpy(void far *outptr,void far *buf,int nr);
 #endif
 
