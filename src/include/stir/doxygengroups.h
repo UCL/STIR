@@ -139,6 +139,48 @@ from/to file.
 Library with 'general' reconstruction building blocks
 */
 /*!
+\defgroup projection Projection building blocks
+\ingroup recon_buildblock
+Everything (?) related to projection matrices, forward and back projection.
+
+In the context of image reconstruction, 'forward projection' means going from 
+the image to an estimate of the (mean of the) data. This is because in 
+SPECT and PET, the measurements can be seen to be approximations of line 
+integrals through the object.
+
+STIR keeps this terminology, even though it is unfortunate. (For instance, this
+a stir::ProjMatrix is not a projection matrix in the mathematical sense.)
+*/
+/*!
+\defgroup symmetries Symmetries building blocks
+\ingroup projection
+Usually, there are (geometric) symmetries between the image and the projection 
+data. This means that various elements of the projection matrix will be equal.
+The classes in this module convert this concept into code, such that projection
+matrices need only be computed for the 'independent' bins.
+*/
+/*!
+\defgroup normalisation Normalisation building blocks
+\ingroup recon_buildblock
+Everything related to BinNormalisation classes.
+
+In PET 'normalisation' is used to describe a multiplicative calibration of
+every detector-pair. More generally, it can be used to the process of 
+'correcting' projection data by multiplying every bin with a factor.
+*/
+/*!
+\defgroup priors Prior building blocks
+\ingroup recon_buildblock
+Everything related to priors, which are used for MAP-type (also knows as
+'penalised') reconstructions.
+*/
+/*!
+\defgroup distributable distributable building blocks
+\ingroup recon_buildblock
+Classes and functions that are used to make a common interface for the serial
+and parallel implementation of the reconstruction algorithms.
+*/
+/*!
 \defgroup LogLikBased_buildblock Reconstruction building blocks for loglikelihood based algorithms
 \ingroup recon_buildblock
 Library with additional building blocks used for algorithms which
