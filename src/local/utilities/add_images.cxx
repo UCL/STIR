@@ -1,5 +1,5 @@
 //
-// %W%: %E%
+// $Id$
 //
 
 /*!
@@ -9,8 +9,8 @@
 
   \author Kris Thielemans
 
-  \date %E%
-  \version %I%
+  $Date$
+  $Revision$
 
   \warning This does not check if image types are the same, nor if origins and
   voxel sizes etc. match.
