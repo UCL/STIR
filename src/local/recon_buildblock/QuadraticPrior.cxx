@@ -35,6 +35,7 @@ QuadraticPrior<elemT>::initialise_keymap()
   parser.add_key("only 2D", &only_2D); 
   parser.add_key("kappa filename", &kappa_filename);
   parser.add_key("precomputed weights", &precomputed_weights);
+  parser.add_key ("precomputed weights 3D", &precomputed_weights_3D);
   parser.add_stop_key("END Quadratic Prior Parameters");
 }
 
@@ -48,20 +49,45 @@ QuadraticPrior<elemT>::post_processing()
   if (kappa_filename.size() != 0)
     kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
 
-  if (precomputed_weights.get_length() !=0)
+  if (precomputed_weights.get_length() !=0 || precomputed_weights_3D.get_length() !=0)
   {
-  const unsigned int size_y = precomputed_weights.get_length();
-  const unsigned int size_x = precomputed_weights[1].get_length();  
-  const int min_index_y = -(size_y/2);
-  const int min_index_x = -(size_x/2);
-  weights.grow(IndexRange3D(0,0,min_index_y, min_index_y + size_y - 1,
-  				   min_index_x, min_index_x + size_x - 1 ));
-
-  for (int j = min_index_y; j<= weights[0].get_max_index(); ++j)
-    for (int i = min_index_x; i<= weights[0][j].get_max_index(); ++i)
+     unsigned int size_z=0;
+     unsigned int size_y=0;
+     unsigned int size_x=0;
+    if (precomputed_weights_3D.get_length() !=0)
     {
+    size_z = precomputed_weights_3D.get_length();
+    size_y = precomputed_weights_3D[1].get_length();
+    size_x = precomputed_weights_3D[1][1].get_length();  
+    }
+    else
+    {
+     size_y = precomputed_weights.get_length();
+     size_x = precomputed_weights[1].get_length();  
+    }
+    const int min_index_z = -(size_z/2);
+    const int min_index_y = -(size_y/2);
+    const int min_index_x = -(size_x/2);
+    
+    weights.grow(IndexRange3D(min_index_z, min_index_z+size_z-1,
+			      min_index_y, min_index_y + size_y - 1,
+			      min_index_x, min_index_x + size_x - 1 ));
+
+ for (int k = min_index_z; k<= weights.get_max_index(); ++k)
+  for (int j = min_index_y; j<= weights[k].get_max_index(); ++j)
+    for (int i = min_index_x; i<= weights[k][j].get_max_index(); ++i)
+    {
+   if (precomputed_weights_3D.get_length() !=0)
+   {
+    weights[k][j][i] = 
+      static_cast<float>(precomputed_weights_3D[k-min_index_z][j-min_index_y][i-min_index_x]);
+   }
+   else
+   {
     weights[0][j][i] = 
       static_cast<float>(precomputed_weights[j-min_index_y][i-min_index_x]);
+   }
+
     }
   }
   return false;
@@ -76,6 +102,7 @@ QuadraticPrior<elemT>::set_defaults()
   only_2D = false;
   kappa_ptr = 0;  
   precomputed_weights.fill(0);
+  precomputed_weights_3D.fill(0);
 }
 
 
