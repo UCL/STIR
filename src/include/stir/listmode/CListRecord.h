@@ -23,7 +23,8 @@
 #define __stir_listmode_CListRecord_H__
 
 
-#include "stir/common.h"
+#include "stir/round.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 class Bin;
@@ -125,9 +126,17 @@ public:
 class CListTime
 {
 public:
-  virtual double get_time_in_secs() const = 0;
+  virtual unsigned long get_time_in_millisecs() const = 0;
+  inline double get_time_in_secs() const
+    { return get_time_in_millisecs()/1000.; }
 
-  virtual Succeeded set_time_in_secs(const double time_in_secs) = 0;
+  virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
+  inline Succeeded set_time_in_secs(const double time_in_secs)
+    { 
+      unsigned long time_in_millisecs;
+      round_to(time_in_millisecs, time_in_secs/1000.);
+      return set_time_in_millisecs(time_in_millisecs); 
+    }
 
   //! get gating info
   /*! Generally, gates are numbered from 0 to some maximum value.
