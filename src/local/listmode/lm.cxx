@@ -192,9 +192,7 @@ get_detectors(
 {
   int tangential_pos_num;
   int view_num;
-  // TODO? note that I had to use ring_b ring_a order here to get correct segment assignment.
-  // This probably means that the ProjDataInfoCylindrical routine should be changed instead.
-  get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_b, ring_a);
+  get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
 
   sinogram_to_detectors(det_num_a, det_num_b, tangential_pos_num, view_num, num_views);
 }
@@ -210,9 +208,7 @@ set_detectors(
   int swap_detectors =
     detectors_to_sinogram(det_num_a, det_num_b, tangential_pos_num, view_num, num_views);
 
-  // TODO? note that I had to use ring_b ring_a order here to get correct segment assignment.
-  // This probably means that the ProjDataInfoCylindrical routine should be changed instead.
-  if (swap_detectors == 1)
+  if (swap_detectors != 1)
   {
     set_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
   }
@@ -228,9 +224,7 @@ sinogram_coordinates_to_bin(Bin& bin, const int view_num, const int tang_pos_num
 			const int ring_a, const int ring_b,
 			const ProjDataInfoCylindrical& proj_data_info)
 {
-  // TODO? note that I had to use ring_b ring_a order here to get correct segment assignment.
-  // This probably means that the ProjDataInfoCylindrical routine should be changed instead.
-  if (proj_data_info.get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_b, ring_a) ==
+  if (proj_data_info.get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_a, ring_b) ==
       Succeeded::no)
     {
       bin.set_bin_value(-1);
