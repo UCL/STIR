@@ -21,12 +21,15 @@
 using namespace std;
 
 START_NAMESPACE_STIR
-
-	float scatter_estimate_for_all_scatter_points(
-	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-	const unsigned det_num_A, 
-	const unsigned det_num_B)
+float scatter_estimate_for_all_scatter_points(
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,		
+	  const bool use_cosphi,
+	  const bool use_cache)	
 {	
 	float scatter_ratio = 0; 
 	
@@ -38,7 +41,10 @@ START_NAMESPACE_STIR
 			  scatter_estimate_for_one_scatter_point(
 			  image_as_activity, image_as_density, 
 			  scatter_point_num,
-			  det_num_A, det_num_B);
+			  det_num_A, det_num_B,
+			  lower_energy_threshold, 
+			  upper_energy_threshold,		
+			  use_cosphi, use_cache);
 	  }
     
 	return scatter_ratio;

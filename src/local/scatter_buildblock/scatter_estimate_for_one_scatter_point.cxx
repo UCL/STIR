@@ -31,14 +31,12 @@ float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const std::size_t scatter_point_num, 
 	  const unsigned det_num_A, 
-	  const unsigned det_num_B)
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,		
+	  const bool use_cosphi,
+	  const bool use_cache)
 {	
-	// TODO hard-wired for now
-//	static const float lower_energy_threshold = 375;
-//	static const float upper_energy_threshold = 600;
-	static const float lower_energy_threshold = 350;
-	static const float upper_energy_threshold = 650;
-
 	const CartesianCoordinate3D<float>& scatter_point =
 		scatt_points_vector[scatter_point_num].coord;
 	const CartesianCoordinate3D<float>& detector_coord_A =
@@ -76,42 +74,62 @@ float scatter_estimate_for_one_scatter_point(
 		detection_efficiency_BGO(lower_energy_threshold,
                                  upper_energy_threshold,
                                  new_energy);
-
 	if (detection_efficiency_scatter==0)
 		return 0;
+	float emiss_to_detA, 
+		emiss_to_detB,
+		atten_to_detA,
+		atten_to_detB;
 
-	const float
+	if (use_cache)
+	{			
 		emiss_to_detA = cached_factors(
-	                             image_as_activity,
-	                             scatter_point_num, 
-                                 det_num_A
-								 , act_image_type
-							     );
-    const float
-	  emiss_to_detB = cached_factors(
-		                         image_as_activity,
-								 scatter_point_num, 
-								 det_num_B
-								 ,act_image_type
-							     );
-	if (emiss_to_detA==0 && emiss_to_detB==0)
-		return 0;
-
+			image_as_activity,
+			scatter_point_num, 
+			det_num_A
+			, act_image_type);
+		
+		emiss_to_detB = cached_factors(
+			image_as_activity,
+			scatter_point_num, 
+			det_num_B
+			,act_image_type);
+		if (emiss_to_detA==0 && emiss_to_detB==0)
+		return 0;	
     // TODO in principle, the scattered photon should have different attenuation
-    const float 
 		atten_to_detA = cached_factors(
-	                             image_as_density,
-	                             scatter_point_num, 
-                                 det_num_A
-								 , att_image_type
-								 );
-	const float
+			image_as_density,
+			scatter_point_num, 
+			det_num_A
+			, att_image_type);
 		atten_to_detB = cached_factors(
-	                             image_as_density,
-	                             scatter_point_num, 
-                                 det_num_B
-						    	 , att_image_type
-								 );
+			image_as_density,
+			scatter_point_num, 
+			det_num_B
+			, att_image_type);
+	}
+	else
+	{
+		emiss_to_detA = integral_scattpoint_det( 
+			image_as_activity,
+			scatter_point, 
+			detector_coord_A);
+		emiss_to_detB = integral_scattpoint_det(
+			image_as_activity,
+			scatter_point, 
+			detector_coord_B);
+		if (emiss_to_detA==0 && emiss_to_detB==0)
+			return 0;
+		// TODO in principle, the scattered photon should have different attenuation
+		atten_to_detA = exp(-integral_scattpoint_det(
+			image_as_density,
+			scatter_point, 
+			detector_coord_A));
+		atten_to_detB = exp(-integral_scattpoint_det(
+			image_as_density,
+			scatter_point, 
+			detector_coord_B));
+	}
 
 	const VoxelsOnCartesianGrid<float>& image =
 		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
@@ -132,21 +150,28 @@ float scatter_estimate_for_one_scatter_point(
 	assert(scatter_point_mu==
 		image[round((scatter_point-origin)/voxel_size)]);
 #endif
-
-	return 
+	
+	const float scatter_ratio =
 		(emiss_to_detA + emiss_to_detB)
 		/(rB*rB*rA*rA)
 		*dif_cross_section
-		*atten_to_detA
 		*atten_to_detB
+		*atten_to_detA
 		*scatter_point_mu
 		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
-//		*cos_incident_angle_A*cos_incident_angle_A
-//		*cos_incident_angle_B*cos_incident_angle_B 
 		*exp(-total_cross_section(new_energy)/total_cross_section_511keV)
         /total_cross_section_511keV
 		;	
+
+	if (!use_cosphi)
+		return
+		scatter_ratio;
+	else
+		return
+		scatter_ratio*cos_incident_angle_A*cos_incident_angle_A
+		*cos_incident_angle_B*cos_incident_angle_B ;
+
 }
 
 END_NAMESPACE_STIR

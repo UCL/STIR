@@ -41,6 +41,7 @@ See STIR/LICENSE.txt for details
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
+//#include "stir/Scanner.h"
 #include "local/stir/Scatter.h"
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
@@ -54,7 +55,7 @@ int main(int argc, const char *argv[])
 {         
 	USING_NAMESPACE_STIR
 		using namespace std;
-	if (argc< 3 || argc>8)
+	if (argc< 3 || argc>12)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[activity_image]\n"
@@ -62,19 +63,34 @@ int main(int argc, const char *argv[])
 			<< "\t[proj_data_filename]\n" 
 			<< "\t[output_proj_data_filename]\n"
 			<< "\t[attenuation_threshold]\n"
+			<< "\t[lower_energy_threshold]\n"
+			<< "\t[upper_energy_threshold]\n"
 			<< "\t[maximum_scatter_points]\n"
-			<< "\t[random points]\n\n" 
+			<< "\t[random points]\n"
+			<< "\t[use_cosphi]\n"
+			<< "\t[use_cache]\n\n" 
 			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
+			<< "\tlower_energy_threshold defaults to 350 keV\n"
+			<< "\tupper_energy_threshold defaults to 650 keV\n"			
 			<< "\tmaximum_scatter_points defaults to 1000\n" 
-			<< "\trandom points defaults to true, use 0 to set to false\n";
+			<< "\tuse_cosphi defaults to false, use 1 to set to true\n"
+			<< "\tuse_cache defaults to true, use 0 to set to false\n";
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
-	int scatt_points = argc>=7 ? atoi(argv[6]) : 1000 ;
+	const float lower_energy_threshold = argc>=7 ? atof(argv[6]) : 350 ;
+	const float upper_energy_threshold = argc>=8 ? atof(argv[7]) : 650 ;
+	int scatt_points = argc>=9 ? atoi(argv[8]) : 1000 ;
 	bool random = true;
-	if (argc>=8 && atoi(argv[7])==0)
+	if (argc>=10 && atoi(argv[9])==0)
 		random = false;
-	
+	bool use_cosphi = false;
+	if (argc>=11 && atoi(argv[10])==1)
+		use_cosphi = true;
+	bool use_cache = true;
+	if (argc>=12 && atoi(argv[11])==0)
+		use_cache = false;
+
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
 		DiscretisedDensity<3,float>::read_from_file(argv[1]), 
@@ -106,7 +122,9 @@ int main(int argc, const char *argv[])
 	
 	if (proj_data_info_ptr==0 || density_image_sptr==0 || activity_image_sptr==0)
 		error("Check the input files\n");
-	const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
+/*	const float total_detectors = proj_data_info_ptr->get_num_rings()*
+		proj_data_info_ptr->get_num_detectors_per_ring ();
+*/	const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
 		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
 		(*activity_image_sptr.get());
 	const DiscretisedDensityOnCartesianGrid<3,float>& density_image = 
@@ -120,16 +138,21 @@ int main(int argc, const char *argv[])
 		 << output_proj_data_filename <<".s\n"
 		 << "and the statistics into the statistics.txt\n"
 		 << "***********************************************************\n"
-		 << "The simulation has started...";	
+		 << "The simulation has started...\n";	
 	
 	scatter_viewgram(output_proj_data,
 		activity_image, density_image,
-		scatt_points,attenuation_threshold,random);  
+		scatt_points,attenuation_threshold,
+		lower_energy_threshold,upper_energy_threshold,
+		use_cosphi,use_cache,random);  
 
 	writing_log(activity_image,
 		density_image,
 		proj_data_info_ptr,
 		attenuation_threshold/rescale,
-		scatt_points, random, argv);
+		scatt_points,
+		lower_energy_threshold,
+		upper_energy_threshold,
+		use_cosphi,use_cache,random,argv);
 	return EXIT_SUCCESS;
 }                 

@@ -49,6 +49,7 @@ struct ScatterPoint
 
 extern std::vector< ScatterPoint> scatt_points_vector;
 extern std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+extern int total_detectors;
 
 /*!
    \ingroup scatter
@@ -88,9 +89,9 @@ float integral_scattpoint_det (
 	  const CartesianCoordinate3D<float>& detector_coord);  
 
 float  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-	  				   const unsigned scatter_point_num, 
-					   const unsigned det_num,
-					   const image_type input_image_type);
+	  				  const unsigned scatter_point_num, 
+					  const unsigned det_num,
+					  const image_type input_image_type);
 /*!
   \ingroup scatter
  \brief 
@@ -101,7 +102,11 @@ float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const std::size_t scatter_point_num, 
 	  const unsigned det_num_A, 
-	  const unsigned det_num_B);
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,		
+	  const bool use_cosphi,
+	  const bool use_cache);
 /*!	\name Klein-Nishina functions					
   \ingroup scatter
   \brief computes the differential cross section
@@ -155,7 +160,11 @@ float scatter_estimate_for_all_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const unsigned det_num_A, 
-	  const unsigned det_num_B);
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,		
+	  const bool use_cosphi,
+	  const bool use_cache);
 /*!
   \ingroup scatter
   \brief 
@@ -165,7 +174,9 @@ void scatter_viewgram(
 	ProjData& proj_data,
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-    int& scatt_points, const float att_threshold, const bool random);
+    int& scatt_points, const float att_threshold, 
+	const float lower_energy_threshold, const float upper_energy_threshold,		
+	const bool use_cosphi, const bool use_cache, const bool random);
 
 
 // Functions that could be in the BasicCoordinate Class
@@ -188,6 +199,10 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr,
 				 const float given_attenuation_threshold,
 				 const int total_scatt_points,
+				 const float lower_energy_threshold, 
+				 const float upper_energy_threshold,		
+				 const bool use_cosphi,
+				 const bool use_cache,
 				 const bool random, 
 				 const char *argv[]);
 

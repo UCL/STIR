@@ -48,7 +48,10 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const DiscretisedDensityOnCartesianGrid<3,float>& density_image,
 				 const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr,
 				 const float given_attenuation_threshold,
-				 const int total_scatt_points,
+				 const int total_scatt_points, 
+				 const float lower_energy_threshold, 
+				 const float upper_energy_threshold,
+				 const bool use_cosphi, const bool use_cache,
 				 const bool random, const char *argv[])
 {	
 	Bin bin;
@@ -88,14 +91,26 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 		<< axial_bins << " axial_bins * "
 		<< proj_data_info_ptr->get_num_tangential_poss() 
 		<< " tangential_bins\n"  
-		<< "\nThreshold was set to: " << given_attenuation_threshold
-		<< "\nScatter Points are taken all above the threshold";
+		<< "\n - The energy window was set to: [" 
+		<< lower_energy_threshold << "," << upper_energy_threshold 
+		<< "]\n - Threshold was set to: " << given_attenuation_threshold
+		<< "\n - Scatter Points are taken all above the threshold";
 		
 	if (random)
-		mystream << "\nand have picked randomly ";
-	else
-	mystream << "and have picked in the center of the Voxel";
-    mystream <<"\n\n\t ****************** END ****************\n";
+		mystream << "\n and have picked randomly ";
+	if (!random)
+		mystream << " and have picked in the center of the Voxel\n";
+	if(use_cosphi)
+		mystream << " - The prompt angle has been taken into account\n";
+	if(!use_cosphi)
+		mystream << " - The prompt angle has not been taken into account\n";
+	if(use_cache)
+		mystream << " - Use of caching\n";
+	if(!use_cache)
+		mystream << " - No use of caching\n";
+
+
+    mystream <<"\n\n\t ****************** END ****************\n\a";
 }
 
 void writing_time(const double simulation_time, const int scatt_points_vector_size)
