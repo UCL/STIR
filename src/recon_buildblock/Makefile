@@ -15,7 +15,8 @@ SOURCES= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingRayTracing_Siddon.cxx \
 	BackProjectorByBin.cxx \
 	BackProjectorByBinUsingInterpolation.cxx \
-	BackProjectorByBinUsingInterpolation_3DCho.cxx \
+	BackProjectorByBinUsingInterpolation_linear.cxx \
+	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
 	ReconstructionParameters.cxx \
 	IterativeReconstruction.cxx \
 	IterativeReconstructionParameters.cxx \
