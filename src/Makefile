@@ -9,7 +9,7 @@
 # This makefile defines dependencies and rules for the 
 # following targets:
 #	how (gives brief usage info)	
-#	all clean lib install 
+#	all clean lib install install-all
 #	clean_tests clean_lib clean_exes 
 #	run_tests run_interactive_tests 
 #
@@ -17,14 +17,15 @@
 # It is set-up to recurse into $(LIBDIRS), $(EXEDIRS), $(TESTDIRS)
 # from where it imports lib.mk, exe.mk and test.mk respectively.
 # These  'sub'makefiles will define other targets such as 
-# EXESUBDIR, clean_exes_EXESUBDIR, install_EXESUBDIR
+# EXESUBDIR, clean_exes_EXESUBDIR, install_exes_EXESUBDIR
 # build_tests_TESTSUBDIR, clean_tests_TESTSUBDIR, 
 #                   run_tests_TESTSUBDIR, 
 #                   run_interactive_tests_TESTSUBDIR
 # build_lib_LIBSUBDIR, clean_lib_LIBSUBDIR
 # See lib.mk, exe.mk and test.mk in this directory for more details.
 #
-.PHONY: how all clean lib install \
+.PHONY: how all clean lib \
+	install install-all install-exes install-lib install-include \
 	clean_tests clean_lib clean_exes \
 	run_tests run_interactive_tests all_test_exes \
 	default_target
@@ -41,12 +42,8 @@ how:
 	@echo "     clean_tests clean_lib clean_exes "
 	@echo "     run_tests run_interactive_tests" 
 	@echo "and options can be for instance:"
-	@echo "     BUILD=debug DEST=somenicesubdir/"
+	@echo "     BUILD=debug DEST=somenicedir/ INSTALL_PREFIX=/usr/local"
 	@echo "See the STIR User's guide for more info."
-
-# first make a variable that allows us to test if we have gcc 3.0 or later
-# If so, this will allow us to simplify life a lot!
-IS_GCC_3:=$(shell $(CXX) -v 2>&1 |grep "gcc version [3456789]")
 
 
 include config.mk
@@ -87,7 +84,9 @@ clean_exes:  $(addprefix clean_exes_, $(EXEDIRS))
 clean: clean_tests clean_lib clean_exes
 #	rm -rf $(DEST)
 
-install: $(addprefix install_, $(EXEDIRS))
+install: install-exes
+
+install-all: install-exes install-lib install-include
 
 run_tests: $(addprefix run_tests_, $(TESTDIRS)) 
 
@@ -116,6 +115,18 @@ $(STIR_LIB): $(foreach dir, $(LIBDIRS), $($(dir)_LIB_OBJS))
 # global variables of type 
 # RegisteredParsingObject::RegisterIt
 STIR_REGISTRIES:=$(foreach dir, $(LIBDIRS), $($(dir)_REGISTRY_OBJS))
+
+install-exes: $(addprefix install_exes_, $(EXEDIRS))
+
+install-lib: lib $(STIR_REGISTRIES)
+	mkdir -p $(INSTALL_LIB_DIR)
+	$(INSTALL) $(STIR_LIB) $(STIR_REGISTRIES) $(INSTALL_LIB_DIR)
+
+install-include:
+	mkdir -p $(INSTALL_INCLUDE_DIR)
+	cp -R ${WORKSPACE}/include/stir $(INSTALL_INCLUDE_DIR)
+	@echo Check permissions for the files in $(INSTALL_INCLUDE_DIR)/stir
+	@echo Warning: boost include files are not copied
 
 #********* default rules
 
