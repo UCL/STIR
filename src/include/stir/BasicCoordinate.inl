@@ -302,22 +302,10 @@ inner_product (const BasicCoordinate<num_dimensions, coordT>& p1,
   return std::inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
 #endif
 }
-
 // TODO specialise for complex coordTs if you need them
 template <int num_dimensions, class coordT>
 double
-norm (const BasicCoordinate<num_dimensions, coordT>& p1)
-{
-#ifdef _MSC_VER
-  return sqrt(static_cast<double>(std::inner_product(p1.begin(), p1.end(), p1.begin(), coordT(0))));
-#else
-	return sqrt(static_cast<double>(inner_product<num_dimensions,coordT>(p1,p1)));
-#endif
-}
-// TODO specialise for complex coordTs if you need them
-template <int num_dimensions, class coordT>
-double
-normsq (const BasicCoordinate<num_dimensions, coordT>& p1)
+norm_squared (const BasicCoordinate<num_dimensions, coordT>& p1)
 {
 #ifdef _MSC_VER
   return static_cast<double>(std::inner_product(p1.begin(), p1.end(), p1.begin(), coordT(0)));
@@ -325,13 +313,20 @@ normsq (const BasicCoordinate<num_dimensions, coordT>& p1)
   return static_cast<double>(inner_product<num_dimensions,coordT>(p1,p1));
 #endif
 }
+// TODO specialise for complex coordTs if you need them
+template <int num_dimensions, class coordT>
+double
+norm (const BasicCoordinate<num_dimensions, coordT>& p1)
+{
+  return sqrt(norm_squared(p1));
+}
 
 template <int num_dimensions, class coordT>
 double 
 cos_angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
            const BasicCoordinate<num_dimensions, coordT>& p2)
 {
-  return (inner_product(p1,p2)/sqrt(normsq(p1)/ normsq(p2)));
+  return inner_product(p1,p2)/sqrt(norm_squared(p1)*norm_squared(p2)) ;
 }
 
 template <int num_dimensions, class coordT>
