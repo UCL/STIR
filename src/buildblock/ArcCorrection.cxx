@@ -39,7 +39,7 @@
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
 #include "stir/numerics/overlap_interpolate.h"
-#include <algorithm>
+#include <typeinfo>
 
 START_NAMESPACE_STIR
 ArcCorrection::
@@ -83,6 +83,19 @@ set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr,
        const int num_arccorrected_tangential_poss, 
        const float bin_size)
 {
+  if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>
+      (noarc_corr_proj_data_info_sptr.get()) == 0)
+    {
+      // give friendly warning message
+      if (dynamic_cast<ProjDataInfoCylindricalArcCorr const *>
+	  (noarc_corr_proj_data_info_sptr.get()) != 0)
+	warning("ArcCorrection called with arc-corrected proj_data_info");
+      else
+	warning("ArcCorrection called with proj_data_info of the wrong type:\n\t%s",
+		typeid(*noarc_corr_proj_data_info_sptr).name());
+      return Succeeded::no;
+    }
+
   _noarc_corr_proj_data_info_sptr = noarc_corr_proj_data_info_sptr;
   const int min_segment_num =
     _noarc_corr_proj_data_info_sptr->get_min_segment_num();
@@ -204,7 +217,7 @@ set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr)
 	     -noarc_corr_proj_data_info_sptr->
 	     get_s(Bin(0,0,0,
 		       noarc_corr_proj_data_info_sptr->
-		       get_min_tangential_pos_num()+2))
+		       get_min_tangential_pos_num()-2))
 	     );
   const int max_arccorr_tangential_pos_num =
     static_cast<int>(ceil(max_s/tangential_sampling));
