@@ -8,8 +8,11 @@
 // KT 26/11 added iterator things
 
 /*
-   KT 27/03/98 use two levels of debugging. For normal debugging #define _DEBUG. 
+   KT 27/03/98 use two levels of debugging. 
+   For normal debugging #define _DEBUG. 
    For extensive debugging, use #define _DEBUG 2
+
+   KT 26/10/98 new members get_data_ptr(), update_data(), release_data_ptr()
 */
 
 #include "pet_common.h"
@@ -64,7 +67,7 @@ protected:
     {		
       length =0;	// i.e. an empty row of zero length,
       start = 0;	// no offsets
-      num = mem = 0;				// and no data.
+      num = mem = 0;	// and no data.
     };
 
   //KT 13/11 added this function, only non-empty when debugging
@@ -73,11 +76,15 @@ protected:
   // Tensorbase
   void check_state() const
     {
-    // KT 27/03/98 disable for normal debugging
+      // KT 27/03/98 disable for normal debugging
 #if _DEBUG>1
-    assert(((length > 0) ||
+      assert(((length > 0) ||
 	      (length == 0 && start == 0 &&
 	       num == 0 && mem == 0)));
+    
+      // KT 26/10/98 new
+      // check if data is being access via a pointer (see get_data_ptr())
+      assert(pointer_access == false);
 #endif
     }
 
@@ -95,6 +102,9 @@ public:
 	
   VectorWithOffset()
     { 
+      // KT&AZ 26/10/98 new
+      pointer_access = false;
+
       Init();
     };
 
@@ -102,6 +112,9 @@ public:
   //KT TODO don't know how to write this constructor in terms of the more general one below
   VectorWithOffset(const Int hsz)
     {	
+      // KT&AZ 26/10/98 new
+      pointer_access = false;
+
       if ((hsz > 0)) {
 	length = hsz;
 	start = 0;
@@ -115,6 +128,9 @@ public:
     : length(hlast - hfirst + 1),
       start(hfirst)
     { 
+      // KT&AZ 26/10/98 new
+      pointer_access = false;
+
       if (length > 0) {
 	mem = new T[length];
 	num = mem - hfirst;
@@ -190,8 +206,9 @@ public:
 	  set_offset(il.get_min_index());
 	  for(Int i=0; i<length; i++)     
 	    mem[i] = il.mem[i];		// different widths are taken 
-	}			       			// care of by Tensor::operator=
-      else	Recycle();
+	}			      	// care of by Tensor::operator=
+      else	
+	Recycle();
       check_state();
       return *this;
     }
@@ -215,15 +232,21 @@ public:
 
   T& operator[] (Int i) {	// Allow array-style access, read/write
     check_state();
-    assert((i>=start)&&(i<(length+start)));
+    // KT 26/10/98 split into 2 assertions
+    assert(i>=start);
+    assert(i<(length+start));
+
     return num[i];
   };
 	
   //KT 13/11 return a reference now, avoiding copying
   const T& operator[] (Int i) const {  // array access, read-only
     check_state();
+    // KT 26/10/98 split into 2 assertions
+    assert(i>=start);
+    assert(i<(length+start));
+
     //KT 13/11 can't return T() now anymore (reference to temporary)
-    assert((i>=start)&&(i<(length+start)));
     return num[i];
     // if ((i>=start)&&(i<(length+start))) return num[i];
     ////KT somewhat strange design choice
@@ -272,6 +295,50 @@ public:
   Int get_index(iterator iter)
     { return iter - num; }
 #endif // DEFINE_ITERATORS
+
+private:
+  
+  // KT&AZ 26/10/98 new
+
+  /* Members for access to the data via a T*.
+     To prevent invalidating the safety checks (and making 
+     reimplementation more difficult), NO manipulation with
+     the vector is allowed between the pairs
+     get_data_ptr() and update_data() 
+     get_const_data_ptr() and release_data_ptr().
+     */
+
+  
+  bool pointer_access;
+
+  T* get_data_ptr()
+    {
+      pointer_access = true;
+      return mem;
+
+      // if implementation changes, this would need to keep track 
+      // if which pointer it returns.
+    };
+
+  void update_data()
+    {
+      pointer_access = false;
+      // do nothing now
+    };
+
+  const T * get_const_data_ptr()
+    {
+      pointer_access = true;
+      return mem;
+
+      // if implementation changes, this would need to keep track 
+      // if which pointer it returns.
+    };
+
+  void release_data_ptr()
+    {
+      pointer_access = false;
+    }
 };
 
 #ifdef DEFINE_ITERATORS
