@@ -120,6 +120,64 @@ operator-= (const elemT f)
 }
 
 
+/*! \warning: this uses multiplication according to elemT (careful for overflow for integer types!) */
+template <typename elemT>   
+RelatedViewgrams<elemT>&
+RelatedViewgrams<elemT>::
+operator*= (const RelatedViewgrams<elemT>& arg)
+{
+  assert(get_num_viewgrams() == arg.get_num_viewgrams());
+  iterator iter = begin(); 
+  const_iterator arg_iter = arg.begin();
+  for ( ; iter != end(); ++iter, ++arg_iter)
+    *iter *= *arg_iter;
+  return *this;
+}
+
+/*! \warning: this uses division according to elemT (i.e. no rounding or so) */
+template <typename elemT>   
+RelatedViewgrams<elemT>&
+RelatedViewgrams<elemT>::
+operator/= (const RelatedViewgrams<elemT>& arg)
+{
+  assert(get_num_viewgrams() == arg.get_num_viewgrams());
+  iterator iter = begin(); 
+  const_iterator arg_iter = arg.begin();
+  for ( ; iter != end(); ++iter, ++arg_iter)
+    *iter /= *arg_iter;
+  return *this;
+}
+
+
+/*! \warning: this uses addition according to elemT (careful with overflow with integer types!) */
+template <typename elemT>   
+RelatedViewgrams<elemT>&
+RelatedViewgrams<elemT>::
+operator+= (const RelatedViewgrams<elemT>& arg)
+{
+  assert(get_num_viewgrams() == arg.get_num_viewgrams());
+  iterator iter = begin(); 
+  const_iterator arg_iter = arg.begin();
+  for ( ; iter != end(); ++iter, ++arg_iter)
+    *iter += *arg_iter;
+  return *this;
+}
+
+/*! \warning: this uses subtraction according to elemT (careful with unsigned types!) */
+template <typename elemT>   
+RelatedViewgrams<elemT>&
+RelatedViewgrams<elemT>::
+operator-= (const RelatedViewgrams<elemT>& arg)
+{
+  assert(get_num_viewgrams() == arg.get_num_viewgrams());
+  iterator iter = begin(); 
+  const_iterator arg_iter = arg.begin();
+  for ( ; iter != end(); ++iter, ++arg_iter)
+    *iter -= *arg_iter;
+  return *this;
+}
+
+
 
 template <typename elemT>
 elemT 

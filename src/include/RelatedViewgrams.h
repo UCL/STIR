@@ -138,6 +138,16 @@ public:
    //! Subtraction of all data elements by a constant
    RelatedViewgrams& operator-= (const elemT);
 
+
+   //! Element-wise multiplication with another RelatedViewgram object
+   RelatedViewgrams& operator*= (const RelatedViewgrams<elemT>&);
+   //! Element-wise division by another RelatedViewgram object
+   RelatedViewgrams& operator/= (const RelatedViewgrams<elemT>&);
+   //! Element-wise addition by another RelatedViewgram object
+   RelatedViewgrams& operator+= (const RelatedViewgrams<elemT>&);
+   //! Element-wise subtraction by another RelatedViewgram object
+   RelatedViewgrams& operator-= (const RelatedViewgrams<elemT>&);
+
    // numeric functions
 
    //! Find the maximum of all data elements
