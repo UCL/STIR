@@ -80,6 +80,7 @@ find_scale_factor(scaleT& scale_factor,
           a reference to a (float or double) variable which will be
 	  set to the scale factor such that (ignoring types)
 	   \code  data_in == data_out * scale_factor \endcode
+  \see find_scale_factor for more info on the determination of \a scale_factor.
    
    \param data_in 
           some Array object, elements are of some numeric type \a T1
@@ -95,7 +96,6 @@ find_scale_factor(scaleT& scale_factor,
    Note that there is an effective threshold at 0 currently (i.e. negative
    numbers are cut out) when T2 is an unsigned type.
 
-  \see find_scale_factor for more info on the determination of \a scale_factor.
 */
 #if 1
 template <int num_dimensions, class T1, class T2, class scaleT>
