@@ -55,12 +55,14 @@ int main(int argc, char *argv[])
   char cti_name[1000], scanner_name[1000] = "";
   vector<string> filenames;
   bool its_an_image = true;
+  bool write_as_attenuation = false;
   
   if(argc>=4)
   {
-    if (strcmp(argv[1],"-s")==0)
+    if (strcmp(argv[1],"-s")==0 || strcmp(argv[1],"-a")==0)
       {
 	its_an_image = false;
+        write_as_attenuation = strcmp(argv[1],"-a")==0;
         strcpy(cti_name,argv[2]);
         int num_files = argc-3;
         argv+=3;
@@ -86,9 +88,11 @@ int main(int argc, char *argv[])
 	<< "Multiples files can be written to a single ECAT 7 file.\n"
         << "The data will be assigned a frame number in the "
         << "order that they occur on the command line.\n\n"
-        << "Usage: 2 possible forms depending on data type\n"
+        << "Usage: 3 possible forms depending on data type\n"
 	<< "For sinogram data:\n"
 	<< "\tconv_to_ecat7 -s output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
+	<< "For sinogram-attenuation data:\n"
+	<< "\tconv_to_ecat7 -a output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
 	<< "For image data:\n"
 	<< "\tconv_to_ecat7 output_ECAT7_name orig_filename1 [orig_filename2 ...] scanner_name\n"
 	<< "scanner_name has to be recognised by the Scanner class\n"
@@ -97,6 +101,9 @@ int main(int argc, char *argv[])
 	<< "I will now ask you the same info interactively...\n\n";
     
     its_an_image = ask("Converting images?",true);
+    if (!its_an_image)
+      write_as_attenuation = ask("Write as attenuation data?",false);
+
     int num_files = ask_num("Number of files",1,10000,1);
     filenames.reserve(num_files);
     char cur_name[max_filename_length];
@@ -126,6 +133,8 @@ int main(int argc, char *argv[])
     Main_header mhead;
     make_ECAT7_main_header(mhead, *scanner_ptr, filenames[0], *density_ptr);
     mhead.num_frames = filenames.size();
+    mhead.acquisition_type =
+      mhead.num_frames>1 ? DynamicEmission : StaticEmission;
 
     MatrixFile* mptr= matrix_create (cti_name, MAT_CREATE, &mhead);
     if (mptr == 0)
@@ -166,7 +175,18 @@ int main(int argc, char *argv[])
     Main_header mhead;
     make_ECAT7_main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
     mhead.num_frames = filenames.size();
-
+    if (write_as_attenuation)
+      {
+	mhead.file_type = AttenCor;
+	mhead.acquisition_type =
+	  TransmissionScan;
+      }
+    else
+      {
+	mhead.file_type = Float3dSinogram;
+	mhead.acquisition_type =
+	  mhead.num_frames>1 ? DynamicEmission : StaticEmission;
+      }
     MatrixFile* mptr= matrix_create (cti_name, MAT_CREATE, &mhead);
     if (mptr == 0)
     {
