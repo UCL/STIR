@@ -32,6 +32,7 @@ using namespace std;
 START_NAMESPACE_STIR
 std::vector< ScatterPoint> scatt_points_vector;
 std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+int total_detectors;
 
 static
 unsigned 
@@ -47,8 +48,11 @@ find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
 	}
 	else
 	{
-		detection_points_vector.push_back(coord);
-		return detection_points_vector.size()-1;
+	  if (detection_points_vector.size()==static_cast<std::size_t>(total_detectors))
+	    error("More detection points than we think there are!\n");
+
+	  detection_points_vector.push_back(coord);
+	  return detection_points_vector.size()-1;
 	}
 }
 
@@ -63,8 +67,17 @@ void scatter_viewgram(
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
 		(*proj_data.get_proj_data_info_ptr());
-	
+
+	// fill in scatt_points_vector
 	sample_scatter_points(image_as_density,scatt_points,att_threshold,random);
+
+	// find final size of detection_points_vector
+	total_detectors = 
+	   proj_data_info.get_scanner_ptr()->get_num_rings()*
+	   proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring ();
+	// reserve space to avoid reallocation, but the actual size will grow dynamically
+	detection_points_vector.reserve(total_detectors);
+
 #if 0
 	{
 		fstream scatter_points_file("scatter_points.txt", ios::out); //output file //
@@ -168,6 +181,10 @@ void scatter_viewgram(
 		}
 		bin_timer.stop();		
 		writing_time(bin_timer.value(), scatt_points_vector.size());
+
+		if (detection_points_vector.size() != static_cast<int>(total_detectors))
+		  warning("Expected num detectors: %d, but found %d\n",
+			  total_detectors, detection_points_vector.size());
 }
 	END_NAMESPACE_STIR
 		
