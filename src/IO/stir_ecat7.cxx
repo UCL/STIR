@@ -1780,7 +1780,9 @@ ProjData_to_ECAT7_help(MatrixFile *mptr, const NumericInfo<OutputType>& output_t
 		       const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
   const ByteOrder output_byte_order =
-    output_type_info.integer_type() ? ByteOrder::get_native_order() : ByteOrder::big_endian;
+ //   output_type_info.integer_type() ? ByteOrder::get_native_order() : ByteOrder::big_endian;
+ByteOrder::big_endian;
+
   const short int cti_data_type = 
     find_ECAT_data_type(output_type_info.type_id(), output_byte_order);
   if (cti_data_type==0)
