@@ -9,13 +9,15 @@ all: $(DEST)libbuildblock.a
 clean:
 	$(RM) $(DEST)*
 
-
+# KT 25/10/2000
+# removed   DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.cxx 
+# added   ProjDataInfoCylindrical.cxx 
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
-  DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.cxx \
   ProjData.cxx \
   ProjDataInfo.cxx \
+  ProjDataInfoCylindrical.cxx \
   ProjDataFromStream.cxx \
   ProjDataGEAdvance.cxx \
   Scanner.cxx \
