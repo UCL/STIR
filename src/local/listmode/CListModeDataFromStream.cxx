@@ -64,7 +64,7 @@ Succeeded
 CListModeDataFromStream::
 get_next_record(CListRecord& event) const
 {
-#ifdef STIRByteOrderIsBigEndian
+#ifdef STIRNativeByteOrderIsBigEndian
   assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
 #else
   assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
@@ -72,8 +72,8 @@ get_next_record(CListRecord& event) const
 
 #if 0  
   stream_ptr->read(reinterpret_cast<char *>(&event), sizeof(event));
-#if (defined(STIRByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
-    || (defined(STIRByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
+#if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
+    || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
   ByteOrder::swap_order(event);
 #endif
   
@@ -114,12 +114,12 @@ get_next_record(CListRecord& event) const
     stream_position = stream_ptr->tellg();
     
   }
-  
+
   if (current_pos != static_cast<unsigned int>(num_records_in_buffer))
   {
     event = buffer[current_pos++];
-#if (defined(STIRByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
-    || (defined(STIRByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
+#if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
+    || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
     ByteOrder::swap_order(event);
 #endif
     return Succeeded::yes;

@@ -269,8 +269,7 @@ int get_next_event(istream&in, CListRecord& event)
 // this will skip last event in file
 int get_next_event(istream&in, CListRecord& event)
 {
-  // TODO this is appropriate only for 966
-#ifdef STIRByteOrderIsBigEndian
+#ifdef STIRNativeByteOrderIsBigEndian
   assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
 #else
   assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
@@ -305,8 +304,8 @@ int get_next_event(istream&in, CListRecord& event)
   if (current_pos != static_cast<unsigned int>(num_events_in_buffer))
   {
     event = buffer[current_pos++];
-#if (defined(STIRByteOrderIsBigEndian) && !defined(STIRListmodeFileFormatIsBigEndian)) \
-    || (defined(STIRByteOrderIsLittleEndian) && defined(STIRListmodeFileFormatIsBigEndian)) 
+#if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListmodeFileFormatIsBigEndian)) \
+    || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListmodeFileFormatIsBigEndian)) 
     ByteOrder::swap_order(event);
 #endif
     return 1;
