@@ -33,7 +33,6 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::istream;
-using std::string;
 using std::streampos;
 using std::vector;
 using std::pair;
@@ -62,7 +61,10 @@ public:
 
       \todo Maybe allow for passing e.g. something_2.lm in case the first lm file is missing.
   */
-  CListModeDataECAT(const string& listmode_filename_prefix);
+  CListModeDataECAT(const std::string& listmode_filename_prefix);
+
+  virtual std::string
+    get_name() const;
 
   virtual
     std::time_t get_scan_start_time_in_secs_since_1970() const;
@@ -86,7 +88,7 @@ public:
   virtual bool has_delayeds() const { return true; }
 
 private:
-  string listmode_filename_prefix;
+  std::string listmode_filename_prefix;
   mutable unsigned int current_lm_file;
   mutable shared_ptr<CListModeDataFromStream> current_lm_data_ptr;
   //! a vector that stores the saved_get_positions for ever .lm file

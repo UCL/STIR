@@ -106,6 +106,15 @@ get_scan_start_time_in_secs_since_1970() const
   return std::time_t(-1);
 }
 
+std::string
+CListModeDataFromStream::
+get_name() const
+{
+  error("CListModeDataFromStream::get_name() should never be called");
+  return "";
+}
+
+
 Succeeded
 CListModeDataFromStream::
 get_next_record(CListRecord& record_of_general_type) const
