@@ -17,11 +17,12 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/recon_buildblock/Reconstruction.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
@@ -86,6 +87,8 @@ public:
   int num_segments_to_combine;
 
  private:
+  shared_ptr<BackProjectorByBin> back_projector_sptr;
+
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing(); 

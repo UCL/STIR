@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -44,6 +44,10 @@ set_defaults()
   fc_ramp = 0.5;
   pad_in_s=2;
   num_segments_to_combine = -1;
+  back_projector_sptr =
+    new BackProjectorByBinUsingInterpolation(
+					     /*use_piecewise_linear_interpolation = */true, 
+					     /*use_exact_Jacobian = */ false);
  
 }
 
@@ -58,6 +62,8 @@ FBP2DReconstruction::initialise_keymap()
   parser.add_key("Alpha parameter for Ramp filter",  &alpha_ramp);
   parser.add_key("Cut-off for Ramp filter (in cycles)",&fc_ramp);
   parser.add_key("Transaxial extension for FFT", &pad_in_s);
+
+  parser.add_parsing_key("Back projector type", &back_projector_sptr);
 }
 
 void 
@@ -71,6 +77,16 @@ ask_parameters()
   alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);    
   fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
   pad_in_s = ask_num("  Transaxial extension for FFT : ",0,2, 2); 
+
+#if 0
+    // do not ask the user for the projectors to prevent them entering
+    // silly things
+  do 
+    {
+      back_projector_sptr =
+	BackProjectorByBin::ask_type_and_parameters();
+    }
+#endif
 
 }
 
@@ -120,6 +136,12 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
 	    num_segments_to_combine = 3;
 	}
     }
+
+    if (is_null_ptr(back_projector_sptr))
+      {
+	warning("Back projector not set.\n");
+	return Succeeded::no;
+      }
 
   return false;
 }
@@ -206,11 +228,9 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
   assert(fabs(proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0)) ) < 1.E-4);
 
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-       density_ptr,
-    /*use_piecewise_linear_interpolation = */true, 
-    /*use_exact_Jacobian = */ false);
+  // set projector to be used for the calculations
+  back_projector_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+			      density_ptr);
 
 
   // set ramp filter with appropriate sizes
@@ -224,7 +244,7 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   density_ptr->fill(0);
   
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector_ptr->get_symmetries_used()->clone();
+    back_projector_sptr->get_symmetries_used()->clone();
   for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
   {         
     const ViewSegmentNumbers vs_num(view_num, 0);
@@ -242,7 +262,7 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       filter.apply(*viewgram_iter);
     }
     //  and backproject
-    back_projector_ptr->back_project(*density_ptr, viewgrams);
+    back_projector_sptr->back_project(*density_ptr, viewgrams);
   } 
  
   // Normalise the image
