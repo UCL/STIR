@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -36,6 +36,7 @@ using std::cerr;
 using std::setw;
 using std::endl;
 using std::min;
+using std::max;
 #endif
 
 START_NAMESPACE_STIR
@@ -75,91 +76,74 @@ void michelogram(const ProjDataInfoCylindrical& proj_data_info)
 
 class ProjDataInfoCylindricalTests: public RunTests
 {
-public:  
-  void run_tests();
+protected:  
+  void test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info);
 };
 
 
 void
 ProjDataInfoCylindricalTests::
-run_tests()
+test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info) 
 {
-  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
-
-  cerr << "Testing consistency between different implementations\n";
+  cerr << "\tTesting consistency between different implementations of geometric info\n";
   {
-    shared_ptr<ProjDataInfo> proj_data_info_ptr =
-      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-				    /*span*/5, 10,/*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
-    
-    ProjDataInfoCylindrical& proj_data_info_cyl =
-      dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
-
-    Bin bin(proj_data_info_ptr->get_max_segment_num(),
+    const Bin bin(proj_data_info.get_max_segment_num(),
 	    1,
-	    proj_data_info_ptr->get_max_axial_pos_num(proj_data_info_ptr->get_max_segment_num())/2,
+	    proj_data_info.get_max_axial_pos_num(proj_data_info.get_max_segment_num())/2,
 	    1);
-    check_if_equal(proj_data_info_ptr->get_sampling_in_m(bin),
-		   proj_data_info_cyl.get_sampling_in_m(bin),
+    check_if_equal(proj_data_info.get_sampling_in_m(bin),
+		   proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
 		   "test consistency get_sampling_in_m");
-    check_if_equal(proj_data_info_ptr->get_sampling_in_t(bin),
-		   proj_data_info_cyl.get_sampling_in_t(bin),
+    check_if_equal(proj_data_info.get_sampling_in_t(bin),
+		   proj_data_info.ProjDataInfo::get_sampling_in_t(bin),
 		   "test consistency get_sampling_in_t");
-
-    check_if_equal(proj_data_info_ptr->get_tantheta(bin),
-		   proj_data_info_cyl.get_tantheta(bin),
+#if 0
+    // ProjDataInfo has no default implementation for get_tantheta
+    // I just leave the code here to make this explicit
+    check_if_equal(proj_data_info.get_tantheta(bin),
+		   proj_data_info.ProjDataInfo::get_tantheta(bin),
 		   "test consistency get_tantheta");
-    check_if_equal(proj_data_info_ptr->get_costheta(bin),
-		   proj_data_info_cyl.get_costheta(bin),
+#endif
+    check_if_equal(proj_data_info.get_costheta(bin),
+		   proj_data_info.ProjDataInfo::get_costheta(bin),
 		   "test consistency get_costheta");
 
-    check_if_equal(proj_data_info_ptr->get_costheta(bin),
-		   cos(atan(proj_data_info_ptr->get_tantheta(bin))),
+    check_if_equal(proj_data_info.get_costheta(bin),
+		   cos(atan(proj_data_info.get_tantheta(bin))),
 		   "cross check get_costheta and get_tantheta");
 
     // try the same with a non-standard ring spacing
-    proj_data_info_cyl.set_ring_spacing(2);
+    proj_data_info.set_ring_spacing(2);
 
-    check_if_equal(proj_data_info_ptr->get_sampling_in_m(bin),
-		   proj_data_info_cyl.get_sampling_in_m(bin),
+    check_if_equal(proj_data_info.get_sampling_in_m(bin),
+		   proj_data_info.ProjDataInfo::get_sampling_in_m(bin),
 		   "test consistency get_sampling_in_m");
-    check_if_equal(proj_data_info_ptr->get_sampling_in_t(bin),
-		   proj_data_info_cyl.get_sampling_in_t(bin),
+    check_if_equal(proj_data_info.get_sampling_in_t(bin),
+		   proj_data_info.ProjDataInfo::get_sampling_in_t(bin),
 		   "test consistency get_sampling_in_t");
-
-    check_if_equal(proj_data_info_ptr->get_tantheta(bin),
-		   proj_data_info_cyl.get_tantheta(bin),
+#if 0
+    check_if_equal(proj_data_info.get_tantheta(bin),
+		   proj_data_info.ProjDataInfo::get_tantheta(bin),
 		   "test consistency get_tantheta");
-    check_if_equal(proj_data_info_ptr->get_costheta(bin),
-		   proj_data_info_cyl.get_costheta(bin),
+#endif
+    check_if_equal(proj_data_info.get_costheta(bin),
+		   proj_data_info.ProjDataInfo::get_costheta(bin),
 		   "test consistency get_costheta");
 
-    check_if_equal(proj_data_info_ptr->get_costheta(bin),
-		   cos(atan(proj_data_info_ptr->get_tantheta(bin))),
+    check_if_equal(proj_data_info.get_costheta(bin),
+		   cos(atan(proj_data_info.get_tantheta(bin))),
 		   "cross check get_costheta and get_tantheta");
   }
 
-  cerr << "Test ring pair to segment,ax_pos (span 1)\n";
-  {
-    shared_ptr<Scanner> small_scanner_ptr = 
-      new Scanner(Scanner::Unknown_Scanner,
-		  "Small scanner",
-		  /*num_detectors_per_ring*/ 80, 
-		  /* num_rings */ 3, 
-		  /*max_num_non_arccorrected_bins*/ 40, 
-		  /*RingRadius*/ 400.F, /*RingSpacing*/ 5.F, 
-		  /*BinSize*/ 4.5F, /*intrTilt*/ 0);
-
-    shared_ptr<ProjDataInfo> proj_data_info_ptr =
-      ProjDataInfo::ProjDataInfoCTI(small_scanner_ptr,
-				    /*span*/1, small_scanner_ptr->get_num_rings()-1,
-				    /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
-    
-    ProjDataInfoCylindrical& proj_data_info =
-      dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
-
-    for (int ring1=0; ring1<small_scanner_ptr->get_num_rings(); ++ring1)
-      for (int ring2=0; ring2<small_scanner_ptr->get_num_rings(); ++ring2)
+  if (proj_data_info.get_max_ring_difference(0) == proj_data_info.get_min_ring_difference(0)
+      && proj_data_info.get_max_ring_difference(1) == proj_data_info.get_min_ring_difference(1)
+      && proj_data_info.get_max_ring_difference(2) == proj_data_info.get_min_ring_difference(2)
+      )
+    {
+      // these tests work only without axial compression
+      cerr << "\tTest ring pair to segment,ax_pos (span 1)\n";
+    for (int ring1=0; ring1<proj_data_info.get_scanner_ptr()->get_num_rings(); ++ring1)
+      for (int ring2=0; ring2<proj_data_info.get_scanner_ptr()->get_num_rings(); ++ring2)
 	{
 	  int segment_num = 0, axial_pos_num = 0;
 	  check(proj_data_info.
@@ -199,15 +183,16 @@ run_tests()
 	}
   }
 
-  cerr << "Test ring pair to segment,ax_pos and vice versa (span 5)\n";
+  cerr << "\tTest ring pair to segment,ax_pos and vice versa (for any axial compression)\n";
   {
+#if 0
     shared_ptr<ProjDataInfo> proj_data_info_ptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				    /*span*/5, 10,/*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
     
     ProjDataInfoCylindrical& proj_data_info =
       dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
-
+#endif
     for (int segment_num=proj_data_info.get_min_segment_num(); 
 	 segment_num<=proj_data_info.get_max_segment_num(); 
 	 ++segment_num)
@@ -256,7 +241,7 @@ void
 ProjDataInfoCylindricalArcCorrTests::run_tests()
 
 { 
-  cerr << "Testing ProjDataInfoCylindricalArcCorr\n";
+  cerr << "-------- Testing ProjDataInfoCylindricalArcCorr --------\n";
   {
     // Test on the empty constructor
     
@@ -345,8 +330,6 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       check_if_equal( s, 20*ob2.get_tangential_sampling() , "get_s, seg 1");
     }
 
-    ProjDataInfoCylindricalTests::run_tests();
-
 #if 0    
   // disabled to get noninteractive test
   michelogram(ob2);
@@ -377,6 +360,27 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
   }
 #endif
 
+
+  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+  cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
+  // Note: test without axial compression requires that all ring differences 
+  // are in some segment, so use maximum ring difference
+  shared_ptr<ProjDataInfo> proj_data_info_ptr =
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+				  /*span*/1, scanner_ptr->get_num_rings()-1,
+				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
+				  /*tang_pos*/64, 
+				  /*arc_corrected*/ true);
+test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
+
+  cerr << "\nTests with proj_data_info with mashing and axial compression\n\n";
+  proj_data_info_ptr =
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+				  /*span*/5, scanner_ptr->get_num_rings()-1,
+				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
+				  /*tang_pos*/64, 
+				  /*arc_corrected*/ true);
+    test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
 }
 
 
@@ -385,7 +389,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
   \brief Test class for ProjDataInfoCylindricalNoArcCorr
 */
 
-class ProjDataInfoCylindricalNoArcCorrTests: public RunTests
+class ProjDataInfoCylindricalNoArcCorrTests: public ProjDataInfoCylindricalTests
 {
 public:  
   void run_tests();
@@ -398,11 +402,26 @@ void
 ProjDataInfoCylindricalNoArcCorrTests::
 run_tests()
 { 
-  cerr << "Testing ProjDataInfoCylindricalNoArcCorr\n";
+  cerr << "\n-------- Testing ProjDataInfoCylindricalNoArcCorr --------\n";
   shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+  cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
+  // Note: test without axial compression requires that all ring differences 
+  // are in some segment, so use maximum ring difference
   shared_ptr<ProjDataInfo> proj_data_info_ptr =
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-				  /*span*/1, 10,/*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
+				  /*span*/1, scanner_ptr->get_num_rings()-1,
+				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
+				  /*tang_pos*/64, 
+				  /*arc_corrected*/ false);
+    test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
+
+  cerr << "\nTests with proj_data_info with mashing and axial compression\n\n";
+  proj_data_info_ptr =
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+				  /*span*/5, scanner_ptr->get_num_rings()-1,
+				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
+				  /*tang_pos*/64, 
+				  /*arc_corrected*/ false);
     test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 }
 
@@ -410,210 +429,271 @@ void
 ProjDataInfoCylindricalNoArcCorrTests::
 test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 {
-  int det_num_a;
-  int det_num_b;
-  int ring_a;
-  int ring_b;
-  int tang_pos_num;
-  int view;
-  
+  test_cylindrical_proj_data_info(proj_data_info);
+
   const int num_detectors = proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
 
-  cerr << "\nTest code for sinogram <-> detector conversions. \n"
-       << "No output means everything is fine." << endl;
+  if (proj_data_info.get_view_mashing_factor()==1)
+    {
+      // these tests work only without mashing
+      int det_num_a;
+      int det_num_b;
+      int tang_pos_num;
+      int view;
 
-  for (det_num_a = 0; det_num_a < num_detectors; det_num_a++)
-    for (det_num_b = 0; det_num_b < num_detectors; det_num_b++)
-      {
-	int det1, det2;
-	bool positive_segment;
-
-        // skip case of equal detectors (as this is a singular LOR)
-	if (det_num_a == det_num_b)
-	  continue;
-
-	positive_segment = 
-	  proj_data_info.get_view_tangential_pos_num_for_det_num_pair(view, tang_pos_num, det_num_a, det_num_b);
-	proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det1, det2, view, tang_pos_num);
-
-	if (!(det_num_a == det1 && det_num_b == det2 && positive_segment) &&
-	    !(det_num_a == det2 && det_num_b == det1 && !positive_segment))
-	  {
-	    cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
-		 << endl
-		 << "  dets -> sino -> dets gives new detector numbers "
-		 << det1 << ", " << det2 << endl;
-	    continue;
-	  }
-	if (view >= num_detectors/2)
-	  {
-	    cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
-		 << endl
-		 << "  view is too big : " << view << endl;
-	  }
-	if (tang_pos_num >= num_detectors/2 || tang_pos_num < -(num_detectors/2))
-	  {
-	    cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
-		 << endl
-		 << "  tang_pos_num is out of range : " << tang_pos_num << endl;
-	  }
-      } // end of detectors_to_sinogram, sinogram_to_detector test
-
-	
-  for (view = 0; view < num_detectors/2; ++view)
-    for (tang_pos_num = -(num_detectors/2)+1; tang_pos_num < num_detectors/2; ++tang_pos_num)
-      {
-	int new_tang_pos_num, new_view;
-	bool positive_segment;
-
-	proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view, tang_pos_num);
-	positive_segment = 
-	  proj_data_info.get_view_tangential_pos_num_for_det_num_pair(new_view, new_tang_pos_num, det_num_a, det_num_b);
-
-	if (tang_pos_num != new_tang_pos_num || view != new_view || !positive_segment)
-	  {
-	    cerr << "Problem at view = " << view << ", tang_pos_num = " << tang_pos_num
-		 << "\n   sino -> dets -> sino gives new view, tang_pos_num :"
-		 << new_view << ", " << new_tang_pos_num 
-                 << " with detector swapping " << positive_segment
-                 << endl;
-	  }
-      } // end of sinogram_to_detector, detectors_to_sinogram test
-	
-	
-  cerr << "\nTest code for detector,ring -> bin and back conversions. \n"
-       << "No output means everything is fine." << endl;
-
-  for (ring_a = 0; ring_a <= 2; ring_a++)
-    for (ring_b = 0; ring_b <= 2; ring_b++)
+      cerr << "\n\tTest code for sinogram <-> detector conversions.";
+      
       for (det_num_a = 0; det_num_a < num_detectors; det_num_a++)
 	for (det_num_b = 0; det_num_b < num_detectors; det_num_b++)
 	  {
-            // skip case of equal detector numbers (as this is either a singular LOR)
-            // or an LOR parallel to the scanner axis
-            if (det_num_a == det_num_b)
-              continue;
-            Bin bin;
-            int det1;
-            int det2;
-            int ring1;
-            int ring2;
-            
-	    proj_data_info.get_bin_for_det_pair(bin,
-						det_num_a, ring_a, 
-						det_num_b, ring_b);
-	
-	    proj_data_info.get_det_pair_for_bin(det1, ring1,
-						det2, ring2,
-						bin);
-	
-	
-	    if (!(det_num_a == det1 && det_num_b == det2 &&
-		  ring_a == ring1 && ring_b == ring2) &&
-		!(det_num_a == det2 && det_num_b == det1 &&
-		  ring_a == ring2 && ring_b == ring1))
+	    int det1, det2;
+	    bool positive_segment;
+	    
+	    // skip case of equal detectors (as this is a singular LOR)
+	    if (det_num_a == det_num_b)
+	      continue;
+	    
+	    positive_segment = 
+	      proj_data_info.get_view_tangential_pos_num_for_det_num_pair(view, tang_pos_num, det_num_a, det_num_b);
+	    proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det1, det2, view, tang_pos_num);
+	    
+	    if (!check((det_num_a == det1 && det_num_b == det2 && positive_segment) ||
+		       (det_num_a == det2 && det_num_b == det1 && !positive_segment)))
 	      {
 		cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
-		     << ", ring1 = " << ring_a << ", ring2 = " << ring_b
-		     << endl
-		     << "  dets,rings -> bin -> dets,rings, gives new numbers:\n\t"
-		     << "det1 = " << det1 << ", det2 = " << det2
-		     << ", ring1 = " << ring1 << ", ring2 = " << ring2
+		     << "\n  dets -> sino -> dets gives new detector numbers "
+		     << det1 << ", " << det2 << endl;
+		continue;
+	      }
+	    if (!check(view < num_detectors/2))
+	      {
+		cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
+		     << ":\n  view is too big : " << view << endl;
+	      }
+	    if (!check(tang_pos_num < num_detectors/2 && tang_pos_num >= -(num_detectors/2)))
+	      {
+		cerr << "Problem at det1 = " << det_num_a << ", det2 = " << det_num_b
+		     << ":\n  tang_pos_num is out of range : " << tang_pos_num << endl;
+	      }
+	  } // end of detectors_to_sinogram, sinogram_to_detector test
+
+	
+      for (view = 0; view < num_detectors/2; ++view)
+	for (tang_pos_num = -(num_detectors/2)+1; tang_pos_num < num_detectors/2; ++tang_pos_num)
+	  {
+	    int new_tang_pos_num, new_view;
+	    bool positive_segment;
+
+	    proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view, tang_pos_num);
+	    positive_segment = 
+	      proj_data_info.get_view_tangential_pos_num_for_det_num_pair(new_view, new_tang_pos_num, det_num_a, det_num_b);
+
+	    if (tang_pos_num != new_tang_pos_num || view != new_view || !positive_segment)
+	      {
+		cerr << "Problem at view = " << view << ", tang_pos_num = " << tang_pos_num
+		     << "\n   sino -> dets -> sino gives new view, tang_pos_num :"
+		     << new_view << ", " << new_tang_pos_num 
+		     << " with detector swapping " << positive_segment
 		     << endl;
 	      }
+	  } // end of sinogram_to_detector, detectors_to_sinogram test
 	
-	  } // end of get_bin_for_det_pair and vice versa code
+    } // end of tests that work only without mashing
 
-  cerr << "\nTest code for bin -> detector,ring and back conversions. (This might take a while...)\n"
-       << "No output means everything is fine." << endl;
+  if (proj_data_info.get_view_mashing_factor()==1
+      && proj_data_info.get_max_ring_difference(0) == proj_data_info.get_min_ring_difference(0)
+      && proj_data_info.get_max_ring_difference(1) == proj_data_info.get_min_ring_difference(1)
+      && proj_data_info.get_max_ring_difference(2) == proj_data_info.get_min_ring_difference(2)
+      )
+    {
+      // these tests work only without mashing and axial compression
+	
+      cerr << "\n\tTest code for detector,ring -> bin and back conversions.";
+      
+      DetectionPositionPair<> det_pos_pair;
+      for (det_pos_pair.pos1().axial_coord() = 0; 
+	   det_pos_pair.pos1().axial_coord() <= 2; 
+	   det_pos_pair.pos1().axial_coord()++)
+	for (det_pos_pair.pos2().axial_coord() = 0; 
+	     det_pos_pair.pos2().axial_coord() <= 2; 
+	     det_pos_pair.pos2().axial_coord()++)
+	  for (det_pos_pair.pos1().tangential_coord() = 0; 
+	       det_pos_pair.pos1().tangential_coord() < (unsigned)num_detectors;
+	       det_pos_pair.pos1().tangential_coord()++)
+	    for (det_pos_pair.pos2().tangential_coord() = 0; 
+		 det_pos_pair.pos2().tangential_coord() < (unsigned)num_detectors; 
+		 det_pos_pair.pos2().tangential_coord()++)
+	      {
+		// skip case of equal detector numbers (as this is either a singular LOR)
+		// or an LOR parallel to the scanner axis
+		if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
+		  continue;
+		Bin bin;
+		DetectionPositionPair<> new_det_pos_pair;
+		const bool there_is_a_bin =
+		  proj_data_info.get_bin_for_det_pos_pair(bin, det_pos_pair) ==
+		    Succeeded::yes;       
+		if (there_is_a_bin)
+		  proj_data_info.get_det_pos_pair_for_bin(new_det_pos_pair, bin);
+		if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
+		    !check(det_pos_pair == new_det_pos_pair, "checking if we round-trip to the same detection positions"))
+		    {
+		      cerr << "Problem at det1 = " << det_pos_pair.pos1().tangential_coord() 
+			   << ", det2 = " << det_pos_pair.pos2().tangential_coord()
+			   << ", ring1 = " << det_pos_pair.pos1().axial_coord() 
+			   << ", ring2 = " << det_pos_pair.pos2().axial_coord()
+			   << endl;
+		      if (there_is_a_bin)
+			 cerr << "  dets,rings -> bin -> dets,rings, gives new numbers:\n\t"
+			      << "det1 = " << new_det_pos_pair.pos1().tangential_coord() 
+			   
+			      << ", det2 = " << new_det_pos_pair.pos2().tangential_coord()
+			      << ", ring1 = " << new_det_pos_pair.pos1().axial_coord() 
+			      << ", ring2 = " << new_det_pos_pair.pos2().axial_coord()
+			 << endl;
+		  }
+	
+	      } // end of get_bin_for_det_pos_pair and vice versa code
+
+      cerr << "\n\tTest code for bin -> detector,ring and back conversions. (This might take a while...)";
+
+      {
+	Bin bin;
+	// set value for comparison later on
+	bin.set_bin_value(0);
+	for (bin.segment_num() = max(-5,proj_data_info.get_min_segment_num()); 
+	     bin.segment_num() <= min(5,proj_data_info.get_max_segment_num()); 
+	     ++bin.segment_num())
+	  for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
+	       bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
+	       ++bin.axial_pos_num())
+	    for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
+	      for (bin.tangential_pos_num() = -(num_detectors/2)+1; 
+		   bin.tangential_pos_num() < num_detectors/2; 
+		   ++bin.tangential_pos_num())
+		{
+
+		  Bin new_bin;
+		  // set value for comparison with bin
+		  new_bin.set_bin_value(0);
+		  DetectionPositionPair<> det_pos_pair;
+		  proj_data_info.get_det_pos_pair_for_bin(det_pos_pair, bin);
+	
+		  const bool there_is_a_bin =
+		    proj_data_info.get_bin_for_det_pos_pair(new_bin, 
+							    det_pos_pair) ==
+		    Succeeded::yes;
+		  if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
+		      !check(bin == new_bin, "checking if we round-trip to the same bin"))
+		    {
+		      cerr << "Problem at  segment = " << bin.segment_num() 
+			   << ", axial pos " << bin.axial_pos_num()
+			   << ", view = " << bin.view_num() 
+			   << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+		      if (there_is_a_bin)
+			cerr  << "  bin -> dets -> bin, gives new numbers:\n\t"
+			      << "segment = " << new_bin.segment_num() 
+			      << ", axial pos " << new_bin.axial_pos_num()
+			      << ", view = " << new_bin.view_num() 
+			      << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+			      << endl;
+		    }
+	
+		} // end of get_det_pos_pair_for_bin and back code
+      }
+    } // end of tests which require no mashing nor axial compression
 
   {
+    cerr << "\n\tTest code for bins <-> detectors routines that work with any mashing and axial compression";
+
     Bin bin;
     // set value for comparison later on
     bin.set_bin_value(0);
+    vector<DetectionPositionPair<> > det_pos_pairs;
     for (bin.segment_num() = proj_data_info.get_min_segment_num(); 
 	 bin.segment_num() <= proj_data_info.get_max_segment_num(); 
 	 ++bin.segment_num())
       for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
 	   bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
 	   ++bin.axial_pos_num())
-	for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
-	  for (bin.tangential_pos_num() = -(num_detectors/2)+1; 
-	       bin.tangential_pos_num() < num_detectors/2; 
+	for (bin.view_num() = proj_data_info.get_min_view_num(); 
+	     bin.view_num() <= proj_data_info.get_max_view_num(); 
+	     ++bin.view_num())
+	  for (bin.tangential_pos_num() = proj_data_info.get_min_tangential_pos_num();
+	       bin.tangential_pos_num() <= proj_data_info.get_max_tangential_pos_num();
 	       ++bin.tangential_pos_num())
 	    {
-
+	      proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
 	      Bin new_bin;
 	      // set value for comparison with bin
 	      new_bin.set_bin_value(0);
-	      int det1, det2, ring1, ring2;
-	      proj_data_info.get_det_pair_for_bin(det1, ring1,
-						  det2, ring2,
-						  bin);
-	      proj_data_info.get_bin_for_det_pair(new_bin,
-						  det1, ring1, 
-						  det2, ring2);
-	
-	
-	
-	      if (bin != new_bin)
+	      for (std::vector<DetectionPositionPair<> >::const_iterator det_pos_pair_iter = det_pos_pairs.begin();
+		   det_pos_pair_iter != det_pos_pairs.end();
+		   ++det_pos_pair_iter)
+		{
+		  const bool there_is_a_bin =
+		    proj_data_info.get_bin_for_det_pos_pair(new_bin, 
+							    *det_pos_pair_iter) ==
+		    Succeeded::yes;
+		  if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
+		      !check(bin == new_bin, "checking if we round-trip to the same bin"))
+		    {
+		      cerr << "Problem at  segment = " << bin.segment_num() 
+			   << ", axial pos " << bin.axial_pos_num()
+			   << ", view = " << bin.view_num() 
+			   << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+		      if (there_is_a_bin)
+			cerr << "  bin -> dets -> bin, gives new numbers:\n\t"
+			     << "segment = " << new_bin.segment_num() 
+			     << ", axial pos " << new_bin.axial_pos_num()
+			     << ", view = " << new_bin.view_num() 
+			     << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+			     << endl;
+		    }
+		} // end of iteration of det_pos_pairs
+	    } // end of loop over all bins
+  } // end of get_all_det_pairs_for_bin and back code
+
+  {
+    cerr << endl;
+    cerr << "\tTesting find scanner coordinates given cartesian and vice versa." << endl;
+    {   
+      for ( int Ring_A = 1; Ring_A < 10; Ring_A++)
+	for ( int Ring_B = 1; Ring_B < 10; Ring_B++)
+	  for ( int det1 =1; det1 <=10; det1 ++)
+	    for ( int det2 =100; det2 <=110; det2 ++)	  
 	      {
-		cerr << "Problem at  segment = " << bin.segment_num() 
-		     << ", axial pos " << bin.axial_pos_num()
-		     << ", view = " << bin.view_num() 
-		     << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n"
-		     << "  bin -> dets -> bin, gives new numbers:\n\t"
-                     << "segment = " << new_bin.segment_num() 
-		     << ", axial pos " << new_bin.axial_pos_num()
-		     << ", view = " << new_bin.view_num() 
-		     << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-		     << endl;
+		CartesianCoordinate3D<float> coord_1;
+		CartesianCoordinate3D<float> coord_2;
+	  
+		proj_data_info.find_cartesian_coordinates_given_scanner_coordinates (coord_1,coord_2,
+										     Ring_A,Ring_B, 
+										     det1,det2);
+	  
+		const CartesianCoordinate3D<float> coord_1_new = coord_1 + (coord_2-coord_1)*5;
+		const CartesianCoordinate3D<float> coord_2_new = coord_1 + (coord_2-coord_1)*2;
+	  
+		int det1_f, det2_f,ring1_f, ring2_f;
+	  
+		proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
+										    coord_1_new, coord_2_new);
+		if (det1_f == det1 && Ring_A == ring1_f)
+		  { 
+		    check_if_equal( det1_f, det1, "test on det1");
+		    check_if_equal( Ring_A, ring1_f, "test on ring1");
+		    check_if_equal( det2_f, det2, "test on det2");
+		    check_if_equal( Ring_B, ring2_f, "test on ring1");
+		  }
+		else
+		  {
+		    check_if_equal( det2_f, det1, "test on det1");
+		    check_if_equal( Ring_B, ring1_f, "test on ring1");
+		    check_if_equal( det1_f, det2, "test on det2");
+		    check_if_equal( Ring_A, ring2_f, "test on ring1");
+		  }
 	      }
-	
-	  } // end of get_det_pair_for_bin and back code
+    }
   }
-   cerr << endl;
-   cerr << "Testing find scanner coordinates given cartesian and vice versa" << endl; 
-   cerr << "No output means everything is fine." << endl;
-   {
-     
-  for ( int Ring_A = 1; Ring_A < 10; Ring_A++)
-    for ( int Ring_B = 1; Ring_B < 10; Ring_B++)
-      for ( int det1 =1; det1 <=10; det1 ++)
-	for ( int det2 =100; det2 <=110; det2 ++)
-	  
-	{
-	  CartesianCoordinate3D<float> coord_1;
-	  CartesianCoordinate3D<float> coord_2;
-	  
-	  // normally one cannot access private members of in the class but I have made it public while testing
-	  proj_data_info.find_cartesian_coordinates_given_scanner_coordinates (coord_1,coord_2,
-	    Ring_A,Ring_B, 
-	    det1,det2);
-	  
-	  const CartesianCoordinate3D<float> coord_1_new = coord_1 + (coord_2-coord_1)*5;
-	  const CartesianCoordinate3D<float> coord_2_new = coord_1 + (coord_2-coord_1)*2;
-	  
-	  int det1_f, det2_f,ring1_f, ring2_f;
-	  
-	  proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
-	    coord_1_new, coord_2_new);
-	  if (det1_f == det1 && Ring_A == ring1_f)
-	  { 
-	    check_if_equal( det1_f, det1, "test on det1");
-	    check_if_equal( Ring_A, ring1_f, "test on ring1");
-	    check_if_equal( det2_f, det2, "test on det2");
-	    check_if_equal( Ring_B, ring2_f, "test on ring1");
-	  }
-	  else
-	  {
-	    check_if_equal( det2_f, det1, "test on det1");
-	    check_if_equal( Ring_B, ring1_f, "test on ring1");
-	    check_if_equal( det1_f, det2, "test on det2");
-	    check_if_equal( Ring_A, ring2_f, "test on ring1");
-	  }
-	}
-   }
 }
 
 END_NAMESPACE_STIR
