@@ -73,9 +73,9 @@ get_num_frames() const
 TimeFrameDefinitions::
 TimeFrameDefinitions()
 {}
+
 // TODO linesapparently  have to end with a newline, otherwise they are ignored
 // (but why?)
-
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& fdef_filename)
 {
@@ -118,6 +118,29 @@ TimeFrameDefinitions(const string& fdef_filename)
       cerr << ',';
   }
   cerr << '}' << endl;
+}
+
+TimeFrameDefinitions::
+TimeFrameDefinitions(const vector<pair<double, double> >& frame_times)
+  : frame_times(frame_times)
+{
+  if (get_num_frames()==0)
+    return;
+
+  // check times are in sequence
+  double current_time = get_start_time(1);
+  for (unsigned int current_frame = 1; current_frame != get_num_frames(); ++ current_frame)
+    {
+      if (current_time > get_start_time(current_frame))
+	error("TimeFrameDefinitions: frame number %d start_time (%g) is smaller than "
+	      "previous end_time (%g)\n",
+	      current_frame, get_start_time(current_frame), current_time);
+      if (get_start_time(current_frame) > get_end_time(current_frame))
+	error("TimeFrameDefinitions: frame number %d start_time (%g) is larger than "
+	      "end_time (%g)\n",
+	      current_frame, get_start_time(current_frame), get_end_time(current_frame));
+      current_time = get_end_time(current_frame);
+    }
 }
 
 END_NAMESPACE_STIR

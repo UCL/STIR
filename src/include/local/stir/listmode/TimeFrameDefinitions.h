@@ -36,6 +36,7 @@ START_NAMESPACE_STIR
 class TimeFrameDefinitions
 {
 public:
+  //! Default constructor: no time frames at all
   TimeFrameDefinitions();
 
   //! Read the frame definitions from a .fdef file
@@ -49,9 +50,16 @@ public:
   This class in fact allows an extension of the above. Setting 
   \a num_frames_of_this_duration to 0 allows skipping
   a time period of the corresponding \a duration_in_secs.
+
+  \warning Each line in the input file <strong>has to end with a newline</strong>,
+  otherwise it might be ignored on some Operating Systems.
   */
   explicit TimeFrameDefinitions(const string& fdef_filename);
   
+  //! Construct from a list of time frames
+  /*! Times have to be in increasing order*/
+  TimeFrameDefinitions(const vector<pair<double, double> >&);
+
   //! 1 based
   double get_start_time(unsigned int frame_num) const;
   double get_end_time(unsigned int frame_num) const;
