@@ -1,6 +1,6 @@
 // $Id$
-#ifndef __stir_read_data_1d_H__
-#define __stir_read_data_1d_H__
+#ifndef __stir_IO_read_data_1d_H__
+#define __stir_IO_read_data_1d_H__
 /*!
   \file 
   \ingroup Array 
@@ -49,6 +49,6 @@ read_data_1d(FILE*& , Array<1, elemT>& data,
 } // end namespace detail
 END_NAMESPACE_STIR
 
-#include "stir/read_data_1d.inl"
+#include "stir/IO/read_data_1d.inl"
 
 #endif

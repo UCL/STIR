@@ -1,6 +1,6 @@
 // $Id$
-#ifndef __stir_write_data_H__
-#define __stir_write_data_H__
+#ifndef __stir_IO_write_data_H__
+#define __stir_IO_write_data_H__
 
 /*!
   \file 
@@ -18,8 +18,6 @@
 */
 
 #include "stir/common.h"
-#include <stdio.h>
-#include <iostream>
 START_NAMESPACE_STIR
 
 class ByteOrder;
@@ -155,21 +153,21 @@ END_NAMESPACE_STIR
 
 #if !defined(__STIR_WORKAROUND_TEMPLATES) || __STIR_WORKAROUND_TEMPLATES<2
 
-#include "stir/write_data.inl"
+#include "stir/IO/write_data.inl"
 
 #else
 
 #define num_dimensions 1
-#include "stir/write_data.inl"
+#include "stir/IO/write_data.inl"
 #undef num_dimensions
 #define num_dimensions 2
-#include "stir/write_data.inl"
+#include "stir/IO/write_data.inl"
 #undef num_dimensions
 #define num_dimensions 3
-#include "stir/write_data.inl"
+#include "stir/IO/write_data.inl"
 #undef num_dimensions
 //#define num_dimensions 4
-//#include "stir/write_data.inl"
+//#include "stir/IO/write_data.inl"
 //#undef num_dimensions
 
 #endif

@@ -1,6 +1,6 @@
 // $Id$
-#ifndef __stir_read_data_H__
-#define __stir_read_data_H__
+#ifndef __stir_IO_read_data_H__
+#define __stir_IO_read_data_H__
 
 /*!
   \file 
@@ -17,9 +17,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/ByteOrder.h"
-#include <stdio.h>
-#include <iostream>
+#include "stir/common.h"
 
 START_NAMESPACE_STIR
 
@@ -93,6 +91,6 @@ read_data(IStreamT& s,
 
 END_NAMESPACE_STIR
 
-#include "stir/read_data.inl"
+#include "stir/IO/read_data.inl"
 
 #endif
