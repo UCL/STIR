@@ -18,7 +18,8 @@ SOURCES = test_Array.cxx \
 	test_VoxelsOnCartesianGrid.cxx \
 	test_proj_data_info.cxx \
 	test_display.cxx \
-	test_stir_math.cxx
+	test_stir_math.cxx \
+	test_OutputFileFormat.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
@@ -54,7 +55,8 @@ run_tests: all get_test_files make_stir_math
 	$(DEST)test_VoxelsOnCartesianGrid
 	$(DEST)test_proj_data_info
 	$(DEST)test_stir_math ../utilities/$(DEST)stir_math \
-        $(DEST)test_InterfileOutputFileFormat input/test_InterfileOutputFileFormat.in
+        $(DEST)test_OutputFileFormat input/test_InterfileOutputFileFormat.in \
+        $(DEST)test_OutputFileFormat input/test_ECAT6OutputFileFormat.in
 
 # running test_stir_math depends on the stir_math executable itself
 make_stir_math:
