@@ -1,11 +1,10 @@
 //
 // $Id$: $Date$
 //
-#ifndef __BackProjectorByBinUsingInterpolation_h_
-#define __BackProjectorByBinUsingInterpolation_h_
 /*!
 
   \file
+  \ingroup recon_buildblock
 
   \brief Declares class BackProjectorByBinUsingInterpolation
 
@@ -13,9 +12,10 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
+#ifndef __BackProjectorByBinUsingInterpolation_h_
+#define __BackProjectorByBinUsingInterpolation_h_
 
 #include "recon_buildblock/BackProjectorByBin.h" 
 #include "Array.h"
@@ -27,6 +27,7 @@
 START_NAMESPACE_TOMO
 
 template <typename elemT> class Segment;
+template <typename elemT> class VoxelsOnCartesianGrid;
 
 /*!
   \brief
