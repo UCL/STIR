@@ -216,12 +216,16 @@ ArrayTests::run_tests()
 	
       Array<1,int> testint(IndexRange<1>(5));
       testint[0] = 2;
+      check_if_equal(testint.size(), size_t(5), "test size()");
+      check_if_equal(testint.size_all(), size_t(5), "test size_all()");
 
       Array<1,float> test(IndexRange<1>(10));
       check_if_zero(test, "Array1D not initialised to 0");
 
       test[1] = (float)10.5;
       test.set_offset(-1);
+      check_if_equal(test.size(), size_t(10), "test size() with non-zero offset");
+      check_if_equal(test.size_all(), size_t(10), "test size_all() with non-zero offset");
       check_if_equal( test[0], 10.5, "test indexing of Array1D");
       test += 1;
       check_if_equal( test[0] , 11.5, "test operator+=(float)");
@@ -292,8 +296,10 @@ ArrayTests::run_tests()
   {
     cerr << "Testing 2D stuff" << endl;
     {
-      IndexRange<2> range(Coordinate2D<int>(0,0),Coordinate2D<int>(9,9));
+      const IndexRange<2> range(Coordinate2D<int>(0,0),Coordinate2D<int>(9,9));
       Array<2,float> test2(range);
+      check_if_equal(test2.size(), size_t(10), "test size()");
+      check_if_equal(test2.size_all(), size_t(100), "test size_all()");
       // KT 17/03/98 added check on initialisation
       check_if_zero(test2, "test Array<2,float> not initialised to 0" );
 
@@ -326,13 +332,14 @@ ArrayTests::run_tests()
       t2fp += testfp;
       check_if_equal( t2fp[3][2] , 5.5, "test operator +=(Array2D)");
       check_if_equal(t2  , t2fp, "test comparing Array2D+= and +" );
-     
-      BasicCoordinate<2,int> c;
-      c[1]=3; c[2]=2; 
-      check_if_equal(t2[c], 5.5, "test on operator[](BasicCoordinate)");   
-      t2[c] = 6.;
-      check_if_equal(t2[c], 6., "test on operator[](BasicCoordinate)");   
 
+      {     
+	BasicCoordinate<2,int> c;
+	c[1]=3; c[2]=2; 
+	check_if_equal(t2[c], 5.5, "test on operator[](BasicCoordinate)");   
+	t2[c] = 6.;
+	check_if_equal(t2[c], 6., "test on operator[](BasicCoordinate)");   
+      }
 
       // assert should break on next line if uncommented
       //t2[-4][3]=1.F;
@@ -362,7 +369,18 @@ ArrayTests::run_tests()
 	check_if_equal(t22  , t2, "test Array2D copy constructor" );
       }
     }
-
+    // size_all with irregular range
+    {
+      const IndexRange<2> range(Coordinate2D<int>(-1,1),Coordinate2D<int>(1,2));
+      Array<2,float> test2(range);
+      check(test2.is_regular(), "test is_regular() with regular");
+      check_if_equal(test2.size(), size_t(3), "test size() with non-zero offset");
+      check_if_equal(test2.size_all(), size_t(6), "test size_all() with non-zero offset");  
+      test2[0].resize(-1,2);
+      check(!test2.is_regular(), "test is_regular() with irregular");
+      check_if_equal(test2.size(), size_t(3), "test size() with irregular range");
+      check_if_equal(test2.size_all(), size_t(6+2), "test size_all() with irregular range");
+    }
     // full iterator
     {
       IndexRange<2> range(Coordinate2D<int>(0,0),Coordinate2D<int>(2,2));
@@ -396,6 +414,8 @@ ArrayTests::run_tests()
 
     IndexRange<3> range(Coordinate3D<int>(0,-1,1),Coordinate3D<int>(3,3,3));
     Array<3,float> test3(range);
+    check_if_equal(test3.size(), size_t(4), "test size()");
+    check_if_equal(test3.size_all(), size_t(60), "test size_all() with non-zero offset");
     // KT 06/04/98 removed operator()
 #if 0
     test3(1,2,1) = (float)6.6;
