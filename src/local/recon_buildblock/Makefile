@@ -14,6 +14,8 @@ clean:
 SOURCES = \
 	ProjMatrixByBinUsingSolidAngle.cxx \
 	PostsmoothingForwardProjectorByBin.cxx \
+	PresmoothingForwardProjectorByBin.cxx \
+	PostsmoothingBackProjectorByBin.cxx \
 	DataSymmetriesForDensels.cxx \
 	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
 	ProjMatrixByDensel.cxx \
