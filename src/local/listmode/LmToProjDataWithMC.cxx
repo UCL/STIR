@@ -1,12 +1,11 @@
 
 #include "local/stir/listmode/LmToProjDataWithMC.h"
-#include "stir/recon_buildblock/TrivialBinNormalisation.h"
-#include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "local/stir/listmode/lm.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Succeeded.h"
 #include <time.h>
+#include "stir/is_null_ptr.h"
 
 
 
@@ -21,7 +20,6 @@ LmToProjDataWithMC::set_defaults()
   norm_filename = "";
   mt_filename ="";
   attenuation_filename ="";
-  normalisation_ptr = new TrivialBinNormalisation;
   ro3d_ptr = 0;
   transmission_duration = 300; // default value 5 min.
 }
@@ -34,7 +32,6 @@ LmToProjDataWithMC::initialise_keymap()
   parser.add_key("mt_filename", &mt_filename);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_key("attenuation_filename", &attenuation_filename);
-  parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("transmission_duration", &transmission_duration);
   parser.add_stop_key("END");
 }
@@ -58,41 +55,17 @@ post_processing()
 {
   if (LmToProjData::post_processing())
     return true;
-
-  if (is_null_ptr(normalisation_ptr))
-  {
-    warning("Invalid normalisation object\n");
-    return true;
-  }
-  
+   
   if (is_null_ptr(ro3d_ptr))
   {
     warning("Invalid Rigid Object 3D Motion object\n");
     return true;
   }
 
-  shared_ptr<Scanner> scanner_ptr = 
-    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
+  //shared_ptr<Scanner> scanner_ptr = 
+    //new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
   
-  proj_data_info_cyl_uncompressed_ptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
-                  1, scanner_ptr->get_num_rings()-1,
-                  scanner_ptr->get_num_detectors_per_ring()/2,
-                  scanner_ptr->get_default_num_arccorrected_bins(), 
-                  false));
-     // set up normalisation object
-  if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
-      != Succeeded::yes)
-    error("correct_projdata: set-up of normalisation failed\n");
- 
-  //shared_ptr<Polaris_MT_File> mt_file_ptr = 
-    //  new Polaris_MT_File(mt_filename);
-  //mt_file_ptr->read_mt_file(mt_filename);
-  
-//  RigidObject3DMotionFromPolaris ro3d_polaris(mt_filename,mt_file_ptr);
-
-  // compute average motion in respect to the transmission scan
+   // compute average motion in respect to the transmission scan
   float att_start_time, att_end_time;
   if (attenuation_filename !="")
   {
