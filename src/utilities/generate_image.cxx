@@ -51,10 +51,10 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/Shape/Shape3D.h"
+#include "stir/Shape/Shape3D.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -64,7 +64,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <iostream>
 
-USING_NAMESPACE_STIR
+START_NAMESPACE_STIR
 
 
 class GenerateImage : public KeyParser
@@ -271,11 +271,11 @@ compute()
   
 }
 
-
+END_NAMESPACE_STIR
 
 /************************ main ************************/
 
-
+USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   
