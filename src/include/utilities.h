@@ -5,7 +5,7 @@
 #define  __UTILITIES_H__
 /*!
   \file 
- 
+  \ingroup buildblock
   \brief This file declares various utility functions.
 
   \author Kris Thielemans
@@ -15,18 +15,18 @@
 
   \version $Revision$
 */
-#include "sinodata.h"
-#include "imagedata.h"
+#include "Tomography_common.h"
+
+#include <iostream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::ios;
+using std::iostream;
+using std::istream;
+using std::streamsize;
+#endif
 
 START_NAMESPACE_TOMO
-
-//! ask_image_details asks for filename etc, and returns an image
-PETImageOfVolume ask_image_details();
-
-
-//! ask_PSOV_details asks for filename etc. and returns a PSOV to play with.
-PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
-				     const bool on_disk = true);
 
 
 /*!
@@ -35,6 +35,7 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
  If the file_size parameter is zero, the stream is read till EOF
  and 'file_size' is set to the number of bytes in the file. 
  Otherwise 'file_size' bytes are read.
+
  The data is read from the current position in the stream.
  At the end of this function, the 'input' stream will be positioned 
  at original_position + file_size.
@@ -56,14 +57,16 @@ streamsize find_remaining_size (istream& input);
 //! A function to ask a number from the user 
 template <class CHARP, class NUMBER>
 inline NUMBER 
-ask_num (CHARP str,
+ask_num (CHARP prompt,
 	 NUMBER minimum_value, 
 	 NUMBER maximum_value, 
 	 NUMBER default_value);
 
-//! A function to ask a yes/no question from the user
-/*! \param default_value ==true means the default answer is Yes.
- */
+/*! \brief A function to ask a yes/no question from the user
+
+  \param prompt a text string 
+  \param default_value==true means the default is Yes.
+  */
 template <class CHARP>
 inline bool 
 ask (CHARP str, bool default_value);
@@ -72,13 +75,10 @@ ask (CHARP str, bool default_value);
  functions for opening binary streams
 *****************************************************/
 
-#include <fstream>
-
 //! opens a stream for reading. Calls error() when it does not succeed.
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
 				  const char * const name);
-
 //! opens a stream for writing. Calls error() when it does not succeed.
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
@@ -220,7 +220,6 @@ ask_filename_and_open(FSTREAM& s,
 { 
   ask_filename_and_open(s, prompt, default_extension, mode, true);
 }
-
 
 /**********************************************************************
  C-string manipulation function
