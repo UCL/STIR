@@ -26,10 +26,15 @@
 #include "stir/Viewgram.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
+#include "stir/utilities.h" // TODO remove (temporary for test GEAdvance)
 // for read_from_file
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
+#ifndef STIR_DEVEL
 #include "stir/ProjDataGEAdvance.h"
+#else
+#include "stir/IO/ProjDataVOLPET.h"
+#endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/is_null_ptr.h"
@@ -59,10 +64,9 @@ START_NAMESPACE_STIR
 
    Currently supported:
    <ul>
-   <li> GE Advance (via class ProjDataGEAdvance)
+   <li> GE VOLPET data (via class ProjDataVOLPET)
    <li> Interfile (using  read_interfile_PDFS())
    <li> ECAT 7 3D sinograms and attenuation files 
-   (by writing an Interfile header first)
    </ul>
 
    Developer's note: ideally the return value would be an auto_ptr.
@@ -74,7 +78,7 @@ read_from_file(const string& filename,
 {
   fstream * input = new fstream(filename.c_str(), openmode | ios::binary);
   if (! *input)
-    error("ProjData::read_from_file: error opening file %s\n", filename.c_str());
+    error("ProjData::read_from_file: error opening file %s", filename.c_str());
 
   const int max_length=300;
   char signature[max_length];
@@ -84,35 +88,50 @@ read_from_file(const string& filename,
   // GE Advance
   if (strncmp(signature, "2D3D", 4) == 0)
   {
+//    if (ask("Read with old code (Y) or new (N)?",false))
+#ifndef STIR_DEVEL 
+      {
 #ifndef NDEBUG
-    warning("ProjData::read_from_file trying to read %s as GEAdvance file\n", 
-	    filename.c_str());
+	warning("ProjData::read_from_file trying to read %s as GE Advance file", 
+		filename.c_str());
 #endif
-    return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
+	return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
+      }
+      //else
+#else // use VOLPET
+      {
+#ifndef NDEBUG
+	warning("ProjData::read_from_file trying to read %s as GE VOLPET file", 
+		filename.c_str());
+#endif
+	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
+	return shared_ptr<ProjData>( new ProjDataVOLPET(filename) );
+      }
   }
+#endif // STIR_DEVEL to differentiate between Advance and VOLPET code
 
-  delete input;
+  delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
 
 #ifdef HAVE_LLN_MATRIX
   // ECAT 7
   if (strncmp(signature, "MATRIX", 6) == 0)
   {
 #ifndef NDEBUG
-    warning("ProjData::read_from_file trying to read %s as ECAT7\n", filename.c_str());
+    warning("ProjData::read_from_file trying to read %s as ECAT7", filename.c_str());
 #endif
     USING_NAMESPACE_ECAT;
     USING_NAMESPACE_ECAT7;
 
     if (is_ECAT7_emission_file(filename) || is_ECAT7_attenuation_file(filename))
     {
-      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
+      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s",
 	      filename.c_str());
       return ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/1,1,0,0);
     }
     else
     {
       if (is_ECAT7_file(filename))
-	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type\n", filename.c_str());
+	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type", filename.c_str());
     }
   }
 #endif // HAVE_LLN_MATRIX
@@ -121,7 +140,7 @@ read_from_file(const string& filename,
   if (is_interfile_signature(signature))
   {
 #ifndef NDEBUG
-    warning("ProjData::read_from_file trying to read %s as Interfile\n", filename.c_str());
+    warning("ProjData::read_from_file trying to read %s as Interfile", filename.c_str());
 #endif
     ProjData * ptr =
       read_interfile_PDFS(filename, openmode);
@@ -131,7 +150,7 @@ read_from_file(const string& filename,
 
 
   error("\nProjData::read_from_file could not read projection data %s.\n"
-	"Unsupported file format? Aborting.\n",
+	"Unsupported file format? Aborting.",
 	  filename.c_str());
   return 0;
 }
