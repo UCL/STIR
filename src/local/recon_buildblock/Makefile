@@ -24,9 +24,12 @@ SOURCES = \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
 	QuadraticPrior.cxx \
-	BinNormalisationUsingProfile.cxx \
+	BinNormalisationUsingProfile.cxx 
+ifeq ($(HAVE_LLN_MATRIX),1)
+SOURCES += \
 	BinNormalisationFromECAT7.cxx
-
+endif
+  
 #	oldForwardProjectorByBinUsingRayTracing.cxx \
 #	oldForwardProjectorByBinUsingRayTracing_Siddon.cxx \
 #	oldBackProjectorByBinUsingInterpolation.cxx \
