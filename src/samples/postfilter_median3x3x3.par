@@ -1,0 +1,8 @@
+PostFilteringParameters :=
+  Postfilter type :=Median   
+  Median Filter Parameters :=
+  mask radius x := 1   
+  mask radius y := 1
+  mask radius z := 1
+  End Median Filter Parameters:=
+End PostFiltering Parameters:=
