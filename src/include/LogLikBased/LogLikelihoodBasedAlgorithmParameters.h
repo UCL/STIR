@@ -8,7 +8,7 @@
 
 /*!
   \file 
-  \ingroup recon_buildblock
+  \ingroup LogLikBased_buildblock
  
   \brief declares the LogLikelihoodBasedAlgorithmParameters class
 
@@ -32,7 +32,7 @@ START_NAMESPACE_TOMO
 /*! 
 
  \brief base parameter class for algorithms associated with the emission tomography loglikelihood function
-
+  \ingroup LogLikBased_buildblock
  */
 
 
