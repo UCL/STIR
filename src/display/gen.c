@@ -1,6 +1,21 @@
 /*
  $Id$: $Date$
 */
+/*!
+\file 
+  
+ \brief  Utility functions used by the screen* files (internal use only)
+  
+ \author Kris Thielemans
+ \author PARAPET project
+ 
+ \date    $Date$
+  
+ \version $Revision$
+
+ \see gen.h 
+ \internal
+*/
 #include "gen.h"
 
 #include <stdarg.h>
@@ -44,11 +59,7 @@ int asknr (char str[],int minv,int maxv,int def)
     puts("\nOut of bounds");
   }
 }
-size_t fread_check(str,buffer,size,infile)
-char str[];
-void * buffer;
-size_t size;
-FILE *infile;
+size_t fread_check(char *str, void *buffer, size_t size, FILE *infile)
 { size_t ret;
   char tmp[200];
 
@@ -62,11 +73,7 @@ FILE *infile;
   return(ret);
 }
 
-size_t fwrite_check(str,buffer,size,outfile)
-char str[];
-void * buffer;
-size_t size;
-FILE *outfile;
+size_t fwrite_check(char *str, void *buffer, size_t size, FILE *outfile)
 { size_t ret;
   char tmp[200];
 
@@ -81,11 +88,7 @@ FILE *outfile;
   return(ret);
 }
 
-void fseek_check(str,file, offset,pos)
-char *str;
-FILE *file;
-long offset;
-int pos;
+void fseek_check(char *str, FILE *file, long int offset, int pos)
 { if (fseek(file,offset,pos))
     error("%s: error seeking in file to position %lu",str,offset);
 }
