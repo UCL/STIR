@@ -28,7 +28,8 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	shift_projdata_along_axis.cxx \
 	remove_sinograms.cxx \
 	generate_image.cxx \
-	rigid_object_transform_projdata.cxx
+	rigid_object_transform_projdata.cxx \
+	rigid_object_transform_image.cxx
 
 #	make_cylinder.cxx 
 
