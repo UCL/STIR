@@ -148,16 +148,38 @@ initialise_keymap()
   parser.add_key("Euler angle alpha (in degrees)", &alpha_in_degrees);
   parser.add_key("Euler angle beta (in degrees)", &beta_in_degrees);
   parser.add_key("Euler angle gamma (in degrees)", &gamma_in_degrees);
+  parser.add_key("direction-x (in mm)", &dir_x_vector);
+  parser.add_key("direction-y (in mm)", &dir_y_vector);
+  parser.add_key("direction-z (in mm)", &dir_z_vector);
 }
 
 bool
 Shape3DWithOrientation::
 post_processing()
 {
-  set_directions_from_Euler_angles(                                 
-                                 static_cast<float>(alpha_in_degrees * _PI/180.),
-                                 static_cast<float>(beta_in_degrees * _PI/180.),
-                                 static_cast<float>(gamma_in_degrees * _PI/180.));
+  if (dir_x_vector.size()==0 && dir_y_vector.size()==0 && dir_z_vector.size()==0)
+    set_directions_from_Euler_angles(                                 
+				     static_cast<float>(alpha_in_degrees * _PI/180.),
+				     static_cast<float>(beta_in_degrees * _PI/180.),
+				     static_cast<float>(gamma_in_degrees * _PI/180.));
+  else if (dir_x_vector.size()==3 && dir_y_vector.size()==3 && dir_z_vector.size()==3)
+    {
+      
+    }
+  else
+    {
+      warning("Either specify Euler angles or the directions (which each be a list of 3 numbers.\n");
+      return false;
+      dir_x = CartesianCoordinate3D<float>(static_cast<float>(dir_x_vector[0]),
+					   static_cast<float>(dir_x_vector[1]),
+					   static_cast<float>(dir_x_vector[2]));
+      dir_y = CartesianCoordinate3D<float>(static_cast<float>(dir_y_vector[0]),
+					   static_cast<float>(dir_y_vector[1]),
+					   static_cast<float>(dir_y_vector[2]));
+      dir_z = CartesianCoordinate3D<float>(static_cast<float>(dir_z_vector[0]),
+					   static_cast<float>(dir_z_vector[1]),
+					   static_cast<float>(dir_z_vector[2]));
+    }
   return Shape3D::post_processing();
 }
 

@@ -7,13 +7,15 @@
 
   \brief Declaration of class Shape3DWithOrientation
 
+  \todo document parsing parameters
+
   \author Sanida Mustafovic
   \author Kris Thielemans
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -21,7 +23,11 @@
 #define __stir_Shape_Shape3DWithOrientation__H__
 
 #include "local/stir/Shape/Shape3D.h"
+#include <vector>
 
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+#endif
 
 /*!
   \ingroup Shape
@@ -81,6 +87,11 @@ private:
   float alpha_in_degrees;
   float beta_in_degrees;
   float gamma_in_degrees;
+
+  
+  vector<double> dir_x_vector;
+  vector<double> dir_y_vector;
+  vector<double> dir_z_vector;
 };
 
 
