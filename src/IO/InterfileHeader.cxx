@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -9,12 +9,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date   $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
 
 #include "InterfileHeader.h"
+#include "ProjDataInfoCylindricalArcCorr.h"
+#include "ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -277,7 +279,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
     &max_ring_difference);
   
   
-  // KT 26/11/98 new
+
   // first set to some crazy values
   num_rings = -1;
   add_key("number of rings",
@@ -302,6 +304,11 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   view_offset = 0;
   add_key("view offset (degrees)",
     KeyArgument::DOUBLE, &view_offset);
+
+  // KT 05/07/2001 new
+  add_key("applied corrections",
+    KeyArgument::LIST_OF_ASCII, &applied_corrections);
+
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()
@@ -599,7 +606,33 @@ bool InterfilePDFSHeader::post_processing()
     return true;
   }
   
-  
+  // check for arc-correction
+  if (applied_corrections.size() == 0)
+  {
+    warning("\nParsing Interfile header for projection data: \n"
+            "\t'applied corrections' keyword not found. Assuming arc-corrected data\n");
+    is_arccorrected = true;
+  }
+  else
+  {
+    is_arccorrected = false;
+    for (
+#ifndef TOMO_NO_NAMESPACES
+      std::
+#endif
+      vector<string>::const_iterator iter = applied_corrections.begin();
+         iter != applied_corrections.end();
+         ++iter)
+    {
+      const string correction = standardise_keyword(*iter);
+      if(correction == "arc correction" || correction == "arc corrected")
+      {
+        is_arccorrected = true;
+        break;
+      }
+    }
+    
+  }
  
   VectorWithOffset<int> sorted_min_ring_diff;
   VectorWithOffset<int> sorted_max_ring_diff;
@@ -609,7 +642,7 @@ bool InterfilePDFSHeader::post_processing()
     sorted_min_ring_diff,sorted_max_ring_diff,
     num_rings_per_segment,
     min_ring_difference, max_ring_difference);
-  
+#if 0  
   cerr << "PDFS data read inferred header :\n";
   cerr << "Segment sequence :";
   for (unsigned int i=0; i<segment_sequence.size(); i++)
@@ -634,6 +667,7 @@ bool InterfilePDFSHeader::post_processing()
 #endif
        (num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
     << endl;
+#endif
   
   // handle scanner
 
@@ -768,16 +802,24 @@ bool InterfilePDFSHeader::post_processing()
   
   
    
-  data_info_ptr = new ProjDataInfoCylindricalArcCorr (
-    scanner_ptr_from_file,
-    float(bin_size_in_cm*10.),
-    sorted_num_rings_per_segment,
-    sorted_min_ring_diff,
-    sorted_max_ring_diff,
-    num_views,num_bins);
-
   
-  
+  if (is_arccorrected)
+    data_info_ptr = 
+    new ProjDataInfoCylindricalArcCorr (
+                                        scanner_ptr_from_file,
+                                        float(bin_size_in_cm*10.),
+                                        sorted_num_rings_per_segment,
+                                        sorted_min_ring_diff,
+                                        sorted_max_ring_diff,
+                                        num_views,num_bins);
+  else
+    data_info_ptr = 
+    new ProjDataInfoCylindricalNoArcCorr (
+                                        scanner_ptr_from_file,
+                                        sorted_num_rings_per_segment,
+                                        sorted_min_ring_diff,
+                                        sorted_max_ring_diff,
+                                        num_views,num_bins);
   
   cerr << data_info_ptr->parameter_info() << endl;
   
