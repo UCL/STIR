@@ -1,24 +1,32 @@
 #
 # $Id$
+#
 
 include ../../Makefile_common
 
-all: ${DEST}sensitivity
+SOURCES = sensitivity.cxx
+
+EXES = \
+	$(DEST)sensitivity
+
+all: $(EXES)
 
 clean:
 	$(RM) $(DEST)*
 
+install: $(EXES)
+        cp $(EXES) $(INSTALL_DIR)
+
 include ../../Makefile_bblibs
 
-SOURCES = sensitivity.cxx
 
 ${DEST}sensitivity: ${DEST}sensitivity.o \
 	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
 	$(CXX) $(CFLAGS)-o $@ $< \
 	${LIB_LOGLIK_BUILDINGBLOCK} \
+	$(LIB_RECON_BUILDINGBLOCK) \
 	$(LIB_BUILDINGBLOCK) \
-  	$(LIB_RECON_BUILDINGBLOCK) \
-	 $(LINK_OPT) $(SYS_LIBS)
+	$(LINK_OPT) $(SYS_LIBS)
 
 
 include $(SOURCES:%.cxx=$(DEST)%.d)
