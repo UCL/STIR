@@ -28,6 +28,7 @@ SOURCES = \
 	ModifiedInverseAverigingImageFilter.cxx \
 	SeparableGaussianImageFilter.cxx \
 	SeparableGaussianArrayFilter.cxx \
+	NonseparableSpatiallyVaryingFilters.cxx \
 	local_helping_functions.cxx
 
 
