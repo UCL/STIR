@@ -19,56 +19,130 @@
 
  */
 
+/*! \namespace stir::ecat
+  \brief Namespace for the ECAT IO part of the STIR library (and some/most of its applications)
 
-/*! \namespace stir::ecat7
+  This namespace contains all routines that are common to the ECAT6 and 
+  ECAT7 format.
+*/
+
+/*! \namespace stir::ecat::ecat7
   \brief Namespace for the ECAT7 IO part of the STIR library (and some/most of its applications)
+
+  This namespace is only non-empty when the HAVE_LLN_MATRIX preprocessor
+  symbol is defined during compilation. 
   */
 
-/*! \namespace stir::ecat6
+/*! \def HAVE_LLN_MATRIX
+    \brief Preprocessor symbol that needs to be defined to enable ECAT7 support.
+  You need to have the ecat matrix library developed originally at the 
+  UCL of Louvain la Neuve. If the STIR Makefiles can find this 
+  library, HAVE_LLN_MATRIX will be automatically defined for you.
+  See the User's guide for instructions.
+*/
+/*! \namespace stir::ecat::ecat6
   \brief Namespace for the ECAT6 IO part of the STIR library (and some/most of its applications)
   */
 /*!
+\defgroup STIR STIR
+All of STIR.
+*/
+
+/*!
+\defgroup STIR_library STIR library
+\ingroup STIR
+The whole collection of libraries in STIR.
+*/
+
+/*!
 \defgroup buildblock Basic building blocks
+\ingroup STIR_library
 Library with things that are not not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
 */
 /*!
+\defgroup ImageProcessor Image processors
+\ingroup buildblock
+A hierarchy of classes for performing image processing. Mechanisms
+for parsing are provided such that different image processors can
+be selected at run-time.
+
+\todo Define more submodules in the doxygen documentation such that this
+looks a lot neater.
+*/
+
+
+/*!
 \defgroup IO Input/Output Library
+\ingroup STIR_library
 Library with classes and functions to read and write images and projection 
 from/to file.
 */
 /*!
-\defgroup ECAT Everything related to the ECAT6 and ECAT7 file format.
+\defgroup ECAT ECAT6 and ECAT7 support in the IO library
+\ingroup IO
 */
 /*!
 \defgroup recon_buildblock Reconstruction building blocks
+\ingroup STIR_library
 Library with 'general' reconstruction building blocks
 */
 /*!
 \defgroup LogLikBased_buildblock Reconstruction building blocks for loglikelihood based algorithms
+\ingroup recon_buildblock
 Library with additional building blocks used for algorithms which
 are similar to EM.
 */
+
+
+/*!
+\defgroup reconstructors Reconstruction classes
+\ingroup STIR_library
+*/
+/*!
+\defgroup OSMAPOSL OSMAPOSL
+\ingroup reconstructors
+Implementation of the OSMAP One-Step-Late reconstruction algorithm
+*/
+
 /*!
 \defgroup display Display functions
+\ingroup STIR_library
 Library for displaying of images
 */
 /*!
 \defgroup para Parallel library 
+\ingroup STIR_library
+*/
+
+/*!
+\defgroup alltest Test code for STIR
+\ingroup STIR
 */
 /*!
 \defgroup test Tests of the basic building blocks
+\ingroup alltest
 */
 /*!
 \defgroup recontest Tests of reconstruction building blocks
+\ingroup alltest
+*/
+
+
+
+
+/*!
+\defgroup main_programs Executables
+\ingroup STIR
+Almost all programs that can be executed by the user.
 */
 /*!
-\defgroup utilities Utility programmes
+\defgroup utilities Utility programs
+\ingroup main_programs
 */
 /*!
-\defgroup reconstructors Reconstruction classes
-*/
-/*!
-\defgroup OSMAPOSL Implementation of the OSMAP One-Step-Late reconstruction algorithm
+\defgroup ECAT_utilities ECAT6 and ECAT7 utilities
+\ingroup utilities
+Includes conversion programs etc.
 */
