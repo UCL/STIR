@@ -1,15 +1,15 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
   \file
   \ingroup local_buildblock
 
-  \brief Declaration of class SinglesRateFromECAT7
+  \brief Declaration of class SinglesRatesFromECAT7
 
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$ 
 */
 
 /*
@@ -30,6 +30,7 @@
 #include "stir/IO/stir_ecat7.h"
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
 class SinglesRatesFromECAT7 : 
@@ -64,6 +65,7 @@ private:
 };
 
 END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 
