@@ -113,9 +113,9 @@ set_up(
        ++segment_num)
   {
      Bin bin (segment_num,0,0,0);
-     if (proj_data_info_ptr->get_sampling_in_t(bin) > voxel_size.z())
+     if (fabs(proj_data_info_ptr->get_sampling_in_m(bin) / voxel_size.z() - 1)> .001)
        error("ProjMatrixByDenselUsingRayTracing used for pixel size (in z) which is "
-       "too small (you're probably not using axially compressed data). I can't handle "
+       "not equal to the axial sampling (you're probably not using axially compressed data). I can't handle "
        "this yet. Sorry.\n");
   }
 
