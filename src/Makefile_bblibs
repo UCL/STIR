@@ -1,5 +1,5 @@
 #
-# $Id$: $Date$
+# $Id$: 
 #
 
 
@@ -12,15 +12,19 @@ LIB_DISPLAY= \
 LIB_LOGLIK_BUILDINGBLOCK= \
    ${WORKSPACE}/iterative/LogLik_buildblock/${DEST}libLogLik_buildblock.a
 
-BB_LIBS = $(LIB_DISPLAY)  $(LIB_RECON_BUILDINGBLOCK) $(LIB_BUILDINGBLOCK)
+BUILDBLOCK_REGISTRIES= \
+    ${WORKSPACE}/buildblock/$(DEST)buildblock_registries.o
+
+RECON_BUILDBLOCK_REGISTRIES= \
+   ${WORKSPACE}/recon_buildblock/$(DEST)recon_buildblock_registries.o
 
 $(LIB_DISPLAY) : FORCE 
 	cd $(WORKSPACE)/display; mkdir -p $(DEST); $(MAKE) all;
 
-$(LIB_BUILDINGBLOCK) : FORCE
+$(LIB_BUILDINGBLOCK) $(BUILDBLOCK_REGISTRIES): FORCE
 	cd $(WORKSPACE)/buildblock; mkdir -p $(DEST); $(MAKE) all;
 
-$(LIB_RECON_BUILDINGBLOCK) : FORCE
+$(LIB_RECON_BUILDINGBLOCK) $(RECON_BUILDBLOCK_REGISTRIES) : FORCE
 	cd $(WORKSPACE)/recon_buildblock; mkdir -p $(DEST); $(MAKE) all;
 
 ${LIB_LOGLIK_BUILDINGBLOCK} : FORCE
@@ -29,11 +33,21 @@ ${LIB_LOGLIK_BUILDINGBLOCK} : FORCE
 
 FORCE:
 
+.PHONY: FORCE
 
-# default rule for making an executable
-
-${DEST}%: ${DEST}%.o $(BB_LIBS)
-	$(CXX) $(CFLAGS)  -o $@ $< $(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
+-include $(WORKSPACE)/local/Makefile_bblibs
 
 
 
+BB_LIBS =$(LOCAL_BB_LIBS) $(LIB_DISPLAY)  $(LIB_RECON_BUILDINGBLOCK) $(LIB_BUILDINGBLOCK)
+
+BB_REGISTRIES=$(LOCAL_BB_REGISTRIES) $(BUILDBLOCK_REGISTRIES) \
+	 $(RECON_BUILDBLOCK_REGISTRIES)
+
+# Default rule for making executables
+# Note: this rule has to occur AFTER the definition of the BB_LIBS
+# et al macros otherwise the value of the macros is empty when 
+# checking the dependencies (even when they are alright when
+# executing the corresponding command)
+${DEST}%: ${DEST}%.o $(BB_LIBS) $(BB_REGISTRIES)
+	$(CXX) $(CFLAGS)  -o $@ $< $(BB_REGISTRIES) $(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
