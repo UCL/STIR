@@ -37,6 +37,10 @@ class ProjDataInfo;
   \ingroup projdata
   \param in_proj_data_info input projection data information.
   \param num_segments_to_combine how many segments will be combined into 1 output segment.
+  \param  num_views_to_combine how many views will be combined in the output 
+    (i.e. mashing)
+  \param num_tangential_poss_to_trim can be used to throw
+    away some bins. Half of the bins will be thrown away at each 'side' of a sinogram (see below).
   \param max_in_segment_num_to_process rebinned in_proj_data only upto this segment.
   Default value -1 means 'do all segments'.
 
@@ -46,14 +50,22 @@ class ProjDataInfo;
   Line of Response and moves data to the axial position in segment 0 such 
   that z-resolution on the axis of the scanner is preserved.
 
-The STIR implementation of SSRB is a generalisation that applies the same
- idea while still allowing preserving some of the obliqueness. For instance, 
-for a dataset with 9 segments, SSRB can produce a new dataset with only 3 
-segments. This essentially increases the axial compression (or span in CTI 
-terminology), see the STIR Glossary on axial compression. In addition, SSRB 
-can introduce extra mashing (see the STIR Glossary) of the data, i.e. add 
-views together.
+  The STIR implementation of SSRB is a generalisation that applies the same
+  idea while still allowing preserving some of the obliqueness. For instance, 
+  for a dataset with 9 segments, SSRB can produce a new dataset with only 3 
+  segments. This essentially increases the axial compression (or span in CTI 
+  terminology), see the STIR Glossary on axial compression. In addition, SSRB 
+  can introduce extra mashing (see the STIR Glossary) of the data, i.e. add 
+  views together.
 
+  Here is how to determine which bins are discarded when trimming is used.
+  For a certain num_tangential_poss, the range is from 
+\verbatim 
+   -(num_tangential_poss/2) to -(num_tangential_poss/2) + num_tangential_poss - 1.
+\endverbatim
+  The new num_tangential_poss is simply set to old_num_tangential_poss - 
+  num_tang_poss_to_trim. Note that because of this, if num_tang_poss_to_trim is
+  negative, more (zero) bins will be added.
 
   \warning in_proj_data_info has to be (at least) of type ProjDataInfoCylindrical
   \warning This function can only handle in_proj_data_info where all segments have 
@@ -65,6 +77,7 @@ ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine = 1,
+     const int num_tang_poss_to_trim = 0,
      const int max_in_segment_num_to_process=-1
      );
 
@@ -82,6 +95,8 @@ SSRB(const ProjDataInfo& in_proj_data_info,
 
   \see SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
+     const int num_views_to_combine,
+     const int num_tang_poss_to_trim,
      const int max_in_segment_num_to_process
      ) for restrictions
   */
@@ -90,6 +105,7 @@ SSRB(const string& output_filename,
      const ProjData& in_projdata,
      const int num_segments_to_combine,
      const int num_views_to_combine = 1,
+     const int num_tang_poss_to_trim = 0,
      const bool do_normalisation = true,
      const int max_segment_num_to_process = -1
      );

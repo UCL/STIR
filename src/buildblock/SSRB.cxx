@@ -40,12 +40,17 @@ ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine,
+     const int num_tang_poss_to_trim,
      const int max_in_segment_num_to_process
      )
 {
   if (num_segments_to_combine%2==0)
     error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
 	  num_segments_to_combine);
+  if (in_proj_data_info.get_num_tangential_poss() <=
+      num_tang_poss_to_trim)
+    error("SSRB: too large number of tangential positions to trim (%d)\n",
+	  num_tang_poss_to_trim);
   const ProjDataInfoCylindrical * const in_proj_data_info_ptr =
     dynamic_cast<ProjDataInfoCylindrical const * >
     (&in_proj_data_info);
@@ -58,9 +63,14 @@ SSRB(const ProjDataInfo& in_proj_data_info,
     dynamic_cast<ProjDataInfoCylindrical * >
     (in_proj_data_info_ptr->clone());
 
-  out_proj_data_info_ptr->set_num_views(
-					in_proj_data_info.get_num_views()/
-					num_views_to_combine);
+  out_proj_data_info_ptr->
+    set_num_views(
+		  in_proj_data_info.get_num_views()/
+		  num_views_to_combine);
+  out_proj_data_info_ptr->
+    set_num_tangential_poss(in_proj_data_info.get_num_tangential_poss() -
+			    num_tang_poss_to_trim);
+
   // Find new maximum segment_num
   // To understand this formula, check how the out_segment_num is related to 
   // the in_segment_num below
@@ -137,6 +147,7 @@ SSRB(const string& output_filename,
      const ProjData& in_proj_data,
      const int num_segments_to_combine,
      const int num_views_to_combine,
+     const int num_tang_poss_to_trim,
      const bool do_norm,
      const int max_in_segment_num_to_process
      )
@@ -148,20 +159,11 @@ SSRB(const string& output_filename,
     SSRB(*in_proj_data.get_proj_data_info_ptr(),
          num_segments_to_combine,
 	 num_views_to_combine,
+	 num_tang_poss_to_trim,
          max_in_segment_num_to_process
      );
-#if 0
-  shared_ptr<iostream> sino_stream = 
-    new fstream (output_filename.c_str(), ios::out|ios::binary);
-  if (!sino_stream->good())
-      error("SSRB: error opening output file %s\n",
-	    output_filename.c_str());
-
-  ProjDataFromStream out_proj_data(out_proj_data_info_ptr, sino_stream); 
-  write_basic_interfile_PDFS_header(output_filename, out_proj_data);
-#else
   ProjDataInterfile out_proj_data(out_proj_data_info_ptr, output_filename, ios::out); 
-#endif
+
   SSRB(out_proj_data, in_proj_data, do_norm);
 }
 
@@ -190,6 +192,7 @@ SSRB(ProjData& out_proj_data,
 
   const int num_views_to_combine =
     in_proj_data.get_num_views()/ out_proj_data.get_num_views();
+
 
   if (in_proj_data.get_min_view_num()!=0 || out_proj_data.get_min_view_num()!=0)
     error ("SSRB can only mash views when min_view_num==0\n");
@@ -270,19 +273,22 @@ SSRB(ProjData& out_proj_data,
 		  if (fabs(out_m - in_m) < 1E-4)
 		    {
 		      ++num_in_ax_pos;
-		      if (num_views_to_combine==1)
-		      {
-			out_sino += in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
-		      }
-		      else
-			{
-			  in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
-			  for (int in_view_num=in_proj_data.get_min_view_num();
-			       in_view_num <= in_proj_data.get_max_view_num();
-			       ++in_view_num)
-			    out_sino[in_view_num/num_views_to_combine] += in_sino[in_view_num];
-			}
-		      break;
+		      
+		      in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
+		      for (int in_view_num=in_proj_data.get_min_view_num();
+			   in_view_num <= in_proj_data.get_max_view_num();
+			   ++in_view_num)
+			for (int tangential_pos_num=
+			       max(in_proj_data.get_min_tangential_pos_num(),
+				   out_proj_data.get_min_tangential_pos_num());
+			     tangential_pos_num <= 
+			       min(in_proj_data.get_max_tangential_pos_num(),
+				   out_proj_data.get_max_tangential_pos_num());
+			     ++tangential_pos_num)
+			  out_sino[in_view_num/num_views_to_combine][tangential_pos_num] = 
+			      in_sino[in_view_num][tangential_pos_num];
+		  
+		      break; // out of loop over ax_pos as we found where to put it
 		    }
 		}
 	    if (do_norm && num_in_ax_pos!=0)
