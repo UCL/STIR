@@ -20,7 +20,7 @@
 
 map_element::map_element()
 {
-  type=NONE;
+  type=KeyArgument::NONE;
   p_object_member=NULL;
   p_object_variable=NULL;
   p_object_list_of_values=NULL;
@@ -30,7 +30,7 @@ map_element::~map_element()
 {
 }
 
-map_element& map_element::operator()(argtype t, 
+map_element& map_element::operator()(KeyArgument::type t, 
 				     void (KeyParser::*pom)(),
 				     void* pov,
 				     const ASCIIlist_type *list_of_values)
@@ -122,41 +122,41 @@ void KeyParser::Init()
 
   // KT 09/10/98 replaced NULL arguments with the DoNothing function
   // as gcc cannot convert 0 to a 'pointer to member function'  
-  kmap["INTERFILE"]=			m(NONE,		&KeyParser::DoNothing);
+  kmap["INTERFILE"]=			m(KeyArgument::NONE,		&KeyParser::DoNothing);
   // KT 01/08/98 just set data_file_name variable now
-  kmap["name of data file"]=		m(ASCII,	&KeyParser::SetVariable, &data_file_name);
-  kmap["GENERAL DATA"]=			m(NONE,		&KeyParser::DoNothing);
-  kmap["GENERAL IMAGE DATA"]=		m(NONE,		&KeyParser::DoNothing);
-  kmap["type of data"]=			m(ASCIIlist,	&KeyParser::SetVariable,
+  kmap["name of data file"]=		m(KeyArgument::ASCII,	&KeyParser::SetVariable, &data_file_name);
+  kmap["GENERAL DATA"]=			m(KeyArgument::NONE,		&KeyParser::DoNothing);
+  kmap["GENERAL IMAGE DATA"]=		m(KeyArgument::NONE,		&KeyParser::DoNothing);
+  kmap["type of data"]=			m(KeyArgument::ASCIIlist,	&KeyParser::SetVariable,
     &type_of_data_index, 
     &type_of_data_values);
   
   // KT 08/10/98 removed space in keyword
-  kmap["imagedata byte order"]=	m(ASCIIlist,	&KeyParser::SetVariable,
+  kmap["imagedata byte order"]=		m(KeyArgument::ASCIIlist,	&KeyParser::SetVariable,
     &byte_order_index, 
     &byte_order_values);
-  kmap["PET STUDY (General)"]=		m(NONE,		&KeyParser::DoNothing);
-  kmap["PET data type"]=		m(ASCIIlist,	&KeyParser::SetVariable,
+  kmap["PET STUDY (General)"]=		m(KeyArgument::NONE,		&KeyParser::DoNothing);
+  kmap["PET data type"]=		m(KeyArgument::ASCIIlist,	&KeyParser::SetVariable,
     &PET_data_type_index, 
     &PET_data_type_values);
   
-  kmap["data format"]=			m(ASCII,	&KeyParser::DoNothing);
+  kmap["data format"]=			m(KeyArgument::ASCII,	&KeyParser::DoNothing);
   // KT 20/06/98 use ASCIIlist
-  kmap["number format"]=		m(ASCIIlist,	&KeyParser::SetVariable,
+  kmap["number format"]=		m(KeyArgument::ASCIIlist,	&KeyParser::SetVariable,
     &number_format_index,
     &number_format_values);
-  kmap["number of bytes per pixel"]=	m(INT,		&KeyParser::SetVariable,&bytes_per_pixel);
-  kmap["number of dimensions"]=		m(INT,	&KeyParser::ReadMatrixInfo,&num_dimensions);
-  kmap["matrix size"]=			m(LIST_OF_INTS,	&KeyParser::SetVariable,&matrix_size);
-  kmap["matrix axis label"]=		m(ASCII,	&KeyParser::SetVariable,&matrix_labels);
-  kmap["scaling factor (mm/pixel)"]=	m(DOUBLE,	&KeyParser::SetVariable,&pixel_sizes);
-  kmap["number of time frames"]=	m(INT,	&KeyParser::ReadFramesInfo,&num_time_frames);
-  kmap["PET STUDY (Emission data)"]=	m(NONE,		&KeyParser::DoNothing);
-  kmap["PET STUDY (Image data)"]=	m(NONE,		&KeyParser::DoNothing);
-  kmap["IMAGE DATA DESCRIPTION"]=	m(NONE,		&KeyParser::DoNothing);
-  kmap["image scaling factor"]=		m(DOUBLE,	&KeyParser::SetVariable,&image_scaling_factor);
-  kmap["data offset in bytes"]=		m(ULONG,	&KeyParser::SetVariable,&data_offset);
-  kmap["END OF INTERFILE"]=		m(NONE,		&KeyParser::SetEndStatus);
+  kmap["number of bytes per pixel"]=	m(KeyArgument::INT,		&KeyParser::SetVariable,&bytes_per_pixel);
+  kmap["number of dimensions"]=		m(KeyArgument::INT,	&KeyParser::ReadMatrixInfo,&num_dimensions);
+  kmap["matrix size"]=			m(KeyArgument::LIST_OF_INTS,	&KeyParser::SetVariable,&matrix_size);
+  kmap["matrix axis label"]=		m(KeyArgument::ASCII,	&KeyParser::SetVariable,&matrix_labels);
+  kmap["scaling factor (mm/pixel)"]=	m(KeyArgument::DOUBLE,	&KeyParser::SetVariable,&pixel_sizes);
+  kmap["number of time frames"]=	m(KeyArgument::INT,	&KeyParser::ReadFramesInfo,&num_time_frames);
+  kmap["PET STUDY (Emission data)"]=	m(KeyArgument::NONE,		&KeyParser::DoNothing);
+  kmap["PET STUDY (Image data)"]=	m(KeyArgument::NONE,		&KeyParser::DoNothing);
+  kmap["IMAGE DATA DESCRIPTION"]=	m(KeyArgument::NONE,		&KeyParser::DoNothing);
+  kmap["image scaling factor"]=		m(KeyArgument::DOUBLE,	&KeyParser::SetVariable,&image_scaling_factor);
+  kmap["data offset in bytes"]=		m(KeyArgument::ULONG,	&KeyParser::SetVariable,&data_offset);
+  kmap["END OF INTERFILE"]=		m(KeyArgument::NONE,		&KeyParser::SetEndStatus);
   
   
   
@@ -282,27 +282,27 @@ int KeyParser::ParseLine()
   {
     switch(current->type)	// depending on the par_type, gets the correct value from the line
     {				// and sets the right temporary variable
-    case NONE :
+    case KeyArgument::NONE :
       break;
-    case ASCII :
+    case KeyArgument::ASCII :
       // KT 28/07/98 new
-    case ASCIIlist :
+    case KeyArgument::ASCIIlist :
       line.get_param(par_ascii);
       break;
-    case INT :
+    case KeyArgument::INT :
       line.get_param(par_int);
       break;
-    case ULONG :
+    case KeyArgument::ULONG :
       line.get_param(par_ulong);
       break;
-    case DOUBLE :
+    case KeyArgument::DOUBLE :
       line.get_param(par_double);
       break;
-    case LIST_OF_INTS :
+    case KeyArgument::LIST_OF_INTS :
       par_intlist.clear();
       line.get_param(par_intlist);
       break;
-    case LIST_OF_ASCII :
+    case KeyArgument::LIST_OF_ASCII :
       par_asciilist.clear();
       line.get_param(par_asciilist);
       break;
@@ -363,46 +363,46 @@ void KeyParser::SetVariable()
       switch(current->type)
 	{
 	  // KT 01/08/98 NUMBER->INT
-	case INT :
+	case KeyArgument::INT :
 	  {
 	    int* p_int=(int*)current->p_object_variable;	// performs the required casting
 	    *p_int=par_int;
 	    break;
 	  }
 	  // KT 01/08/98 new
-	case ULONG :
+	case KeyArgument::ULONG :
 	  {
 	    unsigned long* p_ulong=(unsigned long*)current->p_object_variable;	// performs the required casting
 	    *p_ulong=par_ulong;
 	    break;
 	  }
 	  // KT 01/08/98 new
-	case DOUBLE :
+	case KeyArgument::DOUBLE :
 	  {
 	    double* p_double=(double*)current->p_object_variable;	// performs the required casting
 	    *p_double=par_double;
 	    break;
 	  }
-	case ASCII :
+	case KeyArgument::ASCII :
 	  {
 	    String* p_string=(String*)current->p_object_variable;	// performs the required casting
 	    *p_string=par_ascii;
 	    break;
 	  }
 	  // KT 20/06/98 new
-	case ASCIIlist :
+	case KeyArgument::ASCIIlist :
 	  {
 	    *((int *)current->p_object_variable) =
 	      find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
 	    break;
 	  }
-	case LIST_OF_INTS :
+	case KeyArgument::LIST_OF_INTS :
 	  {
 	    IntVect* p_vectint=(IntVect*)current->p_object_variable;
 	    *p_vectint=par_intlist;
 	    break;
 	  }
-	case LIST_OF_ASCII :
+	case KeyArgument::LIST_OF_ASCII :
 	  {
 	    vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
 	    *p_vectstring=par_asciilist;
@@ -419,41 +419,41 @@ void KeyParser::SetVariable()
       switch(current->type)
 	{
 	  // KT 01/08/98 NUMBER->INT
-	case INT :
+	case KeyArgument::INT :
 	  {
 	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
 	    p_vnumber->operator[](current_index-1)=par_int;
 	    break;
 	  }
 	  // KT 01/08/98 new
-	case ULONG :
+	case KeyArgument::ULONG :
 	  {
 	    UlongVect* p_vnumber=(UlongVect*)current->p_object_variable;	// performs the required casting
 	    p_vnumber->operator[](current_index-1)=par_ulong;
 	    break;
 	  }
 	  // KT 01/08/98 new
-	case DOUBLE :
+	case KeyArgument::DOUBLE :
 	  {
 	    DoubleVect* p_vnumber=(DoubleVect*)current->p_object_variable;	// performs the required casting
 	    p_vnumber->operator[](current_index-1)=par_double;
 	    break;
 	  }
-	case ASCII :
+	case KeyArgument::ASCII :
 	  {
 	    vector<String>* p_vstring=(vector<String>*)current->p_object_variable;	// performs the required casting
 	    p_vstring->operator[](current_index-1)=par_ascii;
 	    break;
 	  }
 	  // KT 20/06/98 new
-	case ASCIIlist :
+	case KeyArgument::ASCIIlist :
 	  {
 	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
 	    p_vnumber->operator[](current_index-1) =
 	      find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
 	    break;
 	  }
-	case LIST_OF_INTS :
+	case KeyArgument::LIST_OF_INTS :
 	  {
 	    vector<IntVect>* p_matrixint=(vector<IntVect>*)current->p_object_variable;
 	    p_matrixint->operator[](current_index-1)=par_intlist;
