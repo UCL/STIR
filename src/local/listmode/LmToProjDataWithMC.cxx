@@ -165,12 +165,19 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
 
   ro3d_ptr->get_motion(ro3dtrans,time);
    
+#if 0
   const CartesianCoordinate3D<float> coord_1_transformed = 
     ro3d_move_to_reference_position.transform_point(ro3dtrans.transform_point(coord_1));
 
   const CartesianCoordinate3D<float> coord_2_transformed = 
     ro3d_move_to_reference_position.transform_point(ro3dtrans.transform_point(coord_2));
-  
+#else
+ const CartesianCoordinate3D<float> coord_1_transformed = 
+    ro3dtrans.transform_point(ro3d_move_to_reference_position.transform_point(coord_1));
+
+  const CartesianCoordinate3D<float> coord_2_transformed = 
+    ro3dtrans.transform_point(ro3d_move_to_reference_position.transform_point(coord_2));
+#endif
   int det_num_a_trans;
   int det_num_b_trans;
   int ring_a_trans;
@@ -270,7 +277,7 @@ LmToProjDataWithMC::find_cartesian_coordinates_given_scanner_coordinates (Cartes
 }
 
 #if 0
-void 
+Succeeded
 LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 							  const CartesianCoordinate3D<float>& coord_1_in,
 							  const CartesianCoordinate3D<float>& coord_2_in, 
@@ -283,9 +290,11 @@ LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& de
   det2 = (int)(round(((2.*_PI)+atan2(coord_2_in.y(),coord_2_in.x()))/(2.*_PI/num_detectors)))% num_detectors;
   ring1 = round(coord_1_in.z()/ring_spacing);
   ring2 = round(coord_2_in.z()/ring_spacing);
+  return Succeeded::yes;
 }
 #endif
 
+#if 1
 Succeeded
 LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 							  const CartesianCoordinate3D<float>& c1,
@@ -341,6 +350,7 @@ LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& de
 #endif
   return Succeeded::yes;
 }
+#endif
 
 void 
 LmToProjDataWithMC::transform_detector_pair_into_view_bin (int& view,int& bin, 
