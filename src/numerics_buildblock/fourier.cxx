@@ -55,7 +55,7 @@ static void init_exparray(const int k, const int pow2k)
     exparray.grow(0, k);
   exparray[k].grow(0,pow2k-1);
   for (int i=0; i< pow2k; ++i)
-    exparray[k][i]= std::exp(std::complex<float>(0, (i*_PI)/pow2k));
+    exparray[k][i]= std::exp(std::complex<float>(0, static_cast<float>((i*_PI)/pow2k)));
 }
 
 // expminarray[k][i] = exp(-i*_PI/pow(2,k))
@@ -71,7 +71,7 @@ static void init_expminarray(const int k, const int pow2k)
     expminarray.grow(0, k);
   expminarray[k].grow(0,pow2k-1);
   for (int i=0; i< pow2k; ++i)
-    expminarray[k][i]= std::exp(std::complex<float>(0, -(i*_PI)/pow2k));
+    expminarray[k][i]= std::exp(std::complex<float>(0, static_cast<float>(-(i*_PI)/pow2k)));
 }
 
 
@@ -203,10 +203,13 @@ fourier(T& c, const int sign)
 
 
 template <typename T>
-Array<1,std::complex<typename T::value_type> >
-fourier_1d_for_real_data(const T& v, const int sign)
+Array<1,std::complex<T> >
+fourier_1d_for_real_data(const Array<1,T>& v, const int sign)
+//Array<1,std::complex<typename T::value_type> >
+//fourier_1d_for_real_data(const T& v, const int sign)
 {
-  typedef std::complex<typename T::value_type> complex_t;
+  //typedef std::complex<typename T::value_type> complex_t;
+  typedef std::complex<T> complex_t;
   if (v.get_length()==0) return Array<1,complex_t>();
   assert(v.get_min_index()==0);
   assert(sign==1 || sign ==-1);
@@ -237,7 +240,7 @@ fourier_1d_for_real_data(const T& v, const int sign)
       // the nice thing about this code that it works even when the length is not a power of 2
       // (but of course, the call to fourier_1d would currently abort in that case)
       const complex_t t2 = 			   
-	std::exp(complex_t(0, sign*(i*_PI)/n-_PI/2))*
+	std::exp(complex_t(0, static_cast<T>(sign*(i*_PI)/n-_PI/2)))*
 	(c[i]-std::conj(c[n-i]));
 
       c[i] = (t1 + t2);
@@ -269,7 +272,7 @@ inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
       const complex_t t1 = (c[i]+std::conj(c[n-i]));
       // TODO could get exp() from static exparray
       const complex_t t2 = 			   
-	std::exp(complex_t(0, -sign*(i*_PI)/n+_PI/2))*
+	std::exp(complex_t(0, static_cast<T>(-sign*(i*_PI)/n+_PI/2)))*
 	(c[i]-std::conj(c[n-i]));
 
       c[i] = (t1 + t2);
@@ -310,13 +313,16 @@ fourier<>(Array<3,std::complex<float> >& c, const int sign);
 template
 void 
 fourier<>(VectorWithOffset<std::complex<float> >& c, const int sign);
-
+/*
 template
 Array<1,std::complex<float> >
+//Array<1,std::complex<VectorWithOffset<float>::value_type> >
 fourier_1d_for_real_data<>(const VectorWithOffset<float>& v, const int sign);
+*/
 
 template
 Array<1,std::complex<float> >
+//Array<1,typename std::complex<Array<1,float>::value_type> >
 fourier_1d_for_real_data<>(const Array<1,float>& v, const int sign);
 
 template 

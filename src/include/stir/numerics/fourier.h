@@ -122,8 +122,11 @@ void fourier_1d(T& c, const int sign);
   \warning Currently, the array has to have \c get_min_index()==0.
 */
 template <typename T>
-Array<1,std::complex<typename T::value_type> >
-fourier_1d_for_real_data(const T& v, const int sign = 1);
+//Array<1,std::complex<typename T::value_type> >
+//fourier_1d_for_real_data(const T& v, const int sign = 1);
+Array<1,std::complex<T> >
+fourier_1d_for_real_data(const Array<1,T>& c, const int sign = 1);
+
 
 /*! \ingroup DFT
 
