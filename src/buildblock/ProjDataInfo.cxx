@@ -319,6 +319,9 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
     error("ProjDataInfoCTI: span %d has to be larger than 0\n", span);
   if (span%2 != 1)
     error("ProjDataInfoCTI: span %d has to be odd\n", span);
+  if (max_delta<(span-1)/2)
+    error("ProjDataInfoCTI: max_ring_difference %d has to be at least (span-1)/2, span is %d\n",
+	  max_delta, span);
   
   const int num_ring = scanner->get_num_rings();
  // Construct first a temporary list of min and max ring diff per segment (0,1,2,3...)
@@ -331,7 +334,7 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   // RDmintmp[0]= (int) ceil(-span/2);
   RDmintmp[0] = -(span-1)/2;
   RDmaxtmp[0] = RDmintmp[0] + span - 1;
-  
+
   int seg_num =0;
   while (RDmaxtmp[seg_num] < max_delta)
   {
