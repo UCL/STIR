@@ -44,6 +44,9 @@ inline int round(const float x);
    \see round(const float)
 */
 inline int round(const double x);
+template <class elemT> 
+inline BasicCoordinate<3,int> 
+round(const BasicCoordinate<3,elemT> x);
 
 END_NAMESPACE_STIR
 
