@@ -360,7 +360,7 @@ GC SCX_gc;
 int SC__curPointX, SC__curPointY, SC__filled;
 unsigned long SC__color;
 /* Color scales */
-#define NUMBER_SCALES 4
+#define NUMBER_SCALES 5
 
 /* this gives RGB values, and the number of entries will be used for
    interpolation between this and the next entry.
@@ -383,12 +383,15 @@ struct color_info sm4green[7]={{0,0,0,32},{0,0,127,64},{0,127,0,31},
 
 struct color_info bw[4]={{0,0,0,130},{127,127,127,1},{127,127,0,0}};
 
+/* KT 29/01/98 added inverse greyscale */
+struct color_info inverse_bw[4]={{127,127,127,130},{0,0,0,1},{127,127,0,0}};
+
 struct
 { char name[10];
   int size;
   struct color_info *p;
 } all_color_scales[NUMBER_SCALES]={{"sm4",5,sm4},{"sm4test",5,sm4test},
-                        {"sm4green",5,sm4green},{"bw",2,bw}};
+                        {"sm4green",5,sm4green},{"bw",2,bw}, "inverse_bw",2,inverse_bw};
 
 static Colormap SCX_Colormap;
 static int CurrentColormap;
@@ -509,7 +512,8 @@ void SCX_START()
     printf("  %s",all_color_scales[i].name);
     CurrentColormap = asknr("Which one do you want ?",0,NUMBER_SCALES-1, 0);
     */
-  CurrentColormap = NUMBER_SCALES-1;
+  /* KT 30/01/98 default to 'bw' */
+  CurrentColormap = NUMBER_SCALES-2;
   SetColormap(SCX_display, SCX_window,
 	      all_color_scales[CurrentColormap].p, 
 	      all_color_scales[CurrentColormap].size);
