@@ -24,8 +24,6 @@ START_NAMESPACE_TOMO
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
-
-
 /*!
   \ingroup buildblock
   \brief 
