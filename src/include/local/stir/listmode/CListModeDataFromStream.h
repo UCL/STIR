@@ -99,16 +99,18 @@ public:
 
 private:
 
-  string listmode_filename;
+  const string listmode_filename;
   shared_ptr<istream> stream_ptr;
   streampos starting_stream_position;
   vector<streampos> saved_get_positions;
 
-  bool value_of_has_delayeds;
-  size_t size_of_record;
-  shared_ptr <CListRecord> empty_record_sptr;
-  ByteOrder list_mode_file_format_byte_order;  
+  const bool value_of_has_delayeds;
+  const size_t size_of_record;
 
+  const shared_ptr <CListRecord> empty_record_sptr;
+  const ByteOrder list_mode_file_format_byte_order;  
+
+  const bool do_byte_swap;
 
   mutable unsigned int num_chars_left_in_buffer;
 };
