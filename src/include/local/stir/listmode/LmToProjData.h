@@ -26,22 +26,11 @@
 #include "stir/ParsingObject.h"
 #include "local/stir/listmode/TimeFrameDefinitions.h"
 
-#include "local/stir/listmode/lm.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
-
-
-
-#ifdef USE_SegmentByView
-#include "stir/SegmentByView.h"
-#else
-#include "stir/Array.h"
-#include "stir/IndexRange3D.h"
-#endif
 
 START_NAMESPACE_STIR
 
-class ProjDataInfoCylindrical;
-
+class CListEvent;
 
 class LmToProjData : public ParsingObject
 {
@@ -53,8 +42,8 @@ public:
 
   shared_ptr<CListModeData> lm_data_ptr;
   TimeFrameDefinitions frame_defs;
-  virtual void get_bin_from_record(Bin& bin, const CListRecord& record, 
-	      const double time, const ProjDataInfoCylindrical&) const;
+  virtual void get_bin_from_event(Bin& bin, const CListEvent& record, 
+				  const double time) const;
 
   void compute();
   shared_ptr<BinNormalisation> normalisation_ptr;
