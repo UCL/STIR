@@ -99,45 +99,48 @@ void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
 {
   switch(mhead.system_type)
   {
+  case 42:
+    scanner_ptr =  new Scanner(Scanner::RATPET);
+    printf("Scanner: RATPET\n");
+    break;
   case 128 : 
-    //camera = camRPT; 
     scanner_ptr = new Scanner(Scanner::RPT); 
     printf("Scanner : RPT\n"); 
     break;
   case 931 : 
-    //camera = cam931; 
     scanner_ptr = new Scanner(Scanner::E931); 
     printf("Scanner : ECAT 931\n"); break;
   case 951 : 
-    //camera = cam951; 
     scanner_ptr = new Scanner(Scanner::E951); 
     printf("Scanner : ECAT 951\n"); break;
   case 953 : 
-    //camera = cam953; 
     scanner_ptr = new Scanner(Scanner::E953); 
     printf("Scanner : ECAT 953\n"); 
     break;
   case 921 : 
-    //camera = cam953; 
     scanner_ptr = new Scanner(Scanner::E921); 
     printf("Scanner : ECAT 921\n"); 
     break;
+  case 925 : 
+    scanner_ptr = new Scanner(Scanner::E925); 
+    printf("Scanner : ECAT 925\n"); 
+    break;
   case 961 : 
-    //camera = cam953; 
     scanner_ptr = new Scanner(Scanner::E961); 
     printf("Scanner : ECAT 961\n"); 
     break;
+  case 962 : 
+    scanner_ptr = new Scanner(Scanner::E962); 
+    printf("Scanner : ECAT 962\n"); 
+    break;
   case 966 : 
-    //camera = cam953; 
     scanner_ptr = new Scanner(Scanner::E966); 
     printf("Scanner : ECAT 966\n"); 
     break;
-  default :  
-    
+  default :      
     {	
-      // camera = camRPT; 
-      scanner_ptr = new Scanner(Scanner::E966); 
-      printf("main_header.system_type unknown, defaulting to 966 \n"); 
+      scanner_ptr = new Scanner(Scanner::E962); 
+      printf("main_header.system_type unknown, defaulting to 962 (ECAT HR+)\n"); 
     }
     break;
   }
