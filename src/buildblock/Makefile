@@ -42,6 +42,7 @@ SOURCES = \
   recon_array_functions.cxx \
   linear_regression.cxx overlap_interpolate.cxx \
   error.cxx warning.cxx  \
+  DataSymmetriesForViewSegmentNumbers.cxx \
 	ParsingObject.cxx \
 	ArrayFilter1DUsingConvolutionSymmetricKernel.cxx \
 	SeparableArrayFunctionObject.cxx \
