@@ -674,7 +674,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   const float voxel_size_z = image.get_grid_spacing()[1]/10;// convert to cm
   //const float voxel_size_y = image.get_grid_spacing()[2]/10;
   const float voxel_size_x = image.get_grid_spacing()[3]/10;
-  if (mhead.plane_separation!=voxel_size_z) 
+  if (fabs(mhead.plane_separation - voxel_size_z) > 1.E-4) 
   {
     warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
             "Main header.plane_separation should be %g\n",
