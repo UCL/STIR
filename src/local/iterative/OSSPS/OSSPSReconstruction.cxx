@@ -168,7 +168,7 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
     parameters.proj_data_ptr, 
     subset_num, 
     parameters.num_subsets, 
-    0, 
+    -parameters.max_segment_num_to_process, // KT 30/05/2002 use new convention of distributable_* functions
     parameters.max_segment_num_to_process, 
     parameters.zero_seg0_end_planes!=0, 
     NULL, 
