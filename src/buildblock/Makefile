@@ -45,134 +45,324 @@ $(DEST)%.o : %.cxx
 # KT 06/11/98 added imagedata.o
 # KT 22/02/99 added PETDataSymmetries.o PETSinogramOfVolume.o RelatedViewgrams.o
 # KT 17/03/99 changed Related... to PETRelated...
-$(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
-  $(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
-  $(DEST)Tensor1D.o $(DEST)Tensors.o \
-  $(DEST)viewdata.o $(DEST)imagedata.o \
-  $(DEST)PETDataSymmetries.o \
-  $(DEST)PETSinogramOfVolume.o \
-  $(DEST)PETRelatedViewgrams.o \
-  $(DEST)utilities.o $(DEST)NumericInfo.o \
-  ${DEST}KeyParser.o ${DEST}line.o \
-  ${DEST}interfile.o ${DEST}InterfileHeader.o \
-  ${DEST}bbfilters.o ${DEST}recon_array_functions.o \
-  ${DEST}sparsedata.o
+#KT 18/03/99 use SOURCES macro for reuse below
+
+SOURCES = \
+  sinodata.cxx convert.cxx \
+  PETScannerInfo.cxx PETScanInfo.cxx \
+  Tensor1D.cxx Tensors.cxx \
+  viewdata.cxx imagedata.cxx \
+  PETDataSymmetries.cxx \
+  PETSinogramOfVolume.cxx \
+  PETRelatedViewgrams.cxx \
+  utilities.cxx NumericInfo.cxx \
+  KeyParser.cxx line.cxx \
+  interfile.cxx InterfileHeader.cxx \
+  bbfilters.cxx recon_array_functions.cxx \
+  sparsedata.cxx
+
+OBJS = $(SOURCES:%.cxx=%.o)
+
+$(DEST)libbuildblock.a:
 	ar r $@ $?
 	ranlib $@
 
+
+# KT 18/03/99 new
+makedepend:
+	ppdep -I ../include $(SOURCES)
 
 #KT 30/07/98 added DEST
 clean: 
 	$(RM) $(DEST)*.o
 	$(RM) $(DEST)*.a
 
-#############################################################
+# DO NOT DELETE THIS LINE -- g++dep uses it.
+# DO NOT PUT ANYTHING AFTER THIS LINE, IT WILL GO AWAY.
 
-#CL 09/10/98 ADd the header file dependencies for all object files
-#I agree that this Makefile become big but it is the only way to update 
-#correctly  all the object files
-
-$(DEST)NumericInfo.o: NumericInfo.cxx ../include/NumericInfo.h \
- ../include/pet_common.h
-
-$(DEST)PETScanInfo.o: PETScanInfo.cxx ../include/pet_common.h \
- ../include/PETScanInfo.h ../include/PETScannerInfo.h
-
-$(DEST)PETScannerInfo.o: PETScannerInfo.cxx ../include/pet_common.h \
- ../include/PETScannerInfo.h
-
-# KT 22/10/98 removed higher dimensional dependencies
-$(DEST)Tensor1D.o: Tensor1D.cxx ../include/pet_common.h ../include/Tensor1D.h \
- ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/convert.h 
-
-# KT 04/11/98 new
-$(DEST)Tensors.o: Tensors.cxx ../include/pet_common.h \
- ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/convert.h \
- ../include/Tensor1D.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/Tensor4D.h
-
-$(DEST)convert.o: convert.cxx ../include/pet_common.h ../include/Tensor1D.h \
- ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/convert.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/Tensor4D.h
-
-# KT 22/10/98 removed
-#$(DEST)interfilereader.o: interfilereader.cxx
-
-# KT 22/10/98 moved down to group Interfile stuff
-$(DEST)KeyParser.o: KeyParser.cxx ../include/KeyParser.h \
- ../include/NumericInfo.h ../include/pet_common.h ../include/line.h
-
-#CL 19/10/98 ADd this file as I have forgotten to include it
-# KT 22/10/98 add InterfileHeader dependency
-$(DEST)interfile.o: interfile.cxx ../include/interfile.h \
- ../include/InterfileHeader.h \
- ../include/KeyParser.h ../include/NumericInfo.h \
- ../include/pet_common.h ../include/imagedata.h ../include/Tensor2D.h \
- ../include/Tensorbase.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/Tensor1D.h \
- ../include/Tensor3D.h ../include/Point3D.h ../include/debug.h \
- ../include/utilities.h ../include/sinodata.h \
- ../include/PETScannerInfo.h
-
-# KT 22/10/98 add InterfileHeader 
+$(DEST)sinodata.o: sinodata.cxx \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/NumericInfo.h \
+  ../include/Tensor2D.h \
+  ../include/Tensor1D.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/PETSinogram.h \
+  ../include/PETViewgram.h
+$(DEST)convert.o: convert.cxx \
+  ../include/Tensor1D.h \
+  ../include/NumericInfo.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/convert.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/Tensor3D.h \
+  ../include/Tensor4D.h
+$(DEST)PETScannerInfo.o: PETScannerInfo.cxx \
+  ../include/PETScannerInfo.h
+$(DEST)PETScanInfo.o: PETScanInfo.cxx \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h
+$(DEST)Tensor1D.o: Tensor1D.cxx \
+  ../include/Tensor1D.h \
+  ../include/NumericInfo.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/convert.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/Tensor3D.h \
+  ../include/Tensor4D.h
+$(DEST)Tensors.o: Tensors.cxx \
+  ../include/convert.h \
+  ../include/NumericInfo.h \
+  ../include/Tensor1D.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/Tensor3D.h \
+  ../include/Tensor4D.h
+$(DEST)viewdata.o: viewdata.cxx \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/NumericInfo.h \
+  ../include/PETSinogram.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor1D.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl
+$(DEST)imagedata.o: imagedata.cxx \
+  ../include/Tensor2D.h \
+  ../include/pet_common.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/NumericInfo.h \
+  ../include/Tensor1D.h \
+  ../include/Tensor3D.h \
+  ../include/Point3D.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/debug.h
+$(DEST)PETDataSymmetries.o: PETDataSymmetries.cxx \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl
+$(DEST)PETSinogramOfVolume.o: PETSinogramOfVolume.cxx \
+  \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/NumericInfo.h \
+  ../include/pet_common.h \
+  ../include/PETSinogram.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor1D.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl
+$(DEST)PETRelatedViewgrams.o: PETRelatedViewgrams.cxx \
+  \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/Tensor2D.h \
+  ../include/pet_common.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/NumericInfo.h \
+  ../include/Tensor1D.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/recon_buildblock/zoom.h \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETSinogram.h \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl \
+  ../include/imagedata.h \
+  ../include/Point3D.h \
+  ../include/debug.h
+$(DEST)utilities.o: utilities.cxx \
+  ../include/pet_common.h \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/NumericInfo.h \
+  ../include/PETSinogram.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor1D.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl \
+  ../include/imagedata.h \
+  ../include/Point3D.h \
+  ../include/debug.h
+$(DEST)NumericInfo.o: NumericInfo.cxx \
+  ../include/pet_common.h
+$(DEST)KeyParser.o: KeyParser.cxx \
+  ../include/pet_common.h \
+  ../include/line.h
+$(DEST)line.o: line.cxx \
+  ../include/pet_common.h
+$(DEST)interfile.o: interfile.cxx \
+  ../include/NumericInfo.h \
+  ../include/pet_common.h \
+  ../include/KeyParser.h \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/PETSinogram.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor1D.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl \
+  ../include/interfile.h \
+  ../include/imagedata.h \
+  ../include/Point3D.h \
+  ../include/debug.h \
+  ../include/utilities.h
 $(DEST)InterfileHeader.o: InterfileHeader.cxx \
- ../include/interfile.h \
- ../include/InterfileHeader.h \
- ../include/pet_common.h
-
-$(DEST)line.o: line.cxx ../include/line.h
-
-# KT 22/10/98 removed
-#$(DEST)pet_string.o: pet_string.cxx ../include/pet_string.h
-
-$(DEST)sinodata.o: sinodata.cxx ../include/pet_common.h ../include/sinodata.h \
- ../include/Tensor1D.h ../include/NumericInfo.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/PETScannerInfo.h ../include/PETScanInfo.h
-
-$(DEST)utilities.o: utilities.cxx ../include/utilities.h \
- ../include/pet_common.h ../include/sinodata.h ../include/Tensor1D.h \
- ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/Tensor2D.h \
- ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/PETScannerInfo.h ../include/PETScanInfo.h
-
-$(DEST)viewdata.o: viewdata.cxx ../include/pet_common.h ../include/sinodata.h \
- ../include/Tensor1D.h ../include/NumericInfo.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/PETScannerInfo.h ../include/PETScanInfo.h
-
-#CL 21/10/98 Add the bbfilters.o
-$(DEST)bbfilters.o: bbfilters.cxx ../include/pet_common.h \
- ../include/bbfilters.h ../include/PETScannerInfo.h \
- ../include/imagedata.h ../include/Tensor2D.h ../include/Tensorbase.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/NumericInfo.h ../include/Tensor1D.h ../include/Tensor3D.h \
- ../include/Point3D.h ../include/debug.h ../include/TensorFunction.h
-
-#MJ 17/11/98 Add the recon_array_functions.o
+  ../include/NumericInfo.h \
+  ../include/pet_common.h \
+  ../include/KeyParser.h \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/PETSinogram.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor1D.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl
+$(DEST)bbfilters.o: bbfilters.cxx \
+  ../include/bbfilters.h \
+  ../include/PETScannerInfo.h \
+  ../include/imagedata.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/NumericInfo.h \
+  ../include/Tensor1D.h \
+  ../include/Tensor3D.h \
+  ../include/Point3D.h \
+  ../include/PETScanInfo.h \
+  ../include/debug.h \
+  ../include/TensorFunction.h \
+  ../include/utilities.h \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETSinogram.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/PETSinogramOfVolume.inl
 $(DEST)recon_array_functions.o: recon_array_functions.cxx \
- ../include/pet_common.h ../include/recon_array_functions.h \
- ../include/sinodata.h ../include/Tensor1D.h ../include/NumericInfo.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/PETScanInfo.h ../include/PETScannerInfo.h \
- ../include/imagedata.h ../include/Point3D.h ../include/debug.h \
- ../include/TensorFunction.h
-
-#PV 24/11/98 Add the sparsedata.o
+  \
+  ../include/pet_common.h \
+  ../include/recon_array_functions.h \
+  ../include/sinodata.h \
+  ../include/PETSinogramOfVolume.h \
+  ../include/PETScanInfo.h \
+  ../include/PETScannerInfo.h \
+  ../include/NumericInfo.h \
+  ../include/PETSinogram.h \
+  ../include/Tensor2D.h \
+  ../include/Tensorbase.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor1D.h \
+  ../include/PETRelatedViewgrams.h \
+  ../include/PETViewgram.h \
+  ../include/PETDataSymmetries.h \
+  ../include/ViewSegmentNumbers.h \
+  ../include/PETDataSymmetries.inl \
+  ../include/PETRelatedViewgrams.inl \
+  ../include/PETSegment.h \
+  ../include/Tensor3D.h \
+  ../include/PETSinogramOfVolume.inl \
+  ../include/imagedata.h \
+  ../include/Point3D.h \
+  ../include/debug.h \
+  ../include/TensorFunction.h
 $(DEST)sparsedata.o: sparsedata.cxx \
- ../include/sparsedata.h \
- ../include/Tensor1D.h ../include/NumericInfo.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/PETScanInfo.h ../include/PETScannerInfo.h \
- ../include/imagedata.h ../include/Point3D.h ../include/debug.h \
- ../include/TensorFunction.h
+  ../include/Tensor1D.h \
+  ../include/pet_common.h \
+  ../include/NumericInfo.h \
+  ../include/NumericVectorWithOffset.h \
+  ../include/VectorWithOffset.h \
+  ../include/Tensor3D.h \
+  ../include/Tensorbase.h \
+  ../include/Tensor2D.h \
+  ../include/Point3D.h \
+  ../include/PETScannerInfo.h
+
+# IF YOU PUT ANYTHING HERE IT WILL GO AWAY
