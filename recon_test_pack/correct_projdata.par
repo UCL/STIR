@@ -1,0 +1,21 @@
+correct_projdata Parameters := 
+
+  input file := Utahscat600k_ca_seg4.hs
+
+  output filename := my_correct_projdata_test_CR
+  ; use data (1) or set to one (0) := 
+
+  ; apply (1) or undo (0) correction := 
+
+  randoms projdata filename := my_fake_randoms.hs
+  
+  Bin Normalisation type := from projdata
+    Bin Normalisation From ProjData :=
+    normalisation projdata filename:= my_fake_norm.hs
+    End Bin Normalisation From ProjData:=
+
+  ; scatter term to be subtracted AFTER norm+atten correction
+  ; defaults to 0
+  ;scatter projdata filename := scatter.hs
+
+END:= 
