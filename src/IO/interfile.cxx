@@ -61,9 +61,12 @@ START_NAMESPACE_STIR
 bool 
 is_interfile_signature(const char * const signature)
 {
+  // checking for "interfile :"
   const char * pos_of_colon = strchr(signature, ':');
+  if (pos_of_colon == NULL)
+    return false;
   string keyword(signature, pos_of_colon-signature);
-  return (pos_of_colon != NULL &&
+  return (
 	  standardise_interfile_keyword(keyword) == 
 	  standardise_interfile_keyword("interfile"));
 }
