@@ -21,7 +21,13 @@
     See STIR/LICENSE.txt for details
 */
 
+/* History
 
+   KT
+   added registry things
+   KT 21/02/2002
+   added option for square FOV
+ */
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
@@ -31,6 +37,10 @@
 #include <algorithm>
 #include <math.h>
 
+#ifndef STIR_NO_NAMESPACE
+using std::min;
+using std::max;
+#endif
 START_NAMESPACE_STIR
 
 
@@ -48,13 +58,16 @@ void
 ProjMatrixByBinUsingRayTracing::initialise_keymap()
 {
   parser.add_start_key("Ray Tracing Matrix Parameters");
+  parser.add_key("restrict to cylindrical FOV", &restrict_to_cylindrical_FOV);
   parser.add_stop_key("End Ray Tracing Matrix Parameters");
 }
 
 
 void
 ProjMatrixByBinUsingRayTracing::set_defaults()
-{}
+{
+  restrict_to_cylindrical_FOV = true;
+}
 
 #if 0
 // static helper function
@@ -118,6 +131,12 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor);
 static void merge_zplus1(ProjMatrixElemsForOneBin& lor);
 
 
+template <typename T>
+static inline int sign(const T& t) 
+{
+  return t<0 ? -1 : 1;
+}
+
 //////////////////////////////////////
 void 
 ProjMatrixByBinUsingRayTracing::
@@ -144,13 +163,6 @@ calculate_proj_matrix_elems_for_one_bin(
   const float s_in_mm = proj_data_info_ptr->get_s(bin);
   const float t_in_mm = proj_data_info_ptr->get_t(bin);
 
-
-  // use FOV which is circular, and is slightly 'inside' the image to avoid 
-  // index out of range
-  const float fovrad_in_mm   = 
-    min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
-        (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
-  if (s_in_mm >= fovrad_in_mm) return;
 
 
   const float sampling_distance_of_adjacent_LORs_z =
@@ -182,33 +194,90 @@ calculate_proj_matrix_elems_for_one_bin(
 
   /* Intersection points of LOR and image FOV (assuming infinitely long scanner)*/
   /* compute   X1f, Y1f,,Z1f et al in voxelcoordinates. */
+  float X1f, X2f, Y1f, Y2f, Z1f, Z2f;
   
-  const float TMP2f = sqrt(square(fovrad_in_mm) - square(s_in_mm));
-  const float X2f = (s_in_mm * cphi - sphi * TMP2f)/voxel_size.x();
-  const float X1f = (s_in_mm * cphi + sphi * TMP2f)/voxel_size.x();
-  const float Y2f = (s_in_mm * sphi + cphi * TMP2f)/voxel_size.y();
-  const float Y1f = (s_in_mm * sphi - cphi * TMP2f)/voxel_size.y();
+  if (restrict_to_cylindrical_FOV)
+    {
+      // use FOV which is cylindrical, and is slightly 'inside' the image to avoid
+      // index out of range
+      const float fovrad_in_mm = 
+	min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
+        (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
+      if (s_in_mm >= fovrad_in_mm) return;
 
-  const float Z1f = 
-    (t_in_mm/costheta - TMP2f*tantheta + offset_in_z)/voxel_size.z() 
-    + (max_index.z() + min_index.z())/2.F;
-  const float Z2f = 
-    (t_in_mm/costheta + TMP2f*tantheta + offset_in_z)/voxel_size.z()
-    + (max_index.z() + min_index.z())/2.F;
+      const float TMP2f = sqrt(square(fovrad_in_mm) - square(s_in_mm));
+      X2f = (s_in_mm * cphi - sphi * TMP2f)/voxel_size.x();
+      X1f = (s_in_mm * cphi + sphi * TMP2f)/voxel_size.x();
+      Y2f = (s_in_mm * sphi + cphi * TMP2f)/voxel_size.y();
+      Y1f = (s_in_mm * sphi - cphi * TMP2f)/voxel_size.y();
 
-  const CartesianCoordinate3D<float> start_point(Z1f,Y1f,X1f);  
-  const CartesianCoordinate3D<float> stop_point(Z2f,Y2f,X2f);  
+      Z1f = 
+	(t_in_mm/costheta - TMP2f*tantheta + offset_in_z)/voxel_size.z() 
+	+ (max_index.z() + min_index.z())/2.F;
+      Z2f = 
+	(t_in_mm/costheta + TMP2f*tantheta + offset_in_z)/voxel_size.z()
+	+ (max_index.z() + min_index.z())/2.F;
+  } // restrict_to_cylindrical_FOV
+  else
+    {
+      // use FOV which is square, and is slightly 'inside' the image to avoid
+      // index out of range
+      // note that we use square and not rectangular as otherwise symmetries
+      // would take us out of the FOV. TODO
+      const float fovrad_in_mm = 
+	min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
+        (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
 
-  // do actual ray tracing for this LOR
+      /* parametrisation of LOR is
+         X= s*cphi + a*sphi, 
+         Y= s*sphi - a*cphi, 
+         Z= t/costheta+offset_in_z+(max_index.z()+min_index.z())/2.F - a*tantheta
+	 a has to be such that 
+	 |X| <= fovrad_in_mm &&  |Y| <= fovrad_in_mm
+      */
+      float max_a;
+      float min_a;
+      if (fabs(cphi) < 1.E-3 || fabs(sphi) < 1.E-3) 
+      {
+	if (fovrad_in_mm < fabs(s_in_mm))
+          return;
+        max_a = fovrad_in_mm;
+        min_a = -fovrad_in_mm;
+      }
+      else
+      {
+        max_a = min((fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+	            (fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+	            (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        if (min_a > max_a - 1.E-3*voxel_size.x())
+	  return;
+      }
+      X1f= (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
+      Y1f= (s_in_mm*sphi - max_a*cphi)/voxel_size.y(); 
+      Z1f= (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z()
+        +(max_index.z()+min_index.z())/2.F;
+      X2f= (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
+      Y2f= (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
+      Z2f= (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z()
+        +(max_index.z()+min_index.z())/2.F;
+	  
+  } //!restrict_to_cylindrical_FOV
 
-  RayTraceVoxelsOnCartesianGrid(lor, start_point, stop_point, voxel_size,
+  {
+    const CartesianCoordinate3D<float> start_point(Z1f,Y1f,X1f);  
+    const CartesianCoordinate3D<float> stop_point(Z2f,Y2f,X2f);  
+    
+    // do actual ray tracing for this LOR
+    
+    RayTraceVoxelsOnCartesianGrid(lor, start_point, stop_point, voxel_size,
 #ifdef NEWSCALE
            1.F/num_lors_per_axial_pos // normalise to mm
 #else
            1/voxel_size.x()/num_lors_per_axial_pos // normalise to some kind of 'pixel units'
 #endif
            );
-
+  }
   // now add on other LORs
   if ( num_lors_per_axial_pos>1)
   {      
