@@ -1331,8 +1331,9 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	{
 	   shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
 	   new VoxelsOnCartesianGrid<float>
-	    (IndexRange3D(-mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
-	     mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
+	    (IndexRange3D(0,0,
+	    //-mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
+	    // mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
 	    -mask_size+6,mask_size+6,
 	    -mask_size+6,mask_size+6),in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
 	 /*shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
@@ -1344,8 +1345,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	  timer.start();
 	  
 	  	// SM 23/05/2002 mask now 3D
-	  const int min_k = max(in_density_cast->get_min_z(),k-mask_size);
-	  const int max_k = min(in_density_cast->get_max_z(),k+mask_size);			
+	  const int min_k = in_density_cast->get_min_z(); //max(in_density_cast->get_min_z(),k-mask_size);
+	  const int max_k = in_density_cast->get_max_z(); // min(in_density_cast->get_max_z(),k+mask_size);			
 	  const int min_j = max(in_density_cast->get_min_y(),j-mask_size);
 	  const int max_j = min(in_density_cast->get_max_y(),j+mask_size);
 	  const int min_i = max(in_density_cast->get_min_x(),i-mask_size);
