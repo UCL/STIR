@@ -19,8 +19,10 @@
 */
 
 #include "stir/IO/InterfileOutputFileFormat.h"
+#include "stir/IO/ECAT6OutputFileFormat.h"
 
 START_NAMESPACE_STIR
 
-static InterfileOutputFileFormat::RegisterIt dummy;
+static InterfileOutputFileFormat::RegisterIt dummy1;
+static ECAT6OutputFileFormat::RegisterIt dummy2;
 END_NAMESPACE_STIR
