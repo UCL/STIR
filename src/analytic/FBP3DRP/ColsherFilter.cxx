@@ -38,6 +38,7 @@
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
 #include "stir/numerics/fourier.h"
 #include "stir/IndexRange2D.h"
+#include "stir/Succeeded.h"
 
 #ifdef __DEBUG_COLSHER
 // for debugging...
@@ -203,7 +204,7 @@ set_up(int target_height, int target_width, float theta,
       filter = fourier_for_real_data(colsher_real);      
     }
   //*********** set kernel used for filtering
-  const Succeeded success= set_kernel(filter);
+  const Succeeded success= set_kernel_in_frequency_space(filter);
   stop_timers();
 
 #ifdef __DEBUG_COLSHER
