@@ -11,22 +11,21 @@
   \author Kris Thielemans
   \author PARAPET project
       
-   \date $Date$	
+   \date $Date$
    \version $Revision$
 */
 #include "recon_buildblock/ForwardProjectorByBin.h"
-#include "Array.h"
-#include "DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.h"
-#include "shared_ptr.h"
 
 START_NAMESPACE_TOMO
 
-template <typename elemT> class Segment;
-template <typename elemT> class Sinogram;
+template <typename T> class shared_ptr;
+template <typename elemT> class Viewgram;
 template <typename elemT> class RelatedViewgrams;
 template <typename elemT> class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT> class Array;
+class ProjDataInfo;
 class ProjDataInfoCylindricalArcCorr;
-
+class DataSymmetriesForViewSegmentNumbers;
 
 /*!
   \ingroup recon_buildblock
@@ -60,7 +59,7 @@ private:
 		  const int min_tangential_pos_num, const int max_tangential_pos_num);
 
 
-  DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid symmetries;
+  const DataSymmetriesForViewSegmentNumbers * symmetries_ptr;
   /*
     The version which uses all possible symmetries.
     Here 0<=view < num_views/4 (= 45 degrees)
