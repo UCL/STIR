@@ -1,19 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup FBP2D
-
-  \brief Implementation of class FBP2DReconstruction
-
-  \author Kris Thielemans
-  \author Claire Labbe
-  \author PARAPET project
-
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -32,16 +19,31 @@
 
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file
+  \ingroup FBP2D
+  \brief Implementation of class stir::FBP2DReconstruction
+
+  \author Kris Thielemans
+  \author Claire Labbe
+  \author PARAPET project
+
+  $Date$
+  $Revision$
+*/
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ArcCorrection.h"
 #include "stir/analytic/FBP2D/RampFilter.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
+// #include "stir/ProjDataInterfile.h"
 #include "stir/Bin.h"
+#include "stir/round.h"
 #include "stir/display.h"
 #include <algorithm>
 #include "stir/IO/interfile.h"
@@ -147,11 +149,13 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
 	dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_ptr->get_proj_data_info_ptr());
 
       if (proj_data_info_cyl_ptr==0)
-        num_segments_to_combine = 1;
+        num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
       else
 	{
 	  if (proj_data_info_cyl_ptr->get_min_ring_difference(0) != 
-	      proj_data_info_cyl_ptr->get_max_ring_difference(0))
+	      proj_data_info_cyl_ptr->get_max_ring_difference(0)
+	      ||
+	      proj_data_info_cyl_ptr->get_num_segments()==1)
 	    num_segments_to_combine = 1;
 	  else
 	    num_segments_to_combine = 3;
@@ -215,15 +219,8 @@ FBP2DReconstruction::
 reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
 
-  if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
-       (proj_data_ptr->get_proj_data_info_ptr()) == 0)
-  {
-    warning("Projection data has to be arc-corrected for FBP2D\n");
-    return Succeeded::no;
-  }
-
-  const ProjDataInfoCylindricalArcCorr& proj_data_info_cyl =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
+  const ProjDataInfoCylindrical& proj_data_info_cyl =
+    dynamic_cast<const ProjDataInfoCylindrical&>
     (*proj_data_ptr->get_proj_data_info_ptr());
 
   // perform SSRB
@@ -245,21 +242,64 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       // just use the proj_data_ptr we have already
     }
 
+  // check if segment 0 has direct sinograms
+  {
+    const float tan_theta = proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0));
+    if(fabs(tan_theta ) > 1.E-4)
+      {
+	warning("FBP2D: segment 0 has non-zero tan(theta) %g", tan_theta);
+	return Succeeded::no;
+      }
+  }
+
+  float tangential_sampling;
+  // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
+  // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
+  shared_ptr<ProjDataInfo> arc_corrected_proj_data_info_sptr;
+
+  // arc-correction if necessary
+  ArcCorrection arc_correction;
+  bool do_arc_correction = false;
+  if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
+      (proj_data_ptr->get_proj_data_info_ptr()) != 0)
+    {
+      // it's already arc-corrected
+      arc_corrected_proj_data_info_sptr =
+	proj_data_ptr->get_proj_data_info_ptr()->clone();
+      tangential_sampling =
+	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
+	(*proj_data_ptr->get_proj_data_info_ptr()).get_tangential_sampling();  
+    }
+  else
+    {
+      // TODO arc-correct to voxel_size
+      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_ptr()->clone()) ==
+	  Succeeded::no)
+	return Succeeded::no;
+      do_arc_correction = true;
+      // TODO full_log
+      warning("FBP2D will arc-correct data first");
+      arc_corrected_proj_data_info_sptr =
+	arc_correction.get_arc_corrected_proj_data_info_sptr();
+      tangential_sampling =
+	arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();  
+    }
+  //ProjDataInterfile ramp_filtered_proj_data(arc_corrected_proj_data_info_sptr,"ramp_filtered");
 
   VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
 
-  assert(fabs(proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0)) ) < 1.E-4);
 
   // set projector to be used for the calculations
-  back_projector_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+  back_projector_sptr->set_up(arc_corrected_proj_data_info_sptr, 
 			      density_ptr);
 
 
   // set ramp filter with appropriate sizes
-  const int fft_size = (int) pow(2.,(int) ceil(log((double)(pad_in_s + 1)* proj_data_ptr->get_num_tangential_poss()) / log(2.)));
+  const int fft_size = 
+    round(pow(2., ceil(log((double)(pad_in_s + 1)* arc_corrected_proj_data_info_sptr->get_num_tangential_poss()) / log(2.))));
   
-  RampFilter filter(proj_data_info_cyl.get_tangential_sampling(), 
+  RampFilter filter(tangential_sampling,
 			 fft_size, 
 			 float(alpha_ramp), float(fc_ramp));   
 
@@ -277,6 +317,10 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     RelatedViewgrams<float> viewgrams = 
       proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
 
+    if (do_arc_correction)
+      viewgrams =
+	arc_correction.do_arc_correction(viewgrams);
+
     // now filter
     for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
          viewgram_iter != viewgrams.end();
@@ -289,6 +333,7 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		    filter);
 #endif
     }
+    // ramp_filtered_proj_data.set_related_viewgrams(viewgrams);
 
   if(display_level>1) 
     display( viewgrams,viewgrams.find_max(),"Ramp filter");
@@ -305,7 +350,7 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   // added binsize etc here to get units ok
   // only do this when the forward projector units are appropriate
   image *= magic_number / proj_data_ptr->get_num_views() *
-    proj_data_info_cyl.get_bin_size()/
+    tangential_sampling/
     (image.get_voxel_size().x()*image.get_voxel_size().y());
 #else
   image *= magic_number / proj_data_ptr->get_num_views();
