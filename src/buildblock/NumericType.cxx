@@ -2,16 +2,29 @@
 // $Id$: $Date$
 //
 
+/*!
+  \file 
+ 
+  \brief implementations for the NumericType class
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
 /* 
-  Implementation of methods of class NumericType
-  
   History:
   - first version Kris Thielemans
 
   - KT 15/12/99 added get_Interfile_info
-   */
+ */
 #include "NumericType.h"
 #include "NumericInfo.h"
+
+START_NAMESPACE_TOMO
 
 NumericType::NumericType(const string number_format, const size_t size_in_bytes)
 { 
@@ -201,3 +214,4 @@ bool NumericType::integer_type() const
       // we never get here, but VC++ wants a return nevertheless
       return false;
     }
+END_NAMESPACE_TOMO
