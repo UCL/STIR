@@ -1,13 +1,11 @@
 
 // $Id$
 
-#ifndef __Array_H__
-#define __Array_H__
+#ifndef __stir_Array_H__
+#define __stir_Array_H__
+
 #ifndef ARRAY_FULL
 #define ARRAY_FULL
-#endif
-#ifndef ARRAY_CONST_IT
-#define ARRAY_CONST_IT
 #endif
 
 /*!
@@ -93,21 +91,21 @@ public:
   */
 
   //@{
-  typedef elemT value_type;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
+  typedef elemT full_value_type;
+  typedef full_value_type* full_pointer;
+  typedef const full_value_type* const_full_pointer;
+  typedef full_value_type& full_reference;
+  typedef const full_value_type& const_full_reference;
 #ifndef ARRAY_FULL2
   //! This defines an iterator type that iterates through all elements.
-  typedef FullArrayIterator<typename base_type::iterator, typename Array<num_dimensions-1, elemT>::full_iterator, elemT, reference, pointer> full_iterator;
+  typedef FullArrayIterator<typename base_type::iterator, typename Array<num_dimensions-1, elemT>::full_iterator, elemT, full_reference, full_pointer> full_iterator;
 
   //! As full_iterator, but for const objects.
-  typedef FullArrayIterator<typename base_type::const_iterator, typename Array<num_dimensions-1, elemT>::const_full_iterator, elemT, const_reference, const_pointer> const_full_iterator;
-#else // ARRAY_FLL2
-  typedef FullArrayIterator<num_dimensions, elemT, reference, pointer> full_iterator;
+  typedef FullArrayIterator<typename base_type::const_iterator, typename Array<num_dimensions-1, elemT>::const_full_iterator, elemT, const_full_reference, const_full_pointer> const_full_iterator;
+#else // ARRAY_FULL2
+  typedef FullArrayIterator<num_dimensions, elemT, full_reference, full_pointer> full_iterator;
 
-  typedef FullArrayConstIterator<num_dimensions, elemT, const_reference, const_pointer> const_full_iterator;
+  typedef FullArrayConstIterator<num_dimensions, elemT, const_full_reference, const_full_pointer> const_full_iterator;
 
 #endif
   //@} 
@@ -125,23 +123,27 @@ public:
   //! virtual destructor, frees up any allocated memory
   inline virtual ~Array();
 
-#ifdef ARRAY_FULL
+  /*! @name functions returning full_iterators*/
+  //@{
   //! start value for iterating through all elements in the array, see full_iterator
   inline full_iterator begin_all();
-#ifdef ARRAY_CONST_IT  
   //! start value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator begin_all() const;
-#endif  
   //! end value for iterating through all elements in the array, see full_iterator
   inline full_iterator end_all();
-#ifdef  ARRAY_CONST_IT
   //! end value for iterating through all elements in the (const) array, see full_iterator
   inline const_full_iterator end_all() const;
-#endif
-#endif
-  
-  //! return the range of indices used  
+  //@}
+
   inline IndexRange<num_dimensions> get_index_range() const;
+
+  /* Implementation note: grow() and resize() are inline such that they are
+     defined for any type you happen to use for elemT. Otherwise, we would
+     need instantiation in Array.cxx.
+  */
+  //! change the array to a new range of indices, new elements are set to 0  
+  inline virtual void 
+    resize(const IndexRange<num_dimensions>& range);
 
   //! grow the array to a new range of indices, new elements are set to 0  
   virtual inline void 
@@ -297,6 +299,12 @@ public:
   // Array::grow initialises new elements to 0
   inline virtual void grow(const int min_index, const int max_index);
   
+  //! Array::resize initialises new elements to 0
+  inline virtual void resize(const IndexRange<1>& range);
+  
+  // Array::resize initialises new elements to 0
+  inline virtual void resize(const int min_index, const int max_index);
+  
   //! return sum of all elements
   inline elemT sum() const;
   
@@ -354,31 +362,18 @@ public:
 
 #endif // boost
 
-
     //! allow array-style access, read/write
-
   inline elemT&	operator[] (int i);
 
-
-
   //! array access, read-only
-
   inline const elemT&	operator[] (int i) const;
-
     
-
   //! allow array-style access giving its BasicCoordinate, read/write  
-
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
-
-
   //! array access giving its BasicCoordinate, read-only
-
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
-
   
-
 
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
@@ -486,6 +481,12 @@ public:
   // Array::grow initialises new elements to 0
   inline virtual void grow(const int min_index, const int max_index);
   
+  //! Array::resize initialises new elements to 0
+  inline virtual void resize(const IndexRange<1>& range);
+  
+  // Array::resize initialises new elements to 0
+  inline virtual void resize(const int min_index, const int max_index);
+  
   //! return sum of all elements
   inline elemT sum() const;
   
@@ -535,31 +536,18 @@ public:
   
 #endif // boost
 
-
     //! allow array-style access, read/write
-
   inline elemT&	operator[] (int i);
 
-
-
   //! array access, read-only
-
   inline const elemT&	operator[] (int i) const;
-
     
-
   //! allow array-style access giving its BasicCoordinate, read/write  
-
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
-
-
   //! array access giving its BasicCoordinate, read-only
-
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
-
   
-
 
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
@@ -656,6 +644,12 @@ public:
   // Array::grow initialises new elements to 0
   inline virtual void grow(const int min_index, const int max_index);
   
+  //! Array::resize initialises new elements to 0
+  inline virtual void resize(const IndexRange<1>& range);
+  
+  // Array::resize initialises new elements to 0
+  inline virtual void resize(const int min_index, const int max_index);
+  
   //! return sum of all elements
   inline elemT sum() const;
   
@@ -706,29 +700,17 @@ public:
 #endif // boost
   
   //! allow array-style access, read/write
-
   inline elemT&	operator[] (int i);
 
-
-
   //! array access, read-only
-
   inline const elemT&	operator[] (int i) const;
-
     
-
   //! allow array-style access giving its BasicCoordinate, read/write  
-
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
-
-
   //! array access giving its BasicCoordinate, read-only
-
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
-
   
-
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
     const ByteOrder byte_order = ByteOrder::native);
@@ -824,6 +806,12 @@ public:
   // Array::grow initialises new elements to 0
   inline virtual void grow(const int min_index, const int max_index);
   
+  //! Array::resize initialises new elements to 0
+  inline virtual void resize(const IndexRange<1>& range);
+  
+  // Array::resize initialises new elements to 0
+  inline virtual void resize(const int min_index, const int max_index);
+  
   //! return sum of all elements
   inline elemT sum() const;
   
@@ -893,31 +881,18 @@ public:
                const ByteOrder byte_order = ByteOrder::native) const;
 #endif
 
-
     //! allow array-style access, read/write
-
   inline elemT&	operator[] (int i);
 
-
-
   //! array access, read-only
-
   inline const elemT&	operator[] (int i) const;
-
     
-
   //! allow array-style access giving its BasicCoordinate, read/write  
-
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
-
-
   //! array access giving its BasicCoordinate, read-only
-
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
-
   
-
 
   //! read data of different type from stream
   void 
@@ -991,6 +966,12 @@ public:
   // Array::grow initialises new elements to 0
   inline virtual void grow(const int min_index, const int max_index);
   
+  //! Array::resize initialises new elements to 0
+  inline virtual void resize(const IndexRange<1>& range);
+  
+  // Array::resize initialises new elements to 0
+  inline virtual void resize(const int min_index, const int max_index);
+  
   //! return sum of all elements
   inline elemT sum() const;
   
@@ -1040,31 +1021,18 @@ public:
 
 #endif // boost
 
-
     //! allow array-style access, read/write
-
   inline elemT&	operator[] (int i);
 
-
-
   //! array access, read-only
-
   inline const elemT&	operator[] (int i) const;
-
     
-
   //! allow array-style access giving its BasicCoordinate, read/write  
-
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
-
-
   //! array access giving its BasicCoordinate, read-only
-
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
-
   
-
 
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
@@ -1109,9 +1077,7 @@ END_NAMESPACE_STIR
 #  include "FullArrayIterator.h"
 #  else
 #    include "FullArrayIterator2.h"
-#    ifdef ARRAY_CONST_IT
 #       include "FullArrayConstIterator.h"
-#    endif
 #  endif
 #endif
 
