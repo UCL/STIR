@@ -6,7 +6,7 @@
   \file
   \ingroup test
 
-  \brief A simple programme to test the InterfileOutputFileFormat function.
+  \brief A simple programme to test the OutputFileFormat function.
 
   \author Kris Thielemans
 
@@ -16,14 +16,16 @@
   
   To run the test, you should use a command line argument with the name of a file.
   This should contain a test par file.
-  See InterfileOutputFileFormatTests for file contents.
+  See OutputFileFormatTests class documentation for file contents.
+
+  \warning Overwrites files STIRtmp.* in the current directory
 */
 /*
     Copyright (C) 2002- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
   
-#include "stir/IO/InterfileOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/RunTests.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -47,23 +49,24 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup test
-  \brief A simple class to test the InterfileOutputFileFormat function.
+  \brief A simple class to test the OutputFileFormat function.
 
   The class reads input from a stream, whose contents should be as
   follows:
 
   \verbatim
-  Test InterfileOutputFileFormat Parameters:=
-  output file format type := Interfile
+  Test OutputFileFormat Parameters:=
+  output file format type := 
   ; here are parameters specific for the file format
   End:=
   \endverbatim
 
+  \warning Overwrites files STIRtmp.* in the current directory
 */
-class InterfileOutputFileFormatTests : public RunTests
+class OutputFileFormatTests : public RunTests
 {
 public:
-  InterfileOutputFileFormatTests(istream& in) ;
+  OutputFileFormatTests(istream& in) ;
 
   void run_tests();
 private:
@@ -72,19 +75,20 @@ private:
   KeyParser parser;
 };
 
-InterfileOutputFileFormatTests::
-InterfileOutputFileFormatTests(istream& in) :
+OutputFileFormatTests::
+OutputFileFormatTests(istream& in) :
   in(in)
 {
   output_file_format_ptr = 0;
-  parser.add_start_key("Test InterfileOutputFileFormat Parameters");
+  parser.add_start_key("Test OutputFileFormat Parameters");
   parser.add_parsing_key("output file format type", &output_file_format_ptr);
   parser.add_stop_key("END");
 }
 
-void InterfileOutputFileFormatTests::run_tests()
+void OutputFileFormatTests::run_tests()
 {  
-  cerr << "Testing InterfileOutputFileFormat parsing function..." << endl;
+  cerr << "Testing OutputFileFormat parsing function..." << endl;
+  cerr << "WARNING: will overwite (and then delete) files called STIRtmp*\n";
 
   if (!check(parser.parse(in), "parsing failed"))
     return;
@@ -93,12 +97,7 @@ void InterfileOutputFileFormatTests::run_tests()
         "parsing failed to set output_file_format_ptr"))
     return;
  
-  if (!check(dynamic_cast<InterfileOutputFileFormat const *>
-          (&(*output_file_format_ptr)) != 0,
-        "parsing failed to set output_file_format_ptr to InterfileOutputFileFormat"))
-    return;
-
-  cerr << "Output parameters as read from input file:\n"
+  cerr << "Output parameters after reading from input file:\n"
        << "-------------------------------------------\n";
   cerr << static_cast<ParsingObject&>(*output_file_format_ptr).parameter_info();
 
@@ -129,28 +128,36 @@ void InterfileOutputFileFormatTests::run_tests()
 
     // write to file
 
+    string filename = "STIRtmp";
     const Succeeded success =
-      output_file_format_ptr->write_to_file("test.hv",image);
+      output_file_format_ptr->write_to_file(filename,image);
     
-    if (!check( success==Succeeded::yes, "test writing to file"))
-      return;
+    if (check( success==Succeeded::yes, "test writing to file"))
+      {
 
-    // now read it back
-    
-    shared_ptr<DiscretisedDensity<3,float> >
-      density_ptr = DiscretisedDensity<3,float>::read_from_file("test.hv");
-
-    const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =
-      dynamic_cast< VoxelsOnCartesianGrid<float> const *>
-      (density_ptr.get());
-    if (!check(!is_null_ptr(image_as_read_ptr), "test on image type read back from file"))
-      return;
-    check_if_equal(image_as_read_ptr->get_grid_spacing(), grid_spacing, "test on grid spacing read back from file");
-
-
-    check_if_equal(image, *density_ptr, "test on data read back from file");
-    check_if_equal(density_ptr->get_origin(), origin, "test on origin read back from file");
-
+	// now read it back
+	
+	shared_ptr<DiscretisedDensity<3,float> >
+	  density_ptr = DiscretisedDensity<3,float>::read_from_file(filename);
+	
+	const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =
+	  dynamic_cast< VoxelsOnCartesianGrid<float> const *>
+	  (density_ptr.get());
+	if (check(!is_null_ptr(image_as_read_ptr), "test on image type read back from file"))
+	  {
+	    check_if_equal(image_as_read_ptr->get_grid_spacing(), grid_spacing, "test on grid spacing read back from file");
+	    
+	    
+	    check_if_equal(image, *density_ptr, "test on data read back from file");
+	    check_if_equal(density_ptr->get_origin(), origin, "test on origin read back from file");
+	  }
+      }
+    if (is_everything_ok())
+      {
+	
+      }
+    else
+	cerr << "You can check what was written in STIRtmp.*\n";
 
   }
     
@@ -182,7 +189,7 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  InterfileOutputFileFormatTests tests(in);
+  OutputFileFormatTests tests(in);
   tests.run_tests();
   return tests.main_return_value();
 }
