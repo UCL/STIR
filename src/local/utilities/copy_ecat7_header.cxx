@@ -61,15 +61,17 @@ void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
 	short align_2;
 	short align_3;
   */
-  if (out_sh.recon_zoom==0)
+  //  if (out_sh.recon_zoom==0)
     {
       warning("Filling in recon_zoom as well\n");
       STIR_DO_IT(recon_zoom);
     }
-  else
+#if 0
+    else
     {
       warning("Keeping recon_zoom\n");
     }
+#endif
 
   STIR_DO_IT(frame_duration);
   STIR_DO_IT(frame_start_time);
@@ -113,6 +115,89 @@ void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
   STIR_DO_IT(scatter_type);
   STIR_DO_IT(recon_type);
   STIR_DO_IT(recon_views);
+}
+
+
+void copy_subheader(Image_subheader& out_sh, const Scan3D_subheader& in_sh)
+{
+  warning("Copying only timing and gating info from scan to image subheader\n");
+  /*
+	short data_type;
+	short num_dimensions;
+	short x_dimension;
+	short y_dimension;
+	short z_dimension;
+	short align_0;
+	float z_offset;
+	float x_offset;
+	float y_offset;
+	float scale_factor;
+	short image_min;
+	short image_max;
+	float x_pixel_size;
+	float y_pixel_size;
+	float z_pixel_size;
+	short align_1;
+	float x_resolution;
+	float y_resolution;
+	float z_resolution;
+	short align_2;
+	short align_3;
+
+  //  if (out_sh.recon_zoom==0)
+    {
+      warning("Filling in recon_zoom as well\n");
+      STIR_DO_IT(recon_zoom);
+    }
+#if 0
+    else
+    {
+      warning("Keeping recon_zoom\n");
+    }
+#endif
+  STIR_DO_IT(filter_code);
+  STIR_DO_IT(z_rotation_angle);
+  STIR_DO_IT(processing_code);
+  STIR_DO_IT(filter_cutoff_frequency);
+  STIR_DO_IT(filter_resolution);
+  STIR_DO_IT(filter_ramp_slope);
+  STIR_DO_IT(filter_order);
+  STIR_DO_IT(filter_scatter_fraction);
+  STIR_DO_IT(filter_scatter_slope);
+  for (int i=0; i<40; ++i)
+    STIR_DO_IT(annotation[i]);
+  STIR_DO_IT(mt_1_1);
+  STIR_DO_IT(mt_1_2);
+  STIR_DO_IT(mt_1_3);
+  STIR_DO_IT(mt_2_1);
+  STIR_DO_IT(mt_2_2);
+  STIR_DO_IT(mt_2_3);
+  STIR_DO_IT(mt_3_1);
+  STIR_DO_IT(mt_3_2);
+  STIR_DO_IT(mt_3_3);
+  STIR_DO_IT(rfilter_cutoff);
+  STIR_DO_IT(rfilter_resolution);
+  STIR_DO_IT(rfilter_code);
+  STIR_DO_IT(rfilter_order);
+  STIR_DO_IT(zfilter_cutoff);
+  STIR_DO_IT(zfilter_resolution);
+  STIR_DO_IT(zfilter_code);
+  STIR_DO_IT(zfilter_order);
+  STIR_DO_IT(mt_1_4);
+  STIR_DO_IT(mt_2_4);
+  STIR_DO_IT(mt_3_4);
+  STIR_DO_IT(scatter_type);
+  STIR_DO_IT(recon_type);
+  STIR_DO_IT(recon_views);
+  STIR_DO_IT(decay_corr_fctr);
+*/
+  STIR_DO_IT(frame_duration);
+  STIR_DO_IT(frame_start_time);
+  STIR_DO_IT(num_r_elements);
+  STIR_DO_IT(num_angles);
+  STIR_DO_IT(gate_duration);
+  STIR_DO_IT(r_wave_offset);
+  STIR_DO_IT(num_accepted_beats);
 }
 
 void copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
@@ -206,27 +291,44 @@ void copy_subheader(MatrixData * data_out,
     case PetImage:
     case ByteVolume:
     case PetVolume:
-	copy_subheader(
-           *reinterpret_cast<Image_subheader *>(data_out->shptr),
-           *reinterpret_cast<Image_subheader *>(data_in->shptr));
-	break;
+      {
+	switch(data_in->matfile->mhptr->file_type)
+	  {
+	  case Byte3dSinogram:
+	  case Short3dSinogram:
+	  case Float3dSinogram :
+	    copy_subheader(
+			   *reinterpret_cast<Image_subheader *>(data_out->shptr),
+			   *reinterpret_cast<Scan3D_subheader *>(data_in->shptr));
+	    break;
+	  case PetImage:
+	  case ByteVolume:
+	  case PetVolume:
+	    copy_subheader(
+			   *reinterpret_cast<Image_subheader *>(data_out->shptr),
+			   *reinterpret_cast<Image_subheader *>(data_in->shptr));
+	    break;
+	  default:
+	    error("\ncopy_subheader: cannot copy input subheader to subheader of type image\n");
+	  }
+      }
     case AttenCor:   		
-	copy_subheader(
-           *reinterpret_cast<Attn_subheader *>(data_out->shptr),
-           *reinterpret_cast<Attn_subheader *>(data_in->shptr));
-	break;
+      copy_subheader(
+		     *reinterpret_cast<Attn_subheader *>(data_out->shptr),
+		     *reinterpret_cast<Attn_subheader *>(data_in->shptr));
+      break;
     case Byte3dSinogram:
     case Short3dSinogram:
     case Float3dSinogram :
-	copy_subheader(
-           *reinterpret_cast<Scan3D_subheader *>(data_out->shptr),
-           *reinterpret_cast<Scan3D_subheader *>(data_in->shptr));
-	break;
+      copy_subheader(
+		     *reinterpret_cast<Scan3D_subheader *>(data_out->shptr),
+		     *reinterpret_cast<Scan3D_subheader *>(data_in->shptr));
+      break;
     default:
     case ByteProjection:
     case PetProjection:
-	error("copy_subheader: file_type not supported yet\n");
-}
+      error("copy_subheader: file_type not supported yet\n");
+    }
 }
 
 Succeeded
@@ -236,6 +338,8 @@ copy_main_header(MatrixFile * mout_ptr, MatrixFile *min_ptr)
     mh.num_frames = mout_ptr->mhptr->num_frames;
     mh.num_gates = mout_ptr->mhptr->num_gates;
     mh.num_bed_pos = mout_ptr->mhptr->num_bed_pos;
+    mh.file_type = mout_ptr->mhptr->file_type;
+    
     if (mat_write_main_header(mout_ptr->fptr, &mh))
       return Succeeded::no;
     else
