@@ -73,6 +73,8 @@ get_num_frames() const
 TimeFrameDefinitions::
 TimeFrameDefinitions()
 {}
+// TODO linesapparently  have to end with a newline, otherwise they are ignored
+// (but why?)
 
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& fdef_filename)
