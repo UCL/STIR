@@ -115,33 +115,26 @@ else
   }
 }
 
-//MJ new
 void Reconstruction::ask_parameters()
 {
 
-  char input_filename_char[max_filename_length];
-  char output_filename_prefix_char[max_filename_length];
+  input_filename =
+    ask_filename_with_extension("Enter file name of 3D sinogram data : ", ".hs");
 
-  ask_filename_with_extension(input_filename_char,"Enter file name of 3D sinogram data : ", ".hs");
-  cerr<<endl;
-
-  input_filename=input_filename_char;
-
-  proj_data_ptr = ProjData::read_from_file(input_filename_char);
+  proj_data_ptr = ProjData::read_from_file(input_filename.c_str());
 
   max_segment_num_to_process=
     ask_num("Maximum absolute segment number to process: ",
 	    0, proj_data_ptr->get_max_segment_num(), 0);
 
-  ask_filename_with_extension(output_filename_prefix_char,"Output filename prefix", "");
-
-  output_filename_prefix=output_filename_prefix_char;
+  output_filename_prefix= 
+    ask_string("Output filename prefix:", "");
 
   zoom=  ask_num("Specify a zoom factor as magnification effect ? ",0.1,10.,1.);
 
 
   output_image_size_xy =  
-    ask_num("Final image size (-1 for default)? ",
+    ask_num("Final image size (-1 for whole FOV)? ",
 	    -1,
 	    4*static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom),
 	    -1);
@@ -155,12 +148,12 @@ void Reconstruction::ask_parameters()
     // for y-axis, toward the top of the FOV
     // for z-axis, toward the patient's feet (assuming typical spinal, head first position)
     
-    cout << endl << "    Enter offset  Xoff, Yoff (in pixels) :";
+    cerr << endl << "    Enter offset  Xoff, Yoff (in pixels) :";
     Xoffset = ask_num("   X offset  ",-old_size/2, old_size/2, 0);
     Yoffset = ask_num("   Y offset  ",-old_size/2, old_size/2, 0);
 #endif
     
-    cout << "\n    Enter output file format type :\n";
+    cerr << "\n    Enter output file format type :\n";
     output_file_format_ptr = OutputFileFormat::ask_type_and_parameters();
 
 #if 0
