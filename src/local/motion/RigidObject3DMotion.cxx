@@ -22,6 +22,7 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/stream.h"
 
+#include <time.h>
 #include <iostream>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
