@@ -1,21 +1,28 @@
 //
-// $Id$ :$Date$
+// $Id$: $Date$
 //
+/*!
 
-// KT 01/08/98 removed ! from keywords
+  \file
+  \ingroup buildblock
 
-// KT 12/11/98 changed String->string
+  \brief Implementations for class Line
 
-// KT 14/12 changed <> to "" in next include
+  \author Patrick Valente
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
 #include "line.h"
-#include <vector>
-// KT 09/08/98 added for using cerr for warnings
-#include <iostream>
 
-#if defined(_MSC_VER)
-// disable warning about truncation of very long type names for debugger
-#pragma warning(once: 4786)
-#endif
+
+START_NAMESPACE_TOMO
+
+const int LINE_ERROR =-1;
+const int LINE_OK	= 0;
 
 string Line::get_keyword()
 {
@@ -61,9 +68,9 @@ int Line::get_index()
 		if (eok == string::npos)
 		{
 		  // TODO do something more graceful
-		  cerr << "Interfile warning: invalid vectored key in line \n'"
-		       << *this << "'.\n" 
-		       << "Assuming this is not a vectored key." << endl;
+		  warning("Interfile warning: invalid vectored key in line \n'%s'.\n%s",
+		       this->c_str(), 
+		       "Assuming this is not a vectored key.");
 		  return 0;
 		}
 		// KT 09/08/98 replaced Mid by substr
@@ -288,3 +295,5 @@ Line& Line::operator=(const char* ch)
 	string::operator=(ch);
 	return *this;
 }
+
+END_NAMESPACE_TOMO

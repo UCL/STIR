@@ -3,15 +3,21 @@
 //
 
 /*
-  Linear regression function
-  
-  Kris Thielemans, 08/12/1999
-*/
+  \file
+  \ingroup buildblock
 
+  \brief Implementation of linear_regression() function
 
-#include "pet_common.h"
+  \author Kris Thielemans  
+  \author PARAPET project
+
+  \date $Date$
+  \version $Revision$
+*/  
+
 #include "linear_regression.h"
 
+START_NAMESPACE_TOMO
 
 template <class Value, class DataType, class CoordinatesType>
 void linear_regression(Value& constant, Value& scale,
@@ -129,3 +135,4 @@ void linear_regression<>(double& constant, double& scale,
 		       const bool use_estimated_variance
                        );
 
+END_NAMESPACE_TOMO
