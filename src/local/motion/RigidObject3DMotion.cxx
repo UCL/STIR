@@ -40,6 +40,7 @@ find_ref_start_end_from_att_file (double& att_start_time, double& att_end_time,
 			    double transmission_duration,
 			    const string& attenuation_filename)
 {
+#ifdef HAVE_LLN_MATRIX
   MatrixFile* AttnFile = matrix_open(attenuation_filename.c_str(), MAT_READ_ONLY, AttenCor );
   if (AttnFile==NULL)
     error("Error opening attenuation file %s\n", attenuation_filename.c_str());
@@ -51,6 +52,9 @@ find_ref_start_end_from_att_file (double& att_start_time, double& att_end_time,
   matrix_close( AttnFile ) ;
   att_start_time = ( AttnTime->tm_hour * 3600.0 ) + ( AttnTime->tm_min * 60.0 ) + AttnTime->tm_sec ;
   att_end_time = att_start_time + transmission_duration;
+#else
+    error("Error opening attenuation file %s: compiled without ECAT7 support\n", attenuation_filename.c_str());
+#endif
 }
 
 void 
