@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -12,11 +12,22 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
     
 */
 //   Pretty horrible implementations at the moment...
+
+/* Modification history
+
+  KT 29/06/2001 make sure that a filename ending on .hv is treated correctly
+  KT 26/08/2001 make sure that a data_filename ending on .hs is treated correctly
+  KT 05/09/2001 added directory capability
+  KT 14/01/2000 added directory capability in read_interfile_PDFS
+  KT 18/01/2001 use data from proj_data_info instead of scanner
+  KT 10/12/2001 do not call ask_parameters anymore when failing to parse the header
+                write applied corrections keyword for arc-correction	  
+*/
 
 #include "interfile.h"
 #include "InterfileHeader.h"
@@ -25,8 +36,9 @@
 #include "CartesianCoordinate3D.h"
 #include "VoxelsOnCartesianGrid.h"
 #include "ProjDataFromStream.h"
-#include "ProjDataInfoCylindrical.h"
+#include "ProjDataInfoCylindricalArcCorr.h"
 #include "Scanner.h"
+#include "tomo/Succeeded.h"
 
 #include <fstream>
 
@@ -47,10 +59,7 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input,
   InterfileImageHeader hdr;
   if (!hdr.parse(input))
   {
-      warning("\nError parsing interfile header, \n\
-I am going to ask you lots of questions...\n");
-      return new VoxelsOnCartesianGrid<float>
-        (VoxelsOnCartesianGrid<float>::ask_parameters());
+      return 0; //KT 10/12/2001 do not call ask_parameters anymore 
     }
   
   // prepend directory_for_data to the data_file_name from the header
@@ -65,8 +74,6 @@ I am going to ask you lots of questions...\n");
   
   CartesianCoordinate3D<float> voxel_size(hdr.pixel_sizes[2], hdr.pixel_sizes[1], hdr.pixel_sizes[0]);
   
-  // KT 29/10/98 adjusted x,y ranges to centre 
-  // KT 03/11/99 added int
   const int y_size =  hdr.matrix_size[1][0];
   const int x_size =  hdr.matrix_size[0][0];
   VoxelsOnCartesianGrid<float>* image_ptr =
@@ -424,9 +431,7 @@ read_interfile_PDFS(istream& input,
 
    if (!hdr.parse(input))
     {
-      warning("\nError parsing interfile header, \n\
-I am going to ask you lots of questions...\n");
-      return ProjDataFromStream::ask_parameters();
+      return 0; // KT 10122001 do not call ask_parameters anymore
     }
 
   // KT 14/01/2000 added directory capability
@@ -554,6 +559,13 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   output_header << "!PET STUDY (General) :=\n";
   output_header << "!PET data type := Emission\n";
   {
+    // KT 10/12/2001 write applied corrections keyword
+    if(dynamic_cast< const ProjDataInfoCylindricalArcCorr*> (pdfs.get_proj_data_info_ptr()) != NULL)
+      output_header << "applied corrections := {arc correction}\n";
+    else
+      output_header << "applied corrections := {None}\n";
+  }
+  {
     string number_format;
     size_t size_in_bytes;
 
@@ -601,8 +613,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 	}
       default:
 	{
-	  error("write_interfile_PSOV_header: unsupported storage order,\
-defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
+	  error("write_interfile_PSOV_header: unsupported storage order, "
+                "defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
 	}
       }
     
