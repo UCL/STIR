@@ -26,7 +26,7 @@
 #include "stir/recon_array_functions.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/LogLikBased/common.h"
-#include "stir/TruncateMinToSmallPositiveValueImageProcessor.h"
+#include "stir/ThresholdMinToSmallPositiveValueImageProcessor.h"
 #include "stir/ChainedImageProcessor.h"
 #include "stir/Succeeded.h"
 #include "stir/thresholding.h"
@@ -106,7 +106,7 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
       parameters.proj_data_ptr->get_max_segment_num();
 
   if(parameters.enforce_initial_positivity) 
-    truncate_min_to_small_positive_value(*target_image_ptr);
+    threshold_min_to_small_positive_value(*target_image_ptr);
 
   if(parameters.inter_update_filter_interval>0 && 
      !is_null_ptr(parameters.inter_update_filter_ptr))
@@ -120,7 +120,7 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
       parameters.inter_update_filter_ptr =
 	new ChainedImageProcessor<3,float>(
 				  parameters.inter_update_filter_ptr,
-				  new  TruncateMinToSmallPositiveValueImageProcessor<float>
+				  new  ThresholdMinToSmallPositiveValueImageProcessor<float>
 );
 
     }
@@ -131,7 +131,7 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
       parameters.inter_iteration_filter_ptr =
 	new ChainedImageProcessor<3,float>(
 					   parameters.inter_iteration_filter_ptr,
-					   new  TruncateMinToSmallPositiveValueImageProcessor<float>
+					   new  ThresholdMinToSmallPositiveValueImageProcessor<float>
 );
     }
 }

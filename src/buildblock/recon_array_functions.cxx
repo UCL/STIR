@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 
 const float SMALL_NUM = 0.000001F;
 
-void truncate_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image){
+void threshold_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image){
 
 
   long nuneg;

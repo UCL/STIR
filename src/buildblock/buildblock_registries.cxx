@@ -21,12 +21,12 @@
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/MedianImageFilter3D.h"
 #include "stir/ChainedImageProcessor.h"
-#include "stir/TruncateMinToSmallPositiveValueImageProcessor.h"
+#include "stir/ThresholdMinToSmallPositiveValueImageProcessor.h"
 
 START_NAMESPACE_STIR
 
 static MedianImageFilter3D<float>::RegisterIt dummy;
 static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;
 static ChainedImageProcessor<3,float>::RegisterIt dummy3;
-static TruncateMinToSmallPositiveValueImageProcessor<float>::RegisterIt dummy4;
+static ThresholdMinToSmallPositiveValueImageProcessor<float>::RegisterIt dummy4;
 END_NAMESPACE_STIR
