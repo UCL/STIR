@@ -59,7 +59,7 @@ static inline
 unsigned long int
 convert_4_bytes(unsigned char * buffer)
 {
-  if (ByteOrder::native != ByteOrder::big_endian)
+  if (ByteOrder::native == ByteOrder::big_endian)
     return buffer[0] + 256UL*(buffer[1] + 256UL*(buffer[2] + 256UL*buffer[3]));
   else
     return buffer[3] + 256UL*(buffer[2] + 256UL*(buffer[1] + 256UL*buffer[0]));
@@ -140,7 +140,8 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
       singles_file.read(reinterpret_cast<char *>(buffer),size_of_singles_record);
       if (!singles_file)
 	{
-	  warning("Error reading singles file record %d. Stopped reading from this point.", singles_record_num);
+	  if (!singles_file.eof())
+	    warning("Error reading singles file record %d. Stopped reading from this point.", singles_record_num);
 	  break;
 	}
       singles_str.time = convert_4_bytes(buffer);
