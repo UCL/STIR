@@ -16,7 +16,7 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date    $Date$
+  \date   $Date$
   \version $Revision$
 */
 
@@ -46,16 +46,10 @@ public:
   //! file name for output reconstructed images
   string output_filename_prefix; // KT 160899 changed name
 
-  //! signals whether or not to display final result
-  int disp;
-
   //! the output image size
   /*! convention: if -1, use get_num_tangential_poss()
   */
   int output_image_size; 
-
-  //! signals whether or not to save intermediate files
-  int save_intermediate_files;
 
   //! number of views to add (i.e. mashing)
   int num_views_to_add;
