@@ -67,11 +67,11 @@ main (int argc, char* argv[])
 
   // compute total singles in this frame
   Array<2,float> singles_in_this_frame(array_sgl[0].get_index_range());
-
+  unsigned how_many_entries = 0;
   // find entry in start of frame
   int entry_num=array_sgl.get_min_index(); 
   for (;
-       entry_num+1<times.size() && entry_num<= array_sgl.get_max_index(); 
+       static_cast<std::size_t>(entry_num+1)<times.size() && entry_num<= array_sgl.get_max_index(); 
        ++entry_num)
     {
       const double current_time = times[entry_num+1];
@@ -80,14 +80,17 @@ main (int argc, char* argv[])
     }
   // now add singles in this frame
   for (;
-       entry_num<times.size() && entry_num<= array_sgl.get_max_index(); 
+       static_cast<std::size_t>(entry_num)<times.size() && entry_num<= array_sgl.get_max_index(); 
        ++entry_num)
     {
       const double current_time = times[entry_num];
       if (current_time > frame_defs.get_end_time(frame_num) )
 	break;
       singles_in_this_frame += array_sgl[entry_num];
+      ++how_many_entries;
     }
+  // compute average rate
+  singles_in_this_frame /= how_many_entries;
 
   // now write to file
   {
@@ -96,7 +99,7 @@ main (int argc, char* argv[])
     int singles_num = 0;
     while (array_iter != singles_in_this_frame.end_all())
       {
-	output << singles_num << "  " << *array_iter * 1000 << '\n';
+	output << singles_num << "  " << *array_iter << '\n';
 	++singles_num;
 	++array_iter;
       }
