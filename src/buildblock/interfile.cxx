@@ -10,61 +10,69 @@
    */
 
 #include "interfile.h"
+#include "utilities.h"
 
 PETImageOfVolume read_interfile_image(fstream& input)
 {
   KeyParser kp(&input);
   if(kp.StartParsing())
-  {
-    PETerror("Error parsing interfile header");
-    Abort();
-  }
+    {
+      PETerror("\nError parsing interfile header, \n\
+               I am going to ask you lots of questions...\n");
+      return ask_image_details();
+    }
   
   
-    printf("byte order : %s_endian\n",
-      kp.file_byte_order == ByteOrder::little_endian ? "Little" : "Big");
-    printf("Number type:  %d\n", kp.type_of_numbers);
-    /*
+  printf("byte order : %s_endian\n",
+	 kp.file_byte_order == ByteOrder::little_endian ? "Little" : "Big");
+  printf("Number type:  %d\n", kp.type_of_numbers);
+  /*
     printf("num_dimensions : %d\n",kp.num_dimensions);
     for(int i=0;i<kp.num_dimensions;i++)
     {
-      vector<int> v;
-      v=kp.matrix_size[i];
-      for(int ii=0;ii<v.size();ii++)
-	printf("matrix_size[%d][%d] : %d\n",i+1,ii+1,v[ii]);
-      //printf("matrix_labels[%d] : %s\n",i+1, kp.matrix_labels[i].c_str());
+    vector<int> v;
+    v=kp.matrix_size[i];
+    for(int ii=0;ii<v.size();ii++)
+    printf("matrix_size[%d][%d] : %d\n",i+1,ii+1,v[ii]);
+    //printf("matrix_labels[%d] : %s\n",i+1, kp.matrix_labels[i].c_str());
     }
-    */
-    assert(kp.num_dimensions == 3);
-    assert(kp.matrix_size[0].size() == 1);
-    assert(kp.matrix_size[1].size() == 1);
-    assert(kp.matrix_size[2].size() == 1);
+  */
+  assert(kp.num_dimensions == 3);
+  assert(kp.matrix_size[0].size() == 1);
+  assert(kp.matrix_size[1].size() == 1);
+  assert(kp.matrix_size[2].size() == 1);
 
-    Point3D origin(0,0,0);
+  Point3D origin(0,0,0);
 
-    Point3D voxel_size(kp.pixel_sizes[0], kp.pixel_sizes[1], kp.pixel_sizes[2]);
+  Point3D voxel_size(kp.pixel_sizes[0], kp.pixel_sizes[1], kp.pixel_sizes[2]);
 
-    PETImageOfVolume 
-     image(Tensor3D<float>(kp.matrix_size[2][0], kp.matrix_size[1][0], kp.matrix_size[0][0]),
-		      origin,
-		      voxel_size);
-    Real scale = Real(1);
-    image.read_data(*(kp.in_stream), kp.type_of_numbers, scale, kp.file_byte_order);
-    assert(scale == 1);    
+  PETImageOfVolume 
+    image(Tensor3D<float>(kp.matrix_size[2][0], kp.matrix_size[1][0], kp.matrix_size[0][0]),
+	  origin,
+	  voxel_size);
+  Real scale = Real(1);
+  image.read_data(*(kp.in_stream), kp.type_of_numbers, scale, kp.file_byte_order);
+  assert(scale == 1);    
 
-    /*
+  /*
     // look at the KeyParser class for retrieving 
     // values for the PETSinog. constructor.
     //PETSinogramOfVolume sino;
     vector<int> min_r(9,0);
     
-     sino(scanmodel,min_r,kp.matrix_size[max_r_index],ecc);
-    */
+    sino(scanmodel,min_r,kp.matrix_size[max_r_index],ecc);
+  */
     
+  if(kp.in_stream!=0)
+    {
+      kp.in_stream->close();
+      delete kp.in_stream;
+    }
   
   
   return image;
 }
+
 
 template <class NUMBER>
 bool write_basic_interfile(const char * const filename, Tensor3D<NUMBER>& image)
@@ -131,7 +139,8 @@ bool write_basic_interfile(const char * const filename, Tensor3D<NUMBER>& image)
       return false;
     }  
     string data_name = filename;
-    data_name += ".av";
+    // point to the same file with binary data
+    data_name += ".v";
     ofstream output_data;
     open_write_binary(output_data, data_name.c_str());
     
@@ -160,7 +169,6 @@ bool write_basic_interfile(const char * const filename, Tensor3D<NUMBER>& image)
     output_header << "matrix axis label [2] := y\n";
     output_header << "!END OF INTERFILE :=\n";
     
-    image.write_data(output_data);
   }
   return true;
 }
