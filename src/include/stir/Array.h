@@ -78,12 +78,21 @@ class Array : public NumericVectorWithOffset<Array<num_dimensions-1, elemT>, ele
 {
 private:
   typedef  Array<num_dimensions, elemT> self;
-
-protected:
   typedef NumericVectorWithOffset<Array<num_dimensions-1, elemT>, elemT> base_type;
  
 public:
+  //@{
+  //! typedef such that we do not need to have \a typename wherever we use iterators 
+  typedef typename base_type::iterator iterator;
+  typedef typename base_type::const_iterator const_iterator;
+  //@}
 #ifdef ARRAY_FULL
+  /*! @name typedefs for full_iterator support
+  Full iterators provide a 1-dimensional view on a multi-dimensional
+  Array. 
+  */
+
+  //@{
   typedef elemT value_type;
   typedef value_type* pointer;
   typedef const value_type* const_pointer;
@@ -91,21 +100,18 @@ public:
   typedef const value_type& const_reference;
 #ifndef ARRAY_FULL2
   //! This defines an iterator type that iterates through all elements.
-  typedef FullArrayIterator<base_type::iterator, typename Array<num_dimensions-1, elemT>::full_iterator, elemT, reference, pointer> full_iterator;
-#ifdef ARRAY_CONST_IT
+  typedef FullArrayIterator<typename base_type::iterator, typename Array<num_dimensions-1, elemT>::full_iterator, elemT, reference, pointer> full_iterator;
+
   //! As full_iterator, but for const objects.
-  typedef FullArrayIterator<base_type::const_iterator, typename Array<num_dimensions-1, elemT>::const_full_iterator, elemT, const_reference, const_pointer> const_full_iterator;
-#else
-  typedef FullArrayIterator<base_type::iterator, typename Array<num_dimensions-1, elemT>::full_iterator, elemT, reference, pointer> const_full_iterator;
-#endif
+  typedef FullArrayIterator<typename base_type::const_iterator, typename Array<num_dimensions-1, elemT>::const_full_iterator, elemT, const_reference, const_pointer> const_full_iterator;
 #else // ARRAY_FULL2
   typedef FullArrayIterator<num_dimensions, elemT, reference, pointer> full_iterator;
-#ifdef ARRAY_CONST_IT
+
   typedef FullArrayConstIterator<num_dimensions, elemT, const_reference, const_pointer> const_full_iterator;
+
 #endif
+  //@} 
 #endif
-#endif
-  
 public:
   //! Construct an empty Array
   inline Array();
@@ -219,13 +225,16 @@ class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
 			 boost::operators<Array<1, elemT>, elemT>
 #endif
 {
-protected: 
+private: 
   
   typedef NumericVectorWithOffset<elemT,elemT> base_type;
   typedef Array<1, elemT> self;
 
 
 public:
+  //! typedefs such that we do not need to have \a typename wherever we use iterators 
+  typedef typename base_type::iterator iterator;
+  typedef typename base_type::const_iterator const_iterator;
 
   /*! \brief Iterator type for going through all elements
 
