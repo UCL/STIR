@@ -84,8 +84,8 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image,
 { 
   const CartesianCoordinate3D<float>& voxel_size= image.get_voxel_size();
   const CartesianCoordinate3D<float>& origin= image.get_origin();
-  if (norm(origin)>.00001)
-      error("Shape3D::construct_volume currently ignores image origin (not shape origin)\n");
+  //if (norm(origin)>.00001)
+  //    error("Shape3D::construct_volume currently ignores image origin (not shape origin)\n");
   const int min_z = image.get_min_z();
   const int min_y = image.get_min_y();
   const int min_x = image.get_min_x();
@@ -126,7 +126,7 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image,
 
 	// first check if we're already at an edge voxel
 	// Note:  this allow fuzzy boundaries
-	bool recompute = current_value<.999F || current_value>.00F;
+	bool recompute = current_value<.999F && current_value>.00F;
 	if (!recompute)
 	  {
 	    // check neighbour values. If they are all equal, we'll assume it's ok.
