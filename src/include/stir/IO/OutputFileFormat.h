@@ -41,6 +41,10 @@ class Succeeded;
   \brief 
   Base class for classes that create output files.
 
+  \todo Support projection data
+  \todo  Provide functions that enable the user to inquire about
+  capabilities. For instance, supports_multi_time_frames(),
+  supports_different_xy_pixel_size() etc.
  */
 class OutputFileFormat : 
   public RegisteredObject<OutputFileFormat >,
@@ -63,9 +67,9 @@ public:
     \warning In the case of file formats that use a separate header file, the \a
        filename argument at input is/should be used as a filename for the file
        with the actual data. At output however, the name of the header file 
-       will/should be returned. This is all a bit messy, so it's recommended to 
-       not use an extension.
-
+       will/should be returned. This is all a bit messy, so it's 
+       <strong>recommended</strong> to 
+       not use an extension for the output filename.
 
   \todo 
       Unfortunately, C++ does not allow virtual member templates, so we'd need
@@ -78,7 +82,7 @@ public:
 		  
   //! write a single image to file
   /*! See the virtual version. This version does not return the 
-      filename as used.
+      filename used.
   */
   Succeeded  
     write_to_file(const string& filename, 
