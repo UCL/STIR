@@ -361,11 +361,13 @@ RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const Ca
 RigidObject3DTransformation compose ( const RigidObject3DTransformation& apply_last,
 				      const RigidObject3DTransformation& apply_first)
 {
-  Quaternion<float> quat_tmp (0,apply_last.get_translation().x(),apply_last.get_translation().y(),apply_last.get_translation().z());
- CartesianCoordinate3D<float> trans((apply_first.get_quaternion()*quat_tmp*conjugate(apply_last.get_quaternion()))[4],
-				      (apply_first.get_quaternion()*quat_tmp*conjugate(apply_last.get_quaternion()))[3],
-				      (apply_first.get_quaternion()*quat_tmp*conjugate(apply_last.get_quaternion()))[2]);
-  return RigidObject3DTransformation(apply_last.get_quaternion()*apply_first.get_quaternion(),
+ Quaternion<float> quat_tmp (0,apply_last.get_translation().x(),apply_last.get_translation().y(),apply_last.get_translation().z());
+
+ CartesianCoordinate3D<float> trans((apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion()))[4],
+				    (apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion()))[3],
+				    (apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion()))[2]);
+
+ return RigidObject3DTransformation(apply_first.get_quaternion()*apply_last.get_quaternion(),
 				     apply_first.get_translation()+trans);
 }
 END_NAMESPACE_STIR
