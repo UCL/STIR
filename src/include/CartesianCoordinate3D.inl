@@ -4,7 +4,7 @@
 
 /*!
   \file 
- 
+  \ingroup buildblock  
   \brief inline implementations for the CartesianCoordinate3D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -48,8 +48,7 @@ CartesianCoordinate3D<coordT>:: operator=(const basebase_type& c)
   return *this;
 }
 
-// Point3D to CartesianCoordinate3D
-
+#ifdef OLDDESIGN
 template <class coordT>
 CartesianCoordinate3D<coordT> ::CartesianCoordinate3D(const Point3D& p)
 
@@ -58,6 +57,7 @@ CartesianCoordinate3D<coordT> ::CartesianCoordinate3D(const Point3D& p)
   y() = p.y;
   z() = p.z;
 }
+#endif
 
 template <class coordT>
 coordT&
