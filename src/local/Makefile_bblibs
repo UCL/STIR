@@ -7,7 +7,7 @@ LOCAL_LIB_BUILDINGBLOCK= \
    ${WORKSPACE}/local/buildblock/${DEST}libbuildblock.a
 
 LOCAL_BUILDBLOCK_REGISTRIES= \
-    ${WORKSPACE}/local/buildblock/$(DEST)buildblock_registries.o
+    ${WORKSPACE}/local/buildblock/$(DEST)local_buildblock_registries.o
 
 $(LOCAL_LIB_BUILDINGBLOCK) $(LOCAL_BUILDBLOCK_REGISTRIES): FORCE2
 	cd $(WORKSPACE)/local/buildblock; mkdir -p $(DEST); $(MAKE) all;

@@ -2,10 +2,10 @@
 # $Id$
 #
 
-include ../../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 
-all: $(DEST)libbuildblock.a $(DEST)buildblock_registries.o
+all: $(DEST)libbuildblock.a $(DEST)local_buildblock_registries.o
 
 clean:
 	$(RM) $(DEST)*
