@@ -125,9 +125,10 @@ public:
   {
     typename Array<num_dimensions,T2>::iterator out_iter = data_out.begin();
     typename Array<num_dimensions,T1>::const_iterator in_iter = data_in.begin();
+    const typename Array<num_dimensions,T1>::const_iterator in_iter_end = data_in.end();
     for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
+         in_iter != in_iter_end;
+         ++in_iter, ++out_iter)
     {
       convert_array_auxiliary<num_dimensions-1,T1,T2,scaleT>::
         convert_array_fixed_scale_factor(*out_iter, scale_factor, *in_iter);
@@ -175,9 +176,10 @@ public:
     // resolved at compile time, so a good compiler does the work for me.
     typename Array<1,T2>::iterator out_iter = data_out.begin();
     typename Array<1,T1>::const_iterator in_iter = data_in.begin();
+    const typename Array<1,T1>::const_iterator in_iter_end = data_in.end();
     for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
+         in_iter != in_iter_end;
+         ++in_iter, ++out_iter)
     {    
       if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
       {
@@ -363,7 +365,7 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
       data_in.end_all();
     for (;
          in_iter != in_iter_end;
-         in_iter++, out_iter++)
+         ++in_iter, ++out_iter)
     {    
 	   //TODO can remove check on <t1>.signed_type
       if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
