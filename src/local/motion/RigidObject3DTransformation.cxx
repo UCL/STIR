@@ -127,7 +127,7 @@ CartesianCoordinate3D<float>
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
   CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
- Quaternion<float> quat_norm_tmp = quat;
+  Quaternion<float> quat_norm_tmp = quat;
    
   //cerr << quat << endl;
   {
@@ -158,16 +158,15 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
 #else  
   // first include transation and then do the transfromation with quaternion where the other is now 
   // swapped
-  Quaternion<float> tmp;
-  tmp[2] += translation.x();
-  tmp[3] += translation.y();
-  tmp[4] += translation.z();
+  // SM include the point tmp =point+q
+  Quaternion<float> tmp1=point_q;
+  tmp1[2] += translation.x();
+  tmp1[3] += translation.y();
+  tmp1[4] += translation.z();
   
-  tmp =  conjugate(quat_norm_tmp) * point_q *quat_norm_tmp ;
+  const Quaternion<float> tmp =  conjugate(quat_norm_tmp) * tmp1 *quat_norm_tmp ;
 
   const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
-
-
 #endif
 #else
   //translation only
@@ -176,7 +175,8 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
 						  swapped_point.y()+translation.y(),
 						  swapped_point.x()+translation.x());
 #endif
-#else
+
+#else // for rotational matrix 
   // transformation with rotational matrix
   Array<2,float> matrix = Array<2,float>(IndexRange2D(0,2,0,2));
 
