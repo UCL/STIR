@@ -54,7 +54,7 @@ int main(int argc, const char *argv[])
 {         
 	USING_NAMESPACE_STIR
 		using namespace std;
-	if (argc< 6 || argc>12)
+	if (argc< 6 || argc>13)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[activity_image]\n"
@@ -67,13 +67,15 @@ int main(int argc, const char *argv[])
 			<< "\t[maximum_scatter_points]\n"
 			<< "\t[random points]\n"
 			<< "\t[use_cosphi]\n"
-			<< "\t[use_cache]\n\n" 
+			<< "\t[use_cache]\n"
+			<< "\t[find_DS]\n\n"
 			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
 			<< "\tlower_energy_threshold defaults to 350 keV\n"
 			<< "\tupper_energy_threshold defaults to 650 keV\n"			
 			<< "\tmaximum_scatter_points defaults to 1000\n" 
 			<< "\tuse_cosphi defaults to false, use 1 to set to true\n"
-			<< "\tuse_cache defaults to true, use 0 to set to false\n";
+			<< "\tuse_cache defaults to true, use 0 to set to false\n"
+			<< "\tfind_DS defaults to false, use 1 to set to true\n" ;
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
@@ -89,6 +91,9 @@ int main(int argc, const char *argv[])
 	bool use_cache = true;
 	if (argc>=12 && atoi(argv[11])==0)
 		use_cache = false;
+	bool find_DS = false;
+	if (argc>=13 && atoi(argv[12])==1)
+		find_DS = true;
 
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
@@ -127,7 +132,7 @@ int main(int argc, const char *argv[])
 		activity_image, density_image,
 		scatt_points,attenuation_threshold,
 		lower_energy_threshold,upper_energy_threshold,
-		use_cosphi,use_cache,random);  
+		use_cosphi,use_cache,find_DS,random);  
 
 	writing_log(activity_image,
 		density_image,
@@ -136,6 +141,8 @@ int main(int argc, const char *argv[])
 		scatt_points,
 		lower_energy_threshold,
 		upper_energy_threshold,
-		use_cosphi,use_cache,random,argv);
+		use_cosphi,use_cache,
+		random,argv);
+
 	return EXIT_SUCCESS;
 }                 

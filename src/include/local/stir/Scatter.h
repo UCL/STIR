@@ -94,7 +94,7 @@ float  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discreti
   \ingroup scatter
  \brief 
 */
-
+//@{
 float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -105,6 +105,31 @@ float scatter_estimate_for_one_scatter_point(
 	  const float upper_energy_threshold,		
 	  const bool use_cosphi,
 	  const bool use_cache);
+
+float scatter_estimate_for_two_scatter_points(
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	  const std::size_t scatter_point_1_num, 
+	  const std::size_t scatter_point_2_num, 
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,		
+	  const bool use_cosphi,
+	  const bool use_cache);
+
+float scatter_estimate_for_all_scatter_points(
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,		
+	  const bool use_cosphi,
+	  const bool use_cache,
+	  const bool find_DS);
+//@}
+
 /*!	\name Klein-Nishina functions					
   \ingroup scatter
   \brief computes the differential cross section
@@ -147,26 +172,16 @@ float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point
 */ 
 inline
 float total_cross_section(float energy);
-//@}
+
 
 inline
 float energy_after_scatter_511keV(const float cos_theta);
 
+inline
+float total_cross_section_relative_to_511keV(const float energy);
+//@}
 
-/*!
-  \ingroup scatter
-  \brief 
 
-*/
-float scatter_estimate_for_all_scatter_points(
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-	  const unsigned det_num_A, 
-	  const unsigned det_num_B,
-	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,		
-	  const bool use_cosphi,
-	  const bool use_cache);
 /*!
   \ingroup scatter
   \brief 
@@ -178,7 +193,7 @@ void scatter_viewgram(
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
     int& scatt_points, const float att_threshold, 
 	const float lower_energy_threshold, const float upper_energy_threshold,		
-	const bool use_cosphi, const bool use_cache, const bool random);
+	const bool use_cosphi, const bool use_cache, const bool find_DS, const bool random);
 
 
 // Functions that could be in the BasicCoordinate Class
@@ -211,9 +226,13 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 /* !\ingroup scatter
      \brief Temporary implementation of writing time information
 */
-void writing_time(const int simulation_time, const int scatt_points_vector_size);
+void writing_time(const int simulation_time, 
+				  const int scatt_points_vector_size,
+				  const bool find_DS);
 
-void writing_time(const double simulation_time, const int scatt_points_vector_size);
+void writing_time(const double simulation_time, 
+				  const int scatt_points_vector_size,
+				  const bool find_DS);
 
 
 END_NAMESPACE_STIR
