@@ -59,6 +59,10 @@ END:=
 /*
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
+
+  Modification history:
+
+  KT 30/05/2002 loop over segments/views now works for any type of symmetry
 */
 
 
@@ -125,18 +129,15 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
     :
       forward_projector_ptr->get_symmetries_used()->clone();
 
-  // TODO somehow find basic range for loop
-  const int min_segment_num = 
-    !do_attenuation ? output_projdata.get_min_segment_num() : 0;
-  const int max_view_num = 
-    !do_attenuation ? input_projdata.get_max_view_num() : input_projdata.get_num_views()/4;
-
-  for (int segment_num = min_segment_num; segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
+  for (int segment_num = output_projdata.get_min_segment_num(); segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
   {
-    cerr<<endl<<"Processing segment #"<<segment_num<<endl;
-    for (int view_num=0; view_num<=max_view_num; ++view_num)
+    cerr<<endl<<"Processing segment # "<<segment_num << "(and any related segments)"<<endl;
+    for (int view_num=input_projdata.get_min_view_num(); view_num<=input_projdata.get_max_view_num(); ++view_num)
     {    
       const ViewSegmentNumbers view_seg_nums(view_num,segment_num);
+      if (!symmetries_ptr->is_basic(view_seg_nums))
+        continue;
+      
       // ** first fill in the data **
       
       RelatedViewgrams<float> 
@@ -306,7 +307,6 @@ initialise_keymap()
   parser.add_key("apply (1) or undo (0) correction", &apply_or_undo_correction);
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("randoms projdata filename", &randoms_projdata_filename);
-  //parser.add_key("Normalisation filename", &norm_filename);
   parser.add_key("attenuation image filename", &atten_image_filename);
   parser.add_parsing_key("forward projector type", &forward_projector_ptr);
   parser.add_key("scatter_projdata_filename", &scatter_projdata_filename);
