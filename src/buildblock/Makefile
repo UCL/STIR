@@ -43,6 +43,7 @@ SOURCES = \
   linear_regression.cxx overlap_interpolate.cxx \
   error.cxx warning.cxx  \
   DataSymmetriesForViewSegmentNumbers.cxx \
+	TimeFrameDefinitions.cxx \
 	ParsingObject.cxx \
 	ArrayFilter1DUsingConvolutionSymmetricKernel.cxx \
 	SeparableArrayFunctionObject.cxx \
