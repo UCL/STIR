@@ -21,7 +21,7 @@
 #ifndef __stir_FORE_FourierRebinning_H__
 #define __stir_FORE_FourierRebinning_H__
 
-
+#include <complex.h>
 #include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/RegisteredParsingObject.h"
 
@@ -102,13 +102,10 @@ class PETCount_rebinned
   a small value of d : dlim. Owing to the small value of d, the axial shift can be 
   neglected as in the SSRB approximation.
 */
-class FourierRebinning 
-: 
-public 
-  RegisteredParsingObject<
-      FourierRebinning,
-      ProjDataRebinning,
-      ProjDataRebinning>
+class FourierRebinning : public   RegisteredParsingObject<
+                                  FourierRebinning,
+                                  ProjDataRebinning,
+                                  ProjDataRebinning>
 {
  private:
   typedef ProjDataRebinning base_type;
@@ -140,8 +137,11 @@ public
 
 
     //! This method creates a stack of 2D rebinned sinograms from the whole 3D data set (i.e. the ProjData data) and saves it.
-    Succeeded rebin();
+   Succeeded rebin();
+
+
  private:
+
 /*! 
   \brief Fourier rebinning
 
@@ -150,42 +150,31 @@ public
   and returns the updated stack of 2D rebinned sinograms still in Fourier space,
   the updated weigthing factors as well as  the new rebinned elements counter.
 
-  \param  data  3D float array containing the 3D data in which the number of views is equal to the next power of two. The dimensions of this array are (1,fft_size,nviews_pow2)
-  \param FTdata	(out) 3D float array containing the stack of 2D rebinned data in Fourier space. The dimensions of this array are (2*num_rings()-1, nviews_pow2, fft_size);
-  \param Weights (out) weight values in Fourier space or normalisation factors which represents the variable number of contributions for each w, k, r.  The dimensions of this array are  (2*num_rings()-1, nviews_pow2/2, fft_size)
-  \param z  Plane number to be processsed
-  \param delta	 Ring difference number to be processed
-  \param scan_info  Scanner informations
-  \param num_rebinned  Counter for the number of total, missing or SSRB elements (see more details in section II.8)
+ 
 */
-    void rebinning(const Array<3,float> &data, 
-		   Array<3,float> &FTdata, Array<3,float> &Weights,
-                   float z, float delta,  const ProjDataInfo &, 
-		   PETCount_rebinned &num_rebinned);
+    void rebinning(const Array<2,std::complex<float> > &data,
+       Array<3,std::complex<float> > &FTdata, Array<3,float> &Weights,
+       float z, float average_ring_difference_in_segment, int &num_views_pow2, int &num_tang_poss_pow2,
+       const float &half_distance_between_rings,const float &sampling_distance_in_s,const float &radial_sampling_freq_w,
+       const float &R_field_of_view_mm, const float &ratio_ring_spacing_to_ring_radius,  PETCount_rebinned &num_rebinned);
 
 /*!
   \brief This method takes as input the real 3D data set
-  (in which the number of views have been extended  to a number of power of 2)
+  (in which the number of
+  views have been extended  to a number of power of 2)
   and  returns the rebinned sinograms in Fourier space, their weighting factors
   as well as the counter rebinned elements
-
-  \b 3D \b FFT <BR>
-  The FFT for plane=plane is now in data and speq. Speq does only contain components at the Nyquist frequency, and
-  these are set to zero in the filter function anyway. The remaining values are stored in data in wrap-around order,
-  see Num Rec in C page 527.<BR>
-  Now let us rebin these data into the direct FTed sino array FTdata[.][.][plane] :<BR>
-  Positive w is the second index of data from 1 to fft_size/2+1; Positive k is the third index of data from 1 to nviewdpot-1,
-  in steps of two for the real part, the corresponding imaginary part being stored with indices 2 to nviews_pow2.
 
   \b Rebinning <BR>
   Assign each frequency component (w,k) to the rebinned sinogram of the slice lying closest axially to
   z - (tk/w) with t=((ring0 -ring1)*ring_spacing/(2*R) with R=ring_radius, 
   Pm(w,k) = Pm(w,k) + Pij(w,k) (i=ring0 and j=ring1), and m is the nearest integer to (i+j) -k(i-j)/(Rw)).
 */
-    void do_rebinning( SegmentBySinogram<float>&segment,
-                       PETCount_rebinned &num_rebinned_total,
-                       Array<3,float> &FTdata,
-                       Array<3,float> &weight);
+    void do_rebinning( SegmentBySinogram<float>&segment, int &num_tang_poss_pow2,
+                       int &num_views_pow2, const int &num_planes, const float& average_ring_difference_in_segment,
+                       const float &half_distance_between_rings,const float &sampling_distance_in_s,
+                       const float &radial_sampling_freq_w, const float &R_field_of_view_mm,const float &ratio_ring_spacing_to_ring_radius,
+                       PETCount_rebinned &num_rebinned_total, Array<3,std::complex<float> > &FTdata, Array<3,float> &weight);
 
 //! This method takes as input the segment or the 3D sinograms and returns the new segment on where views have been added by num_views_to_add. This method is general used fro direct planes.
     //    void do_mashing(SegmentBySinogram<float> &direct_sinos);
@@ -202,7 +191,7 @@ public
 //CL10/03/00 Remove these lines as not useful
 #if 0
 //  This is a function to save on fly the look-up-table
-void do_LUT(char lutfilename[80], Array<3,float> &weight);
+void do_LUT(char lutfilename[80], Array<3,std::complex<float> > &weight);
 
 //  This is a function to store the look-up-table (weighting factors)
 void do_storeLUT(char lutfilename[80], Array<3,float> &weight);
@@ -214,6 +203,12 @@ void do_display_count(PETCount_rebinned &num_rebinned_total);
 
 //! This is a function to adjust the number of views of a segment to the next power of 2
 void do_adjust_nb_views_to_pow2(SegmentBySinogram<float> &segment) ;
+
+//! This function checks if the steering and input paramters for FORE are inside the allowed range of parameters
+//void fore_check_parameters(int num_tang_poss_pow2, int num_views_pow2, int max_segment_num_to_process,
+//                           int deltamin, int kmin, int wmin, int kc);
+ void fore_check_parameters(int num_tang_poss_pow2, int num_views_pow2, int max_segment_num_to_process);
+
 
  protected:
   virtual bool post_processing();  
