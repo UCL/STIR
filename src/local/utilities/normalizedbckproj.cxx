@@ -29,7 +29,7 @@
 
 #include "local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
