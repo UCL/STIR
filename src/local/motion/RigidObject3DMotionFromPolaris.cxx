@@ -151,7 +151,7 @@ RigidObject3DMotionFromPolaris::find_offset(const CListModeData& listmode_data)
   }
   else
   {
-    //printf( "\t\tEntry %6d in %s Corresponds to Time 0 in %s \n", *ZeroOffSet, MotionTrackFileName, ListModeFileName ) ;
+   printf( "\t\tEntry %6d in .mt file Corresponds to Time 0 \n", ZeroOffSet) ;
   }
   
   
@@ -237,11 +237,15 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
     more_events-=1;
   }
 
-  //int s = lm_random_number.size();
+  int s = lm_random_number.size();
+ 
+  if (s==0)
+    error("RigidObject3DMotionFromPolaris: No random numbers stored from lm file \n");
+
   //cerr << " LM random number" << endl; 
 
   //for ( int i = 0;i<=10;i++)
-    //cerr << lm_random_number[i] << "  " ;
+   //cerr << lm_random_number[i] << "  " ;
 
  
 }
@@ -284,6 +288,15 @@ bool RigidObject3DMotionFromPolaris::post_processing()
   mt_file_ptr = new Polaris_MT_File(mt_filename);
   return false;
 }
+
+
+Succeeded 
+RigidObject3DMotionFromPolaris::set_polaris_time_offset(float time_offset)
+{
+  Polaris_time_offset=time_offset;
+  return Succeeded::yes;
+}
+
 #endif
 
 END_NAMESPACE_STIR
