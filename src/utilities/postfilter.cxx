@@ -6,7 +6,7 @@
   \file 
   \ingroup utilities
 
-  \brief  This programme performs filtering on image data
+  \brief  This program performs filtering on image data
  
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -16,7 +16,7 @@
   $Date$
   $Revision$
 
-  This programme enables calling any ImageProcessor object on input data, 
+  This program enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
    postfilter <output filename > <input header file name> <filter .par filename>
@@ -44,11 +44,12 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/interfile.h"
 #include "stir/utilities.h"
 #include "stir/KeyParser.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ImageProcessor.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/is_null_ptr.h"
 
 #include <iostream> 
 
@@ -76,7 +77,7 @@ class PostFiltering
 {
 public:
   PostFiltering();
-  ImageProcessor<3,float>* filter_ptr;
+  shared_ptr<ImageProcessor<3,float> > filter_ptr;
 public:
   KeyParser parser;
   
@@ -100,7 +101,7 @@ int
 main(int argc, char *argv[])
 {
   
-  DiscretisedDensity<3,float> *input_image_ptr;
+  shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
   PostFiltering post_filtering;
   string out_filename;
   
@@ -143,22 +144,22 @@ main(int argc, char *argv[])
 
   cerr << "PostFilteringParameters:\n" << post_filtering.parser.parameter_info();
 
-  if (post_filtering.filter_ptr == 0)
+  if (is_null_ptr(post_filtering.filter_ptr))
     {
-      error("postfilter: No filter set. Not writing any output.\n");
+      warning("postfilter: No filter set. Not writing any output.\n");
+      return EXIT_FAILURE;
     }
 
-  if (input_image_ptr == 0)
+  if (is_null_ptr(input_image_ptr))
     {
-      error("postfilter: No input image. Not writing any output.\n");
+      warning("postfilter: No input image. Not writing any output.\n");
+      return EXIT_FAILURE;
     }
     
   post_filtering.filter_ptr->apply(*input_image_ptr);
   
-  
-  write_basic_interfile(out_filename.c_str(),*input_image_ptr);
-
-  delete input_image_ptr;
+  DefaultOutputFileFormat output_file_format;
+  output_file_format.write_to_file(out_filename,*input_image_ptr);
 
   return EXIT_SUCCESS;
 }
