@@ -50,7 +50,7 @@ class Polaris_MT_File
 public:
   struct Record
   {
-   float sample_time;
+   double sample_time;
    unsigned int rand_num;
    char total_num;
    Quaternion<float> quat;

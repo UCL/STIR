@@ -49,7 +49,7 @@ Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
 	 mt_stream.getline( DataStr, MAX_STRING_LENGTH))
     {
       /* Extract elements from string */
-      if (sscanf( DataStr, "%f %u %c %f %f %f %f %f %f %f %f", 
+      if (sscanf( DataStr, "%lf %u %c %f %f %f %f %f %f %f %f", 
 		  &record.sample_time, &record.rand_num, &record.total_num, 
 		  &record.quat[1], &record.quat[2], &record.quat[3], &record.quat[4], 
 		  &record.trans.x(), &record.trans.y(), &record.trans.z(), 
@@ -62,7 +62,7 @@ Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
 	  vector_of_records.push_back(record);
 	  vector_of_tags.push_back(record);
 	}
-      else if (sscanf( DataStr, "%f %u %c : ---- Missing ----",
+      else if (sscanf( DataStr, "%lf %u %c : ---- Missing ----",
 		       &record.sample_time, &record.rand_num, &record.total_num
 		       ) ==3)
 	{
