@@ -29,16 +29,17 @@ void add_poisson(ProjData& output_projdata,
 int
 main (int argc,char *argv[])
 {
-  if(argc<4)
+  if(argc<5)
   {
-    cerr<<"Usage: add_poisson <input header file name (*.hs)> scaling_factor <output filename (no extension)> \n";
+    cerr<<"Usage: add_poisson <input header file name (*.hs)> scaling_factor <output filename (no extension)> seed-unsigned-int\n";
     exit(EXIT_FAILURE);
   }  
   
   const char *const filename = argv[3];
   const float scaling_factor = atof(argv[2]);
   shared_ptr<ProjData>  in_data = ProjData::read_from_file(argv[1]);
-  
+  unsigned int seed = atoi(argv[4]);
+  srand(seed);
   
   string filename_san =filename;
   filename_san += ".s";
