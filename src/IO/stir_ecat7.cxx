@@ -3,12 +3,20 @@
 //
 /*!
   \file
-  \ingroup CTI
+  \ingroup ECAT
+  \ingroup IO
 
-  \brief Implementation of routines which convert CTI things into our 
+  \brief Implementation of routines which convert ECAT7 things into our 
   building blocks and vice versa.
 
   \author Kris Thielemans
+  \author Cristina de Oliveira (offset_in_ecat_file function)
+  \warning This only works with some CTI file_types. In particular, it does NOT
+  work with the ECAT6-like files_types, as then there are subheaders 'in' the 
+  datasets.
+  
+    \warning Implementation uses the Louvain la Neuve Ecat library. So, it will
+    only work on systems where this library works properly.
 
   $Date$
   $Revision$
@@ -27,6 +35,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ByteOrder.h"
+#include "stir/NumericType.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -35,6 +44,7 @@
 #include "stir/Scanner.h" 
 #include "stir/Bin.h" 
 #include "stir/Succeeded.h" 
+
 #include "stir/IO/stir_ecat7.h"
 
 #include <iostream>
@@ -94,40 +104,56 @@ static int print_debug (char const * const fname, char *format, ...)
 
 }
 
-short find_cti_system_type(const Scanner& scanner)
+
+static bool is_ecat7_file(Main_header& mhead, const string& filename)
 {
-  switch(scanner.get_type())
-  {
-  case Scanner::E921:
-    return 921; 
-    
-  case Scanner::E931:
-    return 931; 
-    
-  case Scanner::E951:
-    return 951; 
-    
-  case Scanner::E953:
-    return 953;
-
-  case Scanner::E961:
-    return 961;
-
-  case Scanner::E962:
-    return 962; 
-    
-  case Scanner::E966:
-    return 966;
-
-  case Scanner::RPT:
-    return 128;
-    
-  default:
-    warning("\nfind_CTI_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", 
-      scanner.get_name().c_str());
-    return 0;
-  }
+  MatrixFile * const mptr = matrix_open( filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if(!mptr) 
+    {
+      return false;
+    }
+  else
+    {
+      // do some checks on the main header
+      return 
+	mhead.sw_version>=70 && mhead.sw_version<=79  &&
+	( mhead.file_type >= 1 && mhead.file_type <= Float3dSinogram) &&
+	mhead.num_frames>0;
+    }
 }
+
+bool is_ecat7_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat7_file(mhead, filename);
+}
+
+bool is_ecat7_image_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat7_file(mhead, filename) &&
+    (mhead.file_type == PetImage ||
+     mhead.file_type ==ByteVolume || mhead.file_type == PetVolume);
+}
+
+
+bool is_ecat7_emission_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat7_file(mhead, filename) &&
+    (mhead.file_type == CTISinogram || mhead.file_type == Byte3dSinogram||
+    mhead.file_type == Short3dSinogram || mhead.file_type == Float3dSinogram);
+}
+
+
+bool is_ecat7_attenuation_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat7_file(mhead, filename) &&
+    mhead.file_type ==AttenCor;
+}
+
+
 
 void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
 {
@@ -177,44 +203,11 @@ void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
   }
 }
 
-void find_data_type(NumericType& data_type, ByteOrder& byte_order, const short ecat_data_type)
-{
-  switch(ecat_data_type)
-  {
-  case ByteData:
-    data_type = NumericType::SCHAR; byte_order = ByteOrder::native; return;
-    
-  case VAX_Ix2:
-    data_type = NumericType("signed integer", 2); byte_order = ByteOrder::little_endian; return;
-    
-  case SunShort:
-    data_type = NumericType("signed integer", 2); byte_order = ByteOrder::big_endian; return;
-    
-  case VAX_Ix4:
-    data_type = NumericType("signed integer", 4); byte_order = ByteOrder::little_endian; return;
-    
-  case VAX_Rx4:
-    data_type = NumericType("float", 4); byte_order = ByteOrder::little_endian; return;
-    
-  case IeeeFloat:
-    data_type =NumericType("float", 4); byte_order = ByteOrder::big_endian; return;
-    
-  case SunLong:
-    data_type = NumericType("signed integer", 4); byte_order = ByteOrder::big_endian; return;
-    
-  default:
-    warning("header.data_type unknown: %d\nAssuming VaxShort\n", ecat_data_type); 
-    data_type = NumericType("signed integer", 2); byte_order = ByteOrder::little_endian; return;
-  }
-}
 
-
-
-
-short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order)
+short find_ecat_data_type(const NumericType& type, const ByteOrder& byte_order)
 {
   if (!type.signed_type())
-    warning("find_cti_data_type: CTI data support only signed types. Using the signed equivalent\n");
+    warning("find_ecat_data_type: CTI data support only signed types. Using the signed equivalent\n");
   if (type.integer_type())
   {
     switch(type.size_in_bytes())
@@ -246,7 +239,7 @@ short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order)
   string number_format;
   size_t size_in_bytes;
   type.get_Interfile_info(number_format, size_in_bytes);
-  warning("find_cti_data_type: CTI does not support data type '%s' of %d bytes.\n",
+  warning("find_ecat_data_type: CTI does not support data type '%s' of %d bytes.\n",
           number_format.c_str(), size_in_bytes);
   return short(0);
 }
@@ -599,7 +592,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.original_file_name[31]='\0';
   mhead.num_frames= 1; 
   
-  mhead.system_type= find_cti_system_type(scanner);
+  mhead.system_type= find_ECAT_system_type(scanner);
   mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
   mhead.bin_size = scanner.get_default_bin_size();
@@ -1044,7 +1037,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   }
   NumericType data_type;
   ByteOrder byte_order;
-  find_data_type(data_type, byte_order, sub_header_ptr->data_type);
+  find_type_from_ECAT_data_type(data_type, byte_order, sub_header_ptr->data_type);
 
   if (bin_size != scanner_ptr->get_default_bin_size())
   {
@@ -1149,7 +1142,8 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 }
 
 Succeeded 
-write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
+write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
+                                       const string& ecat7_filename,
                                        int frame, int gate, int data,
                                        int bed)
 {
@@ -1163,7 +1157,8 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
   }
   if (mptr->mhptr->sw_version < V7)
   { 
-    warning("This seems to be an ECAT 6 file. I'm not writing any header...\n"); 
+    warning("write_basic_interfile_header_for_ecat7: %s seems to be an ECAT 6 file. "
+            "I'm not writing any header...\n",  ecat7_filename.c_str()); 
     return Succeeded::no; 
   }
   
@@ -1173,8 +1168,9 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
   
   if (matrix==NULL)
   { 
-    warning("Matrix not found at \"%d,1,%d,%d,%d\". I'm not writing any header...\n",
-       frame, 1, gate, data, bed);
+    warning("write_basic_interfile_header_for_ecat7: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
+            "I'm not writing any header...\n",
+            frame, 1, gate, data, bed,  ecat7_filename.c_str());
     return Succeeded::no;
   }
   
@@ -1201,7 +1197,7 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
         reinterpret_cast<Image_subheader*>(matrix->shptr);
       
       if(sub_header_ptr->num_dimensions != 3)
-        warning("Expected subheader_ptr->num_dimensions==3\n");
+        warning("write_basic_interfile_header_for_ecat7: Expected subheader_ptr->num_dimensions==3\n");
       const Coordinate3D<int> dimensions(matrix->zdim,
         matrix->ydim,
         matrix->xdim);
@@ -1217,14 +1213,16 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
       
       NumericType data_type;
       ByteOrder byte_order;
-      find_data_type(data_type, byte_order, matrix->data_type);
+      find_type_from_ECAT_data_type(data_type, byte_order, matrix->data_type);
       
       const long offset_in_file =
         offset_in_ecat_file(mptr, frame, 1, gate, data, bed, 0, NULL);
       // KT 14/05/2002 added error check
       if (offset_in_ecat_file<0)
       { 
-        warning("Error in determining offset into ECAT file. I'm not writing any header...\n"); 
+        warning("write_basic_interfile_header_for_ecat7: Error in determining offset into ECAT7 file %s.\n"
+                "I'm not writing any header...\n",
+                 ecat7_filename.c_str()); 
         return Succeeded::no; 
       }     
       
@@ -1233,6 +1231,7 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
       scaling_factors[0] = scale_factor;
       file_offsets[0] = static_cast<unsigned long>(offset_in_file);
       strcat(header_filename, ".hv");
+      interfile_header_filename = header_filename;
       write_basic_interfile_image_header(header_filename, ecat7_filename,
         dimensions, voxel_size, data_type,byte_order,
         scaling_factors,
@@ -1255,6 +1254,7 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
 	return Succeeded::no;
       
       strcat(header_filename, ".hs");
+      interfile_header_filename = header_filename;
       write_basic_interfile_PDFS_header(header_filename, ecat7_filename, *pdfs_ptr);
       delete pdfs_ptr;
 
@@ -1263,7 +1263,9 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
     
         
   default:
-    warning("File type not handled. I'm not writing any Interfile headers...\n");
+    warning("write_basic_interfile_header_for_ecat7: File type not handled for file %s.\n"
+            "I'm not writing any Interfile headers...\n",
+             ecat7_filename.c_str());
     return Succeeded::no;
   }
   
@@ -1343,7 +1345,7 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   // don't have neat functions for written Arrays to FILE anyway (only to streams)
   NumericType data_type;
   ByteOrder byte_order;
-  find_data_type(data_type, byte_order, mhead.data_type);
+  find_type_from_ECAT_data_type(data_type, byte_order, mhead.data_type);
   
   const long offset_in_file =
     offset_in_ecat_file(mptr, frame, 1, gate, data, bed, 0, NULL);
@@ -1519,7 +1521,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
   
   NumericType data_type;
   ByteOrder byte_order;
-  find_data_type(data_type, byte_order, 
+  find_type_from_ECAT_data_type(data_type, byte_order, 
                  mhead.file_type == AttenCor?attn_shead.data_type:scan3d_shead.data_type);
 
   cout<<endl<<"Processing segment number:";
