@@ -40,7 +40,8 @@ using std::pair;
 START_NAMESPACE_STIR
 
 //! A class that reads the listmode data for ECAT scanners
-/*! This file format is currently used by the HR+ and HR++. It stores
+/*!  \ingroup listmode
+    This file format is currently used by the HR+ and HR++. It stores
     the coincidence data in multiple .lm files, with a maximum filesize
     of about 2 GB (to avoid problems with OS limits on filesize).
     In addition, there is a .sgl file with the singles per 'bucket' 
