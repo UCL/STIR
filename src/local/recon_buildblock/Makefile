@@ -18,7 +18,13 @@ SOURCES = \
 	oldBackProjectorByBinUsingInterpolation.cxx \
 	oldBackProjectorByBinUsingInterpolation_linear.cxx \
 	oldBackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
-	PostsmoothingForwardProjectorByBin.cxx
+	PostsmoothingForwardProjectorByBin.cxx \
+	DataSymmetriesForDensels.cxx \
+	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
+	ProjMatrixByDensel.cxx \
+	ProjMatrixElemsForOneDensel.cxx \
+	ProjMatrixByDenselUsingRayTracing.cxx
+
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
