@@ -60,7 +60,6 @@ private:
 					    const int det1,const int det2, 
 					    const Scanner& scanner) const;
 
-  shared_ptr<Scanner> scanner_ptr;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
   string attenuation_filename; 
   float transmission_duration;
