@@ -23,7 +23,7 @@
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/PixelsOnCartesianGrid.h"
-
+#include "stir/NumericType.h"
 #include "stir/IndexRange3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/utilities.h"
