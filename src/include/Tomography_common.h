@@ -73,7 +73,7 @@
  <LI> overloads of std::copy for built-in types to use memcpy (so it's faster)
  </UL>
 
-<H3> Tomography namespace members declared here</H3>
+<H3> Tomo namespace members declared here</H3>
   
  <UL>
  <LI> const double _PI
@@ -161,7 +161,7 @@ Library for displaying of images*/
 
 
 //*************** namespace macros
-/*! \namespace Tomography
+/*! \namespace Tomo
   \brief Namespace for the PARAPET library
 
   This namespace encompasses the whole
@@ -173,9 +173,9 @@ Library for displaying of images*/
 
 // TODO remove conditional
 #if !defined(OLDDESIGN)
-# define START_NAMESPACE_TOMO namespace Tomography {
+# define START_NAMESPACE_TOMO namespace Tomo {
 # define END_NAMESPACE_TOMO }
-# define USING_NAMESPACE_TOMO using namespace Tomography;
+# define USING_NAMESPACE_TOMO using namespace Tomo;
 #else
 # define USING_NAMESPACE_TOMO 
 # define START_NAMESPACE_TOMO 
