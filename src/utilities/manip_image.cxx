@@ -1,8 +1,9 @@
 //
-// $Id$ : $Date$
+// $Id$: $Date$
 //
 /*!
   \file 
+  \ingroup utilities
  
   \brief  This programme performs operations on image data
 
@@ -11,11 +12,19 @@
   \author PARAPET project
 
   \date    $Date$
-
   \version $Revision$
 
-  TODOdoc
+  \warning It only supports VoxelsOnCartesianGrid type of images.
 */
+
+#include "VoxelsOnCartesianGrid.h"
+#include "display.h"
+#include "utilities.h"
+#include "interfile.h"
+#include "recon_array_functions.h"
+#include "ArrayFunction.h"
+#include "zoom.h"
+
 
 #include <iostream> 
 #include <fstream>
@@ -29,34 +38,28 @@ using std::cerr;
 using std::endl;
 #endif
 
-#include "pet_common.h" 
-#include "imagedata.h"
-#include "TensorFunction.h"
-#include "display.h"
-#include "interfile.h"
-#include "utilities.h"
-#include "recon_array_functions.h"
-#include "zoom.h"
-
 USING_NAMESPACE_TOMO
 
-#define ZERO_TOL 0.000001
+void trim_edges(VoxelsOnCartesianGrid<float>& main_buffer);
+void get_plane(VoxelsOnCartesianGrid<float>& main_buffer);
+void get_plane_row(VoxelsOnCartesianGrid<float>& main_buffer);
 
-void trim_edges(PETImageOfVolume& main_buffer);
-void get_plane(PETImageOfVolume& main_buffer);
-void get_plane_row(PETImageOfVolume& main_buffer);
-
-PETImageOfVolume ask_interfile_image(const char *const input_query);
+VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query);
 
 void show_menu();
 void show_math_menu();
-void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math);
+void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math);
 
 int main(int argc, char *argv[])
 {
     // file input
-    PETImageOfVolume main_buffer;
-    if(argc>1) main_buffer= read_interfile_image(argv[1]);
+    VoxelsOnCartesianGrid<float> main_buffer;
+    if(argc>1) 
+    {
+      main_buffer= 
+	* dynamic_cast<VoxelsOnCartesianGrid<float> *>(
+	DiscretisedDensity<3,float>::read_from_file(argv[1]).get());
+    }
     else {
         cerr<<endl<<"Usage: vox <header file name> (*.hv)"<<endl<<endl;
         main_buffer= ask_interfile_image("File to load in main buffer? ");
@@ -91,13 +94,13 @@ int main(int argc, char *argv[])
 
             case 1: // display
             {  
-                VectorWithOffset<float> scale_factors(main_buffer.get_min_index3(), 
-                                                      main_buffer.get_max_index3());
+                VectorWithOffset<float> scale_factors(main_buffer.get_min_index(), 
+                                                      main_buffer.get_max_index());
                 scale_factors.fill(1.F);
-                VectorWithOffset<char *> text(main_buffer.get_min_index3(),
-                                              main_buffer.get_max_index3());
-                for (int i=main_buffer.get_min_index3(); 
-                     i<= main_buffer.get_max_index3(); i++) {
+                VectorWithOffset<char *> text(main_buffer.get_min_index(),
+                                              main_buffer.get_max_index());
+                for (int i=main_buffer.get_min_index(); 
+                     i<= main_buffer.get_max_index(); i++) {
                     char *str = new char [15];
                     sprintf(str, "image %d", i);
                     text[i] = str;
@@ -207,7 +210,7 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-void trim_edges(PETImageOfVolume& input_image) 
+void trim_edges(VoxelsOnCartesianGrid<float>& input_image) 
 {
     const int xe=input_image.get_max_x();
     const int xs=input_image.get_min_x();
@@ -219,7 +222,7 @@ void trim_edges(PETImageOfVolume& input_image)
     if(ask("Zero end planes?",false)) truncate_end_planes(input_image);
 }
 
-void get_plane(PETImageOfVolume& input_image) 
+void get_plane(VoxelsOnCartesianGrid<float>& input_image) 
 {
     int zs,ys,xs, ze,ye,xe;
 
@@ -245,7 +248,7 @@ void get_plane(PETImageOfVolume& input_image)
             profile<<input_image[zs+plane-1][y][x]<<" ";
 }
 
-void get_plane_row(PETImageOfVolume& input_image) 
+void get_plane_row(VoxelsOnCartesianGrid<float>& input_image) 
 {
     int zs,ys,xs, ze,ye,xe;
 
@@ -297,14 +300,18 @@ void get_plane_row(PETImageOfVolume& input_image)
     }
 }
 
-PETImageOfVolume ask_interfile_image(const char *const input_query)
+VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query)
 {
     char filename[max_filename_length];
 
     system("ls *hv");
     ask_filename_with_extension(filename, input_query, ".hv");
 
-    return read_interfile_image(filename);
+    shared_ptr<DiscretisedDensity<3,float> > image_ptr =
+      DiscretisedDensity<3,float>::read_from_file(filename);
+    return 
+      * dynamic_cast<VoxelsOnCartesianGrid<float>*>(image_ptr.get());
+
 }
 
 
@@ -351,9 +358,9 @@ MATH MODE:\n\
 }
 
 
-void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
+void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math)
 {
-    PETImageOfVolume math_buffer=main_buffer; //initialize math buffer
+    VoxelsOnCartesianGrid<float> math_buffer=main_buffer; //initialize math buffer
     int operation;
 
     show_math_menu();
@@ -378,7 +385,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
             case 2: // absolute difference
             {
 
-                PETImageOfVolume aux_image=
+                VoxelsOnCartesianGrid<float> aux_image=
                     ask_interfile_image("What image to compare with?");
 
                 math_buffer-=aux_image;
@@ -394,7 +401,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
 
             case 3: // image addition
             {
-                PETImageOfVolume aux_image=
+                VoxelsOnCartesianGrid<float> aux_image=
                     ask_interfile_image("What image to add?");
 
                 math_buffer+=aux_image;
@@ -404,7 +411,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
 
             case 4:  // image subtraction
             {
-                PETImageOfVolume aux_image=
+                VoxelsOnCartesianGrid<float> aux_image=
                     ask_interfile_image("What image to subtract?");
 
                 math_buffer-=aux_image;
@@ -413,7 +420,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
 
             case 5:  // image multiplication
             {
-                PETImageOfVolume aux_image=
+                VoxelsOnCartesianGrid<float> aux_image=
                     ask_interfile_image("What image to multiply?");
 
                 math_buffer*=aux_image;
@@ -429,7 +436,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
                 const int xs=math_buffer.get_min_x();
                 const int xm=(xs+xe)/2;
 
-                PETImageOfVolume aux_image= 
+                VoxelsOnCartesianGrid<float> aux_image= 
                     ask_interfile_image("What image to divide?");
 
                 const int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),2);
@@ -479,18 +486,18 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
 		  ask_num("Zoom factor z",0.1F,5.F,1.F);
                 const float offset_x =
                   ask_num("Offset x (in mm)", 
-			  -math_buffer.get_x_size()*math_buffer.get_voxel_size().x,
-			  math_buffer.get_x_size()*math_buffer.get_voxel_size().x,
+			  -math_buffer.get_x_size()*math_buffer.get_voxel_size().x(),
+			  math_buffer.get_x_size()*math_buffer.get_voxel_size().x(),
 			  0.F);
                 const float offset_y = 
 		  ask_num("Offset y (in mm)", 
-			  -math_buffer.get_y_size()*math_buffer.get_voxel_size().y,
-			  math_buffer.get_y_size()*math_buffer.get_voxel_size().y,
+			  -math_buffer.get_y_size()*math_buffer.get_voxel_size().y(),
+			  math_buffer.get_y_size()*math_buffer.get_voxel_size().y(),
 			  0.F);
                 const float offset_z = 
 		  ask_num("Offset z (in mm)", 
-			  -math_buffer.get_z_size()*math_buffer.get_voxel_size().z,
-			  math_buffer.get_z_size()*math_buffer.get_voxel_size().z,
+			  -math_buffer.get_z_size()*math_buffer.get_voxel_size().z(),
+			  math_buffer.get_z_size()*math_buffer.get_voxel_size().z(),
 			  0.F);
                 const int new_size_x = 
 		  ask_num("New x size (pixels)", 1, 
