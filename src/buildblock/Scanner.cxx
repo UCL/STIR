@@ -25,6 +25,7 @@
 
 #include "stir/Scanner.h"
 #include "stir/utilities.h"
+#include "stir/Succeeded.h"
 #include "stir/interfile_keyword_functions.h"
 #include <iostream>
 #include <algorithm>
@@ -40,7 +41,6 @@ using std::cout;
 using std::endl;
 using std::ends;
 using std::cin;
-using std::find;
 #endif
 
 START_NAMESPACE_STIR
@@ -70,12 +70,14 @@ Scanner::Scanner(Type scanner_type)
 
   if (scanner_type == E931)
     // KT 25/01/2002 corrected ring_spacing
-    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 13.5F,  3.129F,   0,0,0,0,0,1);
+    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 13.5F,  3.129F,   
+	       0,0,0,8,8,1);
   else if (scanner_type == E951)
-    set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   0,0,0,0,0, 1);
+    set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   
+	       0,1,4,8,8, 1);
   else if (scanner_type == E953)
     set_params(E953,string_list("ECAT 953"), 16, 160,2* 192, 382.5F,  6.75F, 3.129F,   
-	       static_cast<float>(15.*_PI/180),0,0,0,0, 1);
+	       static_cast<float>(15.*_PI/180),1,4,8,8, 1);
   else if (scanner_type == E921)
     set_params(E921,string_list("ECAT 921", "ECAT EXACT", "EXACT"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 
 	       static_cast<float>(15.*_PI/180),1,4,8,8, 1);
@@ -135,8 +137,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 	   int num_detector_layers_v)
 {
   set_params(type_v,list_of_names_v,NoRings_v,
-	     max_num_non_arccorrected_bins,
-	     max_num_non_arccorrected_bins,
+	     max_num_non_arccorrected_bins_v,
+	     max_num_non_arccorrected_bins_v,
 	     num_detectors_per_ring_v, 
 	     RingRadius_v, RingSpacing_v, 
 	     BinSize_v, intrTilt_v,
@@ -174,12 +176,11 @@ set_params(Type type_v,const list<string>& list_of_names_n,
   num_axial_crystals_per_block= num_axial_crystals_per_block_v;
   num_transaxial_crystals_per_block= num_transaxial_crystals_per_block_v;
   num_detector_layers = num_detector_layers_v;
-  check_consistency();
 }
 
-void 
+Succeeded 
 Scanner::
-check_consistency()
+check_consistency() const
 {
   if (intrinsic_tilt<-_PI || intrinsic_tilt>_PI)
     warning("Scanner: intrinsic_tilt is very large. maybe it's in degrees (but should be in radians)");
@@ -194,7 +195,7 @@ check_consistency()
 	  get_num_transaxial_blocks() *
 	  get_num_transaxial_crystals_per_block();
 	if ( dets_per_ring != get_num_detectors_per_ring())
-	  error("Scanner: inconsistent transaxial block info\n");
+	  { warning("Scanner: inconsistent transaxial block info\n"); return Succeeded::no; }
       }
   }
   {
@@ -207,7 +208,7 @@ check_consistency()
 	  get_num_transaxial_buckets() *
 	  get_num_transaxial_blocks_per_bucket();
 	if ( blocks_per_ring != get_num_transaxial_blocks())
-	  error("Scanner: inconsistent transaxial block/bucket info\n");
+	  { warning("Scanner: inconsistent transaxial block/bucket info\n"); return Succeeded::no; }
       }
   }
   {
@@ -220,7 +221,7 @@ check_consistency()
 	  get_num_axial_blocks() *
 	  get_num_axial_crystals_per_block();
 	if ( dets_axial != get_num_rings())
-	  error("Scanner: inconsistent axial block info\n");
+	  { warning("Scanner: inconsistent axial block info\n"); return Succeeded::no; }
       }
   }
   {
@@ -233,9 +234,11 @@ check_consistency()
 	  get_num_axial_buckets() *
 	  get_num_axial_blocks_per_bucket();
 	if ( blocks_axial != get_num_axial_blocks())
-	  error("Scanner: inconsistent axial block/bucket info\n");
+	  { warning("Scanner: inconsistent axial block/bucket info\n"); return Succeeded::no; }
       }
   }
+
+  return Succeeded::yes;
 }
 
 #if 0
@@ -452,49 +455,55 @@ Scanner* Scanner::ask_parameters()
     cerr << "I didn't recognise the scanner you entered.";
   cerr << "I'll ask lots of questions\n";
   
+  while (true)
+    {
+      int num_detectors_per_ring = 
+	ask_num("Enter number of detectors per ring:",0,2000,128);
   
-  int num_detectors_per_ring = 
-    ask_num("Enter number of detectors per ring:",0,2000,128);
+      int NoRings = 
+	ask_num("Enter number of rings :",0,128,16);
   
-  int NoRings = 
-    ask_num("Enter number of rings :",0,128,16);
+      int NoBins = 
+	ask_num("Enter number of bins: ",0,2000,128);
   
-  int NoBins = 
-    ask_num("Enter number of bins: ",0,2000,128);
+      float RingRadius=
+	ask_num("Enter ring radius (in mm): ",0.F,600.F,256.F);
   
-  float RingRadius=
-    ask_num("Enter ring radius (in mm): ",0.F,600.F,256.F);
+      float RingSpacing= 
+	ask_num("Enter ring spacing (in mm): ",0.F,20.F,6.75F);
   
-  float RingSpacing= 
-    ask_num("Enter ring spacing (in mm): ",0.F,20.F,6.75F);
+      float BinSize= 
+	ask_num("Enter bin size (in mm):",0.F,20.F,3.75F);
+      float intrTilt=
+	ask_num("Enter intrinsic_tilt (in degrees):",-180.F,360.F,0.F);
+      int TransBlocksPerBucket = 
+	ask_num("Enter number of transaxial blocks per bucket: ",0,10,2);
+      int AxialBlocksPerBucket = 
+	ask_num("Enter number of axial blocks per bucket: ",0,10,6);
+      int AxialCrystalsPerBlock = 
+	ask_num("Enter number of axial crystals per block: ",0,12,8);
+      int TransaxialCrystalsPerBlock = 
+	ask_num("Enter number of transaxial crystals per block: ",0,12,8);
+      int num_detector_layers =
+	ask_num("Enter number of layers per block: ",1,100,1);
+      Type type = User_defined_scanner;
   
-  float BinSize= 
-    ask_num("Enter bin size (in mm):",0.F,20.F,3.75F);
-  float intrTilt=
-    ask_num("Enter intrinsic_tilt (in degrees):",0.F,360.F,90.F);
-  int TransBlocksPerBucket = 
-    ask_num("Enter number of transaxial blocks per bucket: ",0,10,2);
-  int AxialBlocksPerBucket = 
-    ask_num("Enter number of axial blocks per bucket: ",0,10,6);
-  int AxialCrystalsPerBlock = 
-    ask_num("Enter number of axial crystals per block: ",0,12,8);
-  int TransaxialCrystalsPerBlock = 
-    ask_num("Enter number of transaxial crystals per block: ",0,12,8);
-  int num_detector_layers =
-    ask_num("Enter number of layers per block: ",1,100,1);
-   Type type = User_defined_scanner;
+      Scanner* scanner_ptr =
+	new Scanner(type,string_list(name),
+		    num_detectors_per_ring,  NoRings, 
+		    NoBins, NoBins, 
+		    RingRadius, RingSpacing, 
+		    BinSize,intrTilt*float(_PI)/180,
+		    AxialBlocksPerBucket,TransBlocksPerBucket,
+		    AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+		    num_detector_layers );
   
-  Scanner* scanner =
-    new Scanner(type,string_list(name),
-                num_detectors_per_ring,  NoRings, 
-		NoBins, NoBins, 
-                RingRadius, RingSpacing, 
-                BinSize,intrTilt,
-		AxialBlocksPerBucket,TransBlocksPerBucket,
-		AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-		num_detector_layers );
+      if (scanner_ptr->check_consistency()==Succeeded::yes ||
+	  !ask("Ask questions again?",true))
+	return scanner_ptr;
   
-  return scanner;
+      delete scanner_ptr;
+    } // infinite loop
 }
 
 
