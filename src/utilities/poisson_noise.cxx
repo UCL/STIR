@@ -56,13 +56,15 @@
 #ifdef _MSC_VER
 // Current version of boost::random breaks on VC6 and 7 because of 
 // compile time asserts. I'm disabling them for now by defining the following.
-#define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS 
+// #define BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS 
 #endif
 
 //#include <boost/random.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+
 #endif
 #include "stir/round.h"
 
@@ -97,7 +99,10 @@ int generate_poisson_random(const float mu)
   // note: the threshold must be such that exp(threshold) is still a floating point number
   if (mu > 60.F)
   {
-    boost::normal_distribution<base_generator_type> randomnormal(generator, mu, sqrt(mu));
+    boost::normal_distribution<double> normal_distrib(mu, sqrt(mu));
+    boost::variate_generator<base_generator_type, boost::normal_distribution<double> >
+    randomnormal(generator,
+		 normal_distrib);
     const double random = randomnormal();
     return random<=0 ? 0 : round(random);
   }
