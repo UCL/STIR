@@ -5,7 +5,7 @@
 //
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief defines the CartesianCoordinate3D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -13,16 +13,15 @@
   \author PARAPET project
 
   \date    $Date$
-
   \version $Revision$
 
 */
 
 /*!
   \ingroup buildblock
-   \brief a templated class for 3-dimensional coordinates.
+  \brief a templated class for 3-dimensional coordinates.
 
-   It is derived from Coordinate3D<coordT>. The only new methods are
+  It is derived from Coordinate3D<coordT>. The only new methods are
    z(),y(),x(), corresponding resp. to 
    operator[](1), operator[](2), operator[](3)
 
@@ -31,10 +30,10 @@
 
 
 #include "Coordinate3D.h"
-
-// TODO remove
+#ifdef OLDDESIGN
 #include "pet_common.h"
 #include "Point3D.h"
+#endif
 
 START_NAMESPACE_TOMO
 
@@ -50,8 +49,9 @@ public:
   inline CartesianCoordinate3D(const coordT&, const coordT&, const coordT&);
   inline CartesianCoordinate3D(const basebase_type& c);
   inline CartesianCoordinate3D& operator=(const basebase_type& c);
-  // TODO remove
+#ifdef OLDDESIGN
   inline CartesianCoordinate3D(const Point3D& p);
+#endif
 
   inline coordT& z();
   inline coordT z() const;
