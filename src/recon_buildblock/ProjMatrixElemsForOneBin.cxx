@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,10 +11,10 @@
   \author Kris Thielemans
   \author PARAPET project
   
-  \date $Date$
-  
-  \version $Revision$
+  $Date$  
+  $Revision$
 */
+#include "tomo/Succeeded.h"
 #include "recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "DiscretisedDensity.h"
 #include "recon_buildblock/SymmetryOperation.h"
@@ -22,7 +22,6 @@
 
 #include "recon_buildblock/RelatedBins.h"
 
-#include <fstream>
 
 START_NAMESPACE_TOMO
 
