@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup normalisation
@@ -10,10 +26,6 @@
   \author Kris Thielemans
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -56,8 +68,8 @@ ChainedBinNormalisation()
 }
 
 ChainedBinNormalisation::
-ChainedBinNormalisation(shared_ptr<ChainedBinNormalisation> const& apply_first_v,
-		        shared_ptr<ChainedBinNormalisation> const& apply_second_v)
+ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first_v,
+		        shared_ptr<BinNormalisation> const& apply_second_v)
   : apply_first(apply_first_v),
     apply_second(apply_second_v)
 {
@@ -100,9 +112,14 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
 float
 ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const
 {
-  // TODO
-  return 1;
-
+  return 
+    (!is_null_ptr(apply_first) 
+     ? apply_first->get_bin_efficiency(bin,start_time,end_time)
+     : 1)
+    *
+    (!is_null_ptr(apply_second) 
+     ? apply_second->get_bin_efficiency(bin,start_time,end_time)
+     : 1);
 }
  
  
