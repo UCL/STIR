@@ -69,12 +69,11 @@ END:=
 #include "stir/utilities.h"
 #include "stir/interfile.h"
 #include "stir/CPUTimer.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ParsingObject.h"
 #include "stir/Succeeded.h"
-#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
@@ -84,8 +83,7 @@ END:=
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
-//#include "stir/display.h"
-
+#include "stir/is_null_ptr.h"
 #include <string>
 #include <iostream> 
 #include <fstream>
@@ -247,7 +245,7 @@ public:
   shared_ptr<ProjData> input_projdata_ptr;
   shared_ptr<ProjData> scatter_projdata_ptr;
   shared_ptr<ProjData> randoms_projdata_ptr;
-  shared_ptr<ProjDataFromStream> output_projdata_ptr;
+  shared_ptr<ProjData> output_projdata_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
   shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
@@ -259,6 +257,7 @@ private:
 
   virtual void set_defaults();
   virtual void initialise_keymap();
+  virtual bool post_processing();
   string input_filename;
   string output_filename;
   string scatter_projdata_filename;
@@ -313,6 +312,20 @@ initialise_keymap()
   parser.add_stop_key("END");
 }
 
+
+bool
+CorrectProjDataParameters::
+post_processing()
+{
+  if (is_null_ptr(normalisation_ptr))
+  {
+    warning("Invalid normalisation object\n");
+    return true;
+  }
+
+  return false;
+}
+
 CorrectProjDataParameters::
 CorrectProjDataParameters(const char * const par_filename)
 {
@@ -321,12 +334,6 @@ CorrectProjDataParameters(const char * const par_filename)
     parse(par_filename) ;
   else
     ask_parameters();
-  /*
-  if (norm_filename!="" && norm_filename != "1")
-    normalisation_ptr = new BinNormalisationFromProjData(norm_filename);
-  else
-    normalisation_ptr = new TrivialBinNormalisation;
-  */
   input_projdata_ptr = ProjData::read_from_file(input_filename);
 
   if (scatter_projdata_filename!="" && scatter_projdata_filename != "0")
@@ -348,18 +355,7 @@ CorrectProjDataParameters(const char * const par_filename)
     
     new_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
                                             max_segment_num_to_process);
-    
-    iostream * output_stream_ptr = 
-      new fstream (output_filename.c_str(), ios::out| ios::binary);
-    if (!output_stream_ptr->good())
-    {
-      error("error opening file %s\n",output_filename.c_str());
-    }
-    
-    
-    output_projdata_ptr = new ProjDataFromStream(new_data_info_ptr,output_stream_ptr);
-    
-    write_basic_interfile_PDFS_header(output_filename, *output_projdata_ptr);
+     output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename);
   }
 
   // read attenuation data
