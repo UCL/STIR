@@ -68,14 +68,15 @@ int main(int argc, const char *argv[])
 			<< "\t[random points]\n"
 			<< "\t[use_cosphi]\n"
 			<< "\t[use_cache]\n"
-			<< "\t[find_DS]\n\n"
+			<< "\t[scatter_level]\n\n"
 			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
 			<< "\tlower_energy_threshold defaults to 350 keV\n"
 			<< "\tupper_energy_threshold defaults to 650 keV\n"			
 			<< "\tmaximum_scatter_points defaults to 1000\n" 
 			<< "\tuse_cosphi defaults to false, use 1 to set to true\n"
 			<< "\tuse_cache defaults to true, use 0 to set to false\n"
-			<< "\tfind_DS defaults to false, use 1 to set to true\n" ;
+			<< "\tscatter_level defaults to 0 finds the SSS+DSS\n"
+			<< "\tuse 1 for only SSS or 2 for only DSS\n" ;
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
@@ -91,10 +92,8 @@ int main(int argc, const char *argv[])
 	bool use_cache = true;
 	if (argc>=12 && atoi(argv[11])==0)
 		use_cache = false;
-	bool find_DS = false;
-	if (argc>=13 && atoi(argv[12])==1)
-		find_DS = true;
-
+	const int scatter_level = argc>= 13 ? atoi(argv[12]) : 0 ;
+	
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
 		DiscretisedDensity<3,float>::read_from_file(argv[1]), 
@@ -132,7 +131,7 @@ int main(int argc, const char *argv[])
 		activity_image, density_image,
 		scatt_points,attenuation_threshold,
 		lower_energy_threshold,upper_energy_threshold,
-		use_cosphi,use_cache,find_DS,random);  
+		use_cosphi,use_cache,scatter_level,random);  
 
 	writing_log(activity_image,
 		density_image,

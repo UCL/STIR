@@ -106,7 +106,7 @@ float scatter_estimate_for_one_scatter_point(
 	  const bool use_cosphi,
 	  const bool use_cache);
 
-float scatter_estimate_for_two_scatter_points(
+double scatter_estimate_for_two_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const std::size_t scatter_point_1_num, 
@@ -127,7 +127,7 @@ float scatter_estimate_for_all_scatter_points(
 	  const float upper_energy_threshold,		
 	  const bool use_cosphi,
 	  const bool use_cache,
-	  const bool find_DS);
+	  const int scatter_level);
 //@}
 
 /*!	\name Klein-Nishina functions					
@@ -193,7 +193,7 @@ void scatter_viewgram(
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
     int& scatt_points, const float att_threshold, 
 	const float lower_energy_threshold, const float upper_energy_threshold,		
-	const bool use_cosphi, const bool use_cache, const bool find_DS, const bool random);
+	const bool use_cosphi, const bool use_cache, const int scatter_level, const bool random);
 
 
 // Functions that could be in the BasicCoordinate Class
@@ -228,11 +228,11 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 */
 void writing_time(const int simulation_time, 
 				  const int scatt_points_vector_size,
-				  const bool find_DS);
+				  const int scatter_level);
 
 void writing_time(const double simulation_time, 
 				  const int scatt_points_vector_size,
-				  const bool find_DS);
+				  const int scatter_level);
 
 
 END_NAMESPACE_STIR

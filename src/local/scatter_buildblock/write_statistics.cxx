@@ -115,7 +115,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 
 void writing_time(const double simulation_time, 
 				  const int scatt_points_vector_size, 
-				  const bool find_DS)
+				  const int scatter_level)
 {
 		{
 			fstream mystream("statistics.txt", ios::out | ios::app); //output file //
@@ -124,10 +124,10 @@ void writing_time(const double simulation_time,
 			else
 			{
 				mystream  << "\n  ****** NEW STATISTIC DATA FOR ";
-					if(find_DS)
-						mystream << "DOUBLE ";
-					if(!find_DS)
-						mystream << "SINGLE ";
+					if(scatter_level==2)
+						mystream << "ONLY DOUBLE ";
+					if(scatter_level==1)
+						mystream << "ONLY SINGLE ";
 				mystream  << "SCATTER SIMULATION ******\nn"
 			   	    << "\tTotal simulation time elapsed: "				  
 					<<   simulation_time/60 
