@@ -1,3 +1,8 @@
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+
 #include "local/stir/Shape/EllipsoidalCylinder.h"
 #include "local/stir/Shape/CombinedShape3D.h"
 
