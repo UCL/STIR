@@ -151,73 +151,19 @@ set_up(
   }	    
 }
 // point should be w.r.t. middle of the scanner!
+static inline 
 void 
-ProjMatrixByBinUsingInterpolation::
-find_tang_ax_pos_diff(float& tang_pos_diff,
-		      float& ax_pos_diff,
-		      const Bin& bin,
-		      const CartesianCoordinate3D<float>& point) const
+find_s_m_of_voxel(float& s, float& m,
+		  const CartesianCoordinate3D<float>& point,
+		  const float cphi, const float sphi,
+		  const float tantheta)
 {
-  const float phi = proj_data_info_ptr->get_phi(bin);
-  const float cphi = cos(phi);
-  const float sphi = sin(phi);  
-  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
-  
-  // Compute ds = difference between s and s-projection of selected voxel
-  const float tang_pos_of_densel_projection=
-    (point.x()*cphi+point.y()*sphi);
+  s = (point.x()*cphi+point.y()*sphi);
 
-  const float s_diff =
-    tang_pos_of_densel_projection - proj_data_info_ptr->get_s(bin);
-
-  tang_pos_diff = 
-     s_diff/proj_data_info_ptr->get_sampling_in_s(bin);
-
-  const float m_of_densel_projection =
+  m =
     point.z()- tantheta*(-point.x()*sphi+point.y()*cphi);
-
-  const float m_diff =  
-    m_of_densel_projection -
-    proj_data_info_ptr->get_m(bin); 
-  ax_pos_diff = m_diff/proj_data_info_ptr->get_sampling_in_m(bin);
-
-#if 0
-
-  // alternative way to get ax_pos_diff using other code
-  // should give the same, but doesn't.
-  // for test case if scanner with 3 ranges, span=1,
-  // there is a difference of delta/2
-  // TODO why?
-
-  const float sampling_distance_of_adjacent_LORs_z =
-    proj_data_info_ptr->get_sampling_in_m(bin);
-  // find correspondence between ax_pos coordinates and image coordinates:
-  // z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset
-  const DataSymmetriesForBins_PET_CartesianGrid& symmetries =
-    static_cast<const DataSymmetriesForBins_PET_CartesianGrid&>(
-								*symmetries_ptr);
-  assert(fabs(sampling_distance_of_adjacent_LORs_z -
-	      voxel_size.z() *
-	      symmetries.get_num_planes_per_axial_pos(bin.segment_num()))
-	 < 1.E-3);
-  const float axial_pos_to_z_offset = 
-    symmetries.get_axial_pos_to_z_offset(bin.segment_num());
-  const float axial_pos_to_z_offset_in_mm = 
-    axial_pos_to_z_offset * voxel_size.z();
-
-  // note: origin.z() used because already in DataSymmetries
-  const float ax_pos_of_densel_projection =
-    (point.z()-origin.z() - tantheta*(-point.x()*sphi+point.y()*cphi) 
-     - axial_pos_to_z_offset_in_mm)/
-    proj_data_info_ptr->get_sampling_in_m(bin);
-  const float other_ax_pos_diff =
-    ax_pos_of_densel_projection-bin.axial_pos_num(); 
-
-  assert(fabs(ax_pos_diff - other_ax_pos_diff)
-	 > .001);
-#endif
-
 }
+
 
 /*
 
@@ -260,16 +206,6 @@ interpolate_tang_pos(const float tang_pos_diff)
 {
   return linear_interpolate(tang_pos_diff);
 }
-static inline
-float 
-interpolate_ax_pos(const float ax_pos_diff, const bool piecewise)
-{
-  // TODO fixed relative vox_size to 1 for now
-  if (piecewise)
-    return piecewise_linear_interpolate(ax_pos_diff, 1);
-  else
-    return linear_interpolate(ax_pos_diff);
-}
 
 
 float
@@ -277,15 +213,77 @@ ProjMatrixByBinUsingInterpolation::
 get_element(const Bin& bin, 
 	    const CartesianCoordinate3D<float>& densel_ctr) const
 {
-  float tang_pos_diff;
-  float ax_pos_diff;
-  find_tang_ax_pos_diff(tang_pos_diff,
-			ax_pos_diff,
-			bin,
-			densel_ctr);
-  return 
-    interpolate_tang_pos(tang_pos_diff)*
-    interpolate_ax_pos(ax_pos_diff, use_piecewise_linear_interpolation_now)*
+  const float phi = proj_data_info_ptr->get_phi(bin);
+  const float cphi = cos(phi);
+  const float sphi = sin(phi);  
+  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
+
+  float s_densel, m_densel;
+  find_s_m_of_voxel(s_densel, m_densel,
+		    densel_ctr,
+		    cphi, sphi,
+		    tantheta);
+  const float s_diff =
+    s_densel - proj_data_info_ptr->get_s(bin);
+
+  const float m_diff =  
+    m_densel -
+    proj_data_info_ptr->get_m(bin); 
+
+#if 0
+  // alternative way to get m_diff using other code
+  // should give the same, but doesn't.
+  // for test case if scanner with 3 rings, span=1,
+  // there is a difference of delta/2*proj_data_info_ptr->get_sampling_in_m(bin)
+  // TODO why?
+
+  // find correspondence between ax_pos coordinates and image coordinates:
+  // z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset
+  const DataSymmetriesForBins_PET_CartesianGrid& symmetries =
+    static_cast<const DataSymmetriesForBins_PET_CartesianGrid&>(
+								*symmetries_ptr);
+  assert(fabs(proj_data_info_ptr->get_sampling_in_m(bin) -
+	      voxel_size.z() *
+	      symmetries.get_num_planes_per_axial_pos(bin.segment_num()))
+	 < 1.E-3);
+  const float axial_pos_to_z_offset = 
+    symmetries.get_axial_pos_to_z_offset(bin.segment_num());
+  const float axial_pos_to_z_offset_in_mm = 
+    axial_pos_to_z_offset * voxel_size.z();
+
+  // note: origin.z() used because already in DataSymmetries
+  const float other_m_diff =
+    m - origin.z() - axial_pos_to_z_offset_in_mm
+     - bin.axial_pos_num()*proj_data_info_ptr->get_sampling_in_m(bin);
+  assert(fabs(m_diff - other_m_diff)
+	 < .001*proj_data_info_ptr->get_sampling_in_m(bin));
+#endif
+
+  const float s_max =
+    std::max(cphi>sphi? voxel_size.x() : voxel_size.y(),
+	     proj_data_info_ptr->get_sampling_in_s(bin));
+  float result =  interpolate_tang_pos(s_diff/s_max);
+  if (result==0)
+    return 0;
+  const float m_max =
+    std::max(voxel_size.z(),
+	     proj_data_info_ptr->get_sampling_in_m(bin));
+
+  result *=
+    (use_piecewise_linear_interpolation_now?
+     piecewise_linear_interpolate(m_diff/m_max, 
+				  std::min(voxel_size.z(),
+					   proj_data_info_ptr->get_sampling_in_m(bin))
+				  /m_max)
+     :
+     linear_interpolate(m_diff/m_max)
+     );
+
+  if (result==0)
+    return 0;
+
+  return
+    result *
     jacobian(proj_data_info_cyl().get_average_ring_difference(bin.segment_num()), 
 	     proj_data_info_ptr->get_s(bin));
 }
@@ -317,15 +315,61 @@ calculate_proj_matrix_elems_for_one_bin(
      Horrible.
   */
   BasicCoordinate<3,int> c;
-  int min1=densel_range.get_min_index();
-  int max1=densel_range.get_max_index();
+  int min1;
+  int max1;
   // find z-range (this would depend on origin and the symmetries though)
   {
-    const int num_voxels_per_ring =
-      round(ceil(proj_data_info_ptr->get_scanner_ptr()->get_ring_spacing()/
-		 voxel_size[1]));
-    min1 -= num_voxels_per_ring;
-    max1 += num_voxels_per_ring;
+#if 0
+    /* attempt to take a large range of essentially 3 times the z-range of the image.
+       This does not work though. It's easy to come up with cases where this
+       range is still too small. Probably we would have to use the
+       scanner length or so and take the image-origin into account.
+       It's not easy though as illustrated by the following example: 
+
+       2 rings, span=1, z-voxel_size=ring_distance/2, 3 image-planes, segment 0
+       and image-origin shifted over 3 planes.
+       The problem comes when using the swap_*_zq symmetries (which occurs
+       even if shift_z=false).
+    */
+    min1=densel_range.get_min_index();
+    max1=densel_range.get_max_index();
+    int length = max-min1+1;
+    min1 -= length;
+    max1 += length;
+#else
+    /* Here we use geometric info. However, the code below only works
+       for DiscretisedDensityOnCartesianGrid (with a regular_range)
+    */
+    min1=densel_range.get_min_index();
+    // find radius of cylinder around all of the image
+    const float max_radius = 
+      std::max(
+	       std::max(-densel_range[min1].get_min_index(),
+			densel_range[min1].get_max_index()
+			)*voxel_size[2],
+	       std::max(-densel_range[min1][0].get_min_index(),
+			densel_range[min1][0].get_max_index()
+			)*voxel_size[1]
+	       );
+    // find width of the 'tube of response'
+    const float z_width_of_TOR =
+      proj_data_info_ptr->get_sampling_in_m(bin);
+    // now find where tube enters/leaves image
+    // we use a safety margin here as we could probably use z_width_of_LOR/2
+    const float z_middle_LOR =
+      proj_data_info_ptr->get_m(bin) - origin.z();
+    const float min_z_LOR =
+      z_middle_LOR - 
+      fabs(proj_data_info_ptr->get_tantheta(bin))*max_radius -
+      z_width_of_TOR;
+    const float max_z_LOR =
+      z_middle_LOR + 
+      fabs(proj_data_info_ptr->get_tantheta(bin))*max_radius +
+      z_width_of_TOR;
+
+    min1 = round(floor(min_z_LOR/voxel_size[1]));
+    max1 = round(ceil(max_z_LOR/voxel_size[1]));
+#endif
   }
   /* we loop over all coordinates, but for optimisation do the following:
      In each dimension, we ASSUME that the non-zero range is CONNECTED.
@@ -350,6 +394,9 @@ calculate_proj_matrix_elems_for_one_bin(
       // TODO ugly stuff to avoid having symmetries obtaining voxels
       // which are outside the FOV
       // this will break when non-zero origin.y() or x() 
+      // (but then there would be no relevant symmetries I guess)
+      assert(origin.y()==0);
+      assert(origin.x()==0);
       const int first_min2=range2d.get_min_index();
       const int first_max2=range2d.get_max_index();
       const int min2 = std::max(first_min2, -first_max2);
@@ -386,18 +433,24 @@ calculate_proj_matrix_elems_for_one_bin(
 		  found_nonzero3=true;
 		  lor.push_back(ProjMatrixElemsForOneBin::value_type(c, element_value));
 		}
+#ifndef __PMByBinElement_SLOW__
 	      else if (found_nonzero3)
 		break;
+#endif
 	    }
 	  if (found_nonzero3)
 	    found_nonzero2=true;
+#ifndef __PMByBinElement_SLOW__
 	  else if (found_nonzero2)
 	    break;
+#endif
 	}
       if (found_nonzero2)
 	found_nonzero1=true;
+#ifndef __PMByBinElement_SLOW__
       else if (found_nonzero1)
 	break;
+#endif
     }
 }
 
