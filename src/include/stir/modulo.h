@@ -38,6 +38,7 @@ START_NAMESPACE_STIR
 
     Error handling (i.e. \a b=0) is as for std::fmod().
 */
+inline
 double
 modulo(const double a, const double b)
 {
@@ -50,6 +51,7 @@ modulo(const double a, const double b)
     This is mainly useful for converting results from e.g. std::atan2 to 
     a range \f$\[0,2\pi)\f$.
 */
+inline 
 double
 from_min_pi_plus_pi_to_0_2pi(const double phi)
 {
@@ -62,6 +64,7 @@ from_min_pi_plus_pi_to_0_2pi(const double phi)
 //! Convert angle to standard range
 /*! \ingroup bulidblock
     Identical to modulo(phi, 2*_PI) */
+inline 
 double
 to_0_2pi(const double phi)
 {
