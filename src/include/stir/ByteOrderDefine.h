@@ -23,6 +23,7 @@ START_NAMESPACE_STIR
 
 /*!
   \def  STIRNativeByteOrderIsBigEndian
+  \ingroup buildblock  
   \brief A macro that is defined \e only when the compilation is on
   a big endian machine.
 
@@ -44,6 +45,7 @@ START_NAMESPACE_STIR
 
 /*!
   \def  STIRNativeByteOrderIsLittleEndian
+  \ingroup buildblock  
   \brief A macro that is defined \e only when the compilation is on
   a little endian machine.
 
