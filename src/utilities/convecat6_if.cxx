@@ -67,7 +67,7 @@ main(int argc, char *argv[])
     }
 
 
-// open input file, read main header
+    // open input file, read main header
     cti_fptr=fopen(cti_name, "rb"); 
     if(!cti_fptr) {
         error("\nError opening input file: %s\n",cti_name);
@@ -76,40 +76,64 @@ main(int argc, char *argv[])
     if(cti_read_main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) {
         error("\nUnable to read main header in file: %s\n",cti_name);
     }
-
-    const int frame_num=
-      ask_num("Frame number ? ",
-             1,
 #ifndef STIR_NO_NAMESPACES
-             // VC needs this
-             std::
+             // VC needs this std::
+  const int num_frames = std::max(static_cast<int>( mhead.num_frames),1);
+  const int num_bed_poss = static_cast<int>( mhead.num_bed_pos);
+  const int num_gates = std::max(static_cast<int>( mhead.num_gates),1);
+#else
+  const int num_frames = max(static_cast<int>( mhead.num_frames),1);
+  const int num_bed_poss = static_cast<int>( mhead.num_bed_pos);
+  const int num_gates = max(static_cast<int>( mhead.num_gates),1);
 #endif
-             max(static_cast<int>(mhead.num_frames),1),
-             1);
-    const int bed_num=
-      ask_num("Bed number ? ",
-              0,static_cast<int>(mhead.num_bed_pos), 0);
-    const int gate_num=
-      ask_num("Gate number ? ",
-              1,
-#ifndef STIR_NO_NAMESPACES
-             // VC needs this
-             std::
-#endif
-              max(static_cast<int>(mhead.num_gates),1), 
-              1);
-    const int data_num=
-      ask_num("Data number ? ",0,8, 0);
 
+
+  int min_frame_num = 1;
+  int max_frame_num = num_frames;
+  int min_bed_num = 0;
+  int max_bed_num = num_bed_poss-1; 
+  int min_gate_num = 1;
+  int max_gate_num = num_gates;
+  int data_num = 0;
+  bool do_all = true;
+  
+  if (ask("Attempt all data-sets (Y) or single data-set (N)", true))
+    {
+      data_num=ask_num("Data number ? ",0,8, 0);      
+    }
+  else
+    {
+      do_all = false;
+      min_frame_num= max_frame_num=
+	ask_num("Frame number ? ", 1, num_frames,1);
+      min_bed_num= max_bed_num=
+	ask_num("Bed number ? ", 0,num_bed_poss, 0);
+      min_gate_num= max_gate_num=
+	ask_num("Gate number ? ", 1, num_gates, 1);
+      data_num=
+	ask_num("Data number ? ",0,8, 0);
+    }
         
-    switch(mhead.file_type)
+  switch(mhead.file_type)
     { 
     case matImageFile:
-      {                       
-        shared_ptr<VoxelsOnCartesianGrid<float> > image_ptr =
-          ECAT6_to_VoxelsOnCartesianGrid(frame_num, gate_num, data_num, bed_num,
-                         cti_fptr, mhead);
-        write_basic_interfile(out_name,*image_ptr);
+      {
+	char *new_out_filename = new char[strlen(out_name)+100];
+	for (int frame_num=min_frame_num; frame_num<=max_frame_num;++frame_num)
+	  for (int bed_num=min_bed_num; bed_num<=max_bed_num;++bed_num)
+	    for (int gate_num=min_gate_num; gate_num<=max_gate_num;++gate_num)
+	      {
+		strcpy(new_out_filename, out_name);
+		if (do_all)
+		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
+			  frame_num, gate_num, bed_num, data_num);
+		cerr << "Writing " << new_out_filename << endl;
+		shared_ptr<VoxelsOnCartesianGrid<float> > image_ptr =
+		  ECAT6_to_VoxelsOnCartesianGrid(frame_num, gate_num, data_num, bed_num,
+						 cti_fptr, mhead);
+		write_basic_interfile(new_out_filename,*image_ptr);
+	      }
+	delete new_out_filename;
         break;
       }
     case matScanFile:
@@ -120,15 +144,28 @@ main(int argc, char *argv[])
            ask_num("Max ring diff to store (-1 == num_rings-1)",-1,100,-1);
 
         const bool arccorrected = 
-	  ask("Consider the data to be arc-corrected?",true);
-        ECAT6_to_PDFS(frame_num, gate_num, data_num, bed_num,
-		      max_ring_diff, arccorrected,
-		      out_name, cti_fptr, mhead);
+	  ask("Consider the data to be arc-corrected?",false);
+
+	char *new_out_filename = new char[strlen(out_name)+100];
+	for (int frame_num=min_frame_num; frame_num<=max_frame_num;++frame_num)
+	  for (int bed_num=min_bed_num; bed_num<=max_bed_num;++bed_num)
+	    for (int gate_num=min_gate_num; gate_num<=max_gate_num;++gate_num)
+	      {
+		strcpy(new_out_filename, out_name);
+		if (do_all)
+		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
+			  frame_num, gate_num, bed_num, data_num);
+		cerr << "Writing " << new_out_filename << endl;
+		ECAT6_to_PDFS(frame_num, gate_num, data_num, bed_num,
+			      max_ring_diff, arccorrected,
+			      new_out_filename, cti_fptr, mhead);
+	      }
+	delete new_out_filename;
         break;
       }
     default:
       {
-        error("\nSupporting only image, scan or atten file type at the moment. Sorry.\n");            
+        error("\nSupporting only image, scan, atten or norm file type at the moment. Sorry.\n");            
       }
     }    
     fclose(cti_fptr);
