@@ -1,7 +1,7 @@
 
 //
 //
-//LogLikelihoodBasedAlgorithmParameters
+// $Id$
 //
 //
 #include "recon_buildblock/LogLikelihoodBasedAlgorithmParameters.h"
