@@ -7,7 +7,7 @@ WORKSPACE = ${HOME}/PPhead
 INCLUDE = ${WORKSPACE}/include
 DISPLAYLIB = ${WORKSPACE}/display/libdisplay.a
 BUILDBLOCKLIB = ${WORKSPACE}/buildblock/libbuildblock.a
-PARAPLUSLIB = ${WORKSPACE}/paraplus/libparaplus.a
+PARAPLUSLIB = /usr/lcoal/lib/libparaplus.a
 
 #KT added the last -I option for Solaris, doesn't harm anyone if it's
 # not necessary
@@ -15,7 +15,6 @@ CFLAGS = -g -D_DEBUG -I${INCLUDE} -I/usr/openwin/include -DTEST
 #KT 28/11 added buildblock library
 #KT 28/11 added the last -L option for Solaris
 LDFLAGS = -g -L${WORKSPACE}/display  -L${WORKSPACE}/buildblock \
-	  -L${WORKSPACE}/paraplus \
           -L/usr/openwin/lib -lparaplus \
           -lbuildblock -ldisplay -lX11 -lcurses
 
@@ -29,7 +28,9 @@ LDFLAGS = -g -L${WORKSPACE}/display  -L${WORKSPACE}/buildblock \
 	$(CXX) $(DEBUG) $(CFLAGS) -o $@ $< ${LDFLAGS}
 
 
-all: tensor display sinodata VectorWithOffset convert pplusdummy pplustiny
+all: tensor display sinodata VectorWithOffset convert paraplus
+
+paraplus:	ParaEPXtest pplustiny pplusdummy
 
 #KT added .h dependencies
 tensor: tensor.cxx ${INCLUDE}/Tensor1D.h ${INCLUDE}/Tensor2D.h \
@@ -51,12 +52,12 @@ VectorWithOffset: VectorWithOffset.cxx ${INCLUDE}/VectorWithOffset.h
 convert: convert.cxx ${BUILDBLOCKLIB}
 	$(CXX) $(CFLAGS) -o $@ $< 
 
-pplusdummy: pplusdummy.cxx 
+pplusdummy: pplusdummy.cxx $(PARAPLUSLIB}
 	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
 
-pplustiny: pplustiny.cxx  /usr/local/lib/libparaplus.a
+pplustiny: pplustiny.cxx $(PARAPLUSLIB)
 	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
 
-ParaEPXtest: ParaEPXtest.cxx /usr/local/lib/libparaplus.a
+ParaEPXtest: ParaEPXtest.cxx $(PARAPLUSLIB)
 	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
 
