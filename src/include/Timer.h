@@ -61,6 +61,8 @@
 */
 
 
+#ifndef __TIMER_H__
+#define __TIMER_H__
 
 class Timer
 {
@@ -173,3 +175,7 @@ private:
 };
 
 #endif
+
+#endif // __TIMER_H__
+
+
