@@ -1308,11 +1308,11 @@ long get_vax_long (const unsigned short *bufr, int off)
 void hostltovaxl (const long in, unsigned short out [2])
 {  
 #if STIRIsNativeByteOrderBigEndian
-	out [0] = (in & 0x0000FFFF);
-	out [1] = (in & 0xFFFF0000) >> 16;
+	out [0] = static_cast<unsigned short>(in & 0x0000FFFF);
+	out [1] = static_cast<unsigned short>((in & 0xFFFF0000) >> 16);
 #else
-	out[0] = (in & 0xFFFF0000) >> 16;
-        out [1] = (in & 0x0000FFFF);
+	out[0] = static_cast<unsigned short>((in & 0xFFFF0000) >> 16);
+        out [1] = static_cast<unsigned short>((in & 0x0000FFFF));
 #endif
 }
 

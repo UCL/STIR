@@ -118,7 +118,7 @@ SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,
   //cerr << " Axial pos: " << axial_bucket_num << endl;
   //cerr << " Transax pos: " << transaxial_bucket_num << endl;
   
-  return singles[frame_num][axial_bucket_num][transaxial_bucket_num]/4.0;  // divide by 4.0 to be consistant with CTIs
+  return singles[frame_num][axial_bucket_num][transaxial_bucket_num]/4.0F;  // divide by 4.0 to be consistant with CTIs
 
 }
 
@@ -152,7 +152,7 @@ SinglesRatesFromECAT7::get_frame_number (const double start_time, const double e
 {
   assert(end_time >=start_time);
   //cerr << "num frames are" << time_frame_defs.get_num_frames()<<endl;;
-  for ( int i = 1; i <=time_frame_defs.get_num_frames(); i++)
+  for (unsigned int i = 1; i <=time_frame_defs.get_num_frames(); i++)
     {
       double start = time_frame_defs.get_start_time(i);
       double end = time_frame_defs.get_end_time(i);
@@ -160,7 +160,7 @@ SinglesRatesFromECAT7::get_frame_number (const double start_time, const double e
       //cerr << " End frame " << end << endl;
        if ((start/start_time)<=1 && (end/end_time)>=1)
 	{
-	  return i;
+	  return static_cast<int>(i);
 	}
     }
       

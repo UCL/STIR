@@ -221,10 +221,10 @@ construct_target_image_ptr() const
 {
   return
       new VoxelsOnCartesianGrid<float> (*get_parameters().proj_data_ptr->get_proj_data_info_ptr(),
-					get_parameters().zoom,
-					CartesianCoordinate3D<float>(get_parameters().Zoffset,
-								     get_parameters().Yoffset,
-								     get_parameters().Xoffset),
+					static_cast<float>(get_parameters().zoom),
+					CartesianCoordinate3D<float>(static_cast<float>(get_parameters().Zoffset),
+								     static_cast<float>(get_parameters().Yoffset),
+					static_cast<float>(get_parameters().Xoffset)),
 					CartesianCoordinate3D<int>(get_parameters().output_image_size_z,
                                                                    get_parameters().output_image_size_xy,
                                                                    get_parameters().output_image_size_xy)

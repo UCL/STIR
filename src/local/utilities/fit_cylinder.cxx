@@ -58,8 +58,8 @@ main(int argc, char *argv[])
       warning("Can only handle images of type VoxelsOnCartesianGrid\n");
       exit(EXIT_FAILURE);
     }
-  const float cylinder_radius = atof(argv[3]);
-  const float cylinder_length = atof(argv[4]);
+  const float cylinder_radius = static_cast<float>(atof(argv[3]));
+  const float cylinder_length = static_cast<float>(atof(argv[4]));
 
   VectorWithOffset< CartesianCoordinate3D<float> > allCoG;
   VectorWithOffset<float> weights;
@@ -118,9 +118,9 @@ main(int argc, char *argv[])
     CartesianCoordinate3D<float>(0, cst_y, cst_x) + 
     dir_z * (image_ptr->get_z_size() * image_ptr->get_voxel_size().z());
 
-  dir_z /= norm(dir_z);
+  dir_z /= static_cast<float>(norm(dir_z));
   CartesianCoordinate3D<float> dir_y(-scale_y, 1, 0);
-  dir_y /= norm(dir_y);
+  dir_y /= static_cast<float>(norm(dir_y));
   // TODO sign of dir_x
   const CartesianCoordinate3D<float> dir_x = cross_product(dir_z, dir_y);
 

@@ -155,7 +155,7 @@ main(int argc, char* argv[])
   shared_ptr<ProjData> eff_projdata_ptr = ProjData::read_from_file(argv[3]);  
  
   int max_segment_num_to_process = atoi(argv[4]);
-  float tolerance_of_corruption =atoi(argv[5]);
+  float tolerance_of_corruption =static_cast<float>(atof(argv[5]));
   //int num_axial_poss_to_remove_at_min_side = atoi(argv[5]);
   //int num_axial_poss_to_remove_at_max_side = atoi(argv[6]);
 

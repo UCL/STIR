@@ -64,7 +64,8 @@ RayTraceVoxelsOnCartesianGrid
   // d12 is distance between the 2 points
   // it turns out we can multiply here with the normalisation_constant
   // (as that just scales the coordinate system)
-  const float d12 = norm(difference*voxel_size) * normalisation_constant;
+  const float d12 = 
+    static_cast<float>(norm(difference*voxel_size) * normalisation_constant);
   
   const int sign_x = difference.x()>=0 ? 1 : -1;
   const int sign_y = difference.y()>=0 ? 1 : -1;

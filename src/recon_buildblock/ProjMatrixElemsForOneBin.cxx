@@ -437,13 +437,19 @@ operator==(const ProjMatrixElemsForOneBin& lor) const
   // first determine a tolerance for the floating point comparisons
   // do this by finding the maxumum value in the first lor
   float max_value = 0;
-  for (const_iterator this_iter= begin(); this_iter!= end(); ++this_iter)
-    {
-      const float current_value=this_iter->get_value();
-      if (current_value> max_value)
-	max_value = current_value;
-    }
-  const float tolerance = max_value*.0005;
+
+  {
+    // extra brackets here to avoid VC 7.1 complaining about this_iter
+    // being defined here in for() and a few lines further on
+    // (it really shouldn't complain)
+    for (const_iterator this_iter= begin(); this_iter!= end(); ++this_iter)
+      {
+	const float current_value=this_iter->get_value();
+	if (current_value> max_value)
+	  max_value = current_value;
+      }
+  }
+  const float tolerance = max_value*.0005F;
 
   const_iterator this_iter= begin(); 
   const_iterator lor_iter = lor.begin();

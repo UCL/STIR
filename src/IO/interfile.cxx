@@ -95,7 +95,9 @@ read_interfile_image(istream& input,
   
   CartesianCoordinate3D<float> origin(0,0,0);
   
-  CartesianCoordinate3D<float> voxel_size(hdr.pixel_sizes[2], hdr.pixel_sizes[1], hdr.pixel_sizes[0]);
+  CartesianCoordinate3D<float> voxel_size(static_cast<float>(hdr.pixel_sizes[2]), 
+					  static_cast<float>(hdr.pixel_sizes[1]), 
+					  static_cast<float>(hdr.pixel_sizes[0]));
   
   const int y_size =  hdr.matrix_size[1][0];
   const int x_size =  hdr.matrix_size[0][0];
@@ -120,7 +122,7 @@ read_interfile_image(istream& input,
   
   for (int i=0; i< hdr.matrix_size[2][0]; i++)
     if (hdr.image_scaling_factors[0][i]!= 1)
-      (*image_ptr)[i] *= hdr.image_scaling_factors[0][i];
+      (*image_ptr)[i] *= static_cast<float>(hdr.image_scaling_factors[0][i]);
     
   return image_ptr;
 }
@@ -517,7 +519,7 @@ at the moment. Using the first scale factor only.\n");
 			        hdr.storage_order,
 			        hdr.type_of_numbers,
 			        hdr.file_byte_order,
-			        hdr.image_scaling_factors[0][0]);
+			        static_cast<float>(hdr.image_scaling_factors[0][0]));
 
 
 }

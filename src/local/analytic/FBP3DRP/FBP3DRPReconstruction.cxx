@@ -170,7 +170,7 @@ static void find_rmin_rmax(int& rmin, int& rmax,
     (fovrad + proj_data_info_cyl.get_ring_radius())/(2*proj_data_info_cyl.get_ring_radius());
   // now shift it to the edge of the FOV 
   // (taking into account that z==get_min_z() is in the middle of the voxel)
-  z_in_image_coordinates += image.get_min_z() - .5;
+  z_in_image_coordinates += image.get_min_z() - .5F;
   
   // now convert to virtual_ring_coordinates using z = num_planes_per_virtual_ring * ring + virtual_ring_offset
   const float z_in_virtual_ring_coordinates = 
@@ -772,13 +772,14 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
     int nrings = viewgrams.get_num_axial_poss(); 
     int nprojs = viewgrams.get_num_tangential_poss();
     
-    int width = (int) pow(2, ((int) ceil(log((PadS + 1) * nprojs) / log(2))));
-    int height = (int) pow(2, ((int) ceil(log((PadZ + 1) * nrings) / log(2))));	
+    int width = (int) pow(2, ((int) ceil(log((PadS + 1.) * nprojs) / log(2.))));
+    int height = (int) pow(2, ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
     
     
     const float theta_max = atan(proj_data_info_cyl.get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
     
-    const float gamma = _PI/2 - atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0)));
+    const float gamma = 
+      static_cast<float>(_PI/2 - atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0))));
     
     full_log << "Colsher filter theta_max = " << theta_max << " theta = " << _PI/2-gamma
       << " d_a = " << proj_data_info_cyl.get_tangential_sampling()
@@ -820,7 +821,7 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 	  proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) + 1;
 	full_log << "  - Multiplying filtered projections by " << num_ring_differences << endl;
 	if (num_ring_differences != 1){
-          viewgrams *= num_ring_differences;
+          viewgrams *= static_cast<float>(num_ring_differences);
 	}
       
       }

@@ -292,7 +292,7 @@ SSRB(ProjData& out_proj_data,
 		    }
 		}
 	    if (do_norm && num_in_ax_pos!=0)
-	      out_sino /= num_in_ax_pos*num_views_to_combine;
+	      out_sino /= static_cast<float>(num_in_ax_pos*num_views_to_combine);
 	    if (num_in_ax_pos==0)
 	      warning("SSRB: no sinograms contributing to output segment %d, ax_pos %d\n",
 		      out_segment_num, out_ax_pos_num);

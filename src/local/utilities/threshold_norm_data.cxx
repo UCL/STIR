@@ -58,9 +58,9 @@ main(int argc, char **argv)
   shared_ptr<ProjData> input_proj_data_ptr = 
     ProjData::read_from_file(argv[2]); 
   const float min_threshold = 
-    argc>4 ? atof(argv[3]) : .01F;
+    argc>4 ? static_cast<float>(atof(argv[3])) : .01F;
   const float new_value = 
-    argc>5 ? atof(argv[4]) : 1.E20F;
+    argc>5 ? static_cast<float>(atof(argv[4])) : 1.E20F;
 
 
   shared_ptr<ProjData> proj_data_ptr =

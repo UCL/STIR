@@ -48,7 +48,7 @@ void threshold_min_to_small_positive_value(DiscretisedDensity<3,float>& input_im
   float Minneg;
 
   nuneg=0;
-  Minneg = 0.0;
+  Minneg = 0.0F;
 
   // TODO the 'rim_truncate' part of this function does not make a lot of sense in general
   DiscretisedDensityOnCartesianGrid<3,float>& input_image_cartesian =
@@ -71,7 +71,8 @@ void threshold_min_to_small_positive_value(DiscretisedDensity<3,float>& input_im
   float small_value=min_positive_value(input_image,rim_truncation_image);
   small_value=(small_value>0.F)?small_value*SMALL_NUM:SMALL_NUM;
 
-  const float truncated_radius = (xe-xs)/2 - rim_truncation_image;
+  const float truncated_radius = 
+    static_cast<float>((xe-xs)/2 - rim_truncation_image);
 
 
   for (int z=zs; z<=ze; z++)
@@ -199,7 +200,8 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
   const int ym=(ys+ye)/2;
   const int xm=(xs+xe)/2;
   
-  const float truncated_radius = (xe-xs)/2 - rim_truncation_image;
+  const float truncated_radius = 
+    static_cast<float>((xe-xs)/2 - rim_truncation_image);
    
 
   for (int z=zs; z<=ze; z++)
@@ -352,10 +354,11 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
   const int ym=(ys+ye)/2;
   const int xm=(xs+xe)/2;
   
-  const float truncated_radius = (xe-xs)/2 - rim_truncation;
+  const float truncated_radius = 
+    static_cast<float>((xe-xs)/2 - rim_truncation);
 
   float small_value= (float) numerator.find_max()*SMALL_NUM;
-  small_value=(small_value>0.0)?small_value:0.0;   
+  small_value=(small_value>0.0F)?small_value:0.0F;   
 
   for (int z=zs; z<=ze; z++)
     for (int y=ys; y <= ye; y++)
@@ -411,7 +414,7 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 {
   assert(numerator.get_index_range() == denominator.get_index_range());
   float small_value= numerator.find_max()*SMALL_NUM;
-  small_value=(small_value>0.0)?small_value:0.0;   
+  small_value=(small_value>0.0F)?small_value:0.0F;   
   // TODO rewrite in terms of 'full' iterator
  
   for (int z=numerator.get_min_index(); z<=numerator.get_max_index(); z++)
@@ -485,7 +488,7 @@ void multiply_and_add(DiscretisedDensity<3,float> &image_res, const DiscretisedD
 float neg_trunc(float x)
 {
 
-  return (x<0.0)?0.0:x;
+  return (x<0.0F)?0.0F:x;
 
 }
 
@@ -537,7 +540,8 @@ float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim
   const int ym=(ys+ye)/2;
   const int xm=(xs+xe)/2;
 
-  const float truncated_radius = (xe-xs)/2 - rim_truncation_image;
+  const float truncated_radius = 
+    static_cast<float>((xe-xs)/2 - rim_truncation_image);
 
   float current_estimate=0.F;
 

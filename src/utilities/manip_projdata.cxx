@@ -275,7 +275,7 @@ MENU:\n\
 
 float pos_indicate(float x)
 {
-    return (x>0.0)?1.0:0.0;
+    return (x>0.0)?1.0F:0.0F;
 }
 
 END_NAMESPACE_STIR

@@ -107,11 +107,11 @@ virtual_apply(DiscretisedDensity<3,elemT>& density) const
        z<=density.get_max_index();
        ++z)
          density[z] *= 
-         plane_scale_factors[static_cast<
-#ifndef STIR_NO_NAMESPACES
-           std:: // necessary due to bug in VC 6.0
-#endif
-           vector<double>::size_type>(z-density.get_min_index())];  
+	   static_cast<float>
+	   (
+	    plane_scale_factors[static_cast<std::vector<double>::size_type>
+				(z-density.get_min_index())]
+	    );  
 }
 
 

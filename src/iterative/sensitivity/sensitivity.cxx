@@ -196,10 +196,10 @@ void do_sensitivity(const char * const par_filename)
       {
 	result_ptr =
 	  new VoxelsOnCartesianGrid<float> (*parameters.proj_data_ptr->get_proj_data_info_ptr(),
-					    parameters.zoom,
-					    CartesianCoordinate3D<float>(parameters.Zoffset,
-									 parameters.Yoffset,
-									 parameters.Xoffset),
+					    static_cast<float>(parameters.zoom),
+					    CartesianCoordinate3D<float>(static_cast<float>(parameters.Zoffset),
+									 static_cast<float>(parameters.Yoffset),
+									 static_cast<float>(parameters.Xoffset)),
 					    CartesianCoordinate3D<int>(parameters.output_image_size_z,
 								       parameters.output_image_size_xy,
 								       parameters.output_image_size_xy));

@@ -227,7 +227,8 @@ proj_Siddon(
   const bool zero_diff_in_z = fabs(difference.z())<=small_difference;
 
   // d12 is distance between the 2 points (times normalisation_const)
-  const float d12 = norm(difference*Bild.get_voxel_size()) * normalisation_constant;
+  const float d12 = 
+    static_cast<float>(norm(difference*Bild.get_voxel_size()) * normalisation_constant);
     // KT 16/02/98 multiply with d12 to get normalisation right from the start
   const float inc_x = (zero_diff_in_x) ? 1000000.F*d12 : d12 / (sign_x*difference.x());
   const float inc_y = (zero_diff_in_y) ? 1000000.F*d12 : d12 / (sign_y*difference.y());

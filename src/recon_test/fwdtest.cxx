@@ -379,10 +379,10 @@ void fill_cylinder(VoxelsOnCartesianGrid<float>& image)
 	    (double)image.get_min_y(), (double)image.get_max_y(), 
 	    (image.get_min_y()+ image.get_max_y())/2.);
   
-  const double zc = 
+  const float zc = 
     ask_num("Centre Z coordinate",     
-	    (double)image.get_min_z(), (double)image.get_max_z(), 
-	    (image.get_min_z()+ image.get_max_z())/2.);
+	    (float)image.get_min_z(), (float)image.get_max_z(), 
+	    (image.get_min_z()+ image.get_max_z())/2.F);
 
   
   const double Rcyl = 
@@ -391,9 +391,9 @@ void fill_cylinder(VoxelsOnCartesianGrid<float>& image)
 	    (image.get_max_x()- image.get_min_x())/4.);
   
   // Max length is num_planes+1 because of edges of voxels
-  const double Lcyl = 
-    ask_num("Length (planes)", 1., (image.get_max_z()- image.get_min_z())+1.,
-	    (image.get_max_z()- image.get_min_z())+1.);
+  const float Lcyl = 
+    ask_num("Length (planes)", 1.F, (image.get_max_z()- image.get_min_z())+1.F,
+	    (image.get_max_z()- image.get_min_z())+1.F);
   
   
   cerr << "Centre coordinate: (x,y,z) = (" 
@@ -429,13 +429,13 @@ void fill_cylinder(VoxelsOnCartesianGrid<float>& image)
 	      }
 	  }
 	// update plane with normalised value (independent of num_samples)
-	plane[y][x] = voxel_value*value/(num_samples*num_samples); 
+	plane[y][x] = static_cast<float>(voxel_value*value/(num_samples*num_samples)); 
       }
     
   for (int z=image.get_min_z(); z<=image.get_max_z(); z++)
     {
       // use 2. to make both args of min() and max() double
-    float zfactor = (std::min(z+.5, zc+Lcyl/2.) - std::max(z-.5, zc-Lcyl/2.));
+    float zfactor = (std::min(z+.5F, zc+Lcyl/2.F) - std::max(z-.5F, zc-Lcyl/2.F));
       if (zfactor<0) zfactor = 0;
       image[z] = plane;
       image[z] *= zfactor;

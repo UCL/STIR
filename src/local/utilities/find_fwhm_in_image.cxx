@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;            
   } 
   const unsigned short num_maxima = argc>=3 ? atoi(argv[2]) : 1 ;
-  const float level = argc>=4 ? atoi(argv[3]) : 2 ;  
+  const float level = argc>=4 ? static_cast<float>(atof(argv[3])) : 2 ;  
   const int dimension = argc>=5 ? atoi(argv[4]) : 0 ; 
   const bool nema = argc>=6 ? atoi(argv[5]) : 1 ; 
   cerr << "Finding " << num_maxima << " maxima\n" ;    

@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     }
   const string  output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);  
-  const float value = argc <=3 ? 0.F: atof(argv[3]);
+  const float value = argc <=3 ? 0.F: static_cast<float>(atof(argv[3]));
   const int max_segment_num_to_process = argc <=4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[4]);
 
   ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr =

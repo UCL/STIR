@@ -402,7 +402,8 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
   //MJ 05/03/2000 moved this inside the update function
   
   
-  *multiplicative_update_image_ptr*= get_parameters().num_subsets;
+  *multiplicative_update_image_ptr*= 
+    static_cast<float>(get_parameters().num_subsets);
   
   
   if(get_parameters().inter_update_filter_interval>0 &&

@@ -305,8 +305,8 @@ find_LOR_intersections_with_cylinder(LORAs2Points<coordT1>& intersection_coords,
     return Succeeded::no; // LOR is outside detector radius
   const coordT2 root = static_cast<coordT2>(sqrt(argsqrt));
 
-  const coordT2 l1 = (- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2;
-  const coordT2 l2 = (- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2;
+  const coordT2 l1 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2);
+  const coordT2 l2 = static_cast<coordT2>((- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2);
   // TODO won't work when coordT1!=coordT2
   intersection_coords.p1() = d*l1 + c1;
   intersection_coords.p2() = d*l2 + c1;
@@ -332,7 +332,7 @@ find_LOR_intersections_with_cylinder(LORInCylinderCoordinates<coordT1>& cyl_coor
 
   const CartesianCoordinate3D<coordT1>& c1 = intersection_coords.p1();
   const CartesianCoordinate3D<coordT1>& c2 = intersection_coords.p2();
-  cyl_coords.reset(radius);
+  cyl_coords.reset(static_cast<float>(radius));
   
   cyl_coords.p1().psi() = 
     from_min_pi_plus_pi_to_0_2pi(static_cast<coordT1>(atan2(c1.x(),-c1.y())));
@@ -420,7 +420,7 @@ change_representation(LORInCylinderCoordinates<coordT>& lor,              \
                          const double radius)  const	  	             \
 {								             \
   lor = *this;                           				     \
-  return lor.set_radius(radius);					     \
+  return lor.set_radius(static_cast<coordT>(radius));					     \
 }									     \
 									     \
 template <class coordT>							     \
@@ -430,7 +430,7 @@ change_representation(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>& lor,   
                                                const double radius)  const   \
 {									     \
   lor = *this;                           				     \
-  return lor.set_radius(radius);					     \
+  return lor.set_radius(static_cast<coordT>(radius));					     \
 }									     \
 									     \
 template <class coordT>							     \
@@ -440,7 +440,7 @@ change_representation(LORInAxialAndSinogramCoordinates<coordT>& lor,            
                                   const double radius) const                 \
 {									     \
   lor = *this;                           				     \
-  return lor.set_radius(radius);					     \
+  return lor.set_radius(static_cast<coordT>(radius));					     \
 }									     \
 									     \
 template <class coordT>							     \
@@ -450,7 +450,7 @@ get_intersections_with_cylinder(LORAs2Points<coordT>& lor,              \
                                 const double radius) const		     \
 {									     \
   self_type tmp = *this;							     \
-  if (tmp.set_radius(radius) == Succeeded::no)			             \
+  if (tmp.set_radius(static_cast<coordT>(radius)) == Succeeded::no)			             \
     return Succeeded::no;						     \
   lor = tmp;                                                                 \
   return Succeeded::yes;								     \

@@ -62,7 +62,7 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
    max_ring_diff(max_ring_diff_v)
 {
   
-  azimuthal_angle_sampling = _PI/num_views;
+  azimuthal_angle_sampling = static_cast<float>(_PI/num_views);
   ring_radius = get_scanner_ptr()->get_ring_radius();
   ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
 

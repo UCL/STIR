@@ -56,7 +56,7 @@ main(int argc, char **argv)
   shared_ptr<ProjData> norm_proj_data_ptr = 
     ProjData::read_from_file(argv[3]); 
   const float max_threshold_in_norm = 
-    argc>5 ? atof(argv[4]) : 1.E19F;
+    argc>5 ? static_cast<float>(atof(argv[4])) : 1.E19F;
 
   shared_ptr<ProjData> proj_data_ptr =
     new ProjDataInterfile(input_proj_data_ptr->get_proj_data_info_ptr()->clone(),

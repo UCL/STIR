@@ -68,7 +68,7 @@ post_processing()
        ++parsing_iter, ++coefficients_iter)
     {
       const unsigned int size = parsing_iter->size();
-      const int min_index = -(size/2);
+      const int min_index = -static_cast<int>((size/2));
       if (size%2==0)
 	warning("Parsing SeparableConvolutionImageFilter\n"
 		"Even number of filter coefficients for the %d-th dimension."

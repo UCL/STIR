@@ -90,7 +90,7 @@ main (int argc, char* argv[])
       ++how_many_entries;
     }
   // compute average rate
-  singles_in_this_frame /= how_many_entries;
+  singles_in_this_frame /= static_cast<float>(how_many_entries);
 
   // now write to file
   {

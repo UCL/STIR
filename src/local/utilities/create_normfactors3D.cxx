@@ -78,8 +78,8 @@ int main(int argc, char **argv)
 	    for (int ra = 0; ra < num_rings; ++ra)
               for (int a = 0; a < num_detectors_per_ring; ++a)
 	        efficiencies[ra][a] = 
-		  (2+sin(2*_PI*a/num_detectors_per_ring))*
-		  exp(noise*((2.F*rand())/RAND_MAX - 1));
+		  static_cast<float>((2+sin(2*_PI*a/num_detectors_per_ring))*
+				     exp(noise*((2.F*rand())/RAND_MAX - 1)));
 	    {
 	      char *out_filename = new char[out_filename_prefix.size() + 30];
 	      sprintf(out_filename, "%s_%s_%d_%d.out", 

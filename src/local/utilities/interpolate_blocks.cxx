@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 	     ++tang_pos_num, current_value += increment)
 	  viewgram[ax_pos_num][tang_pos_num] = current_value;
 	assert(fabs(current_value - next_value)<
-	       max(fabs(previous_value), fabs(next_value))*10^-5);
+	       max(fabs(previous_value), fabs(next_value))*10.E-5);
       }      
       out_projdata.set_viewgram(viewgram);
     }

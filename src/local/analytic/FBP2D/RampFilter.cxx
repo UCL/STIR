@@ -52,13 +52,15 @@ inline float ramp_filter_in_space(const int n,
   // KT&Darren Hogg 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
   if (n==0)
     return
-        (2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */);
+      static_cast<float>((2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */));
   else if (fabs(fabs(x)-1) < 1E-6)
     return
-        -(square(2*fc)*(8*alpha + (-1 + alpha)*square(_PI)))/
-          (4*_PI/* *square(sampledist) */);
+        static_cast<float>(
+			   -(square(2*fc)*(8*alpha + (-1 + alpha)*square(_PI)))/
+			   (4*_PI/* *square(sampledist) */));
   else
     return
+      static_cast<float>(
         square(2*fc)*(
 	   -alpha - square(x) + 3*alpha*square(x) - square(square(x)) + 
            _PI*x*sin(_PI*x)*(-1 + square(x))*
@@ -66,7 +68,8 @@ inline float ramp_filter_in_space(const int n,
            cos(_PI*x)*(alpha - (1 + alpha)*square(x) + 
                       (-1 + 2*alpha)*square(square(x)))
         )/
-        (_PI/* *square(sampledist) */*square(-1 + x)*square(x)*square(1 + x));
+        (_PI/* *square(sampledist) */*square(-1 + x)*square(x)*square(1 + x))
+	);
 }
 
 // KT&CL 03/08/99 insert max value for fc
@@ -122,7 +125,7 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
 
   // KT&DH 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
   filter[0] = 
-    (2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */);
+    static_cast<float>((2*square(fc)*(-4 + alpha*(4 + square(_PI))))/(_PI/* *square(sampledist) */));
 
   // note: filter[length/2] is set twice for even n
   for (int n = 1; n <= length/2; n += 1)

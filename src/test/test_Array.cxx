@@ -304,7 +304,7 @@ ArrayTests::run_tests()
       }
       {
 	for (int i=test.get_min_index(); i<= test.get_max_index(); i++)
-	  test[i] = 3.5*i + 100;
+	  test[i] = 3.5F*i + 100;
       }
       Array<1,float> test_copy = test;
 
@@ -639,7 +639,7 @@ ArrayTests::run_tests()
     cerr << "Testing 1D IO" << endl;
     Array<1,float> t1(IndexRange<1>(-1,10));
     for (int i=-1; i<=10; i++)
-      t1[i] = sin(i* _PI/ 15.);
+      t1[i] = static_cast<float>(sin(i* _PI/ 15.));
         run_IO_tests(t1);
   }
   {
@@ -648,7 +648,7 @@ ArrayTests::run_tests()
     Array<2,float> t1(range);
     for (int i=-1; i<=10; i++)
       for (int j=11; j<=20; j++)
-	t1[i][j] = sin(i*j* _PI/ 15.);
+	t1[i][j] = static_cast<float>(sin(i*j* _PI/ 15.));
     run_IO_tests(t1);
   }
   {

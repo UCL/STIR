@@ -89,7 +89,8 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
 
     int             k, j;
     float           fa, fb, omega, psi;
-    float           fil, mod_nu, nu_a, nu_b;
+    float           mod_nu, nu_a, nu_b;
+    double fil;
 	/*
 	 * The Colsher filter is real-valued, so it has only height*width elements,
 	 * going from [1..height*width]. It is arranged in wrap-around order
@@ -106,7 +107,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
             fa = (float) k / width;
             nu_a = fa / d_a;
             if (fa == 0. && fb == 0.) {
-                filter[ii++] = 0.;
+                filter[ii++] = 0.F;
                 continue;
             }
 
@@ -126,10 +127,12 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
                 //for both planar and axial direction
 
             if (fa < fc_planar || fb < fc_axial) 
-                filter[ii++] = fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
-                    *(alpha_axial + (1. - alpha_axial)* cos(_PI * fb / fc_axial));
+                filter[ii++] = 
+		  static_cast<float>(
+				     fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
+				     *(alpha_axial + (1. - alpha_axial)* cos(_PI * fb / fc_axial)));
             else
-                filter[ii++] = 0.;
+                filter[ii++] = 0.F;
 
         }
                 
@@ -150,10 +153,11 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
 
 
             if (-fa < fc_planar || fb < fc_axial) 
-                filter[ii++] = fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
-                    *(alpha_axial + (1. - alpha_axial)* cos(_PI * fb / fc_axial));
+                filter[ii++] = 
+		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
+				     *(alpha_axial + (1. - alpha_axial)* cos(_PI * fb / fc_axial)));
             else
-                filter[ii++] = 0.;                        
+                filter[ii++] = 0.F;
 		
         }
     }
@@ -176,10 +180,11 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
 
  
             if (fa < fc_planar || -fb < fc_axial) 
-                filter[ii++] = fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
-                    *(alpha_axial + (1. - alpha_axial)* cos(_PI * (-fb) / fc_axial));
+                filter[ii++] = 
+		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
+				     *(alpha_axial + (1. - alpha_axial)* cos(_PI * (-fb) / fc_axial)));
             else
-                filter[ii++] = 0.;
+                filter[ii++] = 0.F;
                     
         }
                 
@@ -197,10 +202,11 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
                 fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
             if (-fa < fc_planar || -fb < fc_axial) 
-                filter[ii++] = fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
-                    *(alpha_axial + (1. - alpha_axial)* cos(_PI * (-fb) / fc_axial));
+                filter[ii++] = 
+		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
+				      *(alpha_axial + (1. - alpha_axial)* cos(_PI * (-fb) / fc_axial)));
             else
-                filter[ii++] = 0.;
+                filter[ii++] = 0.F;
 
                          
         }
@@ -208,7 +214,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
 
     // KT&Darren Hogg 03/07/2001 inserted correct scale factor 
     // TODO this assumes current value for the magic_number in bakcprojector
-    filter *= 4*_PI*d_a;
+    filter *= static_cast<float>(4*_PI*d_a);
 
     
     {
@@ -377,8 +383,8 @@ void Filter_proj_Colsher(Viewgram<float> & view_i,
   int nrings = rmax - rmin + 1; 
   int nprojs = view_i.get_num_tangential_poss();
   
-  int width = (int) pow(2, ((int) ceil(log((PadS + 1) * nprojs) / log(2))));
-  int height = (int) pow(2, ((int) ceil(log((PadZ + 1) * nrings) / log(2))));	
+  int width = (int) pow(2, ((int) ceil(log((PadS + 1.) * nprojs) / log(2.))));
+  int height = (int) pow(2, ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
   
   const int maxproj = view_i.get_max_tangential_pos_num();
   const int minproj = view_i.get_min_tangential_pos_num();
