@@ -22,8 +22,8 @@ EXTRA_OPT+=-D ENABLE_DENSEL
 ifeq ($(SYSTEM),LINUX)
 
 ifneq (,$(findstring beo,$(host-name)))
-# the beowulf cluster has Athlon-mp processors
-EXTRA_OPT+=-g -Wall -march=athlon-mp
+# the beowulf cluster has Athlon processors
+EXTRA_OPT+=-g -Wall -march=athlon
 CXX=g++-3.0
 CC=gcc-3.0
 INSTALL_DIR=/apps/prod/STIRbin/
