@@ -105,7 +105,7 @@ inline
 float total_cross_section_relative_to_511keV(const float energy)
 {
   const float a= energy/511.0;
-  static const float prefactor = 9/(-40 + 27 log(3.));
+  static const float prefactor = 9/(-40 + 27*log(3.));
   return //check this in Mathematica
 	  prefactor*
 	  (((-4 - a*(16 + a*(18 + 2*a)))/square(1 + 2*a) + 
