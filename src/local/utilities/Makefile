@@ -32,7 +32,8 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	rigid_object_transform_image.cxx \
 	find_maximum_in_image.cxx \
 	remove_corrupted_sinograms.cxx \
-	move_image.cxx
+	move_image.cxx \
+  find_fwhm_in_image.cxx
 
 #	make_cylinder.cxx 
 
@@ -86,3 +87,4 @@ install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
 
 include $(WORKSPACE)/Makefile_bblibs
+
