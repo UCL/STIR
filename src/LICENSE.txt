@@ -8,6 +8,8 @@ GNU Lesser General Public License (see LGPL.txt for text),
 unless specified otherwise below.
 This includes all files in the following subdirectories 
     . (that is, the directory where this file resides)
+    analytic/FBP2D
+    analytic/FBP3DRP/Colsher*
     buildblock
     recon_buildblock
     numerics_buildblock
@@ -26,23 +28,24 @@ This includes all files in the following subdirectories
     include/stir/recon_buildblock
     include/stir/LogLikBased
     include/stir/numerics
+    include/stir/analytic/FBP2D
+    include/stir/analytic/FBP3DRP
 
 Files in the following subdirectories are covered by the 
 GNU General Public License (see GPL.txt for text):
     recon_test
     utilities 
-    analytic/FBP2D
+    analytic/FBP3DRP/FBP*
     iterative/sensitivity
     iterative/OSMAPOSL
     include/stir/OSMAPOSL
-    include/stir/analytic/FBP2D
 
 Some files are in addition covered by the PARAPET license 
 (see PARAPETLICENSE.txt). This is always indicated in the file, but
 a complete list is also given at the end of this file.
 
 
-IO/ecat6_utils.cxx (and potentially other files explictly mentioning the CTI copyright)
+IO/ecat6_utils.cxx (and potentially other files explicitly mentioning the CTI copyright)
 is based on work by CTI PET Systems Inc. It
 can be redistributed freely, but not used in any commercial program.
 Please contact CTI PET systems if you need more information.
