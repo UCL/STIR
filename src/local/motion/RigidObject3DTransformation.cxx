@@ -213,6 +213,31 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
     return CartesianCoordinate3D<float> (transformed_point.z(), transformed_point.x(), transformed_point.y());
 }
 
+void 
+RigidObject3DTransformation::
+transform_bin(Bin& bin, 
+	      const ProjDataInfoCylindricalNoArcCorr& out_proj_data_info,
+	      const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const
+{
+
+  CartesianCoordinate3D<float> coord_1;
+  CartesianCoordinate3D<float> coord_2;
+  in_proj_data_info.find_cartesian_coordinates_of_detection(coord_1,coord_2,bin);
+  
+  // now do the movement
+  
+  const CartesianCoordinate3D<float> 
+    coord_1_transformed = transform_point(coord_1);
+  
+  const CartesianCoordinate3D<float> 
+    coord_2_transformed = transform_point(coord_2);
+  
+  out_proj_data_info.
+    find_bin_given_cartesian_coordinates_of_detection(bin,
+                                                      coord_1_transformed,
+					              coord_2_transformed);
+}
+  
 
 void
 RigidObject3DTransformation::get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference)
