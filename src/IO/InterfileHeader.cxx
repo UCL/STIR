@@ -520,7 +520,7 @@ find_segment_sequence(vector<int>& segment_sequence,
   vector< pair<float, int> > sum_and_location(num_segments);
   for (int i=0; i<num_segments; i++)
   {
-    sum_and_location[i].first = min_ring_difference[i] + max_ring_difference[i];
+    sum_and_location[i].first = static_cast<float>(min_ring_difference[i] + max_ring_difference[i]);
     sum_and_location[i].second = i;
   }
 #if 0
@@ -884,14 +884,14 @@ bool InterfilePDFSHeader::post_processing()
   // data from the Interfile header (or the guessed scanner).
   Scanner * scanner_ptr_from_file =
     new Scanner(guessed_scanner_ptr->get_type(), originating_system,
-           num_detectors_per_ring, num_rings, 
-	   guessed_scanner_ptr->get_max_num_non_arccorrected_bins(), 
-	   guessed_scanner_ptr->get_default_num_arccorrected_bins(),
-	   ring_diameter_in_cm*10.F/2,
-	   distance_between_rings_in_cm*10.F,
-	   bin_size_in_cm*10.F,
-	   // TODO have keyword
-	   guessed_scanner_ptr->get_default_intrinsic_tilt());
+		num_detectors_per_ring, num_rings, 
+		guessed_scanner_ptr->get_max_num_non_arccorrected_bins(), 
+		guessed_scanner_ptr->get_default_num_arccorrected_bins(),
+		static_cast<float>(ring_diameter_in_cm*10./2),
+		static_cast<float>(distance_between_rings_in_cm*10.),
+		static_cast<float>(bin_size_in_cm*10),
+		// TODO have keyword
+		guessed_scanner_ptr->get_default_intrinsic_tilt());
 
 
   delete guessed_scanner_ptr;
@@ -923,6 +923,6 @@ bool InterfilePDFSHeader::post_processing()
   //cerr << data_info_ptr->parameter_info() << endl;
   
   return false;
-};
+}
 
 END_NAMESPACE_STIR

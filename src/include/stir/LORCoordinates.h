@@ -173,7 +173,7 @@ class LORInCylinderCoordinates : public LOR<coordT>
   void reset(coordT radius=1)
     {
       // set psi such that the new LOR does intersect that cylinder
-      _p1.psi()=0; _p2.psi()=_PI; _radius=radius; 
+      _p1.psi()=0; _p2.psi()=static_cast<coordT>(_PI); _radius=radius; 
     }
   coordT radius() const { check_state(); return _radius; }
 

@@ -634,7 +634,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
         const float delta=proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
 
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
-        Proj2424 *= jacobian(delta, s+ 0.5);
+        Proj2424 *= jacobian(delta, s+ 0.5F);
 
 	// find correspondence between ax_pos coordinates and image coordinates:
 	// z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset
@@ -827,7 +827,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	const float delta=proj_data_info_cyl_ptr->get_average_ring_difference(segment_num);
 
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
-        Proj2424 *= jacobian(delta, s+ 0.5);
+        Proj2424 *= jacobian(delta, s+ 0.5F);
         
 	// find correspondence between ax_pos coordinates and image coordinates:
 	// z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset

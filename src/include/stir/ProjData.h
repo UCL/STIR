@@ -26,6 +26,7 @@
 #include "stir/ProjDataInfo.h"
 #include <string>
 #include <iostream>
+//#include <ios>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -94,7 +95,7 @@ public:
   //! A static member to get the projection data from a file
   static shared_ptr<ProjData> 
     read_from_file(const string& filename,
-		   const ios::openmode open_mode = ios::in);
+		   const std::ios::openmode open_mode = std::ios::in);
 
   //! Constructors
   inline ProjData();

@@ -77,7 +77,7 @@ public:
        tmp = 4*(R2 - dxy2 * s*s);
      else
        tmp = 4*R2;
-     return tmp / pow(tmp + ring_spacing2*delta*delta, 1.5)* backprojection_normalisation;
+     return tmp / pow(tmp + ring_spacing2*delta*delta, 1.5F)* backprojection_normalisation;
    }
 };     
 

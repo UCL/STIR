@@ -72,7 +72,7 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 {
   assert(scanner_ptr.use_count()!=0);
   ring_radius = scanner_ptr->get_ring_radius();
-  angular_increment = _PI/scanner_ptr->get_num_detectors_per_ring();
+  angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 }
@@ -432,8 +432,8 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   assert(det2<num_detectors_per_ring);
 
   LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_ring_radius());
-  cyl_coords.p1().psi() = (2.*_PI/num_detectors_per_ring)*(det1);
-  cyl_coords.p2().psi() = (2.*_PI/num_detectors_per_ring)*(det2);
+  cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
+  cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
   cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing();
   cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing();
   LORAs2Points<float> lor(cyl_coords);  

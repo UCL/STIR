@@ -152,13 +152,13 @@ void build_gauss(VectorWithOffset<elemT>&kernel, int res,float s2,  float sampli
   
   
   hres = res/2;
-  kernel[hres-1] = 1/sqrt(s2*TPI);
+  kernel[hres-1] = static_cast<elemT>(1/sqrt(s2*TPI));
   sum =   kernel[hres-1];       
   kernel[res-1] = 0;
   for (j=1;(j<hres && !cutoff);j++){
-    kernel[hres-j-1] = kernel[hres-1]*(double ) exp(-0.5*(j*sampling_interval)*(j*sampling_interval)/s2);
+    kernel[hres-j-1] = static_cast<elemT>(kernel[hres-1]* exp(-0.5*(j*sampling_interval)*(j*sampling_interval)/s2));
     kernel[hres+j-1] = kernel [hres-j-1];
-    sum +=  2.0 * kernel[hres-j-1];
+    sum +=  2.0F * kernel[hres-j-1];
     if (kernel[hres-j-1]  <kernel[hres-1]*ZERO_TOL) cutoff=1;
             
   }  
@@ -191,15 +191,15 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     
     //MJ 12/05/98 compute parameters relevant to DFT/IDFT
     
-    elemT s2 = fwhm*fwhm/(8*log(2)); //variance in Mm
+    elemT s2 = fwhm*fwhm/(8*log(2.F)); //variance in Mm
     
     const int n=7; //determines cut-off in both space and frequency domains
-    const elemT sinc_length=10000.0;
-    int samples_per_voxel=(int)(MmPerVox*2*sqrt(2*log(10)*n/s2)/TPI +1);
+    const elemT sinc_length=10000.0F;
+    int samples_per_voxel=(int)(MmPerVox*2*sqrt(2*log(10.F)*n/s2)/TPI +1);
     const elemT sampling_interval=MmPerVox/samples_per_voxel;
-    elemT stretch= (samples_per_voxel>1)?sinc_length:0.0;
+    elemT stretch= (samples_per_voxel>1)?sinc_length:0.0F;
     
-    int Res=(int)(log((sqrt(8*n*log(10)*s2)+stretch)/sampling_interval)/log(2)+1);
+    int Res=(int)(log((sqrt(8*n*log(10.)*s2)+stretch)/sampling_interval)/log(2.)+1);
     Res=(int) pow(2.0,(double) Res); //MJ 12/05/98 made adaptive 
     
     

@@ -248,42 +248,42 @@ main(int argc, char **argv)
     {
       if (argc<2)
       { cerr << "Option '--add-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-      add_scalar += atof(argv[1]);
+      add_scalar += static_cast<float>(atof(argv[1]));
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--times-scalar")==0)
     {
       if (argc<2)
       { cerr << "Option '--times-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-      mult_scalar *= atof(argv[1]);
+      mult_scalar *= static_cast<float>(atof(argv[1]));
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--divide-scalar")==0)
     {
       if (argc<2)
       { cerr << "Option '--divide-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-      mult_scalar /= atof(argv[1]);
+      mult_scalar /= static_cast<float>(atof(argv[1]));
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--max-threshold")==0)
     {
       if (argc<2)
       { cerr << "Option '--max-threshold' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-      max_threshold = atof(argv[1]);
+      max_threshold = static_cast<float>(atof(argv[1]));
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--min-threshold")==0)
     {
       if (argc<2)
       { cerr << "Option '--min-threshold' expects a (float) argument\n"; exit(EXIT_FAILURE); }
-      min_threshold = atof(argv[1]);
+      min_threshold = static_cast<float>(atof(argv[1]));
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--power")==0)
     {
       if (argc<2)
       { cerr << "Option '--power' expects an argument\n"; exit(EXIT_FAILURE); }
-      power = atof(argv[1]);
+      power = static_cast<float>(atof(argv[1]));
       argc-=2; argv+=2;
     } 
     else  if (strcmp(argv[0], "--including-first")==0)

@@ -304,9 +304,9 @@ void get_plane_row(VoxelsOnCartesianGrid<float>& input_image)
     ye=input_image.get_max_y(); 
     xe=input_image.get_max_x();
 
-    float zm=(zs+ze)/2.;
-    float ym=(ys+ye)/2.;
-    float xm=(xs+xe)/2.;
+    float zm=(zs+ze)/2.F;
+    float ym=(ys+ye)/2.F;
+    float xm=(xs+xe)/2.F;
   
     int axdir=ask_num("Which axis direction (z=0,y=1,x=2)?",0,2,2);
 

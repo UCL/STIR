@@ -124,8 +124,8 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
   {
     for (unsigned int i=1; i<= segment_sequence_orig.size()/2; i++)
     { 
-      segment_sequence_orig[2*i-1] = i;
-      segment_sequence_orig[2*i] = -i;
+      segment_sequence_orig[2*i-1] = static_cast<int>(i);
+      segment_sequence_orig[2*i] = -static_cast<int>(i);
       // cout << "segment_sequence_orig[" << 2*i-1 << "] = " << segment_sequence_orig[2*i-1] << endl;
       // cout << "segment_sequence_orig[" << 2*i << "] = " << segment_sequence_orig[2*i] << endl;
     }

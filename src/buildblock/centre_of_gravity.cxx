@@ -123,7 +123,7 @@ find_centre_of_gravity_in_mm_per_plane(  VectorWithOffset< CartesianCoordinate3D
 	allCoG[z].y() = CoG[1];
 	allCoG[z].x() = CoG[2];
       }
-    allCoG[z].z() = z;
+    allCoG[z].z() = static_cast<float>(z);
     allCoG[z] *= voxel_size;
     allCoG[z] += origin;
   }

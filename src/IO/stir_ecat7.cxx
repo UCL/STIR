@@ -31,6 +31,7 @@
 #include "stir/ProjDataFromStream.h"
 #include "stir/IO/interfile.h"
 #include "stir/utilities.h"
+#include "stir/NumericInfo.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Sinogram.h"
 #include "stir/IndexRange3D.h"
@@ -1724,6 +1725,32 @@ update_ECAT7_subheader(MatrixFile *mptr, SUBHEADER_TYPE& shead,
     return update_ECAT7_subheader(mptr, shead, matdir);
 }
 
+/* local function to write data to FILE. 
+   Warning: will corrupt data in array when byteswapping */
+template <class OutputType>
+static
+Succeeded
+write_data_to_stream(FILE* file_ptr,
+		     Array<1,OutputType>& array, const ByteOrder byte_order)
+{
+  // note for byte swapping
+  // if necessary, we swap, then write. We really should swap back, but as the
+  // data isn't needed after this, we don't.
+  // Note that swapping back could be less expensive than copying the data 
+  // somewhere and do the swap there
+  const size_t size_to_write = 
+    sizeof(OutputType) * static_cast<size_t>(array.get_length());
+  if (size_to_write==0)
+    return Succeeded::yes;
+  if (!byte_order.is_native_order())
+    for(int i=array.get_min_index(); i<=array.get_max_index(); ++i)
+      ByteOrder::swap_order(array[i]);
+  const size_t size_written = 
+    fwrite(reinterpret_cast<const char *>(array.get_data_ptr()), 
+	   1, size_to_write, file_ptr);
+  array.release_data_ptr();
+  return size_to_write==size_written ? Succeeded::yes : Succeeded::no;
+}
 
 Succeeded 
 ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data, 
@@ -1870,7 +1897,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
 
     if (offset_in_file<0)
     { 
-      warning("Error in determining offset into ECAT file for segment %d (f%d, g%d, d%d, b%d)\n"
+      warning("\nError in determining offset into ECAT file for segment %d (f%d, g%d, d%d, b%d)\n"
 	      "Maybe the file is too big?\n"
 	      "No data written for this segment and all remaining segments\n",
         segment_num, frame_num, gate_num, data_num, bed_num);
@@ -1879,7 +1906,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
 
     if (fseek(mptr->fptr, offset_in_file, SEEK_SET))
     {
-      warning("ProjData_to_ECAT7: error in fseek for segment %d (f%d, g%d, d%d, b%d)\n"
+      warning("\nProjData_to_ECAT7: error in fseek for segment %d (f%d, g%d, d%d, b%d)\n"
             "No data written for this segment and all remaining segments\n",
             segment_num, frame_num, gate_num, data_num, bed_num);
       return Succeeded::no;
@@ -1887,39 +1914,29 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
     for (int view_num=proj_data.get_min_view_num(); view_num<=proj_data.get_max_view_num(); ++view_num)
       for (int ax_pos_num=proj_data.get_min_axial_pos_num(segment_num); ax_pos_num <= proj_data.get_max_axial_pos_num(segment_num); ++ax_pos_num)
       {
+	Succeeded succeeded= Succeeded::yes;
         Array<1,float>& float_array = segment[view_num][ax_pos_num];
-#ifdef UseFloatOutput
-	Array<1,float>& array = float_array;
-#else
-	float scale_factor_used = scale_factor;
-	Array<1,OutputType> array =
-	  convert_array(scale_factor_used, float_array, NumericInfo<OutputType>());
-	if (scale_factor_used != scale_factor)
-	  {
-	    warning("ProjData_to_ECAT7: error in finding scale factor, segment %d (f%d, g%d, d%d, b%d)\n"
-		    "No data written for this segment and all remaining segments\n",
-		    segment_num, frame_num, gate_num, data_num, bed_num);
-	    return Succeeded::no;
-	  }
-#endif
-        // note for byte swapping
-        // if necessary, we swap, then write. We really should swap back, but as the
-        // data isn't needed after this, we don't.
-        // Note that swapping back could be less expensive than copying the data 
-        // somewhere and do the swap there
-        const size_t size_to_write = 
-          sizeof(OutputType) * static_cast<size_t>(array.get_length());
-        if (size_to_write==0)
-          continue;
-        if (!byte_order.is_native_order())
-          for(int i=array.get_min_index(); i<=array.get_max_index(); ++i)
-            ByteOrder::swap_order(array[i]);
-        const size_t size_written = 
-          fwrite(reinterpret_cast<const char *>(array.get_data_ptr()), 
-                 1, size_to_write, mptr->fptr);
-        array.release_data_ptr();
 
-        if (size_written != size_to_write)
+	if (typeid(OutputType) == typeid(float))
+	  {
+	    succeeded=write_data_to_stream(mptr->fptr, float_array, byte_order);
+	  }
+	else
+	  {
+	    float scale_factor_used = scale_factor;
+	    Array<1,OutputType> array_of_output_type =
+	      convert_array(scale_factor_used, float_array, NumericInfo<OutputType>());
+	    if (scale_factor_used != scale_factor)
+	      {
+		warning("\nProjData_to_ECAT7: error in finding scale factor, segment %d (f%d, g%d, d%d, b%d)\n"
+			"No data written for this segment and all remaining segments\n",
+			segment_num, frame_num, gate_num, data_num, bed_num);
+		return Succeeded::no;
+	      }
+	    succeeded=write_data_to_stream(mptr->fptr, array_of_output_type, byte_order);
+	  }
+
+        if (succeeded==Succeeded::no)
         {
           warning("ProjData_to_ECAT7: error in writing segment %d (f%d, g%d, d%d, b%d)\n"
             "Not all data written for this segment and none for all remaining segments\n",

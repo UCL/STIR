@@ -227,7 +227,7 @@ main (int argc,char *argv[])
     }
 	  
   const char *const filename = argv[1];
-  const float scaling_factor = atof(argv[3]);
+  const float scaling_factor = static_cast<float>(atof(argv[3]));
   shared_ptr<ProjData>  in_data = ProjData::read_from_file(argv[2]);
 
 #ifndef RAND

@@ -186,7 +186,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	if(x1 >= in_data.get_min_index()) 
 	{
 	  out_data[x2] = in_data[x1]; 
-	  out_data[x2] *= 1/diff_between_right_edges + 1;
+	  out_data[x2] *= static_cast<float>(1/diff_between_right_edges + 1); // note conversion to float to avoid compiler warnings in case that T is float (or a float array)
 	}
 	else 
 	{
@@ -198,7 +198,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	  out_data[x2] -= in_data[x1+1];
 	}
 	
-	out_data[x2] *= diff_between_right_edges/zoom;
+	out_data[x2] *= static_cast<float>(diff_between_right_edges/zoom);
 	
 	// advance 'in' bin
 	x1++;
@@ -234,7 +234,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	x1 <= in_data.get_max_index() )
       {
 	out_data[x2] = in_data[x1];
-	out_data[x2] *= -diff_between_right1_and_left2;
+	out_data[x2] *= static_cast<float>(-diff_between_right1_and_left2);
       }
       else
       {
@@ -266,9 +266,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	  // out_data[x2] += in_data[x1]*dx;
 	  if (fabs(dx) > 1e-5)
 	  {
-	    out_data[x2] /= dx;
+	    out_data[x2] /= static_cast<float>(dx);
 	    out_data[x2] += in_data[x1];
-	    out_data[x2] *= dx;
+	    out_data[x2] *= static_cast<float>(dx);
 	  }
 	}
 	// next bin
@@ -281,7 +281,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	  {
 	    // out_data[x2] = in_data[x1]*(1-dx);
 	    out_data[x2] = in_data[x1];
-	    out_data[x2] *= (1-dx);
+	    out_data[x2] *= static_cast<float>((1-dx));
 	  }
 	  else if (assign_rest_with_zeroes) 
 	  {
