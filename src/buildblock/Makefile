@@ -1,22 +1,19 @@
 #AIX Makefile for PPhead/buildblock directory
 #
-# @(#)Makefile	1.24 : 98/11/13
+# $Id$: $Date$
 #
 
 
-# DB 1/2/99 Add WORKSPACE and INCLUDE_DIR directory
 WORKSPACE = ${HOME}/PPhead
 INCLUDE_DIR = ${WORKSPACE}/include
 
 
 CXX = g++
 RM = /bin/rm -f 
-# KT 18/12/97 removed Para++ related CFLAGS
-#CL030698 Move debug flags to DEBUG
-# DB 1/2/99 change CFLAGS
-DEBUG=-D_DEBUG
+# KT 22/03/99 moved -g to DEBUG
+DEBUG=-D_DEBUG -g
 DEST=debug/
-CFLAGS = -g $(DEBUG) -I$(INCLUDE_DIR)
+CFLAGS = $(DEBUG) -I$(INCLUDE_DIR)
 #CXX = xlC
 #CFLAGS = -g -D_DEBUG -I$(INCLUDE_DIR) -DTEMPLATE_ARG
 
@@ -28,8 +25,6 @@ CFLAGS = -g $(DEBUG) -I$(INCLUDE_DIR)
 
 .KEEP_STATE:
 
-#KT 16/12 wanted to add interfile...
-#CL 060798 Add createdir for create directories of debugged or optimized files versions
 all: createdir $(DEST)libbuildblock.a
 
 createdir: 
@@ -39,11 +34,6 @@ createdir:
 $(DEST)%.o : %.cxx 
 	$(CXX) $(CFLAGS) -o $@ -c $< 
 
-# CL 300998 added PETScanInfo.cxx  file
-# KT 22/10/98 added InterfileHeader.o
-# KT 04/11/98 added Tensors.o
-# KT 06/11/98 added imagedata.o
-# KT 22/02/99 added PETDataSymmetries.o PETSinogramOfVolume.o RelatedViewgrams.o
 # KT 17/03/99 changed Related... to PETRelated...
 #KT 18/03/99 use SOURCES macro for reuse below
 
