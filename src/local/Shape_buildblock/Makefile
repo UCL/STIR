@@ -20,12 +20,15 @@ SOURCES = \
   
 
 
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
+endif
+
+.PRECIOUS: $(DEST)*.o $(DEST)*.a
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
-
-.PRECIOUS: $(DEST)*.o $(DEST)*.a
 
 $(DEST)libShape_buildblock.a: $(OBJS)
 	ar r $@ $?
