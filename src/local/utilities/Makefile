@@ -21,7 +21,8 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	inverse_proj_data.cxx 	\
 	make_cylinder.cxx \
 	CoG.cxx \
-	find_ML_normfactors.cxx
+	find_ML_normfactors.cxx \
+	threshold_norm_data.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
