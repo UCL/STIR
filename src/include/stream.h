@@ -1,29 +1,30 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
-
   \file
   \ingroup buildblock
 
-  \brief Output of basic types to an ostream
+  \brief Input/output of basic vector-like types to/from streams
 
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#include <iostream>
-#include <vector>
-#ifndef TOMO_NO_NAMESPACES
-using  std::ostream;
-using  std::vector;
-#endif
+#ifndef __stream_H__
+#define __stream_H__
 
 #include "VectorWithOffset.h"
 #include "BasicCoordinate.h"
+#include <iostream>
+#include <vector>
+#ifndef TOMO_NO_NAMESPACE
+using std::istream;
+using std::ostream;
+using std::vector;
+#endif
 
 START_NAMESPACE_TOMO
 
@@ -42,18 +43,9 @@ START_NAMESPACE_TOMO
 
 
 template <typename elemT>
+inline 
 ostream& 
-operator<<(ostream& str, const VectorWithOffset<elemT>& v)
-{
-      str << '{';
-      for (int i=v.get_min_index(); i<v.get_max_index(); i++)
-	str << v[i] << ", ";
-      // KT 8/12/1000 corrected case for 0 length
-      if (v.get_length()>0)
-	str << v[v.get_max_index()];
-      str << '}' << endl;
-      return str;
-}
+operator<<(ostream& str, const VectorWithOffset<elemT>& v);
 
 /*!
   \brief Outputs a BasicCoordinate to a stream.
@@ -65,18 +57,9 @@ operator<<(ostream& str, const VectorWithOffset<elemT>& v)
   with no endl at the end. 
   */
 template <int num_dimensions, typename coordT>
+inline 
 ostream& 
-operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
-{
-      str << '{';
-      for (int i=1; i<num_dimensions; i++)
-	str << v[i] << ", ";
-      // KT 8/12/1000 corrected case for 0 length
-      if (num_dimensions>0)
-	str << v[num_dimensions];
-      str << '}';
-      return str;
-}
+operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
 
 
 /*!
@@ -91,20 +74,77 @@ operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
   For each element of the vector ostream::operator<<() will be called.
 */
 template <typename elemT>
+inline 
 ostream& 
-operator<<(ostream& str, const vector<elemT>& v)
-{
-      str << '{';
-      // slightly different from above because vector::size() is unsigned
-      // so 0-1 == 0xFFFFFFFF (and not -1)
-      if (v.size()>0)
-      {
-        for (unsigned int i=0; i<v.size()-1; i++)
-	  str << v[i] << ", ";      
-	str << v[v.size()-1];
-      }
-      str << '}' << endl;
-      return str;
-}
+operator<<(ostream& str, const vector<elemT>& v);
+
+/*!
+  \brief Inputs a vector from a stream.
+
+  Input is of the form 
+  \verbatim
+  {1, 2, 3}
+  \endverbatim
+  
+  Input is stopped when either the beginning '{', an intermediate ',' or the 
+  trailing '}' is not found. The size of the vector will be the number of 
+  correctly read elemT elements.
+  
+  For each element of the vector istream::operator>>() will be called.
+
+  elemT needs to have a default constructor.
+*/
+template <typename elemT>
+inline 
+istream& 
+operator>>(istream& str, vector<elemT>& v);
+
+/*!
+  \brief Inputs a VectorWithOffset from a stream.
+
+  Input is of the form 
+  \verbatim
+  {1, 2, 3}
+  \endverbatim
+  
+  Input is stopped when either the beginning '{', an intermediate ',' or the 
+  trailing '}' is not found.  The size of the vector will be the number of 
+  correctly read elemT elements.
+  
+  v.get_min_index() will be 0 at the end of the call.
+
+  For each element of the vector istream::operator>>() will be called.
+
+  elemT needs to have a default constructor.
+*/
+template <typename elemT>
+inline 
+istream& 
+operator>>(istream& str, VectorWithOffset<elemT>& v);
+
+/*!
+  \brief Inputs a coordinate from a stream.
+
+  Input is of the form 
+  \verbatim
+  {1, 2, 3}
+  \endverbatim
+  
+  Input is stopped when either the beginning '{', an intermediate ',' or the 
+  trailing '}' is not found. The size of the vector will be the number of 
+  correctly read elemT elements.
+  
+  For each element of the vector istream::operator>>() will be called.
+
+  elemT needs to have a default constructor.
+*/
+template <int num_dimensions, typename coordT>
+inline 
+istream& 
+operator<<(istream& str, BasicCoordinate<num_dimensions, coordT>& v);
 
 END_NAMESPACE_TOMO
+
+#include "stream.inl"
+
+#endif
