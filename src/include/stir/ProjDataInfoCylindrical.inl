@@ -25,6 +25,7 @@
 #include <math.h>
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -52,7 +53,6 @@ ProjDataInfoCylindrical::get_t(const Bin& bin) const
     sqrt(1+square(get_tantheta(bin)));
 }
 
-
 float
 ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
 {
@@ -62,6 +62,12 @@ ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
     (2*sqrt(square(ring_radius)-square(get_s(bin))));  
 }
 
+
+float 
+ProjDataInfoCylindrical::get_sampling_in_m(const Bin& bin) const
+{
+  return get_axial_sampling(bin.segment_num());
+}
 
 int 
 ProjDataInfoCylindrical::
@@ -164,6 +170,28 @@ get_segment_axial_pos_num_for_ring_pair(int& segment_num,
   ax_pos_num = (ring1 + ring2 - ax_pos_num_offset[segment_num])*
                get_num_axial_poss_per_ring_inc(segment_num)/2;
   return Succeeded::yes;
+}
+
+const ProjDataInfoCylindrical::RingNumPairs&
+ProjDataInfoCylindrical::
+get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
+					     const int axial_pos_num) const
+{
+  if (!ring_diff_arrays_computed)
+    initialise_ring_diff_arrays();
+  if (is_null_ptr(segment_axial_pos_to_ring_pair[segment_num][axial_pos_num]))
+    compute_segment_axial_pos_to_ring_pair(segment_num, axial_pos_num);
+  return *segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];
+}
+
+unsigned
+ProjDataInfoCylindrical::
+get_num_ring_pairs_for_segment_axial_pos_num(const int segment_num,
+					     const int axial_pos_num) const
+{
+  return 
+    get_all_ring_pairs_for_segment_axial_pos_num(segment_num, 
+						 axial_pos_num).size();
 }
 
 END_NAMESPACE_STIR
