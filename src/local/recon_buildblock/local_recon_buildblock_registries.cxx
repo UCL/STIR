@@ -16,6 +16,7 @@
     See STIR/LICENSE.txt for details
 */
 
+
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
 #include "local/stir/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
 
@@ -27,7 +28,10 @@
 #include "local/stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
 #include "local/stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 #include "local/stir/recon_buildblock/BinNormalisationUsingProfile.h"
+
+
 #ifdef HAVE_LLN_MATRIX
+#include "local/stir/recon_buildblock/BinNormalisationSinogramRescaling.h"
 #include "local/stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
 
@@ -48,9 +52,12 @@ static QuadraticPrior<float>::RegisterIt dummy21;
 
 
 static BinNormalisationUsingProfile::RegisterIt dummy101;
+
+
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
+static BinNormalisationSinogramRescaling::RegisterIt dummy555;
 static BinNormalisationFromECAT7::RegisterIt dummy102;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
