@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -11,8 +11,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
   This programme allows forward projection of a few segments/views
   only, or of the full data set. 
@@ -26,7 +26,8 @@
   If no proj_data_file is given, some questions are asked to use 'standard'
   characteristics.        
 */
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+
+#include "recon_buildblock/ForwardProjectorByBin.h"
 #include "display.h"
 #include "interfile.h"
 #include "ProjDataFromStream.h"
@@ -48,10 +49,12 @@ USING_NAMESPACE_STD
 /******************* Declarations local functions *******************/
 
 static void 
-do_segments(const VoxelsOnCartesianGrid<float>& image, ProjDataFromStream& s3d,
+do_segments(const VoxelsOnCartesianGrid<float>& image, ProjData& s3d,
 	    const int start_segment_num, const int end_segment_num,
 	    const int start_view, const int end_view,
-	    ForwardProjectorByBin*);
+	    const int start_tangential_pos_num, const int end_tangential_pos_num,
+	    ForwardProjectorByBin&,
+            const bool disp);
 static void 
 fill_cuboid(VoxelsOnCartesianGrid<float>& image);
 static void 
@@ -70,9 +73,7 @@ main(int argc, char *argv[])
         <<"The projdata-file will be used to get the scanner, mashing etc. details" 
 	<< endl; 
   }
-  if (argc<2)
-    exit(EXIT_FAILURE);
-
+  
 
   ProjDataInfo* new_data_info_ptr;
   if(argc==2)
@@ -85,15 +86,6 @@ main(int argc, char *argv[])
   {
     new_data_info_ptr= ProjDataInfo::ask_parameters();
   }
-  
-  // make num_bins odd (TODO remove)
-  {
-    int num_tangential_poss = new_data_info_ptr->get_num_tangential_poss();
-    if (num_tangential_poss%2 == 0)
-      num_tangential_poss++;
-    new_data_info_ptr->set_num_tangential_poss(num_tangential_poss);
-  }
-
   int limit_segments=
     ask_num("Maximum absolute segment number to process: ", 0, 
     new_data_info_ptr->get_max_segment_num(), 
@@ -116,7 +108,7 @@ main(int argc, char *argv[])
        << " and its Interfile header\n";
 
   
-  const int disp = 
+  const int dispstart = 
     ask_num("Display start image ? no (0), yes (1)", 
     0,1,0);
 
@@ -124,52 +116,70 @@ main(int argc, char *argv[])
     ask_num("Save  start images ? no (0), yes (1)",
     0,1,0);   
   
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr;   
-  VoxelsOnCartesianGrid<float> * vox_image_ptr;
-     
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr = 0;   
+  VoxelsOnCartesianGrid<float> * vox_image_ptr = 0;
+
 
   switch (ask_num("Start image is cuboid (1) or cylinder (2) or on file (3)",1,3,2))
   {
   case 1:
-    image_sptr = vox_image_ptr =
-     new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()));
-
-    fill_cuboid(*vox_image_ptr);
-    break;
-  case 2:
-    image_sptr = vox_image_ptr =
-     new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()));
-    fill_cylinder(*vox_image_ptr);
-    break;
-  case 3:
-  
-   char filename[max_filename_length];
-   
-   ask_filename_with_extension(filename, "Input file name ?", ".hv");
-   
-   image_sptr =
-     DiscretisedDensity<3,float>::read_from_file(filename);
-   vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
-
-    // TODO remove whenever we don't need odd sizes anymore
-    if (vox_image_ptr->get_x_size() %2 == 0)
     {
-      vox_image_ptr->grow(IndexRange3D(vox_image_ptr->get_min_z(),vox_image_ptr->get_max_z(),
-	         vox_image_ptr->get_min_y(), -vox_image_ptr->get_min_y(),
-		 vox_image_ptr->get_min_x(), -vox_image_ptr->get_min_x()));
+      const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
+      int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
+      xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+      image_sptr = vox_image_ptr =
+        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
+                                         zoom,
+                                         CartesianCoordinate3D<float>(0,0,0),
+                                         xy_size);      
+      fill_cuboid(*vox_image_ptr);
+      break;
     }
-    break;
+  case 2:
+    {
+      const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
+      int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
+      xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+      image_sptr = vox_image_ptr =
+        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
+                                         zoom,
+                                         CartesianCoordinate3D<float>(0,0,0),
+                                         xy_size);
+      fill_cylinder(*vox_image_ptr);
+      break;
+    }
+  case 3:
+    {
+      char filename[max_filename_length];
+      
+      ask_filename_with_extension(filename, "Input file name ?", ".hv");
+      
+      image_sptr =
+        DiscretisedDensity<3,float>::read_from_file(filename);
+      vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
+      
+      break;
+    }
   }
 
-  ForwardProjectorByBinUsingRayTracing * forw_projector_ptr = 
-    new ForwardProjectorByBinUsingRayTracing(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-        image_sptr);
-    
+  const float z_origin = 
+    ask_num("Shift z-origin (in pixels)", 
+             -vox_image_ptr->get_length()/2,
+             vox_image_ptr->get_length()/2,
+             0) *vox_image_ptr->get_voxel_size().z();
   
-  if (disp)
+  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
+  // use shared_ptr such that it cleans up automatically
+  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
+    ForwardProjectorByBin::ask_type_and_parameters();
+  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+			     image_sptr);
+  cerr << forw_projector_ptr->parameter_info();
+
+  if (dispstart)
     {
       cerr << "Displaying start image";
-      display(*image_sptr);
+      display(*image_sptr, image_sptr->find_max());
     }
   
 
@@ -193,7 +203,10 @@ main(int argc, char *argv[])
       proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 
       proj_data_ptr->get_min_view_num(), 
       proj_data_ptr->get_max_view_num(),
-      forw_projector_ptr);
+      proj_data_ptr->get_min_tangential_pos_num(), 
+      proj_data_ptr->get_max_tangential_pos_num(),
+      *forw_projector_ptr,
+      false);
     
     timer.stop();
     cerr << timer.value() << " s CPU time"<<endl;
@@ -201,7 +214,10 @@ main(int argc, char *argv[])
 
   }
   else
-  {   
+  { 
+    const bool disp = 
+      ask("Display projected related viewgrams ? ", false);
+    
     // first set all data to 0
     cerr << "Filling output file with 0\n";
     for (int segment_num = proj_data_ptr->get_min_segment_num(); 
@@ -209,7 +225,7 @@ main(int argc, char *argv[])
          ++segment_num)
     {
       const SegmentByView<float> segment = 
-        proj_data_ptr->get_empty_segment_by_view(segment_num);
+        proj_data_ptr->get_empty_segment_by_view(segment_num, false);
       if (!(proj_data_ptr->set_segment(segment) == Succeeded::yes))
         warning("Error set_segment %d\n", segment_num);            
     }
@@ -231,11 +247,20 @@ main(int argc, char *argv[])
         ask_num("Start view  (related views will be done as well)", min_view, max_view, min_view);
       const int end_view = 
         ask_num("End   view  (related views will be done as well)", start_view, max_view, max_view);
+
+      const int min_tangential_pos_num = proj_data_ptr->get_min_tangential_pos_num();
+      const int max_tangential_pos_num = proj_data_ptr->get_max_tangential_pos_num();
+
+      const int start_tangential_pos_num = 
+        ask_num("Start tangential_pos_num", min_tangential_pos_num, max_tangential_pos_num, min_tangential_pos_num);
+      const int end_tangential_pos_num = 
+        ask_num("End   tangential_pos_num ", start_tangential_pos_num, max_tangential_pos_num, max_tangential_pos_num);
       
       do_segments(*vox_image_ptr,*proj_data_ptr, 
 	          segment_num,segment_num, 
 	          start_view, end_view,
-	          forw_projector_ptr);
+                  start_tangential_pos_num, end_tangential_pos_num,
+	          *forw_projector_ptr, disp);
       
 
       timer.stop();
@@ -252,13 +277,15 @@ main(int argc, char *argv[])
 /******************* Implementation local functions *******************/
 void
 do_segments(const VoxelsOnCartesianGrid<float>& image, 
-            ProjDataFromStream& proj_data,
+            ProjData& proj_data,
 	    const int start_segment_num, const int end_segment_num,
 	    const int start_view, const int end_view,
-	    ForwardProjectorByBin* forw_projector_ptr)
+	    const int start_tangential_pos_num, const int end_tangential_pos_num,
+	    ForwardProjectorByBin& forw_projector,
+            const bool disp)
 {
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    forw_projector_ptr->get_symmetries_used()->clone();  
+    forw_projector.get_symmetries_used()->clone();  
   
   list<ViewSegmentNumbers> already_processed;
   
@@ -278,8 +305,13 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
         << endl;
       
       RelatedViewgrams<float> viewgrams = 
-        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
-      forw_projector_ptr->forward_project(viewgrams, image);	  
+        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr,false);
+      forw_projector.forward_project(viewgrams, image,
+        viewgrams.get_min_axial_pos_num(),
+        viewgrams.get_max_axial_pos_num(),
+        start_tangential_pos_num, end_tangential_pos_num);	  
+      if (disp)
+         display(viewgrams, viewgrams.find_max());
       if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
         error("Error set_related_viewgrams\n");            
     }   
@@ -340,13 +372,13 @@ void fill_cylinder(VoxelsOnCartesianGrid<float>& image)
 
   
   const double Rcyl = 
-    ask_num("Radius", 
+    ask_num("Radius (pixels)", 
 	    .5, (image.get_max_x()- image.get_min_x())/2.,
 	    (image.get_max_x()- image.get_min_x())/4.);
   
   // Max length is num_planes+1 because of edges of voxels
   const double Lcyl = 
-    ask_num("Length", 2., (image.get_max_z()- image.get_min_z())+1.,
+    ask_num("Length (planes)", 1., (image.get_max_z()- image.get_min_z())+1.,
 	    (image.get_max_z()- image.get_min_z())+1.);
   
   
