@@ -973,7 +973,7 @@ int x_begin,y_begin, lengthX,lengthY;
 			  SCX_pixmap_format.depth,
 			  ZPixmap, /*offset */ 0, (char *)local_image, 
 			  (unsigned)lengthX, (unsigned)lengthY, 
-			  SCX_pixmap_format.bits_per_pixel, bytes_per_line);
+			  SCX_pixmap_format.scanline_pad, bytes_per_line);
   if (myimage == NULL)
     {
       message("XcreateImage returned 0. No bitmap displayed.\n");
