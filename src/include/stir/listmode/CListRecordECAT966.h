@@ -37,6 +37,8 @@
 #include "stir/Succeeded.h"
 #include "stir/ByteOrderDefine.h"
 #include "stir/round.h"
+#include "boost/static_assert.hpp"
+#include "boost/cstdint.hpp"
 
 START_NAMESPACE_STIR
 
@@ -222,12 +224,16 @@ public:
     get_uncompressed_proj_data_info_sptr()
     { return uncompressed_proj_data_info_sptr; }
 
-private:
+  //private:
+ public: // TODO necessary for lm_fansums and other temporary utilities
   union {
     CListEventDataECAT966  event_data;
     CListTimeDataECAT966   time_data; 
-    long         raw;
+    boost::int32_t         raw;
   };
+  BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
+  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT966)==4); 
+  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT966)==4); 
 
 };
 
