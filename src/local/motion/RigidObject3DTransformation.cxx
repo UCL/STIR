@@ -15,7 +15,12 @@ using std::endl;
 #define usin(x)	(float)sin((double)(x))
 
 START_NAMESPACE_STIR
+//#define FIRSTROT  /* rotate first before translation */
+#define WITHQUAT  /* implements transformation using matrices (same result, but slower) */
 
+#if !defined(WITHQUAT) && !defined(FIRSTROT)
+#error did not implement FIRSTROT yet with matrices
+#endif
 
 Array<1,float> 
 matrix_multiply( Array<2,float>&matrix, Array<1,float>& vec)
@@ -126,7 +131,9 @@ RigidObject3DTransformation::set_euler_angles()
 CartesianCoordinate3D<float> 
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
-  CartesianCoordinate3D<float> swapped_point(-point.z(), -point.y(), -point.x());
+  //CartesianCoordinate3D<float> swapped_point(-point.z(), -point.y(), -point.x());
+  CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
+
 
   Quaternion<float> quat_norm_tmp = quat;
    
@@ -141,7 +148,7 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
       //warning("Non-normalised quaternion: %g", quat_norm);
 
   }
-#if 1
+#ifdef WITHQUAT
 
 #if 1 // put to 0 for translation only!!!
   
@@ -201,7 +208,9 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   const CartesianCoordinate3D<float> transformed_point(out[out.get_max_index()],out[out.get_min_index()+1],out[out.get_min_index()]);
 
 #endif
-  return CartesianCoordinate3D<float> (-transformed_point.z(), -transformed_point.y(), -transformed_point.x());
+ // return CartesianCoordinate3D<float> (-transformed_point.z(), -transformed_point.y(), -transformed_point.x());
+//}
+    return CartesianCoordinate3D<float> (transformed_point.z(), transformed_point.x(), transformed_point.y());
 }
 
 
