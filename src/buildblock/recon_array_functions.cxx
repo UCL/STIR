@@ -217,6 +217,133 @@ void divide_and_truncate_den(const PETImageOfVolume& numerator,
 
 }
 
+// AZ&KT 04/10/99: removed view45, added rim_truncation_sino
+void divide_and_truncate(const int view, // const int view45,
+			 PETSegmentBySinogram& numerator, 
+			 const PETSegmentBySinogram& denominator,
+			 const int rim_truncation_sino,
+			 int& count, int& count2, float* f /* = NULL */)
+{
+  assert(numerator.get_num_views() == denominator.get_num_views());
+
+  const int view45 = numerator.get_num_views() / 4;
+
+  const int view90 = view45*2;
+  const int plus90 = view90+view;
+  const int min180 = view45*4-view;
+  const int min90  = view90-view;
+	
+  int v[4],max_index;
+
+  if (view != 0 /* && view != globals.view45 */ ){
+    max_index=3;
+    v[0]=view;v[1]=plus90;v[2]=min90;v[3]=min180;
+  }
+	
+  else{
+    max_index=3;
+    v[0]=view;v[1]=plus90;
+    v[2]=view45;v[3]=view90+view45; 
+  }
+
+  const int rs=denominator.get_min_ring();
+  const int re=denominator.get_max_ring();
+  const int vs=denominator.get_min_view();
+  const int ve=denominator.get_max_view();
+  const int bs=denominator.get_min_bin();
+  const int be=denominator.get_max_bin();
+
+  for(int r=rs;r<=re;r++)
+    for(int i=0;i<=max_index;i++)
+      for(int b=bs;b<=be;b++) {
+	      
+	if(denominator[r][v[i]][b]<=ZERO_TOL ||/* numerator[r][v[i]][b]/denominator[r][v[i]][b]>100.0 ||*/
+	   numerator[r][v[i]][b]<0.0|| 
+	   b<bs+rim_truncation_sino || b>be-rim_truncation_sino) {
+	  if(numerator[r][v[i]][b]>ZERO_TOL && denominator[r][v[i]][b]<=ZERO_TOL ) count++;
+	  else if( numerator[r][v[i]][b]<0.0) count2++;
+	  numerator[r][v[i]][b]=0.0;
+	}	      
+	else {
+	  numerator[r][v[i]][b]/=denominator[r][v[i]][b];
+
+	  if (f != NULL) {
+	    *f -= numerator[r][v[i]][b]*log(denominator[r][v[i]][b]); //Check the validity of this
+	  };
+	};
+      }	
+}
+
+// AZ&KT 04/10/99: added rim_truncation_sino
+void divide_and_truncate(PETViewgram& numerator, 
+			 const PETViewgram& denominator,
+			 const int rim_truncation_sino,
+			 int& count, int& count2, float* f /* = NULL */)
+{
+  
+  const int rs=numerator.get_min_ring();
+  const int re=numerator.get_max_ring();
+  const int bs=numerator.get_min_bin();
+  const int be=numerator.get_max_bin();
+  
+  for(int r=rs;r<=re;r++)
+    for(int b=bs;b<=be;b++){      
+      
+      if(denominator[r][b]<=ZERO_TOL ||/* numerator[r][b]/denominator[r][b]>100.0 ||*/
+	 numerator[r][b]<0.0 ||
+	 b<bs+rim_truncation_sino ||
+	 b>be-rim_truncation_sino ) {
+	if(numerator[r][b]>ZERO_TOL && denominator[r][b]<=ZERO_TOL ) count++;
+	else if( numerator[r][b]<0.0) count2++;
+	numerator[r][b]=0.0;
+      }
+      
+      else {
+
+	numerator[r][b]/=denominator[r][b];
+
+	if (f != NULL) {
+	      *f -= numerator[r][b]*log(denominator[r][b]);
+	};
+      };
+    }
+}
+
+// AZ 07/10/99: added
+void truncate_rim(PETSegmentBySinogram& seg, const int rim_truncation_sino, const int view)
+{
+  const int rs=seg.get_min_ring();
+  const int re=seg.get_max_ring();
+  const int bs=seg.get_min_bin();
+  const int be=seg.get_max_bin();
+  
+  for(int r=rs;r<=re;r++)
+    {
+      for(int b=bs;b<bs+rim_truncation_sino;b++)     
+	seg[r][view][b]=0;
+      for(int b=be-rim_truncation_sino+1; b<=be;b++)     
+	seg[r][view][b]=0;        
+    }
+}
+
+// AZ 07/10/99: added
+void truncate_rim(PETViewgram& viewgram, const int rim_truncation_sino)
+{
+  const int rs=viewgram.get_min_ring();
+  const int re=viewgram.get_max_ring();
+  const int bs=viewgram.get_min_bin();
+  const int be=viewgram.get_max_bin();
+  
+  for(int r=rs;r<=re;r++)
+    {
+      for(int b=bs;b<bs+rim_truncation_sino;b++)     
+	viewgram[r][b]=0;
+      for(int b=be-rim_truncation_sino+1; b<=be;b++)     
+	viewgram[r][b]=0;        
+    }
+}
+
+
 void truncate_end_planes(PETImageOfVolume &input_image)
 {
 
