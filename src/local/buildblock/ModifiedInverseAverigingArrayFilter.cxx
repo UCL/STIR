@@ -109,12 +109,14 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 				    :kapa0_over_kapa1(kapa0_over_kapa1_v),
 				    filter_coefficients(filter_coefficients_v)
 {
-
   
-    //VectorWithOffset<float> new_filter_coefficients(filter_coefficients_v.get_min_index(),filter_coefficients_v.get_max_index());    
-    
 #if 1
-   int size =32;  
+  int size;
+  // for larger kappa0/kappa1
+  if (kapa0_over_kapa1_v >50)
+    size =64;
+    else
+    size =32;  
   
   
   VectorWithOffset<float> filter_coefficients_padded(1,size);
@@ -172,7 +174,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     if (sq_kapas!=1.F)
   {
     
-      int kernel_length=0;
+  int kernel_length=0;
 
   float inverse_sq_kapas;
   if (fabs((double)sq_kapas ) >0.000000000001)
@@ -216,21 +218,26 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
    // for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
    for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
   { 
+
+  if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10000) break;
     //sm 16/11/2001 try the new threshold
-  if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
+  //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
    //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
     else (kernel_length)++;
   }  
 
   // new
-  if (kernel_length == real_div.get_length())
+  //if (kernel_length == real_div.get_length())
      new_filter_coefficients.grow(-(kernel_length-1),kernel_length);    
-  else
-    new_filter_coefficients.grow(-kernel_length,kernel_length);    
+  //else
+    //new_filter_coefficients.grow(-kernel_length,kernel_length);    
   
   new_filter_coefficients[0] = real_div[1];
+  new_filter_coefficients[kernel_length] = real_div[kernel_length];
 
-   for (int  i = 1;i<= min(15,kernel_length);i++)
+   for (int  i = 1;i<= kernel_length-1;i++)
+
+     //min(15,kernel_length);i++)
    {
      new_filter_coefficients[i]=real_div[i+1];
      new_filter_coefficients[-i]=real_div[i+1];
@@ -243,36 +250,12 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     new_filter_coefficients = filter_coefficients;
    }
 
-// this is insane
-#if 0
-  // TODO this s not the best way of limiting ranges
-  if (kernel_length == real_div.get_length())
-     new_filter_coefficients.grow(-(kernel_length-1),kernel_length-1);    
-  else
-     new_filter_coefficients.grow(-(kernel_length-1),kernel_length-1);    
 
-  new_filter_coefficients.grow(-kernel_length,kernel_length);    
-  new_filter_coefficients[0] = real_div[1];
-
-   for (int  i = 1;i<= min(15,kernel_length);i++)
-   {
-     new_filter_coefficients[i]=real_div[i+1];
-     new_filter_coefficients[-i]=real_div[i+1];
-
-   }
-
-  }
-    else
-   {
-    new_filter_coefficients = filter_coefficients;
-   }
-   
-#endif
 
 #endif 
-   cerr << " COEFF PRINT NOW" << endl;
-   for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
-    cerr << new_filter_coefficients[i] << "   ";   
+   //cerr << " COEFF PRINT NOW" << endl;
+   //for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+    //cerr << new_filter_coefficients[i] << "   ";   
 
   const string filename ="coeff_SA_2D_pf_new";
   shared_ptr<iostream> output = new fstream (filename.c_str(), ios::ate|ios::out|ios::binary);
@@ -916,10 +899,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     cerr << div[2*i+1] << "    ";
   cerr << endl;*/
 
-  cerr << "REAL COEFF" << endl;
+  /*cerr << "REAL COEFF" << endl;
   for (int i=1;i<=real_div.get_max_index();i++)
     cerr << real_div[i] << "    ";
-  cerr << endl;
+  cerr << endl;*/
 
 
   //VectorWithOffset<float> new_filter_coefficients_long(1,size);
