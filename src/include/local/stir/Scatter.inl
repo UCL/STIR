@@ -120,7 +120,7 @@ float detection_efficiency_BGO( const float low, const float high,
 						        const float energy)
 {
 	return
-		detection_efficiency(low, high, energy, 511, .25); //SET resolution to 0.22
+		detection_efficiency(low, high, energy, 511, .22);
 }
 inline
 float max_cos_angle(const float low, const float approx, const float resolution)
@@ -133,7 +133,7 @@ inline
 float max_cos_angle_BGO(const float low, const float approx)
 {
 	return
-		max_cos_angle(low,approx,.25);
+		max_cos_angle(low,approx,.22);
 }
 inline 
 float energy_lower_limit(const float low, const float approx, const float resolution)
@@ -145,7 +145,7 @@ inline
 float energy_lower_limit_BGO(const float low, const float approx)
 {
 	return
-		energy_lower_limit(low, approx, .25);
+		energy_lower_limit(low, approx, .22);
 }
 
 END_NAMESPACE_STIR
