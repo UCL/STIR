@@ -109,10 +109,21 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr_v)
 
   for (int segment_num = min_segment_num; !something_wrong && segment_num<=max_segment_num; ++segment_num)
     {
-      rescaling_factors[segment_num].set_offset(proj_data_info_sptr->get_min_axial_pos_num(segment_num));
+      const int min_axial_pos_num =
+	proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+      const int max_axial_pos_num =
+	proj_data_info_sptr->get_max_axial_pos_num(segment_num);
+      rescaling_factors[segment_num].set_offset(min_axial_pos_num);
       something_wrong = 
 	something_wrong ||
-	rescaling_factors[segment_num].get_max_index() != proj_data_info_sptr->get_max_axial_pos_num(segment_num);
+	rescaling_factors[segment_num].get_max_index() != max_axial_pos_num;
+      for (int axial_pos_num = min_axial_pos_num; !something_wrong && axial_pos_num<=max_axial_pos_num; ++axial_pos_num)
+	{
+	  rescaling_factors[segment_num][axial_pos_num].set_offset(proj_data_info_sptr->get_min_view_num());
+	  something_wrong = 
+	    something_wrong ||
+	    rescaling_factors[segment_num][axial_pos_num].get_max_index() != proj_data_info_sptr->get_max_view_num();
+	}
     }
   if (something_wrong)
     {
@@ -128,10 +139,7 @@ float
 BinNormalisationSinogramRescaling::
 get_bin_efficiency(const Bin& bin, const double /*start_time*/, const double /*end_time*/) const 
 {
-  const int axial_pos_num = bin.axial_pos_num();
-  const int segment_num = bin.segment_num();
- 
-  return rescaling_factors[segment_num][axial_pos_num];
+  return rescaling_factors[bin.segment_num()][bin.axial_pos_num()][bin.view_num()];
 
 }
 

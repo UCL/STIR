@@ -82,7 +82,7 @@ private:
   // the proj data info used for obtaining axial position num, segment num
   // will be set by set_up()
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
-  Array<2,float> rescaling_factors;
+  Array<3,float> rescaling_factors;
 
   // parsing stuff
   virtual void set_defaults();

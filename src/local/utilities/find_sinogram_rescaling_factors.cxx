@@ -70,18 +70,28 @@ main( int argc, char* argv[])
   const int max_segment_num = numerator_sptr->get_max_segment_num();
   
   // define array of scaling_factors of appropriate range
-  Array<2,float> scaling_factors;
+  Array<3,float> scaling_factors;
   {
     // sorry, this is pretty horrible...
-    IndexRange<2> scaling_factor_index_range;
+    IndexRange<3> scaling_factor_index_range;
     scaling_factor_index_range.grow(min_segment_num, max_segment_num);
     for ( int segment_num = numerator_sptr->get_min_segment_num();
 	  segment_num <= numerator_sptr->get_max_segment_num();
 	  ++segment_num)
       {
-	scaling_factor_index_range[segment_num] =
-	  IndexRange<1>(numerator_sptr->get_min_axial_pos_num(segment_num),
-			numerator_sptr->get_max_axial_pos_num(segment_num));
+	const int min_axial_pos_num =
+	  numerator_sptr->get_min_axial_pos_num(segment_num);
+	const int max_axial_pos_num =
+	  numerator_sptr->get_max_axial_pos_num(segment_num);
+	scaling_factor_index_range[segment_num].grow(min_axial_pos_num, max_axial_pos_num);
+	for (int axial_pos_num = numerator_sptr->get_min_axial_pos_num(segment_num);
+	     axial_pos_num <= numerator_sptr->get_max_axial_pos_num(segment_num);
+	     ++axial_pos_num)
+	  {
+	    scaling_factor_index_range[segment_num][axial_pos_num] =
+	      IndexRange<1>(numerator_sptr->get_min_view_num(),
+			    numerator_sptr->get_max_view_num());
+	  }
       }
     scaling_factors.grow(scaling_factor_index_range);
   }
@@ -96,31 +106,31 @@ main( int argc, char* argv[])
 	   ++axial_pos)
 	{
          
-	  const Sinogram<float> numerator_sinogram = numerator_sptr->get_sinogram(axial_pos, segment_num);
-          const Sinogram<float> denominator_sinogram = denominator_sptr->get_sinogram(axial_pos, segment_num);
+	  const Sinogram<float> numerator_sinogram =
+	    numerator_sptr->get_sinogram(axial_pos, segment_num);
+          const Sinogram<float> denominator_sinogram =
+	    denominator_sptr->get_sinogram(axial_pos, segment_num);
           
-
-          float numerator_sum =0;
-	  float denominator_sum =0;
 
 	  for ( int view_num = numerator_sinogram.get_min_view_num();
 		view_num <= numerator_sinogram.get_max_view_num();
 		view_num++)
-	    for ( int tang_pos = numerator_sinogram.get_min_tangential_pos_num();
-		  tang_pos <= numerator_sinogram.get_max_tangential_pos_num();
-		  tang_pos++)
-	      {
-		numerator_sum += numerator_sinogram[view_num][tang_pos];
-		denominator_sum += denominator_sinogram[view_num][tang_pos];	 
-	      }
+	    {
+	      float numerator_sum =0;
+	      float denominator_sum =0;
+
+	      for ( int tang_pos = numerator_sinogram.get_min_tangential_pos_num();
+		    tang_pos <= numerator_sinogram.get_max_tangential_pos_num();
+		    tang_pos++)
+		{
+		  numerator_sum += numerator_sinogram[view_num][tang_pos];
+		  denominator_sum += denominator_sinogram[view_num][tang_pos];	 
+		}
 	  
-	  scaling_factors[segment_num][axial_pos] = numerator_sum/denominator_sum; 
+	      scaling_factors[segment_num][axial_pos][view_num] = 
+		numerator_sum/denominator_sum; 
+	    }
 	  
-#if 0
-	  Sinogram<float> quotient_sinogram = numerator_sinogram.get_empty_sinogram(axial_pos, segment_num);
-	  quotient_sinogram.fill(numerator_sum/denominator_sum);
-          rescaling_factors_sptr->set_sinogram(quotient_sinogram);
-#endif	  
 	}
   
     }
