@@ -43,9 +43,13 @@ CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
     value_of_has_delayeds(value_of_has_delayeds),
     size_of_record(size_of_record),
     empty_record_sptr(empty_record_sptr),
-    list_mode_file_format_byte_order(list_mode_file_format_byte_order)
+    list_mode_file_format_byte_order(list_mode_file_format_byte_order),
+    do_byte_swap(
+		 size_of_record>1 &&
+		 list_mode_file_format_byte_order != ByteOrder::get_native_order())
 {
   scanner_ptr =scanner_ptr_v;
+
   if (is_null_ptr(stream_ptr))
     return;
   starting_stream_position = stream_ptr->tellg();
@@ -68,7 +72,11 @@ CListModeDataFromStream(const string& listmode_filename,
     value_of_has_delayeds(value_of_has_delayeds),
     size_of_record(size_of_record),
     empty_record_sptr(empty_record_sptr),
-    list_mode_file_format_byte_order(list_mode_file_format_byte_order)
+    list_mode_file_format_byte_order(list_mode_file_format_byte_order),
+    do_byte_swap(
+		 size_of_record>1 &&
+		 list_mode_file_format_byte_order != ByteOrder::get_native_order())
+
 {
   fstream* s_ptr = new fstream;
   open_read_binary(*s_ptr, listmode_filename.c_str());
@@ -86,9 +94,6 @@ CListModeDataFromStream::
 get_next_record(CListRecord& record) const
 {
 
-  const bool do_byte_swap =
-    size_of_record>1 &&
-    list_mode_file_format_byte_order != ByteOrder::get_native_order();
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
 
@@ -127,7 +132,6 @@ get_next_record(CListRecord& record) const
   // cache the records in a 8 MB buffer
 
   // TODO this might skip last record in file
-  const unsigned int buf_size = 8683520/size_of_record;
   static char buffer[8683520];
   static char *current_position_in_buffer = 0;
 
@@ -136,6 +140,7 @@ get_next_record(CListRecord& record) const
   {
     //cerr << "Reading from listmode file \n";
     // read some more data
+    const unsigned int buf_size = 8683520/size_of_record;
     stream_ptr->read(buffer, buf_size);
     current_position_in_buffer = buffer;
     num_chars_left_in_buffer = static_cast<unsigned int>(stream_ptr->gcount());
@@ -190,6 +195,9 @@ reset()
 {
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
+
+  // make sure we forget about any contents in the buffer
+  num_chars_left_in_buffer = 0;
 
   // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
   if (stream_ptr->eof()) 
