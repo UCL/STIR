@@ -7,9 +7,14 @@
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 #
 # This makefile defines dependencies and rules for the 
+# followin $ Hammersmith Imanet Ltd
+# This file is part of STIR, and is distributed under the 
+# terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
+#
+# This makefile defines dependencies and rules for the 
 # following targets:
 #	how (gives brief usage info)	
-#	all clean lib install install-all
+#	all clean lib install install-all uninstall uninstall-all
 #	clean_tests clean_lib clean_exes 
 #	run_tests run_interactive_tests 
 #
@@ -26,6 +31,7 @@
 #
 .PHONY: how all clean lib \
 	install install-all install-exes install-lib install-include \
+	uninstall uninstall-all uninstall-exes uninstall-lib uninstall-include \
 	clean_tests clean_lib clean_exes \
 	run_tests run_interactive_tests all_test_exes \
 	default_target
@@ -38,7 +44,8 @@ default_target: all
 how:
 	@echo "Usage: make [target] [options]" 
 	@echo "where useful targets are:"
-	@echo "     all clean lib install "
+	@echo "     all clean lib install install-all"
+	@echo "     uninstall uninstall-all"
 	@echo "     clean_tests clean_lib clean_exes "
 	@echo "     run_tests run_interactive_tests" 
 	@echo "and options can be for instance:"
@@ -88,6 +95,10 @@ install: install-exes
 
 install-all: install-exes install-lib install-include
 
+uninstall: uninstall-exes
+
+uninstall-all: uninstall-exes uninstall-lib uninstall-include
+
 run_tests: $(addprefix run_tests_, $(TESTDIRS)) 
 
 run_interactive_tests: $(addprefix run_interactive_tests_, $(TESTDIRS)) 
@@ -118,15 +129,24 @@ STIR_REGISTRIES:=$(foreach dir, $(LIBDIRS), $($(dir)_REGISTRY_OBJS))
 
 install-exes: $(addprefix install_exes_, $(EXEDIRS))
 
+
+uninstall-exes: $(addprefix uninstall_exes_, $(EXEDIRS))
+
 install-lib: lib $(STIR_REGISTRIES)
 	mkdir -p $(INSTALL_LIB_DIR)
 	$(INSTALL) $(STIR_LIB) $(STIR_REGISTRIES) $(INSTALL_LIB_DIR)
+
+uninstall-lib: 
+	$(RM) $(addprefix $(INSTALL_LIB_DIR)/, $(notdir $(STIR_LIB) $(STIR_REGISTRIES)))
 
 install-include:
 	mkdir -p $(INSTALL_INCLUDE_DIR)
 	cp -R ${WORKSPACE}/include/stir $(INSTALL_INCLUDE_DIR)
 	@echo Check permissions for the files in $(INSTALL_INCLUDE_DIR)/stir
 	@echo Warning: boost include files are not copied
+
+uninstall-include:
+	$(RM) -r $(INSTALL_INCLUDE_DIR)/stir
 
 #********* default rules
 
