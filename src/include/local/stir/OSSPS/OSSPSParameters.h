@@ -77,6 +77,7 @@ public:
   //! name of the file containing the "precomputed denominator" - see Erdogan & Fessler for more info
   string precomputed_denominator_filename;
   float relaxation_parameter;
+  float relaxation_gamma;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

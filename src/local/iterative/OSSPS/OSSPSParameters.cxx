@@ -57,6 +57,7 @@ OSSPSParameters::set_defaults()
   //MAP_model="additive"; 
   prior_ptr = 0;
   relaxation_parameter = 0;
+  relaxation_gamma = 0.1;
 }
 
 void
@@ -77,6 +78,7 @@ OSSPSParameters::initialise_keymap()
   parser.add_key("write update image",&write_update_image);   
   parser.add_key("precomputed denominator", &precomputed_denominator_filename);
   parser.add_key("relaxation parameter", &relaxation_parameter);
+  parser.add_key("relaxation gamma", &relaxation_gamma);
   
 }
 
@@ -148,10 +150,19 @@ bool OSSPSParameters::post_processing()
   if (LogLikelihoodBasedAlgorithmParameters::post_processing())
     return true;
   
-   if( proj_data_ptr->get_num_views()/4 % num_subsets != 0) 
-  { warning("Number of subsets is such that subsets will be very unbalanced. "
-            "The current implementation of OS-SPS can not handle this. Choose the number of subsets as a divisor of %d\n",
-            proj_data_ptr->get_num_views()/4); }
+  
+    /* if (inter_update_filter_interval<0)
+    { warning("Range error in inter-update filter interval \n"); return true; }
+    
+      if (!is_null_ptr(prior_ptr))
+      {
+      if (MAP_model != "additive" && MAP_model != "multiplicative")
+      {
+      warning("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'\n",
+      MAP_model.c_str());
+      return true;
+      }
+}*/
   
   if (precomputed_denominator_filename.length() == 0)
   { warning("You need to specify a precomputed denominator \n"); 
