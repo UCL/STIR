@@ -118,6 +118,14 @@ Array<num_dimensions, elemT>::begin_all() const
 }
 
 template <int num_dimensions, typename elemT>
+typename Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::begin_all_const() const
+{
+  return static_cast<const Array<num_dimensions, elemT>&>(*this).begin_all();
+}
+
+
+template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::end_all()
 {
@@ -156,6 +164,12 @@ Array<num_dimensions, elemT>::end_all() const
   }
 }
 
+template <int num_dimensions, typename elemT>
+typename Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::end_all_const() const
+{
+  return static_cast<const Array<num_dimensions, elemT>&>(*this).end_all();
+}
 
 #endif // ARRAY_FULL
 
@@ -449,7 +463,21 @@ Array<1, elemT>::end_all() const
 {
    return this->end();
 }
-  
+
+template <typename elemT>
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all_const() const
+{
+  return this->begin();
+}
+
+template <typename elemT>
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all_const() const
+{
+   return this->end();
+}
+
 template <typename elemT>
 IndexRange<1> 
 Array<1, elemT>::get_index_range() const
@@ -753,6 +781,18 @@ Array<1, elemT>::end_all() const
    return this->end();
 }
 
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all_const() const
+{
+  return this->begin();
+}
+
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all_const() const
+{
+   return this->end();
+}
+
 IndexRange<1>
 Array<1, float>::get_index_range() const
 {
@@ -1022,6 +1062,18 @@ Array<1, elemT>::end_all()
 
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
+{
+   return this->end();
+}
+
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all_const() const
+{
+  return this->begin();
+}
+
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all_const() const
 {
    return this->end();
 }
@@ -1305,6 +1357,19 @@ Array<1, elemT>::end_all() const
    return this->end();
 }
 
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all_const() const
+{
+  return this->begin();
+}
+
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all_const() const
+{
+   return this->end();
+}
+
+
 IndexRange<1>
 Array<1, unsigned short>::get_index_range() const
 {
@@ -1575,6 +1640,18 @@ Array<1, elemT>::end_all()
 
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
+{
+   return this->end();
+}
+
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::begin_all_const() const
+{
+  return this->begin();
+}
+
+typename Array<1, elemT>::const_full_iterator 
+Array<1, elemT>::end_all_const() const
 {
    return this->end();
 }
