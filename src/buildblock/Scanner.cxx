@@ -420,7 +420,7 @@ Scanner::parameter_info() const
   s << "Number of Rings                        := " << num_rings << '\n';
   s << "Number of detectors per ring           := " << get_num_detectors_per_ring() << '\n';
   s << "ring diameter (cm)                     := " << get_ring_radius()*2./10 << '\n'
-    << "distance between rings (cm)            := " << get_ring_spacing()*2./10 << '\n'
+    << "distance between rings (cm)            := " << get_ring_spacing()/10 << '\n'
     << "bin size (cm)                          := " << get_default_bin_size()/10. << '\n'
     << "view offset (degrees)                  := " << get_default_intrinsic_tilt()*180/_PI << '\n';
   // block/bucket description
