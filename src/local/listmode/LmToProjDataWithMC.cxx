@@ -66,7 +66,7 @@ post_processing()
 			       attenuation_filename);
 
   RigidObject3DTransformation av_motion = ro3d_ptr->compute_average_motion(att_start_time,att_end_time);
-  
+ 
   ro3d_move_to_reference_position =av_motion.inverse();
     
   }
@@ -249,14 +249,14 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
 							  const CartesianCoordinate3D<float>& c2,
 							  const Scanner& scanner) const
 {
-  CartesianCoordinate3D<float> c1_swapped = c1;
-  CartesianCoordinate3D<float> c2_swapped = c2;
+  //CartesianCoordinate3D<float> c1_swapped = c1;
+  //CartesianCoordinate3D<float> c2_swapped = c2;
 						 
   const int num_detectors=scanner.get_num_detectors_per_ring();
   const float ring_spacing=scanner.get_ring_spacing();
   const float ring_radius=scanner.get_ring_radius();
 
-  const CartesianCoordinate3D<float> d = c2_swapped - c1_swapped;
+  const CartesianCoordinate3D<float> d = c2 - c1;
   /* parametrisation of LOR is 
      c = l*d+c1
      l has to be such that c.x^2 + c.y^2 = R^2
@@ -270,15 +270,15 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   */
   const float dxy2 = (square(d.x())+square(d.y()));
   const float argsqrt=
-    (square(ring_radius)*dxy2-square(d.x()*c1_swapped.y()-d.y()*c1_swapped.x()));
+    (square(ring_radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
   if (argsqrt<=0)
     return Succeeded::no; // LOR is outside detector radius
   const float root = sqrt(argsqrt);
 
-  const float l1 = (- (d.x()*c1_swapped.x() + d.y()*c1_swapped.y())+root)/dxy2;
-  const float l2 = (- (d.x()*c1_swapped.x() + d.y()*c1_swapped.y())-root)/dxy2;
-  const CartesianCoordinate3D<float> coord_det1 = d*l1 + c1_swapped;
-  const CartesianCoordinate3D<float> coord_det2 = d*l2 + c1_swapped;
+  const float l1 = (- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2;
+  const float l2 = (- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2;
+  const CartesianCoordinate3D<float> coord_det1 = d*l1 + c1;
+  const CartesianCoordinate3D<float> coord_det2 = d*l2 + c1;
   assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
   assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
 
