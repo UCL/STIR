@@ -140,24 +140,22 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 				const int min_z, const int max_z,
 				const int min_y, const int max_y,
 				const int min_x, const int max_x,
-				ProjMatrixByDensel& proj_matrix, bool do_attenuation);
+				ProjMatrixByDensel& proj_matrix, 
+				bool do_attenuation,
+				const float threshold);
 
 void
 find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
-			    VectorWithOffset<SegmentByView<float> *>& all_segments,
-			    VectorWithOffset<SegmentByView<float> *>& attenuation_segmnets,			    
+			     VectorWithOffset<SegmentByView<float> *>& all_segments,
+			     VectorWithOffset<SegmentByView<float> *>& attenuation_segmnets,			    
 			     const int min_z, const int max_z,
 			     const int min_y, const int max_y,
 			     const int min_x, const int max_x,
-			     ProjMatrixByDensel& proj_matrix, bool do_attenuation)				
+			     ProjMatrixByDensel& proj_matrix, bool do_attenuation, 
+			     const float threshold)				
 {
-
-  // WARNING - find a way of finding max in the sinogram
-  // TODO - include other segments as well
-  const float max_in_viewgram = (*all_segments[0]).find_max();
-    //33.52F;
-  const float threshold = 0.0001F*max_in_viewgram;    
-
+  
+    
   ProjMatrixElemsForOneDensel probs;
   for (int z = min_z; z<= max_z; ++z)
   {
@@ -178,34 +176,34 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 	  if (bin >= threshold)
 	  {
 	    if (do_attenuation)
-		{
-	    	 float bin_attenuation= 
-	     (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
-	
-		 image[z][y][x] += (square(bin_attenuation)/bin) * square(val);}
-		 else
-	    image[z][y][x] += (1.F/bin) * square(val);
+	    {
+	      float bin_attenuation= 
+		(*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
+	      
+	      image[z][y][x] += (square(bin_attenuation)/bin) * square(val);}
+	    else
+	      image[z][y][x] += (1.F/bin) * square(val);
 	  }
 	  else
 	    if(do_attenuation)
-		{
-	    	float bin_attenuation= 
-	   (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
-	    image[z][y][x] += (square(bin_attenuation)/threshold) * square(val);
-		}
-	      else
-	    image[z][y][x] += (1.F/threshold) * square(val);
-	  
+	    {
+	      float bin_attenuation= 
+		(*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
+	      image[z][y][x] += (square(bin_attenuation)/threshold) * square(val);
+	    }
+	    else
+	      image[z][y][x] += (1.F/threshold) * square(val);
+	    
 	}
 	
       }
     }      
   }
-
+  
   for (DiscretisedDensity<3,float>::full_iterator iter = image.begin_all();
-	    iter !=image.end_all();
-	    ++iter)
-	    *iter = sqrt(*iter);
+  iter !=image.end_all();
+  ++iter)
+    *iter = sqrt(*iter);
 }
 
 
@@ -377,7 +375,8 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     VectorWithOffset<SegmentByView<float> *> all_segments(start_segment_num, end_segment_num);
     VectorWithOffset<SegmentByView<float> *> all_attenuation_segments(start_segment_num, end_segment_num);
 
-    bool do_attenuation;
+    // first initialise to false
+    bool do_attenuation = false;
     
     for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     {
@@ -441,14 +440,23 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     
     shared_ptr<DiscretisedDensity<3,float> > kappa1_ptr_bck =  vox_image_ptr_kappa1;   
 
+ // WARNING - find a way of finding max in the sinogram
+  // TODO - include other segments as well
+  const float max_in_viewgram = (proj_data_ptr->get_segment_by_view(0)).find_max();
+  //cerr <<  max_in_viewgram ;
+  //cerr << endl;
+  //33.52F;
+  const float threshold = 0.0001F*max_in_viewgram;  
 
+  //cerr << " THRESHOLD IS" << threshold; 
+  //cerr << endl;
     
     find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
       all_attenuation_segments,
       vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
       vox_image_ptr_kappa1->get_min_y(),vox_image_ptr_kappa1->get_max_y(),
       vox_image_ptr_kappa1->get_min_x(),vox_image_ptr_kappa1->get_max_x(),
-      *proj_matrix_ptr, do_attenuation);
+      *proj_matrix_ptr, do_attenuation,threshold);
     
     for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     { 
@@ -488,8 +496,10 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     
     
     for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
-      for (int j =in_density_cast_0.get_min_y()+2;j<=in_density_cast_0.get_max_y()-2;j++)
-	for (int i =in_density_cast_0.get_min_x()+2;i<=in_density_cast_0.get_max_x()-2;i++)	
+     for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
+      for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
+      //for (int j =in_density_cast_0.get_min_y()+2;j<=in_density_cast_0.get_max_y()-2;j++)
+	//for (int i =in_density_cast_0.get_min_x()+2;i<=in_density_cast_0.get_max_x()-2;i++)	
 	{
 	  
 	  // WARNING - only works for segment zero at the moment
@@ -506,9 +516,16 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	      -2,2,-2,2),in_density.get_origin(),in_density_cast_0.get_voxel_size());  
 	    
 	    // the mask size is in 2D only
-	    for (int j_in =-2;j_in<=2;j_in++)
-	      for (int i_in =-2;i_in<=2;i_in++)	
-		(*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][j_in+j][i_in+i];
+	    // to do - find a better way of handeling boarders
+	    for (int j_in =-2;j_in<=0;j_in++)
+	      for (int i_in =-2;i_in<=0;i_in++)	
+		    (*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][max(j,j_in+j)][max(i,i_in+i)];
+
+	  for (int j_in =1;j_in<=2;j_in++)
+	      for (int i_in =1;i_in<=2;i_in++)	
+		    (*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][min(j,j_in+j)][min(i,i_in+i)];
+
+		//(*in_density_cast_tmp)[k][j_in][i_in] = in_density_cast_0[k][j_in+j][i_in+i];
 	      
 	      fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
 		in_density_cast_0.get_min_z(), in_density_cast_0.get_max_z(),
@@ -520,25 +537,31 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		all_attenuation_segments,
 		vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
 		0,0,0,0,
-		*proj_matrix_ptr,false);	  
+		*proj_matrix_ptr,false,threshold);	  
 	      (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][0][0];
 	      
 	      
 	  }
 	  else
-	  {	    
+	  {
+	    int min_j = max(j,j-2);
+	    int max_j = min(j,j+2);
+	    int min_i = max(i,i-2);
+	    int max_i = min(i,i+2);
 	    
 	    fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
 	      in_density_cast_0.get_min_z(), in_density_cast_0.get_max_z(),
-	      j-2,j+2,
-	      i-2,i+2,
+	      min_j,max_j,
+	      min_i,max_i,
+	      //j-2,j+2,
+	      //i-2,i+2,
 	      in_density_cast_0);
 	    
 	    find_inverse_and_bck_densels(*kappa0_ptr_bck,all_segments_for_kappa0,
 	      all_attenuation_segments,
 	      vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
 	      j,j,i,i,
-	      *proj_matrix_ptr,false);
+	      *proj_matrix_ptr,false,threshold);
 	  }
 	  //	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
 	  //	<< ", " << kappa0_ptr_bck->find_max() << endl; 
