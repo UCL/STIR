@@ -65,13 +65,16 @@ main(int argc, char *argv[])
   VectorWithOffset<float> 
     weights(image_ptr->get_min_index(), image_ptr->get_max_index());
 
+  const float centre_z = image_ptr->get_length()*voxel_size.z()/2;
 
   for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
   {
     allCoG[z] = find_centre_of_gravity((*image_ptr)[z]);
     allCoG[z].z() = z;
     allCoG[z] *= voxel_size;
-    weights[z] = min((*image_ptr)[z].sum(), 0);
+    // shift towards centre of image
+    allCoG[z].z() -= centre_z;
+    weights[z] = max((*image_ptr)[z].sum(), 0.F);
   }
   {
     ofstream xout("CoG.x");
