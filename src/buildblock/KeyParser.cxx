@@ -38,6 +38,7 @@
 #endif
 
 #ifndef STIR_NO_NAMESPACES
+using std::getline;
 using std::ifstream;
 using std::cerr;
 using std::cout;
