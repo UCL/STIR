@@ -70,7 +70,7 @@ Scanner::Scanner(Type scanner_type)
   if (scanner_type == E931)
     // KT 25/01/2002 corrected ring_spacing
     set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 13.5F,  3.129F,   
-	       0,0,0,8,8,1);
+	       0,2,4,4,8,1); // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
   else if (scanner_type == E951)
     set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   
 	       0,1,4,8,8, 1);
@@ -93,10 +93,11 @@ Scanner::Scanner(Type scanner_type)
     set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 
 	       0,6,2,8,8, 1); 
   else if (scanner_type == RPT)
-    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0,0,0,8,8, 1);
+    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0,0,0,8,8, 1); 
   else if (scanner_type == RATPET)
     set_params(RATPET,string_list("RATPET"), 8, 56,2*56, 115/2.F,  6.25F, 1.65F,   
-	       0,1,0,8,7, 1); // HR block
+	       0,
+	       1,16,8,7, 1); // HR block, 4 buckets per ring
   else if (scanner_type == Advance)
   {
     // 283 bins (non-uniform sampling) 
