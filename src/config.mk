@@ -70,7 +70,7 @@ LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 # include local configuration file, possibly overriding any of the above
 # use -include to not warn when it does not exist
 
--include $(WORKSPACE)/local/Makefile_common
+-include $(WORKSPACE)/local/config.mk
 
 
 
