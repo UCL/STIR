@@ -4,17 +4,19 @@
 /*!
 
   \file
-
+  \ingroup buildblock
   \brief Implementations for class ArrayFilter1DUsingConvolutionSymmetricKernel
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  \date $Date$
-  \version $Revision$
+  
+  $Date$
+  $Revision$
 */
 
 #include "tomo/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "VectorWithOffset.h"
+#include "Array.h"
 
 START_NAMESPACE_TOMO
 template <typename elemT>

@@ -18,7 +18,7 @@
 
 
 #include "tomo/ArrayFunctionObject.h"
-
+#include "Array.h"
 
 START_NAMESPACE_TOMO
 
@@ -49,8 +49,9 @@ public:
   virtual void inline operator() (Array<num_dimensions,elemT>& out_array, 
                            const Array<num_dimensions,elemT>& in_array) const
   {
-   out_array = in_array;
-   do_it(out_array);
+    assert(out_array.get_index_range() == in_array.get_index_range());
+    out_array = in_array;
+    do_it(out_array);
   }
 protected:
   virtual void do_it(Array<num_dimensions,elemT>& array) const = 0;

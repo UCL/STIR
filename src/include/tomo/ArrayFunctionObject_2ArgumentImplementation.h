@@ -7,9 +7,8 @@
   \brief Declaration of class ArrayFunctionObject_2ArgumentImplementation
 
   \author Kris Thielemans
-
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 #ifndef __Tomo_ArrayFunctionObject_2ArgumentImplementation_H__
@@ -17,7 +16,7 @@
 
 
 #include "tomo/ArrayFunctionObject.h"
-
+#include "Array.h"
 
 START_NAMESPACE_TOMO
 
