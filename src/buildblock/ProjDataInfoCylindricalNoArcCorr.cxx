@@ -15,13 +15,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Bin.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/LORCoordinates.h"
 #include "stir/round.h"
 
 #ifdef BOOST_NO_STRINGSTREAM
@@ -317,6 +318,7 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   const float ring_spacing=get_scanner_ptr()->get_ring_spacing();
   const float ring_radius=get_scanner_ptr()->get_ring_radius();
 
+#if 0
   const CartesianCoordinate3D<float> d = c2 - c1;
   /* parametrisation of LOR is 
      c = l*d+c1
@@ -347,19 +349,21 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   det2 = stir::round(((2.*_PI)+atan2(coord_det2.x(),-coord_det2.y()))/(2.*_PI/num_detectors))% num_detectors;
   ring1 = round(coord_det1.z()/ring_spacing);
   ring2 = round(coord_det2.z()/ring_spacing);
+#else
+  LORInCylinderCoordinates<float> cyl_coords;
+  if (find_LOR_intersections_with_cylinder(cyl_coords,
+					   LORAs2Points<float>(c1, c2),
+					   ring_radius)
+      == Succeeded::no)
+    return Succeeded::no;
 
+  det1 = round(cyl_coords.p1().psi()/(2.*_PI/num_detectors));
+  det2 = round(cyl_coords.p2().psi()/(2.*_PI/num_detectors));
+  ring1 = round(cyl_coords.p1().z()/ring_spacing);
+  ring2 = round(cyl_coords.p2().z()/ring_spacing);
 
-#ifndef NDEBUG
-  {
-
-    CartesianCoordinate3D<float> check1, check2;
-    find_cartesian_coordinates_given_scanner_coordinates (check1, check2,
-							  ring1,ring2, 
-							  det1, det2);
-    assert(norm(coord_det1-check1)<ring_spacing);
-    assert(norm(coord_det2-check2)<ring_spacing);
-  }
 #endif
+
   assert(det1 >=0 && det1<get_scanner_ptr()->get_num_detectors_per_ring());
   assert(det2 >=0 && det2<get_scanner_ptr()->get_num_detectors_per_ring());
 
@@ -398,21 +402,18 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
 				 const int Ring_A,const int Ring_B, 
 				 const int det1, const int det2) const
 {
-//  assert(Ring_A >=0 && Ring_A<get_scanner_ptr()->get_num_rings());
-  //assert(Ring_B >=0 && Ring_B<get_scanner_ptr()->get_num_rings());
-  //assert(det1 >=0 && det1<get_scanner_ptr()->get_num_detectors_per_ring());
-  //assert(det2 >=0 && det2<get_scanner_ptr()->get_num_detectors_per_ring());
+  const int num_detectors_per_ring = 
+    get_scanner_ptr()->get_num_detectors_per_ring();
 
-  int num_detectors = get_scanner_ptr()->get_num_detectors_per_ring();
-
-  float df1 = (2.*_PI/num_detectors)*(det1);
-  float df2 = (2.*_PI/num_detectors)*(det2);
-  float x1 = get_scanner_ptr()->get_ring_radius()*cos(df1);
-  float y1 = get_scanner_ptr()->get_ring_radius()*sin(df1);
-  float x2 = get_scanner_ptr()->get_ring_radius()*cos(df2);
-  float y2 = get_scanner_ptr()->get_ring_radius()*sin(df2);
-  float z1 = Ring_A*get_scanner_ptr()->get_ring_spacing();
-  float z2 = Ring_B*get_scanner_ptr()->get_ring_spacing();
+#if 0
+  const float df1 = (2.*_PI/num_detectors_per_ring)*(det1);
+  const float df2 = (2.*_PI/num_detectors_per_ring)*(det2);
+  const float x1 = get_scanner_ptr()->get_ring_radius()*cos(df1);
+  const float y1 = get_scanner_ptr()->get_ring_radius()*sin(df1);
+  const float x2 = get_scanner_ptr()->get_ring_radius()*cos(df2);
+  const float y2 = get_scanner_ptr()->get_ring_radius()*sin(df2);
+  const float z1 = Ring_A*get_scanner_ptr()->get_ring_spacing();
+  const float z2 = Ring_B*get_scanner_ptr()->get_ring_spacing();
   // make sure the return values are in STIR coordinates
   coord_1.z() = z1;
   coord_1.y() = -x1;
@@ -421,6 +422,17 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2.z() = z2;
   coord_2.y() = -x2;
   coord_2.x() = y2; 
+#else
+  LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_ring_radius());
+  cyl_coords.p1().psi() = (2.*_PI/num_detectors_per_ring)*(det1);
+  cyl_coords.p2().psi() = (2.*_PI/num_detectors_per_ring)*(det2);
+  cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing();
+  cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing();
+  LORAs2Points<float> lor(cyl_coords);  
+  coord_1 = lor.p1();
+  coord_2 = lor.p2();
+  
+#endif
 }
 
 
@@ -430,14 +442,14 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 						  const CartesianCoordinate3D<float>& coord_1,
 						  const CartesianCoordinate3D<float>& coord_2) const
 {
-  int det_num_a_trans;
-  int det_num_b_trans;
-  int ring_a_trans;
-  int ring_b_trans;
+  int det_num_a;
+  int det_num_b;
+  int ring_a;
+  int ring_b;
   
   // given two CartesianCoordinates find the intersection     
-  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a_trans,det_num_b_trans,
-							   ring_a_trans, ring_b_trans,
+  if (find_scanner_coordinates_given_cartesian_coordinates(det_num_a,det_num_b,
+							   ring_a, ring_b,
 							   coord_1,
 							   coord_2) ==
       Succeeded::no)
@@ -446,18 +458,74 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
     return;
   }
 
-  if (ring_a_trans<0 ||
-      ring_a_trans>=get_scanner_ptr()->get_num_rings() ||
-      ring_b_trans<0 ||
-      ring_b_trans>=get_scanner_ptr()->get_num_rings() ||
-      get_bin_for_det_pair(bin,
-			   det_num_a_trans, ring_a_trans,
-			   det_num_b_trans, ring_b_trans) ==
-      Succeeded::no ||
+  // check rings are in valid range
+  // this should have been done by find_scanner_coordinates_given_cartesian_coordinates
+  assert(!(ring_a<0 ||
+	   ring_a>=get_scanner_ptr()->get_num_rings() ||
+	   ring_b<0 ||
+	   ring_b>=get_scanner_ptr()->get_num_rings()));
+
+  if (get_bin_for_det_pair(bin,
+			   det_num_a, ring_a,
+			   det_num_b, ring_b) == Succeeded::no ||
       bin.tangential_pos_num() < get_min_tangential_pos_num() ||
       bin.tangential_pos_num() > get_max_tangential_pos_num())
     bin.set_bin_value(-1);
 }
 
+Bin
+ProjDataInfoCylindricalNoArcCorr::
+get_bin(const LOR<float>& lor) const
+{
+  Bin bin;
+#if 1
+  // find nearest bin by going to nearest detectors first
+  LORInCylinderCoordinates<float> cyl_coords;
+  if (lor.change_representation(cyl_coords, get_ring_radius()) == Succeeded::no)
+    {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+  const int num_detectors_per_ring = 
+    get_scanner_ptr()->get_num_detectors_per_ring();
+
+  const int det1 = round(cyl_coords.p1().psi()/(2.*_PI/num_detectors_per_ring));
+  const int det2 = round(cyl_coords.p2().psi()/(2.*_PI/num_detectors_per_ring));
+  const int ring1 = round(cyl_coords.p1().z()/get_ring_spacing());
+  const int ring2 = round(cyl_coords.p2().z()/get_ring_spacing());
+
+  assert(det1 >=0 && det1<num_detectors_per_ring);
+  assert(det2 >=0 && det2<num_detectors_per_ring);
+
+  if (ring1 >=0 && ring1<get_scanner_ptr()->get_num_rings() &&
+      ring2 >=0 && ring2<get_scanner_ptr()->get_num_rings() &&
+      get_bin_for_det_pair(bin,
+			   det1, ring1, det2, ring2) == Succeeded::yes)
+    {
+      return bin;
+    }
+  else
+    {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+
+
+#else
+  // TODO terrrrrrrrrribly wasteful
+  LORAs2Points<float> lor_2pts;
+  if (lor.change_representation(lor_2pts, get_ring_radius()) == Succeeded::no)
+    {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+  find_bin_given_cartesian_coordinates_of_detection(bin,
+						    lor_2pts.p1(),
+						    lor_2pts.p2());
+  return bin;
+#endif
+}
+
+ 
 END_NAMESPACE_STIR
 
