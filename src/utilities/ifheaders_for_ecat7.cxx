@@ -551,7 +551,7 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 	  static_cast<ProcessingCode>(sub_header_ptr->corrections_applied);
 	
 	const bool arc_corrected = 
-	  (cti_processing_code | ArcPrc) != 0;
+	  (cti_processing_code & ArcPrc) != 0;
 	
 	return   
 	  make_pdfs_from_matrix_aux(sub_header_ptr, 
