@@ -1,19 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
   \brief A utility to perform a rigid object transformation on projection data.
 
+  Basic program for moving projection data given 1 rigid object transformation,
+  specified by 1 quaternion and 1 translation vector. Conventions for these are
+  as for Polaris.
+
+  \see transform_3d_object(ProjData& out_proj_data,
+		    const ProjData& in_proj_data,
+		    const RigidObject3DTransformation& rigid_object_transformation)
+
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/ProjDataInterfile.h"
 #include "stir/Succeeded.h"
