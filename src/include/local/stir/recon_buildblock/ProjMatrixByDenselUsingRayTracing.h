@@ -20,10 +20,8 @@
 #define __ProjMatrixByDenselUsingRayTracing__
 
 #include "stir/RegisteredParsingObject.h"
-#include "local/stir/recon_buildblock/ProjMatrixByDensel.h"
-#include "stir/ProjDataInfo.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDenselOnCartesianGridUsingElement.h"
 #include "stir/CartesianCoordinate3D.h"
-#include "stir/shared_ptr.h"
 
  
 
@@ -60,9 +58,10 @@ class DataSymmetriesForDensels_PET_CartesianGrid;
 class ProjMatrixByDenselUsingRayTracing : 
   public RegisteredParsingObject<
 	      ProjMatrixByDenselUsingRayTracing,
-              ProjMatrixByDensel
+              ProjMatrixByDenselOnCartesianGridUsingElement
 	       >
 {
+  typedef ProjMatrixByDenselOnCartesianGridUsingElement base_type;
 public :
     //! Name which will be used when parsing a ProjMatrixByDensel object
   static const char * const registered_name; 
@@ -80,9 +79,20 @@ public :
 
   virtual const  DataSymmetriesForDensels* get_symmetries_ptr() const;
 
+  virtual float 
+    get_element(const Bin&, const CartesianCoordinate3D<float>&) const;
+
 private:
   shared_ptr<DataSymmetriesForDensels_PET_CartesianGrid> symmetries_ptr;
-  
+#if 0
+  //! variable that determines if a cylindrical FOV or the whole image will be handled
+  bool restrict_to_cylindrical_FOV;
+#endif
+  //! variable that determines how many rays will be traced in tangential direction for one bin
+  int num_tangential_LORs;
+  //! variable that determines if interleaved sinogram coordinates are used or not.
+  bool use_actual_detector_boundaries;  
+
   // explicitly list necessary members for image details (should use an Info object instead)
   // ideally these should be const, but I have some trouble initialising them in that case
   CartesianCoordinate3D<float> voxel_size;
@@ -94,15 +104,11 @@ private:
   float yhalfsize;
   float zhalfsize;
 
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
 
-
-  virtual void 
-    calculate_proj_matrix_elems_for_one_densel(
-                                            ProjMatrixElemsForOneDensel&) const;
 
    virtual void set_defaults();
    virtual void initialise_keymap();
+   virtual bool post_processing();
   
 };
 
