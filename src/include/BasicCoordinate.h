@@ -6,6 +6,7 @@
 
 /*!
   \file 
+  \ingroup buildblock
  
   \brief This file declares class BasicCoordinate<num_dimensions, coordT> and 
   some functions acting on BasicCoordinate objects.
@@ -17,6 +18,9 @@
   \date    $Date$
 
   \version $Revision$
+
+  \warning The arithmetic operations will at some point be moved to a
+  derived class CartesianCoordinate. (TODO)
 
 */
 
@@ -32,6 +36,7 @@ using std::random_access_iterator_tag;
 
 START_NAMESPACE_TOMO
 /*!
+  \ingroup buildblock
   \brief class BasicCoordinate<\c int \c num_dimensions, \c typename \c coordT> defines \c num_dimensions -dimensional coordinates.
 
 
