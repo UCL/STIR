@@ -855,6 +855,15 @@ INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+INSTANTIATE(4, float, signed char);
+INSTANTIATE(4, signed char, float);
+INSTANTIATE(4, short, signed char);
+INSTANTIATE(4, signed char, short);
+INSTANTIATE(4, unsigned short, signed char);
+INSTANTIATE(4, signed char, unsigned short);
+INSTANTIATE(4, signed char, signed char);
+#endif
 INSTANTIATE(4, float, short);
 INSTANTIATE(4, float, unsigned short);
 INSTANTIATE(4, short, float);
@@ -942,6 +951,15 @@ INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+INSTANTIATE(4, float, signed char);
+INSTANTIATE(4, signed char, float);
+INSTANTIATE(4, short, signed char);
+INSTANTIATE(4, signed char, short);
+INSTANTIATE(4, unsigned short, signed char);
+INSTANTIATE(4, signed char, unsigned short);
+INSTANTIATE(4, signed char, signed char);
+#endif
 INSTANTIATE(4, float, short);
 INSTANTIATE(4, float, unsigned short);
 INSTANTIATE(4, short, float);
