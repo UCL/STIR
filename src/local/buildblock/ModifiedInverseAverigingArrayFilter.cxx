@@ -1,4 +1,7 @@
-
+/*
+    Copyright (C) 2001- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #include "local/stir/ModifiedInverseAverigingArrayFilter.h"
 #include "local/stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
@@ -111,219 +114,235 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 				    filter_coefficients(filter_coefficients_v)
 {
   
+  //cerr <<kapa0_over_kapa1<< endl;
 #if 1
+  const int length_of_size_array = 16;
+  const float kapa0_over_kapa1_interval_size=10.F;
+  static VectorWithOffset<int> size_for_kapa0_over_kapa1;
+  if (size_for_kapa0_over_kapa1.get_length()==0)
+  {
+    size_for_kapa0_over_kapa1.grow(0,length_of_size_array-1);
+    size_for_kapa0_over_kapa1.fill(64);
+  }
+
+  const int kapa0_over_kapa1_interval = 
+    min(static_cast<int>(floor(kapa0_over_kapa1/kapa0_over_kapa1_interval_size)),
+        length_of_size_array-1);
+/*
   int size;
   // for larger kappa0/kappa1
-  if (kapa0_over_kapa1_v >50)
-    size =256;
+  if (kapa0_over_kapa1_v >100)
+    size = 1024;
+  else if (kapa0_over_kapa1_v >50)
+    size = 512;
+    //size =256;
     else
-    size =128;  
-
-  int filter_length = floor(filter_coefficients.get_length()/2);
-  //cerr << " FILTER LENGTH IS " << filter_length << endl;
-  
-  VectorWithOffset<float> filter_coefficients_padded(1,size);
-  filter_coefficients_padded.fill(0);
-  // SM 10/12/2001 changed such that all filter sizes could be handeled.  
-  filter_coefficients_padded[1] = filter_coefficients[0];  
-  for ( int i = 1;i<=filter_length;i++)
-  {
-  filter_coefficients_padded[2*i+1] = filter_coefficients[i];    
-  filter_coefficients_padded[size-(2*(i-1)+1)] = filter_coefficients[i];
- }
-    /*for (int i = 1;i<=size;i++)
-    { cerr << filter_coefficients_padded[i] << "   " ;
-    }*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
+    size = 256;
+    //size =128;  
 */
-
-
-
-
-  // old  
-  //filter_coefficients_padded[1] = filter_coefficients[0];
-  //filter_coefficients_padded[3] = filter_coefficients[1];
-  //filter_coefficients_padded[size-1] = filter_coefficients[-1];
-
-  /*for (int i = 1;i<=size;i++)
-    cerr << filter_coefficients_padded[i] << "   " ;
-    cerr << endl;*/
-
-
-  // rescale to DC=1
-  float sum =0;  
-  for (int i=1;i<=size;i++)
-    sum += filter_coefficients_padded[i];  
-  
-  for (int i=1;i<=size;i++)
-    filter_coefficients_padded[i] =filter_coefficients_padded[i]/sum;
-
-  
-  Array<1,float> fft_filter(1,filter_coefficients_padded.get_length());
-  Array<1,float> fft_1(1,filter_coefficients_padded.get_length());  
-
-  Array<1,float> fft_filter_denom(1,filter_coefficients_padded.get_length());
-  Array<1,float> fft_filter_denom_1(1,filter_coefficients_padded.get_length());
-
-
-  Array<1,float> fft_filter_num(1,filter_coefficients_padded.get_length());
-  Array<1,float> div(1,filter_coefficients_padded.get_length());
-  
-  fft_filter_denom.fill(0);
-  fft_filter_num.fill(0);
-  div.fill(0);  
-  fft_1[1] =1;
-  
-
-  for (int i =1;i<=size;i++)
-    fft_filter[i] = filter_coefficients_padded[i]; 
-  
   //TODO CHECK
-
- /* cerr << "Now printing the value of kapas" << endl;
+    
+  /* cerr << "Now printing the value of kapas" << endl;
   cerr << kapa0_over_kapa1_v << endl;*/
   float sq_kapas = kapa0_over_kapa1_v; 
   VectorWithOffset<float> new_filter_coefficients;
-
+  
   if ( sq_kapas > 10000)
   {
     new_filter_coefficients.grow(0,0);
     new_filter_coefficients[0]=1;
   }
-  else
-    if (sq_kapas!=1.F)
+  else if (sq_kapas!=1.F)
   {
     
-  
-  float inverse_sq_kapas;
-  if (fabs((double)sq_kapas ) >0.000000000001)
-    inverse_sq_kapas = 1/sq_kapas;
-  else 
-    inverse_sq_kapas = 0;
-  
-  fft_filter_denom =fft_filter*(sq_kapas-1) + fft_1;
-  fft_filter_denom *= inverse_sq_kapas;
-  
-  
-  four1(fft_filter_denom,fft_filter_denom.get_length()/2,1);
-  four1(fft_1,fft_1.get_length()/2,1);
-  four1(fft_filter,fft_filter.get_length()/2,1);  
-  
-  // to check the outputs make the fft consistant with mathematica
-  // divide 1/sqrt(size/2)
-  for (int i=1; i<=size; i++)
-  {
-    fft_filter[i] =fft_filter[i]/sqrt(static_cast<double> (size/2));
-    fft_1[i] =fft_1[i]/sqrt(static_cast<double> (size/2));
-    fft_filter_denom[i] = fft_filter_denom[i]/sqrt(static_cast<double>(size/2));
-  }
-  
-  mulitply_complex_arrays(fft_filter_num,fft_filter,fft_1);
-  divide_complex_arrays(div,fft_filter_num,fft_filter_denom);   
-  four1(div,div.get_length()/2,-1);
-  
-  for (int i = div.get_min_index();i<=div.get_max_index();i++)
-  {
-    div[i] = div[i]/sqrt(static_cast<double> (div.get_length()/2));
-  }
-  
-  Array<1,float> real_div(1,filter_coefficients_padded.get_length()/2);
-  real_div[1] = div[1];
-  for (int i=1;i<=(size/2)-1;i++)
-    real_div[i+1] = div[2*i+1];
-  
-  int kernel_length=0;
+    while(true)
+    {
+      const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
+      
+      int filter_length = floor(filter_coefficients.get_length()/2);
+      //cerr << " FILTER LENGTH IS " << filter_length << endl;
+      
+      VectorWithOffset<float> filter_coefficients_padded(1,size);
+      filter_coefficients_padded.fill(0);
+      // SM 10/12/2001 changed such that all filter sizes could be handeled.  
+      filter_coefficients_padded[1] = filter_coefficients[0];  
+      for ( int i = 1;i<=filter_length;i++)
+      {
+	filter_coefficients_padded[2*i+1] = filter_coefficients[i];    
+	filter_coefficients_padded[size-(2*(i-1)+1)] = filter_coefficients[i];
+      }
+      
+      // rescale to DC=1
+      float sum =0;  
+      for (int i=1;i<=size;i++)
+	sum += filter_coefficients_padded[i];  
+      
+      for (int i=1;i<=size;i++)
+	filter_coefficients_padded[i] =filter_coefficients_padded[i]/sum;
 
-   // new - to prevent form aliasing limit the new range for the coefficients to 
-   // filter_coefficients_padded.get_length()/4
-   // for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
-   for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
-  { 
-
-  if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10000000) break;
-    //sm 16/11/2001 try the new threshold
-  //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
-   //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
-    else (kernel_length)++;
-  }  
-  if (kernel_length == filter_coefficients_padded.get_length()/4)
-    warning("ModifiedInverseAverigingArrayFilter: kernel_length reached maximum length %d. "
-            "First filter coefficient %g, last %g\n"
-            "Increase length of FFT array to resolve this problem\n",
-	    kernel_length, real_div[real_div.get_min_index()], real_div[kernel_length]);
-  // new
-  //if (kernel_length == real_div.get_length())
-     new_filter_coefficients.grow(-(kernel_length-1),kernel_length);    
-  //else
-    //new_filter_coefficients.grow(-kernel_length,kernel_length);    
-  
-  new_filter_coefficients[0] = real_div[1];
-  new_filter_coefficients[kernel_length] = real_div[kernel_length];
-
-   for (int  i = 1;i<= kernel_length-1;i++)
-
-     //min(15,kernel_length);i++)
-   {
-     new_filter_coefficients[i]=real_div[i+1];
-     new_filter_coefficients[-i]=real_div[i+1];
-
-   }
-
-  }
-    else
-   {
-    new_filter_coefficients = filter_coefficients;
-   }
-
-
-
+     /* for (int i=1;i<=size;i++)
+	  cerr << filter_coefficients_padded[i] << "   ";  
+      cerr << endl;*/
+      
+      
+      Array<1,float> fft_filter(1,filter_coefficients_padded.get_length());
+      Array<1,float> fft_1(1,filter_coefficients_padded.get_length());  
+      
+      Array<1,float> fft_filter_denom(1,filter_coefficients_padded.get_length());
+      Array<1,float> fft_filter_denom_1(1,filter_coefficients_padded.get_length());
+      
+      
+      Array<1,float> fft_filter_num(1,filter_coefficients_padded.get_length());
+      Array<1,float> div(1,filter_coefficients_padded.get_length());
+      
+      fft_filter_denom.fill(0);
+      fft_filter_num.fill(0);
+      div.fill(0);  
+      fft_1[1] =1;
+      
+      
+      for (int i =1;i<=size;i++)
+	fft_filter[i] = filter_coefficients_padded[i]; 
+      
+      
+      float inverse_sq_kapas;
+      if (fabs((double)sq_kapas ) >0.000000000001)
+	inverse_sq_kapas = 1/sq_kapas;
+      else 
+	inverse_sq_kapas = 0;
+      
+      fft_filter_denom =fft_filter*(sq_kapas-1) + fft_1;
+      fft_filter_denom *= inverse_sq_kapas;
+      
+      
+      four1(fft_filter_denom,fft_filter_denom.get_length()/2,1);
+      four1(fft_1,fft_1.get_length()/2,1);
+      four1(fft_filter,fft_filter.get_length()/2,1);  
+      
+      // to check the outputs make the fft consistant with mathematica
+      // divide 1/sqrt(size/2)
+      for (int i=1; i<=size; i++)
+      {
+	fft_filter[i] =fft_filter[i]/sqrt(static_cast<double> (size/2));
+	fft_1[i] =fft_1[i]/sqrt(static_cast<double> (size/2));
+	fft_filter_denom[i] = fft_filter_denom[i]/sqrt(static_cast<double>(size/2));
+      }
+      
+      mulitply_complex_arrays(fft_filter_num,fft_filter,fft_1);
+      divide_complex_arrays(div,fft_filter_num,fft_filter_denom);   
+      four1(div,div.get_length()/2,-1);
+      
+      for (int i = div.get_min_index();i<=div.get_max_index();i++)
+      {
+	div[i] = div[i]/sqrt(static_cast<double> (div.get_length()/2));
+      }
+      
+      Array<1,float> real_div(1,filter_coefficients_padded.get_length()/2);
+      real_div[1] = div[1];
+      for (int i=1;i<=(size/2)-1;i++)
+	real_div[i+1] = div[2*i+1];
+      
+      int kernel_length=0;
+      
+      // new - to prevent form aliasing limit the new range for the coefficients to 
+      // filter_coefficients_padded.get_length()/4
+      // for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
+      for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
+      { 
+	
+	if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000) break;
+	//sm 16/11/2001 try the new threshold
+	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
+	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
+	else (kernel_length)++;
+      }  
+      if (kernel_length == filter_coefficients_padded.get_length()/4)
+      {
+	warning("ModifiedInverseAverigingArrayFilter: kernel_length reached maximum length %d. "
+	  "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	  "Increasing length of FFT array to resolve this problem\n",
+	  kernel_length, real_div[real_div.get_min_index()], real_div[kernel_length],
+	  kapa0_over_kapa1);
+	size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	  size_for_kapa0_over_kapa1[i]=
+	    max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
+      }
+      else
+      {	  
+	// new
+	//if (kernel_length == real_div.get_length())
+	new_filter_coefficients.grow(-(kernel_length-1),kernel_length);    
+	//else
+	//new_filter_coefficients.grow(-kernel_length,kernel_length);    
+	
+	new_filter_coefficients[0] = real_div[1];
+	new_filter_coefficients[kernel_length] = real_div[kernel_length];
+	
+	for (int  i = 1;i<= kernel_length-1;i++)
+	  
+	  //min(15,kernel_length);i++)
+	{
+	  new_filter_coefficients[i]=real_div[i+1];
+	  new_filter_coefficients[-i]=real_div[i+1];
+	  
+	}
+	
+	break; // out of while(true)
+      }
+    } // this bracket is for the while loop
+    }
+    else //sq_kappas == 1
+    {
+      new_filter_coefficients = filter_coefficients;
+    }
+    
+      
 #endif 
-   //cerr << " COEFF PRINT NOW" << endl;
-   //for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
-    //cerr << new_filter_coefficients[i] << "   ";   
-
-  const string filename ="coeff_SA_2D_pf_new";
-  shared_ptr<iostream> output = new fstream (filename.c_str(), ios::ate|ios::out|ios::binary);
-  if (!*output)
-    error("Error opening output file %s\n",filename.c_str()); 
-
-  // now rescaled the calculated coefficients to DC gain 1
-  
-  float sum_new_coefficients =0.F;  
-  for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
-    sum_new_coefficients += new_filter_coefficients[i];  
-  
- for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
-     new_filter_coefficients[i] /=sum_new_coefficients;  
-
-  *output << "coeff" << endl;
-  *output << endl;  
-  for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
-  *output << new_filter_coefficients[i] << "   ";
-  *output << endl;
-
-  /* cerr << " COEFF" << endl;
-  for (int i=0;i<=2;i++)
-  cerr << filter_coefficients[i] << "   ";*/
-  
-  // to do only filtering in 2d -> 
-  // z-direction is for 0 index
- kernel_index_range =
-   IndexRange3D(0,0, 
-                new_filter_coefficients.get_min_index(), new_filter_coefficients.get_max_index(),
-		new_filter_coefficients.get_min_index(), new_filter_coefficients.get_max_index());
-
- for (int i=2;i<=num_dimensions;i++)
-  {
-    all_1d_array_filters[i-1] = 
-        new ArrayFilter1DUsingConvolution<float>(new_filter_coefficients);
-  }
-  
-  all_1d_array_filters[0] = 	 
-      new ArrayFilter1DUsingConvolution<float>();
-  
+      //cerr << " COEFF PRINT NOW" << endl;
+      //for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+      //cerr << new_filter_coefficients[i] << "   ";   
+      
+      const string filename ="coeff_SA_2D_pf_new";
+      shared_ptr<iostream> output = new fstream (filename.c_str(), ios::ate|ios::out|ios::binary);
+      if (!*output)
+	error("Error opening output file %s\n",filename.c_str()); 
+      
+      // now rescaled the calculated coefficients to DC gain 1
+      
+      float sum_new_coefficients =0.F;  
+      for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+	sum_new_coefficients += new_filter_coefficients[i];  
+      
+      for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+	new_filter_coefficients[i] /=sum_new_coefficients;  
+      
+      *output << "coeff" << endl;
+      *output << endl;  
+      for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
+	*output << new_filter_coefficients[i] << "   ";
+      *output << endl;
+      
+      /* cerr << " COEFF" << endl;
+      for (int i=0;i<=new_filter_coefficients.get_max_index();i++)
+      cerr << new_filter_coefficients[i] << "   ";*/
+      
+      // to do only filtering in 2d -> 
+      // z-direction is for 0 index
+      kernel_index_range =
+	IndexRange3D(0,0, 
+	new_filter_coefficients.get_min_index(), new_filter_coefficients.get_max_index(),
+	new_filter_coefficients.get_min_index(), new_filter_coefficients.get_max_index());
+      
+      for (int i=2;i<=num_dimensions;i++)
+      {
+	all_1d_array_filters[i-1] = 
+	  new ArrayFilter1DUsingConvolution<float>(new_filter_coefficients);
+      }
+      
+      all_1d_array_filters[0] = 	 
+	new ArrayFilter1DUsingConvolution<float>();
+      
 }
 
 
@@ -338,10 +357,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 				    :kapa0_over_kapa1(kapa0_over_kapa1_v),
 				    filter_coefficients(filter_coefficients_v)
 {
-
+  
   VectorWithOffset<float> new_filter_coefficients(-1,1);    
-    //VectorWithOffset<float> new_filter_coefficients(filter_coefficients_v.get_min_index(),filter_coefficients_v.get_max_index());    
-    
+  //VectorWithOffset<float> new_filter_coefficients(filter_coefficients_v.get_min_index(),filter_coefficients_v.get_max_index());    
+  
 #if 1
   //float kapa1_over_kapa0= 1/kapa0_over_kapa1_v;
   int size =32;  
@@ -351,28 +370,28 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   filter_coefficients_padded[1] = filter_coefficients[0];
   filter_coefficients_padded[3] = filter_coefficients[1];
   filter_coefficients_padded[size-1] = filter_coefficients[-1];
-
+  
   /*for (int i = 1;i<=size;i++)
-    cerr << filter_coefficients_padded[i] << "   " ;
-    cerr << endl;*/
-
+  cerr << filter_coefficients_padded[i] << "   " ;
+  cerr << endl;*/
+  
 #if 0
   filter_coefficients_padded[5] = filter_coefficients[0];
   filter_coefficients_padded[7] = filter_coefficients[1];
   filter_coefficients_padded[9] = filter_coefficients[2];
-
+  
   // new
- // filter_coefficients_padded[11] = 1;
- // filter_coefficients_padded[13] = filter_coefficients[2];
- // filter_coefficients_padded[15] = filter_coefficients[1];
- // filter_coefficients_padded[17] = filter_coefficients[0];  
+  // filter_coefficients_padded[11] = 1;
+  // filter_coefficients_padded[13] = filter_coefficients[2];
+  // filter_coefficients_padded[15] = filter_coefficients[1];
+  // filter_coefficients_padded[17] = filter_coefficients[0];  
   
   
   filter_coefficients_padded[11] = filter_coefficients[2];
   filter_coefficients_padded[13] = filter_coefficients[1];
   filter_coefficients_padded[15] = filter_coefficients[0];  
 #endif
-
+  
   // rescale to DC=1
   float sum =0;  
   for (int i=1;i<=size;i++)
@@ -380,23 +399,23 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   
   for (int i=1;i<=size;i++)
     filter_coefficients_padded[i] =filter_coefficients_padded[i]/sum;
-
-   /*if (kapa0_over_kapa1_v==1)
-  {
+  
+    /*if (kapa0_over_kapa1_v==1)
+    {
     new_filter_coefficients[0] = filter_coefficients_v[0];
     new_filter_coefficients[1] = filter_coefficients_v[1];
     new_filter_coefficients[2] = filter_coefficients_v[2];
-  }
-  else
+    }
+    else
   { */
   
   Array<1,float> fft_filter(1,filter_coefficients_padded.get_length());
   Array<1,float> fft_1(1,filter_coefficients_padded.get_length());  
-
+  
   Array<1,float> fft_filter_denom(1,filter_coefficients_padded.get_length());
   Array<1,float> fft_filter_denom_1(1,filter_coefficients_padded.get_length());
-
-
+  
+  
   Array<1,float> fft_filter_num(1,filter_coefficients_padded.get_length());
   Array<1,float> div(1,filter_coefficients_padded.get_length());
   
@@ -406,22 +425,22 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   
   // new - HERE
   //fft_1[9] =1;
-    fft_1[1] =1;
+  fft_1[1] =1;
   // new
   //fft_1[11] =1;
   
-
+  
   for (int i =1;i<=size;i++)
     fft_filter[i] = filter_coefficients_padded[i]; 
   
   //TODO CHECK
-
- /* cerr << "Now printing the value of kapas" << endl;
+  
+  /* cerr << "Now printing the value of kapas" << endl;
   cerr << kapa0_over_kapa1_v << endl;*/
   float sq_kapas = kapa0_over_kapa1_v; //kapa1_over_kapa0;
   //cerr << "CHECKING " << endl;
-   // cerr << sq_kapas << endl;
-
+  // cerr << sq_kapas << endl;
+  
   
   float inverse_sq_kapas;
   if (fabs((double)sq_kapas ) >0.000000000001)
@@ -438,7 +457,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   FFT_routines fft_unity_new;
   fft_filter_new.find_fft_filter(fft_filter);
   fft_filter_new.find_fft_unity(fft_1);*/
-
+  
   four1(fft_1,fft_1.get_length()/2,1);
   four1(fft_filter,fft_filter.get_length()/2,1);
   
@@ -452,14 +471,14 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     fft_filter_denom[i] = fft_filter_denom[i]/sqrt(size/2);
   }
   /* cerr << " fft_denom" << endl;  
-   for (int i=1;i<=size;i++)
-    cerr << fft_filter_denom[i] << "   ";
-
-   cerr << endl;*/
+  for (int i=1;i<=size;i++)
+  cerr << fft_filter_denom[i] << "   ";
+  
+  cerr << endl;*/
   
   mulitply_complex_arrays(fft_filter_num,fft_filter,fft_1);
   divide_complex_arrays(div,fft_filter_num,fft_filter_denom); 
-
+  
   
   four1(div,div.get_length()/2,-1);
   
@@ -481,62 +500,62 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   
   /*cerr << "REAL coeff" << endl;
   for (int i=1;i<=real_div.get_max_index();i++)
-    cerr << real_div[i] << "    ";
-    cerr << endl;*/
-
-
-  // sm 12/09/2001
-    /*new_filter_coefficients[1] =real_div[1];
-    new_filter_coefficients[0] =real_div[2];
-    new_filter_coefficients[2] =real_div[2];*/
-
-
-    new_filter_coefficients[0] =real_div[1];
-    new_filter_coefficients[-1] =real_div[2];
-    new_filter_coefficients[1] =real_div[2];
+  cerr << real_div[i] << "    ";
+  cerr << endl;*/
   
-
+  
+  // sm 12/09/2001
+  /*new_filter_coefficients[1] =real_div[1];
+  new_filter_coefficients[0] =real_div[2];
+  new_filter_coefficients[2] =real_div[2];*/
+  
+  
+  new_filter_coefficients[0] =real_div[1];
+  new_filter_coefficients[-1] =real_div[2];
+  new_filter_coefficients[1] =real_div[2];
+  
+  
 #endif 
-   //cerr << " COEFF PRINT NOW" << endl;
-   //for (int i=0;i<=2;i++)
-   // cerr << new_filter_coefficients[i] << "   ";
-   //cerr << endl;
-
+  //cerr << " COEFF PRINT NOW" << endl;
+  //for (int i=0;i<=2;i++)
+  // cerr << new_filter_coefficients[i] << "   ";
+  //cerr << endl;
+  
   const string filename ="coeff_RT_2D_TEST";
   shared_ptr<iostream> output = new fstream (filename.c_str(), ios::out|ios::binary|ios::app|ios::ate);
   if (!*output)
     error("Error opening output file %s\n",filename.c_str()); 
-
+  
   // now rescaled the calculated coefficients to DC gain 1
   
   /*float sum_new_coefficients =0.F;  
   for (int i=-1;i<=1;i++)
-    sum_new_coefficients += new_filter_coefficients[i];  
+  sum_new_coefficients += new_filter_coefficients[i];  
   
-  for (int i=-1;i<=1;i++)
-    new_filter_coefficients[i] /=sum_new_coefficients;  */
-
+    for (int i=-1;i<=1;i++)
+  new_filter_coefficients[i] /=sum_new_coefficients;  */
+  
   *output << "coeff" << endl;
   *output << endl;  
   for (int i=-1;i<=1;i++)
-  *output << new_filter_coefficients[i] << "   ";
+    *output << new_filter_coefficients[i] << "   ";
   *output << endl;
-
+  
   /* cerr << " COEFF" << endl;
   for (int i=0;i<=2;i++)
   cerr << filter_coefficients[i] << "   ";*/
   
   // to do only filtering in 2d -> 
   // z-direction is for 0 index
-
- for (int i=2;i<=num_dimensions;i++)
+  
+  for (int i=2;i<=num_dimensions;i++)
   {
     all_1d_array_filters[i-1] = 
-        new ArrayFilter1DUsingConvolution<float>(new_filter_coefficients);
+      new ArrayFilter1DUsingConvolution<float>(new_filter_coefficients);
   }
   
   all_1d_array_filters[0] = 	 
-      new ArrayFilter1DUsingConvolution<float>();
+    new ArrayFilter1DUsingConvolution<float>();
   
 }
 
@@ -549,10 +568,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 				    :kapa0_over_kapa1(kapa0_over_kapa1_v),
 				    filter_coefficients(filter_coefficients_v)
 {
-
+  
   //VectorWithOffset<float> new_filter_coefficients(0,2);    
-    VectorWithOffset<float> new_filter_coefficients(filter_coefficients_v.get_min_index(),filter_coefficients_v.get_max_index());    
-    
+  VectorWithOffset<float> new_filter_coefficients(filter_coefficients_v.get_min_index(),filter_coefficients_v.get_max_index());    
+  
 #if 1
   //float kapa1_over_kapa0= 1/kapa0_over_kapa1_v;
   int size =32;  
