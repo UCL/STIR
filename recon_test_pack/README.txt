@@ -1,5 +1,5 @@
 $Id$
-README file for STIR recon_test_pack version 1.1
+README file for STIR recon_test_pack version 1.2 (and later versions?)
 ------------------------------------------------
 
 This test pack runs some simple tests to check if convecat6_if,
@@ -17,7 +17,7 @@ automatically. run_tests.bat is the corresponding DOS batch file.
 Both  write some diagnostic output to stdout. Output of
 all programmes is redirected to log files. In case anything is wrong, these
 might contain something useful. If you cannot solve the problems, email to
-the user's mailing list (see http://stir.irsl.org for info), with all log 
+the user's mailing list (see http://stir.HammersmithImanet.com for info), with all log 
 files attached to the email.
 
 
