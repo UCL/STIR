@@ -33,7 +33,7 @@
 START_NAMESPACE_STIR
 
 static ProjMatrixByBinUsingSolidAngle::RegisterIt dummy11;
-static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
+//static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
 
 //static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;
 static PostsmoothingForwardProjectorByBin::RegisterIt dummy2;
