@@ -4,14 +4,14 @@
 /*!
 
   \file
-  
+  \ingroup buildblock
+
   \brief declares the CPUTimer class.
     
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$
-        
+  \date $Date$        
   \version $Revision$
 */
 #ifndef __CPUTimer_H__
@@ -21,6 +21,7 @@
 START_NAMESPACE_TOMO
 
 /*!
+  \ingroup buildblock
   \brief A class for measuring elapsed CPU time.
 
   CPUTimer is derived from Timer, and hence has the same interface. It
@@ -87,9 +88,11 @@ private:
   virtual inline double get_current_value() const;
 };
 
-#include "CPUTimer.inl"
+
 
 END_NAMESPACE_TOMO
+
+#include "CPUTimer.inl"
 
 #endif // __CPUTimer_H__
 
