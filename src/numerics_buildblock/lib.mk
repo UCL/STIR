@@ -1,7 +1,7 @@
 #
 # $Id$
 #
-dir:=numerics
+dir:=numerics_buildblock
 
 $(dir)_LIB_SOURCES := \
   fourier.cxx 
