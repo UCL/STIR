@@ -15,6 +15,9 @@
   $Date$
   $Revision$
 */
+#include "tomo/common.h"
+
+START_NAMESPACE_TOMO
 
 //! Threshold a sequence from above and below
 /*! \par Type requirements:
@@ -68,5 +71,7 @@ threshold_lower(forw_iterT begin, forw_iterT end,
     }
 }
 
+END_NAMESPACE_TOMO
 
 #endif
+
