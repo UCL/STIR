@@ -146,12 +146,12 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
   
 
   // KT 20/06/2001 converted from assert to a warning
-  if(sampling_distance_of_adjacent_LORs_xy < voxel_size.x() - 1.E-3 ||
-     sampling_distance_of_adjacent_LORs_xy < voxel_size.y() - 1.E-3)
-     warning("WARNING: ForwardProjectorByBinUsingRayTracing assumes that pixel size (in x,y) "
-             "is greater or equal than the bin size.\n"
+  if(sampling_distance_of_adjacent_LORs_xy > voxel_size.x() + 1.E-3 ||
+     sampling_distance_of_adjacent_LORs_xy > voxel_size.y() + 1.E-3)
+     warning("ForwardProjectorByBinUsingRayTracing assumes that pixel size (in x,y) "
+             "is greater than or equal to the bin size.\n"
              "As this is NOT the case with the current data, the projector will "
-             "completely miss some voxels for some (or all) views.\n");
+             "completely miss some voxels for some (or all) views.");
 }
 
 
