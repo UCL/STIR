@@ -7,7 +7,6 @@
  \author PARAPET project
  
  $Date$
-  
  $Revision$
 
  This is part of a library by Kris Thielemans, mainly written in 1991.
@@ -184,13 +183,29 @@ extern SC_pixel_t *read_buffer(char *dev,int size);
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
 
+#define SC_C_BACKGROUND 12
+#define SC_C_MAX	127		/* maximum color to be used */
+#define SC_C_FULL	255		/* maximum color available */
+
 extern Display * SCX_display;
 extern Window SCX_window;
 extern GC SCX_gc;
+  /* KT 28/11/2002 added for TrueColor support */
+extern XVisualInfo SCX_visual_info;
+extern unsigned long SCX_color_translation[SC_C_FULL];
 
 extern int SC__curPointX, SC__curPointY, SC__filled;
 extern unsigned long SC__color;
 extern unsigned SCX_X_MAX(void), SCX_Y_MAX(void);
+
+/* define macro to access XVisualInfo.class. 
+   This is renamed by X to c_class when compiling C++ programs.
+*/
+#if defined(__cplusplus) || defined(c_plusplus)
+#define SCX_get_class(vinfo)	  vinfo.c_class
+#else
+#define SCX_get_class(vinfo)	  vinfo.class
+#endif
 
 extern void SCX_START(void);
 /* KT 01/03/2000 added next declaration */
@@ -218,7 +233,7 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
 #define SC_TSTYLE(par)
 #define SC_PRMFIL(par)  SC__filled = par
 #define SC_COLOR(par)   XSetForeground(SCX_display, SCX_gc,\
-                                SC__color = (unsigned long)par)
+                                SC__color = (unsigned long)SCX_color_translation[par])
 #define SC_TSIZE(par)
 #define SC_POINT()      XDrawPoint(SCX_display,SCX_window,SCX_gc,\
                                 SC__curPointX, SC__curPointY)
@@ -263,7 +278,9 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
 #define SC_TEXT(str)    XDrawString(SCX_display, SCX_window,SCX_gc, \
                                 SC__curPointX, SC__curPointY, \
                                 str, (int)strlen(str))
-#define SC_MASK(par)    XSetPlaneMask(SCX_display, SCX_gc, \
+  /* KT 28/11/2002 only enable mask when the visual is PseudoColor */
+#define SC_MASK(par)    if (SCX_get_class(SCX_visual_info)==PseudoColor) \
+                            XSetPlaneMask(SCX_display, SCX_gc, \
                                 (unsigned long)par)
 #define SC_LINFUN(par)  XSetFunction(SCX_display, SCX_gc, par)
 #define SC_LUTX(par,R,G,B)
@@ -271,7 +288,7 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
 #define SC_LUTINT(par)
 #define SC_CLEAR_BLOCK(color,x_b,x_e,y_b,y_e)  \
 			XSetForeground(SCX_display, SCX_gc,\
-                                (unsigned long)color); \
+                                (unsigned long)SCX_color_translation[color]); \
   			XFillRectangle(SCX_display, SCX_window, SCX_gc, \
                                 Min((x_b),(x_e)), Min((y_b),(y_e)),\
                                 abs((x_b)-(x_e)), abs((y_b)-(y_e))); \
@@ -279,13 +296,14 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
                                 (unsigned long)SC__color);
 #define SC_LF_REPLACE   GXcopy
 #define SC_LF_XOR       GXxor
-#define SC_DEPTH	DefaultDepthOfScreen(SCX_window)
-#define SC_C_BACKGROUND 12
-#define SC_C_MAX	127		/* maximum color to be used */
-#define SC_C_FULL	255		/* maximum color available */
+#define SC_DEPTH	SCX_visual_info.depth
 #define SC_C_ANNOTATE   (SC_C_MAX+1)
 /* two definitions for masking availability */
-#define SC_M_ALL        SC_C_FULL
+/* Note: On X-windows, masking works only properly for a PseudoColor visual
+   (i.e. 8-bit color with adjustable colormap)
+*/  
+  /* KT 28/11/2002 changed value for TrueColor support */
+#define SC_M_ALL        ((unsigned long)-1L)
 #define SC_M_ANNOTATE   (SC_C_MAX+1)
 
 #endif /* SC_XWINDOWS */
