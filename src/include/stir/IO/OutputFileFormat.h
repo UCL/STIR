@@ -51,7 +51,7 @@ class OutputFileFormat :
   public ParsingObject
 {
 public:
-  OutputFileFormat(const NumericType& = NumericType::SHORT, 
+  OutputFileFormat(const NumericType& = NumericType::FLOAT, 
                    const ByteOrder& = ByteOrder::native);
 
   //! Write a single image to file
