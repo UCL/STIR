@@ -13,14 +13,15 @@
   \author Sanida Mustafovic
   \author PARAPET project
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
 */
 
 
 #include "recon_buildblock/IterativeReconstruction.h"
 #include "DiscretisedDensity.h"
 #include "tomo/ImageProcessor.h"
+#include "tomo/Succeeded.h"
 #include "interfile.h"
 #include <iostream>
 
@@ -71,18 +72,6 @@ IterativeReconstruction::
 recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
 {
    
-  //TODO use zoom factor et al
-  if(get_parameters().zoom!=1)
-    warning("Warning: No zoom factor will be used\n");
-  if(get_parameters().Xoffset!=0)
-    warning("Warning: Xoffset will not be used\n");
-  if(get_parameters().Yoffset!=0)
-    warning("Warning: Yoffset will not be used\n");
-  if(get_parameters().output_image_size!=-1)
-    warning("Warning: output_image_size will keep its default value\n");
-  if(get_parameters().num_views_to_add!=1)
-    warning("Warning: No mashing will be used\n");
-
   // Building filters
   // This is not really necessary, as apply would call this anyway.
   // However, we have it here such that any errors in building the filters would
@@ -91,7 +80,9 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
   if(get_parameters().inter_iteration_filter_interval>0 && get_parameters().inter_iteration_filter_ptr != 0 )
     {
       cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
-      get_parameters().inter_iteration_filter_ptr->set_up(*target_image_ptr);
+      if (get_parameters().inter_iteration_filter_ptr->set_up(*target_image_ptr)
+          == Succeeded::no)
+	error("Error building inter iteration filter\n");
     }
 
  
@@ -99,7 +90,9 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
   {
     cerr<<endl<<"Building post filter kernel"<<endl;
     
-    get_parameters().post_filter_ptr->set_up(*target_image_ptr);
+    if (get_parameters().post_filter_ptr->set_up(*target_image_ptr)
+          == Succeeded::no)
+	error("Error building post filter\n");
   }
 
 }
