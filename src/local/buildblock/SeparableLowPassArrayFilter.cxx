@@ -60,17 +60,28 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
       new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);*/
 
   
-  
+ if (!z_trivial) 
+ {
  for (int i=1;i<=num_dimensions;i++)
   {
     all_1d_array_filters[i-1] = 	 
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
       //new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);
   }
-
-   //all_1d_array_filters[0] = 	 
-      //new ArrayFilter1DUsingConvolution<float>();
+ }
+ else
+ {
+   for (int i=2;i<=num_dimensions;i++)
+  {
+    all_1d_array_filters[i-1] = 	 
+      new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
+      //new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);
+  }
+   all_1d_array_filters[0] = 	 
+    new ArrayFilter1DUsingConvolution<float>();
     
+ }
+   
 }
 
 template SeparableLowPassArrayFilter<3,float>;
