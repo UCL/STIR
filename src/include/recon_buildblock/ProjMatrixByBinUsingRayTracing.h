@@ -1,0 +1,91 @@
+//
+// $Id$: $Date$
+//
+/*!
+  \file
+  \ingroup recon_buildblock
+
+  \brief ProjMatrixByBinUsingRayTracing's definition 
+
+  \author Kris Thielemans
+  \author Mustapha Sadki
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
+#ifndef __ProjMatrixByBinUsingRayTracing__
+#define __ProjMatrixByBinUsingRayTracing__
+
+#include "recon_buildblock/ProjMatrixByBin.h"
+#include "ProjDataInfo.h"
+#include "CartesianCoordinate3D.h"
+#include "shared_ptr.h"
+
+ 
+
+START_NAMESPACE_TOMO
+
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
+
+/*!
+  \ingroup recon_buildblock
+  \brief Computes projection matrix elements for VoxelsOnCartesianGrid images
+  by using a Length of Intersection (LOI) model. 
+
+  Currently, the LOIs are divided by voxel_size.x(), unless NEWSCALE is
+  #defined during compilation time of ProjMatrixByBinUsingRayTracing.cxx. 
+
+  If the z voxel size is exactly twice the sampling in axial direction,
+  multiple LORs are used, to avoid missing voxels. (TODOdoc describe how).
+
+  Currently, a FOV is used which is circular, and is slightly 'inside' the 
+  image (i.e. the radius is about 1 voxel smaller than the maximum possible).
+
+  The implementation uses RayTraceVoxelsOnCartesianGrid().
+
+  \warning Only appropriate for VoxelsOnCartesianGrid type of images
+  (otherwise a run-time error occurs).
+  
+  \warning Current implementation assumes that x,y voxel sizes are at least as 
+  large as the sampling in tangential direction, and that z voxel size is either
+  smaller than or exactly twice the sampling in axial direction of the segments.
+
+*/
+
+class ProjMatrixByBinUsingRayTracing : public ProjMatrixByBin
+{
+public :
+
+  //! Constructor, taking all geometric info
+  /*! The density_info_ptr is not stored to avoid using memory for the data itself.
+  */
+  ProjMatrixByBinUsingRayTracing(		 
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr, // TODO should be Info only
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr
+    );
+
+private:
+
+  // explicitly list necessary members for image details (should use an Info object instead)
+  // ideally these should be const, but I have some trouble initialising them in that case
+  CartesianCoordinate3D<float> voxel_size;
+  CartesianCoordinate3D<float> origin;  
+  CartesianCoordinate3D<int> min_index;
+  CartesianCoordinate3D<int> max_index;
+
+  const shared_ptr<ProjDataInfo> proj_data_info_ptr;
+
+
+  virtual void 
+    calculate_proj_matrix_elems_for_one_bin(
+                                            ProjMatrixElemsForOneBin&) const;
+};
+
+END_NAMESPACE_TOMO
+
+#endif
+
+
+
