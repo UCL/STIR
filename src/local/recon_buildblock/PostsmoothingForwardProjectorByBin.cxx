@@ -42,7 +42,7 @@ initialise_keymap()
 {
   parser.add_start_key("Post Smoothing Forward Projector");
   parser.add_stop_key("End Post Smoothing Forward Projector");
-  parser.add_parsing_key("Original Forward projector", &original_forward_projector_ptr);
+  parser.add_parsing_key("Original Forward projector type", &original_forward_projector_ptr);
   parser.add_key("Forward projector postsmoothing kernel", &tang_kernel_double);
   parser.add_key("Forward projector postsmoothing tangential kernel", &tang_kernel_double);
   parser.add_key("Forward projector postsmoothing axial kernel", &ax_kernel_double);
