@@ -6,7 +6,7 @@
   \file 
   \ingroup test
  
-  \brief A simple programme to test the Coordinate classes
+  \brief A simple program to test the Coordinate classes
 
   \author Kris Thielemans
   \author PARAPET project
@@ -18,11 +18,12 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/round.h"
 #include "stir/RunTests.h"
 #include <iostream>
 #include <algorithm>
@@ -115,23 +116,89 @@ coordinateTests::run_tests()
 #endif
       check_if_zero(norm(b-b_sorted), "testing iterators via STL sort");
     }
+  }
+  {
+    cerr << "Testing join/cut_first_dimension/comparisons on BasicCoordinate<?,int>" << endl;
     
     // join
-#if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
     {
-      BasicCoordinate<3, float> a;
+      BasicCoordinate<3, int> a;
       a[1]=1;a[2]=2;a[3]=3;
-      BasicCoordinate<4, float> a4 = join(0.F, a);
-      check_if_equal(a4[1], 0., "testing join of float with BasicCoordinate");
-      check_if_equal(a4[2], 1., "testing join of float with BasicCoordinate");
-      check_if_equal(a4[3], 2., "testing join of float with BasicCoordinate");
-      check_if_equal(a4[4], 3., "testing join of float with BasicCoordinate");
+      {
+	BasicCoordinate<4, int> a4 = join(0, a);
+	check_if_equal(a4[1], 0, "testing join of float with BasicCoordinate");
+	check_if_equal(a4[2], 1, "testing join of float with BasicCoordinate");
+	check_if_equal(a4[3], 2, "testing join of float with BasicCoordinate");
+	check_if_equal(a4[4], 3, "testing join of float with BasicCoordinate");
+      }
+      {
+	BasicCoordinate<4, int> a4 = join(a, 0);
+	check_if_equal(a4[1], 1, "testing join of BasicCoordinate with float");
+	check_if_equal(a4[2], 2, "testing join of BasicCoordinate with float");
+	check_if_equal(a4[3], 3, "testing join of BasicCoordinate with float");
+	check_if_equal(a4[4], 0, "testing join of BasicCoordinate with float");
+      }
     }
-#endif
+    // cut*dimension
+    {
+      BasicCoordinate<3, int> a;
+      a[1]=1;a[2]=2;a[3]=3;
+      const BasicCoordinate<2, int> start = cut_last_dimension(a);
+      check_if_equal(start[1], 1, "testing cut_last_dimension");
+      check_if_equal(start[2], 2, "testing cut_last_dimension");
+      const BasicCoordinate<2, int> end = cut_first_dimension(a);
+      check_if_equal(end[1], 2, "testing cut_first_dimension");
+      check_if_equal(end[2], 3, "testing cut_first_dimension");
+    }
+    // comparison 2D
+    {
+      BasicCoordinate<2, int> a;
+      a[1]=1;a[2]=2;
+      BasicCoordinate<2, int> b;
+      b[1]=1;b[2]=1;
+      check(a==a, "2D operator==");
+      check(a<=a, "2D operator<= (when equal)");
+      check(a>=a, "2D operator>= (when equal)");
+      check(a>b, "2D operator>");
+      check(b<a, "2D operator<");
+      check(a>=b, "2D operator>= (when not equal)");
+      check(b<=a, "2D operator<= (when not equal)");
+      check(a!=b, "2D operator!=");
+    }
+    // comparison 3D
+    {
+      BasicCoordinate<3, int> a;
+      a[1]=1;a[2]=2;a[3]=3;
+      BasicCoordinate<3, int> b;
+      b[1]=1;b[2]=1;b[3]=3;
+      check(a==a, "3D operator==");
+      check(a<=a, "3D operator<= (when equal)");
+      check(a>=a, "3D operator>= (when equal)");
+      check(a>b, "3D operator>");
+      check(b<a, "3D operator<");
+      check(a>=b, "3D operator>= (when not equal)");
+      check(b<=a, "3D operator<= (when not equal)");
+      check(a!=b, "3D operator!=");
+    }
+    // comparison 4D
+    {
+      BasicCoordinate<4, int> a;
+      a[1]=1;a[2]=2;a[3]=3; a[4]=1;
+      BasicCoordinate<4, int> b;
+      b[1]=1;b[2]=1;b[3]=3; b[4]=2;
+      check(a==a, "4D operator==");
+      check(a<=a, "4D operator<= (when equal)");
+      check(a>=a, "4D operator>= (when equal)");
+      check(a>b, "4D operator>");
+      check(b<a, "4D operator<");
+      check(a>=b, "4D operator>= (when not equal)");
+      check(b<=a, "4D operator<= (when not equal)");
+      check(a!=b, "4D operator!=");
+    }
   }
 
-  // essentially the same as above, but now with Coordinate3D
-  // also, at the end, some convertions are tested
+  // essentially the same as BasicCoordinate<3,float>, but now with Coordinate3D
+  // also, at the end, some conversions are tested
   {
     cerr << "Testing Coordinate3D" << endl;
 
@@ -180,8 +247,8 @@ coordinateTests::run_tests()
     {
       BasicCoordinate<3,float> gen_a(a);
       a = gen_a;
-      check_if_zero(norm(a-copy_of_a), "testing convertions");    
-      check_if_zero(norm(gen_a-copy_of_a), "testing convertions");    
+      check_if_zero(norm(a-copy_of_a), "testing conversions");    
+      check_if_zero(norm(gen_a-copy_of_a), "testing conversions");    
     }
 
   }
@@ -235,12 +302,30 @@ coordinateTests::run_tests()
     {
       BasicCoordinate<3,float> gen_a(a);
       a = gen_a;
-      check_if_zero(norm(a-copy_of_a), "testing convertions");    
-      check_if_zero(norm(gen_a-copy_of_a), "testing convertions");    
+      check_if_zero(norm(a-copy_of_a), "testing conversions");    
+      check_if_zero(norm(gen_a-copy_of_a), "testing conversions");    
     }
 
   }
 
+  {
+    cerr << "Testing round with coordinates" << endl;
+    const Coordinate3D<float> af(1.1F,-1.1F,3.6F);
+    const Coordinate3D<int> aint = round(af);
+    check_if_equal(aint, Coordinate3D<int> (1,-1,4));
+  }
+  {
+    cerr << "Testing constructor with different types of coordinates" << endl;
+    /* Note: C++ rules for automatic conversion are such that the code below
+       would not work if 'af' is defined as
+       const Coordinate3D<float> af(1.1F,-1.1F,3.6F);
+    */
+    const BasicCoordinate<3,float> af = Coordinate3D<float> (1.1F,-1.1F,3.6F);
+    const BasicCoordinate<3,int> aint(af);
+    check_if_equal(aint, Coordinate3D<int> (1,-1,3));
+    const BasicCoordinate<3,float> af2(aint);
+    check_if_equal(af2, Coordinate3D<float> (1.F,-1.F,3.F));
+  }
 }
 
 
