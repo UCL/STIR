@@ -5,7 +5,7 @@
 
   \file
   \ingroup buildblock  
-  \brief Declaration of class TruncateMinToSmallPositiveValueImageProcessor
+  \brief Declaration of class ThresholdMinToSmallPositiveValueImageProcessor
     
   \author Kris Thielemans
       
@@ -17,8 +17,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_TruncateMinToSmallPositiveValueImageProcessor_H__
-#define __stir_TruncateMinToSmallPositiveValueImageProcessor_H__
+#ifndef __stir_ThresholdMinToSmallPositiveValueImageProcessor_H__
+#define __stir_ThresholdMinToSmallPositiveValueImageProcessor_H__
 
 
 #include "stir/RegisteredParsingObject.h"
@@ -33,7 +33,7 @@ START_NAMESPACE_STIR
 
 /*!
   \brief A class in the ImageProcessor hierarchy that calls
-   truncate_min_to_small_positive_value().
+   threshold_min_to_small_positive_value().
   
   As it is derived from RegisteredParsingObject, it implements all the 
   necessary things to parse parameter files etc.
@@ -47,10 +47,10 @@ START_NAMESPACE_STIR
  */
 
 template <typename elemT>
-class TruncateMinToSmallPositiveValueImageProcessor : 
+class ThresholdMinToSmallPositiveValueImageProcessor : 
   public 
     RegisteredParsingObject<
-        TruncateMinToSmallPositiveValueImageProcessor<elemT>,
+        ThresholdMinToSmallPositiveValueImageProcessor<elemT>,
         ImageProcessor<num_dimensions,elemT>
     >
 {
@@ -58,7 +58,7 @@ public:
   static const char * const registered_name; 
   
   //! Construct given parameters 
-  TruncateMinToSmallPositiveValueImageProcessor(const int rim_truncation_image = 0);
+  ThresholdMinToSmallPositiveValueImageProcessor(const int rim_truncation_image = 0);
     
   
 private:
