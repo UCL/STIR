@@ -112,12 +112,12 @@ int main(int argc, char **argv)
   if (start_segment_num!=end_segment_num ||
       start_axial_pos_num != end_axial_pos_num)
     warning("Matrix Size will be wrong because more than 1 segment/axial_pos\n");
-  if (!only_first_plane)
+  if (!only_plane_zero)
     warning("Column sizes will be wrong because more than 1 plane\n");
 
   output << proj_data_info_ptr->get_num_views()*proj_data_info_ptr->get_num_tangential_poss()
          << " "
-         << xsize*ysize*(only_first_plane?1:density_info_ptr->get_length())
+         << xsize*ysize*(only_plane_zero?1:density_info_ptr->get_length())
          << endl;
 #endif
 
