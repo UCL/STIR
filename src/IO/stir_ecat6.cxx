@@ -301,7 +301,8 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 {
   shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_Main_header(mhead);
   cout << "Scanner determined from ECAT6_Main_header: " << scanner_ptr->get_name() << endl;
-  if (scanner_ptr->get_type() == Scanner::Unknown_Scanner)
+  if (scanner_ptr->get_type() == Scanner::Unknown_scanner ||
+      scanner_ptr->get_type() == Scanner::User_defined_scanner)
   {
     warning("ECAT6_to_PDFS: Couldn't determine the scanner \n"
       "(Main_header.system_type=%d), defaulting to 953.\n"
