@@ -38,7 +38,13 @@ START_NAMESPACE_STIR
 
   \warning the ProjData object containing the normalisation factors should 
   currently have exactly the same dimensions as the data it is applied on.
-  
+
+  \par Parsing details
+  \verbatim
+  Bin Normalisation From ProjData:=
+  normalisation projdata filename := <ASCII>
+  End Bin Normalisation From ProjData:=
+  \endverbatim
 */
 class BinNormalisationFromProjData :
    public RegisteredParsingObject<BinNormalisationFromProjData, BinNormalisation>
@@ -61,6 +67,11 @@ public:
   //! Constructor that takes the projdata from a shared_pointer
   /*! The projdata object pointed to will \c not be modified. */
   BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr);
+
+  //! Checks if we can handle certain projection data.
+  /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors 
+      with the ProjDataInfo supplied. */
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
 
   //! Normalise some data
   /*! 
