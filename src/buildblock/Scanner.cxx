@@ -183,58 +183,79 @@ Scanner::
 check_consistency() const
 {
   if (intrinsic_tilt<-_PI || intrinsic_tilt>_PI)
-    warning("Scanner: intrinsic_tilt is very large. maybe it's in degrees (but should be in radians)");
+    warning("Scanner %s: intrinsic_tilt is very large. maybe it's in degrees (but should be in radians)",
+	    this->get_name().c_str());
 
   {
     if (get_num_transaxial_crystals_per_block() <= 0 ||
 	get_num_transaxial_blocks() <= 0)
-      warning("Scanner: transaxial block info is not set\n");
+      warning("Scanner %s: transaxial block info is not set",
+	      this->get_name().c_str());
     else
       {
 	const int dets_per_ring =
 	  get_num_transaxial_blocks() *
 	  get_num_transaxial_crystals_per_block();
 	if ( dets_per_ring != get_num_detectors_per_ring())
-	  { warning("Scanner: inconsistent transaxial block info\n"); return Succeeded::no; }
+	  { 
+	    warning("Scanner %s: inconsistent transaxial block info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_transaxial_blocks_per_bucket() <= 0 ||
 	get_num_transaxial_buckets() <=0)
-      warning("Scanner: transaxial bucket info is not set\n");
+      warning("Scanner %s: transaxial bucket info is not set",
+	      this->get_name().c_str());
     else
       {
 	const int blocks_per_ring =
 	  get_num_transaxial_buckets() *
 	  get_num_transaxial_blocks_per_bucket();
 	if ( blocks_per_ring != get_num_transaxial_blocks())
-	  { warning("Scanner: inconsistent transaxial block/bucket info\n"); return Succeeded::no; }
+	  { 
+	    warning("Scanner %s: inconsistent transaxial block/bucket info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_crystals_per_block() <= 0 ||
 	get_num_axial_blocks() <=0)
-      warning("Scanner: axial block info is not set\n");
+      warning("Scanner %s: axial block info is not set",
+	      this->get_name().c_str());
     else
       {
 	const int dets_axial =
 	  get_num_axial_blocks() *
 	  get_num_axial_crystals_per_block();
 	if ( dets_axial != get_num_rings())
-	  { warning("Scanner: inconsistent axial block info\n"); return Succeeded::no; }
+	  { 
+	    warning("Scanner %s: inconsistent axial block info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_blocks_per_bucket() <= 0 ||
 	get_num_axial_buckets() <=0)
-      warning("Scanner: axial bucket info is not set\n");
+      warning("Scanner %s: axial bucket info is not set",
+	      this->get_name().c_str());
     else
       {
 	const int blocks_axial =
 	  get_num_axial_buckets() *
 	  get_num_axial_blocks_per_bucket();
 	if ( blocks_axial != get_num_axial_blocks())
-	  { warning("Scanner: inconsistent axial block/bucket info\n"); return Succeeded::no; }
+	  { 
+	    warning("Scanner %s: inconsistent axial block/bucket info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
 
