@@ -22,7 +22,6 @@
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/Quaternion.h"
 #include "local/stir/listmode/CListRecord.h"
-#include "stir/KeyParser.h"
 #include "local/stir/motion/Polaris_MT_File.h"
 
 #include <iostream>
@@ -39,7 +38,9 @@ const char * const
 RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris"; 
 
 RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris()
-{}
+{
+  set_defaults();
+}
 
 RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris(const string mt_filename_v,shared_ptr<Polaris_MT_File> mt_file_ptr_v)
 {
@@ -49,7 +50,8 @@ RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris(const string mt_f
 }
 
 RigidObject3DTransformation
-RigidObject3DMotionFromPolaris::compute_average_motion(const float start_time, const float end_time) const
+RigidObject3DMotionFromPolaris::
+compute_average_motion(const double start_time, const double end_time) const
 {
   // CartesianCoordinate3D<float> euler_angles;
   int samples = 0 ;
@@ -96,20 +98,20 @@ RigidObject3DMotionFromPolaris::compute_average_motion(const float start_time, c
 
 void 
 RigidObject3DMotionFromPolaris::
-get_motion(RigidObject3DTransformation& ro3dtrans, const float time) const
+get_motion(RigidObject3DTransformation& ro3dtrans, const double time) const
 {
   Polaris_MT_File::const_iterator iterator_for_record_just_after_this_time =
     mt_file_ptr->begin();
 
   while (iterator_for_record_just_after_this_time!= mt_file_ptr->end() &&
-         iterator_for_record_just_after_this_time->sample_time < time + Polaris_time_offset)
+         iterator_for_record_just_after_this_time->sample_time < time + time_offset)
     ++iterator_for_record_just_after_this_time;
 
   if (iterator_for_record_just_after_this_time == mt_file_ptr->end())
   {
     error("RigidObject3DMotionFromPolaris: motion asked for time %g which is "
 	  "beyond the range of data (time in Polaris units: %g)\n",
-	  time, time + Polaris_time_offset);
+	  time, time + time_offset);
   }
   else
   {
@@ -200,8 +202,7 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
       // yes, they match
       cerr << "\n\tFound " << num_matched_tags << " matching tags between mt file and listmode data\n";
       cerr << "\tEntry " << mt_offset << " in .mt file corresponds to Time 0 \n";
-      Polaris_time_offset = (*mt_file_ptr)[mt_offset].sample_time;
-      cerr<< "\tPolaris time offset is:  " <<  Polaris_time_offset << endl;
+      time_offset = (*mt_file_ptr)[mt_offset].sample_time;
       return;
     }
   }
@@ -262,8 +263,8 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
   
   
   int mt_offset = ZeroOffSet;
-  Polaris_time_offset = (*mt_file_ptr)[mt_offset].sample_time;
-  cerr<< "\tPolaris time offset is:  " <<  Polaris_time_offset << endl;
+  time_offset = 
+    (mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
 
 #endif
 
@@ -378,10 +379,10 @@ RigidObject3DMotionFromPolaris::find_and_store_random_numbers_from_mt_file(vecto
   
 }
 
-#if 1
 void 
 RigidObject3DMotionFromPolaris::set_defaults()
 {
+  RigidObject3DMotion::set_defaults();
   mt_filename = "";
 }
 
@@ -389,29 +390,25 @@ RigidObject3DMotionFromPolaris::set_defaults()
 void 
 RigidObject3DMotionFromPolaris::initialise_keymap()
 {
-  parser.add_start_key("Start Rigid Object3D Motion From Polaris");
+  RigidObject3DMotion::initialise_keymap();
+  parser.add_start_key("Rigid Object 3D Motion From Polaris Parameters");
   parser.add_key("mt filename", &mt_filename);
-  parser.add_stop_key("End Rigid Object3D Motion From Polaris");
-
+  parser.add_stop_key("End Rigid Object 3D Motion From Polaris");
 }
 
 bool RigidObject3DMotionFromPolaris::post_processing()
 {
-
   mt_file_ptr = new Polaris_MT_File(mt_filename);
+  if (is_null_ptr(mt_file_ptr))
+    {
+      warning("Error initialising mt file \n");
+      return true;
+    }
+  if (RigidObject3DMotion::post_processing()==true)
+    return true;
   return false;
 }
 
-
-Succeeded 
-RigidObject3DMotionFromPolaris::set_polaris_time_offset(float mt_offset)
-{
-  Polaris_time_offset=(*mt_file_ptr)[mt_offset].sample_time;
-  cerr<< "\tPolaris time offset is:  " <<  Polaris_time_offset << endl;
-  return Succeeded::yes;
-}
-
-#endif
 
 END_NAMESPACE_STIR
 
