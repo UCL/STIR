@@ -19,7 +19,7 @@
 
 
 #include "tomo/ImageProcessor.h"
-#include "tomo/local/DAVArrayFilter3D.h"
+#include "local/tomo/DAVArrayFilter3D.h"
 
 #include "tomo/RegisteredParsingObject.h"
 
