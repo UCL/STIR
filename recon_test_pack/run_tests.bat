@@ -4,7 +4,7 @@ rem see README.txt
 rem Author: Kris Thielemans
 
 
-echo This script should work with PARAPET software 0.91. If you have
+echo This script should work with PARAPET software 0.93. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 
@@ -40,11 +40,11 @@ set ThereWereErrors=1
 :run_OSEM
 
 echo.
-echo ------------- Running OSEMMain ------------- 
+echo ------------- Running OSMAPOSL ------------- 
 
-%INSTALL_DIR%OSEMMain OSEMMain_test.par 1> OSEMMain.log 2> OSEMMain_stderr.log
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test.par 1> OSMAPOSL.log 2> OSMAPOSL_stderr.log
 
-echo ---- Comparing output of OSEMMain subiter 3 (should be identical up to tolerance)
+echo ---- Comparing output of OSMAPOSL subiter 3 (should be identical up to tolerance)
 %INSTALL_DIR%compare_image test_image_3.hv my_test_image_3.hv
 if ERRORLEVEL 1 goto OSEM3_problem
 echo ---- This test seems to be ok !
@@ -55,7 +55,7 @@ set ThereWereErrors=1
 
 :OSEM5
 
-echo ---- Comparing output of OSEMMain subiter 3 (should be identical up to tolerance)
+echo ---- Comparing output of OSMAPOSL subiter 5 (should be identical up to tolerance)
 %INSTALL_DIR%compare_image test_image_5.hv my_test_image_5.hv
 if ERRORLEVEL 1 goto OSEM5_problem
 echo ---- This test seems to be ok !
