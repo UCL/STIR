@@ -5,7 +5,7 @@
   \file 
   \ingroup listmode
 
-  \brief Program to bin listmode data to 3d sinograms
+  \brief Implementation of class LmToProjData
  
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -59,7 +59,6 @@ FRAME_BASED_DT_CORR:
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 #include "stir/Scanner.h"
-#include "stir/SegmentByView.h"
 #ifdef USE_SegmentByView
 #include "stir/ProjDataInterfile.h"
 #include "stir/SegmentByView.h"
@@ -92,24 +91,12 @@ using std::min;
 using std::max;
 #endif
 
-
-
-
-
-#ifdef USE_SegmentByView
-#include "stir/SegmentByView.h"
-#else
-#include "stir/Array.h"
-#include "stir/IndexRange3D.h"
-#endif
-
 START_NAMESPACE_STIR
 
 #ifdef USE_SegmentByView
 typedef SegmentByView<elem_type> segment_type;
 #else
-#include "stir/Array.h"
-#include "stir/IndexRange3D.h"
+#error does not work at the moment
 #endif
 /******************** Prototypes  for local routines ************************/
 
