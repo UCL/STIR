@@ -23,7 +23,9 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	CoG.cxx \
 	find_ML_normfactors.cxx \
 	threshold_norm_data.cxx \
-	SSRB.cxx
+	compute_sum_images_to_random_power.cxx \
+	add_images_and_rescale.cxx 
+	
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
