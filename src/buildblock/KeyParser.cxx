@@ -1,20 +1,29 @@
 //
 // $Id$ :$Date$
 //
+/*!
+  \file 
+ 
+  \brief implementations for the KeyParser class
 
-// KT 01/08/98 removed ! from keywords
-// KT 14/12 changed <> to "" in next 3 includes
+  \author Kris Thielemans
+  \author Patrick Valente
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
+
+#include "Tomography_common.h"
 #include "KeyParser.h"
 #include "line.h"
-// KT 20/06/98 needed for PETerror
-#include "pet_common.h"
-// KT 13/11/98 needed for new parse()
+
+
 #include <fstream>
 
-// KT 20/06/98 do this pragma only for VC++
-#ifdef _MSC_VER
-#pragma warning(disable: 4786)
-#endif
+START_NAMESPACE_TOMO
 
 // map_element implementation;
 
@@ -76,7 +85,7 @@ bool KeyParser::parse(const char * const filename)
    ifstream hdr_stream(filename);
    if (!hdr_stream)
     { 
-      PETerror("KeyPraser::parse: couldn't open file %s\n", filename);
+      warning("KeyParser::parse: couldn't open file %s\n", filename);
       return false;
     }
     return parse(hdr_stream);
@@ -115,8 +124,9 @@ int KeyParser::parse_header()
     
   if (parse_line(false))	
     process_key();
+  // TODO skip white space ?
   if (status != parsing)
-  { PETerror("KeyParser error: required first keyword not found\n");  return 1; }
+  { warning("KeyParser error: required first keyword not found\n");  return 1; }
 
   while(status==parsing)
     {
@@ -389,3 +399,5 @@ void KeyParser::process_key()
     (this->*(current->p_object_member))();	//calls appropriate member function
   }
 }
+
+END_NAMESPACE_TOMO
