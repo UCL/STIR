@@ -13,7 +13,7 @@
 */
 #include "local/stir/listmode/LmToProjDataWithMC.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "local/stir/listmode/CListRecordECAT966.h"
+#include "stir/listmode/CListRecordECAT966.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Succeeded.h"
 #include <time.h>
@@ -155,9 +155,13 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
       if (do_pre_normalisation)
 	{
 	  // now normalise event taking into account the
-	  // normalisation factor before motion correction and the number of
-	  // uncompressed bins that contribute to this bin
-	  // TODO this normalisation is not really correct
+	  // normalisation factor before motion correction
+	  // Note: this normalisation is not really correct
+	  // we need to take the number of uncompressed bins that
+	  // contribute to this bin into account (will be done in 
+	  // do_post_normalisation).
+	  // In addition, there is time-based normalisation.
+	  // See Thielemans et al, Proc. MIC 2003
 	  bin.set_bin_value(1/bin_efficiency);
 	}
       else
