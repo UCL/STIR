@@ -57,6 +57,10 @@ public:// FBP3DRP specific parameters. public as FBP3DRPReconstruction class nee
   */  
   string image_for_reprojection_filename;
 
+  //! Number of segments to combine with SSRB before calling FBP
+  /*! default -1 will use SSRB only when the data are not yet axially compressed */
+  int num_segments_to_combine;
+
   //! Transaxial extension for FFT
   int PadS; 
   //! Axial extension for FFT

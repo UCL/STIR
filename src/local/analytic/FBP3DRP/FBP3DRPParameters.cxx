@@ -31,8 +31,7 @@ START_NAMESPACE_STIR
 
 FBP3DRPParameters::FBP3DRPParameters(const string& parameter_filename)
 
-        : ReconstructionParameters(), 
-	  fit_projections(0) // KTTODO !
+        : ReconstructionParameters()
 {
   initialise(parameter_filename);
 }
@@ -50,6 +49,8 @@ set_defaults()
   alpha_ramp = 1;
   fc_ramp = 0.5;
   
+  num_segments_to_combine = -1;
+
   PadS = 2;
   PadZ = 2;
     
@@ -71,6 +72,8 @@ FBP3DRPParameters::initialise_keymap()
   parser.add_key("image to be used for reprojection", &image_for_reprojection_filename);
   parser.add_key("Save intermediate images", &save_intermediate_files);
 
+  // TODO move to 2D recon
+  parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("Alpha parameter for Ramp filter",  &alpha_ramp);
   parser.add_key("Cut-off for Ramp filter (in cycles)",&fc_ramp);
   
@@ -116,7 +119,9 @@ FBP3DRPParameters::ask_parameters()
 
 // PARAMETERS => 2D RECONSTRUCTION RAMP FILTER (ALPHA, FC)
     cout << endl << "For 2D reconstruction filtering (Ramp filter) : " ;
-    
+
+    num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
+    // TODO check odd
     alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);
     
    fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
