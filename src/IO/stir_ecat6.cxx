@@ -69,6 +69,60 @@ static void read_sinogram(Sinogram<float>& sino_2D,
 		   int mat_index, 
 		   int frame, int gate, int data, int bed);
 
+static bool is_ecat6_file(Main_header& mhead, const string& filename)
+{
+  //check if it's ECAT 6 
+  FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
+  if(!cti_fptr) 
+    error("\nError opening input file: %s\n",filename.c_str());
+
+  if(cti_read_main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
+    {
+      // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT6
+      return false;
+    }
+  else
+    {
+      // do some checks on the main header
+      return 
+	mhead.sw_version>=0 && mhead.sw_version<=69  &&
+	( mhead.file_type == matScanFile ||
+	  mhead.file_type == matImageFile ||
+	  mhead.file_type == matAttenFile ||
+	  mhead.file_type == matNormFile) &&
+	mhead.num_frames>0;
+    }
+}
+
+  
+bool is_ecat6_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat6_file(mhead, filename);
+}
+
+bool is_ecat6_image_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat6_file(mhead, filename) &&
+    mhead.file_type ==matImageFile;
+}
+
+
+bool is_ecat6_emission_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat6_file(mhead, filename) &&
+    mhead.file_type ==matScanFile;
+}
+
+
+bool is_ecat6_attenuation_file(const string& filename)
+{
+  Main_header mhead;
+  return is_ecat6_file(mhead, filename) &&
+    mhead.file_type ==matAttenFile;
+}
 
 word find_CTI_system_type(const Scanner& scanner)
 {
