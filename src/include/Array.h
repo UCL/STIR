@@ -126,7 +126,10 @@ public:
   inline IndexRange<num_dimensions> get_index_range() const;
 
   //! grow the array to a new range of indices, new elements are set to 0  
-  inline virtual void 
+#ifndef ARRAY4
+  inline 
+#endif
+  virtual void 
     grow(const IndexRange<num_dimensions>& range);
   
   //! return sum of all elements
