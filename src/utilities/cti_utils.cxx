@@ -34,7 +34,7 @@
 
 // TODO get rid of _SWAPEM_ and use ByteOrder
 // currently checked by asserts()
-#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
+#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
 #define   _SWAPEM_           // bigendian
 #endif
 
@@ -209,6 +209,13 @@ int cti_read_main_header (FILE *fptr, Main_header *h)
     short *b;    
     char *bb;
     int status;
+
+#ifdef _SWAPEM_
+  if(ByteOrder::get_native_order() != ByteOrder::big_endian)
+#else
+  if(ByteOrder::get_native_order() != ByteOrder::little_endian)
+#endif
+    error("Error in File %s: _SWAPEM_ preprocessor define is determined incorrectly. Correct please. \n", __FILE__);
 
     b = (short *) malloc (MatBLKSIZE);
     if (!b) return EXIT_FAILURE;
