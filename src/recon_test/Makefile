@@ -1,4 +1,5 @@
-#
+# AIX Makefile for PPhead/recon_test directory
+
 # $Id$: $Date$
 #
 
