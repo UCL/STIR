@@ -66,13 +66,13 @@ void fourn (Array<1,float> &data, Array<1,int> &nn, int ndim, int isign);
     \param n has to be equal to th elength of \a data
 
   \warning Currently, only the real elements of the filter will be used. (Historical reason?)
-  So, the result will be incorect of the filter has complex components (i.e. its 
+  So, the result will be incorrect of the filter has complex components (i.e. its 
   spatial kernel is not symmetric).
   */
 void convlvC (Array<1,float> &data, const Array<1,float> &filter, int n);
 
 //! 3D FFT of real numbers
-void rlft3(Array<3,float> &data, Array<2,float> &speq, unsigned long nn1, unsigned long nn2, unsigned long nn3, int isign);
+void rlft3(Array<3,float> &data, Array<2,float> &speq, int nn1, int nn2, int nn3, int isign);
 //! Calculates the Fourier Transform of a set of 2n real-valued data points.
 /*!
   Replaces this data ( which is stored in array data[1..2n]) by the positive
