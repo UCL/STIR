@@ -1,4 +1,6 @@
+//
 // $Id$: $Date$
+//
 
 // Implementations for utilities.h
 
@@ -74,8 +76,9 @@ inline IFSTREAM& open_read_binary(IFSTREAM& s,
 #else
   s.open(name, ios::in | ios::binary); 
 #endif
+  // KT 14/01/2000 added name of file in error message
   if (s.fail() || s.bad())
-    { PETerror("Error opening file\n"); Abort(); }
+    { PETerror("Error opening file %s\n", name); Abort(); }
   return s;
 }
 
@@ -84,7 +87,8 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
 				  const char * const name)
 {
     s.open(name, ios::out | ios::binary); 
+    // KT 14/01/2000 added name of file in error message
     if (s.fail() || s.bad())
-    { PETerror("Error opening file\n"); Abort(); }
+    { PETerror("Error opening file %s\n", name); Abort(); }
     return s;
 }
