@@ -10,6 +10,7 @@ include $(WORKSPACE)/Makefile_common
 
 LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/buildblock \
+	$(WORKSPACE)/IO \
 	$(WORKSPACE)/recon_buildblock \
 	$(WORKSPACE)/display \
 	$(WORKSPACE)/iterative/LogLik_buildblock 
