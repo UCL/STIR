@@ -120,6 +120,7 @@ main(int argc, char *argv[])
   shared_ptr<ProjData> proj_data_ptr;
  
   bool do_denominator;
+  bool do_sqrt;
 
   switch(argc)
   {
@@ -127,6 +128,7 @@ main(int argc, char *argv[])
     { 
       proj_data_ptr = ProjData::read_from_file(argv[1]); 
       do_denominator = ask("Do you want to normalise the result ?", true);
+      do_sqrt = ask("Do you want to take the sqrt ?", true);
       break;
     }
     /*
@@ -216,11 +218,14 @@ main(int argc, char *argv[])
                   true);  
       *image_sptr /= *denominator_ptr;
     }
+    if (do_sqrt)
+    {
     //in_place_apply_function(*image_sptr, &sqrt);
     for (DiscretisedDensity<3,float>::full_iterator iter = image_sptr->begin_all();
          iter != image_sptr->end_all();
 	 ++iter)
-      *iter = sqrt(*iter);
+	 *iter = sqrt(*iter);
+    }
 
     
     timer.stop();
