@@ -21,6 +21,7 @@ SOURCES = \
 	ProjMatrixByDensel.cxx \
 	ProjMatrixElemsForOneDensel.cxx \
 	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
+        ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
 	QuadraticPrior.cxx \
 	BinNormalisationUsingProfile.cxx
