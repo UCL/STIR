@@ -16,7 +16,11 @@ SOURCES = \
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
+endif
+
 
 .PRECIOUS: $(DEST)*.o $(DEST)*.a
 
