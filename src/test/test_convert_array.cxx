@@ -3,7 +3,7 @@
 //
 /*!
   \file 
- 
+  \ingroup test 
   \brief tests for the convert_array function
 
   \author Kris Thielemans
@@ -11,10 +11,8 @@
 
   \date    $Date$
   \version $Revision$
-
-  TODO remove _org and FULL stuff
-
 */
+//  TODO remove FULL stuff
 
 #include <iostream>
 #include <cmath>
@@ -183,9 +181,10 @@ convert_array_Tests::run_tests()
 	check(fabs(double(*iter_ti2) *scale_factor / *iter_tf1 - 1) < 1E-4) ;
       
     }
-#endif
+
     timer.stop();
     cerr << timer.value() << "secs" << endl;
+#endif // FULL
   }
 #ifdef FULL
   //   3D
