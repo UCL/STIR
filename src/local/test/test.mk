@@ -1,7 +1,7 @@
 #
 # $Id$
 # 
-dir := local/test/
+dir := local/test
 
 $(dir)_TEST_SOURCES :=  \
 test_RigidObject3DTransformation.cxx \
@@ -14,6 +14,9 @@ run_tests_$(dir): all_test_exes
  
 run_interactive_tests_$(dir): 
 
+# rule to ignore registries
+# note: has to be before include statement as that changes value of $(dir)
+${DEST}$(dir)/test_Fourier: ${DEST}$(dir)/test_Fourier.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
 
 include $(WORKSPACE)/test.mk
-
