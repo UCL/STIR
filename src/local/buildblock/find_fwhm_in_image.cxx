@@ -52,7 +52,8 @@ template <int num_dimensions, class elemT>
 static void 
 flexible_mask(Array<num_dimensions,elemT> & input_array,
               const BasicCoordinate<num_dimensions,int>& max_location,   
-              const BasicCoordinate<num_dimensions,elemT>& resolution); 
+              const BasicCoordinate<num_dimensions,elemT>& resolution,
+              const float level); 
 
 template <class elemT>
 static float find_NEMA_level(const Array<1,elemT>& column, const float level)
@@ -112,7 +113,7 @@ find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
                                                                       3), level) : 0;
     list_res_index.push_back(res_index);
     if (maximum_num+1!= num_maxima && num_maxima<=10)
- 	  flexible_mask(input_image,max_location,res_index.resolution);         
+ 	  flexible_mask(input_image,max_location,res_index.resolution,level);         
   } 
   return list_res_index ;
 }                                          
@@ -321,17 +322,18 @@ template <int num_dimensions, class elemT>
 static void 
 flexible_mask(Array<num_dimensions,elemT>& input_array, 
               const BasicCoordinate<num_dimensions,int>& max_location,
-              const BasicCoordinate<num_dimensions,elemT>& resolution)
+              const BasicCoordinate<num_dimensions,elemT>& resolution,
+              const float level)
 /*                                
   This mask-function has as input the reference &input_image and the location of a point source.  
   Then, with the use of the resolution (in pixels), at each of the directions, masks the input_image.
   Changing the scale factor is easy to have a different mask size.                                                                
 */
 {
-  const unsigned short scale=2; 
-  const int mask_size_z = scale*int(resolution[1]) ,
-            mask_size_y = scale*int(resolution[2]) ,
-            mask_size_x = scale*int(resolution[3]) ;     
+  const float scale=3./level; 
+  const int mask_size_z = int(scale*(resolution[1])),
+            mask_size_y = int(scale*(resolution[2])),
+            mask_size_x = int(scale*(resolution[3]));     
   const int min_k_index = input_array.get_min_index();
 	const int max_k_index = input_array.get_max_index();
 	for ( int k = max(max_location[1]-mask_size_z,min_k_index); k<= min(max_location[1]+mask_size_z,max_k_index); ++k)
