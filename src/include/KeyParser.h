@@ -25,7 +25,7 @@
 #include "pet_common.h"
 #endif
 
-#include "tomo/common.h"
+#include "shared_ptr.h"
 
 //#include <map>
 #include <list>
@@ -89,7 +89,10 @@ public:
   enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist, ULONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
     // KT 07/02/2001 new
-    PARSINGOBJECT, FLOAT, BOOL};
+    PARSINGOBJECT, 
+    // KT 20/08/2001 new
+    SHARED_PARSINGOBJECT,
+    FLOAT, BOOL};
 };
 
 /*!
@@ -117,6 +120,10 @@ public :
   // KT 07/02/2001 new
   map_element(void (KeyParser::*pom)(),
 	      Object** pov, 
+              Parser *);
+  // KT 20/08/2001 new
+  map_element(void (KeyParser::*pom)(),
+	      shared_ptr<Object>* pov, 
               Parser *);
   ~map_element();
 	
@@ -209,18 +216,23 @@ public:
   template <typename ParsingClass>
   void add_parsing_key(const string& keyword, ParsingClass** parsed_object_ptr_ptr)
   {
-#if 0
-    kmap[standardise_keyword(keyword)] = 
-        map_element(&KeyParser::set_parsing_object, 
-                    reinterpret_cast<Object**>(parsed_object_ptr_ptr), 
-                    (map_element::Parser *)(&ParsingClass::read_registered_object));
-#else
     add_in_keymap(keyword,     
                   map_element(&KeyParser::set_parsing_object, 
                     reinterpret_cast<Object**>(parsed_object_ptr_ptr), 
                     (map_element::Parser *)(&ParsingClass::read_registered_object))
 		    );
-#endif
+  }
+
+  //! add keyword corresponding to an object that will parse the next keys itself
+  /*! As above, but with a shared_ptr */
+  template <typename ParsingClass>
+  void add_parsing_key(const string& keyword, shared_ptr<ParsingClass>* parsed_object_ptr_ptr)
+  {
+    add_in_keymap(keyword,     
+                  map_element(&KeyParser::set_shared_parsing_object, 
+                    reinterpret_cast<shared_ptr<Object>*>(parsed_object_ptr_ptr), 
+                    (map_element::Parser *)(&ParsingClass::read_registered_object))
+		    );
   }
 
   //! Prints all keywords (in random order) to the stream
@@ -295,14 +307,18 @@ public:
   void do_nothing() {};
   //! set the variable to the value given as the value of the keyword
   void set_variable();
+
   // KT 07/02/2001 new
   //! set the variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
   void set_parsing_object();
+  // KT 20/08/2001 new
+  //! set the shared_ptr variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
+  void set_shared_parsing_object();
 
   
 private :
 
-  friend map_element;
+  friend class map_element;
   ////// variables
 
   enum parse_status { end_parsing, parsing };
