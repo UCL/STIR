@@ -963,6 +963,12 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     
 }
 
+float
+ProjDataFromStream::get_scale_factor() const
+{ 
+  return scale_factor;}
+
+
 
 END_NAMESPACE_TOMO
 
