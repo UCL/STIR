@@ -34,9 +34,9 @@ void scatter_viewgram(
     int max_scatt_points, const int att_threshold)
 	{	
 		  	  
-	const ProjDataInfoCylindricalNoArcCorr *proj_data_info = 
-		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr> 
-		(proj_data.get_proj_data_info_ptr());
+	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
+		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
+		(*proj_data.get_proj_data_info_ptr());
 		
 			
 			//proj_data.get_proj_data_info_ptr());
@@ -44,7 +44,7 @@ void scatter_viewgram(
 	std::vector<CartesianCoordinate3D<float> > scatter_points_vector =  
 		sample_scatter_points(image_as_density,max_scatt_points,att_threshold);
 	
-	CartesianCoordinate3D<float> det_coord_A, det_coord_B;
+	CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     Bin bin;
 	
 	for (bin.segment_num()=proj_data_info.get_min_segment_num();
@@ -58,8 +58,8 @@ void scatter_viewgram(
 				proj_data.get_empty_viewgram(bin.view_num(), bin.segment_num());
 			
 			for (bin.axial_pos_num()=
-				proj_data_info.get_min_axial_pos_num(segment_num);
-			bin.axial_pos_num()<=proj_data_info.get_max_axial_pos_num(segment_num);
+				proj_data_info.get_min_axial_pos_num(bin.segment_num());
+			bin.axial_pos_num()<=proj_data_info.get_max_axial_pos_num(bin.segment_num());
 			++bin.axial_pos_num())
 				for (bin.tangential_pos_num()=
 					proj_data_info.get_min_tangential_pos_num();
