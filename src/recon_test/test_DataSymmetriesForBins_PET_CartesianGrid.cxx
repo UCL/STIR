@@ -603,7 +603,7 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
   density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
   image.set_grid_spacing(image.get_grid_spacing()/
 			 CartesianCoordinate3D<float>(2,1,1));
-  density_sptr->grow(IndexRange3D(0, org_z_length*2,
+  density_sptr->grow(IndexRange3D(-2, org_z_length*2, // note: -2 because grow doesn't allow shrinking!
 				  image.get_min_y(), image.get_max_y(),
 				  image.get_min_x(), image.get_max_x()));
   run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
