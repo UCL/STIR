@@ -231,19 +231,19 @@ BINMATH MENU:\n\
 0. Quit \n\
 1. Display viewgrams\n\
 2. Display sinograms\n\
-3. Absolute difference\n\
+3. Absolute difference between 2 sinograms\n\
 4. Add sinogram\n\
 5. Subtract sinogram\n\
-6. Multiply sinogram\n\
-7. Divide sinogram\n\
+6. Multiplyby sinogram\n\
+7. Divide with sinogram\n\
 8. Add scalar\n\
-9. Multiply scalar\n\
-10. Divide scalar \n\
+9. Multiply by scalar\n\
+10. Divide with scalar \n\
 11. Min/Max & counts \n\
 12. Positive indicator \n\
 13. Truncate negatives \n\
-14. Trim end bins\n\
-15. Zero end planes of segment 0 \n\
+14. Application of a tangential truncating window\n\
+15. Application of an axial truncating window to segment 0\n\
 16. Restart\n\
 17. Redisplay menu"<<endl;
 }
@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
 
                     //Write sinogram result to file
                 if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) 
-		  output_proj_data->set_segment_by_view(seg1);
+		  output_proj_data->set_segment(seg1);
             }
 //Now do other segments
             if(limit_segments>0)
@@ -467,8 +467,8 @@ int main(int argc, char *argv[])
 
 //Write sinogram result to file
                     if(operation!= _display_view && operation!= _display_sino  && operation!= _stats && buffer_opened) {
-                        output_proj_data->set_segment_by_view(seg1_neg);  
-			output_proj_data->set_segment_by_view(seg1_pos);  
+                        output_proj_data->set_segment(seg1_neg);  
+			output_proj_data->set_segment(seg1_pos);  
                     }
                 }
 
