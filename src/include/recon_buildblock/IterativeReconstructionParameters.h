@@ -82,10 +82,10 @@ public:
   int save_interval;
 
   //! signals whether to zero the data in the end planes of the projection data
-  bool zero_seg0_end_planes;
+  int zero_seg0_end_planes;
 
   //! signals whether to randomise the subset order in each iteration
-  bool randomise_subset_order;
+  int randomise_subset_order;
 
   //! subiteration interval at which to apply inter-iteration filters 
   int inter_iteration_filter_interval;

@@ -70,8 +70,8 @@ IterativeReconstructionParameters::IterativeReconstructionParameters()
   post_filter_Nz_dir = 0.0;
 
 //MJ 02/08/99 added subset randomization
-
-  randomise_subset_order = false;
+  // KT 05/07/2000 made int
+  randomise_subset_order = 0;
 
 
   add_key("number of subiterations", KeyArgument::INT, &num_subiterations);
@@ -123,9 +123,9 @@ void IterativeReconstructionParameters::ask_parameters()
     ask_num("Maximum absolute segment number to process: ",
 	    0, proj_data_ptr->get_max_segment_num(), 0);
   
-  
+  // KT 05/07/2000 made int
   zero_seg0_end_planes =
-    ask("Zero end planes of segment 0 ?", true);
+    ask("Zero end planes of segment 0 ?", true) ? 1 : 0;
  
 
     
@@ -196,8 +196,9 @@ void IterativeReconstructionParameters::ask_parameters()
     }
 
 
-
-    randomise_subset_order=ask("Randomly generate subset order?", false);
+    // KT 05/07/2000 made int
+    randomise_subset_order=
+      ask("Randomly generate subset order?", false) ? 1 : 0;
 
 
 }
@@ -270,7 +271,8 @@ bool IterativeReconstructionParameters::post_processing()
 #endif
   ////////////////// subset order
 
-  if (randomise_subset_order){
+  // KT 05/07/2000 made randomise_subset_order int
+  if (randomise_subset_order!=0){
    srand((unsigned int) (time(NULL)) ); //seed the rand() function
    }
 
