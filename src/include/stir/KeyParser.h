@@ -54,40 +54,6 @@ typedef vector<string> ASCIIlist_type;
 class Object;
 class Succeeded;
 
-/*!
-  \ingroup buildblock
-  \brief A class to parse Interfile headers
-
-  Currently, Interfile 3.3 parsing rules are hard-coded. 
-
-  KeyParser reads input line by line and parses each line separately.
-  It allows for \r at the end of the line (as in files
-  originating in DOS/Windows).
-  When the line ends with a backslash '\', the next line
-  will just be appended to the current one. That is, '\'
-  acts as continuation marker.
-
-  Lines can have arbitrary length.
-
-  \warning The backslash HAS to be the last character. Even
-  spaces after it will stop the 'continuation'.
-  
-  \warning Vectored keys are treated very dangerously: when a keyword
-  is assumed to be vectored, run-time errors occur when it is used without [].
-  \warning The use of the [*] index for vectored keys is NOT supported.
-
-  \warning All this is going to change to a more general purpose parser...
-
-  Main problem: when non-trivial callback functions have to be used, you need to do it
-  via a derived class (as KeyParser requires  pointers to member functions.)
-
-  \warning As KeyParser::add_key stores pointers to the variables where you want 
-  your results, it is somewhat dangerous to copy a KeyParser object. That is, its 
-  keymap will still point to the same variables.
-
-  \todo add checking functions in the map, as in add_key("my key",&my_value, check_positive)
-  \todo add facilities for checking (while parsing) if a keyword was present before the current one
-*/
 class KeyParser;
 
 /*!
@@ -143,6 +109,43 @@ public :
   map_element& operator=(const map_element& me);
 };
 
+// note: next text contains double \\ for correct parsing by doxygen
+// you should read them as a single  backslash
+/*!
+  \ingroup buildblock
+  \brief A class to parse Interfile headers
+
+  Currently, Interfile 3.3 parsing rules are hard-coded. 
+
+  KeyParser reads input line by line and parses each line separately.
+  It allows for '\\r' at the end of the line (as in files
+  originating in DOS/Windows).
+  When the line ends with a backslash '\\', the next line
+  will just be appended to the current one. That is, '\\'
+  acts as continuation marker.
+
+  Lines can have arbitrary length.
+
+  \warning The backslash HAS to be the last character. Even
+  spaces after it will stop the 'continuation'.
+  
+  \warning Vectored keys are treated very dangerously: when a keyword
+  is assumed to be vectored, run-time errors occur when it is used without [].
+  \warning The use of the [*] index for vectored keys is NOT supported.
+
+  \warning All this is going to change to a more general purpose parser...
+
+  Main problem: when non-trivial callback functions have to be used, you need to do it
+  via a derived class (as KeyParser requires  pointers to member functions.)
+
+  \warning As KeyParser::add_key stores pointers to the variables where you want 
+  your results, it is somewhat dangerous to copy a KeyParser object. That is, its 
+  keymap will still point to the same variables.
+
+  \todo add checking functions in the map, as in 
+   \code add_key("my key",&my_value, check_positive); \endcode
+  \todo add facilities for checking (while parsing) if a keyword was present before the current one
+*/
 class KeyParser
 {
 
@@ -428,4 +431,3 @@ private :
 END_NAMESPACE_STIR
 
 #endif
-
