@@ -15,7 +15,7 @@ clean:
 SOURCES = \
 	sample_scatter_points.cxx \
 	integral_scattpoint_det.cxx \
-	scatter_estimate_for_one_scatter_points.cxx\
+	scatter_estimate_for_one_scatter_point.cxx\
 	scatter_estimate_for_all_scatter_points.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
