@@ -1,10 +1,10 @@
 //
-// $Id$ : $Date$
+// $Id$: $Date$
 //
 
 /*!
   \file
-  \ingroup utilities
+  \ingroup recontest
 
   \brief Test programme for back projection
 
@@ -13,7 +13,6 @@
   \author PARAPET project
   
   \date $Date$
-
   \version $Revision$
 */
 
@@ -27,6 +26,7 @@
 #include "utilities.h"
 #include "IndexRange3D.h"
 #include "RelatedViewgrams.h"
+#include "VoxelsOnCartesianGrid.h"
 
 
 #include <fstream>
@@ -281,7 +281,7 @@ main(int argc, char **argv)
     
     if (save)
     {
-      char* file = "bcktest_new";
+      char* file = "bcktest";
       cerr <<"  - Saving " << file << endl;
       write_basic_interfile(file, *image_sptr);
       
