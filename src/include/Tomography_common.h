@@ -100,6 +100,9 @@
 \defgroup test Tests of the basic building blocks
 \defgroup recontest Tests of reconstruction building blocks
 \defgroup reconstructors Reconstruction classes
+\defgroup OSMAPOSL Implementation of the OSMAP One-Step-Late reconstruction algorithm
+\defgroup LogLikBased_buildblock Reconstruction building blocks for
+loglikelihood based algorithms
 \defgroup utilities Utility programmes
 \defgroup display Display functions
 \defgroup para Parallel library 
