@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// @(#)vox.cxx	1.17: 99/02/11
 //
 
 
@@ -459,9 +459,7 @@ void get_plane_row(PETImageOfVolume& input_image){
   float xm=(xs+xe)/2.;
   
 
-  ofstream profile;
-  ask_filename_and_open(profile,  "Output filename ",
-			".prof", ios::out); 
+
 
   int axdir=ask_num("Which axis direction (z=0,y=1,x=2)?",0,2,2);
 
@@ -473,7 +471,10 @@ void get_plane_row(PETImageOfVolume& input_image){
     int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,(int)xm-xs+1);
     int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,(int)ym-ys+1);
 
- 
+   ofstream profile;
+   ask_filename_and_open(profile,  "Output filename ",
+			".prof", ios::out); 
+
     for (int z=zs; z<= ze; z++)
       profile<<input_image[z][ycoord+ys-1][xcoord+xs-1]<<" ";
 
@@ -482,9 +483,29 @@ void get_plane_row(PETImageOfVolume& input_image){
 
   else if (axdir==1){
 
+    int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,(int)zm-zs+1);
+    int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,(int)xm-xs+1);
+ 
+
+    ofstream profile;
+    ask_filename_and_open(profile,  "Output filename ",
+			".prof", ios::out); 
+
+    for (int y=ys; y<= ye; y++)
+      profile<<input_image[zcoord+zs-1][y][xcoord+xs-1]<<" ";
+
+  }
+
+  else { //axdir=2
+
 
     int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,(int)zm-zs+1);
     int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,(int)ym-ys+1);
+
+
+    ofstream profile;
+    ask_filename_and_open(profile,  "Output filename ",
+			".prof", ios::out); 
 
     for (int x=xs; x<= xe; x++)
       profile<<input_image[zcoord+zs-1][ycoord+ys-1][x]<<" ";
@@ -493,15 +514,7 @@ void get_plane_row(PETImageOfVolume& input_image){
 
   }
 
-  else{ //axdir=2
-
-    int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,(int)zm-zs+1);
-    int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,(int)xm-xs+1);
  
-    for (int y=ys; y<= ye; y++)
-      profile<<input_image[zcoord+zs-1][y][xcoord+xs-1]<<" ";
-
-  }
 
 
 }
@@ -576,15 +589,16 @@ void show_math_menu(){
     3. Add image\n\
     4. Subtract image\n\
     5. Multiply image\n\
-    6. Add scalar\n\
-    7. Multiply scalar\n\
-    8. Divide scalar \n\
-    9. Min/Max in image\n\
-    10. Main buffer --> Math buffer\n\
-    11. Math buffer --> Main Buffer\n\
-    12. Reload main buffer\n\
-    13. Redisplay menu\n\
-    14. Main mode"<<endl;
+    6. Divide (and truncate) image\n\
+    7. Add scalar\n\
+    8. Multiply scalar\n\
+    9. Divide scalar \n\
+    10. Min/Max in image\n\
+    11. Main buffer --> Math buffer\n\
+    12. Math buffer --> Main Buffer\n\
+    13. Reload main buffer\n\
+    14. Redisplay menu\n\
+    15. Main mode"<<endl;
    
 }
 
@@ -599,7 +613,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 	
 	do{
 
-	operation=ask_num("Choose Operation: ",0,14,13);
+	operation=ask_num("Choose Operation: ",0,15,14);
 
        
 
@@ -683,8 +697,41 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
       }
 
  //TODO add Kris' image division routine
+   //MJ 17/08/99 added divide option
+ case 6: 
+   {// image division
 
- case 6: //MJ 6/11/98 new
+
+
+//TODO modify divide_and_truncate so that count argument is not required
+     int count; 
+
+  const int xe=math_buffer.get_max_x();
+  const int xs=math_buffer.get_min_x();
+  const int xm=(xs+xe)/2;
+
+  PETImageOfVolume 
+    aux_image = ask_interfile_image("What image to divide?");
+
+ const int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),2);
+
+    divide_and_truncate(math_buffer, 
+                          aux_image, 
+			  rim_trunc,
+                          count);
+
+
+
+
+    break;
+
+      }
+
+ //TODO add Kris' image division routine
+
+
+
+ case 7: //MJ 6/11/98 new
    {//scalar addition
 
      // KT 11/02/99 made sure it asks for a float
@@ -695,7 +742,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
       }
 
- case 7: //MJ 6/11/98 new
+ case 8: //MJ 6/11/98 new
    {//scalar mulltiplication
 
      // KT 11/02/99 made sure it asks for a float
@@ -706,7 +753,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
       }
 
- case 8:
+ case 9:
    {//scalar division
 
 	float scalar=0.0;
@@ -728,7 +775,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
       }
 
-    case 9:
+    case 10:
       {
   cerr << "Min and Max in image " << math_buffer.find_min() 
        << " " << math_buffer.find_max() << endl;
@@ -736,7 +783,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 	break;
       }
 
-    case 10:
+    case 11:
       {//reinitialize math buffer
 
 	math_buffer=main_buffer;
@@ -745,7 +792,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 	break;
       }
 
-    case 11:
+    case 12:
       {//dump math buffer to main buffer
 
 	main_buffer=math_buffer;
@@ -757,7 +804,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
 
 
-    case 12:
+    case 13:
       {//reload main buffer in math mode
 
 	main_buffer = ask_interfile_image("File to load in buffer? ");
@@ -768,7 +815,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
 
 
-    case 13:
+    case 14:
       {//redisplay menu
 
 	show_math_menu();
@@ -776,7 +823,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
       }
 
 
-    case 14:
+    case 15:
       {//go back to main mode
 
 	show_menu();
@@ -787,7 +834,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
      }// end switch math mode
 
 
-      }while(operation>0 && operation<14);
+      }while(operation>0 && operation<15);
 
 
 }
