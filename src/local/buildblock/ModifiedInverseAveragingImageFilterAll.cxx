@@ -19,7 +19,7 @@
 #include "local/stir/ModifiedInverseAveragingImageFilterAll.h"
 #include "stir/IndexRange3D.h"
 #include "stir/ProjDataFromStream.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/RelatedViewgrams.h"
 #include "local/stir/fft.h"
