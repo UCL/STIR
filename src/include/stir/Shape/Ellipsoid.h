@@ -73,8 +73,10 @@ public:
              const CartesianCoordinate3D<float>& dir_x,
              const CartesianCoordinate3D<float>& dir_y,
              const CartesianCoordinate3D<float>& dir_z);
-  float get_geometric_volume()const;
-  bool is_inside_shape(const CartesianCoordinate3D<float>& index) const;
+  float get_geometric_volume() const;
+  float get_geometric_area() const;
+
+  bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
 
   Shape3D* clone() const;
 

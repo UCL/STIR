@@ -12,10 +12,11 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/Shape/Ellipsoid.h"
+#include <math.h>
 
 START_NAMESPACE_STIR
 
@@ -116,9 +117,16 @@ Ellipsoid::Ellipsoid(const float radius_xv,
 
 float Ellipsoid::get_geometric_volume() const
  {
-   return ((4*radius_x*radius_y*radius_z*_PI)/3);
+   return static_cast<float>((4*radius_x*radius_y*radius_z*_PI)/3);
  }
 
+
+float 
+Ellipsoid:: 
+get_geometric_area()const
+{
+  return static_cast<float>(4*pow(radius_x*radius_y*radius_z,2.F/3)*_PI);
+}
 
 bool Ellipsoid::is_inside_shape(const CartesianCoordinate3D<float>& index) const
 
