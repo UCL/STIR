@@ -35,10 +35,11 @@ $(DEST)%.o : %.cxx
 # CL 300998 added PETScanInfo.cxx  file
 # KT 22/10/98 added InterfileHeader.o
 # KT 04/11/98 added Tensors.o
+# KT 06/11/98 added imagedata.o
 $(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
   $(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
   $(DEST)Tensor1D.o $(DEST)Tensors.o \
-  $(DEST)viewdata.o \
+  $(DEST)viewdata.o $(DEST)imagedata.o \
   $(DEST)utilities.o $(DEST)NumericInfo.o \
   ${DEST}KeyParser.o ${DEST}line.o \
   ${DEST}interfile.o ${DEST}InterfileHeader.o \
