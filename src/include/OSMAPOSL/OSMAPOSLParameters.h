@@ -1,5 +1,5 @@
 //
-// %W%: %E%
+// $Id$
 //
  
 #ifndef __OSMAPOSLParameters_h__
@@ -15,17 +15,15 @@
   \author Matthew Jacobson
   \author PARAPET project
 
-  \date %E%
-  \version %I%
-
-  
+  $Date$
+  $Revision$
 */
 
 
 //#include "LogLikBased/MAPParameters.h"
 #include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
 #include "tomo/recon_buildblock/GeneralisedPrior.h"
-//#include "tomo/ImageProcessor.h"
+#include "tomo/ImageProcessor.h"
 
 START_NAMESPACE_TOMO
 
@@ -76,7 +74,7 @@ public:
 
   //! inter-update filter object
   //ImageProcessor inter_update_filter;
-  ImageProcessor<3,float>* inter_update_filter_ptr;
+  shared_ptr<ImageProcessor<3,float> > inter_update_filter_ptr;
 
   // KT 17/08/2000 3 new parameters
 
@@ -91,10 +89,10 @@ public:
 
   //KT&SM 02/05/2001 new
   //! the prior that will be used
-  GeneralisedPrior<float>* prior_ptr;
+  shared_ptr<GeneralisedPrior<float> > prior_ptr;
 
-   //! should be either additive or multiplicative
-   string MAP_model; 
+  //! should be either additive or multiplicative
+  string MAP_model; 
   virtual void set_defaults();
   virtual void initialise_keymap();
 
