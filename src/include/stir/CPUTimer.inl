@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,7 +31,7 @@
 */
 
 
-#if defined(__OS_UNIX__)
+#if defined(__OS_UNIX__) && !defined(STIR_CPUTimer_use_clock)
 // use times() instead of clock() for Unix. (Higher resolution)
 // Only tested for AIX, sun, OSF, but it is probably POSIX
 // If does not work for your OS, use the version with clock() below
@@ -50,7 +50,7 @@ double CPUTimer::get_current_value() const
 
 
 
-#elif defined(__OS_WIN__)
+#elif defined(__OS_WIN__)  && !defined(STIR_CPUTimer_use_clock)
 
 // VC++ 5.0 needs GetProcessTimes(), due to a bug in clock()
 // This breaks on Win95 though
