@@ -16,6 +16,7 @@
 #include "stir/Array.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
+#include <fstream>
 
 START_NAMESPACE_STIR
 
@@ -29,7 +30,9 @@ write_data_1d(std::ostream& s, const Array<1, elemT>& data,
 	   const ByteOrder byte_order,
 	   const bool can_corrupt_data)
 {
-  if (!s)
+  if (!s || 
+      (dynamic_cast<std::ofstream*>(&s)!=0 && !dynamic_cast<std::ofstream*>(&s)->is_open()) || 
+      (dynamic_cast<std::fstream*>(&s)!=0 && !dynamic_cast<std::fstream*>(&s)->is_open()))
     { warning("write_data: error before writing to stream.\n"); return Succeeded::no; }
   
   // While writing, the array is potentially byte-swapped.
