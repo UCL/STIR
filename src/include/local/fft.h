@@ -24,7 +24,7 @@
 #ifndef __FFT_H__
 #define __FFT_H__
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 
