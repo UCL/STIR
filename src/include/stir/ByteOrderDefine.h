@@ -21,20 +21,20 @@
 
 START_NAMESPACE_STIR
 
-
 /*!
-  \def  STIRIsNativeByteOrderIsBigEndian
+  \def  STIRIsNativeByteOrderBigEndian
   \ingroup buildblock  
   \brief A macro that is defined to 1 when the compilation is on
   a big endian machine, otherwise it is set to 0. 
 
   \par Usage
   \code
-  #if STIRIsNativeByteOrderIsBigEndian
+  #if STIRIsNativeByteOrderBigEndian
   // code specific for big endian machines
   #else
   // code for little endian machines
   #endif
+  \endcode
 
   \par Relation to the ByteOrder class.
 
