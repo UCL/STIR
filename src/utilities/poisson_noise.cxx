@@ -1,3 +1,23 @@
+//
+// $Id$
+//
+
+/*!
+  \file
+  \ingroup utilities 
+  \brief Adding of Poisson noise to projection data
+
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+
+  $Date$
+  $Revision$
+
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #include "stir/interfile.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/SegmentByView.h"
@@ -100,10 +120,7 @@ add_poisson(ProjData& output_projdata,
 	cerr << "Ax_Pos" << ax_pos << endl;
 	cerr << "Tang Poss" << tang_pos << endl;
 	*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
+
 	const float bin = seg_input[view][ax_pos][tang_pos];
 	//cerr << "bin" << bin << endl;
 	const int random_poisson = generate_poisson_random(bin*scaling_factor);
