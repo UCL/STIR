@@ -84,7 +84,10 @@ transform_3d_object(DiscretisedDensity<3,float>& out_density,
       for (int x= out_image[z][y].get_min_index(); x<= out_image[z][y].get_max_index(); ++x)
       {
         const CartesianCoordinate3D<float> current_point =
-          CartesianCoordinate3D<float>(z,y,x) * out_image.get_voxel_size() +
+          CartesianCoordinate3D<float>(static_cast<float>(z),
+				       static_cast<float>(y),
+				       static_cast<float>(x)) * 
+	  out_image.get_voxel_size() +
           out_image.get_origin();
         const CartesianCoordinate3D<float> new_point =
           inverse_rigid_object_transformation.transform_point(current_point);

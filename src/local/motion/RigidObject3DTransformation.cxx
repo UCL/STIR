@@ -350,22 +350,22 @@ RigidObject3DTransformation::quaternion_2_m3(Array<2,float>& mat, const Quaterni
 
 
 	// TODO check the sizes here -- before 0->3; now 1->4 
-	s = 2.0/((quat_tmp[1]*quat_tmp[1])+(quat_tmp[2]*quat_tmp[2])+(quat_tmp[3]*quat_tmp[3])+(quat_tmp[4]*quat_tmp[4]));
+	s = 2.0F/((quat_tmp[1]*quat_tmp[1])+(quat_tmp[2]*quat_tmp[2])+(quat_tmp[3]*quat_tmp[3])+(quat_tmp[4]*quat_tmp[4]));
 
 	xs = quat_tmp[2]*s;  ys = quat_tmp[3]*s;  zs = quat_tmp[4]*s;
 	wx = quat_tmp[1]*xs; wy = quat_tmp[1]*ys; wz = quat_tmp[1]*zs;
 	xx = quat_tmp[2]*xs; xy = quat_tmp[2]*ys; xz = quat_tmp[2]*zs;
 	yy = quat_tmp[3]*ys; yz = quat_tmp[3]*zs; zz = quat_tmp[4]*zs;
 
-	mat[0][0] = 1.0-yy-zz;
+	mat[0][0] = 1.0F-yy-zz;
 	mat[0][1] = xy-wz;
 	mat[0][2] = xz+wy;
 	mat[1][0] = xy+wz;
-	mat[1][1] = 1.0-xx-zz;
+	mat[1][1] = 1.0F-xx-zz;
 	mat[1][2] = yz-wx;
 	mat[2][0] = xz-wy;
 	mat[2][1] = yz+wx;
-	mat[2][2] = 1.0-xx-yy;
+	mat[2][2] = 1.0F-xx-yy;
 }
 
 void 
