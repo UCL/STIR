@@ -42,12 +42,23 @@ double CPUTimer::get_current_value() const
 }
 
 
-// KT 12/01/2000 use on every windows system
+
 #elif defined(__OS_WIN__)
 
-// KT 27/05/98 VC++ 5.0 needs GetProcessTimes(), due to a bug in clock()
-// This breaks on Win95, but should work on WinNT
+// VC++ 5.0 needs GetProcessTimes(), due to a bug in clock()
+// This breaks on Win95 though
 #include <windows.h>
+
+
+// undefine the min,max macros again (we did this already in Tomography_common.h)
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
+
 double CPUTimer::get_current_value() const
 {  
   FILETIME CreationTime;  // when the process was created 
@@ -57,7 +68,7 @@ double CPUTimer::get_current_value() const
   
   GetProcessTimes(GetCurrentProcess(), 
     &CreationTime, &ExitTime, &KernelTime, &UserTime);
-  // KT 13/01/2000 gcc still has problems with LARGE_INTEGER
+  //  gcc still has problems with LARGE_INTEGER
 #ifndef __GNUG__  
   LARGE_INTEGER ll;
   ll.LowPart = UserTime.dwLowDateTime;
