@@ -136,7 +136,7 @@ RigidObject3DTransformationTests::run_tests()
     
     for (int i=0; i<1000; ++i)
     {
-      const CartesianCoordinate3D<float> point(210*i,-55-i,2+2*i);
+      const CartesianCoordinate3D<float> point(210.F*i,-55.F-i,2.F+2*i);
       const CartesianCoordinate3D<float> transformed_point =ro3dtrans.transform_point(point);
       //Testing norm of the original and transformed point 
       {
@@ -229,7 +229,7 @@ RigidObject3DTransformationTests::run_tests()
     
     for (int i=0; i<1000; ++i)
     {
-      const CartesianCoordinate3D<float> point(210*i,-55-i,2+2*i);
+      const CartesianCoordinate3D<float> point(210.F*i,-55.F-i,2.F+2*i);
 #ifdef DO_TIMINGS
       timer.start();
 #endif
@@ -398,12 +398,27 @@ test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info)
 		  const Bin org_bin(segment_num,view_num,axial_pos_num,tangential_pos_num, /* value*/1);
 	
 		  Bin transformed_bin = org_bin;
+#ifndef NEW_ROT
+		  {
+		    const ProjDataInfoCylindricalNoArcCorr& proj_data_info_na =
+		      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr &>(proj_data_info);
+		    ro3dtrans.transform_bin(transformed_bin, proj_data_info_na, proj_data_info_na);
+		  }
+#else
 		  ro3dtrans.transform_bin(transformed_bin, proj_data_info, proj_data_info);
+#endif
 	    
 		  if (transformed_bin.get_bin_value()>0) // only check when the transformed_bin is within the range
 		    {
+#ifndef NEW_ROT
+		      {
+			const ProjDataInfoCylindricalNoArcCorr& proj_data_info_na =
+			  dynamic_cast<const ProjDataInfoCylindricalNoArcCorr &>(proj_data_info);
+			ro3dtrans_inverse.transform_bin(transformed_bin, proj_data_info_na, proj_data_info_na);
+		      }
+#else
 		      ro3dtrans_inverse.transform_bin(transformed_bin, proj_data_info, proj_data_info);
-
+#endif
 		      const Bin diff = abs_bin_diff(org_bin, transformed_bin, proj_data_info.get_num_views());
 		      if (transformed_bin.get_bin_value()>0)
 			{
@@ -451,7 +466,7 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
   const CartesianCoordinate3D<float> voxel_size =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(*density_sptr).get_grid_spacing();
     
-  Quaternion<float> quat(1,.2,.4,.3);
+  Quaternion<float> quat(1.F,.2F,.4F,.3F);
   quat.normalise();
   const CartesianCoordinate3D<float> translation(-11,-12,15);
     
@@ -480,7 +495,15 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
 	 ++bin_iter)
       {
 	Bin transformed_bin = *bin_iter;
+#ifndef NEW_ROT
+	{
+	  ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+	    dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_sptr);
+	  ro3dtrans.transform_bin(transformed_bin, proj_data_info, proj_data_info);
+	}
+#else
 	ro3dtrans.transform_bin(transformed_bin, *proj_data_info_sptr, *proj_data_info_sptr);
+#endif
 	if (transformed_bin.get_bin_value()>0)
 	  {
 	    ++num_contributing_bins;
