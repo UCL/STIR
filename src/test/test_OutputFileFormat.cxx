@@ -19,6 +19,10 @@
   See OutputFileFormatTests class documentation for file contents.
 
   \warning Overwrites files STIRtmp.* in the current directory
+
+  \todo The current implementation requires that the output file format as also
+  readable by DiscretisedDensity::read_from_file. At least we should provide a
+  run-time switch to not run that part of the tests.
 */
 /*
     Copyright (C) 2002- $Date$, IRSL
@@ -37,6 +41,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -116,14 +121,13 @@ void OutputFileFormatTests::run_tests()
     VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
     {
       // fill with some data
-      float data = .9;
-      for (VoxelsOnCartesianGrid<float>::full_iterator iter = image.begin_all();
-	   iter != image.end_all();
-	 ++iter)
-	{
-	  *iter = data;
-	  data = data*(data+2);
-	}
+      for (int z=image.get_min_z(); z<=image.get_max_z(); ++z)
+	for (int y=image.get_min_y(); y<=image.get_max_y(); ++y)
+	  for (int x=image.get_min_x(); x<=image.get_max_x(); ++x)
+	    image[z][y][x]=
+	      300*sin(static_cast<float>(x*_PI)/image.get_max_x())
+	      *sin(static_cast<float>(y*_PI)/image.get_max_y())
+	      *cos(static_cast<float>(z*_PI/3)/image.get_max_z());
     }
 
     // write to file
@@ -143,12 +147,21 @@ void OutputFileFormatTests::run_tests()
 	const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =
 	  dynamic_cast< VoxelsOnCartesianGrid<float> const *>
 	  (density_ptr.get());
+
+	set_tolerance(.00001);
 	if (check(!is_null_ptr(image_as_read_ptr), "test on image type read back from file"))
 	  {
 	    check_if_equal(image_as_read_ptr->get_grid_spacing(), grid_spacing, "test on grid spacing read back from file");
 	    
-	    
+
+	    if (output_file_format_ptr->get_type_of_numbers().integer_type())
+	      {
+		set_tolerance(image.find_max()/
+			      pow(2,output_file_format_ptr->get_type_of_numbers().size_in_bits()));
+	      }
+
 	    check_if_equal(image, *density_ptr, "test on data read back from file");
+	    set_tolerance(.00001);
 	    check_if_equal(density_ptr->get_origin(), origin, "test on origin read back from file");
 	  }
       }
