@@ -15,8 +15,21 @@
   \version $Revision$
 */
 #include "utilities.h"
+#include "IndexRange3D.h"
+#include <iostream>
+#include <fstream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::ifstream;
+using std::ofstream;
+using std::fstream;
+using std::streampos;
+using std::cerr;
+using std::endl;
+#endif
 
 START_NAMESPACE_TOMO
+
 
 const char * const 
 find_filename(const char * const filename_with_directory)
@@ -208,7 +221,7 @@ ask_filename_and_open(FSTREAM& s,
     ask_filename_with_extension(filename, prompt, default_extension),
     mode);
   if (abort_if_failed && !s)
-  { PETerror("Error opening file %s\n", filename); Abort(); }
+  { error("Error opening file %s\n", filename);  }
 }
 
 // instantiations
@@ -235,9 +248,11 @@ ask_filename_and_open(fstream& s,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 
+//#endif // NEWONLY
 
-// KT 09/10/98 new
-PETImageOfVolume ask_image_details()
+#if 0
+
+VoxelsOnCartesianGrid<float> ask_image_details()
 {
  
 
@@ -249,7 +264,7 @@ PETImageOfVolume ask_image_details()
     ios::in | ios::binary);
 
   int scanner_num = 
-      ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);// CL 061298 Add ART scan
+      ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);
  
   PETScannerInfo scanner;
   switch( scanner_num )
@@ -304,10 +319,12 @@ PETImageOfVolume ask_image_details()
   }
 
   
-  Point3D origin(0,0,0);
-  Point3D voxel_size(scanner.bin_size,
-                     scanner.bin_size,
-                     scanner.ring_spacing/2); 
+  CartesianCoordinate3D<float> 
+    origin(0,0,0);
+  CartesianCoordinate3D<float>
+    voxel_size(scanner.ring_spacing/2,
+               scanner.bin_size,
+               scanner.bin_size); 
 
   int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
   if (scanner.num_bins % 2 == 0 &&
@@ -315,8 +332,8 @@ PETImageOfVolume ask_image_details()
     max_bin++;
    
 
-  PETImageOfVolume 
-    input_image(Tensor3D<float>(
+  VoxelsOnCartesianGrid<float> 
+    input_image(IndexRange3D(
 				0, 2*scanner.num_rings-2,
 				(-scanner.num_bins/2), max_bin,
 				(-scanner.num_bins/2), max_bin),
@@ -324,7 +341,7 @@ PETImageOfVolume ask_image_details()
 		voxel_size);
 
 
-  Real scale = Real(1);
+  float scale = float(1);
   input_image.read_data(input, data_type, scale);  
   assert(scale==1);
 
@@ -332,171 +349,9 @@ PETImageOfVolume ask_image_details()
 
 }
 
-PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
-				     const bool on_disk)
-{
-
- 
- 
-
-
-  char filename[256];
-  cout << endl;
-  system("ls *scn *dat *bin");//CL 14/10/98 ADd this printing out of some data files
-  
-  // KT 21/10/98 use new function
-  ask_filename_with_extension(
-    filename, 
-    "Enter file name of 3D sinogram data : ", ".scn");
-
-  if (on_disk)
-    {
-    
-      fstream * p_fstream = new fstream;
-      open_read_binary(*p_fstream, filename);
-      p_in_stream = p_fstream;
-    }
-  else
-    {  
-      unsigned long file_size = 0;
-      char *memory = 0;
-      { 
-	fstream input;
-	open_read_binary(input, filename);
-	memory = (char *)read_stream_in_memory(input, file_size);
-      }
-    
-#ifdef __GNUG__
-      // This is the old implementation of the strstream class.
-      // The next constructor should work according to the doc, but it doesn't in gcc 2.8.1.
-      //strstream in_stream(memory, file_size, ios::in | ios::binary);
-      // Reason: in_stream contains an internal strstreambuf which is 
-      // initialised as buffer(memory, file_size, memory), which prevents
-      // reading from it.
-    
-      strstreambuf * buffer = new strstreambuf(memory, file_size, memory+file_size);
-      p_in_stream = new iostream(buffer);
-#else
-      // TODO this does allocate and copy 2 times
-      p_in_stream = new stringstream (string(memory, file_size), 
-				      ios::in | ios::binary);
-      delete[] memory;
 #endif
-    
-    } // else 'on_disk' 
- 
- 
 
-  int scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE, 4: ART)", 0,4,0);//CL 290199 Add the ART scanner
-  PETScannerInfo scanner;
-
-  switch( scanner_num )
-    {
-    case 0:
-      scanner = (PETScannerInfo::RPT); 
-      break;
-    case 1:
-      scanner = (PETScannerInfo::E953); 
-      break;
-    case 2:
-      scanner = (PETScannerInfo::E966); 
-      break;
-    case 3:
-      scanner = (PETScannerInfo::Advance); 
-      break;
-    case 4://CL 290199 ADd the ART scanner
-      scanner = (PETScannerInfo::ART); 
-      break;
-
-    default:
-      PETerror("Wrong scanner number\n"); Abort();
-    }
-
-  // KT 15/10/98 allow reading of extended sinograms
- 
-  if (scanner.num_bins % 2 == 0 &&
-      ask("Make num_bins odd ?", false))
-    scanner.num_bins++;
-
-  scanner.show_params();
-
-  // KT 19/10/99 change default to 1
-  int span = ask_num("Span value : ", 1,11,1);
-    
-  int max_delta = ask_num("Max. ring difference acquired : ",
-			  0,
-			  scanner.num_rings-1,
-			  scanner.type == PETScannerInfo::Advance 
-			  ? 11 : scanner.num_rings-1);
-
-  PETSinogramOfVolume::StorageOrder storage_order;
-  {
-    int data_org = ask_num("Type of data organisation:\n\
-0: SegmentRingViewBin, 1: SegmentViewRingBin, 2: ViewSegmentRingBin ", 
-			   0,
-			   2,
-			   scanner.type == PETScannerInfo::Advance ? 2 : 0);
-
-    switch (data_org)
-      { 
-      case 0:
-	storage_order = PETSinogramOfVolume::SegmentRingViewBin;
-	break;
-      case 1:
-	storage_order = PETSinogramOfVolume::SegmentViewRingBin;
-	break;
-      case 2:
-	storage_order = PETSinogramOfVolume::ViewSegmentRingBin;
-	break;
-      }
-  }
-
-  NumericType data_type;
-  {
-    int data_type_sel = ask_num("Type of data :\n\
-0: signed 16bit int, 1: unsigned 16bit int, 2: 4bit float ", 0,2,0);
-    switch (data_type_sel)
-      { 
-      case 0:
-	data_type = NumericType::SHORT;
-	break;
-      case 1:
-	data_type = NumericType::USHORT;
-	break;
-      case 2:
-	data_type = NumericType::FLOAT;
-	break;
-      }
-  }
-
-
-  ByteOrder byte_order;
-  { 
-      // KT 19/10/99 change default to false    
-    byte_order = ask("Little endian byte order ?", false) ?
-      ByteOrder::little_endian :
-      ByteOrder::big_endian;
-  }
-
-  long offset_in_file ;
-  {
-    // find file size
-    p_in_stream->seekg(0L, ios::beg);   
-    unsigned long file_size = find_remaining_size(*p_in_stream);
-
-    offset_in_file = ask_num("Offset in file (in bytes)", 
-			     0UL,file_size, 0UL);
-  }
-
-  return PETSinogramOfVolume(scanner, span, max_delta,
-			     *p_in_stream, offset_in_file,
-			     storage_order,
-			     data_type,
-			     // KT 15/03/99 new and removed Real(1) (is default)
-			     byte_order);
-
-}
-
+//#if NEWONLY
 // find number of remaining characters
 streamsize find_remaining_size (istream& input)
 {
@@ -518,7 +373,7 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
   // allocate memory
   char *memory = new char[file_size];
   if (memory == 0)
-    { PETerror("Not enough memory\n"); Abort(); }
+    { error("Not enough memory\n");  }
 
   {
     const unsigned long chunk_size = 1024*64;
@@ -527,10 +382,15 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
 
     while( to_read != 0)
       {
-	const unsigned long this_read_size = min(to_read, chunk_size);
+	const unsigned long this_read_size = 
+#ifndef TOMO_NO_NAMESPACES
+	  std::min(to_read, chunk_size);
+#else
+	  min(to_read, chunk_size);
+#endif
 	input.read(current_location, this_read_size);
 	if (!input)
-	  { PETerror("Error after reading from stream\n"); Abort(); }
+	{ error("Error after reading from stream\n");  }
 
 	to_read -= this_read_size;
 	current_location += this_read_size;
