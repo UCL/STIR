@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup Array
   \brief Declaration of class ArrayFunctionObject
 
   \author Kris Thielemans
@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,7 +31,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class Array;
 template <int num_dimensions> class IndexRange;
 /*!
-  \ingroup buildblock
+  \ingroup Array
   \brief A class for operations on n-dimensional Arrays
 */
 template <int num_dimensions, typename elemT>

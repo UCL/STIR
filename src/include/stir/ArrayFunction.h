@@ -2,7 +2,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup Array
 
   \brief This include file provides some additional functionality for Array objects.
 
@@ -48,7 +48,7 @@
  */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -80,6 +80,7 @@ START_NAMESPACE_STIR
 //----------------------------------------------------------------------
 
 //! Replace elements by their logarithm, 1D version
+/*! \ingroup Array */
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>&
@@ -91,11 +92,13 @@ in_place_log(Array<1,float>& v);
 
 
 //! apply log to each element of the multi-dimensional array
+/*! \ingroup Array */
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
 in_place_log(Array<num_dimensions, elemT>& v);
 
 //! Replace elements by their exponentiation, 1D version
+/*! \ingroup Array */
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
@@ -106,11 +109,13 @@ in_place_exp(Array<1,float>& v);
 #endif
 
 //! apply exp to each element of the multi-dimensional array
+/*! \ingroup Array */
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
 in_place_exp(Array<num_dimensions, elemT>& v);
 
 //! Replace elements by their absolute value, 1D version
+/*! \ingroup Array */
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
@@ -121,12 +126,14 @@ in_place_abs(Array<1,float>& v);
 #endif
 
 //! store absolute value of each element of the multi-dimensional array
+/*! \ingroup Array */
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
 in_place_abs(Array<num_dimensions, elemT>& v);
 
 // this generic function does not seem to work of f is an overloaded function
 //! apply any function(object) to each element of the 1-dimensional array
+/*! \ingroup Array */
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT, class FUNCTION>
 inline Array<1,elemT>& 
@@ -138,7 +145,8 @@ in_place_apply_function(Array<1,float>& v, float (*f)(float));
 
 
 //! apply any function(object) to each element of the multi-dimensional array
-/*! each element will be replaced by 
+/*! \ingroup Array 
+ Each element will be replaced by 
     \code
     elem = f(elem);
     \endcode
@@ -148,7 +156,8 @@ inline Array<num_dimensions, elemT>&
 in_place_apply_function(Array<num_dimensions, elemT>& v, FUNCTION f);
 
 //! Apply a function object on all possible 1d arrays extracted by keeping all indices fixed, except the first one
-/*!
+/*! \ingroup Array 
+
   For the 2d case, this amounts to applying a function on all columns 
   of the matrix.
 
@@ -179,7 +188,8 @@ inline void
 in_place_apply_array_function_on_1st_index(Array<num_dim, elemT>& array, FunctionObjectPtr f);
 
 
-/*! As above, but storing results in a different array.
+//! apply any function(object) to each element of the multi-dimensional array, storing results in a different array
+/*! \ingroup Array 
   \warning Both in_array and out_array have to have regular ranges. Moreover, they have to 
   have matching ranges except for the outermost level. The (binary) function is applied as
   \code 
@@ -228,7 +238,7 @@ apply_array_function_on_1st_index(Array<num_dim, elemT>& out_array,
 
 
 //! Apply a sequence of 1d array-function objects on every dimension of the input array
-/*!
+/*! \ingroup Array 
   The sequence of function object pointers is specified by iterators. There must be
   num_dim function objects in the sequence, i.e. stop-start==num_dim.
 
@@ -265,7 +275,8 @@ in_place_apply_array_functions_on_each_index(Array<1, elemT>& array,
 
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 //! Apply a sequence of 1d array-function objects on every dimension of the input array, store in output array
-/*!
+/*! \ingroup Array 
+
   The sequence of function object pointers is specified by iterators. There must be
   num_dim function objects in the sequence, i.e. stop-start==num_dim.
 
@@ -287,7 +298,8 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
 #endif
 
 //! Apply a sequence of 1d array-function objects of a specific type on every dimension of the input array, store in output array
-/*!
+/*! \ingroup Array 
+
   This function uses optimisations possible because ArrayFunctionObject gives information
   on sizes etc.
   \todo Modify such that this function would handle function 
@@ -306,6 +318,8 @@ apply_array_functions_on_each_index(Array<num_dim, elemT>& out_array,
 
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 //! 1d specialisation of above
+/*! \ingroup Array 
+*/
 // has to be here to get general 1D specialisation to compile
 template <typename elemT>
 #endif
@@ -318,6 +332,8 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <typename elemT, typename FunctionObjectPtrIter> 
 //! 1d specialisation for general function objects
+/*! \ingroup Array 
+ */
 inline void 
 apply_array_functions_on_each_index(Array<1, elemT>& out_array, 
                                     const Array<1, elemT>& in_array, 
@@ -335,7 +351,8 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 //----------------------------------------------------------------------
 
 //! Inner product of 2 1D arrays
-/*! This returns the sum of multiplication of elements of \a v1 and \a v2.
+/*! \ingroup Array 
+  This returns the sum of multiplication of elements of \a v1 and \a v2.
     \warning Implementation is not appropriate for complex numbers.
  */
 template<class elemT>
@@ -343,7 +360,8 @@ inline elemT
 inner_product (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
 
 //! l2 norm of a 1D array
-/*! This returns the sqrt of the sum of the square elements of \a v1.
+/*! \ingroup Array 
+  This returns the sqrt of the sum of the square elements of \a v1.
     \warning Implementation is not appropriate for complex numbers.
  */
 template<class elemT>
@@ -351,7 +369,8 @@ inline double
 norm (const Array<1,elemT> & v1);
 
 //! angle between 2 1D arrays
-/*! This is not appropriate for complex numbers.
+/*! \ingroup Array 
+  This is not appropriate for complex numbers.
  */
 template<class elemT>
 inline double
