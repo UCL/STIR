@@ -5,7 +5,6 @@
 /*!
 
   \file
-
   \brief Declaration of FFT routines
 
   This are C++-ified version of Numerical Recipes routines. You need to have
@@ -17,13 +16,13 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date :$
+  $Date$
 
   $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 #ifndef __FFT_H__
@@ -71,7 +70,9 @@ void fourn (Array<1,float> &data, Array<1,int> &nn, int ndim, int isign);
   spatial kernel is not symmetric).
   */
 void convlvC (Array<1,float> &data, const Array<1,float> &filter, int n);
-//void rlft3(Array<3,float> &data, Array<2,float> &speq, unsigned long nn1, unsigned long nn2, unsigned long nn3, int isign);
+
+//! 3D FFT of real numbers
+void rlft3(Array<3,float> &data, Array<2,float> &speq, unsigned long nn1, unsigned long nn2, unsigned long nn3, int isign);
 //! Calculates the Fourier Transform of a set of 2n real-valued data points.
 /*!
   Replaces this data ( which is stored in array data[1..2n]) by the positive
