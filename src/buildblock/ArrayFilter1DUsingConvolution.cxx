@@ -14,11 +14,11 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/ArrayFilter1DUsingConvolution.h"
+#include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/IndexRange.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
