@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup IO
+  \ingroup InterfileIO
   \brief Declaration of class InterfileOutputFileFormat
 
   \author Kris Thielemans
@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000-2$Date$, IRSL
+    Copyright (C) 2003-$Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -27,7 +27,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup IO
+  \ingroup InterfileIO
   \brief 
   Implementation of OutputFileFormat paradigm for the Interfile format.
  */
@@ -41,17 +41,17 @@ public :
     //! Name which will be used when parsing an OutputFileFormat object
   static const char * const registered_name;
 
-  InterfileOutputFileFormat(const NumericType& = NumericType::SHORT, 
+  InterfileOutputFileFormat(const NumericType& = NumericType::FLOAT, 
                    const ByteOrder& = ByteOrder::native);
 
 
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
-
+ protected:
   virtual Succeeded  
-    write_to_file(string& output_filename,
+    actual_write_to_file(string& output_filename,
 		  const DiscretisedDensity<3,float>& density) const;
 
-private:
+
   virtual void initialise_keymap();
   virtual bool post_processing();
 
