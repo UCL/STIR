@@ -25,7 +25,8 @@ SOURCES = \
 	ProjMatrixElemsForOneDensel.cxx \
 	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
-	QuadraticPrior.cxx
+	QuadraticPrior.cxx \
+	BinNormalisationUsingProfile.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
