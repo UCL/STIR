@@ -14,6 +14,19 @@
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 #include "stir/numerics/fourier.h"
@@ -93,7 +106,7 @@ void fourier_1d(T& c, const int sign)
   bitreversal(c);
   // find 'nn' which is such that length==2^nn
   const int nn=round(log(static_cast<double>(c.size()))/log(2.));
-  if (c.get_length()!= round(pow(2,nn)))
+  if (c.get_length()!= round(pow(2.,nn)))
     error ("fourier_1d called with array length %d which is not 2^%d\n", c.size(), nn);
 
   int k=0;
