@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Implementations for class multiply_plane_scale_factorsImageProcessor
 
   \author Kris Thielemans
@@ -39,6 +39,7 @@ void
 multiply_plane_scale_factorsImageProcessor<elemT>::
 set_defaults()
 {
+  ImageProcessor<3,elemT>::set_defaults();
   plane_scale_factors.resize(0);
 }
 
@@ -47,6 +48,7 @@ void
 multiply_plane_scale_factorsImageProcessor<elemT>::
 initialise_keymap()
 {
+  ImageProcessor<3,elemT>::initialise_keymap();
   parser.add_start_key("multiply_plane_scale_factors Parameters");
   parser.add_key("plane_scale_factors",&plane_scale_factors);
   parser.add_stop_key("END multiply_plane_scale_factors Parameters");
@@ -80,7 +82,7 @@ multiply_plane_scale_factorsImageProcessor<elemT>::
 virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 {
-  if (density.get_length()!=plane_scale_factors.size())
+  if (density.get_length()!=static_cast<int>(plane_scale_factors.size()))
   {
     warning("multiply_plane_scale_factors: number of planes (%d) should be equal to number of scale factors (%d).\n",
         density.get_length(),plane_scale_factors.size());
@@ -97,7 +99,7 @@ multiply_plane_scale_factorsImageProcessor<elemT>::
 virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {     
-  if (density.get_length()!=plane_scale_factors.size())
+  if (density.get_length()!=static_cast<int>(plane_scale_factors.size()))
     {
       error("Exiting\n");
     }
