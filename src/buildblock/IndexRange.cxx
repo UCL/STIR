@@ -1,7 +1,6 @@
 //
-// $Id$: $Date$
+// $Id$
 //
-
 /*!
   \file 
   \buildblock 
@@ -10,16 +9,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
 #include "IndexRange.h"
+#include <algorithm>
 
 START_NAMESPACE_TOMO
-
-#include <algorithm>
 
 #ifndef TOMO_NO_MUTABLE
 
