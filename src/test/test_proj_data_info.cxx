@@ -434,6 +434,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 
   const int num_detectors = proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
 
+#ifndef TEST_ONLY_GET_BIN
   if (proj_data_info.get_view_mashing_factor()==1)
     {
       // these tests work only without mashing
@@ -654,16 +655,24 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 		} // end of iteration of det_pos_pairs
 	    } // end of loop over all bins
   } // end of get_all_det_pairs_for_bin and back code
+#endif //TEST_ONLY_GET_BIN
 
   {
     cerr << endl;
     cerr << "\tTesting find scanner coordinates given cartesian and vice versa." << endl;
     {   
-      for ( int Ring_A = 1; Ring_A < 10; Ring_A++)
-	for ( int Ring_B = 1; Ring_B < 10; Ring_B++)
-	  for ( int det1 =1; det1 <=10; det1 ++)
-	    for ( int det2 =100; det2 <=110; det2 ++)	  
+      const int num_detectors_per_ring =
+	proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
+      const int num_rings =
+	proj_data_info.get_scanner_ptr()->get_num_rings();
+
+      for ( int Ring_A = 0; Ring_A < num_rings; Ring_A+=num_rings/3)
+	for ( int Ring_B = 0; Ring_B < num_rings; Ring_B+=num_rings/3)
+	  for ( int det1 =0; det1 < num_detectors_per_ring; ++det1)
+	    for ( int det2 =0; det2 < num_detectors_per_ring; ++det2)	  
 	      {
+		if (det1==det2)
+		  continue;
 		CartesianCoordinate3D<float> coord_1;
 		CartesianCoordinate3D<float> coord_2;
 	  
@@ -676,8 +685,9 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	  
 		int det1_f, det2_f,ring1_f, ring2_f;
 	  
-		proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
-										    coord_1_new, coord_2_new);
+		check(proj_data_info.find_scanner_coordinates_given_cartesian_coordinates(det1_f, det2_f, ring1_f, ring2_f,
+										    coord_1_new, coord_2_new) ==
+		      Succeeded::yes);
 		if (det1_f == det1 && Ring_A == ring1_f)
 		  { 
 		    check_if_equal( det1_f, det1, "test on det1");
