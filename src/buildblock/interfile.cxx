@@ -232,19 +232,24 @@ write_basic_interfile_image_header(const string& header_file_name,
     }
 
   // analogue of image scaling factor[*] for Louvain la Neuve Interfile reader
-  if (scaling_factors.get_length() > 1)
+  { 
+    bool output_quantification_units = true;
+    if (scaling_factors.get_length() > 1)
     {
       const float first_scaling_factor = scaling_factors[0];
       for (int i=1; i <= scaling_factors.get_max_index(); i++)
 	{
 	  if (scaling_factors[i] != first_scaling_factor)
 	    {
-	      cerr << "Interfile WARNING: quantification units keyword is set incorrectly\n";
+	      cerr << "Interfile WARNING: non-standard 'quantification units' keyword not set as not all scale factors are the same\n";
+              output_quantification_units = false;
 	      break;
 	    }
 	}
     }
-  output_header << "quantification units := " << scaling_factors[0] << endl;
+    if (output_quantification_units)
+      output_header << "quantification units := " << scaling_factors[0] << endl;
+  }
   // TODO
   // output_header << "maximum pixel count := " << image.find_max()/scale << endl;  
   output_header << "!END OF INTERFILE :=\n";
