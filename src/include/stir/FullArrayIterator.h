@@ -40,6 +40,11 @@ START_NAMESPACE_STIR
   \warning This class should never be used explicitly, but only through
   the typedefs Array::full_iterator et al.
 
+  This implementation assumes that \a restiterT has begin_all() and end_all() members.
+  Moreover, for the usual \c for loops to work, there is a requirement on how the 
+  class that uses FullArrayIterator implements end_all(). See the implementation of
+  Array::end_all(). 
+  
   \internal
 */
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
