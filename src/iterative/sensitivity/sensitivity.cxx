@@ -48,7 +48,7 @@
 #include "stir/recon_buildblock/distributable.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 
-#include "stir/OSMAPOSL/OSMAPOSLParameters.h"
+#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include <typeinfo>
 #include <iostream>
 
@@ -96,25 +96,14 @@ void
 }
 
 
-END_NAMESPACE_STIR
-
-USING_NAMESPACE_STIR
-
-#ifdef PARALLEL
-int master_main(int argc, char **argv)
-#else
-int main(int argc, char **argv)
-#endif
+void do_sensitivity(const char * const par_filename)
 {
-  if(argc!=2) 
+  OSMAPOSLReconstruction parameters;
+  if (!parameters.parse(par_filename))
   {
-    cerr<<"Usage: sensitivity OSMAPOSL_par_file\n"
-        <<"The par-file will be used to get the scanner, mashing etc. details" 
-	<< endl; 
-    return (EXIT_FAILURE);
+    warning("Error parsing input file %s, exiting\n", par_filename);
+    exit(EXIT_FAILURE);
   }
-
-  OSMAPOSLParameters parameters(argv[1]);
   if (parameters.max_segment_num_to_process==-1)
     parameters.max_segment_num_to_process =
       parameters.proj_data_ptr->get_max_segment_num();
@@ -288,7 +277,27 @@ int main(int argc, char **argv)
   cerr << "min and max in image " << result_ptr->find_min() 
        << " " << result_ptr->find_max() << endl;
 
+}
+END_NAMESPACE_STIR
 
+
+USING_NAMESPACE_STIR
+
+#ifdef PARALLEL
+int master_main(int argc, char **argv)
+#else
+int main(int argc, char **argv)
+#endif
+{
+  if(argc!=2) 
+  {
+    cerr<<"Usage: sensitivity OSMAPOSL_par_file\n"
+        <<"The par-file will be used to get the scanner, mashing etc. details" 
+	<< endl; 
+    return (EXIT_FAILURE);
+  }
+
+  do_sensitivity(argv[1]);
   return EXIT_SUCCESS;
 
 }
