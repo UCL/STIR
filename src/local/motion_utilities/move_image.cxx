@@ -6,6 +6,19 @@
   \author Kris Thielemans
   $Date$
   $Revision$
+  
+  \par Example par file
+  \verbatim
+  MoveImage Parameters:=
+  input file:= input_filename
+  time frame_definition filename := frame_definition_filename
+  output filename prefix := output_filename_prefix
+  ;move_to_reference := 1
+  Rigid Object 3D Motion Type := type
+  ;Output file format := interfile
+  END :=
+\endverbatim
+}
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
@@ -32,7 +45,9 @@ public:
   TimeFrameDefinitions frame_defs;
 
   virtual void process_data();
-  
+
+  void move_to_reference(const bool);
+
 protected:
 
   
@@ -46,6 +61,7 @@ protected:
   string output_filename_prefix;
   string frame_definition_filename;
  
+  bool do_move_to_reference;
      
 private:
   shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr; 
@@ -62,7 +78,7 @@ MoveImage::set_defaults()
 {
   ro3d_ptr = 0;
   output_file_format_sptr = new DefaultOutputFileFormat;
-
+  do_move_to_reference = true;
 }
 
 void 
@@ -72,8 +88,9 @@ MoveImage::initialise_keymap()
   parser.add_start_key("MoveImage Parameters");
 
   parser.add_key("input file",&input_filename);
-  parser.add_key("frame_definition file",&frame_definition_filename);
+  parser.add_key("time frame definition filename",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
+  parser.add_key("move_to_reference", &do_move_to_reference);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_parsing_key("Output file format",&output_file_format_sptr);
   parser.add_stop_key("END");
@@ -84,7 +101,10 @@ MoveImage(const char * const par_filename)
 {
   set_defaults();
   if (par_filename!=0)
-    parse(par_filename) ;
+    {
+      if (parse(par_filename)==false)
+	exit(EXIT_FAILURE);
+    }
   else
     ask_parameters();
 
@@ -140,7 +160,15 @@ post_processing()
  
 
 void 
-MoveImage::process_data()
+MoveImage::
+move_to_reference(const bool value)
+{
+  do_move_to_reference=value;
+}
+
+void 
+MoveImage::
+process_data()
 {
   shared_ptr< DiscretisedDensity<3,float> > out_density_sptr =
     in_density_sptr->get_empty_discretised_density();
@@ -165,8 +193,9 @@ MoveImage::process_data()
 		compose(ro3d_ptr->get_transformation_to_reference_position(),
 			compose(rigid_object_transformation,
 				move_from_scanner)));
-      rigid_object_transformation = 
-	rigid_object_transformation.inverse();
+      if (!do_move_to_reference)
+	rigid_object_transformation = 
+	  rigid_object_transformation.inverse();
 
       object_3d_transform_image(*out_density_sptr, *in_density_sptr,
 				rigid_object_transformation);
@@ -198,12 +227,22 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char * argv[])
 {
-  
+  bool move_to_reference=true;
+  bool set_move_to_reference=false;
+  if (argc>2 && strcmp(argv[1],"--move-to-reference")==0)
+    {
+      set_move_to_reference=true;
+      move_to_reference=atoi(argv[2]);
+      argc+=2; argv-=2;
+    }
   if (argc!=1 && argc!=2) {
-    cerr << "Usage: " << argv[0] << " [par_file]\n";
+    cerr << "Usage: " << argv[0] << " [--move-to-reference 0|1] [par_file]\n";
     exit(EXIT_FAILURE);
   }
   MoveImage application(argc==2 ? argv[1] : 0);
+  if (set_move_to_reference)
+    application.move_to_reference(move_to_reference);
+
   application.process_data();
 
   return EXIT_SUCCESS;
