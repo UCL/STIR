@@ -66,6 +66,8 @@ USE_SegmentByView
 #include "stir/ParsingObject.h"
 #include "local/stir/listmode/TimeFrameDefinitions.h"
 #include "stir/CPUTimer.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/is_null_ptr.h"
 
 #include <fstream>
 #include <iostream>
@@ -141,6 +143,10 @@ set_defaults()
   delayed_increment = -1;
   interactive=false;
   num_segments_in_memory = -1;
+  normalisation_ptr = new TrivialBinNormalisation;
+  pre_normalisation =0;
+  post_normalisation=0;
+  
 }
 
 void 
@@ -152,7 +158,10 @@ initialise_keymap()
   parser.add_key("template_projdata", &template_proj_data_name);
   parser.add_key("frame_definition file",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
+  parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
+  parser.add_key("pre normalisation", &pre_normalisation);
+  parser.add_key("post normalisation", &post_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
   if (CListEvent::has_delayeds())
@@ -189,6 +198,14 @@ post_processing()
       warning("You have to specify an input_filename\n");
       return true;
     }
+
+  if (is_null_ptr(normalisation_ptr))
+  {
+    warning("Invalid normalisation object\n");
+    return true;
+  }
+
+  
 #ifdef HIDACREBINNER
   unsigned long input_file_offset = 0;
   LM_DATA_INFO lm_infos;
@@ -211,6 +228,22 @@ post_processing()
 
   template_proj_data_info_ptr = 
     template_proj_data_ptr->get_proj_data_info_ptr()->clone();
+
+  shared_ptr<Scanner> scanner_ptr = 
+    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
+
+   proj_data_info_cyl_uncompressed_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
+                  1, scanner_ptr->get_num_rings()-1,
+                  scanner_ptr->get_num_detectors_per_ring()/2,
+                  scanner_ptr->get_default_num_arccorrected_bins(), 
+                  false));
+       // set up normalisation object
+  if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+      != Succeeded::yes)
+    error("correct_projdata: set-up of normalisation failed\n");
+
 
   if (max_segment_num_to_process==-1)
     max_segment_num_to_process = 
@@ -271,8 +304,50 @@ get_bin_from_record(Bin& bin, const CListRecord& record,
     *proj_data_info_ptr,
     handle_anode_wire_efficiency);
 #else
-  record.event.get_bin(bin, proj_data_info); 
-  // TODO handle do_normalisation
+  if (pre_normalisation)
+  {
+    record.event.get_bin(bin, dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr)); 
+    // do_normalisation
+    if (bin.get_bin_value()>0)
+    {
+      const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
+      bin.set_bin_value(1/bin_efficiency);
+    }
+    // do motion correction here
+    // find detectors
+  int det_num_a;
+  int det_num_b;
+  int ring_a;
+  int ring_b;
+  record.event.get_detectors(det_num_a,det_num_b,ring_a,ring_b);
+
+  const Scanner * const scanner_ptr = 
+    template_proj_data_info_ptr->get_scanner_ptr();
+
+    if ( ring_a > scanner_ptr->get_num_rings() || ring_a <0 || ring_b <0 || 
+      ring_b > scanner_ptr->get_num_rings() ||
+      dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).
+      get_bin_for_det_pair(bin,
+      det_num_a, ring_a,
+      det_num_b, ring_b) == Succeeded::no)
+    {
+      bin.segment_num() = 
+	(ring_b-ring_a)/
+	  (proj_data_info.get_max_ring_difference(0) -
+	  proj_data_info.get_min_ring_difference(0) + 1);
+      bin.set_bin_value(-1);
+
+    }
+  }
+  else // post_normalisation
+  {
+    record.event.get_bin(bin, proj_data_info); 
+    if (bin.get_bin_value()>0)
+    {
+      const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
+      bin.set_bin_value(1/bin_efficiency);
+    }
+  }
 #endif
 }
 
