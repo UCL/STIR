@@ -23,6 +23,8 @@ using namespace std;
 
 START_NAMESPACE_STIR
 
+const float total_cross_section_511keV = total_cross_section(511.);
+
 float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -48,28 +50,28 @@ float scatter_estimate_for_one_scatter_point(
 	                               image_as_activity,
 								   scatter_point, 
 								   detector_coord_B);
-
+	
 	const VoxelsOnCartesianGrid<float>& image =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
-
+		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
+	
     const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
-
-  float rA=two_points_distance(scatter_point,detector_coord_A);
-	float rB=two_points_distance(scatter_point,detector_coord_B);
-
-	float scatter_point_mue=
+	
+	const float rA=norm(scatter_point-detector_coord_A);
+	const float rB=norm(scatter_point-detector_coord_B);
+	
+	const float scatter_point_mue=
 		image[round(scatter_point/voxel_size)];
-
+	
 	const float scatter_point_to_detA_ratio=
-  emiss_integral_to_detA*exp(-atten_integral_to_detA)*exp(-atten_integral_to_detB)
-	*scatter_point_mue*dif_cross_section_511keV(scatter_point,detector_coord_A,detector_coord_B)
-	/(total_cross_section_511keV*rA*rA);
+		emiss_integral_to_detA*exp(-atten_integral_to_detA)*exp(-atten_integral_to_detB)
+		*scatter_point_mue*dif_cross_section_511keV(scatter_point,detector_coord_A,detector_coord_B)
+		/(total_cross_section_511keV*rA*rA);
 	// ( in v2 ->* efficiencies, for the E')
-
+	
 	const float scatter_point_to_detB_ratio=
-	emiss_integral_to_detB*exp(-atten_integral_to_detB)*exp(-atten_integral_to_detA) 
-	*scatter_point_mue*dif_cross_section_511keV(scatter_point,detector_coord_B,detector_coord_A)
-	/(total_cross_section_511keV*rB*rB);
+		emiss_integral_to_detB*exp(-atten_integral_to_detB)*exp(-atten_integral_to_detA) 
+		*scatter_point_mue*dif_cross_section_511keV(scatter_point,detector_coord_B,detector_coord_A)
+		/(total_cross_section_511keV*rB*rB);
 	// ( in v2 ->* efficiencies, for the E')
 	
 	return scatter_point_to_detA_ratio+scatter_point_to_detB_ratio;
