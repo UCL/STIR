@@ -49,8 +49,21 @@ using std::streampos;
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
+const unsigned 
+SinglesRatesFromSglFile::size_of_singles_record = 4*128;
+
 const char * const 
 SinglesRatesFromSglFile::registered_name = "Singles From Sgl File"; 
+
+static inline 
+unsigned long int
+convert_4_bytes(unsigned char * buffer)
+{
+  if (ByteOrder::native != ByteOrder::big_endian)
+    return buffer[0] + 256UL*(buffer[1] + 256UL*(buffer[2] + 256UL*buffer[3]));
+  else
+    return buffer[3] + 256UL*(buffer[2] + 256UL*(buffer[1] + 256UL*buffer[0]));
+}
 
 
 SinglesRatesFromSglFile::
@@ -68,10 +81,7 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
   {
     error("\nSinglesRatesFromSglFile: Couldn't open \"%s\".\n", sgl_filename.c_str());
   }
-  
-  sgl_str singles_str;
-  vector<sgl_str> vector_of_records;
-  
+    
   //first find out the size of the file
   singles_file.seekg(0, ios::end);
   const streampos end_stream_position = singles_file.tellg();
@@ -107,7 +117,7 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
   
   //skip the first 512 bytes which are part of ECAT7 header
   const int number_of_elements = 
-    static_cast<int>((end_stream_position-static_cast<streampos>(512))/sizeof(singles_str));
+    static_cast<int>((end_stream_position-static_cast<streampos>(512))/size_of_singles_record);
 
   //TODO move to Scanner
   if (scanner_sptr->get_type() == Scanner::E966)
@@ -124,16 +134,24 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
   singles_file.seekg(512,ios::beg);
   while (singles_file && singles_record_num<=number_of_elements)
   {
-    singles_file.read((char*)&singles_str,sizeof(singles_str));
-    if (!singles_file)
-      break;
-
+    sgl_str singles_str;
+    {
+      unsigned char buffer[size_of_singles_record];
+      singles_file.read(reinterpret_cast<char *>(buffer),size_of_singles_record);
+      if (!singles_file)
+	{
+	  warning("Error reading singles file record %d. Stopped reading from this point.", singles_record_num);
+	  break;
+	}
+      singles_str.time = convert_4_bytes(buffer);
+      singles_str.num_sgl = convert_4_bytes(buffer+4);
+      for (unsigned int i=0; i<(size_of_singles_record-8)/4; ++i)
+	  singles_str.sgl[i] = convert_4_bytes(buffer+8+4*i);
+    }
     const int num_singles_units =
       scanner_sptr->get_num_transaxial_buckets() *
       (scanner_sptr->get_num_axial_blocks()/num_axial_blocks_per_singles_unit);
 
-    if (ByteOrder::native != ByteOrder::big_endian)
-      ByteOrder::swap_order(singles_str.num_sgl);
     if (singles_str.num_sgl != num_singles_units)
       error("Number of singles units should be %d, but is %d in singles file",
 	    num_singles_units,  singles_str.num_sgl);
@@ -141,12 +159,8 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
     for ( int i = 0; i<num_singles_units;i++, ++array_iter)
     {
       assert(array_iter !=singles.end_all());
-      if (ByteOrder::native != ByteOrder::big_endian)
-	ByteOrder::swap_order(singles_str.sgl[i]);
       *array_iter = static_cast<float>(singles_str.sgl[i]);
     }
-    if (ByteOrder::native != ByteOrder::big_endian)
-	ByteOrder::swap_order(singles_str.time);
     // singles in the sgl file given in msec.multiply with 0.001 to convert into sec.
     times.push_back(singles_str.time*0.001);
     ++singles_record_num;
