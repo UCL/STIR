@@ -20,11 +20,14 @@
 
 #include "LogLikBased/LogLikelihoodBasedReconstruction.h"
 #include "LogLikBased/common.h"
+#include "recon_buildblock/ProjectorByBinPair.h"
+#include "shared_ptr.h"
 // for checks between sensitivity and target_image
 #include "DiscretisedDensityOnCartesianGrid.h"
 // for set_projectors_and_symmetries
 #include "recon_buildblock/distributable.h"
-
+// for get_symmetries_ptr()
+#include "recon_buildblock/BackProjectorByBin.h"
 #include "Viewgram.h"
 #include "recon_array_functions.h"
 #include <iostream>
@@ -65,8 +68,11 @@ void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensi
 
     if (typeid(*sensitivity_image_ptr) != typeid(*target_image_ptr))
       error("sensitivity image and target_image should be the same type of DiscretisedDensity. Sorry.\n");
+#if 0
+    // disabled for now, as the origin info is not saved in the header
     if (sensitivity_image_ptr->get_origin() != target_image_ptr->get_origin())
       error("Currently, sensitivity and target_image should have the same origin. Sorry.\n");
+#endif
     if (sensitivity_image_ptr->get_index_range() != target_image_ptr->get_index_range())
       error("Currently, sensitivity and target_image should have the same index ranges. Sorry.\n");
     {
