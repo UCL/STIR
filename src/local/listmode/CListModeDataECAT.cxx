@@ -2,9 +2,8 @@
 // $Id$
 //
 /*!
-
   \file
-  \ingroup buildblock  
+  \ingroup listmode  
   \brief Implementation of class CListModeDataECAT
     
   \author Kris Thielemans
@@ -19,6 +18,7 @@
 
 
 #include "local/stir/listmode/CListModeDataECAT.h"
+#include "local/stir/listmode/CListRecordECAT966.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
@@ -32,6 +32,10 @@ using std::fstream;
 
 START_NAMESPACE_STIR
 
+// TODO compile time assert
+// sizeof(CListTimeDataECAT966)==4
+// sizeof(CListEventDataECAT966)==4
+
 CListModeDataECAT::
 CListModeDataECAT(const string& listmode_filename_prefix)
   : listmode_filename_prefix(listmode_filename_prefix)    
@@ -44,6 +48,14 @@ CListModeDataECAT(const string& listmode_filename_prefix)
 }
 
 
+
+shared_ptr <CListRecord> 
+CListModeDataECAT::
+get_empty_record_sptr() const
+{
+  // TODO differentiate using scanner_ptr
+  return new CListRecordECAT966;
+}
 
 Succeeded
 CListModeDataECAT::
@@ -75,7 +87,9 @@ open_lm_file(unsigned int new_lm_file) const
         return Succeeded::no;
       }
       current_lm_data_ptr =
-	new CListModeDataFromStream(stream_ptr, scanner_ptr);
+	new CListModeDataFromStream(stream_ptr, scanner_ptr, 
+				    has_delayeds(), sizeof(CListTimeDataECAT966), get_empty_record_sptr(), 
+				    ByteOrder::big_endian);
       current_lm_file = new_lm_file;
 
       // now restore saved_get_positions for this file
