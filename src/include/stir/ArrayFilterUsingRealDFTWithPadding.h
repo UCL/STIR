@@ -25,8 +25,8 @@
 #include <complex>
 
 #if defined(_MSC_VER) && _MSC_VER<=1200
-/* VC 6.0 cannot overload the real and complex constructors and set_kernel...
-   I just disable the complex versions.
+/* VC 6.0 cannot overload the real and complex constructors
+   I just disable the complex version.
    */
 #define __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
 
@@ -71,7 +71,7 @@ public:
     \warning Will call error() when sizes are not appropriate.
     \warning This function is disabled for VC 6.0 because of compiler limitations
   */
-  ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, std::complex<elemT> >& complex_filter_kernel);
+  ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, std::complex<elemT> >& kernel_in_frequency_space);
 #endif
 
   //! set the real kernel coefficients
@@ -85,12 +85,12 @@ public:
       DFT. If you want to avoid aliasing, make sure that the kernel is at least
       twice as long as the input and output arrays.
 
-      As this function uses fourier(), see there for restrictions on the possible
-      kernel length, but at time of writing, it has to be a power of 2.
+      As this function uses fourier_for_real_data(), see there for restrictions 
+      on the possible kernel length, but at time of writing, it has to be a power of 2.
   */
   Succeeded 
     set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel);
-#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
+
   //! set the complex kernel coefficients
   /*  The kernel has to be given with index ranges starting from 0.
       So, the 0- index corresponds to the DC component of the filter.
@@ -102,11 +102,9 @@ public:
 
       See fourier() for restrictions on the possible
       kernel length, but at time of writing, it has to be a power of 2.
-      \warning This function is disabled for VC 6.0 because of compiler limitations
   */
   Succeeded
-    set_kernel(const Array<num_dimensions, std::complex<elemT> >& complex_filter_kernel);
-#endif
+    set_kernel_in_frequency_space(const Array<num_dimensions, std::complex<elemT> >& kernel_in_frequency_space);
 
   //! checks if the kernel corresponds to a trivial filter operation
   /*! 
@@ -115,7 +113,8 @@ public:
   bool is_trivial() const;
 
 protected:
-  Array<num_dimensions, std::complex<elemT> > complex_filter_kernel;
+  Array<num_dimensions, std::complex<elemT> > kernel_in_frequency_space;
+
   //! Performs the convolution
   /*! \a in_array and \a out_array can have arbitrary (even non-regular)
       index ranges. However, they will copied (if necessary)
