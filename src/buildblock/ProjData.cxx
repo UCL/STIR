@@ -33,7 +33,7 @@
 #ifndef STIR_DEVEL
 #include "stir/ProjDataGEAdvance.h"
 #else
-#include "stir/IO/ProjDataVOLPET.h"
+#include "local/stir/IO/ProjDataVOLPET.h"
 #endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
