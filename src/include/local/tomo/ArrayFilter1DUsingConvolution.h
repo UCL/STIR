@@ -22,6 +22,7 @@
 
 START_NAMESPACE_TOMO
 
+template <typename elemT> class VectorWithOffset;
 
 /*!
   \ingroup buildblock
@@ -56,9 +57,9 @@ START_NAMESPACE_TOMO
   \warning 1 argument operator() currently leaves the array with the
   the same index range, i.e. it does not extend it with the kernel size or so.
 
-  \see ArrayFilter1DUsingConvolution for an implementation
+  \see ArrayFilter1DUsingSymmetricConvolution for an implementation
   when the kernel is symmetric. (Note: it's not clear if that implementation
-  would result in faster execution).
+  results in faster execution).
   */
 template <typename elemT>
 class ArrayFilter1DUsingConvolution : 
@@ -78,6 +79,14 @@ public:
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
     */
   bool is_trivial() const;
+
+  virtual Succeeded 
+    get_influencing_indices(IndexRange<1>& influencing_indices, 
+                            const IndexRange<1>& output_indices) const;
+
+  virtual Succeeded 
+    get_influenced_indices(IndexRange<1>& influenced_indices, 
+                           const IndexRange<1>& input_indices) const;
 
 private:
   VectorWithOffset< elemT> filter_coefficients;

@@ -4,7 +4,7 @@
 /*!
 
   \file
-
+  \ingroup buildblock
   \brief Implementations for class ArrayFilter1DUsingConvolution
 
   \author Kris Thielemans
@@ -15,6 +15,9 @@
 */
 
 #include "local/tomo/ArrayFilter1DUsingConvolution.h"
+#include "IndexRange.h"
+#include "VectorWithOffset.h"
+#include "Array.h"
 
 START_NAMESPACE_TOMO
 
@@ -44,6 +47,35 @@ is_trivial() const
     filter_coefficients.get_length() == 0 ||
     (filter_coefficients.get_length()==1 &&
      filter_coefficients[filter_coefficients.get_min_index()] == 1);
+}
+
+
+template <typename elemT>
+Succeeded 
+ArrayFilter1DUsingConvolution<elemT>::
+get_influencing_indices(IndexRange<1>& influencing_index_range, 
+                        const IndexRange<1>& input_index_range) const
+{
+  influencing_index_range = 
+    (filter_coefficients.get_length() == 0)
+    ? input_index_range
+    : IndexRange<1>(input_index_range.get_min_index() - filter_coefficients.get_max_index(),
+                    input_index_range.get_max_index() - filter_coefficients.get_min_index());
+  return Succeeded::yes;
+}
+
+template <typename elemT>
+Succeeded 
+ArrayFilter1DUsingConvolution<elemT>:: 
+get_influenced_indices(IndexRange<1>& influenced_index_range, 
+                       const IndexRange<1>& output_index_range) const
+{
+  influenced_index_range = 
+    (filter_coefficients.get_length() == 0)
+    ? output_index_range
+    : IndexRange<1>(output_index_range.get_min_index() + filter_coefficients.get_min_index(),
+                    output_index_range.get_max_index() + filter_coefficients.get_max_index());
+  return Succeeded::yes;
 }
 
 template <typename elemT>
