@@ -626,8 +626,11 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
      }
      
      for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
-       for (int j =in_density_cast_0.get_min_y()+2;j<=in_density_cast_0.get_max_y()-2;j++)
-	 for (int i =in_density_cast_0.get_min_x()+2;i<=in_density_cast_0.get_max_x()-2;i++)	
+       for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
+	 for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
+
+     //  for (int j =in_density_cast_0.get_min_y()+2;j<=in_density_cast_0.get_max_y()-2;j++)
+//	 for (int i =in_density_cast_0.get_min_x()+2;i<=in_density_cast_0.get_max_x()-2;i++)	
 	   
 	   // for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
 	   //	for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
