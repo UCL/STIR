@@ -216,12 +216,17 @@ else
 # (Visual C++ can generate a database file, but we cannot read that)
 # of course, this only works when you have makedepend, touch, sed
 
-# the -Y option disables looking for system includes
+# for VC, the -Y option disables looking for system includes
+# it wouldn't work for other compilers presumably
 MAKEDEPENDCXX = touch $(df).d && makedepend $(CFLAGS) -f $(df).d $< -Y -o$(O_SUFFIX) 2> /dev/null
 MAKEDEPENDC = $(MAKEDEPENDCXX)
 endif
 
-dotD2dotP = sed -e 's&$(*F)\.o&$(DEST)$(*).o&' < $(df).d > $(df).P; \
+# note: first sed line put $(DEST) in front of the object target
+# it uses s& to avoid problems with / in paths
+# also, the \ in front of ${O_SUFFIX} is to 'escape' the . at the start of ${O_SUFFIX}
+# as a . in the sed pattern means 'any character'
+dotD2dotP = sed -e 's&$(*)\${O_SUFFIX}&$(DEST)$(*)$(O_SUFFIX)&' < $(df).d > $(df).P; \
 	sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
 	$(RM) $(df).d
