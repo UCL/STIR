@@ -137,7 +137,7 @@ read_data_1d(FILE* & fptr_ref, Array<1, elemT>& data,
   const std::size_t num_to_read =
     static_cast<std::size_t>(data.size());
   const std::size_t num_read =
-    read(reinterpret_cast<char *>(data.get_data_ptr()), sizeof(elemT), num_to_read, fptr);
+    fread(reinterpret_cast<char *>(data.get_data_ptr()), sizeof(elemT), num_to_read, fptr);
   data.release_data_ptr();
 
   if (ferror(fptr) || num_to_read!=num_read)
