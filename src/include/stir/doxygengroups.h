@@ -119,7 +119,14 @@ be selected at run-time.
 
 */
 
-
+/*!
+\defgroup numerics Numerical algorithms
+\ingroup STIR_library
+*/
+/*! 
+\defgroup DFT Discrete Fourier transforms
+\ingroup numerics
+*/
 /*!
 \defgroup IO Input/Output Library
 \ingroup STIR_library
