@@ -27,7 +27,7 @@
 #include "local/stir/listmode/TimeFrameDefinitions.h"
 
 #include "local/stir/listmode/lm.h"
-
+#include "stir/recon_buildblock/BinNormalisation.h"
 
 
 
@@ -57,6 +57,9 @@ public:
 	      const double time, const ProjDataInfoCylindrical&) const;
 
   void compute();
+  shared_ptr<BinNormalisation> normalisation_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
+  
 protected:
 
   virtual void set_defaults();
@@ -66,6 +69,8 @@ protected:
   string output_filename_prefix;
   string template_proj_data_name;
   string frame_definition_filename;
+  bool pre_normalisation;
+  bool post_normalisation;
   bool store_prompts;
   int delayed_increment;
   int current_frame;
