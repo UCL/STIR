@@ -156,4 +156,14 @@ endif
 # If so, this will allow us to simplify generating the dependencies a lot!
 IS_GCC_3:=$(shell $(CXX) -v 2>&1 |grep "gcc version [3456789]")
 
+# a variable that will be used to get the real name of an executable
+# this is necessary on Windows.
+# CYGWIN make automatically appends .exe to executable files in targets etc, but not
+# commands such as cp
+ifeq ($(SYSTEM),CYGWIN)
+EXE_SUFFIX := .exe
+else
+#EXE_SUFFIX=
+endif
+
 

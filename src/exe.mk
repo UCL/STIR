@@ -3,6 +3,7 @@
 #
 # Author Kris Thielemans
 # Copyright 2004- $Date$ Hammersmith Imanet Ltd
+# This file is part of STIR, and is di $ Hammersmith Imanet Ltd
 # This file is part of STIR, and is distributed under the 
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 #
@@ -37,11 +38,7 @@ $(dir)_EXES:= \
 
 $(dir):  $($(dir)_EXES)
 
-ifeq ($(SYSTEM),CYGWIN)
-$(dir)_EXE_FILENAMES := $(addsuffix .exe, $($(dir)_EXES))
-else
-$(dir)_EXE_FILENAMES := $($(dir)_EXES)
-endif
+$(dir)_EXE_FILENAMES := $(addsuffix $(EXE_SUFFIX), $($(dir)_EXES))
 
 
 # note: see lib.mk for explanation for the $(@:...) trick

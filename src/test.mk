@@ -32,11 +32,7 @@ $(dir)_TEST_EXES:= \
 	$(patsubst %.c, $(DEST)%, $(filter %.c, $($(dir)_TEST_SOURCES)))
 
 
-ifeq ($(SYSTEM),CYGWIN)
-$(dir)_TEST_EXE_FILENAMES := $(addsuffix .exe, $($(dir)_TEST_EXES))
-else
-$(dir)_TEST_EXE_FILENAMES := $($(dir)_TEST_EXES)
-endif
+$(dir)_TEST_EXE_FILENAMES := $(addsuffix $(EXE_SUFFIX), $($(dir)_TEST_EXES))
 
 .PHONY: build_tests_$(dir) clean_tests_$(dir)  run_tests_$(dir) run_interactive_tests_$(dir)
 
