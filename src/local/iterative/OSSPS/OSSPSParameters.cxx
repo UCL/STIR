@@ -148,19 +148,10 @@ bool OSSPSParameters::post_processing()
   if (LogLikelihoodBasedAlgorithmParameters::post_processing())
     return true;
   
-  
-    /* if (inter_update_filter_interval<0)
-    { warning("Range error in inter-update filter interval \n"); return true; }
-    
-      if (!is_null_ptr(prior_ptr))
-      {
-      if (MAP_model != "additive" && MAP_model != "multiplicative")
-      {
-      warning("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'\n",
-      MAP_model.c_str());
-      return true;
-      }
-}*/
+   if( proj_data_ptr->get_num_views()/4 % num_subsets != 0) 
+  { warning("Number of subsets is such that subsets will be very unbalanced. "
+            "The current implementation of OS-SPS can not handle this. Choose the number of subsets as a divisor of %d\n",
+            proj_data_ptr->get_num_views()/4); }
   
   if (precomputed_denominator_filename.length() == 0)
   { warning("You need to specify a precomputed denominator \n"); 
