@@ -13,6 +13,7 @@ clean:
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
+  DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.cxx \
   ProjData.cxx \
   ProjDataInfo.cxx \
   ProjDataFromStream.cxx \
@@ -38,8 +39,6 @@ SOURCES = \
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
-
-all: $(DEST)libbuildblock.a
 
 include $(SOURCES:%.cxx=$(DEST)%.d)
 
