@@ -169,10 +169,17 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
     default:
       PETerror("Wrong scanner number\n"); Abort();
     }
+
+  // KT 15/10/98 allow reading of extended sinograms
+ 
+  if (scanner.num_bins % 2 == 0 &&
+      ask("Make num_bins odd ?", false))
+    scanner.num_bins++;
+
   scanner.show_params();
 
   //CL 03/08/98 Add the option for spanning value
-    int span = ask_num("Span value : ", 1,11,7);
+  int span = ask_num("Span value : ", 1,11,7);
     
   int max_delta = ask_num("Max. ring difference acquired : ",
 			  0,
