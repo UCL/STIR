@@ -73,6 +73,16 @@ set_defaults()
 {
   use_piecewise_linear_interpolation_now = true;
   use_exact_Jacobian_now = true;
+
+  // next can be set to false, but with some rounding error problems (e.g. at 90 degrees)
+  do_symmetry_90degrees_min_phi = true;
+  // next 2 have to be true, otherwise breaks
+  do_symmetry_180degrees_min_phi = true;
+  do_symmetry_swap_segment = true;
+  // next 2 can be set to false but are ignored anyway
+  do_symmetry_swap_s = true;
+  do_symmetry_shift_z = true;
+
 }
 
 void
@@ -83,6 +93,14 @@ initialise_keymap()
   parser.add_stop_key("End Back Projector Using Interpolation Parameters");
   parser.add_key("use_piecewise_linear_interpolation", &use_piecewise_linear_interpolation_now);
   parser.add_key("use_exact_Jacobian",&use_exact_Jacobian_now);
+#ifdef STIR_DEVEL
+  // see set_defaults()
+  parser.add_key("do_symmetry_90degrees_min_phi", &do_symmetry_90degrees_min_phi);
+  parser.add_key("do_symmetry_180degrees_min_phi", &do_symmetry_180degrees_min_phi);
+  parser.add_key("do_symmetry_swap_segment", &do_symmetry_swap_segment);
+  parser.add_key("do_symmetry_swap_s", &do_symmetry_swap_s);
+  parser.add_key("do_symmetry_shift_z", &do_symmetry_shift_z);
+#endif
 }
 
 const DataSymmetriesForViewSegmentNumbers *
@@ -91,23 +109,23 @@ const DataSymmetriesForViewSegmentNumbers *
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolation,
-                                     const bool use_exact_Jacobian)			   
-  :
-  use_piecewise_linear_interpolation_now(use_piecewise_linear_interpolation),
-  use_exact_Jacobian_now(use_exact_Jacobian)
+                                     const bool use_exact_Jacobian) 
 {
+  set_defaults();
+  use_piecewise_linear_interpolation_now = use_piecewise_linear_interpolation;
+  use_exact_Jacobian_now = use_exact_Jacobian;
 }
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
 				     const bool use_piecewise_linear_interpolation,
-                                     const bool use_exact_Jacobian)			   
-  :
-  symmetries_ptr(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr)),
-  use_piecewise_linear_interpolation_now(use_piecewise_linear_interpolation),
-  use_exact_Jacobian_now(use_exact_Jacobian)
+                                     const bool use_exact_Jacobian)
 {
+  set_defaults();
+  use_piecewise_linear_interpolation_now = use_piecewise_linear_interpolation;
+  use_exact_Jacobian_now = use_exact_Jacobian;
+  set_up(proj_data_info_ptr, image_info_ptr);
 }
 
 void
@@ -115,7 +133,12 @@ BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& pro
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
 {
   symmetries_ptr = 
-    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr);
+    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr,
+                                                do_symmetry_90degrees_min_phi,
+                                                do_symmetry_180degrees_min_phi,
+						do_symmetry_swap_segment,
+						do_symmetry_swap_s,
+						do_symmetry_shift_z);
 
    // check if data are according to what we can handle
 
@@ -308,30 +331,77 @@ actual_back_project(DiscretisedDensity<3,float>& density,
     {
       // segment symmetry
 
+      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 1)
+	error("BackProjectorByBinUsingInterpolation: back_project called with RelatedViewgrams with unexpect number of related viewgrams");
+
       const Viewgram<float> & pos_view = *r_viewgrams_iter;//0
       r_viewgrams_iter++;
       const Viewgram<float> & neg_view = *r_viewgrams_iter;//1
-      r_viewgrams_iter++;
-      const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;//2
-      r_viewgrams_iter++;
-      const Viewgram<float> & neg_plus90 =*r_viewgrams_iter;//3
-      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 4)
+      assert(neg_view.get_view_num() == pos_view.get_view_num());
+	   
+      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 2)
 	{
-	  assert(pos_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
-	  assert(neg_view.get_view_num() == pos_view.get_view_num());
-	  assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
-
+	  const Viewgram<float> pos_plus90 =  pos_view.get_empty_copy();
+	  const Viewgram<float>& neg_plus90 = pos_plus90; 
 	  back_project_view_plus_90_and_delta(
 					      image,
 					      pos_view, neg_view, pos_plus90, neg_plus90, 
 					      min_axial_pos_num, max_axial_pos_num,
 					      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+	}
+      else if (zoomed_viewgrams_ptr->get_num_viewgrams() == 4)
+	{
+	  r_viewgrams_iter++;
+      
+	  if (r_viewgrams_iter->get_view_num() == pos_view.get_view_num() + num_views/2)
+	    {
+	      const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;//2
+	      r_viewgrams_iter++;
+	      const Viewgram<float> & neg_plus90 =*r_viewgrams_iter;//3
+
+	      assert(pos_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
+	      assert(neg_plus90.get_view_num() == num_views / 2 + pos_view.get_view_num());
+	      back_project_view_plus_90_and_delta(
+						  image,
+						  pos_view, neg_view, pos_plus90, neg_plus90, 
+						  min_axial_pos_num, max_axial_pos_num,
+						  zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+	    }
+	  else if (r_viewgrams_iter->get_view_num() == num_views-pos_view.get_view_num())
+	    {
+	      assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
+	      const Viewgram<float> & pos_min180 =*r_viewgrams_iter; //2
+	      r_viewgrams_iter++;
+	      const Viewgram<float> & neg_min180 =*r_viewgrams_iter;//3
+	      const Viewgram<float>& pos_plus90 =pos_view.get_empty_copy();// anything 0 really
+	      const Viewgram<float>& neg_plus90 = pos_plus90;
+	      const Viewgram<float>& pos_min90 = pos_plus90;
+	      const Viewgram<float>& neg_min90 = pos_plus90;
+
+	      assert(pos_min180.get_view_num() == num_views - pos_view.get_view_num());
+	      assert(neg_min180.get_view_num() == num_views - pos_view.get_view_num());
+
+	      back_project_all_symmetries(
+					  image,
+					  pos_view, neg_view, pos_plus90, neg_plus90, 
+					  pos_min180, neg_min180, pos_min90, neg_min90,
+					  min_axial_pos_num, max_axial_pos_num,
+					      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+	    }
+	  else
+	    {
+	      error("BackProjectorByBinUsingInterpolation: back_project called with RelatedViewgrams with inconsistent views");
+	    }
 
 	}
-      else
+      else  if (zoomed_viewgrams_ptr->get_num_viewgrams() == 8)
 	{
 	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
 	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != num_views/4);
+	  r_viewgrams_iter++;
+	  const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;//2
+	  r_viewgrams_iter++;
+	  const Viewgram<float> & neg_plus90 =*r_viewgrams_iter;//3
 	  r_viewgrams_iter++;//4
 	  const Viewgram<float> & pos_min180 =*r_viewgrams_iter;
 	  r_viewgrams_iter++;//5
@@ -774,9 +844,11 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
 
+  const int num_views =  pos_view.get_proj_data_info_ptr()->get_num_views();
+
   assert(pos_view.get_view_num()>=0);
-  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2 ||
-	 (pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views() &&
+  assert(pos_view.get_view_num() <num_views/2 ||
+	 (pos_view.get_view_num() <num_views &&
 	  pos_plus90.find_max()==0 && neg_plus90.find_max()==0) );
 
 
@@ -799,10 +871,21 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   // a variable which will be used in the loops over s to get s_in_mm
   Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
 
-  // KT 20/06/2001 rewrite using get_phi  
-  const float cphi = cos(proj_data_info_cyl_ptr->get_phi(bin));
-  const float sphi = sin(proj_data_info_cyl_ptr->get_phi(bin));
+  // compute cos(phi) and sin(phi)
+  /* KT included special cases for phi=0 and 90 degrees to try to avoid rounding problems
+    This is because the current low-level code has problems with e.g. cos(phi) being
+    a very small negative number.*/
+  const float cphi = 
+   bin.view_num()==0? 1 :
+   2*bin.view_num()==num_views ? 0 :
+   cos(proj_data_info_cyl_ptr->get_phi(bin));
+  const float sphi = 
+   bin.view_num()==0? 0 :
+   2*bin.view_num()==num_views ? 1 :
+  sin(proj_data_info_cyl_ptr->get_phi(bin));
  
+  assert(fabs(cphi-cos(proj_data_info_cyl_ptr->get_phi(bin)))<.001);
+  assert(fabs(sphi-sin(proj_data_info_cyl_ptr->get_phi(bin)))<.001);
   // KT XXX
   const float fovrad_in_mm   = 
     min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
