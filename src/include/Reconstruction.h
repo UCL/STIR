@@ -82,6 +82,9 @@ public:
     
 };
 
+// MS 13/07 comments PETIterativeReconstruction ,
+// defined in ART/PETIterativeReconstruction.h with extention
+/*
 class PETIterativeReconstruction: public PETReconstruction
 {
 public:
@@ -95,7 +98,7 @@ inline PETIterativeReconstruction::PETIterativeReconstruction
 (int max) :max_iterations(max)
 {    
 }
-
+*/
 
 
 /******************* 2D reconstructions ************/
