@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -35,6 +35,7 @@ using std::list;
 
 START_NAMESPACE_STIR
 
+class Succeeded;
 
 /*!
   \ingroup buildblock
@@ -59,6 +60,8 @@ class Scanner
 
   // E931 HAS to be first, Unknown_scanner HAS to be last
   // also, the list HAS to be consecutive (so DO NOT assign numbers here)
+  // finally, test_Scanner assumes E966 is the last in the list of CTI scanners
+  // supported by ecat_model from the LLN matrix library
   // 08-3-2004, zlong, add user defined scanner
   //! enum for all predefined scanners
   /* \a Userdefined_scanner can be used to set arbitrary scanner geometry info.
@@ -142,6 +145,10 @@ class Scanner
 
   //! get scanner type
   inline Type get_type() const;
+  //! checks consistency 
+  /*! Calls warning() with diagnostics when there are problems
+   */
+  Succeeded check_consistency() const;
 
   //! \name Functions returning geometrical info
   //@{
@@ -284,7 +291,6 @@ private:
   int num_detector_layers;
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
-  /*! calls check_consistency() */
   void set_params(Type type_v,const list<string>& list_of_names,
                   int NoRings_v, 
 		  int max_num_non_arccorrected_bins,
@@ -297,7 +303,6 @@ private:
 		  int num_detector_layers);
 
   // ! set all parameters
-  /*! calls check_consistency() */
   void set_params(Type type_v,const list<string>& list_of_names,
                   int NoRings_v, 
 		  int max_num_non_arccorrected_bins,
@@ -310,10 +315,6 @@ private:
 		  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
 		  int num_detector_layers);
 
-  //! checks consistency 
-  /*! Calls error() when there are problems
-   */
-  void check_consistency();
 };
 
 END_NAMESPACE_STIR
