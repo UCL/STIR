@@ -52,6 +52,7 @@ public:
   long int  num_sgl;
   long int  sgl[126];
  };
+ static const unsigned size_of_singles_record;
 
   //! Name which will be used when parsing a SinglesRatesFromSglFile object 
   static const char * const registered_name; 
