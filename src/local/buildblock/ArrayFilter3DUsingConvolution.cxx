@@ -266,7 +266,7 @@ do_it_2d(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
   
  
   const int k_min = filter_coefficients.get_min_index();
-  const int k_max = filter_coefficients.get_max_index();
+  //const int k_max = filter_coefficients.get_max_index();
   const int j_min = filter_coefficients[k_min].get_min_index();
   const int j_max = filter_coefficients[k_min].get_max_index();
   const int i_min = filter_coefficients[k_min][j_min].get_min_index();
