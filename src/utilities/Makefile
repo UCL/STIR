@@ -17,7 +17,10 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
 	extract_segments.cxx \
 	correct_projdata.cxx \
 	stir_math.cxx \
-	list_projdata_info.cxx
+	list_projdata_info.cxx \
+	SSRB.cxx \
+	ecat_swap_corners.cxx \
+	poisson_noise.cxx
 
 
 ifeq ($(HAVE_LLN_MATRIX),1)
