@@ -110,6 +110,9 @@ actual_back_project(DiscretisedDensity<3,float>& image,
     for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
       for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
       { 
+        // KT 21/02/2002 added check on 0
+        if (viewgram[ax_pos][tang_pos] == 0)
+          continue;
 	Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
 	proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
 	proj_matrix_row.back_project(image, bin);
@@ -179,6 +182,9 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 	       viewgram_iter != viewgrams.end();
 	       ++viewgram_iter)
 	    {
+              // KT 21/02/2002 added check on 0
+              if ((*viewgram_iter)[axial_pos_tmp][tang_pos_tmp] == 0)
+                continue;
 	      proj_matrix_row_copy = proj_matrix_row;
 	      Bin bin(viewgram_iter->get_segment_num(),
 		      viewgram_iter->get_view_num(),
@@ -187,7 +193,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 		      (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
 	      
 	      auto_ptr<SymmetryOperation> symm_op_ptr = 
-		symmetries->find_symmetry_operation_to_basic_bin(bin);
+		symmetries->find_symmetry_operation_from_basic_bin(bin);
 	      assert(bin == basic_bin);
 	      
 	      symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
