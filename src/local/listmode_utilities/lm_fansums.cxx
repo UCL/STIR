@@ -24,7 +24,7 @@
 #include "local/stir/listmode/CListRecord.h"
 #include "local/stir/listmode/CListRecordECAT966.h"// TODO get rid of this
 #include "local/stir/listmode/CListModeData.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
 #include "stir/Array.h"
 #include "stir/IndexRange2D.h"
