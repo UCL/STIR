@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
 template <typename T> class shared_ptr;
-
+class ProjMatrixByBinFromFile;
 /*!
   \ingroup symmetries
   \brief Symmetries appropriate for a (cylindrical) PET scanner, and 
@@ -137,6 +137,9 @@ public:
   inline float get_axial_pos_to_z_offset(const int segment_num) const;
   
 private:
+  // temporary fix to give access to the bools
+  friend class ProjMatrixByBinFromFile;
+
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;
   bool do_symmetry_swap_segment;
