@@ -38,6 +38,18 @@ enum image_type{act_image_type, att_image_type};
 
 template <class coordT> class CartesianCoordinate3D;
 class ProjDataInfoCylindricalNoArcCorr;
+
+
+
+struct ScatterPoint
+{ 
+  CartesianCoordinate3D<float> coord;
+  float mu_value;
+};
+
+extern std::vector< ScatterPoint> scatt_points_vector;
+extern std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+
 /*!
    \ingroup scatter
    \brief samples the scatters points randomly in the attenuation_map
@@ -50,7 +62,7 @@ class ProjDataInfoCylindricalNoArcCorr;
    points are assigned to the scatt_points, giving a warning.
 */  
 
-std::vector<CartesianCoordinate3D<float> > 
+void
 sample_scatter_points(
 		const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
 		int & scatt_points,
@@ -76,8 +88,8 @@ float integral_scattpoint_det (
 	  const CartesianCoordinate3D<float>& detector_coord);  
 
 float  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-	  				   const CartesianCoordinate3D<float>& scatter_point, 
-					   const CartesianCoordinate3D<float>& detector_coord,
+	  				   const unsigned scatter_point_num, 
+					   const unsigned det_num,
 					   const image_type input_image_type);
 /*!
   \ingroup scatter
@@ -87,9 +99,9 @@ float  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discreti
 float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-	  const CartesianCoordinate3D<float>& scatter_point, 
-	  const CartesianCoordinate3D<float>& detector_coord_A, 
-	  const CartesianCoordinate3D<float>& detector_coord_B);
+	  const std::size_t scatter_point_num, 
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B);
 /*!	\name Klein-Nishina functions					
   \ingroup scatter
   \brief computes the differential cross section
@@ -118,7 +130,6 @@ float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point
 /*!						
   \ingroup scatter
   \brief computes the total cross section
-   Better inline?????
 
   This function computes the total cross section
 	for Compton scatter, based on the Klein-Nishina-Formula
@@ -143,9 +154,8 @@ float energy_after_scatter_511keV(const float cos_theta);
 float scatter_estimate_for_all_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-	  const std::vector<CartesianCoordinate3D<float> >& scatter_points, 
-	  const CartesianCoordinate3D<float>& detector_coord_A, 
-	  const CartesianCoordinate3D<float>& detector_coord_B);
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B);
 /*!
   \ingroup scatter
   \brief 
@@ -170,6 +180,9 @@ BasicCoordinate<num_dimensions,float> convert_int_to_float(const BasicCoordinate
 extern "C"  double erf(const double x);
 #endif
 
+/* !\ingroup scatter
+     \brief Temporary implementation of writing log information
+*/
 void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
 				 const DiscretisedDensityOnCartesianGrid<3,float>& density_image,
 				 const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr,
@@ -178,10 +191,12 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const bool random, 
 				 const char *argv[]);
 
+/* !\ingroup scatter
+     \brief Temporary implementation of writing time information
+*/
+void writing_time(const int simulation_time, const int scatt_points_vector_size);
+
 void writing_time(const double simulation_time, const int scatt_points_vector_size);
-
-
-
 
 
 END_NAMESPACE_STIR

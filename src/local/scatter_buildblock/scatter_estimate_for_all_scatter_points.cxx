@@ -25,22 +25,20 @@ START_NAMESPACE_STIR
 	float scatter_estimate_for_all_scatter_points(
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-    const std::vector<CartesianCoordinate3D<float> >& scatter_points_vector, 
-	const CartesianCoordinate3D<float>& detector_coord_A, 
-	const CartesianCoordinate3D<float>& detector_coord_B)
+	const unsigned det_num_A, 
+	const unsigned det_num_B)
 {	
 	float scatter_ratio = 0; 
 	
-	for(std::vector<CartesianCoordinate3D<float> >:: const_iterator 
-		current_iter_point = scatter_points_vector.begin();
-	    current_iter_point != scatter_points_vector.end() ;
-	  ++current_iter_point)
+	for(std::size_t scatter_point_num =0;
+		scatter_point_num < scatt_points_vector.size();
+	    ++scatter_point_num)
 	  {
 		  scatter_ratio +=
 			  scatter_estimate_for_one_scatter_point(
 			  image_as_activity, image_as_density, 
-			  *current_iter_point,
-			  detector_coord_A, detector_coord_B);
+			  scatter_point_num,
+			  det_num_A, det_num_B);
 	  }
     
 	return scatter_ratio;

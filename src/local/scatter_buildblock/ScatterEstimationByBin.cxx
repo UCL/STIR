@@ -30,6 +30,27 @@
 using namespace std;
 
 START_NAMESPACE_STIR
+std::vector< ScatterPoint> scatt_points_vector;
+std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+
+static
+unsigned 
+find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
+{
+	std::vector<CartesianCoordinate3D<float> >::const_iterator iter=
+	std::find(detection_points_vector.begin(),
+		      detection_points_vector.end(),
+			  coord);
+	if (iter != detection_points_vector.end())
+	{
+		return iter-detection_points_vector.begin();
+	}
+	else
+	{
+		detection_points_vector.push_back(coord);
+		return detection_points_vector.size()-1;
+	}
+}
 
 void scatter_viewgram( 
 					  ProjData& proj_data,
@@ -41,8 +62,8 @@ void scatter_viewgram(
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
 		(*proj_data.get_proj_data_info_ptr());
 	
-	std::vector<CartesianCoordinate3D<float> > scatt_points_vector =  
-		sample_scatter_points(image_as_density,scatt_points,att_threshold,random);
+	sample_scatter_points(image_as_density,scatt_points,att_threshold,random);
+#if 0
 	{
 		fstream scatter_points_file("scatter_points.txt", ios::out); //output file //
 		if(!scatter_points_file)    
@@ -51,6 +72,7 @@ void scatter_viewgram(
 		  scatter_points_file << scatt_points_vector;
 		cerr << scatt_points_vector.size() << " scatter points selected!" << endl;				
 	}
+#endif
 
 	CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     Bin bin;
@@ -107,14 +129,17 @@ void scatter_viewgram(
 				{  
 					// have now all bin coordinates
 					proj_data_info.find_cartesian_coordinates_of_detection(
-						detector_coord_A,detector_coord_B,bin);					
+						detector_coord_A,detector_coord_B,bin);
+					const unsigned det_num_A =
+					  find_in_detection_points_vector(detector_coord_A + shift_detector_coordinates_to_origin);
+					const unsigned det_num_B =
+					  find_in_detection_points_vector(detector_coord_B + shift_detector_coordinates_to_origin);
 					bin.set_bin_value(
 						scatter_estimate_for_all_scatter_points(
 						image_as_activity,
 						image_as_density,
-						scatt_points_vector, 
-						detector_coord_A + shift_detector_coordinates_to_origin, 
-						detector_coord_B + shift_detector_coordinates_to_origin));
+						det_num_A, 
+						det_num_B));
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();

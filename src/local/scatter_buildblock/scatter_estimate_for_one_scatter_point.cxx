@@ -29,9 +29,9 @@ static const float total_cross_section_511keV =
 float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-	  const CartesianCoordinate3D<float>& scatter_point, 
-	  const CartesianCoordinate3D<float>& detector_coord_A, 
-	  const CartesianCoordinate3D<float>& detector_coord_B)
+	  const std::size_t scatter_point_num, 
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B)
 {	
 	// TODO hard-wired for now
 //	static const lower_energy_threshold = 350;
@@ -39,6 +39,12 @@ float scatter_estimate_for_one_scatter_point(
 	static const float lower_energy_threshold = 375;
 	static const float upper_energy_threshold = 600;
 
+	const CartesianCoordinate3D<float>& scatter_point =
+		scatt_points_vector[scatter_point_num].coord;
+	const CartesianCoordinate3D<float>& detector_coord_A =
+		detection_points_vector[det_num_A];
+    const CartesianCoordinate3D<float>& detector_coord_B =
+		detection_points_vector[det_num_B];
 
 	// note: costheta is -cos_angle such that it is 1 for zero scatter angle
 	const float costheta =
@@ -77,15 +83,15 @@ float scatter_estimate_for_one_scatter_point(
 	const float
 		emiss_to_detA = cached_factors(
 	                             image_as_activity,
-	                             scatter_point, 
-                                 detector_coord_A
+	                             scatter_point_num, 
+                                 det_num_A
 								 , act_image_type
 							     );
     const float
 	  emiss_to_detB = cached_factors(
 		                         image_as_activity,
-								 scatter_point, 
-								 detector_coord_B
+								 scatter_point_num, 
+								 det_num_B
 								 ,act_image_type
 							     );
 	if (emiss_to_detA==0 && emiss_to_detB==0)
@@ -95,32 +101,37 @@ float scatter_estimate_for_one_scatter_point(
     const float 
 		atten_to_detA = cached_factors(
 	                             image_as_density,
-	                             scatter_point, 
-                                 detector_coord_A
+	                             scatter_point_num, 
+                                 det_num_A
 								 , att_image_type
 								 );
 	const float
 		atten_to_detB = cached_factors(
 	                             image_as_density,
-	                             scatter_point, 
-                                 detector_coord_B
+	                             scatter_point_num, 
+                                 det_num_B
 						    	 , att_image_type
 								 );
 
 	const VoxelsOnCartesianGrid<float>& image =
 		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
 	
-    const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 	
 	const float rA=norm(scatter_point-detector_coord_A);
 	const float rB=norm(scatter_point-detector_coord_B);
+	
+	const float scatter_point_mu=
+		scatt_points_vector[scatter_point_num].mu_value;
+#ifndef NDEBUG
+	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 	CartesianCoordinate3D<float>  origin = 
 		image.get_origin();
 	origin.z() -= 
 		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
-	
-	const float scatter_point_mue=
-		image[round((scatter_point-origin)/voxel_size)];
+
+	assert(scatter_point_mu==
+		image[round((scatter_point-origin)/voxel_size)]);
+#endif
 
 	return 
 		(emiss_to_detA + emiss_to_detB)
@@ -128,7 +139,7 @@ float scatter_estimate_for_one_scatter_point(
 		*dif_cross_section
 		*atten_to_detA
 		*atten_to_detB
-		*scatter_point_mue
+		*scatter_point_mu
 		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
 //		*cos_incident_angle_A*cos_incident_angle_A

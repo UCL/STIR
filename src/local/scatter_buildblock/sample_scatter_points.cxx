@@ -32,7 +32,7 @@ static inline float random_point(const float low, const float high){
 	return result;
 }
 
-std::vector<CartesianCoordinate3D<float> > 
+void
 sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
 					  int & scatt_points, 
 					  const float att_threshold,
@@ -64,8 +64,7 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 	{ // Initialize Pseudo Random Number generator using time  
 				srand((unsigned)time( NULL ));
 	}
-	std::vector<CartesianCoordinate3D<float> > scatt_points_vector; 
-	scatt_points_vector.reserve(std::min(1000, scatt_points));  // TOCHECK: I give the scatt_points as a reference 
+	scatt_points_vector.reserve(std::min(1000, scatt_points));  
 
 	// coord[] is in voxels units       
 	for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
@@ -73,19 +72,21 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 			for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])   
 				if(attenuation_map[coord] >= att_threshold)
 				{
-					CartesianCoordinate3D<float> scatter_point = convert_int_to_float(coord);
+					ScatterPoint scatter_point;
+					
+					scatter_point.coord = convert_int_to_float(coord);
 					if (random)
-						scatter_point +=
+						scatter_point.coord +=
 						CartesianCoordinate3D<float>(random_point(-.5,.5),
 						random_point(-.5,.5),
 						random_point(-.5,.5));
-					
-					scatt_points_vector.push_back(voxel_size*scatter_point + origin);
+					scatter_point.coord =
+						voxel_size*scatter_point.coord + origin;
+					scatter_point.mu_value = attenuation_map[coord];
+					scatt_points_vector.push_back(scatter_point);
 				}					
 
 	scatt_points = scatt_points_vector.size(); //this is the number of total scatt_points that is a refernece to the call
-	
-	return scatt_points_vector; // in mm units
 }
 
 END_NAMESPACE_STIR 
