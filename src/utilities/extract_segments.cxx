@@ -1,23 +1,27 @@
 //
-//$Date$: $Date$
+//$Id$: $Date$
 //
 /*!
   \file 
   \ingroup utilities
  
-  \brief  This programme extracts projection data by segment into 3d image files
+  \brief This programme extracts projection data by segment into 3d
+  image files
 
   \author Kris Thielemans
   \author PARAPET project
 
   \date    $Date$
   \version $Revision$
+
+  This utility extracts projection data by segment into a sequence of
+  3d image files. It is mainly useful to import segments into external
+  image display/manipulation programmes which do not understand 3D-PET
+  data, but can read Interfile images.
 */
 #include "ProjData.h"
-#include "Sinogram.h"
 #include "SegmentByView.h"
 #include "SegmentBySinogram.h"
-#include "CartesianCoordinate3D.h"
 #include "interfile.h"
 #include "utilities.h"
 
