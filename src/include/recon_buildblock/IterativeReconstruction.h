@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __IterativeReconstruction_h__
 #define __IterativeReconstruction_h__

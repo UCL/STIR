@@ -1,10 +1,9 @@
+
 #include "recon_buildblock/IterativeReconstructionParameters.h" 
 
 //
+// $Id$
 //
-//IterativeReconstructionParameters
-//
-//MJ 01/02/2000 added
 
 IterativeReconstructionParameters::IterativeReconstructionParameters()
   : ReconstructionParameters()

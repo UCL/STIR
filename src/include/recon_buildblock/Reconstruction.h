@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 #ifndef __Reconstruction_H__
 #define __Reconstruction_H__
 /*!
