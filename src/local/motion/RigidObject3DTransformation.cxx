@@ -1,5 +1,26 @@
+//
+// $Id$
+//
+/*!
+  \file 
+  \ingroup motion
+  \brief implementation of class RigidObject3DTransformation
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
+
+*/
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This software is distributed under the terms of the GNU Lesser General 
+    Public Licence (LGPL).
+    See STIR/LICENSE.txt for details
+*/
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "stir/IndexRange2D.h"
+#include "stir/LORCoordinates.h"
 #include "stir/stream.h"
 #include <math.h>
 
@@ -224,6 +245,7 @@ transform_bin(Bin& bin,
 	      const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const
 {
 
+#ifndef NEW_ROT
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
   in_proj_data_info.find_cartesian_coordinates_of_detection(coord_1,coord_2,bin);
@@ -240,6 +262,16 @@ transform_bin(Bin& bin,
     find_bin_given_cartesian_coordinates_of_detection(bin,
                                                       coord_1_transformed,
 					              coord_2_transformed);
+#else
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+  in_proj_data_info.get_LOR(lor, bin);
+  LORAs2Points<float> lor_as_points;
+  lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
+  const LORAs2Points<float> 
+    transformed_lor_as_points(transform_point(lor_as_points.p1()),
+			      transform_point(lor_as_points.p2()));
+  bin = out_proj_data_info.get_bin(transformed_lor_as_points);
+#endif
 }
   
 
