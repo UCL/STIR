@@ -60,7 +60,10 @@ public:
 				  string attenuation_proj_data_filename,
 				  const VectorWithOffset<elemT>& filter_coefficients,
 				  shared_ptr<ProjData> proj_data_ptr,
-				  shared_ptr<ProjData> attenuation_proj_data_ptr, int mask_size);
+				  shared_ptr<ProjData> attenuation_proj_data_ptr,
+				  DiscretisedDensity<3,float>* initial_image,
+				  DiscretisedDensity<3,float>* sensitivity_image,
+				  int mask_size);
 			     
   
   				  
@@ -76,11 +79,21 @@ private:
   shared_ptr<ProjData> attenuation_proj_data_ptr;
   string attenuation_proj_data_filename;
 
+  DiscretisedDensity<3,float>* initial_image;
+  string initial_image_filename;
+  
+  DiscretisedDensity<3,float>* sensitivity_image;
+  string sensitivity_image_filename;
+
+
+
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
    // new
    void virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
    void virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const;
+   void precalculate_filter_coefficients (VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ModifiedInverseAverigingArrayFilter <3,float> >  > > >& all_filter_coefficients,
+					  DiscretisedDensity<3,elemT>* in_density) const;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
