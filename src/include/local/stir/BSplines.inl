@@ -30,7 +30,7 @@
 */
 
 using namespace std;
-
+#include "stir/modulo.h"
 START_NAMESPACE_STIR
 #if defined(_MSC_VER) && _MSC_VER<=1300
 
@@ -197,10 +197,9 @@ BSplines_coef(RandIterOut c_begin_iterator,
 
 template <typename pos_type>
 pos_type 
-BSplines_weight(const pos_type abs_relative_position
-					//, enum enum_spline_level
-					) 
+BSplines_weight(const pos_type relative_position) 
 {
+	const pos_type abs_relative_position = fabs(relative_position);
 	assert(abs_relative_position>=0);
 	if (abs_relative_position>=2)
 		return 0;
@@ -242,19 +241,50 @@ void
 template <typename out_elemT, typename in_elemT>
 out_elemT 
 BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline(const pos_type relative_position) 
+BSpline(const pos_type relative_position, const bool deriv)
 {	
+	assert(relative_position>-input_size+2);
+	assert(relative_position<2*input_size-4);
 	out_elemT BSpline_value;
 	set_to_zero(BSpline_value);
-	//assert(relative_position<static_cast<out_elemT>(input_size));
-//		warning("New sampling position out of range");
-	for (int k=(int)relative_position-2; k<(int)(relative_position+3) && k<=input_size; ++k)		
-	{
-		if (k<0) continue;
-		BSpline_value += 
-			BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k] *
-			BSplines_weight(fabs((pos_type)k-relative_position));
+	const int int_pos =(int)floor(relative_position);
+#if 0
+	for (int k=int_pos-2; k<int_pos+3; ++k)		
+	{	
+		int index;
+		// if outside-range: implement modulo(-k,2*input_size-2) by hand
+		if (k<0) index=-k;
+		else if (k>=input_size) index=2*input_size-2-k;
+		else index = k;
+		assert(0<=index && index<input_size);
+		BSpline_value += BSpline_product(index, k-relative_position, deriv);
 	}
+#else
+	const int kmin= int_pos-2;
+	const int kmax= int_pos+2;
+	const int kmax_in_range = std::min(kmax, input_size-1);
+	int k=kmin;
+	for (; k<0; ++k)		
+	{		
+		const int index=-k;
+		assert(0<=index && index<input_size);
+		BSpline_value += BSpline_product(index, k-relative_position, deriv);
+
+	}
+	for (; k<=kmax_in_range; ++k)		
+	{		
+		const int index=k;
+		assert(0<=index && index<input_size);
+		BSpline_value += BSpline_product(index, k-relative_position, deriv);
+	}
+	for (; k<=kmax; ++k)		
+	{		
+		const int index=2*input_size-2-k;
+		assert(0<=index && index<input_size);
+		BSpline_value += BSpline_product(index, k-relative_position, deriv);
+	}
+#endif
+
 	return BSpline_value;
 }
 
@@ -262,33 +292,32 @@ template <typename out_elemT, typename in_elemT>
 out_elemT 
 BSplines1DRegularGrid<out_elemT,in_elemT>::
 BSpline_1st_der(const pos_type relative_position) 
-{	
-//	assert(relative_position<static_cast<pos_type>(input_size));
-	out_elemT BSpline_value;
-	set_to_zero(BSpline_value);
-	for (int k=(int)relative_position-2; k<(int)(relative_position+3) && k<=input_size; ++k)		
-	{
-		if (k<0) continue;
-		BSpline_value += 
-			BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k] *
-			BSplines_1st_der_weight((pos_type)k-relative_position);
-	}
-	return BSpline_value;
+{		
+	return BSpline(relative_position,1);
 }
+
+template <typename out_elemT, typename in_elemT>
+out_elemT
+BSplines1DRegularGrid<out_elemT,in_elemT>::
+BSpline_product(const int index, const pos_type relative_position, const bool deriv)
+{
+			return deriv==0 ? BSplines_coef_vector[index]*BSplines_weight(relative_position)
+				: BSplines_1st_der_weight(relative_position);	
+	}
 
 template <typename out_elemT, typename in_elemT>
 const out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
 operator() (const pos_type relative_position) const 
 {
 	return BSplines1DRegularGrid<out_elemT,in_elemT>::
-		BSpline(relative_position);		
+		BSpline(relative_position, 0);		
 };
 template <typename out_elemT, typename in_elemT>
 out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
 operator() (const pos_type relative_position)
 {
 	return BSplines1DRegularGrid<out_elemT,in_elemT>::
-		BSpline(relative_position);		
+		BSpline(relative_position, 0);		
 }
 //*
 template <typename out_elemT, typename in_elemT>
@@ -305,7 +334,7 @@ BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //
 			current_relative_position_iterator!=output_relative_position_end_iterator; 
 		++current_iterator,++current_relative_position_iterator)
 			*current_iterator = BSplines1DRegularGrid<out_elemT,in_elemT>:: 
-			BSpline(*current_relative_position_iterator);		
+			BSpline(*current_relative_position_iterator,0);		
 
 	return output_vector;		
 }

@@ -46,10 +46,9 @@ class BSplines1DRegularGrid
 private:
 	typedef typename std::vector<out_elemT>::iterator RandIterOut; 
 	int input_size; // create in the constructor 
-	
-  
+	std::vector<out_elemT> BSplines_coef_vector;  
 public:
-	std::vector<out_elemT> BSplines_coef_vector;//(input_size);
+	
 /*
 void
 inline  
@@ -84,14 +83,17 @@ inline
 			input_begin_iterator, input_end_iterator);				
   }
 
-
 inline 
 out_elemT
-BSpline(const pos_type relative_position) ;
+BSpline(const pos_type relative_position, const bool deriv) ;
 
 inline 
 out_elemT
 BSpline_1st_der(const pos_type relative_position) ;
+
+inline
+out_elemT
+BSpline_product(const int index, const pos_type relative_position, const bool deriv);
 
 inline
 const out_elemT 
@@ -108,9 +110,7 @@ BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //
 inline
 const std::vector<out_elemT> 
 BSpline_output_sequence(std::vector<pos_type> output_relative_position);
-
 };
-
 
 template <class IterT>
 inline 
@@ -133,7 +133,6 @@ BSplines_coef(RandIterOut c_begin_iterator,
 			   IterT input_begin_iterator, 
 			   IterT input_end_iterator);
 
-
 template <typename pos_type>
 inline 
 pos_type 
@@ -142,7 +141,7 @@ BSplines_weight(const pos_type relative_position);
 template <typename pos_type>
 inline 
 pos_type 
-BSplines_1st_der_weight(const pos_type abs_relative_position) ;
+BSplines_1st_der_weight(const pos_type relative_position) ;
 
 //*/
 END_NAMESPACE_STIR
