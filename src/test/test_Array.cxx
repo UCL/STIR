@@ -240,7 +240,7 @@ ArrayTests::run_tests()
 
       {
 	Array<1,float> ref(-1,2); 
-	ref[-1]=1;ref[0]=3;ref[1]=3.14;
+	ref[-1]=1.F;ref[0]=3.F;ref[1]=3.14F;
 	Array<1,float> test = ref;
 
 	test += 1;
