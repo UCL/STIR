@@ -5,6 +5,7 @@
 /*!
   \file
   \ingroup OSMAPOSL  
+  \ingroup reconstructors
   \brief  implementation of the OSMAPOSLReconstruction class 
     
   \author Matthew Jacobson
@@ -24,6 +25,8 @@
 #include "tomo/ChainedImageProcessor.h"
 #include "tomo/Succeeded.h"
 #include "tomo/thresholding.h"
+#include "tomo/is_null_ptr.h"
+
 #include <memory>
 #include <iostream>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -101,7 +104,7 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
     truncate_min_to_small_positive_value(*target_image_ptr);
 
   if(parameters.inter_update_filter_interval>0 && 
-     parameters.inter_update_filter_ptr != 0)
+     !is_null_ptr(parameters.inter_update_filter_ptr))
     {
       cerr<<endl<<"Building inter-update filter kernel"<<endl;
       if (parameters.inter_update_filter_ptr->set_up(*target_image_ptr)
@@ -117,7 +120,7 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
 
     }
   if (parameters.inter_iteration_filter_interval>0 && 
-      parameters.inter_iteration_filter_ptr!=0)
+      !is_null_ptr(parameters.inter_iteration_filter_ptr))
     {
       // ensure that the result image of the filter is positive
       parameters.inter_iteration_filter_ptr =
@@ -263,7 +266,7 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
   
   
   if(parameters.inter_update_filter_interval>0 &&
-     parameters.inter_update_filter_ptr != 0 &&
+     !is_null_ptr(parameters.inter_update_filter_ptr) &&
      !(subiteration_num%parameters.inter_update_filter_interval))
   {
     
