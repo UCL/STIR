@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_ProjDataInfo_H__
@@ -41,6 +41,8 @@ template <typename elemT> class RelatedViewgrams;
 class DataSymmetriesForViewSegmentNumbers;
 class ViewSegmentNumbers;
 class Bin;
+template <typename T> class LOR;
+template <typename T> class LORInAxialAndNoArcCorrSinogramCoordinates;
 class PMessage;
 
 /*!
@@ -105,6 +107,9 @@ public:
 
   //  ProjDataInfo& operator=(const ProjDataInfo&);
 
+  //! \name Functions that change the data size
+  //@{
+
   //! Set a new range of segment numbers
   /*! 
     This function is virtual in case a derived class needs to know the 
@@ -143,7 +148,10 @@ public:
   //! Set maximum tangential position number
   /*! This function is virtual in case a derived class needs to know the number changed. */
   virtual void set_max_tangential_pos_num(const int max_tang_poss);
-  
+  //@}
+
+  //! \name Functions that return info on the data size
+  //@{
   //! Get number of segments
   inline int get_num_segments() const;
   //! Get number of axial positions per segment
@@ -168,7 +176,10 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //@}
 
+  //| \name Functions that return geometrical info for a Bin
+  //@{
   //! Get tangent of the co-polar angle of the normal to the projection plane
   /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
   virtual float get_tantheta(const Bin&) const =0;
@@ -206,6 +217,19 @@ public:
       normal to the projection plane */
   virtual float get_s(const Bin&) const =0;
 
+  //! Get LOR corresponding to a given bin
+  /*!
+      \see get_bin()
+      \warning This function might get a different type of arguments
+      in the next release.
+  */
+  virtual void
+    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&,
+	    const Bin&) const = 0;
+  //@}
+
+  //! \name Functions that return info on the sampling in the different coordinates
+  //@{
   //! Get sampling distance in the \c t coordinate
   /*! For some coordinate systems, this might depend on the Bin. The 
       default implementation computes it as 
@@ -232,11 +256,37 @@ public:
       \endcode
   */
   virtual float get_sampling_in_s(const Bin&) const;
+  //@}
 
+
+  //! Find the bin in the projection data that 'contains' an LOR
+  /*! Projection data corresponds to lines, so most Lines Of Response 
+      (LORs) there is a bin in the projection data. Usually this will be
+      the bin which has a central LOR that is 'closest' to the LOR that
+      is passed as an argument.
+
+      If there is no such bin (e.g. the LOR does not intersect the
+      detectors, Bin::get_bin_value() will be less than 0, otherwise
+      it will be 1.
+
+      \warning This function might get a different type of arguments
+      in the next release.
+      \see get_LOR()
+  */
+  virtual 
+    Bin
+    get_bin(const LOR<float>&) const = 0;
+
+  //! \name Equality of ProjDataInfo objects
+  //@{
   //! check equality
   virtual bool operator ==(const ProjDataInfo& proj) const; 
   
   inline bool operator !=(const ProjDataInfo& proj) const; 
+  //@}
+
+  //! \name Functions that return sinograms etc (filled with 0)
+  //@{
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
@@ -258,6 +308,8 @@ public:
   RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = false) const;   
+  //@}
+
 
   //! Get scanner pointer  
   inline const Scanner* get_scanner_ptr() const;
