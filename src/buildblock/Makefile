@@ -44,7 +44,9 @@ SOURCES = \
 	SeparableMetzArrayFilter.cxx \
 	MedianArrayFilter3D.cxx \
 	MedianImageFilter3D.cxx \
-	SeparableCartesianMetzImageFilter.cxx 
+	SeparableCartesianMetzImageFilter.cxx \
+	TruncateMinToSmallPositiveValueImageProcessor.cxx \
+	ChainedImageProcessor.cxx
  
 
 
