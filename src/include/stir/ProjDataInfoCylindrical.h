@@ -92,7 +92,7 @@ public:
   
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;
-
+  virtual inline float get_sampling_in_t(const Bin&) const;
   virtual inline float get_sampling_in_m(const Bin&) const;
 
   //! Get the axial sampling (e.g in z_direction)
