@@ -106,7 +106,7 @@ protected:
       few assumptions.
       TODO more doc.
   */
-  void calculate_proj_matrix_elems_for_one_densel(stir::ProjMatrixElemsForOneDensel &) const;
+  void calculate_proj_matrix_elems_for_one_densel(ProjMatrixElemsForOneDensel &) const;
   
   
 };
