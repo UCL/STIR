@@ -628,18 +628,24 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 			   image);
  
                  
-    }            
-    full_log << "    Min= " << image.find_min()
-	     << " Max = " << image.find_max()
-	     << " Sum = " << image.sum() << endl;
-
+    }    
+    // do some logging etc, but only when this segment had any processing
+    // (some segment_nums might not because of the symmetries)
+    if (!first_view_in_segment)
+      {
+	full_log << "\n*************************************************************";
+	full_log << "End if this segment. Current image values:\n"
+		 << "Min= " << image.find_min()
+		 << " Max = " << image.find_max()
+		 << " Sum = " << image.sum() << endl;
 #ifndef PARALLEL
-    if(save_intermediate_files){ 
-      char *file = new char[output_filename_prefix.size() + 20];
-      sprintf(file,"%s_afterseg%d",output_filename_prefix.c_str(),seg_num);
-      do_save_img(file, image);        
-      delete[] file;
-    }
+	if(save_intermediate_files){ 
+	  char *file = new char[output_filename_prefix.size() + 20];
+	  sprintf(file,"%s_afterseg%d",output_filename_prefix.c_str(),seg_num);
+	  do_save_img(file, image);        
+	  delete[] file;
+	}
+      }
 #endif 
   }
 
