@@ -97,6 +97,15 @@ undo(RelatedViewgrams<float>& viewgrams) const
   if (!is_null_ptr(apply_second))
     apply_second->undo(viewgrams);
 }
+
+float
+ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin) const
+{
+  // TODO
+  return 1;
+
+}
+ 
  
 END_NAMESPACE_STIR
 
