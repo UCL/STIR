@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup buildblock
@@ -12,11 +28,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/IO/stir_ecat6.h"
@@ -152,7 +163,7 @@ read_ECAT7_frame_definitions(const string& filename)
   
       if (matrix==NULL)
 	{ 
-	  warning("TimeFrameDefinitions: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n.",
+	  warning("TimeFrameDefinitions: Matrix not found at \"%d,1,%d,%d,%d\" in file \"%s\"\n.",
             frame_num, 1, gate_num, data_num, bed_num,  filename.c_str());
 	  continue;
 	}
@@ -301,7 +312,7 @@ read_fdef_file(const string& fdef_filename)
 {
   ifstream in(fdef_filename.c_str());
   if (!in)
-    error("Error reading %s\n", fdef_filename.c_str());
+    error("TimeFrameDefinitions: Error reading \"%s\"\n", fdef_filename.c_str());
 
   
   double previous_end_time = 0;
@@ -313,7 +324,8 @@ read_fdef_file(const string& fdef_filename)
     if (!in)
       break;
     if (num<0 || duration<=0)
-        error("Reading frame_def file %s: encountered negative numbers (%d, %g)\n",
+        error("TimeFrameDefinitions: Reading frame_def file \"%s\":\n"
+	      "encountered negative numbers (%d, %g)\n",
 	      fdef_filename.c_str(), num, duration);
 
     if (num==0)
@@ -327,6 +339,13 @@ read_fdef_file(const string& fdef_filename)
       previous_end_time+=duration;
     }
   }
+  if (this->get_num_frames()==0)
+    error("TimeFrameDefinitions: Reading frame definitions file \"%s\":\n"
+	  "I didn't discover any frames. Wrong file format?\n"
+	  "Should be an ECAT6, ECAT7 file or a text file with something like\n\n"
+	  "3 50.5\n1 10\n0 3\n1 9\n\n"
+	  "for 3 frames of 50.5 secs, 1 frame of 10 secs, a gap of 3 secs, 1 frame of 9 secs.",
+	  fdef_filename.c_str());
 }
 
 TimeFrameDefinitions::
