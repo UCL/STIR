@@ -1,4 +1,4 @@
-#MAKEFILE FOR DISPLAY DIRECTORY
+# AIX and SOLARIS Makefile for PPhead/display directory
 #
 # $Id$
 #
