@@ -1,8 +1,7 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
-
   \file
   \ingroup recon_buildblock
 
@@ -11,19 +10,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "recon_buildblock/SymmetryOperation.h"
 #include "recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "Coordinate3D.h"
+#ifdef ENABLE_DENSEL 
+#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#endif
 
 START_NAMESPACE_TOMO
 
 void 
-SymmetryOperation::transform_proj_matrix_elems_for_one_bin(
-      ProjMatrixElemsForOneBin& lor) const 
+SymmetryOperation::
+transform_proj_matrix_elems_for_one_bin(
+					ProjMatrixElemsForOneBin& lor) const 
 {
   Bin bin = lor.get_bin();
   transform_bin_coordinates(bin);
@@ -37,6 +39,28 @@ SymmetryOperation::transform_proj_matrix_elems_for_one_bin(
     *element_ptr = ProjMatrixElemsForOneBin::value_type(c, element_ptr->get_value());
     ++element_ptr;
   }
-};
+}
+
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 END_NAMESPACE_TOMO
