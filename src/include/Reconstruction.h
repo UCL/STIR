@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// @(#)Reconstruction.h	1.16: 00/03/02
 //
 #ifndef __RECONSTRUCTION_H__
 #define __RECONSTRUCTION_H__
@@ -186,18 +186,36 @@ zoom_image(PETImageOfVolume &image,
                        const int new_size )     ;
 
 
-////////////////////////////////////////////////////
-class ParaReconstruct2DFBP : public  PETAnalyticReconstruction2D
+//MS added this for RampFilter in ParaReconstruct2DFBP 
+class PETAnalyticReconstruction2DRampFilter: public PETReconstruction2D
 {
+protected:
+    const Filter1DRamp &filter;
+public:
+      //  virtual string parameter_info();
+     
+       
+       PETAnalyticReconstruction2DRampFilter(const Filter1DRamp& f)
+        : filter(f)
+        { } 
+};
+
+
+
+
+////////////////////////////////////////////////////
+class ParaReconstruct2DFBP   : public PETAnalyticReconstruction2DRampFilter
+{
+
 public:
 
-   friend  PMessage& operator<<(PMessage& msg, ParaReconstruct2DFBP& recon);
-   friend  PMessage& operator>>(PMessage& msg, ParaReconstruct2DFBP& recon);
+   //friend  PMessage& operator<<(PMessage& msg, ParaReconstruct2DFBP& recon);
+   //friend  PMessage& operator>>(PMessage& msg, ParaReconstruct2DFBP& recon);
 
     virtual string method_info()
         { return("Parallel 2DFBP"); }
     
-    ParaReconstruct2DFBP(const Filter1D<float>& f): PETAnalyticReconstruction2D(f) 
+    ParaReconstruct2DFBP(const Filter1DRamp& f): PETAnalyticReconstruction2DRampFilter(f) 
     {
             cout << "  - Parallel 2D FBP processing" << endl;
     }    
@@ -206,8 +224,7 @@ public:
     void reconstruct(const PETSegment &sino, PETImageOfVolume &image);
 
    public :
-       static ParaReconstruct2DFBP  *SlaveRecon;
-   //    static PETPlane** Image2D;
+       static ParaReconstruct2DFBP  *SlaveRecon;  
        static int *Index;
        static int  SlaveIndex,x1,x2,y1,y2;
        static int Estimate_number;
