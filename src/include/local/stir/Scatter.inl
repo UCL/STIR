@@ -131,7 +131,7 @@ float detection_efficiency( const float low, const float high,
 	   return 0;
 	// factor 2.35 is used to convert FWHM to sigma
 	const float sigma_times_sqrt2= 
-		sqrt(2)*sqrt(energy*reference_energy)*resolution/2.35;
+		sqrt(2.)*sqrt(energy*reference_energy)*resolution/2.35;
 	
 	return
 		0.5*( erf((high-energy)/sigma_times_sqrt2) 

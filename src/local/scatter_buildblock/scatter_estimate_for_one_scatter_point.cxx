@@ -36,8 +36,8 @@ float scatter_estimate_for_one_scatter_point(
 	// TODO hard-wired for now
 //	static const lower_energy_threshold = 350;
 //	static const upper_energy_threshold = 650;
-	static const lower_energy_threshold = 375;
-	static const upper_energy_threshold = 600;
+	static const float lower_energy_threshold = 375;
+	static const float upper_energy_threshold = 600;
 
 
 	// note: costheta is -cos_angle such that it is 1 for zero scatter angle
