@@ -35,21 +35,16 @@ RM = /bin/rm -f
 
 LIBS1 = -lm
 
-#KT 22/05/98 use GNU make specific syntax to differentiate between systems (sorry)
-ifdef CYGROOT
-#Cygwin32 doesn't have curses
-LIBS = $(LIBS1) -L/usr/X11R6.3/lib -lX11 
-else
+#KT 12/12/99 removed CYGROOT stuff
 LIBS = $(LIBS1) -L/usr/X11/lib -lX11 -lcurses
-endif
 #LIBS_SOL = -L/usr/openwin/lib -L../../../LIBECAT/SOL2  -lm -lecat -lnsl -lsocket
 
-# KT 09/10/98 use OBJS,EXES to prevent repetition, add displayIF
-#CL 10/10/98 Add readsino
-#CL 12/11/98 Remove readsino as now it is obsolete, use either displayPSOV or vox
-# KT 09/02/98 added correctPSOV
-SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx correctPSOV.cxx postfilter.cxx binmath.cxx
-#readsino.cxx 
+
+# KT 09/02/98 added do_linear_regression
+SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx \
+ ecat6bysegmspan.cxx conv2cti.cxx vox.cxx correctPSOV.cxx \
+ postfilter.cxx binmath.cxx do_linear_regression
+
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
 
