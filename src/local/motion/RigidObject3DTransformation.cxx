@@ -1,5 +1,6 @@
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "stir/IndexRange2D.h"
+#include "stir/stream.h"
 #include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
@@ -42,17 +43,16 @@ RigidObject3DTransformation::RigidObject3DTransformation ()
 
 
 RigidObject3DTransformation::RigidObject3DTransformation (const Quaternion<float>& quat_v, const CartesianCoordinate3D<float>& translation_v)
+: quat(quat_v), translation(translation_v)
 {
- quat = quat_v;
- translation= translation_v;
 }
 
 RigidObject3DTransformation 
 RigidObject3DTransformation::inverse() const
 {
-  quat.inverse();
-  translation *= -1;
-  RigidObject3DTransformation ro3d_trans (quat,translation);
+  Quaternion<float> quat_copy =quat;
+  quat_copy.inverse();
+  RigidObject3DTransformation ro3d_trans (quat_copy,translation*(-1));
   return ro3d_trans;
 }
 
@@ -90,54 +90,51 @@ RigidObject3DTransformation::set_euler_angles()
 CartesianCoordinate3D<float> 
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
-  Array<2,float> matrix = Array<2,float>(IndexRange2D(0,2,0,2));
+  CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
  
+  //cerr << quat << endl;
+  {
+    const float quat_norm=square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]);
+    if (fabs(quat_norm-1)>1E-3)
+      warning("Non-normalised quaternion: %g", quat_norm);
+
+  }
 #if 1
 
-#if 0 // TODO remove: translation only!!!
+#if 1 // put to 0 for translation only!!!
   
-  //Quaternion<float> quat_tmp = quat;
   
-  if ((square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]))!=1)
-    quat.normalise();
-  //transformation with quaternions
-  Quaternion<float> point_q (0,point.z(),point.y(),point.x());
+  //transformation with quaternions 
+  const Quaternion<float> point_q (0,swapped_point.x(),swapped_point.y(),swapped_point.z());
   Quaternion<float> conj_quat = quat;
   conj_quat.conjugate();
   
-  Quaternion<float> tmp = quat;
-  tmp *= point_q;
-  tmp *=conj_quat;
+  Quaternion<float> tmp = quat * point_q * conj_quat;
 
   tmp[2] += translation.x();
   tmp[3] += translation.y();
   tmp[4] += translation.z();
-  CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
+  const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
   
 #else
-  // KT translatino only, with swapping of x and y
+  //translation only
  
-  CartesianCoordinate3D<float> transformed_point (point.z()+translation.z(),
-						  point.y()+translation.x(),
-						  point.x()+translation.y());
+  const CartesianCoordinate3D<float> transformed_point (swapped_point.z()+translation.z(),
+						  swapped_point.y()+translation.y(),
+						  swapped_point.x()+translation.x());
 #endif
-#endif
-
-#if 0
+#else
   // transformation with rotational matrix
-  // TODO remove
-  quat[1]=1;
-  quat[2]=0;
-  quat[3]=0;
-  quat[4]=0;
+  Array<2,float> matrix = Array<2,float>(IndexRange2D(0,2,0,2));
 
   quaternion_2_m3(matrix,quat); 
-  
+
+    
   Array<1,float> tmp(matrix.get_min_index(), matrix.get_max_index());
 
-  tmp[matrix.get_min_index()]=point.x();
-  tmp[matrix.get_min_index()+1]=point.y();
-  tmp[matrix.get_max_index()]=point.z();
+  tmp[matrix.get_min_index()]=swapped_point.x();
+  tmp[matrix.get_min_index()+1]=swapped_point.y();
+  tmp[matrix.get_max_index()]=swapped_point.z();
 
   Array<1,float> out(matrix.get_min_index(), matrix.get_max_index());
   // rotation
@@ -147,10 +144,10 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   out[matrix.get_min_index()+1] += translation.y();
   out[matrix.get_max_index()] += translation.z();
 
-  CartesianCoordinate3D<float> transformed_point(out[out.get_max_index()],out[out.get_min_index()+1],out[out.get_min_index()]);
+  const CartesianCoordinate3D<float> transformed_point(out[out.get_max_index()],out[out.get_min_index()+1],out[out.get_min_index()]);
 
 #endif
-  return transformed_point;
+  return CartesianCoordinate3D<float> (transformed_point.z(), transformed_point.x(), transformed_point.y());
 }
 
 
