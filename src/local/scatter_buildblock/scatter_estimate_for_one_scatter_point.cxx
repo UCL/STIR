@@ -17,7 +17,8 @@
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/Scatter.h"
-#include <cmath>
+#include <math.h>
+
 
 using namespace std;
 
@@ -151,7 +152,8 @@ float scatter_estimate_for_one_scatter_point(
 		image[round((scatter_point-origin)/voxel_size)]);
 #endif	
 	const float scatter_ratio =
-		(emiss_to_detA + emiss_to_detB)
+		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
+		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
 		/(rA_squared*rB_squared)
 		*dif_cross_section
 		*atten_to_detB
@@ -159,7 +161,6 @@ float scatter_estimate_for_one_scatter_point(
 		*scatter_point_mu
 		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
-		*exp(-total_cross_section(new_energy)/total_cross_section_511keV)
 		;	
 
 	if (!use_cosphi)
