@@ -6,7 +6,7 @@
   \file
   \ingroup recontest
 
-  \brief Test programme for back projection
+  \brief Test program for back projection
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -21,12 +21,9 @@
     See STIR/LICENSE.txt for details
 */
 
-//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-//#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-//#include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/display.h"
-#include "stir/interfile.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
@@ -34,7 +31,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-
+#include "stir/Succeeded.h"
 
 #include <fstream>
 #include <list>
@@ -318,9 +315,10 @@ main(int argc, char **argv)
     
     if (save)
     {
+      DefaultOutputFileFormat output_format;
       char* file = "bcktest";
       cerr <<"  - Saving " << file << endl;
-      write_basic_interfile(file, *image_sptr);
+      output_format.write_to_file(file, *image_sptr);
       
     }
 
