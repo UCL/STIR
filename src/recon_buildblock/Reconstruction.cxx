@@ -23,7 +23,6 @@
 #include "stir/recon_buildblock/ReconstructionParameters.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"
-#include "stir/interfile.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR

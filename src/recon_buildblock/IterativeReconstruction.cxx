@@ -28,7 +28,6 @@
 #include "stir/ImageProcessor.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
-#include "stir/interfile.h"
 #include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
