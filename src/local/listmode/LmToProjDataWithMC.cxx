@@ -5,7 +5,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "local/stir/listmode/lm.h"
 #include "stir/IO/stir_ecat7.h"
-
+#include "stir/Succeeded.h"
 #include <time.h>
 
 
@@ -177,7 +177,7 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
   
   // now do the movement
   
-  Polaris_MT_File::Record mt_record;
+  //Polaris_MT_File::Record mt_record;
   RigidObject3DTransformation ro3dtrans;
 
   ro3d_ptr->get_motion(ro3dtrans,time);
@@ -203,11 +203,10 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
   if ( ring_a_trans > scanner_ptr->get_num_rings() 
 	|| ring_a_trans <0 || ring_b_trans <0 || 
 	ring_b_trans > scanner_ptr->get_num_rings() ||
-      Succeeded::no ==
         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).
         get_bin_for_det_pair(bin,
 			 det_num_a_trans, ring_a_trans,
-			 det_num_b_trans, ring_b_trans))
+			 det_num_b_trans, ring_b_trans) == Succeeded::no)
   {
     // set to some hopefully sensible value, such that
     // counts are reported ok by LmToProjData::compute
@@ -218,6 +217,8 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
 
     bin.set_bin_value(-1);
   }
+  else
+    bin.set_bin_value(1/bin_efficiency);
 
 #else
   int view_t,elem_t; 
