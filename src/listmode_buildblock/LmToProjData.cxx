@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \ingroup utilities
+  \ingroup listmode
 
   \brief Program to bin listmode data to 3d sinograms
  
@@ -11,10 +11,10 @@
   \author Sanida Mustafovic
   
   $Date$
-  $Revision $
+  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -38,12 +38,10 @@ FRAME_BASED_DT_CORR:
 
 #define FRAME_BASED_DT_CORR
 
-#define INCLUDE_NORMALISATION_FACTORS
-
 // set elem_type to what you want to use for the sinogram elements
 // we need a signed type, as randoms can be subtracted. However, signed char could do.
 
-#if defined(USE_SegmentByView) || defined(INCLUDE_NORMALISATION_FACTORS) 
+#if defined(USE_SegmentByView) 
    typedef float elem_type;
 #  define OUTPUTNumericType NumericType::FLOAT
 #else
@@ -55,9 +53,9 @@ FRAME_BASED_DT_CORR:
 
 #include "stir/utilities.h"
 
-#include "local/stir/listmode/LmToProjData.h"
-#include "local/stir/listmode/CListRecord.h"
-#include "local/stir/listmode/CListModeData.h"
+#include "stir/listmode/LmToProjData.h"
+#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 #include "stir/Scanner.h"
@@ -122,6 +120,10 @@ allocate_segments(VectorWithOffset<segment_type *>& segments,
                        const int start_segment_index, 
 	               const int end_segment_index,
                        const ProjDataInfo* proj_data_info_ptr);
+
+// In the next 2 functions, the 'output' parameter needs to be passed 
+// because save_and_delete_segments needs it when we're not using SegmentByView
+
 /* last parameter only used if USE_SegmentByView
    first parameter only used when not USE_SegmentByView
  */         
@@ -131,23 +133,22 @@ save_and_delete_segments(shared_ptr<iostream>& output,
 			      const int start_segment_index, 
 			      const int end_segment_index, 
 			      ProjData& proj_data);
-
-// In the next 3 functions, the 'output' parameter needs to be passed 
-// because save_and_delete_segments needs it when we're not using SegmentByView
 static
 shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
                     const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
 
-
+/**************************************************************
+ The 3 parsing functions
+***************************************************************/
 void 
 LmToProjData::
 set_defaults()
 {
   max_segment_num_to_process = -1;
   store_prompts = true;
-  delayed_increment = -1;
+  store_delayeds = true;
   interactive=false;
   num_segments_in_memory = -1;
   normalisation_ptr = new TrivialBinNormalisation;
@@ -167,8 +168,8 @@ initialise_keymap()
   parser.add_key("frame_definition file",&frame_definition_filename);
   parser.add_key("num_events_to_store",&num_events_to_store);
   parser.add_key("output filename prefix",&output_filename_prefix);
-  parser.add_parsing_key("Bin Normalisation type for pre normalisation", &normalisation_ptr);
-  parser.add_parsing_key("Bin Normalisation type for post normalisation", &post_normalisation_ptr);
+  parser.add_parsing_key("Bin Normalisation type for pre-normalisation", &normalisation_ptr);
+  parser.add_parsing_key("Bin Normalisation type for post-normalisation", &post_normalisation_ptr);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
@@ -177,8 +178,9 @@ initialise_keymap()
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
   // That's a bit too much trouble for now though...
   {
-    parser.add_key("Store 'prompts'",&store_prompts);
-    parser.add_key("increment to use for 'delayeds'",&delayed_increment);
+    parser.add_key("Store prompts",&store_prompts);
+    parser.add_key("Store delayeds",&store_delayeds);
+    //parser.add_key("increment to use for 'delayeds'",&delayed_increment);
   }
   parser.add_key("List event coordinates",&interactive);
   parser.add_stop_key("END");  
@@ -239,38 +241,78 @@ post_processing()
     num_segments_in_memory =
       min(num_segments_in_memory, num_segments);
 
-  // set up normalisation object
+  Scanner const * const scanner_ptr = 
+    template_proj_data_info_ptr->get_scanner_ptr();
 
-    scanner_ptr = 
-    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
+  if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
+    {
+      warning("Scanner from list mode data (%s) is different from\n"
+	      "scanner from template projdata (%s)\n",
+	      scanner_ptr->get_name().c_str(),
+	      lm_data_ptr->get_scanner_ptr()->get_name().c_str());
+      return true;
+    }
+  
+  // handle store_prompts and store_delayeds
 
-  // TODO this won't work for the HiDAC or so
-  proj_data_info_cyl_uncompressed_ptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
-                  1, scanner_ptr->get_num_rings()-1,
-                  scanner_ptr->get_num_detectors_per_ring()/2,
-                  scanner_ptr->get_default_num_arccorrected_bins(), 
-                  false));
+  if (lm_data_ptr->has_delayeds()==false && store_delayeds==true)
+    {
+      warning("This list mode data does not seem to have delayed events.\n"
+	      "Setting store_delayeds to false.");
+      store_delayeds=true;
+    }
+  
+  if (store_prompts)
+    {
+      if (store_delayeds)
+	delayed_increment = -1;
+      else
+	delayed_increment = 0;
+    }
+  else
+    {
+      if (store_delayeds)
+	delayed_increment = 1;
+      else
+	{
+	  warning("At least one of store_prompts or store_delayeds should be true");
+	  return true;
+	}
+    }
+
+  // set up normalisation objects
 
   if (is_null_ptr(normalisation_ptr))
     {
-      //normalisation_ptr = new TrivialBinNormalisation;
-      warning("Invalid normalisation object\n");
+      warning("Invalid pre-normalisation object\n");
+      return true;
+    }
+  if (is_null_ptr(post_normalisation_ptr))
+    {
+      warning("Invalid post-normalisation object\n");
       return true;
     }
 
   if (do_pre_normalisation)
     {
+      // TODO this won't work for the HiDAC or so
+      proj_data_info_cyl_uncompressed_ptr =
+	dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+							 ProjDataInfo::ProjDataInfoCTI(new Scanner(*scanner_ptr), 
+										       1, scanner_ptr->get_num_rings()-1,
+										       scanner_ptr->get_num_detectors_per_ring()/2,
+										       scanner_ptr->get_default_num_arccorrected_bins(), 
+										       false));
+      
       if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)
-	error("correct_projdata: set-up of normalisation failed\n");
+	error("LmToProjData: set-up of pre-normalisation failed\n");
     }
   else
     {
       if ( post_normalisation_ptr->set_up(template_proj_data_info_ptr)
 	   != Succeeded::yes)
-	error("correct_projdata: set-up of normalisation failed\n");
+	error("LmToProjData: set-up of post-normalisation failed\n");
     }
 
   // handle time frame definitions etc
@@ -294,9 +336,15 @@ post_processing()
   return false;
 }
 
+/**************************************************************
+ Constructors
+***************************************************************/
+
 LmToProjData::
 LmToProjData()
-{}
+{
+  set_defaults();
+}
 
 LmToProjData::
 LmToProjData(const char * const par_filename)
@@ -311,7 +359,11 @@ LmToProjData(const char * const par_filename)
     ask_parameters();
 }
 
+/**************************************************************
+ Here follows the implementation of get_bin_from_event
 
+ this function is complicated because of the normalisation stuff. sorry
+***************************************************************/
 void
 LmToProjData::
 get_bin_from_event(Bin& bin, const CListEvent& event) const
@@ -346,9 +398,6 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
 	return;
 	}
      
-      //	bin.set_bin_value(1/bin_efficiency);
-    // do motion correction here
-
     // now find 'compressed' bin, i.e. taking mashing, span etc into account
     // Also, adjust the normalisation factor according to the number of
     // uncompressed bins in a compressed bin
@@ -371,6 +420,9 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
 
 } 
 
+/**************************************************************
+ Here follows the post_normalisation related stuff. 
+***************************************************************/
 void 
 LmToProjData::
 do_post_normalisation(Bin& bin) const
@@ -422,6 +474,9 @@ get_compression_count(const Bin& bin) const
 
 }
 
+/**************************************************************
+ Empty functions for new time events and new time frames.
+***************************************************************/
 void
 LmToProjData::
 process_new_time_event(const CListTime&)
@@ -433,6 +488,15 @@ LmToProjData::
 start_new_time_frame(const unsigned int)
 {}
 
+/**************************************************************
+ Here follows the actual rebinning code (finally).
+
+ It's simple, but looks ugly because of the facility to store only
+ part of the segments in memory.
+ This really should be cleared up (maybe using ProjDataInMemory?)
+
+ This code will also simplify when we have Study objects allowing multiple frames.
+***************************************************************/
 void
 LmToProjData::
 process_data()
@@ -542,8 +606,6 @@ process_data()
 			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
-			 do_post_normalisation(bin);
-
 			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
 			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
             
@@ -562,9 +624,11 @@ process_data()
 			 // now check if we have its segment in memory
 			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
 			   {
+			     do_post_normalisation(bin);
+			 
 			     num_events_in_frame += event_increment;               
 			     num_stored_events += event_increment;
-			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << flush;
+			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
                             
 			     if (interactive)
 			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored\n", 
@@ -572,9 +636,7 @@ process_data()
 				      current_time);
 			     else
 			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-#ifdef INCLUDE_NORMALISATION_FACTORS
 			       bin.get_bin_value() * 
-#endif
 			       event_increment;
 			   }
 		       }
@@ -671,10 +733,7 @@ construct_proj_data(shared_ptr<iostream>& output,
 {
   vector<int> segment_sequence_in_stream(proj_data_info_ptr->get_num_segments());
   { 
-#ifndef STIR_NO_NAMESPACES
-    std:: // explcitly needed by VC
-#endif
-    vector<int>::iterator current_segment_iter =
+    std::vector<int>::iterator current_segment_iter =
       segment_sequence_in_stream.begin();
     for (int segment_num=proj_data_info_ptr->get_min_segment_num();
          segment_num<=proj_data_info_ptr->get_max_segment_num();
