@@ -36,7 +36,7 @@
 
 #include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
-#include "stir/InterfileHeader.h"
+#include "stir/IO/InterfileHeader.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
 #include "stir/CartesianCoordinate3D.h"

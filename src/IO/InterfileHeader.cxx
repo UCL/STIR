@@ -19,7 +19,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/InterfileHeader.h"
+#include "stir/IO/InterfileHeader.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
