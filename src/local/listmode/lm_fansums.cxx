@@ -143,7 +143,7 @@ int main(int argc, char * argv[])
 
 
   const bool do_time_frame = true;//ask("Do time frame",true); TODO?
-  long num_events_to_store;
+  unsigned long num_events_to_store;
   double start_time = 0;
   double end_time = 0;
 
@@ -231,15 +231,6 @@ int main(int argc, char * argv[])
 #else
             int ra,a,rb,b;
 	    record.event.get_detectors(a,b,ra,rb);
-#if 0
-	    if (interactive)
-            {
-              printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g",
-		     record.event.is_prompt() ? 'p' : 'd',
-		     ra,a,rb,b,
-		     current_time);
-            }
-#endif
 	    if (abs(ra-rb)<=max_ring_diff)
 	      {
 		const int det_num_diff =
@@ -248,9 +239,6 @@ int main(int argc, char * argv[])
 		    det_num_diff>=num_detectors_per_ring-fan_size/2)
 		  {
                   if (interactive)
-#if 0
-		      printf(" accepted\n");
-#else
                   {
                     printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g accepted\n",
                       record.event.is_prompt() ? 'p' : 'd',
@@ -262,7 +250,6 @@ int main(int argc, char * argv[])
                     printf("Seg %4d view %4d ax_pos %4d tang_pos %4d\n", 
                       bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
                   }
-#endif
 		    data_fan_sums[ra][a] += event_increment;
 		    data_fan_sums[rb][b] += event_increment;
 		    num_stored_events += event_increment;
