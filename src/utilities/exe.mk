@@ -32,4 +32,11 @@ ifeq ($(HAVE_LLN_MATRIX),1)
   $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx
 endif
 
+${DEST}$(dir)/poisson_noise: ${DEST}$(dir)/poisson_noise.o \
+   $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< \
+		 $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+
 include $(WORKSPACE)/exe.mk
