@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /*
@@ -63,7 +63,6 @@ static inline int sign(const T& t)
   return t<0 ? -1 : 1;
 }
 
-
 /*!
   This function uses a 3D version of Siddon's algorithm for forward projecting.
   See M. Egger's thesis for details.
@@ -78,10 +77,16 @@ static inline int sign(const T& t)
 
 
 // KT 20/06/2001 should now work for non-arccorrected data as well, pass s_in_mm
+#ifndef STIR_SIDDON_NO_TEMPLATE
 template <int Siddon>
+#endif
 bool
 ForwardProjectorByBinUsingRayTracing::
-proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
+proj_Siddon(
+#ifdef STIR_SIDDON_NO_TEMPLATE
+            int Siddon,
+#endif
+            Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
 	    const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	    const float cphi, const float sphi, const float delta, const 
             float s_in_mm, 
@@ -91,7 +96,6 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	    const float norm_factor,
 	    const bool restrict_to_cylindrical_FOV)
 {
-
   /*
    * Siddon == 1 => Phiplus90_r0ab 
    * Siddon == 2 => Phiplus90s0_r0ab
@@ -531,6 +535,8 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 
 //**************** instantiations
 
+#if !defined(STIR_SIDDON_NO_TEMPLATE)
+// this is the normal code, but it doesn't compile with VC 6.0
 template 
 bool
 ForwardProjectorByBinUsingRayTracing::
@@ -586,4 +592,5 @@ proj_Siddon<4>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &,
 	       const float norm_factor,
 	       const bool restrict_to_cylindrical_FOV);
 
+#endif 
 END_NAMESPACE_STIR

@@ -161,7 +161,6 @@ ForwardProjectorByBinUsingRayTracing::get_symmetries_used() const
   return symmetries_ptr.get(); 
 }
 
-
 void 
 ForwardProjectorByBinUsingRayTracing::
 actual_forward_project(RelatedViewgrams<float>& viewgrams, 
@@ -373,6 +372,8 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 
 }
 
+
+
 /*
     The version which uses all possible symmetries.
     Here 0<=view < num_views/4 (= 45 degrees)
@@ -498,7 +499,13 @@ forward_project_all_symmetries(
 		{
 		  /* Here tang_pos_num=0 and phi=0 or 45*/
 
-		  if (proj_Siddon< 2>(Projall, image, proj_data_info_ptr, cphi, sphi,
+		  if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		      < 2>(
+#else
+			   (2,
+#endif
+			   Projall, image, proj_data_info_ptr, cphi, sphi,
 				      delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
 				      offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
 				      1.F / num_lors_per_virtual_ring,
@@ -517,7 +524,13 @@ forward_project_all_symmetries(
 		  {
 		    bin.tangential_pos_num() = tang_pos_num;
 		    const float s_in_mm = proj_data_info_ptr->get_s(bin);
-                    if (proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
+                    if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+			<1>(
+#else
+			    (1,
+#endif
+			    Projall, image, proj_data_info_ptr, cphi, sphi,
 				       delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
 				       offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
 				       1.F/num_lors_per_virtual_ring,
@@ -548,7 +561,13 @@ forward_project_all_symmetries(
 	      if (min_abs_tangential_pos_num==0)
 		{             
 		  /* Here tang_pos_num==0 and phi!=k*45 */
-		  if (proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
+		  if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		      <4>(
+#else
+			  (4,
+#endif
+			  Projall, image, proj_data_info_ptr, cphi, sphi, 
 				     delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
 				     offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				     1.F/num_lors_per_virtual_ring,
@@ -572,7 +591,13 @@ forward_project_all_symmetries(
 		    bin.tangential_pos_num() = tang_pos_num;
 		    const float s_in_mm = proj_data_info_ptr->get_s(bin);
 
-                    if (proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
+                    if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+			<3>(
+#else
+			    (3,
+#endif
+			    Projall, image, proj_data_info_ptr, cphi, sphi,
 				       delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
 				       offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				       1.F/num_lors_per_virtual_ring,
@@ -887,7 +912,13 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	for (D = 0; D < C; D++) {
 	  /* Here tang_pos_num=0 and phi=0 or 45*/
 	  
-	  if (proj_Siddon<2>( Projall,image,proj_data_cyl_ptr, 
+	  if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+	      <2>(
+#else
+		  (2,
+#endif
+		 Projall,image,proj_data_cyl_ptr, 
 			      cphi, sphi, delta + D, 0, R,min_ax_pos, max_ax_pos, 
 			      offset, num_planes_per_axial_pos, 0,
 			      1.F/num_lors_per_virtual_ring,
@@ -899,7 +930,13 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	    }
 	  /* Now tang_pos_num!=0 and phi=0 or 45 */
 	  for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
-	    if (proj_Siddon<1>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+	    if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		<1>(
+#else
+		    (1,
+#endif
+		    Projall,image,proj_data_cyl_ptr, cphi, sphi,
 			       delta + D, tang_pos_num, R,min_ax_pos,max_ax_pos, 
 			       offset, num_planes_per_axial_pos, 0,
 			       1.F/num_lors_per_virtual_ring,
@@ -918,7 +955,13 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	
 	for (D = 0; D < C; D++) {
 	  /* Here tang_pos_num==0 and phi!=k*45 */
-	  if (proj_Siddon<4>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+	  if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+	      <4>(
+#else
+		  (4,
+#endif
+		  Projall,image,proj_data_cyl_ptr, cphi, sphi,
 			     delta + D, 0, R,min_ax_pos,max_ax_pos, 
 			     offset, num_planes_per_axial_pos, 0,
 			     1.F/num_lors_per_virtual_ring,
@@ -933,7 +976,13 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	  
 	  /* Here tang_pos_num!=0 and phi!=k*45. */
 	  for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
-	    if (proj_Siddon<3>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+	    if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		<3>(
+#else
+		    (3,
+#endif
+		    Projall,image,proj_data_cyl_ptr, cphi, sphi,
 			       delta + D, tang_pos_num, R,min_ax_pos, max_ax_pos, 
 			       offset, num_planes_per_axial_pos, 0,
 			       1.F/num_lors_per_virtual_ring,
@@ -1141,7 +1190,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	{
 	  /* Here tang_pos_num=0 and phi=0 or 45*/     
 	  {        
-	    if (proj_Siddon<2>(Projall, image, proj_data_info_ptr, cphi, sphi,
+	    if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		<2>(
+#else
+		    (2,
+#endif
+		    Projall, image, proj_data_info_ptr, cphi, sphi,
 			       delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
 			       0.F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			       1.F/num_lors_per_virtual_ring,
@@ -1157,7 +1212,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	  
 	  if (num_planes_per_axial_pos == 2)
 	    {	 	  
-	      if (proj_Siddon<2>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+	      if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		  <2>(
+#else
+		      (2,
+#endif
+		      Projall2, image, proj_data_info_ptr, cphi, sphi,
 				 delta + D, 0, R, min_axial_pos_num,  max_axial_pos_num+1,
 				 -0.5F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				 1.F/4,
@@ -1179,7 +1240,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	
 
         {                              
-          if (proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
+          if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+	      <1>(
+#else
+		  (1,
+#endif
+		  Projall, image, proj_data_info_ptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
 			     0.F, num_planes_per_axial_pos, axial_pos_to_z_offset,
 			     1.F/num_lors_per_virtual_ring,
@@ -1201,7 +1268,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
         }
         if (num_planes_per_axial_pos == 2)
         {                            
-          if (proj_Siddon<1>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+          if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+	      <1>(
+#else
+		  (1,
+#endif
+		  Projall2, image, proj_data_info_ptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
 			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset,
 			     1.F/4,
@@ -1233,7 +1306,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	{
 	  /* Here tang_pos_num==0 and phi!=k*45 */
 	  {
-	    if (proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
+	    if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		<4>(
+#else
+		    (4,
+#endif
+		    Projall, image, proj_data_info_ptr, cphi, sphi, 
 			       delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
 			       0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			       1.F/num_lors_per_virtual_ring,
@@ -1250,7 +1329,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	  
 	  if (num_planes_per_axial_pos == 2)        
 	    {         
-	      if (proj_Siddon<4>(Projall2, image, proj_data_info_ptr, cphi, sphi, 
+	      if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+		  <4>(
+#else
+		      (4,
+#endif
+		      Projall2, image, proj_data_info_ptr, cphi, sphi, 
 				 delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
 				 -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 				 1.F/4,
@@ -1273,7 +1358,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	const float s_in_mm = proj_data_info_ptr->get_s(bin);
 
         {          
-          if (proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
+          if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+	      <3>(
+#else
+		  (3,
+#endif
+		  Projall, image, proj_data_info_ptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
 			     0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			     1.F/num_lors_per_virtual_ring,
@@ -1299,7 +1390,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
         } 
         if (num_planes_per_axial_pos == 2)
         {
-	  if (proj_Siddon<3>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+	  if (proj_Siddon
+#ifndef STIR_SIDDON_NO_TEMPLATE
+	      <3>(
+#else
+		  (3,
+#endif
+		  Projall2, image, proj_data_info_ptr, cphi, sphi,
 			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
 			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
 			     1.F/4,
