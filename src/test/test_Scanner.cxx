@@ -73,7 +73,7 @@ test_scanner(const Scanner& scanner)
      allowed for a full-ring tomograph 
   */
   {
-    check(scanner.get_max_num_non_arccorrected_bins() < scanner.get_num_detectors_per_ring(),
+    check(scanner.get_max_num_non_arccorrected_bins() <= scanner.get_num_detectors_per_ring(),
 	  "too large max_num_non_arccorrected_bins compared to num_detectors_per_ring");
   }
   /* check if default_bin_size is close to the central bin size. This is especially true
@@ -117,7 +117,8 @@ test_scanner(const Scanner& scanner)
     cerr << "Comparing STIR scanner info with LLN matrix\n";
     check_if_equal(scanner.get_num_axial_buckets(), ecat_scanner_info->rings,
 		   "number of rings of buckets");
-    check_if_equal(scanner.get_num_axial_buckets()*scanner.get_num_transaxial_buckets(), 
+    if (scanner.get_type() != Scanner::E925) // ART is a partial ring tomograph
+      check_if_equal(scanner.get_num_axial_buckets()*scanner.get_num_transaxial_buckets(), 
 		   ecat_scanner_info->nbuckets,
 		   "total number of buckets");
     check_if_equal(scanner.get_num_transaxial_blocks_per_bucket(), ecat_scanner_info->transBlocksPerBucket,
