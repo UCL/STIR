@@ -1,0 +1,56 @@
+#
+# $Id: 
+#
+WORKSPACE=$(CURDIR)/../../..
+
+include $(WORKSPACE)/Makefile_common
+
+
+LIB_SOURCES =  \
+         OSSPSParameters.cxx \
+         OSSPSReconstruction.cxx 
+
+MAIN_SOURCES = OSSPS.cxx
+
+LIB_OBJS = $(LIB_SOURCES:%.cxx=$(DEST)%.o)
+
+MAIN_OBJS = $(MAIN_SOURCES:%.cxx=$(DEST)%.o)
+
+EXES = $(MAIN_SOURCES:%.cxx=$(DEST)%)
+
+.PRECIOUS: $(LIB_OBJS) $(MAIN_OBJS) $(EXES)
+
+
+all: $(EXES)
+
+clean:
+	$(RM) $(DEST)*
+
+
+install: $(EXES)
+	cp $(EXES) $(INSTALL_DIR)
+
+
+include $(WORKSPACE)/Makefile_bblibs
+
+
+${DEST}OSSPS: ${DEST}OSSPS.o $(LIB_OBJS) \
+	  $(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}  $(BB_REGISTRIES)
+	  $(CXX) $(CFLAGS)-o $@ $< \
+          $(LIB_OBJS) \
+	  $(BB_REGISTRIES) \
+	  ${LIB_LOGLIK_BUILDINGBLOCK}  $(BB_LIBS) \
+	  $(LINK_OPT) $(SYS_LIBS)
+
+
+
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+include $(MAIN_SOURCES:%.cxx=$(DEST)%.d)
+
+include $(LIB_SOURCES:%.cxx=$(DEST)%.d)
+endif
+
+
+
+
