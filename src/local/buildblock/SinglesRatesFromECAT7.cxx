@@ -69,22 +69,31 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
     reinterpret_cast<Main_header*>( mptr->mhptr ) ;
 
   // TODO find out sizes from somewhere somehow -- for HR++ 108 entries (3 (axial)*36(radial))
-  singles =  Array<3,float>(IndexRange3D(0,main_header->num_frames-1,0,2,0,35)); 
+  singles =  Array<3,float>(IndexRange3D(1,main_header->num_frames,0,2,0,35)); 
   
   MatrixData* matrix ;
+  vector<pair<double, double> > time_frames(main_header->num_frames);
   for ( int mat_frame = 1 ; mat_frame <= main_header->num_frames ; mat_frame++ )
   {
-    matrix= matrix_read( mptr, mat_numcod( mat_frame, 1, 1, 0, 0),/*don't read the data*/1) ;
+    //cerr << "Reading frame " << mat_frame <<endl;
+    matrix= matrix_read( mptr, mat_numcod( mat_frame, 1, 1, 0, 0),
+			 /*don't read the data*/MAT_SUB_HEADER) ;
     
     Scan3D_subheader* scan_subheader_ptr=  
       reinterpret_cast<Scan3D_subheader *>(matrix->shptr);
-    
+    time_frames[mat_frame-1].first=scan_subheader_ptr->frame_start_time/1000;
+    time_frames[mat_frame-1].second=
+      time_frames[mat_frame-1].first +
+      scan_subheader_ptr->frame_duration/1000;
+
     float const* singles_ptr = reinterpret_cast<float const *>(scan_subheader_ptr->uncor_singles);//matrix->data_ptr);
-    for(Array<2,float>::full_iterator iter = singles[mat_frame-1].begin_all(); iter != singles[mat_frame-1].end_all();)
+    for(Array<2,float>::full_iterator iter = singles[mat_frame].begin_all(); iter != singles[mat_frame].end_all();)
     {
       *iter++ = *singles_ptr++;
     }
   }
+  time_frame_defs =
+    TimeFrameDefinitions(time_frames);
   return singles; 
   
 }
@@ -100,7 +109,12 @@ SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,
   const int axial_bucket_num = axial_pos/(2*axial_crystals_per_block);//axialCrystalsPerBlock);
   const int transaxial_bucket_num = (transaxial_pos/denom) ;
 
-  return singles[0][axial_bucket_num][transaxial_bucket_num]/4.0;  // divide by 4.0 to be consistant with CTIs
+  int frame_num = get_frame_number(start_time,end_time);
+  //cerr << "Frame_num:   " << frame_num << endl;
+  //cerr << " Axial pos: " << axial_bucket_num << endl;
+  //cerr << " Transax pos: " << transaxial_bucket_num << endl;
+  
+  return singles[frame_num][axial_bucket_num][transaxial_bucket_num]/4.0;  // divide by 4.0 to be consistant with CTIs
 
 }
 
@@ -128,6 +142,28 @@ SinglesRatesFromECAT7::set_defaults()
 {
   ECAT7_filename = "";
 }
+
+int 
+SinglesRatesFromECAT7::get_frame_number (const double start_time, const double end_time) const
+{
+  assert(end_time >start-time);
+
+  int frame_num=0;
+  for ( int i = 0; i <=time_frame_defs.get_num_frames()-1; i++)
+    {
+      double start = time_frame_defs.get_start_time(i);
+      double end = time_frame_defs.get_end_time(i);
+      if ((start_time-start)<0.00001 && (end_time-end)<0.00001)
+	{
+	  frame_num = i;
+	}
+    }
+      
+  return frame_num;
+  
+
+}
+
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
