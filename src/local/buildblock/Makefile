@@ -16,6 +16,8 @@ SOURCES = \
 	SeparableLowPassImageFilter.cxx \
 	ModifiedInverseAverigingArrayFilter.cxx \
 	ModifiedInverseAverigingImageFilter.cxx \
+	SeparableGaussianImageFilter.cxx \
+	SeparableGaussianArrayFilter.cxx \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
