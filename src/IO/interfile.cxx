@@ -194,9 +194,33 @@ bool write_basic_interfile(const char * const filename,
     output_header << "!matrix size [1] := "
       << image.get_length1() << endl;
     output_header << "matrix axis label [1] := x\n";
+    // KT 16/02/98 added voxel size
+    output_header << "scaling factor (mm/pixel) [1] := " 
+                << voxel_size.x << endl;
     output_header << "!matrix size [2] := "
       << image.get_length2() << endl;
     output_header << "matrix axis label [2] := y\n";
+    // KT 16/02/98 added voxel size
+    output_header << "scaling factor (mm/pixel) [2] := " 
+                << voxel_size.y << endl;
+    // KT 16/02/98 added voxel size
+    {
+      // Note: bug in current version of analyze
+      // if voxel_size is not an integer, it will not take the 
+      // pixel size into account
+      // Work around: Always make sure it is not an integer, by
+      // adding a small number to it if necessary
+      // TODO this is horrible and not according to the Interfile standard
+      // so, remove for distribution purposes
+      float zsize = voxel_size.z;
+      if (floor(zsize)==zsize)
+	zsize += 0.00001F;
+      // TODO this is what it should be
+      // float zsize = voxel_size.z/ voxel_size.x;
+      
+      output_header << "!slice thickness (pixels) := " 
+                << zsize << endl;
+    }
     output_header << "!END OF INTERFILE :=\n";
     
   }
@@ -244,28 +268,8 @@ PETSinogramOfVolume read_interfile_PSOV(istream& input)
       max_ring_num_per_segment[s] = hdr.num_rings_per_segment[s]-1;
     }
 
-    // TODO Horrible trick to get the scanner right
-    PETScannerInfo scanner;
-    switch (hdr.num_views)
-    {
-    case 96:
-      scanner = PETScannerInfo::RPT;
-      break;
-    case 192:
-      scanner = PETScannerInfo::E953;
-      break;
-    case 336:
-      scanner = PETScannerInfo::Advance;
-      break;
-    case 288:
-      scanner = PETScannerInfo::E966;
-      break;
-    default:
-      cerr << "Interfile warning: I did not recognise the scanner from num_views.\n\
-Defaulting to RPT" << endl;
-      scanner = PETScannerInfo::RPT;
-      break;
-    }
+    // KT 26/11/98 use new scan_info member of the hdr
+   
     // TODO scaling factors
     for (int i=1; i<hdr.image_scaling_factors[0].size(); i++)
       if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
@@ -274,8 +278,9 @@ Defaulting to RPT" << endl;
 at the moment. Using the first scale factor only.\n");
         break;
       }
+    // KT 26/11/98 use new scan_info member of the hdr
     return PETSinogramOfVolume(
-                      scanner,
+                      hdr.scan_info,
 		      hdr.segment_sequence,
 		      hdr.min_ring_difference, 
 		      hdr.max_ring_difference, 
@@ -288,6 +293,8 @@ at the moment. Using the first scale factor only.\n");
 		      hdr.data_offset[0],
 		      hdr.storage_order,
 		      hdr.type_of_numbers,
+		      // KT 15/03/99 new
+		      hdr.file_byte_order,
 		      hdr.image_scaling_factors[0][0]);
 }
 
@@ -306,6 +313,145 @@ PETSinogramOfVolume read_interfile_PSOV(const char *const filename)
   return read_interfile_PSOV(image_stream);
 }
 
+// KT 15/03/99 new
+
+bool write_basic_interfile_PSOV_header(const char *outfile_name,
+				 const PETSinogramOfVolume& psov)
+{
+
+  string header_name = outfile_name;
+  header_name += ".hs";
+  ofstream output_header(header_name.c_str(), ios::out);
+  if (!output_header.good())
+  {
+    cerr << "Error opening Interfile header '" 
+         << header_name << " for writing" << endl;
+    return false;
+  }  
+  string data_name = outfile_name;
+  data_name += ".s";
+  // ofstream output_data;
+  // open_write_binary(output_data, data_name.c_str());
+
+
+  output_header << "!INTERFILE  :=\n";
+  output_header << "name of data file := " << data_name << endl;
+
+  output_header << "originating system := ";
+  switch(psov.scan_info.get_scanner().type)
+    {
+      case PETScannerInfo::RPT: output_header << "PRT-1\n"; break;
+      case PETScannerInfo::E951: output_header << "ECAT 951\n"; break;
+      case PETScannerInfo::E953: output_header << "ECAT 966\n"; break;
+      case PETScannerInfo::ART: output_header << "ECAT ART\n"; break;
+      case PETScannerInfo::Advance: output_header << "Advance\n"; break;
+      default: output_header << "Unknown\n"; break;
+    }
+
+  output_header << "!GENERAL DATA :=\n";
+  output_header << "!GENERAL IMAGE DATA :=\n";
+  output_header << "!type of data := PET\n";
+  // TODO use on_disk_byte_order
+  output_header << "imagedata byte order := " <<
+    (ByteOrder::get_native_order() == ByteOrder::little_endian 
+     ? "LITTLEENDIAN"
+     : "BIGENDIAN")
+    << endl;
+
+  output_header << "!PET STUDY (General) :=\n";
+  output_header << "!PET data type := Emission\n";
+  // TODO hard-wired float
+  output_header << "!number format := float\n";
+  output_header << "!number of bytes per pixel := 4\n";
+
+  output_header << "number of dimensions := 4\n";
+  
+  // TODO support more ? 
+  {
+    // default to SegmentViewRingBin
+    int order_of_segment = 1;
+    int order_of_view = 2;
+    int order_of_z = 3;
+    int order_of_bin = 4;
+    switch(psov.get_storage_order())
+    {  
+    case PETSinogramOfVolume::ViewSegmentRingBin:
+      {
+	order_of_segment = 2;
+	order_of_view = 1;
+	order_of_z = 3;
+	break;
+      }
+    case PETSinogramOfVolume::SegmentViewRingBin:
+      {
+	order_of_segment = 1;
+	order_of_view = 2;
+	order_of_z = 3;
+	break;
+      }
+    case PETSinogramOfVolume::SegmentRingViewBin:
+      {
+	order_of_segment = 1;
+	order_of_view = 3;
+	order_of_z = 2;
+	break;
+      }
+    default:
+      {
+      PETerror("write_interfile_PSOV_header: unsupported storage order,\
+defaulting to SegmentViewRingBin.\n Please correct by hand !");
+      }
+    }
+    
+    output_header << "!matrix size [" << order_of_segment << "] := " 
+      << psov.get_num_segments() << "\n";
+    output_header << "matrix axis label [" << order_of_segment 
+      << "] := segment\n";
+    output_header << "!matrix size [" << order_of_view << "] := "
+      << psov.get_num_views() << "\n";
+    output_header << "matrix axis label [" << order_of_view << "] := view\n";
+    output_header << "!matrix size [" << order_of_z << "] := "
+      << "{" << psov.get_num_rings(0);
+    for (int s=1; s<= psov.get_max_segment(); s++)
+      output_header << "," << psov.get_num_rings(s) << "," << psov.get_num_rings(-s);
+    output_header << "}\n";
+    
+    output_header << "matrix axis label [" << order_of_z << "] := z\n";
+    output_header << "!matrix size [" << order_of_bin << "] := "
+      << psov.get_num_bins() << "\n";
+    output_header << "matrix axis label [" << order_of_bin << "] := bin\n";
+  }
+
+  output_header << "minimum ring difference per segment := {"
+    << psov.get_min_ring_difference(0);
+  for (int s=1; s<= psov.get_max_segment(); s++)
+    output_header << "," << psov.get_min_ring_difference(s) 
+                  << "," << psov.get_min_ring_difference(-s);
+  output_header << "}\n";
+  output_header << "maximum ring difference per segment := {0";
+  for (int s=1; s<= psov.get_max_segment(); s++)
+    output_header << "," << psov.get_max_ring_difference(s) 
+                  << "," << psov.get_max_ring_difference(-s);
+  output_header << "}\n";
+  
+  output_header << "number of rings := " 
+    << psov.scan_info.get_num_rings() << endl;
+  output_header << "number of detectors per ring := " 
+    << psov.scan_info.get_num_views()*2 << endl;
+  output_header << "transaxial FOV diameter (cm) := "
+    << psov.scan_info.get_ring_radius()*2/10. << endl;
+  output_header << "distance between rings (cm) := " 
+    << psov.scan_info.get_ring_spacing()/10. << endl;
+  output_header << "bin size (cm) := " 
+    << psov.scan_info.get_bin_size()/10. << endl;
+  output_header << "view offset (degrees) := "
+    << psov.scan_info.get_view_offset() << endl;
+
+  output_header << "number of time frames := 1\n";
+  output_header << "!END OF INTERFILE :=\n";
+
+  return true;
+}
 
 /**********************************************************************
  template instantiations
