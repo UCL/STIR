@@ -2,79 +2,90 @@
 // $Id$
 //
 /*!
-  \file
-  \ingroup scatter
-  \brief Implementations of functions defined in scatter.h
+\file
+\ingroup scatter
+\brief Implementations of functions defined in scatter.h
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
-
-    Copyright (C) 2004- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
+  
+	$Date$
+	$Revision$
+	
+	  Copyright (C) 2004- $Date$, Hammersmith Imanet
+	  See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/Scatter.h"
-#include <cmath>
-
+#include <fstream>
+#include <ctime>
 using namespace std;
-
-
 
 START_NAMESPACE_STIR
 
+static inline float random_point(const float low, const float high){
+	/* returns a pseudo random number which holds in the bounds low and high */
+	const float result= (rand()*(high-low))/RAND_MAX  + low;
+	assert(low <= result);
+	assert(high >= result);
+	return result;
+}
+
 std::vector<CartesianCoordinate3D<float> > 
 sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
-					  int & max_scatt_points, 
-					  const float att_threshold)
+					  int & scatt_points, 
+					  const float att_threshold,
+					  const bool random)
 { 
-   const DiscretisedDensityOnCartesianGrid<3,float>* attenuation_map_cartesian_ptr=
-	     &attenuation_map;   
-   if (attenuation_map_cartesian_ptr == 0)
-	   warning("Didn't take an attenuation map as input");
-
-      BasicCoordinate<3,int> min_index, max_index ;
-   CartesianCoordinate3D<int> coord;
-   
-   if(!attenuation_map_cartesian_ptr->get_regular_range(min_index, max_index))
-	   error("scatter points sampling works only on regular ranges, at the moment\n");
+	const DiscretisedDensityOnCartesianGrid<3,float>* attenuation_map_cartesian_ptr=
+		&attenuation_map;   
+	if (attenuation_map_cartesian_ptr == 0)
+		warning("Didn't take an attenuation map as input");
+	
+	BasicCoordinate<3,int> min_index, max_index ;
+	CartesianCoordinate3D<int> coord;
+	
+	if(!attenuation_map_cartesian_ptr->get_regular_range(min_index, max_index))
+		error("scatter points sampling works only on regular ranges, at the moment\n");
     
-   int total_points=1;
+	const VoxelsOnCartesianGrid<float>& image =
+		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
+	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size(); 
+	
+	CartesianCoordinate3D<float>  origin = 
+		image.get_origin();
+	// shift origin such that we refer to the middle of the scanner
+	const float z_to_middle =
+		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
+	origin.z() -= z_to_middle;
 
-   const VoxelsOnCartesianGrid<float>& image =
-  dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
-   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size(); 
+	if(random)
+	{ // Initialize Pseudo Random Number generator using time  
+				srand((unsigned)time( NULL ));
+	}
+	std::vector<CartesianCoordinate3D<float> > scatt_points_vector; 
+	scatt_points_vector.reserve(std::min(1000, scatt_points));  // TOCHECK: I give the scatt_points as a reference 
 
-   std::vector<CartesianCoordinate3D<int> > points; 
-     
-   // coord[] is voxels units       
-   for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
-	   for(coord[2]=min_index[2];coord[2]<=max_index[2];++coord[2])
-		   for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])
-			   points.push_back(coord);
- 
-   std::random_shuffle(points.begin(),points.end()); 
-   std::vector<CartesianCoordinate3D<int> >:: iterator current_iter;
-   std::vector<CartesianCoordinate3D<float> > scatt_points;
+	// coord[] is in voxels units       
+	for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
+		for(coord[2]=min_index[2];coord[2]<=max_index[2];++coord[2])
+			for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])   
+				if(attenuation_map[coord] >= att_threshold)
+				{
+					CartesianCoordinate3D<float> scatter_point = convert_int_to_float(coord);
+					if (random)
+						scatter_point +=
+						CartesianCoordinate3D<float>(random_point(-.5,.5),
+						random_point(-.5,.5),
+						random_point(-.5,.5));
+					
+					scatt_points_vector.push_back(voxel_size*scatter_point + origin);
+				}					
 
-   for(current_iter=points.begin(); 
-       current_iter!=points.end() && total_points<=max_scatt_points;
-	   ++current_iter)			   
-		   if(attenuation_map[(*current_iter)]>=att_threshold)
-		   {			
-			   scatt_points.push_back(voxel_size*convert_int_to_float(*current_iter));
-			   ++total_points;
-		   }	
-    if (total_points <= max_scatt_points) 
-	{
-		warning("The att_threshold or the max_scatt_points are set too high!");	
-		max_scatt_points = total_points-1; 
-	}	
-	// in mm units 
-    return scatt_points;
+	scatt_points = scatt_points_vector.size(); //this is the number of total scatt_points that is a refernece to the call
+	
+	return scatt_points_vector; // in mm units
 }
 
 END_NAMESPACE_STIR 
