@@ -11,7 +11,8 @@ LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/local/QH_library
 
 EXESUBDIRECTORIES= \
-        $(WORKSPACE)/local/QH_utilities
+        $(WORKSPACE)/local/QH_utilities \
+        $(WORKSPACE)/local/utilities
 
 SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 
