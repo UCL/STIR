@@ -1,9 +1,28 @@
 //
 // $Id$: $Date$
 //
+/*!
+  \file 
+ 
+  \brief inline implementations for utility.h
 
-// Implementations for utilities.h
+  \author Kris Thielemans
+  \author PARAPET project
 
+  \date    $Date$
+
+  \version $Revision$
+*/
+
+START_NAMESPACE_TOMO
+/*!
+  The question is currently presented as
+  \verbatim
+  str_text : [minimum_value, maximum_value, D: default_value]: 
+  \endverbatim
+  Simply pressing 'enter' will select the default value. Otherwise, range 
+  checking is performed, and the question asked again if necessary.
+*/
 template <class CHARP, class NUMBER>
 inline NUMBER 
 ask_num (CHARP str,
@@ -78,7 +97,7 @@ inline IFSTREAM& open_read_binary(IFSTREAM& s,
 #endif
   // KT 14/01/2000 added name of file in error message
   if (s.fail() || s.bad())
-    { PETerror("Error opening file %s\n", name); Abort(); }
+    { error("Error opening file %s\n", name);  }
   return s;
 }
 
@@ -89,6 +108,21 @@ inline OFSTREAM& open_write_binary(OFSTREAM& s,
     s.open(name, ios::out | ios::binary); 
     // KT 14/01/2000 added name of file in error message
     if (s.fail() || s.bad())
-    { PETerror("Error opening file %s\n", name); Abort(); }
+    { error("Error opening file %s\n", name); }
     return s;
 }
+
+
+
+#ifndef _MSC_VER
+char *strupr(char * const str)
+{
+  for (char *a = str; *a; a++)
+  {
+    if ((*a >= 'a')&&(*a <= 'z')) *a += 'A'-'a';
+  };
+  return str;
+}
+#endif
+
+END_NAMESPACE_TOMO
