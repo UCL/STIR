@@ -35,44 +35,29 @@ SeparableLowPassArrayFilter()
 
 template <int num_dimensions, typename elemT> 
 SeparableLowPassArrayFilter<num_dimensions,elemT>::
-SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v)
+SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v, int z_trivial)
 :filter_coefficients(filter_coefficients_v)
 {
 
   cerr << "Printing filter coefficients" << endl;
   for (int i =filter_coefficients_v.get_min_index();i<=filter_coefficients_v.get_max_index();i++)    
     cerr  << i<<"   "<< filter_coefficients_v[i] <<"   " << endl;
-
-
-  /* all_1d_array_filters[2] = 	 
-      new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
-
-   all_1d_array_filters[0] = 	 
-       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
-   all_1d_array_filters[1] = 	 
-       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);*/
-  
-   /*all_1d_array_filters[0] = 	 
-       new ArrayFilter1DUsingConvolutionSymmetricKernel<float>();
-   all_1d_array_filters[1] = 	 
-       new ArrayFilter1DUsingConvolutionSymmetricKernel<float>();
-   all_1d_array_filters[2] = 	 
-      new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);*/
-
-  
+   //err << " Z_TRIVIAL "  << z_trivial << endl;
+    
  if (!z_trivial) 
  {
  for (int i=1;i<=num_dimensions;i++)
   {
+   //cerr << "in the right loop" << endl;
     all_1d_array_filters[i-1] = 	 
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
-      //new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);
   }
  }
  else
  {
    for (int i=2;i<=num_dimensions;i++)
   {
+     //cerr << "in the wrong loop" << endl;
     all_1d_array_filters[i-1] = 	 
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients_v);
       //new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);

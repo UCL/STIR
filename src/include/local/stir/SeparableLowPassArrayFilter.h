@@ -47,11 +47,11 @@ public:
   //! Default constructor
   SeparableLowPassArrayFilter();  
   
-  SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients);
+  SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients, int z_trivial);
   
 private:
  VectorWithOffset<float> filter_coefficients;
- 
+ int z_trivial;
 };
 
 
