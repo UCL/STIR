@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup buildblock
+  \ingroup IO
  
   \brief  Implementation of functions which read/write Interfile data
 
