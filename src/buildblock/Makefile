@@ -19,9 +19,8 @@ CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 
 .KEEP_STATE:
 
-#KT 16/12 wanted to add interfile...
-#CL 060798 Add createdir for create directories of debugged or optimized files versions
-all: createdir ${DEST}libbuildblock.a #${DEST}libinterfile.a
+#KT 09/10/98 added interfile to buildblock
+all: createdir ${DEST}libbuildblock.a
 
 createdir: 
 	-mkdir -p $(DEST)
@@ -34,16 +33,13 @@ ${DEST}%.o : %.cxx
 
 
 
-# KT 30/07/98 added utilities
-# KT 03/09/98 added NumericInfo
 ${DEST}libbuildblock.a: ${DEST}sinodata.o ${DEST}convert.o \
    ${DEST}PETScannerInfo.o ${DEST}Tensor1D.o ${DEST}viewdata.o \
-   $(DEST)utilities.o $(DEST)NumericInfo.o
+   $(DEST)utilities.o $(DEST)NumericInfo.o \
+   ${DEST}KeyParser.o ${DEST}line.o ${DEST}interfile.o
 	ar r $@ $?
 	ranlib $@
 
-# KT 03/09/98 removed pet_string
-${DEST}libinterfile.a: ${DEST}KeyParser.o ${DEST}line.o 
 
 #KT 30/07/98 added DEST
 clean: 
