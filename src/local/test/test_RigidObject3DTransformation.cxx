@@ -20,7 +20,7 @@
 #include "local/stir/Quaternion.h"
 #include <iostream>
 #include "local/stir/motion/RigidObject3DTransformation.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 #include "stir/shared_ptr.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
