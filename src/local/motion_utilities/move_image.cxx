@@ -17,7 +17,7 @@
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/object_3d_transform_image.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 
