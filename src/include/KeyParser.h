@@ -9,6 +9,8 @@
 // KT 14/12 changed <String.h> to "pet_string.h"
 // KT 09/08/98 forget about pet_string
 #include <string>
+#include <iostream>
+
 #if !defined(__GNUG__) && !defined (__MSL__)
 	using namespace std;
 #endif
@@ -17,10 +19,6 @@ typedef string String;
 //#include "pet_string.h"
 
 #include <vector>
-#include <fstream>
-// KT 20/06/98 used for type_of_numbers and byte_order
-#include "NumericInfo.h"
-
 
 // KT 20/06/98 use this pragma only in VC++
 #ifdef _MSC_VER
@@ -29,9 +27,6 @@ typedef string String;
 
 #define		STATUS_END_PARSING	0
 #define		STATUS_PARSING		1
-
-#define		BYSINO				0
-#define		BYVIEW				1
 
 typedef vector<int> IntVect;
 typedef vector<unsigned long> UlongVect;
@@ -81,16 +76,51 @@ typedef map<String,map_element> Keymap;
 class KeyParser
 {
 public:
+  // KT 19/10/98 removed default constructor as unused at the moment
+  //KeyParser();
+  // KT 16/10/98 changed  to istream&
+  KeyParser(istream& f);
+  ~KeyParser();
 
-private :				// variables
+  bool parse()
+  {
+    init_keys();
+    return (parse_header()==0 && post_processing()==0);
+  }
+
+protected : 
+
   Keymap kmap;
+
+  typedef void (KeyParser::*KeywordProcessor)();
+
+  // Override the next two functions to have any functionality.
+  virtual void init_keys() = 0;
+  // Returns 0 of OK, 1 of not.
+  virtual int post_processing() 
+  { return 1; }
+	
+
+  void SetEndStatus();
+  // KT 09/10/98 added for use keys which don't do anything
+  void DoNothing() {};
+  void SetVariable();
+
+private :
+  // KT 20/06/98 new
+  // This function is used by SetVariable only
+  // It returns the index of a string in 'list_of_values', -1 of not found
+  int find_in_ASCIIlist(const String& par_ascii, const ASCIIlist_type& list_of_values);
+
+  
+  // variables
   istream * input;
   int	status;				// parsing 0,end_parsing 1
   map_element* current;
   int current_index;
   String keyword;
 
-  // could be make into a union
+  // could be made into a union
   vector<String>  par_asciilist;
   // KT 01/08/98 change number to int, lnumber to ulong, added float
   IntVect		par_intlist;
@@ -103,85 +133,13 @@ private :
 
   int ParseLine();
   int MapKeyword(String keyword);
-  void ChangeStatus(int value);
+  // KT 19/10/98 removed ChangeStatus as unused
+  //void ChangeStatus(int value);
   int ProcessKey();
+  // KT 19/10/98 small version of old StartParsing()
+  // Returns 0 of OK, 1 of not.
+  int parse_header();
 
-private:
-
-  // Lists of possible values for some keywords
-  // KT 20/06/98 new
-  ASCIIlist_type number_format_values;	
-  // KT 01/08/98 new
-  ASCIIlist_type byte_order_values;
-  ASCIIlist_type type_of_data_values;
-  ASCIIlist_type PET_data_type_values;	
-
-  // Corresponding variables here
-
-  int	number_format_index;
-  int	byte_order_index;
-  int type_of_data_index;
-  int PET_data_type_index;
-
-  // Extra private variables which will be translated to something more useful
-  int	bytes_per_pixel;
-  String	data_file_name;
-
-public :
-
-  // TODO these shouldn't be here, but in PETStudy or something
-
-
-  // 'Final' variables
-  fstream*		in_stream;
-  int			max_r_index;
-  int			storage_order;
-  // KT 20/06/98 new
-  // This will be determined from number_format_index and bytes_per_pixel
-  NumericType		type_of_numbers;
-  // KT 01/08/98 new
-  // This will be determined from byte_order_index, or just keep
-  // its default value;
-  ByteOrder file_byte_order;
-	
-  // KT 01/08/98 changed name to num_dimensions and num_time_frames
-  int			num_dimensions;
-  int			num_time_frames;
-  vector<String>		matrix_labels;
-  vector<IntVect>		matrix_size;
-  DoubleVect		pixel_sizes;
-  IntVect			sqc;
-  // KT 01/08/98 changed to DoubleVect
-  DoubleVect		image_scaling_factor;
-  // KT 01/08/98 changed to UlongVect
-  UlongVect		data_offset;
-	
-public : 
-
-  // members
-
-  KeyParser();
-  // KT 16/10/98 changed  to istream&
-  KeyParser(istream& f);
-  ~KeyParser();
-
-  void Init();
-  int StartParsing();
-	
-private :
-
-
-  void ReadMatrixInfo();
-  void ReadFramesInfo();
-  void OpenFileStream();
-  void SetEndStatus();
-  // KT 09/10/98 added for use keys which don't do anything
-  void DoNothing() {};
-  void SetVariable();
-  // KT 20/06/98 new
-  // This function is used by SetVariable only
-  // It returns the index of a string in 'list_of_values', -1 of not found
-  int find_in_ASCIIlist(const String& par_ascii, const ASCIIlist_type& list_of_values);
 };
 
 #endif
