@@ -15,7 +15,9 @@
   $Date$
 
   \warning This file relies on ByteOrderDefine.h to find out if it 
-  has to byteswap. This needs to be changed to use the class ByteOrder. (TODO).
+  has to byteswap. This ideally would be changed to use the class ByteOrder. 
+  Make sure you run test/test_ByteOrder.
+
 */
 /*
   Copyright (C) CTI PET Inc.
@@ -37,12 +39,16 @@
   KT 11/01/2001 
   - added cti_read_norm_subheader,get_normheaders and removed get_attndata 
     as it was identical to get_scandata
+
+  KT 10/09/2004
+  - removed aliasing bugs in get_vax_float etc
 */
 #include "stir/IO/stir_ecat_common.h"
 #include "stir/IO/ecat6_utils.h"     
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
-
+#include "boost/static_assert.hpp"
+#include <algorithm> // for std::swap
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
@@ -54,12 +60,7 @@
 #define bcopy(src, dest, length) memcpy(dest, src, length)
 #define toblocks(x) ((x + (MatBLKSIZE - 1))/MatBLKSIZE)
 
-
-// TODO get rid of _SWAPEM_ and use ByteOrder
-// currently checked by asserts()
-#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
-#define   _SWAPEM_           // bigendian
-#endif
+BOOST_STATIC_ASSERT(sizeof(unsigned short)==2); 
 
 
 
@@ -104,9 +105,9 @@ int get_scanheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead,
     scanParams->nviews = shead->dimension_2;
     scanParams->data_type = shead->data_type;
     if (shead->data_type != mhead->data_type)
-        printf("\nget_scanheader warning: \n\
-data types differ between main header (%d) and subheader (%d)\n\
-Using value from subheader\n", mhead->data_type, shead->data_type);
+        printf("\nget_scanheader warning: \n"
+"data types differ between main header (%d) and subheader (%d)\n"
+"Using value from subheader\n", mhead->data_type, shead->data_type);
 
     return EXIT_SUCCESS;
 }
@@ -162,9 +163,9 @@ int get_attnheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead,
     attnParams->nviews = shead->dimension_2;
     attnParams->data_type = shead->data_type;
     if (shead->data_type != mhead->data_type)
-        printf("\nget_attnheader warning: \n\
-data types differ between main header (%d) and subheader (%d)\n\
-Using value from subheader\n", mhead->data_type, shead->data_type);
+        printf("\nget_attnheader warning: \n"
+"data types differ between main header (%d) and subheader (%d)\n"
+"Using value from subheader\n", mhead->data_type, shead->data_type);
 
     return EXIT_SUCCESS;
 }
@@ -207,9 +208,9 @@ int get_normheaders (FILE *fptr, long matnum, ECAT6_Main_header *mhead,
     normParams->nviews = shead->dimension_2;
     normParams->data_type = shead->data_type;
     if (shead->data_type != mhead->data_type)
-        printf("\nget_normheader warning: \n\
-data types differ between main header (%d) and subheader (%d)\n\
-Using value from subheader\n", mhead->data_type, shead->data_type);
+        printf("\nget_normheader warning: \n"
+"data types differ between main header (%d) and subheader (%d)\n"
+"Using value from subheader\n", mhead->data_type, shead->data_type);
 
     return EXIT_SUCCESS;
 }
@@ -315,8 +316,6 @@ int cti_wblk (FILE *fptr, int blkno, void *bufr, int nblks)
 
 int cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
 {
-    short *b;    
-    char *bb;
     int status;
 
 #if STIRIsNativeByteOrderBigEndian
@@ -326,16 +325,14 @@ int cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
 #endif
     error("Error in File %s: STIRIsNativeByteOrderBigEndian preprocessor define is determined incorrectly. Correct please. \n", __FILE__);
 
-    b = (short *) malloc (MatBLKSIZE);
-    if (!b) return EXIT_FAILURE;
-    bb = (char *) b;
+    short b[MatBLKSIZE];
+    char * const bb = (char *) b;
 
         // read main header at block 1 into buf
     status = cti_rblk (fptr, 1,  bb, 1);
 
     if (status != EXIT_SUCCESS) 
       {
-	free (bb);
 	return EXIT_FAILURE;
       }
 
@@ -396,27 +393,24 @@ int cti_read_ECAT6_Main_header (FILE *fptr, ECAT6_Main_header *h)
     h->init_bed_position = get_vax_float ((unsigned short *) b, 192);
     for (int i=0; i<15; i++)
 	h->bed_offset [i] = get_vax_float ((unsigned short *) b, 194 + 2 * i);
+
     h->plane_separation = get_vax_float ((unsigned short *) b, 224);
     h->lwr_sctr_thres = b [226];
     h->lwr_true_thres = b [227];
     h->upr_true_thres = b [228];
     h->collimator = get_vax_float ((unsigned short *) b, 229);
 
-    free (b);
     return EXIT_SUCCESS;
 }
 
 int cti_read_scan_subheader (FILE *fptr, int blknum, Scan_subheader *h)
 {
-    short *b;        
     int status ;
 
-    b = (short *) malloc (MatBLKSIZE);
-    if (!b) return EXIT_FAILURE;
+    short b[MatBLKSIZE];
 
     status = cti_rblk (fptr, blknum, (char *) b, 1);   // read the block
     if (status != EXIT_SUCCESS) {
-	free (b);
 	return (EXIT_FAILURE);
     }
 
@@ -451,7 +445,6 @@ int cti_read_scan_subheader (FILE *fptr, int blknum, Scan_subheader *h)
     h->frame_start_time = get_vax_long ((unsigned short *) b, 228);
     h->frame_duration = get_vax_long ((unsigned short *) b, 230);
     h->loss_correction_fctr = get_vax_float ((unsigned short *) b, 232);
-    free (b);
     return EXIT_SUCCESS;
 }
 
@@ -514,17 +507,14 @@ int cti_read_norm_subheader(FILE* fptr, int blknum, Norm_subheader *header)
 int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
 {
     int status;
-    short *b;
     char  *bb;
 
         // alloc buffer
-    b = (short *) malloc (MatBLKSIZE);
-    if (!b) return EXIT_FAILURE;
+    short b[MatBLKSIZE];
 
         // read block into buffer
     status = cti_rblk (fptr, blknum, (char *) b, 1);   // read the block
     if (status != EXIT_SUCCESS) {
-	free (b);
 	return (EXIT_FAILURE);
     }
 
@@ -579,7 +569,6 @@ int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
     ihead->recon_start_month = b [192];
     ihead->recon_start_year = b [193];
 
-    free (b);
     return (EXIT_SUCCESS);
 }
 
@@ -598,6 +587,7 @@ FILE *cti_create (const char *fname, const ECAT6_Main_header *mhead)
 	fclose (fptr);
 	return NULL;
     }
+    BOOST_STATIC_ASSERT(sizeof(long)==4);
 	
         // create a First Directory Block in the file
     bufr = (long *) calloc (MatBLKSIZE / sizeof (long), sizeof (long));
@@ -629,6 +619,7 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
     int i, dirblk, nxtblk, busy, oldsize;
     long *dirbufr;           // buffer for directory block
     int status;
+    BOOST_STATIC_ASSERT(sizeof(long)==4);
 
         // set up buffer for directory block
     dirbufr = (long *) calloc (MatBLKSIZE / sizeof (long), sizeof (long));
@@ -760,7 +751,7 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
     int blk, status;
     int nfree, nxtblk, prvblk, nused, matnbr, strtblk, endblk, matstat;
     long *dirbufr;
-    // KT 18/08/2000 do not use temporary bytebufr anymore for SWAPEM
+    BOOST_STATIC_ASSERT(sizeof(long)==4);
 
         // set up buffer for directory block
     
@@ -815,11 +806,7 @@ int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
     int status;
 
 #if STIRIsNativeByteOrderBigEndian
-    char *bufr;
-
-        // allocate intermediate buffer
-    bufr = (char *) calloc (MatBLKSIZE, sizeof (char));
-    if (!bufr) return (EXIT_FAILURE);
+    char bufr[MatBLKSIZE];
 
     dataptr = (char *) data;    // point into data buffer
 
@@ -830,13 +817,11 @@ int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
 	bcopy (dataptr, bufr, MatBLKSIZE);
 	swab (bufr, bufr, MatBLKSIZE);
 	if ((status = cti_wblk (fptr, blk + i, bufr, 1)) != EXIT_SUCCESS) {
-	    free (bufr);
 	    return (EXIT_FAILURE);
 	}
 	dataptr += MatBLKSIZE;
     }
     fflush (fptr);
-    free (bufr);
 
 #else
         // write the data in blocks
@@ -855,10 +840,7 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
 {
     int status;
     char *bbufr;
-    short *bufr = 0;
-  
-    bufr = (short *) calloc (MatBLKSIZE / sizeof (short), sizeof (short));
-    if (!bufr) return EXIT_FAILURE;
+    short bufr[MatBLKSIZE / sizeof (short)];
 
     bbufr = (char *) bufr;
 
@@ -908,7 +890,6 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
     bcopy (header->annotation, bbufr + 420, 40);
         // write to matrix file
     status = cti_wblk (fptr, blknum, bbufr, 1);
-    free (bufr);
 	
     if (status != EXIT_SUCCESS) return (EXIT_FAILURE);
     return (EXIT_SUCCESS);
@@ -917,11 +898,9 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
 int cti_write_ECAT6_Main_header (FILE *fptr, const ECAT6_Main_header *header)
 {
     char *bbufr;
-    short *bufr;
     int status;
 
-    bufr = (short *) calloc (MatBLKSIZE / sizeof (short), sizeof (short));
-    if (!bufr) return EXIT_FAILURE;
+    short bufr[MatBLKSIZE / sizeof (short)];
 
     bbufr = (char *) bufr;
 
@@ -992,7 +971,6 @@ int cti_write_ECAT6_Main_header (FILE *fptr, const ECAT6_Main_header *header)
     status = cti_wblk (fptr, 1, (char *) bufr, 1);
 
     fflush (fptr);
-    free (bufr);
     if (status != EXIT_SUCCESS) return (status);
     else return (EXIT_SUCCESS);
 }
@@ -1000,11 +978,7 @@ int cti_write_ECAT6_Main_header (FILE *fptr, const ECAT6_Main_header *header)
 int cti_write_scan_subheader (FILE *fptr, int blknum, const Scan_subheader *header)
 {
     int status;
-    short *bufr;
-  
-        // calloc bufr
-    bufr = (short *) calloc (MatBLKSIZE / sizeof (short), sizeof (short));
-    if (!bufr) return EXIT_FAILURE;
+    short bufr[MatBLKSIZE / sizeof (short)];
 
         // fill in bufr
     bufr[0] = 256;
@@ -1057,7 +1031,6 @@ int cti_write_scan_subheader (FILE *fptr, int blknum, const Scan_subheader *head
 
     status = cti_wblk (fptr, blknum, (char *) bufr, 1);
 
-    free (bufr);
     return status;
 }
 
@@ -1182,6 +1155,8 @@ typedef struct
         } VAXfloat;
 #endif
 
+BOOST_STATIC_ASSERT(sizeof(VAXfloat)==4);
+
 /* routines for converting VAX floating point format into own format.
    Code is in a generic form that should work on all machines
    (it also works on VAX).
@@ -1238,6 +1213,7 @@ VAXfloat fl_to_VAXfl(float a)
      but it's OK */
   Va.frc1 = (unsigned)(imant >>16);
   Va.frc2 = (unsigned)(imant & 0xffff);
+
   return(Va);
 }
 
@@ -1246,15 +1222,23 @@ VAXfloat fl_to_VAXfl(float a)
 float get_vax_float (const unsigned short *bufr, int off)
 {
 #ifdef VAX
-  return *(float *) (&bufr[off]));
+  float Va;
+  memcpy(&Va, bufr+off, sizeof(float));
+  return Va;
 #else
 
 #if STIRIsNativeByteOrderBigEndian
-  short int tmpbufr[2];
-  swaw((short int*) &bufr[off],(short int *) tmpbufr, 2);
-  return VAXfl_to_fl(*(VAXfloat *) (&tmpbufr));
+  unsigned short int tmpbufr[2];
+  tmpbufr[0]=bufr[off+1];
+  tmpbufr[1]=bufr[off];
+  
+  VAXfloat Va;
+  memcpy(&Va, tmpbufr, sizeof(VAXfloat));
+  return VAXfl_to_fl(Va);  
 # else
-  return VAXfl_to_fl(*(VAXfloat *) (&bufr[off]));
+  float Va;
+  memcpy(&Va, bufr+off, sizeof(VAXfloat));
+  return VAXfl_to_fl(Va);
 # endif	  
 #endif /* not VAX */
 
@@ -1262,20 +1246,11 @@ float get_vax_float (const unsigned short *bufr, int off)
 
 void hostftovaxf (const float in, unsigned short out [2])
 {
-
   const VAXfloat tmp = fl_to_VAXfl(in);
-
+  memcpy(out, &tmp, 4);
 #if STIRIsNativeByteOrderBigEndian         
-  swaw ((short *) &tmp,(short int *) &out[0], 2);
+  std::swap(out[0], out[1]);
   // swab is necessary by caller
-#else
-  union {
-    unsigned short t [2]; 
-    VAXfloat t4;
-  } test;
-  test.t4 = tmp;
-  out[0] = test.t[0];
-  out[1] = test.t[1];
 #endif
 }
 
@@ -1292,9 +1267,9 @@ void hostftovaxf (const float in, unsigned short out [2])
 long get_vax_long (const unsigned short *bufr, int off)
 {
 #if STIRIsNativeByteOrderBigEndian
-	return ((bufr [off + 1] << 16) + bufr [off]);
+	return ((static_cast<long>(bufr [off + 1]) << 16) + bufr [off]);
 #else
-	return *(long *) (&bufr[off]);
+	return ((static_cast<long>(bufr [off]) << 16) + bufr [off+1]);
 #endif
 }
 /*******************************************************************************
@@ -1560,10 +1535,8 @@ Image_subheader img_zero_fill()
 int file_data_to_host(char *dptr, int nblks, int dtype)
 {
   int i, j;
-  char *tmp = NULL;
+  char tmp[512];
   
-  
-  if ((tmp = (char *)malloc(512)) == NULL) return EXIT_FAILURE;
   switch(dtype)
   {
   case ECAT_Byte_data_type:
@@ -1614,8 +1587,7 @@ int file_data_to_host(char *dptr, int nblks, int dtype)
       }
       break;
   }
-  free(tmp);
-	return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 
 END_NAMESPACE_ECAT6
