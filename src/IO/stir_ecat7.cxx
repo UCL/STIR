@@ -116,7 +116,7 @@ static bool is_ECAT7_file(Main_header& mhead, const string& filename)
     char magic[7];
     if (! cti_fptr ||
 	fread(magic, 1, 7, cti_fptr) != 7 ||
-	strcmp(magic, "MATRIX7")!=0)
+	strncmp(magic, "MATRIX7",7)!=0)
       return false;
   }
   if(mat_read_main_header(cti_fptr, &mhead)!=0) 
