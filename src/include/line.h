@@ -31,6 +31,8 @@ public :
 	String get_keyword();
 	int get_index();
 	int get_param(vector<int>& v);
+	// KT 29/10/98 new
+	int et_param(vector<double>& v);
 	int get_param(vector<String>& v);
 	int get_param(String& s);
 	int get_param(int& i);
