@@ -8,13 +8,22 @@
 
   \brief  This programme performs filtering on image data
  
-  \author Matthew Jacobson
+  \author Sanida Mustafovic
   \author Kris Thielemans
-  \author Sanida Mustafovic (conversion to ImageProcessor)
+  \author Matthew Jacobson
   \author PARAPET project
   
   \date $Date$
   \version $Revision$
+
+  This programme enables calling any ImageProcessor object on input data, 
+  and writing it to file. It can take the following command line:
+  \verbatim
+   postfilter <output filename > <input header file name> <filter .par filename>
+  \endverbatim
+  This is done to make it easy to process a lot of files with the same 
+  ImageProcessor. However, if the number of command line arguments is not 
+  correct, appropriate questions will be asked interactively.
 
   \par Example .par file
   \verbatim
@@ -28,50 +37,33 @@
   End PostFiltering Parameters:=
   \endverbatim
 
-
-  
-  \warning It only supports VoxelsOnCartesianGrid type of images.
 */
-
 
 #include "interfile.h"
 #include "utilities.h"
 #include "KeyParser.h"
 #include "DiscretisedDensity.h"
-#include "VoxelsOnCartesianGrid.h"
 #include "tomo/ImageProcessor.h"
 
 #include <iostream> 
-#include <fstream>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-using std::ifstream;
-using std::ofstream;
 #endif
 
 
 START_NAMESPACE_TOMO
 
-VoxelsOnCartesianGrid<float>* ask_interfile_image(char *input_query);
-
-
-
-
-/***************** Miscellaneous Functions  *******/
-
-
-
-VoxelsOnCartesianGrid<float>* ask_interfile_image(char *input_query){
-  
+DiscretisedDensity<3,float>* ask_image(char *input_query)
+{
   
   char filename[max_filename_length];
   ask_filename_with_extension(filename, 
 				input_query,
 				"");
   
-  return read_interfile_image(filename);
+  return DiscretisedDensity<3,float>::read_from_file(filename);
   
 }
 
@@ -103,23 +95,22 @@ int
 main(int argc, char *argv[])
 {
   
-  VoxelsOnCartesianGrid<float> input_image;
+  DiscretisedDensity<3,float> *input_image_ptr;
   PostFiltering post_filtering;
   string out_filename;
   
   if (argc==4)
   {
     out_filename = argv[1];
-    input_image = 
-      * dynamic_cast<VoxelsOnCartesianGrid<float> *>(
-      DiscretisedDensity<3,float>::read_from_file(argv[2]));
+    input_image_ptr = 
+      DiscretisedDensity<3,float>::read_from_file(argv[2]);
 
     post_filtering.parser.parse(argv[3]);
   }
   else
   {
     cerr<<endl<<"Usage: postfilter <output filename > <input header file name> <filter .par filename>"<<endl<<endl;
-    input_image= *ask_interfile_image("Image to process?");
+    input_image_ptr= ask_image("Image to process?");
     char outfile[max_filename_length];
     ask_filename_with_extension(outfile,
       "Output to which file: ", "");
@@ -134,12 +125,18 @@ main(int argc, char *argv[])
     {
       error("postfilter: No filter set. Not writing any output.\n");
     }
-    
-  post_filtering.filter_ptr->build_and_filter(input_image);
-  
-  
-  write_basic_interfile(out_filename.c_str(),input_image);
 
+  if (input_image_ptr == 0)
+    {
+      error("postfilter: No input image. Not writing any output.\n");
+    }
+    
+  post_filtering.filter_ptr->build_and_filter(*input_image_ptr);
+  
+  
+  write_basic_interfile(out_filename.c_str(),*input_image_ptr);
+
+  delete input_image_ptr;
   
   return EXIT_SUCCESS;
 }
