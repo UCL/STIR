@@ -21,18 +21,19 @@ install: $(EXES)
 include $(WORKSPACE)/Makefile_bblibs
 
 
-${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o \
+${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o \
 	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK} $(BB_REGISTRIES)
 	$(CXX) $(CFLAGS) -o $@ $< \
-	  ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o \
+	  ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o \
 	  $(BB_REGISTRIES) \
 	  ${LIB_LOGLIK_BUILDINGBLOCK} \
 	  $(BB_LIBS) \
 	  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
 
-../OSMAPOSL/$(DEST)OSMAPOSLParameters.o:
+../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o:
 	cd ../OSMAPOSL; $(MAKE) all
 
+.PHONY: ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
