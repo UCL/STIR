@@ -27,9 +27,12 @@ include $(SOURCES:%.cxx=$(DEST)%.d)
 clean:
 	$(RM) $(DEST)*
 
-$(DEST)libcti.a: $(DEST)cti_utils.o
-	$(AR) r $@ $?
-	$(RANLIB) $@
+install: $(EXES)
+	cp $(EXES) $(INSTALL_DIR)
+
+#$(DEST)libcti.a: $(DEST)cti_utils.o
+#	$(AR) r $@ $?
+#	$(RANLIB) $@
 
 $(DEST)convif_ecat6: convif_ecat6.cxx $(DEST)cti_utils.o ${LIB_BUILDINGBLOCK}
 	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o \
