@@ -33,6 +33,9 @@
   symbol is defined during compilation. 
   */
 
+// have to define it here, otherwise doxygen ignores the \def command below
+#define  HAVE_LLN_MATRIX
+
 /*! \def HAVE_LLN_MATRIX
     \brief Preprocessor symbol that needs to be defined to enable ECAT7 support.
   You need to have the ecat matrix library developed originally at the 
