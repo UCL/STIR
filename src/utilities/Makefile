@@ -7,7 +7,9 @@ WORKSPACE=$(CURDIR)/..
 include $(WORKSPACE)/Makefile_common
 
 
-SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
+SOURCES = manip_image.cxx \
+	manip_projdata.cxx \
+	display_projdata.cxx \
         convecat6_if.cxx \
 	do_linear_regression.cxx \
 	postfilter.cxx \
@@ -55,6 +57,7 @@ install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
 
 include $(WORKSPACE)/Makefile_bblibs
+
 
 
 
