@@ -4,14 +4,41 @@
 
 /*! 
 \file
-\ingroup utilities
-\ingroup ECAT
+\ingroup ECAT_utilities
 \brief Conversion from interfile (or any format that we can read) 
   to ECAT 6 cti (image and sinogram data)
 \author Kris Thielemans
 \author PARAPET project
 $Date$
 $Revision$
+
+This programme is used to convert image or projection data into CTI ECAT 6 data (input 
+can be any format currently supported by the library). It normally should be run as 
+follows
+<pre>conv_to_ecat6 [-k] [-i]  outputfilename.img input_filename1 [input_filename2 ...] scanner_name
+</pre>
+(for images)
+<pre>conv_to_ecat6 -s[2] [-k] [-i] outputfilename.scn input_filename1 [input_filename2 ...]
+</pre>
+(for projection data)<br>
+If there are no command line parameters, the user is asked for the filenames and options 
+instead. Unless the -i option is used, the data will be assigned a frame number in the 
+order that they occur on the command line.<br>
+See buildblock/Scanner.cxx for supported scanner names, but examples are ECAT 953, 
+ART, Advance. ECAT HR+, etc. If the scanner_name contains a space, the scanner name has to 
+be surrounded by double quotes (&quot;) when used as a command line argument.
+
+\par Command line options:
+<ul>
+<li>	-s2: This option forces output to 2D sinograms (ignoring higher segments).</li>
+<li>	-k: the existing ECAT6 file will NOT be overwritten, but added to. Any existing 
+data in the ECAT6 file with the same &lt;frame,gate,data,bed&gt; specification will be 
+overwritten.</li>
+<li>	-i: ask for &lt;frame,gate,data,bed&gt; for each dataset</li>
+</ul>
+Note that to store projection data in ECAT6, a 3D sinogram cannot be axially compressed 
+(CTI span=1).
+
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -40,6 +67,7 @@ using std::string;
 #endif
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT6
 
 
@@ -95,8 +123,8 @@ int main(int argc, char *argv[])
   {
     cerr<< "\nConversion from data to ECAT6 CTI.\n"
 	<< "Multiples files can be written to a single ECAT 6 file.\n"
-        << "The data will be assigned a frame number in the "
-        << "order that they occur on the command line.\n\n"
+        << "Unless the -i option is used, the data will be assigned a frame number in \n"
+        << "the order that they occur on the command line.\n\n"
         << "Usage: 2 possible forms depending on data type\n"
 	<< "For sinogram data:\n"
 	<< "\tconv_to_ecat6 -s[2] [-k] [-i] output_ECAT6_name orig_filename1 [orig_filename2 ...]\n"
@@ -108,9 +136,9 @@ int main(int argc, char *argv[])
 	<< "(the quotes are required when used as a command line argument)\n\n"
 	<< "Options:\n"
 	<< "  -k: the existing ECAT6 file will NOT be overwritten,\n"
-	<< "\tbut added to. Any existing data in the ECAT6 file with the same <f,g,d,b>\n"
+	<< "\tbut added to. Any existing data in the ECAT6 file with the same <frame,gate,data,bed>\n"
 	<< "\tspecification will be overwritten.\n"
-	<< "  -i: ask for <f,g,d,b> data\n\n"
+	<< "  -i: ask for <frame,gate,data,bed> for each dataset\n\n"
 	<< "I will now ask you the same info interactively...\n\n";
     
     its_an_image = ask("Converting images?",true);

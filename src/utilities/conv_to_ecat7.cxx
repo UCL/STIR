@@ -4,14 +4,33 @@
 
 /*! 
 \file
-\ingroup utilities
-\ingroup ECAT
+\ingroup ECAT_utilities
 \brief Conversion from interfile (or any format that we can read) 
   to ECAT 7 cti (image and sinogram data)
 \author Kris Thielemans
 \author PARAPET project
 $Date$
 $Revision$
+
+
+This programme is used to convert image or projection data into CTI ECAT 7 data (input 
+can be any format currently supported by the library). It normally should be run as 
+follows
+<pre>conv_to_ecat7 output_ECAT7_name input_filename1 [input_filename2 ...] scanner_name
+</pre>
+(for images)
+<pre>conv_to_ecat7 -s output_ECAT7_name  input_filename1 [input_filename2 ...]
+</pre>
+(for emission projection data)
+<pre>conv_to_ecat7 -a output_ECAT7_name  input_filename1 [input_filename2 ...]
+</pre>
+(for sinogram-attenuation data)<br>
+If there are no command line parameters, the user is asked for the filenames and options 
+instead. The data will be assigned a frame number in the 
+order that they occur on the command line.<br>
+See buildblock/Scanner.cxx for supported scanner names, but examples are ECAT 953, 
+ART, Advance. ECAT HR+, etc. If the scanner_name contains a space, the scanner name has to 
+be surrounded by double quotes (&quot;) when used as a command line argument.
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -40,6 +59,7 @@ using std::string;
 #endif
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 
 
