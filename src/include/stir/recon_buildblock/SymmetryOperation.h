@@ -79,11 +79,10 @@ public:
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
 
-#ifdef ENABLE_DENSEL 
   virtual void 
     transform_proj_matrix_elems_for_one_densel(
       ProjMatrixElemsForOneDensel&) const;
-#endif
+
 };
 
 
@@ -107,11 +106,9 @@ public:
     transform_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin& lor) const {}
 
-#ifdef ENABLE_DENSEL 
   virtual void 
     transform_proj_matrix_elems_for_one_densel(
       ProjMatrixElemsForOneDensel&) const {}
-#endif
 };
 
 
