@@ -10,7 +10,6 @@
 \author PARAPET project
 $Date$
 $Revision$
-
 */
 
 
@@ -20,6 +19,7 @@ $Revision$
 #include "utilities.h"
 #include "CTI/Tomo_cti.h"
 #include "CTI/cti_utils.h"
+#include "tomo/Succeeded.h"
 #include <iostream>
 #include <vector>
 #include <string>
