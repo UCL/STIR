@@ -1,6 +1,5 @@
 #
 # $Id$ 
-#@(#)Makefile	1.18 10/19/98
 #
 
 
@@ -17,7 +16,8 @@ CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 #KT 27/02/98 use default rules now, .cxx does not work without next line
 .SUFFIXES: .cc .o .cxx .a
 
-.SCCS_GET:
+# KT 04/11/98 enabled built-in sccs
+#.SCCS_GET:
 
 .KEEP_STATE:
 
@@ -31,6 +31,28 @@ createdir:
 
 $(DEST)%.o : %.cxx 
 	$(CXX) $(CFLAGS) -o $@ -c $< 
+
+# CL 300998 added PETScanInfo.cxx  file
+# KT 22/10/98 added InterfileHeader.o
+# KT 04/11/98 added Tensors.o
+$(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
+  $(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
+  $(DEST)Tensor1D.o $(DEST)Tensors.o \
+  $(DEST)viewdata.o \
+  $(DEST)utilities.o $(DEST)NumericInfo.o \
+  ${DEST}KeyParser.o ${DEST}line.o \
+  ${DEST}interfile.o ${DEST}InterfileHeader.o \
+  ${DEST}bbfilters.o
+	ar r $@ $?
+	ranlib $@
+
+
+#KT 30/07/98 added DEST
+clean: 
+	$(RM) $(DEST)*.o
+	$(RM) $(DEST)*.a
+
+#############################################################
 
 #CL 09/10/98 ADd the header file dependencies for all object files
 #I agree that this Makefile become big but it is the only way to update 
@@ -49,6 +71,14 @@ $(DEST)PETScannerInfo.o: PETScannerInfo.cxx ../include/pet_common.h \
 $(DEST)Tensor1D.o: Tensor1D.cxx ../include/pet_common.h ../include/Tensor1D.h \
  ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
  ../include/VectorWithOffset.h ../include/convert.h 
+
+# KT 04/11/98 new
+$(DEST)Tensors.o: Tensors.cxx ../include/pet_common.h \
+ ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
+ ../include/VectorWithOffset.h ../include/convert.h \
+ ../include/Tensor1D.h \
+ ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
+ ../include/Tensor4D.h
 
 $(DEST)convert.o: convert.cxx ../include/pet_common.h ../include/Tensor1D.h \
  ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
@@ -113,20 +143,4 @@ $(DEST)bbfilters.o: bbfilters.cxx ../include/pet_common.h \
  ../include/NumericInfo.h ../include/Tensor1D.h ../include/Tensor3D.h \
  ../include/Point3D.h ../include/debug.h ../include/TensorFunction.h
 
-# CL 300998 added PETScanInfo.cxx  file
-# KT 22/10/98 added InterfileHeader.o
-$(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
-  $(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
-  $(DEST)Tensor1D.o $(DEST)viewdata.o \
-  $(DEST)utilities.o $(DEST)NumericInfo.o \
-  ${DEST}KeyParser.o ${DEST}line.o \
-  ${DEST}interfile.o ${DEST}InterfileHeader.o \
-  ${DEST}bbfilters.o
-	ar r $@ $?
-	ranlib $@
 
-
-#KT 30/07/98 added DEST
-clean: 
-	$(RM) $(DEST)*.o
-	$(RM) $(DEST)*.a
