@@ -50,8 +50,14 @@ protected:
 
   //! stores the time (in secs) recorded in the previous timing event
   double current_time;
+  
+  //! will be called when a new time frame starts
+  /*! The frame number starts from 1. */
+  virtual void start_new_time_frame(const unsigned int new_frame_num);
+
   //! will be called after a new timing event is found in the file
   virtual void process_new_time_event(const CListTime&);
+
   //! will be called to get the bin for a coincidence event
   /*! If bin.get_bin_value()<=0, the event will be ignored. Otherwise,
     the value will be used as a bin-normalisation factor. */
