@@ -18,6 +18,8 @@
   \version $Revision$
 */
 
+#include "Bin.h"
+
 START_NAMESPACE_TOMO
 ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr()
 
@@ -40,20 +42,8 @@ ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr(const shared_ptr
 
 
 float
-ProjDataInfoCylindricalArcCorr::get_s(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const
-{return transaxial_position_num*bin_size;}
-
-
-float
-ProjDataInfoCylindricalArcCorr::get_tantheta(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const
-{
-  return
-    get_average_ring_difference(segment_num)*
-    get_axial_sampling(segment_num)/ 
-    (2*sqrt(square(ring_radius)-square(get_s(segment_num,view_num,axial_position_num, transaxial_position_num))));
-  
-}
-
+ProjDataInfoCylindricalArcCorr::get_s(const Bin& bin) const
+{return bin.tangential_pos_num()*bin_size;}
 
 
 float
@@ -62,8 +52,8 @@ ProjDataInfoCylindricalArcCorr::get_tangential_sampling() const
 
 #if 1
 void
-ProjDataInfoCylindricalArcCorr::set_tangential_sampling(const float bin_v)
-{bin_size = bin_v;}
+ProjDataInfoCylindricalArcCorr::set_tangential_sampling(const float new_tangential_sampling)
+{bin_size = new_tangential_sampling;}
 #endif
 
 
@@ -71,8 +61,7 @@ ProjDataInfoCylindricalArcCorr::set_tangential_sampling(const float bin_v)
 ProjDataInfo*
 ProjDataInfoCylindricalArcCorr::clone() const
 {
- return static_cast<ProjDataInfo*>(new ProjDataInfoCylindricalArcCorr(*this));
-
+  return static_cast<ProjDataInfo*>(new ProjDataInfoCylindricalArcCorr(*this));
 }
 
 

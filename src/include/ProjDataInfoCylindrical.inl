@@ -16,37 +16,50 @@
 
   \version $Revision$
 */
+
+// for sqrt
+#include <math.h>
+#include "Bin.h"
+
 START_NAMESPACE_TOMO
 
-ProjDataInfoCylindrical::ProjDataInfoCylindrical()
-{}
 
+float
+ProjDataInfoCylindrical::get_phi(const Bin& bin)const
+{ return bin.view_num()*azimuthal_angle_sampling;}
 
-ProjDataInfoCylindrical::ProjDataInfoCylindrical(const shared_ptr<Scanner> scanner_ptr,
-    const VectorWithOffset<int>& num_axial_pos_per_segment,
-    const VectorWithOffset<int>& min_ring_diff_v, 
-    const VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss)
-  :ProjDataInfo(scanner_ptr,num_axial_pos_per_segment, 
-                num_views,num_tangential_poss),
-   min_ring_diff(min_ring_diff_v),
-   max_ring_diff(max_ring_diff_v)
+float
+ProjDataInfoCylindrical::get_t(const Bin& bin) const
 {
-  
-  azimuthal_angle_sampling = _PI/num_views;
-  ring_radius = get_scanner_ptr()->get_ring_radius();
-  ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
-  assert(min_ring_diff.get_length() == max_ring_diff.get_length());
-  assert(min_ring_diff.get_length() == num_axial_pos_per_segment.get_length());
+  return 
+    get_m(bin)/
+    sqrt(1+square(get_tantheta(bin)));
 }
 
+/*!
+  The 0 of the z-axis is chosen in the middle of the scanner.
+
+  \warning Current implementation assumes that the axial positions are always 'centred',
+  i.e. get_m(Bin(..., min_axial_pos_num,...)) == - get_m(Bin(..., max_axial_pos_num,...))
+*/  
 float
-ProjDataInfoCylindrical::get_phi(int segment_num,int view_num,int axial_position_num, int transaxial_position_num)const
-{ return view_num*azimuthal_angle_sampling;}
+ProjDataInfoCylindrical::get_m(const Bin& bin) const
+{ return 
+    bin.axial_pos_num()*get_axial_sampling(bin.segment_num())
+    - m_offset[bin.segment_num()];
+}
+
 
 float
-ProjDataInfoCylindrical::get_t(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const
-{return axial_position_num*get_axial_sampling(segment_num); }
+ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
+{
+  return
+    get_average_ring_difference(bin.segment_num())*
+    ring_spacing/ 
+    (2*sqrt(square(ring_radius)-square(get_s(bin))));
+  
+}
+
 
 
 #ifdef SET
@@ -62,12 +75,15 @@ float
 ProjDataInfoCylindrical::get_azimuthal_angle_sampling() const
 {return azimuthal_angle_sampling;}
 
+/*! 
+   The implementation of this function currently assumes that the axial
+   sampling is equal to the ring spacing for non-spanned data 
+   (i.e. no axial compression), while it is half the 
+   ring spacing for spanned data.
+ */
 float
 ProjDataInfoCylindrical::get_axial_sampling(int segment_num) const
-{  /*if (segment_num ==0)
-    return axial_sampling_segment0;
-  else
-    return axial_sampling_other_segs;*/
+{
   if (max_ring_diff[segment_num] != min_ring_diff[segment_num])
     return ring_spacing/2;
   else

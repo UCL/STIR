@@ -26,7 +26,10 @@ START_NAMESPACE_TOMO
 
 /*!
   \ingroup buildblock 
-  \brief projection data info for arc-corrected data
+  \brief Projection data info for arc-corrected data
+
+  This means that 'tangential_pos_num' actually indexes a linear coordinate
+  with a particular sampling distance (usually called the 'bin_size').
   */
 class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 {
@@ -40,14 +43,13 @@ public:
     const  VectorWithOffset<int>& max_ring_diff_v,
     const int num_views,const int num_tangential_poss);
 
+  inline ProjDataInfo* clone() const;
   
-  inline virtual float get_tantheta(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const; 
-  inline virtual float get_s(int segment_num,int view_num,int axial_position_num, int transaxial_position_num) const;
+  inline virtual float get_s(const Bin&) const;
   //! Set tangential sampling
   inline void set_tangential_sampling(const float bin_size);
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
-  inline ProjDataInfo* clone() const;
 
 private:
   
