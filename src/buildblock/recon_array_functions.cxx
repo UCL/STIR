@@ -383,6 +383,30 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 }
 
 
+void divide_array(SegmentByView<float>& numerator,const SegmentByView<float>& denominator)
+{
+  
+  const int vs=numerator.get_min_view_num();
+  const int ve=numerator.get_max_view_num();
+  const int rs=numerator.get_min_axial_pos_num();
+  const int re=numerator.get_max_axial_pos_num();
+  const int bs=numerator.get_min_tangential_pos_num();
+  const int be=numerator.get_max_tangential_pos_num();
+  
+  for(int v=vs;v<=ve;v++)
+    for(int r=rs;r<=re;r++)
+      for(int b=bs;b<=be;b++)
+	{
+
+	  if (denominator[v][r][b] != 0.0)
+	    numerator[v][r][b]=numerator[v][r][b]/denominator[v][r][b];
+	  else
+	     numerator[v][r][b]=0.0;
+
+	}
+    
+}
+
 void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensity<3,float>& denominator)
 {
   assert(numerator.get_index_range() == denominator.get_index_range());
