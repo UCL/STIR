@@ -22,6 +22,7 @@
 
 
 #include "stir/RegisteredObject.h"
+#include "stir/ParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -38,7 +39,10 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   just live with Prior as a base class.
 */
 template <typename elemT>
-class GeneralisedPrior: public RegisteredObject<GeneralisedPrior<elemT> >
+class GeneralisedPrior: 
+   public RegisteredObject<GeneralisedPrior<elemT> >,
+   public ParsingObject
+			 
 {
 public:
   
@@ -46,13 +50,19 @@ public:
   //! This should compute the gradient of the log of the prior function at the \a current_image_estimate
   /*! The gradient is already multiplied with the penalisation_factor.*/
   virtual void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
-		   const DiscretisedDensity<3,elemT> &current_image_estimate) =0;  
-  
+		   const DiscretisedDensity<3,elemT> &current_image_estimate) =0; 
+
   inline float get_penalisation_factor() const;
   inline void set_penalisation_factor(float new_penalisation_factor);
 
 protected:
   float penalisation_factor;
+  //! sets value for penalisation factor
+  /*! Has to be called by set_defaults in the leaf-class */
+  virtual void set_defaults();
+  //! sets key for penalisation factor
+  /*! Has to be called by initialise_keymap in the leaf-class */
+  virtual void initialise_keymap();
 
 };
 
