@@ -40,3 +40,15 @@ endif
 endif
 endif
 endif
+
+# find hostname
+ifeq (0,${MAKELEVEL})
+host-name := $(shell hostname)
+MAKE := ${MAKE} host-name=${host-name}
+endif
+
+# set gcc to gcc-3.0 on our beowulf cluster
+ifneq (,$(findstring beo,$(host-name)))
+CXX=g++-3.0
+CC=gcc-3.0
+endif
