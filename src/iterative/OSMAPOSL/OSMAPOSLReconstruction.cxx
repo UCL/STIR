@@ -109,17 +109,18 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
   if(parameters.inter_update_filter_interval>0 && 
      !is_null_ptr(parameters.inter_update_filter_ptr))
     {
-      cerr<<endl<<"Building inter-update filter kernel"<<endl;
-      if (parameters.inter_update_filter_ptr->set_up(*target_image_ptr)
-          == Succeeded::no)
-	error("Error building inter-update filter\n");
-
       // ensure that the result image of the filter is positive
       parameters.inter_update_filter_ptr =
 	new ChainedImageProcessor<3,float>(
 				  parameters.inter_update_filter_ptr,
-				  new  ThresholdMinToSmallPositiveValueImageProcessor<float>
-);
+				  new  ThresholdMinToSmallPositiveValueImageProcessor<float>);
+      // KT 04/06/2003 moved set_up after chaining the filter. Otherwise it would be 
+      // called again later on anyway.
+      // Note however that at present, 
+      cerr<<endl<<"Building inter-update filter kernel"<<endl;
+      if (parameters.inter_update_filter_ptr->set_up(*target_image_ptr)
+          == Succeeded::no)
+	error("Error building inter-update filter\n");
 
     }
   if (parameters.inter_iteration_filter_interval>0 && 
@@ -131,6 +132,11 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
 					   parameters.inter_iteration_filter_ptr,
 					   new  ThresholdMinToSmallPositiveValueImageProcessor<float>
 );
+      // KT 04/06/2003 moved set_up after chaining the filter (and removed it from IterativeReconstruction)
+      cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
+      if (get_parameters().inter_iteration_filter_ptr->set_up(*target_image_ptr)
+          == Succeeded::no)
+	error("Error building inter iteration filter\n");
     }
 }
 
