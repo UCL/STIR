@@ -30,6 +30,10 @@
 
 
 #include "stir/TimedObject.h"
+#include "stir/ParsingObject.h"
+#include "stir/shared_ptr.h"
+#include "stir/ProjData.h"
+#include "stir/IO/OutputFileFormat.h"
 #include <string>
 
 
@@ -39,9 +43,7 @@ using std::string;
 
 START_NAMESPACE_STIR
 
-class ReconstructionParameters;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
-template <typename T> class shared_ptr;
 class Succeeded;
 
 /*!
@@ -54,10 +56,9 @@ class Succeeded;
   For convenience, the class is derived from TimedObject. It is the 
   responsibility of the derived class to run these timers though.
 
-  \todo merge ReconstructionParameters hierarchy with this one.
 */
 
-class Reconstruction : public TimedObject 
+class Reconstruction : public TimedObject, public ParsingObject 
 {
 public:
   //! virtual destructor
@@ -65,9 +66,6 @@ public:
   
   //! gives method information
   virtual string method_info() const = 0;
-  
-  //! lists the parameters
-  virtual string parameter_info()  = 0;
   
 
   //! Creates a suitable target_image as determined by the parameters
@@ -98,25 +96,88 @@ public:
     reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr) = 0;
 
   //! accessor for the external parameters
-  ReconstructionParameters& get_parameters()
+  Reconstruction& get_parameters()
     {
-      return static_cast<ReconstructionParameters&>(params());
+      return *this;
     }
 
   //! accessor for the external parameters
-  const ReconstructionParameters& get_parameters() const
+  const Reconstruction& get_parameters() const
     {
-      return static_cast<const ReconstructionParameters&>(params());
+      return *this;
     }
 
+  // parameters
+ protected:
 
-private:
+  //! the input projection data file name
+  string input_filename;
 
-  //! a workaround for compilers not supporting covariant return types
-  virtual ReconstructionParameters& params()=0;
+  //! file name for output reconstructed images
+  string output_filename_prefix; 
 
-  //! a workaround for compilers not supporting covariant return types
-  virtual const ReconstructionParameters& params() const=0;
+  //! the output image size in x and y direction
+  /*! convention: if -1, use a size such that the whole FOV is covered
+  */
+  int output_image_size_xy; // KT 10122001 appended _xy
+
+  //! the output image size in z direction
+  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
+  */
+  int output_image_size_z; // KT 10122001 new
+
+  // KT 20/06/2001 disabled
+#if 0
+  //! number of views to add (i.e. mashing)
+  int num_views_to_add;
+#endif
+  //! the zoom factor
+  double zoom;
+
+  //! offset in the x-direction
+  double Xoffset;
+
+  //! offset in the y-direction
+  double Yoffset;
+
+  // KT 20/06/2001 new
+  //! offset in the z-direction
+  double Zoffset;
+
+  //! the maximum absolute ring difference number to use in the reconstruction
+  /*! convention: if -1, use get_max_segment_num()*/
+  int max_segment_num_to_process;
+
+
+  //! prompts the user to enter parameter values manually
+  virtual void ask_parameters();
+
+
+  //! points to the object for the total input projection data
+  shared_ptr<ProjData> proj_data_ptr;
+
+  //! defines the format of the output files
+  shared_ptr<OutputFileFormat> output_file_format_ptr; 
+
+protected:
+ 
+  //! used to check acceptable parameter ranges, etc...
+  virtual bool post_processing();
+
+  /*! 
+  \brief 
+  This function initialises all parameters, either via parsing, 
+  or by calling ask_parameters() (when parameter_filename is the empty string).
+
+  It should be called in the constructor of the last class in the 
+  hierarchy. At that time, all Interfile keys will have been
+  initialised, and ask_parameters() will be the appropriate virtual
+  function, such that questions are asked for all parameters.
+  */
+  void initialise(const string& parameter_filename);
+  
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
 
 };

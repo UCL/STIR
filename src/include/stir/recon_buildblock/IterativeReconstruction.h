@@ -1,5 +1,5 @@
 //
-// @(#)IterativeReconstruction.h	1.4 00/06/15
+// $Id$
 //
 #ifndef __IterativeReconstruction_h__
 #define __IterativeReconstruction_h__
@@ -16,8 +16,8 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  00/06/15
-  1.4
+  $Date$
+  $Version:$
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -30,7 +30,9 @@
    - added get_initial_image_ptr and 0 argument reconstruct()
 */
 #include "stir/recon_buildblock/Reconstruction.h"
-#include "stir/recon_buildblock/IterativeReconstructionParameters.h"
+#include "stir/shared_ptr.h"
+#include "stir/ImageProcessor.h"
+
 
 START_NAMESPACE_STIR
 
@@ -108,15 +110,15 @@ protected:
   VectorWithOffset<int> randomly_permute_subset_order();
 
   //! accessor for the external parameters
-  IterativeReconstructionParameters& get_parameters()
+  IterativeReconstruction& get_parameters()
     {
-      return static_cast<IterativeReconstructionParameters&>(params());
+      return *this;
     }
 
   //! accessor for the external parameters
-  const IterativeReconstructionParameters& get_parameters() const
+  const IterativeReconstruction& get_parameters() const
     {
-      return static_cast<const IterativeReconstructionParameters&>(params());
+      return *this;
     }
 
 
@@ -127,28 +129,61 @@ protected:
   bool terminate_iterations;
 
 
- private:
- 
-  //! a workaround for compilers not supporting covariant return types
-  virtual ReconstructionParameters& params()=0;
+  // parameters
+ protected:
+  //! the maximum allowed number of full iterations
+  int max_num_full_iterations;
 
-  //! a workaround for compilers not supporting covariant return types
-  virtual const ReconstructionParameters& params() const=0;
+  //! the number of ordered subsets
+  int num_subsets;
+
+  //! the number of subiterations 
+  int num_subiterations;
+
+  //! value with which to initialize the subiteration counter
+  int start_subiteration_num;
+
+  //! name of the file containing the image data for intializing the reconstruction
+  string initial_image_filename;
+
+  //! the starting subset number
+  int start_subset_num;
+
+  //TODO rename
+
+  //! subiteration interval at which images will be saved
+  int save_interval;
+
+  //! signals whether to zero the data in the end planes of the projection data
+  int zero_seg0_end_planes;
+
+  //! signals whether to randomise the subset order in each iteration
+  int randomise_subset_order;
+
+
+  //! inter-iteration filter
+  shared_ptr<ImageProcessor<3,float> > inter_iteration_filter_ptr;
+
+  //! post-filter
+  shared_ptr<ImageProcessor<3,float> >  post_filter_ptr;
+
+
+  
+  //! subiteration interval at which to apply inter-iteration filters 
+  int inter_iteration_filter_interval;
+
+  //! prompts the user to enter parameter values manually
+  virtual void ask_parameters();
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  //! used to check acceptable parameter ranges, etc...
+  virtual bool post_processing();
+
 
 };
 
-
-
-
-
-
-
 END_NAMESPACE_STIR
-
-
-
-
-
 
 #endif
 // __IterativeReconstruction_h__
