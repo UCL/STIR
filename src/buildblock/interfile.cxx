@@ -19,8 +19,8 @@
 PETImageOfVolume read_interfile_image(istream& input)
 {
   // KT 19/10/98 use new class
-  InterfileImageHeader kp(input);
-  if (!kp.parse())
+  InterfileImageHeader hdr(input);
+  if (!hdr.parse())
     {
       PETerror("\nError parsing interfile header, \n\
       I am going to ask you lots of questions...\n");
@@ -28,67 +28,48 @@ PETImageOfVolume read_interfile_image(istream& input)
     }
   
   
-    printf("byte order : %s_endian\n",
-      kp.file_byte_order == ByteOrder::little_endian ? "Little" : "Big");
-    printf("Number type:  %d\n", kp.type_of_numbers);
-    /*
-    printf("num_dimensions : %d\n",kp.num_dimensions);
-    for(int i=0;i<kp.num_dimensions;i++)
-    {
-      vector<int> v;
-      v=kp.matrix_size[i];
-      for(int ii=0;ii<v.size();ii++)
-	printf("matrix_size[%d][%d] : %d\n",i+1,ii+1,v[ii]);
-      //printf("matrix_labels[%d] : %s\n",i+1, kp.matrix_labels[i].c_str());
-    }
-    */
-    // TODO move to ImageHeader post_processing
-    assert(kp.num_dimensions == 3);
-    assert(kp.matrix_size[0].size() == 1);
-    assert(kp.matrix_size[1].size() == 1);
-    assert(kp.matrix_size[2].size() == 1);
-
     //KT 26/10/98 now here
     ifstream data_in;
-    open_read_binary(data_in, kp.data_file_name.c_str());
+    open_read_binary(data_in, hdr.data_file_name.c_str());
 
     Point3D origin(0,0,0);
 
-    Point3D voxel_size(kp.pixel_sizes[0], kp.pixel_sizes[1], kp.pixel_sizes[2]);
+    Point3D voxel_size(hdr.pixel_sizes[0], hdr.pixel_sizes[1], hdr.pixel_sizes[2]);
 
-    //TODO adjust x,y ranges to centre ?
+    // KT 29/10/98 adjusted x,y ranges to centre 
+    const y_size =  hdr.matrix_size[1][0];
+    const x_size =  hdr.matrix_size[0][0];
     PETImageOfVolume 
-     image(Tensor3D<float>(kp.matrix_size[2][0], kp.matrix_size[1][0], kp.matrix_size[0][0]),
-		      origin,
-		      voxel_size);
+      image(Tensor3D<float>(0,hdr.matrix_size[2][0]-1,
+      -y_size/2, (-y_size/2) + y_size - 1,
+      -x_size/2, (-x_size/2) + x_size - 1), 
+      origin,
+      voxel_size);
 
     //KT 26/10/98 do file offset now
-    data_in.seekg(kp.data_offset[0]);
+    data_in.seekg(hdr.data_offset[0]);
 
     Real scale = Real(1);
     //KT 26/10/98 use local stream data_in
-    image.read_data(data_in, kp.type_of_numbers, scale, kp.file_byte_order);
+    image.read_data(data_in, hdr.type_of_numbers, scale, hdr.file_byte_order);
     assert(scale == 1);  
     
-    //KT 26/10/98 take scale factor into account
-    if (kp.image_scaling_factor[0]!= 1)
-      image *= kp.image_scaling_factor[0];
+    // KT 26/10/98 take scale factor into account
+    // KT 29/10/98 use list of factors
+    for (int i=0; i< hdr.matrix_size[2][0]; i++)
+      if (hdr.image_scaling_factors[0][i]!= 1)
+	image[i] *= hdr.image_scaling_factors[0][i];
 
-    //KT 26/10/98 not necessary anymore
-    /*
-    if(kp.in_stream!=0)
-      {
-	kp.in_stream->close();
-	delete kp.in_stream;
-      }
-      */
-  
-  return image;
+ 
+    return image;
 }
 
-
+// KT 09/11/98 added voxel_size & output_type
 template <class NUMBER>
-bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& image)
+bool write_basic_interfile(const char * const filename, 
+			   const Tensor3D<NUMBER>& image,
+			   const Point3D& voxel_size,
+			   const NumericType output_type)
 {
   string header_name = filename;
   header_name += ".hv";
@@ -117,29 +98,48 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
   output_header << "!PET STUDY (General) :=\n";
   output_header << "!PET data type := Image\n";
   output_header << "process status := Reconstructed\n";
+
+  // KT 09/11/98 use output_type
   output_header << "!number format := ";
-  if (NumericInfo<NUMBER>().integer_type() )
-    output_header << ( NumericInfo<NUMBER>().signed_type() 
-                      ? "signed integer\n" : "unsigned integer\n");
+  if (output_type.integer_type() )
+    output_header << (output_type.signed_type() 
+    ? "signed integer\n" : "unsigned integer\n");
   else
     output_header << "float\n";
-  output_header << "!number of bytes per pixel := " 
-                 << NumericInfo<NUMBER>().size_in_bytes() << endl;
+  output_header << "!number of bytes per pixel := "
+    << output_type.size_in_bytes() << endl;
+  
   output_header << "number of dimensions := 3\n";
   output_header << "!matrix size [1] := "
                 << image.get_length1() << endl;
   output_header << "matrix axis label [1] := x\n";
+  output_header << "scaling factor (mm/pixel) [1] := " 
+                << voxel_size.x << endl;
   output_header << "!matrix size [2] := "
                 << image.get_length2() << endl;
   output_header << "matrix axis label [2] := y\n";
+  output_header << "scaling factor (mm/pixel) [2] := " 
+                << voxel_size.y << endl;
   output_header << "!matrix size [3] := "
                 << image.get_length3() << endl;
   output_header << "matrix axis label [3] := z\n";
+  output_header << "scaling factor (mm/pixel) [3] := " 
+                << voxel_size.z << endl;
   output_header << "number of time frames := 1\n";
+
+  // KT 09/11/98 use output_type
+  Real scale = 0;
+  image.write_data(output_data, output_type, scale);
+ 
+
+  output_header << "image scaling factor[1] := " << scale << endl;
+  output_header << "quantification units := " << scale << endl;
+  output_header << "maximum pixel count := " << image.find_max()/scale << endl;
+  
+  
   output_header << "!END OF INTERFILE :=\n";
-
-  image.write_data(output_data);
-
+  
+  
   // temporary copy to make an old-style header to satisfy Analyze
   {
     string header_name = filename;
@@ -159,19 +159,23 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
     output_header << "!name of data file := " << data_name << endl;
     output_header << "!total number of images := "
       << image.get_length3() << endl;
-    output_header << "imagedata byte order := " <<
+    // KT 05/11/98 added ! 
+    output_header << "!imagedata byte order := " <<
       (ByteOrder::get_native_order() == ByteOrder::little_endian 
       ? "LITTLEENDIAN"
       : "BIGENDIAN")
       << endl;
+
+    // KT 09/11/98 use output_type
     output_header << "!number format := ";
-    if (NumericInfo<NUMBER>().integer_type() )
-      output_header << ( NumericInfo<NUMBER>().signed_type() 
+    if (output_type.integer_type() )
+      output_header << (output_type.signed_type() 
       ? "signed integer\n" : "unsigned integer\n");
     else
       output_header << "float\n";
-    output_header << "!number of bytes per pixel := " 
-      << NumericInfo<NUMBER>().size_in_bytes() << endl;
+    output_header << "!number of bytes per pixel := "
+      << output_type.size_in_bytes() << endl;
+    
     output_header << "!matrix size [1] := "
       << image.get_length1() << endl;
     output_header << "matrix axis label [1] := x\n";
@@ -184,6 +188,19 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
   return true;
 }
 
+// KT 09/11/98 new
+bool
+write_basic_interfile(const char * const filename, 
+		      const PETImageOfVolume& image,
+		      const NumericType output_type)
+{
+  return
+    write_basic_interfile(filename, 
+                          image, // use automatic reference to base class
+			  image.get_voxel_size(), 
+			  output_type);
+}
+
 PETSinogramOfVolume read_interfile_PSOV(istream& input)
 {
   //KT 26/10/98 new
@@ -193,44 +210,27 @@ PETSinogramOfVolume read_interfile_PSOV(istream& input)
   fstream *data_in =  new fstream;
   
 
-  InterfilePSOVHeader kp(input);
-  if (!kp.parse())
+  InterfilePSOVHeader hdr(input);
+  if (!hdr.parse())
     {
       PETerror("\nError parsing interfile header, \n\
      I am going to ask you lots of questions...\n");
       return ask_PSOV_details(data_in);
     }
-  
-  
-    printf("byte order : %s_endian\n",
-      kp.file_byte_order == ByteOrder::little_endian ? "Little" : "Big");
-    printf("Number type:  %d\n", kp.type_of_numbers);
-    /*
-    printf("num_dimensions : %d\n",kp.num_dimensions);
-    for(int i=0;i<kp.num_dimensions;i++)
-    {
-      vector<int> v;
-      v=kp.matrix_size[i];
-      for(int ii=0;ii<v.size();ii++)
-	printf("matrix_size[%d][%d] : %d\n",i+1,ii+1,v[ii]);
-      //printf("matrix_labels[%d] : %s\n",i+1, kp.matrix_labels[i].c_str());
-    }
-    */
+   
+    open_read_binary(*data_in, hdr.data_file_name.c_str());
 
-
-    open_read_binary(*data_in, kp.data_file_name.c_str());
-
-    vector<int> min_ring_num_per_segment(kp.num_segments);
-    vector<int> max_ring_num_per_segment(kp.num_segments);
-    for (int s=0; s<kp.num_segments; s++)
+    vector<int> min_ring_num_per_segment(hdr.num_segments);
+    vector<int> max_ring_num_per_segment(hdr.num_segments);
+    for (int s=0; s<hdr.num_segments; s++)
     {
       min_ring_num_per_segment[s] = 0;
-      max_ring_num_per_segment[s] = kp.num_rings_per_segment[s]-1;
+      max_ring_num_per_segment[s] = hdr.num_rings_per_segment[s]-1;
     }
 
     // TODO Horrible trick to get the scanner right
     PETScannerInfo scanner;
-    switch (kp.num_views)
+    switch (hdr.num_views)
     {
     case 96:
       scanner = PETScannerInfo::RPT;
@@ -250,21 +250,29 @@ Defaulting to RPT" << endl;
       scanner = PETScannerInfo::RPT;
       break;
     }
+    // TODO scaling factors
+    for (int i=1; i<hdr.image_scaling_factors[0].size(); i++)
+      if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
+      { 
+        PETerror("Interfile warning: all image scaling factors should be equal \n\
+at the moment. Using the first scale factor only.\n");
+        break;
+      }
     return PETSinogramOfVolume(
                       scanner,
-		      kp.segment_sequence,
-		      kp.min_ring_difference, 
-		      kp.max_ring_difference, 
+		      hdr.segment_sequence,
+		      hdr.min_ring_difference, 
+		      hdr.max_ring_difference, 
 		      min_ring_num_per_segment,
 		      max_ring_num_per_segment,
-		      0, kp.num_views-1,
-		      -kp.num_bins/2,
-		      (-kp.num_bins/2) + kp.num_bins-1,
+		      0, hdr.num_views-1,
+		      -hdr.num_bins/2,
+		      (-hdr.num_bins/2) + hdr.num_bins-1,
 		      *data_in,
-		      kp.data_offset[0],
-		      kp.storage_order,
-		      kp.type_of_numbers,
-		      kp.image_scaling_factor[0]);
+		      hdr.data_offset[0],
+		      hdr.storage_order,
+		      hdr.type_of_numbers,
+		      hdr.image_scaling_factors[0][0]);
 }
 
 
@@ -272,17 +280,25 @@ Defaulting to RPT" << endl;
  template instantiations
  **********************************************************************/
 
-// Codewarrior gets confused by the syntax of template instantiation
-#ifndef __MSL__
-template bool write_basic_interfile(const char * const filename, const Tensor3D<signed char>& );
-template bool write_basic_interfile(const char * const filename, const Tensor3D<unsigned char>&);
-template bool write_basic_interfile(const char * const filename, const Tensor3D<signed short>&);
-template bool write_basic_interfile(const char * const filename, const Tensor3D<unsigned short>&);
-template bool write_basic_interfile(const char * const filename, const Tensor3D<float>&);
-#else
-template bool write_basic_interfile<>(const char * const filename, const Tensor3D<signed char>& );
-template bool write_basic_interfile<>(const char * const filename, const Tensor3D<unsigned char>&);
-template bool write_basic_interfile<>(const char * const filename, const Tensor3D<signed short>&);
-template bool write_basic_interfile<>(const char * const filename, const Tensor3D<unsigned short>&);
-template bool write_basic_interfile<>(const char * const filename, const Tensor3D<float>&);
-#endif
+// KT 01/11/98 disabled 2 instantiations
+/*
+template bool write_basic_interfile<>(const char * const filename, 
+				      const Tensor3D<signed char>&,
+				      const Point3D& voxel_size,
+				      const NumericType output_type );
+template bool write_basic_interfile<>(const char * const filename, 
+				      const Tensor3D<unsigned char>&,const Point3D& voxel_size,
+				      const NumericType output_type);
+*/
+template bool write_basic_interfile<>(const char * const filename, 
+				      const Tensor3D<signed short>&,
+				      const Point3D& voxel_size,
+				      const NumericType output_type);
+template bool write_basic_interfile<>(const char * const filename, 
+				      const Tensor3D<unsigned short>&,
+				      const Point3D& voxel_size,
+				      const NumericType output_type);
+template bool write_basic_interfile<>(const char * const filename, 
+				      const Tensor3D<float>&,
+				      const Point3D& voxel_size,
+				      const NumericType output_type);
