@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup eval_buildblock
+  \ingroup evaluation
 
   \brief Definition of class ROIValues
 
@@ -15,12 +15,12 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_eval_buildblock_ROIValues__H__
-#define __stir_eval_buildblock_ROIValues__H__
+#ifndef __stir_evaluation_ROIValues__H__
+#define __stir_evaluation_ROIValues__H__
 
 #include "stir/common.h"
 
@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup eval_buildblock
+  \ingroup evaluation
   \brief A class to store and get results of an ROI calculation.
   
   This class stores the volume of the ROI (in cubic mm), the integral over the ROI of the functions and
