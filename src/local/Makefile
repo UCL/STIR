@@ -13,8 +13,8 @@ LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/local/eval_buildblock \
 	$(WORKSPACE)/local/QH_library
 
+#KT temp removal of QH_utilities as they don't link
 EXESUBDIRECTORIES= \
-        $(WORKSPACE)/local/QH_utilities \
         $(WORKSPACE)/local/utilities
 
 SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
