@@ -1,3 +1,23 @@
+//
+// $Id$
+//
+/*!
+  \file
+  \ingroup recon_buildblock
+
+  \brief File that registers all RegisterObject children in recon_buildblock
+
+  \author Kris Thielemans
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifdef HAVE_LLN_MATRIX
+#include "local/stir/recon_buildblock/BinNormalisationFromECAT7.h"
+#endif
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
@@ -21,9 +41,10 @@ static PostsmoothingBackProjectorByBin::RegisterIt dummy4;
 static QuadraticPrior<float>::RegisterIt dummy21;
 
 static BinNormalisationUsingProfile::RegisterIt dummy101;
+#ifdef HAVE_LLN_MATRIX
+START_NAMESPACE_ECAT7
+static BinNormalisationFromECAT7::RegisterIt dummy102;
+END_NAMESPACE_ECAT7
+#endif
 
 END_NAMESPACE_STIR
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/

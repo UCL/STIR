@@ -24,7 +24,8 @@ SOURCES = \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
 	QuadraticPrior.cxx \
-	BinNormalisationUsingProfile.cxx
+	BinNormalisationUsingProfile.cxx \
+	BinNormalisationFromECAT7.cxx
 
 #	oldForwardProjectorByBinUsingRayTracing.cxx \
 #	oldForwardProjectorByBinUsingRayTracing_Siddon.cxx \
