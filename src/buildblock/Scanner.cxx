@@ -96,6 +96,9 @@ Scanner::Scanner(Type scanner_type)
   }
   else if (scanner_type == HZLR)
     set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0);
+  else if (scanner_type == HiDAC)
+    // all of these don't make any sense for the HiDAC
+    set_params(HiDAC,string_list("HiDAC"), 0, 0, 0, 0.F, 0.F, 0.F, 0);
   else
     { 
       // warning("Unknown scanner type used for initialisation of Scanner\n"); 
