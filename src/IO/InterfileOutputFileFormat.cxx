@@ -30,8 +30,8 @@ InterfileOutputFileFormat::
 InterfileOutputFileFormat(const NumericType& type, 
                    const ByteOrder& byte_order) 
 {
-  type_of_numbers = type;
-  file_byte_order = byte_order;
+  set_type_of_numbers(type);
+  set_byte_order(byte_order);
 }
 
 void 
@@ -49,13 +49,25 @@ post_processing()
 {
   if (OutputFileFormat::post_processing())
     return true;
-  if (!file_byte_order.is_native_order())
-    {
-      warning("InterfileOutputFileFormat: byte_order is currently fixed to the native order\n");
-      file_byte_order = ByteOrder::native;
-    }
   return false;
 }
+
+
+ByteOrder 
+InterfileOutputFileFormat::
+set_byte_order(const ByteOrder& new_byte_order, const bool warn)
+{
+  if (!new_byte_order.is_native_order())
+  {
+    if (warn)
+      warning("InterfileOutputFileFormat: byte_order is currently fixed to the native format\n");
+    file_byte_order = ByteOrder::native;
+  }
+  else
+    file_byte_order = new_byte_order;
+  return file_byte_order;
+}
+
 
 
 Succeeded  
