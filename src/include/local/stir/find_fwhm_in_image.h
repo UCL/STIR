@@ -137,11 +137,12 @@ find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
 /*!  
    \ingroup resolution
    \brief                              
-  it Masks the input_array.
+   Masks the input_array
 
-  it masks the input_array at the location of a point source with a mask size depending on the resolution 
-  of the previous point (in pixel units), at each of the directions. In the code there is a scale factor 
-  to change easily the size of the mask (mask_size(z,y,x)=int(6*resolution(z,y,x)/level)). 
+  it masks the input_array at the location of a point source setting all values to -1, with a mask size 
+  depending on the resolution of the previous point (in pixel units), at each of the directions. In the 
+  code there is a scale factor to change easily the size of the mask.
+  (mask_size(z,y,x)=int(6*resolution(z,y,x)/level)). 
 */
 template <int num_dimensions, class elemT>   
 void 
@@ -149,6 +150,6 @@ flexible_mask(Array<num_dimensions,elemT>& input_array,
               const BasicCoordinate<num_dimensions,int>& max_location,
               const BasicCoordinate<num_dimensions,elemT>& resolution,
               const float level);
-     
+
 
 END_NAMESPACE_STIR
