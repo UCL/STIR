@@ -1,5 +1,5 @@
-// @(#)Reconstruction.h	1.11 98/10/19
-
+// $Id$: $Date$
+//
 #ifndef __RECONSTRUCTION_H__
 #define __RECONSTRUCTION_H__
 
