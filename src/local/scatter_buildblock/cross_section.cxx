@@ -4,7 +4,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementations of functions defined in scatter.h
+  \brief Implementations of functions defined in Scatter.h
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
