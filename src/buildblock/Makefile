@@ -9,7 +9,7 @@ include $(WORKSPACE)/Makefile_common
 all: $(DEST)libbuildblock.a $(DEST)buildblock_registries.o
 
 clean:
-	$(RM) $(DEST)*.[oad]
+	$(RM) $(DEST)*.[oadP]
 
 # KT 08/02/2002
 # added ProjDataInMemory.cxx
@@ -60,7 +60,7 @@ SOURCES = \
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
-LOBJS = $(DEST)libbuildblock.a($(OBJS))
+#LOBJS = $(DEST)libbuildblock.a($(OBJS))
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
@@ -76,8 +76,8 @@ endif
 
 
 
-$(DEST)libbuildblock.a: $(LOBJS)
+$(DEST)libbuildblock.a: $(OBJS)
+	$(AR) $(ARFLAGS)  $@ $?
 	ranlib $@
-#	ar r $@ $?
 
 
