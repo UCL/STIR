@@ -13,8 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
-
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/Shape/EllipsoidalCylinder.h"
@@ -153,6 +152,14 @@ get_geometric_volume()const
  {
    return static_cast<float>(radius_x*radius_y*_PI*length);
  }
+
+
+float 
+EllipsoidalCylinder:: 
+get_geometric_area()const
+{
+  return static_cast<float>(2*sqrt(radius_x*radius_y)*_PI*length);
+}
 
 Shape3D* 
 EllipsoidalCylinder:: 
