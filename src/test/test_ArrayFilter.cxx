@@ -53,20 +53,10 @@ public:
   void run_tests();
 private:
 
-  template <int num_dimensions>
-  void compare_results_2arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
-			    const ArrayFunctionObject<num_dimensions,float>& filter2,
-			    const Array<num_dimensions,float>& test);
-  template <int num_dimensions>
-  void compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
-			    const ArrayFunctionObject<num_dimensions,float>& filter2,
-			    const Array<num_dimensions,float>& test);
-};
 
 
 template <int num_dimensions>
 void 
-ArrayFilterTests::
 compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
 		     const ArrayFunctionObject<num_dimensions,float>& filter2,
 		     const Array<num_dimensions,float>& test)
@@ -98,7 +88,6 @@ compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
 
 template <int num_dimensions>
 void 
-ArrayFilterTests::
 compare_results_2arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
 		     const ArrayFunctionObject<num_dimensions,float>& filter2,
 		     const Array<num_dimensions,float>& test)
@@ -170,6 +159,7 @@ compare_results_2arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
   }
 }
 
+};
 void
 ArrayFilterTests::run_tests()
 { 
