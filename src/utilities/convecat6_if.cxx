@@ -5,6 +5,7 @@
 /*! 
   \file
   \ingroup utilities
+  \ingroup CTI
   \brief Conversion from ECAT 6 cti to interfile (image and sinogram data)
   \author Kris Thielemans
   \author Damien Sauge
