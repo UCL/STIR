@@ -5,7 +5,8 @@
 /*! 
 \file
 \ingroup utilities
-\brief Conversion from interfile to ECAT 6 cti (image and sinogram data)
+\brief Conversion from interfile (or any format that we can read) 
+  to ECAT 6 cti (image and sinogram data)
 \author Kris Thielemans
 \author PARAPET project
 $Date$
@@ -68,12 +69,15 @@ int main(int argc, char *argv[])
   }  
   else 
   {
-    cerr<<"\nConversion from data to ECAT6 CTI.\n"
-        <<"Usage: 2 possible forms depending on data type\n"
+    cerr<< "\nConversion from data to ECAT6 CTI.\n"
+	<< "Multiples files can be written to a single ECAT 6 file.\n"
+        << "The data will be assigned a frame number in the "
+        << "order that they occur on the command line.\n\n"
+        << "Usage: 2 possible forms depending on data type\n"
 	<< "For sinogram data:\n"
-	<< "\tconv_ecat6 -s ECAT6_name1 [ECAT6_name2 ...] orig_filename\n"
+	<< "\tconv_to_ecat6 -s output_ECAT6_name orig_filename1 [orig_filename2 ...]\n"
 	<< "For image data:\n"
-	<< "\tconv_ecat6 ECAT6_name1  [ECAT6_name2 ...] orig_name scanner_name\n"
+	<< "\tconv_to_ecat6 output_ECAT6_name orig_filename1 [orig_filename2 ...] scanner_name\n"
 	<< "scanner_name has to be recognised by the Scanner class\n"
 	<< "Examples are : \"ECAT 953\", \"RPT\" etc.\n"
 	<< "(the quotes are required when used as a command line argument)\n\n"
