@@ -84,13 +84,14 @@ class KeyParser
 {
 
 public:
-  // KT 19/10/98 removed default constructor as unused at the moment
-  //KeyParser();
-  // KT 16/10/98 changed  to istream&
-  KeyParser(istream& f);
+  // KT 13/11/98 moved istream arg to parse()
+  KeyParser();
   ~KeyParser();
 
-  bool parse();
+  // parse() returns false if there is some error, true otherwise
+  bool parse(istream& f);
+  // KT 13/11/98 new
+  bool parse(const char * const filename);
 
   // KT 29/10/98 made next ones public
   ////// functions to add keys and their actions 
