@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock  
+  \ingroup ImageProcessor  
   \brief Implementation of class SeparableConvolutionImageFilter
     
   \author Kris Thielemans
@@ -35,6 +35,8 @@ void
 SeparableConvolutionImageFilter<elemT>::
 initialise_keymap()
 {
+  ImageProcessor<3, elemT>::initialise_keymap();
+
   parser.add_start_key("Separable Convolution Filter Parameters");
   parser.add_key("x-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+2)));
   parser.add_key("y-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+1)));
@@ -48,10 +50,13 @@ bool
 SeparableConvolutionImageFilter<elemT>::
 post_processing()
 {
+  if (ImageProcessor<3, elemT>::post_processing() != false)
+    return true;
+
   // copy filter_coefficients_for_parsing to filter_coefficients 
   // todo drop any 0s at the start or end
 
-  VectorWithOffset< VectorWithOffset<elemT> >::iterator 
+  typename VectorWithOffset< VectorWithOffset<elemT> >::iterator 
     coefficients_iter = filter_coefficients.begin();
 #ifndef STIR_NO_NAMESPACES
       std::
@@ -73,7 +78,7 @@ post_processing()
       *coefficients_iter = VectorWithOffset<elemT>(min_index, min_index + size - 1);
 
       // can't use std::copy because of cast. sigh.
-      VectorWithOffset<elemT>::iterator 
+      typename VectorWithOffset<elemT>::iterator 
 	coefficients_elem_iter = coefficients_iter->begin();
 #ifndef STIR_NO_NAMESPACES
       std::
@@ -112,7 +117,7 @@ SeparableConvolutionImageFilter(
   // copy filter_coefficients to filter_coefficients_for_parsing such 
   // that get_parameters() works properly
 
-  VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
+  typename VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
     coefficients_iter = filter_coefficients.begin();
 #ifndef STIR_NO_NAMESPACES
       std::
@@ -159,9 +164,9 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
     all_1d_filters(filter_coefficients.get_min_index(),
 		   filter_coefficients.get_max_index());
 
-  VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
+  typename VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
     coefficients_iter = filter_coefficients.begin();
-  VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::iterator 
+  typename VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::iterator 
     filter_iter = all_1d_filters.begin();
   for (;
        coefficients_iter != filter_coefficients.end();
@@ -204,7 +209,8 @@ void
 SeparableConvolutionImageFilter<elemT>::
 set_defaults()
 {
-    filter_coefficients = 
+  ImageProcessor<3, elemT>::set_defaults();
+  filter_coefficients = 
       VectorWithOffset< VectorWithOffset<elemT> >(3);    
 }
 

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Implementations for class ChainedImageProcessor
 
   \author Kris Thielemans
@@ -100,6 +100,7 @@ void
 ChainedImageProcessor<num_dimensions, elemT>::
 set_defaults()
 {
+  ImageProcessor<num_dimensions, elemT>::set_defaults();
 }
 
 template <int num_dimensions, typename elemT>
@@ -107,6 +108,7 @@ void
 ChainedImageProcessor<num_dimensions, elemT>::
 initialise_keymap()
 {
+  ImageProcessor<num_dimensions, elemT>::initialise_keymap();
   parser.add_start_key("Chained Image Processor Parameters");
   parser.add_parsing_key("Image Processor to apply first", &apply_first);
   parser.add_parsing_key("Image Processor to apply second", &apply_second);

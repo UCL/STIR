@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Declaration of class ImageProcessor
 
   \author Kris Thielemans
@@ -23,6 +23,7 @@
 
 
 #include "stir/RegisteredObject.h"
+#include "stir/ParsingObject.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -30,7 +31,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief 
   Base class that defines an interface for classes that do image processing.
 
@@ -47,7 +48,8 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
  */
 template <int num_dimensions, typename elemT>
 class ImageProcessor : 
-  public RegisteredObject<ImageProcessor <num_dimensions,elemT> >
+public RegisteredObject<ImageProcessor <num_dimensions,elemT> >,
+public ParsingObject
 {
 public:
   inline ImageProcessor();

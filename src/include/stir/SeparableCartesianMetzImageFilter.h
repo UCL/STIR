@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup ImageProcessor  
   \brief Declaration of class SeparableCartesianMetzImageFilter
     
   \author Sanida Mustafovic
@@ -34,6 +34,7 @@ START_NAMESPACE_STIR
 #define num_dimensions 3
 
 /*!
+  \ingroup ImageProcessor  
   \brief A class in the ImageProcessor hierarchy that implements Metz 
   filtering (which includes Gaussian filtering).
   
@@ -56,7 +57,8 @@ class SeparableCartesianMetzImageFilter :
   public 
     RegisteredParsingObject<
         SeparableCartesianMetzImageFilter<elemT>,
-        ImageProcessor<num_dimensions,elemT>
+        ImageProcessor<3,elemT>,
+        ImageProcessor<3,elemT>
     >
 {
 public:

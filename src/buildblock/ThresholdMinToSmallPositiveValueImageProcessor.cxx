@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Implementations for class ThresholdMinToSmallPositiveValueImageProcessor
 
   \author Kris Thielemans
@@ -66,6 +66,7 @@ void
 ThresholdMinToSmallPositiveValueImageProcessor<elemT>::
 set_defaults()
 {
+  ImageProcessor<3, elemT>::set_defaults();
 }
 
 template <typename elemT>
@@ -73,6 +74,7 @@ void
 ThresholdMinToSmallPositiveValueImageProcessor<elemT>::
 initialise_keymap()
 {
+  ImageProcessor<3, elemT>::initialise_keymap();
   parser.add_start_key("Threshold Min To Small Positive Value Parameters");
   parser.add_key("rim truncation (in pixels)", &rim_truncation_image);
   parser.add_stop_key("END Threshold Min To Small Positive Value Parameters");
