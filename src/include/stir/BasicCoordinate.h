@@ -137,7 +137,13 @@ template <int num_dimensions, typename coordT>
 inline coordT
 inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
 	       const BasicCoordinate<num_dimensions, coordT>& p2);
-
+//! compute (inner_product(p1,p1))
+/*! 
+  \ingroup Coordinate
+  \todo move to a new CartesianCoordinate class */
+template <int num_dimensions, typename coordT>
+inline double
+norm_squared (const BasicCoordinate<num_dimensions, coordT>& p1);
 //! compute sqrt(inner_product(p1,p1))
 /*! 
   \ingroup Coordinate
@@ -145,15 +151,6 @@ inner_product (const BasicCoordinate<num_dimensions, coordT>& p1,
 template <int num_dimensions, typename coordT>
 inline double
 norm (const BasicCoordinate<num_dimensions, coordT>& p1);
-
-//! compute (inner_product(p1,p1))
-/*! 
-  \ingroup Coordinate
-  \todo move to a new CartesianCoordinate class */
-template <int num_dimensions, typename coordT>
-inline double
-normsq (const BasicCoordinate<num_dimensions, coordT>& p1);
-
 //! compute angle between 2 directions
 /*! \ingroup Coordinate
 	Implemented in terms of acos(cos_angle(p1,p2)).
