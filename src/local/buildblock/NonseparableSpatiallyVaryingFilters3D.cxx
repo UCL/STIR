@@ -32,6 +32,7 @@ See STIR/LICENSE.txt for details
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <map>
 
 #ifndef STIR_NO_NAMESPACES
 using std::ios;
@@ -40,6 +41,7 @@ using std::iostream;
 using std::fstream;
 using std::cerr;
 using std::endl;
+using std::map;
 #endif
 
 #include "local/stir/local_helping_functions.h"
@@ -78,7 +80,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
   static VectorWithOffset<int> size_for_kapa0_over_kapa1;
   if (size_for_kapa0_over_kapa1.get_length()==0)
   {
-    size_for_kapa0_over_kapa1.grow(0,length_of_size_array-1);
+     size_for_kapa0_over_kapa1.grow(0,length_of_size_array-1);
     size_for_kapa0_over_kapa1.fill(64);
   }
   
@@ -124,7 +126,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
       Array<1,float>* fft_filter_1D_array_ptr = 0;
       switch (size)
       {
-       case 64:
+      case 64:
 	fft_filter_1D_array_ptr = &fft_filter_1D_array_64;
 	break;
       case 128:
@@ -155,15 +157,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	/**********************************************************************************/
 	
         Array<3,float> filter_coefficients_padded_3D_array(IndexRange3D(1,size,1,size,1,size));
-#if 0
-	for ( int k = 0;k<=size-1;k++)
-	  for ( int j = 0;j<=size-1;j++)
-	    for ( int i = 0;i<=size-1;i++)
-	    {
-	      filter_coefficients_padded_3D_array[k][j][i] = kernel_3d[k+kernel_3d.get_min_index()][j+kernel_3d[1].get_min_index()][i+kernel_3d[1][1].get_min_index()];
 
-	    }
-#endif
     // here do the padding	
 	const int min_kernel_3d_z = kernel_3d.get_min_index();
 	const int min_kernel_3d_y = kernel_3d[min_kernel_3d_z].get_min_index();
@@ -171,27 +165,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	const int oldsize_z = kernel_3d.get_length();
 	const int oldsize_y = kernel_3d[min_kernel_3d_z].get_length();
 	const int oldsize_x = kernel_3d[min_kernel_3d_z][min_kernel_3d_y].get_length();
-	#if 0	
-	int tmp_y =  min_kernel_3d_y;
-	int tmp_x =  min_kernel_3d_x;
-	int tmp_z =  min_kernel_3d_z;
-	for ( int k = 0;k<=number_of_coefficients_before_padding-1;k++)
-	  for ( int j = 0;j<=number_of_coefficients_before_padding-1;j++)
-	    for ( int i = 0;i<=number_of_coefficients_before_padding-1;i++)
-	    {
-	      filter_coefficients_padded_3D_array[k+1][j+1][i+1] = kernel_3d[k+min_kernel_3d_z][j+min_kernel_3d_y][i+min_kernel_3d_x];    
 
-	      if ( i != (number_of_coefficients_before_padding-1))
-	      {
-		filter_coefficients_padded_3D_array[k+1][j+1][size-(i)] = kernel_3d[k+min_kernel_3d_z][j+min_kernel_3d_y][i+min_kernel_3d_x+1]; 
-	      }
-	      if ( j != (number_of_coefficients_before_padding-1))
-	      {
-		filter_coefficients_padded_3D_array[k+1][size-j][i+1] = kernel_3d[k+min_kernel_3d_z][j+min_kernel_3d_y][i+min_kernel_3d_x+1]; 
-	      }
-	      
-	    }
-#endif
 	    const int max_kernel_3d_z= kernel_3d.get_max_index()-min_kernel_3d_z;
 	    const int max_kernel_3d_y= kernel_3d[min_kernel_3d_z].get_max_index()-min_kernel_3d_y;
 	    const int max_kernel_3d_x= kernel_3d[min_kernel_3d_z][min_kernel_3d_y].get_max_index()-min_kernel_3d_x;
@@ -209,26 +183,6 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 		kernel_3d[oldk+min_kernel_3d_z][oldj+min_kernel_3d_y][oldi+min_kernel_3d_x];    
 
 	     	    }
-	    #if 0
-	    int k_n = 1;
-	    for ( int k = size-(number_of_coefficients_before_padding-1);k<=size-1;k++)
-	    {
-	      int j_n = 1;
-	      for ( int j = size-(number_of_coefficients_before_padding-1);j<=size-1;j++)
-	      {  
-		for ( int i = 0;i<=number_of_coefficients_before_padding-1;i++)
-		{
-		  filter_coefficients_padded_3D_array[k+1][j+1][i+1] = kernel_3d[k_n][j_n][i+min_kernel_3d_x];      
-		  if ( i!=number_of_coefficients_before_padding-1)
-		  {
-		    filter_coefficients_padded_3D_array[k+1][j+1][size-(i)] = kernel_3d[k_n][j_n][i+min_kernel_3d_x+1];  	
-		  }	
-		}
-		j_n ++;
-	      }
-	      k_n++;
-	    }
-#endif
 #if 0
 	    for ( int k = 1; k<=size;k++)
 	    {
@@ -281,8 +235,9 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	}
 	fft_filter_denom_1D_array /= sq_kapas;
 
-
-	divide_complex_arrays(fft_filter_num_1D_array,fft_filter_denom_1D_array);              
+     
+	divide_complex_arrays(fft_filter_num_1D_array,fft_filter_denom_1D_array);  
+	
 	// TODO remove probably
 	if (size_z==1)
 	{
@@ -297,6 +252,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	
 	// make it consistent with mathemematica -- the output of the       
 	fft_filter_num_1D_array  /= sqrt(static_cast<double>(size_z *size_y*size_x));
+
 	
 	
 	// take the real part only 
@@ -857,13 +813,12 @@ void
 NonseparableSpatiallyVaryingFilters3D<elemT>:: 
 virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity<3,elemT>& in_density) const
 {
-  VectorWithOffset < shared_ptr <ArrayFilter3DUsingConvolution <float> > > filter_lookup;
-  //int number_of_discrete_points=500;
-  filter_lookup.grow(1,number_of_discrete_points);
-  const int k_min =1;
-  //const float k_interval = 0.1F; //0.01F;
-  
-  
+#if 0
+  static VectorWithOffset < shared_ptr <ArrayFilter3DUsingConvolution <float> > > 
+    filter_lookup(0,number_of_discrete_points);
+#else
+  static map<int, shared_ptr <ArrayFilter3DUsingConvolution <float> > > filter_lookup;
+#endif
   
   //the first time virtual_apply is called for this object, counter is set to 0
   static int count=0;
@@ -875,13 +830,14 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
   
   // the first set is defined for 2d separable case and the second for 3d case -- 
-  // depending weather it is 2d or 3d corresponding coefficints are used. 
+  // depending wether it is 2d or 3d corresponding coefficints are used. 
   static VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ArrayFilter3DUsingConvolution<float> >  > > > all_filter_coefficients;
-   Array<3,float> all_zeros(IndexRange3D(0,0,0,0,0,0));
+  bool recompute_filters = false;
   //if (initial_image_filename!="1")
   //{  
     if (count ==1)
     {
+      recompute_filters = true;
       all_filter_coefficients.grow(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z());    
       for (int k = in_density_cast_0.get_min_z(); k<=in_density_cast_0.get_max_z();k++)
       {
@@ -892,161 +848,114 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	}
       }
       
-      if ( precomputed_coefficients_filename!="1" && 
-	(*precomputed_coefficients_image)[1][1][1] !=1 && 
-	(*precomputed_coefficients_image)[1][-26][-26]!=1
-	&& rescaling_coefficient > 0.00000001)
+      if ( precomputed_coefficients_filename=="1" )
       {
-	VoxelsOnCartesianGrid<float>* precomputed_coefficients_image_cast =
+	cerr << "Initialisation precomputed coefficients to 1\n";
+	precomputed_coefficients_image = in_density_cast_0.get_empty_discretised_density();
+        precomputed_coefficients_image->fill(1);
+      }
+    }
+    VoxelsOnCartesianGrid<float>* precomputed_coefficients_image_cast =
 	  dynamic_cast< VoxelsOnCartesianGrid<float>* >(precomputed_coefficients_image); 
+    if (count > 40 && count %10 == 0)
+    {
+      recompute_filters = true;
+      cerr << "recompute coefficients now\n WARNING this is specific to approach 2!\n";
+      
+      VoxelsOnCartesianGrid<float> *  normalised_bck_image_cast =
+	dynamic_cast< VoxelsOnCartesianGrid<float> * > (normalised_bck_image);	 			 
+      VoxelsOnCartesianGrid<float> *  sensitivity_image_cast =
+	dynamic_cast< VoxelsOnCartesianGrid<float> * > (sensitivity_image);	 
+      
+      // WARNING this is specific to approach 2!			 
+      precompute_filter_coefficients_for_second_apporach(*precomputed_coefficients_image_cast,
+	in_density_cast_0,
+	*sensitivity_image_cast,
+	*normalised_bck_image_cast);
+    }
+
+    if (recompute_filters)
+    {
+      cerr << "Min,max in coefficients: "
+	   << precomputed_coefficients_image->find_min()*rescaling_coefficient
+	   << ", "
+	   << precomputed_coefficients_image->find_max()*rescaling_coefficient
+	   << endl;
 	cerr << " In here nonseparable" << endl;
 	for ( int k = precomputed_coefficients_image_cast->get_min_z(); k<=precomputed_coefficients_image_cast->get_max_z();k++)
 	  for ( int j = precomputed_coefficients_image_cast->get_min_y(); j<=precomputed_coefficients_image_cast->get_max_y();j++)
 	    for ( int i = precomputed_coefficients_image_cast->get_min_x(); i<=precomputed_coefficients_image_cast->get_max_x();i++)
 	      
 	    {
-	      int k_index;
-	      // rescaling coefficients should be < 1 for narrowing teh kernel and >1 for broadening the kernel
-	      float tmp = float((*precomputed_coefficients_image)[k][j][i]* rescaling_coefficient); 
-	      //cerr << (*precomputed_coefficients_image)[k][j][i] << endl;
-	      //cerr << tmp << endl;
-	      k_index = round(((float)1/(tmp)- k_min)/k_interval);
-	      //cerr << k_index << endl;
-	      //float sq_kapas = 1/tmp;
-	      if (k_index < 1) 
-	      {k_index = 1;}
-	      
-	      if ( k_index > number_of_discrete_points)
-	      { k_index  = number_of_discrete_points;}
-	      
+
+	      // rescaling coefficients should be < 1 for narrowing the kernel and >1 for broadening the kernel
+	      const float tmp = float((*precomputed_coefficients_image)[k][j][i]* rescaling_coefficient); 
+	      const int k_index = round(((float)1/(max(.000000001F,tmp)))/k_interval);
+#if 0	    
+	      if (k_index < filter_lookup.get_min_index())
+		  filter_lookup.grow(k_index, filter_lookup.get_max_index());
+	      if (k_index > filter_lookup.get_max_index())
+		  filter_lookup.grow(filter_lookup.get_min_index(), k_index);
 	      if ( filter_lookup[k_index]==NULL )
+#else
+	      if (filter_lookup.find(k_index)==filter_lookup.end())
+#endif
 	      {
-		//cerr << k<< "   "  << j << "   " << i <<"   " << endl;
-		Array <3,float> new_coeffs;	 
-		cerr << "Now doing index " << k_index << endl;
-		if ((*precomputed_coefficients_image)[k][j][i] >0.0000001)
+		
+		cerr << "Now doing index " << k_index << " i.e. value " << k_index*k_interval << " for 1/tmp " << 1/tmp << endl;
+		if (tmp >0.0000001)
 		{
+		  Array <3,float> new_coeffs;	 		
 		  construct_scaled_filter_coefficients_3D(new_coeffs,filter_coefficients,1/tmp, number_of_coefficients_before_padding); 
 		  filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
-		  all_filter_coefficients[k][j][i] = filter_lookup[k_index];
 		}
 		else
 		{
-		  //cerr << k<< "   "  << j << "   " << i <<"   " << endl;
-		  filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(all_zeros);
-		  all_filter_coefficients[k][j][i] = filter_lookup[k_index];
+		  filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>();
 		}
 		
 	      }
-	      else
-	      {
-		//cerr << k<< "   "  << j << "   " << i <<"   " << endl;
-		all_filter_coefficients[k][j][i] = filter_lookup[k_index];
-	      }
-	      
-	    }
-      }
-      
-      else if ((*precomputed_coefficients_image)[1][1][1] ==1.0 
-	&& (*precomputed_coefficients_image)[0][-26][-26] ==1.0)
-      {
-	cerr << "here" << endl;	
-	Array <3,float> new_coeffs;
-	construct_scaled_filter_coefficients_3D(new_coeffs,filter_coefficients,1, number_of_coefficients_before_padding); 
-	all_filter_coefficients[1][1][1] = 
-	  new ArrayFilter3DUsingConvolution<float>(new_coeffs);	
-	
-      }
-      else        
-	precalculate_filter_coefficients_3D(all_filter_coefficients,initial_image);
-      
-      
-    }
-    
-  //}
-  //else // for initial image
-  //{}
+	      all_filter_coefficients[k][j][i] = filter_lookup[k_index];	    
   
-  cerr << " now filtering" << endl;
+      }    
+      
+    } // end recompute_filters
+
+    
+  std::cerr << " now filtering" << std::endl;
   
   for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
     for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
       for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
       {
-	Array<3,elemT> tmp_out(IndexRange3D(k,k,j,j,i,i));
 	Array<3,elemT> single_pixel(IndexRange3D(k,k,j,j,i,i));
-	       if ( k==in_density_cast_0.get_min_z() && j==in_density_cast_0.get_min_y() 
-		 && i==in_density_cast_0.get_min_x() && count == 300  && precomputed_coefficients_filename!="1" 
-		 && normalised_bck_filename !="1")
-	       { 
-		 cerr <<  " IN the LOOP "  << k << "   " << j << "  " <<i << "   " << endl;
-		 for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
-		   for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
-		     for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
-		     { 
-		       Array <3,float> new_coeffs;
-		       if(in_density_cast_0[k][j][i] >0.00001 )
-		       {
-			 VoxelsOnCartesianGrid<float> *  newly_computed_coeff =
-			   new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-			   in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y(),
-			   in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()),
-			   in_density.get_origin(),in_density_cast_0.get_voxel_size()); 
-			 
-			 VoxelsOnCartesianGrid<float> *  normalised_bck_image_cast =
-			   dynamic_cast< VoxelsOnCartesianGrid<float> * > (normalised_bck_image);	 			 
-			 VoxelsOnCartesianGrid<float> *  sensitivity_image_cast =
-			   dynamic_cast< VoxelsOnCartesianGrid<float> * > (sensitivity_image);	 
-			 
-			 
-			 precompute_filter_coefficients_for_second_apporach(*newly_computed_coeff,
-			   in_density_cast_0,
-			   *sensitivity_image_cast,
-			   *normalised_bck_image_cast);
-			 construct_scaled_filter_coefficients_3D(new_coeffs,filter_coefficients,1/(*newly_computed_coeff)[k][j][i], number_of_coefficients_before_padding); 
-			 all_filter_coefficients[k][j][i] = 
-			   new ArrayFilter3DUsingConvolution<float>(new_coeffs);	
-			 delete newly_computed_coeff;
-		       }       
-		       
-		     }
-	       }
-	       if ( /*(*precomputed_coefficients_image)[1][1][1] !=1 */
-		 rescaling_coefficient> 0.00000001 )
-	       {
-		 //cerr << "in here" << endl;
-		 (*all_filter_coefficients[k][j][i])(single_pixel,in_density);
-		 out_density[k][j][i] = single_pixel[k][j][i];
-	       }
-	       else // this is only for non-varying filters -- TODO
-	       {
-		 (*all_filter_coefficients[1][1][1])(single_pixel,in_density);
-		 out_density[k][j][i] = single_pixel[k][j][i];
-		 
-	       }
-	     }
+	
+	//cerr << "in here" << endl;
+	(*all_filter_coefficients[k][j][i])(single_pixel,in_density);
+	out_density[k][j][i] = single_pixel[k][j][i];
+      }
       
-     }
+}
 #endif
      
      
-     
-     template <typename elemT>
-       void
-       NonseparableSpatiallyVaryingFilters3D<elemT>:: 
-       virtual_apply(DiscretisedDensity<3,elemT>& density) const
-     {
-       DiscretisedDensity<3,elemT>* tmp_density =
-	 density.clone();
-       virtual_apply(density, *tmp_density);
-       delete tmp_density;
-     }
-     
-     
-     template <typename elemT>
-       void
-       NonseparableSpatiallyVaryingFilters3D<elemT>::set_defaults()
-     {
+
+template <typename elemT>
+void
+NonseparableSpatiallyVaryingFilters3D<elemT>:: 
+virtual_apply(DiscretisedDensity<3,elemT>& density) const
+{
+  DiscretisedDensity<3,elemT>* tmp_density =
+    density.clone();
+  virtual_apply(density, *tmp_density);
+  delete tmp_density;
+}
+
+
+template <typename elemT>
+void
+NonseparableSpatiallyVaryingFilters3D<elemT>::set_defaults()
+{
        filter_coefficients.fill(0);
        proj_data_filename ="1";
        proj_data_ptr = NULL;
