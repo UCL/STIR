@@ -74,7 +74,11 @@ inline float ramp_filter_in_space(const int n,
 
 // KT&CL 03/08/99 insert max value for fc
 RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_v)
-  :Filter1D <float>(length), fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)// KT 230899 added F suffix to .5
+  :
+#ifdef NRFFT
+  Filter1D <float>(length), 
+#endif
+  fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)
 {
 
   start_timers();
@@ -120,8 +124,11 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
   assert(length%2==0);
 
   // first construct filter in 'real' space
-
+#ifdef NRFFT
   filter.set_offset(0);
+#else
+  Array<1,float> filter(length);
+#endif
 
   // KT&DH 17/05/2000 removed square(sampledist) as this introduced a scaling factor in the reconstructions
   filter[0] = 
@@ -135,10 +142,14 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
     filter[length-n] = filter[n];
   }
 
+#ifdef NRFFT
   filter.set_offset(1);
 
   realft(filter, length/2, 1);
-
+#else
+  if (set_kernel(filter) == Succeeded::no)
+    error("Error initialisation ramp filter\n");
+#endif
 #endif
   stop_timers();
 
@@ -146,7 +157,7 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
 };
 
 
-string RampFilter:: parameter_info() const
+std::string RampFilter:: parameter_info() const
 {
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
@@ -156,11 +167,15 @@ string RampFilter:: parameter_info() const
   std::ostringstream s;
 #endif  
     s << "RampFilter :="
-      << "\nFilter length := "<< filter.get_length()
+      << "\nFilter length := "
+#ifdef NRFFT
+      << filter.get_length()
+#else
+      << (complex_filter_kernel.size()-1)*2
+#endif
       << "\nCut-off in cycles := "<< fc
       << "\nAlpha parameter := "<<alpha
-      << "\nSample dist := "<< sampledist
-      << ends;
+      << "\nSample dist := "<< sampledist;
     
    return s.str();
 }
