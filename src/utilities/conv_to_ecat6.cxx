@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
   vector<string> filenames;
   bool its_an_image = true;
   bool its_a_2D_sinogram = false;
+  bool add_to_existing = false;
+  bool interactive = false;
   
   if(argc>=4)
   {
@@ -58,7 +60,19 @@ int main(int argc, char *argv[])
 	its_a_2D_sinogram = strlen(argv[1])==3 && argv[1][2]=='2';
 	if (its_a_2D_sinogram) 
 	  cout << "I will write 2D sinograms\n";
-        strcpy(cti_name,argv[2]);
+
+	while (argv[2][0] == '-')
+	  {
+	    if (strcmp(argv[2],"-k")==0)
+	      add_to_existing = true;	    
+	    else if (strcmp(argv[2],"-i")==0)
+	      interactive = true;
+	    else
+	      warning("Ignored unrecognised option: %s.", argv[2]);
+	  
+	    argv++; argc--;
+	  }
+	strcpy(cti_name,argv[2]);
         int num_files = argc-3;
         argv+=3;
         filenames.reserve(num_files);
@@ -85,13 +99,18 @@ int main(int argc, char *argv[])
         << "order that they occur on the command line.\n\n"
         << "Usage: 2 possible forms depending on data type\n"
 	<< "For sinogram data:\n"
-	<< "\tconv_to_ecat6 -s[2] output_ECAT6_name orig_filename1 [orig_filename2 ...]\n"
+	<< "\tconv_to_ecat6 -s[2] [-k] [-i] output_ECAT6_name orig_filename1 [orig_filename2 ...]\n"
 	<< "\tThe -s2 option forces output to 2D sinograms (ignoring higher segments).\n"
 	<< "For image data:\n"
-	<< "\tconv_to_ecat6 output_ECAT6_name orig_filename1 [orig_filename2 ...] scanner_name\n"
+	<< "\tconv_to_ecat6 [-k] [-i] output_ECAT6_name orig_filename1 [orig_filename2 ...] scanner_name\n"
 	<< "scanner_name has to be recognised by the Scanner class\n"
 	<< "Examples are : \"ECAT 953\", \"RPT\" etc.\n"
 	<< "(the quotes are required when used as a command line argument)\n\n"
+	<< "Options:\n"
+	<< "  -k: the existing ECAT6 file will NOT be overwritten,\n"
+	<< "\tbut added to. Any existing data in the ECAT6 file with the same <f,g,d,b>\n"
+	<< "\tspecification will be overwritten.\n"
+	<< "  -i: ask for <f,g,d,b> data\n\n"
 	<< "I will now ask you the same info interactively...\n\n";
     
     its_an_image = ask("Converting images?",true);
@@ -110,6 +129,29 @@ int main(int argc, char *argv[])
     ask_filename_with_extension(cti_name,"Name of the ECAT6 file? ",
       its_an_image ? ".img" : ".scn");
   }
+
+  int num_frames, num_gates, num_bed_poss, num_data;
+  if (interactive)
+    {
+      num_frames = ask_num("Num frames?",1U,filenames.size(), filenames.size());
+      num_gates = ask_num("Num gates?",1U,filenames.size()/num_frames, filenames.size()/num_frames);
+      num_bed_poss = ask_num("Num bed positions?",1U,filenames.size(), filenames.size());
+      num_data = ask_num("Num data?",1U,filenames.size()/num_frames, filenames.size()/num_frames);
+    }
+  else
+    {
+      num_frames = filenames.size();
+      num_gates=1;
+      num_bed_poss=1;
+      num_data=1;
+    }
+  int min_frame_num = 1;
+  int max_frame_num = num_frames;
+  int min_bed_num = 0;
+  int max_bed_num = num_bed_poss-1; 
+  int min_gate_num = 1;
+  int max_gate_num = num_gates;
+  int min_data_num = 0;
 
   if (its_an_image)
   {
@@ -166,24 +208,58 @@ int main(int argc, char *argv[])
       ProjData::read_from_file(filenames[0]);
   
     ECAT6_Main_header mhead;
-    make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
-    mhead.num_frames = filenames.size();
+    FILE *fptr;
 
-    FILE *fptr= cti_create (cti_name, &mhead);
-    if (fptr == NULL)
-    {
-      warning("conv_to_ecat6: error opening output file %s\n", cti_name);
-      return EXIT_FAILURE;
-    }
-
+    if (add_to_existing)
+      {
+	fptr = fopen(cti_name,"wb+");
+	if (!fptr)
+	  error("Error opening cti file %s\n", cti_name);
+	if (cti_read_ECAT6_Main_header (fptr, &mhead) == EXIT_FAILURE)
+	  error("Error reading main header from cti file %s\n", cti_name);
+      }
+    else
+      {
+	make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
+	mhead.num_frames = num_frames;
+	mhead.num_gates = num_gates;
+	mhead.num_bed_pos = num_bed_poss-1;
+	//mhead.num_data = num_data;
+	
+	fptr = cti_create (cti_name, &mhead);
+	if (fptr == NULL)
+	  {
+	    warning("conv_to_ecat6: error opening output file %s\n", cti_name);
+	    return EXIT_FAILURE;
+	  }
+      }
     unsigned int frame_num = 1;
 
     while (1)
     {
+      int current_frame_num, current_bed_num, current_gate_num, current_data_num;
+      if (interactive)
+	{
+	  current_frame_num= 
+	    ask_num("Frame number ? ", min_frame_num, max_frame_num, current_frame_num);
+	  current_bed_num= 
+	    ask_num("Bed number ? ", min_bed_num, max_bed_num, min_bed_num);
+	  current_gate_num=
+	    ask_num("Gate number ? ", min_gate_num, max_gate_num, min_gate_num);
+	  current_data_num=
+	    ask_num("Data number ? ",0,7, 0);
+	}
+      else
+	{
+	  current_frame_num = frame_num;
+	  current_bed_num = min_bed_num;
+	  current_gate_num = min_gate_num;
+	  current_data_num = min_data_num;
+	}
       if (ProjData_to_ECAT6(fptr,
                             *proj_data_ptr, 
                             mhead,
-                            frame_num, 1, 0, 0,
+                            current_frame_num, current_gate_num, current_data_num, current_bed_num,
 			    its_a_2D_sinogram)
                             == Succeeded::no)
       {
