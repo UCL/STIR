@@ -82,6 +82,18 @@ set_up(
   origin = image_info_ptr->get_origin();
   image_info_ptr->get_regular_range(min_index, max_index);
 
+
+  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+       segment_num <= proj_data_info_ptr->get_max_segment_num();
+       ++segment_num)
+  {
+     Bin bin (segment_num,0,0,0);
+     if (proj_data_info_ptr->get_sampling_in_t(bin) > voxel_size.z())
+       error("ProjMatrixByDenselUsingRayTracing used for pixel size (in z) which is "
+       "too small (you're probably not using axially compressed data). I can't handle "
+       "this yet. Sorry.\n");
+  }
+
   symmetries_ptr = 
     new DataSymmetriesForDensels_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr);
@@ -289,7 +301,15 @@ calculate_proj_matrix_elems_for_one_densel(
     //  error("ProjMatrixByDenselUsingRayTracing doesn't work for oblique segments yet\n");
 
     int previous_min_tang_pos = proj_data_info_ptr->get_min_tangential_pos_num();
-    int previous_inc_min_tang_pos = -1;
+    // The current logic checks if start_tang_pos gives non-zero. If so, decrement it,
+    // otherwise, assume that the non-zero bins lie to the right. This is in some
+    // case not true: it's even more to the left, i.e. previous_inc_min_tang_pos was 
+    // not negative enough.
+    // So, currently I set the increment such that start_tang_pos is guaranteed to be
+    // less or equal to proj_data_info_ptr->get_min_tangential_pos_num().
+    // This guarantees I don't miss anything, but it's slow...
+    int previous_inc_min_tang_pos = 
+      proj_data_info_ptr->get_min_tangential_pos_num() - proj_data_info_ptr->get_max_tangential_pos_num();
     const int min_ax_pos = 
       proj_data_info_ptr->get_min_axial_pos_num(seg) +
       (densel[1]-max_index[1])/symmetries_ptr->get_num_planes_per_axial_pos(seg) - 1;
@@ -499,8 +519,9 @@ calculate_proj_matrix_elems_for_one_densel(
         
       }
 #endif
-      // next assert only possible when every voxel is detected for every seg,view
-      assert(found_nonzero_axial);
+      // next assert only possible when every voxel is detected at least once in every seg,view
+      // this would only be true if only voxels in a restricted cylindrical FOV would be used.
+      // assert(found_nonzero_axial);
     }
   }
   
