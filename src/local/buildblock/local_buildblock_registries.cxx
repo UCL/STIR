@@ -15,6 +15,7 @@
 
 #ifdef HAVE_LLN_MATRIX
 #include "local/stir/SinglesRateFromECAT7.h"
+#include "local/stir/SinglesRatesFromSglFile.h"
 #endif
 
 START_NAMESPACE_STIR
@@ -34,6 +35,7 @@ static multiply_plane_scale_factorsImageProcessor<float>::RegisterIt dummy101;
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 static SinglesRatesFromECAT7::RegisterIt dummy100;
+static SinglesRatesFromSglFile::RegisterIt dummy200;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
