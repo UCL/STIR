@@ -144,8 +144,7 @@ set_defaults()
   interactive=false;
   num_segments_in_memory = -1;
   normalisation_ptr = new TrivialBinNormalisation;
-  pre_normalisation =0;
-  post_normalisation=0;
+  pre_or_post_normalisation =0;
   
 }
 
@@ -160,8 +159,7 @@ initialise_keymap()
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
-  parser.add_key("pre normalisation", &pre_normalisation);
-  parser.add_key("post normalisation", &post_normalisation);
+  parser.add_key("pre normalisation (1) or post_normalisation(0)", &pre_or_post_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
   if (CListEvent::has_delayeds())
@@ -304,7 +302,7 @@ get_bin_from_record(Bin& bin, const CListRecord& record,
     *proj_data_info_ptr,
     handle_anode_wire_efficiency);
 #else
-  if (pre_normalisation)
+  if (pre_or_post_normalisation)
   {
     record.event.get_bin(bin, dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr)); 
     // do_normalisation
@@ -314,6 +312,7 @@ get_bin_from_record(Bin& bin, const CListRecord& record,
       bin.set_bin_value(1/bin_efficiency);
     }
     // do motion correction here
+
     // find detectors
   int det_num_a;
   int det_num_b;
