@@ -39,34 +39,30 @@ Shape3D* Shape3D::read_from_file(const string& filename)
 }
 */
 
-float Shape3D::get_voxel_weight(
-   const CartesianCoordinate3D<float>& index,
-   const CartesianCoordinate3D<float>& voxel_size,
-   const CartesianCoordinate3D<int>& num_samples) const
+float 
+Shape3D::
+get_voxel_weight(
+		 const CartesianCoordinate3D<float>& voxel_centre,
+		 const CartesianCoordinate3D<float>& voxel_size,
+		 const CartesianCoordinate3D<int>& num_samples) const
 { 
   int value=0;
   
   for (float zsmall = -float(num_samples.z()-1)/num_samples.z()/2.F;
-  zsmall<=0.5F;
-  zsmall+=1./num_samples.z())
+       zsmall<=0.5F;
+       zsmall+=1.F/num_samples.z())
   {
-    const float zinner=index.z()+zsmall;
-    
     for (float ysmall =-float(num_samples.y()-1)/num_samples.y()/2.F;
-    ysmall<=0.5F;
-    ysmall+=1./num_samples.y())
+	 ysmall<=0.5F;
+	 ysmall+=1.F/num_samples.y())
     {
-      const float yinner=index.y()+ysmall;
-      
       for(float xsmall=-float(num_samples.x()-1)/num_samples.x()/2.F;
-      xsmall<=0.5F;
-      xsmall+=1./num_samples.x())
+	  xsmall<=0.5F;
+	  xsmall+=1.F/num_samples.x())
       {
-	const float xinner= index.x()+xsmall;
 	{
-	  CartesianCoordinate3D<float> r(xinner,yinner,zinner);
-	  r*=voxel_size;   
-	  if(is_inside_shape(r))
+	  const CartesianCoordinate3D<float> r(zsmall,ysmall,xsmall);
+	  if(is_inside_shape(voxel_centre+r*voxel_size))
 	  value += 1;	  	   
 	}
       }
@@ -86,8 +82,10 @@ void
 Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image, 
                           const CartesianCoordinate3D<int>& num_samples) const
 { 
-  CartesianCoordinate3D<float> voxel_size= image.get_voxel_size();
-  
+  const CartesianCoordinate3D<float>& voxel_size= image.get_voxel_size();
+  const CartesianCoordinate3D<float>& origin= image.get_origin();
+  if (norm(origin)>.00001)
+      error("Shape3D::construct_volume currently ignores image origin (not shape origin)\n");
   const int min_z = image.get_min_z();
   const int min_y = image.get_min_y();
   const int min_x = image.get_min_x();
@@ -103,9 +101,16 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image,
       for(int x=min_x;x<=max_x;x++)
 	
       {
-        CartesianCoordinate3D<float> current_point(x,y,z);
+        const CartesianCoordinate3D<float> 
+	  current_index(static_cast<float>(z),
+			static_cast<float>(y),
+			static_cast<float>(x));
 	
-	image[z][y][x] = get_voxel_weight(current_point,voxel_size,crude_num_samples);
+	//image[z][y][x] = get_voxel_weight(current_point,voxel_size,crude_num_samples);
+
+	image[z][y][x] = 
+	  (is_inside_shape(current_index*voxel_size+origin))
+	  ? 1.F : 0.F;
       }
   }
       
@@ -117,28 +122,37 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image,
     for(int y =min_y;y<=max_y;y++)
       for(int x=min_x;x<= max_x;x++)
       {
-	const CartesianCoordinate3D<float> current_point(x,y,z);
 	const float current_value = image[z][y][x];
 
-	bool all_neighbours_are_equal = true;
-	for(int i = z-1;all_neighbours_are_equal && (i<=z+1);i++)
-	  for(int j= y-1;all_neighbours_are_equal && (j<=y+1);j++)
-	    for(int k=x-1;all_neighbours_are_equal && (k<=x+1);k++)	      
-	    {
-	      const float value_of_neighbour =
-		((i < min_z) || (i> max_z) ||
-		 (j < min_y) || (j> max_y) ||
-		 (k < min_x) || (k> max_x)
-		) ? 0 : image[i][j][k];
-	      all_neighbours_are_equal = (value_of_neighbour==current_value);	      
-	    }
-	if (!all_neighbours_are_equal)
+	// first check if we're already at an edge voxel
+	// Note:  this allow fuzzy boundaries
+	bool recompute = current_value<.999F || current_value>.00F;
+	if (!recompute)
+	  {
+	    // check neighbour values. If they are all equal, we'll assume it's ok.
+	    for(int i = z-1;!recompute && (i<=z+1);i++)
+	      for(int j= y-1;!recompute && (j<=y+1);j++)
+		for(int k=x-1;!recompute && (k<=x+1);k++)	      
+		  {
+		    const float value_of_neighbour =
+		      ((i < min_z) || (i> max_z) ||
+		       (j < min_y) || (j> max_y) ||
+	               (k < min_x) || (k> max_x)
+ 	              ) ? 0 : image[i][j][k];
+                      recompute =  (value_of_neighbour!=current_value);
+                   } 
+          }
+        if (recompute)
 	{
 	  num_recomputed++;
-	  image[z][y][x] = get_voxel_weight(current_point,voxel_size,num_samples);
+	  const CartesianCoordinate3D<float> 
+	    current_index(static_cast<float>(z),
+			  static_cast<float>(y),
+			  static_cast<float>(x));
+	  image[z][y][x] = get_voxel_weight(current_index*voxel_size+origin,voxel_size,num_samples);
 	}
       }
-  cerr << "Number recomputed : " << num_recomputed << endl;
+  cerr << "Number of voxels recomputed with finer sampling : " << num_recomputed << endl;
       
 }
 
