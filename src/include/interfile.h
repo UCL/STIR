@@ -63,7 +63,7 @@ PETImageOfVolume read_interfile_image(const char *const filename);
 bool 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
-				   const Coordinate3D<int>& dimensions,
+				   const CartesianCoordinate3D<int>& dimensions,
 				   const Point3D& voxel_size,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
