@@ -144,9 +144,6 @@ public:
   inline IndexRange<num_dimensions> get_index_range() const;
 
   //! grow the array to a new range of indices, new elements are set to 0  
-#ifndef ARRAY4
-  inline 
-#endif
   virtual void 
     grow(const IndexRange<num_dimensions>& range);
   
@@ -357,18 +354,31 @@ public:
 
 #endif // boost
 
+
     //! allow array-style access, read/write
+
   inline elemT&	operator[] (int i);
 
+
+
   //! array access, read-only
+
   inline const elemT&	operator[] (int i) const;
+
     
+
   //! allow array-style access giving its BasicCoordinate, read/write  
+
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
+
+
   //! array access giving its BasicCoordinate, read-only
+
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
+
   
+
 
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
@@ -525,18 +535,31 @@ public:
   
 #endif // boost
 
+
     //! allow array-style access, read/write
+
   inline elemT&	operator[] (int i);
 
+
+
   //! array access, read-only
+
   inline const elemT&	operator[] (int i) const;
+
     
+
   //! allow array-style access giving its BasicCoordinate, read/write  
+
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
+
+
   //! array access giving its BasicCoordinate, read-only
+
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
+
   
+
 
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
@@ -683,17 +706,29 @@ public:
 #endif // boost
   
   //! allow array-style access, read/write
+
   inline elemT&	operator[] (int i);
 
+
+
   //! array access, read-only
+
   inline const elemT&	operator[] (int i) const;
+
     
+
   //! allow array-style access giving its BasicCoordinate, read/write  
+
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
+
+
   //! array access giving its BasicCoordinate, read-only
+
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
+
   
+
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
     const ByteOrder byte_order = ByteOrder::native);
@@ -858,18 +893,31 @@ public:
                const ByteOrder byte_order = ByteOrder::native) const;
 #endif
 
+
     //! allow array-style access, read/write
+
   inline elemT&	operator[] (int i);
 
+
+
   //! array access, read-only
+
   inline const elemT&	operator[] (int i) const;
+
     
+
   //! allow array-style access giving its BasicCoordinate, read/write  
+
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
+
+
   //! array access giving its BasicCoordinate, read-only
+
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
+
   
+
 
   //! read data of different type from stream
   void 
@@ -992,18 +1040,31 @@ public:
 
 #endif // boost
 
+
     //! allow array-style access, read/write
+
   inline elemT&	operator[] (int i);
 
+
+
   //! array access, read-only
+
   inline const elemT&	operator[] (int i) const;
+
     
+
   //! allow array-style access giving its BasicCoordinate, read/write  
+
   inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
 
+
+
   //! array access giving its BasicCoordinate, read-only
+
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
+
   
+
 
   //!  read data from stream, only valid for 'simple' type elemT    
   void read_data(istream& s, 
