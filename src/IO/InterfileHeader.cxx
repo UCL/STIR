@@ -720,8 +720,10 @@ bool InterfilePDFSHeader::post_processing()
       ring_diameter_in_cm = guessed_scanner_ptr->get_ring_radius()*2/10.;
     if (distance_between_rings_in_cm < 0)
       distance_between_rings_in_cm = guessed_scanner_ptr->get_ring_spacing()/10;
+    // KT 01/05/2001 corrected default bin_size
     if (bin_size_in_cm < 0)
-      bin_size_in_cm = guessed_scanner_ptr->get_default_num_arccorrected_bins()/10;
+      bin_size_in_cm = 
+         guessed_scanner_ptr->get_default_bin_size()/10;
     
  
     // consistency check with values of the guessed_scanner_ptr we guessed above
