@@ -1,18 +1,18 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
- 
+  \ingroup buildblock
+
   \brief Implementations of the zoom functions
 
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
 /* Modification history:
@@ -20,11 +20,17 @@
    - CL introduced overlap interpolation.
    - KT moved interpolation to separate function overlap_interpolate, removing bugs.
    - KT introduced 3D zooming for images.
+   - KT converted to new design
  */
    
 #include <cmath>
 #include "interpolate.h"
 #include "zoom.h"
+#include "VoxelsOnCartesianGrid.h" 
+#include "PixelsOnCartesianGrid.h" 
+#include "Viewgram.h"
+#include "RelatedViewgrams.h"
+#include "ProjDataInfoCylindricalArcCorr.h"
 #include "IndexRange3D.h"
 #include "IndexRange2D.h"
 
@@ -32,8 +38,10 @@ START_NAMESPACE_TOMO
 
 // TODO all these are terribly wasteful with memory allocations
 // main reason: we cannot have segments with viewgrams of different sizes (et al)
-#ifdef SINO
-void zoom_segment (PETSegmentByView& segment, 
+// also they need to be converted to the new design
+// as we don't need them at the moment, I can't be bothered...
+#if 0
+void zoom_segment (SegmentByView& segment, 
                    const float zoom, const float azimuthal_angle_sampling, const float y_offset_in_mm, 
                    const int new_size, const float azimuthal_angle_sampling)
 {
@@ -46,7 +54,7 @@ void zoom_segment (PETSegmentByView& segment,
     return;
 
   // KT 17/01/2000 use local copy of scan_info instead of segment.scan_info
-  PETScanInfo scan_info = segment.scan_info;
+  ScanInfo scan_info = segment.scan_info;
   scan_info.set_num_bins(new_size);
   scan_info.set_bin_size(segment.scan_info.get_bin_size() / zoom);
     
@@ -54,62 +62,18 @@ void zoom_segment (PETSegmentByView& segment,
   const int maxsize = minsize+new_size-1;
  
   // TODO replace by get_empty_segment or so
-  PETSegmentByView 
+  SegmentByView 
     out_segment(Tensor3D<float>(segment.get_min_view(), segment.get_max_view(),
-				segment.get_min_ring(), segment.get_max_ring(), 
+				segment.get_min_axial_pos_num(), segment.get_max_axial_pos_num(), 
 				minsize, maxsize),
 		scan_info,
 		segment.get_segment_num(),
-		segment.get_min_ring_difference(),
+		segment.get_min_axial_pos_num_difference(),
 		segment.get_max_ring_difference());
 
   for (int view = segment.get_min_view(); view <= segment.get_max_view(); view++) 
     {
-      PETViewgram viewgram = segment.get_viewgram(view);
-      zoom_viewgram(viewgram,
-		    zoom, x_offset_in_mm, y_offset_in_mm,
-		    new_size, azimuthal_angle_sampling);
-      out_segment.set_viewgram(viewgram);
-    }
-
-  segment = out_segment;
-}
-
-// This function is a copy of the previous lines, except for the 
-// segment declaration line.
-void 
-zoom_segment (PETSegmentBySinogram& segment, 
-	      const float zoom, const float x_offset_in_mm, const float y_offset_in_mm, 
-	      const int new_size, const float azimuthal_angle_sampling)
-{
-
-  if (new_size == segment.get_num_bins() &&
-      zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
-    return;
-
-  // const float azimuthal_angle_sampling = _PI / segment.get_num_views();
-    
-  // KT 17/01/2000 use local copy of scan_info instead of segment.scan_info
-  PETScanInfo scan_info = segment.scan_info;
-  scan_info.set_num_bins(new_size);
-  scan_info.set_bin_size(segment.scan_info.get_bin_size() / zoom);
-
-  const int minsize = -new_size/2;
-  const int maxsize = minsize+new_size-1;
-    
-  // TODO replace by get_empty...
-  PETSegmentBySinogram 
-    out_segment(Tensor3D<float>(segment.get_min_ring(), segment.get_max_ring(), 
-				segment.get_min_view(), segment.get_max_view(),
-				minsize, maxsize),
-		scan_info,
-		segment.get_segment_num(),
-		segment.get_min_ring_difference(),
-		segment.get_max_ring_difference());
-
-  for (int view = segment.get_min_view(); view <= segment.get_max_view(); view++) 
-    {
-      PETViewgram viewgram = segment.get_viewgram(view);
+      Viewgram<float> viewgram = segment.get_viewgram(view);
       zoom_viewgram(viewgram,
 		    zoom, x_offset_in_mm, y_offset_in_mm,
 		    new_size, azimuthal_angle_sampling);
@@ -120,46 +84,142 @@ zoom_segment (PETSegmentBySinogram& segment,
 }
 
 
-// KT 17/01/2000 const for Xoffp
+#endif
+
 void
-zoom_viewgram (PETViewgram& in_view, 
-	       const float zoom, const float x_offset_in_mm, const float y_offset_in_mm, 
-	       const int new_size, const float azimuthal_angle_sampling)
-{   
-  if (new_size == in_view.get_num_bins() &&
+zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams, 
+	       const float zoom, 
+	       const int min_tang_pos_num, const int max_tang_pos_num,
+	       const float x_offset_in_mm, const float y_offset_in_mm)
+{
+  if (min_tang_pos_num == in_viewgrams.get_min_tangential_pos_num() &&
+      max_tang_pos_num == in_viewgrams.get_max_tangential_pos_num() &&
       zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
     return;
     
-  // KT 17/01/2000 use local copy of scan_info
-  PETScanInfo scan_info = in_view.scan_info;
-  scan_info.set_num_bins(new_size);
-  scan_info.set_bin_size(in_view.scan_info.get_bin_size() / zoom);
+  ProjDataInfo * new_proj_data_info_ptr =
+    in_viewgrams.get_proj_data_info_ptr()->clone();
+  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
 
-  // TODO replace by get_empty...
-  PETViewgram 
-    out_view(Tensor2D<float> (in_view.get_min_ring(), in_view.get_max_ring(), 
-			      -(new_size-1)/2,-(new_size-1)/2+new_size-1),
-	     scan_info, 
-	     in_view.get_view_num(),
-	     in_view.get_segment_num());
-    
-    
-  const double phi = in_view.get_view_num()*azimuthal_angle_sampling;
-  // compute offset in bin_size_in units
-  const float offset = 
-    static_cast<float>(x_offset_in_mm*cos(phi) +y_offset_in_mm*sin(phi)) 
-    / in_view.scan_info.get_bin_size();
+  if ( new_proj_data_info_arccorr_ptr==0)
+    error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
+  
+  new_proj_data_info_arccorr_ptr->set_min_tangential_pos_num(min_tang_pos_num);
+  new_proj_data_info_arccorr_ptr->set_max_tangential_pos_num(max_tang_pos_num);
+  
+  new_proj_data_info_arccorr_ptr->
+    set_tangential_sampling(new_proj_data_info_arccorr_ptr->
+			      get_tangential_sampling() / zoom);
 
-  for (int ring= out_view.get_min_ring(); ring <= out_view.get_max_ring(); ring++)
-    {
-      overlap_interpolate(out_view[ring], in_view[ring], zoom, offset, false);
-    }
- 
-  in_view = out_view;
-    
+  RelatedViewgrams<float> 
+    out_viewgrams = 
+    new_proj_data_info_arccorr_ptr->
+      get_empty_related_viewgrams(in_viewgrams.get_basic_view_segment_num(),
+				  in_viewgrams.get_symmetries_ptr()->clone());
+
+  {
+    RelatedViewgrams<float>::iterator out_iter = out_viewgrams.begin();
+    RelatedViewgrams<float>::const_iterator in_iter = in_viewgrams.begin();
+    for (; out_iter != out_viewgrams.end(); ++out_iter, ++in_iter)
+      zoom_viewgram(*out_iter, *in_iter,
+		    x_offset_in_mm, y_offset_in_mm);
+  }
+
+  in_viewgrams = out_viewgrams;
 }
 
-#endif SINO
+void
+zoom_viewgram (Viewgram<float>& in_view, 
+	       const float zoom, 
+	       const int min_tang_pos_num, const int max_tang_pos_num,
+	       const float x_offset_in_mm, const float y_offset_in_mm)
+{   
+  if (min_tang_pos_num == in_view.get_min_tangential_pos_num() &&
+      max_tang_pos_num == in_view.get_max_tangential_pos_num() &&
+      zoom == 1.0 && x_offset_in_mm == 0.0 && y_offset_in_mm == 0.0) 
+    return;
+    
+  ProjDataInfo * new_proj_data_info_ptr =
+    in_view.get_proj_data_info_ptr()->clone();
+  ProjDataInfoCylindricalArcCorr* new_proj_data_info_arccorr_ptr =
+    dynamic_cast<ProjDataInfoCylindricalArcCorr*>(new_proj_data_info_ptr);
+
+  if ( new_proj_data_info_arccorr_ptr==0)
+    error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
+  
+  new_proj_data_info_arccorr_ptr->set_min_tangential_pos_num(min_tang_pos_num);
+  new_proj_data_info_arccorr_ptr->set_max_tangential_pos_num(max_tang_pos_num);
+  
+  new_proj_data_info_arccorr_ptr->
+    set_tangential_sampling(new_proj_data_info_arccorr_ptr->
+			      get_tangential_sampling() / zoom);
+
+  Viewgram<float> 
+    out_view = new_proj_data_info_arccorr_ptr->
+                     get_empty_viewgram(
+					in_view.get_view_num(),
+					in_view.get_segment_num());
+
+  zoom_viewgram(out_view, in_view,    
+		x_offset_in_mm, y_offset_in_mm);
+
+  in_view = out_view;
+}
+
+void
+zoom_viewgram (Viewgram<float>& out_view, 
+	       const Viewgram<float>& in_view, 
+	       const float x_offset_in_mm, const float y_offset_in_mm)
+{   
+  // minimal checks on compatibility
+  assert(in_view.get_proj_data_info_ptr()->get_num_views() == 
+	 out_view.get_proj_data_info_ptr()->get_num_views());
+  assert(in_view.get_view_num() == out_view.get_view_num());
+  assert(in_view.get_proj_data_info_ptr()->get_num_segments() == 
+	 out_view.get_proj_data_info_ptr()->get_num_segments());
+  assert(in_view.get_segment_num() == out_view.get_segment_num());
+  assert(in_view.get_min_axial_pos_num() == out_view.get_min_axial_pos_num());
+  assert(in_view.get_max_axial_pos_num() == out_view.get_max_axial_pos_num());
+
+  // get the pointers to the arc-corrected ProjDataInfo
+  const ProjDataInfoCylindricalArcCorr* in_proj_data_info_arccorr_ptr =
+    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(in_view.get_proj_data_info_ptr());
+  const ProjDataInfoCylindricalArcCorr* out_proj_data_info_arccorr_ptr =
+    dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(out_view.get_proj_data_info_ptr());
+
+  if (in_proj_data_info_arccorr_ptr==0 ||
+      out_proj_data_info_arccorr_ptr==0)
+    error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
+
+  
+  const float in_bin_size = 
+    in_proj_data_info_arccorr_ptr->get_tangential_sampling();
+  const float out_bin_size = 
+    out_proj_data_info_arccorr_ptr->get_tangential_sampling();
+
+  const float zoom = in_bin_size / out_bin_size;
+
+  if (out_view.get_min_tangential_pos_num() == in_view.get_min_tangential_pos_num() &&
+      out_view.get_max_tangential_pos_num() == in_view.get_max_tangential_pos_num() &&
+      zoom == 1.0F && x_offset_in_mm == 0.0F && y_offset_in_mm == 0.0F) 
+    return;
+    
+  const float phi =
+     in_proj_data_info_arccorr_ptr->
+      get_phi(Bin(in_view.get_segment_num(), in_view.get_view_num(), 0,0));
+
+  // compute offset in tangential_sampling_in units
+  const float offset = 
+    (x_offset_in_mm*cos(phi) +y_offset_in_mm*sin(phi))/ in_bin_size;
+
+  for (int axial_pos_num= out_view.get_min_axial_pos_num(); axial_pos_num <= out_view.get_max_axial_pos_num(); axial_pos_num++)
+    {
+      overlap_interpolate(out_view[axial_pos_num], in_view[axial_pos_num], zoom, offset, false);
+    }    
+}
+
+
 
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image,
