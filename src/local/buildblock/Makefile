@@ -32,10 +32,8 @@ SOURCES = \
 	local_helping_functions.cxx \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
-	SinglesRateFromECAT7.cxx \
-	SinglesRateFromSglFile.cxx \
-	SinglesRate.cxx \
-	cleanup966ImageProcessor.cxx
+	cleanup966ImageProcessor.cxx \
+	SinglesRatesFromECAT7.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
