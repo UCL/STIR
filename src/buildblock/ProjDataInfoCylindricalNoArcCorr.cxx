@@ -486,7 +486,7 @@ ProjDataInfoCylindricalNoArcCorr::
 get_bin(const LOR<float>& lor) const
 {
   Bin bin;
-#if 1
+#ifndef STIR_DEVEL
   // find nearest bin by going to nearest detectors first
   LORInCylinderCoordinates<float> cyl_coords;
   if (lor.change_representation(cyl_coords, get_ring_radius()) == Succeeded::no)
@@ -526,17 +526,126 @@ get_bin(const LOR<float>& lor) const
 
 
 #else
-  // TODO terrrrrrrrrribly wasteful
-  LORAs2Points<float> lor_2pts;
-  if (lor.change_representation(lor_2pts, get_ring_radius()) == Succeeded::no)
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> lor_coords;
+  if (lor.change_representation(lor_coords, get_ring_radius()) == Succeeded::no)
     {
       bin.set_bin_value(-1);
       return bin;
     }
-#error probably has problem with shift in origin (LOR w.r.t centre of scanner)
-  find_bin_given_cartesian_coordinates_of_detection(bin,
-						    lor_2pts.p1(),
-						    lor_2pts.p2());
+
+  // first find view 
+  // unfortunately, phi ranges from [0,Pi[, but the rounding can
+  // map this to a view which corresponds to Pi anyway.
+  bin.view_num() = round(lor_coords.phi() / get_azimuthal_angle_sampling());
+  assert(bin.view_num()>=0);
+  assert(bin.view_num()<=get_num_views());
+  const bool swap_direction =
+    bin.view_num() > get_max_view_num();
+  if (swap_direction)
+    bin.view_num()-=get_num_views();
+
+  bin.tangential_pos_num() = round(lor_coords.beta() / angular_increment);
+  if (swap_direction)
+    bin.tangential_pos_num() *= -1;
+
+  if (bin.tangential_pos_num() < get_min_tangential_pos_num() ||
+      bin.tangential_pos_num() > get_max_tangential_pos_num())
+    {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+
+#if 0
+  const int num_rings = 
+    get_scanner_ptr()->get_num_rings();
+  // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
+  int ring1, ring2;
+  if (!swap_direction)
+    {
+      ring1 = round(lor_coords.z1()/get_ring_spacing() + (num_rings-1)/2.F);
+      ring2 = round(lor_coords.z2()/get_ring_spacing() + (num_rings-1)/2.F);
+    }
+  else
+    {
+      ring2 = round(lor_coords.z1()/get_ring_spacing() + (num_rings-1)/2.F);
+      ring1 = round(lor_coords.z2()/get_ring_spacing() + (num_rings-1)/2.F);
+    }
+
+  if (!(ring1 >=0 && ring1<get_scanner_ptr()->get_num_rings() &&
+	ring2 >=0 && ring2<get_scanner_ptr()->get_num_rings() &&
+	get_segment_axial_pos_num_for_ring_pair(bin.segment_num(),
+						bin.axial_pos_num(),
+						ring1,
+						ring2) == Succeeded::yes)
+      )
+    {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+#else
+  // find nearest segment
+  {
+    const float delta =
+      (swap_direction 
+       ? lor_coords.z1()-lor_coords.z2()
+       : lor_coords.z2()-lor_coords.z1()
+       )/get_ring_spacing();
+    // check if out of acquired range
+    // note the +1 or -1, which takes the size of the rings into account
+    if (delta>get_max_ring_difference(get_max_segment_num())+1 ||
+	delta<get_min_ring_difference(get_min_segment_num())-1)
+      {
+	bin.set_bin_value(-1);
+	return bin;
+      } 
+    if (delta>=0)
+      {
+	for (bin.segment_num()=0; bin.segment_num()<get_max_segment_num(); ++bin.segment_num())
+	  {
+	    if (delta < get_max_ring_difference(bin.segment_num())+.5)
+	      break;
+	  }
+      }
+    else
+      {
+	// delta<0
+	for (bin.segment_num()=0; bin.segment_num()>get_min_segment_num(); --bin.segment_num())
+	  {
+	    if (delta > get_min_ring_difference(bin.segment_num())-.5)
+	      break;
+	  }
+      }
+  }
+  // now find nearest axial position
+  {
+    const float m = (lor_coords.z2()+lor_coords.z1())/2;
+#if 0
+    // this uses private member of ProjDataInfoCylindrical
+    // enable when moved
+    if (!ring_diff_arrays_computed)
+      initialise_ring_diff_arrays();
+#ifndef NDEBUG
+    bin.axial_pos_num()=0;
+    assert(get_m(bin)==- m_offset[bin.segment_num()]);
+#endif
+    bin.axial_pos_num() =
+      round((m + m_offset[bin.segment_num()])/
+	    get_axial_sampling(bin.segment_num()));
+#else
+    bin.axial_pos_num()=0;
+    bin.axial_pos_num() =
+      round((m - get_m(bin))/
+	    get_axial_sampling(bin.segment_num()));
+#endif
+    if (bin.axial_pos_num() < get_min_axial_pos_num(bin.segment_num()) ||
+	bin.axial_pos_num() > get_max_axial_pos_num(bin.segment_num()))
+      {
+	bin.set_bin_value(-1);
+	return bin;
+      }
+  }
+#endif
+
   bin.set_bin_value(1);
   return bin;
 #endif
