@@ -1,5 +1,4 @@
 
-#include "local/stir/Quaternion.h"
 
 START_NAMESPACE_STIR
 
