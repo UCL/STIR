@@ -62,7 +62,7 @@ void scatter_viewgram(
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 					  int& scatt_points, const float att_threshold, 
 					  const float lower_energy_threshold, const float upper_energy_threshold,		
-					  const bool use_cosphi,const bool use_cache, const bool find_DS, const bool random)
+					  const bool use_cosphi,const bool use_cache, const int scatter_level, const bool random)
 {		
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
@@ -157,7 +157,7 @@ void scatter_viewgram(
 						det_num_B,
 						lower_energy_threshold,
 						upper_energy_threshold,
-						use_cosphi,use_cache,find_DS));
+						use_cosphi,use_cache,scatter_level));
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();
@@ -180,7 +180,7 @@ void scatter_viewgram(
 				/////////////////// end SCATTER ESTIMATION TIME /////////////////
 		}
 		bin_timer.stop();		
-		writing_time(bin_timer.value(), scatt_points_vector.size(),	find_DS);
+		writing_time(bin_timer.value(), scatt_points_vector.size(),	scatter_level);
 
 		if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
 		  warning("Expected num detectors: %d, but found %d\n",
