@@ -22,18 +22,20 @@
 
 
 #include "KeyParser.h"
-#include "ImageFilter.h"
-#include "utilities.h"
+#include "shared_ptr.h"
+#include "ProjData.h"
+#include <string>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::string;
+#endif
 
 START_NAMESPACE_TOMO
 
 /*!
- \brief base class for all external reconstruction parameter objects
-
-
+  \brief base class for all external reconstruction parameter objects
+  \ingroup recon_buildblock
 */
-
-
 class ReconstructionParameters : public KeyParser
 {
 public:
@@ -48,6 +50,8 @@ public:
   int disp;
 
   //! the output image size
+  /*! convention: if -1, use get_num_tangential_poss()
+  */
   int output_image_size; 
 
   //! signals whether or not to save intermediate files
@@ -66,39 +70,26 @@ public:
   double Yoffset;
 
   //! the maximum absolute ring difference number to use in the reconstruction
+  /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;
-
-
-  // KT&CL 160899 add arguments
-  /* conventions
-     output_image_size : if -1, use num_bins
-     max_segment_num_to_process : convention: if -1, use get_max_segment()
-  */
 
   //! constructor
   ReconstructionParameters();
-         
-   
-   // has to be called by derived classes to show current parameters
-   //CL 01/98/99 return string  
-  // KT 160899 added const to method
 
+  //! destructor
+  virtual ~ReconstructionParameters() {}
+   
   //! lists the parameter values
+  /*! has to be called by derived classes to show current parameters*/
   virtual string parameter_info() const;
 
-
-  //MJ 03/02/2000 added
 
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
 
 
   //! points to the object for the total input projection data
-  PETSinogramOfVolume *proj_data_ptr;
-
-      
-
-
+  shared_ptr<ProjData> proj_data_ptr;
 
 
 protected:
@@ -106,6 +97,18 @@ protected:
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
  
+
+  /*! 
+  \brief 
+  This function initialises all parameters, either via parsing, 
+  or by calling ask_parameters() (when parameter_filename is the empty string).
+
+  It should be called in the constructor of the last class in the 
+  Parameter hierarchy. At that time, all Interfile keys will have been
+  initialised, and ask_parameters() will be the appropriate virtual
+  function, such that questions are asked for all parameters.
+  */
+  void initialise(const string& parameter_filename);
 
 };
  

@@ -8,33 +8,36 @@
   \brief declares the Reconstruction class
 
   \author Kris Thielemans
-  \author Claire Labbe
   \author Matthew Jacobson
+  \author Claire Labbe
   \author PARAPET project
 
   \date    $Date$
   \version $Revision$
 */
 
-#include "imagedata.h"
+
 #include "TimedObject.h"
 #include <string>
-#include "interfile.h"
-#include "recon_array_functions.h"
-#include "ImageFilter.h"
-#include "zoom.h"
+
 
 #ifndef TOMO_NO_NAMESPACES
 using std::string;
 #endif
 
 START_NAMESPACE_TOMO
+
+class ReconstructionParameters;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <typename T> class shared_ptr;
+
 /*!
  \brief base class for all Reconstructions
 
   For convenience, the class is derived from TimedObject. It is the 
   responsibility of the derived class to run these timers though.
 */
+
 class Reconstruction : public TimedObject 
 {
 public:
@@ -48,8 +51,37 @@ public:
   virtual string parameter_info() const = 0;
   
   //! executes the reconstruction
-  virtual void reconstruct(PETImageOfVolume &v) = 0;
+  /*!
+    \param target_image_ptr The result of the reconstruction is stored in *target_image_ptr.
+    For iterative reconstructions, *target_image_ptr is used as an initial estimate.
+    \return Succeeded::yes if everything was alright.
+   */     
+  virtual Succeeded 
+    reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr) = 0;
+
   
+  //! accessor for the external parameters
+  ReconstructionParameters& get_parameters()
+    {
+      return static_cast<ReconstructionParameters&>(params());
+    }
+
+  //! accessor for the external parameters
+  const ReconstructionParameters& get_parameters() const
+    {
+      return static_cast<const ReconstructionParameters&>(params());
+    }
+
+
+private:
+
+  //! a workaround for compilers not supporting covariant return types
+  virtual ReconstructionParameters& params()=0;
+
+  //! a workaround for compilers not supporting covariant return types
+  virtual const ReconstructionParameters& params() const=0;
+
+
 };
 
 END_NAMESPACE_TOMO
