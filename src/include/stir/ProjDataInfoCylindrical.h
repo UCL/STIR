@@ -85,6 +85,10 @@ public:
   */  
   inline float get_m(const Bin&) const;
 
+  virtual void
+    get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
+	    const Bin& bin) const;
+
  
   //void set_azimuthal_angle_sampling(const float angle);
  
