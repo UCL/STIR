@@ -974,7 +974,7 @@ string KeyParser::parameter_info() const
       case KeyArgument::INT:
         s << *reinterpret_cast<int*>(i->second.p_object_variable); break;
       case KeyArgument::BOOL:
-        s << *reinterpret_cast<bool*>(i->second.p_object_variable) ? 1 : 0; break;
+        s << (*reinterpret_cast<bool*>(i->second.p_object_variable) ? 1 : 0); break;
       case KeyArgument::ULONG:
         s << *reinterpret_cast<unsigned long*>(i->second.p_object_variable); break;
       case KeyArgument::NONE:
