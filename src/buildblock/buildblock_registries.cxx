@@ -1,3 +1,19 @@
+//
+// $Id$
+//
+/*!
+
+  \file
+  \ingroup buildblock
+
+  \brief File that registers all RegisterObject children in buildblock
+
+  \author Kris Thielemans
+  
+  $Date$
+  $Revision$
+*/
+
 #include "tomo/SeparableCartesianMetzImageFilter.h"
 #include "tomo/MedianImageFilter3D.h"
 #include "tomo/ChainedImageProcessor.h"
