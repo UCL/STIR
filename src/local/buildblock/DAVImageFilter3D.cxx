@@ -14,7 +14,7 @@
   \version $Revision$
 */
 
-#include "tomo/local/DAVImageFilter3D.h"
+#include "local/tomo/DAVImageFilter3D.h"
 #include "CartesianCoordinate3D.h"
 #include "DiscretisedDensity.h"
 
@@ -105,13 +105,14 @@ const char * const
 DAVImageFilter3D<float>::registered_name =
   "DAV";
 
-#if 0
-// registration business moved to buildblock_registries.cxx
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation, 
 // note that we get a linking error if we don't have the explicit instantiation below
 #  pragma warning(disable:4660)
 #  endif
+
+#if 0
+// registration business moved to local_buildblock_registries.cxx
 
 // Register this class in the ImageProcessor registry
 // At the same time, the compiler will instantiate DAVImageFilter3D<float>
