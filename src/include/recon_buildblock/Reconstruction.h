@@ -1,6 +1,8 @@
-// @(#)Reconstruction.h	1.4 00/06/15
-#ifndef __Reconstruction_H__
-#define __Reconstruction_H__
+//
+// $Id$
+//
+#ifndef __Tomo_recon_buildblock_Reconstruction_H__
+#define __Tomo_recon_buildblock_Reconstruction_H__
 /*!
   \file 
   \ingroup recon_buildblock
@@ -12,8 +14,13 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date    00/06/15
-  \version 1.4
+  $Date$
+  $Revision$
+*/
+/* Modification history
+
+   KT 10122001
+   - added construct_target_image_ptr and 0 argument reconstruct()
 */
 
 
@@ -30,12 +37,15 @@ START_NAMESPACE_TOMO
 class ReconstructionParameters;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <typename T> class shared_ptr;
+class Succeeded;
 
 /*!
  \brief base class for all Reconstructions
 
   For convenience, the class is derived from TimedObject. It is the 
   responsibility of the derived class to run these timers though.
+
+  \todo merge ReconstructionParameters hierarchy with this one.
 */
 
 class Reconstruction : public TimedObject 
@@ -50,6 +60,25 @@ public:
   //! lists the parameters
   virtual string parameter_info()  = 0;
   
+
+  //! Creates a suitable target_image as determined by the parameters
+  virtual DiscretisedDensity<3,float>* 
+    construct_target_image_ptr() const; // KT 10122001 new
+  
+  //! executes the reconstruction
+  /*!
+    Calls construct_target_image_ptr() and then 1 argument reconstruct().
+    At the end of the reconstruction, the final image is saved to file as given in 
+    ReconstructionParameters::output_filename_prefix. 
+
+    This behaviour can be modified by a derived class (for instance see 
+    IterativeReconstruction::reconstruct()).
+
+    \return Succeeded::yes if everything was alright.
+   */     
+  virtual Succeeded 
+    reconstruct(); // KT 10122001 new
+
   //! executes the reconstruction
   /*!
     \param target_image_ptr The result of the reconstruction is stored in *target_image_ptr.
@@ -59,7 +88,6 @@ public:
   virtual Succeeded 
     reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr) = 0;
 
-  
   //! accessor for the external parameters
   ReconstructionParameters& get_parameters()
     {
@@ -89,4 +117,3 @@ END_NAMESPACE_TOMO
     
 #endif
 
-// __Reconstruction_H__
