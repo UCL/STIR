@@ -4,8 +4,8 @@
 /*!
 
   \file
-  \ingroup OSMAPOSL
-  \brief main() for OSMAPOSL
+  \ingroup main_programs
+  \brief main() for OSMAPOSLReconstruction
 
   \author Matthew Jacobson
   \author Kris Thielemans
