@@ -19,6 +19,7 @@
 */
 
 /*!
+  \ingroup buildblock
    \brief a templated class for 3-dimensional coordinates.
 
    It is derived from Coordinate3D<coordT>. The only new methods are
