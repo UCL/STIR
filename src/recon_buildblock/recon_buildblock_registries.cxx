@@ -19,6 +19,7 @@
 */
 
 #include "stir/recon_buildblock/FilterRootPrior.h"
+#include "stir/ImageProcessor.h"
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
