@@ -227,13 +227,13 @@ LORInAxialAndNoArcCorrSinogramCoordinates(const LORInAxialAndSinogramCoordinates
 template <class coordT>
 LORInAxialAndSinogramCoordinates<coordT>::
 LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>& coords)
-  : LORInAxialAndSinogramCoordinates(LORInCylinderCoordinates<coordT>(cyl_coords))
+  : LORInAxialAndSinogramCoordinates(LORInCylinderCoordinates<coordT>(coords))
 {}
 
 template <class coordT>
 LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::
 LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>& coords)
-  : LORInAxialAndNoArcCorrSinogramCoordinates(LORInCylinderCoordinates<coordT>(cyl_coords))
+  : LORInAxialAndNoArcCorrSinogramCoordinates(LORInCylinderCoordinates<coordT>(coords))
 {}
 
 
