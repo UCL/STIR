@@ -127,8 +127,14 @@ get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const
   if (!sampling_corresponds_to_physical_rings)
     return Succeeded::no;
 
+  // check currently necessary as reduce_segment does not reduce the size of the ring_diff arrays
+  if (ring_diff > get_max_ring_difference(get_max_segment_num()) ||
+      ring_diff < get_min_ring_difference(get_min_segment_num()))
+    return Succeeded::no;
+
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
+
   segment_num = ring_diff_to_segment_num[ring_diff];
   // warning: relies on initialise_ring_diff_arrays to set invalid ring_diff to a too large segment_num
   if (segment_num <= get_max_segment_num())
