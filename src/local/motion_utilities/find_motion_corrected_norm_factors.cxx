@@ -116,9 +116,6 @@ private:
   int frame_num;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
-
-  RigidObject3DTransformation move_to_scanner;
-  RigidObject3DTransformation move_from_scanner;
  
   double time_interval;
   int min_num_time_intervals_per_frame;
@@ -271,16 +268,13 @@ post_processing()
   }
 
 
-  if (!ro3d_ptr->is_time_offset_set())
+#if 0
+  if (!ro3d_ptr->is_synchronised())
     {
       warning("You have to specify an input_filename (or an explicit time offset) for the motion object\n");
 	  return true;
     }
-
-  move_from_scanner =
-    RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
-                               CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
-  move_to_scanner = move_from_scanner.inverse();
+#endif
 
   return false;
 }
@@ -372,11 +366,12 @@ FindMCNormFactors::process_data()
 	      error("\ntime interval goes beyond end of frame. Check code!\n");
 	    RigidObject3DTransformation ro3dtrans =
 	      ro3d_ptr->compute_average_motion_rel_time(current_time, current_time+time_interval_this_frame);
+	    ro3dtrans = 
+	      compose(ro3d_ptr->get_transformation_to_scanner_coords(),
+		      compose(ro3d_ptr->get_transformation_to_reference_position(),
+			      compose(ro3dtrans,
+				ro3d_ptr->get_transformation_from_scanner_coords())));
             
-	    ro3dtrans = compose(move_to_scanner,
-				compose(ro3d_ptr->get_transformation_to_reference_position(),
-					compose(ro3dtrans,move_from_scanner)));
-
 	    for (int in_segment_num = proj_data_info_uncompressed_ptr->get_min_segment_num(); 
 		 in_segment_num <= proj_data_info_uncompressed_ptr->get_max_segment_num();
 		 ++in_segment_num)
