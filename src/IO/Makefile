@@ -9,7 +9,7 @@ include $(WORKSPACE)/Makefile_common
 all: $(DEST)libIO.a $(DEST)IO_registries.o
 
 clean:
-	$(RM) $(DEST)*.[oad]
+	$(RM) $(DEST)*.[oadP]
 
 SOURCES = \
   OutputFileFormat.cxx \
@@ -23,13 +23,10 @@ SOURCES = \
 ifeq ($(HAVE_LLN_MATRIX),1)
   SOURCES += ECAT7OutputFileFormat.cxx stir_ecat7.cxx
 endif
-	
-	
-
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
-LOBJS = $(DEST)libIO.a($(OBJS))
+#LOBJS = $(DEST)libIO.a($(OBJS))
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
@@ -44,8 +41,8 @@ endif
 
 
 
-$(DEST)libIO.a: $(LOBJS)
+$(DEST)libIO.a: $(OBJS)
+	$(AR) $(ARFLAGS) $@ $?
 	ranlib $@
-#	ar r $@ $?
 
 
