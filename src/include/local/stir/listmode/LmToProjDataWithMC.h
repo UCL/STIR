@@ -1,3 +1,22 @@
+//
+// $Id$
+//
+/*!
+
+  \file
+  \ingroup listmode
+  \brief Class for rebinning listmode files with motion correction
+    
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+      
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2003- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __stir_listmode_LmToProjDataWithMC_H__
 #define __stir_listmode_LmToProjDataWithMC_H__
@@ -18,13 +37,9 @@ public:
      
   LmToProjDataWithMC(const char * const par_filename);
 
-  virtual void get_bin_from_record(Bin& bin, const CListRecord& record, 
-				   const double time, 
-				   const ProjDataInfoCylindrical&) const;
+  virtual void get_bin_from_event(Bin& bin, const CListEvent&,
+				  const double time) const;
 
-  //SM
-  //shared_ptr<BinNormalisation> normalisation_ptr;
-  //shared_ptr<Polaris_MT_File> mt_file_ptr;
 
 private:
 
@@ -49,8 +64,6 @@ private:
 
   shared_ptr<Scanner> scanner_ptr;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
-  //TODO somehow get this from RigidObject3DMotionFromPolaris
-  string mt_filename;
   string attenuation_filename; 
   string norm_filename;  
   float transmission_duration;
