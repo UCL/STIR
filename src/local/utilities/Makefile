@@ -35,7 +35,8 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	set_blocks_to_value.cxx \
 	shift_projdata_along_axis.cxx \
 	remove_sinograms.cxx \
-	generate_image.cxx
+	generate_image.cxx \
+	rigid_object_transform_projdata.cxx
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
