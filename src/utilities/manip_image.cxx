@@ -361,15 +361,18 @@ void get_plane(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
   xe=input_image.get_max_x();
 
   int zm=(ze+zs)/2;
- 
+
+
+
   int plane=ask_num("Which plane?",1,ze-zs+1,zm-zs+1);
 
   cerr<<endl<<"Output to what file:  ";
   cin>>filename;
   cerr<<endl;
 
-  ofstream profile;
-  open_write_binary(profile, filename);
+  ofstream profile(filename);
+      if (!profile)
+      { cerr << "Couldn't open " << filename; }
 
   for (int y=ys; y<= ye; y++)
     for (int x=xs; x<= xe; x++)
@@ -393,17 +396,60 @@ void get_plane_row(PETImageOfVolume& input_image, const PETScannerInfo& scanner)
 
   int zm=(ze+zs)/2;
   int ym=(ye+ys)/2;
+  int xm=(xe+xs)/2;
 
-  int plane=ask_num("Which plane?",1,ze-zs+1,zm-zs+1);
-  int row=ask_num("Which row?",1,ye-ys+1,ym-ys+1);
+
+ cerr<<endl<<"Output to what file:  ";
+  cin>>filename;
+  cerr<<endl;
+
+  ofstream profile(filename);
+      if (!profile)
+      { cerr << "Couldn't open " << filename; }
+
+  int axdir=ask_num("Which axis direction (z=0,y=1,x=2)?",0,2,2);
+
  
 
-  ofstream profile;
-  open_write_binary(profile, filename);
+  if (axdir==0){
+
+
+  int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,xm-xs+1);
+  int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,ym-ys+1);
+
+
+ 
+  for (int z=zs; z<= ze; z++)
+    profile<<input_image[z][ycoord+ys-1][xcoord+xs-1]<<" ";
+
+  }
+
+
+  else if (axdir==1){
+
+
+  int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,zm-zs+1);
+  int ycoord=ask_num("Y COORDINATE: ",1,ye-ys+1,ym-ys+1);
+
 
  
   for (int x=xs; x<= xe; x++)
-    profile<<input_image[zs+plane-1][ys+row-1][x]<<" ";
-      
+    profile<<input_image[zcoord+zs-1][ycoord+ys-1][x]<<" ";
+
+
+
+  }
+
+  else{ //axdir=2
+
+  int zcoord=ask_num("Z COORDINATE: ",1,ze-zs+1,zm-zs+1);
+  int xcoord=ask_num("X COORDINATE: ",1,xe-xs+1,xm-xs+1);
+
+ 
+  for (int y=ys; y<= ye; y++)
+    profile<<input_image[zcoord+zs-1][y][xcoord+xs-1]<<" ";
+
+  }
+
 
 }
