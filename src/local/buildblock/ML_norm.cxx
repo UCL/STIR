@@ -129,14 +129,12 @@ void display(const DetPairData& det_pair_data, const char * const title)
 }
 
 void make_det_pair_data(DetPairData& det_pair_data,
-			const ProjData& proj_data,
+			const ProjDataInfo& proj_data_info_general_type,
 			const int segment_num,
 			const int ax_pos_num)
 {
-  const ProjDataInfo* proj_data_info_ptr =
-    proj_data.get_proj_data_info_ptr();
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info_general_type);
 
   const int num_detectors = 
     proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
@@ -156,6 +154,21 @@ void make_det_pair_data(DetPairData& det_pair_data,
   }
   det_pair_data.grow(fan_indices);
   det_pair_data.fill(0);
+}
+
+void make_det_pair_data(DetPairData& det_pair_data,
+			const ProjData& proj_data,
+			const int segment_num,
+			const int ax_pos_num)
+{
+  make_det_pair_data(det_pair_data,
+		     *proj_data.get_proj_data_info_ptr(),
+		     segment_num,
+		     ax_pos_num);
+  const int num_detectors = 
+    det_pair_data.get_num_detectors();
+  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_ptr());
 
   shared_ptr<Sinogram<float> > pos_sino_ptr =
     new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num));
