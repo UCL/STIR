@@ -1,20 +1,20 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
   \file
-  \ingroup local_buildblock
+  \ingroup buildblock
 
   \brief Declaration of class Quaternion
 
   \author: Sanida Mustafovic
   \author: Kris Thielemans
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$ 
 */
 
 /*
-    Copyright (C) 2000- $Date: , IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -22,9 +22,7 @@
 #ifndef __stir_Quaternion_H__
 #define __stir_Quaternion_H__
 
-#include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
-//#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -76,6 +74,3 @@ END_NAMESPACE_STIR
 #include "local/stir/Quaternion.inl"
 
 #endif
-
-
-
