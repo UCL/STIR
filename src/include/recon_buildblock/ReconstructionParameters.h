@@ -1,5 +1,5 @@
 //
-// @(#)ReconstructionParameters.h	1.4 00/07/10
+// $Id$
 //
  
 #ifndef __ReconstructionParameters_h__
@@ -16,8 +16,8 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date   00/07/10
-  \version 1.4
+  $Date$
+  $Revision$
 */
 
 
@@ -51,9 +51,11 @@ public:
   */
   int output_image_size; 
 
+  // KT 20/06/2001 disabled
+#if 0
   //! number of views to add (i.e. mashing)
   int num_views_to_add;
-
+#endif
   //! the zoom factor
   double zoom;
 
@@ -62,6 +64,10 @@ public:
 
   //! offset in the y-direction
   double Yoffset;
+
+  // KT 20/06/2001 new
+  //! offset in the z-direction
+  double Zoffset;
 
   //! the maximum absolute ring difference number to use in the reconstruction
   /*! convention: if -1, use get_max_segment_num()*/
