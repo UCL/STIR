@@ -50,6 +50,9 @@ RigidObject3DTransformation::RigidObject3DTransformation ()
 RigidObject3DTransformation::RigidObject3DTransformation (const Quaternion<float>& quat_v, const CartesianCoordinate3D<float>& translation_v)
 : quat(quat_v), translation(translation_v)
 {
+  // test if quaternion normalised
+  assert(fabs(square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]) - 1)>1E-3);
+  // alternatively wwe could just normalise it here
 }
 
 RigidObject3DTransformation 
@@ -135,8 +138,8 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
 
 
-  Quaternion<float> quat_norm_tmp = quat;
-   
+  const Quaternion<float> quat_norm_tmp = quat;
+#if 0 // no longer normalise here, but in Polaris_MT_File   
   //cerr << quat << endl;
   {
     const float quat_norm=square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]);
@@ -148,6 +151,7 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
       //warning("Non-normalised quaternion: %g", quat_norm);
 
   }
+#endif
 #ifdef WITHQUAT
 
 #if 1 // put to 0 for translation only!!!
@@ -358,14 +362,17 @@ RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const Ca
 		quat.neg_quaternion();
 }
 
-RigidObject3DTransformation compose ( const RigidObject3DTransformation& apply_last,
-				      const RigidObject3DTransformation& apply_first)
+RigidObject3DTransformation 
+compose (const RigidObject3DTransformation& apply_last,
+	 const RigidObject3DTransformation& apply_first)
 {
- Quaternion<float> quat_tmp (0,apply_last.get_translation().x(),apply_last.get_translation().y(),apply_last.get_translation().z());
+ const Quaternion<float> quat_tmp (0,apply_last.get_translation().x(),apply_last.get_translation().y(),apply_last.get_translation().z());
 
- CartesianCoordinate3D<float> trans((apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion()))[4],
-				    (apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion()))[3],
-				    (apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion()))[2]);
+ const Quaternion<float> rotated_last_translation_quat =
+   apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion());
+ const CartesianCoordinate3D<float> trans(rotated_last_translation_quat[4],
+					  rotated_last_translation_quat[3],
+					  rotated_last_translation_quat[2]);
 
  return RigidObject3DTransformation(apply_first.get_quaternion()*apply_last.get_quaternion(),
 				     apply_first.get_translation()+trans);
