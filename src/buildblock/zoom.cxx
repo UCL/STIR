@@ -288,8 +288,9 @@ zoom_image(PETImageOfVolume &image_out, const PETImageOfVolume &image_in)
                        image_out.get_min_y(), image_out.get_max_y(),
                        image_out.get_min_x(), image_out.get_max_x());
 
+  // KT 04/02/2000 corrected to use y zooming
   for (int z=image_in.get_min_z(); z<=image_in.get_max_z(); z++)
-    overlap_interpolate(temp2[z], temp[z], zoom_z, offset_z);
+    overlap_interpolate(temp2[z], temp[z], zoom_y, offset_y);
 
   overlap_interpolate(image_out, temp2, zoom_z, offset_z);
 
