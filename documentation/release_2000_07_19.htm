@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in PARAPET release 0.91 (dated 19/07/2000)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in PARAPET release 0.91 (dated 19/07/2000)</h1>
+
+<h2>General changes:</h2>
+
+<ul>
+<li> added conversion to ecat6 and handle ecat7
+<li> software is now tested on Linux (on Pentium) with gcc 2.95.2 (this only needed some changes to PPhead/Makefile_common)
+<li> Interfile parser follows now the 3.3 standard, and some of the proposed extensions there-in on vectored keys (Note: this is the parser only, NOT the keywords).
+<li> corrected some problems with Makefiles
+<li> added the extract_segments utility
+</ul>
+
+<h2>OSEM related changes:</h2>
+
+<ul>
+<li> corrected a bug that caused problems with parsing .par files (for instance, the interiteration filtering setting was ignored on some architectures)
+<li> thresholding after filter operations (to obtain positive image values) is changed to make it insensitive to spurious peaks in the image
+</ul>
+
+<h2>Other:</h2>
+
+<ul>
+<li> fixed a bug that made the truncate_end_planes in manip_image do nothing.
+<li>  the Absolute Difference operation in manip_image (MATH MODE option
+2) is now applied to all voxels.
+<li> compare_image uses a slightly higher threshold now
+<li> made utilities/do_linear_regression compile
+<li> added PPhead/test/input/test_linear_regression.in to the archives. (Needed for make run_tests)
+</ul>
+
+
+    <hr>
+<!-- Created: Wed Jul 19 15:26:59 BST 2000 -->
+<!-- hhmts start -->
+Last modified: Wed Jul 19 15:54:43 BST 2000
+<!-- hhmts end -->
+  </body>
+</html>

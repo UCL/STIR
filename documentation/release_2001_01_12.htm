@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in PARAPET release 0.92 (dated 12/01/2001)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in PARAPET release 0.92 (dated 12/01/2001)</h1>
+
+<h2> Summary for endusers (also to be read by developers)</h2>
+
+
+in/output of any program is NOT affected, except the ECAT* utilities. If you
+don't use ECAT data, and you are only an enduser, there is no reason to
+upgrade (if you installed the patches to 0.91).
+<p>
+You do <strong>NOT</strong> have to change the recon_test_pack.
+
+
+<h3>Changes to files that affect the user</h3>
+
+<h4>utilities/convecat6_if</h4>
+<ul>
+<li> added support for attenuation sinograms
+<li> added support for data types different from 16 bit ints.
+<li> added a bit more diagnostics for file IO errors
+</ul>
+
+<h4>utilities/ifheaders_for_ecat7</h4>
+<ul>
+<li> corrected BUG by swapping segment order
+<li> added support for attenuation sinograms
+<li> check all 'matrices' in file instead of stopping at the first
+missing 'matrix' (useful if you have only frame 13 in the file).
+<li> changed output filenames to include the original extension to prevent
+conflicts with .S and .A files.
+e.g. "ifheaders_for_ecat7 bla.S" will result in files bla_S_f1g1b0d0.hs
+etc.
+</ul>
+
+<h4>utilities/manip_image.cxx</h4>
+<ul>
+<li> added option for maximum on colour scale for display()
+</ul>
+
+<h2>Summary for developers</h2>
+
+<ul>
+<li> various bug fixes in the buildblock files
+<li> some more functionality for the basic projection data classes
+<li> addition of *ProjMatrixByBin* stuff. This allows to compute, manipulate,
+use projection matrices, such that you have access to individual elements.
+You would need this for ART or similar algorithms. The 'ByBin' suffix says
+that this stores the matrix elements 'row-wise' (i.e. all non-zero voxels
+for one bin). Basic caching is provided. At the moment, there is only 1
+non-abstract derived class: ProjMatrixByBinUsingRayTracing, which computes
+Length of
+Intersection for voxels (on a Cartesian grid). The results of using this
+class to forward project data are nearly identical to what you get using the
+already existing ForwardProjectorByBinUsingRayTracing. (Some rounding error
+is unavoidable). Currently, timing between these 2 forward projectors is
+very similar, but I'm afraid this is because while finalising
+ProjMatrixByBinUsingRayTracing, I noticed an extra optimisation  which
+didn't make its way yet into ForwardProjectorByBinUsingRayTracing.
+</ul>
+
+
+<h2>Details</h2>
+<h3>Changed files</h3>
+
+(changed files are all in buildblock/, recon_buildblock/, display/,
+utilities/, include/ or include/recon_buildblock/)
+<pre>
+buildblock/Scanner.cxx:
+- BUG corrected: ordered parameters correctly for Advance
+
+include/SegmentBySinogram.inl:
+- corrected BUG in get_max_tangential_pos_num()
+
+buildblock/SegmentBySinogram.cxx:
+- corrected BUG in grow()
+- enabled growing of axial_pos_num as well
+
+buildblock/SegmentByView.cxx:
+- enabled growing of axial_pos_num as well
+
+buildblock/Viewgram.cxx
+- enabled growing of axial_pos_num as well
+
+include/RelatedViewgrams.*, buildblock/RelatedViewgrams.cxx:
+- added operator*=(float) and /=, +=, -=
+- added grow()
+- added find_min(), find_max(), fill()
+- removed #if 0 #endif stuff
+
+include/Bin.*
+- added operator==
+
+include/ProjDataInfo*, buildblock/ProjDataInfo*.cxx:
+- in get_tantheta() et al, replaced 4 args segment_num,view_num,ax_pos_num,
+tang_pos_num with single argument of type const Bin&
+- new functions ProjDataInfo::get_sampling_in_s(Bin&),
+get_sampling_in_t(Bin&).
+- new functions set_max_axial_pos_num() and set_min_axial_pos_num()
+- more documentation
+- moved some stuff from ProjDataInfo.inl to .cxx
+- moved get_tantheta from ProjDataInfoCylindricalArcCorr to
+ProjDataInfoCylindrical, and corrected BUG (was only ok
+for non-spanned data)
+- moved ProjDataInfoCylindrical constructors to new file
+ProjDataInfoCylindrical.cxx
+
+
+include/DataSymmetriesForViewSegmentNumbers.*
+- removed proj_data_info arg from constructor, and the private member
+- removed SymmetryOperation stuff
+- BUG corrected in default implementation for
+DataSymmetriesForViewSegmentNumbers::find_basic_view_segment_numbers
+
+include/display.h, display/display_array.cxx:
+- added display(RelatedViewgrams...);
+
+include/stream.h:
+- BUG correction: handle case of 0 length appropriately now
+
+buildblock/VoxelsOnCartesianGrid.cxx:
+- use new conventions for get_s()
+
+buildblock/Makefile:
+- removed   DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.cxx
+- added   ProjDataInfoCylindrical.cxx
+
+
+include/DiscretisedDensity.h, buildblock/DiscretisedDensity.cxx:
+- changed the return type of DiscretisedDensity::read_from_file from a
+shared_ptr to an ordinary pointer.
+The reason for this change is that you cannot get rid of the shared_ptr
+otherwise (without the data actually being deleted). Ideally, it should
+return an auto_ptr though.
+
+include/recon_buildblock/BackProjectorByBinUsingInterpolation.h and
+recon_buildblock/BackProjectorByBinUsingInterpolation.cxx:
+- use less include files in .h (decreases dependency)
+- moved implementation of JacobianForIntBP constructor to .cxx
+- changed type of symmetries_ptr private member
+
+include/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h and
+recon_buildblock/ForwardProjectorByBinUsingRayTracing.cxx
+- use less include files in .h (decreases dependency)
+- changed type of symmetries_ptr private member
+
+include/recon_buildblock/SymmetryOperation.h
+- moved from buildblock
+- added ProjMatrixElemsForOneBin stuff
+- more doc
+
+include/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h, .inl
+- moved from buildblock
+- added ProjMatrixElemsForOneBin stuff
+- more doc
+
+recon_buildblock/Makefile:
+added
+DataSymmetriesForBins.cxx \
+DataSymmetriesForBins_PET_CartesianGrid.cxx \
+SymmetryOperation.cxx \
+SymmetryOperations_PET_CartesianGrid.cxx \
+ProjMatrixElemsForOneBin.cxx \
+ProjMatrixByBin.cxx \
+ProjMatrixByBinUsingRayTracing.cxx \
+ForwardProjectorByBinUsingProjMatrixByBin.cxx \
+BackProjectorByBinUsingProjMatrixByBin.cxx \
+RayTraceVoxelsOnCartesianGrid.cxx
+
+
+test/test_proj_data_info.cxx:
+- used new convention for ProjDataInfo::get_s() et al
+
+utilities/manip_image.cxx:
+- added option for maximum on colour scale for display()
+
+utilities/extract_segments.cxx:
+- adjusted comments and include files
+
+utilities/convecat6_if.cxx:
+- added support for attenuation files
+
+utilities/cti_utils.cxx:
+- added support for attenuation files
+- added support for data types different from 16 bit ints.
+- added a bit more diagonistics for file IO errors
+
+include/CTI/cti_utils.h:
+- added cti_read_attn_subheader, get_attnheaders
+- changed behaviour of get_scandata to allow different data types
+- added file_data_to_host()
+
+utilities/Tomo_cti.cxx:
+- corrected 'fall through' bug in a switch statement
+(find_scanner_from_mainheader)
+- corrected BUG in allocation for cti data
+- in ECAT6_to_VoxelsOnCartesianGrid( use cti_lookup to avoid mainheader.dmp)
+- added support for attenuation files
+- added support for data types different from 16 bit ints.
+
+include/Tomo_cti.h:
+- removed read_sinogram   (made static in .cxx file)
+
+utilities/ifheaders_for_ecat7.cxx:
+- corrected BUG by swapping segment order
+- added support for attenuation sinograms
+- check all 'matrices' in file instead of stopping at the first
+missing 'matrix' (useful if you have only frame 13 in the file).
+- changed output filenames to include the original extension to prevent
+conflicts with .S and .A files.
+e.g. "ifheaders_for_ecat7 bla.S" will result in files bla_S_f1g1b0d0.hs
+etc.
+
+</pre>
+
+<h3>moved files</h3>
+
+moved include/SymmetryOperation* to include/recon_buildblock<br>
+moved buildblock/SymmetryOperation* to recon_buildblock<br>
+removed DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.*
+ (made obsolete by
+recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h)
+
+<h3>new files</h3>
+
+<h4>include/recon_buildblock/</h4>
+DataSymmetriesForBins.h, .inl<br>
+DataSymmetriesForBins_PET_CartesianGrid.h, .inl<br>
+BackProjectorByBinUsingProjMatrixByBin.h<br>
+ForwardProjectorByBinUsingProjMatrixByBin.h<br>
+ProjMatrixByBin.h, .inl<br>
+ProjMatrixByBinUsingRayTracing.h<br>
+ProjMatrixElemsForOneBin..h, .inl<br>
+ProjMatrixElemsForOneBinValue.h, .inl<br>
+RayTraceVoxelsOnCartesianGrid.h<br>
+RelatedBins.h,.inl<br>
+
+<h4>buildblock</h4>
+buildblock/ProjDataInfoCylindrical.cxx
+
+<h4>recon_buildblock/</h4>
+DataSymmetriesForBins.cxx<br>
+DataSymmetriesForBins_PET_CartesianGrid.cxx<br>
+BackProjectorByBinUsingProjMatrixByBin.cxx<br>
+ForwardProjectorByBinUsingProjMatrixByBin.cxx<br>
+ProjMatrixByBin.cxx<br>
+ProjMatrixByBinUsingRayTracing.cxx<br>
+ProjMatrixElemsForOneBin.cxx<br>
+RayTraceVoxelsOnCartesianGrid.cxx<br>
+SymmetryOperation.cxx<br>
+SymmetryOperations_PET_CartesianGrid.cxx
+
+
+
+    <hr>
+<!-- Created: Fri Jan 12 11:57:57 GMT 2001 -->
+<!-- hhmts start -->
+Last modified: Fri Jan 12 12:10:02 GMT 2001
+<!-- hhmts end -->
+  </body>
+</html>
