@@ -88,14 +88,13 @@
 
 #include "local/stir/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"
-#include "stir/IO/interfile.h" 
 #include "stir/recon_buildblock/distributable.h"
 //#include "local/stir/FBP3DRP/process_viewgrams.h"
 
 #include "local/stir/FBP3DRP/FBP3DRPReconstruction.h"
 #include "local/stir/FBP2D/FBP2DReconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
-
+#include "stir/utilities.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
@@ -179,6 +178,120 @@ static void find_rmin_rmax(int& rmin, int& rmax,
   rmax =  proj_data_info_cyl.get_max_axial_pos_num(seg_num) + (proj_data_info_cyl.get_min_axial_pos_num(seg_num) - rmin);
 }
 
+
+
+
+void 
+FBP3DRPReconstruction::
+set_defaults()
+{
+  Reconstruction::set_defaults();
+
+  alpha_colsher_axial = 1;
+  fc_colsher_axial = 0.5;
+  alpha_colsher_planar = 1;
+  fc_colsher_planar = 0.5;
+  alpha_ramp = 1;
+  fc_ramp = 0.5;
+  
+  num_segments_to_combine = -1;
+
+  PadS = 2;
+  PadZ = 2;
+    
+  disp=0;
+  save_intermediate_files=0;
+ 
+}
+
+void 
+FBP3DRPReconstruction::initialise_keymap()
+{
+  Reconstruction::initialise_keymap();
+
+  parser.add_start_key("FBP3DRPParameters");
+  parser.add_stop_key("End");
+
+  // parser.add_key("Read data into memory all at once",
+  //    &on_disk );
+  parser.add_key("image to be used for reprojection", &image_for_reprojection_filename);
+  parser.add_key("Save intermediate images", &save_intermediate_files);
+
+  // TODO move to 2D recon
+  parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
+  parser.add_key("Alpha parameter for Ramp filter",  &alpha_ramp);
+  parser.add_key("Cut-off for Ramp filter (in cycles)",&fc_ramp);
+  
+  parser.add_key("Transaxial extension for FFT", &PadS);
+  parser.add_key("Axial extension for FFT", &PadZ);
+  
+  parser.add_key("Alpha parameter for Colsher filter in axial direction", 
+     &alpha_colsher_axial);
+  parser.add_key("Cut-off for Colsher filter in axial direction (in cycles)",
+    &fc_colsher_axial);
+  parser.add_key("Alpha parameter for Colsher filter in planar direction",
+    &alpha_colsher_planar);
+  parser.add_key("Cut-off for Colsher filter in planar direction (in cycles)",
+    &fc_colsher_planar);
+
+}
+
+
+
+void 
+FBP3DRPReconstruction::ask_parameters()
+{ 
+   
+  Reconstruction::ask_parameters();
+    
+   // bool on_disk =  !ask("(1) Read data into memory all at once ?", false);
+// TODO move to Reconstruction
+
+    
+// PARAMETERS => DISP
+    
+    disp = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: intermediate, 3: after each view) ? ", 0,3,0);
+
+    save_intermediate_files =ask_num("Would you like to save all the intermediate images ? ",0,1,0 );
+
+    image_for_reprojection_filename =
+      ask_string("filename of image to be reprojected (empty for using FBP)");
+
+// PARAMETERS => ZEROES-PADDING IN FFT (PADS, PADZ)
+    cout << "\nFilter parameters for 2D and 3D reconstruction";
+    PadS = ask_num("  Transaxial extension for FFT : ",0,2, 2); 
+    PadZ = ask_num(" Axial extension for FFT :",0,2, 2);
+
+// PARAMETERS => 2D RECONSTRUCTION RAMP FILTER (ALPHA, FC)
+    cout << endl << "For 2D reconstruction filtering (Ramp filter) : " ;
+
+    num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
+    // TODO check odd
+    alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);
+    
+   fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
+
+// PARAMETERS => 3D RECONSTRUCTION COLSHER FILTER (ALPHA, FC)
+    cout << "\nFor 3D reconstruction filtering  (Colsher filter) : ";
+    
+    alpha_colsher_axial =  ask_num(" Alpha parameter for Colsher filter in axial direction ? ",0.,1., 1.);
+    
+    fc_colsher_axial =  ask_num(" Cut-off frequency fo Colsher filter in axial direction ? ",0.,.5, 0.5);
+
+    
+    alpha_colsher_planar =  ask_num(" Alpha parameter for Colsher filter in planar direction ? ",0.,1., 1.);
+    
+    fc_colsher_planar =  ask_num(" Cut-off frequency fo Colsher filter in planar direction ? ",0.,.5, 0.5);
+
+
+
+}
+
+string
+FBP3DRPReconstruction::
+method_info() const
+{ return("FBP3DRP"); }
+
 FBP3DRPReconstruction::~FBP3DRPReconstruction()
 {}
 
@@ -196,28 +309,22 @@ FBP3DRPReconstruction::estimated_image() const
 
 FBP3DRPReconstruction::
 FBP3DRPReconstruction(const string& parameter_filename)
-: FBP3DRPParameters(parameter_filename)
 {  
-  proj_data_info_cyl =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr&> (*(proj_data_ptr->get_proj_data_info_ptr()));
+  initialise(parameter_filename);
+  const ProjDataInfoCylindricalArcCorr * proj_data_info_cyl_ptr =
+    dynamic_cast<const ProjDataInfoCylindricalArcCorr *> (proj_data_ptr->get_proj_data_info_ptr());
+  if (proj_data_info_cyl_ptr == 0)
+    error("FBP3DRP currently needs arc-corrected data. Sorry\n");
+
+  proj_data_info_cyl = *proj_data_info_cyl_ptr;
   cerr<<parameter_info() << endl;
 }
 
-FBP3DRPReconstruction::FBP3DRPReconstruction(const FBP3DRPParameters& parameters)
-  : FBP3DRPParameters(parameters)
+FBP3DRPReconstruction::FBP3DRPReconstruction()
 {
-  proj_data_info_cyl =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr&> (*(proj_data_ptr->get_proj_data_info_ptr()));
-
-  cerr<<parameter_info()  << endl;
+  set_defaults();
 }
 
-
-
-string FBP3DRPReconstruction::parameter_info () 
-{ 
-  return FBP3DRPParameters::parameter_info();
-}
 
 Succeeded FBP3DRPReconstruction::reconstruct()
 {
@@ -240,7 +347,7 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
 
   {
     // set projectors to be used for the calculations
-    // TODO get type and parameters for projectors from *Parameters
+    // TODO get type and parameters for projectors from parameters
     // TODO this really should take a proj_data_info which has more axial positions 
     // (for the 'missing projections')
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
@@ -421,10 +528,10 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
 
  
 
-void FBP3DRPReconstruction::do_save_img(const char *file, const VoxelsOnCartesianGrid<float> &data)
+void FBP3DRPReconstruction::do_save_img(const char *file, const VoxelsOnCartesianGrid<float> &data) const
 {              
     full_log <<"  - Saving " << file  << endl;
-    write_basic_interfile( file, data);
+    output_file_format_ptr->write_to_file( file, data);
     full_log << "    Min= " << data.find_min()
          << " Max = " << data.find_max()
          << " Sum = " << data.sum() << endl;
@@ -775,15 +882,5 @@ void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewg
     
 }
 
-
-ReconstructionParameters& FBP3DRPReconstruction::params()
-{
-  return *this;
-}
-
-const ReconstructionParameters& FBP3DRPReconstruction::params() const
-{
-  return *this;
-}
 
 END_NAMESPACE_STIR

@@ -29,6 +29,9 @@ See STIR/LICENSE.txt for details
 #include "stir/Succeeded.h"
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
+#include "stir/NumericInfo.h"
+#include "stir/utilities.h"
+#include <iostream>
 
 #include <memory>
 #include <iostream>
@@ -46,26 +49,128 @@ using std::endl;
 #endif
 
 
-#include "stir/NumericInfo.h"
-// for write_update_image
-#include "stir/IO/interfile.h"
-
 START_NAMESPACE_STIR
 
-OSSPSReconstruction::
-OSSPSReconstruction(const OSSPSParameters& parameters_v)
-: parameters(parameters_v)
+//*************** parameters *************
+
+
+void 
+OSSPSReconstruction::set_defaults()
 {
-  cerr<<parameters.parameter_info();
+  LogLikelihoodBasedReconstruction::set_defaults();
+  enforce_initial_positivity = 1;
+  // KT 17/08/2000 3 new parameters
+  maximum_relative_change = NumericInfo<float>().max_value();
+  minimum_relative_change = 0;
+  write_update_image = 0;
+  precomputed_denominator_filename = "1";
+  //MAP_model="additive"; 
+  prior_ptr = 0;
+  relaxation_parameter = 0;
+  relaxation_gamma = 0.1F;
+}
+
+void
+OSSPSReconstruction::initialise_keymap()
+{
+  LogLikelihoodBasedReconstruction::initialise_keymap();
+  parser.add_start_key("OSSPSParameters");
+  parser.add_stop_key("End");
+  
+  parser.add_key("enforce initial positivity condition",&enforce_initial_positivity);
+  // parser.add_key("inter-update filter subiteration interval",&inter_update_filter_interval);
+  // //add_key("inter-update filter type", KeyArgument::ASCII, &inter_update_filter_type);
+  // parser.add_parsing_key("inter-update filter type", &inter_update_filter_ptr);
+  parser.add_parsing_key("Prior type", &prior_ptr);
+  //parser.add_key("MAP_model", &MAP_model);
+  parser.add_key("maximum relative change", &maximum_relative_change);
+  parser.add_key("minimum relative change",&minimum_relative_change);
+  parser.add_key("write update image",&write_update_image);   
+  parser.add_key("precomputed denominator", &precomputed_denominator_filename);
+  parser.add_key("relaxation parameter", &relaxation_parameter);
+  parser.add_key("relaxation gamma", &relaxation_gamma);
+  
 }
 
 
+void OSSPSReconstruction::ask_parameters()
+{
+  
+  LogLikelihoodBasedReconstruction::ask_parameters();
+  
+  // KT 05/07/2000 made enforce_initial_positivity int
+  enforce_initial_positivity=
+    ask("Enforce initial positivity condition?",true) ? 1 : 0;
+  
+  char precomputed_denominator_filename_char[max_filename_length];
+  
+  ask_filename_with_extension(precomputed_denominator_filename_char,"Enter file name of precomputed denominator  (1 = 1's): ", "");   
+  
+  precomputed_denominator_filename=precomputed_denominator_filename_char;
+  
+
+
+  if(ask("Include prior?",false))
+  {       
+    
+    cerr<<endl<<"Supply prior type:\nPossible values:\n";
+    GeneralisedPrior<float>::list_registered_names(cerr);
+    
+    const string prior_type = ask_string("");
+    
+    prior_ptr = 
+      GeneralisedPrior<float>::read_registered_object(0, prior_type); 
+    
+  } 
+  
+  // KT 17/08/2000 3 new parameters
+  const double max_in_double = static_cast<double>(NumericInfo<float>().max_value());
+  maximum_relative_change = ask_num("maximum relative change",
+    1.,max_in_double,max_in_double);
+  minimum_relative_change = ask_num("minimum relative change",
+    0.,1.,0.);
+  
+  write_update_image = ask_num("write update image", 0,1,0);
+
+  // TODO some more parameters here (relaxation et al)
+}
+
+
+
+
+bool OSSPSReconstruction::post_processing()
+{
+  if (LogLikelihoodBasedReconstruction::post_processing())
+    return true;
+    
+  if (precomputed_denominator_filename.length() == 0)
+  { 
+    warning("You need to specify a precomputed denominator \n"); 
+    return true; 
+  }
+  // KT 09/12/2002 one more check
+  if (!is_null_ptr(prior_ptr) && dynamic_cast<PriorWithParabolicSurrogate<float>*>(prior_ptr.get())==0)
+  {
+    warning("Prior must be of a type derived from PriorWithParabolicSurrogate\n");
+    return true;
+  }
+  
+  return false;
+}
+
+//*************** other functions *************
+
+OSSPSReconstruction::
+OSSPSReconstruction()
+{  
+  set_defaults();
+}
+
 OSSPSReconstruction::
 OSSPSReconstruction(const string& parameter_filename)
-: parameters(parameter_filename)
-{  
-  
-  cerr<<parameters.parameter_info();
+{    
+  initialise(parameter_filename);
+  cerr<<parameter_info();
 }
 
 string OSSPSReconstruction::method_info() const
@@ -81,14 +186,14 @@ string OSSPSReconstruction::method_info() const
   std::ostringstream s;
 #endif
   
-  //if(parameters.inter_update_filter_interval>0) s<<"IUF-";
-  //if(parameters.num_subsets>1) s<<"OS";
-  //if (parameters.prior_ptr == 0 || 
-  //   parameters.prior_ptr->get_penalisation_factor() == 0)
+  //if(inter_update_filter_interval>0) s<<"IUF-";
+  //if(num_subsets>1) s<<"OS";
+  //if (prior_ptr == 0 || 
+  //   prior_ptr->get_penalisation_factor() == 0)
   // s<<"EM";
   //else
   //  s << "MAPOSL";
-  if(parameters.inter_iteration_filter_interval>0) s<<"S";
+  if(inter_iteration_filter_interval>0) s<<"S";
   s<<ends;
   
   return s.str();
@@ -99,11 +204,11 @@ void OSSPSReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> >
 {
   LogLikelihoodBasedReconstruction::recon_set_up(target_image_ptr);
   
-  if (parameters.max_segment_num_to_process==-1)
-    parameters.max_segment_num_to_process =
-    parameters.proj_data_ptr->get_max_segment_num();
+  if (max_segment_num_to_process==-1)
+    max_segment_num_to_process =
+    proj_data_ptr->get_max_segment_num();
   
-  if(parameters.enforce_initial_positivity) 
+  if(enforce_initial_positivity) 
     threshold_min_to_small_positive_value(target_image_ptr->begin_all(),
 					  target_image_ptr->end_all(),
 					  10.E-6F);
@@ -143,8 +248,8 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   // For the quadratic prior, this is independent of the image (only on kappa's)
   // And of course, it's also independent when there is no prior
   const bool recompute_penalty_term_in_denominator =
-    parameters.relaxation_parameter>0 && !is_null_ptr(parameters.prior_ptr) &&
-    parameters.prior_ptr->get_penalisation_factor()>0 &&
+    relaxation_parameter>0 && !is_null_ptr(prior_ptr) &&
+    prior_ptr->get_penalisation_factor()>0 &&
     is_null_ptr(dynamic_cast<QuadraticPrior<float> const* >(get_parameters().prior_ptr.get())) ;
 #ifndef PARALLEL
   //CPUTimer subset_timer;
@@ -156,7 +261,7 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   
   //For ordered set processing  
   static VectorWithOffset<int> subset_array(get_parameters().num_subsets);  
-  if(parameters.randomise_subset_order && (subiteration_num-1)%parameters.num_subsets==0)
+  if(randomise_subset_order && (subiteration_num-1)%num_subsets==0)
   {
     subset_array = randomly_permute_subset_order();    
     cerr<<endl<<"current subset order:"<<endl;    
@@ -164,9 +269,9 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
       cerr<<subset_array[i]<<" ";
   };
   
-  const int subset_num=parameters.randomise_subset_order 
-    ? subset_array[(subiteration_num-1)%parameters.num_subsets] 
-    : (subiteration_num+parameters.start_subset_num-1)%parameters.num_subsets;
+  const int subset_num=randomise_subset_order 
+    ? subset_array[(subiteration_num-1)%num_subsets] 
+    : (subiteration_num+start_subset_num-1)%num_subsets;
   
   cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
     
@@ -179,17 +284,17 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   // This is L' term (upto the (sub)sensitivity)
   distributable_compute_gradient(*numerator_ptr, 
 				 current_image_estimate, 
-				 parameters.proj_data_ptr, 
+				 proj_data_ptr, 
 				 subset_num, 
-				 parameters.num_subsets, 
-				 -parameters.max_segment_num_to_process, // KT 30/05/2002 use new convention of distributable_* functions
-				 parameters.max_segment_num_to_process, 
-				 parameters.zero_seg0_end_planes!=0, 
+				 num_subsets, 
+				 -max_segment_num_to_process, // KT 30/05/2002 use new convention of distributable_* functions
+				 max_segment_num_to_process, 
+				 zero_seg0_end_planes!=0, 
 				 NULL, 
 				 additive_projection_data_ptr);
   
   // subtract sensitivity image
-  *numerator_ptr *= parameters.num_subsets;
+  *numerator_ptr *= num_subsets;
   *numerator_ptr -= *sensitivity_image_ptr;
   
   cerr << "num_subsets*subgradient L : max " << numerator_ptr->find_max();
@@ -200,16 +305,16 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
     auto_ptr< DiscretisedDensity<3,float> >(current_image_estimate.get_empty_discretised_density());
       
   //relaxation_parameter ~1/n where n is iteration number 
-  // KT 09/12/2002 added brackets around subiteration_num/parameters.num_subsets to force integer division
+  // KT 09/12/2002 added brackets around subiteration_num/num_subsets to force integer division
   const float relaxation_parameter = get_parameters().relaxation_parameter/
-	      (1+get_parameters().relaxation_gamma*(subiteration_num/parameters.num_subsets));
+	      (1+get_parameters().relaxation_gamma*(subiteration_num/num_subsets));
     
   // subtract gradient of penalty
   // KT 09/12/2002 avoid work (or crash) when penalty is 0
-  if (relaxation_parameter>0 && !is_null_ptr(parameters.prior_ptr)
-      && parameters.prior_ptr->get_penalisation_factor()>0)
+  if (relaxation_parameter>0 && !is_null_ptr(prior_ptr)
+      && prior_ptr->get_penalisation_factor()>0)
   {
-    parameters.prior_ptr->compute_gradient(*work_image_ptr, current_image_estimate); 
+    prior_ptr->compute_gradient(*work_image_ptr, current_image_estimate); 
     *numerator_ptr -= *work_image_ptr;   
 
     cerr << "total gradient max " << numerator_ptr->find_max();
@@ -222,10 +327,10 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   if (recompute_penalty_term_in_denominator || count==1)
   {
     // KT 09/12/2002 avoid work (or crash) when penalty is 0
-    if (relaxation_parameter>0 && !is_null_ptr(parameters.prior_ptr)
-      && parameters.prior_ptr->get_penalisation_factor()>0)
+    if (relaxation_parameter>0 && !is_null_ptr(prior_ptr)
+      && prior_ptr->get_penalisation_factor()>0)
     {
-      static_cast<PriorWithParabolicSurrogate<float>&>(*parameters.prior_ptr).
+      static_cast<PriorWithParabolicSurrogate<float>&>(*prior_ptr).
         parabolic_surrogate_curvature(*work_image_ptr, current_image_estimate);   
       *work_image_ptr *= 2;
       *work_image_ptr += *precomputed_denominator_ptr ;
@@ -260,15 +365,15 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
    *numerator_ptr *= relaxation_parameter;  
   
   // TODO move below thresholding?
-  if (parameters.write_update_image)
+  if (write_update_image)
   {
     // allocate space for the filename assuming that
     // we never have more than 10^49 subiterations ...
-    char * fname = new char[parameters.output_filename_prefix.size() + 60];
+    char * fname = new char[output_filename_prefix.size() + 60];
     sprintf(fname, "%s_update_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
     
     // Write it to file
-    write_basic_interfile(fname, *numerator_ptr);
+    output_file_format_ptr->write_to_file(fname, *numerator_ptr);
     delete fname;
   }
   
@@ -307,7 +412,7 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
       current_image_estimate.find_max();
     const float new_min = 0.F;
     const float new_max = 
-      static_cast<float>(parameters.maximum_relative_change);
+      static_cast<float>(maximum_relative_change);
     cerr << "current image old min,max: " 
       << current_min
       << ", " 
@@ -326,6 +431,7 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
 #else // PARALLEL
   timerSubset.Stop();
   cerr << "Subset: " << timerSubset.GetTime() << "secs" << endl;
+
 #endif
   
 }

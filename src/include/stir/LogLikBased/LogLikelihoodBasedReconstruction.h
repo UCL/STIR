@@ -29,6 +29,9 @@
 #include "stir/recon_buildblock/IterativeReconstruction.h"
 #include "stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/shared_ptr.h"
+// need to include full class definition of ProjectorByBinPair to enable shared_ptr to call its destructor
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 
 START_NAMESPACE_STIR
 
@@ -49,12 +52,6 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
 
   //! operations prior to the iterations common to all loglikelihood based algorithms
   void recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr);
-  //void loglikelihood_common_recon_set_up(const DiscretisedDensity<3,float> &target_image);
-
-  // KT 25/05/2001 moved everything which was in here to IterativeReconstruction
-  //void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate);
- 
-
 
 
  //! evaluates the loglikelihood function at an image
@@ -67,15 +64,15 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
  float sum_projection_data() const;
 
  //! accessor for the external parameters
- LogLikelihoodBasedAlgorithmParameters& get_parameters()
+ LogLikelihoodBasedReconstruction& get_parameters()
    {
-     return static_cast<LogLikelihoodBasedAlgorithmParameters&>(params());
+     return *this;
    }
 
  //! accessor for the external parameters
- const LogLikelihoodBasedAlgorithmParameters& get_parameters() const
+ const LogLikelihoodBasedReconstruction& get_parameters() const
     {
-      return static_cast<const LogLikelihoodBasedAlgorithmParameters&>(params());
+      return *this;
     }
 
 
@@ -86,14 +83,42 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
  //! points to the sensitivity image
  shared_ptr<DiscretisedDensity<3,float> > sensitivity_image_ptr;
 
- private:
- 
-  //! a workaround for compilers not supporting covariant return types
-  virtual ReconstructionParameters& params()=0;
+  // parameters
+ protected:
+  //! Stores the projectors that are used for the computations
+  shared_ptr<ProjectorByBinPair> projector_pair_ptr;
 
-  //! a workaround for compilers not supporting covariant return types
-  virtual const ReconstructionParameters& params() const=0;
 
+  //! prompts the user to enter parameter values manually
+  virtual void ask_parameters();
+
+  //! name of the file containing the sensitivity image
+  string sensitivity_image_filename;
+
+
+
+//Loglikelihood computation parameters
+
+  //! subiteration interval at which the loglikelihood function is evaluated
+  int loglikelihood_computation_interval;
+
+  //! indicates whether to evaluate the loglikelihood function for all bins or the current subset
+  bool compute_total_loglikelihood;
+
+  //! name of file in which loglikelihood measurements are stored
+  string loglikelihood_data_filename;
+
+
+  //! the projection data in this file is bin-wise added to forward projection results
+  string additive_projection_data_filename;
+
+
+protected:
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+
+  //! used to check acceptable parameter ranges, etc...
+  virtual bool post_processing();
 
 
 };

@@ -13,7 +13,6 @@ clean:
 	$(RM) $(DEST)*
 
 SOURCES= \
-LogLikelihoodBasedAlgorithmParameters.cxx \
 LogLikelihoodBasedReconstruction.cxx \
 common.cxx 
 

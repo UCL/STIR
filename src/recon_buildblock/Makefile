@@ -20,9 +20,7 @@ SOURCES= ForwardProjectorByBin.cxx \
 	BackProjectorByBinUsingInterpolation_linear.cxx \
 	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
 	Reconstruction.cxx \
-	ReconstructionParameters.cxx \
 	IterativeReconstruction.cxx \
-	IterativeReconstructionParameters.cxx \
 	distributable.cxx \
 	DataSymmetriesForBins.cxx \
 	DataSymmetriesForBins_PET_CartesianGrid.cxx \

@@ -7,7 +7,6 @@ include $(WORKSPACE)/Makefile_common
 
 
 LIB_SOURCES =  \
-         OSMAPOSLParameters.cxx \
          OSMAPOSLReconstruction.cxx 
 
 MAIN_SOURCES = OSMAPOSL.cxx

@@ -7,7 +7,6 @@ include $(WORKSPACE)/Makefile_common
 
 
 LIB_SOURCES =  \
-         OSSPSParameters.cxx \
          OSSPSReconstruction.cxx 
 
 MAIN_SOURCES = OSSPS.cxx
