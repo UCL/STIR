@@ -1,5 +1,5 @@
 #
-# $Id$
+# %W:% $Date$
 #
 
 include ../Makefile_common
@@ -21,13 +21,20 @@ SOURCES= ForwardProjectorByBin.cxx \
 	IterativeReconstruction.cxx \
 	IterativeReconstructionParameters.cxx \
 	distributable.cxx \
-#	SymmetryOperation.cxx \
-#	SymmetryOperations_PET_CartesianGrid.cxx 
-#	ProjMatrixElemsForOneBin.cxx \
-#	        ProjMatrixByBin.cxx \
-#                ProjMatrixByBinUsingRayTracing.cxx \
+	DataSymmetriesForBins.cxx \
+	DataSymmetriesForBins_PET_CartesianGrid.cxx \
+	SymmetryOperation.cxx \
+	SymmetryOperations_PET_CartesianGrid.cxx \
+	ProjMatrixElemsForOneBin.cxx \
+	ProjMatrixByBin.cxx \
+	ProjMatrixByBinUsingRayTracing.cxx \
+	ForwardProjectorByBinUsingProjMatrixByBin.cxx \
+	BackProjectorByBinUsingProjMatrixByBin.cxx \
+	RayTraceVoxelsOnCartesianGrid.cxx
 
-
+ifdef PROJSMOOTH
+SOURCES = $(SOURCES) PostsmoothingForwardProjectorByBin.cxx 
+endif	
 
 
 
