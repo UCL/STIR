@@ -196,7 +196,7 @@ transform_3d_object(ProjData& out_proj_data,
 	    {
 	      Bin bin(segment_num, view_num, ax_pos_num, tang_pos_num,
 		      in_segment[view_num][ax_pos_num][tang_pos_num]);
-	      if (bin.get_bin_value()<=0)
+	      if (bin.get_bin_value()==0)
 		continue;
 	      rigid_object_transformation.transform_bin(bin,
 							*out_proj_data_info_noarccor_ptr,
