@@ -39,6 +39,9 @@ public:
 
   virtual void apply(RelatedViewgrams<float>&) const {}
   virtual void undo(RelatedViewgrams<float>&) const {}
+  
+  virtual float get_bin_efficiency(const Bin& bin) const { return 1;}
+  
 
 private:
   virtual void set_defaults() {}

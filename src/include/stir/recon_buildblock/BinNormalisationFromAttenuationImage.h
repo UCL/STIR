@@ -102,6 +102,8 @@ public:
   */
   virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 
+  virtual float get_bin_efficiency(const Bin& bin) const; 
+
 private:
   shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr;

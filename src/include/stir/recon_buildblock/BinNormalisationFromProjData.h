@@ -87,6 +87,8 @@ public:
   */
   virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 
+  virtual float get_bin_efficiency(const Bin& bin) const;
+ 
 private:
   shared_ptr<ProjData> norm_proj_data_ptr;
   virtual void set_defaults();
