@@ -130,20 +130,25 @@ protected:
 */
 
 //! compute  sum_i p1[i] * p2[i]
-/*! \todo move to a new CartesianCoordinate class */
+/*! 
+  \ingroup Coordinate
+  \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline coordT
 inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
 	       const BasicCoordinate<num_dimensions, coordT>& p2);
 
 //! compute sqrt(inner_product(p1,p1))
-/*! \todo move to a new CartesianCoordinate class */
+/*! 
+  \ingroup Coordinate
+  \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline double
 norm (const BasicCoordinate<num_dimensions, coordT>& p1);
 
 //! compute angle between 2 directions
-/*! \todo move to a new CartesianCoordinate class */
+/*! \ingroup Coordinate
+    \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline double 
 angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
@@ -155,6 +160,7 @@ angle (const BasicCoordinate<num_dimensions, coordT>& p1,
   // so we only define it when it's not gcc 2.8.1
 
 //! make a longer BasicCoordinate, by prepending \c  c with the single \c coordT
+/*! \ingroup Coordinate */
 template <int num_dimensions, typename coordT>
 inline BasicCoordinate<num_dimensions+1, coordT> 
 join(const coordT& a, 
@@ -163,6 +169,7 @@ join(const coordT& a,
 #endif // gcc 2.8.1
 
 //! make a shorter BasicCoordinate, by cutting the first element from \c c  
+/*! \ingroup Coordinate */
 template <int num_dimensions, typename coordT>
 inline BasicCoordinate<num_dimensions-1, coordT> 
 cut_first_dimension(const BasicCoordinate<num_dimensions, coordT>& c) ;    
