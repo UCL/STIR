@@ -251,8 +251,7 @@ post_processing()
   move_from_scanner =
     RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
                                CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
-  move_to_scanner = move_from_scanner;
-  move_to_scanner.inverse();
+  move_to_scanner = move_from_scanner.inverse();
 
   return false;
 }
