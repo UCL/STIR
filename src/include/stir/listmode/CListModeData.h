@@ -142,6 +142,18 @@ public:
   virtual
     ~CListModeData();
 
+  //! Returns the name of the list mode data
+  /*! This name is not necessarily unique, and might be empty. However, it is expected
+      (but not guaranteed) that 
+      <code>CListModeData::read_from_file(lm_data_ptr-\>get_name())</code> would read 
+      the same list mode data.
+
+      The reason this cannot be guaranteed is largely in code the list mode data is 
+      not really on disk, but the object corresponds for instance to a Monte Carlo simulator.
+  */
+  virtual std::string
+    get_name() const = 0;
+
   //! Scan start time
   /*! In secs since midnight (UTC) 1/1/1970 (as returned by time()).
 

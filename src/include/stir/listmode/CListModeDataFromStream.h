@@ -50,11 +50,11 @@ START_NAMESPACE_STIR
     buffer is empty.
 
     \warning Although this is currently a derived from CListModeData, this
-    is possibly not a good design choice. In the end, we really need only
+    is not a good design choice. In the end, we really need only
     the buffered IO. For example, to get the current implementation to work, the
     constructors need arguments such as \a empty_record_sptr such that the
     relevant members of CListModeData can be implemented. This increases
-    dependency on CListModeData to a (probably) unacceptable level.
+    dependency on CListModeData to an unacceptable level.
     (e.g. when adding CListModeData::num_energy_windows() we would need
     another argument here).
 
@@ -86,13 +86,6 @@ public:
 			  const shared_ptr <CListRecord>& empty_record_sptr,
 			  const ByteOrder list_mode_file_format_byte_order,
                           const streampos start_of_data = 0);
-
-  //! Bogus implementation
-  /*! This function should never be called. It's an artefact of having this class derived from
-    CListModeData.
-  */
-  virtual std::time_t
-    get_scan_start_time_in_secs_since_1970() const;
 
 
   virtual 
@@ -128,6 +121,19 @@ public:
   void set_saved_get_positions(const vector<streampos>& );
 
 private:
+  //! Bogus implementation
+  /*! This function should never be called. It's an artefact of having this class derived from
+    CListModeData.
+  */
+  virtual std::time_t
+    get_scan_start_time_in_secs_since_1970() const;
+
+  //! Bogus implementation
+  /*! This function should never be called. It's an artefact of having this class derived from
+    CListModeData.
+  */
+  virtual std::string
+    get_name() const;
 
   const string listmode_filename;
   shared_ptr<istream> stream_ptr;

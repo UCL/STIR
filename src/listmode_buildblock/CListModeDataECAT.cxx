@@ -28,7 +28,6 @@
 #include "stir/IO/stir_ecat7.h"
 #endif
 #include "boost/static_assert.hpp"
-#include <time.h>
 #include <iostream>
 #include <fstream>
 #ifndef STIR_NO_NAMESPACES
@@ -48,7 +47,7 @@ BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT962)==4);
 BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT962)==4);
 
 CListModeDataECAT::
-CListModeDataECAT(const string& listmode_filename_prefix)
+CListModeDataECAT(const std::string& listmode_filename_prefix)
   : listmode_filename_prefix(listmode_filename_prefix)    
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
@@ -93,6 +92,13 @@ CListModeDataECAT(const string& listmode_filename_prefix)
   if (open_lm_file(1) == Succeeded::no)
     error("CListModeDataECAT: error opening the first listmode file for filename %s\n",
 	  listmode_filename_prefix.c_str());
+}
+
+std::string
+CListModeDataECAT::
+get_name() const
+{
+  return listmode_filename_prefix;
 }
 
 std::time_t 
@@ -145,7 +151,7 @@ open_lm_file(unsigned int new_lm_file) const
 	}
 
       // now open new file
-      string filename = listmode_filename_prefix;
+      std::string filename = listmode_filename_prefix;
       char rest[50];
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
