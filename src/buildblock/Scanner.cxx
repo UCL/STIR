@@ -228,19 +228,28 @@ Scanner::Scanner(Type type_v,const string name,
 
 }
 
+// TODO replace by using boost::floating_point_comparison
+bool static close_enough(const double a, const double b)
+{
+  return fabs(a-b) <= 
+#ifndef STIR_NO_NAMESPACES
+    std::    // need this explicitly here due to VC 6.0 bug
+#endif
+    min(fabs(a), fabs(b)) * 10E-4;
+}
 
 bool 
 Scanner::operator ==(const Scanner& scanner) const
 {
+// KT 04/02/2003 take floating point rounding into account
 return
   (num_rings ==scanner.num_rings)&&
   (max_num_non_arccorrected_bins ==scanner.max_num_non_arccorrected_bins)&&
   (default_num_arccorrected_bins ==scanner.default_num_arccorrected_bins)&&
   (num_detectors_per_ring == scanner.num_detectors_per_ring)&&
-  (ring_radius==scanner.ring_radius)&&
-  (bin_size==scanner.bin_size)&&
-  (intrinsic_tilt==scanner.intrinsic_tilt);
-
+  close_enough(ring_radius,scanner.ring_radius) &&
+  close_enough(bin_size,scanner.bin_size)&&
+  close_enough(intrinsic_tilt,scanner.intrinsic_tilt);
 }
 
 const list<string>& 
