@@ -21,13 +21,17 @@ install: $(EXES)
 include $(WORKSPACE)/Makefile_bblibs
 
 
-${DEST}sensitivity: ${DEST}sensitivity.o \
-	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
+${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o \
+	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK} $(BB_REGISTRIES)
 	$(CXX) $(CFLAGS)-o $@ $< \
-	${LIB_LOGLIK_BUILDINGBLOCK} \
-	$(LIB_RECON_BUILDINGBLOCK) \
-	$(LIB_BUILDINGBLOCK) \
-	$(LINK_OPT) $(SYS_LIBS)
+	  ../OSMAPOSL/$(DEST)OSMAPOSLParameters.o \
+	  $(BB_REGISTRIES) \
+	  ${LIB_LOGLIK_BUILDINGBLOCK} \
+	  $(BB_LIBS) \
+	  $(LINK_OPT) $(SYS_LIBS)
+
+../OSMAPOSL/$(DEST)OSMAPOSLParameters.o:
+	cd ../OSMAPOSL; $(MAKE) all
 
 
 # include dependency files (but only when not doing 'make clean')
