@@ -35,6 +35,7 @@ START_NAMESPACE_STIR
   A class in the GeneralisedPrior hierarchy. This implements a quadratic Gibbs prior.
 
   \todo make weights used flexible
+  \todo document parameters
 */
 template <typename elemT>
 class QuadraticPrior:  public  
@@ -53,12 +54,12 @@ public:
   //! Constructs it explicitly
   QuadraticPrior(const bool only_2D, float penalization_factor);
   
-  //! compute gradient by applying the filter
+  //! compute gradient 
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
 			const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-  //! compute normalised gradient by applying the filter
-  // in the case of quadratic priors this will just be the sum of weighting coefficients
+  //! compute the parabolic surrogate for the prior
+  /*! in the case of quadratic priors this will just be the sum of weighting coefficients*/
   void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature, 
 			const DiscretisedDensity<3,elemT> &current_image_estimate);
 
@@ -72,6 +73,8 @@ public:
   
 private:
   bool only_2D;
+  string gradient_filename;
+
   Array<3,float> weights;
   virtual void set_defaults();
   virtual void initialise_keymap();
