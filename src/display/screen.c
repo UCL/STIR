@@ -2066,6 +2066,7 @@ void line(x1, y1, x2, y2)
 #endif /* SC_PC */
 
 /* change November 1997: added this function (was SCX_SCALE before) */
+/* 30/01/98 put high intensities on top of scale */
 void SC_SCALE(pos_x,pos_y,size_x,size_y)
 int pos_x, pos_y, size_x, size_y;
 {
@@ -2074,9 +2075,9 @@ int pos_x, pos_y, size_x, size_y;
   
   SC_PRMFIL(1);
   SC_MOVE(pos_x,pos_y);
-  for(p=pos_y-size_y,par=SC_C_MAX;
-      p<pos_y, par>=SC_C_BACKGROUND;
-      p+=(size_y) / (SC_C_MAX-SC_C_BACKGROUND), par--)
+  for(p=pos_y-size_y,par=SC_C_BACKGROUND;
+      p<pos_y, par<=SC_C_MAX;
+      p+=(size_y) / (SC_C_MAX-SC_C_BACKGROUND), par++)
     { SC_COLOR(par);
     SC_RECT(pos_x+size_x,p);
     }
