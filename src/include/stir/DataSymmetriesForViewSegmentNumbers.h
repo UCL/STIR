@@ -2,7 +2,6 @@
 // $Id$
 //
 /*!
-
   \file
   \ingroup buildblock
 
@@ -12,7 +11,6 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
 /*
@@ -23,19 +21,16 @@
 #ifndef __DataSymmetriesForViewSegmentNumbers_H__
 #define __DataSymmetriesForViewSegmentNumbers_H__
 
-#include "stir/ViewSegmentNumbers.h"
+#include "stir/common.h"
 #include <vector>
-#include <memory>
-#include "stir/ProjDataInfo.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::vector;
-#ifndef STIR_NO_AUTO_PTR
-using std::auto_ptr;
-#endif
 #endif
 
 START_NAMESPACE_STIR
+
+class ViewSegmentNumbers;
 
 #if 0
 class ViewSegmentIndexRange;
@@ -50,20 +45,17 @@ class ViewSegmentIndexRange;
   is useful to store and use all information on symmetries
   common between the image representation and the projection data.
 
+  The class mainly defines members to find \c basic ViewSegmentNumbers. These form a 
+  'basis' for all ViewSegmentNumbers in the sense that all ViewSegmentNumbers
+  can be obtained by using symmetry operations on the 'basic' ones.
 */
 class DataSymmetriesForViewSegmentNumbers
 {
 public:
 
-  virtual ~DataSymmetriesForViewSegmentNumbers() {};
+  virtual ~DataSymmetriesForViewSegmentNumbers();
 
   virtual DataSymmetriesForViewSegmentNumbers * clone() const = 0;
-
-#if 0    
-  //??? maybe not needed
-  virtual vector<SymmetryOperation * const>
-    get_all_symmetry_operations() const = 0;
-#endif
 
 #if 0
   // TODO
@@ -77,33 +69,28 @@ public:
     get_related_view_segment_numbers(vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const = 0;
 
   //! returns the number of view_segment_numbers related to 'v_s'
-  virtual inline int
+  /*! The default implementation is in terms of get_related_view_segment_numbers, which will be 
+      slow of course */
+  virtual int
     num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;
-#if 0
-  /*! \brief given an arbitrary view/segment, find the basic view/segment
-  
-  sets 'v_s' to the corresponding 'basic' view/segment and returns the symmetry 
-  transformation from 'basic' to 'v_s'.
-
-  Note that the symmetry operation is not completely defined by giving only view/segment.
-  */
-  virtual auto_ptr<SymmetryOperation>
-    find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const = 0;
-#endif
 
   /*! \brief given an arbitrary view/segment, find the basic view/segment
   
   sets 'v_s' to the corresponding 'basic' view/segment and returns true if
   'v_s' is changed (i.e. it was NOT a basic view/segment).
   */  
-  virtual inline bool
+  virtual bool
     find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const = 0;
 
+  /*! \brief test if a view/segment is 'basic' 
+
+  The default implementation uses find_basic_view_segment_numbers
+  */
+  virtual bool
+    is_basic(const ViewSegmentNumbers& v_s) const;
 };
 
 END_NAMESPACE_STIR
-
-#include "stir/DataSymmetriesForViewSegmentNumbers.inl"
 
 #endif
 
