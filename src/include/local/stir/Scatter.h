@@ -23,6 +23,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/common.h"
+#include "stir/round.h"
 #include "stir/ProjData.h"
 #include <vector>
 #include <cmath>
@@ -54,7 +55,7 @@ std::vector<CartesianCoordinate3D<float> >
 sample_scatter_points(
 		const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
 		int & max_scatt_points,
-        const float att_threshold);
+    const float att_threshold);
 
 /*!						  
   \ingroup scatter
@@ -95,15 +96,19 @@ float scatter_estimate_for_one_scatter_point(
 	energy:	energy of incident photon ( in keV )
 */  	
 float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
-	                     const CartesianCoordinate3D<float>& detector_coordA,
-				          		 const CartesianCoordinate3D<float>& detector_coordB,
-	                     const float energy);
+	                      const CartesianCoordinate3D<float>& detector_coordA,
+				          		  const CartesianCoordinate3D<float>& detector_coordB,
+	                      const float energy);	
+
+float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point,
+	                      const CartesianCoordinate3D<float>& detector_coordA,
+				          		  const CartesianCoordinate3D<float>& detector_coordB);
 /*!						
   \ingroup scatter
   \brief computes the total cross section
    Better inline?????
 
-  n  This function computes the total cross section
+  This function computes the total cross section
 	for Compton scatter, based on the Klein-Nishina-Formula
 	(cf.Am. Institute of Physics Handbook, page 87, chapter 8, formula 8f-22 )
 
@@ -111,8 +116,7 @@ float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
 
 */
 float total_cross_section(float energy);
-
-
+const float total_cross_section_511keV = total_cross_section(511.);
 
 /*!
   \ingroup scatter
@@ -137,7 +141,7 @@ void scatter_viewgram(
     int max_scatt_points, const float att_threshold);
 
 
-// 3 Functions that will be in the BasicCoordinate Class
+// Functions that could be in the BasicCoordinate Class
 
 inline 
 BasicCoordinate<3,float> convert_int_to_float(const BasicCoordinate<3,int>& cint)
@@ -148,27 +152,17 @@ BasicCoordinate<3,float> convert_int_to_float(const BasicCoordinate<3,int>& cint
 		  cfloat[i]=(float)cint[i];
 	  return cfloat;
 	}
-
+template <int num_dimensions, class elemT>
 inline
-BasicCoordinate<3,int> convert_float_to_int(const BasicCoordinate<3,float>& cfloat)
-	{	  
-	  BasicCoordinate<3,int> cint;
-      for(int i=1;i<=3;++i)
-		  {
-		  	  if(ceil(cfloat[i]) - cfloat[i]<=0.5) 
-				  	  cint[i] = (int)ceil(cfloat[i]) ;
-			  else 
-				  	  cint[i] = (int)cfloat[i] ;
-		  }
-	  return cint;
-	}
-
-inline
-float two_points_distance(const BasicCoordinate<3,float>& c1,
-						  const BasicCoordinate<3,float>& c2)
+float two_points_distance(const BasicCoordinate<num_dimensions,elemT>& c1,
+						              const BasicCoordinate<num_dimensions,elemT>& c2)
 	{  
-	   BasicCoordinate<3,float> c=c1-c2;
-	   return sqrt(c[1]*c[1]+c[2]*c[2]+c[3]*c[3]);
+	   BasicCoordinate<num_dimensions,elemT> c=c1-c2;
+	   float product = 0.;
+	   for (int i=1 ; i<=num_dimensions ; ++i)
+	   	   product += c[i]*c[i];
+	
+	   return sqrt(product);
 	}
 
 
