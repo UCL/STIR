@@ -1,4 +1,3 @@
-
 #
 # $Id$: $Date$
 # 
@@ -26,6 +25,9 @@ EXES = $(SOURCES:%.cxx=$(DEST)%)
 all: $(EXES)
 
 include $(SOURCES:%.cxx=$(DEST)%.d)
+
+install:
+	echo "Not installing any executables from test"
 
 clean:
 	$(RM) $(DEST)*
