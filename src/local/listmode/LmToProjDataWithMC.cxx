@@ -138,11 +138,12 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
 
 
-    static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
-
+  static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
+  const double start_time = frame_defs.get_start_time(current_frame_num);
+  const double end_time = frame_defs.get_end_time(current_frame_num);
 
   record.get_uncompressed_bin(bin);
-  const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
+  const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
    
   //Do the motion correction
   
