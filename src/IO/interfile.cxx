@@ -13,7 +13,9 @@
 #include "interfile.h"
 #include "utilities.h"
 
-// KT 14/10/98 make arg istream
+
+START_NAMESPACE_TOMO
+
 // KT 14/01/2000 added directory capability
 PETImageOfVolume read_interfile_image(istream& input, 
 				      const char * const directory_for_data)
@@ -85,10 +87,11 @@ PETImageOfVolume read_interfile_image(const char *const filename)
 const VectorWithOffset<unsigned long> 
 compute_file_offsets(int number_of_time_frames,
 		     const NumericType output_type,
-		     const Coordinate3D<int>& dim,
+		     const CartesianCoordinate3D<int>& dim,
 		     unsigned long initial_offset)
 { 
-  const unsigned long a= dim.x*dim.y*dim.z*output_type.size_in_bytes();
+  // KT&SM 14/02/2000 used CartesianCoordinate3D
+  const unsigned long a= dim.x()*dim.y()*dim.z()*output_type.size_in_bytes();
   VectorWithOffset<unsigned long> temp(number_of_time_frames);
   {
     for (int i=0; i<=number_of_time_frames-1;i++)
@@ -100,7 +103,7 @@ compute_file_offsets(int number_of_time_frames,
 bool 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
-				   const Coordinate3D<int>& dimensions, 
+				   const CartesianCoordinate3D<int>& dimensions, 
 				   const Point3D& voxel_size,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
@@ -142,18 +145,19 @@ write_basic_interfile_image_header(const string& header_file_name,
   
   output_header << "number of dimensions := 3\n";
 
+  // KT&SM 14/02/2000 used CartesianCoordinate3D
   output_header << "!matrix size [1] := "
-		<< dimensions.x << endl;
+		<< dimensions.x() << endl;
   output_header << "matrix axis label [1] := x\n";
   output_header << "scaling factor (mm/pixel) [1] := " 
 		<< voxel_size.x << endl;
   output_header << "!matrix size [2] := "
-		<< dimensions.y<< endl;
+		<< dimensions.y() << endl;
   output_header << "matrix axis label [2] := y\n";
   output_header << "scaling factor (mm/pixel) [2] := " 
 		<< voxel_size.y << endl;
   output_header << "!matrix size [3] := "
-		<< dimensions.z<< endl;
+		<< dimensions.z()<< endl;
   output_header << "matrix axis label [3] := z\n";
   output_header << "scaling factor (mm/pixel) [3] := " 
 		<< voxel_size.z << endl;
@@ -201,8 +205,9 @@ write_basic_interfile_image_header(const string& header_file_name,
     
     output_header << "!INTERFILE  :=\n";
     output_header << "!name of data file := " << image_file_name << endl;
+     // KT&SM 14/02/2000 used CartesianCoordinate3D
     output_header << "!total number of images := "
-		  << dimensions.z << endl;
+		  << dimensions.z() << endl;
     // KT&SM 14/01/2000 added
     for (int i=1;i<=file_offsets.get_length();i++)
       {
@@ -226,13 +231,13 @@ write_basic_interfile_image_header(const string& header_file_name,
 		  << output_type.size_in_bytes() << endl;
     
     output_header << "!matrix size [1] := "
-		  << dimensions.x<< endl;
+		  << dimensions.x()<< endl;
     output_header << "matrix axis label [1] := x\n";
     // KT 16/02/98 added voxel size
     output_header << "scaling factor (mm/pixel) [1] := " 
 		  << voxel_size.x << endl;
     output_header << "!matrix size [2] := "
-		  << dimensions.y << endl;
+		  << dimensions.y() << endl;
     output_header << "matrix axis label [2] := y\n";
     // KT 16/02/98 added voxel size
     output_header << "scaling factor (mm/pixel) [2] := " 
@@ -689,3 +694,7 @@ template bool write_basic_interfile<>(const char * const filename,
 				      const Tensor3D<float>&,
 				      const Point3D& voxel_size,
 				      const NumericType output_type);
+
+
+
+END_NAMESPACE_TOMO
