@@ -362,7 +362,7 @@ FindMCNormFactors::process_data()
 				    // TODO remove scale factor
 				    // it's there to compensate what we have in LmToProjDataWithMC
 				    (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-				      1/
+				      1.F/
 				      (out_proj_data_info_ptr->
 				       get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 										    bin.axial_pos_num())*
