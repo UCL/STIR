@@ -9,8 +9,7 @@ $(dir)_LIB_SOURCES:= \
         cached_factors.cxx\
 	scatter_estimate_for_one_scatter_point.cxx\
 	scatter_estimate_for_all_scatter_points.cxx\
-	scatter_viewgram.cxx\
-	cross_section.cxx
+	scatter_viewgram.cxx
 
 #$(dir)_REGISTRY_SOURCES:= local_scatter_buildblock_registries.cxx
 
