@@ -105,23 +105,21 @@ const char * const
 DAVImageFilter3D<float>::registered_name =
   "DAV";
 
+#if 0
+// registration business moved to buildblock_registries.cxx
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation, 
 // note that we get a linking error if we don't have the explicit instantiation below
 #  pragma warning(disable:4660)
 #  endif
 
-#ifndef TOMO_STATIC
 // Register this class in the ImageProcessor registry
 // At the same time, the compiler will instantiate DAVImageFilter3D<float>
 static DAVImageFilter3D<float>::RegisterIt dummy;
-
-template DAVImageFilter3D<float>;
-#else
-
-
-template DAVImageFilter3D<float>;
 #endif
+
+template DAVImageFilter3D<float>;
+
 
 END_NAMESPACE_TOMO
 
