@@ -55,6 +55,10 @@ Polaris_MT_File::Polaris_MT_File(const string& mt_filename)
 		  &record.trans.x(), &record.trans.y(), &record.trans.z(), 
 		  &record.rms ) ==11)
 	{
+	  // normalise the quaternion. It is only approximately
+	  // normalised in the mt file (probably just due to
+	  // truncation of the floats etc.)
+	  record.quat.normalise();
 	  vector_of_records.push_back(record);
 	  vector_of_tags.push_back(record);
 	}
