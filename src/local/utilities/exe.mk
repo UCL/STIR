@@ -32,6 +32,7 @@ $(dir)_SOURCES = \
 	add_planes_to_image.cxx \
 	find_sinogram_rescaling_factors.cxx \
 	move_image.cxx \
+	move_projdata.cxx \
         find_fwhm_in_image.cxx \
 	get_singles_info.cxx
 
