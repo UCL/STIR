@@ -1,11 +1,36 @@
 //
 // $Id$
 //
+/*!
 
+  \file
+  \ingroup OSMAPOSL
+  
+  \brief  implementation of the OSMAPOSLParameters class 
+    
+  \author Matthew Jacobson
+  \author Kris Thielemans
+  \author PARAPET project
+      
+  \date $Date$
+        
+  \version $Revision$
+*/
 
-#include "OSEM/OSMAPOSLParameters.h"
+#include "OSMAPOSL/OSMAPOSLParameters.h"
+#include "NumericInfo.h"
+#include "utilities.h"
+#include <iostream>
 
-OSMAPOSLParameters::OSMAPOSLParameters()
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::ends;
+#endif
+
+START_NAMESPACE_TOMO
+
+OSMAPOSLParameters::OSMAPOSLParameters(const string& parameter_filename)
      : MAPParameters()
 {
 
@@ -16,12 +41,6 @@ OSMAPOSLParameters::OSMAPOSLParameters()
   inter_update_filter_fwhmz_dir = 0.0;
   inter_update_filter_Nxy_dir = 0.0;
   inter_update_filter_Nz_dir = 0.0;
-
-  //TODO get rid of OSEMParameters key 
-
-
-  add_key("OSEMParameters", 
-    KeyArgument::NONE, &KeyParser::start_parsing);
 
   add_key("OSMAPOSLParameters", 
     KeyArgument::NONE, &KeyParser::start_parsing);
@@ -35,6 +54,9 @@ OSMAPOSLParameters::OSMAPOSLParameters()
   add_key("inter-update xy-dir filter Metz power", KeyArgument::DOUBLE, &inter_update_filter_Nxy_dir);
   add_key("inter-update z-dir filter Metz power", KeyArgument::DOUBLE, &inter_update_filter_Nz_dir);
   
+  
+  // do parsing
+  initialise(parameter_filename);
 
 }
 
@@ -79,7 +101,7 @@ bool OSMAPOSLParameters::post_processing()
 
 
   if (inter_update_filter_interval<0)
-    { PETerror("Range error in inter-update filter interval \n"); return true; }
+    { warning("Range error in inter-update filter interval \n"); return true; }
 
   return false;
 }
@@ -117,3 +139,5 @@ string OSMAPOSLParameters::parameter_info() const
   return s.str();
 
 }
+
+END_NAMESPACE_TOMO

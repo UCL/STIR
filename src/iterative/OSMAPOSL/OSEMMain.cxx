@@ -1,8 +1,28 @@
 //
 // $Id$
 //
+/*!
 
-#include "OSEM/OSMAPOSLReconstruction.h"
+  \file
+
+  \brief main() for OSMAPOSL
+  \warning This file is currently still called OSEMMain, as the MAP functionality
+  is not distributed yet.
+
+  \author Matthew Jacobson
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
+#include "OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "VoxelsOnCartesianGrid.h"
+#include "shared_ptr.h"
+
+
+USING_NAMESPACE_TOMO
 
 #ifdef PARALLEL
 int master_main(int argc, char **argv)
@@ -12,28 +32,28 @@ int main(int argc, char **argv)
 {
 
   OSMAPOSLReconstruction reconstruction_object(argc>1?argv[1]:"");
-
-  PETImageOfVolume target_image(reconstruction_object.get_parameters().proj_data_ptr->scan_info);
-
-  if(reconstruction_object.get_parameters().initial_image_filename=="1")
-    target_image.fill(1.0);
   
+
+  shared_ptr<DiscretisedDensity<3, float> > target_image_ptr;     
+
+  // TODO somehow get rid of VoxelsOnCartesianGrid
+  if(reconstruction_object.get_parameters().initial_image_filename=="1")
+  {
+    target_image_ptr =
+      new VoxelsOnCartesianGrid<float> (*reconstruction_object.get_parameters().proj_data_ptr->get_proj_data_info_ptr());
+    target_image_ptr->fill(1.0);
+  }
   else
     {
-      // MJ 05/03/2000 replaced by interfile
-      // Note: need absolute replacement of target_image to account for zooming
-      target_image = read_interfile_image(reconstruction_object.get_parameters().initial_image_filename.c_str());
+      target_image_ptr = 
+        DiscretisedDensity<3,float>::read_from_file(reconstruction_object.get_parameters().initial_image_filename);
     }
 
 
-  //TODO use warning(),use zoom factor
-  if(reconstruction_object.get_parameters().zoom!=1)
-    warning("Warning: No zoom factor will be used");
-
-
-  reconstruction_object.reconstruct(target_image);
+  reconstruction_object.reconstruct(target_image_ptr);
 
 
   return EXIT_SUCCESS;
 
 }
+
