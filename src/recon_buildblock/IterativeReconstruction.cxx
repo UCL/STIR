@@ -120,7 +120,7 @@ void IterativeReconstruction::end_of_iteration_processing(DiscretisedDensity<3,f
   if(get_parameters().inter_iteration_filter_interval>0 && subiteration_num%get_parameters().inter_iteration_filter_interval==0)
     {
       cerr<<endl<<"Applying inter-iteration filter"<<endl;
-      get_parameters().inter_iteration_filter.apply(current_image_estimate,true);
+      get_parameters().inter_iteration_filter.apply(current_image_estimate);
     }
 
 
