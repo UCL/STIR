@@ -401,21 +401,6 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
       }
 
   start_timers();
-
-#ifndef NRFFT
-    const float theta_max =
-      atan(proj_data_ptr->get_proj_data_info_ptr()->
-	   get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
-
-    colsher_filter = 
-      ColsherFilter(theta_max, 
-                    alpha_colsher_axial, fc_colsher_axial,
-                    alpha_colsher_planar, fc_colsher_planar,
-		    colsher_stretch_factor_planar,
-		    colsher_stretch_factor_axial);
-#else
-    warning("Using NRFFT");
-#endif
   }
   {
     //char file[max_filename_length];
@@ -435,6 +420,22 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
   // Use funny convention that -1 means 'use maximum available'
   if (max_segment_num_to_process<0)
     max_segment_num_to_process = proj_data_ptr->get_max_segment_num();
+
+
+#ifndef NRFFT
+  const float theta_max =
+    atan(proj_data_ptr->get_proj_data_info_ptr()->
+	 get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
+  
+  colsher_filter = 
+    ColsherFilter(theta_max, 
+		  alpha_colsher_axial, fc_colsher_axial,
+		  alpha_colsher_planar, fc_colsher_planar,
+		  colsher_stretch_factor_planar,
+		  colsher_stretch_factor_axial);
+#else
+  warning("Using NRFFT");
+#endif
   
   if(image_for_reprojection_filename == "")
   {
