@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock  
+  \ingroup listmode
   \brief Declaration of class CListModeDataECAT
     
   \author Kris Thielemans
@@ -40,9 +40,13 @@ START_NAMESPACE_STIR
 //! A class that reads the listmode data for ECAT scanners
 /*! This file format is currently used by the HR+ and HR++. It stores
     the coincidence data in multiple .lm files, with a maximum filesize
-    of about 2 GB (to avoid problems wiht OS limits on filesize).
+    of about 2 GB (to avoid problems with OS limits on filesize).
     In addition, there is a .sgl file with the singles per 'bucket' 
-    (every second or so).
+    (every second or so). The .sgl also contains a 'main_header'
+    with some scanner and patient info.
+
+    \todo This class currently relies in the fact that
+     vector<>::size_type == SavedPosition
 */
 class CListModeDataECAT : public CListModeData
 {
@@ -69,9 +73,13 @@ private:
   string listmode_filename_prefix;
   mutable unsigned int current_lm_file;
   mutable shared_ptr<CListModeDataFromStream> current_lm_data_ptr;
-  vector<pair<unsigned int, SavedPosition> > saved_get_positions;
+  //! a vector that stores the saved_get_positions for ever .lm file
+  mutable vector<vector<streampos> > saved_get_positions_for_each_lm_data;
+  typedef pair<unsigned int, SavedPosition> GetPosition;
+  vector<GetPosition > saved_get_positions;
   
   // const as it modifies only mutable elements
+  // It has to be const as e.g. get_next_record calls it
   Succeeded open_lm_file(unsigned int) const; 
 };
 
