@@ -5,7 +5,7 @@
 //
 /*! 
   \file
- 
+  \ingroup buildblock 
   \brief  This file declares the class NumericInfo.
 
   \author Kris Thielemans
@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 // TODO some of these members could be made static
@@ -52,7 +52,7 @@ START_NAMESPACE_STIR
 
      
   The idea comes the ANSI C++ class \c std::numeric_limits, but 
-  g++ doesn't have this yet.
+  some compiler didn't have this yet when PARAPET/STIR was started.
   This current class should disappear at some point.
 
   Note that this general template is essentially empty, but it is needed to use
