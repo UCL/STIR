@@ -152,9 +152,6 @@ int main(int argc, char *argv[])
 
 
   // Create the image
-  // two  manipulations are needed now: 
-  // -it needs to have an odd number of elements
-  // - it needs to be larger than expected because of some overflow in the projectors
   int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
   if (scanner.num_bins % 2 == 0)
     max_bin++;
@@ -249,7 +246,8 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 	      Tensor3D<float>(0, scanner.num_rings-1, 
 			      0, scanner.num_views-1,
 			      -scanner.num_bins/2, max_bin),
-	      &scanner,
+	      // KT 05/11/98 removed & for PETScanInfo parameter
+	      scanner,
 	      0);
 
     
@@ -338,14 +336,16 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 		  Tensor3D<float>(0, scanner.num_views-1, 
 				  0, scanner.num_rings-1 - segment_num,
 				  -scanner.num_bins/2, max_bin),
-		  &scanner,
+	          // KT 05/11/98 removed & for PETScanInfo parameter
+	          scanner,
 		  segment_num);
     PETSegmentByView 
       segment_neg(
 		  Tensor3D<float>(0, scanner.num_views-1, 
 				  0, scanner.num_rings-1 - segment_num,
 				  -scanner.num_bins/2, max_bin),
-		  &scanner,
+		  // KT 05/11/98 removed & for PETScanInfo parameter
+		  scanner,
 		  -segment_num);
 
 
@@ -423,9 +423,7 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 #endif
      
   }
-   
-  // image_result/=float(scanner.num_views);
- 
+    
   return image_result;
 }
 
