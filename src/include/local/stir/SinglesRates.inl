@@ -7,7 +7,7 @@ START_NAMESPACE_STIR
 const 
 Scanner* SinglesRates::get_scanner_ptr() const
 { 
-  return scanner_ptr;
+  return scanner_sptr.get();
 }
 
 END_NAMESPACE_STIR
