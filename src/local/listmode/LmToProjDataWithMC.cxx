@@ -199,7 +199,27 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
     coord_1_transformed,
     coord_2_transformed, 
     *scanner_ptr);
-  
+#if 1  
+  if ( ring_a_trans > scanner_ptr->get_num_rings() 
+	|| ring_a_trans <0 || ring_b_trans <0 || 
+	ring_b_trans > scanner_ptr->get_num_rings() ||
+      Succeeded::no ==
+        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).
+        get_bin_for_det_pair(bin,
+			 det_num_a_trans, ring_a_trans,
+			 det_num_b_trans, ring_b_trans))
+  {
+    // set to some hopefully sensible value, such that
+    // counts are reported ok by LmToProjData::compute
+    bin.segment_num() = 
+	(ring_b_trans-ring_a_trans)/
+	  (proj_data_info.get_max_ring_difference(0) -
+	  proj_data_info.get_min_ring_difference(0) + 1);
+
+    bin.set_bin_value(-1);
+  }
+
+#else
   int view_t,elem_t; 
   transform_detector_pair_into_view_bin(view_t,elem_t,det_num_a_trans,det_num_b_trans, 
     *scanner_ptr);
@@ -226,7 +246,7 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
 
     bin.set_bin_value(-1);
   }
-  
+#endif  
   
 }
 
@@ -337,12 +357,12 @@ LmToProjDataWithMC::transform_detector_pair_into_view_bin (int& view,int& bin,
 					    const int det1,const int det2, 
 					    const Scanner& scanner) const
 { 
-  int num_detectors = scanner.get_num_detectors_per_ring();
-  int h=num_detectors/2;
-  int x = (det1>det2)?det1:det2;
-  int y = (det1<det2)?det1:det2;
-  int a=((x+y+h+1)%num_detectors)/2;
-  int b=a+h;
+  const int num_detectors = scanner.get_num_detectors_per_ring();
+  const int h=num_detectors/2;
+  const int x = (det1>det2)?det1:det2;
+  const int y = (det1<det2)?det1:det2;
+  const int a=((x+y+h+1)%num_detectors)/2;
+  const int b=a+h;
   int te=abs(x-y-h);
   if ((y<a)||(b<x)) te = -te;
   bin=te;
