@@ -22,14 +22,15 @@
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
-#include "stir/RelatedViewgrams.h"
-//#include "stir/DiscretisedDensity.h"
-#include "stir/VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_STIR
 
 
 ForwardProjectorByBin::ForwardProjectorByBin()
+{
+}
+
+ForwardProjectorByBin::~ForwardProjectorByBin()
 {
 }
 
@@ -64,11 +65,13 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 		     const int min_axial_pos_num, const int max_axial_pos_num,
 		     const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
+  start_timers();
   actual_forward_project(viewgrams, density,
              min_axial_pos_num,
 	     max_axial_pos_num,
 	     min_tangential_pos_num,
 	     max_tangential_pos_num);
+  stop_timers();
 }
 
 
