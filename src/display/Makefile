@@ -16,9 +16,10 @@ DEST=debug/
 #CL 030698 Move debug flags to DEBUG
 #__unix__ has to be defined for gen.h 
 # DB 1/2/99 change CFLAGS to include -I$(INCLUDE_DIR)
-
-CFLAGS =  -g $(DEBUG) -I$(INCLUDE_DIR) -D__unix__ \
--I/usr/openwin/include
+# KT 11/11/99 removed /usr/openwin/include. It actually stopped things
+# compiling on gcc 2.95.2 as it was getting old include files
+CFLAGS =  -g $(DEBUG) -I$(INCLUDE_DIR) -D__unix__ 
+# -I/usr/openwin/include
 
 #KT 010798 removed as we do not link in this makefile
 #LDFLAGS = -g -L${HOME}/PPhead/display -lX11 -lcurses
