@@ -45,8 +45,26 @@ using std::streampos;
 
 START_NAMESPACE_STIR
 
-// TODO this is appropriate for the 962 only
-const int CListEventDataECAT962::num_views = 288;
+// static members
+
+shared_ptr<Scanner>
+CListRecordECAT962::
+scanner_sptr =
+  new Scanner(Scanner::E962);
+
+shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+CListRecordECAT962::
+uncompressed_proj_data_info_sptr =
+   dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+   ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                 1, scanner_sptr->get_num_rings()-1,
+                                 scanner_sptr->get_num_detectors_per_ring()/2,
+                                 scanner_sptr->get_default_num_arccorrected_bins
+(),
+                                 false));
+
+const int CListEventDataECAT962 ::num_views = 288;
+
 
 /* Go from sinograms to detectors.
 
@@ -152,8 +170,6 @@ static int detectors_to_sinogram(
 const int  MAXPROJBIN = 512;
 /* data for the 962 scanner */
 const int CRYSTALRINGSPERDETECTOR = 8;
-
-
 //TODO NK check
 void
 CListEventDataECAT962::
