@@ -6,11 +6,10 @@ include ../Makefile_common
 
 # TODO ? differentiate between those that need graphics and those that don't
 SOURCES = tensor.cxx display2.cxx \
-	VectorWithOffset.cxx testconvert.cxx \
+	test_VectorWithOffset.cxx testconvert.cxx \
 	test_linear_regression.cxx \
 	test_interpolate.cxx \
-	test_filename_functions.cxx \
-	test_coordinates.cxx
+	test_filename_functions.cxx 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
