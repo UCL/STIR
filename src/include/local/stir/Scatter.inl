@@ -105,8 +105,12 @@ inline
 float total_cross_section_relative_to_511keV(const float energy)
 {
   const float a= energy/511.0;
+  static const float prefactor = 9/(-40 + 27 log(3.));
   return //check this in Mathematica
-	  9*((2/(a*a) + 8/a + 9 + a)/(1/a + 4 + 4*a)+(-2/(a*a) - 2/a + 1)*log(1 + 2*a))/a/(40-27*log(3));
+	  prefactor*
+	  (((-4 - a*(16 + a*(18 + 2*a)))/square(1 + 2*a) + 
+       ((2 + (2 - a)*a)*log(1 + 2*a))/a)/square(a)
+	   );
 }
 /*!	\ingroup scatter
    \brief detection efficiency for a given energy window
