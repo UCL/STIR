@@ -7,17 +7,13 @@
   \ingroup buildblock
   \brief Implementations for non-inline functions of class ProjDataInMemory
 
-  \author Sanida Mustafovic
   \author Kris Thielemans
-  \author Claire Labbe
-  \author PARAPET project
 
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2002- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -37,7 +33,7 @@
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::iostream;
-using std::ios_base;
+using std::ios;
 #endif
 
 START_NAMESPACE_STIR
@@ -54,16 +50,20 @@ ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool 
   
 #ifdef BOOST_NO_STRINGSTREAM
   const size_t buffer_size = get_size_of_buffer();
-  buffer = auto_ptr<char>(new char[buffer_size]);
-  sino_stream = new strstream(buffer, buffer_size, ios_base::in | ios_base::out | ios_base::binary);
+  //buffer = auto_ptr<char>(new char[buffer_size]);
+  buffer = new char[buffer_size];
+  sino_stream = new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary);
 #else
   // it would be advantageous to preallocate memory as well
   // the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
   // todo?
-  sino_stream = new std::stringstream(ios_base::in | ios_base::out | ios_base::binary);
+  sino_stream = new std::stringstream(ios::in | ios::out | ios::binary);
 #endif
+
+  if (!*sino_stream)
+    error("ProjDataInMemory error initialising stream\n");
 
   if (initialise_with_0)
   {
@@ -80,16 +80,20 @@ ProjDataInMemory(const ProjData& proj_data)
 {
 #ifdef BOOST_NO_STRINGSTREAM
   const size_t buffer_size = get_size_of_buffer();
-  buffer = auto_ptr<char>(new char[buffer_size]);
-  sino_stream = new strstream(buffer, buffer_size, ios_base::in | ios_base::out | ios_base::binary);
+  //buffer = auto_ptr<char>(new char[buffer_size]);
+  buffer = new char[buffer_size];
+  sino_stream = new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary);
 #else
   // it would be advantageous to preallocate memory as well
   // the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
   // todo?
-  sino_stream = new std::stringstream(ios_base::in | ios_base::out | ios_base::binary);
+  sino_stream = new std::stringstream(ios::in | ios::out | ios::binary);
 #endif
+
+  if (!*sino_stream)
+    error("ProjDataInMemory error initialising stream\n");
 
   // copy data
   for (int segment_num = proj_data_info_ptr->get_min_segment_num();
