@@ -38,8 +38,9 @@ public:
   // (in Interfile 3.3 ASCIIlist really means a string which has to be in a specified list)
   // KT 01/08/98 change number to int, lnumber to ulong, added double
   // KT 09/10/98 moved in this class to avoid global name space conflicts
+  // KT 29/10/98 added LIST_OF_DOUBLES
   enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist, ULONG,INT,
-    LIST_OF_INTS,DOUBLE,listASCIIlist};
+    LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist};
 };
 
 /******************************************************************
@@ -53,7 +54,8 @@ class map_element
 public :
   KeyArgument::type type;
   void (KeyParser::*p_object_member)();	// pointer to a member function
-  void* p_object_variable;		// pointer to a variable 
+  //TODO void (*p_object_member)();
+  void *p_object_variable;		// pointer to a variable 
   const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
 
   map_element();
@@ -90,6 +92,21 @@ public:
 
   bool parse();
 
+  // KT 29/10/98 made next ones public
+  ////// functions to add keys and their actions 
+
+  typedef void (KeyParser::*KeywordProcessor)();
+  // TODO typedef void (*KeywordProcessor)();
+
+  void add_key(const string& keyword, 
+    KeyArgument::type t, KeywordProcessor function,
+    void* variable= 0, const ASCIIlist_type * const list = 0);
+  
+  // version that defaults 'function' to set_variable
+  void add_key(const string& keyword, KeyArgument::type t, 
+	      void* variable, const ASCIIlist_type * const list = 0);
+
+
 protected : 
 
   ////// work horses
@@ -100,17 +117,6 @@ protected :
   virtual int post_processing() 
   { return 1; }
 	
-  ////// functions to add keys and their actions 
-  typedef void (KeyParser::*KeywordProcessor)();
-
-  void add_key(const string& keyword, 
-    KeyArgument::type t, KeywordProcessor function,
-    void* variable= 0, const ASCIIlist_type * const list = 0);
-  
-  // version that defaults 'function' to set_variable
-  void add_key(const string& keyword, KeyArgument::type t, 
-	      void* variable, const ASCIIlist_type * const list = 0);
-
 
   ////// predefined actions 
 
@@ -145,6 +151,7 @@ private :
   // could be made into a union
   vector<string>  par_asciilist;
   IntVect	par_intlist;
+  DoubleVect	par_doublelist;
   string	par_ascii;
   int		par_int;	
   double	par_double;	
