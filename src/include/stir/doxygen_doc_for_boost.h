@@ -13,10 +13,15 @@
   see http://www.boost.org
 */
 
+namespace boost
+{
 //! Boost class to define all comparison operators given only 2
 template <class T, class B = ::boost::detail::empty_base>
-  struct boost::partially_ordered;
+  struct partially_ordered;
 
 //! Boost class to define operator!= in terms of operator==
 template <class T, class B = ::boost::detail::empty_base>
-  struct boost::equality_comparable;
+  struct equality_comparable;
+
+}
+
