@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
   \file 
@@ -11,7 +11,7 @@
   \author (with help from Kris Thielemans)
   \author PARAPET project
 
-  \date    $Date$
+  \date $Date$
   \version $Revision$
 
   \warning It only supports VoxelsOnCartesianGrid type of images.
@@ -94,18 +94,10 @@ int main(int argc, char *argv[])
 
             case 1: // display
             {  
-                VectorWithOffset<float> scale_factors(main_buffer.get_min_index(), 
-                                                      main_buffer.get_max_index());
-                scale_factors.fill(1.F);
-                VectorWithOffset<char *> text(main_buffer.get_min_index(),
-                                              main_buffer.get_max_index());
-                for (int i=main_buffer.get_min_index(); 
-                     i<= main_buffer.get_max_index(); i++) {
-                    char *str = new char [15];
-                    sprintf(str, "image %d", i);
-                    text[i] = str;
-                }
-                display(main_buffer, scale_factors, text, main_buffer.find_max(), 0, 0);
+                const float maxi =
+                  ask_num("Maximum in color scale",0.F,main_buffer.find_max(),main_buffer.find_max());
+
+                display(main_buffer, maxi);
                 break;
             }
             case 2: // data total
