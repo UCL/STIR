@@ -10,7 +10,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -33,8 +33,9 @@ int main(int argc, char *argv[])
   
   if(argc!=2) 
   {
-    cerr<<"Usage: " << argv[0] << " projdata_file\n"
-       	<< endl; 
+    cerr<<"Usage: " << argv[0] << " projdata_file\n";
+    return EXIT_FAILURE;
+
   }
 
   shared_ptr<ProjData> projdata_ptr = 
