@@ -13,7 +13,7 @@
   $Date$
   $Revision$
 
-   Usage:
+   \par Usage:
    \code
    SSRB output_filename input_projdata_name num_segments_to_combine \
       [ num_views_to_combine [do_normalisation [max_in_segment_num_to_process ]]]
@@ -22,10 +22,17 @@
       in the original data to combine.
    \param num_views_to_combine has to be at least 1 (which is the default). 
       It is used as the number of views in the original data to combine.
-   \param do_normalisation has to be 1 (normalise the result) or 0
+   \param do_normalisation has to be 1 (normalise the result, which is the default) or 0
    \param max_in_segment_num_to_process defaults to all segments
 
-
+  \par Example:
+  \code
+  SSRB out in.hs 3 2
+  \endcode
+  If in.hs is a file without axial compression (span=1) nor mashing, then the
+  output would correspond to a span=3 file with mashing factor 2, and would be
+  normalised (at least as far as SSRB concerns). \a num_segments_to_combine=3
+  results in ring differences -1,0,1 to be combined all into segment 0, etc. 
   \see 
   SSRB(const string& output_filename,
      const ProjData& in_projdata,
@@ -42,7 +49,7 @@
 */
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
-#include "local/stir/SSRB.h"
+#include "stir/SSRB.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
@@ -62,7 +69,7 @@ int main(int argc, char **argv)
 	   << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
 	   << "  in the original data to combine.\n"
            << "num_views_to_combine has to be at least 1 (which is the default)\n"
-	   << "do_norm has to be 1 (normalise the result) or 0\n"
+	   << "do_norm has to be 1 (normalise the result, which is the default) or 0\n"
 	   << "max_in_segment_num_to_process defaults to all segments\n";
       exit(EXIT_FAILURE);
     }
