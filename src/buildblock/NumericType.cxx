@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /* 
@@ -31,7 +31,7 @@
 
 START_NAMESPACE_STIR
 
-NumericType::NumericType(const string number_format, const size_t size_in_bytes)
+NumericType::NumericType(const string& number_format, const size_t size_in_bytes)
 { 
   bool it_is_signed;
   bool it_is_integral;
@@ -121,26 +121,22 @@ size_t NumericType::size_in_bytes() const
       case BIT:
 	// TODO sensible value ?
 	return 0;
-      case  SCHAR:
-	return NumericInfo<signed char>().size_in_bytes();
-      case  UCHAR:
-	return NumericInfo<unsigned char>().size_in_bytes();
-      case  SHORT:
-	return NumericInfo<short>().size_in_bytes();
-      case  USHORT:
-	return NumericInfo<unsigned short>().size_in_bytes();
-      case  INT:
-	return NumericInfo<int>().size_in_bytes();
-      case  UINT:
-	return NumericInfo<unsigned int>().size_in_bytes();
-      case  LONG:
-	return NumericInfo<long>().size_in_bytes();
-      case  ULONG:
-	return NumericInfo<unsigned long>().size_in_bytes();
-      case  FLOAT:
-	return NumericInfo<float>().size_in_bytes();
-      case  DOUBLE:
-	return NumericInfo<double>().size_in_bytes();
+#define CASE(NUMERICTYPE)                                \
+    case NUMERICTYPE :                                   \
+      return NumericInfo<TypeForNumericType<NUMERICTYPE >::type>().size_in_bytes();
+
+      // now list cases that we want
+      CASE(NumericType::SCHAR);
+      CASE(NumericType::UCHAR);
+      CASE(NumericType::SHORT);
+      CASE(NumericType::USHORT);
+      CASE(NumericType::INT);
+      CASE(NumericType::UINT);
+      CASE(NumericType::LONG);
+      CASE(NumericType::ULONG);
+      CASE(NumericType::FLOAT);
+      CASE(NumericType::DOUBLE);
+#undef CASE
       case UNKNOWN_TYPE:
 	return 0;
       }
@@ -153,31 +149,26 @@ size_t NumericType::size_in_bits() const
 
 bool NumericType::signed_type() const
     { 
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
       switch(id)
       {
       case BIT:
 	return false;
-      case  SCHAR:
-	return NumericInfo<signed char>().signed_type();
-      case  UCHAR:
-	return NumericInfo<unsigned char>().signed_type();
-      case  SHORT:
-	return NumericInfo<short>().signed_type();
-      case  USHORT:
-	return NumericInfo<unsigned short>().signed_type();
-      case  INT:
-	return NumericInfo<int>().signed_type();
-      case  UINT:
-	return NumericInfo<unsigned int>().signed_type();
-      case  LONG:
-	return NumericInfo<long>().signed_type();
-      case  ULONG:
-	return NumericInfo<unsigned long>().signed_type();
-      case  FLOAT:
-	return NumericInfo<float>().signed_type();
-      case  DOUBLE:
-	return NumericInfo<double>().signed_type();
+#define CASE(NUMERICTYPE)                                \
+    case NUMERICTYPE :                                   \
+      return NumericInfo<TypeForNumericType<NUMERICTYPE >::type>().signed_type();
+
+      // now list cases that we want
+      CASE(NumericType::SCHAR);
+      CASE(NumericType::UCHAR);
+      CASE(NumericType::SHORT);
+      CASE(NumericType::USHORT);
+      CASE(NumericType::INT);
+      CASE(NumericType::UINT);
+      CASE(NumericType::LONG);
+      CASE(NumericType::ULONG);
+      CASE(NumericType::FLOAT);
+      CASE(NumericType::DOUBLE);
+#undef CASE
       case UNKNOWN_TYPE:
 	return false;
       }
@@ -187,31 +178,26 @@ bool NumericType::signed_type() const
 
 bool NumericType::integer_type() const
     { 
-  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
       switch(id)
       {
       case BIT:
 	return true;
-      case  SCHAR:
-	return NumericInfo<signed char>().integer_type();
-      case  UCHAR:
-	return NumericInfo<unsigned char>().integer_type();
-      case  SHORT:
-	return NumericInfo<short>().integer_type();
-      case  USHORT:
-	return NumericInfo<unsigned short>().integer_type();
-      case  INT:
-	return NumericInfo<int>().integer_type();
-      case  UINT:
-	return NumericInfo<unsigned int>().integer_type();
-      case  LONG:
-	return NumericInfo<long>().integer_type();
-      case  ULONG:
-	return NumericInfo<unsigned long>().integer_type();
-      case  FLOAT:
-	return NumericInfo<float>().integer_type();
-      case  DOUBLE:
-	return NumericInfo<double>().integer_type();
+#define CASE(NUMERICTYPE)                                \
+    case NUMERICTYPE :                                   \
+      return NumericInfo<TypeForNumericType<NUMERICTYPE >::type>().integer_type();
+
+      // now list cases that we want
+      CASE(NumericType::SCHAR);
+      CASE(NumericType::UCHAR);
+      CASE(NumericType::SHORT);
+      CASE(NumericType::USHORT);
+      CASE(NumericType::INT);
+      CASE(NumericType::UINT);
+      CASE(NumericType::LONG);
+      CASE(NumericType::ULONG);
+      CASE(NumericType::FLOAT);
+      CASE(NumericType::DOUBLE);
+#undef CASE
       case UNKNOWN_TYPE:
 	return false;
 
