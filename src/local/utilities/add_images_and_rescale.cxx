@@ -1,9 +1,26 @@
+//
+// $Id$
+//
+
+/*!
+  \file
+  \ingroup utilities
+
+  \brief  Rescale images: Given the lists of images rescale them with a scaling factor
+
+  \deprecated. use stir_math
+
+  \author Sanida Mustafovic
+
+  $Date$
+  $Revision$
+*/
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/io/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
 
@@ -23,7 +40,6 @@ using std::iostream;
 using std::ofstream;
 using std::ifstream;
 using std::ios;
-
 using std::cerr;
 using std::endl;
 using std::cout;
@@ -34,15 +50,16 @@ using std::cout;
 
 
 
-/* Rescale images: Given the lists of images rescale them with a scaling factor
-*/
 
 
-USING_NAMESPACE_STIR
+
+
 
 
 int main(int argc, char *argv[])
 { 
+USING_NAMESPACE_STIR
+
   VoxelsOnCartesianGrid<float> input_image_1;
   VoxelsOnCartesianGrid<float> cum_image;
   
@@ -66,6 +83,7 @@ int main(int argc, char *argv[])
   int counter =0;
   while(!in_1.eof())
   {      
+    cerr << " Doing: " << counter <<endl;
     counter++;
     in_1.getline(filename,maxsize_length);
     if(strlen(filename)==0)
@@ -80,6 +98,7 @@ int main(int argc, char *argv[])
     //int str_lennew = strlen(file.c_str());
    
   }
+  cerr << "dividing with" << counter << endl;
   cum_image/=counter;
   
    write_basic_interfile(argv[2], cum_image);
@@ -89,3 +108,4 @@ int main(int argc, char *argv[])
   return EXIT_SUCCESS;
   
 }
+
