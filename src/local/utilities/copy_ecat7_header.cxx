@@ -337,6 +337,7 @@ Succeeded
 copy_main_header(MatrixFile * mout_ptr, MatrixFile *min_ptr)
   {
     Main_header mh = *min_ptr->mhptr;
+    mh.num_planes = mout_ptr->mhptr->num_planes;
     mh.num_frames = mout_ptr->mhptr->num_frames;
     mh.num_gates = mout_ptr->mhptr->num_gates;
     mh.num_bed_pos = mout_ptr->mhptr->num_bed_pos;
@@ -495,9 +496,11 @@ int main(int argc, char *argv[])
   {
     cerr<< "\nCopy contents of ECAT7 headers.\n"
         << "Usage: \n"
+	<< "To copy the main header (but keeping num_planes etc)\n"
 	<< "\t" << argv[0] << "  output_ECAT7_name input_ECAT7_name \n"
-	<< "or\n"
+	<< "or to copy a subheader (but keeping essential info)\n"
 	<< "\t" << argv[0] << "  output_ECAT7_name f,g,d,b input_ECAT7_name f,g,d,b\n\n";
+    return EXIT_FAILURE; 
   }
 
   const string output_name = argv[1];
