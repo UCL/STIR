@@ -32,6 +32,7 @@ using std::string;
 #endif
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 
 void dump_subheader(const Scan3D_subheader& scan3dsub)
@@ -117,7 +118,7 @@ dump_subheader(MatrixFile * mptr,
 	if (mat_read_scan_subheader (mptr->fptr, mptr->mhptr, strtblk, &scansub))
 	  {
 	    if (ferror(mptr->fptr))
-	      perror("offset_in_ecat_file: error in reading subheader");
+	      perror("dump_subheader: error in reading subheader");
 	    return;
 	  }
 	dump_subheader(scansub);
@@ -130,7 +131,7 @@ dump_subheader(MatrixFile * mptr,
 	if (mat_read_image_subheader (mptr->fptr, mptr->mhptr, strtblk, &imagesub))
 	  {
 	    if (ferror(mptr->fptr))
-	      perror("offset_in_ecat_file: error in reading subheader");
+	      perror("dump_subheader: error in reading subheader");
 	    return;
 	  }
       
@@ -144,7 +145,7 @@ dump_subheader(MatrixFile * mptr,
 	if (mat_read_attn_subheader (mptr->fptr, mptr->mhptr, strtblk, &attnsub))
 	  {
 	    if (ferror(mptr->fptr))
-	      perror("offset_in_ecat_file: error in reading subheader");
+	      perror("dump_subheader: error in reading subheader");
 	    return;
 	  }
 	dump_subheader(attnsub);
@@ -157,7 +158,7 @@ dump_subheader(MatrixFile * mptr,
 	if (mat_read_norm_subheader (mptr->fptr, mptr->mhptr, strtblk, &normsub))
 	  {
 	    if (ferror(mptr->fptr))
-	      perror("offset_in_ecat_file: error in reading subheader");
+	      perror("dump_subheader: error in reading subheader");
 	    return;
 	  }
 	dump_subheader(normsub);
@@ -172,7 +173,7 @@ dump_subheader(MatrixFile * mptr,
 	if (mat_read_Scan3D_subheader (mptr->fptr, mptr->mhptr, strtblk, &scan3dsub))
 	  {
 	    if (ferror(mptr->fptr))
-	      perror("offset_in_ecat_file: error in reading subheader");
+	      perror("dump_subheader: error in reading subheader");
 	    return;
 	  }
       
