@@ -9,8 +9,8 @@
   \author Larry Byars
   \author Kris Thielemans (conversions from/to VAX floats, longs)
   \author PARAPET project
-  \version $Revision$
-  \date $Date$
+  \version $Date$
+  \date $Revision$
 
   \warning This file relies on preprocessor defines to find out if it 
   has to byteswap. This needs to be changed. (TODO). It does check this
@@ -1181,8 +1181,14 @@ void dump_main_header (FILE *fptr, const Main_header *mhead)
     FILE *dptr;
 	
     if (!fptr) {
+        
+        dptr = fopen ("mainheader.dmp", "w");
+        if (!dptr)
+	  {
+	    printf("Dump to mainheader.dmp failed: couldn't open file\n");
+	    return;
+	  }
         printf ("dumping to mainheader.dmp\n");
-        dptr = fopen ("mainheader.dmp", "w+");
     } 
     else dptr = fptr;
 	
