@@ -1,33 +1,27 @@
-
 //
-// $Id: 
+// $Id$
 //
 /*!
-
   \file
-  \ingroup mytests
+  \ingroup test
 
-  \brief Test programme for LmToProjdataWithMC functions
-
+  \brief Test program for LmToProjdataWithMC functions
   \author Sanida Mustafovic
-  \author PARAPET project
 
-  $Date: 
+  $Date$
   $Revision$
 */
-
+/*
+    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 #include "stir/RunTests.h"
-#include "stir/Scanner.h"
-#include "stir/Bin.h"
 #include "local/stir/Quaternion.h"
-#include <iostream>
-#include <iomanip>
-
 #include "local/stir/listmode/LmToProjDataWithMC.h"
 
+#include <iostream>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
-using std::setw;
 using std::endl;
 #endif
 
@@ -58,7 +52,7 @@ LmToProjDataWithMCTests::run_tests()
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
   
-  // normally one cannot access private memebers of in the class buI have made it public while testing
+  // normally one cannot access private members of in the class but I have made it public while testing
   LmToProjDataWithMCObject.find_cartesian_coordinates_given_scanner_coordinates (coord_1,coord_2,
 							Ring_A,Ring_B, 
 							det1,det2, 
