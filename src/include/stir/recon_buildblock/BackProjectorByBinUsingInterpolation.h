@@ -17,6 +17,18 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 #ifndef __BackProjectorByBinUsingInterpolation_h_
@@ -131,7 +143,7 @@ public:
       const bool use_exact_Jacobian = true);
 
   //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
-  /*! \warning Obsolete */
+  /*! \deprecated Use set_up() instead */
   BackProjectorByBinUsingInterpolation(
     shared_ptr<ProjDataInfo>const&,
     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
@@ -148,8 +160,9 @@ public:
   /*! \brief Gets the symmetries used by this backprojector
 
   \warning This BackProjectorByBin implementation requires that the 
-  RelatedViewgrams data are constructed with all symmetries corresponding
-  to the current member.
+  RelatedViewgrams data are constructed with symmetries corresponding
+  to the current member. Using another DataSymmetriesForViewSegmentNumbers 
+  object will likely crash the program.
   */
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
   /*! 
@@ -174,6 +187,16 @@ private:
   bool use_piecewise_linear_interpolation_now;
 
   bool use_exact_Jacobian_now;
+
+  //! \name variables determining which symmetries will be used
+  /*! \warning do NOT use. They are only here for testing purposes */
+  //@{
+  bool do_symmetry_90degrees_min_phi;
+  bool do_symmetry_180degrees_min_phi;
+  bool do_symmetry_swap_segment;
+  bool do_symmetry_swap_s;
+  bool do_symmetry_shift_z;
+  //@}
 
 #if 0
   // not used yet
