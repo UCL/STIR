@@ -35,7 +35,107 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size);
 // at the original_position
 streamsize find_remaining_size (istream& input);
 
-// KT 21/10/98 new
+// KT 06/11/98 moved from pet_common.h
+
+/*****************************************************
+ ask*() functions for user input
+*****************************************************/
+
+// A function to ask a number from the user 
+// KT 21/05/98 added, replaces asknr from gen.c, it can be used for any numeric type
+template <class CHARP, class NUMBER>
+NUMBER ask_num (CHARP str,NUMBER minimum_value, NUMBER maximum_value, NUMBER default_value)
+{ 
+  
+  while(1)
+  { 
+    char input[30];
+
+    cerr << "\n" << str 
+         << "[" << minimum_value << "," << maximum_value 
+	 << " D:" << default_value << "]: ";
+    fgets(input,30,stdin);
+    istrstream ss(input);
+    NUMBER value = default_value;
+    ss >> value;
+    if ((value>=minimum_value) && (maximum_value>=value))
+      return value;
+    cerr << "\nOut of bounds. Try again.";
+  }
+}
+
+// KT 30/07/98 added, replaces ask from gen.c
+template <class CHARP>
+bool ask (CHARP str, bool default_value)
+{ 
+  
+  char input[30];
+  
+  cerr << "\n" << str 
+       << " [Y/N D:" 
+       << (default_value ? 'Y' : 'N') 
+       << "]: ";
+  fgets(input,30,stdin);
+  if (strlen(input)==0)
+    return default_value;
+  char answer = input[0];
+  if (default_value==true)
+  {
+    if (answer=='N' || answer == 'n')
+      return false;
+    else
+      return true;
+  }
+  else
+  {
+    if (answer=='Y' || answer == 'y')
+      return true;
+    else
+      return false;
+    
+  }
+}
+
+/*****************************************************
+ functions for opening binary streams
+*****************************************************/
+// KT 22/05/98 added next 2
+#include <fstream>
+
+
+// KT 09/08/98 added const
+// KT 09/10/98 use correct syntax for const pointers
+template <class IFSTREAM>
+inline IFSTREAM& open_read_binary(IFSTREAM& s, 
+				  const char * const name)
+{
+#if 0
+  //KT 30/07/98 The next lines are only necessary (in VC 5.0) when importing 
+  // <fstream.h>. We use <fstream> now, so they are disabled.
+
+  // Visual C++ does not complain when opening a nonexisting file for reading,
+  // unless using ios::nocreate
+  s.open(name, ios::in | ios::binary | ios::nocreate); 
+#else
+  s.open(name, ios::in | ios::binary); 
+#endif
+  if (s.fail() || s.bad())
+    { PETerror("Error opening file\n"); Abort(); }
+  return s;
+}
+
+// KT 09/08/98 added const
+// KT 09/10/98 use correct syntax for const pointers
+template <class OFSTREAM>
+inline OFSTREAM& open_write_binary(OFSTREAM& s, 
+				  const char * const name)
+{
+    s.open(name, ios::out | ios::binary); 
+    if (s.fail() || s.bad())
+    { PETerror("Error opening file\n"); Abort(); }
+    return s;
+}
+
 
 /**************************************************************************
  Some functions to manipulate (and ask for) filenames.
