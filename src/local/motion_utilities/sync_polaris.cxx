@@ -1,3 +1,10 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is for internal GE use only
+*/
 /*!
   \file
   \ingroup listmode
@@ -6,7 +13,9 @@
   \author Kris Thielemans
   $Date$
   $Revision$
-  
+
+  \see RigidObject3DMotionFromPolaris 
+  \warning This will change dramatically when using new Polaris acquisition software.
   \par Usage:
   \verbatim
   sync_polaris somefile.mt listmode_filename_prefix
@@ -14,10 +23,6 @@
   where the list mode data is specified as for \c lm_to_projdata (i.e. without 
   <tt>_1.lm</tt> for ECAT list mode data.
 }
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/motion/RigidObject3DMotionFromPolaris.h"

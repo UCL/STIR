@@ -1,22 +1,26 @@
 //
 // $Id$
 //
-
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is for internal GE use only
+*/
 /*!
   \file
-  \ingroup utilities
+  \ingroup motion_utilities
+  \brief A utility that removes corrupted sinograms in the LMC method
 
-  \brief A utility that removes corrupted sinograms
+  See general MC doc for how the LMC method works.
 
   This is a program that takes corrupted sinograms
   (normally after motion correction is applied) and cuts away planes that 
   have too much missing data. The amount that is cut is determined by the user 
   in percentage of a total amount of bins in each efficiency sinogram.
 
-  Because of restrictions in ProjDataInfoCylindrical, we have to cut the same
+  Because of restrictions in stir::ProjDataInfoCylindrical, we have to cut the same
   number of sinograms in each segment. This is because get_m() et al rely
-  on the centre of the scanner to correspond to the middle sinogram. This 
-  results in potentially cutting valid data in the oblique segments..
+  on the centre of the scanner to correspond to the middle sinogram. Unfortunately, this 
+  results in potentially cutting valid data in the oblique segments...
   
   It would not be too difficult to change ProjDataInfoCylindrical to allow
   different offsets, but then we need to write those into the Interfile 

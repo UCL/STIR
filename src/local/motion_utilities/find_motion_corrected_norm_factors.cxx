@@ -99,6 +99,8 @@ construct_proj_data(shared_ptr<iostream>& output,
 
   This class computes these 'time-efficiency' factors.
 
+  See general MC doc for how the LMC method works.
+
   \par Format of parameter file
   \verbatim
 FindMCNormFactors Parameters :=
