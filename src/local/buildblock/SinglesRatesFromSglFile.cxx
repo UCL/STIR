@@ -21,8 +21,10 @@
 #include "local/stir/SinglesRatesFromSglFile.h"
 
 #include <vector>
+#ifdef HAVE_LLN_MATRIX
 #include "ecat_model.h"
 #include "stir/IO/stir_ecat7.h"
+#endif
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -46,6 +48,9 @@ SinglesRatesFromSglFile()
 Array<3,float> 
 SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filname)
 {
+#ifndef HAVE_LLN_MATRIX
+  error("Compiled without ECAT7 support\n");
+#else
   ifstream singles_file(sgl_filname.c_str(), ios::binary);
   if (!singles_file)
   {
@@ -122,7 +127,7 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filname)
 	  sgl_filname.c_str(), singles_record_num, number_of_elements);
     //TODO resize singles to return array with new sizes
   }
-
+#endif
    return singles;
     
 }

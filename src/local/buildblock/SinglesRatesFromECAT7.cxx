@@ -19,8 +19,9 @@
 #include "stir/DetectionPosition.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/IndexRange3D.h"
-
+#ifdef HAVE_LLN_MATRIX
 #include "ecat_model.h"
+#endif
 
 #include <fstream>
 
@@ -45,7 +46,9 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
 		   const ios::openmode open_mode)
 
 {
-
+#ifndef HAVE_LLN_MATRIX
+  error("Compiled without ECAT7 support\n");
+#else
   MatrixFile* mptr = matrix_open(ECAT7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
 
   if (!(mptr->mhptr->file_type == Byte3dSinogram ||
@@ -94,6 +97,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
   }
   time_frame_defs =
     TimeFrameDefinitions(time_frames);
+#endif
   return singles; 
   
 }
