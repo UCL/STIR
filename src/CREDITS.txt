@@ -1,7 +1,7 @@
 Institutions who contributed code after the PARAPET EU project:
 
-1. Imaging Servies and Solutions Ltd
-   London UK
+1. Imaging Research Solutions Ltd (now called Hammersmith Imanet)
+   London UK   
    (14/02/2001 - )
 
 2. Hammersmith Hospital - Medical Research Council (MRC)
@@ -14,41 +14,48 @@ Institutions in the original PARAPET EU project
 
 1. Hammersmith Hospital - Medical Research Council (MRC)
    London, UK
+   Terry SPINKS
 
 2. Brunel University
    Department of Mathematical Sciences
    London, UK
+   Gautam MITRA
 
 3. Ospedale San Raffaele (HSR)
    Dipartemento di Scienze e Technologie Biomediche
    Milan, Italy
+   Maria Carla GILARDI
 
 4. Technion - Israel Institute of Technology
    MINERVA, Optimization Center (MOC)
    Haifa, Israel
+   Aharon BEN-TAL, Roni LEVKOVITZ
 
 5. ELGEMS Ltd.
    Haifa, Israel
+   Michael WILK
 
-6. Geneva University Hospital (HUC)
+6. Geneva University Hospital (HUG)
    Division of Nuclear Medicine
    Geneva, Switzerland
+   Christian MOREL
 
 7. Parsytec GmbH
    Aachen, Germany
+   Arwed EXNER, Carsten RIETBROCK, Stefan KAISER, Volkmar FRIEDRICH
 
 Programmers:
 
 	Zverovich, Alexey (Brunel)
 	Zibulevsky, Michael (MOC)
-	Zaidi, Habib (HUC)
+	Zaidi, Habib (HUG)
 	Valente, Patrick (Brunel)
 	Thielemans, Kris (MRC)
-	Sauge, Damien (HUC)
+	Sauge, Damien (HUG)
 	Sadki, Mustapha (Brunel)
 	Pagani, Elizabetta (HSR)
 	Mustafovic, Sanida (MRC)
-	Labb'e, Claire (HUC)
+	Labbe, Claire (HUG)
 	Jacobson, Matthew (MOC)
 	Hague, Darren (Brunel)
 	Gordon, Ekaterina (MOC)
@@ -59,7 +66,7 @@ Design I:
 	Zibulevsky, Michael (MOC)
 	Thielemans, Kris (MRC)
 	de Oliveira, Cristina (MRC)
-	Labb'e, Claire (HUC)
+	Labbe, Claire (HUG)
 	Hague, Darren (Brunel)
 
 Design II:
