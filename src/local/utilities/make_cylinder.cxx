@@ -1,6 +1,10 @@
 //
-// %W%: %E%
+// $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "local/stir/Shape/EllipsoidalCylinder.h"
@@ -58,10 +62,6 @@ main(int argc, char **argv)
   int orig_y= ask_num("orig_y",min_y_dir,max_y_dir,(min_y_dir+max_y_dir)/2);
   int orig_x= ask_num("orig_x",min_x_dir,max_x_dir,(min_x_dir+max_x_dir)/2);
   */
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
  
 
   CartesianCoordinate3D<float> origin(0,0,0);
@@ -101,8 +101,16 @@ main(int argc, char **argv)
 
   const float shift_x = ask_num("Shift of x in z (in mm)",-1000.F,1000.F,0.F);
   const float shift_y = ask_num("Shift of y in z (in mm)",-1000.F,1000.F,0.F);
-  CartesianCoordinate3D<float> cyl_origin(0,shift_y,shift_x);
 
+  const float centre_z = image.get_length()*image.get_voxel_size().z()/2;
+    
+  const float origin_z= ask_num("z of centre of cylinder (w.r.t.z of centre of image)",
+				-centre_z, centre_z, 0.F);
+
+  const CartesianCoordinate3D<float> 
+    cyl_origin(origin_z + centre_z,
+	       shift_y + origin_z*velocity_y,
+	       shift_x + origin_z*velocity_x);
 
 
   EllipsoidalCylinder cylinder(length, radius, radius,
