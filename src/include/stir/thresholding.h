@@ -16,7 +16,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/min_positive_element.h"
@@ -29,12 +29,13 @@ using std::fill;
 START_NAMESPACE_STIR
 
 //! Threshold a sequence from above and below
-/*! \par Type requirements:
+/*! \ingroup buildblock
+  \par Type requirements:
     
     <ul>
-    <li>forw_iterT is a forward iterator
-    <li>elemT must be assignable to *forw_iterT
-    <li>bool operator>(*forw_iterT, elemT) must exist
+    <li>\c forw_iterT is a forward iterator
+    <li>\c elemT must be assignable to <tt>*forw_iterT</tt>
+    <li><tt>bool operator>(*forw_iterT, elemT)</tt> must exist
     </ul>
 */
 template <typename forw_iterT, typename elemT>
@@ -53,7 +54,8 @@ threshold_upper_lower(forw_iterT begin, forw_iterT end,
 }
 
 //! Threshold a sequence from above
-/*! \see threshold_upper_lower for type requirements */
+/*! \ingroup buildblock
+  \see threshold_upper_lower for type requirements */
 template <typename forw_iterT, typename elemT>
 inline void
 threshold_upper(forw_iterT begin, forw_iterT end,
@@ -67,7 +69,8 @@ threshold_upper(forw_iterT begin, forw_iterT end,
 }
 
 //! Threshold a sequence from below
-/*! \see threshold_upper_lower for type requirements */
+/*! \ingroup buildblock
+ \see threshold_upper_lower for type requirements */
 template <typename forw_iterT, typename elemT>
 inline void
 threshold_lower(forw_iterT begin, forw_iterT end,
@@ -82,19 +85,19 @@ threshold_lower(forw_iterT begin, forw_iterT end,
 
 //! sets non-positive values in the sequence to small positive ones
 /*!
+  \ingroup buildblock
   Thresholds the sequence from below to  
-  \code *min_positive_element()*small_number
-  \end_code
+  <tt> *min_positive_element()*small_number</tt>
   However, if all values are less than or equal to 0, they are 
   set to \a small_number.
 
-   \param start start of the sequence. Usually object.begin().
+   \param begin start of the sequence. Usually <tt>object.begin()</tt>.
    \param end end of the sequence in iterator sense (so actually one beyond
-     the last element). Usually object.end().
+     the last element). Usually <tt>object.end()</tt>.
    \param small_number see above
 
    The iterator type has to satisfy the requirements of a forward iterator,
-   and its value_type has to be comparable using < and <=.
+   and its value_type has to be comparable using &lt; and &lt;=.
 */ 
 template <typename ForwardIter_t, typename elemT>
 void
