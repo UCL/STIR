@@ -16,7 +16,8 @@
   \date    $Date$
 
   \version $Revision$
-
+  */
+/*
   Modification History:
 
   - first version by Kris Thielemans
@@ -37,14 +38,20 @@
 
 START_NAMESPACE_TOMO
 
-/*!
-  \brief provides names for some numeric types and methods for finding their properties.
-  */
-
 #ifndef TOMO_NO_NAMESPACES
 using std::size_t;
 using std::string;
 #endif
+
+/*!
+  \brief 
+  provides names for some numeric types and methods for finding their properties.
+
+  \warning CHAR itself is missing (there's only signed and unsigned versions).
+  This is because this class is only used where you have to know if the type
+  is signed.
+  */
+
 
 class NumericType
 {
