@@ -5,17 +5,14 @@
 #ifndef __KEYPARSER_H__
 #define __KEYPARSER_H__
 
+#include "pet_common.h"
+
 #include <map>
 #include <string>
 #include <iostream>
 #include <vector>
 
-#include "pet_common.h"
 
-#ifdef _MSC_VER
-// disable warning about truncation of identifiers in debugging information
-#pragma warning(disable: 4786)
-#endif
 
 typedef vector<int> IntVect;
 typedef vector<unsigned long> UlongVect;
