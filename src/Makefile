@@ -69,7 +69,7 @@ EXEDIRS += utilities recon_test \
 
 TESTDIRS += test recon_test
 
-STIR_LIB:=$(DEST)libstir.a
+STIR_LIB:=$(DEST)libstir$(LIB_SUFFIX)
 
 include $(addsuffix /lib.mk, $(LIBDIRS))
 
@@ -91,14 +91,14 @@ all: $(EXEDIRS)
 clean_tests: $(addprefix clean_tests_, $(TESTDIRS)) 
 
 clean_lib:  $(addprefix clean_lib_, $(LIBDIRS)) 
-	rm -f $(DEST)libSTIR.a
+	rm -f $(DEST)libSTIR$(LIB_SUFFIX)
 
 clean_exes:  $(addprefix clean_exes_, $(EXEDIRS)) 
 
 clean: clean_tests clean_lib clean_exes
 #	rm -rf $(DEST)
 
-install: install-exes
+install: all install-exes
 
 install-all: install-exes install-lib install-include
 
@@ -113,15 +113,19 @@ run_interactive_tests: $(addprefix run_interactive_tests_, $(TESTDIRS))
 # next target is necessary to get $(dir)_run_tests to compile/link all its files first
 all_test_exes: $(foreach dir, $(TESTDIRS), $($(dir)_TEST_EXES))
 
-.PRECIOUS:  $(DEST)*.a
+.PRECIOUS:  $(DEST)*$(LIB_SUFFIX)
 
 lib: $(STIR_LIB)
 
-
 $(STIR_LIB): $(foreach dir, $(LIBDIRS), $($(dir)_LIB_OBJS))
-	$(AR) $(ARFLAGS)  $@ $?
+ifneq ("$(AR)","link")
+	$(AR) $(ARFLAGS)  $(AR_OUTFLAG)$@ $?
 ifeq ("$(IS_GNU_AR)","")
 	ranlib $@
+endif
+else
+	$(AR) $(ARFLAGS)  $(AR_OUTFLAG)$@ $^
+# link /lib seems to need a list of all .objs
 endif
 
 
@@ -154,8 +158,6 @@ uninstall-include:
 # There is some complicated trickery to get automatic dependency checking on
 # .h and .inl files. This means that if you change only a .h file, make will 
 # still rebuild all .c and .cxx files that include this .h file (even indirectly).
-
-.SUFFIXES: .c .o .cxx .a .P 
 
 # To generate dependencies, we use -MM for gcc (or g++) and -M for other compilers
 ifeq ($(CXX),g++)
@@ -205,29 +207,39 @@ else
 df = $(DEST)$*
 
 # alternative choices  for MAKEDEPEND
-#MAKEDEPENDCXX = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
-#MAKEDEPENDC = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
+ifeq ("$(IS_MS_VC)","")
+# normal case
 MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
 MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS)  > $(df).d $<
+else
+# use when your compiler cannot generate dependencies in text form
+# (Visual C++ can generate a database file, but we cannot read that)
+# of course, this only works when you have makedepend, touch, sed
 
-#cp $(df).d $(df).P; 
+# the -Y option disables looking for system includes
+MAKEDEPENDCXX = touch $(df).d && makedepend $(CFLAGS) -f $(df).d $< -Y -o$(O_SUFFIX) 2> /dev/null
+MAKEDEPENDC = $(MAKEDEPENDCXX)
+endif
+
 dotD2dotP = sed -e 's&$(*F)\.o&$(DEST)$(*).o&' < $(df).d > $(df).P; \
 	sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
-	rm -f $(df).d
+	$(RM) $(df).d
 
 
-${DEST}%.o : %.cxx
-	@ -mkdir -p $(dir $@); \
-	$(MAKEDEPENDCXX);  \
-	$(dotD2dotP);
-	$(CXX) $(CFLAGS) -o $@ -c $< 
+${DEST}%${O_SUFFIX} : %.cxx
+	@ -mkdir -p $(dir $@); 
+ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
+	$(MAKEDEPENDCXX);$(dotD2dotP);
+endif
+	$(CXX) $(CFLAGS)  ${O_OUTFLAG}$@  -c $< 
 
-${DEST}%.o : %.c
-	@ -mkdir -p $(dir $@); \
-	$(MAKEDEPENDC); \
-	$(dotD2dotP); 
-	$(CC) $(CFLAGS) -o $@ -c $< 
+${DEST}%${O_SUFFIX} : %.c
+	@ -mkdir -p $(dir $@); 
+ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
+	$(MAKEDEPENDC); $(dotD2dotP); 
+endif	
+	$(CC) $(CFLAGS) ${O_OUTFLAG}$@ -c $< 
 
 
 endif # GCC3
@@ -238,5 +250,6 @@ endif # GCC3
 # Otherwise the value of the macros is empty when 
 # checking the dependencies (even when they are alright when
 # executing the corresponding command)
-${DEST}%: ${DEST}%.o $(STIR_LIB) $(STIR_REGISTRIES)  $(EXTRA_LIBS) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_REGISTRIES) $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}%: ${DEST}%${O_SUFFIX} $(STIR_LIB) $(STIR_REGISTRIES)  $(EXTRA_LIBS) 
+	${LINK} ${EXE_OUTFLAG}${@}$(EXE_SUFFIX) $<  $(STIR_REGISTRIES) $(STIR_LIB) $(LINKFLAGS) $(SYS_LIBS)
+# DO NOT DELETE

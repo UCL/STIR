@@ -48,34 +48,154 @@ else
 PARALIB=PVM
 endif # not CC
 
-#******** compiler that will be used
+#******** default compiler and linker that will be used
 
 # for C++ 
 CXX=g++ 
 # for C
 CC=gcc
+# program that will be used for linking, normally the C++ compiler
+LINK=$(CXX)
 
+
+# make a variable that allows us to test if we have Microsoft Visual Studio C++
+# If so, lots of variables in the makefiles will have to be set non-standard.
+IS_MS_VC:=$(shell $(CXX) 2>&1  |grep Microsoft)
+
+ifneq ("$(IS_MS_VC)","")
+$(warning Enabling Visual C++ specific fixes)
+endif
 
 #******* compiler and linker extra options
 
 
-#** EXTRA_OPT: for compiler
-# allow the user to get some extra options by using make EXTRA_OPT=bla 
+#** EXTRA_CFLAGS: for compiler
+# allow the user to get some extra options by using make EXTRA_CFLAGS=bla 
 ifeq ($(CC),gcc)
-EXTRA_OPT =-Wall -Wno-deprecated
+EXTRA_CFLAGS =-Wall -Wno-deprecated
 endif
 
-#** EXTRA_LINK_OPT: for linker
+#** EXTRA_LINKFLAGS: for linker
 #allow the user to get extra options for link time
-EXTRA_LINK_OPT=
+EXTRA_LINKFLAGS=
 #** compiler options
 
 
 #******** variables used only for ecat7
-# local/Makefile_common can override these defaults
+# local/config.mk can override these defaults
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
 LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
+
+
+#******* compiler and linker options
+
+ifeq ($(SYSTEM),LINUX)
+# note for gcc 2.95.2:
+# do not use -malign-double as it crashes in iostream stuff
+OPTIM_CFLAGS=-O3  -ffast-math -DNDEBUG
+else
+ifeq ($(SYSTEM),CYGWIN)
+OPTIM_CFLAGS=-O3  -ffast-math -malign-double -DNDEBUG
+else
+OPTIM_CFLAGS=-O3 -DNDEBUG
+endif
+endif
+
+DEBUG_CFLAGS=-D_DEBUG -g
+
+OPTIM_LINKFLAGS=
+DEBUG_LINKFLAGS=-g
+
+ifeq ($(BUILD),debug)
+CFLAGS = $(DEBUG_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+else # release version
+CFLAGS = $(OPTIM_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+endif 
+
+
+
+#** LINKFLAGS:  add specific libraries and switches depending on platforms
+# possibly this should check on AIX as well
+# if so, we should additionally check on ifeq($(CC),gcc)
+# as -Xlinker is only appropriate for gcc
+ifeq ($(SYSTEM),CC)
+LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS)
+else
+LINKFLAGS=$(EXTRA_LINKFLAGS) $(EXTRA_LIBS) 
+endif
+
+ifeq ($(BUILD),debug)
+LINKFLAGS+= $(DEBUG_LINKFLAGS)
+else # release version
+LINKFLAGS+= $(OPTIM_LINKFLAGS) 
+endif 
+
+
+#******** system libraries
+
+SYS_LIBS = -lm
+ 
+# add any others specific to your system using the SYSTEM macros
+
+
+#********* macros for compiler options
+# see below why we need them
+
+ifeq ("$(IS_MS_VC)","")
+# the 'normal' case of cc, ar, etc.
+
+# flag to be passed to $(CXX) and $(CC) for specifying the name of the object (.o) file
+O_OUTFLAG := -o
+# extension for object files
+O_SUFFIX := .o
+# flag to be passed to $(LINK) for specifying the name of the executable
+EXE_OUTFLAG := -o
+# note: extension for executables is handled somewhat differently
+# CYGWIN make (in Unix mode) appends the .exe in targets etc, so we need 
+# $(EXE_SUFFIX) only for copying, deleting files etc
+
+# extension for archives
+LIB_SUFFIX := .a
+
+else
+
+# various settings for the Microsoft Visual C++ compiler
+# Unfortunately, this compiler has non-standard options, so we need
+# various macros such that the rest of the Makefiles can be general 
+# (although a bit less readable unfortunately)
+
+# KT has put other options here as well, to avoid cluttering this file
+# with stuff that most people don't want to see.
+
+# Note that we set CC, LINK and AR here appropriately, see you only need to set 
+# CXX=cl for all this to jump into action.
+
+CC=$(CXX)
+
+O_OUTFLAG:=/Fo
+O_SUFFIX:=.obj
+LINK=link 
+#EXE_OUTFLAG=/Fe
+EXE_OUTFLAG:=/out:
+LIB_SUFFIX:=.lib
+AR:=link
+ARFLAGS=-lib -nologo 
+AR_OUTFLAG=-out:
+
+# Normally, you should set the LIB and INCLUDE environment variables. 
+# If not, you could specify the location of your Visual Studio files by hand
+#MSVCLOC:=c:/Program Files/Microsoft Visual C++ Toolkit 2003/
+EXTRA_LINKFLAGS= /nologo  #/libpath:"${MSVCLOC}lib"
+SYS_LIBS=  # get rid of -lm above
+
+DEBUG_CFLAGS=/Z7 /Od /D _DEBUG /GS /GZ /MLd 
+OPTIM_CFLAGS=/D NDEBUG /Ox /ML 
+EXTRA_CFLAGS=/nologo /G6 /W3 /GR /GX /D "_WINDOWS"  /D "WIN32" # /I"${MSVCLOC}include" 
+OPTIM_LINKFLAGS= /incremental:no
+DEBUG_LINKFLAGS= /debug
+
+endif # end of settings for MS VC
 
 #********  customisation
 # include local configuration file, possibly overriding any of the above
@@ -93,64 +213,18 @@ LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
 
 
-
-#******* compiler and linker options
-
-ifeq ($(SYSTEM),LINUX)
-# note for gcc 2.95.2:
-# do not use -malign-double as it crashes in iostream stuff
-OPTIM_OPT=-O3  -ffast-math -DNDEBUG
-else
-ifeq ($(SYSTEM),CYGWIN)
-OPTIM_OPT=-O3  -ffast-math -malign-double -DNDEBUG
-else
-OPTIM_OPT=-O3 -DNDEBUG
-endif
-endif
-
-DEBUG_OPT=-D_DEBUG -g
-
-
-
-ifeq ($(BUILD),debug)
-CFLAGS = $(DEBUG_OPT)  $(EXTRA_OPT)  -I$(INCLUDE_DIR) 
-else # release version
-CFLAGS = $(OPTIM_OPT)  $(EXTRA_OPT)  -I$(INCLUDE_DIR) 
-endif # BUILD ?
-
-
-
-#** LINK_OPT:  add specific libraries and switches depending on platforms
-# possibly this should check on AIX as well
-# if so, we should additionally check on ifeq($(CC),gcc)
-# as -Xlinker is only appropriate for gcc
-ifeq ($(SYSTEM),CC)
-LINK_OPT=-Xlinker -bbigtoc $(EXTRA_LINK_OPT) $(EXTRA_LIBS)
-else
-LINK_OPT=$(EXTRA_LINK_OPT) $(EXTRA_LIBS) 
-endif
-
-
-#******** libraries
-
-#** system libraries
-
-
-
-SYS_LIBS = -lm
- 
-# add any others specific to your system using the SYSTEM macros
-
-
 #******* LLN matrix libraries
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
+  ifneq ($(HAVE_LLN_MATRIX),0)
+
   # yes, the LLN files seem to be there, so we can compile 
   HAVE_LLN_MATRIX=1
   CFLAGS +=  -I $(LLN_INCLUDE_DIR) -D HAVE_LLN_MATRIX
-  EXTRA_LIBS += $(LLN_LIB_DIR)/libecat.a
+  EXTRA_LIBS += $(LLN_LIB_DIR)/libecat$(LIB_SUFFIX)
   ifeq ($(SYSTEM),SUN)
      SYS_LIBS += -lnsl -lsocket
+  endif
   endif
 endif
 
@@ -165,7 +239,7 @@ IS_GCC_3:=$(shell $(CXX) -v 2>&1 |grep "gcc version [3456789]")
 IS_GNU_AR:=$(shell $(AR) --version 2>&1 |grep "GNU ar")
 ifneq ("$(IS_GNU_AR)","")
   # $(warning Using GNU ar)
-  ARFLAGS:=rvs
+  ARFLAGS:=rs
 else
   # $(warning Not using GNU ar)
 endif
