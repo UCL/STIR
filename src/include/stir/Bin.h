@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_Bin_H__
@@ -30,7 +30,7 @@
 
 
 START_NAMESPACE_STIR
-/*!
+/*!   \ingroup projdata
  \brief
  A class for storing coordinates and value of a single projection bin.
 
