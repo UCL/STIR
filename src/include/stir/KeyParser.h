@@ -51,6 +51,7 @@ typedef vector<double> DoubleVect;
 typedef vector<string> ASCIIlist_type;
 
 class Object;
+class Succeeded;
 
 /*!
   \ingroup buildblock
@@ -64,6 +65,8 @@ class Object;
   When the line ends with a backslash '\', the next line
   will just be appended to the current one. That is, '\'
   acts as continuation marker.
+
+  Lines can have arbitrary length.
 
   \warning The backslash HAS to be the last character. Even
   spaces after it will stop the 'continuation'.
@@ -80,6 +83,9 @@ class Object;
   \warning As KeyParser::add_key stores pointers to the variables where you want 
   your results, it is somewhat dangerous to copy a KeyParser object. That is, its 
   keymap will still point to the same variables.
+
+  \todo add checking functions in the map, as in add_key("my key",&my_value, check_positive)
+  \todo add facilities for checking (while parsing) if a keyword was present before the current one
 */
 class KeyParser;
 
@@ -139,8 +145,6 @@ public :
   map_element& operator=(const map_element& me);
 };
 
-class Line;
-
 class KeyParser
 {
 
@@ -169,7 +173,8 @@ public:
   /*! The integer should be 0 or 1, corresponding to false and true resp. */
   void add_key(const string& keyword, bool * variable_ptr);
   
-  //! SM 02/05/2001
+  // SM 02/05/2001
+  //! add a keyword. When parsing, parse its value as a list of doubles and put its value in *variable_ptr
   void add_key(const string& keyword, vector<double> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a string and put it in *variable_ptr
@@ -251,7 +256,8 @@ public:
   //! Returns a string with keywords and their values
   /*! Keywords are listed in the order they are inserted in the keymap 
       (except for start and stop keys which are listed first and last).
-      \warning UNSAFE for 'vectored' keys.
+
+      \bug breaks with 'vectored' keys.
       */
   virtual string parameter_info() const;
 
@@ -259,11 +265,11 @@ public:
   //! Ask interactively for values for all keywords
   /*! Keywords are asked in the order they are inserted in the keymap.
 
-      TODO any consistency checks are currently done by post_processing() at the
+      \todo any consistency checks are currently done by post_processing() at the
       end of the parsing. It should be possible to have checks after every question
       such that it can be repeated.
 
-      \warning UNSAFE for 'vectored' keys.
+      \bug breaks with  for 'vectored' keys.
       */
   virtual void ask_parameters();
 
@@ -285,6 +291,10 @@ protected :
   virtual string 
     standardise_keyword(const string& keyword) const;
 
+
+  //! gets a keyword from a string
+  virtual string 
+    get_keyword(const string&) const;
 
 
 
@@ -310,20 +320,23 @@ protected :
 
 
 public:
-  //! to start parsing, has to be set by first keyword
+  //! callback function to start parsing, has to be set by first keyword
   void start_parsing();
   //! to stop parsing
   void stop_parsing();
-  //! for keys which do not do anything
+  //! callback function for keys which do not do anything
   void do_nothing() {};
-  //! set the variable to the value given as the value of the keyword
+  //! callback function  that sets the variable to the value given as the value of the keyword
+  /*! if the keyword had no value, set_variable will do nothing */
   void set_variable();
 
   // KT 07/02/2001 new
-  //! set the variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
+  //! callback function that sets the variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
+  /*! if the keyword had no value, set_variable will do nothing */
   void set_parsing_object();
   // KT 20/08/2001 new
-  //! set the shared_ptr variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
+  //! callback function that sets the shared_ptr variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
+  /*! if the keyword had no value, set_variable will do nothing */
   void set_shared_parsing_object();
 
   
@@ -349,7 +362,11 @@ private :
   int current_index;
   string keyword;
 
-  // could be made into a union
+  // next will be false when there's only a keyword on the line
+  // maybe should be protected (or even public?). At the moment, this is only used by set_variable().
+  // That should cover most cases.
+  bool keyword_has_a_value;
+  // could be made into a union, but should use boost::any instead
   vector<string>  par_asciilist;
   IntVect	par_intlist;
   DoubleVect	par_doublelist;
@@ -360,20 +377,20 @@ private :
 
   ////// methods
 
-  // loops over all lines in the file. returns 0 of OK, 1 of not.
-  int parse_header();
+  // loops over all lines in the file.
+  Succeeded parse_header();
 
   // read a line, find keyword and call parse_value_in_line()
-  int read_and_parse_line(const bool write_warning);
+  Succeeded read_and_parse_line(const bool write_warning);
 
-  // see if keyword is in the keymap using map_keyword
-  // if so, call its call_back function and return 1, else
-  // conditionally write a warning and return 0  
-  int parse_value_in_line(Line& line, const bool write_warning);
+  // see if current keyword is in the keymap using map_keyword
+  // if so, call its call_back function and return Succeeded::yes, else
+  // conditionally write a warning and return Succeeded::no
+  Succeeded parse_value_in_line(const string& line, const bool write_warning);
 
   // set 'current' to map_element corresponding to 'keyword'
-  // return 1 if valid keyword, 0 otherwise
-  int map_keyword(const string& keyword);
+  // return Succeeded::yes if valid keyword, Succeeded::no otherwise
+  Succeeded map_keyword(const string& keyword);
 
   // call appropriate member function
   void process_key();
