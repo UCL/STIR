@@ -5,6 +5,7 @@
 /*! 
 \file
 \ingroup utilities
+\ingroup ECAT
 \brief Conversion from interfile (or any format that we can read) 
   to ECAT 7 cti (image and sinogram data)
 \author Kris Thielemans
@@ -24,15 +25,7 @@ $Revision$
 #include "stir/shared_ptr.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
-
-#ifdef STIR_NO_NAMESPACES
-// terrible trick to avoid conflict between our Sinogram and matrix::Sinogram
-// when we do have namespaces, the conflict can be resolved by using ::Sinogram
-#define Sinogram CTISinogram
-#endif
-
-#include "matrix.h"
-#include "local/stir/CTI/stir_ecat7.h"
+#include "stir/IO/stir_ecat7.h"
 
 #include <iostream>
 #include <vector>
