@@ -18,8 +18,9 @@
 
 /******************* Declarations local functions *******************/
 // KT 21/10/98 made all of these static
+// KT 29/10/98 use PSOV
 static void 
-do_segments(const PETImageOfVolume& image, const PETScannerInfo& scanner,
+do_segments(const PETImageOfVolume& image, const PETSinogramOfVolume& s3d,
 	    const int abs_segment_num, 
 	    const int start_view, const int end_view,
 	    ostream * out,
@@ -121,24 +122,31 @@ main()
     }
   // KT 14/10/98 new
   if (save==2)
-    {
-      cerr << "Saving start image to 'test_image'" << endl;
-      write_basic_interfile("test_image", image);
-    }
+  {
+    cerr << "Saving start image to 'test_image'" << endl;
+    write_basic_interfile("test_image", image);
+  }
   
-  // KT 14/10 rewrite using segment numbers
-  int max_segment_num = scanner.num_rings-1; 
-  // KT 06/10/98 use name
-  if (scanner.type == PETScannerInfo::Advance)
-    max_segment_num = 11;
+  // KT 29/10/98 new
+  fstream *out = 0;
+  
+  PETSinogramOfVolume s3d(
+    scanner, 
+    1 /*==span*/, 
+    scanner.type != PETScannerInfo::Advance ?
+    scanner.num_rings-1 : 11,
+    *out, 0UL,
+    PETSinogramOfVolume::SegmentViewRingBin,
+    NumericType::FLOAT,
+    Real(1));
+  
   
   if (ask("Do full forward projection ?", true))
   {
-    ofstream *out = 0;
     if (save)
     {
       cerr << "Saving in 'fwd_image.scn'" << endl;
-      out = new (ofstream);
+      out = new (fstream);
       open_write_binary(*out, "fwd_image.scn");
     }
 
@@ -147,9 +155,9 @@ main()
     timer_fp.restart();
 
     for (int abs_segment_num=0; 
-         abs_segment_num<= max_segment_num; 
+         abs_segment_num<= s3d.get_max_segment(); 
          abs_segment_num++)
-      do_segments(image, scanner,
+      do_segments(image, s3d,
                   abs_segment_num, 0, scanner.num_views-1,
                   out, disp, save);
     timer.stop();
@@ -173,7 +181,7 @@ main()
       timer_fp.restart();
       
       int abs_segment_num = ask_num("Segment number to forward project",
-				    0, max_segment_num, 0);
+				    0, s3d.get_max_segment(), 0);
       
       const int nviews = scanner.num_views;
       cerr << "Special views are at 0, "
@@ -182,7 +190,7 @@ main()
       int start_view = ask_num("Start view", 0, nviews-1, 0);
       int end_view = ask_num("End   view", 0, nviews-1, start_view);
       
-      do_segments(image, scanner, 
+      do_segments(image, s3d, 
 	          abs_segment_num, 
 	          start_view, end_view,
 	          0, 
@@ -202,64 +210,20 @@ main()
 
 /******************* Implementation local functions *******************/
 void
-do_segments(const PETImageOfVolume& image, const PETScannerInfo& scanner,
+do_segments(const PETImageOfVolume& image, const PETSinogramOfVolume& s3d,
 	    const int abs_segment_num, 
 	    const int start_view, const int end_view,
 	    ostream * out,
 	    const int disp, const int save)
 {
-  
-  int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
-  if (scanner.num_bins % 2 == 0)
-    max_bin++;
-  const int nviews = scanner.num_views;
-  
-  // KT 07/10/98 now handle segment 0 correctly
-  
-  int pos_max_ring_diff = abs_segment_num;
-  int pos_min_ring_diff = abs_segment_num;
-  int num_rings_this_segment =
-    scanner.num_rings - abs_segment_num;
-  
-  // GEAdvance has different segment number etc
-  // KT 06/10/98 use name
-  if (scanner.type == PETScannerInfo::Advance)
-    {
-      if (abs_segment_num == 0)
-	{
-	  pos_max_ring_diff = 1;
-	  pos_min_ring_diff = -1;
-	  num_rings_this_segment = 2*scanner.num_rings-1;
-	}
-      else
-	{ 
-	  pos_max_ring_diff++;
-	  pos_min_ring_diff++;
-	  num_rings_this_segment--;
-	}
-    
-    }
-  
-  
+  const int nviews = s3d.get_num_views();
+
+  // KT 03/11/98 use get_empty_segment...
+
   PETSegmentByView 
-    segment_pos(
-		Tensor3D<float>(0, scanner.num_views-1, 
-				0, num_rings_this_segment - 1,
-				-scanner.num_bins/2, max_bin),
-		&scanner,
-		abs_segment_num,
-		pos_min_ring_diff,
-		pos_max_ring_diff);
-  
+    segment_pos = s3d.empty_segment_view_copy(abs_segment_num);
   PETSegmentByView 
-    segment_neg(
-		Tensor3D<float>(0, scanner.num_views-1, 
-				0, num_rings_this_segment - 1,
-				-scanner.num_bins/2, max_bin),
-		&scanner,
-		-abs_segment_num, 
-		-pos_max_ring_diff, 
-		-pos_min_ring_diff); 
+    segment_neg = s3d.empty_segment_view_copy(-abs_segment_num);
   
   {       
     
@@ -329,6 +293,8 @@ do_segments(const PETImageOfVolume& image, const PETScannerInfo& scanner,
 	    write_basic_interfile(file, segment_neg);
 	  }
       }
+
+    // TODO replace by set_segment
     if (out != 0)
       {
 	segment_pos.write_data(*out);
