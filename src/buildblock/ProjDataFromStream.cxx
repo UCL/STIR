@@ -148,7 +148,9 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
         error("ProjDataFromStream: error reading data\n");
       if(scale != 1)
         error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
-      sino_stream->seekg(intra_views_offset, ios::cur);
+      // seek to next line unless it was the last we need to read
+      if(ax_pos_num != get_max_axial_pos_num(segment_num))
+	 sino_stream->seekg(intra_views_offset, ios::cur);
     }
   }
   
@@ -169,11 +171,11 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
     const int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
 
     viewgram.grow(
-     IndexRange2D(get_min_axial_pos_num(segment_num),
-     get_max_axial_pos_num(segment_num),
-     
-     get_min_tangential_pos_num(),
-     new_max_tangential_pos));   
+		  IndexRange2D(get_min_axial_pos_num(segment_num),
+			       get_max_axial_pos_num(segment_num),
+			       
+			       get_min_tangential_pos_num(),
+			       new_max_tangential_pos));   
   }  
 
   return viewgram;    
@@ -322,9 +324,10 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
 		  " corrupted due to problems with writing or the scale factor \n",
 		  view_num, segment_num);
 	  return Succeeded::no;
-    }
-      
-      sino_stream->seekp(intra_views_offset, ios::cur);
+	}
+      // seek to next line unless it was the last we need to read
+      if(ax_pos_num != get_max_axial_pos_num(segment_num))
+	sino_stream->seekp(intra_views_offset, ios::cur);
     }
     return Succeeded::yes;
   }
@@ -468,7 +471,9 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
         error("ProjDataFromStream: error reading data\n");
      if(scale != 1)
        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
-    sino_stream->seekg(intra_ax_pos_offset, ios::cur);
+      // seek to next line unless it was the last we need to read
+      if(view != get_max_view_num())
+	sino_stream->seekg(intra_ax_pos_offset, ios::cur);
    }    
   }
   sinogram *= scale_factor;
@@ -563,8 +568,9 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
 		    ax_pos_num, segment_num);
 	    return Succeeded::no;
 	  }
-  
-	sino_stream->seekp(intra_ax_pos_offset, ios::cur);
+        // seek to next line unless it was the last we need to read
+	if(view != get_max_view_num())
+	  sino_stream->seekp(intra_ax_pos_offset, ios::cur);
       }
       return Succeeded::yes;
     }
