@@ -682,8 +682,9 @@ string KeyParser::parameter_info() const
         }
       case KeyArgument::SHARED_PARSINGOBJECT:
         {
-#if defined __GNUC__
-          s << "COMPILED WITH GNU C++, CANNOT INSERT VALUE YET";
+#if defined(__GNUC__) && __GNUC__ < 3
+
+          s << "COMPILED WITH GNU C++ (prior to version 3.0), CANNOT INSERT VALUE";
 #else
           shared_ptr<Object> parsing_object_ptr =
             (*reinterpret_cast<shared_ptr<Object>*>(i->second.p_object_variable));
