@@ -92,19 +92,23 @@ int main(int argc, char *argv[])
     fabs(reference_max):fabs(reference_min);
 
   *first_operand -= *second_operand;
-  in_place_abs(*first_operand);
   const float max_error=first_operand->find_max();
+  const float min_error=first_operand->find_min();
+  in_place_abs(*first_operand);
+  const float max_abs_error=first_operand->find_max();
 
-  const bool same=(max_error/amplitude<=tolerance);
+  const bool same=(max_abs_error/amplitude<=tolerance);
 
-  cout<<endl<<"Maximum absolute error = "<<max_error<<endl;
-  cout<<"Error relative to sup-norm of first image = "<<(max_error/amplitude)*100<<" %"<<endl;
+  cout << "\nMaximum absolute error = "<<max_abs_error
+       << "\nMaximum in (1st - 2nd) = "<<max_error
+       << "\nMinimum in (1st - 2nd) = "<<min_error<<endl;
+  cout <<"Error relative to sup-norm of first image = "<<(max_abs_error/amplitude)*100<<" %"<<endl;
 
   cout<<"\nImage arrays ";
 
   if(same)
   {
-    cout << (max_error == 0 ? "are " : "deemed ")
+    cout << (max_abs_error == 0 ? "are " : "deemed ")
          << "identical\n";
   }
   else 
