@@ -86,8 +86,8 @@ private:
   
   Succeeded virtual_build_filter(const DiscretisedDensity<num_dimensions,elemT>& image);
   // new
-  void  filter_it(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
-  void  filter_it(DiscretisedDensity<num_dimensions,elemT>& density) const ;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
+  void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
   
 };
 

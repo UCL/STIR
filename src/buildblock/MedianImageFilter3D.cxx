@@ -50,7 +50,7 @@ MedianImageFilter3D<elemT>::virtual_build_filter (const DiscretisedDensity<3,ele
 
 template <typename elemT>
 void
-MedianImageFilter3D<elemT>::filter_it(DiscretisedDensity<3, elemT>& density) const
+MedianImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& density) const
 {
   //assert(consistency_check(density) == Succeeded::yes);
   median_filter(density);   
@@ -58,7 +58,7 @@ MedianImageFilter3D<elemT>::filter_it(DiscretisedDensity<3, elemT>& density) con
 
 template <typename elemT>
 void
-MedianImageFilter3D<elemT>::filter_it(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
+MedianImageFilter3D<elemT>::virtual_apply(DiscretisedDensity<3, elemT>& out_density, const DiscretisedDensity<3, elemT>& in_density) const
 {
   //assert(consistency_check(in_density) == Succeeded::yes);
   median_filter(out_density,in_density);   

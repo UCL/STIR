@@ -50,7 +50,7 @@ public:
   inline Succeeded  build_filter(const DiscretisedDensity< num_dimensions,elemT>& density);
 
   //! Builds the filter (if not already done before) and filter \a density in-place
-  inline void build_and_filter(DiscretisedDensity<num_dimensions,elemT>& density);
+  inline void apply(DiscretisedDensity<num_dimensions,elemT>& density);
   /*!
     \brief
     Builds the filter (if not already done before) and filter \a in_density, 
@@ -59,7 +59,7 @@ public:
     \warning Most derived classes will assume that out_density is already set-up
     appropriately.
   */
-  inline void build_and_filter(DiscretisedDensity<num_dimensions,elemT>& out_density,
+  inline void apply(DiscretisedDensity<num_dimensions,elemT>& out_density,
                                const DiscretisedDensity<num_dimensions,elemT>& in_density);
 
   // Check if filtering images with this dimensions, sampling_distances etc actually makes sense
@@ -70,10 +70,10 @@ protected:
   //! Will be called to build the filter
   virtual Succeeded  virtual_build_filter(const DiscretisedDensity< num_dimensions,elemT>& image) = 0;
   //! Performs actual filtering
-  virtual void filter_it(DiscretisedDensity<num_dimensions,elemT>& density, 
+  virtual void virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density, 
                          const DiscretisedDensity<num_dimensions,elemT>& in_density) const = 0; 
   //! Performs actual filtering (in-place)
-  virtual void filter_it(DiscretisedDensity<num_dimensions,elemT>& density) const =0;
+  virtual void virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const =0;
 private:  
   bool filter_built;  
 

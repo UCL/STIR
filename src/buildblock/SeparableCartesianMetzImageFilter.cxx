@@ -46,7 +46,7 @@ virtual_build_filter(const DiscretisedDensity<3,elemT>& density)
 template <typename elemT>
 void
 SeparableCartesianMetzImageFilter<elemT>::
-filter_it(DiscretisedDensity<3,elemT>& density) const
+virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {     
   //assert(consistency_check(density) == Succeeded::yes);
@@ -57,7 +57,7 @@ filter_it(DiscretisedDensity<3,elemT>& density) const
 template <typename elemT>
 void
 SeparableCartesianMetzImageFilter<elemT>::
-filter_it(DiscretisedDensity<3,elemT>& out_density, 
+virtual_apply(DiscretisedDensity<3,elemT>& out_density, 
 	  const DiscretisedDensity<3,elemT>& in_density) const
 {
   //assert(consistency_check(in_density) == Succeeded::yes);
