@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -18,13 +18,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 #include "recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "Coordinate3D.h"
+#ifdef ENABLE_DENSEL 
+#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#endif
 
 START_NAMESPACE_TOMO
 
@@ -49,6 +51,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_z_shift::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
 transform_proj_matrix_elems_for_one_bin(
@@ -68,6 +91,27 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
@@ -89,6 +133,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
 transform_proj_matrix_elems_for_one_bin(
@@ -108,6 +173,27 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
@@ -129,6 +215,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
 transform_proj_matrix_elems_for_one_bin(
@@ -148,6 +255,27 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx::
@@ -169,6 +297,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmx::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_ymy::
 transform_proj_matrix_elems_for_one_bin(
@@ -189,6 +338,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_ymy::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_zq::
 transform_proj_matrix_elems_for_one_bin(
@@ -204,6 +374,27 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
@@ -225,6 +416,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
 transform_proj_matrix_elems_for_one_bin(
@@ -244,6 +456,27 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
@@ -265,6 +498,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
 transform_proj_matrix_elems_for_one_bin(
@@ -284,6 +538,27 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
@@ -305,6 +580,27 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
+
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
 transform_proj_matrix_elems_for_one_bin(
@@ -324,7 +620,26 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
-
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
@@ -344,5 +659,28 @@ transform_proj_matrix_elems_for_one_bin(
     ++element_ptr;
   }
 }
+
+
+
+#ifdef ENABLE_DENSEL 
+void 
+SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
+transform_proj_matrix_elems_for_one_densel(
+				       ProjMatrixElemsForOneDensel& probs) const
+{
+  Densel densel = probs.get_densel();
+  transform_image_coordinates(densel);
+  probs.set_densel(densel);
+  
+  ProjMatrixElemsForOneDensel::iterator element_ptr = probs.begin();
+  while (element_ptr != probs.end()) 
+  {
+    Bin c(*element_ptr);
+    self::transform_bin_coordinates(c);
+    *element_ptr = ProjMatrixElemsForOneDensel::value_type(c);
+    ++element_ptr;
+  }
+} 
+#endif
 
 END_NAMESPACE_TOMO
