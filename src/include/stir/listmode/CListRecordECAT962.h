@@ -1,8 +1,23 @@
 //
 // $Id$
 //
-/*!
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
   \file
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 962 (aka Exact HR+)
@@ -11,10 +26,6 @@
       
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_listmode_CListRecordECAT962_H__
@@ -29,8 +40,10 @@
 
 START_NAMESPACE_STIR
 
+
 //! Class for storing and using a coincidence event from a listmode file
-/*! The private definition is specific to the 962. Public members are generic
+/*! \ingroup listmode
+    The private definition is specific to the 962. Public members are generic
     though.
 
   For the 962 the event word is 32 bit. To save 1 bit in size, a 2d sinogram
@@ -38,6 +51,8 @@ START_NAMESPACE_STIR
      for both events).
      Both bin and view use 9 bits, so their maximum range is
      512 values, which is fine for the 962 (which needs only 288).
+
+   The 962 has 2 other bits, one for the energy window, and a 'multiple' bit.
 
   \todo use DetectionPosition etc.
 */
@@ -113,6 +128,8 @@ class CListEventDataECAT962
 class CListRecordECAT962;
 
 //! A class for storing and using a timing 'event' from a listmode file
+/*! \ingroup listmode
+ */
 class CListTimeDataECAT962
 {
  public:
@@ -143,7 +160,8 @@ private:
 };
 
 //! A class for a general element of a listmode file
-/*! For the 962 it's either a coincidence event, or a timing flag.*/
+/*! \ingroup listmode
+   For the 962 it's either a coincidence event, or a timing flag.*/
   class CListRecordECAT962 : public CListRecordUsingUnion
 {
 private:
