@@ -1,12 +1,36 @@
 //
 // $Id$: $Date$
 //
-/* Function to convert Array objects of different numeric types
-Version 1.0: KT
-
- See convert_array.h for more information
+/*!
+  \file 
  
+  \brief implementation of convert_array
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+  This file contains explicit instantiations. If you experience
+  linking problems with convert_array, you might need to instantiate
+  your own types at the end of this file.
+
+  \warning Compiling this file will probably gives lots of warnings
+  on testing negativity of unsigned types. This is because of
+  template instantiations and is perfectly harmless.
+  Ignore these warnings.
+
+  Currently this file contains 2 implementations. The normal one, and
+  one using full iterators. The latter is far more simple, but not
+  supported by all compilers. Also, it is somewhat slower at the moment.
+
 */
+
+// Because of support for compilers which cannot do partial
+// template specialisation, this file is terribly messy.
+// Try to read only the 'modern' stuff.
 
 #include "convert_array.h"
 #include <algorithm>
@@ -76,7 +100,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -123,7 +148,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0      
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -194,8 +220,8 @@ public:
 
 #else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
-// we'll assume scaleT==Real
-#define scaleT Real
+// we'll assume scaleT==float
+#define scaleT float
 
 /************** float, short *********************/
 #define T1 float
@@ -216,7 +242,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -276,7 +303,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -336,7 +364,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -396,7 +425,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -456,7 +486,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -516,7 +547,8 @@ public:
     find_scale_factor(data_in, info1, info2, scale_factor);
     if (scale_factor == 0)
     {
-      // data_in contains only 0, data_out is already 0
+      // data_in contains only 0
+      data_out.fill(0);
     }
     else
     {
@@ -665,37 +697,88 @@ convert_array(Array<num_dimensions, T2>& data_out,
     convert_array(data_out, scale_factor, data_in);   
 }
 #endif
+
+#if defined(ARRAY_FULL) && defined(ARRAY_CONST_IT)
+//TODO specialise for T1==T2
+#if 1
+template <int num_dimensions, class T1, class T2, class scaleT>
+Array<num_dimensions, T2>
+convert_array_FULL(scaleT& scale_factor,
+	      const Array<num_dimensions, T1>& data_in, 
+	      const NumericInfo<T2> info2)
+{
+  Array<num_dimensions,T2> data_out(data_in.get_index_range());
+
+  convert_array_FULL(data_out, scale_factor, data_in);
+  return data_out;    
+}
+#endif
+#if 1
+template <int num_dimensions, class T1, class T2, class scaleT>
+void 
+convert_array_FULL(Array<num_dimensions, T2>& data_out,
+	      scaleT& scale_factor,
+	      const Array<num_dimensions, T1>& data_in)
+{
+    assert(data_in.get_index_range() == data_out.get_index_range());
+
+    NumericInfo<T1> info1;
+    NumericInfo<T2> info2;
+    
+    find_scale_factor(data_in, info1, info2, scale_factor);
+    if (scale_factor == 0)
+    {
+      // data_in contains only 0
+      data_out.fill(0);
+      return;
+    }
+    
+    
+    // do actual conversion
+    // KT: I coded the various checks on the data types in the loop.
+    // This is presumably slow, but all these conditionals can be 
+    // resolved at compile time, so a good compiler does the work for me.
+    Array<num_dimensions,T2>::full_iterator out_iter = data_out.begin_all();
+    Array<num_dimensions,T1>::const_full_iterator in_iter = data_in.begin_all();
+    for (;
+         in_iter != data_in.end_all();
+         in_iter++, out_iter++)
+    {    
+	   //TODO can remove check on <t1>.signed_type
+      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
+      {
+	// truncate negatives
+	*out_iter = 0;
+      }
+      else
+	*out_iter = 
+ 	  NumericInfo<T2>().integer_type() ?
+	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
+            static_cast<T2>(*in_iter / scale_factor);
+    }
+    
+}
+#endif
+
+#endif
+
 /***************************************************************
   Template instantiations :
    for num_dimensions=1,2,3
-   T1,T2 : float, short, scaleT : Real
-   T1,T2 : float, unsigned short, scaleT : Real
+   T1,T2 : float, short, scaleT : float
+   T1,T2 : float, unsigned short, scaleT : float
 
-   T1,T2 : short, unsigned short, scaleT: Real (only for linking)
-   T1=T2 : short, unsigned short, float, scaleT: Real
+   T1,T2 : short, unsigned short, scaleT: float (only for linking)
+   T1=T2 : short, unsigned short, float, scaleT: float
 ***************************************************************/
 
-/*
- VC 5.0 has a bug that it cannot resolve the num_dimensions template-arg
- when using convert_array. You have to specify all template args explicitly.
- I do this here with macros to prevent other compilers breaking on it
- (notably VC 6.0...)
- */
-#if defined(_MSC_VER) && (_MSC_VER < 1200)
-#define INSTANTIATE(dim, type_in, type_out) \
-   template \
-   Array<dim,type_out> convert_array<dim,type_out, type_in>( \
-                              Real& scale_factor, \
-                              const Array<dim,type_in>& data_in, \
-			      const NumericInfo<type_out> info2);
-#else
+
 #define INSTANTIATE(dim, type_in, type_out) \
    template \
    Array<dim,type_out> convert_array<>( \
-			      Real& scale_factor, \
+			      float& scale_factor, \
 		              const Array<dim,type_in>& data_in, \
 			      const NumericInfo<type_out> info2);
-#endif
 
 
 
@@ -710,13 +793,6 @@ INSTANTIATE(1, short, short);
 INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
-#if 0
-template 
-  void convert_array<2,float, short>(  Array<2,float>& data_out,
-                              Real& scale_factor, 
-                              const Array<2,short>& data_in, 
-			      const NumericInfo<float> info2);
-#endif
 
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
@@ -743,4 +819,53 @@ INSTANTIATE(3, float, float);
 
 #undef INSTANTIATE
 
+// TODO remove
+#if defined(ARRAY_FULL) && defined(ARRAY_CONST_IT)
+#define INSTANTIATE(dim, type_in, type_out) \
+   template \
+   Array<dim,type_out> convert_array_FULL<>( \
+			      float& scale_factor, \
+		              const Array<dim,type_in>& data_in, \
+			      const NumericInfo<type_out> info2);
+
+
+
+INSTANTIATE(1, float, short);
+INSTANTIATE(1, float, unsigned short);
+INSTANTIATE(1, short, float);
+INSTANTIATE(1, unsigned short, float);
+INSTANTIATE(1, unsigned short, short);
+INSTANTIATE(1, short, unsigned short);
+
+INSTANTIATE(1, short, short);
+INSTANTIATE(1, unsigned short, unsigned short);
+INSTANTIATE(1, float, float);
+
+
+INSTANTIATE(2, float, short);
+INSTANTIATE(2, float, unsigned short);
+INSTANTIATE(2, short, float);
+INSTANTIATE(2, unsigned short, float);
+INSTANTIATE(2, unsigned short, short);
+INSTANTIATE(2, short, unsigned short);
+
+INSTANTIATE(2, short, short);
+INSTANTIATE(2, unsigned short, unsigned short);
+INSTANTIATE(2, float, float);
+
+INSTANTIATE(3, float, short);
+INSTANTIATE(3, float, unsigned short);
+INSTANTIATE(3, short, float);
+INSTANTIATE(3, unsigned short, float);
+INSTANTIATE(3, unsigned short, short);
+INSTANTIATE(3, short, unsigned short);
+
+INSTANTIATE(3, short, short);
+INSTANTIATE(3, unsigned short, unsigned short);
+INSTANTIATE(3, float, float);
+
+
+#undef INSTANTIATE
+
+#endif
 END_NAMESPACE_TOMO
