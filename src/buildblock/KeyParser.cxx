@@ -304,6 +304,7 @@ KeyParser::add_key(const string& keyword, double * variable)
   {
     add_key(keyword, KeyArgument::DOUBLE, variable);
   }
+
 void
 KeyParser::add_key(const string& keyword, int * variable)
   {
@@ -328,6 +329,12 @@ KeyParser::add_key(const string& keyword, string * variable)
     add_key(keyword, KeyArgument::ASCII, variable);
   }
 
+void
+KeyParser::add_key(const string& keyword, int * variable,
+                   const ASCIIlist_type * list_of_values_ptr)
+  {
+    add_key(keyword, KeyArgument::ASCIIlist, variable, list_of_values_ptr);
+  }
  
 void
 KeyParser::add_start_key(const string& keyword)
@@ -677,7 +684,6 @@ assign_to_list(T1& mylist, const T2& value, const int current_index,
 
 void KeyParser::set_variable()
 {
-  // KT 07/10/2002 new
   if (!keyword_has_a_value)
     return;
 
@@ -734,8 +740,21 @@ void KeyParser::set_variable()
 	  
 	case KeyArgument::ASCIIlist :
 	  {
-	    *((int *)current->p_object_variable) =
-	      find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    const int index =
+              find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
+	    *((int *)current->p_object_variable) = index;
+            if (index == -1)
+            { 
+              // it was not in the list
+              // TODO we should use warning() instead
+              cerr << "KeyParser warning : value of keyword \""
+                   << keyword << "\" is \""
+                   << par_ascii
+                   << "\"\n\tshould have been one of:";
+              for (unsigned int i=0; i<current->p_object_list_of_values->size(); i++)
+                cerr << "\n\t" << (*current->p_object_list_of_values)[i];
+              cerr << '\n' << endl;
+            }
 	    break;
 	  }
 	case KeyArgument::LIST_OF_INTS :
@@ -762,7 +781,7 @@ void KeyParser::set_variable()
 	  break;
 	}
     }
-  else														// Sets vector elements using current_index
+  else	// Sets vector elements using current_index
     {
       switch(current->type)
 	{
@@ -790,9 +809,21 @@ void KeyParser::set_variable()
 	  
 	case KeyArgument::ASCIIlist :
 	  {
+	    const int index_in_asciilist =
+              find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
 	    assign_to_list(*(IntVect*)current->p_object_variable, 
-			   find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values)), 
-			   current_index, keyword);
+			   index_in_asciilist, current_index, keyword);
+            if (index_in_asciilist == -1)
+            { 
+              // it was not in the list
+              // TODO we should use warning() instead
+              cerr << "KeyParser warning : value of keyword \""
+                   << keyword << "\" is \""
+                   << par_ascii
+                   << "\"\n\tshould have been one of:";
+              for (unsigned int i=0; i<current->p_object_list_of_values->size(); i++)
+                cerr << "\n\t" << (*current->p_object_list_of_values)[i];
+            }
 	    break;
 	  }
 	case KeyArgument::LIST_OF_INTS :
@@ -828,16 +859,6 @@ int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& 
       if (standardise_keyword(par_ascii) == standardise_keyword(list_of_values[i]))
 	return i;
   }
-  // it was not in the list
-  cerr << "Interfile warning : value of keyword \""
-       << keyword << "\" is \""
-       << par_ascii
-       << "\"\n\tshould have been one of:";
-  {
-    for (unsigned int i=0; i<list_of_values.size(); i++)
-      cerr << "\n\t" << list_of_values[i];
-  }
-  cerr << endl << endl;
   return -1;
 }  	
 
@@ -903,9 +924,11 @@ string KeyParser::parameter_info() const
       case KeyArgument::ASCII :
 	 s << *reinterpret_cast<string*>(i->second.p_object_variable); break;	  	  
       case KeyArgument::ASCIIlist :
-        { // TODO check
+        { 
 	    const int index = *reinterpret_cast<int*>(i->second.p_object_variable);
-            s << (*i->second.p_object_list_of_values)[index];	      
+            s << (index == -1 ?
+                   "UNALLOWED VALUE" :
+                   (*i->second.p_object_list_of_values)[index]);
 	    break;
 	}
       case KeyArgument::PARSINGOBJECT:
