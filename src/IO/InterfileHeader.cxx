@@ -426,8 +426,9 @@ int InterfilePSOVHeader::post_processing()
       return 1;
     }
 
-  //KT 12/11/98 derived segment_seqence fro ring differences
-  vector<int> segment_sequence = 
+  //KT 12/11/98 derived segment_sequence fro ring differences
+  // KT 12/11/98 a little bit later, use the class member.
+  segment_sequence = 
     find_segment_sequence(min_ring_difference, max_ring_difference);
 
   cerr << "Segment sequence :";
