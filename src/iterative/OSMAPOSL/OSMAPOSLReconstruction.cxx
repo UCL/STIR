@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 
 /*!
@@ -32,6 +32,11 @@ using std::cerr;
 using std::ends;
 using std::endl;
 #endif
+
+// KT 17/08/2000 limit update
+#include "NumericInfo.h"
+// for write_update_image
+#include "interfile.h"
 
 START_NAMESPACE_TOMO
 
@@ -92,6 +97,41 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
     }
 
 }
+
+
+
+
+// KT 17/08/2000 limit update, new static function, will be moved somewhere else
+static void
+truncate_min_max(DiscretisedDensity<3,float>& image, 
+                    const float new_min, const float new_max)
+{
+  float current_max = NumericInfo<float>().min_value();
+  float current_min = NumericInfo<float>().max_value();
+
+  for (int c1 = image.get_min_index(); c1 <= image.get_max_index(); ++c1)
+    for (int c2 = image[c1].get_min_index(); c2 <= image[c1].get_max_index(); ++c2)
+      for (int c3 = image[c1][c2].get_min_index(); c3 <= image[c1][c2].get_max_index(); ++c3)
+      {
+         const float current_value = image[c1][c2][c3];
+         if (current_value > current_max)
+           current_max = current_value;
+         if (current_value < current_min)
+           current_min = current_value;
+         if (current_value > new_max)
+           image[c1][c2][c3] = new_max;
+         if (current_value < new_min)
+           image[c1][c2][c3] = new_min;
+      }
+
+  cerr << "Update image old min,max: " 
+       << current_min << ", " << current_max
+       << ", new min,max " 
+       << max(current_min, new_min) << ", " << min(current_max, new_max)
+       << endl;
+}
+
+
 
 
 
@@ -197,7 +237,25 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
 
     }
 
-  
+  // KT 17/08/2000 limit update
+  // TODO move below thresholding?
+  if (parameters.write_update_image)
+  {
+    // allocate space for the filename assuming that
+    // we never have more than 10^49 subiterations ...
+    char * fname = new char[parameters.output_filename_prefix.size() + 60];
+    sprintf(fname, "%s_update_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
+    
+    // Write it to file
+    write_basic_interfile(fname, *multiplicative_update_image_ptr);
+    delete fname;
+  }
+
+  if (subiteration_num != 1)
+    truncate_min_max(*multiplicative_update_image_ptr, 
+                     static_cast<float>(parameters.minimum_relative_change), 
+                     static_cast<float>(parameters.maximum_relative_change));
+
   current_image_estimate *= *multiplicative_update_image_ptr; 
   
 
