@@ -99,6 +99,7 @@ private:
   DiscretisedDensity<3,float>* normalised_bck_image ;
   string normalised_bck_filename;
   int num_dim;
+  int number_of_coefficients_before_padding;
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
    // new
@@ -106,6 +107,8 @@ private:
    void virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const;
    void precalculate_filter_coefficients_2D (VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ArrayFilter2DUsingConvolution<float> >  > > >& all_filter_coefficients,
 					  DiscretisedDensity<3,elemT>* in_density) const;
+
+   
    
    
    virtual void set_defaults();
