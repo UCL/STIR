@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	bool same=(max_error/amplitude<=tolerance)?true:false;
 
 	cerr<<endl<<"Maximum absolute error = "<<max_error<<endl;
-	cerr<<"Error relative to sup-norm of first array = "<<(max_error/amplitude)*100<<endl;
+	cerr<<"Error relative to sup-norm of first array = "<<(max_error/amplitude)*100<<" %"<<endl;
 
 	cerr<<"Image arrays deemed ";
 
