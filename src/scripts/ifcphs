@@ -2,18 +2,14 @@
 # Shell script for copying Interfile files and their headers
 # Restriction: files are assumed to be called .hs .s
 # Kris Thielemans 27/07/99
-#
-echo $#
-if test 1 -eq 1; then echo ok; fi
-if [ 1 -eq 1 ]; then echo ok; fi
+
 if [ $# -lt 2 ]; then
   echo "Usage: $0 fromfiles destination";
   echo "'fromfiles' can be specified with or without extension"
   echo "When there is more than 1 name in 'fromfiles', 'destination' has "
   echo "to be a directory.";
 fi
-echo bla
-#
+
 # get last argument in a funny way
 destination=`echo $* |awk '{ print $NF }'`
 # test if last arg is a directory when there are more than 2 arguments
@@ -21,7 +17,7 @@ if [ $# -gt 2  -a ! -d $destination ]; then
     echo "Last argument must be a directory when giving more than 1 source";
     exit 1;
 fi
-#
+
 while [ $# -ge 2 ]; do
 
 	source=$1
@@ -30,7 +26,7 @@ while [ $# -ge 2 ]; do
 	  # try to remove the extension
 	  if [ -r  ${source%.*}.hs ]; then
 	    source=${source%.*};
-	  fi
+	  fi;
 	fi
 
 	filesnotfound=""
@@ -63,12 +59,3 @@ while [ $# -ge 2 ]; do
  	# end of processing current arg
 	shift;
 done
-
-
-
-
-
-
-
-
-
