@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __Tomo_Succeeded_H__
 #define __Tomo_Succeeded_H__
@@ -13,8 +13,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "tomo/common.h"
 
@@ -36,8 +36,8 @@ class Succeeded
 public:
   enum value { yes, no };
   Succeeded(const value& v) : v(v) {}
-  bool operator==(const Succeeded &v2) { return v == v2.v; }
-  bool operator!=(const Succeeded &v2) { return v != v2.v; }
+  bool operator==(const Succeeded &v2) const { return v == v2.v; }
+  bool operator!=(const Succeeded &v2) const { return v != v2.v; }
 private:
   value v;
 };
