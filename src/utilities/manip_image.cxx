@@ -32,7 +32,7 @@
 
 void display_halo(const PETImageOfVolume& main_buffer);
 
-void clean_rim(PETImageOfVolume& main_buffer);
+void trim_edges(PETImageOfVolume& main_buffer);
 void get_plane(PETImageOfVolume& main_buffer);
 void get_plane_row(PETImageOfVolume& main_buffer);
 
@@ -241,6 +241,12 @@ main(int argc, char *argv[]){
 	  cerr << "Min and Max in plane " 
 	       << main_buffer[zs+plane-1].find_min() 
 	       << " " << main_buffer[zs+plane-1].find_max() << endl;
+
+	  cerr << "Number of counts = " 
+	       << main_buffer[zs+plane-1].sum() 
+	       << endl;
+
+	  
 	  
 	}
 	break;
@@ -260,7 +266,7 @@ main(int argc, char *argv[]){
 
     case 6:
       {
-	clean_rim(main_buffer);
+	trim_edges(main_buffer);
 
 	break;
       }
@@ -382,11 +388,12 @@ void display_halo(const PETImageOfVolume& input_image){
 }
 
 
-void clean_rim(PETImageOfVolume& input_image){
+void trim_edges(PETImageOfVolume& input_image){
 
 
   const int xe=input_image.get_max_x();
   const int xs=input_image.get_min_x();
+
   const int xm=(xs+xe)/2;
   
 
@@ -395,6 +402,11 @@ void clean_rim(PETImageOfVolume& input_image){
 
   //MJ 17/11/98 use new function
   truncate_rim(input_image,rim_trunc);
+
+
+  //MJ 24/11/98 added end plane truncation capability at the request of KT
+
+  if(ask("Zero end planes?",false)) truncate_end_planes(input_image);
 
 }
 
@@ -542,9 +554,9 @@ void show_menu(){
     1. Display\n\
     2. Data total\n\
     3. Data plane-wise\n\
-    4. Min/Max for plane\n\
+    4. Min/Max & Counts plane-wise \n\
     5. Min/Max in image\n\
-    6. Trim rim \n\
+    6. Trim \n\
     7. Get plane\n\
     8. Get row\n\
     9. Counts\n\
@@ -615,7 +627,7 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
   math_buffer-=aux_image;
   in_place_abs(math_buffer);
-  clean_rim(math_buffer);
+  trim_edges(math_buffer);
 
   cerr <<endl<< "Min and Max absolute difference " << math_buffer.find_min() 
        << " " << math_buffer.find_max() << endl;
