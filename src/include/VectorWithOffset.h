@@ -1,4 +1,4 @@
-// $Id$ : $Date$
+// $Id$: $Date$
 
 #ifndef __VECTORWITHOFFSET_H__
 #define __VECTORWITHOFFSET_H__
@@ -17,17 +17,24 @@ public:
   // like in vector.h and defalloc.h
   typedef T value_type;
   typedef T * pointer;
+  typedef const T * const_pointer;
   typedef T * iterator;
   typedef const T * const_iterator;
   typedef T& reference;
   typedef const T& const_reference;
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
+#ifdef __MSL__
+  typedef reverse_iterator<const_iterator, value_type, const_reference, 
+    const_pointer, difference_type>  const_reverse_iterator;
+  typedef reverse_iterator<iterator, value_type, reference, 
+    pointer, difference_type> reverse_iterator;
+#else
   typedef reverse_iterator<const_iterator, value_type, const_reference, 
     difference_type>  const_reverse_iterator;
   typedef reverse_iterator<iterator, value_type, reference, difference_type>
      reverse_iterator;
-
+#endif
 protected:
 
   Int length;	// length of matrix (in cells)
