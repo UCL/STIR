@@ -14,8 +14,8 @@ LIB_SOURCES = \
 	CListRecordECAT966.cxx \
 	LmToProjData.cxx \
 	LmToProjDataBootstrap.cxx \
-	LmToProjDataWithMC.cxx \
-	TimeFrameDefinitions.cxx
+	LmToProjDataWithMC.cxx 
+	
 
 
 LIB_OBJS = $(LIB_SOURCES:%.cxx=${DEST}%.o)
