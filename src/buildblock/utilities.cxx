@@ -1,11 +1,22 @@
 //
 // $Id$
 //
+/*!
+  \file 
+ 
+  \brief non-inline implementations for utility.h
 
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+*/
 #include "utilities.h"
 
-
-// KT 21/10/98 new ask_ functions
+START_NAMESPACE_TOMO
 
 const char * const 
 find_filename(const char * const filename_with_directory)
@@ -527,3 +538,5 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
   }
   return memory;
 }
+
+END_NAMESPACE_TOMO

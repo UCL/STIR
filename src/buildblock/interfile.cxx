@@ -2,17 +2,31 @@
 // $Id$ :$Date$
 //
 
-/* 
-    Functions which read/write Interfile images
-    Pretty horrible implementations at the moment...
+/*!
+  \file 
+ 
+  \brief Implementation of functions which read/write Interfile data
 
-    First version: Kris Thielemans
-     */
+  \author Kris Thielemans 
+  \author Sanida Mustafovic
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+    
+*/
+//   Pretty horrible implementations at the moment...
 
 #include "InterfileHeader.h"
 #include "interfile.h"
 #include "utilities.h"
 
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::ofstream;
+#endif
 
 START_NAMESPACE_TOMO
 
