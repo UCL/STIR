@@ -2,7 +2,6 @@
 // $Id$
 //
 /*!
-
   \file
   \ingroup recon_buildblock
 
@@ -14,7 +13,6 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
 /*
@@ -35,19 +33,6 @@ using std::max;
 
 START_NAMESPACE_STIR
 
-/*
-  Siddon's algorithm works by looking at intersections of the 
-  'intra-voxel' planes with the LOR.
-
-  The LOR is parametrised as
-  \code
-  (x,y,z) = a (1/inc_x, 1/inc_y, 1/inc_z) + start_point
-  \endcode
-  Then values of 'a' are computed where the LOR intersects an intra-voxel plane.
-  For example, 'ax' are the values where x= n + 0.5 (for integer n).
-  Finally, we can go along the LOR and check which of the ax,ay,az is smallest,
-  as this determines which plane the LOR intersects at this point.
-*/
 void 
 RayTraceVoxelsOnCartesianGrid
         (ProjMatrixElemsForOneBin& lor, 
@@ -58,6 +43,15 @@ RayTraceVoxelsOnCartesianGrid
 {
 
   const CartesianCoordinate3D<float> difference = stop_point-start_point;
+
+  // Make sure there's enough space in the LOR to avoid reallocation.
+  // This will make it faster, but also avoid over-allocation
+  // (as most STL implementations double the allocated size at over-run).
+  lor.reserve(
+              static_cast<unsigned int>(ceil(fabs(difference.z()))) +
+              static_cast<unsigned int>(ceil(fabs(difference.y()))) +
+              static_cast<unsigned int>(ceil(fabs(difference.x()))) +
+              3);
 
   assert(difference.x() <=0);
   assert(difference.y() >=0);
@@ -134,5 +128,6 @@ RayTraceVoxelsOnCartesianGrid
         }
     }	// end of while (a<amax)           
   }
+
 }
 END_NAMESPACE_STIR
