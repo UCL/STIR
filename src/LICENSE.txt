@@ -64,7 +64,7 @@ statement and license.
 
 
 Explicit list of files that carry the PARAPET license
--------------------------------------------------------
+----------------------------------------------------
 ./analytic/FBP2D/FBP2DReconstruction.cxx
 ./analytic/FBP2D/RampFilter.cxx
 ./analytic/FBP3DRP/ColsherFilter.cxx
@@ -102,7 +102,7 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/VoxelsOnCartesianGrid.cxx
 ./buildblock/warning.cxx
 ./buildblock/zoom.cxx
-./CREDITS.txt
+./ChangeLog.bak
 ./display/display_array.cxx
 ./display/gen.c
 ./display/gen.h
@@ -271,7 +271,6 @@ Explicit list of files that carry the PARAPET license
 ./iterative/OSMAPOSL/OSMAPOSL.cxx
 ./iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
 ./iterative/sensitivity/sensitivity.cxx
-./LICENSE.txt
 ./recon_buildblock/BackProjectorByBin.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation_3DCho.cxx
@@ -319,3 +318,4 @@ Explicit list of files that carry the PARAPET license
 ./utilities/manip_image.cxx
 ./utilities/manip_projdata.cxx
 ./utilities/postfilter.cxx
+./xx
