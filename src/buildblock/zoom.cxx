@@ -202,24 +202,26 @@ zoom_image(PETImageOfVolume &image,
 
 
 // KT 17/01/2000 new
+// KT 16/02/2000 use CartesianCoordinate  
 void
 zoom_image(PETImageOfVolume &image,
-	   const Coordinate3D<float>& zooms,
-	   const Coordinate3D<float>& offsets,
-	   const Coordinate3D<int>& new_sizes)
+	   const CartesianCoordinate3D<float>& zooms,
+	   const CartesianCoordinate3D<float>& offsets,
+	   const CartesianCoordinate3D<int>& new_sizes)
 {
-    Point3D voxel_size(image.get_voxel_size().x/zooms.x,
-                       image.get_voxel_size().y/zooms.y,
-                       image.get_voxel_size().z/zooms.z);
-    
-    Point3D origin(image.get_origin().x + offsets.x,
-                   image.get_origin().y + offsets.y,
-		   image.get_origin().z + offsets.z);
 
-    // TODO use get_empty...
-    PETImageOfVolume new_image(Tensor3D<float>(-new_sizes.z/2, -new_sizes.z/2+new_sizes.z-1,
-                                               -new_sizes.y/2, -new_sizes.y/2+new_sizes.y-1,
-                                               -new_sizes.x/2, -new_sizes.x/2+new_sizes.x-1),
+  Point3D voxel_size(image.get_voxel_size().x/zooms.x(),
+		     image.get_voxel_size().y/zooms.y(),
+		     image.get_voxel_size().z/zooms.z());
+  
+  Point3D origin(image.get_origin().x + offsets.x(),
+		 image.get_origin().y + offsets.y(),
+		 image.get_origin().z + offsets.z());
+  
+  // TODO use get_empty...
+  PETImageOfVolume new_image(Tensor3D<float>(-new_sizes.z()/2, -new_sizes.z()/2+new_sizes.z()-1,
+                                               -new_sizes.y()/2, -new_sizes.y()/2+new_sizes.y()-1,
+                                               -new_sizes.x()/2, -new_sizes.x()/2+new_sizes.x()-1),
                                origin,
                                voxel_size);
     zoom_image(new_image, image);
