@@ -6,6 +6,7 @@ dir := local/scatter_buildblock
 $(dir)_LIB_SOURCES:= \
 	sample_scatter_points.cxx \
 	integral_scattpoint_det.cxx\
+        cached_factors.cxx\
 	scatter_estimate_for_one_scatter_point.cxx\
 	scatter_estimate_for_all_scatter_points.cxx\
 	scatter_viewgram.cxx\
