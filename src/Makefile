@@ -23,8 +23,9 @@ EXESUBDIRECTORIES= \
 
 SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 
-
-__TEST_local_Makefile:=$(shell if [ -e local/Makefile ]; then echo 1;  fi)
+ifeq ($(wildcard local/Makefile), local/Makefile)
+__TEST_local_Makefile:=1
+endif
 
 
 .PHONY: $(EXESUBDIRECTORIES) all install clean alllocal alldistrib
