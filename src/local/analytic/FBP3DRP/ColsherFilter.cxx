@@ -22,6 +22,7 @@
 #include "stir/Viewgram.h"
 #endif
 #include "local/stir/FBP3DRP/ColsherFilter.h"
+#include "stir/IndexRange2D.h"
 
 #ifdef __DEBUG_COLSHER
 // for debugging...
@@ -40,7 +41,7 @@
 
 START_NAMESPACE_STIR
 
-string ColsherFilter::parameter_info() const
+std::string ColsherFilter::parameter_info() const
 {
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this

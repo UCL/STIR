@@ -78,7 +78,7 @@ public:
                   float alpha_colsher_radial, float fc_colsher_radial);
 #endif
 
-  virtual string parameter_info() const;
+  virtual std::string parameter_info() const;
   
   ~ColsherFilter() {}
 
