@@ -85,6 +85,11 @@ public:
   
   //! Transform point 
   CartesianCoordinate3D<float> transform_point(const CartesianCoordinate3D<float>& point) const;
+  //! Transform bin in from some projection data
+  /*!  Finds 'closest' (in some sense) bin to the transformed LOR.
+
+     if NEW_ROT is not #defined at compilation time, 
+    it will throw an exception when arc-corrected data is used.*/
   void transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
 	             const ProjDataInfo& in_proj_data_info) const;
   //! Get relative transformation (not implemented at present)
