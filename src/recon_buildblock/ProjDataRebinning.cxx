@@ -15,7 +15,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/recon_buildblock/ProjDataRebinning.h"
+#include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/Succeeded.h"
 
 
