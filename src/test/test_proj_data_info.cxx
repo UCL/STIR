@@ -282,8 +282,8 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
       } // end of detectors_to_sinogram, sinogram_to_detector test
 
 	
-  for (view = 0; view < num_detectors/2; view++)
-    for (tang_pos_num = -(num_detectors/2); tang_pos_num < num_detectors/2; tang_pos_num++)
+  for (view = 0; view < num_detectors/2; ++view)
+    for (tang_pos_num = -(num_detectors/2)+1; tang_pos_num < num_detectors/2; ++tang_pos_num)
       {
 	int new_tang_pos_num, new_view;
 	bool positive_segment;
@@ -292,12 +292,13 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	positive_segment = 
 	  proj_data_info.get_view_tangential_pos_num_for_det_num_pair(new_view, new_tang_pos_num, det_num_a, det_num_b);
 
-	if (tang_pos_num != new_tang_pos_num || view != new_view)
+	if (tang_pos_num != new_tang_pos_num || view != new_view || !positive_segment)
 	  {
 	    cerr << "Problem at view = " << view << ", tang_pos_num = " << tang_pos_num
-		 << endl
-		 << "   sino -> dets -> sino gives new view, tang_pos_num :"
-		 << view << ", " << tang_pos_num << endl;
+		 << "\n   sino -> dets -> sino gives new view, tang_pos_num :"
+		 << new_view << ", " << new_tang_pos_num 
+                 << " with detector swapping " << positive_segment
+                 << endl;
 	  }
       } // end of sinogram_to_detector, detectors_to_sinogram test
 	
@@ -310,12 +311,16 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
       for (det_num_a = 0; det_num_a < num_detectors; det_num_a++)
 	for (det_num_b = 0; det_num_b < num_detectors; det_num_b++)
 	  {
-	    Bin bin;
-	    int det1;
-	    int det2;
-	    int ring1;
-	    int ring2;
-	
+            // skip case of equal detector numbers (as this is either a singular LOR)
+            // or an LOR parallel to the scanner axis
+            if (det_num_a == det_num_b)
+              continue;
+            Bin bin;
+            int det1;
+            int det2;
+            int ring1;
+            int ring2;
+            
 	    proj_data_info.get_bin_for_det_pair(bin,
 						det_num_a, ring_a, 
 						det_num_b, ring_b);
@@ -355,7 +360,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	   bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
 	   ++bin.axial_pos_num())
 	for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
-	  for (bin.tangential_pos_num() = -(num_detectors/2); 
+	  for (bin.tangential_pos_num() = -(num_detectors/2)+1; 
 	       bin.tangential_pos_num() < num_detectors/2; 
 	       ++bin.tangential_pos_num())
 	    {
