@@ -1,22 +1,20 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$ , Hammersmith Imanet Ltd
+    For internal GE use only
+*/
 /*!
   \file
   \ingroup motion
 
-  \brief Declaration of class RigidObject3DTransformation
+  \brief Declaration of class stir::RigidObject3DTransformation
 
   \author  Sanida Mustafovic and Kris Thielemans
   $Date$
   $Revision$
 */
-
-/*
-    Copyright (C) 2000- $Date$ , Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #ifndef __stir_RigidObject3DTransformation_H__
 #define __stir_RigidObject3DTransformation_H__
@@ -27,10 +25,41 @@
 #include "stir/Succeeded.h"
 #include "stir/Array.h"
 #include "stir/Bin.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfo.h"
 
 START_NAMESPACE_STIR
 
+/*! \ingroup  motion
+  \brief Class to perform rigid object transformations in 3 dimensions
+
+  Supported transformations include rotations and translations. Rotations are
+  encoded using quaternions. The convention used is described in<br>
+  B.K. Horn, <i>Closed-form solution of absolute orientation using 
+  unit quaternions</i>,
+  J. Opt. Soc. Am. A Vol.4 No. 6, (1987) p.629.
+
+  \warning This class is tuned to work with the Polaris coordinate system.
+  In particular, STIR uses a left-handed coordinate-system, while the Polaris uses
+  a right-handed system. To solve this issue, STIR coordinates are x,y swapped before
+  performing any actual transformation (and the result is swapped back of course).
+
+  After the swapping, the transformation that is applied is as follows
+  \f[ r' = \mathrm{conj}(q)(r-t)q \f]
+  where the quaternion is specified as \f$[q0,qx,qy,qz]\f$, while the translation
+  is initialised in the usual (in STIR) reverse order, e.g.
+  \begin{verbatim}
+  CartesianCoordinate3D<float> t(tz,ty,tx);
+  \end{verbatim}
+  \warning No swapping is performed on the translation. The whole transformation 
+  has to be specified in the right-handed system.
+
+  Note that this transformation is the inverse of Horn's.
+
+  This class can transform coordinates and  Bin object belonging to some projection data.
+
+  \warning The Euler angles are probably different from the ones used in the Shape3D hierarchy.
+  \todo define Euler angles
+*/
 class RigidObject3DTransformation
 {
 public:
@@ -51,19 +80,14 @@ public:
   //! Get Euler angles
   Coordinate3D<float> get_euler_angles() const;
   
-  //! Set Euler angles
+  
   //Succeeded set_euler_angles();
   
   //! Transform point 
   CartesianCoordinate3D<float> transform_point(const CartesianCoordinate3D<float>& point) const;
-#ifndef NEW_ROT
-  void transform_bin(Bin& bin,const ProjDataInfoCylindricalNoArcCorr& out_proj_data_info,
-	             const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const;
-#else
   void transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
 	             const ProjDataInfo& in_proj_data_info) const;
-#endif  
-  //! Get relative transformation
+  //! Get relative transformation (not implemented at present)
   void get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference);   
   
   static void quaternion_2_euler(Coordinate3D<float>& Euler_angles, const Quaternion<float>& quat);
