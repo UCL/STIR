@@ -195,14 +195,15 @@ forward_project_view_2D(Viewgram<float> & pos_view,
 
   // KT 20/06/2001 changed 'int s' parameter to 'float s_in_mm'
   //! The actual implementation of Siddon's algorithm 
+  template <int symmetry_type> 
   static void proj_Siddon(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
 			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
 			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
-			  const int Siddon,
 			  const int num_planes_per_axial_pos,
-			  const float axial_pos_to_z_offset);
+			  const float axial_pos_to_z_offset,
+			  const float norm_factor);
 
 
   virtual void set_defaults();
