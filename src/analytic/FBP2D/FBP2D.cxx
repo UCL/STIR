@@ -4,7 +4,7 @@
 /*! 
   \file 
   \ingroup FBP2D
-  \ingroup reconstructors
+  \ingroup main_programs
   \brief Main program for FBP2D reconstruction 
   \author Kris Thielemans
   $Date$
