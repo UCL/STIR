@@ -22,6 +22,7 @@
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/RelatedViewgrams.h"
 
 START_NAMESPACE_STIR
 
