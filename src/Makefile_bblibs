@@ -14,6 +14,24 @@ LIB_DISPLAY= \
 LIB_LOGLIK_BUILDINGBLOCK= \
    ${WORKSPACE}/iterative/LogLik_buildblock/${DEST}libLogLik_buildblock.a
 
+
+LIB_LISTMODE_BUILDINGBLOCK= \
+   ${WORKSPACE}/listmode_buildblock/${DEST}liblistmode_buildblock.a
+
+LIB_SHAPE_BUILDINGBLOCK= \
+   ${WORKSPACE}/Shape_buildblock/${DEST}libShape_buildblock.a
+
+SHAPE_BUILDBLOCK_REGISTRIES= \
+   ${WORKSPACE}/Shape_buildblock/${DEST}Shape_buildblock_registries.o
+
+LIB_EVAL_BUILDINGBLOCK= \
+   ${WORKSPACE}/eval_buildblock/${DEST}libeval_buildblock.a
+
+
+LIB_SHAPE_BUILDINGBLOCK= \
+   ${WORKSPACE}/Shape_buildblock/${DEST}libShape_buildblock.a
+
+
 # name definitions for all explicit object files
 BUILDBLOCK_REGISTRIES= \
     ${WORKSPACE}/buildblock/$(DEST)buildblock_registries.o
@@ -22,6 +40,10 @@ IO_REGISTRIES= \
 
 RECON_BUILDBLOCK_REGISTRIES= \
    ${WORKSPACE}/recon_buildblock/$(DEST)recon_buildblock_registries.o
+
+SHAPE_BUILDBLOCK_REGISTRIES= \
+   ${WORKSPACE}/Shape_buildblock/${DEST}Shape_buildblock_registries.o
+
 
 # make rules for the libraries and registries
 $(LIB_DISPLAY) : FORCE 
@@ -38,6 +60,15 @@ $(LIB_RECON_BUILDINGBLOCK) $(RECON_BUILDBLOCK_REGISTRIES) : FORCE
 
 ${LIB_LOGLIK_BUILDINGBLOCK} : FORCE
 	cd $(WORKSPACE)/iterative/LogLik_buildblock; mkdir -p $(DEST); $(MAKE) all;
+
+
+$(LIB_LISTMODE_BUILDINGBLOCK) : FORCE
+	cd $(WORKSPACE)/listmode_buildblock; mkdir -p $(DEST); $(MAKE) all;
+$(LIB_SHAPE_BUILDINGBLOCK) $(SHAPE_BUILDBLOCK_REGISTRIES): FORCE
+	cd $(WORKSPACE)/Shape_buildblock; mkdir -p $(DEST); $(MAKE) all;
+
+$(LIB_EVAL_BUILDINGBLOCK) : FORCE2
+	cd $(WORKSPACE)/eval_buildblock; mkdir -p $(DEST); $(MAKE) all;
 
 
 FORCE:
