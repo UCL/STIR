@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"
@@ -114,16 +114,11 @@ DiscretisedDensity<num_dimensions,elemT>::
     {
       warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
 	      filename.c_str());
-      string interfile_header_name;
-      if (write_basic_interfile_header_for_ECAT7(interfile_header_name, filename, 1,1,0,0) ==
-        Succeeded::no)
-        return 0;
-#ifndef NDEBUG
-      warning("DiscretisedDensity::read_from_file wrote interfile header %s\nNow reading as interfile\n", 
-        interfile_header_name.c_str());
-#endif
-      return 
-        read_interfile_image(interfile_header_name);
+      DiscretisedDensity<num_dimensions,elemT> * density_ptr =
+	ECAT7_to_VoxelsOnCartesianGrid(filename,
+				       /*frame_num, gate_num, data_num, bed_num*/1,1,0,0);
+      if (!is_null_ptr(density_ptr))
+	return density_ptr;
     }
     else
     {
