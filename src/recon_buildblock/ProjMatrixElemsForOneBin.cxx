@@ -186,14 +186,11 @@ merge( ProjMatrixElemsForOneBin &lor2 )
   lor2.sort();
 
   iterator element_ptr = begin();
-#ifndef __GNUC__
-  const_iterator element_ptr2= lor2.begin();
-#else
-  // gcc 3.0.1 (and 3.0.3) has a bug that it doesn't compile the insert() line flagged below 
-  // (10 lines further on).
-  // Making it a non-const iterator works around the problem
   iterator element_ptr2= lor2.begin();
-#endif
+  // implementation note: cannot use const_iterator in the line above
+  // as some compilers (including gcc 3.* and VC 7.0) would not compile
+  // the elements.insert() line below, as the types of the iterators no longer 
+  // match exactly.
 #if 1
   // KT 15/05/2002 much faster implementation than before, and its output is sorted
 #ifndef NDEBUG
@@ -204,7 +201,7 @@ merge( ProjMatrixElemsForOneBin &lor2 )
     if (element_ptr == end())
     {
       elements.reserve(size() + lor2.end() - element_ptr2);
-      elements.insert(end(), element_ptr2, lor2.end()); // here's where the gcc bug appeared
+      elements.insert(end(), element_ptr2, lor2.end()); 
       break;
     }
     if (value_type::coordinates_equal(*element_ptr2, *element_ptr))
