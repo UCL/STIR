@@ -12,13 +12,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
 
 #include "local/stir/recon_buildblock/BinNormalisationUsingProfile.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/stream.h"
 
 START_NAMESPACE_STIR
 
@@ -42,13 +43,21 @@ bool
 BinNormalisationUsingProfile::
 post_processing()
 {
+#if 0
   profile = Array<1,float>(-114,113);
   ifstream profile_data(profile_filename.c_str());
   for (int i=profile.get_min_index(); i<=profile.get_max_index(); ++i)
     profile_data >> profile[i];
+#else
+  ifstream profile_data(profile_filename.c_str());
+  profile_data >> profile;
+  profile.set_offset(-(profile.get_length()/2));
+#endif
   if (!profile_data)
-    error("Error reading profile %s\n", profile_filename.c_str());
-
+    {
+      warning("Error reading profile %s\n", profile_filename.c_str());
+      return true;
+    }
   return false;
 }
 
@@ -61,13 +70,10 @@ BinNormalisationUsingProfile()
 
 BinNormalisationUsingProfile::
 BinNormalisationUsingProfile(const string& filename)
-    : profile(  Array<1,float>(-114,113) )
+  : profile_filename(filename)
 {
-  ifstream profile_data(filename.c_str());
-  for (int i=profile.get_min_index(); i<=profile.get_max_index(); ++i)
-    profile_data >> profile[i];
-  if (!profile_data)
-    error("Error reading profile %s\n", filename.c_str());
+  if (post_processing()==true)
+    error("Exiting\n");
 }
 
 void 
