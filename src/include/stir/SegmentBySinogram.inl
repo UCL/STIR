@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -29,78 +29,78 @@ template <typename elemT>
 int 
 SegmentBySinogram<elemT> ::get_num_axial_poss() const
 {
-   return get_length();
+   return this->get_length();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_min_axial_pos_num() const
 {
-  return get_min_index();
+  return this->get_min_index();
 }
 
 template <typename elemT>
 int 
 SegmentBySinogram<elemT>::get_max_axial_pos_num() const
 {
-  return get_max_index();
+  return this->get_max_index();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_num_views() const
 {
-  return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_length();
+  return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_length();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_min_view_num() const
 {
-  return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_min_index();
+  return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_min_index();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_max_view_num() const
 {
-return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_max_index();
+return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_max_index();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_num_tangential_poss() const
 {
-  return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_length();
+  return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_length();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_min_tangential_pos_num() const
 {
- return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_min_index();
+ return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_min_index();
 }
 
 template <typename elemT>
 int
 SegmentBySinogram<elemT>::get_max_tangential_pos_num() const
 {
-return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_max_index();
+return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()].get_max_index();
 }
  
 template <typename elemT>
 typename SegmentBySinogram<elemT>::StorageOrder 
 SegmentBySinogram<elemT>::
 get_storage_order() const
-  { return StorageBySino; }
+  { return Segment<elemT>::StorageBySino; }
 
 template <typename elemT>
 Sinogram<elemT> 
 SegmentBySinogram<elemT>::
 get_sinogram(int axial_pos_num) const
 { return Sinogram<elemT>(Array<3,elemT>::operator[](axial_pos_num), 
-                         proj_data_info_ptr, axial_pos_num, 
-                         get_segment_num()); }
+                         Segment<elemT>::proj_data_info_ptr, axial_pos_num, 
+                         Segment<elemT>::get_segment_num()); }
 
 template <typename elemT>
 void 

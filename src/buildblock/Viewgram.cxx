@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -38,7 +38,7 @@ void
 Viewgram<elemT>::
 grow(const IndexRange<2>& range)
 {   
-  if (range == get_index_range())
+  if (range == this->get_index_range())
     return;
 
   assert(range.is_regular()==true);
@@ -64,6 +64,6 @@ grow(const IndexRange<2>& range)
  instantiations
  ****************************/
 
-template Viewgram<float>;
+template class Viewgram<float>;
 
 END_NAMESPACE_STIR

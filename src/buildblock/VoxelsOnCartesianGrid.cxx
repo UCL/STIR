@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -132,7 +132,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
                                                     const CartesianCoordinate3D<int>& sizes)
 						    
 {
-  set_origin(origin);
+  this->set_origin(origin);
 
   int z_size = sizes.z();
   // initialise to 0 to prevent compiler warnings
@@ -141,7 +141,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
   float s_sampling = 0;
   find_sampling_and_z_size(z_sampling, s_sampling, z_size, &proj_data_info);
   
-  set_grid_spacing(
+  this->set_grid_spacing(
       CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
       );
   int x_size_used = sizes.x();
@@ -174,7 +174,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
 		      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
 
 
-  grow(range);
+  this->grow(range);
 }
 
 /*!
@@ -187,9 +187,9 @@ VoxelsOnCartesianGrid<elemT>*
 VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 {
-  return new VoxelsOnCartesianGrid(get_index_range(),
-		                   get_origin(), 
-		                   get_grid_spacing());
+  return new VoxelsOnCartesianGrid(this->get_index_range(),
+		                   this->get_origin(), 
+		                   this->get_grid_spacing());
 }
 
 
@@ -215,7 +215,7 @@ template<class elemT>
 void 
 VoxelsOnCartesianGrid<elemT>::set_voxel_size(const BasicCoordinate<3,float>& c) 
 {
-  set_grid_spacing(c);
+  this->set_grid_spacing(c);
 }
 
 template<class elemT>  
@@ -223,8 +223,8 @@ PixelsOnCartesianGrid<elemT>
 VoxelsOnCartesianGrid<elemT>::get_plane(const int z) const
 {
   PixelsOnCartesianGrid<elemT> 
-    plane(operator[](z),
-          get_origin(),
+    plane(this->operator[](z),
+          this->get_origin(),
 	  Coordinate2D<float>(get_voxel_size().y(), get_voxel_size().x())
 	  );
   return plane;
@@ -239,11 +239,11 @@ VoxelsOnCartesianGrid<elemT>::set_plane(const PixelsOnCartesianGrid<elemT>& plan
   assert(get_max_x() == plane.get_max_x());
   assert(get_min_y() == plane.get_min_y());
   assert(get_max_y() == plane.get_max_y());
-  assert(get_origin() == plane.get_origin());
+  assert(this->get_origin() == plane.get_origin());
   assert(get_voxel_size().x() == plane.get_pixel_size().x());
   assert(get_voxel_size().y() == plane.get_pixel_size().y());
   
-  operator[](z) = plane;	  
+  this->operator[](z) = plane;	  
 }
 
 template<class elemT>   
@@ -260,12 +260,12 @@ VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
 
-  get_regular_range(min_indices, max_indices);
+  this->get_regular_range(min_indices, max_indices);
   assert(min_z <= min_indices.z());
   assert(max_z >= max_indices.z());
   min_indices.z() = min_z;
   max_indices.z() = max_z;
-  grow(IndexRange<3>(min_indices, max_indices));
+  this->grow(IndexRange<3>(min_indices, max_indices));
 }
 
 /****************************
@@ -354,6 +354,6 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
 /**********************************************
  instantiations
  **********************************************/
-template VoxelsOnCartesianGrid<float>;
+template class VoxelsOnCartesianGrid<float>;
 
 END_NAMESPACE_STIR

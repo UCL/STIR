@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/SeparableCartesianMetzImageFilter.h"
@@ -140,18 +140,18 @@ SeparableCartesianMetzImageFilter<elemT>::
 initialise_keymap()
 {
   ImageProcessor<3, elemT>::initialise_keymap();
-  parser.add_start_key("Separable Cartesian Metz Filter Parameters");
+  this->parser.add_start_key("Separable Cartesian Metz Filter Parameters");
 
-  parser.add_key("x-dir filter FWHM (in mm)", &fwhms[3]);
-  parser.add_key("y-dir filter FWHM (in mm)", &fwhms[2]);
-  parser.add_key("z-dir filter FWHM (in mm)", &fwhms[1]);
-  parser.add_key("x-dir filter Metz power", &metz_powers[3]);
-  parser.add_key("y-dir filter Metz power", &metz_powers[2]);
-  parser.add_key("z-dir filter Metz power", &metz_powers[1]);   
-  parser.add_key("x-dir maximum kernel size", &max_kernel_sizes[3]);
-  parser.add_key("y-dir maximum kernel size", &max_kernel_sizes[2]);
-  parser.add_key("z-dir maximum kernel size", &max_kernel_sizes[1]);
-  parser.add_stop_key("END Separable Cartesian Metz Filter Parameters");
+  this->parser.add_key("x-dir filter FWHM (in mm)", &fwhms[3]);
+  this->parser.add_key("y-dir filter FWHM (in mm)", &fwhms[2]);
+  this->parser.add_key("z-dir filter FWHM (in mm)", &fwhms[1]);
+  this->parser.add_key("x-dir filter Metz power", &metz_powers[3]);
+  this->parser.add_key("y-dir filter Metz power", &metz_powers[2]);
+  this->parser.add_key("z-dir filter Metz power", &metz_powers[1]);   
+  this->parser.add_key("x-dir maximum kernel size", &max_kernel_sizes[3]);
+  this->parser.add_key("y-dir maximum kernel size", &max_kernel_sizes[2]);
+  this->parser.add_key("z-dir maximum kernel size", &max_kernel_sizes[1]);
+  this->parser.add_stop_key("END Separable Cartesian Metz Filter Parameters");
 }
 
 
@@ -171,7 +171,7 @@ SeparableCartesianMetzImageFilter<float>::registered_name =
 // static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy;
 // have the above variable in a separate file, which you need to pass at link time
 
-template SeparableCartesianMetzImageFilter<float>;
+template class SeparableCartesianMetzImageFilter<float>;
 
 END_NAMESPACE_STIR
 

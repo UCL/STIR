@@ -41,7 +41,7 @@ GeneralisedPrior<elemT>::set_defaults()
 #  pragma warning(disable:4661)
 #  endif
 
-template GeneralisedPrior<float>;
+template class GeneralisedPrior<float>;
 
 END_NAMESPACE_STIR
 

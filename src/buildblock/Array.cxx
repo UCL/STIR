@@ -39,11 +39,11 @@ void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   base_type::grow(range.get_min_index(), range.get_max_index());
-  base_type::iterator iter = begin();
+  base_type::iterator iter = base_type::begin();
   IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
   for (;
-  iter != end(); 
-  iter++, range_iter++)
+       iter != base_type::end(); 
+       iter++, range_iter++)
     (*iter).grow(*range_iter);
 
   is_regular_range = range.is_regular();
@@ -57,7 +57,7 @@ void
 Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
@@ -95,7 +95,7 @@ Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, float& sca
   }
 #undef read_and_convert
 
-  check_state();
+  base_type::check_state();
 }
 
 /**************************** write_data *****************************/
@@ -121,7 +121,7 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
 		                         float& scale,
 		                         const ByteOrder byte_order ) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -161,7 +161,7 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
     }
 #undef convert_and_write
 
-  check_state();
+  base_type::check_state();
 }
 
 #else // MEMBER_TEMPLATES
@@ -173,7 +173,7 @@ void Array<num_dimensions,elemT>::write_data(ostream& s,
 				  scaleT& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   Array<num_dimensions,elemT2> data = 
     convert_array(scale, *this,  NumericInfo<type>());
   data.write_data(s, byte_order);
@@ -188,7 +188,7 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
 				  scaleT& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   data.write_data(s, byte_order);
   // TODO you might want to use the scale even in this case, 
   // but at the moment we don't
@@ -204,7 +204,7 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
 				  float& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -257,23 +257,23 @@ void
 Array<1, elemT>::read_data(istream& s, 
 			   const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   
   if (!s)
   { error("Array::read_data: error before reading from stream\n"); }
   if (s.eof())
   { error("Array::read_data: reading past EOF\n"); }
   
-  s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
-  release_data_ptr();
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  base_type::release_data_ptr();
   
   if (!s)
   { error("Array::read_data: error after reading from stream \n"); }
-  check_state();
+  base_type::check_state();
   
   if (!byte_order.is_native_order())
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
     
 }
 
@@ -282,7 +282,7 @@ void
 Array<1, elemT>::write_data(ostream& s,
 			    const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   
   // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
   // While writing, the tensor is byte-swapped.
@@ -291,7 +291,7 @@ Array<1, elemT>::write_data(ostream& s,
   if (!byte_order.is_native_order())
   {
   Array<1, T> a_copy(*this);
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
   ByteOrder::swap_order(a_copy[i]);
   a_copy.write_data(s);
   return;
@@ -299,26 +299,26 @@ Array<1, elemT>::write_data(ostream& s,
   */
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
   if (!s)
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
-  check_state();
+  base_type::check_state();
 }
 
 /************************** 4 arg version *******************************/
@@ -330,7 +330,7 @@ template <class elemT>
 void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
@@ -347,7 +347,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::SHORT:
       {
 	typedef signed short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( convert_array(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -355,7 +355,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::USHORT:
       {
 	typedef unsigned short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( convert_array(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -363,7 +363,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::FLOAT:
       {
 	typedef float type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( convert_array(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -375,7 +375,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 // KT 17/05/2000 forgot to add write_data...
@@ -385,7 +385,7 @@ template <class elemT>
 void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -430,7 +430,7 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 #else // MEMBER_TEMPLATES
@@ -446,11 +446,11 @@ void Array<1,elemT>::read_data(istream& s,
 				 scaleT& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
-  Array<1,elemT2> data(get_min_index(), get_max_index());
+  base_type::check_state();
+  Array<1,elemT2> data(base_type::get_min_index(), base_type::get_max_index());
   data.read_data(s, byte_order);
   operator=( convert_array(scale, data, NumericInfo<elemT>()) );
-  check_state();
+  base_type::check_state();
 }
 
 /*! Partial specialisation to \c elemT = \c elemT2, \c scale will always be set to 1. */
@@ -460,12 +460,12 @@ void Array<1,elemT>::read_data(istream& s,
 				 scaleT& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   data.read_data(s, byte_order);
   // TODO you might want to use the scale even in this case, 
   // but at the moment we don't
   scale = scaleT(1);
-  check_state();
+  base_type::check_state();
 }
 
 
@@ -475,7 +475,7 @@ void Array<1,elemT>::read_data(ostream& s,
 				  float& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
@@ -524,7 +524,7 @@ void Array<1,elemT>::write_data(ostream& s,
 				 scaleT& scale,
 				 const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   Array<elemT2> data = 
     convert_array(scale, *this, NumericInfo<elemT2>());
   data.write_data(s, byte_order);
@@ -537,7 +537,7 @@ void Array<1,elemT>::write_data(ostream& s,
 				 scaleT& scale,
 				 const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   data.write_data(s, byte_order);
   // TODO you might want to use the scale even in this case, 
   // but at the moment we don't
@@ -549,7 +549,7 @@ template <class elemT>
 void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -588,7 +588,7 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 #endif // MEMBER_TEMPLATES
@@ -604,23 +604,23 @@ void
 Array<1, float>::read_data(istream& s, 
 			   const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   
   if (!s)
   { error("Error before reading from stream in read_data\n");  }
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
-  release_data_ptr();
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  base_type::release_data_ptr();
   
   if (!s)
   { error("Error after reading from stream in read_data\n");  }
-  check_state();
+  base_type::check_state();
   
   if (!byte_order.is_native_order())
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
     
 }
 
@@ -628,7 +628,7 @@ void
 Array<1, float>::write_data(ostream& s,
 			    const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   
   // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
   // While writing, the tensor is byte-swapped.
@@ -637,7 +637,7 @@ Array<1, float>::write_data(ostream& s,
   if (!byte_order.is_native_order())
   {
   Array<1, T> a_copy(*this);
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
     ByteOrder::swap_order(a_copy[i]);
   a_copy.write_data(s);
   return;
@@ -645,26 +645,26 @@ Array<1, float>::write_data(ostream& s,
   */
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
   if (!s)
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
-  check_state();
+  base_type::check_state();
 }
 
 /************** short ******************/
@@ -673,23 +673,23 @@ void
 Array<1, short>::read_data(istream& s, 
 			   const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   
   if (!s)
   { error("Error before reading from stream in read_data\n");  }
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
-  release_data_ptr();
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  base_type::release_data_ptr();
   
   if (!s)
   { error("Error after reading from stream in read_data\n");  }
-  check_state();
+  base_type::check_state();
   
   if (!byte_order.is_native_order())
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
     
 }
 
@@ -697,7 +697,7 @@ void
 Array<1, short>::write_data(ostream& s,
 			    const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   
   // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
   // While writing, the tensor is byte-swapped.
@@ -706,7 +706,7 @@ Array<1, short>::write_data(ostream& s,
   if (!byte_order.is_native_order())
   {
   Array<1, T> a_copy(*this);
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
   ByteOrder::swap_order(a_copy[i]);
   a_copy.write_data(s);
   return;
@@ -714,26 +714,26 @@ Array<1, short>::write_data(ostream& s,
   */
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
   if (!s)
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
-  check_state();
+  base_type::check_state();
 
 }/************** unsigned short ******************/
 
@@ -742,23 +742,23 @@ void
 Array<1, unsigned short>::read_data(istream& s, 
 			   const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   
   if (!s)
   { error("Error before reading from stream in read_data\n");  }
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
-  release_data_ptr();
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  base_type::release_data_ptr();
   
   if (!s)
   { error("Error after reading from stream in read_data\n");  }
-  check_state();
+  base_type::check_state();
   
   if (!byte_order.is_native_order())
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
     
 }
 
@@ -766,7 +766,7 @@ void
 Array<1, unsigned short>::write_data(ostream& s,
 			    const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   
   // TODO handling of byte-swapping is unsafe when we wouldn't call abort()
   // While writing, the tensor is byte-swapped.
@@ -775,7 +775,7 @@ Array<1, unsigned short>::write_data(ostream& s,
   if (!byte_order.is_native_order())
   {
   Array<1, T> a_copy(*this);
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
   ByteOrder::swap_order(a_copy[i]);
   a_copy.write_data(s);
   return;
@@ -783,26 +783,26 @@ Array<1, unsigned short>::write_data(ostream& s,
   */
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
   if (!s)
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
-    for(int i=get_min_index(); i<=get_max_index(); i++)
-      ByteOrder::swap_order(num[i]);
+    for(int i=base_type::get_min_index(); i<=base_type::get_max_index(); i++)
+      ByteOrder::swap_order(base_type::num[i]);
   }
   
-  check_state();
+  base_type::check_state();
 }
 
 #if !defined(_MSC_VER) || (_MSC_VER > 1100)
@@ -836,7 +836,7 @@ Array<1, unsigned short>::write_data(ostream& s,
 void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -881,13 +881,13 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
@@ -904,7 +904,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::SHORT:
       {
 	typedef signed short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -912,7 +912,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::USHORT:
       {
 	typedef unsigned short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -920,7 +920,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::FLOAT:
       {
 	typedef float type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -932,7 +932,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 #undef elemT
@@ -946,7 +946,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -991,13 +991,13 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
@@ -1014,7 +1014,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::SHORT:
       {
 	typedef signed short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -1022,7 +1022,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::USHORT:
       {
 	typedef unsigned short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -1030,7 +1030,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::FLOAT:
       {
 	typedef float type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -1042,7 +1042,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 #undef elemT
@@ -1055,7 +1055,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				  const ByteOrder byte_order) const
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       write_data(s, byte_order);
@@ -1100,13 +1100,13 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
-  check_state();
+  base_type::check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
@@ -1123,7 +1123,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::SHORT:
       {
 	typedef signed short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -1131,7 +1131,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::USHORT:
       {
 	typedef unsigned short type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -1139,7 +1139,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
     case NumericType::FLOAT:
       {
 	typedef float type;
-	Array<1,type> data(get_min_index(), get_max_index());
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
 	data.read_data(s, byte_order);
 	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
 	break;
@@ -1151,7 +1151,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
       
     }
 
-  check_state();
+  base_type::check_state();
 }
 
 #undef elemT

@@ -107,7 +107,7 @@ is_trivial() const
 
 
 // instantiation
-template SeparableArrayFunctionObject<3, float>;
+template class SeparableArrayFunctionObject<3, float>;
 
 END_NAMESPACE_STIR
 

@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/SegmentByView.h"
@@ -83,8 +83,8 @@ SegmentByView<elemT>::get_sinogram(int axial_pos_num) const
   for (int v=get_min_view_num(); v<= get_max_view_num(); v++)
     pre_sino[v] = Array<3,elemT>::operator[](v)[axial_pos_num];
   
-  return Sinogram<elemT>(pre_sino, proj_data_info_ptr, axial_pos_num, 
-		     get_segment_num());
+  return Sinogram<elemT>(pre_sino, this->proj_data_info_ptr, axial_pos_num, 
+			 this->get_segment_num());
 }
 
 template <typename elemT>
@@ -107,7 +107,7 @@ void
 SegmentByView<elemT>::
 grow(const IndexRange<3>& range)
 {   
-  if (range == get_index_range())
+  if (range == this->get_index_range())
     return;
 
   assert(range.is_regular()==true);
@@ -116,19 +116,19 @@ grow(const IndexRange<3>& range)
   // TODO
   assert(range.get_min_index() == 0);
 
-  ProjDataInfo* pdi_ptr = proj_data_info_ptr->clone();
+  ProjDataInfo* pdi_ptr = this->proj_data_info_ptr->clone();
 
   const int ax_min = range[0].get_min_index();
   const int ax_max = range[0].get_max_index();
   
-  pdi_ptr->set_min_axial_pos_num(ax_min, get_segment_num());
-  pdi_ptr->set_max_axial_pos_num(ax_max, get_segment_num());
+  pdi_ptr->set_min_axial_pos_num(ax_min, this->get_segment_num());
+  pdi_ptr->set_max_axial_pos_num(ax_max, this->get_segment_num());
   
   pdi_ptr->set_num_views(range.get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[0][ax_min].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[0][ax_min].get_max_index());
 
-  proj_data_info_ptr = pdi_ptr;
+  this->proj_data_info_ptr = pdi_ptr;
 
   Array<3,elemT>::grow(range);
 	
@@ -138,7 +138,7 @@ grow(const IndexRange<3>& range)
  instantiations
  *************************************/
 
-template SegmentByView<float>;
+template class SegmentByView<float>;
 
 
 END_NAMESPACE_STIR

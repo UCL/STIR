@@ -121,7 +121,7 @@ is_trivial() const
 
 
 // instantiation
-template MedianArrayFilter3D<float>;
+template class MedianArrayFilter3D<float>;
 
 END_NAMESPACE_STIR
 

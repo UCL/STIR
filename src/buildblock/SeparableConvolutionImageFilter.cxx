@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -37,11 +37,11 @@ initialise_keymap()
 {
   ImageProcessor<3, elemT>::initialise_keymap();
 
-  parser.add_start_key("Separable Convolution Filter Parameters");
-  parser.add_key("x-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+2)));
-  parser.add_key("y-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+1)));
-  parser.add_key("z-dir filter coefficients", &(*filter_coefficients_for_parsing.begin()));
-  parser.add_stop_key("END Separable Convolution Filter Parameters");
+  this->parser.add_start_key("Separable Convolution Filter Parameters");
+  this->parser.add_key("x-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+2)));
+  this->parser.add_key("y-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+1)));
+  this->parser.add_key("z-dir filter coefficients", &(*filter_coefficients_for_parsing.begin()));
+  this->parser.add_stop_key("END Separable Convolution Filter Parameters");
 
 }
 
@@ -221,6 +221,6 @@ set_defaults()
 #  pragma warning(disable:4660)
 #  endif
 
-template SeparableConvolutionImageFilter<float>;
+template class SeparableConvolutionImageFilter<float>;
 
 END_NAMESPACE_STIR
