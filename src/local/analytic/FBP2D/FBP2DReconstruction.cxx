@@ -42,22 +42,30 @@ string FBP2DReconstruction::parameter_info()
 }
 
 FBP2DReconstruction::
-FBP2DReconstruction(const Segment<float>& direct_sinos, const RampFilter& f)
-: filter(f),
-  direct_sinos(direct_sinos)
-{}
+FBP2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr, const RampFilter& f)
+: filter(f)
+{
+  parameters.proj_data_ptr = proj_data_ptr;
+}
 
 Succeeded 
 FBP2DReconstruction::
 reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
+  if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
+       (parameters.proj_data_ptr->get_proj_data_info_ptr()) == 0)
+  {
+    warning("Projection data has to be arc-corrected for FBP2D\n");
+    return Succeeded::no;
+  }
+
   VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
 
-  assert(direct_sinos.get_proj_data_info_ptr()->get_tantheta(Bin(direct_sinos.get_segment_num(),0,0,0)) ==0);
+  assert(fabs(parameters.proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0)) ) < 1.E-4);
 
   shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation(direct_sinos.get_proj_data_info_ptr()->clone(), 
+    new BackProjectorByBinUsingInterpolation(parameters.proj_data_ptr->get_proj_data_info_ptr()->clone(), 
        density_ptr,
     /*use_piecewise_linear_interpolation = */true, 
     /*use_exact_Jacobian = */ false);
@@ -65,21 +73,11 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   density_ptr->fill(0);
   
   // TODO get boundaries from the symmetries ?
-  for (int view=0; view <= direct_sinos.get_num_views() /4; view++) 
+  for (int view=0; view <= parameters.proj_data_ptr->get_num_views() /4; view++) 
   {         
-    // terrible trick to get a RelatedViewgrams object:
-    // first get an empty one
     RelatedViewgrams<float> viewgrams = 
-      direct_sinos.get_proj_data_info_ptr()->get_empty_related_viewgrams(ViewSegmentNumbers(view, 0),
-      back_projector_ptr->get_symmetries_used()->clone());
-    // now fill in with the actual data 
-    for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
-         viewgram_iter != viewgrams.end();
-         ++viewgram_iter)
-    {
-      *viewgram_iter = direct_sinos.get_viewgram(viewgram_iter->get_view_num());
-    }
-
+      parameters.proj_data_ptr->get_related_viewgrams(ViewSegmentNumbers(view, 0),
+                                                      back_projector_ptr->get_symmetries_used()->clone());   
 
     // now filter
     for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
@@ -92,82 +90,25 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     back_projector_ptr->back_project(*density_ptr, viewgrams);
   }  
   // Normalise the image
-  // This starts from the following reasoning:
-  //   integral(projection_data_for_one_view) == integral(image)
-  // We take the average of the lhs over all views (better for noise).
-  // We have to take proper units into account when replacing the 
-  // integrals by discrete sums:
-  //   sum_over_bins(projection_data_for_one_view) bin_size ==
-  //   sum_over_pixels(image) voxel_size.x voxel_size.y
   // The binsize factor is only there when the forward projector
   // uses mm units, instead of pixel-size units.
 
-  // KT & Darren Hogg 17/05/2000 finally found out the scale factor!
-#if 1
+  // KT & Darren Hogg 17/05/2000 finally found the scale factor!
+
   const ProjDataInfoCylindricalArcCorr& proj_data_info_cyl =
     dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
-    (*direct_sinos.get_proj_data_info_ptr());
+    (*parameters.proj_data_ptr->get_proj_data_info_ptr());
   // TODO remove magic, is a scale factor in the backprojector 
   const float magic_number=2*proj_data_info_cyl.get_ring_radius()*proj_data_info_cyl.get_num_views()/proj_data_info_cyl.get_ring_spacing();
 #ifdef NEWSCALE
   // added binsize etc here to get units ok
   // only do this when the forward projector units are appropriate
-  image *= magic_number / direct_sinos.get_num_views() *
+  image *= magic_number / parameters.proj_data_ptr->get_num_views() *
     proj_data_info_cyl.get_bin_size()/
-    (image.get_voxel_size().x*image.get_voxel_size().y);
+    (image.get_voxel_size().x()*image.get_voxel_size().y());
 #else
-  image *= magic_number / direct_sinos.get_num_views();
+  image *= magic_number / parameters.proj_data_ptr->get_num_views();
 #endif
-
-#else // old way of scaling 
-
-  const ProjDataInfoCylindricalArcCorr& proj_data_info_cyl =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
-    (*direct_sinos.get_proj_data_info_ptr());
-
-
-#ifdef NEWSCALE
-  // added binsize etc here to get units ok
-  // only do this when the forward projector units are appropriate
-#ifdef KTTEST  
-  cerr << "Reconstruct2DFBP: applying scale factor " <<
-     direct_sinos.sum()*proj_data_info_cyl.get_bin_size()/
-       (direct_sinos.get_num_views()* image.sum_positive()*
-        image.get_voxel_size().x*image.get_voxel_size().y) 
-        << endl;
-#endif
-  
-  
-  if(image.sum_positive()==0)
-    image.fill(0.F);
-  else
-    image*= direct_sinos.sum()*proj_data_info_cyl.get_bin_size()/
-       (direct_sinos.get_num_views()* image.sum()*
-        image.get_voxel_size().x*image.get_voxel_size().y);
-#else
-  // original code
-  if(1){
-      
-      if(image.sum()==0)
-          image.fill(0.F);
-      else
-      {
-#ifdef KTTEST
-	cerr << "Reconstruct2DFBP: applying scale factor " <<
-	    direct_sinos.sum()/
-              (direct_sinos.get_num_views()* image.sum()) << endl;
-#endif
-	  
-           image*= direct_sinos.sum()/
-              (direct_sinos.get_num_views()* image.sum());
-          
-	  
-      }
-}
- 
-#endif // !NEWSCALE
-
-#endif // old way of scaling plane by plane
 
   return Succeeded::yes;
 }

@@ -34,7 +34,7 @@ class FBP2DReconstruction : public Reconstruction
 {
 
 public:
-    FBP2DReconstruction(const Segment<float>& direct_sinos, const RampFilter& f);
+    FBP2DReconstruction(const shared_ptr<ProjData>&, const RampFilter& f);
 
     Succeeded reconstruct(shared_ptr<DiscretisedDensity<3,float> > const &);
 
@@ -47,7 +47,6 @@ protected:
     RampFilter filter;
 
 private:
-  const Segment<float>& direct_sinos;
   ReconstructionParameters parameters;
 
   virtual ReconstructionParameters& params();
