@@ -27,14 +27,22 @@ SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 __TEST_local_Makefile:=$(shell if [ -e local/Makefile ]; then echo 1;  fi)
 
 
-.PHONY: $(EXESUBDIRECTORIES) all install clean
+.PHONY: $(EXESUBDIRECTORIES) all install clean alllocal alldistrib
 
 # all is the default target (becomes it comes first)
-# it depends on the directories whose dependency rules will just 
-# execute make in their relevant subdirectory
-# this way, when make fails in one subdirectory, this make will fail 
+# it depends 2 targets: the files in the distribution, and any local files
+all: alldistrib alllocal
+
+# alldistrib target makes all files in the distribution (and any local
+# libraries that are linked in by local/Makefile_bblibs). It depends
+# on the directories whose dependency rules will just 
+# execute make in their relevant subdirectory.
+# This way, when make fails in one subdirectory, this make will fail 
 # as well
-all: $(EXESUBDIRECTORIES)
+alldistrib: $(EXESUBDIRECTORIES)
+
+
+alllocal:
 ifeq ($(__TEST_local_Makefile),1)
 	(cd local; $(MAKE) all);
 endif
