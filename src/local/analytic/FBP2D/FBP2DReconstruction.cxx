@@ -29,7 +29,7 @@
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Bin.h"
-
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -111,7 +111,7 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
     }
   if (pad_in_s<0 || pad_in_s>2)
     {
-      warning("padding factor has to be between 0 and 2 but is %g\n", pad_in_s);
+      warning("padding factor has to be between 0 and 2 but is %d\n", pad_in_s);
       return true;
     }
   if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
@@ -140,7 +140,7 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
     if (is_null_ptr(back_projector_sptr))
       {
 	warning("Back projector not set.\n");
-	return Succeeded::no;
+	return true;
       }
 
   return false;
@@ -264,8 +264,14 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
          viewgram_iter != viewgrams.end();
          ++viewgram_iter)
     {
+#ifdef NRFFT
       filter.apply(*viewgram_iter);
-    }
+#else
+      std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
+		    filter);
+
+#endif
+}
     //  and backproject
     back_projector_sptr->back_project(*density_ptr, viewgrams);
   } 
