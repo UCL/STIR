@@ -28,39 +28,30 @@
 
  
    TODO:
-   - implement the Normalisation class
+   - use the Normalisation class
+   - put into LogLikBasedAlgorithm
+
+  Modification history:
+  KT use OSMAPOSLParameters to get most of the parameters to avoid 
+     mistakes with unmatched sensitivity images
+  KT allow multiplicative normalisation
+  KT allow for different sized attenuation image when projectors can handle it
    */
 
 
 #include "ProjData.h"
-#include "ProjDataFromStream.h"
-#include "RelatedViewgrams.h"
-#include "ProjDataInfoCylindrical.h"
 #include "VoxelsOnCartesianGrid.h"
 #include "utilities.h"
 #include "interfile.h"
 
-#include "ArrayFunction.h"
-#include "recon_array_functions.h"
-
 #include "LogLikBased/common.h"
 
 #include "recon_buildblock/distributable.h"
-#if 0
-#ifndef USE_PMRT
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#else
-#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#endif
-#else
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-#endif
+#include "recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 
 #include "OSMAPOSL/OSMAPOSLParameters.h"
+#include <typeinfo>
+#include <iostream>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::endl;
@@ -78,18 +69,6 @@ class sensparameters{
 
 
 
-// A do-nothing class for normalisation
-class Normalisation
-{
-public:
-  virtual void apply(RelatedViewgrams<float>&) const {}
-};
-
-// KT 01/12/98 function which constructs ProjData (nothing else for the moment)
-ProjData * ask_parameters();
-
-
-
 void
  compute_sensitivity_image(DiscretisedDensity<3,float>& result,
                            shared_ptr<ProjData> const& proj_data_ptr,
@@ -100,10 +79,6 @@ void
 			   //const Normalisation& normalisation,
 			   const sensparameters &globals)
 {
-
-
-
-
 
 #ifdef TEST
 
@@ -121,8 +96,8 @@ void
 
 #endif
 
-    //warning("Currently ignoring attenuation factors (but not the attenuation image)\n");
-    // TODO norm
+    // TODO attenuation factors
+    assert(atten_proj_data_ptr.use_count() == 0);
     distributable_compute_sensitivity_image(result,
 					    proj_data_ptr->get_proj_data_info_ptr()->clone(),
                                             do_attenuation ? attenuation_image_ptr.get() : NULL,
@@ -159,22 +134,6 @@ void
 }
 
 
-ProjData * 
-ask_parameters()
-{
-  
-  shared_ptr<ProjDataInfo> proj_data_info_ptr = ProjDataInfo::ask_parameters();
-
-  iostream *out = 0;
-  
-  return new ProjDataFromStream(
-    proj_data_info_ptr, 
-    out, 0UL);
-}
-
-
-
-
 END_NAMESPACE_TOMO
 
 USING_NAMESPACE_TOMO
@@ -185,60 +144,13 @@ int master_main(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
-  shared_ptr<ProjData> proj_data_ptr = 0;
-
-
-#if 0  
-  if(argc==2)
-  {
-    proj_data_ptr = ProjData::read_from_file(argv[1]);
-  }
-  else
-  {
-    proj_data_ptr = ask_parameters();
-  }
-  if(argc!=2) 
-  {
-    cerr<<"Usage: sensitivity [PSOV-file]\n"
-        <<"The PSOV-file will be used to get the scanner, mashing etc. details" 
-	<< endl; 
-  }
-   
-
-  globals.limit_segments=ask_num("Maximum absolute segment number to process: ", 
-    0, proj_data_ptr->get_max_segment_num(), proj_data_ptr->get_max_segment_num() );
-  
-  {
-    const ProjDataInfoCylindrical * pdi_cyl_ptr =
-      dynamic_cast<const ProjDataInfoCylindrical *>
-      ( proj_data_ptr->get_proj_data_info_ptr());
-    
-    globals.zero_seg0_end_planes =
-      pdi_cyl_ptr != NULL &&
-      ask("Zero end planes of segment 0 ?", 
-           pdi_cyl_ptr->get_min_ring_difference(0) == pdi_cyl_ptr->get_max_ring_difference(0));
-  }
-
-  globals.rim_truncation_sino = rim_truncation_sino;
-    // ask_num("Number of bins to set to zero ?",0, proj_data_ptr->get_max_tangential_pos_num(), 4);
-
-
-#ifndef TEST
-  char out_filename[max_filename_length];
-  ask_filename_with_extension(out_filename,
-			      "Output to which file (without extension)?",
-			      "");
-#endif
-
-#else
   if(argc!=2) 
   {
     cerr<<"Usage: sensitivity OSMAPOSL_par_file\n"
         <<"The par-file will be used to get the scanner, mashing etc. details" 
 	<< endl; 
+    return (EXIT_FAILURE);
   }
-  if (argc>2)
-    exit(1);
 
   OSMAPOSLParameters parameters(argv[1]);
   if (parameters.max_segment_num_to_process==-1)
@@ -247,16 +159,15 @@ int main(int argc, char **argv)
 
   globals.rim_truncation_sino = rim_truncation_sino;
   string out_filename = parameters.sensitivity_image_filename;
-  globals.zero_seg0_end_planes = parameters.zero_seg0_end_planes;
-  proj_data_ptr = parameters.proj_data_ptr;
+  globals.zero_seg0_end_planes = parameters.zero_seg0_end_planes==1;
+  const shared_ptr<ProjData> proj_data_ptr = parameters.proj_data_ptr;
   globals.limit_segments = parameters.max_segment_num_to_process;
   
-#endif
 
+  // get attenuation info
   bool do_attenuation;
   shared_ptr<DiscretisedDensity<3,float> >
-    attenuation_image_ptr(
-    new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_ptr()));
+    attenuation_image_ptr = 0;
 
   {
     char atten_name[max_filename_length];
@@ -273,24 +184,10 @@ int main(int argc, char **argv)
     {
       do_attenuation = true;
 
-     // Read from file
-      // TODO remove unsatisfactory manipulations for handling 'odd-sized' images.
-      // TODO add checks on sizes etc.
-
-      shared_ptr<DiscretisedDensity<3,float> > attenuation_density_from_file_ptr =
+     // Read from file      
+      attenuation_image_ptr =
         DiscretisedDensity<3,float>::read_from_file(atten_name);
-
-      const VoxelsOnCartesianGrid<float> * attenuation_image_from_file_ptr =
-         dynamic_cast<const VoxelsOnCartesianGrid<float> *>(attenuation_density_from_file_ptr.get());
-      
-      if (attenuation_image_from_file_ptr == NULL)
-        error("Can only handle VoxelsOnCartesianGrid for the attenuation image\n");
-
-      // Now add to the attenuation_image (which is 0 at this point)
-      // This in principle should allow us to read an 'even-sized' image
-      // as += just adds the appropriate ranges
-      *attenuation_image_ptr += *attenuation_image_from_file_ptr;
-
+    
       cerr << "WARNING: attenuation image data are supposed to be in units cm^-1\n"
 	"Reference: water has mu .096 cm^-1" << endl;
       cerr<< "Max in attenuation image:" 
@@ -302,37 +199,26 @@ int main(int argc, char **argv)
       */
       // projectors work in pixel units, so convert attenuation data 
       // from cm^-1 to pixel_units^-1
+      const VoxelsOnCartesianGrid<float> * attenuation_image_voxels_ptr =
+         dynamic_cast<const VoxelsOnCartesianGrid<float> *>(attenuation_image_ptr.get());
+      if (attenuation_image_voxels_ptr == 0)
+        error("Can only handle VoxelsOnCartesianGrid for the attenuation image\n");
+
       const float rescale = 
-	dynamic_cast<VoxelsOnCartesianGrid<float> *>(attenuation_image_ptr.get())->
-	get_voxel_size().x()/10;
+	attenuation_image_voxels_ptr->get_voxel_size().x()/10;
 #else
-      const float rescale = 
-	dynamic_cast<VoxelsOnCartesianGrid<float> *>(attenuation_image_ptr.get())->
-	10.F;
+      // projectors work in mm, so convert attenuation data 
+      // from cm^-1 to mm^-1
+      const float rescale = 1/10.F;
 #endif
       *attenuation_image_ptr *= rescale;      
     }
   }
 
   shared_ptr<ProjData> atten_proj_data_ptr = 0;
-#if 0
-  // TODO
-  if (!do_attenuation)
-  {
-    char atten_name[max_filename_length];
-    ask_filename_with_extension(atten_name, 
-				"Get attenuation factors from which file (1 = 1's):",
-				"");    
-    
-    if(strcmp(atten_name,"1")!=0)
-    {
-      atten_proj_data_ptr = ProjData::read_from_file(atten_name);
-    }
-  }
-#endif
 
+  // get normalisation info
   shared_ptr<ProjData> norm_proj_data_ptr = 0;
-#if 1
   {
     char norm_name[max_filename_length];
     ask_filename_with_extension(norm_name, 
@@ -342,73 +228,98 @@ int main(int argc, char **argv)
     if(strcmp(norm_name,"1")!=0)
     {
       norm_proj_data_ptr = ProjData::read_from_file(norm_name);
+      // check sizes etc.
+      shared_ptr<ProjData> data_to_reconstruct_ptr =
+        ProjData::read_from_file(parameters.input_filename);
+      if (*norm_proj_data_ptr->get_proj_data_info_ptr() !=
+          *data_to_reconstruct_ptr->get_proj_data_info_ptr())
+          error("Normalisation file and input projection file must have identical characteristics.\n");
     }
   }
-#endif
-#if 0
-  // TODO replace
-#ifndef USE_PMRT
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-                                             attenuation_image_ptr);
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-                                             attenuation_image_ptr);
-#else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing( attenuation_image_ptr , proj_data_ptr->get_proj_data_info_ptr()->clone()); 	
-  ForwardProjectorByBin* forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-  BackProjectorByBin* back_projector_ptr =
-    new BackProjectorByBinUsingProjMatrixByBin(PM); 
-#endif
-
-#else
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    parameters.projector_pair_ptr->get_forward_projector_sptr();
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    parameters.projector_pair_ptr->get_back_projector_sptr();
-  parameters.projector_pair_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-					attenuation_image_ptr);
-#endif
-  set_projectors_and_symmetries(forward_projector_ptr, 
-                                back_projector_ptr, 
-                                back_projector_ptr->get_symmetries_used()->clone());
-
 
   // Initialise the sensitivity image  
   shared_ptr<DiscretisedDensity<3,float> > result_ptr;
-#if 0
-  result_ptr =
-    attenuation_image_ptr->get_empty_discretised_density();
-#else
-    // TODO somehow get rid of VoxelsOnCartesianGrid
-  if(parameters.initial_image_filename=="1")
   {
-    result_ptr =
-      new VoxelsOnCartesianGrid<float> (*parameters.proj_data_ptr->get_proj_data_info_ptr(),
-					parameters.zoom,
-					CartesianCoordinate3D<float>(parameters.Zoffset,
-								     parameters.Yoffset,
-								     parameters.Xoffset),
-					parameters.output_image_size);
+    // TODO replace by IterativeReconstruction::get_initial_image_ptr
+    if (parameters.initial_image_filename=="1")
+      {
+	result_ptr =
+	  new VoxelsOnCartesianGrid<float> (*parameters.proj_data_ptr->get_proj_data_info_ptr(),
+					    parameters.zoom,
+					    CartesianCoordinate3D<float>(parameters.Zoffset,
+									 parameters.Yoffset,
+									 parameters.Xoffset),
+					    CartesianCoordinate3D<int>(parameters.output_image_size_z,
+								       parameters.output_image_size_xy,
+								       parameters.output_image_size_xy));
+      }
+    else
+      {
+	result_ptr = 
+	  DiscretisedDensity<3,float>::read_from_file(parameters.initial_image_filename);
+	result_ptr->fill(0);
+      }
   }
-  else
+
+  // set_up projectors (ugly!)
+  {
+    shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
+      parameters.projector_pair_ptr->get_forward_projector_sptr();
+    shared_ptr<BackProjectorByBin> back_projector_ptr =
+      parameters.projector_pair_ptr->get_back_projector_sptr();
+    
+    if (do_attenuation && dynamic_cast<const ProjectorByBinPairUsingProjMatrixByBin*>(parameters.projector_pair_ptr.get()) != NULL)
     {
-      result_ptr = 
-        DiscretisedDensity<3,float>::read_from_file(parameters.initial_image_filename);
-      result_ptr->fill(0);
+      // attenuation image and output image must have identical info
+      // TODO somehow remove restriction
+      {
+        if (typeid(*attenuation_image_ptr) != typeid(*result_ptr))
+          error("single projection matrix used: attenuation image and result should be the same type of DiscretisedDensity. Sorry.\n");
+        if (attenuation_image_ptr->get_origin() != result_ptr->get_origin())
+          error("single projection matrix used: Currently, attenuation and result should have the same origin. Sorry.\n");
+        if (attenuation_image_ptr->get_index_range() != result_ptr->get_index_range())
+          error("single projection matrix used: Currently, attenuation and result should have the same index ranges. Sorry.\n");
+        {
+          DiscretisedDensityOnCartesianGrid<3,float> const *attn_ptr =
+            dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const *>(attenuation_image_ptr.get());
+          if (attn_ptr != 0)
+          {
+            // we can now check on grid_spacing
+            DiscretisedDensityOnCartesianGrid<3,float> const *image_ptr =
+              dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const *>(result_ptr.get());
+            if (attn_ptr->get_grid_spacing() != image_ptr->get_grid_spacing())
+              error("single projection matrix used: Currently, attenuation and result should have the same grid spacing. Sorry.\n");
+          }
+        }
+        // TODO ensure compatible info for any type of DiscretisedDensity
+      }
+      parameters.projector_pair_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+                                            attenuation_image_ptr);
     }
-#endif
+    else
+    {
+      shared_ptr<ProjDataInfo> proj_data_info_sptr =
+	proj_data_ptr->get_proj_data_info_ptr()->clone();
+      if (do_attenuation)
+	{
+	  // attenuation image and output image can have different info
+	  forward_projector_ptr->set_up(proj_data_info_sptr, attenuation_image_ptr);
+	}
+      back_projector_ptr->set_up(proj_data_info_sptr, result_ptr);
+    }
+
+    set_projectors_and_symmetries(forward_projector_ptr, 
+				  back_projector_ptr, 
+				  back_projector_ptr->get_symmetries_used()->clone());
+  } // end set_up projectors
 
   // Compute the sensitivity image  
-    compute_sensitivity_image(*result_ptr,
-			      proj_data_ptr, 
-                              attenuation_image_ptr,  do_attenuation, 
-                              atten_proj_data_ptr,
-                              norm_proj_data_ptr,
-                              //Normalisation (), 
-                              globals);
+  compute_sensitivity_image(*result_ptr,
+			    proj_data_ptr, 
+			    attenuation_image_ptr,  do_attenuation, 
+			    atten_proj_data_ptr,
+			    norm_proj_data_ptr,
+			    globals);
 #ifndef TEST
   write_basic_interfile(out_filename, *result_ptr, NumericType::FLOAT);
 
