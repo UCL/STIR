@@ -5,6 +5,8 @@
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     For internal GE use only
 */
+#ifndef __stir_motion_RigidObject3DMotionFromPolaris__H__
+#define __stir_motion_RigidObject3DMotionFromPolaris__H__
 /*!
   \file
   \ingroup motion
@@ -117,3 +119,4 @@ private:
 
 
 END_NAMESPACE_STIR
+#endif
