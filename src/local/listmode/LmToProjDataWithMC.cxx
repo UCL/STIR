@@ -28,6 +28,7 @@ void
 LmToProjDataWithMC::set_defaults()
 {
   LmToProjData::set_defaults();
+  reference_position_is_average_position_in_frame = false;
   _reference_abs_time_sptr = 0;
   ro3d_ptr = 0; 
 }
@@ -37,7 +38,10 @@ LmToProjDataWithMC::initialise_keymap()
 {
   LmToProjData::initialise_keymap();
   parser.add_start_key("LmToProjDataWithMC Parameters");
-  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
+  parser.add_key("reference_position_is_average_position_in_frame", 
+		 &reference_position_is_average_position_in_frame);
+  parser.add_parsing_key("time interval for reference position type", 
+			 &_reference_abs_time_sptr);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
 }
 
@@ -64,32 +68,31 @@ post_processing()
     warning("Invalid Rigid Object 3D Motion object\n");
     return true;
   }
-#if 0
-  // TODO move to RigidObject3DMotion, bu tit does not necessarily have the list mode data
-  if (!ro3d_ptr->is_synchronised())
-    ro3d_ptr->synchronise(*lm_data_ptr);
-#endif
 
-  // set transformation_to_reference_position
-  if (is_null_ptr(_reference_abs_time_sptr))
+  if (reference_position_is_average_position_in_frame)
     {
-      warning("time interval for reference position is not set");
-      return true;
+      if (!is_null_ptr(_reference_abs_time_sptr))
+	{
+	  warning("time interval for reference position is set, but you asked for average over each frame");
+	  return true;
+	}
     }
+  else
     {
-      RigidObject3DTransformation av_motion = 
-	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
-      cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
-      cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
-      _transformation_to_reference_position =av_motion.inverse();    
+      // set transformation_to_reference_position
+      if (is_null_ptr(_reference_abs_time_sptr))
+	{
+	  warning("time interval for reference position is not set");
+	  return true;
+	}
+      {
+	RigidObject3DTransformation av_motion = 
+	  ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+	cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
+	cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
+	_transformation_to_reference_position =av_motion.inverse();    
+      }
     }
-
-  move_from_scanner = ro3d_ptr->get_transformation_from_scanner_coords();
-  /* 966 transformation:
-    RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
-                               CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
-  */
-  move_to_scanner = ro3d_ptr->get_transformation_to_scanner_coords();
 
 #ifdef FRAME_BASED_DT_CORR
   cerr << "LmToProjDataWithMC Using FRAME_BASED_DT_CORR\n";
@@ -104,6 +107,22 @@ post_processing()
   return false;
 }
 
+void
+LmToProjDataWithMC::
+start_new_time_frame(const unsigned int current_frame_num)
+{
+  LmToProjData::start_new_time_frame(current_frame_num);
+  if (reference_position_is_average_position_in_frame)
+    {
+     const double start_time = frame_defs.get_start_time(current_frame_num);
+     const double end_time = frame_defs.get_end_time(current_frame_num);
+     RigidObject3DTransformation av_motion = 
+       ro3d_ptr->compute_average_motion_rel_time(start_time, end_time);
+     cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
+     cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
+     _transformation_to_reference_position =av_motion.inverse();    
+    }
+}
 
 void
 LmToProjDataWithMC::
@@ -111,6 +130,11 @@ process_new_time_event(const CListTime& time_event)
 {
   assert(fabs(current_time - time_event.get_time_in_secs())<.0001);     
   ro3d_ptr->get_motion_rel_time(ro3dtrans,current_time);
+
+  const RigidObject3DTransformation& move_from_scanner = 
+    ro3d_ptr->get_transformation_from_scanner_coords();
+  const RigidObject3DTransformation& move_to_scanner =
+    ro3d_ptr->get_transformation_to_scanner_coords();
 
   ro3dtrans = compose(move_to_scanner,
 		      compose(_transformation_to_reference_position,
@@ -140,7 +164,11 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
    
   //Do the motion correction
-  
+#if 1
+  ro3dtrans.transform_bin(bin,
+			  proj_data_info,
+			  *record.get_uncompressed_proj_data_info_sptr());
+#else
   // find cartesian coordinates on LOR
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
@@ -149,34 +177,15 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
     find_cartesian_coordinates_of_detection(coord_1,coord_2, bin);
   
   // now do the movement
-#if 1
- 
   const CartesianCoordinate3D<float> coord_1_transformed = ro3dtrans.transform_point(coord_1);
   const CartesianCoordinate3D<float> coord_2_transformed = ro3dtrans.transform_point(coord_2);
  
   
-#else  
-
- const CartesianCoordinate3D<float> coord_1_transformed =
-     move_to_scanner.
-     transform_point(ro3d_move_to_reference_position.
-                   transform_point(
-                                  ro3dtrans.
-                                   transform_point(move_from_scanner.
-                                                   transform_point(coord_1))));
-  const CartesianCoordinate3D<float> coord_2_transformed =
-     move_to_scanner.
-     transform_point(ro3d_move_to_reference_position.
-                   transform_point(
-                                  ro3dtrans.
-                                   transform_point(move_from_scanner.
-                                                   transform_point(coord_2))));
-
-#endif
   proj_data_info.
     find_bin_given_cartesian_coordinates_of_detection(bin,
                                                       coord_1_transformed,
 					              coord_2_transformed);
+#endif
 
   if (bin.get_bin_value() > 0)
     {
