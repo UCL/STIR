@@ -2,8 +2,8 @@
 // $Id$: $Date$
 //
 /*!
-
   \file
+  \ingroup buildblock
 
   \brief This declares the Timer class.
 
@@ -11,7 +11,6 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
 
@@ -23,10 +22,11 @@
 START_NAMESPACE_TOMO
 
 /*!
+  \ingroup buildblock
   \brief
-  a general base class for timers. Interface is like a stop watch.
+  A general base class for timers. Interface is like a stop watch.
 
-  Example of usage:
+  \par Example of usage:
 
   \code
   DerivedFromTimer t;
@@ -41,11 +41,8 @@ START_NAMESPACE_TOMO
   \endcode
 
   Derived classes simply have to implement the virtual function 
-  \c double get_current_value()
+   double get_current_value()
 */
-
-
-
 class Timer
 {  
 public:
@@ -54,8 +51,10 @@ public:
   inline void start();
   inline void stop();
   inline void reset();
+#ifdef OLDDESIGN
   // TODO remove
   inline void restart() ;
+#endif
   //! return value is undefined when start() is not called first.
   inline double value() const;
 
@@ -67,11 +66,14 @@ protected:
   virtual double get_current_value() const = 0;
 };
 
+END_NAMESPACE_TOMO
+
+
 #include "Timer.inl"
 
 // TODO remove
+#ifdef OLDDESIGN
 #include "CPUTimer.h"
-
-END_NAMESPACE_TOMO
+#endif
 
 #endif // __TIMER_H__
