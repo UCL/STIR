@@ -2,21 +2,119 @@
 
 #include "utilities.h"
 
+
+// KT 21/10/98 new ask_ functions
+
+const char * const 
+find_filename(const char * const filename_with_directory)
+{
+  char *name;
+
+#if __OS__ == __VAX__
+ name = strrchr(filename_with_directory,']');
+ if (name==NULL)
+   name = strrchr(filename_with_directory,':');
+#elif __OS__ == __WIN__
+ name = strrchr(filename_with_directory,'\\');
+ if (name==NULL)
+   name = strrchr(filename_with_directory,'/');
+ if (name==NULL)
+   name = strrchr(filename_with_directory,':');
+#elif __OS__ == __MAC__
+ name = strrchr(filename_with_directory,':');
+#else __OS__ == __UNIX__
+ name = strrchr(filename_with_directory,'/');
+#endif /* VAX */
+ if (name!=NULL)
+   return name++;
+ else
+   return filename_with_directory;
+}
+
+char *add_extension(char *file_in_directory_name, 
+		    const char * const extension)
+{
+  if (strchr(find_filename(file_in_directory_name),'.') == NULL)
+    strcat (file_in_directory_name,extension);
+  return file_in_directory_name;
+}
+
+char *ask_filename_with_extension(char *file_in_directory_name,
+				  const char * const prompt,
+				  const char * const default_extension)
+{
+  char ptr[max_filename_length];
+  
+  file_in_directory_name[0]='\0';
+  while (strlen(file_in_directory_name)==0)
+  { 
+    printf ("\n%s ", prompt);
+    if (strlen(default_extension))
+      printf("(default extension '%s')", default_extension);
+    printf(":");
+    fgets(ptr,max_filename_length,stdin);
+    sscanf(ptr," %s",file_in_directory_name);
+  }
+  add_extension(file_in_directory_name,default_extension);
+  return(file_in_directory_name);
+}
+
+
+template <class FSTREAM>
+void
+ask_filename_and_open(FSTREAM& s,
+		      const char * const prompt,
+	              const char * const default_extension,
+		      ios::openmode mode,
+		      bool abort_if_failed)
+{
+  char filename[max_filename_length];
+  s.open(
+    ask_filename_with_extension(filename, prompt, default_extension),
+    mode);
+  if (abort_if_failed && !s)
+  { PETerror("Error opening file %s\n", filename); Abort(); }
+}
+
+// instantiations
+
+template 
+void
+ask_filename_and_open(ifstream& s,
+		      const char * const prompt,
+	              const char * const default_extension,
+		      ios::openmode mode,
+		      bool abort_if_failed);
+template 
+void
+ask_filename_and_open(ofstream& s,
+		      const char * const prompt,
+	              const char * const default_extension,
+		      ios::openmode mode,
+		      bool abort_if_failed);
+template 
+void
+ask_filename_and_open(fstream& s,
+		      const char * const prompt,
+	              const char * const default_extension,
+		      ios::openmode mode,
+		      bool abort_if_failed);
+
+
 // KT 09/10/98 new
 PETImageOfVolume ask_image_details()
 {
  
 
-
-  char filename[256];
-  cout << "Enter file name " <<endl;
-  cin >> filename;
-
   // Open file with data
   ifstream input;
-  open_read_binary(input, filename);
+  // KT 21/10/98 use new function
+  ask_filename_and_open(
+    input, "Enter filename for input image", ".v", 
+    ios::in | ios::binary);
 
-  int scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
+  int scanner_num = 
+    ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
  
   PETScannerInfo scanner;
   switch( scanner_num )
@@ -108,8 +206,9 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
   cout << endl;
   system("ls *scn *dat *bin");//CL 14/10/98 ADd this printing out of some data files
   
-  cout << "\nEnter file name of 3D sinogram data : " ;
-  cin >> filename;
+  // KT 21/10/98 use new function
+  ask_filename_with_extension(
+    "Enter file name of 3D sinogram data : ", ".scn", filename);
 
   if (on_disk)
     {
@@ -286,3 +385,4 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
   }
   return memory;
 }
+
