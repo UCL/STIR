@@ -1,0 +1,3 @@
+#! /bin/sh
+echo "stir_math --mult --power -1 $*"
+stir_math --mult --power -1 $*
