@@ -318,7 +318,7 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   const float ring_spacing=get_scanner_ptr()->get_ring_spacing();
   const float ring_radius=get_scanner_ptr()->get_ring_radius();
 
-#if 0
+#if 1
   const CartesianCoordinate3D<float> d = c2 - c1;
   /* parametrisation of LOR is 
      c = l*d+c1
