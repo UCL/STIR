@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 1.4 (dated ??/??/2004)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 1.4 (dated ??/??/2004)</h1>
+
+<p>
+TODO
+</p>
+<p>Nearly all work on this update was by Kris Thielemans. <br>
+Thanks to Oliver Nix for fixes for (and testing with) Visual Studio Express 2005.
+<br>
+Also many thanks to M&eacute;rence Sibomana for updating the LLN ecat matrix library to
+iron out some problems with STIR.
+</p>
+<h2> Summary for endusers (also to be read by developers)</h2>
+
+<h3>New utilities</h3>
+<ul>
+</ul>
+
+
+<h3>Bugs removed that affect users</h3>
+<ul>
+<li> corrected bug in CListModeData::save_get_position/set_get_position occured 
+in the last chunk of the listmode file (where chunk size was determined by 
+buf_size_in_bytes = 8683520). In that case, the repositioning failed and called
+error() and aborted the program. In normal use, this bug would
+normally only have appeared if the last frame was very short.
+</li>
+</ul>
+
+<h3>Code changes that influence your results</h3>
+<ul>
+</ul>
+ 
+<h3>New functionality of existing utilities</h3>
+<ul>
+</ul>
+
+
+<h3>Code changes that do not influence your results</h3>
+<ul>
+</ul>
+
+<h3>Installation procedure changes</h3>
+<ul>
+</ul>
+
+
+<h3>Documentation changes</h3>
+<ul>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>New functionality</h3>
+<ul>
+</ul>
+<h3>Other code changes</h3>
+<ul>
+</ul>
+</body>
+
+</html>
+
