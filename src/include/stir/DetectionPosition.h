@@ -4,14 +4,14 @@
 
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class DetectionPosition
   \author Kris Thielemans
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_DetectionPosition_H__
@@ -20,7 +20,7 @@
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
-/*!
+/*!   \ingroup projdata
  \brief
  A class for storing coordinates of a detection. 
  
@@ -31,7 +31,7 @@ START_NAMESPACE_STIR
  
  The scanner might have more
  than 1 detector array (for example a dual-headed system), but this info is 
- (currently) not in this class. Also, the detector array migh be rotating
+ (currently) not in this class. Also, the detector array might be rotating
  during acquisition. The corresponding angle is also not in the class.
  
  This is essentially a collection of 3 numbers: 
@@ -67,10 +67,11 @@ public:
   inline coordT& tangential_coord(); 
   inline coordT& axial_coord(); 
   inline coordT& radial_coord(); 
-  //! comparison operators
+  //! \name comparison operators
+  //@{
   inline bool operator==(const DetectionPosition&) const;
   inline bool operator!=(const DetectionPosition&) const;
-  
+  //@}
 private :
   coordT  tangential;  
   coordT  axial; 

@@ -4,14 +4,14 @@
 
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Implementation of inline methods of class DetectionPositionPair
   \author Kris Thielemans
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
