@@ -3,6 +3,7 @@
 
 
 #include "stir/Array.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
 
 
@@ -44,6 +45,12 @@ void convert_array_2D_into_1D_array( Array<1,float>& out_array,Array<2,float>& i
 
 void convert_array_1D_into_2D_array( Array<2,float>& out_array,Array<1,float>& in_array);
 
+
+void precompute_filter_coefficients_for_second_apporach(VoxelsOnCartesianGrid<float>& precomputed_coefficients,
+							const VoxelsOnCartesianGrid<float>& input_image,
+							VoxelsOnCartesianGrid<float>& sensitivity_image,
+							VoxelsOnCartesianGrid<float>& normalised_bck);
+	      
 
 
 
