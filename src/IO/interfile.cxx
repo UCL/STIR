@@ -64,6 +64,20 @@ PETImageOfVolume read_interfile_image(istream& input)
     return image;
 }
 
+
+// KT 13/11/98 new
+PETImageOfVolume read_interfile_image(char *filename)
+{
+    ifstream image_stream(filename);
+    if (!image_stream)
+    { 
+      PETerror("read_interfile_image: couldn't open file %s\n", filename);
+      exit(1);
+    }
+
+  return read_interfile_image(image_stream);
+}
+
 // KT 09/11/98 added voxel_size & output_type
 template <class NUMBER>
 bool write_basic_interfile(const char * const filename, 
@@ -273,6 +287,21 @@ at the moment. Using the first scale factor only.\n");
 		      hdr.storage_order,
 		      hdr.type_of_numbers,
 		      hdr.image_scaling_factors[0][0]);
+}
+
+
+
+// KT 13/11/98 new
+PETSinogramOfVolume read_interfile_PSOV(char *filename)
+{
+    ifstream image_stream(filename);
+    if (!image_stream)
+    { 
+      PETerror("read_interfile_PSOV: couldn't open file %s\n", filename);
+      exit(1);
+    }
+
+  return read_interfile_PSOV(image_stream);
 }
 
 
