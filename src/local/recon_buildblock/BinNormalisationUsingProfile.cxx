@@ -72,7 +72,7 @@ BinNormalisationUsingProfile(const string& filename)
 
 void 
 BinNormalisationUsingProfile::
-apply(RelatedViewgrams<float>& viewgrams) const 
+apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
   RelatedViewgrams<float>::iterator viewgrams_iter = 
     viewgrams.begin();
@@ -96,7 +96,7 @@ apply(RelatedViewgrams<float>& viewgrams) const
 
 void
 BinNormalisationUsingProfile::
-undo(RelatedViewgrams<float>& viewgrams) const 
+undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
   /*
   const int old_min = profile.get_min_index();
