@@ -17,6 +17,18 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForBins_PET_CartesianGrid_H__
@@ -34,7 +46,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
 template <typename T> class shared_ptr;
-class ProjMatrixByBinFromFile;
+
 /*!
   \ingroup symmetries
   \brief Symmetries appropriate for a (cylindrical) PET scanner, and 
@@ -134,11 +146,22 @@ public:
       */
   inline float get_num_planes_per_axial_pos(const int segment_num) const;
   inline float get_axial_pos_to_z_offset(const int segment_num) const;
-  
-private:
-  // temporary fix to give access to the bools
-  friend class ProjMatrixByBinFromFile;
 
+  //! \name Methods to find out which symmetries are used
+  //@{
+  inline bool using_symmetry_90degrees_min_phi() const
+    { return do_symmetry_90degrees_min_phi; }
+  inline bool using_symmetry_180degrees_min_phi() const
+    { return do_symmetry_180degrees_min_phi; }
+  inline bool using_symmetry_swap_segment() const
+    { return do_symmetry_swap_segment; }
+  inline bool using_symmetry_swap_s() const
+    { return do_symmetry_swap_s; }
+  inline bool using_symmetry_shift_z() const
+    { return do_symmetry_shift_z; }
+  //@}
+
+private:
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;
   bool do_symmetry_swap_segment;
