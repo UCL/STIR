@@ -49,33 +49,23 @@ float scatter_estimate_for_one_scatter_point(
 		-cos_angle(detector_coord_A - scatter_point,
 		           detector_coord_B - scatter_point);
 	// note: costheta is identical for scatter to A or scatter to B
-	// Hence, the cross_section is identical for both cases as well.
-	const float dif_cross_section =
-		dif_cross_section_511keV(costheta); 
+	// Hence, the cross_section and energy are identical for both cases as well.
 	const float new_energy =
-		energy_after_scatter_511keV(costheta);
-
-	const CartesianCoordinate3D<float> detA_to_ring_center(0,-detector_coord_A[2],-detector_coord_A[3]);
-	const CartesianCoordinate3D<float> detB_to_ring_center(0,-detector_coord_B[2],-detector_coord_B[3]);
-	const float cos_incident_angle_A = 
-		cos_angle(scatter_point - detector_coord_A,
-		          detA_to_ring_center) ;
-	const float cos_incident_angle_B = 
-		cos_angle(scatter_point - detector_coord_B,
-		          detB_to_ring_center) ;
+	  energy_after_scatter_511keV(costheta);
 
 	// TODO: slightly dangerous to use a static here
-	// it would give wrong results when the energy_thresholds are changed...
+	// it would give wrong results when the energy_thresholds are changed...	
 	static const float detection_efficiency_no_scatter =
-		detection_efficiency_BGO(lower_energy_threshold,
-                                 upper_energy_threshold,
-                                 512);
+	  detection_efficiency_BGO(lower_energy_threshold,
+				   upper_energy_threshold,
+				   512);
 	const float detection_efficiency_scatter =
-		detection_efficiency_BGO(lower_energy_threshold,
-                                 upper_energy_threshold,
-                                 new_energy);
+	  detection_efficiency_BGO(lower_energy_threshold,
+				   upper_energy_threshold,
+				   new_energy);
 	if (detection_efficiency_scatter==0)
 		return 0;
+
 	float emiss_to_detA, 
 		emiss_to_detB,
 		atten_to_detA,
@@ -129,11 +119,10 @@ float scatter_estimate_for_one_scatter_point(
 			image_as_density,
 			scatter_point, 
 			detector_coord_B));
-	}
+	}	
 
-	const VoxelsOnCartesianGrid<float>& image =
-		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
-	
+	const float dif_cross_section =
+		dif_cross_section_511keV(costheta); 
 	
 	const float rA=norm(scatter_point-detector_coord_A);
 	const float rB=norm(scatter_point-detector_coord_B);
@@ -141,6 +130,8 @@ float scatter_estimate_for_one_scatter_point(
 	const float scatter_point_mu=
 		scatt_points_vector[scatter_point_num].mu_value;
 #ifndef NDEBUG
+	const VoxelsOnCartesianGrid<float>& image =
+		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
 	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 	CartesianCoordinate3D<float>  origin = 
 		image.get_origin();
@@ -168,10 +159,22 @@ float scatter_estimate_for_one_scatter_point(
 		return
 		scatter_ratio;
 	else
-		return
-		scatter_ratio*cos_incident_angle_A*cos_incident_angle_A
-		*cos_incident_angle_B*cos_incident_angle_B ;
+	  {
+	    const CartesianCoordinate3D<float> 
+	      detA_to_ring_center(0,-detector_coord_A[2],-detector_coord_A[3]);
+	    const CartesianCoordinate3D<float> 
+	      detB_to_ring_center(0,-detector_coord_B[2],-detector_coord_B[3]);
+	    const float cos_incident_angle_A = 
+	      cos_angle(scatter_point - detector_coord_A,
+			detA_to_ring_center) ;
+	    const float cos_incident_angle_B = 
+	      cos_angle(scatter_point - detector_coord_B,
+			detB_to_ring_center) ;
 
+	    return
+	      scatter_ratio*cos_incident_angle_A*cos_incident_angle_A
+	      *cos_incident_angle_B*cos_incident_angle_B ;
+	  }
 }
 
 END_NAMESPACE_STIR
