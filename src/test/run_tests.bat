@@ -16,15 +16,18 @@ VC\test_convert_array\%1\test_convert_array
 @pause 
 VC\test_IndexRange\%1\test_IndexRange
 @pause 
+VC\test_coordinates\%1\test_coordinates
+@pause 
+VC\test_ArrayFilter\%1\test_ArrayFilter
+@pause 
 VC\test_filename_functions\%1\test_filename_functions
 @pause 
 VC\test_linear_regression\%1\test_linear_regression  input\test_linear_regression.in
 @pause 
-VC\test_coordinates\%1\test_coordinates
-@pause 
 VC\test_VoxelsOnCartesianGrid\%1\test_VoxelsOnCartesianGrid
 @pause 
 VC\test_proj_data_info\%1\test_proj_data_info
+
 @pause 
 VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_InterfileOutputFileFormat.in 
 @pause 
@@ -32,7 +35,13 @@ VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_InterfileOutputFile
 @pause 
 VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_ECAT6OutputFileFormat.in
 @pause 
+VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_ECAT7OutputFileFormat.in
+@pause 
 VC\test_ByteOrder\%1\test_ByteOrder
+@pause
+VC\test_ROIs\%1\test_ROIs
+@pause
+VC\test_Scanner\%1\test_Scanner
 @pause 
 @echo Executing test_stir_math 
 @echo This relies on having stir_math compiled (in the utilities workspace).
