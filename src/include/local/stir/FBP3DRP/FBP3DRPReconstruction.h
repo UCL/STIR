@@ -4,6 +4,7 @@
 
 /*! 
   \file 
+  \ingroup FBP3DRP
   \brief Class for serial FBP3DRP reconstruction
   \author Claire LABBE
   \author Kris Thielemans
@@ -42,8 +43,9 @@ class Succeeded;
  TODO Derive from PETAnalyticReconstruction when it makes any sense
  */
 /*!
+  \ingroup FBP3DRP
   \class FBP3DRPReconstruction
-  \brief This class contains the implementation of the serial FBP3DRP reconstruction.
+  \brief This class contains the implementation of the FBP3DRP algorithm.
 
   This class implements the 3DRP algorithm (Kinahan and Rogers) as a specific
   case of a 3D FBP reconstruction algorithm. 
@@ -59,7 +61,8 @@ class Succeeded;
   version of a continuous inversion formula. This will work best (but of 
   course slowest) when the number of segments is large. 
 
-  This implementation is specific for data derived from cylindrical PET scanners.
+  This implementation is specific for data using sampling corresponding
+  to cylindrical PET scanners.
   This dependency essentially only occurs in the backprojection where a
   Jacobian is necessary in this case, and where the number of ring differences
   in each segment is taken into account. It would be not too difficult
@@ -71,7 +74,7 @@ class Succeeded;
   2) For the process of oblique sinograms:
 	  - Forward projection works at full resolution i.e forward projection works
 	  from images without zooming and complete missing projection data on normal sinograms
-	  - Colher filter is then applied on complete data
+	  - Colsher filter is then applied on complete data
 	  - 3D backprojection then puts this data into an image with 
 	  appropriate voxel sizes, i.e. it is up to the backprojector to perform
 	  the zooming.
@@ -217,6 +220,10 @@ protected:
   double alpha_colsher_planar; 
   //! Cut-off frequency for Colsher filter in planar direction
   double fc_colsher_planar; 
+  //! Define Colsher at larger size than used for filtering, axial direction
+  int colsher_stretch_factor_axial;
+  //! Define Colsher at larger size than used for filtering, planar direction
+  int colsher_stretch_factor_planar;
  
 
   //! =1 => apply additional fitting procedure to forward projected data (DISABLED)

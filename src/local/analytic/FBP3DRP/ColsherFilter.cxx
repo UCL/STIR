@@ -4,9 +4,10 @@
 
 /*! 
   \file 
+  \ingroup FBP3DRP
   \brief Colsher filter implementation
-  \author Claire LABBE
   \author Kris Thielemans
+  \author Claire LABBE
   \author based on C-code by Matthias Egger
   \author PARAPET project
   $Date$
@@ -22,6 +23,7 @@
 #include "stir/Viewgram.h"
 #endif
 #include "local/stir/FBP3DRP/ColsherFilter.h"
+#include "stir/numerics/fourier.h"
 #include "stir/IndexRange2D.h"
 
 #ifdef __DEBUG_COLSHER
@@ -76,10 +78,14 @@ std::string ColsherFilter::parameter_info() const
 
 ColsherFilter::ColsherFilter(float theta_max_v,
 			     float alpha_colsher_axial_v, float fc_colsher_axial_v,
-			     float alpha_colsher_planar_v, float fc_colsher_planar_v) 
+			     float alpha_colsher_planar_v, float fc_colsher_planar_v,
+			     const int stretch_factor_axial,
+			     const int stretch_factor_planar) 
         : theta_max(theta_max_v), 
           alpha_axial(alpha_colsher_axial_v), fc_axial(fc_colsher_axial_v),
-          alpha_planar(alpha_colsher_planar_v), fc_planar(fc_colsher_planar_v)
+          alpha_planar(alpha_colsher_planar_v), fc_planar(fc_colsher_planar_v),
+	  stretch_factor_axial(stretch_factor_axial),
+	  stretch_factor_planar(stretch_factor_planar)
 {
 }
 
@@ -87,15 +93,27 @@ ColsherFilter::ColsherFilter(float theta_max_v,
 #ifdef __DEBUG_COLSHER
 #ifndef NRFFT
 //a function to get the real part of a complex number used in the debugging stuff
-float myreal(const std::complex<float>& z) { return z.real(); }
+float real_part(const std::complex<float>& z) { return z.real(); }
 #endif
 #endif
  
 Succeeded
 ColsherFilter::
-set_up(int height, int width, float theta,
+set_up(int target_height, int target_width, float theta,
        float d_a, float d_b)
 {
+  /* Ideally we would sample the Colsher filter in 'real' space, and then
+     construct the coefficients for discrete fourier transforms. Unfortunately, 
+     this requires an impossible (?) analytic integral.
+     We approximate this integral numerically y using the following procedure.
+
+     We first define the Colsher filter on a larger grid in 
+     frequency space. Then we inverse transform to 'real' space,
+     keep only the filter coefficients for the actual grid (i.e. cut
+     off the tails), and transform back to frequency space.
+  */
+  const int height=target_height*stretch_factor_axial;
+  const int width=target_width*stretch_factor_planar;
   if (height==0 || width==0)
     return Succeeded::yes;
   if (theta > theta_max+.001F)
@@ -106,6 +124,7 @@ set_up(int height, int width, float theta,
     }
   start_timers();
 
+  //*********** first construct filter on large grid 
   /*
     The Colsher filter is real-valued and symmetric. As we use 
     fourier_for_real_data, we have to arrange it in wrap-around order in the 
@@ -122,7 +141,7 @@ set_up(int height, int width, float theta,
     {
       const float fb = static_cast<float>(j) / height;
       const float nu_b = fb / d_b;
-      for (int k = 0; k <= width/2; k++) 
+      for (int k = 0; k <= width/2; ++k) 
 	{
 	  const float fa = (float) k / width;
 	  const float nu_a = fa / d_a;
@@ -151,27 +170,55 @@ set_up(int height, int width, float theta,
 	    filter[height-j][k] = fil;
 	}
     }
+  //*********** now find it on normal grid by passing to 'real' space
+
+  if (stretch_factor_planar>1 || stretch_factor_axial>1)
+    {
+      Array<2,float > colsher_real=
+	inverse_fourier_for_real_data_corrupting_input(filter);
+      // cut out tails. unfortunately that's a bit complicated because of wrap-around
+      colsher_real.resize(IndexRange2D(target_height,target_width));
+      for (int j = 0; j <  target_height/2; ++j) 
+	{
+	  for (int k = 0; k < target_width/2; k++) 
+	    {
+	      if (j!=0) colsher_real[target_height-j][k] = colsher_real[j][k];
+	      if (j!=0 &&k!=0) colsher_real[target_height-j][target_width-k] = colsher_real[j][k];
+	      if (k!=0) colsher_real[j][target_width-k] = colsher_real[j][k];
+	    }
+	}
+      filter = fourier_for_real_data(colsher_real);      
+    }
+  //*********** set kernel used for filtering
   const Succeeded success= set_kernel(filter);
+  stop_timers();
 
 #ifdef __DEBUG_COLSHER
   {
-    Array<2,float > real_filter(IndexRange2D(height,width/2+1));
-    std::transform(filter.begin_all(), filter.end_all(), real_filter.begin_all(), myreal/*std::real<std::complex<float> >*/);
+    // write to file
+    /* a bit complicated because we can only write Array's of real numbers.
+       Luckily, the Colsher filter is real in frequency space, so we can
+       copy its real part into an Array of floats.
+    */
+    Array<2,float > real_filter(IndexRange2D(target_height,target_width/2+1));
+    std::transform(filter.begin_all(), filter.end_all(), real_filter.begin_all(), 
+		   real_part/*std::real<std::complex<float> >*/);
     char file[200];
-    sprintf(file,"%s_%d_%d_%g.dat","new_colsher",width,height,theta);
+    sprintf(file,"%s_%d_%d_%g.dat","new_colsher",target_width,target_height,theta);
     std::cout << "Saving filter : " << file << std::endl;
     std::ofstream s(file);
     write_data(s,real_filter);
   }
 #endif
 #ifdef __DEBUG_COLSHER
-  filter.resize(IndexRange2D(-0,height/3,-width/3,width/3));
-  filter.fill(0);
-  filter[0][0]=1;
-  this->operator()(filter);
-  display(filter);
+  {
+    Array<2,float > PSF(IndexRange2D(-0,target_height/3,-target_width/3,target_width/3));
+    PSF.fill(0);
+    PSF[0][0]=1;
+    this->operator()(PSF);
+    display(PSF,"PSF",PSF.find_max()/20);
+  }
 #endif
-  stop_timers();
   return success;
 }
                 

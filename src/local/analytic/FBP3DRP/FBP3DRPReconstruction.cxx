@@ -4,7 +4,7 @@
 
 /*! 
   \file 
-  \ingroup reconstructors
+  \ingroup FBP3DRP
   \brief serial FBP3DRP reconstruction implementation
   \author Claire LABBE
   \author Kris Thielemans
@@ -14,14 +14,14 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 /*
  Modification history: (anti-chronological order)
  KT 05/10/2003
- - decrease dependency on symmetries by using syymetries_ptr->is_basic().
+ - decrease dependency on symmetries by using symetries_ptr->is_basic().
    Before this, we relied explicitly on the range 
    0<=segment_num, 0<=view_num<=num_views()/4
    This range was fine when using the interpolating backprojector 
@@ -81,9 +81,7 @@
 //    Colsher filter is done out of the view loop. This will speed up the
 //    FBP3DRP implementation
 
-//
-// CL 20/10/98 CHnage theta0 to theta_max for the maximal aperture allowable for reconstruction
-// Also, replaced theta by gamma to be consistent with Egger PhD as theta is a very confused parameter
+
 
 
 
@@ -205,8 +203,11 @@ set_defaults()
   
   num_segments_to_combine = -1;
 
-  PadS = 2;
-  PadZ = 2;
+  PadS = 1;
+  PadZ = 1;
+
+  colsher_stretch_factor_planar=2;
+  colsher_stretch_factor_axial=2;
     
   disp=0;
   save_intermediate_files=0;
@@ -230,8 +231,6 @@ FBP3DRPReconstruction::initialise_keymap()
   // parser.add_key("Read data into memory all at once",
   //    &on_disk );
   parser.add_key("image to be used for reprojection", &image_for_reprojection_filename);
-  parser.add_key("Save intermediate images", &save_intermediate_files);
-  parser.add_key("Display level",&disp);
 
   // TODO move to 2D recon
   parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
@@ -249,9 +248,16 @@ FBP3DRPReconstruction::initialise_keymap()
     &alpha_colsher_planar);
   parser.add_key("Cut-off for Colsher filter in planar direction (in cycles)",
     &fc_colsher_planar);
+  parser.add_key("Stretch factor for Colsher filter definition in axial direction",
+		 &colsher_stretch_factor_axial);
+  parser.add_key("Stretch factor for Colsher filter definition in planar direction",
+		 &colsher_stretch_factor_planar);
 
   parser.add_parsing_key("Back projector type", &back_projector_sptr);
   parser.add_parsing_key("Forward projector type", &forward_projector_sptr);
+
+  parser.add_key("Save intermediate images", &save_intermediate_files);
+  parser.add_key("Display level",&disp);
 }
 
 
@@ -277,8 +283,10 @@ FBP3DRPReconstruction::ask_parameters()
 
 // PARAMETERS => ZEROES-PADDING IN FFT (PADS, PADZ)
     cerr << "\nFilter parameters for 2D and 3D reconstruction";
-    PadS = ask_num("  Transaxial extension for FFT : ",0,2, 2); 
-    PadZ = ask_num(" Axial extension for FFT :",0,2, 2);
+#if 0
+    PadS = ask_num("  Transaxial extension for FFT : ",0,2, 1); 
+    PadZ = ask_num(" Axial extension for FFT :",0,2, 1);
+#endif
 
 // PARAMETERS => 2D RECONSTRUCTION RAMP FILTER (ALPHA, FC)
     cerr << endl << "For 2D reconstruction filtering (Ramp filter) : " ;
@@ -371,14 +379,18 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
   alpha_fit = 1.0F;
   beta_fit = 0.0F;
 
-  if (PadS<2 || PadZ<2)
-    warning("WARNING: PadS=1 (or PadZ=1) should ONLY be used when the non-zero data \n\
-occupy only half of the FOV. Otherwise aliasing will occur!\n");
-
-  start_timers();
-
   // TODO move to post_processing()
   {
+    if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
+      {
+	warning("stretch factors for Colsher filter have to be at least 1");
+	return Succeeded::no;
+      }
+    
+    if (PadS<1 || PadZ<1)
+      warning("PadS=0 (or PadZ=0) should ONLY be used when the non-zero data\n"
+	      "occupy only half of the FOV. Otherwise aliasing will occur!");
+      
     if (is_null_ptr(back_projector_sptr))
       {
 	warning("Back projector not set.\n");
@@ -389,6 +401,9 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
 	warning("Forward projector not set.\n");
 	return Succeeded::no;
       }
+
+  start_timers();
+
 #ifndef NRFFT
     const float theta_max =
       atan(proj_data_ptr->get_proj_data_info_ptr()->
@@ -397,7 +412,11 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
     colsher_filter = 
       ColsherFilter(theta_max, 
                     alpha_colsher_axial, fc_colsher_axial,
-                    alpha_colsher_planar, fc_colsher_planar);
+                    alpha_colsher_planar, fc_colsher_planar,
+		    colsher_stretch_factor_planar,
+		    colsher_stretch_factor_axial);
+#else
+    warning("Using NRFFT");
 #endif
   }
   {

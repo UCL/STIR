@@ -4,15 +4,17 @@
 
 /*! 
   \file 
+  \ingroup FBP3DRP
   \brief Colsher filter class
   \author Claire LABBE
+  \author Kris Thielemans
   \author PARAPET project
   $Date$
   $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -27,13 +29,12 @@
 #endif
 
 START_NAMESPACE_STIR
-
-template <typename elemT> class Segment;
+#ifdef NRFFT
 template <typename elemT> class Viewgram;
-
+#endif
 
 /*!
-
+  \ingroup FBP3DRP
   \brief This class contains the Colsher filter used for 3D-PET reconstruction.
 
   The Colsher filter is combined with a 2-dimensional apodising Hamming filter.
@@ -56,12 +57,22 @@ public:
     \brief constructor for the ColsherFilter.
     
     \param theta_max
-           the polar angle corresponding to the maximum oblique angle included in the reconstruction
-    The alpha and fc parameters are designed to minimize the amplification of noise.
+           the polar angle corresponding to the maximum oblique angle 
+	   included in the reconstruction.
+
+    The \c alpha and \c fc parameters are designed to minimize the 
+    amplification of noise.
+
+    The \c stretch_factor parameters can be used to define the Colsher
+    filter via a finer grid to avoid the problems with sampling a 
+    continuous filter in frequency space. For the ramp-filter, this can 
+    be done using analytic integration, but here we have to do it numerically. 
   */
   explicit ColsherFilter(float theta_max,
-			 float alpha_colsher_axial=1.F, float fc_colsher_axial=0.F,
-			 float alpha_colsher_radial=1.F, float fc_colsher_radial=0.F);
+			 float alpha_colsher_axial=1.F, float fc_colsher_axial=0.5F,
+			 float alpha_colsher_radial=1.F, float fc_colsher_radial=0.5F,
+			 const int stretch_factor_axial=2,
+			 const int stretch_factor_planar=2);
   //! Initialise filter values
   /*! creates a 2D Colsher filter of size height*width,
     \param theta the polar angle
@@ -72,7 +83,7 @@ public:
     set_up(int height, int width, float theta,
 	   float d_a, float d_b);
 #else
-    ColsherFilter(int height, int width, float gamma, float theta_max,
+  ColsherFilter(int height, int width, float gamma, float theta_max,
 		  float d_a, float d_b,
                   float alpha_colsher_axial, float fc_colsher_axial,
                   float alpha_colsher_radial, float fc_colsher_radial);
@@ -103,7 +114,8 @@ public:
     float alpha_planar;
     //! value of the planar cut-off frequency of the Colsher filter
     float fc_planar;
-  
+    int stretch_factor_axial;
+    int stretch_factor_planar;
 };
 
 #ifdef NRFFT
