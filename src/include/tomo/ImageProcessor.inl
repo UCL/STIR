@@ -31,16 +31,16 @@ START_NAMESPACE_TOMO
 template <int num_dimensions, typename elemT>
 ImageProcessor<num_dimensions,elemT>::
 ImageProcessor()
-: filter_built(false)
+: is_set_up_already(false)
 {}
    
 template <int num_dimensions, typename elemT>
 Succeeded 
 ImageProcessor<num_dimensions,elemT>::
-build_filter(const DiscretisedDensity< num_dimensions,elemT>& image)
+set_up(const DiscretisedDensity< num_dimensions,elemT>& image)
 {
-  Succeeded result = virtual_build_filter(image);
-  filter_built = (result == Succeeded::yes);
+  Succeeded result = virtual_set_up(image);
+  is_set_up_already = (result == Succeeded::yes);
   return result;
 }
 
@@ -51,8 +51,8 @@ ImageProcessor<num_dimensions,elemT>::
 apply(DiscretisedDensity<num_dimensions,elemT>& density)
   {
     //assert(consistency_check(density) == Succeeded::yes);
-    if (!filter_built )
-      build_filter(density);
+    if (!is_set_up_already )
+      set_up(density);
     virtual_apply(density);
   }
 
@@ -64,8 +64,8 @@ apply(DiscretisedDensity<num_dimensions,elemT>& density,
 		 const DiscretisedDensity<num_dimensions,elemT>& in_density)
   {
     //assert(consistency_check(in_density) == Succeeded::yes);
-    if (!filter_built )
-      if (build_filter(in_density) == Succeeded::no)
+    if (!is_set_up_already )
+      if (set_up(in_density) == Succeeded::no)
       {
 	warning("ImageProcessor::apply: Building filter was unsuccesfull. No filtering done.\n");
 	return;

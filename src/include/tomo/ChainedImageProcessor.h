@@ -35,7 +35,7 @@ START_NAMESPACE_TOMO
   the same characteristics as the input density. 
   
 
-  \warning ChainedImageProcessor::build_filter builds only the image
+  \warning ChainedImageProcessor::set_up builds only the image
   processor of the first in the image processor in the chain. This 
   is because at this point, we do not really know what the first
   image processor will do to the image (it might change index 
@@ -73,7 +73,7 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   
-  Succeeded virtual_build_filter(const DiscretisedDensity<num_dimensions,elemT>& image);
+  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image);
 
   void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
   void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;
