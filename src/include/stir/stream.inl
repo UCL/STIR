@@ -15,7 +15,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /* History:
@@ -132,7 +132,7 @@ operator>>(istream& str, VectorWithOffset<elemT>& v)
 
 template <int num_dimensions, typename coordT>
 istream& 
-operator<<(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
+operator>>(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
 {
   char c = '\0';
   str >> ws >> c;
