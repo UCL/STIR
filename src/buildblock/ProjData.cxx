@@ -28,9 +28,11 @@
 
 // for read_from_file
 #include "stir/interfile.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/interfile_keyword_functions.h"
 #include "stir/ProjDataGEAdvance.h"
+#include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
+#include "stir/is_null_ptr.h"
 #include <cstring>
 #include <fstream>
 
@@ -57,8 +59,10 @@ START_NAMESPACE_STIR
 
    Currently supported:
    <ul>
-   <li> ProjDataGEAdvance
-   <li> ProjDataFromStream, specified via an Interfile header.
+   <li> GE Advance (via class ProjDataGEAdvance)
+   <li> Interfile (using  read_interfile_PDFS())
+   <li> ECAT 7 3D sinograms and attenuation files 
+   (by writing an Interfile header first)
    </ul>
 
    Developer's note: ideally the return value would be an auto_ptr.
@@ -68,28 +72,74 @@ ProjData::
 read_from_file(const string& filename,
 	       const ios::openmode openmode)
 {
-  iostream * input = new fstream(filename.c_str(), openmode | ios::binary);
+  fstream * input = new fstream(filename.c_str(), openmode | ios::binary);
   if (! *input)
     error("ProjData::read_from_file: error opening file %s\n", filename.c_str());
 
   const int max_length=300;
   char signature[max_length];
   input->read(signature, max_length);
+  signature[max_length-1]='\0';
 
-  shared_ptr<ProjData> result = 0;
-
+  // GE Advance
   if (strncmp(signature, "2D3D", 4) == 0)
-    result = shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
-  else
   {
-    delete input;
-    result = shared_ptr<ProjData>(read_interfile_PDFS(filename, openmode));
+#ifndef NDEBUG
+    warning("ProjData::read_from_file trying to read %s as GEAdvance file\n", 
+	    filename.c_str());
+#endif
+    return shared_ptr<ProjData>( new ProjDataGEAdvance(input) );
   }
 
-  if (result.use_count() == 0)
-    error("\nProjData::read_from_file could not read projection data %s. Aborting.\n",
+  delete input;
+
+#ifdef HAVE_LLN_MATRIX
+  // ECAT 7
+  if (strncmp(signature, "MATRIX", 6) == 0)
+  {
+#ifndef NDEBUG
+    warning("ProjData::read_from_file trying to read %s as ECAT7\n", filename.c_str());
+#endif
+    USING_NAMESPACE_ECAT7;
+
+    if (is_ecat7_emission_file(filename) || is_ecat7_attenuation_file(filename))
+    {
+      string interfile_header_name;
+      if (write_basic_interfile_header_for_ecat7(interfile_header_name, filename, 1,1,0,0) ==
+	  Succeeded::no)
+        return 0;
+#ifndef NDEBUG
+      warning("ProjData::read_from_file wrote interfile header %s\nNow reading as interfile", 
+              interfile_header_name.c_str());
+#endif
+      return shared_ptr<ProjData>(read_interfile_PDFS(interfile_header_name, openmode));
+    }
+    else
+    {
+      if (is_ecat7_file(filename))
+	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type\n", filename.c_str());
+    }
+  }
+#endif // HAVE_LLN_MATRIX
+
+  // Interfile
+  if (standardise_interfile_keyword(signature) == 
+      standardise_interfile_keyword("interfile"))
+  {
+#ifndef NDEBUG
+    warning("ProjData::read_from_file trying to read %s as Interfile\n", filename.c_str());
+#endif
+    shared_ptr<ProjData> ptr =
+      read_interfile_PDFS(filename, openmode);
+    if (!is_null_ptr(ptr))
+      return ptr;
+  }
+
+
+  error("\nProjData::read_from_file could not read projection data %s.\n"
+	"Unsupported file format? Aborting.\n",
 	  filename.c_str());
-  return result;
+  return 0;
 }
 
 
