@@ -1,9 +1,9 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
-#ifndef __ProjMatrixByBin_H__
-#define __ProjMatrixByBin_H__
+#ifndef __Tomo_recon_buildblock_ProjMatrixByBin_H__
+#define __Tomo_recon_buildblock_ProjMatrixByBin_H__
 
 /*!
 
@@ -15,14 +15,13 @@
   \author Kris Thielemans
   \author PARAPET project
    
-  \date $Date$
-    
-  \version $Revision$
+  $Date$  
+  $Revision$
 */
 
 
 
-
+#include "tomo/RegisteredObject.h"
 #include "recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "recon_buildblock/DataSymmetriesForBins.h"
 #include "shared_ptr.h"
@@ -63,10 +62,20 @@ class Bin;
   This functionality will probably be moved to a new class 
   ProjMatrixByBinWithCache. (TODO)
 */
-class ProjMatrixByBin {
+class ProjMatrixByBin :  public RegisteredObject<ProjMatrixByBin>
+{
 public:
   
   virtual ~ProjMatrixByBin() {}
+
+  //! To be called before any calculation is performed
+  /*! Note that get_proj_matrix_elems_for_one_bin() will expect objects of
+      compatible sizes and other info.
+  */
+  virtual void set_up(
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+  ) = 0;
 
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByBin
   inline const  DataSymmetriesForBins* get_symmetries_ptr() const;
@@ -173,7 +182,7 @@ private:
 
 END_NAMESPACE_TOMO
 
-#include  "ProjMatrixByBin.inl"
+#include  "recon_buildblock/ProjMatrixByBin.inl"
 
 #undef TOMO_MUTABLE_CONST
 
