@@ -24,7 +24,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
 #include "stir/Array.h"
-#include "stir/DiscretisedDensity.h
+#include "stir/DiscretisedDensity.h"
 
 START_NAMESPACE_STIR
 
