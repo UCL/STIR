@@ -13,7 +13,7 @@
 */
 
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -55,14 +55,7 @@ public:
   virtual const RigidObject3DTransformation& 
     get_transformation_from_scanner_coords() const;
   
-//private: 
-  //! Find and store gating values in a vector from lm_file  
-  void find_and_store_gate_tag_values_from_lm(vector<float>& lm_time, 
-					      vector<unsigned>& lm_random_number,
-					      CListModeData& listmode_data);
-
-  //! Find and store random numbers from mt_file
-  void find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers);
+private: 
 
   void find_offset(CListModeData& listmode_data);
 
