@@ -50,6 +50,7 @@ protected:
 
   //! stores the time (in secs) recorded in the previous timing event
   double current_time;
+  unsigned int current_frame_num;
   
   //! will be called when a new time frame starts
   /*! The frame number starts from 1. */
@@ -76,7 +77,6 @@ protected:
   bool pre_or_post_normalisation;
   bool store_prompts;
   int delayed_increment;
-  int current_frame;
   int num_segments_in_memory;
   // TODO make long (or even unsigned long) but can't do this yet because we can't parse longs yet
   int num_events_to_store;
