@@ -4,7 +4,7 @@ rem see README.txt
 rem Author: Kris Thielemans
 
 
-echo This script should work with PARAPET software 0.94. If you have
+echo This script should work with STIR version 1.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 
