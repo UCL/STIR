@@ -133,11 +133,14 @@ main(int argc, char *argv[])
       const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
       int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+      int z_size = 2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1;
+      z_size = ask_num("Number of z pixels",1,1000,z_size);
       image_sptr = vox_image_ptr =
         new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
                                          zoom,
                                          CartesianCoordinate3D<float>(0,0,0),
-                                         xy_size);      
+                                         Coordinate3D<int>(z_size,xy_size,xy_size));
+      
       fill_cuboid(*vox_image_ptr);
       break;
     }
@@ -146,11 +149,13 @@ main(int argc, char *argv[])
       const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
       int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+      int z_size = 2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1;
+      z_size = ask_num("Number of z pixels",1,1000,z_size);
       image_sptr = vox_image_ptr =
         new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
                                          zoom,
                                          CartesianCoordinate3D<float>(0,0,0),
-                                         xy_size);
+                                         Coordinate3D<int>(z_size,xy_size,xy_size));
       fill_cylinder(*vox_image_ptr);
       break;
     }
