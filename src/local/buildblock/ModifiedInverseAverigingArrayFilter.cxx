@@ -349,10 +349,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 	*output << new_filter_coefficients[i] << "   ";
       *output << endl;
       
-     /* cerr << " PRINTING NOW" << endl;
+      cerr << " PRINTING NOW" << endl;
        cerr << " COEFF" << endl;
       for (int i=0;i<=new_filter_coefficients.get_max_index();i++)
-      cerr << new_filter_coefficients[i] << "   ";*/
+      cerr << new_filter_coefficients[i] << "   ";
       
       // to do only filtering in 2d -> 
       // z-direction is for 0 index
