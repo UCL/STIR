@@ -32,6 +32,8 @@
 
 #include "stir/recon_buildblock/RelatedBins.h"
 #include <algorithm>
+//#include <iostream>
+//#include "stir/stream.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::copy;
@@ -116,8 +118,20 @@ Succeeded ProjMatrixElemsForOneBin::check_state() const
   {
     if (value_type::coordinates_equal(*lor_iter, *(lor_iter+1)))
     {
-      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d\n",
-        lor_iter->coord1(), lor_iter->coord2(), lor_iter->coord3());
+      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, v=%d, a=%d, t=%d\n",
+	      lor_iter->coord1(), lor_iter->coord2(), lor_iter->coord3(),
+	      bin.segment_num(), bin.view_num(),
+	      bin.axial_pos_num(), bin.tangential_pos_num());
+#if 0
+      const_iterator iter = begin();
+      while (iter!= end())
+	{
+	  std::cerr << iter->get_coords() 
+		    << ':' << iter->get_value()
+		    << '\n';
+	  ++iter;
+	}
+#endif
       success = Succeeded::no;
     }
   }
@@ -418,5 +432,54 @@ forward_project(RelatedBins& r_bins,
   
 }
 
+
+bool 
+ProjMatrixElemsForOneBin::
+operator==(const ProjMatrixElemsForOneBin& lor) const
+{
+  // first determine a tolerance for the floating point comparisons
+  // do this by finding the maxumum value in the first lor
+  float max_value = 0;
+  for (const_iterator this_iter= begin(); this_iter!= end(); ++this_iter)
+    {
+      const float current_value=this_iter->get_value();
+      if (current_value> max_value)
+	max_value = current_value;
+    }
+  const float tolerance = max_value*.0005;
+
+  const_iterator this_iter= begin(); 
+  const_iterator lor_iter = lor.begin();
+  while (this_iter!= end() && lor_iter!=lor.end())
+    {
+      // skip small elements
+      if (this_iter->get_value()<tolerance)
+	{ ++this_iter; continue; }
+      if (lor_iter->get_value()<tolerance)
+	{ ++lor_iter; continue; }
+      // compare coordinates and value
+      if (this_iter->get_coords() != lor_iter->get_coords() ||
+	  fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
+	return false;
+      ++this_iter;
+      ++lor_iter;
+    }
+  for (; this_iter!= end(); ++this_iter)
+    {
+      if (this_iter->get_value()> tolerance)
+	return false;
+    }
+  for (; lor_iter!= lor.end(); ++lor_iter)
+    {
+      if (lor_iter->get_value()> tolerance)
+	return false;
+    }
+  return true;
+  
+}
+bool 
+ProjMatrixElemsForOneBin::
+operator!=(const ProjMatrixElemsForOneBin& lor) const
+{ return !(*this==lor); }
 
 END_NAMESPACE_STIR
