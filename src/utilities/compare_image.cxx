@@ -5,7 +5,7 @@
 /*!
 \file
 \ingroup utilities 
-\brief compare images
+\brief compare images to see if they are identical, allowing for small differences
 
 \author Matthew Jacobson
 \author Kris Thielemans
@@ -15,7 +15,8 @@
 \version $Revision$
 
 This utility compares two images. They are deemed identical if
-their maximum absolute difference is less than a hard-coded tolerance value.
+their maximum absolute relative difference is less than a hard-coded tolerance 
+value.
 Diagnostic output is written to stdout, and the return value indicates
 if the files are identical or not.
 */
@@ -43,10 +44,9 @@ USING_NAMESPACE_TOMO
 int main(int argc, char *argv[])
 {
 
-  const float tolerance=0.0001F;
-  float max_error;
+  const float tolerance=0.0005F;
 
-  if(argc<3)
+  if(argc!=3)
   {
     cerr<< "Usage:" << argv[0] << "old_image new_image\n";
     exit(EXIT_FAILURE);
@@ -66,20 +66,25 @@ int main(int argc, char *argv[])
 
   *first_operand -= *second_operand;
   in_place_abs(*first_operand);
-  max_error=first_operand->find_max();
+  const float max_error=first_operand->find_max();
 
-  bool same=(max_error/amplitude<=tolerance)?true:false;
+  const bool same=(max_error/amplitude<=tolerance);
 
   cout<<endl<<"Maximum absolute error = "<<max_error<<endl;
-  cout<<"Error relative to sup-norm of first array = "<<(max_error/amplitude)*100<<" %"<<endl;
+  cout<<"Error relative to sup-norm of first image = "<<(max_error/amplitude)*100<<" %"<<endl;
 
-  cout<<"Image arrays deemed ";
+  cout<<"\nImage arrays ";
 
   if(same)
-    cout<<"identical";
-  else cout<<"different";
-  cout<<endl;
-
+  {
+    cout << (max_error == 0 ? "are " : "deemed ")
+         << "identical\n";
+  }
+  else 
+  {
+    cout<<"deemed different\n";
+  }
+  cout << "(tolerance used: " << tolerance*100 << " %)\n\n";
   return same?EXIT_SUCCESS:EXIT_FAILURE;
 
 } //end main
