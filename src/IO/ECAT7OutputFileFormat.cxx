@@ -56,6 +56,11 @@ set_defaults()
 {
   default_scanner_name = "ECAT 962";
   OutputFileFormat::set_defaults();
+  file_byte_order = ByteOrder::big_endian;
+  type_of_numbers = NumericType::SHORT;
+
+  set_key_values();
+
 }
 
 bool
@@ -113,7 +118,7 @@ set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 
 Succeeded  
 ECAT7OutputFileFormat::
-    write_to_file(string& filename, 
+    actual_write_to_file(string& filename, 
                   const DiscretisedDensity<3,float>& density) const
 {
   shared_ptr<Scanner> scanner_ptr = 
