@@ -259,6 +259,11 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   }
 #endif
 
+  // conditions on searching flow
+  assert(cphi>=0-.001);
+  assert(sphi>=0-.001);
+  assert(cphi+sphi>=1-.001);
+
   double dzvert,dzhor,ds;
   double dsdiag,dzdiag,dz;
   int X,Y,Z,Q;
@@ -1066,6 +1071,11 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
     error("This backprojector cannot handle such oblique segments: delta = %g. Sorry.\n",delta);
   }
 #endif
+
+  // conditions on searching flow
+  assert(cphi>=0-.001);
+  assert(sphi>=0-.001);
+  assert(cphi+sphi>=1-.001);
 
   const float ring_unit = 1./num_planes_per_axial_pos;
   // CL&KT 21/12/99 new
@@ -2316,8 +2326,9 @@ find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
   // For example, when ds<0, adding sin(phi) is not guaranteed to make it positive
   // (where the most obvious example was phi==0, although I did treat that correctly).
   // On the other hand ds + cphi >= (cphi-sphi)/2 + 0.5, which is >=0.5 as
-  // 0<=phi<=45.
-  // Similarly, ds - cphi <= -(cphi-sphi)/2 + 0.5 <= 0.5
+  // 0<=phi<=45 (in fact, it is still >=0 if 45<phi<=90).
+  // Similarly, ds - cphi <= -(cphi-sphi)/2 + 0.5 <= 1 for 0<=phi<=90.
+
   if (ds<epsilon) 
     {
 #if 0    
