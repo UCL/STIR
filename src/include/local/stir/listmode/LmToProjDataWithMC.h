@@ -3,7 +3,7 @@
 #define __stir_listmode_LmToProjDataWithMC_H__
 //
 
-#include "stir/recon_buildblock/BinNormalisation.h"
+
 #include "local/stir/listmode/LmToProjData.h"
 #include "stir/CartesianCoordinate3D.h"
 
@@ -22,7 +22,8 @@ public:
 				   const double time, 
 				   const ProjDataInfoCylindrical&) const;
 
-  shared_ptr<BinNormalisation> normalisation_ptr;
+  //SM
+  //shared_ptr<BinNormalisation> normalisation_ptr;
   //shared_ptr<Polaris_MT_File> mt_file_ptr;
 
 private:
@@ -46,7 +47,6 @@ private:
 					    const int det1,const int det2, 
 					    const Scanner& scanner) const;
 
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
   shared_ptr<Scanner> scanner_ptr;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
   //TODO somehow get this from RigidObject3DMotionFromPolaris
