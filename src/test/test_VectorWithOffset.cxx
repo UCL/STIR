@@ -19,6 +19,16 @@ main()
   
   VectorWithOffset<int> v(-3, 40);
 
+  // KT 29/10/98 new
+  for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
+    v[i] = 2*i;
+  assert(v[4] == 8);
+
+  int *ptr = v.get_data_ptr();
+  ptr[4+3] = 5;
+  v.update_data();
+  assert(v[4] == 5);
+
 #ifdef DEFINE_ITERATORS
 #ifndef __MSL__
   iota(v.begin(), v.end(), -3);
