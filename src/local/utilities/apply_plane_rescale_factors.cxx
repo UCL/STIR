@@ -5,7 +5,7 @@
   \file 
   \ingroup utilities
  
-  \brief This programme rescales planes of an image according to a file with
+  \brief This program rescales planes of an image according to a file with
   scale factors
 
   The scale factors should be given in a file as {plane1, plane2,...}, as written
@@ -17,12 +17,12 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2002- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"
 #include "local/stir/multiply_plane_scale_factorsImageProcessor.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/Succeeded.h"
 #include "stir/stream.h"
 #include <fstream>
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   {
     ifstream factors(rescale_factors_filename);
     factors >> rescale_factors;
-    if (rescale_factors.size() != density_ptr->get_length())
+    if (rescale_factors.size() != static_cast<unsigned>(density_ptr->get_length()))
     {
       warning("%s: wrong number of scale factors (%d) found in file %s, should be %d\n",
             argv[0], rescale_factors.size(), 
@@ -70,7 +70,8 @@ int main(int argc, char **argv)
   }
 
   {
-    multiply_plane_scale_factorsImageProcessor<float>(rescale_factors) image_processor;
+    multiply_plane_scale_factorsImageProcessor<float> 
+      image_processor(rescale_factors);
     image_processor.apply(*density_ptr);
   }
       
