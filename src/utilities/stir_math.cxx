@@ -17,6 +17,8 @@ The command line arguments are as follows (but everything has to fit on 1 line):
   [--times-scalar mult_scalar_float] 
   [--divide-scalar divide_scalar_float] 
   [--add-scalar add_scalar_float] 
+  [--min-threshold min_threshold]
+  [--max-threshold max_threshold]
   [--including-first] 
   [--verbose]
   output_filename_with_extension in_data1 [in_data2 [in_data3...]]
@@ -30,6 +32,8 @@ or
   [--times-scalar mult_scalar_float] 
   [--divide-scalar divide_scalar_float] 
   [--add-scalar add_scalar_float] 
+  [--min-threshold min_threshold]
+  [--max-threshold max_threshold]
   [--including-first] 
   [--verbose]
   out_and_input_filename in_data2 [in_data3 [in_data4...]]
@@ -47,16 +51,17 @@ first filename will first be manipulated according to '--power' and '--times-sca
 The '-s' option is necessary if the arguments are projection data.
 Otherwise, it is assumed the data are images.<br>
 Multiple occurences of '--times-scalar' and '--divide-scalar' are
-allowed and will just result in accumulation of the factors.<br>
-Power is taken before multiplication with the scalar, which is done before addition of the scalar.<br>
+allowed and will just result in accumulation of the factors.<P>
+The order of the manipulations is as follows:<br>
+(1) thresholding (2) power (3) scalar multiplication (4) scalar addition.
 \par Examples
 <ul>
 <li> subtracting 2 files<br>
 \code stir_math --times-scalar -1 output in1 in2 \endcode
 <li> sum the square of each file<br>
 \code stir_math --power 2 --including-first output in1 in2 \endcode
-<li> Dividing 2 files<br>
-\code stir_math --mult --power -1 output in1 in2 \endcode
+<li> Dividing 2 files after thresholding the 2nd file<br>
+\code stir_math --mult --power -1 --min-threshold .1 output in1 in2 \endcode
 <li> Dividing 2 files, with first file set to the quotient<br>
 \code stir_math --accumulate --mult --power -1 in1 in2 \endcode
 
@@ -93,6 +98,7 @@ $Revision$
 #include "stir/utilities.h"
 #include "stir/ArrayFunction.h"
 #include "stir/Succeeded.h"
+#include "stir/NumericInfo.h"
 
 #include <fstream> 
 #include <iostream> 
@@ -120,18 +126,23 @@ USING_NAMESPACE_STIR
 class pow_times_add: public unary_function<float,float>
 {
 public:
-  pow_times_add(const float add_scalar, const float mult_scalar, const float power)
-    : add(add_scalar), mult(mult_scalar), power(power)
+  pow_times_add(const float add_scalar, const float mult_scalar, const float power, 
+		const float min_threshold, const float max_threshold)
+    : add(add_scalar), mult(mult_scalar), power(power), 
+      min_threshold(min_threshold), max_threshold(max_threshold)
   {}
 
   float operator()(float const arg) const
   {
-    return add+mult*(power==1?arg : pow(arg,power));
+    const float value = min(max(arg, min_threshold), max_threshold);
+    return add+mult*(power==1?value : pow(value,power));
   }
 private:
   const float add;
   const float mult;
   const float power;
+  const float min_threshold;
+  const float max_threshold;
 };
 
 int 
@@ -145,6 +156,8 @@ main(int argc, char **argv)
 	<< "[--times-scalar mult_scalar_float]\n\t"
 	<< "[--divide-scalar div_scalar_float]\n\t"
 	<< "[--add-scalar add_scalar_float]\n\t"
+	<< "[--min-threshold min_threshold]\n\t"
+	<< "[--max-threshold max_threshold]\n\t"
 	<< "[--including-first] [--verbose]\n\t"
 	<< "output_filename_with_extension in_data1 [in_data2 [in_data3...]]\n\n"
 	<< "(but everything on 1 line).\n"
@@ -157,11 +170,11 @@ main(int argc, char **argv)
         << "The '--accumulate' option can be used to say that the first filename given will be "
            "used for input AND output. Note that when using this option together with "
            "'--including-first', the data in the first filename will first be manipulated "
-           "according to '--power', '--times-scalar' and '--divide-scalar'.\n"
+           "according to '--power', '--times-scalar' and '--divide-scalar'.\n\n"
 	<< "Multiple occurences of '--times-scalar' and '--divide-scalar' are\n"
-	<< "allowed and will just result in accumulation of the factors.\n"
-        << "Power is taken before multiplication with the scalar, which is\n"
-	<< "done before addition of the scalar.\n\n"
+	<< "allowed and will just result in accumulation of the factors.\n\n"
+	<< "The order of the manipulations is as follows:\n"
+	<< "(1) thresholding (2) power (3) scalar multiplication (4) scalar addition.\n\n"
 	<< "The '-s' option is necessary if the arguments are projection data."
 	<< " Otherwise, it is assumed the data are images.\n\n"
 	<< "WARNING: there is no check that the data sizes and other info are compatible "
@@ -183,6 +196,8 @@ main(int argc, char **argv)
   bool accumulate=false;
   float add_scalar = 0.F;
   float mult_scalar = 1.F;
+  float min_threshold = NumericInfo<float>().min_value();
+  float max_threshold = NumericInfo<float>().max_value();
   float power = 1;
   bool except_first = true;
   bool verbose = false;
@@ -199,19 +214,33 @@ main(int argc, char **argv)
       { cerr << "Option '--add-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
       add_scalar += atof(argv[1]);
       argc-=2; argv+=2;
-    } else
-    if (strcmp(argv[0], "--times-scalar")==0)
+    } 
+    else if (strcmp(argv[0], "--times-scalar")==0)
     {
       if (argc<2)
       { cerr << "Option '--times-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
       mult_scalar *= atof(argv[1]);
       argc-=2; argv+=2;
-    } else
-    if (strcmp(argv[0], "--divide-scalar")==0)
+    } 
+    else if (strcmp(argv[0], "--divide-scalar")==0)
     {
       if (argc<2)
       { cerr << "Option '--divide-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
       mult_scalar /= atof(argv[1]);
+      argc-=2; argv+=2;
+    } 
+    else if (strcmp(argv[0], "--max-threshold")==0)
+    {
+      if (argc<2)
+      { cerr << "Option '--max-threshold' expects a (float) argument\n"; exit(EXIT_FAILURE); }
+      max_threshold = atof(argv[1]);
+      argc-=2; argv+=2;
+    } 
+    else if (strcmp(argv[0], "--min-threshold")==0)
+    {
+      if (argc<2)
+      { cerr << "Option '--min-threshold' expects a (float) argument\n"; exit(EXIT_FAILURE); }
+      min_threshold = atof(argv[1]);
       argc-=2; argv+=2;
     } 
     else if (strcmp(argv[0], "--power")==0)
@@ -271,7 +300,10 @@ main(int argc, char **argv)
   if (num_files==0)
   { cerr << "No input files on command line\n"; exit(EXIT_FAILURE); }
 
-  const bool no_math_on_data = power==1 && mult_scalar==1 && add_scalar==0;
+  const bool no_math_on_data = power==1 && mult_scalar==1 && add_scalar==0 &&
+    min_threshold == NumericInfo<float>().min_value() &&
+    max_threshold == NumericInfo<float>().max_value();
+
 
   if (verbose)
     {
@@ -279,7 +311,9 @@ main(int argc, char **argv)
 	   << (do_add ? "adding " : "multiplying ")
 	   << num_files;
       if (!no_math_on_data)
-	cout <<" files after taking a power of "
+	cout <<" files after thresholding to a min value of "
+	     << min_threshold << "\n and a max value of "
+	     << max_threshold << "\n and then taking a power of "
 	     << power << "\n and then multiplying with "
 	     << mult_scalar << "\n and then adding  "
 	     << add_scalar
@@ -289,7 +323,7 @@ main(int argc, char **argv)
     }
 
   // construct function object that does the manipulations on each data
-  pow_times_add pow_times_add_object(add_scalar, mult_scalar, power);
+  pow_times_add pow_times_add_object(add_scalar, mult_scalar, power, min_threshold, max_threshold);
 
   // start the main processing
   if (!do_projdata)
