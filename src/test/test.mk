@@ -19,7 +19,8 @@ $(dir)_TEST_SOURCES := test_Array.cxx \
 	test_ByteOrder.cxx \
 	test_Scanner.cxx \
 	test_ROIs.cxx \
-	test_VAXfloat.cxx
+	test_VAXfloat.cxx \
+	test_ArcCorrection.cxx
 
 $(dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \
@@ -104,6 +105,10 @@ ${DEST}$(dir)/test_OutputFileFormat: ${DEST}$(dir)/test_OutputFileFormat${O_SUFF
 
 ${DEST}$(dir)/test_proj_data_info: ${DEST}$(dir)/test_proj_data_info${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_ArcCorrection: ${DEST}$(dir)/test_ArcCorrection${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+
 
 include $(WORKSPACE)/test.mk
 
