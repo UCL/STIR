@@ -35,19 +35,24 @@ float scatter_estimate_for_one_scatter_point(
 	  const bool use_cosphi,
 	  const bool use_cache)
 {	
+	static const float max_single_scatter_cos_angle=max_cos_angle_BGO(lower_energy_threshold,2.);
+
+	static const float min_energy=energy_lower_limit_BGO(lower_energy_threshold,2.);
+
 	const CartesianCoordinate3D<float>& scatter_point =
 		scatt_points_vector[scatter_point_num].coord;
 	const CartesianCoordinate3D<float>& detector_coord_A =
 		detection_points_vector[det_num_A];
     const CartesianCoordinate3D<float>& detector_coord_B =
 		detection_points_vector[det_num_B];
-
 	// note: costheta is -cos_angle such that it is 1 for zero scatter angle
 	const float costheta =
 		-cos_angle(detector_coord_A - scatter_point,
 		           detector_coord_B - scatter_point);
 	// note: costheta is identical for scatter to A or scatter to B
 	// Hence, the cross_section and energy are identical for both cases as well.
+	if(max_single_scatter_cos_angle>costheta)
+		return 0;
 	const float new_energy =
 	  energy_after_scatter_511keV(costheta);
 
