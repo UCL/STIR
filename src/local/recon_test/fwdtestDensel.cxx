@@ -34,7 +34,7 @@
 
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 //#include "stir/display.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
