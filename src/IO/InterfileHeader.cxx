@@ -233,9 +233,9 @@ bool InterfileHeader::post_processing()
   // fact that the default didn't change. This isn't good enough, but it has to do for now.
   if (lln_quantification_units!=1.)
   {
-     const bool all_one = image_scaling_factors[1][1] == 1.;
+     const bool all_one = image_scaling_factors[0][0] == 1.;
     for (int frame=0; frame<num_time_frames; frame++)
-      for (unsigned int i=1; i<image_scaling_factors[frame].size(); i++)
+      for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
         // probably never occured) or lln_quantification_units
