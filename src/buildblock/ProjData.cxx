@@ -107,8 +107,8 @@ read_from_file(const string& filename,
 	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
 	return shared_ptr<ProjData>( new ProjDataVOLPET(filename) );
       }
-  }
 #endif // STIR_DEVEL to differentiate between Advance and VOLPET code
+  }
 
   delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
 
