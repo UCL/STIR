@@ -472,13 +472,14 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
         Proj2424 *= jacobian(delta, s+ 0.5);
 
+	// TODO replace all this junk by things from DataSymmetries
 	// find correspondence between ring coordinates and image coordinates:
 	// z = num_planes_per_virtual_ring * ring + virtual_ring_offset
 	// compute the offset by matching up the centre of the scanner 
 	// in the 2 coordinate systems
-	const int num_planes_per_virtual_ring =
+	const float num_planes_per_virtual_ring =
            proj_data_info_cyl_ptr->get_axial_sampling(segment_num)/image.get_voxel_size().z();
-	const int num_virtual_rings_per_physical_ring =
+	const float num_virtual_rings_per_physical_ring =
            proj_data_info_cyl_ptr->get_ring_spacing()/proj_data_info_cyl_ptr->get_axial_sampling(segment_num);
 	const float virtual_ring_offset = 
 	  (image.get_max_z() + image.get_min_z())/2.F
@@ -647,9 +648,9 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	// z = num_planes_per_virtual_ring * ring + virtual_ring_offset
 	// compute the offset by matching up the centre of the scanner 
 	// in the 2 coordinate systems
-	const int num_planes_per_virtual_ring =
+	const float num_planes_per_virtual_ring =
           proj_data_info_cyl_ptr->get_axial_sampling(segment_num)/image.get_voxel_size().z();
-        const int num_virtual_rings_per_physical_ring =
+        const float num_virtual_rings_per_physical_ring =
           proj_data_info_cyl_ptr->get_ring_spacing()/proj_data_info_cyl_ptr->get_axial_sampling(segment_num);
         
         const float virtual_ring_offset = 
