@@ -104,10 +104,6 @@ BackProjectorByBinUsingProjMatrixByBin::get_symmetries_used() const
   return proj_matrix_ptr->get_symmetries_ptr();
 }
 
-#if 0
-// straightforward version which relies on ProjMatrixByBin to sort out all 
-// symmetries
-// will be slow if there's no caching
 void 
 BackProjectorByBinUsingProjMatrixByBin::
 actual_back_project(DiscretisedDensity<3,float>& image,
@@ -115,121 +111,121 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 		    const int min_axial_pos_num, const int max_axial_pos_num,
 		    const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  ProjMatrixElemsForOneBin proj_matrix_row;
+  if (proj_matrix_ptr->is_cache_enabled()/* &&
+					    !proj_matrix_ptr->does_cache_store_only_basic_bins()*/)
+    {
+      // straightforward version which relies on ProjMatrixByBin to sort out all 
+      // symmetries
+      // would be slow if there's no caching at all, but is very fast if everything is cached
+
+      ProjMatrixElemsForOneBin proj_matrix_row;
   
-  RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
+      RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
   
-  while( r_viewgrams_iter!=viewgrams.end())
-  {
-    const Viewgram<float>& viewgram = *r_viewgrams_iter;
-    const int view_num = viewgram.get_view_num();
-    const int segment_num = viewgram.get_segment_num();
-    
-    for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
-      for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
-      { 
-        // KT 21/02/2002 added check on 0
-        if (viewgram[ax_pos][tang_pos] == 0)
-          continue;
-	Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
-	proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
-	proj_matrix_row.back_project(image, bin);
-      }
-     ++r_viewgrams_iter;   
-  }
-	   
-}
-#else
-// complicated version which handles the symmetries explicitly
-// faster when no caching is performed, about just as fast when there is caching
-void 
-BackProjectorByBinUsingProjMatrixByBin::
-actual_back_project(DiscretisedDensity<3,float>& image,
-		    const RelatedViewgrams<float>& viewgrams,
-		    const int min_axial_pos_num, const int max_axial_pos_num,
-		    const int min_tangential_pos_num, const int max_tangential_pos_num)
-{
-  ProjMatrixElemsForOneBin proj_matrix_row;
-  ProjMatrixElemsForOneBin proj_matrix_row_copy;
-  const DataSymmetriesForBins* symmetries = proj_matrix_ptr->get_symmetries_ptr(); 
-
-  Array<2,int> 
-    already_processed(IndexRange2D(min_axial_pos_num, max_axial_pos_num,
-		                   min_tangential_pos_num, max_tangential_pos_num));
-
-  vector<AxTangPosNumbers> related_ax_tang_poss;
-  for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
-    for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
-    {       
-      if (already_processed[ax_pos][tang_pos])
-        continue;          
-
-      Bin basic_bin(viewgrams.get_basic_segment_num(),
-		    viewgrams.get_basic_view_num(),
-		    ax_pos,
-		    tang_pos);
-      symmetries->find_basic_bin(basic_bin);
-    
-      proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
-      
-      related_ax_tang_poss.resize(0);
-      symmetries->get_related_bins_factorised(related_ax_tang_poss,basic_bin,
-					      min_axial_pos_num, max_axial_pos_num,
-					      min_tangential_pos_num, max_tangential_pos_num);
-    
-      for (
-#ifndef STIR_NO_NAMESPACES
-	   std::
-#endif
-	     vector<AxTangPosNumbers>::const_iterator r_ax_tang_poss_iter = related_ax_tang_poss.begin();
-	   r_ax_tang_poss_iter != related_ax_tang_poss.end();
-	   ++r_ax_tang_poss_iter)
+      while( r_viewgrams_iter!=viewgrams.end())
 	{
-	  const int axial_pos_tmp = (*r_ax_tang_poss_iter)[1];
-	  const int tang_pos_tmp = (*r_ax_tang_poss_iter)[2];
+	  const Viewgram<float>& viewgram = *r_viewgrams_iter;
+	  const int view_num = viewgram.get_view_num();
+	  const int segment_num = viewgram.get_segment_num();
+    
+	  for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
+	    for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
+	      { 
+		// KT 21/02/2002 added check on 0
+		if (viewgram[ax_pos][tang_pos] == 0)
+		  continue;
+		Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
+		proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
+		proj_matrix_row.back_project(image, bin);
+	      }
+	  ++r_viewgrams_iter;   
+	}
+    }  
+  else
+    {
+      // complicated version which handles the symmetries explicitly
+      // faster when no caching is performed, about just as fast when there is caching
+      ProjMatrixElemsForOneBin proj_matrix_row;
+      ProjMatrixElemsForOneBin proj_matrix_row_copy;
+      const DataSymmetriesForBins* symmetries = proj_matrix_ptr->get_symmetries_ptr(); 
+
+      Array<2,int> 
+	already_processed(IndexRange2D(min_axial_pos_num, max_axial_pos_num,
+				       min_tangential_pos_num, max_tangential_pos_num));
+
+      vector<AxTangPosNumbers> related_ax_tang_poss;
+      for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
+	for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
+	  {       
+	    if (already_processed[ax_pos][tang_pos])
+	      continue;          
+
+	    Bin basic_bin(viewgrams.get_basic_segment_num(),
+			  viewgrams.get_basic_view_num(),
+			  ax_pos,
+			  tang_pos);
+	    symmetries->find_basic_bin(basic_bin);
+    
+	    proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, basic_bin);
+      
+	    related_ax_tang_poss.resize(0);
+	    symmetries->get_related_bins_factorised(related_ax_tang_poss,basic_bin,
+						    min_axial_pos_num, max_axial_pos_num,
+						    min_tangential_pos_num, max_tangential_pos_num);
+    
+	    for (
+#ifndef STIR_NO_NAMESPACES
+		 std::
+#endif
+		   vector<AxTangPosNumbers>::const_iterator r_ax_tang_poss_iter = related_ax_tang_poss.begin();
+		 r_ax_tang_poss_iter != related_ax_tang_poss.end();
+		 ++r_ax_tang_poss_iter)
+	      {
+		const int axial_pos_tmp = (*r_ax_tang_poss_iter)[1];
+		const int tang_pos_tmp = (*r_ax_tang_poss_iter)[2];
 	  
-	  // symmetries might take the ranges out of what the user wants
-	  if ( !(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
-		 min_tangential_pos_num <=tang_pos_tmp  && tang_pos_tmp <= max_tangential_pos_num))
-	    continue;
+		// symmetries might take the ranges out of what the user wants
+		if ( !(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
+		       min_tangential_pos_num <=tang_pos_tmp  && tang_pos_tmp <= max_tangential_pos_num))
+		  continue;
 	  
-	  already_processed[axial_pos_tmp][tang_pos_tmp] = 1;
+		already_processed[axial_pos_tmp][tang_pos_tmp] = 1;
        
 	  
-	  for (RelatedViewgrams<float>::const_iterator viewgram_iter = viewgrams.begin();
-	       viewgram_iter != viewgrams.end();
-	       ++viewgram_iter)
-	    {
-              // KT 21/02/2002 added check on 0
-              if ((*viewgram_iter)[axial_pos_tmp][tang_pos_tmp] == 0)
-                continue;
-	      proj_matrix_row_copy = proj_matrix_row;
-	      Bin bin(viewgram_iter->get_segment_num(),
-		      viewgram_iter->get_view_num(),
-		      axial_pos_tmp,
-		      tang_pos_tmp,
-		      (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
+		for (RelatedViewgrams<float>::const_iterator viewgram_iter = viewgrams.begin();
+		     viewgram_iter != viewgrams.end();
+		     ++viewgram_iter)
+		  {
+		    // KT 21/02/2002 added check on 0
+		    if ((*viewgram_iter)[axial_pos_tmp][tang_pos_tmp] == 0)
+		      continue;
+		    proj_matrix_row_copy = proj_matrix_row;
+		    Bin bin(viewgram_iter->get_segment_num(),
+			    viewgram_iter->get_view_num(),
+			    axial_pos_tmp,
+			    tang_pos_tmp,
+			    (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
 	      
-	      auto_ptr<SymmetryOperation> symm_op_ptr = 
-		symmetries->find_symmetry_operation_from_basic_bin(bin);
-	      // TODO replace with Bin::compare_coordinates or so
-	      assert(bin.segment_num() == basic_bin.segment_num());
-	      assert(bin.view_num() == basic_bin.view_num());
-	      assert(bin.axial_pos_num() == basic_bin.axial_pos_num());
-	      assert(bin.tangential_pos_num() == basic_bin.tangential_pos_num());
+		    auto_ptr<SymmetryOperation> symm_op_ptr = 
+		      symmetries->find_symmetry_operation_from_basic_bin(bin);
+		    // TODO replace with Bin::compare_coordinates or so
+		    assert(bin.segment_num() == basic_bin.segment_num());
+		    assert(bin.view_num() == basic_bin.view_num());
+		    assert(bin.axial_pos_num() == basic_bin.axial_pos_num());
+		    assert(bin.tangential_pos_num() == basic_bin.tangential_pos_num());
 	      
-	      symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
-	      proj_matrix_row_copy.back_project(image, bin);
-	    }
-	}  
-    }      
-  assert(already_processed.sum() 
-	 == (
-	     (max_axial_pos_num - min_axial_pos_num + 1) *
-	     (max_tangential_pos_num - min_tangential_pos_num + 1)));
-  
+		    symm_op_ptr->transform_proj_matrix_elems_for_one_bin(proj_matrix_row_copy);
+		    proj_matrix_row_copy.back_project(image, bin);
+		  }
+	      }  
+	  }      
+      assert(already_processed.sum() 
+	     == (
+		 (max_axial_pos_num - min_axial_pos_num + 1) *
+		 (max_tangential_pos_num - min_tangential_pos_num + 1)));
+    }  
 }
 
-#endif
+
 
 END_NAMESPACE_STIR
