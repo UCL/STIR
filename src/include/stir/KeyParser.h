@@ -103,9 +103,7 @@ class KeyArgument
 public:
   enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist, ULONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
-    // KT 07/02/2001 new
     PARSINGOBJECT, 
-    // KT 20/08/2001 new
     SHARED_PARSINGOBJECT,
     FLOAT, BOOL};
 };
@@ -123,7 +121,6 @@ public :
   //TODO void (*p_object_member)();
   void *p_object_variable;		// pointer to a variable 
   const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
-  // KT 07/02/2001 new
   // TODO should really not be here, but it works for now
   typedef Object * (Parser)(istream*, const string&);
   Parser* parser;
@@ -132,11 +129,9 @@ public :
 
   map_element(KeyArgument::type t, void (KeyParser::*pom)(),
 	      void* pov= 0, const ASCIIlist_type *list_of_valid_keywords = 0);
-  // KT 07/02/2001 new
   map_element(void (KeyParser::*pom)(),
 	      Object** pov, 
               Parser *);
-  // KT 20/08/2001 new
   map_element(void (KeyParser::*pom)(),
 	      shared_ptr<Object>* pov, 
               Parser *);
@@ -173,13 +168,22 @@ public:
   /*! The integer should be 0 or 1, corresponding to false and true resp. */
   void add_key(const string& keyword, bool * variable_ptr);
   
-  // SM 02/05/2001
   //! add a keyword. When parsing, parse its value as a list of doubles and put its value in *variable_ptr
   void add_key(const string& keyword, vector<double> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a string and put it in *variable_ptr
   /*! The 'value' can contain spaces. */
   void add_key(const string& keyword, string * variable_ptr);
+  /*!
+    \brief add a keyword. When parsing, its string value is checked against 
+    a list of strings. The corresponding index is stored in 
+    *variable_ptr.
+
+    If no match is found, a warning message is issued and *variable_ptr
+    is set to -1.
+  */
+  void add_key(const string& keyword, 
+    int* variable_ptr, const ASCIIlist_type * const list_of_values);
 
   //! add keyword that has to occur before all others
   /*! Example of such a key: INTERFILE*/
@@ -273,6 +277,13 @@ public:
       */
   virtual void ask_parameters();
 
+
+  //! returns the index of a string in 'list_of_values', -1 if not found
+  /*! Implementation note: this function is non-static because it uses
+      standardise_keyword
+  */
+  int find_in_ASCIIlist(const string&, const ASCIIlist_type& list_of_values);
+
   
 protected : 
 
@@ -288,11 +299,17 @@ protected :
 
   
   //! convert 'rough' keyword into a standardised form
+  /*! \todo Implementation note: this function is non-static such that it can
+      be overloaded. Probably a template with a function object would be 
+      better. */
   virtual string 
     standardise_keyword(const string& keyword) const;
 
 
   //! gets a keyword from a string
+  /*! Implementation note: this function is non-static as it uses 
+      standardise_keyword().
+  */ 
   virtual string 
     get_keyword(const string&) const;
 
@@ -330,11 +347,9 @@ public:
   /*! if the keyword had no value, set_variable will do nothing */
   void set_variable();
 
-  // KT 07/02/2001 new
   //! callback function that sets the variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
   /*! if the keyword had no value, set_variable will do nothing */
   void set_parsing_object();
-  // KT 20/08/2001 new
   //! callback function that sets the shared_ptr variable by calling the parser (as stored by add_parsing_key()), with argument the value of the keyword
   /*! if the keyword had no value, set_variable will do nothing */
   void set_shared_parsing_object();
@@ -396,9 +411,6 @@ private :
   void process_key();
 
 
-  // This function is used by set_variable only
-  // It returns the index of a string in 'list_of_values', -1 if not found
-  int find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values);
 
 };
 
