@@ -19,6 +19,7 @@ SOURCES= ForwardProjectorByBin.cxx \
 	BackProjectorByBinUsingInterpolation.cxx \
 	BackProjectorByBinUsingInterpolation_linear.cxx \
 	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
+	Reconstruction.cxx \
 	ReconstructionParameters.cxx \
 	IterativeReconstruction.cxx \
 	IterativeReconstructionParameters.cxx \
