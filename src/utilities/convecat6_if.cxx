@@ -13,7 +13,7 @@
   $Revision$
   $Date$
 
-  Usage: 
+  \par Usage: 
   <pre>convecat6_if [output_file_name_without_extension cti_data_file_name [scanner_name]]
   </pre>
   The optional \a scanner_name can be used to force to a particular scanner"
@@ -23,7 +23,7 @@
   contains a space, the scanner name has to be surrounded by double quotes 
   (&quot;) when used as a command line argument.
   <br>
-  The programme asks if all frames should be written or not. If so, all 
+  The program asks if all frames should be written or not. If so, all 
   sinograms/images are converted for a fixed 'data' number. For each data set,
   a suffix is added to the output_filename of the form "_f#g#b#d#" where the # 
   are replaced by the corresponding number of the frame, gate, bed, data.
@@ -38,6 +38,10 @@
   emission sinograms, the data are multiplied with subheader.loss_correction_fctr
   (unless the loss correction factor is < 0, in which case it is assumed to be 1).
   \warning Currently, the decay correction factor is ignored.
+
+  \todo This could easily be used to convert to other file formats. For images,
+  this simply involves changing the OutputFileFormat. For projection data,
+  we would have to extend OutputFileFormat to handle projection data.
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -47,12 +51,13 @@
 
 
 #include "stir/utilities.h"
-#include "stir/interfile.h"
+#include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/shared_ptr.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/ecat6_utils.h"
 #include "stir/Scanner.h"
+#include "stir/Succeeded.h"
 #include <stdio.h>
 #include <iostream>
 #include <algorithm>
@@ -179,7 +184,8 @@ main(int argc, char *argv[])
 		shared_ptr<VoxelsOnCartesianGrid<float> > image_ptr =
 		  ECAT6_to_VoxelsOnCartesianGrid(frame_num, gate_num, data_num, bed_num,
 						 cti_fptr, mhead);
-		write_basic_interfile(new_out_filename,*image_ptr);
+		InterfileOutputFileFormat output_file_format;
+		output_file_format.write_to_file(new_out_filename,*image_ptr);
 	      }
 	delete new_out_filename;
         break;
