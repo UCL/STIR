@@ -25,6 +25,7 @@
 #ifndef TOMO_NO_NAMESPACES
 using std::string;
 using std::istream;
+using std::ios;
 #endif
 
 
