@@ -64,6 +64,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 using std::string;
+using std::size_t;
 #endif
 
 USING_NAMESPACE_STIR
@@ -158,13 +159,13 @@ int main(int argc, char *argv[])
       its_an_image ? ".img" : ".scn");
   }
 
-  int num_frames, num_gates, num_bed_poss, num_data;
+  size_t num_frames, num_gates, num_bed_poss, num_data;
   if (interactive)
     {
-      num_frames = ask_num("Num frames?",1U,filenames.size(), filenames.size());
-      num_gates = ask_num("Num gates?",1U,filenames.size()/num_frames, filenames.size()/num_frames);
-      num_bed_poss = ask_num("Num bed positions?",1U,filenames.size(), filenames.size());
-      num_data = ask_num("Num data?",1U,filenames.size()/num_frames, filenames.size()/num_frames);
+      num_frames = ask_num("Num frames?",static_cast<size_t>(1),filenames.size(), filenames.size());
+      num_gates = ask_num("Num gates?",static_cast<size_t>(1),filenames.size()/num_frames, filenames.size()/num_frames);
+      num_bed_poss = ask_num("Num bed positions?",static_cast<size_t>(1),filenames.size(), filenames.size());
+      num_data = ask_num("Num data?",static_cast<size_t>(1),filenames.size()/num_frames, filenames.size()/num_frames);
     }
   else
     {
@@ -173,13 +174,13 @@ int main(int argc, char *argv[])
       num_bed_poss=1;
       num_data=1;
     }
-  int min_frame_num = 1;
-  int max_frame_num = num_frames;
-  int min_bed_num = 0;
-  int max_bed_num = num_bed_poss-1; 
-  int min_gate_num = 1;
-  int max_gate_num = num_gates;
-  int min_data_num = 0;
+  size_t min_frame_num = 1;
+  size_t max_frame_num = num_frames;
+  size_t min_bed_num = 0;
+  size_t max_bed_num = num_bed_poss-1; 
+  size_t min_gate_num = 1;
+  size_t max_gate_num = num_gates;
+  size_t min_data_num = 0;
 
   if (its_an_image)
   {
@@ -204,7 +205,7 @@ int main(int argc, char *argv[])
       warning("conv_to_ecat6: error opening output file %s\n", cti_name);
       return EXIT_FAILURE;
     }
-    unsigned int frame_num = 1;
+    size_t frame_num = 1;
 
     while (1)
     {
@@ -261,11 +262,11 @@ int main(int argc, char *argv[])
 	    return EXIT_FAILURE;
 	  }
       }
-    unsigned int frame_num = 1;
+    size_t frame_num = 1;
 
     while (1)
     {
-      int current_frame_num, current_bed_num, current_gate_num, current_data_num;
+      size_t current_frame_num, current_bed_num, current_gate_num, current_data_num;
       if (interactive)
 	{
 	  current_frame_num= 
