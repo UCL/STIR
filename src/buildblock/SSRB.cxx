@@ -1,8 +1,24 @@
 //
 // $Id$
 //
-/*!
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
+/*!
   \file
   \ingroup projdata
   \brief Implementation of SSRB
@@ -11,10 +27,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInterfile.h"
@@ -47,6 +59,14 @@ SSRB(const ProjDataInfo& in_proj_data_info,
   if (num_segments_to_combine%2==0)
     error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
 	  num_segments_to_combine);
+  if (in_proj_data_info.get_max_segment_num() < max_in_segment_num_to_process)
+    error("SSRB: max_in_segment_num_to_process (%d) is too large\n"
+	  "Input data has maximum segment number %d.",
+	  max_in_segment_num_to_process,
+	  in_proj_data_info.get_max_segment_num());
+  if (max_in_segment_num_to_process < 0)
+    error("SSRB: max_in_segment_num_to_process (%d) is negative.",
+	  max_in_segment_num_to_process);
   if (in_proj_data_info.get_num_tangential_poss() <=
       num_tang_poss_to_trim)
     error("SSRB: too large number of tangential positions to trim (%d)\n",
