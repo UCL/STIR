@@ -16,12 +16,13 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
+#include "stir/IndexRange.h"
 #include "stir/stream.h"
 #include <iostream>
 #ifndef OLDDESIGN
@@ -87,7 +88,8 @@ public:
   //! Tests equality, see check()
   bool check_if_equal(const double a, const double b, char const * const str = "");
   bool check_if_equal(const int a, const int b, char const * const str = "");
-  // VC needs definition of template members in the class def unfortunately.
+  bool check_if_equal(const unsigned int a, const unsigned int b, char const * const str = "");
+  // VC 6.0 needs definition of template members in the class def unfortunately.
   template <class T>
     bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, 
                         const char * const str = "")
@@ -110,6 +112,19 @@ public:
     return true;
   }
   
+  // VC 6.0 needs definition of template members in the class def unfortunately.
+  template <int n>
+    bool check_if_equal(const IndexRange<n>& t1, const IndexRange<n>& t2, 
+                        const char * const str = "")
+  {
+    if (t1 != t2)
+    {
+      cerr << "Error: unequal ranges. " << str << endl;
+      return everything_ok = false;
+    }
+    else
+      return true;
+  }
 
   //! Tests if the value is 0, see check()
   bool check_if_zero(const int a, const char * const str = "");
@@ -238,6 +253,20 @@ RunTests::check_if_equal(const double a, const double b, char const * const str)
 
 bool
 RunTests::check_if_equal(const int a, const int b, char const * const str)
+{
+  if (a != b)
+  {
+    cerr << "Error : unequal values are " << a << " and " << b 
+         << ". " << str<< endl;
+    everything_ok = false;
+    return false;
+  }
+  else
+    return true;
+}
+
+bool
+RunTests::check_if_equal(const unsigned int a, const unsigned int b, char const * const str)
 {
   if (a != b)
   {
