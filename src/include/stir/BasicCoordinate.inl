@@ -20,7 +20,7 @@
     See STIR/LICENSE.txt for details
 */
 
-
+#include "stir/detail/test_if_1d.h"
 // for std::inner_product
 #include <numeric>
 // for sqrt and acos
@@ -102,13 +102,6 @@ BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_di
     std:: // VC needs this explicitly
 #endif
     equal(begin(), end(), c.begin());
-}
-
-template <int num_dimensions, class coordT>
-bool
-BasicCoordinate<num_dimensions, coordT>::operator!=(const BasicCoordinate<num_dimensions, coordT>& c) const
-{
-  return !(*this==c);
 }
 
 /*
@@ -337,9 +330,6 @@ angle (const BasicCoordinate<num_dimensions, coordT>& p1,
   return acos(cos_angle(p1,p2));
 }
 
-#if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
-// only define when not gcc 2.8.1
-
 template <int num_dimensions, class coordT>
 inline BasicCoordinate<num_dimensions+1, coordT> 
 join(const coordT& a, 
@@ -348,29 +338,104 @@ join(const coordT& a,
   BasicCoordinate<num_dimensions+1, coordT> retval;
   
   *retval.begin() = a;
-#ifdef STIR_NO_NAMESPACES
-  copy(c.begin(), c.end(), retval.begin()+1);
-#else
   std::copy(c.begin(), c.end(), retval.begin()+1);
-#endif
   return retval;
 }
  
-#endif // gcc 2.8.1
+template <int num_dimensions, class coordT>
+BasicCoordinate<num_dimensions-1, coordT> 
+cut_last_dimension(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  BasicCoordinate<num_dimensions-1, coordT> retval;  
+  std::copy(c.begin(), c.end()-1, retval.begin());
+  return retval;
+}
+template <int num_dimensions, class coordT>
+inline BasicCoordinate<num_dimensions+1, coordT> 
+join(const BasicCoordinate<num_dimensions, coordT>& c, const coordT& a)
+{
+  BasicCoordinate<num_dimensions+1, coordT> retval;
+  
+  retval[num_dimensions+1] = a;
+  std::copy(c.begin(), c.end(), retval.begin());
+  return retval;
+}
 
 template <int num_dimensions, class coordT>
-inline BasicCoordinate<num_dimensions-1, coordT> 
+BasicCoordinate<num_dimensions-1, coordT> 
 cut_first_dimension(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   BasicCoordinate<num_dimensions-1, coordT> retval;
   
-#ifdef STIR_NO_NAMESPACES
-  copy(c.begin()+1, c.end(), retval.begin());
-#else
   std::copy(c.begin()+1, c.end(), retval.begin());
-#endif
   return retval;
 }         
+
+// helper functinos for operator<()
+namespace detail
+{
+
+  template <class coordT>
+  inline 
+  bool 
+  coordinate_less_than_help(is_1d,
+			    const BasicCoordinate<1, coordT>& c1,
+			    const BasicCoordinate<1, coordT>& c2)
+  {
+    return c1[1]<c2[1];
+  }
+
+  // specialisation for 2D, avoiding cut_first_dimension and hence potentially slow if it's not optimised away
+  template <class coordT>
+  inline 
+  bool 
+  coordinate_less_than_help(is_not_1d,
+			    const BasicCoordinate<2, coordT>& c1,
+			    const BasicCoordinate<2, coordT>& c2)
+  {
+    return 
+      c1[1]<c2[1] || 
+      (c1[1]==c2[1] && c1[2]<c2[2]);
+  }
+
+  // specialisation for 3D, avoiding cut_first_dimension and hence potentially slow if it's not optimised away
+  template <class coordT>
+  inline 
+  bool 
+  coordinate_less_than_help(is_not_1d,
+			    const BasicCoordinate<3, coordT>& c1,
+			    const BasicCoordinate<3, coordT>& c2)
+  {
+    return 
+      c1[1]<c2[1] || 
+      (c1[1]==c2[1] && 
+       (c1[2]<c2[2] ||
+	c1[2]==c2[2] && c1[3]<c2[3]));
+  }
+
+
+  template <int num_dimensions, class coordT>
+  inline 
+  bool 
+  coordinate_less_than_help(is_not_1d,
+			    const BasicCoordinate<num_dimensions, coordT>& c1,
+			    const BasicCoordinate<num_dimensions, coordT>& c2)
+  {
+    return 
+      c1[1]<c2[1] || 
+      (c1[1]==c2[1] && cut_first_dimension(c1)<cut_first_dimension(c2));
+  }
+
+} // end namespace detail
+
+template <int num_dimensions, class coordT>
+bool
+BasicCoordinate<num_dimensions, coordT>::
+operator<(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  return detail::coordinate_less_than_help(detail::test_if_1d<num_dimensions>(),
+					   *this, c);
+}
 
 END_NAMESPACE_STIR
 
