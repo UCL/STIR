@@ -84,10 +84,13 @@ RayTraceVoxelsOnCartesianGrid
     it has a natural scale of 1.)
   */
   const float small_difference = 1.E-5F;
+  const bool zero_diff_in_x = fabs(difference.x())<=small_difference;
+  const bool zero_diff_in_y = fabs(difference.y())<=small_difference;
+  const bool zero_diff_in_z = fabs(difference.z())<=small_difference;
 
-  const float inc_x = (fabs(difference.x())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.x());
-  const float inc_y = (fabs(difference.y())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.y());
-  const float inc_z = (fabs(difference.z())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.z());
+  const float inc_x = zero_diff_in_x ? d12*1000000.F : d12 / fabs(difference.x());
+  const float inc_y = zero_diff_in_y ? d12*1000000.F : d12 / fabs(difference.y());
+  const float inc_z = zero_diff_in_z ? d12*1000000.F : d12 / fabs(difference.z());
   
   // intersection points with intra-voxel planes : 
   // find voxel which contains the start_voxel, and go to its 'left' edge
@@ -114,9 +117,9 @@ RayTraceVoxelsOnCartesianGrid
      a? might turn out be a tiny bit smaller then a?_end_actual. So, we set aend a tiny bit 
      smaller than aend_actual.
   */
-  const float axend = (fabs(difference.x())<=small_difference) ? d12*1000000.F : (xmax - start_point.x()) * inc_x * sign_x *.9999F;
-  const float ayend = (fabs(difference.y())<=small_difference) ? d12*1000000.F : (ymax - start_point.y()) * inc_y * sign_y *.9999F;
-  const float azend = (fabs(difference.z())<=small_difference) ? d12*1000000.F : (zmax - start_point.z()) * inc_z * sign_z *.9999F;
+const float axend = zero_diff_in_x ? d12*1000000.F : (xmax - start_point.x()) * inc_x * sign_x *.9999F;
+  const float ayend = zero_diff_in_y ? d12*1000000.F : (ymax - start_point.y()) * inc_y * sign_y *.9999F;
+  const float azend = zero_diff_in_z ? d12*1000000.F : (zmax - start_point.z()) * inc_z * sign_z *.9999F;
   
   const float amax = min(axend, min(ayend, azend));
   
@@ -128,24 +131,39 @@ RayTraceVoxelsOnCartesianGrid
   // coordinates of the first Voxel: 
   CartesianCoordinate3D<int> current_voxel((int) (zmin + sign_z*0.5F), (int) (ymin + sign_y*0.5F), (int) (xmin + sign_x*0.5F));
   
-  // intersection point of the LOR :
-  // with the previous xy-plane  (z smaller) : 
-  float az = (fabs(difference.z())<=small_difference) ? -1. : (zmin - start_point.z()) * inc_z * sign_z;
-  // with the previous yz-plane (x smaller) : 
-  float ax = (fabs(difference.x())<=small_difference) ? -1 : (xmin - start_point.x()) * inc_x * sign_x;
-  // with the previous xz-plane (y smaller) : 
-  float ay = (fabs(difference.y())<=small_difference) ? -1 : (ymin - start_point.y()) * inc_y * sign_y;
+  /* Find the a? values of the intersection points of the LOR with the planes between voxels.
+
+     Note on special handling of rays parallel to one of the planes:
+     
+     The corresponding a? value would be -infinity. We just set it to
+     a value low enough such that the start value of 'a' is not compromised 
+     further on.
+     Normally
+       a? = (?min-start_point.?) * inc_? * sign_?
+     Because the start voxel includes the start_point, we have that
+       a? <= -inc_?
+     As inc_? is set to some large number when the ray is parallel, this is
+     a good value for the ray.
+  */
+  // with the previous xy-plane
+ float az = zero_diff_in_z ? -inc_z : (zmin - start_point.z()) * inc_z * sign_z;
+  // with the previous yz-plane
+  float ax = zero_diff_in_x ? -inc_x : (xmin - start_point.x()) * inc_x * sign_x;
+  // with the previous xz-plane
+  float ay = zero_diff_in_y ? -inc_y : (ymin - start_point.y()) * inc_y * sign_y;
   
   // The biggest a?  value gives the start of the a-row 
   float a = max(ax, max(ay,az));      
-  ax += inc_x;
-  ay += inc_y;
-  az += inc_z;
+
+  // now go the intersections with next plane
+  if (zero_diff_in_x) ax = axend; else ax += inc_x;
+  if (zero_diff_in_y) ay = ayend; else ay += inc_y;
+  if (zero_diff_in_z) az = azend; else az += inc_z;
   
   // just to be sure, check that ax was set large enough when difference.x() was small.
-  assert(fabs(difference.x())>small_difference || ax>amax);
-  assert(fabs(difference.y())>small_difference || ay>amax);
-  assert(fabs(difference.z())>small_difference || az>amax);
+  assert(!zero_diff_in_x || ax>amax);
+  assert(!zero_diff_in_y || ay>amax);
+  assert(!zero_diff_in_z || az>amax);
 
   {	  
     // go along the LOR 
