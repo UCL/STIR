@@ -164,6 +164,7 @@ CListModeDataFromStream::
 save_get_position() 
 {
   saved_get_positions[num_saved_get_positions]= stream_ptr->tellg();
+  assert(num_saved_get_positions+1 != 0);
   return ++num_saved_get_positions;
 } 
 
@@ -171,6 +172,7 @@ Succeeded
 CListModeDataFromStream::
 set_get_position(const CListModeDataFromStream::SavedPosition& pos)
 {
+  assert(pos < num_saved_get_positions);
   stream_ptr->seekg(saved_get_positions[pos]);
   if (!stream_ptr->good())
     return Succeeded::no;

@@ -106,6 +106,7 @@ save_get_position()
     current_lm_file;
   saved_get_positions[num_saved_get_positions].second = 
      current_lm_data_ptr->get_stream_ptr()->tellg();
+  assert(num_saved_get_positions+1 != 0);
   return ++num_saved_get_positions;
 } 
 
@@ -113,6 +114,7 @@ Succeeded
 CListModeDataECAT::
 set_get_position(const CListModeDataECAT::SavedPosition& pos)
 {
+  assert(pos < num_saved_get_positions);
   if (open_lm_file(saved_get_positions[pos].first) == Succeeded::no)
     return Succeeded::no;
 
