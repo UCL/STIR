@@ -442,7 +442,7 @@ void
 RigidObject3DTransformationTests::
 test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 {
-  cerr << "\ttesting consistency transform_point and transform_bin\n";
+  cerr << "\n\ttesting consistency transform_point and transform_bin\n";
 
   shared_ptr<DiscretisedDensity<3,float> > density_sptr =
     new VoxelsOnCartesianGrid<float> (*proj_data_info_sptr);
@@ -451,9 +451,9 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
   const CartesianCoordinate3D<float> voxel_size =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(*density_sptr).get_grid_spacing();
     
-  Quaternion<float> quat(1,0,.2,0);
+  Quaternion<float> quat(1,.2,.4,.3);
   quat.normalise();
-  const CartesianCoordinate3D<float> translation(0,0,0);//11,-12,15);
+  const CartesianCoordinate3D<float> translation(-11,-12,15);
     
   const RigidObject3DTransformation ro3dtrans(quat, translation);
     
@@ -471,8 +471,7 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
     ProjMatrixElemsForOneDensel bins;
     ProjMatrixElemsForOneBin lor;
       
-    //const Densel densel((density_sptr->get_min_index()+density_sptr->get_max_index())/2+1,3,5);
-const Densel densel((density_sptr->get_min_index()+density_sptr->get_max_index())/2,0,0);
+    const Densel densel((density_sptr->get_min_index()+density_sptr->get_max_index())/2+5,5,10);
     pm_by_densel.get_proj_matrix_elems_for_one_densel(bins, densel);
 
     unsigned num_contributing_bins=0;
