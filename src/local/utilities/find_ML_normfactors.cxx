@@ -17,7 +17,6 @@
     Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
-
 #include "local/stir/ML_norm.h"
 
 #include "stir/Scanner.h"
@@ -222,34 +221,6 @@ void check_geo_data()
 
 #endif
   
-inline float KL(const float a, const float b, const float threshold_a = 0)
-{
-  assert(a>=0);
-  assert(b>=0);
-  float res = a<=threshold_a ? b : (a*(log(a)-log(b)) + b - a);
-#ifndef NDEBUG
-  if (res != res)
-    warning("KL nan at a=%g b=%g, threshold %g\n",a,b,threshold_a);
-  if (res > 1.E20)
-    warning("KL large at a=%g b=%g, threshold %g\n",a,b,threshold_a);
-#endif
-  assert(res>=-1.e-4);
-  return res;
-}
-
-template <int num_dimensions, typename elemT>
-float KL(const Array<num_dimensions, elemT>& a, const Array<num_dimensions, elemT>& b, const float threshold_a = 0)
-{
-  float sum = 0;
-  Array<num_dimensions, elemT>::const_full_iterator iter_a = a.begin_all();
-  Array<num_dimensions, elemT>::const_full_iterator iter_b = b.begin_all();
-  while (iter_a != a.end_all())
-    {
-      sum += KL(*iter_a++, *iter_b++, threshold_a);
-    }
-  return sum;
-}
-
 float KL(const DetPairData& d1, const DetPairData& d2, const float threshold = 0)
 {
   float sum=0;
@@ -258,6 +229,8 @@ float KL(const DetPairData& d1, const DetPairData& d2, const float threshold = 0
       sum += KL(d1(a,b), d2(a,b), threshold);
   return sum;
 }
+
+
 
 END_NAMESPACE_STIR
 
@@ -280,6 +253,8 @@ int main(int argc, char **argv)
   shared_ptr<ProjData> model_data = ProjData::read_from_file(argv[3]);
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const string out_filename_prefix = argv[1];
+  const int num_rings = 
+    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
   const int num_detectors = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
   const int num_crystals_per_block = 8;
@@ -456,7 +431,6 @@ int main(int argc, char **argv)
 	  }
 	}
     }
-
   timer.stop();
   cerr << "CPU time " << timer.value() << " secs" << endl;
   return EXIT_SUCCESS;
