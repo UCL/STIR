@@ -40,15 +40,14 @@ START_NAMESPACE_TOMO
    very difficult to assign auto_ptrs to shared_ptrs.
 */
 template<int num_dimensions, typename elemT>
-shared_ptr< DiscretisedDensity<num_dimensions,elemT> > 
+DiscretisedDensity<num_dimensions,elemT> *
 DiscretisedDensity<num_dimensions,elemT>::
  read_from_file(const string& filename)
 {
   if (num_dimensions != 3 || typeid(elemT) != typeid(float))
     error("DiscretisedDensity::read_from_file currently only supports 3d float images\n");
 
-  return shared_ptr< DiscretisedDensity<num_dimensions,elemT> > 
-          (read_interfile_image(filename));
+  return read_interfile_image(filename);
 }
 
 
