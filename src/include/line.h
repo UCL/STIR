@@ -1,26 +1,44 @@
 //
-// $Id$: $Date$
+// $Id$ :$Date$
 //
+/*!
 
+  \file
+  \ingroup buildblock
+
+  \brief declaration of class Line
+
+  \author Patrick Valente
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
 #ifndef __LINE_H__
 #define __LINE_H__
 
-// KT 14/12 changed <> to "" in next  include
-// KT 09/08/98 forget about pet_string
-#include <string>
-// KT 12/11/98 import pet_common.h for namespace stuff
+#ifdef OLDDESIGN
 #include "pet_common.h"
+#endif
 
-// KT 12/11/98 removed
-// typedef string String;
+#include "Tomography_common.h"
 
-//#include "pet_string.h"
+#include <string>
 #include <vector>
-#define LINE_ERROR -1
-#define LINE_OK		0
-#define MAX_LINE_LENGTH 256
 
-// KT 12/11/98 use string
+#ifndef TOMO_NO_NAMESPACES
+using std::string;
+using std::vector;
+#endif
+
+START_NAMESPACE_TOMO
+
+/*!
+  \brief A class used by the Interfile parser.
+  \warning This will be removed soon. Do NOT USE.
+*/
 class Line : private string
 {
 
@@ -44,5 +62,8 @@ public :
 	int get_param(double& i);
 };
 
+END_NAMESPACE_TOMO
+
 #endif
+
 
