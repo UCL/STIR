@@ -8,6 +8,9 @@ include $(WORKSPACE)/Makefile_common
 
 LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/local/buildblock \
+	$(WORKSPACE)/local/recon_buildblock \
+	$(WORKSPACE)/local/Shape_buildblock \
+	$(WORKSPACE)/local/eval_buildblock \
 	$(WORKSPACE)/local/QH_library
 
 EXESUBDIRECTORIES= \
@@ -28,12 +31,16 @@ install: all
 	for subdir in $(EXESUBDIRECTORIES); do   \
 	   echo "-------------------"; $(MAKE) -C $$subdir install; \
 	done
-ifeq ($(__TEST_local_Makefile),1)
-	(cd local; $(MAKE) install);
-endif
 
 
 clean: 
 	for subdir in $(SUBDIRECTORIES); do \
 	   echo "-------------------"; $(MAKE) -C $$subdir clean; \
 	done;
+
+
+
+
+
+
+
