@@ -24,7 +24,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
-
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -43,6 +43,14 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   \f[ G_v = \beta ( {\lambda_v \over F_v} - 1) \f]
   where \f$ \lambda\f$ is the image where to compute the gradient, and
   \f$F\f$ is the image obtained by filtering \f$\lambda\f$.
+
+  However, we need to avoid division by 0, as it might cause a NaN or an 
+  'infinity'. So, we replace the quotient above by<br>
+  if \f$|\lambda_v| < M*|F_v| \f$
+  then \f${\lambda_v \over F_v}\f$
+  else \f$M*\rm{sign}(F_v)*\rm{sign}(lambda_v)\f$,<br>
+  where \f$M\f$ is an arbitrary threshold on the quotient (fixed to 1000 when
+  I wrote this documentation, but check FilterRootPrior.cxx if you want to be sure).
 
   Note that for nearly all filters, this is not a real prior, as this
   'gradient' is \e not the gradient of a function. This can be checked
@@ -77,9 +85,8 @@ public:
 			const DiscretisedDensity<3,elemT> &current_image_estimate);
   
   
-private:
-  // TODO should be shared_ptr
-   ImageProcessor<3,elemT>* filter_ptr;   
+private:  
+   shared_ptr<ImageProcessor<3,elemT> > filter_ptr;   
    virtual void set_defaults();
    virtual void initialise_keymap();
 
