@@ -147,7 +147,7 @@ float scatter_estimate_for_one_scatter_point(
 	const float scatter_ratio =
 		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
 		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
-		/(rA_squared*rB_squared) //3/4 is due to the volume of the pyramid approximation!
+		/(rA_squared*rB_squared) 
 		*dif_cross_section
 		*atten_to_detB
 		*atten_to_detA
