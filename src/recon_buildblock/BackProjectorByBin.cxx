@@ -15,7 +15,7 @@
   \version $Revision$
 */
 
-#include "new_recon_buildblock/BackProjectorByBin.h"
+#include "recon_buildblock/BackProjectorByBin.h"
 #include "RelatedViewgrams.h"
 #include "DiscretisedDensity.h"
 //#include "Viewgram.h"
