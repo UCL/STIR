@@ -69,7 +69,7 @@
  <LI> overloads of std::copy for built-in types to use memcpy (so it's faster)
  </UL>
 
-<H3> Tomo namespace members declared here</H3>
+<H3> stir namespace members declared here</H3>
   
  <UL>
  <LI> const double _PI
@@ -123,26 +123,11 @@
 
 
 //*************** namespace macros
-/*! \namespace Tomo
-  \brief Namespace for the PARAPET library
-
-  This namespace encompasses the whole
-  library. All classes, functions and symbols are in this namespace.
-  This has the effect that conflicts with any other library is
-  impossible (except if that library uses the same namespace...).
- */
 #ifndef STIR_NO_NAMESPACES
 
-// TODO remove conditional
-#if !defined(OLDDESIGN)
-# define START_NAMESPACE_STIR namespace Tomo {
+# define START_NAMESPACE_STIR namespace stir {
 # define END_NAMESPACE_STIR }
-# define USING_NAMESPACE_STIR using namespace Tomo;
-#else
-# define USING_NAMESPACE_STIR 
-# define START_NAMESPACE_STIR 
-# define END_NAMESPACE_STIR 
-#endif
+# define USING_NAMESPACE_STIR using namespace stir;
 # define START_NAMESPACE_STD namespace std {
 # define END_NAMESPACE_STD }
 # define USING_NAMESPACE_STD using namespace std;

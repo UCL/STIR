@@ -1,19 +1,30 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-// define some doxygen groups
+// define some doxygen groups and namespace
 // This file does not contain any code
+
+/*! \namespace stir
+  \brief Namespace for the STIR library (and some/most of its applications)
+
+  This namespace encompasses the whole
+  library. All classes, functions and symbols are in this namespace.
+  This has the effect that conflicts with any other library is
+  impossible (except if that library uses the same namespace...).
+
+  In the future, we might use a hierarchy of namespaces, but we don't yet...
+ */
 
 /*!
 \defgroup buildblock Basic building blocks
 Library with things that are not not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
-*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 /*!
 \defgroup recon_buildblock Reconstruction building blocks
