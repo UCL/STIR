@@ -49,8 +49,6 @@ using std::endl;
 
 // KT 17/08/2000 limit update
 #include "stir/NumericInfo.h"
-// for write_update_image
-#include "stir/interfile.h"
 
 START_NAMESPACE_STIR
 
@@ -290,7 +288,8 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
     sprintf(fname, "%s_update_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
     
     // Write it to file
-    write_basic_interfile(fname, *multiplicative_update_image_ptr);
+    get_parameters().output_file_format_ptr->
+      write_to_file(fname, *multiplicative_update_image_ptr);
     delete fname;
   }
   
