@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -86,49 +86,56 @@ shared_ptr<ProjData> ask_proj_data(char *input_query);
 void do_math(enum options operation, SegmentByView<float>& sino1,SegmentByView<float> &sino2,
              float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized)
 {
-    switch(operation) {
-        case _absdiff: { //absolute difference
-            sino1-=sino2;
-            in_place_abs(sino1);
+  switch(operation) 
+    {
 
-            if(!accumulators_initialized) {
-                accum_max=sino1.find_max();
-                accum_min=sino1.find_min();
-                accum_sum=sino1.sum();
-                accumulators_initialized=true;
-            }
-            else {
-                if (accum_max<sino1.find_max()) accum_max= sino1.find_max();
-                if (accum_min>sino1.find_min()) accum_min= sino1.find_min();
-                accum_sum+=sino1.sum();
-            }
-            break;
-        }
+    case _absdiff: { //absolute difference
+      sino1-=sino2;
+      in_place_abs(sino1);
+    
+      if(!accumulators_initialized) {
+	accum_max=sino1.find_max();
+	accum_min=sino1.find_min();
+	accum_sum=sino1.sum();
+	accumulators_initialized=true;
+      }
+      else {
+	if (accum_max<sino1.find_max()) accum_max= sino1.find_max();
+	if (accum_min>sino1.find_min()) accum_min= sino1.find_min();
+	accum_sum+=sino1.sum();
+      }
+      break;
+    }
         
-        case _add_sino: { // sinogram addition
-            sino1+=sino2;
-            break;
-        }
+    case _add_sino: { // sinogram addition
+      sino1+=sino2;
+      break;
+    }
 
 
-        case _subtract_sino: { // sinogram subtraction
-            sino1-=sino2;
-            break;
-        }
+    case _subtract_sino: { // sinogram subtraction
+      sino1-=sino2;
+      break;
+    }
 
-        case _mult_sino: { // image multiplication
-            sino1*=sino2;
-            break;
-        }
+    case _mult_sino: { // image multiplication
+      sino1*=sino2;
+      break;
+    }
 
-        case _div_sino: { // sinogram division
-            divide_array(sino1,sino2);
-            break;
-        }
+    case _div_sino: { // sinogram division
+      divide_array(sino1,sino2);
+      break;
+    }
 
-	//MJ 20/6/2000 removed.  _zero_seg option relies on this to fall through
-	//	default: 
-	//  error("manip_projdata: error in switch: operation invalid\n");
+    
+    //MJ 07/14/2000 empty default to suppress warning in gcc 2.95.2
+    default:
+      { 
+	//empty statement
+      }
+      
+
 
     } // end switch
 }
@@ -136,83 +143,88 @@ void do_math(enum options operation, SegmentByView<float>& sino1,SegmentByView<f
 
 void do_math(enum options operation, SegmentByView<float>& sino1, SegmentBySinogram<float>& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
 {
-    switch(operation) {
-        case _display_view: { //display math buffer by View
-	    char title[100];
-	    sprintf(title, "Segment %d", sino1.get_segment_num());
-            display(sino1,sino1.find_max(), title);
-            if(ask("Display single viewgram?",false)) {
-                int vs=sino1.get_min_view_num();
-                int ve=sino1.get_max_view_num();
-                int view_num=ask_num("Which viewgram?",vs,ve,vs);
-       
-                Viewgram<float> viewgram=sino1.get_viewgram(view_num);
-                display(viewgram);
-            }
-            break;
-        }
+    switch(operation) 
+      {
 
-        case _display_sino: { //display math buffer by sinogram
-	    char title[100];
-	    sprintf(title, "Segment %d", sino1.get_segment_num());
-            display(seg_sinogram, seg_sinogram.find_max());
-            break;
-        }
+      case _display_view: { //display math buffer by View
+	char title[100];
+	sprintf(title, "Segment %d", sino1.get_segment_num());
+	display(sino1,sino1.find_max(), title);
+	if(ask("Display single viewgram?",false)) {
+	  int vs=sino1.get_min_view_num();
+	  int ve=sino1.get_max_view_num();
+	  int view_num=ask_num("Which viewgram?",vs,ve,vs);
+	  
+	  Viewgram<float> viewgram=sino1.get_viewgram(view_num);
+	  display(viewgram);
+	}
+	break;
+      }
 
-        case _add_scalar: { //scalar addition
-            sino1+=scalar;
-            break;
-        }
+      case _display_sino: { //display math buffer by sinogram
+	char title[100];
+	sprintf(title, "Segment %d", sino1.get_segment_num());
+	display(seg_sinogram, seg_sinogram.find_max());
+	break;
+      }
 
-        case _mult_scalar: { //scalar multiplication
-            sino1*=scalar;
-            break;
-        }
+      case _add_scalar: { //scalar addition
+	sino1+=scalar;
+	break;
+      }
 
-        case _div_scalar: { //scalar division
-            sino1/=scalar;
-            break;
-        }
+      case _mult_scalar: { //scalar multiplication
+	sino1*=scalar;
+	break;
+      }
 
-        case _stats: { //global min&max + number of counts
-            if(!accumulators_initialized) {
-                accum_max=sino1.find_max();
-                accum_min=sino1.find_min();
-                accum_sum=sino1.sum();
-                accumulators_initialized=true;
-            }
-            else {
-                if (accum_max<sino1.find_max()) accum_max= sino1.find_max();
-                if (accum_min>sino1.find_min()) accum_min= sino1.find_min();
-                accum_sum+=sino1.sum();
-            }
-            break;
-        }
+      case _div_scalar: { //scalar division
+	sino1/=scalar;
+	break;
+      }
+
+      case _stats: { //global min&max + number of counts
+	if(!accumulators_initialized) {
+	  accum_max=sino1.find_max();
+	  accum_min=sino1.find_min();
+	  accum_sum=sino1.sum();
+	  accumulators_initialized=true;
+	}
+	else {
+	  if (accum_max<sino1.find_max()) accum_max= sino1.find_max();
+	  if (accum_min>sino1.find_min()) accum_min= sino1.find_min();
+	  accum_sum+=sino1.sum();
+	}
+	break;
+      }
         
-        case _pos_ind:
-	  {
-	    in_place_apply_function(sino1,pos_indicate); //positive indicator
-	    break;
-	  }
+      case _pos_ind:
+	{
+	  in_place_apply_function(sino1,pos_indicate); //positive indicator
+	  break;
+	}
                      
-        case _trim: 
-	  {
-	    truncate_rim(sino1, (int) scalar); //trim rim
-	    break;
-	  }
+      case _trim: 
+	{
+	  truncate_rim(sino1, (int) scalar); //trim rim
+	  break;
+	}
 
-        case _trunc_neg: 
-	  {
-	    in_place_apply_function(sino1,neg_trunc);
-	    break;
-	  }
+      case _trunc_neg: 
+	{
+	  in_place_apply_function(sino1,neg_trunc);
+	  break;
+	}
 
+	
+	//MJ 07/14/2000 empty default to suppress warning in gcc 2.95.2
+      default:
+	{ 
+	  //empty statement
+	}
+	
 	  
-	  //MJ 20/6/2000 removed. _zero_seg option relies on this to fall through
-	  //	default: 
-	  //error("manip_projdata: error in switch: operation invalid\n");
-	  
-    } //end switch
+      } //end switch
 }
 
 shared_ptr<ProjData> ask_proj_data(char *input_query)
