@@ -17,6 +17,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "local/stir/SSRB.h"
 #include "stir/interfile.h"
@@ -39,6 +40,7 @@ START_NAMESPACE_STIR
 ProjDataInfo *
 SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
+     const int num_views_to_combine,
      const int max_in_segment_num_to_process
      )
 {
@@ -54,6 +56,9 @@ SSRB(const ProjDataInfo& in_proj_data_info,
     dynamic_cast<ProjDataInfoCylindrical * >
     (in_proj_data_info_ptr->clone());
 
+  out_proj_data_info_ptr->set_num_views(
+					in_proj_data_info.get_num_views()/
+					num_views_to_combine);
   const int out_max_segment_num = 
     ((max_in_segment_num_to_process == -1
       ? in_proj_data_info.get_max_segment_num()
@@ -126,25 +131,29 @@ void
 SSRB(const string& output_filename,
      const ProjData& in_proj_data,
      const int num_segments_to_combine,
-     const int max_in_segment_num_to_process,
-     const bool do_norm
+     const int num_views_to_combine,
+     const bool do_norm,
+     const int max_in_segment_num_to_process
      )
 {
   shared_ptr<ProjDataInfo> out_proj_data_info_ptr =
     SSRB(*in_proj_data.get_proj_data_info_ptr(),
          num_segments_to_combine,
+	 num_views_to_combine,
          max_in_segment_num_to_process
      );
+#if 0
   shared_ptr<iostream> sino_stream = 
     new fstream (output_filename.c_str(), ios::out|ios::binary);
   if (!sino_stream->good())
       error("SSRB: error opening output file %s\n",
 	    output_filename.c_str());
 
-  //ProjDataInterfile out_proj_data(output_filename, out_proj_data_info_ptr, ios::out); 
   ProjDataFromStream out_proj_data(out_proj_data_info_ptr, sino_stream); 
   write_basic_interfile_PDFS_header(output_filename, out_proj_data);
-
+#else
+  ProjDataInterfile out_proj_data(out_proj_data_info_ptr, output_filename, ios::out); 
+#endif
   SSRB(out_proj_data, in_proj_data, do_norm);
 }
 
@@ -171,6 +180,14 @@ SSRB(ProjData& out_proj_data,
       "type ProjDataInfoCylindrical\n");
   }
 
+  const int num_views_to_combine =
+    in_proj_data.get_num_views()/ out_proj_data.get_num_views();
+
+  if (in_proj_data.get_min_view_num()!=0 || out_proj_data.get_min_view_num()!=0)
+    error ("SSRB can only mash views when min_view_num==0\n");
+  if (in_proj_data.get_num_views() % out_proj_data.get_num_views())
+    error ("SSRB can only mash views when out_num_views divides in_num_views\n");
+  
   for (int out_segment_num = out_proj_data.get_min_segment_num(); 
        out_segment_num <= out_proj_data.get_max_segment_num();
        ++out_segment_num)
@@ -217,10 +234,12 @@ SSRB(ProjData& out_proj_data,
 	      }
 	  }
 
-	// keep out_sino out of the loop to avoid reallocations
+	// keep sinograms out of the loop to avoid reallocations
 	// initialise to something because there's no default constructor
 	Sinogram<float> out_sino = 
 	  out_proj_data.get_empty_sinogram(out_proj_data.get_min_axial_pos_num(out_segment_num),out_segment_num);
+	Sinogram<float> in_sino = 
+	  in_proj_data.get_empty_sinogram(in_proj_data.get_min_axial_pos_num(out_segment_num),out_segment_num);
 
 	for (int out_ax_pos_num = out_proj_data.get_min_axial_pos_num(out_segment_num); 
 	     out_ax_pos_num  <= out_proj_data.get_max_axial_pos_num(out_segment_num);
@@ -243,14 +262,25 @@ SSRB(ProjData& out_proj_data,
 		  if (fabs(out_m - in_m) < 1E-4)
 		    {
 		      ++num_in_ax_pos;
-		      out_sino += in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
+		      if (num_views_to_combine==1)
+		      {
+			out_sino += in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
+		      }
+		      else
+			{
+			  in_sino = in_proj_data.get_sinogram(in_ax_pos_num, in_segment_num);
+			  for (int in_view_num=in_proj_data.get_min_view_num();
+			       in_view_num <= in_proj_data.get_max_view_num();
+			       ++in_view_num)
+			    out_sino[in_view_num/num_views_to_combine] += in_sino[in_view_num];
+			}
 		      break;
 		    }
 		}
 	    if (do_norm && num_in_ax_pos!=0)
-	      out_sino /= num_in_ax_pos;
+	      out_sino /= num_in_ax_pos*num_views_to_combine;
 	    if (num_in_ax_pos==0)
-	      warning("SSRB: no sinograms contributing to segment %d, ax_pos %d\n",
+	      warning("SSRB: no sinograms contributing to output segment %d, ax_pos %d\n",
 		      out_segment_num, out_ax_pos_num);
 
 	    out_proj_data.set_sinogram(out_sino);
