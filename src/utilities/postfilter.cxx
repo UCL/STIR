@@ -129,6 +129,10 @@ main(int argc, char *argv[])
     }
   else
     {     
+      cerr << "\nI'm going to ask you for the type of filter (or image processor)\n"
+	"Possible values:\n";
+      ImageProcessor<3,float>::list_registered_names(cerr);
+      
       post_filtering.parser.ask_parameters();    
     }
 
