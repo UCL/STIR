@@ -9,6 +9,7 @@
 #include "local/stir/SeparableLowPassImageFilter.h"
 #include "local/stir/SeparableGaussianImageFilter.h"
 #include "local/stir/NonseparableSpatiallyVaryingFilters.h"
+#include "local/stir/NonseparableSpatiallyVaryingFilters3D.h"
 
 
 START_NAMESPACE_STIR
@@ -19,6 +20,7 @@ static DAVImageFilter3D<float>::RegisterIt dummy1;
 static SeparableLowPassImageFilter<float>::RegisterIt dummy4;
 static ModifiedInverseAveragingImageFilterAll<float>::RegisterIt dummy6;
 static NonseparableSpatiallyVaryingFilters<float>:: RegisterIt dummy7;
+static NonseparableSpatiallyVaryingFilters3D<float>::RegisterIt dummy8;
 
 END_NAMESPACE_STIR
 
