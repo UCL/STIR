@@ -28,9 +28,9 @@ START_NAMESPACE_TOMO
   Simply pressing 'enter' will select the default value. Otherwise, range 
   checking is performed, and the question asked again if necessary.
 */
-template <class CHARP, class NUMBER>
+template <class NUMBER>
 inline NUMBER 
-ask_num (CHARP str,
+ask_num (const string& str,
 	 NUMBER minimum_value,
 	 NUMBER maximum_value,
 	 NUMBER default_value)
@@ -50,37 +50,6 @@ ask_num (CHARP str,
     if ((value>=minimum_value) && (maximum_value>=value))
       return value;
     cerr << "\nOut of bounds. Try again.";
-  }
-}
-
-template <class CHARP>
-inline bool ask (CHARP str, bool default_value)
-{ 
-  
-  char input[30];
-  
-  cerr << "\n" << str 
-       << " [Y/N D:" 
-       << (default_value ? 'Y' : 'N') 
-       << "]: ";
-  fgets(input,30,stdin);
-  if (strlen(input)==0)
-    return default_value;
-  char answer = input[0];
-  if (default_value==true)
-  {
-    if (answer=='N' || answer == 'n')
-      return false;
-    else
-      return true;
-  }
-  else
-  {
-    if (answer=='Y' || answer == 'y')
-      return true;
-    else
-      return false;
-    
   }
 }
 

@@ -18,12 +18,14 @@
 #include "Tomography_common.h"
 
 #include <iostream>
+#include <string>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::ios;
 using std::iostream;
 using std::istream;
 using std::streamsize;
+using std::string;
 #endif
 
 START_NAMESPACE_TOMO
@@ -55,21 +57,24 @@ streamsize find_remaining_size (istream& input);
 *****************************************************/
 
 //! A function to ask a number from the user 
-template <class CHARP, class NUMBER>
+template <class NUMBER>
 inline NUMBER 
-ask_num (CHARP prompt,
+ask_num (const string& prompt,
 	 NUMBER minimum_value, 
 	 NUMBER maximum_value, 
 	 NUMBER default_value);
+
+//! A function to ask a string from the user 
+string
+ask_string(const string& prompt, const string& default_value = "");
 
 /*! \brief A function to ask a yes/no question from the user
 
   \param prompt a text string 
   \param default_value==true means the default is Yes.
   */
-template <class CHARP>
-inline bool 
-ask (CHARP str, bool default_value);
+bool 
+ask (const string& str, bool default_value);
 
 /*****************************************************
  functions for opening binary streams
