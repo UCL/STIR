@@ -500,12 +500,20 @@ mat_write_any_subheader(
 
 int main(int argc, char *argv[])
 {
+
+  bool update=true; // switch between update and straight copy
+  if (argc>1 && strcmp(argv[1], "--copy")==0)
+    {
+      update=false;
+      --argc; ++ argv;
+    }
+
   if(argc!=3 && argc!=5)
   {
     cerr<< "\nCopy contents of ECAT7 headers.\n"
         << "Usage: \n"
 	<< "To copy the main header (but keeping num_planes etc)\n"
-	<< "\t" << argv[0] << "  output_ECAT7_name input_ECAT7_name \n"
+	<< "\t [--copy] " << argv[0] << "  output_ECAT7_name input_ECAT7_name \n"
 	<< "or to copy a subheader (but keeping essential info)\n"
 
 	<< "\t" << argv[0] << "  output_ECAT7_name f,g,d,b input_ECAT7_name f,g,d,b\n\n";
@@ -535,12 +543,20 @@ int main(int argc, char *argv[])
       Main_header mh_in;
       if (mat_read_main_header(in_fptr, &mh_in)!=0)
 	  error("Error reading main header from %s", input_name.c_str());
-      Main_header mh_out;
-      if (mat_read_main_header(out_fptr, &mh_out)!=0)
-	  error("Error reading main header from %s", output_name.c_str());
-      update_main_header(mh_out, mh_in);
-      if (mat_write_main_header(out_fptr, &mh_out))
-	error("Error writing main header to %s", output_name.c_str());
+      if (update)
+	{
+	  Main_header mh_out;
+	  if (mat_read_main_header(out_fptr, &mh_out)!=0)
+	    error("Error reading main header from %s", output_name.c_str());
+	  update_main_header(mh_out, mh_in);
+	  if (mat_write_main_header(out_fptr, &mh_out))
+	    error("Error writing main header to %s", output_name.c_str());
+	}
+      else
+	{
+	  if (mat_write_main_header(out_fptr, &mh_in))
+	    error("Error writing main header to %s", output_name.c_str());
+	}
       fclose(in_fptr);
       fclose(out_fptr);
       return EXIT_SUCCESS;
