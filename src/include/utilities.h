@@ -7,6 +7,11 @@
 
 #include "pet_common.h"
 #include "sinodata.h"
+#include "imagedata.h"
+
+// KT 09/10/98 new
+// ask_image_details asks for filename etc, and returns an image
+PETImageOfVolume ask_image_details();
 
 
 // ask_PSOV_details asks for filename etc. and returns a PSOV to play with.
@@ -14,7 +19,8 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
 				     const bool on_disk = true);
 
 
-// Reads data into memory, returning a pointer to the memory
+// read_stream_in_memory
+// reads data into memory, returning a pointer to the memory
 // If the file_size parameter is zero, the stream is read till EOF
 // and 'file_size' is set to the number of bytes in the file. 
 // Otherwise 'file_size' bytes are read.

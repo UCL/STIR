@@ -2,6 +2,101 @@
 
 #include "utilities.h"
 
+// KT 09/10/98 new
+PETImageOfVolume ask_image_details()
+{
+  int scanner_num = 0;
+  int span = 1 ;
+  PETScannerInfo scanner;
+
+  char filename[256];
+  cout << "Enter file name " <<endl;
+  cin >> filename;
+
+  // Open file with data
+  ifstream input;
+  open_read_binary(input, filename);
+
+  scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
+  // span ==1 only supported now
+  span = 1;
+
+  switch( scanner_num )
+    {
+    case 0:
+      scanner = (PETScannerInfo::RPT); 
+      break;
+    case 1:
+      scanner = (PETScannerInfo::E953); 
+      break;
+    case 2:
+      scanner = (PETScannerInfo::E966); 
+      break;
+    case 3:
+      scanner = (PETScannerInfo::Advance); 
+      break;
+    default:
+      PETerror("Wrong scanner number\n"); Abort();
+    }
+
+  NumericType data_type;
+  {
+    int data_type_sel = ask_num("Type of data :\n\
+0: signed 16bit int, 1: unsigned 16bit int, 2: 4bit float ", 0,2,2);
+    switch (data_type_sel)
+      { 
+      case 0:
+	data_type = NumericType::SHORT;
+	break;
+      case 1:
+	data_type = NumericType::USHORT;
+	break;
+      case 2:
+	data_type = NumericType::FLOAT;
+	break;
+      }
+  }
+
+
+  {
+    // find offset 
+
+    input.seekg(0L, ios::beg);   
+    unsigned long file_size = find_remaining_size(input);
+
+    unsigned long offset_in_file = ask_num("Offset in file (in bytes)", 
+			     0UL,file_size, 0UL);
+    input.seekg(offset_in_file, ios::beg);
+  }
+
+  
+  Point3D origin(0,0,0);
+  Point3D voxel_size(scanner.bin_size,
+                     scanner.bin_size,
+                     scanner.ring_spacing/2); 
+
+  int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
+  if (scanner.num_bins % 2 == 0 &&
+      ask("Make x,y size odd ?", true))
+    max_bin++;
+   
+
+  PETImageOfVolume 
+    input_image(Tensor3D<float>(
+				0, 2*scanner.num_rings-2,
+				(-scanner.num_bins/2), max_bin,
+				(-scanner.num_bins/2), max_bin),
+		origin,
+		voxel_size);
+
+
+  Real scale = Real(1);
+  input_image.read_data(input, data_type, scale);  
+  assert(scale==1);
+
+  return input_image; 
+
+}
 
 PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
 				     const bool on_disk)
