@@ -42,11 +42,12 @@ public:
 
   virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 private:
-  Array<1,float> profile;
+  mutable Array<1,float> profile;
+  string profile_filename;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
-  //virtual bool post_processing();
+  virtual bool post_processing();
 };
 
 END_NAMESPACE_TOMO
