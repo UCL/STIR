@@ -1,0 +1,42 @@
+OSMAPOSLParameters :=
+
+input file := Utahscat600k_ca_seg4.hs
+output prefix := my_test_image
+display (0,1,2) := 0
+zoom := 1
+Xoffset (in mm) := 0
+Yoffset (in mm) := 0
+
+; if disabled, defaults to maximum segment number in the file
+maximum absolute segment number to process := 4
+
+; if the next two parameters are disabled, 
+; defaults are to images full of 1s.
+; this funny default is just for testing if you can read an initial image
+initial image:= RPTsens_seg4.hv
+sensitivity image:= RPTsens_seg4.hv
+
+number of subsets:= 12
+start at subset:= 1
+number of subiterations:= 5
+save images at subiteration intervals:= 3
+
+zero end planes of segment 0:= 1
+
+inter-update filter subiteration interval:= 4
+inter-update xy-dir filter FWHM (in mm):= 5
+inter-update z-dir filter FWHM (in mm):= 8
+inter-update xy-dir filter Metz power:= 1.0
+inter-update z-dir filter Metz power:=1.0
+
+inter-iteration filter subiteration interval:= 4
+inter-iteration xy-dir filter FWHM (in mm):= 6.0
+inter-iteration z-dir filter FWHM (in mm):= 6.0
+inter-iteration xy-dir filter Metz power:= 2.0
+inter-iteration z-dir filter Metz power:= 2.0
+
+start at subiteration number:=2
+enforce initial positivity condition:=0
+
+
+END :=
