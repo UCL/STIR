@@ -18,14 +18,14 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/NumericType.h"
 // note that I had to include Succeeded.h instead of just forward 
 // declaring the class. Otherwise every file that used write_*interfile*
-// has to include Succeded.h (even if it doesn't use the return value).
+// has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
 #include <iostream>
 #include <string>
@@ -60,7 +60,7 @@ class ProjDataFromStream;
     This function checks if the list of characters pointed to by
     \a signature satifies these requirements.
 
-    \warning \a signature should be '\0' terminated.
+    \warning The parameter \a signature should be 0 terminated.
 */
 bool is_interfile_signature(const char * const signature);
 
@@ -70,7 +70,7 @@ bool is_interfile_signature(const char * const signature);
  If there is trouble interpreting the header, 
  VoxelsOnCartesianGrid<float>::ask_parameters() is called instead
  If the name for the data file is not an absolute pathname,
- \c directory_for_data is prepended (if not NULL).
+ \a directory_for_data is prepended (if not NULL).
 
   \warning it is up to the caller to deallocate the image
 
@@ -100,9 +100,14 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
  In fact, at the moment 2 headers are output:
  <ul>
  <li>'header_file_name' is 'new-style' (suitable for Mediman for instance), 
- <li>*.ahv is 'old-style' (suitable for Analyze for instance)
+ <li>*.ahv is 'old-style' (Interfile version 3.3) (suitable for Analyze for instance)
  </ul>
  They both point to the same file with binary data.
+
+ \warning The .ahv file contains a fix such that Analyze reads the data
+ with the correct voxel size (in z), which is probably non-confirming, and
+ so will get other programs to read the voxel size incorrectly. 
+ A relevant comment is written in each .ahv file.
  */
 
 Succeeded 
@@ -132,7 +137,6 @@ compute_file_offsets(int number_of_time_frames,
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
- \return 'true' when succesful, 'false' otherwise.
 */
 
 template <class elemT>
@@ -147,7 +151,6 @@ write_basic_interfile(const string&filename,
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
- \return 'true' when succesful, 'false' otherwise.
 
  \warning For Visual Studio, only the float version is defined to work around a 
   compiler bug. (Otherwise, the float version is not instantiated for some reason).
@@ -171,7 +174,6 @@ write_basic_interfile(const string& filename,
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
- \return 'true' when succesful, 'false' otherwise.
 */
 Succeeded 
 write_basic_interfile(const string& filename, 
@@ -184,7 +186,6 @@ write_basic_interfile(const string& filename,
   \ingroup InterfileIO
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
- \return 'true' when succesful, 'false' otherwise.
 
   Currently the DiscretisedDensity<3,float>& object has to be a reference to a 
   VoxelsOnCartesianGrid<float> object.
