@@ -5,7 +5,7 @@
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-START_NAMESPACE_STIR // for doxygen
+namespace stir { // for doxygen
 /*!
   \file
   \ingroup motion_utilities
@@ -27,7 +27,7 @@ START_NAMESPACE_STIR // for doxygen
   $Date$
   $Revision$
 */
-END_NAMESPACE_STIR
+} // END_NAMESPACE_STIR
 
 #include "stir/ProjDataInterfile.h"
 #include "stir/Succeeded.h"

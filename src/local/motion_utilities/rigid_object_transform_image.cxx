@@ -5,7 +5,8 @@
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     Internal GE use only.
 */
-START_NAMESPACE_STIR // for doxygen
+
+namespace stir { // for doxygen
 /*!
   \file
   \ingroup motion_utilities
@@ -27,7 +28,7 @@ START_NAMESPACE_STIR // for doxygen
   $Date$
   $Revision$
 */
-END_NAMESPACE_STIR
+} // end namespace stir
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
