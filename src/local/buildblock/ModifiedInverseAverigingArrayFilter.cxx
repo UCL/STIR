@@ -114,9 +114,9 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   int size;
   // for larger kappa0/kappa1
   if (kapa0_over_kapa1_v >50)
-    size =64;
+    size =256;
     else
-    size =32;  
+    size =128;  
   
   
   VectorWithOffset<float> filter_coefficients_padded(1,size);
@@ -219,7 +219,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
    for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
   { 
 
-  if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10000) break;
+  if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10000000) break;
     //sm 16/11/2001 try the new threshold
   //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
    //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
@@ -264,12 +264,12 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 
   // now rescaled the calculated coefficients to DC gain 1
   
- /* float sum_new_coefficients =0.F;  
+  float sum_new_coefficients =0.F;  
   for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
     sum_new_coefficients += new_filter_coefficients[i];  
   
  for (int i=new_filter_coefficients.get_min_index();i<=new_filter_coefficients.get_max_index();i++)
-     new_filter_coefficients[i] /=sum_new_coefficients;  */
+     new_filter_coefficients[i] /=sum_new_coefficients;  
 
   *output << "coeff" << endl;
   *output << endl;  
