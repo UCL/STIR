@@ -19,6 +19,10 @@
 
 #include <algorithm>
 
+#ifndef TOMO_NO_NAMESPACES
+using std::equal;
+#endif
+
 START_NAMESPACE_TOMO
 
 template <class T>
@@ -280,6 +284,11 @@ VectorWithOffset<T>::operator== (const VectorWithOffset &iv) const
   if (length != iv.length || start != iv.start) return false;
   return equal(begin(), end(), iv.begin());
 }
+
+template <class T>
+bool 
+VectorWithOffset<T>::operator!= (const VectorWithOffset &iv) const
+{ return !(*this == iv); }
 
 template <class T>
 void 
