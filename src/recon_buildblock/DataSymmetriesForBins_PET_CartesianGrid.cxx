@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup recon_buildblock
   \brief non-inline implementations for class 
          DataSymmetriesForBins_PET_CartesianGrid
 
@@ -15,10 +15,10 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/recon_Coordinate/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/shared_ptr.h"

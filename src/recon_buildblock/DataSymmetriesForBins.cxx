@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup recon_buildblock
 
   \brief implementations for class DataSymmetriesForBins
 
@@ -16,15 +16,15 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/DataSymmetriesForBins.h"
+#include "stir/recon_Coordinate/DataSymmetriesForBins.h"
 #include "stir/Bin.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/BasicCoordinate.h"
-#include "stir/recon_buildblock/SymmetryOperation.h"
+#include "stir/recon_Coordinate/SymmetryOperation.h"
 
 START_NAMESPACE_STIR
 
