@@ -29,13 +29,13 @@ $(DEST)libcti.a: $(DEST)cti_utils.o
 	$(AR) r $@ $?
 	$(RANLIB) $@
 
-$(DEST)convif_ecat6: convif_ecat6.cxx $(DEST)libcti.a ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< -L$(DEST) -lcti \
+$(DEST)convif_ecat6: convif_ecat6.cxx $(DEST)cti_utils.o ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
 
 
-$(DEST)convecat6_if: convecat6_if.cxx $(DEST)libcti.a ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< -L$(DEST) -lcti  \
+$(DEST)convecat6_if: convecat6_if.cxx $(DEST)cti_utils.o ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
 
 
