@@ -44,6 +44,10 @@ const float ZERO_TOL= 0.000001F; //MJ 12/05/98 Made consistent with other files
 #include "VoxelsOnCartesianGrid.h"
 #include "recon_array_functions.h"
 
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+#endif
 
 //MJ 05/03/2000 centimeters-->millimeters.
 
