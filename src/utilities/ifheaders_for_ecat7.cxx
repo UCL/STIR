@@ -34,6 +34,8 @@ only work on systems where this library works properly.
 
 */
 
+#ifdef HAVE_LLN_MATRIX
+
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -114,3 +116,6 @@ main( int argc, char **argv)
   }
   return EXIT_SUCCESS;
 }
+
+#endif
+
