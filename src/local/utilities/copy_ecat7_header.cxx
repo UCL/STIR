@@ -12,7 +12,7 @@ $Date$
 $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -23,6 +23,7 @@ $Revision$
 
 #include <iostream>
 #include <string>
+#include <stdio.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -333,17 +334,24 @@ void copy_subheader(MatrixData * data_out,
     }
 }
 
+void update_main_header(Main_header& mh_out, const Main_header& mh_in)
+  {
+    Main_header mh = mh_in;
+    mh.num_planes = mh_out.num_planes;
+    mh.num_frames = mh_out.num_frames;
+    mh.num_gates = mh_out.num_gates;
+    mh.num_bed_pos = mh_out.num_bed_pos;
+    mh.file_type = mh_out.file_type;
+    
+    mh_out = mh;
+  }
+
 Succeeded
 copy_main_header(MatrixFile * mout_ptr, MatrixFile *min_ptr)
   {
-    Main_header mh = *min_ptr->mhptr;
-    mh.num_planes = mout_ptr->mhptr->num_planes;
-    mh.num_frames = mout_ptr->mhptr->num_frames;
-    mh.num_gates = mout_ptr->mhptr->num_gates;
-    mh.num_bed_pos = mout_ptr->mhptr->num_bed_pos;
-    mh.file_type = mout_ptr->mhptr->file_type;
+    update_main_header(*mout_ptr->mhptr, *min_ptr->mhptr);
     
-    if (mat_write_main_header(mout_ptr->fptr, &mh))
+    if (mat_write_main_header(mout_ptr->fptr, mout_ptr->mhptr))
       return Succeeded::no;
     else
       return Succeeded::yes;
@@ -508,6 +516,37 @@ int main(int argc, char *argv[])
  
   const bool write_main_header = argc==3; 
 
+#ifndef USE_MATRIX_LIB_FOR_MAINHEADER
+  if (write_main_header)
+    {
+      FILE * in_fptr = fopen(input_name.c_str(), "rb");
+      if (!in_fptr) 
+	{
+	  char error_string[100000];
+	  sprintf(error_string, "Error opening %s for reading", input_name.c_str());
+	  perror(error_string);	
+	  exit(EXIT_FAILURE);
+	}
+      FILE * out_fptr = fopen(output_name.c_str(), "rb+");
+      if (!out_fptr) 
+	{
+	  error("Error opening %s for reading and writing: %s", 
+		input_name.c_str(), strerror(errno));
+	}
+      Main_header mh_in;
+      if (mat_read_main_header(in_fptr, &mh_in)!=0)
+	  error("Error reading main header from %s", input_name.c_str());
+      Main_header mh_out;
+      if (mat_read_main_header(out_fptr, &mh_out)!=0)
+	  error("Error reading main header from %s", output_name.c_str());
+      update_main_header(mh_out, mh_in);
+      if (mat_write_main_header(out_fptr, &mh_out))
+	error("Error writing main header to %s", output_name.c_str());
+      fclose(in_fptr);
+      fclose(out_fptr);
+      return EXIT_SUCCESS;
+    }
+#endif
 
   MatrixFile *min_ptr=
     matrix_open( input_name.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
@@ -521,12 +560,17 @@ int main(int argc, char *argv[])
     matrix_perror(output_name.c_str());
     exit(EXIT_FAILURE);
   }
+#ifdef USE_MATRIX_LIB_FOR_MAINHEADER
   if (write_main_header)
-    if (copy_main_header(mout_ptr, min_ptr) == Succeeded::no)
-      return EXIT_FAILURE; 
+    {
+      if (copy_main_header(mout_ptr, min_ptr) == Succeeded::no)
+	return EXIT_FAILURE; 
+      else
+	return EXIT_SUCCESS;
+    }
+#endif
 
-  if (argc!=5)
-    return EXIT_SUCCESS;
+  assert(!write_main_header);
 
   const ECAT_dataset_spec out_spec(argv[2]);
   const ECAT_dataset_spec in_spec(argv[4]);
