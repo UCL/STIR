@@ -18,7 +18,7 @@
 
 
 #include "stir/listmode/CListModeDataFromStream.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecordUsingUnion.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
@@ -48,6 +48,11 @@ CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
 		 size_of_record>1 &&
 		 list_mode_file_format_byte_order != ByteOrder::get_native_order())
 {
+  // this run-time check on the type of the record should somehow be avoided
+  // (by passing a shared_ptr of the correct type).
+  if (dynamic_cast<CListRecordUsingUnion const *>(empty_record_sptr.get()) == 0)
+    error("CListModeDataFromStream can only handle CListRecordUsingUnion types\n");
+
   scanner_ptr =scanner_ptr_v;
 
   if (is_null_ptr(stream_ptr))
@@ -78,6 +83,10 @@ CListModeDataFromStream(const string& listmode_filename,
 		 list_mode_file_format_byte_order != ByteOrder::get_native_order())
 
 {
+  // this run-time check on the type of the record should somehow be avoided
+  // (by passing a shared_ptr of the correct type).
+  if (dynamic_cast<CListRecordUsingUnion const *>(empty_record_sptr.get()) == 0)
+    error("CListModeDataFromStream can only handle CListRecordUsingUnion types\n");
   fstream* s_ptr = new fstream;
   open_read_binary(*s_ptr, listmode_filename.c_str());
   stream_ptr = s_ptr;
@@ -91,9 +100,12 @@ CListModeDataFromStream(const string& listmode_filename,
 
 Succeeded
 CListModeDataFromStream::
-get_next_record(CListRecord& record) const
+get_next_record(CListRecord& record_of_general_type) const
 {
+  assert(dynamic_cast<CListRecordUsingUnion const *>(empty_record_sptr.get()) != 0);
 
+  CListRecordUsingUnion& record =
+    static_cast<CListRecordUsingUnion&>(record_of_general_type);
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
 
