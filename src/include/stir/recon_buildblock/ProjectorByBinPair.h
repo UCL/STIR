@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projection
@@ -11,10 +27,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_ProjectorByBinPair_h_
 #define __stir_recon_buildblock_ProjectorByBinPair_h_
@@ -70,6 +82,19 @@ public:
   const shared_ptr<BackProjectorByBin>
     get_back_projector_sptr() const;
   
+
+  //! Provide access to the (minimal) symmetries used by the projectors
+  /*! It is expected that the forward and back projector can handle the same
+      symmetries.
+
+      \warning There is currently no check that this is the case, and we just return
+      the symmetries returned by the back projector.
+      \todo determine set of minimal symmetries
+  */
+  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const
+    {
+      return get_back_projector_sptr()->get_symmetries_used();
+    }
 
 protected:
 
