@@ -6,7 +6,7 @@
   \file
   \ingroup test
 
-  \brief Test programme for ProjDataInfoCylindricalArcCorr
+  \brief Test program for ProjDataInfo hierarchy
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -28,11 +28,14 @@
 #include "stir/Bin.h"
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
+#include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::setw;
 using std::endl;
+using std::min;
 #endif
 
 START_NAMESPACE_STIR
@@ -67,10 +70,182 @@ void michelogram(const ProjDataInfoCylindrical& proj_data_info)
 
 /*!
   \ingroup test
+  \brief Test class for ProjDataInfoCylindrical
+*/
+
+class ProjDataInfoCylindricalTests: public RunTests
+{
+public:  
+  void run_tests();
+};
+
+
+void
+ProjDataInfoCylindricalTests::
+run_tests()
+{
+  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+
+  cerr << "Testing consistency between different implementations\n";
+  {
+    shared_ptr<ProjDataInfo> proj_data_info_ptr =
+      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+				    /*span*/5, 10,/*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
+    
+    ProjDataInfoCylindrical& proj_data_info_cyl =
+      dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
+
+    Bin bin(proj_data_info_ptr->get_max_segment_num(),
+	    1,
+	    proj_data_info_ptr->get_max_axial_pos_num(proj_data_info_ptr->get_max_segment_num())/2,
+	    1);
+    check_if_equal(proj_data_info_ptr->get_sampling_in_m(bin),
+		   proj_data_info_cyl.get_sampling_in_m(bin),
+		   "test consistency get_sampling_in_m");
+    check_if_equal(proj_data_info_ptr->get_sampling_in_t(bin),
+		   proj_data_info_cyl.get_sampling_in_t(bin),
+		   "test consistency get_sampling_in_t");
+
+    check_if_equal(proj_data_info_ptr->get_tantheta(bin),
+		   proj_data_info_cyl.get_tantheta(bin),
+		   "test consistency get_tantheta");
+    check_if_equal(proj_data_info_ptr->get_costheta(bin),
+		   proj_data_info_cyl.get_costheta(bin),
+		   "test consistency get_costheta");
+
+    check_if_equal(proj_data_info_ptr->get_costheta(bin),
+		   cos(atan(proj_data_info_ptr->get_tantheta(bin))),
+		   "cross check get_costheta and get_tantheta");
+
+    // try the same with a non-standard ring spacing
+    proj_data_info_cyl.set_ring_spacing(2);
+
+    check_if_equal(proj_data_info_ptr->get_sampling_in_m(bin),
+		   proj_data_info_cyl.get_sampling_in_m(bin),
+		   "test consistency get_sampling_in_m");
+    check_if_equal(proj_data_info_ptr->get_sampling_in_t(bin),
+		   proj_data_info_cyl.get_sampling_in_t(bin),
+		   "test consistency get_sampling_in_t");
+
+    check_if_equal(proj_data_info_ptr->get_tantheta(bin),
+		   proj_data_info_cyl.get_tantheta(bin),
+		   "test consistency get_tantheta");
+    check_if_equal(proj_data_info_ptr->get_costheta(bin),
+		   proj_data_info_cyl.get_costheta(bin),
+		   "test consistency get_costheta");
+
+    check_if_equal(proj_data_info_ptr->get_costheta(bin),
+		   cos(atan(proj_data_info_ptr->get_tantheta(bin))),
+		   "cross check get_costheta and get_tantheta");
+  }
+
+  cerr << "Test ring pair to segment,ax_pos (span 1)\n";
+  {
+    shared_ptr<Scanner> small_scanner_ptr = 
+      new Scanner(Scanner::Unknown_Scanner,
+		  "Small scanner",
+		  /*num_detectors_per_ring*/ 80, 
+		  /* num_rings */ 3, 
+		  /*max_num_non_arccorrected_bins*/ 40, 
+		  /*RingRadius*/ 400.F, /*RingSpacing*/ 5.F, 
+		  /*BinSize*/ 4.5F, /*intrTilt*/ 0);
+
+    shared_ptr<ProjDataInfo> proj_data_info_ptr =
+      ProjDataInfo::ProjDataInfoCTI(small_scanner_ptr,
+				    /*span*/1, small_scanner_ptr->get_num_rings()-1,
+				    /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
+    
+    ProjDataInfoCylindrical& proj_data_info =
+      dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
+
+    for (int ring1=0; ring1<small_scanner_ptr->get_num_rings(); ++ring1)
+      for (int ring2=0; ring2<small_scanner_ptr->get_num_rings(); ++ring2)
+	{
+	  int segment_num = 0, axial_pos_num = 0;
+	  check(proj_data_info.
+		get_segment_axial_pos_num_for_ring_pair(segment_num,
+							axial_pos_num,
+							ring1,
+							ring2) ==
+		    Succeeded::yes,
+		"test if segment,ax_pos_num found for a ring pair");
+	  check_if_equal(segment_num, ring2-ring1,
+			 "test if segment_num is equal to ring difference\n");
+	  check_if_equal(axial_pos_num, min(ring2,ring1),
+			 "test if segment_num is equal to ring difference\n");
+	  
+	  int check_ring1 = 0, check_ring2 = 0;
+	  proj_data_info.
+	    get_ring_pair_for_segment_axial_pos_num(check_ring1,
+						    check_ring2,
+						    segment_num,
+						    axial_pos_num);
+	  check_if_equal(ring1, check_ring1,
+			 "test ring1 equal after going to segment/ax_pos and returning\n");
+	  check_if_equal(ring2, check_ring2,
+			 "test ring2 equal after going to segment/ax_pos and returning\n");
+
+	  const ProjDataInfoCylindrical::RingNumPairs& ring_pairs =
+	    proj_data_info.
+	    get_all_ring_pairs_for_segment_axial_pos_num(segment_num,
+							 axial_pos_num);
+
+	  check_if_equal(ring_pairs.size(), 1,
+			 "test total number of ring-pairs for 1 segment/ax_pos should be 1 for span=1\n");
+	  check_if_equal(ring1, ring_pairs[0].first,
+			 "test ring1 equal after going to segment/ax_pos and returning (version with all ring_pairs)\n");
+	  check_if_equal(ring2, ring_pairs[0].second,
+			 "test ring2 equal after going to segment/ax_pos and returning (version with all ring_pairs)\n");
+	}
+  }
+
+  cerr << "Test ring pair to segment,ax_pos and vice versa (span 5)\n";
+  {
+    shared_ptr<ProjDataInfo> proj_data_info_ptr =
+      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+				    /*span*/5, 10,/*views*/ scanner_ptr->get_num_detectors_per_ring()/2, /*tang_pos*/128, /*arc_corrected*/ false);
+    
+    ProjDataInfoCylindrical& proj_data_info =
+      dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr);
+
+    for (int segment_num=proj_data_info.get_min_segment_num(); 
+	 segment_num<=proj_data_info.get_max_segment_num(); 
+	 ++segment_num)
+      for (int axial_pos_num=proj_data_info.get_min_axial_pos_num(segment_num); 
+	   axial_pos_num<=proj_data_info.get_max_axial_pos_num(segment_num); 
+	   ++axial_pos_num)
+	{
+	  const ProjDataInfoCylindrical::RingNumPairs& ring_pairs =
+	    proj_data_info.
+	    get_all_ring_pairs_for_segment_axial_pos_num(segment_num,
+							 axial_pos_num);
+	  for (ProjDataInfoCylindrical::RingNumPairs::const_iterator iter = ring_pairs.begin();
+	       iter != ring_pairs.end();
+	       ++iter)
+	    {
+	      int check_segment_num = 0, check_axial_pos_num = 0;
+	      check(proj_data_info.
+		    get_segment_axial_pos_num_for_ring_pair(check_segment_num,
+							    check_axial_pos_num,
+							    iter->first,
+							    iter->second) ==
+		    Succeeded::yes,
+		    "test if segment,ax_pos_num found for a ring pair");
+	      check_if_equal(check_segment_num, segment_num,
+			     "test if segment_num is consistent\n");
+	      check_if_equal(check_axial_pos_num, axial_pos_num,
+			     "test if axial_pos_num is consistent\n");
+	    }
+	}	      
+  }
+}
+
+/*!
+  \ingroup test
   \brief Test class for ProjDataInfoCylindricalArcCorr
 */
 
-class ProjDataInfoCylindricalArcCorrTests: public RunTests
+class ProjDataInfoCylindricalArcCorrTests: public ProjDataInfoCylindricalTests
 {
 public:  
   void run_tests();
@@ -169,6 +344,9 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       check_if_equal( t, (10-ax_pos_origin)/sqrt(1+square(thetatest))*ob2.get_axial_sampling(1) , "get_t, seg 1");
       check_if_equal( s, 20*ob2.get_tangential_sampling() , "get_s, seg 1");
     }
+
+    ProjDataInfoCylindricalTests::run_tests();
+
 #if 0    
   // disabled to get noninteractive test
   michelogram(ob2);
@@ -346,7 +524,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	
 	  } // end of get_bin_for_det_pair and vice versa code
 
-  cerr << "\nTest code for bin -> detector,ring and back conversions.\n"
+  cerr << "\nTest code for bin -> detector,ring and back conversions. (This might take a while...)\n"
        << "No output means everything is fine." << endl;
 
   {
@@ -403,9 +581,9 @@ USING_NAMESPACE_STIR
 
 int main()
 {
-  ProjDataInfoCylindricalNoArcCorrTests tests1;
-  tests1.run_tests();
   ProjDataInfoCylindricalArcCorrTests tests;
   tests.run_tests();
+  ProjDataInfoCylindricalNoArcCorrTests tests1;
+  tests1.run_tests();
   return tests.main_return_value();
 }
