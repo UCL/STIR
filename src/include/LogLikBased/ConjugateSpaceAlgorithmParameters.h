@@ -9,7 +9,7 @@
 
 /*!
   \file 
-  \ingroup recon_buildblock
+ \ingroup LogLikBased_buildblock
  
   \brief declares the ConjugateSpaceAlgorithmParameters class
 
@@ -21,13 +21,13 @@
 */
 
 
-#include "recon_buildblock/LogLikelihoodBasedAlgorithmParameters.h"
+#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
 
 START_NAMESPACE_TOMO
 
 /*!
  \brief base parameter class for algorithms based on conjugate space methods
-
+  \ingroup LogLikBased_buildblock
 
 */
 

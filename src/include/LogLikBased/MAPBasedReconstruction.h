@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup reconstruction
+  \ingroup LogLikBased_buildblock
  
   \brief declares the MAPBasedReconstruction class
 
@@ -22,15 +22,14 @@
 */
 
 
-#include "recon_buildblock/LogLikelihoodBasedReconstruction.h"
-#include "recon_buildblock/MAPParameters.h"
+#include "LogLikBased/LogLikelihoodBasedReconstruction.h"
+#include "LogLikBased/MAPParameters.h"
 
 START_NAMESPACE_TOMO
 
 /*! \brief base class for MAP based reconstruction objects
-
+ \ingroup LogLikBased_buildblock
  */
-
 
 class MAPBasedReconstruction: public LogLikelihoodBasedReconstruction
 {
@@ -39,7 +38,8 @@ class MAPBasedReconstruction: public LogLikelihoodBasedReconstruction
 
 
   //! evaluates the gradient of the prior at an image
-  PETImageOfVolume compute_prior_gradient(const PETImageOfVolume &current_image_estimate );
+  void compute_prior_gradient(DiscretisedDensity<3,float>& prior_gradient, 
+                              const DiscretisedDensity<3,float> &current_image_estimate );
 
 
   //! accessor for the external parameters
@@ -48,19 +48,19 @@ class MAPBasedReconstruction: public LogLikelihoodBasedReconstruction
       return static_cast<MAPParameters&>(params());
     }
 
-
-  /*
+  //! accessor for the external parameters
   const MAPParameters& get_parameters() const
     {
       return static_cast<const MAPParameters&>(params());
     }
-    */
 
  private:
  
   //! a workaround for compilers not supporting covariant return types
   virtual ReconstructionParameters& params()=0;
 
+  //! a workaround for compilers not supporting covariant return types
+  virtual const ReconstructionParameters& params() const =0;
 
 
 };

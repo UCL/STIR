@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup reconstruction
+  \ingroup LogLikBased_buildblock
  
   \brief declares the LogLikelihoodBasedReconstruction class
 
@@ -23,16 +23,15 @@
 
 
 #include "recon_buildblock/IterativeReconstruction.h"
-#include "recon_buildblock/LogLikelihoodBasedAlgorithmParameters.h"
-#include "distributable.h"
-#include "mle_common.h"
+#include "LogLikelihoodBasedAlgorithmParameters.h"
+#include "DiscretisedDensity.h"
 
 START_NAMESPACE_TOMO
 
+
 /*! \brief base class for loglikelihood function related reconstruction objects
-
+  \ingroup LogLikBased_buildblock
  */
-
 
 
 class LogLikelihoodBasedReconstruction: public IterativeReconstruction
@@ -42,23 +41,23 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
  protected:
 
 
+  LogLikelihoodBasedReconstruction();
+
   //MJ for appendability
 
   //! operations prior to the iterations common to all loglikelihood based algorithms
-  void loglikelihood_common_recon_set_up(PETImageOfVolume &target_image);
+  void recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr);
+  //void loglikelihood_common_recon_set_up(const DiscretisedDensity<3,float> &target_image);
 
- //! operations for the end of the iteration common to all loglikelihood based algorithms
-  void loglikelihood_common_end_of_iteration_processing(PETImageOfVolume &current_image_estimate);
+  //! operations for the end of the iteration common to all loglikelihood based algorithms
+  void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate);
+ 
 
 
-
- //TODO remove sensitivity_image and proj_dat, possibly also accum
 
  //! evaluates the loglikelihood function at an image
- void compute_loglikelihood(float* accum,
-			    const PETImageOfVolume& current_image_estimate,
-			    const PETImageOfVolume& sensitivity_image,
-			    const PETSinogramOfVolume* proj_dat,
+ float compute_loglikelihood(
+			    const DiscretisedDensity<3,float>& current_image_estimate,
 			    const int magic_number=1);
 
  //! adds up the projection data
@@ -70,35 +69,28 @@ class LogLikelihoodBasedReconstruction: public IterativeReconstruction
      return static_cast<LogLikelihoodBasedAlgorithmParameters&>(params());
    }
 
-
- /*
+ //! accessor for the external parameters
  const LogLikelihoodBasedAlgorithmParameters& get_parameters() const
     {
       return static_cast<const LogLikelihoodBasedAlgorithmParameters&>(params());
     }
 
-    */
 
- //Ultimately the argument will be a PETStudy or the like
- 
- //! customized constructor that can call pure virtual functions
- void LogLikelihoodBasedReconstruction_ctor(char* parameter_filename="");
-
- //! customized destructor that can call pure virtual functions
- void LogLikelihoodBasedReconstruction_dtor();
-
+ // TODO move to parameters (KT thinks)
 
  //! points to the additive projection data
- PETSinogramOfVolume* additive_projection_data_ptr;
+ shared_ptr<ProjData> additive_projection_data_ptr;
 
  //! points to the sensitivity image
- PETImageOfVolume* sensitivity_image_ptr;
+ shared_ptr<DiscretisedDensity<3,float> > sensitivity_image_ptr;
 
  private:
  
   //! a workaround for compilers not supporting covariant return types
   virtual ReconstructionParameters& params()=0;
 
+  //! a workaround for compilers not supporting covariant return types
+  virtual const ReconstructionParameters& params() const=0;
 
 
 

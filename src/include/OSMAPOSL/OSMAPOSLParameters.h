@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup recon_buildblock
+  \ingroup OSMAPOSL
  
   \brief declares the OSMAPOSLParameters class
 
@@ -18,10 +18,11 @@
   \date    $Date$
   \version $Revision$
 
+  This class is supposed to be the last in the Parameter hierarchy.
 */
 
 
-#include "recon_buildblock/MAPParameters.h"
+#include "LogLikBased/MAPParameters.h"
 
 
 START_NAMESPACE_TOMO
@@ -35,15 +36,13 @@ START_NAMESPACE_TOMO
 class OSMAPOSLParameters : public MAPParameters
 {
 
-protected:
-
-  //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();
-
 public:
 
-  //! constructor
-  OSMAPOSLParameters();
+  /*!
+  \brief Constructor, initialises everything from parameter file, or (when
+  parameter_filename == "") by calling ask_parameters().
+  */
+  explicit OSMAPOSLParameters(const string& parameter_filename = "");
  
   //! lists the parameter values
   virtual string parameter_info() const;
@@ -75,7 +74,10 @@ public:
   //! inter-update filter object
   ImageFilter inter_update_filter;
  
+private:
 
+  //! used to check acceptable parameter ranges, etc...
+  virtual bool post_processing();
 
 };
 
