@@ -198,11 +198,13 @@ main(int argc, char **argv)
   const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,100.F,1.F);
   int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
   xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+  int z_size = 2*proj_data_info_ptr->get_scanner_ptr()->get_num_rings()-1;
+  z_size = ask_num("Number of z pixels",1,1000,z_size);
   VoxelsOnCartesianGrid<float> * vox_image_ptr =
     new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr,
 				     zoom,
 				     Coordinate3D<float>(0,0,0),
-				     xy_size);
+				     Coordinate3D<int>(z_size,xy_size,xy_size));
   const float z_origin = 
     ask_num("Shift z-origin (in pixels)", 
 	    -vox_image_ptr->get_length()/2,
