@@ -409,6 +409,9 @@ FindMCNormFactors::process_data()
 		  }
 	      }
 	  }
+	// decrease our counter of the numer of time intervals to set it to
+	// the number we actually had
+	--current_num_time_intervals;
 	if (current_num_time_intervals != num_time_intervals_this_frame+1)
 	  warning("\nUnexpected number of time intervals %d, should be %d",
 		  current_num_time_intervals, num_time_intervals_this_frame);
