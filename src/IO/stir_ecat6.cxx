@@ -99,6 +99,7 @@ Scanner* find_scanner_from_ECAT6_main_header(const Main_header& mhead)
   case 12 : 
     //camera = cam931; 
     scanner_ptr = new Scanner(Scanner::E931); 
+    break;
   case 951 : 
     //camera = cam951; 
     scanner_ptr = new Scanner(Scanner::E951); 
