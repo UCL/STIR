@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup recon_buildblock
 
   \brief Implementation of all symmetry classes for PET scanners and cartesian images
 
