@@ -81,6 +81,9 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   use actual detector boundaries := 0
   do symmetry 90degrees min phi := 1
   do symmetry 180degrees min phi := 1
+  do_symmetry_swap_segment := 1
+  do_symmetry_swap_s := 1
+  do_symmetry_shift_z := 1
   End Ray Tracing Matrix Parameters :=
   \endverbatim
                   
@@ -128,6 +131,9 @@ private:
   bool use_actual_detector_boundaries;
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;
+  bool do_symmetry_swap_segment;
+  bool do_symmetry_swap_s;
+  bool do_symmetry_shift_z;
 
   // explicitly list necessary members for image details (should use an Info object instead)
   CartesianCoordinate3D<float> voxel_size;

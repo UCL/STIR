@@ -52,6 +52,8 @@ public:
       {phi, 180-phi, 90-phi, 90+phi}.
       The boolean parameters allow to select which angles should be considered as related:<br>
       <ul>
+      <li> azimuthal</li>
+      <ul>
       <li> all 4:
            (\a do_symmetry_90degrees_min_phi=true)</li>
       <li> only {phi, 180-phi} :
@@ -60,6 +62,10 @@ public:
       <li> none:
             (\a do_symmetry_90degrees_min_phi=false, 
             \a do_symmetry_180degrees_min_phi = false)</li>
+      </ul>
+      <li>axial (i.e. positive vs. negative segment): \a do_symmetry_swap_segment</li>
+      <li>tangential (i.e. positive vs negative s): \a     do_symmetry_swap_s </li>
+      <li> axial shift \a do_symmetry_shift_z</li>
       </ul>
 
       Note that when \a do_symmetry_90degrees_min_phi=true, the value of
@@ -72,7 +78,10 @@ public:
   DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
                                           const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
                                           const bool do_symmetry_90degrees_min_phi = true,
-                                          const bool do_symmetry_180degrees_min_phi = true);
+                                          const bool do_symmetry_180degrees_min_phi = true,
+					  const bool do_symmetry_swap_segment = true,
+					  const bool do_symmetry_swap_s = true,
+					  const bool do_symmetry_shift_z = true);
 
 
   virtual 
@@ -130,6 +139,9 @@ public:
 private:
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;
+  bool do_symmetry_swap_segment;
+  bool do_symmetry_swap_s;
+  bool do_symmetry_shift_z;
   //const shared_ptr<ProjDataInfo>& proj_data_info_ptr;
   int num_views;
   int num_planes_per_scanner_ring;
