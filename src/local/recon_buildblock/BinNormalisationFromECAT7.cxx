@@ -138,6 +138,13 @@ read_norm_data(const string& filename)
       reinterpret_cast<Norm3D_subheader *>(matrix->shptr);
   
   num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
+
+  //TODO move to Scanner
+  if (scanner_ptr->get_type() == Scanner::E966)
+    num_axial_blocks_per_singles_unit = 2;
+  else
+    num_axial_blocks_per_singles_unit = 1;
+
   if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
     error("BinNormalisationFromECAT7: "
           "number of rings determined from subheader is %d, while the scanner object says it is %d\n",
@@ -155,7 +162,6 @@ read_norm_data(const string& filename)
                   /*num_tangential_poss=*/nrm_subheader_ptr->num_r_elements, 
                   /*arc_corrected =*/false)
                   );
-  //init_deadtime(/* Arguments NOT Used	*/) ; TODO
   
   /*
     Extract geometrical & crystal interference, and crystal efficiencies from the
@@ -187,9 +193,11 @@ read_norm_data(const string& filename)
 		   0, scanner_ptr->get_num_detectors_per_ring()-1));
   
 
+#if 0
   int geom_test = nrm_subheader_ptr->num_geo_corr_planes * (max_tang_pos_num-min_tang_pos_num +1);
   int cry_inter = num_transaxial_crystals_per_block * (max_tang_pos_num-min_tang_pos_num +1);
   int eff_test = scanner_ptr->get_num_detectors_per_ring() * scanner_ptr->get_num_rings();
+#endif
   
   {
     float const* data_ptr = reinterpret_cast<float const *>(matrix->data_ptr);
@@ -206,20 +214,17 @@ read_norm_data(const string& filename)
     )
       *iter++ = *data_ptr++;
   }
-
-		/* Set up equation parameters for deadtime correction */
+  // TODO mvoe dead-time stuff to a separate function
+  /* Set up equation parameters for deadtime correction */
   float *axial_t1 = nrm_subheader_ptr->ring_dtcor1 ;		/* 'Paralyzing deadtimes' for each axial Xstal */
   float *axial_t2 = nrm_subheader_ptr->ring_dtcor2 ;		/* 'Non-paralyzing deadtimes' for each axial Xstal */
-  float *trans_t1 = nrm_subheader_ptr->crystal_dtcor ;		/* 'Non-paralyzing deadtimes' for each transaxial Xstal in block */
-			/*
-				24 entries for axial_t1 & axial_t2
-					Each entry accounts for 2 crystal rings
-				0 <= iRing <= 23 for ring 0 --> 47
-			*/
-
-  axial_t1_array = Array<1,float>(0,scanner_ptr->get_num_rings()-1);
-  axial_t2_array = Array<1,float>(0,scanner_ptr->get_num_rings()-1);
-  trans_t1_array = Array<1,float>(0,scanner_ptr->get_num_rings()-1);
+  /* for 966
+     24 entries for axial_t1 & axial_t2
+     Each entry accounts for 2 crystal rings
+     0 <= iRing <= 23 for ring 0 --> 47
+  */
+  axial_t1_array = Array<1,float>(0,scanner_ptr->get_num_rings()/num_axial_blocks_per_singles_unit-1);
+  axial_t2_array = Array<1,float>(0,scanner_ptr->get_num_rings()/num_axial_blocks_per_singles_unit-1);
 
   for (Array<1,float>::full_iterator iter = axial_t1_array.begin_all();
          iter != axial_t1_array.end_all();)
@@ -228,11 +233,14 @@ read_norm_data(const string& filename)
   for (Array<1,float>::full_iterator iter = axial_t2_array.begin_all();
          iter != axial_t2_array.end_all();)
       *iter++ = *axial_t2++;
-
+#if 0
+  // this is currently not used by CTI and hence not by get_deadtime_efficiency
+  float *trans_t1 = nrm_subheader_ptr->crystal_dtcor ;		/* 'Non-paralyzing deadtimes' for each transaxial Xstal in block */
+  trans_t1_array = Array<1,float>(0,num_transaxial_crystals_per_block-1);
   for (Array<1,float>::full_iterator iter = trans_t1_array.begin_all();
          iter != trans_t1_array.end_all();)
       *iter++ = *trans_t1++;
-
+#endif
 
   
   free_matrix_data(matrix);
@@ -291,6 +299,7 @@ BinNormalisationFromECAT7::
 get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const 
 {
   const int num_rings = proj_data_info_cyl_ptr->get_scanner_ptr()->get_num_rings();
+  // TODO disable when not HR+ or HR++
   /*
   Additional correction for HR+ and HR++
   ======================================
@@ -458,8 +467,8 @@ BinNormalisationFromECAT7::get_deadtime_efficiency (const DetectionPosition<>& d
     return 1;
   const float rate = singles_rates_ptr->get_singles_rate(det_pos,start_time,end_time);
   return
-     ( 1.0 + axial_t1_array[ det_pos.axial_coord()/2] * rate + 
-       axial_t2_array[ det_pos.axial_coord()/2] * rate * rate );
+     ( 1.0 + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
+       axial_t2_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate * rate );
 						//* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
 
 }
