@@ -119,25 +119,28 @@ void KeyParser::Init()
   // default values
   file_byte_order = ByteOrder::big_endian;
   type_of_data_index = 6; // PET
-  
-  kmap["INTERFILE"]=			m(NONE,		NULL);
+
+  // KT 09/10/98 replaced NULL arguments with the DoNothing function
+  // as gcc cannot convert 0 to a 'pointer to member function'  
+  kmap["INTERFILE"]=			m(NONE,		&KeyParser::DoNothing);
   // KT 01/08/98 just set data_file_name variable now
   kmap["name of data file"]=		m(ASCII,	&KeyParser::SetVariable, &data_file_name);
-  kmap["GENERAL DATA"]=			m(NONE,		NULL);
-  kmap["GENERAL IMAGE DATA"]=		m(NONE,		NULL);
+  kmap["GENERAL DATA"]=			m(NONE,		&KeyParser::DoNothing);
+  kmap["GENERAL IMAGE DATA"]=		m(NONE,		&KeyParser::DoNothing);
   kmap["type of data"]=			m(ASCIIlist,	&KeyParser::SetVariable,
     &type_of_data_index, 
     &type_of_data_values);
   
-  kmap["image data byte order"]=	m(ASCIIlist,	&KeyParser::SetVariable,
+  // KT 08/10/98 removed space in keyword
+  kmap["imagedata byte order"]=	m(ASCIIlist,	&KeyParser::SetVariable,
     &byte_order_index, 
     &byte_order_values);
-  kmap["PET STUDY (General)"]=		m(NONE,		NULL);
+  kmap["PET STUDY (General)"]=		m(NONE,		&KeyParser::DoNothing);
   kmap["PET data type"]=		m(ASCIIlist,	&KeyParser::SetVariable,
     &PET_data_type_index, 
     &PET_data_type_values);
   
-  kmap["data format"]=			m(ASCII,	NULL);
+  kmap["data format"]=			m(ASCII,	&KeyParser::DoNothing);
   // KT 20/06/98 use ASCIIlist
   kmap["number format"]=		m(ASCIIlist,	&KeyParser::SetVariable,
     &number_format_index,
@@ -148,9 +151,9 @@ void KeyParser::Init()
   kmap["matrix axis label"]=		m(ASCII,	&KeyParser::SetVariable,&matrix_labels);
   kmap["scaling factor (mm/pixel)"]=	m(DOUBLE,	&KeyParser::SetVariable,&pixel_sizes);
   kmap["number of time frames"]=	m(INT,	&KeyParser::ReadFramesInfo,&num_time_frames);
-  kmap["PET STUDY (Emission data)"]=	m(NONE,		NULL);
-  kmap["PET STUDY (Image data)"]=	m(NONE,		NULL);
-  kmap["IMAGE DATA DESCRIPTION"]=	m(NONE,		NULL);
+  kmap["PET STUDY (Emission data)"]=	m(NONE,		&KeyParser::DoNothing);
+  kmap["PET STUDY (Image data)"]=	m(NONE,		&KeyParser::DoNothing);
+  kmap["IMAGE DATA DESCRIPTION"]=	m(NONE,		&KeyParser::DoNothing);
   kmap["image scaling factor"]=		m(DOUBLE,	&KeyParser::SetVariable,&image_scaling_factor);
   kmap["data offset in bytes"]=		m(ULONG,	&KeyParser::SetVariable,&data_offset);
   kmap["END OF INTERFILE"]=		m(NONE,		&KeyParser::SetEndStatus);
@@ -171,7 +174,9 @@ int KeyParser::StartParsing()
   Line line;
   
   // checks if INTERFILE HEADER :
-  
+
+  printf("---------- Start parsing Interfile --------------\n");  
+
   // TODO replace with input >> line;
   input->getline(buf,256,'\n');
   line=buf;
@@ -182,8 +187,6 @@ int KeyParser::StartParsing()
     printf("This is not an Interfile");
     return 1;
 		}
-  else 
-    printf("Ok :interfile! \n");
   
   // initializes keyword map
   Init();
@@ -219,9 +222,12 @@ int KeyParser::StartParsing()
   if (num_dimensions != 3)
   { cerr << "Interfile error: expecting 3D image " << endl; return 1; }
   
-  if (matrix_labels[0]!="z" || matrix_labels[1]!="y" ||
-    matrix_labels[2]!="x")
-  { cerr << "Interfile: only supporting z,y,x order of coordinates now."
+  // KT 09/10/98 changed order z,y,x->x,y,z
+  // KT 09/10/98 allow no labels at all
+  if (matrix_labels[0].length()>0 
+      && (matrix_labels[0]!="x" || matrix_labels[1]!="y" ||
+	  matrix_labels[2]!="z"))
+  { cerr << "Interfile: only supporting x,y,z order of coordinates now."
   << endl; return 1; }
   
   /*
@@ -247,7 +253,8 @@ int KeyParser::StartParsing()
 	  else
 	  storage_order=BYVIEW;
   */
-  
+
+  printf("---------- End parsing Interfile ----------------\n");    
   return 0;
   
 }	
@@ -404,47 +411,49 @@ void KeyParser::SetVariable()
   }
   else														// Sets vector elements using current_index
   {
+    // KT 09/10/98 replaced vector::at with vector::operator[] 
+    // KT 09/10/98 as SGI STL does not have at()
     switch(current->type)
     {
       // KT 01/08/98 NUMBER->INT
     case INT :
       {
 	IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->at(current_index-1)=par_int;
+	p_vnumber->operator[](current_index-1)=par_int;
 	break;
       }
       // KT 01/08/98 new
     case ULONG :
       {
 	UlongVect* p_vnumber=(UlongVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->at(current_index-1)=par_ulong;
+	p_vnumber->operator[](current_index-1)=par_ulong;
 	break;
       }
       // KT 01/08/98 new
     case DOUBLE :
       {
 	DoubleVect* p_vnumber=(DoubleVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->at(current_index-1)=par_double;
+	p_vnumber->operator[](current_index-1)=par_double;
 	break;
       }
     case ASCII :
       {
 	vector<String>* p_vstring=(vector<String>*)current->p_object_variable;	// performs the required casting
-	p_vstring->at(current_index-1)=par_ascii;
+	p_vstring->operator[](current_index-1)=par_ascii;
 	break;
       }
       // KT 20/06/98 new
     case ASCIIlist :
       {
 	IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
-	p_vnumber->at(current_index-1) =
+	p_vnumber->operator[](current_index-1) =
 	  find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
 	break;
       }
     case LIST_OF_INTS :
       {
 	vector<IntVect>* p_matrixint=(vector<IntVect>*)current->p_object_variable;
-	p_matrixint->at(current_index-1)=par_intlist;
+	p_matrixint->operator[](current_index-1)=par_intlist;
 	break;
       }
       /*	case LIST_OF_ASCII :
