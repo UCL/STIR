@@ -16,10 +16,16 @@
     Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
+#ifndef __stir_ML_norm_H__
+#define __stir_ML_norm_H__
+
 #define ARRAY_CONST_IT  
 
 #include "stir/ProjData.h"
 #include "stir/Array.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/IndexRange2D.h"
+#include "stir/Sinogram.h"
 
 START_NAMESPACE_STIR
 
