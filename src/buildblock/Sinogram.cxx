@@ -36,13 +36,14 @@ START_NAMESPACE_STIR
 template <typename elemT>
 void 
 Sinogram<elemT>::
-grow(const IndexRange<2>& range)
+resize(const IndexRange<2>& range)
 {   
   if (range == this->get_index_range())
     return;
 
   // can only handle min_view==0 at the moment
   // TODO
+
   assert(range.get_min_index() == 0);
   
   ProjDataInfo* pdi_ptr = proj_data_info_ptr->clone();
@@ -53,10 +54,21 @@ grow(const IndexRange<2>& range)
 
   proj_data_info_ptr = pdi_ptr;
 
-  Array<2,elemT>::grow(range);
+  Array<2,elemT>::resize(range);
 	
 }
 
+/*!
+  This makes sure that the new Array dimensions are the same as those in the
+  ProjDataInfo member.
+*/
+template <typename elemT>
+void 
+Sinogram<elemT>::
+grow(const IndexRange<2>& range)
+{
+  resize(range);
+}
 
 /******************************
  instantiations

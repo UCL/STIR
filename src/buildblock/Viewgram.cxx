@@ -36,7 +36,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 void 
 Viewgram<elemT>::
-grow(const IndexRange<2>& range)
+resize(const IndexRange<2>& range)
 {   
   if (range == this->get_index_range())
     return;
@@ -55,8 +55,21 @@ grow(const IndexRange<2>& range)
 
   proj_data_info_ptr = pdi_ptr;
 
-  Array<2,elemT>::grow(range);
+  Array<2,elemT>::resize(range);
 	
+}
+
+
+/*!
+  This makes sure that the new Array dimensions are the same as those in the
+  ProjDataInfo member.
+*/
+template <typename elemT>
+void 
+Viewgram<elemT>::
+grow(const IndexRange<2>& range)
+{
+  resize(range);
 }
 
 

@@ -107,7 +107,7 @@ SegmentBySinogram<elemT>::set_viewgram(const Viewgram<elemT>& viewgram)
 template <typename elemT>
 void 
 SegmentBySinogram<elemT>::
-grow(const IndexRange<3>& range)
+resize(const IndexRange<3>& range)
 {   
   if (range == this->get_index_range())
     return;
@@ -132,8 +132,21 @@ grow(const IndexRange<3>& range)
 
   this->proj_data_info_ptr = pdi_ptr;
 
-  Array<3,elemT>::grow(range);
+  Array<3,elemT>::resize(range);
 	
+}
+
+
+/*!
+  This makes sure that the new Array dimensions are the same as those in the
+  ProjDataInfo member.
+*/
+template <typename elemT>
+void 
+SegmentBySinogram<elemT>::
+grow(const IndexRange<3>& range)
+{
+  resize(range);
 }
 
 /*************************************
