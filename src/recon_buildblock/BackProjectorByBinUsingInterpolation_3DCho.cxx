@@ -68,7 +68,7 @@
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "VoxelsOnCartesianGrid.h"
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-
+#include "tomo/round.h"
 /*
   KT 22/05/98 drastic revision
 
@@ -144,7 +144,7 @@ START_NAMESPACE_TOMO
 static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
-                              const int image_rad,
+                              const float image_rad,
 			      //const float d_sl,
 			      const double d_sl,
                               int&X1, int&Y1, int& Z1,
@@ -218,7 +218,15 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   assert(fabs(image.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
   /* FOV radius in voxel units */
-  const int image_rad = (int)((image.get_x_size()-1)/2);
+  // KT 20/06/2001 change calculation of FOV such that even sized image will work
+  const float fovrad_in_mm   = 
+    min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
+	(min(image.get_max_y(), -image.get_min_y()))*image.get_voxel_size().y()); 
+  const float image_rad = fovrad_in_mm/image.get_voxel_size().x();
+  //const int image_rad = (int)((image.get_x_size()-1)/2);
+
+  //KTxxx allow min_z!=0 in all comparisons below
+  const int minplane =  image.get_min_z(); 
   const int maxplane =  image.get_max_z(); 
    
 
@@ -584,7 +592,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       const double twodsdz=2*ds*dz;
       const double twodsdz2=2*ds*(dz+0.5);
 
-      if (Z>=0&&Z<=maxplane) {
+      if (Z>=minplane&&Z<=maxplane) {
 	// original image[Z][Y][X]+=UpA0+dsdz*K3A0
 	image[Z][Y][X]+= (dz <= 0.25) ? A0a0 : UpA0+twodsdz*K3A0;
         image[Z][X][-Y]+=(dz <= 0.25) ? A2a0 : UpA2 +twodsdz*K3A2;
@@ -594,7 +602,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
         }
 
       }
-      if (Zplus>=0&&Zplus<=maxplane) {
+      if (Zplus>=minplane&&Zplus<=maxplane) {
         image[Zplus][Y][X]+=(dz >= 0.25) ? A0a1 : UpA0+twodsdz2*K3A0 +ZplusKorrA0;
         image[Zplus][X][-Y]+=(dz >= 0.25) ? A2a1 : UpA2+twodsdz2*K3A2 +ZplusKorrA2;
 	if (do_s_symmetry) {
@@ -603,7 +611,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
         }
 
       }
-      if (Q>=0&&Q<=maxplane) {
+      if (Q>=minplane&&Q<=maxplane) {
         image[Q][Y][X]+=(dz <= 0.25) ? A0na0 : UpA0n +twodsdz*K3A0n;
         image[Q][X][-Y]+=(dz <= 0.25) ? A2na0 : UpA2n +twodsdz*K3A2n;
         if (do_s_symmetry) {
@@ -611,7 +619,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	  image[Q][-X][Y]+=(dz <= 0.25) ? P2a0 : UpP2 +twodsdz*K3P2;
         }
       }
-      if (Qmin>=0&&Qmin<=maxplane) {
+      if (Qmin>=minplane&&Qmin<=maxplane) {
         image[Qmin][Y][X]+=(dz >= 0.25) ? A0na1 : UpA0n+twodsdz2*K3A0n + ZplusKorrA0n;
         image[Qmin][X][-Y]+=(dz >= 0.25) ? A2na1 : UpA2n+twodsdz2*K3A2n + ZplusKorrA2n;
         if (do_s_symmetry) {
@@ -629,7 +637,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       const double dsdz=ds*dz;
       const double dsdz2=ds*(dz+ring_unit);
 
-      if (Z>=0&&Z<=maxplane) {
+      if (Z>=minplane&&Z<=maxplane) {
         image[Z][Y][X]+=UpA0+dsdz*K3A0;
         image[Z][X][-Y]+=UpA2+dsdz*K3A2;
 	if (do_s_symmetry) {
@@ -640,7 +648,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       }
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-      if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5) {
+      if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5) {
         image[Zplus][Y][X]+=UpA0+dsdz2*K3A0+ZplusKorrA0;
         image[Zplus][X][-Y]+=UpA2+dsdz2*K3A2+ZplusKorrA2;
 	if (do_s_symmetry) {
@@ -649,7 +657,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
         }
 
       }
-      if (Q>=0&&Q<=maxplane) {
+      if (Q>=minplane&&Q<=maxplane) {
         image[Q][Y][X]+=UpA0n+dsdz*K3A0n;
         image[Q][X][-Y]+=UpA2n+dsdz*K3A2n;
         if (do_s_symmetry) {
@@ -659,7 +667,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       }
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-      if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5) {
+      if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5) {
         image[Qmin][Y][X]+=UpA0n+dsdz2*K3A0n+ZplusKorrA0n;
         image[Qmin][X][-Y]+=UpA2n+dsdz2*K3A2n+ZplusKorrA2n;
         if (do_s_symmetry) {
@@ -675,36 +683,36 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       
       TMP1=ds*K3A0;
       TMP2=UpA0+dz*TMP1;
-      if (Z>=0&&Z<=maxplane)
+      if (Z>=minplane&&Z<=maxplane)
 	image[Z][Y][X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+       if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	image[Zplus][Y][X]+=TMP2+ring_unit*TMP1+ZplusKorrA0;
       TMP1=ds*K3A2;
       TMP2=UpA2+dz*TMP1;
-      if (Z>=0&&Z<=maxplane)
+      if (Z>=minplane&&Z<=maxplane)
 	image[Z][X][-Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+       if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	image[Zplus][X][-Y]+=TMP2+ring_unit*TMP1+ZplusKorrA2;
   
       TMP1=ds*K3A0n;
       TMP2=UpA0n+dz*TMP1;
-      if (Q>=0&&Q<=maxplane)
+      if (Q>=minplane&&Q<=maxplane)
 	image[Q][Y][X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-      if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+      if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	image[Qmin][Y][X]+=TMP2+ring_unit*TMP1+ZplusKorrA0n;
       TMP1=ds*K3A2n;
       TMP2=UpA2n+dz*TMP1;
-      if (Q>=0&&Q<=maxplane)
+      if (Q>=minplane&&Q<=maxplane)
 	image[Q][X][-Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-      if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+      if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	image[Qmin][X][-Y]+=TMP2+ring_unit*TMP1+ZplusKorrA2n;
   
       // KT 14/05/98 changed X!=-Y to s!=0 || ds!=0 to make it work for view != view45
@@ -712,36 +720,36 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       if (s!=0 || fabs(ds) > epsilon) {
 	TMP1=ds*K3P0;
 	TMP2=UpP0+dz*TMP1;
-	if (Q>=0&&Q<=maxplane)
+	if (Q>=minplane&&Q<=maxplane)
 	  image[Q][-Y][-X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+ 	if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	  image[Qmin][-Y][-X]+=TMP2+ring_unit*TMP1+ZplusKorrP0;
 	TMP1=ds*K3P2;
 	TMP2=UpP2+dz*TMP1;
-	if (Q>=0&&Q<=maxplane)
+	if (Q>=minplane&&Q<=maxplane)
 	  image[Q][-X][Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+ 	if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	  image[Qmin][-X][Y]+=TMP2+ring_unit*TMP1+ZplusKorrP2;
   
 	TMP1=ds*K3P0n;
 	TMP2=UpP0n+dz*TMP1;
-	if (Z>=0&&Z<=maxplane)
+	if (Z>=minplane&&Z<=maxplane)
 	  image[Z][-Y][-X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+ 	if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	  image[Zplus][-Y][-X]+=TMP2+ring_unit*TMP1+ZplusKorrP0n;
 	TMP1=ds*K3P2n;
 	TMP2=UpP2n+dz*TMP1;
-	if (Z>=0&&Z<=maxplane)
+	if (Z>=minplane&&Z<=maxplane)
 	  image[Z][-X][Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+ 	if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	  image[Zplus][-X][Y]+=TMP2+ring_unit*TMP1+ZplusKorrP2n;
       }
 #endif // ALTERNATIVE 
@@ -1008,7 +1016,14 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   int X,Y,Z,Q;
 
   /* FOV radius in voxel units */
-  const int image_rad = (int)((image.get_x_size()-1)/2);
+  // KT 20/06/2001 change calculation of FOV such that even sized image will work
+  const float fovrad_in_mm   = 
+    min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
+	(min(image.get_max_y(), -image.get_min_y()))*image.get_voxel_size().y()); 
+  const float image_rad = fovrad_in_mm/image.get_voxel_size().x();
+  //const int image_rad = (int)((image.get_x_size()-1)/2);
+  // KT XXX
+  const int minplane =  image.get_min_z(); 
   const int maxplane =  image.get_max_z(); 
    
 
@@ -1574,7 +1589,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       const bool do_s_symmetry = (s!=0 || fabs(ds) > epsilon);
 
 
-      if (Z>=0&&Z<=maxplane) {
+      if (Z>=minplane&&Z<=maxplane) {
         image[Z][Y][X]+=(dz <= 0.25) ? A0a0 : UpA0 +twodsdz*K3A0;
         image[Z][X][-Y]+=(dz <= 0.25) ? A2a0 : UpA2 +twodsdz*K3A2;
         image[Z][X][Y]+=(dz <= 0.25) ? A1na0 : UpA1n +twodsdz*K3A1n;
@@ -1587,7 +1602,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	    image[Z][-X][Y]+=(dz <= 0.25) ? P2na0 : UpP2n +twodsdz*K3P2n;
 	  }
       }
-      if (Zplus>=0&&Zplus<=maxplane) {
+      if (Zplus>=minplane&&Zplus<=maxplane) {
         image[Zplus][Y][X]+=(dz >= 0.25) ? A0a1 : UpA0 +twodsdz2*K3A0+ZplusKorrA0;
         image[Zplus][X][-Y]+=(dz >= 0.25) ? A2a1 : UpA2 +twodsdz2*K3A2+ZplusKorrA2;
         image[Zplus][X][Y]+=(dz >= 0.25) ? A1na1 : UpA1n +twodsdz2*K3A1n+ZplusKorrA1n;
@@ -1600,7 +1615,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	    image[Zplus][-X][Y]+=(dz >= 0.25) ? P2na1 : UpP2n +twodsdz2*K3P2n+ZplusKorrP2n;
 	  }
       }
-      if (Q>=0&&Q<=maxplane) {
+      if (Q>=minplane&&Q<=maxplane) {
         image[Q][Y][-X]+=(dz <= 0.25) ? A3a0 : UpA3 +twodsdz*K3A3;
         image[Q][Y][X]+=(dz <= 0.25) ? A0na0 : UpA0n +twodsdz*K3A0n;
         image[Q][X][-Y]+=(dz <= 0.25) ? A2na0 : UpA2n +twodsdz*K3A2n;
@@ -1613,7 +1628,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	    image[Q][-Y][X]+=(dz <= 0.25) ? P3na0 : UpP3n +twodsdz*K3P3n;
 	  }
       }
-      if (Qmin>=0&&Qmin<=maxplane) {
+      if (Qmin>=minplane&&Qmin<=maxplane) {
         image[Qmin][Y][-X]+=(dz >= 0.25) ? A3a1 : UpA3 +twodsdz2*K3A3+ZplusKorrA3;
         image[Qmin][Y][X]+=(dz >= 0.25) ? A0na1 : UpA0n +twodsdz2*K3A0n+ZplusKorrA0n;
         image[Qmin][X][-Y]+=(dz >= 0.25) ? A2na1 : UpA2n +twodsdz2*K3A2n+ZplusKorrA2n;
@@ -1633,7 +1648,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       // KT 16/06/98 changed check ds!=0 to fabs(ds)>epsilon for better rounding control
       const bool do_s_symmetry = (s!=0 || fabs(ds) > epsilon);
 
-      if (Z>=0&&Z<=maxplane) {
+      if (Z>=minplane&&Z<=maxplane) {
         image[Z][Y][X]+=UpA0+dsdz*K3A0;
         image[Z][X][-Y]+=UpA2+dsdz*K3A2;
         image[Z][X][Y]+=UpA1n+dsdz*K3A1n;
@@ -1646,7 +1661,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	    image[Z][-X][Y]+=UpP2n+dsdz*K3P2n;
 	  }
       }
-      if (Zplus>=0&&Zplus<=maxplane) {
+      if (Zplus>=minplane&&Zplus<=maxplane) {
         image[Zplus][Y][X]+=UpA0+dsdz2*K3A0+ZplusKorrA0;
         image[Zplus][X][-Y]+=UpA2+dsdz2*K3A2+ZplusKorrA2;
         image[Zplus][X][Y]+=UpA1n+dsdz2*K3A1n+ZplusKorrA1n;
@@ -1659,7 +1674,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	    image[Zplus][-X][Y]+=UpP2n+dsdz2*K3P2n+ZplusKorrP2n;
 	  }
       }
-      if (Q>=0&&Q<=maxplane) {
+      if (Q>=minplane&&Q<=maxplane) {
         image[Q][Y][-X]+=UpA3+dsdz*K3A3;
         image[Q][Y][X]+=UpA0n+dsdz*K3A0n;
         image[Q][X][-Y]+=UpA2n+dsdz*K3A2n;
@@ -1672,7 +1687,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	    image[Q][-Y][X]+=UpP3n+dsdz*K3P3n;
 	  }
       }
-      if (Qmin>=0&&Qmin<=maxplane) {
+      if (Qmin>=minplane&&Qmin<=maxplane) {
         image[Qmin][Y][-X]+=UpA3+dsdz2*K3A3+ZplusKorrA3;
         image[Qmin][Y][X]+=UpA0n+dsdz2*K3A0n+ZplusKorrA0n;
         image[Qmin][X][-Y]+=UpA2n+dsdz2*K3A2n+ZplusKorrA2n;
@@ -1689,73 +1704,73 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       double TMP1,TMP2;
       TMP1=ds*K3A0;
       TMP2=UpA0+dz*TMP1;
-      if (Z>=0&&Z<=maxplane)
+      if (Z>=minplane&&Z<=maxplane)
 	image[Z][Y][X]+=TMP2;
 
       
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+       if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	image[Zplus][Y][X]+=TMP2+ring_unit*TMP1+ZplusKorrA0;
        
       TMP1=ds*K3A1;
       TMP2=UpA1+dz*TMP1;
-      if (Q>=0&&Q<=maxplane)
+      if (Q>=minplane&&Q<=maxplane)
 	image[Q][X][Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+       if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	image[Qmin][X][Y]+=TMP2+ring_unit*TMP1+ZplusKorrA1;
   
        
       TMP1=ds*K3A2;
       TMP2=UpA2+dz*TMP1;
-      if (Z>=0&&Z<=maxplane)
+      if (Z>=minplane&&Z<=maxplane)
 	image[Z][X][-Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+       if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	image[Zplus][X][-Y]+=TMP2+ring_unit*TMP1+ZplusKorrA2;
       TMP1=ds*K3A3;
       TMP2=UpA3+dz*TMP1;
-      if (Q>=0&&Q<=maxplane)
+      if (Q>=minplane&&Q<=maxplane)
 	image[Q][Y][-X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+       if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	image[Qmin][Y][-X]+=TMP2+ring_unit*TMP1+ZplusKorrA3;
   
       TMP1=ds*K3A0n;
       TMP2=UpA0n+dz*TMP1;
-      if (Q>=0&&Q<=maxplane)
+      if (Q>=minplane&&Q<=maxplane)
 	image[Q][Y][X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+       if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	image[Qmin][Y][X]+=TMP2+ring_unit*TMP1+ZplusKorrA0n;
       TMP1=ds*K3A1n;
       TMP2=UpA1n+dz*TMP1;
-      if (Z>=0&&Z<=maxplane)
+      if (Z>=minplane&&Z<=maxplane)
 	image[Z][X][Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+       if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	image[Zplus][X][Y]+=TMP2+ring_unit*TMP1+ZplusKorrA1n;
       TMP1=ds*K3A2n;
       TMP2=UpA2n+dz*TMP1;
-      if (Q>=0&&Q<=maxplane)
+      if (Q>=minplane&&Q<=maxplane)
 	image[Q][X][-Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+       if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
 	image[Qmin][X][-Y]+=TMP2+ring_unit*TMP1+ZplusKorrA2n;
       TMP1=ds*K3A3n;
       TMP2=UpA3n+dz*TMP1;
-      if (Z>=0&&Z<=maxplane)
+      if (Z>=minplane&&Z<=maxplane)
 	image[Z][Y][-X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
-       if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+       if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
 	image[Zplus][Y][-X]+=TMP2+ring_unit*TMP1+ZplusKorrA3n;
 
       // KT 16/06/98 changed check ds!=0 to fabs(ds)>epsilon for better rounding control
@@ -1763,68 +1778,68 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 	{
 	  TMP1=ds*K3P0;
 	  TMP2=UpP0+dz*TMP1;
-	  if (Q>=0&&Q<=maxplane)
+	  if (Q>=minplane&&Q<=maxplane)
             image[Q][-Y][-X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+ 	  if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
             image[Qmin][-Y][-X]+=TMP2+ring_unit*TMP1+ZplusKorrP0;
 	  TMP1=ds*K3P1;
 	  TMP2=UpP1+dz*TMP1;
-	  if (Z>=0&&Z<=maxplane)
+	  if (Z>=minplane&&Z<=maxplane)
             image[Z][-X][-Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+ 	  if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
             image[Zplus][-X][-Y]+=TMP2+ring_unit*TMP1+ZplusKorrP1;
 	  TMP1=ds*K3P2;
 	  TMP2=UpP2+dz*TMP1;
-	  if (Q>=0&&Q<=maxplane)
+	  if (Q>=minplane&&Q<=maxplane)
             image[Q][-X][Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+ 	  if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
             image[Qmin][-X][Y]+=TMP2+ring_unit*TMP1+ZplusKorrP2;
 	  TMP1=ds*K3P3;
 	  TMP2=UpP3+dz*TMP1;
-	  if (Z>=0&&Z<=maxplane)
+	  if (Z>=minplane&&Z<=maxplane)
             image[Z][-Y][X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+ 	  if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
             image[Zplus][-Y][X]+=TMP2+ring_unit*TMP1+ZplusKorrP3;
   
 	  TMP1=ds*K3P0n;
 	  TMP2=UpP0n+dz*TMP1;
-	  if (Z>=0&&Z<=maxplane)
+	  if (Z>=minplane&&Z<=maxplane)
             image[Z][-Y][-X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+ 	  if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
             image[Zplus][-Y][-X]+=TMP2+ring_unit*TMP1+ZplusKorrP0n;
 	  TMP1=ds*K3P1n;
 	  TMP2=UpP1n+dz*TMP1;
-	  if (Q>=0&&Q<=maxplane)
+	  if (Q>=minplane&&Q<=maxplane)
             image[Q][-X][-Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+ 	  if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
             image[Qmin][-X][-Y]+=TMP2+ring_unit*TMP1+ZplusKorrP1n;
 	  TMP1=ds*K3P2n;
 	  TMP2=UpP2n+dz*TMP1;
-	  if (Z>=0&&Z<=maxplane)
+	  if (Z>=minplane&&Z<=maxplane)
             image[Z][-X][Y]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Zplus>=0&&Zplus<=maxplane && ring_unit==0.5)
+ 	  if (Zplus>=minplane&&Zplus<=maxplane && ring_unit==0.5)
             image[Zplus][-X][Y]+=TMP2+ring_unit*TMP1+ZplusKorrP2n;
 	  TMP1=ds*K3P3n;
 	  TMP2=UpP3n+dz*TMP1;
-	  if (Q>=0&&Q<=maxplane)
+	  if (Q>=minplane&&Q<=maxplane)
             image[Q][-Y][X]+=TMP2;
           //CL SPAN 15/09/98 Add one more condition in order to skip the statement in case of span data
           //as there is only one voxel in the beam in slice unit
- 	  if (Qmin>=0&&Qmin<=maxplane && ring_unit==0.5)
+ 	  if (Qmin>=minplane&&Qmin<=maxplane && ring_unit==0.5)
             image[Qmin][-Y][X]+=TMP2+ring_unit*TMP1+ZplusKorrP3n;
 	}
     
@@ -2151,7 +2166,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
-                              const int image_rad, const double d_sl,
+                              const float image_rad, const double d_sl,
                               int&X1, int&Y1, int& Z1,
                               double& ds, double& dz, double& dzhor, double& dzvert,			      
                               const int num_planes_per_virtual_ring,
@@ -2185,7 +2200,7 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
      pixel close to the border is not selected.
      Not that anyone cares...
   */
-  int rpix = (image_rad-1);		 /* Radius of target image in voxel units */
+  int rpix = round(image_rad-1);		 /* Radius of target image in voxel units */
   const double r2 = rpix * rpix * d_xy * d_xy; /* Radius squared of target image in mm^2 */
    
  

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,9 +11,8 @@
   \author Claire Labbe
   \author PARAPET project
   
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 #include "VoxelsOnCartesianGrid.h"
@@ -22,7 +21,15 @@
 #include "Array.h"
 #include "IndexRange4D.h"
 #include "ProjDataInfoCylindricalArcCorr.h"
+#include "tomo/round.h"
+#include "shared_ptr.h"
+#include "zoom.h"
+#include <memory>
+#include <math.h>
 
+#ifndef TOMO_NAMESPACES
+using std::auto_ptr;
+#endif
 
 START_NAMESPACE_TOMO
 
@@ -39,7 +46,7 @@ JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool 
 
 const DataSymmetriesForViewSegmentNumbers *
  BackProjectorByBinUsingInterpolation::get_symmetries_used() const
-{ return symmetries_ptr; }
+{ return symmetries_ptr.get(); }
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
@@ -74,43 +81,86 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 		    const int min_tangential_pos_num, const int max_tangential_pos_num)
 
 {
+  const ProjDataInfoCylindricalArcCorr* proj_data_info_cyl_ptr = 
+    dynamic_cast<const ProjDataInfoCylindricalArcCorr*> (viewgrams.get_proj_data_info_ptr());
+ 
+
+  if ( proj_data_info_cyl_ptr==NULL)
+  {
+    error("\nBackProjectorByBinUsingInterpolation:\n"
+	  "can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
+  }
   // this will throw an exception when the cast does not work
   VoxelsOnCartesianGrid<float>& image = 
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(density);
   // TODO somehow check symmetry object in RelatedViewgrams
+  assert(viewgrams.get_num_viewgrams() >= 2);
 
+
+  const float zoom = 
+    proj_data_info_cyl_ptr->get_tangential_sampling()/
+    image.get_voxel_size().x();
+
+  // zoom the viewgrams if necessary
+  // if zoom==1 there's no need for allocation of a new
+  // RelatedViewgrams object, so we do some trickery with a pointer
+  const RelatedViewgrams<float>* zoomed_viewgrams_ptr = 0;
+  // to make it exception-proof we need to use an auto_ptr or shared_ptr
+  shared_ptr<RelatedViewgrams<float> > zoomed_viewgrams_sptr;
+  int zoomed_min_tangential_pos_num = 
+    static_cast<int>(ceil(min_tangential_pos_num*zoom));
+  int zoomed_max_tangential_pos_num = 
+    static_cast<int>(ceil(max_tangential_pos_num*zoom));
+
+  if (fabs(zoom-1) > 1E-4)
+    {
+      // store it in an auto_ptr, such that it gets cleaned up correctly
+      zoomed_viewgrams_sptr = 
+	new RelatedViewgrams<float>(viewgrams);
+      zoomed_viewgrams_ptr = zoomed_viewgrams_sptr.get();
+
+      zoom_viewgrams(*zoomed_viewgrams_sptr, zoom, 
+		    zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
+    }
+  else
+    {
+      // we cannot use the auto_ptr here, as that would try to free the 
+      // viewgrams object
+      zoomed_viewgrams_ptr = &viewgrams;
+    }
+
+#ifndef NDEBUG
+  // This variable is only used in assert() at the moment, so avoid compiler 
+  // warning by defining it only when in debug mode
   const int num_views = viewgrams.get_proj_data_info_ptr()->get_num_views();
-  RelatedViewgrams<float>::const_iterator r_viewgrams_iter = viewgrams.begin();
-  if (viewgrams.get_basic_segment_num() == 0)
+#endif
+  RelatedViewgrams<float>::const_iterator r_viewgrams_iter = zoomed_viewgrams_ptr->begin();
+  if (zoomed_viewgrams_ptr->get_basic_segment_num() == 0)
     {
       // no segment symmetry
       const Viewgram<float> & pos_view =*r_viewgrams_iter;
       r_viewgrams_iter++;
       const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;
 
-      //const Viewgram<float> & pos_view = viewgrams.get_viewgram_reference(0); 
-      // const Viewgram<float> & pos_plus90 = viewgrams.get_viewgram_reference(1); 
       const Viewgram<float> neg_view = pos_view.get_empty_copy(); 
       const Viewgram<float> neg_plus90 = pos_plus90.get_empty_copy(); 
-      if (viewgrams.get_num_viewgrams() == 2)
+      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 2)
 	{
 	  back_project_view_plus_90_and_delta(
 					      image,
 					      pos_view, neg_view, pos_plus90, neg_plus90, 
 					      min_axial_pos_num, max_axial_pos_num,
-					      min_tangential_pos_num, max_tangential_pos_num);
+					      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
 
 	}
       else
 	{
-	  assert(viewgrams.get_basic_view_num() != 0);
-	  assert(viewgrams.get_basic_view_num() != num_views/4);
+	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
+	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != num_views/4);
 	  r_viewgrams_iter++;//2 
 	  const Viewgram<float> & pos_min180 =*r_viewgrams_iter;
 	  r_viewgrams_iter++;//3
 	  const Viewgram<float> & pos_min90 =*r_viewgrams_iter;
-	  // const Viewgram<float> & pos_min180 = viewgrams.get_viewgram_reference(2); 
-	  //const Viewgram<float> & pos_min90 = viewgrams.get_viewgram_reference(3); 
 	  const Viewgram<float> neg_min180 = pos_min180.get_empty_copy(); 
 	  const Viewgram<float> neg_min90 = pos_min90.get_empty_copy();     
 
@@ -119,7 +169,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 				      pos_view, neg_view, pos_plus90, neg_plus90, 
 				      pos_min180, neg_min180, pos_min90, neg_min90,
 				      min_axial_pos_num, max_axial_pos_num,
-				      min_tangential_pos_num, max_tangential_pos_num);
+				      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
 
 	}
     }
@@ -134,23 +184,19 @@ actual_back_project(DiscretisedDensity<3,float>& density,
       const Viewgram<float> & pos_plus90 =*r_viewgrams_iter;//2
       r_viewgrams_iter++;
       const Viewgram<float> & neg_plus90 =*r_viewgrams_iter;//3
-      //const Viewgram<float> & pos_view = viewgrams.get_viewgram_reference(0); 
-      //const Viewgram<float> & neg_view = viewgrams.get_viewgram_reference(1); 
-      //const Viewgram<float> & pos_plus90 = viewgrams.get_viewgram_reference(2); 
-      //const Viewgram<float> & neg_plus90 = viewgrams.get_viewgram_reference(3); 
-      if (viewgrams.get_num_viewgrams() == 4)
+      if (zoomed_viewgrams_ptr->get_num_viewgrams() == 4)
 	{
 	  back_project_view_plus_90_and_delta(
 					      image,
 					      pos_view, neg_view, pos_plus90, neg_plus90, 
 					      min_axial_pos_num, max_axial_pos_num,
-					      min_tangential_pos_num, max_tangential_pos_num);
+					      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
 
 	}
       else
 	{
-	  assert(viewgrams.get_basic_view_num() != 0);
-	  assert(viewgrams.get_basic_view_num() != num_views/4);
+	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != 0);
+	  assert(zoomed_viewgrams_ptr->get_basic_view_num() != num_views/4);
 	  r_viewgrams_iter++;//4
 	  const Viewgram<float> & pos_min180 =*r_viewgrams_iter;
 	  r_viewgrams_iter++;//5
@@ -160,21 +206,15 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 	  r_viewgrams_iter++;//7
 	  const Viewgram<float> & neg_min90 =*r_viewgrams_iter;
 
-	  //  const Viewgram<float> & pos_min180 = viewgrams.get_viewgram_reference(4); 
-	  //  const Viewgram<float> & neg_min180 = viewgrams.get_viewgram_reference(5); 
-	  //  const Viewgram<float> & pos_min90 = viewgrams.get_viewgram_reference(6); 
-	  //  const Viewgram<float> & neg_min90 = viewgrams.get_viewgram_reference(7);     
-
 	  back_project_all_symmetries(
 				      image,
 				      pos_view, neg_view, pos_plus90, neg_plus90, 
 				      pos_min180, neg_min180, pos_min90, neg_min90,
 				      min_axial_pos_num, max_axial_pos_num,
-				      min_tangential_pos_num, max_tangential_pos_num);
+				      zoomed_min_tangential_pos_num, zoomed_max_tangential_pos_num);
 
 	}
     }
-
 
 }
 
@@ -192,12 +232,12 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 void 
 BackProjectorByBinUsingInterpolation::
   back_project_2D_all_symmetries(const Sinogram<float> &sino, PETPlane &image, int view,
-                                    const int min_bin_num, const int max_bin_num)
+                                    const int min_tang_pos, const int max_tang_pos)
 {
   start_timers();
 
   assert(sino.get_min_bin() == - sino.get_max_bin());
-  assert(min_bin_num == -max_bin_num);
+  assert(min_tang_pos == -max_tang_pos);
   assert(image.get_min_x() == - image.get_max_x());
   assert(image.get_min_y() == - image.get_max_y());
   assert(view < sino.get_num_views() / 4);
@@ -221,7 +261,7 @@ BackProjectorByBinUsingInterpolation::
   
   ProjDataForIntBP projs;
   //TODO loop is wrong
-  for (int s = 0; s <= max_bin_num - 2; s++)
+  for (int s = 0; s <= max_tang_pos - 2; s++)
   {
     const float jac = jacobian(0, s+ 0.5);
     
@@ -254,12 +294,12 @@ BackProjectorByBinUsingInterpolation::
 void 
 BackProjectorByBinUsingInterpolation::
   back_project_2D_view_plus_90(const Sinogram<float> &sino, PETPlane &image, int view,
-                               const int min_bin_num, const int max_bin_num)
+                               const int min_tang_pos, const int max_tang_pos)
 {
   start_timers();
 
   assert(sino.get_min_bin() == - sino.get_max_bin());
-  assert(min_bin_num == -max_bin_num);
+  assert(min_tang_pos == -max_tang_pos);
   assert(image.get_min_x() == - image.get_max_x());
   assert(image.get_min_y() == - image.get_max_y());
   assert(view < sino.get_num_views() / 2);
@@ -283,7 +323,7 @@ BackProjectorByBinUsingInterpolation::
   
   ProjDataForIntBP projs;
   // TODO loop is wrong
-  for (int s = 0; s <= max_bin_num - 2; s++)
+  for (int s = 0; s <= max_tang_pos - 2; s++)
   {
     const float jac = jacobian(0, s+ 0.5);
     
@@ -344,9 +384,15 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   assert(min_tangential_pos_num >= pos_view.get_min_tangential_pos_num());
   assert(max_tangential_pos_num <= pos_view.get_max_tangential_pos_num());
 
-  assert(min_tangential_pos_num == - max_tangential_pos_num);
+  //KTxxx not necessary anymore
+  //assert(min_tangential_pos_num == - max_tangential_pos_num);
 
-  int segment_num = pos_view.get_segment_num();
+#ifndef NDEBUG
+  // This variable is only used in assert() at the moment, so avoid compiler 
+  // warning by defining it only when in debug mode
+  const int segment_num = pos_view.get_segment_num();
+#endif
+
   
   assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
   assert(pos_view.get_view_num() > 0);
@@ -362,28 +408,53 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   assert(neg_min90.get_view_num() == pos_min90.get_view_num());
   assert(neg_min180.get_view_num() == pos_min180.get_view_num());
 
-  //KTxxx not necessary anymore assert(pos_view.get_num_bins() ==image.get_x_size());
-  assert(image.get_min_x() == -image.get_max_x());
-  assert(image.get_voxel_size().x() ==(proj_data_info_cyl_ptr)->get_tangential_sampling());
-  // TODO rewrite code a bit to remove this assertion
-  assert(image.get_min_z() == 0);
+  //KTxxx not necessary anymore 
+  //assert(image.get_min_x() == -image.get_max_x());
+  // KTXXX converted from assert to error
+  if(image.get_voxel_size().x() !=(proj_data_info_cyl_ptr)->get_tangential_sampling()
+     || image.get_voxel_size().y() !=(proj_data_info_cyl_ptr)->get_tangential_sampling())
+      error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size\n");
+      
+  // KTxxx not necessary anymore
+  //assert(image.get_min_z() == 0);
 
   if (pos_view.get_view_num() == 0 || pos_view.get_view_num() == nviews/4)
     {
       error("BackProjectorByBinUsingInterpolation: back_project_all_symmetries called with view 0 or 45 degrees.\n");
     }
 
-  // TODO remove -2, it's there because otherwise find_start_values goes  crazy
-  const int max_bin_num_to_use =
-    min(max_tangential_pos_num, image.get_max_x()-2);
+  // KT XXX
+  const float fovrad_in_mm   = 
+    min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
+	(min(image.get_max_y(), -image.get_min_y()))*image.get_voxel_size().y()); 
+  const int fovrad = round(fovrad_in_mm/image.get_voxel_size().x());
+  // TODO remove -2, it's there because otherwise find_start_values() goes crazy.
+  const int max_tang_pos_to_use =
+    min(max_tangential_pos_num, fovrad-2);
+  const int min_tang_pos_to_use =
+    max(min_tangential_pos_num, -(fovrad-2));
+
+  const int max_abs_tang_pos_to_use = 
+    max(max_tang_pos_to_use, -min_tang_pos_to_use);
+  const int min_abs_tang_pos_to_use = 
+    max_tang_pos_to_use<0 ?
+      -max_tang_pos_to_use
+    : (min_tang_pos_to_use>0 ?
+       min_tang_pos_to_use
+       : 0 );
+
 
   start_timers();
 
   const JacobianForIntBP jacobian(proj_data_info_cyl_ptr, use_exact_Jacobian_now);
 
   Array<4, float > Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
-  const float cphi = cos(pos_view.get_view_num() * _PI / nviews);
-  const float sphi = sin(pos_view.get_view_num() * _PI / nviews);
+  // a variable which will be used in the loops over s to get s_in_mm
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
+
+  // KT 20/06/2001 rewrite using get_phi  
+  const float cphi = cos(proj_data_info_cyl_ptr->get_phi(bin));
+  const float sphi = sin(proj_data_info_cyl_ptr->get_phi(bin));
  
 
   // Do a loop over all axial positions. However, because we use interpolation of
@@ -398,7 +469,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
       if (ax_pos==min_axial_pos_num-1 || ax_pos==max_axial_pos_num)
 	Proj2424.fill(0);
       
-      for (int s = 0; s <= max_bin_num_to_use; s++) {
+      for (int s = min_abs_tang_pos_to_use; s <= max_abs_tang_pos_to_use; s++) {
 	const int splus = s + 1;
 	const int ms = -s;
 	const int msplus = -splus;
@@ -406,76 +477,76 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	// now I have to check if ax_pos is in allowable range
         if (ax_pos >= min_axial_pos_num)
 	{
-	Proj2424[0][0][0][1] = pos_view[ax_pos][s];
-	Proj2424[0][0][0][2] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos][splus];
-	Proj2424[0][1][0][3] = pos_min90[ax_pos][s];
-	Proj2424[0][1][0][4] = splus>max_bin_num_to_use ? 0 : pos_min90[ax_pos][splus];
-	Proj2424[0][2][0][1] = pos_plus90[ax_pos][s];
-	Proj2424[0][2][0][2] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos][splus];
-	Proj2424[0][3][0][3] = pos_min180[ax_pos][s];
-	Proj2424[0][3][0][4] = splus>max_bin_num_to_use ? 0 : pos_min180[ax_pos][splus];
-	Proj2424[1][0][0][3] = neg_view[ax_pos][s];
-	Proj2424[1][0][0][4] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos][splus];
-	Proj2424[1][1][0][1] = neg_min90[ax_pos][s];
-	Proj2424[1][1][0][2] = splus>max_bin_num_to_use ? 0 : neg_min90[ax_pos][splus];
-	Proj2424[1][2][0][3] = neg_plus90[ax_pos][s];
-	Proj2424[1][2][0][4] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos][splus];
-	Proj2424[1][3][0][1] = neg_min180[ax_pos][s];
-	Proj2424[1][3][0][2] = splus>max_bin_num_to_use ? 0 : neg_min180[ax_pos][splus];
+	Proj2424[0][0][0][1] = s>max_tang_pos_to_use ? 0 : pos_view[ax_pos][s];
+	Proj2424[0][0][0][2] = splus>max_tang_pos_to_use ? 0 : pos_view[ax_pos][splus];
+	Proj2424[0][1][0][3] = s>max_tang_pos_to_use ? 0 : pos_min90[ax_pos][s];
+	Proj2424[0][1][0][4] = splus>max_tang_pos_to_use ? 0 : pos_min90[ax_pos][splus];
+	Proj2424[0][2][0][1] = s>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos][s];
+	Proj2424[0][2][0][2] = splus>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos][splus];
+	Proj2424[0][3][0][3] = s>max_tang_pos_to_use ? 0 : pos_min180[ax_pos][s];
+	Proj2424[0][3][0][4] = splus>max_tang_pos_to_use ? 0 : pos_min180[ax_pos][splus];
+	Proj2424[1][0][0][3] = s>max_tang_pos_to_use ? 0 : neg_view[ax_pos][s];
+	Proj2424[1][0][0][4] = splus>max_tang_pos_to_use ? 0 : neg_view[ax_pos][splus];
+	Proj2424[1][1][0][1] = s>max_tang_pos_to_use ? 0 : neg_min90[ax_pos][s];
+	Proj2424[1][1][0][2] = splus>max_tang_pos_to_use ? 0 : neg_min90[ax_pos][splus];
+	Proj2424[1][2][0][3] = s>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos][s];
+	Proj2424[1][2][0][4] = splus>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos][splus];
+	Proj2424[1][3][0][1] = s>max_tang_pos_to_use ? 0 : neg_min180[ax_pos][s];
+	Proj2424[1][3][0][2] = splus>max_tang_pos_to_use ? 0 : neg_min180[ax_pos][splus];
 
-	Proj2424[0][0][1][3] = pos_view[ax_pos][ms];
-	Proj2424[0][0][1][4] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos][msplus];
-	Proj2424[0][1][1][1] = pos_min90[ax_pos][ms];
-	Proj2424[0][1][1][2] = splus>max_bin_num_to_use ? 0 : pos_min90[ax_pos][msplus];
-	Proj2424[0][2][1][3] = pos_plus90[ax_pos][ms];
-	Proj2424[0][2][1][4] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos][msplus];
-	Proj2424[0][3][1][1] = pos_min180[ax_pos][ms];
-	Proj2424[0][3][1][2] = splus>max_bin_num_to_use ? 0 : pos_min180[ax_pos][msplus];
-	Proj2424[1][0][1][1] = neg_view[ax_pos][ms];
-	Proj2424[1][0][1][2] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos][msplus];
-	Proj2424[1][1][1][3] = neg_min90[ax_pos][ms];
-	Proj2424[1][1][1][4] = splus>max_bin_num_to_use ? 0 : neg_min90[ax_pos][msplus];
-	Proj2424[1][2][1][1] = neg_plus90[ax_pos][ms];
-	Proj2424[1][2][1][2] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos][msplus];
-	Proj2424[1][3][1][3] = neg_min180[ax_pos][ms];
-	Proj2424[1][3][1][4] = splus>max_bin_num_to_use ? 0 : neg_min180[ax_pos][msplus];
+	Proj2424[0][0][1][3] = ms<min_tang_pos_to_use ? 0 : pos_view[ax_pos][ms];
+	Proj2424[0][0][1][4] = msplus<min_tang_pos_to_use ? 0 : pos_view[ax_pos][msplus];
+	Proj2424[0][1][1][1] = ms<min_tang_pos_to_use ? 0 : pos_min90[ax_pos][ms];
+	Proj2424[0][1][1][2] = msplus<min_tang_pos_to_use ? 0 : pos_min90[ax_pos][msplus];
+	Proj2424[0][2][1][3] = ms<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos][ms];
+	Proj2424[0][2][1][4] = msplus<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos][msplus];
+	Proj2424[0][3][1][1] = ms<min_tang_pos_to_use ? 0 : pos_min180[ax_pos][ms];
+	Proj2424[0][3][1][2] = msplus<min_tang_pos_to_use ? 0 : pos_min180[ax_pos][msplus];
+	Proj2424[1][0][1][1] = ms<min_tang_pos_to_use ? 0 : neg_view[ax_pos][ms];
+	Proj2424[1][0][1][2] = msplus<min_tang_pos_to_use ? 0 : neg_view[ax_pos][msplus];
+	Proj2424[1][1][1][3] = ms<min_tang_pos_to_use ? 0 : neg_min90[ax_pos][ms];
+	Proj2424[1][1][1][4] = msplus<min_tang_pos_to_use ? 0 : neg_min90[ax_pos][msplus];
+	Proj2424[1][2][1][1] = ms<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos][ms];
+	Proj2424[1][2][1][2] = msplus<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos][msplus];
+	Proj2424[1][3][1][3] = ms<min_tang_pos_to_use ? 0 : neg_min180[ax_pos][ms];
+	Proj2424[1][3][1][4] = msplus<min_tang_pos_to_use ? 0 : neg_min180[ax_pos][msplus];
 	}
 
 	if (ax_pos_plus <= max_axial_pos_num)
 	{
-	Proj2424[0][0][0][3] = pos_view[ax_pos_plus][s];
-	Proj2424[0][0][0][4] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos_plus][splus];
-	Proj2424[0][1][0][1] = pos_min90[ax_pos_plus][s];
-	Proj2424[0][1][0][2] = splus>max_bin_num_to_use ? 0 : pos_min90[ax_pos_plus][splus];
-        Proj2424[0][2][0][3] = pos_plus90[ax_pos_plus][s];
-	Proj2424[0][2][0][4] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos_plus][splus];
-	Proj2424[0][3][0][1] = pos_min180[ax_pos_plus][s];
-	Proj2424[0][3][0][2] = splus>max_bin_num_to_use ? 0 : pos_min180[ax_pos_plus][splus];
-	Proj2424[1][0][0][1] = neg_view[ax_pos_plus][s];
-	Proj2424[1][0][0][2] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos_plus][splus];
-	Proj2424[1][1][0][3] = neg_min90[ax_pos_plus][s];
-	Proj2424[1][1][0][4] = splus>max_bin_num_to_use ? 0 : neg_min90[ax_pos_plus][splus];
-	Proj2424[1][2][0][1] = neg_plus90[ax_pos_plus][s];
-	Proj2424[1][2][0][2] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos_plus][splus];
-	Proj2424[1][3][0][3] = neg_min180[ax_pos_plus][s];
-	Proj2424[1][3][0][4] = splus>max_bin_num_to_use ? 0 : neg_min180[ax_pos_plus][splus];
+	Proj2424[0][0][0][3] = s>max_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][s];
+	Proj2424[0][0][0][4] = splus>max_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][splus];
+	Proj2424[0][1][0][1] = s>max_tang_pos_to_use ? 0 : pos_min90[ax_pos_plus][s];
+	Proj2424[0][1][0][2] = splus>max_tang_pos_to_use ? 0 : pos_min90[ax_pos_plus][splus];
+        Proj2424[0][2][0][3] = s>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][s];
+	Proj2424[0][2][0][4] = splus>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][splus];
+	Proj2424[0][3][0][1] = s>max_tang_pos_to_use ? 0 : pos_min180[ax_pos_plus][s];
+	Proj2424[0][3][0][2] = splus>max_tang_pos_to_use ? 0 : pos_min180[ax_pos_plus][splus];
+	Proj2424[1][0][0][1] = s>max_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][s];
+	Proj2424[1][0][0][2] = splus>max_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][splus];
+	Proj2424[1][1][0][3] = s>max_tang_pos_to_use ? 0 : neg_min90[ax_pos_plus][s];
+	Proj2424[1][1][0][4] = splus>max_tang_pos_to_use ? 0 : neg_min90[ax_pos_plus][splus];
+	Proj2424[1][2][0][1] = s>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][s];
+	Proj2424[1][2][0][2] = splus>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][splus];
+	Proj2424[1][3][0][3] = s>max_tang_pos_to_use ? 0 : neg_min180[ax_pos_plus][s];
+	Proj2424[1][3][0][4] = splus>max_tang_pos_to_use ? 0 : neg_min180[ax_pos_plus][splus];
 
-	Proj2424[0][0][1][1] = pos_view[ax_pos_plus][ms];
-	Proj2424[0][0][1][2] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos_plus][msplus];
-	Proj2424[0][1][1][3] = pos_min90[ax_pos_plus][ms];
-	Proj2424[0][1][1][4] = splus>max_bin_num_to_use ? 0 : pos_min90[ax_pos_plus][msplus];
-	Proj2424[0][2][1][1] = pos_plus90[ax_pos_plus][ms];
-	Proj2424[0][2][1][2] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos_plus][msplus];
-	Proj2424[0][3][1][3] = pos_min180[ax_pos_plus][ms];
-	Proj2424[0][3][1][4] = splus>max_bin_num_to_use ? 0 : pos_min180[ax_pos_plus][msplus];
-	Proj2424[1][0][1][3] = neg_view[ax_pos_plus][ms];
-	Proj2424[1][0][1][4] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos_plus][msplus];
-	Proj2424[1][1][1][1] = neg_min90[ax_pos_plus][ms];
-	Proj2424[1][1][1][2] = splus>max_bin_num_to_use ? 0 : neg_min90[ax_pos_plus][msplus];
-	Proj2424[1][2][1][3] = neg_plus90[ax_pos_plus][ms];
-	Proj2424[1][2][1][4] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos_plus][msplus];
-	Proj2424[1][3][1][1] = neg_min180[ax_pos_plus][ms];
-	Proj2424[1][3][1][2] = splus>max_bin_num_to_use ? 0 : neg_min180[ax_pos_plus][msplus];
+	Proj2424[0][0][1][1] = ms<min_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][ms];
+	Proj2424[0][0][1][2] = msplus<min_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][msplus];
+	Proj2424[0][1][1][3] = ms<min_tang_pos_to_use ? 0 : pos_min90[ax_pos_plus][ms];
+	Proj2424[0][1][1][4] = msplus<min_tang_pos_to_use ? 0 : pos_min90[ax_pos_plus][msplus];
+	Proj2424[0][2][1][1] = ms<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][ms];
+	Proj2424[0][2][1][2] = msplus<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][msplus];
+	Proj2424[0][3][1][3] = ms<min_tang_pos_to_use ? 0 : pos_min180[ax_pos_plus][ms];
+	Proj2424[0][3][1][4] = msplus<min_tang_pos_to_use ? 0 : pos_min180[ax_pos_plus][msplus];
+	Proj2424[1][0][1][3] = ms<min_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][ms];
+	Proj2424[1][0][1][4] = msplus<min_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][msplus];
+	Proj2424[1][1][1][1] = ms<min_tang_pos_to_use ? 0 : neg_min90[ax_pos_plus][ms];
+	Proj2424[1][1][1][2] = msplus<min_tang_pos_to_use ? 0 : neg_min90[ax_pos_plus][msplus];
+	Proj2424[1][2][1][3] = ms<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][ms];
+	Proj2424[1][2][1][4] = msplus<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][msplus];
+	Proj2424[1][3][1][1] = ms<min_tang_pos_to_use ? 0 : neg_min180[ax_pos_plus][ms];
+	Proj2424[1][3][1][2] = msplus<min_tang_pos_to_use ? 0 : neg_min180[ax_pos_plus][msplus];
 	}
 	const int segment_num = pos_view.get_segment_num();
 
@@ -484,20 +555,13 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
         Proj2424 *= jacobian(delta, s+ 0.5);
 
-	// TODO replace all this junk by things from DataSymmetries
-	// find correspondence between ring coordinates and image coordinates:
+	// find correspondence between ax_pos coordinates and image coordinates:
 	// z = num_planes_per_virtual_ring * ring + virtual_ring_offset
-	// compute the offset by matching up the centre of the scanner 
-	// in the 2 coordinate systems
+	// KT 20/06/2001 rewrote using saymmetries_ptr
 	const float num_planes_per_virtual_ring =
-           proj_data_info_cyl_ptr->get_axial_sampling(segment_num)/image.get_voxel_size().z();
-	const float num_virtual_rings_per_physical_ring =
-           proj_data_info_cyl_ptr->get_ring_spacing()/proj_data_info_cyl_ptr->get_axial_sampling(segment_num);
+          symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
 	const float virtual_ring_offset = 
-	  (image.get_max_z() + image.get_min_z())/2.F
-	  - num_planes_per_virtual_ring
-	    *(pos_view.get_max_axial_pos_num()+ num_virtual_rings_per_physical_ring*delta 
-	      + pos_view.get_min_axial_pos_num())/2;
+	  symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
 
         if (use_piecewise_linear_interpolation_now && num_planes_per_virtual_ring>1)
           piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
@@ -556,28 +620,34 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   assert(min_tangential_pos_num >= pos_view.get_min_tangential_pos_num());
   assert(max_tangential_pos_num <= pos_view.get_max_tangential_pos_num());
 
-  assert(min_tangential_pos_num == - max_tangential_pos_num);
+  // KTXXX not necessary anymore
+  //assert(min_tangential_pos_num == - max_tangential_pos_num);
+#ifndef NDEBUG
+  // These variables are only used in assert() at the moment, so avoid compiler 
+  // warning by defining it only when in debug mode
   const int segment_num = pos_view.get_segment_num();
+  const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views();
+#endif
 
   assert(proj_data_info_cyl_ptr ->get_average_ring_difference(segment_num) >= 0);
 
   assert(pos_view.get_view_num()>=0);
   assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
 
-  const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views();
 
   assert(pos_plus90.get_view_num() == nviews / 2 + pos_view.get_view_num());
   assert(neg_view.get_view_num() == pos_view.get_view_num());
   assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
 
 
-  assert(image.get_min_x() == -image.get_max_x());
-  assert(image.get_voxel_size().x() == proj_data_info_cyl_ptr ->get_tangential_sampling());
-  // TODO rewrite code a bit to remove this assertion
-  assert(image.get_min_z() == 0);
-  // TODO remove -2, it's there because otherwise find_start_values() goes crazy.
-  const int max_bin_num_to_use =
-    min(max_tangential_pos_num, image.get_max_x()-2);
+  // KTXXX not necessary anymore
+  // assert(image.get_min_x() == -image.get_max_x());
+  // KTXXX converted from assert to error
+  if(image.get_voxel_size().x() !=(proj_data_info_cyl_ptr)->get_tangential_sampling()
+     || image.get_voxel_size().y() !=(proj_data_info_cyl_ptr)->get_tangential_sampling())
+      error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size\n");
+  // KTXXX not necessary anymore
+  //assert(image.get_min_z() == 0);
 
   start_timers();
 
@@ -585,9 +655,33 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   Array<4, float > Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
 
-  const float cphi = cos(pos_view.get_view_num() * _PI / nviews);
-  const float sphi = sin(pos_view.get_view_num() * _PI / nviews);
+  // a variable which will be used in the loops over s to get s_in_mm
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
+
+  // KT 20/06/2001 rewrite using get_phi  
+  const float cphi = cos(proj_data_info_cyl_ptr->get_phi(bin));
+  const float sphi = sin(proj_data_info_cyl_ptr->get_phi(bin));
  
+  // KT XXX
+  const float fovrad_in_mm   = 
+    min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
+	(min(image.get_max_y(), -image.get_min_y()))*image.get_voxel_size().y()); 
+  const int fovrad = round(fovrad_in_mm/image.get_voxel_size().x());
+  // TODO remove -2, it's there because otherwise find_start_values() goes crazy.
+  const int max_tang_pos_to_use =
+    min(max_tangential_pos_num, fovrad-2);
+  const int min_tang_pos_to_use =
+    max(min_tangential_pos_num, -(fovrad-2));
+
+
+  const int max_abs_tang_pos_to_use = 
+    max(max_tang_pos_to_use, -min_tang_pos_to_use);
+  const int min_abs_tang_pos_to_use = 
+    max_tang_pos_to_use<0 ?
+      -max_tang_pos_to_use
+    : (min_tang_pos_to_use>0 ?
+       min_tang_pos_to_use
+       : 0 );
 
   // Do a loop over all axial positions. However, because we use interpolation of
   // a 'beam', each step takes elements from ax_pos and ax_pos+1. So, data at
@@ -600,7 +694,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
       // We have to fill with 0, as not all elements are set in the lines below
       if (ax_pos==min_axial_pos_num-1 || ax_pos==max_axial_pos_num)
 	Proj2424.fill(0);
-      for (int s = 0; s <= max_bin_num_to_use; s++) {
+      for (int s = min_abs_tang_pos_to_use; s <= max_abs_tang_pos_to_use; s++) {
 	const int splus = s + 1;
 	const int ms = -s;
 	const int msplus = -splus;
@@ -608,44 +702,44 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	// now I have to check if ax_pos is in allowable range
 	if (ax_pos >= min_axial_pos_num)
 	  {
-	    Proj2424[0][0][0][1] = pos_view[ax_pos][s];
-	    Proj2424[0][0][0][2] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos][splus];
-	    Proj2424[0][2][0][1] = pos_plus90[ax_pos][s];
-	    Proj2424[0][2][0][2] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos][splus];
-	    Proj2424[1][0][0][3] = neg_view[ax_pos][s];
-	    Proj2424[1][0][0][4] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos][splus];
-	    Proj2424[1][2][0][3] = neg_plus90[ax_pos][s];
-	    Proj2424[1][2][0][4] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos][splus];
+	    Proj2424[0][0][0][1] = s>max_tang_pos_to_use ? 0 : pos_view[ax_pos][s];
+	    Proj2424[0][0][0][2] = splus>max_tang_pos_to_use ? 0 : pos_view[ax_pos][splus];
+	    Proj2424[0][2][0][1] = s>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos][s];
+	    Proj2424[0][2][0][2] = splus>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos][splus];
+	    Proj2424[1][0][0][3] = s>max_tang_pos_to_use ? 0 : neg_view[ax_pos][s];
+	    Proj2424[1][0][0][4] = splus>max_tang_pos_to_use ? 0 : neg_view[ax_pos][splus];
+	    Proj2424[1][2][0][3] = s>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos][s];
+	    Proj2424[1][2][0][4] = splus>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos][splus];
 
-	    Proj2424[0][0][1][3] = pos_view[ax_pos][ms];
-	    Proj2424[0][0][1][4] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos][msplus];
-	    Proj2424[0][2][1][3] = pos_plus90[ax_pos][ms];
-	    Proj2424[0][2][1][4] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos][msplus];
-	    Proj2424[1][0][1][1] = neg_view[ax_pos][ms];
-	    Proj2424[1][0][1][2] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos][msplus];
-	    Proj2424[1][2][1][1] = neg_plus90[ax_pos][ms];
-	    Proj2424[1][2][1][2] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos][msplus];
+	    Proj2424[0][0][1][3] = ms<min_tang_pos_to_use ? 0 : pos_view[ax_pos][ms];
+	    Proj2424[0][0][1][4] = msplus<min_tang_pos_to_use ? 0 : pos_view[ax_pos][msplus];
+	    Proj2424[0][2][1][3] = ms<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos][ms];
+	    Proj2424[0][2][1][4] = msplus<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos][msplus];
+	    Proj2424[1][0][1][1] = ms<min_tang_pos_to_use ? 0 : neg_view[ax_pos][ms];
+	    Proj2424[1][0][1][2] = msplus<min_tang_pos_to_use ? 0 : neg_view[ax_pos][msplus];
+	    Proj2424[1][2][1][1] = ms<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos][ms];
+	    Proj2424[1][2][1][2] = msplus<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos][msplus];
 	  }
 
         if (ax_pos_plus <= max_axial_pos_num)
 	  {
-	    Proj2424[0][0][0][3] = pos_view[ax_pos_plus][s];
-	    Proj2424[0][0][0][4] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos_plus][splus];
-	    Proj2424[0][2][0][3] = pos_plus90[ax_pos_plus][s];
-	    Proj2424[0][2][0][4] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos_plus][splus];
-	    Proj2424[1][0][0][1] = neg_view[ax_pos_plus][s];
-	    Proj2424[1][0][0][2] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos_plus][splus];
-	    Proj2424[1][2][0][1] = neg_plus90[ax_pos_plus][s];
-	    Proj2424[1][2][0][2] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos_plus][splus];
+	    Proj2424[0][0][0][3] = s>max_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][s];
+	    Proj2424[0][0][0][4] = splus>max_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][splus];
+	    Proj2424[0][2][0][3] = s>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][s];
+	    Proj2424[0][2][0][4] = splus>max_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][splus];
+	    Proj2424[1][0][0][1] = s>max_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][s];
+	    Proj2424[1][0][0][2] = splus>max_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][splus];
+	    Proj2424[1][2][0][1] = s>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][s];
+	    Proj2424[1][2][0][2] = splus>max_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][splus];
 
-	    Proj2424[0][0][1][1] = pos_view[ax_pos_plus][ms];
-	    Proj2424[0][0][1][2] = splus>max_bin_num_to_use ? 0 : pos_view[ax_pos_plus][msplus];
-	    Proj2424[0][2][1][1] = pos_plus90[ax_pos_plus][ms];
-	    Proj2424[0][2][1][2] = splus>max_bin_num_to_use ? 0 : pos_plus90[ax_pos_plus][msplus];
-	    Proj2424[1][0][1][3] = neg_view[ax_pos_plus][ms];
-	    Proj2424[1][0][1][4] = splus>max_bin_num_to_use ? 0 : neg_view[ax_pos_plus][msplus];
-	    Proj2424[1][2][1][3] = neg_plus90[ax_pos_plus][ms];
-	    Proj2424[1][2][1][4] = splus>max_bin_num_to_use ? 0 : neg_plus90[ax_pos_plus][msplus];
+	    Proj2424[0][0][1][1] = ms<min_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][ms];
+	    Proj2424[0][0][1][2] = msplus<min_tang_pos_to_use ? 0 : pos_view[ax_pos_plus][msplus];
+	    Proj2424[0][2][1][1] = ms<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][ms];
+	    Proj2424[0][2][1][2] = msplus<min_tang_pos_to_use ? 0 : pos_plus90[ax_pos_plus][msplus];
+	    Proj2424[1][0][1][3] = ms<min_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][ms];
+	    Proj2424[1][0][1][4] = msplus<min_tang_pos_to_use ? 0 : neg_view[ax_pos_plus][msplus];
+	    Proj2424[1][2][1][3] = ms<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][ms];
+	    Proj2424[1][2][1][4] = msplus<min_tang_pos_to_use ? 0 : neg_plus90[ax_pos_plus][msplus];
 	  }
 
 	const int segment_num = pos_view.get_segment_num();
@@ -654,22 +748,13 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
         // take s+.5 as average for the beam (it's slowly varying in s anyway)
         Proj2424 *= jacobian(delta, s+ 0.5);
         
-	
-        // TODO replace by things from DataSymmetries
-	// find correspondence between ring coordinates and image coordinates:
+	// find correspondence between ax_pos coordinates and image coordinates:
 	// z = num_planes_per_virtual_ring * ring + virtual_ring_offset
-	// compute the offset by matching up the centre of the scanner 
-	// in the 2 coordinate systems
+	// KT 20/06/2001 rewrote using symmetries_ptr
 	const float num_planes_per_virtual_ring =
-          proj_data_info_cyl_ptr->get_axial_sampling(segment_num)/image.get_voxel_size().z();
-        const float num_virtual_rings_per_physical_ring =
-          proj_data_info_cyl_ptr->get_ring_spacing()/proj_data_info_cyl_ptr->get_axial_sampling(segment_num);
-        
-        const float virtual_ring_offset = 
-          (image.get_max_z() + image.get_min_z())/2.F
-          - num_planes_per_virtual_ring
-          *(pos_view.get_max_axial_pos_num()+ num_virtual_rings_per_physical_ring*delta 
-	    + pos_view.get_min_axial_pos_num())/2;
+          symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
+	const float virtual_ring_offset = 
+	  symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
 
         if (use_piecewise_linear_interpolation_now && num_planes_per_virtual_ring>1)
           piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90( Proj2424, image, 
