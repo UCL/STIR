@@ -49,12 +49,12 @@ enforce initial positivity condition:=0
 
 prior type := FilterRootPrior
 FilterRootPrior Parameters:=
-  penalisation factor := 1
+  penalisation factor := .2
   Filter type:= median
   Median Filter Parameters :=
   mask radius x := 1   
   mask radius y := 1
-  mask radius z := 1
+  mask radius z := 0
   End Median Filter Parameters:=
 END FilterRootPrior Parameters:=
 map model := multiplicative
