@@ -1,66 +1,89 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 
 /*!
 \file
-
+\ingroup utilities
 \brief process sinogram data
 
 \author Matthew Jacobson
+\author Sanida Mustafovic and Kris Thielemans (conversion to new design)
 \author PARAPET project
 
-\date    00/03/11
-\version 1.3
+\date    $Date$
+\version $Revision$
 
 This utility programme processes (interfile) sinogram data 
 (maximum number of segments as input). It can
- - display by View - by Segment
- - do operations between two data
- - do operations with a scalar     
+<ul>
+ <li> display by View - by Segment
+ <li> do operations between two data
+ <li> do operations with a scalar     
+ </ul>
 */
 
-#include "pet_common.h"
+// TODO get rid of 2 copies of the segments ByView and BySinogram
+// TODO get rid of pos, neg segments (can now do each one separately)
 
-#include <numeric>
 
-#include "imagedata.h"
-#include "TensorFunction.h" 
+
+
+#include "ProjDataFromStream.h"
+#include "SegmentByView.h"
+#include "SegmentBySinogram.h"
+#include "Sinogram.h"
+#include "Viewgram.h"
+
+//#include "Scanner.h"
+#include "ArrayFunction.h" 
 #include "recon_array_functions.h"
 #include "display.h"
 #include "interfile.h"
 #include "utilities.h"
+#include "shared_ptr.h"
 
-#define ZERO_TOL 0.0000001
+#include <numeric>
+#include <fstream> 
+#include <iostream> 
+
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::fstream;
+#endif
+
+
 
 START_NAMESPACE_TOMO
 
 // in relation with show_math_menu()
+// _menu HAS to be the last option
 enum options { _quit, _display_view, _display_sino, _absdiff, _add_sino, _subtract_sino, 
                _mult_sino, _div_sino, _add_scalar, _mult_scalar, _div_scalar, _stats,
-               _pos_ind, _trunc_neg, _trim, _zero_ends, _pad_ends, _restart, _menu};
+               _pos_ind, _trunc_neg, _trim, _zero_ends, /*_pad_ends,*/ _restart, _menu};
 
 //*********************** prototypes
 
 // operations between two datas
-void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &sino2,
+void do_math(enum options operation, SegmentByView<float>& sino1,SegmentByView<float> &sino2,
              float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized);
 
 // display, operations with a scalar, others
-void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar=0.0);
+void do_math(enum options operation, SegmentByView<float>& sino1, SegmentBySinogram<float>& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar=0.0);
 
 void make_buffer_header(const char *data_filename,const char *header_filename, 
-                        PETSinogramOfVolume& input_sino, int limit_segments, 
+                        ProjData& input_sino, int limit_segments, 
 			NumericType::Type output_type=NumericType::FLOAT);
 
 void show_math_menu();
 
 float pos_indicate(float x);
 
-PETSinogramOfVolume ask_interfile_PSOV(char *input_query);
+shared_ptr<ProjData> ask_proj_data(char *input_query);
 //*********************** functions
 
-void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &sino2,
+void do_math(enum options operation, SegmentByView<float>& sino1,SegmentByView<float> &sino2,
              float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized)
 {
     switch(operation) {
@@ -102,27 +125,34 @@ void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &s
             divide_array(sino1,sino2);
             break;
         }
+	default: 
+	  error("binmath: error in switch: operation invalid\n");
+
     } // end switch
 }
 
 
-void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
+void do_math(enum options operation, SegmentByView<float>& sino1, SegmentBySinogram<float>& seg_sinogram, float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
 {
     switch(operation) {
         case _display_view: { //display math buffer by View
-            display(sino1, sino1.find_max());
-            if(ask("Extract viewgram?",false)) {
-                int vs=sino1.get_min_view();
-                int ve=sino1.get_max_view();
+	    char title[100];
+	    sprintf(title, "Segment %d", sino1.get_segment_num());
+            display(sino1,sino1.find_max(), title);
+            if(ask("Display single viewgram?",false)) {
+                int vs=sino1.get_min_view_num();
+                int ve=sino1.get_max_view_num();
                 int view_num=ask_num("Which viewgram?",vs,ve,vs);
        
-                PETViewgram viewgram=sino1.get_viewgram(view_num);
+                Viewgram<float> viewgram=sino1.get_viewgram(view_num);
                 display(viewgram);
             }
             break;
         }
 
         case _display_sino: { //display math buffer by sinogram
+	    char title[100];
+	    sprintf(title, "Segment %d", sino1.get_segment_num());
             display(seg_sinogram, seg_sinogram.find_max());
             break;
         }
@@ -157,27 +187,45 @@ void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogr
             break;
         }
         
-        case _pos_ind: in_place_apply_function(sino1,pos_indicate); //positive indicator
- 
-        case _trim: truncate_rim(sino1, (int) scalar); //trim rim
+        case _pos_ind:
+	  {
+	    in_place_apply_function(sino1,pos_indicate); //positive indicator
+	    break;
+	  }
+                     
+        case _trim: 
+	  {
+	    truncate_rim(sino1, (int) scalar); //trim rim
+	    break;
+	  }
 
-        case _trunc_neg: in_place_apply_function(sino1,neg_trunc);
-    
+        case _trunc_neg: 
+	  {
+	    in_place_apply_function(sino1,neg_trunc);
+	    break;
+	  }
+
+	default: 
+	  error("binmath: error in switch: operation invalid\n");	  
     } //end switch
 }
 
-PETSinogramOfVolume ask_interfile_PSOV(char *input_query)
+shared_ptr<ProjData> ask_proj_data(char *input_query)
 {
     char filename[max_filename_length];
 
     system("ls *hs");
     ask_filename_with_extension(filename, input_query, ".hs");
 
-    return read_interfile_PSOV(filename);
+    return 
+       ProjData::read_from_file(filename);
 }
 
 void show_math_menu()
 {
+  assert(_menu == 17);
+
+  // KT disabled Pad end planes: 16. Pad end planes of segment 0 \n
     cerr<<"\n\
 BINMATH MENU:\n\
 0. Quit \n\
@@ -196,118 +244,10 @@ BINMATH MENU:\n\
 13. Truncate negatives \n\
 14. Trim end bins\n\
 15. Zero end planes of segment 0 \n\
-16. Pad end planes of segment 0 \n\
-17. Restart\n\
-18. Redisplay menu"<<endl;
+16. Restart\n\
+17. Redisplay menu"<<endl;
 }
 
-
-void make_buffer_header(const char *data_filename,const char *header_filename,
-                        PETSinogramOfVolume& input_sino, int limit_segments,
-			NumericType::Type output_type)
-{
-    // TODO replace by write_interfile_PSOV_header
-
-    int nrings=input_sino.scan_info.get_num_rings();
-    ofstream header;
-    header.open(header_filename, ios::out);
-    if(!header) {
-        cerr<<endl<<"Could not create header"<<endl;
-        exit(1);
-    }
-
-    header<<"!INTERFILE  := \n";
-    header<<"name of data file := "<<data_filename;
-    header<<"\n";
-    header<<"originating system := ";
-    //Get the Scanner name
-    //TODO From PETScannerInfo
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::RPT) header<<"PRT-1 \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) header<<"Advance \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E953) header<<"ECAT 953 \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E951) header<<"ECAT 951 \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E966) header<<"EXACT3D \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::HZLR) header<<"Positron HZL/R \n";
-    else { 
-        error("Tried to create header for unsupported scanner type");
-    }
-
-    bool merges_seg0=(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance ||
-		      input_sino.scan_info.get_scanner().type==PETScannerInfo::HZLR )? true:false;
-
-    header<<"!GENERAL DATA := \n";
-    header<<"!GENERAL IMAGE DATA := \n";
-    header<<"!type of data := PET \n";
-    header<<"imagedata byte order := " <<
-      (ByteOrder::get_native_order() == ByteOrder::little_endian 
-       ? "LITTLEENDIAN"
-       : "BIGENDIAN")<< "\n";
-    header<<"!PET STUDY (General) := \n";
-    header<<"!PET data type := Emission \n";
-    header<<"!number format := "<<((output_type==NumericType::FLOAT)?"float":"signed integer") <<" \n";
-    header<<"!number of bytes per pixel := "<<((output_type==NumericType::FLOAT)? "4":"2") <<" \n"; 
-    header<<"number of dimensions := 4 \n";
-    header<<"!matrix size [1] := " <<2*limit_segments+1<<"\n"; 
-    header<<"matrix axis label [1] := segment \n"; 
-    header<<"!matrix size [2] := "<<input_sino.scan_info.get_num_views()<<"\n"; 
-    header<<"matrix axis label [2] := view \n";
-//number of rings per segment
-    header<<"!matrix size [3] := {";
-    if(merges_seg0) {
-        header<<2*nrings-1;
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-(i+1)<<", "<<nrings-(i+1);
-    }
-    else {
-        header<< nrings;
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-i<<", "<<nrings-i;
-    }
-    header<<"}\n";
-//end -- number of  rings per segment
-    header<<"matrix axis label [3] := z \n"; 
-    header<<"!matrix size [4] := "<< input_sino.scan_info.get_num_bins()<<"\n";
-    header<<"matrix axis label [4] := bin \n";
-//min ring differences per segment
-    header<<"minimum ring difference per segment := {";
-    if(merges_seg0) {
-        header<<"-1";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
-    }
-    else {
-        header<<"0";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<i<<", "<<-i;
-    }
-    header<<"}\n";
-//end min ring differences
-
-//max ring differences per segment
-    header<<"maximum ring difference per segment := {";
-    if(merges_seg0) {
-        header<<"1";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
-    }
-    else {
-        header<<"0";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<i<<", "<<-i;
-    }
-    header<<"}\n";
-//end max ring differences
-    header<<"number of rings := "<<nrings<<"\n"; 
-    header<<"number of detectors per ring := "<<2*input_sino.scan_info.get_num_views()<<"\n";
-
-    header.setf(ios::fixed);
-
-    header<<"ring diameter (cm) := "<<2*input_sino.scan_info.get_ring_radius()/10.<<"\n";
-    header<<"distance between rings (cm) := "<<input_sino.scan_info.get_ring_spacing()/10.<<"\n";
-    header<<"bin size (cm) := "<< input_sino.scan_info.get_bin_size()/10.<<"\n";
-    header<<"view offset (degrees) := " <<input_sino.scan_info.get_scanner().intrinsic_tilt<<"\n";
-
-    header.unsetf(ios::fixed);
-
-    header<<"number of time frames := 1\n"; 
-    header<<"!END OF INTERFILE :="<<"\n";
-
-    header.close();
-}
 
 
 float pos_indicate(float x)
@@ -319,35 +259,38 @@ END_NAMESPACE_TOMO
 
 //********************** main
 
+
+
 USING_NAMESPACE_TOMO
+
 
 int main(int argc, char *argv[])
 {
-    bool quit=false,reload=false,abort_display;
+    bool quit=false,reload=false;
 
-    PETSinogramOfVolume *first_operand =  NULL;
+    shared_ptr<ProjData> first_operand =  NULL;
+    ProjDataFromStream *output_proj_data=  NULL;
         // Start
     do { //(re)start from here
-        ofstream new_sino;
-        char output_buffer_root[max_filename_length];
-        char output_buffer_header[max_filename_length];
-        char output_buffer_filename[max_filename_length];
         bool buffer_opened=false;
+        char output_buffer_header[max_filename_length];
 
         if (first_operand==NULL) 
 	  {
 
 	    if (reload)  
-	      first_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Input sinogram"));
+	      // changed the ask... returns ponter 
+	      first_operand=ask_proj_data("Input sinogram"); //new
+	      //ProjDataFromStream(ask_proj_data("Input sinogram"));
 
 	    else // just starting
 	      { 
 		if(argc<2)
 		  {
 		    cerr<<endl<<"Usage: binmath <header file name> (*.hs)"<<endl<<endl;
-		    first_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Input sinogram"));
+		    first_operand=ask_proj_data("Input sinogram"); 
 		  }
-		else first_operand= new PETSinogramOfVolume(read_interfile_PSOV(argv[1]));
+		else first_operand= ProjData::read_from_file(argv[1]);
 	  
 		reload=false;
 
@@ -356,16 +299,7 @@ int main(int argc, char *argv[])
 	  }
 	 
 
-	int limit_segments=ask_num("Maximum absolute segment number to process: ", 0, first_operand->get_max_segment(), first_operand->get_max_segment() );
-
-	NumericType::Type output_type=NumericType::FLOAT;
-	float scale_factor;
-
-	if(ask("Output in signed integers?",false))
-	  {
-	    output_type=NumericType::SHORT;
-	    scale_factor = ask_num("Scale Factor",0.F,10000.F,1.F);
-	  }
+	int limit_segments=ask_num("Maximum absolute segment number to process: ", 0, first_operand->get_max_segment_num(), first_operand->get_max_segment_num() );
 
 
         do { //math operations loop
@@ -373,36 +307,59 @@ int main(int argc, char *argv[])
             show_math_menu();
             enum options operation;
 
-            operation= (enum options) ask_num("Choose Operation: ",0,17,17);
+            operation= 
+	      static_cast<options>( 
+	        ask_num("Choose Operation: ",
+	                                     0,static_cast<int>(_menu), static_cast<int>(_menu))
+	        );
             if (operation==_menu) continue; //redisplay menu
             if (operation==_restart || operation==_quit) { //restart or quit
-	   
-	      if(new_sino!=NULL) new_sino.close();
-              assert(first_operand != NULL);
-	      delete first_operand; 
-	      first_operand=NULL;
+#if 1
+	       assert(output_proj_data == NULL);
+#else
+	      // enable this when using the output buffer for reading/writing at the same time	     
+	      if (output_proj_data != NULL)
+	      {
+		delete output_proj_data;
+		output_proj_data = NULL;
+	      }
+#endif
+ 	      first_operand=NULL;
 	      if(operation==_restart) reload=true;
 	      if(operation==_quit) quit=true;
 	      break;
             }
   
             if (operation!= _display_view && operation!= _display_sino 
-                && operation!= _stats &&!buffer_opened) {  //operation result is a sinogram
-                ask_filename_with_extension(output_buffer_root, "Output to which file (without extension)?", "");
-                sprintf(output_buffer_filename, "%s.%s",output_buffer_root , "s");
-                sprintf(output_buffer_header, "%s.%s",output_buffer_root , "hs");
-                make_buffer_header(output_buffer_filename, output_buffer_header, *first_operand, limit_segments, output_type); 
-                // first_operand->get_max_segment()
-                open_write_binary(new_sino, output_buffer_filename);
-                buffer_opened=true;
+                && operation!= _stats &&!buffer_opened) 
+	    {
+	      //operation result is a sinogram
+
+              char output_buffer_root[max_filename_length];
+              char output_buffer_filename[max_filename_length];
+              
+	      ask_filename_with_extension(output_buffer_root, "Output to which file (without extension)?", "");
+	      sprintf(output_buffer_filename, "%s.%s",output_buffer_root , "s");
+	      // TODO relies on write_basic_interfile_PDFS_header using .hs extension
+	      sprintf(output_buffer_header, "%s.%s",output_buffer_root , "hs");		
+	      fstream * new_sino_ptr = new fstream;
+	      open_write_binary(*new_sino_ptr, output_buffer_filename);
+	      ProjDataInfo * pdi_ptr =
+		first_operand->get_proj_data_info_ptr()->clone();		                         
+	      pdi_ptr->reduce_segment_range(-limit_segments, limit_segments);
+	      output_proj_data = 
+		new ProjDataFromStream(pdi_ptr, new_sino_ptr);
+	      write_basic_interfile_PDFS_header(output_buffer_filename, *output_proj_data);
+	      buffer_opened=true;
             }
 
-            PETSinogramOfVolume *second_operand= NULL;
+            shared_ptr<ProjData> second_operand= NULL;
             float *scalar=NULL;
 
             if(operation==_absdiff || operation==_add_sino || operation==_subtract_sino || 
                operation==_mult_sino || operation==_div_sino) //requiring 2nd sinogram operand
-                second_operand= new PETSinogramOfVolume(ask_interfile_PSOV("Second sinogram operand" ));
+                second_operand= ask_proj_data("Second sinogram operand" );
+	
             if(operation==_add_scalar || operation==_mult_scalar || operation==_div_scalar ||
                operation==_trim || operation==_zero_ends ) { //requiring scalar operand
                 bool need_int=false;
@@ -410,13 +367,13 @@ int main(int argc, char *argv[])
        
                 if(operation==_trim) {
                     need_int=true;
-                    upper_bound=(float) (first_operand->scan_info.get_num_bins()/2 +1);
+                    upper_bound=(float) (first_operand->get_proj_data_info_ptr()->get_num_tangential_poss()/2 +1);
                     lower_bound=deflt=0.0;
                 }
 
                 if(operation==_zero_ends) {
                     need_int=true;
-                    upper_bound=(float) (first_operand->scan_info.get_num_rings()/2+1);
+                    upper_bound=(float) (first_operand->get_proj_data_info_ptr()->get_num_axial_poss(0)/2+1);
                     lower_bound=deflt=1.0;
                 }
 
@@ -427,55 +384,71 @@ int main(int argc, char *argv[])
             }
 // first do segment 0
             { 
-                PETSegmentByView seg1=first_operand->get_segment_view_copy(0);
-                PETSegmentBySinogram seg_sinogram=first_operand->get_segment_sino_copy(0);
-            
+                SegmentByView<float> seg1=first_operand->get_segment_by_view(0);
+                SegmentBySinogram<float> seg_sinogram=first_operand->get_segment_by_sinogram(0);
+#if 0            
+		// TODO grow statement is wrong
+		// also this can't work anymore, as set_segment would complain about incompatible sizes
 		if(operation == _pad_ends)
 		  {
 
-		    bool merges_seg0=(seg1.scan_info.get_scanner().type==PETScannerInfo::Advance || seg1.scan_info.get_scanner().type==PETScannerInfo::HZLR )? true:false;
+		    // TODO this is wrong, as other scanners could have merged segment 0 as well
+		    // find out from min_ring_difference etc.
+		    bool merges_seg0=(first_operand->get_proj_data_info_ptr()->get_scanner_ptr()->type==
+		             Scanner::Advance || 
+			     seg1.get_proj_data_info_ptr()->get_scanner_ptr()->type==Scanner::HZLR )? true:false;
 
-		    if((merges_seg0 &&seg1.get_num_rings() == 2*(first_operand->scan_info.get_scanner().num_rings)-3) || (!merges_seg0 && seg1.get_num_rings() == first_operand->scan_info.get_scanner().num_rings))
+		    if((merges_seg0 &&
+		        seg1.get_num_axial_poss() == 
+			2*(first_operand->get_proj_data_info_ptr()->get_scanner_ptr()->num_rings)-3
+			) 
+			|| // TODO something wrong here says MJ
+			(!merges_seg0 
+			 && seg1.get_num_axial_poss() == 
+			 first_operand->get_proj_data_info_ptr()->get_scanner_ptr()->num_rings))
 		      {
-			seg1.grow_height(seg1.get_min_ring()-1,seg1.get_max_ring()+1);
+			//seg1.grow_height(seg1.get_min_axial_pos_num()-1,seg1.get_max_axial_pos_num()+1);
+		          seg1.grow(seg1.get_min_axial_pos_num()-1,seg1.get_max_axial_pos_num()+1);
+
 		      }
 		    else
 		      {
 			cerr<<"Number of rings is consistent. Operation had no effect"<<endl<<endl;
 		      }
 		  }
-
-                if(second_operand != NULL)  {
-                    PETSegmentByView seg2=second_operand->get_segment_view_copy(0);
+#endif
+                if(second_operand.use_count() != 0)  {
+                    SegmentByView<float> seg2=second_operand->get_segment_by_view(0);
                     do_math(operation,seg1,seg2,accum_max,accum_min,accum_sum,false);
                 }
 
                 else if(scalar != NULL) {
                     if(operation==_zero_ends )
-                        for(int i=seg1.get_min_view();i<=seg1.get_max_view();i++)
+                        for(int i=seg1.get_min_view_num();i<=seg1.get_max_view_num();i++)
                             for(int j=0;j<*scalar;j++ ) {
-                                seg1[i][seg1.get_min_ring()+j].fill(0);
-                                seg1[i][seg1.get_max_ring()-j].fill(0);
+                                seg1[i][seg1.get_min_axial_pos_num()+j].fill(0);
+                                seg1[i][seg1.get_max_axial_pos_num()-j].fill(0);
                             }
                     else  do_math(operation,seg1,seg_sinogram,accum_max,accum_min,accum_sum,false,*scalar);
                 }
                 else do_math(operation,seg1,seg_sinogram,accum_max,accum_min,accum_sum,false);
 
                     //Write sinogram result to file
-                if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) seg1.write_data(new_sino,output_type,scale_factor);
+                if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) 
+		  output_proj_data->set_segment_by_view(seg1);
             }
 //Now do other segments
             if(limit_segments>0)
                 for (int segment_num = 1; segment_num <= limit_segments ; segment_num++) {
                     if((operation==_display_view || operation==_display_sino) && ask("Abort display",false)) break;
-                    PETSegmentByView  seg1_pos=first_operand->get_segment_view_copy(segment_num);
-                    PETSegmentByView  seg1_neg=first_operand->get_segment_view_copy(-segment_num);
-                    PETSegmentBySinogram  seg_sinogram_pos=first_operand->get_segment_sino_copy(segment_num);
-                    PETSegmentBySinogram  seg_sinogram_neg=first_operand->get_segment_sino_copy(-segment_num);
+                    SegmentByView<float>  seg1_pos=first_operand->get_segment_by_view(segment_num);
+                    SegmentByView<float>  seg1_neg=first_operand->get_segment_by_view(-segment_num);
+                    SegmentBySinogram<float>  seg_sinogram_pos=first_operand->get_segment_by_sinogram(segment_num);
+                    SegmentBySinogram<float>  seg_sinogram_neg=first_operand->get_segment_by_sinogram(-segment_num);
                       
-                    if(second_operand != NULL) {
-                        PETSegmentByView seg2_pos=second_operand->get_segment_view_copy(segment_num);
-                        PETSegmentByView seg2_neg=second_operand->get_segment_view_copy(-segment_num);
+                    if(second_operand.use_count() != 0) {
+                        SegmentByView<float> seg2_pos=second_operand->get_segment_by_view(segment_num);
+                        SegmentByView<float> seg2_neg=second_operand->get_segment_by_view(-segment_num);
                         do_math(operation,seg1_pos,seg2_pos,accum_max,accum_min,accum_sum,true);
                         do_math(operation,seg1_neg,seg2_neg,accum_max,accum_min,accum_sum,true);
                     }
@@ -494,31 +467,38 @@ int main(int argc, char *argv[])
 
 //Write sinogram result to file
                     if(operation!= _display_view && operation!= _display_sino  && operation!= _stats && buffer_opened) {
-                        seg1_neg.write_data(new_sino,output_type,scale_factor);  
-                        seg1_pos.write_data(new_sino,output_type,scale_factor);
+                        output_proj_data->set_segment_by_view(seg1_neg);  
+			output_proj_data->set_segment_by_view(seg1_pos);  
                     }
                 }
 
-//if buffer changed, reinitialize put pointer and update first operand
-            if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) {
-                new_sino.seekp(0,ios::beg);
-                assert(first_operand != NULL);
-                delete first_operand;
-                first_operand=new PETSinogramOfVolume(read_interfile_PSOV(output_buffer_header));
+
+//if buffer changed, reinitialize first operand to output of previous math operation
+            if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) 
+	    {
+	      // at the moment, we close the output buffer, and will reopen it later on
+	      // this is to avoid conflicts with reading and writing from/to the same file
+	      // alternatively, the output_proj_data would use a read/write file, and
+	      // we would do first_operand = output_proj_data
+              
+	      if (output_proj_data != NULL)
+	      {
+		delete output_proj_data;
+		output_proj_data = NULL;
+	      }
+	      buffer_opened = false;	      
+	      
+	      first_operand=ProjData::read_from_file(output_buffer_header);
             }
 
 //Get accumulator results and de-allocate
             if (operation ==_absdiff || operation ==_stats) cerr<<endl<<"Maximum= "<<accum_max<<endl;
             if (operation ==_absdiff || operation ==_stats) cerr<<endl<<"Minimum= "<<accum_min<<endl;
             if (operation ==_absdiff || operation ==_stats) cerr<<endl<<"Total counts= "<<accum_sum<<endl;  
-            if (second_operand != NULL) delete second_operand;
             if (scalar != NULL) delete scalar;
 
         } while(!quit); // end math operations do-while loop
     } while(!quit); // restart do-while loop
 
-
-
-    delete first_operand;
     return EXIT_SUCCESS;
 } //end main
