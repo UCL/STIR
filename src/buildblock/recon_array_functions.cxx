@@ -383,33 +383,11 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 }
 
 
-void divide_array(SegmentByView<float>& numerator,const SegmentByView<float>& denominator)
-{
-  
-  const int vs=numerator.get_min_view_num();
-  const int ve=numerator.get_max_view_num();
-  const int rs=numerator.get_min_axial_pos_num();
-  const int re=numerator.get_max_axial_pos_num();
-  const int bs=numerator.get_min_tangential_pos_num();
-  const int be=numerator.get_max_tangential_pos_num();
-  
-  for(int v=vs;v<=ve;v++)
-    for(int r=rs;r<=re;r++)
-      for(int b=bs;b<=be;b++)
-	{
-
-	  if (denominator[v][r][b] != 0.0)
-	    numerator[v][r][b]=numerator[v][r][b]/denominator[v][r][b];
-	  else
-	     numerator[v][r][b]=0.0;
-
-	}
-    
-}
-
 void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensity<3,float>& denominator)
 {
-    assert(numerator.get_index_range() == denominator.get_index_range());
+  assert(numerator.get_index_range() == denominator.get_index_range());
+  float small_value= numerator.find_max()*SMALL_NUM;
+  small_value=(small_value>0.0)?small_value:0.0;   
   // TODO rewrite in terms of 'full' iterator
  
   for (int z=numerator.get_min_index(); z<=numerator.get_max_index(); z++)
@@ -417,11 +395,12 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
       for (int x=numerator[z][y].get_min_index(); x<=numerator[z][y].get_max_index(); x++)
       { 
 
-	if (denominator[z][y][x] != 0.0)
-	  numerator[z][y][x]=numerator[z][y][x]/denominator[z][y][x];
-	else
-	  numerator[z][y][x]=0.0;
-
+	  if(fabs(denominator[z][y][x])<=small_value && fabs(numerator[z][y][x])<=small_value) 
+	  {
+	    numerator[z][y][x]=0;
+	  }	      
+	  else 
+	    numerator[z][y][x]/=denominator[z][y][x];
       }
     
 }
