@@ -61,9 +61,9 @@ SOURCES = \
   bbfilters.cxx recon_array_functions.cxx \
   sparsedata.cxx
 
-OBJS = $(SOURCES:%.cxx=%.o)
+OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
-$(DEST)libbuildblock.a:
+$(DEST)libbuildblock.a: $(OBJS)
 	ar r $@ $?
 	ranlib $@
 
