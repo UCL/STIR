@@ -87,6 +87,14 @@ public:
 			  const ByteOrder list_mode_file_format_byte_order,
                           const streampos start_of_data = 0);
 
+  //! Bogus implementation
+  /*! This function should never be called. It's an artefact of having this class derived from
+    CListModeData.
+  */
+  virtual std::time_t
+    get_scan_start_time_in_secs_since_1970() const;
+
+
   virtual 
     shared_ptr <CListRecord> get_empty_record_sptr() const
     { return empty_record_sptr; }

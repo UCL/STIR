@@ -13,6 +13,8 @@
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This software is distributed under the terms 
+    of the GNU Lesser General  Public Licence (LGPL)
     See STIR/LICENSE.txt for details
 */
 
@@ -22,10 +24,15 @@
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
 #include <string>
+#include <ctime>
+
+# ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::time_t; }
+#endif
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
-using std::size_t;
 #endif
 
 START_NAMESPACE_STIR
@@ -134,6 +141,15 @@ public:
 
   virtual
     ~CListModeData();
+
+  //! Scan start time
+  /*! In secs since midnight (UTC) 1/1/1970 (as returned by time()).
+
+     Should return <tt>std::time_t(-1)</tt> if unknown or invalid.
+  */
+  virtual
+    std::time_t 
+    get_scan_start_time_in_secs_since_1970() const = 0;
 
   //! Get a pointer to an empty record
   /*! This is mainly/only useful to get a record of the correct type, that can then be
