@@ -48,6 +48,8 @@ QuadraticPrior<elemT>::post_processing()
   if (kappa_filename.size() != 0)
     kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
 
+  if (precomputed_weights.get_length() !=0)
+  {
   const unsigned int size_y = precomputed_weights.get_length();
   const unsigned int size_x = precomputed_weights[1].get_length();  
   const int min_index_y = -(size_y/2);
@@ -61,6 +63,7 @@ QuadraticPrior<elemT>::post_processing()
     weights[0][j][i] = 
       static_cast<float>(precomputed_weights[j-min_index_y][i-min_index_x]);
     }
+  }
   return false;
 
 }
