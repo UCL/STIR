@@ -20,7 +20,6 @@ SOURCES = \
 	SeparableGaussianArrayFilter.cxx \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
-	ArrayFilter1DUsingConvolution.cxx \
 	fft.cxx \
 	SSRB.cxx \
 	ML_norm.cxx
