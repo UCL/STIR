@@ -17,11 +17,12 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/ProjDataInfoCylindrical.h"
+#include "stir/LORCoordinates.h"
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
@@ -435,6 +436,45 @@ reduce_segment_range(const int min_segment_num, const int max_segment_num)
   ProjDataInfo::reduce_segment_range(min_segment_num, max_segment_num);
   ring_diff_arrays_computed = false;
 }
+
+
+void
+ProjDataInfoCylindrical::
+get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
+	const Bin& bin) const
+{
+  const float s_in_mm = get_s(bin);
+  const float m_in_mm = get_m(bin);
+  const float tantheta = get_tantheta(bin);
+  const float phi = get_phi(bin);
+  /* parametrisation of LOR is
+     X= s*cphi + a*sphi, 
+     Y= s*sphi - a*cphi, 
+     Z= m - a*tantheta
+     find now min_a, max_a such that end-points intersect the ring
+  */    
+  assert(fabs(s_in_mm) < get_ring_radius());
+  // a has to be such that X^2+Y^2 == R^2      
+  const float  max_a = sqrt(square(get_ring_radius()) - square(s_in_mm));
+  const float  min_a = -max_a;
+    
+  /*    start_point.x() = (s_in_mm*cphi + max_a*sphi);
+	start_point.y() = (s_in_mm*sphi - max_a*cphi);
+	start_point.z() = (m_in_mm - max_a*tantheta);
+	stop_point.x() = (s_in_mm*cphi + min_a*sphi);
+	stop_point.y() = (s_in_mm*sphi - min_a*cphi);
+	stop_point.z() = (m_in_mm - min_a*tantheta);
+  */
+  const float z1 = (m_in_mm - max_a*tantheta);
+  const float z2 = (m_in_mm - min_a*tantheta);
+    
+    
+  lor = 
+    LORInAxialAndNoArcCorrSinogramCoordinates<float>(z1, z2,
+						     phi,
+						     asin(s_in_mm/get_ring_radius()),
+						     get_ring_radius());
+}  
   
 string
 ProjDataInfoCylindrical::parameter_info()  const
