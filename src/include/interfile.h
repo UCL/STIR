@@ -24,8 +24,32 @@ PETImageOfVolume read_interfile_image(istream& input);
 // .ahv is 'old-style' (suitable for Analyze for instance)
 // They both point to the same file with binary data.
 // KT 09/10/98 added const for image arg
+// KT 09/11/98 added voxel_size & output_type
 template <class NUMBER>
-bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& image);
+bool write_basic_interfile(const char * const filename, 
+			   const Tensor3D<NUMBER>& image,
+			   const Point3D& voxel_size,
+			   const NumericType output_type = NumericType::FLOAT);
+
+// KT 09/11/98 added this for 'old' interface
+template <class NUMBER>
+inline bool 
+write_basic_interfile(const char * const filename, 
+		      const Tensor3D<NUMBER>& image,
+		      const NumericType output_type = NumericType::FLOAT)
+{
+  return
+    write_basic_interfile(filename, 
+			  image, 
+			  Point3D(1,1,1), 
+			  output_type);
+}
+
+// KT 09/11/98 new to preserve voxel_size
+bool 
+write_basic_interfile(const char * const filename, 
+		      const PETImageOfVolume& image,
+		      const NumericType output_type = NumericType::FLOAT);
 
 // This reads the first 3D sinogram from an Interfile header
 // If there is trouble interpreting the header, 
@@ -33,3 +57,4 @@ bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& 
 // KT 26/10/98 new
 PETSinogramOfVolume read_interfile_PSOV(istream& input);
 #endif // __Interfile_h__
+
