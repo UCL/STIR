@@ -45,8 +45,10 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   If the z voxel size is exactly twice the sampling in axial direction,
   multiple LORs are used, to avoid missing voxels. (TODOdoc describe how).
 
-  Currently, a FOV is used which is circular, and is slightly 'inside' the 
-  image (i.e. the radius is about 1 voxel smaller than the maximum possible).
+  It is possible to use a cylindrical or cuboid FOV (in the latter case it
+  is going to be square in transaxial direction). In both cases, the FOV is 
+  slightly 'inside' the image (i.e. it is about 1 voxel at each side
+  smaller than the maximum possible).
 
   The implementation uses RayTraceVoxelsOnCartesianGrid().
 
@@ -81,6 +83,8 @@ public :
     );
 
 private:
+  //! variable that determines if a cylindrical FOV or the whole image will be handled
+  bool restrict_to_cylindrical_FOV;
 
   // explicitly list necessary members for image details (should use an Info object instead)
   // ideally these should be const, but I have some trouble initialising them in that case
