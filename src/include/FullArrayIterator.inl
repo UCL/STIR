@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -11,9 +11,9 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
 
@@ -104,6 +104,13 @@ FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
         current_rest_iter == iter2.current_rest_iter); 
     */
 }  
+template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
+bool 
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>
+  ::operator!=(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& iter2) const
+{
+  return !(*this == iter2);
+}
 
 template <typename topleveliterT, typename restiterT, typename elemT, typename _Ref, typename _Ptr>
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::reference

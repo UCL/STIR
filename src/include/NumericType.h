@@ -78,6 +78,7 @@ public:
 
   //! comparison operator
   inline bool operator==(NumericType type) const;
+  inline bool operator!=(NumericType type) const;
 
   //! as reported by sizeof(), so it is really size_in_sizeof_char
   size_t size_in_bytes() const;

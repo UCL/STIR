@@ -45,5 +45,9 @@ bool ByteOrder::operator==(const ByteOrder order2) const
     (!is_native_order() && !order2.is_native_order());
 }
 
+bool ByteOrder::operator!=(const ByteOrder order2) const
+{
+return !(*this == order2);
+}
 
 END_NAMESPACE_TOMO

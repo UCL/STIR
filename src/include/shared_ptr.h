@@ -102,6 +102,7 @@ public:
 #endif
   
   inline bool  operator== (const shared_ptr<T> & cp) const;
+  inline bool  operator!= (const shared_ptr<T> & cp) const;
   
   // KT 10/05/2000 removed as not in boost::shared_ptr
 #if 0

@@ -83,6 +83,14 @@ IndexRange<num_dimensions>::
 template <int num_dimensions>
 bool
 IndexRange<num_dimensions>::
+  operator!=(const IndexRange<num_dimensions>& range2) const
+{
+  return !(*this==range2);
+}
+
+template <int num_dimensions>
+bool
+IndexRange<num_dimensions>::
   is_regular() const
 {
   switch (is_regular_range)

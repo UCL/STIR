@@ -97,6 +97,7 @@ class Scanner
 
   //! comparison operator
   bool operator ==(const Scanner& scanner) const;
+  inline bool operator !=(const Scanner& scanner) const;
 
   //! get scanner type
   inline Type get_type() const;

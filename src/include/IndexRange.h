@@ -91,6 +91,7 @@ public:
 
   //! comparison operator
   inline bool operator==(const IndexRange<num_dimensions>&) const;
+  inline bool operator!=(const IndexRange<num_dimensions>&) const;
 
   //! checks if the range is 'regular'
   inline bool is_regular() const;

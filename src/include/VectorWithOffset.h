@@ -109,6 +109,7 @@ public:
   
   //! comparison
   inline bool operator== (const VectorWithOffset &iv) const;
+  inline bool operator!= (const VectorWithOffset &iv) const;
   
   //! fill elements with value n
   inline void fill(const T &n);

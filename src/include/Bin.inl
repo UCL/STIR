@@ -100,5 +100,10 @@ Bin::operator==(const Bin& bin2) const
     bin_value == bin2.bin_value;
 }
 
+bool  
+Bin::operator!=(const Bin& bin2) const
+{ 
+  return !(*this==bin2);
+}
 
 END_NAMESPACE_TOMO
