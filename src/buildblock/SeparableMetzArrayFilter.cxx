@@ -42,35 +42,41 @@ const int INVERSEFFT=-1;
 
 // build Gaussian kernel according to the full width half maximum 
 template <typename elemT>
-static void build_gauss(VectorWithOffset<elemT>&kernel, int res,elemT s2,  elemT sampling_interval);
+static void build_gauss(VectorWithOffset<elemT>&kernel, 
+			int res,float s2, float sampling_interval);
 
 template <typename elemT>
 static void discrete_fourier_transform(VectorWithOffset<elemT>&data, unsigned int nn, int isign);
 
 template <typename elemT>
-static VectorWithOffset<elemT> build_metz(elemT N,elemT fwhm, elemT MmPerVoxel);
+static void build_metz(VectorWithOffset<elemT>&kernel,
+		       float N,float fwhm, float MmPerVoxel, int max_kernel_size);
 
 
 
 template <int num_dimensions, typename elemT>
 SeparableMetzArrayFilter<num_dimensions,elemT>::
 SeparableMetzArrayFilter
-  (const VectorWithOffset<elemT>& fwhms_v,
-   const VectorWithOffset<elemT>& metz_powers_v,
-   const BasicCoordinate<num_dimensions,elemT>& sampling_distances_v)
+  (const VectorWithOffset<float>& fwhms_v,
+   const VectorWithOffset<float>& metz_powers_v,
+   const BasicCoordinate<num_dimensions,float>& sampling_distances_v,
+   const VectorWithOffset<int>& max_kernel_sizes_v)
  : fwhms(fwhms_v),
    metz_powers(metz_powers_v),
-   sampling_distances(sampling_distances_v)
+   sampling_distances(sampling_distances_v),
+   max_kernel_sizes(max_kernel_sizes_v)
 {
   assert(metz_powers.get_length() == num_dimensions);
   assert(fwhms.get_length() == num_dimensions);
   assert(metz_powers.get_min_index() == 1);
   assert(fwhms.get_min_index() == 1);
+  assert(max_kernel_sizes.get_length() == num_dimensions);
+  assert(max_kernel_sizes.get_min_index() == 1);
   
   for (int i=1; i<=num_dimensions; ++i)
   {
-    VectorWithOffset<elemT> kernel=
-      build_metz(metz_powers[i],fwhms[i],sampling_distances[i]);
+    VectorWithOffset<elemT> kernel;
+    build_metz(kernel, metz_powers[i],fwhms[i],sampling_distances[i],max_kernel_sizes[i]);
     
     for (int j=0;j<kernel.get_length();j++)
       if(metz_powers[i]>0.0)  printf ("%d-dir Metz[%d]=%f\n",i,j,kernel[j]);   
@@ -131,7 +137,7 @@ void discrete_fourier_transform(VectorWithOffset<elemT>&data, unsigned int nn, i
 
 
 template <typename elemT>
-void build_gauss(VectorWithOffset<elemT>&kernel, int res,elemT s2,  elemT sampling_interval)
+void build_gauss(VectorWithOffset<elemT>&kernel, int res,float s2,  float sampling_interval)
 {
   
   
@@ -166,7 +172,8 @@ void build_gauss(VectorWithOffset<elemT>&kernel, int res,elemT s2,  elemT sampli
 
 //MJ 19/04/99  Used KT's solution to the shifted index problem. Also build_metz now allocates the kernel.
 template <typename elemT>
-VectorWithOffset<elemT> build_metz(elemT N,elemT fwhm, elemT MmPerVox)
+void build_metz(VectorWithOffset<elemT>& kernel,
+		float N,float fwhm, float MmPerVox, int max_kernel_size)
 {    
   
   int kernel_length = 0;
@@ -297,7 +304,7 @@ VectorWithOffset<elemT> build_metz(elemT N,elemT fwhm, elemT MmPerVox)
     
     
     //MJ 17/12/98 added step to undo zero padding (requested by RL)
-    
+    // KT 01/06/2001 added kernel_length stuff
     kernel_length=Res; 
     
     for (i=Res-1;i>=0;i--){
@@ -308,31 +315,35 @@ VectorWithOffset<elemT> build_metz(elemT N,elemT fwhm, elemT MmPerVox)
     
     
 #if 0
-    // SM&KT 04/04/2001 removed this truncation of the kernel
+    // SM&KT 04/04/2001 removed this truncation of the kernel as we don't have the relevant parameter anymore
     if ((kernel_length)>length_of_row_to_filter/2){
       kernel_length=length_of_row_to_filter/2;
     }
 #endif
+
+    if (max_kernel_size>0 && (kernel_length)>max_kernel_size/2){
+      kernel_length=max_kernel_size/2;
+    }
     
-    VectorWithOffset<elemT> kernel(kernel_length);//=new elemT[(kernel_length)];
+    //VectorWithOffset<elemT> kernel(kernel_length);//=new elemT[(kernel_length)];
+    kernel.grow(0,kernel_length-1);
     
     for (i=0;i<(kernel_length);i++) kernel[i]=filter[i];
     
-    return kernel;
+    //return kernel;
   }
   
   else{
-    VectorWithOffset<elemT> kernel(1);//=new elemT[1];
+    //VectorWithOffset<elemT> kernel(1);//=new elemT[1];
+    kernel.grow(0,0);
     //*kernel=1.0F;
     //kernel_length=1L;
     kernel[0] = 1.F;
     kernel_length=1;
     
-    return kernel;
+    //return kernel;
   }
-  
-  
-  
+
 }
 
 

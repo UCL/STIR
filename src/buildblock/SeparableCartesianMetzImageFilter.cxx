@@ -22,7 +22,8 @@ START_NAMESPACE_TOMO
   
 template <typename elemT>
 Succeeded
-SeparableCartesianMetzImageFilter<elemT>::virtual_build_filter(const DiscretisedDensity<3,elemT>& density)
+SeparableCartesianMetzImageFilter<elemT>::
+virtual_build_filter(const DiscretisedDensity<3,elemT>& density)
 
 {
 /*  if (consistency_check(density) == Succeeded::no)
@@ -31,7 +32,11 @@ SeparableCartesianMetzImageFilter<elemT>::virtual_build_filter(const Discretised
   const VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
-  metz_filter = SeparableMetzArrayFilter<3,elemT>(get_metz_fwhm(),get_metz_powers(),image.get_voxel_size());
+  metz_filter = 
+    SeparableMetzArrayFilter<3,elemT>(get_metz_fwhms(),
+				      get_metz_powers(),
+				      image.get_voxel_size(), 
+				      get_max_kernel_sizes());
   
   return Succeeded::yes;
   
@@ -40,18 +45,20 @@ SeparableCartesianMetzImageFilter<elemT>::virtual_build_filter(const Discretised
 
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::filter_it(DiscretisedDensity<3,elemT>& density) const
+SeparableCartesianMetzImageFilter<elemT>::
+filter_it(DiscretisedDensity<3,elemT>& density) const
 
 {     
   //assert(consistency_check(density) == Succeeded::yes);
-  metz_filter(density);
-  
+  metz_filter(density);  
 }
 
 
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::filter_it(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity<3,elemT>& in_density) const
+SeparableCartesianMetzImageFilter<elemT>::
+filter_it(DiscretisedDensity<3,elemT>& out_density, 
+	  const DiscretisedDensity<3,elemT>& in_density) const
 {
   //assert(consistency_check(in_density) == Succeeded::yes);
   metz_filter(out_density,in_density);
@@ -61,7 +68,8 @@ SeparableCartesianMetzImageFilter<elemT>::filter_it(DiscretisedDensity<3,elemT>&
 
 template <typename elemT>
 Succeeded
-SeparableCartesianMetzImageFilter<elemT>:: consistency_check( const DiscretisedDensity<3, elemT>& image) const
+SeparableCartesianMetzImageFilter<elemT>:: 
+consistency_check( const DiscretisedDensity<3, elemT>& image) const
 {
   
   //TODO?
@@ -83,49 +91,60 @@ SeparableCartesianMetzImageFilter<elemT>:: consistency_check( const DiscretisedD
 #endif
 
 template <typename elemT>
-SeparableCartesianMetzImageFilter<elemT>::SeparableCartesianMetzImageFilter()
-: fwhm(VectorWithOffset<elemT>(1,3)),
-  metz_power(VectorWithOffset<elemT>(1,3))
+SeparableCartesianMetzImageFilter<elemT>::
+SeparableCartesianMetzImageFilter()
+: fwhms(VectorWithOffset<float>(1,3)),
+  metz_powers(VectorWithOffset<float>(1,3)),
+  max_kernel_sizes(VectorWithOffset<int>(1,3))
 {
   set_defaults();
 }
 
 template <typename elemT>
 VectorWithOffset<float>
-SeparableCartesianMetzImageFilter<elemT>:: get_metz_fwhm()
-{  return fwhm;}
+SeparableCartesianMetzImageFilter<elemT>:: 
+get_metz_fwhms() const
+{  return fwhms;}
 
 template <typename elemT>
 VectorWithOffset<float> 
-SeparableCartesianMetzImageFilter<elemT>::get_metz_powers()
-{  return metz_power;}
+SeparableCartesianMetzImageFilter<elemT>::
+get_metz_powers() const
+{  return metz_powers;}
+
+
+template <typename elemT>
+VectorWithOffset<int> 
+SeparableCartesianMetzImageFilter<elemT>::
+get_max_kernel_sizes() const
+{  return max_kernel_sizes;}
 
 template <typename elemT>
 void
-SeparableCartesianMetzImageFilter<elemT>::set_defaults()
+SeparableCartesianMetzImageFilter<elemT>::
+set_defaults()
 {
-/*
-   fwhm_xy = 1.;
-   fwhm_z = 1.;
-   metz_power_xy = 1;
-   metz_power_z = 1;
-*/
-  fwhm.fill(0);
-  metz_power.fill(0);  
+  fwhms.fill(0);
+  metz_powers.fill(0);  
+  max_kernel_sizes.fill(-1);
 }
 
 template <typename elemT>
 void 
-SeparableCartesianMetzImageFilter<elemT>::initialise_keymap()
+SeparableCartesianMetzImageFilter<elemT>::
+initialise_keymap()
 {
   parser.add_start_key("Separable Cartesian Metz Filter Parameters");
 
-  parser.add_key("x-dir filter FWHM (in mm)", &fwhm[3]);
-  parser.add_key("y-dir filter FWHM (in mm)", &fwhm[2]);
-  parser.add_key("z-dir filter FWHM (in mm)", &fwhm[1]);
-  parser.add_key("x-dir filter Metz power", &metz_power[3]);
-  parser.add_key("y-dir filter Metz power", &metz_power[2]);
-  parser.add_key("z-dir filter Metz power", &metz_power[1]);   
+  parser.add_key("x-dir filter FWHM (in mm)", &fwhms[3]);
+  parser.add_key("y-dir filter FWHM (in mm)", &fwhms[2]);
+  parser.add_key("z-dir filter FWHM (in mm)", &fwhms[1]);
+  parser.add_key("x-dir filter Metz power", &metz_powers[3]);
+  parser.add_key("y-dir filter Metz power", &metz_powers[2]);
+  parser.add_key("z-dir filter Metz power", &metz_powers[1]);   
+  parser.add_key("x-dir maximum kernel size", &max_kernel_sizes[3]);
+  parser.add_key("y-dir maximum kernel size", &max_kernel_sizes[2]);
+  parser.add_key("z-dir maximum kernel size", &max_kernel_sizes[1]);
   parser.add_stop_key("END Separable Cartesian Metz Filter Parameters");
 }
 
@@ -147,6 +166,7 @@ SeparableCartesianMetzImageFilter<float>::registered_name =
 // have the above variable in a separate file, which you need to pass at link time
 
 template SeparableCartesianMetzImageFilter<float>;
+
 END_NAMESPACE_TOMO
 
 
