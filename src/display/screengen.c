@@ -229,20 +229,24 @@ screen_image_t sc_image[];
   /* how many times can we enlarge the images ?                         */
   LENGTH_X = max_x-min_x;               /* size in pixels of the region */
   LENGTH_Y = max_y-min_y;
-  scale = 0;
+
+  // KT&CL 3/12 changed the test of fitting 1 iamge to the window
+  if (LENGTH_X < SIZE_X || LENGTH_Y < SIZE_Y+15)
+  { message("\nEven one image of this size doesn't fit in the window");
+    return(0);
+  }
+  // KT&CL 3/12 start form 1 now
+  scale = 1;
   do
   {
     /* we compute the number of images of this scale that fit in the
        allowed region. Place for text under the images is reserved      */
-    nr_x = LENGTH_X / ((scale+1)*(SIZE_X-1) + 1);
-    nr_y = LENGTH_Y / ((scale+1)*(SIZE_Y-1) + 1+15);
     scale++;
+    nr_x = LENGTH_X / (scale*(SIZE_X-1) + 1);
+    nr_y = LENGTH_Y / (scale*(SIZE_Y-1) + 1+15);
   } while (nr_x*nr_y >= nr_sc);
   scale--;                              /* one too far                  */
-  if (!scale)
-  { message("\nEven one image of this size doesn't fit in the window");
-    return(0);
-  }
+
   nr_x = LENGTH_X / (scale*(SIZE_X-1) + 1);
   nr_y = LENGTH_Y / (scale*(SIZE_Y-1) + 1+15);
   /* we want to center the images in the region
