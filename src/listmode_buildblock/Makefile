@@ -12,6 +12,7 @@ LIB_SOURCES = \
 	CListModeData.cxx \
 	CListModeDataFromStream.cxx \
 	CListModeDataECAT.cxx \
+	CListRecordECAT966.cxx \
 	LmToProjData.cxx \
 	LmToProjDataWithMC.cxx \
 	TimeFrameDefinitions.cxx
