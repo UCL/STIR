@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 	DiscretisedDensity<3,float>::read_from_file(argv[1]).get());
     }
     else {
-        cerr<<endl<<"Usage: vox <header file name> (*.hv)"<<endl<<endl;
+        cerr<<endl<<"Usage: manip_image <header file name> (*.hv)"<<endl<<endl;
         main_buffer= ask_interfile_image("File to load in main buffer? ");
     }
 
@@ -215,7 +215,7 @@ void trim_edges(VoxelsOnCartesianGrid<float>& input_image)
     const int xe=input_image.get_max_x();
     const int xs=input_image.get_min_x();
     const int xm=(xs+xe)/2;
-    const int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),2);
+    const int rim_trunc=ask_num("By how many voxels to trim the FOV? ",0,(int)(xe-xm),2);
 
     truncate_rim(input_image,rim_trunc);
 
@@ -234,9 +234,7 @@ void get_plane(VoxelsOnCartesianGrid<float>& input_image)
     ye=input_image.get_max_y(); 
     xe=input_image.get_max_x();
 
-    float zm=(zs+ze)/2.;
-    float ym=(ys+ye)/2.;
-    float xm=(xs+xe)/2.;
+    const int zm=(ze+zs)/2;
 
     int plane=ask_num("Which plane?",1,ze-zs+1,(int)zm-zs+1);
 
@@ -320,18 +318,18 @@ void show_menu()
     cerr<<"\n\
 MAIN MODE:\n\
 0. Quit\n\
-1. Display\n\
-2. Data total\n\
-3. Data plane-wise\n\
-4. Min/Max & Counts plane-wise \n\
-5. Min/Max in image\n\
-6. Trim \n\
+1. Display image\n\
+2. Display all numeric data\n\
+3. Display numeric data per plane\n\
+4. Minimum, maximum & counts per plane \n\
+5. Minimum & maximum in image\n\
+6. Radial truncation \n\
 7. Get plane\n\
 8. Get row\n\
 9. Counts\n\
 10. Math mode\n\
 11. Reload main buffer\n\
-12. Buffer to file\n\
+12. Write buffer to file\n\
 13. Redisplay menu"<<endl;
 }
 void show_math_menu()
@@ -340,16 +338,16 @@ void show_math_menu()
 MATH MODE:\n\
 0. Quit \n\
 1. Display math buffer\n\
-2. Absolute difference\n\
+2. Subtract image and take absolute value\n\
 3. Add image\n\
 4. Subtract image\n\
 5. Multiply image\n\
-6. Divide (and truncate) image\n\
+6. Divide image (and truncate FOV)\n\
 7. Add scalar\n\
 8. Multiply scalar\n\
 9. Divide scalar \n\
 10. Zoom image \n\
-11. Min/Max in image\n\
+11. Minimum & maximum in image\n\
 12. Main buffer --> Math buffer\n\
 13. Math buffer --> Main Buffer\n\
 14. Reload main buffer\n\
@@ -439,7 +437,7 @@ void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math)
                 VoxelsOnCartesianGrid<float> aux_image= 
                     ask_interfile_image("What image to divide?");
 
-                const int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),2);
+                const int rim_trunc=ask_num("By how many voxels to trim the FOV? ",0,(int)(xe-xm),2);
 
                 divide_and_truncate(math_buffer, aux_image, rim_trunc, count);
                 break;
