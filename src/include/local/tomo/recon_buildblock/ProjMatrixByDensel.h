@@ -11,9 +11,7 @@
   \ingroup recon_buildblock 
   \brief declaration of ProjMatrixByDensel and its helpers classes
   
-  \author Mustapha Sadki
   \author Kris Thielemans
-  \author PARAPET project
    
   $Date$  
   $Revision$
@@ -74,7 +72,7 @@ public:
   ) = 0;
 
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByDensel
-  inline const  DataSymmetriesForDensels* get_symmetries_ptr() const;
+  virtual const DataSymmetriesForDensels* get_symmetries_ptr() const = 0;
   
   
   //! The main method for getting a column of the matrix.
@@ -115,7 +113,6 @@ public:
   
   
 protected:
-  shared_ptr<DataSymmetriesForDensels> symmetries_ptr;
   
 
   //! default ctor (enables caching)
