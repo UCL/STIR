@@ -150,7 +150,8 @@ get_segment_axial_pos_num_for_ring_pair(int& segment_num,
   assert(0<=ring2);
   assert(ring2<get_scanner_ptr()->get_num_rings());
 
-  if (get_segment_num_for_ring_difference(segment_num, ring1-ring2) == Succeeded::no)
+  // KT 01/08/2002 swapped rings
+  if (get_segment_num_for_ring_difference(segment_num, ring2-ring1) == Succeeded::no)
     return Succeeded::no;
 
   // see initialise_ring_diff_arrays() for some info

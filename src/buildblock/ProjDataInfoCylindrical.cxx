@@ -262,8 +262,9 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
 
   const int ring_diff = get_max_ring_difference(segment_num);
 
-  ring1 = (ring1_plus_ring2 + ring_diff)/2;
-  ring2 = (ring1_plus_ring2 - ring_diff)/2;
+  // KT 01/08/2002 swapped rings
+  ring1 = (ring1_plus_ring2 - ring_diff)/2;
+  ring2 = (ring1_plus_ring2 + ring_diff)/2;
   assert((ring1_plus_ring2 + ring_diff)%2 == 0);
   assert((ring1_plus_ring2 - ring_diff)%2 == 0);
 }
