@@ -44,7 +44,6 @@ InterfileHeader::InterfileHeader()
   number_format_values.push_back("unsigned integer");
   number_format_values.push_back("float");
   
-  // KT 01/08/98 new
   byte_order_values.push_back("LITTLEENDIAN");
   byte_order_values.push_back("BIGENDIAN");
   
@@ -64,19 +63,20 @@ InterfileHeader::InterfileHeader()
   type_of_data_values.push_back("Other");
   
   // default values
+  // KT 07/10/2002 added 2 new ones
+  number_format_index = 3; // unsigned integer
+  bytes_per_pixel = -1; // standard does not provide a default
   // KT 02/11/98 set default for correct variable
   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
   type_of_data_index = 6; // PET
-  // KT 02/11/98 new
   PET_data_type_index = 5; // Image
-  // KT 19/10/98 added new ones
-  //KT 26/10/98 removed in_stream = 0;
   num_dimensions = 0;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
-  // KT 29/10/98 factor->factors and new defaults
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
+  lln_quantification_units = 1.;
+
   data_offset.resize(num_time_frames, 0UL);
 
 
@@ -84,10 +84,8 @@ InterfileHeader::InterfileHeader()
   // as gcc cannot convert 0 to a 'pointer to member function'  
   add_key("INTERFILE", 
     KeyArgument::NONE,	&KeyParser::start_parsing);
-  // KT 01/08/98 just set data_file_name variable now
   add_key("name of data file", 
     KeyArgument::ASCII,	&data_file_name);
-  // KT 26/11/98 new
   add_key("originating system",
     KeyArgument::ASCII, &originating_system);
   add_key("GENERAL DATA", 
@@ -99,7 +97,6 @@ InterfileHeader::InterfileHeader()
     &type_of_data_index, 
     &type_of_data_values);
   
-  // KT 08/10/98 removed space in keyword
   add_key("imagedata byte order", 
     KeyArgument::ASCIIlist,
     &byte_order_index, 
@@ -113,7 +110,6 @@ InterfileHeader::InterfileHeader()
   
   add_key("data format", 
     KeyArgument::ASCII,	&KeyParser::do_nothing);
-  // KT 20/06/98 use ASCIIlist
   add_key("number format", 
     KeyArgument::ASCIIlist,
     &number_format_index,
@@ -140,16 +136,18 @@ InterfileHeader::InterfileHeader()
   add_key("IMAGE DATA DESCRIPTION", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
 
-  // KT 03/11/98 2 new to avoid error messages
   //TODO
   add_key("maximum pixel count", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("minimum pixel count", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
 
-  // KT 03/11/98 factor -> factors
   add_key("image scaling factor", 
     KeyArgument::LIST_OF_DOUBLES, &image_scaling_factors);
+  // KT 07/10/2002 new
+  // support for Louvain la Neuve's extension of 3.3
+  add_key("quantification units",
+    KeyArgument::DOUBLE, &lln_quantification_units);
 
   add_key("data offset in bytes", 
     KeyArgument::ULONG,	&data_offset);
@@ -161,24 +159,56 @@ InterfileHeader::InterfileHeader()
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
 {
-    // KT 20/06/98 new
+  // KT 07/10/2002 new
+  if (number_format_index<0 || 
+      static_cast<ASCIIlist_type::size_type>(number_format_index)>=number_format_values.size())
+  {
+    warning("Interfile internal error: 'number_format_index' out of range\n");
+    return true;
+  }
+  // KT 07/10/2002 new
+  // check if bytes_per_pixel is set if the data type is not 'bit'
+  if (number_format_index!=0 && bytes_per_pixel<0)
+  {
+    warning("Interfile error: 'number of bytes per pixel' keyword should be set\n");
+    return true;
+  }
+
   type_of_numbers = NumericType(number_format_values[number_format_index], bytes_per_pixel);
   
-  // KT 01/08/98 new
   file_byte_order = byte_order_index==0 ? 
     ByteOrder::little_endian : ByteOrder::big_endian;
   
-  //KT 26/10/98 removed
-  //in_stream = new fstream;
-  //open_read_binary(*in_stream, data_file_name.c_str());
   if(type_of_data_values[type_of_data_index] != "PET")
     warning("Interfile Warning: only 'type of data := PET' supported.\n");
 
-  // KT 29/10/98 new
-  if (matrix_size.size()==0 || matrix_size[matrix_size.size()-1].size()!=1)
+  // KT 07/10/2002 more extensive error checking for matrix_size keyword
+  if (matrix_size.size()==0)
   {
-    warning("Interfile error: matrix size keywords not in expected format\n");
+    warning("Interfile error: no matrix size keywords present\n");
     return true;
+  }
+  if (matrix_size[matrix_size.size()-1].size()!=1)
+  {
+    warning("Interfile error: last dimension (%d) of 'matrix size' cannot be a list of numbers\n",
+      matrix_size[matrix_size.size()-1].size());
+    return true;
+  }
+  for (unsigned int dim=0; dim != matrix_size.size(); ++dim)
+  {
+    if (matrix_size[dim].size()==0)
+    {
+      warning("Interfile error: dimension (%d) of 'matrix size' not present\n", dim);
+      return true;
+    }
+    for (unsigned int i=0; i != matrix_size[dim].size(); ++i)
+    {
+      if (matrix_size[dim][i]<=0)
+      {
+        warning("Interfile error: dimension (%d) of 'matrix size' has a number <= 0 at position\n", dim, i);
+        return true;
+      }
+    }
   }
 
   for (int frame=0; frame<num_time_frames; frame++)
@@ -197,6 +227,36 @@ bool InterfileHeader::post_processing()
     }
   }
   
+  // KT 07/10/2002 new
+  // support for non-standard key
+  // TODO as there's currently no way to find out if a key was used in the header, we just rely on the
+  // fact that the default didn't change. This isn't good enough, but it has to do for now.
+  if (lln_quantification_units!=1.)
+  {
+     const bool all_one = image_scaling_factors[1][1] == 1.;
+    for (int frame=0; frame<num_time_frames; frame++)
+      for (unsigned int i=1; i<image_scaling_factors[frame].size(); i++)
+      {
+        // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
+        // probably never occured) or lln_quantification_units
+        if ((all_one && image_scaling_factors[frame][i] != 1.) ||
+            (!all_one && image_scaling_factors[frame][i] != lln_quantification_units))
+          {
+            warning("Interfile error: key 'quantification units' can only be used when either "
+                    "image_scaling_factors[] keywords are not present, or have identical values.\n");
+            return true;
+          }
+        // if they're all 1, we set the value to lln_quantification_units
+        if (all_one)
+          image_scaling_factors[frame][i] = lln_quantification_units;
+      }
+    if (all_one)
+    {
+       warning("Interfile warning: non-standard key 'quantification_units' used to set 'image_scaling_factors' to %g\n",
+               lln_quantification_units);
+    }      
+  } // lln_quantification_units
+  
   return false;
 
 }
@@ -207,7 +267,6 @@ void InterfileHeader::read_matrix_info()
 
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
-  // KT 19/10/98 added default values
   pixel_sizes.resize(num_dimensions, 1.);
   
 }
@@ -215,8 +274,6 @@ void InterfileHeader::read_matrix_info()
 void InterfileHeader::read_frames_info()
 {
   set_variable();
-  // KT 19/10/98 added default values
-  // KT 29/10/98 factor->factors and new defaults
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
@@ -239,7 +296,6 @@ bool InterfileImageHeader::post_processing()
   if (num_dimensions != 3)
     { warning("Interfile error: expecting 3D image\n"); return true; }
 
-  // KT 29/10/98 moved from asserts in read_interfile_image
   if ( (matrix_size[0].size() != 1) || 
        (matrix_size[1].size() != 1) ||
        (matrix_size[2].size() != 1) )
