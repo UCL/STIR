@@ -1,19 +1,17 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
-
   \file
-  \ingroup buildblock
+  \ingroup recon_buildblock
   \brief inline implementations for class DataSymmetriesForBins_PET_CartesianGrid
 
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "ProjDataInfoCylindrical.h"
 #include "SymmetryOperations_PET_CartesianGrid.h"
@@ -32,12 +30,25 @@ cartesian_grid_info_ptr() const
 }
 #endif
 
+int
+DataSymmetriesForBins_PET_CartesianGrid::
+get_num_planes_per_axial_pos(const int segment_num) const
+{
+  return num_planes_per_axial_pos[segment_num];
+}
+
+float 
+DataSymmetriesForBins_PET_CartesianGrid::
+get_axial_pos_to_z_offset(const int segment_num) const
+{
+  return axial_pos_to_z_offset[segment_num];
+}	
 
 int
 DataSymmetriesForBins_PET_CartesianGrid::
 find_transform_z(
-			 const int segment_num, 
-			 const int  axial_pos_num) const
+		 const int segment_num, 
+		 const int  axial_pos_num) const
 {
   ProjDataInfoCylindrical* proj_data_info_cyl_ptr = 
     static_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get());
