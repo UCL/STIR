@@ -261,7 +261,11 @@ RigidObject3DTransformationTests::run_tests()
   // tests using transform_bin
   {
     shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
-
+    // we make the scanner longer to avoid problems with rotations 
+    // (almost) orthogonal to the scanner axis. Otherwise most
+    // LORs would be transformed out of the scanner, and we won't get
+    // a get intersection of the backprojections
+    scanner_ptr->set_num_rings(40); 
     cerr << "\nTests with proj_data_info without mashing and axial compression, no arc-correction\n";
     shared_ptr<ProjDataInfo> proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
@@ -466,7 +470,7 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
   const CartesianCoordinate3D<float> voxel_size =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(*density_sptr).get_grid_spacing();
     
-  Quaternion<float> quat(1.F,.2F,.4F,.3F);
+  Quaternion<float> quat(.7F,.2F,.4F,.3F);
   quat.normalise();
   const CartesianCoordinate3D<float> translation(-11,-12,15);
     
@@ -512,7 +516,8 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
 	    lor.back_project(*density_sptr, transformed_bin);
 	  }
       }
-    cerr << "num_contributing_bins " << num_contributing_bins << '\n';
+    cerr << "num_contributing_bins " << num_contributing_bins 
+	 << " out of " << bins.end() - bins.begin() << '\n';
     const CartesianCoordinate3D<int> densel_from_bins =
       index_at_maximum(*density_sptr);
 
