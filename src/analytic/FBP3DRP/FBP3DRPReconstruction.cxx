@@ -129,13 +129,13 @@ static ofstream full_log;
 
 // terribly ugly. can be replaced using LORCoordinates stuff (TODO)
 static void find_rmin_rmax(int& rmin, int& rmax, 
-                           const ProjDataInfoCylindricalArcCorr& proj_data_info_cyl,
+                           const ProjDataInfoCylindrical& proj_data_info_cyl,
                            const int seg_num, 
                            const VoxelsOnCartesianGrid<float>& image)
 {
   
   const float fovrad = 
-    ((int) (proj_data_info_cyl.get_num_tangential_poss()/2)-1)*proj_data_info_cyl.get_tangential_sampling();
+    proj_data_info_cyl.get_s(Bin(0,0,0,proj_data_info_cyl.get_num_tangential_poss()/2 - 1));
   // Compute minimum and maximum rings of 'missing' projections
    
   const float delta=proj_data_info_cyl.get_average_ring_difference(seg_num);
@@ -346,16 +346,18 @@ FBP3DRPReconstruction::estimated_image() const
   return static_cast<const VoxelsOnCartesianGrid<float>&>(*image_estimate_density_ptr);
 }
 
+const ProjDataInfoCylindrical& 
+FBP3DRPReconstruction::input_proj_data_info_cyl() const
+{
+  return 
+    static_cast<ProjDataInfoCylindrical const&> 
+    (*proj_data_ptr->get_proj_data_info_ptr());
+}
+
 FBP3DRPReconstruction::
 FBP3DRPReconstruction(const string& parameter_filename)
 {  
   initialise(parameter_filename);
-  const ProjDataInfoCylindricalArcCorr * proj_data_info_cyl_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalArcCorr *> (proj_data_ptr->get_proj_data_info_ptr());
-  if (proj_data_info_cyl_ptr == 0)
-    error("FBP3DRP currently needs arc-corrected data. Sorry\n");
-
-  proj_data_info_cyl = *proj_data_info_cyl_ptr;
 }
 
 FBP3DRPReconstruction::FBP3DRPReconstruction()
@@ -379,6 +381,9 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
 
   // TODO move to post_processing()
   {
+    if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_ptr()) == 0)
+      error("FBP3DRP currently needs cylindrical projection data. Sorry\n");
+
     if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
       {
 	warning("stretch factors for Colsher filter have to be at least 1");
@@ -401,8 +406,8 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
 	return Succeeded::no;
       }
 
-  start_timers();
   }
+  start_timers();
   {
     //char file[max_filename_length];
     //sprintf(file,"%s.full_log",output_filename_prefix.c_str());
@@ -491,15 +496,39 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
     // TODO set fit parameters
   }
 
+  // find out if arc-correction if necessary
+  // and initialise proj_data_info_with_missing_data_sptr accordingly
   {
-    // find proj_data_info with space for missing data
-    proj_data_info_with_missing_data_sptr = 
-      proj_data_ptr->get_proj_data_info_ptr()->clone();
+    if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
+	(proj_data_ptr->get_proj_data_info_ptr()) != 0)
+      {
+	// it's already arc-corrected
+	arc_correction_sptr = 0; // just rest to make sure in case we run the reconstruction twice
+	proj_data_info_with_missing_data_sptr =
+	  proj_data_ptr->get_proj_data_info_ptr()->clone();
+      }
+    else
+      {
+	arc_correction_sptr = new ArcCorrection;
+	// TODO arc-correct to voxel_size
+	if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone()) ==
+	    Succeeded::no)
+	  return Succeeded::no;
+      
+	full_log << "FBP3DRP will arc-correct data first\n";
+	// warning: need to use clone() as we're modifying it later on
+	proj_data_info_with_missing_data_sptr =
+	  arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->clone();
+      }
+  }
+
+  // make space for missing data  
+  {
     proj_data_info_with_missing_data_sptr->
       reduce_segment_range(-max_segment_num_to_process,
 			   max_segment_num_to_process);
-    for (int segment_num= proj_data_ptr->get_min_segment_num();
-	 segment_num<= proj_data_ptr->get_max_segment_num();
+    for (int segment_num= proj_data_info_with_missing_data_sptr->get_min_segment_num();
+	 segment_num<= proj_data_info_with_missing_data_sptr->get_max_segment_num();
 	 ++segment_num)
       {
 	// note: initialisation to 0 to avoid compiler warnings,
@@ -507,7 +536,7 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
 	int new_min_axial_pos_num = 0;
 	int new_max_axial_pos_num = 0;
 	find_rmin_rmax(new_min_axial_pos_num, new_max_axial_pos_num,
-		       proj_data_info_cyl, segment_num, image); 
+		       input_proj_data_info_cyl(), segment_num, image); 
 	proj_data_info_with_missing_data_sptr->
 	  set_min_axial_pos_num(new_min_axial_pos_num, segment_num);
 	proj_data_info_with_missing_data_sptr->
@@ -564,7 +593,7 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
   
   // image_estimate should have 'default' dimensions, origin and voxel_size
   image_estimate_density_ptr =
-    new VoxelsOnCartesianGrid<float>(proj_data_info_cyl);      
+    new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_ptr());      
   
   {        
     FBP2DReconstruction recon2d(proj_data_ptr, 
@@ -654,8 +683,8 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 	  full_log << "\n--------------------------------\n";
 	  full_log << "PROCESSING SEGMENT  No " << seg_num << endl ;
 	  
-	  full_log << "Average delta= " <<  proj_data_info_cyl.get_average_ring_difference(seg_num)
-		   << " with span= " << proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) +1
+	  full_log << "Average delta= " <<  input_proj_data_info_cyl().get_average_ring_difference(seg_num)
+		   << " with span= " << input_proj_data_info_cyl().get_max_ring_difference(seg_num) - input_proj_data_info_cyl().get_min_ring_difference(seg_num) +1
 		   << " and extended axial position numbers: min= " << new_min_axial_pos_num << " and max= " << new_max_axial_pos_num  <<endl;
 	  
 	  first_view_in_segment = false;
@@ -741,6 +770,15 @@ void FBP3DRPReconstruction::do_best_fit(const Sinogram<float> &sino_measured,con
 }
 
           
+void FBP3DRPReconstruction::do_arc_correction(RelatedViewgrams<float> & viewgrams) const
+{        
+
+  if (is_null_ptr(arc_correction_sptr))
+    return;
+
+  viewgrams = arc_correction_sptr->do_arc_correction(viewgrams);
+}
+
 void FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams,
                                                  int new_min_axial_pos_num, int new_max_axial_pos_num)
 {        
@@ -809,6 +847,10 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 	
 void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & viewgrams)
 { 
+
+  assert(dynamic_cast<ProjDataInfoCylindricalArcCorr const *>
+	 (viewgrams.get_proj_data_info_ptr()));
+
   // TODO make into object member instead of static
   static int prev_seg_num = viewgrams.get_proj_data_info_ptr()->get_min_segment_num()-1;  
 #ifdef NRFFT
@@ -820,38 +862,39 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
   {
     prev_seg_num = seg_num;
     full_log << "  - Constructing Colsher filter for this segment\n";
-    int nrings = viewgrams.get_num_axial_poss(); 
-    int nprojs = viewgrams.get_num_tangential_poss();
+    const int nrings = viewgrams.get_num_axial_poss(); 
+    const int nprojs = viewgrams.get_num_tangential_poss();
     
-    int width = (int) pow(2, ((int) ceil(log((PadS + 1.) * nprojs) / log(2.))));
-    int height = (int) pow(2, ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
+    const int width = (int) pow(2, ((int) ceil(log((PadS + 1.) * nprojs) / log(2.))));
+    const int height = (int) pow(2, ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
     
     
-    const float theta_max = atan(proj_data_info_cyl.get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
+    const float theta_max = atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
     
     const float theta = 
-      static_cast<float>(atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0))));
+      static_cast<float>(atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(seg_num,0,0,0))));
     
+    const float sampling_in_s =
+      viewgrams.get_proj_data_info_ptr()->get_sampling_in_s(Bin(seg_num,0,0,0));
+    const float sampling_in_t =
+      viewgrams.get_proj_data_info_ptr()->get_sampling_in_t(Bin(seg_num,0,0,0));
     full_log << "Colsher filter theta_max = " << theta_max << " theta = " << theta
-      << " d_a = " << proj_data_info_cyl.get_tangential_sampling()
-	     << " d_b = " << proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)) << endl;
+      << " d_a = " << sampling_in_s
+	     << " d_b = " << sampling_in_t << endl;
     
     
 #ifdef NRFFT
-
-    assert(fabs(proj_data_info_cyl.get_axial_sampling(seg_num)*cos(theta) /
-		proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)) - 1) < .0001);
     colsher_filter = 
       ColsherFilter(height, width, _PI/2 - theta, theta_max, 
-                    proj_data_info_cyl.get_tangential_sampling(), 
-                    proj_data_info_cyl.get_axial_sampling(seg_num)*cos(theta),// TODO replace with get_sampling_in_t()
+                    sampling_in_s, 
+                    sampling_in_t,
                     alpha_colsher_axial, fc_colsher_axial,
                     alpha_colsher_planar, fc_colsher_planar);
 #else
     if (colsher_filter.set_up(height, width, 
 			      theta, 
-			      proj_data_info_cyl.get_tangential_sampling(), 
-			      proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)))
+			      sampling_in_s, 
+			      sampling_in_t)
 	!= Succeeded::yes)
       error("Exiting");
 #endif
@@ -871,6 +914,7 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 
 #else
 
+  //  do not use std::for_each. at present on gcc it copies the filter for every viewgram
   //  std::for_each(viewgrams.begin(), viewgrams.end(), 
   //		colsher_filter);
   RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
@@ -888,7 +932,8 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 			 */  
       {
 	const int num_ring_differences = 
-	  proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) + 1;
+	  input_proj_data_info_cyl().get_max_ring_difference(seg_num) - 
+	  input_proj_data_info_cyl().get_min_ring_difference(seg_num) + 1;
 	full_log << "  - Multiplying filtered projections by " << num_ring_differences << endl;
 	if (num_ring_differences != 1){
           viewgrams *= static_cast<float>(num_ring_differences);
@@ -953,6 +998,8 @@ void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewg
                                                    int orig_min_axial_pos_num, int orig_max_axial_pos_num,
                                                    VoxelsOnCartesianGrid<float> &image)
 {
+        do_arc_correction(viewgrams);
+
         do_grow3D_viewgram(viewgrams, new_min_axial_pos_num, new_max_axial_pos_num);
         
 	do_forward_project_view(viewgrams,
