@@ -1,9 +1,9 @@
-CXX = g++
+-CXX = g++
 CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -I/epx/epx/include -D_CR_LIB_
 #CXX = xlC
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -DTEMPLATE_ARG
 
-all:	ParaProcess.o ParaProcessPattern.o ParaStream.o ParaStreamIn.o ParaStreamOut.o ParaStreamInOps.o ParaStreamOutOps.o sinodata.o
+all:	ParaProcess.o ParaProcessPattern.o ParaStream.o ParaStreamIn.o ParaStreamOut.o ParaStreamInOps.o ParaStreamOutOps.o ParaEPX.o sinodata.o
 
 #%.o:	%.cxx
 #.o.cxx:
@@ -41,5 +41,8 @@ ParaStreamInOps.o:	ParaStreamInOps.cxx
 	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
 ParaStreamOutOps.o:	ParaStreamOutOps.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaEPX.o:	ParaEPX.cxx
 	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
