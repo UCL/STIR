@@ -34,7 +34,7 @@ class NumericType
 {
 public:
   enum Type { BIT, SCHAR, UCHAR, SHORT, USHORT, INT, UINT, LONG, ULONG, 
-	 FLOAT, DOUBLE, UNKNOWN } id;
+	 FLOAT, DOUBLE, UNKNOWN_TYPE } id;
   NumericType(Type t)
     : id(t) 
     {}
