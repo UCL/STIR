@@ -146,7 +146,7 @@ SinglesRatesFromECAT7::set_defaults()
 int 
 SinglesRatesFromECAT7::get_frame_number (const double start_time, const double end_time) const
 {
-  assert(end_time >start_time);
+  assert(end_time >=start_time);
   //cerr << "num frames are" << time_frame_defs.get_num_frames()<<endl;;
   for ( int i = 1; i <=time_frame_defs.get_num_frames(); i++)
     {
