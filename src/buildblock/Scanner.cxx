@@ -67,7 +67,8 @@ Scanner::Scanner(Type scanner_type)
 
 
   if (scanner_type == E931)
-    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
+    // KT 25/01/2002 corrected ring_spacing
+    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 13.5F,  3.129F,   0);
   else if (scanner_type == E951)
     set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
   else if (scanner_type == E953)
@@ -92,7 +93,6 @@ Scanner::Scanner(Type scanner_type)
     // Advance option
     // 283 bins (non-uniform sampling) 
     // 281 bins (uniform sampling)
-    // KT 24/08/2000 ordered parameters correctly
     set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,469.5F, 8.5F, 1.96F, 0);
   }
   else if (scanner_type == HZLR)
