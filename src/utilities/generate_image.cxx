@@ -12,10 +12,21 @@
   \code
   generate_image Parameters :=
   output filename:= somefile
-  XY output image size (in pixels):= 13
+  X output image size (in pixels):= 13
+  Y output image size (in pixels):= 13
   Z output image size (in pixels):= 15
-  XY voxel size (in mm):= 4
+  X voxel size (in mm):= 4
+  Y voxel size (in mm):= 4
   Z voxel size (in mm) := 5
+
+  ; parameters that determine subsampling of border voxels
+  ; to obtain smooth edges
+  ; setting these to 1 will just check if the centre of the voxel is in or out
+  ; default to 5
+  Z number of samples to take per voxel := 5
+  Y number of samples to take per voxel := 5
+  X number of samples to take per voxel := 5
+
   ; now starts an enumeration of objects
   ; Shape3D hierarchy for possible shapes and their parameters
   shape type:= ellipsoidal cylinder
@@ -95,6 +106,8 @@ private:
   float output_voxel_size_x;
   float output_voxel_size_y;
   float output_voxel_size_z;
+
+  CartesianCoordinate3D<int> num_samples;
 };
 
 
@@ -105,6 +118,7 @@ increment_current_shape_num()
     {
       shape_ptrs.push_back(current_shape_ptr);
       values.push_back(current_value);
+      current_shape_ptr = 0;
     }
 }
 
@@ -118,6 +132,7 @@ set_defaults()
   output_voxel_size_x=1;
   output_voxel_size_y=1;
   output_voxel_size_z=1;
+  num_samples = CartesianCoordinate3D<int>(5,5,5);
   shape_ptrs.resize(0);
   values.resize(0);
   output_filename.resize(0);
@@ -137,6 +152,11 @@ initialise_keymap()
   add_key("X voxel size (in mm)",&output_voxel_size_x);
   add_key("Y voxel size (in mm)",&output_voxel_size_y);
   add_key("Z voxel size (in mm)",&output_voxel_size_z);
+  
+  add_key("Z number of samples to take per voxel", &num_samples.z());
+  add_key("Y number of samples to take per voxel", &num_samples.y());
+  add_key("X number of samples to take per voxel", &num_samples.x());
+  
   add_parsing_key("shape type", &current_shape_ptr);
   add_key("value", &current_value);
   add_key("next shape", KeyArgument::NONE,
@@ -197,6 +217,21 @@ post_processing()
       warning("Z output_voxel_size should be strictly positive\n");
       return true;
     }
+  if (num_samples.z()<=0)
+    {
+      warning("number of samples to take in z-direction should be strictly positive\n");
+      return true;
+    }
+  if (num_samples.y()<=0)
+    {
+      warning("number of samples to take in y-direction should be strictly positive\n");
+      return true;
+    }
+  if (num_samples.x()<=0)
+    {
+      warning("number of samples to take in x-direction should be strictly positive\n");
+      return true;
+    }
   return false;
 }
 
@@ -210,7 +245,10 @@ GenerateImage(const char * const par_filename)
   initialise_keymap();
   set_defaults();
   if (par_filename!=0)
-    parse(par_filename) ;
+    {
+      if (parse(par_filename) == false)
+	exit(EXIT_FAILURE);
+    }
   else
     ask_parameters();
 
@@ -230,8 +268,7 @@ GenerateImage(const char * const par_filename)
 Succeeded
 GenerateImage::
 compute()
-{
-  const CartesianCoordinate3D<int> num_samples(5,5,5);
+{  
 #if 0
   shared_ptr<DiscretisedDensity<3,float> > density_ptr = 
     DiscretisedDensity<3,float>::read_from_file(template_filename);
