@@ -43,7 +43,7 @@ public:
 
   void find_ref_pos_from_att_file (float& att_start_time, float& att_end_time, 
 	const float transmission_duration, const string attnuation_filename);
-  
+  /*
   void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
 				 CartesianCoordinate3D<float>& coord_2,
 				 const int Ring_A,const int Ring_B, 
@@ -54,7 +54,7 @@ public:
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 							  const CartesianCoordinate3D<float>& coord_1_in,
 							  const CartesianCoordinate3D<float>& coord_2_in, 
-							  const Scanner& scanner) const;
+							  const Scanner& scanner) const;*/
 
   void transform_detector_pair_into_view_bin (int& view,int& bin, 
 					    const int det1,const int det2, 
@@ -70,6 +70,8 @@ public:
   virtual bool post_processing();
 
   mutable RigidObject3DTransformation ro3d_move_to_reference_position;
+  RigidObject3DTransformation move_to_scanner;
+  RigidObject3DTransformation move_from_scanner;
 
   
 };
