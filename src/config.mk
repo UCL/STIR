@@ -8,7 +8,10 @@ BUILD=opt
 #******** location of files
 
 INCLUDE_DIR = ${WORKSPACE}/include
-INSTALL_DIR = ${HOME}/bin
+INSTALL_PREFIX := ${HOME}
+INSTALL_EXE_DIR = $(INSTALL_PREFIX)/bin
+INSTALL_LIB_DIR = $(INSTALL_PREFIX)/lib
+INSTALL_INCLUDE_DIR = $(INSTALL_PREFIX)/include
 
 # location of .o, .a and executables, set DEST if you don't agree with the default
 ifndef DEST
@@ -19,11 +22,15 @@ DEST=opt/
 endif # debug/ ?
 endif # DEST not defined
 
-
 #******* type of graphics used by display()
 # possible values: X, PGM, MATHLINK, NONE
 # note: only used in display/lib.mk and for GRAPH_LIBS
 GRAPHICS=X
+
+#******* command used for install* targets
+INSTALL=cp
+# could be something like 
+#INSTALL="install -s -m 755"
 
 #****** find out which system we're on
 
@@ -144,8 +151,9 @@ ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
 endif
 
 
-
-
-
+#****** other configuration checks
+# make a variable that allows us to test if we have gcc 3.0 or later
+# If so, this will allow us to simplify generating the dependencies a lot!
+IS_GCC_3:=$(shell $(CXX) -v 2>&1 |grep "gcc version [3456789]")
 
 
