@@ -27,6 +27,25 @@
 
 START_NAMESPACE_TOMO
 
+#ifdef ARRAY4
+
+template <int num_dimensions, typename elemT>
+void 
+Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
+{
+  base_type::grow(range.get_min_index(), range.get_max_index());
+  base_type::iterator iter = begin();
+  IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
+  for (;
+  iter != end(); 
+  iter++, range_iter++)
+    (*iter).grow(*range_iter);
+
+  is_regular_range = range.is_regular();
+}
+#endif
+
+
 /*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT>
 void 
@@ -1154,5 +1173,11 @@ template class Array<2,float>;
 template class Array<3, short>;
 template class Array<3,unsigned short>;
 template class Array<3,float>;
+
+#ifdef ARRAY4
+template class Array<4, short>;
+template class Array<4,unsigned short>;
+template class Array<4,float>;
+#endif
 
 END_NAMESPACE_TOMO
