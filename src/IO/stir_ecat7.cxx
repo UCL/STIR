@@ -1141,40 +1141,242 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
     }
 }
 
+static
+Succeeded
+get_ECAT7_image_info(CartesianCoordinate3D<int>& dimensions,
+		     CartesianCoordinate3D<float>& voxel_size,
+		     Coordinate3D<float>& origin,
+		     float& scale_factor,      
+		     NumericType& type_of_numbers,
+		     ByteOrder& byte_order,
+		     long& offset_in_file,
+
+		     const string& ECAT7_filename,
+		     const int frame_num, const int gate_num, const int data_num, const int bed_num,
+		     const char * const warning_prefix,
+		     const char * const warning_suffix)
+{
+  MatrixFile * const mptr = 
+    matrix_open( ECAT7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if (!mptr) {
+    matrix_perror( ECAT7_filename.c_str());
+    return Succeeded::no;
+  }
+  if (mptr->mhptr->sw_version < V7)
+    { 
+      matrix_close(mptr);
+      warning("%s: %s seems to be an ECAT 6 file. "
+	      "%s",
+	      warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+      return Succeeded::no;
+    }
+
+  //case PetImage: TODO this probably has subheaders?
+  if (mptr->mhptr->file_type != ByteVolume &&
+      mptr->mhptr->file_type != PetVolume)
+    {
+      matrix_close(mptr);
+      warning("%s: %s has the wrong file type to be read as an image."
+	      "%s",
+	      warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+      return Succeeded::no;
+    }
+  
+  const int matnum = mat_numcod (frame_num, 1, gate_num, data_num, bed_num);
+  MatrixData* matrix = matrix_read( mptr, matnum, MAT_SUB_HEADER);
+  
+  if (matrix==NULL)
+    { 
+      matrix_close(mptr);
+      warning("%s: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
+	      "%s",
+	      warning_prefix,
+	      frame_num, gate_num, data_num, bed_num, ECAT7_filename.c_str(),
+	      warning_suffix);
+      return Succeeded::no;
+    }  
+
+  Image_subheader const * const sub_header_ptr=
+    reinterpret_cast<Image_subheader const* const>(matrix->shptr);
+    
+  if(sub_header_ptr->num_dimensions != 3)
+    warning("%s: while reading matrix \"%d,1,%d,%d,%d\" in file %s:\n"
+	    "Expected subheader_ptr->num_dimensions==3. Continuing\n",
+	    warning_prefix,
+	    frame_num, gate_num, data_num, bed_num, ECAT7_filename.c_str());
+  dimensions = 
+    CartesianCoordinate3D<int>(matrix->zdim,
+		      matrix->ydim,
+		      matrix->xdim);
+  voxel_size =
+    CartesianCoordinate3D<float>(matrix->z_size * 10,
+				 matrix->y_size * 10,
+				 matrix->pixel_size * 10); // convert to mm
+
+  origin =
+    Coordinate3D<float>(matrix->z_origin * 10,
+			matrix->y_origin * 10,
+			matrix->x_origin * 10); // convert to mm
+      
+  scale_factor = matrix->scale_factor;
+      
+  find_type_from_ECAT_data_type(type_of_numbers, byte_order, matrix->data_type);
+      
+  offset_in_file =
+    offset_in_ECAT_file(mptr, frame_num, 1, gate_num, data_num, bed_num, 0, NULL);
+  if (offset_in_ECAT_file<0)
+    { 
+      free_matrix_data(matrix);
+      matrix_close(mptr);
+      warning("%s: while reading matrix \"%d,1,%d,%d,%d\" in file %s:\n"
+	      "Error in determining offset into ECAT7 file %s.\n"
+	      "%s",
+	      warning_prefix, 
+	      frame_num, gate_num, data_num, bed_num, ECAT7_filename.c_str(),
+	      warning_suffix);
+      return Succeeded::no;
+    }     
+    
+  free_matrix_data(matrix);
+  matrix_close(mptr);
+  return Succeeded::yes;
+}
+
+VoxelsOnCartesianGrid<float> *
+ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
+			       const int frame_num, const int gate_num, const int data_num, const int bed_num)
+{
+  const char * const warning_prefix = "ECAT7_to_VoxelsOnCartesianGrid";
+  const char * const warning_suffix =  "I'm not reading any data...\n";
+
+  CartesianCoordinate3D<int> dimensions;
+  CartesianCoordinate3D<float> voxel_size;
+  Coordinate3D<float> origin;
+  float scale_factor;
+  NumericType type_of_numbers;
+  ByteOrder byte_order;
+  long offset_in_file;
+  if (get_ECAT7_image_info(dimensions, voxel_size, origin,
+			   scale_factor, type_of_numbers, byte_order, offset_in_file,
+
+			   ECAT7_filename,
+			   frame_num, gate_num, data_num, bed_num,
+			   warning_prefix,
+			   warning_suffix) ==
+      Succeeded::no)
+    { 
+      return 0;
+    }
+
+  const IndexRange3D range_3D (0,dimensions.z()-1,
+			       -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
+			       -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
+  VoxelsOnCartesianGrid<float>* image_ptr =
+    new VoxelsOnCartesianGrid<float> (range_3D, origin, voxel_size);
+  
+  std::ifstream data_in(ECAT7_filename.c_str(), ios::in | ios::binary);
+  if (!data_in)
+    {
+      warning("%s: cannot open %s using C++ ifstream.\n"
+	      "%s",  
+	      warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+      return 0;
+    }
+
+  data_in.seekg(static_cast<unsigned long>(offset_in_file));
+  if (!data_in)
+    {
+      warning("%s: while reading %s:\n"
+	      "error seeking to position of data.\n"
+	      "%s",  
+	      warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+
+      return 0;
+    }
+  
+  {
+    float scale = float(1);
+    image_ptr->read_data(data_in, type_of_numbers, scale, byte_order);
+    if (scale != 1)
+      {
+	warning("%s: while reading %s:\n"
+		"error in reading data with convertion to floats.\n",
+		"%s", 
+		warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+
+	return 0;
+      }
+  }
+  *image_ptr *= scale_factor;
+    
+  return image_ptr;
+}
+
+ProjDataFromStream*
+ECAT7_to_PDFS(const string& ECAT7_filename,
+	      const int frame_num, const int gate_num, const int data_num, const int bed_num)
+{  
+  MatrixFile * const mptr = matrix_open( ECAT7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if (!mptr) {
+    matrix_perror( ECAT7_filename.c_str());
+    return 0;
+  }
+  const char * const warning_prefix = "ECAT7_to_PDFS";
+  const char * const warning_suffix =  "I'm not reading any data...\n";
+
+  if (mptr->mhptr->sw_version < V7)
+    { 
+      warning("%s: %s seems to be an ECAT 6 file. "
+	      "%s",  warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+      return 0; 
+    }
+  const int matnum = mat_numcod (frame_num, 1, gate_num, data_num, bed_num);
+  MatrixData* matrix = matrix_read( mptr, matnum, MAT_SUB_HEADER);
+  
+  if (matrix==NULL)
+    { 
+      matrix_close(mptr);
+      warning("%s: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
+	      "%s",
+	      warning_prefix,
+	      frame_num, gate_num, data_num, bed_num, 
+	      ECAT7_filename.c_str(), warning_suffix);
+      return 0;
+    }
+  
+  shared_ptr<iostream> stream_ptr = 
+    new fstream(ECAT7_filename.c_str(), ios::in | ios::binary);
+      
+  ProjDataFromStream * pdfs_ptr = 
+    make_pdfs_from_matrix(mptr, matrix, stream_ptr);
+  free_matrix_data(matrix);
+  matrix_close(mptr);
+  return pdfs_ptr;
+}
+
+
 Succeeded 
 write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
                                        const string& ECAT7_filename,
-                                       int frame, int gate, int data,
-                                       int bed)
+				       const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
-  
-
   
   MatrixFile * const mptr = matrix_open( ECAT7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
   if (!mptr) {
     matrix_perror( ECAT7_filename.c_str());
     return Succeeded::no;
   }
+  const char * const warning_prefix = "write_basic_interfile_header_for_ECAT7";
+  const char * const warning_suffix =  "I'm not reading an Interfile header...\n";
+
   if (mptr->mhptr->sw_version < V7)
   { 
-    warning("write_basic_interfile_header_for_ECAT7: %s seems to be an ECAT 6 file. "
-            "I'm not writing any header...\n",  ECAT7_filename.c_str()); 
+    warning("%s: %s seems to be an ECAT 6 file. "
+            "%s",  warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
     return Succeeded::no; 
   }
   
 
-  const int matnum = mat_numcod (frame, 1, gate, data, bed);
-  MatrixData* matrix = matrix_read( mptr, matnum, MAT_SUB_HEADER);
-  
-  if (matrix==NULL)
-  { 
-    matrix_close(mptr);
-    warning("write_basic_interfile_header_for_ECAT7: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
-            "I'm not writing any header...\n",
-            frame, gate, data, bed,  ECAT7_filename.c_str());
-    return Succeeded::no;
-  }
-  
   char *header_filename = new char[ECAT7_filename.size() + 100];
   {
     strcpy(header_filename, ECAT7_filename.c_str());
@@ -1185,7 +1387,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       *dot_ptr = '_';
     // now add stuff to say which frame, gate, bed, data this was
     sprintf(header_filename+strlen(header_filename), "_f%dg%dd%db%d", 
-	    frame, gate, data, bed);
+	    frame_num, gate_num, data_num, bed_num);
   }
   
   switch (mptr->mhptr->file_type)
@@ -1194,40 +1396,25 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
   case ByteVolume:
   case PetVolume:
     {
-      Image_subheader *sub_header_ptr=
-        reinterpret_cast<Image_subheader*>(matrix->shptr);
-      
-      if(sub_header_ptr->num_dimensions != 3)
-        warning("write_basic_interfile_header_for_ECAT7: Expected subheader_ptr->num_dimensions==3\n");
-      const Coordinate3D<int> dimensions(matrix->zdim,
-        matrix->ydim,
-        matrix->xdim);
-      const CartesianCoordinate3D<float> voxel_size(matrix->z_size * 10,
-        matrix->y_size * 10,
-        matrix->pixel_size * 10); // convert to mm
-      /* not used yet
-      const Coordinate3D<float> origin(matrix->z_origin * 10,
-        matrix->y_origin * 10,
-        matrix->x_origin * 10); // convert to mm
-      */
-      const float scale_factor = matrix->scale_factor;
-      
-      NumericType data_type;
+      CartesianCoordinate3D<int> dimensions;
+      CartesianCoordinate3D<float> voxel_size;
+      Coordinate3D<float> origin;
+      float scale_factor;
+      NumericType type_of_numbers;
       ByteOrder byte_order;
-      find_type_from_ECAT_data_type(data_type, byte_order, matrix->data_type);
-      
-      const long offset_in_file =
-        offset_in_ECAT_file(mptr, frame, 1, gate, data, bed, 0, NULL);
-      // KT 14/05/2002 added error check
-      if (offset_in_ECAT_file<0)
-      { 
-	free_matrix_data(matrix);
-	matrix_close(mptr);
-        warning("write_basic_interfile_header_for_ECAT7: Error in determining offset into ECAT7 file %s.\n"
-                "I'm not writing any header...\n",
-                 ECAT7_filename.c_str()); 
-        return Succeeded::no; 
-      }     
+      long offset_in_file;
+      if (get_ECAT7_image_info(dimensions, voxel_size, origin,
+			       scale_factor, type_of_numbers, byte_order, offset_in_file,
+
+			       ECAT7_filename,
+			       frame_num, gate_num, data_num, bed_num,
+			       warning_prefix,
+			       warning_suffix) ==
+	  Succeeded::no)
+	{ 
+	  matrix_close(mptr);
+	  return Succeeded::no;
+	}
       
       VectorWithOffset<float> scaling_factors(1);
       VectorWithOffset<unsigned long> file_offsets(1);
@@ -1236,10 +1423,9 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       strcat(header_filename, ".hv");
       interfile_header_filename = header_filename;
       write_basic_interfile_image_header(header_filename, ECAT7_filename,
-        dimensions, voxel_size, data_type,byte_order,
-        scaling_factors,
-        file_offsets);
-      free_matrix_data(matrix);
+					 dimensions, voxel_size, type_of_numbers, byte_order,
+					 scaling_factors,
+					 file_offsets);
       break;
     }
           
@@ -1248,31 +1434,44 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
   case Short3dSinogram:
   case Float3dSinogram :
     {
+      const int matnum = mat_numcod (frame_num, 1, gate_num, data_num, bed_num);
+      MatrixData* matrix = matrix_read( mptr, matnum, MAT_SUB_HEADER);
+  
+      if (matrix==NULL)
+	{ 
+	  matrix_close(mptr);
+	  warning("%s: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
+		  "%s",
+		  warning_prefix,
+		  frame_num, gate_num, data_num, bed_num, 
+		  ECAT7_filename.c_str(), warning_suffix);
+	  return Succeeded::no;
+	}
+  
       shared_ptr<iostream> stream_ptr = 
 	new fstream(ECAT7_filename.c_str(), ios::in | ios::binary);
       
-      ProjDataFromStream* pdfs_ptr = 
+      shared_ptr<ProjDataFromStream> pdfs_ptr = 
 	make_pdfs_from_matrix(mptr, matrix, stream_ptr);
       free_matrix_data(matrix);
      
       if (pdfs_ptr == NULL)
-	return Succeeded::no;
-      
+	{
+	  matrix_close(mptr);
+	  return Succeeded::no;
+	}
       strcat(header_filename, ".hs");
       interfile_header_filename = header_filename;
       write_basic_interfile_PDFS_header(header_filename, ECAT7_filename, *pdfs_ptr);
-      delete pdfs_ptr;
 
       break;
-    }
-    
+    }    
         
   default:
-      free_matrix_data(matrix);
-      matrix_close(mptr);
-      warning("write_basic_interfile_header_for_ECAT7: File type not handled for file %s.\n"
-            "I'm not writing any Interfile headers...\n",
-             ECAT7_filename.c_str());
+    matrix_close(mptr);
+    warning("%s: File type not handled for file %s.\n"
+	    "%s",
+	    warning_prefix, ECAT7_filename.c_str(), warning_suffix);
     return Succeeded::no;
   }
   
