@@ -312,19 +312,19 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     if (tantheta==0)
       {
 	assert(stop_point.z()==start_point.z());
-	if (fabs(modulo(stop_point.z(),1)-.5)<.001)
+	if (fabs(modulo(stop_point.z(),1.F)-.5)<.001)
 	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two z-planes\n");
       }
     if (cphi==0)
       {
 	assert(stop_point.y()==start_point.y());
-	if (fabs(modulo(stop_point.y(),1)-.5)<.001)
+	if (fabs(modulo(stop_point.y(),1.F)-.5)<.001)
 	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
       }
     if (sphi==0)
       {
 	assert(stop_point.x()==start_point.x());
-	if (fabs(modulo(stop_point.x(),1)-.5)<.001)
+	if (fabs(modulo(stop_point.x(),1.F)-.5)<.001)
 	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
       }
 
@@ -491,7 +491,7 @@ calculate_proj_matrix_elems_for_one_bin(
       //  (t_in_mm+offset_in_z)/voxel_size.z();
       // if so, we ray trace first to the voxels at smaller z, but will add the 
       // other plane later (in add_adjacent_z)
-      if (fabs(modulo((t_in_mm+offset_in_z)/voxel_size.z(),1)-.5)<.001)
+      if (fabs(modulo((t_in_mm+offset_in_z)/voxel_size.z(),1.F)-.5)<.001)
         offset_in_z -= .1F*voxel_size.z();
     }
 
