@@ -28,6 +28,7 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	shift_projdata_along_axis.cxx \
 	remove_sinograms.cxx \
 	generate_image.cxx \
+	fit_cylinder.cxx \
 	rigid_object_transform_projdata.cxx \
 	rigid_object_transform_image.cxx \
 	find_maximum_in_image.cxx \
