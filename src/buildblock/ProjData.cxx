@@ -28,7 +28,6 @@
 
 // for read_from_file
 #include "stir/interfile.h"
-#include "stir/interfile_keyword_functions.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 #include "stir/ProjDataGEAdvance.h"
 #include "stir/IO/stir_ecat7.h"
@@ -105,6 +104,8 @@ read_from_file(const string& filename,
 
     if (is_ecat7_emission_file(filename) || is_ecat7_attenuation_file(filename))
     {
+      warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
+	      filename.c_str());
       string interfile_header_name;
       if (write_basic_interfile_header_for_ecat7(interfile_header_name, filename, 1,1,0,0) ==
 	  Succeeded::no)
@@ -113,6 +114,7 @@ read_from_file(const string& filename,
       warning("ProjData::read_from_file wrote interfile header %s\nNow reading as interfile", 
               interfile_header_name.c_str());
 #endif
+
       return read_interfile_PDFS(interfile_header_name, openmode);
     }
     else
@@ -124,8 +126,7 @@ read_from_file(const string& filename,
 #endif // HAVE_LLN_MATRIX
 
   // Interfile
-  if (standardise_interfile_keyword(signature) == 
-      standardise_interfile_keyword("interfile"))
+  if (is_interfile_signature(signature))
   {
 #ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as Interfile\n", filename.c_str());
@@ -142,7 +143,6 @@ read_from_file(const string& filename,
 	  filename.c_str());
   return 0;
 }
-
 
 Viewgram<float> 
 ProjData::get_empty_viewgram(const int view_num, const int segment_num, 
