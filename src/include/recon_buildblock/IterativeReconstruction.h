@@ -6,7 +6,7 @@
 
 /*!
   \file 
-  \ingroup reconstruction
+  \ingroup recon_buildblock
  
   \brief declares the IterativeReconstruction class
 
@@ -25,49 +25,40 @@
 
 START_NAMESPACE_TOMO
 
-/*! \brief base class for iterative reconstruction objects
-
+/*! 
+  \brief base class for iterative reconstruction objects
+  \ingroup recon_buildblock
  */
-
 
 class IterativeReconstruction : public Reconstruction
 {
  
     
- public:
+public:
 
   //! accessor for the subiteration counter
   int get_subiteration_num() const
     {return subiteration_num;}
 
   //! executes the reconstruction
-  virtual void reconstruct(PETImageOfVolume &target_image);
+  virtual Succeeded 
+    reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr);
 
- protected:
-
+protected:
+ 
+  IterativeReconstruction();
 
   //! operations prior to the iterations
-  virtual void recon_set_up(PETImageOfVolume &target_image)=0;
+  virtual void recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr)=0;
 
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_image_estimate(PETImageOfVolume &current_image_estimate)=0;
+  virtual void update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate)=0;
 
   //! operations for the end of the iteration
-  virtual void end_of_iteration_processing(PETImageOfVolume &current_image_estimate)=0;
-
-  //MJ for appendability
-
-  //! operations prior to the iterations common to all iterative algorithms
-  void iterative_common_recon_set_up(PETImageOfVolume &target_image);
-
-  //! operations for the end of the iteration common to all iterative algorithms
-  void iterative_common_end_of_iteration_processing(PETImageOfVolume &current_image_estimate);
+  virtual void end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate)=0;
 
   //! used to randomly generate a subset sequence order for the current iteration
   VectorWithOffset<int> randomly_permute_subset_order();
-
-  //MJ seemingly dumb, but params() may eventually have to return a Reconstruction object
-
 
   //! accessor for the external parameters
   IterativeReconstructionParameters& get_parameters()
@@ -75,21 +66,12 @@ class IterativeReconstruction : public Reconstruction
       return static_cast<IterativeReconstructionParameters&>(params());
     }
 
-  /*
+  //! accessor for the external parameters
   const IterativeReconstructionParameters& get_parameters() const
     {
       return static_cast<const IterativeReconstructionParameters&>(params());
     }
-    */
 
-  
-  // Ultimately the argument will be a PETStudy or the like
-  
-  //! customized constructor that can call pure virtual functions
-  void IterativeReconstruction_ctor(char* parameter_filename="");
-
-  //! customized destructor that can call pure virtual functions
-  void IterativeReconstruction_dtor();
 
   //! the subiteration counter
   int subiteration_num;
@@ -103,6 +85,8 @@ class IterativeReconstruction : public Reconstruction
   //! a workaround for compilers not supporting covariant return types
   virtual ReconstructionParameters& params()=0;
 
+  //! a workaround for compilers not supporting covariant return types
+  virtual const ReconstructionParameters& params() const=0;
 
 };
 
