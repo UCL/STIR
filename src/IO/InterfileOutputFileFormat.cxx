@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup IO
+  \ingroup InterfileIO
   \brief Implementation of class InterfileOutputFileFormat
 
   \author Kris Thielemans
@@ -72,7 +72,7 @@ set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 
 Succeeded  
 InterfileOutputFileFormat::
-    write_to_file(string& filename, 
+    actual_write_to_file(string& filename, 
                   const DiscretisedDensity<3,float>& density) const
 {
   // TODO modify write_basic_interfile to return filename
