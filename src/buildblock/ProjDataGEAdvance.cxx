@@ -20,6 +20,7 @@
 
 
 #include "ProjDataGEAdvance.h"
+#include "tomo/Succeeded.h"
 #include "Viewgram.h"
 #include "Sinogram.h"
 #include "Scanner.h"
