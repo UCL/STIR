@@ -4,7 +4,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declaration of class CListModeData
+  \brief Declaration of class CListModeDataFromStream
     
   \author Kris Thielemans
       
@@ -12,15 +12,15 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_listmode_CListModeDataFromStream_H__
 #define __stir_listmode_CListModeDataFromStream_H__
 
-#include "local/stir/listmode/CListModeData.h"
-#include "local/stir/listmode/CListRecord.h"
+#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/shared_ptr.h"
 #include "stir/ByteOrder.h"
 
@@ -38,7 +38,28 @@ using std::vector;
 START_NAMESPACE_STIR
 
 //! A class that reads the listmode data from a (presumably binary) stream 
-/*! \todo This class currently relies in the fact that
+/*! This class is really a helper class for implementing different types
+    of CListModeData types. It is useful when all types of records (e.g.
+    timing and detected-event) have the same size. In that case, all IO
+    handling is completely generic and is implemented in this class.
+
+    The current implementation uses a buffered approach for IO. A fixed number
+    of records is read into a buffer which is then used for subsequent
+    calls to get_next_record(). So, disk IO is only necessary when the 
+    buffer is empty.
+
+    \warning Although this is currently a derived from CListModeData, this
+    is possibly not a good design choice. In the end, we really need only
+    the buffered IO. For example, to get the current implementation to work, the
+    constructors need arguments such as \a empty_record_sptr such that the
+    relevant members of CListModeData can be implemented. This increases
+    dependency on CListModeData to a (probably) unacceptable level.
+    (e.g. when adding CListModeData::num_energy_windows() we would need
+    another argument here).
+
+    \todo Do not derive this class from CListModeData.
+
+    \todo This class currently relies in the fact that
      vector<streampos>::size_type == SavedPosition
 */
 class CListModeDataFromStream : public CListModeData
