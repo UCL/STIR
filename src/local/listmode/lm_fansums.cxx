@@ -5,16 +5,15 @@
   \file 
   \ingroup utilities
 
-  \brief Program to bin listmode data to 3d sinograms
+  \brief Program to compute fansums directly from listmode data
  
   \author Kris Thielemans
-  \author Sanida Mustafovic
   
   $Date$
   $Revision $
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2002- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -40,6 +39,7 @@ INCLUDE_NORMALISATION_FACTORS:
 #include "local/stir/listmode/lm.h"
 
 #endif
+#include "local/stir/listmode/CListModeData.h"
 #include "stir/Scanner.h"
 #include "stir/Array.h"
 #include "stir/IndexRange2D.h"
@@ -71,7 +71,6 @@ USING_NAMESPACE_STIR
 
 
 
-/******************** Prototypes  for local routines ************************/
 
 
 /************************ main ************************/
@@ -90,15 +89,17 @@ int main(int argc, char * argv[])
 
   //*********** open listmode file
 
-  fstream input (input_filename.c_str(),ios::in | ios::binary );
-  if (!input.is_open())  error("Error opening input file.\n");
-  long input_file_offset = 0;
+
 #ifdef HIDACREBINNER
-  // read the list mode header to obtain lm_infos   
+  unsigned long input_file_offset = 0;
   LM_DATA_INFO lm_infos;
   read_lm_QHiDAC_data_head_only(&lm_infos,&input_file_offset,input_filename);
+  shared_ptr<CListModeData> listmode_ptr =
+    new CListModeDataFromStream(input_filename, input_file_offset);
 #else
   // something similar will be done for other listmode types. TODO
+  shared_ptr<CListModeData> listmode_ptr =
+    CListModeData::read_from_file(input_filename);
 #endif
 
 
@@ -139,18 +140,6 @@ int main(int argc, char * argv[])
     :
     0 /* listmode file does not store delayeds*/; 
     
-  // Determine maximum number of events from file size 
-  long max_num_events;
-  { 
-    // start of the binary part
-    input.seekg(input_file_offset,ios::beg);
-    const streampos start_of_stream = input.tellg();
-    
-    input.seekg(0, ios::end);
-    const streampos end_stream_position = input.tellg();
-    
-    max_num_events = (long)(end_stream_position - start_of_stream) / sizeof(CListEvent);
-  }
 
 
   const bool do_time_frame = true;//ask("Do time frame",true); TODO?
@@ -162,13 +151,15 @@ int main(int argc, char * argv[])
   {
     start_time = ask_num("Start time (in secs)",0.,1.e6,0.);
     end_time = ask_num("End time (in secs)",start_time,1.e6,3600.); // TODO get sensible maximum from data
-    num_events_to_store = max_num_events;
   }
   else
   {
+    unsigned long max_num_events = 1UL << 8*sizeof(unsigned long)-1;
+      //listmode_ptr->get_num_records();
+
     num_events_to_store = 
       ask_num("Number of (prompt/true/random) events to store", 
-      (long)0, max_num_events, max_num_events);
+      (unsigned long)0, max_num_events, max_num_events);
   }
 
   const bool interactive=ask("List event coordinates?",false);
@@ -189,72 +180,62 @@ int main(int argc, char * argv[])
   long num_events_in_frame = 0;
   Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
   
-
   // the next variable is used to see if there are more events to store for the current segments
   // num_events_to_store-more_events will be the number of allowed coincidence events currently seen in the file
   // ('allowed' independent on the fact of we have its segment in memory or not)
-  long more_events = num_events_to_store;
+  // When do_time_frame=true, the number of events is irrelevant, so we 
+  // just set more_events to 1, and never change it
+  long more_events = 
+    do_time_frame? 1 : num_events_to_store;
   
   // go to the beginning of the binary data
-  {
-    input.seekg(input_file_offset,ios::beg);
-    
-    if (input.bad()) 
-      error("Problem after seeking to start of listmode file");
-    
-      if (input.eof()) 
-	{ 
-        // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
-	  input.clear();
-	  if (input.eof()) 
-	    error("seekg forgot to reset EOF or the file is empty. Can't correct this. Exiting...\n");      
-	}
-  }
+  listmode_ptr->reset();
   
   {      
     // loop over all events in the listmode file
-    CListRecord event;
+    CListRecord record;
     double current_time = 0;
     while (more_events)
       {
-        if (!get_next_event(input, event)) 
-	  {
-	    // no more events in file for some reason
-	    break; //get out of while loop
-	  }
-        if (event.is_time())
-	  {
-	    const double new_time = event.time.get_time_in_secs();
-	    if (do_time_frame && new_time >= end_time)
-	      break; // get out of while loop
-	    current_time = new_time;
-	  }
-	else if (event.is_event() && start_time <= current_time)
+        if (listmode_ptr->get_next_record(record) == Succeeded::no) 
+        {
+          // no more events in file for some reason
+          break; //get out of while loop
+        }
+        if (record.is_time())
+        {
+          const double new_time = record.time.get_time_in_secs();
+          if (do_time_frame && new_time >= end_time)
+            break; // get out of while loop
+          current_time = new_time;
+        }
+        else if (record.is_event() && start_time <= current_time)
 	  {
             // see if we increment or decrement the value in the sinogram
             const int event_increment =
-              event.event.is_prompt() 
+              record.event.is_prompt() 
               ? ( store_prompts ? 1 : 0 ) // it's a prompt
               :  delayed_increment;//it is a delayed-coincidence event
             
             if (event_increment==0)
               continue;
             
-            more_events-= event_increment;
+            if (!do_time_frame)
+	      more_events-= event_increment;
 
 #ifdef HIDACREBINNER
-	    if (event.event.conver_1 > max_converter ||
-		event.event.conver_2 > max_converter) 
+	    if (record.event.conver_1 > max_converter ||
+		record.event.conver_2 > max_converter) 
 	      continue;
 #error dont know how to do this
 #else
             int ra,a,rb,b;
-	    event.event.get_detectors(a,b,ra,rb);
+	    record.event.get_detectors(a,b,ra,rb);
 #if 0
 	    if (interactive)
             {
               printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g",
-		     event.event.is_prompt() ? 'p' : 'd',
+		     record.event.is_prompt() ? 'p' : 'd',
 		     ra,a,rb,b,
 		     current_time);
             }
@@ -272,7 +253,7 @@ int main(int argc, char * argv[])
 #else
                   {
                     printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g accepted\n",
-                      event.event.is_prompt() ? 'p' : 'd',
+                      record.event.is_prompt() ? 'p' : 'd',
                       ra,a,rb,b,
                       current_time);
                     
@@ -309,7 +290,7 @@ int main(int argc, char * argv[])
 
     time_of_last_stored_event = 
       max(time_of_last_stored_event,current_time); 
-  } // end of if (num_stored_events < num_events_to_stored)
+  }
 
 
   timer.stop();
@@ -320,9 +301,10 @@ int main(int argc, char * argv[])
   }
 
   cerr << "Last stored event was recorded after time-tick at " << time_of_last_stored_event << " secs\n";
-  if (!do_time_frame && num_stored_events<num_events_to_store) 
+  if (!do_time_frame && 
+      (num_stored_events<=0 ||
+       static_cast<unsigned long>(num_stored_events)<num_events_to_store))
     cerr << "Early stop due to EOF. " << endl;
-  cerr <<  "Total number of prompts/trues/delayed in this time period: " << num_events_in_frame << endl;
   cerr << "Total number of prompts/trues/delayed stored: " << num_stored_events << endl;
 
   cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
