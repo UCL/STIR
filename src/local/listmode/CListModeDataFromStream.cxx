@@ -69,14 +69,42 @@ Succeeded
 CListModeDataFromStream::
 get_next_record(CListRecord& event) const
 {
+  if (is_null_ptr(stream_ptr))
+    return Succeeded::no;
+
 #ifdef STIRNativeByteOrderIsBigEndian
   assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
 #else
   assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
 #endif
 
-#if 0  
+  // not sure what sizeof does with references. so check.
+  assert(sizeof(event) == sizeof(CListRecord));
+#if 1
+  // simple implementation that reads the events one by one from the stream
+  // rely on file caching by the C++ library or the OS
+
+  /* On Windows XP with CYGWIN and gcc 3.2, rebinning a test file with this method
+     gives the following times:
+     real    0m17.952s
+     user    0m7.811s
+     sys     0m0.770s
+     In contrast, the next ('cached by hand') version takes
+     real    0m50.915s
+     user    0m23.243s
+     sys     0m11.165s
+     This means, that the simplest version is by far faster (even though
+     it requires almost continuous disk access). This is a due to the tellg() call apparently. See next version.
+  */
+
+  // next line will not work if CListRecord is a base-class (replace sizeof())
   stream_ptr->read(reinterpret_cast<char *>(&event), sizeof(event));
+  // now byte-swap it if necessary
+  // at the moment rely on STIRListModeFileFormatIsBigEndian preprocessor define
+  // ugly! 
+  // If this would be replaced by some conditional byte-swapping based on
+  // a list_mode_file_format_byte_order member, this implementation would
+  // be completely generic and could be used for arbitrary CListRecord 
 #if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
     || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
   ByteOrder::swap_order(event);
@@ -92,13 +120,19 @@ get_next_record(CListRecord& event) const
   return Succeeded::no;
   
 #else
-// this will skip last event in file
-  
-  const unsigned int buf_size = 100000;
+  // cache the events in a 8 MB buffer
+
+  // TODO this will skip last event in file
+  // TODO this will currently break save_get_position() as the position in 
+  // the buffer will not be taken into account
+  const unsigned int buf_size = 8683520/sizeof(event);
+    // next line will not work if CListRecord is a base-class
   static CListRecord buffer[buf_size];
   static unsigned int current_pos = buf_size;
   static streamsize num_records_in_buffer = 0;
   static streampos stream_position  = 0;
+
+  // first check if we need to refill the buffer
   if (current_pos == buf_size || stream_position != stream_ptr->tellg())// check if user reset the stream position, if so, reinitialise buffer
   {
     //cerr << "Reading from listmode file \n";
@@ -112,7 +146,7 @@ get_next_record(CListRecord& event) const
     else
     {
       if (!stream_ptr->good())
-      { error("Error after reading from stream in get_next_record\n"); }
+      { error("Error after reading from stream in CListModeDataFromStream::get_next_record\n"); }
       num_records_in_buffer = buf_size;
       assert(buf_size*sizeof(event)==stream_ptr->gcount());
     }
@@ -120,8 +154,10 @@ get_next_record(CListRecord& event) const
     
   }
 
+  // now get event from buffer
   if (current_pos != static_cast<unsigned int>(num_records_in_buffer))
   {
+    // next line will not work if CListRecord is a base-class
     event = buffer[current_pos++];
 #if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
     || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
@@ -143,22 +179,17 @@ Succeeded
 CListModeDataFromStream::
 reset()
 {
+  if (is_null_ptr(stream_ptr))
+    return Succeeded::yes;
+
+  // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
+  if (stream_ptr->eof()) 
+    stream_ptr->clear();
   stream_ptr->seekg(starting_stream_position, ios::beg);
-  // TODO -- I think here it shlue be !stream_ptr->bad() and there is one misplaced bracket
   if (stream_ptr->bad())
-    { 
-      if (stream_ptr->eof()) 
-	{ 
-	  // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
-	  stream_ptr->clear();
-	  if (stream_ptr->eof()) 
-	    error("seekg forgot to reset EOF or the file is empty. Can't correct this. Exiting...\n");      
-	}
-      else
-	error("Error after seeking to start of data in CListModeDataFromStream::reset()\n");
-      
-    }
-  return Succeeded::yes;
+    return Succeeded::no;
+  else
+    return Succeeded::yes;
 }
 
 
@@ -166,16 +197,20 @@ CListModeData::SavedPosition
 CListModeDataFromStream::
 save_get_position() 
 {
-  saved_get_positions[num_saved_get_positions]= stream_ptr->tellg();
-  assert(num_saved_get_positions+1 != 0);
-  return ++num_saved_get_positions;
+  assert(!is_null_ptr(stream_ptr));
+  // TODO should somehow check if tellg() worked and return an error if it didn't
+  saved_get_positions.push_back(stream_ptr->tellg());
+  return saved_get_positions.size()-1;
 } 
 
 Succeeded
 CListModeDataFromStream::
 set_get_position(const CListModeDataFromStream::SavedPosition& pos)
 {
-  assert(pos < num_saved_get_positions);
+  if (is_null_ptr(stream_ptr))
+    return Succeeded::no;
+
+  assert(pos < saved_get_positions.size());
   stream_ptr->seekg(saved_get_positions[pos]);
   if (!stream_ptr->good())
     return Succeeded::no;
@@ -183,11 +218,18 @@ set_get_position(const CListModeDataFromStream::SavedPosition& pos)
     return Succeeded::yes;
 }
 
-istream * const
+vector<streampos> 
 CListModeDataFromStream::
-get_stream_ptr() const
+get_saved_get_positions() const
 {
-  return stream_ptr.get();
+  return saved_get_positions;
+}
+
+void 
+CListModeDataFromStream::
+set_saved_get_positions(const vector<streampos>& poss)
+{
+  saved_get_positions = poss;
 }
 
 #if 0
