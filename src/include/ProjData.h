@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -10,9 +10,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #ifndef __ProjData_H__
 #define __ProjData_H__
@@ -86,7 +85,9 @@ class ProjData
 {
 public:
   //! A static member to get the projection data from a file
-  static shared_ptr<ProjData> read_from_file(const string& filename);
+  static shared_ptr<ProjData> 
+    read_from_file(const string& filename,
+		   const ios::openmode openmode = ios::in);
 
   //! Constructors
   inline ProjData();

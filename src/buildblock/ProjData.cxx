@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -10,9 +10,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "ProjData.h"
 #include "RelatedViewgrams.h"
@@ -53,13 +52,14 @@ START_NAMESPACE_TOMO
    <li> ProjDataFromStream, specified via an Interfile header.
    </ul>
 
-   Developer's note: ideally the return value would be an auto_ptr, but it's
-   very difficult to assign auto_ptrs to shared_ptrs.
+   Developer's note: ideally the return value would be an auto_ptr.
 */
 shared_ptr<ProjData> 
-ProjData::read_from_file(const string& filename)
+ProjData::
+read_from_file(const string& filename,
+	       const ios::openmode openmode)
 {
-  iostream * input = new fstream(filename.c_str(), ios::in | ios::binary);
+  iostream * input = new fstream(filename.c_str(), openmode | ios::binary);
   if (! *input)
     error("ProjData::read_from_file: error opening file %s\n", filename.c_str());
 
@@ -72,7 +72,7 @@ ProjData::read_from_file(const string& filename)
   else
   {
     delete input;
-    return shared_ptr<ProjData>(read_interfile_PDFS(filename));
+    return shared_ptr<ProjData>(read_interfile_PDFS(filename, openmode));
   }
 }
 
