@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   if (argc < 10 || argc > 12)
     {
       cerr << "Usage:\n"
-	   << argv[0] << " output_filename input_projdata_name q0 qx qy qz tx ty tz [max_in_segment_num_to_process [max_in_segment_num_to_process ]]\n"
+	   << argv[0] << " output_filename input_projdata_name q0 qx qy qz tx ty tz [max_in_segment_num_to_process [max_out_segment_num_to_process ]]\n"
 	   << "max_in_segment_num_to_process defaults to all segments\n";
       exit(EXIT_FAILURE);
     }
