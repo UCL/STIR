@@ -100,14 +100,15 @@ read_from_file(const string& filename,
 #ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as ECAT7\n", filename.c_str());
 #endif
+    USING_NAMESPACE_ECAT;
     USING_NAMESPACE_ECAT7;
 
-    if (is_ecat7_emission_file(filename) || is_ecat7_attenuation_file(filename))
+    if (is_ECAT7_emission_file(filename) || is_ECAT7_attenuation_file(filename))
     {
       warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
 	      filename.c_str());
       string interfile_header_name;
-      if (write_basic_interfile_header_for_ecat7(interfile_header_name, filename, 1,1,0,0) ==
+      if (write_basic_interfile_header_for_ECAT7(interfile_header_name, filename, 1,1,0,0) ==
 	  Succeeded::no)
         return 0;
 #ifndef NDEBUG
@@ -119,7 +120,7 @@ read_from_file(const string& filename,
     }
     else
     {
-      if (is_ecat7_file(filename))
+      if (is_ECAT7_file(filename))
 	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type\n", filename.c_str());
     }
   }
