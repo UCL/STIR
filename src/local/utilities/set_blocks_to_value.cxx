@@ -24,8 +24,7 @@
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
-#include "stir/interfile.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -38,6 +37,8 @@ using std::cerr;
 using std::fstream;
 using std::sort;
 using std::unique;
+using std::min;
+using std::max;
 #endif
 START_NAMESPACE_STIR
 
@@ -56,6 +57,10 @@ void do_block(vector<Bin>& list_of_bins_in_block,
   
   const int tang_det_offset = tangential_block_num*tangential_num_crystals_in_block;
   const int ax_det_offset = axial_block_num*axial_num_crystals_in_block;
+  const int max_ring_diff = 
+    proj_data_info.get_max_ring_difference(proj_data_info.get_max_segment_num());
+  const int min_ring_diff = 
+    proj_data_info.get_min_ring_difference(proj_data_info.get_min_segment_num());
   for (int ax_crystal=0; ax_crystal<axial_num_crystals_in_block; ++ax_crystal)
     for (int tang_crystal=0; tang_crystal<tangential_num_crystals_in_block; ++tang_crystal)
     {
@@ -63,7 +68,7 @@ void do_block(vector<Bin>& list_of_bins_in_block,
       const int ring = ax_crystal + ax_det_offset;
       {
         for (int other_det=0; other_det<num_detectors_per_ring; ++other_det)
-          for (int other_ring=0; other_ring<num_rings; ++other_ring)
+          for (int other_ring=max(0,ring+min_ring_diff); other_ring<=min(num_rings,ring+max_ring_diff); ++other_ring)
           {
             Succeeded success =
               proj_data_info.get_bin_for_det_pair(bin, 
@@ -137,16 +142,7 @@ int main(int argc, char **argv)
   }
   proj_data_info_ptr->reduce_segment_range(-max_segment_num_to_process,max_segment_num_to_process);
 
-
-  shared_ptr<iostream> sino_stream = 
-    new fstream (output_filename.c_str(), ios::out|ios::binary);
-  if (!sino_stream->good())
-      error("%s: error opening output file %s\n",
-	    argv[0],output_filename.c_str());
-
-  //ProjDataInterfile out_projdata(output_filename, proj_data_info_ptr, ios::out); 
-  ProjDataFromStream out_projdata(proj_data_info_ptr->clone(), sino_stream); 
-  write_basic_interfile_PDFS_header(output_filename, out_projdata);
+  ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
 
   const int num_rings = 
     proj_data_info_ptr->get_scanner_ptr()->get_num_rings();
@@ -177,15 +173,16 @@ int main(int argc, char **argv)
   sort_and_make_unique(list_of_bins);
 
   std::vector<Bin>::const_iterator bin_iter = list_of_bins.begin();
-  for (int segment_num = in_projdata_ptr->get_min_segment_num();
-       segment_num <= in_projdata_ptr->get_max_segment_num();
+  for (int segment_num = out_projdata.get_min_segment_num();
+       segment_num <= out_projdata.get_max_segment_num();
        ++segment_num)
     for (int view_num = in_projdata_ptr->get_min_view_num();
          view_num <= in_projdata_ptr->get_max_view_num();
          ++view_num)
     {       
       Viewgram<float> viewgram =
-        in_projdata_ptr->get_viewgram(view_num, segment_num);
+	out_projdata.get_empty_viewgram(view_num, segment_num);
+      viewgram +=  in_projdata_ptr->get_viewgram(view_num, segment_num);
       const int max_ax_pos_num = viewgram.get_max_axial_pos_num();
       const int min_ax_pos_num = viewgram.get_min_axial_pos_num();
       const int max_tang_pos_num = viewgram.get_max_tangential_pos_num();
