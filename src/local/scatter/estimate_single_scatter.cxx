@@ -41,7 +41,6 @@ See STIR/LICENSE.txt for details
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
-//#include "stir/Scanner.h"
 #include "local/stir/Scatter.h"
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
@@ -101,20 +100,6 @@ int main(int argc, const char *argv[])
 		"\tReference: water has mu .096 cm^-1\n" 
 		"\tMax in attenuation image: %g\n" ,
 		density_image_sptr->find_max());
-#ifndef NEWSCALE		
-	cerr << "WARNING: Multiplying attenuation image by x-voxel size \n"
-		 <<	"\tto correct for scale factor in forward projectors...\n";
-	/* projectors work in pixel units, so convert attenuation data 
-	   from cm^-1 to pixel_units^-1 */
-	const float rescale = 
-		dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> *>(density_image_sptr.get())->
-		get_grid_spacing()[3]/10;
-#else
-	const float rescale = 
-		0.1F;
-#endif
-	*density_image_sptr *= rescale;
-	attenuation_threshold *= rescale;
 	shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
 	const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr =
 		dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(
@@ -122,9 +107,7 @@ int main(int argc, const char *argv[])
 	
 	if (proj_data_info_ptr==0 || density_image_sptr==0 || activity_image_sptr==0)
 		error("Check the input files\n");
-/*	const float total_detectors = proj_data_info_ptr->get_num_rings()*
-		proj_data_info_ptr->get_num_detectors_per_ring ();
-*/	const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
+	const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
 		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
 		(*activity_image_sptr.get());
 	const DiscretisedDensityOnCartesianGrid<3,float>& density_image = 
@@ -149,7 +132,7 @@ int main(int argc, const char *argv[])
 	writing_log(activity_image,
 		density_image,
 		proj_data_info_ptr,
-		attenuation_threshold/rescale,
+		attenuation_threshold,
 		scatt_points,
 		lower_energy_threshold,
 		upper_energy_threshold,
