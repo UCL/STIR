@@ -23,7 +23,7 @@
 
 
 
-
+#include "ImageFilter.h"
 #include "recon_buildblock/ReconstructionParameters.h"
 
 START_NAMESPACE_TOMO
@@ -122,6 +122,8 @@ public:
 
   //! post-filter Metz power for axial direction filtering
   double post_filter_Nz_dir;
+
+  // TODO make shared_ptr
 
   //! inter-iteration filter object
   ImageFilter inter_iteration_filter;
