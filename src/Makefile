@@ -237,5 +237,5 @@ endif # GCC3
 # Otherwise the value of the macros is empty when 
 # checking the dependencies (even when they are alright when
 # executing the corresponding command)
-${DEST}%: ${DEST}%.o $(STIR_LIB) $(STIR_REGISTRIES)
+${DEST}%: ${DEST}%.o $(STIR_LIB) $(STIR_REGISTRIES)  $(EXTRA_LIBS) 
 	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_REGISTRIES) $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
