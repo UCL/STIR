@@ -33,7 +33,7 @@ START_NAMESPACE_STIR
 class Bin;
 class ProjDataInfoCylindrical;
 
-#define STIRListmodeFileFormatIsBigEndian
+#define STIRListModeFileFormatIsBigEndian
 
 //typedef unsigned int            BITS;
 
