@@ -4,36 +4,52 @@
 // $Id$: $Date$
 //
 
-/*
-   This file declares BasicCoordinate<dim, coordT>: 
-   a templated class for 'dim'-dimensional coordinates.
-   It also declares some functions acting on BasicCoordinate objects.
+/*!
+  \file 
+ 
+  \brief This file declares class BasicCoordinate<num_dimensions, coordT> and 
+  some functions acting on BasicCoordinate objects.
 
-   a BasicCoordinate<dim, coordT> is essentially a vector of size n, but 
-   as the dimension is templated, it has better performance.
+  \author Kris Thielemans
+  \author Alexey Zverovich
+  \author PARAPET project
 
-   Access to the individual coordinates is through operator[].
-   Warning : Indices run from 1 to 'dim'
+  \date    $Date$
 
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+  \version $Revision$
+
 */
+
+
 #include "Tomography_common.h"
+#include <iterator>
 
 #ifndef TOMO_NO_NAMESPACES
-	using std::size_t;
-	using std::ptrdiff_t;
+using std::size_t;
+using std::ptrdiff_t;
+using std::random_access_iterator_tag;
 #endif
 
 START_NAMESPACE_TOMO
+/*!
+  \brief class BasicCoordinate<\c int \c num_dimensions, \c typename \c coordT> defines \c num_dimensions -dimensional coordinates.
 
-template <int dim, typename coordT>
+
+   A BasicCoordinate<\c num_dimensions, \c coordT> is essentially a vector of size \c num_dimensions, but 
+   as the dimension is templated, it has better performance.
+
+   Access to the individual coordinates is through operator[].
+   
+   \warning  Indices run from 1 to \ num_dimensions
+
+*/
+template <int num_dimensions, typename coordT>
 class BasicCoordinate
 { 
 
 public:
   // typedefs for iterator support
+  typedef random_access_iterator_tag iterator_category;
   typedef coordT value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
@@ -42,9 +58,9 @@ public:
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
 	
-  // default constructor. NO initialisation
+  //! default constructor. NO initialisation
   inline BasicCoordinate();
-  // copy constructor
+  //! copy constructor
   inline BasicCoordinate(const BasicCoordinate& c);
 
   // virtual destructor, not implemented at the moment 
@@ -55,6 +71,9 @@ public:
 
   // assignment
   inline BasicCoordinate & operator=(const BasicCoordinate& c);
+
+  // comparison
+  inline bool operator==(const BasicCoordinate& c) const;
 
   // access to elements
   inline coordT& operator[](const int d);
@@ -91,7 +110,7 @@ public:
 
 protected:
   // allocate 1 too many to leave space for coords[0] (which is never used)
-  coordT coords[dim+1];
+  coordT coords[num_dimensions+1];
 
 };
 
@@ -100,22 +119,35 @@ protected:
   General functions on BasicCoordinate objects, like in TensorFunction.h
 */
 
-// sum_i p1[i] * p2[i]
-template <int dim, typename coordT>
+//! compute  sum_i p1[i] * p2[i]
+template <int num_dimensions, typename coordT>
 inline coordT
-inner_product (const BasicCoordinate<dim, coordT>& p1, 
-	       const BasicCoordinate<dim, coordT>& p2);
+inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
+	       const BasicCoordinate<num_dimensions, coordT>& p2);
 
-// sqrt(inner_product(p1,p1)
-template <int dim, typename coordT>
+//! compute sqrt(inner_product(p1,p1))
+template <int num_dimensions, typename coordT>
 inline double
-norm (const BasicCoordinate<dim, coordT>& p1);
+norm (const BasicCoordinate<num_dimensions, coordT>& p1);
 
-// angle between 2 directions
-template <int dim, typename coordT>
+//! compute angle between 2 directions
+template <int num_dimensions, typename coordT>
 inline double 
-angle (const BasicCoordinate<dim, coordT>& p1, 
-       const BasicCoordinate<dim, coordT>& p2);
+angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
+       const BasicCoordinate<num_dimensions, coordT>& p2);
+
+#if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
+  // gcc 2.8.1 bug:
+  // It cannot call 'join' (it generates a bad mangled name for the function)
+  // so we only define it when it's not gcc 2.8.1
+
+//! make a longer BasicCoordinate, by prepending \c  c with the single \c coordT
+template <int num_dimensions, typename coordT>
+inline BasicCoordinate<num_dimensions+1, coordT> 
+join(const coordT& a, 
+     const BasicCoordinate<num_dimensions, coordT>& c);
+
+#endif // gcc 2.8.1
 
 END_NAMESPACE_TOMO
 
