@@ -47,15 +47,17 @@ ProjMatrixByBinUsingSolidAngle()
 void 
 ProjMatrixByBinUsingSolidAngle::initialise_keymap()
 {
+  ProjMatrixByBin::initialise_keymap();
   parser.add_start_key("Solid Angle Matrix Parameters");
   parser.add_stop_key("End Solid Angle Matrix Parameters");
-  parser.add_key("disable caching", &cache_disabled);
 }
 
 
 void
 ProjMatrixByBinUsingSolidAngle::set_defaults()
-{}
+{
+  ProjMatrixByBin::set_defaults();
+}
 
 
 void
