@@ -69,77 +69,44 @@ Scanner::Scanner(Type scanner_type)
 
   if (scanner_type == E931)
     // KT 25/01/2002 corrected ring_spacing
-    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 13.5F,  3.129F,   0);
+    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 13.5F,  3.129F,   0,0,0,0,0);
   else if (scanner_type == E951)
-    set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
+    set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   0,0,0,0,0);
   else if (scanner_type == E953)
-    set_params(E953,string_list("ECAT 953"), 16, 160,2* 192, 382.5F,  6.75F, 3.129F,   15);
+    set_params(E953,string_list("ECAT 953"), 16, 160,2* 192, 382.5F,  6.75F, 3.129F,   15,0,0,0,0);
   else if (scanner_type == E921)
-    set_params(E921,string_list("ECAT 921", "ECAT EXACT", "EXACT"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
+    set_params(E921,string_list("ECAT 921", "ECAT EXACT", "EXACT"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F,0,0,0,0);
   else if (scanner_type == E925)
-    set_params(E925,string_list("ECAT 925", "ECAT ART"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
+    set_params(E925,string_list("ECAT 925", "ECAT ART"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F,0,0,0,0);
   else if (scanner_type == E961)
-    set_params(E961,string_list("ECAT 961", "ECAT HR"), 24, 336,2* 196, 412.0F, 6.25F, 1.650F, 13.F);
+    set_params(E961,string_list("ECAT 961", "ECAT HR"), 24, 336,2* 196, 412.0F, 6.25F, 1.650F, 13.F,0,0,0,0);
   else if (scanner_type == E962)
-    set_params(E962,string_list("ECAT 962","ECAT HR+"), 32, 288,2* 288, 412.5F, 4.85F, 2.25F, 0.F);
+    set_params(E962,string_list("ECAT 962","ECAT HR+"), 32, 288,2* 288, 412.5F, 4.85F, 2.25F, 0.F,3,4,8,8);
   else if (scanner_type == E966)
-    set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 0); 
+    set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 0,2,6,8,8); 
   else if (scanner_type == RPT)
-    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0);
+    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0,0,0,0,0);
   else if (scanner_type == RATPET)
-    set_params(RPT,string_list("RATPET"), 8, 56,2*56, 115,  6.25F, 1.65F,   0); // HR block
+    set_params(RPT,string_list("RATPET"), 8, 56,2*56, 115,  6.25F, 1.65F,   0,0,0,0,0); // HR block
   else if (scanner_type == Advance)
   {
     // Advance option
     // 283 bins (non-uniform sampling) 
     // 281 bins (uniform sampling)
-    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,471.875F, 8.5F, 1.970177F, 0);
-    /* Values for GE Advance set by Roman Krais [kraisr@pet.tyks.fi]
-       after communication with Chuck Stearns (GE).
-       They are derived from the VOLPET header of a corrected sinogram.
-
-       The 471.875 mm (943.75 mm) was calculated from the VOLPET-theta-header. In
-       the header there are the angles (theta) for each segments. If you know the
-       Detector Spacing (distance between detector rings, 8.5 mm for GE Advance)
-       then you can easily calculate the Detector Ring Diameter from that.
-
-       tan(alpha) = Ring Difference * Ring Spacing / Ring Diameter
-       
-       GE software uses the approximation tan(alpha) = alpha.
-
-       Example of VOLPET-theta header:
-       
-       Segment -0: theta angle:          +0.000000 rad
-       number of z-elements: 35 
-       z-element separation: 4.250000  mm
-       Segment +1: theta angle:          +0.018013265 rad
-       number of z-elements: 31 
-       z-element separation: 4.249310  mm
-       (...)
-       Segment +5: theta angle:          +0.090066329 rad
-       number of z-elements: 15 
-       z-element separation: 4.232774  mm
-
-       so: 
-       Segment +1: Ring Diameter = 2 * 8.5 mm * 1 / 0.018013265 = 943.7489539
-       Segment +5: Ring Diameter = 2 * 8.5 mm * 5 / 0.090066329 = 943.748912
-
-       Note by KT: VOLPET  z-element separation corresponds to
-       STIR's get_sampling_in_t() (for s=0) i.e. it is 4.25 * cos(theta)
-    */
+    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,469.5F, 8.5F, 1.96F, 0,0,0,0,0);
   }
   else if (scanner_type == HZLR)
-    set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0);
+    set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0,0,0,0,0);
   else if (scanner_type == HRRT)
     set_params(HRRT,string_list("HRRT"), 104, 288, 2*288, 234.765F, 
-			   2.4375F, 1.21875F, 0); // added by Dylan Togane
+			   2.4375F, 1.21875F, 0,0,0,0,0); // added by Dylan Togane
   else if (scanner_type == HiDAC)
     // all of these don't make any sense for the HiDAC
-    set_params(HiDAC,string_list("HiDAC"), 0, 0, 0, 0.F, 0.F, 0.F, 0);
+    set_params(HiDAC,string_list("HiDAC"), 0, 0, 0, 0.F, 0.F, 0.F, 0,0,0,0,0);
   else
     { 
       // warning("Unknown scanner type used for initialisation of Scanner\n"); 
-      set_params(Unknown_Scanner,string_list("Unknown"), 0, 0, 0, 0.F, 0.F, 0.F, 0);
+      set_params(Unknown_Scanner,string_list("Unknown"), 0, 0, 0, 0.F, 0.F, 0.F, 0,0,0,0,0);
     }
 }
 
@@ -151,7 +118,9 @@ Scanner::set_params(Type type_v,const list<string>& list_of_names_n,
 		  int num_detectors_per_ring_v,
 		  float RingRadius_v,
 		  float RingSpacing_v,
-		  float BinSize_v, float intrTilt_v)
+		  float BinSize_v, float intrTilt_v,
+		  int trans_blocks_per_bucket_v, int axial_blocks_per_bucket_v,
+		  int axial_crystals_per_block_v,int angular_crystals_per_block_v)
 
 {
   type =type_v;
@@ -164,6 +133,10 @@ Scanner::set_params(Type type_v,const list<string>& list_of_names_n,
   ring_spacing = RingSpacing_v;
   bin_size = BinSize_v;
   intrinsic_tilt = intrTilt_v;	
+  trans_blocks_per_bucket = trans_blocks_per_bucket_v;
+  axial_blocks_per_bucket = axial_blocks_per_bucket_v;
+  axial_crystals_per_block= axial_crystals_per_block_v;
+  angular_crystals_per_block=angular_crystals_per_block_v;
 }
 
 void
@@ -174,7 +147,9 @@ Scanner::set_params(Type type_v,const list<string>& list_of_names_n,
 		  int num_detectors_per_ring_v,
 		  float RingRadius_v,
 		  float RingSpacing_v,
-		  float BinSize_v, float intrTilt_v)
+		  float BinSize_v, float intrTilt_v,
+		  int trans_blocks_per_bucket_v, int axial_blocks_per_bucket_v,
+		  int axial_crystals_per_block_v,int angular_crystals_per_block_v)
 {
   type =type_v;
   list_of_names = list_of_names_n;  
@@ -186,6 +161,10 @@ Scanner::set_params(Type type_v,const list<string>& list_of_names_n,
   ring_spacing = RingSpacing_v;
   bin_size = BinSize_v;
   intrinsic_tilt = intrTilt_v;	
+  trans_blocks_per_bucket = trans_blocks_per_bucket_v;
+  axial_blocks_per_bucket = axial_blocks_per_bucket_v;
+  axial_crystals_per_block= axial_crystals_per_block_v;
+  angular_crystals_per_block=angular_crystals_per_block_v;
 }
 
 
@@ -194,7 +173,9 @@ Scanner::Scanner(Type type_v,
 		 int num_detectors_per_ring_v,
 		 int NoRings_v,	
 		 int max_num_non_arccorrected_bins, float RingRadius_v, 
-		 float RingSpacing_v, float BinSize_v, float intrTilt_v)
+		 float RingSpacing_v, float BinSize_v, float intrTilt_v,
+		 int trans_blocks_per_bucket_v, int axial_blocks_per_bucket_v,
+		 int axial_crystals_per_block_v,int angular_crystals_per_block_v)
 {
   type =type_v;
   list_of_names = list_of_names_n;        
@@ -206,19 +187,26 @@ Scanner::Scanner(Type type_v,
   ring_spacing = RingSpacing_v;
   bin_size = BinSize_v;
   intrinsic_tilt = intrTilt_v;	
+  trans_blocks_per_bucket = trans_blocks_per_bucket_v;
+  axial_blocks_per_bucket = axial_blocks_per_bucket_v;
+  axial_crystals_per_block= axial_crystals_per_block_v;
+  angular_crystals_per_block=angular_crystals_per_block_v;
 	
 }
 
 Scanner::Scanner(Type type_v,const string name,
          int num_detectors_per_ring_v, int NoRings_v, int max_num_non_arccorrected_bins, 
 	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v)
+         float BinSize_v, float intrTilt_v,
+	 int trans_blocks_per_bucket_v, int axial_blocks_per_bucket_v,
+         int axial_crystals_per_block_v,int angular_crystals_per_block_v)
 {
   set_params(type_v,string_list(name),NoRings_v,
          max_num_non_arccorrected_bins,
          num_detectors_per_ring_v, 
 	 RingRadius_v, RingSpacing_v, 
-         BinSize_v, intrTilt_v);
+         BinSize_v, intrTilt_v,trans_blocks_per_bucket_v, axial_blocks_per_bucket_v,
+         axial_crystals_per_block_v,angular_crystals_per_block_v);
 
 }
 
@@ -230,7 +218,9 @@ Scanner::Scanner(Type type_v,
 		 int max_num_non_arccorrected_bins,
 		 int default_num_arccorrected_bins,
 		 float RingRadius_v, 
-		 float RingSpacing_v, float BinSize_v, float intrTilt_v)
+		 float RingSpacing_v, float BinSize_v, float intrTilt_v,
+		 int trans_blocks_per_bucket_v, int axial_blocks_per_bucket_v,
+		 int axial_crystals_per_block_v,int angular_crystals_per_block_v)
 {
   type =type_v;
   list_of_names = list_of_names_n;        
@@ -242,6 +232,11 @@ Scanner::Scanner(Type type_v,
   ring_spacing = RingSpacing_v;
   bin_size = BinSize_v;
   intrinsic_tilt = intrTilt_v;	
+  trans_blocks_per_bucket = trans_blocks_per_bucket_v;
+  axial_blocks_per_bucket = axial_blocks_per_bucket_v;
+  axial_crystals_per_block= axial_crystals_per_block_v;
+  angular_crystals_per_block=angular_crystals_per_block_v;
+
 	
 }
 
@@ -250,14 +245,17 @@ Scanner::Scanner(Type type_v,const string name,
 	 int max_num_non_arccorrected_bins,
 	 int default_num_arccorrected_bins,
 	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v)
+         float BinSize_v, float intrTilt_v,
+	 int trans_blocks_per_bucket_v, int axial_blocks_per_bucket_v,
+         int axial_crystals_per_block_v,int angular_crystals_per_block_v)
 {
   set_params(type_v,string_list(name),NoRings_v,
          max_num_non_arccorrected_bins,
 	 default_num_arccorrected_bins,
          num_detectors_per_ring_v, 
 	 RingRadius_v, RingSpacing_v, 
-         BinSize_v, intrTilt_v);
+         BinSize_v, intrTilt_v,trans_blocks_per_bucket_v, axial_blocks_per_bucket_v,
+         axial_crystals_per_block_v,angular_crystals_per_block_v);
 
 }
 
@@ -327,7 +325,14 @@ Scanner::parameter_info() const
     bin_size << endl;
   s << "Intrinsic tilt                         " << 
     intrinsic_tilt << endl << endl;
-
+  s << "Transaxial blocks per bucket           " << 
+    trans_blocks_per_bucket << endl << endl;
+  s << "Axial blocks per bucket		       " << 
+    axial_blocks_per_bucket << endl << endl;
+  s << "Axial crystals per block               " << 
+    axial_crystals_per_block << endl << endl;
+  s << "Angular crystals per block             " << 
+    angular_crystals_per_block << endl << endl;
   s << ends;
 
   return s.str();
@@ -402,13 +407,22 @@ Scanner* Scanner::ask_parameters()
     ask_num("Enter bin size (in mm):",0.F,10.F,3.75F);
   float intrTilt=
     ask_num("Enter intrinsic_tilt (in degrees):",0.F,360.F,90.F);
-  Type type = Unknown_Scanner;
+  int TransBlocksPerBucket = 
+    ask_num("Enter number of trans blocks per bucket: ",0,10,2);
+  int AxialBlocksPerBucket = 
+    ask_num("Enter number of axial blocks per bucket: ",0,10,6);
+  int AxialCrystalsPerBlock = 
+    ask_num("Enter number of axial crystals per block: ",0,10,8);
+  int AngularCrystalsPerBlock = 
+    ask_num("Enter number of angular crystals per block: ",0,10,8);
+   Type type = Unknown_Scanner;
   
   Scanner* scanner =
     new Scanner(type,name,
                 num_detectors_per_ring,  NoRings, NoBins, 
                 RingRadius, RingSpacing, 
-                BinSize,intrTilt);
+                BinSize,intrTilt,TransBlocksPerBucket,AxialBlocksPerBucket,
+		AxialCrystalsPerBlock,AngularCrystalsPerBlock );
   
   return scanner;
 }
