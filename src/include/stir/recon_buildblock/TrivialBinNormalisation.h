@@ -37,10 +37,10 @@ public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
-  virtual void apply(RelatedViewgrams<float>&) const {}
-  virtual void undo(RelatedViewgrams<float>&) const {}
+  virtual void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
+  virtual void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
   
-  virtual float get_bin_efficiency(const Bin& bin) const { return 1;}
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
   
 
 private:

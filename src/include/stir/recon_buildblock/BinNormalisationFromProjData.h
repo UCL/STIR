@@ -78,16 +78,16 @@ public:
     This means \c multiply with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*! 
     This means \c divide with the data in the projdata object 
     passed in the constructor. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin) const;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
  
 private:
   shared_ptr<ProjData> norm_proj_data_ptr;

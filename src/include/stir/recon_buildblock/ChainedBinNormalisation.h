@@ -92,15 +92,15 @@ ChainedBinNormalisation(shared_ptr<ChainedBinNormalisation> const& apply_first,
   /*! 
     This calls apply() of the 2 BinNormalisation members
   */
-  virtual void apply(RelatedViewgrams<float>& viewgrams) const;
+  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   //! Undo the normalisation of some data
   /*! 
     This calls undo() of the 2 BinNormalisation members. 
   */
-  virtual void undo(RelatedViewgrams<float>& viewgrams) const;
+  virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin) const;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
  
 
 private:

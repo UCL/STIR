@@ -56,7 +56,7 @@ public:
     notation of the class documentation, this would \c divide by the factors 
     \f$\mathrm{norm}_b \f$.
   */
-  virtual void apply(RelatedViewgrams<float>&) const= 0;
+  virtual void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const= 0;
   //! undo the normalisation of some data
   /*! 
     This would be used for instance to bring geometrically forward projected data to 
@@ -64,9 +64,9 @@ public:
     notation of the class documentation, this would \c multiply by the factors 
     \f$\mathrm{norm}_b \f$.
   */
-  virtual void undo(RelatedViewgrams<float>&) const = 0; 
+  virtual void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const = 0; 
 
-  virtual float get_bin_efficiency(const Bin& bin) const =0;
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const =0;
  
 };
 
