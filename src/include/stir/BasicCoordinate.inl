@@ -337,8 +337,22 @@ join(const coordT& a,
 #endif
   return retval;
 }
-
+ 
 #endif // gcc 2.8.1
+
+template <int num_dimensions, class coordT>
+inline BasicCoordinate<num_dimensions-1, coordT> 
+cut_first_dimension(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  BasicCoordinate<num_dimensions-1, coordT> retval;
+  
+#ifdef STIR_NO_NAMESPACES
+  copy(c.begin()+1, c.end(), retval.begin());
+#else
+  std::copy(c.begin()+1, c.end(), retval.begin());
+#endif
+  return retval;
+}         
 
 END_NAMESPACE_STIR
 
