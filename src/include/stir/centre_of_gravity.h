@@ -36,9 +36,28 @@ template <class elemT> class VoxelsOnCartesianGrid;
       C_k = \sum_{i_1...i_n} i_k A_{i1...i_n}
    \f]
 */
+#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#define T float
+#define num_dimensions 2
+#else
 template <int num_dimensions, class T>
+#endif
 BasicCoordinate<num_dimensions,T> 
 find_unweighted_centre_of_gravity(const Array<num_dimensions,T>& );
+
+//! Compute centre of gravity of a 1D Array but without dividing by its sum
+/*! \ingroup Array
+*/   
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+template <class T>
+#endif
+T 
+find_unweighted_centre_of_gravity(const Array<1,T>& );
+
+#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#undef T
+#undef num_dimensions
+#endif
 
 //! Compute centre of gravity of an Array
 /*! \ingroup Array
