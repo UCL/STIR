@@ -27,4 +27,9 @@ PETImageOfVolume read_interfile_image(istream& input);
 template <class NUMBER>
 bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& image);
 
+// This reads the first 3D sinogram from an Interfile header
+// If there is trouble interpreting the header, 
+// ask_PSOV_details() is called instead
+// KT 26/10/98 new
+PETSinogramOfVolume read_interfile_PSOV(istream& input);
 #endif // __Interfile_h__
