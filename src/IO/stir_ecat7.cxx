@@ -1379,11 +1379,11 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     return Succeeded::no;
   }
   const char * const warning_prefix = "write_basic_interfile_header_for_ECAT7";
-  const char * const warning_suffix =  "I'm not reading an Interfile header...\n";
+  const char * const warning_suffix =  "I'm not writing an Interfile header...\n";
 
   if (mptr->mhptr->sw_version < V7)
   { 
-    warning("%s: %s seems to be an ECAT 6 file. "
+    warning("%s: '%s' seems to be an ECAT 6 file. "
             "%s",  warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
     return Succeeded::no; 
   }
@@ -1452,7 +1452,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       if (matrix==NULL)
 	{ 
 	  matrix_close(mptr);
-	  warning("%s: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
+	  warning("%s: Matrix not found at \"%d,1,%d,%d,%d\" in file '%s'.\n"
 		  "%s",
 		  warning_prefix,
 		  frame_num, gate_num, data_num, bed_num, 
@@ -1481,7 +1481,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
         
   default:
     matrix_close(mptr);
-    warning("%s: File type not handled for file %s.\n"
+    warning("%s: File type not handled for file '%s'.\n"
 	    "%s",
 	    warning_prefix, ECAT7_filename.c_str(), warning_suffix);
     return Succeeded::no;
