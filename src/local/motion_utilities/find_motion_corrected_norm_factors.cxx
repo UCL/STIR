@@ -17,7 +17,7 @@
 
 #include "local/stir/listmode/LmToProjData.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
