@@ -1,21 +1,20 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    For internal GE use only.
+*/
 /*!
   \file
   \ingroup motion
 
-  \brief Declaration of class Polaris_MT_File
+  \brief Declaration of class stir::Polaris_MT_File
 
   \author Sanida Mustafovic
   \author Kris Thielemans
   $Date$
   $Revision$ 
-*/
-
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_Polaris_MT_File__
@@ -36,7 +35,8 @@ namespace std { using ::time_t; using ::tm; using ::localtime; }
 
 START_NAMESPACE_STIR
 
-/*! \brief a class for parsing .mt files output by the Polaris software
+/*!\ingroup motion
+   \brief a class for parsing .mt files output by the Polaris software
 
   At present, the acquired motion tracking data is formatted as
   \verbatim

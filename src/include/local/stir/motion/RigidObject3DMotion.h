@@ -1,22 +1,20 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    For internal GE use only
+*/
 /*!
   \file
   \ingroup motion
 
-  \brief Declaration of class RigidObject3DMotion
+  \brief Declaration of class stir::RigidObject3DMotion
 
   \author  Sanida Mustafovic and Kris Thielemans
   $Date$
   $Revision$
 */
-
-/*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "stir/listmode/CListModeData.h"
