@@ -178,9 +178,14 @@ private:
   double ring_diameter_in_cm;
   double distance_between_rings_in_cm;
   double bin_size_in_cm;
-  // this is in degrees
-  double view_offset;
+  // this intrinsic tilt
+  double view_offset_in_degrees;
 
+  int num_axial_blocks_per_bucket;
+  int num_transaxial_blocks_per_bucket;
+  int num_axial_crystals_per_block;
+  int num_transaxial_crystals_per_block;
+  int num_detector_layers;
 
   bool is_arccorrected;
 };
