@@ -11,12 +11,16 @@ LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/local/recon_buildblock \
 	$(WORKSPACE)/local/Shape_buildblock \
 	$(WORKSPACE)/local/eval_buildblock \
-	$(WORKSPACE)/local/QH_library
+	$(WORKSPACE)/local/QH_library \
+	$(WORKSPACE)/local/motion \
+	$(WORKSPACE)/local/listmode	
 
 #KT temp removal of QH_utilities as they don't link
 EXESUBDIRECTORIES= \
         $(WORKSPACE)/local/utilities \
-        $(WORKSPACE)/local/listmode_utilities
+        $(WORKSPACE)/local/listmode_utilities \
+	$(WORKSPACE)/local/analytic/FBP3DRP \
+	$(WORKSPACE)/local/iterative/OSSPS 
 
 SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 
