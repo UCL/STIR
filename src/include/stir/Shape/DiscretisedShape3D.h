@@ -26,6 +26,15 @@ START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
+/*! \ingroup Shape
+  \brief A class for shapes that have been discretised
+
+  Currently only supports discretisation via VoxelsOnCartesianGrid.
+
+  For DiscretisedShaped3D objects with smooth edges, voxel values
+    will vary between 0 and 1. 
+
+*/
 class DiscretisedShape3D: 
   public RegisteredParsingObject<DiscretisedShape3D, Shape3D, Shape3D>
 {
@@ -47,8 +56,12 @@ public:
 
   //! determine if a point is inside a non-zero voxel or not
   /*! 
-    For template images with smooth edges, this means that this definition
-    cannot be used to find the voxel_weight. This is of course why we redefine 
+    \warning For voxels at the edges, it is somewhat
+    ill-defined if a point in the voxel is inside the shape. The current
+    implementation will return true for every point in the voxel, 
+    even if the voxel value is .001.
+    In particular, this means that this definition of is_inside_shape()
+    cannot be used to find the voxel_weight. So, we have to redefine 
     get_voxel_weight() in the present class.
     */
   bool is_inside_shape(const CartesianCoordinate3D<float>& index) const;
@@ -77,10 +90,16 @@ private:
   inline const VoxelsOnCartesianGrid<float>& image() const;
   inline VoxelsOnCartesianGrid<float>& image();
 
+  //! \name Parsing functions
+  //@{
   virtual void set_defaults();  
   virtual void initialise_keymap();
+  //! Checks validity of parameters
+  /*! As currently there are 2 origin parameters (in Shape3D and
+      DiscretisedDensity, this function checks for consistency).
+  */
   virtual bool post_processing();
-    
+  //@}
   string filename;
 };
 
