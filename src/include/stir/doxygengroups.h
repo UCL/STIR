@@ -128,8 +128,12 @@ from/to file.
 */
 
 /*! 
-\defgroup evaluation Classes for computing ROI values and other simple 
-   Figures of Merits for image evaluation
+\defgroup evaluation Classes for computing ROI values and other FOMs
+   For image evaluation, it is often necessary to compute ROI values, 
+   or other simple Figures of Merits (FOMs). These classes
+   and functions allow you do to this directly in STIR. This is mainly
+   useful for automation, as there is no nice graphical interface in STIR
+   to draw ROIs etc.
 \ingroup STIR_library
 */
 
@@ -148,7 +152,7 @@ the image to an estimate of the (mean of the) data. This is because in
 SPECT and PET, the measurements can be seen to be approximations of line 
 integrals through the object.
 
-STIR keeps this terminology, even though it is unfortunate. (For instance, this
+STIR keeps this terminology, even though it is unfortunate. (For instance, 
 a stir::ProjMatrix is not a projection matrix in the mathematical sense.)
 */
 /*!
@@ -169,7 +173,7 @@ every detector-pair. More generally, it can be used to the process of
 'correcting' projection data by multiplying every bin with a factor.
 */
 /*!
-\defgroup priors Prior building blocks
+\defgroup priors Priors and penalties for MAP
 \ingroup recon_buildblock
 Everything related to priors, which are used for MAP-type (also knows as
 'penalised') reconstructions.
