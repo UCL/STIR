@@ -20,6 +20,13 @@
 #include "local/stir/listmode/CListModeDataECAT.h"
 
 START_NAMESPACE_STIR
+
+CListModeData::
+CListModeData()
+{
+  num_saved_get_positions = 0;
+}
+
 CListModeData::
 ~CListModeData()
 {}

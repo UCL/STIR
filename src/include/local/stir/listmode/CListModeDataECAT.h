@@ -24,11 +24,15 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
+#include <vector>
 
 #ifndef STIR_NO_NAMESPACES
 using std::istream;
 using std::string;
 using std::streampos;
+using std::vector;
+using std::pair;
 #endif
 
 START_NAMESPACE_STIR
@@ -55,10 +59,17 @@ public:
   virtual 
     Succeeded reset();
 
+  virtual
+    SavedPosition save_get_position();
+
+  virtual
+    Succeeded set_get_position(const SavedPosition&);
+
 private:
   string listmode_filename_prefix;
   mutable unsigned int current_lm_file;
   mutable shared_ptr<CListModeDataFromStream> current_lm_data_ptr;
+  vector<pair<unsigned int, SavedPosition> > saved_get_positions;
   
   // const as it modifies only mutable elements
   Succeeded open_lm_file(unsigned int) const; 

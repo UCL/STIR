@@ -26,6 +26,7 @@
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
+using std::ios;
 #endif
 
 START_NAMESPACE_STIR
@@ -71,7 +72,9 @@ get_next_record(CListRecord& record) const
     return Succeeded::yes;
   else
   {
-    if (open_lm_file(++current_lm_file) == Succeeded::yes)
+    // warning: do not modify current_lm_file here. This is done by open_lm_file
+    // open_lm_file uses current_lm_file as well
+    if (open_lm_file(current_lm_file+1) == Succeeded::yes)
       return current_lm_data_ptr->get_next_record(record);
     else
       return Succeeded::no;
@@ -94,6 +97,33 @@ reset()
     }
 }
 
+
+CListModeData::SavedPosition
+CListModeDataECAT::
+save_get_position() 
+{
+  saved_get_positions[num_saved_get_positions].first = 
+    current_lm_file;
+  saved_get_positions[num_saved_get_positions].second = 
+     current_lm_data_ptr->get_stream_ptr()->tellg();
+  return ++num_saved_get_positions;
+} 
+
+Succeeded
+CListModeDataECAT::
+set_get_position(const CListModeDataECAT::SavedPosition& pos)
+{
+  if (open_lm_file(saved_get_positions[pos].first) == Succeeded::no)
+    return Succeeded::no;
+
+  current_lm_data_ptr->get_stream_ptr()->
+    seekg(saved_get_positions[pos].second, ios::beg);
+  if (!current_lm_data_ptr->get_stream_ptr()->good())
+    return Succeeded::no;
+  else
+    return Succeeded::yes;
+}
+  
 #if 0
 unsigned long
 CListModeDataECAT::

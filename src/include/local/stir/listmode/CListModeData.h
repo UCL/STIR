@@ -35,9 +35,15 @@ class Succeeded;
 class CListModeData
 {
 public:
+  //! Use this type for save/set_get_position
+  typedef unsigned int SavedPosition;
 
   //! Attempts to get a CListModeData object from a file
   static CListModeData* read_from_file(const string& filename);
+
+  //! Default constructor
+  /*! Initialises num_saved_get_positions to 0 */
+  CListModeData();
 
   virtual
     ~CListModeData();
@@ -50,11 +56,26 @@ public:
   virtual 
     Succeeded reset() = 0;
 
+  //! Save the current reading position
+  /*! \warning There is a maximum number of times this function will be called.
+      This is determined by the SavedPosition type. Once you save more
+      positions, the first positions will be overwritten.
+      \warning These saved positions are only valid for the lifetime of the 
+      CListModeData object.
+  */
+  virtual
+    SavedPosition save_get_position() = 0;
+
+  //! Set the position for reading to a previously saved point
+  virtual
+    Succeeded set_get_position(const SavedPosition&) = 0;
+
   //! Get scanner pointer  
   virtual const Scanner* get_scanner_ptr() const;
   
 protected:
   shared_ptr<Scanner> scanner_ptr;
+  unsigned int num_saved_get_positions;
 };
 
 END_NAMESPACE_STIR
