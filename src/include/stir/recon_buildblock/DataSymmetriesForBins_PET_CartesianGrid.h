@@ -50,17 +50,29 @@ public:
   //! Constructor with optional selection of symmetries
   /*! For the azimuthal angle phi, the following angles are symmetry related for a square grid:
       {phi, 180-phi, 90-phi, 90+phi}.
-      The boolean parameters allow to select if all 4 angles should be considered as related 
-      (\a do_symmetry_90degrees_min_phi_v=true), or only {phi, 180-phi} 
-      (\a do_symmetry_90degrees_min_phi_v=false, \a do_symmetry_180degrees_min_phi_v = true), or none.
+      The boolean parameters allow to select which angles should be considered as related:<br>
+      <ul>
+      <li> all 4:
+           (\a do_symmetry_90degrees_min_phi=true)</li>
+      <li> only {phi, 180-phi} :
+           (\a do_symmetry_90degrees_min_phi=false, 
+            \a do_symmetry_180degrees_min_phi = true)</li>
+      <li> none:
+            (\a do_symmetry_90degrees_min_phi=false, 
+            \a do_symmetry_180degrees_min_phi = false)</li>
+      </ul>
+
+      Note that when \a do_symmetry_90degrees_min_phi=true, the value of
+      \a do_symmetry_180degrees_min_phi is irrelevant. This because otherwise a
+      non-consecutive range in phi would have to be used.<br>
 
       The symmetry in phi is automatically reduced for non-square grids or when the number of
       views is not a multiple of 4.
   */    
   DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
                                           const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
-                                          const bool do_symmetry_90degrees_min_phi_v = true,
-                                          const bool do_symmetry_180degrees_min_phi_v = true);
+                                          const bool do_symmetry_90degrees_min_phi = true,
+                                          const bool do_symmetry_180degrees_min_phi = true);
 
 
   virtual 
