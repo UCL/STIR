@@ -32,6 +32,7 @@ INCLUDE_NORMALISATION_FACTORS:
 
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
+#include "stir/ParsingObject.h"
 #ifdef HIDACREBINNER
 #include "local/stir/QHidac/lm_qhidac.h"
 
@@ -50,123 +51,261 @@ INCLUDE_NORMALISATION_FACTORS:
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <utility>
 
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;
 using std::ifstream;
-using std::iostream;
 using std::ofstream;
-using std::streampos;
 using std::cerr;
 using std::cout;
 using std::flush;
 using std::endl;
 using std::min;
 using std::max;
+using std::pair;
+using std::vector;
+using std::make_pair;
 #endif
 
+START_NAMESPACE_STIR
 
-
-USING_NAMESPACE_STIR
-
-
-
-
-
-/************************ main ************************/
-
-
-int main(int argc, char * argv[])
+class TimeFrameDefinitions
 {
+public:
+  TimeFrameDefinitions();
+  explicit TimeFrameDefinitions(const string& fdef_filename);
   
-  if (argc!=6) {
-    cerr << "Usage: " << argv[0] << " outfilename listmode_filename  scanner_name  max_ring_diff fan_size\n";
-    exit(EXIT_FAILURE);
+  //! 1 based
+  double get_start_time(unsigned int frame_num) const;
+  double get_end_time(unsigned int frame_num) const;
+  
+  double get_start_time() const;
+  double get_end_time() const;
+  
+  unsigned int get_num_frames() const;
+  
+private:
+  vector<pair<double, double> > frame_times;
+};
+
+double
+TimeFrameDefinitions::
+get_start_time(unsigned int frame_num) const
+{
+  assert(frame_num>=1);
+  assert(frame_num<=get_num_frames());
+  return frame_times[frame_num-1].first;
+}
+
+double
+TimeFrameDefinitions::
+get_end_time(unsigned int frame_num) const
+{
+  assert(frame_num>=1);
+  assert(frame_num<=get_num_frames());
+  return frame_times[frame_num-1].second;
+}
+
+double
+TimeFrameDefinitions::
+get_start_time() const
+{
+  return get_start_time(1);
+}
+
+double
+TimeFrameDefinitions::
+get_end_time() const
+{
+  return get_end_time(get_num_frames());
+}
+
+unsigned int
+TimeFrameDefinitions::
+get_num_frames() const
+{
+  return frame_times.size();
+}
+
+TimeFrameDefinitions::
+TimeFrameDefinitions()
+{}
+
+TimeFrameDefinitions::
+TimeFrameDefinitions(const string& fdef_filename)
+{
+  ifstream in(fdef_filename.c_str());
+  if (!in)
+    error("Error reading %s\n", fdef_filename.c_str());
+
+  
+  double previous_end_time = 0;
+  while (true)
+  {
+    int num;
+    double duration;
+    in >> num >> duration;
+    if (!in || in.eof())
+      break;
+    if (num<=0 || duration<=0)
+        error("Reading frame_def file %s: encountered negative numbers (%d, %g)\n",
+	      fdef_filename.c_str(), num, duration);
+
+    while (num--)
+    {
+      frame_times.push_back(make_pair(previous_end_time, previous_end_time+duration));
+      previous_end_time+=duration;
+    }
   }
 
-  const string input_filename = argv[2];
-  const string output_filename = argv[1];
+  cerr << "Frame definitions:\n{";
+  for (unsigned frame_num=1; frame_num<=get_num_frames(); ++frame_num)
+  {
+    cerr << '{' << get_start_time(frame_num) 
+         << ',' << get_end_time(frame_num) 
+         << '}';
+    if (frame_num<get_num_frames())
+      cerr << ',';
+  }
+  cerr << '}' << endl;
+}
 
-  //*********** open listmode file
+class LmFansums : public ParsingObject
+{
+public:
 
+  LmFansums(const char * const par_filename);
 
-#ifdef HIDACREBINNER
-  unsigned long input_file_offset = 0;
-  LM_DATA_INFO lm_infos;
-  read_lm_QHiDAC_data_head_only(&lm_infos,&input_file_offset,input_filename);
-  shared_ptr<CListModeData> listmode_ptr =
-    new CListModeDataFromStream(input_filename, input_file_offset);
-#else
-  // something similar will be done for other listmode types. TODO
-  shared_ptr<CListModeData> listmode_ptr =
-    CListModeData::read_from_file(input_filename);
-#endif
+  int max_segment_num_to_process;
+  int fan_size;
+  shared_ptr<CListModeData> lm_data_ptr;
+  TimeFrameDefinitions frame_defs;
 
+  void compute();
+private:
 
-  //*********** get Scanner details
-  shared_ptr<Scanner> scanner_ptr = Scanner::get_scanner_from_name(argv[3]);
-  const int num_rings = scanner_ptr->get_num_rings();
-  const int num_detectors_per_ring = scanner_ptr->get_num_detectors_per_ring();
-  const int fan_size = atoi(argv[5]);
-  const int max_ring_diff = atoi(argv[4]);
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+  string input_filename;
+  string output_filename_prefix;
+  string frame_definition_filename;
+  bool store_prompts;
+int delayed_increment;
+  int current_frame;
 
+  bool interactive;
 
-  //*********** ask some more questions on how to process the data
+  void write_fan_sums(const Array<2,float>& data_fan_sums, 
+               const unsigned current_frame_num) const;
+};
 
+void 
+LmFansums::
+set_defaults()
+{
+  max_segment_num_to_process = -1;
+  fan_size = -1;
+  store_prompts = true;
+  delayed_increment = -1;
+  interactive=false;
+}
+
+void 
+LmFansums::
+initialise_keymap()
+{
+  parser.add_start_key("lm_fansums Parameters");
+  parser.add_key("input file",&input_filename);
+  parser.add_key("frame_definition file",&frame_definition_filename);
+  parser.add_key("output filename prefix",&output_filename_prefix);
+  parser.add_key("tangential fan_size", &fan_size);
+  parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
+
+  if (CListEvent::has_delayeds())
+  {
+    parser.add_key("Store 'prompts'",&store_prompts);
+    parser.add_key("increment to use for 'delayeds'",&delayed_increment);
+  }
+  parser.add_key("List event coordinates",&interactive);
+  parser.add_stop_key("END");
 
 #ifdef HIDACREBINNER     
   const unsigned int max_converter = 
     ask_num("Maximum allowed converter",0,15,15);
 #endif
   
-#ifdef INCLUDE_NORMALISATION_FACTORS
-  const bool do_normalisation = ask("Include normalisation factors?", false);
-#  ifdef HIDACREBINNER     
-  const bool handle_anode_wire_efficiency  =
-    do_normalisation ? ask("normalise for anode wire efficiency?",false) : false;
-#  endif
+
+}
+
+
+bool
+LmFansums::
+post_processing()
+{
+#ifdef HIDACREBINNER
+  unsigned long input_file_offset = 0;
+  LM_DATA_INFO lm_infos;
+  read_lm_QHiDAC_data_head_only(&lm_infos,&input_file_offset,input_filename);
+  lm_data_ptr =
+    new CListModeDataFromStream(input_filename, input_file_offset);
+#else
+  // something similar will be done for other listmode types. TODO
+  lm_data_ptr =
+    CListModeData::read_from_file(input_filename);
 #endif
 
-  const bool store_prompts = 
-    CListEvent::has_delayeds() ? ask("Store 'prompts' ?",true) : true;
-  const int delayed_increment = 
-    CListEvent::has_delayeds() 
-    ? 
-    ( store_prompts ?
-      (ask("Subtract 'delayed' coincidences ?",true) ? -1 : 0)
-      :
-      1
-    )
-    :
-    0 /* listmode file does not store delayeds*/; 
-    
-
-
-  const bool do_time_frame = true;//ask("Do time frame",true); TODO?
-  unsigned long num_events_to_store;
-  double start_time = 0;
-  double end_time = 0;
-
-  if (do_time_frame)
-  {
-    start_time = ask_num("Start time (in secs)",0.,1.e6,0.);
-    end_time = ask_num("End time (in secs)",start_time,1.e6,3600.); // TODO get sensible maximum from data
-  }
+  const int num_rings =
+      lm_data_ptr->get_scanner_ptr()->get_num_rings();
+  if (max_segment_num_to_process==-1)
+    max_segment_num_to_process = num_rings-1;
   else
-  {
-    unsigned long max_num_events = 1UL << 8*sizeof(unsigned long)-1;
-      //listmode_ptr->get_num_records();
+    max_segment_num_to_process =
+      min(max_segment_num_to_process, num_rings-1);
 
-    num_events_to_store = 
-      ask_num("Number of (prompt/true/random) events to store", 
-      (unsigned long)0, max_num_events, max_num_events);
-  }
+  const int max_fan_size = 
+    lm_data_ptr->get_scanner_ptr()->get_max_num_non_arccorrected_bins();
+  if (fan_size==-1)
+    fan_size = max_fan_size;
+  else
+    fan_size =
+      min(fan_size, max_fan_size);
 
-  const bool interactive=ask("List event coordinates?",false);
+  frame_defs = TimeFrameDefinitions(frame_definition_filename);
+  return false;
+}
+
+LmFansums::
+LmFansums(const char * const par_filename)
+{
+  set_defaults();
+  if (par_filename!=0)
+    parse(par_filename) ;
+  else
+    ask_parameters();
+
+}
+
+
+void
+LmFansums::
+compute()
+{
+
+  //*********** get Scanner details
+  shared_ptr<Scanner> scanner_ptr =
+    new Scanner(*lm_data_ptr->get_scanner_ptr());
+  const int num_rings = 
+    lm_data_ptr->get_scanner_ptr()->get_num_rings();
+  const int num_detectors_per_ring = 
+    lm_data_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
+  
+
 
   const shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
-    (ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 1, max_ring_diff,
+    (ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 1, max_segment_num_to_process,
                                    scanner_ptr->get_num_detectors_per_ring()/2,
                                    fan_size,
                                    false));
@@ -177,39 +316,41 @@ int main(int argc, char * argv[])
     
   double time_of_last_stored_event = 0;
   long num_stored_events = 0;
-  long num_events_in_frame = 0;
   Array<2,float> data_fan_sums(IndexRange2D(num_rings, num_detectors_per_ring));
   
-  // the next variable is used to see if there are more events to store for the current segments
-  // num_events_to_store-more_events will be the number of allowed coincidence events currently seen in the file
-  // ('allowed' independent on the fact of we have its segment in memory or not)
-  // When do_time_frame=true, the number of events is irrelevant, so we 
-  // just set more_events to 1, and never change it
-  long more_events = 
-    do_time_frame? 1 : num_events_to_store;
-  
   // go to the beginning of the binary data
-  listmode_ptr->reset();
+  lm_data_ptr->reset();
   
+  unsigned int current_frame_num = 1;
   {      
     // loop over all events in the listmode file
     CListRecord record;
     double current_time = 0;
-    while (more_events)
+    while (true)
       {
-        if (listmode_ptr->get_next_record(record) == Succeeded::no) 
+        if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
         {
           // no more events in file for some reason
+          write_fan_sums(data_fan_sums, current_frame_num);
           break; //get out of while loop
         }
         if (record.is_time())
         {
           const double new_time = record.time.get_time_in_secs();
-          if (do_time_frame && new_time >= end_time)
-            break; // get out of while loop
+          if (new_time >= frame_defs.get_end_time(current_frame_num))
+          {
+            while (current_frame_num <= frame_defs.get_num_frames() &&
+              new_time >= frame_defs.get_end_time(current_frame_num))
+            {
+              write_fan_sums(data_fan_sums, current_frame_num++);
+              data_fan_sums.fill(0);
+            }
+            if (current_frame_num > frame_defs.get_num_frames())
+              break; // get out of while loop
+          }
           current_time = new_time;
         }
-        else if (record.is_event() && start_time <= current_time)
+        else if (record.is_event() && frame_defs.get_start_time(current_frame_num) <= current_time)
 	  {
             // see if we increment or decrement the value in the sinogram
             const int event_increment =
@@ -220,8 +361,6 @@ int main(int argc, char * argv[])
             if (event_increment==0)
               continue;
             
-            if (!do_time_frame)
-	      more_events-= event_increment;
 
 #ifdef HIDACREBINNER
 	    if (record.event.conver_1 > max_converter ||
@@ -231,7 +370,7 @@ int main(int argc, char * argv[])
 #else
             int ra,a,rb,b;
 	    record.event.get_detectors(a,b,ra,rb);
-	    if (abs(ra-rb)<=max_ring_diff)
+	    if (abs(ra-rb)<=max_segment_num_to_process)
 	      {
 		const int det_num_diff =
 		  (a-b+3*num_detectors_per_ring/2)%num_detectors_per_ring;
@@ -281,24 +420,54 @@ int main(int argc, char * argv[])
 
 
   timer.stop();
-  // write fan sums to file
-  {
-    ofstream out(output_filename.c_str());
-    out << data_fan_sums;
-  }
-
+  
   cerr << "Last stored event was recorded after time-tick at " << time_of_last_stored_event << " secs\n";
-  if (!do_time_frame && 
-      (num_stored_events<=0 ||
-       static_cast<unsigned long>(num_stored_events)<num_events_to_store))
+  if (current_frame_num <= frame_defs.get_num_frames())
     cerr << "Early stop due to EOF. " << endl;
   cerr << "Total number of prompts/trues/delayed stored: " << num_stored_events << endl;
 
   cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
+}
+
+
+// write fan sums to file
+void 
+LmFansums::
+write_fan_sums(const Array<2,float>& data_fan_sums, 
+               const unsigned current_frame_num) const
+{
+  char txt[50];
+  sprintf(txt, "_f%d.dat", current_frame_num);
+  string filename = output_filename_prefix;
+  filename += txt;
+  ofstream out(filename.c_str());
+  out << data_fan_sums;
+}
+
+END_NAMESPACE_STIR
+
+
+USING_NAMESPACE_STIR
+
+
+
+
+
+/************************ main ************************/
+
+
+int main(int argc, char * argv[])
+{
+  
+  if (argc!=1 && argc!=2) {
+    cerr << "Usage: " << argv[0] << " [par_file]\n";
+    exit(EXIT_FAILURE);
+  }
+  LmFansums lm_fansums(argc==2 ? argv[1] : 0);
+  lm_fansums.compute();
 
   return EXIT_SUCCESS;
 }
 
 
 
-/************************* Local helper routines *************************/
