@@ -14,7 +14,20 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Year:$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -23,15 +36,8 @@
 #include "stir/ProjDataInterfile.h"
 #include "stir/Viewgram.h"
 #include "stir/ArrayFunction.h"
-
+#include "stir/thresholding.h"
 #include <iostream>
-
-#ifndef STIR_NO_NAMESPACES
-using std::endl;
-using std::cerr;
-using std::endl;
-#endif
-
 
 USING_NAMESPACE_STIR
 
@@ -41,7 +47,7 @@ main (int argc, char * argv[])
   
   if (argc!=3)
   {
-    cerr<<"\nUsage: " <<argv[0] << " <output filename > <input proj_data file name>  \n"<<endl;
+    std::cerr<<"\nUsage: " <<argv[0] << " <output filename > <input proj_data file name>  \n";
     return EXIT_FAILURE;
   }
   
@@ -62,8 +68,17 @@ main (int argc, char * argv[])
 	  ++view_num)
     {
       Viewgram<float> viewgram = attenuation_proj_data_ptr->get_viewgram(view_num,segment_num);
+      
+      // threshold minimum to arbitrary value as log will otherwise explode)
+      threshold_lower(viewgram.begin_all(), viewgram.end_all(), .1F);
+
       in_place_log(viewgram);
-      out_proj_data_ptr->set_viewgram(viewgram);
+      if (out_proj_data_ptr->set_viewgram(viewgram) != Succeeded::yes)
+	{
+	  warning("Error setting output viewgram at segment %d view %d. Exiting",
+		  segment_num, view_num);
+	  return EXIT_FAILURE;
+	}
     }
     
   
