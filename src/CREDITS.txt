@@ -1,0 +1,61 @@
+Institutions in PARAPET:
+
+1. Hammersmith Hospital - Medical Research Council (MRC)
+   London, UK
+
+2. Brunel University
+   Department of Mathematical Sciences
+   London, UK
+
+3. Ospedale San Raffaele (HSR)
+   Dipartemento di Scienze e Technologie Biomediche
+   Milan, Italy
+
+4. Technion - Israel Institute of Technology
+   MINERVA, Optimization Center (MOC)
+   Haifa, Israel
+
+5. ELGEMS Ltd.
+   Haifa, Israel
+
+6. Geneva University Hospital (HUC)
+   Division of Nuclear Medicine
+   Geneva, Switzerland
+
+7. Parsytec GmbH
+   Aachen, Germany
+
+Programmers:
+
+	Zverovich, Alexey (Brunel)
+	Zibulevsky, Michael (MOC)
+	Zaidi, Habib (HUC)
+	Valente, Patrick (Brunel)
+	Thielemans, Kris (MRC)
+	Sauge, Damien (HUC)
+	Sadki, Mustapha (Brunel)
+	Pagani, Elizabetta (HSR)
+	Mustafovic, Sanida (MRC)
+	Labb'e, Claire (HUC)
+	Jacobson, Matthew (MOC)
+	Hague, Darren (Brunel)
+	Gordon, Ekaterina (MOC)
+	Belluzzo, Damiano (HSR)
+
+Design I:
+
+	Zibulevsky, Michael (MOC)
+	Thielemans, Kris (MRC)
+	de Oliveira, Cristina (MRC)
+	Labb'e, Claire (HUC)
+	Hague, Darren (Brunel)
+
+Design II:
+
+	Zverovich, Alexey (Brunel)
+	Thielemans, Kris (MRC) 
+	Sadki, Mustapha (Brunel)
+	Mustafovic, Sanida (MRC)
+	Jacobson, Matthew (MOC)
+
+Overall technical development supervisor: Thielemans, Kris (MRC) 
