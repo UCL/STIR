@@ -1,5 +1,5 @@
 // 
-//$Id$: $Date$
+// $Id$: $Date$
 //
 #ifndef __Interfile_h__
 #define __Interfile_h__
@@ -14,7 +14,6 @@
   \author PARAPET project
 
   \date    $Date$
-
   \version $Revision$
     
 */
@@ -173,26 +172,20 @@ ProjDataFromStream* read_interfile_PDFS(istream& input,
 ProjDataFromStream* read_interfile_PDFS(const string& filename);
 
 //! This writes an Interfile header appropriate for the ProjDataFromStream object.
-Succeeded write_basic_interfile_PDFS_header(const string& header_filename,
+/*! A .hs extension will be added to the header_file_name if none is present.
+ \return Succeeded::yes when succesful, Succeeded::no otherwise.
+*/
+ Succeeded write_basic_interfile_PDFS_header(const string& header_filename,
       			                const string& data_filename,
 				        const ProjDataFromStream& pdfs);
 
 //! This function writes an Interfile header for the pdfs object.
 /*! The header_filename is found by replacing the extension in the 
    data_filename with .hs
+   \return Succeeded::yes when succesful, Succeeded::no otherwise.
  */
 Succeeded write_basic_interfile_PDFS_header(const string& data_filename,
 			    const ProjDataFromStream& pdfs);
-
-#if 0
-// write interfile header with the file name as the 
-// only input argment
-// the problem however is that in order to obtain the PDFS info
-// we have to call ask_PDFS_details()
-// but having this function gives you flexibility of writing the 
-// interfile header without entering the file_name + header_name+PDFS..   
-Succeeded write_basic_interfile_PDFS_header(const string& filename);
-#endif
 
 END_NAMESPACE_TOMO
 
