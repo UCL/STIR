@@ -70,7 +70,6 @@ END:=
 
 
 #include "stir/utilities.h"
-#include "stir/interfile.h"
 #include "stir/CPUTimer.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInterfile.h"
