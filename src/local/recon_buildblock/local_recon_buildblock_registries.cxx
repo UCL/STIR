@@ -17,6 +17,8 @@
 */
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
+#include "local/stir/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
+
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
 //#include "local/stir/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
 //#include "local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
@@ -33,6 +35,7 @@
 START_NAMESPACE_STIR
 
 static ProjMatrixByBinUsingSolidAngle::RegisterIt dummy11;
+static ProjMatrixByBinSinglePhoton::RegisterIt dummy12;
 //static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
 
 //static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;

@@ -24,7 +24,8 @@ SOURCES = \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
 	QuadraticPrior.cxx \
-	BinNormalisationUsingProfile.cxx 
+	BinNormalisationUsingProfile.cxx \
+	ProjMatrixByBinSinglePhoton.cxx 
 ifeq ($(HAVE_LLN_MATRIX),1)
 SOURCES += \
 	BinNormalisationFromECAT7.cxx
