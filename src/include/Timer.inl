@@ -4,6 +4,7 @@
 /*!
 
   \file
+  \ingroup buildblock
 
   \brief inline implementations for Timer
 
@@ -11,7 +12,6 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
 START_NAMESPACE_TOMO
@@ -44,12 +44,14 @@ void Timer::stop()
   }
 }
 
+#ifdef OLDDESIGN
 void Timer::restart() 
 { 
   previous_total_value = 0.;
   running = false;
   start();
 }
+#endif
 
 void Timer::reset() 
 { 
