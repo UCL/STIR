@@ -29,6 +29,7 @@
 // for read_from_file
 #include "stir/interfile.h"
 #include "stir/interfile_keyword_functions.h"
+#include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 #include "stir/ProjDataGEAdvance.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -112,7 +113,7 @@ read_from_file(const string& filename,
       warning("ProjData::read_from_file wrote interfile header %s\nNow reading as interfile", 
               interfile_header_name.c_str());
 #endif
-      return shared_ptr<ProjData>(read_interfile_PDFS(interfile_header_name, openmode));
+      return read_interfile_PDFS(interfile_header_name, openmode);
     }
     else
     {
@@ -129,7 +130,7 @@ read_from_file(const string& filename,
 #ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as Interfile\n", filename.c_str());
 #endif
-    shared_ptr<ProjData> ptr =
+    ProjData * ptr =
       read_interfile_PDFS(filename, openmode);
     if (!is_null_ptr(ptr))
       return ptr;
