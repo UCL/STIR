@@ -53,8 +53,7 @@ START_NAMESPACE_STIR
 
 void
 construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_2D_array,   
-					Array<3,float>& kernel_3d,const float kapa0_over_kapa1,
-					int number_of_coefficients_before_padding);
+					Array<3,float>& kernel_3d,const float kapa0_over_kapa1);
 					
 
 //// IMPLEMENTATION /////
@@ -62,8 +61,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 
 void
 construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_3D_array,   
-					Array<3,float>& kernel_3d,const float kapa0_over_kapa1,
-					int number_of_coefficients_before_padding)
+					Array<3,float>& kernel_3d,const float kapa0_over_kapa1)
 {
 
   /**************************************************************************************/
@@ -91,6 +89,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
   if ( sq_kapas > 10000)
   {
     new_filter_coefficients_3D_array.grow(IndexRange3D(0,0,0,0,0,0));
+    new_filter_coefficients_3D_array.fill(1);
   }
   else if (sq_kapas!=1.F)
   {
@@ -101,16 +100,11 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
     while(true)
     {
       const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
-      const int size_z = size;
+      const int size_z = kernel_3d.get_length()==1 ? 1 : size;
       const int size_y = size; 
       const int size_x = size;
 
-      int filter_length_z = static_cast<int>(floor(kernel_3d.get_length()/2));
-      int filter_length_y = static_cast<int>(floor(kernel_3d[0].get_length()/2));
-      int filter_length_x = static_cast<int>(floor(kernel_3d[0][0].get_length()/2));
-	
-      cerr << "Now doing size " << size << std::endl;
-      
+      cerr << "Now doing size " << size << std::endl;     
       
       float inverse_sq_kapas;
       if (fabs((double)sq_kapas ) >0.000000000001)
@@ -118,10 +112,10 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
       else 
 	inverse_sq_kapas = 0;
       
-      static Array<1,float> fft_filter_1D_array_64(1,2*64*64*64);
-      static Array<1,float> fft_filter_1D_array_128(1,2*128*128*128);
-      static Array<1,float> fft_filter_1D_array_256(1,2*256*256*256);
-      //static Array<1,float> fft_filter_1D_array_512(1,2*512*512*512);
+      static Array<1,float> fft_filter_1D_array_64(1,2*(size_z==1?1:64)*64*64);
+      static Array<1,float> fft_filter_1D_array_128(1,2*(size_z==1?1:128)*128*128);
+      static Array<1,float> fft_filter_1D_array_256(1,2*(size_z==1?1:256)*256*256);
+      //static Array<1,float> fft_filter_1D_array_512(1,2*(size_z==1?1:512)*512*512);
       
       Array<1,float>* fft_filter_1D_array_ptr = 0;
       switch (size)
@@ -156,7 +150,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	// ( DO NOT TAKE IMAGINARY PART INTO ACCOUNT YET)
 	/**********************************************************************************/
 	
-        Array<3,float> filter_coefficients_padded_3D_array(IndexRange3D(1,size,1,size,1,size));
+        Array<3,float> filter_coefficients_padded_3D_array(IndexRange3D(1,size_z,1,size_y,1,size_x));
 
     // here do the padding	
 	const int min_kernel_3d_z = kernel_3d.get_min_index();
@@ -173,9 +167,9 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	  for ( int j = -(oldsize_y/2);j<=-(oldsize_y/2)+oldsize_y-1;j++)
 	    for ( int i = -(oldsize_x/2);i<=-(oldsize_x/2)+oldsize_x-1;i++)
 	    {
-	      const int newk= k>=0 ? k : size+k;
-	      const int newj= j>=0 ? j : size+j;
-	      const int newi= i>=0 ? i : size+i;
+	      const int newk= k>=0 ? k : size_z+k;
+	      const int newj= j>=0 ? j : size_y+j;
+	      const int newi= i>=0 ? i : size_x+i;
 	      const int oldk= k>=0 ? k : oldsize_z+k;
 	      const int oldj= j>=0 ? j : oldsize_y+j;
 	      const int oldi= i>=0 ? i : oldsize_x+i;
@@ -184,11 +178,11 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 
 	     	    }
 #if 0
-	    for ( int k = 1; k<=size;k++)
+	    for ( int k = 1; k<=size_z;k++)
 	    {
-	      for ( int j = 1; j<=size;j++)
+	      for ( int j = 1; j<=size_y;j++)
 	      {
-		  for ( int i = 1; i<=size;i++)
+		  for ( int i = 1; i<=size_x;i++)
 		  {
 		    cerr << filter_coefficients_padded_3D_array[k][j][i] << "   " ;
 
@@ -237,17 +231,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 
      
 	divide_complex_arrays(fft_filter_num_1D_array,fft_filter_denom_1D_array);  
-	
-	// TODO remove probably
-	if (size_z==1)
-	{
-	  Array<1,int> array_lengths_2d(1,2);
-	  array_lengths_2d[1]=array_lengths[2];
-	  array_lengths_2d[2]=array_lengths[3];
-	  fourn(fft_filter_num_1D_array, array_lengths_2d, 2,-1);
-	}
-	else
-	  fourn(fft_filter_num_1D_array, array_lengths, 3,-1);
+	fourn(fft_filter_num_1D_array, array_lengths, 3,-1);
 	
 	
 	// make it consistent with mathemematica -- the output of the       
@@ -309,7 +293,10 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	  
 	  /******************************* z DIRECTION ************************************/
 	  
-	 
+	 if (size_z==1)
+	   kernel_length_z=1;
+	 else
+	 {
 	    int jz = new_filter_coefficients_3D_array_tmp.get_min_index();
 	    int iz = new_filter_coefficients_3D_array_tmp[jz][new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index();
 	    for (int k=new_filter_coefficients_3D_array_tmp.get_min_index();k<=new_filter_coefficients_3D_array_tmp.get_max_index()/2;k++)
@@ -319,6 +306,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 		<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/threshold) break;
 	      else (kernel_length_z)++;
 	    }
+	 }
 	  /********************************************************************************/
 	  
 	  if (kernel_length_x == size_x/2)
@@ -360,6 +348,9 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
 	  }
 	  else
 	  {	 
+	    cerr << "kernel lengths found: (z,y,x): "
+	         << '('<< kernel_length_z << ',' << kernel_length_y << ',' << kernel_length_x << ')'
+		 << endl;
 	    new_filter_coefficients_3D_array.grow(IndexRange3D(-(kernel_length_z-1),kernel_length_z-1,
 	      -(kernel_length_y-1),kernel_length_y-1,
 	      -(kernel_length_x-1),kernel_length_x-1));
@@ -386,29 +377,41 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
     }
     else //sq_kappas == 1
     {
-      new_filter_coefficients_3D_array.grow(IndexRange3D(
-	    -number_of_coefficients_before_padding+1,number_of_coefficients_before_padding-1,
-	    -number_of_coefficients_before_padding+1,number_of_coefficients_before_padding-1,
-	    -number_of_coefficients_before_padding+1,number_of_coefficients_before_padding-1));
-
-	for (int  k = 0;k<= number_of_coefficients_before_padding-1;k++)
-          for (int  j = 0;j<= number_of_coefficients_before_padding-1;j++)	  
-	    for (int  i = 0;i<= number_of_coefficients_before_padding-1;i++)	  		  
-	    {
-	            float tmp = filter_coefficients[filter_coefficients.get_min_index()+k][filter_coefficients[1].get_min_index()+j][filter_coefficients[1][1].get_min_index()+i];
-		    new_filter_coefficients_3D_array[k][j][i]=
-		    new_filter_coefficients_3D_array[k][j][-i]=		    
-		    new_filter_coefficients_3D_array[k][-j][i]=
-		    new_filter_coefficients_3D_array[k][-j][-i]=
-		    new_filter_coefficients_3D_array[-k][j][i]=
-		    new_filter_coefficients_3D_array[-k][-j][i]=
-		    new_filter_coefficients_3D_array[-k][j][-i]=
-		    new_filter_coefficients_3D_array[-k][-j][-i]=
-	      filter_coefficients[filter_coefficients.get_min_index()+k][filter_coefficients[1].get_min_index()+j][filter_coefficients[1][1].get_min_index()+i];
-		  	 
-	      
-	    }
-	  
+      const unsigned int size_x = filter_coefficients[0][0].get_length();  
+      const unsigned int size_y = filter_coefficients[0].get_length();  
+      const unsigned int size_z = filter_coefficients.get_length();  
+      
+      const int min_index_z = -(size_z/2);  
+      const int min_index_y = -(size_y/2);
+      const int min_index_x = -(size_x/2);
+      
+      new_filter_coefficients_3D_array.grow(IndexRange3D(min_index_z, min_index_z + size_z - 1,
+	min_index_y, min_index_y + size_y - 1,
+	min_index_x, min_index_x + size_x - 1 ));
+      
+      for (int  k = 0;k<= new_filter_coefficients_3D_array.get_max_index();k++)
+      {
+	const int oldk = filter_coefficients.get_min_index()+k;
+	for (int  j = 0;j<= new_filter_coefficients_3D_array[oldk].get_max_index();j++)
+	{
+	  const int oldj = filter_coefficients[oldk].get_min_index()+j;
+	  for (int  i = 0;i<= new_filter_coefficients_3D_array[oldk][oldj].get_max_index();i++)	  		  
+	  {
+	    const int oldi = filter_coefficients[oldk][oldj].get_min_index()+i;
+	    const float tmp = filter_coefficients[oldk][oldj][oldi];
+	    new_filter_coefficients_3D_array[k][j][i]=
+	      new_filter_coefficients_3D_array[k][j][-i]=		    
+	      new_filter_coefficients_3D_array[k][-j][i]=
+	      new_filter_coefficients_3D_array[k][-j][-i]=
+	      new_filter_coefficients_3D_array[-k][j][i]=
+	      new_filter_coefficients_3D_array[-k][-j][i]=
+	      new_filter_coefficients_3D_array[-k][j][-i]=
+	      new_filter_coefficients_3D_array[-k][-j][-i]=
+	      tmp;	      
+	  }
+	}
+      }
+      
       
     }
 
@@ -762,7 +765,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
 	  {
 	    Array <3,float> new_coeffs;
 	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
-	  construct_scaled_filter_coefficients_3D(new_coeffs, filter_coefficients,sq_kapas,number_of_coefficients_before_padding);
+	  construct_scaled_filter_coefficients_3D(new_coeffs, filter_coefficients,sq_kapas);
 		  filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
 		  all_filter_coefficients[k][j][i] = filter_lookup[k_index];
 		  //new ArrayFilter3DUsingConvolution<float>(new_coeffs);	
@@ -813,12 +816,9 @@ void
 NonseparableSpatiallyVaryingFilters3D<elemT>:: 
 virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity<3,elemT>& in_density) const
 {
-#if 0
-  static VectorWithOffset < shared_ptr <ArrayFilter3DUsingConvolution <float> > > 
-    filter_lookup(0,number_of_discrete_points);
-#else
+
   static map<int, shared_ptr <ArrayFilter3DUsingConvolution <float> > > filter_lookup;
-#endif
+
   
   //the first time virtual_apply is called for this object, counter is set to 0
   static int count=0;
@@ -857,7 +857,9 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     }
     VoxelsOnCartesianGrid<float>* precomputed_coefficients_image_cast =
 	  dynamic_cast< VoxelsOnCartesianGrid<float>* >(precomputed_coefficients_image); 
-    if (count > 10 && count %10 == 0)
+    if (recompute_every_num_subiterations>0 && 
+        count>recompute_from_subiteration_num &&
+	count %recompute_every_num_subiterations == 0)
     {
       recompute_filters = true;
       cerr << "recompute coefficients now\n WARNING this is specific to approach 2!\n";
@@ -882,6 +884,15 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	   << precomputed_coefficients_image->find_max()*rescaling_coefficient
 	   << endl;
 	cerr << " In here nonseparable" << endl;
+	float max = precomputed_coefficients_image->find_max()*rescaling_coefficient;
+	
+#if 0
+	if (count==1)
+	  k_interval = max*.01F;
+#endif	
+	cerr << endl;
+	cerr << " New k_interval is " << k_interval << "   ";
+
 	for ( int k = precomputed_coefficients_image_cast->get_min_z(); k<=precomputed_coefficients_image_cast->get_max_z();k++)
 	  for ( int j = precomputed_coefficients_image_cast->get_min_y(); j<=precomputed_coefficients_image_cast->get_max_y();j++)
 	    for ( int i = precomputed_coefficients_image_cast->get_min_x(); i<=precomputed_coefficients_image_cast->get_max_x();i++)
@@ -892,24 +903,25 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	      const float tmp = float((*precomputed_coefficients_image)[k][j][i]* rescaling_coefficient); 
 	      //const int k_index = round(((float)1/(max(.000000001F,tmp)))/k_interval);
 	      const int k_index = round((tmp)/k_interval);
-
-#if 0	    
-	      if (k_index < filter_lookup.get_min_index())
-		  filter_lookup.grow(k_index, filter_lookup.get_max_index());
-	      if (k_index > filter_lookup.get_max_index())
-		  filter_lookup.grow(filter_lookup.get_min_index(), k_index);
-	      if ( filter_lookup[k_index]==NULL )
-#else
+#if 1
 	      if (filter_lookup.find(k_index)==filter_lookup.end())
-#endif
+
 	      {
 		
 		cerr << "Now doing index " << k_index << " i.e. value " << k_index*k_interval << " for tmp " << tmp << endl;
 		if (tmp >0.0000001)
 		{
 		  Array <3,float> new_coeffs;	 		
-		  construct_scaled_filter_coefficients_3D(new_coeffs,filter_coefficients,1/tmp, number_of_coefficients_before_padding); 
+		  construct_scaled_filter_coefficients_3D(new_coeffs,filter_coefficients,1/tmp); 
 		  filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
+#if 0
+		  {
+		    char filename[1000];
+		    sprintf(filename, "filter%g.hv",tmp);
+		    filename[7]='_';
+		    write_basic_interfile(filename, new_coeffs);
+		  }
+#endif
 		}
 		else
 		{
@@ -917,8 +929,21 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		}
 		
 	      }
-	      all_filter_coefficients[k][j][i] = filter_lookup[k_index];	    
-  
+	      all_filter_coefficients[k][j][i] = filter_lookup[k_index];
+#else	      	      
+		
+		cerr << "Now doing tmp " << tmp << endl;
+		if (tmp >0.0000001)
+		{
+		  Array <3,float> new_coeffs;	 		
+		  construct_scaled_filter_coefficients_3D(new_coeffs,filter_coefficients,1/tmp); 
+		  all_filter_coefficients[k][j][i]  = new ArrayFilter3DUsingConvolution<float>(new_coeffs);
+		}
+		else
+		{
+		  all_filter_coefficients[k][j][i]  = new ArrayFilter3DUsingConvolution<float>();
+		}
+#endif
       }    
       
     } // end recompute_filters
@@ -973,10 +998,11 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::set_defaults()
        attenuation_proj_data_ptr = NULL;
        mask_size = 0;
        //num_dim = 1;
-       number_of_discrete_points =0;
        k_interval =0;
-       number_of_coefficients_before_padding =0;
        rescaling_coefficient =0;
+
+       recompute_from_subiteration_num = 1;
+       recompute_every_num_subiterations = 0;
        
      }
      
@@ -991,13 +1017,12 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::set_defaults()
        parser.add_key("initial_image_filename", &initial_image_filename);
        parser.add_key("sensitivity_image_filename", &sensitivity_image_filename);
        parser.add_key("mask_size", &mask_size);
-       parser.add_key("number_of_discrete_points", &number_of_discrete_points);
        parser.add_key("k_interval", &k_interval);
        parser.add_key("rescaling coefficient", & rescaling_coefficient);
        parser.add_key ("precomputed_coefficients_filename", &precomputed_coefficients_filename);
        parser.add_key ("normalised_bck_filename", &normalised_bck_filename); 
-       parser.add_key ("number of coefficients before padding", &number_of_coefficients_before_padding);
-       //parser.add_key ("rescaling coefficient", & rescaling_coefficient);
+       parser.add_key ("recompute_from_subiteration_num", & recompute_from_subiteration_num);
+       parser.add_key ("recompute_every_num_subiterations", & recompute_every_num_subiterations);
        parser.add_stop_key("END Nonseparable Spatially Varying Filters 3D");
      }
      
