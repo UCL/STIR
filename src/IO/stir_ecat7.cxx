@@ -9,7 +9,7 @@
   building blocks and vice versa.
 
   \author Kris Thielemans
-  \author Cristina de Oliveira (offset_in_ecat_file function)
+  \author Cristina de Oliveira (offset_in_ECAT_file function)
   \warning This only works with some CTI file_types. In particular, it does NOT
   work with the ECAT6-like files_types, as then there are subheaders 'in' the 
   datasets.
@@ -21,7 +21,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -218,12 +218,12 @@ short find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
 *	o f f s e t
 * -------------------------------------------
 */
-static int offset_in_ECAT_file (MatrixFile *mptr, int frame, int plane, int gate, int data,
+static long offset_in_ECAT_file (MatrixFile *mptr, int frame, int plane, int gate, int data,
             int bed, int segment, int *plane_size_ptr = NULL)
 {
   
-  int el_size[15], matnum, strtblk, group = abs(segment),
-    plane_size = 0, i, off;
+  int el_size[15], matnum, strtblk, group = abs(segment), i;
+  long  plane_size = 0, off;
   struct MatDir matdir;
   Scan_subheader scansub;
   Image_subheader imagesub;
