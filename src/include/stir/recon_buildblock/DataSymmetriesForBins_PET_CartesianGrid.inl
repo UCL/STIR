@@ -17,6 +17,10 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
+
+  Modification history:
+
+  KT 30/05/2002 added possibility for reduced symmetry in view_num
 */
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
@@ -96,6 +100,11 @@ find_sym_op_bin0(
   const int z_shift = num_planes_per_axial_pos[segment_num]*axial_pos_num;
   
   const int view180 = num_views;
+
+  // TODO get rid of next 2 restrictions
+  assert(!do_symmetry_180degrees_min_phi || view_num>=0);
+  assert(!do_symmetry_180degrees_min_phi || view_num<num_views);
+
 #ifndef NDEBUG
   // This variable is only used in assert() at the moment, so avoid compiler 
   // warning by defining it only when in debug mode
@@ -105,19 +114,19 @@ find_sym_op_bin0(
   const int view90  = view180/2;
   const int view45  = view180/4;
 
-  if (  view_num > view90 && view_num <= view135 ) {  //[90, 135 ]		
+  if (  do_symmetry_90degrees_min_phi && view_num > view90 && view_num <= view135) {  //(90, 135 ]
     if ( segment_num >= 0)	
       return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift);          
     else               
       return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq(view180, axial_pos_num, z_shift, transform_z);		   // seg < 0    				 			 
   } 
-  else if ( view_num > view45 && view_num <= view90  ) { // [ 45,  90] 		 
+  else if ( do_symmetry_90degrees_min_phi && view_num > view45 && view_num <= view90  ) { // [ 45,  90] 		 
     if ( segment_num >= 0)  
       return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq(view180, axial_pos_num, z_shift, transform_z);  					 			  			 
     else
       return new SymmetryOperation_PET_CartesianGrid_swap_xy_yx(view180, axial_pos_num, z_shift); // seg < 0   //KT????????????  different for view90, TODO				  
   }  
-  else if( view_num > view135 && view_num <= view180 ){   // 135 180 
+  else if( do_symmetry_180degrees_min_phi && view_num > view90/* && view_num <= view180 */){   // (135, 180) but (90,180) for reduced symmetry case
     if( segment_num >= 0)   
       return new SymmetryOperation_PET_CartesianGrid_swap_xmx_zq(view180, axial_pos_num, z_shift, transform_z);  
     else 	            
@@ -125,7 +134,8 @@ find_sym_op_bin0(
   } 
   else 
   {
-    assert( view_num >= view0 && view_num <= view45);
+    assert( !do_symmetry_90degrees_min_phi || (view_num >= view0 && view_num <= view45));
+    assert( !do_symmetry_180degrees_min_phi || (view_num >= view0 && view_num <= view90));
     if ( segment_num < 0) 
       return new SymmetryOperation_PET_CartesianGrid_swap_zq(view180, axial_pos_num, z_shift, transform_z);                              
     else
@@ -152,6 +162,10 @@ find_sym_op_general_bin(
 
   const int z_shift = num_planes_per_axial_pos[segment_num]*axial_pos_num;
   
+// TODO get rid of next 2 restrictions
+  assert(!do_symmetry_180degrees_min_phi || view_num>=0);
+  assert(!do_symmetry_180degrees_min_phi || view_num<num_views);
+
   const int view180 = num_views;
 #ifndef NDEBUG
   // This variable is only used in assert() at the moment, so avoid compiler 
@@ -164,7 +178,7 @@ find_sym_op_general_bin(
   const int view45  = view180/4;
   
   
-  if (  view_num > view90 && view_num <= view135 ) {  //[90, 135 ]		
+  if (  do_symmetry_90degrees_min_phi && view_num > view90 && view_num <= view135) {  //(90, 135 ]
     if ( segment_num >  0) {	 // pos_plus90		 
       if ( s > 0 ) 
         return new SymmetryOperation_PET_CartesianGrid_swap_xmy_yx(view180, axial_pos_num, z_shift);           				    			   
@@ -186,7 +200,7 @@ find_sym_op_general_bin(
           return new SymmetryOperation_PET_CartesianGrid_swap_xy_ymx(view180, axial_pos_num, z_shift);			 
       }			   			    					  
   }    
-  else   if ( view_num > view45 && view_num <= view90  )  // [ 45,  90] 
+  else   if ( do_symmetry_90degrees_min_phi && view_num > view45 && view_num <= view90  )  // [ 45,  90] 
   {		   
     if ( segment_num > 0){  
       if ( s > 0 ) 	   
@@ -209,7 +223,7 @@ find_sym_op_general_bin(
         return new SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx(view180, axial_pos_num, z_shift);				       
     }
   }  
-  else  if( view_num > view135 && view_num <= view180 )   // 135 180 
+  else if( do_symmetry_180degrees_min_phi && view_num > view90/* && view_num <= view180 */)   // (135, 180) but (90,180) for reduced symmetry case    
   {
     if( segment_num > 0){				    
       if ( s > 0 )     
@@ -228,7 +242,8 @@ find_sym_op_general_bin(
   }  
   else 
   {    
-    assert( view_num >= view0 && view_num <= view45 );
+    assert( !do_symmetry_90degrees_min_phi || (view_num >= view0 && view_num <= view45));
+    assert( !do_symmetry_180degrees_min_phi || (view_num >= view0 && view_num <= view90));
     if ( segment_num > 0) 
     {   
       if ( s < 0) 
@@ -272,18 +287,33 @@ DataSymmetriesForBins_PET_CartesianGrid::
 find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const 
 {
    bool change=false;
-   //const int view0=  0;
+ // TODO get rid of next 2 restrictions
+  assert(!do_symmetry_180degrees_min_phi || v_s.view_num()>=0);
+  assert(!do_symmetry_180degrees_min_phi || v_s.view_num()<num_views);
+
+  //const int view0=  0;
    const int view90  =  num_views>>1;   
    const int view45  =  view90>>1;
    const int view135 =  view90+view45;
 
-   if ( v_s.segment_num() < 0    )  { v_s.segment_num() = -v_s.segment_num(); change=true;};	   
-   if ( v_s.view_num() > view45)  { change=true;  }
-  
-   if ( v_s.view_num() == num_views )    v_s.view_num() =0;	
-   else if ( v_s.view_num()  >=  view135)  v_s.view_num() = num_views - v_s.view_num(); 		
-   else if ( v_s.view_num()  >=  view90  )    v_s.view_num() =  v_s.view_num() - view90;		
-   else if ( v_s.view_num()  > view45 ) v_s.view_num()  = view90 - v_s.view_num() ;
+   if ( v_s.segment_num() < 0    )  { v_s.segment_num() = -v_s.segment_num(); change=true;}
+
+   if (do_symmetry_90degrees_min_phi)
+   {
+     //if ( v_s.view_num() == num_views )    v_s.view_num() =0;	// KT 30/05/2002 disabled as it should never happen
+     //else 
+     if (v_s.view_num() >= view135)  
+     { v_s.view_num() = num_views - v_s.view_num(); return true; }
+     else if (v_s.view_num()  >=  view90  ) 
+     { v_s.view_num() =  v_s.view_num() - view90;  return true; }	
+     else if (v_s.view_num()  > view45 ) 
+     { v_s.view_num()  = view90 - v_s.view_num() ;  return true; }
+   }
+   else if (do_symmetry_180degrees_min_phi)
+   {
+     if (v_s.view_num() > view90  ) 
+     { v_s.view_num() =  num_views - v_s.view_num();  return true; }
+   }
    
   return change;
 }
@@ -333,9 +363,9 @@ DataSymmetriesForBins_PET_CartesianGrid::
 int
 DataSymmetriesForBins_PET_CartesianGrid::
 num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const
-{
-  int num = 2;
-  if ((vs.view_num() % (num_views/4)) != 0)
+{      
+  int num = do_symmetry_180degrees_min_phi  && (vs.view_num() % (num_views/2)) != 0 ? 2 : 1;
+  if (do_symmetry_90degrees_min_phi && (vs.view_num() % (num_views/2)) != num_views/4)
     num *= 2;
   if (vs.segment_num() != 0)
     num *= 2;
@@ -347,8 +377,8 @@ int
 DataSymmetriesForBins_PET_CartesianGrid::
 num_related_bins(const Bin& b) const
 {
-  int num = 2;
-  if ((b.view_num() % (num_views/4)) != 0)
+  int num = do_symmetry_180degrees_min_phi  && (b.view_num() % (num_views/2)) != 0 ? 2 : 1;
+  if (do_symmetry_90degrees_min_phi && (b.view_num() % (num_views/2)) != num_views/4)
     num *= 2;
   if (b.segment_num() != 0)
     num *= 2;
@@ -394,9 +424,6 @@ get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewS
   const int segment_num = vs.segment_num();
   const int view_num = vs.view_num();
 
-  const bool symviewplus90 = true;
-  const bool sym90minview = 
-    (view_num % (num_views/4)) != 0;
   const bool symz = 
     (segment_num != 0);
 
@@ -408,7 +435,7 @@ get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewS
   if (symz)
     rel_vs.push_back(ViewSegmentNumbers(view_num,-segment_num));
 
-  if (symviewplus90)
+  if (do_symmetry_180degrees_min_phi && do_symmetry_90degrees_min_phi && (view_num % (num_views/2)) != num_views/4)
   {
     const int related_view_num = 
       view_num < num_views/2 ?
@@ -419,13 +446,13 @@ get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewS
       rel_vs.push_back(ViewSegmentNumbers( related_view_num,-segment_num));
   }
 
-  if (symviewplus90 && sym90minview)
+  if (do_symmetry_180degrees_min_phi && (view_num % (num_views/2)) != 0)
   {
     rel_vs.push_back(ViewSegmentNumbers( num_views - view_num,segment_num));
     if (symz)
       rel_vs.push_back(ViewSegmentNumbers( num_views - view_num,-segment_num));
   }
-  if (sym90minview)
+  if (do_symmetry_90degrees_min_phi && (view_num % (num_views/4)) != 0)
   {
     // use trick to get related_view_num between 0 and num_views:
     // use modulo num_views (but add num_views first to ensure positivity)
