@@ -22,6 +22,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
+#include "stir/Succeeded.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <iostream>
@@ -36,7 +37,7 @@ public:
   GenerateImage(const char * const par_filename);
 
 
-  void compute();
+  Succeeded compute();
 private:
 
   virtual void set_defaults();
@@ -141,7 +142,7 @@ GenerateImage(const char * const par_filename)
 }
   
 
-void
+Succeeded
 GenerateImage::
 compute()
 {
@@ -181,7 +182,7 @@ compute()
       *out_density_ptr += current_image;
     }
   DefaultOutputFileFormat output_file_format;
-  output_file_format.write_to_file(output_filename, *out_density_ptr);  
+  return output_file_format.write_to_file(output_filename, *out_density_ptr);  
   
 }
 
@@ -198,7 +199,7 @@ int main(int argc, char * argv[])
     exit(EXIT_FAILURE);
   }
   GenerateImage application(argc==2 ? argv[1] : 0);
-  application.compute();
+  Succeeded success = application.compute();
 
-  return EXIT_SUCCESS;
+  return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }

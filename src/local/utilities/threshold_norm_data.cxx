@@ -24,6 +24,7 @@ $Revision$
 #include "stir/SegmentByView.h"
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
+#include "stir/Succeeded.h"
 
 #include <numeric>
 #include <iostream> 
@@ -65,6 +66,8 @@ main(int argc, char **argv)
   shared_ptr<ProjData> proj_data_ptr =
     new ProjDataInterfile(input_proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			   output_file_name);
+
+  Succeeded success = Succeeded::yes;
    
   for (int segment_num = input_proj_data_ptr->get_min_segment_num();
        segment_num <=input_proj_data_ptr->get_max_segment_num();
@@ -81,10 +84,12 @@ main(int argc, char **argv)
 	  *iter = new_value;
       }
     if (!(proj_data_ptr->set_segment(segment) == Succeeded::yes))
-      warning("Error set_segment %d\n", segment_num);   
+      {
+	warning("Error set_segment %d\n", segment_num);   
+	success = Succeeded::no;
+      }
+
   }
   
-  
-
-  return EXIT_SUCCESS;
+  return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
