@@ -5,7 +5,7 @@
 /*! 
 \file
 \ingroup utilities
-\ingroup CTI
+\ingroup ECAT
 \brief Conversion from interfile (or any format that we can read) 
   to ECAT 6 cti (image and sinogram data)
 \author Kris Thielemans
@@ -24,8 +24,8 @@ $Revision$
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
 #include "stir/utilities.h"
-#include "stir/CTI/stir_cti.h"
-#include "stir/CTI/cti_utils.h"
+#include "stir/IO/stir_ecat6.h"
+#include "stir/IO/ecat6_utils.h"
 #include "stir/Succeeded.h"
 #include <iostream>
 #include <vector>
@@ -40,8 +40,7 @@ using std::string;
 #endif
 
 USING_NAMESPACE_STIR
-
-
+USING_NAMESPACE_ECAT6
 
 
 int main(int argc, char *argv[])
@@ -125,8 +124,8 @@ int main(int argc, char *argv[])
     shared_ptr<DiscretisedDensity<3,float> > density_ptr =
       DiscretisedDensity<3,float>::read_from_file(filenames[0]);
   
-    Main_header mhead;
-    make_ECAT6_main_header(mhead, *scanner_ptr, filenames[0], *density_ptr);
+    ECAT6_Main_header mhead;
+    make_ECAT6_Main_header(mhead, *scanner_ptr, filenames[0], *density_ptr);
     mhead.num_frames = filenames.size();
 
     FILE *fptr= cti_create (cti_name, &mhead);
@@ -166,8 +165,8 @@ int main(int argc, char *argv[])
     shared_ptr<ProjData > proj_data_ptr =
       ProjData::read_from_file(filenames[0]);
   
-    Main_header mhead;
-    make_ECAT6_main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
+    ECAT6_Main_header mhead;
+    make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
     mhead.num_frames = filenames.size();
 
     FILE *fptr= cti_create (cti_name, &mhead);
