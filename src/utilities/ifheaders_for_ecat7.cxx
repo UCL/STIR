@@ -1,3 +1,30 @@
+//
+// $Id$: $Date$
+//
+
+/*! 
+\file
+\brief Utility to make Interfile headers for ECAT7 data
+\author Kris Thielemans
+\author Cristina de Oliveira (offset_in_ecat_file function)
+\author PARAPET project
+\version $Date$
+\date  $Revision$
+
+\warning This only works with some CTI file_types. In particular, it does NOT
+work with the ECAT6 files_types, as then there are subheaders 'in' the 
+datasets.
+
+\warning Implementation uses the Louvain la Neuve Ecat library. So, it will
+only work on systems where this library works properly.
+
+*/
+/* 
+  History
+  KT first version
+  KT 25/10/2000 swapped segment order
+*/
+
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -152,7 +179,7 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
 {
   
   int el_size[15], matnum, strtblk, group = abs(segment),
-    plane_size, i, off;
+    plane_size = 0, i, off;
   struct MatDir matdir;
   Scan_subheader scansub;
   Image_subheader imagesub;
@@ -240,11 +267,11 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
           if (group)
             for (i = 0; i < group; i++)
               off += plane_size * attnsub.z_elements[i];
-            
-            if (segment < 0)
-              off += plane_size * attnsub.z_elements[group]/2;
-            off += (plane - 1) * plane_size;
-            break;
+	  // KT 25/10/2000 swapped segment order
+	  if (segment > 0)
+	    off += plane_size * attnsub.z_elements[group]/2;
+	  off += (plane - 1) * plane_size;
+	  break;
             
         case ElAxVwRd:
           print_debug (prog, "group %d, plane %d\n", group, plane);
@@ -261,8 +288,8 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
               el_size[attnsub.data_type];
             if (group)
               plane_size /=2;
-            
-            if (segment < 0)
+	    // KT 25/10/2000 swapped segment order
+            if (segment > 0)
               off += plane_size*attnsub.num_angles;
             
             off += (plane - 1) *plane_size;
@@ -315,17 +342,17 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
         if (group)
           for (i = 0; i < group; i++)
             off += (plane_size * scan3dsub.num_z_elements[i]);
+	// KT 25/10/2000 swapped segment order
+	if (segment > 0)
+	  off += plane_size * scan3dsub.num_z_elements[group]/2;
+	
           
-          if (segment < 0)
-            off += plane_size * scan3dsub.num_z_elements[group]/2;
-          
-          
-          print_debug (prog, "num_z_elements[group] = %d\n", scan3dsub.num_z_elements[group]);
-          print_debug (prog, "plane-1 = %d\n", plane-1);
-          
-          off += ((plane - 1) * plane_size);
-          print_debug (prog, "off = %d\n", off);
-          break;
+	print_debug (prog, "num_z_elements[group] = %d\n", scan3dsub.num_z_elements[group]);
+	print_debug (prog, "plane-1 = %d\n", plane-1);
+	
+	off += ((plane - 1) * plane_size);
+	print_debug (prog, "off = %d\n", off);
+	break;
           
       case ElAxVwRd:
         if (group)
@@ -342,7 +369,8 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
           if (group)
           {
             plane_size /=2;
-            if (segment < 0)
+	    // KT 25/10/2000 swapped segment order
+            if (segment > 0)
               off += plane_size;
             off += (plane - 1) *plane_size * 2;
           }
@@ -358,49 +386,58 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
       off = 1;
       break;
     }
-        }
-        
-        if (plane_size_ptr != NULL)
-          *plane_size_ptr = plane_size;
-        
-        return (off);
+  }
+  
+  if (plane_size_ptr != NULL)
+    *plane_size_ptr = plane_size;
+  
+  return (off);
 
 }
 
-
+//! A utility function only called by make_pdfs_matrix()
+/*!
+  Most of the names of the variables we need are the same in the 
+  Scan3D or Attn subheader, except num_z_elements and span.
+  So, instead of writing essentially the same function twice, we
+  use a templated version. Note that this takes care of the
+  different locations of the information in the subheaders,
+  as only the name is used.
+*/
+template <typename SUBHEADERPTR>
+static
 ProjDataFromStream * 
-make_pdfs_from_matrix(MatrixFile * const mptr, 
+make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr, 
+		      short const * num_z_elements,
+		      const int span,
+		      MatrixFile * const mptr, 
                       MatrixData * const matrix, 
                       const shared_ptr<iostream>&  stream_ptr)
 {
-  Scan3D_subheader *sub_header_ptr= 
-    reinterpret_cast<Scan3D_subheader*>(matrix->shptr);
-  
-  
   shared_ptr<Scanner> scanner_ptr;
-  find_scanner(scanner_ptr, *(mptr->mhptr));
-  
+  find_scanner(scanner_ptr, *(mptr->mhptr)); 
+ 
   if(sub_header_ptr->num_dimensions != 4)
-    warning("Expected subheader.num_dimensions==3. Continuing...\n");
+    warning("Expected subheader.num_dimensions==4. Continuing...\n");
   const int num_tangential_poss = sub_header_ptr->num_r_elements;
   const int num_views = sub_header_ptr->num_angles;
+
   // find maximum segment
   int max_segment_num = 0;
-  while(max_segment_num<64 && sub_header_ptr->num_z_elements[max_segment_num+1] != 0)
+  while(max_segment_num<64 && num_z_elements[max_segment_num+1] != 0)
     ++max_segment_num;
   
   VectorWithOffset<int> num_axial_poss_per_seg(-max_segment_num,max_segment_num);
   
-  num_axial_poss_per_seg[0] = sub_header_ptr->num_z_elements[0];
+  num_axial_poss_per_seg[0] = num_z_elements[0];
   for (int segment_num=1; segment_num<=max_segment_num; ++segment_num)
   {
     num_axial_poss_per_seg[-segment_num] =
       num_axial_poss_per_seg[segment_num] = 
-      sub_header_ptr->num_z_elements[segment_num]/2;
+      num_z_elements[segment_num]/2;
   }
   
   const int max_delta = sub_header_ptr->ring_difference;
-  const int span = sub_header_ptr->axial_compression;
   const float bin_size = sub_header_ptr->x_resolution * 10; // convert to mm
   const float scale_factor = sub_header_ptr->scale_factor;
   
@@ -425,8 +462,10 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
   
   if (bin_size != scanner_ptr->get_default_bin_size())
   {
-    warning("Bin size from header (%g) does not agree with expected value for scanner %s (%g%).\nUsing expected value\n",
-      bin_size, scanner_ptr->get_name().c_str(), scanner_ptr->get_default_bin_size());
+    warning("Bin size from header (%g) does not agree with expected value %g\nfor scanner %s. Using expected value...\n",
+	    bin_size, 
+	    scanner_ptr->get_default_bin_size(), 
+	    scanner_ptr->get_name().c_str());
     // TODO
     //scanner_ptr->set_bin_size(bin_size);
   }
@@ -438,31 +477,73 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
   pdi_ptr->set_num_axial_poss_per_segment(num_axial_poss_per_seg);
     
   vector<int> segment_sequence_in_stream(2*max_segment_num+1);
-  // ECAT 7 always stores segments as 0, 1, -1, ...
+  // KT 25/10/2000 swapped segment order
+  // ECAT 7 always stores segments as 0, -1, +1, ...
   segment_sequence_in_stream[0] = 0;
   for (int segment_num = 1; segment_num<=max_segment_num; ++segment_num)
   {
-    segment_sequence_in_stream[2*segment_num-1] = segment_num;
-    segment_sequence_in_stream[2*segment_num] = -segment_num;
+    segment_sequence_in_stream[2*segment_num-1] = -segment_num;
+    segment_sequence_in_stream[2*segment_num] = segment_num;
   }
   
   Matval matval;
   mat_numdoc(matrix->matnum, &matval);
 
-   const long offset_in_file =
-    offset_in_ecat_file(mptr, matval.frame, 1, matval.gate, matval.data, matval.bed, 0, NULL);
+  const long offset_in_file =
+    offset_in_ecat_file(mptr,
+			matval.frame, 1, matval.gate, matval.data, matval.bed,
+			0, NULL);
 
- 
   
   return new ProjDataFromStream (pdi_ptr, stream_ptr, offset_in_file, 
-    segment_sequence_in_stream,
-    storage_order,
-    data_type,
-    byte_order,
-    scale_factor);
+				 segment_sequence_in_stream,
+				 storage_order,
+				 data_type,
+				 byte_order,
+				 scale_factor);
 }
 
 
+
+ProjDataFromStream * 
+make_pdfs_from_matrix(MatrixFile * const mptr, 
+                      MatrixData * const matrix, 
+                      const shared_ptr<iostream>&  stream_ptr)
+{
+  switch (mptr->mhptr->file_type)
+    {
+    case AttenCor:   		
+      {
+	Attn_subheader const *sub_header_ptr= 
+	  reinterpret_cast<Attn_subheader const*>(matrix->shptr);
+	
+	return   
+	  make_pdfs_from_matrix_aux(sub_header_ptr, 
+				    sub_header_ptr->z_elements,
+				    sub_header_ptr->span,
+				    mptr, matrix, stream_ptr);
+      }
+    case Byte3dSinogram:
+    case Short3dSinogram:
+    case Float3dSinogram :
+      {
+	Scan3D_subheader const * sub_header_ptr= 
+	  reinterpret_cast<Scan3D_subheader const*>(matrix->shptr);
+	
+	return   
+	  make_pdfs_from_matrix_aux(sub_header_ptr, 
+				    sub_header_ptr->num_z_elements,
+				    sub_header_ptr->axial_compression,
+				    mptr, matrix, stream_ptr);
+      }
+    default:
+      {
+	warning ("make_pdfs_from_matrix: unsupported file_type %d\n",
+	       mptr->mhptr->file_type);
+	return NULL;
+      }
+    }
+}
 
 Succeeded 
 write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
@@ -495,12 +576,17 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
   }
   
   char *header_filename = new char[ecat7_filename.size() + 100];
-  strcpy(header_filename, ecat7_filename.c_str());
-  // get rid of extension
-  replace_extension(header_filename, "");
-  sprintf(header_filename+strlen(header_filename), "_f%dg%db%dd%d", 
-    frame, gate, bed, data);
-  
+  {
+    strcpy(header_filename, ecat7_filename.c_str());
+    // keep extension, just in case we would have conflicts otherwise
+    // but replace the . with a _
+    char * dot_ptr = strchr(find_filename(header_filename),'.');
+    if (dot_ptr != NULL)
+      *dot_ptr = '_';
+    // now add stuff to say which frame, gate, bed, data this was
+    sprintf(header_filename+strlen(header_filename), "_f%dg%db%dd%d", 
+	    frame, gate, bed, data);
+  }
   
   switch (mptr->mhptr->file_type)
   {
@@ -538,6 +624,7 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
       VectorWithOffset<unsigned long> file_offsets(1);
       scaling_factors[0] = scale_factor;
       file_offsets[0] = static_cast<unsigned long>(offset_in_file);
+      strcat(header_filename, ".hv");
       write_basic_interfile_image_header(header_filename, ecat7_filename,
         dimensions, voxel_size, data_type,byte_order,
         scaling_factors,
@@ -545,38 +632,31 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
       break;
     }
           
-#if 0           
   case AttenCor:   		
+  case Byte3dSinogram:
+  case Short3dSinogram:
+  case Float3dSinogram :
     {
-      Attn_subheader  *sub_header_ptr=
-        reinterpret_cast<Attn_subheader*>(matrix->shptr);;
+      shared_ptr<iostream> stream_ptr = 
+	new fstream(ecat7_filename.c_str(), ios::in | ios::binary);
       
-      print_debug (prog, "AttenCor\n");
-      //printf("span                        : %d\n",ah->span);
+      ProjDataFromStream* pdfs_ptr = 
+	make_pdfs_from_matrix(mptr, matrix, stream_ptr);
+     
+      if (pdfs_ptr == NULL)
+	return Succeeded::no;
       
+      strcat(header_filename, ".hs");
+      write_basic_interfile_PDFS_header(header_filename, ecat7_filename, *pdfs_ptr);
+      delete pdfs_ptr;
+
       break;
-
-    }   
-#endif    
-    case Byte3dSinogram:
-    case Short3dSinogram:
-    case Float3dSinogram :
-      {
-        shared_ptr<iostream> stream_ptr = 
-          new fstream(ecat7_filename.c_str(), ios::in | ios::binary);
-
-        shared_ptr<ProjDataFromStream> pdfs_ptr = 
-          make_pdfs_from_matrix(mptr, matrix, stream_ptr);
-
-        write_basic_interfile_PDFS_header(header_filename, ecat7_filename, *pdfs_ptr);
-
-        break;
-      }
-
+    }
+    
         
-      default:
-        warning("File type not handled. I'm not writing any headers...\n");
-        return Succeeded::no;
+  default:
+    warning("File type not handled. I'm not writing any headers...\n");
+    return Succeeded::no;
   }
   
   delete header_filename;
@@ -621,13 +701,8 @@ main( int argc, char **argv)
     for (int frame_num=1; frame_num<=num_frames;++frame_num)
       for (int bed_num=0; bed_num<num_bed_poss;++bed_num)
         for (int gate_num=1; gate_num<=num_gates;++gate_num)
-          if(write_basic_interfile_header_for_ecat7( argv[1], 
-                                                     frame_num, gate_num, data_num, bed_num)
-                                                     == Succeeded::no)
-          {
-            warning("Assuming rest of file has problems. Exiting...\n");
-            return EXIT_FAILURE;
-          }
+          write_basic_interfile_header_for_ecat7( argv[1], 
+						  frame_num, gate_num, data_num, bed_num);
   }
   else
   {
