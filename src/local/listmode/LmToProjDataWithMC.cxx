@@ -20,6 +20,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/stream.h"
 
+#define FRAME_BASED_DT_CORR
+
 START_NAMESPACE_STIR
 
 void 
@@ -79,49 +81,8 @@ void
 LmToProjDataWithMC::
 process_new_time_event(const CListTime& time_event)
 {
-  assert(fabs(current_time - time_event.get_time_in_secs())<.0001);
-#if 0
-  RigidObject3DTransformation ro3dtrans_1(Quaternion<float>(0.9977, 0.0148, 0.0608, -0.0237), 
-    CartesianCoordinate3D<float>(-1964.4,-69.24,-37.01));
-  RigidObject3DTransformation ro3dtrans_2(Quaternion<float>(0.9977, 0.0154, 0.0606, -0.024), 
-    CartesianCoordinate3D<float>(-1875.15,-67.34,-36.48));
-  RigidObject3DTransformation ro3dtrans_3(Quaternion<float>(0.9977,0.0138, 0.0614, -0.024), 
-    CartesianCoordinate3D<float>(-1876.14,-66.21,-59.69));
-  RigidObject3DTransformation ro3dtrans_4(Quaternion<float>(0.9976, 0.015, 0.0615, -0.0242), 
-    CartesianCoordinate3D<float>(-1877.02,-66.46,27.43));
-  RigidObject3DTransformation ro3dtrans_5 (Quaternion<float>(0.9976, 0.0145, 0.0628, \
--0.0248), 
-    CartesianCoordinate3D<float>(-1935.34,-65.86,27.01));
-
-  if (current_time >=0 && current_time <=558)
-  {
-    ro3dtrans= ro3dtrans_1;
-  }
-  else if(current_time>=573 && current_time <=906)
-  {
-    ro3dtrans= ro3dtrans_2;
-  }
-  else if (current_time>=936 && current_time <=1185)
-  {
-    ro3dtrans= ro3dtrans_3;
-  }
-  else if ( current_time>=1200 && current_time <=1527)
-  {
-    ro3dtrans= ro3dtrans_4;
-  }
-  else if (current_time>=1566 && current_time <=1860)
-  {
-    ro3dtrans= ro3dtrans_5;
-  }
-  else 
-  { cerr << " STop no more frames " << endl;
-  }
-
-
-#else
-     
+  assert(fabs(current_time - time_event.get_time_in_secs())<.0001);     
   ro3d_ptr->get_motion(ro3dtrans,current_time);
-#endif
 
          ro3dtrans = compose(move_to_scanner,
 			     compose(ro3d_ptr->get_transformation_to_reference_position(),
@@ -139,8 +100,13 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
 
 
   static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
+#ifndef FRAME_BASED_DT_CORR
+  const double start_time = current_time;
+  const double end_time = current_time;
+#else
   const double start_time = frame_defs.get_start_time(current_frame_num);
-  const double end_time = frame_defs.get_end_time(current_frame_num);
+  const double end_time =frame_defs.get_end_time(current_frame_num);
+#endif
 
   record.get_uncompressed_bin(bin);
   const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
@@ -184,21 +150,21 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
                                                       coord_1_transformed,
 					              coord_2_transformed);
 
-  // given two CartesianCoordinates find the intersection     
   if (bin.get_bin_value() > 0)
-  {
-    // now normalise event taking into account the
-    // normalisation factor before motion correction and the number of
-    // uncompressed bins that contribute to this bin
-    // TODO this normalisation is not really correct
-    bin.set_bin_value(1/ 
-		      (bin_efficiency*
-		       proj_data_info.
-		         get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-								    bin.axial_pos_num())*
-		       proj_data_info.get_view_mashing_factor()));
-  }
-
+    {
+      if (do_pre_normalisation)
+	{
+	  // now normalise event taking into account the
+	  // normalisation factor before motion correction and the number of
+	  // uncompressed bins that contribute to this bin
+	  // TODO this normalisation is not really correct
+	  bin.set_bin_value(1/bin_efficiency);
+	}
+      else
+	{
+	  bin.set_bin_value(1);
+	}
+    }
   
 }
 
