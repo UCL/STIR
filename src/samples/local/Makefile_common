@@ -2,6 +2,11 @@
 # Use this file to modify defaults for some variables in Makefile_common
 # Modify according to your own needs
 
+# set non-default location of Louvain la Neuve files 
+# This will (only) be used in utilities/Makefile to compile and link
+# ifheaders_for_ecat7
+LLN_INCLUDE_DIR=$(HOME)/lln/ecat
+
 # This file only sets EXTRA_OPT
 # Changes w.r.t. defaults:
 # use all warnings,
