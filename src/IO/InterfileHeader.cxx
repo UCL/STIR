@@ -9,7 +9,7 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date   $Id$
+  \date   $Date$
   \version $Revision$
 
 */
