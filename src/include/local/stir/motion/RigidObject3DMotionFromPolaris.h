@@ -57,6 +57,25 @@ public:
 
   Succeeded set_mt_file(const string& mt_filename);
 
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+
+  //! Gets boundaries to determine when the time offset is out of bounds
+  //*! Currently, the time offset is compared to the start of the listmode scan.*/
+  double get_max_time_offset_deviation() const
+    { return max_time_offset_deviation; }
+  //! Sets boundaries to determine when the time offset is out of bounds
+  void set_max_time_offset_deviation(const double v)
+    { max_time_offset_deviation = v; }
+  //! Gets boundaries to determine when the time drift is too large
+  /*! deviation is measured as fabs(time_drift-1) */
+  double get_max_time_drift_deviation() const
+    { return max_time_drift_deviation; }
+  //! Sets boundaries to determine when the time drift is too large
+  void set_max_time_drift_deviation(const double v)
+    { max_time_drift_deviation = v; }
+
 private: 
 
   void do_synchronisation(CListModeData& listmode_data);
@@ -71,9 +90,6 @@ private:
   shared_ptr<Polaris_MT_File> mt_file_ptr;
   string mt_filename;  
  
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
 
  private:
   // TODO this should probably be moved to RigidObject3DMotion
@@ -83,6 +99,14 @@ private:
 
   double time_offset;
   double time_drift;
+
+  //! A variable used to determine when the time offset is out of bounds
+  //*! Currently, the time offset is compared to the start of the listmode scan.*/
+  double max_time_offset_deviation;
+  //! A variable used to determine when the time drift is too large
+  /*! deviation is measured as fabs(time_drift-1) */
+  double max_time_drift_deviation;
+
   std::time_t listmode_data_start_time_in_secs;
 };
 

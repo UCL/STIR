@@ -51,7 +51,7 @@ RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris";
 RigidObject3DMotionFromPolaris::RigidObject3DMotionFromPolaris()
 {
   set_defaults();
-  time_offset = time_not_yet_determined;
+
 }
 
 const RigidObject3DTransformation& 
@@ -370,7 +370,7 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 
       const string sync_filename =
 	list_mode_filename + "_" + 
-	find_filename(mt_filename.c_str()) +
+	get_filename(mt_filename) +
 	".sync";
 
       std::ifstream sync_file(sync_filename.c_str());
@@ -413,9 +413,10 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 	}
       std::cerr << parser.parameter_info();
     }
-  if (time_drift<.99 || time_drift>1.01)
+  if (fabs(time_drift-1) > max_time_drift_deviation)
     {
-      warning("RigidObject3DMotionFromPolaris: time_drift %g is out-of-bounds",
+      warning("RigidObject3DMotionFromPolaris: time_drift %g is too large.\n"
+	      "You could change the tolerance using the 'maximum time drift deviation' keyword.",
 	      time_drift);
       return Succeeded::no;
     }
@@ -433,10 +434,11 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 	   << lm_start_time 
 	   << " in secs after midnight local time"<< endl;
 
-      if (fabs(time_offset - lm_start_time) > 3)
+      if (fabs(time_offset - lm_start_time) > max_time_offset_deviation)
 	{
-	  warning("RigidObject3DMotionFromPolaris: time_offset %g is out-of-bounds",
-	      time_offset);
+	  warning("RigidObject3DMotionFromPolaris: max_time_offset deviation %g is too large.\n"
+	      "You could change the tolerance using the 'maximum time offset deviation' keyword.",
+	      time_offset - lm_start_time);
 	  return Succeeded::no;
 	}
     }
@@ -457,7 +459,7 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
        return Succeeded::no;
     } 
   if (fabs(rel_time_to_polaris_time(secs_since_1970_to_rel_time(mt_file_ptr->get_start_time_in_secs_since_1970())) - 
-	   mt_file_ptr->begin_all_tags()->sample_time) > 5)
+	   mt_file_ptr->begin_all_tags()->sample_time) > max_time_offset_deviation)
     {
       warning("Polaris start of data (%g secs since midnight) does not seem to match \n"
 	      "with its first time tag (%g),\n" 
@@ -585,6 +587,9 @@ RigidObject3DMotionFromPolaris::set_defaults()
   RigidObject3DMotion::set_defaults();
   mt_filename = "";
   transformation_from_scanner_coordinates_filename = "";
+  time_offset = time_not_yet_determined;
+  max_time_drift_deviation = .01;
+  max_time_offset_deviation = 3.;
 }
 
 
@@ -596,6 +601,10 @@ RigidObject3DMotionFromPolaris::initialise_keymap()
   parser.add_key("mt filename", &mt_filename);
   parser.add_key("transformation_from_scanner_coordinates_filename",
 		 &transformation_from_scanner_coordinates_filename);
+  parser.add_key("maximum time_drift deviation",
+		 &max_time_drift_deviation);
+  parser.add_key("maximum time offset deviation",
+		 &max_time_offset_deviation);
   parser.add_stop_key("End Rigid Object 3D Motion From Polaris");
 }
 
@@ -634,6 +643,16 @@ bool RigidObject3DMotionFromPolaris::post_processing()
   }
 
 
+  if (max_time_drift_deviation<0 || max_time_drift_deviation>.9)
+    {
+      warning("Polaris: Invalid max_time_drift_deviation %g",  max_time_drift_deviation);
+      return true;
+    }
+  if (max_time_offset_deviation<0 || max_time_offset_deviation>100000)
+    {
+      warning("Polaris: Invalid max_time_offset_deviation %g",  max_time_offset_deviation);
+      return true;
+    }
   if (RigidObject3DMotion::post_processing()==true)
     return true;
   return false;
