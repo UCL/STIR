@@ -14,7 +14,7 @@ clean:
 SOURCES = \
 	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
-
+	fft.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
