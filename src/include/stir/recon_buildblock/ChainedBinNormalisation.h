@@ -100,6 +100,9 @@ ChainedBinNormalisation(shared_ptr<ChainedBinNormalisation> const& apply_first,
   */
   virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 
+  virtual float get_bin_efficiency(const Bin& bin) const;
+ 
+
 private:
   shared_ptr<ChainedBinNormalisation> apply_first;
   shared_ptr<ChainedBinNormalisation> apply_second;

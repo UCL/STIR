@@ -21,6 +21,7 @@
 
 
 #include "stir/RegisteredObject.h"
+#include "stir/Bin.h"
 
 START_NAMESPACE_STIR
 
@@ -64,6 +65,9 @@ public:
     \f$\mathrm{norm}_b \f$.
   */
   virtual void undo(RelatedViewgrams<float>&) const = 0; 
+
+  virtual float get_bin_efficiency(const Bin& bin) const =0;
+ 
 };
 
 END_NAMESPACE_STIR
