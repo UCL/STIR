@@ -85,18 +85,18 @@ Scanner::Scanner(Type scanner_type)
     set_params(E925,string_list("ECAT 925", "ECAT ART"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 
 	       static_cast<float>(15.*_PI/180),3,4,8,8, 1);
   else if (scanner_type == E961)
-    set_params(E961,string_list("ECAT 961", "ECAT HR"), 24, 336,2* 196, 412.0F, 6.25F, 1.650F, 
+    set_params(E961,string_list("ECAT 961", "ECAT HR"), 24, 336,2* 392, 412.0F, 6.25F, 1.650F, 
 	       static_cast<float>(13.*_PI/180),1,8,8,7, 1);
   else if (scanner_type == E962)
     set_params(E962,string_list("ECAT 962","ECAT HR+"), 32, 288,2* 288, 412.5F, 4.85F, 2.25F, 
 	       0.F,4,3,8,8, 1);
   else if (scanner_type == E966)
     set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 
-	       0,2,6,8,8, 1); 
+	       0,6,2,8,8, 1); 
   else if (scanner_type == RPT)
     set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0,0,0,0,0, 1);
   else if (scanner_type == RATPET)
-    set_params(RATPET,string_list("RATPET"), 8, 56,2*56, 115,  6.25F, 1.65F,   
+    set_params(RATPET,string_list("RATPET"), 8, 56,2*56, 115/2.F,  6.25F, 1.65F,   
 	       0,1,0,8,7, 1); // HR block
   else if (scanner_type == Advance)
   {
