@@ -56,12 +56,12 @@ public :
   virtual NumericType set_type_of_numbers(const NumericType&, const bool warn = false);
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
 
-  virtual Succeeded  
-    write_to_file(string& output_filename,
-		  const DiscretisedDensity<3,float>& density) const;
 public:
   string default_scanner_name;
-private:
+protected:
+  virtual Succeeded  
+    actual_write_to_file(string& output_filename,
+		  const DiscretisedDensity<3,float>& density) const;
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
