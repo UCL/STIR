@@ -532,7 +532,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.acquisition_type = 0; 
   mhead.coin_samp_mode = 0; // default to net_trues
   mhead.axial_samp_mode= 0;
-  mhead.patient_orientation = 0;
+  mhead.patient_orientation = HeadFirstSupine;
   fill_string(mhead.facility_name, 20);
   mhead.num_planes= 0;
   mhead.num_frames= 1; // used for matnum, so set coherent default values
