@@ -742,7 +742,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	   {
 	     cerr << new_filter_coefficients_2D_array_tmp[j][i] << "   " ;
 
-	   }*	  cerr << endl;
+	   }	  cerr << endl;*/
 	    	
 	    new_filter_coefficients_2D_array.grow(IndexRange2D(
 	      -(kernel_length_y-1),kernel_length_y-1,
