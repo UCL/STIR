@@ -687,9 +687,9 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
  case 6: //MJ 6/11/98 new
    {//scalar addition
 
-  float scalar=ask_num("What scalar to add?", -100000,+100000,0);
-
-  math_buffer+=scalar;
+     // KT 11/02/99 made sure it asks for a float
+     float scalar=ask_num("What scalar to add?", -100000.F,+100000.F,0.F);
+     math_buffer+=scalar;
 
     break;
 
@@ -698,11 +698,9 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
  case 7: //MJ 6/11/98 new
    {//scalar mulltiplication
 
-  float scalar=ask_num("What scalar to multiply?", -100000,+100000,1);
-
-  math_buffer*=scalar;
-
-
+     // KT 11/02/99 made sure it asks for a float
+     float scalar=ask_num("What scalar to multiply?", -100000.F,+100000.F,1.F);
+     math_buffer*=scalar;
 
     break;
 
@@ -714,8 +712,8 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 	float scalar=0.0;
 
 	  do{
-
-	    scalar=ask_num("What scalar to divide?", -100000,+100000,1);
+	    // KT 11/02/99 made sure it asks for a float
+	    scalar=ask_num("What scalar to divide?", -100000.F,+100000.F,1.F);
 
 	    if(scalar==0.0) 
 	      cerr<<endl<<"Illegal -- division by 0"<<endl;
