@@ -76,10 +76,10 @@ RigidObject3DTransformation::inverse() const
      tr_point= transform(point) =
 		 conj(q)*(point-trans)*q
 	invtransform(tr_point) = 
-	          conj(invq)*(tr_point + invtrans)*invq
-		= conj(invq)*(conj(q)*(point-trans)*q + invtrans)*invq
+	          conj(invq)*(tr_point - invtrans)*invq
+		= conj(invq)*(conj(q)*(point-trans)*q - invtrans)*invq
             = point
-	so -conj(q)*(trans)*q + invtrans==0
+	so -conj(q)*(trans)*q + -invtrans==0
    */
   const Quaternion<float> invq = stir::inverse(quat);
   const Quaternion<float>
@@ -87,8 +87,8 @@ RigidObject3DTransformation::inverse() const
   const Quaternion<float> qinvtrans =
     conjugate(quat) * qtrans * quat;
   const CartesianCoordinate3D<float>
-    invtrans(-qinvtrans[4],-qinvtrans[3],-qinvtrans[2]);
-  return RigidObject3DTransformation(invq, invtrans*(+1));
+    invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
+  return RigidObject3DTransformation(invq, invtrans*(-1));
 #endif
 }
 
@@ -126,7 +126,7 @@ RigidObject3DTransformation::set_euler_angles()
 CartesianCoordinate3D<float> 
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
-  CartesianCoordinate3D<float> swapped_point(-point.z(), point.y(), -point.x());
+  CartesianCoordinate3D<float> swapped_point(-point.z(), -point.y(), -point.x());
 
   Quaternion<float> quat_norm_tmp = quat;
    
@@ -201,7 +201,7 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   const CartesianCoordinate3D<float> transformed_point(out[out.get_max_index()],out[out.get_min_index()+1],out[out.get_min_index()]);
 
 #endif
-  return CartesianCoordinate3D<float> (-transformed_point.z(), transformed_point.y(), -transformed_point.x());
+  return CartesianCoordinate3D<float> (-transformed_point.z(), -transformed_point.y(), -transformed_point.x());
 }
 
 
