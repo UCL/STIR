@@ -112,6 +112,7 @@ coordinateTests::run_tests()
     }
     
     // join
+#if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
     {
       BasicCoordinate<3, float> a;
       a[1]=1;a[2]=2;a[3]=3;
@@ -121,6 +122,7 @@ coordinateTests::run_tests()
       check_if_equal(a4[3], 2., "testing join of float with BasicCoordinate");
       check_if_equal(a4[4], 3., "testing join of float with BasicCoordinate");
     }
+#endif
   }
 
   // essentially the same as above, but now with Coordinate3D
