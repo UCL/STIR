@@ -191,14 +191,16 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
   
   image_ptr = new VoxelsOnCartesianGrid<float> (range_3D, origin, voxel_size);
   
-  // allocation for buffer
-  short * cti_data= new short[x_size*y_size];
-  
+  // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE
+  const size_t cti_data_size = x_size*y_size+ MatBLKSIZE;
+  short * cti_data= new short[cti_data_size];
+
   // CTI stuff always assumes this
   assert(sizeof(short) == 2);
 
   for(int z=0; z<mhead.num_planes; z++) 
     { // loop upon planes
+      
       long matnum = cti_numcod(frame_num, z+1,gate_num, data_num, bed_num);
         
       if(!cti_lookup(cti_fptr, matnum, &entry)) { // get entry
@@ -227,7 +229,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
       if(cti_rblk (cti_fptr, entry.strtblk+1, cti_data, entry.endblk-entry.strtblk)!=EXIT_SUCCESS) { // get data
 	error("\nUnable to read data\n");            
       }
- 
+
       NumericType type;
       ByteOrder byte_order;
       find_type_from_cti_data_type(type, byte_order, ihead.data_type);
@@ -268,11 +270,10 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
   if (!is_3D_file)
   {
     // better make sure by checking if plane (5,5) is not in its '3D' place
-    ScanInfoRec scanParams;
-    Scan_subheader shead;
+    MatDir entry;
     const int mat_index= cti_rings2plane(num_rings, 5,5); 
     const long matnum= cti_numcod(frame_num, mat_index,gate_num, data_num, bed_num);
-    is_3D_file = (get_scanheaders(cti_fptr, matnum, &mhead, &shead, &scanParams)== EXIT_SUCCESS);
+    is_3D_file = cti_lookup (cti_fptr, matnum, &entry);
   }
   int span = 1;
 
@@ -351,9 +352,9 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
   // write to proj_data
   {
     
-    // allocation of buffer
+    // allocation of buffer. Provide enough space for a multiple of MatBLKSIZE
     short* cti_data= 
-      new short[proj_data->get_num_tangential_poss()*proj_data->get_num_views()];
+      new short[proj_data->get_num_tangential_poss()*proj_data->get_num_views() + MatBLKSIZE];
     
     cout<<"\nProcessing segment number:";
     
