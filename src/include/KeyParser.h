@@ -6,27 +6,16 @@
 #define __KEYPARSER_H__
 
 #include <map>
-// KT 14/12 changed <String.h> to "pet_string.h"
-// KT 09/08/98 forget about pet_string
 #include <string>
 #include <iostream>
-
-#if !defined(__GNUG__) && !defined (__MSL__)
-	using namespace std;
-#endif
-
-typedef string String;
-//#include "pet_string.h"
-
 #include <vector>
 
-// KT 20/06/98 use this pragma only in VC++
+#include "pet_common.h"
+
 #ifdef _MSC_VER
+// disable warning about truncation of identifiers in debugging information
 #pragma warning(disable: 4786)
 #endif
-
-#define		STATUS_END_PARSING	0
-#define		STATUS_PARSING		1
 
 typedef vector<int> IntVect;
 typedef vector<unsigned long> UlongVect;
@@ -34,10 +23,14 @@ typedef vector<double> DoubleVect;
 
 
 // KT 20/06/98 new
-typedef vector<String> ASCIIlist_type;
+typedef vector<string> ASCIIlist_type;
 
 class KeyParser;
 
+/******************************************************************
+ A class that enumerates the possible types that can be used
+ to store parsed values.
+ ******************************************************************/
 class KeyArgument
 {
 public:
@@ -49,32 +42,45 @@ public:
     LIST_OF_INTS,DOUBLE,listASCIIlist};
 };
 
+/******************************************************************
+ Classes to store the keywords and their actions.
+ These should not be used outside of the KeyParser implementation.
+ Unfortunately C++ seems to require defining this class before the 
+ class KeyParser.
+ ******************************************************************/
 class map_element
 {
 public :
   KeyArgument::type type;
   void (KeyParser::*p_object_member)();	// pointer to a member function
   void* p_object_variable;		// pointer to a variable 
-  const ASCIIlist_type *p_object_list_of_values;			// only used by ASCIIlist
+  const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
 
   map_element();
+  // KT 22/10/98 changed operator() into constructor
+  map_element(KeyArgument::type t, void (KeyParser::*pom)(),
+	      void* pov= 0, const ASCIIlist_type *list = 0);
+
   ~map_element();
 	
-  // KT 20/06/98 added 4th argument for ASCIIlist
-  map_element& operator()(KeyArgument::type t, void (KeyParser::*pom)(),
-			  void* pov= NULL, const ASCIIlist_type *list = 0);
   map_element& operator=(const map_element& me);
 };
 
-// KT 20/06/98 gcc is up to date now, so we can use the 2 arg version of map<>
 #if defined(__MSL__)
-typedef map<String,map_element, less<String>, allocator<map_element> > Keymap;
+typedef map<string,map_element, less<string>, allocator<map_element> > Keymap;
 #else
-typedef map<String,map_element> Keymap;
+typedef map<string,map_element> Keymap;
 #endif
 
+/******************************************************************
+ KT 26/10/98 modified text
+ KeyParser is the main class. It is mainly useful to derive from.
+
+ TODO: write how it works
+ ******************************************************************/
 class KeyParser
 {
+
 public:
   // KT 19/10/98 removed default constructor as unused at the moment
   //KeyParser();
@@ -82,63 +88,90 @@ public:
   KeyParser(istream& f);
   ~KeyParser();
 
-  bool parse()
-  {
-    init_keys();
-    return (parse_header()==0 && post_processing()==0);
-  }
+  bool parse();
 
 protected : 
 
-  Keymap kmap;
+  ////// work horses
 
-  typedef void (KeyParser::*KeywordProcessor)();
-
-  // Override the next two functions to have any functionality.
-  virtual void init_keys() = 0;
+  //KT 26/10/98 removed virtual void init_keys() = 0;
+  // Override the next function if you need to
   // Returns 0 of OK, 1 of not.
   virtual int post_processing() 
   { return 1; }
 	
+  ////// functions to add keys and their actions 
+  typedef void (KeyParser::*KeywordProcessor)();
 
-  void SetEndStatus();
-  // KT 09/10/98 added for use keys which don't do anything
-  void DoNothing() {};
-  void SetVariable();
+  void add_key(const string& keyword, 
+    KeyArgument::type t, KeywordProcessor function,
+    void* variable= 0, const ASCIIlist_type * const list = 0);
+  
+  // version that defaults 'function' to set_variable
+  void add_key(const string& keyword, KeyArgument::type t, 
+	      void* variable, const ASCIIlist_type * const list = 0);
+
+
+  ////// predefined actions 
+
+  // to start parsing, has to be set by first keyword
+  void start_parsing();
+  // to stop parsing
+  void stop_parsing();
+  // KT 09/10/98 added for keys which don't do anything
+  void do_nothing() {};
+  // set the variable to the value given as the value of the keyword
+  void set_variable();
+
+
 
 private :
-  // KT 20/06/98 new
-  // This function is used by SetVariable only
-  // It returns the index of a string in 'list_of_values', -1 of not found
-  int find_in_ASCIIlist(const String& par_ascii, const ASCIIlist_type& list_of_values);
+
+  ////// variables
+
+  // KT 22/10/98 new enum
+  enum parse_status { end_parsing, parsing };
+  parse_status status;
+
+
+  Keymap kmap;
 
   
-  // variables
   istream * input;
-  int	status;				// parsing 0,end_parsing 1
   map_element* current;
   int current_index;
-  String keyword;
+  string keyword;
 
   // could be made into a union
-  vector<String>  par_asciilist;
-  // KT 01/08/98 change number to int, lnumber to ulong, added float
-  IntVect		par_intlist;
-  String		par_ascii;
-  int			par_int;	
-  double		par_double;	
+  vector<string>  par_asciilist;
+  IntVect	par_intlist;
+  string	par_ascii;
+  int		par_int;	
+  double	par_double;	
   unsigned long par_ulong;
 
-private :
+  ////// methods
 
-  int ParseLine();
-  int MapKeyword(String keyword);
-  // KT 19/10/98 removed ChangeStatus as unused
-  //void ChangeStatus(int value);
-  int ProcessKey();
-  // KT 19/10/98 small version of old StartParsing()
-  // Returns 0 of OK, 1 of not.
+  // loops over all lines in the file. returns 0 of OK, 1 of not.
   int parse_header();
+
+  // read a line, see if it's a keyword using map_keyword)
+  // if so, return 1, else
+  // conditionally write a warning and return 0
+  int parse_line(const bool write_warning);
+
+  // set 'current' to map_element corresponding to 'keyword'
+  // return 1 if valid keyword, 0 otherwise
+  int map_keyword(const string& keyword);
+
+  // call appropriate member function
+  void process_key();
+
+
+  // KT 20/06/98 new
+  // This function is used by set_variable only
+  // It returns the index of a string in 'list_of_values', -1 if not found
+  int find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values);
 
 };
 

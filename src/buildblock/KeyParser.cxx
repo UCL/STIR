@@ -19,26 +19,26 @@
 map_element::map_element()
 {
   type=KeyArgument::NONE;
-  p_object_member=NULL;
-  p_object_variable=NULL;
-  p_object_list_of_values=NULL;
+  p_object_member=0;
+  p_object_variable=0;
+  p_object_list_of_values=0;
+}
+
+map_element::map_element(KeyArgument::type t, 
+			 void (KeyParser::*pom)(),
+			 void* pov,
+			 const ASCIIlist_type *list_of_values)
+{
+  type=t;
+  p_object_member=pom;
+  p_object_variable=pov;
+  p_object_list_of_values=list_of_values;
 }
 
 map_element::~map_element()
 {
 }
 
-map_element& map_element::operator()(KeyArgument::type t, 
-				     void (KeyParser::*pom)(),
-				     void* pov,
-				     const ASCIIlist_type *list_of_values)
-{
-  type=t;
-  p_object_member=pom;
-  p_object_variable=pov;
-  p_object_list_of_values=list_of_values;
-  return *this;
-}
 
 map_element& map_element::operator=(const map_element& me)
 {
@@ -71,73 +71,68 @@ KeyParser::KeyParser(istream& f)
 {
   input=&f;
   current_index=-1;
-  status=STATUS_PARSING;
+  status=end_parsing;
   current=new map_element();
 }
 
 KeyParser::~KeyParser()
 {
-  // KT 01/08/98 leave this for calling program
-  
-#if 0
-  if(in_stream!=NULL)
-  {
-    in_stream->close();
-    delete in_stream;
-  }
-#endif
+}
+
+bool KeyParser::parse()
+{
+  //KT 26/10/98 removed init_keys();
+  return (parse_header()==0 && post_processing()==0);
 }
 
 
+void KeyParser::add_key(const string& keyword, 
+			KeyArgument::type t, 
+			KeywordProcessor function,
+			void* variable,
+			const ASCIIlist_type * const list_of_values)
+{
+  kmap[keyword.c_str()] = 
+    map_element(t, function, variable, list_of_values);
+}
+
+void KeyParser::add_key(const string& keyword, 
+			KeyArgument::type t, 
+			void* variable,
+			const ASCIIlist_type * const list_of_values)
+{
+  kmap[keyword.c_str()] = 
+    map_element(t, &KeyParser::set_variable, variable, list_of_values);
+}
 
 int KeyParser::parse_header()
 {
     
-  // checks if INTERFILE HEADER 
-  // KT 19/10/98 put between {}
-  {
-    char buf[MAX_LINE_LENGTH];    
-    Line line;
-    
-    // TODO replace with input >> line;
-    input->getline(buf,MAX_LINE_LENGTH,'\n');
-    line=buf;
-    keyword=line.get_keyword();	
-    
-    if(keyword!="INTERFILE")
-    {
-      return 1;
-    }
-  }
+  if (parse_line(false))	
+    process_key();
+  if (status != parsing)
+  { PETerror("KeyParser error: required first keyword not found\n");  return 1; }
 
-  while(status)
+  while(status==parsing)
     {
-      if(ParseLine())	
-	ProcessKey();
-      // KT 01/08/98 added warning message
-      else
-	cerr << "KeyParser Warning: unrecognized keyword: " << keyword << endl;
-    
+      if(parse_line(true))	
+	process_key();    
     }
   
-
   return 0;
   
 }	
 
-
-// KT 19/10/98 removed ChangeStatus as unused
-//void KeyParser::ChangeStatus(int value)
-//{  status=value;}
-
-int KeyParser::ParseLine()
+int KeyParser::parse_line(const bool write_warning)
 {
   Line line;
   
-  // KT 19/10/98 added EOF check
-  if (!input)
+  // KT 22/10/98 changed EOF check
+  if (!input->good())
   {
-    SetEndStatus();
+    // KT 22/10/98 added warning
+    PETerror("KeyParser warning: early EOF or bad file");
+    stop_parsing();
     return 0;
   }
   {
@@ -149,7 +144,7 @@ int KeyParser::ParseLine()
   keyword=line.get_keyword();
   current_index=line.get_index();
 		// maps keyword to appropriate map_element (sets current)
-  if(MapKeyword(keyword))	
+  if(map_keyword(keyword))	
   {
     switch(current->type)	// depending on the par_type, gets the correct value from the line
     {				// and sets the right temporary variable
@@ -182,14 +177,26 @@ int KeyParser::ParseLine()
     }
     return 1;
   }
+
+  // KT 22/10/98 warning message moved here
+  // skip empty lines and comments
+  if (keyword.length() != 0 && keyword[0] != ';' && write_warning)
+    PETerror("KeyParser warning: unrecognized keyword: %s\n", keyword.c_str());
+
+  // do no processing of this key
   return 0;
 }
 
-void KeyParser::SetEndStatus()
+void KeyParser::start_parsing()
 {
-  if(status==STATUS_PARSING)
-    status=STATUS_END_PARSING;
+  status=parsing;
 }
+
+void KeyParser::stop_parsing()
+{
+  status=end_parsing;
+}
+
 #if 0
 // KT 01/08/98 just set data_file_name variable now
 void KeyParser::OpenFileStream()
@@ -208,7 +215,7 @@ void KeyParser::OpenFileStream()
 #endif
 
 
-void KeyParser::SetVariable()
+void KeyParser::set_variable()
 {
   // TODO this does not handle the vectored key convention
   
@@ -240,7 +247,7 @@ void KeyParser::SetVariable()
 	  }
 	case KeyArgument::ASCII :
 	  {
-	    String* p_string=(String*)current->p_object_variable;	// performs the required casting
+	    string* p_string=(string*)current->p_object_variable;	// performs the required casting
 	    *p_string=par_ascii;
 	    break;
 	  }
@@ -259,7 +266,7 @@ void KeyParser::SetVariable()
 	  }
 	case KeyArgument::LIST_OF_ASCII :
 	  {
-	    vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
+	    vector<string>* p_vectstring=(vector<string>*)current->p_object_variable;
 	    *p_vectstring=par_asciilist;
 	    break;
 	  }
@@ -296,7 +303,7 @@ void KeyParser::SetVariable()
 	  }
 	case KeyArgument::ASCII :
 	  {
-	    vector<String>* p_vstring=(vector<String>*)current->p_object_variable;	// performs the required casting
+	    vector<string>* p_vstring=(vector<string>*)current->p_object_variable;	// performs the required casting
 	    p_vstring->operator[](current_index-1)=par_ascii;
 	    break;
 	  }
@@ -316,7 +323,7 @@ void KeyParser::SetVariable()
 	  }
 	  /*	case LIST_OF_ASCII :
 		{
-		vector<String>* p_vectstring=(vector<String>*)current->p_object_variable;
+		vector<string>* p_vectstring=(vector<string>*)current->p_object_variable;
 		*p_vectstring=par_asciilist;
 		break;
 		}*/
@@ -327,7 +334,7 @@ void KeyParser::SetVariable()
 }
 
 // KT 20/06/98 new
-int KeyParser::find_in_ASCIIlist(const String& par_ascii, const ASCIIlist_type& list_of_values)
+int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values)
 {
   {
     // TODO, once we know for sure type type of ASCIIlist_type, we could use STL find()
@@ -349,7 +356,7 @@ int KeyParser::find_in_ASCIIlist(const String& par_ascii, const ASCIIlist_type& 
   return -1;
 }  	
 
-int KeyParser::MapKeyword(String keyword)
+int KeyParser::map_keyword(const string& keyword)
 {
   Keymap::iterator it;
   
@@ -367,12 +374,10 @@ int KeyParser::MapKeyword(String keyword)
 
 
 
-int KeyParser::ProcessKey()
+void KeyParser::process_key()
 {
   if(current->p_object_member!=NULL)
   {
-    (this->*(current->p_object_member))();		//calls appropriate member function
-    return 0;
+    (this->*(current->p_object_member))();	//calls appropriate member function
   }
-  return 1;						// no server function specified
 }
