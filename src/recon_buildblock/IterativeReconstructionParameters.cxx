@@ -1,9 +1,38 @@
-
-#include "recon_buildblock/IterativeReconstructionParameters.h" 
-
 //
 // $Id$
 //
+/*!
+  \file
+
+  \brief non-inline implementations for IterativeReconstructionParameters
+
+  \author Matthew Jacobson
+  \author Kris Thielemans
+  \author PARAPET project
+  
+  \date $Date$
+
+  \version $Revision$
+*/
+
+// TODO get rid of restriction of subsets according to 'view45'
+// it's not appropriate for general symmetries
+
+#include "recon_buildblock/IterativeReconstructionParameters.h" 
+#include "NumericInfo.h"
+#include "ImageFilter.h"
+#include "utilities.h"
+// for time(), used as seed for random stuff
+#include <ctime>
+#include <iostream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::ends;
+#endif
+
+START_NAMESPACE_TOMO
 
 IterativeReconstructionParameters::IterativeReconstructionParameters()
   : ReconstructionParameters()
@@ -62,7 +91,8 @@ IterativeReconstructionParameters::IterativeReconstructionParameters()
   add_key("inter-iteration z-dir filter Metz power", KeyArgument::DOUBLE, &inter_iteration_filter_Nz_dir);
   
   add_key("do post-filtering", KeyArgument::INT,&do_post_filtering);
-  add_key("post filter type", KeyArgument::ASCII, &post_filter_type);
+  // KT 25/05/2000 'post filter' -> post-filter
+  add_key("post-filter type", KeyArgument::ASCII, &post_filter_type);
   add_key("post-filter xy-dir FWHM (in mm)", KeyArgument::DOUBLE, &post_filter_fwhmxy_dir);
   add_key("post-filter z-dir FWHM (in mm)", KeyArgument::DOUBLE, &post_filter_fwhmz_dir);
   //MJ 22/02/99 added for Metz filtering
@@ -86,12 +116,12 @@ void IterativeReconstructionParameters::ask_parameters()
 
 
  
-  const int view45 = proj_data_ptr->scan_info.get_num_views()/4;
+  const int view45 = proj_data_ptr->get_proj_data_info_ptr()->get_num_views()/4;
     
   // KT 15/10/98 correct formula for max
   max_segment_num_to_process=
     ask_num("Maximum absolute segment number to process: ",
-	    0, proj_data_ptr->get_max_segment(), 0);
+	    0, proj_data_ptr->get_max_segment_num(), 0);
   
   
   zero_seg0_end_planes =
@@ -179,28 +209,70 @@ bool IterativeReconstructionParameters::post_processing()
   if (ReconstructionParameters::post_processing())
     return true;
 
+  // KT&MJ 23/05/2000 PETerror->warning
   if (initial_image_filename.length() == 0)
-  { PETerror("You need to specify an initial image file\n"); return true; }
+  { warning("You need to specify an initial image file\n"); return true; }
 
  if (num_subsets<1 )
-  { PETerror("number of subsets should be positive\n"); return true; }
+  { warning("number of subsets should be positive\n"); return true; }
   if (num_subiterations<1)
-  { PETerror("Range error in number of subiterations\n"); return true; }
+  { warning("Range error in number of subiterations\n"); return true; }
   
   if(start_subset_num<0 || start_subset_num>=num_subsets) 
-  { PETerror("Range error in starting subset\n"); return true; }
+  { warning("Range error in starting subset\n"); return true; }
 
   if(save_interval<1 || save_interval>num_subiterations) 
-  { PETerror("Range error in iteration save interval\n"); return true;}
+  { warning("Range error in iteration save interval\n"); return true;}
  
-  //MJ 22/02/99 enabled Metz filtering >1 ---> >2
   if (inter_iteration_filter_interval<0)
-  { PETerror("Range error in inter-iteration filter interval \n"); return true; }
+  { warning("Range error in inter-iteration filter interval \n"); return true; }
 
   //TODO add more checking for filters
 
  if (start_subiteration_num<1)
-   { PETerror("Range error in starting subiteration number\n"); return true; }
+   { warning("Range error in starting subiteration number\n"); return true; }
+
+  ///////////////// consistency checks
+
+ if(max_segment_num_to_process > proj_data_ptr->get_max_segment_num()) 
+ { warning("Range error in number of segments\n"); return true;}
+  
+  if( num_subsets>proj_data_ptr->get_num_views()/4) 
+  { warning("Range error in number of subsets\n"); return true;}
+  
+#if 0
+  // requires target_image
+  // TODO
+  /////////////////// initialise filters
+  
+  if(inter_iteration_filter_interval>0 && !inter_iteration_filter.kernels_built )
+    {
+      cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
+
+      inter_iteration_filter.build(target_image,
+					    inter_iteration_filter_fwhmxy_dir, 
+					    inter_iteration_filter_fwhmz_dir,
+					    (float) inter_iteration_filter_Nxy_dir,
+					    (float) inter_iteration_filter_Nz_dir);
+    }
+
+ 
+  if(do_post_filtering && !post_filter.kernels_built)
+    {
+    cerr<<endl<<"Building post filter kernel"<<endl;
+
+    post_filter.build(target_image,post_filter_fwhmxy_dir,
+			       post_filter_fwhmz_dir,
+			       (float) post_filter_Nxy_dir,
+			       (float) post_filter_Nz_dir);
+    }
+
+#endif
+  ////////////////// subset order
+
+  if (randomise_subset_order){
+   srand((unsigned int) (time(NULL)) ); //seed the rand() function
+   }
 
   return false;
 }
@@ -229,7 +301,8 @@ string IterativeReconstructionParameters::parameter_info() const
         << start_subset_num << endl;
   s << "number of subiterations := "
         << num_subiterations << endl;
-  s << "starting subiteration number := "
+  // KT 25/05/2000 'starting' -> 'start at'
+  s << "start at subiteration number := "
      << start_subiteration_num << endl;
   s << "save images at subiteration intervals := "
         << save_interval << endl;
@@ -277,3 +350,4 @@ string IterativeReconstructionParameters::parameter_info() const
 }
 
 
+END_NAMESPACE_TOMO

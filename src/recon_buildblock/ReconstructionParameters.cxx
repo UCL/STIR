@@ -3,11 +3,33 @@
 // $Id$
 //
 
-#include "pet_common.h"
+/*!
+
+  \file
+  \ingroup recon_buildblock
+  
+  \brief  implementation of the ReconstructionParameters class 
+    
+  \author Matthew Jacobson
+  \author Kris Thielemans
+  \author PARAPET project
+      
+  \date $Date$
+        
+  \version $Revision$
+*/
+
 #include "recon_buildblock/ReconstructionParameters.h" 
-#include "interfile.h"
+#include "utilities.h"
+#include <iostream>
 
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+using std::ends;
+#endif
 
+START_NAMESPACE_TOMO
 
 // KT&CL 160899 added arguments
 
@@ -40,8 +62,8 @@ ReconstructionParameters::ReconstructionParameters(): KeyParser()
  
   add_key("display (0,1,2)",
     KeyArgument::INT, &disp);
-  // KT 180899 new
-  add_key("Save intermediate files",
+  // KT 25/05/2000 Save -> save
+  add_key("save intermediate files",
     KeyArgument::INT, &save_intermediate_files);
   add_key("zoom",         
     KeyArgument::DOUBLE, &zoom);
@@ -65,20 +87,40 @@ ReconstructionParameters::ReconstructionParameters(): KeyParser()
  
 }
 
+void 
+ReconstructionParameters::initialise(const string& parameter_filename)
+{
+  if(parameter_filename.size()==0)
+  {
+    cerr << "Next time, try passing the executable a parameter file"
+	 << endl;
+
+    ask_parameters();
+  }
+
+else
+  {
+  if (!parse(parameter_filename.c_str()))
+    {
+      error("Error parsing input file %s, exiting\n", parameter_filename.c_str());
+    }
+
+  }
+}
 
 //MJ new
 void ReconstructionParameters::ask_parameters()
 {
 
-  char input_filename_char[max_filename_length],output_filename_prefix_char[max_filename_length];
+  char input_filename_char[max_filename_length];
+  char output_filename_prefix_char[max_filename_length];
 
   ask_filename_with_extension(input_filename_char,"Enter file name of 3D sinogram data : ", ".hs");
   cerr<<endl;
 
   input_filename=input_filename_char;
 
-   // AZ&MJ 05/10/99: Interfile input
-  proj_data_ptr = new PETSinogramOfVolume(read_interfile_PSOV(input_filename_char));
+  proj_data_ptr = ProjData::read_from_file(input_filename_char);
 
   ask_filename_with_extension(output_filename_prefix_char,"Output filename prefix", "");
 
@@ -92,19 +134,22 @@ void ReconstructionParameters::ask_parameters()
 bool ReconstructionParameters::post_processing()
 {
   if (input_filename.length() == 0)
-  { PETerror("You need to specify an input file\n"); return true; }
+  { warning("You need to specify an input file\n"); return true; }
   if (output_filename_prefix.length() == 0)// KT 160899 changed name of variable
-  { PETerror("You need to specify an output prefix\n"); return true; }
+  { warning("You need to specify an output prefix\n"); return true; }
   if (zoom < 0)
-  { PETerror("zoom should be positive\n"); return true; }
+  { warning("zoom should be positive\n"); return true; }
   // TODO initialise output_image_size from num_bins here or so
   if (output_image_size!=-1 && output_image_size%2==0)
-  { PETerror("output image size needs to be odd\n"); return true; }
+  { warning("output image size needs to be odd\n"); return true; }
 
   // KT 160899 new
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
-  { PETerror("The 'mash x views' key has an invalid value (must be 1 or even number)\n"); return true; }
+  { warning("The 'mash x views' key has an invalid value (must be 1 or even number)\n"); return true; }
+
  
+  proj_data_ptr= ProjData::read_from_file(input_filename);
+  
   
   return false;
 }
@@ -121,10 +166,11 @@ string ReconstructionParameters::parameter_info() const
 
     //MJ 01/02/2000 Got rid of annoying spaces
     s << "input file := " << input_filename  << endl;
-    s << "output file prefix := " << output_filename_prefix << endl;
+    // KT 25/05/2000 file -> filename
+    s << "output filename prefix := " << output_filename_prefix << endl;
 // KT 160899 changed name of variable
     s << "display (0,1,2) := " << disp << endl;
-    s << "save intermediate files := " << save_intermediate_files << endl;
+    s << "Save intermediate files := " << save_intermediate_files << endl;
     s << "zoom := " << zoom << endl;
     s << "Xoffset (in mm) := " << Xoffset << endl;
     s << "Yoffset (in mm) := " << Yoffset << endl;
@@ -138,7 +184,7 @@ string ReconstructionParameters::parameter_info() const
 }
 
 
-
+END_NAMESPACE_TOMO
 
 
 
