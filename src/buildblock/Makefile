@@ -10,7 +10,6 @@ clean:
 	$(RM) $(DEST)*
 
 SOURCES = \
-  PETerror.cxx \
   sinodata.cxx convert.cxx \
   PETScannerInfo.cxx PETScanInfo.cxx \
   Tensor1D.cxx Tensors.cxx \
@@ -24,11 +23,12 @@ SOURCES = \
   bbfilters.cxx recon_array_functions.cxx \
   sparsedata.cxx \
   linear_regression.cxx overlap_interpolate.cxx \
-  zoom.cxx mash_views.cxx 
+  zoom.cxx mash_views.cxx  \
+  error.cxx warning.cxx
 
 SOURCES_NEW=  Array.cxx convert_array.cxx \
   VoxelsOnCartesianGrid.cxx \
-  IndexRange.cxx error.cxx warning.cxx
+  IndexRange.cxx 
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
