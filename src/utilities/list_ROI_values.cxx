@@ -10,11 +10,24 @@
   The .par file has the following format
   \verbatim
   ROIValues Parameters :=
+
+  ; give the ROI an (optional) name. Defaults to the empty string.
+  ROI name := some name
   ; see Shape3D hierarchy for possible values
-  ROI Shape type:=None
+  ROI Shape type:=ellipsoid
+  ;; ellipsoid parameters here
+
+  ; if more than 1 ROI is desired, you can do this
+  next shape :=
+  ROI name := some other name
+  ROI Shape type:=ellipsoidal cylinder
+  ;; parameters here
+
   number of samples to take for ROI template-z:=1
   number of samples to take for ROI template-y:=1
   number of samples to take for ROI template-x:=1
+
+  ; specify (optional) filter to apply before computing ROI values
   ; see ImageProcessor hierarchy for possible values
   Image Filter type:=None
   End:=
@@ -35,46 +48,114 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ImageProcessor.h"
 #include "stir/KeyParser.h"
+#include "stir/is_null_ptr.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <vector>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-using std::cout;
 using std::ofstream;
 #endif
 
 
 START_NAMESPACE_STIR
 //TODO repetition of postfilter.cxx to be able to use its .par file
-class ROIValuesParameters 
+class ROIValuesParameters : public KeyParser
 {
 public:
   ROIValuesParameters();
-  Shape3D * shape_ptr;
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+  std::vector<shared_ptr<Shape3D> > shape_ptrs;
+  std::vector<string> shape_names;
   CartesianCoordinate3D<int> num_samples;
   shared_ptr<ImageProcessor<3,float> > filter_ptr;
-public:
-  KeyParser parser;
+private:
+  shared_ptr<Shape3D> current_shape_sptr;
+  string current_shape_name;
+  void increment_current_shape_num();
+
   
 };
 
 ROIValuesParameters::ROIValuesParameters()
 {
-  filter_ptr = 0;
-  shape_ptr = 0;
-  num_samples = CartesianCoordinate3D<int>(1,1,1);
-  parser.add_start_key("ROIValues Parameters");
-  parser.add_parsing_key("ROI Shape type", &shape_ptr);
-  parser.add_key("number of samples to take for ROI template-z", &num_samples.z());
-  parser.add_key("number of samples to take for ROI template-y", &num_samples.y());
-  parser.add_key("number of samples to take for ROI template-x", &num_samples.x());
-  parser.add_parsing_key("Image Filter type", &filter_ptr);
-  parser.add_stop_key("END"); 
+  set_defaults();
+  initialise_keymap();
 }
 
+void ROIValuesParameters::
+increment_current_shape_num()
+{
+  if (!is_null_ptr( current_shape_sptr))
+    {
+      shape_ptrs.push_back(current_shape_sptr);
+      shape_names.push_back(current_shape_name);
+      current_shape_sptr = 0;
+      current_shape_name = "";
+    }
+}
+
+void 
+ROIValuesParameters::
+set_defaults()
+{
+  shape_ptrs.resize(0);
+  shape_names.resize(0);
+
+  filter_ptr = 0;
+  current_shape_sptr = 0;
+  current_shape_name = "";
+  num_samples = CartesianCoordinate3D<int>(1,1,1);
+}
+
+void 
+ROIValuesParameters::
+initialise_keymap()
+{
+  add_start_key("ROIValues Parameters");
+  add_key("ROI name", &current_shape_name);
+  add_parsing_key("ROI Shape type", &current_shape_sptr);
+  add_key("next shape", KeyArgument::NONE,
+	  (KeywordProcessor)&ROIValuesParameters::increment_current_shape_num);
+  add_key("number of samples to take for ROI template-z", &num_samples.z());
+  add_key("number of samples to take for ROI template-y", &num_samples.y());
+  add_key("number of samples to take for ROI template-x", &num_samples.x());
+  add_parsing_key("Image Filter type", &filter_ptr);
+  add_stop_key("END"); 
+}
+
+bool
+ROIValuesParameters::
+post_processing()
+{
+  assert(shape_names.size() == shape_ptrs.size());
+
+  if (!is_null_ptr( current_shape_sptr))
+    {
+      increment_current_shape_num();
+    }
+  if (num_samples.z()<=0)
+    {
+      warning("number of samples to take in z-direction should be strictly positive\n");
+      return true;
+    }
+  if (num_samples.y()<=0)
+    {
+      warning("number of samples to take in y-direction should be strictly positive\n");
+      return true;
+    }
+  if (num_samples.x()<=0)
+    {
+      warning("number of samples to take in x-direction should be strictly positive\n");
+      return true;
+    }
+  return false;
+}
 
 END_NAMESPACE_STIR
 
@@ -108,7 +189,7 @@ main(int argc, char *argv[])
   const char * const input_file = argv[2];
   if (!out)
   {
-    cout<< "Cannot open output file.\n";
+    warning("Cannot open output file.\n");
     return EXIT_FAILURE;
   }
   
@@ -118,10 +199,13 @@ main(int argc, char *argv[])
 
   ROIValuesParameters parameters;
   if (argc<4)
-    parameters.parser.ask_parameters();
+    parameters.ask_parameters();
   else
-    parameters.parser.parse(argv[3]);
-  cerr << "Parameters used:\n" << parameters.parser.parameter_info() << endl;
+    {
+      if (parameters.parse(argv[3]) == false)
+	exit(EXIT_FAILURE);
+    }
+  cerr << "Parameters used (aside from names and ROIs):\n\n" << parameters.parameter_info() << endl;
 
 
   const int min_plane_number = 
@@ -129,46 +213,53 @@ main(int argc, char *argv[])
   const int max_plane_number = 
     argc==6 ? atoi(argv[5])-1 : image_ptr->get_max_index();
 
-#if 0
-  CartesianCoordinate3D<float> bounding_box_bottom;
-  CartesianCoordinate3D<float> bounding_box_top;
-  get_bounding_box(bounding_box_bottom, bounding_box_top, *image_ptr);
-  Shape3D* shape_ptr = ask_Shape3D(bounding_box_bottom, bounding_box_top);
-#endif  
-  
-  VectorWithOffset<ROIValues> values;
   
   if (parameters.filter_ptr!=0)
     parameters.filter_ptr->apply(*image_ptr);
 
-  compute_ROI_values_per_plane(values, *image_ptr, *parameters.shape_ptr, parameters.num_samples);
-  
-  out << input_file << endl;
-  out << std::setw(10) << "Plane num" 
+  out << input_file << '\n';
+  out << std::setw(15) << "ROI"
+      << std::setw(10) << "Plane_num" 
       << std::setw(15) << "Mean "
       << std::setw(15) << "Stddev";
   if (do_CV)
     out << std::setw(15) << "CV";
   out  <<'\n';
   
-  for (int i=min_plane_number;i<=max_plane_number;i++)
   {
-    out << std::setw(10) << i+1  
-        << std::setw(15) << values[i].get_mean()
-        << std::setw(15) << values[i].get_stddev();
-    if (do_CV)
-      out << std::setw(15) << values[i].get_CV();
-    out <<'\n';
-  }
+    std::vector<shared_ptr<Shape3D> >::const_iterator current_shape_iter =
+      parameters.shape_ptrs.begin();
+    std::vector<string >::const_iterator current_name_iter =
+      parameters.shape_names.begin();
+    for (;
+	 current_shape_iter != parameters.shape_ptrs.end();
+	 ++current_shape_iter, ++current_name_iter)
+      {  
+	VectorWithOffset<ROIValues> values;
+	compute_ROI_values_per_plane(values, *image_ptr, **current_shape_iter, parameters.num_samples);
+  
+	for (int i=min_plane_number;i<=max_plane_number;i++)
+	  {
+	    out << std::setw(15) << *current_name_iter
+		<< std::setw(10) << i+1  
+		<< std::setw(15) << values[i].get_mean()
+		<< std::setw(15) << values[i].get_stddev();
+	    if (do_CV)
+	      out << std::setw(15) << values[i].get_CV();
+	    out <<'\n';
+	  }
+
   
 #if 0
-  for (VectorWithOffset<ROIValues>::const_iterator iter = values.begin();
-  iter != values.end();
-  iter++)
-  {
-    cout << iter->report();
-  }
+	for (VectorWithOffset<ROIValues>::const_iterator iter = values.begin();
+	     iter != values.end();
+	     iter++)
+	  {
+	    std::cout << iter->report();
+	  }
 #endif
+      }
+  }
 
   return EXIT_SUCCESS;
 }
