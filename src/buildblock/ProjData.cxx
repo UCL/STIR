@@ -27,7 +27,7 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 // for read_from_file
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 #include "stir/ProjDataGEAdvance.h"
 #include "stir/IO/stir_ecat7.h"

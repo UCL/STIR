@@ -43,7 +43,7 @@ only work on systems where this library works properly.
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 #include "stir/IO/stir_ecat7.h"
 #include <iostream>

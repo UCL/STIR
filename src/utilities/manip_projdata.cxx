@@ -44,7 +44,7 @@ This utility programme processes (interfile) sinogram data
 #include "stir/ArrayFunction.h" 
 #include "stir/recon_array_functions.h"
 #include "stir/display.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
 
