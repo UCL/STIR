@@ -52,15 +52,6 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
 /*!
    \ingroup resolution
    \brief 
-   finds the maximum of the Input_Array and returns its 
-   location as a vector in BasicCoordinate Field (only 3D implementation).
-*/ 
-template <int num_dimensions, class elemT>
-BasicCoordinate<num_dimensions,int>                        
-maximum_location(const Array<num_dimensions,elemT>&);
-/*!
-   \ingroup resolution
-   \brief 
    finds the maximum of the Input_Array in the given slice at the given
    dimension (z=1, y=2, x=3), and returns its location as a vector in BasicCoordinate Field 
    (only 3D implementation).

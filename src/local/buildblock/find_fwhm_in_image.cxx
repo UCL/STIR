@@ -19,6 +19,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "local/stir/find_fwhm_in_image.h"
+#include "stir/index_at_maximum.h"
 #include <algorithm>  
 #include <list>
 
@@ -87,7 +88,7 @@ CartesianCoordinate3D<float>
     }  
     else     // Searches through out the image to find the point sources  
     {  
-      max_location =	maximum_location(input_image);  
+      max_location =	indices_at_maximum(input_image);  
       current_maximum = input_image[max_location];
     }                        
     res_index.voxel_location = max_location;     
@@ -150,39 +151,6 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
 	                        end_iterator,
                           level_height); 
 }
-                   
-template<int num_dimensions,class elemT>                         
-BasicCoordinate<num_dimensions,int> 
-maximum_location(const Array<num_dimensions,elemT>& input_array)
-{
-  const elemT current_maximum = input_array.find_max();
-  BasicCoordinate<num_dimensions,int>  max_location, min_index, max_index; 
-  
-  bool found=false;    
-  min_index[1] = input_array.get_min_index();
-  max_index[1] = input_array.get_max_index();
-	for ( int k = min_index[1]; k<= max_index[1] && !found; ++k)
-	{
-	  min_index[2] = input_array[k].get_min_index();
-	  max_index[2] = input_array[k].get_max_index();
-	  for ( int j = min_index[2]; j<= max_index[2] && !found; ++j)
-	  {
-	  min_index[3] = input_array[k][j].get_min_index();
-    max_index[3] = input_array[k][j].get_max_index();
-		 for ( int i = min_index[3]; i<= max_index[3] && !found; ++i)
-		 {
-           if (input_array[k][j][i] == current_maximum)
-		   {
-         max_location[1] = k;
-		  	 max_location[2] = j;
-		  	 max_location[3] = i;
-		   }
-		 }
-	  }
-	}
-  found = true;		
-  return max_location;	
-}                            
 
 template<int num_dimensions,class elemT>                         
 BasicCoordinate<num_dimensions,int>
@@ -203,7 +171,7 @@ maximum_location_per_slice(const Array<num_dimensions,elemT>& input_array,
   for (counter[2]=min_slice_index[2]; counter[2]<= max_slice_index[2] ; ++counter[2])    
   for (counter[3]=min_slice_index[3]; counter[3]<= max_slice_index[3] ; ++counter[3])    
 	 slice_array[counter] = input_array[counter];  
-  return maximum_location(slice_array);	
+  return indices_at_maximum(slice_array);	
 }       
                        
 template <int num_dimensions, class elemT>
