@@ -8,6 +8,40 @@
 
   \brief A utility to generate images consistening of uniform objects added/subtracted together
 
+  \par Example .par file
+  \code
+  generate_image Parameters :=
+  output filename:= somefile
+  XY output image size (in pixels):= 13
+  Z output image size (in pixels):= 15
+  XY voxel size (in mm):= 4
+  Z voxel size (in mm) := 5
+  ; now starts an enumeration of objects
+  ; Shape3D hierarchy for possible shapes and their parameters
+  shape type:= ellipsoidal cylinder
+     Ellipsoidal Cylinder Parameters:=
+     radius-x (in mm):= 1 
+     radius-y (in mm):= 2
+     length-z (in mm):= 3
+     origin-x (in mm):= 0
+     origin-y (in mm):= 15
+     origin-z (in mm):= 10
+     END:=
+  value := 10
+
+  ; here comes another shape
+  next shape:=
+  shape type:= ellipsoid
+  ; etc
+
+  ; as many shapes as you want
+  END:=
+  \endcode
+
+  \warning If the shape is smaller than the voxel-size, or the shape
+  is at the edge of the image, the current
+  mechanism of generating the image might miss the shape entirely.
+
   \author Kris Thielemans
 
   $Date$
@@ -119,6 +153,10 @@ post_processing()
   return false;
 }
 
+//! \brief parses parameters
+/*! \warning Currently does not support interactive input, due to 
+    the use of the 'next shape' keyword.
+*/
 GenerateImage::
 GenerateImage(const char * const par_filename)
 {
@@ -160,9 +198,9 @@ compute()
   VoxelsOnCartesianGrid<float> 
     current_image(IndexRange3D(0,output_image_size_z-1,
 			       -(output_image_size_xy/2),
-			       -(output_image_size_xy/2)+output_image_size_xy,
+			       -(output_image_size_xy/2)+output_image_size_xy-1,
 			       -(output_image_size_xy/2),
-			       -(output_image_size_xy/2)+output_image_size_xy),
+			       -(output_image_size_xy/2)+output_image_size_xy-1),
 		  CartesianCoordinate3D<float>(0,0,0),
 		  CartesianCoordinate3D<float>(output_voxel_size_z,
 					       output_voxel_size_xy,
@@ -195,7 +233,7 @@ int main(int argc, char * argv[])
 {
   
   if ( argc!=2) {
-    cerr << "Usage: " << argv[0] << " [par_file]\n";
+    cerr << "Usage: " << argv[0] << " par_file\n";
     exit(EXIT_FAILURE);
   }
   GenerateImage application(argc==2 ? argv[1] : 0);
