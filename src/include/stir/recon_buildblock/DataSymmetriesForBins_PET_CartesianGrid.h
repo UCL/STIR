@@ -75,7 +75,7 @@ public:
     num_related_bins(const Bin& b) const;
 
   inline auto_ptr<SymmetryOperation>
-    find_symmetry_operation_to_basic_bin(Bin&) const;
+    find_symmetry_operation_from_basic_bin(Bin&) const;
 
   inline bool
     find_basic_bin(Bin& b) const;

@@ -140,13 +140,13 @@ public:
   virtual int
     num_related_bins(const Bin& b) const;
 
-  /*! \brief given an arbitrary bin 'b', find the basic bin
+  /*! \brief given an arbitrary bin 'b', find the basic bin and the corresponding symmetry operation
   
   sets 'b' to the corresponding 'basic' bin and returns the symmetry 
   transformation from 'basic' to 'b'.
   */
   virtual auto_ptr<SymmetryOperation>
-    find_symmetry_operation_to_basic_bin(Bin&) const = 0;
+    find_symmetry_operation_from_basic_bin(Bin&) const = 0;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin
   
@@ -156,9 +156,9 @@ public:
   virtual bool
     find_basic_bin(Bin& b) const;
 
-  //! default implementation in terms of find_symmetry_operation_to_basic_bin
+  //! default implementation in terms of find_symmetry_operation_from_basic_bin
   virtual auto_ptr<SymmetryOperation>
-    find_symmetry_operation_to_basic_view_segment_numbers(ViewSegmentNumbers&) const;
+    find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
 
 
 protected:

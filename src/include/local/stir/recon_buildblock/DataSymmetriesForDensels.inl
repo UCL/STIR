@@ -9,15 +9,12 @@
   \brief inline implementations for class DataSymmetriesForDensels
 
   \author Kris Thielemans
-  \author PARAPET project
-
+  
   $Date$
-
   $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 

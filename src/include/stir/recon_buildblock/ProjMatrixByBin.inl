@@ -44,7 +44,7 @@ inline void ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(
   Bin basic_bin = bin;
     
   auto_ptr<SymmetryOperation> symm_ptr = 
-    symmetries_ptr->find_symmetry_operation_to_basic_bin(basic_bin);
+    symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
   
   probabilities.set_bin(basic_bin);
 

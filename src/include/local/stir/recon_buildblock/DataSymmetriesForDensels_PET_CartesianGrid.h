@@ -9,14 +9,12 @@
   \brief Declaration of class DataSymmetriesForDensels_PET_CartesianGrid
 
   \author Kris Thielemans
-  \author PARAPET project
-
+  
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForDensels_PET_CartesianGrid_H__
@@ -73,7 +71,7 @@ public:
     num_related_densels(const Densel& b) const;
 
   inline auto_ptr<SymmetryOperation>
-    find_symmetry_operation_to_basic_densel(Densel&) const;
+    find_symmetry_operation_from_basic_densel(Densel&) const;
 
   inline bool
     find_basic_densel(Densel& b) const;

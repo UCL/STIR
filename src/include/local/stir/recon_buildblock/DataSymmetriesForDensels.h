@@ -2,22 +2,18 @@
 // $Id$
 //
 /*!
-
   \file
   \ingroup recon_buildblock
 
   \brief Declaration of class DataSymmetriesForDensels
 
   \author Kris Thielemans
-  \author PARAPET project
-
+ 
   $Date$
-
   $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForDensels_H__
@@ -111,7 +107,7 @@ public:
   transformation from 'basic' to 'b'.
   */
   virtual auto_ptr<SymmetryOperation>
-    find_symmetry_operation_to_basic_densel(Densel&) const = 0;
+    find_symmetry_operation_from_basic_densel(Densel&) const = 0;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel
   

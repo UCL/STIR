@@ -317,7 +317,7 @@ find_basic_bin(Bin& b) const
 // TODO, optimise
 auto_ptr<SymmetryOperation>
 DataSymmetriesForBins_PET_CartesianGrid::
-  find_symmetry_operation_to_basic_bin(Bin& b) const
+  find_symmetry_operation_from_basic_bin(Bin& b) const
 {
   auto_ptr<SymmetryOperation> 
     sym_op(
