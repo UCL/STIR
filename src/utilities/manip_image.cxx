@@ -13,6 +13,7 @@
 #include <numeric>
 #include "imagedata.h"
 
+
 //MJ 2/11/98 include Tensor functions
 #include "TensorFunction.h"
 
@@ -21,10 +22,10 @@
 #include "interfile.h"
 // KT 23/10/98 use ask_* version all over the place
 #include "utilities.h"
-
+//MJ 17/11/98 include new functions
+#include "recon_array_functions.h"
 
 #define ZERO_TOL 0.000001
-#define ROOF 40000000.0
 
 //enable this at some point
 //const int rim_trunc_image=2;
@@ -383,38 +384,17 @@ void display_halo(const PETImageOfVolume& input_image){
 
 void clean_rim(PETImageOfVolume& input_image){
 
-  // KT 23/10/98 removed plane as not used
-  int zs,ys,xs, ze,ye,xe;
 
-  zs=input_image.get_min_z();
-  ys=input_image.get_min_y();
-  xs=input_image.get_min_x(); 
+  const int xe=input_image.get_max_x();
+  const int xs=input_image.get_min_x();
+  const int xm=(xs+xe)/2;
   
-  ze=input_image.get_max_z();  
-  ye=input_image.get_max_y(); 
-  xe=input_image.get_max_x();
 
-  float zm=(zs+ze)/2.;
-  float ym=(ys+ye)/2.;
-  float xm=(xs+xe)/2.;
-  
-  float d;
+  //MJ 17/11/98 changed default to 2, int to const int
+  const int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),2);
 
-  int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),4);
- 
-  for (int z=zs; z<=ze; z++)
-    for (int y=ys; y <= ye; y++)
-      for (int x=xs; x<= xe; x++){
-
-	d=sqrt(pow(xm-x,2)+pow(ym-y,2));
-
-	if(d>=(xe-xm)-rim_trunc) {
-	  input_image[z][y][x]=0.0;   
-	}
-
-      }
-
-
+  //MJ 17/11/98 use new function
+  truncate_rim(input_image,rim_trunc);
 
 }
 
