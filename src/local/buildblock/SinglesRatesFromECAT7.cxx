@@ -81,10 +81,10 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
     
     Scan3D_subheader* scan_subheader_ptr=  
       reinterpret_cast<Scan3D_subheader *>(matrix->shptr);
-    time_frames[mat_frame-1].first=scan_subheader_ptr->frame_start_time/1000;
+    time_frames[mat_frame-1].first=scan_subheader_ptr->frame_start_time/1000.;
     time_frames[mat_frame-1].second=
       time_frames[mat_frame-1].first +
-      scan_subheader_ptr->frame_duration/1000;
+      scan_subheader_ptr->frame_duration/1000.;
 
     float const* singles_ptr = reinterpret_cast<float const *>(scan_subheader_ptr->uncor_singles);//matrix->data_ptr);
     for(Array<2,float>::full_iterator iter = singles[mat_frame].begin_all(); iter != singles[mat_frame].end_all();)
