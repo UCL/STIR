@@ -49,9 +49,9 @@ multiply_plane_scale_factorsImageProcessor<elemT>::
 initialise_keymap()
 {
   ImageProcessor<3,elemT>::initialise_keymap();
-  parser.add_start_key("multiply_plane_scale_factors Parameters");
-  parser.add_key("plane_scale_factors",&plane_scale_factors);
-  parser.add_stop_key("END multiply_plane_scale_factors Parameters");
+  this->parser.add_start_key("multiply_plane_scale_factors Parameters");
+  this->parser.add_key("plane_scale_factors",&plane_scale_factors);
+  this->parser.add_stop_key("END multiply_plane_scale_factors Parameters");
 }
 
 template <typename elemT>

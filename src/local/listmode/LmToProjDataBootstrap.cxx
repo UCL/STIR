@@ -49,8 +49,8 @@ void
 LmToProjDataBootstrap<LmToProjDataT>::initialise_keymap()
 {
   LmToProjData::initialise_keymap();
-  parser.add_start_key("LmToProjDataBootstrap Parameters");
-  parser.add_key("seed", reinterpret_cast<int *>(&seed)); // TODO get rid of cast
+  this->parser.add_start_key("LmToProjDataBootstrap Parameters");
+  this->parser.add_key("seed", reinterpret_cast<int *>(&seed)); // TODO get rid of cast
 }
 
 template <typename LmToProjDataT>
@@ -59,9 +59,9 @@ LmToProjDataBootstrap(const char * const par_filename)
 {
   set_defaults();
   if (par_filename!=0)
-    parse(par_filename) ;
+    this->parse(par_filename) ;
   else
-    ask_parameters();
+    this->ask_parameters();
 }
 
 template <typename LmToProjDataT>
@@ -72,7 +72,7 @@ LmToProjDataBootstrap(const char * const par_filename, const unsigned int seed_v
   seed = seed_v;
   if (par_filename!=0)
     {
-      parse(par_filename);
+      this->parse(par_filename);
       // make sure that seed_v parameter overrides whatever was in the par file
       if (seed != seed_v)
 	{
@@ -84,7 +84,7 @@ LmToProjDataBootstrap(const char * const par_filename, const unsigned int seed_v
 	}
     }
   else
-    ask_parameters();
+    this->ask_parameters();
 }
 
 template <typename LmToProjDataT>
@@ -111,24 +111,24 @@ start_new_time_frame(const unsigned int new_frame_num)
 
   base_type::start_new_time_frame(new_frame_num);
 
-  const double start_time = frame_defs.get_start_time(new_frame_num);
-  const double end_time = frame_defs.get_end_time(new_frame_num);
+  const double start_time = this->frame_defs.get_start_time(new_frame_num);
+  const double end_time = this->frame_defs.get_end_time(new_frame_num);
   // When do_time_frame=true, the number of events is irrelevant, so we 
   // just set more_events to 1, and never change it
   long more_events = 
-    do_time_frame? 1 : num_events_to_store;
+    this->do_time_frame? 1 : this->num_events_to_store;
 
   unsigned int total_num_events_in_this_frame = 0;
 
   // loop over all events in the listmode file
-  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  shared_ptr <CListRecord> record_sptr = this->lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
 
   cerr << "\nGoing through listmode file to find number of events in this frame" << endl;
   double current_time = start_time;
   while (more_events)
     {
-      if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
+      if (this->lm_data_ptr->get_next_record(record) == Succeeded::no) 
 	{
 	  // no more events in file for some reason
 	  break; //get out of while loop
@@ -136,7 +136,7 @@ start_new_time_frame(const unsigned int new_frame_num)
       if (record.is_time())
 	{
 	  const double new_time = record.time().get_time_in_secs();
-	  if (do_time_frame && new_time >= end_time)
+	  if (this->do_time_frame && new_time >= end_time)
 	    break; // get out of while loop
 	  current_time = new_time;
 	}
@@ -144,7 +144,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 	{
 	  ++total_num_events_in_this_frame;
 
-	  if (!do_time_frame)
+	  if (!this->do_time_frame)
 	    {
 	      // painful business to decrement more_events
 
@@ -159,22 +159,22 @@ start_new_time_frame(const unsigned int new_frame_num)
 	      base_type::get_bin_from_event(bin, record.event());
 	      // check if it's inside the range we want to store
 	      if (bin.get_bin_value()>0
-		  && bin.tangential_pos_num()>= template_proj_data_info_ptr->get_min_tangential_pos_num()
-		  && bin.tangential_pos_num()<= template_proj_data_info_ptr->get_max_tangential_pos_num()
-		  && bin.axial_pos_num()>=template_proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num())
-		  && bin.axial_pos_num()<=template_proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num())
-		  && bin.segment_num()>=template_proj_data_info_ptr->get_min_segment_num()
-		  && bin.segment_num()<=template_proj_data_info_ptr->get_max_segment_num()
+		  && bin.tangential_pos_num()>= this->template_proj_data_info_ptr->get_min_tangential_pos_num()
+		  && bin.tangential_pos_num()<= this->template_proj_data_info_ptr->get_max_tangential_pos_num()
+		  && bin.axial_pos_num()>=this->template_proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num())
+		  && bin.axial_pos_num()<=this->template_proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num())
+		  && bin.segment_num()>=this->template_proj_data_info_ptr->get_min_segment_num()
+		  && bin.segment_num()<=this->template_proj_data_info_ptr->get_max_segment_num()
 		  ) 
 		{
-		  assert(bin.view_num()>=template_proj_data_info_ptr->get_min_view_num());
-		  assert(bin.view_num()<=template_proj_data_info_ptr->get_max_view_num());
+		  assert(bin.view_num()>=this->template_proj_data_info_ptr->get_min_view_num());
+		  assert(bin.view_num()<=this->template_proj_data_info_ptr->get_max_view_num());
             
 		  // see if we increment or decrement the value in the sinogram
 		  const int event_increment =
 		    record.event().is_prompt() 
-		    ? ( store_prompts ? 1 : 0 ) // it's a prompt
-		    :  delayed_increment;//it is a delayed-coincidence event
+		    ? ( this->store_prompts ? 1 : 0 ) // it's a prompt
+		    :  this->delayed_increment;//it is a delayed-coincidence event
             
 		  if (event_increment==0)
 		    continue;
@@ -238,7 +238,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
 
 
 // instantiation
-template LmToProjDataBootstrap<LmToProjData>;
+template class LmToProjDataBootstrap<LmToProjData>;
 
 
 

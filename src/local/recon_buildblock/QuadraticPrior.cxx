@@ -31,14 +31,14 @@ void
 QuadraticPrior<elemT>::initialise_keymap()
 {
   GeneralisedPrior<elemT>::initialise_keymap();
-  parser.add_start_key("Quadratic Prior Parameters");
-  parser.add_key("only 2D", &only_2D); 
-  parser.add_key("kappa filename", &kappa_filename);
-  parser.add_key("precomputed weights", &precomputed_weights);
-  parser.add_key ("precomputed weights 3D", &precomputed_weights_3D);
+  this->parser.add_start_key("Quadratic Prior Parameters");
+  this->parser.add_key("only 2D", &only_2D); 
+  this->parser.add_key("kappa filename", &kappa_filename);
+  this->parser.add_key("precomputed weights", &precomputed_weights);
+  this->parser.add_key ("precomputed weights 3D", &precomputed_weights_3D);
 
-  parser.add_key("gradient filename", &gradient_filename);
-  parser.add_stop_key("END Quadratic Prior Parameters");
+  this->parser.add_key("gradient filename", &gradient_filename);
+  this->parser.add_stop_key("END Quadratic Prior Parameters");
 }
 
 
@@ -108,7 +108,7 @@ QuadraticPrior<elemT>::set_defaults()
   precomputed_weights_3D.fill(0);
 }
 
-
+template <>
 const char * const 
 QuadraticPrior<float>::registered_name =
   "Quadratic";
@@ -124,7 +124,7 @@ template <typename elemT>
 QuadraticPrior<elemT>::QuadraticPrior(const bool only_2D_v, float penalisation_factor_v)
   :  only_2D(only_2D_v)
 {
-  penalisation_factor = penalisation_factor_v;
+  this->penalisation_factor = penalisation_factor_v;
 }
 
 
@@ -165,7 +165,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 		 const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
   assert(  prior_gradient.get_index_range() == current_image_estimate.get_index_range());  
-  if (penalisation_factor==0)
+  if (this->penalisation_factor==0)
   {
     prior_gradient.fill(0);
     return;
@@ -281,7 +281,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 		if (do_kappa)
 		  gradient *= (*kappa_ptr)[z][y][x];
 #endif
-		prior_gradient[z][y][x]= gradient * penalisation_factor;
+		prior_gradient[z][y][x]= gradient * this->penalisation_factor;
 	      }              
 	  }
     }
@@ -311,7 +311,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
 {
   assert(  prior_Hessian_for_single_densel.get_index_range() == current_image_estimate.get_index_range());  
   prior_Hessian_for_single_densel.fill(0);
-  if (penalisation_factor==0)
+  if (this->penalisation_factor==0)
   {
     return;
   }
@@ -368,10 +368,10 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
 	  (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 	
 	diagonal += current;
-	prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*penalisation_factor;
+	prior_Hessian_for_single_densel_cast[z+dz][y+dy][x+dx] = -current*this->penalisation_factor;
       }
       
-      prior_Hessian_for_single_densel[z][y][x]= diagonal * penalisation_factor;
+      prior_Hessian_for_single_densel[z][y][x]= diagonal * this->penalisation_factor;
 }              
 
 template <typename elemT>
@@ -381,7 +381,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 {
 
   assert( parabolic_surrogate_curvature.get_index_range() == current_image_estimate.get_index_range());  
-  if (penalisation_factor==0)
+  if (this->penalisation_factor==0)
   {
     parabolic_surrogate_curvature.fill(0);
     return;
@@ -443,7 +443,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 			gradient += current;
 		      }
 		
-		parabolic_surrogate_curvature[z][y][x]= gradient * penalisation_factor;
+		parabolic_surrogate_curvature[z][y][x]= gradient * this->penalisation_factor;
 	      }              
 	  }
     }
@@ -466,7 +466,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 #  endif
 
 
-template QuadraticPrior<float>;
+template class QuadraticPrior<float>;
 
 END_NAMESPACE_STIR
 
