@@ -24,17 +24,16 @@
 using std::cout;
 #endif
 
-START_NAMESPACE_STIR
- 
+START_NAMESPACE_STIR 
 
-template <typename Root>
+template <class Root>
 RegisteredObject<Root>::RegisteredObject()
 {}
 
 
 #ifndef _MSC_VER
-template <typename Root>
-RegisteredObject<Root>::RegistryType& 
+template <class Root>
+typename RegisteredObject<Root>::RegistryType& 
 RegisteredObject<Root>::registry ()
 {
   static RegistryType the_registry("None", 0);
@@ -42,7 +41,7 @@ RegisteredObject<Root>::registry ()
 }
 #endif
 
-template <typename Root>
+template <class Root>
 Root*
 RegisteredObject<Root>::read_registered_object(istream* in, const string& registered_name)
 {
@@ -50,7 +49,7 @@ RegisteredObject<Root>::read_registered_object(istream* in, const string& regist
   return factory==0 ? 0 : (*factory)(in);
 }
 
-template <typename Root>
+template <class Root>
 Root*
 RegisteredObject<Root>::ask_type_and_parameters()
 {
@@ -60,14 +59,13 @@ RegisteredObject<Root>::ask_type_and_parameters()
   return read_registered_object(0, registered_name);
 }
  
-template <typename Root>
+template <class Root>
 void 
 RegisteredObject<Root>::
 list_registered_names(ostream& stream)
 {
   registry().list_keys(stream);
 }
-
 
 
 END_NAMESPACE_STIR
