@@ -235,8 +235,8 @@ post_processing()
     {
       warning("Scanner from list mode data (%s) is different from\n"
 	      "scanner from template projdata (%s)\n",
-	      scanner_ptr->get_name().c_str(),
-	      lm_data_ptr->get_scanner_ptr()->get_name().c_str());
+	      lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
+	      scanner_ptr->get_name().c_str());
       return true;
     }
   
