@@ -75,8 +75,7 @@ ProjMatrixByDenselUsingRayTracing::post_processing()
   //  return true;
   if (num_tangential_LORs<1)
   {
-    warning("ProjMatrixByDenselUsingRayTracing: num_tangential_LORs should be at le
-ast 1, but is %d\n",
+    warning("ProjMatrixByDenselUsingRayTracing: num_tangential_LORs should be at least 1, but is %d\n",
             num_tangential_LORs);
     return true;
   }
