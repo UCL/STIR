@@ -22,15 +22,20 @@
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
+/*!
+ \ingroup buildblock
+ \name Functions for rounding floating point numbers
+ */
+ //@{
 
 //! Implements rounding of floating point numbers
 /*!
-   \ingroup buildblock
+   
    round() has the property that 
    \code
    round(x) == -round(-x)
    \endcode
-   The usual (int)(x+.5) has machine dependent behaviour for 
+   The usual <tt>(int)(x+.5)</tt> has machine dependent behaviour for 
    negative numbers.
 
    .5 is rounded to 1 (and hence -.5 to -1).
@@ -40,20 +45,20 @@ START_NAMESPACE_STIR
 */
 inline int round(const float x);
 //! Implements rounding of double numbers
-/*!
-   \ingroup buildblock
+/*!   
    \see round(const float)
 */
 inline int round(const double x);
 
 //! Implements rounding of a BasicCoordinate object
 /*!
-   \ingroup buildblock
    \see round(const float)
 */
 template <int num_dimensions, class elemT>
 inline BasicCoordinate<num_dimensions,int>
 round(const BasicCoordinate<num_dimensions,elemT>& x);
+
+//@}
 
 END_NAMESPACE_STIR
 

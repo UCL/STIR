@@ -24,8 +24,13 @@
 
 START_NAMESPACE_STIR
 
-//! Like std::fmod() but with guaranteed nonnegative result
 /*! \ingroup buildblock
+   \name Functions for modulo computations
+*/
+//@{
+
+//! Like std::fmod() but with guaranteed nonnegative result
+/*! 
     std::fmod(a,b) return a number of the same sign as \a a. This is often 
     inconvenient as the result of this is that the range of std::fmod(a,b) is
     from \a -fabs(b) to \a +fabs(b).
@@ -51,13 +56,13 @@ modulo(const double a, const double b)
 }
 
 //! modulo for floats
-/*!  \ingroup buildblock
+/*!  
   \see modulo(double,double)
   The reason for this function is that rounding from double to float
-  might make the result of the calcluation with doubles larger than b.
+  might make the result of the calculation with doubles larger than b.
 
   \warning Because of C++ promotion of floats to doubles, it is
-  very easy to call the module(double,double) version inadvertently.
+  very easy to call the modulo(double,double) version inadvertently.
   So, you should probably not rely too much on the result being less than 
   \a b.
 */
@@ -75,8 +80,7 @@ modulo(const float a, const float b)
 }
 
 //! Like the normal modulus operator (%) but with guaranteed nonnegative result
-/*! \ingroup buildblock
-
+/*! 
    Result will be larger than or equal to 0, and (strictly) smaller than
    \a abs(b).
 */
@@ -92,7 +96,7 @@ modulo(const int a, const int b)
 }
 
 //! Performs the modulus operation on each element of the coordinates
-/*! \ingroup buildblock
+/*! 
    \return A BasicCoordinate such that for all <tt>d</tt>
      \code result[d] = modulo(a[d], b[d] \endcode
 */
@@ -108,9 +112,9 @@ modulo(const BasicCoordinate<num_dimensions, T>& a, const BasicCoordinate<num_di
 }
 
 //! A function to convert an angle from one range to another
-/*! \ingroup buildblock
+/*! 
     This is mainly useful for converting results from e.g. std::atan2 to 
-    a range \f$\[0,2\pi)\f$.
+    a range \f$[0,2\pi)\f$.
 */
 template <typename FloatOrDouble>
 inline 
@@ -132,8 +136,7 @@ from_min_pi_plus_pi_to_0_2pi(const FloatOrDouble phi)
 }
 
 //! Convert angle to standard range
-/*! \ingroup buildblock
-    Identical to modulo(phi, 2*_PI) */
+/*! Identical to <tt>modulo(phi, static_cast<FloatOrDouble>(2*_PI))</tt> */
 template <typename FloatOrDouble>
 inline 
 FloatOrDouble
@@ -141,6 +144,8 @@ to_0_2pi(const FloatOrDouble phi)
 {
   return modulo(phi, static_cast<FloatOrDouble>(2*_PI));
 }
+
+//@}
 
 END_NAMESPACE_STIR
 
