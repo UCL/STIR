@@ -114,6 +114,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 				    filter_coefficients(filter_coefficients_v)
 {
   
+
   //cerr <<kapa0_over_kapa1<< endl;
 #if 1
   const int length_of_size_array = 16;
@@ -249,8 +250,9 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
       // for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
       for (int i=1;i<=filter_coefficients_padded.get_length()/4;i++)
       { 
-	
-	if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000) break;
+	// SM TESTING SMALLER THRESHOLD - 24/03/2002
+	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000) break;
+	if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100000000) break;
 	//sm 16/11/2001 try the new threshold
 	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/100) break;
 	//if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
