@@ -10,6 +10,9 @@
   \author PARAPET project
   \version $Revision$
   \date  $Date$
+
+  \warning This file relies on _PLATFORM_xxx preprocessor defines to find out if it 
+  has to byteswap. This needs to be changed. (TODO)
 */
 
 #include <limits.h>
@@ -468,7 +471,8 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
         nxtblk = dirblk + 1;
     
             // see if matnum entry is in this block
-        for (i=4; i<MatBLKSIZE / sizeof (long); i+=sizeof (long)) {
+        // KT added unsigned to avoid compiler warnings
+        for (i=4; (unsigned)i<MatBLKSIZE / sizeof (long); i+=sizeof (long)) {
 	    if (dirbufr [i] == 0) { // skip to next block
 		busy = 0;
 		break;
@@ -607,7 +611,8 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
 	nused  = dirbufr [3];
 
             // look through the entries in this block
-	for (int i=4; i<MatBLKSIZE / sizeof (long); i+=sizeof (long)) {
+        // KT added unsigned to avoid compiler warnings
+	for (int i=4; (unsigned)i<MatBLKSIZE / sizeof (long); i+=sizeof (long)) {
 	    matnbr  = dirbufr [i];
 	    strtblk = dirbufr [i + 1];
 	    endblk  = dirbufr [i + 2];
