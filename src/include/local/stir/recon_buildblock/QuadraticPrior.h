@@ -78,6 +78,7 @@ private:
   virtual bool post_processing();
   string kappa_filename;
   Array<2,float> precomputed_weights;
+  Array<3,float> precomputed_weights_3D;
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 };
 
