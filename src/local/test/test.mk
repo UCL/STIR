@@ -19,4 +19,7 @@ run_interactive_tests_$(dir):
 ${DEST}$(dir)/test_Fourier: ${DEST}$(dir)/test_Fourier.o $(STIR_LIB) 
 	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
 
+${DEST}$(dir)/test_RigidObject3DTransformation: ${DEST}$(dir)/test_RigidObject3DTransformation.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
 include $(WORKSPACE)/test.mk
