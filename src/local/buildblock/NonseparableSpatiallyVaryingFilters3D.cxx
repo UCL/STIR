@@ -890,7 +890,9 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 
 	      // rescaling coefficients should be < 1 for narrowing the kernel and >1 for broadening the kernel
 	      const float tmp = float((*precomputed_coefficients_image)[k][j][i]* rescaling_coefficient); 
-	      const int k_index = round(((float)1/(max(.000000001F,tmp)))/k_interval);
+	      //const int k_index = round(((float)1/(max(.000000001F,tmp)))/k_interval);
+	      const int k_index = round((tmp)/k_interval);
+
 #if 0	    
 	      if (k_index < filter_lookup.get_min_index())
 		  filter_lookup.grow(k_index, filter_lookup.get_max_index());
@@ -902,7 +904,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 #endif
 	      {
 		
-		cerr << "Now doing index " << k_index << " i.e. value " << k_index*k_interval << " for 1/tmp " << 1/tmp << endl;
+		cerr << "Now doing index " << k_index << " i.e. value " << k_index*k_interval << " for tmp " << tmp << endl;
 		if (tmp >0.0000001)
 		{
 		  Array <3,float> new_coeffs;	 		
