@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,8 +11,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
@@ -20,11 +20,13 @@
 #include "Viewgram.h"
 #include "RelatedViewgrams.h"
 #include <algorithm>
-// TODO
-#include "Coordinate2D.h"
+#include <vector>
+#include <list>
 
 #ifndef TOMO_NO_NAMESPACE
 using std::find;
+using std::vector;
+using std::list;
 #endif
 
 START_NAMESPACE_TOMO
@@ -33,24 +35,23 @@ START_NAMESPACE_TOMO
 
 ForwardProjectorByBinUsingProjMatrixByBin::
 ForwardProjectorByBinUsingProjMatrixByBin(  
-    const shared_ptr<ProjMatrixByBin> proj_matrix_ptr
+    const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr
     )		   
-    : proj_matrix_ptr(proj_matrix_ptr)
-      //data_symmetries(proj_matrix_ptr->get_symmetries_ptr()->clone())
-  {
-     assert(proj_matrix_ptr.use_count()!=0);	 
-    
-  }
+  : proj_matrix_ptr(proj_matrix_ptr)
+{
+  assert(proj_matrix_ptr.use_count()!=0);	   
+}
 
 const DataSymmetriesForViewSegmentNumbers *
 ForwardProjectorByBinUsingProjMatrixByBin::get_symmetries_used() const
 {
   return proj_matrix_ptr->get_symmetries_ptr();
-    //&data_symmetries;
 }
 
 #if 0
-
+// straightforward version which relies on ProjMatrixByBin to sort out all 
+// symmetries
+// will be slow if there's no caching
 void 
 ForwardProjectorByBinUsingProjMatrixByBin::
  actual_forward_project(RelatedViewgrams<float>& viewgrams, 
@@ -82,7 +83,8 @@ ForwardProjectorByBinUsingProjMatrixByBin::
 }
 
 #else
-
+// complicated version which handles the symmetries explicitly
+// might be faster when no caching is performed
 void 
 ForwardProjectorByBinUsingProjMatrixByBin::
 actual_forward_project(RelatedViewgrams<float>& viewgrams, 
@@ -125,14 +127,11 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
     {
        const int axial_pos_tmp = (*r_ax_poss_iter)[1];
        const int tang_pos_tmp = (*r_ax_poss_iter)[2];
-#if 0
+
+       // symmetries might take the ranges out of what the user wants
        if ( !(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
 	      min_tangential_pos_num <=tang_pos_tmp  && tang_pos_tmp <= max_tangential_pos_num))
 	  continue;
-#else
-       assert(min_axial_pos_num <= axial_pos_tmp && axial_pos_tmp <= max_axial_pos_num &&
-	      min_tangential_pos_num <=tang_pos_tmp  && tang_pos_tmp <= max_tangential_pos_num);
-#endif
 
        already_processed.push_back(*r_ax_poss_iter);
        
@@ -161,8 +160,9 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
       }  
     }      
   assert(already_processed.size() == 
-            (max_axial_pos_num - min_axial_pos_num + 1) *
-            (max_tangential_pos_num - min_tangential_pos_num + 1));
+         static_cast<unsigned>(
+			       (max_axial_pos_num - min_axial_pos_num + 1) *
+			       (max_tangential_pos_num - min_tangential_pos_num + 1)));
 	   
 }
 
