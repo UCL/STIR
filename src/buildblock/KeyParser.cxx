@@ -20,11 +20,18 @@
 
 #include "KeyParser.h"
 #include "tomo/Object.h"
+#include "tomo/interfile_keyword_functions.h"
 #include "line.h"
 #include "stream.h"
-
+#include <typeinfo>
 #include <fstream>
 #include <cstring>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
+#include <sstream>
+#endif
+
 #ifndef TOMO_NO_NAMESPACES
 using std::ifstream;
 using std::cerr;
@@ -65,6 +72,16 @@ map_element::map_element(void (KeyParser::*pom)(),
               Parser* parser)
   :
   type(KeyArgument::PARSINGOBJECT),
+  p_object_member(pom),
+  p_object_variable(pov),
+  parser(parser)//static_cast<Parser *>(parser))
+  {}
+
+map_element::map_element(void (KeyParser::*pom)(),
+	      shared_ptr<Object>* pov, 
+              Parser* parser)
+  :
+  type(KeyArgument::SHARED_PARSINGOBJECT),
   p_object_member(pom),
   p_object_variable(pov),
   parser(parser)//static_cast<Parser *>(parser))
@@ -136,40 +153,7 @@ bool KeyParser::parse(istream& f)
 string 
 KeyParser::standardise_keyword(const string& keyword) const
 {
-  string::size_type cp =0;		//current index
-  char const * const white_space = " \t_!";
-  
-  // skip white space
-  cp=keyword.find_first_not_of(white_space,0);
-  
-  if(cp==string::npos)
-    return string();
-  
-  // remove trailing white spaces
-  const string::size_type eok=keyword.find_last_not_of(white_space);
-  
-  string kw;
-  kw.reserve(eok+1);
-  char previous_was_white_space = false;
-  while (cp <= eok)
-  {
-    if (isspace(static_cast<int>(keyword[cp])) || keyword[cp]=='_' || keyword[cp]=='!')
-    {
-      if (!previous_was_white_space)
-      {
-        kw.append(1,' ');
-        previous_was_white_space = true;
-      }
-      // else: skip this white space character
-    }
-    else
-    {
-      kw.append(1,static_cast<char>(tolower(static_cast<int>(keyword[cp]))));
-      previous_was_white_space = false;
-    }
-    ++cp;
-  }
-  return kw;
+  return standardise_interfile_keyword(keyword);
 }
 
 map_element* KeyParser::find_in_keymap(const string& keyword)
@@ -290,7 +274,18 @@ int KeyParser::parse_header()
   if (read_and_parse_line(false))	
     process_key();
   if (status != parsing)
-  { warning("KeyParser error: required first keyword not found\n");  return 1; }
+  { 
+    // find starting keyword
+    string start_keyword;
+    for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
+    {      
+      if (i->second.p_object_member == &KeyParser::start_parsing)
+      start_keyword = i->first;
+    }
+    warning("KeyParser error: required first keyword \"%s\" not found\n",
+        start_keyword.c_str());  
+    return 1; 
+  }
 
   while(status==parsing)
     {
@@ -347,6 +342,7 @@ int KeyParser::parse_value_in_line(Line& line, const bool write_warning)
     case KeyArgument::ASCIIlist :
       // KT 07/02/2001 new
     case KeyArgument::PARSINGOBJECT:
+    case KeyArgument::SHARED_PARSINGOBJECT:
       line.get_param(par_ascii);
       break;
     case KeyArgument::INT :
@@ -405,6 +401,19 @@ void KeyParser::set_parsing_object()
   if(current_index!=0)
     error("KeyParser::PARSINGOBJECT can't handle vectored keys yet\n");
   *reinterpret_cast<Object **>(current->p_object_variable) =
+    (*current->parser)(input, par_ascii);	    
+}
+
+
+// KT 20/08/2001 new
+void KeyParser::set_shared_parsing_object()
+{
+    // TODO this does not handle the vectored key convention
+  
+  // current_index is set to 0 when there was no index
+  if(current_index!=0)
+    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet\n");
+  *reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable) =
     (*current->parser)(input, par_ascii);	    
 }
 
@@ -613,9 +622,13 @@ void KeyParser::process_key()
 // variable is actually a vector of the relevant type
 string KeyParser::parameter_info() const
 {  
-    // TODO dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+#ifdef BOOST_NO_STRINGSTREAM
+    // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
     char str[100000];
     ostrstream s(str, 100000);
+#else
+    std::ostringstream s;
+#endif
 
     // first find start key
     for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
@@ -665,6 +678,26 @@ string KeyParser::parameter_info() const
 	  }
 	  else
 	    s << "None";
+          break;	 
+        }
+      case KeyArgument::SHARED_PARSINGOBJECT:
+        {
+#if defined __GNUC__
+          s << "COMPILED WITH GNU C++, CANNOT INSERT VALUE YET";
+#else
+          shared_ptr<Object> parsing_object_ptr =
+            (*reinterpret_cast<shared_ptr<Object>*>(i->second.p_object_variable));
+          
+          if (parsing_object_ptr.use_count()!=0)
+	  {
+            //std::cerr << "\nBefore *parsing_object_ptr" << endl;	  
+            //std::cerr << "\ntypename *parsing_object_ptr " << typeid(*parsing_object_ptr).name() <<std::endl<<std::endl;
+	    s << parsing_object_ptr->get_registered_name() << endl;
+	    s << parsing_object_ptr->parameter_info() << endl;
+	  }
+	  else
+	    s << "None";
+#endif
           break;	 
         }
 
