@@ -76,7 +76,18 @@ LmToProjDataBootstrap(const char * const par_filename, const unsigned int seed_v
   set_defaults();
   seed = seed_v;
   if (par_filename!=0)
-    parse(par_filename) ;
+    {
+      parse(par_filename);
+      // make sure that seed_v parameter overrides whatever was in the par file
+      if (seed != seed_v)
+	{
+	  warning("LmToProjDataBootstrap: parameter file %s contains seed (%u) which is\n"
+		  "different from the seed value (%u) passed to me.\n"
+		  "I will use the latter.\n",
+		  par_filename, seed, seed_v);
+	  seed = seed_v;
+	}
+    }
   else
     ask_parameters();
 }
@@ -201,7 +212,10 @@ start_new_time_frame(const unsigned int new_frame_num)
       // warning this did not check for overflow
     }
 
-  assert(std::accumulate(num_times_to_replicate.begin(),  num_times_to_replicate.end(),0) == total_num_events_in_this_frame);
+  assert(std::accumulate(num_times_to_replicate.begin(),  
+			 num_times_to_replicate.end(),
+			 0U) == 
+	 total_num_events_in_this_frame);
 	 
   num_times_to_replicate_iter = num_times_to_replicate.begin();
     
