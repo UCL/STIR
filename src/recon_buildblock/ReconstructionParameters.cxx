@@ -170,7 +170,7 @@ string ReconstructionParameters::parameter_info() const
     s << "output filename prefix := " << output_filename_prefix << endl;
 // KT 160899 changed name of variable
     s << "display (0,1,2) := " << disp << endl;
-    s << "Save intermediate files := " << save_intermediate_files << endl;
+    s << "save intermediate files := " << save_intermediate_files << endl;
     s << "zoom := " << zoom << endl;
     s << "Xoffset (in mm) := " << Xoffset << endl;
     s << "Yoffset (in mm) := " << Yoffset << endl;
