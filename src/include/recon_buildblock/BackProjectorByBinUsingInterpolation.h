@@ -249,33 +249,33 @@ struct ProjDataForIntBP
                                      VoxelsOnCartesianGrid<float>& image,				     
 				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                      float delta,
-                                     float cphi, float sphi, int s, int ring0, 
-				     const float num_planes_per_virtual_ring,
-				     const float virtual_ring_offset);
+                                     float cphi, float sphi, int s, int ax_pos0, 
+				     const int num_planes_per_axial_pos,
+				     const float axial_pos_to_z_offset);
 
  static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
                                                          VoxelsOnCartesianGrid<float>& image,							 
 							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                                          float delta,
-                                                          float cphi, float sphi, int s, int ring0,
-                                                          const float num_planes_per_virtual_ring,
-							  const float virtual_ring_offset);
+                                                          float cphi, float sphi, int s, int ax_pos0,
+                                                          const int num_planes_per_axial_pos,
+							  const float axial_pos_to_z_offset);
 
   static void linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float > const & Projptr,
                                      VoxelsOnCartesianGrid<float>& image,				     
 				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                      float delta,
-                                     float cphi, float sphi, int s, int ring0, 
-				     const float num_planes_per_virtual_ring,
-				     const float virtual_ring_offset);
+                                     float cphi, float sphi, int s, int ax_pos0, 
+				     const int num_planes_per_axial_pos,
+				     const float axial_pos_to_z_offset);
 
  static void linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
                                                          VoxelsOnCartesianGrid<float>& image,							 
 							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                                          float delta,
-                                                          float cphi, float sphi, int s, int ring0,
-                                                          const float num_planes_per_virtual_ring,
-							  const float virtual_ring_offset);
+                                                          float cphi, float sphi, int s, int ax_pos0,
+                                                          const int num_planes_per_axial_pos,
+							  const float axial_pos_to_z_offset);
 
   /*
 static void   backproj2D_Cho_view_viewplus90( PETPlane & image,

@@ -153,13 +153,13 @@ forward_project_view_plus_90_and_delta_2D(Viewgram<float> & pos_view,
 			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
-			  const float R, const int rmin, const int rmax, const float offset, 
+			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
 			  const int Siddon,
-			  const float num_planes_per_virtual_ring,
-			  const float virtual_ring_offset);
+			  const int num_planes_per_axial_pos,
+			  const float axial_pos_to_z_offset);
 
 
-   virtual void set_defaults();
-   virtual void initialise_keymap();
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 };
 END_NAMESPACE_TOMO
