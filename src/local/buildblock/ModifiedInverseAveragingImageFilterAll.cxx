@@ -113,7 +113,7 @@ construct_scaled_filter_coefficients_3D(Array<3,float> &new_filter_coefficients_
       
       int filter_length = static_cast<int>(floor(kernel_1d.get_length()/2));
       
-      cerr << "Now doing size " << size << std::endl;
+      //cerr << "Now doing size " << size << std::endl;
       
       // FIRST PADD 1D FILTER COEFFICIENTS AND MAKE THEM SYMMETRIC 
       // ( DO NOT TAKE IMAGINARY PART INTO ACCOUNT YET)
@@ -438,6 +438,11 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 				     const float kapa0_over_kapa1)
 				     
 {
+
+ 
+  if (kapa0_over_kapa1!=0)
+  {
+
   //kapa0_over_kapa1
   
   // in the case where sq_kappas=1 --- scaled_filter == original template filter 
@@ -480,7 +485,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
       
       int filter_length = static_cast<int>(floor(kernel_1d.get_length()/2));
       
-      cerr << "Now doing size " << size << std::endl;
+      //cerr << "Now doing size " << size << std::endl;
       
       // FIRST PADD 1D FILTER COEFFICIENTS AND MAKE THEM SYMMETRIC 
       // ( DO NOT TAKE IMAGINARY PART INTO ACCOUNT YET)
@@ -534,6 +539,10 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	new  Array<1,float> (1,2*256*256);
       static shared_ptr <Array<1,float> > fft_filter_1D_array_512 = 
 	new  Array<1,float> (1,2*512*512);
+      static shared_ptr <Array<1,float> > fft_filter_1D_array_1024 = 
+	new  Array<1,float> (1,2*1024*1024);
+      static shared_ptr <Array<1,float> > fft_filter_1D_array_2048= 
+	new  Array<1,float> (1,2*2048*2048);
       
       
       convert_array_2D_into_1D_array(fft_filter_1D_array,fft_filter);
@@ -602,7 +611,35 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	  fft_filter_1D_array = *fft_filter_1D_array_512;
 
 	}
-      }      
+      }  
+       else if ( size == 1024)
+      {
+	if ( (*fft_filter_1D_array_1024)[1] == 0.F)
+	{
+	  fourn(fft_filter_1D_array, array_lengths, 2,1);
+          fft_filter_1D_array /= sqrt(static_cast<double>(size *size));      
+	  *fft_filter_1D_array_1024 = fft_filter_1D_array;
+	}
+	else
+	{
+	  fft_filter_1D_array = *fft_filter_1D_array_1024;
+
+	}
+      }  
+      else if ( size == 2048)
+      {
+	if ( (*fft_filter_1D_array_2048)[1] == 0.F)
+	{
+	  fourn(fft_filter_1D_array, array_lengths, 2,1);
+          fft_filter_1D_array /= sqrt(static_cast<double>(size *size));      
+	  *fft_filter_1D_array_2048 = fft_filter_1D_array;
+	}
+	else
+	{
+	  fft_filter_1D_array = *fft_filter_1D_array_2048;
+
+	}
+      }  
       else     
       {
 	warning("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");
@@ -626,7 +663,13 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	break;
       case 512:
 	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(512*512)));
-	break;      
+	break;  
+      case 1024:
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(1024*1024)));
+	break;
+      case 2048:
+	fft_1_1D_array = static_cast<float>(1/sqrt(static_cast<float>(2048*2048)));
+	break;
       
       default:
 	warning("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");;
@@ -808,7 +851,12 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	   }*/
     
 	
-
+}
+else
+{
+   new_filter_coefficients_2D_array.grow(IndexRange2D(0,0,0,0));
+   new_filter_coefficients_2D_array[0][0] =0;
+  }
 		    
 }
 
@@ -834,6 +882,7 @@ ModifiedInverseAveragingImageFilterAll(string proj_data_filename_v,
 				    shared_ptr<ProjData> attenuation_proj_data_ptr_v,
 				    DiscretisedDensity<3,float>* initial_image_v,
 				    DiscretisedDensity<3,float>* sensitivity_image_v,
+				    DiscretisedDensity<3,float>* precomputed_coefficients_image_v,
 				    int mask_size_v,  int num_dim_v)
 
 				    
@@ -849,6 +898,7 @@ ModifiedInverseAveragingImageFilterAll(string proj_data_filename_v,
   attenuation_proj_data_ptr = attenuation_proj_data_ptr_v;
   initial_image = initial_image_v;
   sensitivity_image = sensitivity_image_v;
+  precomputed_coefficients_image = precomputed_coefficients_image_v;
   mask_size= mask_size_v;
   num_dim = num_dim_v;
 }
@@ -879,6 +929,12 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
     DiscretisedDensity<3,float>::read_from_file(sensitivity_image_filename); 
 	else 
     sensitivity_image = NULL;
+   if (precomputed_coefficients_filename !="1")
+     precomputed_coefficients_image = 
+      DiscretisedDensity<3,float>::read_from_file(precomputed_coefficients_filename);
+   else
+     precomputed_coefficients_image =NULL; 
+
 
     return Succeeded::yes;
   
@@ -893,7 +949,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
 
  
   VectorWithOffset < shared_ptr <ArrayFilter3DUsingConvolution <float> > > filter_lookup;
-  filter_lookup.grow(1,1000);
+  filter_lookup.grow(1,500);
   const int k_min =1;
   const float k_interval = 0.01F; //0.01F;
   
@@ -1114,7 +1170,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
 	  //float tmp_1 = (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
 	    //cerr << (*sensitivity_image)[k][j][i] << "   " << (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
 
-	  multiply_with_sensitivity = (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
+	 /* multiply_with_sensitivity = (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
 	  if ((*sensitivity_image)[k][j][i] >0.0000001 || (*sensitivity_image)[k][j][i] <-0.0000001)
 	  {
 	  multiply_with_sensitivity /= (*sensitivity_image)[k][j][i];
@@ -1122,9 +1178,9 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
 	  else
 	  {
 	    multiply_with_sensitivity /= 0.000001F;
-	  }
+	  }*/
 	  
-	  sq_kapas *= multiply_with_sensitivity;
+	 // sq_kapas *= multiply_with_sensitivity;
 	  (*kappa_coefficients)[k][j][i] = sq_kapas;
 
 	  //sq_kapas = 10.0F;
@@ -1143,8 +1199,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
 	   if (k_index < 1) 
 	   {k_index = 1;}
 	    
-	   if ( k_index > 1000)
-	   { k_index  = 1000;}
+	   if ( k_index > 500)
+	   { k_index  = 500;}
 	  
 	  
 	  if ( filter_lookup[k_index]==NULL )
@@ -1202,7 +1258,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 {
  
   VectorWithOffset < shared_ptr <ArrayFilter2DUsingConvolution <float> > > filter_lookup;
-  const int num_elements_in_interval = 1000;
+  const int num_elements_in_interval = 500;
   filter_lookup.grow(1,num_elements_in_interval);
   const int k_min =1;
   const float k_interval = 0.01F; //0.01F;
@@ -1422,7 +1478,11 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	{ 
 	  sq_kapas =((*kappa0_ptr_bck)[k][j][i]*(*kappa0_ptr_bck)[k][j][i])/((*kappa1_ptr_bck)[k][j][i]*(*kappa1_ptr_bck)[k][j][i]);
 
-	    
+	   //cerr << " kappa0 " << (*kappa0_ptr_bck)[k][j][i] << endl;
+	   //cerr << " kappa1 " << (*kappa1_ptr_bck)[k][j][i] << endl;
+
+
+
 	/*  multiply_with_sensitivity = (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
 	  if ((*sensitivity_image)[k][j][i] >0.0000001 || (*sensitivity_image)[k][j][i] <-0.0000001)
 	  {
@@ -1439,7 +1499,10 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 #endif
 	 (*kappa_coefficients)[k][j][i] = sq_kapas;
 	   //sq_kapas = 2;
-
+	  
+	
+	 
+	  //cerr << " now printing sq_kappas value:" << "   " << sq_kapas << endl;
 	  int k_index ;
           k_index = round(((float)sq_kapas- k_min)/k_interval);
 	   if (k_index < 1) 
@@ -1500,7 +1563,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 {
  
   VectorWithOffset < shared_ptr <ModifiedInverseAverigingArrayFilter <3, float> > > filter_lookup;
-  const int num_elements_in_interval = 1000;
+  const int num_elements_in_interval = 500;
   filter_lookup.grow(1,num_elements_in_interval);
   const int k_min =1;
   const float k_interval = 0.01F; //0.01F;
@@ -1640,7 +1703,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 #if 1
 	   shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
 	   new VoxelsOnCartesianGrid<float>
-	    (IndexRange3D(0,0,
+	    (IndexRange3D(k,k,
 	    -mask_size+6,mask_size+6,
 	    -mask_size+6,mask_size+6),in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
 	 
@@ -1705,6 +1768,9 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	{ 
+	 // cerr << "kapa0" << (*kappa0_ptr_bck)[k][j][i] << endl;
+	  //cerr << "kapa1" << (*kappa1_ptr_bck)[k][j][i] << endl;
+
 	  sq_kapas =((*kappa0_ptr_bck)[k][j][i]*(*kappa0_ptr_bck)[k][j][i])/((*kappa1_ptr_bck)[k][j][i]*(*kappa1_ptr_bck)[k][j][i]);
   
 #else
@@ -1815,6 +1881,35 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    (all_filter_coefficients_nonseparable_2D[k])[j].grow(in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()); 
 	  }
 	}
+
+        if ( precomputed_coefficients_filename!="1")
+	{
+	  VoxelsOnCartesianGrid<float>* precomputed_coefficients_image_cast =
+	      dynamic_cast< VoxelsOnCartesianGrid<float>* >(precomputed_coefficients_image); 
+	  cerr << " In here nonseparable" << endl;
+	  for ( int k = precomputed_coefficients_image_cast->get_min_z(); k<=precomputed_coefficients_image_cast->get_max_z();k++)
+	    for ( int j = precomputed_coefficients_image_cast->get_min_y(); j<=precomputed_coefficients_image_cast->get_max_y();j++)
+	      for ( int i = precomputed_coefficients_image_cast->get_min_x(); i<=precomputed_coefficients_image_cast->get_max_x();i++)
+	      {
+		Array <2,float> new_coeffs;
+		//cerr << (*precomputed_coefficients_image)[k][j][i] << "     " << endl;
+		if((*precomputed_coefficients_image)[k][j][i] >0.00001 )
+		{
+		  construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,1/(*precomputed_coefficients_image)[k][j][i]); 
+		  all_filter_coefficients_nonseparable_2D[k][j][i] = 
+		    new ArrayFilter2DUsingConvolution<float>(new_coeffs);	
+		}
+		else
+		{
+		  all_filter_coefficients_nonseparable_2D[k][j][i] = 
+		    new ArrayFilter2DUsingConvolution<float>();	
+		  
+		}
+		
+		
+	      }
+	}
+	else        
 	precalculate_filter_coefficients_2D(all_filter_coefficients_nonseparable_2D,initial_image);
 	
       }   
@@ -1829,6 +1924,33 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    (all_filter_coefficients_separable[k])[j].grow(in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()); 
 	  }
 	}
+	if ( precomputed_coefficients_filename!="1")
+	{
+	  cerr << " In here " << endl;
+	 for ( int k = 0; k<=1;k++)
+	   for ( int j = -26; j<=26;j++)
+	     for ( int i = -26; i<=26;i++)
+	     {
+	     //  cerr << k <<"   "<< j <<"   "<< i <<"   "<< endl;
+	       cerr << (*precomputed_coefficients_image)[k][j][i] << "     " << endl;
+	       if((*precomputed_coefficients_image)[k][j][i] >0.00001 )
+	       {
+	       all_filter_coefficients_separable[k][j][i]= 
+		new ModifiedInverseAverigingArrayFilter <3, float>(filter_coefficients,1/(*precomputed_coefficients_image)[k][j][i]);
+	       }
+	       else
+	       {
+		  all_filter_coefficients_separable[k][j][i]= 
+		    new ModifiedInverseAverigingArrayFilter <3, float>();
+
+	       }
+	  //construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,(*precomputed_coefficients_image)[k][j][i]); 
+	  //all_filter_coefficients_separable[k][j][i] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
+	     }
+
+	}
+	else
+
      precalculate_filter_coefficients_separable(all_filter_coefficients_separable,initial_image);
 	
 
@@ -2233,6 +2355,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::set_defaults()
   initial_image_filename ="1";
   sensitivity_image_filename ='1';
   sensitivity_image = NULL;
+  precomputed_coefficients_filename ='1';
+  precomputed_coefficients_image =NULL;
   attenuation_proj_data_ptr = NULL;
   mask_size = 0;
   num_dim = 1;
@@ -2251,6 +2375,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>:: initialise_keymap()
   parser.add_key("sensitivity_image_filename", &sensitivity_image_filename);
   parser.add_key("mask_size", &mask_size);
   parser.add_key("num_dim", & num_dim);
+  parser.add_key ("precomputed_coefficients_filename", &precomputed_coefficients_filename);
   parser.add_stop_key("END Modified Inverse Image Filter All Parameters");
 }
 
