@@ -157,7 +157,7 @@ compute_file_offsets(int number_of_time_frames,
 static
 string 
 interfile_get_data_file_name_in_header(const string& header_file_name, 
-				    const string& data_file_name)
+ 				    const string& data_file_name)
 {
   const string dir_name_of_binary_data =
     get_directory_name(data_file_name);
@@ -172,8 +172,10 @@ interfile_get_data_file_name_in_header(const string& header_file_name,
   if (dir_name_of_header == dir_name_of_binary_data)
     {
       // dirnames are the same, so strip from data_file_name
-      return string(data_file_name,
-		    find_pos_of_filename(data_file_name));
+      return
+        string(data_file_name,
+               find_pos_of_filename(data_file_name), 
+                string::npos);
     }
   else
     {
