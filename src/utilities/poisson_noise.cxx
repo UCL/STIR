@@ -1,10 +1,6 @@
-
-#include <stdlib.h>
-#include "utilities.h"
 #include "interfile.h"
 #include"ProjDataFromStream.h"
 #include "SegmentByView.h"
-#include "ProjDataInfoCylindrical.h"
 
 #include <iostream> 
 #include <fstream>
@@ -25,7 +21,7 @@ USING_NAMESPACE_TOMO
 
 int generate_poisson_random(const float mu);
 
-void add_poisson(ProjDataFromStream& output_projdata, 
+void add_poisson(ProjData& output_projdata, 
 		 const ProjData& input_projdata, 
 		 const float scaling_factor);
 
@@ -35,36 +31,28 @@ main (int argc,char *argv[])
 {
   if(argc<4)
   {
-    cout<<"Usage: add_poisson <header file name> (*.hs) scaling_factor\n";
+    cerr<<"Usage: add_poisson <input header file name (*.hs)> scaling_factor <output filename (no extension)> \n";
     exit(EXIT_FAILURE);
   }  
   
   const char *const filename = argv[3];
+  const float scaling_factor = atof(argv[2]);
   shared_ptr<ProjData>  in_data = ProjData::read_from_file(argv[1]);
   
   
-  const ProjDataInfo* data_info = in_data->get_proj_data_info_ptr();
-  string header_name = filename;
-  header_name += ".hs"; 
   string filename_san =filename;
-  filename_san += ".prj";
+  filename_san += ".s";
   
-  ProjDataInfo* new_data_info= data_info->clone();
-  
-  float scale_factor = 1;
   iostream * sino_stream = new fstream (filename_san.c_str(), ios::out| ios::binary);
   if (!sino_stream->good())
   {
-    error("add_poisson: error opening file %s\n",filename_san);
+    error("add_poisson: error opening file %s\n",filename_san.c_str());
   }
   
-  ProjDataFromStream new_data(new_data_info,sino_stream); 
-  float scaling_factor = atoi(argv[2]);
-  
-  add_poisson(new_data,*in_data, scaling_factor);
-  cerr << "done" << endl;
+  ProjDataFromStream new_data(in_data->get_proj_data_info_ptr()->clone(),sino_stream); 
   write_basic_interfile_PDFS_header(filename_san, new_data);
   
+  add_poisson(new_data,*in_data, scaling_factor);
   
   return EXIT_SUCCESS;
 }
@@ -72,10 +60,8 @@ main (int argc,char *argv[])
 
 
 int generate_poisson_random(const float mu)
-{
-  
-  double u = static_cast<double>(rand()) / RAND_MAX;
-  
+{  
+  double u = static_cast<double>(rand()) / RAND_MAX; 
   
   // prevent problems if n growing too large (or even to infinity) 
   // when u is very close to 1
@@ -92,8 +78,7 @@ int generate_poisson_random(const float mu)
     accum += (term *= mu/n); 
     n++;
   }
-  
-  
+    
   return (n - 1);
 }
 
@@ -101,53 +86,39 @@ int generate_poisson_random(const float mu)
 
 
 void 
-add_poisson(ProjDataFromStream& output_projdata, const ProjData& input_projdata, const float scaling_factor)
+add_poisson(ProjData& output_projdata, const ProjData& input_projdata, const float scaling_factor)
 {
   
   
-  for (int seg= input_projdata.get_proj_data_info_ptr()->get_min_segment_num(); 
-  seg<=input_projdata.get_proj_data_info_ptr()->get_max_segment_num();seg++)  
+  for (int seg= input_projdata.get_min_segment_num(); 
+       seg<=input_projdata.get_max_segment_num();
+       seg++)  
   {
-    SegmentByView<float> seg_output_set= 
-      output_projdata.get_proj_data_info_ptr()->get_empty_segment_by_view(seg);//i);
-    seg_output_set.fill(0);
-    output_projdata.set_segment(seg_output_set);
-  }
+    SegmentByView<float> seg_input= input_projdata.get_segment_by_view(seg);
+    SegmentByView<float> seg_output= 
+      output_projdata.get_empty_segment_by_view(seg,false);
   
-  
-  int i=0;
-  SegmentByView<float> seg_input= input_projdata.get_segment_by_view(i);
-  SegmentByView<float> seg_output= 
-    output_projdata.get_proj_data_info_ptr()->get_empty_segment_by_view(i);
-  
-  //cerr << "Min View " << seg_input.get_min_view_num() << endl;
-  // cerr << "Max View " << seg_input.get_max_view_num() << endl;  
-  //cerr << "Min Axial " << seg_input.get_min_axial_pos_num() << endl;
-  //cerr << "Max Axial " << seg_input.get_max_axial_pos_num() << endl;
-  // cerr << "Min Tang " << seg_input.get_min_tangential_pos_num() << endl;
-  // cerr << "Max Tang " << seg_input.get_max_tangential_pos_num() << endl;
-  
-  
-  
-  for(int view=seg_input.get_min_view_num();view<seg_input.get_max_view_num();view++)    
-    for(int ring=seg_input.get_min_axial_pos_num();ring<seg_input.get_max_axial_pos_num();ring++)
-      for(int tang_pos=-5;tang_pos<5;tang_pos++)	
+    cerr << "Segment " << seg << endl;
+
+    for(int view=seg_input.get_min_view_num();view<=seg_input.get_max_view_num();view++)    
+      for(int ax_pos=seg_input.get_min_axial_pos_num();ax_pos<=seg_input.get_max_axial_pos_num();ax_pos++)
+	//for(int tang_pos=-5;tang_pos<5;tang_pos++)	
+      for(int tang_pos=seg_input.get_min_tangential_pos_num();tang_pos<=seg_input.get_max_tangential_pos_num();tang_pos++)
       { 
-	cerr << "View " << view << endl;
-	cerr << "Ring" << ring << endl;
+	/*	cerr << "View " << view << endl;
+	cerr << "Ax_Pos" << ax_pos << endl;
 	cerr << "Tang Poss" << tang_pos << endl;
-	
-	float bin = seg_input[view][ring][tang_pos];
-	cerr << "bin" << bin << endl;
-	int random_poisson = generate_poisson_random(bin*scaling_factor);
-	cerr << "done random poisson" << endl;
-	seg_output[view][ring][tang_pos] = static_cast<float>(random_poisson);	
-	
+	*/
+	const float bin = seg_input[view][ax_pos][tang_pos];
+	//cerr << "bin" << bin << endl;
+	const int random_poisson = generate_poisson_random(bin*scaling_factor);
+	//cerr << "done " << random_poisson << endl;
+	seg_output[view][ax_pos][tang_pos] = static_cast<float>(random_poisson);		
       }           
-      output_projdata.set_segment(seg_output);
-      cerr << " done in the loop" << endl;
-      
-      
-      
-      
+      output_projdata.set_segment(seg_output);      
+  }
 }
+
+
+
+
