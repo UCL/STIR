@@ -12,7 +12,8 @@
 // This reads the first image from an Interfile header
 // If there is trouble interpreting the header, 
 // ask_image_details() is called instead
-PETImageOfVolume read_interfile_image(fstream& input);
+// KT 14/10/98 make arg istream
+PETImageOfVolume read_interfile_image(istream& input);
 
 // This outputs an Interfile header and data for a Tensor3D object.
 // Extensions .hv and .v will be added to the parameter 'filename' 
