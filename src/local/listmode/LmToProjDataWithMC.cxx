@@ -258,6 +258,8 @@ LmToProjDataWithMC::find_cartesian_coordinates_given_scanner_coordinates (Cartes
   coord_2.x() = x2;
 
 }
+
+#if 0
 void 
 LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 							  const CartesianCoordinate3D<float>& coord_1_in,
@@ -272,7 +274,63 @@ LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& de
   ring1 = round(coord_1_in.z()/ring_spacing);
   ring2 = round(coord_2_in.z()/ring_spacing);
 }
+#endif
 
+Succeeded
+LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
+							  const CartesianCoordinate3D<float>& c1,
+							  const CartesianCoordinate3D<float>& c2,
+							  const Scanner& scanner) const
+{
+  const int num_detectors=scanner.get_num_detectors_per_ring();
+  const float ring_spacing=scanner.get_ring_spacing();
+  const float ring_radius=scanner.get_ring_radius();
+
+  const CartesianCoordinate3D<float> d = c2 - c1;
+  /* parametrisation of LOR is 
+     c = l*d+c1
+     l has to be such that c.x^2 + c.y^2 = R^2
+     i.e.
+     (l*d.x+c1.x)^2+(l*d.y+c1.y)^2==R^2
+     l^2*(d.x^2+d.y^2) + 2*l*(d.x*c1.x + d.y*c1.y) + c1.x^2+c2.y^2-R^2==0
+     write as a*l^2+2*b*l+e==0
+     l = (-b +- sqrt(b^2-a*e))/a
+     argument of sqrt simplifies to
+     R^2*(d.x^2+d.y^2)-(d.x*c1.y-d.y*c1.x)^2
+  */
+  const float dxy2 = (square(d.x())+square(d.y()));
+  const float argsqrt=
+    (square(ring_radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
+  if (argsqrt<=0)
+    return Succeeded::no; // LOR is outside detector radius
+  const float root = sqrt(argsqrt);
+
+  const float l1 = (- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2;
+  const float l2 = (- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2;
+  const CartesianCoordinate3D<float> coord_det1 = d*l1 + c1;
+  const CartesianCoordinate3D<float> coord_det2 = d*l2 + c1;
+  assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
+  assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
+
+  det1 = stir::round(((2.*_PI)+atan2(coord_det1.y(),coord_det1.x()))/(2.*_PI/num_detectors))% num_detectors;
+  det2 = stir::round(((2.*_PI)+atan2(coord_det2.y(),coord_det2.x()))/(2.*_PI/num_detectors))% num_detectors;
+  ring1 = round(coord_det1.z()/ring_spacing);
+  ring2 = round(coord_det2.z()/ring_spacing);
+
+#ifndef NDEBUG
+  {
+
+    CartesianCoordinate3D<float> check1, check2;
+    find_cartesian_coordinates_given_scanner_coordinates (check1, check2,
+							  ring1,ring2, 
+							  det1, det2, 
+							  scanner);
+    assert(norm(coord_det1-check1)<ring_spacing);
+    assert(norm(coord_det2-check2)<ring_spacing);
+  }
+#endif
+  return Succeeded::yes;
+}
 
 void 
 LmToProjDataWithMC::transform_detector_pair_into_view_bin (int& view,int& bin, 
@@ -296,4 +354,3 @@ LmToProjDataWithMC::transform_detector_pair_into_view_bin (int& view,int& bin,
 
 
 END_NAMESPACE_STIR
-
