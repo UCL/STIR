@@ -5,6 +5,7 @@
 
   \file
   \ingroup IO
+  \ingroup ECAT
   \brief Implementation of class ECAT6OutputFileFormat
 
   \author Kris Thielemans
@@ -19,13 +20,13 @@
 
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/NumericType.h"
-#include "stir/CTI/cti_utils.h"
-#include "stir/CTI/stir_cti.h"
+#include "stir/IO/ecat6_utils.h"
+#include "stir/IO/stir_ecat6.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
-
+USING_NAMESPACE_ECAT6
 
 const char * const 
 ECAT6OutputFileFormat::registered_name = "ECAT6";
@@ -66,7 +67,7 @@ post_processing()
   shared_ptr<Scanner> scanner_ptr = 
     Scanner::get_scanner_from_name(default_scanner_name);
 
-  if (find_CTI_system_type(*scanner_ptr)==0)
+  if (find_ECAT_system_type(*scanner_ptr)==0)
     {
       warning("ECAT6OutputFileFormat: default_scanner_name %s is not supported\n",
 	      default_scanner_name.c_str());
@@ -119,8 +120,8 @@ ECAT6OutputFileFormat::
   
   add_extension(filename, ".img");
 
-  Main_header mhead;
-  make_ECAT6_main_header(mhead, *scanner_ptr, "", density);
+  ECAT6_Main_header mhead;
+  make_ECAT6_Main_header(mhead, *scanner_ptr, "", density);
   mhead.num_frames = 1;
   
   FILE *fptr= cti_create (filename.c_str(), &mhead);
