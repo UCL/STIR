@@ -74,6 +74,7 @@ private:
  
   
   int max_segment_num_to_process;
+  int current_frame_num;
 private:
   bool do_Shifted_Poisson;
   bool do_prompts;
@@ -117,7 +118,8 @@ set_defaults()
   scatter_projdata_filename = "";
   Shifted_Poisson_numerator_projdata_filename = "";
   Shifted_Poisson_denominator_projdata_filename = "";
-  
+
+  current_frame_num = 1;  
 }
 
 void 
@@ -137,7 +139,9 @@ initialise_keymap()
   parser.add_key("Shifted_Poisson_denominator_projdata_filename", &Shifted_Poisson_denominator_projdata_filename);
   parser.add_key("prompts_denominator_projdata_filename", &prompts_denominator_projdata_filename);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
+
   parser.add_key("frame definition filename", &frame_definition_filename); 
+  parser.add_key("frame number", &current_frame_num); 
  
  
   parser.add_stop_key("END Prepare projdata Parameters");
@@ -174,36 +178,62 @@ PrepareProjData(const char * const par_filename)
 
   if (do_Shifted_Poisson || do_prompts)
      randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename);
-  if (!do_scatter)
-     scatter_projdata_ptr = 
-       scatter_projdata_filename.size()==0 ?
-       0 :
-       ProjData::read_from_file(scatter_projdata_filename);
 
-        // read time frame def 
-   if (frame_definition_filename.size()!=0)
+  scatter_projdata_ptr = 
+       !do_scatter && scatter_projdata_filename.size()!=0 ?
+       ProjData::read_from_file(scatter_projdata_filename) : 0;
+
+  // read time frame def 
+  if (frame_definition_filename.size()!=0)
     frame_defs = TimeFrameDefinitions(frame_definition_filename);
-   else
+  else
     {
-      // make a single frame starting from 0. End value will be ignored.
+      // make a single frame starting from 0 to 1
+      warning("No time frame definitions present.\n"
+	      "If the normalisation type needs time info for the dead-time correction,\n"
+	      "you will get wrong results\n");
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 
-
-  const int max_segment_num_available =
-    trues_projdata_ptr->get_max_segment_num();
-  if (max_segment_num_to_process<0 ||
-      max_segment_num_to_process > max_segment_num_available)
-    max_segment_num_to_process = max_segment_num_available;
+  if (current_frame_num < 1 ||
+      static_cast<unsigned int>(current_frame_num) > frame_defs.get_num_frames())
+    {
+      warning("\nFrame number %d is out of range for frame definitions\n", current_frame_num);
+      exit(EXIT_FAILURE);
+    }
 
   // construct output projdata
   {
-    output_data_info_ptr= 
-      trues_projdata_ptr->get_proj_data_info_ptr()->clone();
+    // get output_data_info_ptr from one of the input files
+
+    if (!is_null_ptr(trues_projdata_ptr))
+      output_data_info_ptr= 
+	trues_projdata_ptr->get_proj_data_info_ptr()->clone();
+    else if (!is_null_ptr(randoms_projdata_ptr))
+      output_data_info_ptr= 
+	randoms_projdata_ptr->get_proj_data_info_ptr()->clone();
+    else if (!is_null_ptr(precorrected_projdata_ptr))
+      output_data_info_ptr= 
+	precorrected_projdata_ptr->get_proj_data_info_ptr()->clone();
+    else
+      {
+	warning("\nAt least one of these input files must be set: trues, randoms, precorrected\n");
+	exit(EXIT_FAILURE);
+      }
+
+    // set segment range
+
+    const int max_segment_num_available =
+      output_data_info_ptr->get_max_segment_num();
+    if (max_segment_num_to_process<0 ||
+	max_segment_num_to_process > max_segment_num_available)
+      max_segment_num_to_process = max_segment_num_available;
+
     output_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
-                                            max_segment_num_to_process);
-    
+					       max_segment_num_to_process);
+
+    // open other files
 
     if (normatten_projdata_filename.size()!=0)
       normatten_projdata_ptr = 
@@ -261,8 +291,8 @@ doit()
         output_data_info_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr);
 
       {
-	double start_time = frame_defs.get_start_time();
-	double end_time = frame_defs.get_end_time();
+	const double start_time = frame_defs.get_start_time(current_frame_num);
+	const double end_time = frame_defs.get_end_time(current_frame_num);
         normatten_viewgrams.fill(1.F);
         normalisation_ptr->apply(normatten_viewgrams,start_time,end_time);
         
