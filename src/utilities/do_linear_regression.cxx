@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     cerr << argv[0] 
          << ": Error opening input file " << argv[1] << "\nExiting."
 	 << endl;
-    return 1;
+    return EXIT_FAILURE;
   }
 
   int size;
@@ -81,19 +81,26 @@ int main(int argc, char **argv)
   VectorWithOffset<float> measured_data(size);
   VectorWithOffset<float> weights(size);
   for (int i=0; i<size; i++)
-    in >> coordinates[i];
+    {
+      in >> coordinates[i];
+      if (!in)
+	error("%s: error reading input file %s after the %d-th coordinate\n",
+	      argv[0], argv[1], i);
+    }
   for (int i=0; i<size; i++)
-    in >> measured_data[i];
+    {
+      in >> measured_data[i];
+      if (!in)
+	error("%s: error reading input file %s after the %d-th measured_data\n",
+	      argv[0], argv[1], i);
+    }
   for (int i=0; i<size; i++)
-    in >> weights[i];
-
-  if (!in)
-  {
-    cerr << argv[0] 
-         << ": Error while reading input file " << argv[1] 
-	 << "\nTrying to continue."
-	 << endl;    
-  }
+    {
+      in >> weights[i];
+      if (!in)
+	error("%s: error reading input file %s after the %d-th weight\n",
+	      argv[0], argv[1], i);
+    }
 
   double scale=0;
   double constant=0;
