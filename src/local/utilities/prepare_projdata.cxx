@@ -69,6 +69,8 @@ private:
   shared_ptr<ProjData> Shifted_Poisson_numerator_projdata_ptr;
   shared_ptr<ProjData> Shifted_Poisson_denominator_projdata_ptr;
   shared_ptr<ProjData> prompts_denominator_projdata_ptr;
+  TimeFrameDefinitions frame_defs;
+ 
   
   int max_segment_num_to_process;
 private:
@@ -92,6 +94,7 @@ private:
   string Shifted_Poisson_numerator_projdata_filename;
   string Shifted_Poisson_denominator_projdata_filename;
   string prompts_denominator_projdata_filename;
+  string frame_definition_filename;
   
 };
 
@@ -133,6 +136,8 @@ initialise_keymap()
   parser.add_key("Shifted_Poisson_denominator_projdata_filename", &Shifted_Poisson_denominator_projdata_filename);
   parser.add_key("prompts_denominator_projdata_filename", &prompts_denominator_projdata_filename);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
+  parser.add_key("frame definition filename", &frame_definition_filename); 
+ 
  
   parser.add_stop_key("END Prepare projdata Parameters");
 }
@@ -173,6 +178,17 @@ PrepareProjData(const char * const par_filename)
        scatter_projdata_filename.size()==0 ?
        0 :
        ProjData::read_from_file(scatter_projdata_filename);
+
+        // read time frame def 
+   if (frame_definition_filename.size()!=0)
+    frame_defs = TimeFrameDefinitions(frame_definition_filename);
+   else
+    {
+      // make a single frame starting from 0. End value will be ignored.
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      frame_defs = TimeFrameDefinitions(frame_times);
+    }
+
 
   const int max_segment_num_available =
     trues_projdata_ptr->get_max_segment_num();
@@ -244,8 +260,10 @@ doit()
         output_data_info_ptr->get_empty_related_viewgrams(view_seg_num, symmetries_ptr);
 
       {
+	double start_time = frame_defs.get_start_time();
+	double end_time = frame_defs.get_end_time();
         normatten_viewgrams.fill(1.F);
-        normalisation_ptr->apply(normatten_viewgrams);
+        normalisation_ptr->apply(normatten_viewgrams,start_time,end_time);
         
         if (!is_null_ptr(normatten_projdata_ptr))
 	  normatten_projdata_ptr->set_related_viewgrams(normatten_viewgrams);
