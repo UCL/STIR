@@ -632,9 +632,9 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
 	// find correspondence between ax_pos coordinates and image coordinates:
 	// z = num_planes_per_axial_pos * ring + axial_pos_to_z_offset
-	// KT 20/06/2001 rewrote using saymmetries_ptr
-	const float num_planes_per_axial_pos =
-          symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
+	// KT 20/06/2001 rewrote using symmetries_ptr
+	const int num_planes_per_axial_pos =
+          round(symmetries_ptr->get_num_planes_per_axial_pos(segment_num));
 	const float axial_pos_to_z_offset = 
 	  symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
 
