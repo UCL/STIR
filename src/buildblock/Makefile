@@ -30,7 +30,8 @@ DEBUG = -O3 -finline-functions -ffast-math -m486 -malign-double -malign-function
 #TODO put this back [incompatible wiht -pg] -fomit-frame-pointer 
 # -fforce-mem
 else # not Linux
-DEBUG = -O3
+# KT 17/01/2000 added NDEBUG
+DEBUG = -O3 -DNDEBUG
 endif # Linux?
 endif # opt/ ?
 endif # debug/ ?
@@ -62,6 +63,7 @@ $(DEST)%.o : %.cxx
 
 # KT 10/12/99 added linear_regression.cxx
 # KT 15/12/99 removed NumericInfo, added PETerror, overlap_interpolate, NumericType and ByteOrder
+# KT 17/01/2000 added zoom and mash_views
 SOURCES = \
   PETerror.cxx \
   sinodata.cxx convert.cxx \
@@ -76,7 +78,8 @@ SOURCES = \
   interfile.cxx InterfileHeader.cxx \
   bbfilters.cxx recon_array_functions.cxx \
   sparsedata.cxx \
-  linear_regression.cxx overlap_interpolate.cxx
+  linear_regression.cxx overlap_interpolate.cxx \
+  zoom.cxx mash_views.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
