@@ -5,7 +5,7 @@
 /*!
   \file 
  
-  \brief Implementation of functions which read/write Interfile data
+  \brief  Implementation of functions which read/write Interfile data
 
   \author Kris Thielemans 
   \author Sanida Mustafovic
@@ -17,50 +17,61 @@
     
 */
 //   Pretty horrible implementations at the moment...
+// KT 30/05/2000 made all const char * const into const string&
 
 #include "InterfileHeader.h"
 #include "interfile.h"
+#include "IndexRange3D.h"
 #include "utilities.h"
+#include "VoxelsOnCartesianGrid.h"
+#include "ProjDataFromStream.h"
+#include "ProjDataInfoCylindrical.h"
+#include "Scanner.h"
+
+#include <fstream>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
+using std::ifstream;
+using std::fstream;
 #endif
 
 START_NAMESPACE_TOMO
 
-// KT 14/01/2000 added directory capability
-PETImageOfVolume read_interfile_image(istream& input, 
-				      const char * const directory_for_data)
+
+VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
+				      const string&  directory_for_data)
 {
   InterfileImageHeader hdr;
   if (!hdr.parse(input))
-    {
-      PETerror("\nError parsing interfile header, \n\
+  {
+      warning("\nError parsing interfile header, \n\
 I am going to ask you lots of questions...\n");
-      return ask_image_details();
+      return new VoxelsOnCartesianGrid<float>
+        (VoxelsOnCartesianGrid<float>::ask_parameters());
     }
   
-  // KT 14/01/2000 added directory capability
   // prepend directory_for_data to the data_file_name from the header
   char full_data_file_name[max_filename_length];
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
-  prepend_directory_name(full_data_file_name, directory_for_data);  
+  prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
   
   ifstream data_in;
   open_read_binary(data_in, full_data_file_name);
   
-  Point3D origin(0,0,0);
+  CartesianCoordinate3D<float> origin(0,0,0);
   
-  Point3D voxel_size(hdr.pixel_sizes[0], hdr.pixel_sizes[1], hdr.pixel_sizes[2]);
+  CartesianCoordinate3D<float> voxel_size(hdr.pixel_sizes[2], hdr.pixel_sizes[1], hdr.pixel_sizes[0]);
   
   // KT 29/10/98 adjusted x,y ranges to centre 
   // KT 03/11/99 added int
   const int y_size =  hdr.matrix_size[1][0];
   const int x_size =  hdr.matrix_size[0][0];
-  PETImageOfVolume 
-    image(Tensor3D<float>(0,hdr.matrix_size[2][0]-1,
+  VoxelsOnCartesianGrid<float>* image_ptr =
+    new VoxelsOnCartesianGrid<float>
+            (IndexRange3D(0,hdr.matrix_size[2][0]-1,
 			  -y_size/2, (-y_size/2) + y_size - 1,
 			  -x_size/2, (-x_size/2) + x_size - 1), 
 	  origin,
@@ -68,31 +79,29 @@ I am going to ask you lots of questions...\n");
   
   data_in.seekg(hdr.data_offset[0]);
   
-  Real scale = Real(1);
-  image.read_data(data_in, hdr.type_of_numbers, scale, hdr.file_byte_order);
+  float scale = float(1);
+  image_ptr->read_data(data_in, hdr.type_of_numbers, scale, hdr.file_byte_order);
   // TODO perform run-time check also when not debugging
   assert(scale == 1);  
   
   for (int i=0; i< hdr.matrix_size[2][0]; i++)
     if (hdr.image_scaling_factors[0][i]!= 1)
-      image[i] *= hdr.image_scaling_factors[0][i];
+      (*image_ptr)[i] *= hdr.image_scaling_factors[0][i];
     
-  return image;
+  return image_ptr;
 }
 
 
-PETImageOfVolume read_interfile_image(const char *const filename)
+VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
 {
-  ifstream image_stream(filename);
+  ifstream image_stream(filename.c_str());
   if (!image_stream)
     { 
-      PETerror("read_interfile_image: couldn't open file %s\n", filename);
-      exit(1);
+      error("read_interfile_image: couldn't open file %s\n", filename.c_str());
     }
 
-  // KT 14/01/2000 added directory capability
   char directory_name[max_filename_length];
-  get_directory_name(directory_name, filename);
+  get_directory_name(directory_name, filename.c_str());
   
   return read_interfile_image(image_stream, directory_name);
 }
@@ -118,7 +127,7 @@ bool
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
 				   const CartesianCoordinate3D<int>& dimensions, 
-				   const Point3D& voxel_size,
+				   const CartesianCoordinate3D<float>& voxel_size,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
@@ -159,22 +168,21 @@ write_basic_interfile_image_header(const string& header_file_name,
   
   output_header << "number of dimensions := 3\n";
 
-  // KT&SM 14/02/2000 used CartesianCoordinate3D
+  output_header << "matrix axis label [1] := x\n";
   output_header << "!matrix size [1] := "
 		<< dimensions.x() << endl;
-  output_header << "matrix axis label [1] := x\n";
   output_header << "scaling factor (mm/pixel) [1] := " 
-		<< voxel_size.x << endl;
+		<< voxel_size.x() << endl;
+  output_header << "matrix axis label [2] := y\n";
   output_header << "!matrix size [2] := "
 		<< dimensions.y() << endl;
-  output_header << "matrix axis label [2] := y\n";
   output_header << "scaling factor (mm/pixel) [2] := " 
-		<< voxel_size.y << endl;
+		<< voxel_size.y() << endl;
+  output_header << "matrix axis label [3] := z\n";
   output_header << "!matrix size [3] := "
 		<< dimensions.z()<< endl;
-  output_header << "matrix axis label [3] := z\n";
   output_header << "scaling factor (mm/pixel) [3] := " 
-		<< voxel_size.z << endl;
+		<< voxel_size.z() << endl;
 
   output_header << "number of time frames := " << scaling_factors.get_length() << endl;
   
@@ -206,16 +214,18 @@ write_basic_interfile_image_header(const string& header_file_name,
   
   // temporary copy to make an old-style header to satisfy Analyze
   {
-    string header_name = header_file_name;
-    // TODO replace old extension with new one
-    header_name += ".ahv";
-    ofstream output_header(header_name.c_str(), ios::out);
+    char *header_name = new char[header_file_name.size() +5];
+    strcpy(header_name, header_file_name.c_str());
+    replace_extension(header_name, ".ahv");
+
+    ofstream output_header(header_name, ios::out);
     if (!output_header.good())
       {
 	cerr << "Error opening old-style Interfile header '" 
 	     << header_name << " for writing" << endl;
 	return false;
       }  
+    delete header_name;
     
     output_header << "!INTERFILE  :=\n";
     output_header << "!name of data file := " << image_file_name << endl;
@@ -244,19 +254,16 @@ write_basic_interfile_image_header(const string& header_file_name,
     output_header << "!number of bytes per pixel := "
 		  << output_type.size_in_bytes() << endl;
     
+    output_header << "matrix axis label [1] := x\n";
     output_header << "!matrix size [1] := "
 		  << dimensions.x()<< endl;
-    output_header << "matrix axis label [1] := x\n";
-    // KT 16/02/98 added voxel size
     output_header << "scaling factor (mm/pixel) [1] := " 
-		  << voxel_size.x << endl;
+		  << voxel_size.x() << endl;
+    output_header << "matrix axis label [2] := y\n";
     output_header << "!matrix size [2] := "
 		  << dimensions.y() << endl;
-    output_header << "matrix axis label [2] := y\n";
-    // KT 16/02/98 added voxel size
     output_header << "scaling factor (mm/pixel) [2] := " 
-		  << voxel_size.y << endl;
-    // KT 16/02/98 added voxel size
+		  << voxel_size.y() << endl;
     {
       // Note: bug in current version of analyze
       // if voxel_size is not an integer, it will not take the 
@@ -265,7 +272,7 @@ write_basic_interfile_image_header(const string& header_file_name,
       // adding a small number to it if necessary
       // TODO this is horrible and not according to the Interfile standard
       // so, remove for distribution purposes
-      float zsize = voxel_size.z;
+      float zsize = voxel_size.z();
       if (floor(zsize)==zsize)
 	zsize += 0.00001F;
       // TODO this is what it should be
@@ -282,185 +289,106 @@ write_basic_interfile_image_header(const string& header_file_name,
 
 
 template <class NUMBER>
-bool write_basic_interfile(const char * const filename, 
-			   const Tensor3D<NUMBER>& image,
-			   const Point3D& voxel_size,
+bool write_basic_interfile(const string&  filename, 
+			   const Array<3,NUMBER>& image,
+			   const CartesianCoordinate3D<float>& voxel_size,
 			   const NumericType output_type)
 {
+  CartesianCoordinate3D<int> min_indices;
+  CartesianCoordinate3D<int> max_indices;
+  if (!image.get_regular_range(min_indices, max_indices))
+  {
+    warning("write_basic_interfile: can handle only regular index ranges\n. No output\n");
+    return false;
+  }
+  CartesianCoordinate3D<int> dimensions = max_indices - min_indices;
+  dimensions += 1;
 
   string header_name = filename;
-  header_name += ".hv";
-  ofstream output_header(header_name.c_str(), ios::out);
-  if (!output_header.good())
-    {
-      cerr << "Error opening Interfile header '" 
-	   << header_name << " for writing" << endl;
-      return false;
-    }
- 
+  header_name += ".hv"; 
   string data_name = filename;
   data_name += ".v";
+
   ofstream output_data;
   open_write_binary(output_data, data_name.c_str());
 
-  output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " << data_name << endl;
-  output_header << "!GENERAL DATA :=\n";
-  output_header << "!GENERAL IMAGE DATA :=\n";
-  output_header << "!type of data := PET\n";
-  output_header << "imagedata byte order := " <<
-    (ByteOrder::get_native_order() == ByteOrder::little_endian 
-     ? "LITTLEENDIAN"
-     : "BIGENDIAN")
-		<< endl;
-  output_header << "!PET STUDY (General) :=\n";
-  output_header << "!PET data type := Image\n";
-  output_header << "process status := Reconstructed\n";
-
-  output_header << "!number format := ";
-  if (output_type.integer_type() )
-    output_header << (output_type.signed_type() 
-		      ? "signed integer\n" : "unsigned integer\n");
-  else
-    output_header << "float\n";
-  output_header << "!number of bytes per pixel := "
-		<< output_type.size_in_bytes() << endl;
-  
-  output_header << "number of dimensions := 3\n";
-  output_header << "!matrix size [1] := "
-		<< image.get_length1() << endl;
-  output_header << "matrix axis label [1] := x\n";
-  output_header << "scaling factor (mm/pixel) [1] := " 
-		<< voxel_size.x << endl;
-  output_header << "!matrix size [2] := "
-		<< image.get_length2() << endl;
-  output_header << "matrix axis label [2] := y\n";
-  output_header << "scaling factor (mm/pixel) [2] := " 
-		<< voxel_size.y << endl;
-  output_header << "!matrix size [3] := "
-		<< image.get_length3() << endl;
-  output_header << "matrix axis label [3] := z\n";
-  output_header << "scaling factor (mm/pixel) [3] := " 
-		<< voxel_size.z << endl;
-  output_header << "number of time frames := 1\n";
-
-  Real scale = 0;
+  float scale = 0;
   image.write_data(output_data, output_type, scale);
- 
 
-  output_header << "image scaling factor[1] := " << scale << endl;
-  output_header << "quantification units := " << scale << endl;
-  output_header << "maximum pixel count := " << image.find_max()/scale << endl;
-  
-  
-  output_header << "!END OF INTERFILE :=\n";
-  
-  
-  // temporary copy to make an old-style header to satisfy Analyze
-  {
-    string header_name = filename;
-    header_name += ".ahv";
-    ofstream output_header(header_name.c_str(), ios::out);
-    if (!output_header.good())
-      {
-	cerr << "Error opening old-style Interfile header '" 
-	     << header_name << " for writing" << endl;
-	return false;
-      }  
-    string data_name = filename;
-    data_name += ".v";
-    
-    output_header << "!INTERFILE  :=\n";
-    output_header << "!name of data file := " << data_name << endl;
-    output_header << "!total number of images := "
-		  << image.get_length3() << endl;
-    output_header << "!imagedata byte order := " <<
-      (ByteOrder::get_native_order() == ByteOrder::little_endian 
-       ? "LITTLEENDIAN"
-       : "BIGENDIAN")
-		  << endl;
+  VectorWithOffset<float> scaling_factors(1);
+  scaling_factors[0] = scale;
+  VectorWithOffset<unsigned long> file_offsets(1);
+  file_offsets.fill(0);
 
-    output_header << "!number format := ";
-    if (output_type.integer_type() )
-      output_header << (output_type.signed_type() 
-			? "signed integer\n" : "unsigned integer\n");
-    else
-      output_header << "float\n";
-    output_header << "!number of bytes per pixel := "
-		  << output_type.size_in_bytes() << endl;
-    
-    output_header << "!matrix size [1] := "
-		  << image.get_length1() << endl;
-    output_header << "matrix axis label [1] := x\n";
-    output_header << "scaling factor (mm/pixel) [1] := " 
-		  << voxel_size.x << endl;
-    output_header << "!matrix size [2] := "
-		  << image.get_length2() << endl;
-    output_header << "matrix axis label [2] := y\n";
-    output_header << "scaling factor (mm/pixel) [2] := " 
-		  << voxel_size.y << endl;
-    {
-      // Note: bug in current version of analyze
-      // if voxel_size is not an integer, it will not take the 
-      // pixel size into account
-      // Work around: Always make sure it is not an integer, by
-      // adding a small number to it if necessary
-      // TODO this is horrible and not according to the Interfile standard
-      // so, remove for distribution purposes
-      float zsize = voxel_size.z;
-      if (floor(zsize)==zsize)
-	zsize += 0.00001F;
-      // TODO this is what it should be
-      // float zsize = voxel_size.z/ voxel_size.x;
-      
-      output_header << "!slice thickness (pixels) := " 
-		    << zsize << endl;
-    }
-    output_header << "!END OF INTERFILE :=\n";
-    
-  }
+
+  write_basic_interfile_image_header(header_name,
+				   data_name,
+				   dimensions, 
+				   voxel_size,
+				   output_type,
+				   ByteOrder::native,
+				   scaling_factors,
+				   file_offsets);
+
   return true;
 }
 
 bool
-write_basic_interfile(const char * const filename, 
-		      const PETImageOfVolume& image,
+write_basic_interfile(const string&  filename, 
+		      const VoxelsOnCartesianGrid<float>& image,
 		      const NumericType output_type)
 {
   return
     write_basic_interfile(filename, 
 			  image, // use automatic reference to base class
-			  image.get_voxel_size(), 
+			  image.get_grid_spacing(), 
 			  output_type);
 }
 
-// KT 14/01/2000 added directory capability
-PETSinogramOfVolume 
-read_interfile_PSOV(istream& input,
-		    const char * const directory_for_data)
+bool 
+write_basic_interfile(const string& filename, 
+		      const DiscretisedDensity<3,float>& image,
+		      const NumericType output_type)
 {
+  // dynamic_cast will throw an exception when it's not valid
+  return
+    write_basic_interfile(filename,
+                          dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image),
+                          output_type);
+}
+
+
+
+ProjDataFromStream* 
+read_interfile_PDFS(istream& input,
+		    const string& directory_for_data)
+{
+  
+  InterfilePDFSHeader hdr;  
+
+   if (!hdr.parse(input))
+    {
+      warning("\nError parsing interfile header, \n\
+I am going to ask you lots of questions...\n");
+      return ProjDataFromStream::ask_parameters();
+    }
+
+  // KT 14/01/2000 added directory capability
+  // prepend directory_for_data to the data_file_name from the header
+
+  char full_data_file_name[max_filename_length];
+  strcpy(full_data_file_name, hdr.data_file_name.c_str());
+  prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
+
   // Horrible trick to keep the stream alive. At the moment, this pointer
   // is never deleted
   // TODO
   fstream *data_in =  new fstream;
   
 
-  InterfilePSOVHeader hdr;
-  if (!hdr.parse(input))
-    {
-      PETerror("\nError parsing interfile header, \n\
-I am going to ask you lots of questions...\n");
-      return ask_PSOV_details(data_in);
-    }
+  open_read_binary(*data_in,full_data_file_name);
 
-  // KT 14/01/2000 added directory capability
-  // prepend directory_for_data to the data_file_name from the header
-  char full_data_file_name[max_filename_length];
-  strcpy(full_data_file_name, hdr.data_file_name.c_str());
-  prepend_directory_name(full_data_file_name, directory_for_data);  
-  
-  open_read_binary(*data_in, full_data_file_name);
-  
+ 
   vector<int> min_ring_num_per_segment(hdr.num_segments);
   vector<int> max_ring_num_per_segment(hdr.num_segments);
   for (int s=0; s<hdr.num_segments; s++)
@@ -469,56 +397,49 @@ I am going to ask you lots of questions...\n");
       max_ring_num_per_segment[s] = hdr.num_rings_per_segment[s]-1;
     }
   
-  for (int i=1; i<hdr.image_scaling_factors[0].size(); i++)
+  for (unsigned int i=1; i<hdr.image_scaling_factors[0].size(); i++)
     if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
       { 
-	PETerror("Interfile warning: all image scaling factors should be equal \n\
+	warning("Interfile warning: all image scaling factors should be equal \n\
 at the moment. Using the first scale factor only.\n");
 	break;
       }
+  
+   assert(hdr.data_info_ptr !=0);
+  return new ProjDataFromStream(hdr.data_info_ptr,			    
+			        data_in,
+			        hdr.data_offset[0],
+                                hdr.segment_sequence,
+			        hdr.storage_order,
+			        hdr.type_of_numbers,
+			        hdr.file_byte_order,
+			        hdr.image_scaling_factors[0][0]);
 
-  return PETSinogramOfVolume(
-			     hdr.scan_info,
-			     hdr.segment_sequence,
-			     hdr.min_ring_difference, 
-			     hdr.max_ring_difference, 
-			     min_ring_num_per_segment,
-			     max_ring_num_per_segment,
-			     0, hdr.num_views-1,
-			     -hdr.num_bins/2,
-			     (-hdr.num_bins/2) + hdr.num_bins-1,
-			     *data_in,
-			     hdr.data_offset[0],
-			     hdr.storage_order,
-			     hdr.type_of_numbers,
-			     hdr.file_byte_order,
-			     hdr.image_scaling_factors[0][0]);
+
 }
 
 
-
-PETSinogramOfVolume 
-read_interfile_PSOV(const char *const filename)
+ProjDataFromStream*
+read_interfile_PDFS(const string& filename)
 {
-  ifstream image_stream(filename);
+  ifstream image_stream(filename.c_str());
   if (!image_stream)
     { 
-      PETerror("read_interfile_PSOV: couldn't open file %s\n", filename);
-      exit(1);
+      error("read_interfile_PDFS: couldn't open file %s\n", filename.c_str());
     }
   
   // KT 14/01/2000 added directory capability
   char directory_name[max_filename_length];
-  get_directory_name(directory_name, filename);
+  get_directory_name(directory_name, filename.c_str());
   
-  return read_interfile_PSOV(image_stream, directory_name);
+  return read_interfile_PDFS(image_stream, directory_name);
 }
 
 // TODO add directory capability
 bool 
-write_basic_interfile_PSOV_header(const string& header_file_name,
-				  const string& image_file_name,
-				  const PETSinogramOfVolume& psov)
+write_basic_interfile_PDFS_header(const string& header_file_name,
+				  const string& data_file_name,
+				  const ProjDataFromStream& pdfs)
 {
 
   ofstream output_header(header_file_name.c_str(), ios::out);
@@ -530,34 +451,39 @@ write_basic_interfile_PSOV_header(const string& header_file_name,
     }  
 
   // KT 25/01/2000 new
-  const vector<int> segment_sequence = psov.get_segment_sequence_in_stream();
+  const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
   output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " <<image_file_name << endl;
+  output_header << "name of data file := " <<data_file_name << endl;
 
   output_header << "originating system := ";
-  // TODO get from PETScannerInfo
-  switch(psov.scan_info.get_scanner().type)
+#if 0
+  // TODO get from Scanner
+  switch(pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->type)
     {
-      // SM 22/01/2000 HiDAC added
-    case PETScannerInfo::HiDAC: output_header<< "HiDAC\n"; break;
-    case PETScannerInfo::RPT: output_header << "PRT-1\n"; break;
-    case PETScannerInfo::E931: output_header << "ECAT 931\n"; break;
-    case PETScannerInfo::E951: output_header << "ECAT 951\n"; break;
+      // SM 22/01/2000 HiDAC added      
+    case Scanner::HiDAC: output_header<< "HiDAC\n"; break;
+    case Scanner::RPT: output_header << "PRT-1\n"; break;
+    case Scanner::E931: output_header << "ECAT 931\n"; break;
+    case Scanner::E951: output_header << "ECAT 951\n"; break;
 
-    case PETScannerInfo::E953: output_header << "ECAT 953\n"; break;
-    case PETScannerInfo::E966: output_header << "ECAT 966\n"; break;
-    case PETScannerInfo::ART: output_header << "ECAT ART\n"; break;
-    case PETScannerInfo::Advance: output_header << "Advance\n"; break;
+    case Scanner::E953: output_header << "ECAT 953\n"; break;
+    case Scanner::E966: output_header << "ECAT 966\n"; break;
+    case Scanner::ART: output_header << "ECAT ART\n"; break;
+    case Scanner::Advance: output_header << "Advance\n"; break;
+      // KT 30/05/2000 added Positron
+    case Scanner::HZLR: output_header << "Positron HZL/R\n"; break;
     default: output_header << "Unknown\n"; break;
     }
+#endif
+  output_header <<pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_name() << endl;
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
   // KT 25/01/2000 use get_...
   output_header << "imagedata byte order := " <<
-    (psov.get_byte_order_in_stream() == ByteOrder::little_endian 
+    (pdfs.get_byte_order_in_stream() == ByteOrder::little_endian 
      ? "LITTLEENDIAN"
      : "BIGENDIAN")
 		<< endl;
@@ -569,7 +495,7 @@ write_basic_interfile_PSOV_header(const string& header_file_name,
     string number_format;
     size_t size_in_bytes;
 
-    const NumericType data_type = psov.get_data_type_in_stream();
+    const NumericType data_type = pdfs.get_data_type_in_stream();
     data_type.get_Interfile_info(number_format, size_in_bytes);
 
     output_header << "!number format := " << number_format << "\n";
@@ -580,28 +506,31 @@ write_basic_interfile_PSOV_header(const string& header_file_name,
   
   // TODO support more ? 
   {
-    // default to SegmentViewRingBin
+    // default to Segment_View_AxialPos_TangPos
     int order_of_segment = 1;
     int order_of_view = 2;
     int order_of_z = 3;
     int order_of_bin = 4;
-    switch(psov.get_storage_order())
+    switch(pdfs.get_storage_order())
+     /*
       {  
-      case PETSinogramOfVolume::ViewSegmentRingBin:
+      case ProjDataFromStream::ViewSegmentRingBin:
 	{
 	  order_of_segment = 2;
 	  order_of_view = 1;
 	  order_of_z = 3;
 	  break;
 	}
-      case PETSinogramOfVolume::SegmentViewRingBin:
+	*/
+    {
+      case ProjDataFromStream::Segment_View_AxialPos_TangPos:
 	{
 	  order_of_segment = 1;
 	  order_of_view = 2;
 	  order_of_z = 3;
 	  break;
 	}
-      case PETSinogramOfVolume::SegmentRingViewBin:
+      case ProjDataFromStream::Segment_AxialPos_View_TangPos:
 	{
 	  order_of_segment = 1;
 	  order_of_view = 3;
@@ -610,8 +539,8 @@ write_basic_interfile_PSOV_header(const string& header_file_name,
 	}
       default:
 	{
-	  PETerror("write_interfile_PSOV_header: unsupported storage order,\
-defaulting to SegmentViewRingBin.\n Please correct by hand !");
+	  error("write_interfile_PSOV_header: unsupported storage order,\
+defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
 	}
       }
     
@@ -619,62 +548,86 @@ defaulting to SegmentViewRingBin.\n Please correct by hand !");
     output_header << "matrix axis label [" << order_of_segment 
 		  << "] := segment\n";
     output_header << "!matrix size [" << order_of_segment << "] := " 
-		  << psov.get_num_segments() << "\n";
+		  << pdfs.get_segment_sequence_in_stream().size()<< "\n";
     output_header << "matrix axis label [" << order_of_view << "] := view\n";
     output_header << "!matrix size [" << order_of_view << "] := "
-		  << psov.get_num_views() << "\n";
+		  << pdfs.get_proj_data_info_ptr()->get_num_views() << "\n";
     
     output_header << "matrix axis label [" << order_of_z << "] := z\n";
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
+#ifndef TOMO_NO_NAMESPACES
+      // VC needs this explicitly here
+      std::
+#endif
       vector<int>::const_iterator seg = segment_sequence.begin();
-      output_header << "{ " << psov.get_num_rings(*seg);
+      output_header << "{ " <<pdfs.get_proj_data_info_ptr()->get_num_axial_poss(*seg);
       for (seg++; seg != segment_sequence.end(); seg++)
-	output_header << "," << psov.get_num_rings(*seg);
+	output_header << "," << pdfs.get_proj_data_info_ptr()->get_num_axial_poss(*seg);
       output_header << "}\n";
     }
 
     output_header << "matrix axis label [" << order_of_bin << "] := bin\n";
     output_header << "!matrix size [" << order_of_bin << "] := "
-		  << psov.get_num_bins() << "\n";
+		  <<pdfs.get_proj_data_info_ptr()->get_num_tangential_poss() << "\n";
   }
+
+  const  ProjDataInfoCylindrical* proj_data_info_ptr = 
+    dynamic_cast< const  ProjDataInfoCylindrical*> (pdfs.get_proj_data_info_ptr());
+
+   if (proj_data_info_ptr==NULL)
+    error("\ninterfile,\n\
+     Casting failed!");
 
   output_header << "minimum ring difference per segment := ";    
   {
+    #ifndef TOMO_NO_NAMESPACES
+      // VC needs this explicitly here
+      std::
+#endif
     vector<int>::const_iterator seg = segment_sequence.begin();
-    output_header << "{ " << psov.get_min_ring_difference(*seg);
+   // output_header << "{ " <<((ProjDataInfoCylindrical *)pdfs.get_proj_data_info_ptr())->get_min_ring_difference(*seg);
+    output_header << "{ " << proj_data_info_ptr->get_min_ring_difference(*seg);
     for (seg++; seg != segment_sequence.end(); seg++)
-      output_header << "," << psov.get_min_ring_difference(*seg);
+      output_header << "," <<proj_data_info_ptr->get_min_ring_difference(*seg);
     output_header << "}\n";
   }
 
   output_header << "maximum ring difference per segment := ";
   {
-    vector<int>::const_iterator seg = segment_sequence.begin();
-    output_header << "{ " << psov.get_max_ring_difference(*seg);
+#ifndef TOMO_NO_NAMESPACES
+      // VC needs this explicitly here
+    std::
+#endif
+	vector<int>::const_iterator seg = segment_sequence.begin();
+    //output_header << "{ " <<((ProjDataInfoCylindrical*)pdfs.get_proj_data_info_ptr())->get_max_ring_difference(*seg);
+    output_header << "{ " <<proj_data_info_ptr->get_max_ring_difference(*seg);
     for (seg++; seg != segment_sequence.end(); seg++)
-      output_header << "," << psov.get_max_ring_difference(*seg);
+     // output_header << "," <<((ProjDataInfoCylindrical*)pdfs.get_proj_data_info_ptr())->get_max_ring_difference(*seg);
+     output_header << "," <<proj_data_info_ptr->get_max_ring_difference(*seg);
     output_header << "}\n";
   }
   
   output_header << "number of rings := " 
-		<< psov.scan_info.get_num_rings() << endl;
+		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings() << endl;
   output_header << "number of detectors per ring := " 
-		<< psov.scan_info.get_num_views()*2 << endl;
+		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_max_num_views()*2 << endl;
   // KT&SM 22/01/2000 corrected to ring diameter
   output_header << "ring diameter (cm) := "
-		<< psov.scan_info.get_ring_radius()*2/10. << endl;
+		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_radius()*2/10. << endl;
   output_header << "distance between rings (cm) := " 
-		<< psov.scan_info.get_ring_spacing()/10. << endl;
+		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_spacing()/10. << endl;
   output_header << "bin size (cm) := " 
-		<< psov.scan_info.get_bin_size()/10. << endl;
-  output_header << "view offset (degrees) := "
-		<< psov.scan_info.get_view_offset() << endl;
+		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
+
+  // no view offset... check
+ //output_header << "view offset (degrees) := "
+//		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->view_offset<< endl;
  
   // SM 22/01/2000 new
   output_header<<"data offset in bytes[1] := "
-	       << psov.get_offset_in_stream()<<endl;
+	       <<pdfs.get_offset_in_stream()<<endl;
     
 
   output_header << "number of time frames := 1\n";
@@ -683,30 +636,54 @@ defaulting to SegmentViewRingBin.\n Please correct by hand !");
   return true;
 }
 
+bool
+write_basic_interfile_PDFS_header(const string& data_filename,
+			    const ProjDataFromStream& pdfs)
+
+{
+  char header_file_name[max_filename_length];
+  strcpy(header_file_name,data_filename.c_str());
+  replace_extension(header_file_name,".hs");
+  return 
+    write_basic_interfile_PDFS_header(header_file_name,
+				    data_filename,pdfs);
+}
+
+#if 0
+
+bool
+write_basic_interfile_PDFS_header(const string& filename)
+{
+char header_file_name[max_filename_length];
+  strcpy(header_file_name,filename.c_str());
+  replace_extension(header_file_name,".hs");
+  ProjDataFromStream* pdfs;
+  pdfs = new ProjDataFromStream();
+ 
+  pdfs = ask_PDFS_details(true);
+   return
+  write_basic_interfile_PDFS_header(header_file_name,
+				    filename,*pdfs);
+
+}
+
+#endif 
 /**********************************************************************
    template instantiations
    **********************************************************************/
 
-  /*
-  template bool write_basic_interfile<>(const char * const filename, 
-					const Tensor3D<signed char>&,
-					const Point3D& voxel_size,
-					const NumericType output_type );
-  template bool write_basic_interfile<>(const char * const filename, 
-					const Tensor3D<unsigned char>&,const Point3D& voxel_size,
-					const NumericType output_type);
-  */
-template bool write_basic_interfile<>(const char * const filename, 
-				      const Tensor3D<signed short>&,
-				      const Point3D& voxel_size,
+
+template bool write_basic_interfile<>(const string&  filename, 
+				      const Array<3,signed short>&,
+				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
-template bool write_basic_interfile<>(const char * const filename, 
-				      const Tensor3D<unsigned short>&,
-				      const Point3D& voxel_size,
+template bool write_basic_interfile<>(const string&  filename, 
+				      const Array<3,unsigned short>&,
+				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
-template bool write_basic_interfile<>(const char * const filename, 
-				      const Tensor3D<float>&,
-				      const Point3D& voxel_size,
+template bool write_basic_interfile<>(const string&  filename, 
+				      const Array<3,float>&,
+				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
 
 

@@ -1,23 +1,32 @@
 //
 // $Id$
 //
+/*!
+
+  \file
+  \ingroup buildblock
+
+  \brief Metz and Gaussian Filter Routines for iterative filtering 
+
+  \author Matthew Jacobson (some help by Kris Thielemans)
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
 /*
-   Metz and Gaussian Filter Routines for iterative filtering 
+   
    First Version 2 August 98
 Changes
    1. Added possibility for convolution with small kernels (variable kerlen). 22 August 1998
    2. Added Gaussian filtering.
 
-Adapted for PARAPET by Matthew Jacobson (some help by Kris Thielemans)
-   
+  
 */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#define ZERO_TOL 0.000001 //MJ 12/05/98 Made consistent with other files
+const float ZERO_TOL= 0.000001F; //MJ 12/05/98 Made consistent with other files
 #define TPI 6.28318530717958647692
 #define FORWARDFFT 1
 #define INVERSEFFT -1
@@ -26,19 +35,21 @@ Adapted for PARAPET by Matthew Jacobson (some help by Kris Thielemans)
 #define REALC(a) 2*(a)
 #define IMGC(a) 2*(a)+1
 
-#include "pet_common.h" 
 #include "ImageFilter.h"
 #include "TensorFunction.h" 
 #include <iostream> 
-#include <fstream>
 
 #include <numeric>
-#include "utilities.h"
+//#include "utilities.h"
+#include "VoxelsOnCartesianGrid.h"
 #include "recon_array_functions.h"
 
 
 //MJ 05/03/2000 centimeters-->millimeters.
 
+START_NAMESPACE_TOMO
+
+// KT 30/05/2000 made axdir from long to int
 
 //MJ 22/04/99  KT wants the declarations here and not in bbfilters.h
 
@@ -58,7 +69,7 @@ void discrete_fourier_transform(float *data, unsigned long nn, int isign);
 float *build_metz(long *kerlen, long res, float N,float fwhm, float MmPerVoxel);
 
 
-void extract_row(float *onerow,long axdir,long row_num,PETImageOfVolume& input_image);
+void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<float>& input_image);
 /* 
 
 extract a row from the input_image
@@ -69,7 +80,7 @@ extract a row from the input_image
  
 void convolution_1D(float *outrow,long res,long kerlen,float *onerow,float *cfilter);
 
-void reput_row(PETImageOfVolume &input_image,long axdir,long row_num,float *outrow);
+void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,long row_num,float *outrow);
 
 /* 
 
@@ -79,7 +90,7 @@ put back the filtered row into the input_image
  
 
 
-void separable_cartesian_3Dfilter(long kerlx,long kerlz, PETImageOfVolume &input_image,float *kernelX,float *kernelZ,float *onerow, float *outrow);
+void separable_cartesian_3Dfilter(long kerlx,long kerlz, VoxelsOnCartesianGrid<float> &input_image,float *kernelX,float *kernelZ,float *onerow, float *outrow);
 
 /* Perform 3D filtering on a input_image with the possiblility of 
    different filters in the XY and Z directions
@@ -186,9 +197,9 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
   if(fwhm>0.0F){
 
  
-
-     unsigned long i;
-     float xreal,ximg,zabs2,sumf;                                        
+      // KT 30/05/2000 dropped unsigned
+     long i;
+     float xreal,ximg,zabs2;                                        
 
 //MJ 12/05/98 compute parameters relevant to DFT/IDFT
 
@@ -274,7 +285,7 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
 
 	     }
 
-	     if (zabs2>1) zabs2=(float) 1-ZERO_TOL;
+	     if (zabs2>1) zabs2=(float) (1-ZERO_TOL);
              if (zabs2>0) {
 	       // if (zabs2>=1) cerr<<endl<<"zabs2 is "<<zabs2<<" and N is "<<N<<endl;
                fftdata[REALC(i)]=(1-pow((1-zabs2),N))*(xreal/zabs2);
@@ -353,7 +364,7 @@ float *build_metz(long *kerlen,long res ,float N,float fwhm, float MmPerVox)
 }
 
 
-void extract_row(float *onerow,long axdir,long row_num,PETImageOfVolume& input_image){
+void extract_row(float *onerow,int axdir,long row_num,VoxelsOnCartesianGrid<float>& input_image){
 
 
   int zs,ys,xs, ze,ye,xe;
@@ -445,7 +456,7 @@ void convolution_1D(float *outrow,long res,long kerlen,float *onerow,float *cfil
 }  
 
 
-void reput_row(PETImageOfVolume &input_image,long axdir,long row_num,float *outrow){
+void reput_row(VoxelsOnCartesianGrid<float> &input_image,int axdir,long row_num,float *outrow){
 
 
   int zs,ys,xs, ze,ye,xe;
@@ -496,7 +507,7 @@ void reput_row(PETImageOfVolume &input_image,long axdir,long row_num,float *outr
 
   else if(axdir==0){
     
-    int  res=input_image.get_z_size();
+    //int  res=input_image.get_z_size();
     //int hres=res/2;
 
     int y_0=row_num/input_image.get_y_size();
@@ -520,9 +531,9 @@ void reput_row(PETImageOfVolume &input_image,long axdir,long row_num,float *outr
 
                  
 
-void separable_cartesian_3Dfilter(long kerlx,long kerlz, PETImageOfVolume &input_image,float *kernelX,float *kernelZ,float *onerow, float *outrow){
+void separable_cartesian_3Dfilter(long kerlx,long kerlz, VoxelsOnCartesianGrid<float> &input_image,float *kernelX,float *kernelZ,float *onerow, float *outrow){
 
-  long axdir;
+  int axdir;
   long i,pres;
 
   int resx=input_image.get_x_size();
@@ -561,7 +572,8 @@ void separable_cartesian_3Dfilter(long kerlx,long kerlz, PETImageOfVolume &input
 
   }      
 
-    set_negatives_small(input_image);
+  // TODO do this only conditionally
+    truncate_min_to_small_positive_value(input_image);
     cerr<<endl; //MJ 06/03/2000 added 
 
   /* direction 0 : Z direction */
@@ -575,15 +587,15 @@ void separable_cartesian_3Dfilter(long kerlx,long kerlz, PETImageOfVolume &input
 //Constructor-like
 
 //MJ 05/03/2000 got rid of scanner dependence
-void ImageFilter::build(const PETImageOfVolume& representative_image,double fwhmx_dir,double fwhmz_dir,float Nx_dir,float Nz_dir)
+void ImageFilter::build(const DiscretisedDensity<3,float>& representative_density,double fwhmx_dir,double fwhmz_dir,float Nx_dir,float Nz_dir)
 {
 
   if (kernels_built)
     {
-    cerr<<endl<<"Filter already built"<<endl;
-    exit(1);
+    error("Filter already built\n");    
     }
-
+  const VoxelsOnCartesianGrid<float>& representative_image =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(representative_density);
 
   fwhmx=fwhmx_dir;
   fwhmz=fwhmz_dir;
@@ -605,7 +617,7 @@ void ImageFilter::build(const PETImageOfVolume& representative_image,double fwhm
   // kernelX = new float [Res/2];
   // kernelZ = new float[Res/2];
  
-   kernelX=build_metz(&kerlx,Resx,Nx,fwhmx,representative_image.get_voxel_size().x);
+   kernelX=build_metz(&kerlx,Resx,Nx,fwhmx,representative_image.get_voxel_size().x());
 
    for (int i=0;i<kerlx;i++)
    if(Nx>0.0)  printf ("X-dir Metz[%d]=%f\n",i,kernelX[i]);   
@@ -613,7 +625,7 @@ void ImageFilter::build(const PETImageOfVolume& representative_image,double fwhm
 
    cerr<<endl;
 
-   kernelZ=build_metz(&kerlz,Resz,Nz,fwhmz,representative_image.get_voxel_size().z);  
+   kernelZ=build_metz(&kerlz,Resz,Nz,fwhmz,representative_image.get_voxel_size().z());  
 
    for (int i=0;i<kerlz;i++)
    if(Nz>0.0)  printf ("Z-dir Metz[%d]=%f\n",i,kernelZ[i]);   
@@ -647,14 +659,18 @@ ImageFilter::~ImageFilter(){
 }
 
 
-void ImageFilter::apply(PETImageOfVolume& input_image){
+void ImageFilter::apply(DiscretisedDensity<3,float>& input_image){
 
   //MJ 03/05/2000
-  if(kerlx==0 || kerlz==0) {PETerror("Filter operation attempted with an unconstructed ImageFilter object \n"); exit(1);}
+  if(kerlx==0 || kerlz==0) {error("Filter operation attempted with an unconstructed ImageFilter object \n");}
 
- separable_cartesian_3Dfilter(kerlx,kerlz,input_image,kernelX,kernelZ,onerow,outrow);
+  VoxelsOnCartesianGrid<float>& input_image_vox =
+    dynamic_cast<VoxelsOnCartesianGrid<float>&>(input_image);
+  separable_cartesian_3Dfilter(kerlx,kerlz,input_image_vox,kernelX,kernelZ,onerow,outrow);
 
 
 }
 
 
+
+END_NAMESPACE_TOMO
