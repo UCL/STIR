@@ -79,6 +79,29 @@ string ask_string (const string& str, const string& default_value)
   else
     return input;
 }
+FILE*& open_read_binary(FILE*& fptr, 
+                        const string& name)
+{
+  fptr = fopen(name.c_str(), "rb"); 
+  if (ferror(fptr))
+    { error("Error opening file %s\n", name.c_str());  }
+  return fptr;
+}
+
+FILE*& open_write_binary(FILE*& fptr, 
+                        const string& name)
+{
+  fptr = fopen(name.c_str(), "wb"); 
+  if (ferror(fptr))
+    { error("Error opening file %s\n", name.c_str());  }
+  return fptr;
+}
+
+void close_file(FILE*& fptr)
+{
+  fclose(fptr);
+  fptr=0;
+}
 
 const char * const 
 find_filename(const char * const filename_with_directory)
