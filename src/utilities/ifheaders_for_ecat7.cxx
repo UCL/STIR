@@ -397,22 +397,27 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
 
 //! A utility function only called by make_pdfs_matrix()
 /*!
+  \internal 
+
   Most of the names of the variables we need are the same in the 
   Scan3D or Attn subheader, except num_z_elements and span.
   So, instead of writing essentially the same function twice, we
   use a templated version. Note that this takes care of the
   different locations of the information in the subheaders,
   as only the name is used.
+
+  Extra parameters are used when the names of the variables do not match.
 */
 template <typename SUBHEADERPTR>
 static
 ProjDataFromStream * 
 make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr, 
-		      short const * num_z_elements,
-		      const int span,
-		      MatrixFile * const mptr, 
-                      MatrixData * const matrix, 
-                      const shared_ptr<iostream>&  stream_ptr)
+			  short const * num_z_elements,
+			  const int span,
+			  const bool arc_corrected,
+			  MatrixFile * const mptr, 
+			  MatrixData * const matrix, 
+			  const shared_ptr<iostream>&  stream_ptr)
 {
   shared_ptr<Scanner> scanner_ptr;
   find_scanner(scanner_ptr, *(mptr->mhptr)); 
@@ -458,8 +463,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   NumericType data_type;
   ByteOrder byte_order;
   find_data_type(data_type, byte_order, sub_header_ptr->data_type);
-  
-  
+
   if (bin_size != scanner_ptr->get_default_bin_size())
   {
     warning("Bin size from header (%g) does not agree with expected value %g\nfor scanner %s. Using expected value...\n",
@@ -472,7 +476,9 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   // TODO more checks on FOV etc.
   
   shared_ptr<ProjDataInfo> pdi_ptr =
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span, max_delta, num_views, num_tangential_poss);
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span, max_delta, 
+				  num_views, num_tangential_poss,  
+				  arc_corrected);
   
   pdi_ptr->set_num_axial_poss_per_segment(num_axial_poss_per_seg);
     
@@ -517,10 +523,16 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 	Attn_subheader const *sub_header_ptr= 
 	  reinterpret_cast<Attn_subheader const*>(matrix->shptr);
 	
+	// CTI does not provide corrections_applied to check if the data
+	// is arc-corrected. Presumably it's attenuation data is always 
+	// arccorrected
+	const bool arc_corrected = true;
+	warning("Assuming data is arc-corrected (info not available in CTI attenuation subheader)\n");
 	return   
 	  make_pdfs_from_matrix_aux(sub_header_ptr, 
 				    sub_header_ptr->z_elements,
 				    sub_header_ptr->span,
+				    arc_corrected,
 				    mptr, matrix, stream_ptr);
       }
     case Byte3dSinogram:
@@ -529,11 +541,18 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
       {
 	Scan3D_subheader const * sub_header_ptr= 
 	  reinterpret_cast<Scan3D_subheader const*>(matrix->shptr);
+
+	ProcessingCode cti_processing_code =
+	  static_cast<ProcessingCode>(sub_header_ptr->corrections_applied);
+	
+	const bool arc_corrected = 
+	  (cti_processing_code | ArcPrc) != 0;
 	
 	return   
 	  make_pdfs_from_matrix_aux(sub_header_ptr, 
 				    sub_header_ptr->num_z_elements,
 				    sub_header_ptr->axial_compression,
+				    arc_corrected,
 				    mptr, matrix, stream_ptr);
       }
     default:
