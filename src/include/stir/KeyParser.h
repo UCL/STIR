@@ -105,6 +105,7 @@ public:
   enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist, ULONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
     ARRAY2D_OF_FLOATS,
+    ARRAY3D_OF_FLOATS,
     PARSINGOBJECT, 
     SHARED_PARSINGOBJECT,
     FLOAT, BOOL};
@@ -175,6 +176,9 @@ public:
 
   //! add a keyword. When parsing, parse its value as a 2d array of floats and put its value in *variable_ptr
   void add_key(const string& keyword, Array<2,float>* variable);
+
+  //! add a keyword. When parsing, parse its value as a 3d array of floats and put its value in *variable_ptr
+  void add_key(const string& keyword, Array<3,float>* variable);
 
   //! add a keyword. When parsing, parse its value as a string and put it in *variable_ptr
   /*! The 'value' can contain spaces. */
@@ -391,6 +395,7 @@ private :
   IntVect	par_intlist;
   DoubleVect	par_doublelist;
   Array<2,float> par_array2d_of_floats;
+  Array<3,float> par_array3d_of_floats;
   string	par_ascii;
   int		par_int;	
   double	par_double;	
