@@ -158,9 +158,14 @@ angle (const BasicCoordinate<num_dimensions, coordT>& p1,
 template <int num_dimensions, typename coordT>
 inline BasicCoordinate<num_dimensions+1, coordT> 
 join(const coordT& a, 
-     const BasicCoordinate<num_dimensions, coordT>& c);
+     const BasicCoordinate<num_dimensions, coordT>& c);    
 
 #endif // gcc 2.8.1
+
+//! make a shorter BasicCoordinate, by cutting the first element from \c c  
+template <int num_dimensions, typename coordT>
+inline BasicCoordinate<num_dimensions-1, coordT> 
+cut_first_dimension(const BasicCoordinate<num_dimensions, coordT>& c) ;    
 
 END_NAMESPACE_STIR
 
