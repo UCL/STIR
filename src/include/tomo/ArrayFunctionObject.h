@@ -44,15 +44,6 @@ public:
 };
 
 
-template <int num_dimensions, typename elemT>
-void 
-ArrayFunctionObject<num_dimensions,elemT>::
-operator() (Array<num_dimensions,elemT>& array) const
-{
-   Array<num_dimensions,elemT> copy_array( array);
-   (*this)(array, copy_array);
-}
-
 
 
 END_NAMESPACE_TOMO 
