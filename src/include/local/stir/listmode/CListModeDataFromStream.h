@@ -20,7 +20,9 @@
 #define __stir_listmode_CListModeDataFromStream_H__
 
 #include "local/stir/listmode/CListModeData.h"
+#include "local/stir/listmode/CListRecord.h"
 #include "stir/shared_ptr.h"
+#include "stir/ByteOrder.h"
 
 #include <iostream>
 #include <string>
@@ -45,7 +47,11 @@ public:
   //! Constructor taking a stream
   /*! Data will be assumed to start at the current position reported by seekg().*/ 
   CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
-                          const shared_ptr<Scanner>& scanner_ptr);
+                          const shared_ptr<Scanner>& scanner_ptr,
+			  const bool value_of_has_delayeds,
+			  const size_t size_of_record,
+			  const shared_ptr <CListRecord>& empty_record_sptr,
+			  const ByteOrder list_mode_file_format_byte_order);
 
   //! Constructor taking a filename
   /*! File will be opened in binary mode. ListMode data will be assumed to 
@@ -53,7 +59,19 @@ public:
   */
   CListModeDataFromStream(const string& listmode_filename, 
                           const shared_ptr<Scanner>& scanner_ptr,
+			  const bool value_of_has_delayeds,
+			  const size_t size_of_record,
+			  const shared_ptr <CListRecord>& empty_record_sptr,
+			  const ByteOrder list_mode_file_format_byte_order,
                           const streampos start_of_data = 0);
+
+  virtual 
+    shared_ptr <CListRecord> get_empty_record_sptr() const
+    { return empty_record_sptr; }
+
+  //! ECAT listmode data stores delayed events as well (as opposed to prompts)
+  virtual bool has_delayeds() const 
+    { return value_of_has_delayeds; }
 
   virtual 
     Succeeded get_next_record(CListRecord& event) const;
@@ -85,6 +103,14 @@ private:
   shared_ptr<istream> stream_ptr;
   streampos starting_stream_position;
   vector<streampos> saved_get_positions;
+
+  bool value_of_has_delayeds;
+  size_t size_of_record;
+  shared_ptr <CListRecord> empty_record_sptr;
+  ByteOrder list_mode_file_format_byte_order;  
+
+
+  mutable unsigned int num_chars_left_in_buffer;
 };
 
 END_NAMESPACE_STIR
