@@ -316,7 +316,7 @@ resize(const int min_index, const int max_index)
       return;
     }
   const unsigned old_length = length;
-  if (length>0)
+  if (old_length>0)
     {
       if (min_index == get_min_index() && max_index == get_max_index())
 	return;
@@ -338,18 +338,20 @@ resize(const int min_index, const int max_index)
 	  start = overlap_min_index;
 	}
     } // end if (length>0)
+  const unsigned overlapping_length = length;
   reserve(min_index, max_index);
   // TODO when using allocator, call default constructor for new elements here
   // (and delete the ones that go out of range!)
   length = 
     static_cast<unsigned>(max_index - min_index) + 1;
   start = min_index;
-  if (old_length>0)
+  if (overlapping_length>0)
     {
       // do not change num as num[0] should remain the same
     }
   else
     {
+      // we have reallocated the whole array, so set num correctly
       num = begin_allocated_memory - min_index;
     }
   check_state();
