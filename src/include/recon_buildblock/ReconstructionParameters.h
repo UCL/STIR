@@ -72,10 +72,6 @@ public:
 
   //! destructor
   virtual ~ReconstructionParameters() {}
-   
-  //! lists the parameter values
-  /*! has to be called by derived classes to show current parameters*/
-  virtual string parameter_info();
 
 
   //! prompts the user to enter parameter values manually
