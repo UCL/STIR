@@ -47,7 +47,7 @@ public:
   //! Default constructor
   SeparableGaussianImageFilter();
 
-  VectorWithOffset<float> get_standard_deviation();
+  float get_standard_deviation();
   
   
 private:
