@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,9 +12,9 @@
   \author Kris Thielemans (based on earlier work by Alexey Zverovich and Matthew Jacobson)
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
 #include "shared_ptr.h"
 #include "LogLikBased/common.h"
@@ -134,6 +134,7 @@ void RPC_process_related_viewgrams_gradient(DiscretisedDensity<3,float>* output_
   {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
   }
+
 
   // for sinogram division
       
