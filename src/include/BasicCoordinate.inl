@@ -3,6 +3,7 @@
 //
 /*!
   \file 
+  \ingroup buildblock
  
   \brief (inline) implementations for BasicCoordinate
 
@@ -16,8 +17,6 @@
 
 */
 
-// Note: includes have to be outside the namespace for gcc 2.95.2
-// (as it does not put the STL library in std).
 
 // for std::inner_product
 #include <numeric>
@@ -29,6 +28,7 @@
 using std::acos;
 using std::sqrt;
 # endif
+using std::equal;
 #endif
 
 START_NAMESPACE_TOMO
@@ -117,7 +117,9 @@ BasicCoordinate<num_dimensions, coordT>::BasicCoordinate(const BasicCoordinate<n
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator+=(const BasicCoordinate<num_dimensions, coordT>& c)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator+=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] += c[i];
@@ -125,7 +127,9 @@ BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator-=(const BasicCoordinate<num_dimensions, coordT>& c)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator-=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] -= c[i];
@@ -133,7 +137,9 @@ BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator*=(const BasicCoordinate<num_dimensions, coordT>& c)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator*=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] *= c[i];
@@ -141,7 +147,19 @@ BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator+=(const coordT& a)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator/=(const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  for (int i=1; i<=num_dimensions; i++)
+    coords[i] /= c[i];
+  return *this;
+}
+
+template <int num_dimensions, typename coordT>
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator+=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] += a;
@@ -149,7 +167,9 @@ BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator-=(const coordT& a)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator-=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] -= a;
@@ -157,7 +177,9 @@ BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator*=(const coordT& a)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator*=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] *= a;
@@ -165,7 +187,9 @@ BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>
 }
 
 template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>& BasicCoordinate<num_dimensions, coordT>::operator/=(const coordT& a)
+BasicCoordinate<num_dimensions, coordT>& 
+BasicCoordinate<num_dimensions, coordT>::
+operator/=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
     coords[i] /= a;
