@@ -5,7 +5,7 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   $Date$
-  $Revision $
+  $Revision$
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
@@ -26,10 +26,7 @@ void
 LmToProjDataWithMC::set_defaults()
 {
   LmToProjData::set_defaults();
-  // attenuation_filename ="";
-  ro3d_ptr = 0;
-  //transmission_duration = 300; // default value 5 min.
- 
+  ro3d_ptr = 0; 
 }
 
 void 
@@ -38,11 +35,6 @@ LmToProjDataWithMC::initialise_keymap()
   LmToProjData::initialise_keymap();
   parser.add_start_key("LmToProjDataWithMC Parameters");
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
-  //parser.add_key("attenuation_filename", &attenuation_filename);
-  //parser.add_key("transmission_duration", &transmission_duration);
-  //parser.add_key("reference_quaternion", &reference_quaternion);
-  //parser.add_key ("reference_translation", &reference_translation);
-
 }
 
 LmToProjDataWithMC::
@@ -68,39 +60,7 @@ post_processing()
     warning("Invalid Rigid Object 3D Motion object\n");
     return true;
   }
-#if 0
-   // compute average motion in respect to the transmission scan
-  float att_start_time, att_end_time;
-  if (attenuation_filename !="")
-  {
-  find_ref_pos_from_att_file (att_start_time, att_end_time,transmission_duration,
-			       attenuation_filename);
 
-  RigidObject3DTransformation av_motion = ro3d_ptr->compute_average_motion(att_start_time,att_end_time);
-  cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
-  cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
-  ro3d_move_to_reference_position =av_motion.inverse();
-    
-  }
-  else
-  { 
-    att_start_time=0;
-    att_end_time=0;
-    if (reference_translation.size()!=3 || reference_quaternion.size() !=4)
-      {
-	warning ("Invalid reference quaternion or translation\n");
-	return true;
-      }
-
-
-    CartesianCoordinate3D<float>ref_trans(static_cast<float>(reference_translation[0]),static_cast<float>(reference_translation[1]),static_cast<float>(reference_translation[2]));
-    Quaternion<float>ref_quat(static_cast<float>(reference_quaternion[0]),static_cast<float>(reference_quaternion[1]),static_cast<float>(reference_quaternion[2]),static_cast<float>(reference_quaternion[3]));
-    RigidObject3DTransformation av_motion(ref_quat, ref_trans);
-    cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
-    cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
-   ro3d_move_to_reference_position =av_motion.inverse();
-  }
-#endif
   // TODO move to RigidObject3DMotion
   if (!ro3d_ptr->is_time_offset_set())
     ro3d_ptr->synchronise(*lm_data_ptr);
@@ -109,33 +69,12 @@ post_processing()
   move_from_scanner =
     RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
                                CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
-  move_to_scanner = move_from_scanner;
-  move_to_scanner.inverse();
+  move_to_scanner = move_from_scanner.inverse();
 
   return false;
 }
 
-#if 0
-void 
-LmToProjDataWithMC::
-find_ref_pos_from_att_file (float& att_start_time, float& att_end_time, 
-			    float transmission_duration,
-			    const string attenuation_filename)
-{
-	MatrixFile* AttnFile = matrix_open(attenuation_filename.c_str(), MAT_READ_ONLY, AttenCor );
-	if (AttnFile==NULL)
-	  error("Error opening attenuation file %s\n", attenuation_filename.c_str());
 
-		/* Acquisition date and time - main head */
-	time_t sec_time = AttnFile->mhptr->scan_start_time;
-
-	struct tm* AttnTime = localtime( &sec_time  ) ;
-	matrix_close( AttnFile ) ;
-	att_start_time = ( AttnTime->tm_hour * 3600.0 ) + ( AttnTime->tm_min * 60.0 ) + AttnTime->tm_sec ;
-	att_end_time = att_start_time + transmission_duration;
-}
-
-#endif
 void
 LmToProjDataWithMC::
 process_new_time_event(const CListTime& time_event)
