@@ -47,26 +47,28 @@ IndexRange<num_dimensions>::IndexRange(const base_type& range)
   {}
 
 template <int num_dimensions>
-IndexRange<num_dimensions>::IndexRange(
-       const BasicCoordinate<num_dimensions, int>& min_v,
-       const BasicCoordinate<num_dimensions, int>& max_v)
-       : base_type(min_v[1], max_v[1]),
-         is_regular_range(regular_true)
+IndexRange<num_dimensions>::
+IndexRange(
+	   const BasicCoordinate<num_dimensions, int>& min_v,
+	   const BasicCoordinate<num_dimensions, int>& max_v)
+  : base_type(min_v[1], max_v[1]),
+    is_regular_range(regular_true)
 {
-  BasicCoordinate<num_dimensions-1, int> new_min;
-  BasicCoordinate<num_dimensions-1, int> new_max; 
-#ifndef STIR_NO_NAMESPACES  
-  // "using std::copy" didn't work for VC 6...
-  std::copy(min_v.begin()+1, min_v.end(), new_min.begin());
-  std::copy(max_v.begin()+1, max_v.end(), new_max.begin());
-#else
-  copy(min_v.begin()+1, min_v.end(), new_min.begin());
-  copy(max_v.begin()+1, max_v.end(), new_max.begin());
-#endif
-  for(iterator iter=this->begin(); iter != this->end(); iter++)
-    *iter = IndexRange<num_dimensions-1>(new_min, new_max);
+  const IndexRange<num_dimensions-1>
+    lower_dims(cut_first_dimension(min_v), cut_first_dimension(max_v));
+  this->fill(lower_dims);
 }
 
+template <int num_dimensions>
+IndexRange<num_dimensions>::
+IndexRange(const BasicCoordinate<num_dimensions, int>& sizes)
+  : base_type(sizes[1]),
+    is_regular_range(regular_true)
+{
+  const IndexRange<num_dimensions-1>
+    lower_dims(cut_first_dimension(sizes));
+  this->fill(lower_dims);
+}
 
 template <int num_dimensions>
 bool
@@ -164,6 +166,10 @@ IndexRange<1>::IndexRange(const BasicCoordinate<1,int>& min_v,
 
 IndexRange<1>::IndexRange(const int length)
 : min(0), max(length-1)
+{}
+
+IndexRange<1>::IndexRange(const BasicCoordinate<1,int>& size)
+: min(0), max(size[1]-1)
 {}
 
 int IndexRange<1>::get_min_index() const
