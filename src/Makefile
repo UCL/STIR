@@ -68,8 +68,19 @@ EXEDIRS += utilities recon_test \
 
 TESTDIRS += test recon_test
 
+STIR_LIB:=$(DEST)libstir.a
 
 include $(addsuffix /lib.mk, $(LIBDIRS))
+
+
+# STIR_REGISTRIES should be set to all object files we want to 
+# explicitly link with (i.e. in addition to the library).
+# In particular, this should include all files with
+# global variables of type 
+# RegisteredParsingObject::RegisterIt
+# We set it here such that the sub-Makefiles below can use it
+STIR_REGISTRIES:=$(foreach dir, $(LIBDIRS), $($(dir)_REGISTRY_OBJS))
+
 include $(addsuffix /exe.mk, $(EXEDIRS))
 include $(addsuffix /test.mk, $(TESTDIRS))
 
@@ -103,8 +114,6 @@ all_test_exes: $(foreach dir, $(TESTDIRS), $($(dir)_TEST_EXES))
 
 .PRECIOUS:  $(DEST)*.a
 
-STIR_LIB:=$(DEST)libstir.a
-
 lib: $(STIR_LIB)
 
 
@@ -114,13 +123,6 @@ $(STIR_LIB): $(foreach dir, $(LIBDIRS), $($(dir)_LIB_OBJS))
 
 
 
-
-# STIR_REGISTRIES should be set to all object files we want to 
-# explicitly link with (i.e. in addition to the library).
-# In particular, this should include all files with
-# global variables of type 
-# RegisteredParsingObject::RegisterIt
-STIR_REGISTRIES:=$(foreach dir, $(LIBDIRS), $($(dir)_REGISTRY_OBJS))
 
 install-exes: $(addprefix install_exes_, $(EXEDIRS))
 
