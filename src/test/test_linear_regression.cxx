@@ -1,76 +1,82 @@
-
 //
 // $Id$: $Date$
 //
+/*!
 
-/*
-  A simple programme to test the linear_regression function.
-  There should be a command line argument with the name of a file.
+  \file
+  \ingroup test
+
+  \brief A simple programme to test the linear_regression function.
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+
+  
+  To run the test, you should use a command line argument with the name of a file.
   This should contain a number of test cases for the fit.
-  File contents should as follows:
-    1 line with some general text
-    1 line with some text for the next test case
-    list_of_numbers
-    1 line with some text for the next test case
-    list_of_numbers
+  See linear_regressionTests for file contents.
+*/
+  
+#include "linear_regression.h"
+#include "RunTests.h"
+
+#include <fstream>
+#include <iostream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::ifstream;
+using std::istream;
+#endif
+
+START_NAMESPACE_TOMO
+
+/*!
+  \ingroup test
+  \brief A simple class to test the linear_regression function.
+
+  The class reads input from a stream, whose contents should be as follows:
+
+    1 line with some general text<br>
+    1 line with some text for the next test case<br>
+    list_of_numbers<br>
+    1 line with some text for the next test case<br>
+    list_of_numbers<br>
     ...
 
     
     where list_of_numbers is the following list of numbers 
     (white space is ignored)
-    number_of_points
-    coordinates
-    data	 
-    weights
-    expected_constant  expected_scale  
-    expected_chi_square  
-    expected_variance_of_constant  expected_variance_of_scale  
-    expected_covariance_of_constant_with_scale
 
-  Kris Thielemans, 08/12/1999
+    number_of_points<br>
+    coordinates<br>
+    data<br>
+    weights<br>
+    expected_constant  expected_scale  <br>
+    expected_chi_square <br> 
+    expected_variance_of_constant  expected_variance_of_scale  <br>
+    expected_covariance_of_constant_with_scale<br>
+
 */
-
-#include "pet_common.h"
-#include "linear_regression.h"
-#include <fstream>
-#include <iostream>
-
-const double tolerance = 1E-4F;
-
-bool check_if_equal(double a, double b, char *str = "Should be equal")
+class linear_regressionTests : public RunTests
 {
-  if ((fabs(b)>tolerance && fabs(a/b-1) > tolerance)
-      || (fabs(b)<=tolerance && fabs(a-b) > tolerance))
-  {
-    cerr << "Error : values are " << a << " and " << b 
-         << " (" << str<< ")"  << endl;
-    return false;
-  }
-  else
-    return true;
-}
+public:
+  linear_regressionTests(istream& in) 
+    : in(in)
+  {}
+
+  void run_tests();
+private:
+  istream& in;
+};
 
 
-int main(int argc, char **argv)
-{
-  if (argc != 2)
-  {
-    cerr << "Usage : " << argv[0] << " filename\n"
-         << "See source file for the format of this file.\n"
-	 << endl;
-    return 1;
-  }
-
-
-  ifstream in(argv[1]);
-  if (!in)
-  {
-    cerr << argv[0] 
-         << ": Error opening input file " << argv[1] << "\nExiting."
-	 << endl;
-    return 1;
-  }
-  
+void linear_regressionTests::run_tests()
+{  
   cerr << "Testing linear_regression function..." << endl;
 
   char text[200];
@@ -150,8 +156,33 @@ int main(int argc, char **argv)
       exit(1);
   }
 
-  cerr << "Everything fine" << endl;
-
-  return 0;
 }
 
+
+END_NAMESPACE_TOMO
+
+USING_NAMESPACE_TOMO
+
+int main(int argc, char **argv)
+{
+  if (argc != 2)
+  {
+    cerr << "Usage : " << argv[0] << " filename\n"
+         << "See source file for the format of this file.\n\n";
+    return EXIT_FAILURE;
+  }
+
+
+  ifstream in(argv[1]);
+  if (!in)
+  {
+    cerr << argv[0] 
+         << ": Error opening input file " << argv[1] << "\nExiting.\n";
+
+    return EXIT_FAILURE;
+  }
+
+  linear_regressionTests tests(in);
+  tests.run_tests();
+  return tests.main_return_value();
+}
