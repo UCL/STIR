@@ -265,11 +265,15 @@ void divide_and_truncate(const int view, // const int view45,
 	  numerator[r][v[i]][b]=0.0;
 	}	      
 	else {
-	  numerator[r][v[i]][b]/=denominator[r][v[i]][b];
 
+	  //MJ 28/10/99 corrected - moved above the sinogram division
 	  if (f != NULL) {
 	    *f -= numerator[r][v[i]][b]*log(denominator[r][v[i]][b]); //Check the validity of this
 	  };
+
+	  numerator[r][v[i]][b]/=denominator[r][v[i]][b];
+
+	
 	};
       }	
 }
@@ -300,11 +304,14 @@ void divide_and_truncate(PETViewgram& numerator,
       
       else {
 
-	numerator[r][b]/=denominator[r][b];
-
+	//MJ 28/10/99 corrected - moved above the sinogram division
 	if (f != NULL) {
 	      *f -= numerator[r][b]*log(denominator[r][b]);
 	};
+
+	numerator[r][b]/=denominator[r][b];
+
+
       };
     }
 }
@@ -355,4 +362,30 @@ input_image[ze].fill(0.0);
 
 
 
+}
+
+
+
+void divide_array(PETSegmentByView& numerator,PETSegmentByView& denominator)
+{
+  
+  const int vs=numerator.get_min_view();
+  const int ve=numerator.get_max_view();
+  const int rs=numerator.get_min_ring();
+  const int re=numerator.get_max_ring();
+  const int bs=numerator.get_min_bin();
+  const int be=numerator.get_max_bin();
+  
+  for(int v=vs;v<=ve;v++)
+    for(int r=rs;r<=re;r++)
+      for(int b=bs;b<=be;b++)
+	{
+
+	  if (denominator[v][r][b] != 0.0)
+	    numerator[v][r][b]=numerator[v][r][b]/denominator[v][r][b];
+	  else
+	     numerator[v][r][b]=0.0;
+
+	}
+    
 }
