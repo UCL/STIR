@@ -13,8 +13,15 @@
 
   \date $Date$
   \version $Revision$
+  
+  Currently, Interfile 3.3 parsing rules are hard-coded. 
+  
+  \warning Vectored keys are treated very dangerously: when a keyword
+  is assumed to be vectored, run-time errors occur when it is used without [].
+  \warning The use of the [*] index for vectored keys is NOT supported.
 
-  \warning All this is going to change ...
+  \warning All this is going to change to a more general purpose parser...
+  
 */
 #ifndef __KEYPARSER_H__
 #define __KEYPARSER_H__
@@ -35,6 +42,7 @@ using std::vector;
 using std::string;
 using std::map;
 using std::istream;
+using std::ostream;
 #endif
 
 START_NAMESPACE_TOMO
@@ -44,7 +52,6 @@ typedef vector<unsigned long> UlongVect;
 typedef vector<double> DoubleVect;
 
 
-// KT 20/06/98 new
 typedef vector<string> ASCIIlist_type;
 
 
@@ -125,6 +132,8 @@ public:
   void add_key(const string& keyword, KeyArgument::type t, 
 	      void* variable, const ASCIIlist_type * const list = 0);
 
+  //! Prints all keywords (in random order) to the stream
+  void print_keywords_to_stream(ostream&) const;
 
 protected : 
 
@@ -136,6 +145,10 @@ protected :
    { return false; }
 	
 
+  
+  //! convert 'rough' keyword into a standardised form
+  virtual string 
+    standardise_keyword(const string& keyword) const;
 
   ////// predefined actions 
 
@@ -149,7 +162,7 @@ protected :
   void set_variable();
 
 
-
+  
 private :
 
   ////// variables
@@ -180,7 +193,7 @@ private :
   // loops over all lines in the file. returns 0 of OK, 1 of not.
   int parse_header();
 
-  // read a line, see if it's a keyword using map_keyword)
+  // read a line, see if contains a keyword using map_keyword
   // if so, return 1, else
   // conditionally write a warning and return 0
   int parse_line(const bool write_warning);
