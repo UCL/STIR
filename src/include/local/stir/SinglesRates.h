@@ -23,6 +23,7 @@
 #include "stir/DetectionPosition.h"
 #include "stir/RegisteredObject.h"
 #include "stir/Scanner.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -32,12 +33,14 @@ public:
 
   virtual ~SinglesRates () {};
   //! Virtual function that return singles rate given the detection postions and/or time or detection 
-  virtual float get_singles_rate (const DetectionPosition<>& det_pos, float time) const =0;
+  virtual float get_singles_rate (const DetectionPosition<>& det_pos, 
+				  const double start_time,
+				  const double end_time) const =0;
   //! Get the scanner pointer
   inline const Scanner * get_scanner_ptr () const;
 
 protected:
-  const Scanner* scanner_ptr;
+  shared_ptr<Scanner> scanner_sptr;
 
 };
 
