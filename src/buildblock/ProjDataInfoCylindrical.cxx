@@ -137,8 +137,8 @@ initialise_ring_diff_arrays() const
 
        Ignoring the difficulties of axial compression for a second, it is clear that
        for a given bin, there will be 2 rings as follows:
-         ring1 = get_m(bin)/ring_spacing  + ring_diff/2 + (num_rings-1)/2
-         ring2 = get_m(bin)/ring_spacing  - ring_diff/2 + (num_rings-1)/2
+         ring2 = get_m(bin)/ring_spacing  + ring_diff/2 + (num_rings-1)/2
+         ring1 = get_m(bin)/ring_spacing  - ring_diff/2 + (num_rings-1)/2
        This follows from the fact that get_m() returns the z position
        in millimeter of the middle of the LOR w.r.t. the middle of the scanner.
        The (num_rings-1)/2 shifts the origin such that the first ring has 
