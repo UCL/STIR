@@ -44,6 +44,7 @@ class Bin;
 class SymmetryOperation
 {
 public:
+  virtual inline ~SymmetryOperation() {}
   virtual inline bool is_trivial() const { return false;}
   virtual void 
     transform_bin_coordinates(Bin&) const = 0;
@@ -57,9 +58,12 @@ public:
     transform_incremental_image_coordinates(Coordinate3D<int>&) const = 0;
 #endif
 
+#ifdef PROJMATRIX
   virtual void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
+#endif
+
 #if 0
   virtual void 
     transform_proj_matrix_elems_for_voxel(
