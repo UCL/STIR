@@ -1,15 +1,26 @@
-/*
-   $Id$: $Date$
+/*!
+ \file
+  
+ \brief very basic display routines
+  
+ \author Kris Thielemans
+ \author PARAPET project
+ 
+ \date    $Date$
+  
+ \version $Revision$
 
-   This is part of a library by Kris Thielemans, mainly written in 1991.
-   It provides macros (and a few functions) for displaying stuff on a screen.
-   It works in XWindows, DOS (upto SVGA resolution, or using a PGA) and 
-   a VAX using a Matrox card (very much similar to PGA).
-   It's fairly simplistic. No menus. Just simple display of bitmaps,
-   lines, points, text strings.
-
-   Not much documentation around I'm afraid...
+ This is part of a library by Kris Thielemans, mainly written in 1991.
+ It provides macros (and a few functions) for displaying stuff on a screen.
+ It works in XWindows, DOS (upto SVGA resolution, or using a PGA) and 
+ a VAX using a Matrox card (very much similar to PGA).
+ It's fairly simplistic. No menus. Just simple display of bitmaps,
+ lines, points, text strings.
+  
+ \internal
+ 
 */
+
 
 /* Change November 1997: added next 3 lines */
 #ifdef __cplusplus
@@ -20,23 +31,6 @@ extern "C" {
 #define ANSI
 #endif
 
-  /* Change 13/02/98: update for more recent compilers */
-#ifdef MSDOS
-#if !defined(__GNUC__) && !defined(_WIN32)
-#define MSDOS16BIT
-#else
-#define SC_XWINDOWS
-#endif
-#endif
-
-#if defined(__osf__) || defined(__unix__) || defined(ultrix)
-#define SC_XWINDOWS
-#endif
-
-  /* Change 13/02/98, allow for XWindows on VAX */
-#if defined(VAX) && !defined(SC_XWINDOWS)
-#define SC_QG
-#endif
 
 #ifndef SC_pixel_t
 #define SC_pixel_t unsigned char
@@ -403,5 +397,5 @@ extern void input_message(void);
 
 /* Change November 1997: added next 3 lines: end of extern "C" */
 #ifdef __cplusplus
-	   }
+}
 #endif
