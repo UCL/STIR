@@ -125,7 +125,7 @@ LORInCylinderCoordinates(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>
   _p1.z() = na_coords.z1();
   _p2.z() = na_coords.z2();
   _p1.psi() = to_0_2pi(na_coords.phi() + na_coords.beta());
-  _p2.psi() = to_0_2pi(na_coords.phi() - na_coords.beta() + _PI);
+  _p2.psi() = to_0_2pi(na_coords.phi() - na_coords.beta() + static_cast<coordT>(_PI));
 }
 
 template <class coordT>
@@ -136,7 +136,7 @@ LORInCylinderCoordinates(const LORInAxialAndSinogramCoordinates<coordT>& coords)
   _p1.z() = coords.z1();
   _p2.z() = coords.z2();
   _p1.psi() = to_0_2pi(coords.phi() + coords.beta());
-  _p2.psi() = to_0_2pi(coords.phi() - coords.beta() + _PI);
+  _p2.psi() = to_0_2pi(coords.phi() - coords.beta() + static_cast<coordT>(_PI));
 }
 
 template <class coordT>
@@ -148,14 +148,14 @@ get_sino_coords(  coordT& _z1,
 		  const LORInCylinderCoordinates<coordT>& cyl_coords)
 {
   // TODO check
-  _beta = to_0_2pi(cyl_coords.p1().psi() - cyl_coords.p2().psi() +  static_cast<coordT>(_PI))/2;
+  _beta = to_0_2pi((cyl_coords.p1().psi() - cyl_coords.p2().psi() +  static_cast<coordT>(_PI))/2);
   _phi =  to_0_2pi((cyl_coords.p1().psi() + cyl_coords.p2().psi() - static_cast<coordT>( _PI))/2);
   /* Now bring into standard range and set z accordingly */
-  if (_phi <  _PI)
+  if (_phi <  static_cast<coordT>(_PI))
     {
-      if (_beta >=  _PI/2)
+      if (_beta >=  static_cast<coordT>(_PI)/2)
         {
-          _beta = _PI - _beta;
+          _beta = static_cast<coordT>(_PI) - _beta;
 	  _z2 = cyl_coords.p1().z();
 	  _z1 = cyl_coords.p2().z();
         }
@@ -167,11 +167,11 @@ get_sino_coords(  coordT& _z1,
     }
   else
     {
-      _phi -= _PI;
+      _phi -= static_cast<coordT>(_PI);
       assert(_phi>=0);
-      if (_beta >=  _PI/2)
+      if (_beta >=  static_cast<coordT>(_PI)/2)
         {
-          _beta -= _PI;
+          _beta -= static_cast<coordT>(_PI);
 	  _z1 = cyl_coords.p1().z();
 	  _z2 = cyl_coords.p2().z();
         }
