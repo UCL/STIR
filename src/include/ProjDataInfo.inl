@@ -1,8 +1,7 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
-
   \file
   \ingroup buildblock
   \brief Implementations of inline functions for class ProjDataInfo
@@ -11,13 +10,15 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 START_NAMESPACE_TOMO
   
+bool 
+ProjDataInfo::operator !=(const ProjDataInfo& proj) const
+{ return !(*this == proj); }
 
 int 
 ProjDataInfo::get_num_segments() const
