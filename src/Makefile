@@ -1,7 +1,9 @@
 # 
-# $Id$: $Date$
+# $Id$: 
 #
 include Makefile_common
+
+
 
 LIBSUBDIRECTORIES = \
 	$(WORKSPACE)/buildblock \
@@ -18,14 +20,19 @@ EXESUBDIRECTORIES= \
 
 SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 
-MAKE_ALL = $(MAKE) all
+
+__TEST_local_Makefile:=$(shell if [ -e local/Makefile ]; then echo 1;  fi)
+
+
 
 all: 
 	for subdir in $(EXESUBDIRECTORIES); do   \
 	  	(echo "------------------");\
-		(cd $$subdir; $(MAKE_ALL)); \
-	done
-
+		(cd $$subdir; $(MAKE) all); \
+	done;
+ifeq ($(__TEST_local_Makefile),1)
+	(cd local; $(MAKE) all);
+endif
 
 
 install:
@@ -33,18 +40,19 @@ install:
 	  	(echo "------------------");\
 		(cd $$subdir; $(MAKE) install); \
 	done
+ifeq ($(__TEST_local_Makefile),1)
+	(cd local; $(MAKE) install);
+endif
+
 
 clean: 
-#	echo -n "Are you sure to clean up all the directories ? (y/n)"
-#	set resp = $<
-#	if ($resp == 'y') then
-		for subdir in $(SUBDIRECTORIES); do \
-	  		(echo \rm -rf $$subdir/$(DEST)); \
-			(cd $$subdir; \rm -r $(DEST));\
-		done; \
-#	else
-#		(echo "No clean up ");
-#	fi
+	for subdir in $(SUBDIRECTORIES); do 
+	  	(echo \rm -rf $$subdir/$(DEST)); 
+		(cd $$subdir; \rm -r $(DEST));
+	done; 
+ifeq ($(__TEST_local_Makefile),1)
+	(cd local; $(MAKE) all);
+endif
 
 
-.PHONY: all clean
+.PHONY: all clean install
