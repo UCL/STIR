@@ -31,7 +31,7 @@
 #include "stir/RunTests.h"
 #include "stir/stream.h"
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <math.h>
 #ifndef STIR_NO_NAMESPACES
 using std::stringstream;
