@@ -20,7 +20,7 @@
 */
 #include "stir/DiscretisedDensity.h"
 #include "local/stir/cleanup966ImageProcessor.h"
-#include "stir/interfile.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/Succeeded.h"
 
 #ifndef STIR_NO_NAMESPACES
@@ -48,19 +48,20 @@ int main(int argc, char **argv)
     DiscretisedDensity<3,float>::read_from_file(input_filename);
 
   // apply 
-  cleanup966ImageProcessor<float() image_processor;
-  if (cleanup966ImageProcessor.set_up(*density_ptr) == false)
+  cleanup966ImageProcessor<float> image_processor;
+  if (image_processor.set_up(*density_ptr) == false)
     {
       warning("%s: cannot handle non-zero offset in x or y in file %s\n",
 	      argv[0], input_filename);
       return EXIT_FAILURE;
     }
-  image_processor(apply(density);
+  image_processor.apply(density);
   // write image
-  Succeeded res = write_basic_interfile(output_filename, *density_ptr);
+  DefaultOutputFileFormat output_file_format;
+  Succeeded res = 
+    output_file_format.write_to_file(output_filename, *density_ptr);
 
   return res==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-
 }
 
 
