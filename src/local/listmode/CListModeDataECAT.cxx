@@ -40,11 +40,13 @@ CListModeDataECAT::
 CListModeDataECAT(const string& listmode_filename_prefix)
   : listmode_filename_prefix(listmode_filename_prefix)    
 {
+  // initialise scanner_ptr before calling open_lm_file, as it is used in that function
+  // TODO get scanner from .sgl
+  scanner_ptr = new Scanner(Scanner::E966);
+
   if (open_lm_file(1) == Succeeded::no)
     error("CListModeDataECAT: error opening the first listmode file for filename %s\n",
 	  listmode_filename_prefix.c_str());
-  // TODO get scanner from .sgl
-  scanner_ptr = new Scanner(Scanner::E966);
 }
 
 
