@@ -31,6 +31,7 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	rigid_object_transform_projdata.cxx \
 	rigid_object_transform_image.cxx \
 	find_maximum_in_image.cxx \
+	remove_corrupted_sinograms.cxx \
 	move_image.cxx
 
 #	make_cylinder.cxx 
