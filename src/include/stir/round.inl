@@ -8,6 +8,7 @@
   \brief Implementation of the round functions
     
   \author Kris Thielemans
+  \author Charalampos Tsoumpas
       
   $Date$	
   $Revision$	
