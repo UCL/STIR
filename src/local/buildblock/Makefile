@@ -29,6 +29,7 @@ SOURCES = \
 	SeparableGaussianImageFilter.cxx \
 	SeparableGaussianArrayFilter.cxx \
 	NonseparableSpatiallyVaryingFilters.cxx \
+	NonseparableSpatiallyVaryingFilters3D.cxx \
 	local_helping_functions.cxx
 
 
