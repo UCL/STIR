@@ -11,12 +11,23 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -25,9 +36,7 @@
 #include "stir/IndexRange.h"
 #include "stir/stream.h"
 #include <iostream>
-#ifndef OLDDESIGN
 #include <typeinfo>
-#endif
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -50,11 +59,20 @@ int main(int argc, char **argv, char **env)
   return tests.main_return_value();
 }
 \endcode
+
+  \par Implementation notes
+
+  At present, the various check* functions are overloaded on most basic
+  types, and in some STIR specific types such as VectorWithOffset. 
+  This creates problems when the arguments are not exactly of one of those
+  types. For instance, when std::size_t is not one of <code>unsigned int</code>
+  or <code>unsigned long</code>, the compilation will break.
+
+  A potential solution for this would be to use member templates. It would
+  also remove some code repetition. However, you then need 
+  specialisation of member template, and a relatively recent compiler.
+  We leave this for later.
 */
-
-// some of this could be written nicer using more member templates
-// handling the int case separately would require specialisation of member templates though
-
 class RunTests
 {
 public:
@@ -89,6 +107,7 @@ public:
   bool check_if_equal(const double a, const double b, char const * const str = "");
   bool check_if_equal(const int a, const int b, char const * const str = "");
   bool check_if_equal(const unsigned int a, const unsigned int b, char const * const str = "");
+  bool check_if_equal(const unsigned long a, const unsigned long b, char const * const str = "");
   // VC 6.0 needs definition of template members in the class def unfortunately.
   template <class T>
     bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, 
@@ -138,9 +157,7 @@ public:
     {
       if(!check_if_zero(t[i], str))
       {
-#ifndef OLDDESIGN
         cerr << "(at VectorWithOffset<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
-#endif
         return false;
       }
     }
@@ -251,8 +268,23 @@ RunTests::check_if_equal(const double a, const double b, char const * const str)
     return true;
 }
 
+
 bool
 RunTests::check_if_equal(const int a, const int b, char const * const str)
+{
+  if (a != b)
+  {
+    cerr << "Error : unequal values are " << a << " and " << b 
+         << ". " << str<< endl;
+    everything_ok = false;
+    return false;
+  }
+  else
+    return true;
+}
+
+bool
+RunTests::check_if_equal(const unsigned long a, const unsigned long b, char const * const str)
 {
   if (a != b)
   {
