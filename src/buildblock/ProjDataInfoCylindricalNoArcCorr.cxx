@@ -318,7 +318,7 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   const float ring_spacing=get_scanner_ptr()->get_ring_spacing();
   const float ring_radius=get_scanner_ptr()->get_ring_radius();
 
-#if 1
+#if 0
   const CartesianCoordinate3D<float> d = c2 - c1;
   /* parametrisation of LOR is 
      c = l*d+c1
@@ -423,6 +423,13 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2.y() = -x2;
   coord_2.x() = y2; 
 #else
+  // although code maybe doesn't really need the following, 
+  // asserts in the LOR code will break if these conditions are not satisfied.
+  assert(0<=det1);
+  assert(det1<num_detectors_per_ring);
+  assert(0<=det2);
+  assert(det2<num_detectors_per_ring);
+
   LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_ring_radius());
   cyl_coords.p1().psi() = (2.*_PI/num_detectors_per_ring)*(det1);
   cyl_coords.p2().psi() = (2.*_PI/num_detectors_per_ring)*(det2);
