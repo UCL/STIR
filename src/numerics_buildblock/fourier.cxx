@@ -18,6 +18,8 @@
 */
 #include "stir/numerics/fourier.h"
 #include "stir/round.h"
+#include "stir/modulo.h"
+#include "stir/array_index_functions.h"
 START_NAMESPACE_STIR
 
 
@@ -48,7 +50,7 @@ static   exparray_t exparray;
 
 static void init_exparray(const int k, const int pow2k)
 {
-  if (exparray.get_max_index() >= k && exparray[k].get_length()>0)
+  if (exparray.get_max_index() >= k && exparray[k].size()>0)
     return;
 
   if (exparray.get_max_index() <k)
@@ -64,7 +66,7 @@ static   exparray_t expminarray;
 
 static void init_expminarray(const int k, const int pow2k)
 {
-  if (expminarray.get_max_index() >= k && expminarray[k].get_length()>0)
+  if (expminarray.get_max_index() >= k && expminarray[k].size()>0)
     return;
 
   if (expminarray.get_max_index() <k)
@@ -85,14 +87,14 @@ static void init_expminarray(const int k, const int pow2k)
 template <typename T>
 void fourier_1d(T& c, const int sign)
 {
-  if (c.get_length()==0) return;
+  if (c.size()==0) return;
   assert(c.get_min_index()==0);
   assert(sign==1 || sign ==-1);
   bitreversal(c);
   // find 'nn' which is such that length==2^nn
-  const int nn=round(log(static_cast<double>(c.get_length()))/log(2.));
+  const int nn=round(log(static_cast<double>(c.size()))/log(2.));
   if (c.get_length()!= round(pow(2,nn)))
-    error ("fourier_1d called with array length %d which is not 2^%d\n", c.get_length(), nn);
+    error ("fourier_1d called with array length %d which is not 2^%d\n", c.size(), nn);
 
 
   int k=0;
@@ -146,9 +148,9 @@ struct fourier_auxiliary
   do_fourier(VectorWithOffset<elemT >& c, const int sign)
   {
     fourier_1d(c, sign);
-    //TODO use something from <functional> to map function on each element
+    const typename VectorWithOffset<elemT>::iterator iter_end = c.end();
     for (typename VectorWithOffset<elemT>::iterator iter = c.begin();
-	 iter != c.end();
+	 iter != iter_end;
 	 ++iter)
       fourier(*iter, sign);
   }
@@ -210,14 +212,14 @@ fourier_1d_for_real_data(const Array<1,T>& v, const int sign)
 {
   //typedef std::complex<typename T::value_type> complex_t;
   typedef std::complex<T> complex_t;
-  if (v.get_length()==0) return Array<1,complex_t>();
+  if (v.size()==0) return Array<1,complex_t>();
   assert(v.get_min_index()==0);
   assert(sign==1 || sign ==-1);
-  if (v.get_length()%2!=0)
+  if (v.size()%2!=0)
     error("fourier_1d_of_real can only handle arrays of even length.\n");
 
   Array<1,complex_t> c;
-  const unsigned int n = v.get_length()/2;
+  const unsigned int n = v.size()/2;
   // we reserve a range of 0,n here, such that 
   // resize(n) later doesn't reallocate and copy
   c.reserve(n+1);
@@ -260,13 +262,16 @@ Array<1,T>
 inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
 {
   typedef std::complex<T> complex_t;
-  if (c.get_length()==0) return Array<1,T>();
+  if (c.size()==0) return Array<1,T>();
   assert(c.get_min_index()==0);
   assert(sign==1 || sign ==-1);
   const int n = c.get_length()-1;
 
-  assert(c[0].imag()==0);
-  assert(c[n].imag()==0);
+  // somewhat problematic asserts to check that the imaginary part of c[0] and c[n] is 0
+  // trouble is that it could be only approximately 0 (e.g. when calling 
+  // inverse_fourier_real_data on multi-dimensional arrays)
+  assert(fabs(c[0].imag())<=.01*fabs(c[0].real()));
+  assert(fabs(c[n].imag())<=.01*fabs(c[n].real()));
   for (int i=1; i<=n/2; ++i)
     {
       const complex_t t1 = (c[i]+std::conj(c[n-i]));
@@ -290,8 +295,6 @@ inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
   inverse_fourier(c, sign);
   // extract real numbers.
   Array<1,T> v(2*n);
-  // note: we need to divide by 2 in the final result. To save
-  // some time, we do that here.
   for (int i=0; i<n; ++i)
     {
       v[2*i]= c[i].real()/2;
@@ -300,10 +303,164 @@ inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign)
   return v;
 }
 
+// multi-dimensional case
+
+/* A class that does the recursion for multi-dimensional arrays.
+
+   This is done with a class because partial template specialisation is
+   more powerful than function overloading.
+*/
+template <int num_dimensions, typename elemT>
+struct fourier_for_real_data_auxiliary
+{
+  static Array<num_dimensions,std::complex<elemT> >
+  do_fourier_for_real_data(const Array<num_dimensions,elemT >& c, const int sign)
+  {
+    // complicated business to get index range which is as follows:
+    // outer_dimension = outer_dimension of c
+    // all other dimensions are as small as possible (to avoid reallocations)
+    BasicCoordinate<num_dimensions, int> min_index, max_index;
+    for (int d=2; d<=num_dimensions; ++d)
+      min_index[d] = max_index[d] = 0;
+    min_index[1] = c.get_min_index();
+    max_index[1] = c.get_max_index();
+    Array<num_dimensions, std::complex<elemT> > array(IndexRange<num_dimensions>(min_index, max_index));
+    for (int i=c.get_min_index(); i<=c.get_max_index(); ++i)
+      array[i] = fourier_for_real_data(c[i], sign);
+    fourier_1d(array, sign);
+    return array;
+  }
+  static Array<num_dimensions,elemT>
+  do_inverse_fourier_for_real_data(Array<num_dimensions,std::complex<elemT> >& c, const int sign)
+  {
+    inverse_fourier_1d(c, sign);
+    // complicated business to get index range which is as follows:
+    // outer_dimension = outer_dimension of c
+    // all other dimensions are as small as possible (to avoid reallocations)
+    BasicCoordinate<num_dimensions, int> min_index, max_index;
+    for (int d=2; d<=num_dimensions; ++d)
+      min_index[d] = max_index[d] = 0;
+    min_index[1] = c.get_min_index();
+    max_index[1] = c.get_max_index();
+    Array<num_dimensions, elemT> array(IndexRange<num_dimensions>(min_index, max_index));
+
+    for (int i=c.get_min_index(); i<=c.get_max_index(); ++i)
+      array[i] = inverse_fourier_for_real_data(c[i], sign);
+    return array;
+  }
+};
+
+// specialisation for the one-dimensional case
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+
+template <typename elemT>
+struct fourier_for_real_data_auxiliary<1,elemT>
+{
+  static Array<1,std::complex<elemT> >
+  do_fourier_for_real_data(const Array<1,elemT>& c, const int sign)
+  {
+    return
+      fourier_1d_for_real_data(c, sign);
+  }
+  static Array<1,elemT>
+  do_inverse_fourier_for_real_data(Array<1,std::complex<elemT> >& c, const int sign)
+  {
+    return
+      inverse_fourier_1d_for_real_data(c, sign);
+  }
+};
 
 
-// INSTANTIATIONS
-// add any you need
+#else  //no partial template specialisation
+
+// we just list float and double explicitly
+
+Array<1,std::complex<float> >
+fourier_for_real_data_auxiliary<float>::
+do_fourier_for_real_data(Array<1,float>& c, const int sign)
+{
+  return
+    fourier_1d_for_real_data(c, sign);
+}
+
+Array<1,float>
+fourier_for_real_data_auxiliary<float>::
+do_inverse_fourier_for_real_data(Array<1,std::complex<float> >& c, const int sign)
+{
+  return
+    inverse_fourier_1d_for_real_data(c, sign);
+}
+
+Array<1,std::complex<double> >
+fourier_for_real_data_auxiliary<double>::
+do_fourier_for_real_data(Array<1,double>& c, const int sign)
+{
+  return
+    fourier_1d_for_real_data(c, sign);
+}
+
+Array<1,double>
+fourier_for_real_data_auxiliary<double>::
+do_inverse_fourier_for_real_data(Array<1,std::complex<double> >& c, const int sign)
+{
+  return
+    inverse_fourier_1d_for_real_data(c, sign);
+}
+#endif
+
+// now the fourier_for_real_data function is easy to define in terms of the class above
+template <int num_dimensions, typename T>
+Array<num_dimensions,std::complex<T> >
+fourier_for_real_data(const Array<num_dimensions,T>& c, const int sign)
+{
+  return
+    fourier_for_real_data_auxiliary<num_dimensions,T>::
+    do_fourier_for_real_data(c,sign);
+}
+
+
+template <int num_dimensions, typename T>
+Array<num_dimensions,T >
+inverse_fourier_for_real_data(Array<num_dimensions,std::complex<T> >& c, const int sign)
+{
+  return
+  fourier_for_real_data_auxiliary<num_dimensions,T>::
+    do_inverse_fourier_for_real_data(c,sign);
+}
+
+template <int num_dimensions, typename T>
+Array<num_dimensions, std::complex<T> > 
+pos_frequencies_to_all(const Array<num_dimensions, std::complex<T> >& c)
+{
+  assert(c.is_regular());
+  BasicCoordinate<num_dimensions, int> min_index, max_index;
+  c.get_regular_range(min_index, max_index);
+  // check min_indices are 0
+  assert(min_index == (min_index*0));  
+  max_index[num_dimensions]=max_index[num_dimensions]*2-1;
+  Array<num_dimensions, std::complex<T> > result(IndexRange<num_dimensions>(min_index, max_index));
+  
+  BasicCoordinate<num_dimensions, int> index = min_index;
+  const BasicCoordinate<num_dimensions, int> sizes = max_index+1;
+  do
+    {
+      result[index] = c[index];
+      if (index[num_dimensions]>0)
+	{
+	  const BasicCoordinate<num_dimensions, int> related_index = 
+	    modulo(sizes-index, sizes);
+	  result[related_index] = std::conj(c[index]);
+	}
+    }
+  while(next(index, c));
+  return result;
+}
+
+
+/*****************************************************************
+ * INSTANTIATIONS
+ * add any you need
+ ******************************************************************/
 
 // note: instantiate the highest dimension you need. That will do all lower dimensions
 template
@@ -313,20 +470,21 @@ fourier<>(Array<3,std::complex<float> >& c, const int sign);
 template
 void 
 fourier<>(VectorWithOffset<std::complex<float> >& c, const int sign);
-/*
-template
-Array<1,std::complex<float> >
-//Array<1,std::complex<VectorWithOffset<float>::value_type> >
-fourier_1d_for_real_data<>(const VectorWithOffset<float>& v, const int sign);
-*/
 
-template
-Array<1,std::complex<float> >
-//Array<1,typename std::complex<Array<1,float>::value_type> >
-fourier_1d_for_real_data<>(const Array<1,float>& v, const int sign);
+#define INSTANTIATE(d,type) \
+ template \
+ Array<d,std::complex<type> > \
+ fourier_for_real_data<>(const Array<d,type>& v, const int sign); \
+ template  \
+ Array<d,type> \
+  inverse_fourier_for_real_data<>(Array<d,std::complex<type> >& c, const int sign); \
+ template \
+ Array<d, std::complex<type> > \
+ pos_frequencies_to_all<>(const Array<d, std::complex<type> >& c);
 
-template 
-Array<1,float>
-  inverse_fourier_1d_for_real_data<>(Array<1,std::complex<float> >& c, const int sign);
+INSTANTIATE(1,float);
+INSTANTIATE(2,float);
+INSTANTIATE(3,float);
+#undef INSTANTIATE
 
 END_NAMESPACE_STIR
