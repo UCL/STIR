@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup Array 
   \brief inline implementations for the Array class 
 
   \author Kris Thielemans (with help from Alexey Zverovich)
@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 // include for min,max definitions
