@@ -1,21 +1,34 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Internal GE use only.
+*/
+START_NAMESPACE_STIR // for doxygen
 /*!
-
   \file
-  \ingroup utilities
+  \ingroup motion_utilities
   \brief A utility to re-interpolate an image to a new coordinate system.
+
+  Basic program for moving an image given 1 rigid object transformation,
+  specified by 1 quaternion and 1 translation vector. Conventions for these are
+  as for Polaris.
+
+  \see transform_3d_object(DiscretisedDensity<3,float>& out_density, 
+		    const DiscretisedDensity<3,float>& in_density, 
+		    const RigidObject3DTransformation& rigid_object_transformation)
+
+  \par Usage
+  Run to get a usage message
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+END_NAMESPACE_STIR
+
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/Succeeded.h"
