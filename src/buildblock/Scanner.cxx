@@ -540,7 +540,7 @@ Scanner::get_scanner_from_name(const string& name)
   {
     scanner_ptr = new Scanner(type);
     const list<string>& list_of_names = scanner_ptr->get_all_names();
-    for (list<string>::const_iterator iter =list_of_names.begin();
+    for (std::list<string>::const_iterator iter =list_of_names.begin();
 	 iter!=list_of_names.end();
 	   ++iter)
       {
