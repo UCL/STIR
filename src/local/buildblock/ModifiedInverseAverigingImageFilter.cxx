@@ -180,7 +180,7 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 	      float bin_attenuation= 
 		(*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
 	      
-	      image[z][y][x] += (square(bin_attenuation)/bin) * square(val);}
+	      image[z][y][x] += (bin_attenuation/bin) * square(val);}
 	    else
 	      image[z][y][x] += (1.F/bin) * square(val);
 	  }
@@ -189,7 +189,7 @@ find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
 	    {
 	      float bin_attenuation= 
 		(*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  
-	      image[z][y][x] += (square(bin_attenuation)/threshold) * square(val);
+	      image[z][y][x] += (bin_attenuation/threshold) * square(val);
 	    }
 	    else
 	      image[z][y][x] += (1.F/threshold) * square(val);
@@ -285,7 +285,8 @@ ModifiedInverseAverigingImageFilter(string proj_data_filename_v,
 				    string attenuation_proj_data_filename_v,
 				    const VectorWithOffset<elemT>& filter_coefficients_v,
 				    shared_ptr<ProjData> proj_data_ptr_v,
-				    shared_ptr<ProjData> attenuation_proj_data_ptr_v)
+				    shared_ptr<ProjData> attenuation_proj_data_ptr_v,
+				    int mask_size_v)
 
 				    
 {
@@ -298,6 +299,7 @@ ModifiedInverseAverigingImageFilter(string proj_data_filename_v,
   attenuation_proj_data_filename = attenuation_proj_data_filename_v;
   proj_data_ptr = proj_data_ptr_v;
   attenuation_proj_data_ptr = attenuation_proj_data_ptr_v;
+  mask_size= mask_size_v;
 }
 
 
@@ -442,14 +444,15 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 
  // WARNING - find a way of finding max in the sinogram
   // TODO - include other segments as well
-  const float max_in_viewgram = (proj_data_ptr->get_segment_by_view(0)).find_max();
+  const float max_in_viewgram = 33.52;
+    //(proj_data_ptr->get_segment_by_view(0)).find_max();
   //cerr <<  max_in_viewgram ;
   //cerr << endl;
   //33.52F;
   const float threshold = 0.0001F*max_in_viewgram;  
 
-  //cerr << " THRESHOLD IS" << threshold; 
-  //cerr << endl;
+  cerr << " THRESHOLD IS" << threshold; 
+  cerr << endl;
     
     find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
       all_attenuation_segments,
@@ -498,9 +501,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
      for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
       for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
-      //for (int j =in_density_cast_0.get_min_y()+2;j<=in_density_cast_0.get_max_y()-2;j++)
-	//for (int i =in_density_cast_0.get_min_x()+2;i<=in_density_cast_0.get_max_x()-2;i++)	
-	{
+      	{
 	  
 	  // WARNING - only works for segment zero at the moment
 	  // do the calculation of kappa0 here
@@ -508,21 +509,22 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  (*all_segments_for_kappa0[all_segments.get_min_index()]).fill(0);	    
 	  if (attenuation_proj_data_filename !="1")
 	  {
-	     //cerr << " in here" << "     " ;
 	   
 	    shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
 	      new VoxelsOnCartesianGrid<float>
 	      (IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-	      -2,2,-2,2),in_density.get_origin(),in_density_cast_0.get_voxel_size());  
+	      -mask_size,mask_size,
+	      -mask_size,mask_size),in_density.get_origin(),in_density_cast_0.get_voxel_size());  
 	   
-	     const int min_j = max(in_density_cast_0.get_min_y(),j-2);
-	    const int max_j = min(in_density_cast_0.get_max_y(),j+2);
-	    const int min_i = max(in_density_cast_0.get_min_x(),i-2);
-	    const int max_i = min(in_density_cast_0.get_max_x(),i+2);
+	    const int min_j = max(in_density_cast_0.get_min_y(),j-mask_size);
+	    const int max_j = min(in_density_cast_0.get_max_y(),j+mask_size);
+	    const int min_i = max(in_density_cast_0.get_min_x(),i-mask_size);
+	    const int max_i = min(in_density_cast_0.get_max_x(),i+mask_size);
 	   
 	    // the mask size is in 2D only
 	    for (int j_in =min_j;j_in<=max_j;j_in++)
 	      for (int i_in =min_i;i_in<=max_i;i_in++)	
+	     
 		    (*in_density_cast_tmp)[k][j_in-j][i_in-i] = in_density_cast_0[k][j_in][i_in];
 	      
 	      fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
@@ -542,10 +544,10 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  }
 	  else
 	  {
-	    const int min_j = max(in_density_cast_0.get_min_y(),j-2);
-	    const int max_j = min(in_density_cast_0.get_max_y(),j+2);
-	    const int min_i = max(in_density_cast_0.get_min_x(),i-2);
-	    const int max_i = min(in_density_cast_0.get_max_x(),i+2);
+	    const int min_j = max(in_density_cast_0.get_min_y(),j-mask_size);
+	    const int max_j = min(in_density_cast_0.get_max_y(),j+mask_size);
+	    const int min_i = max(in_density_cast_0.get_min_x(),i-mask_size);
+	    const int max_i = min(in_density_cast_0.get_max_x(),i+mask_size);
 	    
 	    fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
 	      in_density_cast_0.get_min_z(), in_density_cast_0.get_max_z(),
@@ -565,7 +567,6 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  //	<< ", " << kappa0_ptr_bck->find_max() << endl; 
 	  
 	  char* file0 = "kappa0";
-	  //cerr <<"  - Saving " << file0 << endl;
 	  write_basic_interfile(file0, *kappa0_ptr_bck);
 	  
 	  float sq_kapas;
@@ -573,7 +574,6 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	    fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	  { 
-	    //sq_kapas =((*image_sptr_0)[k][j][i]*(*image_sptr_0)[k][j][i])/((*image_sptr_1)[k][j][i]*(*image_sptr_1)[k][j][i]);
 	    sq_kapas =((*kappa0_ptr_bck)[k][j][i]*(*kappa0_ptr_bck)[k][j][i])/((*kappa1_ptr_bck)[k][j][i]*(*kappa1_ptr_bck)[k][j][i]);
 	    
 	    *output1 << " Values of kapa0 and kapa1" << endl;
@@ -626,16 +626,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
      for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
        for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
 	 for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
-
-     //  for (int j =in_density_cast_0.get_min_y()+2;j<=in_density_cast_0.get_max_y()-2;j++)
-//	 for (int i =in_density_cast_0.get_min_x()+2;i<=in_density_cast_0.get_max_x()-2;i++)	
-	   
-	   // for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
-	   //	for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
-	 {
-	   
-	   //cerr << " FIRST TIME" << "        " ;
-	   // TODO can't do this yet 
+ 	 {
 	   Array<3,elemT> tmp_out(IndexRange3D(k,k,j,j,i,i));
 	   (*all_filter_coefficients[k][j][i])(tmp_out,in_density);
 	   out_density[k][j][i] = tmp_out[k][j][i];	
@@ -1366,6 +1357,7 @@ ModifiedInverseAverigingImageFilter<elemT>::set_defaults()
   proj_data_ptr = NULL;
   attenuation_proj_data_filename ="1";
   attenuation_proj_data_ptr = NULL;
+  mask_size = 0;
  
 }
 
@@ -1377,6 +1369,7 @@ ModifiedInverseAverigingImageFilter<elemT>:: initialise_keymap()
   parser.add_key("filter_coefficients", &filter_coefficients_for_parsing);
   parser.add_key("proj_data_filename", &proj_data_filename);
   parser.add_key("attenuation_proj_data_filename", &attenuation_proj_data_filename);
+  parser.add_key("mask_size", &mask_size);
   parser.add_stop_key("END Modified Inverse Image Filter Parameters");
 }
 
