@@ -82,7 +82,6 @@ $Revision$
 #include "stir/SegmentByView.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/Succeeded.h"
-#include "stir/interfile.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
 #include "stir/ArrayFunction.h"
