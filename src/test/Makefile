@@ -11,7 +11,7 @@ PARAPLUSLIB = /usr/local/lib/libparaplus.a
 
 #KT added the last -I option for Solaris, doesn't harm anyone if it's
 # not necessary
-CFLAGS = -g -D_DEBUG -I${INCLUDE} -I/usr/openwin/include -DTEST -L/usr/local/lib
+CFLAGS = -g -D_DEBUG -I${INCLUDE} -I/usr/openwin/include -DTEST -L/usr/local2/lib -L/usr/local/lib
 #KT 28/11 added buildblock library
 #KT 28/11 added the last -L option for Solaris
 LDFLAGS = -g -L${WORKSPACE}/display  -L${WORKSPACE}/buildblock \
