@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief Declaration of class DataSymmetriesForDensels
 
@@ -13,15 +13,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#ifndef __DataSymmetriesForDensels_H__
-#define __DataSymmetriesForDensels_H__
+#ifndef __stir_recon_buildblock_DataSymmetriesForDensels_H__
+#define __stir_recon_buildblock_DataSymmetriesForDensels_H__
 
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
-#include "stir/ProjDataInfo.h"
-#include "stir/shared_ptr.h"
+#include "stir/Densel.h"
 #include <vector>
 #include <memory>
 
@@ -34,7 +33,6 @@ using std::auto_ptr;
 #endif
 #endif
 
-#include "local/stir/Densel.h"
 
 START_NAMESPACE_STIR
 
@@ -49,7 +47,7 @@ class DenselIndexRange;
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief A class for encoding/finding symmetries common to the geometry
   of the projection data and the discretised density. 
 
@@ -58,8 +56,6 @@ class DenselIndexRange;
   way to be able to write generic code without knowing which 
   particular symmetries the data have.
 
-  TODO? I've used Densel here to have the 4 coordinates, but Densel has data as well 
-  which is not really necessary here.
 */
 class DataSymmetriesForDensels 
 {
@@ -84,7 +80,6 @@ public:
       \warning \c b has to be a 'basic' Densel
   */
   // next return value could be a RelatedDensels ???
-  // however, both Densel and RelatedDensels have data in there (which is not needed here)
   virtual  void
     get_related_densels(vector<Densel>&, const Densel& b) const = 0;
 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
   
   \brief Inline implementations for class ProjMatrixElemsForOneDenselValue
     
@@ -13,15 +13,10 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-
-//for SHRT_MAX etc
-#ifndef NDEBUG
-#include <climits>
-#endif
 
 START_NAMESPACE_STIR
 

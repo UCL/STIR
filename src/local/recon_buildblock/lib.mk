@@ -9,10 +9,8 @@ $(dir)_LIB_SOURCES:= \
 	PostsmoothingForwardProjectorByBin.cxx \
 	PresmoothingForwardProjectorByBin.cxx \
 	PostsmoothingBackProjectorByBin.cxx \
-	DataSymmetriesForDensels.cxx \
 	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
 	ProjMatrixByDensel.cxx \
-	ProjMatrixElemsForOneDensel.cxx \
 	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \

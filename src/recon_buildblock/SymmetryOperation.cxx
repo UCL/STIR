@@ -21,9 +21,7 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/Coordinate3D.h"
-#ifdef ENABLE_DENSEL 
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-#endif
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 
 START_NAMESPACE_STIR
 
@@ -47,7 +45,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation::
 transform_proj_matrix_elems_for_one_densel(
@@ -66,6 +63,6 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 END_NAMESPACE_STIR

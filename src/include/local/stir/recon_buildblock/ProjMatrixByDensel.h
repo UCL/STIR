@@ -17,17 +17,17 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 
 
 #include "stir/RegisteredObject.h"
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
-#include "local/stir/Densel.h"
-
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "stir/Densel.h"
+#include "stir/ProjDataInfo.h" // todo replace by forward declaration
 #include <map>
 
 #ifndef STIR_NO_NAMESPACES

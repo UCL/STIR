@@ -17,13 +17,13 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 
 #include "local/stir/recon_buildblock/ProjMatrixByDensel.h"
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/Succeeded.h"
 //#include <iostream>
 

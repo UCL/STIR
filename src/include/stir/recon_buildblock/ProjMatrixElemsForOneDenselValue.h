@@ -3,35 +3,30 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
   
   \brief Declaration of class ProjMatrixElemsForOneDenselValue
     
   \author Kris Thielemans
-  \author Mustapha Sadki
-  \author PARAPET project
       
   $Date$        
   $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __ProjMatrixElemsForOneDenselValue_H__
-#define __ProjMatrixElemsForOneDenselValue_H__
+#ifndef __stir_recon_buildblock_ProjMatrixElemsForOneDenselValue_H__
+#define __stir_recon_buildblock_ProjMatrixElemsForOneDenselValue_H__
 
-
-#include "stir/common.h"
 #include "stir/Bin.h"
 
 START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Stores voxel coordinates and the value of the matrix element. 
  
   (Probably) only useful in class ProjMatrixElemsForOneDensel.
@@ -87,6 +82,6 @@ public:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.inl"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.inl"
 
 #endif // __ProjMatrixElemsForOneDenselValue_H__

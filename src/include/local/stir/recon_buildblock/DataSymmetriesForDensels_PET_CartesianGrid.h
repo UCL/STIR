@@ -21,11 +21,12 @@
 #define __DataSymmetriesForDensels_PET_CartesianGrid_H__
 
 
-#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "stir/ProjDataInfo.h"
 //#include "stir/SymmetryOperations_PET_CartesianGrid.h"
 //#include "stir/ViewSegmentNumbers.h"
 //#include "stir/VoxelsOnCartesianGrid.h"
-#include "local/stir/Densel.h"
+#include "stir/Densel.h"
 
 START_NAMESPACE_STIR
 

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup symmetries
 
   \brief implementations for class DataSymmetriesForDensels
 
@@ -17,12 +17,12 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
-#include "local/stir/Densel.h"
+#include "stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "stir/Densel.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
 
 START_NAMESPACE_STIR
