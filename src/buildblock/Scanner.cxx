@@ -35,33 +35,62 @@ using std::find;
 START_NAMESPACE_TOMO
 
 // local convenience functions to make a list of strings
-
 static list<string> 
-string_list(const string& s)
+   string_list(const string&);
+static list<string> 
+   string_list(const string&, const string&);
+static list<string> 
+   string_list(const string&, const string&, const string&);
+static list<string> 
+   string_list(const string&, const string&, const string&, const string&);
+
+   
+
+
+  
+Scanner::Scanner(Type scanner_type)
 {
-  list<string> l;
-  l.push_back(s);
-  return l;
+  // num_detectors_per_ring,
+  // NoRings, NoBins, RingRadius,
+  // RingSpacing, BinSize, intrTilt
+  // before arc-correction, central_bin_size = ring_radius* pi/num_detectors
+
+
+  if (scanner_type == E931)
+    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
+  else if (scanner_type == E951)
+    set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
+  else if (scanner_type == E953)
+    set_params(E953,string_list("ECAT 953"), 16, 160,2* 192, 382.5F,  6.75F, 3.129F,   15);
+  else if (scanner_type == E921)
+    set_params(E921,string_list("ECAT 921", "ECAT EXACT", "EXACT"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
+  else if (scanner_type == E925)
+    set_params(E925,string_list("ECAT 925"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
+  else if (scanner_type == E961)
+    set_params(E961,string_list("ECAT 961"), 24, 336,2* 196, 412.0F, 6.25F, 1.650F, 13.F); 
+  else if (scanner_type == E962)
+    set_params(E962,string_list("ECAT 962","ECAT HR+"), 32, 288,2* 144, 412.5F, 4.85F, 2.247F, 0.F); 
+  else if (scanner_type == E966)
+    set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 0); 
+  else if (scanner_type == ART)
+    // TODO check
+    set_params(ART,string_list("ECAT ART", "ART"), 24, 192,2*192 , 410,  6.75F, 2.439F,   0);
+  else if (scanner_type == RPT)
+    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0);
+  // Advance option
+  // 283 bins (non-uniform sampling) 
+  // 281 bins (uniform sampling)
+  else if (scanner_type == Advance)
+    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,2*336,281,469.5F, 8.5F, 1.96F, 0);
+  else if (scanner_type == HZLR)
+    set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0);
+  else
+    { 
+      // warning("Unknown scanner type used for initialisation of Scanner\n"); 
+      set_params(Unknown_Scanner,string_list("Unknown"), 0, 0, 0, 0.F, 0.F, 0.F, 0);
+    }
 }
 
-static list<string> 
-string_list(const string& s1, const string& s2)
-{
-  list<string> l;
-  l.push_back(s1);
-  l.push_back(s2);
-  return l;
-}
-
-static list<string> 
-string_list(const string& s1, const string& s2, const string& s3)
-{
-  list<string> l;
-  l.push_back(s1);
-  l.push_back(s2);
-  l.push_back(s3);
-  return l;
-}
 
 void
 Scanner::set_params(Type type_v,const list<string>& list_of_names_n,
@@ -105,67 +134,6 @@ Scanner::set_params(Type type_v,const list<string>& list_of_names_n,
   ring_spacing = RingSpacing_v;
   bin_size = BinSize_v;
   intrinsic_tilt = intrTilt_v;	
-}
-
-   
-
-
-  
-Scanner::Scanner(Type scanner_type)
-{
-  // num_detectors_per_ring,
-  // NoRings, NoBins, RingRadius,
-  // RingSpacing, BinSize, intrTilt
-  // before arc-correction, central_bin_size = ring_radius* pi/num_detectors
-
-
-  if (scanner_type == E931)
-    set_params(E931,string_list("ECAT 931"),  8, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
-  else if (scanner_type == E951)
-    set_params(E951,string_list("ECAT 951"), 16, 192,2* 256, 510.0F, 6.75F,  3.129F,   0);
-  else if (scanner_type == E953)
-    set_params(E953,string_list("ECAT 953"), 16, 160,2* 192, 382.5F,  6.75F, 3.129F,   15);
-  else if (scanner_type == E921)
-    set_params(E921,string_list("ECAT 921"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
-  else if (scanner_type == E925)
-    set_params(E925,string_list("ECAT 925"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
-#if 0
-  else if (scanner_type == E961)
-    { warning("Scanner characteristics not fully filled in\n"); 
-      set_params(E961,string_list("ECAT 961"), 24, 336,2* 196, 410, 3.125F, 1.650F, 13.F); 
-    }
-  else if (scanner_type == E962)
-    { warning("Scanner characteristics not fully filled in\n");
-      set_params(E962,string_list("ECAT 962"), 32, 288,2* 144, 412.5F, 2.425F, 2.247F, 0.F); 
-    }
-#endif
-  else if (scanner_type == E966)
-    set_params(E966,string_list("Exact 3D", "Exact HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 0); 
-  else if (scanner_type == ART)
-    // TODO check
-    set_params(ART,string_list("ECAT ART", "ART"), 24, 192,2* 192 , 410,  6.75F, 2.439F,   0);
-  else if (scanner_type == RPT)
-    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*  192, 380,  6.75F, 3.1088F,   0);
-  else if (scanner_type ==HiDAC)
-    set_params(HiDAC,string_list("HiDAC"), 15, 100,2* 100, 100,  1.0F, 1.0F,   0);
-  // Advance option
-  // 283 bins (non-uniform sampling) 
-  // 281 bins (uniform sampling)
-  else if (scanner_type == Advance)
-    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283, 281, 2*336, 469.5F, 8.5F, 1.96F, 0);
-#if 0
-  else if (scanner_type == Exact)
-    { warning("Scanner characteristics not fully filled in\n");
-      set_params(Exact, string_list("ECAT Exact"), 24, 0,2* 0, 205, 6.5F, 0, 0); 
-    }
-#endif
-  else if (scanner_type == HZLR)
-    set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0);
-  else
-    { 
-      // warning("Unknown scanner type used for initialisation of Scanner\n"); 
-      set_params(Unknown_Scanner,string_list("Unknown"), 0, 0, 0, 0.F, 0.F, 0.F, 0);
-    }
 }
 
 
@@ -423,6 +391,45 @@ string Scanner:: list_all_names()
   
   s << ends;
   return s.str();
+}
+
+
+static list<string> 
+string_list(const string& s)
+{
+  list<string> l;
+  l.push_back(s);
+  return l;
+}
+
+static list<string> 
+string_list(const string& s1, const string& s2)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  return l;
+}
+
+static list<string> 
+string_list(const string& s1, const string& s2, const string& s3)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  l.push_back(s3);
+  return l;
+}
+
+static list<string> 
+string_list(const string& s1, const string& s2, const string& s3, const string& s4)
+{
+  list<string> l;
+  l.push_back(s1);
+  l.push_back(s2);
+  l.push_back(s3);
+  l.push_back(s4);
+  return l;
 }
 
 END_NAMESPACE_TOMO
