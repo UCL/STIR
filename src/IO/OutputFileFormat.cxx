@@ -40,11 +40,9 @@ OutputFileFormat::
 set_defaults()
 {
   file_byte_order = ByteOrder::native;
-  type_of_numbers = NumericType::SHORT;
+  type_of_numbers = NumericType::FLOAT;
 
-  number_format_index = 2; // signed integer
-  bytes_per_pixel = type_of_numbers.size_in_bytes(); 
-  byte_order_index = -1;//  if not changed->file_byte_order = ByteOrder::native;
+  set_key_values();
 }
 
 void 
@@ -65,13 +63,13 @@ initialise_keymap()
     byte_order_values.push_back("BIGENDIAN");
   }
   parser.add_key("byte order",
-    &byte_order_index,
-    &byte_order_values);
+		 &byte_order_index,
+		 &byte_order_values);
   parser.add_key("number format",
-    &number_format_index,
-    &number_format_values);
+		 &number_format_index,
+		 &number_format_values);
   parser.add_key("number of bytes per pixel",
-       &bytes_per_pixel);
+		 &bytes_per_pixel);
 }
 
 void 
@@ -173,8 +171,16 @@ set_byte_order_and_type_of_numbers(ByteOrder& new_byte_order, NumericType& new_t
 
 Succeeded  
 OutputFileFormat::
+write_to_file(string& filename, 
+	      const DiscretisedDensity<3,float>& density) const
+{
+  return actual_write_to_file(filename, density);
+}
+
+Succeeded  
+OutputFileFormat::
 write_to_file(const string& filename, 
-                  const DiscretisedDensity<3,float>& density) const
+	      const DiscretisedDensity<3,float>& density) const
 {
   string filename_to_use = filename;
   return 
