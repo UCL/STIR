@@ -45,7 +45,7 @@ public:
     compute_average_motion(const double start_time, const double end_time) const;
 
   //! Given the time obtain motion info, i.e. RigidObject3DTransformation
-  virtual void get_motion(RigidObject3DTransformation& ro3dtrans, const double time) const;
+  virtual void get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const;
 
   //! Synchronise motion tracking file and listmode file
   virtual Succeeded synchronise(CListModeData& listmode_data);
