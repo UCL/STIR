@@ -13,6 +13,8 @@
 */
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This software is distributed under the terms 
+    of the GNU Lesser General  Public Licence (LGPL).
     See STIR/LICENSE.txt for details
 */
 
@@ -25,6 +27,7 @@
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
 #endif
+#include "boost/static_assert.hpp"
 #include <time.h>
 #include <iostream>
 #include <fstream>
@@ -38,9 +41,11 @@ using std::ifstream;
 
 START_NAMESPACE_STIR
 
-// TODO compile time assert
-// sizeof(CListTimeDataECAT966)==4
-// sizeof(CListEventDataECAT966)==4
+// compile time asserts
+BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT966)==4);
+BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT966)==4);
+BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT962)==4);
+BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT962)==4);
 
 CListModeDataECAT::
 CListModeDataECAT(const string& listmode_filename_prefix)
@@ -65,23 +70,17 @@ CListModeDataECAT(const string& listmode_filename_prefix)
 			  sizeof(singles_main_header));
 	if (!singles_file)
 	  {
-	    warning("\nCouldn't read main_header from %s. We forge ahead anyway.\n", singles_filename.c_str());
+	    warning("Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 966 data).", singles_filename.c_str());
 	    scanner_ptr = new Scanner(Scanner::E966);
+	    // TODO invalid other fields in singles header
+	    singles_main_header.scan_start_time = std::time_t(-1);
 	  }
 	else
 	  {
 	    unmap_main_header(buffer, &singles_main_header);
 	    ecat::ecat7::find_scanner(scanner_ptr, singles_main_header);
 	    
-	    time_t sec_time = singles_main_header.scan_start_time;
-	    struct tm* lm_start_time_tm = localtime( &sec_time  ) ;
-	    // currently use same formula as Peter
-	    // it relies on TZ though: bad! (TODO)
-	    lm_start_time = ( lm_start_time_tm->tm_hour * 3600.0 ) + ( lm_start_time_tm->tm_min * 60.0 ) + lm_start_time_tm->tm_sec ;
-	    
 	    // TODO get lm_duration from singles
-
-	    cerr << '\n' << singles_filename << " file says that listmode start time is " << lm_start_time << endl;
 	  }
       }
   }
@@ -96,6 +95,16 @@ CListModeDataECAT(const string& listmode_filename_prefix)
 	  listmode_filename_prefix.c_str());
 }
 
+std::time_t 
+CListModeDataECAT::
+get_scan_start_time_in_secs_since_1970() const
+{
+#ifdef HAVE_LLN_MATRIX
+  return singles_main_header.scan_start_time;
+#else
+  return std::time_t(-1);
+#endif
+}
 
 
 shared_ptr <CListRecord> 
