@@ -284,3 +284,10 @@ Almost all programs that can be executed by the user.
 Includes conversion programs etc.
 */
 
+
+
+/*!
+\defgroup examples Example files
+\ingroup STIR
+Some examples files to illustrate some basic coding in STIR.
+*/
