@@ -156,7 +156,9 @@ EXE_OUTFLAG := -o
 # $(EXE_SUFFIX) only for copying, deleting files etc
 
 # extension for archives
-LIB_SUFFIX := .a
+LIB_SUFFIX:=.a
+# usually, on Unix, libraries are called libsomething.a, such that one could do -lsomething
+LIB_PREFIX:=lib
 
 else
 
@@ -179,6 +181,7 @@ LINK=link
 #EXE_OUTFLAG=/Fe
 EXE_OUTFLAG:=/out:
 LIB_SUFFIX:=.lib
+LIB_PREFIX:=
 AR:=link
 ARFLAGS=-lib -nologo 
 AR_OUTFLAG=-out:
@@ -221,7 +224,7 @@ ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   # yes, the LLN files seem to be there, so we can compile 
   HAVE_LLN_MATRIX=1
   CFLAGS +=  -I $(LLN_INCLUDE_DIR) -D HAVE_LLN_MATRIX
-  EXTRA_LIBS += $(LLN_LIB_DIR)/libecat$(LIB_SUFFIX)
+  EXTRA_LIBS += $(LLN_LIB_DIR)/$(LIB_PREFIX)ecat$(LIB_SUFFIX)
   ifeq ($(SYSTEM),SUN)
      SYS_LIBS += -lnsl -lsocket
   endif

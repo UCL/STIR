@@ -69,7 +69,7 @@ EXEDIRS += utilities recon_test \
 
 TESTDIRS += test recon_test
 
-STIR_LIB:=$(DEST)libstir$(LIB_SUFFIX)
+STIR_LIB:=$(DEST)$(LIB_PREFIX)stir$(LIB_SUFFIX)
 
 include $(addsuffix /lib.mk, $(LIBDIRS))
 
