@@ -27,8 +27,6 @@
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "local/stir/recon_buildblock/ProjMatrixByDensel.h"
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/IO/interfile.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/RelatedViewgrams.h"
@@ -39,7 +37,6 @@
 
 #include "stir/CPUTimer.h"
 
-#include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 #include "local/stir/fwd_and_bck_manipulation_for_SAF.h"
 #include "local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
 #include "stir/SegmentByView.h"
@@ -679,7 +676,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	{
 #if 1	
 	  const int new_k_ctr = 
-	    z_direction_trivial==1?0:(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2);
+	    z_direction_trivial==1?0:(round(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2.);
 	  const int mask_size_z = 
 	    z_direction_trivial==1?0:mask_size;
 
@@ -755,8 +752,8 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	{ 
-	  float tmp  = (*kappa0_ptr_bck)[k][j][i];
-	  float tmp1  = (*kappa1_ptr_bck)[k][j][i];
+	  //float tmp  = (*kappa0_ptr_bck)[k][j][i];
+	  //float tmp1  = (*kappa1_ptr_bck)[k][j][i];
 	  //cerr << "kappa_0 " << (*kappa0_ptr_bck)[k][j][i] << endl;
 	  //cerr << "kappa_1 " << (*kappa1_ptr_bck)[k][j][i] << endl;
 
@@ -1027,7 +1024,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	*output << endl;
 	*output << "Plane number " << endl;   
 	
-	int size = filter_coefficients.get_length();
+	// int size = filter_coefficients.get_length();
 	
 	//todo - remove
 	const string testing_kappas_att="kappa_att";
