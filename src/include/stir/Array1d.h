@@ -209,14 +209,10 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
   }
   else
   {
-    {
-      for (int i=this->get_min_index(); i<oldstart; i++)
-	this->num[i] = elemT(0);
-    }
-    {
-      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
-	this->num[i] = elemT(0);
-    }
+    for (int i=this->get_min_index(); i<oldstart && i<=this->get_max_index(); ++i)
+      this->num[i] = elemT(0);
+    for (int i=std::max(oldstart + oldlength, this->get_min_index()); i<=this->get_max_index(); ++i)
+      this->num[i] = elemT(0);
   }
   this->check_state();  
 }
