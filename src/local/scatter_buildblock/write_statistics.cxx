@@ -120,6 +120,15 @@ void writing_time(const double simulation_time,
 				mystream << "ONLY DOUBLE ";
 			if(scatter_level==1)
 				mystream << "ONLY SINGLE ";
+			if(scatter_level==0)
+				mystream << "NO ";
+			if(scatter_level==10)
+				mystream << "SINGLE and NO ";
+			if(scatter_level==12)
+				mystream << "SINGLE and DOUBLE ";
+			if(scatter_level==120)
+				mystream << "SINGLE, DOUBLE and NO";
+		
 			mystream  << "SCATTER SIMULATION ******\n\n"
 				<< "Total simulation time elapsed: "				  
 				<<   simulation_time/60 
