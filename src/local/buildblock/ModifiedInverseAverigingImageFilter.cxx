@@ -404,11 +404,11 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 				-3,3,-3,3,
 				*proj_matrix_ptr);
 	   
-	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
-	<< ", " << kappa0_ptr_bck->find_max() << endl; 
+//	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
+//	<< ", " << kappa0_ptr_bck->find_max() << endl; 
 
 	 char* file0 = "kappa0";
-	 cerr <<"  - Saving " << file0 << endl;
+	 //cerr <<"  - Saving " << file0 << endl;
 	 write_basic_interfile(file0, *kappa0_ptr_bck);
 
 #endif
@@ -422,7 +422,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
       << ", " << kappa1_ptr_bck->find_max() << endl;   
     
     char* file1 = "kappa1";
-    cerr <<"  - Saving " << file1 << endl;
+    //cerr <<"  - Saving " << file1 << endl;
     write_basic_interfile(file1, *kappa1_ptr_bck);
     
     
@@ -449,13 +449,14 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     
     int size = filter_coefficients.get_length();
     
-    for (int k=40;k<=60;k+=20)   
+    for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k+=1)   
       for (int j =-23;j<=23;j++)
-	for (int i =-10;i<=10;i++)	
+	for (int i =-25;i<=25;i++)	
 	// for (int j =-3;j<=3;j++)
 	  // for (int i =-3;i<=3;i++)	
        {
 #if 1
+	   
 	// WARNING - only works for segment zero at the moment
 	// do the calculation of kappa0 here
 	kappa0_ptr_bck->fill(0); 
@@ -472,11 +473,11 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 				j,j,i,i,
 				*proj_matrix_ptr);
 	   
-	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
-	<< ", " << kappa0_ptr_bck->find_max() << endl; 
+//	cerr << "min and max in image - kappa0 " <<kappa0_ptr_bck->find_min()
+//	<< ", " << kappa0_ptr_bck->find_max() << endl; 
 
 	 char* file0 = "kappa0";
-	 cerr <<"  - Saving " << file0 << endl;
+	 //cerr <<"  - Saving " << file0 << endl;
 	 write_basic_interfile(file0, *kappa0_ptr_bck);
 #endif	 
 	 Array<3,elemT> tmp_out(IndexRange3D(k,k,j,j,i,i));
@@ -585,7 +586,7 @@ fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
   in_density_extracted_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));    
   
   //int counter;
-  for ( int k = 40;k<=60;k+=20)
+  for ( int k = in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k+=1)
     // to do all pixels where the cyl and the line source are
     for ( int j =-3;j<=3;j++)
      for ( int i =-3;i<=3;i++) 
