@@ -21,6 +21,9 @@
 #include "ProjDataInfo.h"
 
 START_NAMESPACE_TOMO
+
+class Succeeded;
+
 /*!
   \ingroup buildblock 
   \brief projection data info for data corresponding to a 
@@ -113,34 +116,50 @@ public:
 
   //! Find which segment a particular ring difference belongs to
   /*!
-    If there is no segment containing this ring difference, this will return 
-    a segment number larger than the maximum or smaller than the minimum.
+    \return Succeeded::yes when a corresponding segment was found. 
     */
-  inline int 
-    get_segment_num_for_ring_difference(const int ring_diff) const;
+  inline Succeeded 
+    get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const;
 
-  //! Find which segment and axial position a ring pair contributes to
+  //! Find to which segment and axial position a ring pair contributes
   /*!
     \a ring1, \a ring2 have to between 0 and scanner.get_num_rings()-1.
+    \return Succeeded::yes when a corresponding segment was found. 
+    \warning axial_pos_num returned might be outside the actual range in the proj_data_info.
 
     For CTI data with span, this essentially implements a 'michelogram'.
 
     \warning Current implementation assumes that the axial positions start from 0 for
     the first ring-pair in the segment.
 
-    \warning When the segment_num returned would be out of range, an out-of-range 
-    index will occur (checked by asserts in debug mode, but not in optimised mode).
+    \warning The implementation of this function currently assumes that the axial
+    sampling is equal to the ring spacing for non-spanned data 
+    (i.e. no axial compression), while it is half the 
+    ring spacing for spanned data.
+  */
+  inline Succeeded 
+    get_segment_axial_pos_num_for_ring_pair(int& segment_num,
+                                            int& axial_pos_num,
+                                            const int ring1,
+                                            const int ring2) const;
+
+  //! Find a ring pair that contributes to a segment and axial position
+  /*!
+    \a ring1, \a ring2 will be between 0 and scanner.get_num_rings()-1.
+
+    \warning Currently only works when no axial compression is used for the segment (i.e.
+    min_ring_diff = max_ring_diff). Otherwise, a error() will be called.
 
     \warning The implementation of this function currently assumes that the axial
     sampling is equal to the ring spacing for non-spanned data 
     (i.e. no axial compression), while it is half the 
     ring spacing for spanned data.
   */
-  inline void 
-    get_segment_axial_pos_num_for_ring_pair(int& segment_num,
-                                            int& ax_pos_num,
-                                            const int ring1,
-                                            const int ring2) const;
+  void
+    get_ring_pair_for_segment_axial_pos_num(int& ring1,
+					    int& ring2,
+					    const int segment_num,
+                                            const int axial_pos_num) const;
 
   virtual string parameter_info() const;
 
@@ -154,7 +173,6 @@ private:
   VectorWithOffset<int> min_ring_diff; 
   VectorWithOffset<int> max_ring_diff;
 
-  int view_mashing_factor;
   /*
     Next members have to be mutable as they can be modified by const member 
     functions. We need this because of the presence of set_min_ring_difference()
@@ -164,6 +182,7 @@ private:
     set_*ring_difference functions, and move the content of  
     initialise_ring_diff_arrays() to the constructor.
   */
+  // TODO base::set_ax_pos et al invalidate ring_diff arrays
   //! This member will signal if the arrays below contain sensible info or not
   mutable bool ring_diff_arrays_computed;
   //! This member stores the offsets used in get_m()
@@ -177,7 +196,7 @@ private:
   //! This function sets all of the above
   void initialise_ring_diff_arrays() const;
 
-  inline int get_num_rings_per_axial_pos(const int segment_num) const;
+  inline int get_num_axial_poss_per_ring_inc(const int segment_num) const;
 
 };
 

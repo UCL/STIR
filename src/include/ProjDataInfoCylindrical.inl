@@ -19,6 +19,7 @@
 // for sqrt
 #include <math.h>
 #include "Bin.h"
+#include "tomo/Succeeded.h"
 
 START_NAMESPACE_TOMO
 
@@ -59,7 +60,7 @@ ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
 
 int 
 ProjDataInfoCylindrical::
-get_num_rings_per_axial_pos(const int segment_num) const
+get_num_axial_poss_per_ring_inc(const int segment_num) const
 {
   return
     max_ring_diff[segment_num] != min_ring_diff[segment_num] ?
@@ -73,7 +74,7 @@ ProjDataInfoCylindrical::get_azimuthal_angle_sampling() const
 float
 ProjDataInfoCylindrical::get_axial_sampling(int segment_num) const
 {
-  return ring_spacing/get_num_rings_per_axial_pos(segment_num);
+  return ring_spacing/get_num_axial_poss_per_ring_inc(segment_num);
 }
 
 float 
@@ -102,23 +103,30 @@ float
 ProjDataInfoCylindrical::get_ring_spacing() const
 { return ring_spacing;}
 
-int 
-ProjDataInfoCylindrical::
-get_segment_num_for_ring_difference(const int ring_diff) const
-{
-  if (!ring_diff_arrays_computed)
-    initialise_ring_diff_arrays();
-  return ring_diff_to_segment_num[ring_diff];
-}
-
 int
 ProjDataInfoCylindrical::
 get_view_mashing_factor() const
 {
-  return view_mashing_factor;
+  // KT 28/11/2001 do not pre-store anymore as set_num_views would invalidate it
+  return get_scanner_ptr()->get_num_detectors_per_ring()/2 / get_num_views();
 }
 
-void
+Succeeded
+ProjDataInfoCylindrical::
+get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const
+{
+  if (!ring_diff_arrays_computed)
+    initialise_ring_diff_arrays();
+  segment_num = ring_diff_to_segment_num[ring_diff];
+  // warning: relies on initialise_ring_diff_arrays to set invalid ring_diff to a too large segment_num
+  if (segment_num <= get_max_segment_num())
+    return Succeeded::yes;
+  else
+    return Succeeded::no;
+}
+
+
+Succeeded
 ProjDataInfoCylindrical::
 get_segment_axial_pos_num_for_ring_pair(int& segment_num,
                                         int& ax_pos_num,
@@ -130,12 +138,13 @@ get_segment_axial_pos_num_for_ring_pair(int& segment_num,
   assert(0<=ring2);
   assert(ring2<get_scanner_ptr()->get_num_rings());
 
-  segment_num = get_segment_num_for_ring_difference(ring1-ring2);
+  if (get_segment_num_for_ring_difference(segment_num, ring1-ring2) == Succeeded::no)
+    return Succeeded::no;
+
   // see initialise_ring_diff_arrays() for some info
-  if (get_num_rings_per_axial_pos(segment_num)==1)
-    ax_pos_num = (ring1 + ring2 - ax_pos_num_offset[segment_num])/2;
-  else
-    ax_pos_num = (ring1 + ring2 - ax_pos_num_offset[segment_num]);
+  ax_pos_num = (ring1 + ring2 - ax_pos_num_offset[segment_num])*
+               get_num_axial_poss_per_ring_inc(segment_num)/2;
+  return Succeeded::yes;
 }
 
 END_NAMESPACE_TOMO
