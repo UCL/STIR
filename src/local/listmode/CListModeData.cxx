@@ -17,6 +17,7 @@
 */
 
 #include "local/stir/listmode/CListModeDataFromStream.h"
+#include "local/stir/listmode/CListModeDataECAT.h"
 
 START_NAMESPACE_STIR
 CListModeData::
@@ -27,6 +28,7 @@ CListModeData*
 CListModeData::
 read_from_file(const string& filename)
 {
-  return new CListModeDataFromStream(filename);
+  //return new CListModeDataFromStream(filename);
+return new CListModeDataECAT(filename);
 }
 END_NAMESPACE_STIR
