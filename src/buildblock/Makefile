@@ -1,4 +1,3 @@
-#AIX Makefile for PPhead/buildblock directory
 #
 # $Id$: $Date$
 #
@@ -56,7 +55,8 @@ createdir:
 	-mkdir -p $(DEST)
 
 # KT 15/12/99 added createdir depedency
-Makefile: depend createdir
+# KT 18/02/2000 removed depend
+Makefile: createdir
 
 $(DEST)%.o : %.cxx 
 	$(CXX) $(CFLAGS) -o $@ -c $< 
@@ -64,6 +64,7 @@ $(DEST)%.o : %.cxx
 # KT 10/12/99 added linear_regression.cxx
 # KT 15/12/99 removed NumericInfo, added PETerror, overlap_interpolate, NumericType and ByteOrder
 # KT 17/01/2000 added zoom and mash_views
+# KT   Array.cxx convert_array.cxx
 SOURCES = \
   PETerror.cxx \
   sinodata.cxx convert.cxx \
@@ -79,7 +80,9 @@ SOURCES = \
   bbfilters.cxx recon_array_functions.cxx \
   sparsedata.cxx \
   linear_regression.cxx overlap_interpolate.cxx \
-  zoom.cxx mash_views.cxx
+  zoom.cxx mash_views.cxx \
+  Array.cxx convert_array.cxx
+
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
