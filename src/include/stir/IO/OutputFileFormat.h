@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000-2$Date$, IRSL
+    Copyright (C) 2003-$Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -69,20 +69,20 @@ public:
        with the actual data. At output however, the name of the header file 
        will/should be returned. This is all a bit messy, so it's 
        <strong>recommended</strong> to 
-       not use an extension for the output filename.
+       <strong>not</strong> use an extension for the output filename.
 
   \todo 
-      Unfortunately, C++ does not allow virtual member templates, so we'd need
+      Unfortunately, C++ does not allow virtual member templates (and this function calls
+      actual_write_to_file()), so we'd need
       other versions of this for other data types or dimensions.
   */
-  virtual
   Succeeded  
     write_to_file(string& filename, 
-                  const DiscretisedDensity<3,float>& density) const = 0;
+                  const DiscretisedDensity<3,float>& density) const;
 		  
   //! write a single image to file
-  /*! See the virtual version. This version does not return the 
-      filename used.
+  /*! See the version with non-const \a filename. This version does not return the 
+      filename used. 
   */
   Succeeded  
     write_to_file(const string& filename, 
@@ -124,6 +124,19 @@ protected:
   //! byte order used for output 
   ByteOrder file_byte_order;
 
+  //! virtual function called by write_to_file()
+  /*! This function has to be overloaded by the derived class.
+
+      The reason we do not simply make write_to_file() virtual is that we have
+      2 versions of write_to_file. C++ rules are such that overloading the virtual
+      function in a derived class means that the other version gets hidden. Having
+      the non-virtual write_to_file() call the virtual actual_write_to_file() solves
+      this problem.
+  */
+  virtual Succeeded  
+    actual_write_to_file(string& filename, 
+                  const DiscretisedDensity<3,float>& density) const = 0;
+
   // parsing stuff
 
   //! sets value for output data type
@@ -136,7 +149,7 @@ protected:
   /*! Has to be called by post_processing() in the leaf-class */
   virtual bool post_processing();
   //! overloaded member for ParsingObject::set_key_values()
-  /*! Has to be called by set_key_values() in th eleaf-class (if it redefines it) */
+  /*! Has to be called by set_key_values() in the leaf-class (if it redefines it) */
   virtual void set_key_values();
 
 private:
