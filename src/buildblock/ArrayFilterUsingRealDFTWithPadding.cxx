@@ -145,7 +145,7 @@ do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT
 	Array<num_dimensions,std::complex<elemT> > tmp =
 	  fourier_for_real_data(in_array);
 	tmp *= complex_filter_kernel;
-	out_array = inverse_fourier_for_real_data(tmp);
+	out_array = inverse_fourier_for_real_data_corrupting_input(tmp);
       }
     }
     else
