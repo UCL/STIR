@@ -51,7 +51,7 @@ float neg_trunc(float x);
 //float neg_indicate(float x){return (x<=0.0)?1.0:0.0;}
 
 //! sets non-positive voxel values to small positive ones
-void truncate_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image=0);
+void threshold_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image=0);
 
 //! divide sinograms and set 'edge bins' to zero, put answer in numerator
 void divide_and_truncate(DiscretisedDensity<3,float>& numerator, 
