@@ -1,0 +1,78 @@
+
+using namespace std;
+
+START_NAMESPACE_STIR
+
+/*
+   This function can be used only for 3D images, with the same size at each dimension.
+*/
+
+
+template <class BidirectionalIterType1,
+		  class BidirectionalIterType2,
+	      class BidirectionalIterType3,
+		  class BidirectionalIterType4>
+void 
+inline 
+IIR_filter(BidirectionalIterType1& output_begin_iterator, 
+		   BidirectionalIterType1& output_end_iterator,
+		   const BidirectionalIterType2& input_begin_iterator, 
+		   const BidirectionalIterType2& input_end_iterator,
+		   const BidirectionalIterType3& input_factor_begin_iterator,
+		   const BidirectionalIterType3& input_factor_end_iterator,
+		   const BidirectionalIterType4& pole_begin_iterator,
+		   const BidirectionalIterType4& pole_end_iterator)
+{
+	*output_begin_iterator=*input_factor_begin_iterator*(*input_begin_iterator);
+
+	BidirectionalIterType1 current_output_iterator = output_begin_iterator+1;
+	BidirectionalIterType2 current_input_iterator = input_begin_iterator+1;
+	for(; 
+	     current_output_iterator != output.end();
+		++current_output_iterator,
+			++current_input_iterator)
+		{
+			for(BidirectionalIterType3 current_input_factor_iterator = input_factor_begin_iterator;
+				current_input_factor_iterator!= input_factor_end_iterator;
+				++current_input_factor_iterator,--current_input_iterator)
+				{
+					(*current_output_iterator) += (*current_input_factor_iterator)*
+												   (*current_input_iterator);
+				if (current_input_iterator==input_begin_iterator)
+					break;
+				}
+				BidirectionalIterType4 current_pole_iterator = pole_begin_iterator;
+				BidirectionalIterType1 current_feedback_iterator = current_output_iterator-1;
+			for(;
+				current_pole_iterator != pole_end_iterator;
+				++current_pole_iterator,--current_feedback_iterator)
+				{
+					if(current_output_iterator==output_begin_iterator)
+					break;
+					
+					(*current_output_iterator) -= (*current_pole_iterator)*(*current_feedback_iterator);				
+					current_feedback_iterator != output.end())
+				}
+		}
+
+}
+
+template <class BidirectionalIterType1,
+		  class BidirectionalIterType2,
+	      class BidirectionalIterType3>		 
+void 
+inline 
+FIR_filter(BidirectionalIterType1& output_begin_iterator, 
+		   BidirectionalIterType1& output_end_iterator,
+		   const BidirectionalIterType2& input_begin_iterator, 
+		   const BidirectionalIterType2& input_end_iterator,
+		   const BidirectionalIterType3& input_factor_begin_iterator,
+		   const BidirectionalIterType3& input_factor_end_iterator)
+{
+	IIR_filter(output_begin_iterator, output_end_iterator, 
+		   input_begin_iterator, input_end_iterator, 
+		   input_factor_begin_iterator, input_factor_end_iterator,
+		   output_begin_iterator, output_begin_iterator);
+}
+
+END_NAMESPACE_STIR

@@ -18,58 +18,86 @@
 #include "stir/shared_ptr.h"
 
 //#include <iterator_traits.h>
-#include <list>
-
+#include <vector>
+#include <iostream>
 #include <cmath>
 
 START_NAMESPACE_STIR
 
-template <class BiIterType1,
-		  class BiIterType2,
-	      class BiIterType3,
-		  class BiIterType4>
+template <class RandIter1,
+		  class RandIter2,
+	      class RandIter3,
+		  class RandIter4>
 void 
 inline 
-IIR_filter(BiIterType1 output_begin_iterator, 
-		   BiIterType1 output_end_iterator,
-		   const BiIterType2 input_begin_iterator, 
-		   const BiIterType2 input_end_iterator,
-		   const BiIterType3 input_factor_begin_iterator,
-		   const BiIterType3 input_factor_end_iterator,
-		   const BiIterType4 pole_begin_iterator,
-		   const BiIterType4 pole_end_iterator,
+IIR_filter(RandIter1 output_begin_iterator, 
+		   RandIter1 output_end_iterator,
+		   const RandIter2 input_begin_iterator, 
+		   const RandIter2 input_end_iterator,
+		   const RandIter3 input_factor_begin_iterator,
+		   const RandIter3 input_factor_end_iterator,
+		   const RandIter4 pole_begin_iterator,
+		   const RandIter4 pole_end_iterator,
 		   const bool if_initial_exists);
 
-template <class BiIterType1,
-		  class BiIterType2,
-	      class BiIterType3>		 
+template <class RandIter1,
+		  class RandIter2,
+	      class RandIter3>		 
 void 
 inline 
-FIR_filter(BiIterType1 output_begin_iterator, 
-						   BiIterType1 output_end_iterator,
-						   const BiIterType2 input_begin_iterator, 
-						   const BiIterType2 input_end_iterator,
-						   const BiIterType3 input_factor_begin_iterator,
-						   const BiIterType3 input_factor_end_iterator,
+FIR_filter(RandIter1 output_begin_iterator, 
+						   RandIter1 output_end_iterator,
+						   const RandIter2 input_begin_iterator, 
+						   const RandIter2 input_end_iterator,
+						   const RandIter3 input_factor_begin_iterator,
+						   const RandIter3 input_factor_end_iterator,
 						   const bool if_initial_exists);
 
-template <class BiIterType>
+template <class RandIter>
 float
 inline
-sequence_sum(BiIterType input_iterator,
+sequence_sum(RandIter input_iterator,
 	   unsigned int Nmax,
 	   float pole, // to be complex as well?
 	   double precision 
 	   );
 
-template <class BiIterType1, 
-		  class BiIterType2>
+template <class RandIter1, 
+		  class RandIter2>
 void
 inline 
-Bsplines_coef(BiIterType1 c_begin_iterator, 
-			   BiIterType1 c_end_iterator,
-			   BiIterType2 input_signal_begin_iterator, 
-			   BiIterType2 input_signal_end_iterator);
+BSplines_coef(RandIter1 c_begin_iterator, 
+			   RandIter1 c_end_iterator,
+			   RandIter2 input_signal_begin_iterator, 
+			   RandIter2 input_signal_end_iterator);
+
+template <class elemT>
+elemT 
+inline
+BSpline(const elemT relative_position) ;
+
+/*
+enum enum_spline_level 
+{
+	constant, linear, cubic, quadratic
+} spline_level;
+*/
+
+
+template <class elemT>
+inline
+elemT BSplines_weight(elemT relative_position);
+
+template <class RandIter1, 
+		  class RandIter2>
+void
+inline 
+BSplines1DRegular(RandIter1 c_begin_iterator, 
+				  RandIter1 c_end_iterator,
+				  RandIter2 input_signal_begin_iterator, 
+				  RandIter2 input_signal_end_iterator);
+
+
 
 //*/
 END_NAMESPACE_STIR
