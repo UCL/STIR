@@ -25,18 +25,18 @@ class Line : private string
 {
 
 public :
-	Line() : String()
+	Line() : string()
 	{}
 
 	Line& operator=(const char* ch);
 
-	String get_keyword();
+	string get_keyword();
 	int get_index();
 	int get_param(vector<int>& v);
 	// KT 29/10/98 new
 	int get_param(vector<double>& v);
-	int get_param(vector<String>& v);
-	int get_param(String& s);
+	int get_param(vector<string>& v);
+	int get_param(string& s);
 	int get_param(int& i);
 	// KT 01/08/98 new
 	int get_param(unsigned long& i);
