@@ -103,7 +103,7 @@ public:
     \param bin effectively calls set_bin(bin)
     \param default_capacity effectively calls reserve(default_capacity)
   */
-  explicit ProjMatrixElemsForOneBin(const Bin& bin= Bin(), const int default_capacity = 300); 
+  explicit ProjMatrixElemsForOneBin(const Bin& bin= Bin(), const int default_capacity = 0); 
   
   /* rely on compiler-generated versions 
   ProjMatrixElemsForOneBin( const ProjMatrixElemsForOneBin&);
@@ -140,7 +140,8 @@ public:
   void reserve(size_type max_number);
   //! number of non-zero elements
   inline size_type size() const;	
-
+  //! number of allocated elements
+  size_type capacity() const;
   //! Multiplies all values with a constant
   ProjMatrixElemsForOneBin& operator*=(const float d); 
   //! Divides all values with a constant
