@@ -41,7 +41,8 @@ ReconstructionParameters::set_defaults()
 {
   input_filename="";
   output_filename_prefix="";
-  output_image_size=-1;
+  output_image_size_xy=-1;
+  output_image_size_z=-1;
   zoom=1.F;
   Xoffset=0.F;
   Yoffset=0.F;
@@ -59,15 +60,17 @@ ReconstructionParameters::initialise_keymap()
 {
   parser.add_key("input file",&input_filename);
   // KT 03/05/2001 removed
-  //parser.add_key("output prefix", &output_filename_prefix);// KT 160899 changed name of variable
-  parser.add_key("output filename prefix",&output_filename_prefix);// KT 160899added duplicate key
+  //parser.add_key("output prefix", &output_filename_prefix);
+  parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_key("zoom", &zoom);
-  // KT 160899 renamed key
-  parser.add_key("output image size",&output_image_size);
-  parser.add_key("Xoffset (in mm)", &Xoffset);
-  parser.add_key("Yoffset (in mm)", &Yoffset);
+  // KT 10122001 renamed key and added z version
+  parser.add_key("XY output image size (in pixels)",&output_image_size_xy);
+  // KT 13122001 disabled Z stuff and offsets as it still gives problems with the projectors
+  // parser.add_key("Z output image size (in pixels)",&output_image_size_z);
+  //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces
+  //parser.add_key("Y offset (in mm)", &Yoffset);
   // KT 20/06/2001 new
-  parser.add_key("Zoffset (in mm)", &Zoffset);
+  // parser.add_key("Z offset (in mm)", &Zoffset);
  
   // KT 20/06/2001 disabled
   //parser.add_key("mash x views", &num_views_to_add);
@@ -129,13 +132,16 @@ bool ReconstructionParameters::post_processing()
   { warning("You need to specify an input file\n"); return true; }
   if (output_filename_prefix.length() == 0)// KT 160899 changed name of variable
   { warning("You need to specify an output prefix\n"); return true; }
-  if (zoom < 0)
+  if (zoom <= 0)
   { warning("zoom should be positive\n"); return true; }
-  // TODO initialise output_image_size from num_bins here or so
-  if (output_image_size!=-1 && output_image_size<1)
-  { warning("output image size must be positive (or -1 as default)\n"); return true; }
+  
+  if (output_image_size_xy!=-1 && output_image_size_xy<1) // KT 10122001 appended_xy
+  { warning("output image size xy must be positive (or -1 as default)\n"); return true; }
+  if (output_image_size_z!=-1 && output_image_size_z<1) // KT 10122001 new
+  { warning("output image size z must be positive (or -1 as default)\n"); return true; }
 
-  // KT 20/06/2001 disabled
+
+  // KT 20/06/2001 disabled as not functional yet
 #if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
   { warning("The 'mash x views' key has an invalid value (must be 1 or even number)\n"); return true; }
