@@ -1,17 +1,43 @@
 //
 // $Id$
 //
+/*!
+  \file
+  \ingroup buildblock
 
+  \brief Declaration of class KeyParser
+
+  \author Patrick Valente
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+  \version $Revision$
+
+  \warning All this is going to change ...
+*/
 #ifndef __KEYPARSER_H__
 #define __KEYPARSER_H__
 
+#ifdef OLDDESIGN
 #include "pet_common.h"
+#endif
+
+#include "Tomography_common.h"
 
 #include <map>
 #include <string>
 #include <iostream>
 #include <vector>
 
+#ifndef TOMO_NO_NAMESPACES
+using std::vector;
+using std::string;
+using std::map;
+using std::istream;
+#endif
+
+START_NAMESPACE_TOMO
 
 typedef vector<int> IntVect;
 typedef vector<unsigned long> UlongVect;
@@ -21,30 +47,36 @@ typedef vector<double> DoubleVect;
 // KT 20/06/98 new
 typedef vector<string> ASCIIlist_type;
 
+
+/*!
+  \ingroup buildblock
+  \brief A class to parse Interfile headers
+  \warning This class will change dramatically in the future.
+
+  Main problem: this can only be used by derived classes (as it requires
+  pointers to member functions.
+*/
 class KeyParser;
 
-/******************************************************************
- A class that enumerates the possible types that can be used
- to store parsed values.
- ******************************************************************/
+/*!
+  \ingroup buildblock
+  \brief  A class that enumerates the possible types that can be used
+ to store parsed values. Used (only) by KeyParser.
+
+  ASCIIlist means a string which has to be one of a specified list
+ */
 class KeyArgument
 {
 public:
-  // KT 20/06/98 changed NUMBERlist to LIST_OF_INTS and (old) ASCIIlist to LIST_OF_ASCII
-  // (in Interfile 3.3 ASCIIlist really means a string which has to be in a specified list)
-  // KT 01/08/98 change number to int, lnumber to ulong, added double
-  // KT 09/10/98 moved in this class to avoid global name space conflicts
-  // KT 29/10/98 added LIST_OF_DOUBLES
   enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist, ULONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist};
 };
 
-/******************************************************************
- Classes to store the keywords and their actions.
- These should not be used outside of the KeyParser implementation.
- Unfortunately C++ seems to require defining this class before the 
- class KeyParser.
- ******************************************************************/
+/*!
+ \brief Class to store the Interfile keywords and their actions.
+
+ \warning These should not be used outside of the KeyParser implementation.
+*/
 class map_element
 {
 public :
@@ -55,7 +87,7 @@ public :
   const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
 
   map_element();
-  // KT 22/10/98 changed operator() into constructor
+
   map_element(KeyArgument::type t, void (KeyParser::*pom)(),
 	      void* pov= 0, const ASCIIlist_type *list = 0);
 
@@ -64,42 +96,32 @@ public :
   map_element& operator=(const map_element& me);
 };
 
-#if defined(__MSL__)
-typedef map<string,map_element, less<string>, allocator<map_element> > Keymap;
-#else
 typedef map<string,map_element> Keymap;
-#endif
 
-/******************************************************************
- KT 26/10/98 modified text
- KeyParser is the main class. It is mainly useful to derive from.
-
- TODO: write how it works
- ******************************************************************/
 class KeyParser
 {
 
 public:
-  // KT 13/11/98 moved istream arg to parse()
   KeyParser();
-  ~KeyParser();
+  virtual ~KeyParser();
 
-  // parse() returns false if there is some error, true otherwise
+  //! parse() returns false if there is some error, true otherwise
   bool parse(istream& f);
-  // KT 13/11/98 new
+  //! parse() returns false if there is some error, true otherwise
   bool parse(const char * const filename);
 
-  // KT 29/10/98 made next ones public
   ////// functions to add keys and their actions 
 
   typedef void (KeyParser::*KeywordProcessor)();
   // TODO typedef void (*KeywordProcessor)();
 
+
+  //! add a keyword to the list, together with its call_back function
   void add_key(const string& keyword, 
     KeyArgument::type t, KeywordProcessor function,
     void* variable= 0, const ASCIIlist_type * const list = 0);
   
-  // version that defaults 'function' to set_variable
+  //! version that defaults 'function' to set_variable
   void add_key(const string& keyword, KeyArgument::type t, 
 	      void* variable, const ASCIIlist_type * const list = 0);
 
@@ -108,25 +130,22 @@ protected :
 
   ////// work horses
 
-  //KT 26/10/98 removed virtual void init_keys() = 0;
-  // Override the next function if you need to
-  // Returns 0 of OK, 1 of not.
-
-  //MJ 15/05/2000 made bool
+  //! This will be called at the end of the parsing
+  /*! \return false if everything OK, true if not */
   virtual bool post_processing() 
-   { return true; }
+   { return false; }
 	
 
 
   ////// predefined actions 
 
-  // to start parsing, has to be set by first keyword
+  //! to start parsing, has to be set by first keyword
   void start_parsing();
-  // to stop parsing
+  //! to stop parsing
   void stop_parsing();
-  // KT 09/10/98 added for keys which do not do anything
+  //! for keys which do not do anything
   void do_nothing() {};
-  // set the variable to the value given as the value of the keyword
+  //! set the variable to the value given as the value of the keyword
   void set_variable();
 
 
@@ -135,7 +154,6 @@ private :
 
   ////// variables
 
-  // KT 22/10/98 new enum
   enum parse_status { end_parsing, parsing };
   parse_status status;
 
@@ -175,11 +193,13 @@ private :
   void process_key();
 
 
-  // KT 20/06/98 new
   // This function is used by set_variable only
   // It returns the index of a string in 'list_of_values', -1 if not found
   int find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values);
 
 };
 
+END_NAMESPACE_TOMO
+
 #endif
+
