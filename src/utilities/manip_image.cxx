@@ -36,6 +36,7 @@ void get_plane(PETImageOfVolume& main_buffer);
 void get_plane_row(PETImageOfVolume& main_buffer);
 
 PETImageOfVolume ask_interfile_image(char *input_query);
+PETImageOfVolume get_interfile_image(char *filename);
 
 void show_menu();
 void show_math_menu();
@@ -46,8 +47,8 @@ main(int argc, char *argv[]){
 
 
 
-  //  PETScannerInfo::Scanner_type scanner_type = PETScannerInfo::RPT;
-  // PETScannerInfo scanner(scanner_type);
+//  PETScannerInfo::Scanner_type scanner_type = PETScannerInfo::RPT;
+// PETScannerInfo scanner(scanner_type);
 // KT 13/10/98 include interfile
 
 #if 0
@@ -129,9 +130,10 @@ main(int argc, char *argv[]){
   main_buffer.read_data(input);   
 #endif // now interfile
 
+//MJ 13/09/98 restored command line input capability (as requested by KT)
 
   PETImageOfVolume 
-    main_buffer = ask_interfile_image("File to load in main buffer? ");
+    main_buffer = (argc>1) ? get_interfile_image(argv[1]):ask_interfile_image("File to load in main buffer? ");
 
 
 
@@ -532,6 +534,26 @@ return read_interfile_image(image_stream);
 
 }
 
+//MJ 12/9/98 added for command line input capability
+
+PETImageOfVolume get_interfile_image(char *filename){
+
+
+    ifstream image_stream(filename);
+    if (!image_stream)
+    { 
+      PETerror("Couldn't open file %s", filename);
+      cerr<<endl;
+      exit(1);
+    }
+
+return read_interfile_image(image_stream);
+
+}
+
+
+
+
 void show_menu(){
 
   cerr<<"\n\
@@ -542,7 +564,7 @@ void show_menu(){
     3. Data plane-wise\n\
     4. Min/Max for plane\n\
     5. Min/Max in image\n\
-    6. Clean rim \n\
+    6. Trim rim \n\
     7. Get plane\n\
     8. Get row\n\
     9. Counts\n\
@@ -650,11 +672,6 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
 
   math_buffer-=aux_image;
 
-
-  if(ask("Display result ?",true))
-    display(Tensor3D<float> (math_buffer), math_buffer.find_max());
-
-    if(ask("Put in input buffer ?",true)) main_buffer=math_buffer;
 
     break;
 
