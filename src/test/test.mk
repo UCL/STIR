@@ -5,95 +5,97 @@ dir := test
 
 $(dir)_TEST_SOURCES := test_Array.cxx \
 	test_VectorWithOffset.cxx \
-	ArrayFilterUsingRealDFTWithPadding.cxx \
+	test_ArrayFilter.cxx \
         test_convert_array.cxx \
 	test_IndexRange.cxx \
 	test_coordinates.cxx \
 	test_linear_regression.cxx \
-	test_interpolate.cxx \
 	test_filename_functions.cxx \
 	test_coordinates.cxx \
 	test_VoxelsOnCartesianGrid.cxx \
 	test_proj_data_info.cxx \
-	test_display.cxx \
 	test_stir_math.cxx \
 	test_OutputFileFormat.cxx \
 	test_ByteOrder.cxx
 
+$(dir)_INTERACTIVE_TEST_SOURCES := \
+	test_display.cxx \
+	test_interpolate.cxx 
 
-run_tests_$(dir): all_test_exes  $(DEST)utilities/stir_math
-	$(DEST)test/test_VectorWithOffset
-	$(DEST)test/test_Array
-	$(DEST)test/test_convert_array
-	$(DEST)test/test_IndexRange
-	$(DEST)test/test_filename_functions
-	$(DEST)test/test_linear_regression  test/input/test_linear_regression.in
-	$(DEST)test/test_coordinates
-	$(DEST)test/test_VoxelsOnCartesianGrid
-	$(DEST)test/test_proj_data_info
-	$(DEST)test/test_stir_math $(DEST)/utilities/stir_math 
-	$(DEST)test/test_OutputFileFormat test/input/test_InterfileOutputFileFormat.in 
-	$(DEST)test/test_OutputFileFormat test/input/test_InterfileOutputFileFormat_short.in 
-	$(DEST)test/test_OutputFileFormat test/input/test_ECAT6OutputFileFormat.in
-	$(DEST)test/test_ByteOrder
+
+# note: do not use $(dir) in the command lines as that variable
+# will by be something else when the command line gets executed! 
+# (see e.g. lib.mk)
+run_$(dir)/test_linear_regression: $(DEST)$(dir)/test_linear_regression PHONY_TARGET
+	$<  test/input/test_linear_regression.in
+
+run_$(dir)/test_OutputFileFormat: $(DEST)$(dir)/test_OutputFileFormat$(EXE_SUFFIX) PHONY_TARGET
+	$< test/input/test_InterfileOutputFileFormat.in 
+	$< test/input/test_InterfileOutputFileFormat_short.in 
+	$< test/input/test_ECAT6OutputFileFormat.in
 ifeq ($(HAVE_LLN_MATRIX),1)
-	$(DEST)test/test_OutputFileFormat test/input/test_ECAT7OutputFileFormat.in
+	$< test/input/test_ECAT7OutputFileFormat.in
 else
 	@echo No ECAT7 support compiled, so no tests for this file format
 endif
 
-    
-run_interactive_tests_$(dir): all_test_exes
-	$(DEST)test/test_interpolate
-	$(DEST)test/test_display
 
+ifneq ($(SYSTEM),CYGWIN)
+run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math$(EXE_SUFFIX) PHONY_TARGET
+	$< $(DEST)/utilities/stir_math$(EXE_SUFFIX) 
+else
+run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math PHONY_TARGET
+	$< `cygpath -w $(DEST)/utilities/stir_math.exe`
+endif
+
+##################################################
 # rules to ignore registries
 # note: have to be before include statement as that changes value of $(dir)
-${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_IndexRange: ${DEST}$(dir)/test_IndexRange.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_IndexRange: ${DEST}$(dir)/test_IndexRange${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_coordinates: ${DEST}$(dir)/test_coordinates.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_coordinates: ${DEST}$(dir)/test_coordinates${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_linear_regression: ${DEST}$(dir)/test_linear_regression.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_linear_regression: ${DEST}$(dir)/test_linear_regression${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_interpolate: ${DEST}$(dir)/test_interpolate.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_interpolate: ${DEST}$(dir)/test_interpolate${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
-${DEST}$(dir)/test_filename_functions: ${DEST}$(dir)/test_filename_functions.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_filename_functions: ${DEST}$(dir)/test_filename_functions${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-${DEST}$(dir)/test_ByteOrder: ${DEST}$(dir)/test_ByteOrder.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_ByteOrder: ${DEST}$(dir)/test_ByteOrder${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-${DEST}$(dir)/test_stir_math: ${DEST}$(dir)/test_stir_math.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_stir_math: ${DEST}$(dir)/test_stir_math${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-${DEST}$(dir)/test_OutputFileFormat: ${DEST}$(dir)/test_OutputFileFormat.o \
-   $(STIR_LIB) $(filter %IO_registries.o,$(STIR_REGISTRIES))  $(EXTRA_LIBS) 
-	$(CXX) $(CFLAGS)  -o $@ $< \
-		$(filter %IO_registries.o,$(STIR_REGISTRIES)) \
-		 $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_OutputFileFormat: ${DEST}$(dir)/test_OutputFileFormat${O_SUFFIX} \
+   $(STIR_LIB) $(filter %IO_registries${O_SUFFIX},$(STIR_REGISTRIES))  $(EXTRA_LIBS) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< \
+		$(filter %IO_registries${O_SUFFIX},$(STIR_REGISTRIES)) \
+		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-${DEST}$(dir)/test_proj_data_info: ${DEST}$(dir)/test_proj_data_info.o $(STIR_LIB) 
-	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+${DEST}$(dir)/test_proj_data_info: ${DEST}$(dir)/test_proj_data_info${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 include $(WORKSPACE)/test.mk
 
