@@ -127,7 +127,8 @@ read_norm_data(const string& filename)
   scanner_ptr =
     find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
   
-  MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 0/*= read data as well */);
+  MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 
+				    Norm3d/*= read data as well */);
   if (matrix == 0)
     error("BinNormalisationFromECAT7: error reading data in  %s\n", filename.c_str());
 
