@@ -81,7 +81,7 @@ protected:
 
 
 END_NAMESPACE_TOMO
-#include "RegisteredObject.inl"
+#include "tomo/RegisteredObject.inl"
 
 #endif
 
