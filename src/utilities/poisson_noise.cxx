@@ -27,7 +27,7 @@ USING_NAMESPACE_TOMO
   // try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
   typedef boost::mt19937 base_generator_type;
   // initialize by reproducible seed
-  static base_generator_type generator(42);
+  static base_generator_type generator(boost::uint32_t(42));
 
   boost::uniform_01<base_generator_type> random01(generator);
 #else
@@ -110,7 +110,8 @@ add_poisson(ProjData& output_projdata,
 void usage()
 {
     cerr <<"Usage: add_poisson [-p | --preserve-mean] <output_filename (no extension)> <input_file_name> scaling_factor seed-unsigned-int\n"
-	 << "Without the -p option, the mean of the output data will"
+         <<"The seed value for the random number generator has to be strictly positive.\n"
+         << "Without the -p option, the mean of the output data will"
 	 << " be equal to scaling_factor*mean_of_input\n."
 	 << "The options -o and --preserve-mean are identical.\n";
 }
@@ -146,11 +147,18 @@ main (int argc,char *argv[])
 
 #ifndef RAND
   boost::uint32_t seed = atoi(argv[4]);
+  // check seed!=0 as current generator used does not allow this value
+  if (seed==0)
+   error("Seed value has to be non-zero.\n");
   generator.seed(seed);
 #else
   unsigned int seed = atoi(argv[4]);
+  // check seed!=0 as Darren Hogg observed strange statistics on Linux
+  if (seed==0)
+   error("Seed value has to be non-zero.\n");
   srand(seed);
 #endif
+
 
   string filename_san =filename;
   filename_san += ".s";
