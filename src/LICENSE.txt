@@ -263,7 +263,6 @@ Explicit list of files that carry the PARAPET license
 ./IO/ecat6_utils.cxx
 ./IO/interfile.cxx
 ./IO/InterfileHeader.cxx
-./IO/ProjDataVOLPET.cxx
 ./IO/stir_ecat6.cxx
 ./IO/stir_ecat_common.cxx
 ./iterative/LogLik_buildblock/common.cxx
