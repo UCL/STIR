@@ -175,7 +175,7 @@ initialise_keymap()
     ask_num("Maximum allowed converter",0,15,15);
 #endif
 #ifdef INCLUDE_NORMALISATION_FACTORS
-  const bool do_normalisation = ask("Include normalisation factors?", false);
+
 #  ifdef HIDACREBINNER     
   const bool handle_anode_wire_efficiency  =
     do_normalisation ? ask("normalise for anode wire efficiency?",false) : false;
@@ -237,10 +237,19 @@ post_processing()
                   scanner_ptr->get_num_detectors_per_ring()/2,
                   scanner_ptr->get_default_num_arccorrected_bins(), 
                   false));
-       // set up normalisation object
-  if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
-      != Succeeded::yes)
-    error("correct_projdata: set-up of normalisation failed\n");
+   // set up normalisation object
+  if (pre_or_post_normalisation)
+    {
+      if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+	   != Succeeded::yes)
+	error("correct_projdata: set-up of normalisation failed\n");
+    }
+  else
+    {
+      if ( normalisation_ptr->set_up(template_proj_data_info_ptr)
+	   != Succeeded::yes)
+	error("correct_projdata: set-up of normalisation failed\n");
+    }
 
 
   if (max_segment_num_to_process==-1)
@@ -309,7 +318,13 @@ get_bin_from_record(Bin& bin, const CListRecord& record,
     if (bin.get_bin_value()>0)
     {
       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
-      bin.set_bin_value(1/bin_efficiency);
+      // TODO remove arbitrary number. Supposes that these bin_Efficiencies are around 1
+      if (bin_efficiency < 1.E-10)
+	warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
+		bin_efficiency,
+		bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
+      else
+	bin.set_bin_value(1/bin_efficiency);
     }
     // do motion correction here
 
@@ -344,7 +359,13 @@ get_bin_from_record(Bin& bin, const CListRecord& record,
     if (bin.get_bin_value()>0)
     {
       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
-      bin.set_bin_value(1/bin_efficiency);
+      // TODO remove arbitrary number. Supposes that these bin_Efficiencies are around 1
+      if (bin_efficiency < 1.E-10)
+	warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
+		bin_efficiency,
+		bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
+      else
+	bin.set_bin_value(1/bin_efficiency);
     }
   }
 #endif
@@ -539,7 +560,7 @@ compute()
  cerr << "Last stored event was recorded after time-tick at " << time_of_last_stored_event << " secs\n";
  if (!do_time_frame && 
      (num_stored_events<=0 ||
-      static_cast<unsigned long>(num_stored_events)<num_events_to_store))
+      /*static_cast<unsigned long>*/(num_stored_events)<num_events_to_store))
    cerr << "Early stop due to EOF. " << endl;
  cerr <<  "Total number of prompts/trues/delayed within segment limit in this time period: " << num_events_in_frame << endl;
  cerr << "Total number of prompts/trues/delayed stored: " << num_stored_events << endl;
