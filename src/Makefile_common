@@ -44,7 +44,9 @@ ifeq ($(__TEST_OS),CYGWIN_NT-4.0)
 SYSTEM = CYGWIN
 else
 ifeq ($(__TEST_OS),SunOS)
-__TEST_AP = $(shell csh -f -c "if (-e `which aprun`) echo 1")
+# test if this as the Fujitsu parallel processor
+# TODO
+__TEST_AP = 0# $(shell csh -f -c "if (-e `which aprun`) echo 1")
 ifeq ($(__TEST_AP),1)
 SYSTEM = AP3000
 else
@@ -73,6 +75,11 @@ CC=gcc
 
 #******** libraries
 
+#** system libraries
+
+SYS_LIBS = -lm
+
+#** building block libraries
 
 #These libraries will be used as dependencies
 LIB_RECON_BUILDINGBLOCK= \
@@ -84,7 +91,8 @@ LIB_DISPLAY= \
 
 BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
 
-SYS_LIBS= -lm
+
+#** graphics libraries
  
 ifeq "$(GRAPHICS)" "X"
 GRAPH_LIBS = -lcurses -lX11
@@ -101,7 +109,20 @@ endif
 endif
 endif
 
+
+# add any others specific to your system using the SYSTEM macros
+
 #******* compiler and linker options
+
+
+#** EXTRA_OPT: for compiler
+# allow the user to get some extra options by using make EXTRA_OPT=bla 
+EXTRA_OPT =-Wall
+
+#** EXTRA_LINK_OPT: for linker
+#allow the user to get extra options for link time
+EXTRA_LINK_OPT=
+#** compiler options
 
 ifeq ($(SYSTEM),LINUX)
 OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
@@ -114,21 +135,11 @@ endif
 endif
 
 ifeq ($(SYSTEM),LINUX)
-DEBUG_OPT=-D_DEBUG -pg -g
+# enable -pg to do profiling
+DEBUG_OPT=-D_DEBUG -g -pg
 else
 DEBUG_OPT=-D_DEBUG -g
 endif
-
-# possibly this should check on AIX as well
-ifeq ($(SYSTEM),CC)
-LINK_OPT=-Xlinker -bbigtoc $(LIBS)
-else
-LINK_OPT=$(LIBS)
-endif
-
-
-# allow the user to get some extra options by using make EXTRA_OPT=bla 
-EXTRA_OPT =-Wconversion -Wstrict-prototypes 
 
 # TODO, do not use DEBUG here
 ifeq ($(BUILD),debug)
@@ -137,8 +148,16 @@ else # release version
 DEBUG = $(OPTIM_OPT)  $(EXTRA_OPT) 
 endif # BUILD ?
 
-# removed -I/usr/lib
 CFLAGS= -g $(DEBUG) -I$(INCLUDE_DIR) 
+
+
+#** LINK_OPT:  add specific libraries and switches depending on platforms
+# possibly this should check on AIX as well
+ifeq ($(SYSTEM),CC)
+LINK_OPT=-Xlinker -bbigtoc $(EXTRA_LINK_OPT) $(LIBS)
+else
+LINK_OPT=$(EXTRA_LINK_OPT) $(LIBS) 
+endif
 
 #******** targets
 
@@ -167,7 +186,6 @@ vpath %.inl = ${INCLUDE_DIR} ${INCLUDE_DIR}/FORE ${INCLUDE_DIR}/OSEM ${INCLUDE_D
 
 .SUFFIXES: .c .o .cxx .a .d
 
-# KT 22/02/2000 new
 # TODO it's always using -M at the moment, don't know why...
 # To generate dependencies, we use -MM for gcc (or g++) and -M for other compilers
 ifeq ($(CXX),g++)
