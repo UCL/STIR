@@ -51,18 +51,22 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
 \brief This stores the non-zero projection matrix elements
-  for every 'voxel'.
+  for every 'densel' that contributes to a given bin.
 
-  Most of the members of this class would work just as well
-  for a (not yet existing) class ProjMatrixElemsForOneVoxel.
+  In the usual terminology, this class implements a Line (or Tube)
+  of Response (LOR, or TOR).
+
+  \todo Most of the members of this class would work just as well
+  for a (not yet existing) class ProjMatrixElemsForOneDensel.
   This means that we should derived both from a common
-  base class, templated in the type of element (TODO).
+  base class, templated in the type of element.
 
+  \todo
   It might be useful to template this class in terms of the
   element-type as well. That way, we could have 'compact' 
   elements, efficient elements, etc. However, doing this
   will probably only be useful if all ProjMatrixByBin classes
-  are then templated as well (TODO?).
+  are then templated as well, which would be a pain.
 */
 
 /* 
@@ -158,6 +162,17 @@ public:
      */
   // TODO make sure we can have a const argument
   void merge(ProjMatrixElemsForOneBin &lor );
+
+  //! Compare 2 lors to see if they are equal
+  /*! \warning Compares element by element. Does not sort first or so.
+      \warning Compares float values, so uses a tolerance. This tolerance
+      is currently set to a fraction of the maximum value in the first lor.
+      \warning this is a fairly CPU intensive operation.
+  */
+  bool operator==(const ProjMatrixElemsForOneBin&) const;
+  //! Compare 2 lors 
+  bool operator!=(const ProjMatrixElemsForOneBin&) const;
+
 
 #if 0  
   void write(fstream&fst) const;     	
