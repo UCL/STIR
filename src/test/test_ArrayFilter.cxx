@@ -53,9 +53,10 @@ public:
   void run_tests();
 private:
 
-  void compare_results_2arg(const ArrayFunctionObject<1,float>& filter1,
-			    const ArrayFunctionObject<1,float>& filter2,
-			    const Array<1,float>& test);
+  template <int num_dimensions>
+  void compare_results_2arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
+			    const ArrayFunctionObject<num_dimensions,float>& filter2,
+			    const Array<num_dimensions,float>& test);
   template <int num_dimensions>
   void compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
 			    const ArrayFunctionObject<num_dimensions,float>& filter2,
@@ -83,7 +84,7 @@ compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
     Array<num_dimensions,float> out1(test);
     BasicCoordinate<num_dimensions, int> min_indices, max_indices;
     check(test.get_regular_range(min_indices, max_indices), "test only works for Arrays of regular range");
-    const IndexRange<num_dimensions> larger_range(min_indices-5, max_indices+7);
+    const IndexRange<num_dimensions> larger_range(min_indices-2, max_indices+1);
     out1.resize(larger_range);
 
     Array<num_dimensions,float> out2(out1);
@@ -95,15 +96,18 @@ compare_results_1arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
   }
 }
 
+template <int num_dimensions>
 void 
 ArrayFilterTests::
-compare_results_2arg(const ArrayFunctionObject<1,float>& filter1,
-		     const ArrayFunctionObject<1,float>& filter2,
-		     const Array<1,float>& test)
+compare_results_2arg(const ArrayFunctionObject<num_dimensions,float>& filter1,
+		     const ArrayFunctionObject<num_dimensions,float>& filter2,
+		     const Array<num_dimensions,float>& test)
 {
+  BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+  check(test.get_regular_range(min_indices, max_indices), "test only works for Arrays of regular range");
   {
-    Array<1,float> out1(test.get_index_range());
-    Array<1,float> out2(out1.get_index_range());
+    Array<num_dimensions,float> out1(test.get_index_range());
+    Array<num_dimensions,float> out2(out1.get_index_range());
     filter1(out1, test);
     filter2(out2, test);
     
@@ -111,8 +115,9 @@ compare_results_2arg(const ArrayFunctionObject<1,float>& filter1,
     //std::cerr << out1 << out2;
   }
   {
-    Array<1,float> out1(IndexRange<1>(200));
-    Array<1,float> out2(out1.get_index_range());
+    const IndexRange<num_dimensions> larger_range(min_indices-2, max_indices+1);
+    Array<num_dimensions,float> out1(larger_range);
+    Array<num_dimensions,float> out2(larger_range);
     filter1(out1, test);
     filter2(out2, test);
     
@@ -120,19 +125,25 @@ compare_results_2arg(const ArrayFunctionObject<1,float>& filter1,
     //std::cerr << out1 << out2;
   }
   {
-    Array<1,float> out1(IndexRange<1>(50));
-    Array<1,float> out2(out1.get_index_range());
+    const IndexRange<num_dimensions> smaller_range(min_indices+2, max_indices-1);
+    Array<num_dimensions,float> out1(smaller_range);
+    Array<num_dimensions,float> out2(smaller_range);
     filter1(out1, test);
     filter2(out2, test);
     
     check_if_equal( out1, out2, "test comparing output of filters, smaller length");
   }
+  if (num_dimensions==1)
   {
-    IndexRange<1> influenced_range;
+    IndexRange<num_dimensions> influenced_range;
     if (filter2.get_influenced_indices(influenced_range, test.get_index_range())==Succeeded::yes)
       {
-	Array<1,float> out1(IndexRange<1>(influenced_range.get_min_index()-3, influenced_range.get_max_index()+4));
-	Array<1,float> out2(out1.get_index_range());
+	BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+	check(influenced_range.get_regular_range(min_indices, max_indices), "test only works for Arrays of regular range");
+	const IndexRange<num_dimensions> larger_range(min_indices-3, max_indices+4);// WARNING ALIASING +7
+	//Array<num_dimensions,float> out1(IndexRange<num_dimensions>(influenced_range.get_min_index()-3, influenced_range.get_max_index()+4));
+	Array<num_dimensions,float> out1(larger_range);
+	Array<num_dimensions,float> out2(out1.get_index_range());
 	filter1(out1, test);
 	filter2(out2, test);
     
@@ -179,7 +190,7 @@ ArrayFilterTests::run_tests()
       const int DFT_kernel_size=256;
       // necessary to avoid aliasing in DFT
       assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
-      assert(DFT_kernel_size>=2*size1);
+      assert(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
       Array<1,float> kernel_for_DFT(IndexRange<1>(0,DFT_kernel_size-1));
       Array<1,float> kernel_for_conv(IndexRange<1>(-kernel_half_length,kernel_half_length));
       for (int i=-kernel_half_length; i<kernel_half_length; ++i)
@@ -261,8 +272,8 @@ ArrayFilterTests::run_tests()
       const int DFT_kernel_size=64;
       // necessary to avoid aliasing in DFT
       assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
-      assert(DFT_kernel_size>=2*size2);
-      assert(DFT_kernel_size>=2*size1);
+      assert(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
+      assert(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
       const Coordinate2D<int> sizes(DFT_kernel_size/2,DFT_kernel_size);
       Array<2,float> kernel_for_DFT(IndexRange2D(DFT_kernel_size/2,DFT_kernel_size));
       Array<2,float> kernel_for_conv(IndexRange2D(-(kernel_half_length/2),kernel_half_length/2,
@@ -287,19 +298,19 @@ ArrayFilterTests::run_tests()
       //std::cerr << get_tolerance();
 
       cerr <<"Comparing DFT and Convolution with input offset 0\n";
-      //compare_results_2arg(DFT_filter, conv_filter, test);
+      compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
       cerr <<"Comparing DFT and Convolution with input negative offset\n";
-      //compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
+      compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
       cerr <<"Comparing DFT and Convolution with input positive offset\n";
-      //compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
+      compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
   }
   std::cerr << "\nTesting 3D\n";
   {
-    const int size1=3;const int size2=7; const int size3=3;
+    const int size1=5;const int size2=7; const int size3=6;
     Array<3,float> test(IndexRange3D(size1,size2,size3));
     Array<3,float> test_neg_offset(IndexRange3D(-5,size1-6,-10,size2-11,-4,size3-5));
     Array<3,float> test_pos_offset(IndexRange3D(1,size1,2,size2+1,3,size3+4));
@@ -312,13 +323,13 @@ ArrayFilterTests::run_tests()
       std::copy(test.begin_all(), test.end_all(), test_pos_offset.begin_all());
     }
     {
-      const int kernel_half_length=3;
-      const int DFT_kernel_size=16;
+      const int kernel_half_length=7;
+      const int DFT_kernel_size=32;
       // necessary to avoid aliasing in DFT
       assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
-      assert(DFT_kernel_size/2>=2*size1);
-      assert(DFT_kernel_size>=2*size2);
-      assert(DFT_kernel_size>=2*size3);
+      assert(DFT_kernel_size/2>=2*size1+3);// note +3 as test grows the array
+      assert(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
+      assert(DFT_kernel_size>=2*size3+3);// note +3 as test grows the array
       const Coordinate3D<int> sizes(DFT_kernel_size/2,DFT_kernel_size,DFT_kernel_size);
       Array<3,float> kernel_for_DFT(IndexRange3D(DFT_kernel_size/2,DFT_kernel_size,DFT_kernel_size));
       Array<3,float> kernel_for_conv(IndexRange3D(-(kernel_half_length/2),kernel_half_length/2,
@@ -345,13 +356,13 @@ ArrayFilterTests::run_tests()
       //std::cerr << get_tolerance();
 
       cerr <<"Comparing DFT and Convolution with input offset 0\n";
-      //compare_results_2arg(DFT_filter, conv_filter, test);
+      compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
       cerr <<"Comparing DFT and Convolution with input negative offset\n";
-      //compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
+      compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
       cerr <<"Comparing DFT and Convolution with input positive offset\n";
-      //compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
+      compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
   }
