@@ -126,8 +126,8 @@ inline
 float max_cos_angle(const float low, const float approx, const float resolution)
 {
 	return
-	2 - (8176*log(2))/(square(approx*resolution)*(511 + (16*low*log(2))/square(approx*resolution) - 
-	sqrt(511)*sqrt(511 + (32*low*log(2))/square(approx*resolution)))) ;
+	2. - (8176.*log(2.))/(square(approx*resolution)*(511. + (16.*low*log(2.))/square(approx*resolution) - 
+	sqrt(511.)*sqrt(511. + (32.*low*log(2.))/square(approx*resolution)))) ;
 }
 inline
 float max_cos_angle_BGO(const float low, const float approx)
@@ -139,7 +139,7 @@ inline
 float energy_lower_limit(const float low, const float approx, const float resolution)
 {
   return
-  low + (approx*resolution)*(approx*resolution)*(46.0761 - 2.03829*sqrt(22.1807*low/((approx*resolution)*(approx*resolution))+511.));
+  low + (approx*resolution)*(approx*resolution)*(46.0761 - 2.03829*sqrt(22.1807*low/square(approx*resolution)+511.));
 }
 inline
 float energy_lower_limit_BGO(const float low, const float approx)
