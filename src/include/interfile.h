@@ -67,16 +67,18 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
 
 //! This outputs an Interfile header for an image.
 /*!
- No extensions will be added to the filenames.
- Return is 'true' when succesful, 'false' otherwise.
+ A .hv extension will be added to the header_file_name if none is present.
+ \return Succeeded::yes when succesful, Succeeded::no otherwise.
  
  In fact, at the moment 2 headers are output:
- 'header_file_name' is 'new-style' (suitable for Mediman for instance), 
- *.ahv is 'old-style' (suitable for Analyze for instance)
+ <ul>
+ <li>'header_file_name' is 'new-style' (suitable for Mediman for instance), 
+ <li>*.ahv is 'old-style' (suitable for Analyze for instance)
+ </ul>
  They both point to the same file with binary data.
  */
 
-bool 
+Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
 				   const CartesianCoordinate3D<int>& dimensions,
@@ -103,7 +105,8 @@ compute_file_offsets(int number_of_time_frames,
 */
 
 template <class elemT>
-bool write_basic_interfile(const string&filename, 
+Succeeded 
+write_basic_interfile(const string&filename, 
 			   const Array<3,elemT>& image,
 			   const CartesianCoordinate3D<float>& voxel_size,
 			   const NumericType output_type = NumericType::FLOAT);
@@ -116,17 +119,10 @@ bool write_basic_interfile(const string&filename,
 */
 
 template <class elemT>
-inline bool 
+Succeeded 
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
-		      const NumericType output_type = NumericType::FLOAT)
-{
-  return
-    write_basic_interfile(filename, 
-			  image, 
-			  CartesianCoordinate3D<float>(1,1,1), 
-			  output_type);
-}
+		      const NumericType output_type = NumericType::FLOAT);
 
 //! This outputs an Interfile header and data for a VoxelsOnCartesianGrid<float> object
 /*!
@@ -134,7 +130,7 @@ write_basic_interfile(const string& filename,
  Extensions .hv (and .ahv) will be used for the header filename. 
  \return 'true' when succesful, 'false' otherwise.
 */
-bool 
+Succeeded 
 write_basic_interfile(const string& filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
 		      const NumericType output_type = NumericType::FLOAT);
@@ -149,7 +145,7 @@ write_basic_interfile(const string& filename,
   Currently the DiscretisedDensity<3,float>& object has to be a reference to a 
   VoxelsOnCartesianGrid<float> object.
 */
-bool 
+Succeeded 
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
 		      const NumericType output_type = NumericType::FLOAT);
@@ -177,7 +173,7 @@ ProjDataFromStream* read_interfile_PDFS(istream& input,
 ProjDataFromStream* read_interfile_PDFS(const string& filename);
 
 //! This writes an Interfile header appropriate for the ProjDataFromStream object.
-bool write_basic_interfile_PDFS_header(const string& header_filename,
+Succeeded write_basic_interfile_PDFS_header(const string& header_filename,
       			                const string& data_filename,
 				        const ProjDataFromStream& pdfs);
 
@@ -185,7 +181,7 @@ bool write_basic_interfile_PDFS_header(const string& header_filename,
 /*! The header_filename is found by replacing the extension in the 
    data_filename with .hs
  */
-bool write_basic_interfile_PDFS_header(const string& data_filename,
+Succeeded write_basic_interfile_PDFS_header(const string& data_filename,
 			    const ProjDataFromStream& pdfs);
 
 #if 0
@@ -195,7 +191,7 @@ bool write_basic_interfile_PDFS_header(const string& data_filename,
 // we have to call ask_PDFS_details()
 // but having this function gives you flexibility of writing the 
 // interfile header without entering the file_name + header_name+PDFS..   
-bool write_basic_interfile_PDFS_header(const string& filename);
+Succeeded write_basic_interfile_PDFS_header(const string& filename);
 #endif
 
 END_NAMESPACE_TOMO
