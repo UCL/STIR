@@ -805,6 +805,12 @@ int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
     char *dataptr;
     int status;
 
+    if (ibytes%MatBLKSIZE != 0)
+      {
+	warning("Error writing ECAT6 data: data_size should be a multiple of %d.\nNo Data written to file.",
+		MatBLKSIZE);
+	return (EXIT_FAILURE);
+      }      
 #if STIRIsNativeByteOrderBigEndian
     char bufr[MatBLKSIZE];
 
@@ -843,8 +849,7 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
     short bufr[MatBLKSIZE / sizeof (short)];
 
     bbufr = (char *) bufr;
-
-        // transfer subheader information
+    // transfer subheader information
     bufr [63] = header->data_type;
     bufr [64] = header->num_dimensions;
     bufr [66] = header->dimension_1;
@@ -888,9 +893,10 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
 #endif
 
     bcopy (header->annotation, bbufr + 420, 40);
-        // write to matrix file
+    // write to matrix file
+
     status = cti_wblk (fptr, blknum, bbufr, 1);
-	
+    fflush(fptr);
     if (status != EXIT_SUCCESS) return (EXIT_FAILURE);
     return (EXIT_SUCCESS);
 }
@@ -901,7 +907,6 @@ int cti_write_ECAT6_Main_header (FILE *fptr, const ECAT6_Main_header *header)
     int status;
 
     short bufr[MatBLKSIZE / sizeof (short)];
-
     bbufr = (char *) bufr;
 
     bufr [24] = header->sw_version;
@@ -966,11 +971,24 @@ int cti_write_ECAT6_Main_header (FILE *fptr, const ECAT6_Main_header *header)
     bcopy (header->study_description, bbufr + 318, 32);
     bcopy (header->facility_name, bbufr + 356, 20);
     bcopy (header->user_process_code, bbufr + 462, 10);
+    
+    // write main header at block 1    
+    //warning("KTXXX writing mainheader from %x",bbufr);
+    status = cti_wblk (fptr, 1, (char *) bbufr, 1);
+    //warning("KTXXXflush");
+    /* warning: valgrind 2.2.0 on debian 'woody' gives an error in the
+       next system call:
 
-        // write main header at block 1
-    status = cti_wblk (fptr, 1, (char *) bufr, 1);
-
+       Syscall param write(buf) contains uninitialised or unaddressable byte(s)
+       at 0x1BBADBF4: write (in /lib/libc-2.2.5.so)
+       by 0x1BB54AB7: (within /lib/libc-2.2.5.so)
+       by 0x1BB54A15: _IO_do_write (in /lib/libc-2.2.5.so)
+       by 0x1BB54E3E: _IO_file_sync (in /lib/libc-2.2.5.so)
+       Address 0x1B908000 is not stack'd, malloc'd or (recently) free'd
+      KT does not know where this comes from.
+    */
     fflush (fptr);
+    //warning("KTXXXdone");
     if (status != EXIT_SUCCESS) return (status);
     else return (EXIT_SUCCESS);
 }
