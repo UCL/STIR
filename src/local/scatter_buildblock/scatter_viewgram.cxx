@@ -48,23 +48,21 @@ void scatter_viewgram(
 
 /////////////////// SCATTER ESTIMATION TIME /////////////////	
 	CPUTimer bin_timer;
+	int bin_counter = 0;
 	bin_timer.start();
 	int axial_bins = 0 ;
 	for (bin.segment_num()=proj_data_info.get_min_segment_num();
-	bin.segment_num()<=proj_data_info.get_max_segment_num();
-	++bin.segment_num())	
-	axial_bins += proj_data_info.get_max_axial_pos_num(bin.segment_num()) - proj_data_info.get_min_axial_pos_num(bin.segment_num())+1;	
-  int total_bins = (proj_data_info.get_max_segment_num() - proj_data_info.get_min_segment_num()+1)*
-	                 (proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num()+1) * axial_bins *
-	                 (proj_data_info.get_max_tangential_pos_num() - proj_data_info.get_min_tangential_pos_num()+1) ;
+	     bin.segment_num()<=proj_data_info.get_max_segment_num();
+	     ++bin.segment_num())	
+	  axial_bins += proj_data_info.get_num_axial_poss(bin.segment_num());	
+    const int total_bins = proj_data_info.get_num_views() * axial_bins *
+	                 proj_data_info.get_num_tangential_poss() ;
 	cerr << "\n Total Scatter Points : " << max_scatt_points 
 		 << "\n Total bins : " << total_bins << " = " 
-		 << proj_data_info.get_max_segment_num() - proj_data_info.get_min_segment_num()+1 
-		 << " segment_bins * "
-		 << proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num()+1
+		 << proj_data_info.get_num_views() 
 		 << " view_bins * " 
 		 << axial_bins << " axial_bins * "
-		 << proj_data_info.get_max_tangential_pos_num() - proj_data_info.get_min_tangential_pos_num()+1 
+		 << proj_data_info.get_num_tangential_poss() 
 		 << " tangential_bins\n"  ;
 	
 /////////////////// end SCATTER ESTIMATION TIME /////////////////
@@ -102,22 +100,21 @@ void scatter_viewgram(
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();	
 						
-/////////////////// SCATTER ESTIMATION TIME /////////////////						
-						 						
-						static int bin_counter = 0;
-						++bin_counter;
-						if(bin_counter%10==0)
-						{				
-     					 static double previous_timer = 0 ;		
-						   cerr << bin_counter << " bins  Total time elapsed "
-						        << bin_timer.value() << " sec  Time remaining about "
-						        << (bin_timer.value()-previous_timer)*(total_bins - bin_counter)/(10*60) 
-								<< " minutes\n";
-						   previous_timer = bin_timer.value() ;
-						}
-/////////////////// end SCATTER ESTIMATION TIME /////////////////
+					++bin_counter;
+
 					}			    	
 				proj_data.set_viewgram(viewgram);
+				/////////////////// SCATTER ESTIMATION TIME /////////////////												 						
+				{				
+					static double previous_timer = 0 ;		
+					cerr << bin_counter << " bins  Total time elapsed "
+						<< bin_timer.value() << " sec  Time remaining about "
+						<< (bin_timer.value()-previous_timer)*(total_bins - bin_counter)/
+						(viewgram.get_num_axial_poss()*viewgram.get_num_tangential_poss()*60) 
+						<< " minutes\n";
+					previous_timer = bin_timer.value() ;
+				}
+				/////////////////// end SCATTER ESTIMATION TIME /////////////////
 			}
 			bin_timer.stop();		
 	}
