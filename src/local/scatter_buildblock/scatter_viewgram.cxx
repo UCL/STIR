@@ -157,7 +157,7 @@ void scatter_viewgram(
 						det_num_B,
 						lower_energy_threshold,
 						upper_energy_threshold,
-						use_cosphi,use_cache));
+						use_cosphi,use_cache)/scatt_points_vector.size());
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();
