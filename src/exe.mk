@@ -29,7 +29,7 @@ $(dir)_EXES:= \
 	$(patsubst %.cxx, $(DEST)%, $(filter %.cxx, $($(dir)_SOURCES))) \
 	$(patsubst %.c, $(DEST)%, $(filter %.c, $($(dir)_SOURCES)))
 
-.PHONY: $(dir) clean_exes_$(dir) install_$(dir)
+.PHONY: $(dir) clean_exes_$(dir) install_exes_$(dir)
 
 # make sure make keeps the .o file
 # otherwise it will be deleted
@@ -51,8 +51,9 @@ clean_exes_$(dir):
 	rm -f $(DEST)$(@:clean_exes_%=%)/*.[oP]
 
 
-install_$(dir): $(dir)
-	cp $($(@:install_%=%)_EXE_FILENAMES) $(INSTALL_DIR)
+install_exes_$(dir): $(dir)
+	mkdir -p $(INSTALL_EXE_DIR)
+	$(INSTALL) $($(@:install_exes_%=%)_EXE_FILENAMES) $(INSTALL_EXE_DIR)
 
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
   -include \
