@@ -2,7 +2,7 @@
 !name of data file := test_image_5.v
 !total number of images := 31
 !data offset in bytes := 0
-!imagedata byte order := BIGENDIAN
+!imagedata byte order := LITTLEENDIAN
 !number format := float
 !number of bytes per pixel := 4
 matrix axis label [1] := x
