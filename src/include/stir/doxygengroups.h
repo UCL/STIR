@@ -64,7 +64,11 @@ projection data,...
 looks a lot neater.
 */
 /*!
-\defgroup Array Items relating to (multi-dimensional) arrays
+\defgroup Array Items relating to vectors and (multi-dimensional) arrays
+\ingroup buildblock
+*/
+/*!
+\defgroup Coordinate Items relating to coordinates
 \ingroup buildblock
 */
 /*!
