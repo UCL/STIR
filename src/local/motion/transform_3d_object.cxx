@@ -155,6 +155,7 @@ transform_3d_object(ProjData& out_proj_data,
 		    const int min_in_segment_num_to_process,
 		    const int max_in_segment_num_to_process)
 {
+#ifndef NEW_ROT
   const ProjDataInfoCylindricalNoArcCorr* const 
    out_proj_data_info_noarccor_ptr = 
        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr* const>(out_proj_data.get_proj_data_info_ptr());
@@ -167,7 +168,13 @@ transform_3d_object(ProjData& out_proj_data,
       warning("Wrong type of proj_data_info (no-arccorrection)\n");
       return Succeeded::no;
     }
-
+#else
+  const ProjDataInfo&
+   out_proj_data_info = 
+       *out_proj_data.get_proj_data_info_ptr();
+  const ProjDataInfo& 
+    in_proj_data_info = *in_proj_data.get_proj_data_info_ptr();
+#endif
   const int out_min_segment_num = out_proj_data.get_min_segment_num();
   const int out_max_segment_num = out_proj_data.get_max_segment_num();
   VectorWithOffset<shared_ptr<SegmentByView<float> > > out_seg_ptr(out_min_segment_num, out_max_segment_num);
@@ -199,8 +206,14 @@ transform_3d_object(ProjData& out_proj_data,
 	      if (bin.get_bin_value()==0)
 		continue;
 	      rigid_object_transformation.transform_bin(bin,
+#ifndef NEW_ROT
 							*out_proj_data_info_noarccor_ptr,
-							*in_proj_data_info_noarccor_ptr);
+							*in_proj_data_info_noarccor_ptr
+#else
+							out_proj_data_info,
+							in_proj_data_info
+#endif
+							);
 
 	      if (bin.get_bin_value()>0)
 		(*out_seg_ptr[bin.segment_num()])[bin.view_num()]
