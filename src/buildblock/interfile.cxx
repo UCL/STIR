@@ -38,8 +38,9 @@ PETImageOfVolume read_interfile_image(istream& input)
     Point3D voxel_size(hdr.pixel_sizes[0], hdr.pixel_sizes[1], hdr.pixel_sizes[2]);
 
     // KT 29/10/98 adjusted x,y ranges to centre 
-    const y_size =  hdr.matrix_size[1][0];
-    const x_size =  hdr.matrix_size[0][0];
+    // KT 03/11/99 added int
+    const int y_size =  hdr.matrix_size[1][0];
+    const int x_size =  hdr.matrix_size[0][0];
     PETImageOfVolume 
       image(Tensor3D<float>(0,hdr.matrix_size[2][0]-1,
       -y_size/2, (-y_size/2) + y_size - 1,
