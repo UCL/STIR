@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 
 #ifndef __LogLikelihoodBasedAlgorithmParameters_h__
@@ -17,7 +17,7 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  \date $Date$
   \version $Revision$
 
 */
@@ -74,6 +74,13 @@ public:
 
   //! the projection data in this file is bin-wise added to forward projection results
   string additive_projection_data_filename;
+#ifdef PROJSMOOTH
+  VectorWithOffset<float> forward_proj_postsmooth_tang_kernel;
+  vector<double> forward_proj_postsmooth_tang_kernel_double;
+  VectorWithOffset<float> forward_proj_postsmooth_ax_kernel;
+  vector<double> forward_proj_postsmooth_ax_kernel_double;
+  int forward_proj_postsmooth_smooth_segment_0_axially;
+#endif
 
 protected:
 
