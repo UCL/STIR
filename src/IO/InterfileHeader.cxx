@@ -629,6 +629,11 @@ bool InterfilePDFSHeader::post_processing()
         is_arccorrected = true;
         break;
       }
+      else if (correction != "none")
+	    warning("\nParsing Interfile header for projection data: \n"
+		    "\t value '%s' for keyword 'applied corrections' ignored\n",
+		    correction.c_str());
+	
     }
     
   }
