@@ -171,7 +171,8 @@ void IterativeReconstruction::end_of_iteration_processing(DiscretisedDensity<3,f
       sprintf(fname, "%s_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
 
      // Write it to file
-      write_basic_interfile(fname, current_image_estimate);
+      get_parameters().output_file_format_ptr->
+	write_to_file(fname, current_image_estimate);
       delete fname; 
     }
 }
