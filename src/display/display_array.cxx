@@ -69,7 +69,7 @@ static void Array2DtoSCImg (
 
 /* KT
    Warning: g++ 2.7.2.2 compiler bug:
-   when using Tensor1D<float> for the scale_factors (and not the template 
+   when using VectorWithOffset<float> for the scale_factors (and not the template 
    SCALE), g++ complains about a null character. Removing any of the other
    parameters, or using int or double as the type, makes this g++ bug 
    disappear. Or indeed, using a template...
@@ -95,6 +95,8 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
   const int length_y = max_indices[2] - min_indices[2] + 1;
   const int length_x = max_indices[3] - min_indices[3] + 1;
 
+  // KT 30/05/2002 open a window here first, such that SC_X_MAX is set to actual window size
+  SC_START_BIG(); // KT 30/05/2002 select bigger window size 
   // window dimensions
   const int min_x = 0;
   const int min_y = 0;
@@ -110,13 +112,17 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
 			   length_y,
 			   sc_image,num_in_window);
   if (num_in_window == 0)
+  {
+    SC_STOP();
     return;
+  }
 
   int nr=plane_stack.get_min_index();
   int i;
   while (nr<=plane_stack.get_max_index())
   {
-    SC_START();
+    if (nr!=plane_stack.get_min_index())
+      SC_START_BIG(); // KT 30/05/2002 select bigger window size 
     SC_MASK(SC_M_ALL);
     SC_CLEAR_BLOCK((SC_C_BACKGROUND+ SC_C_MAX)/3,min_x,max_x-1,min_y,max_y-1);
     SC_SCALE(SC_X_MAX-30,30, 20, SC_Y_MAX - 60);
@@ -161,7 +167,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
       // work-around for the fact that the (old) display library
       // does not use const char*. We copy the data into char *...
       // There would be problems if sc_image[i].text is going 
-      // to be modified. However, draw_sc_iamges does not do this, so let's
+      // to be modified. However, draw_sc_images does not do this, so let's
       // live with it (otherwise it requires changing lots of declarations
       // in screen.c, and possibly X !)
       // TODO ?
@@ -179,7 +185,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
       delete[] (sc_image[i].text);
     }
     if (plane_stack.get_max_index()>nr)
-      if( !ask("Continue ?",true) )
+      if( !ask("Continue display?",true) )
 	break;                          /* out of while                 */
   }
   delete[] sc_image;
