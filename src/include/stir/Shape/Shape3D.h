@@ -23,12 +23,6 @@
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
 #include "stir/CartesianCoordinate3D.h"
-#include <string>
-
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -38,6 +32,35 @@ template <typename elemT> class VoxelsOnCartesianGrid;
 /*!
   \ingroup Shape
   \brief The base class for all 3 dimensional shapes
+
+  Shape3D objects are intended to represent geometrical object with
+  sharp boundaries. So, a point is inside or shape, or it is not (i.e.
+  no fuzzyness).
+
+  The only derived class where this is relaxed is DiscretisedShape3D.
+  However, this then needs some special treatment for some member 
+  functions, and you have to be somewhat careful with that class.
+
+  \todo This could/should be generalised to allow general fuzzy shapes.
+  Probably the only thing to change is to let is_inside_shape() return
+  a float (between 0 and 1). This would solve some issues with 
+  DiscretisedDhape3D.
+
+  \todo The restriction to the 3D case for this base class largely comes
+  from the construct_volume() member (and the origin parsing members)
+
+  \todo This base class really should have no origin member.
+  For example, DiscretisedShape3D now has effectively two.
+  Instead, we should have an additional class Shape3DWithOrigin.
+  Easy to do.
+
+  \par Parsing
+  This base class defines the following keywords for parsing
+  \verbatim
+  origin-z (in mm):= <float> ;defaults to 0
+  origin-y (in mm):= <float> ;defaults to 0
+  origin-x (in mm):= <float> ;defaults to 0
+  \endvarbatim
 */
 class Shape3D :
    public RegisteredObject<Shape3D>,
@@ -47,19 +70,40 @@ public:
 
   
   virtual ~Shape3D() {}
-  
+
+  /*! 
+    \brief Determine (approximately) the intersection volume of a voxel with the shape.
+
+    \param voxel_centre is a cartesian coordinate in 'absolute' coordinates,
+    i.e. in mm and <b>not</b> relative to the \a origin member.
+    \param voxel_size is the voxel size in mm.
+    \param num_samples determines the number of samples to take in z,y,x
+    direction.
+    \return a value between 0 and 1 representing the fraction of the
+    voxel inside the shape
+
+    In the Shape3D implementation, this is simply done by calling
+    is_inside_shape() at various points in the voxel, and returning
+    the average value. Obviously, this will only approximate the 
+    intersection volume for very large \a num_samples, or when the
+    voxel is completely inside the shape.
+  */
   virtual float get_voxel_weight(
-    const CartesianCoordinate3D<float>& index,
+    const CartesianCoordinate3D<float>& voxel_centre,
     const CartesianCoordinate3D<float>& voxel_size, 
     const CartesianCoordinate3D<int>& num_samples) const;
   
   
   //! determine if a point is inside the shape or not (up to floating point errors)
   /*! 
-  This is really only well defined for shapes with sharp boundaries. 
-  \see DiscretisedShape3D::is_inside_shape.
+    \param coord is a cartesian coordinate in 'absolute' coordinates,
+    i.e. in mm and <b>not</b> relative to the \a origin member.
+  
+    This is really only well defined for shapes with sharp boundaries. 
+    \see DiscretisedShape3D::is_inside_shape for some discussion.
+    \todo replace by floating point return value?
   */
-  virtual bool is_inside_shape(const CartesianCoordinate3D<float>& index) const = 0;
+  virtual bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const = 0;
   
   //! translate the whole shape (see scale)
   virtual void translate(const CartesianCoordinate3D<float>& direction) = 0;
@@ -78,12 +122,25 @@ public:
   \endcode
  */
   virtual void scale(const CartesianCoordinate3D<float>& scale3D) 
-  { error ("TODO: scale");}
+  { error ("TODO: Shape3D::scale");}
   
   //! scale the whole shape, keeping the centre at the same place
   inline void scale_around_origin(const CartesianCoordinate3D<float>& scale3D);
   
-  
+  /*!
+    \brief construct an image representation the shape in a discretised manner
+
+    In principle, each voxel is sub-sampled to allow smoother edges.
+    \warning Shapes have to be larger than the voxel size for sensible results.
+    For efficiency reasons, the current implementation of this function
+    does a first pass through the image where is_inside_shape() is called
+    only for the centre of the voxels. After this, only edge voxels are
+    resampled. So, if a shape lies between the centre of all voxels,
+    it will not be sampled at all.
+  \todo Get rid of restriction to allow only VoxelsOnCartesianGrid<float>
+  (but that's rather hard)
+  \todo Potentially this should fill a DiscretisedShape3D.
+  */
   virtual void construct_volume(VoxelsOnCartesianGrid<float> &image, const CartesianCoordinate3D<int>& num_samples) const;
   //virtual void construct_slice(PixelsOnCartesianGrid<float> &plane, const CartesianCoordinate3D<int>& num_samples) const;
   //virtual float get_geometric_volume() const =0;
@@ -99,11 +156,15 @@ protected:
   inline Shape3D();
   inline Shape3D(const CartesianCoordinate3D<float>& origin);
 
+  //! origin of the shape
+  /*! \todo replace by virtual function */
   CartesianCoordinate3D<float> origin;
 
+  //! \name Parsing functions
+  //@{
   virtual void set_defaults();  
   virtual void initialise_keymap();
-
+  //@}
 };
 
 END_NAMESPACE_STIR
