@@ -43,17 +43,14 @@ initialise_keymap()
   OutputFileFormat::initialise_keymap();
 }
 
-template <int num_dimensions, typename elemT>
 Succeeded  
 InterfileOutputFileFormat::
     write_to_file(const string& filename, 
-                  const DiscretisedDensity< num_dimensions,elemT>& density)
+                  const DiscretisedDensity<3,float>& density)
 {
   return 
-    write_basic_interfile(filename, desnity);
+    write_basic_interfile(filename, density);
 };
-
-
 
 END_NAMESPACE_STIR
 

@@ -50,10 +50,15 @@ public:
   OutputFileFormat(const NumericType& = NumericType::SHORT, 
                    const ByteOrder& = ByteOrder::native);
 
-  template <int num_dimensions, typename elemT>
+  //! Write a single image to file
+  /*! \todo 
+      Unfortunately, C++ does not allow virtual member templates, so we'd need
+      other versions of this for other data types or dimensions.
+  */
+  virtual
   Succeeded  
     write_to_file(const string& filename, 
-                  const DiscretisedDensity< num_dimensions,elemT>& density) = 0;
+                  const DiscretisedDensity<3,float>& density) = 0;
 
 
 protected:
