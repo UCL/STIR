@@ -235,13 +235,13 @@ template<class elemT>
 void		            		      
 VoxelsOnCartesianGrid<elemT>::set_plane(const PixelsOnCartesianGrid<elemT>& plane, const int z)
 {
-  assert(get_min_x() == plane.get_min_x());
-  assert(get_max_x() == plane.get_max_x());
-  assert(get_min_y() == plane.get_min_y());
-  assert(get_max_y() == plane.get_max_y());
+  assert(this->get_min_x() == plane.get_min_x());
+  assert(this->get_max_x() == plane.get_max_x());
+  assert(this->get_min_y() == plane.get_min_y());
+  assert(this->get_max_y() == plane.get_max_y());
   assert(this->get_origin() == plane.get_origin());
-  assert(get_voxel_size().x() == plane.get_pixel_size().x());
-  assert(get_voxel_size().y() == plane.get_pixel_size().y());
+  assert(this->get_voxel_size().x() == plane.get_pixel_size().x());
+  assert(this->get_voxel_size().y() == plane.get_pixel_size().y());
   
   this->operator[](z) = plane;	  
 }
