@@ -100,14 +100,30 @@ ArrayTests::run_tests()
       check_if_equal(test[c] , 12.5 , "test operator[](BasicCoordinate)");  
 
       {
-	// KT 31/01/2000 new
+	Array<1,float> ref(-1,2); 
+	ref[-1]=1;ref[0]=3;ref[1]=3.14;
+	Array<1,float> test = ref;
+
+	test += 1;
+	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+	  check_if_equal( test[i] , ref[i]+1, "test operator+=(float)");
+	test = ref; test -= 4;
+	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+	  check_if_equal( test[i] , ref[i]-4, "test operator-=(float)");
+	test = ref; test *= 3;
+	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+	  check_if_equal( test[i] , ref[i]*3, "test operator*=(float)");
+	test = ref; test /= 3;
+	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+	  check_if_equal( test[i] , ref[i]/3, "test operator/=(float)");
+      }
+      {
 	Array<1,float> test2;
 	test2 = test * 2;
 	check_if_equal( 2*test[0] , test2[0], "test operator*(float)");
       }
 
       {
-	// KT 31/01/2000 new
 	Array<1,float> test2 = test;
 	test.grow(-2,test.get_max_index());
 	Array<1,float> test3 = test2 + test;
@@ -335,18 +351,29 @@ ArrayTests::run_tests()
     float sum = test4.sum();
     check_if_equal( sum , 131.9, "test on sum()");
     }
-    const IndexRange<4> larger_range(Coordinate4D<int>(-3,0,-1,1),Coordinate4D<int>(-1,3,3,3));
+    const IndexRange<4> larger_range(Coordinate4D<int>(-3,0,-1,1),Coordinate4D<int>(-1,3,3,5));
     test4.grow(larger_range);
-    Array<4,float> test41 = test4;
-    check_if_equal(test4  , test41, "test Array4D copy constructor" );
-    check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after grow");
- 
-    BasicCoordinate<4,int> c;
-    c[1]=-2;c[2]=1;c[3]=0;c[4]=2;
-    check_if_equal(test4[c] , 7.3 , "test on operator[](BasicCoordinate)");   
-    test4[c]=1.;
-    check_if_equal(test4[c] , 1. , "test on operator[](BasicCoordinate)");   
-    
+    check_if_equal(test4.get_index_range(), larger_range, "test Array4D grow index range");
+    check_if_equal(test4.sum(), 131.9 , "test Array4D grow sum");
+    {
+      const Array<4,float> test41 = test4;
+      check_if_equal(test4  , test41, "test Array4D copy constructor" );
+      check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after grow");
+    }
+    {
+      Array<4,float> test41 = test4;
+      const IndexRange<4> mixed_range(Coordinate4D<int>(-4,1,0,1),Coordinate4D<int>(-2,3,3,6));
+      test41.resize(mixed_range);
+      check_if_equal(test41.get_index_range(), mixed_range, "test Array4D resize index range");
+      check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after resize");
+    }
+    { 
+      BasicCoordinate<4,int> c;
+      c[1]=-2;c[2]=1;c[3]=0;c[4]=2;
+      check_if_equal(test4[c] , 7.3 , "test on operator[](BasicCoordinate)");   
+      test4[c]=1.;
+      check_if_equal(test4[c] , 1. , "test on operator[](BasicCoordinate)");   
+    }
     {
       Array<4,float> test4bis(range);
       test4bis[-2][1][2][1] = (float)6.6;
@@ -355,10 +382,12 @@ ArrayTests::run_tests()
 
       test4ter += test4;
       check_if_equal(test4ter[-3][1][0][1] ,2.3, "test on operator+=(Array4D)");
+      check(test4ter.get_index_range() == larger_range, "test range for operator+=(Array4D) with grow");
            
       // Note that test4 is bigger in size than test4bis.
       Array<4,float> test4quat = test4bis + test4;
       check_if_equal(test4quat  ,test4ter, "test summing Array4D with grow");
+      check(test4quat.get_index_range() == larger_range, "test range for operator+=(Array4D)");
     }
 
     // test on scalar multiplication, division
@@ -566,7 +595,66 @@ ArrayTests::run_tests()
       check_if_equal(shorts ,shorts2, "test 3D out/in: floats read as shorts: data" );
     }
 
+#if !defined(_MSC_VER) || (_MSC_VER > 1200)
+    // test with signed char
+    // disabled for VC 6.0 as it cannot compile the relevant instantiations
+    // TODO avoid horrible repetition of code above
+    {
+      float scale = 1;
+      {
+	ofstream os;
+	open_write_binary(os, "output.schar");
+	floats.write_data(os, NumericType::SCHAR, scale);
+      }
+      assert(scale>1);
+    
 
+      Array<3,signed char> schars(floats.get_index_range());
+      {
+	ifstream is;
+	open_read_binary(is, "output.schar");
+	schars.read_data(is);
+      }
+
+      // compare write_data of floats as signed chars with convert()
+      {
+	float newscale = scale;
+	Array<3,signed char> floatsconverted = convert_array(newscale, floats, NumericInfo<signed char>());
+	check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
+	check_if_equal(floatsconverted ,schars, "test read_data <-> convert : data");
+      }
+
+      // compare floats with schars*scale
+      {
+	Array<3,float> diff = floats;
+	diff /= scale;
+	for (int i1=floats.get_min_index(); i1<= floats.get_max_index(); i1++)
+	  for (int i2=floats[i1].get_min_index(); i2<= floats[i1].get_max_index(); i2++)
+	    for (int i3=floats[i1][i2].get_min_index(); i3<= floats[i1][i2].get_max_index(); i3++)
+	      diff[i1][i2][i3] -= schars[i1][i2][i3];
+	 
+	// difference should be maximum .5
+	// the next test relies on how check_if_zero works
+	diff *= float(2*get_tolerance());
+	check_if_zero(diff, "test 3D out/in: floats written as signed chars" );
+      }
+
+
+      // compare read_data of floats as signed chars with above
+      {
+	Array<3,signed char> schars2(floats.get_index_range());
+    
+	ifstream is;
+	open_read_binary(is, "output.flt");
+
+	float in_scale = 0;
+	schars2.read_data(is, NumericType::FLOAT, in_scale);
+	check_if_equal(scale ,in_scale, "test 3D out/in: floats read as signed chars: scale" );
+	check_if_equal(schars ,schars2, "test 3D out/in: floats read as signed chars: data" );
+      }
+      remove("output.schar");
+    } // end of tests for signed char
+#endif // _MSC_VER>1200
   }
 #endif
   // clean up test files
