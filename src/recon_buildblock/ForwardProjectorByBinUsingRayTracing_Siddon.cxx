@@ -15,7 +15,6 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
 /*
@@ -27,6 +26,7 @@
 #include <cmath>
 #include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "ProjDataInfoCylindricalArcCorr.h"
+#include "VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_TOMO
 
