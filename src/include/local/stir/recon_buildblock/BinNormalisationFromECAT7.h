@@ -65,7 +65,7 @@ public:
   //! Constructor that reads the projdata from a file
   BinNormalisationFromECAT7(const string& filename);
 
-  void set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
   float get_efficiency_factor(const Bin& bin) const;
   //! Normalise some data
   /*! 

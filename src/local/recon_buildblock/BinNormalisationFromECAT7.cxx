@@ -72,7 +72,7 @@ BinNormalisationFromECAT7(const string& filename)
   read_norm_data(filename);
 }
 
-void
+Succeeded
 BinNormalisationFromECAT7::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 {
@@ -80,15 +80,25 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
   if (proj_data_info_cyl_ptr==0)
-    error("BinNormalisationFromECAT7 can only be used on non-arccorrected data\n");
+  {
+    warning("BinNormalisationFromECAT7 can only be used on non-arccorrected data\n");
+    return Succeeded::no;
+  }
   if (*proj_data_info_ptr->get_scanner_ptr()  != *scanner_ptr)
-    error("BinNormalisationFromECAT7: scanner object from proj data is different from the one from the normalisation file\n");
+  {
+    warning("BinNormalisationFromECAT7: scanner object from proj data is different from the one "
+      "from the normalisation file\n");
+    return Succeeded::no;
+  }
 
-  span = proj_data_info_cyl_ptr->get_max_ring_difference(0) - proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
+  span = 
+    proj_data_info_cyl_ptr->get_max_ring_difference(0) - 
+    proj_data_info_cyl_ptr->get_min_ring_difference(0) + 1;
   // TODO insert check all other segments are the same
 
   mash = scanner_ptr->get_num_detectors_per_ring()/2/proj_data_info_ptr->get_num_views();
 
+  return Succeeded::yes;
 }
 
 void
