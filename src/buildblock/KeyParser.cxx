@@ -130,7 +130,7 @@ KeyParser::standardise_keyword(const string& keyword) const
     return string();
   
   // remove trailing white spaces
-  const int eok=keyword.find_last_not_of(white_space);
+  const string::size_type eok=keyword.find_last_not_of(white_space);
   
   string kw;
   kw.reserve(eok+1);
