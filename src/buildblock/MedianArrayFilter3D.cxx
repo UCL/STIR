@@ -17,7 +17,12 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
-
+/* History:
+   SM first version
+   KT 19/03/2002 
+   change handling of edges (they were not filtered before)
+   correct bug in case output and input array size were not the same
+*/
 #include "stir/MedianArrayFilter3D.h"
 #include "stir/Coordinate3D.h"
 
@@ -47,16 +52,32 @@ MedianArrayFilter3D<elemT>::MedianArrayFilter3D(const Coordinate3D<int>& mask_ra
 
 
 template <typename elemT>
-void
+int
 MedianArrayFilter3D<elemT>::
 extract_neighbours(Array<1,elemT>& neigbours,const Array<3,elemT>& in_array,const Coordinate3D<int>& c_pixel) const
 {  
   int index=0;
   
-  for (int zi =-mask_radius_z;zi<= mask_radius_z;zi++)
-    for (int yi =-mask_radius_y;yi<= mask_radius_y;yi++)
-      for( int xi=-mask_radius_x;xi<= mask_radius_x;xi++)	 
-        neigbours[index++] = in_array[c_pixel[1]+zi][c_pixel[2]+yi][c_pixel[3]+xi];
+  for (int zi =-mask_radius_z;zi<= mask_radius_z;++zi)
+    {
+      const int z = c_pixel[1]+zi;
+      if (z<in_array.get_min_index() || z> in_array.get_max_index())
+	continue;
+      for (int yi =-mask_radius_y;yi<= mask_radius_y;++yi)
+	{
+	  const int y = c_pixel[2]+yi;
+	  if (y<in_array[z].get_min_index() || y> in_array[z].get_max_index())
+	    continue;
+	  for( int xi=-mask_radius_x;xi<= mask_radius_x;++xi)
+	    {
+	      const int x = c_pixel[3]+xi;
+	      if (x<in_array[z][y].get_min_index() || x> in_array[z][y].get_max_index())
+		continue;
+	      neigbours[index++] = in_array[z][y][x];
+	    }
+	}
+    }
+  return index;
 }
 
 template <typename elemT>
@@ -68,13 +89,20 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
 
   Array<1,elemT> neighbours (0,(2*mask_radius_x+1)*(2*mask_radius_y+1)*(2*mask_radius_z+1)-1);
 
-  for (int z=in_array.get_min_index()+mask_radius_z;z<= in_array.get_max_index()-mask_radius_z;z++)
-   for (int y=in_array[z].get_min_index()+mask_radius_y;y <= in_array[z].get_max_index()-mask_radius_y;y++)
-     for (int x=in_array[z][y].get_min_index()+mask_radius_x;x <= in_array[z][y].get_max_index()-mask_radius_x;x++)       
+  for (int z=out_array.get_min_index();z<= out_array.get_max_index();++z)
+   for (int y=out_array[z].get_min_index();y <= out_array[z].get_max_index();++y)
+     for (int x=out_array[z][y].get_min_index();x <= out_array[z][y].get_max_index();++x)
      {
-      extract_neighbours(neighbours,in_array,Coordinate3D<int>(z,y,x));	 
-      nth_element(neighbours.begin(), neighbours.begin()+neighbours.get_length()/2, neighbours.end());
-      out_array[z][y][x] = neighbours[neighbours.get_length()/2]; 
+       const int num_neighbours =
+	 extract_neighbours(neighbours,in_array,Coordinate3D<int>(z,y,x));
+       if (num_neighbours==0)
+         continue;
+       nth_element(neighbours.begin(), neighbours.begin()+num_neighbours/2, neighbours.end());
+       if (num_neighbours%2==1)
+	 out_array[z][y][x] = neighbours[num_neighbours/2]; 
+       else
+	 out_array[z][y][x] = (neighbours[num_neighbours/2]+
+			       neighbours[num_neighbours/2 - 1])/2; 
      } 
 }
 
