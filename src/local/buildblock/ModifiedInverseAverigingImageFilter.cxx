@@ -533,7 +533,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 
  
   VectorWithOffset < shared_ptr <ArrayFunctionObject <3,float> > > filter_lookup;
-  const num_of_elements_in_interval = 500;
+  const int num_of_elements_in_interval = 500;
   filter_lookup.grow(1,num_of_elements_in_interval);
   const int k_min =1;
   const float k_interval = 0.01F; //0.01F;
