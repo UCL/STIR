@@ -1,137 +1,38 @@
 #
-# AIX Makefile for PPhead/test directory
-#
 # $Id$: $Date$
-#
 # 
-WORKSPACE = ${HOME}/PPhead
-INCLUDE_DIR = ${WORKSPACE}/include
 
+include ../Makefile_common
+include ../Makefile_bblibs
 
-#These libraries will be used as dependencies
-LIB_RECON_BUILDINGBLOCK= \
-   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
-LIB_BUILDINGBLOCK= \
-   ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
-LIB_DISPLAY= \
-   ${WORKSPACE}/display/${DEST}libdisplay.a
+# TODO enable test_coordinates
 
-
-
-
-AR = ar
-RANLIB= ranlib
-DEBUG= -D_DEBUG
-DEST=debug/
-CXX= g++ 
-PXCXX = px g++
-
-
-#KT 22/05/98 use INCLUDE_DIR and DEBUG and more warnings
-CFLAGS= -g $(DEBUG) -Decho -I$(INCLUDE_DIR) -Wconversion -Wstrict-prototypes 
-#LDFLAGS= -Iinclude 
-
-.SUFFIXES: .cc .o .cxx .a
-
-${DEST}%.o : %.cxx
-#.cxx.o:
-	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-
-${DEST}% : ${DEST}%.o ${LIB_BUILDINGBLOCK} ${LIB_DISPLAY}
-#.o:
-	$(CXX) $(CFLAGS) -o $@ $< \
-	     ${LIB_BUILDINGBLOCK} \
-	    ${LIB_DISPLAY} ${LIBS}
-
-
-RM = /bin/rm -f 
-
-LIBS1 = -lm
-
-#KT 22/05/98 use GNU make specific syntax to differentiate between systems (sorry)
-# KT 10/12/99 removed CYGROOT dependency
-LIBS = $(LIBS1)  -lX11 -lcurses
-
-# From here specific to this Makefile
-
-
-all: createdir libs nopara
- 
-createdir:
-	-mkdir -p $(DEST)
-
-libs: $(LIB_BUILDINGBLOCK) $(LIB_DISPLAY)
-
-# KT 101299 added test_linear_regression
-nopara: $(DEST)tensor $(DEST)display2 \
+all: $(DEST)tensor $(DEST)display2 \
 	$(DEST)VectorWithOffset $(DEST)testconvert \
-	$(DEST)test_linear_regression
+	$(DEST)test_linear_regression \
+	$(DEST)test_interpolate \
+	$(DEST)test_filename_functions 
+#	$(DEST)test_coordinates
 
 get_test_files: input/test_linear_regression.in
 
 run_tests: all get_test_files
 	$(DEST)VectorWithOffset
-	$(DEST)testconvert
 	$(DEST)tensor
+	$(DEST)testconvert
 	$(DEST)test_linear_regression  input/test_linear_regression.in
+	$(DEST)test_interpolate
+	$(DEST)test_filename_functions 
+#	$(DEST)test_coordinates
 
 
-$(LIB_DISPLAY): FORCE
-	cd $(WORKSPACE)/display; $(MAKE);
+.PHONY: run_tests get_test_files
 
-# KT 09/10/98 changed spelling mistake BUILD -> BUILDING
-$(LIB_BUILDINGBLOCK): FORCE
-	cd $(WORKSPACE)/buildblock; $(MAKE); 
+# disable default rule
+# as executables here do not depend on recon_buildblock
+${DEST}%: ${DEST}%.o $(BB_LIBS)
 
-FORCE:
-
-clean:
-	rm $(DEST)tensor $(DEST)display $(DEST)sinodata  \
-	$(DEST)VectorWithOffsetc $(DEST)testconvert 
-
-#CL 09/10/98 ADd the header file dependencies for all object files
-#I agree that this Makefile become big but it is the only way to update 
-#correctly  all the object files
-
-$(DEST)Timer.o: Timer.cxx ../include/Timer.h
-
-$(DEST)VectorWithOffset.o: VectorWithOffset.cxx ../include/VectorWithOffset.h \
- ../include/pet_common.h
-
-$(DEST)createsino.o: createsino.cxx ../include/Tensor3D.h \
- ../include/pet_common.h ../include/Tensorbase.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/NumericInfo.h ../include/Tensor2D.h ../include/Tensor1D.h
-
-$(DEST)createsino2.o: createsino2.cxx ../include/Tensor3D.h \
- ../include/pet_common.h ../include/Tensorbase.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/NumericInfo.h ../include/Tensor2D.h ../include/Tensor1D.h
-
-$(DEST)display2.o: display2.cxx ../include/pet_common.h \
- ../include/VectorWithOffset.h ../include/Tensor2D.h \
- ../include/Tensorbase.h ../include/NumericVectorWithOffset.h \
- ../include/NumericInfo.h ../include/Tensor1D.h ../include/Tensor3D.h \
- ../include/display.h ../include/sinodata.h \
- ../include/PETScannerInfo.h ../include/PETScanInfo.h
-
-$(DEST)sinodata2.o: sinodata2.cxx ../include/pet_common.h ../include/sinodata.h \
- ../include/Tensor1D.h ../include/NumericInfo.h \
- ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/PETScannerInfo.h ../include/PETScanInfo.h \
- ../include/display.h
-
-$(DEST)tensor.o: tensor.cxx ../include/Tensor4D.h ../include/pet_common.h \
- ../include/Tensorbase.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/NumericInfo.h \
- ../include/Tensor3D.h ../include/Tensor2D.h ../include/Tensor1D.h \
- ../include/TensorFunction.h
-
-$(DEST)testconvert.o: testconvert.cxx ../include/convert.h \
- ../include/NumericInfo.h ../include/pet_common.h \
- ../include/Tensor1D.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/Tensor2D.h \
- ../include/Tensorbase.h ../include/Tensor3D.h ../include/Tensor4D.h
-
+${DEST}%: ${DEST}%.o ${LIB_BUILDINGBLOCK} ${LIB_DISPLAY}
+	$(CXX) $(CFLAGS)  -o $@ $<  \
+          ${LIB_DISPLAY} ${LIB_BUILDINGBLOCK} \
+	  $(LINK_OPT) $(SYS_LIBS)
