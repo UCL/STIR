@@ -31,15 +31,12 @@
 */
 #include "stir/utilities.h"
 #include "stir/evaluation/compute_ROI_values.h"
-#if 0
-#include "stir/Shape/CombinedShape3D.h"
-#include "stir/Shape/EllipsoidalCylinder.h"
-#endif
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ImageProcessor.h"
 #include "stir/KeyParser.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -79,86 +76,6 @@ ROIValuesParameters::ROIValuesParameters()
 }
 
 
-#if 0
-void
-get_bounding_box(
-              CartesianCoordinate3D<float>& bounding_box_bottom,
-              CartesianCoordinate3D<float>& bounding_box_top,
-              const VoxelsOnCartesianGrid<float>& image);
-
-Shape3D*
-ask_Shape3D(const CartesianCoordinate3D<float>& bounding_box_bottom,
-            const CartesianCoordinate3D<float>& bounding_box_top);
-
-
-void
-get_bounding_box(
-                 CartesianCoordinate3D<float>& bounding_box_bottom,
-                 CartesianCoordinate3D<float>& bounding_box_top,
-                 const VoxelsOnCartesianGrid<float>& image)
-{
-  CartesianCoordinate3D<float> image_bottom(image.get_min_z(), image.get_min_y(), image.get_min_x());
-  CartesianCoordinate3D<float> image_top(image.get_max_z(), image.get_max_y(), image.get_max_x());
-  // TODO remove explicit conversion to CartesianCoordinate3D
-  bounding_box_bottom = image_bottom * CartesianCoordinate3D<float> (image.get_voxel_size());
-  bounding_box_top =image_top * CartesianCoordinate3D<float> (image.get_voxel_size());
-}
-
-Shape3D*
-ask_Shape3D(const CartesianCoordinate3D<float>& bounding_box_bottom,
-            const CartesianCoordinate3D<float>& bounding_box_top)
-{
-  const CartesianCoordinate3D<float> bounding_box_centre = 
-    (bounding_box_bottom + bounding_box_top)/2;
-  
-  const float xc = 
-    ask_num("Centre X coordinate", 
-    bounding_box_bottom.x(), bounding_box_top.x(), bounding_box_centre.x());
-  
-  const float yc = 
-    ask_num("Centre Y coordinate", 
-    bounding_box_bottom.y(), bounding_box_top.y(), bounding_box_centre.y());
-  
-  const float zc = 
-    ask_num("Centre Z coordinate",     
-    bounding_box_bottom.z(), bounding_box_top.z(), bounding_box_centre.z());
-  
-  const float alpha =
-    ask_num("First angle  ",0,180,0);
-  const float beta=
-    ask_num(" Second angle ",0,180,0);
-  const float gamma=
-    ask_num(" Third angle",0,180,0);
-  
-  double  max_len = norm(bounding_box_top - bounding_box_bottom);
-  
-  const double Rcyl_a = 
-    ask_num("Radius a in mm",
-    0.,max_len/4,50.);
-  
-  const double Rcyl_b = 
-    ask_num("Radius b in mm",
-    0.,max_len/2,100.);
-  
-  const double Lcyl = 
-    ask_num("Length",
-    0.,max_len,max_len);
-  
-  
-  
-  cerr << "Centre coordinate: (x,y,z) = (" 
-    << xc << ", " << yc << ", " << zc  
-    << ")" << endl;
-  cerr << "Radius_a = " << Rcyl_a << ",Radius_b="<< Rcyl_b <<",Length = " << Lcyl << endl;            
-  
-  
-return new EllipsoidalCylinder (Lcyl,Rcyl_a,Rcyl_b, 
-             CartesianCoordinate3D<float>(zc,yc,xc),
-             alpha,beta,gamma);
-  
-}
-#endif
-
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
@@ -166,23 +83,33 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char *argv[])
 {
+  bool do_CV=false;
+  const char * const progname = argv[0];
+
+  if (argc>1 && strcmp(argv[1],"--CV")==0)
+    {
+      do_CV=true;
+      --argc; ++argv;
+    }
   if(argc!=6 && argc!=4 && argc!=3) 
   {
-    cerr<<endl<<"Usage: " << argv[0] << " output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
+    cerr<<"\nUsage: " << progname << " \\\n"
+	<< "\t[--CV] output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
+    cerr << "Normally, only mean and stddev are listed.\n"
+	 << "Use the option --CV to output the Coefficient of Variation as well.\n";
     cerr << "Plane numbers start from 1\n";
-    cerr << "When ROI_filename.par is not given, the user will be asked for the parameters. "
+    cerr << "When ROI_filename.par is not given, the user will be asked for the parameters.\n"
       "Use this to see what a .par file should look like.\n."<<endl;
     exit(EXIT_FAILURE);
   }
 
 
-  //SM
   ofstream out (argv[1]);
   const char * const input_file = argv[2];
   if (!out)
   {
     cout<< "Cannot open output file.\n";
-    return 1;
+    return EXIT_FAILURE;
   }
   
   
@@ -217,17 +144,21 @@ main(int argc, char *argv[])
   compute_ROI_values_per_plane(values, *image_ptr, *parameters.shape_ptr, parameters.num_samples);
   
   out << input_file << endl;
-  out << "Plane number" <<"         Mean "<<"          "<< "Stddev"
-      // "            CV"
-      <<endl;
+  out << std::setw(10) << "Plane num" 
+      << std::setw(15) << "Mean "
+      << std::setw(15) << "Stddev";
+  if (do_CV)
+    out << std::setw(15) << "CV";
+  out  <<'\n';
   
   for (int i=min_plane_number;i<=max_plane_number;i++)
   {
-    out << i+1  
-        <<"         "<<values[i].get_mean()
-        <<"                 "<< values[i].get_stddev()
-        //<< "              " <<values[i].get_CV()
-        <<endl;
+    out << std::setw(10) << i+1  
+        << std::setw(15) << values[i].get_mean()
+        << std::setw(15) << values[i].get_stddev();
+    if (do_CV)
+      out << std::setw(15) << values[i].get_CV();
+    out <<'\n';
   }
   
 #if 0
