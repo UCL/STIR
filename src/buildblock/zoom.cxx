@@ -232,6 +232,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image,
 	   const float x_offset_in_mm, const float y_offset_in_mm, 
 	   const int new_size )                          
 {
+  assert(new_size>=0);
   if(zoom==1 && x_offset_in_mm==0 && y_offset_in_mm==0 && new_size== image.get_x_size()) 
     return;
    
@@ -271,6 +272,9 @@ zoom_image(VoxelsOnCartesianGrid<float> &image,
 	   const CartesianCoordinate3D<int>& new_sizes)
 {
 
+  assert(new_sizes.x()>=0);
+  assert(new_sizes.y()>=0);
+  assert(new_sizes.z()>=0);
   CartesianCoordinate3D<float>
     voxel_size = image.get_grid_spacing() / zooms;
   
