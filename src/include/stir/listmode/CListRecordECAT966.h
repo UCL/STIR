@@ -12,16 +12,18 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_listmode_CListRecordECAT966_H__
 #define __stir_listmode_CListRecordECAT966_H__
 
-#include "local/stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/Succeeded.h"
+#include "stir/ByteOrderDefine.h"
 #include "stir/round.h"
 
 START_NAMESPACE_STIR
@@ -43,8 +45,8 @@ class CListEventDataECAT966
 {
  public:  
   inline bool is_prompt() const { return random == 0; }
-  inline void set_prompt(const bool prompt = true) 
-    { if (prompt) random=0; else random=1;}
+  inline Succeeded set_prompt(const bool prompt = true) 
+  { if (prompt) random=0; else random=1; return Succeeded::yes; }
 
   //! This routine returns the corresponding detector pair   
   void get_detectors(
@@ -63,9 +65,6 @@ class CListEventDataECAT966
   void set_sinogram_and_ring_coordinates(
 			const int view_num, const int tangential_pos_num, 
 			const int ring_a, const int ring_b);
-
-  void get_bin(Bin&, const ProjDataInfoCylindrical&) const;
-
 
  private:
   const static int num_views;
@@ -116,12 +115,16 @@ class CListTimeDataECAT966
  public:
   inline double get_time_in_secs() const
   { return time/1000.;  }
-  inline void set_time_in_secs(const double time_in_secs)
-  { time = ((1U<<28)-1) & static_cast<unsigned>(round(time_in_secs * 1000)); }
+  inline Succeeded set_time_in_secs(const double time_in_secs)
+  { 
+    time = ((1U<<28)-1) & static_cast<unsigned>(round(time_in_secs * 1000)); 
+    // TODO return more useful value
+    return Succeeded::yes;
+  }
   inline unsigned int get_gating() const
   { return gating; }
-  inline void set_gating(unsigned int g)
-    { gating = g & 0xf;}
+  inline Succeeded set_gating(unsigned int g)
+  { gating = g & 0xf; return gating==g ? Succeeded::yes : Succeeded::no;}
 private:
   friend class CListRecordECAT966; // to give access to type field
 #ifdef STIRByteOrderIsBigEndian
@@ -135,22 +138,6 @@ private:
   unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
 #endif
 };
-
-#if 0
-//! A class for storing and using a timing 'event' from a listmode file
-class CListTimeECAT966: public CListTime, private CListTimeDataECAT966
-{
- public:
-  inline double get_time_in_secs() const 
-    { return CListTimeDataECAT966::get_time_in_secs(); }
-  inline void set_time_in_secs(const double time_in_secs)
-    { CListTimeDataECAT966::set_time_in_secs(time_in_secs);
-  inline unsigned int get_gating() const
-    { return CListTimeDataECAT966::get_gating(); }
-  inline void set_gating(unsigned int g) 
-    { CListTimeDataECAT966::set_gating(); }
-};
-#endif
 
 //! A class for a general element of a listmode file
 /*! For the 966 it's either a coincidence event, or a timing flag.*/
@@ -191,20 +178,28 @@ public:
   // time 
   inline double get_time_in_secs() const 
     { return time_data.get_time_in_secs(); }
-  inline void set_time_in_secs(const double time_in_secs)
-    { time_data.set_time_in_secs(time_in_secs); }
+  inline Succeeded set_time_in_secs(const double time_in_secs)
+    { return time_data.set_time_in_secs(time_in_secs); }
   inline unsigned int get_gating() const
     { return time_data.get_gating(); }
-  inline void set_gating(unsigned int g) 
-    { time_data.set_gating(g); }
+  inline Succeeded set_gating(unsigned int g) 
+    { return time_data.set_gating(g); }
 
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
-  inline void set_prompt(const bool prompt = true) { event_data.set_prompt(prompt); }
-  void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const 
-    {
-      event_data.get_bin(bin, dynamic_cast<const ProjDataInfoCylindrical&>(proj_data_info));
-    }
+  inline Succeeded set_prompt(const bool prompt = true) 
+  { return event_data.set_prompt(prompt); }
+
+  virtual
+    void
+    get_detection_coordinates(CartesianCoordinate3D<float>& coord_1,
+			      CartesianCoordinate3D<float>& coord_2) const;
+
+  //! warning only ProjDataInfoCylindricalNoArcCorr
+  virtual
+    void 
+    get_bin(Bin&, const ProjDataInfo&) const;
+
   void get_uncompressed_bin(Bin& bin) const;
 
   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
