@@ -37,7 +37,8 @@
 # WORKSPACE default to the current directory
 # this can be done simply using . (as it's no longer a recursive make)
 # Using . instead of $(CURDIR) avoids problems with spaces in filename
-WORKSPACE := . #$(CURDIR)
+WORKSPACE := .
+#$(CURDIR)
 
 # make sure that 'all' is also the first target and hence the default
 default_target: all
