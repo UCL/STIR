@@ -54,7 +54,9 @@ ParsingObject:: parse(istream& in)
     initialise_keymap(); 
     keymap_is_initialised = true;
   }
+  // TODO drop next line
   set_defaults();
+  set_key_values();
   if (!parser.parse(in))
   {
     warning("Error parsing.\n"); 
@@ -92,9 +94,21 @@ ParsingObject::ask_parameters()
     initialise_keymap(); 
     keymap_is_initialised = true;
   }
+  // TODO drop next line
   set_defaults();
+  set_key_values();
 
-  parser.ask_parameters();
+  while(true)
+  {
+    parser.ask_parameters();
+
+    if (post_processing()==true)
+    {
+      warning("\nError post processing keyword values. Doing it all over again...\n"); 
+    }
+    else
+      return;
+  }
 }
 
 string
@@ -105,6 +119,7 @@ ParsingObject::parameter_info()
     initialise_keymap(); 
     keymap_is_initialised = true;
   }
+  set_key_values();
   return parser.parameter_info(); 
 }
 
