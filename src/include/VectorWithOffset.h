@@ -124,7 +124,11 @@ public:
     //Tensor3D and 4D.
     for (i=start ; i<start + length; i++)
       newnum[i] = num[i];
-    delete [] mem;
+    // KT 18/12/97 added check on length. Probably not really necessary
+    // as mem should be == 0 in that case, and delete[] 0 doesn't do anything
+    // (I think). Anyway, we're on the safe side now...
+    if (length != 0)
+      delete [] mem;
     mem = newmem;
     num = newnum;
     length = new_length;
