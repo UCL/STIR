@@ -727,10 +727,7 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
             // read a block and examine the matrix numbers in it
 	status = cti_rblk (fptr, blk, dirbufr, 1);
 	if (status != EXIT_SUCCESS) break;
-#ifdef _SWAPEM_   // read into byte buffer and swap
-        swab (dirbufr, (char *) dirbufr, MatBLKSIZE);
-        swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / sizeof (short));
-#endif
+
 	
             // get directory block info
 	nfree  = dirbufr [0];
