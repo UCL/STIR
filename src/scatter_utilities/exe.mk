@@ -3,8 +3,8 @@
 #
 dir := local/scatter
 
-$(dir)_SOURCES :=  estimate_single_scatter.cxx/
-	write_statistics
+$(dir)_SOURCES :=  estimate_single_scatter.cxx
+
 
 
 include $(WORKSPACE)/exe.mk
