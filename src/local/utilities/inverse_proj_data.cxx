@@ -19,7 +19,6 @@
 
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 //#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "local/BackProjectorByBinUsingSquareProjMatrixByBin.h"
 #include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "recon_buildblock/ProjMatrixByBin.h"
 #include "recon_buildblock/BackProjectorByBin.h"
