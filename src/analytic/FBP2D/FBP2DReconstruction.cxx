@@ -29,8 +29,9 @@
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/Bin.h"
+#include "stir/display.h"
 #include <algorithm>
-
+#include "stir/IO/interfile.h"
 START_NAMESPACE_STIR
 
 
@@ -43,6 +44,7 @@ set_defaults()
   alpha_ramp = 1;
   fc_ramp = 0.5;
   pad_in_s=2;
+  display_level=0; // no display
   num_segments_to_combine = -1;
   back_projector_sptr =
     new BackProjectorByBinUsingInterpolation(
@@ -62,6 +64,7 @@ FBP2DReconstruction::initialise_keymap()
   parser.add_key("Alpha parameter for Ramp filter",  &alpha_ramp);
   parser.add_key("Cut-off for Ramp filter (in cycles)",&fc_ramp);
   parser.add_key("Transaxial extension for FFT", &pad_in_s);
+  parser.add_key("Display level",&display_level);
 
   parser.add_parsing_key("Back projector type", &back_projector_sptr);
 }
@@ -77,6 +80,7 @@ ask_parameters()
   alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);    
   fc_ramp =  ask_num(" Cut-off frequency for Ramp filter ? ",0.,.5, 0.5);
   pad_in_s = ask_num("  Transaxial extension for FFT : ",0,2, 2); 
+  display_level = ask_num("Which images would you like to display \n\t(0: None, 1: Final, 2: filtered viewgrams) ? ", 0,2,0);
 
 #if 0
     // do not ask the user for the projectors to prevent them entering
@@ -269,9 +273,12 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 #else
       std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
 		    filter);
-
 #endif
-}
+    }
+
+  if(display_level>1) 
+    display( viewgrams,viewgrams.find_max(),"Ramp filter");
+
     //  and backproject
     back_projector_sptr->back_project(*density_ptr, viewgrams);
   } 
@@ -289,6 +296,9 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 #else
   image *= magic_number / proj_data_ptr->get_num_views();
 #endif
+
+  if (display_level>0)
+    display(image, image.find_max(), "FBP image");
 
   return Succeeded::yes;
 }
