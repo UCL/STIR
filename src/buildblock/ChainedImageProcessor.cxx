@@ -9,11 +9,12 @@
 
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "tomo/ChainedImageProcessor.h"
 #include "DiscretisedDensity.h"
+#include "tomo/is_null_ptr.h"
 #include <memory>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -28,13 +29,13 @@ Succeeded
 ChainedImageProcessor<num_dimensions, elemT>::
 virtual_set_up(const DiscretisedDensity<num_dimensions, elemT>& density)
 {
-  if (apply_first != 0)
+  if (!is_null_ptr(apply_first))
     {
       // note that we cannot really build the filter for the 2nd 
       // as we don't know what the first will do to the dimensions etc. of the image
       return apply_first->set_up(density);
     }
-  else if (apply_second != 0)
+  else if (!is_null_ptr(apply_second))
     return apply_second->set_up(density);
   else
     return Succeeded::yes;  
@@ -46,9 +47,9 @@ void
 ChainedImageProcessor<num_dimensions, elemT>::
 virtual_apply(DiscretisedDensity<num_dimensions, elemT>& density) const
 {  
-  if (apply_first != 0)
+  if (!is_null_ptr(apply_first))
     apply_first->apply(density);
-  if (apply_second != 0)
+  if (!is_null_ptr(apply_second))
     apply_second->apply(density);
 }
 
@@ -59,9 +60,9 @@ ChainedImageProcessor<num_dimensions, elemT>::
 virtual_apply(DiscretisedDensity<num_dimensions, elemT>& out_density, 
 	  const DiscretisedDensity<num_dimensions, elemT>& in_density) const
 {
-  if (apply_first != 0)
+  if (!is_null_ptr(apply_first))
     {
-      if (apply_second != 0)
+      if (!is_null_ptr(apply_second))
 	{
 	  // a bit complicated because we need a temporary image
 	  auto_ptr< DiscretisedDensity<num_dimensions, elemT> > temp_density_ptr =
@@ -75,15 +76,15 @@ virtual_apply(DiscretisedDensity<num_dimensions, elemT>& out_density,
 	apply_first->apply(out_density, in_density);
     }
   else
-      if (apply_second != 0)
+      if (!is_null_ptr(apply_second))
 	apply_second->apply(out_density, in_density);
 
 }
 
 template <int num_dimensions, typename elemT>
 ChainedImageProcessor<num_dimensions, elemT>::
-ChainedImageProcessor(ImageProcessor<num_dimensions,elemT> *const apply_first_v,
-		      ImageProcessor<num_dimensions,elemT> *const apply_second_v)
+ChainedImageProcessor(shared_ptr<ImageProcessor<num_dimensions,elemT> > const& apply_first_v,
+		      shared_ptr<ImageProcessor<num_dimensions,elemT> > const& apply_second_v)
   : apply_first(apply_first_v),
     apply_second(apply_second_v)
 {
