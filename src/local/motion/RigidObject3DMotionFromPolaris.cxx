@@ -101,7 +101,7 @@ get_motion(RigidObject3DTransformation& ro3dtrans, const float time) const
 
 
 void 
-RigidObject3DMotionFromPolaris::find_offset(const CListModeData& listmode_data)
+RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 {
  
   int Total;
@@ -172,7 +172,7 @@ RigidObject3DMotionFromPolaris::find_offset(const CListModeData& listmode_data)
 
 
 Succeeded 
-RigidObject3DMotionFromPolaris::synchronise(const CListModeData& listmode_data)
+RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 {
   
   find_offset(listmode_data);
@@ -184,7 +184,7 @@ RigidObject3DMotionFromPolaris::synchronise(const CListModeData& listmode_data)
 void
 RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<float>& lm_time, 
 								       vector<unsigned>& lm_random_number, 
-								       const CListModeData& listmode_data/*const string& lm_filename*/)
+								       CListModeData& listmode_data/*const string& lm_filename*/)
 {
   
   unsigned  LastChannelState=0;
@@ -202,7 +202,7 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
   long more_events = max_num_events;
   
   // reset listmode to the beginning 
-//  listmode_data.reset();
+  listmode_data.reset();
   
   while (more_events)
   {
@@ -247,6 +247,8 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
   //for ( int i = 0;i<=10;i++)
    //cerr << lm_random_number[i] << "  " ;
 
+  // reset listmode to the beginning 
+  listmode_data.reset();
  
 }
 
