@@ -2,9 +2,6 @@
 // $Id$: $Date$
 //
 
-// @(#)vox.cxx	1.1: 98/08/07
-//
-
 
 #include "pet_common.h" 
 #include <iostream.h> 
