@@ -1,0 +1,48 @@
+fbp3drpparameters :=
+input file := input.hs
+output filename prefix := output
+
+; all following parameters are optional
+
+;;;;;;; output image parameters
+
+zoom := 1
+; defaults to cover whole FOV
+xy output image size (in pixels) := 180
+
+maximum absolute segment number to process := 2
+
+;;;;;;; parameters for initial image
+
+; you can use an existing image (but be careful about the scale!)
+; image to be used for reprojection := some_image
+
+; or you can use FBP on 2D data. following are reconstruction parameters for 2D
+
+; default means: call SSRB only if no axial compression is already present
+num segments to combine with ssrb := -1
+; filter parameters, default to pure ramp
+alpha parameter for ramp filter := 1
+cut-off for ramp filter (in cycles) := 0.5
+
+;;;;;;;; parameters for Colsher filter
+
+alpha parameter for colsher filter in axial direction := 1
+cut-off for colsher filter in axial direction (in cycles) := 0.5
+alpha parameter for colsher filter in planar direction := 1
+cut-off for colsher filter in planar direction (in cycles) := 0.5
+
+; define colsher on finer grid. The higher the number, the better (but slower)
+stretch factor for colsher filter definition in axial direction := 2
+stretch factor for colsher filter definition in planar direction := 2
+
+; allow less padding. DO NOT USE
+transaxial extension for fft := 1
+axial extension for fft := 1
+
+;;;;;;;;; other parameters
+save intermediate images := 0
+display level := 0
+
+end := 
+
