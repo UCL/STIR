@@ -21,9 +21,11 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
 #include "stir/Bin.h"
+#include "stir/stream.h"
 #include "stir/CPUTimer.h"
 #include "stir/Viewgram.h"
 #include <fstream>
+#include <cstdio>
 
 using namespace std;
 
@@ -33,16 +35,23 @@ void scatter_viewgram(
 					  ProjData& proj_data,
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-					  const int scatt_points, const float att_threshold)
-{	
-	
+					  int& scatt_points, const float att_threshold, const bool random)
+{		
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
 		(*proj_data.get_proj_data_info_ptr());
 	
 	std::vector<CartesianCoordinate3D<float> > scatt_points_vector =  
-		sample_scatter_points(image_as_density,scatt_points,att_threshold);
-	
+		sample_scatter_points(image_as_density,scatt_points,att_threshold,random);
+	{
+		fstream scatter_points_file("scatter_points.txt", ios::out); //output file //
+		if(!scatter_points_file)    
+		  warning("Cannot open scatter_points file.\n") ;	              
+		else
+		  scatter_points_file << scatt_points_vector;
+		cerr << scatt_points_vector.size() << " scatter points selected!" << endl;				
+	}
+
 	CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     Bin bin;
 	
@@ -58,7 +67,25 @@ void scatter_viewgram(
     const int total_bins = proj_data_info.get_num_views() * axial_bins *
 		proj_data_info.get_num_tangential_poss()	;
 	/////////////////// end SCATTER ESTIMATION TIME /////////////////
-	
+
+	/* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
+	   coordinate in a coordinate system where z=0 in the first ring of the scanner.
+	   We want to shift this to a coordinate system where z=0 in the middle 
+	   of the scanner.
+	   We can use get_m() as that uses the 'middle of the scanner' system.
+	   (sorry)
+	   */
+#ifndef NDEBUG
+	// check above statement
+	proj_data_info.find_cartesian_coordinates_of_detection(
+						detector_coord_A,detector_coord_B,Bin(0,0,0,0));
+	assert(detector_coord_A.z()==0);
+	assert(detector_coord_B.z()==0);
+#endif
+	const CartesianCoordinate3D<float>  
+			shift_detector_coordinates_to_origin(proj_data_info.get_m(Bin(0,0,0,0)),
+				                                 0,
+												 0);
 	for (bin.segment_num()=proj_data_info.get_min_segment_num();
 	bin.segment_num()<=proj_data_info.get_max_segment_num();
 	++bin.segment_num())
@@ -86,8 +113,8 @@ void scatter_viewgram(
 						image_as_activity,
 						image_as_density,
 						scatt_points_vector, 
-						detector_coord_A, 
-						detector_coord_B));
+						detector_coord_A + shift_detector_coordinates_to_origin, 
+						detector_coord_B + shift_detector_coordinates_to_origin));
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();
@@ -108,18 +135,9 @@ void scatter_viewgram(
 					previous_bin_count = bin_counter ;
 				}						
 				/////////////////// end SCATTER ESTIMATION TIME /////////////////
-		}		  
-		cerr << "Total Scatter Points : " << scatt_points_vector.size() << endl;			
-			fstream mystream("statistics.txt", ios::out | ios::app); //output file //
-				if(!mystream)    
-					error("Cannot open text file.\n") ;					
-				mystream  << "\n\t ********* NEW STATISTIC DATA *********\n" 
-				 		<< "\nTotal bins: " << bin_counter 			      				
-						<< "\tTotal minutes elapsed: "				  
-						<< bin_timer.value()/60 
-						<< "\nTotal Scatter Points : " << scatt_points_vector.size() << endl;
-				bin_timer.stop();
-				mystream.close();
-	}
+		}
+		bin_timer.stop();		
+		writing_time(bin_timer.value(), scatt_points_vector.size());
+}
 	END_NAMESPACE_STIR
 		
