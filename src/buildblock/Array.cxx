@@ -25,6 +25,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+
     See STIR/LICENSE.txt for details
 */
 
@@ -55,6 +56,13 @@ Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, float& sca
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	read_and_convert(signed char);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	read_and_convert(signed short);	
@@ -121,6 +129,13 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
 
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	convert_and_write(signed char);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	convert_and_write(signed short);	
@@ -198,6 +213,13 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	data.write_data(s, NumericInfo<signed char>(), scale, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -245,7 +267,7 @@ Array<1, elemT>::read_data(istream& s,
   if (s.eof())
   { error("Array::read_data: reading past EOF\n"); }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
   base_type::release_data_ptr();
   
   if (!s)
@@ -288,7 +310,7 @@ Array<1, elemT>::write_data(ostream& s,
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
@@ -325,6 +347,16 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
+	data.read_data(s, byte_order);
+	operator=( convert_array(scale, data, NumericInfo<elemT>()) );
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -380,6 +412,16 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data = 
+	  convert_array(scale, *this, NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -469,6 +511,14 @@ void Array<1,elemT>::read_data(ostream& s,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	data.read_data(s, NumericInfo<type>(), scale, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -544,6 +594,14 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	data.write_data(s, NumericInfo<type>(), scale, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -592,7 +650,7 @@ Array<1, float>::read_data(istream& s,
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
   base_type::release_data_ptr();
   
   if (!s)
@@ -634,7 +692,7 @@ Array<1, float>::write_data(ostream& s,
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
@@ -661,7 +719,7 @@ Array<1, short>::read_data(istream& s,
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
   base_type::release_data_ptr();
   
   if (!s)
@@ -703,7 +761,7 @@ Array<1, short>::write_data(ostream& s,
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
@@ -730,7 +788,7 @@ Array<1, unsigned short>::read_data(istream& s,
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::length * sizeof(elemT));
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
   base_type::release_data_ptr();
   
   if (!s)
@@ -772,7 +830,7 @@ Array<1, unsigned short>::write_data(ostream& s,
   { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
-  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::length * sizeof(elemT));   
+  s.write(reinterpret_cast<const char *>(base_type::begin()), base_type::get_length() * sizeof(elemT));   
   
   if (!s)
   { error("Array::write_data: error after writing to stream.\n");  }
@@ -831,6 +889,16 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data = 
+	  CONVERT_ARRAY_WRITE(scale, *this, NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -882,6 +950,16 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
+	data.read_data(s, byte_order);
+	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -941,6 +1019,16 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data = 
+	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -992,6 +1080,16 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
+	data.read_data(s, byte_order);
+	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -1050,6 +1148,16 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data = 
+	  CONVERT_ARRAY_WRITE(scale, *this,  NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -1101,6 +1209,16 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
     {
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+    case NumericType::SCHAR:
+      {
+	typedef signed char type;
+	Array<1,type> data(base_type::get_min_index(), base_type::get_max_index());
+	data.read_data(s, byte_order);
+	operator=( CONVERT_ARRAY_READ(scale, data, NumericInfo<elemT>()) );
+	break;
+      }
+#endif
     case NumericType::SHORT:
       {
 	typedef signed short type;
@@ -1153,24 +1271,18 @@ template class Array<1,unsigned short>;
 template class Array<1,float>;
 #endif
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<2,signed char>;
-#endif
 template class Array<2,short>;
 template class Array<2,unsigned short>;
 template class Array<2,float>;
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<3, signed char>;
-#endif
 template class Array<3, short>;
 template class Array<3,unsigned short>;
 template class Array<3,float>;
 
-
 template class Array<4, short>;
 template class Array<4,unsigned short>;
 template class Array<4,float>;
-
 
 END_NAMESPACE_STIR
