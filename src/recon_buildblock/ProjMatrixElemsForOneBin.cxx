@@ -200,7 +200,7 @@ merge( ProjMatrixElemsForOneBin &lor2 )
   {
     if (element_ptr == end())
     {
-      elements.reserve(size() + lor2.end() - element_ptr2);
+      elements.reserve((lor2.end() - element_ptr2) + size());
       elements.insert(end(), element_ptr2, lor2.end()); 
       break;
     }
