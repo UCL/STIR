@@ -24,17 +24,28 @@ public:
   typedef const T& const_reference;
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
+#ifdef DEFINE_ITERATORS
+  //KT 22/01/98 updated to gcc 2.8.0
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+  // the new ANSI C++ style reverse iterator
+  typedef reverse_iterator<const_iterator>  const_reverse_iterator;
+  typedef reverse_iterator<iterator> reverse_iterator;
+#else
 #ifdef __MSL__
+  // Modena STL implementation
   typedef reverse_iterator<const_iterator, value_type, const_reference, 
     const_pointer, difference_type>  const_reverse_iterator;
   typedef reverse_iterator<iterator, value_type, reference, 
     pointer, difference_type> reverse_iterator;
 #else
+  // (old) HP STL implementation, used by gcc 2.7.2
   typedef reverse_iterator<const_iterator, value_type, const_reference, 
     difference_type>  const_reverse_iterator;
   typedef reverse_iterator<iterator, value_type, reference, difference_type>
      reverse_iterator;
-#endif
+#endif /* __MSL__ */
+#endif /*  __STL_CLASS_PARTIAL_SPECIALIZATION */
+#endif /* DEFINE_ITERATORS */
 protected:
 
   Int length;	// length of matrix (in cells)
@@ -223,11 +234,13 @@ public:
     check_state();
   };
   
+#ifdef DEFINE_ITERATORS
   // KT 26/11 added iterator things here
   iterator begin() { return mem; }
   const_iterator begin() const { return mem; }
   iterator end() { return mem+length; }
   const_iterator end() const { return mem+length; }
+
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const { 
     return const_reverse_iterator(end()); 
@@ -240,12 +253,11 @@ public:
   // returns the index such that &v[v.get_index(iter)]  == iter
   Int get_index(iterator iter)
     { return iter - num; }
-
+#endif // DEFINE_ITERATORS
 };
 
-
-#ifdef __GNUG__
-// TODO should really check on version number here
+#ifdef DEFINE_ITERATORS
+#if defined (__GNUG__) && (__GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8))
 // Work arounds from vector.h for G++ 2.7
 // sort() etc. use value_type(), which needs the lines below.
 // Note that value_type() of a reverse_iterator does not work (also not
@@ -306,6 +318,7 @@ struct VectorWithOffset_const_reverse_iterator {
 	return it;
     }
 };
-#endif
+#endif // check on GNU 2.7
+#endif // DEFINE_ITERATORS
 
 #endif
