@@ -6,7 +6,7 @@
   \file
   \ingroup recon_buildblock
   \brief instantiations of RegisteredObject for classes in recon_buildblock
-  (only useful for Microsoft Visual Studio)
+  (only useful for Microsoft Visual Studio 6.0)
 
   \author Kris Thielemans
 
@@ -14,9 +14,12 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
+// note: include has to be before #ifdef as it's in this file that
+// __STIR_REGISTRY_NOT_INLINE is defined
+#include "stir/RegisteredObject.h"
 
 #ifdef __STIR_REGISTRY_NOT_INLINE
 

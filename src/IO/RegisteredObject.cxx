@@ -19,6 +19,10 @@
     See STIR/LICENSE.txt for details
 */
 
+// note: include has to be before #ifdef as it's in this file that
+// __STIR_REGISTRY_NOT_INLINE is defined
+#include "stir/RegisteredObject.h"
+
 #ifdef __STIR_REGISTRY_NOT_INLINE
 
 #pragma message("instantiating RegisteredObject<OutputFileFormat >")
