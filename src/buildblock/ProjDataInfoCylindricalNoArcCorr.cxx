@@ -345,8 +345,8 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
   assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
 
-  det1 = stir::round(((2.*_PI)+atan2(coord_det1.x(),-coord_det1.y()))/(2.*_PI/num_detectors))% num_detectors;
-  det2 = stir::round(((2.*_PI)+atan2(coord_det2.x(),-coord_det2.y()))/(2.*_PI/num_detectors))% num_detectors;
+  det1 = modulo(round(atan2(coord_det1.x(),-coord_det1.y())/(2.*_PI/num_detectors)), num_detectors);
+  det2 = modulo(round(atan2(coord_det2.x(),-coord_det2.y())/(2.*_PI/num_detectors)), num_detectors);
   ring1 = round(coord_det1.z()/ring_spacing);
   ring2 = round(coord_det2.z()/ring_spacing);
 #else
@@ -357,8 +357,8 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
       == Succeeded::no)
     return Succeeded::no;
 
-  det1 = round(cyl_coords.p1().psi()/(2.*_PI/num_detectors)) % num_detectors;
-  det2 = round(cyl_coords.p2().psi()/(2.*_PI/num_detectors)) % num_detectors;
+  det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors)), num_detectors);
+  det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors)), num_detectors);
   ring1 = round(cyl_coords.p1().z()/ring_spacing);
   ring2 = round(cyl_coords.p2().z()/ring_spacing);
 
@@ -496,8 +496,8 @@ get_bin(const LOR<float>& lor) const
   const int num_detectors_per_ring = 
     get_scanner_ptr()->get_num_detectors_per_ring();
 
-  const int det1 = round(cyl_coords.p1().psi()/(2.*_PI/num_detectors_per_ring));
-  const int det2 = round(cyl_coords.p2().psi()/(2.*_PI/num_detectors_per_ring));
+  const int det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
+  const int det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
   const int ring1 = round(cyl_coords.p1().z()/get_ring_spacing());
   const int ring2 = round(cyl_coords.p2().z()/get_ring_spacing());
 
