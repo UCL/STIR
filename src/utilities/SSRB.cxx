@@ -5,12 +5,36 @@
 
   \file
   \ingroup utilities
+  \ingroup main_programs
   \brief Main program for SSRB
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
+
+   Usage:
+   \code
+   SSRB output_filename input_projdata_name num_segments_to_combine \
+      [ num_views_to_combine [do_normalisation [max_in_segment_num_to_process ]]]
+   \endcode
+   \param num_segments_to_combine has to be odd. It is used as the number of segments
+      in the original data to combine.
+   \param num_views_to_combine has to be at least 1 (which is the default). 
+      It is used as the number of views in the original data to combine.
+   \param do_normalisation has to be 1 (normalise the result) or 0
+   \param max_in_segment_num_to_process defaults to all segments
+
+
+  \see 
+  SSRB(const string& output_filename,
+     const ProjData& in_projdata,
+     const int num_segments_to_combine,
+     const int num_views_to_combine,
+     const bool do_normalisation,
+     const int max_in_segment_num_to_process
+     )
+  for info on parameters and restrictions.
 */
 /*
     Copyright (C) 2002- $Date$, IRSL
@@ -33,9 +57,11 @@ int main(int argc, char **argv)
   if (argc > 7 || argc < 4 )
     {
       cerr << "Usage:\n"
-	   << argv[0] << " output_filename input_projdata_name extra_span [ extra_mash [do_norm [max_in_segment_num_to_process ]]]\n"
-	   << "extra_span has to be odd. It is used as the number of segments\n"
+	   << argv[0] << " output_filename input_projdata_name num_segments_to_combine \\\n"
+           <<"\t[ num_views_to_combine [do_norm [max_in_segment_num_to_process ]]]\n"
+	   << "num_segments_to_combine has to be odd. It is used as the number of segments\n"
 	   << "  in the original data to combine.\n"
+           << "num_views_to_combine has to be at least 1 (which is the default)\n"
 	   << "do_norm has to be 1 (normalise the result) or 0\n"
 	   << "max_in_segment_num_to_process defaults to all segments\n";
       exit(EXIT_FAILURE);
