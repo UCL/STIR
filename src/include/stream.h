@@ -39,6 +39,7 @@ START_NAMESPACE_TOMO
   will be on its own line.
 */
 
+
 template <typename elemT>
 ostream& 
 operator<<(ostream& str, const VectorWithOffset<elemT>& v)
@@ -46,7 +47,10 @@ operator<<(ostream& str, const VectorWithOffset<elemT>& v)
       str << '{';
       for (int i=v.get_min_index(); i<v.get_max_index(); i++)
 	str << v[i] << ", ";
-      str << v[v.get_max_index()] << '}' << endl;
+      // KT 8/12/1000 corrected case for 0 length
+      if (v.get_length()>0)
+	str << v[v.get_max_index()];
+      str << '}' << endl;
       return str;
 }
 
@@ -66,7 +70,10 @@ operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
       str << '{';
       for (int i=1; i<num_dimensions; i++)
 	str << v[i] << ", ";
-      str << v[num_dimensions] << '}';
+      // KT 8/12/1000 corrected case for 0 length
+      if (num_dimensions>0)
+	str << v[num_dimensions];
+      str << '}';
       return str;
 }
 END_NAMESPACE_TOMO
