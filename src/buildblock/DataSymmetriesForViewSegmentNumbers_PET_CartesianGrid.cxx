@@ -5,7 +5,8 @@
 
   \file
   \ingroup buildblock
-  \brief non-inline implementations for class DataSymmetriesForBins_PET_CartesianGrid
+  \brief non-inline implementations for class 
+         DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid
 
   \author Kris Thielemans
   \author PARAPET project
@@ -14,18 +15,19 @@
 
   \version $Revision$
 */
-#include "DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid.h"
 #include "ProjDataInfoCylindrical.h"
-#include "VoxelsOnCartesianGrid.h"
-
+#include "DiscretisedDensityOnCartesianGrid.h"
+#include "shared_ptr.h"
+#include <typeinfo>
 
 START_NAMESPACE_TOMO
 
-  // find correspondence between axial_pos_num and image coordinates:
-  // z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset
-  // compute the offset by matching up the centre of the scanner 
-  // in the 2 coordinate systems
-
+//! find correspondence between axial_pos_num and image coordinates
+/*! z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset
+   compute the offset by matching up the centre of the scanner 
+   in the 2 coordinate systems
+*/
 static void 
 find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
                                          VectorWithOffset<int>& num_planes_per_axial_pos,
@@ -51,7 +53,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     num_planes_per_scanner_ring = static_cast<int>(num_planes_per_scanner_ring_float + 0.5);
     
     if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-5)
-    error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing\
+    error("DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid can currently only support z-grid spacing\
     equal to the ring spacing of the scanner divided by an integer. Sorry\n");
   }
   
@@ -66,7 +68,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
       num_planes_per_axial_pos[segment_num] = static_cast<int>(num_planes_per_axial_pos_float + 0.5);
       
       if (fabs(num_planes_per_axial_pos_float - num_planes_per_axial_pos[segment_num]) > 1.E-5)
-        error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing\
+        error("DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid can currently only support z-grid spacing\
         equal to the axial sampling in the projection data divided by an integer. Sorry\n");
       
     }  
@@ -83,13 +85,19 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
   }
 }
 
-DataSymmetriesForBins_PET_CartesianGrid::
-DataSymmetriesForBins_PET_CartesianGrid
+/*! The DiscretisedDensity pointer has to point to an object of 
+  type  DiscretisedDensityOnCartesianGrid (or a derived type).
+  
+  We really need only the geometrical info from the image. At the moment
+  we have to use the data itself as well.
+*/
+DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid::
+DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid
 (
  const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
  const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr
 )
-  : DataSymmetriesForBins(proj_data_info_ptr)/*,
+  : DataSymmetriesForViewSegmentNumbers(proj_data_info_ptr)/*,
     image_info_ptr(image_info_ptr)*/
 {
   if(dynamic_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get()) == NULL)
