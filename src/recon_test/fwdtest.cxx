@@ -61,11 +61,14 @@ main()
 
   // KT 02/07/98 new
   {
+    // KT 31/01/98 avoid using FOV_radius
+    int original_num_bins = scanner.num_bins;
     scanner.num_bins /= ask_num("Reduce num_bins by factor", 1,16,1); 
     scanner.num_views /= ask_num("Reduce num_views by factor", 1,16,1);  
     // scanner.num_rings /= 1;
 
-    scanner.bin_size = 2* scanner.FOV_radius / scanner.num_bins;
+    //  scanner.bin_size = 2* scanner.FOV_radius / scanner.num_bins;
+    scanner.bin_size *= float(original_num_bins) / scanner.num_bins;
     // scanner.ring_spacing = scanner.FOV_axial / scanner.num_rings;
   }    
 
@@ -315,7 +318,8 @@ do_segments(const PETImageOfVolume& image, const PETSinogramOfVolume& s3d,
 // KT 21/10/98 use dimensions from the image itself
 void fill_cuboid(PETImageOfVolume& image)
 {
-  
+  // KT 31/01/98 add value
+  const float voxel_value = ask_num("Voxel value",-10E10F, 10E10F,1.F);
   const int xs = ask_num("Start X coordinate", 
 			 image.get_min_x(), image.get_max_x(), 
 			 (image.get_min_x()+ image.get_max_x())/2);
@@ -342,12 +346,14 @@ void fill_cuboid(PETImageOfVolume& image)
   for (int z=zs; z<=ze; z++)
     for (int y=ys; y <= ye; y++)
       for (int x=xs; x<= xe; x++)
-	image[z][y][x] = 1; 
+	image[z][y][x] = voxel_value; 
 }
 
 // KT 21/10/98 use dimensions from the image itself
 void fill_cylinder(PETImageOfVolume& image)
 {
+  // KT 31/01/98 add value
+  const float voxel_value = ask_num("Voxel value",-10E10F, 10E10F,1.F);
  
   // KT 21/10/98 made double
   const double xc = 
@@ -410,7 +416,7 @@ void fill_cylinder(PETImageOfVolume& image)
 	      }
 	  }
 	// update plane with normalised value (independent of num_samples)
-	plane[y][x] = value/(num_samples*num_samples); 
+	plane[y][x] = voxel_value*value/(num_samples*num_samples); 
       }
     
   for (int z=image.get_min_z(); z<=image.get_max_z(); z++)
