@@ -22,11 +22,12 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
-
+#include <fstream>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ios;
+using std::fstream;
 #endif
 
 START_NAMESPACE_STIR
@@ -55,8 +56,15 @@ open_lm_file(unsigned int new_lm_file) const
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
       cerr << "CListModeDataECAT: opening file " << filename << endl;
+      shared_ptr<istream> stream_ptr = 
+	new fstream(filename.c_str(), ios::in | ios::binary);
+      if (!(*stream_ptr))
+      {
+	warning("Error opening file %s\n ", filename.c_str());
+        return Succeeded::no;
+      }
       current_lm_data_ptr =
-	new CListModeDataFromStream(filename, scanner_ptr);
+	new CListModeDataFromStream(stream_ptr, scanner_ptr);
       current_lm_file = new_lm_file;
       return Succeeded::yes;
     }
