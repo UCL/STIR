@@ -55,6 +55,8 @@ public:
 private:
  
   Array<3,float> singles;
+  // TODO move to Scanner
+  int num_axial_blocks_per_singles_unit;
   string ECAT7_filename;
   virtual void set_defaults();
   virtual void initialise_keymap();
