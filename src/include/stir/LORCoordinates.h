@@ -125,7 +125,7 @@ class LORCylindricalCoordinates_z_and_radius
     : _radius(radius)
   { check_state(); }
   LORCylindricalCoordinates_z_and_radius(coordT z1, coordT z2, coordT radius)
-    : _z1(z1), _z2(z2), _radius(radius)
+    : _radius(radius), _z1(z1), _z2(z2)
   { check_state(); }
 
   coordT z1() const     { check_state(); return _z1; }
