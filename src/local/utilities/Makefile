@@ -30,13 +30,15 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	zero_projdata_from_norm.cxx \
 	SSRB.cxx \
 	attenuation_coefficients_to_projections.cxx \
-	construct_randoms_from_singles.cxx
+	construct_randoms_from_singles.cxx \
+	interpolate_blocks.cxx \
+	set_blocks_to_value.cxx
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   # yes, the LLN files seem to be there, so we can compile 
   # ecat7 stuff as well
-  SOURCES += change_mhead_file_type.cxx
+  SOURCES += change_mhead_file_type.cxx copy_ecat7_header.cxx
   CFLAGS +=  -I $(LLN_INCLUDE_DIR)
   ifeq ($(SYSTEM),SUN)
      EXTRA_LIBS += -lnsl -lsocket
