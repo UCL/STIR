@@ -27,7 +27,7 @@
 #include "stir/ProjData.h"
 #include "stir/SegmentByView.h"
 #include "stir/SegmentBySinogram.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 
 

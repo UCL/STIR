@@ -21,7 +21,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/IO/ecat6_utils.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/stir_ecat7.h"

@@ -30,7 +30,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include <numeric>
 #include <iostream>
 #include <fstream>
