@@ -1,6 +1,20 @@
 //
 // $Id$: $Date$
 //
+/*!
+
+  \file
+
+  \brief inline implementations for Timer
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
+START_NAMESPACE_TOMO
 
 Timer::Timer()
 {  
@@ -37,6 +51,11 @@ void Timer::restart()
   start();
 }
 
+void Timer::reset() 
+{ 
+  assert(running == false);
+  previous_total_value = 0.;
+}
 
 double Timer::value() const
 { 
@@ -46,3 +65,5 @@ double Timer::value() const
   return tmp;
 }
 
+
+END_NAMESPACE_TOMO
