@@ -112,8 +112,8 @@ ForwardProjectorByBinUsingProjMatrixByBin::
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  if (proj_matrix_ptr->is_cache_enabled() &&
-      !proj_matrix_ptr->does_cache_store_only_basic_bins())
+  if (proj_matrix_ptr->is_cache_enabled()/* &&
+					    !proj_matrix_ptr->does_cache_store_only_basic_bins()*/)
   {
     // straightforward version which relies on ProjMatrixByBin to sort out all 
     // symmetries
