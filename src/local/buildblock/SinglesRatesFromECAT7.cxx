@@ -159,11 +159,11 @@ SinglesRatesFromECAT7::get_frame_number (const double start_time, const double e
   //cerr << "num frames are" << time_frame_defs.get_num_frames()<<endl;;
   for (unsigned int i = 1; i <=time_frame_defs.get_num_frames(); i++)
     {
-      double start = time_frame_defs.get_start_time(i);
-      double end = time_frame_defs.get_end_time(i);
+      const double start = time_frame_defs.get_start_time(i);
+      const double end = time_frame_defs.get_end_time(i);
       //cerr << "Start frame" << start <<endl;
       //cerr << " End frame " << end << endl;
-       if ((start/start_time)<=1 && (end/end_time)>=1)
+       if (start<=start_time+.001 && end>=end_time-.001)
 	{
 	  return static_cast<int>(i);
 	}
