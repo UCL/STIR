@@ -38,7 +38,9 @@ run_tests: all get_test_files
 
 .PHONY: run_tests get_test_files
 
-# disable default rule
+.PRECIOUS:  $(OBJS) $(EXES)
+
+# Disable default rule
 # as executables here do not depend on recon_buildblock
 ${DEST}%: ${DEST}%.o $(BB_LIBS)
 
