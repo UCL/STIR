@@ -24,8 +24,9 @@ map_element::map_element()
   p_object_list_of_values=0;
 }
 
+// KT 29/10/98 use typedef'ed name for 2nd arg
 map_element::map_element(KeyArgument::type t, 
-			 void (KeyParser::*pom)(),
+			 KeyParser::KeywordProcessor pom, 
 			 void* pov,
 			 const ASCIIlist_type *list_of_values)
 {
@@ -61,7 +62,6 @@ KeyParser::KeyParser()
   input=0;
   status=STATUS_PARSING;
   current_index=-1;
-  in_stream=NULL;
   current=new map_element();
 }
 #endif // 0
@@ -168,6 +168,10 @@ int KeyParser::parse_line(const bool write_warning)
       par_intlist.clear();
       line.get_param(par_intlist);
       break;
+    case KeyArgument::LIST_OF_DOUBLES :
+      par_doublelist.clear();
+      line.get_param(par_doublelist);
+      break;
     case KeyArgument::LIST_OF_ASCII :
       par_asciilist.clear();
       line.get_param(par_asciilist);
@@ -196,23 +200,6 @@ void KeyParser::stop_parsing()
 {
   status=end_parsing;
 }
-
-#if 0
-// KT 01/08/98 just set data_file_name variable now
-void KeyParser::OpenFileStream()
-{
-  // TODO open as binary, except when type of data is ASCII...
-  in_stream=new fstream(par_ascii.c_str(),ios::in);
-  if (in_stream->fail() || in_stream->bad())
-    printf("Error opening file\n"); 
-  else
-  {
-    current->p_object_variable=in_stream;
-  }
-  
-  printf("parameter : %s\n", par_ascii.c_str());
-}
-#endif
 
 
 void KeyParser::set_variable()
@@ -264,6 +251,12 @@ void KeyParser::set_variable()
 	    *p_vectint=par_intlist;
 	    break;
 	  }
+	case KeyArgument::LIST_OF_DOUBLES :
+	  {
+	    IntVect* p_vectint=(IntVect*)current->p_object_variable;
+	    *p_vectint=par_intlist;
+	    break;
+	  }
 	case KeyArgument::LIST_OF_ASCII :
 	  {
 	    vector<string>* p_vectstring=(vector<string>*)current->p_object_variable;
@@ -271,6 +264,8 @@ void KeyParser::set_variable()
 	    break;
 	  }
 	default :
+	  // KT 29/10/98 added
+	  PETerror("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
     }
@@ -321,6 +316,12 @@ void KeyParser::set_variable()
 	    p_matrixint->operator[](current_index-1)=par_intlist;
 	    break;
 	  }
+	case KeyArgument::LIST_OF_DOUBLES :
+	  {
+	    vector<DoubleVect>* p_matrixdouble=(vector<DoubleVect>*)current->p_object_variable;
+	    p_matrixdouble->operator[](current_index-1)=par_doublelist;
+	    break;
+	  }
 	  /*	case LIST_OF_ASCII :
 		{
 		vector<string>* p_vectstring=(vector<string>*)current->p_object_variable;
@@ -328,6 +329,8 @@ void KeyParser::set_variable()
 		break;
 		}*/
 	default :
+	  // KT 29/10/98 added
+	  PETerror("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
     }
