@@ -7,8 +7,6 @@ WORKSPACE=$(CURDIR)/../..
 include $(WORKSPACE)/Makefile_common
 
 SOURCES = fillwithotherprojdata.cxx \
-	list_ROI_values.cxx \
-	zoom_image.cxx \
 	compute_plane_rescale_factors.cxx \
 	apply_plane_rescale_factors.cxx \
 	prepare_projdata.cxx \
@@ -27,7 +25,6 @@ SOURCES = fillwithotherprojdata.cxx \
 	set_blocks_to_value.cxx \
 	shift_projdata_along_axis.cxx \
 	remove_sinograms.cxx \
-	generate_image.cxx \
 	fit_cylinder.cxx \
 	rigid_object_transform_projdata.cxx \
 	rigid_object_transform_image.cxx \
