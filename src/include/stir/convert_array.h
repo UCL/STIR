@@ -26,10 +26,13 @@
 
 // TODO enable FULL 
 
-#include "stir/NumericInfo.h"
-#include "stir/Array.h"
+#include "stir/common.h"
 
 START_NAMESPACE_STIR
+
+template <class T> class NumericInfo;
+template <int num_dimensions, class elemT> class Array;
+
 
 /*!
   \ingroup buildblock
