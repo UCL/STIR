@@ -2,10 +2,10 @@
 // $Id$: $Date$
 //
 /*! 
- \file
-
+  \file
+  \ingroup display
   
-  \brief  inline functions to display 2D and 3D Tensor objects
+  \brief  functions to display 2D and 3D Array objects
 
   \author Kris Thielemans
   \author PARAPET project
@@ -15,8 +15,12 @@
   \version $Revision$
 
 */
+
+#include "IndexRange3D.h"
+
+START_NAMESPACE_TOMO
 /*!
-   \see display(const Tensor3D<elemT>&,
+   \see display(const Array<3,elemT>&,
              const VectorWithOffset<scaleT>& ,
              const VectorWithOffset<CHARP>& ,
              double,
@@ -26,7 +30,7 @@
 */
 template <class elemT>
 void 
-display(const Tensor3D<elemT>& plane_stack,
+display(const Array<3,elemT>& plane_stack,
 	double maxi,
 	const char * const title,
 	int zoom)
@@ -53,7 +57,7 @@ display(const Tensor3D<elemT>& plane_stack,
 }
 
 /*! 
-  \see display(const Tensor3D<elemT>&,
+  \see display(const Array<3,elemT>&,
              const VectorWithOffset<scaleT>& ,
              const VectorWithOffset<CHARP>& ,
              double,
@@ -61,7 +65,7 @@ display(const Tensor3D<elemT>& plane_stack,
              int zoom) for more info.*/
 template <class elemT>
 void 
-display(const Tensor2D<elemT>& plane,
+display(const Array<2,elemT>& plane,
 		    const char * const text,
 		    double maxi, int zoom )
 { 
@@ -69,15 +73,15 @@ display(const Tensor2D<elemT>& plane,
   if (plane.get_length()==0)
     return;
   // make a 3D array with arbitrary dimensions for its first and only plane
-  Tensor3D<elemT> stack(0,0,0,0,0,0);
+  Array<3,elemT> stack(IndexRange3D(0,0,0,0,0,0));
   // this assignment sets correct dimensions for the 2 lowest dimensions
   stack[0] = plane;
   VectorWithOffset<float> scale_factors(1);
   scale_factors[0] = 1.F;
   VectorWithOffset<const char*> texts(1);
-  texts[0] = text==0 ? "" : text;
+  texts[0] = "";
   
-  display(stack, scale_factors, texts, maxi, 0/*title*/, zoom);
+  display(stack, scale_factors, texts, maxi, text, zoom);
 }
 
 # if defined(__GNUC__) && (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
@@ -89,7 +93,7 @@ display(const Tensor2D<elemT>& plane,
 
 
 template <class elemT, class scaleT, class CHARP>
-void display(const Tensor3D<elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
              const VectorWithOffset<scaleT>& scale_factors,
              const VectorWithOffset<CHARP>& text,
              double maxi,
@@ -97,7 +101,7 @@ void display(const Tensor3D<elemT>& plane_stack,
 { display(plane_stack, scale_factors, text, maxi, title, 0); }
 
 template <class elemT, class scaleT, class CHARP>
-void display(const Tensor3D<elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
              const VectorWithOffset<scaleT>& scale_factors,
              const VectorWithOffset<CHARP>& text,
              double maxi)
@@ -105,39 +109,42 @@ void display(const Tensor3D<elemT>& plane_stack,
 
 
 template <class elemT, class scaleT, class CHARP>
-void display(const Tensor3D<elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
              const VectorWithOffset<scaleT>& scale_factors,
              const VectorWithOffset<CHARP>& text)
 { display(plane_stack, scale_factors, text, 0., 0, 0); }
 
 template <class elemT>
-void display(const Tensor3D<elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
 	     double maxi,
 	     const char * const title)
 { display(plane_stack, maxi, title, 0); }
 
 template <class elemT>
-void display(const Tensor3D<elemT>& plane_stack,
+void display(const Array<3,elemT>& plane_stack,
 	     double maxi)
 { display(plane_stack, maxi, 0, 0); }
 
 template <class elemT>
-void display(const Tensor3D<elemT>& plane_stack)
+void display(const Array<3,elemT>& plane_stack)
 { display(plane_stack, 0., 0, 0); }
 
 template <class elemT>
-void display(const Tensor2D<elemT>& plane,
+void display(const Array<2,elemT>& plane,
 		    const char * const text,
 		    double maxi)
 { display(plane, text, maxi, 0); }
 
 template <class elemT>
-void display(const Tensor2D<elemT>& plane,
+void display(const Array<2,elemT>& plane,
 		    const char * const text)
 { display(plane, text, 0., 0); }
 
 template <class elemT>
-void display(const Tensor2D<elemT>& plane)
+void display(const Array<2,elemT>& plane)
 { display(plane, 0, 0., 0); }
 
+
 #endif
+
+END_NAMESPACE_TOMO
