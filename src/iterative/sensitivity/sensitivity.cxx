@@ -17,6 +17,11 @@
 
   $Date$
   $Revision$
+
+  
+   \todo use the BinNormalisation class
+   \todo put into LogLikBasedAlgorithm
+
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -25,17 +30,7 @@
 */
 
 /* 
-
-   if TEST is #defined, results of different ring differences (i.e. the profiles   through the centres of all planes) are
-   stored as separate files (seg_x.dat) and the sensitivity image is
-   not computed.
-   if TEST is not defined, output is written to a user-specified output file
-
  
-   TODO:
-   - use the Normalisation class
-   - put into LogLikBasedAlgorithm
-
   Modification history:
   KT use OSMAPOSLParameters to get most of the parameters to avoid 
      mistakes with unmatched sensitivity images
@@ -85,21 +80,8 @@ void
 			   const sensparameters &globals)
 {
 
-#ifdef TEST
-
-  for (int segment_num = 0; segment_num <= globals.limit_segments; segment_num++)
-  {
-    int min_segment = segment_num;
-    int max_segment = segment_num;
-    
-    result.fill(0);
-      
-#else
-
-    int min_segment = 0;
+    int min_segment = -globals.limit_segments; // KT 30/05/2002 use new convention of distributable_* functions
     int max_segment = globals.limit_segments;
-
-#endif
 
     // TODO attenuation factors
     assert(atten_proj_data_ptr.use_count() == 0);
@@ -112,30 +94,6 @@ void
 					    max_segment,
 					    globals.zero_seg0_end_planes,
 					    norm_proj_data_ptr);
-
-#ifdef TEST
-
-    char fname[20];
-    sprintf(fname, "seg_%d.prof", segment_num);
-    cerr << "Writing horizontal profiles to " << fname << endl;
-    ofstream profile(fname);
-    if (!profile)
-    {
-      cerr << "Couldn't open " << fname << endl;
-    }
-    else
-    {
-      for (int z = result.get_min_z(); z <= result.get_max_z(); z++) 
-      { 
-	for (int x = result.get_min_x(); x <= result.get_max_x(); x++)
-	  profile<<(*result)[z][0][x]<<" ";
-	profile << "\n";
-      };
-    };
-  };
-
-#endif
-
 }
 
 
@@ -325,13 +283,11 @@ int main(int argc, char **argv)
 			    atten_proj_data_ptr,
 			    norm_proj_data_ptr,
 			    globals);
-#ifndef TEST
   write_basic_interfile(out_filename, *result_ptr, NumericType::FLOAT);
 
   cerr << "min and max in image " << result_ptr->find_min() 
        << " " << result_ptr->find_max() << endl;
 
-#endif
 
   return EXIT_SUCCESS;
 
