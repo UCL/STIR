@@ -255,8 +255,8 @@ compute()
   shared_ptr<DiscretisedDensity<3,float> > out_density_ptr = 
     current_image.clone();
 #endif
-  vector<float >::const_iterator value_iter = values.begin();
-  for (vector<shared_ptr<Shape3D> >::const_iterator iter = shape_ptrs.begin();
+  std::vector<float >::const_iterator value_iter = values.begin();
+  for (std::vector<shared_ptr<Shape3D> >::const_iterator iter = shape_ptrs.begin();
        iter != shape_ptrs.end();
        ++iter, ++value_iter)
     {
