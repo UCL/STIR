@@ -385,15 +385,15 @@ Scanner::parameter_info() const
     << "bin size (cm)                          := " << get_default_bin_size()/10. << '\n'
     << "view offset (degrees)                  := " << get_default_intrinsic_tilt()*180/_PI << '\n';
   // block/bucket description
-  s << "Number of Transaxial blocks per bucket := "
+  s << "Number of blocks per bucket in transaxial direction  := "
     << get_num_transaxial_blocks_per_bucket() << '\n'
-    << "Number of Axial blocks per bucket      := "
+    << "Number of blocks per bucket in axial direction       := "
     << get_num_axial_blocks_per_bucket() << '\n'
-    << "Number of Axial crystals per block     := "
+    << "Number of crystals per block in axial direction      := "
     << get_num_axial_crystals_per_block() << '\n'
-    << "Number of Transaxial crystals per block:= "
+    << "Number of crystals per block in transaxial direction := "
     << get_num_transaxial_crystals_per_block() << '\n'
-    << "Number of detector layers              := "
+    << "Number of detector layers                            := "
     << get_num_detector_layers() << '\n';
   s << "Maximum number of nonarccorrected bins := "
      << get_max_num_non_arccorrected_bins() << '\n'
