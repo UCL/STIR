@@ -70,11 +70,11 @@ int main(int argc, char *argv[])
   DiscretisedDensity<3,float>::read_from_file(argv[2]);
   
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
-  const ProjDataInfoCylindricalNoArcCorr* proj_data_info_sptr =
+  const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr =
 	  dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(
 	    template_proj_data_sptr->get_proj_data_info_ptr());
 
-  if (proj_data_info_sptr==0 || density_image_sptr==0 || activity_image_sptr==0)
+  if (proj_data_info_ptr==0 || density_image_sptr==0 || activity_image_sptr==0)
 	  error("Check the input files\n");
   
   
@@ -86,89 +86,28 @@ int main(int argc, char *argv[])
     dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
 	(*density_image_sptr.get());
  
-    string output_string;
+    string output_proj_data_filename;
     string input_string(argv[1]);
-    string slices_string(argv[2]);             
-  //   string_iter;
-    for(string:: iterator string_iter=input_string.begin(); 
-        string_iter!=input_string.end() && *string_iter!='.' ;
-        ++string_iter)  
-    output_string.push_back(*string_iter);     
-    if (argc>=4)
-    {
-       string level_string(argv[3]);
-       output_string +=  '_' + slices_string + "_slices_FW" + level_string + 'M' ;
-    }
-    else
-    output_string +=  '_' + slices_string + "_slices_FWHM" ;  
-/*    string output_proj_data_filename;
-    string input_string(argv[1]);    
-    string:: iterator string_iter;
+    
+
+/*    string:: iterator string_iter;
     for(string_iter=input_string.begin(); 
         string_iter!=input_string.end() && *string_iter!='.' ;
         ++string_iter)  
     output_proj_data_filename.push_back(*string_iter); 
 	if (argc>=6)
-	{
+	{ */
 		string max_scat_points_string(argv[5]);             
-		output_proj_data_filename +=  '_' +  max_scat_points_string ;	
-	}
+		output_proj_data_filename =  input_string + '_' +  max_scat_points_string ;	
+/*	}
     else
     output_proj_data_filename +=  '_' + "100" ;  
-
-  ProjDataInterfile output_proj_data(proj_data_info_sptr->clone(),
+*/
+  ProjDataInterfile output_proj_data(proj_data_info_ptr->clone(),
 		                             output_proj_data_filename);
   scatter_viewgram(output_proj_data,
 	  activity_image, density_image,
-	  max_scat_points,attenuation_threshold);  
-	  */
-/*  
-       
-    if (argc>=4)
-    {
-       string level_string(argv[3]);
-       output_string +=  '_' + slices_string + "_slices_FW" + level_string + 'M' ;
-    }
-    else
-    output_string +=  '_' + slices_string + "_slices_FWHM" ;  
-      
-    ofstream out(output_string.c_str()); //output file //
-    if(!out)
-    {
-      cout << "Cannot open text file.\n" ;
-      return EXIT_FAILURE;
-    }       
-    out << "Slice\t Z\tY\t X\tResZ(mm) ResY(mm) ResX(mm) Value\n"; 
-    for (short counter=0 ; counter!=num_maxima ; ++counter)
-    { 
-      out << setw(3) << counter+1 << "\t" 
-          << setw(3) << current_iter->voxel_location[1] << "\t"
-          << setw(3) << current_iter->voxel_location[2] << "\t"
-          << setw(3) << current_iter->voxel_location[3] << "\t" 
- 	      << setw(6) << current_iter->resolution[1]<< "\t"
-       	  << setw(6) << current_iter->resolution[2]<< "\t"
-         << setw(6) << current_iter->resolution[3]<< "\t"
-          << setw(9) << current_iter->voxel_value << "\n" ;
-      ++current_iter;         
-    }
-    out.close();       
- 
-  else 
-    for (short counter=0 ; counter!=num_maxima ; ++counter)
-    {
-      cout << counter+1 << ". max: " << setw(6)	<<  current_iter->voxel_value	  
-	         << " at: "  << setw(3) << current_iter->voxel_location[1]
-		       << " (Z) ," << setw(3) << current_iter->voxel_location[2]
-           << " (Y) ," << setw(3) << current_iter->voxel_location[3] << " (X) \n" ;
-  	  cout << "  \n The resolution in z axis is "
-           << setw(6) << (current_iter->resolution[1])
-       	   << ", \n The resolution in y axis is "
-     	     << setw(6) << (current_iter->resolution[2])
-           << ", \n The resolution in x axis is "
-     	     << setw(6) << (current_iter->resolution[3])
-           << ", in mm relative to origin. \n \n";  
-      ++current_iter;         
-    }                
-	*/
+	  max_scat_points,attenuation_threshold);        
+   
   return EXIT_SUCCESS;
 }                 
