@@ -1,12 +1,33 @@
 //
 // $Id$ : $Date$
 //
+/*!
+  \file 
+ 
+  \brief  This programme performs operations on image data
 
-// vox - display, perform operations on interfile image data
+  \author Matthew Jacobson
+  \author (with help from Kris Thielemans)
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+  TODOdoc
+*/
 
 #include <iostream> 
 #include <fstream>
 #include <numeric>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::iostream;
+using std::ofstream;
+using std::ios;
+using std::cerr;
+using std::endl;
+#endif
 
 #include "pet_common.h" 
 #include "imagedata.h"
@@ -16,6 +37,8 @@
 #include "utilities.h"
 #include "recon_array_functions.h"
 #include "zoom.h"
+
+USING_NAMESPACE_TOMO
 
 #define ZERO_TOL 0.000001
 
@@ -447,30 +470,46 @@ void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math)
             }
 
             case 10: // zoom
-            { 
-                const float zoom_x = ask_num("Zoom factor x",0.1F,5.F,1.F);
-                const float zoom_y = ask_num("Zoom factor y",0.1F,5.F,zoom_x);
-                const float zoom_z = ask_num("Zoom factor z",0.1F,5.F,1.F);
-                const float offset_x = ask_num("Offset x (in mm)", 0.F,
-                                               math_buffer.get_x_size()*math_buffer.get_voxel_size().x/2,0.F);
-                const float offset_y = ask_num("Offset y (in mm)", 0.F,
-                                               math_buffer.get_y_size()*math_buffer.get_voxel_size().y/2,0.F);
-                const float offset_z = ask_num("Offset z (in mm)", 0.F,
-                                               math_buffer.get_y_size()*math_buffer.get_voxel_size().z/2,0.F);
-                const int new_size_x = ask_num("New x size (pixels)", 1, 
-                                               static_cast<int>(math_buffer.get_x_size()*zoom_x * 2), 
-                                               static_cast<int>(math_buffer.get_x_size()*zoom_x));
-                const int new_size_y = ask_num("New y size (pixels)", 1, 
-                                               static_cast<int>(math_buffer.get_y_size()*zoom_y * 2), 
-                                               new_size_x);
-                const int new_size_z = ask_num("New z size (pixels)", 1, 
-                                               static_cast<int>(math_buffer.get_z_size()*zoom_z * 2), 
-                                               static_cast<int>(math_buffer.get_z_size()*zoom_z));
-                zoom_image(math_buffer, Coordinate3D<float>(zoom_x, zoom_y, zoom_z),
-                           Coordinate3D<float>(offset_x, offset_y, offset_z),
-                           Coordinate3D<int>(new_size_x, new_size_y, new_size_z));
+	      {
+                const float zoom_x = 
+		  ask_num("Zoom factor x",0.1F,5.F,1.F);
+                const float zoom_y = 
+		  ask_num("Zoom factor y",0.1F,5.F,zoom_x);
+                const float zoom_z = 
+		  ask_num("Zoom factor z",0.1F,5.F,1.F);
+                const float offset_x =
+                  ask_num("Offset x (in mm)", 
+			  -math_buffer.get_x_size()*math_buffer.get_voxel_size().x,
+			  math_buffer.get_x_size()*math_buffer.get_voxel_size().x,
+			  0.F);
+                const float offset_y = 
+		  ask_num("Offset y (in mm)", 
+			  -math_buffer.get_y_size()*math_buffer.get_voxel_size().y,
+			  math_buffer.get_y_size()*math_buffer.get_voxel_size().y,
+			  0.F);
+                const float offset_z = 
+		  ask_num("Offset z (in mm)", 
+			  -math_buffer.get_z_size()*math_buffer.get_voxel_size().z,
+			  math_buffer.get_z_size()*math_buffer.get_voxel_size().z,
+			  0.F);
+                const int new_size_x = 
+		  ask_num("New x size (pixels)", 1, 
+			  static_cast<int>(math_buffer.get_x_size()*zoom_x * 2), 
+			  static_cast<int>(math_buffer.get_x_size()*zoom_x));
+                const int new_size_y = 
+		  ask_num("New y size (pixels)", 1, 
+			  static_cast<int>(math_buffer.get_y_size()*zoom_y * 2), 
+			  new_size_x);
+                const int new_size_z = 
+		  ask_num("New z size (pixels)", 1, 
+			  static_cast<int>(math_buffer.get_z_size()*zoom_z * 2), 
+			  static_cast<int>(math_buffer.get_z_size()*zoom_z));
+                zoom_image(math_buffer, 
+			   CartesianCoordinate3D<float>(zoom_z, zoom_y, zoom_x),
+                           CartesianCoordinate3D<float>(offset_z, offset_y, offset_x),
+                           CartesianCoordinate3D<int>(new_size_z, new_size_y, new_size_x));
                 break;
-            }
+	      }
 
             case 11:
             {
