@@ -19,7 +19,7 @@
 */
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/zoom.h"
-#include "stir/IO/DefaultOutputFormat.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/utilities.h"
 
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   zoom_image(new_image, zooms, offsets_in_mm, new_sizes);
 
   // write it to file
-  DefaultOutputFormat output_file_format;
+  DefaultOutputFileFormat output_file_format;
   output_file_format.write_to_file(output_filename, new_image);
 
   return EXIT_SUCCESS;
