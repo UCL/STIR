@@ -283,9 +283,11 @@ get_bin_from_event(Bin& bin, const CListEvent& event,
 {  
   if (pre_or_post_normalisation)
   {
-    event.get_bin(bin, dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr)); 
+    event.get_bin(bin, *proj_data_info_cyl_uncompressed_ptr);
+    if (bin.get_bin_value()<=0)
+      return; // rejected for some strange reason
+
     // do_normalisation
-    if (bin.get_bin_value()>0)
     {
       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
@@ -298,28 +300,10 @@ get_bin_from_event(Bin& bin, const CListEvent& event,
     }
     // do motion correction here
 
-#if 0 // TODOXXX
-    // find detectors
-  int det_num_a;
-  int det_num_b;
-  int ring_a;
-  int ring_b;
-  event.get_detectors(det_num_a,det_num_b,ring_a,ring_b);
+    // now find 'compressed' bin, i.e. taking mashing, span etc into account
+    // Also, adjust the normalisation factor according to the number of
+    // uncompressed bins in a compressed bin
 
-  const Scanner * const scanner_ptr = 
-    template_proj_data_info_ptr->get_scanner_ptr();
-
-    if ( ring_a >= scanner_ptr->get_num_rings() || ring_a <0 || ring_b <0 || 
-	 ring_b >= scanner_ptr->get_num_rings() ||
-	 dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr).
-	 get_bin_for_det_pair(bin,
-			      det_num_a, ring_a,
-			      det_num_b, ring_b) == Succeeded::no)
-    {
-      bin.set_bin_value(-1);
-
-    }
-#else
     const float bin_value = bin.get_bin_value();
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, bin);
@@ -328,17 +312,13 @@ get_bin_from_event(Bin& bin, const CListEvent& event,
       dynamic_cast<const ProjDataInfoCylindrical&>(*template_proj_data_info_ptr);
     if (bin.get_bin_value()>0)
       {
-	// TODO this normalisation factor is inaccurate for the end-planes
 	bin.set_bin_value(bin_value / 
-			  ((proj_data_info.get_max_ring_difference(bin.segment_num()) -
-			    proj_data_info.get_min_ring_difference(bin.segment_num()) + 1)*
+			  (proj_data_info.
+			     get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
+									  bin.axial_pos_num())*
 			   proj_data_info.get_view_mashing_factor()));
       }
-    else
-      {
-	bin.set_bin_value(-1);
-      }
-#endif
+
   }
   else // post_normalisation
   {
@@ -346,7 +326,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event,
     if (bin.get_bin_value()>0)
     {
       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
-      // TODO remove arbitrary number. Supposes that these bin_Efficiencies are around 1
+      // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
 	  warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
