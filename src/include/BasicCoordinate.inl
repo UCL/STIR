@@ -1,28 +1,30 @@
 //
 // $Id$: $Date$
 //
+/*!
+  \file 
+ 
+  \brief (inline) implementations for BasicCoordinate
 
-/*
-  (inline) implementations for BasicCoordinate
+  \author Kris Thielemans
+  \author Alexey Zverovich
+  \author PARAPET project
 
-  
-   History:
-   1.0 (25/01/2000)
-     Kris Thielemans and Alexey Zverovich
+  \date    $Date$
+
+  \version $Revision$
+
 */
-
-#include <cassert>
 
 // Note: includes have to be outside the namespace for gcc 2.95.2
 // (as it does not put the STL library in std).
 
-// for std:: inner_product
+// for std::inner_product
 #include <numeric>
 // for sqrt and acos
 #include <cmath>
 
 #ifndef TOMO_NO_NAMESPACES
-using std::inner_product;
 # ifndef BOOST_NO_STDC_NAMESPACE
 using std::acos;
 using std::sqrt;
@@ -82,6 +84,15 @@ BasicCoordinate<num_dimensions, coordT>::operator[](const int d) const
   return coords[d]; 
 }
 
+/*
+  comparison
+ */
+template <int num_dimensions, typename coordT>
+bool
+BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_dimensions, coordT>& c) const
+{
+  return equal(begin(), end(), c.begin());
+}
 
 /*
   (numerical) assignments
@@ -245,9 +256,9 @@ inner_product (const BasicCoordinate<num_dimensions, coordT>& p1,
 	       const BasicCoordinate<num_dimensions, coordT>& p2)
 {
 #ifdef TOMO_NO_NAMESPACES
-  return inner_product(p1.begin(), p1.end(), p2.begin(), 0);
+  return inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
 #else
-  return std::inner_product(p1.begin(), p1.end(), p2.begin(), 0);
+  return std::inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
 #endif
 }
 
@@ -266,5 +277,26 @@ angle (const BasicCoordinate<num_dimensions, coordT>& p1,
 {
   return acos(inner_product(p1,p2)/norm(p1)/ norm(p2));
 }
+
+#if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
+// only define when not gcc 2.8.1
+
+template <int num_dimensions, typename coordT>
+inline BasicCoordinate<num_dimensions+1, coordT> 
+join(const coordT& a, 
+     const BasicCoordinate<num_dimensions, coordT>& c)
+{
+  BasicCoordinate<num_dimensions+1, coordT> retval;
+  
+  *retval.begin() = a;
+#ifdef TOMO_NO_NAMESPACES
+  copy(c.begin(), c.end(), retval.begin()+1);
+#else
+  std::copy(c.begin(), c.end(), retval.begin()+1);
+#endif
+  return retval;
+}
+
+#endif // gcc 2.8.1
 
 END_NAMESPACE_TOMO
