@@ -111,11 +111,11 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
 
   if (xy_size==-1)
     {
-      // default it to cover full FOV
+      // default it to cover full FOV by taking 2*R_in_pixs+1
       const float FOVradius_in_mm = 
 	max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
 	    -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
-      xy_size_used = round(2*FOVradius_in_mm / get_voxel_size().x());
+      xy_size_used = round(2*FOVradius_in_mm / get_voxel_size().x() + 1);
     }
   if (xy_size_used<0)
     error("VoxelsOnCartesianGrid: attempt to construct image with negative xy_size %d\n", 
