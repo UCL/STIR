@@ -69,6 +69,15 @@ ProjDataInfo::get_sampling_in_t(const Bin& bin) const
      )/2;
 }
 
+float 
+ProjDataInfo::get_sampling_in_m(const Bin& bin) const
+{
+  return
+    (get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
+     get_m(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()-1,bin.tangential_pos_num()))
+     )/2;
+}
+
 
 float 
 ProjDataInfo::get_sampling_in_s(const Bin& bin) const
@@ -115,26 +124,26 @@ ProjDataInfo::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_ax
 
 /*! No checks are done on validity of the min_ax_pos_num argument */
 void 
-ProjDataInfo::set_min_axial_pos_num(int min_ax_pos_num, const int segment_num)
+ProjDataInfo::set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num)
 {
   min_axial_pos_per_seg[segment_num] = min_ax_pos_num;
 }
 /*! No checks are done on validity of the max_ax_pos_num argument */
 void 
-ProjDataInfo::set_max_axial_pos_num(int max_ax_pos_num, const int segment_num)
+ProjDataInfo::set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num)
 {
   max_axial_pos_per_seg[segment_num] = max_ax_pos_num;
 }
 
 
 void
-ProjDataInfo::set_min_tangential_pos_num(int min_tang_poss)
+ProjDataInfo::set_min_tangential_pos_num(const int min_tang_poss)
 {
   min_tangential_pos_num = min_tang_poss;
 }
 
 void
-ProjDataInfo::set_max_tangential_pos_num(int max_tang_poss)
+ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
 {
   max_tangential_pos_num = max_tang_poss;
 }
