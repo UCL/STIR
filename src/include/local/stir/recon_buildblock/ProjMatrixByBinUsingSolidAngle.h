@@ -41,6 +41,7 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class ProjMatrixByBinUsingSolidAngle : 
   public RegisteredParsingObject<
 	      ProjMatrixByBinUsingSolidAngle,
+              ProjMatrixByBin,
               ProjMatrixByBin
 	       >
 {
