@@ -13,13 +13,13 @@
 */
 
 /*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet
+    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 
 #include "local/stir/motion/RigidObject3DTransformation.h"
-#include "local/stir/listmode/CListModeData.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
 

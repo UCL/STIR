@@ -22,7 +22,7 @@
 #define __stir_listmode_LmToProjDataWithMC_H__
 
 
-#include "local/stir/listmode/LmToProjData.h"
+#include "stir/listmode/LmToProjData.h"
 #include "stir/CartesianCoordinate3D.h"
 
 #include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
