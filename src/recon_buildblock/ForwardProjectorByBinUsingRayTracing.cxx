@@ -160,42 +160,69 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
   // this will throw an exception when the cast does not work
   const VoxelsOnCartesianGrid<float>& image = 
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
-  // TODO somehow check symmetry object in RelatedViewgrams
-  assert(viewgrams.get_num_viewgrams() >= 2);
 
-#ifndef NDEBUG
-  // This variable is only used in assert() at the moment, so avoid compiler 
-  // warning by defining it only when in debug mode
   const int num_views = viewgrams.get_proj_data_info_ptr()->get_num_views();
-#endif
 
-  RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
   if (viewgrams.get_basic_segment_num() == 0)
   {
     
-    Viewgram<float> & pos_view = *r_viewgrams_iter;
-    r_viewgrams_iter++;
-    Viewgram<float> & pos_plus90 =*r_viewgrams_iter;
-
-    if (viewgrams.get_num_viewgrams() == 2)
+    if (viewgrams.get_num_viewgrams() == 1)
     {
-      forward_project_view_plus_90_and_delta_2D(
-	pos_view, pos_plus90,  
+      Viewgram<float> & pos_view = *viewgrams.begin();
+      forward_project_view_2D(
+	pos_view,  
 	image,
 	min_axial_pos_num, max_axial_pos_num,
 	min_tangential_pos_num, max_tangential_pos_num);
 
     }
     else
+    if (viewgrams.get_num_viewgrams() == 2)
     {
-      assert(viewgrams.get_basic_view_num() != 0);
-      assert(viewgrams.get_basic_view_num() != num_views/4);
-      r_viewgrams_iter=viewgrams.begin();
-      r_viewgrams_iter+=2;
-      Viewgram<float> & pos_min180 =*r_viewgrams_iter;
+      assert(viewgrams.get_basic_view_num() >= 0);
+      assert(viewgrams.get_basic_view_num() < num_views/2);
+      Viewgram<float> & pos_view = *viewgrams.begin();
+      if ((viewgrams.begin()+1)->get_view_num() == pos_view.get_view_num() + num_views/2)
+	{
+	  Viewgram<float> & pos_plus90 =*(viewgrams.begin()+1);
+	  if (pos_plus90.get_view_num() != pos_view.get_view_num() + num_views/2)
+	    error("ForwardProjectorUsingRayTracing: error in symmetries. Check 2D case with 2 viewgrams\n");
 
-      r_viewgrams_iter++;
-      Viewgram<float> & pos_min90 =*r_viewgrams_iter;
+	  forward_project_view_plus_90_2D(
+						    pos_view, pos_plus90,  
+						    image,
+						    min_axial_pos_num, max_axial_pos_num,
+						    min_tangential_pos_num, max_tangential_pos_num);
+	}
+      else
+	{
+	  Viewgram<float> & pos_min180 =*(viewgrams.begin()+1);
+	  if (pos_min180.get_view_num() != num_views - pos_view.get_view_num())
+	    error("ForwardProjectorUsingRayTracing: error in symmetries. Check 2D case with 2 viewgrams\n");
+
+	  forward_project_view_min_180_2D(
+						    pos_view, pos_min180,  
+						    image,
+						    min_axial_pos_num, max_axial_pos_num,
+						    min_tangential_pos_num, max_tangential_pos_num);
+	}	  
+    }
+    else
+    {
+      assert(viewgrams.get_basic_view_num() > 0);
+      assert(viewgrams.get_basic_view_num() < num_views/4);
+      Viewgram<float> & pos_view = *(viewgrams.begin());
+      Viewgram<float> & pos_plus90 =*(viewgrams.begin()+1);
+      Viewgram<float> & pos_min180 =*(viewgrams.begin()+2);
+      Viewgram<float> & pos_min90 =*(viewgrams.begin()+3);
+
+      if (pos_plus90.get_view_num() != pos_view.get_view_num() + num_views/2)
+	error("ForwardProjectorUsingRayTracing: error in symmetries. Check 2D case with 4 viewgrams\n");
+      if (pos_min180.get_view_num() != num_views - pos_view.get_view_num())
+	error("ForwardProjectorUsingRayTracing: error in symmetries. Check 2D case with 4 viewgrams\n");
+      if (pos_min90.get_view_num() != num_views/2 - pos_view.get_view_num())
+	error("ForwardProjectorUsingRayTracing: error in symmetries. Check 2D case with 4 viewgrams\n");
+
       forward_project_all_symmetries_2D(
 	pos_view, pos_plus90, 
 	pos_min180, pos_min90, 
@@ -208,46 +235,128 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
   else
   {
     // segment symmetry
-    r_viewgrams_iter=viewgrams.begin();
-    Viewgram<float> & pos_view = *r_viewgrams_iter; //0
-    r_viewgrams_iter++;
-    Viewgram<float> & neg_view =*r_viewgrams_iter; //1
-    r_viewgrams_iter++;
-    Viewgram<float> & pos_plus90 =*r_viewgrams_iter; //2
-    r_viewgrams_iter++;
-    Viewgram<float> & neg_plus90 =*r_viewgrams_iter ; //3
-    if (viewgrams.get_num_viewgrams() == 4)
-    {
-      forward_project_view_plus_90_and_delta(
-	pos_view, neg_view, pos_plus90, neg_plus90, 
-	image,
-	min_axial_pos_num, max_axial_pos_num,
-	min_tangential_pos_num, max_tangential_pos_num);
+    if (viewgrams.get_num_viewgrams() == 2)
+      {
+	Viewgram<float> & pos_view = *(viewgrams.begin()+0);
+	Viewgram<float> & neg_view =*(viewgrams.begin()+1);
 
-    }
-    else
-    {
-      assert(viewgrams.get_basic_view_num() != 0);
-      assert(viewgrams.get_basic_view_num() != num_views/4);
+	if (pos_view.get_view_num() != neg_view.get_view_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 2 viewgrams\n");
+	if (neg_view.get_segment_num() != - pos_view.get_segment_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 2 viewgrams\n");
 
-      r_viewgrams_iter++;//4
-      Viewgram<float> & pos_min180 =*r_viewgrams_iter;
-      r_viewgrams_iter++;//5
-      Viewgram<float> & neg_min180=*r_viewgrams_iter;
-      r_viewgrams_iter++;//6
-      Viewgram<float> & pos_min90=*r_viewgrams_iter;
-	r_viewgrams_iter++;//7
-      Viewgram<float> & neg_min90 =*r_viewgrams_iter;
+	forward_project_delta(
+			      pos_view, neg_view,
+			      image,
+			      min_axial_pos_num, max_axial_pos_num,
+			      min_tangential_pos_num, max_tangential_pos_num);
+      }
+    else if (viewgrams.get_num_viewgrams() == 4)
+      {
+	Viewgram<float> & pos_view = *(viewgrams.begin()+0);
+	Viewgram<float> & neg_view =*(viewgrams.begin()+1);
+	if (neg_view.get_view_num() != pos_view.get_view_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 2 viewgrams\n");
+	if (neg_view.get_segment_num() != - pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
 
-      forward_project_all_symmetries(
-	pos_view, neg_view, pos_plus90, neg_plus90, 
-	pos_min180, neg_min180, pos_min90, neg_min90,
-	image,
-	min_axial_pos_num, max_axial_pos_num,
-	min_tangential_pos_num, max_tangential_pos_num);
+	if ((viewgrams.begin()+2)->get_view_num() == pos_view.get_view_num() + num_views/2)
+	  {
+	    Viewgram<float> & pos_plus90 =*(viewgrams.begin()+2);
+	    Viewgram<float> & neg_plus90 =*(viewgrams.begin()+3);
+	    if (pos_plus90.get_view_num() != pos_view.get_view_num() + num_views/2)
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
+	    if (neg_plus90.get_view_num() != neg_view.get_view_num() + num_views/2)
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
+	    if (pos_plus90.get_segment_num() != pos_view.get_segment_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
+	    if (neg_plus90.get_segment_num() != - pos_view.get_segment_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
+	    forward_project_view_plus_90_and_delta(
+						   pos_view, neg_view, pos_plus90, neg_plus90, 
+						   image,
+						   min_axial_pos_num, max_axial_pos_num,
+						   min_tangential_pos_num, max_tangential_pos_num);
+	  }
+	else
+	  {
+	    Viewgram<float> & pos_min180 =*(viewgrams.begin()+2);
+	    Viewgram<float> & neg_min180 =*(viewgrams.begin()+3);
+	    if (pos_min180.get_view_num() != num_views - pos_view.get_view_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");	   
+	    if (neg_min180.get_view_num() != num_views - neg_view.get_view_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
+	    if (pos_min180.get_segment_num() != pos_view.get_segment_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
+	    if (neg_min180.get_segment_num() != - pos_view.get_segment_num())
+	      error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 4 viewgrams\n");
 
-    }
-  }
+	    forward_project_view_min_180_and_delta(
+						   pos_view, neg_view, pos_min180, neg_min180, 
+						   image,
+						   min_axial_pos_num, max_axial_pos_num,
+						   min_tangential_pos_num, max_tangential_pos_num);	   
+	  }
+      }
+    else if (viewgrams.get_num_viewgrams() == 8)
+      {
+	assert(viewgrams.get_basic_view_num() > 0);
+	assert(viewgrams.get_basic_view_num() < num_views/4);
+	Viewgram<float> & pos_view = *(viewgrams.begin()+0);
+	Viewgram<float> & neg_view =*(viewgrams.begin()+1);
+	Viewgram<float> & pos_plus90 =*(viewgrams.begin()+2);
+	Viewgram<float> & neg_plus90 =*(viewgrams.begin()+3);
+	Viewgram<float> & pos_min180 =*(viewgrams.begin()+4);
+	Viewgram<float> & neg_min180=*(viewgrams.begin()+5);
+	Viewgram<float> & pos_min90=*(viewgrams.begin()+6);
+	Viewgram<float> & neg_min90 =*(viewgrams.begin()+7);
+
+	if (pos_plus90.get_view_num() != pos_view.get_view_num() + num_views/2)
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (pos_min180.get_view_num() != num_views - pos_view.get_view_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (pos_min90.get_view_num() != num_views/2 - pos_view.get_view_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+
+	if (neg_view.get_view_num() != pos_view.get_view_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (neg_min90.get_view_num() != num_views/2 - neg_view.get_view_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (neg_plus90.get_view_num() != neg_view.get_view_num() + num_views/2)
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (neg_min180.get_view_num() != num_views - neg_view.get_view_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+
+	if (pos_plus90.get_segment_num() != pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (pos_min90.get_segment_num() != pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (pos_min180.get_segment_num() != pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+
+	if (neg_view.get_segment_num() != - pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (neg_plus90.get_segment_num() != - pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (neg_min90.get_segment_num() != - pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+	if (neg_min180.get_segment_num() != - pos_view.get_segment_num())
+	  error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case with 8 viewgrams\n");
+
+	forward_project_all_symmetries(
+				       pos_view, neg_view, pos_plus90, neg_plus90, 
+				       pos_min180, neg_min180, pos_min90, neg_min90,
+				       image,
+				       min_axial_pos_num, max_axial_pos_num,
+				       min_tangential_pos_num, max_tangential_pos_num);
+
+      }
+    else // other number of viewgrams
+      {
+	error("ForwardProjectorUsingRayTracing: error in symmetries. Check 3D case\n");
+      }
+
+  } // oblique case
 
 
 }
@@ -270,7 +379,7 @@ forward_project_all_symmetries(
 			       Viewgram<float> & neg_min90, 
 			       const VoxelsOnCartesianGrid<float>& image,
 			       const int min_ax_pos_num, const int max_ax_pos_num,
-			       const int min_tangential_pos_num, const int max_tangential_pos_num)
+			       const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
 
   // KT 20/06/2001 should now work for non-arccorrected data as well
@@ -289,21 +398,20 @@ forward_project_all_symmetries(
   const int view = pos_view.get_view_num();
 
   assert(delta > 0);
-  // relax 2 assertions to not break the temporary 4 parameter forward_project below
+
   assert(view >= 0);
-  assert(view <= 2*view45);
+  /* removed assertions which would break the temporary 2,4 parameter forward_project 
+  assert(view <= view90);
   
-  // KT 21/05/98 added some assertions
   assert(pos_plus90.get_view_num() == nviews / 2 + pos_view.get_view_num());
-  /* remove 2 assertions which would break the temporary 4 parameter forward_project below
   assert(pos_min90.get_view_num() == nviews / 2 - pos_view.get_view_num());
   assert(pos_min180.get_view_num() == nviews - pos_view.get_view_num());
-  */
+  
   assert(neg_view.get_view_num() == pos_view.get_view_num());
   assert(neg_plus90.get_view_num() == pos_plus90.get_view_num());
   assert(neg_min90.get_view_num() == pos_min90.get_view_num());
   assert(neg_min180.get_view_num() == pos_min180.get_view_num());
-  
+  */
    //assert(image.get_min_z() == 0);
 
   assert(delta ==
@@ -349,7 +457,7 @@ forward_project_all_symmetries(
     : (min_tangential_pos_num>0 ?
        min_tangential_pos_num
        : 0 );
-  // in the loop, the case tang_pos_num==0 will be treated separetely (because it's self-symmetric)
+  // in the loop, the case tang_pos_num==0 will be treated separately (because it's self-symmetric)
   const int min_tang_pos_num_in_loop =
     min_abs_tangential_pos_num==0 ? 1 : min_abs_tangential_pos_num;
   
@@ -509,9 +617,41 @@ forward_project_all_symmetries(
 
 
 /*
-This function projects 4 viewgrams related by symmetry.
-It will be used for view=0 or 45 degrees 
+This function projects 2 viewgrams related by segment symmetry.
+*/
 
+void 
+ForwardProjectorByBinUsingRayTracing::
+  forward_project_delta(Viewgram<float> & pos_view, 
+			Viewgram<float> & neg_view,  
+			const VoxelsOnCartesianGrid<float> & image,
+			const int min_axial_pos_num, const int max_axial_pos_num,
+			const int min_tangential_pos_num, const int max_tangential_pos_num) const
+{
+  assert(pos_view.get_segment_num() > 0);
+  assert(pos_view.get_view_num() >= 0);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views());
+
+  Viewgram<float> dummy = pos_view;
+
+
+    forward_project_all_symmetries(
+                    pos_view, 
+                    neg_view, 
+                    dummy,
+		    dummy,
+                    dummy,
+                    dummy,
+                    dummy,
+                    dummy,
+                    image,
+                    min_axial_pos_num, max_axial_pos_num,
+                    min_tangential_pos_num, max_tangential_pos_num);
+}
+
+
+/*
+This function projects 4 viewgrams related by symmetry.
   Here 0<=view < num_views/2 (= 90 degrees)
 */
 
@@ -523,7 +663,7 @@ ForwardProjectorByBinUsingRayTracing::
 				         Viewgram<float> & neg_plus90, 
 				         const VoxelsOnCartesianGrid<float> & image,
 				         const int min_axial_pos_num, const int max_axial_pos_num,
-				         const int min_tangential_pos_num, const int max_tangential_pos_num)
+				         const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
   //assert(pos_view.get_average_ring_difference() > 0);
   assert(pos_view.get_view_num() >= 0);
@@ -539,6 +679,38 @@ ForwardProjectorByBinUsingRayTracing::
                     neg_plus90, 
                     dummy,
                     dummy,
+                    dummy,
+                    dummy,
+                    image,
+                    min_axial_pos_num, max_axial_pos_num,
+                    min_tangential_pos_num, max_tangential_pos_num);
+}
+
+
+void 
+ForwardProjectorByBinUsingRayTracing::
+  forward_project_view_min_180_and_delta(Viewgram<float> & pos_view, 
+				         Viewgram<float> & neg_view, 
+				         Viewgram<float> & pos_min180, 
+				         Viewgram<float> & neg_min180, 
+				         const VoxelsOnCartesianGrid<float> & image,
+				         const int min_axial_pos_num, const int max_axial_pos_num,
+				         const int min_tangential_pos_num, const int max_tangential_pos_num) const
+{
+  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_view_num() >= 0);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+
+  Viewgram<float> dummy = pos_view;
+
+
+    forward_project_all_symmetries(
+                    pos_view, 
+                    neg_view, 
+                    dummy,
+                    dummy,
+                    pos_min180, 
+                    neg_min180, 
                     dummy,
                     dummy,
                     image,
@@ -791,11 +963,35 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 
 void 
 ForwardProjectorByBinUsingRayTracing::
-forward_project_view_plus_90_and_delta_2D(Viewgram<float> & pos_view, 
+forward_project_view_2D(Viewgram<float> & pos_view, 
+			const VoxelsOnCartesianGrid<float> & image,
+			const int min_axial_pos_num, const int max_axial_pos_num,
+			const int min_tangential_pos_num, const int max_tangential_pos_num) const
+{
+  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_view_num() >= 0);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views());
+
+  Viewgram<float> dummy = pos_view;
+
+  forward_project_all_symmetries_2D(
+                    pos_view, 
+                    dummy, 
+                    dummy,
+                    dummy,             
+                    image,
+                    min_axial_pos_num, max_axial_pos_num,
+                    min_tangential_pos_num, max_tangential_pos_num);
+
+}
+
+void 
+ForwardProjectorByBinUsingRayTracing::
+forward_project_view_plus_90_2D(Viewgram<float> & pos_view, 
 				          Viewgram<float> & pos_plus90, 
                                           const VoxelsOnCartesianGrid<float> & image,
                                           const int min_axial_pos_num, const int max_axial_pos_num,
-                                          const int min_tangential_pos_num, const int max_tangential_pos_num)
+                                          const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
   //assert(pos_view.get_average_ring_difference() > 0);
   assert(pos_view.get_view_num() >= 0);
@@ -816,6 +1012,32 @@ forward_project_view_plus_90_and_delta_2D(Viewgram<float> & pos_view,
 }
 
 
+void 
+ForwardProjectorByBinUsingRayTracing::
+forward_project_view_min_180_2D(Viewgram<float> & pos_view, 
+			       Viewgram<float> & pos_min180, 
+			       const VoxelsOnCartesianGrid<float> & image,
+			       const int min_axial_pos_num, const int max_axial_pos_num,
+			       const int min_tangential_pos_num, const int max_tangential_pos_num) const
+{
+  //assert(pos_view.get_average_ring_difference() > 0);
+  assert(pos_view.get_view_num() >= 0);
+  assert(pos_view.get_view_num() < pos_view.get_proj_data_info_ptr()->get_num_views()/2);
+
+  Viewgram<float> dummy = pos_view;
+
+  forward_project_all_symmetries_2D(
+				    pos_view, 
+				    dummy,
+				    pos_min180, 
+				    dummy,             
+				    image,
+				    min_axial_pos_num, max_axial_pos_num,
+                    min_tangential_pos_num, max_tangential_pos_num);
+  
+}
+
+
 
 void 
 ForwardProjectorByBinUsingRayTracing::
@@ -825,7 +1047,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 			         Viewgram<float> & pos_min90, 
 			         const VoxelsOnCartesianGrid<float>& image,
 			         const int min_axial_pos_num, const int max_axial_pos_num,
-			         const int min_tangential_pos_num, const int max_tangential_pos_num)
+			         const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
   start_timers();
 
@@ -847,11 +1069,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   assert(delta == 0);
   // relax 2 assertions to not break the temporary 4 parameter forward_project below
   assert(view >= 0);
-  assert(view <= 2*view45);
+  assert(view <= view90);
   
-  // KT 21/05/98 added some assertions
+
+  /* remove assertions which would break the temporary 1,2 parameter forward_project.
+     Now checked before calling 
   assert(pos_plus90.get_view_num() == nviews / 2 + pos_view.get_view_num());
-  /* remove 2 assertions which would break the temporary 4 parameter forward_project below
   assert(pos_min90.get_view_num() == nviews / 2 - pos_view.get_view_num());
   assert(pos_min180.get_view_num() == nviews - pos_view.get_view_num());
   */
