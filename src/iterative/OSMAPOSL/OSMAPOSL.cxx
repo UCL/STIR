@@ -11,13 +11,11 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "OSMAPOSL/OSMAPOSLReconstruction.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "shared_ptr.h"
+#include "tomo/Succeeded.h"
 
 
 USING_NAMESPACE_TOMO
@@ -32,31 +30,9 @@ int main(int argc, char **argv)
   OSMAPOSLReconstruction reconstruction_object(argc>1?argv[1]:"");
   
 
-  shared_ptr<DiscretisedDensity<3, float> > target_image_ptr;     
+  return reconstruction_object.reconstruct() == Succeeded::yes ?
+           EXIT_SUCCESS : EXIT_FAILURE;
 
-  // TODO somehow get rid of VoxelsOnCartesianGrid
-  if(reconstruction_object.get_parameters().initial_image_filename=="1")
-  {
-    target_image_ptr =
-      new VoxelsOnCartesianGrid<float> (*reconstruction_object.get_parameters().proj_data_ptr->get_proj_data_info_ptr(),
-					reconstruction_object.get_parameters().zoom,
-					CartesianCoordinate3D<float>(reconstruction_object.get_parameters().Zoffset,
-								     reconstruction_object.get_parameters().Yoffset,
-								     reconstruction_object.get_parameters().Xoffset),
-					reconstruction_object.get_parameters().output_image_size);
-    target_image_ptr->fill(1.0);
-  }
-  else
-    {
-      target_image_ptr = 
-        DiscretisedDensity<3,float>::read_from_file(reconstruction_object.get_parameters().initial_image_filename);
-    }
-
-
-  reconstruction_object.reconstruct(target_image_ptr);
-
-
-  return EXIT_SUCCESS;
 
 }
 
