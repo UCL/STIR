@@ -99,7 +99,7 @@ main( int argc, char **argv)
     for (int frame_num=1; frame_num<=num_frames;++frame_num)
       for (int bed_num=0; bed_num<num_bed_poss;++bed_num)
         for (int gate_num=1; gate_num<=num_gates;++gate_num)
-          write_basic_interfile_header_for_ecat7( interfile_header_filename,
+          write_basic_interfile_header_for_ECAT7( interfile_header_filename,
                                                   argv[1], 
 						  frame_num, gate_num, data_num, bed_num);
   }
@@ -110,7 +110,7 @@ main( int argc, char **argv)
     const int gate_num=ask_num("Gate number ? ",1,num_gates, 1);
     const int data_num=ask_num("Data number ? ",0,8, 0);
     
-    write_basic_interfile_header_for_ecat7( interfile_header_filename,
+    write_basic_interfile_header_for_ECAT7( interfile_header_filename,
                                             argv[1], frame_num, gate_num, data_num,
                                             bed_num);
   }
