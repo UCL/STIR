@@ -710,8 +710,16 @@ bool InterfilePDFSHeader::post_processing()
       warning(warning_msg, "Advance");
       break;
     case 288*2:
-      guessed_scanner_ptr = new Scanner( Scanner::E966);
-      warning(warning_msg, "ECAT 966");
+      if(num_rings == 104) 
+      { //added by Dylan Togane
+ 	guessed_scanner_ptr = new Scanner( Scanner::HRRT);
+	warning(warning_msg, "HRRT");
+      }
+      else 
+      {
+	guessed_scanner_ptr = new Scanner( Scanner::E966);
+	warning(warning_msg, "ECAT 966");
+      }
       break; // Dylan Togane [dtogane@camhpet.on.ca] 30/07/2002 bug fix: added break
       // KT 10/01/2000 added
     case 256*2:
