@@ -11,9 +11,7 @@ all: $(DEST)libbuildblock.a $(DEST)buildblock_registries.o
 clean:
 	$(RM) $(DEST)*.[oad]
 
-# KT 08/02/2002
-# added ProjDataInMemory.cxx
-# KT 07/05/2001 added ArrayFilter1DUsingConvolution.cxx and SeparableConvolutionImageFilter.cxx
+# KT 25/06/02 added DataSymmetriesForViewSegmentNumbers.cxx
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
@@ -51,7 +49,9 @@ SOURCES = \
 	ThresholdMinToSmallPositiveValueImageProcessor.cxx \
 	ChainedImageProcessor.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
-	SeparableConvolutionImageFilter.cxx
+	SeparableConvolutionImageFilter.cxx \
+        DataSymmetriesForViewSegmentNumbers.cxx
+
  
 
 
