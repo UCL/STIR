@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \ingroup utilities
+  \ingroup buildblock
 
   \brief Implementation of class TimeFrameDefinitions
  
@@ -21,9 +21,7 @@
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/ecat6_utils.h"     
-#ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
-#endif
 
 #include <iostream>
 #include <fstream>
