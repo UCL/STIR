@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __LogLikBased_common_H__
@@ -17,11 +17,11 @@
   \author Matthew Jacobson
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 
 START_NAMESPACE_TOMO
