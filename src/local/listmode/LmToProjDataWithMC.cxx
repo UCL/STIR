@@ -206,6 +206,11 @@ LmToProjDataWithMC::find_cartesian_coordinates_given_scanner_coordinates (Cartes
 				 const int det1, const int det2, 
 				 const Scanner& scanner) const
 {
+//  assert(Ring_A >=0 && Ring_A<scanner.get_num_rings());
+  //assert(Ring_B >=0 && Ring_B<scanner.get_num_rings());
+  //assert(det1 >=0 && det1<scanner.get_num_detectors_per_ring());
+  //assert(det2 >=0 && det2<scanner.get_num_detectors_per_ring());
+
   int num_detectors = scanner.get_num_detectors_per_ring();
 
   float df1 = (2.*_PI/num_detectors)*(det1);
@@ -216,7 +221,7 @@ LmToProjDataWithMC::find_cartesian_coordinates_given_scanner_coordinates (Cartes
   float y2 = scanner.get_ring_radius()*sin(df2);
   float z1 = Ring_A*scanner.get_ring_spacing();
   float z2 = Ring_B*scanner.get_ring_spacing();
-  
+#if 1
   coord_1.z() = z1;
   coord_1.y() = x1;
   coord_1.x() = -y1;
@@ -224,6 +229,16 @@ LmToProjDataWithMC::find_cartesian_coordinates_given_scanner_coordinates (Cartes
   coord_2.z() = z2;
   coord_2.y() = x2;
   coord_2.x() = -y2; 
+#else
+  coord_1.z() = z1;
+  coord_1.y() = y1;
+  coord_1.x() = x1;
+
+  coord_2.z() = z2;
+  coord_2.y() = y2;
+  coord_2.x() = x2; 
+#endif
+
 }
 
 
@@ -267,15 +282,19 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
   assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
 
-  /*det1 = stir::round(((2.*_PI)+atan2(coord_det1.y(),coord_det1.x()))/(2.*_PI/num_detectors))% num_detectors;
+#if 0
+  det1 = stir::round(((2.*_PI)+atan2(coord_det1.y(),coord_det1.x()))/(2.*_PI/num_detectors))% num_detectors;
   det2 = stir::round(((2.*_PI)+atan2(coord_det2.y(),coord_det2.x()))/(2.*_PI/num_detectors))% num_detectors;
   ring1 = round(coord_det1.z()/ring_spacing);
-  ring2 = round(coord_det2.z()/ring_spacing);*/
+  ring2 = round(coord_det2.z()/ring_spacing);
+#endif
+#if 1
   // swapped here x and y and change the sign 
   det1 = stir::round(((2.*_PI)+atan2(-coord_det1.x(),coord_det1.y()))/(2.*_PI/num_detectors))% num_detectors;
   det2 = stir::round(((2.*_PI)+atan2(-coord_det2.x(),coord_det2.y()))/(2.*_PI/num_detectors))% num_detectors;
   ring1 = round(coord_det1.z()/ring_spacing);
   ring2 = round(coord_det2.z()/ring_spacing);
+#endif
 
 
 #ifndef NDEBUG
@@ -290,7 +309,13 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
     assert(norm(coord_det2-check2)<ring_spacing);
   }
 #endif
-  return Succeeded::yes;
+  assert(det1 >=0 && det1<scanner.get_num_detectors_per_ring());
+  assert(det2 >=0 && det2<scanner.get_num_detectors_per_ring());
+
+  return 
+    (ring1 >=0 && ring1<scanner.get_num_rings() &&
+     ring2 >=0 && ring2<scanner.get_num_rings()) 
+     ? Succeeded::yes : Succeeded::no;
 }
 
 
