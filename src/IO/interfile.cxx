@@ -715,6 +715,23 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
        output_header << "bin size (cm) := " 
 		     << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
 		     //pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
+       // TODO should use Scanner::parameter_info() but overlaps with above (but data is not necessarily the same)
+       const Scanner& scanner = *proj_data_info_ptr->get_scanner_ptr();
+       if (scanner.get_num_axial_blocks_per_bucket()>0)
+	 output_header << "number of blocks_per_bucket in axial direction := "
+		       << scanner.get_num_axial_blocks_per_bucket() << '\n';
+       if (scanner.get_num_transaxial_blocks_per_bucket()>0)
+	 output_header << "number of blocks_per_bucket in transaxial direction := "
+		       << scanner.get_num_transaxial_blocks_per_bucket() << '\n';
+       if (scanner.get_num_axial_crystals_per_block()>0)
+	 output_header << "number of crystals_per_block in axial direction := "
+		       << scanner.get_num_axial_crystals_per_block() << '\n';
+       if (scanner.get_num_transaxial_crystals_per_block()>0)
+	 output_header << "number of crystals_per_block in transaxial direction := "
+		       << scanner.get_num_transaxial_crystals_per_block() << '\n';
+       if (scanner.get_num_detector_layers()>0)
+	 output_header << "number of detector layers := "
+		       << scanner.get_num_detector_layers() << '\n';
 
        //output_header << "view offset (degrees) := "
        //		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->view_offset<< endl;
@@ -731,7 +748,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   output_header<<"data offset in bytes[1] := "
 	       <<pdfs.get_offset_in_stream()<<endl;
     
-
+ 
   output_header << "number of time frames := 1\n";
   output_header << "!END OF INTERFILE :=\n";
 
