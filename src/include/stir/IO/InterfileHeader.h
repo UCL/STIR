@@ -16,12 +16,12 @@
 
   \warning Different datasets in 1 header are not yet supported.
 
-  See http://www.irsl.org/~kris for a description of the full
+  See http://www.HammersmithImanet.com/~kris for a description of the full
   proposal for Interfile headers for 3D PET.
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,7 +31,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/NumericInfo.h"
 #include "stir/KeyParser.h"
-
+#include "stir/PatientPosition.h"
 #include "stir/ProjDataFromStream.h"
 
 
@@ -60,16 +60,21 @@ protected:
 
 private:
 
+  // TODO the next few ones should be made static members
   // Lists of possible values for some keywords
   ASCIIlist_type number_format_values;	
   ASCIIlist_type byte_order_values;
   ASCIIlist_type type_of_data_values;
+  ASCIIlist_type patient_orientation_values;
+  ASCIIlist_type patient_rotation_values;
 
   // Corresponding variables here
 
   int number_format_index;
   int byte_order_index;
   int type_of_data_index;
+  int patient_orientation_index;
+  int patient_rotation_index;
 
   // Extra private variables which will be translated to something more useful
   int bytes_per_pixel;
@@ -90,6 +95,8 @@ public :
   // TODO these shouldn't be here, but in PETStudy or something
 
   // 'Final' variables
+
+  PatientPosition patient_position;
 
   string data_file_name;
 
