@@ -44,6 +44,9 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      const int max_in_segment_num_to_process
      )
 {
+  if (num_segments_to_combine%2==0)
+    error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
+	  num_segments_to_combine);
   const ProjDataInfoCylindrical * const in_proj_data_info_ptr =
     dynamic_cast<ProjDataInfoCylindrical const * >
     (&in_proj_data_info);
@@ -59,11 +62,14 @@ SSRB(const ProjDataInfo& in_proj_data_info,
   out_proj_data_info_ptr->set_num_views(
 					in_proj_data_info.get_num_views()/
 					num_views_to_combine);
+  // Find new maximum segment_num
+  // To understand this formula, check how the out_segment_num is related to 
+  // the in_segment_num below
   const int out_max_segment_num = 
     ((max_in_segment_num_to_process == -1
       ? in_proj_data_info.get_max_segment_num()
       : max_in_segment_num_to_process
-      )-1)/num_segments_to_combine;
+      )-(num_segments_to_combine/2))/num_segments_to_combine;
   if (out_max_segment_num <0)
     error("SSRB: max_in_segment_num_to_process  %d is too small. No output segments\n",
 	  max_in_segment_num_to_process);
@@ -136,6 +142,9 @@ SSRB(const string& output_filename,
      const int max_in_segment_num_to_process
      )
 {
+  if (num_segments_to_combine%2==0)
+    error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
+	  num_segments_to_combine);
   shared_ptr<ProjDataInfo> out_proj_data_info_ptr =
     SSRB(*in_proj_data.get_proj_data_info_ptr(),
          num_segments_to_combine,
