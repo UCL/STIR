@@ -256,7 +256,7 @@ ask_filename_and_open(FSTREAM& s,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 
-//! as above, but with default \c abort_if_failed = \true
+//! as above, but with default \c abort_if_failed = true
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,

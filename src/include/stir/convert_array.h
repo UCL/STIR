@@ -32,24 +32,29 @@
 START_NAMESPACE_STIR
 
 /*!
-   \brief A function that returns a new Array with elements of type \c T2 such that \c data_in == \c data_out * \c scale_factor
+  \ingroup buildblock
+   \brief A function that returns a new Array (of the same dimension) with elements of type \c T2
 
-   example :
-      data_out = convert_array(scale_factor, data_in, NumericInfo<T2>())
+   Result is (approximately) \a data_in / \a scale_factor.
+
+   \par example 
+   \code
+   Array<2,float> data_out = convert_array(scale_factor, data_in, NumericInfo<float>())
+   \endcode
 
    \param scale_factor 
           a reference to a (float or double) variable which will be
 	  set to the scale factor such that (ignoring types)
-	     data_in == data_out * scale_factor
+	   \code  data_in == data_out * scale_factor \endcode
 	  If scale_factor is initialised to 0, the maximum range of T2
 	  is used. If scale_factor != 0, convert_array attempts to use the
 	  given scale_factor, unless the T2 range doesn't fit.
 	  In that case, the same scale_factor is used as in the 0 case.
    
    \param data_in 
-          some Array object, elements are of some numeric type \c T1
-   \param  2nd parameter :
-          T2 is the desired output type
+          some Array object, elements are of some numeric type \a T1
+   \param info2
+          \a T2 is the desired output type
 
    \return 
       data_out :
@@ -68,15 +73,15 @@ convert_array(scaleT& scale_factor,
 	      const NumericInfo<T2> info2);
 #endif
 /*!
-
+  \ingroup buildblock
   \brief Converts the \c data_in Array to \c data_out (with elements of different types) such that \c data_in == \c data_out * \c scale_factor
-
-  TODOdoc more 
 
   \par example 
   \code
       convert_array(data_out, scale_factor, data_in);
   \endcode
+
+  \see convert_array(scale_factor, data_in, info2) for more info
 */
 
 template <int num_dimensions, class T1, class T2, class scaleT>
