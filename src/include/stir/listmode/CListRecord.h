@@ -30,7 +30,7 @@ class Bin;
 class ProjDataInfo;
 class Succeeded;
 template <typename coordT> class CartesianCoordinate3D;
-template <typename coordT> class LORInAxialAndNoArcCorrSinogramCoordinates;
+template <typename coordT> class LORAs2Points;
 
 //! Class for storing and using a coincidence event from a list mode file
 /*! \ingroup listmode
@@ -82,9 +82,8 @@ public:
       Implementation is in terms of get_detection_coordinates().
     \see get_detection_coordinates()
     \todo This function might need time info or so for rotating scanners.
-    \todo return value might change depending on the LORCoordinates design choices
   */
-  LORInAxialAndNoArcCorrSinogramCoordinates<float>
+  LORAs2Points<float>
     get_LOR() const;
 
   //! Finds the bin coordinates of this event for some characteristics of the projection data
@@ -111,7 +110,7 @@ public:
 }; /*-coincidence event*/
 
 
-//! A class for storing and using a timing 'event' from a listmode file
+//! A class for storing and using a timing record from a listmode file
 /*! \ingroup listmode
     CListTime is used to provide an interface to the 'timing' events 
     in the list mode stream. Usually, the timing event also contains 
@@ -138,12 +137,12 @@ public:
   virtual Succeeded set_gating(unsigned int) = 0;
 };
 
-//! A class for a general element of a listmode file
+//! A class for a general element of a list mode file
 /*! \ingroup listmode
     This represents either a timing or coincidence event in a list mode
     data stream.
 
-    Some scanners can have different types of 'events'. For example,
+    Some scanners can have more types of records. For example,
     the Quad-HiDAC puts singles information in the
     list mode file. If you need that information,
     you will have to do casting to e.g. CListRecordQHiDAC.
@@ -164,16 +163,6 @@ public:
 
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
-
-  //! \name access to the raw data
-  //@{
-  /*! \warning Use with care! (why do you need it anyway?)
-      These functions exists (only) for allowing CListModeDataFromStream to 
-      read the data.
-  */
-  virtual char const * get_const_data_ptr() const = 0;
-  virtual char * get_data_ptr() = 0;
-  //@}
 
 };
 
