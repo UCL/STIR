@@ -112,6 +112,10 @@ int
 ProjDataInfoCylindrical::
 get_view_mashing_factor() const
 {
+  // KT 10/05/2002 new assert
+  assert(get_scanner_ptr()->get_num_detectors_per_ring() > 0);
+  // KT 10/05/2002 moved assert here from constructor
+  assert(get_scanner_ptr()->get_num_detectors_per_ring() % (2*get_num_views()) == 0);
   // KT 28/11/2001 do not pre-store anymore as set_num_views would invalidate it
   return get_scanner_ptr()->get_num_detectors_per_ring()/2 / get_num_views();
 }
