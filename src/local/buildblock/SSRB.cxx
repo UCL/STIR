@@ -57,10 +57,13 @@ SSRB(const string& output_filename,
     (in_proj_data_info_ptr->clone());
 
   const int out_max_segment_num = 
-    ((max_segment_num_to_process == -1)
-     ? in_projdata.get_max_segment_num()
-     : max_segment_num_to_process
-     )/span;
+    ((max_segment_num_to_process == -1
+      ? in_projdata.get_max_segment_num()
+      : max_segment_num_to_process
+      )-1)/span;
+  if (out_max_segment_num <0)
+    error("SSRB: max_segment_num_to_process  %d is too small. No output segments\n",
+	  max_segment_num_to_process);
 
   out_proj_data_info_ptr->reduce_segment_range(-out_max_segment_num,out_max_segment_num);
   for (int out_segment_num = -out_max_segment_num; 
