@@ -177,7 +177,7 @@ void FilenameTests::run_tests()
   check(strcmp(prepend_directory_name(filename_with_directory, "a"),
          "b:c.v") == 0);
 
-#else defined(__OS_UNIX__)
+#else // defined(__OS_UNIX__)
 
   cerr << "(using Unix filesystem conventions)" << endl;
 
