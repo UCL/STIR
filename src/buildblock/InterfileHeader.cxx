@@ -16,6 +16,8 @@
 */
 
 #include "InterfileHeader.h"
+// for accumulate
+#include <numeric>
 
 START_NAMESPACE_TOMO
 
@@ -496,7 +498,11 @@ int InterfilePSOVHeader::post_processing()
   for (int i=0; i<num_rings_per_segment.size(); i++)
     cerr << num_rings_per_segment[i] << "  ";  cerr << endl;
   cerr << "Total number of planes :" 
+#ifndef TOMO_NO_NAMESPACES
+       << std::accumulate(num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
+#else
        << accumulate(num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
+#endif
        << endl;
 
 
