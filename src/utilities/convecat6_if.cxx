@@ -13,6 +13,19 @@
   $Revision$
   $Date$
 
+  Usage: 
+  <pre>convecat6_if [output_file_name_without_extension cti_data_file_name]
+  </pre>
+  The programme asks if all frames should be written or not. If so, all 
+  sinograms/images are converted for a fixed 'data' number. For each data set,
+  a suffix is added to the output_filename of the form "_f#g#b#d#" where the # 
+  are replaced by the corresponding nunmber of the frame, gate, bed, data.
+
+  \warning CTI ECAT files seem to have a peculiarity that frames and gates are 
+  numbered from 1, while bed positions are numbered from 0. Similarly, the number
+  of bed positions in the main header seems to be 1 less than the actual number
+  present. This is at least the case for single bed studies. If this is not true
+  for multi-bed studies, the code would have to be adapted.
   \warning Most of the data in the ECAT 6 headers is ignored (except dimensions)
   \warning Data are scaled using the subheader.scale_factor * subheader.loss_correction_fctr
   (unless the loss correction factor is < 0, in which case it is assumed to be 1).
@@ -36,6 +49,7 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
+using std::cout;
 using std::endl;
 #endif
 
@@ -46,44 +60,48 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char *argv[])
 {
-    char cti_name[max_filename_length], out_name[max_filename_length];
-    FILE *cti_fptr;
+  char cti_name[max_filename_length], out_name[max_filename_length];
+  FILE *cti_fptr;
  
-    if(argc==3)
-      { 
-	strcpy(cti_name, argv[2]);
-	strcpy(out_name, argv[1]);
-      }
-    else 
+  if(argc==3)
+    { 
+      strcpy(cti_name, argv[2]);
+      strcpy(out_name, argv[1]);
+    }
+  else 
     {
-        cerr<<"\nConversion from ECAT6 CTI data to interfile.\n";
-        cerr<<"Usage: convecat6_if [output_file_name cti_data_file_name]\n"<<endl;
-	if (argc!=1)
-	  exit(EXIT_FAILURE);
+      cerr<<"\nConversion from ECAT6 CTI data to interfile.\n";
+      cerr<<"Usage: convecat6_if [output_file_name_without_extension cti_data_file_name]\n"<<endl;
+      if (argc!=1)
+	exit(EXIT_FAILURE);
 
-	ask_filename_with_extension(out_name,"Name of the output file? (.hv/.hs and .v/.s will be added)","");    
-        ask_filename_with_extension(cti_name,"Name of the input data file? ",".scn");
+      ask_filename_with_extension(out_name,"Name of the output file? (.hv/.hs and .v/.s will be added)","");    
+      ask_filename_with_extension(cti_name,"Name of the input data file? ",".scn");
         
     }
 
 
-    // open input file, read main header
-    cti_fptr=fopen(cti_name, "rb"); 
-    if(!cti_fptr) {
-        error("\nError opening input file: %s\n",cti_name);
-    }
-    Main_header mhead;
-    if(cti_read_main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) {
-        error("\nUnable to read main header in file: %s\n",cti_name);
-    }
+  // open input file, read main header
+  cti_fptr=fopen(cti_name, "rb"); 
+  if(!cti_fptr) {
+    error("\nError opening input file: %s\n",cti_name);
+  }
+  Main_header mhead;
+  if(cti_read_main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) {
+    error("\nUnable to read main header in file: %s\n",cti_name);
+  }
+
+  // funnily enough, num_bed_pos seems to be offset with 1
+  // (That's to say, in a singled bed study, num_bed_pos==0) 
+  // TODO maybe not true for multi-bed studies
 #ifndef STIR_NO_NAMESPACES
-             // VC needs this std::
+  // VC needs this std::
   const int num_frames = std::max(static_cast<int>( mhead.num_frames),1);
-  const int num_bed_poss = static_cast<int>( mhead.num_bed_pos);
+  const int num_bed_poss = std::max(static_cast<int>( mhead.num_bed_pos) + 1,1);
   const int num_gates = std::max(static_cast<int>( mhead.num_gates),1);
 #else
   const int num_frames = max(static_cast<int>( mhead.num_frames),1);
-  const int num_bed_poss = static_cast<int>( mhead.num_bed_pos);
+  const int num_bed_poss = std::max(static_cast<int>( mhead.num_bed_pos) + 1,1);
   const int num_gates = max(static_cast<int>( mhead.num_gates),1);
 #endif
 
@@ -99,19 +117,24 @@ main(int argc, char *argv[])
   
   if (ask("Attempt all data-sets (Y) or single data-set (N)", true))
     {
-      data_num=ask_num("Data number ? ",0,8, 0);      
+      data_num=ask_num("Data number ? ",0,8, 0);
+
+      cout << "Processing frames " << min_frame_num << '-' << max_frame_num
+	   << ", gates " <<  min_gate_num << '-' << max_gate_num
+	   << ", bed positions " << min_bed_num << '-' << max_bed_num
+	   << endl;
     }
   else
     {
       do_all = false;
       min_frame_num= max_frame_num=
-	ask_num("Frame number ? ", 1, num_frames,1);
+	ask_num("Frame number ? ", min_frame_num, max_frame_num, min_frame_num);
       min_bed_num= max_bed_num=
-	ask_num("Bed number ? ", 0,num_bed_poss, 0);
+	ask_num("Bed number ? ", min_bed_num, max_bed_num, min_bed_num);
       min_gate_num= max_gate_num=
-	ask_num("Gate number ? ", 1, num_gates, 1);
+	ask_num("Gate number ? ", min_gate_num, max_gate_num, min_gate_num);
       data_num=
-	ask_num("Data number ? ",0,8, 0);
+	ask_num("Data number ? ",0,7, 0);
     }
         
   switch(mhead.file_type)
@@ -127,7 +150,7 @@ main(int argc, char *argv[])
 		if (do_all)
 		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
 			  frame_num, gate_num, bed_num, data_num);
-		cerr << "Writing " << new_out_filename << endl;
+		cout << "Writing " << new_out_filename << endl;
 		shared_ptr<VoxelsOnCartesianGrid<float> > image_ptr =
 		  ECAT6_to_VoxelsOnCartesianGrid(frame_num, gate_num, data_num, bed_num,
 						 cti_fptr, mhead);
@@ -141,7 +164,7 @@ main(int argc, char *argv[])
     case matNormFile:
       {            
         const int max_ring_diff= 
-           ask_num("Max ring diff to store (-1 == num_rings-1)",-1,100,-1);
+	  ask_num("Max ring diff to store (-1 == num_rings-1)",-1,100,-1);
 
         const bool arccorrected = 
 	  ask("Consider the data to be arc-corrected?",false);
@@ -155,7 +178,7 @@ main(int argc, char *argv[])
 		if (do_all)
 		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
 			  frame_num, gate_num, bed_num, data_num);
-		cerr << "Writing " << new_out_filename << endl;
+		cout << "Writing " << new_out_filename << endl;
 		ECAT6_to_PDFS(frame_num, gate_num, data_num, bed_num,
 			      max_ring_diff, arccorrected,
 			      new_out_filename, cti_fptr, mhead);
@@ -168,7 +191,7 @@ main(int argc, char *argv[])
         error("\nSupporting only image, scan, atten or norm file type at the moment. Sorry.\n");            
       }
     }    
-    fclose(cti_fptr);
+  fclose(cti_fptr);
     
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
