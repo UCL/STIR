@@ -29,6 +29,7 @@ using std::string;
 using std::cerr;
 using std::min;
 using std::max;
+using std::endl;
 #endif
 
 USING_NAMESPACE_STIR
@@ -45,11 +46,12 @@ int main(int argc, char **argv)
 	   << "be added (they will be set to 0)\n";
       exit(EXIT_FAILURE);
     }
+ 
   const string  output_filename = argv[1];
   shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);  
   const int num_axial_poss_to_remove_at_each_side =  atoi(argv[3]);
   int max_segment_num_to_process = argc <=4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[4]);
-
+ 
   // construct new proj_data_info_ptr for output data
   ProjDataInfo * proj_data_info_ptr =
     in_projdata_ptr->get_proj_data_info_ptr()->clone();
@@ -66,6 +68,7 @@ int main(int argc, char **argv)
 	error("%s: there are not enough axial positions even in segment 0\n",
 		argv[0]);
       }
+   
 
     proj_data_info_ptr->reduce_segment_range(-max_segment_num_to_process,
 					     max_segment_num_to_process);
@@ -79,10 +82,12 @@ int main(int argc, char **argv)
       new_num_axial_poss_per_segment[segment_num] =
 	in_projdata_ptr->get_num_axial_poss(segment_num) - 
 	2*num_axial_poss_to_remove_at_each_side;
+	
 
     proj_data_info_ptr->set_num_axial_poss_per_segment(new_num_axial_poss_per_segment);
+     
   }
-
+ 
   ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
 
   Succeeded succes = Succeeded::yes;
@@ -94,12 +99,22 @@ int main(int argc, char **argv)
 	out_projdata.get_empty_segment_by_sinogram(segment_num);
       const SegmentBySinogram<float> in_segment = 
         in_projdata_ptr->get_segment_by_sinogram( segment_num);
-      for (int ax_pos_num=max(out_segment.get_min_axial_pos_num(), in_segment.get_min_axial_pos_num());
-           ax_pos_num<=min(out_segment.get_max_axial_pos_num(), in_segment.get_max_axial_pos_num());
-           ++ax_pos_num)
-        out_segment[ax_pos_num] = in_segment[ax_pos_num];
-      if (out_projdata.set_segment(out_segment) == Succeeded::no)
+
+      // 17/02/2002 SM corrected such that sinograms from both sides are removed not only from one side
+      for (int ax_pos_num=(in_segment.get_min_axial_pos_num()+num_axial_poss_to_remove_at_each_side);
+           ax_pos_num<=in_segment.get_max_axial_pos_num()-num_axial_poss_to_remove_at_each_side;
+       ++ax_pos_num)
+       {
+	 cerr << ax_pos_num << "  ";
+        out_segment[ax_pos_num-num_axial_poss_to_remove_at_each_side] = in_segment[ax_pos_num];
+	
+       }
+       if (out_projdata.set_segment(out_segment) == Succeeded::no)
              succes = Succeeded::no;
+       cerr << endl;
+
+      
+	 
     }
 
     return succes == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
