@@ -422,4 +422,16 @@ compose (const RigidObject3DTransformation& apply_last,
  return RigidObject3DTransformation(apply_first.get_quaternion()*apply_last.get_quaternion(),
 				     apply_first.get_translation()+trans);
 }
+
+std::ostream&
+operator<<(std::ostream& out,
+	   const RigidObject3DTransformation& rigid_object_transformation)
+{
+  out << '{' 
+      << rigid_object_transformation.get_quaternion()
+      << ','
+      << rigid_object_transformation.get_translation()
+      << "}";
+  return out;
+}
 END_NAMESPACE_STIR

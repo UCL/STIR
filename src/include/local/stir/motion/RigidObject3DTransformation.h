@@ -1,9 +1,9 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
   \file
-  \ingroup local_buildblock
+  \ingroup motion
 
   \brief Declaration of class RigidObject3DTransformation
 
@@ -76,6 +76,14 @@ private:
   friend RigidObject3DTransformation compose ( const RigidObject3DTransformation& apply_last,
 					       const RigidObject3DTransformation& apply_first);
 };
+
+//! Output to stream
+/*! \ingroup motion
+    Will be written as \verbatim { quaternion, translation } \endverbatim
+*/
+std::ostream&
+operator<<(std::ostream& out,
+	   const RigidObject3DTransformation& rigid_object_transformation);
 
 END_NAMESPACE_STIR
 
