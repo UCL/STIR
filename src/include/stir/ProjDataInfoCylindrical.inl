@@ -49,8 +49,7 @@ float
 ProjDataInfoCylindrical::get_t(const Bin& bin) const
 {
   return 
-    get_m(bin)/
-    sqrt(1+square(get_tantheta(bin)));
+    get_m(bin)*get_costheta(bin);
 }
 
 float
@@ -67,6 +66,12 @@ float
 ProjDataInfoCylindrical::get_sampling_in_m(const Bin& bin) const
 {
   return get_axial_sampling(bin.segment_num());
+}
+
+float 
+ProjDataInfoCylindrical::get_sampling_in_t(const Bin& bin) const
+{
+  return get_axial_sampling(bin.segment_num())*get_costheta(bin);
 }
 
 int 
