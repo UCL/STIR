@@ -7,6 +7,7 @@
 #ifndef RAND
 #include <boost/random.hpp>
 #endif
+#include "tomo/round.h"
 
 #ifndef TOMO_NO_NAMESPACES
 using std::iostream;
@@ -28,34 +29,45 @@ USING_NAMESPACE_TOMO
   typedef boost::mt19937 base_generator_type;
   // initialize by reproducible seed
   static base_generator_type generator(boost::uint32_t(42));
-
   boost::uniform_01<base_generator_type> random01(generator);
 #else
+#error can not do normal distribution
+
 inline double random01() { return static_cast<double>(rand()) / RAND_MAX; }
 #endif
 
 int generate_poisson_random(const float mu)
 {  
-
-  double u = random01();
-  
-  // prevent problems if n growing too large (or even to infinity) 
-  // when u is very close to 1
-  if (u>1-1.E-6)
-    u = 1-1.E-6;
-  
-  const double upper = exp(mu)*u;
-  double accum = 1.;
-  double term = 1.; 
-  int n = 1;
-  
-  while(accum <upper)
+  // check if mu is large. If so, use the normal distribution
+  // note: the threshold must be such that exp(threshold) is still a floating point number
+  if (mu > 60.F)
   {
-    accum += (term *= mu/n); 
-    n++;
+    boost::normal_distribution<base_generator_type> randomnormal(generator, mu, sqrt(mu));
+    const double random = randomnormal();
+    return random<0 ? 0 : Tomo::round(random);
   }
+  else
+  {
+    double u = random01();
+  
+    // prevent problems if n growing too large (or even to infinity) 
+    // when u is very close to 1
+    if (u>1-1.E-6)
+      u = 1-1.E-6;
+  
+    const double upper = exp(mu)*u;
+    double accum = 1.;
+    double term = 1.; 
+    int n = 1;
+  
+    while(accum <upper)
+    {
+      accum += (term *= mu/n); 
+      n++;
+    }
     
-  return (n - 1);
+    return (n - 1);
+  }
 }
 
 
