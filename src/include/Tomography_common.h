@@ -33,6 +33,10 @@
 
  - includes boost/config.hpp
 
+ - #defines TOMO_NO_COVARIANT_RETURN_TYPES when the compiler does not
+   support virtual functions of a derived class differing only in the return
+   type.
+   
  - preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
    use as #ifdef  __OS_WIN__ ... #elif ... #endif
@@ -89,11 +93,27 @@ In addition, the following are defined in the Tomography namespace
 
 #include "boost/config.hpp"
 
+//*************** preprocessor definitions for old compilers
+
+//**** namespace support
+
 #if defined __GNUC__
 # if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
 #  define TOMO_NO_NAMESPACES
 # endif
 #endif
+
+//**** TOMO_NO_COVARIANT_RETURN_TYPES
+/* Define when your compiler does not handle the following:
+   class A { virtual A* f();}
+   class B:A { virtual B* f(); }
+*/
+#ifdef _MSC_VER
+#define TOMO_NO_COVARIANT_RETURN_TYPES
+#endif
+
+
+//*************** namespace macros
 
 #ifndef TOMO_NO_NAMESPACES
 //TODO remove
@@ -118,7 +138,8 @@ In addition, the following are defined in the Tomography namespace
 # define USING_NAMESPACE_STD 
 #endif
 
-// define __OS_xxx__
+
+//*************** define __OS_xxx__
 
 #if !defined(__OS_WIN__) && !defined(__OS_MAC__) && !defined(__OS_VAX__) && !defined(__OS_UNIX__) 
 // if none of these macros is defined externally, we attempt to guess, defaulting to UNIX
@@ -162,6 +183,7 @@ In addition, the following are defined in the Tomography namespace
 
 #endif // !defined(__OS_xxx_)
 
+//*************** min, max
 // STL should have min,max in <algorithm>, 
 // but vanilla VC++ has a conflict between std::min and some preprocessor defs
 #if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
@@ -183,6 +205,9 @@ inline const T& max(const T& a, const T& b)
 
 }
 #endif // min,max defs
+
+
+//*************** !=, >, <= and >= 
 
 #if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
 // general definitions of operator !=, >, <= and >= in terms of == and <
@@ -209,7 +234,7 @@ inline bool operator>=(const T& x, const T& y) {
 
 #endif // !=,>,<=,>=
 
-// overload std::copy for built-in types
+//*************** overload std::copy for built-in types
 
 #include <algorithm>
 
@@ -278,9 +303,11 @@ copy(const bool * first, const bool * last, bool * to)
 END_NAMESPACE_STD
 
 
+//*************** strstream stuff
 
-//  some trickery to make strstreams work most of the time. 
+// some trickery to make strstreams work most of the time. 
 // gcc 2.95.2 has still only the old strstream libraries.
+// TODO These macros should really work the other way around: old in terms of new
 #if defined(_MSC_VER) || defined(__MSL__)
 #  include <sstream>
 #  define strstream stringstream
@@ -289,6 +316,8 @@ END_NAMESPACE_STD
 #else
 #  include <strstream>
 #endif
+
+//*************** for() scope trick
 
 /* ANSI C++ (re)defines the scope of variables declared in a for() statement.
    Example: the 'i' variable has scope only within the for statement.
@@ -306,6 +335,8 @@ END_NAMESPACE_STD
 #	endif
 #endif
 
+//*************** assert
+
 #ifndef TOMO_ASSERT
 #  include <cassert>
 #else
@@ -322,20 +353,26 @@ END_NAMESPACE_STD
 #  endif
 #endif // TOMO_ASSERT
 
+//*************** 
 START_NAMESPACE_TOMO
 
+//TODO remove
 typedef float Real;
 
+//! \f$\pi\f$
 const double _PI = 3.14159265358979323846264338327950288419716939937510;
 
+//! Print error with format string a la \c printf and abort
 void error(char *s, ...);
 
+//! returns the square of a number, templated.
 template <class NUMBER> 
 inline NUMBER square(const NUMBER &x) { return x*x; }
 
 #ifndef _MSC_VER
 
-inline char *strupr(char * const str)
+//! make string uppercase
+inline char *strupr(const char * const str)
 {
   for (char *a = str; *a; a++)
   {
