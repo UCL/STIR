@@ -53,12 +53,18 @@ endif
 
 .KEEP_STATE:
 
-#TODO .o files get deleted anyway
-.PRECIOUS = ${DEST}bcktest.o ${DEST}fwdtest.o ${DEST}zoomtest.o \
+#specify files which should not be deleted at the end of a make
+#KT 05/10/98 replaced = sign with : in next line, works now
+.PRECIOUS: ${DEST}bcktest.o ${DEST}fwdtest.o ${DEST}zoomtest.o \
     $(LIB_DISPLAY) $(LIB_BUILDBLOCK) $(LIB_RECON_BUILDINGBLOCK)
 
+#KT 05/10/98 added createdir and FORCE to list of targets
+# So, the corresponding commands will always be executed 
+# (when doing 'make' or 'make all')
+all: createdir FORCE ${DEST}bcktest ${DEST}fwdtest ${DEST}zoomtest
 
-all: ${DEST}bcktest ${DEST}fwdtest ${DEST}zoomtest
+createdir: 
+	-mkdir -p $(DEST)
 
 
 #zoomtest:  zoomtest.o $(LIB_RECON_BUILDINGBLOCK)
@@ -66,7 +72,7 @@ all: ${DEST}bcktest ${DEST}fwdtest ${DEST}zoomtest
 
 
 
-#TODO doesn't seem to work when the libraries do not exist yet
+
 $(LIB_RECON_BUILDINGBLOCK): FORCE
 	cd $(WORKSPACE)/recon_buildblock; $(MAKE);
 
