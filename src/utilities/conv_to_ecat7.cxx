@@ -19,6 +19,7 @@ $Revision$
     See STIR/LICENSE.txt for details
 */
 
+#ifdef HAVE_LLN_MATRIX
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
@@ -211,4 +212,6 @@ int main(int argc, char *argv[])
   }  
 }
 
+
+#endif
 
