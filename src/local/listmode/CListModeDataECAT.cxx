@@ -59,7 +59,8 @@ CListModeDataECAT(const string& listmode_filename_prefix)
       }
     else
       {
-	singles_file.read(reinterpret_cast<char *>(&singles_main_header), 
+	char buffer[sizeof(Main_header)];
+	singles_file.read(buffer,
 			  sizeof(singles_main_header));
 	if (!singles_file)
 	  {
@@ -68,6 +69,7 @@ CListModeDataECAT(const string& listmode_filename_prefix)
 	  }
 	else
 	  {
+	    unmap_main_header(buffer, &singles_main_header);
 	    ecat::ecat7::find_scanner(scanner_ptr, singles_main_header);
 	    
 	    time_t sec_time = singles_main_header.scan_start_time;
