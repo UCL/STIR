@@ -9,8 +9,8 @@
   \author Larry Byars
   \author Kris Thielemans (conversions from/to VAX floats, longs)
   \author PARAPET project
-  \version $Date$
-  \date $Revision$
+  \version $Revision$
+  \date $Date$
 
   \warning This file relies on preprocessor defines to find out if it 
   has to byteswap. This needs to be changed. (TODO). It does check this
@@ -41,6 +41,8 @@
 
 
 START_NAMESPACE_TOMO
+
+
 int get_scanheaders (FILE *fptr, long matnum, Main_header *mhead, 
                      Scan_subheader *shead, ScanInfoRec *scanParams)
 {
@@ -84,7 +86,7 @@ Using value from subheader\n", mhead->data_type, shead->data_type);
     return EXIT_SUCCESS;
 }
 
-int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
+int get_scandata (FILE *fptr, char *scan, ScanInfoRec *scanParams)
 {
     int status;
 
@@ -92,8 +94,12 @@ int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
     if (!scan) return EXIT_FAILURE;
 
     status= cti_rblk(fptr, scanParams->strtblk, (char *) scan, scanParams->nblks);
+    if (status != EXIT_SUCCESS) 
+      return EXIT_FAILURE;
+    return 
+      file_data_to_host(scan, scanParams->nblks,scanParams->data_type);
+#if 0
 
-    if (status == EXIT_SUCCESS) {
 #ifdef _SWAPEM_ // we have to swap bytes in order to read the ints
         if (scanParams->data_type == matI2Data)
             swab ((char *) scan, (char *) scan, scanParams->nblks * MatBLKSIZE);
@@ -112,8 +118,88 @@ int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
         }
 
 #endif
+#endif
+}
+
+
+int get_attnheaders (FILE *fptr, long matnum, Main_header *mhead, 
+                     Attn_subheader *shead, ScanInfoRec *attnParams)
+{
+    int status;
+    MatDir entry;
+
+        // check the header
+    status = cti_read_main_header (fptr, mhead);
+    if (status != EXIT_SUCCESS) return EXIT_FAILURE;
+    
+    if (mhead->file_type != matAttenFile) {
+	printf ("\n- file is not a attn file, type = %d\n", mhead->file_type);
+	dump_main_header (0, mhead);
+	return EXIT_FAILURE;
     }
-    return status;
+
+        // look up matnum in attn file
+    if (!cti_lookup (fptr, matnum, &entry)) {
+	printf ("\n- specified matrix not in attn file\n");
+	dump_main_header (0, mhead);
+	return EXIT_FAILURE;
+    }
+
+        // read attn subheader
+    status = cti_read_attn_subheader (fptr, entry.strtblk, shead);
+    if (status != EXIT_SUCCESS) {
+	printf ("\n- error reading attn subheader\n");
+	return EXIT_FAILURE;
+    }
+
+    attnParams->strtblk = entry.strtblk + 1;
+    attnParams->nblks = entry.endblk - entry.strtblk;
+    attnParams->nprojs = shead->dimension_1;
+    attnParams->nviews = shead->dimension_2;
+    attnParams->data_type = shead->data_type;
+    if (shead->data_type != mhead->data_type)
+        printf("\nget_attnheader warning: \n\
+data types differ between main header (%d) and subheader (%d)\n\
+Using value from subheader\n", mhead->data_type, shead->data_type);
+
+    return EXIT_SUCCESS;
+}
+
+int get_attndata (FILE *fptr, char *attn, ScanInfoRec *attnParams)
+{
+    int status;
+
+        // read data from attn file
+    if (!attn) return EXIT_FAILURE;
+
+    status= cti_rblk(fptr, attnParams->strtblk, (char *) attn, attnParams->nblks);
+
+    if (status != EXIT_SUCCESS) 
+      return EXIT_FAILURE;
+    return 
+      file_data_to_host(attn, attnParams->nblks,attnParams->data_type);
+#if 0
+
+#ifdef _SWAPEM_ // we have to swap bytes in order to read the ints
+        if (attnParams->data_type == matI2Data)
+            swab ((char *) attn, (char *) attn, attnParams->nblks * MatBLKSIZE);
+        else if (attnParams->data_type != matSunShort) {
+            printf("\nget_attndata: unsupported data_type %d\n", 
+                   attnParams->data_type);
+            return(EXIT_FAILURE);
+        }
+#else
+        if (attnParams->data_type == matSunShort)
+            swab ((char *) attn, (char *) attn, attnParams->nblks * MatBLKSIZE);
+        else if (attnParams->data_type != matI2Data) {
+            printf("\nget_attndata: unsupported data_type %d\n", 
+                   attnParams->data_type);
+            return(EXIT_FAILURE);
+        }
+
+#endif
+#endif    
+    return EXIT_SUCCESS;
 }
 
 long cti_numcod (int frame, int plane, int gate, int data, int bed)
@@ -180,10 +266,20 @@ int cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
     if (!fptr || !bufr) return EXIT_FAILURE;
    
     err = fseek (fptr, (long) (blkno - 1) * MatBLKSIZE, 0);
-    if (err) return (EXIT_FAILURE);
+    if (err) 
+    {
+      // KT 18/08/2000 more error diagnostics    
+      perror("cti_rblk: error in fseek");
+      return (EXIT_FAILURE);
+    }
    
     n = fread (bufr, sizeof (char), nblks * MatBLKSIZE, fptr);
-    if (n != nblks * MatBLKSIZE) return (EXIT_FAILURE);
+    if (n != nblks * MatBLKSIZE) 
+    {
+      // KT 18/08/2000 more error diagnostics
+      perror("cti_rblk: error in fread");
+      return (EXIT_FAILURE);
+    }
 
     return EXIT_SUCCESS;
 }
@@ -342,6 +438,33 @@ int cti_read_scan_subheader (FILE *fptr, int blknum, Scan_subheader *h)
     return EXIT_SUCCESS;
 }
 
+
+int cti_read_attn_subheader(FILE* fptr, int blknum, Attn_subheader *header)
+{
+  short int bufr[256];
+  int  err;
+  
+  err = cti_rblk( fptr, blknum, bufr, 1);
+  if (err) return(err);
+  
+#ifdef _SWAPEM_ // we have to swap bytes in order to read the ints
+  swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
+#endif
+  
+  header->data_type = bufr[63];
+  header->attenuation_type = bufr[64];
+  header->dimension_1 = bufr[66];
+  header->dimension_2 = bufr[67];
+  header->scale_factor = get_vax_float((unsigned short *)bufr, 91);
+  header->x_origin = get_vax_float((unsigned short *)bufr, 93);
+  header->y_origin = get_vax_float((unsigned short *)bufr, 95);
+  header->x_radius = get_vax_float((unsigned short *)bufr, 97);
+  header->y_radius = get_vax_float((unsigned short *)bufr, 99);
+  header->tilt_angle = get_vax_float((unsigned short *)bufr, 101);
+  header->attenuation_coeff = get_vax_float((unsigned short *)bufr, 103);
+  header->sample_distance = get_vax_float((unsigned short *)bufr, 105);
+  return EXIT_SUCCESS;
+}
 int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
 {
     int status;
@@ -591,12 +714,7 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
     int blk, status;
     int nfree, nxtblk, prvblk, nused, matnbr, strtblk, endblk, matstat;
     long *dirbufr;
-
-#ifdef _SWAPEM_ // set up byte buffer
-    char *bytebufr;
-    bytebufr = (char *) malloc (MatBLKSIZE);
-    if (!bytebufr) return 0;
-#endif
+    // KT 18/08/2000 do not use temporary bytebufr anymore for SWAPEM
 
         // set up buffer for directory block
     
@@ -607,16 +725,10 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
     status = EXIT_SUCCESS;
     while (status == EXIT_SUCCESS) { // look through the blocks in the file
             // read a block and examine the matrix numbers in it
+	status = cti_rblk (fptr, blk, dirbufr, 1);
+	if (status != EXIT_SUCCESS) break;
 #ifdef _SWAPEM_   // read into byte buffer and swap
-	status = cti_rblk (fptr, blk, bytebufr, 1);
-	if (status != EXIT_SUCCESS) break;
-        swab (bytebufr, (char *) dirbufr, MatBLKSIZE);
-#else   // read into directory buffer */
-	status = cti_rblk (fptr, blk, (char *) dirbufr, 1);
-	if (status != EXIT_SUCCESS) break;
-#endif
-	
-#ifdef _SWAPEM_ // swap words
+        swab (dirbufr, (char *) dirbufr, MatBLKSIZE);
         swaw ((short *) dirbufr, (short *) dirbufr, MatBLKSIZE / sizeof (short));
 #endif
 	
@@ -639,9 +751,6 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
 		entry->endblk  = endblk;
 		entry->matstat = matstat;
 		free (dirbufr);
-#ifdef _SWAPEM_
-		free (bytebufr);
-#endif
 		return 1;     // we were successful
 	    }
         }
@@ -1412,6 +1521,69 @@ Image_subheader img_zero_fill()
     fill_string(v_ihead.annotation, 40);
 
     return(v_ihead);
+}
+
+
+/* adapted by KT from Louvain la Neuve matrix package */
+int file_data_to_host(char *dptr, int nblks, int dtype)
+{
+  int i, j;
+  char *tmp = NULL;
+  
+  
+  if ((tmp = (char *)malloc(512)) == NULL) return EXIT_FAILURE;
+  switch(dtype)
+  {
+  case matByteData:
+    break;
+  case matI2Data:
+    if (ByteOrder::get_native_order() == ByteOrder::big_endian) 
+      for (i=0, j=0; i<nblks; i++, j+=512) {
+        swab( dptr+j, tmp, 512);
+        memcpy(dptr+j, tmp, 512);
+      }
+      break;
+  case matI4Data:
+    if (ByteOrder::get_native_order() == ByteOrder::big_endian) 
+      for (i=0, j=0; i<nblks; i++, j+=512) {
+        swab(dptr+j, tmp, 512);
+        swaw((short*)tmp, (short*)(dptr+j), 256);
+      }
+      break;
+  case matVAXR4Data:
+    if (ByteOrder::get_native_order() == ByteOrder::big_endian) 
+      for (i=0, j=0; i<nblks; i++, j+=512) {
+        swab( dptr+j, tmp, 512);
+      }
+      for (i=0; i<nblks*128; i++)
+        ((float *)dptr)[i] = get_vax_float( (unsigned short *)dptr, i*2) ;
+      break;
+  case matSunShort:
+    if (ByteOrder::get_native_order() != ByteOrder::big_endian) 
+      for (i=0, j=0; i<nblks; i++, j+=512) {
+        swab(dptr+j, tmp, 512);
+        memcpy(dptr+j, tmp, 512);
+      }
+      break;
+  case matSunLong:
+  case matStdR4:
+    if (ByteOrder::get_native_order() != ByteOrder::big_endian) 
+      for (i=0, j=0; i<nblks; i++, j+=512) {
+        swab(dptr+j, tmp, 512);
+        swaw((short*)tmp, (short*)(dptr+j), 256);
+      }
+      break;
+  default:	/* something else...treat as Vax I*2 */
+    if (ByteOrder::get_native_order() == ByteOrder::big_endian) 
+      
+      for (i=0, j=0; i<nblks; i++, j+=512) {
+        swab(dptr+j, tmp, 512);
+        memcpy(dptr+j, tmp, 512);
+      }
+      break;
+  }
+  free(tmp);
+	return EXIT_SUCCESS;
 }
 
 END_NAMESPACE_TOMO
