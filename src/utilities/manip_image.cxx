@@ -12,8 +12,10 @@
 
 
 #include "display.h"
-// KT 13/10/98 include interfile
+// KT 13/10/98 include interfile 
 #include "interfile.h"
+// KT 23/10/98 use ask_* version all over the place
+#include "utilities.h"
 
 
 #define ZERO_TOL 0.000001
@@ -150,23 +152,24 @@ main(int argc, char *argv[]){
 
 
   do{
-    cerr<<endl<<"1. Visual"<<endl;
-    cerr<<"2. Data total"<<endl;
-    cerr<<"3. Data plane-wise"<<endl;
-    cerr<<"4. Min/Max for plane"<<endl;
-    cerr<<"5. Show halo"<<endl;
-    //    cerr<<"6. Central profile "<<endl;
-    cerr<<"6. Clean rim "<<endl;
-    cerr<<"7. Get plane"<<endl;
-    cerr<<"8. Get row"<<endl;
-    cerr<<"9. Counts"<<endl;
-    cerr<<"10. Quit"<<endl<<endl;
-    cerr<<"Input selection: ";
-    cin>>choice;
-    cerr<<endl;
+    // KT 23/10/98 use ask_num
+    choice = ask_num("\n\
+    0. Quit\n\
+    1. Visual\n\
+    2. Data total\n\
+    3. Data plane-wise\n\
+    4. Min/Max for plane\n\
+    5. Show halo\n\
+    6. Clean rim \n\
+    7. Get plane\n\
+    8. Get row\n\
+    9. Counts\n
+    Selection ",0,9,1);
 
 
     switch(choice){
+    case 0:
+      break;
 
     case 1:
       {  
@@ -207,11 +210,9 @@ main(int argc, char *argv[]){
 	plane=1;
 	
 	while(plane>0 && plane <=ze-zs+1 ){
-	  cerr<<endl<<"\nInput plane # (0 to exit):  ";
-	  cin>>plane;
-	  cerr<<endl<<endl;
+	  plane = ask_num("Input plane # (0 to exit)", 0, ze-zs+1, zs);
 	  
-	  if(!(plane>0 && plane <=ze-zs+1 )) break;	  	 
+	  if(plane==0) break;	  	 
 	  
 	  for (int y=ys; y <= ye; y++)
 	    for (int x=xs; x<= xe; x++){
@@ -228,12 +229,12 @@ main(int argc, char *argv[]){
 	plane=1;
 	
 	while(plane>0 && plane <=ze-zs+1 ){
-	  cerr<<endl<<"\nInput plane # (0 to exit):  ";
-	  cin>>plane;
-	  cerr<<endl<<endl;
+	  plane = ask_num("Input plane # (0 to exit)", 0, ze-zs+1, zs);
 	  
-	  if(!(plane>0 && plane <=ze-zs+1 )) break;
-	  cerr << "Min and Max in plane " << input_image[zs+plane-1].find_min() 
+	  if(plane==0) break;	  	 
+
+	  cerr << "Min and Max in plane " 
+	       << input_image[zs+plane-1].find_min() 
 	       << " " << input_image[zs+plane-1].find_max() << endl;
 	  
 	}
@@ -265,18 +266,14 @@ main(int argc, char *argv[]){
        break;
      }
 
- case 9:
-   {
-
-     cerr<<endl<<"The number of counts is: "<<input_image.sum()<<endl;
-
-      break;
-   }
-    case 10:
-      break;
-    }
+    case 9:
+      {	
+	cerr<<endl<<"The number of counts is: "<<input_image.sum()<<endl;      
+	break;
+      }
+    }    
   
-  }while(!(choice==10));
+  }while(!(choice==0));
 
   return 0;
 
@@ -330,7 +327,8 @@ void display_halo(const PETImageOfVolume& input_image){
 
 void clean_rim(PETImageOfVolume& input_image){
 
-  int zs,ys,xs, ze,ye,xe,plane;
+  // KT 23/10/98 removed plane as not used
+  int zs,ys,xs, ze,ye,xe;
 
   zs=input_image.get_min_z();
   ys=input_image.get_min_y();
@@ -358,13 +356,12 @@ void clean_rim(PETImageOfVolume& input_image){
 
       }
 
-  //MJ 07/09/98 added output feature
-
-  if(ask_num("Write trimmed image to file ? (0: No, 1: Yes)",0,1,0)){
-    char outfile[200];
-    cout << endl << "Output filename (without extension) : ";
-    cin >> outfile;
-    write_basic_interfile( outfile, input_image);
+  if(ask("Write trimmed image to file ?",false)){
+    char outfile[max_filename_length];
+    ask_filename_with_extension(outfile, 
+				"Output filename (without extension) ",
+				"");
+    write_basic_interfile(outfile, input_image);
 
   }
 
@@ -391,13 +388,9 @@ void get_plane(PETImageOfVolume& input_image){
 
   int plane=ask_num("Which plane?",1,ze-zs+1,(int)zm-zs+1);
 
-  cerr<<endl<<"Output to what file:  ";
-  cin>>filename;
-  cerr<<endl;
-
-  ofstream profile(filename);
-      if (!profile)
-      { cerr << "Couldn't open " << filename; }
+  ofstream profile;
+  ask_filename_and_open(profile,  "Output filename ",
+			".prof", ios::out); 
 
   for (int y=ys; y<= ye; y++)
     for (int x=xs; x<= xe; x++)
@@ -424,13 +417,9 @@ void get_plane_row(PETImageOfVolume& input_image){
   float xm=(xs+xe)/2.;
   
 
-  cerr<<endl<<"Output to what file:  ";
-  cin>>filename;
-  cerr<<endl;
-
-  ofstream profile(filename);
-  if (!profile)
-    { cerr << "Couldn't open " << filename; return; }
+  ofstream profile;
+  ask_filename_and_open(profile,  "Output filename ",
+			".prof", ios::out); 
 
   int axdir=ask_num("Which axis direction (z=0,y=1,x=2)?",0,2,2);
 
