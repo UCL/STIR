@@ -46,8 +46,9 @@ class BackProjectorByBin :
 public:
 
   //! Default constructor calls reset_timers()
- inline
-   BackProjectorByBin();
+  BackProjectorByBin();
+
+  virtual ~BackProjectorByBin();
 
   //! Stores all necessary geometric info
  /*! 
@@ -72,30 +73,21 @@ public:
 
   /*! \brief projects the viewgrams into the volume
    it adds to the data already present in the volume.*/
-  inline
-    void back_project(DiscretisedDensity<3,float>&,
-                      const RelatedViewgrams<float>&);
+ void back_project(DiscretisedDensity<3,float>&,
+		   const RelatedViewgrams<float>&);
 
   /*! \brief projects the specified range of the viewgrams into the volume
    it adds to the data already present in the volume.*/
-  inline
-    void back_project(DiscretisedDensity<3,float>&,
-                      const RelatedViewgrams<float>&, 		  
-		      const int min_axial_pos_num, const int max_axial_pos_num);
+ void back_project(DiscretisedDensity<3,float>&,
+		   const RelatedViewgrams<float>&, 		  
+		   const int min_axial_pos_num, const int max_axial_pos_num);
 
   /*! \brief projects the specified range of the viewgrams into the volume
-   it adds to the data already present in the volume.*/
-  inline
-    void back_project(DiscretisedDensity<3,float>&,
-                      const RelatedViewgrams<float>&,
-		      const int min_axial_pos_num, const int max_axial_pos_num,
-		      const int min_tangential_pos_num, const int max_tangential_pos_num);
-
-
-
-
-  virtual ~BackProjectorByBin() {}
-
+    it adds to the data already present in the volume.*/
+ void back_project(DiscretisedDensity<3,float>&,
+		   const RelatedViewgrams<float>&,
+		   const int min_axial_pos_num, const int max_axial_pos_num,
+		   const int min_tangential_pos_num, const int max_tangential_pos_num);
 
 
 protected:
@@ -110,6 +102,5 @@ protected:
 
 END_NAMESPACE_STIR
 
-#include "stir/recon_buildblock/BackProjectorByBin.inl"
 
 #endif // __BackProjectorByBin_h_
