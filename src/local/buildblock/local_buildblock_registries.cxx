@@ -2,7 +2,7 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
-
+#ifdef SANIDA
 #include "local/stir/DAVImageFilter3D.h"
 #include "local/stir/ModifiedInverseAverigingImageFilter.h"
 #include "local/stir/ModifiedInverseAveragingImageFilterAll.h"
@@ -10,6 +10,7 @@
 #include "local/stir/SeparableGaussianImageFilter.h"
 #include "local/stir/NonseparableSpatiallyVaryingFilters.h"
 #include "local/stir/NonseparableSpatiallyVaryingFilters3D.h"
+#endif
 #include "local/stir/cleanup966ImageProcessor.h"
 #include "local/stir/multiply_plane_scale_factorsImageProcessor.h"
 
