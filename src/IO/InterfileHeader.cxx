@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup IO 
   \brief implementations for the InterfileHeader class
 
   \author Kris Thielemans
