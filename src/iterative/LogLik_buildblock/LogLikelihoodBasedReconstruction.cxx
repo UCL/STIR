@@ -20,6 +20,8 @@
 
 #include "LogLikBased/LogLikelihoodBasedReconstruction.h"
 #include "LogLikBased/common.h"
+// for checks between sensitivity and target_image
+#include "DiscretisedDensityOnCartesianGrid.h"
 // for set_projectors_and_symmetries
 #include "recon_buildblock/distributable.h"
 #ifndef USE_PMRT
@@ -37,6 +39,7 @@
 #include "Viewgram.h"
 #include "recon_array_functions.h"
 #include <iostream>
+#include <typeinfo>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
@@ -67,10 +70,29 @@ void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensi
   
   else
   {       
-    // TODO ensure compatible sizes of initial image and sensitivity
     
     sensitivity_image_ptr = 
       DiscretisedDensity<3,float>::read_from_file(get_parameters().sensitivity_image_filename);   
+
+    if (typeid(*sensitivity_image_ptr) != typeid(*target_image_ptr))
+      error("sensitivity image and target_image should be the same type of DiscretisedDensity. Sorry.\n");
+    if (sensitivity_image_ptr->get_origin() != target_image_ptr->get_origin())
+      error("Currently, sensitivity and target_image should have the same origin. Sorry.\n");
+    if (sensitivity_image_ptr->get_index_range() != target_image_ptr->get_index_range())
+      error("Currently, sensitivity and target_image should have the same index ranges. Sorry.\n");
+    {
+      DiscretisedDensityOnCartesianGrid<3,float> const *sens_ptr =
+	       dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const *>(sensitivity_image_ptr.get());
+      if (sens_ptr != 0)
+      {
+	// we can now check on grid_spacing
+	DiscretisedDensityOnCartesianGrid<3,float> const *image_ptr =
+	  dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const *>(target_image_ptr.get());
+	  if (sens_ptr->get_grid_spacing() != image_ptr->get_grid_spacing())
+	    error("Currently, sensitivity and target_image should have the same grid spacing. Sorry.\n");
+      }
+    }
+    // TODO ensure compatible info for any type of DiscretisedDensity
   }
   
   
