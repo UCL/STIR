@@ -28,6 +28,7 @@
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "local/stir/SinglesRates.h"
 #include "stir/Scanner.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Array.h"
@@ -66,7 +67,7 @@ public:
   BinNormalisationFromECAT7(const string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_efficiency_factor(const Bin& bin) const;
+  float get_bin_efficiency(const Bin& bin) const;
   //! Normalise some data
   /*! 
     This means \c multiply with the data in the projdata object 
@@ -82,6 +83,10 @@ public:
   virtual void undo(RelatedViewgrams<float>& viewgrams) const;
 
 private:
+  Array<1,float> axial_t1_array;
+  Array<1,float> axial_t2_array;
+  Array<1,float> trans_t1_array;
+  shared_ptr<SinglesRates> singles_rates_ptr;
   Array<2,float> geometric_factors;
   Array<2,float> efficiency_factors;
   Array<2,float> crystal_interference_factors;
@@ -94,6 +99,7 @@ private:
   int mash;
 
   void read_norm_data(const string& filename);
+  float get_deadtime_efficiency ( const DetectionPosition<>& det_pos) const;
 
   // parsing stuff
   virtual void set_defaults();
