@@ -50,10 +50,10 @@ using std::endl;
 START_NAMESPACE_STIR
 
 
-void
 construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_2D_array,   
-					Array<2,float>& kernel_2d,
-					const float kapa0_over_kapa1);
+					Array<2,float>& kernel_2d,const float kapa0_over_kapa1,
+					int number_of_coefficients_before_padding);
+					
 
 //// IMPLEMENTATION /////
 /**********************************************************************************************/
@@ -61,9 +61,11 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 
 
 
-void
+
+
 construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_2D_array,   
-					Array<2,float>& kernel_2d,const float kapa0_over_kapa1)
+					Array<2,float>& kernel_2d,const float kapa0_over_kapa1,
+					int number_of_coefficients_before_padding)
 					
 {
 #if 1
@@ -119,7 +121,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	/**********************************************************************************/
 	
 	Array<2,float> filter_coefficients_padded_2D_array(IndexRange2D(1,size,1,size));
-	int number_of_coefficients_before_padding = 15;
+	//int number_of_coefficients_before_padding = 15;
 	
 
        int min_kernel_2d_y = kernel_2d.get_min_index();
@@ -153,16 +155,15 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
     }
 
 
-/*
-       for ( int j = 1;j<=16;j++)
+
+    /*   for ( int j = 1;j<=64;j++)
        {
-	for ( int i = 1;i<=16;i++)
+	for ( int i = 1;i<=64;i++)
 	{
 	  cerr <<  filter_coefficients_padded_2D_array[j][i] << "   " ;
 	}
 	cerr << endl;
        }
-
 */
 	/*************************************************************************************/
 	
@@ -177,14 +178,17 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	
 	create_kernel_2d (filter_coefficients_padded, kernel_1d_vector);*/
 	Array<2,float> filter_coefficients_padded(IndexRange2D(1,size,1,size));
-	filter_coefficients_padded = filter_coefficients_padded_2D_array;	
+	filter_coefficients_padded = filter_coefficients_padded_2D_array;
 	
-	
+ 	
 	// rescale to DC=1
+	float tmp = filter_coefficients_padded.sum();
 	filter_coefficients_padded /= filter_coefficients_padded.sum();
+      /*  for ( int j = filter_coefficients_padded.get_min_index(); j<=filter_coefficients_padded.get_max_index();j++)
+	 for ( int i = 	filter_coefficients_padded.get_min_index(); i<=	filter_coefficients_padded.get_max_index();i++)
+	   cerr << filter_coefficients_padded[j][i] << "     ";*/
 	
 	Array<2,float>& fft_filter = filter_coefficients_padded;
-	
 	float inverse_sq_kapas;
 	if (fabs((double)sq_kapas ) >0.000000000001)
 	  inverse_sq_kapas = 1/sq_kapas;
@@ -210,7 +214,6 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	
 	
 	convert_array_2D_into_1D_array(fft_filter_1D_array,fft_filter);
-	// fft_1_1D_array[1]=1;
 	
 	Array<1, int> array_lengths(1,2);
 	array_lengths[1] = fft_filter.get_length();
@@ -225,7 +228,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	  if ( (*fft_filter_1D_array_64)[1] == 0.F)
 	  {
 	    fourn(fft_filter_1D_array, array_lengths, 2,1);
-	    fft_filter_1D_array /= sqrt(static_cast<double>(size *size));      
+	    fft_filter_1D_array /= sqrt(static_cast<double>(size *size));     
 	    *fft_filter_1D_array_64 = fft_filter_1D_array;
 	  }
 	  else
@@ -345,17 +348,19 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	//fft_1_1D_array /= sqrt(static_cast<double> (size *size*size));
 	// fft_filter_1D_array /= sqrt(static_cast<double>(size *size*size));
 	Array<2,float> new_filter_coefficients_2D_array_tmp (IndexRange2D(1,filter_coefficients_padded.get_length(),1,filter_coefficients_padded.get_length()));
-	
-	
-	
+		
 	{        
 	  Array<1,float> fft_filter_num_1D_array(1, 2*fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length());
 	  //Array<1,float> div_1D_array(1, 2*fft_filter.get_length()*fft_filter[fft_filter.get_min_index()].get_length());    
 	  
 	  //mulitply_complex_arrays(fft_filter_num_1D_array,fft_filter_1D_array,fft_1_1D_array);
-	  
+	 
+	 	  
 	  fft_filter_num_1D_array = fft_filter_1D_array* fft_1_1D_array;
-	  
+#if 0
+	  for ( int i = fft_filter_num_1D_array.get_min_index(); i<=fft_filter_num_1D_array.get_max_index();i++)
+	    cerr << fft_filter_num_1D_array[i] << i  << "   ";
+#endif	  
 	  fft_filter_1D_array *= (sq_kapas-1);
 	  // this is necesssery since the imagainary part is stored in the odd indices
 	  for ( int i = fft_filter_1D_array.get_min_index(); i<=fft_filter_1D_array.get_max_index(); i+=2)
@@ -365,16 +370,12 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	  fft_filter_1D_array /= sq_kapas;
 	  
 	  divide_complex_arrays(fft_filter_num_1D_array,fft_filter_1D_array);  
-	  
-	  
-	  
+
 	  fourn(fft_filter_num_1D_array, array_lengths,2,-1);	
 	  
 	  // make it consistent with mathemematica -- the output of the       
 	  fft_filter_num_1D_array  /= sqrt(static_cast<double>(size *size));
-	  
-	  
-	  
+  
 	  // take the real part only 
 	  /*********************************************************************************/
 	  {
@@ -389,13 +390,21 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	    
 	  }
 	}
-	
+ 
+#if 0
+	for ( int j = new_filter_coefficients_2D_array_tmp.get_min_index(); j<=new_filter_coefficients_2D_array_tmp.get_max_index();j++)
+	 for ( int i = new_filter_coefficients_2D_array_tmp[1].get_min_index(); i<=new_filter_coefficients_2D_array_tmp[1].get_max_index();i++)
+	 {	 
+	    cerr << new_filter_coefficients_2D_array_tmp[j][i] << i  << "   ";
+	 }
+	  
+#endif
 	
 	int kernel_length_x=0;
 	int kernel_length_y=0;
 	
 	// to prevent form aliasing limit the new range for the coefficients to 
-	// filter_coefficients_padded.get_length()/4
+	// filter_coefficients_padded.get_length()/2
 	
 	//cerr << " X DIERCTION NOW" << endl;
 	// do the x -direction first -- fix y and z to the min and look for the max index in x
@@ -461,6 +470,8 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	
 	}	  cerr << endl;*/
 	  
+
+	  cerr << " IN THIS LOOP " << endl;
 	  new_filter_coefficients_2D_array.grow(IndexRange2D(
 	    -(kernel_length_y-1),kernel_length_y-1,
 	    -(kernel_length_x-1),kernel_length_x-1));
@@ -479,8 +490,14 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	      new_filter_coefficients_2D_array[j][-i]=new_filter_coefficients_2D_array_tmp[j+1][i+1];
 	      
 	      
-	      
 	    }
+#if 0
+	    for (int  j = 0;j<= kernel_length_y-1;j++)	  
+	    for (int  i = 0;i<= kernel_length_x-1;i++)	  
+	    {
+	      cerr << new_filter_coefficients_2D_array[j][i] << "    " ;
+	    }
+#endif
 	    
 	    
 	    break; // out of while(true)
@@ -489,7 +506,23 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
     }
     else //sq_kappas == 1
     {
-      new_filter_coefficients_2D_array = filter_coefficients;
+	     new_filter_coefficients_2D_array.grow(IndexRange2D(
+	    -number_of_coefficients_before_padding-1,number_of_coefficients_before_padding-1,
+	    -number_of_coefficients_before_padding-1,number_of_coefficients_before_padding-1));
+
+          for (int  j = 0;j<= number_of_coefficients_before_padding-1;j++)	  
+	    for (int  i = 0;i<= number_of_coefficients_before_padding-1;i++)	  		  
+	    {
+	      new_filter_coefficients_2D_array[j][i]=filter_coefficients[filter_coefficients.get_min_index()+j][filter_coefficients[1].get_min_index()+i];
+	      new_filter_coefficients_2D_array[-j][-i]=filter_coefficients[filter_coefficients.get_min_index()+j][filter_coefficients[1].get_min_index()+i];
+	      
+	      new_filter_coefficients_2D_array[-j][i]=filter_coefficients[filter_coefficients.get_min_index()+j][filter_coefficients[1].get_min_index()+i];
+	      new_filter_coefficients_2D_array[j][-i]=filter_coefficients[filter_coefficients.get_min_index()+j][filter_coefficients[1].get_min_index()+i];
+	          
+	    }
+	   
+
+      //new_filter_coefficients_2D_array = filter_coefficients;
     }
     
     
@@ -862,7 +895,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D 
 	  {
 	    Array <2,float> new_coeffs;
 	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
-	    construct_scaled_filter_coefficients_2D(new_coeffs, filter_coefficients,sq_kapas);    
+	    construct_scaled_filter_coefficients_2D(new_coeffs, filter_coefficients,sq_kapas, number_of_coefficients_before_padding);    
 	    filter_lookup[k_index] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
 	    all_filter_coefficients[k][j][i] = filter_lookup[k_index];
 	    
@@ -945,7 +978,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	      Array <2,float> new_coeffs;
 	      if((*precomputed_coefficients_image)[k][j][i] >0.00001 )
 	      {
-		construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,1/(*precomputed_coefficients_image)[k][j][i]); 
+		construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,1/(*precomputed_coefficients_image)[k][j][i], number_of_coefficients_before_padding); 
 		all_filter_coefficients_nonseparable_2D[k][j][i] = 
 		  new ArrayFilter2DUsingConvolution<float>(new_coeffs);	
 	      }
@@ -1002,7 +1035,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 			   in_density_cast_0,
 			   *sensitivity_image_cast,
 			   *normalised_bck_image_cast);
-			 construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,1/(*newly_computed_coeff)[k][j][i]); 
+			 construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,1/(*newly_computed_coeff)[k][j][i], number_of_coefficients_before_padding); 
 			 all_filter_coefficients_nonseparable_2D[k][j][i] = 
 			   new ArrayFilter2DUsingConvolution<float>(new_coeffs);	
 			 delete newly_computed_coeff;
@@ -1050,6 +1083,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
        attenuation_proj_data_ptr = NULL;
        mask_size = 0;
        num_dim = 1;
+       number_of_coefficients_before_padding =0;
        
      }
      
@@ -1066,7 +1100,8 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
        parser.add_key("mask_size", &mask_size);
        parser.add_key("num_dim", & num_dim);
        parser.add_key ("precomputed_coefficients_filename", &precomputed_coefficients_filename);
-       parser.add_key ("normalised_bck_filename", &normalised_bck_filename);  
+       parser.add_key ("normalised_bck_filename", &normalised_bck_filename); 
+       parser.add_key("number of coefficients before padding", &number_of_coefficients_before_padding);
        parser.add_stop_key("END Nonseparable Spatially Varying Filters");
      }
      
