@@ -50,10 +50,24 @@ RigidObject3DTransformation::RigidObject3DTransformation (const Quaternion<float
 RigidObject3DTransformation 
 RigidObject3DTransformation::inverse() const
 {
-  Quaternion<float> quat_copy =quat;
-  quat_copy.inverse();
-  RigidObject3DTransformation ro3d_trans (quat_copy,translation*(-1));
-  return ro3d_trans;
+  /* Formula for inverse is a bit complicated because of
+    fixed order of first rotation and then translation
+
+     tr_point= transform(point) =
+		 q*point*conj(q) + trans
+	invtransform(tr_point) = 
+		invq*(q*point*conj(q)+trans)*conj(invq) -
+                invq*trans*conj(invq)
+            = point
+   */
+  const Quaternion<float> invq = stir::inverse(quat);
+  const Quaternion<float>
+    qtrans(0,translation.x(),translation.y(),translation.z());
+  const Quaternion<float> qinvtrans =
+    invq * qtrans * conjugate(invq);
+  const CartesianCoordinate3D<float>
+    invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
+  return RigidObject3DTransformation(invq, invtrans*(-1));
 }
 
 Quaternion<float>
@@ -111,10 +125,8 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   
   //transformation with quaternions 
   const Quaternion<float> point_q (0,swapped_point.x(),swapped_point.y(),swapped_point.z());
-  Quaternion<float> conj_quat = quat_norm_tmp;
-  conj_quat.conjugate();
   
-  Quaternion<float> tmp = quat_norm_tmp * point_q * conj_quat;
+  Quaternion<float> tmp = quat_norm_tmp * point_q * conjugate(quat_norm_tmp);
 
   tmp[2] += translation.x();
   tmp[3] += translation.y();
