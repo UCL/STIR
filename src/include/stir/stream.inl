@@ -21,6 +21,7 @@
 /* History:
    KT 08/12/2000 corrected cases in operator<< for 0 length
    KT 29/08/2001 added operator>>
+   KT 07/10/2002 corrected case in operator>> for 0 length and added more checking on stream state
 */
 
 #include <algorithm>
@@ -85,20 +86,36 @@ operator>>(istream& str, vector<elemT>& v)
   v.resize(0);
   char c;
   str >> ws >> c;
-  if (c != '{')
+  if (!str || c != '{')
     return str;
   
   elemT t;
   do
   {
     str >> t;
-    v.push_back(t);
+    if (!str.fail())
+    { 
+      v.push_back(t);
+      str >> ws >> c;
+    }
+    else 
+      break;
+  }
+  while (str && c  == ',');
+
+  if (str.fail())
+  {
+    str.clear();
     str >> ws >> c;
   }
-  while (c  == ',');
-
+  if (!str)
+  {
+    warning("\nreading a vector, expected closing }, but found EOF or worse. Length of vector returned is %ud\n", v.size());
+    return str;
+  }
+    
   if (c!= '}')
-    warning("\nreading a vector, expected closing }, found %c instead.\n", c);
+    warning("\nreading a vector, expected closing }, found %c instead. Length of vector returned is %u\n", c, v.size());
   return str;
 }
 
@@ -117,9 +134,9 @@ template <int num_dimensions, typename coordT>
 istream& 
 operator<<(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
 {
-  char c;
+  char c = '\0';
   str >> ws >> c;
-  if (c != '{')
+  if (!str || c != '{')
   {
     warning("\nreading a coordinate of dimension %d, expected opening {, found %c instead.\n"
               "Elements will be undefined\n", c);
@@ -127,15 +144,16 @@ operator<<(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
   }
   for (int i=1; i<num_dimensions; i++)
   { 
+    c = '\0';
     str >> v[i];
     str >> ws >> c;
-    if (i<num_dimensions && c!=',')        
+    if (i<num_dimensions && (!str || c!=','))
     {
       warning("\nreading a coordinate of dimension %d, expected comma, found %c instead.\n"
               "Remaining elements will be undefined\n", c);
       return str;
     }
-    if (i==num_dimensions && c!='}') 
+    if (i==num_dimensions && (!str || c!='}'))
     {
       warning("\nreading a coordinate of dimension %d, expected closing }, found %c instead.\n", c);
       return str;
