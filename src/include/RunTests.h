@@ -19,7 +19,9 @@
 #include "BasicCoordinate.h"
 #include "stream.h"
 #include <iostream>
+#ifndef OLDDESIGN
 #include <typeinfo>
+#endif
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
@@ -116,7 +118,9 @@ public:
     {
       if(!check_if_zero(t[i], str))
       {
+#ifndef OLDDESIGN
         cerr << "(at VectorWithOffset<" << typeid(T).name() << "> first mismatch at index " << i << ")\n";
+#endif
         return false;
       }
     }
