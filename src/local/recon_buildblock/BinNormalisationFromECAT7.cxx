@@ -39,6 +39,7 @@ using std::fstream;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
 // TODO find out info from somewhere
@@ -440,6 +441,7 @@ BinNormalisationFromECAT7::get_deadtime_efficiency (const DetectionPosition<>& d
 
 
 
-END_NAMESPACE_ECAT7  
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT  
 END_NAMESPACE_STIR
 

@@ -1,3 +1,20 @@
+//
+// $Id$
+//
+/*!
+
+  \file
+  \brief Implementation of Singles RatesFromECAT7
+
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2003- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #include "local/stir/SinglesRateFromECAT7.h"
 #include "stir/DetectionPosition.h"
 #include "stir/IO/stir_ecat7.h"
@@ -13,6 +30,7 @@ using std::fstream;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
 const char * const 
@@ -105,5 +123,6 @@ SinglesRatesFromECAT7::set_defaults()
 }
 
 END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 

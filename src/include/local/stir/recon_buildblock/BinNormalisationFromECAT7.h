@@ -39,6 +39,7 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
 /*!
@@ -109,7 +110,8 @@ private:
   string normalisation_ECAT7_filename;
 };
 
-END_NAMESPACE_ECAT7  
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 #endif
