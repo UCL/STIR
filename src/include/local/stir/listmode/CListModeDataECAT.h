@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -21,7 +21,9 @@
 
 #include "local/stir/listmode/CListModeDataFromStream.h"
 #include "stir/shared_ptr.h"
-
+#ifdef HAVE_LLN_MATRIX
+#include "stir/IO/stir_ecat7.h"
+#endif
 #include <iostream>
 #include <string>
 #include <utility>
@@ -85,6 +87,11 @@ private:
   mutable vector<vector<streampos> > saved_get_positions_for_each_lm_data;
   typedef pair<unsigned int, SavedPosition> GetPosition;
   vector<GetPosition > saved_get_positions;
+#ifdef HAVE_LLN_MATRIX
+  Main_header singles_main_header;
+#endif
+  float lm_start_time;
+  float lm_duration;
   
   // const as it modifies only mutable elements
   // It has to be const as e.g. get_next_record calls it
