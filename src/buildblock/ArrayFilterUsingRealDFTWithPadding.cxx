@@ -15,16 +15,15 @@
     Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-
+#include "stir/Array.h"
 #include "stir/ArrayFilterUsingRealDFTWithPadding.h"
 #include "stir/numerics/fourier.h"
 #include "stir/Succeeded.h"
-#include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
 #include "stir/array_index_functions.h"
 #include "stir/modulo.h"
-//#include "stir/stream.h"//XXX
 #include <algorithm>
+
 
 START_NAMESPACE_STIR
 
@@ -41,6 +40,7 @@ ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filt
     error("Error constructing ArrayFilterUsingRealDFTWithPadding\n");
 }
 
+#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
 template <int num_dimensions, typename elemT>
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
 ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, 
@@ -49,6 +49,7 @@ ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions,
   if (set_kernel(complex_filter_kernel) == Succeeded::no) 
     error("Error constructing ArrayFilterUsingRealDFTWithPadding\n");
 }
+#endif
 
 template <int num_dimensions, typename elemT>
 Succeeded
@@ -109,6 +110,7 @@ set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel)
   return set_padding_range();
 }
 
+#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
 template <int num_dimensions, typename elemT>
 Succeeded
 ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
@@ -117,7 +119,7 @@ set_kernel(const Array<num_dimensions, std::complex<elemT> >& complex_filter_ker
   complex_filter_kernel = complex_filter_kernel_v;
   return set_padding_range();
 }
-
+#endif
 
 template <int num_dimensions, typename elemT>
 bool ArrayFilterUsingRealDFTWithPadding<num_dimensions, elemT>:: 
@@ -176,6 +178,7 @@ do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT
 template class ArrayFilterUsingRealDFTWithPadding<1,float>;
 template class ArrayFilterUsingRealDFTWithPadding<2,float>;
 template class ArrayFilterUsingRealDFTWithPadding<3,float>;
+
 END_NAMESPACE_STIR
 
 
