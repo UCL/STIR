@@ -105,6 +105,7 @@ protected:
   shared_ptr<ProjDataInfo> proj_data_info_uncompressed_ptr;
   const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_uncompressed_ptr;
   shared_ptr<Scanner> scanner_ptr;
+  bool do_pre_normalisation;
   
 
   bool do_time_frame;
@@ -128,7 +129,8 @@ FindMCNormFactors::set_defaults()
 {
   max_segment_num_to_process = -1;
   ro3d_ptr = 0;
-  normalisation_ptr = new TrivialBinNormalisation;
+  normalisation_ptr = 0;
+  do_pre_normalisation = true;
   time_interval=1; 
   min_num_time_intervals_per_frame = 1;
   max_num_time_intervals_per_frame = 100;
@@ -146,7 +148,7 @@ FindMCNormFactors::initialise_keymap()
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
-
+  parser.add_key("do pre normalisation", &do_pre_normalisation);
   parser.add_key("default time interval", &time_interval);
   parser.add_key("minimum number of time intervals per frame", &min_num_time_intervals_per_frame);
   parser.add_key("maximum number of time intervals per frame", &max_num_time_intervals_per_frame);
@@ -218,13 +220,15 @@ post_processing()
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>
     (proj_data_info_uncompressed_ptr.get());
 
-  if (is_null_ptr(normalisation_ptr))
+
+  if (!do_pre_normalisation && is_null_ptr(normalisation_ptr))
     {
       //normalisation_ptr = new TrivialBinNormalisation;
       warning("Invalid normalisation object\n");
       return true;
     }
-  if ( normalisation_ptr->set_up(proj_data_info_uncompressed_ptr)
+  if (!do_pre_normalisation &&
+      normalisation_ptr->set_up(proj_data_info_uncompressed_ptr)
        != Succeeded::yes)
     {
       warning("set-up of normalisation failed\n");
@@ -374,7 +378,9 @@ FindMCNormFactors::process_data()
 			     in_tangential_pos_num <= proj_data_info_uncompressed_ptr->get_max_tangential_pos_num();
 			     ++in_tangential_pos_num)
 			  {
-			    Bin bin(in_segment_num,in_view_num,in_ax_pos_num, in_tangential_pos_num, 1);
+			    const Bin original_bin(in_segment_num,in_view_num,in_ax_pos_num, in_tangential_pos_num, 1);
+			    // find new bin position
+			    Bin bin = original_bin;
 			    ro3dtrans.transform_bin(bin, 
 						    *out_proj_data_info_ptr,
 						    *proj_data_info_cyl_uncompressed_ptr);
@@ -394,13 +400,22 @@ FindMCNormFactors::process_data()
 				  {
 				    // TODO remove scale factor
 				    // it's there to compensate what we have in LmToProjDataWithMC
+				    if (do_pre_normalisation)
+				      {
 				    (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-				      normalisation_ptr->
-				      get_bin_efficiency(bin,start_time,end_time)/
+				      1.F/
 				      (out_proj_data_info_ptr->
 				       get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 										    bin.axial_pos_num())*
 				       out_proj_data_info_ptr->get_view_mashing_factor());
+				      }
+				    else
+				      {
+				      (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
+				      normalisation_ptr->
+					get_bin_efficiency(original_bin,start_time,end_time);
+
+				      }
 				    
 				  }
 			      }
@@ -409,10 +424,10 @@ FindMCNormFactors::process_data()
 		  }
 	      }
 	  }
-	// decrease our counter of the numer of time intervals to set it to
+	// decrease our counter of the number of time intervals to set it to
 	// the number we actually had
 	--current_num_time_intervals;
-	if (current_num_time_intervals != num_time_intervals_this_frame+1)
+	if (current_num_time_intervals != num_time_intervals_this_frame)
 	  warning("\nUnexpected number of time intervals %d, should be %d",
 		  current_num_time_intervals, num_time_intervals_this_frame);
 	for (int segment_num=start_segment_index; segment_num<=end_segment_index; ++segment_num)
