@@ -32,6 +32,8 @@ VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_InterfileOutputFile
 @pause 
 VC\test_OutputFileFormat\%1\test_OutputFileFormat input/test_ECAT6OutputFileFormat.in
 @pause 
+VC\test_ByteOrder\%1\test_ByteOrder
+@pause 
 @echo Executing test_stir_math 
 @echo This relies on having stir_math compiled (in the utilities workspace).
 VC\test_stir_math\%1\test_stir_math ..\utilities\VC\stir_math\%1\stir_math 
