@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -14,8 +14,8 @@
 
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 /*
   Modification history
@@ -25,8 +25,10 @@
 
 #include <cmath>
 #include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
+// KT 20/06/2001 should now work for non-arccorrected data as well
+#include "ProjDataInfoCylindrical.h"
 #include "VoxelsOnCartesianGrid.h"
+#include "tomo/round.h"
 
 START_NAMESPACE_TOMO
 
@@ -38,15 +40,17 @@ START_NAMESPACE_TOMO
   (while being careful when s=0 to avoid self-symmetric cases)
   */
 
-//CL&KT 21/12/99 changed 2 last arguments
+
+// KT 20/06/2001 should now work for non-arccorrected data as well, pass s_in_mm
 void ForwardProjectorByBinUsingRayTracing::
 proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
-                 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
-	const float cphi, const float sphi, const float delta, const int s, 
-	const float R, const int rmin, const int rmax, const float offset, 
-	const int Siddon,
-	const int num_planes_per_virtual_ring,
-	const float virtual_ring_offset)
+	    const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	    const float cphi, const float sphi, const float delta, const 
+            float s_in_mm, 
+	    const float R, const int rmin, const int rmax, const float offset, 
+	    const int Siddon,
+	    const float num_planes_per_virtual_ring,
+	    const float virtual_ring_offset)
 {
   float x1, y1, z1, x2, y2, z2, xmin, ymin, zmin,    xmax, ymax, zmax;
   float           a, a0, axend, ayend, azend, amax;
@@ -87,6 +91,10 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   VectorWithOffset<float> ax(MAXDIM2);
   VectorWithOffset<float> ay(MAXDIM2);
   VectorWithOffset<float> az(MAXDIM2);
+  const float s = s_in_mm / d_xy;  
+
+
+  // compute intersections with scanner cylinder
 
   // KT&CL 30/01/98 simplify formulas by not handling s=0 seperately
       // {
@@ -159,33 +167,19 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
   /* We compute here X1f, Y1f, Z1f, X2f, Y2f, Z2f in voxelcoordinates. */
 
 
-
-  // KT&CL 30/01/98 simplify formulas by not handling s=0 seperately
-  int fovrad  = (int) (xdim / 2) - 1;
+  // KT 20/06/2001 change calculation of FOV such that even sized Bilds will work
+  const float fovrad_in_mm   = 
+    min((min(Bild.get_max_x(), -Bild.get_min_x())-1)*Bild.get_voxel_size().x(),
+	(min(Bild.get_max_y(), -Bild.get_min_y())-1)*Bild.get_voxel_size().y()); 
+  const float fovrad = fovrad_in_mm/d_xy;
+  //const int fovradold  = (int) (xdim / 2) - 1;
+  //if (Bild.get_x_size()%2==1 && fovradold!=fovrad)
+  //  warning("fovrad old %d, new %g\n", fovradold, fovrad);
   TMP2 = sqrt(fovrad * fovrad - s * s);
   X2f = s * cphi - sphi * TMP2;
   X1f = s * cphi + sphi * TMP2;
   Y2f = s * sphi + cphi * TMP2;
   Y1f = s * sphi - cphi * TMP2;
-  /*
-  int 		fovrad  = (int) (xdim / 2) - 1;
-  if (Siddon == 4) {
-    TMP2 = fovrad;
-    X2f = -sphi * TMP2;
-    X1f = sphi * TMP2;
-    Y2f = cphi * TMP2;
-    Y1f = -cphi * TMP2;
-  } else {
-    if ((Siddon == 3) || (Siddon == 1))
-      TMP2 = sqrt(fovrad * fovrad - (float)s * s);
-    else if (Siddon == 2)
-      TMP2 = fovrad;
-    X2f = s * cphi - sphi * TMP2;
-    X1f = s * cphi + sphi * TMP2;
-    Y2f = s * sphi + cphi * TMP2;
-    Y1f = s * sphi - cphi * TMP2;
-  }
-  */
   // CL&KT 21/12/99 added virtual_ring_offset and num_planes_per_physical_ring
   Z1f = num_planes_per_virtual_ring * (rmin + offset) 
         + num_planes_per_physical_ring * delta/2 * (1 - TMP2 / TMP) 
