@@ -5,7 +5,7 @@
 /*! 
   \file
   \ingroup utilities
-  \ingroup CTI
+  \ingroup ECAT
   \brief Conversion from ECAT 6 cti to interfile (image and sinogram data)
   \author Kris Thielemans
   \author Damien Sauge
@@ -44,8 +44,8 @@
 #include "stir/interfile.h"
 #include "stir/shared_ptr.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/CTI/stir_cti.h"
-#include "stir/CTI/cti_utils.h"
+#include "stir/IO/stir_ecat6.h"
+#include "stir/IO/ecat6_utils.h"
 #include "stir/Scanner.h"
 #include <stdio.h>
 #include <iostream>
@@ -62,6 +62,7 @@ using std::max;
 
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT6
 
 int
 main(int argc, char *argv[])
@@ -102,8 +103,8 @@ main(int argc, char *argv[])
   if(!cti_fptr) {
     error("\nError opening input file: %s\n",cti_name);
   }
-  Main_header mhead;
-  if(cti_read_main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) {
+  ECAT6_Main_header mhead;
+  if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) {
     error("\nUnable to read main header in file: %s\n",cti_name);
   }
 
@@ -112,7 +113,7 @@ main(int argc, char *argv[])
     // force scanner
     shared_ptr<Scanner> scanner_ptr = 
       Scanner::get_scanner_from_name(scanner_name_ptr);
-    mhead.system_type = find_CTI_system_type(*scanner_ptr);
+    mhead.system_type = find_ECAT_system_type(*scanner_ptr);
   }
 
   // funnily enough, num_bed_pos seems to be offset with 1
