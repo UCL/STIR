@@ -10,7 +10,8 @@ include $(WORKSPACE)/Makefile_common
 LIB_SOURCES = \
 	lm.cxx \
 	CListModeData.cxx \
-	CListModeDataFromStream.cxx
+	CListModeDataFromStream.cxx \
+	CListModeDataECAT.cxx
 
 SOURCES = \
 	lm_to_projdata.cxx \
