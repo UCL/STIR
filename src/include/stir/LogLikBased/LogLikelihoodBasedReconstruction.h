@@ -21,13 +21,12 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
 
 #include "stir/recon_buildblock/IterativeReconstruction.h"
-#include "stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
 // need to include full class definition of ProjectorByBinPair to enable shared_ptr to call its destructor
