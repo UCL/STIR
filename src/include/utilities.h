@@ -1,8 +1,8 @@
 //
-// $Id$: $Date$
+// $Id$
 //
-#ifndef __UTILITIES_H__
-#define  __UTILITIES_H__
+#ifndef __Tomo_UTILITIES_H__
+#define  __Tomo_UTILITIES_H__
 /*!
   \file 
   \ingroup buildblock
@@ -11,11 +11,10 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 #include <iostream>
 #include <string>

@@ -1,9 +1,9 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
-#ifndef __VectorWithOffset_H__
-#define __VectorWithOffset_H__
+#ifndef __Tomo_VectorWithOffset_H__
+#define __Tomo_VectorWithOffset_H__
 
 /*!
   \file 
@@ -13,14 +13,12 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
-
+  $Date$
+  $Revision$
 */
 
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 #include <iterator>
 #ifndef TOMO_NO_NAMESPACES

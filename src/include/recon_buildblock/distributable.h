@@ -1,12 +1,11 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __DISTRIBUTABLE_H__
 #define __DISTRIBUTABLE_H__
 
 /*!
-
   \file
   \ingroup recon_buildblock
 
@@ -17,11 +16,10 @@
   \author Matthew Jacobson
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+   $Date$
+   $Revision$
 */
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 

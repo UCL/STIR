@@ -1,3 +1,6 @@
+//
+// $Id$
+//
 /*!
   \file
   \ingroup buildblock
@@ -7,15 +10,14 @@
   \author Mustapha Sadki (minor modifications by Kris Thielemans)
   \author PARAPET project
       
-  \date $Date$
-        
-  \version $Revision$
+  $Date$        
+  $Revision$
 */         
 
-#ifndef __SHARED_PTR__
-#define __SHARED_PTR__
+#ifndef __Tomo_SHARED_PTR__
+#define __Tomo_SHARED_PTR__
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 #ifdef TOMO_USE_BOOST
 #include "boost/smart_ptr.hpp"

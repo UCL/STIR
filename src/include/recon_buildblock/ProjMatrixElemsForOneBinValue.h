@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,15 +11,15 @@
   \author Mustapha Sadki
   \author PARAPET project
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
 */
 
 #ifndef __ProjMatrixElemsForOneBinValue_H__
 #define __ProjMatrixElemsForOneBinValue_H__
 
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,16 +11,16 @@
   \author Sanida Mustafovic
   \author PARAPET project
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
 
-#ifndef __ViewSegmentNumbers_h__
-#define __ViewSegmentNumbers_h__
+#ifndef __Tomo_ViewSegmentNumbers_h__
+#define __Tomo_ViewSegmentNumbers_h__
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 

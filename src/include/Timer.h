@@ -1,5 +1,5 @@
 // 
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -10,14 +10,14 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
-#ifndef __TIMER_H__
-#define __TIMER_H__
+#ifndef __Tomo_TIMER_H__
+#define __Tomo_TIMER_H__
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 
 START_NAMESPACE_TOMO
 

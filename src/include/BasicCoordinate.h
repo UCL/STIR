@@ -1,7 +1,7 @@
-#ifndef __BasicCoordinate_H__
-#define __BasicCoordinate_H__
+#ifndef __Tomo_BasicCoordinate_H__
+#define __Tomo_BasicCoordinate_H__
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -15,17 +15,16 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
+  $Revision$
 
-  \version $Revision$
-
-  \warning The arithmetic operations will at some point be moved to a
-  derived class CartesianCoordinate. (TODO)
+  \todo The arithmetic operations will at some point be moved to a
+  derived class CartesianCoordinate. 
 
 */
 
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 #include <iterator>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -122,21 +121,24 @@ protected:
 
 
 /*
-  General functions on BasicCoordinate objects, like in TensorFunction.h
+  General functions on BasicCoordinate objects, like in ArrayFunction.h
 */
 
 //! compute  sum_i p1[i] * p2[i]
+/*! \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline coordT
 inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
 	       const BasicCoordinate<num_dimensions, coordT>& p2);
 
 //! compute sqrt(inner_product(p1,p1))
+/*! \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline double
 norm (const BasicCoordinate<num_dimensions, coordT>& p1);
 
 //! compute angle between 2 directions
+/*! \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline double 
 angle (const BasicCoordinate<num_dimensions, coordT>& p1, 

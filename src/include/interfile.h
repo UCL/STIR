@@ -1,8 +1,8 @@
 // 
 // $Id$
 //
-#ifndef __Interfile_h__
-#define __Interfile_h__
+#ifndef __Tomo_Interfile_h__
+#define __Tomo_Interfile_h__
 /*!
   \file 
   \ingroup buildblock
@@ -14,11 +14,14 @@
   \author PARAPET project
 
   $Date$
-  $Revision$
-    
+  $Revision$  
 */
 
 #include "NumericType.h"
+// note that I had to include Succeeded.h instead of just forward 
+// declaring the class. Otherwise every file that used write_*interfile*
+// has to include Succeded.h (even if it doesn't use the return value).
+#include "tomo/Succeeded.h"
 #include <iostream>
 #include <string>
 

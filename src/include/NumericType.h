@@ -1,9 +1,9 @@
 //
-//  $Id$: $Date$
+//  $Id$
 //
 
-#ifndef __NumericType_H__
-#define __NumericType_H__
+#ifndef __Tomo_NumericType_H__
+#define __Tomo_NumericType_H__
 
 /*!
   \file 
@@ -13,9 +13,8 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
   */
 /*
   Modification History:
@@ -33,7 +32,7 @@
 
 */
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 #include <string>
 
 START_NAMESPACE_TOMO

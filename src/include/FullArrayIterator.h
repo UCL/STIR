@@ -1,8 +1,8 @@
 //
-// $Id$: $Date$
+// $Id$
 //
-#ifndef __FullArrayIterator__H__
-#define __FullArrayIterator__H__
+#ifndef __Tomo_FullArrayIterator__H__
+#define __Tomo_FullArrayIterator__H__
 
 /*!
   \file 
@@ -13,13 +13,11 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
-
-  \version $Revision$
-
+  $Date$
+  $Revision$
 */
 
-#include "Tomography_common.h"
+#include "tomo/common.h"
 #include <iterator>
 #ifndef TOMO_NO_NAMESPACES
 using std::size_t;

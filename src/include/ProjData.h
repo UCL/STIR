@@ -37,7 +37,7 @@ template <typename elemT> class SegmentByView;
 template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
 class ViewSegmentNumbers;
-
+class Succeeded;
 
 
 /*!
