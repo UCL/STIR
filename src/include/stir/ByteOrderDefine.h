@@ -13,13 +13,21 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
+
+#ifndef DOXYGEN_SKIP
+// define both if them when doxygen is run
+// otherwise doxygen will only generate the doc for the one that is actually defined
+
+#define STIRNativeByteOrderIsBigEndian
+#define STIRNativeByteOrderIsLittleEndian
+#endif
 
 /*!
   \def  STIRNativeByteOrderIsBigEndian
@@ -32,7 +40,7 @@ START_NAMESPACE_STIR
 
   The definition of class ByteOrder is independent of this macro.
 
-  \warning It is recommened to check these settings by using an assert on 
+  \warning It is recommended to check these settings by using an assert on 
   ByteOrder.
   \warning This macro depends on preprocessor defines set by your compiler.
   The list of defines is bound to be incomplete though. The current list sets
@@ -53,10 +61,10 @@ START_NAMESPACE_STIR
 */
 
 // currently checked by asserts()
-#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__) && !defined(__k6__) && !defined(__athlon__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
-#define STIRNativeByteOrderIsBigEndian
+#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__)&& !defined(__i886__) && !defined(__k6__) && !defined(__athlon__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
+#define STIRNativeByteOrderIsBigEndian 1
 #else
-#define STIRNativeByteOrderIsLittleEndian
+#define STIRNativeByteOrderIsLittleEndian 1
 #endif
 END_NAMESPACE_STIR
 
