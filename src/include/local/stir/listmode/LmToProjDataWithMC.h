@@ -20,7 +20,6 @@
 
 #ifndef __stir_listmode_LmToProjDataWithMC_H__
 #define __stir_listmode_LmToProjDataWithMC_H__
-//
 
 
 #include "local/stir/listmode/LmToProjData.h"
@@ -37,8 +36,7 @@ public:
      
   LmToProjDataWithMC(const char * const par_filename);
 
-  virtual void get_bin_from_event(Bin& bin, const CListEvent&,
-				  const double time) const;
+  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
 
 
 private:
@@ -65,7 +63,6 @@ private:
   shared_ptr<Scanner> scanner_ptr;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
   string attenuation_filename; 
-  string norm_filename;  
   float transmission_duration;
   float polaris_time_offset;
    
