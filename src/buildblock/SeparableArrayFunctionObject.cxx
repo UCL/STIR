@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2001- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -43,11 +43,20 @@ void
 SeparableArrayFunctionObject<num_dim, elemT>::
 do_it(Array<num_dim,elemT>& array) const
 {
-   
   if (!is_trivial())
-   in_place_apply_array_functions_on_each_index(array, 
-                                             all_1d_array_filters.begin(), 
-                                             all_1d_array_filters.end());
+    {
+#ifndef NDEBUG
+      // currently in_place_apply_array_functions_on_each_index doesn't handle 0 
+      // pointers gracefully, so we check here that there aren't any
+      for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator
+	      iter=all_1d_array_filters.begin();
+	    iter!=all_1d_array_filters.end();
+	    ++iter)
+	assert(iter->is_null());
+#endif
+       in_place_apply_array_functions_on_each_index(array, 
+						    all_1d_array_filters.begin(), 
+						    all_1d_array_filters.end());
 
 }
 
@@ -56,10 +65,12 @@ bool
 SeparableArrayFunctionObject<num_dim, elemT>::
 is_trivial() const
 {
-  for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator iter=all_1d_array_filters.begin();
-        iter!=all_1d_array_filters.end();++iter)
+  for ( VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator 
+	  iter=all_1d_array_filters.begin();
+        iter!=all_1d_array_filters.end();
+	++iter)
    {
-     if (!(*iter)->is_trivial())
+     if (!iter->is_null() && !(*iter)->is_trivial())
        return false;
    }
    return true;
