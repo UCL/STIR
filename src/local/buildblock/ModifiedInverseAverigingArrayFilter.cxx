@@ -50,7 +50,7 @@ ModifiedInverseAverigingArrayFilter()
   filter_coefficients[2] =0;  */
   
   // because there is no filtering at all, we might as well ignore 3rd direction
-  for (int i=1;i<=num_dimensions;i++)
+  for (int i=2;i<=num_dimensions;i++)
   {
     
     all_1d_array_filters[i-1] = 	       
@@ -103,7 +103,7 @@ kapa0_over_kapa1(kapa0_over_kapa1_v)
       const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
       int filter_length = static_cast<int>(floor(kernel_1d.get_length()/2));
       
-      cerr << "Now doing size " << size << std::endl;
+      //cerr << "Now doing size " << size << std::endl;
       
       float inverse_sq_kapas;
       if (fabs((double)sq_kapas ) >0.000000000001)
@@ -115,6 +115,10 @@ kapa0_over_kapa1(kapa0_over_kapa1_v)
       static Array<1,float> fft_filter_1D_array_128(1,128);
       static Array<1,float> fft_filter_1D_array_256(1,256);
       static Array<1,float> fft_filter_1D_array_512(1,512);
+      static Array<1,float> fft_filter_1D_array_1024(1,1024);
+      static Array<1,float> fft_filter_1D_array_2048(1,2048);
+      static Array<1,float> fft_filter_1D_array_4096(1,4096);
+      static Array<1,float> fft_filter_1D_array_8192(1,8192);
 
       Array<1,float>* fft_filter_1D_array_ptr = 0;
       switch (size)
@@ -130,7 +134,18 @@ kapa0_over_kapa1(kapa0_over_kapa1_v)
 	break;
       case 512:
 	fft_filter_1D_array_ptr = &fft_filter_1D_array_512;
-	break;      
+	break; 
+      case 1024:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_1024;
+      case 2048:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_2048;
+	break;
+      case 4096:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_4096;
+	break;
+      case 8192:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_8192;
+	break;
       default:
 	error("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");
 	break;
