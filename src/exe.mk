@@ -31,7 +31,7 @@ $(dir)_EXES:= \
 
 # make sure make keeps the .o files
 # otherwise they will be deleted
-.PRECIOUS: $(patsubst %.cxx, $(DEST)%.o, $(filter %.cxx, $($(dir)_SOURCES))) 
+.PRECIOUS: $(patsubst %.cxx, $(DEST)%$(O_SUFFIX), $(filter %.cxx, $($(dir)_SOURCES))) 
 
 $(dir):  $($(dir)_EXES)
 
@@ -42,7 +42,9 @@ $(dir)_EXE_FILENAMES := $(addsuffix $(EXE_SUFFIX), $($(dir)_EXES))
 # it really is just a way to get $(dir) at build-time
 clean_exes_$(dir):
 	rm -f $($(@:clean_exes_%=%)_EXE_FILENAMES)
-	rm -f $(DEST)$(@:clean_exes_%=%)/*.[oP]
+	rm -f $(DEST)$(@:clean_exes_%=%)/*.[P]
+	rm -f $(DEST)$(@:clean_exes_%=%)/*$(O_SUFFIX)
+
 
 
 install_exes_$(dir): $(dir)

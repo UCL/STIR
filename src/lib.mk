@@ -25,11 +25,11 @@
 $(dir)_LIB_SOURCES:= $(addprefix $(dir)/, $($(dir)_LIB_SOURCES))
 $(dir)_REGISTRY_SOURCES:= $(addprefix $(dir)/, $($(dir)_REGISTRY_SOURCES))
 $(dir)_LIB_OBJS:= \
-	$(patsubst %.cxx, $(DEST)%.o, $(filter %.cxx, $($(dir)_LIB_SOURCES))) \
-	$(patsubst %.c, $(DEST)%.o, $(filter %.c, $($(dir)_LIB_SOURCES)))
+	$(patsubst %.cxx, $(DEST)%${O_SUFFIX}, $(filter %.cxx, $($(dir)_LIB_SOURCES))) \
+	$(patsubst %.c, $(DEST)%${O_SUFFIX}, $(filter %.c, $($(dir)_LIB_SOURCES)))
 $(dir)_REGISTRY_OBJS:= \
-	$(patsubst %.cxx, $(DEST)%.o, $(filter %.cxx, $($(dir)_REGISTRY_SOURCES))) \
-	$(patsubst %.c, $(DEST)%.o, $(filter %.c, $($(dir)_REGISTRY_SOURCES)))
+	$(patsubst %.cxx, $(DEST)%${O_SUFFIX}, $(filter %.cxx, $($(dir)_REGISTRY_SOURCES))) \
+	$(patsubst %.c, $(DEST)%${O_SUFFIX}, $(filter %.c, $($(dir)_REGISTRY_SOURCES)))
 
 build_lib_$(dir):  $($(dir)_LIB_OBJS) $($(dir)_REGISTRY_OBJS)
 
@@ -51,7 +51,8 @@ endif
 # the following work-around by Paul D Smith does the trick
 
 clean_lib_$(dir):
-	rm -f $(DEST)$(@:clean_lib_%=%)/*.[oP]
+	rm -f $(DEST)$(@:clean_lib_%=%)/*.[P]
+	rm -f $(DEST)$(@:clean_lib_%=%)/*$(O_SUFFIX)
 
 
 
