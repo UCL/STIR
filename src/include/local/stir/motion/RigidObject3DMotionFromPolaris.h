@@ -1,22 +1,20 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    For internal GE use only
+*/
 /*!
   \file
   \ingroup motion
 
-  \brief Declaration of class RigidObject3DMotionFromPolaris
+  \brief Declaration of class stir::RigidObject3DMotionFromPolaris
 
   \author  Sanida Mustafovic and Kris Thielemans
   $Date$
   $Revision$ 
 */
-
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/Polaris_MT_File.h"
@@ -24,7 +22,14 @@
 
 START_NAMESPACE_STIR
 /*! \ingroup motion
-  A class for handling motion information from the Polaris tracker
+  \brief A class for handling motion information from the Polaris tracker
+
+  Implements synchronisation by comparing gate data in the list mode file
+  with the numbers stored in the Polaris .mt file. Computes both time
+  offset and clock drift. Synchronisation is stored in a <tt>.sync</tt> file.
+  If present, this file is read and actual synchronisation is skipped.
+  (This is useful, as the synchronisation is slow as it walks through the
+  whole list mode file).
 */
 class RigidObject3DMotionFromPolaris: 
   public 
