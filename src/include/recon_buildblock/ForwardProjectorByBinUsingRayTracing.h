@@ -11,8 +11,7 @@
   \author Kris Thielemans
   \author PARAPET project
       
-   \date $Date$
-	
+   \date $Date$	
    \version $Revision$
 */
 #include "recon_buildblock/ForwardProjectorByBin.h"
@@ -25,6 +24,7 @@ START_NAMESPACE_TOMO
 template <typename elemT> class Segment;
 template <typename elemT> class Sinogram;
 template <typename elemT> class RelatedViewgrams;
+template <typename elemT> class VoxelsOnCartesianGrid;
 class ProjDataInfoCylindricalArcCorr;
 
 
