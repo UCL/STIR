@@ -48,6 +48,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
 #include "boost/static_assert.hpp"
+#include "boost/cstdint.hpp"
 #include <algorithm> // for std::swap
 #include <limits.h>
 #include <float.h>
@@ -572,11 +573,14 @@ int cti_read_image_subheader (FILE *fptr, int blknum, Image_subheader *ihead)
     return (EXIT_SUCCESS);
 }
 
+typedef int int32;
+BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
+
 FILE *cti_create (const char *fname, const ECAT6_Main_header *mhead)
 {
     FILE *fptr;
     int status;
-    long *bufr;
+    boost::int32_t *bufr;
 
         // open the file and write the header into it.
     fptr = fopen (fname, "wb+");
@@ -587,10 +591,9 @@ FILE *cti_create (const char *fname, const ECAT6_Main_header *mhead)
 	fclose (fptr);
 	return NULL;
     }
-    BOOST_STATIC_ASSERT(sizeof(long)==4);
 	
         // create a First Directory Block in the file
-    bufr = (long *) calloc (MatBLKSIZE / sizeof (long), sizeof (long));
+    bufr = (boost::int32_t *) calloc (MatBLKSIZE / sizeof (boost::int32_t), sizeof (boost::int32_t));
     if (!bufr) {
 	fclose (fptr);
 	return NULL;
@@ -617,12 +620,11 @@ FILE *cti_create (const char *fname, const ECAT6_Main_header *mhead)
 int cti_enter (FILE *fptr, long matnum, int nblks)
 {
     int i, dirblk, nxtblk, busy, oldsize;
-    long *dirbufr;           // buffer for directory block
+    boost::int32_t *dirbufr;           // buffer for directory block
     int status;
-    BOOST_STATIC_ASSERT(sizeof(long)==4);
 
         // set up buffer for directory block
-    dirbufr = (long *) calloc (MatBLKSIZE / sizeof (long), sizeof (long));
+    dirbufr = (boost::int32_t *) calloc (MatBLKSIZE / sizeof (boost::int32_t), sizeof (boost::int32_t));
     if (!dirbufr) return 0;
 
         // read first directory block from file
@@ -648,7 +650,7 @@ int cti_enter (FILE *fptr, long matnum, int nblks)
     
             // see if matnum entry is in this block
         // KT added unsigned to avoid compiler warnings
-        for (i=4; (unsigned)i<MatBLKSIZE / sizeof (long); i+=sizeof (long)) {
+        for (i=4; (unsigned)i<MatBLKSIZE / sizeof (boost::int32_t); i+=sizeof (boost::int32_t)) {
 	    if (dirbufr [i] == 0) { // skip to next block
 		busy = 0;
 		break;
@@ -750,12 +752,11 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
 {
     int blk, status;
     int nfree, nxtblk, prvblk, nused, matnbr, strtblk, endblk, matstat;
-    long *dirbufr;
-    BOOST_STATIC_ASSERT(sizeof(long)==4);
+    boost::int32_t *dirbufr;
 
         // set up buffer for directory block
     
-    dirbufr = (long *) malloc (MatBLKSIZE);
+    dirbufr = (boost::int32_t *) malloc (MatBLKSIZE);
     if (!dirbufr) return 0;
 
     blk = MatFirstDirBlk;
@@ -777,7 +778,7 @@ int cti_lookup (FILE *fptr, long matnum, MatDir *entry)
 
             // look through the entries in this block
         // KT added unsigned to avoid compiler warnings
-	for (int i=4; (unsigned)i<MatBLKSIZE / sizeof (long); i+=sizeof (long)) {
+	for (int i=4; (unsigned)i<MatBLKSIZE / sizeof (boost::int32_t); i+=sizeof (boost::int32_t)) {
 	    matnbr  = dirbufr [i];
 	    strtblk = dirbufr [i + 1];
 	    endblk  = dirbufr [i + 2];
@@ -1264,6 +1265,8 @@ void hostftovaxf (const float in, unsigned short out [2])
 	bufr - input data buffer.
 	off - index into buffer of first 16-bit word of the 32-bit value to convert.
 *******************************************************************************/
+BOOST_STATIC_ASSERT(sizeof(long)>=4);
+
 long get_vax_long (const unsigned short *bufr, int off)
 {
 #if STIRIsNativeByteOrderBigEndian
