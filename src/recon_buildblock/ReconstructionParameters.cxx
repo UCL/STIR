@@ -30,15 +30,10 @@ using std::ends;
 
 START_NAMESPACE_TOMO
 
-// KT&CL 160899 added arguments
 
 ReconstructionParameters::ReconstructionParameters()
 : ParsingObject()
 {
-
-  set_defaults();
-  initialise_keymap();
-
 }
   
 void 
@@ -147,11 +142,6 @@ bool ReconstructionParameters::post_processing()
 }
  
  
-
-string ReconstructionParameters::parameter_info() 
-{
-  return ParsingObject::parameter_info();
-}
 
 
 END_NAMESPACE_TOMO
