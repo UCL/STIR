@@ -26,8 +26,11 @@
 #include "stir/IndexRange2D.h"
 #include "stir/Sinogram.h"
 #include <string>
+#include <iostream>
 #ifndef STIR_NO_NAMESPACES
 using std::string;
+using std::ostream;
+using std::istream;
 #endif
 
 START_NAMESPACE_STIR
@@ -95,7 +98,8 @@ class FanProjData : private Array<4,float>
 public:
 
   FanProjData();
-  FanProjData(const int num_rings, const int num_detectors, const int max_ring_diff, const int fan_size);
+  FanProjData(const int num_rings, const int num_detectors_per_ring, const int max_ring_diff, const int fan_size);
+  virtual ~FanProjData();
   FanProjData& operator=(const FanProjData&);
 
   float& operator()(const int ra, const int a, const int rb, const int b);
@@ -104,8 +108,8 @@ public:
 
   void fill(const float d);
 
-  int get_min_index() const;
-  int get_max_index() const;
+  int get_min_ra() const;
+  int get_max_ra() const;
   int get_min_a() const;
   int get_max_a() const;
   int get_min_b(const int a) const;
@@ -117,17 +121,23 @@ public:
   float sum(const int ra, const int a) const;
   float find_max() const;
   float find_min() const;
-  int get_num_detectors() const;
+  int get_num_detectors_per_ring() const;
   int get_num_rings() const;
 
 
 private:
+  friend ostream& operator<<(ostream&, const FanProjData&);
+  friend istream& operator>>(istream&, FanProjData&);
   typedef Array<4,float> base_type;
-  FanProjData(const IndexRange<4>& range);
-  void grow(const IndexRange<4>&);
+  //FanProjData(const IndexRange<4>& range);
+  //void grow(const IndexRange<4>&);
   int num_rings;
-  int num_detectors;
+  int num_detectors_per_ring;
+  int max_ring_diff;
+  int half_fan_size;
 };
+
+typedef FanProjData BlockData3D;
 
 void display(const FanProjData&,const char * const);
 
@@ -135,10 +145,11 @@ void make_fan_data(FanProjData& fan_data,
 			const ProjData& proj_data);
 void set_fan_data(ProjData& proj_data,
                        const FanProjData& fan_data);
-#if 0
+
 void apply_block_norm(FanProjData& fan_data, 
-                    const BlockData& geo_data, 
+                    const BlockData3D& block_data, 
                     const bool apply= true);
+#if 0
 void apply_geo_norm(FanProjData& fan_data, 
                     const GeoData& geo_data, 
                     const bool apply= true);
@@ -176,6 +187,10 @@ float KL(const Array<num_dimensions, elemT>& a, const Array<num_dimensions, elem
     }
   return sum;
 }
+
+float KL(const DetPairData& d1, const DetPairData& d2, const float threshold);
+
+float KL(const FanProjData& d1, const FanProjData& d2, const float threshold);
 
 END_NAMESPACE_STIR
 #endif
