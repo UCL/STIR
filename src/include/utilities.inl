@@ -3,7 +3,7 @@
 //
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief inline implementations for utility.h
 
   \author Kris Thielemans
@@ -13,6 +13,11 @@
 
   \version $Revision$
 */
+#include <iostream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+#endif
 
 START_NAMESPACE_TOMO
 /*!
