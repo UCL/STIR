@@ -46,6 +46,23 @@ using std::ios;
 
 START_NAMESPACE_TOMO
 
+static void cti_data_to_float_Array(Array<2,float>&out, 
+                             char const * const buffer, const float scale_factor, int dtype);
+
+
+/*
+  \brief reads data from a CTI file into a Sinogram object
+  \param buffer is supposed to be a pre-allocated buffer (which will be modified)
+
+  It applies all scale factors.
+  */
+static void read_sinogram(Sinogram<float>& sino_2D,
+                   char *buffer, 
+		   FILE*fptr, 
+		   int mat_index, 
+		   int frame, int gate, int data, int bed);
+
+
 word find_CTI_system_type(const Scanner& scanner)
 {
   switch(scanner.get_type())
@@ -191,12 +208,12 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
   
   image_ptr = new VoxelsOnCartesianGrid<float> (range_3D, origin, voxel_size);
   
-  // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE
-  const size_t cti_data_size = x_size*y_size+ MatBLKSIZE;
-  short * cti_data= new short[cti_data_size];
-
-  // CTI stuff always assumes this
-  assert(sizeof(short) == 2);
+  NumericType type;
+  ByteOrder byte_order;
+  find_type_from_cti_data_type(type, byte_order, ihead.data_type);
+  // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE  
+  const size_t cti_data_size = x_size*y_size*type.size_in_bytes()+ MatBLKSIZE;
+  char * cti_data= new char[cti_data_size];
 
   for(int z=0; z<mhead.num_planes; z++) 
     { // loop upon planes
@@ -229,19 +246,20 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
       if(cti_rblk (cti_fptr, entry.strtblk+1, cti_data, entry.endblk-entry.strtblk)!=EXIT_SUCCESS) { // get data
 	error("\nUnable to read data\n");            
       }
-
+      if (file_data_to_host(cti_data, entry.endblk-entry.strtblk, ihead.data_type)!=EXIT_SUCCESS)
+        error("\nerror converting to host data format\n");
+      cti_data_to_float_Array((*image_ptr)[z+min_z],cti_data, scale_factor, ihead.data_type);
+#if 0
       NumericType type;
       ByteOrder byte_order;
       find_type_from_cti_data_type(type, byte_order, ihead.data_type);
-      if (!byte_order.is_native_order())
-	swab((char *)cti_data, (char *)cti_data, (entry.endblk-entry.strtblk)*MatBLKSIZE); // swab the bytes
         
       for(int y=0; y<y_size; y++)
 	for(int x=0; x<x_size; x++)
           {
             (*image_ptr)[z+min_z][y+min_y][x+min_x]=scale_factor*cti_data[y*x_size+x];
           }
-
+#endif
     } // end loop on planes
     
   delete cti_data;
@@ -273,13 +291,14 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     MatDir entry;
     const int mat_index= cti_rings2plane(num_rings, 5,5); 
     const long matnum= cti_numcod(frame_num, mat_index,gate_num, data_num, bed_num);
-    is_3D_file = cti_lookup (cti_fptr, matnum, &entry);
+    // KT 18/08/2000 add !=0 to prevent compiler warning on conversion from int to bool
+    is_3D_file = cti_lookup (cti_fptr, matnum, &entry)!=0;
   }
   int span = 1;
 
   if (!is_3D_file)
   {
-    warning("I'm guessing this is a 2D sinogram\n");
+    warning("I'm guessing this is a stack of 2D sinograms\n");
     if(mhead.num_planes == 2*num_rings-1)
     {
       span=3; 
@@ -309,20 +328,37 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 	
   // construct a ProjDataFromStream object
   shared_ptr<ProjDataFromStream>  proj_data =  NULL;
+  ScanInfoRec scanParams;
 
   {
     
-    ScanInfoRec scanParams;
-    Scan_subheader shead;
     // read first subheader for dimensions
     {     
       long matnum= cti_numcod(frame_num, 1,gate_num, data_num, bed_num);
-      if (get_scanheaders(cti_fptr, matnum, &mhead, &shead, &scanParams)!= EXIT_SUCCESS)
-        error("Error reading matnum %d\n", matnum);
-    }   
-    
-    const int num_views = shead.dimension_2;
-    const int num_tangential_poss = shead.dimension_1; 
+      switch(mhead.file_type)
+      {
+      case matScanFile:
+        {
+          Scan_subheader shead;
+          if (get_scanheaders(cti_fptr, matnum, &mhead, &shead, &scanParams)!= EXIT_SUCCESS)
+            error("Error reading matnum %d\n", matnum);
+          break;
+        }   
+      case matAttenFile:
+        {
+          Attn_subheader shead;        
+          if(get_attnheaders (cti_fptr, matnum, &mhead, 
+            &shead, &scanParams)!= EXIT_SUCCESS)
+            error("Error reading matnum %d\n", matnum);
+          break;
+        }
+      
+      default:
+        error("ECAT6_to_PDFS: unsupported file type %d\n",mhead.file_type);
+      }
+    }
+    const int num_views = scanParams.nviews;
+    const int num_tangential_poss = scanParams.nprojs; 
     
     
     ProjDataInfo* p_data_info= 
@@ -351,11 +387,14 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 
   // write to proj_data
   {
-    
-    // allocation of buffer. Provide enough space for a multiple of MatBLKSIZE
-    short* cti_data= 
-      new short[proj_data->get_num_tangential_poss()*proj_data->get_num_views() + MatBLKSIZE];
-    
+    NumericType type;
+    ByteOrder byte_order;
+    find_type_from_cti_data_type(type, byte_order, scanParams.data_type);
+    // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE  
+    const size_t cti_data_size = 
+      proj_data->get_num_tangential_poss()*proj_data->get_num_views()*type.size_in_bytes()+ MatBLKSIZE;
+    char * cti_data= new char[cti_data_size];
+     
     cout<<"\nProcessing segment number:";
     
     if (is_3D_file)
@@ -415,39 +454,55 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 
 // takes a pre-allocated buffer (which will be modified)
 void read_sinogram(Sinogram<float>& sino_2D,
-                   short *buffer, 
+                   char *buffer, 
 		   FILE*fptr, 
 		   int mat_index, 
 		   int frame, int gate, int data, int bed)
 {
   Main_header mhead;
-  Scan_subheader shead;
   ScanInfoRec scanParams;
   const long matnum=
     cti_numcod (frame,mat_index,gate,data,bed);
-  if(get_scanheaders (fptr, matnum, &mhead, 
-                               &shead, &scanParams)!= EXIT_SUCCESS)
-          error("Error reading matnum %d\n", matnum);
+  if (cti_read_main_header (fptr, &mhead) != EXIT_SUCCESS) 
+    error("read_sinogram: error reading main_header");
   
-  float scale_factor = shead.scale_factor;
-  if (shead.loss_correction_fctr>0)
-    scale_factor *= shead.loss_correction_fctr;
-  else
-    warning("\nread_sinogram warning: loss_correction_fctr invalid, using 1\n");
-
+  float scale_factor;
+  switch(mhead.file_type)
+  {
+    case matScanFile:
+      {
+        Scan_subheader shead;
+        
+        if(get_scanheaders (fptr, matnum, &mhead, 
+                            &shead, &scanParams)!= EXIT_SUCCESS)
+          error("Error reading matnum %d\n", matnum);
+        
+        scale_factor = shead.scale_factor;
+        if (shead.loss_correction_fctr>0)
+          scale_factor *= shead.loss_correction_fctr;
+        else
+          warning("\nread_sinogram warning: loss_correction_fctr invalid, using 1\n");
+        break;
+      }
+    case matAttenFile:
+      {
+        Attn_subheader shead;
+        
+        if(get_attnheaders (fptr, matnum, &mhead, 
+                            &shead, &scanParams)!= EXIT_SUCCESS)
+          error("Error reading matnum %d\n", matnum);
+        
+        scale_factor = shead.scale_factor;
+        break;
+      }
+    default:
+      error("read_sinogram: unsupported format");
+  }
   if(get_scandata (fptr, buffer, &scanParams)!= EXIT_SUCCESS)
           error("Error reading matnum %d\n", matnum);
 
-  // copy from buffer to sino_2D
-  const int min_tang_pos = sino_2D.get_min_tangential_pos_num();
-  const int min_view=  sino_2D.get_min_view_num();
-  
-  for(int y=0; y<sino_2D.get_num_views(); y++)
-    for(int x=0; x<sino_2D.get_num_tangential_poss(); x++)
-    {
-      sino_2D[y+min_view][x+min_tang_pos] =
-        scale_factor* (*buffer++);
-    }           
+  cti_data_to_float_Array(sino_2D, buffer, scale_factor, scanParams.data_type);
+
 }
 
 
@@ -746,6 +801,60 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
     delete[] cti_data;
     fclose(fptr);  
     return Succeeded::yes;
+}
+
+
+void cti_data_to_float_Array(Array<2,float>&out, 
+                             char const * const buffer, const float scale_factor, int dtype)
+{
+
+  // CTI stuff always assumes this
+  assert(sizeof(short) == 2);
+  assert(sizeof(long)==4);
+  assert(sizeof(float)==4);
+
+  switch (dtype)
+  {
+  case matByteData:
+  {
+    signed char const *  cti_data = 
+      reinterpret_cast<signed char const * const >(buffer);
+    for(int y=out.get_min_index(); y<=out.get_max_index(); y++)
+      for(int x=out[y].get_min_index(); x<=out[y].get_max_index(); x++)
+        out[y][x]=scale_factor*(*cti_data++);
+    break;
+  }
+  case matI2Data:
+  case matSunShort:
+  {
+    short const * cti_data = 
+      reinterpret_cast<short const * const >(buffer);
+    for(int y=out.get_min_index(); y<=out.get_max_index(); y++)
+      for(int x=out[y].get_min_index(); x<=out[y].get_max_index(); x++)
+        out[y][x]=scale_factor*(*cti_data++);
+    break;
+  }
+  case matI4Data:
+  case matSunLong:
+    {
+     long const * cti_data = 
+      reinterpret_cast<long const * const >(buffer);
+    for(int y=out.get_min_index(); y<=out.get_max_index(); y++)
+      for(int x=out[y].get_min_index(); x<=out[y].get_max_index(); x++)
+        out[y][x]=scale_factor*(*cti_data++);
+    break;
+  }
+  case matVAXR4Data:
+  case matStdR4:
+  {
+    float const * cti_data = 
+      reinterpret_cast<float const * const >(buffer);
+    for(int y=out.get_min_index(); y<=out.get_max_index(); y++)
+      for(int x=out[y].get_min_index(); x<=out[y].get_max_index(); x++)
+        out[y][x]=scale_factor*(*cti_data++);
+    break;
+  }
+  }
 }
 
 END_NAMESPACE_TOMO
