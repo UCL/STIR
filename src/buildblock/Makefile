@@ -22,7 +22,8 @@ CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 
 #KT 16/12 wanted to add interfile...
 #CL 060798 Add createdir for create directories of debugged or optimized files versions
-all: createdir ${DEST}libbuildblock.a #${DEST}libinterfile.a
+#CL 19/10/98 ACtivate the interfile library
+all: createdir ${DEST}libbuildblock.a ${DEST}libinterfile.a
 
 createdir: 
 	-mkdir -p $(DEST)
@@ -60,6 +61,16 @@ $(DEST)convert.o: convert.cxx ../include/pet_common.h ../include/Tensor1D.h \
  ../include/Tensor4D.h
 
 $(DEST)interfilereader.o: interfilereader.cxx
+
+#CL 19/10/98 ADd this file as I have forgotten to include it
+$(DEST)interfile.o: interfile.cxx ../include/interfile.h \
+ ../include/KeyParser.h ../include/NumericInfo.h \
+ ../include/pet_common.h ../include/imagedata.h ../include/Tensor2D.h \
+ ../include/Tensorbase.h ../include/NumericVectorWithOffset.h \
+ ../include/VectorWithOffset.h ../include/Tensor1D.h \
+ ../include/Tensor3D.h ../include/Point3D.h ../include/debug.h \
+ ../include/utilities.h ../include/sinodata.h \
+ ../include/PETScannerInfo.h
 
 $(DEST)line.o: line.cxx ../include/line.h
 
