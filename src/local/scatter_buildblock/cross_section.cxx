@@ -31,7 +31,6 @@ float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
 	  const CartesianCoordinate3D<float>& detector_coord_A,
 	  const CartesianCoordinate3D<float>& detector_coord_B, float energy)
 {
-
   const CartesianCoordinate3D<float> scatter_point_det_A = detector_coord_A - scatter_point ;  //vector from detector_A to scatter_point
   const CartesianCoordinate3D<float> scatter_point_det_B = detector_coord_B - scatter_point ;  //vector from detector_B to scatter_point
 
@@ -45,6 +44,28 @@ float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
   const float cos_theta = scalar_product/(dAS*dBS) ;
   const float sin_theta2= 1-cos_theta*cos_theta ;
   const float P= 1/(1+(energy/511.0)*(1-cos_theta));
+
+
+  return(  Re*Re/2* (P - P*P*sin_theta2 + P*P*P) );
+}
+
+float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point,
+	  const CartesianCoordinate3D<float>& detector_coord_A,
+	  const CartesianCoordinate3D<float>& detector_coord_B)
+{
+  const CartesianCoordinate3D<float> scatter_point_det_A = detector_coord_A - scatter_point ;  //vector from detector_A to scatter_point
+  const CartesianCoordinate3D<float> scatter_point_det_B = detector_coord_B - scatter_point ;  //vector from detector_B to scatter_point
+
+  float scalar_product = 0.;
+  for(int i=1;i<=3;++i)
+  scalar_product += scatter_point_det_A[i]*scatter_point_det_B[i];
+
+  const float dAS = two_points_distance(detector_coord_A,scatter_point); // the distance of the detector_A to scatter_point S
+  const float dBS = two_points_distance(detector_coord_B,scatter_point); // the distance of the detector_B to scatter_point S
+
+  const float cos_theta = scalar_product/(dAS*dBS) ;
+  const float sin_theta2= 1-cos_theta*cos_theta ;
+  const float P= 1/(2-cos_theta);
 
 
   return(  Re*Re/2* (P - P*P*sin_theta2 + P*P*P) );
