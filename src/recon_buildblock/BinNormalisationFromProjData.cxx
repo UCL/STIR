@@ -22,49 +22,13 @@
 #include "stir/shared_ptr.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ViewSegmentNumbers.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
 const char * const 
 BinNormalisationFromProjData::registered_name = "From ProjData"; 
 
-BinNormalisationFromProjData::
-BinNormalisationFromProjData()
-{
-  set_defaults();
-}
-
-BinNormalisationFromProjData::
-BinNormalisationFromProjData(const string& filename)
-    : norm_proj_data_ptr(ProjData::read_from_file(filename.c_str()))
-  {}
-
-BinNormalisationFromProjData::
-BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
-    : norm_proj_data_ptr(norm_proj_data_ptr)
-  {}
-
-void 
-BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const 
-  {
-    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
-      viewgrams.get_symmetries_ptr();
-    viewgrams *= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
-  }
-
-void 
-BinNormalisationFromProjData::
-undo(RelatedViewgrams<float>& viewgrams) const 
-  {
-    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
-      viewgrams.get_symmetries_ptr();
-    viewgrams /= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
-
-  }
 
 void 
 BinNormalisationFromProjData::set_defaults()
@@ -88,6 +52,58 @@ post_processing()
   norm_proj_data_ptr = ProjData::read_from_file(normalisation_projdata_filename);
   return false;
 }
+
+BinNormalisationFromProjData::
+BinNormalisationFromProjData()
+{
+  set_defaults();
+}
+
+BinNormalisationFromProjData::
+BinNormalisationFromProjData(const string& filename)
+    : norm_proj_data_ptr(ProjData::read_from_file(filename))
+  {}
+
+BinNormalisationFromProjData::
+BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
+    : norm_proj_data_ptr(norm_proj_data_ptr)
+  {}
+
+Succeeded 
+BinNormalisationFromProjData::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+{
+  if (*(norm_proj_data_ptr->get_proj_data_info_ptr()) == *proj_data_info_ptr)
+    return Succeeded::yes;
+  else
+  {
+    warning("BinNormalisationFromProjData: incompatible projection data\n");
+    return Succeeded::no;
+  }
+}
+
+
+void 
+BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams) const 
+  {
+    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
+    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
+      viewgrams.get_symmetries_ptr();
+    viewgrams *= 
+      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
+  }
+
+void 
+BinNormalisationFromProjData::
+undo(RelatedViewgrams<float>& viewgrams) const 
+  {
+    const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
+    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
+      viewgrams.get_symmetries_ptr();
+    viewgrams /= 
+      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
+
+  }
 
   
 END_NAMESPACE_STIR
