@@ -58,35 +58,6 @@ FullArrayIterator(const FullArrayIterator<topleveliterT, restiterT, elemT, _Ref,
     last_rest_iter(iter2.last_rest_iter)
 {}
 
-/*! We make sure that incrementing the full_iterator ends up in
-    (last_top_level_iter - 1, *(last_top_level_iter - 1).end_all()).
-    This SHOULD represent end_all() of this full_iterator.
-*/
-template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& 
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++()
-{
-  assert(current_top_level_iter < last_top_level_iter);
-  ++current_rest_iter;
-
-  if (current_rest_iter == last_rest_iter
-      && current_top_level_iter != (last_top_level_iter - 1))
-  {
-    ++current_top_level_iter;
-    current_rest_iter = (*current_top_level_iter).begin_all();
-    last_rest_iter = (*current_top_level_iter).end_all();
-  }
-  return *this;
-}
-
-template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr> 
-FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++(int)
-{
-  FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr> was = *this;
-  ++(*this);
-  return was;
-}
 
 template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
 bool 
@@ -129,6 +100,36 @@ typename FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::pointer
 FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator->() const
 {
   return &(operator*());
+}
+
+/*! We make sure that incrementing the full_iterator ends up in
+    (last_top_level_iter - 1, *(last_top_level_iter - 1).end_all()).
+    This <b>has to</b> represent end_all() of this full_iterator.
+*/
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>& 
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++()
+{
+  assert(current_top_level_iter < last_top_level_iter);
+  ++current_rest_iter;
+
+  if (current_rest_iter == last_rest_iter
+      && current_top_level_iter != (last_top_level_iter - 1))
+  {
+    ++current_top_level_iter;
+    current_rest_iter = (*current_top_level_iter).begin_all();
+    last_rest_iter = (*current_top_level_iter).end_all();
+  }
+  return *this;
+}
+
+template <class topleveliterT, class restiterT, class elemT, class _Ref, class _Ptr>
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr> 
+FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr>::operator++(int)
+{
+  FullArrayIterator<topleveliterT, restiterT, elemT, _Ref, _Ptr> was = *this;
+  ++(*this);
+  return was;
 }
 
 
