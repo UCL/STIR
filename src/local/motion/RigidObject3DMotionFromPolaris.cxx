@@ -21,7 +21,7 @@
 #include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/Quaternion.h"
-#include "local/stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecord.h"
 #include "local/stir/motion/Polaris_MT_File.h"
 
 #include <iostream>

@@ -19,7 +19,7 @@
 
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
-#include "local/stir/listmode/CListModeData.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/stream.h"
 
