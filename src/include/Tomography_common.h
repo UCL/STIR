@@ -7,7 +7,7 @@
 
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief basic configuration include file 
 
   \author Kris Thielemans
@@ -25,19 +25,23 @@
  and functions in an attempt to smooth out some system dependencies.
  It also defines some functions which are used very often.
 
- \par Macros and system dependencies:
+ <H3> Macros and system dependencies:</H3>
 
- - macros for namespace support: 
+<UL>
+ <LI> macros for namespace support: 
    #defines TOMO_NO_NAMESPACES if the compiler does not support namespaces
    #defines START_NAMESPACE_TOMO etc.
 
- - includes boost/config.hpp
+ <LI> includes boost/config.hpp
 
- - #defines TOMO_NO_COVARIANT_RETURN_TYPES when the compiler does not
+ <LI> #defines TOMO_NO_COVARIANT_RETURN_TYPES when the compiler does not
    support virtual functions of a derived class differing only in the return
    type.
+
+ <LI> #defines TOMO_NO_AUTO_PTR when the compiles has no std::auto_ptr support.
+ In that case, we #define auto_ptr to shared_ptr
    
- - preprocessor definitions which attempt to determine the 
+ <LI> preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
    use as #ifdef  __OS_WIN__ ... #elif ... #endif
    Possible values are __OS_WIN__, __OS_MAC__, __OS_VAX__, __OS_UNIX__
@@ -46,42 +50,64 @@
    (If the attempts fail to determine the correct OS, you can pass
     the correct value as a preprocessor definition to the compiler)
  
- - #includes cstdio, cstdlib, cstring, cmath
+ <LI> #includes cstdio, cstdlib, cstring, cmath
 
- - templates const T& std::min(const T& x, const T& y) and std::max (if not provided)
+ <LI> templates const T& std::min(const T& x, const T& y) and std::max (if not provided)
    (source files should still include <algorithm> though)
 
- - general definitions of operator !=, >, <= and >= in terms of == and < (if not provided)
+ <LI> general definitions of operator !=, >, <= and >= in terms of == and < (if not provided)
  
- - a feable attempt to be able to use the old strstream and 
+ <LI> a feable attempt to be able to use the old strstream and 
    the new stringstream classes in the same way
 
- - a trick to get ANSI C++ 'for' scoping rules work, even for compilers
+ <LI> a trick to get ANSI C++ 'for' scoping rules work, even for compilers
    which do not follow the new standard
 
- - #ifdef TOMO_ASSERT, then define our own assert, else include <cassert>
+ <LI> #ifdef TOMO_ASSERT, then define our own assert, else include <cassert>
 
+</UL>
 
-\par Speeding up std::copy
+<H3> Speeding up std::copy</H3>
 
- - overloads of std::copy for built-in types to use memcpy (so it's faster)
+ <UL>
+ <LI> overloads of std::copy for built-in types to use memcpy (so it's faster)
+ </UL>
 
-
-\par Tomography namespace members declared here
+<H3> Tomography namespace members declared here</H3>
   
- - const double _PI
+ <UL>
+ <LI> const double _PI
  
- - error(const char * const format_string, ...)
-   writes error information a la printf.
+ <LI> error(const char * const format_string, ...)
+   writes error information a la printf and aborts.
 
- - inline template <class NUMBER> NUMBER square(const NUMBER &x)
+ <LI> warning(const char * const format_string, ...)
+   writes warning information a la printf.
 
- */
+ <LI> inline template <class NUMBER> NUMBER square(const NUMBER &x)
+
+ <LI> an enumerated type Succeeded to be used as return value for functions
+     instead of using bools or int with unclear meaning.
+ </UL>
+*/
+
+
+// define some doxygen groups
+/*!
+\defgroup buildblock Basic building blocks
+\defgroup recon_buildblock Reconstruction building blocks
+\defgroup containsmain Files containing main()
+\defgroup test Tests of the basic building blocks
+\defgroup recontest Tests of reconstruction building blocks
+\defgroup reconstructors Reconstruction classes
+\defgroup utilities Utility programmes
+\defgroup display Display functions
+\defgroup para Parallel library 
+*/
 
 #ifdef _MSC_VER
 // disable warnings on very long identifiers for debugging information
 #pragma warning(disable: 4786)
-
 #endif // _MSC_VER
 
 #include <cstdio>
@@ -112,10 +138,18 @@
 
 
 //*************** namespace macros
+/*! \namespace Tomography
+  \brief Namespace for the PARAPET library
 
+  This namespace encompasses the whole
+  library. All classes, functions and symbols are in this namespace.
+  This has the effect that conflicts with any other library is
+  impossible (except if that library uses the same namespace...).
+ */
 #ifndef TOMO_NO_NAMESPACES
-//TODO remove
-#ifdef TOMO
+
+// TODO remove conditional
+#if !defined(OLDDESIGN)
 # define START_NAMESPACE_TOMO namespace Tomography {
 # define END_NAMESPACE_TOMO }
 # define USING_NAMESPACE_TOMO using namespace Tomography;
@@ -181,6 +215,22 @@
 
 #endif // !defined(__OS_xxx_)
 
+//************** auto_ptr
+#if defined __GNUC__
+# if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
+#  define TOMO_NO_AUTO_PTR
+# endif
+#endif
+
+#ifdef TOMO_NO_AUTO_PTR
+// first include memory, just in case there is a (supposedly flawed) auto_ptr in there
+#include <memory>
+// now include our own shared_ptr (somewhat tricky, as this will 
+// include Tomography_common again...)
+#include "shared_ptr.h"
+#define auto_ptr shared_ptr
+#endif
+
 //*************** min, max
 // STL should have min,max in <algorithm>, 
 // but vanilla VC++ has a conflict between std::min and some preprocessor defs
@@ -237,6 +287,7 @@ inline bool operator>=(const T& x, const T& y) {
 #include <algorithm>
 
 START_NAMESPACE_STD
+//! overloads std::copy for faster performance
 template <>
 inline double * 
 copy(const double * first, const double * last, double * to)
@@ -311,6 +362,11 @@ END_NAMESPACE_STD
 #  define strstream stringstream
 #  define istrstream istringstream
 #  define ostrstream ostringstream
+
+using std::stringstream;
+using std::istringstream;
+using std::ostringstream;
+
 #else
 #  include <strstream>
 #endif
@@ -367,6 +423,16 @@ void warning(const char *const s, ...);
 template <class NUMBER> 
 inline NUMBER square(const NUMBER &x) { return x*x; }
 
+//! a class containing an enumeration type that can be used by functions to signal successive operation or not
+class Succeeded
+{
+public:
+  enum value { yes, no };
+  Succeeded(const value& v) : v(v) {}
+  bool operator==(const Succeeded &v2) { return v == v2.v; }
+private:
+  value v;
+};
 
 END_NAMESPACE_TOMO
 
