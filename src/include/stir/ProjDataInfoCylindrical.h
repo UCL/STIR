@@ -24,6 +24,13 @@
 
 
 #include "stir/ProjDataInfo.h"
+#include <utility>
+#include <vector>
+
+#ifndef STIR_NO_NAMESPACES
+using std::vector;
+using std::pair;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -44,6 +51,9 @@ class ProjDataInfoCylindrical: public ProjDataInfo
 {
 
 public:
+  //! Type used by get_all_ring_pairs_for_segment_axial_pos_num()
+  typedef vector<pair<int, int> > RingNumPairs;
+
   //! Constructors
   ProjDataInfoCylindrical();
   //! Constructor given all the necessary information
@@ -83,6 +93,8 @@ public:
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;
 
+  virtual inline float get_sampling_in_m(const Bin&) const;
+
   //! Get the axial sampling (e.g in z_direction)
   /*! 
    \warning The implementation of this function currently assumes that the axial
@@ -92,11 +104,11 @@ public:
   */
   inline float get_axial_sampling(int segment_num) const;
   
-  //! Get average ring difference for the given segmnet
+  //! Get average ring difference for the given segment
   inline float get_average_ring_difference(int segment_num) const;
   //! Get minimum ring difference for the given segment 
   inline int get_min_ring_difference(int segment_num) const;
-  //! Get maximun ring difference for the given segmnet 
+  //! Get maximum ring difference for the given segment 
   inline int get_max_ring_difference(int segment_num) const;
 
   //! Set minimum ring difference
@@ -104,6 +116,10 @@ public:
   //! Set maximum ring difference
   void set_max_ring_difference(int max_ring_diff_v, int segment_num);
 
+  virtual void set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment); 
+  virtual void set_min_axial_pos_num(const int min_ax_pos_num, const int segment_num);
+  virtual void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num);
+  virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
 
   //! Get detector ring radius
   inline float get_ring_radius() const;
@@ -151,6 +167,29 @@ public:
                                             int& axial_pos_num,
                                             const int ring1,
                                             const int ring2) const;
+
+  //! Find all ring pairs that contribute to a segment and axial position
+  /*!
+    \a ring1, \a ring2 will be between 0 and scanner.get_num_rings()-1.
+
+    \warning The implementation of this function currently assumes that the axial
+    sampling is equal to the ring spacing for non-spanned data 
+    (i.e. no axial compression), while it is half the 
+    ring spacing for spanned data.
+  */
+  inline const RingNumPairs&
+    get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
+						 const int axial_pos_num) const;
+  //! Find the number of ring pairs that contribute to a segment and axial position
+  /*!
+    \warning The implementation of this function currently assumes that the axial
+    sampling is equal to the ring spacing for non-spanned data 
+    (i.e. no axial compression), while it is half the 
+    ring spacing for spanned data.
+  */
+  inline unsigned
+    get_num_ring_pairs_for_segment_axial_pos_num(const int segment_num,
+						 const int axial_pos_num) const;
 
   //! Find a ring pair that contributes to a segment and axial position
   /*!
@@ -206,9 +245,9 @@ private:
     If your compiler does not support mutable (and you don't want to upgrade
     it to something more sensible), your best bet is to remove the 
     set_*ring_difference functions, and move the content of  
-    initialise_ring_diff_arrays() to the constructor.
+    initialise_ring_diff_arrays() to the constructor. (Not recommended!)
   */
-  // TODO base::set_ax_pos et al invalidate ring_diff arrays
+
   //! This member will signal if the arrays below contain sensible info or not
   mutable bool ring_diff_arrays_computed;
   //! This member stores the offsets used in get_m()
@@ -218,11 +257,25 @@ private:
   mutable VectorWithOffset<int> ax_pos_num_offset;
   //! This member stores a table converting ring differences to segment numbers
   mutable VectorWithOffset<int> ring_diff_to_segment_num;
+  //! This member stores a table converting segment/axial_pos to ring1+ring2
+  mutable VectorWithOffset<VectorWithOffset<int> > segment_axial_pos_to_ring1_plus_ring2;
 
   //! This function sets all of the above
   void initialise_ring_diff_arrays() const;
 
   inline int get_num_axial_poss_per_ring_inc(const int segment_num) const;
+
+  //! This member will signal if the array below contain sensible info or not
+  mutable bool segment_axial_pos_to_ring_pair_allocated;
+  //! This member stores a table used by get_all_ring_pairs_for_segment_axial_pos_num()
+  mutable VectorWithOffset< VectorWithOffset < shared_ptr<RingNumPairs> > > 
+    segment_axial_pos_to_ring_pair;
+
+  //! allocate table
+  void allocate_segment_axial_pos_to_ring_pair() const;
+
+  //! initialise one element of the above table
+  void compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_pos_num) const;
 
 };
 
