@@ -140,7 +140,7 @@ ProjDataInfo::ProjDataInfo()
 
 
 
-ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner> scanner_ptr_v,
+ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
                            const VectorWithOffset<int>& num_axial_pos_per_segment_v, 
                            const int num_views_v, 
                            const int num_tangential_poss_v)
