@@ -64,7 +64,7 @@ int generate_poisson_random(const float mu)
   {
     boost::normal_distribution<base_generator_type> randomnormal(generator, mu, sqrt(mu));
     const double random = randomnormal();
-    return random<0 ? 0 : round(random);
+    return random<0 ? 0 : stir::round(random);// needs namespace as there's a global round on gcc on Linux
   }
   else
   {
