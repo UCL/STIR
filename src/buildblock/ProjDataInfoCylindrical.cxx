@@ -23,9 +23,9 @@
 #else
 #include <sstream>
 #endif
-#if 0
-#include <iostream>
-#endif
+
+#include "tomo/round.h"
+
 
 #ifndef TOMO_NO_NAMESPACES
 using std::min_element;
@@ -58,7 +58,6 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
   ring_radius = get_scanner_ptr()->get_ring_radius();
   ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
 
-  view_mashing_factor = get_scanner_ptr()->get_num_detectors_per_ring()/2 / num_views;
   assert(get_scanner_ptr()->get_num_detectors_per_ring() % (2*num_views) == 0);
 
   assert(min_ring_diff.get_length() == max_ring_diff.get_length());
@@ -113,32 +112,67 @@ initialise_ring_diff_arrays() const
   // initialise ax_pos_num_offset 
   { 
     const int num_rings = get_scanner_ptr()->get_num_rings();
-    ax_pos_num_offset.grow(get_min_segment_num(),get_max_segment_num());
+    ax_pos_num_offset =
+      VectorWithOffset<int>(get_min_segment_num(),get_max_segment_num());
     
-    /* ax_pos_num will be determined by looking at ring1+ring2
-       it's a bit complicated because of dependency on the 'axial compression' (or 'span')
-       If get_num_rings_per_axial_pos(segment_num)==1 (i.e. no axial compression)
-       then ring1+ring2 increments in steps of 2 in the segment. So, 
-       ax_pos_num = (ring1+ring2)/2 + some offset.
-       In the other case (i.e. axial compression), ring1+ring2 increments in steps of 1, so
-       ax_pos_num = (ring1+ring2) + some offset.
+    /* ax_pos_num will be determined by looking at ring1+ring2.
+       This also works for axially compressed data (i.e. span) as
+       ring1+ring2 is constant for all ring-pairs combined into 1
+       segment,ax_pos.
+
+       Ignoring the difficulties of axial compression for a second, it is clear that
+       for a given bin, there will be 2 rings as follows:
+         ring1 = get_m(bin)/ring_spacing  + ring_diff/2 + (num_rings-1)/2
+         ring2 = get_m(bin)/ring_spacing  - ring_diff/2 + (num_rings-1)/2
+       This follows from the fact that get_m() returns the z position
+       in millimeter of the middle of the LOR w.r.t. the middle of the scanner.
+       The (num_rings-1)/2 shifts the origin such that the first ring has 
+       ring_num==0.
+
+       From the above, it follows that
+         ring1+ring2=2*get_m(bin)/ring_spacing + (num_rings-1)
+       Finally, we use the formula for get_m to obtain
+         ring1+ring2=2*ax_pos_num/get_num_axial_poss_per_ring_inc(segment_num)
+	             -2*m_offset[segment_num]/ring_spacing + (num_rings-1)
+       Solving this for ax_pos_num:
+         ax_pos_num = (ring1+ring2-(num_rings-1)
+                       + 2*m_offset[segment_num]/ring_spacing
+		      ) * get_num_axial_poss_per_ring_inc(segment_num)/2
+
+       We could plug m_offset in to obtain
+         ax_pos_num = (ring1+ring2-(num_rings-1)
+		      ) * get_num_axial_poss_per_ring_inc(segment_num)/2.
+                      +
+		      (get_max_axial_pos_num(segment_num) 
+		        + get_min_axial_pos_num(segment_num) )/2.
+       this formula is easy to understand, but we don't use it as
+       at some point somebody might change m_offset
+       and forget to change this code... 
+       (also, the form above would need float division and then rounding)
        */
     for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
     {
-#if 0 
-      // TODO all this wouldn't work on HiDAC data or so (for instance even number of planes in seg 0)
-      // this first offset would shift the 0 of ax_pos_num to the centre of the scanner
       ax_pos_num_offset[segment_num] =
-        num_rings - 1;
-      
-      // now shift origin such that the middle of the ax_pos_num range corresponds to the the centre of the scanner
-      // first check that we don't end up with half-integer indices
-      assert((get_max_axial_pos_num(segment_num) + get_min_axial_pos_num(segment_num)) %
-          get_num_rings_per_axial_pos(segment_num) == 0);
-#endif
-      ax_pos_num_offset[segment_num] -=
-          (get_max_axial_pos_num(segment_num) + get_min_axial_pos_num(segment_num))/
-          get_num_rings_per_axial_pos(segment_num);
+        round((num_rings-1) - 2*m_offset[segment_num]/ring_spacing);
+      // check that it was integer
+      assert(fabs(ax_pos_num_offset[segment_num] -
+		  ((num_rings-1) - 2*m_offset[segment_num]/ring_spacing)) < 1E-4);
+
+      if (get_num_axial_poss_per_ring_inc(segment_num)==1)
+	{
+	  // check that we'll get an integer ax_pos_num, i.e. 
+	  // (ring1+ring2  - ax_pos_num_offset) has to be even, for any
+          // ring1,ring2 in the segment, i.e ring1-ring2 = ring_diff, so
+	  // ring1+ring2 = 2*ring2 + ring_diff
+	  assert(get_min_ring_difference(segment_num) ==
+		 get_max_ring_difference(segment_num));
+	  if ((get_max_ring_difference(segment_num) -
+	       ax_pos_num_offset[segment_num]) % 2 != 0)
+	    warning("ProjDataInfoCylindrical: the number of axial positions in "
+		    "segment %d is such that current conventions will place "
+		    "the LORs shifted with respect to the physical rings.\n",
+		    segment_num);
+      }
     }
   }
   // initialise ring_diff_to_segment_num
@@ -147,7 +181,12 @@ initialise_ring_diff_arrays() const
       *min_element(min_ring_diff.begin(), min_ring_diff.end());
     const int max_ring_difference = 
       *max_element(max_ring_diff.begin(), max_ring_diff.end());
-    ring_diff_to_segment_num.grow(min_ring_difference, max_ring_difference);
+    ring_diff_to_segment_num =
+      VectorWithOffset<int>(-(get_scanner_ptr()->get_num_rings()-1), get_scanner_ptr()->get_num_rings()-1);
+    // first set all to impossible value
+    // warning: get_segment_num_for_ring_difference relies on the fact that this value
+    // is larger than get_max_segment_num()
+    ring_diff_to_segment_num.fill(get_max_segment_num()+1);
 
     for(int ring_diff=min_ring_difference; ring_diff <= max_ring_difference; ++ring_diff) 
     {    
@@ -168,7 +207,6 @@ initialise_ring_diff_arrays() const
       {
         warning("ProjDataInfoCylindrical: ring difference %d does not belong to a segment\n",
           ring_diff);
-        ring_diff_to_segment_num[ring_diff] = get_max_segment_num()+1;
       }
     }
   }
@@ -176,6 +214,36 @@ initialise_ring_diff_arrays() const
   ring_diff_arrays_computed = true;
 }
 
+void
+ProjDataInfoCylindrical::
+get_ring_pair_for_segment_axial_pos_num(int& ring1,
+					int& ring2,
+					const int segment_num,
+					const int axial_pos_num) const
+{
+  // can do only span=1 at the moment
+  if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
+    error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression\n");
+
+  // see documentation above for formulas
+        
+  const int ring1_plus_ring2 =
+    round(2*axial_pos_num/get_num_axial_poss_per_ring_inc(segment_num)
+	  -2*m_offset[segment_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1));
+  // check that it was integer
+  assert(fabs(
+	      ring1_plus_ring2 -
+	      (2*axial_pos_num/get_num_axial_poss_per_ring_inc(segment_num)
+	       -2*m_offset[segment_num]/ring_spacing + (get_scanner_ptr()->get_num_rings()-1))
+	      ) < 1E-4) ;
+
+  const int ring_diff = get_max_ring_difference(segment_num);
+
+  ring1 = (ring1_plus_ring2 + ring_diff)/2;
+  ring2 = (ring1_plus_ring2 - ring_diff)/2;
+  assert((ring1_plus_ring2 + ring_diff)%2 == 0);
+  assert((ring1_plus_ring2 - ring_diff)%2 == 0);
+}
 
 /*
 void
@@ -209,6 +277,7 @@ void
 ProjDataInfoCylindrical::
 set_ring_spacing(float ring_spacing_v)
 {
+  ring_diff_arrays_computed = false;
   ring_spacing = ring_spacing_v;
 }
 
