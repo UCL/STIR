@@ -150,6 +150,24 @@ const int max_filename_length = 1000;
 extern const char * const 
 find_filename(const char * const filename_with_directory);
 
+// KT 19/03/99 new
+// Checks if the filename points to an absolute location, or is
+// a relative (e.g. to current directory) pathname.
+extern bool
+is_absolute_pathname(const char * const filename_with_directory);
+
+// KT 19/03/99 new
+// Prepend directory_name to the filename, but only
+// if !is_absolute_pathname(filename_with_directory)
+// If necessary, a directory separator is inserted.
+// Return a pointer to the start of the new filename
+// Warning: this function assumes that filename_with_directory 
+// points to sufficient allocated space to contain the new string
+extern char *
+prepend_directory_name(char * filename_with_directory, 
+		       const char * const directory_name);
+
+
 // Append 'extension' to 'filename_with_directory'
 // if no '.' is found in 'filename_with_directory'
 // (excluding the directory part)
