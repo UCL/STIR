@@ -134,9 +134,11 @@ public:
   float get_scale_factor() const;  
 
     
-private:
-  //! the file with the data
+protected:
+  //! the stream with the data
   shared_ptr<iostream> sino_stream;
+
+private:
   //! offset of the whole 3d sinogram in the stream
   streamoff  offset;
   
