@@ -37,6 +37,17 @@ main()
       break;
     }
 
+
+  // KT 02/07/98 new
+  {
+    scanner.num_bins /= ask_num("Reduce num_bins by factor", 1,16,1); 
+    scanner.num_views /= ask_num("Reduce num_views by factor", 1,16,1);  
+    // scanner.num_rings /= 1;
+
+    scanner.bin_size = 2* scanner.FOV_radius / scanner.num_bins;
+    // scanner.ring_spacing = scanner.FOV_axial / scanner.num_rings;
+  }    
+
   int disp = ask_num("Display images ? (0: No, 1: Yes)", 0, 1, 1);
 
   int save = ask_num("Save  images (0: No, 1: Yes) ? ", 0,1,0);
@@ -56,10 +67,40 @@ main()
 					  -(scanner.num_bins/2), max_bin),
 			 origin, voxel_size);
 
- 
+  // KT 02/07/98 moved image initialisation out of the loop
+  const int nbins = scanner.num_bins;
+
+  int xs = ask_num("Start X coordinate", -nbins/2, max_bin, 0);
+  int ys = ask_num("Start Y coordinate", -nbins/2, max_bin, 0);
+  int zs = ask_num("Start Z coordinate", 0, 2*scanner.num_rings-2, 0);
+  
+  int xe = ask_num("End X coordinate", -nbins/2, max_bin, xs);
+  int ye = ask_num("End Y coordinate", -nbins/2, max_bin, ys);
+  int ze = ask_num("End Z coordinate", 0, 2*scanner.num_rings-2, zs);
+  
+  
+  cerr << "Start coordinate: (x,y,z) = (" 
+       << xs << ", " << ys << ", " << zs  
+       << ")" << endl;
+  cerr << "End   coordinate: (x,y,z) = (" 
+       << xe << ", " << ye << ", " << ze  
+       << ")" << endl;	
+  
+  image.fill(0);
+  for (int z=zs; z<=ze; z++)
+    for (int y=ys; y <= ye; y++)
+      for (int x=xs; x<= xe; x++)
+	image[z][y][x] = 1; 
+  
+  if (disp)
+    {
+      cerr << "Displaying start image";
+      display(Tensor3D<float>(image));
+    }
+	  
 
 
-  while(true)
+  do
     {
       int max_ring_diff = scanner.num_rings-1; // DB another 'Advanced' bug fixed
       if (scanner_num == 3) // GE Advance
@@ -67,8 +108,9 @@ main()
 
       int abs_ave_ring_diff = ask_num("Ring difference to forward project (0 to end)",
 				      0, max_ring_diff, 0);
-      if (abs_ave_ring_diff == 0)
-	break;
+      // KT 02/07/98 allow segment 0
+      //if (abs_ave_ring_diff == 0)
+      // break;
 
       //      int abs_segment_num = segment_num >= 0 ? segment_num : -segment_num;
       int abs_segment_num = abs_ave_ring_diff;
@@ -83,6 +125,10 @@ main()
 	  }
 	else
 	  abs_segment_num--;
+
+      bool use_2D_forwardprojection =  
+	 (ask_num("Use 2D forward projection (2) or 3D for segment 0 (3) ? ",
+		    2,3,2) == 2);
 
       PETSegmentByView 
 	segment_pos(
@@ -112,51 +158,38 @@ main()
 	const int nviews = scanner.num_views;
 	cerr << "Special views are at 0, "
 	     << nviews/4 <<", " << nviews/2 <<", " << nviews/4*3 << endl;
-	int view = ask_num("View", 0, nviews-1, 0);
-        int view_to_process = view % (nviews/2);
-	if (view_to_process > nviews/4)
-	  view_to_process = nviews/2 - view_to_process;
-	cerr << endl
-	     << "Symmetry related view which will be passed to forward_project :"
-	     << view_to_process << endl;
-	cerr << endl
-	     << " Image filling" << endl;
-	cerr << endl << endl;
-
-	const int nbins = scanner.num_bins;
-
-	int xs = ask_num("Start X coordinate", -nbins/2, max_bin, 0);
-	int ys = ask_num("Start Y coordinate", -nbins/2, max_bin, 0);
-	int zs = ask_num("Start Z coordinate", 0, 2*scanner.num_rings-2, 0);
-	
-	int xe = ask_num("End X coordinate", -nbins/2, max_bin, xs);
-	int ye = ask_num("End Y coordinate", -nbins/2, max_bin, ys);
-	int ze = ask_num("End Z coordinate", 0, 2*scanner.num_rings-2, zs);
-	
-	
-	cerr << "Start coordinate: (x,y,z) = (" 
-	   << xs << ", " << ys << ", " << zs  
-	     << ")" << endl;
-	cerr << "End   coordinate: (x,y,z) = (" 
-	     << xe << ", " << ye << ", " << ze  
-	     << ")" << endl;	
-
-	image.fill(0);
-	for (int z=zs; z<=ze; z++)
-	  for (int y=ys; y <= ye; y++)
-	    for (int x=xs; x<= xe; x++)
-	      image[z][y][x] = 1; 
-	  
-	if (disp)
-	  {
-	    cerr << "Displaying start image";
-	    display(Tensor3D<float>(image));
-	  }
-	  
+	// KT 02/07/98 allow more views
+	int start_view = ask_num("Start view", 0, nviews-1, 0);
+	int end_view = ask_num("End   view", 0, nviews-1, start_view);
         CPUTimer timer;
 	timer.restart();
-	forward_project(image, segment_pos, segment_neg, view_to_process);
 
+	
+	Tensor1D<int> processed_views(0, nviews/4);
+
+	for (int view= start_view; view<=end_view; view++)
+	  { 
+	    int view_to_process = view % (nviews/2);
+	    if (view_to_process > nviews/4)
+	      view_to_process = nviews/2 - view_to_process;
+	    if (processed_views[view_to_process])
+	      continue;
+	    processed_views[view_to_process] = 1;
+
+	    cerr << endl
+		 << "Symmetry related view which will be passed to forward_project :"
+		 << view_to_process << endl;
+
+	    if (segment_pos.get_segment_num() == 0 && use_2D_forwardprojection)
+	      {
+		forward_project_2D(image, segment_pos, view_to_process);
+	      }
+	    else
+	      {
+		forward_project(image, segment_pos, segment_neg, view_to_process);
+	      }
+
+	  }
 
 	timer.stop();
 	cerr << timer.value() << " s CPU time"<<endl;
@@ -201,6 +234,7 @@ main()
       }
 
     }
+    while (ask_num("One more (0: No, 1: Yes) ? ", 0,1,1));
 
   return 0;
 
