@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -11,9 +11,8 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
 
@@ -24,10 +23,12 @@
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "Scanner.h"
 #include "Bin.h"
+#include "tomo/round.h"
 #include <fstream>
-
+#include <algorithm>
 #ifndef TOMO_NO_NAMESPACES
 using std::ifstream;
+using std::max;
 #endif
 
 START_NAMESPACE_TOMO
@@ -75,26 +76,16 @@ static void find_sampling_and_z_size(
 
     // TODO make this independent on segment etc.
     z_sampling = 
-      proj_data_info_ptr->get_t(Bin(0,0,1,0)) - proj_data_info_cyl_ptr->get_t(Bin(0,0,0,0));
+      proj_data_info_ptr->get_sampling_in_t(Bin(0,0,1,0));
 
-    z_size = proj_data_info_cyl_ptr->get_num_axial_poss(0);
+    z_size = proj_data_info_ptr->get_num_axial_poss(0);
   }
 
   // now do s_sampling
-
-  if (const ProjDataInfoCylindricalArcCorr*
-        proj_data_info_cyl_ptr = 
-	dynamic_cast<const ProjDataInfoCylindricalArcCorr*>(proj_data_info_ptr))
-  {
-    // the case of cylindrical data, arc corrected
-    s_sampling =  proj_data_info_cyl_ptr->get_tangential_sampling();
-  }
-  else
-  {   
-    // TODO make this independent on segment etc.
+  // TODO make this independent on segment etc.
     s_sampling = 
-      proj_data_info_ptr->get_s(Bin(0,0,0,1)) - proj_data_info_cyl_ptr->get_s(Bin(0,0,0,0));
-  }
+      proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,1));
+
 }
 
 template<class elemT>   		            		      
@@ -116,10 +107,25 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
       CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
       );
     
+  int xy_size_used = xy_size;
+
+  if (xy_size==-1)
+    {
+      // default it to cover full FOV
+      const float FOVradius_in_mm = 
+	max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
+	    -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
+      xy_size_used = round(2*FOVradius_in_mm / get_voxel_size().x());
+    }
+  if (xy_size_used<0)
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative xy_size %d\n", 
+	  xy_size_used);
+  if (xy_size_used==0)
+    warning("VoxelsOnCartesianGrid: constructed image with xy_size 0\n");
 
   IndexRange3D range (0, z_size-1, 
-    -(xy_size/2), -(xy_size/2) + xy_size-1,
-    -(xy_size/2), -(xy_size/2) + xy_size-1);
+		      -(xy_size_used/2), -(xy_size_used/2) + xy_size_used-1,
+		      -(xy_size_used/2), -(xy_size_used/2) + xy_size_used-1);
   
   grow(range);
   
@@ -144,7 +150,14 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
       CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
       );
   
-  int xy_size = proj_data_info.get_num_tangential_poss();
+  int xy_size = -1;
+  {
+    // default it to cover full FOV
+    const float FOVradius_in_mm = 
+      max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
+	  -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
+    xy_size = round(2*FOVradius_in_mm / get_voxel_size().x());
+  }
   if (make_xy_size_odd && (xy_size%2 == 0))
     xy_size++;
   
@@ -236,11 +249,12 @@ VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
 template<class elemT>
 VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
 {
- 
+  // this is completely superseded by read_from_file
+  // TODO make into something else useful?
 
   // Open file with data
   ifstream input;
-  // KT 21/10/98 use new function
+  
   ask_filename_and_open(
     input, "Enter filename for input image", ".v", 
     ios::in | ios::binary);
@@ -248,32 +262,6 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
    Scanner * scanner_ptr = 
     Scanner::ask_parameters();
 
-#if 0
-  int scanner_num = 
-      ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);
- 
-  Scanner scanner;
-  switch( scanner_num )
-    {
-    case 0:
-      scanner = (Scanner::RPT); 
-      break;
-    case 1:
-      scanner = (Scanner::E953); 
-      break;
-    case 2:
-      scanner = (Scanner::E966); 
-      break;
-    case 3:
-      scanner = (Scanner::Advance); 
-      break;
-        case 4:// CL 061298 Add ART scanner
-      scanner = (Scanner::ART); 
-      break;
-    default:
-      error("Wrong scanner number\n");
-    }
-#endif
 
   NumericType data_type;
   {
