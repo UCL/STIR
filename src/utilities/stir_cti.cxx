@@ -41,12 +41,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
 using std::fstream;
 using std::ios;
+using std::min;
 #endif
 
 START_NAMESPACE_STIR
@@ -782,7 +784,8 @@ DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density,
 
 Succeeded 
 ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhead,
-                  const int frame_num, const int gate_num, const int data_num, const int bed_num)
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num,
+		  const bool write_2D_sinograms)
 {
   if (mhead.file_type!= matScanFile)
   {
@@ -791,20 +794,30 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhea
             frame_num, gate_num, data_num, bed_num);
     return Succeeded::no;
   }
+
+  const int max_segment_num = 
+    write_2D_sinograms
+    ? 0
+    :
+      min(proj_data.get_max_segment_num(), -proj_data.get_min_segment_num())
+;
+  const int min_segment_num = - max_segment_num;
+
   {
     int num_planes = 0;
-    for(int segment_num=proj_data.get_min_segment_num();
-        segment_num <= proj_data.get_max_segment_num();
-        ++segment_num)
-     num_planes+= proj_data.get_num_axial_poss(segment_num);
-  
+    for(int segment_num=min_segment_num;
+	segment_num <= max_segment_num;
+	++segment_num)
+      num_planes+= proj_data.get_num_axial_poss(segment_num);
+    
     if (mhead.num_planes!=num_planes)
-    {
-      warning("ProjData_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
-              "Main header.num_planes should be %d\n",
-              frame_num, gate_num, data_num, bed_num,num_planes);
-      return Succeeded::no;
-    }
+      {
+	warning("ProjData_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
+		"Main header.num_planes should be %d, but is %d\n",
+		frame_num, gate_num, data_num, bed_num,num_planes, mhead.num_planes);
+	if (mhead.num_planes<num_planes)
+	  return Succeeded::no;
+      }
   }
   
   Scan_subheader shead= scan_zero_fill();
@@ -840,21 +853,46 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhea
         proj_data_info_cyl_ptr->get_tangential_sampling();
     }
   }
+    
+  // find num_rings and check span
+  int num_rings = proj_data.get_num_axial_poss(0);
+  {
+    ProjDataInfoCylindrical const * const
+      proj_data_info_cyl_ptr =
+      dynamic_cast<ProjDataInfoCylindrical const * const>
+      (proj_data.get_proj_data_info_ptr());
+    if (proj_data_info_cyl_ptr!=NULL)
+      {
+	// check if spanned data in segment 0
+	if (proj_data_info_cyl_ptr->get_min_ring_difference(0) <
+	    proj_data_info_cyl_ptr->get_max_ring_difference(0))
+	  {
+	    if (write_2D_sinograms)
+	      num_rings = (proj_data.get_num_axial_poss(0)+1)/2;
+	    else
+	      {
+		warning("Can only handle span==1 data. Exiting\n");
+		return Succeeded::no;
+	      }
+	  }
+      }
+  }
+	      
+
+  if (num_rings != proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings())
+{
+    warning("Expected %d num_rings from scanner while segment 0 implies %d rings\n",
+            proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings(), num_rings);
+}
   
   short *cti_data= new short[plane_size];
   Array<2,short> short_sinogram(IndexRange2D(min_view,proj_data.get_max_view_num(),
     min_bin,proj_data.get_max_tangential_pos_num()));
-  
-  const int num_rings = proj_data.get_num_axial_poss(0);
-  if (num_rings != proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings())
-    warning("Expected %d num_rings from scanner while segment 0 has %d planes\n",
-            proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings(), num_rings);
-  
-  
+
   cout<<endl<<"Processing segment number:";
   
-  for(int segment_num=proj_data.get_min_segment_num();
-      segment_num <= proj_data.get_max_segment_num();
+  for(int segment_num=min_segment_num;
+      segment_num <= max_segment_num;
       ++segment_num)
   {    
     cout<<"  "<<segment_num;
@@ -863,9 +901,11 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhea
     const int num_axial_poss= proj_data.get_num_axial_poss(segment_num);
     const int min_axial_poss= proj_data.get_min_axial_pos_num(segment_num);
     
-    if (num_axial_poss != num_rings - abs(segment_num))
+    if (!write_2D_sinograms && num_axial_poss != num_rings - abs(segment_num))
     {
-      warning("Can only handle span==1 data. Exiting\n");
+      warning("Can only handle span==1 data. Number of sinograms in this segment "
+	      "should be %d. Exiting\n",  num_rings - abs(segment_num));
+      delete[] cti_data;
       return Succeeded::no;
     }
     
@@ -894,7 +934,10 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhea
       else
       { ring1= z+abs(segment_num); ring2= z; }
       
-      const int indexcod= cti_rings2plane( num_rings, ring1, ring2); // change indexation into CTI
+      const int indexcod= 
+	write_2D_sinograms 
+	? z+1
+	: cti_rings2plane( num_rings, ring1, ring2); // change indexation into CTI
       const long matnum= cti_numcod(frame_num, indexcod, gate_num, data_num, bed_num);
       if(cti_write_scan(fptr, matnum, &shead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) 
       {
@@ -913,7 +956,8 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhea
 
 Succeeded 
 ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string const & orig_name,
-                  const int frame_num, const int gate_num, const int data_num, const int bed_num)
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num,
+		  const bool write_2D_sinograms)
 {  
   Main_header mhead;
   make_ECAT6_main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
@@ -922,7 +966,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
   FILE *fptr= cti_create(cti_name.c_str(), &mhead);   
   Succeeded result =
     ProjData_to_ECAT6(fptr, proj_data, mhead, 
-    frame_num, gate_num,data_num, bed_num);
+		      frame_num, gate_num,data_num, bed_num, write_2D_sinograms);
   
   fclose(fptr);    
   return result;
