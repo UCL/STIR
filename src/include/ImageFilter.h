@@ -42,7 +42,8 @@ class ImageFilter
   void build(const DiscretisedDensity<3,float>& representative_image,double fwhmx_dir=0,double fwhmz_dir=0,float Nx_dir=0.0,float Nz_dir=0.0);
 
   //! does 3D convolution with the filter
-  void apply(DiscretisedDensity<3,float>& input_image, bool applying_threshold=false);
+  void apply(DiscretisedDensity<3,float>& input_image, bool
+applying_threshold=true);
 
   //! constructor
    ImageFilter();
