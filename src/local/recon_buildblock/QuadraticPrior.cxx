@@ -13,6 +13,7 @@
 */
 
 #include "local/tomo/recon_buildblock/QuadraticPrior.h"
+#include "tomo/Succeeded.h"
 #include "DiscretisedDensityOnCartesianGrid.h"
 #include "IndexRange3D.h"
 #include "interfile.h"
