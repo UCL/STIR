@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -19,9 +19,8 @@
   \author (based on C version by Matthias Egger)
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 // enable this variable if you need to handle very oblique LORs
 #define MOREZ
@@ -37,6 +36,8 @@
   - views : view, view+90 degrees, 180 degrees - view, 90 degrees - view
   - s,-s symmetry (while being careful when s==0 to avoid self-symmetric 
     cases)
+
+  For historical reasons, 'axial_pos_num' is here called 'ring'.
 
   Note: encoding used in Proj2424
   Proj2424[n][f][ms][b]
@@ -129,8 +130,9 @@ So, it could be more expensive to construct the Projptr and fill it in from the
 viewgrams, compared to use the viewgrams directly.
 */
 
-static const double epsilon = 1e-10;
 START_NAMESPACE_TOMO
+
+static const double epsilon = 1e-10;
 
 /* 
    This declares a local function that finds the first voxel in the beam, and 
@@ -145,12 +147,11 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
                               const float image_rad,
-			      //const float d_sl,
 			      const double d_sl,
                               int&X1, int&Y1, int& Z1,
                               double& ds, double& dz, double& dzhor, double& dzvert,
-                              const float num_planes_per_virtual_ring,
-			      const float virtual_ring_offset);
+                              const float num_planes_per_axial_pos,
+			      const float axial_pos_to_z_offset);
 /****************************************************************************
 
    backproj3D_Cho_view_viewplus90 backprojects 4 beams related by
@@ -172,18 +173,18 @@ linear_interpolation_backproj3D_Cho_view_viewplus90
                                const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                                float delta,
                                float cphi, float sphi, int s, int ring0,
-                               const float num_planes_per_virtual_ring,
-			       const float virtual_ring_offset)
+                               const int num_planes_per_axial_pos,
+			       const float axial_pos_to_z_offset)
 {
   // KT 04/05/2000 new check
 #if PIECEWISE_INTERPOLATION
-  if (num_planes_per_virtual_ring==1 && delta !=0)
+  if (num_planes_per_axial_pos==1 && delta !=0)
     error("This version of the backprojector cannot be used for span>1. \
 Recompile %s with PIECEWISE_INTERPOLATION=0", __FILE__);
 #else
 #ifdef ALTERNATIVE
   // TODO
-  if (num_planes_per_virtual_ring==1 && delta !=0)
+  if (num_planes_per_axial_pos==1 && delta !=0)
     error("This version of the backprojector cannot be used for span>1. \
 Recompile %s with ALTERNATIVE not #defined", __FILE__);
 #endif
@@ -210,7 +211,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   double dsdiag,dzdiag,dz;
   int X,Y,Z,Q;
 
-  const float ring_unit = 1./num_planes_per_virtual_ring;
+  const float ring_unit = 1./num_planes_per_axial_pos;
   
   // in our current coordinate system, the following constant is always 2
   // TODO remove assumption
@@ -225,7 +226,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   const float image_rad = fovrad_in_mm/image.get_voxel_size().x();
   //const int image_rad = (int)((image.get_x_size()-1)/2);
 
-  //KTxxx allow min_z!=0 in all comparisons below
+  //KT 20/06/2001 allow min_z!=0 in all comparisons below
   const int minplane =  image.get_min_z(); 
   const int maxplane =  image.get_max_z(); 
    
@@ -235,8 +236,8 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 		    image_rad, image.get_voxel_size().z(),
 		    X, Y, Z,
 		    ds, dz, dzhor, dzvert,
-                    num_planes_per_virtual_ring,
-		    virtual_ring_offset);
+                    num_planes_per_axial_pos,
+		    axial_pos_to_z_offset);
 
     /* 
      The formulas below give the values to update a pixel.
@@ -544,12 +545,12 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   // Z+Q = 2*centre_of_LOR_in_image_coordinates
   // Note that we are backprojecting ring0 and ring0+1, so we mirror around ring0+0.5
   // original  Q = (int)  (4*ring0+2*delta+2-Z + 0.5);
-  // CL&KT 21/12/99 added virtual_ring_offset and num_planes_per_physical_ring
+  // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
   {
     // first compute it as floating point (although it has to be an int really)
-    const float Qf = (2*num_planes_per_virtual_ring*(ring0 + 0.5) 
+    const float Qf = (2*num_planes_per_axial_pos*(ring0 + 0.5) 
                       + num_planes_per_physical_ring*delta
-	              + 2*virtual_ring_offset
+	              + 2*axial_pos_to_z_offset
 	              - Z); 
     // now use rounding to be safe
     Q = (int)floor(Qf + 0.5);
@@ -973,18 +974,18 @@ linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
                                                       float delta,
                                                       float cphi, float sphi,
                                                       int s, int ring0,
-                                                      const float num_planes_per_virtual_ring,
-						      const float virtual_ring_offset)
+                                                      const int num_planes_per_axial_pos,
+						      const float axial_pos_to_z_offset)
 {
   // KT 04/05/2000 new check
 #if PIECEWISE_INTERPOLATION
-  if (num_planes_per_virtual_ring==1 && delta !=0)
+  if (num_planes_per_axial_pos==1 && delta !=0)
     error("This version of the backprojector cannot be used for span>1. \
 Recompile %s with PIECEWISE_INTERPOLATION=0", __FILE__);
 #else
 #ifdef ALTERNATIVE
   // TODO
-  if (num_planes_per_virtual_ring==1 && delta !=0)
+  if (num_planes_per_axial_pos==1 && delta !=0)
     error("This version of the backprojector cannot be used for span>1. \
 Recompile %s with ALTERNATIVE not #defined", __FILE__);
 #endif
@@ -1005,7 +1006,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   }
 #endif
 
-  const float ring_unit = 1./num_planes_per_virtual_ring;
+  const float ring_unit = 1./num_planes_per_axial_pos;
   // CL&KT 21/12/99 new
   // in our current coordinate system, the following constant is always 2
   const int num_planes_per_physical_ring = 2;
@@ -1032,8 +1033,8 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 		    image_rad, image.get_voxel_size().z(),
 		    X, Y, Z,
 		    ds, dz, dzhor, dzvert,                    
-                    num_planes_per_virtual_ring,
-		    virtual_ring_offset);
+                    num_planes_per_axial_pos,
+		    axial_pos_to_z_offset);
 
   // K1, K2, K3 invariants
 
@@ -1540,12 +1541,12 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   // Z+Q = 2*centre_of_LOR_in_image_coordinates
   // Note that we are backprojecting ring0 and ring0+1, so we mirror around ring0+0.5
   // original  Q = (int)  (4*ring0+2*delta+2-Z + 0.5);
-  // CL&KT 21/12/99 added virtual_ring_offset and num_planes_per_physical_ring
+  // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
   {
     // first compute it as floating point (although it has to be an int really)
-    const float Qf = (2*num_planes_per_virtual_ring*(ring0 + 0.5) 
+    const float Qf = (2*num_planes_per_axial_pos*(ring0 + 0.5) 
                       + num_planes_per_physical_ring*delta
-	              + 2*virtual_ring_offset
+	              + 2*axial_pos_to_z_offset
 	              - Z); 
     // now use rounding to be safe
     Q = (int)floor(Qf + 0.5);
@@ -2169,8 +2170,8 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
                               const float image_rad, const double d_sl,
                               int&X1, int&Y1, int& Z1,
                               double& ds, double& dz, double& dzhor, double& dzvert,			      
-                              const float num_planes_per_virtual_ring,
-			      const float virtual_ring_offset)
+                              const float num_planes_per_axial_pos,
+			      const float axial_pos_to_z_offset)
 {
   // use notations from Egger's thesis
 
@@ -2297,7 +2298,7 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
     // We convert this to 'general' sizes of planes w.r.t. rings 
     // KT&CL 22/12/99 inserted offset
     const double Z1f =  
-      num_planes_per_virtual_ring*(ring0 + 0.5) + virtual_ring_offset 
+      num_planes_per_axial_pos*(ring0 + 0.5) + axial_pos_to_z_offset 
       + num_planes_per_physical_ring*delta/2 * (1 - root2/root1);
     //const double Z2f = (ring0 + 0.5)/ring_unit + (ttheta * (root1 + root2))/d_sl;
     // TODO possible problem for negative Z1f, use floor() instead
@@ -2313,30 +2314,30 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
     //const double z=ring_unit*( Z1-delta*( (-X1*sphi+Y1*cphi)/root + 1 ) );// Eq 6.15 from Egger Thesis//CL SPAN 14/09/98 2*delta
     // KT&CL 22/12/99 inserted offset
     const double z=( Z1-num_planes_per_physical_ring*delta/2*( (-X1*sphi+Y1*cphi)/root + 1 ) -
-                     virtual_ring_offset)/num_planes_per_virtual_ring;
+                     axial_pos_to_z_offset)/num_planes_per_axial_pos;
     dz=z-ring0; 
     // Using the same formula (z=...) for X1f, Y1f, Z1f gives zf = ring0+ 0.5
     // As the difference between X1f, Y1f, Z1f and X1,Y1,Y2 is at most 1 in every coordinate,
     //   -1/2 - delta/root/2 <= z - zf <= delta/root/2, so
     // -delta/root/2 <= dz <= 0.5 + delta/root/2
-    // As delta < Rpix for most scanners, -1/num_planes_per_virtual_ring < dz < 1
+    // As delta < Rpix for most scanners, -1/num_planes_per_axial_pos < dz < 1
     // For some scanners though (e.g. HiDAC) this is not true, so we keep on checking if
     // dz is in the appropriate range
 
 
     /* Push voxel back into beam */
-    // KT 01/06/98 added 'else' here for the case when dz=1/num_planes_per_virtual_ring, the first step puts it to 0,
+    // KT 01/06/98 added 'else' here for the case when dz=1/num_planes_per_axial_pos, the first step puts it to 0,
     // the 2nd step shouldn't do anything (dz<0), but because we compare with epsilon, 
     // it got back to .5
     
     //  MOREZ: if ->while
-    if (dz>=1./num_planes_per_virtual_ring) 
+    if (dz>=1./num_planes_per_axial_pos) 
     {
-      while (dz>=1./num_planes_per_virtual_ring)
+      while (dz>=1./num_planes_per_axial_pos)
       { 
 	Z1--; 
-	//z-=1/num_planes_per_virtual_ring; 
-	dz-=1./num_planes_per_virtual_ring;
+	//z-=1/num_planes_per_axial_pos; 
+	dz-=1./num_planes_per_axial_pos;
       } 
     }
     else //if 
@@ -2344,8 +2345,8 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
       while (dz<epsilon)   
       { 
 	Z1++;
-	//z+=1/num_planes_per_virtual_ring; 
-	dz+=1./num_planes_per_virtual_ring;
+	//z+=1/num_planes_per_axial_pos; 
+	dz+=1./num_planes_per_axial_pos;
       }
     }
 
@@ -2354,8 +2355,8 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
     // incremental quantities.
 
     // KT&CL 22/12/99 changed ring_unit
-    dzvert=-delta*cphi/root/num_planes_per_virtual_ring;  /* Only valid if d_xy = d_p */
-    dzhor=-delta*sphi/root/num_planes_per_virtual_ring;
+    dzvert=-delta*cphi/root/num_planes_per_axial_pos;  /* Only valid if d_xy = d_p */
+    dzhor=-delta*sphi/root/num_planes_per_axial_pos;
   }
 }
 
