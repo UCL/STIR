@@ -1,6 +1,5 @@
-//
 // $Id$: $Date$
-//
+
 #ifndef __UTILITIES_H__
 #define  __UTILITIES_H__
 
@@ -83,6 +82,14 @@ const int max_filename_length = 1000;
 extern const char * const 
 find_filename(const char * const filename_with_directory);
 
+// KT 14/01/2000 new
+// Copies the directory part from 'filename_with_directory'
+// into 'directory_name' and returns the 'directory_name' pointer.
+// WARNING: assumes that directory_name points to enough allocated space
+char *
+get_directory_name(char *directory_name, 
+		   const char * const filename_with_directory);
+
 // KT 19/03/99 new
 // Checks if the filename points to an absolute location, or is
 // a relative (e.g. to current directory) pathname.
@@ -96,6 +103,8 @@ is_absolute_pathname(const char * const filename_with_directory);
 // Return a pointer to the start of the new filename
 // Warning: this function assumes that filename_with_directory 
 // points to sufficient allocated space to contain the new string
+// KT 14/01/2000 new functionality
+// If 'directory_name' == 0, nothing happens
 extern char *
 prepend_directory_name(char * filename_with_directory, 
 		       const char * const directory_name);
@@ -113,6 +122,20 @@ extern char *
 add_extension(char * file_in_directory_name, 
 	      const char * const extension);
 
+
+// SM&KT 18/01/2000 new
+// Replace extension in 'filename_with_directory' with 'extension' 
+// if no extension is found in 'filename_with_directory',
+// 'extension' is appended.
+// Returns the 'filename_with_directory' pointer.
+// Example (on Unix):
+//     char filename[max_filename_length] = "dir.name/filename.v";
+//     replace_extension(filename, ".img");
+//   results in 'filename' pointing to "dir.name/filename.img"
+extern char *
+replace_extension(char *file_in_directory_name, 
+ 	          const char * const extension);
+		   
 
 // Asks for a filename (appending an extension if none is provided)
 // and stores where file_in_directory_name points to.
@@ -136,7 +159,6 @@ ask_filename_with_extension(char *file_in_directory_name,
 //       types ifstream, ofstream, fstream
 // Implementation note: gcc 2.8.1 seems to have problems with default
 // values when templates are around, so I overload the function
-
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,

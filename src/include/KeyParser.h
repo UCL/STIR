@@ -1,5 +1,5 @@
 //
-// $Id$ :$Date$
+// $Id$: $Date$
 //
 
 #ifndef __KEYPARSER_H__
