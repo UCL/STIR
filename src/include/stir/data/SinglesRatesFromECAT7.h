@@ -28,6 +28,7 @@
 #include "stir/Array.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/IO/stir_ecat7.h"
+#include "local/stir/listmode/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
@@ -38,6 +39,13 @@ public RegisteredParsingObject<SinglesRatesFromECAT7, SinglesRates>
 
 { 
 public:
+
+ struct sgl_str {
+	  long int  time;
+	  long int  num_sgl;
+	  long int  sgl[126];
+ };
+
   //! Name which will be used when parsing a SinglesRatesFromECAT7 object 
   static const char * const registered_name; 
 
@@ -47,8 +55,14 @@ public:
   //!  The function that reads singles from ECAT7 file
   Array<3,float> read_singles_from_file(const string& ECAT7_filename,
 					const ios::openmode open_mode = ios::in);
+  //! The function that reads singles from *.sgl file 
+  Array<3,float> read_singles_from_sgl_file (const string& filename,
+					     TimeFrameDefinitions& time_def);
+  
   //! Given the detection position get the singles rate   
-  virtual float get_singles_rate (const DetectionPosition<>& det_pos, float time) const;
+  virtual float get_singles_rate (const DetectionPosition<>& det_pos, 
+				  const float start_time,
+				  const float end_time) const;
   
   
 private:
@@ -61,6 +75,8 @@ private:
   int transBlocksPerBucket;
   int angularCrystalsPerBlock;
   int axialCrystalsPerBlock;
+  //TimeFrameDefinitions time_def;
+
   
 };
 
