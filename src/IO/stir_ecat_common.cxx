@@ -4,7 +4,6 @@
 /*!
   \file
   \ingroup ECAT
-  \ingroup IO
 
   \brief Implementation of routines which convert ECAT6 and ECAT7 things into our 
   building blocks and vice versa. 
@@ -27,6 +26,7 @@
 #include "stir/IO/stir_ecat_common.h"
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
 
 
 void find_type_from_ECAT_data_type(NumericType& type, ByteOrder& byte_order, const short data_type)
@@ -179,4 +179,5 @@ Scanner* find_scanner_from_ECAT_system_type(const short system_type)
   }
 }
 
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR

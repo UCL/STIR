@@ -4,7 +4,6 @@
 /*!
   \file
   \ingroup ECAT
-  \ingroup IO
 
   \brief Implementation of routines which convert CTI things into our 
   building blocks and vice versa.
@@ -53,6 +52,7 @@ using std::min;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 
 static void cti_data_to_float_Array(Array<2,float>&out, 
@@ -71,7 +71,7 @@ static void read_sinogram(Sinogram<float>& sino_2D,
 		   int mat_index, 
 		   int frame, int gate, int data, int bed);
 
-static bool is_ecat6_file(ECAT6_Main_header& mhead, const string& filename)
+static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
 {
   //check if it's ECAT 6 
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
@@ -95,32 +95,32 @@ static bool is_ecat6_file(ECAT6_Main_header& mhead, const string& filename)
 }
 
   
-bool is_ecat6_file(const string& filename)
+bool is_ECAT6_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ecat6_file(mhead, filename);
+  return is_ECAT6_file(mhead, filename);
 }
 
-bool is_ecat6_image_file(const string& filename)
+bool is_ECAT6_image_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ecat6_file(mhead, filename) &&
+  return is_ECAT6_file(mhead, filename) &&
     mhead.file_type ==matImageFile;
 }
 
 
-bool is_ecat6_emission_file(const string& filename)
+bool is_ECAT6_emission_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ecat6_file(mhead, filename) &&
+  return is_ECAT6_file(mhead, filename) &&
     mhead.file_type ==matScanFile;
 }
 
 
-bool is_ecat6_attenuation_file(const string& filename)
+bool is_ECAT6_attenuation_file(const string& filename)
 {
   ECAT6_Main_header mhead;
-  return is_ecat6_file(mhead, filename) &&
+  return is_ECAT6_file(mhead, filename) &&
     mhead.file_type ==matAttenFile;
 }
 
@@ -926,4 +926,5 @@ void cti_data_to_float_Array(Array<2,float>&out,
 }
 
 END_NAMESPACE_ECAT6
+END_NAMESPACE_ECAT7
 END_NAMESPACE_STIR

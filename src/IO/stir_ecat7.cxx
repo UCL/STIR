@@ -4,7 +4,6 @@
 /*!
   \file
   \ingroup ECAT
-  \ingroup IO
 
   \brief Implementation of routines which convert ECAT7 things into our 
   building blocks and vice versa.
@@ -74,7 +73,7 @@ using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR
-
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 /* ------------------------------------
  *	print_debug
@@ -107,7 +106,7 @@ static int print_debug (char const * const fname, char *format, ...)
 }
 
 
-static bool is_ecat7_file(Main_header& mhead, const string& filename)
+static bool is_ECAT7_file(Main_header& mhead, const string& filename)
 {
   MatrixFile * const mptr = matrix_open( filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
   if(!mptr) 
@@ -125,34 +124,34 @@ static bool is_ecat7_file(Main_header& mhead, const string& filename)
     }
 }
 
-bool is_ecat7_file(const string& filename)
+bool is_ECAT7_file(const string& filename)
 {
   Main_header mhead;
-  return is_ecat7_file(mhead, filename);
+  return is_ECAT7_file(mhead, filename);
 }
 
-bool is_ecat7_image_file(const string& filename)
+bool is_ECAT7_image_file(const string& filename)
 {
   Main_header mhead;
-  return is_ecat7_file(mhead, filename) &&
+  return is_ECAT7_file(mhead, filename) &&
     (mhead.file_type == PetImage ||
      mhead.file_type ==ByteVolume || mhead.file_type == PetVolume);
 }
 
 
-bool is_ecat7_emission_file(const string& filename)
+bool is_ECAT7_emission_file(const string& filename)
 {
   Main_header mhead;
-  return is_ecat7_file(mhead, filename) &&
+  return is_ECAT7_file(mhead, filename) &&
     (mhead.file_type == CTISinogram || mhead.file_type == Byte3dSinogram||
     mhead.file_type == Short3dSinogram || mhead.file_type == Float3dSinogram);
 }
 
 
-bool is_ecat7_attenuation_file(const string& filename)
+bool is_ECAT7_attenuation_file(const string& filename)
 {
   Main_header mhead;
-  return is_ecat7_file(mhead, filename) &&
+  return is_ECAT7_file(mhead, filename) &&
     mhead.file_type ==AttenCor;
 }
 
@@ -164,10 +163,10 @@ void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
 }
 
 
-short find_ecat_data_type(const NumericType& type, const ByteOrder& byte_order)
+short find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
 {
   if (!type.signed_type())
-    warning("find_ecat_data_type: CTI data support only signed types. Using the signed equivalent\n");
+    warning("find_ECAT_data_type: CTI data support only signed types. Using the signed equivalent\n");
   if (type.integer_type())
   {
     switch(type.size_in_bytes())
@@ -199,7 +198,7 @@ short find_ecat_data_type(const NumericType& type, const ByteOrder& byte_order)
   string number_format;
   size_t size_in_bytes;
   type.get_Interfile_info(number_format, size_in_bytes);
-  warning("find_ecat_data_type: CTI does not support data type '%s' of %d bytes.\n",
+  warning("find_ECAT_data_type: CTI does not support data type '%s' of %d bytes.\n",
           number_format.c_str(), size_in_bytes);
   return short(0);
 }
@@ -208,7 +207,7 @@ short find_ecat_data_type(const NumericType& type, const ByteOrder& byte_order)
 *	o f f s e t
 * -------------------------------------------
 */
-static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int data,
+static int offset_in_ECAT_file (MatrixFile *mptr, int frame, int plane, int gate, int data,
             int bed, int segment, int *plane_size_ptr = NULL)
 {
   
@@ -220,7 +219,7 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
   Norm_subheader normsub;
   Attn_subheader attnsub;
   Scan3D_subheader scan3dsub;
-  char *prog = "offset_in_ecat_file";
+  char *prog = "offset_in_ECAT_file";
   /*
   set_debug (prog);
   */
@@ -256,7 +255,7 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
       if (mat_read_scan_subheader (mptr->fptr, mptr->mhptr, strtblk, &scansub))
       {
         if (ferror(mptr->fptr))
-          perror("offset_in_ecat_file: error in reading subheader");
+          perror("offset_in_ECAT_file: error in reading subheader");
         return -1;
       }
       plane_size = scansub.num_r_elements *
@@ -277,7 +276,7 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
       if (mat_read_image_subheader (mptr->fptr, mptr->mhptr, strtblk, &imagesub))
       {
         if (ferror(mptr->fptr))
-          perror("offset_in_ecat_file: error in reading subheader");
+          perror("offset_in_ECAT_file: error in reading subheader");
         return -1;
       }
       
@@ -304,7 +303,7 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
       if (mat_read_attn_subheader (mptr->fptr, mptr->mhptr, strtblk, &attnsub))
       {
         if (ferror(mptr->fptr))
-          perror("offset_in_ecat_file: error in reading subheader");
+          perror("offset_in_ECAT_file: error in reading subheader");
         return -1;
       }
         
@@ -361,7 +360,7 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
       if (mat_read_norm_subheader (mptr->fptr, mptr->mhptr, strtblk, &normsub))
       {
         if (ferror(mptr->fptr))
-          perror("offset_in_ecat_file: error in reading subheader");
+          perror("offset_in_ECAT_file: error in reading subheader");
         return -1;
       }
       off = strtblk*MatBLKSIZE;
@@ -391,7 +390,7 @@ static int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate
       if (mat_read_Scan3D_subheader (mptr->fptr, mptr->mhptr, strtblk, &scan3dsub))
       {
         if (ferror(mptr->fptr))
-          perror("offset_in_ecat_file: error in reading subheader");
+          perror("offset_in_ECAT_file: error in reading subheader");
         return -1;
       }
       
@@ -823,7 +822,7 @@ void img_subheader_zero_fill(Image_subheader & ihead)
 
 
 
-//! A utility function only called by make_subheader_for_ecat7(..., ProjDataInfo&)
+//! A utility function only called by make_subheader_for_ECAT7(..., ProjDataInfo&)
 /*!
   \internal 
 
@@ -838,7 +837,7 @@ void img_subheader_zero_fill(Image_subheader & ihead)
 */
 template <typename SUBHEADERPTR>
 static void
-make_subheader_for_ecat7_aux(SUBHEADERPTR sub_header_ptr, 
+make_subheader_for_ECAT7_aux(SUBHEADERPTR sub_header_ptr, 
 			  short * num_z_elements,
 			  short& span,
 			  const Main_header& mhead,
@@ -890,27 +889,27 @@ make_subheader_for_ecat7_aux(SUBHEADERPTR sub_header_ptr,
 
 // WARNING data_type has still to be set
 void
-make_subheader_for_ecat7(Attn_subheader& shead, 
+make_subheader_for_ECAT7(Attn_subheader& shead, 
                          const Main_header& mhead,
                          const ProjDataInfo& proj_data_info
                          )
 {
-  make_subheader_for_ecat7_aux(&shead, shead.z_elements, shead.span,
+  make_subheader_for_ECAT7_aux(&shead, shead.z_elements, shead.span,
                      mhead, proj_data_info);
   if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const * const>(&proj_data_info))
   {
-    warning("make_subheader_for_ecat7: data is not arc-corrected but info is not available in CTI attenuation subheader\n");
+    warning("make_subheader_for_ECAT7: data is not arc-corrected but info is not available in CTI attenuation subheader\n");
   }
 }
     
 // WARNING data_type has to be set
 void
-make_subheader_for_ecat7(Scan3D_subheader& shead, 
+make_subheader_for_ECAT7(Scan3D_subheader& shead, 
                          const Main_header& mhead,
                          const ProjDataInfo& proj_data_info
                          )
 {
-  make_subheader_for_ecat7_aux(&shead, shead.num_z_elements, shead.axial_compression,
+  make_subheader_for_ECAT7_aux(&shead, shead.num_z_elements, shead.axial_compression,
                      mhead, proj_data_info);
   // try to convert to cylindrical ProjDataInfo to check if it's arccorrected
   // use pointer such that we can check if it worked (without catching exceptions)
@@ -924,7 +923,7 @@ make_subheader_for_ecat7(Scan3D_subheader& shead,
   }
   else
   {
-    warning("make_subheader_for_ecat7: unknown type of proj_data_info. Setting data to arc-corrected anyway\n");
+    warning("make_subheader_for_ECAT7: unknown type of proj_data_info. Setting data to arc-corrected anyway\n");
     shead.corrections_applied = static_cast<short>(ArcPrc);
   }
 }
@@ -1056,11 +1055,11 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   mat_numdoc(matrix->matnum, &matval);
 
   const long offset_in_file =
-    offset_in_ecat_file(mptr,
+    offset_in_ECAT_file(mptr,
 			matval.frame, 1, matval.gate, matval.data, matval.bed,
 			0, NULL);
   // KT 14/05/2002 added error check
-  if (offset_in_ecat_file<0)
+  if (offset_in_ECAT_file<0)
     return 0;
 
   
@@ -1127,23 +1126,23 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 }
 
 Succeeded 
-write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
-                                       const string& ecat7_filename,
+write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
+                                       const string& ECAT7_filename,
                                        int frame, int gate, int data,
                                        int bed)
 {
   
 
   
-  MatrixFile * const mptr = matrix_open( ecat7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  MatrixFile * const mptr = matrix_open( ECAT7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
   if (!mptr) {
-    matrix_perror( ecat7_filename.c_str());
+    matrix_perror( ECAT7_filename.c_str());
     return Succeeded::no;
   }
   if (mptr->mhptr->sw_version < V7)
   { 
-    warning("write_basic_interfile_header_for_ecat7: %s seems to be an ECAT 6 file. "
-            "I'm not writing any header...\n",  ecat7_filename.c_str()); 
+    warning("write_basic_interfile_header_for_ECAT7: %s seems to be an ECAT 6 file. "
+            "I'm not writing any header...\n",  ECAT7_filename.c_str()); 
     return Succeeded::no; 
   }
   
@@ -1153,15 +1152,15 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
   
   if (matrix==NULL)
   { 
-    warning("write_basic_interfile_header_for_ecat7: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
+    warning("write_basic_interfile_header_for_ECAT7: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
             "I'm not writing any header...\n",
-            frame, 1, gate, data, bed,  ecat7_filename.c_str());
+            frame, 1, gate, data, bed,  ECAT7_filename.c_str());
     return Succeeded::no;
   }
   
-  char *header_filename = new char[ecat7_filename.size() + 100];
+  char *header_filename = new char[ECAT7_filename.size() + 100];
   {
-    strcpy(header_filename, ecat7_filename.c_str());
+    strcpy(header_filename, ECAT7_filename.c_str());
     // keep extension, just in case we would have conflicts otherwise
     // but replace the . with a _
     char * dot_ptr = strchr(find_filename(header_filename),'.');
@@ -1182,7 +1181,7 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
         reinterpret_cast<Image_subheader*>(matrix->shptr);
       
       if(sub_header_ptr->num_dimensions != 3)
-        warning("write_basic_interfile_header_for_ecat7: Expected subheader_ptr->num_dimensions==3\n");
+        warning("write_basic_interfile_header_for_ECAT7: Expected subheader_ptr->num_dimensions==3\n");
       const Coordinate3D<int> dimensions(matrix->zdim,
         matrix->ydim,
         matrix->xdim);
@@ -1201,13 +1200,13 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
       find_type_from_ECAT_data_type(data_type, byte_order, matrix->data_type);
       
       const long offset_in_file =
-        offset_in_ecat_file(mptr, frame, 1, gate, data, bed, 0, NULL);
+        offset_in_ECAT_file(mptr, frame, 1, gate, data, bed, 0, NULL);
       // KT 14/05/2002 added error check
-      if (offset_in_ecat_file<0)
+      if (offset_in_ECAT_file<0)
       { 
-        warning("write_basic_interfile_header_for_ecat7: Error in determining offset into ECAT7 file %s.\n"
+        warning("write_basic_interfile_header_for_ECAT7: Error in determining offset into ECAT7 file %s.\n"
                 "I'm not writing any header...\n",
-                 ecat7_filename.c_str()); 
+                 ECAT7_filename.c_str()); 
         return Succeeded::no; 
       }     
       
@@ -1217,7 +1216,7 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
       file_offsets[0] = static_cast<unsigned long>(offset_in_file);
       strcat(header_filename, ".hv");
       interfile_header_filename = header_filename;
-      write_basic_interfile_image_header(header_filename, ecat7_filename,
+      write_basic_interfile_image_header(header_filename, ECAT7_filename,
         dimensions, voxel_size, data_type,byte_order,
         scaling_factors,
         file_offsets);
@@ -1230,7 +1229,7 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
   case Float3dSinogram :
     {
       shared_ptr<iostream> stream_ptr = 
-	new fstream(ecat7_filename.c_str(), ios::in | ios::binary);
+	new fstream(ECAT7_filename.c_str(), ios::in | ios::binary);
       
       ProjDataFromStream* pdfs_ptr = 
 	make_pdfs_from_matrix(mptr, matrix, stream_ptr);
@@ -1240,7 +1239,7 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
       
       strcat(header_filename, ".hs");
       interfile_header_filename = header_filename;
-      write_basic_interfile_PDFS_header(header_filename, ecat7_filename, *pdfs_ptr);
+      write_basic_interfile_PDFS_header(header_filename, ECAT7_filename, *pdfs_ptr);
       delete pdfs_ptr;
 
       break;
@@ -1248,9 +1247,9 @@ write_basic_interfile_header_for_ecat7(string& interfile_header_filename,
     
         
   default:
-    warning("write_basic_interfile_header_for_ecat7: File type not handled for file %s.\n"
+    warning("write_basic_interfile_header_for_ECAT7: File type not handled for file %s.\n"
             "I'm not writing any Interfile headers...\n",
-             ecat7_filename.c_str());
+             ECAT7_filename.c_str());
     return Succeeded::no;
   }
   
@@ -1333,10 +1332,10 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   find_type_from_ECAT_data_type(data_type, byte_order, mhead.data_type);
   
   const long offset_in_file =
-    offset_in_ecat_file(mptr, frame, 1, gate, data, bed, 0, NULL);
+    offset_in_ECAT_file(mptr, frame, 1, gate, data, bed, 0, NULL);
   
   // KT 14/05/2002 added error check
-  if (offset_in_ecat_file<0)
+  if (offset_in_ECAT_file<0)
   { 
     warning("Error in determining offset into ECAT file for segment %d (f%d, g%d, d%d, b%d)\n"
       "No data written for this segment and all remaining segments\n",
@@ -1446,7 +1445,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
 
   if (mhead.file_type == AttenCor)
   {
-    make_subheader_for_ecat7(attn_shead, mhead, *proj_data.get_proj_data_info_ptr());
+    make_subheader_for_ECAT7(attn_shead, mhead, *proj_data.get_proj_data_info_ptr());
     // Setup remaining subheader params
     attn_shead.data_type= IeeeFloat;
     attn_shead.scale_factor= 1.F; 
@@ -1454,7 +1453,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
   }
   else
   {
-    make_subheader_for_ecat7(scan3d_shead, mhead, *proj_data.get_proj_data_info_ptr());
+    make_subheader_for_ECAT7(scan3d_shead, mhead, *proj_data.get_proj_data_info_ptr());
     // Setup remaining subheader params
     scan3d_shead.data_type= IeeeFloat;
     scan3d_shead.loss_correction_fctr= 1.F; 
@@ -1523,11 +1522,11 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
       proj_data.get_segment_by_view(segment_num);
 
     const long offset_in_file =
-      offset_in_ecat_file(mptr,
+      offset_in_ECAT_file(mptr,
   			  frame_num, 1, gate_num, data_num, bed_num,
                           segment_num, NULL);
     // KT 14/05/2002 added error check
-    if (offset_in_ecat_file<0)
+    if (offset_in_ECAT_file<0)
     { 
       warning("Error in determining offset into ECAT file for segment %d (f%d, g%d, d%d, b%d)\n"
         "No data written for this segment and all remaining segments\n",
@@ -1601,7 +1600,7 @@ ProjData_to_ECAT7(ProjData const& proj_data, string const & cti_name, string con
 }
 
 END_NAMESPACE_ECAT7
-
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 #endif //#ifdef HAVE_LLN_MATRIX
