@@ -20,6 +20,7 @@
 #include "local/stir/listmode/TimeFrameDefinitions.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/round.h"
 
 
 #define USE_SegmentByView
@@ -94,7 +95,6 @@ protected:
   virtual bool post_processing();
 
   //! parsing variables
-  string input_filename;
   string output_filename_prefix;
   string template_proj_data_name;
   string frame_definition_filename;
@@ -114,10 +114,10 @@ private:
 
   RigidObject3DTransformation move_to_scanner;
   RigidObject3DTransformation move_from_scanner;
-  RigidObject3DTransformation ro3dtrans; // actual Polaris  motion for current_time
  
   double time_interval;
-  
+  int min_num_time_intervals_per_frame;
+  int max_num_time_intervals_per_frame;
 };
 
 void 
@@ -126,6 +126,8 @@ FindMCNormFactors::set_defaults()
   max_segment_num_to_process = -1;
   ro3d_ptr = 0;
   time_interval=1; 
+  min_num_time_intervals_per_frame = 1;
+  max_num_time_intervals_per_frame = 100;
 }
 
 void 
@@ -134,14 +136,15 @@ FindMCNormFactors::initialise_keymap()
 
   parser.add_start_key("FindMCNormFactors Parameters");
 
-  parser.add_key("input file",&input_filename);
   parser.add_key("template_projdata", &template_proj_data_name);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
   parser.add_key("frame_definition file",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
 
-  parser.add_key("time interval", &time_interval);
+  parser.add_key("default time interval", &time_interval);
+  parser.add_key("minimum number of time intervals per frame", &min_num_time_intervals_per_frame);
+  parser.add_key("maximum number of time intervals per frame", &max_num_time_intervals_per_frame);
   parser.add_stop_key("END");
 }
 
@@ -234,18 +237,10 @@ post_processing()
   }
 
 
-  // TODO move to RigidObject3DMotion
   if (!ro3d_ptr->is_time_offset_set())
     {
-      if (input_filename.size()==0)
-	{
-	  warning("You have to specify an input_filename (or an explcit time offset)\n");
+      warning("You have to specify an input_filename (or an explicit time offset) for the motion object\n");
 	  return true;
-	}
-      shared_ptr<CListModeData> lm_data_ptr =
-       CListModeData::read_from_file(input_filename);
-
-      ro3d_ptr->synchronise(*lm_data_ptr);
     }
 
   move_from_scanner =
@@ -273,8 +268,20 @@ FindMCNormFactors::process_data()
     {
       const double start_time = frame_defs.get_start_time(current_frame_num);
       const double end_time = frame_defs.get_end_time(current_frame_num);
+      const double frame_duration = end_time - start_time;
+      const int num_time_intervals_this_frame =
+	max(min(round(frame_duration/time_interval),
+		max_num_time_intervals_per_frame),
+	    min_num_time_intervals_per_frame);
+      const double time_interval_this_frame =
+	frame_duration / num_time_intervals_this_frame;
+
       cerr << "\nDoing frame " << current_frame_num
-	   << ": from " << start_time << " to " << end_time << endl;
+	   << ": from " << start_time << " to " << end_time 
+	   << " with " << num_time_intervals_this_frame
+	   << " time intervals of length "
+	   << time_interval_this_frame
+	   << endl;
 
 
       //*********** open output file
@@ -308,14 +315,20 @@ FindMCNormFactors::process_data()
 		  "type ProjDataInfoCylindricalNoArcCorr\n");
 	  }
 
-	unsigned num_time_samples=0; 
+	int current_num_time_intervals=0; 
+	cerr << "Doing time intervals: ";
 	for (double current_time = start_time;
 	     current_time<=end_time; 
-	     current_time+=time_interval)
+	     current_time+=time_interval_this_frame)
 	  {
-	    cerr << "\nDoing time " << current_time << endl;
-	    ++num_time_samples;
-	    ro3d_ptr->get_motion(ro3dtrans,current_time);
+	    if (++current_num_time_intervals > num_time_intervals_this_frame)
+	      break;
+	    cerr << '(' << current_time << '-' << current_time+time_interval_this_frame << ") ";
+
+	    if (current_time+time_interval_this_frame > end_time + time_interval_this_frame*.01)
+	      error("\ntime interval goes beyond end of frame. Check code!\n");
+	    RigidObject3DTransformation ro3dtrans =
+	      ro3d_ptr->compute_average_motion_rel_time(current_time, current_time+time_interval_this_frame);
             
 	    ro3dtrans = compose(move_to_scanner,
 				compose(ro3d_ptr->get_transformation_to_reference_position(),
@@ -375,11 +388,13 @@ FindMCNormFactors::process_data()
 		  }
 	      }
 	  }
-
+	if (current_num_time_intervals != num_time_intervals_this_frame+1)
+	  warning("\nUnexpected number of time intervals %d, should be %d",
+		  current_num_time_intervals, num_time_intervals_this_frame);
 	for (int segment_num=start_segment_index; segment_num<=end_segment_index; ++segment_num)
 	  {
-	    if (num_time_samples>0)
-	      (*(segments[segment_num])) /= num_time_samples;
+	    if (current_num_time_intervals>0)
+	      (*(segments[segment_num])) /= current_num_time_intervals;
 	    // add constant to avoid division by 0 later.
 	    (*(segments[segment_num])) +=.00001;
 	  }
