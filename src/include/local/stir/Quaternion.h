@@ -66,6 +66,11 @@ private:
   
 };
 
+template <typename coordT>
+inline Quaternion<coordT> conjugate(const Quaternion<coordT>&);
+
+template <typename coordT>
+inline Quaternion<coordT> inverse(const Quaternion<coordT>&);
 END_NAMESPACE_STIR
 
 #include "local/stir/Quaternion.inl"

@@ -138,6 +138,22 @@ Quaternion<coordT>::inverse()
   coords[3] = -(*this)[3]/dp;
   coords[4] = -(*this)[4]/dp;
 }
-   
+
+
+template <typename coordT>
+Quaternion<coordT> conjugate(const Quaternion<coordT>& q)
+{
+  Quaternion<coordT> tmp = q;
+  tmp.conjugate();
+  return tmp;
+}
+
+template <typename coordT>
+Quaternion<coordT> inverse(const Quaternion<coordT>& q)
+{
+  Quaternion<coordT> tmp = q;
+  tmp.inverse();
+  return tmp;
+}
 
 END_NAMESPACE_STIR
