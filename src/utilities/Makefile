@@ -8,8 +8,9 @@ include ../Makefile_common
 SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
         convecat6_if.cxx \
 	do_linear_regression.cxx \
+	postfilter.cxx \
         #convif_ecat6.cxx \
-	#correctPSOV.cxx postfilter.cxx 
+	#correctPSOV.cxx 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
