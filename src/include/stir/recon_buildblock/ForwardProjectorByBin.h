@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __ForwardProjectorByBin_h_
-#define __ForwardProjectorByBin_h_
+#ifndef __stir_recon_buildblock_ForwardProjectorByBin_h__
+#define __stir_recon_buildblock_ForwardProjectorByBin_h__
 /*!
   \file
   \ingroup recon_buildblock
@@ -26,12 +26,6 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
-#include <iostream>
-
-#ifndef STIR_NO_NAMESPACES
-using std::ios;
-using std::iostream;
-#endif
 
 
 START_NAMESPACE_STIR
@@ -81,23 +75,19 @@ virtual void set_up(
 
   //! project the volume into the viewgrams
   /*! it overwrites the data already present in the viewgram */
-  //inline
     void forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&);
 
-  //inline
     void forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num);
 
-  //inline
     void forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num);
 
-  //inline
-    virtual ~ForwardProjectorByBin() {}
+    virtual ~ForwardProjectorByBin();
 
 protected:
   //! This virtual function has to be implemented by the derived class.
@@ -110,4 +100,4 @@ protected:
 
 END_NAMESPACE_STIR
 
-#endif // __ForwardProjectorByBin_h_
+#endif // __stir_recon_buildblock_ForwardProjectorByBin_h__
