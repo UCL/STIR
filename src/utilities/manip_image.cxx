@@ -178,7 +178,7 @@ main(int argc, char *argv[]){
 
     case 3:
     
-      //int plane=1;
+       plane=1;
  
       while(plane>0 && plane <=ze-zs+1 ){
 	cerr<<endl<<"\nInput plane # (0 to exit):  ";
@@ -201,6 +201,9 @@ main(int argc, char *argv[]){
       break;
  
     case 4:
+      
+      plane=1;
+
       while(plane>0 && plane <=ze-zs+1 ){
 	cerr<<endl<<"\nInput plane # (0 to exit):  ";
 	cin>>plane;
