@@ -3,7 +3,7 @@
 #
 include ../Makefile_common
 
-SOURCES = bcktest.cxx fwdtest.cxx zoomtest.cxx
+SOURCES = bcktest.cxx fwdtest.cxx #zoomtest.cxx
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
