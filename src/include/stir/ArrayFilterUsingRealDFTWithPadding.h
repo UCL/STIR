@@ -19,10 +19,18 @@
 #ifndef __stir_ArrayFilterUsingRealDFTWithPadding_H__
 #define __stir_ArrayFilterUsingRealDFTWithPadding_H__
 
-
+#include "stir/Array.h"
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
 #include "stir/IndexRange.h"
 #include <complex>
+
+#if defined(_MSC_VER) && _MSC_VER<=1200
+/* VC 6.0 cannot overload the real and complex constructors and set_kernel...
+   I just disable the complex versions.
+   */
+#define __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
+
+#endif
 
 START_NAMESPACE_STIR
 class Succeeded;
@@ -56,11 +64,15 @@ public:
     \warning Will call error() when sizes are not appropriate
   */      
   ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, elemT>& real_filter_kernel);
+
+#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
   //! Construct the filter given the complex kernel coefficients
   /*! \see set_kernel(const Array<num_dimensions, std::complex<elemT> >&)
-    \warning Will call error() when sizes are not appropriate
+    \warning Will call error() when sizes are not appropriate.
+    \warning This function is disabled for VC 6.0 because of compiler limitations
   */
   ArrayFilterUsingRealDFTWithPadding(const Array<num_dimensions, std::complex<elemT> >& complex_filter_kernel);
+#endif
 
   //! set the real kernel coefficients
   /*
@@ -78,6 +90,7 @@ public:
   */
   Succeeded 
     set_kernel(const Array<num_dimensions, elemT>& real_filter_kernel);
+#ifndef __stir_ArrayFilterUsingRealDFTWithPadding_no_complex_kernel__
   //! set the complex kernel coefficients
   /*  The kernel has to be given with index ranges starting from 0.
       So, the 0- index corresponds to the DC component of the filter.
@@ -87,11 +100,13 @@ public:
       'real' kernel before DFT. If you want to avoid aliasing, make sure that the kernel is at least
       twice as long as the input and output arrays.
 
-      As this function uses fourier(), see there for restrictions on the possible
+      See fourier() for restrictions on the possible
       kernel length, but at time of writing, it has to be a power of 2.
+      \warning This function is disabled for VC 6.0 because of compiler limitations
   */
   Succeeded
     set_kernel(const Array<num_dimensions, std::complex<elemT> >& complex_filter_kernel);
+#endif
 
   //! checks if the kernel corresponds to a trivial filter operation
   /*! 
