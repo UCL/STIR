@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 
 #ifndef __RECONSTRUCTION_H__
 #define __RECONSTRUCTION_H__
@@ -26,183 +26,184 @@
 PETSinogramOfVolume CorrectForAttenuation(const PETSinogramOfVolume &sino, const PETSinogramOfVolume &atten)       
 {
 // Kernel of Attenuation correction
-	 PETerror("TODO"); Abort();
-	 return sino;
+    PETerror("TODO"); Abort();
+    return sino;
 }
 
 PETSegmentBySinogram CorrectForAttenuation(const PETSegmentBySinogram &sino, const PETSegmentBySinogram &atten)
 {
 // Kernel of Attenuation correction
-	PETerror("TODO"); Abort();
-	return sino;
+    PETerror("TODO"); Abort();
+    return sino;
 }
 #endif
 
 class PETReconstruction
 {
+ 
+    
 public:
-  // KT 02/06/98 made pure virtual
-  virtual string method_info() = 0;
+        // KT 02/06/98 made pure virtual
+    virtual string method_info();
 
-  virtual string parameter_info()
-    { return ""; }
-  virtual void reconstruct(const PETSinogramOfVolume&, PETImageOfVolume&)  = 0;
+    virtual string parameter_info()
+        { return ""; }
+        /* CL 15/10/98 Default constructor*/
+    PETReconstruction(){
+        cout << "Reconstruction starting..." << endl;
+    }
+ 
+  
+    virtual void reconstruct(const PETSinogramOfVolume &s, PETImageOfVolume &v)
+        {}
+  
 // KT 28/06/98 disabled for now
 #if 0
-  virtual void  reconstruct(const PETSinogramOfVolume &s, const PETSinogramOfVolume &a, PETImageOfVolume &v) 
-    { 
-	reconstruct(CorrectForAttenuation(s, a), v); 
-    }
+    virtual void  reconstruct(const PETSinogramOfVolume &s, const PETSinogramOfVolume &a, PETImageOfVolume &v) 
+        { 
+            reconstruct(CorrectForAttenuation(s, a), v); 
+        }
 #endif
 };
 
 class PETAnalyticReconstruction: public PETReconstruction
 {
 public:
-  int delta_min;
-  int delta_max;
-  const Filter1D<float>& filter;
-  virtual string parameter_info();
-  PETAnalyticReconstruction(int min, int max, const Filter1D<float>& f);
+    int delta_min; /* Lower bound of "obliqueness" */
+    int delta_max; /* Upper bound of "obliqueness" */
+   const Filter1D<float> &filter; /* Ramp filter */
+    
+        //CL 15/10/98 New function
+    virtual string method_info(){
+        return("Analytical algorithm");
+    }
+  
+    virtual string parameter_info();
+    
+    
+    PETAnalyticReconstruction(int min, int max, const Filter1D<float>& f);
+    
 };
-
-inline PETAnalyticReconstruction::PETAnalyticReconstruction
-     (int min, int max, const Filter1D<float>& f) :  delta_min(min), delta_max(max), filter(f)
-{};
-
-inline string PETAnalyticReconstruction::parameter_info()
-{
-  // KT 02/06/98 stringstream doesn't understand this
-  /*char str[100];
-
-  ostrstream s(str, 100);
-  s << "delta_min " << delta_min << " delta_max" << delta_max;
-  return str;
-  */
-  ostrstream s;
-  // KT 28/07/98 added 'ends' to make sure the string is null terminated
-  s << "delta_min " << delta_min << ", delta_max " << delta_max << ends;
-  return s.str();
-}
 
 class PETIterativeReconstruction: public PETReconstruction
 {
 public:
-  int max_iterations;
-PETIterativeReconstruction(int max);
+    int max_iterations;
+    PETIterativeReconstruction(int max=1);
+            //CL 15/10/98 New function
+    virtual string method_info();
 };
 
 inline PETIterativeReconstruction::PETIterativeReconstruction
-     (int max) :max_iterations(max)
+(int max) :max_iterations(max)
 {    
 }
 
 class PETPROMISReconstruction : public PETAnalyticReconstruction
 {
 private:
-  const int PadS;
-  const int PadZ;
-  const int disp;
-  const int save;
-  const bool process_by_view;
-  
+    int PadS; /* Transaxial extension for FFT */
+    int PadZ;/* Axial extension for FFT */
+    int disp; /* Switch on or off displaying */
+    int save; /* Switch on or off saving */
+    bool process_by_view; /* Run on" by segment" or "by view" process
+                             int already_2Drecon; /* Trick for not redoing 2DFBP if is already done */
+    int num_average_views;  /* Mashing option */
+    float Xoff, Yoff, zoom; /* Zooming options */
+    float alpha; /* ALpha parameter for Hamming filter */
+    float fc; /* Cut-off frequency for Colsher filter */
+
+        //  const Filter1D<float> &filter; /* Ramp filter */
+    
 public:
-  // KT 02/06/98 changed from method() to method_info()
-  string method_info()
-    { return("PROMIS"); }
-  PETPROMISReconstruction
-    (int min, int max, Filter1D<float> f,
-     const int PadS = 0, const int PadZ = 1,
-     const bool process_by_view = true, const int disp = 0, const int save = 0);
-  void reconstruct(const PETSinogramOfVolume &s, PETImageOfVolume &v);
+        //CL 051098 Default for PETPROMISREconstruction
+ 
+    PETPROMISReconstruction (Filter1D<float> &f,
+                             int min=1,
+                             int max=1,
+                             int PadS_v = 0,
+                             int PadZ_v = 1,
+                             bool process_by_view_v = true,
+                             int disp_v = 0,
+                             int save_v = 0,
+                             int already_2Drecon_v = 0,
+                             int num_average_views_v=0,
+                             float Xoff_v = 0.F,
+                             float Yoff_v = 0.F,
+                             float zoom_v = 1.F,
+                             float alpha_v = 0.5F,
+                             float fc_v = 0.5F);
+  
+    
+    virtual  string parameter_info();
+  
+    string parameter_info_analytic(){
+        return PETAnalyticReconstruction::parameter_info();
+    }
+ 
+ 
+        // KT 02/06/98 changed from method() to method_info()
+    string method_info()
+        { return("PROMIS"); }
+  
+    void reconstruct(const PETSinogramOfVolume &s, PETImageOfVolume &v);
 };
 
-inline PETPROMISReconstruction::PETPROMISReconstruction
-    (int min, int max, Filter1D<float> f,
-     const int PadS, const int PadZ,
-     const bool process_by_view, const int disp, const int save)
-   : PETAnalyticReconstruction(min, max, f),
-     PadS(PadS), PadZ(PadZ), disp(disp), save(save), process_by_view(process_by_view)
-{
-}
 
 
 /******************* 2D reconstructions ************/
 class PETReconstruction2D
 {
 public:
-  // KT 02/06/98 made pure virtual
-  virtual string method_info() = 0;
-  virtual string parameter_info()
-    { return ""; }
-
-  //KT 28/07/98 new
-  virtual void reconstruct(const PETSinogram &, PETPlane &) = 0;
-  //KT 28/07/98 implement this below
-  virtual void reconstruct(const PETSegment& , PETImageOfVolume&);
-  // KT 28/06/98 disabled for now
+        // KT 02/06/98 made pure virtual
+    virtual string method_info() = 0;
+    virtual string parameter_info()
+        { return ""; }
+  
+    virtual void reconstruct(const PETSinogram &sino2D, PETPlane &image2D)=0;
+    virtual void reconstruct(const PETSegment &sino, PETImageOfVolume &image)=0;  
+        // KT 28/06/98 disabled for now
 #if 0
-  virtual void reconstruct(const PETSegment& s, 
-			   const PETSegment& a, PETImageOfVolume& v) 
-    { reconstruct(CorrectForAttenuation(s, a), v); }
+    virtual void reconstruct(const PETSegment& s, 
+                             const PETSegment& a, PETImageOfVolume& v) 
+        { reconstruct(CorrectForAttenuation(s, a), v); }
 #endif
 };
 
-//KT 28/07/98 implement as in FBP2D
-void PETReconstruction2D::reconstruct(const PETSegment& sinos, PETImageOfVolume& image)
-{
-    assert(sinos.min_ring() == image.get_min_z());
-    assert(sinos.max_ring() == image.get_max_z());
-    assert((sinos.get_num_bins() ==image.get_x_size()) && (image.get_x_size() == image.get_y_size()));
-    assert(sinos.get_average_ring_difference() ==0);
 
-    PETPlane image2D=image.get_plane(0);
-    for (int  z = sinos.min_ring(); z <= sinos.max_ring(); z++)
-    {
-       reconstruct(sinos.get_sinogram(z), image2D);
-       image.set_plane(image2D, z);
-    }
-}
+
+
 
 class PETAnalyticReconstruction2D: public PETReconstruction2D
 {
-  // KT 28/07/98 made protected
 protected:
-  const Filter1D<float>& filter;
+    const Filter1D<float> &filter;
 public:
-  virtual string parameter_info();
-  PETAnalyticReconstruction2D(const Filter1D<float>& f);
+    virtual string parameter_info();
+        //CL 15/10/98 ACtivate filter
+              PETAnalyticReconstruction2D(const Filter1D<float>& f);    
+    
 };
 
-inline PETAnalyticReconstruction2D::PETAnalyticReconstruction2D
-     (const Filter1D<float>& f)
-     :  filter(f)
-{};
 
-inline string PETAnalyticReconstruction2D::parameter_info()
-{ char str[100];
-
-  ostrstream s(str, 100);
-  // TODO info on filter
-  //s << "delta_min " << delta_min << " delta_max" << delta_max;
-  return str;
-}
 
 class Reconstruct2DFBP : public PETAnalyticReconstruction2D
 {
- public:
-  Reconstruct2DFBP(const Filter1D<float>& f): PETAnalyticReconstruction2D(f)
-    {}
 
-  virtual void reconstruct(const PETSinogram &sino2D, PETPlane &image2D);
+public:
+    virtual string method_info()
+        { return("2DFBP"); }
+ 
+    Reconstruct2DFBP(const Filter1D<float>& f): PETAnalyticReconstruction2D(f) 
+        {
+            cout << "  - 2D FBP processing" << endl;
+        }
+    
+
+    void reconstruct(const PETSinogram &sino2D, PETPlane &image2D);
+    void reconstruct(const PETSegment &sino, PETImageOfVolume &image);
 };
 
-// KT 28/07/98 implement here, but TODO FBP2D should be changed
-#include "recon_buildblock/FBP2D.h"
 
-void Reconstruct2DFBP::reconstruct(const PETSinogram &sino2D, PETPlane &image2D)
-{
-	FBP2D(sino2D, filter, image2D);
-}
     
 #endif
