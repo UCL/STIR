@@ -217,8 +217,8 @@ transform_3d_object(ProjData& out_proj_data,
 		continue;
 #ifndef ROT_INT
 	      rigid_object_transformation.transform_bin(bin,
-							out_proj_data_info,
-							in_proj_data_info
+							*out_proj_data_info_noarccor_ptr,
+							*in_proj_data_info_noarccor_ptr
 							);
 	      if (bin.get_bin_value()>0)
 		(*out_seg_ptr[bin.segment_num()])[bin.view_num()]
