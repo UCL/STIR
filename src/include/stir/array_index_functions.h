@@ -24,6 +24,7 @@
 
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -57,7 +58,13 @@ inline
 BasicCoordinate<num_dimensions, int>
 get_min_indices(const Array<num_dimensions, T>& a)
 {
-  return join(a.get_min_index(), get_min_indices(*a.begin()));
+  if (a.get_min_index()<=a.get_max_index())
+    return join(a.get_min_index(), get_min_indices(*a.begin()));
+  else
+    { 
+      BasicCoordinate<num_dimensions, int> tmp;
+      return tmp;
+    }
 }
 
 template <typename T>
@@ -76,6 +83,8 @@ bool
 next(BasicCoordinate<1, int>& index, 
      const Array<num_dimensions2, T>& a)
 {
+  if (a.get_min_index()>a.get_max_index())
+    return false;
   index[1]++;
   return index[1]<=a.get_max_index();
 }
@@ -85,6 +94,8 @@ bool
 next(BasicCoordinate<num_dimensions, int>& index, 
      const Array<num_dimensions2, T>& a)
 {
+  if (a.get_min_index()>a.get_max_index())
+    return false;
   index[num_dimensions]++;
   BasicCoordinate<num_dimensions-1, int> upper_index= cut_last_dimension(index);
   if (index[num_dimensions]<=get(a,cut_last_dimension(index)).get_max_index())
