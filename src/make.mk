@@ -3,6 +3,10 @@
 #
 WORKSPACE := $(CURDIR)
 
+# make sure that 'all' is also the first target and hence the default
+default_target: all
+
+
 include config.mk
 
 LIBDIRS :=
@@ -17,6 +21,7 @@ LIBDIRS += buildblock recon_buildblock display IO \
 	iterative/OSMAPOSL
 
 EXEDIRS += utilities recon_test \
+	listmode_utilities \
 	iterative/OSMAPOSL \
 	iterative/sensitivity
 
@@ -24,8 +29,6 @@ TESTDIRS += test recon_test
 
 .PHONY: all clean lib install run_tests run_interactive_tests all_test_exes default_target
 
-default_target:
-	echo Please use one of the targets all, clean, install
 
 include $(addsuffix /lib.mk, $(LIBDIRS))
 include $(addsuffix /exe.mk, $(EXEDIRS))
