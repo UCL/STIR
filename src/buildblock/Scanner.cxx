@@ -60,10 +60,11 @@ static list<string>
   
 Scanner::Scanner(Type scanner_type)
 {
+  // NoRings, NoBins, 
   // num_detectors_per_ring,
-  // NoRings, NoBins, RingRadius,
+  // RingRadius,
   // RingSpacing, BinSize, intrTilt
-  // before arc-correction, central_bin_size = ring_radius* pi/num_detectors
+  // before arc-correction, central_bin_size = ring_radius* pi/num_detectors for CTI scanners
 
 
   if (scanner_type == E931)
@@ -78,9 +79,9 @@ Scanner::Scanner(Type scanner_type)
   else if (scanner_type == E925)
     set_params(E925,string_list("ECAT 925", "ECAT ART"), 24, 192,2* 192, 412.5F, 6.75F, 3.375F, 15.F);
   else if (scanner_type == E961)
-    set_params(E961,string_list("ECAT 961", "ECAT HR"), 24, 336,2* 196, 412.0F, 6.25F, 1.650F, 13.F); 
+    set_params(E961,string_list("ECAT 961", "ECAT HR"), 24, 336,2* 196, 412.0F, 6.25F, 1.650F, 13.F);
   else if (scanner_type == E962)
-    set_params(E962,string_list("ECAT 962","ECAT HR+"), 32, 288,2* 144, 412.5F, 4.85F, 2.247F, 0.F); 
+    set_params(E962,string_list("ECAT 962","ECAT HR+"), 32, 288,2* 288, 412.5F, 4.85F, 2.25F, 0.F);
   else if (scanner_type == E966)
     set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 0); 
   else if (scanner_type == RPT)
