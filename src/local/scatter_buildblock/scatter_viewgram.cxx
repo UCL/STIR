@@ -34,6 +34,9 @@ std::vector< ScatterPoint> scatt_points_vector;
 std::vector<CartesianCoordinate3D<float> > detection_points_vector;
 int total_detectors;
 
+static const float total_cross_section_511keV = 
+  total_cross_section(511.); 
+
 static
 unsigned 
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
@@ -77,6 +80,10 @@ void scatter_viewgram(
 	   proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring ();
 	// reserve space to avoid reallocation, but the actual size will grow dynamically
 	detection_points_vector.reserve(total_detectors);
+		
+	const VoxelsOnCartesianGrid<float>& image =
+		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
+	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 
 #if 0
 	{
@@ -149,7 +156,8 @@ void scatter_viewgram(
 					  find_in_detection_points_vector(detector_coord_A + shift_detector_coordinates_to_origin);
 					const unsigned det_num_B =
 					  find_in_detection_points_vector(detector_coord_B + shift_detector_coordinates_to_origin);
-					bin.set_bin_value(
+					bin.set_bin_value(10E9*
+						voxel_size[1]*voxel_size[2]*voxel_size[3]*
 						scatter_estimate_for_all_scatter_points(
 						image_as_activity,
 						image_as_density,
@@ -157,7 +165,7 @@ void scatter_viewgram(
 						det_num_B,
 						lower_energy_threshold,
 						upper_energy_threshold,
-						use_cosphi,use_cache)/scatt_points_vector.size());
+						use_cosphi,use_cache)/total_cross_section_511keV);
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();
