@@ -2,8 +2,9 @@
 // $Id$
 //
 /*!
-
   \file
+  \ingroup ECAT
+  \ingroup IO
 
   \brief Declaration of routines which convert CTI things into our 
   building blocks and vice versa.
@@ -23,18 +24,37 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_CTI_stir_ecat7_H__
-#define __stir_CTI_stir_ecat7_H__
+#ifndef __stir_IO_stir_ecat7_H__
+#define __stir_IO_stir_ecat7_H__
 
-#include "stir/common.h"
+#ifdef HAVE_LLN_MATRIX
+
+#include "stir/IO/stir_ecat_common.h"
+
+#ifdef STIR_NO_NAMESPACES
+// terrible trick to avoid conflict between stir::Sinogram and Sinogram defined in matrix.h
+// when we do have namespaces, the conflict can be resolved by using ::Sinogram
+#define Sinogram CTISinogram
+#else
+#define CTISinogram ::Sinogram
+#endif
+
+#include "matrix.h"
+
+#ifdef STIR_NO_NAMESPACES
+#undef Sinogram
+#endif
+
 #include <string>
+#include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
+using std::iostream;
 #endif
 
 //*************** namespace macros
-#if 0 //ndef STIR_NO_NAMESPACE
+#if !defined(STIR_NO_NAMESPACE)
 # define START_NAMESPACE_ECAT7 namespace ecat7 {
 # define END_NAMESPACE_ECAT7 }
 # define USING_NAMESPACE_ECAT7 using namespace ecat7;
@@ -45,7 +65,6 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
-START_NAMESPACE_ECAT7
 
 class NumericType;
 class ByteOrder;
@@ -55,18 +74,35 @@ template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class Sinogram;
 template <typename T> class shared_ptr;
 class ProjData;
+class ProjDataInfo;
 class ProjDataFromStream;
+
+START_NAMESPACE_ECAT7
+
+/*!
+  \brief checks if the file is in ECAT7 format
+
+  This partly relies on the implementation of matrix_open in the LLN matrix library.
+  Additional checks are made on the main header. Current checks are:
+  <ol>
+  <li> sw_version field between 70 and 79
+  <li> file_type field one of the values in the enum MatFileType
+  <li> num_frames field > 0
+  </ol>
+  \warning When the file is not readable, error() is called.
+*/
+bool is_ecat7_file(const string& filename);
+//! Checks in addition if the file contains images
+bool is_ecat7_image_file(const string& filename);
+//! Checks in addition if the file contains emission sinograms (or blank/transmision)
+bool is_ecat7_emission_file(const string& filename);
+//! Checks in addition if the file contains attenuation correction factors
+bool is_ecat7_attenuation_file(const string& filename);
 
 
 //! determine scanner type from the main_header
 /*! Returns a Unknown_Scanner if it does not recognise it. */
 void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead);
-//! Find out which NumericType and ByteOrder corresponds to a CTI data type
-void find_data_type(NumericType& data_type, ByteOrder& byte_order, const short ecat_data_type);
-
-//! Find out which CTI data type corresponds to a certain NumericType and ByteOrder
-/*! Returns 0 when it does not recognise it */
-short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order);
 
 
 //! Create a new ECAT7 image file and write the data in there
@@ -164,9 +200,14 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 //! Writes an Interfile header that 'points' into an ECAT7 file
 /*! Only data types AttenCor, Byte3dSinogram, Short3dSinogram, Float3dSinogram,
     ByteVolume, PetVolume can be handled.
+
+    \a interfile_header_name will be set to the header name used. It will be of the form
+    ecat7_filename_extension_f1g1d0b0.h?. For example, for ecat7_filename test.S, and
+    frame=2, gate=3, data=4, bed=5, the header name will be test_S_f2g3d4b5.hs
 */
 Succeeded 
-write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
+write_basic_interfile_header_for_ecat7(string& interfile_header_name,
+                                       const string& ecat7_filename,
                                        int frame, int gate, int data,
                                        int bed);
 
@@ -191,5 +232,7 @@ void ECAT7_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 END_NAMESPACE_ECAT7
 
 END_NAMESPACE_STIR
+
+#endif
 
 #endif
