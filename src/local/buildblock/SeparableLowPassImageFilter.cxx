@@ -105,6 +105,7 @@ initialise_keymap()
 {
   parser.add_start_key("Separable Lowpass Filter Parameters");
   parser.add_key("filter_coefficients", &filter_coefficients_for_parsing);
+  parser.add_key("z_trivial", &z_trivial);
   //parser.add_key("filter_coefficients2", &filter_coefficients[0]);
   //parser.add_key("filter_coefficients3", &filter_coefficients[1]);  
   parser.add_stop_key("END Separable Lowpass Filter Parameters");
