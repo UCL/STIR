@@ -17,15 +17,17 @@
 */
 
 #include "VoxelsOnCartesianGrid.h"
+#include "PixelsOnCartesianGrid.h"
+
 #include "IndexRange3D.h"
 #include "CartesianCoordinate3D.h"
 #include "utilities.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
+#include "ProjDataInfoCylindrical.h"
 #include "Scanner.h"
 #include "Bin.h"
-#include "tomo/round.h"
 #include <fstream>
 #include <algorithm>
+#include <math.h>
 #ifndef TOMO_NO_NAMESPACES
 using std::ifstream;
 using std::max;
@@ -60,11 +62,12 @@ static void find_sampling_and_z_size(
     assert(proj_data_info_cyl_ptr->get_min_segment_num() <= 0);
     assert(proj_data_info_cyl_ptr->get_max_segment_num() >= 0);
 
-    z_size = 
-      proj_data_info_cyl_ptr->get_max_ring_difference(0) >
-      proj_data_info_cyl_ptr->get_min_ring_difference(0)
-      ? proj_data_info_cyl_ptr->get_num_axial_poss(0)
-      : 2*proj_data_info_cyl_ptr->get_num_axial_poss(0) - 1;
+    if (z_size<0)
+      z_size = 
+        proj_data_info_cyl_ptr->get_max_ring_difference(0) >
+        proj_data_info_cyl_ptr->get_min_ring_difference(0)
+        ? proj_data_info_cyl_ptr->get_num_axial_poss(0)
+        : 2*proj_data_info_cyl_ptr->get_num_axial_poss(0) - 1;
   }
   else
   {
@@ -78,7 +81,8 @@ static void find_sampling_and_z_size(
     z_sampling = 
       proj_data_info_ptr->get_sampling_in_t(Bin(0,0,1,0));
 
-    z_size = proj_data_info_ptr->get_num_axial_poss(0);
+    if (z_size<0)
+      z_size = proj_data_info_ptr->get_num_axial_poss(0);
   }
 
   // now do s_sampling
@@ -88,17 +92,46 @@ static void find_sampling_and_z_size(
 
 }
 
+
+template<class elemT>
+VoxelsOnCartesianGrid<elemT> ::VoxelsOnCartesianGrid()
+ : DiscretisedDensityOnCartesianGrid<3,elemT>()
+{}
+
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+		      (const Array<3,elemT>& v,
+		       const CartesianCoordinate3D<float>& origin,
+		       const BasicCoordinate<3,float>& grid_spacing)
+		       :DiscretisedDensityOnCartesianGrid<3,elemT>
+		       (v.get_index_range(),origin,grid_spacing)
+{
+  Array<3,elemT>::operator=(v);
+}
+
+
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+		      (const IndexRange<3>& range, 
+		       const CartesianCoordinate3D<float>& origin,
+		       const BasicCoordinate<3,float>& grid_spacing)
+		       :DiscretisedDensityOnCartesianGrid<3,elemT>
+		       (range,origin,grid_spacing)
+{}
+
+// KT 10/12/2001 use new format of args for the constructor, and remove the make_xy_size_odd constructor
 template<class elemT>   		            		      
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info,
 						    const float zoom, 
 						    const CartesianCoordinate3D<float>& origin,
-						    const int xy_size)
+                                                    const CartesianCoordinate3D<int>& sizes)
 						    
 {
   set_origin(origin);
 
+  int z_size = sizes.z();
   // initialise to 0 to prevent compiler warnings
-  int z_size = 0;
+  //int z_size = 0;
   float z_sampling = 0;
   float s_sampling = 0;
   find_sampling_and_z_size(z_sampling, s_sampling, z_size, &proj_data_info);
@@ -106,70 +139,38 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
   set_grid_spacing(
       CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
       );
-    
-  int xy_size_used = xy_size;
+  int x_size_used = sizes.x();
+  int y_size_used = sizes.y();
 
-  if (xy_size==-1)
+  if (sizes.x()==-1 || sizes.y()==-1)
     {
-      // default it to cover full FOV by taking 2*R_in_pixs+1
+      // default it to cover full FOV by taking image_size>=2*FOVradius_in_pixs+1
       const float FOVradius_in_mm = 
 	max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
 	    -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
-      xy_size_used = round(2*FOVradius_in_mm / get_voxel_size().x() + 1);
+      if (sizes.x()==-1)
+        x_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().x())) + 1;
+      if (sizes.y()==-1)
+        y_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().y())) + 1;        
     }
-  if (xy_size_used<0)
-    error("VoxelsOnCartesianGrid: attempt to construct image with negative xy_size %d\n", 
-	  xy_size_used);
-  if (xy_size_used==0)
-    warning("VoxelsOnCartesianGrid: constructed image with xy_size 0\n");
+  if (x_size_used<0)
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative x_size %d\n", 
+	  x_size_used);
+  if (x_size_used==0)
+    warning("VoxelsOnCartesianGrid: constructed image with x_size 0\n");
+  if (y_size_used<0)
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative y_size %d\n", 
+	  y_size_used);
+  if (y_size_used==0)
+    warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
 
   IndexRange3D range (0, z_size-1, 
-		      -(xy_size_used/2), -(xy_size_used/2) + xy_size_used-1,
-		      -(xy_size_used/2), -(xy_size_used/2) + xy_size_used-1);
-  
+		      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
+		      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
+
+
   grow(range);
-  
 }
-
-template<class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info,
-						    const float zoom, 
-						    const CartesianCoordinate3D<float>& origin,
-						    const bool make_xy_size_odd)
-						    
-{
-  set_origin(origin);
-  // initialise to 0 to prevent compiler warnings
-  int z_size = 0;
-  float z_sampling = 0;
-  float s_sampling = 0;
-  find_sampling_and_z_size(z_sampling, s_sampling, z_size,&proj_data_info);
-
-   
-  set_grid_spacing(
-      CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
-      );
-  
-  int xy_size = -1;
-  {
-    // default it to cover full FOV
-    const float FOVradius_in_mm = 
-      max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
-	  -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
-    xy_size = round(2*FOVradius_in_mm / get_voxel_size().x());
-  }
-  if (make_xy_size_odd && (xy_size%2 == 0))
-    xy_size++;
-  
-  IndexRange3D range (0, z_size-1, 
-    -(xy_size/2), -(xy_size/2) + xy_size-1,
-    -(xy_size/2), -(xy_size/2) + xy_size-1);
-  
-  grow(range);
-  
-
-} 
-
 
 /*!
   This member function will be unnecessary when all compilers can handle
@@ -186,11 +187,30 @@ VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 		                   get_grid_spacing());
 }
 
+
+template<class elemT>
+#ifdef TOMO_NO_COVARIANT_RETURN_TYPES
+DiscretisedDensity<3,elemT>*
+#else
+VoxelsOnCartesianGrid<elemT>*
+#endif
+VoxelsOnCartesianGrid<elemT>::get_empty_discretised_density() const
+{
+  return get_empty_voxels_on_cartesian_grid();
+}
+
 template<class elemT>
 DiscretisedDensity<3, elemT>* 
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
   return new VoxelsOnCartesianGrid(*this);
+}
+
+template<class elemT>
+void 
+VoxelsOnCartesianGrid<elemT>::set_voxel_size(const BasicCoordinate<3,float>& c) 
+{
+  set_grid_spacing(c);
 }
 
 template<class elemT>  
