@@ -44,9 +44,9 @@ float integral_scattpoint_det (
 
   ProjMatrixElemsForOneBin lor;
   RayTraceVoxelsOnCartesianGrid(lor, 
-                              scatter_point, 
-                              detector_coord/voxel_size,
-							  voxel_size,
+                              scatter_point/voxel_size, // in voxel units
+                              detector_coord/voxel_size, // in voxel units
+							  voxel_size, // in mm
 							  0.1F);
   float sum = 0;  // add up values along LOR
   {     
