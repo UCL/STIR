@@ -69,6 +69,15 @@ $(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
 		$(LLN_LIB_DIR)/libecat.a ${LIB_BUILDINGBLOCK} \
 		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
 
+
+${DEST}postfilter: ${DEST}postfilter.o \
+	  ../buildblock/${DEST}registrystuff.o \
+	  $(BB_LIBS) #$(LIB_BUILDINGBLOCK) 
+	$(CXX) $(CFLAGS)-o $@ $< \
+	../buildblock/${DEST}registrystuff.o \
+	$(BB_LIBS) $(LIB_BUILDINGBLOCK) \
+	$(LINK_OPT) $(SYS_LIBS)
+
 include ../Makefile_bblibs
 
 
