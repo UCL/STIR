@@ -30,7 +30,9 @@ SOURCES = \
 	SeparableGaussianArrayFilter.cxx \
 	NonseparableSpatiallyVaryingFilters.cxx \
 	NonseparableSpatiallyVaryingFilters3D.cxx \
-	local_helping_functions.cxx
+	local_helping_functions.cxx \
+	multiply_plane_scale_factorsImageProcessor.cxx \
+	cleanup966ImageProcessor.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
