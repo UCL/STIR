@@ -190,7 +190,7 @@ std::string RampFilter:: parameter_info() const
 #ifdef NRFFT
       << filter.get_length()
 #else
-      << (complex_filter_kernel.size()-1)*2
+      << (kernel_in_frequency_space.size()-1)*2
 #endif
       << "\nCut-off in cycles := "<< fc
       << "\nAlpha parameter := "<<alpha
