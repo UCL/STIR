@@ -5,7 +5,7 @@
   \file
   \ingroup utilities
 
-  \brief Utility programme for getting ROI values
+  \brief Utility program for getting ROI values
 
   The .par file has the following format
   \verbatim
@@ -26,16 +26,16 @@
 
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/utilities.h"
-#include "local/stir/eval_buildblock/compute_ROI_values.h"
+#include "stir/evaluation/compute_ROI_values.h"
 #if 0
-#include "local/stir/Shape/CombinedShape3D.h"
-#include "local/stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/CombinedShape3D.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
 #endif
-#include "local/stir/Shape/DiscretisedShape3D.h"
+#include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ImageProcessor.h"
 #include "stir/KeyParser.h"
@@ -58,7 +58,7 @@ public:
   ROIValuesParameters();
   Shape3D * shape_ptr;
   CartesianCoordinate3D<int> num_samples;
-  ImageProcessor<3,float>* filter_ptr;
+  shared_ptr<ImageProcessor<3,float> > filter_ptr;
 public:
   KeyParser parser;
   
