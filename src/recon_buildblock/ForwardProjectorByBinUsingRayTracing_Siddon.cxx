@@ -50,15 +50,16 @@ START_NAMESPACE_STIR
 
 
 // KT 20/06/2001 should now work for non-arccorrected data as well, pass s_in_mm
+template <int Siddon>
 void ForwardProjectorByBinUsingRayTracing::
 proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
 	    const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	    const float cphi, const float sphi, const float delta, const 
             float s_in_mm, 
 	    const float R, const int rmin, const int rmax, const float offset, 
-	    const int Siddon,
 	    const int num_planes_per_axial_pos,
-	    const float axial_pos_to_z_offset)
+	    const float axial_pos_to_z_offset,
+	    const float norm_factor)
 {
   float x1, y1, z1, x2, y2, z2, xmin, ymin, zmin,    xmax, ymax, zmax;
   float           a, a0, axend, ayend, azend, amax;
@@ -127,20 +128,20 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
        */
     // d12 is distance between the 2 points
     const float d12 = sqrt((dx12 * dx12 + dy12 * dy12) * d_xy * d_xy +
-	     dz12 * dz12 * d_sl * d_sl);
+	     dz12 * dz12 * d_sl * d_sl) * norm_factor;
 #else
     // d12 is distance between the 2 points
     const float d12 = sqrt((dx12 * dx12 + dy12 * dy12) * d_xy * d_xy +
-	     dz12 * dz12 * d_sl * d_sl) / d_xy;
+	     dz12 * dz12 * d_sl * d_sl) / d_xy * norm_factor;
 #endif
     // KT 16/02/98 moved slightly up
     // KT 16/02/98 multiply with d12 to get normalisation right from the start
     // Iddx12 = ((x1 == x2) ? 1000. : 1 / dx12);
     // Iddy12 = ((y1 == y2) ? 1000. : 1 / dy12);
     // Iddz12 = ((z1 == z2) ? 1000. : 1 / dz12);
-    Iddx12 = (x1 == x2) ? 1000000.F : d12 / dx12;
-    Iddy12 = (y1 == y2) ? 1000000.F : d12 / dy12;
-    Iddz12 = (z1 == z2) ? 1000000.F : d12 / dz12;
+    Iddx12 = (x1 == x2) ? 1000000.F*norm_factor : d12 / dx12;
+    Iddy12 = (y1 == y2) ? 1000000.F*norm_factor : d12 / dy12;
+    Iddz12 = (z1 == z2) ? 1000000.F*norm_factor : d12 / dz12;
   }
 
    
@@ -481,5 +482,55 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 
 	
 }
+
+
+//**************** instantiations
+
+template 
+void ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<1>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
+	       const float s_in_mm, 
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
+	       const int num_planes_per_axial_pos,
+	       const float axial_pos_to_z_offset,
+	       const float norm_factor);
+
+
+template
+void ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<2>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
+	       const float s_in_mm, 
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
+	       const int num_planes_per_axial_pos,
+	       const float axial_pos_to_z_offset,
+	       const float norm_factor);
+
+
+template
+void ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<3>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
+	       const float s_in_mm, 
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
+	       const int num_planes_per_axial_pos,
+	       const float axial_pos_to_z_offset,
+	       const float norm_factor);
+
+
+template
+void ForwardProjectorByBinUsingRayTracing::
+proj_Siddon<4>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
+	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const float cphi, const float sphi, const float delta, 
+	       const float s_in_mm, 
+	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
+	       const int num_planes_per_axial_pos,
+	       const float axial_pos_to_z_offset,
+	       const float norm_factor);
 
 END_NAMESPACE_STIR
