@@ -1,4 +1,16 @@
-Institutions in PARAPET:
+Institutions who contributed code after the PARAPET EU project:
+
+1. Imaging Servies and Solutions Ltd
+   London UK
+   (14/02/2001 - )
+
+2. Hammersmith Hospital - Medical Research Council (MRC)
+   London, UK
+   (1/4/2000 - 13/02/2001)
+
+
+Institutions in the original PARAPET EU project
+(end date 30/03/2000)
 
 1. Hammersmith Hospital - Medical Research Council (MRC)
    London, UK
@@ -53,9 +65,9 @@ Design I:
 Design II:
 
 	Zverovich, Alexey (Brunel)
-	Thielemans, Kris (MRC) 
+	Thielemans, Kris (MRC, IRSL) 
 	Sadki, Mustapha (Brunel)
-	Mustafovic, Sanida (MRC)
+	Mustafovic, Sanida (MRC, IRSL)
 	Jacobson, Matthew (MOC)
 
-Overall technical development supervisor: Thielemans, Kris (MRC) 
+Overall technical development supervisor: Thielemans, Kris (MRC, IRSL) 
