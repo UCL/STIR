@@ -96,7 +96,7 @@
 
 #include "local/stir/FBP3DRP/ColsherFilter.h" 
 #include "stir/display.h"
-#include "stir/recon_buildblock/distributable.h"
+//#include "stir/recon_buildblock/distributable.h"
 //#include "local/stir/FBP3DRP/process_viewgrams.h"
 
 #include "local/stir/FBP3DRP/FBP3DRPReconstruction.h"
@@ -207,7 +207,13 @@ set_defaults()
     
   disp=0;
   save_intermediate_files=0;
- 
+
+  forward_projector_sptr =
+    new ForwardProjectorByBinUsingRayTracing;
+  back_projector_sptr =
+    new BackProjectorByBinUsingInterpolation(
+					     /*use_piecewise_linear_interpolation = */false, 
+					     /*use_exact_Jacobian = */ false);
 }
 
 void 
@@ -240,6 +246,8 @@ FBP3DRPReconstruction::initialise_keymap()
   parser.add_key("Cut-off for Colsher filter in planar direction (in cycles)",
     &fc_colsher_planar);
 
+  parser.add_parsing_key("Back projector type", &back_projector_sptr);
+  parser.add_parsing_key("Forward projector type", &forward_projector_sptr);
 }
 
 
@@ -282,7 +290,7 @@ FBP3DRPReconstruction::ask_parameters()
     
     alpha_colsher_axial =  ask_num(" Alpha parameter for Colsher filter in axial direction ? ",0.,1., 1.);
     
-    fc_colsher_axial =  ask_num(" Cut-off frequency fo Colsher filter in axial direction ? ",0.,.5, 0.5);
+    fc_colsher_axial =  ask_num(" Cut-off frequency for Colsher filter in axial direction ? ",0.,.5, 0.5);
 
     
     alpha_colsher_planar =  ask_num(" Alpha parameter for Colsher filter in planar direction ? ",0.,1., 1.);
@@ -290,7 +298,22 @@ FBP3DRPReconstruction::ask_parameters()
     fc_colsher_planar =  ask_num(" Cut-off frequency fo Colsher filter in planar direction ? ",0.,.5, 0.5);
 
 
-
+#if 0
+    // do not ask the user for the projectors to prevent them entering
+    // silly things
+  do 
+    {
+      back_projector_sptr =
+	BackProjectorByBin::ask_type_and_parameters();
+    }
+  while (back_projector_sptr.use_count()==0);
+  do 
+    {
+      forward_projector_sptr =
+	ForwardProjectorByBin::ask_type_and_parameters();
+    }
+  while (forward_projector_sptr.use_count()==0);
+#endif
 }
 
 string
@@ -351,22 +374,34 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
 
   start_timers();
 
+  // TODO move to post_processing()
+  {
+    if (is_null_ptr(back_projector_sptr))
+      {
+	warning("Back projector not set.\n");
+	return Succeeded::no;
+      }
+    if (is_null_ptr(forward_projector_sptr))
+      {
+	warning("Forward projector not set.\n");
+	return Succeeded::no;
+      }
+  }
+  // TODO move to initialise()
   {
     // set projectors to be used for the calculations
-    // TODO get type and parameters for projectors from parameters
     // TODO this really should take a proj_data_info which has more axial positions 
     // (for the 'missing projections')
-    shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-      new ForwardProjectorByBinUsingRayTracing(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-					       target_image_ptr);
-    shared_ptr<BackProjectorByBin> back_projector_ptr =
-      new BackProjectorByBinUsingInterpolation(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-                                               target_image_ptr,
-                                               /*use_piecewise_linear_interpolation = */false, 
-                                               /*use_exact_Jacobian = */ false);
-    set_projectors_and_symmetries(forward_projector_ptr, 
-                                  back_projector_ptr, 
-                                  back_projector_ptr->get_symmetries_used()->clone());
+    forward_projector_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+				  target_image_ptr);
+    back_projector_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+			       target_image_ptr);
+#if 0
+    do when enabling callbacks
+    set_projectors_and_symmetries(forward_projector_sptr, 
+                                  back_projector_sptr, 
+                                  back_projector_sptr->get_symmetries_used()->clone());
+#endif
   }
   {
     //char file[max_filename_length];
@@ -536,7 +571,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 
   // TODO check if forward projector and back projector have compatible symmetries
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector_ptr->get_symmetries_used()->clone();
+    back_projector_sptr->get_symmetries_used()->clone();
 
   for (int seg_num= -max_segment_num_to_process; seg_num <= max_segment_num_to_process; seg_num++) 
   {
@@ -681,7 +716,7 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 	       << " to "
 	       << orig_min_axial_pos_num-1 << endl;
 
-      forward_projector_ptr->forward_project(viewgrams, estimated_image(),
+      forward_projector_sptr->forward_project(viewgrams, estimated_image(),
 					     rmin ,orig_min_axial_pos_num-1);	    
 
     }
@@ -692,7 +727,7 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 	       << orig_max_axial_pos_num+1
 	       << " to " << rmax << endl;
     
-      forward_projector_ptr->forward_project(viewgrams, estimated_image(),
+      forward_projector_sptr->forward_project(viewgrams, estimated_image(),
 					     orig_max_axial_pos_num+1, rmax);
     
     }
@@ -796,7 +831,7 @@ void FBP3DRPReconstruction::do_3D_backprojection_view(const RelatedViewgrams<flo
     full_log << "  - Backproject the filtered Colsher complete sinograms" << endl;
     // TODO drop rmin,rmax
 
-    back_projector_ptr->back_project(image, viewgrams,rmin, rmax);
+    back_projector_sptr->back_project(image, viewgrams,rmin, rmax);
         
 }
 
@@ -827,8 +862,8 @@ void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &imag
 #ifndef PARALLEL
     logfile << "\n\n TIMING RESULTS :\n"    
             << "Total CPU time : " << get_CPU_timer_value() << '\n' 
-            << "forward projection CPU time : " << forward_projector_ptr->get_CPU_timer_value() << '\n' 
-            << "back projection CPU time : " << back_projector_ptr->get_CPU_timer_value() << '\n';
+            << "forward projection CPU time : " << forward_projector_sptr->get_CPU_timer_value() << '\n' 
+            << "back projection CPU time : " << back_projector_sptr->get_CPU_timer_value() << '\n';
 #endif    
 }
 
