@@ -24,16 +24,8 @@ $(dir)_SOURCES = \
 	shift_projdata_along_axis.cxx \
 	remove_sinograms.cxx \
 	fit_cylinder.cxx \
-	rigid_object_transform_projdata.cxx \
-	rigid_object_transform_image.cxx \
 	find_maximum_in_image.cxx \
-	remove_corrupted_sinograms.cxx \
-	fwd_image_and_fill_missing_data.cxx \
-	add_planes_to_image.cxx \
 	find_sinogram_rescaling_factors.cxx \
-	move_image.cxx \
-	move_projdata.cxx \
-	sync_polaris.cxx \
         find_fwhm_in_image.cxx \
 	get_singles_info.cxx \
 	calculate_attenuation_coefficients.cxx
