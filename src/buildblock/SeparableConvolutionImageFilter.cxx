@@ -53,6 +53,9 @@ post_processing()
 
   VectorWithOffset< VectorWithOffset<elemT> >::iterator 
     coefficients_iter = filter_coefficients.begin();
+#ifndef STIR_NO_NAMESPACES
+      std::
+#endif
   vector< vector<double> >::const_iterator 
     parsing_iter = filter_coefficients_for_parsing.begin();
   for (;
@@ -72,7 +75,10 @@ post_processing()
       // can't use std::copy because of cast. sigh.
       VectorWithOffset<elemT>::iterator 
 	coefficients_elem_iter = coefficients_iter->begin();
-      vector<double>::const_iterator 
+#ifndef STIR_NO_NAMESPACES
+      std::
+#endif
+	vector<double>::const_iterator 
 	parsing_elem_iter = parsing_iter->begin();
       for (;
 	   parsing_elem_iter != parsing_iter->end();
@@ -108,6 +114,9 @@ SeparableConvolutionImageFilter(
 
   VectorWithOffset< VectorWithOffset<elemT> >::const_iterator 
     coefficients_iter = filter_coefficients.begin();
+#ifndef STIR_NO_NAMESPACES
+      std::
+#endif
   vector< vector<double> >::iterator 
     parsing_iter = filter_coefficients_for_parsing.begin();
   for (;
@@ -198,6 +207,13 @@ set_defaults()
     filter_coefficients = 
       VectorWithOffset< VectorWithOffset<elemT> >(3);    
 }
+
+
+#  ifdef _MSC_VER
+// prevent warning message on reinstantiation, 
+// note that we get a linking error if we don't have the explicit instantiation below
+#  pragma warning(disable:4660)
+#  endif
 
 template SeparableConvolutionImageFilter<float>;
 
