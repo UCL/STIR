@@ -261,11 +261,11 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 	error("\nUnable to look up image subheader\n");
       }
         
-      CartesianCoordinate3D<float> sub_head_origin(0, ihead.y_origin*10, ihead.x_origin*10);
+      const CartesianCoordinate3D<float> sub_head_origin(0, ihead.y_origin*10, ihead.x_origin*10);
       {
-	if (image_ptr->get_origin() != sub_head_origin)
+	if (norm(image_ptr->get_origin() - sub_head_origin) > .01F)
           {
-            warning("ECAT6_to_VoxelsOnCartesianGrid: x,y offset of plane %d does not agree with plane 0. Ignoring it...\n",
+		    warning("ECAT6_to_VoxelsOnCartesianGrid: x,y offset in subheader of plane %d does not agree with plane 1. Ignoring it...\n",
 		    z+1);
           }
       }
