@@ -69,7 +69,7 @@ display(const Tensor2D<elemT>& plane,
   if (plane.get_length()==0)
     return;
   // make a 3D array with arbitrary dimensions for its first and only plane
-  Tensor3D<elemT> stack(IndexRange3D(0,0,0,0,0,0));
+  Tensor3D<elemT> stack(0,0,0,0,0,0);
   // this assignment sets correct dimensions for the 2 lowest dimensions
   stack[0] = plane;
   VectorWithOffset<float> scale_factors(1);
