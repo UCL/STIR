@@ -15,7 +15,7 @@
 */
 #include "stir/Array.h"
 #include "stir/Succeeded.h"
-#include <typeinfo>
+#include "stir/ByteOrder.h"
 
 START_NAMESPACE_STIR
 
