@@ -1,5 +1,5 @@
 // 
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __Interfile_h__
 #define __Interfile_h__
@@ -13,8 +13,8 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
     
 */
 
@@ -116,13 +116,23 @@ write_basic_interfile(const string&filename,
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
  \return 'true' when succesful, 'false' otherwise.
+
+ \warning For Visual Studio, only the float version is defined to work around a 
+  compiler bug. (Otherwise, the float version is not instantiated for some reason).
 */
 
+#ifndef _MSC_VER
 template <class elemT>
+#else
+#define elemT float
+#endif
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
 		      const NumericType output_type = NumericType::FLOAT);
+#ifdef _MSC_VER
+#undef elemT 
+#endif
 
 //! This outputs an Interfile header and data for a VoxelsOnCartesianGrid<float> object
 /*!

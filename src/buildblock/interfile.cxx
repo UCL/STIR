@@ -286,7 +286,11 @@ write_basic_interfile_image_header(const string& header_file_name,
 
 
 
+#ifndef _MSC_VER
 template <class elemT>
+#else
+#define elemT float
+#endif
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
@@ -298,6 +302,9 @@ write_basic_interfile(const string& filename,
 			  CartesianCoordinate3D<float>(1,1,1), 
 			  output_type);
 }
+#ifdef _MSC_VER
+#undef elemT 
+#endif
 
 template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename, 
@@ -674,6 +681,7 @@ write_basic_interfile<>(const string&  filename,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
 
+#ifndef _MSC_VER
 
 template 
 Succeeded 
@@ -692,5 +700,6 @@ Succeeded
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,float>& image,
 		      const NumericType output_type);
+#endif
 
 END_NAMESPACE_TOMO
