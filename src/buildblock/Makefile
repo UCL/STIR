@@ -1,5 +1,5 @@
 #
-# $Id$: $Date$
+# $Id$
 #
 
 include ../Makefile_common
@@ -20,7 +20,7 @@ SOURCES = \
   utilities.cxx NumericType.cxx ByteOrder.cxx \
   KeyParser.cxx line.cxx \
   interfile.cxx InterfileHeader.cxx \
-  bbfilters.cxx recon_array_functions.cxx \
+  ImageFilter.cxx recon_array_functions.cxx \
   sparsedata.cxx \
   linear_regression.cxx overlap_interpolate.cxx \
   zoom.cxx mash_views.cxx  \
