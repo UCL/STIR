@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -108,6 +108,6 @@ protected:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/Shape/Shape3D.inl"
+#include "stir/Shape/Shape3D.inl"
 
 #endif

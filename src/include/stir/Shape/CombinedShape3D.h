@@ -13,14 +13,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_Shape_CombinedShape3D_h__
 #define __stir_Shape_CombinedShape3D_h__
 
 #include "stir/RegisteredParsingObject.h"
-#include "local/stir/Shape/Shape3D.h"
+#include "stir/Shape/Shape3D.h"
 #include "stir/shared_ptr.h"
 #include <functional>
 
@@ -66,6 +66,6 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/Shape/CombinedShape3D.inl"
+#include "stir/Shape/CombinedShape3D.inl"
 
 #endif

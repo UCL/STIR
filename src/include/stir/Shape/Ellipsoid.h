@@ -38,7 +38,7 @@
 
 
 #include "stir/RegisteredParsingObject.h"
-#include "local/stir/Shape/Shape3DWithOrientation.h"
+#include "stir/Shape/Shape3DWithOrientation.h"
 
 START_NAMESPACE_STIR
 
