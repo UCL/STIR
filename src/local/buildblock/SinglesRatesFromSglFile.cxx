@@ -86,16 +86,21 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
       ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
     }
    }
-  trans_blocks_per_bucket =scanner_sptr->get_trans_blocks_per_bucket();
-  angular_crystals_per_block =scanner_sptr->get_angular_crystals_per_block();
-  axial_crystals_per_block =scanner_sptr->get_axial_crystals_per_block();
+  if (scanner_sptr->get_type() != Scanner::E966)
+    error("check SinglesRatesFromECAT7 for non-966\n");
+
+  trans_blocks_per_bucket =scanner_sptr->get_num_transaxial_blocks_per_bucket();
+  angular_crystals_per_block =scanner_sptr->get_num_transaxial_crystals_per_block();
+  axial_crystals_per_block =scanner_sptr->get_num_axial_crystals_per_block();
   
   //skip the first 512 bytes which are part of ECAT7 header
   int number_of_elements = 
     static_cast<int>((end_stream_position-static_cast<streampos>(512))/sizeof(singles_str));
 
   // TODO replace hard-wired sizes by fields from scanner
-  singles = Array<3,float>(IndexRange3D(0,number_of_elements-1,0,2,0,35)); 
+  singles = Array<3,float>(IndexRange3D(0,number_of_elements-1,
+					0,scanner_sptr->get_num_axial_buckets()-1,
+					0,scanner_sptr->get_num_transaxial_buckets()-1)); 
   Array<3,float>::full_iterator array_iter  = singles.begin_all();
  
   int singles_record_num=0;
@@ -105,12 +110,15 @@ SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
     singles_file.read((char*)&singles_str,sizeof(singles_str));
     if (!singles_file)
       break;
-    for ( int i = 0; i<=107;i++, ++array_iter)
+    const int num_buckets =
+      scanner_sptr->get_num_transaxial_buckets() *
+      scanner_sptr->get_num_axial_buckets();
+    for ( int i = 0; i<num_buckets;i++, ++array_iter)
     {
       assert(array_iter !=singles.end_all());
       if (ByteOrder::native != ByteOrder::big_endian)
 	ByteOrder::swap_order(singles_str.sgl[i]);
-      *array_iter = singles_str.sgl[i];      
+      *array_iter = static_cast<float>(singles_str.sgl[i]);
     }
     if (ByteOrder::native != ByteOrder::big_endian)
 	ByteOrder::swap_order(singles_str.time);
@@ -159,6 +167,7 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
   //TODO
   if ( start_time==end_time && start_time <=2.1)
     { 
+      // TODO 4 966
      return  singles[0][axial_bucket_num][transaxial_bucket_num]/4;       
     }
     
@@ -196,12 +205,14 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
     {
     singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];       
     }
+      // TODO 4 966
     // TODO division by 4 probably is to get from singles_rate_per_bucket to singles_rate_per_block
     return singles_average/(4*(i-start_index));  // divide by 4.0 to be consistant with CTIns
 #else
 
     int i= (int)start_time/2;
     
+      // TODO 4 966
     return  singles[i][axial_bucket_num][transaxial_bucket_num]/4;       
 
 

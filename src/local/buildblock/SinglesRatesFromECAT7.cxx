@@ -57,22 +57,18 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
        ECAT7_filename.c_str());
   scanner_sptr = find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
 
-#if 0
-  // TODO expand Scanner class such that these info can be obtaied from there
-  EcatModel *ScannerModelInfo =  ecat_model(mptr->mhptr->system_type);
-  transBlocksPerBucket=ScannerModelInfo->transBlocksPerBucket;
-  angularCrystalsPerBlock=ScannerModelInfo->angularCrystalsPerBlock;
-  axialCrystalsPerBlock =ScannerModelInfo->axialCrystalsPerBlock ;
-#else
-  trans_blocks_per_bucket =scanner_sptr->get_trans_blocks_per_bucket();
-  angular_crystals_per_block =scanner_sptr->get_angular_crystals_per_block();
-  axial_crystals_per_block =scanner_sptr->get_axial_crystals_per_block();
-#endif
+  if (scanner_sptr->get_type() != Scanner::E966)
+    error("check SinglesRatesFromECAT7 for non-966\n");
+  trans_blocks_per_bucket =scanner_sptr->get_num_transaxial_blocks_per_bucket();
+  angular_crystals_per_block =scanner_sptr->get_num_transaxial_crystals_per_block();
+  axial_crystals_per_block =scanner_sptr->get_num_axial_crystals_per_block();
+
   Main_header* main_header = 
     reinterpret_cast<Main_header*>( mptr->mhptr ) ;
 
-  // TODO find out sizes from somewhere somehow -- for HR++ 108 entries (3 (axial)*36(radial))
-  singles =  Array<3,float>(IndexRange3D(1,main_header->num_frames,0,2,0,35)); 
+  singles =  Array<3,float>(IndexRange3D(1,main_header->num_frames,
+					 0,scanner_sptr->get_num_axial_buckets()-1,
+					 0,scanner_sptr->get_num_transaxial_buckets()-1)); 
   
   MatrixData* matrix ;
   vector<pair<double, double> > time_frames(main_header->num_frames);
@@ -118,6 +114,7 @@ SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,
   //cerr << " Axial pos: " << axial_bucket_num << endl;
   //cerr << " Transax pos: " << transaxial_bucket_num << endl;
   
+  // TODO 4
   return singles[frame_num][axial_bucket_num][transaxial_bucket_num]/4.0F;  // divide by 4.0 to be consistant with CTIs
 
 }
