@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock  
+  \ingroup listmode
   \brief Declaration of class CListModeData
     
   \author Kris Thielemans
@@ -36,6 +36,9 @@ using std::vector;
 START_NAMESPACE_STIR
 
 //! A class that reads the listmode data from a (presumably binary) stream 
+/*! \todo This class currently relies in the fact that
+     vector<streampos>::size_type == SavedPosition
+*/
 class CListModeDataFromStream : public CListModeData
 {
 public:
@@ -58,27 +61,29 @@ public:
   virtual 
     Succeeded reset();
 
-  virtual
     SavedPosition save_get_position();
 
-  virtual
     Succeeded set_get_position(const SavedPosition&);
 
-  //! Provide access to the associated stream
-  /*! \warning This should not be used to read/write to the stream.
-      Repositioning the stream is allowed though.
-      \todo This is only provided to be able to save positions even
-      after deleting the CListModeDataFromStream object. Instead, we should
-      provide a way to keep those saved positions alive.
-   */
-  istream * const
-    get_stream_ptr() const;
+  //! Function that enables the user to store the saved get_positions
+  /*! Together with set_saved_get_positions(), this allows 
+      reinstating the saved get_positions when 
+      reopening the same list-mode stream.
+  */
+  vector<streampos> get_saved_get_positions() const;
+  //! Function that sets the saved get_positions
+  /*! Normally, the argument results from a call to 
+      get_saved_get_positions() on the same list-mode stream.
+      \warning There is no check if the argument actually makes sense
+      for the current stream.
+  */ 
+  void set_saved_get_positions(const vector<streampos>& );
 
-protected:
+private:
+
   string listmode_filename;
   shared_ptr<istream> stream_ptr;
   streampos starting_stream_position;
-private:
   vector<streampos> saved_get_positions;
 };
 
