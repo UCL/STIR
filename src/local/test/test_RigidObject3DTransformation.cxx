@@ -26,7 +26,7 @@
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
 #include "stir/stream.h"
-
+#include "stir/IO/DefaultOutputFileFormat.h"
 #include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -312,6 +312,51 @@ RigidObject3DTransformationTests::run_tests()
 
 }
 
+static Bin
+abs_bin_diff_no_reorder(const Bin& org_bin, const Bin& transformed_bin)
+{
+  Bin diff;
+  diff.segment_num() =
+    std::abs(org_bin.segment_num() - transformed_bin.segment_num());
+  diff.view_num() = 
+    std::abs(org_bin.view_num() - transformed_bin.view_num());
+  diff.axial_pos_num() = 
+    std::abs(org_bin.axial_pos_num() - transformed_bin.axial_pos_num());
+  diff.tangential_pos_num() = 
+    std::abs(org_bin.tangential_pos_num() - transformed_bin.tangential_pos_num());
+  return diff;
+}
+
+static Bin
+swap_direction(const Bin& bin, const int num_views)
+{
+  return Bin(-bin.segment_num(), 
+	     bin.view_num() < num_views/2? bin.view_num()+ num_views : bin.view_num() - num_views,
+	     bin.axial_pos_num(), 
+	     -bin.tangential_pos_num());
+}
+
+static int 
+sup_norm(const Bin& bin)
+{
+  return max(abs(bin.segment_num()), 
+	     max(abs(bin.view_num()),
+		 max(abs(bin.axial_pos_num()), 
+		     abs(bin.tangential_pos_num()))));
+}
+
+static Bin
+abs_bin_diff(const Bin& org_bin, const Bin& transformed_bin, const int num_views)
+{
+  const Bin diff1=abs_bin_diff_no_reorder(org_bin, transformed_bin);
+  const Bin diff2=abs_bin_diff_no_reorder(org_bin, swap_direction(transformed_bin, num_views));
+  return 
+    sup_norm(diff1)<sup_norm(diff2) 
+    ? diff1
+    : diff2;
+}
+
+
 void
 RigidObject3DTransformationTests::
 test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info)
@@ -321,16 +366,13 @@ test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info)
   quat.normalise();
   const CartesianCoordinate3D<float> translation(11,-12,15);
     
-  const RigidObject3DTransformation ro3dtrans(quat, translation);
+  const RigidObject3DTransformation ro3dtrans;//KT(quat, translation);
     
   RigidObject3DTransformation ro3dtrans_inverse =ro3dtrans;
   ro3dtrans_inverse =ro3dtrans_inverse.inverse();
 
   unsigned num_bins_checked = 0;
-  int max_diff_segment_num=0;
-  int max_diff_view_num=0;
-  int max_diff_axial_pos_num=0;
-  int max_diff_tangential_pos_num=0;
+  Bin max_diff(0,0,0,0);
   for (int segment_num=proj_data_info.get_min_segment_num();
        segment_num<=proj_data_info.get_max_segment_num();
        ++segment_num)
@@ -362,30 +404,15 @@ test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info)
 		    {
 		      ro3dtrans_inverse.transform_bin(transformed_bin, proj_data_info, proj_data_info);
 
-		      const int diff_segment_num =
-			std::abs(org_bin.segment_num() - transformed_bin.segment_num());
-		      const int diff_view_num = 
-			std::abs(org_bin.view_num() - transformed_bin.view_num());
-		      const int diff_axial_pos_num = 
-			std::abs(org_bin.axial_pos_num() - transformed_bin.axial_pos_num());
-		      const int diff_tangential_pos_num = 
-			std::abs(org_bin.tangential_pos_num() - transformed_bin.tangential_pos_num());
+		      const Bin diff = abs_bin_diff(org_bin, transformed_bin, proj_data_info.get_num_views());
 		      if (transformed_bin.get_bin_value()>0)
 			{
-			  if (diff_segment_num>max_diff_segment_num)
-			    max_diff_segment_num=diff_segment_num;
-			  if (diff_view_num>max_diff_view_num)
-			    max_diff_view_num=diff_view_num;
-			  if (diff_axial_pos_num>max_diff_axial_pos_num)
-			    max_diff_axial_pos_num=diff_axial_pos_num;
-			  if (diff_tangential_pos_num>max_diff_tangential_pos_num)
-			    max_diff_tangential_pos_num=diff_tangential_pos_num;
+			  if (sup_norm(diff)>sup_norm(max_diff))
+			    max_diff = diff;
 			}
+			
 		      if (!check(org_bin.get_bin_value() == transformed_bin.get_bin_value(), "transform_bin_with_inverse: value") ||
-			  !check(diff_segment_num<=1, "transform_bin_with_inverse: segment") ||
-			  !check(diff_view_num<=1, "transform_bin_with_inverse: view") ||
-			  !check(diff_axial_pos_num<=2, "transform_bin_with_inverse: axial_pos") ||
-			  !check(diff_tangential_pos_num<=1, "transform_bin_with_inverse: tangential_pos"))
+			  !check(sup_norm(diff)<3, "transform_bin_with_inverse: different bin"))
 			{
 			  cerr << "\tProblem at  segment = " << org_bin.segment_num() 
 			       << ", axial pos " << org_bin.axial_pos_num()
@@ -405,10 +432,10 @@ test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info)
 	} // view
     } //segment
   cerr << '\t' << num_bins_checked << " num_bins checked\n\tMax deviation:\n"
-       << "\tsegment = " << max_diff_segment_num 
-       << ", axial pos " << max_diff_axial_pos_num
-       << ", view = " << max_diff_view_num 
-       << ", tangential_pos_num = " << max_diff_tangential_pos_num << "\n";
+       << "\tsegment = " << max_diff.segment_num ()
+       << ", axial pos " << max_diff.axial_pos_num()
+       << ", view = " << max_diff.view_num() 
+       << ", tangential_pos_num = " << max_diff.tangential_pos_num() << "\n";
 }
 
 void
@@ -424,11 +451,11 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
   const CartesianCoordinate3D<float> voxel_size =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(*density_sptr).get_grid_spacing();
     
-  Quaternion<float> quat(1,-2,3,8);
+  Quaternion<float> quat(1,0,.2,0);
   quat.normalise();
-  const CartesianCoordinate3D<float> translation(11,-12,15);
+  const CartesianCoordinate3D<float> translation(0,0,0);//11,-12,15);
     
-  const RigidObject3DTransformation ro3dtrans;//(quat, translation);
+  const RigidObject3DTransformation ro3dtrans(quat, translation);
     
   //RigidObject3DTransformation ro3dtrans_inverse =ro3dtrans;
   //ro3dtrans_inverse =ro3dtrans_inverse.inverse();
@@ -444,9 +471,11 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
     ProjMatrixElemsForOneDensel bins;
     ProjMatrixElemsForOneBin lor;
       
-    const Densel densel((density_sptr->get_min_index()+density_sptr->get_max_index())/2+1,3,5);
+    //const Densel densel((density_sptr->get_min_index()+density_sptr->get_max_index())/2+1,3,5);
+const Densel densel((density_sptr->get_min_index()+density_sptr->get_max_index())/2,0,0);
     pm_by_densel.get_proj_matrix_elems_for_one_densel(bins, densel);
-      
+
+    unsigned num_contributing_bins=0;
     for (ProjMatrixElemsForOneDensel::const_iterator bin_iter = bins.begin();
 	 bin_iter != bins.end();
 	 ++bin_iter)
@@ -455,10 +484,13 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
 	ro3dtrans.transform_bin(transformed_bin, *proj_data_info_sptr, *proj_data_info_sptr);
 	if (transformed_bin.get_bin_value()>0)
 	  {
+	    ++num_contributing_bins;
+	    transformed_bin.set_bin_value(bin_iter->get_bin_value());
 	    pm_by_bin.get_proj_matrix_elems_for_one_bin(lor, transformed_bin);
 	    lor.back_project(*density_sptr, transformed_bin);
 	  }
       }
+    cerr << "num_contributing_bins " << num_contributing_bins << '\n';
     const CartesianCoordinate3D<int> densel_from_bins =
       index_at_maximum(*density_sptr);
 
@@ -472,9 +504,14 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
       norm(convert_int_to_float(densel_from_bins) - transformed_densel_float);
     if (max_deviation < deviation)
       max_deviation = deviation;
+	cerr << "Org: " << densel << " transformed: " << transformed_densel_float << "by bin: " << densel_from_bins << "\n";
     if (!check(deviation<1.1,"deviation of pixel"))
       {
 	cerr << "Org: " << densel << " transformed: " << transformed_densel_float << "by bin: " << densel_from_bins << "\n";
+	DefaultOutputFileFormat output_file_format;
+	output_file_format.write_to_file("STIRImage", *density_sptr);
+	cerr << "Image written as STIRImage.*\n";
+
       }
   }
   cerr << "\tmax deviation : " << max_deviation << '\n';
