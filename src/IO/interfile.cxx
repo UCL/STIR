@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 //   Pretty horrible implementations at the moment...
@@ -45,6 +45,8 @@
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/write_data.h"
+#include "stir/IO/read_data.h"
 
 #include <fstream>
 
@@ -108,9 +110,13 @@ read_interfile_image(istream& input,
   data_in.seekg(hdr.data_offset[0]);
   
   float scale = float(1);
-  image_ptr->read_data(data_in, hdr.type_of_numbers, scale, hdr.file_byte_order);
-  // TODO perform run-time check also when not debugging
-  assert(scale == 1);  
+  if (read_data(data_in, *image_ptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
+    == Succeeded::no
+    || scale != 1)
+  {
+    warning("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
+    return 0;
+  }
   
   for (int i=0; i< hdr.matrix_size[2][0]; i++)
     if (hdr.image_scaling_factors[0][i]!= 1)
@@ -411,7 +417,7 @@ Succeeded write_basic_interfile(const string&  filename,
   open_write_binary(output_data, data_name);
 
   float scale = 0;
-  image.write_data(output_data, output_type, scale);
+  write_data(output_data, image, output_type, scale);
 
   VectorWithOffset<float> scaling_factors(1);
   scaling_factors[0] = scale;
