@@ -210,39 +210,6 @@ post_processing()
   template_proj_data_info_ptr = 
     template_proj_data_ptr->get_proj_data_info_ptr()->clone();
 
-
-  shared_ptr<Scanner> scanner_ptr = 
-    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
-
-  // TODO this won't work for the HiDAC or so
-  proj_data_info_cyl_uncompressed_ptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
-                  1, scanner_ptr->get_num_rings()-1,
-                  scanner_ptr->get_num_detectors_per_ring()/2,
-                  scanner_ptr->get_default_num_arccorrected_bins(), 
-                  false));
-  // set up normalisation object
-  if (is_null_ptr(normalisation_ptr))
-    {
-      //normalisation_ptr = new TrivialBinNormalisation;
-      warning("Invalid normalisation object\n");
-      return true;
-    }
-
-  if (pre_or_post_normalisation)
-    {
-      if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
-	   != Succeeded::yes)
-	error("correct_projdata: set-up of normalisation failed\n");
-    }
-  else
-    {
-      if ( normalisation_ptr->set_up(template_proj_data_info_ptr)
-	   != Succeeded::yes)
-	error("correct_projdata: set-up of normalisation failed\n");
-    }
-
   // initialise segment_num related variables
 
   if (max_segment_num_to_process==-1)
@@ -264,6 +231,40 @@ post_processing()
   else
     num_segments_in_memory =
       min(num_segments_in_memory, num_segments);
+
+  // set up normalisation object
+
+  shared_ptr<Scanner> scanner_ptr = 
+    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
+
+  // TODO this won't work for the HiDAC or so
+  proj_data_info_cyl_uncompressed_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
+                  1, scanner_ptr->get_num_rings()-1,
+                  scanner_ptr->get_num_detectors_per_ring()/2,
+                  scanner_ptr->get_default_num_arccorrected_bins(), 
+                  false));
+
+  if (is_null_ptr(normalisation_ptr))
+    {
+      //normalisation_ptr = new TrivialBinNormalisation;
+      warning("Invalid normalisation object\n");
+      return true;
+    }
+
+  if (pre_or_post_normalisation)
+    {
+      if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+	   != Succeeded::yes)
+	error("correct_projdata: set-up of normalisation failed\n");
+    }
+  else
+    {
+      if ( normalisation_ptr->set_up(template_proj_data_info_ptr)
+	   != Succeeded::yes)
+	error("correct_projdata: set-up of normalisation failed\n");
+    }
 
   // handle time frame definitions etc
 
@@ -368,6 +369,12 @@ LmToProjData::
 process_new_time_event(const CListTime&)
 {}
 
+
+void
+LmToProjData::
+start_new_time_frame(const unsigned int)
+{}
+
 void
 LmToProjData::
 process_data()
@@ -390,11 +397,15 @@ process_data()
       ++current_frame_num)
    {
      long num_events_in_frame = 0;
+
+     // TODO could be improved by first skipping events not in the frame
      frame_start_positions[current_frame_num] = 
        lm_data_ptr->save_get_position();
+
      const double start_time = frame_defs.get_start_time(current_frame_num);
      const double end_time = frame_defs.get_end_time(current_frame_num);
 
+     start_new_time_frame(current_frame_num);
 
      //*********** open output file
        shared_ptr<iostream> output;
