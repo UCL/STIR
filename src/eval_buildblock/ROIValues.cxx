@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup eval_buildblock
+  \ingroup evaluation
 
   \brief Implementation of class ROI_values
 
@@ -15,11 +15,11 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/eval_buildblock/ROIValues.h"
+#include "stir/evaluation/ROIValues.h"
 #include "stir/NumericInfo.h"
 #include <math.h>
 #ifdef BOOST_NO_STRINGSTREAM

@@ -3,9 +3,9 @@
 //
 /*!
   \file
-  \ingroup eval_buildblock
+  \ingroup evaluation
 
-  \brief Implementation of functions declared in tomo/eval_buildblock/compute_ROI_values.h
+  \brief Implementation of functions declared in tomo/evaluation/compute_ROI_values.h
 
   \author Kris Thielemans
   \author Damiano Belluzzo
@@ -13,11 +13,11 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/eval_buildblock/compute_ROI_values.h"
-#include "local/stir/Shape/Shape3D.h"
+#include "stir/evaluation/compute_ROI_values.h"
+#include "stir/Shape/Shape3D.h"
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"

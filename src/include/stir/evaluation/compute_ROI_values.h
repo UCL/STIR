@@ -3,7 +3,7 @@
 //
 /*!
   \file Declaration of various function that computes ROI values
-  \ingroup eval_buildblock
+  \ingroup evaluation
 
   \brief 
 
@@ -12,13 +12,13 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_eval_buildblock_compute_ROI_values__H__
-#define __stir_eval_buildblock_compute_ROI_values__H__
+#ifndef __stir_evaluation_compute_ROI_values__H__
+#define __stir_evaluation_compute_ROI_values__H__
 
-#include "local/stir/eval_buildblock/ROIValues.h"
+#include "stir/evaluation/ROIValues.h"
 
 START_NAMESPACE_STIR
 
@@ -27,6 +27,9 @@ template <typename coordT> class CartesianCoordinate3D;
 template <typename elemT> class VectorWithOffset;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Shape3D;
+
+//! \addtogroup evaluation
+//@{
 
 // TODO doc
 
@@ -68,6 +71,8 @@ compute_CR_cold_per_plane(VectorWithOffset<ROIValues>& val1,VectorWithOffset<ROI
 VectorWithOffset<float>
 compute_uniformity_per_plane(VectorWithOffset<ROIValues>& val);
 
+// end of doxygen group
+//@}
 
 END_NAMESPACE_STIR
 
