@@ -8,6 +8,7 @@
 //#include "local/stir/InverseSeparableCartesianMetzImageFilter.h"
 #include "local/stir/SeparableLowPassImageFilter.h"
 #include "local/stir/SeparableGaussianImageFilter.h"
+#include "local/stir/SeparableGaussianImageFilterWithSquareCoefficients.h"
 
 
 START_NAMESPACE_STIR
@@ -17,6 +18,7 @@ static DAVImageFilter3D<float>::RegisterIt dummy1;
 //static InverseSeparableCartesianMetzImageFilter <float>::RegisterIt dummy3;
 static SeparableLowPassImageFilter<float>::RegisterIt dummy4;
 static SeparableGaussianImageFilter<float>::RegisterIt dummy5;
+static SeparableGaussianImageFilterWithSquareCoefficients<float>::RegisterIt dummy6;
 
 END_NAMESPACE_STIR
 

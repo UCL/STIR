@@ -458,7 +458,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
     vox_image_ptr_kappa1->get_min_z(),vox_image_ptr_kappa1->get_max_z(),
     vox_image_ptr_kappa1->get_min_y(),vox_image_ptr_kappa1->get_max_y(),
     vox_image_ptr_kappa1->get_min_x(),vox_image_ptr_kappa1->get_max_x(),
-    *proj_matrix_ptr, do_attenuation,threshold,true);
+    *proj_matrix_ptr, do_attenuation,threshold, false); //true);
   
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
   { 
@@ -528,7 +528,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	      (ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2,ceil((vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z())/2),
 	      //0,0,0,0,
 	      6,6,6,6,
-	      *proj_matrix_ptr,false,threshold, true);	  
+	      *proj_matrix_ptr,false,threshold, false) ;//true);	  
 	    (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2][6][6];
 	    //(*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
 	    
