@@ -579,17 +579,17 @@ void show_math_menu(){
   cerr<<"\n\
     MATH MODE:\n\
     0. Quit \n\
-    1. Display math buffer
+    1. Display math buffer\n\
     2. Absolute difference\n\
     3. Add image\n\
     4. Subtract image\n\
-    5. Multiply image
+    5. Multiply image\n\
     6. Add scalar\n\
     7. Multiply scalar\n\
     8. Divide scalar \n\
     9. Min/Max in image\n\
-    10. Main buffer --> Math buffer
-    11. Math buffer --> Main Buffer
+    10. Main buffer --> Math buffer\n\
+    11. Math buffer --> Main Buffer\n\
     12. Reload main buffer\n\
     13. Redisplay menu\n\
     14. Main mode"<<endl;
