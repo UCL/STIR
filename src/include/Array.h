@@ -1,5 +1,9 @@
 
-// $Id$: $Date$
+// $Id$
+
+#ifndef ARRAY_FULL
+#define ARRAY_FULL
+#endif
 
 #ifndef __Array_H__
 #define __Array_H__
