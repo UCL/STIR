@@ -91,6 +91,8 @@ ${DEST}$(dir)/test_OutputFileFormat: ${DEST}$(dir)/test_OutputFileFormat.o \
 		$(filter %IO_registries.o,$(STIR_REGISTRIES)) \
 		 $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
 
+${DEST}$(dir)/test_proj_data_info: ${DEST}$(dir)/test_proj_data_info.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
 
 include $(WORKSPACE)/test.mk
 
