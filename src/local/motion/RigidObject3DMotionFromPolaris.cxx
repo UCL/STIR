@@ -26,6 +26,7 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/utilities.h"
 #include "stir/stream.h"
+#include "stir/is_null_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/linear_regression.h"
 #include <fstream>
