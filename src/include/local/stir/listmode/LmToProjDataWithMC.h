@@ -49,6 +49,9 @@ private:
   RigidObject3DTransformation move_to_scanner;
   RigidObject3DTransformation move_from_scanner;
   RigidObject3DTransformation ro3dtrans; // actual Polaris  motion for current_time
+  
+
+
 
   
 };
