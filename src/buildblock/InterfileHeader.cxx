@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -9,9 +9,9 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  \date    00/03/08
 
-  \version $Revision$
+  \version 1.10
 
 */
 
@@ -150,7 +150,7 @@ InterfileHeader::InterfileHeader()
 }
 
 
-int InterfileHeader::post_processing()
+bool InterfileHeader::post_processing()
 {
     // KT 20/06/98 new
   type_of_numbers = NumericType(number_format_values[number_format_index], bytes_per_pixel);
@@ -169,7 +169,7 @@ int InterfileHeader::post_processing()
   if (matrix_size.size()==0 || matrix_size[matrix_size.size()-1].size()!=1)
   {
     cerr << "Interfile error: matrix size keywords not in expected format" << endl;
-    return 1;
+    return true;
   }
 
   for (int frame=0; frame<num_time_frames; frame++)
@@ -185,11 +185,11 @@ int InterfileHeader::post_processing()
       matrix_size[matrix_size.size()-1][0])
     {
       cerr << "Interfile error: wrong number of image scaling factors" << endl;
-      return 1;
+      return true;
     }
   }
   
-  return 0;
+  return false;
 
 }
 
@@ -217,23 +217,23 @@ void InterfileHeader::read_frames_info()
 
 /***********************************************************************/
 
-int InterfileImageHeader::post_processing()
+bool InterfileImageHeader::post_processing()
 {
 
-  if (InterfileHeader::post_processing() == 1)
-    return 1;
+  if (InterfileHeader::post_processing() == true)
+    return true;
 
   if (PET_data_type_values[PET_data_type_index] != "Image")
-    { warning("Interfile error: expecting an image\n");  return 1; }
+    { warning("Interfile error: expecting an image\n");  return true; }
   
   if (num_dimensions != 3)
-    { warning("Interfile error: expecting 3D image\n"); return 1; }
+    { warning("Interfile error: expecting 3D image\n"); return true; }
 
   // KT 29/10/98 moved from asserts in read_interfile_image
   if ( (matrix_size[0].size() != 1) || 
        (matrix_size[1].size() != 1) ||
        (matrix_size[2].size() != 1) )
-  { warning("Interfile error: only handling image with homogeneous dimensions\n"); return 1; }
+  { warning("Interfile error: only handling image with homogeneous dimensions\n"); return true; }
 
   // KT 09/10/98 changed order z,y,x->x,y,z
   // KT 09/10/98 allow no labels at all
@@ -243,11 +243,11 @@ int InterfileImageHeader::post_processing()
     {
       cerr << "Interfile: only supporting x,y,z order of coordinates now."
 	   << endl; 
-      return 1; 
+      return true; 
     }
 
 
-  return 0;
+  return false;
 }
 /**********************************************************************/
 
@@ -458,14 +458,14 @@ find_segment_sequence(const vector<int>& min_ring_difference,
   return sqc;
 }
 
-int InterfilePSOVHeader::post_processing()
+bool InterfilePSOVHeader::post_processing()
 {
 
-  if (InterfileHeader::post_processing() == 1)
-    return 1;
+  if (InterfileHeader::post_processing() == true)
+    return true;
 
   if (PET_data_type_values[PET_data_type_index] != "Emission")
-    { warning("Interfile error: expecting emission data\n");  return 1; }
+    { warning("Interfile error: expecting emission data\n");  return true; }
   
   // KT 29/10/98 some more checks
   // KT 12/11/98 removed segment_sequence
@@ -475,7 +475,7 @@ int InterfilePSOVHeader::post_processing()
       num_rings_per_segment.size() != num_segments)
     { 
       warning("Interfile error: per-segment information is inconsistent\n"); 
-      return 1;
+      return true;
     }
 
   //KT 12/11/98 derived segment_sequence fro ring differences
@@ -530,6 +530,9 @@ int InterfilePSOVHeader::post_processing()
   // SM 22/01/2000 added
   else if (originating_system == "HiDAC")
     scanner = PETScannerInfo::HiDAC;
+  // MJ 09/04/2000 added
+  else if (originating_system == "Positron HZL/R")
+    scanner = PETScannerInfo::HZLR;
   else
   {
     char * warning_msg = 0;
@@ -648,7 +651,7 @@ originating_system or 'number of detectors per ring'.\n");;
   
   scan_info.show_params();
 
-  return 0;
+  return false;
 }
 
 END_NAMESPACE_TOMO
