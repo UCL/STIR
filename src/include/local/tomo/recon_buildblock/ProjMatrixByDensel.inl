@@ -19,14 +19,6 @@
 
 START_NAMESPACE_TOMO
 
-const DataSymmetriesForDensels*
-ProjMatrixByDensel:: 
-get_symmetries_ptr() const
-{
-  return  symmetries_ptr.get(); 
-}
-
-
 void ProjMatrixByDensel::
 get_proj_matrix_elems_for_one_densel(
 				     ProjMatrixElemsForOneDensel& probabilities,
