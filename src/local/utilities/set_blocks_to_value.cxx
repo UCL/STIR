@@ -79,14 +79,6 @@ void do_block(vector<Bin>& list_of_bins_in_block,
               other_det, other_ring);
             if (success == Succeeded::yes)
               list_of_bins_in_block.push_back(bin);
-            if (ring == other_ring)
-              continue;
-            success =
-              proj_data_info.get_bin_for_det_pair(bin, 
-              other_det, other_ring,
-              det, ring);
-            if (success == Succeeded::yes)
-              list_of_bins_in_block.push_back(bin);
           }
       }
     }
