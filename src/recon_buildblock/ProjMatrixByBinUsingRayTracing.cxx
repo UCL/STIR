@@ -46,6 +46,7 @@
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/round.h"
+#include "stir/modulo.h"
 #include "stir/stream.h"
 #include <algorithm>
 #include <math.h>
@@ -196,6 +197,21 @@ set_up(
 	warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
 
     }  
+
+#if 0
+  // test if our 2D code does not have problems
+  {
+    // currently 2D code relies on the LOR falling in the middle of a voxel (in z-direction)
+    const float z_shift = - origin.z()/voxel_size.z()
+      +(max_index.z()+min_index.z())/2.F;
+    if (fabs(z_shift - round(z_shift)) > .01)
+      error("ProjMatrixByBinUsingRayTracing can currently not handle this image.\n"
+	    "Make sure you either have \n"
+	    "- an odd number of planes and z_origin=n* z_voxel_size\n"
+	    "- or an even number of planes and z_origin=(n+1/2)*z_voxel_size\n"
+	    "(for some integer n).\n");
+  }
+#endif
 };
 
 /* this is used when 
@@ -203,15 +219,18 @@ set_up(
   it adds two  adjacents z with their half value
   */
 static void 
-add_adjacent_z(ProjMatrixElemsForOneBin& lor, const int num_LORs=2);
+add_adjacent_z(ProjMatrixElemsForOneBin& lor, 
+	       const float z_of_first_voxel, 
+	       const float right_edge_of_TOR);
 
+#if 0
 /* Complicated business to add the same values at z+1
    while taking care that the (x,y,z) coordinates remain unique in the LOR.
   (If you copy the LOR somewhere else, you can simply use 
    ProjMatrixElemsForOneBin::merge())
 */         
 static void merge_zplus1(ProjMatrixElemsForOneBin& lor);
-
+#endif
 
 template <typename T>
 static inline int sign(const T& t) 
@@ -288,7 +307,27 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
     stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
     stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
-  
+
+    // check we're not exactly at the border of 2 planes in the 2D case
+    if (tantheta==0)
+      {
+	assert(stop_point.z()==start_point.z());
+	if (fabs(modulo(stop_point.z(),1)-.5)<.001)
+	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two z-planes\n");
+      }
+    if (cphi==0)
+      {
+	assert(stop_point.y()==start_point.y());
+	if (fabs(modulo(stop_point.y(),1)-.5)<.001)
+	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
+      }
+    if (sphi==0)
+      {
+	assert(stop_point.x()==start_point.x());
+	if (fabs(modulo(stop_point.x(),1)-.5)<.001)
+	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
+      }
+
     // find out in which direction we should do the ray tracing to obtain a sorted lor
     // we want to go from small z to large z, 
     // or if z are equal, from small y to large y and so on
@@ -312,6 +351,16 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
 #endif
            );
 
+#ifndef NDEBUG
+    {
+      // TODO output is still not sorted... why?
+
+      //ProjMatrixElemsForOneBin sorted_lor = lor;
+      //sorted_lor.sort();
+      //assert(lor == sorted_lor);
+      lor.check_state();
+    }
+#endif
     return;
   }
 
@@ -427,14 +476,25 @@ calculate_proj_matrix_elems_for_one_bin(
      voxel overlaps with the TOR (in axial direction).
      TODO sort this out for arbitrary origin.z() and adjust code in add_adjacent_z
   */
-  const float offset_in_z = 
-    (num_lors_per_axial_pos == 1 || tantheta == 0 ? 
-     0.F :
-     (-sampling_distance_of_adjacent_LORs_z/(2*num_lors_per_axial_pos)*
+  const float z_position_of_first_LOR_wrt_centre_of_TOR =
+    (-sampling_distance_of_adjacent_LORs_z/(2*num_lors_per_axial_pos)*
       (num_lors_per_axial_pos-1))
-     )
-    - origin.z()
+    - origin.z();
+  float offset_in_z = 
+    z_position_of_first_LOR_wrt_centre_of_TOR
     +(max_index.z()+min_index.z())/2.F * voxel_size.z();
+
+  if (tantheta==0)
+    {
+      // make sure we don't ray-trace exactly between 2 planes
+      // z-coordinate (in voxel units) will be
+      //  (t_in_mm+offset_in_z)/voxel_size.z();
+      // if so, we ray trace first to the voxels at smaller z, but will add the 
+      // other plane later (in add_adjacent_z)
+      if (fabs(modulo((t_in_mm+offset_in_z)/voxel_size.z(),1)-.5)<.001)
+        offset_in_z -= .1F*voxel_size.z();
+    }
+
 
   // use FOV which is slightly 'inside' the image to avoid
   // index out of range
@@ -477,13 +537,24 @@ calculate_proj_matrix_elems_for_one_bin(
   }
       
   // now add on other LORs in axial direction
-  if ( num_lors_per_axial_pos>1 && lor.size()>0)
+  if (lor.size()>0)
   {          
     if (tantheta==0 ) 
       { 
-	add_adjacent_z(lor, num_lors_per_axial_pos);
+	const float z_of_first_voxel=
+	  lor.begin()->coord1() +
+	  origin.z()/voxel_size.z() -
+	  (max_index.z() + min_index.z())/2.F;
+	const float left_edge_of_TOR =
+	  (t_in_mm - sampling_distance_of_adjacent_LORs_z/2
+	   )/voxel_size.z();
+	const float right_edge_of_TOR =
+	  (t_in_mm + sampling_distance_of_adjacent_LORs_z/2
+	   )/voxel_size.z();
+
+	add_adjacent_z(lor, z_of_first_voxel - left_edge_of_TOR, right_edge_of_TOR -left_edge_of_TOR);
       }
-    else
+    else if (num_lors_per_axial_pos>1)
       {
 #if 0
 	if (num_lors_per_axial_pos==2)
@@ -498,7 +569,7 @@ calculate_proj_matrix_elems_for_one_bin(
 	    // reserve enough memory to avoid reallocations
 	    lor.reserve(lor.size()*num_lors_per_axial_pos);
 	    // now add adjacent z
-	    for (int z_index=1; z_index<num_lors_per_axial_pos; z_index+=1)
+	    for (int z_index=1; z_index<num_lors_per_axial_pos; ++z_index)
 	      {
 		// add 1 to each z in the LOR
 		ProjMatrixElemsForOneBin::iterator element_ptr = lor_with_next_z.begin();
@@ -518,55 +589,103 @@ calculate_proj_matrix_elems_for_one_bin(
 		lor.merge(lor_with_next_z);
 	      }
 	  }
-      }
-  } // if( num_lors_per_axial_pos>1)
+      } // if( tantheta!=0 && num_lors_per_axial_pos>1)
+  } //if (lor.size()!=0)
   
 }
 
-// TODO these currently do NOT follow the requirement that
-// after processing lor.sort() == lor
-// assumes that centre of 1 voxel coincides with centre of bin.
 static void 
-add_adjacent_z(ProjMatrixElemsForOneBin& lor, const int num_LORs)
+add_adjacent_z(ProjMatrixElemsForOneBin& lor, 
+	       const float z_of_first_voxel, 
+	       const float right_edge_of_TOR)
 {
-  // KT&SM 15/05/2000 bug fix !
+  assert(lor.size()>0);
+  assert(z_of_first_voxel+.5>=0);
+  assert(z_of_first_voxel-.5<=right_edge_of_TOR);
   // first reserve enough memory for the whole vector
   // otherwise the iterators can be invalidated by memory allocation
-  lor.reserve(lor.size() * (num_LORs+1));
+  const int num_overlapping_voxels =
+    round(ceil(right_edge_of_TOR-z_of_first_voxel+.5001));
+  lor.reserve(lor.size() * num_overlapping_voxels);
   
-  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+  // point to end of original LOR, i.e. first plane
+  const ProjMatrixElemsForOneBin::const_iterator element_end = lor.end();
+  
+  for (int z_index= 1; z_index<=right_edge_of_TOR-z_of_first_voxel; ++z_index)
+    {
+      const float overlap_of_voxel_with_TOR =
+	std::min(right_edge_of_TOR, z_of_first_voxel + z_index + .5F) -
+	std::max(0.F, z_of_first_voxel + z_index - .5F);
+      if (overlap_of_voxel_with_TOR<=0)
+	{
+	  assert(num_overlapping_voxels==z_index);
+	  break;
+	}
+      assert(overlap_of_voxel_with_TOR < 1.0001);
+      const int new_z = lor.begin()->coord1()+z_index;
+      if (overlap_of_voxel_with_TOR>.9999) // test if it is 1
+	{
+	  // just copy the value
+	  for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+		 element_ptr != element_end;
+		 ++element_ptr)
+	    {      
+	      assert(new_z == element_ptr->coord1()+z_index);
+	      lor.push_back(
+			    ProjMatrixElemsForOneBin::
+			    value_type(
+				       Coordinate3D<int>(new_z,
+							 element_ptr->coord2(),
+							 element_ptr->coord3()),
+				       element_ptr->get_value()));
+	    }
+	}
+      else
+	{
+	  // multiply the value with the overlap
+	  for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+		 element_ptr != element_end;
+		 ++element_ptr)
+	    {      
+	      assert(new_z == element_ptr->coord1()+z_index);
+	      lor.push_back(
+			    ProjMatrixElemsForOneBin::
+			    value_type(
+				       Coordinate3D<int>(new_z,
+							 element_ptr->coord2(),
+							 element_ptr->coord3()),
+				       element_ptr->get_value()*overlap_of_voxel_with_TOR));
+	    }
+	}
+    } // loop over z_index
 
-  ProjMatrixElemsForOneBin::const_iterator element_end = lor.end();
-  
-  while (element_ptr != element_end)
-  {      
-    if (num_LORs % 2 == 0)
+  // now check original z
+  {
+    const float overlap_of_voxel_with_TOR =
+      std::min(right_edge_of_TOR, z_of_first_voxel + .5F) -
+      std::max(0.F, z_of_first_voxel - .5F);
+    assert (overlap_of_voxel_with_TOR>0);
+    assert(overlap_of_voxel_with_TOR < 1.0001);
+    if (overlap_of_voxel_with_TOR<.9999) // test if it is 1
       {
-	lor.push_back( 
-		      ProjMatrixElemsForOneBin::
-		      value_type(
-				 Coordinate3D<int>(element_ptr->coord1()-(num_LORs/2),element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()/2));
+	// multiply the value with the overlap
+	for (  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
+	       element_ptr != element_end;
+	       ++element_ptr)
+	    *element_ptr *= overlap_of_voxel_with_TOR;
       }
-    for (int z_index= -(num_LORs/2)+1; z_index<=+(num_LORs/2)-1; ++z_index)
-      {
-	if (z_index==0)
-	  continue; // don't repeat elements which are already there from the start
-	lor.push_back(
-		      ProjMatrixElemsForOneBin::
-		      value_type(
-				 Coordinate3D<int>(element_ptr->coord1()+z_index,element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()));
-      }
-    if (num_LORs % 2 == 0)
-      {
-	lor.push_back( 
-		      ProjMatrixElemsForOneBin::
-		      value_type(
-				 Coordinate3D<int>(element_ptr->coord1()+(num_LORs/2),element_ptr->coord2(),element_ptr->coord3()),element_ptr->get_value()/2));
-      }
-    ++element_ptr;
   }
+#ifndef NDEBUG
+  {
+    // ProjMatrixElemsForOneBin sorted_lor = lor;
+    // sorted_lor.sort();
+    // assert(lor == sorted_lor);
+    lor.check_state();
+  }
+#endif
 }
 
+#if 0
 /*
   This function add another image row (with z+1) to the LOR, with the
   same x,y and value.
@@ -581,7 +700,7 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor, const int num_LORs)
   If the above condition is not satisfied, the current implementation can end
   up with 1 voxel occuring more than once in the end result.
   
-  This could easily be solved by checkin gthis at the end (after a sort()).
+  This could easily be solved by checking this at the end (after a sort()).
   However, as we don't do this yet, we currently no longer call this function.
 */
 static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
@@ -637,6 +756,7 @@ static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
   lor.check_state();
   cerr << "after check_St\n";
 }
+#endif
 
 END_NAMESPACE_STIR
 
