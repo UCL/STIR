@@ -33,8 +33,8 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	BinNormalisationFromProjData.cxx \
 	TrivialBinNormalisation.cxx \
     BinNormalisationFromAttenuationImage.cxx \
-	GeneralisedPrior.cxx
-
+	GeneralisedPrior.cxx \
+	ProjDataRebinning.cxx
 
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
