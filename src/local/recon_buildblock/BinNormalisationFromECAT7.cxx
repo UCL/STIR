@@ -46,8 +46,6 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-// TODO find out info from somewhere
-const int transaxial_crystals = 8;
 	   
 
 const char * const 
@@ -462,7 +460,7 @@ BinNormalisationFromECAT7::get_deadtime_efficiency (const DetectionPosition<>& d
   return
      ( 1.0 + axial_t1_array[ det_pos.axial_coord()/2] * rate + 
        axial_t2_array[ det_pos.axial_coord()/2] * rate * rate );
-						//* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % transaxial_crystals ] * rate ) ) ;
+						//* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
 
 }
 
