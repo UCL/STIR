@@ -48,6 +48,8 @@ class ProjDataFromStream;
  \c directory_for_data is prepended (if not NULL).
 
   \warning it is up to the caller to deallocate the image
+
+  This should normally never be used. Use DiscretisedDensity::read_from_file() instead.
  */
 VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
 				      const string& directory_for_data = "");
@@ -58,6 +60,8 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input,
  with 'directory_for_data' set to the directory part of 'filename'.
 
   \warning it is up to the caller to deallocate the image
+
+  This should normally never be used. Use DiscretisedDensity::read_from_file() instead.
 */
 VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
 
@@ -75,7 +79,7 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
 bool 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
-				   const Coordinate3D<int>& dimensions,
+				   const CartesianCoordinate3D<int>& dimensions,
 				   const CartesianCoordinate3D<float>& voxel_size,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
@@ -93,8 +97,9 @@ compute_file_offsets(int number_of_time_frames,
 
 //! This outputs an Interfile header and data for a Array<3,elemT> object.
 /*!
- Extensions .hv (and .ahv) and .v will be added to the parameter 'filename' 
- Return is 'true' when succesful, 'false' otherwise.
+ Extension .v will be added to the parameter 'filename' (if no extension present).
+ Extensions .hv (and .ahv) will be used for the header filename. 
+ \return 'true' when succesful, 'false' otherwise.
 */
 
 template <class elemT>
@@ -105,8 +110,9 @@ bool write_basic_interfile(const string&filename,
 
 //! This outputs an Interfile header and data for a Array<3,elemT> object, assuming unit voxel sizes
 /*!
- Extensions .hv (and .ahv) and .v will be added to the parameter 'filename' 
- Return is 'true' when succesful, 'false' otherwise.
+ Extension .v will be added to the parameter 'filename' (if no extension present).
+ Extensions .hv (and .ahv) will be used for the header filename. 
+ \return 'true' when succesful, 'false' otherwise.
 */
 
 template <class elemT>
@@ -124,8 +130,9 @@ write_basic_interfile(const string& filename,
 
 //! This outputs an Interfile header and data for a VoxelsOnCartesianGrid<float> object
 /*!
- Extensions .hv (and .ahv) and .v will be added to the parameter 'filename' 
- Return is 'true' when succesful, 'false' otherwise.
+ Extension .v will be added to the parameter 'filename' (if no extension present).
+ Extensions .hv (and .ahv) will be used for the header filename. 
+ \return 'true' when succesful, 'false' otherwise.
 */
 bool 
 write_basic_interfile(const string& filename, 
@@ -135,8 +142,9 @@ write_basic_interfile(const string& filename,
 
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
 /*!
- Extensions .hv (and .ahv) and .v will be added to the parameter 'filename' 
- Return is 'true' when succesful, 'false' otherwise.
+ Extension .v will be added to the parameter 'filename' (if no extension present).
+ Extensions .hv (and .ahv) will be used for the header filename. 
+ \return 'true' when succesful, 'false' otherwise.
 
   Currently the DiscretisedDensity<3,float>& object has to be a reference to a 
   VoxelsOnCartesianGrid<float> object.
@@ -153,7 +161,7 @@ write_basic_interfile(const string& filename,
   If the name for the data file is not an absolute pathname,
   \c directory_for_data is prepended (if not NULL).
 
-  \warning it is up to the caller to deallocate the object
+  \warning it is up to the caller to deallocate the object  
 */
 ProjDataFromStream* read_interfile_PDFS(istream& input,
  				        const string& directory_for_data = "");
@@ -163,6 +171,8 @@ ProjDataFromStream* read_interfile_PDFS(istream& input,
   with 'directory_for_data' set to the directory part of 'filename'.
 
   \warning it is up to the caller to deallocate the object
+
+  This should normally never be used. Use ProjData::read_from_file() instead.
 */
 ProjDataFromStream* read_interfile_PDFS(const string& filename);
 
