@@ -119,7 +119,7 @@ do_it(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
   const int i_min = filter_coefficients[j_min].get_min_index();
   const int i_max = filter_coefficients[j_min].get_max_index();
   
-  Array <2,float> filter_tmp (IndexRange2D(0,j_max-1,0,i_max-1));
+  /*Array <2,float> filter_tmp (IndexRange2D(0,j_max-1,0,i_max-1));
 
     for ( int j =j_min; j<=j_max; j++)
       for ( int i =i_min; i<=i_max; i++)
@@ -131,7 +131,7 @@ do_it(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
   const int j_min_tmp = filter_tmp.get_min_index();
   const int j_max_tmp = filter_tmp.get_max_index();
   const int i_min_tmp = filter_tmp[j_min].get_min_index();
-  const int i_max_tmp = filter_tmp[j_min].get_max_index();
+  const int i_max_tmp = filter_tmp[j_min].get_max_index();*/
 
  
     for (int y=out_min_y; y<=out_max_y; y++) 
@@ -139,10 +139,10 @@ do_it(Array<2,elemT>& out_array, const Array<2,elemT>& in_array) const
       {
 	out_array[y][x] = 0;
 	
-	  for (int j=max(j_min_tmp, y-in_max_y); j<=min(j_max_tmp, y-in_min_y); j++)  
-	    for (int i=max(i_min_tmp, x-in_max_x); i<=min(i_max_tmp, x-in_min_x); i++) 
+	  for (int j=max(j_min, y-in_max_y); j<=min(j_max, y-in_min_y); j++)  
+	    for (int i=max(i_min, x-in_max_x); i<=min(i_max, x-in_min_x); i++) 
 	      
-	      out_array[y][x] += filter_tmp[j][i]*in_array[y-j][x-i];   
+	      out_array[y][x] += filter_coefficients[j][i]*in_array[y-j][x-i];   
       }
       
       
