@@ -55,15 +55,15 @@ get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<1,int> &c)
 template <int num_dimensions, typename T>
 inline
 BasicCoordinate<num_dimensions, int>
-get_first_index(const Array<num_dimensions, T>& a)
+get_min_indices(const Array<num_dimensions, T>& a)
 {
-  return join(a.get_min_index(), get_first_index(*a.begin()));
+  return join(a.get_min_index(), get_min_indices(*a.begin()));
 }
 
 template <typename T>
 inline
 BasicCoordinate<1, int>
-get_first_index(const Array<1, T>& a)
+get_min_indices(const Array<1, T>& a)
 {
   BasicCoordinate<1, int> result;
   result[1] = a.get_min_index();
