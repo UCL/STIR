@@ -22,7 +22,7 @@
 
 
 #include "stir/RegisteredParsingObject.h"
-#include "stir/recon_buildblock/ParabolicSurrogatePrior.h"
+#include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
 #include "stir/Array.h"
 
 START_NAMESPACE_STIR
@@ -41,7 +41,7 @@ template <typename elemT>
 class QuadraticPrior:  public  
 		       RegisteredParsingObject< QuadraticPrior<elemT>,
       		       			        GeneralisedPrior<elemT>,  			      	   
-						ParabolicSurrogatePrior<elemT>
+						PriorWithParabolicSurrogate<elemT>
 	                                      >
 {
 public:
