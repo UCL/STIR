@@ -24,7 +24,7 @@
 #include "recon_buildblock/ProjMatrixByBin.h"
 #include "recon_buildblock/BackProjectorByBin.h"
 #include "shared_ptr.h"
-#include "DataSymmetriesForBins.h"
+//#include "DataSymmetriesForBins.h"
 //#include "RelatedViewgrams.h"
 
 class Viewgrams;
