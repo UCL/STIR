@@ -69,8 +69,8 @@ END:=
 #include "stir/utilities.h"
 #include "stir/interfile.h"
 #include "stir/CPUTimer.h"
-#include "stir/ProjDataInterfile.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ParsingObject.h"
 #include "stir/Succeeded.h"
@@ -112,10 +112,11 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
                         const shared_ptr<ProjData>& scatter_projdata_ptr,
 			shared_ptr<DiscretisedDensity<3,float> >& attenuation_image_ptr,
 			const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
-			const BinNormalisation& normalisation,
+			BinNormalisation& normalisation,
                         const shared_ptr<ProjData>& randoms_projdata_ptr
                         )
 {
+
   const bool do_attenuation = attenuation_image_ptr.use_count() != 0;
   const bool do_scatter = scatter_projdata_ptr.use_count() != 0;
   const bool do_randoms = randoms_projdata_ptr.use_count() != 0;
@@ -358,6 +359,12 @@ CorrectProjDataParameters(const char * const par_filename)
      output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename);
   }
 
+  // set up normalisation object
+  if (
+      normalisation_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone()
+      != Succeeded::yes)
+    error("correct_projdata: set-up of normalisation failed\n");
+ 
   // read attenuation data
   if(atten_image_filename!="0" && atten_image_filename!="")
   {
