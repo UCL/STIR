@@ -125,14 +125,6 @@ Succeeded
 ProjDataInMemory::
 write_to_file(const string& output_filename) const
 {
-  shared_ptr<iostream> file_stream = 
-    new fstream (output_filename.c_str(), ios::out|ios::binary);
-  if (!file_stream->good())
-  {
-    warning("ProjDataInMemory::write_to_file: error opening output file %s\n",
-	    output_filename.c_str());
-    return Succeeded::no;
-  }
 
   ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
   
