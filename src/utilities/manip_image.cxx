@@ -159,7 +159,8 @@ main(int argc, char *argv[]){
     cerr<<"6. Clean rim "<<endl;
     cerr<<"7. Get plane"<<endl;
     cerr<<"8. Get row"<<endl;
-    cerr<<"9. Quit"<<endl<<endl;   
+    cerr<<"9. Counts"<<endl;
+    cerr<<"10. Quit"<<endl<<endl;
     cerr<<"Input selection: ";
     cin>>choice;
     cerr<<endl;
@@ -264,11 +265,18 @@ main(int argc, char *argv[]){
        break;
      }
 
-    case 9:
+ case 9:
+   {
+
+     cerr<<endl<<"The number of counts is: "<<input_image.sum()<<endl;
+
+      break;
+   }
+    case 10:
       break;
     }
   
-  }while(!(choice==9));
+  }while(!(choice==10));
 
   return 0;
 
