@@ -112,7 +112,7 @@ protected:
 
      
 private:
-
+  int frame_num;
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
 
@@ -134,6 +134,7 @@ FindMCNormFactors::set_defaults()
   time_interval=1; 
   min_num_time_intervals_per_frame = 1;
   max_num_time_intervals_per_frame = 100;
+  frame_num = -1;
 }
 
 void 
@@ -144,7 +145,9 @@ FindMCNormFactors::initialise_keymap()
 
   parser.add_key("template_projdata", &template_proj_data_name);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
-  parser.add_key("frame_definition file",&frame_definition_filename);
+  parser.add_key("time frame_definition file",&frame_definition_filename);
+  parser.add_key("time frame number", &frame_num);
+
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
@@ -253,7 +256,13 @@ post_processing()
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
       frame_defs = TimeFrameDefinitions(frame_times);
     }
-
+  if (frame_num != -1 && 
+      (frame_num<1 && unsigned(frame_num)> frame_defs.get_num_frames()))
+    {
+      warning("'time frame num should be either -1 or between 1 and the number of frames\n");
+      return true;
+    }
+	
   if (is_null_ptr(ro3d_ptr))
   {
     warning("Invalid Rigid Object 3D Motion object\n");
@@ -285,9 +294,13 @@ FindMCNormFactors::process_data()
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
 
+  const unsigned min_frame_num =
+    frame_num==-1 ? 1 : unsigned(frame_num);
+  const unsigned max_frame_num =
+    frame_num==-1 ? frame_defs.get_num_frames() : unsigned(frame_num);
 
-  for (unsigned int current_frame_num = 1;
-       current_frame_num<=frame_defs.get_num_frames();
+  for (unsigned int current_frame_num = min_frame_num;
+       current_frame_num<= max_frame_num;
        ++current_frame_num)
     {
       const double start_time = frame_defs.get_start_time(current_frame_num);
@@ -381,10 +394,28 @@ FindMCNormFactors::process_data()
 			    const Bin original_bin(in_segment_num,in_view_num,in_ax_pos_num, in_tangential_pos_num, 1);
 			    // find new bin position
 			    Bin bin = original_bin;
+			 
 			    ro3dtrans.transform_bin(bin, 
-						    *out_proj_data_info_ptr,
-						    *proj_data_info_cyl_uncompressed_ptr);
-     
+						      *out_proj_data_info_ptr,
+						      *proj_data_info_cyl_uncompressed_ptr);
+#if 0
+			      if ((bin.axial_pos_num()-original_bin.axial_pos_num())> 0.0001 ||  
+				  (bin.segment_num()-original_bin.segment_num())> 0.0001 ||
+				   (bin.tangential_pos_num()-original_bin.tangential_pos_num()) > 0.0001||
+				   (bin.view_num() -original_bin.view_num())> 0.0001) 
+
+  {
+    Quaternion<float> quat = ro3dtrans.get_quaternion();
+    cerr << quat[1] << "   " << quat[2]<<  "   " << quat[3]<< "   " << quat[4]<< endl;
+    CartesianCoordinate3D<float> trans=ro3dtrans.get_translation();
+    cerr <<  trans.z() << "    " <<  trans.y() << "   " << trans.x() << endl;
+    cerr << " Start" << endl;
+cerr << " Original bin is " << original_bin.segment_num() << "   " << original_bin.axial_pos_num() << "   " << original_bin.view_num() << "    "  << original_bin.tangential_pos_num() << endl;
+cerr << " Transformed  bin is " << bin.segment_num() << "   " << bin.axial_pos_num() << "   " << bin.view_num() << "    "  << bin.tangential_pos_num() << endl;
+
+ cerr << " End" << endl;
+  }
+#endif
 			    if (bin.get_bin_value()>0
 				&& bin.tangential_pos_num()>= out_proj_data_ptr->get_min_tangential_pos_num()
 				&& bin.tangential_pos_num()<= out_proj_data_ptr->get_max_tangential_pos_num()
