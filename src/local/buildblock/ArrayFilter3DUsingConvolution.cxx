@@ -118,17 +118,7 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
   const int out_min_x = out_array[out_min_z][out_min_y].get_min_index();
   const int out_max_x = out_array[out_min_z][out_min_y].get_max_index();
   
-  const int k_min = filter_coefficients.get_min_index();
-  const int k_max = filter_coefficients.get_max_index();
-  const int j_min = filter_coefficients[k_min].get_min_index();
-  const int j_max = filter_coefficients[k_min].get_max_index();
-  const int i_min = filter_coefficients[k_min][j_min].get_min_index();
-  const int i_max = filter_coefficients[k_min][j_min].get_max_index();
-  
-  
-  if (k_min != k_max)
-  {  
-    if (is_trivial())
+  if (is_trivial())
     {    
       for (int z=out_min_z; z<=out_max_z; z++) 
 	for (int y=out_min_y; y<=out_max_y; y++) 
@@ -141,6 +131,18 @@ do_it(Array<3,elemT>& out_array, const Array<3,elemT>& in_array) const
 	  return;
     }
   
+  const int k_min = filter_coefficients.get_min_index();
+  const int k_max = filter_coefficients.get_max_index();
+ 
+  const int j_min = filter_coefficients[k_min].get_min_index();
+  const int j_max = filter_coefficients[k_min].get_max_index();
+  const int i_min = filter_coefficients[k_min][j_min].get_min_index();
+  const int i_max = filter_coefficients[k_min][j_min].get_max_index();
+  
+  
+  if (k_min != k_max)
+  {  
+    
     
     for (int z=out_min_z; z<=out_max_z; z++) 
       for (int y=out_min_y; y<=out_max_y; y++) 
