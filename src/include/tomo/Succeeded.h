@@ -1,6 +1,9 @@
 //
 // $Id$: $Date$
 //
+#ifndef __Tomo_Succeeded_H__
+#define __Tomo_Succeeded_H__
+
 /*!
 
   \file
@@ -40,3 +43,5 @@ private:
 };
 
 END_NAMESPACE_TOMO
+
+#endif
