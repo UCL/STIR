@@ -7,7 +7,7 @@
 
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief This file declares the NumericType class.
 
   \author Kris Thielemans 
@@ -44,6 +44,7 @@ using std::string;
 #endif
 
 /*!
+  \ingroup buildblock
   \brief 
   provides names for some numeric types and methods for finding their properties.
 
