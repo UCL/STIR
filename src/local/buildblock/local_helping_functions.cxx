@@ -340,5 +340,26 @@ void convert_array_1D_into_2D_array( Array<2,float>& out_array,Array<1,float>& i
       }
 }
 
+
+void precompute_filter_coefficients_for_second_apporach(VoxelsOnCartesianGrid<float>& precomputed_coefficients,
+							const VoxelsOnCartesianGrid<float>& input_image,
+							VoxelsOnCartesianGrid<float>& sensitivity_image,
+							VoxelsOnCartesianGrid<float>& normalised_bck)
+{
+
+  for (int k=input_image.get_min_z();k<=input_image.get_max_z();k++)   
+    for (int j =input_image.get_min_y();j<=input_image.get_max_y();j++)
+      for (int i =input_image.get_min_x();i<=input_image.get_max_x();i++)
+      {
+	if ( sensitivity_image[k][j][i]> 0.00001  ||sensitivity_image[k][j][i] < -0.00001)
+	precomputed_coefficients[k][j][i] = input_image[k][j][i] /sensitivity_image[k][j][i];
+	precomputed_coefficients[k][j][i] = precomputed_coefficients[k][j][i] *normalised_bck[k][j][i];
+      }
+	
+
+
+
+}
+	      
  
 END_NAMESPACE_STIR
