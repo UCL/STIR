@@ -27,7 +27,8 @@ SOURCES = \
 	ModifiedInverseAverigingArrayFilter.cxx \
 	ModifiedInverseAverigingImageFilter.cxx \
 	SeparableGaussianImageFilter.cxx \
-	SeparableGaussianArrayFilter.cxx 
+	SeparableGaussianArrayFilter.cxx \
+	local_helping_functions.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
