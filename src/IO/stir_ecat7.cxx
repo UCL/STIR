@@ -554,7 +554,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.system_type= find_ECAT_system_type(scanner);
   mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
-  mhead.bin_size = scanner.get_default_bin_size();
+  mhead.bin_size = scanner.get_default_bin_size()/10;
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
   
@@ -1320,7 +1320,7 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 
   ihead.recon_zoom= 
     mhead.bin_size/voxel_size_x *
-    scanner_ptr->get_default_num_arccorrected_bins()/128;
+    scanner_ptr->get_default_num_arccorrected_bins()/128.F;
 
   ihead.decay_corr_fctr= 1;
 
