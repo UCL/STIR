@@ -10,6 +10,8 @@
 #include "display.h"
 // KT 06/10/98 use forward projection timer
 #include "recon_buildblock/timers.h"
+// KT 09/10/98 use interfile output
+#include "interfile.h"
 
 
 // KT 07/10/98 new, isolated from main()
@@ -103,7 +105,8 @@ void fill_cylindroid(PETImageOfVolume& image, const PETScannerInfo& scanner)
 
     for (int z=image.get_min_z(); z<=image.get_max_z(); z++)
     {
-      float zfactor = (min(z+.5, zc+Lcyl/2) - max(z-.5, zc-Lcyl/2));
+      // KT 09/10/98 changed 2 -> 2. to make both args of min() and max() double
+      float zfactor = (min(z+.5, zc+Lcyl/2.) - max(z-.5, zc-Lcyl/2.));
       if (zfactor<0) zfactor = 0;
       image[z] = plane;
       image[z] *= zfactor;
@@ -168,7 +171,7 @@ main()
 			 origin, voxel_size);
 
   // KT 06/10/98 allow 2 types of images
-  if (ask_num("Start image is cuboid (1) or cylindroid (2)",1,2,1)==1)
+  if (ask_num("Start image is cuboid (1) or cylindroid (2)",1,2,2)==1)
     fill_cuboid(image, scanner);
   else
     fill_cylindroid(image, scanner);
@@ -190,47 +193,61 @@ main()
       if (scanner.type == PETScannerInfo::Advance)
 	max_ring_diff = 11;
 
-      int abs_ave_ring_diff = ask_num("Ring difference to forward project",
+      int abs_segment_num = ask_num("Ring difference to forward project",
 				      0, max_ring_diff, 0);
 
-      //      int abs_segment_num = segment_num >= 0 ? segment_num : -segment_num;
-      int abs_segment_num = abs_ave_ring_diff;
+      // KT 07/10/98 now handle segment 0 correctly
 
-      //DB GEAdvance has different numbers: segment number and average_ring diff
+      int pos_max_ring_diff = abs_segment_num;
+      int pos_min_ring_diff = abs_segment_num;
+      int num_rings_this_segment =
+	scanner.num_rings - abs_segment_num;
+
+      // GEAdvance has different segment number etc
 
       // KT 06/10/98 use name
       if (scanner.type == PETScannerInfo::Advance)
-	if (abs_ave_ring_diff == 1)
-	  {
-	    PETerror("ring difference 1 not allowed for GE Advance\n");
-	    break;
-	  }
+      {
+	if (abs_segment_num == 1)
+	{
+	  PETerror("ring difference 1 not allowed for GE Advance\n");
+	  break;
+	}
+	if (abs_segment_num == 0)
+	{
+	  pos_max_ring_diff = 1;
+	  pos_min_ring_diff = -1;
+	  num_rings_this_segment = 2*scanner.num_rings-1;
+	}
 	else
 	  abs_segment_num--;
+	
+      }
 
       bool use_2D_forwardprojection =  
 	 (ask_num("Use 2D forward projection (2) or 3D for segment 0 (3) ? ",
 		    2,3,2) == 2);
 
+
       PETSegmentByView 
 	segment_pos(
 		    Tensor3D<float>(0, scanner.num_views-1, 
-				    0, scanner.num_rings-1 - abs_ave_ring_diff, // DB see above
+				    0, num_rings_this_segment - 1,
 				    -scanner.num_bins/2, max_bin),
 		    &scanner,
-		    abs_segment_num, // DB ABS
-		    abs_ave_ring_diff, // min ring diff
-		    abs_ave_ring_diff); // max ring diff
+		    abs_segment_num,
+		    pos_min_ring_diff,
+		    pos_max_ring_diff);
 
       PETSegmentByView 
 	segment_neg(
 		    Tensor3D<float>(0, scanner.num_views-1, 
-				    0, scanner.num_rings-1 - abs_ave_ring_diff, // DB see above
+				    0, num_rings_this_segment - 1,
 				    -scanner.num_bins/2, max_bin),
 		    &scanner,
-		    -abs_segment_num, // DB ABS
-		    -abs_ave_ring_diff, // min ring diff
-		    -abs_ave_ring_diff); // max ring diff
+		    -abs_segment_num, 
+		    -pos_max_ring_diff, 
+		    -pos_min_ring_diff); 
 
       {   
 
@@ -300,20 +317,16 @@ main()
         if (save)
 	{
 	  {
-	    char* file = "fwdtestpos.img";
+	    char* file = "fwdtestpos";
 	    cerr <<"  - Saving " << file << endl;
-	    ofstream output;
-	    open_write_binary(output, file);
-
-	    segment_pos.write_data(output);
+	    // KT 09/10/98 use interfile output
+	    write_basic_interfile(file, segment_pos);
 	  }
 	  {
-	    char* file = "fwdtestneg.img";
+	    char* file = "fwdtestneg";
 	    cerr <<"  - Saving " << file << endl;
-	    ofstream output;
-	    open_write_binary(output, file);
-
-	    segment_neg.write_data(output);
+	    // KT 09/10/98 use interfile output
+	    write_basic_interfile(file, segment_neg);
 	  }
 	}
 
