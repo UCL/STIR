@@ -132,8 +132,8 @@ float scatter_estimate_for_one_scatter_point(
 	const float dif_cross_section =
 		dif_cross_section_511keV(costheta); 
 	
-	const float rAsq=normsq(scatter_point-detector_coord_A);
-	const float rBsq=normsq(scatter_point-detector_coord_B);
+	const float rA_squared=norm_squared(scatter_point-detector_coord_A);
+	const float rB_squared=norm_squared(scatter_point-detector_coord_B);
 	
 	const float scatter_point_mu=
 		scatt_points_vector[scatter_point_num].mu_value;
@@ -152,14 +152,14 @@ float scatter_estimate_for_one_scatter_point(
 #endif	
 	const float scatter_ratio =
 		(emiss_to_detA + emiss_to_detB)
-		/(rBsq*rAsq)
+		/(rA_squared*rB_squared)
 		*dif_cross_section
 		*atten_to_detB
 		*atten_to_detA
 		*scatter_point_mu
 		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
-		*exp(-total_cross_section(new_energy)/total_cross_section_511keV)        
+		*exp(-total_cross_section(new_energy)/total_cross_section_511keV)
 		;	
 
 	if (!use_cosphi)
