@@ -324,9 +324,9 @@ find_LOR_intersections_with_cylinder(LORInCylinderCoordinates<coordT1>& cyl_coor
   cyl_coords.reset(radius);
   
   cyl_coords.p1().psi() = 
-    static_cast<coordT1>(from_min_pi_plus_pi_to_0_2pi(atan2(c1.x(),-c1.y())));
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT1>(atan2(c1.x(),-c1.y())));
   cyl_coords.p2().psi() = 
-    static_cast<coordT1>(from_min_pi_plus_pi_to_0_2pi(atan2(c2.x(),-c2.y())));
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT1>(atan2(c2.x(),-c2.y())));
   cyl_coords.p1().z() = 
     static_cast<coordT1>(c1.z());
   cyl_coords.p2().z() = 
