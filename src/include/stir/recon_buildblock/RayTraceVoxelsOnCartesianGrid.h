@@ -41,10 +41,14 @@ template <typename elemT> class CartesianCoordinate3D;
   of the voxels are assumed to be at integer coordinates 
   (e.g. (0,0,0) is the centre of a voxel).
 
+  For the start voxel, the intersection length of the LOR with the
+  whole voxel is computed, not just from the start_point to the next edge. The
+  same is true for the end voxel.
+
   \warning RayTraceVoxelsOnCartesianGrid appends voxels and intersection lengths to the lor.
   It does NOT reset it first.
 
-  RayTraceVoxelsOnCartesianGrid uses Siddon's algorithm.
+  RayTraceVoxelsOnCartesianGrid is based on Siddon's algorithm.
 
   Siddon's algorithm works by looking at intersections of the 
   'intra-voxel' planes with the LOR.
