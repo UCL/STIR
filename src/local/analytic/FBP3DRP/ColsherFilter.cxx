@@ -14,41 +14,29 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-
-#include "stir/Segment.h"
 #include "stir/Viewgram.h"
-
 #include "local/stir/FBP3DRP/ColsherFilter.h"
 
+#ifdef __DEBUG_COLSHER
+// for debugging...
 #include "stir/display.h"
-
-#include <math.h>
-// TODO remove
+#include "stir/IO/write_data.h"
 #include <iostream>
 #include <fstream>
+#endif
+
+#include <math.h>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
 #include <sstream>
 #endif
 
-//#include "stir/interfile.h"
-
-#ifndef STIR_NO_NAMESPACE
-using std::ends;
-using std::ofstream;
-using std::cout;
-using std::endl;
-#endif
-
 START_NAMESPACE_STIR
-
-static const double epsilon = 1e-10;
-
 
 string ColsherFilter::parameter_info() const
 {
@@ -59,7 +47,7 @@ string ColsherFilter::parameter_info() const
 #else
   std::ostringstream s;
 #endif  
-    s << "\nPETFilterColsherParameters :="
+    s << "\nColsherFilter Parameters :="
 #ifdef NRFFT
       << "\nFilter height := "<< height
       << "\nFilter width := "<< width      
@@ -91,6 +79,14 @@ ColsherFilter::ColsherFilter(float theta_max_v,
           alpha_planar(alpha_colsher_planar_v), fc_planar(fc_colsher_planar_v)
 {
 }
+
+
+#ifdef __DEBUG_COLSHER
+#ifndef NRFFT
+//a function to get the real part of a complex number used in the debugging stuff
+float myreal(const std::complex<float>& z) { return z.real(); }
+#endif
+#endif
  
 Succeeded
 ColsherFilter::
@@ -108,9 +104,10 @@ set_up(int height, int width, float theta,
   start_timers();
 
   /*
-   * The Colsher filter is real-valued and symmetric. As we use fourier_for_real_data,
-   * it is arranged in wrap-around order in the axial dimension, but we we need only the
-   * positive frequencies in tangential direction.
+    The Colsher filter is real-valued and symmetric. As we use 
+    fourier_for_real_data, we have to arrange it in wrap-around order in the 
+    axial dimension, but we need only the positive frequencies in 
+    tangential direction.
    */
   Array<2,std::complex<float> > filter(IndexRange2D(height,width/2+1));
 
@@ -149,17 +146,22 @@ set_up(int height, int width, float theta,
 	  filter[j][k] = fil;
 	  if (j>0)
 	    filter[height-j][k] = fil;
-#if 0
-	  if (k>0)
-	    filter[j][width-k] = fil;
-	  if (j>0 && k>0)
-	    filter[height-j][width-k] = fil;		
-#endif
 	}
     }
-  //  display(filter,"Colsher");
   const Succeeded success= set_kernel(filter);
-#if 0
+
+#ifdef __DEBUG_COLSHER
+  {
+    Array<2,float > real_filter(IndexRange2D(height,width/2+1));
+    std::transform(filter.begin_all(), filter.end_all(), real_filter.begin_all(), myreal/*std::real<std::complex<float> >*/);
+    char file[200];
+    sprintf(file,"%s_%d_%d_%g.dat","new_colsher",width,height,theta);
+    std::cout << "Saving filter : " << file << std::endl;
+    std::ofstream s(file);
+    write_data(s,real_filter);
+  }
+#endif
+#ifdef __DEBUG_COLSHER
   filter.resize(IndexRange2D(-0,height/3,-width/3,width/3));
   filter.fill(0);
   filter[0][0]=1;
@@ -314,24 +316,15 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
     filter *= static_cast<float>(4*_PI*d_a);
 
     
-    {
-            
-        if(0){
-            char file[200];
-            sprintf(file,"%s_%d_%d.dat","filtColsher",width,height);
-            cout << "Saving filter : " << file << endl;
-    
-            ofstream logfile(file);
- 
-            if (logfile.fail() || logfile.bad()) {
-                error("Error opening file\n");
-            }
-            for(int p= 1; p <= height*width; p++)
-                logfile << filter[p] << " ";
-        }
-    }
-        
-            
+#ifdef __DEBUG_COLSHER
+  {
+    char file[200];
+    sprintf(file,"%s_%d_%d_%g.dat","old_colsher",width,height,_PI/2-gamma);
+    std::cout << "Saving filter : " << file << std::endl;
+    std::ofstream s(file);
+    write_data(s,filter);
+  }
+#endif
 }
 
 void Filter_proj_Colsher(Viewgram<float> & view_i,
