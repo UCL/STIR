@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 
@@ -37,8 +37,8 @@
 
 #include "display.h"
 
-// KT 13/11/98 new
-const int hard_wired_rim_truncation_sino = 4;
+#include "distributable.h"
+#include "mle_common.h"
 
 class parameters{
   public:
@@ -63,12 +63,17 @@ PETSinogramOfVolume * ask_parameters();
 // KT 09/11/98 use PSOV for construction of segments, added const for globals
 PETImageOfVolume
 compute_sensitivity_image(const PETSinogramOfVolume& s3d,
-			  const PETImageOfVolume& attenuation_image,
+			   PETImageOfVolume& attenuation_image,
 			  const bool do_attenuation,
 			  const Normalisation& normalisation,
 			  const parameters &globals);
 
-int main(int argc, char *argv[])
+// AZ 06/10/99: added parallel main()
+#ifdef PARALLEL
+int master_main(int argc, char **argv)
+#else
+int main(int argc, char **argv)
+#endif
 {
   // KT 01/12/98 unsatisfying trick to keep the old way of input
   // but allow a new way using an Interfile header.
@@ -101,7 +106,7 @@ int main(int argc, char *argv[])
   globals.limit_segments=ask_num("Maximum absolute segment number to process: ", 
     0, s3d.get_max_segment(), s3d.get_max_segment() );
   
-  globals.limit_segments++;
+  //globals.limit_segments++;
   
   // KT 04/11/98 new
   // KT 13/11/98 set defaults to work properly
@@ -111,7 +116,8 @@ int main(int argc, char *argv[])
 
   // KT 09/11/98 new
   // KT 13/11/98 hard wire in 
-  globals.rim_truncation_sino = hard_wired_rim_truncation_sino;
+  // AZ 07/10/99 assign to the global one
+  globals.rim_truncation_sino = ::rim_truncation_sino;
     // ask_num("Number of bins to set to zero ?",0, s3d.get_max_bin(), 4);
 
   // KT 14/08/98 added conditional
@@ -200,224 +206,65 @@ forward projectors..." << endl;
 
 
 PETImageOfVolume compute_sensitivity_image(const PETSinogramOfVolume& s3d,
-					   const PETImageOfVolume& attenuation_image,
+					   PETImageOfVolume& attenuation_image,
 					   const bool do_attenuation,
 					   const Normalisation& normalisation,
 					   const parameters &globals)
 {
-  /* KT 09/11/98 not necessary anymore
-  int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
-  if (scanner.num_bins % 2 == 0)
-    max_bin++;
-  */
-
-  // KT 09/11/98 use new member
   PETImageOfVolume 
-    image_result = attenuation_image.get_empty_copy();
+    result = attenuation_image.get_empty_copy();
 
-  // first do segment 0
-  { 
-    cerr<<endl<<"Processing segment 0"<<endl;
-    
-    /* KT 09/11/98 use PSOV
-    PETSegmentBySinogram
-    segment(
-    Tensor3D<float>(0, scanner.num_rings-1, 
-    0, scanner.num_views-1,
-    -scanner.num_bins/2, max_bin),
-    // KT 05/11/98 removed & for PETScanInfo parameter
-    scanner,
-    0);
-    */
-
-    PETSegmentBySinogram
-      segment = s3d.get_empty_segment_sino_copy(0);
-
-    if (do_attenuation)
-    {
-      //KT&MJ 11/08/98 use 2D forward projector
-      
-      cerr<<"Starting forward project"<<endl;
-
-      forward_project_2D(attenuation_image, segment);	  
-
-      cerr<<"Finished forward project"<<endl;
-      //display(Tensor3D<float>(segment), segment.find_max());
-      
-      segment *= -1;
-      in_place_exp(segment);
-
-
-    }
-    else
-    {
-      segment.fill(1); 
-    }
-      
-    // KT 09/11/98 new
-    truncate_rim(segment, globals.rim_truncation_sino);
-
-    normalisation.apply(segment);
-
-    // KT 04/11/98 new
-    if (globals.zero_seg0_end_planes)
-      {
-	cerr << "\nZeroing end-planes of segment 0" << endl;
-	segment[segment.get_min_ring()].fill(0);
-	segment[segment.get_max_ring()].fill(0);
-      }
-
-
-    cerr<<endl<<"Starting backproject"<<endl;
-    Backprojection_2D(segment, image_result);
-    cerr<<endl<<"Finished backproject"<<endl;
-
-    /* cerr << "min and max in image " << image_result.find_min() 
-       << " " << image_result.find_max() << endl;
-       display(Tensor3D<float> (image_result), image_result.find_max());
-    */
 #ifdef TEST
-    {
-      // KT&MJ 12/08/98 output only profiles
-      char fname[20];
-/*
-      sprintf(fname, "seg_%d.dat", 0);
-      // Write it to file
-      ofstream segment_data;
-      open_write_binary(segment_data, fname);
-      image_result.write_data(segment_data);
-*/
-      sprintf(fname, "seg_%d.prof", 0);
-      cerr << "Writing horizontal profiles to " << fname << endl;
-      ofstream profile(fname);
-      if (!profile)
-      { cerr << "Couldn't open " << fname; }
 
-      for (int z=image_result.get_min_z(); z<= image_result.get_max_z(); z++) 
-      { 
-	for (int x=image_result.get_min_x(); x<= image_result.get_max_x(); x++)
-          profile<<image_result[z][0][x]<<" ";
-        profile << "\n";
-      }
-    }
-#endif
-
-  }
-
-
-  // now do a loop over the other segments
-
-  for (int segment_num = 1; segment_num < globals.limit_segments ; segment_num++)
+  for (int segment_num = 0; segment_num <= globals.limit_segments; segment_num++)
   {
+    int min_segment = segment_num;
+    int max_segment = segment_num;
+    
+    result.fill(0);
+      
+#else
 
-    cerr<<endl<<"Processing segment #"<<segment_num<<endl;
+    int min_segment = 0;
+    int max_segment = globals.limit_segments;
+
+#endif
+
+    distributable_compute_sensitivity_image(result,
+					    s3d,
+					    attenuation_image,
+					    do_attenuation,
+					    0,
+					    1,
+					    min_segment,
+					    max_segment,
+					    globals.zero_seg0_end_planes,
+					    NULL); //TODO: multiplicative_sinogram goes here
 
 #ifdef TEST
-    image_result.fill(0);
-#endif 
-    /* KT 09/11/98 use PSOV
-    PETSegmentByView 
-      segment_pos(
-		  Tensor3D<float>(0, scanner.num_views-1, 
-				  0, scanner.num_rings-1 - segment_num,
-				  -scanner.num_bins/2, max_bin),
-	          // KT 05/11/98 removed & for PETScanInfo parameter
-	          scanner,
-		  segment_num);
-    PETSegmentByView 
-      segment_neg(
-		  Tensor3D<float>(0, scanner.num_views-1, 
-				  0, scanner.num_rings-1 - segment_num,
-				  -scanner.num_bins/2, max_bin),
-		  // KT 05/11/98 removed & for PETScanInfo parameter
-		  scanner,
-		  -segment_num);
-     */
-    PETSegmentByView 
-      segment_pos = s3d.get_empty_segment_view_copy(segment_num);
-    PETSegmentByView 
-      segment_neg = s3d.get_empty_segment_view_copy(-segment_num);
 
-    if (do_attenuation)
+    char fname[20];
+    sprintf(fname, "seg_%d.prof", segment_num);
+    cerr << "Writing horizontal profiles to " << fname << endl;
+    ofstream profile(fname);
+    if (!profile)
     {
-
-      cerr<<"Starting forward project"<<endl;
-      forward_project(attenuation_image, segment_pos, segment_neg);	       
-      cerr<<"Finished forward project"<<endl;
-      // display(Tensor3D<float>(segment_pos), segment_pos.find_max());
-      
-      segment_pos *= -1;
-      segment_neg *= -1;
-      in_place_exp(segment_pos);
-      in_place_exp(segment_neg);
-      
+      cerr << "Couldn't open " << fname << endl;
     }
     else
     {
-      segment_pos.fill(1);
-      segment_neg.fill(1);
-    }
-
-    // KT 09/11/98 new
-    truncate_rim(segment_pos, globals.rim_truncation_sino);
-    truncate_rim(segment_neg, globals.rim_truncation_sino);
-
-    normalisation.apply(segment_pos);
-    normalisation.apply(segment_neg);
-
-    //KT TODO use by view versions (but also for forward projection)
-
-    cerr<<"Starting backproject"<<endl;
-    back_project(segment_pos, segment_neg, image_result);
-    cerr<<"Finished backproject"<<endl;
-
-    /*const int nviews = segment_pos.get_num_views();
-    const int view90 = nviews / 2;
-    for (int view=0; view < segment_pos.get_num_views()/2; view++)
-      back_project(segment_pos.get_viewgram(view), 
-		 segment_neg.get_viewgram(view),
-		 segment_pos.get_viewgram(view90 + view),
-		 segment_neg.get_viewgram(view90 + view),
-		 image_result);
-    */
-      
-    
-    /*
-      cerr << "min and max in image " << image_result.find_min() 
-      << " " << image_result.find_max() << endl;
-      display(Tensor3D<float> (image_result), image_result.find_max());
-    */
-#ifdef TEST
-
-    {
-      char fname[20];
-      // KT&MJ 12/08/98 write profiles only
-      /*
-      sprintf(fname, "seg_%d.dat", segment_num);
-      // Write it to file
-      ofstream segment_data;
-      open_write_binary(segment_data, fname);
-      image_result.write_data(segment_data);
-
-      */
-      sprintf(fname, "seg_%d.prof", segment_num);
-      cerr << "Writing horizontal profiles to " << fname << endl;
-      ofstream profile(fname);
-      if (!profile)
-      { cerr << "Couldn't open " << fname; }
-
-      for (int z=image_result.get_min_z(); z<= image_result.get_max_z(); z++) 
+      for (int z = image_result.get_min_z(); z <= image_result.get_max_z(); z++) 
       { 
-	for (int x=image_result.get_min_x(); x<= image_result.get_max_x(); x++)
-          profile<<image_result[z][0][x]<<" ";
-        profile << "\n";
-      }
-    }
+	for (int x = image_result.get_min_x(); x <= image_result.get_max_x(); x++)
+	  profile<<image_result[z][0][x]<<" ";
+	profile << "\n";
+      };
+    };
+  };
+
 #endif
-     
-  }
-    
-  return image_result;
+
+  return result;
 }
 
 
@@ -484,3 +331,258 @@ ask_parameters()
     PETSinogramOfVolume::SegmentViewRingBin,
     NumericType::FLOAT);
 }
+
+
+void RPC_process_seg0_view(PETImageOfVolume& lambda, PETImageOfVolume& image_x,
+			   PETSegmentBySinogram* y, int view, int view45,
+			   int& count, int& count2, float* f /* = NULL */,
+			   PETSegmentBySinogram* binwise_correction)
+{
+  assert(y != NULL || binwise_correction != NULL);
+  //  assert(binwise_correction != NULL);
+
+  PETSegmentBySinogram y_bar = (y != NULL) ? *y : *binwise_correction;
+  y_bar.fill(0.0);
+
+  if (f != NULL)
+  {
+    forward_project_2D(lambda, y_bar, view);
+    PETViewgram viewgram = y_bar.get_viewgram(view);
+    viewgram *= -1;
+    in_place_exp(viewgram);
+    y_bar.set_viewgram(viewgram);
+
+    // current convention -- in 2D case forward project view45 and view0
+    // together to be consistent with 2D backprojector
+    if (view == 0)
+    {
+      forward_project_2D(lambda, y_bar, view45);
+      PETViewgram viewgram = y_bar.get_viewgram(view45);
+      viewgram *= -1;
+      in_place_exp(viewgram);
+      y_bar.set_viewgram(viewgram);
+    };
+  }
+  else
+  {
+    y_bar.fill(1); 
+  }
+
+  if (RPC_slave_sens_zero_seg0_end_planes)
+  {
+    y_bar[y_bar.get_min_ring()].fill(0);
+    y_bar[y_bar.get_max_ring()].fill(0);
+  };
+      
+  int view90 = view45 * 2;
+  truncate_rim(y_bar, rim_truncation_sino, view);
+  truncate_rim(y_bar, rim_truncation_sino, view + view90);
+  if (view == 0)
+  {
+    truncate_rim(y_bar, rim_truncation_sino, view45);
+    truncate_rim(y_bar, rim_truncation_sino, view90 + view45);
+  }
+  else
+  {
+
+    truncate_rim(y_bar, rim_truncation_sino, view90 - view);
+    truncate_rim(y_bar, rim_truncation_sino, view90 * 2 - view);
+  };
+
+  // normalisation.apply(segment);
+
+  if (binwise_correction != NULL)
+  {
+    y_bar *= *binwise_correction;
+  };
+
+  Backprojection_2D(y_bar, image_x, view);
+};      
+
+// AZ&MJ 03/10/99 Added bc_*
+void RPC_process_4_viewgrams(PETImageOfVolume& lambda, PETImageOfVolume& image_x, 
+                             PETViewgram* pos_view, PETViewgram* neg_view,
+	                     PETViewgram* pos_plus90, PETViewgram* neg_plus90,
+	                     int& count, int& count2, float* f /* = NULL */,
+			     PETViewgram* bc_pos_view /* = NULL */, PETViewgram* bc_neg_view /* = NULL */,
+			     PETViewgram* bc_pos_plus90 /* = NULL */, PETViewgram* bc_neg_plus90 /* = NULL */)
+{
+  // AZ 04/10/99: all these should be non-NULL
+  //  assert(bc_pos_view != NULL && bc_neg_view != NULL && bc_pos_plus90 != NULL && bc_neg_plus90 != NULL);
+
+  // AZ 04/10/99: these should be either all NULL or all non-NULL
+  assert((pos_view != NULL && neg_view != NULL && pos_plus90 != NULL && neg_plus90 != NULL) ||
+	 (pos_view == NULL && neg_view == NULL && pos_plus90 == NULL && neg_plus90 == NULL));
+
+  PETViewgram pos_bar_view   = (pos_view != NULL) ? pos_view->get_empty_copy() : bc_pos_view->get_empty_copy();
+  PETViewgram neg_bar_view   = (neg_view != NULL) ? neg_view->get_empty_copy() : bc_neg_view->get_empty_copy();
+  PETViewgram pos_bar_plus90 = (pos_plus90 != NULL) ? pos_plus90->get_empty_copy() : bc_pos_plus90->get_empty_copy();
+  PETViewgram neg_bar_plus90 = (neg_plus90 != NULL) ? neg_plus90->get_empty_copy() : bc_neg_plus90->get_empty_copy();
+
+  if (f != NULL)
+  {
+    forward_project(lambda,
+		    pos_bar_view, 
+		    neg_bar_view, 
+		    pos_bar_plus90, 
+		    neg_bar_plus90);
+
+    pos_bar_view *= -1;
+    neg_bar_view *= -1;
+    pos_bar_plus90 *= -1;
+    neg_bar_plus90 *= -1;
+
+    in_place_exp(pos_bar_view);
+    in_place_exp(neg_bar_view);
+    in_place_exp(pos_bar_plus90);
+    in_place_exp(neg_bar_plus90);
+  }
+  else
+  {
+    pos_bar_view.fill(1);
+    neg_bar_view.fill(1);
+    pos_bar_plus90.fill(1);
+    neg_bar_plus90.fill(1);
+  };
+
+  truncate_rim(pos_bar_view, rim_truncation_sino);
+  truncate_rim(neg_bar_view, rim_truncation_sino);
+  truncate_rim(pos_bar_plus90, rim_truncation_sino);
+  truncate_rim(neg_bar_plus90, rim_truncation_sino);
+
+  // TODO:normalise
+
+  if (bc_pos_view != NULL)
+  {
+    pos_bar_view   *= *bc_pos_view;
+    neg_bar_view   *= *bc_neg_view;
+    pos_bar_plus90 *= *bc_pos_plus90;
+    neg_bar_plus90 *= *bc_neg_plus90;
+  };
+      
+  back_project(pos_bar_view, 
+	       neg_bar_view, 
+	       pos_bar_plus90, 
+	       neg_bar_plus90, 
+	       image_x);
+};
+
+// AZ&MJ 03/10/99 Added bc_*
+void RPC_process_8_viewgrams(PETImageOfVolume& lambda, PETImageOfVolume& image_x, 
+                             PETViewgram* pos_view,   PETViewgram* neg_view,
+	                     PETViewgram* pos_plus90, PETViewgram* neg_plus90,
+                             PETViewgram* pos_min180, PETViewgram* neg_min180,
+	                     PETViewgram* pos_min90,  PETViewgram* neg_min90,
+	                     int& count, int& count2, float* f /* = NULL */,
+			     PETViewgram* bc_pos_view   /* = NULL */, PETViewgram* bc_neg_view   /* = NULL */,
+			     PETViewgram* bc_pos_plus90 /* = NULL */, PETViewgram* bc_neg_plus90 /* = NULL */,
+			     PETViewgram* bc_pos_min180 /* = NULL */, PETViewgram* bc_neg_min180 /* = NULL */,
+			     PETViewgram* bc_pos_min90  /* = NULL */, PETViewgram* bc_neg_min90  /* = NULL */)
+{
+  // AZ 04/10/99: all these should be non-NULL
+  //  assert(pos_view == NULL && neg_view == NULL && pos_plus90 == NULL && neg_plus90 == NULL &&
+  //	 pos_min180 == NULL && neg_min180 == NULL && pos_min90 == NULL && neg_min90 == NULL);
+  //  assert(bc_pos_view != NULL && bc_neg_view != NULL && bc_pos_plus90 != NULL && bc_neg_plus90 != NULL &&
+  // bc_pos_min180 != NULL && bc_neg_min180 != NULL && bc_pos_min90 != NULL && bc_neg_min90 != NULL);
+
+  // AZ 04/10/99: these should be either all NULL or all non-NULL
+  assert((pos_view != NULL && neg_view != NULL && pos_plus90 != NULL && neg_plus90 != NULL &&
+	  pos_min180 != NULL && neg_min180 != NULL && pos_min90 != NULL && neg_min90 != NULL) ||
+	 (pos_view == NULL && neg_view == NULL && pos_plus90 == NULL && neg_plus90 == NULL &&
+	  pos_min180 == NULL && neg_min180 == NULL && pos_min90 == NULL && neg_min90 == NULL));
+
+  PETViewgram pos_bar_view   = (pos_view != NULL) ? pos_view->get_empty_copy() : bc_pos_view->get_empty_copy();
+  PETViewgram neg_bar_view   = (neg_view != NULL) ? neg_view->get_empty_copy() : bc_neg_view->get_empty_copy();
+  PETViewgram pos_bar_plus90 = (pos_plus90 != NULL) ? pos_plus90->get_empty_copy() : bc_pos_plus90->get_empty_copy();
+  PETViewgram neg_bar_plus90 = (neg_plus90 != NULL) ? neg_plus90->get_empty_copy() : bc_neg_plus90->get_empty_copy();
+  PETViewgram pos_bar_min90  = (pos_min90 != NULL) ? pos_min90->get_empty_copy() : bc_pos_min90->get_empty_copy();
+  PETViewgram neg_bar_min90  = (neg_min90 != NULL) ? neg_min90->get_empty_copy() : bc_neg_min90->get_empty_copy();
+  PETViewgram pos_bar_min180 = (pos_min180 != NULL) ? pos_min180->get_empty_copy() : bc_pos_min180->get_empty_copy();
+  PETViewgram neg_bar_min180 = (neg_min180 != NULL) ? neg_min180->get_empty_copy() : bc_neg_min180->get_empty_copy();
+
+  /*
+  PETViewgram pos_bar_view   = bc_pos_view->get_empty_copy();
+  PETViewgram neg_bar_view   = bc_neg_view->get_empty_copy();
+  PETViewgram pos_bar_plus90 = bc_pos_plus90->get_empty_copy();
+  PETViewgram neg_bar_plus90 = bc_neg_plus90->get_empty_copy();
+  PETViewgram pos_bar_min90  = bc_pos_min90->get_empty_copy();
+  PETViewgram neg_bar_min90  = bc_neg_min90->get_empty_copy();
+  PETViewgram pos_bar_min180 = bc_pos_min180->get_empty_copy();
+  PETViewgram neg_bar_min180 = bc_neg_min180->get_empty_copy();
+  */
+
+  if (f != NULL)
+  {
+    forward_project(lambda,
+		    pos_bar_view, 
+		    neg_bar_view, 
+		    pos_bar_plus90, 
+		    neg_bar_plus90, 
+		    pos_bar_min180, 
+		    neg_bar_min180, 
+		    pos_bar_min90, 
+		    neg_bar_min90);
+      
+    pos_bar_view *= -1;
+    neg_bar_view *= -1;
+    pos_bar_plus90 *= -1;
+    neg_bar_plus90 *= -1;
+    pos_bar_min180 *= -1;
+    neg_bar_min180 *= -1;
+    pos_bar_min90 *= -1;
+    neg_bar_min90 *= -1;
+
+    in_place_exp(pos_bar_view);
+    in_place_exp(neg_bar_view);
+    in_place_exp(pos_bar_plus90);
+    in_place_exp(neg_bar_plus90);
+    in_place_exp(pos_bar_min180);
+    in_place_exp(neg_bar_min180);
+    in_place_exp(pos_bar_min90);
+    in_place_exp(neg_bar_min90);
+  }
+  else
+  {
+    pos_bar_view.fill(1);
+    neg_bar_view.fill(1);
+    pos_bar_plus90.fill(1);
+    neg_bar_plus90.fill(1);
+    pos_bar_min180.fill(1);
+    neg_bar_min180.fill(1);
+    pos_bar_min90.fill(1);
+    neg_bar_min90.fill(1);
+  };
+
+  truncate_rim(pos_bar_view, rim_truncation_sino);
+  truncate_rim(neg_bar_view, rim_truncation_sino);
+  truncate_rim(pos_bar_plus90, rim_truncation_sino);
+  truncate_rim(neg_bar_plus90, rim_truncation_sino);
+  truncate_rim(pos_bar_min180, rim_truncation_sino);
+  truncate_rim(neg_bar_min180, rim_truncation_sino);
+  truncate_rim(pos_bar_min90, rim_truncation_sino);
+  truncate_rim(neg_bar_min90, rim_truncation_sino);
+
+  // TODO:normalise
+
+  if (bc_pos_view != NULL)
+  {
+    pos_bar_view   *= *bc_pos_view;
+    neg_bar_view   *= *bc_neg_view;
+    pos_bar_plus90 *= *bc_pos_plus90;
+    neg_bar_plus90 *= *bc_neg_plus90;
+    pos_bar_min90  *= *bc_pos_min90;
+    neg_bar_min90  *= *bc_neg_min90;
+    pos_bar_min180 *= *bc_pos_min180;
+    neg_bar_min180 *= *bc_neg_min180;
+  };
+      
+  back_project(pos_bar_view, 
+	       neg_bar_view, 
+	       pos_bar_plus90, 
+	       neg_bar_plus90, 
+	       pos_bar_min180, 
+	       neg_bar_min180, 
+	       pos_bar_min90, 
+	       neg_bar_min90, 
+	       image_x);
+};
