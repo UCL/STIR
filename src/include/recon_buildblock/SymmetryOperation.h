@@ -23,7 +23,7 @@
 
 START_NAMESPACE_TOMO
 
-template <int num_dimensions, class coordT> class BasicCoordinate3D;
+template <int num_dimensions, class coordT> class BasicCoordinate;
 class ViewSegmentNumbers;
 class ProjMatrixElemsForOneBin;
 class Bin;
