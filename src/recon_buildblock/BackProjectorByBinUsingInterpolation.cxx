@@ -1,19 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup projection
-
-  \brief non-inline implementations for BackProjectorByBinUsingInterpolation
-
-  \author Kris Thielemans
-  \author Claire Labbe
-  \author PARAPET project
-  
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -30,6 +17,19 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup projection
+
+  \brief non-inline implementations for BackProjectorByBinUsingInterpolation
+
+  \author Kris Thielemans
+  \author Claire Labbe
+  \author PARAPET project
+  
+  $Date$
+  $Revision$
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -221,13 +221,17 @@ actual_back_project(DiscretisedDensity<3,float>& density,
   const RelatedViewgrams<float>* zoomed_viewgrams_ptr = 0;
   // to make it exception-proof we need to use an auto_ptr or shared_ptr
   shared_ptr<RelatedViewgrams<float> > zoomed_viewgrams_sptr;
-  int zoomed_min_tangential_pos_num = 
-    static_cast<int>(ceil(min_tangential_pos_num*zoom));
-  int zoomed_max_tangential_pos_num = 
-    static_cast<int>(ceil(max_tangential_pos_num*zoom));
+  int zoomed_min_tangential_pos_num;
+  int zoomed_max_tangential_pos_num;
 
+  // warning: this criterion has to be the same as the error-check in x,y voxel size
+  // (see lines around warning message 'must be equal to'... which occurs more than once)
   if (fabs(zoom-1) > 1E-4)
     {
+      zoomed_min_tangential_pos_num = 
+	static_cast<int>(ceil(min_tangential_pos_num*zoom));
+      zoomed_max_tangential_pos_num = 
+	static_cast<int>(ceil(max_tangential_pos_num*zoom));
       // store it in an auto_ptr, such that it gets cleaned up correctly
       zoomed_viewgrams_sptr = 
 	new RelatedViewgrams<float>(viewgrams);
@@ -238,6 +242,10 @@ actual_back_project(DiscretisedDensity<3,float>& density,
     }
   else
     {
+      zoomed_min_tangential_pos_num = 
+	min_tangential_pos_num;
+      zoomed_max_tangential_pos_num = 
+	max_tangential_pos_num;
       // we cannot use the auto_ptr here, as that would try to free the 
       // viewgrams object
       zoomed_viewgrams_ptr = &viewgrams;
@@ -617,12 +625,11 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views();
 
-  //KTxxx not necessary anymore 
-  //assert(image.get_min_x() == -image.get_max_x());
-  // KTXXX converted from assert to error
-  if(image.get_voxel_size().x() !=(proj_data_info_cyl_ptr)->get_tangential_sampling()
-     || image.get_voxel_size().y() !=(proj_data_info_cyl_ptr)->get_tangential_sampling())
-      error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size\n");
+  // warning: error check has to be the same as what is used for the criterion to do the zooming
+  // (see lines concerning zoomed_viewgrams)
+  if(fabs(image.get_voxel_size().x()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4
+     || fabs(image.get_voxel_size().y()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4)
+    error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size.");
       
   // KTxxx not necessary anymore
   //assert(image.get_min_z() == 0);
@@ -852,13 +859,12 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 	  pos_plus90.find_max()==0 && neg_plus90.find_max()==0) );
 
 
+  // warning: error check has to be the same as what is used for the criterion to do the zooming
+  // (see lines concerning zoomed_viewgrams)
+  if(fabs(image.get_voxel_size().x()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4
+     || fabs(image.get_voxel_size().y()/proj_data_info_cyl_ptr->get_tangential_sampling() - 1) > 1E-4)
+    error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size.");
 
-  // KTXXX not necessary anymore
-  // assert(image.get_min_x() == -image.get_max_x());
-  // KTXXX converted from assert to error
-  if(image.get_voxel_size().x() !=(proj_data_info_cyl_ptr)->get_tangential_sampling()
-     || image.get_voxel_size().y() !=(proj_data_info_cyl_ptr)->get_tangential_sampling())
-      error("BackProjectorByBinUsingInterpolation: x,y voxel size must be equal to bin size\n");
   // KTXXX not necessary anymore
   //assert(image.get_min_z() == 0);
 
