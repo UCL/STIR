@@ -73,6 +73,7 @@ void
 ForwardProjectorByBinUsingRayTracing::
 set_defaults()
 {
+  restrict_to_cylindrical_FOV = true;
 }
 
 void
@@ -80,6 +81,7 @@ ForwardProjectorByBinUsingRayTracing::
 initialise_keymap()
 {
   parser.add_start_key("Forward Projector Using Ray Tracing Parameters");
+  parser.add_key("restrict to cylindrical FOV", &restrict_to_cylindrical_FOV);
   parser.add_stop_key("End Forward Projector Using Ray Tracing Parameters");
 }
 
@@ -448,14 +450,7 @@ forward_project_all_symmetries(
     round(symmetries_ptr->get_num_planes_per_axial_pos(segment_num));
   const float axial_pos_to_z_offset = 
     symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
-    
-    
-  // use FOV which is circular, and is slightly 'inside' the image to avoid 
-  // index out of range
-  const float fovrad_in_mm   = 
-    min((min(image.get_max_x(), -image.get_min_x())-1)*image.get_voxel_size().x(),
-	(min(image.get_max_y(), -image.get_min_y())-1)*image.get_voxel_size().y()); 
-  
+      
   // KT 20/06/2001 parameters to find 'basic' range of tang_pos_num
   const int max_abs_tangential_pos_num = 
     max(max_tangential_pos_num, -min_tangential_pos_num);
@@ -503,10 +498,11 @@ forward_project_all_symmetries(
 		{
 		  /* Here tang_pos_num=0 and phi=0 or 45*/
 
-		  proj_Siddon< 2>(Projall, image, proj_data_info_ptr, cphi, sphi,
-				  delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
-				  offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
-				  1.F / num_lors_per_virtual_ring);
+		  if (proj_Siddon< 2>(Projall, image, proj_data_info_ptr, cphi, sphi,
+				      delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
+				      offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
+				      1.F / num_lors_per_virtual_ring,
+				      restrict_to_cylindrical_FOV))
 		  for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                     my_ax_pos0 = C * ax_pos0 + D;
 		    
@@ -521,17 +517,12 @@ forward_project_all_symmetries(
 		  {
 		    bin.tangential_pos_num() = tang_pos_num;
 		    const float s_in_mm = proj_data_info_ptr->get_s(bin);
-		    //const float s_in_pix = s_in_mm/image.get_voxel_size().x();
-		    //if (fabs(s_in_pix-tang_pos_num)>1E-4)
-		    //	warning("Different tang_pos_num %d, %g, view %d\n",tang_pos_num, s_in_pix, view);
-		                        
-		    if (s_in_mm >= fovrad_in_mm) 
-		      break;
-                    proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
-				   delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
-				   offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
-				   1.F/num_lors_per_virtual_ring);
-                    for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
+                    if (proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
+				       delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
+				       offset, num_planes_per_axial_pos, axial_pos_to_z_offset,
+				       1.F/num_lors_per_virtual_ring,
+				       restrict_to_cylindrical_FOV))
+		      for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                         my_ax_pos0 = C * ax_pos0 + D;
                         if (tang_pos_num<=max_tangential_pos_num)
 			  {
@@ -557,11 +548,12 @@ forward_project_all_symmetries(
 	      if (min_abs_tangential_pos_num==0)
 		{             
 		  /* Here tang_pos_num==0 and phi!=k*45 */
-		  proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
-				 delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
-				 offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-				 1.F/num_lors_per_virtual_ring);
-		  for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
+		  if (proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
+				     delta + D, 0, R,min_ax_pos_num, max_ax_pos_num,
+				     offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+				     1.F/num_lors_per_virtual_ring,
+				     restrict_to_cylindrical_FOV))
+		    for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) {
                     my_ax_pos0 = C * ax_pos0 + D;
                     pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]; 
                     pos_min90[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][1]; 
@@ -579,18 +571,13 @@ forward_project_all_symmetries(
 	      for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
 		    bin.tangential_pos_num() = tang_pos_num;
 		    const float s_in_mm = proj_data_info_ptr->get_s(bin);
-		    //const float s_in_pix = s_in_mm/image.get_voxel_size().x();
-		    //if (fabs(s_in_pix-tang_pos_num)>1E-4)
-		    //  warning("Different tang_pos_num %d, %g, view %d\n",tang_pos_num, s_in_pix, view);
-		                        
-		    if (s_in_mm >= fovrad_in_mm) 
-		      break;
 
-                    proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
-				   delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
-				   offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-				   1.F/num_lors_per_virtual_ring);
-                    for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) 
+                    if (proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
+				       delta + D, s_in_mm, R,min_ax_pos_num, max_ax_pos_num,
+				       offset, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+				       1.F/num_lors_per_virtual_ring,
+				       restrict_to_cylindrical_FOV))
+		      for (ax_pos0 = min_ax_pos_num; ax_pos0 <= max_ax_pos_num; ax_pos0++) 
 		      {
 			my_ax_pos0 = C * ax_pos0 + D;
 			if (tang_pos_num<=max_tangential_pos_num)
@@ -890,7 +877,7 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
     // However, we have to divide projections by num_planes_per_axial_pos
     // to get values equal to the (average) line integral
     
-    // KT&CL 21/12/99 use num_planes_per_axial_pos in the offset and in proj_Siddon
+    // KT&CL 21/12/99 use num_planes_per_axial_pos in the offset and in if proj_Siddon
     // inside proj_Siddon z=num_planes_per_axial_pos*offset, but that has 
     // to be plane_num, so we set offset accordingly
     const float offset = float(plane_num)/num_planes_per_axial_pos;
@@ -900,28 +887,30 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	for (D = 0; D < C; D++) {
 	  /* Here tang_pos_num=0 and phi=0 or 45*/
 	  
-	  proj_Siddon<2>( Projall,image,proj_data_cyl_ptr, 
-			  cphi, sphi, delta + D, 0, R,min_ax_pos, max_ax_pos, 
-			  offset, num_planes_per_axial_pos, 0,
-			  1.F/num_lors_per_virtual_ring);
-	  for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
-	    my_ax_pos0 = C * ax_pos0 + D;
-	    sino[view][0] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos; 
-	    sino[plus90][0] += Projall[ax_pos0][0][0][2] / num_planes_per_axial_pos;
-	  }
+	  if (proj_Siddon<2>( Projall,image,proj_data_cyl_ptr, 
+			      cphi, sphi, delta + D, 0, R,min_ax_pos, max_ax_pos, 
+			      offset, num_planes_per_axial_pos, 0,
+			      1.F/num_lors_per_virtual_ring,
+			      restrict_to_cylindrical_FOV))
+	    for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
+	      my_ax_pos0 = C * ax_pos0 + D;
+	      sino[view][0] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos; 
+	      sino[plus90][0] += Projall[ax_pos0][0][0][2] / num_planes_per_axial_pos;
+	    }
 	  /* Now tang_pos_num!=0 and phi=0 or 45 */
 	  for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
-	    proj_Siddon<1>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
-			   delta + D, tang_pos_num, R,min_ax_pos,max_ax_pos, 
-			   offset, num_planes_per_axial_pos, 0,
-			   1.F/num_lors_per_virtual_ring);
-	    for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
-	      ax_pos0 = C * ax_pos0 + D;
-	      sino[view][tang_pos_num] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
-	      sino[plus90][tang_pos_num] += Projall[ax_pos0][0][0][2] / num_planes_per_axial_pos;
-	      sino[view][-tang_pos_num] += Projall[ax_pos0][0][1][0] / num_planes_per_axial_pos;
-	      sino[plus90][-tang_pos_num] += Projall[ax_pos0][0][1][2] / num_planes_per_axial_pos;
-	    }
+	    if (proj_Siddon<1>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+			       delta + D, tang_pos_num, R,min_ax_pos,max_ax_pos, 
+			       offset, num_planes_per_axial_pos, 0,
+			       1.F/num_lors_per_virtual_ring,
+			       restrict_to_cylindrical_FOV))
+	      for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
+		ax_pos0 = C * ax_pos0 + D;
+		sino[view][tang_pos_num] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
+		sino[plus90][tang_pos_num] += Projall[ax_pos0][0][0][2] / num_planes_per_axial_pos;
+		sino[view][-tang_pos_num] += Projall[ax_pos0][0][1][0] / num_planes_per_axial_pos;
+		sino[plus90][-tang_pos_num] += Projall[ax_pos0][0][1][2] / num_planes_per_axial_pos;
+	      }
 	  }
 	}
       } else {
@@ -929,11 +918,12 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	
 	for (D = 0; D < C; D++) {
 	  /* Here tang_pos_num==0 and phi!=k*45 */
-	  proj_Siddon<4>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
-			 delta + D, 0, R,min_ax_pos,max_ax_pos, 
-			 offset, num_planes_per_axial_pos, 0,
-			 1.F/num_lors_per_virtual_ring);
-	  for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
+	  if (proj_Siddon<4>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+			     delta + D, 0, R,min_ax_pos,max_ax_pos, 
+			     offset, num_planes_per_axial_pos, 0,
+			     1.F/num_lors_per_virtual_ring,
+			     restrict_to_cylindrical_FOV))
+	    for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
 	    my_ax_pos0 = C * ax_pos0 + D;
 	    sino[view][0] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
 	    sino[min90][0] += Projall[ax_pos0][0][0][1] / num_planes_per_axial_pos;
@@ -943,11 +933,12 @@ void ForwardProjectorByBinUsingRayTracing::forward_project_2D(Sinogram<float> &s
 	  
 	  /* Here tang_pos_num!=0 and phi!=k*45. */
 	  for (tang_pos_num = min_tang_pos_num_in_loop; tang_pos_num <= max_abs_tangential_pos_num; tang_pos_num++) {
-	    proj_Siddon<3>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
-			   delta + D, tang_pos_num, R,min_ax_pos, max_ax_pos, 
-			   offset, num_planes_per_axial_pos, 0,
-			   1.F/num_lors_per_virtual_ring);
-	    for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
+	    if (proj_Siddon<3>(Projall,image,proj_data_cyl_ptr, cphi, sphi,
+			       delta + D, tang_pos_num, R,min_ax_pos, max_ax_pos, 
+			       offset, num_planes_per_axial_pos, 0,
+			       1.F/num_lors_per_virtual_ring,
+			       restrict_to_cylindrical_FOV))
+	      for (ax_pos0 = min_ax_pos; ax_pos0 <= max_ax_pos; ax_pos0++) {
 	      my_ax_pos0 = C * ax_pos0 + D;
 	      sino[view][tang_pos_num] += Projall[ax_pos0][0][0][0] / num_planes_per_axial_pos;
 	      sino[min90][tang_pos_num] += Projall[ax_pos0][0][0][1] / num_planes_per_axial_pos;
@@ -1109,20 +1100,9 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
     round(symmetries_ptr->get_num_planes_per_axial_pos(segment_num));
   const float axial_pos_to_z_offset = 
     symmetries_ptr->get_axial_pos_to_z_offset(segment_num);
-
-  // use FOV which is circular, and is slightly 'inside' the image to avoid 
-  // index out of range
-  const float fovrad_in_mm   = 
-    min((min(image.get_max_x(), -image.get_min_x())-1)*image.get_voxel_size().x(),
-	(min(image.get_max_y(), -image.get_min_y())-1)*image.get_voxel_size().y()); 
-  
   
   const int max_abs_tangential_pos_num = 
     max(max_tangential_pos_num, -min_tangential_pos_num);
-  //const int old_max =
-  //  (int) (pos_view.get_num_tangential_poss() / 2) - 1; 
-  //if (old_max != max_abs_tangential_pos_num)
-  //  warning("max tang_pos_num old %d old %d\n",max_abs_tangential_pos_num, old_max);
 
   const int min_abs_tangential_pos_num = 
     max_tangential_pos_num<0 ?
@@ -1161,11 +1141,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	{
 	  /* Here tang_pos_num=0 and phi=0 or 45*/     
 	  {        
-	    proj_Siddon<2>(Projall, image, proj_data_info_ptr, cphi, sphi,
-			   delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
-			   0.F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-			   1.F/num_lors_per_virtual_ring);
-	    for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
+	    if (proj_Siddon<2>(Projall, image, proj_data_info_ptr, cphi, sphi,
+			       delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
+			       0.F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			       1.F/num_lors_per_virtual_ring,
+			       restrict_to_cylindrical_FOV))
+	      for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
 	      {
 		my_ax_pos0 = C * ax_pos0 + D;
 		
@@ -1176,11 +1157,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	  
 	  if (num_planes_per_axial_pos == 2)
 	    {	 	  
-	      proj_Siddon<2>(Projall2, image, proj_data_info_ptr, cphi, sphi,
-			      delta + D, 0, R, min_axial_pos_num,  max_axial_pos_num+1,
-			      -0.5F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-			      1.F/4);
-	      for (int ax_pos0 =  min_axial_pos_num; ax_pos0 <=  max_axial_pos_num; ax_pos0++) 
+	      if (proj_Siddon<2>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+				 delta + D, 0, R, min_axial_pos_num,  max_axial_pos_num+1,
+				 -0.5F/*==offset*/, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+				 1.F/4,
+				 restrict_to_cylindrical_FOV))
+		for (int ax_pos0 =  min_axial_pos_num; ax_pos0 <=  max_axial_pos_num; ax_pos0++) 
 		{
 		  my_ax_pos0 = C * ax_pos0 + D;
 		  pos_view[my_ax_pos0][0] += (Projall2[ax_pos0+1][0][0][0]+ Projall2[ax_pos0][0][0][0]); 
@@ -1194,20 +1176,16 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
       {
 	bin.tangential_pos_num() = tang_pos_num;
 	const float s_in_mm = proj_data_info_ptr->get_s(bin);
-	// const float s_in_pix = s_in_mm/image.get_voxel_size().x();
-	// if (fabs(s_in_pix-tang_pos_num)>1E-4)
-	//  warning("Different tang_pos_num %d, %g, view %d\n",tang_pos_num, s_in_pix, view);
 	
-        if (s_in_mm >= fovrad_in_mm) 
-	  break;
 
         {                              
-          proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
-			 delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
-			 0.F, num_planes_per_axial_pos, axial_pos_to_z_offset,
-			 1.F/num_lors_per_virtual_ring);
-          for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
-          {
+          if (proj_Siddon<1>(Projall, image, proj_data_info_ptr, cphi, sphi,
+			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
+			     0.F, num_planes_per_axial_pos, axial_pos_to_z_offset,
+			     1.F/num_lors_per_virtual_ring,
+			     restrict_to_cylindrical_FOV))
+	    for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
+	      {
             my_ax_pos0 = C * ax_pos0 + D;
 	    if (tang_pos_num<=max_tangential_pos_num)
 	      {
@@ -1223,12 +1201,13 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
         }
         if (num_planes_per_axial_pos == 2)
         {                            
-          proj_Siddon<1>(Projall2, image, proj_data_info_ptr, cphi, sphi,
-			 delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
-			 -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset,
-			 1.F/4);
-          for (int ax_pos0 =min_axial_pos_num; ax_pos0 <=max_axial_pos_num; ax_pos0++) 
-          {
+          if (proj_Siddon<1>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
+			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset,
+			     1.F/4,
+			     restrict_to_cylindrical_FOV))
+	    for (int ax_pos0 =min_axial_pos_num; ax_pos0 <=max_axial_pos_num; ax_pos0++) 
+	      {
             my_ax_pos0 = C * ax_pos0 + D;
 	    if (tang_pos_num<=max_tangential_pos_num)
 	      {
@@ -1254,11 +1233,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	{
 	  /* Here tang_pos_num==0 and phi!=k*45 */
 	  {
-	    proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
-			   delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
-			   0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-			   1.F/num_lors_per_virtual_ring);
-	    for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
+	    if (proj_Siddon<4>(Projall, image, proj_data_info_ptr, cphi, sphi, 
+			       delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
+			       0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			       1.F/num_lors_per_virtual_ring,
+			       restrict_to_cylindrical_FOV))
+	      for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
 	      {
 		my_ax_pos0 = C * ax_pos0 + D;
 		pos_view[my_ax_pos0][0] +=  Projall[ax_pos0][0][0][0]; 
@@ -1270,11 +1250,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
 	  
 	  if (num_planes_per_axial_pos == 2)        
 	    {         
-	      proj_Siddon<4>(Projall2, image, proj_data_info_ptr, cphi, sphi, 
-			     delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
-			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-			     1.F/4);
-	      for (int ax_pos0 = min_axial_pos_num; ax_pos0 <=max_axial_pos_num; ax_pos0++) 
+	      if (proj_Siddon<4>(Projall2, image, proj_data_info_ptr, cphi, sphi, 
+				 delta + D, 0, R,min_axial_pos_num, max_axial_pos_num,
+				 -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+				 1.F/4,
+				 restrict_to_cylindrical_FOV))
+		for (int ax_pos0 = min_axial_pos_num; ax_pos0 <=max_axial_pos_num; ax_pos0++) 
 		{
 		  my_ax_pos0 = C * ax_pos0 + D;
 		  pos_view[my_ax_pos0][0] +=  (Projall2[ax_pos0][0][0][0]+Projall2[ax_pos0+1][0][0][0]); 
@@ -1290,20 +1271,15 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
       {
 	bin.tangential_pos_num() = tang_pos_num;
 	const float s_in_mm = proj_data_info_ptr->get_s(bin);
-	// const float s_in_pix = s_in_mm/image.get_voxel_size().x();
-	// if (fabs(s_in_pix-tang_pos_num)>1E-4)
-	//  warning("Different tang_pos_num %d, %g, view %d\n",tang_pos_num, s_in_pix, view);
-	
-        if (s_in_mm >= fovrad_in_mm) 
-	  break;
 
         {          
-          proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
-		       delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
-		       0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-		       1.F/num_lors_per_virtual_ring);
-          for (int ax_pos0 = min_axial_pos_num; ax_pos0<= max_axial_pos_num; ax_pos0++) 
-          {
+          if (proj_Siddon<3>(Projall, image, proj_data_info_ptr, cphi, sphi,
+			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num,
+			     0.F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			     1.F/num_lors_per_virtual_ring,
+			     restrict_to_cylindrical_FOV))
+	    for (int ax_pos0 = min_axial_pos_num; ax_pos0<= max_axial_pos_num; ax_pos0++) 
+	      {
             my_ax_pos0 = C * ax_pos0 + D;
 	    if (tang_pos_num<=max_tangential_pos_num)
 	      {
@@ -1323,11 +1299,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
         } 
         if (num_planes_per_axial_pos == 2)
         {
-	  proj_Siddon<3>(Projall2, image, proj_data_info_ptr, cphi, sphi,
-			  delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
-			  -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
-			 1.F/4);
-	  for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
+	  if (proj_Siddon<3>(Projall2, image, proj_data_info_ptr, cphi, sphi,
+			     delta + D, s_in_mm, R,min_axial_pos_num, max_axial_pos_num+1,
+			     -0.5F, num_planes_per_axial_pos, axial_pos_to_z_offset ,
+			     1.F/4,
+			     restrict_to_cylindrical_FOV))
+	    for (int ax_pos0 = min_axial_pos_num; ax_pos0 <= max_axial_pos_num; ax_pos0++) 
 	    {
 	      my_ax_pos0 = C * ax_pos0 + D;
 	      if (tang_pos_num<=max_tangential_pos_num)
