@@ -32,8 +32,8 @@
 #include "stir/Coordinate4D.h"
 #include "stir/convert_array.h"
 #include "stir/Succeeded.h"
-#include "stir/write_data.h"
-#include "stir/read_data.h"
+#include "stir/IO/write_data.h"
+#include "stir/IO/read_data.h"
 
 #include "stir/RunTests.h"
 
