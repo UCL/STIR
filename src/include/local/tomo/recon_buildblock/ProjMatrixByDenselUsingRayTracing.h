@@ -8,8 +8,6 @@
   \brief ProjMatrixByDenselUsingRayTracing's definition 
 
   \author Kris Thielemans
-  \author Mustapha Sadki
-  \author PARAPET project
 
   $Date$
   $Revision$
@@ -28,6 +26,7 @@
 START_NAMESPACE_TOMO
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
+class DataSymmetriesForDensels_PET_CartesianGrid;
 
 /*!
   \ingroup recon_buildblock
@@ -75,8 +74,11 @@ public :
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
-private:
+  virtual const  DataSymmetriesForDensels* get_symmetries_ptr() const;
 
+private:
+  shared_ptr<DataSymmetriesForDensels_PET_CartesianGrid> symmetries_ptr;
+  
   // explicitly list necessary members for image details (should use an Info object instead)
   // ideally these should be const, but I have some trouble initialising them in that case
   CartesianCoordinate3D<float> voxel_size;
