@@ -54,15 +54,13 @@ public:
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
 
   //! Constructor that sets the data to a given 3d Array
-  inline 
-    SegmentByView(const Array<3,elemT>& v,  
-	          const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
-		  const int segment_num);
+  SegmentByView(const Array<3,elemT>& v,  
+		const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+		const int segment_num);
 
   //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
-  inline
-    SegmentByView(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-                  const int segment_num);
+  SegmentByView(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+		const int segment_num);
 
   
   //! Conversion from 1 storage order to the other
