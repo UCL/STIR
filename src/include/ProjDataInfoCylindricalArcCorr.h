@@ -36,21 +36,22 @@ class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 
 public:
   //! Constructors
-  inline ProjDataInfoCylindricalArcCorr();
-  inline  ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,float bin_size,
+  ProjDataInfoCylindricalArcCorr();
+  ProjDataInfoCylindricalArcCorr(const shared_ptr<Scanner> scanner_ptr,float bin_size,
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v, 
     const  VectorWithOffset<int>& max_ring_diff_v,
     const int num_views,const int num_tangential_poss);
 
-  inline ProjDataInfo* clone() const;
+  ProjDataInfo* clone() const;
   
   inline virtual float get_s(const Bin&) const;
   //! Set tangential sampling
-  inline void set_tangential_sampling(const float bin_size);
+  void set_tangential_sampling(const float bin_size);
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
 
+  virtual string parameter_info() const;
 private:
   
   float bin_size;
