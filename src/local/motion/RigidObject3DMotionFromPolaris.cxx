@@ -239,8 +239,8 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
 
   int s = lm_random_number.size();
 
-  for ( int i = 1; i<= lm_random_number.size(); i++)
-    cerr << lm_random_number[i] << "  ";
+  //for ( int i = 1; i<= lm_random_number.size(); i++)
+    //cerr << lm_random_number[i] << "  ";
  
   if (s <=1)
     error("RigidObject3DMotionFromPolaris: No random numbers stored from lm file \n");
