@@ -4,7 +4,6 @@
 /*!
 
   \file
-  \ingroup IO
   \ingroup ECAT
   \brief Implementation of class ECAT6OutputFileFormat
 
@@ -26,7 +25,9 @@
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
-USING_NAMESPACE_ECAT6
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT6
+
 
 const char * const 
 ECAT6OutputFileFormat::registered_name = "ECAT6";
@@ -141,7 +142,8 @@ ECAT6OutputFileFormat::
   
   return success;
 }
-
+END_NAMESPACE_ECAT6
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 

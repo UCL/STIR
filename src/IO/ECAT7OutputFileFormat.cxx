@@ -4,7 +4,6 @@
 /*!
 
   \file
-  \ingroup IO
   \ingroup ECAT
   \brief Implementation of class ECAT7OutputFileFormat
 
@@ -14,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002-2$Date$, IRSL
+    Copyright (C) 2002-$Date$, IRSL
     See STIR/LICENSE.txt for details
 */
 
@@ -27,7 +26,8 @@
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
-USING_NAMESPACE_ECAT7
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT6
 
 const char * const 
 ECAT7OutputFileFormat::registered_name = "ECAT7";
@@ -142,6 +142,8 @@ ECAT7OutputFileFormat::
   return success;
 }
 
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 
