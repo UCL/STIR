@@ -30,8 +30,19 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char * argv[])
 {
+  const double initial_max_time_offset_deviation = -10E37;
+  double max_time_offset_deviation = initial_max_time_offset_deviation;
+  if (argc>2 &&  strcmp(argv[1], "--max_time_offset_deviation")==0)
+    {
+      max_time_offset_deviation = atof(argv[2]);
+      argc-=2; argv+=2;
+    }
+      
+  cerr << argc;
   if (argc!=3) {
-    std::cerr << "Usage:\n" << argv[0] << " polarisfile.mt listmode_filename_prefix\n"
+    std::cerr << "Usage:\n" << argv[0] << "\\\n"
+	      << "\t[--max_time_offset_deviation value ] \\\n"
+	      << "\tpolarisfile.mt listmode_filename_prefix\n"
 	 << "\twhere the list mode data is specified as for lm_to_projdata\n"
 	 << "\t(i.e. without _1.lm for ECAT list mode data.\n";
     return EXIT_FAILURE;
@@ -46,6 +57,9 @@ int main(int argc, char * argv[])
 
   shared_ptr<CListModeData> lm_data_ptr =
     CListModeData::read_from_file(list_mode_filename);
+
+  if (max_time_offset_deviation!=initial_max_time_offset_deviation)
+    polaris_motion.set_max_time_offset_deviation(max_time_offset_deviation);
 
   if (polaris_motion.synchronise(*lm_data_ptr) == Succeeded::no)
     return EXIT_FAILURE;
