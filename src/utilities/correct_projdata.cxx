@@ -34,11 +34,19 @@ correct_projdata Parameters :=
 
   ; random coincidences estimate, subtracted before anything else is done
   ;randoms projdata filename := random.hs
-  ; normalisation (or binwise multiplication, so can contain atteunation factors as well)
-  normalisation filename := norm.hs
+  ; normalisation (or binwise multiplication, so can contain attenuation factors as well)
+  Bin Normalisation type := from projdata
+    Bin Normalisation From ProjData :=
+    normalisation projdata filename:= norm.hs
+    End Bin Normalisation From ProjData:=
   ; attenuation image, will be forward projected to get attenuation factors
   ;attenuation image filename := attenuation_image.hv
+  
+  ; forward projector used to estimate attenuation factors, defaults to Ray Tracing
+  ;forward_projector type := Ray Tracing
+
   ; scatter term to be subtracted AFTER norm+atten correction
+  ; defaults to 0
   ;scatter projdata filename := scatter.hs
 END:= 
 \endverbatim
@@ -91,12 +99,13 @@ START_NAMESPACE_TOMO
 
 
 // note: apply_or_undo_correction==true means: apply it
-void
+static void
 correct_projection_data(ProjData& output_projdata, const ProjData& input_projdata,
 			const bool use_data_or_set_to_1,
 			const bool apply_or_undo_correction,
                         const shared_ptr<ProjData>& scatter_projdata_ptr,
 			shared_ptr<DiscretisedDensity<3,float> >& attenuation_image_ptr,
+			const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
 			const BinNormalisation& normalisation,
                         const shared_ptr<ProjData>& randoms_projdata_ptr
                         )
@@ -114,17 +123,6 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
     attenuation_image_ptr = 
       new VoxelsOnCartesianGrid<float>(*input_projdata.get_proj_data_info_ptr());
 
-  // TODO replace
-#ifndef USE_PMRT
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing(input_projdata.get_proj_data_info_ptr()->clone(), 
-                                             attenuation_image_ptr);
-#else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing( attenuation_image_ptr , input_projdata.get_proj_data_info_ptr()->clone()); 	
-  ForwardProjectorByBin* forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-#endif
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr=
     forward_projector_ptr->get_symmetries_used()->clone();
 
@@ -247,6 +245,7 @@ public:
   shared_ptr<ProjDataFromStream> output_projdata_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
   shared_ptr<DiscretisedDensity<3,float> > attenuation_image_ptr;
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
   bool apply_or_undo_correction;
   bool use_data_or_set_to_1;  
   int max_segment_num_to_process;
@@ -275,8 +274,19 @@ set_defaults()
   scatter_projdata_filename = "";
   atten_image_filename = "";
   norm_filename = "";
+  normalisation_ptr = new TrivialBinNormalisation;
   randoms_projdata_filename = "";
   attenuation_image_ptr = 0;
+
+#ifndef USE_PMRT
+  forward_projector_ptr =
+    new ForwardProjectorByBinUsingRayTracing;
+#else
+  shared_ptr<ProjMatrixByBin> PM = 
+    new  ProjMatrixByBinUsingRayTracing;
+  forward_projector_ptr =
+    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
+#endif
 }
 
 void 
@@ -290,10 +300,11 @@ initialise_keymap()
  
   parser.add_key("use data (1) or set to one (0)", &use_data_or_set_to_1);
   parser.add_key("apply (1) or undo (0) correction", &apply_or_undo_correction);
-  //parser.add_parsing_key("BinNormalisation", &normalisation_ptr);
+  parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("randoms projdata filename", &randoms_projdata_filename);
-  parser.add_key("Normalisation filename", &norm_filename);
+  //parser.add_key("Normalisation filename", &norm_filename);
   parser.add_key("attenuation image filename", &atten_image_filename);
+  parser.add_parsing_key("forward projector type", &forward_projector_ptr);
   parser.add_key("scatter_projdata_filename", &scatter_projdata_filename);
   parser.add_stop_key("END");
 }
@@ -306,12 +317,12 @@ CorrectProjDataParameters(const char * const par_filename)
     parse(par_filename) ;
   else
     ask_parameters();
-
+  /*
   if (norm_filename!="" && norm_filename != "1")
     normalisation_ptr = new BinNormalisationFromProjData(norm_filename);
   else
     normalisation_ptr = new TrivialBinNormalisation;
-
+  */
   input_projdata_ptr = ProjData::read_from_file(input_filename);
 
   if (scatter_projdata_filename!="" && scatter_projdata_filename != "0")
@@ -352,9 +363,7 @@ CorrectProjDataParameters(const char * const par_filename)
   {
     attenuation_image_ptr = 
       DiscretisedDensity<3,float>::read_from_file(atten_image_filename.c_str());
-    
-    // TODO check sizes etc.
-    
+        
     cerr << "WARNING: attenuation image data are supposed to be in units cm^-1\n"
       "Reference: water has mu .096 cm^-1" << endl;
     cerr<< "Max in attenuation image:" 
@@ -373,7 +382,10 @@ CorrectProjDataParameters(const char * const par_filename)
     const float rescale = 
       10.F;
 #endif
-    *attenuation_image_ptr *= rescale;      
+    *attenuation_image_ptr *= rescale;
+
+    forward_projector_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone(),
+				  attenuation_image_ptr);
   }
 
 }
@@ -407,6 +419,7 @@ int main(int argc, char *argv[])
 			  parameters.use_data_or_set_to_1, parameters.apply_or_undo_correction,
                           parameters.scatter_projdata_ptr,
 			  parameters.attenuation_image_ptr,  
+			  parameters.forward_projector_ptr,  
 			  *parameters.normalisation_ptr,
                           parameters.randoms_projdata_ptr);
  
