@@ -229,7 +229,54 @@ set_get_position(const CListModeDataECAT::SavedPosition& pos)
   return
     current_lm_data_ptr->set_get_position(saved_get_positions[pos].second);
 }
-  
+#if 0
+SavedPosition
+CListModeDataECAT::
+save_get_pos_at_time(const double time)
+{ 
+  assert(time>=0);
+  shared_ptr<CListRecord> record_sptr = get_empty_record_sptr(); 
+  CListRecord& record = *record_sptr;
+
+  // we first check if we can continue reading from the current point
+  // or have to go back to the start of the list mode data
+  {
+    bool we_read_one = false;
+    while (get_next_record(record) == Succeeded::yes) 
+      {
+	we_read_one = true;
+        if(record.is_time())
+	  {
+	    const double new_time = record.time().get_time_in_secs();
+	    if (new_time > time)
+	      reset();
+	    break;
+	  }
+      }
+    if (!we_read_one)
+      {
+	// we might have been at the end of file
+	reset();
+      }
+  }
+
+  while (get_next_record(record) == Succeeded::yes) 
+      {
+        if(record.is_time())
+	  {
+	    const double new_time = record.time().get_time_in_secs();
+	    if (new_time>=time)
+	      {
+		return save_get_position();
+	      }
+	  }
+     }
+  // TODO not nice: should flag EOF or so.
+  return  save_get_position();
+
+}
+
+#endif
 #if 0
 unsigned long
 CListModeDataECAT::
