@@ -1179,8 +1179,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     if (dot_ptr != NULL)
       *dot_ptr = '_';
     // now add stuff to say which frame, gate, bed, data this was
-    sprintf(header_filename+strlen(header_filename), "_f%dg%db%dd%d", 
-	    frame, gate, bed, data);
+    sprintf(header_filename+strlen(header_filename), "_f%dg%dd%db%d", 
+	    frame, gate, data, bed);
   }
   
   switch (mptr->mhptr->file_type)
