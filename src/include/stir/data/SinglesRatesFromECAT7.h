@@ -44,7 +44,7 @@ public:
 
   //!  The function that reads singles from ECAT7 file
   Array<3,float> read_singles_from_file(const string& ECAT7_filename,
-					const ios::openmode open_mode = ios::in);
+					const std::ios::openmode open_mode = std::ios::in);
   
   //! Given the detection position get the singles rate   
   virtual float get_singles_rate (const DetectionPosition<>& det_pos, 
