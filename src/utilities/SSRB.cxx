@@ -5,7 +5,6 @@
 
   \file
   \ingroup utilities
-  \ingroup main_programs
   \brief Main program for SSRB
 
   \author Kris Thielemans
