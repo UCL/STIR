@@ -16,13 +16,6 @@
 */
 START_NAMESPACE_TOMO
 
-DataSymmetriesForViewSegmentNumbers::
-DataSymmetriesForViewSegmentNumbers(const shared_ptr<ProjDataInfo>& proj_data_info_ptr/*,
-                        const shared_ptr<DiscretisedDensity>& image_info*/
-)
-  : proj_data_info_ptr(proj_data_info_ptr)/*,
-    image_info(image_info)*/
-{}
 
 /*! default implementation in terms of get_related_view_segment_numbers, will be slow of course */
 int
@@ -33,12 +26,13 @@ DataSymmetriesForViewSegmentNumbers::num_related_view_segment_numbers(const View
   return rel_vs.size();
 }
 
+#if 0
 /*! default implementation in terms of find_symmetry_operation_to_basic_view_segment_numbers */
 bool DataSymmetriesForViewSegmentNumbers::find_basic_view_segment_numbers(ViewSegmentNumbers& vs) const
 {
   auto_ptr<SymmetryOperation> sym_op =
     find_symmetry_operation_to_basic_view_segment_numbers(vs);
-  return sym_op->is_trivial();
+  return !sym_op->is_trivial();
 }
-
+#endif
 END_NAMESPACE_TOMO
