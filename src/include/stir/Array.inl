@@ -496,7 +496,7 @@ template <typename elemT>
 size_t
 Array<1, elemT>::size_all() const 
 {
-  return size();
+  return this->size();
 }
 
 template <class elemT>
