@@ -78,8 +78,6 @@ ParsingObject:: parse(istream& in)
     initialise_keymap(); 
     keymap_is_initialised = true;
   }
-  // TODO drop next line
-  set_defaults();
   set_key_values();
   if (!parser.parse(in))
   {
