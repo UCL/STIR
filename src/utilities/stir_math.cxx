@@ -85,7 +85,7 @@ $Date$
 $Revision$ 
 */
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -99,6 +99,8 @@ $Revision$
 #include "stir/ArrayFunction.h"
 #include "stir/Succeeded.h"
 #include "stir/NumericInfo.h"
+#include "stir/KeyParser.h"
+#include "stir/is_null_ptr.h"
 
 #include <fstream> 
 #include <iostream> 
@@ -148,9 +150,10 @@ private:
 int 
 main(int argc, char **argv)
 {
-  if(argc<4)
+  if(argc<3)
   {
     cerr<< "Usage: " << argv[0] << "\n\t"
+	<< "[--output-format parameter-filename ]\n\t"
 	<< "[-s] [--accumulate] [--add | --mult]\n\t"
 	<< "[--power power_float]\n\t"
 	<< "[--times-scalar mult_scalar_float]\n\t"
@@ -202,13 +205,34 @@ main(int argc, char **argv)
   bool except_first = true;
   bool verbose = false;
   bool do_projdata = false;
+  shared_ptr<OutputFileFormat> output_format_sptr =
+    new DefaultOutputFileFormat;
 
 
   // first process command line options
 
   while (argc>0 && argv[0][0]=='-')
   {
-    if (strcmp(argv[0], "--add-scalar")==0)
+    if (strcmp(argv[0], "--output-format")==0)
+      {
+	if (argc<2)
+	  { 
+	    cerr << "Option '--output-format' expects a (filename) argument\n"; 
+	    exit(EXIT_FAILURE); 
+	  }
+	KeyParser parser;
+	parser.add_start_key("output file format parameters");
+	parser.add_parsing_key("output file format type", &output_format_sptr);
+	parser.add_stop_key("END"); 
+	if (parser.parse(argv[1]) == false || is_null_ptr(output_format_sptr))
+	  {
+	    cerr << "Error parsing output file format from " << argv[1]<<endl;
+	    exit(EXIT_FAILURE); 
+	  }
+	argc-=2; argv+=2;
+    } 
+	
+      else if (strcmp(argv[0], "--add-scalar")==0)
     {
       if (argc<2)
       { cerr << "Option '--add-scalar' expects a (float) argument\n"; exit(EXIT_FAILURE); }
@@ -352,8 +376,7 @@ main(int argc, char **argv)
 
       if (verbose)
 	cout << "Writing output image " << output_file_name << endl;
-      DefaultOutputFileFormat output_format;
-      output_format.write_to_file(output_file_name, *image_ptr);
+      output_format_sptr->write_to_file(output_file_name, *image_ptr);
     }
   else // do_projdata
     {
