@@ -12,7 +12,8 @@
 #include <iterator>
 
 template <class T>
-class VectorWithOffset {
+class VectorWithOffset
+{
 public:
   // like in vector.h and defalloc.h
   typedef T value_type;
@@ -34,15 +35,15 @@ public:
 #ifdef __MSL__
   // Modena STL implementation
   typedef reverse_iterator<const_iterator, value_type, const_reference, 
-    const_pointer, difference_type>  const_reverse_iterator;
+  const_pointer, difference_type>  const_reverse_iterator;
   typedef reverse_iterator<iterator, value_type, reference, 
-    pointer, difference_type> reverse_iterator;
+  pointer, difference_type> reverse_iterator;
 #else
   // (old) HP STL implementation, used by gcc 2.7.2
   typedef reverse_iterator<const_iterator, value_type, const_reference, 
-    difference_type>  const_reverse_iterator;
+  difference_type>  const_reverse_iterator;
   typedef reverse_iterator<iterator, value_type, reference, difference_type>
-     reverse_iterator;
+  reverse_iterator;
 #endif /* __MSL__ */
 #endif /*  __STL_CLASS_PARTIAL_SPECIALIZATION */
 #endif /* DEFINE_ITERATORS */
@@ -54,46 +55,53 @@ protected:
   T *num;	// array to hold elements indexed by start
   T *mem;	// pointer to start of memory for new/delete
 
-  void Init() {		// Default member settings for all constructors
-    length =0;	// i.e. an empty row of zero length,
-    start = 0;	// no offsets
-    num = mem = 0;				// and no data.
-  };
+  // Default member settings for all constructors
+  void Init() 
+    {		
+      length =0;	// i.e. an empty row of zero length,
+      start = 0;	// no offsets
+      num = mem = 0;				// and no data.
+    };
 
   //KT 13/11 added this function, only non-empty when debugging
   //to be used before and after any modification of the object
   // KT 21/11 had to make this protected now, as it is called by
   // Tensorbase
   void check_state() const
-  { assert(((length > 0) ||
-            (length == 0 && start == 0 &&
-             num == 0 && mem == 0)));
-  }
+    {
+      assert(((length > 0) ||
+	      (length == 0 && start == 0 &&
+	       num == 0 && mem == 0)));
+    }
 
 public:  
+
+  // Free memory and make object as if default-constructed	
+  void Recycle() 
+    {
+      check_state();
+      if (length > 0){
+	delete[] mem; 
+	Init();
+      }
+    };
 	
-  void Recycle() {	// Free memory and make object as if default-constructed
-    check_state();
-    if (length > 0){
-      delete[] mem; 
+  VectorWithOffset()
+    { 
       Init();
-    }
-  };
-	
-  VectorWithOffset() { 
-    Init();
-  };
+    };
 
   // Construct a VectorWithOffset of given length
   //KT TODO don't know how to write this constructor in terms of the more general one below
-  VectorWithOffset(const Int hsz) {	
-    if ((hsz > 0)) {
-      length = hsz;
-      start = 0;
-      num = mem = new T[hsz];
-    } else Init();
-    check_state();
-  }			
+  VectorWithOffset(const Int hsz)
+    {	
+      if ((hsz > 0)) {
+	length = hsz;
+	start = 0;
+	num = mem = new T[hsz];
+      } else Init();
+      check_state();
+    }			
     
   // Construct a VectorWithOffset of elements with offsets hfirst
   VectorWithOffset(const Int hfirst, const Int hlast)   
@@ -104,21 +112,24 @@ public:
 	mem = new T[length];
 	num = mem - hfirst;
       } else Init(); 
-    check_state();
-  }
+      check_state();
+    }
 
-  ~VectorWithOffset() { Recycle(); };		// Destructor
+  ~VectorWithOffset()
+    { Recycle(); };		// Destructor
 
-  void set_offset(const Int hfirst) {
-    check_state();
-    //KT 13/11 only allowed when non-zero length
-    if (length == 0) return;
-    start = hfirst;
-    num = mem - start;
-  }
+  void set_offset(const Int hfirst) 
+    {
+      check_state();
+      //KT 13/11 only allowed when non-zero length
+      if (length == 0) return;
+      start = hfirst;
+      num = mem - start;
+    }
 
+  // KT 02/03/98 made virtual (see Tensor3D.h why)
   //grow the length range of the tensor, new elements are set to NUMBER()
-  void grow(Int hfirst, Int hlast) { 
+  virtual void grow(Int hfirst, Int hlast) { 
     check_state();
     const Int new_length = hlast - hfirst + 1;
     if (hfirst == start && new_length == length) {
@@ -149,45 +160,45 @@ public:
 
   // Assignment operator
 #ifdef TEMPLATE_ARG
-  VectorWithOffset & operator= (const VectorWithOffset<T, NUMBER> &il) 	
+  VectorWithOffset & operator= (const VectorWithOffset<NUMBER> &il) 	
 #else
-  VectorWithOffset & operator= (const VectorWithOffset &il) 
+    VectorWithOffset & operator= (const VectorWithOffset &il) 
 #endif
-  {
-    check_state();
-    if (this == &il) return *this;		// in case of x=x
-    if (il.length > 0)
-      {		
-	if (length != il.length)	// if new tensorbase has different
-	  {				// length, reallocate memory
-            //KT TODO optimisation possible (skipping a superfluous Init() )
-            //if (length > 0) delete [] mem;
-	    //in fact, the test on length can be skipped, because when
-	    //length == 0, mem == 0, and delete [] 0 doesn't do anything
-	    //???check
-	    Recycle();
-	    length = il.length;
-	    mem = new T[length];
-	  }
-	set_offset(il.get_min_index());
-	for(Int i=0; i<length; i++)     
-	  mem[i] = il.mem[i];		// different widths are taken 
-      }			       			// care of by Tensor::operator=
-    else	Recycle();
-    check_state();
-    return *this;
-  }
+    {
+      check_state();
+      if (this == &il) return *this;		// in case of x=x
+      if (il.length > 0)
+	{		
+	  if (length != il.length)	// if new tensorbase has different
+	    {				// length, reallocate memory
+	      //KT TODO optimisation possible (skipping a superfluous Init() )
+	      //if (length > 0) delete [] mem;
+	      //in fact, the test on length can be skipped, because when
+	      //length == 0, mem == 0, and delete [] 0 doesn't do anything
+	      //???check
+	      Recycle();
+	      length = il.length;
+	      mem = new T[length];
+	    }
+	  set_offset(il.get_min_index());
+	  for(Int i=0; i<length; i++)     
+	    mem[i] = il.mem[i];		// different widths are taken 
+	}			       			// care of by Tensor::operator=
+      else	Recycle();
+      check_state();
+      return *this;
+    }
 
   // Copy constructor
 #ifdef TEMPLATE_ARG
-  VectorWithOffset(const VectorWithOffset<T, NUMBER> &il)
+  VectorWithOffset(const VectorWithOffset<NUMBER> &il)
 #else
-  VectorWithOffset(const VectorWithOffset &il) 
+    VectorWithOffset(const VectorWithOffset &il) 
 #endif
-  {
-    Init();
-    *this = il;		// Uses assignment operator (above)
-  };
+    {
+      Init();
+      *this = il;		// Uses assignment operator (above)
+    };
 
   Int get_length() const { check_state(); return length; };	// return length of VectorWithOffset
 
@@ -214,25 +225,25 @@ public:
 		
   // comparison
 #ifdef TEMPLATE_ARG
-  bool operator== (const VectorWithOffset<T, NUMBER> &iv) const
+  bool operator== (const VectorWithOffset<NUMBER> &iv) const
 #else
-  bool operator== (const VectorWithOffset &iv) const
+    bool operator== (const VectorWithOffset &iv) const
 #endif
-  {
-    check_state();
-    if (length != iv.length || start != iv.start) return false;
-    for (Int i=0; i<length; i++)
-      if (mem[i] != iv.mem[i]) return false;
-    return true; }
+    {
+      check_state();
+      if (length != iv.length || start != iv.start) return false;
+      for (Int i=0; i<length; i++)
+	if (mem[i] != iv.mem[i]) return false;
+      return true; }
 
   // Fill elements with value n
   void fill(const T &n) 
-  {
-    check_state();
-    for(Int i=0; i<length; i++)
-      mem[i] = n;
-    check_state();
-  };
+    {
+      check_state();
+      for(Int i=0; i<length; i++)
+	mem[i] = n;
+      check_state();
+    };
   
 #ifdef DEFINE_ITERATORS
   // KT 26/11 added iterator things here
@@ -263,27 +274,34 @@ public:
 // Note that value_type() of a reverse_iterator does not work (also not
 // in vector.h
 template <class T>
-struct VectorWithOffset_iterator {
-    VectorWithOffset<T>::iterator it;
-    VectorWithOffset_iterator(VectorWithOffset<T>::iterator i) : it(i) {}
-    operator VectorWithOffset<T>::iterator() {
-	return it;
+
+struct VectorWithOffset_iterator 
+{
+  VectorWithOffset<T>::iterator it;
+  VectorWithOffset_iterator(VectorWithOffset<T>::iterator i)
+    : it(i) {}
+  operator VectorWithOffset<T>::iterator()
+    {
+      return it;
     }
 };
 
 template <class T>
-inline T* value_type(const VectorWithOffset_iterator<T>&) {
-    return (T*)(0);
+inline T* value_type(const VectorWithOffset_iterator<T>&) 
+{
+  return (T*)(0);
 }
 
 
 template <class T>
-struct VectorWithOffset_const_iterator {
-    VectorWithOffset<T>::const_iterator it;
-    VectorWithOffset_const_iterator(VectorWithOffset<T>::const_iterator i) : it(i) {}
-    operator VectorWithOffset<T>::const_iterator() {
-	return it;
-    }
+struct VectorWithOffset_const_iterator
+{
+  VectorWithOffset<T>::const_iterator it;
+  VectorWithOffset_const_iterator(VectorWithOffset<T>::const_iterator i)
+    : it(i) {}
+  operator VectorWithOffset<T>::const_iterator() {
+    return it;
+  }
 };
 
 // KT: I included these to make things work with rend() and so on. 
@@ -296,27 +314,32 @@ struct VectorWithOffset_const_iterator {
  value_type(v.rbegin());
  */
 template <class T>
-struct VectorWithOffset_reverse_iterator {
-    VectorWithOffset<T>::reverse_iterator it;
-    VectorWithOffset_reverse_iterator(VectorWithOffset<T>::reverse_iterator i) : it(i) {}
-    operator VectorWithOffset<T>::reverse_iterator() {
-	return it;
-    }
+struct VectorWithOffset_reverse_iterator 
+{
+  VectorWithOffset<T>::reverse_iterator it;
+  VectorWithOffset_reverse_iterator(VectorWithOffset<T>::reverse_iterator i)
+    : it(i) {}
+  operator VectorWithOffset<T>::reverse_iterator() {
+    return it;
+  }
 };
 
 template <class T>
-inline T* value_type(const VectorWithOffset_reverse_iterator<T>&) {
-    return (T*)(0);
+inline T* value_type(const VectorWithOffset_reverse_iterator<T>&) 
+{
+  return (T*)(0);
 }
 
 
 template <class T>
-struct VectorWithOffset_const_reverse_iterator {
-    VectorWithOffset<T>::const_reverse_iterator it;
-    VectorWithOffset_const_reverse_iterator(VectorWithOffset<T>::const_reverse_iterator i) : it(i) {}
-    operator VectorWithOffset<T>::const_reverse_iterator() {
-	return it;
-    }
+struct VectorWithOffset_const_reverse_iterator 
+{
+  VectorWithOffset<T>::const_reverse_iterator it;
+  VectorWithOffset_const_reverse_iterator(VectorWithOffset<T>::const_reverse_iterator i) 
+    : it(i) {}
+  operator VectorWithOffset<T>::const_reverse_iterator() {
+    return it;
+  }
 };
 #endif // check on GNU 2.7
 #endif // DEFINE_ITERATORS
