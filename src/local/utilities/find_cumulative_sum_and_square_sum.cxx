@@ -78,8 +78,11 @@ int main(int argc, char *argv[])
   }
 
   cum_image/=counter;
-  write_basic_interfile(argv[3], cum_image);
-  write_basic_interfile(argv[4], cum_square);
+
+  char* file_sum = argv[2];
+  char* file_sum_sq = argv[3];
+  write_basic_interfile(file_sum, cum_image);
+  write_basic_interfile(file_sum_sq, cum_square);
 
 
   
