@@ -22,8 +22,8 @@ PETImageOfVolume read_interfile_image(fstream& input);
 // .hv is 'new-style' (suitable for Mediman for instance), 
 // .ahv is 'old-style' (suitable for Analyze for instance)
 // They both point to the same file with binary data.
-
+// KT 09/10/98 added const for image arg
 template <class NUMBER>
-bool write_basic_interfile(const char * const filename, Tensor3D<NUMBER>& image);
+bool write_basic_interfile(const char * const filename, const Tensor3D<NUMBER>& image);
 
 #endif // __Interfile_h__
