@@ -33,7 +33,7 @@
 #include "stir/NumericVectorWithOffset.h"
 #include "stir/ByteOrder.h"
 #include "stir/NumericType.h"
-#include "stir/IndexRange.h"
+#include "stir/IndexRange.h"   
 
 #include <iostream>
 
@@ -104,7 +104,7 @@ public:
 
   //! As full_iterator, but for const objects.
   typedef FullArrayIterator<typename base_type::const_iterator, typename Array<num_dimensions-1, elemT>::const_full_iterator, elemT, const_reference, const_pointer> const_full_iterator;
-#else // ARRAY_FULL2
+#else // ARRAY_FLL2
   typedef FullArrayIterator<num_dimensions, elemT, reference, pointer> full_iterator;
 
   typedef FullArrayConstIterator<num_dimensions, elemT, const_reference, const_pointer> const_full_iterator;
@@ -158,7 +158,7 @@ public:
   
   //! return maximum of all the elements
   inline elemT find_max() const;
-  
+                                                            
   //! return minimum of all the elements
   inline elemT find_min() const;
   
@@ -178,6 +178,23 @@ public:
   
   //! write data to stream
   inline void write_data(ostream& s, const ByteOrder byte_order = ByteOrder::native) const;    
+   
+  //! allow array-style access, read/write
+  inline Array<num_dimensions-1, elemT>& 
+	operator[] (int i);
+
+  //! array access, read-only
+  inline const Array<num_dimensions-1, elemT>& 
+	operator[] (int i) const;
+
+  //! allow array-style access giving its BasicCoordinate, read/write  
+  inline elemT&
+  operator[](const BasicCoordinate<num_dimensions,int> &c) ;
+
+  //! array access giving its BasicCoordinate, read-only
+  // TODO alternative return value: elemT
+  inline const elemT&
+  operator[](const BasicCoordinate<num_dimensions,int> &c) const;
   
 #ifdef MEMBER_TEMPLATES
   template <class elemT2, class scaleT>
@@ -219,7 +236,7 @@ private:
 template <class elemT>
 class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
 #ifdef STIR_USE_BOOST
-                         ,
+      ,
 			 boost::operators<Array<1, elemT>, NumericVectorWithOffset<elemT, elemT> >,
 			 boost::operators<Array<1, elemT> >,
 			 boost::operators<Array<1, elemT>, elemT>
@@ -297,19 +314,19 @@ public:
   
   //! checks if the index range is 'regular' (always true)
   inline bool is_regular() const;
-
-  //! find regular range
+  
+  //! find regular range                                     
   bool get_regular_range(
      BasicCoordinate<1, int>& min,
      BasicCoordinate<1, int>& max) const;
-
+  
 #ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
   in NumericVectorWithOffset already.
   Reason: we allow addition (and similar operations) of tensors of 
   different sizes. This implies that operator+= can call a 'grow'
-  on retval. For this to work, retval should be a Array, not 
+  on retval. For this to work, retval should be an Array, not 
   its base_type (which happens if these function are not repeated
   in this class).
   Complicated...
@@ -337,6 +354,18 @@ public:
   
   //! division with an 'elemT'
   inline self operator/ (const elemT a) const;
+
+  //! allow array-style access, read/write
+  inline elemT&	operator[] (int i);
+
+  //! array access, read-only
+  inline const elemT&	operator[] (int i) const;
+    
+  //! allow array-style access giving its BasicCoordinate, read/write  
+  inline const elemT& operator[](const BasicCoordinate<1,int>& c) const;
+
+  //! array access giving its BasicCoordinate, read-only
+  inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
 #endif // boost
   
@@ -635,8 +664,8 @@ public:
   inline self operator* (const elemT a) const;
   
   //! division with an 'elemT'
-  inline self operator/ (const elemT a) const;
-  
+  inline self operator/ (const elemT a) const; 
+
 #endif // boost
   
   //!  read data from stream, only valid for 'simple' type elemT    
@@ -780,7 +809,7 @@ public:
   
   //! division with an 'elemT'
   inline self operator/ (const elemT a) const;
-  
+
 #endif // boost
   
   //!  read data from stream, only valid for 'simple' type elemT    
@@ -921,7 +950,7 @@ public:
   
   //! division with an 'elemT'
   inline self operator/ (const elemT a) const;
-  
+
 #endif // boost
   
   //!  read data from stream, only valid for 'simple' type elemT    
