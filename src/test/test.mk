@@ -85,5 +85,12 @@ ${DEST}$(dir)/test_ByteOrder: ${DEST}$(dir)/test_ByteOrder.o $(STIR_LIB)
 ${DEST}$(dir)/test_stir_math: ${DEST}$(dir)/test_stir_math.o $(STIR_LIB) 
 	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
 
+${DEST}$(dir)/test_OutputFileFormat: ${DEST}$(dir)/test_OutputFileFormat.o \
+   $(STIR_LIB) $(filter %IO_registries.o,$(STIR_REGISTRIES))  $(EXTRA_LIBS) 
+	$(CXX) $(CFLAGS)  -o $@ $< \
+		$(filter %IO_registries.o,$(STIR_REGISTRIES)) \
+		 $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
 include $(WORKSPACE)/test.mk
 
