@@ -163,13 +163,15 @@ convert_array_Tests::run_tests()
       // float -> short with automatic scale factor
       float scale_factor = 0;
       Array<3,short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
-      
+#ifndef DO_TIMING_ONLY      
       check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
+      const Array<3,short>::full_iterator iter_end= ti2.end_all();
       for (Array<3,short>::full_iterator iter= ti2.begin_all();
-           iter != ti2.end_all();
-	   iter++)
+           iter != iter_end;
+	   ++iter)
 	*iter = short( double((*iter)) *scale_factor);
       check(ti1 == ti2);
+#endif
     }
     
     tf1 *= 1E20F;
@@ -178,14 +180,16 @@ convert_array_Tests::run_tests()
       float scale_factor = 1;
       Array<3,short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
 
+#ifndef DO_TIMING_ONLY
       check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
       Array<3,short>::full_iterator iter_ti2= ti2.begin_all();
+      const Array<3,short>::full_iterator iter_ti2_end= ti2.end_all();
       Array<3,float>::full_iterator iter_tf1= tf1.begin_all();
       for (;
-           iter_ti2 != ti2.end_all();
-	   iter_ti2++, iter_tf1++)
+           iter_ti2 != iter_ti2_end;
+	   ++iter_ti2, ++iter_tf1)
 	check(fabs(double(*iter_ti2) *scale_factor / *iter_tf1 - 1) < 1E-4) ;
-      
+#endif      
     }
 
     timer.stop();
@@ -219,12 +223,15 @@ convert_array_Tests::run_tests()
       float scale_factor = 0;
       Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
       
+#ifndef DO_TIMING_ONLY
       check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
+      const Array<3,short>::full_iterator iter_end= ti2.end_all();
       for (Array<3,short>::full_iterator iter= ti2.begin_all();
-           iter != ti2.end_all();
-	   iter++)
+           iter != iter_end;
+	   ++iter)
 	*iter = short( double((*iter)) *scale_factor);
       check(ti1 == ti2);
+#endif
     }
     
     tf1 *= 1E20F;
@@ -233,14 +240,17 @@ convert_array_Tests::run_tests()
       float scale_factor = 1;
       Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
 
+#ifndef DO_TIMING_ONLY
       check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
       Array<3,short>::full_iterator iter_ti2= ti2.begin_all();
+      const Array<3,short>::full_iterator iter_ti2_end= ti2.end_all();
       Array<3,float>::full_iterator iter_tf1= tf1.begin_all();
       for (;
-           iter_ti2 != ti2.end_all();
-	   iter_ti2++, iter_tf1++)
+           iter_ti2 != iter_ti2_end;
+	   ++iter_ti2, ++iter_tf1)
 	check(fabs(double(*iter_ti2) *scale_factor / *iter_tf1 - 1) < 1E-4) ;
       
+#endif
     }
     timer.stop();
     cerr << timer.value() << "secs" << endl;
