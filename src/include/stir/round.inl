@@ -38,7 +38,7 @@ int round(const double x)
 
 template <int num_dimensions, class elemT>
 BasicCoordinate<num_dimensions,int>
-round(const BasicCoordinate<num_dimensions,elemT> x)
+round(const BasicCoordinate<num_dimensions,elemT>& x)
 {
 	BasicCoordinate<num_dimensions,int> rnd_x;
 	for(int i=1;i<=num_dimensions;++i)
