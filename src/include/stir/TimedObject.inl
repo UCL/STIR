@@ -26,13 +26,13 @@ void TimedObject::reset_timers()
   cpu_timer.reset();
 }
 
-void TimedObject::start_timers()
+void TimedObject::start_timers() const
 {
   cpu_timer.start();
 }
 
 
-void TimedObject::stop_timers()
+void TimedObject::stop_timers() const
 {
   cpu_timer.stop();
 }
