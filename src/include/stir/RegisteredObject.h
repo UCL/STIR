@@ -135,13 +135,18 @@ protected:
   typedef Root * (*RootFactory)(istream*);
   //! The type of the registry
   typedef FactoryRegistry<string, RootFactory, interfile_less> RegistryType;
+
+#if defined(_MSC_VER) && _MSC_VER<=1300
+#  define __STIR_REGISTRY_NOT_INLINE
+#endif
+
   //! Static function returning the registry
-  /*! \warning This function is non inline when using Visual C++ because of
+  /*! \warning This function is non inline when using Visual C++ 6.0 because of
       a compiler limitation. This means that when using this compiler,
       RegisteredObject will need explicit instantiations for all derived classes.
   */
-#ifndef _MSC_VER
-  inline 
+#ifndef __STIR_REGISTRY_NOT_INLINE
+  inline
 #endif
     static RegistryType& registry();
 
