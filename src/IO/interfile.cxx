@@ -545,8 +545,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   ofstream output_header(header_name.c_str(), ios::out);
   if (!output_header.good())
     {
-      cerr << "Error opening Interfile header '" 
-	   << header_name << " for writing" << endl;
+      warning("Error opening Interfile header '%s' for writing\n",
+	      header_name.c_str());
       return Succeeded::no;
     }  
 
