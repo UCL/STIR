@@ -215,7 +215,13 @@ main(int argc, char **argv)
   
 
   shared_ptr<BackProjectorByBin> back_projector_ptr;
-    BackProjectorByBin::ask_type_and_parameters();
+  do 
+    {
+      back_projector_ptr =
+	BackProjectorByBin::ask_type_and_parameters();
+    }
+  while (back_projector_ptr.use_count()==0);
+
   back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			     image_sptr);
  
