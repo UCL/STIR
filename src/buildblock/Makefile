@@ -3,7 +3,7 @@ CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -I/epx/epx/include -D_CR_LI
 #CXX = xlC
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -DTEMPLATE_ARG
 
-all:	ParaProcess.o ParaProcessPattern.o ParaStream.o ParaStreamIn.o ParaStreamOut.o ParaStreamInOps.o ParaStreamOutOps.o ParaEPX.o libbuildblock.a
+all:	libbuildblock.a
 
 #%.o:	%.cxx
 #.o.cxx:
@@ -29,27 +29,4 @@ Tensor1D.o: Tensor1D.cxx
 sinodata.o: sinodata.cxx
 	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
-ParaProcess.o:	ParaProcess.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaProcessPattern.o: ParaProcessPattern.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaStream.o:	ParaStream.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaStreamIn.o:	ParaStreamIn.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaStreamOut.o:	ParaStreamOut.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaStreamInOps.o:	ParaStreamInOps.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaStreamOutOps.o:	ParaStreamOutOps.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-
-ParaEPX.o:	ParaEPX.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
