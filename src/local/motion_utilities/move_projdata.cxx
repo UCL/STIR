@@ -9,7 +9,7 @@
   
   \par Example par file
   \verbatim
-  MoveImage Parameters:=
+  MoveProjData Parameters:=
   input file:= input_filename
   time frame_definition filename := frame_definition_filename
   output filename prefix := output_filename_prefix
@@ -89,6 +89,9 @@ MoveProjData::set_defaults()
   frame_num_to_process = -1;
   output_file_format_sptr = new DefaultOutputFileFormat;
   do_move_to_reference = true;
+
+  max_in_segment_num_to_process=-1;
+  max_out_segment_num_to_process=-1;
 }
 
 void 
