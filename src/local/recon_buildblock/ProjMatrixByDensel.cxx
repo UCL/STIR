@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,15 +12,14 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$
-        
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
 #include "local/tomo/recon_buildblock/ProjMatrixByDensel.h"
 #include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-//#include "utilities.h"
+#include "tomo/Succeeded.h"
 //#include <iostream>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -52,7 +51,7 @@ get_cached_proj_matrix_elems_for_one_densel(
 #ifndef NDEBUG
   // Check that this is a 'basic' coordinate
   Densel densel_copy = densel; 
-  assert ( !symmetries_ptr->find_basic_densel(densel_copy));     
+  assert ( !get_symmetries_ptr()->find_basic_densel(densel_copy));     
 #endif         
   
 	 
