@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_round_H__
-#define __Tomo_round_H__
+#ifndef __stir_round_H__
+#define __stir_round_H__
 /*!
   \file
   \ingroup buildblock
@@ -14,9 +14,13 @@
   $Date$
   $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! Implements rounding of floating point numbers
 /*!
@@ -41,8 +45,8 @@ inline int round(const float x);
 */
 inline int round(const double x);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "tomo/round.inl"
+#include "stir/round.inl"
 
 #endif

@@ -15,20 +15,25 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "local/tomo/recon_buildblock/ProjMatrixByDensel.h"
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-#include "tomo/Succeeded.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDensel.h"
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "stir/Succeeded.h"
 //#include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 //using std::cout;
 //using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ProjMatrixByDensel::ProjMatrixByDensel()
 { 
@@ -130,4 +135,4 @@ void ProjMatrixByDensel::write_to_file_by_densel(
 #endif
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

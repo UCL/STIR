@@ -11,13 +11,17 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const char * const 
 TrivialBinNormalisation::registered_name = "None";
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

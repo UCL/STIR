@@ -12,12 +12,16 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "local/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
-#include "Viewgram.h"
-#include "RelatedViewgrams.h"
+#include "local/stir/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 const char * const 
 PostsmoothingForwardProjectorByBin::registered_name =
   "Post Smoothing";
@@ -195,4 +199,4 @@ smooth(Viewgram<float>& v,
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -10,16 +10,20 @@
 
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #ifdef _MSC_VER
 #pragma message("instantiating RegisteredObject<Shape3D>")
-#include "local/tomo/Shape/Shape3D.h"
+#include "local/stir/Shape/Shape3D.h"
 
 // and others
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename Root>
 RegisteredObject<Root>::RegistryType& 
@@ -37,6 +41,6 @@ RegisteredObject<Root>::registry ()
 
 template RegisteredObject<Shape3D>; 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

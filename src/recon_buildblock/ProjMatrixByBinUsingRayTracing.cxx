@@ -15,18 +15,23 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "ProjDataInfo.h"
-#include "recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include <algorithm>
 #include <math.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const char * const 
@@ -290,5 +295,5 @@ static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
   
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

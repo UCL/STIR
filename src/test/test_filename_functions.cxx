@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,19 +11,24 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "utilities.h"
-#include "RunTests.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/utilities.h"
+#include "stir/RunTests.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief Test class for filename functions defined in utility.h
@@ -212,9 +217,9 @@ void FilenameTests::run_tests()
 #endif /* Unix */  
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 int main()
 {
   FilenameTests tests;

@@ -14,18 +14,23 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __ProjMatrixByBinUsingRayTracing__
 #define __ProjMatrixByBinUsingRayTracing__
 
-#include "tomo/RegisteredParsingObject.h"
-#include "recon_buildblock/ProjMatrixByBin.h"
-#include "ProjDataInfo.h"
-#include "CartesianCoordinate3D.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/shared_ptr.h"
 
  
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
@@ -96,7 +101,7 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

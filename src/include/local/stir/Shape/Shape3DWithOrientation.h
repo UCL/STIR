@@ -12,11 +12,15 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __tomo_Shape_Shape3DWithOrientation__H__
-#define __tomo_Shape_Shape3DWithOrientation__H__
+#ifndef __stir_Shape_Shape3DWithOrientation__H__
+#define __stir_Shape_Shape3DWithOrientation__H__
 
-#include "local/tomo/Shape/Shape3D.h"
+#include "local/stir/Shape/Shape3D.h"
 
 
 /*!
@@ -24,7 +28,7 @@
   \brief Class for shapes with orientation
    
 */
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class Shape3DWithOrientation: public Shape3D
 {
@@ -80,6 +84,6 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -13,22 +13,27 @@
   \author (loosely based on some C code by Matthias Egger)
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
-#include "recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "CartesianCoordinate3D.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <math.h>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::min;
 using std::max;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*
   Siddon's algorithm works by looking at intersections of the 
@@ -130,4 +135,4 @@ RayTraceVoxelsOnCartesianGrid
     }	// end of while (a<amax)           
   }
 }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

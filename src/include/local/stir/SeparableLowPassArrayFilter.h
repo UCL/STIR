@@ -14,24 +14,28 @@
    $Date: 
    $Revision: 
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_SeparableLowPassArrayFilter_H__
-#define __Tomo_SeparableLowPassArrayFilter_H__
+#ifndef __stir_SeparableLowPassArrayFilter_H__
+#define __stir_SeparableLowPassArrayFilter_H__
 
-#include "DiscretisedDensity.h"
-#include "tomo/SeparableArrayFunctionObject.h"
-#include "Array.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/SeparableArrayFunctionObject.h"
+#include "stir/Array.h"
 
 #include <vector>
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 #endif
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <int num_dimensions, typename elemT>
@@ -51,6 +55,6 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

@@ -14,15 +14,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#ifndef __Tomo_ViewSegmentNumbers_h__
-#define __Tomo_ViewSegmentNumbers_h__
+#ifndef __stir_ViewSegmentNumbers_h__
+#define __stir_ViewSegmentNumbers_h__
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief A very simple class to store view and segment numbers 
@@ -62,8 +67,8 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ViewSegmentNumbers.inl"
+#include "stir/ViewSegmentNumbers.inl"
 
 #endif

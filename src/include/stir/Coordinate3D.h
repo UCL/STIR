@@ -1,7 +1,7 @@
 #ifndef __Coordinate3D_H__
 #define __Coordinate3D_H__
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -12,16 +12,21 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "BasicCoordinate.h"
+#include "stir/BasicCoordinate.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
    \brief a templated class for 3-dimensional coordinates.
@@ -45,9 +50,9 @@ public:
   inline Coordinate3D& operator=(const base_type& c);
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "Coordinate3D.inl"
+#include "stir/Coordinate3D.inl"
 
 #endif
 

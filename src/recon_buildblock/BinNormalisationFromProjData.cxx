@@ -11,14 +11,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "tomo/recon_buildblock/BinNormalisationFromProjData.h"
-#include "ProjData.h"
-#include "shared_ptr.h"
-#include "RelatedViewgrams.h"
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+#include "stir/ProjData.h"
+#include "stir/shared_ptr.h"
+#include "stir/RelatedViewgrams.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const char * const 
 BinNormalisationFromProjData::registered_name = "From ProjData"; 
@@ -85,5 +89,5 @@ post_processing()
 }
 
   
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

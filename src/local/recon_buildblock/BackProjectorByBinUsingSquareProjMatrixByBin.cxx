@@ -15,16 +15,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "local/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
-#include "Viewgram.h"
-#include "RelatedViewgrams.h"
-#include "BasicCoordinate.h"
-#include "VoxelsOnCartesianGrid.h"
+#include "local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const char * const 
 BackProjectorByBinUsingSquareProjMatrixByBin::registered_name =
@@ -123,4 +127,4 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
   proj_matrix_ptr->set_up(proj_data_info_ptr, image_info_ptr);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

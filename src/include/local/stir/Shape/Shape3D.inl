@@ -12,8 +12,12 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 Shape3D::Shape3D()
 : origin(0,0,0)
@@ -38,4 +42,4 @@ CartesianCoordinate3D<float> Shape3D::get_origin() const
 { return origin; }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

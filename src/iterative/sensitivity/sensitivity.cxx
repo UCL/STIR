@@ -18,6 +18,11 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 /* 
 
@@ -39,26 +44,26 @@
    */
 
 
-#include "ProjData.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "utilities.h"
-#include "interfile.h"
+#include "stir/ProjData.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/utilities.h"
+#include "stir/interfile.h"
 
-#include "LogLikBased/common.h"
+#include "stir/LogLikBased/common.h"
 
-#include "recon_buildblock/distributable.h"
-#include "recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/distributable.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 
-#include "OSMAPOSL/OSMAPOSLParameters.h"
+#include "stir/OSMAPOSL/OSMAPOSLParameters.h"
 #include <typeinfo>
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class sensparameters{
   public:
@@ -134,9 +139,9 @@ void
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 #ifdef PARALLEL
 int master_main(int argc, char **argv)

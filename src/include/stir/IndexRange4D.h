@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*! 
   \file
@@ -10,17 +10,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #ifndef __IndexRange4D_H__
 #define __IndexRange4D_H__
 
-#include "IndexRange.h"
+#include "stir/IndexRange.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -49,8 +54,8 @@ public:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "IndexRange4D.inl"
+#include "stir/IndexRange4D.inl"
 
 #endif

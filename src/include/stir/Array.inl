@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,22 +10,27 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
   For compilers that do not support partial template specialisation,
   the 1D implementations are rather tedious: full specialisations
   for a few common types. Result: lots of code repetition.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 // include for min,max definitions
 #include <algorithm>
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::max;
 using std::min;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /**********************************************
  inlines for Array<num_dimensions, elemT>
@@ -184,7 +189,7 @@ Array<num_dimensions, elemT>::find_max() const
     elemT maxval= num[get_min_index()].find_max();
     for(int i=get_min_index()+1; i<=get_max_index(); i++)
     {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       maxval = std::max(num[i].find_max(), maxval);
 #else
       maxval = max(num[i].find_max(), maxval);
@@ -209,7 +214,7 @@ Array<num_dimensions, elemT>::find_min() const
     elemT minval= num[get_min_index()].find_min();
     for(int i=get_min_index()+1; i<=get_max_index(); i++)
     {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       minval = std::min(num[i].find_min(), minval);
 #else
       minval = min(num[i].find_min(), minval);
@@ -424,7 +429,7 @@ Array<1, elemT>::find_max() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::max_element(begin(), end());	
 #else
     return *max_element(begin(), end());
@@ -446,7 +451,7 @@ Array<1, elemT>::find_min() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::min_element(begin(), end());
 #else
     return *min_element(begin(), end());
@@ -477,7 +482,7 @@ Array<1, elemT>::get_regular_range(
   return range.get_regular_range(min,max);
 }
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
 
 /* KT 31/01/2000 I had to add these functions here, although they are 
 in NumericVectorWithOffset already.
@@ -686,7 +691,7 @@ Array<1, float>::find_max() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::max_element(begin(), end());	
 #else
     return *max_element(begin(), end());
@@ -706,7 +711,7 @@ Array<1, float>::find_min() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::min_element(begin(), end());
 #else
     return *min_element(begin(), end());
@@ -720,7 +725,7 @@ Array<1, float>::find_min() const
   check_state();
 };  
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
 
 /* KT 31/01/2000 I had to add these functions here, although they are 
 in NumericVectorWithOffset already.
@@ -929,7 +934,7 @@ Array<1, int>::find_max() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::max_element(begin(), end());	
 #else
     return *max_element(begin(), end());
@@ -950,7 +955,7 @@ Array<1, int>::find_min() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::min_element(begin(), end());
 #else
     return *min_element(begin(), end());
@@ -964,7 +969,7 @@ Array<1, int>::find_min() const
   check_state();
 };  
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
 
 /* KT 31/01/2000 I had to add these functions here, although they are 
 in NumericVectorWithOffset already.
@@ -1172,7 +1177,7 @@ Array<1, unsigned short>::find_max() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::max_element(begin(), end());	
 #else
     return *max_element(begin(), end());
@@ -1192,7 +1197,7 @@ Array<1, unsigned short>::find_min() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::min_element(begin(), end());
 #else
     return *min_element(begin(), end());
@@ -1206,7 +1211,7 @@ Array<1, unsigned short>::find_min() const
   check_state();
 };  
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
 
 /* KT 31/01/2000 I had to add these functions here, although they are 
 in NumericVectorWithOffset already.
@@ -1414,7 +1419,7 @@ Array<1, short>::find_max() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::max_element(begin(), end());	
 #else
     return *max_element(begin(), end());
@@ -1434,7 +1439,7 @@ Array<1, short>::find_min() const
   check_state();
   if (length > 0)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     return *std::min_element(begin(), end());
 #else
     return *min_element(begin(), end());
@@ -1448,7 +1453,7 @@ Array<1, short>::find_min() const
   check_state();
 };  
 
-#ifndef TOMO_USE_BOOST
+#ifndef STIR_USE_BOOST
 
 /* KT 31/01/2000 I had to add these functions here, although they are 
 in NumericVectorWithOffset already.
@@ -1535,4 +1540,4 @@ Array<1, short>::operator/ (const short a) const
 
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

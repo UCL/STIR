@@ -13,22 +13,27 @@
   $Date$
   $Revision $
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "OSMAPOSL/OSMAPOSLParameters.h"
+#include "stir/OSMAPOSL/OSMAPOSLParameters.h"
 
-#include "NumericInfo.h"
-#include "utilities.h"
-#include "tomo/is_null_ptr.h"
+#include "stir/NumericInfo.h"
+#include "stir/utilities.h"
+#include "stir/is_null_ptr.h"
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 OSMAPOSLParameters::OSMAPOSLParameters(const string& parameter_filename)
@@ -150,4 +155,4 @@ bool OSMAPOSLParameters::post_processing()
   return false;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

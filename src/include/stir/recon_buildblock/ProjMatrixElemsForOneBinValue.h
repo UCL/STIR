@@ -14,14 +14,19 @@
   $Date$        
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __ProjMatrixElemsForOneBinValue_H__
 #define __ProjMatrixElemsForOneBinValue_H__
 
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename coordT> class BasicCoordinate;
 
@@ -94,8 +99,8 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/ProjMatrixElemsForOneBinValue.inl"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBinValue.inl"
 
 #endif // __ProjMatrixElemsForOneBinValue_H__

@@ -18,25 +18,30 @@
   (unless the loss correction factor is < 0, in which case it is assumed to be 1).
   \warning Currently, the decay correction factor is ignored.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "utilities.h"
-#include "interfile.h"
-#include "shared_ptr.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "CTI/Tomo_cti.h"
-#include "CTI/cti_utils.h"
+#include "stir/utilities.h"
+#include "stir/interfile.h"
+#include "stir/shared_ptr.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/CTI/stir_cti.h"
+#include "stir/CTI/cti_utils.h"
 #include <stdio.h>
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int
 main(int argc, char *argv[])
@@ -75,7 +80,7 @@ main(int argc, char *argv[])
     const int frame_num=
       ask_num("Frame number ? ",
              1,
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
              // VC needs this
              std::
 #endif
@@ -87,7 +92,7 @@ main(int argc, char *argv[])
     const int gate_num=
       ask_num("Gate number ? ",
               1,
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
              // VC needs this
              std::
 #endif

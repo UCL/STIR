@@ -12,12 +12,16 @@
   $Date$
   $Revision$
 */
-#include "local/tomo/Shape/Shape3D.h"
-#include "local/tomo/Shape/DiscretisedShape3D.h"
-#include "DiscretisedDensity.h"
-#include "VoxelsOnCartesianGrid.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/Shape/Shape3D.h"
+#include "local/stir/Shape/DiscretisedShape3D.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
@@ -25,7 +29,7 @@ using std::endl;
 
 // Check the sampled elements of the voxel
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*
 Shape3D* Shape3D::read_from_file(const string& filename)
 {
@@ -182,4 +186,4 @@ initialise_keymap()
   parser.add_key("origin-x (in mm)", &origin.x());
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -9,8 +9,12 @@
     
   \author Kris Thielemans
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
@@ -19,7 +23,7 @@
 #include <climits>
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ProjMatrixElemsForOneDenselValue::
 ProjMatrixElemsForOneDenselValue(const Bin& bin)
@@ -119,4 +123,4 @@ operator<(const ProjMatrixElemsForOneDenselValue& el1,
                  el1.get_bin_value()<el2.get_bin_value()))))));
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

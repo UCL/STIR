@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __DiscretisedDensity_H__
 #define __DiscretisedDensity_H__
@@ -14,23 +14,28 @@
   \author (help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "CartesianCoordinate3D.h"
-#include "Array.h"
-#include "shared_ptr.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/Array.h"
+#include "stir/shared_ptr.h"
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -116,7 +121,7 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "DiscretisedDensity.inl"
+#include "stir/DiscretisedDensity.inl"
 #endif

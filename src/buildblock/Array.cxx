@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 
 /*!
   \file 
@@ -8,9 +8,9 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
   Currently, this file needs to contain only read_data, write_data.
 
@@ -22,10 +22,15 @@
   the 1D implementations are rather tedious: full specialisations
   for a few common types. Result: lots of code repetition.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "convert_array.h"
+#include "stir/convert_array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 #ifdef ARRAY4
 
@@ -1180,4 +1185,4 @@ template class Array<4,unsigned short>;
 template class Array<4,float>;
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,11 +13,16 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/interfile_keyword_functions.h"
+#include "stir/interfile_keyword_functions.h"
 #include <ctype.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 string 
 standardise_interfile_keyword(const string& keyword)
@@ -59,4 +64,4 @@ standardise_interfile_keyword(const string& keyword)
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

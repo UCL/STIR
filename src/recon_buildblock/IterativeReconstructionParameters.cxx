@@ -11,28 +11,33 @@
   \author Sanida Mustafovic
   \author PARAPET project
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 // TODO get rid of restriction of subsets according to 'view45'
 // it's not appropriate for general symmetries
 
-#include "recon_buildblock/IterativeReconstructionParameters.h" 
-#include "NumericInfo.h"
-#include "tomo/ImageProcessor.h"
-#include "utilities.h"
+#include "stir/recon_buildblock/IterativeReconstructionParameters.h" 
+#include "stir/NumericInfo.h"
+#include "stir/ImageProcessor.h"
+#include "stir/utilities.h"
 // for time(), used as seed for random stuff
 #include <ctime>
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 IterativeReconstructionParameters::IterativeReconstructionParameters()
   : ReconstructionParameters()
@@ -211,4 +216,4 @@ bool IterativeReconstructionParameters::post_processing()
   return false;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

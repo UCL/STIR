@@ -13,13 +13,17 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __ProjDataInfoCylindricalNoArcCorr_H__
 #define __ProjDataInfoCylindricalNoArcCorr_H__
 
 
-#include "ProjDataInfoCylindrical.h"
+#include "stir/ProjDataInfoCylindrical.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class Succeeded;
 
@@ -178,8 +182,8 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ProjDataInfoCylindricalNoArcCorr.inl"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.inl"
 
 #endif

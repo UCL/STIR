@@ -13,14 +13,19 @@
   $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "InterfileHeader.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/InterfileHeader.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
 #include <functional>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::binary_function;
 using std::pair;
 using std::sort;
@@ -28,7 +33,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 InterfileHeader::InterfileHeader()
      : KeyParser()
 {
@@ -616,7 +621,7 @@ bool InterfilePDFSHeader::post_processing()
   {
     is_arccorrected = false;
     for (
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       std::
 #endif
       vector<string>::const_iterator iter = applied_corrections.begin();
@@ -664,7 +669,7 @@ bool InterfilePDFSHeader::post_processing()
 
   cerr << "Total number of planes :" 
     << 
-#ifndef TOMO_NO_NAMESPACES // stupid work-around for VC
+#ifndef STIR_NO_NAMESPACES // stupid work-around for VC
     std::accumulate
 #else
     accumulate
@@ -830,4 +835,4 @@ bool InterfilePDFSHeader::post_processing()
   return false;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

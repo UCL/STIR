@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -13,12 +13,17 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 int 
@@ -109,4 +114,4 @@ SegmentBySinogram<elemT>::
 set_sinogram(const Sinogram<elemT>& s)
   { set_sinogram(s, s.get_axial_pos_num()); }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

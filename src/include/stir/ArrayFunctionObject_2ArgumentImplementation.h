@@ -10,15 +10,19 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_ArrayFunctionObject_2ArgumentImplementation_H__
-#define __Tomo_ArrayFunctionObject_2ArgumentImplementation_H__
+#ifndef __stir_ArrayFunctionObject_2ArgumentImplementation_H__
+#define __stir_ArrayFunctionObject_2ArgumentImplementation_H__
 
 
-#include "tomo/ArrayFunctionObject.h"
-#include "Array.h"
+#include "stir/ArrayFunctionObject.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -57,6 +61,6 @@ protected:
 
 
 
-END_NAMESPACE_TOMO 
+END_NAMESPACE_STIR 
 
 #endif 

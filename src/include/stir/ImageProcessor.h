@@ -10,18 +10,22 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_ImageProcessor_H__
-#define __Tomo_ImageProcessor_H__
+#ifndef __stir_ImageProcessor_H__
+#define __stir_ImageProcessor_H__
 
 
-#include "tomo/RegisteredObject.h"
-#include "tomo/Succeeded.h"
+#include "stir/RegisteredObject.h"
+#include "stir/Succeeded.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
@@ -101,8 +105,8 @@ private:
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "tomo/ImageProcessor.inl"
+#include "stir/ImageProcessor.inl"
 
 #endif

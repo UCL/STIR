@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_LogLikBased_LogLikelihoodBasedAlgorithmParameters_h__
-#define __Tomo_LogLikBased_LogLikelihoodBasedAlgorithmParameters_h__
+#ifndef __stir_LogLikBased_LogLikelihoodBasedAlgorithmParameters_h__
+#define __stir_LogLikBased_LogLikelihoodBasedAlgorithmParameters_h__
 
 
 /*!
@@ -20,15 +20,20 @@
   $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "recon_buildblock/IterativeReconstructionParameters.h"
-#include "shared_ptr.h"
+#include "stir/recon_buildblock/IterativeReconstructionParameters.h"
+#include "stir/shared_ptr.h"
 // need to include full class definition of ProjectorByBinPair to enable shared_ptr to call its destructor
-#include "recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
 
@@ -82,6 +87,6 @@ protected:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __LogLikelihoodBasedAlgorithmParameters_h__

@@ -12,7 +12,11 @@
   $Date$
   $Revision$
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 template<class operation>
 CombinedShape3D<operation>::CombinedShape3D( shared_ptr<Shape3D> object1_v, shared_ptr<Shape3D> object2_v)
@@ -71,4 +75,4 @@ void CombinedShape3D<operation>::scale(const CartesianCoordinate3D<float>& scale
   object2_ptr->scale(scale3D);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

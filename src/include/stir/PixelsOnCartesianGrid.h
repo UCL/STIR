@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __PixelsOnCartesianGrid_H__
@@ -14,15 +14,20 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
-#include "DiscretisedDensityOnCartesianGrid.h"
-#include "CartesianCoordinate2D.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/DiscretisedDensityOnCartesianGrid.h"
+#include "stir/CartesianCoordinate2D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ProjDataInfo;
 
@@ -64,7 +69,7 @@ PixelsOnCartesianGrid(const ProjDataInfo * proj_data_info_ptr,
 
 
 //! Definition of the pure virtual defined in DiscretisedDensity
-#ifdef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
 DiscretisedDensity<2,elemT>*
 #else
 PixelsOnCartesianGrid<elemT>*
@@ -99,9 +104,9 @@ inline void set_pixel_size(const BasicCoordinate<2,float>&) const;
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "PixelsOnCartesianGrid.inl"
+#include "stir/PixelsOnCartesianGrid.inl"
 #endif
 
 

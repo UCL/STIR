@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,17 +12,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "KeyParser.h"
-#include "tomo/Object.h"
-#include "tomo/interfile_keyword_functions.h"
-#include "line.h"
-#include "stream.h"
+#include "stir/KeyParser.h"
+#include "stir/Object.h"
+#include "stir/interfile_keyword_functions.h"
+#include "stir/line.h"
+#include "stir/stream.h"
 #include <typeinfo>
 #include <fstream>
 #include <cstring>
@@ -32,7 +37,7 @@
 #include <sstream>
 #endif
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::cerr;
 using std::cout;
@@ -41,7 +46,7 @@ using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! max length of Interfile line
 const int MAX_LINE_LENGTH=512;
@@ -765,4 +770,4 @@ void KeyParser::ask_parameters()
       return;
   }
 }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

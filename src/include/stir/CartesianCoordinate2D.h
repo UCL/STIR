@@ -1,7 +1,7 @@
 #ifndef __CartesianCoordinate2D_H__
 #define __CartesianCoordinate2D_H__
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -12,17 +12,22 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "Coordinate2D.h"
+#include "stir/Coordinate2D.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -55,9 +60,9 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "CartesianCoordinate2D.inl"
+#include "stir/CartesianCoordinate2D.inl"
 
 #endif
 

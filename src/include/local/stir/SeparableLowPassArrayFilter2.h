@@ -10,23 +10,27 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_SeparableLowPassArrayFilter2__H__
-#define __Tomo_SeparableLowPassArrayFilter2__H__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_SeparableLowPassArrayFilter2__H__
+#define __stir_SeparableLowPassArrayFilter2__H__
 
-#include "Array.h"
-#include "BasicCoordinate.h"
-#include "tomo/ArrayFunctionObject_2ArgumentImplementation.h"
-#include "tomo/Succeeded.h"
-#include "shared_ptr.h"
-#include "VectorWithOffset.h"
+#include "stir/Array.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
+#include "stir/Succeeded.h"
+#include "stir/shared_ptr.h"
+#include "stir/VectorWithOffset.h"
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 #endif
-#include "local/tomo/ArrayFilter1DUsingConvolution.h"
+#include "local/stir/ArrayFilter1DUsingConvolution.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \warning Both in_array and out_array have to have regular ranges. Moreover, they have to have matching ranges except for the outermost level. 
@@ -335,6 +339,6 @@ SeparableLowPassArrayFilter2(const VectorWithOffset<elemT>& filter_coefficients_
   
     
 }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

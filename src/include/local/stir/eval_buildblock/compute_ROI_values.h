@@ -11,12 +11,16 @@
   $Date$
   $Revision$
 */
-#ifndef __tomo_eval_buildblock_compute_ROI_values__H__
-#define __tomo_eval_buildblock_compute_ROI_values__H__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_eval_buildblock_compute_ROI_values__H__
+#define __stir_eval_buildblock_compute_ROI_values__H__
 
-#include "local/tomo/eval_buildblock/ROIValues.h"
+#include "local/stir/eval_buildblock/ROIValues.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename coordT> class CartesianCoordinate2D;
 template <typename coordT> class CartesianCoordinate3D;
@@ -65,6 +69,6 @@ VectorWithOffset<float>
 compute_uniformity_per_plane(VectorWithOffset<ROIValues>& val);
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

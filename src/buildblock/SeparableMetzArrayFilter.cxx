@@ -12,22 +12,26 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "tomo/SeparableMetzArrayFilter.h"
-#include "tomo/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-#include "VectorWithOffset.h"
+#include "stir/SeparableMetzArrayFilter.h"
+#include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/VectorWithOffset.h"
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const float ZERO_TOL= 0.000001F; //MJ 12/05/98 Made consistent with other files
@@ -350,7 +354,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
 
 template SeparableMetzArrayFilter<3, float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

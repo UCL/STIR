@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
@@ -13,17 +13,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "VectorWithOffset.h"
-#include "Array.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 # if defined(__GNUC__) && (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
 // gcc 2.95.2 is the only compiler we've used that handles the defaults properly
@@ -169,8 +174,8 @@ void display(const RelatedViewgrams<elemT>& v1,
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "display.inl"
+#include "stir/display.inl"
 
 #endif 

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,12 +11,17 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 //ProjDataFromStream::ProjDataFromStream()
@@ -29,7 +34,7 @@ ProjDataFromStream::get_storage_order() const
 int 
 ProjDataFromStream::find_segment_index_in_sequence(const int segment_num) const
 {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   std::vector<int>::const_iterator iter =
     std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
 #else
@@ -78,4 +83,4 @@ ProjDataFromStream::operator ==(const ProjDataFromStream& proj)
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -15,27 +15,31 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
       
-  \date $Date: 
-  \version $Revision: 
+  $Date: 
+  $Revision: 
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_ModifiedInverseAverigingArrayFilter_H__
-#define __Tomo_ModifiedInverseAverigingArrayFilter_H__
+#ifndef __stir_ModifiedInverseAverigingArrayFilter_H__
+#define __stir_ModifiedInverseAverigingArrayFilter_H__
 
-#include "DiscretisedDensity.h"
-#include "tomo/SeparableArrayFunctionObject.h"
-#include "local/tomo/SeparableLowPassArrayFilter2.h"
-#include "Array.h"
-#include "IndexRange.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/SeparableArrayFunctionObject.h"
+#include "local/stir/SeparableLowPassArrayFilter2.h"
+#include "stir/Array.h"
+#include "stir/IndexRange.h"
 #include <vector>
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class  FFT_routines
 {
@@ -76,6 +80,6 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

@@ -11,14 +11,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __tomo_Shape_EllipsoidalCylinder_h__
-#define __tomo_Shape_EllipsoidalCylinder_h__
+#ifndef __stir_Shape_EllipsoidalCylinder_h__
+#define __stir_Shape_EllipsoidalCylinder_h__
 
-#include "tomo/RegisteredParsingObject.h"
-#include "local/tomo/Shape/Shape3DWithOrientation.h"
+#include "stir/RegisteredParsingObject.h"
+#include "local/stir/Shape/Shape3DWithOrientation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class EllipsoidalCylinder: 
    public RegisteredParsingObject<EllipsoidalCylinder, Shape3D, Shape3DWithOrientation>
@@ -63,8 +67,8 @@ private:
   virtual void initialise_keymap();    
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/Shape/EllipsoidalCylinder.inl"
+#include "local/stir/Shape/EllipsoidalCylinder.inl"
 
 #endif

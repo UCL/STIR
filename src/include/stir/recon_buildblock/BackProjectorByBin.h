@@ -14,13 +14,18 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_recon_buildblock_BackProjectorByBin_h_
-#define __Tomo_recon_buildblock_BackProjectorByBin_h_
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_recon_buildblock_BackProjectorByBin_h_
+#define __stir_recon_buildblock_BackProjectorByBin_h_
 
-#include "tomo/RegisteredObject.h"
-#include "TimedObject.h"
+#include "stir/RegisteredObject.h"
+#include "stir/TimedObject.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, class elemT> class DiscretisedDensity;
@@ -103,8 +108,8 @@ protected:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/BackProjectorByBin.inl"
+#include "stir/recon_buildblock/BackProjectorByBin.inl"
 
 #endif // __BackProjectorByBin_h_

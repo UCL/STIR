@@ -13,8 +13,13 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
   
 bool 
 ProjDataInfo::operator !=(const ProjDataInfo& proj) const
@@ -83,5 +88,5 @@ ProjDataInfo::get_scanner_ptr() const
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

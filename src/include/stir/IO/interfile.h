@@ -1,8 +1,8 @@
 // 
 // $Id$
 //
-#ifndef __Tomo_Interfile_h__
-#define __Tomo_Interfile_h__
+#ifndef __stir_Interfile_h__
+#define __stir_Interfile_h__
 /*!
   \file 
   \ingroup buildblock
@@ -16,23 +16,28 @@
   $Date$
   $Revision$  
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "NumericType.h"
+#include "stir/NumericType.h"
 // note that I had to include Succeeded.h instead of just forward 
 // declaring the class. Otherwise every file that used write_*interfile*
 // has to include Succeded.h (even if it doesn't use the return value).
-#include "tomo/Succeeded.h"
+#include "stir/Succeeded.h"
 #include <iostream>
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::istream;
 using std::ios;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ByteOrder;
 template <int num_dimensions, typename elemT> class Array;
@@ -208,7 +213,7 @@ ProjDataFromStream* read_interfile_PDFS(const string& filename,
 Succeeded write_basic_interfile_PDFS_header(const string& data_filename,
 			    const ProjDataFromStream& pdfs);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __Interfile_h__
 

@@ -16,13 +16,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include  "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "Viewgram.h"
-#include "RelatedViewgrams.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const char * const 
 BackProjectorByBinUsingProjMatrixByBin::registered_name =
@@ -104,4 +109,4 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 	   
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

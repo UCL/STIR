@@ -10,19 +10,23 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "local/tomo/DAVImageFilter3D.h"
-#include "CartesianCoordinate3D.h"
-#include "DiscretisedDensity.h"
+#include "local/stir/DAVImageFilter3D.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/DiscretisedDensity.h"
 
 // TODO REMOVE
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
@@ -31,7 +35,7 @@ using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 DAVImageFilter3D<elemT>:: DAVImageFilter3D(const CartesianCoordinate3D<int>& mask_radius)
@@ -122,5 +126,5 @@ static DAVImageFilter3D<float>::RegisterIt dummy;
 template DAVImageFilter3D<float>;
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

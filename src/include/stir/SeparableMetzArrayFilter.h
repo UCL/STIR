@@ -10,18 +10,22 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_SeparableMetzArrayFilter_H__
-#define __Tomo_SeparableMetzArrayFilter_H__
+#ifndef __stir_SeparableMetzArrayFilter_H__
+#define __stir_SeparableMetzArrayFilter_H__
 
-#include "tomo/SeparableArrayFunctionObject.h"
-#include "BasicCoordinate.h"
-#include "VectorWithOffset.h"
+#include "stir/SeparableArrayFunctionObject.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/VectorWithOffset.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 
@@ -103,7 +107,7 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // SeparableMetzArrayFilter
 

@@ -11,9 +11,13 @@
   $Date$
   $Revision$
 */
-#include "local/tomo/Shape/EllipsoidalCylinder.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/Shape/EllipsoidalCylinder.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 EllipsoidalCylinder::EllipsoidalCylinder()
 {
@@ -108,4 +112,4 @@ const char * const
 EllipsoidalCylinder::registered_name = "Ellipsoidal Cylinder";
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -46,6 +46,11 @@
    catered for by explicit instantiations. If you need it for any other
    types, you'd have to add them by hand.
  */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 /* History:
 
@@ -58,17 +63,17 @@
   apply_array_function_on_each_index
 */
 
-#ifndef __Tomo_ArrayFunction_H__
-#define __Tomo_ArrayFunction_H__
+#ifndef __stir_ArrayFunction_H__
+#define __stir_ArrayFunction_H__
   
-#include "Array.h"
-#include "shared_ptr.h"
+#include "stir/Array.h"
+#include "stir/shared_ptr.h"
 
 #include <cmath>
 
-#include "tomo/ArrayFunctionObject.h"
+#include "stir/ArrayFunctionObject.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //----------------------------------------------------------------------
 // element wise and in place numeric functions
@@ -353,9 +358,9 @@ inline double
 angle (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ArrayFunction.inl"
+#include "stir/ArrayFunction.inl"
 #undef ActualFunctionObjectPtrIter
 
 #endif

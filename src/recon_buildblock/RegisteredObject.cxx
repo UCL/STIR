@@ -10,31 +10,35 @@
 
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #ifdef _MSC_VER
 #pragma message("instantiating RegisteredObject<GeneralisedPrior<float> >")
-#include "tomo/recon_buildblock/GeneralisedPrior.h"
+#include "stir/recon_buildblock/GeneralisedPrior.h"
 
 #pragma message("instantiating RegisteredObject<ProjMatrixByBin>")
-#include "recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
 
 #pragma message("instantiating RegisteredObject<ProjectorByBinPair>")
-#include "recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 
 #pragma message("instantiating RegisteredObject<ForwardProjectorByBin>")
-#include "recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
 
 #pragma message("instantiating RegisteredObject<BackProjectorByBin>")
-#include "recon_buildblock/BackProjectorByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
 
 #pragma message("instantiating RegisteredObject<BinNormalisation>")
-#include "tomo/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisation.h"
 
 // and others
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename Root>
 RegisteredObject<Root>::RegistryType& 
@@ -62,6 +66,6 @@ template RegisteredObject<ForwardProjectorByBin>;
 template RegisteredObject<BackProjectorByBin>;
 
 template RegisteredObject<BinNormalisation>;
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

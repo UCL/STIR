@@ -2,19 +2,19 @@
 // %W%: %E%
 //
 
-#include "VoxelsOnCartesianGrid.h"
-#include "local/tomo/Shape/EllipsoidalCylinder.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "local/stir/Shape/EllipsoidalCylinder.h"
 
-#include "interfile.h"
-#include "utilities.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int 
 main(int argc, char **argv)
@@ -58,6 +58,10 @@ main(int argc, char **argv)
   int orig_y= ask_num("orig_y",min_y_dir,max_y_dir,(min_y_dir+max_y_dir)/2);
   int orig_x= ask_num("orig_x",min_x_dir,max_x_dir,(min_x_dir+max_x_dir)/2);
   */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
  
 
   CartesianCoordinate3D<float> origin(0,0,0);

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,25 +10,30 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "VectorWithOffset.h"
-#include "BasicCoordinate.h"
-#include "stream.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/BasicCoordinate.h"
+#include "stir/stream.h"
 #include <iostream>
 #ifndef OLDDESIGN
 #include <typeinfo>
 #endif
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief A base class for making test classes
@@ -164,10 +169,10 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 RunTests::RunTests(const double tolerance)
   : tolerance(tolerance), everything_ok(true)
@@ -271,4 +276,4 @@ RunTests::check_if_zero(const double a, const char * const str )
     return true;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

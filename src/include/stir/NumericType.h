@@ -2,8 +2,8 @@
 //  $Id$
 //
 
-#ifndef __Tomo_NumericType_H__
-#define __Tomo_NumericType_H__
+#ifndef __stir_NumericType_H__
+#define __stir_NumericType_H__
 
 /*!
   \file 
@@ -16,6 +16,11 @@
   $Date$
   $Revision$
   */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /*
   Modification History:
 
@@ -32,12 +37,12 @@
 
 */
 
-#include "tomo/common.h"
+#include "stir/common.h"
 #include <string>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::string;
 #endif
@@ -95,8 +100,8 @@ public:
   void get_Interfile_info(string& number_format, size_t& size_in_bytes) const;
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "NumericType.inl"
+#include "stir/NumericType.inl"
 
 #endif

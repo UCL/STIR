@@ -9,25 +9,29 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#ifndef __Tomo_SeparableArrayFunctionObject_H__
-#define __Tomo_SeparableArrayFunctionObject_H__
+#ifndef __stir_SeparableArrayFunctionObject_H__
+#define __stir_SeparableArrayFunctionObject_H__
 
-#include "tomo/ArrayFunctionObject_1ArgumentImplementation.h"
-#include "shared_ptr.h"
+#include "stir/ArrayFunctionObject_1ArgumentImplementation.h"
+#include "stir/shared_ptr.h"
 #include <vector>
-#include "VectorWithOffset.h"
+#include "stir/VectorWithOffset.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 
@@ -58,7 +62,7 @@ protected:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif //SeparableArrayFunctionObject

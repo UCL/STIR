@@ -12,8 +12,12 @@
   $Date$	
   $Revision$	
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 int round(const float x)
 {
@@ -31,4 +35,4 @@ int round(const double x)
     return -static_cast<int>(-x+0.5);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

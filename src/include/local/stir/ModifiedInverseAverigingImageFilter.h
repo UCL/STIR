@@ -13,25 +13,29 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
       
-  \date $Date: 
-  \version $Revision: 
+  $Date: 
+  $Revision: 
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_ModifiedInverseAverigingImageFilter_H__
-#define __Tomo_ModifiedInverseAverigingImageFilter_H__
+#ifndef __stir_ModifiedInverseAverigingImageFilter_H__
+#define __stir_ModifiedInverseAverigingImageFilter_H__
 
 
-#include "local/tomo/ModifiedInverseAverigingArrayFilter.h"
-#include "DiscretisedDensity.h"
-#include "tomo/ImageProcessor.h"
-#include "tomo/RegisteredParsingObject.h"
-#include "VectorWithOffset.h"
-#include "ProjData.h"
+#include "local/stir/ModifiedInverseAverigingArrayFilter.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ImageProcessor.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/ProjData.h"
 
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // TODO!! remove define
 
@@ -90,6 +94,6 @@ private:
 
 #undef num_dimensions
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

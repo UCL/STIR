@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -10,12 +10,17 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 
 template<class elemT>
@@ -91,7 +96,7 @@ PixelsOnCartesianGrid<elemT>::set_pixel_size(const BasicCoordinate<2,float>& s) 
 }
 
 template<class elemT>
-#ifdef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
 DiscretisedDensity<2,elemT>*
 #else
 PixelsOnCartesianGrid<elemT>*
@@ -123,4 +128,4 @@ PixelsOnCartesianGrid<elemT>::clone() const
 {
   return new PixelsOnCartesianGrid(*this);
 }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

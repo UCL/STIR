@@ -9,16 +9,20 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "tomo/MedianImageFilter3D.h"
-#include "CartesianCoordinate3D.h"
-#include "DiscretisedDensity.h"
+#include "stir/MedianImageFilter3D.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/DiscretisedDensity.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 MedianImageFilter3D<elemT>:: MedianImageFilter3D(const CartesianCoordinate3D<int>& mask_radius)
@@ -102,4 +106,4 @@ MedianImageFilter3D<float>::registered_name =
 
 template MedianImageFilter3D<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

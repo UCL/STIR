@@ -16,27 +16,32 @@
   $Date$      
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
-#include "shared_ptr.h"
-#include "utilities.h"
+#include "stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
+#include "stir/shared_ptr.h"
+#include "stir/utilities.h"
 #include <iostream>
 // include the following to set defaults
 #ifndef USE_PMRT
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #else
-#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
-#include "recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
-#ifndef TOMO_NO_NAMESPACES
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 LogLikelihoodBasedAlgorithmParameters::LogLikelihoodBasedAlgorithmParameters()
@@ -127,4 +132,4 @@ bool LogLikelihoodBasedAlgorithmParameters::post_processing()
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,19 +10,24 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "RelatedViewgrams.h"
+#include "stir/RelatedViewgrams.h"
 
 #ifdef _MSC_VER
 // disable warning that constructor with PMessage is not implemented
 #pragma warning(disable: 4661)
 #endif // _MSC_VER
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 // a function which is called internally to see if the object is valid
@@ -275,7 +280,7 @@ grow(const IndexRange<2>& range)
 }
 /* 
   TODO
-#include "zoom.h"
+#include "stir/zoom.h"
 
 template <typename elemT>
 void RelatedViewgrams<elemT>::zoom(const float zoom, const float Xoffp, const float Yoffp,
@@ -309,4 +314,4 @@ void RelatedViewgrams<elemT>::grow_num_bins(const int new_min_bin_num,
 
 template RelatedViewgrams<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

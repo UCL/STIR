@@ -13,30 +13,34 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #define ARRAY_CONST_IT  
 
-#include "ProjDataInfoCylindricalNoArcCorr.h"
-#include "ProjData.h"
-#include "Scanner.h"
-#include "Bin.h"
-#include "stream.h"
-#include "Array.h"
-#include "Sinogram.h"
-#include "IndexRange2D.h"
-#include "display.h"
-#include "CPUTimer.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjData.h"
+#include "stir/Scanner.h"
+#include "stir/Bin.h"
+#include "stir/stream.h"
+#include "stir/Array.h"
+#include "stir/Sinogram.h"
+#include "stir/IndexRange2D.h"
+#include "stir/display.h"
+#include "stir/CPUTimer.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 typedef Array<2,float> DetPairData;
 typedef Array<2,float> GeoData;
@@ -243,9 +247,9 @@ float KL(const Array<num_dimensions, elemT>& a, const Array<num_dimensions, elem
   return sum;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {

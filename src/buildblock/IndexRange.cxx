@@ -13,12 +13,17 @@
   $Revision$
 
 */
-#include "IndexRange.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/IndexRange.h"
 #include <algorithm>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
 
 
 template <int num_dimensions>
@@ -30,7 +35,7 @@ IndexRange<num_dimensions>::get_regular_range(
   // check if empty range    
   if (begin() == end())
   {
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
 #else
@@ -65,7 +70,7 @@ IndexRange<num_dimensions>::get_regular_range(
 	is_regular_range = regular_false;
 	return false;
       }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       if (!std::equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
 	  !std::equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
 #else
@@ -101,7 +106,7 @@ IndexRange<num_dimensions>::get_regular_range(
   return true;
 }
 
-#else // TOMO_NO_MUTABLE
+#else // STIR_NO_MUTABLE
 
 template <int num_dimensions>
 bool
@@ -112,7 +117,7 @@ IndexRange<num_dimensions>::get_regular_range(
   // check if empty range    
   if (begin() == end())
   {
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
 #else
@@ -146,7 +151,7 @@ IndexRange<num_dimensions>::get_regular_range(
 	//is_regular_range = regular_false;
 	return false;
       }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       if (!std::equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
 	  !std::equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
 #else
@@ -182,7 +187,7 @@ IndexRange<num_dimensions>::get_regular_range(
   // check if empty range    
   if (begin() == end())
   {
-#ifndef TOMO_NO_NAMESPACES  
+#ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
 #else
@@ -216,7 +221,7 @@ IndexRange<num_dimensions>::get_regular_range(
 	is_regular_range = regular_false;
 	return false;
       }
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       if (!std::equal(lower_dim_min.begin(), lower_dim_min.end(), lower_dim_min_try.begin()) ||
 	  !std::equal(lower_dim_max.begin(), lower_dim_max.end(), lower_dim_max_try.begin()))
 #else
@@ -243,7 +248,7 @@ IndexRange<num_dimensions>::get_regular_range(
   return true;
 }
 
-#endif // TOMO_NO_MUTABLE
+#endif // STIR_NO_MUTABLE
 
 
 /***************************************************
@@ -253,4 +258,4 @@ IndexRange<num_dimensions>::get_regular_range(
 template class IndexRange<2>;
 template class IndexRange<3>;
 template class IndexRange<4>;
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

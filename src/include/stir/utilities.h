@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __Tomo_UTILITIES_H__
-#define  __Tomo_UTILITIES_H__
+#ifndef __stir_UTILITIES_H__
+#define  __stir_UTILITIES_H__
 /*!
   \file 
   \ingroup buildblock
@@ -14,12 +14,17 @@
   $Date$
   $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
 #include <iostream>
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::iostream;
 using std::istream;
@@ -27,7 +32,7 @@ using std::streamsize;
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -236,8 +241,8 @@ inline char *strupr(char * const str);
 #define strupr _strupr
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "utilities.inl"
+#include "stir/utilities.inl"
 
 #endif // __UTILITIES_H__

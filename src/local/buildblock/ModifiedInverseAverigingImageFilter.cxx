@@ -9,35 +9,39 @@
     \author Sanida Mustafovic
     \author Kris Thielemans
     
-      \date $Date:
-      \version $Revision:
+      $Date:
+      $Revision:
 */
-#include "local/tomo/ModifiedInverseAverigingImageFilter.h"
-#include "IndexRange3D.h"
-#include "shared_ptr.h"
-#include "ProjData.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "ProjDataFromStream.h"
-#include "recon_buildblock/ProjMatrixByBin.h"
-#include "local/tomo/recon_buildblock/ProjMatrixByDensel.h"
-#include "local/tomo/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "interfile.h"
-#include "CartesianCoordinate3D.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/ModifiedInverseAverigingImageFilter.h"
+#include "stir/IndexRange3D.h"
+#include "stir/shared_ptr.h"
+#include "stir/ProjData.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDensel.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/interfile.h"
+#include "stir/CartesianCoordinate3D.h"
 
-#include "local/tomo/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 
-#include "local/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
-#include "SegmentByView.h"
+#include "local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
+#include "stir/SegmentByView.h"
 
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::find;
 using std::iostream;
@@ -47,7 +51,7 @@ using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
   
 // old stuff before densels
@@ -1437,6 +1441,6 @@ template ModifiedInverseAverigingImageFilter<float>;
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

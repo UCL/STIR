@@ -12,13 +12,17 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
-#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const char * const 
@@ -77,4 +81,4 @@ get_proj_matrix_ptr() const
   return proj_matrix_ptr.get();
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

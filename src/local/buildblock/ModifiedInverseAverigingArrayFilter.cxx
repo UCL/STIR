@@ -1,14 +1,14 @@
 
-#include "local/tomo/ModifiedInverseAverigingArrayFilter.h"
-#include "local/tomo/ArrayFilter1DUsingConvolution.h"
-#include "tomo/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-#include "Array.h"
-#include "IndexRange3D.h"
-#include "local/fft.h"
+#include "local/stir/ModifiedInverseAverigingArrayFilter.h"
+#include "local/stir/ArrayFilter1DUsingConvolution.h"
+#include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/Array.h"
+#include "stir/IndexRange3D.h"
+#include "local/stir/fft.h"
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::fstream;
 using std::iostream;
@@ -18,7 +18,7 @@ using std::endl;
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // divide complex arrays where elements are stored as follows:
 // A = array[ a(1), a(2), a(3), a(4), a(5), a(6), a(7), a(8), a(9),a(10)]
@@ -134,6 +134,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     /*for (int i = 1;i<=size;i++)
     { cerr << filter_coefficients_padded[i] << "   " ;
     }*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
@@ -993,7 +997,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
 
 template ModifiedInverseAverigingArrayFilter<3, float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

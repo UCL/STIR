@@ -14,17 +14,22 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __DataSymmetriesForDensels_PET_CartesianGrid_H__
 #define __DataSymmetriesForDensels_PET_CartesianGrid_H__
 
 
-#include "local/tomo/recon_buildblock/DataSymmetriesForDensels.h"
-//#include "SymmetryOperations_PET_CartesianGrid.h"
-//#include "ViewSegmentNumbers.h"
-//#include "VoxelsOnCartesianGrid.h"
-#include "local/tomo/Densel.h"
+#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
+//#include "stir/SymmetryOperations_PET_CartesianGrid.h"
+//#include "stir/ViewSegmentNumbers.h"
+//#include "stir/VoxelsOnCartesianGrid.h"
+#include "local/stir/Densel.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
@@ -48,7 +53,7 @@ public:
 
   virtual 
     inline 
-#ifndef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForDensels_PET_CartesianGrid *
 #else
     DataSymmetriesForDensels *
@@ -116,8 +121,8 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.inl"
+#include "local/stir/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.inl"
 
 #endif

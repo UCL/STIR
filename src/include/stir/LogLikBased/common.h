@@ -21,10 +21,15 @@
 
   $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename T> class shared_ptr;
 template <typename elemT> class RelatedViewgrams;
@@ -113,6 +118,6 @@ void distributable_accumulate_loglikelihood(const DiscretisedDensity<3,float>& c
 				    shared_ptr<ProjData> const& binwise_correction = NULL);
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

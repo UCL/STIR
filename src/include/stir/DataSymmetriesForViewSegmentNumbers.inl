@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,11 +10,16 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 
 /*! default implementation in terms of get_related_view_segment_numbers, will be slow of course */
@@ -35,4 +40,4 @@ bool DataSymmetriesForViewSegmentNumbers::find_basic_view_segment_numbers(ViewSe
   return !sym_op->is_trivial();
 }
 #endif
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

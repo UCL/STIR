@@ -21,12 +21,17 @@
 
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __FFT_H__
 #define __FFT_H__
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class Array;
 
@@ -37,7 +42,7 @@ void convlvC (Array<1,float> &data, const Array<1,float> &filter, int n);
 //void rlft3(Array<3,float> &data, Array<2,float> &speq, unsigned long nn1, unsigned long nn2, unsigned long nn3, int isign);
 void realft ( Array<1,float> &data, int n, int isign);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

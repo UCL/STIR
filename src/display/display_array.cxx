@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 
 /*!
  \file 
@@ -9,43 +9,48 @@
  \author Kris Thielemans
  \author PARAPET project
  
- \date $Date$
+ $Date$
   
- \version $Revision$
+ $Revision$
 
  \see display.h for some comments on the interface.
 
  Three implementations now:
 
 <ul>
- <li> TOMO_SIMPLE_BITMAPS is based on some functions KT wrote in 1991,
+ <li> STIR_SIMPLE_BITMAPS is based on some functions KT wrote in 1991,
    which work in XWindows, DOS (upto SVGA resolution, or using a PGA) and 
    a VAX using a Matrox card (very much similar to PGA).
    It's fairly simplistic. No menus. 
 
- <li> TOMO_MATHLINK puts the imageinfo over a MathLink connection to Mathematica,
+ <li> STIR_MATHLINK puts the imageinfo over a MathLink connection to Mathematica,
    where it can be displayed anyway you like.
 
- <li> TOMO_PGM puts all images in a single PGM file.
+ <li> STIR_PGM puts all images in a single PGM file.
 
 </ul>
 
- if both TOMO_SIMPLE_BITMAPS and TOMO_MATHLINK are defined, display()
+ if both STIR_SIMPLE_BITMAPS and STIR_MATHLINK are defined, display()
  asks which version you want to use
  
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
  
  
 
-#include "display.h"
-#include "IndexRange3D.h"
-#include "utilities.h"
-#include "RelatedViewgrams.h"
+#include "stir/display.h"
+#include "stir/IndexRange3D.h"
+#include "stir/utilities.h"
+#include "stir/RelatedViewgrams.h"
   
 // First we define the different implementations. 
 // See end of file for display() itself.
 
-#ifdef TOMO_SIMPLE_BITMAPS
+#ifdef STIR_SIMPLE_BITMAPS
 
 // #include "gen.h"
 // gen.h defined Min (which is used in screen.h)
@@ -53,7 +58,7 @@
 #include "screen.h"
 #include <cstring>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // local helper routine, defined after display()
 template <class elemT>
@@ -263,17 +268,17 @@ static void Array2DtoSCImg (
     }
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#endif // TOMO_SIMPLE_BITMAPS
+#endif // STIR_SIMPLE_BITMAPS
 
-#ifdef TOMO_MATHLINK
+#ifdef STIR_MATHLINK
 
 #include "mathlink.h"
 extern "C" void init_and_connectlink( char* linkname);
 extern "C" MLINK lp;
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /* TODO, this ignores all arguments for the moment, except plane_stack and scale_factors */
 template <class elemT, class SCALE, class CHARP>
@@ -320,15 +325,15 @@ void display_mathlink(const Array<3,elemT>& plane_stack,
   /*MLPutFunction( lp, "Exit", 0);*/
 }
  
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#endif // TOMO_MATHLINK
+#endif // STIR_MATHLINK
 
-#ifdef TOMO_PGM
+#ifdef STIR_PGM
 
 #include <cstdio>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /* TODO, this ignores all arguments for the moment, except plane_stack and scale_factors */
@@ -405,18 +410,18 @@ display_pgm (const Array<3,elemT>& plane_stack,
   fprintf(stderr, "Wrote PGM plane_stack to file %s \n", name);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#endif // TOMO_PGM
+#endif // STIR_PGM
 
 
 #include <iostream>
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <class elemT, class SCALE, class CHARP>
 void display(const Array<3,elemT>& plane_stack,
@@ -435,12 +440,12 @@ void display(const Array<3,elemT>& plane_stack,
   assert(plane_stack.get_max_index() == text.get_max_index());
 
   cerr << "Displaying " << (title==0 ? "" : title) << endl;
-#if defined(TOMO_PGM)
+#if defined(STIR_PGM)
   display_pgm(plane_stack, scale_factors, 
                    text, maxi, title,  scale);
 #endif
 
-#if defined(TOMO_SIMPLE_BITMAPS) && defined(TOMO_MATHLINK)
+#if defined(STIR_SIMPLE_BITMAPS) && defined(STIR_MATHLINK)
   if (ask_num("Display as bitmap (0) or via MathLink (1)",0,1,0) == 0)
     display_bitmap(plane_stack, scale_factors, 
                    text, maxi, title, scale);
@@ -448,11 +453,11 @@ void display(const Array<3,elemT>& plane_stack,
     display_mathlink(plane_stack, scale_factors, 
                      text, maxi, title, scale);
 #endif
-#if defined(TOMO_SIMPLE_BITMAPS) && !defined(TOMO_MATHLINK)
+#if defined(STIR_SIMPLE_BITMAPS) && !defined(STIR_MATHLINK)
   display_bitmap(plane_stack, scale_factors, 
                    text, maxi, title, scale);
 #endif
-#if !defined(TOMO_SIMPLE_BITMAPS) && defined(TOMO_MATHLINK)
+#if !defined(STIR_SIMPLE_BITMAPS) && defined(STIR_MATHLINK)
   display_mathlink(plane_stack, scale_factors, 
                    text, maxi, title, scale);
 #endif
@@ -468,7 +473,7 @@ void display(const RelatedViewgrams<elemT>& vs,
     all_of_them(IndexRange3D(0,vs.get_num_viewgrams()-1,
                              vs.get_min_axial_pos_num(),vs.get_max_axial_pos_num(), 
       	                     vs.get_min_tangential_pos_num(),vs.get_max_tangential_pos_num()));
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     std::
 #endif
       copy(vs.begin(), vs.end(), all_of_them.begin());
@@ -546,4 +551,4 @@ void display(const RelatedViewgrams<float>& vs,
 	     const char * const title,
              int zoom);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

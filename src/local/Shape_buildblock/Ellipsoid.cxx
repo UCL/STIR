@@ -11,9 +11,13 @@
   $Date$
   $Revision$
 */
-#include "local/tomo/Shape/Ellipsoid.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/Shape/Ellipsoid.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 Ellipsoid::Ellipsoid()
 {
@@ -114,4 +118,4 @@ Ellipsoid::set_defaults()
 const char * const 
 Ellipsoid::registered_name = "Ellipsoid";
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -10,17 +10,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "SegmentBySinogram.h"
-#include "SegmentByView.h"
-#include "IndexRange2D.h"
-#include "IndexRange3D.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/SegmentByView.h"
+#include "stir/IndexRange2D.h"
+#include "stir/IndexRange3D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 
@@ -137,4 +142,4 @@ grow(const IndexRange<3>& range)
 
 template SegmentBySinogram<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

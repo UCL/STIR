@@ -1,14 +1,14 @@
-#include "ProjDataFromStream.h"
-#include "interfile.h"
-#include "utilities.h"
-#include "SegmentBySinogram.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
+#include "stir/SegmentBySinogram.h"
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::fstream;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 void dets_to_ve( int da, int db, int *v, int *e, int ndets)
 {
@@ -44,6 +44,10 @@ compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 		{0,7,0}, {0,8,0}, {0,9,1}, {1,8,1},
 		{11,17,0}, {10,17,0}, {10,16,2}, {9,17,2}};
 	*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 	int ndets, deta, detb, v, e, a, b, *list, i, j, n, m;
 	int db = 32, off, nodup;
 	byte *fixer;

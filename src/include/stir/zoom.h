@@ -72,10 +72,15 @@
    x_ctr_index = (x_max_index + x_min_index)/2
 \endcode
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class Viewgram;
 template <typename elemT> class RelatedViewgrams;
@@ -162,7 +167,7 @@ void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
            const PixelsOnCartesianGrid<float> &image2D_in);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

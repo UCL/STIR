@@ -10,20 +10,24 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "tomo/MedianArrayFilter3D.h"
-#include "Coordinate3D.h"
+#include "stir/MedianArrayFilter3D.h"
+#include "stir/Coordinate3D.h"
 
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::nth_element;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <typename elemT>
@@ -91,5 +95,5 @@ is_trivial() const
 // instantiation
 template MedianArrayFilter3D<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

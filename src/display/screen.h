@@ -6,9 +6,9 @@
  \author Kris Thielemans
  \author PARAPET project
  
- \date    $Date$
+ $Date$
   
- \version $Revision$
+ $Revision$
 
  This is part of a library by Kris Thielemans, mainly written in 1991.
  It provides macros (and a few functions) for displaying stuff on a screen.
@@ -19,6 +19,11 @@
   
  \internal
  
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
@@ -45,7 +50,7 @@ typedef SC_pixel_t huge image_t;
 
 #ifdef SC_QG
 
-#include "scqg.h"
+#include "stir/scqg.h"
 typedef SC_pixel_t out_t;
 #ifdef VAX
 #define PGA "qga0:"

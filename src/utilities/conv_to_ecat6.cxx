@@ -12,27 +12,32 @@
 $Date$
 $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "DiscretisedDensity.h"
-#include "ProjData.h"
-#include "shared_ptr.h"
-#include "utilities.h"
-#include "CTI/Tomo_cti.h"
-#include "CTI/cti_utils.h"
-#include "tomo/Succeeded.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ProjData.h"
+#include "stir/shared_ptr.h"
+#include "stir/utilities.h"
+#include "stir/CTI/stir_cti.h"
+#include "stir/CTI/cti_utils.h"
+#include "stir/Succeeded.h"
 #include <iostream>
 #include <vector>
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::vector;
 using std::string;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 

@@ -9,27 +9,31 @@
 
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_FactoryRegistry_H__
-#define __Tomo_FactoryRegistry_H__
+#ifndef __stir_FactoryRegistry_H__
+#define __stir_FactoryRegistry_H__
 
 
-#include "tomo/common.h"
+#include "stir/common.h"
 #include <iostream>
 #include <map>
 #include <functional>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::ostream;
 using std::map;
 using std::less;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -105,9 +109,9 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "tomo/FactoryRegistry.inl"
+#include "stir/FactoryRegistry.inl"
 
 
 #endif

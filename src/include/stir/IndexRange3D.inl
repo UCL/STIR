@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*! 
   \file
@@ -10,14 +10,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "Coordinate3D.h"
+#include "stir/Coordinate3D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 IndexRange3D::IndexRange3D()
 : base_type()
@@ -39,4 +44,4 @@ IndexRange3D::IndexRange3D(const int length_1, const int length_2, const int len
 : base_type(Coordinate3D<int>(0,0,0),
 	    Coordinate3D<int>(length_1-1,length_2-1,length_3-1))
 {}
-END_NAMESPACE_TOMO 
+END_NAMESPACE_STIR 

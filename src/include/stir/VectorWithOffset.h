@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __Tomo_VectorWithOffset_H__
-#define __Tomo_VectorWithOffset_H__
+#ifndef __stir_VectorWithOffset_H__
+#define __stir_VectorWithOffset_H__
 
 /*!
   \file 
@@ -16,18 +16,23 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
 #include <iterator>
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::ptrdiff_t;
 using std::random_access_iterator_tag;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*! 
@@ -116,7 +121,7 @@ public:
   inline T* get_data_ptr();
 
   //! member function for access to the data via a const T*
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
   inline const T * get_const_data_ptr() const;
 #else
   inline const T * get_const_data_ptr();
@@ -155,15 +160,15 @@ protected:
 
   //! boolean to test if get_data_ptr is called
   // This variable is declared mutable such that get_const_data_ptr() can change it.
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
   mutable
 #endif
   bool pointer_access;
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "VectorWithOffset.inl"
+#include "stir/VectorWithOffset.inl"
 
 #endif // __VectorWithOffset_H__

@@ -10,12 +10,16 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #if 0
 // lines necessary for .cxx, but it's now .inl
-#include "tomo/ImageProcessor.h"
+#include "stir/ImageProcessor.h"
 
 #ifdef _MSC_VER
 // disable warnings on pure virtuals
@@ -25,7 +29,7 @@
 #endif // 0
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
  
 template <int num_dimensions, typename elemT>
@@ -90,4 +94,4 @@ consistency_check( const DiscretisedDensity<num_dimensions,elemT>& image) const
 template ImageProcessor<3,float>;
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,28 +13,33 @@
   $Date$        
   $Revision$
 */         
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_SHARED_PTR__
-#define __Tomo_SHARED_PTR__
+#ifndef __stir_SHARED_PTR__
+#define __stir_SHARED_PTR__
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-#ifdef TOMO_USE_BOOST
+#ifdef STIR_USE_BOOST
 #include "boost/smart_ptr.hpp"
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 using boost::shared_ptr;
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #else
 // no boost implementation
 #include <memory>
-#ifndef TOMO_NO_NAMESPACES
-#ifndef TOMO_NO_AUTO_PTR
+#ifndef STIR_NO_NAMESPACES
+#ifndef STIR_NO_AUTO_PTR
 using std::auto_ptr;
 #endif
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -85,7 +90,7 @@ public:
   
   inline shared_ptr(const shared_ptr<T> & cp);
   
-#ifndef TOMO_NO_AUTO_PTR
+#ifndef STIR_NO_AUTO_PTR
   inline shared_ptr(auto_ptr<T>& r);
 #endif
   
@@ -136,10 +141,10 @@ private:
   
 };
 
-#endif // TOMO_USE_BOOST
+#endif // STIR_USE_BOOST
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "shared_ptr.inl"
+#include "stir/shared_ptr.inl"
 
 #endif

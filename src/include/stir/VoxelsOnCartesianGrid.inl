@@ -14,7 +14,12 @@
   $Revision$
 
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 
 template<class elemT>
@@ -27,4 +32,4 @@ VoxelsOnCartesianGrid<elemT>::get_voxel_size() const
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

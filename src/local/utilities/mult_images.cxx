@@ -15,11 +15,15 @@
   \warning This does not check if image types are the same, nor if origins and
   voxel sizes etc. match.
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "DiscretisedDensity.h"
-#include "interfile.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/interfile.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -31,7 +35,7 @@ using std::endl;
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char *argv[])

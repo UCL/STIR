@@ -11,21 +11,25 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_recon_buildblock_BinNormalisationUsingProfile_H__
-#define __Tomo_recon_buildblock_BinNormalisationUsingProfile_H__
+#ifndef __stir_recon_buildblock_BinNormalisationUsingProfile_H__
+#define __stir_recon_buildblock_BinNormalisationUsingProfile_H__
 
-#include "tomo/recon_buildblock/BinNormalisation.h"
-#include "tomo/RegisteredParsingObject.h"
-#include "RelatedViewgrams.h"
+#include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/RelatedViewgrams.h"
 
 #include <string>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class BinNormalisationUsingProfile : 
   public RegisteredParsingObject<BinNormalisationUsingProfile, BinNormalisation>
@@ -50,7 +54,7 @@ private:
   virtual bool post_processing();
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
   

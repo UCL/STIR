@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,14 +11,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "Bin.h"
+#include "stir/Bin.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 void
 DataSymmetriesForBins::
     get_related_bins(vector<Bin>& rel_b, const Bin& b) const
@@ -42,4 +47,4 @@ DataSymmetriesForBins::
                                proj_data_info_ptr->get_max_tangential_pos_num());
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

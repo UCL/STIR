@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -11,26 +11,31 @@
   \author (with help from Kris Thielemans)
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
   \warning It only supports VoxelsOnCartesianGrid type of images.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "VoxelsOnCartesianGrid.h"
-#include "display.h"
-#include "utilities.h"
-#include "interfile.h"
-#include "recon_array_functions.h"
-#include "ArrayFunction.h"
-#include "zoom.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/display.h"
+#include "stir/utilities.h"
+#include "stir/interfile.h"
+#include "stir/recon_array_functions.h"
+#include "stir/ArrayFunction.h"
+#include "stir/zoom.h"
 
 
 #include <iostream> 
 #include <fstream>
 #include <numeric>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::ofstream;
 using std::ios;
@@ -38,7 +43,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 void trim_edges(VoxelsOnCartesianGrid<float>& main_buffer);
 void get_plane(VoxelsOnCartesianGrid<float>& main_buffer);

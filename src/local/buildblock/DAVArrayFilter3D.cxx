@@ -13,16 +13,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "local/tomo/DAVArrayFilter3D.h"
-#include "Coordinate3D.h"
-#include "Array.h"
+#include "local/stir/DAVArrayFilter3D.h"
+#include "stir/Coordinate3D.h"
+#include "stir/Array.h"
 // remove 
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
@@ -34,7 +38,7 @@ using std::min_element;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <typename elemT>
@@ -159,5 +163,5 @@ is_trivial() const
 // instantiation
 template DAVArrayFilter3D<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

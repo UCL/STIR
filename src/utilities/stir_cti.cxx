@@ -14,37 +14,42 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "interfile.h"
-#include "Sinogram.h"
-#include "ProjDataFromStream.h"
-#include "ProjDataInfo.h"
-#include "IndexRange3D.h"
-#include "CartesianCoordinate3D.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "ByteOrder.h"
-#include "ProjData.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "convert_array.h"
-#include "IndexRange2D.h"
-#include "utilities.h"
+#include "stir/interfile.h"
+#include "stir/Sinogram.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/IndexRange3D.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ByteOrder.h"
+#include "stir/ProjData.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/convert_array.h"
+#include "stir/IndexRange2D.h"
+#include "stir/utilities.h"
 
-#include "Scanner.h" 
-#include "CTI/cti_utils.h"
-#include "CTI/Tomo_cti.h"
+#include "stir/Scanner.h" 
+#include "stir/CTI/cti_utils.h"
+#include "stir/CTI/stir_cti.h"
 
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
 using std::fstream;
 using std::ios;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 static void cti_data_to_float_Array(Array<2,float>&out, 
                              char const * const buffer, const float scale_factor, int dtype);
@@ -939,4 +944,4 @@ void cti_data_to_float_Array(Array<2,float>&out,
   }
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,18 +11,23 @@
   \author Mustapha Sadki
   \author PARAPET project
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "Coordinate3D.h"
+#include "stir/Coordinate3D.h"
 
 //for SHRT_MAX etc
 #ifndef NDEBUG
 #include <climits>
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ProjMatrixElemsForOneBinValue::
 ProjMatrixElemsForOneBinValue(const BasicCoordinate<3,int>& coords,
@@ -146,4 +151,4 @@ operator<(const ProjMatrixElemsForOneBinValue& el1,
                (el1.c3<el2.c3 || (el1.c3==el2.c3 && el1.value<el2.value)))));
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

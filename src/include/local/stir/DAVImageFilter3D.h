@@ -10,20 +10,24 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_DAVImageFilter3D_H__
-#define __Tomo_DAVImageFilter3D_H__
+#ifndef __stir_DAVImageFilter3D_H__
+#define __stir_DAVImageFilter3D_H__
 
 
-#include "tomo/ImageProcessor.h"
-#include "local/tomo/DAVArrayFilter3D.h"
+#include "stir/ImageProcessor.h"
+#include "local/stir/DAVArrayFilter3D.h"
 
-#include "tomo/RegisteredParsingObject.h"
+#include "stir/RegisteredParsingObject.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename coordT> class CartesianCoordinate3D;
 
@@ -59,7 +63,7 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 #endif  // DAVImageFilter3D

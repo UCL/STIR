@@ -19,19 +19,24 @@
   See http://www.irsl.org/~kris for a description of the full
   proposal for Interfile headers for 3D PET.
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __INTERFILEHEADER_H__
 #define __INTERFILEHEADER_H__
 
-#include "ByteOrder.h"
-#include "NumericInfo.h"
-#include "KeyParser.h"
+#include "stir/ByteOrder.h"
+#include "stir/NumericInfo.h"
+#include "stir/KeyParser.h"
 
-#include "ProjDataFromStream.h"
+#include "stir/ProjDataFromStream.h"
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ProjDataInfo;
 
@@ -170,6 +175,6 @@ private:
   bool is_arccorrected;
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __INTERFILEHEADER_H__

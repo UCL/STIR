@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -11,17 +11,22 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
-#include "DiscretisedDensity.h"
-#include "interfile.h"
-#include "VoxelsOnCartesianGrid.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/DiscretisedDensity.h"
+#include "stir/interfile.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include <typeinfo>
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
    This function will attempt to determine the type of image in the file,
@@ -61,4 +66,4 @@ DiscretisedDensity<num_dimensions,elemT>::
 
 template class DiscretisedDensity<3,float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

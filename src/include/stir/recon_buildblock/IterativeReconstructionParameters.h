@@ -16,17 +16,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    00/07/05
-  \version 1.4
+  00/07/05
+  1.4
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "shared_ptr.h"
-#include "tomo/ImageProcessor.h"
-#include "recon_buildblock/ReconstructionParameters.h"
+#include "stir/shared_ptr.h"
+#include "stir/ImageProcessor.h"
+#include "stir/recon_buildblock/ReconstructionParameters.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
 
@@ -104,7 +109,7 @@ public:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
  
 
 

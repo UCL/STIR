@@ -15,18 +15,23 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "local/tomo/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
-#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "ProjDataInfo.h"
-#include "tomo/round.h"
+#include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/round.h"
 #include <algorithm>
 #include <math.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const char * const 
@@ -383,5 +388,5 @@ calculate_proj_matrix_elems_for_one_bin(
 
          
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

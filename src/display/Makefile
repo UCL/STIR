@@ -14,17 +14,17 @@ clean:
 #******* first find out which files we need
 
 ifeq "$(GRAPHICS)" "X"
-GRAPHOPT = -DTOMO_SIMPLE_BITMAPS -DSC_XWINDOWS
+GRAPHOPT = -DSTIR_SIMPLE_BITMAPS -DSC_XWINDOWS
 SOURCES_CXX = display_array.cxx 
 SOURCES_C = gen.c screengen.c screen.c
 else
 ifeq "$(GRAPHICS)" "PGM"
-GRAPHOPT = -DTOMO_PGM
+GRAPHOPT = -DSTIR_PGM
 SOURCES_CXX = display_array.cxx
 SOURCES_C = 
 else
 ifeq "$(GRAPHICS)" "MATHLINK"
-GRAPHOPT = -DTOMO_MATHLINK
+GRAPHOPT = -DSTIR_MATHLINK
 SOURCES_CXX = display_array.cxx 
 SOURCES_C = mathlinkhelp.c
 else

@@ -12,13 +12,17 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_
-#define __Tomo_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_
+#define __stir_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_
 
-#include "tomo/RegisteredParsingObject.h"
-#include "recon_buildblock/ProjectorByBinPair.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -47,7 +51,7 @@ private:
   void initialise_keymap();
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-#endif // __Tomo_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_
+#endif // __stir_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_

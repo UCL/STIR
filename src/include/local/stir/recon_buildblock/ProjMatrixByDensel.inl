@@ -13,16 +13,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "recon_buildblock/SymmetryOperation.h"
-#include "tomo/Succeeded.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
+#include "stir/Succeeded.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void ProjMatrixByDensel::
 get_proj_matrix_elems_for_one_densel(
 				     ProjMatrixElemsForOneDensel& probabilities,
-				     const Densel& densel) TOMO_MUTABLE_CONST
+				     const Densel& densel) STIR_MUTABLE_CONST
 {  
   // set to empty
   probabilities.erase();
@@ -84,7 +88,7 @@ ProjMatrixByDensel::cache_key(const Densel& densel)
 void  
 ProjMatrixByDensel::
 cache_proj_matrix_elems_for_one_densel(
-                                    const ProjMatrixElemsForOneDensel& probabilities) TOMO_MUTABLE_CONST
+                                    const ProjMatrixElemsForOneDensel& probabilities) STIR_MUTABLE_CONST
 { 
   if ( cache_disabled ) return;
   
@@ -94,4 +98,4 @@ cache_proj_matrix_elems_for_one_densel(
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

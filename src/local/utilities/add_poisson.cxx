@@ -1,15 +1,15 @@
-#include "interfile.h"
-#include"ProjDataFromStream.h"
-#include "SegmentByView.h"
+#include "stir/interfile.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/SegmentByView.h"
 
 #include <iostream> 
 #include <fstream>
 #ifndef RAND
 #include <boost/random.hpp>
 #endif
-#include "tomo/round.h"
+#include "stir/round.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::ofstream;
 using std::ifstream;
@@ -21,7 +21,7 @@ using std::cout;
 #endif
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 #ifndef RAND
@@ -100,6 +100,10 @@ add_poisson(ProjData& output_projdata,
 	cerr << "Ax_Pos" << ax_pos << endl;
 	cerr << "Tang Poss" << tang_pos << endl;
 	*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 	const float bin = seg_input[view][ax_pos][tang_pos];
 	//cerr << "bin" << bin << endl;
 	const int random_poisson = generate_poisson_random(bin*scaling_factor);

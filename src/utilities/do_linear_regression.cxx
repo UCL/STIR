@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -11,8 +11,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
   This performs a weighted least squares fit.<br>
   stdev and covariance are computed using the estimated 
@@ -24,21 +24,26 @@
   data<br>
   weights
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "linear_regression.h"
-#include "VectorWithOffset.h"
+#include "stir/linear_regression.h"
+#include "stir/VectorWithOffset.h"
 
 #include <fstream>
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::ifstream;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char **argv)

@@ -10,16 +10,20 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "local/tomo/ArrayFilter1DUsingConvolution.h"
-#include "IndexRange.h"
-#include "VectorWithOffset.h"
-#include "Array.h"
+#include "local/stir/ArrayFilter1DUsingConvolution.h"
+#include "stir/IndexRange.h"
+#include "stir/VectorWithOffset.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 ArrayFilter1DUsingConvolution<elemT>::
@@ -111,5 +115,5 @@ do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
 
 template ArrayFilter1DUsingConvolution<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

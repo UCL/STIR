@@ -14,24 +14,29 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "VoxelsOnCartesianGrid.h"
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "Array.h"
-#include "IndexRange4D.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "tomo/round.h"
-#include "shared_ptr.h"
-#include "zoom.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/Array.h"
+#include "stir/IndexRange4D.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/round.h"
+#include "stir/shared_ptr.h"
+#include "stir/zoom.h"
 #include <memory>
 #include <math.h>
 
-#ifndef TOMO_NAMESPACES
+#ifndef STIR_NAMESPACES
 using std::auto_ptr;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 JacobianForIntBP::
 JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact)
@@ -851,4 +856,4 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

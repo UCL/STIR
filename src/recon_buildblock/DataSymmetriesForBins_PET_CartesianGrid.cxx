@@ -13,14 +13,19 @@
   $Date$
   $Revision$
 */
-#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "ProjDataInfoCylindrical.h"
-#include "DiscretisedDensityOnCartesianGrid.h"
-#include "shared_ptr.h"
-#include "tomo/round.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/ProjDataInfoCylindrical.h"
+#include "stir/DiscretisedDensityOnCartesianGrid.h"
+#include "stir/shared_ptr.h"
+#include "stir/round.h"
 #include <typeinfo>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //! find correspondence between axial_pos_num and image coordinates
 /*! z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset
@@ -170,7 +175,7 @@ DataSymmetriesForBins_PET_CartesianGrid
 }
 
 
-#ifndef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins *
 #else
     DataSymmetriesForViewSegmentNumbers *
@@ -181,4 +186,4 @@ clone() const
   return new DataSymmetriesForBins_PET_CartesianGrid(*this);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

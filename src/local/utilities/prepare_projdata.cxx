@@ -13,26 +13,30 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "utilities.h"
-#include "interfile.h"
-#include "CPUTimer.h"
-#include "ProjDataFromStream.h"
-#include "RelatedViewgrams.h"
-#include "TrivialDataSymmetriesForViewSegmentNumbers.h"
-#include "tomo/ParsingObject.h"
-#include "tomo/Succeeded.h"
+#include "stir/utilities.h"
+#include "stir/interfile.h"
+#include "stir/CPUTimer.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
+#include "stir/ParsingObject.h"
+#include "stir/Succeeded.h"
 
-#include "tomo/recon_buildblock/BinNormalisationFromProjData.h"
-#include "tomo/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 
 #include <string>
 #include <iostream> 
 #include <fstream>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::fstream;
@@ -41,7 +45,7 @@ using std::cout;
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 
@@ -314,9 +318,9 @@ doit()
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main(int argc, char *argv[])
 {

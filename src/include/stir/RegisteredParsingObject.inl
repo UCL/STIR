@@ -9,17 +9,21 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::ifstream;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename Derived, typename Base, typename Parent>
 string 
@@ -45,4 +49,4 @@ RegisteredParsingObject<Derived,Base,Parent>::parameter_info()
   return ParsingObject::parameter_info();
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

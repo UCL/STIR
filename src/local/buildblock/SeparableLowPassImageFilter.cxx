@@ -1,8 +1,8 @@
 
-#include "local/tomo/SeparableLowPassImageFilter.h"
-#include "VoxelsOnCartesianGrid.h"
+#include "local/stir/SeparableLowPassImageFilter.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 SeparableLowPassImageFilter<elemT>::
@@ -32,6 +32,10 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
   {
    filter_coeff[i] =  static_cast<elemT>(filter_coefficients[i]); 
   }*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
  const VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
@@ -139,4 +143,4 @@ SeparableLowPassImageFilter<float>::registered_name =
 
 template SeparableLowPassImageFilter<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

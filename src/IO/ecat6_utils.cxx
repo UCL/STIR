@@ -29,13 +29,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "CTI/cti_utils.h"     
+#include "stir/CTI/cti_utils.h"     
 
 // replace bcopy with memcpy
 #define bcopy(src, dest, length) memcpy(dest, src, length)
 #define toblocks(x) ((x + (MatBLKSIZE - 1))/MatBLKSIZE)
 
-#include "ByteOrder.h"
+#include "stir/ByteOrder.h"
 
 // TODO get rid of _SWAPEM_ and use ByteOrder
 // currently checked by asserts()
@@ -45,7 +45,7 @@
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 int get_scanheaders (FILE *fptr, long matnum, Main_header *mhead, 
@@ -1588,4 +1588,4 @@ int file_data_to_host(char *dptr, int nblks, int dtype)
 	return EXIT_SUCCESS;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,29 +13,34 @@
   $Date$
   $Revision$
 */
-#include "ProjData.h"
-#include "tomo/Succeeded.h"
-#include "RelatedViewgrams.h"
-#include "SegmentBySinogram.h"
-#include "SegmentByView.h"
-#include "Viewgram.h"
-#include "DataSymmetriesForViewSegmentNumbers.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjData.h"
+#include "stir/Succeeded.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/SegmentByView.h"
+#include "stir/Viewgram.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 // for read_from_file
-#include "interfile.h"
-#include "ProjDataFromStream.h"
-#include "ProjDataGEAdvance.h"
-#include "ViewSegmentNumbers.h"
+#include "stir/interfile.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataGEAdvance.h"
+#include "stir/ViewSegmentNumbers.h"
 #include <cstring>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::istream;
 using std::fstream;
 using std::ios;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*! 
    This function will attempt to determine the type of projection data in the file,
@@ -220,4 +225,4 @@ ProjData::set_segment(const SegmentByView<float>& segment)
   return Succeeded::yes;
 }
   
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -11,9 +11,13 @@
   $Date$
   $Revision$
 */
-#include "VoxelsOnCartesianGrid.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/VoxelsOnCartesianGrid.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const VoxelsOnCartesianGrid<float>& 
@@ -30,4 +34,4 @@ image()
   return static_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

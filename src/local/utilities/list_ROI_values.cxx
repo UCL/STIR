@@ -25,20 +25,24 @@
   $Revision$
 
 */
-#include "utilities.h"
-#include "local/tomo/eval_buildblock/compute_ROI_values.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/utilities.h"
+#include "local/stir/eval_buildblock/compute_ROI_values.h"
 #if 0
-#include "local/tomo/Shape/CombinedShape3D.h"
-#include "local/tomo/Shape/EllipsoidalCylinder.h"
+#include "local/stir/Shape/CombinedShape3D.h"
+#include "local/stir/Shape/EllipsoidalCylinder.h"
 #endif
-#include "local/tomo/Shape/DiscretisedShape3D.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "tomo/ImageProcessor.h"
-#include "KeyParser.h"
+#include "local/stir/Shape/DiscretisedShape3D.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ImageProcessor.h"
+#include "stir/KeyParser.h"
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::cout;
@@ -46,7 +50,7 @@ using std::ofstream;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 //TODO repetition of postfilter.cxx to be able to use its .par file
 class ROIValuesParameters 
 {
@@ -155,9 +159,9 @@ return new EllipsoidalCylinder (Lcyl,Rcyl_a,Rcyl_b,
 }
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int
 main(int argc, char *argv[])

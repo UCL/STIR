@@ -18,18 +18,23 @@
    $Date$
    $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/RegisteredObject.h"
-#include "TimedObject.h"
+#include "stir/RegisteredObject.h"
+#include "stir/TimedObject.h"
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::iostream;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <typename elemT> class RelatedViewgrams;
@@ -103,6 +108,6 @@ protected:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __ForwardProjectorByBin_h_

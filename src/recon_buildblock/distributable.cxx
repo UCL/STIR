@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -13,26 +13,31 @@
   \author Matthew Jacobson
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "shared_ptr.h"
-#include "recon_buildblock/distributable.h"
-#include "RelatedViewgrams.h"
-#include "ProjData.h"
-#include "DiscretisedDensity.h"
-#include "CPUTimer.h"
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/shared_ptr.h"
+#include "stir/recon_buildblock/distributable.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/ProjData.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/CPUTimer.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 bool RPC_slave_sens_zero_seg0_end_planes = false;
 
@@ -195,4 +200,4 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
 
 #endif // !PARALLEL
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

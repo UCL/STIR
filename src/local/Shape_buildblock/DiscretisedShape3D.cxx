@@ -11,10 +11,14 @@
   $Date$
   $Revision$
 */
-#include "local/tomo/Shape/DiscretisedShape3D.h"
-#include "tomo/round.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/Shape/DiscretisedShape3D.h"
+#include "stir/round.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void
 DiscretisedShape3D::
@@ -140,4 +144,4 @@ post_processing()
 const char * const 
 DiscretisedShape3D::registered_name = "Discretised Shape3D";
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

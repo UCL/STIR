@@ -19,9 +19,14 @@
    $Date$
    $Revision$
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename T> class shared_ptr;
 template <typename elemT> class RelatedViewgrams;
@@ -76,7 +81,7 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif // __DISTRIBUTABLE_H__
 

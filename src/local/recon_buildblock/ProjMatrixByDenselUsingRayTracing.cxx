@@ -13,22 +13,26 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "local/tomo/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-#include "local/tomo/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "ProjDataInfo.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
+#include "local/stir/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfo.h"
 #include <algorithm>
 #include <math.h>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::max;
 using std::min;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 const char * const 
@@ -590,5 +594,5 @@ static void merge_zplus1(ProjMatrixElemsForOneDensel& probs)
 }
 
 #endif
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

@@ -11,12 +11,16 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "local/tomo/recon_buildblock/BinNormalisationUsingProfile.h"
-#include "RelatedViewgrams.h"
+#include "local/stir/recon_buildblock/BinNormalisationUsingProfile.h"
+#include "stir/RelatedViewgrams.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const char * const 
   BinNormalisationUsingProfile::
@@ -127,5 +131,5 @@ undo(RelatedViewgrams<float>& viewgrams) const
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
   

@@ -12,18 +12,22 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __ProjMatrixByDenselUsingRayTracing__
 #define __ProjMatrixByDenselUsingRayTracing__
 
-#include "tomo/RegisteredParsingObject.h"
-#include "local/tomo/recon_buildblock/ProjMatrixByDensel.h"
-#include "ProjDataInfo.h"
-#include "CartesianCoordinate3D.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredParsingObject.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDensel.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/shared_ptr.h"
 
  
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class DataSymmetriesForDensels_PET_CartesianGrid;
@@ -102,7 +106,7 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

@@ -1,15 +1,19 @@
 //
 // $Id$
 //
-#ifndef __tomo_Densel__H_
-#define __tomo_Densel__H_
+#ifndef __stir_Densel__H_
+#define __stir_Densel__H_
 //TODO
-#include "Coordinate3D.h"
+#include "stir/Coordinate3D.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 typedef Coordinate3D<int> Densel;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/

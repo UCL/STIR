@@ -14,6 +14,11 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 // for std::inner_product
@@ -23,14 +28,14 @@
 // for equal
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 # ifndef BOOST_NO_STDC_NAMESPACE
 using std::acos;
 using std::sqrt;
 # endif
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*
   iterators
@@ -91,7 +96,7 @@ bool
 BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
   return 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
     std:: // VC needs this explicitly
 #endif
     equal(begin(), end(), c.begin());
@@ -289,7 +294,7 @@ coordT
 inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
 	       const BasicCoordinate<num_dimensions, coordT>& p2)
 {
-#ifdef TOMO_NO_NAMESPACES
+#ifdef STIR_NO_NAMESPACES
   return inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
 #else
   return std::inner_product(p1.begin(), p1.end(), p2.begin(), coordT(0));
@@ -323,7 +328,7 @@ join(const coordT& a,
   BasicCoordinate<num_dimensions+1, coordT> retval;
   
   *retval.begin() = a;
-#ifdef TOMO_NO_NAMESPACES
+#ifdef STIR_NO_NAMESPACES
   copy(c.begin(), c.end(), retval.begin()+1);
 #else
   std::copy(c.begin(), c.end(), retval.begin()+1);
@@ -333,4 +338,4 @@ join(const coordT& a,
 
 #endif // gcc 2.8.1
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

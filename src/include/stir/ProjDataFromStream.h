@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,29 +12,34 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __ProjDataFromStream_H__
 #define __ProjDataFromStream_H__
 
-#include "ProjData.h" 
-#include "NumericType.h"
-#include "ByteOrder.h"
-#include "shared_ptr.h"
+#include "stir/ProjData.h" 
+#include "stir/NumericType.h"
+#include "stir/ByteOrder.h"
+#include "stir/shared_ptr.h"
 
 #include <iostream>
 #include <vector>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::istream;
 using std::iostream;
 using std::streamoff;
 using std::vector;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -162,8 +167,8 @@ private:
   
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "ProjDataFromStream.inl"
+#include "stir/ProjDataFromStream.inl"
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,25 +12,30 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __RelatedDensels_H__
 #define __RelatedDensels_H__
 
-#include "shared_ptr.h"
-#include "local/tomo/Densel.h"
+#include "stir/shared_ptr.h"
+#include "local/stir/Densel.h"
 #include <vector>
 #include <iterator>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::ptrdiff_t;
 using std::random_access_iterator_tag;
 using std::vector;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class ProjData;
 //class Densel;
@@ -55,7 +60,7 @@ public:
   typedef size_t size_type;
 
   //! typedefs to make it partly comply with STL requirements
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   typedef std::vector<Densel>::iterator iterator;
   typedef std::vector<Densel>::const_iterator const_iterator;
 #else
@@ -103,9 +108,9 @@ private:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/recon_buildblock/RelatedDensels.inl"
+#include "local/stir/recon_buildblock/RelatedDensels.inl"
 
 #endif //__RelatedDensels_H__
 

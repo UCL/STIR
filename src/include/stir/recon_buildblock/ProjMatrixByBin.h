@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __Tomo_recon_buildblock_ProjMatrixByBin_H__
-#define __Tomo_recon_buildblock_ProjMatrixByBin_H__
+#ifndef __stir_recon_buildblock_ProjMatrixByBin_H__
+#define __stir_recon_buildblock_ProjMatrixByBin_H__
 
 /*!
 
@@ -18,28 +18,33 @@
   $Date$  
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "tomo/RegisteredObject.h"
-#include "recon_buildblock/ProjMatrixElemsForOneBin.h"
-#include "recon_buildblock/DataSymmetriesForBins.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredObject.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
+#include "stir/shared_ptr.h"
 
 #include <map>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::map;
 #endif
 
 // define a local preprocessor symbol to keep code relatively clean
-#ifdef TOMO_NO_MUTABLE
-#define TOMO_MUTABLE_CONST
+#ifdef STIR_NO_MUTABLE
+#define STIR_MUTABLE_CONST
 #else
-#define TOMO_MUTABLE_CONST const
+#define STIR_MUTABLE_CONST const
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /* TODO 
 class ProjMatrixElemsForOneViewgram;
@@ -92,7 +97,7 @@ public:
   inline void 
     get_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin&,
-       const Bin&) TOMO_MUTABLE_CONST;
+       const Bin&) STIR_MUTABLE_CONST;
   
 #if 0
   // TODO
@@ -152,13 +157,13 @@ protected:
   
   //! The method to store data in the cache.
   inline void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
-    TOMO_MUTABLE_CONST;
+    STIR_MUTABLE_CONST;
 
 private:
   
   typedef unsigned int CacheKey;
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
 #else
   typedef map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
@@ -167,7 +172,7 @@ private:
   typedef MapProjMatrixElemsForOneBin::const_iterator const_MapProjMatrixElemsForOneBinIterator;
  
   //! collection of  ProjMatrixElemsForOneBin (internal cache )   
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
   mutable
 #endif
     MapProjMatrixElemsForOneBin cache_collection;
@@ -180,11 +185,11 @@ private:
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include  "recon_buildblock/ProjMatrixByBin.inl"
+#include "stir/recon_buildblock/ProjMatrixByBin.inl"
 
-#undef TOMO_MUTABLE_CONST
+#undef STIR_MUTABLE_CONST
 
 #endif // __ProjMatrixByBin_H__
 

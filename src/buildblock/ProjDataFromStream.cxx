@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,25 +12,30 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "ProjDataFromStream.h"
-#include "tomo/Succeeded.h"
-#include "Viewgram.h"
-#include "Sinogram.h"
-#include "SegmentBySinogram.h"
-#include "SegmentByView.h"
-#include "IndexRange2D.h"
-#include "IndexRange3D.h"
-#include "utilities.h"
-#include "interfile.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/Succeeded.h"
+#include "stir/Viewgram.h"
+#include "stir/Sinogram.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/SegmentByView.h"
+#include "stir/IndexRange2D.h"
+#include "stir/IndexRange3D.h"
+#include "stir/utilities.h"
+#include "stir/interfile.h"
 #include <numeric>
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::find;
 using std::ios;
 using std::iostream;
@@ -47,7 +52,7 @@ using std::endl;
 #define FIND find
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 //---------------------------------------------------------
 // constructors
 //---------------------------------------------------------
@@ -971,7 +976,7 @@ ProjDataFromStream::get_scale_factor() const
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
   
   

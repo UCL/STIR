@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 #ifndef __convert_array_H__
 #define  __convert_array_H__
@@ -14,17 +14,22 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 // TODO enable FULL 
 
-#include "NumericInfo.h"
-#include "Array.h"
+#include "stir/NumericInfo.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
    \brief A function that returns a new Array with elements of type \c T2 such that \c data_in == \c data_out * \c scale_factor
@@ -105,6 +110,6 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
 // #define convert_array convert_array_FULL
 #endif // ARRAY_FULL
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,18 +11,23 @@
   \author Mustapha Sadki
   \author PARAPET project
       
-  \date $Date$        
-  \version $Revision$
+  $Date$        
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 #ifndef __ProjMatrixElemsForOneDenselValue_H__
 #define __ProjMatrixElemsForOneDenselValue_H__
 
 
-#include "tomo/common.h"
-#include "Bin.h"
+#include "stir/common.h"
+#include "stir/Bin.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 /*!
@@ -80,8 +85,8 @@ public:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDenselValue.inl"
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.inl"
 
 #endif // __ProjMatrixElemsForOneDenselValue_H__

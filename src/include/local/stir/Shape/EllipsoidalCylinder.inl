@@ -12,7 +12,11 @@
   $Date$
   $Revision$
 */
-START_NAMESPACE_TOMO
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+START_NAMESPACE_STIR
 
 float EllipsoidalCylinder:: get_geometric_volume()const
  {
@@ -32,4 +36,4 @@ EllipsoidalCylinder::scale(const CartesianCoordinate3D<float>& scale3D)
   radius_a *= scale3D.x();
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

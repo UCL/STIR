@@ -13,20 +13,25 @@
   $Date$
   $Revision$
 */
-#include "ProjData.h"
-#include "Sinogram.h"
-#include "SegmentByView.h"
-#include "SegmentBySinogram.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjData.h"
+#include "stir/Sinogram.h"
+#include "stir/SegmentByView.h"
+#include "stir/SegmentBySinogram.h"
 
-#include "display.h"
-#include "utilities.h"
+#include "stir/display.h"
+#include "stir/utilities.h"
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char *argv[])

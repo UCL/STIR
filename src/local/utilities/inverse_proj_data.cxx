@@ -13,34 +13,39 @@
   \author Sanida Mustafovic
   \author PARAPET project
   
-  \date $Date: 
-  \version $Revision: 
+  $Date: 
+  $Revision: 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-//#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "recon_buildblock/ProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-//#include "display.h"
-#include "interfile.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "ProjDataFromStream.h"
-#include "ProjDataInfo.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+//#include "stir/display.h"
+#include "stir/interfile.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInfo.h"
 // for ask_filename...
-#include "utilities.h"
-#include "IndexRange3D.h"
-#include "RelatedViewgrams.h"
-#include "SegmentByView.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "Viewgram.h"
+#include "stir/utilities.h"
+#include "stir/IndexRange3D.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/SegmentByView.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/Viewgram.h"
 
 
 #include <fstream>
 #include <list>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
 using std::iostream;
@@ -52,7 +57,7 @@ using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void find_inverse(ProjData* proj_data_ptr_out, const ProjData* proj_data_ptr_in);
 
@@ -138,10 +143,10 @@ find_inverse( ProjData* proj_data_ptr_out, const ProjData* proj_data_ptr_in)
     
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int 
 main(int argc, char **argv)

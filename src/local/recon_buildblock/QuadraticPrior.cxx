@@ -11,14 +11,18 @@
   $Date$        
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "local/tomo/recon_buildblock/QuadraticPrior.h"
-#include "tomo/Succeeded.h"
-#include "DiscretisedDensityOnCartesianGrid.h"
-#include "IndexRange3D.h"
-#include "interfile.h"
+#include "local/stir/recon_buildblock/QuadraticPrior.h"
+#include "stir/Succeeded.h"
+#include "stir/DiscretisedDensityOnCartesianGrid.h"
+#include "stir/IndexRange3D.h"
+#include "stir/interfile.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT>
 void 
@@ -196,5 +200,5 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
 template QuadraticPrior<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

@@ -9,19 +9,23 @@
     
   \author Kris Thielemans
       
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#ifndef __Tomo_TruncateMinToSmallPositiveValueImageProcessor_H__
-#define __Tomo_TruncateMinToSmallPositiveValueImageProcessor_H__
+#ifndef __stir_TruncateMinToSmallPositiveValueImageProcessor_H__
+#define __stir_TruncateMinToSmallPositiveValueImageProcessor_H__
 
 
-#include "tomo/RegisteredParsingObject.h"
-#include "tomo/ImageProcessor.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/ImageProcessor.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // TODO!! remove define
 
@@ -73,7 +77,7 @@ private:
 
 #undef num_dimensions
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

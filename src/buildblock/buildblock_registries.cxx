@@ -13,16 +13,20 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "tomo/SeparableCartesianMetzImageFilter.h"
-#include "tomo/MedianImageFilter3D.h"
-#include "tomo/ChainedImageProcessor.h"
-#include "tomo/TruncateMinToSmallPositiveValueImageProcessor.h"
+#include "stir/SeparableCartesianMetzImageFilter.h"
+#include "stir/MedianImageFilter3D.h"
+#include "stir/ChainedImageProcessor.h"
+#include "stir/TruncateMinToSmallPositiveValueImageProcessor.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 static MedianImageFilter3D<float>::RegisterIt dummy;
 static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;
 static ChainedImageProcessor<3,float>::RegisterIt dummy3;
 static TruncateMinToSmallPositiveValueImageProcessor<float>::RegisterIt dummy4;
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -16,6 +16,11 @@
   $Revision$
     
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 //   Pretty horrible implementations at the moment...
 
 /* Modification history
@@ -29,20 +34,20 @@
                 write applied corrections keyword for arc-correction	  
 */
 
-#include "interfile.h"
-#include "InterfileHeader.h"
-#include "IndexRange3D.h"
-#include "utilities.h"
-#include "CartesianCoordinate3D.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "ProjDataFromStream.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "Scanner.h"
-#include "tomo/Succeeded.h"
+#include "stir/interfile.h"
+#include "stir/InterfileHeader.h"
+#include "stir/IndexRange3D.h"
+#include "stir/utilities.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/Scanner.h"
+#include "stir/Succeeded.h"
 
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ofstream;
@@ -50,7 +55,7 @@ using std::ifstream;
 using std::fstream;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
@@ -630,7 +635,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
       // VC needs this explicitly here
       std::
 #endif
@@ -655,7 +660,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
    
        output_header << "minimum ring difference per segment := ";    
        {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 	 // VC needs this explicitly here
 	 std::
 #endif
@@ -668,7 +673,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
        output_header << "maximum ring difference per segment := ";
        {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 	 // VC needs this explicitly here
 	 std::
 #endif
@@ -787,4 +792,4 @@ write_basic_interfile<>(const string& filename,
 		      const NumericType output_type);
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

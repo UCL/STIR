@@ -1,5 +1,5 @@
-#ifndef __Tomo_BasicCoordinate_H__
-#define __Tomo_BasicCoordinate_H__
+#ifndef __stir_BasicCoordinate_H__
+#define __stir_BasicCoordinate_H__
 //
 // $Id$
 //
@@ -22,18 +22,23 @@
   derived class CartesianCoordinate. 
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "tomo/common.h"
+#include "stir/common.h"
 #include <iterator>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::size_t;
 using std::ptrdiff_t;
 using std::random_access_iterator_tag;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 /*!
   \ingroup buildblock
   \brief class BasicCoordinate<\c int \c num_dimensions, \c typename \c coordT> defines \c num_dimensions -dimensional coordinates.
@@ -157,9 +162,9 @@ join(const coordT& a,
 
 #endif // gcc 2.8.1
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "BasicCoordinate.inl"
+#include "stir/BasicCoordinate.inl"
 
 
 

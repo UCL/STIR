@@ -12,15 +12,19 @@
   $Date$
   $Revision$
 */
-#include "local/tomo/eval_buildblock/compute_ROI_values.h"
-#include "local/tomo/Shape/Shape3D.h"
-#include "CartesianCoordinate2D.h"
-#include "CartesianCoordinate3D.h"
-#include "VoxelsOnCartesianGrid.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/eval_buildblock/compute_ROI_values.h"
+#include "local/stir/Shape/Shape3D.h"
+#include "stir/CartesianCoordinate2D.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include <numeric>
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void
 compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values, 
@@ -206,4 +210,4 @@ compute_uniformity_per_plane(VectorWithOffset<ROIValues>& val)
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

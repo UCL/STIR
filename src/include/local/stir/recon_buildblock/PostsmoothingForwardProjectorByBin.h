@@ -12,15 +12,19 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_recon_buildblock_PostsmoothingForwardProjectorByBin__H__
-#define __Tomo_recon_buildblock_PostsmoothingForwardProjectorByBin__H__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_recon_buildblock_PostsmoothingForwardProjectorByBin__H__
+#define __stir_recon_buildblock_PostsmoothingForwardProjectorByBin__H__
 
-#include "tomo/RegisteredParsingObject.h"
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "shared_ptr.h"
-#include "VectorWithOffset.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/shared_ptr.h"
+#include "stir/VectorWithOffset.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class Viewgram;
 
@@ -88,6 +92,6 @@ private:
   virtual bool post_processing();
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

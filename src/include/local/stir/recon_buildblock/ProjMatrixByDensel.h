@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __Tomo_recon_buildblock_ProjMatrixByDensel_H__
-#define __Tomo_recon_buildblock_ProjMatrixByDensel_H__
+#ifndef __stir_recon_buildblock_ProjMatrixByDensel_H__
+#define __stir_recon_buildblock_ProjMatrixByDensel_H__
 
 /*!
 
@@ -16,29 +16,33 @@
   $Date$  
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "tomo/RegisteredObject.h"
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-#include "local/tomo/recon_buildblock/DataSymmetriesForDensels.h"
-#include "local/tomo/Densel.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredObject.h"
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "local/stir/Densel.h"
+#include "stir/shared_ptr.h"
 
 #include <map>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::map;
 #endif
 
 // define a local preprocessor symbol to keep code relatively clean
-#ifdef TOMO_NO_MUTABLE
-#define TOMO_MUTABLE_CONST
+#ifdef STIR_NO_MUTABLE
+#define STIR_MUTABLE_CONST
 #else
-#define TOMO_MUTABLE_CONST const
+#define STIR_MUTABLE_CONST const
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 	    
 //template <typename elemT> class RelatedViewgrams;	    
 //class Densel;	    
@@ -86,7 +90,7 @@ public:
   inline void 
     get_proj_matrix_elems_for_one_densel(
        ProjMatrixElemsForOneDensel&,
-       const Densel&) TOMO_MUTABLE_CONST;
+       const Densel&) STIR_MUTABLE_CONST;
   
 #if 0
   // TODO
@@ -145,13 +149,13 @@ protected:
   
   //! The method to store data in the cache.
   inline void  cache_proj_matrix_elems_for_one_densel( const ProjMatrixElemsForOneDensel&)
-    TOMO_MUTABLE_CONST;
+    STIR_MUTABLE_CONST;
 
 private:
   
   typedef unsigned int CacheKey;
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   typedef std::map<CacheKey, ProjMatrixElemsForOneDensel>   MapProjMatrixElemsForOneDensel;
 #else
   typedef map<CacheKey, ProjMatrixElemsForOneDensel>   MapProjMatrixElemsForOneDensel;
@@ -160,7 +164,7 @@ private:
   typedef MapProjMatrixElemsForOneDensel::const_iterator const_MapProjMatrixElemsForOneDenselIterator;
  
   //! collection of  ProjMatrixElemsForOneDensel (internal cache )   
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
   mutable
 #endif
     MapProjMatrixElemsForOneDensel cache_collection;
@@ -173,11 +177,11 @@ private:
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include  "local/tomo/recon_buildblock/ProjMatrixByDensel.inl"
+#include "local/stir/recon_buildblock/ProjMatrixByDensel.inl"
 
-#undef TOMO_MUTABLE_CONST
+#undef STIR_MUTABLE_CONST
 
 #endif // __ProjMatrixByDensel_H__
 

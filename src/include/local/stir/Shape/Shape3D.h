@@ -12,21 +12,25 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __tomo_Shape_Shape3D_h__
-#define __tomo_Shape_Shape3D_h__
+#ifndef __stir_Shape_Shape3D_h__
+#define __stir_Shape_Shape3D_h__
 
-#include "tomo/RegisteredObject.h"
-#include "tomo/ParsingObject.h"
-#include "CartesianCoordinate3D.h"
+#include "stir/RegisteredObject.h"
+#include "stir/ParsingObject.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <string>
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class VoxelsOnCartesianGrid;
 
@@ -102,8 +106,8 @@ protected:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/Shape/Shape3D.inl"
+#include "local/stir/Shape/Shape3D.inl"
 
 #endif

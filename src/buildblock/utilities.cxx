@@ -10,16 +10,21 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "utilities.h"
-#include "IndexRange3D.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/utilities.h"
+#include "stir/IndexRange3D.h"
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
@@ -28,7 +33,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // KT 01/05/2000 moved here from .inl, after getting rid of CHARP template
 bool ask (const string& str, bool default_value)
@@ -331,7 +336,7 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
     while( to_read != 0)
       {
 	const unsigned long this_read_size = 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 	  std::min(to_read, chunk_size);
 #else
 	  min(to_read, chunk_size);
@@ -347,4 +352,4 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
   return memory;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -13,9 +13,14 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "local/tomo/eval_buildblock/ROIValues.h"
-#include "NumericInfo.h"
+#include "local/stir/eval_buildblock/ROIValues.h"
+#include "stir/NumericInfo.h"
 #include <math.h>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
@@ -24,12 +29,12 @@
 #endif
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void ROIValues::init()
 {
@@ -117,4 +122,4 @@ return stream;
 #endif
   
     
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

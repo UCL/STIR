@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*!
@@ -10,8 +10,8 @@
 \author Matthew Jacobson
 \author PARAPET project
 
-\date    $Date$
-\version $Revision$
+$Date$
+$Revision$
 
 This utility compares two input projection data sets. 
 The input data are deemed identical if their maximum absolute difference 
@@ -20,18 +20,23 @@ Diagnostic output is written to stdout, and the return value indicates
 if the files are identical or not.
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
 
-#include "ProjData.h"
-#include "SegmentByView.h"
-#include "ArrayFunction.h" 
-#include "shared_ptr.h"
+#include "stir/ProjData.h"
+#include "stir/SegmentByView.h"
+#include "stir/ArrayFunction.h" 
+#include "stir/shared_ptr.h"
 
 #include <numeric>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -39,7 +44,7 @@ using std::endl;
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 //*********************** prototypes
@@ -73,13 +78,13 @@ update_comparison(SegmentByView<float>& input1,SegmentByView<float> &input2,
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 //********************** main
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char *argv[])

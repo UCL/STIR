@@ -12,17 +12,21 @@
   $Date$  
   $Revision$
 */
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-#include "tomo/Succeeded.h"
-#include "DiscretisedDensity.h"
-#include "recon_buildblock/SymmetryOperation.h"
-#include "local/tomo/recon_buildblock/DataSymmetriesForDensels.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "stir/Succeeded.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
+#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
 
-#include "local/tomo/recon_buildblock/RelatedDensels.h"
+#include "local/stir/recon_buildblock/RelatedDensels.h"
 
 #include <fstream>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 ProjMatrixElemsForOneDensel::
@@ -101,7 +105,7 @@ void ProjMatrixElemsForOneDensel::sort()
 {
   // need explicit std:: here to resolve possible name conflict
   // this might give you trouble if your compiler does not support namespaces
-#if !defined(TOMO_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
+#if !defined(STIR_NO_NAMESPACES) || (__GNUC__ == 2 && __GNUC_MINOR__ <= 8)
   std::
 #endif                                           
   sort(begin(), end(), value_type::coordinates_less);
@@ -318,4 +322,4 @@ forward_project(RelatedDensels& r_densels,
 }
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

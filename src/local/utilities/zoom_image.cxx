@@ -13,17 +13,21 @@
   $Date$
   $Revision$
 */
-#include "VoxelsOnCartesianGrid.h"
-#include "zoom.h"
-#include "interfile.h"
-#include "utilities.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/zoom.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*
@@ -11,13 +11,18 @@
   \author Kris Thielemans  
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */  
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "linear_regression.h"
+#include "stir/linear_regression.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <class Value, class DataType, class CoordinatesType>
 void linear_regression(Value& constant, Value& scale,
@@ -135,4 +140,4 @@ void linear_regression<>(double& constant, double& scale,
 		       const bool use_estimated_variance
                        );
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

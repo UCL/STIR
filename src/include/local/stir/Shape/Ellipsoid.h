@@ -11,17 +11,21 @@
   $Date$
   $Revision$
 */
-#ifndef __tomo_Shape_Ellipsoid_h__
-#define __tomo_Shape_Elliposoid_h__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_Shape_Ellipsoid_h__
+#define __stir_Shape_Elliposoid_h__
 
 
-#include "tomo/RegisteredParsingObject.h"
-#include "local/tomo/Shape/Shape3DWithOrientation.h"
+#include "stir/RegisteredParsingObject.h"
+#include "local/stir/Shape/Shape3DWithOrientation.h"
 
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup Shape
@@ -70,6 +74,6 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

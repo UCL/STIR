@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,24 +12,29 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$
+  $Date$
         
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
-#include "recon_buildblock/ProjMatrixByBin.h"
-#include "recon_buildblock/ProjMatrixElemsForOneBin.h"
-//#include "utilities.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
+//#include "stir/utilities.h"
 //#include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 //using std::cout;
 //using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ProjMatrixByBin::ProjMatrixByBin()
 { 
@@ -131,4 +136,4 @@ void ProjMatrixByBin::write_to_file_by_bin(
 #endif
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

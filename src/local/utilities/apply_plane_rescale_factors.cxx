@@ -16,18 +16,22 @@
   $Date$
   $Revision$
 */
-#include "DiscretisedDensity.h"
-#include "interfile.h"
-#include "tomo/Succeeded.h"
-#include "stream.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/DiscretisedDensity.h"
+#include "stir/interfile.h"
+#include "stir/Succeeded.h"
+#include "stir/stream.h"
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main(int argc, char **argv)

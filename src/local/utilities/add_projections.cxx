@@ -11,30 +11,35 @@
 \author Kris Thielemans 
 \author PARAPET project
 
-\date    $Date: 
-\version $Revision: 
+$Date: 
+$Revision: 
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 
 
-#include "ProjDataFromStream.h"
-#include "SegmentByView.h"
-#include "SegmentBySinogram.h"
-#include "Sinogram.h"
-#include "Viewgram.h"
-#include "ArrayFunction.h" 
-#include "recon_array_functions.h"
-#include "display.h"
-#include "interfile.h"
-#include "utilities.h"
-#include "shared_ptr.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/SegmentByView.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/Sinogram.h"
+#include "stir/Viewgram.h"
+#include "stir/ArrayFunction.h" 
+#include "stir/recon_array_functions.h"
+#include "stir/display.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
+#include "stir/shared_ptr.h"
 
 #include <numeric>
 #include <fstream> 
 #include <iostream> 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::fstream;
@@ -42,7 +47,7 @@ using std::fstream;
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int 
 main(int argc, char **argv)

@@ -15,10 +15,15 @@
   $Date$
   $Revision$
 */
-#include "tomo/Succeeded.h"
-#include "recon_buildblock/SymmetryOperation.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/Succeeded.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const DataSymmetriesForBins*
 ProjMatrixByBin:: get_symmetries_ptr() const
@@ -29,7 +34,7 @@ ProjMatrixByBin:: get_symmetries_ptr() const
 
 inline void ProjMatrixByBin::get_proj_matrix_elems_for_one_bin(
                                                                ProjMatrixElemsForOneBin& probabilities,
-                                                               const Bin& bin) TOMO_MUTABLE_CONST
+                                                               const Bin& bin) STIR_MUTABLE_CONST
 {  
   // set to empty
   probabilities.erase();
@@ -93,7 +98,7 @@ ProjMatrixByBin::cache_key(const Bin& bin)
 void  
 ProjMatrixByBin::
 cache_proj_matrix_elems_for_one_bin(
-                                    const ProjMatrixElemsForOneBin& probabilities) TOMO_MUTABLE_CONST
+                                    const ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST
 { 
   if ( cache_disabled ) return;
   
@@ -103,4 +108,4 @@ cache_proj_matrix_elems_for_one_bin(
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

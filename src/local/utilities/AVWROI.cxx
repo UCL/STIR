@@ -1,22 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "AVW.h"
-#include "AVW_ObjectMap.h"
-#include "AVW_ImageFile.h"
+#include "stir/AVW.h"
+#include "stir/AVW_ObjectMap.h"
+#include "stir/AVW_ImageFile.h"
 
 #define ARRAY_FULL
-#include "IndexRange3D.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "CartesianCoordinate3D.h"
-#include "interfile.h"
-#include "utilities.h"
+#include "stir/IndexRange3D.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::copy;
 using std::cerr;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 template <typename elemT>
 static 
@@ -170,6 +170,10 @@ main(int argc, char **argv)
                             object_map->Object[object_num]->MaximumYValue);
       printf("z : %d,%d\n", object_map->Object[object_num]->MinimumZValue,
                             object_map->Object[object_num]->MaximumZValue);
+*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
       //volume = AVW_GetObject(object_map, object_num, volume);
       //image = AVW_GetOrthogonal(volume, AVW_TRANSVERSE,0,image);

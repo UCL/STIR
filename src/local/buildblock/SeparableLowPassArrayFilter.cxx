@@ -1,13 +1,13 @@
 
-#include "local/tomo/SeparableLowPassArrayFilter.h"
-#include "local/tomo/ArrayFilter1DUsingConvolution.h"
-#include "tomo/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "local/stir/SeparableLowPassArrayFilter.h"
+#include "local/stir/ArrayFilter1DUsingConvolution.h"
+#include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 
 
 #include <iostream>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ios;
 using std::fstream;
 using std::iostream;
@@ -16,7 +16,7 @@ using std::endl;
 #endif
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT>
 SeparableLowPassArrayFilter<num_dimensions,elemT>::
@@ -55,6 +55,10 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
        new ArrayFilter1DUsingConvolutionSymmetricKernel<float>();
    all_1d_array_filters[2] = 	 
       new ArrayFilter1DUsingConvolutionSymmetricKernel<float>(filter_coefficients_v);*/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
   
   
  /*for (int i=2;i<=num_dimensions;i++)
@@ -71,4 +75,4 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
 
 template SeparableLowPassArrayFilter<3,float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

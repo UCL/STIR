@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,13 +12,18 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#include "line.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/line.h"
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const int LINE_ERROR =-1;
 const int LINE_OK	= 0;
@@ -243,4 +248,4 @@ Line& Line::operator=(const char* ch)
 	return *this;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

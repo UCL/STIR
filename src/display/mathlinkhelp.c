@@ -1,5 +1,10 @@
 /*
- $Id$: $Date$
+ $Id$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
 /*!
@@ -10,14 +15,14 @@
  \author Kris Thielemans
  \author PARAPET project
  
- \date    $Date$
+ $Date$
   
- \version $Revision$
+ $Revision$
 
  \internal
 */
 
-#ifdef TOMO_MATHLINK
+#ifdef STIR_MATHLINK
 
 #include "mathlink.h"
 #include <stdio.h>
@@ -121,4 +126,4 @@ void init_and_connectlink( char* linkname)
 }
 
 
-#endif /*TOMO_MATHLINK */
+#endif /*STIR_MATHLINK */

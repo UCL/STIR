@@ -11,17 +11,21 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#ifndef __Tomo_recon_buildblock_QuadraticPrior_H__
-#define __Tomo_recon_buildblock_QuadraticPrior_H__
+#ifndef __stir_recon_buildblock_QuadraticPrior_H__
+#define __stir_recon_buildblock_QuadraticPrior_H__
 
 
-#include "tomo/RegisteredParsingObject.h"
-#include "tomo/recon_buildblock/GeneralisedPrior.h"
-#include "Array.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/recon_buildblock/GeneralisedPrior.h"
+#include "stir/Array.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -66,7 +70,7 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif
 

@@ -11,16 +11,20 @@
   $Date$
   $Revision$
 */
-#include "ProjDataInfoCylindrical.h"
-#include "recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/ProjDataInfoCylindrical.h"
+#include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACE
+#ifndef STIR_NO_NAMESPACE
 using std::swap;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 #if 0
 const DiscretisedDensityOnCartesianGrid<3,float> *    
@@ -208,4 +212,4 @@ get_related_densels(vector<Densel>& v, const Densel& d) const
   
 }
   
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

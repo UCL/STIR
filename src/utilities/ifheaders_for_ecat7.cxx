@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*! 
@@ -8,8 +8,8 @@
 \author Kris Thielemans
 \author Cristina de Oliveira (offset_in_ecat_file function)
 \author PARAPET project
-\version $Date$
-\date  $Revision$
+$Date$
+$Revision$
 
 \warning This only works with some CTI file_types. In particular, it does NOT
 work with the ECAT6 files_types, as then there are subheaders 'in' the 
@@ -18,6 +18,11 @@ datasets.
 \warning Implementation uses the Louvain la Neuve Ecat library. So, it will
 only work on systems where this library works properly.
 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 /* 
   History
@@ -31,24 +36,24 @@ only work on systems where this library works properly.
 
 #include <stdarg.h>
 
-#include "ProjDataInfo.h"
-#include "ProjDataFromStream.h"
-#include "interfile.h"
-#include "utilities.h"
-#include "CartesianCoordinate3D.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/interfile.h"
+#include "stir/utilities.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#ifdef TOMO_NO_NAMESPACES
+#ifdef STIR_NO_NAMESPACES
 // terrible trick to avoid conflict between our Sinogram and matrix::Sinogram
 // when we do have namespaces, the conflict can be resolved by using ::Sinogram
 #define Sinogram CTISinogram
 #endif
 
-#include "matrix.h"
+#include "stir/matrix.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::string;
 using std::ios;
 using std::iostream;
@@ -57,7 +62,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /* ------------------------------------
  *	print_debug
@@ -211,7 +216,7 @@ int offset_in_ecat_file (MatrixFile *mptr, int frame, int plane, int gate, int d
   
   switch (mptr->mhptr->file_type)
   {
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
   case ::Sinogram:
 #else
   case CTISinogram:
@@ -682,9 +687,9 @@ write_basic_interfile_header_for_ecat7(const string& ecat7_filename,
   return Succeeded::yes;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int	
 main( int argc, char **argv)

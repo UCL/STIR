@@ -32,14 +32,19 @@
   $Revision$
 
 */          
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 #ifndef __SymmetryOperations_PET_CartesianGrid_H__
 #define __SymmetryOperations_PET_CartesianGrid_H__
 
-#include "recon_buildblock/SymmetryOperation.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class SymmetryOperation_PET_CartesianGrid_z_shift : public SymmetryOperation
 {
@@ -585,9 +590,9 @@ private:
 
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/SymmetryOperations_PET_CartesianGrid.inl"
+#include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.inl"
 
 
 #endif

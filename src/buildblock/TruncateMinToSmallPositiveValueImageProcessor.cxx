@@ -9,14 +9,18 @@
 
   \author Kris Thielemans
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
-#include "tomo/TruncateMinToSmallPositiveValueImageProcessor.h"
-#include "recon_array_functions.h"
-#include "DiscretisedDensity.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/TruncateMinToSmallPositiveValueImageProcessor.h"
+#include "stir/recon_array_functions.h"
+#include "stir/DiscretisedDensity.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
   
 template <typename elemT>
@@ -93,7 +97,7 @@ TruncateMinToSmallPositiveValueImageProcessor<float>::registered_name =
 
 template TruncateMinToSmallPositiveValueImageProcessor<float>;
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

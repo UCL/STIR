@@ -15,18 +15,23 @@
    $Date$        
    $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "VoxelsOnCartesianGrid.h"
-#include "ProjDataInfo.h"
-#include "ProjDataInfoCylindricalArcCorr.h"
-#include "Scanner.h"
-#include "IndexRange.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
+#include "stir/Scanner.h"
+#include "stir/IndexRange.h"
 
 #include <iostream>
 #include <math.h>
-#include "RunTests.h"
+#include "stir/RunTests.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup test
@@ -190,10 +195,10 @@ VoxelsOnCartesianGridTests::run_tests()
   }
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 
 int main()

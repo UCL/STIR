@@ -16,16 +16,21 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "OSMAPOSL/OSMAPOSLReconstruction.h"
-#include "recon_array_functions.h"
-#include "DiscretisedDensity.h"
-#include "LogLikBased/common.h"
-#include "tomo/TruncateMinToSmallPositiveValueImageProcessor.h"
-#include "tomo/ChainedImageProcessor.h"
-#include "tomo/Succeeded.h"
-#include "tomo/thresholding.h"
-#include "tomo/is_null_ptr.h"
+#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/recon_array_functions.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/LogLikBased/common.h"
+#include "stir/TruncateMinToSmallPositiveValueImageProcessor.h"
+#include "stir/ChainedImageProcessor.h"
+#include "stir/Succeeded.h"
+#include "stir/thresholding.h"
+#include "stir/is_null_ptr.h"
 
 #include <memory>
 #include <iostream>
@@ -35,7 +40,7 @@
 #include <sstream>
 #endif
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::auto_ptr;
 using std::cerr;
 using std::ends;
@@ -43,11 +48,11 @@ using std::endl;
 #endif
 
 // KT 17/08/2000 limit update
-#include "NumericInfo.h"
+#include "stir/NumericInfo.h"
 // for write_update_image
-#include "interfile.h"
+#include "stir/interfile.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 OSMAPOSLReconstruction::
 OSMAPOSLReconstruction(const OSMAPOSLParameters& parameters_v)
@@ -325,4 +330,4 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -15,27 +15,32 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-//#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-//#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-//#include "recon_buildblock/ProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "display.h"
-#include "interfile.h"
-#include "ProjDataFromStream.h"
-#include "ProjDataInfo.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+//#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/display.h"
+#include "stir/interfile.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInfo.h"
 // for ask_filename...
-#include "utilities.h"
-#include "IndexRange3D.h"
-#include "RelatedViewgrams.h"
-#include "VoxelsOnCartesianGrid.h"
+#include "stir/utilities.h"
+#include "stir/IndexRange3D.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 
 
 #include <fstream>
 #include <list>
 #include <algorithm>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
 using std::iostream;
@@ -49,7 +54,7 @@ using std::endl;
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void
 do_segments(DiscretisedDensity<3,float>& image, 
@@ -145,11 +150,11 @@ do_segments(DiscretisedDensity<3,float>& image,
     
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 int
 main(int argc, char **argv)
 {  

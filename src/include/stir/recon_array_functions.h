@@ -2,8 +2,8 @@
 // $Id$
 //
 
-#ifndef __Tomo_recon_array_functions_h_
-#define __Tomo_recon_array_functions_h_
+#ifndef __stir_recon_array_functions_h_
+#define __stir_recon_array_functions_h_
 
 /*!
   \file 
@@ -18,11 +18,16 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
-#include "tomo/common.h"
+#include "stir/common.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 // TODO template this all in data type of Viewgram et al
@@ -117,6 +122,6 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 
 float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image);
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 #endif // __recon_array_functions_h_
 

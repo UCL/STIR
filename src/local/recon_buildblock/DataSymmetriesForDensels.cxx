@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,16 +11,21 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "local/tomo/recon_buildblock/DataSymmetriesForDensels.h"
-#include "local/tomo/Densel.h"
-#include "recon_buildblock/SymmetryOperation.h"
+#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "local/stir/Densel.h"
+#include "stir/recon_buildblock/SymmetryOperation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 DataSymmetriesForDensels::
 DataSymmetriesForDensels()
@@ -44,4 +49,4 @@ bool DataSymmetriesForDensels::find_basic_densel(Densel& b) const
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

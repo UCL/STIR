@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 /*!
 
   \file
@@ -9,18 +9,23 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 */
-#include "VectorWithOffset.h"
-#include "Array.h"
-#include "IndexRange3D.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/VectorWithOffset.h"
+#include "stir/Array.h"
+#include "stir/IndexRange3D.h"
 
-#include "display.h"
-#include "utilities.h" // for ask_... facilities
+#include "stir/display.h"
+#include "stir/utilities.h" // for ask_... facilities
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 int
 main()

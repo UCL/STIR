@@ -11,14 +11,18 @@
   $Date$
   $Revision$
 */
-#ifndef __tomo_Shape_DiscretisedShape3D_H__
-#define __tomo_Shape_DiscretisedShape3D_H__
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_Shape_DiscretisedShape3D_H__
+#define __stir_Shape_DiscretisedShape3D_H__
 
-#include "tomo/RegisteredParsingObject.h"
-#include "local/tomo/Shape/Shape3D.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredParsingObject.h"
+#include "local/stir/Shape/Shape3D.h"
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
@@ -81,8 +85,8 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/Shape/DiscretisedShape3D.inl"
+#include "local/stir/Shape/DiscretisedShape3D.inl"
 
 #endif

@@ -13,12 +13,17 @@
   $Revision$
 
 */
-#include "tomo/common.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/common.h"
 
 #include <cstdarg>
 #include <stdlib.h>
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 void error(const char *const s, ...)
 {
@@ -27,4 +32,4 @@ void error(const char *const s, ...)
   vfprintf(stderr, s, ap);
   abort();
 }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

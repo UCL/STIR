@@ -16,18 +16,23 @@
 
   $Revision$
 */
-#include "shared_ptr.h"
-#include "LogLikBased/common.h"
-#include "recon_array_functions.h"
-#include "ArrayFunction.h"
-#include "RelatedViewgrams.h"
-#include "DiscretisedDensity.h"
-#include "ProjDataFromStream.h"
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "recon_buildblock/distributable.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/shared_ptr.h"
+#include "stir/LogLikBased/common.h"
+#include "stir/recon_array_functions.h"
+#include "stir/ArrayFunction.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/recon_buildblock/distributable.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 //! Call-back function for compute_gradient
@@ -249,4 +254,4 @@ void RPC_process_related_viewgrams_sensitivity
 }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -16,24 +16,29 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date: 
+  $Date: 
 
-  \version $Revision: 
+  $Revision: 
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "recon_buildblock/ProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "tomo/RegisteredParsingObject.h"
-#include "shared_ptr.h"
-//#include "recon_buildblock/DataSymmetriesForBins.h"
-//#include "RelatedViewgrams.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/RegisteredParsingObject.h"
+#include "stir/shared_ptr.h"
+//#include "stir/recon_buildblock/DataSymmetriesForBins.h"
+//#include "stir/RelatedViewgrams.h"
 
 class Viewgrams;
 template <typename elemT> class RelatedViewgrams;
 class ProjDataInfoCylindricalArcCorr;
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \brief This implements the BackProjectorByBin interface, given any 
@@ -82,9 +87,9 @@ private:
 
  
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-//#include "BackProjectorByBinUsingSquareProjMatrixByBin.inl"
+//#include "stir/BackProjectorByBinUsingSquareProjMatrixByBin.inl"
 
 #endif
 

@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -13,13 +13,18 @@
   \author Claire Labbe
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "Scanner.h"
-#include "utilities.h"
+#include "stir/Scanner.h"
+#include "stir/utilities.h"
 #include <iostream>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -29,7 +34,7 @@
 #endif
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
 using std::ends;
@@ -37,7 +42,7 @@ using std::cin;
 using std::find;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 // local convenience functions to make a list of strings
 static list<string> 
@@ -453,4 +458,4 @@ string_list(const string& s1, const string& s2, const string& s3, const string& 
   return l;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -17,18 +17,23 @@
   $Date$       
   $Revision$
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "recon_buildblock/ReconstructionParameters.h" 
-#include "utilities.h"
+#include "stir/recon_buildblock/ReconstructionParameters.h" 
+#include "stir/utilities.h"
 #include <iostream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
 using std::ends;
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 ReconstructionParameters::ReconstructionParameters()
@@ -156,7 +161,7 @@ bool ReconstructionParameters::post_processing()
  
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
 

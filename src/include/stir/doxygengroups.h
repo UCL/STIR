@@ -11,6 +11,10 @@ Library with things that are not not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /*!
 \defgroup recon_buildblock Reconstruction building blocks
 Library with 'general' reconstruction building blocks

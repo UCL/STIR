@@ -26,24 +26,29 @@
   If no proj_data_file is given, some questions are asked to use 'standard'
   characteristics.        
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#include "local/tomo/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-//#include "display.h"
-#include "interfile.h"
-#include "ProjDataFromStream.h"
-#include "ProjDataInfo.h"
+#include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
+//#include "stir/display.h"
+#include "stir/interfile.h"
+#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInfo.h"
 // for ask_filename...
-#include "utilities.h"
-#include "IndexRange3D.h"
-#include "RelatedViewgrams.h"
-#include "SegmentByView.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "CPUTimer.h"
+#include "stir/utilities.h"
+#include "stir/IndexRange3D.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/SegmentByView.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/CPUTimer.h"
 #include <fstream>
 
 
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 USING_NAMESPACE_STD
 
 

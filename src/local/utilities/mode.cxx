@@ -10,6 +10,10 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 #include <fstream>
 #include <strstream>
 #include <vector>

@@ -12,15 +12,19 @@
   $Date$
   $Revision$
 */
-#ifndef __Tomo_recon_buildblock_ProjectorByBinPair_h_
-#define __Tomo_recon_buildblock_ProjectorByBinPair_h_
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_recon_buildblock_ProjectorByBinPair_h_
+#define __stir_recon_buildblock_ProjectorByBinPair_h_
 
-#include "tomo/RegisteredObject.h"
-#include "recon_buildblock/ForwardProjectorByBin.h"
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "shared_ptr.h"
+#include "stir/RegisteredObject.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/shared_ptr.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
@@ -74,7 +78,7 @@ protected:
 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 
-#endif // __Tomo_recon_buildblock_ProjectorByBinPair_h_
+#endif // __stir_recon_buildblock_ProjectorByBinPair_h_

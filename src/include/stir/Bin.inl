@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,11 +12,16 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 Bin::Bin()
 {}
@@ -106,4 +111,4 @@ Bin::operator!=(const Bin& bin2) const
   return !(*this==bin2);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -16,8 +16,13 @@
    catered for by explicit instantiations. If you need it for any other
    types, you'd have to add them by hand.
  */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 //----------------------------------------------------------------------
 // element wise and in place numeric functions
@@ -479,5 +484,5 @@ matrix_multiply(const Array<2,elemT> &m1, const Array<2,elemT>& m2)
 }
 #endif // 0 (2D routines)
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 

@@ -13,8 +13,12 @@
    $Date$
    $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 DataSymmetriesForViewSegmentNumbers*
 TrivialDataSymmetriesForViewSegmentNumbers::
@@ -47,4 +51,4 @@ find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const
   return false;
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

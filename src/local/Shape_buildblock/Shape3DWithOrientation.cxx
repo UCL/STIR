@@ -12,9 +12,13 @@
   $Date$
   $Revision$
 */
-#include "local/tomo/Shape/Shape3DWithOrientation.h"
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "local/stir/Shape/Shape3DWithOrientation.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 
 void 
@@ -165,4 +169,4 @@ set_key_values()
   beta_in_degrees = static_cast<float>(get_angle_beta()*180./_PI);
   gamma_in_degrees = static_cast<float>(get_angle_gamma()*180./_PI);
 }
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

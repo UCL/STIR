@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -10,14 +10,19 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "ProjDataInfo.h"
+#include "stir/ProjDataInfo.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 const ProjDataInfo*
 ProjData::get_proj_data_info_ptr() const
@@ -70,4 +75,4 @@ int ProjData::get_max_tangential_pos_num() const
 { return proj_data_info_ptr->get_max_tangential_pos_num(); }
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

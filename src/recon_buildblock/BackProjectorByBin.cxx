@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -10,17 +10,22 @@
   \author Kris Thielemans
   \author PARAPET project
   
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 
-#include "recon_buildblock/BackProjectorByBin.h"
-#include "RelatedViewgrams.h"
-#include "DiscretisedDensity.h"
-//#include "Viewgram.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/DiscretisedDensity.h"
+//#include "stir/Viewgram.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 #if 0
 
@@ -70,4 +75,4 @@ void BackProjectorByBin::back_project
 
 #endif
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

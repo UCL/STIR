@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file 
@@ -10,13 +10,18 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 ByteOrder::ByteOrder(Order byte_order)
   : byte_order(byte_order)
@@ -50,4 +55,4 @@ bool ByteOrder::operator!=(const ByteOrder order2) const
 return !(*this == order2);
 }
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR

@@ -11,14 +11,18 @@
   $Date$
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
-#ifndef __Tomo_recon_buildblock_BinNormalisation_H__
-#define __Tomo_recon_buildblock_BinNormalisation_H__
+#ifndef __stir_recon_buildblock_BinNormalisation_H__
+#define __stir_recon_buildblock_BinNormalisation_H__
 
 
-#include "tomo/RegisteredObject.h"
+#include "stir/RegisteredObject.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 template <typename elemT> class RelatedViewgrams;
 
@@ -56,6 +60,6 @@ public:
   virtual void undo(RelatedViewgrams<float>&) const = 0; 
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
 #endif

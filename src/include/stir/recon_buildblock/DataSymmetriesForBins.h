@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,29 +11,34 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForBins_H__
 #define __DataSymmetriesForBins_H__
 
-#include "DataSymmetriesForViewSegmentNumbers.h"
-#include "ProjDataInfo.h"
-#include "shared_ptr.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/shared_ptr.h"
 #include <vector>
 #include <memory>
 
-#include "Coordinate2D.h"
+#include "stir/Coordinate2D.h"
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
-#ifndef TOMO_NO_AUTO_PTR
+#ifndef STIR_NO_AUTO_PTR
 using std::auto_ptr;
 #endif
 #endif
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class Bin;
 class SymmetryOperation;
@@ -73,7 +78,7 @@ public:
   virtual ~DataSymmetriesForBins() {};
 
   virtual 
-#ifndef TOMO_NO_COVARIANT_RETURN_TYPES
+#ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForBins 
 #else
     DataSymmetriesForViewSegmentNumbers
@@ -161,9 +166,9 @@ protected:
   const shared_ptr<ProjDataInfo> proj_data_info_ptr;
 };
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "recon_buildblock/DataSymmetriesForBins.inl"
+#include "stir/recon_buildblock/DataSymmetriesForBins.inl"
 
 
 #endif

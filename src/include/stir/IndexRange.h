@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __IndexRange_H__
@@ -13,15 +13,20 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date    $Date$
+  $Date$
 
-  \version $Revision$
+  $Revision$
 
 */
-#include "VectorWithOffset.h"
-#include "BasicCoordinate.h"
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
+#include "stir/VectorWithOffset.h"
+#include "stir/BasicCoordinate.h"
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 /*!
   \ingroup buildblock
@@ -101,7 +106,7 @@ public:
 			 BasicCoordinate<num_dimensions, int>& min,
 			 BasicCoordinate<num_dimensions, int>& max) const;
 
-#ifdef TOMO_NO_MUTABLE
+#ifdef STIR_NO_MUTABLE
   //! checks if the range is 'regular'
   inline bool is_regular();
 
@@ -116,7 +121,7 @@ private:
   enum is_regular_type {regular_true, regular_false, regular_to_do};
 
   //! variable storing the current knowledge about regularity
-#ifndef TOMO_NO_MUTABLE
+#ifndef STIR_NO_MUTABLE
   mutable 
 #endif
     is_regular_type is_regular_range;
@@ -156,9 +161,9 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "IndexRange.inl"
+#include "stir/IndexRange.inl"
 
 #endif
 

@@ -57,20 +57,20 @@ install: $(EXES)
 
 include $(WORKSPACE)/Makefile_bblibs
 
-#$(DEST)libcti.a: $(DEST)cti_utils.o  $(DEST)Tomo_cti.o
+#$(DEST)libcti.a: $(DEST)cti_utils.o  $(DEST)stir_cti.o
 #	$(AR) r $@ $?
 #	ranlib $@
 
 
 $(DEST)conv_to_ecat6: $(DEST)conv_to_ecat6.o \
-    $(DEST)cti_utils.o $(DEST)Tomo_cti.o ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)Tomo_cti.o \
+    $(DEST)cti_utils.o $(DEST)stir_cti.o ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)stir_cti.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
 
 
 $(DEST)convecat6_if: $(DEST)convecat6_if.o \
-    $(DEST)cti_utils.o $(DEST)Tomo_cti.o ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)Tomo_cti.o \
+    $(DEST)cti_utils.o $(DEST)stir_cti.o ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)stir_cti.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
 
 

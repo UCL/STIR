@@ -1,9 +1,9 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
-#ifndef __Tomo_recon_buildblock_ProjMatrixElemsForOneDensel__
-#define __Tomo_recon_buildblock_ProjMatrixElemsForOneDensel__
+#ifndef __stir_recon_buildblock_ProjMatrixElemsForOneDensel__
+#define __stir_recon_buildblock_ProjMatrixElemsForOneDensel__
 
 /*!
 
@@ -17,15 +17,19 @@
   $Date$        
   $Revision$
 */
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 
 
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDenselValue.h"
-#include "local/tomo/Densel.h"
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.h"
+#include "local/stir/Densel.h"
 #include <vector>
 #include <fstream>
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::vector;
 using std::fstream;
 using std::random_access_iterator_tag;
@@ -33,7 +37,7 @@ using std::random_access_iterator_tag;
 
 
 
-START_NAMESPACE_TOMO
+START_NAMESPACE_STIR
 
 class RelatedDensels;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -190,8 +194,8 @@ private:
 };
 
 
-END_NAMESPACE_TOMO
+END_NAMESPACE_STIR
 
-#include "local/tomo/recon_buildblock/ProjMatrixElemsForOneDensel.inl"
+#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.inl"
 
 #endif

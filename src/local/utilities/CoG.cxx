@@ -3,18 +3,18 @@
 //
 
 
-#include "DiscretisedDensity.h"
-#include "VoxelsOnCartesianGrid.h"
-#include "shared_ptr.h"
-#include "CartesianCoordinate3D.h"
-#include "CartesianCoordinate2D.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/shared_ptr.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/CartesianCoordinate2D.h"
 #include <iostream>
 #include <iomanip>
 #include <numeric>
 #include <fstream>
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::cout;
 using std::setw;
@@ -22,7 +22,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-USING_NAMESPACE_TOMO
+USING_NAMESPACE_STIR
 
 template <class T> CartesianCoordinate3D<T> 
 find_centre_of_gravity(const Array<2,T>& plane);
@@ -96,6 +96,10 @@ main(int argc, char *argv[])
 
 
   /***************** Miscellaneous Functions  *******/
+/*
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 
 template <class T>
 T
