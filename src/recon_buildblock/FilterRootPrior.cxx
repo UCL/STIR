@@ -77,12 +77,13 @@ FilterRootPrior<elemT>::compute_gradient(DiscretisedDensity<3,elemT>& prior_grad
 }
 
 
+
 template <typename elemT>
 void 
 FilterRootPrior<elemT>::initialise_keymap()
 {
+  GeneralisedPrior<elemT>::initialise_keymap();
   parser.add_start_key("FilterRootPrior Parameters");
-  parser.add_key("penalisation_factor", &penalisation_factor);
   parser.add_parsing_key("Filter type", &filter_ptr); 
   parser.add_stop_key("END FilterRootPrior Parameters");
 }
@@ -92,9 +93,8 @@ template <typename elemT>
 void
 FilterRootPrior<elemT>::set_defaults()
 {
-  filter_ptr = 0;
-  penalisation_factor = 0;
-  
+  GeneralisedPrior<elemT>::set_defaults();
+  filter_ptr = 0;  
 }
 
 
