@@ -62,18 +62,19 @@ public:
   
   //! executes the rebinning
   /*!
-    Calls 1 argument rebin().
+    At the end of the rebinning, the final image is saved to file as given in
+    output_filename_prefix.
     \return Succeeded::yes if everything was alright.
    */     
   virtual Succeeded 
-    rebin();
+    rebin()=0;
+#if 0
   //! executes the ProjDataRebinning
   /*!
     At the end of the rebinning, the final image is saved to file as given in 
     output_filename_prefix. 
     \return Succeeded::yes if everything was alright.
    */     
-#if 0
   virtual Succeeded 
     rebin(const ProjData&) = 0;
 #endif
