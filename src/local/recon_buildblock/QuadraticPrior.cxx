@@ -57,13 +57,14 @@ QuadraticPrior<elemT>::post_processing()
     if (precomputed_weights_3D.get_length() !=0)
     {
     size_z = precomputed_weights_3D.get_length();
-    size_y = precomputed_weights_3D[1].get_length();
-    size_x = precomputed_weights_3D[1][1].get_length();  
+    size_y = precomputed_weights_3D[0].get_length();
+    size_x = precomputed_weights_3D[0][0].get_length();  
     }
     else
     {
+      size_z = 1;
      size_y = precomputed_weights.get_length();
-     size_x = precomputed_weights[1].get_length();  
+     size_x = precomputed_weights[0].get_length();  
     }
     const int min_index_z = -(size_z/2);
     const int min_index_y = -(size_y/2);
