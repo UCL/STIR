@@ -27,8 +27,14 @@
 START_NAMESPACE_STIR
 
 static InterfileOutputFileFormat::RegisterIt dummy1;
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT6
 static ECAT6OutputFileFormat::RegisterIt dummy2;
+END_NAMESPACE_ECAT6
 #ifdef HAVE_LLN_MATRIX
+START_NAMESPACE_ECAT7
 static ECAT7OutputFileFormat::RegisterIt dummy3;
+END_NAMESPACE_ECAT7
 #endif
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR

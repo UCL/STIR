@@ -4,8 +4,7 @@
 
 /*! 
 \file
-\ingroup utilities
-\ingroup ECAT
+\ingroup ECAT_utilities
 \brief Utility to make Interfile headers for ECAT7 data
 \author Kris Thielemans
 
@@ -62,6 +61,7 @@ using std::endl;
 
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 
 int	
