@@ -1,9 +1,13 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    For GE internal use only.
+*/
 /*!
   \file 
-  \ingroup listmode
+  \ingroup listmode_utilities
 
   \brief Program to show info about listmode data
  
@@ -12,14 +16,10 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
-*/
 
 
-#include "local/stir/listmode/CListRecord.h"
-#include "local/stir/listmode/CListModeData.h"
+#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/Succeeded.h"
 
 #include "stir/Scanner.h"
