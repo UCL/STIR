@@ -35,6 +35,7 @@
 #define _SWAPEM_
 #endif
 
+START_NAMESPACE_TOMO
 int get_scanheaders (FILE *fptr, long matnum, Main_header *mhead, 
                      Scan_subheader *shead, ScanInfoRec *scanParams)
 {
@@ -1265,3 +1266,5 @@ Image_subheader img_zero_fill()
 
     return(v_ihead);
 }
+
+END_NAMESPACE_TOMO
