@@ -91,7 +91,7 @@ private:
   DiscretisedDensity<3,float>* sensitivity_image;
   string sensitivity_image_filename;
 
-   DiscretisedDensity<3,float>* precomputed_coefficients_image ;
+  mutable DiscretisedDensity<3,float>* precomputed_coefficients_image ;
   string precomputed_coefficients_filename;
 
   DiscretisedDensity<3,float>* normalised_bck_image ;
