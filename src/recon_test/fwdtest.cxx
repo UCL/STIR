@@ -5,14 +5,13 @@
 /*!
 
   \file
-
+  \ingroup recontest
   \brief Testing programme for forward projection
 
   \author Kris Thielemans
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 
   This programme allows forward projection of a few segments/views
@@ -37,6 +36,7 @@
 #include "IndexRange3D.h"
 #include "RelatedViewgrams.h"
 #include "SegmentByView.h"
+#include "VoxelsOnCartesianGrid.h"
 #include <fstream>
 
 
