@@ -5,6 +5,7 @@ dir := test
 
 $(dir)_TEST_SOURCES := test_Array.cxx \
 	test_VectorWithOffset.cxx \
+	ArrayFilterUsingRealDFTWithPadding.cxx \
         test_convert_array.cxx \
 	test_IndexRange.cxx \
 	test_coordinates.cxx \

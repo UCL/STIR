@@ -35,6 +35,7 @@ $(dir)_LIB_SOURCES := \
 	TimeFrameDefinitions.cxx \
 	ParsingObject.cxx \
 	ArrayFilter1DUsingConvolutionSymmetricKernel.cxx \
+	ArrayFilterUsingRealDFTWithPadding.cxx \
 	SeparableArrayFunctionObject.cxx \
 	SeparableMetzArrayFilter.cxx \
 	MedianArrayFilter3D.cxx \
