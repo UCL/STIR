@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 			     << setw(6) << max_k*grid_spacing[1] 
 			     << ',' << setw(6) << max_j*grid_spacing[2] 
 			     << ',' << setw(6)  << max_i*grid_spacing[3]
-				 << in mm relative to origin";
+				 << "in mm relative to origin";
 			  }
 			cout << '\n';
 			found = true;		  
