@@ -14,7 +14,7 @@
   $Revision$
 */
 #include "ProjDataInfoCylindrical.h"
-#include "SymmetryOperations_PET_CartesianGrid.h"
+#include "recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 
 
 START_NAMESPACE_TOMO
