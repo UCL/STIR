@@ -13,8 +13,8 @@
 class InterfileHeader : public KeyParser
 {
 public:
-  //KT 26/10/98 moved to .cxx file
-  InterfileHeader(istream& f);
+  // KT 13/11/98 moved stream arg from constructor to parse()
+  InterfileHeader();
 
 protected:
 
@@ -84,8 +84,9 @@ public :
 class InterfileImageHeader : public InterfileHeader
 {
 public:
-   InterfileImageHeader(istream& f)
-     : InterfileHeader(f)
+  // KT 13/11/98 moved stream arg from constructor to parse()
+  InterfileImageHeader()
+     : InterfileHeader()
    {}
 
 protected:
@@ -102,7 +103,8 @@ class InterfilePSOVHeader : public InterfileHeader
 {
 public:
    //KT 26/10/98 
-  InterfilePSOVHeader(istream& f);
+  // KT 13/11/98 moved stream arg from constructor to parse()
+  InterfilePSOVHeader();
 
 protected:
 
