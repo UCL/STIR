@@ -14,13 +14,13 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #ifdef _MSC_VER
 #pragma message("instantiating RegisteredObject<Shape3D>")
-#include "local/stir/Shape/Shape3D.h"
+#include "stir/Shape/Shape3D.h"
 
 // and others
 START_NAMESPACE_STIR

@@ -17,7 +17,7 @@
 
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
 
 START_NAMESPACE_STIR
 

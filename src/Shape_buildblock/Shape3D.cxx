@@ -13,11 +13,11 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/Shape/Shape3D.h"
-#include "local/stir/Shape/DiscretisedShape3D.h"
+#include "stir/Shape/Shape3D.h"
+#include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
