@@ -53,7 +53,6 @@ main()
 
   int scale = 0;
   int max_mode = 0;
-  int nr_sc = 0;
 
 
   if (!ask("Accept defaults ?",true))
