@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,13 +11,13 @@
   \author Mustapha Sadki
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #ifndef __ProjMatrixByBinUsingRayTracing__
 #define __ProjMatrixByBinUsingRayTracing__
 
+#include "tomo/RegisteredParsingObject.h"
 #include "recon_buildblock/ProjMatrixByBin.h"
 #include "ProjDataInfo.h"
 #include "CartesianCoordinate3D.h"
@@ -54,16 +54,25 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 */
 
-class ProjMatrixByBinUsingRayTracing : public ProjMatrixByBin
+class ProjMatrixByBinUsingRayTracing : 
+  public RegisteredParsingObject<
+	      ProjMatrixByBinUsingRayTracing,
+              ProjMatrixByBin
+	       >
 {
 public :
+    //! Name which will be used when parsing a ProjMatrixByBin object
+  static const char * const registered_name; 
 
-  //! Constructor, taking all geometric info
-  /*! The density_info_ptr is not stored to avoid using memory for the data itself.
+  //! Default constructor (calls set_defaults())
+  ProjMatrixByBinUsingRayTracing();
+
+  //! Stores all necessary geometric info
+  /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
-  ProjMatrixByBinUsingRayTracing(		 
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr, // TODO should be Info only
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr
+  virtual void set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
 private:
@@ -75,12 +84,16 @@ private:
   CartesianCoordinate3D<int> min_index;
   CartesianCoordinate3D<int> max_index;
 
-  const shared_ptr<ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_ptr;
 
 
   virtual void 
     calculate_proj_matrix_elems_for_one_bin(
                                             ProjMatrixElemsForOneBin&) const;
+
+   virtual void set_defaults();
+   virtual void initialise_keymap();
+  
 };
 
 END_NAMESPACE_TOMO

@@ -23,6 +23,7 @@
 
 #include "recon_buildblock/ProjMatrixByBin.h"
 #include "recon_buildblock/ForwardProjectorByBin.h"
+#include "tomo/RegisteredParsingObject.h"
 #include "shared_ptr.h"
 
 
@@ -39,14 +40,29 @@ template <typename elemT> class RelatedViewgrams;
   It stores a shared_ptr to a ProjMatrixByBin object, which will be used
   to get the relevant elements of the projection matrix.
   */
-class ForwardProjectorByBinUsingProjMatrixByBin: public  ForwardProjectorByBin
+class ForwardProjectorByBinUsingProjMatrixByBin: 
+  public RegisteredParsingObject<ForwardProjectorByBinUsingProjMatrixByBin,
+                                 ForwardProjectorByBin>
 { 
 public:
-  
+    //! Name which will be used when parsing a ForwardProjectorByBin object
+  static const char * const registered_name; 
+
+  ForwardProjectorByBinUsingProjMatrixByBin();
+
   ForwardProjectorByBinUsingProjMatrixByBin(  
     const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr
     );
-    
+
+  //! Stores all necessary geometric info
+  /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
+  */
+  virtual void set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    );
+
+  
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
   
@@ -58,6 +74,9 @@ private:
 			      const DiscretisedDensity<3,float>& image,
 			      const int min_axial_pos_num, const int max_axial_pos_num,
 			      const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
   
 };
 
