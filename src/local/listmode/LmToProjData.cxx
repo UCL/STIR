@@ -147,6 +147,7 @@ set_defaults()
   num_segments_in_memory = -1;
   normalisation_ptr = new TrivialBinNormalisation;
   pre_or_post_normalisation =0;
+  num_events_to_store = 0;
   
 }
 
@@ -158,6 +159,7 @@ initialise_keymap()
   parser.add_key("input file",&input_filename);
   parser.add_key("template_projdata", &template_proj_data_name);
   parser.add_key("frame_definition file",&frame_definition_filename);
+  parser.add_key("num_events_to_store",&num_events_to_store);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
@@ -188,11 +190,11 @@ post_processing()
       return true;
     }
 
-  if (is_null_ptr(normalisation_ptr))
-  {
-    warning("Invalid normalisation object\n");
-    return true;
-  }
+  if (!interactive && output_filename_prefix.size()==0)
+    {
+      warning("You have to specify an output_filename_prefix\n");
+      return true;
+    }
 
   lm_data_ptr =
     CListModeData::read_from_file(input_filename);
@@ -208,18 +210,26 @@ post_processing()
   template_proj_data_info_ptr = 
     template_proj_data_ptr->get_proj_data_info_ptr()->clone();
 
+
   shared_ptr<Scanner> scanner_ptr = 
     new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
 
   // TODO this won't work for the HiDAC or so
-   proj_data_info_cyl_uncompressed_ptr =
+  proj_data_info_cyl_uncompressed_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
                   1, scanner_ptr->get_num_rings()-1,
                   scanner_ptr->get_num_detectors_per_ring()/2,
                   scanner_ptr->get_default_num_arccorrected_bins(), 
                   false));
-   // set up normalisation object
+  // set up normalisation object
+  if (is_null_ptr(normalisation_ptr))
+    {
+      //normalisation_ptr = new TrivialBinNormalisation;
+      warning("Invalid normalisation object\n");
+      return true;
+    }
+
   if (pre_or_post_normalisation)
     {
       if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
@@ -233,6 +243,7 @@ post_processing()
 	error("correct_projdata: set-up of normalisation failed\n");
     }
 
+  // initialise segment_num related variables
 
   if (max_segment_num_to_process==-1)
     max_segment_num_to_process = 
@@ -254,11 +265,24 @@ post_processing()
     num_segments_in_memory =
       min(num_segments_in_memory, num_segments);
 
-  frame_defs = TimeFrameDefinitions(frame_definition_filename);
+  // handle time frame definitions etc
 
-  do_time_frame = true;
-  // TODO handle num_events stuff
+  do_time_frame = num_events_to_store<=0;
 
+  if (do_time_frame && frame_definition_filename.size()==0)
+    {
+      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'\n");
+      return true;
+    }
+
+  if (frame_definition_filename.size()!=0)
+    frame_defs = TimeFrameDefinitions(frame_definition_filename);
+  else
+    {
+      // make a single frame starting from 0. End value will be ignored.
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      frame_defs = TimeFrameDefinitions(frame_times);
+    }
   return false;
 }
 
