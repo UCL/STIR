@@ -24,7 +24,6 @@
 							  [upper_energy_threshold]
 							  [maximum_scatter_points]
 							  [random points]
-							  [use_cosphi]
 							  [use_cache]
 							  [scatter_level]
   	
@@ -36,7 +35,6 @@
 	  \param upper_energy_threshold defaults to 650 keV		  
 	  \param maximum_scatter_points defaults to 1000: Input not activated	
 	  \param random points defaults to true
-	  \param use_cosphi defaults to false
 	  \param use_cache defaults to true
 	  \param scatter_level defaults to 1 (Single Scatter)
 */
@@ -77,17 +75,18 @@ int main(int argc, const char *argv[])
 			<< "\t[upper_energy_threshold]\n"
 			<< "\t[maximum_scatter_points]\n"
 			<< "\t[random points]\n"
-			<< "\t[use_cosphi]\n"
 			<< "\t[use_cache]\n"
 			<< "\t[scatter_level]\n\n"
 			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
 			<< "\tlower_energy_threshold defaults to 350 keV\n"
 			<< "\tupper_energy_threshold defaults to 650 keV\n"			
 			<< "\tmaximum_scatter_points defaults to 1000\n" 
-			<< "\tuse_cosphi defaults to false, use 1 to set to true\n"
 			<< "\tuse_cache defaults to true, use 0 to set to false\n"
-			<< "\tscatter_level defaults to 0 finds the SSS+DSS\n"
-			<< "\tuse 1 for only SSS or 2 for only DSS\n" ;
+			<< "\tscatter_level simulation defaults to 10 finds the simulated acquired sinogram\n"
+			<< "\tscatter_level to 12 finds the SSS+DSS\n"
+			<< "\tuse 1 for only SSS\n"
+			<< "\t    2 for only DSS\n" 
+			<< "\tor  0 for no scatter sinogram\n" ;
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
@@ -97,13 +96,10 @@ int main(int argc, const char *argv[])
 	bool random = true;
 	if (argc>=10 && atoi(argv[9])==0)
 		random = false;
-	bool use_cosphi = false;
-	if (argc>=11 && atoi(argv[10])==1)
-		use_cosphi = true;
 	bool use_cache = true;
 	if (argc>=12 && atoi(argv[11])==0)
 		use_cache = false;
-	const int scatter_level = argc>= 13 ? atoi(argv[12]) : 0 ;
+	const int scatter_level = argc>= 13 ? atoi(argv[12]) : 10 ;
 	
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
@@ -142,7 +138,7 @@ int main(int argc, const char *argv[])
 		activity_image, density_image,
 		scatt_points,attenuation_threshold,
 		lower_energy_threshold,upper_energy_threshold,
-		use_cosphi,use_cache,scatter_level,random);  
+		use_cache,scatter_level,random);  
 
 	writing_log(activity_image,
 		density_image,
@@ -151,7 +147,7 @@ int main(int argc, const char *argv[])
 		scatt_points,
 		lower_energy_threshold,
 		upper_energy_threshold,
-		use_cosphi,use_cache,
+		use_cache,
 		random,argv);
 
 	return EXIT_SUCCESS;

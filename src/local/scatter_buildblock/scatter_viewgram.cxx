@@ -59,7 +59,7 @@ void scatter_viewgram(
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 					  int& scatt_points, const float att_threshold, 
 					  const float lower_energy_threshold, const float upper_energy_threshold,		
-					  const bool use_cosphi,const bool use_cache, const int scatter_level, const bool random)
+					  const bool use_cache, const int scatter_level, const bool random)
 {		
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
 		dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
@@ -151,6 +151,29 @@ void scatter_viewgram(
 					const unsigned det_num_B =
 					  find_in_detection_points_vector(detector_coord_B + 
 					                                  shift_detector_coordinates_to_origin);
+				
+					//Temporary save in the scatter sinogram
+					if(scatter_level%10==0)
+					bin.set_bin_value(scatter_estimate_for_none_scatter_point(
+						image_as_activity, image_as_density, 
+						det_num_A, det_num_B,
+						lower_energy_threshold, 
+						upper_energy_threshold));	
+					else if(scatter_level==120)
+					bin.set_bin_value(scatter_estimate_for_none_scatter_point(
+						image_as_activity, image_as_density, 
+						det_num_A, det_num_B,
+						lower_energy_threshold, 
+						upper_energy_threshold)+
+						scatter_estimate_for_all_scatter_points(
+						image_as_activity,
+						image_as_density,
+						det_num_A, 
+						det_num_B,
+						lower_energy_threshold,
+						upper_energy_threshold,
+						use_cache,scatter_level));	
+					else
 					bin.set_bin_value(
 						scatter_estimate_for_all_scatter_points(
 						image_as_activity,
@@ -159,7 +182,7 @@ void scatter_viewgram(
 						det_num_B,
 						lower_energy_threshold,
 						upper_energy_threshold,
-						use_cosphi,use_cache,scatter_level));
+						use_cache,scatter_level));
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();

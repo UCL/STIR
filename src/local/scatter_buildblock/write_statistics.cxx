@@ -50,7 +50,7 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const int total_scatt_points, 
 				 const float lower_energy_threshold, 
 				 const float upper_energy_threshold,
-				 const bool use_cosphi, const bool use_cache,
+				 const bool use_cache,
 				 const bool random, const char *argv[])
 {	
 	Bin bin;
@@ -98,10 +98,6 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 		mystream << " and have picked randomly\n";
 	if (!random)
 		mystream << " and have picked in the center of the Voxel\n";
-	if(use_cosphi)
-		mystream << " - The prompt angle has been taken into account\n";
-	if(!use_cosphi)
-		mystream << " - The prompt angle has not been taken into account\n";
 	if(use_cache)
 		mystream << " - Use of caching\n";
 	if(!use_cache)

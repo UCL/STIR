@@ -32,7 +32,6 @@ float scatter_estimate_for_one_scatter_point(
 	  const unsigned det_num_B,
 	  const float lower_energy_threshold, 
 	  const float upper_energy_threshold,		
-	  const bool use_cosphi,
 	  const bool use_cache)
 {	
 	static const float max_single_scatter_cos_angle=max_cos_angle_BGO(lower_energy_threshold,2.);
@@ -56,12 +55,6 @@ float scatter_estimate_for_one_scatter_point(
 	const float new_energy =
 	  energy_after_scatter_511keV(costheta);
 
-	// TODO: slightly dangerous to use a static here
-	// it would give wrong results when the energy_thresholds are changed...	
-	static const float detection_efficiency_no_scatter =
-	  detection_efficiency_BGO(lower_energy_threshold,
-				   upper_energy_threshold,
-				   511);
 	const float detection_efficiency_scatter =
 	  detection_efficiency_BGO(lower_energy_threshold,
 				   upper_energy_threshold,
@@ -154,33 +147,30 @@ float scatter_estimate_for_one_scatter_point(
 	const float scatter_ratio =
 		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
 		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
-		/(rA_squared*rB_squared)
+		/(rA_squared*rB_squared) //3/4 is due to the volume of the pyramid approximation!
 		*dif_cross_section
 		*atten_to_detB
 		*atten_to_detA
 		*scatter_point_mu
-		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
 		;	
-	if (!use_cosphi)
-		return
-		scatter_ratio;
-	else
-	  {
 	    const CartesianCoordinate3D<float> 
 	      detA_to_ring_center(0,-detector_coord_A[2],-detector_coord_A[3]);
 	    const CartesianCoordinate3D<float> 
 	      detB_to_ring_center(0,-detector_coord_B[2],-detector_coord_B[3]);
-	    const float cos_incident_angle_A = 
+	    const float cos_incident_angle_AS = 
 	      cos_angle(scatter_point - detector_coord_A,
 			detA_to_ring_center) ;
-	    const float cos_incident_angle_B = 
+	    const float cos_incident_angle_BS = 
 	      cos_angle(scatter_point - detector_coord_B,
 			detB_to_ring_center) ;
+	    
 	    return
-	      scatter_ratio*cos_incident_angle_A*cos_incident_angle_A
-	      *cos_incident_angle_B*cos_incident_angle_B ;
-	  }
+	      scatter_ratio
+		  *cos_incident_angle_AS*cos_incident_angle_AS
+		  *cos_incident_angle_BS*cos_incident_angle_BS;
+;
+	
 }
 
 END_NAMESPACE_STIR
