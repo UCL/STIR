@@ -39,10 +39,13 @@ correct_projdata Parameters :=
     Bin Normalisation From ProjData :=
     normalisation projdata filename:= norm.hs
     End Bin Normalisation From ProjData:=
+
   ; attenuation image, will be forward projected to get attenuation factors
+  ; OBSOLETE
   ;attenuation image filename := attenuation_image.hv
   
   ; forward projector used to estimate attenuation factors, defaults to Ray Tracing
+  ; OBSOLETE
   ;forward_projector type := Ray Tracing
 
   ; scatter term to be subtracted AFTER norm+atten correction
