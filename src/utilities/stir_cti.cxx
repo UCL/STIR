@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,8 +11,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
@@ -302,7 +302,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 }
 
 void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
-                      int max_ring_diff,
+		   int max_ring_diff, bool arccorrected,
                       char *v_data_name, FILE *cti_fptr, Main_header &mhead)
 {
   shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_main_header(mhead);
@@ -397,7 +397,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     
     
     ProjDataInfo* p_data_info= 
-      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,span,max_ring_diff,num_views,num_tangential_poss); 
+      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,span,max_ring_diff,num_views,num_tangential_poss,arccorrected); 
     
     
     ProjDataFromStream::StorageOrder  storage_order=
@@ -501,7 +501,7 @@ void read_sinogram(Sinogram<float>& sino_2D,
   if (cti_read_main_header (fptr, &mhead) != EXIT_SUCCESS) 
     error("read_sinogram: error reading main_header");
   
-  float scale_factor;
+  float scale_factor = 0; // intialised to avoid compiler warnings
   switch(mhead.file_type)
   {
     case matScanFile:

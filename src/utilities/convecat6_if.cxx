@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 /*! 
@@ -10,8 +10,8 @@
   \author Damien Sauge
   \author Sanida Mustafovic
   \author PARAPET project
-  \version $Revision$
-  \date $Date$
+  $Revision$
+  $Date$
 
   \warning Most of the data in the ECAT 6 headers is ignored (except dimensions)
   \warning Data are scaled using the subheader.scale_factor * subheader.loss_correction_fctr
@@ -112,10 +112,12 @@ main(int argc, char *argv[])
       {            
         const int max_ring_diff= 
            ask_num("Max ring diff to store (-1 == num_rings-1)",-1,100,-1);
-        
+
+        const bool arccorrected = 
+	  ask("Consider the data to be arc-corrected?",true);
         ECAT6_to_PDFS(frame_num, gate_num, data_num, bed_num,
-                         max_ring_diff, 
-                         out_name, cti_fptr, mhead);
+		      max_ring_diff, arccorrected,
+		      out_name, cti_fptr, mhead);
         break;
       }
     default:
