@@ -1,6 +1,10 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    For internal GE use only.
+*/
 /*!
   \file 
   \ingroup motion
@@ -12,17 +16,14 @@
   $Revision$
 
 */
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    This software is distributed under the terms of the GNU Lesser General 
-    Public Licence (LGPL).
-    See STIR/LICENSE.txt for details
-*/
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "stir/IndexRange2D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/stream.h"
 #include <math.h>
+#ifndef NEW_ROT
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#endif
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -244,21 +245,16 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
 
 void 
 RigidObject3DTransformation::
-#ifndef NEW_ROT
-transform_bin(Bin& bin, 
-	      const ProjDataInfoCylindricalNoArcCorr& out_proj_data_info,
-	      const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const
-#else
- transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
+transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
 	             const ProjDataInfo& in_proj_data_info) const
-#endif  
 {
 
   const float value = bin.get_bin_value();
 #ifndef NEW_ROT
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
-  in_proj_data_info.find_cartesian_coordinates_of_detection(coord_1,coord_2,bin);
+  dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(in_proj_data_info).
+    find_cartesian_coordinates_of_detection(coord_1,coord_2,bin);
   
   // now do the movement
   
@@ -268,7 +264,7 @@ transform_bin(Bin& bin,
   const CartesianCoordinate3D<float> 
     coord_2_transformed = transform_point(coord_2);
   
-  out_proj_data_info.
+  dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(out_proj_data_info).
     find_bin_given_cartesian_coordinates_of_detection(bin,
                                                       coord_1_transformed,
 					              coord_2_transformed);
