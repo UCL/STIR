@@ -52,25 +52,32 @@ void ProjMatrixElemsForOneDensel::erase()
 
 ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator*=(const float d)
 {
-  iterator element_ptr = begin();
-  while (element_ptr != end())
+  // KT 21/02/2002 added check on 1
+  if (d != 1.F)
   {
-    *element_ptr *= d;        
-    ++element_ptr;
-  }	 
+    iterator element_ptr = begin();
+    while (element_ptr != end())
+    {
+      *element_ptr *= d;        
+      ++element_ptr;
+    }	 
+  }
   return *this;
 }
 
 ProjMatrixElemsForOneDensel& ProjMatrixElemsForOneDensel::operator/=(const float d)
 {
   assert( d != 0);
-  
-  iterator element_ptr = begin();
-  while (element_ptr != end())
-  { 
-    *element_ptr /= d;
-    ++element_ptr;
-  }	 
+  // KT 21/02/2002 added check on 1
+  if (d != 1.F)
+  {
+    iterator element_ptr = begin();
+    while (element_ptr != end())
+    { 
+      *element_ptr /= d;
+      ++element_ptr;
+    }
+  }
   return *this;
 }
 
