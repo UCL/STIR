@@ -8,9 +8,7 @@
 
   \brief non-inline implementations for ProjMatrixByDenselUsingRayTracing
 
-  \author Mustapha Sadki
   \author Kris Thielemans
-  \author PARAPET project
 
   $Date$
   $Revision$
@@ -55,14 +53,11 @@ void
 ProjMatrixByDenselUsingRayTracing::set_defaults()
 {}
 
-#if 0
-// static helper function
-// check if a is an integer multiple of b
-static bool is_multiple(const float a, const float b)
+const DataSymmetriesForDensels*
+ProjMatrixByDenselUsingRayTracing:: get_symmetries_ptr() const
 {
-  return fabs(fmod(static_cast<double>(a), static_cast<double>(b))) > 1E-5;
+  return  symmetries_ptr.get();
 }
-#endif
 
 void
 ProjMatrixByDenselUsingRayTracing::
@@ -120,6 +115,10 @@ add_adjacent_z(ProjMatrixElemsForOneDensel& probs);
 */         
 static void merge_zplus1(ProjMatrixElemsForOneDensel& probs);
 #endif
+static inline int sign(const float x) 
+{ return x>=0 ? 1 : - 1; }
+
+
 // for positive halfsizes, this is valid for 0<=phi<=Pi/2 && 0<theta<Pi/2
 static inline float 
   projection_of_voxel_help(const float xctr, const float yctr, const float zctr,
@@ -130,9 +129,9 @@ static inline float
 {
   const float epsilon = 1.E-4F;
   if (fabs(sphi)<epsilon)
-    sphi=epsilon;
+    sphi=sign(sphi)*epsilon;
   else if (fabs(cphi)<epsilon)
-    cphi=epsilon;
+    cphi=sign(cphi)*epsilon;
   const float zs = zctr - m; 
   const float ys = yctr - s*cphi;
   const float xs = xctr + s*sphi;
@@ -157,9 +156,9 @@ static inline float
     return 0.F;
 #if 1
   if (fabs(sphi)<epsilon)
-    sphi=epsilon;
+    sphi=sign(sphi)*epsilon;
   else if (fabs(cphi)<epsilon)
-    cphi=epsilon;
+    cphi=sign(cphi)*epsilon;
 #else
   // should work, but doesn't
   if (fabs(sphi)<epsilon)
@@ -175,8 +174,6 @@ static inline float
      0.F);
 }
 
-static inline int sign(const float x) 
-{ return x>0 ? 1 : - 1; }
 
 static inline float 
   projection_of_voxel(const float xctr, const float yctr, const float zctr,
@@ -210,10 +207,10 @@ static inline float
   const float costheta = 1/sqrt(1+square(tantheta));
   const float m = proj_data_info.get_t(bin)/costheta;
   // phi in KT's Mathematica conventions
-  const float phi = proj_data_info.get_phi(bin) - _PI/2; 
+  const float phi = proj_data_info.get_phi(bin) + _PI/2; 
   const float cphi = cos(phi);
   const float sphi = sin(phi);
-  const float s = proj_data_info.get_s(bin);
+  const float s = -proj_data_info.get_s(bin);
   
   return
     projection_of_voxel(xctr, yctr, zctr,
@@ -236,7 +233,6 @@ calculate_proj_matrix_elems_for_one_densel(
   const float zctr = 
     (densel[1] - (min_index.z() + max_index.z())/2.F) * voxel_size.z() +
     origin.z();
-  //assert(densel.axial_pos_num() == 0);
 
   assert(probs.size() == 0);
 #if 0     
@@ -285,24 +281,138 @@ calculate_proj_matrix_elems_for_one_densel(
 
   for (int seg = proj_data_info_ptr->get_min_segment_num(); seg <= proj_data_info_ptr->get_max_segment_num(); ++seg)
   {
-    // TODO: oblique segments need ax_pos_num outside range, but how?
-    if (seg!=0)
-      error("ProjMatrixByDenselUsingRayTracing doesn't work for oblique segments yet\n");
+    //if (seg!=0)
+    //  error("ProjMatrixByDenselUsingRayTracing doesn't work for oblique segments yet\n");
 
     int previous_min_tang_pos = proj_data_info_ptr->get_min_tangential_pos_num();
-    int previous_inc_min_tang_pos = -2;
+    int previous_inc_min_tang_pos = -1;
+    const int min_ax_pos = 
+      proj_data_info_ptr->get_min_axial_pos_num(seg) +
+      (densel[1]-max_index[1])/symmetries_ptr->get_num_planes_per_axial_pos(seg) - 1;
+    const int max_ax_pos = 
+      proj_data_info_ptr->get_max_axial_pos_num(seg) +
+      (densel[1]-min_index[1])/symmetries_ptr->get_num_planes_per_axial_pos(seg) + 1;
+    int previous_min_ax_pos = min_ax_pos;
+    int previous_inc_min_ax_pos = -1;
 
     for (int view = proj_data_info_ptr->get_min_view_num(); view <= proj_data_info_ptr->get_max_view_num(); ++view)
     {
       bool found_nonzero_axial = false;
-      for (int ax_pos = proj_data_info_ptr->get_min_axial_pos_num(seg); ax_pos <= proj_data_info_ptr->get_max_axial_pos_num(seg); ++ax_pos)
+      int start_ax_pos = previous_min_ax_pos + previous_inc_min_ax_pos;
+      int ax_pos_inc = -1;
+      for (int ax_pos = start_ax_pos; ax_pos <= max_ax_pos; ax_pos+=ax_pos_inc)
       {
+        if (ax_pos<min_ax_pos)
+        {
+          ax_pos_inc = 1;
+          ax_pos=min_ax_pos;
+          continue;
+        }
+        // else
+        
         bool found_nonzero_tangential = false;
         int start_tang_pos = previous_min_tang_pos + previous_inc_min_tang_pos;
         
         // check if the increment wasn't too large (or not negative enough):
         // do this by looping until the current bin gives 0          
-        while(true)
+#if 1
+        //std::cerr << "Start at tang_pos " << start_tang_pos 
+        //          << " (" << seg << ',' << view << ',' << ax_pos << ')'<< std::endl;
+        Bin bin(seg, view, ax_pos, 0);          
+        int tang_pos_inc = -1;
+        for (int tang_pos = start_tang_pos; tang_pos <= proj_data_info_ptr->get_max_tangential_pos_num(); tang_pos+=tang_pos_inc)
+        {
+          if (tang_pos<proj_data_info_ptr->get_min_tangential_pos_num())
+          {
+            tang_pos_inc = 1;
+            tang_pos=proj_data_info_ptr->get_min_tangential_pos_num();
+            continue;
+          }
+          // else
+        
+          bin.tangential_pos_num() = tang_pos;
+          const float LOI = 
+            projection_of_voxel(xctr, yctr, zctr,
+                                xhalfsize, yhalfsize, zhalfsize,
+                                bin, *proj_data_info_ptr);
+          if (LOI > xhalfsize/1000.)
+          {
+            if (tang_pos_inc==-1)
+            {
+              // it's non-zero, check next bin to the left
+              --previous_inc_min_tang_pos;
+            }
+            else
+            {
+              if (!found_nonzero_tangential) 
+              {
+                //std::cerr << "\tfirst tang_pos at " << tang_pos 
+                //          << '(' << seg << ',' << view << ',' << ax_pos << ')'<< std::endl;
+                previous_min_tang_pos = tang_pos;
+                found_nonzero_tangential = true;
+              }
+              if (ax_pos_inc==+1)
+              {
+#ifdef NEWSCALE
+                bin.set_bin_value(LOI); // normalise to mm
+#else
+                bin.set_bin_value(LOI/voxel_size.x()); // normalise to some kind of 'pixel units'
+#endif
+                probs.push_back(ProjMatrixElemsForOneDensel::value_type(bin));
+              }
+            }
+          }
+          else // the Pbv was zero
+          {
+            if (tang_pos_inc==-1)
+            {
+              tang_pos_inc=1;
+            }
+            else
+            {
+              if (found_nonzero_tangential)
+              {
+                // the first tang_pos where the result is zero again. So, all the next ones will be 0 as well.
+                break;
+              }
+            }
+          }
+        } // end loop over tang_pos
+        if (found_nonzero_tangential)
+        {
+          if (ax_pos_inc==-1)
+          {
+            // it's non-zero, check next bin to the left
+            --previous_inc_min_ax_pos;
+          }
+          else
+          {            
+            if (!found_nonzero_axial)
+            {
+              previous_min_ax_pos = ax_pos;
+              found_nonzero_axial = true;
+            }
+          }
+        }
+        else // all bins for this ax_pos were zero
+        {
+          if (ax_pos_inc==-1)
+          {
+            ax_pos_inc = 1;
+          }
+          else if (found_nonzero_axial)
+          {            
+            // the first ax_pos where the result is zero again. So, all the next ones will be 0 as well.
+            break;
+            // TODO potentially, the mechanism of using previous_min_ax_pos caused the 
+            // ax_pos loop to miss to non-zero bins. See above
+          }
+        }
+        
+      }
+    
+#else
+            while(true)
         {
           // if we're at the smallest bin, keep the increment
           if (start_tang_pos<=proj_data_info_ptr->get_min_tangential_pos_num())
@@ -346,7 +456,7 @@ calculate_proj_matrix_elems_for_one_densel(
             {
               //std::cerr << "\tfirst tang_pos at " << tang_pos 
               //          << '(' << seg << ',' << view << ',' << ax_pos << ')'<< std::endl;
-              previous_min_tang_pos = tang_pos;
+              //XXXprevious_min_tang_pos = tang_pos;
             }
             found_nonzero_tangential = true;
 #ifdef NEWSCALE
@@ -359,7 +469,7 @@ calculate_proj_matrix_elems_for_one_densel(
           else if (found_nonzero_tangential)
           {
             // the first tang_pos where the result is zero again. So, all the next ones will be 0 as well.
-            break;
+            //XXXbreak;
           }
         } // end loop over tang_pos
         if (found_nonzero_axial)
@@ -367,7 +477,7 @@ calculate_proj_matrix_elems_for_one_densel(
           if (!found_nonzero_tangential)
           {
             // the first ax_pos where the result is zero again. So, all the next ones will be 0 as well.
-            break;
+            //XXXbreak;
             // TODO potentially, the mechanism of using previous_min_tang_pos caused the 
             // tang_pos loop to miss to non-zero bins. This would occur if start_tang_pos was to
             // the 'right' of the nonzero range.
@@ -384,6 +494,9 @@ calculate_proj_matrix_elems_for_one_densel(
         }
         
       }
+#endif
+      // next assert only possible when every voxel is detected for every seg,view
+      assert(found_nonzero_axial);
     }
   }
   
