@@ -5,6 +5,7 @@
 WORKSPACE=$(CURDIR)/..
 
 # variables used only for ecat7
+# local/Makefile_common can override these defaults
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
 LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
@@ -22,9 +23,7 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
 	correct_projdata.cxx 
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
-__TEST_LLN:=$(shell if [ -r $(LLN_INCLUDE_DIR)/matrix.h ]; then echo 1;  fi)
-
-ifeq ($(__TEST_LLN),1)
+ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   # yes, the LLN files seem to be there, so we can compile 
   # ifheaders_for_ecat7 as well
   SOURCES += ifheaders_for_ecat7.cxx
