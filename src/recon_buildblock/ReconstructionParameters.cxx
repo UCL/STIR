@@ -122,9 +122,49 @@ void ReconstructionParameters::ask_parameters()
 
   proj_data_ptr = ProjData::read_from_file(input_filename_char);
 
+  // KT 28/01/2002 moved here from IterativeReconstruction
+  max_segment_num_to_process=
+    ask_num("Maximum absolute segment number to process: ",
+	    0, proj_data_ptr->get_max_segment_num(), 0);
+
   ask_filename_with_extension(output_filename_prefix_char,"Output filename prefix", "");
 
   output_filename_prefix=output_filename_prefix_char;
+
+  zoom=  ask_num("Specify a zoom factor as magnification effect ? ",0.1,10.,1.);
+
+
+  output_image_size_xy =  
+    ask_num("Final image size (-1 for default)? ",
+	    -1,
+	    4*static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom),
+	    -1);
+    
+#if 0    
+    // This section enables you to position a reconstructed image
+    // along x (horizontal), y (vertical) and/or z (transverse) axes
+    // The default values is in the center of the FOV,
+    // the positve direction is
+    // for x-axis, toward the patient's left side (assuming typical spinal, head first position)
+    // for y-axis, toward the top of the FOV
+    // for z-axis, toward the patient's feet (assuming typical spinal, head first position)
+    
+    cout << endl << "    Enter offset  Xoff, Yoff (in pixels) :";
+    Xoffset = ask_num("   X offset  ",-old_size/2, old_size/2, 0);
+    Yoffset = ask_num("   Y offset  ",-old_size/2, old_size/2, 0);
+#endif
+#if 0
+    // The angular compression consists of an average pairs of sinograms rows
+    // in order to reduce the number of views by a factor of 2
+    // and therefore reduce the amount of data in a sinogram as well
+    // the reconstruction time by about the half of
+    // the total unmashed recontruction time
+    // By default, no mashing
+    // Note: The inclusion of angular compression has been shown in literature
+    // to have little effect near the center of the FOV.
+    // However, it could cause loss of precision
+    num_views_to_add=  ask_num("Mashing views ? (1: No mashing, 2: By 2 , 4: By 4) : ",1,4,1);
+#endif
 
 
 }
