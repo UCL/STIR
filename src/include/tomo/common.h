@@ -87,13 +87,6 @@
 
  <LI> inline template <class NUMBER> NUMBER square(const NUMBER &x)
 
- <LI> a class Succeeded to be used as return value for functions
-     instead of using bools or int with unclear meaning.
-     This is now done by including tomo/Succeeded.h<br>
-     <strong>
-     Explicitly include tomo/Succeeded.h in new programmes,
-     as this will disappear from this file in the future.
-     </strong>
  </UL>
 */
 
@@ -462,6 +455,5 @@ inline NUMBER square(const NUMBER &x) { return x*x; }
 
 END_NAMESPACE_TOMO
 
-#include "tomo/Succeeded.h"
 
 #endif 
