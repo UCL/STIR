@@ -36,14 +36,6 @@
  All documentation depends on the person who writes it. In the end, only 
  the code is what matters...
 
-
- Although doxygen is a wonderful tool, it does have a few problems. For
- example:
- <ul>
- <li>the #include statements does not contain the correct path of the 
-     files. 
- <li>In previous versions of doxygen, class hierarchies based on RegisteredObject 
-   et al were unfortunately not always listed correctly. This now seems to be fixed.
- </ul>
+ 
 
 */
