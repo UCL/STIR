@@ -23,8 +23,8 @@
 #include "RelatedViewgrams.h"
 #include "DiscretisedDensity.h"
 #include "ProjDataFromStream.h"
-#include "new_recon_buildblock/ForwardProjectorByBin.h"
-#include "new_recon_buildblock/BackProjectorByBin.h"
+#include "recon_buildblock/ForwardProjectorByBin.h"
+#include "recon_buildblock/BackProjectorByBin.h"
 #include "recon_buildblock/distributable.h"
 
 START_NAMESPACE_TOMO
