@@ -59,6 +59,9 @@ public:
 
   void find_offset(const CListModeData& listmode_data);
 
+  //! The option to set polaris time manualy in case syncronisation cannot be performed
+  Succeeded set_polaris_time_offset(float time_offset);
+
 
   shared_ptr<Polaris_MT_File> mt_file_ptr;
   float Polaris_time_offset;
