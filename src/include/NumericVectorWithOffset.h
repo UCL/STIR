@@ -1,208 +1,114 @@
-// NumericVectorWithOffset.h 
-// TODO
-// by KT, based on Tensor1D.h by DH
-
+//
 // $Id$: $Date$
+//
 
-#ifndef NumericVectorWithOffset_H
-#define NumericVectorWithOffset_H
-//KT include for min,max definitions
-#include <algorithm>
+#ifndef __NumericVectorWithOffset_H__
+#define __NumericVectorWithOffset_H__
+/*!
+  \file 
+ 
+  \brief defines the NumericVectorWithOffset class
 
-#include "pet_common.h"
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
+
+
 #include "VectorWithOffset.h"
 
+START_NAMESPACE_TOMO
+/*! 
+  \ingroup buildblock
+  \brief like VectorWithOffset, but with various numeric operations defined
+
+  Extra operations compared to VectorWithOffset are all the numeric
+  operators +,-,*,/ with NumericVectorWithOffset objects of the
+  same type, but also with objects of type \c elemT.
+ */
  
-template <class T, class NUMBER>
+template <class T, class elemT>
 class NumericVectorWithOffset : public VectorWithOffset<T>
 {
 private:
-	typedef VectorWithOffset<T> base_type;
+  typedef VectorWithOffset<T> base_type;
+
 public:
-  // Construct an empty NumericVectorWithOffset
-  NumericVectorWithOffset()
-    : base_type()
-    {}
+  //! Construct an empty NumericVectorWithOffset
+  inline NumericVectorWithOffset();
 
-  // Construct a NumericVectorWithOffset of given length
-  NumericVectorWithOffset(const Int hsz)
-    : base_type(hsz)
-    {}
+  //! Construct a NumericVectorWithOffset of given length
+  inline explicit NumericVectorWithOffset(const int hsz);
     
-  // Construct a NumericVectorWithOffset of elements with offsets hfirst
-  NumericVectorWithOffset(const Int hfirst, const Int hlast)   
-    : base_type(hfirst, hlast)
-    {}
+  //! Construct a NumericVectorWithOffset of elements with offset \c min_index
+  inline NumericVectorWithOffset(const int min_index, const int max_index);
 
 
-  // member templates ??? TODO
-  // matrix addition
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset operator+ (const NumericVectorWithOffset<T, NUMBER> &iv) const 	
-#else
-  NumericVectorWithOffset operator+ (const NumericVectorWithOffset &iv) const 
-#endif
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    return retval += iv; };
+  // arithmetic operations with a vector, combining element by element
 
-  // matrix subtraction
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset operator- (const NumericVectorWithOffset<T, NUMBER> &iv) const 
-#else
-  NumericVectorWithOffset operator- (const NumericVectorWithOffset &iv) const 
-#endif
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    return retval -= iv; }
+  //! adding vectors, element by element
+  inline NumericVectorWithOffset operator+ (const NumericVectorWithOffset &v) const;
 
-  // elem by elem multiplication
-  //KT 16/03/98 changed % to *
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset operator* (const NumericVectorWithOffset<T, NUMBER> &iv) const 
-#else
-  NumericVectorWithOffset operator* (const NumericVectorWithOffset &iv) const
-#endif
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    return retval *= iv; }
+  //! subtracting vectors, element by element
+  inline NumericVectorWithOffset operator- (const NumericVectorWithOffset &v) const;
 
-  // elem by elem division
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset operator/ (const NumericVectorWithOffset<T, NUMBER> &iv) const 
-#else
-  NumericVectorWithOffset operator/ (const NumericVectorWithOffset &iv) const
-#endif
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    return retval /= iv; }
+  //! multiplying vectors, element by element
+  inline NumericVectorWithOffset operator* (const NumericVectorWithOffset &v) const;
 
-  // TODO, use member templates, or implement as a function (not a member), 
-  // this would get rid of the NUMBER part of the NumericVectorWithOffset template
+  //! dividing vectors, element by element
+  inline NumericVectorWithOffset operator/ (const NumericVectorWithOffset &v) const;
 
-  // Add a constant to every element
-  NumericVectorWithOffset operator+ (const NUMBER &iv) const 
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    retval += iv;
-    return retval;
-  }
 
-  // Subtract a constant from every element
-  NumericVectorWithOffset operator- (const NUMBER &iv) const 
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    retval -= iv; 
-    return retval;
-  }
+  // arithmetic operations with a elemT
+  // TODO??? use member templates 
 
-  // Multiply every element by a constant
-  NumericVectorWithOffset operator* (const NUMBER &iv) const 
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    retval *= iv;
-    return retval;
-  }
+  //! return a new vector with elements equal to the sum of the elements in the original and the \c elemT 
+  inline NumericVectorWithOffset operator+ (const elemT &v) const;
+
+  //! return a new vector with elements equal to the difference of the elements in the original and the \c elemT 
+  inline NumericVectorWithOffset operator- (const elemT &v) const;
+
+  //! return a new vector with elements equal to the multiplication of the elements in the original and the \c elemT 
+  inline NumericVectorWithOffset operator* (const elemT &v) const;
 	       
-  // Divide every element by a constant
-  NumericVectorWithOffset operator/ (const NUMBER &iv) const 
-  {
-    check_state();
-    NumericVectorWithOffset retval(*this);
-    retval /= iv;
-    return retval;
-  }
+  //! return a new vector with elements equal to the division of the elements in the original and the \c elemT 
+  inline NumericVectorWithOffset operator/ (const elemT &v) const;
 
 
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset &operator+= (const NumericVectorWithOffset<T, NUMBER> &iv) 
-#else
-  NumericVectorWithOffset &operator+= (const NumericVectorWithOffset &iv) 
-#endif
-  {
-    check_state();
-    grow (min(start,iv.start), max(start+length-1,iv.start+iv.length-1));
-    for (Int i=iv.start; i<iv.start + iv.length; i++)
-      num[i] += iv.num[i];
-    check_state();
-    return *this; }
+  // corresponding assignment operators
 
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset &operator-= (const NumericVectorWithOffset<T, NUMBER> &iv)
-#else
-  NumericVectorWithOffset &operator-= (const NumericVectorWithOffset &iv)
-#endif
-  {
-    check_state();
-    grow (min(start,iv.start), max(start+length-1,iv.start+iv.length-1));
-    for (Int i=iv.start; i<iv.start + iv.length; i++)
-      num[i] -= iv.num[i];
-    check_state();
-    return *this; }
+  //! adding elements of \c v to the current vector
+  inline NumericVectorWithOffset & operator+= (const NumericVectorWithOffset &v);
 
-  // KT 16/03/98 changed from % to *
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset &operator*= (const NumericVectorWithOffset<T, NUMBER> &iv)
-#else
-  NumericVectorWithOffset &operator*= (const NumericVectorWithOffset &iv)
-#endif
-  {
-    check_state();
-    grow (min(start,iv.start), max(start+length-1,iv.start+iv.length-1));
-    for (Int i=iv.start; i<iv.start + iv.length; i++)
-      num[i] *= iv.num[i];
-    check_state();
-    return *this; }
+  //! subtracting elements of \c v from the current vector
+  inline NumericVectorWithOffset & operator-= (const NumericVectorWithOffset &v);
 
-#ifdef TEMPLATE_ARG
-  NumericVectorWithOffset &operator/= (const NumericVectorWithOffset<T, NUMBER> &iv)
-#else
-  NumericVectorWithOffset &operator/= (const NumericVectorWithOffset &iv)
-#endif
-  {
-    check_state();
-    grow (min(start,iv.start), max(start+length-1,iv.start+iv.length-1));
-    for (Int i=iv.start; i<iv.start + iv.length; i++)
-      num[i] /= iv.num[i];
-    check_state();
-    return *this; }
+  //! multiplying elements of the current vector with elements of \c v 
+  inline NumericVectorWithOffset & operator*= (const NumericVectorWithOffset &v);
 
-  NumericVectorWithOffset &operator+= (const NUMBER &iv) {
-    check_state();
-    for (Int i=start; i<start + length; i++)
-      num[i] += iv;
-    check_state();
-    return *this; }
+  //! dividing all elements of the current vector by elements of \c v
+  inline NumericVectorWithOffset & operator/= (const NumericVectorWithOffset &v);
 
-  NumericVectorWithOffset &operator-= (const NUMBER &iv) {
-    check_state();
-    for (Int i=start; i<start + length; i++)
-      num[i] -= iv;
-    check_state();
-    return *this; }
+  //! adding an \c elemT to the elements of the current vector
+  inline NumericVectorWithOffset & operator+= (const elemT &v);
 
-  NumericVectorWithOffset &operator*= (const NUMBER &iv) {
-    check_state();
-    for (Int i=start; i<start + length; i++)
-      num[i] *= iv;
-    check_state();
-    return *this; }
+  //! subtracting an \c elemT from the elements of the current vector
+  inline NumericVectorWithOffset & operator-= (const elemT &v);
 
-  NumericVectorWithOffset &operator/= (const NUMBER &iv) {
-    check_state();
-    for (Int i=start; i<start + length; i++)
-      num[i] /= iv;
-    check_state();
-    return *this; }
+  //! multiplying the elements of the current vector with an \c elemT 
+  inline NumericVectorWithOffset & operator*= (const elemT &v);
 
+  //! dividing the elements of the current vector by an \c elemT 
+  inline NumericVectorWithOffset & operator/= (const elemT &v);
 
 };
 
-#endif // NumericVectorWithOffset_H
+END_NAMESPACE_TOMO
+
+#include "NumericVectorWithOffset.inl"
+
+#endif // __NumericVectorWithOffset_H__
