@@ -109,7 +109,15 @@ public:
   
   //! return minimum value of all elements
   inline elemT find_min() const;
+    
+  //! checks if the index range is 'regular' (always \c true as this is the 1D case)
+  inline bool is_regular() const;
   
+  //! find regular range, returns \c false if the range is not regular
+  inline bool get_regular_range(
+     BasicCoordinate<1, int>& min,
+     BasicCoordinate<1, int>& max) const;
+
 #ifndef STIR_USE_BOOST
   
   /* KT 31/01/2000 I had to add these functions here, although they are 
@@ -318,6 +326,7 @@ Array<1, elemT>::sum() const
   return acc; 
 };
 
+#ifndef __stir_Array1d_no_comparisons__
 elemT
 Array<1, elemT>::sum_positive() const 
 {	
@@ -371,6 +380,23 @@ Array<1, elemT>::find_min() const
   } 
   this->check_state();
 };  
+
+#endif // end of __stir_Array1d_no_comparisons__
+
+bool
+Array<1, elemT>::is_regular() const
+{
+  return true;
+}
+
+bool
+Array<1, elemT>::get_regular_range(
+     BasicCoordinate<1, int>& min,
+     BasicCoordinate<1, int>& max) const
+{
+  const IndexRange<1> range = get_index_range();
+  return range.get_regular_range(min,max);
+}
 
 #ifndef STIR_USE_BOOST
 
