@@ -50,8 +50,17 @@ class SeparableArrayFunctionObject :
    public ArrayFunctionObject_1ArgumentImplementation<num_dimensions,elemT>
 {
 public:
+  //! Default constructor, results in a trivial ArrayFunctionObject
   SeparableArrayFunctionObject ();
+  //! Constructor taking 1D ArrayFunctionObjects
+  /*!
+    The 1d functino objects are passed in a VectorWithOffset which needs to 
+    have num_dimensions elements. (The starting index is irrelevant).
+
+    The shared_ptr's have to be either all null (a trivial object) or all non-null.
+   */
   SeparableArrayFunctionObject (const VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >&); 
+
   bool is_trivial() const;
 
 protected:
