@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForBins_PET_CartesianGrid_H__
@@ -63,9 +63,9 @@ public:
             (\a do_symmetry_90degrees_min_phi=false, 
             \a do_symmetry_180degrees_min_phi = false)</li>
       </ul>
-      <li>axial (i.e. positive vs. negative segment): \a do_symmetry_swap_segment</li>
+      <li>axial (i.e. positive vs. negative segment): \a do_symmetry_swap_segment </li>
       <li>tangential (i.e. positive vs negative s): \a     do_symmetry_swap_s </li>
-      <li> axial shift \a do_symmetry_shift_z</li>
+      <li> axial shift \a do_symmetry_shift_z </li>
       </ul>
 
       Note that when \a do_symmetry_90degrees_min_phi=true, the value of
@@ -128,7 +128,7 @@ public:
 
 
   //! find correspondence between axial_pos_num and image coordinates
-  /*! z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset
+  /*! <tt>z = num_planes_per_axial_pos * axial_pos_num + axial_pos_to_z_offset</tt>
   
       compute the offset by matching up the centre of the scanner 
       in the 2 coordinate systems
