@@ -15,7 +15,6 @@
 
   $Revision$
 
-  \warning matrix.h has to be included before this
 */
 /*
     Copyright (C) 2000 PARAPET partners
@@ -54,6 +53,7 @@ using std::iostream;
 
 START_NAMESPACE_STIR
 
+class Succeeded;
 class NumericType;
 class ByteOrder;
 class Scanner;
