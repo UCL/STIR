@@ -53,7 +53,6 @@ run_tests: all get_test_files make_stir_math
 	$(DEST)test_filename_functions
 	$(DEST)test_linear_regression  input/test_linear_regression.in
 	$(DEST)test_coordinates
-	$(DEST)test_filename_functions 
 	$(DEST)test_VoxelsOnCartesianGrid
 	$(DEST)test_proj_data_info
 	$(DEST)test_stir_math ../utilities/$(DEST)stir_math 
