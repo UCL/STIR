@@ -2122,7 +2122,7 @@ int pos_x, pos_y, size_x, size_y;
   
   SC_PRMFIL(1);
   SC_MOVE(pos_x,pos_y);
-  /* KT 17/06/2000 condition now uses && instead of a ,
+  /* KT 17/06/2000 condition now uses && instead of a ,*/
   for(p=pos_y-size_y,par=SC_C_BACKGROUND;
       p<pos_y && par<=SC_C_MAX;
       p+=(size_y) / (SC_C_MAX-SC_C_BACKGROUND), par++)
