@@ -37,7 +37,7 @@ main(int argc, char * argv[])
   
   VoxelsOnCartesianGrid<float> * output_image;
   output_image =input_image_sptr_vox->get_empty_voxels_on_cartesian_grid();
-  output_image->grow_z_range(output_image->get_min_z()+number_of_planes_min, output_image->get_max_z()+number_of_planes_max);
+  output_image->grow_z_range(output_image->get_min_z()-number_of_planes_min, output_image->get_max_z()+number_of_planes_max);
 
   for (int k=input_image_sptr_vox->get_min_z();k<=input_image_sptr_vox->get_max_z();k++)   
     for (int j =input_image_sptr_vox->get_min_y();j<=input_image_sptr_vox->get_max_y();j++)
