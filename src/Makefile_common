@@ -100,10 +100,10 @@ LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 ifeq ($(SYSTEM),LINUX)
 # note for gcc 2.95.2:
 # do not use -malign-double as it crashes in iostream stuff
-OPTIM_OPT=-O3  -ffast-math -malign-functions=2 -malign-loops=2 -DNDEBUG
+OPTIM_OPT=-O3  -ffast-math  -DNDEBUG
 else
 ifeq ($(SYSTEM),CYGWIN)
-OPTIM_OPT=-O3  -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
+OPTIM_OPT=-O3  -ffast-math -malign-double  -DNDEBUG
 else
 OPTIM_OPT=-O3 -DNDEBUG
 endif
@@ -212,30 +212,7 @@ ADVANCED_DEPENDENCIES=1
 
 ifneq ($(ADVANCED_DEPENDENCIES),1)
 
-# default rule for making 'mini-Makefiles' with the dependency info 
-# for a single source file
-# see GNU make documentation
-# modifications by KT to put .o and .d in $(DEST)
-
-$(DEST)%.d: %.cxx
-	-mkdir -p $(DEST)
-	$(SHELL) -ec '$(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) $< \
-          | sed '\''s&\($*\)\.o[ :]*&$(DEST)\1.o $@ : &g'\'' > $@; \
-            [ -s $@ ] || rm -f $@'                             
-
-$(DEST)%.d: %.c
-	-mkdir -p $(DEST)
-	$(SHELL) -ec '$(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS) $< \
-          | sed '\''s&\($*\)\.o[ :]*&$(DEST)\1.o $@ : &g'\'' > $@; \
-            [ -s $@ ] || rm -f $@'                             
-
-${DEST}%.o: %.cxx 
-	-mkdir -p $(DEST)
-	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-${DEST}%.o: %.c
-	-mkdir -p $(DEST)
-	$(CC) $(CFLAGS) -o $@ -c $< 
+$(error ADVANCED_DEPENDENCIES=0 is no longer supported)
 
 else # ADVANCED_DEPENDENCIES==1
 
