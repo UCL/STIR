@@ -48,10 +48,10 @@ float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
   const float scalar_product = 
 	inner_product(scatter_point_det_A, scatter_point_det_B);
 
-  const float dAS = norm(detector_coord_A-scatter_point); // the distance of the detector_A to scatter_point S
-  const float dBS = norm(detector_coord_B-scatter_point); // the distance of the detector_B to scatter_point S
+  const float dASsq = normsq(detector_coord_A-scatter_point); // the distance of the detector_A to scatter_point S
+  const float dBSsq = normsq(detector_coord_B-scatter_point); // the distance of the detector_B to scatter_point S
 
-  const float cos_theta = scalar_product/(dAS*dBS) ;
+  const float cos_theta = scalar_product/sqrt(dASsq*dBSsq) ;
   const float sin_theta2= 1-cos_theta*cos_theta ;
   const float P= 1/(1+(energy/511.0)*(1-cos_theta));
 
@@ -131,7 +131,7 @@ float detection_efficiency( const float low, const float high,
 	   return 0;
 	// factor 2.35 is used to convert FWHM to sigma
 	const float sigma_times_sqrt2= 
-		sqrt(2.)*sqrt(energy*reference_energy)*resolution/2.35;
+		sqrt(2.*energy*reference_energy)*resolution/2.35;
 	
 	return
 		0.5*( erf((high-energy)/sigma_times_sqrt2) 
