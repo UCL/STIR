@@ -56,9 +56,6 @@ void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
 	float y_pixel_size;
 	float z_pixel_size;
 	short align_1;
-	float x_resolution;
-	float y_resolution;
-	float z_resolution;
 	short align_2;
 	short align_3;
   */
@@ -91,6 +88,9 @@ void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
   STIR_DO_IT(filter_order);
   STIR_DO_IT(filter_scatter_fraction);
   STIR_DO_IT(filter_scatter_slope);
+  STIR_DO_IT(x_resolution);
+  STIR_DO_IT(y_resolution);
+  STIR_DO_IT(z_resolution);
   for (int i=0; i<40; ++i)
     STIR_DO_IT(annotation[i]);
   STIR_DO_IT(mt_1_1);
@@ -312,6 +312,7 @@ void copy_subheader(MatrixData * data_out,
 	  default:
 	    error("\ncopy_subheader: cannot copy input subheader to subheader of type image\n");
 	  }
+	break;
       }
     case AttenCor:   		
       copy_subheader(
