@@ -17,10 +17,6 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifndef HAVE_LLN_MATRIX
-#error This file can only be compiled when HAVE_LLN_MATRIX is #defined
-#endif
-
 #ifndef __stir_SinglesRatesFromECAT7_H__
 #define __stir_SinglesRatesFromECAT7_H__
 
