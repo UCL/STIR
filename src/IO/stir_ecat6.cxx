@@ -3,6 +3,7 @@
 //
 /*!
   \file
+  \ingroup CTI
 
   \brief Implementation of routines which convert CTI things into our 
   building blocks and vice versa.
@@ -37,7 +38,7 @@
 #include <fstream>
 
 #ifndef TOMO_NO_NAMESPACES
-using std::cerr;
+using std::cout;
 using std::endl;
 using std::fstream;
 using std::ios;
@@ -49,6 +50,9 @@ word find_CTI_system_type(const Scanner& scanner)
 {
   switch(scanner.get_type())
   {
+  case Scanner::E921:
+    return 921; 
+    
   case Scanner::E931:
     return 931; 
     
@@ -61,6 +65,9 @@ word find_CTI_system_type(const Scanner& scanner)
   case Scanner::E961:
     return 961;
 
+  case Scanner::E962:
+    return 962; 
+    
   case Scanner::E966:
     return 966;
 
@@ -68,36 +75,36 @@ word find_CTI_system_type(const Scanner& scanner)
     return 128;
     
   default:
-    warning("find_CTI_system_type: %s currently unsupported\n. Defaulting to 953.\n", 
+    warning("\nfind_CTI_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", 
       scanner.get_name().c_str());
-    return 953;
+    return 0;
   }
 }
 
 
 Scanner* find_scanner_from_ECAT6_main_header(const Main_header& mhead)
 {
+  // we could do more effort here by checking some values of other fields than system_type.
+  // TODO
+
   Scanner * scanner_ptr = 0;
   switch(mhead.system_type)
   {
   case 128 : 
     //camera = camRPT; 
     scanner_ptr = new Scanner(Scanner::RPT); 
-    printf("Scanner : RPT\n"); 
     break;
+
   case 931 :
   case 12 : 
     //camera = cam931; 
     scanner_ptr = new Scanner(Scanner::E931); 
-    printf("Scanner : ECAT 931\n"); break;
   case 951 : 
     //camera = cam951; 
     scanner_ptr = new Scanner(Scanner::E951); 
-    printf("Scanner : ECAT 951\n"); break;
   case 953 : 
     //camera = cam953; 
     scanner_ptr = new Scanner(Scanner::E953); 
-    printf("Scanner : ECAT 953\n"); 
     break;
   default :  
     // enable our support for ECAT6 data for GE Advance
@@ -105,21 +112,19 @@ Scanner* find_scanner_from_ECAT6_main_header(const Main_header& mhead)
     {
       //camera = camAdvance; 
       scanner_ptr = new Scanner(Scanner::Advance); 
-      printf("Scanner : GE Advance\n"); 
       break;
     }
     else
     {	
-      //camera = camRPT; 
-      scanner_ptr = new Scanner(Scanner::RPT); 
-      printf("main_header.system_type unknown, defaulting to RPT \n"); 
+      scanner_ptr = new Scanner(Scanner::Unknown_Scanner); 
     }
     break;
   }
   return scanner_ptr;
 }
 
-void make_ECAT6_main_header(Main_header& mhead, Scanner const * const scanner_ptr,
+void make_ECAT6_main_header(Main_header& mhead,
+			    Scanner const& scanner,
                             const string& orig_name                     
                             )
 {
@@ -133,12 +138,12 @@ void make_ECAT6_main_header(Main_header& mhead, Scanner const * const scanner_pt
   // cti_utils routines always write data as VAX short
   mhead.data_type= matI2Data;
   
-  mhead.system_type= find_CTI_system_type(*scanner_ptr);
-  mhead.axial_fov= scanner_ptr->get_num_rings()*scanner_ptr->get_ring_spacing()/10;
-  mhead.transaxial_fov= scanner_ptr->get_default_num_arccorrected_bins()*scanner_ptr->get_default_bin_size()/10;
+  mhead.system_type= find_CTI_system_type(scanner);
+  mhead.axial_fov= scanner.get_num_rings()*scanner.get_ring_spacing()/10;
+  mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
   
-  mhead.plane_separation= scanner_ptr->get_ring_spacing()/2/10;
-  //WRONG mhead.gantry_tilt= scanner_ptr->get_default_intrinsic_tilt();
+  mhead.plane_separation= scanner.get_ring_spacing()/2/10;
+  //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
 }
 
 
@@ -216,7 +221,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
       if (ihead.loss_corr_fctr>0)
 	scale_factor *= ihead.loss_corr_fctr;
       else
-	printf("\nread_plane warning: loss_corr_fctr invalid, using 1\n");
+	warning("\nread_plane warning: loss_corr_fctr invalid, using 1\n");
 
       if(cti_rblk (cti_fptr, entry.strtblk+1, cti_data, entry.endblk-entry.strtblk)!=EXIT_SUCCESS) { // get data
 	error("\nUnable to read data\n");            
@@ -245,6 +250,16 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
                       char *v_data_name, FILE *cti_fptr, Main_header &mhead)
 {
   shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_main_header(mhead);
+  cout << "Scanner determined from main_header: " << scanner_ptr->get_name() << endl;
+  if (scanner_ptr->get_type() == Scanner::Unknown_Scanner)
+  {
+    warning("ECAT6_to_PDFS: Couldn't determine the scanner from the \n"
+      "main_header.system_type, defaulting to 953.\n"
+      "This will give dramatic problems when the number of rings of your scanner is NOT 16.\n"); 
+    scanner_ptr = new Scanner(Scanner::E953);
+  }
+
+  
   const int num_rings = scanner_ptr->get_num_rings();
 
   // ECAT 6 does not have a flag for 3D vs. 2D, so we guess it first from num_planes
@@ -339,7 +354,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     short* cti_data= 
       new short[proj_data->get_num_tangential_poss()*proj_data->get_num_views()];
     
-    cerr<<"\nProcessing segment number:";
+    cout<<"\nProcessing segment number:";
     
     if (is_3D_file)
     {
@@ -347,7 +362,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       { // loop on segment number
         
         // positive ring difference
-        cerr<<"  "<<w;
+        cout<<"  "<<w;
         int num_axial_poss= num_rings-w;
         
         for(int ring1=0; ring1<num_axial_poss; ring1++) { // ring order: 0-0,1-1,..,15-15 then 0-1,1-2,..,14-15
@@ -362,7 +377,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
         
         // negative ring difference
         if(w>0) {
-          cerr<<"  "<<-w;
+          cout<<"  "<<-w;
           for(int ring2=0; ring2<num_axial_poss; ring2++) { // ring order: 0-1,2-1,..,15-14 then 2-0,3-1,..,15-13
             int ring1=ring2+w; // ring1>ring2
             int mat_index= cti_rings2plane(num_rings, ring1, ring2);
@@ -379,7 +394,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     else
     {
       // 2D case
-      cerr << "0\n";
+      cout << "0\n";
       for(int z=0; z<proj_data->get_num_axial_poss(0); z++)
       {
         Sinogram<float> sino_2D = proj_data->get_empty_sinogram(z,0,false);
@@ -390,7 +405,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       
     } // end of 2D case
     
-    cerr<<endl;
+    cout<<endl;
     delete cti_data;
   } // end of write
 }
@@ -416,7 +431,7 @@ void read_sinogram(Sinogram<float>& sino_2D,
   if (shead.loss_correction_fctr>0)
     scale_factor *= shead.loss_correction_fctr;
   else
-    printf("\nread_sinogram warning: loss_correction_fctr invalid, using 1\n");
+    warning("\nread_sinogram warning: loss_correction_fctr invalid, using 1\n");
 
   if(get_scandata (fptr, buffer, &scanParams)!= EXIT_SUCCESS)
           error("Error reading matnum %d\n", matnum);
@@ -515,7 +530,9 @@ short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order)
 }
 
 Succeeded 
-DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, string const & cti_name, string const&orig_name,
+DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, 
+			    string const & cti_name, string const&orig_name,
+			    const Scanner& scanner,
                             const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
   
@@ -524,11 +541,7 @@ DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, string 
     dynamic_cast<VoxelsOnCartesianGrid<float> const&>(density);
   
   Main_header mhead;
-  
-  {
-    shared_ptr<Scanner> scanner_ptr = Scanner::ask_parameters();
-    make_ECAT6_main_header(mhead, scanner_ptr.get(), orig_name);    
-  }
+  make_ECAT6_main_header(mhead, scanner, orig_name);
 
   
   // extra main parameters that depend on data type
@@ -606,7 +619,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
       proj_data.get_proj_data_info_ptr()->get_scanner_ptr();
 
     Main_header mhead;
-    make_ECAT6_main_header(mhead, scanner_ptr, orig_name);
+    make_ECAT6_main_header(mhead, *scanner_ptr, orig_name);
 
     // extra main parameters that depend on data type
     mhead.file_type= matScanFile;
@@ -662,7 +675,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
       scanner_ptr->get_num_rings(), num_rings);
     
     
-    cerr<<endl<<"Performing segment number:";
+    cout<<endl<<"Processing segment number:";
     
     for(int segment_num=proj_data.get_min_segment_num();
         segment_num <= proj_data.get_max_segment_num();
@@ -670,7 +683,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
     {
       
       
-      cerr<<"  "<<segment_num;
+      cout<<"  "<<segment_num;
       
       
       const int num_axial_poss= proj_data.get_num_axial_poss(segment_num);
@@ -694,7 +707,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
             for(int x=0; x<num_bin; x++)
               diff[y+min_view][x+min_bin]-= scale_factor*short_sinogram[y+min_view][x+min_bin];
           }         
-          cerr << "plane "<< z << " scalef "<< scale_factor << " min " << diff.find_min() 
+          cout << "plane "<< z << " scalef "<< scale_factor << " min " << diff.find_min() 
             << " max " << diff.find_max() << endl;
         }
 #endif
@@ -727,7 +740,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
         }
       } // end of loop on planes
     } // end of loop on segments
-    cerr<<endl;
+    cout<<endl;
     delete[] cti_data;
     fclose(fptr);  
     return Succeeded::yes;
