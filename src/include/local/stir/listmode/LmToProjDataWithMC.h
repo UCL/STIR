@@ -37,7 +37,7 @@ private:
 				 const Scanner& scanner) const;
 
 
-  void find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
+  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 							  const CartesianCoordinate3D<float>& coord_1_in,
 							  const CartesianCoordinate3D<float>& coord_2_in, 
 							  const Scanner& scanner) const;
