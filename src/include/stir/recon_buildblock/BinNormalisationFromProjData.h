@@ -21,6 +21,8 @@
 
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/RegisteredParsingObject.h"
+#include "stir/ProjData.h"
+#include "stir/shared_ptr.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACE
@@ -28,9 +30,6 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
-
-class ProjData;
-template <typename T> class shared_ptr;
 
 /*!
   \ingroup recon_buildblock
