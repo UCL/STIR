@@ -30,6 +30,19 @@
   - convert Siddon argument to a template argument. This allows the compiler
     to resolve all if (Siddon==...) statements at compiler time, and hence
     speeds up the code.
+  KT 1/12/2003 :
+  WARNING: somewhat different results are generated since this version
+  (see below)
+  - almost completely reimplemented in terms of what I did for
+   ProjMatrixByBinUsingRayTracing and RayTraceVoxelsOnCartesianGrid.
+   This version is now stable under numerical rounding error, and
+   gives the same results as the projection matrix version.
+   Unfortunately, this means it gives somewhat DIFFERENT results compared
+   to the previous version. The difference sits essentially in the end-voxel
+   on the LOR. For most/all applications, this difference should be irrelevant.
+  - added option restrict_to_cylindrical_FOV
+  - make proj_Siddon return true or false to check if any data has been
+  forward projected
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -44,6 +57,11 @@ using std::max;
 #endif
 
 START_NAMESPACE_STIR
+template <typename T>
+static inline int sign(const T& t) 
+{
+  return t<0 ? -1 : 1;
+}
 
 
 /*!
@@ -61,7 +79,8 @@ START_NAMESPACE_STIR
 
 // KT 20/06/2001 should now work for non-arccorrected data as well, pass s_in_mm
 template <int Siddon>
-void ForwardProjectorByBinUsingRayTracing::
+bool
+ForwardProjectorByBinUsingRayTracing::
 proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
 	    const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	    const float cphi, const float sphi, const float delta, const 
@@ -69,10 +88,9 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	    const float R, const int rmin, const int rmax, const float offset, 
 	    const int num_planes_per_axial_pos,
 	    const float axial_pos_to_z_offset,
-	    const float norm_factor)
+	    const float norm_factor,
+	    const bool restrict_to_cylindrical_FOV)
 {
-  float           a, a0;
-  int             MAXDIM2, X, Y, Z, Q, Zdup, Qdup, k, ix, iy, iz, kmax, ring0;
 
   /*
    * Siddon == 1 => Phiplus90_r0ab 
@@ -80,129 +98,161 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
    * Siddon == 3 => Symall_r0ab 
    * Siddon == 4 => s0_r0ab
    */
-  //CL&KT 21/12/99 changed ring_unit to num_planes_per_axial_pos
- 
-  int             xdim = Bild.get_x_size(); //CL 100298  scanner->num_bins;
-  // KT 19/05/2000 use other voxel sizes instead of relying on nrings
-  int             ydim = Bild.get_y_size();
-  int             zdim = Bild.get_z_size();
-  float           d_xy = Bild.get_voxel_size().x();
-  float           d_sl = Bild.get_voxel_size().z();
 
-  // CL&KT 21/12/99 new
+  /* TODO: check in implementation:
+     why first voxel +=inc_? in all directions
+  */
+  /* See RayTraceVoxelsOnCartesianGrid() for a clearer implementation of the
+     Siddon algorithm. This doesn't handle the symmetries, so is a lot shorter.
+
+     For a comparison, remember that the current function relies on symmetries
+     having been applied first, so the end_point-start_point coordinates
+     always have particular signs. In the notation of RayTraceVoxelsOnCartesianGrid():
+  */
+  const int sign_x=-1;
+  const int sign_y=+1;
+  const int sign_z=+1;
+
   // in our current coordinate system, the following constant is always 2
   const int num_planes_per_physical_ring = 2;
   assert(fabs(Bild.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
 
 
-  int maxplane = Bild.get_z_size()-1; // CL 180298 Change the assignement //nrings + nrings - 2;
-  MAXDIM2 = (xdim > ydim) ? xdim + 2 : ydim + 2;
-  if (zdim + 2 > MAXDIM2)
-    MAXDIM2 = zdim + 2;
 
-  VectorWithOffset<float> ax(MAXDIM2);
-  VectorWithOffset<float> ay(MAXDIM2);
-  VectorWithOffset<float> az(MAXDIM2);
-  const float s = s_in_mm / d_xy;  
-
-
-  // compute intersections with scanner cylinder
-
-  // KT&CL 30/01/98 simplify formulas by not handling s=0 seperately
-      // {
-  const  float R2pix = R*R/d_xy/d_xy;
-  const float TMP = sqrt(R2pix - s * s);
-//  }
-  const float x2 = s * cphi - sphi * TMP;
-  const float x1 = s * cphi + sphi * TMP;
-  const float y2 = s * sphi + cphi * TMP;
-  const float y1 = s * sphi - cphi * TMP;
-
-  // CL&KT 21/12/99 added axial_pos_to_z_offset
-  const float z1 = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset;//SPAN
-  // CL&KT 21/12/99 introduced num_planes_per_physical_ring
-  const float z2 = z1 + num_planes_per_physical_ring * delta;
-
-
-  // { KT 25/11/2003 no longer local as we need d12 below
-    const float dx12 = x1 - x2;
-    const float dy12 = y2 - y1;
-    const float dz12 = z2 - z1;
 #ifdef NEWSCALE
-    /* KT 16/02/98 removed division by d_xy to get line integrals in mm
-       (or whatever units that bin_size et al are defined)
-       */
-    // d12 is distance between the 2 points
-    const float d12 = sqrt((dx12 * dx12 + dy12 * dy12) * d_xy * d_xy +
-	     dz12 * dz12 * d_sl * d_sl) * norm_factor;
+  /* KT 16/02/98 removed division by voxel_size.x() to get line integrals in mm
+     (or whatever units that voxel_size() is defined)
+  */
+  const float normalisation_constant = norm_factor;
 #else
-    // d12 is distance between the 2 points
-    const float d12 = sqrt((dx12 * dx12 + dy12 * dy12) * d_xy * d_xy +
-	     dz12 * dz12 * d_sl * d_sl) / d_xy * norm_factor;
+  const float normalisation_constant = norm_factor / Bild.get_voxel_size().x();
 #endif
-    // KT 16/02/98 multiply with d12 to get normalisation right from the start
-    const float Iddx12 = (x1 == x2) ? 1000000.F*d12 : d12 / dx12;
-    const float Iddy12 = (y1 == y2) ? 1000000.F*d12 : d12 / dy12;
-    const float Iddz12 = (z1 == z2) ? 1000000.F*d12 : d12 / dz12;
-    // }
 
-   
-
-  /* Intersection points of LOR and image FOV */
-  /* We compute here X1f, Y1f, Z1f, X2f, Y2f, Z2f in voxelcoordinates. */
-
-
-  // KT 20/06/2001 change calculation of FOV such that even sized images will work
+  // KT 1/12/2003 no longer subtract -1 as determination of first and last voxel is now
+  // no longer sensitive to rounding error
   const float fovrad_in_mm   = 
-    min((min(Bild.get_max_x(), -Bild.get_min_x())-1)*Bild.get_voxel_size().x(),
-	(min(Bild.get_max_y(), -Bild.get_min_y())-1)*Bild.get_voxel_size().y()); 
-  const float fovrad = fovrad_in_mm/d_xy;
-  //const int fovradold  = (int) (xdim / 2) - 1;
-  //if (Bild.get_x_size()%2==1 && fovradold!=fovrad)
-  //  warning("fovrad old %d, new %g\n", fovradold, fovrad);
-  const float TMP2 = sqrt(fovrad * fovrad - s * s);
-  const float X2f = s * cphi - sphi * TMP2;
-  const float X1f = s * cphi + sphi * TMP2;
-  const float Y2f = s * sphi + cphi * TMP2;
-  const float Y1f = s * sphi - cphi * TMP2;
-  // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
-  const float Z1f = num_planes_per_axial_pos * (rmin + offset) 
-        + num_planes_per_physical_ring * delta/2 * (1 - TMP2 / TMP) 
-	+ axial_pos_to_z_offset;//SPAN
-  const float Z2f = num_planes_per_axial_pos * (rmin + offset)
-        + num_planes_per_physical_ring * delta/2 * (1 + TMP2 / TMP) 
-	+ axial_pos_to_z_offset;//SPAN
+    min((min(Bild.get_max_x(), -Bild.get_min_x()))*Bild.get_voxel_size().x(),
+	(min(Bild.get_max_y(), -Bild.get_min_y()))*Bild.get_voxel_size().y()); 
+
+  const CartesianCoordinate3D<float>& voxel_size = Bild.get_voxel_size();
+
+  CartesianCoordinate3D<float> start_point;  
+  CartesianCoordinate3D<float> stop_point;
+  {
+    /* parametrisation of LOR is
+         X= s*cphi + a*sphi, 
+         Y= s*sphi - a*cphi, 
+         // Z= t/costheta+offset_in_z - a*tantheta
+         Z= num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset +
+           + num_planes_per_physical_ring * delta/2 * (1 - a / TMP);
+	 with TMP = sqrt(R*R - square(s_in_mm));
+	 The Z parametrisation can be understood by noting that at a=TMP, the LOR
+	 intersects the detector cylinder with radius R.
+
+       find now min_a, max_a such that end-points intersect border of FOV 
+    */
+    float max_a;
+    float min_a;
+    
+    if (restrict_to_cylindrical_FOV)
+    {
+      if (fabs(s_in_mm) >= fovrad_in_mm) 
+	return false;
+      // a has to be such that X^2+Y^2 == fovrad^2      
+      max_a = sqrt(square(fovrad_in_mm) - square(s_in_mm));
+      min_a = -max_a;
+    } // restrict_to_cylindrical_FOV
+    else
+    {
+      // use FOV which is square.
+      // note that we use square and not rectangular as otherwise symmetries
+      // would take us out of the FOV. TODO
+      /*
+        a has to be such that 
+        |X| <= fovrad_in_mm &&  |Y| <= fovrad_in_mm
+      */
+      if (fabs(cphi) < 1.E-3 || fabs(sphi) < 1.E-3) 
+      {
+        if (fovrad_in_mm < fabs(s_in_mm))
+          return false;
+        max_a = fovrad_in_mm;
+        min_a = -fovrad_in_mm;
+      }
+      else
+      {
+        max_a = min((fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+                    (fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+                    (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        if (min_a > max_a - 1.E-3*voxel_size.x())
+          return false;
+      }
+      
+    } //!restrict_to_cylindrical_FOV
+    const float TMP = sqrt(R*R - square(s_in_mm));
+    
+    start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
+    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y(); 
+    //start_point.z() = (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z();
+    start_point.z() = num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset +
+      + num_planes_per_physical_ring * delta/2 * (1 - max_a / TMP);
+
+    stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
+    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
+    //stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
+    stop_point.z() =  num_planes_per_axial_pos * (rmin + offset) + axial_pos_to_z_offset +
+      + num_planes_per_physical_ring * delta/2 * (1 - min_a / TMP);
+  }
+  // find voxel which contains the start_point, and go to its 'left' edge
+  const float xmin = round(start_point.x()) - sign_x*0.5F;
+  const float ymin = round(start_point.y()) - sign_y*0.5F;
+  const float zmin = round(start_point.z()) - sign_z*0.5F;
+  // find voxel which contains the end_point, and go to its 'right' edge
+  const float xmax = round(stop_point.x()) + sign_x*0.5F;
+  const float ymax = round(stop_point.y()) + sign_y*0.5F;  
+  const float zmax = round(stop_point.z()) + sign_z*0.5F;
+
+  const CartesianCoordinate3D<float> difference = stop_point-start_point;
+  assert(difference.x() <= .00001F);
+  assert(difference.y() >= -.00001F);
+  assert(difference.z() >= -.00001F);
+
+  const float small_difference = 1.E-5F;
+  const bool zero_diff_in_x = fabs(difference.x())<=small_difference;
+  const bool zero_diff_in_y = fabs(difference.y())<=small_difference;
+  const bool zero_diff_in_z = fabs(difference.z())<=small_difference;
+
+  // d12 is distance between the 2 points (times normalisation_const)
+  const float d12 = norm(difference*Bild.get_voxel_size()) * normalisation_constant;
+    // KT 16/02/98 multiply with d12 to get normalisation right from the start
+  const float inc_x = (zero_diff_in_x) ? 1000000.F*d12 : d12 / (sign_x*difference.x());
+  const float inc_y = (zero_diff_in_y) ? 1000000.F*d12 : d12 / (sign_y*difference.y());
+  const float inc_z = (zero_diff_in_z) ? 1000000.F*d12 : d12 / (sign_z*difference.z());
 
 
-  /* intersection points with  intra-voxel planes : */
-  const float xmin = (int) (floor(X1f + 0.5)) + 0.5;
-  const float ymin = (int) (floor(Y1f - 0.5)) + 0.5;
-  const float zmin = (int) (floor(Z1f - 0.5)) + 0.5;
-  const float xmax = (int) (floor(X2f - 0.5)) + 0.5;
-  const float ymax = (int) (floor(Y2f + 0.5)) + 0.5;
-  const float zmax = (int) (floor(Z2f + 0.5)) + 0.5;
+  /* Find the a? values of the intersection points of the LOR with the planes between voxels.
+     Note on special handling of rays parallel to one of the planes:
+     
+     The corresponding a? value would be -infinity. We just set it to
+     a value low enough such that the start value of 'a' is not compromised 
+     further on.
+     Normally
+       a? = (?min-start_point.?) * inc_? * sign_?
+     Because the start voxel includes the start_point, we have that
+       a? <= -inc_?
+     As inc_? is set to some large number when the ray is parallel, this is
+     a good value for the ray.
+  */
+  /* intersection point of the LOR with the previous yz-plane : */
+  float ax = (zero_diff_in_x) ? -inc_x : (xmin - start_point.x()) * sign_x * inc_x;
+  /* intersection point of the LOR with the previous xz-plane : */
+  float ay = (zero_diff_in_y) ? -inc_y : (ymin - start_point.y()) * sign_y * inc_y;
+  /* The biggest a? value gives the start of the 'a'-row */
+  /* intersection point of the LOR with the previous xy-plane : */
+  float az = (zero_diff_in_z) ? -inc_z : (zmin - start_point.z()) * sign_z * inc_z;
+  float a = max(ax, max(ay, az));
 
-
-  /* intersection point of the LOR with the previous xy-plane  (z smaller) : */
-  az[0] = (z1 == z2) ? -1. : (zmin - z1) * Iddz12;
-  /* intersection point of the LOR with the previous yz-plane (x smaller) : */
-  ax[0] = (x1 == x2) ? -1 : (x1 - xmin) * Iddx12;
-  /* intersection point of the LOR with the previous xz-plane (y bigger) : */
-  ay[0] = (y1 == y2) ? -1 : (ymin - y1) * Iddy12;
-
-
-  /* The biggest a?[0] value gives the start of the alpha-row */
-  if (az[0] > ax[0])
-    if (az[0] > ay[0])	/* LOR enters via xy-plane, z=zmin */
-      a0 = az[0];
-    else		/* LOR enters via xz-plane, y=ymin */
-      a0 = ay[0];
-  else if (ax[0] > ay[0])/* LOR enters via yz-plane, x=xmin */
-    a0 = ax[0];
-  else			/* LOR enters via xz-plane, y=ymin */
-    a0 = ay[0];
-
-  /* The smallest a?[0] value, gives the end of the alpha-row */
+  /* The smallest a? value, gives the end of the 'a'-row */
   /* (Note: doc is copied from RayTraceVoxelsOnCartesianGrid. Would need to be adapted a bit)
 
      Find a?end for the last intersections with the coordinate planes. 
@@ -217,74 +267,23 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
      aend. With exact arithmetic, a? would have been incremented exactly to 
        a?_end_actual = a?start + (?max-?end)*inc_?*sign_?, 
      so we could loop until a==aend_actual. However, because of numerical precision,
-     a? might turn out be a tiny bit smaller then a?_end_actual. So, we set aend a tiny bit 
-     smaller than aend_actual.
+     a? might turn out be a tiny bit smaller then a?_end_actual. So, we set aend a 
+     (somewhat less tiny) bit smaller than aend_actual, and loop while (a<aend).
   */
-#if 1
-  const float axend = (x2 == x1) ? 1000000.F : (x1 - xmax) * Iddx12/*.9999F*/;
-  const float ayend = (y2 == y1) ? 1000000.F : (ymax - y1) * Iddy12/*.9999F*/;
-  const float azend = (z2 == z1) ? 1000000.F : (zmax - z1) * Iddz12/*.9999F*/;
-#else
-  const float axend = (x2 == x1) ? d12*1000000.F : (x1 - xmax) * Iddx12/*.9999F*/;
-  const float ayend = (y2 == y1) ? d12*1000000.F : (ymax - y1) * Iddy12/*.9999F*/;
-  const float azend = (z2 == z1) ? d12*1000000.F : (zmax - z1) * Iddz12/*.9999F*/;
-#endif
-#if 0
+  const float axend = (zero_diff_in_x) ? d12*1000000.F : (xmax - start_point.x()) * sign_x * inc_x*.9999F;
+  const float ayend = (zero_diff_in_y) ? d12*1000000.F : (ymax - start_point.y()) * sign_y * inc_y*.9999F;
+  const float azend = (zero_diff_in_z) ? d12*1000000.F : (zmax - start_point.z()) * sign_z * inc_z*.9999F;
+
   const float amax = min(axend, min(ayend, azend));
-# if 0
-  const float newaxend = (x2 == x1) ? d12*1000000.F : (x1 - xmax) * Iddx12/*.9999F*/;
-  const float newayend = (y2 == y1) ? d12*1000000.F : (ymax - y1) * Iddy12/*.9999F*/;
-  const float newazend = (z2 == z1) ? d12*1000000.F : (zmax - z1) * Iddz12/*.9999F*/;
-  const float newamax = min(newaxend, min(newayend, newazend));
-  if (amax != newamax)
-    cerr << '\n' << amax << ' ' << newamax << ' ' << newamax-amax;
-# endif
-#else
-  float amax;
-  if (azend < axend)
-    if (azend < ayend)
-      amax = azend;
-    else
-      amax = ayend;
-  else if (axend < ayend)
-    amax = axend;
-  else
-    amax = ayend;
-# if 0
-  const float newamax = min(axend, min(ayend, azend));
-  if (amax != newamax)
-    cerr << '\n' << amax << ' ' << newamax << ' ' << newamax-amax;
-# endif  
-#endif
-  /* Computation of ax[], ay[] und az[] : */
-  k = 1;
-  kmax =(int) (1 + xmin - xmax);
-  while (k <= kmax) {
-    ax[k] = ax[k - 1] + Iddx12;
-    k++;
-  }
-  k = 1;
-  kmax =(int) (1 + ymax - ymin);
-  while (k <= kmax) {
-    ay[k] = ay[k - 1] + Iddy12;
-    k++;
-  }
-  k = 1;
-  kmax = (int) (1 + zmax - zmin);
-  while (k <= kmax) {
-    az[k] = az[k - 1] + Iddz12;
-    k++;
-  }
 
   /* Coordinates of the first Voxel : */
-  X = (int) (xmin - 0.5);
-  Y = (int) (ymin + 0.5);
-  Z = (int) (zmin + 0.5);
+  int X = round(xmin + sign_x* 0.5F);
+  int Y = round(ymin + sign_y* 0.5F);
+  int Z = round(zmin + sign_z* 0.5F);
 
   // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
   // Z+Q = 2*centre_of_LOR_in_image_coordinates
-  // original  Q = (int) (4 * (rmin + offset) + 2 * delta - Z);
-  // CL&KT 21/12/99 added axial_pos_to_z_offset and num_planes_per_physical_ring
+  int Q;
   {
     // first compute it as floating point (although it has to be an int really)
     const float Qf = (2*num_planes_per_axial_pos*(rmin + offset) 
@@ -325,16 +324,24 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
     }
   */
   /* Now we go slowly along the LOR */
-  ix = iy = iz = 1;
-  a = a0;
+  if (zero_diff_in_x) ax = axend; else ax += inc_x;
+  if (zero_diff_in_y) ay = ayend; else ay += inc_y;
+  if (zero_diff_in_z) az = azend; else az += inc_z;
+
+  // these are used to check boundaries on Z
+  // We do not use get_min_index() explicitly as presumably a comparison with 0 
+  // is just a tiny bit faster...
+  // TODO remove this
+  const int maxplane = Bild.get_max_index(); 
+  assert(Bild.get_min_index() == 0);
+
   while (a < amax) {
-    if (ax[ix] < ay[iy])
-      if (ax[ix] < az[iz]) {	/* LOR leaves voxel through yz-plane */
-	const float d = ax[ix] - a;
-	Zdup = Z;
-	Qdup = Q;
-        //CL&KT 21/12/99 used num_planes_per_axial_pos
-        for (ring0 = rmin; 
+    if (ax < ay)
+      if (ax < az) {	/* LOR leaves voxel through yz-plane */
+	const float d = ax - a;
+	int Zdup = Z;
+	int Qdup = Q;
+        for (int ring0 = rmin; 
 	     ring0 <= rmax; 
 	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	{
@@ -373,14 +380,13 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	  }
 						
 	}
-	a = ax[ix++];
+	a = ax ;  ax +=  inc_x;
 	X--;
       } else {	/* LOR leaves voxel through xy-plane */
-	const float d = az[iz] - a;
-	Zdup = Z;
-	Qdup = Q;
-        //CL&KT 21/12/99 used num_planes_per_axial_pos
-        for (ring0 = rmin; 
+	const float d = az - a;
+	int Zdup = Z;
+	int Qdup = Q;
+        for (int ring0 = rmin; 
 	     ring0 <= rmax; 
 	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	{
@@ -420,16 +426,15 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	  }
 						
 	}
-	a = az[iz++];
+	a = az ;  az +=  inc_z;
 	Z++;
 	Q--;
       }
-    else if (ay[iy] < az[iz]) {	/* LOR leaves voxel through xz-plane */
-      const float d = ay[iy] - a;
-      Zdup = Z;
-      Qdup = Q;
-      //CL&KT 21/12/99 used num_planes_per_axial_pos
-      for (ring0 = rmin; 
+    else if (ay < az) {	/* LOR leaves voxel through xz-plane */
+      const float d = ay - a;
+      int Zdup = Z;
+      int Qdup = Q;
+      for (int ring0 = rmin; 
            ring0 <= rmax; 
 	   ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	   {
@@ -468,14 +473,13 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	}
 					
       }
-      a = ay[iy++];
+      a = ay;   ay +=  inc_y;
       Y++;
     } else {/* LOR leaves voxel through xy-plane */
-      const float d = az[iz] - a;
-      Zdup = Z;
-      Qdup = Q;
-        //CL&KT 21/12/99 used num_planes_per_axial_pos
-        for (ring0 = rmin; 
+      const float d = az - a;
+      int Zdup = Z;
+      int Qdup = Q;
+        for (int ring0 = rmin; 
 	     ring0 <= rmax; 
 	     ring0++, Zdup += num_planes_per_axial_pos, Qdup +=num_planes_per_axial_pos )
 	{
@@ -514,21 +518,22 @@ proj_Siddon(Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild,
 	}
 					
       }
-      a = az[iz++];
+      a = az ;  az +=  inc_z;
       Z++;
       Q--;
     }
 
   }		/* Ende while (a<amax) */
 
-	
+  return true;
 }
 
 
 //**************** instantiations
 
 template 
-void ForwardProjectorByBinUsingRayTracing::
+bool
+ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<1>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
 	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	       const float cphi, const float sphi, const float delta, 
@@ -536,11 +541,13 @@ proj_Siddon<1>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &,
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
 	       const int num_planes_per_axial_pos,
 	       const float axial_pos_to_z_offset,
-	       const float norm_factor);
+	       const float norm_factor,
+	       const bool restrict_to_cylindrical_FOV);
 
 
 template
-void ForwardProjectorByBinUsingRayTracing::
+bool
+ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<2>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
 	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	       const float cphi, const float sphi, const float delta, 
@@ -548,11 +555,13 @@ proj_Siddon<2>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &,
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
 	       const int num_planes_per_axial_pos,
 	       const float axial_pos_to_z_offset,
-	       const float norm_factor);
+	       const float norm_factor,
+	       const bool restrict_to_cylindrical_FOV);
 
 
 template
-void ForwardProjectorByBinUsingRayTracing::
+bool
+ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<3>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
 	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	       const float cphi, const float sphi, const float delta, 
@@ -560,11 +569,13 @@ proj_Siddon<3>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &,
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
 	       const int num_planes_per_axial_pos,
 	       const float axial_pos_to_z_offset,
-	       const float norm_factor);
+	       const float norm_factor,
+	       const bool restrict_to_cylindrical_FOV);
 
 
 template
-void ForwardProjectorByBinUsingRayTracing::
+bool
+ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<4>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
 	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
 	       const float cphi, const float sphi, const float delta, 
@@ -572,6 +583,7 @@ proj_Siddon<4>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &,
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
 	       const int num_planes_per_axial_pos,
 	       const float axial_pos_to_z_offset,
-	       const float norm_factor);
+	       const float norm_factor,
+	       const bool restrict_to_cylindrical_FOV);
 
 END_NAMESPACE_STIR
