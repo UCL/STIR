@@ -22,6 +22,7 @@
 
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/ProjData.h"
 
 START_NAMESPACE_STIR
 
@@ -31,6 +32,31 @@ BackProjectorByBin::BackProjectorByBin()
 
 BackProjectorByBin::~BackProjectorByBin()
 {
+}
+
+void 
+BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
+				 const ProjData& proj_data)
+{
+    
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
+    this->get_symmetries_used()->clone();  
+  
+  for (int segment_num = proj_data.get_min_segment_num(); 
+       segment_num <= proj_data.get_max_segment_num(); 
+       ++segment_num)
+    for (int view_num= proj_data.get_min_view_num(); 
+	 view_num <= proj_data.get_max_view_num();
+	 ++view_num)      
+    {       
+      ViewSegmentNumbers vs(view_num, segment_num);
+      if (!symmetries_sptr->is_basic(vs))
+        continue;
+      
+      const RelatedViewgrams<float> viewgrams = 
+        proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      back_project(image, viewgrams);	  
+    }
 }
 
 void 
