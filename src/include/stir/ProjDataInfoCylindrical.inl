@@ -120,6 +120,9 @@ Succeeded
 ProjDataInfoCylindrical::
 get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const
 {
+  if (!sampling_corresponds_to_physical_rings)
+    return Succeeded::no;
+
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
   segment_num = ring_diff_to_segment_num[ring_diff];

@@ -67,6 +67,12 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
 
   assert(get_scanner_ptr()->get_num_detectors_per_ring() % (2*num_views) == 0);
 
+  // TODO this info should probably be provided via the constructor, or at
+  // least by Scanner.
+  sampling_corresponds_to_physical_rings =
+    scanner_ptr->get_type() != Scanner::HiDAC;
+  
+
   assert(min_ring_diff.get_length() == max_ring_diff.get_length());
   assert(min_ring_diff.get_length() == num_axial_pos_per_segment.get_length());
 
@@ -117,6 +123,7 @@ initialise_ring_diff_arrays() const
     }
   }
   // initialise ax_pos_num_offset 
+  if (sampling_corresponds_to_physical_rings)
   { 
     const int num_rings = get_scanner_ptr()->get_num_rings();
     ax_pos_num_offset =
@@ -183,6 +190,7 @@ initialise_ring_diff_arrays() const
     }
   }
   // initialise ring_diff_to_segment_num
+  if (sampling_corresponds_to_physical_rings)
   {
     const int min_ring_difference = 
       *min_element(min_ring_diff.begin(), min_ring_diff.end());
@@ -234,6 +242,8 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
 					const int segment_num,
 					const int axial_pos_num) const
 {
+  if (!sampling_corresponds_to_physical_rings)
+    error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for this type of sampled data\n");
   // can do only span=1 at the moment
   if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
     error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression\n");
