@@ -27,12 +27,18 @@
 #include "stir/RunTests.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
+#include "stir/Succeeded.h"
+
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/IndexRange3D.h"
 
 #include <fstream>
 #include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
+using std::endl;
 using std::ifstream;
 using std::istream;
 #endif
@@ -92,7 +98,63 @@ void InterfileOutputFileFormatTests::run_tests()
         "parsing failed to set output_file_format_ptr to InterfileOutputFileFormat"))
     return;
 
+  cerr << "Output parameters as read from input file:\n"
+       << "-------------------------------------------\n";
   cerr << static_cast<ParsingObject&>(*output_file_format_ptr).parameter_info();
+
+  cerr << "-------------------------------------------\n\n";
+
+  cerr << "Now writing to file and reading it back." << endl; 
+  // construct density and write to file
+  {
+    CartesianCoordinate3D<float> origin (0,0,0);  // TODO origin shift currently not supported by Interfile IO
+    CartesianCoordinate3D<float> grid_spacing (3,4,5); 
+  
+    IndexRange<3> 
+      range(CartesianCoordinate3D<int>(0,-15,-14),
+	    CartesianCoordinate3D<int>(4,14,14));
+	    
+    VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
+    {
+      // fill with some data
+      float data = .9;
+      for (VoxelsOnCartesianGrid<float>::full_iterator iter = image.begin_all();
+	   iter != image.end_all();
+	 ++iter)
+	{
+	  *iter = data;
+	  data = data*(data+2);
+	}
+    }
+
+    // write to file
+
+    const Succeeded success =
+      output_file_format_ptr->write_to_file("test.hv",image);
+    
+    if (!check( success==Succeeded::yes, "test writing to file"))
+      return;
+
+    // now read it back
+    
+    shared_ptr<DiscretisedDensity<3,float> >
+      density_ptr = DiscretisedDensity<3,float>::read_from_file("test.hv");
+
+    const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =
+      dynamic_cast< VoxelsOnCartesianGrid<float> const *>
+      (density_ptr.get());
+    if (!check(!is_null_ptr(image_as_read_ptr), "test on image type read back from file"))
+      return;
+    check_if_equal(image_as_read_ptr->get_grid_spacing(), grid_spacing, "test on grid spacing read back from file");
+
+
+    check_if_equal(image, *density_ptr, "test on data read back from file");
+    check_if_equal(density_ptr->get_origin(), origin, "test on origin read back from file");
+
+
+  }
+    
+
 
 }
 
