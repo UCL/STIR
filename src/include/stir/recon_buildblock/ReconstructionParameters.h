@@ -29,6 +29,7 @@
 #include "stir/ParsingObject.h"
 #include "stir/shared_ptr.h"
 #include "stir/ProjData.h"
+#include "stir/IO/OutputFileFormat.h"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
@@ -97,6 +98,9 @@ public:
   //! points to the object for the total input projection data
   shared_ptr<ProjData> proj_data_ptr;
 
+
+  //! defines the format of the output files
+  shared_ptr<OutputFileFormat> output_file_format_ptr; // KT 22/05/2003 new
 
 protected:
  
