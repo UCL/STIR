@@ -16,7 +16,7 @@ all:	libbuildblock.a
 #	$(CXX) $(DEBUG) $(CFLAGS) -o $@  $< 
 
 
-libbuildblock.a: sinodata.o convert.o PETScannerInfo.o # Tensor1D.o
+libbuildblock.a: sinodata.o convert.o PETScannerInfo.o Tensor1D.o
 	ar r $@ $?
 	ranlib $@
 
