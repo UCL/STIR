@@ -4,6 +4,9 @@
 
 #include <iostream> 
 #include <fstream>
+#ifndef RAND
+#include <boost/random.hpp>
+#endif
 
 #ifndef TOMO_NO_NAMESPACES
 using std::iostream;
@@ -19,50 +22,22 @@ using std::cout;
 
 USING_NAMESPACE_TOMO
 
-int generate_poisson_random(const float mu);
 
-void add_poisson(ProjData& output_projdata, 
-		 const ProjData& input_projdata, 
-		 const float scaling_factor);
+#ifndef RAND
+  // try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
+  typedef boost::mt19937 base_generator_type;
+  // initialize by reproducible seed
+  static base_generator_type generator(42);
 
-
-int
-main (int argc,char *argv[])
-{
-  if(argc<5)
-  {
-    cerr<<"Usage: add_poisson <input header file name (*.hs)> scaling_factor <output filename (no extension)> seed-unsigned-int\n";
-    exit(EXIT_FAILURE);
-  }  
-  
-  const char *const filename = argv[3];
-  const float scaling_factor = atof(argv[2]);
-  shared_ptr<ProjData>  in_data = ProjData::read_from_file(argv[1]);
-  unsigned int seed = atoi(argv[4]);
-  srand(seed);
-  
-  string filename_san =filename;
-  filename_san += ".s";
-  
-  iostream * sino_stream = new fstream (filename_san.c_str(), ios::out| ios::binary);
-  if (!sino_stream->good())
-  {
-    error("add_poisson: error opening file %s\n",filename_san.c_str());
-  }
-  
-  ProjDataFromStream new_data(in_data->get_proj_data_info_ptr()->clone(),sino_stream); 
-  write_basic_interfile_PDFS_header(filename_san, new_data);
-  
-  add_poisson(new_data,*in_data, scaling_factor);
-  
-  return EXIT_SUCCESS;
-}
-
-
+  boost::uniform_01<base_generator_type> random01(generator);
+#else
+inline double random01() { return static_cast<double>(rand()) / RAND_MAX; }
+#endif
 
 int generate_poisson_random(const float mu)
 {  
-  double u = static_cast<double>(rand()) / RAND_MAX; 
+
+  double u = random01();
   
   // prevent problems if n growing too large (or even to infinity) 
   // when u is very close to 1
@@ -87,7 +62,10 @@ int generate_poisson_random(const float mu)
 
 
 void 
-add_poisson(ProjData& output_projdata, const ProjData& input_projdata, const float scaling_factor)
+add_poisson(ProjData& output_projdata, 
+	    const ProjData& input_projdata, 
+	    const float scaling_factor,
+	    const bool preserve_mean)
 {
   
   
@@ -114,7 +92,11 @@ add_poisson(ProjData& output_projdata, const ProjData& input_projdata, const flo
 	//cerr << "bin" << bin << endl;
 	const int random_poisson = generate_poisson_random(bin*scaling_factor);
 	//cerr << "done " << random_poisson << endl;
-	seg_output[view][ax_pos][tang_pos] = static_cast<float>(random_poisson);		
+	seg_output[view][ax_pos][tang_pos] = 
+	  preserve_mean ?
+	  random_poisson / scaling_factor
+	  :
+	  static_cast<float>(random_poisson);		
       }           
       output_projdata.set_segment(seg_output);      
   }
@@ -122,4 +104,68 @@ add_poisson(ProjData& output_projdata, const ProjData& input_projdata, const flo
 
 
 
+
+
+
+void usage()
+{
+    cerr <<"Usage: add_poisson [-p | --preserve-mean] <output_filename (no extension)> <input_file_name> scaling_factor seed-unsigned-int\n"
+	 << "Without the -p option, the mean of the output data will"
+	 << " be equal to scaling_factor*mean_of_input\n."
+	 << "The options -o and --preserve-mean are identical.\n";
+}
+
+int
+main (int argc,char *argv[])
+{
+  if(argc<5)
+  {
+    usage();
+    return(EXIT_FAILURE);
+  }  
+  
+  bool preserve_mean = false;
+
+  // option processing
+  if (argv[1][0] == '-')
+    {
+      if (strcmp(argv[1],"-p")==0 ||
+	  strcmp(argv[1],"--preserve-mean")==0)
+	preserve_mean = true;
+      else
+	{
+	  usage();
+	  return(EXIT_FAILURE);
+	}  
+      ++argv;
+    }
+	  
+  const char *const filename = argv[1];
+  const float scaling_factor = atof(argv[3]);
+  shared_ptr<ProjData>  in_data = ProjData::read_from_file(argv[2]);
+
+#ifndef RAND
+  boost::uint32_t seed = atoi(argv[4]);
+  generator.seed(seed);
+#else
+  unsigned int seed = atoi(argv[4]);
+  srand(seed);
+#endif
+
+  string filename_san =filename;
+  filename_san += ".s";
+  
+  iostream * sino_stream = new fstream (filename_san.c_str(), ios::out| ios::binary);
+  if (!sino_stream->good())
+  {
+    error("add_poisson: error opening file %s\n",filename_san.c_str());
+  }
+  
+  ProjDataFromStream new_data(in_data->get_proj_data_info_ptr()->clone(),sino_stream); 
+  write_basic_interfile_PDFS_header(filename_san, new_data);
+  
+  add_poisson(new_data,*in_data, scaling_factor, preserve_mean);
+  
+  return EXIT_SUCCESS;
+}
 
