@@ -94,7 +94,7 @@ Scanner::Scanner(Type scanner_type)
     set_params(E966,string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"), 48, 288,2* 288, 412.5F, 4.850F, 2.250F, 
 	       0,6,2,8,8, 1); 
   else if (scanner_type == RPT)
-    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0,0,0,0,0, 1);
+    set_params(RPT,string_list("PRT-1", "RPT"), 16, 128,2*192, 380,  6.75F, 3.1088F,   0,0,0,8,8, 1);
   else if (scanner_type == RATPET)
     set_params(RATPET,string_list("RATPET"), 8, 56,2*56, 115/2.F,  6.25F, 1.65F,   
 	       0,1,0,8,7, 1); // HR block
