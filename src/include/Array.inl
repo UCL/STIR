@@ -30,7 +30,7 @@ START_NAMESPACE_TOMO
 /**********************************************
  inlines for Array<num_dimensions, elemT>
  **********************************************/
-
+#ifndef ARRAY4
 template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
@@ -45,6 +45,7 @@ Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 
   is_regular_range = range.is_regular();
 }
+#endif
 
 template <int num_dimensions, typename elemT>
 Array<num_dimensions, elemT>::Array()
