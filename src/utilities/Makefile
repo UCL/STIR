@@ -51,11 +51,9 @@ endif
 
 
 
-.KEEP_STATE:
+.PRECIOUS: $(DEST)vox.o $(DEST)displayPSOV.o
 
-.PRECIOUS: $(DEST)vox.o
-
-all: createdir libs $(DEST)vox
+all: createdir libs $(DEST)vox $(DEST)displayPSOV $(DEST)swap_byteorder
 
 createdir:
 	-mkdir -p $(DEST)
@@ -72,4 +70,4 @@ FORCE:
 
 
 clean: 
-	$(RM) $(DEST)*.o $(DEST)vox
+	$(RM) $(DEST)*.o $(DEST)vox $(DEST)displayPSOV $(DEST)swap_byteorder
