@@ -4,7 +4,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Inline implementations for class SingleScatter
+  \brief Inline implementations for class Scatter
 
   \author Kris Thielemans
   \author Charalampos Tsoumpas
@@ -16,13 +16,7 @@
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-
-
-
-
 //using namespace std;
-
-
 START_NAMESPACE_STIR
 
 template<int num_dimensions>
@@ -35,7 +29,6 @@ BasicCoordinate<num_dimensions,float> convert_int_to_float(const BasicCoordinate
 		  cfloat[i]=(float)cint[i];
 	  return cfloat;
 	}
-
 inline
 float dif_cross_section(const float cos_theta, float energy)
 { 
@@ -62,7 +55,6 @@ energy_after_scatter(const float cos_theta, const float energy)
 {
    return energy/(1+(energy/511.0)*(1-cos_theta));
 }
-
 inline
 float
 energy_after_scatter_511keV(const float cos_theta)
@@ -76,7 +68,6 @@ float dif_cross_section_511keV(const float cos_theta)
   const float P= 1/(2-cos_theta);
   return(  Re*Re/2*P* (1 - P*sin_theta2 + P*P) );
 }
-
 inline
 float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point,
 	  const CartesianCoordinate3D<float>& detector_coord_A,
@@ -90,17 +81,14 @@ float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point
 	  dif_cross_section_511keV(-cos_angle(detector_coord_A - scatter_point,
 		                                  detector_coord_B - scatter_point)); 
 }
-
 inline
 float total_cross_section(const float energy)
 {
   const float a= energy/511.0;
   const float l= log(1.0+2.0*a);
   const double sigma0= 6.65E-25;
-
   return( 0.75*sigma0  * ( (1.0+a)/(a*a)*( 2.0*(1.0+a)/(1.0+2.0*a)- l/a ) + l/(2.0*a) - (1.0+3.0*a)/(1.0+2.0*a)/(1.0+2.0*a) ) );
 }
-
 inline
 float total_cross_section_relative_to_511keV(const float energy)
 {
@@ -112,28 +100,10 @@ float total_cross_section_relative_to_511keV(const float energy)
        ((2 + (2 - a)*a)*log(1 + 2*a))/a)/square(a)
 	   );
 }
-/*!	\ingroup scatter
-   \brief detection efficiency for a given energy window
-   
-   This function provides a simple model of the interaction of radiation
-	with the detector .
-	
-	\param low, high Discriminator bounds of the detector in keV
-	\param energy	 Energy of incident photon in keV
-	\param resolution Energy resolution of the detector b(between 0 and 1) at the reference energy
-	\param reference_energy  Energy where the FWHM is given by \c resolution
-			  
-	The energy spectrum is assumed to be Gaussian. The FWHM is assumed to 
-	be proportional to sqrt(energy). This is reasonable given the Poisson 
-	statistics of scintillation detectors. The proportionality factor is 
-	determined by requiring that FWHM(reference_energy)=resolution*reference_energy.
-
-	This formula is the same as the one used by SIMSET for Simple_PET detector.
-*/
 inline 
 float detection_efficiency( const float low, const float high, 
 						    const float energy, 
-							const float reference_energy, const float resolution )
+							const float reference_energy, const float resolution)
 {
 	if (energy<=low || energy >= high)
 	   return 0;
@@ -145,7 +115,6 @@ float detection_efficiency( const float low, const float high,
 		0.5*( erf((high-energy)/sigma_times_sqrt2) 
 		      - erf((low-energy)/sigma_times_sqrt2 ));	
 }
-
 /*!	\ingroup scatter
    \brief detection efficiency for BGO  for a given energy window
    */
@@ -156,6 +125,5 @@ float detection_efficiency_BGO( const float low, const float high,
 	return
 		detection_efficiency(low, high, energy, 511, .25); //SET resolution to 0.22
 }
-
 END_NAMESPACE_STIR
 

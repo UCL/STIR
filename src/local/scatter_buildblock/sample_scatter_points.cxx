@@ -4,7 +4,7 @@
 /*!
 \file
 \ingroup scatter
-\brief Implementations of functions defined in scatter.h
+\brief Implementations of functions defined in Scatter.h
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
@@ -21,7 +21,6 @@
 #include <fstream>
 #include <ctime>
 using namespace std;
-
 START_NAMESPACE_STIR
 
 static inline float random_point(const float low, const float high){
@@ -47,14 +46,11 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 	CartesianCoordinate3D<int> coord;
 	
 	if(!attenuation_map_cartesian_ptr->get_regular_range(min_index, max_index))
-		error("scatter points sampling works only on regular ranges, at the moment\n");
-    
+		error("scatter points sampling works only on regular ranges, at the moment\n");    
 	const VoxelsOnCartesianGrid<float>& image =
 		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
-	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size(); 
-	
-	CartesianCoordinate3D<float>  origin = 
-		image.get_origin();
+	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size(); 	
+	CartesianCoordinate3D<float>  origin = image.get_origin();
 	// shift origin such that we refer to the middle of the scanner
 	const float z_to_middle =
 		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
@@ -72,8 +68,7 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 			for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])   
 				if(attenuation_map[coord] >= att_threshold)
 				{
-					ScatterPoint scatter_point;
-					
+					ScatterPoint scatter_point;					
 					scatter_point.coord = convert_int_to_float(coord);
 					if (random)
 						scatter_point.coord +=
@@ -85,8 +80,6 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 					scatter_point.mu_value = attenuation_map[coord];
 					scatt_points_vector.push_back(scatter_point);
 				}					
-
 	scatt_points = scatt_points_vector.size(); //this is the number of total scatt_points that is a refernece to the call
 }
-
 END_NAMESPACE_STIR 

@@ -4,7 +4,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementations of functions defined in scatter.h
+  \brief Implementations of functions defined in Scatter.h
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
@@ -18,10 +18,7 @@
 */
 #include "local/stir/Scatter.h"
 #include <math.h>
-
-
 using namespace std;
-
 START_NAMESPACE_STIR
 
 static const float total_cross_section_511keV = 
@@ -78,8 +75,7 @@ float scatter_estimate_for_one_scatter_point(
 			image_as_activity,
 			scatter_point_num, 
 			det_num_A
-			, act_image_type);
-		
+			, act_image_type);		
 		emiss_to_detB = cached_factors(
 			image_as_activity,
 			scatter_point_num, 
@@ -129,7 +125,6 @@ float scatter_estimate_for_one_scatter_point(
 			scatter_point, 
 			detector_coord_B));
 	}	
-
 	const float dif_cross_section =
 		dif_cross_section_511keV(costheta); 
 	
@@ -150,7 +145,7 @@ float scatter_estimate_for_one_scatter_point(
 
 	assert(scatter_point_mu==
 		image[round((scatter_point-origin)/voxel_size)]);
-#endif	
+#endif	                           
 	const float scatter_ratio =
 		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
 		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
@@ -162,7 +157,6 @@ float scatter_estimate_for_one_scatter_point(
 		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
 		;	
-
 	if (!use_cosphi)
 		return
 		scatter_ratio;
@@ -178,7 +172,6 @@ float scatter_estimate_for_one_scatter_point(
 	    const float cos_incident_angle_B = 
 	      cos_angle(scatter_point - detector_coord_B,
 			detB_to_ring_center) ;
-
 	    return
 	      scatter_ratio*cos_incident_angle_A*cos_incident_angle_A
 	      *cos_incident_angle_B*cos_incident_angle_B ;

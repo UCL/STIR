@@ -4,30 +4,24 @@
 /*!
 \file
 \ingroup scatter
-\brief Implementations of functions defined in scatter.h
-Function calculates the integral along LOR in a 
-image (attenuation or emission). 
+\brief Implementations of functions defined in Scatter.h
+Function calculates the integral along LOR in an image (attenuation or emission). 
 (From scatter point to detector coordinate)
 
   \author Pablo Aguiar
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
-	
-	  
+  		  
 		$Date$
 		$Revision$
 		
 		  Copyright (C) 2004- $Date$, Hammersmith Imanet
 		  See STIR/LICENSE.txt for details
 */
-
 #include "local/stir/Scatter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
-
-
 START_NAMESPACE_STIR
 
 float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
@@ -43,7 +37,6 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 	const float z_to_middle =
 		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
 	origin.z() -= z_to_middle;
-
 		ProjMatrixElemsForOneBin lor;
 		RayTraceVoxelsOnCartesianGrid(lor, 
 			(scatter_point-origin)/voxel_size,  // should be in voxel units
@@ -61,8 +54,7 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 			bool we_have_been_within_the_image = false;
 			while (element_ptr != lor.end())
 			{
-				const BasicCoordinate<3,int> coords = element_ptr->get_coords();
-				
+				const BasicCoordinate<3,int> coords = element_ptr->get_coords();				
 				if (coords[1] >= image.get_min_index() && 
 					coords[1] <= image.get_max_index() &&
 					coords[2] >= image[coords[1]].get_min_index() && 

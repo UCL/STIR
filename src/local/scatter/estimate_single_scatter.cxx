@@ -20,14 +20,25 @@
 							  [proj_data_filename]
 							  [scatter_viewgram_filename]
 							  [attenuation_threshold]
-							  [maximum_scatter_points]	
+							  [lower_energy_threshold]
+							  [upper_energy_threshold]
+							  [maximum_scatter_points]
 							  [random points]
-	  
-	  Output: Viewgram with name activity_image_maximum_scatter_points
+							  [use_cosphi]
+							  [use_cache]
+							  [scatter_level]
+  	
+	  Output: Viewgram with name scatter_viewgram_filename
               statistics.txt
 	  \endcode
-	  \param attenuation_threshold defaults to .09 cm^-1
-	  \param maximum_scatter_points defaults to 1000	  
+	  \param attenuation_threshold defaults to .05 cm^-1
+	  \param lower_energy_threshold defaults to 350 keV
+	  \param upper_energy_threshold defaults to 650 keV		  
+	  \param maximum_scatter_points defaults to 1000: Input not activated	
+	  \param random points defaults to true
+	  \param use_cosphi defaults to false
+	  \param use_cache defaults to true
+	  \param scatter_level defaults to 1 (Single Scatter)
 */
 /*
 Copyright (C) 2004- $Date$, Hammersmith Imanet
