@@ -1,5 +1,5 @@
 //
-// $Id$ :$Date$
+// $Id$: $Date$
 //
 
 /*!
@@ -17,10 +17,9 @@
     
 */
 //   Pretty horrible implementations at the moment...
-// KT 30/05/2000 made all const char * const into const string&
 
-#include "InterfileHeader.h"
 #include "interfile.h"
+#include "InterfileHeader.h"
 #include "IndexRange3D.h"
 #include "utilities.h"
 #include "VoxelsOnCartesianGrid.h"
@@ -507,10 +506,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   // TODO support more ? 
   {
     // default to Segment_View_AxialPos_TangPos
-    int order_of_segment = 1;
-    int order_of_view = 2;
-    int order_of_z = 3;
-    int order_of_bin = 4;
+    int order_of_segment = 4;
+    int order_of_view = 3;
+    int order_of_z = 2;
+    int order_of_bin = 1;
     switch(pdfs.get_storage_order())
      /*
       {  
@@ -525,16 +524,16 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     {
       case ProjDataFromStream::Segment_View_AxialPos_TangPos:
 	{
-	  order_of_segment = 1;
-	  order_of_view = 2;
-	  order_of_z = 3;
+	  order_of_segment = 4;
+	  order_of_view = 3;
+	  order_of_z = 2;
 	  break;
 	}
       case ProjDataFromStream::Segment_AxialPos_View_TangPos:
 	{
-	  order_of_segment = 1;
-	  order_of_view = 3;
-	  order_of_z = 2;
+	  order_of_segment = 4;
+	  order_of_view = 2;
+	  order_of_z = 3;
 	  break;
 	}
       default:
@@ -553,7 +552,7 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
     output_header << "!matrix size [" << order_of_view << "] := "
 		  << pdfs.get_proj_data_info_ptr()->get_num_views() << "\n";
     
-    output_header << "matrix axis label [" << order_of_z << "] := z\n";
+    output_header << "matrix axis label [" << order_of_z << "] := axial_pos\n";
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
@@ -568,7 +567,7 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
       output_header << "}\n";
     }
 
-    output_header << "matrix axis label [" << order_of_bin << "] := bin\n";
+    output_header << "matrix axis label [" << order_of_bin << "] := tangential_pos\n";
     output_header << "!matrix size [" << order_of_bin << "] := "
 		  <<pdfs.get_proj_data_info_ptr()->get_num_tangential_poss() << "\n";
   }
