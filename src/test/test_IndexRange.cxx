@@ -5,7 +5,7 @@
 /*!
   \file 
  
-  \brief A simple programme to test the IndexRange class
+  \brief A simple program to test the IndexRange class
 
   \author Kris Thielemans
   \author PARAPET project
@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -97,6 +97,24 @@ IndexRange_Tests::run_tests()
     }
 
     IndexRange3D another_idx_range3d(low[1],high[1], low[2], high[2], low[3], high[3]);
+    check(another_idx_range3d == idx_range3d, "test IndexRange3D");
+  }
+  {
+    const Coordinate3D<int> sizes(3,4,5);
+    const IndexRange<3> idx_range3d(sizes);
+    
+    check(idx_range3d[3].get_max_index() == 5, 
+      "testing constructor from 1 Coordinate object");
+    check(idx_range3d.is_regular()==true, 
+      "testing is_regular on regular range");
+    Coordinate3D<int> low_test, high_test;
+    if (idx_range3d.get_regular_range(low_test, high_test))
+    {
+      check_if_equal(Coordinate3D<int>(0,0,0), low_test, "testing is_regular on regular range: lower indices");
+      check_if_equal(sizes-1, high_test, "testing is_regular on regular range: higher indices");
+    }
+
+    const IndexRange3D another_idx_range3d(sizes[1], sizes[2], sizes[3]);
     check(another_idx_range3d == idx_range3d, "test IndexRange3D");
   }
 
