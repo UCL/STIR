@@ -23,7 +23,6 @@
 #include "utilities.h"
 #include "interfile.h"
 
-#include "PETScannerInfo.h"
 #include "sinodata.h"
 #include "imagedata.h"
 
@@ -36,16 +35,16 @@
 
 #include "display.h"
 
-// KT 04/11/98 not used anymore
-//#define ZERO_TOL 0.000001
-//#define ROOF 40000000.0
-
+// KT 13/11/98 new
+const int hard_wired_rim_truncation_sino = 4;
 
 class parameters{
   public:
  int limit_segments, MAP_mode, num_subsets, view45, phase_offset, iteration_num;   
   // KT 04/11/98 new
   bool zero_seg0_end_planes;
+  // KT 09/11/98 new
+  int rim_truncation_sino;
 } globals;
 
 
@@ -57,78 +56,103 @@ public:
   virtual void apply(PETSegment&) const {}
 };
 
+// KT 09/11/98 new
+void truncate_rim(PETSegmentByView& seg, const int rim_truncation_sino);
+void truncate_rim(PETSegmentBySinogram& seg, const int rim_truncation_sino);
+
+// KT 09/11/98 use PSOV for construction of segments, added const for globals
 PETImageOfVolume
-compute_sensitivity_image(const PETScannerInfo& scanner,
+compute_sensitivity_image(const PETSinogramOfVolume& s3d,
 			  const PETImageOfVolume& attenuation_image,
 			  const bool do_attenuation,
 			  const Normalisation& normalisation,
-			  parameters &globals);
+			  const parameters &globals);
 
 int main(int argc, char *argv[])
 {
 
-  if(argc>2) {
-    cout<<"Usage: sensitivity [c]";
+  if(argc>1) {
+    cout<<"Usage: sensitivity ";
     exit(1);
   }
 
 
-  int scanner_num = 0;
-  PETScannerInfo scanner;
-  char scanner_char[200];
-
-
-  scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE) ? ", 0,3,0);
+  // KT 05/11/98 use scan_info
+  PETScanInfo scan_info;
+ 
+  int scanner_num = 
+    ask_num("Enter scanner number (0: RPT, 1:1: 953, 2: 966, 3: GE, 4: ART) ? ", 
+            0,4,0);
   switch( scanner_num )
     {
     case 0:
-      scanner = (PETScannerInfo::RPT);
-      sprintf(scanner_char,"%s","RPT");
+      scan_info = (PETScannerInfo::RPT);
       break;
     case 1:
-      scanner = (PETScannerInfo::E953);
-      sprintf(scanner_char,"%s","953");   
+      scan_info = (PETScannerInfo::E953);
       break;
     case 2:
-      scanner = (PETScannerInfo::E966);
-      sprintf(scanner_char,"%s","966"); 
+      scan_info = (PETScannerInfo::E966);
       break;
     case 3:
-      scanner = (PETScannerInfo::Advance);
-      sprintf(scanner_char,"%s","Advance");   
+      scan_info = (PETScannerInfo::Advance);
       break;
-    default:
-      PETerror("Wrong scanner number\n"); Abort();
+    case 4:
+      scan_info = (PETScannerInfo::ART);
+      break;
     }
 
+  {
+    const int new_num_bins = 
+      scan_info.get_num_bins() / ask_num("Reduce num_bins by factor", 1,16,1);
 
- 
-  if(argc==2)
-    {
-      // KT&MJ 11/08/98 allow for higher sampling in z
+    // keep same radius of FOV
+    scan_info.set_bin_size(
+      (scan_info.get_bin_size()*scan_info.get_num_bins()) / new_num_bins
+      );
 
-      //scanner.num_bins /= 4; 
-      //scanner.num_views /= 4; 
-      cerr << "Warning, using 3 times more rings";
-      scanner.num_rings *= 3;
+    scan_info.set_num_bins(new_num_bins); 
+
+    scan_info.set_num_views(
+      scan_info.get_num_views()/ ask_num("Reduce num_views by factor", 1,16,1)
+      );  
+
+  }    
+
+  // KT 09/11/98 allow span
+  int span = 1;
+  if (scan_info.get_scanner().type != PETScannerInfo::Advance)
+    span = ask_num("Span value", 1, scan_info.get_num_rings()/2, 1);
+
+  // KT 09/11/98 use PETSinogramOfVolume
+  fstream *out = 0;
   
-    
-      scanner.bin_size = 2* scanner.FOV_radius / scanner.num_bins;
-      scanner.ring_spacing = scanner.FOV_axial / scanner.num_rings;
-    }
+  PETSinogramOfVolume s3d(
+    scan_info, 
+    span, 
+    scan_info.get_scanner().type != PETScannerInfo::Advance ?
+    scan_info.get_num_rings()-1 : 11,
+    *out, 0UL,
+    PETSinogramOfVolume::SegmentViewRingBin,
+    NumericType::FLOAT,
+    Real(1));
 
 
- globals.limit_segments=ask_num("Maximum absolute segment number to process: ", 0, scanner.type == (PETScannerInfo::Advance) ?
-				11 :
-				scanner.num_rings-1,  scanner.type == (PETScannerInfo::Advance) ?
-				11 :
-				scanner.num_rings-1);
+  globals.limit_segments=ask_num("Maximum absolute segment number to process: ", 
+    0, s3d.get_max_segment(), s3d.get_max_segment() );
+  
+  globals.limit_segments++;
+  
+  // KT 04/11/98 new
+  // KT 13/11/98 set defaults to work properly
+  globals.zero_seg0_end_planes =
+    ask("Zero end planes of segment 0 ?", 
+        s3d.get_min_ring_difference(0) == s3d.get_max_ring_difference(0));
 
- globals.limit_segments++;
-
- // KT 04/11/98 new
- globals.zero_seg0_end_planes =
-   ask("Zero end planes of segment 0 ?", true);
+  // KT 09/11/98 new
+  // KT 13/11/98 hard wire in 
+  globals.rim_truncation_sino = hard_wired_rim_truncation_sino;
+    // ask_num("Number of bins to set to zero ?",0, s3d.get_max_bin(), 4);
 
   // KT 14/08/98 added conditional
 #ifndef TEST
@@ -140,41 +164,16 @@ int main(int argc, char *argv[])
 #endif
 
 
-  Point3D origin(0,0,0);
-
-
-  Point3D voxel_size(scanner.bin_size,
-                     scanner.bin_size,
-                     scanner.ring_spacing/2); 
-
-
-
-
-
-  // Create the image
-  int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
-  if (scanner.num_bins % 2 == 0)
-    max_bin++;
-
   bool do_attenuation;
-  PETImageOfVolume 
-    attenuation_image(Tensor3D<float>(
-				      0, 2*scanner.num_rings-2,
-				      (-scanner.num_bins/2), max_bin,
-				      (-scanner.num_bins/2), max_bin),
-		      origin,
-		      voxel_size);
+  // KT 09/11/98 use new constructor
+  PETImageOfVolume attenuation_image(scan_info);
 
   {
-    char atten_name[100];
-    
-    // if(batch) strcpy(filename2,argv[4]);
-    //else{
-    cout<<endl;
-    
-    cout << endl << "Get attenuation image from which file (0 = 0's): ";
-    cin >> atten_name;
-    //}
+    // KT 13/11/98 use ask_
+    char atten_name[max_filename_length];
+    ask_filename_with_extension(atten_name, 
+				"Get attenuation image from which file (0 = 0's): ",
+				"");    
     
     if(atten_name[0]=='0')
     {
@@ -184,9 +183,17 @@ int main(int argc, char *argv[])
     {
       do_attenuation = true;
 
+      // KT 13/11/98 read from interfile
+      // Read from file by adding to the attenuation_image 
+      // (which is 0 at this point)
+      // This in principle should allow us to read an 'even-sized' image
+      // as += just adds the appropriate ranges
+      attenuation_image += read_interfile_image(atten_name);
+      /*
       ifstream atten_img;
       open_read_binary(atten_img, atten_name);
       attenuation_image.read_data(atten_img);   
+      */
     }
   }
 
@@ -195,7 +202,7 @@ int main(int argc, char *argv[])
 
   // Compute the sensitivity image  
   PETImageOfVolume result =
-    compute_sensitivity_image(scanner, attenuation_image,  do_attenuation, Normalisation (), globals);
+    compute_sensitivity_image(s3d, attenuation_image,  do_attenuation, Normalisation (), globals);
 #ifndef TEST
   // KT 04/11/98 removed on request by MJ
   //result+=(float)ZERO_TOL;
@@ -207,7 +214,8 @@ int main(int argc, char *argv[])
    open_write_binary(sensitivity_data, out_filename);
    result.write_data(sensitivity_data);
    */
-  write_basic_interfile(out_filename, result);
+  // KT 12/11/98 always write as float
+  write_basic_interfile(out_filename, result, NumericType::FLOAT);
 
   cerr << "min and max in image " << result.find_min() 
        << " " << result.find_max() << endl;
@@ -221,36 +229,40 @@ int main(int argc, char *argv[])
 }
 
 
-PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
+PETImageOfVolume compute_sensitivity_image(const PETSinogramOfVolume& s3d,
 					   const PETImageOfVolume& attenuation_image,
 					   const bool do_attenuation,
 					   const Normalisation& normalisation,
-					   parameters &globals)
+					   const parameters &globals)
 {
+  /* KT 09/11/98 not necessary anymore
   int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
   if (scanner.num_bins % 2 == 0)
     max_bin++;
+  */
 
+  // KT 09/11/98 use new member
   PETImageOfVolume 
-    image_result(Tensor3D<float>(0, 2*scanner.num_rings-2,
-				 (-scanner.num_bins/2), max_bin,
-				 (-scanner.num_bins/2), max_bin),
-		 attenuation_image.get_origin(),
-		 attenuation_image.get_voxel_size());
+    image_result = attenuation_image.get_empty_copy();
 
   // first do segment 0
-  { cerr<<endl<<"Processing segment 0"<<endl;
+  { 
+    cerr<<endl<<"Processing segment 0"<<endl;
+    
+    /* KT 09/11/98 use PSOV
+    PETSegmentBySinogram
+    segment(
+    Tensor3D<float>(0, scanner.num_rings-1, 
+    0, scanner.num_views-1,
+    -scanner.num_bins/2, max_bin),
+    // KT 05/11/98 removed & for PETScanInfo parameter
+    scanner,
+    0);
+    */
 
     PETSegmentBySinogram
-      segment(
-	      Tensor3D<float>(0, scanner.num_rings-1, 
-			      0, scanner.num_views-1,
-			      -scanner.num_bins/2, max_bin),
-	      // KT 05/11/98 removed & for PETScanInfo parameter
-	      scanner,
-	      0);
+      segment = s3d.empty_segment_sino_copy(0);
 
-    
     if (do_attenuation)
     {
       //KT&MJ 11/08/98 use 2D forward projector
@@ -272,6 +284,9 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
       segment.fill(1); 
     }
       
+    // KT 09/11/98 new
+    truncate_rim(segment, globals.rim_truncation_sino);
+
     normalisation.apply(segment);
 
     // KT 04/11/98 new
@@ -321,16 +336,16 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 
 
   // now do a loop over the other segments
-  // now doing all segments
 
-  for (int segment_num = 1; segment_num < globals.limit_segments ; segment_num++){
+  for (int segment_num = 1; segment_num < globals.limit_segments ; segment_num++)
+  {
 
     cerr<<endl<<"Processing segment #"<<segment_num<<endl;
 
 #ifdef TEST
     image_result.fill(0);
 #endif 
-
+    /* KT 09/11/98 use PSOV
     PETSegmentByView 
       segment_pos(
 		  Tensor3D<float>(0, scanner.num_views-1, 
@@ -347,7 +362,11 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 		  // KT 05/11/98 removed & for PETScanInfo parameter
 		  scanner,
 		  -segment_num);
-
+     */
+    PETSegmentByView 
+      segment_pos = s3d.empty_segment_view_copy(segment_num);
+    PETSegmentByView 
+      segment_neg = s3d.empty_segment_view_copy(-segment_num);
 
     if (do_attenuation)
     {
@@ -368,6 +387,10 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
       segment_pos.fill(1);
       segment_neg.fill(1);
     }
+
+    // KT 09/11/98 new
+    truncate_rim(segment_pos, globals.rim_truncation_sino);
+    truncate_rim(segment_neg, globals.rim_truncation_sino);
 
     normalisation.apply(segment_pos);
     normalisation.apply(segment_neg);
@@ -428,3 +451,44 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 }
 
 
+// KT 09/11/98 new
+void truncate_rim(PETSegmentByView& seg, const int rim_truncation_sino)
+{
+  
+  const int vs=seg.get_min_view();
+  const int ve=seg.get_max_view();
+  const int rs=seg.get_min_ring();
+  const int re=seg.get_max_ring();
+  const int bs=seg.get_min_bin();
+  const int be=seg.get_max_bin();
+  
+  for(int v=vs;v<=ve;v++)
+    for(int r=rs;r<=re;r++)
+    {
+      for(int b=bs;b<bs+rim_truncation_sino;b++)     
+	seg[v][r][b]=0;
+      for(int b=be-rim_truncation_sino+1; b<=be;b++)     
+	seg[v][r][b]=0;        
+    }
+}
+
+// KT 09/11/98 new
+void truncate_rim(PETSegmentBySinogram& seg, const int rim_truncation_sino)
+{
+  
+  const int vs=seg.get_min_view();
+  const int ve=seg.get_max_view();
+  const int rs=seg.get_min_ring();
+  const int re=seg.get_max_ring();
+  const int bs=seg.get_min_bin();
+  const int be=seg.get_max_bin();
+  
+  for(int r=rs;r<=re;r++)
+    for(int v=vs;v<=ve;v++)
+    {
+      for(int b=bs;b<bs+rim_truncation_sino;b++)     
+	seg[r][v][b]=0;
+      for(int b=be-rim_truncation_sino+1; b<=be;b++)     
+	seg[r][v][b]=0;        
+    }
+}
