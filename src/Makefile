@@ -68,13 +68,15 @@ LIBDIRS += buildblock recon_buildblock display IO \
 	listmode_buildblock \
 	iterative/LogLik_buildblock \
 	iterative/OSMAPOSL \
-	analytic/FBP2D
+	analytic/FBP2D \
+	analytic/FBP3DRP
 
 EXEDIRS += utilities recon_test \
 	listmode_utilities \
 	iterative/OSMAPOSL \
 	iterative/sensitivity \
-	analytic/FBP2D
+	analytic/FBP2D \
+	analytic/FBP3DRP
 
 TESTDIRS += test recon_test
 
