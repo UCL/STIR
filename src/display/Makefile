@@ -83,19 +83,13 @@ else
 ${DEST}%.o: %.cxx 
 	@ -mkdir -p $(DEST)
 	$(MAKEDEPENDCXX);  
-	@ cp $(df).d $(df).P;  \
-	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
-	rm -f $(df).d;
+	$(dotD2dotP);
 	$(CXX) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
 
 ${DEST}%.o: %.c
 	@ -mkdir -p $(DEST); 
 	$(MAKEDEPENDC); 
-	@ cp $(df).d $(df).P; \
-            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
-            rm -f $(df).d;
+	$(dotD2dotP);
 	$(CC) $(CFLAGS) -o $@ -c $< $(GRAPHOPT)
 
 
