@@ -39,6 +39,9 @@ START_NAMESPACE_ECAT6
   \ingroup ECAT
   \brief 
   Implementation of OutputFileFormat paradigm for the ECAT6 format.
+
+  \warning Currently output always uses 2-byte signed integers in
+  little-endian byte order.
  */
 class ECAT6OutputFileFormat : 
   public RegisteredParsingObject<
@@ -53,7 +56,11 @@ public :
   ECAT6OutputFileFormat(const NumericType& = NumericType::SHORT, 
                    const ByteOrder& = ByteOrder::native);
 
+  //! Set type of numbers to be used for output
+  /*! Currently the return value will always be NumericType::SHORT */
   virtual NumericType set_type_of_numbers(const NumericType&, const bool warn = false);
+  //! Set byte order to be used for output
+  /*! Currently the return value will always be ByteOrder::LITTLEENDIAN */
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
 
 public:
