@@ -52,7 +52,7 @@
  
  <LI> #includes cstdio, cstdlib, cstring, cmath
 
- <LI> a trick to get ANSI C++ 'for' scoping rules work, even for compilers
+ <LI> a trick to get ANSI C++ 'for' scoping rules work for compilers
    which do not follow the new standard
 
  <LI> #ifdef STIR_ASSERT, then define our own assert, else include &lt;cassert&gt;
@@ -62,7 +62,8 @@
 <H3> Speeding up std::copy</H3>
 
  <UL>
- <LI> overloads of std::copy for built-in types to use memcpy (so it's faster)
+ <LI> For old compilers (check the source!), overloads of std::copy for built-in 
+      types to use memmove (so it's faster)
  </UL>
 
 <H3> stir namespace members declared here</H3>
@@ -76,7 +77,7 @@
  <LI> <tt>warning(const char * const format_string, ...)</tt>
    writes warning information a la printf.
 
- <LI> <tt>inline template  <class NUMBER> NUMBER square(const NUMBER &x) </tt>
+ <LI> <tt>inline template  &lt;class NUMBER&gt; NUMBER square(const NUMBER &x) </tt>
 
  </UL>
 */
@@ -85,18 +86,13 @@
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-
-#ifdef _MSC_VER
-// disable warnings on very long identifiers for debugging information
-#pragma warning(disable: 4786)
-#endif // _MSC_VER
+#include "boost/config.hpp"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
 
-#include "boost/config.hpp"
 
 //*************** preprocessor definitions for old compilers
 
@@ -113,7 +109,7 @@
    class A { virtual A* f();}
    class B:A { virtual B* f(); }
 */
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _MSC_VER<=1300
 #define STIR_NO_COVARIANT_RETURN_TYPES
 #endif
 
@@ -202,7 +198,22 @@
 
 
 //*************** overload std::copy for built-in types
+/* If you have an older compiler, chages are that std::copy is 
+   implemented in the obvious way of iterating and copying along 
+   the way. However, for simple types (such as floats), calling 
+   memmove (not memcpy as the ranges could overlap) is faster.
+   So, we overload std::copy for some built-in types.
+  
+   However, newer compilers (in particular gcc from version 2.8)
+   take care of this themselves. So, we only do this 
+   conditionally.
+*/
+#if defined(_MSC_VER) && _MSC_VER<=1300
+// do this only up to VC 7.0
+#define STIR_SPEED_UP_STD_COPY
+#endif
 
+#ifdef STIR_SPEED_UP_STD_COPY
 #include <algorithm>
 
 START_NAMESPACE_STD
@@ -210,66 +221,67 @@ START_NAMESPACE_STD
 template <>
 inline double * 
 copy(const double * first, const double * last, double * to)
-{  memcpy(to, first, (last-first)*sizeof(double)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(double)); return to+(last-first); }
 
 template <>
 inline float * 
 copy(const float * first, const float * last, float * to)
-{  memcpy(to, first, (last-first)*sizeof(float)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(float)); return to+(last-first); }
 
 template <>
 inline unsigned long int * 
 copy(const unsigned long int * first, const unsigned long int * last, unsigned long int * to)
-{  memcpy(to, first, (last-first)*sizeof(unsigned long int)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(unsigned long int)); return to+(last-first); }
 
 template <>
 inline signed long int * 
 copy(const signed long int * first, const signed long int * last, signed long int * to)
-{  memcpy(to, first, (last-first)*sizeof(signed long int)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(signed long int)); return to+(last-first); }
 
 template <>
 inline unsigned int * 
 copy(const unsigned int * first, const unsigned int * last, unsigned int * to)
-{  memcpy(to, first, (last-first)*sizeof(unsigned int)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(unsigned int)); return to+(last-first); }
 
 template <>
 inline signed int * 
 copy(const signed int * first, const signed int * last, signed int * to)
-{  memcpy(to, first, (last-first)*sizeof(signed int)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(signed int)); return to+(last-first); }
 
 template <>
 inline unsigned short int * 
 copy(const unsigned short int * first, const unsigned short int * last, unsigned short int * to)
-{  memcpy(to, first, (last-first)*sizeof(unsigned short int)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(unsigned short int)); return to+(last-first); }
 
 template <>
 inline signed short int * 
 copy(const signed short int * first, const signed short int * last, signed short int * to)
-{  memcpy(to, first, (last-first)*sizeof(signed short int)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(signed short int)); return to+(last-first); }
 
 template <>
 inline unsigned char * 
 copy(const unsigned char * first, const unsigned char * last, unsigned char * to)
-{  memcpy(to, first, (last-first)*sizeof(unsigned char)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(unsigned char)); return to+(last-first); }
 
 template <>
 inline signed char * 
 copy(const signed char * first, const signed char * last, signed char * to)
-{  memcpy(to, first, (last-first)*sizeof(signed char)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(signed char)); return to+(last-first); }
 
 template <>
 inline char * 
 copy(const char * first, const char * last, char * to)
-{  memcpy(to, first, (last-first)*sizeof(char)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(char)); return to+(last-first); }
 
 
 template <>
 inline bool * 
 copy(const bool * first, const bool * last, bool * to)
-{  memcpy(to, first, (last-first)*sizeof(bool)); return to+(last-first); }
+{  memmove(to, first, (last-first)*sizeof(bool)); return to+(last-first); }
 
 END_NAMESPACE_STD
 
+#endif // #ifdef STIR_SPEED_UP_STD_COPY
 
 //*************** for() scope trick
 
@@ -281,7 +293,7 @@ END_NAMESPACE_STD
    At the moment, we only need it for VC++ 
    */
    
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _MSC_VER<=1300
 #	ifndef for
 #		define for if (0) ; else for
 #	else
