@@ -22,7 +22,7 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
 	correct_projdata.cxx 
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
-__TEST_LLN:=$(shell if [ -e $(LLN_INCLUDE_DIR)/matrix.h ]; then echo 1;  fi)
+__TEST_LLN:=$(shell if [ -r $(LLN_INCLUDE_DIR)/matrix.h ]; then echo 1;  fi)
 
 ifeq ($(__TEST_LLN),1)
   # yes, the LLN files seem to be there, so we can compile 
@@ -77,7 +77,7 @@ $(DEST)convecat6_if: $(DEST)convecat6_if.o \
 $(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
      $(LLN_LIB_DIR)/libecat.a \
      ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@ $<  \
+	$(CXX) $(CFLAGS) -I $(LLN_INCLUDE_DIR) -o $@ $<  \
 		$(LLN_LIB_DIR)/libecat.a ${LIB_BUILDINGBLOCK} \
 		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
 
