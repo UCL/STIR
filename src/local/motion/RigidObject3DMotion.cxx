@@ -23,7 +23,12 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/stream.h"
 
-#include <time.h>
+#include <ctime>
+
+# ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::time_t; using ::tm; using ::localtime; }
+#endif
+
 #include <iostream>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -32,7 +37,7 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-static const double time_offset_not_yet_determined=-1234567.8;
+static const double time_not_yet_determined=-1234567.8;
 
 void 
 RigidObject3DMotion::
@@ -46,9 +51,9 @@ find_ref_start_end_from_att_file (double& att_start_time, double& att_end_time,
     error("Error opening attenuation file %s\n", attenuation_filename.c_str());
 
   /* Acquisition date and time - main head */
-  time_t sec_time = AttnFile->mhptr->scan_start_time;
+  std::time_t sec_time = AttnFile->mhptr->scan_start_time;
 
-  struct tm* AttnTime = localtime( &sec_time  ) ;
+  struct std::tm* AttnTime = std::localtime( &sec_time  ) ;
   matrix_close( AttnFile ) ;
   att_start_time = ( AttnTime->tm_hour * 3600.0 ) + ( AttnTime->tm_min * 60.0 ) + AttnTime->tm_sec ;
   att_end_time = att_start_time + transmission_duration;
@@ -63,9 +68,9 @@ RigidObject3DMotion::set_defaults()
   transmission_duration = 300;
   attenuation_filename ="";
   list_mode_filename="";
-  reference_start_time=time_offset_not_yet_determined;
-  reference_end_time=time_offset_not_yet_determined*10;
-  time_offset=time_offset_not_yet_determined;
+  reference_start_time=time_not_yet_determined;
+  reference_end_time=time_not_yet_determined*10;
+  time_offset=time_not_yet_determined;
 }
 
 void 
@@ -97,7 +102,7 @@ post_processing()
       cerr << "reference times from attenuation file: "
 	   <<  reference_start_time << " till " << reference_end_time << '\n';
     }
-  if (reference_start_time != time_offset_not_yet_determined && 
+  if (reference_start_time != time_not_yet_determined && 
       reference_start_time < reference_end_time)
     {
       RigidObject3DTransformation av_motion = 
@@ -135,6 +140,11 @@ post_processing()
       synchronise(*lm_data_ptr);
     }
 
+  if (!is_synchronised())
+    {
+      warning("RigidObject3DMotion object not synchronised.");
+      return false;
+    }
   return false;
 }
 
@@ -150,7 +160,6 @@ RigidObject3DMotion::get_transformation_to_reference_position() const
 { 
  return transformation_to_reference_position;
 }
-
 
 void
 RigidObject3DMotion::
@@ -168,9 +177,9 @@ get_time_offset() const
 
 bool 
 RigidObject3DMotion::
-is_time_offset_set() const
+is_synchronised() const
 {
-  return time_offset!=time_offset_not_yet_determined;
+  return time_offset!=time_not_yet_determined;
 }  
 
 END_NAMESPACE_STIR
