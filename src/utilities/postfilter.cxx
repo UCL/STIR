@@ -5,25 +5,41 @@
 /*!
   \file 
   \ingroup utilities
- 
+
   \brief  This programme performs filtering on image data
-
+ 
   \author Matthew Jacobson
-  \author (with help from Kris Thielemans)
+  \author Kris Thielemans
+  \author Sanida Mustafovic (conversion to ImageProcessor)
   \author PARAPET project
-
-  \date $Date$  
+  
+  \date $Date$
   \version $Revision$
 
+  \par Example .par file
+  \verbatim
+  PostFilteringParameters :=
+  Postfilter type :=Median   
+  Median Filter Parameters :=
+  mask radius x := 1   
+  mask radius y := 2
+  mask radius z := 3
+  End Median Filter Parameters:=
+  End PostFiltering Parameters:=
+  \endverbatim
+
+
+  
   \warning It only supports VoxelsOnCartesianGrid type of images.
 */
 
 
 #include "interfile.h"
 #include "utilities.h"
+#include "KeyParser.h"
 #include "DiscretisedDensity.h"
 #include "VoxelsOnCartesianGrid.h"
-#include "ImageFilter.h"
+#include "tomo/ImageProcessor.h"
 
 #include <iostream> 
 #include <fstream>
@@ -31,6 +47,8 @@
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
 using std::endl;
+using std::ifstream;
+using std::ofstream;
 #endif
 
 
@@ -41,21 +59,41 @@ VoxelsOnCartesianGrid<float>* ask_interfile_image(char *input_query);
 
 
 
-  /***************** Miscellaneous Functions  *******/
+/***************** Miscellaneous Functions  *******/
 
 
 
 VoxelsOnCartesianGrid<float>* ask_interfile_image(char *input_query){
-
-
-    char filename[max_filename_length];
-    ask_filename_with_extension(filename, 
+  
+  
+  char filename[max_filename_length];
+  ask_filename_with_extension(filename, 
 				input_query,
 				"");
-
-    return read_interfile_image(filename);
-
+  
+  return read_interfile_image(filename);
+  
 }
+
+class PostFiltering 
+{
+public:
+  PostFiltering();
+  ImageProcessor<3,float>* filter_ptr;
+public:
+  KeyParser parser;
+  
+};
+
+PostFiltering::PostFiltering()
+{
+  filter_ptr = 0;
+  parser.add_start_key("PostFilteringParameters");
+  parser.add_parsing_key("PostFilter type", &filter_ptr);
+  parser.add_stop_key("END PostFiltering Parameters");
+  
+}
+
 
 END_NAMESPACE_TOMO
 
@@ -64,77 +102,46 @@ USING_NAMESPACE_TOMO
 int
 main(int argc, char *argv[])
 {
-
- 
+  
   VoxelsOnCartesianGrid<float> input_image;
-  if (argc>1)
+  PostFiltering post_filtering;
+  string out_filename;
+  
+  if (argc==4)
   {
-     input_image = 
-	* dynamic_cast<VoxelsOnCartesianGrid<float> *>(
-         DiscretisedDensity<3,float>::read_from_file(argv[1]));
+    out_filename = argv[1];
+    input_image = 
+      * dynamic_cast<VoxelsOnCartesianGrid<float> *>(
+      DiscretisedDensity<3,float>::read_from_file(argv[2]));
+
+    post_filtering.parser.parse(argv[3]);
   }
   else
   {
-
-    cerr<<endl<<"Usage: postfilter <header file name> (*.hv)"<<endl<<endl;
+    cerr<<endl<<"Usage: postfilter <output filename > <input header file name> <filter .par filename>"<<endl<<endl;
     input_image= *ask_interfile_image("Image to process?");
+    char outfile[max_filename_length];
+    ask_filename_with_extension(outfile,
+      "Output to which file: ", "");
+    out_filename = outfile;
+  
+    post_filtering.parser.ask_parameters();    
   }
-   
-  //TODO Only require header file?
 
+  cerr << "PostFilteringParameters:\n" << post_filtering.parser.parameter_info();
 
-
-  // MJ 10/07/2000 Made thresholding optional
-
-  bool applying_threshold=false;
-
-
-  if(ask("Output filter PSF (instead of filtered image)?",false))
+  if (post_filtering.filter_ptr == 0)
     {
-
-   
-      int zs,ys,xs, ze,ye,xe, zm,ym,xm;
-
-
-      zs=input_image.get_min_z();
-      ys=input_image.get_min_y();
-      xs=input_image.get_min_x(); 
-      
-      ze=input_image.get_max_z();  
-      ye=input_image.get_max_y(); 
-      xe=input_image.get_max_x();
-      
-      zm=(zs+ze)/2;
-      ym=(ys+ye)/2;
-      xm=(xs+xe)/2;
-
-      input_image.fill(0.0);
-      (input_image)[zm][ym][xm]=1.0F;
-
+      error("postfilter: No filter set. Not writing any output.\n");
     }
+    
+  post_filtering.filter_ptr->build_and_filter(input_image);
+  
+  
+  write_basic_interfile(out_filename.c_str(),input_image);
 
-  else applying_threshold=ask("Truncate mininum to small (relative to image max) positive value?",false);
- 
-
-  double fwhmx_dir=ask_num(" Full-width half-maximum (x,y-dir) (in mm)?", 0.0,20.0,0.5);
-  double fwhmz_dir=ask_num(" Full-width half-maximum (z-dir) (in mm)?", 0.0,20.0,0.5);
-  float Nx_dir=ask_num(" Metz power (x-dir) ?", 0.0,5.0,0.0);   
-  float Nz_dir=ask_num(" Metz power (z-dir) ?", 0.0,5.0,0.0);	
-
-  ImageFilter filter;
-
-  filter.build(input_image,fwhmx_dir,fwhmz_dir,Nx_dir,Nz_dir);
-  filter.apply(input_image, applying_threshold);
-
-  char outfile[max_filename_length];
-  ask_filename_with_extension(outfile,
-                               "Output to which file: ", "");
-
-
-
-  write_basic_interfile(outfile,input_image);
-
+  
   return EXIT_SUCCESS;
-
 }
+
 
