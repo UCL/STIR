@@ -345,7 +345,9 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
   {
     for (int i=this->get_min_index(); i<oldstart && i<=this->get_max_index(); ++i)
       this->num[i] = elemT(0);
-    for (int i=std::max(oldstart + oldlength, this->get_min_index()); i<=this->get_max_index(); ++i)
+    for (int i=std::max(static_cast<int>(oldstart + oldlength), this->get_min_index()); 
+	i<=this->get_max_index(); 
+	++i)
       this->num[i] = elemT(0);
   }
   this->check_state();  
