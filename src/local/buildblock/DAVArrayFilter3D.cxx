@@ -14,7 +14,7 @@
   \version $Revision$
 */
 
-#include "tomo/local/DAVArrayFilter3D.h"
+#include "local/tomo/DAVArrayFilter3D.h"
 #include "Coordinate3D.h"
 // remove 
 #include <iostream>
