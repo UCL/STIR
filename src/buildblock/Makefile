@@ -38,7 +38,7 @@ SOURCES = \
   interfile.cxx InterfileHeader.cxx interfile_keyword_functions.cxx \
   zoom.cxx \
   NumericType.cxx ByteOrder.cxx \
-  KeyParser.cxx line.cxx \
+  KeyParser.cxx  \
   recon_array_functions.cxx \
   linear_regression.cxx overlap_interpolate.cxx \
   error.cxx warning.cxx  \
