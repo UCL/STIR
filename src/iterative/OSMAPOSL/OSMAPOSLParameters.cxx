@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
 
@@ -54,7 +54,16 @@ OSMAPOSLParameters::OSMAPOSLParameters(const string& parameter_filename)
   add_key("inter-update xy-dir filter Metz power", KeyArgument::DOUBLE, &inter_update_filter_Nxy_dir);
   add_key("inter-update z-dir filter Metz power", KeyArgument::DOUBLE, &inter_update_filter_Nz_dir);
   
-  
+  // KT 17/08/2000 3 new parameters
+
+  maximum_relative_change = NumericInfo<float>().max_value();
+  minimum_relative_change = 1/ NumericInfo<float>().max_value();
+  add_key("maximum relative change", KeyArgument::DOUBLE, &maximum_relative_change);
+  add_key("minimum relative change", KeyArgument::DOUBLE, &minimum_relative_change);
+ 
+  write_update_image = 0;
+  add_key("write update image", KeyArgument::INT, &write_update_image);
+
   // do parsing
   initialise(parameter_filename);
 
@@ -89,6 +98,15 @@ void OSMAPOSLParameters::ask_parameters()
       inter_update_filter_Nz_dir= ask_num(" Metz power (z-dir)?", 0.0,NumericInfo<double>().max_value(),0.0);
 	
     } 
+
+  // KT 17/08/2000 3 new parameters
+  const double max_in_double = static_cast<double>(NumericInfo<float>().max_value());
+  maximum_relative_change = ask_num("maximum relative change",
+      1.,max_in_double,max_in_double);
+  minimum_relative_change = ask_num("minimum relative change",
+      1/max_in_double,1.,1/max_in_double);
+  
+  write_update_image = ask_num("write update image", 0,1,0);
 
 }
 
@@ -134,6 +152,16 @@ string OSMAPOSLParameters::parameter_info() const
     << inter_update_filter_Nxy_dir << endl;
   s << "inter-update z-dir filter Metz power := "
     << inter_update_filter_Nz_dir << endl<<endl;  
+
+  // KT 17/08/2000 3 new parameters
+
+  s << "maximum relative change := "
+    << maximum_relative_change << endl;
+  s << "minimum relative change := "
+    << minimum_relative_change << endl;
+
+  s << "write update image := "
+    << write_update_image << endl;
 
   s<<ends;
 

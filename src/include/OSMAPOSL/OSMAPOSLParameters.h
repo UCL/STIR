@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
  
 #ifndef __OSMAPOSLParameters_h__
@@ -15,10 +15,10 @@
   \author Matthew Jacobson
   \author PARAPET project
 
-  \date    $Date$
+  \date $Date$
   \version $Revision$
 
-  This class is supposed to be the last in the Parameter hierarchy.
+  
 */
 
 
@@ -31,6 +31,7 @@ START_NAMESPACE_TOMO
 
  \brief parameter class for OSMAPOSL
 
+  This class is supposed to be the last in the Parameter hierarchy.
  */
 
 class OSMAPOSLParameters : public MAPParameters
@@ -73,7 +74,17 @@ public:
 
   //! inter-update filter object
   ImageFilter inter_update_filter;
- 
+
+  // KT 17/08/2000 3 new parameters
+
+  //! restrict updates (larger relative updates will be thresholded)
+  double maximum_relative_change;
+
+  //! restrict updates (smaller relative updates will be thresholded)
+  double minimum_relative_change;
+  
+  //! boolean value to determine if the update images have to be written to disk
+  int write_update_image;
 private:
 
   //! used to check acceptable parameter ranges, etc...
