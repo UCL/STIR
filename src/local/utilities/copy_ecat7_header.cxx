@@ -33,6 +33,7 @@ using std::ostream;
 #endif
 
 USING_NAMESPACE_STIR
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 #define STIR_DO_IT(x) out_sh.x =in_sh.x;
 
@@ -346,12 +347,12 @@ copy_main_header(MatrixFile * mout_ptr, MatrixFile *min_ptr)
       return Succeeded::yes;
   }
 
-class ecat_dataset_spec
+class ECAT_dataset_spec
 {
 public:
-ecat_dataset_spec();
-ecat_dataset_spec(const char *const spec);
-ecat_dataset_spec(const string&);
+ECAT_dataset_spec();
+ECAT_dataset_spec(const char *const spec);
+ECAT_dataset_spec(const string&);
 int matnum() const;
 int frame_num; 
 int plane_num;
@@ -365,7 +366,7 @@ void set_defaults();
 };
 
 void
-ecat_dataset_spec::
+ECAT_dataset_spec::
 set_defaults()
 {
   frame_num=1;
@@ -375,7 +376,7 @@ set_defaults()
 }
 
 void
-ecat_dataset_spec::
+ECAT_dataset_spec::
 decode_spec(const char * const spec)
 {
   set_defaults();
@@ -383,32 +384,32 @@ decode_spec(const char * const spec)
                    &frame_num, &gate_num, &data_num, &bed_pos_num);
 }
 
-ecat_dataset_spec::
-ecat_dataset_spec()
+ECAT_dataset_spec::
+ECAT_dataset_spec()
 {
   set_defaults();
 }
 
-ecat_dataset_spec::
-ecat_dataset_spec(const char * const spec)
+ECAT_dataset_spec::
+ECAT_dataset_spec(const char * const spec)
 {
   decode_spec(spec);
 }
 
-ecat_dataset_spec::
-ecat_dataset_spec(const string& spec)
+ECAT_dataset_spec::
+ECAT_dataset_spec(const string& spec)
 {
   decode_spec(spec.c_str());
 }
 
 int 
-ecat_dataset_spec::
+ECAT_dataset_spec::
 matnum() const
 {
   return mat_numcod (frame_num, 1, gate_num, data_num, bed_pos_num);
 }
 
-ostream& operator<<(ostream& s, const ecat_dataset_spec& spec)
+ostream& operator<<(ostream& s, const ECAT_dataset_spec& spec)
 {
   s << spec.frame_num << ','
     << spec.gate_num << ','
@@ -523,8 +524,8 @@ int main(int argc, char *argv[])
   if (argc!=5)
     return EXIT_SUCCESS;
 
-  const ecat_dataset_spec out_spec(argv[2]);
-  const ecat_dataset_spec in_spec(argv[4]);
+  const ECAT_dataset_spec out_spec(argv[2]);
+  const ECAT_dataset_spec in_spec(argv[4]);
   cerr << "Attempting to read in '" << in_spec <<"' and out '"
        << out_spec << "'" << endl;
   MatrixData * mindata_ptr =
