@@ -19,6 +19,11 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
+/* History
+
+   KT 15/05/2002 
+   rewrote merge(). it worked only on sorted arrays before, while the end-result wasn't sorted
+*/
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/DiscretisedDensity.h"
@@ -26,7 +31,11 @@
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
 
 #include "stir/recon_buildblock/RelatedBins.h"
+#include <algorithm>
 
+#ifndef STIR_NO_NAMESPACES
+using std::copy;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -50,6 +59,13 @@ reserve(size_type max_number)
 void ProjMatrixElemsForOneBin::erase()
 {
   elements.resize(0);
+}
+
+ProjMatrixElemsForOneBin::size_type 
+ProjMatrixElemsForOneBin::
+capacity() const 
+{
+  return elements.capacity();
 }
 
 ProjMatrixElemsForOneBin& ProjMatrixElemsForOneBin::operator*=(const float d)
@@ -133,35 +149,85 @@ float ProjMatrixElemsForOneBin::square_sum() const
 }
 
 // TODO make sure we can have a const argument
-// not calling lor2.erase() would probably speed it up anyway
 void 
 ProjMatrixElemsForOneBin::
 merge( ProjMatrixElemsForOneBin &lor2 )
 {
   assert(check_state() == Succeeded::yes);
   assert(lor2.check_state() == Succeeded::yes);
+#ifndef NDEBUG
+  // we will check at the end of the total probability is conserved, so we compute it first
+  float old_sum = 0;
+  for (const_iterator iter= begin(); iter != end(); ++iter)
+    old_sum+= iter->get_value();
+  for (const_iterator iter= lor2.begin(); iter != lor2.end(); ++iter)
+    old_sum+= iter->get_value();
+#endif
+  // KT 15/05/2002 insert sort first, as both implementations assume this
+  sort();
+  lor2.sort();
 
   iterator element_ptr = begin();
+#ifndef __GNUC__
+  const_iterator element_ptr2= lor2.begin();
+#else
+  // gcc 3.0.1 (and 3.0.3) has a bug that it doesn't compile the insert() line flagged below 
+  // (10 lines further on).
+  // Making it a non-const iterator works around the problem
   iterator element_ptr2= lor2.begin();
-  
+#endif
+#if 1
+  // KT 15/05/2002 much faster implementation than before, and its output is sorted
+#ifndef NDEBUG
+  //unsigned int insertions = 0;
+#endif
+  while ( element_ptr2 != lor2.end() )
+  {
+    if (element_ptr == end())
+    {
+      elements.reserve(size() + lor2.end() - element_ptr2);
+      elements.insert(end(), element_ptr2, lor2.end()); // here's where the gcc bug appeared
+      break;
+    }
+    if (value_type::coordinates_equal(*element_ptr2, *element_ptr))
+    {
+      *element_ptr++ += *element_ptr2++;
+    }
+    else if (value_type::coordinates_less(*element_ptr2, *element_ptr))
+    {
+      element_ptr = elements.insert(element_ptr, *element_ptr2);
+      assert(*element_ptr == *element_ptr2);
+      ++element_ptr; ++element_ptr2;
+#ifndef NDEBUG
+      //++insertions;
+#endif
+    } 
+    else
+    {
+      ++element_ptr;
+    }
+  }
+
+
+#else
+  // this old version assumed the input arrays were sorted, but its output wasn't
+  // it could be rewritten to avoid lor2.erase() such that this method could be const
+  // this would probably speed it up anyway
   bool found=false;
   while ( element_ptr2 != lor2.end() )
-  {   		
-    //unsigned int key = make_key( element_ptr2->x, element_ptr2->y,element_ptr2->z);    		 
-    iterator  dup_xyz = element_ptr; 	  
+  {
+    // here it is assumed that the input is sorted
+    // this could be possibly be dropped by initialising dup_xyz = begin()
+    // performance would be bad however
+    iterator  dup_xyz = element_ptr;
     while ( dup_xyz != end() )
     {
-      //unsigned int dup_key = make_key( dup_xyz->x,dup_xyz->y,dup_xyz->z);			 
-      
-      //if ( dup_key == key ) 
       if (value_type::coordinates_equal(*element_ptr2, *dup_xyz))
       {
-        //TEST/////////
         *dup_xyz += *element_ptr2;		    	  
-        ///////////////
         element_ptr = dup_xyz+1;
         found = true;
-        break; // assume no more duplicated point, only 2 lors 
+        break; // assume no more duplicated point
       }
       else
         ++dup_xyz;
@@ -175,13 +241,27 @@ merge( ProjMatrixElemsForOneBin &lor2 )
       ++element_ptr2;			
     }	
   }
-  // append the rest
+  // append the rest (but not sorted)
   element_ptr2  = lor2.begin();
   while ( element_ptr2 != lor2.end() )
   {   		  
     push_back( *element_ptr2);
     ++element_ptr2;
   }
+  // KT 15/05/2002 added sort for compatiblity with other version
+  sort();
+#endif
+#ifndef NDEBUG
+  // check that the values sum to the same as before merging
+  float new_sum = 0;
+  for (const_iterator iter= begin(); iter != end(); ++iter)
+    new_sum+= iter->get_value();
+  assert(fabs(new_sum-old_sum)<old_sum*10E-4);
+  // check that it's sorted
+  for (const_iterator iter=begin(); iter+1!=end(); ++iter)
+    assert(value_type::coordinates_less(*iter, *(iter+1)));
+  //std::cerr << insertions << " insertions, size " << size() << std::endl;
+#endif
   assert(check_state() == Succeeded::yes);
 }
 
