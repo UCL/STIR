@@ -38,17 +38,28 @@ public:
   inline void reset_timers();
 
   //! stop all timers kept by this object
-  inline void stop_timers();
+  /*! Note: function is const such that it can be called in a
+      function of a derived class that is const.
+  */
+  inline void stop_timers() const;
 
   //! start all timers kept by this object
-  inline void start_timers();
+  /*! Note: function is const such that it can be called in a
+      function of a derived class that is const.
+  */
+  inline void start_timers() const;
 
   //! get current value of the timer (since first use or last reset)
   inline double get_CPU_timer_value() const;
 
 private:
 
-  CPUTimer cpu_timer;
+  //! A timer that measured CPU time.
+  /*! Note: member is mutable such that it can be modified in a const function.
+  */
+  mutable CPUTimer cpu_timer;
+
+  // TODO include other times (such as wall-clock)
 
 };
 
