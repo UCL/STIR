@@ -20,8 +20,9 @@ install: $(EXES)
 
 include $(WORKSPACE)/Makefile_bblibs
 
+vpath %.cxx ../OSMAPOSL
 
-${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o \
+${DEST}sensitivity: ${DEST}sensitivity.o $(DEST)OSMAPOSLReconstruction.o \
 	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK} $(BB_REGISTRIES)
 	$(CXX) $(CFLAGS) -o $@ $< \
 	  ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o \
@@ -30,10 +31,10 @@ ${DEST}sensitivity: ${DEST}sensitivity.o ../OSMAPOSL/$(DEST)OSMAPOSLReconstructi
 	  $(BB_LIBS) \
 	  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
 
-../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o:
-	cd ../OSMAPOSL; $(MAKE) all
+#../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o:
+#	cd ../OSMAPOSL; $(MAKE) all
 
-.PHONY: ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o
+#.PHONY: ../OSMAPOSL/$(DEST)OSMAPOSLReconstruction.o
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
