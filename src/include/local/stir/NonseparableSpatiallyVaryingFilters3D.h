@@ -70,8 +70,7 @@ public:
 				  DiscretisedDensity<3,float>* precomputed_coefficients_image,
 				  DiscretisedDensity<3,float>* normalised_bck_image,
 				  int mask_size, 
-				  int num_dim);
-			     
+				  float rescaling_coefficient);			     
   
   				  
 private: 
@@ -92,13 +91,16 @@ private:
   DiscretisedDensity<3,float>* sensitivity_image;
   string sensitivity_image_filename;
 
-  DiscretisedDensity<3,float>* precomputed_coefficients_image ;
+   DiscretisedDensity<3,float>* precomputed_coefficients_image ;
   string precomputed_coefficients_filename;
 
   DiscretisedDensity<3,float>* normalised_bck_image ;
   string normalised_bck_filename;
-  int num_dim;
+  float rescaling_coefficient;
   int number_of_coefficients_before_padding;
+  float k_interval;
+  int number_of_discrete_points;
+  //float rescaling_coefficient;
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
    // new
