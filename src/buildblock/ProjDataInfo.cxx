@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -11,13 +11,12 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #include "ProjDataInfo.h"
-// include next for the ask_ function
 #include "ProjDataInfoCylindricalArcCorr.h"
+#include "ProjDataInfoCylindricalNoArcCorr.h"
 #include "Scanner.h"
 #include "Viewgram.h"
 #include "Sinogram.h"
@@ -36,6 +35,11 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
+#include <sstream>
+#endif
 
 
 #ifndef TOMO_NO_NAMESPACES
@@ -152,27 +156,29 @@ string
 ProjDataInfo::parameter_info()  const
 {
 
-  // TODO replace with new stringstream
-  char buffer[30000];
-  ostrstream str(buffer, 30000);
-  str << "Parameters relating to the scanner :\n" << endl;
- 
-  str << scanner_ptr->parameter_info();
+#ifdef BOOST_NO_STRINGSTREAM
+  // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+  char str[30000];
+  ostrstream s(str, 30000);
+#else
+  std::ostringstream s;
+#endif
+  s << scanner_ptr->parameter_info();
 
-  str << "Parameters relating to this data :\n" << endl;
+  s << "Parameters relating to this data :\n";
 
-  str << "\nSegment_num range:           ("
+  s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
-  str << "Number of Views:                " << get_num_views() << endl;
-  str << "Number of axial positions per seg: {";
+  s << "Number of Views:                " << get_num_views() << endl;
+  s << "Number of axial positions per seg: {";
   for (int seg_num=get_min_segment_num(); seg_num <= get_max_segment_num(); ++seg_num)
-    str << get_num_axial_poss(seg_num) << " ";
-  str << "}\n";
-  str << "Number of tangential positions: " << get_num_tangential_poss() << endl;
+    s << get_num_axial_poss(seg_num) << " ";
+  s << "}\n";
+  s << "Number of tangential positions: " << get_num_tangential_poss() << endl;
 
-  str << ends;
-  return str.str();
+  s << ends;
+  return s.str();
 
 }
 
@@ -300,10 +306,14 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet
 
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
-			      int span, int max_delta, 
-			      int num_views,int num_tangential_poss)
+			      const int span, const int max_delta, 
+			      const int num_views, const int num_tangential_poss,
+                              const bool arc_corrected)
 {
-  
+  if (span < 1)
+    error("ProjDataInfoCTI: span %d has to be larger than 0\n", span);
+  if (span%2 != 1)
+    error("ProjDataInfoCTI: span %d has to be odd\n", span);
   
   const int num_ring = scanner->get_num_rings();
  // Construct first a temporary list of min and max ring diff per segment (0,1,2,3...)
@@ -344,9 +354,10 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   
   for(int i=1; i<=max_seg_num; i++)
   {
-    max_ring_difference[-i]= -RDmaxtmp[i];
+    // KT 28/06/2001 make sure max_ring_diff>min_ring_diff for negative segments
+    max_ring_difference[-i]= -RDmintmp[i];
     max_ring_difference[i]= RDmaxtmp[i];
-    min_ring_difference[-i]= -RDmintmp[i];
+    min_ring_difference[-i]= -RDmaxtmp[i];
     min_ring_difference[i]= RDmintmp[i];    
   }
   
@@ -369,23 +380,32 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
     }    
   }
   
-  float bin_size = scanner->get_default_bin_size();
+  const float bin_size = scanner->get_default_bin_size();
   
   
-  return new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
-    //azimuthal_angle_sampling,ring_radius,
-    //ring_spacing,
-    num_axial_pos_per_segment,
-    min_ring_difference, 
-    max_ring_difference,
-    num_views,num_tangential_poss);
+  if (arc_corrected)
+    return
+    new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
+                                       num_axial_pos_per_segment,
+                                       min_ring_difference, 
+                                       max_ring_difference,
+                                       num_views,num_tangential_poss);
+  else
+    return
+    new ProjDataInfoCylindricalNoArcCorr(scanner,
+                                       num_axial_pos_per_segment,
+                                       min_ring_difference, 
+                                       max_ring_difference,
+                                       num_views,num_tangential_poss);
 
 }
 
+// KT 28/06/2001 added arc_corrected flag
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
-			     int max_delta,
-			     int num_views, int num_tangential_poss)
+			     const int max_delta,
+			     const int num_views, const int num_tangential_poss,
+                             const bool arc_corrected)
 	       
 	       
 {
@@ -421,13 +441,20 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
   
   
   
-  return new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
-    //azimuthal_angle_sampling,ring_radius,
-   // ring_spacing,
-    num_axial_pos_per_segment,
-    min_ring_difference, 
-    max_ring_difference,
-    num_views,num_tangential_poss);
+  if (arc_corrected)
+    return
+    new ProjDataInfoCylindricalArcCorr(scanner,bin_size,
+                                       num_axial_pos_per_segment,
+                                       min_ring_difference, 
+                                       max_ring_difference,
+                                       num_views,num_tangential_poss);
+  else
+    return
+    new ProjDataInfoCylindricalNoArcCorr(scanner,
+                                       num_axial_pos_per_segment,
+                                       min_ring_difference, 
+                                       max_ring_difference,
+                                       num_views,num_tangential_poss);
 }
 
 
@@ -444,22 +471,28 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
      scanner_ptr->get_max_num_non_arccorrected_bins()+1,
      scanner_ptr->get_default_num_arccorrected_bins());
   
-  int span = 
-    scanner_ptr->get_type() == Scanner::Advance 
-    ? 1 
-    : ask_num("Span value : ", 1,11,1);
-
+   int span = 0;
+   while(span%2==0)
+   {
+     span = 
+       scanner_ptr->get_type() == Scanner::Advance 
+       ? 1 
+       : ask_num("Span value (must be odd) : ", 1,11,1);
+   }
   
-  int max_delta = ask_num("Max. ring difference acquired : ",
+   const int max_delta = ask_num("Max. ring difference acquired : ",
     0,
     scanner_ptr->get_num_rings()-1,
     scanner_ptr->get_type() == Scanner::Advance 
     ? 11 : scanner_ptr->get_num_rings()-1);
  
+  const bool arc_corrected =
+    ask("Is the data arc-corrected?",true);
+
   ProjDataInfo * pdi_ptr =
     scanner_ptr->get_type() == Scanner::Advance 
-    ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss)
-    : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss);
+    ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected)
+    : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected);
 
   cout << pdi_ptr->parameter_info() <<endl;
 
