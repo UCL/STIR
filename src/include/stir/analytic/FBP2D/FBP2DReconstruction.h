@@ -1,11 +1,11 @@
 //
 // $Id$
 //
-#ifndef __stir_FBP2D_FBP2DReconstruction_H__
-#define __stir_FBP2D_FBP2DReconstruction_H__
+#ifndef __stir_analytic_FBP2D_FBP2DReconstruction_H__
+#define __stir_analytic_FBP2D_FBP2DReconstruction_H__
 /*!
   \file 
-  \ingroup recon_buildblock
+  \ingroup FBP2D
  
   \brief declares the FBP2DReconstruction class
 
@@ -36,7 +36,9 @@ template <typename T> class shared_ptr;
 class Succeeded;
 class ProjData;
 
-//! Reconstruction class for 2D Filtered Back Projection
+/*! \ingroup FBP2D
+ \brief Reconstruction class for 2D Filtered Back Projection
+*/
 class FBP2DReconstruction : public Reconstruction
 {
 
