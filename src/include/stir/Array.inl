@@ -88,7 +88,12 @@ Array<num_dimensions, elemT>::begin_all()
   if (this->begin() == this->end())
   {
     // empty array
-    return full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::full_iterator());
+    return 
+        full_iterator(this->begin(), this->end(), 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+		      typename
+#endif
+		      Array<num_dimensions-1, elemT>::full_iterator());
   }
   else
     return full_iterator(this->begin(), this->end(), this->begin()->begin_all());
@@ -101,7 +106,12 @@ Array<num_dimensions, elemT>::begin_all() const
   if (this->begin() == this->end())
   {
     // empty array
-    return const_full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::const_full_iterator());
+    return  
+      const_full_iterator(this->begin(), this->end(), 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+			  typename 
+#endif
+			  Array<num_dimensions-1, elemT>::const_full_iterator());
   }
   else
     return const_full_iterator(this->begin(), this->end(), this->begin()->begin_all());
@@ -114,7 +124,12 @@ Array<num_dimensions, elemT>::end_all()
   if (this->begin() == this->end())
   {
     // empty array
-    return full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::full_iterator());
+    return 
+      full_iterator(this->begin(), this->end(), 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+		    typename 
+#endif
+		    Array<num_dimensions-1, elemT>::full_iterator());
   }
   else
     return full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
@@ -127,7 +142,11 @@ Array<num_dimensions, elemT>::end_all() const
   if (this->begin() == this->end())
   {
     // empty array
-    return const_full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::const_full_iterator());
+    return const_full_iterator(this->begin(), this->end(), 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
+			       typename 
+#endif
+			       Array<num_dimensions-1, elemT>::const_full_iterator());
   }
   else
   { // TODO
