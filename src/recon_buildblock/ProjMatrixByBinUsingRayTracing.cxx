@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,9 +12,8 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 
@@ -25,19 +24,50 @@
 #include "ProjDataInfo.h"
 #include "recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include <algorithm>
+#include <math.h>
 
 START_NAMESPACE_TOMO
 
-ProjMatrixByBinUsingRayTracing::
-ProjMatrixByBinUsingRayTracing(		 
-                               const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr,  
-                               const shared_ptr<ProjDataInfo>& proj_data_info_ptr
-                               )
- :  
- proj_data_info_ptr(proj_data_info_ptr)
 
+const char * const 
+ProjMatrixByBinUsingRayTracing::registered_name =
+  "Ray Tracing";
+
+ProjMatrixByBinUsingRayTracing::
+ProjMatrixByBinUsingRayTracing()
 {
-  
+  set_defaults();
+}
+
+void 
+ProjMatrixByBinUsingRayTracing::initialise_keymap()
+{
+  parser.add_start_key("Ray Tracing Matrix Parameters");
+  parser.add_stop_key("End Ray Tracing Matrix Parameters");
+}
+
+
+void
+ProjMatrixByBinUsingRayTracing::set_defaults()
+{}
+
+#if 0
+// static helper function
+// check if a is an integer multiple of b
+static bool is_multiple(const float a, const float b)
+{
+  return fabs(fmod(static_cast<double>(a), static_cast<double>(b))) > 1E-5;
+}
+#endif
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    )
+{
+  proj_data_info_ptr= proj_data_info_ptr_v; 
   const VoxelsOnCartesianGrid<float> * image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
@@ -52,6 +82,19 @@ ProjMatrixByBinUsingRayTracing(
   symmetries_ptr = 
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr);
+  const float sampling_distance_of_adjacent_LORs_xy =
+    proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+  
+  if(sampling_distance_of_adjacent_LORs_xy > voxel_size.x() + 1.E-3 ||
+     sampling_distance_of_adjacent_LORs_xy > voxel_size.y() + 1.E-3)
+     warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
+             "that is smaller than the bin size.\n"
+             "This matrix will completely miss some voxels for some (or all) views.\n");
+  if(sampling_distance_of_adjacent_LORs_xy < voxel_size.x() - 1.E-3 ||
+     sampling_distance_of_adjacent_LORs_xy < voxel_size.y() - 1.E-3)
+     warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
+             "that is larger than the bin size.\n"
+             "Backprojecting with this matrix will have artefacts at views 0 and 90 degrees.\n");
   
 };
 
@@ -79,7 +122,8 @@ calculate_proj_matrix_elems_for_one_bin(
   const Bin bin = lor.get_bin();
   //assert(bin.axial_pos_num() == 0);
   assert(bin.tangential_pos_num() >= 0);
-  assert(bin.tangential_pos_num() <= proj_data_info_ptr->get_max_tangential_pos_num());  
+  // KT 20/06/2001 removed assert as it might come from a related bin which has larger abs(tang_pos_num)
+  //assert(bin.tangential_pos_num() <= proj_data_info_ptr->get_max_tangential_pos_num());  
   assert(bin.segment_num()  >= 0  );
   assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
   assert(bin.view_num() <= proj_data_info_ptr->get_num_views()/4);    
@@ -107,11 +151,6 @@ calculate_proj_matrix_elems_for_one_bin(
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
  
-  const float sampling_distance_of_adjacent_LORs_xy =
-    proj_data_info_ptr->get_sampling_in_s(bin);
-
-  assert(sampling_distance_of_adjacent_LORs_xy >= voxel_size.x() - 1.E-3);
-  assert(sampling_distance_of_adjacent_LORs_xy >= voxel_size.y() - 1.E-3);
 
   // find number of LORs we have to take, such that we don't miss voxels
   // we have to subtract a tiny amount from the quotient, to avoid having too many LORs
@@ -128,10 +167,12 @@ calculate_proj_matrix_elems_for_one_bin(
               - num_lors_per_axial_pos*voxel_size.z()) <= 1E-4);
 
 
-  // find offset in z for 2nd LOR (if any)
+  // find offset in z, taking into account if there are 1 or 2 LORs
+  // KT 20/06/2001 take origin.z() into account
   const float offset_in_z = 
-    num_lors_per_axial_pos == 1 || tantheta == 0 ? 
-    0.F : -sampling_distance_of_adjacent_LORs_z/4;
+    (num_lors_per_axial_pos == 1 || tantheta == 0 ? 
+     0.F : -sampling_distance_of_adjacent_LORs_z/4)
+    - origin.z();
 
 
   /* Intersection points of LOR and image FOV (assuming infinitely long scanner)*/
@@ -142,6 +183,7 @@ calculate_proj_matrix_elems_for_one_bin(
   const float X1f = (s_in_mm * cphi + sphi * TMP2f)/voxel_size.x();
   const float Y2f = (s_in_mm * sphi + cphi * TMP2f)/voxel_size.y();
   const float Y1f = (s_in_mm * sphi - cphi * TMP2f)/voxel_size.y();
+
   const float Z1f = 
     (t_in_mm/costheta - TMP2f*tantheta + offset_in_z)/voxel_size.z() 
     + (max_index.z() + min_index.z())/2.F;
@@ -169,7 +211,7 @@ calculate_proj_matrix_elems_for_one_bin(
     assert(num_lors_per_axial_pos==2);
     if (tantheta==0 ) 
     { 
-      assert(Z1f == 0);
+      assert(Z1f == -origin.z()/voxel_size.z());
       add_adjacent_z(lor);
     }
     else
