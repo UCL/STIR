@@ -897,7 +897,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    //new fstream (output_file_name_kappa0_cyl.c_str(),ios::trunc|ios::out|ios::in|ios::binary);
 	  
 	  shared_ptr<iostream> sino_stream_kappa1 = 
-	    new fstream (output_file_name_kappa1.c_str(), ios::out|ios::in|ios::binary);
+	    new fstream (output_file_name_kappa1.c_str(), ios::trunc|ios::out|ios::in|ios::binary);
 	  
 	  
 /*	  if (!sino_stream_kappa0->good())
