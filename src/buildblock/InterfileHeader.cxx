@@ -60,6 +60,9 @@ InterfileHeader::InterfileHeader()
   // KT 01/08/98 just set data_file_name variable now
   add_key("name of data file", 
     KeyArgument::ASCII,	&data_file_name);
+  // KT 26/11/98 new
+  add_key("originating system",
+    KeyArgument::ASCII, &originating_system);
   add_key("GENERAL DATA", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("GENERAL IMAGE DATA", 
@@ -120,6 +123,7 @@ InterfileHeader::InterfileHeader()
   // KT 03/11/98 factor -> factors
   add_key("image scaling factor", 
     KeyArgument::LIST_OF_DOUBLES, &image_scaling_factors);
+
   add_key("data offset in bytes", 
     KeyArgument::ULONG,	&data_offset);
   add_key("END OF INTERFILE", 
@@ -251,6 +255,29 @@ InterfilePSOVHeader::InterfilePSOVHeader()
     KeyArgument::LIST_OF_INTS, 
     (KeywordProcessor)&InterfilePSOVHeader::resize_segments_and_set, 
     &max_ring_difference);
+
+  
+  // KT 26/11/98 new
+  // first set to some crazy values
+  num_rings = -1;
+  add_key("number of rings",
+    KeyArgument::INT, &num_rings);
+  num_detectors_per_ring = -1;
+  add_key("number of detectors per ring",
+    KeyArgument::INT, &num_detectors_per_ring);
+  transaxial_FOV_diameter_in_cm = -1;
+  add_key("transaxial FOV diameter (cm)",
+    KeyArgument::DOUBLE, &transaxial_FOV_diameter_in_cm);
+  distance_between_rings_in_cm = -1;
+  add_key("distance between rings (cm)",
+    KeyArgument::DOUBLE, &distance_between_rings_in_cm);
+  bin_size_in_cm = -1;
+  add_key("bin size (cm)",
+    KeyArgument::DOUBLE, &bin_size_in_cm);
+  // this is a good default value
+  view_offset = 0;
+  add_key("view offset (degrees)",
+    KeyArgument::DOUBLE, &view_offset);
 }
 
 void InterfilePSOVHeader::resize_segments_and_set()
@@ -433,6 +460,7 @@ int InterfilePSOVHeader::post_processing()
   segment_sequence = 
     find_segment_sequence(min_ring_difference, max_ring_difference);
 
+  cerr << "PSOV data read inferred header :" << endl;
   cerr << "Segment sequence :";
   for (int i=0; i<segment_sequence.size(); i++)
     cerr << segment_sequence[i] << "  ";
@@ -449,6 +477,104 @@ int InterfilePSOVHeader::post_processing()
   cerr << "Total number of planes :" 
        << accumulate(num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
        << endl;
+
+
+  // Now try to construct a sensible PETScanInfo object.
+
+  // KT 26/11/98 new
+  PETScannerInfo::Scanner_type scanner;
+  
+  if (originating_system == "PRT-1")
+    scanner = PETScannerInfo::RPT;
+  else if (originating_system == "ECAT 953")
+    scanner = PETScannerInfo::E953;
+  else if (originating_system == "ECAT 966")
+    scanner = PETScannerInfo::E966;
+  else if (originating_system == "ECAT ART")
+    scanner = PETScannerInfo::ART;
+  else if (originating_system == "Advance")
+    scanner = PETScannerInfo::Advance;
+  else
+  {
+    char * warning = 0;
+    if (num_detectors_per_ring < 1)
+    {
+      num_detectors_per_ring = num_views*2;
+      warning = "\nInterfile warning: I don't recognise 'originating system' value.\n\
+\tI guessed %s from 'num_views' (note: this guess is wrong for mashed data)\n\n";
+    }
+    else
+    {
+       warning = "\nInterfile warning: I don't recognise 'originating system' value.\n\
+I guessed %s from 'number of detectors per ring'\n";
+    }
+
+     
+     switch (num_detectors_per_ring)
+     {
+     case 96*2:
+       scanner = PETScannerInfo::RPT;
+       PETerror(warning, "PRT-1");
+       break;
+     case 192*2:
+       scanner = PETScannerInfo::E953;
+       PETerror(warning, "ECAT 953");
+       break;
+     case 336*2:
+       scanner = PETScannerInfo::Advance;
+       PETerror(warning, "Advance");
+       break;
+     case 288*2:
+       scanner = PETScannerInfo::E966;
+       PETerror(warning, "ECAT 966");
+       break;
+     default:
+       PETerror("\nInterfile warning: I did not recognise the scanner neither from \n\
+originating_system or 'number of detectors per ring'.\n");;
+       scanner = PETScannerInfo::Unknown_Scanner;
+       break;
+     }
+   
+  }
+
+  if (scanner == PETScannerInfo::Unknown_Scanner)
+  {
+    if (num_rings < 1)
+      PETerror("Interfile warning: 'number of rings' invalid.\n");
+    if (num_detectors_per_ring < 1)
+      PETerror("Interfile warning: 'num_detectors_per_ring' invalid.\n");
+    if (transaxial_FOV_diameter_in_cm < 1)
+      PETerror("Interfile warning: 'transaxial FOV diameter (in cm)' invalid.\n");
+    if (distance_between_rings_in_cm < 1)
+      PETerror("Interfile warning: 'distance between rings (in cm)' invalid.\n");
+    if (bin_size_in_cm < 1)
+      PETerror("Interfile warning: 'bin size (in cm)' invalid.\n");
+  }
+  else
+  {
+    PETScannerInfo full_scanner(scanner);
+
+    if (num_rings < 1)
+      num_rings = full_scanner.num_rings;
+    if (num_detectors_per_ring < 1)
+      num_detectors_per_ring = full_scanner.num_views*2;
+    if (transaxial_FOV_diameter_in_cm < 1)
+      transaxial_FOV_diameter_in_cm = full_scanner.FOV_radius*2/10.;
+    if (distance_between_rings_in_cm < 1)
+      distance_between_rings_in_cm = full_scanner.ring_spacing/10;
+    if (bin_size_in_cm < 1)
+      bin_size_in_cm = full_scanner.bin_size/10;
+    
+    // TODO consistency check with full_scanner values ?
+  }
+  scan_info = PETScanInfo(scanner, 
+	      num_rings, num_bins, num_views, 
+	      float(transaxial_FOV_diameter_in_cm/2*10.),
+	      float(distance_between_rings_in_cm*10.), 
+	      float(bin_size_in_cm*10.), 
+	      float(view_offset));
+  
+  scan_info.show_params();
 
   return 0;
 }
