@@ -122,7 +122,8 @@ public:
     RegisterIt()
     {
       //std::cerr << "Adding " << Derived::registered_name <<" to registry"<<std::endl;
-      registry().add_to_registry(Derived::registered_name, read_from_stream);  
+      // note: VC 7.0 needs a '&' in front of read_from_stream for some reason
+      registry().add_to_registry(Derived::registered_name, &read_from_stream);  
     }
    
     /*! \brief Destructor should remove it from the registry.
