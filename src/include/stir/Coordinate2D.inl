@@ -37,8 +37,8 @@ Coordinate2D<coordT>::Coordinate2D(const coordT& c1,
 				   const coordT& c2)
   : base_type()
 {
-  this->coords[1] = c1;
-  this->coords[2] = c2;
+  (*this)[1] = c1;
+  (*this)[2] = c2;
 }
 
 template <class coordT>

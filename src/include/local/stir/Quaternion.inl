@@ -14,11 +14,11 @@ Quaternion<coordT>&
 Quaternion<coordT>::
 operator*=(const Quaternion<coordT>& q)
 { 
-  Quaternion<coordT> tmp (*this);
-  coords[1] = tmp[1]*q[1]-tmp[2]*q[2]-tmp[3]*q[3]-tmp[4]*q[4];
-  coords[2] = tmp[1]*q[2]+tmp[2]*q[1]+tmp[3]*q[4]-tmp[4]*q[3];
-  coords[3] = tmp[1]*q[3]+tmp[3]*q[1]+tmp[4]*q[2]-tmp[2]*q[4];
-  coords[4] = tmp[1]*q[4]+tmp[4]*q[1]+tmp[2]*q[3]-tmp[3]*q[2];
+  const Quaternion<coordT> tmp (*this);
+  (*this)[1] = tmp[1]*q[1]-tmp[2]*q[2]-tmp[3]*q[3]-tmp[4]*q[4];
+  (*this)[2] = tmp[1]*q[2]+tmp[2]*q[1]+tmp[3]*q[4]-tmp[4]*q[3];
+  (*this)[3] = tmp[1]*q[3]+tmp[3]*q[1]+tmp[4]*q[2]-tmp[2]*q[4];
+  (*this)[4] = tmp[1]*q[4]+tmp[4]*q[1]+tmp[2]*q[3]-tmp[3]*q[2];
 
   return *this;
  
@@ -29,7 +29,7 @@ Quaternion<coordT>&
 Quaternion<coordT>::operator*= (const coordT& a)
 {
   for (int i=1; i<=4; i++)
-    coords[i] *= a;
+    (*this)[i] *= a;
   return *this;
  
 }
@@ -58,7 +58,7 @@ Quaternion<coordT>&
 Quaternion<coordT>:: operator/= (const coordT& a)
 {
   for (int i=1; i<=4; i++)
-    coords[i] /= a;
+    (*this)[i] /= a;
   return *this;
 
 }
@@ -97,10 +97,10 @@ template <typename coordT>
 void 
 Quaternion<coordT>:: neg_quaternion ()
 {
-  coords[1] =-(*this)[1];
-  coords[2] =-(*this)[2];
-  coords[3] =-(*this)[3];
-  coords[4] =-(*this)[4];
+  (*this)[1] =-(*this)[1];
+  (*this)[2] =-(*this)[2];
+  (*this)[3] =-(*this)[3];
+  (*this)[4] =-(*this)[4];
  
 }
 
@@ -110,21 +110,21 @@ template <typename coordT>
 void 
 Quaternion<coordT>:: conjugate()
 {
-  coords[1] =(*this)[1];
-  coords[2] =-(*this)[2];
-  coords[3] =-(*this)[3];
-  coords[4] =-(*this)[4];
+  (*this)[1] =(*this)[1];
+  (*this)[2] =-(*this)[2];
+  (*this)[3] =-(*this)[3];
+  (*this)[4] =-(*this)[4];
 }
 
 template <typename coordT>
 void 
 Quaternion<coordT>:: normalise() 
 {
-  const coordT n = sqrt(square(coords[1]) + square(coords[2]) +square(coords[3])+ square(coords[4]));   
-  coords[1] /=n;
-  coords[2] /=n;
-  coords[3] /=n;
-  coords[4] /=n;
+  const coordT n = sqrt(square((*this)[1]) + square((*this)[2]) +square((*this)[3])+ square((*this)[4]));   
+  (*this)[1] /=n;
+  (*this)[2] /=n;
+  (*this)[3] /=n;
+  (*this)[4] /=n;
 }
 
 template <typename coordT>
@@ -132,10 +132,10 @@ void
 Quaternion<coordT>::inverse()	
 {
   float dp = dot_product((*this),(*this));
-  coords[1] =  (*this)[1]/dp;
-  coords[2] = -(*this)[2]/dp;
-  coords[3] = -(*this)[3]/dp;
-  coords[4] = -(*this)[4]/dp;
+  (*this)[1] =  (*this)[1]/dp;
+  (*this)[2] = -(*this)[2]/dp;
+  (*this)[3] = -(*this)[3]/dp;
+  (*this)[4] = -(*this)[4]/dp;
 }
 
 

@@ -38,10 +38,10 @@ Coordinate4D<coordT>::Coordinate4D(const coordT& c1,
 				   const coordT& c4)
   : base_type()
 {
-  this->coords[1] = c1;
-  this->coords[2] = c2;
-  this->coords[3] = c3;
-  this->coords[4] = c4;
+  (*this)[1] = c1;
+  (*this)[2] = c2;
+  (*this)[3] = c3;
+  (*this)[4] = c4;
 }
 
 template <class coordT>
