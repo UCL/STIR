@@ -4,6 +4,7 @@
 
 /*!
   \file 
+  \ingroup buildblock
  
   \brief  Implementation of functions which read/write Interfile data
 
@@ -12,7 +13,6 @@
   \author PARAPET project
 
   \date    $Date$
-
   \version $Revision$
     
 */
@@ -112,7 +112,6 @@ compute_file_offsets(int number_of_time_frames,
 		     const CartesianCoordinate3D<int>& dim,
 		     unsigned long initial_offset)
 { 
-  // KT&SM 14/02/2000 used CartesianCoordinate3D
   const unsigned long a= dim.x()*dim.y()*dim.z()*output_type.size_in_bytes();
   VectorWithOffset<unsigned long> temp(number_of_time_frames);
   {
@@ -188,7 +187,6 @@ write_basic_interfile_image_header(const string& header_file_name,
   for (int i=1; i<=scaling_factors.get_length();i++)
     {
       output_header << "image scaling factor"<<"["<<i<<"] := " << scaling_factors[i-1]<< endl;
-      // KT&SM 14/01/2000 added    
       output_header << "data offset in bytes"<<"["<<i<<"] := "<< file_offsets[i-1]<< endl;
     }
 
@@ -228,15 +226,12 @@ write_basic_interfile_image_header(const string& header_file_name,
     
     output_header << "!INTERFILE  :=\n";
     output_header << "!name of data file := " << image_file_name << endl;
-     // KT&SM 14/02/2000 used CartesianCoordinate3D
     output_header << "!total number of images := "
 		  << dimensions.z() << endl;
-    // KT&SM 14/01/2000 added
     for (int i=1;i<=file_offsets.get_length();i++)
       {
 	output_header << "!data offset in bytes := " <<file_offsets[i-1]<< endl;
       }
-    // KT 05/11/98 added ! 
     output_header << "!imagedata byte order := " <<
       (ByteOrder::get_native_order() == ByteOrder::little_endian 
        ? "LITTLEENDIAN"
@@ -275,7 +270,7 @@ write_basic_interfile_image_header(const string& header_file_name,
       if (floor(zsize)==zsize)
 	zsize += 0.00001F;
       // TODO this is what it should be
-      // float zsize = voxel_size.z/ voxel_size.x;
+      // float zsize = voxel_size.z()/ voxel_size.x();
       
       output_header << "!slice thickness (pixels) := " 
 		    << zsize << endl;
@@ -303,13 +298,16 @@ bool write_basic_interfile(const string&  filename,
   CartesianCoordinate3D<int> dimensions = max_indices - min_indices;
   dimensions += 1;
 
-  string header_name = filename;
-  header_name += ".hv"; 
-  string data_name = filename;
-  data_name += ".v";
+  char * data_name = new char[filename.size() + 5];
+  char * header_name = new char[filename.size() + 5];
+
+  strcpy(data_name, filename.c_str());
+  add_extension(data_name, ".v");
+  strcpy(header_name, data_name);
+  replace_extension(header_name, ".hv");
 
   ofstream output_data;
-  open_write_binary(output_data, data_name.c_str());
+  open_write_binary(output_data, data_name);
 
   float scale = 0;
   image.write_data(output_data, output_type, scale);
@@ -328,6 +326,8 @@ bool write_basic_interfile(const string&  filename,
 				   ByteOrder::native,
 				   scaling_factors,
 				   file_offsets);
+  delete header_name;
+  delete data_name;
 
   return true;
 }
@@ -378,15 +378,6 @@ I am going to ask you lots of questions...\n");
   char full_data_file_name[max_filename_length];
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
-
-  // Horrible trick to keep the stream alive. At the moment, this pointer
-  // is never deleted
-  // TODO
-  fstream *data_in =  new fstream;
-  
-
-  open_read_binary(*data_in,full_data_file_name);
-
  
   vector<int> min_ring_num_per_segment(hdr.num_segments);
   vector<int> max_ring_num_per_segment(hdr.num_segments);
@@ -405,6 +396,10 @@ at the moment. Using the first scale factor only.\n");
       }
   
    assert(hdr.data_info_ptr !=0);
+
+  fstream *data_in =  new fstream;  
+  open_read_binary(*data_in,full_data_file_name);
+
   return new ProjDataFromStream(hdr.data_info_ptr,			    
 			        data_in,
 			        hdr.data_offset[0],
@@ -427,7 +422,6 @@ read_interfile_PDFS(const string& filename)
       error("read_interfile_PDFS: couldn't open file %s\n", filename.c_str());
     }
   
-  // KT 14/01/2000 added directory capability
   char directory_name[max_filename_length];
   get_directory_name(directory_name, filename.c_str());
   
@@ -449,38 +443,17 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       return false;
     }  
 
-  // KT 25/01/2000 new
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
   output_header << "!INTERFILE  :=\n";
   output_header << "name of data file := " <<data_file_name << endl;
 
   output_header << "originating system := ";
-#if 0
-  // TODO get from Scanner
-  switch(pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->type)
-    {
-      // SM 22/01/2000 HiDAC added      
-    case Scanner::HiDAC: output_header<< "HiDAC\n"; break;
-    case Scanner::RPT: output_header << "PRT-1\n"; break;
-    case Scanner::E931: output_header << "ECAT 931\n"; break;
-    case Scanner::E951: output_header << "ECAT 951\n"; break;
-
-    case Scanner::E953: output_header << "ECAT 953\n"; break;
-    case Scanner::E966: output_header << "ECAT 966\n"; break;
-    case Scanner::ART: output_header << "ECAT ART\n"; break;
-    case Scanner::Advance: output_header << "Advance\n"; break;
-      // KT 30/05/2000 added Positron
-    case Scanner::HZLR: output_header << "Positron HZL/R\n"; break;
-    default: output_header << "Unknown\n"; break;
-    }
-#endif
   output_header <<pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_name() << endl;
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
-  // KT 25/01/2000 use get_...
   output_header << "imagedata byte order := " <<
     (pdfs.get_byte_order_in_stream() == ByteOrder::little_endian 
      ? "LITTLEENDIAN"
@@ -489,7 +462,6 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   output_header << "!PET STUDY (General) :=\n";
   output_header << "!PET data type := Emission\n";
-  // KT 25/01/2000 use get_...
   {
     string number_format;
     size_t size_in_bytes;
@@ -543,7 +515,6 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
 	}
       }
     
-    // SM 22/01/2000 changed order of write statements
     output_header << "matrix axis label [" << order_of_segment 
 		  << "] := segment\n";
     output_header << "!matrix size [" << order_of_segment << "] := " 
@@ -649,25 +620,6 @@ write_basic_interfile_PDFS_header(const string& data_filename,
 				    data_filename,pdfs);
 }
 
-#if 0
-
-bool
-write_basic_interfile_PDFS_header(const string& filename)
-{
-char header_file_name[max_filename_length];
-  strcpy(header_file_name,filename.c_str());
-  replace_extension(header_file_name,".hs");
-  ProjDataFromStream* pdfs;
-  pdfs = new ProjDataFromStream();
- 
-  pdfs = ask_PDFS_details(true);
-   return
-  write_basic_interfile_PDFS_header(header_file_name,
-				    filename,*pdfs);
-
-}
-
-#endif 
 /**********************************************************************
    template instantiations
    **********************************************************************/
