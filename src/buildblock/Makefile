@@ -1,8 +1,12 @@
+#
+# $Id$: $Date$
+#
 CXX = g++
 RM = /bin/rm -f 
 # KT 18/12/97 removed Para++ related CFLAGS
 #CL030698 Move debug flags to DEBUG
 DEBUG=-D_DEBUG
+DEST=debug/
 CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include
 #CXX = xlC
@@ -12,42 +16,21 @@ CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 .SUFFIXES: .cc .o .cxx .a
 
 #KT 16/12 wanted to add interfile...
-all:	libbuildblock.a #libinterfile.a
+all:	${DEST}libbuildblock.a #${DEST}libinterfile.a
 
-#KT 27/02/98 use default rules now
-.cxx.o:
+#KT
+${DEST}%.o : %.cxx 
+#.cxx.o:
 	$(CXX) $(CFLAGS) -o $@ -c $< 
 
 
 
-libbuildblock.a: sinodata.o convert.o PETScannerInfo.o Tensor1D.o viewdata.o
+${DEST}libbuildblock.a: ${DEST}sinodata.o ${DEST}convert.o \
+   ${DEST}PETScannerInfo.o ${DEST}Tensor1D.o ${DEST}viewdata.o
 	ar r $@ $?
 	ranlib $@
-libinterfile.a: KeyParser.o line.o pet_string.o
 
-#KT 27/02/98 use default rules now, so all this can go
-#convert.o: convert.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-#Tensor1D.o: Tensor1D.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-#sinodata.o: sinodata.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-#PETScannerInfo.o:  PETScannerInfo.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-#KT 16/12 added next 3
-
-KeyParser.o:  KeyParser.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-line.o:  line.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
-
-pet_string.o:  pet_string.cxx
-#	$(CXX) $(CFLAGS) -o $@ -c $< 
+${DEST}libinterfile.a: ${DEST}KeyParser.o ${DEST}line.o ${DEST}pet_string.o
 
 clean: 
 	$(RM) *.o
