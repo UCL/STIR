@@ -97,10 +97,9 @@ private:
   DiscretisedDensity<3,float>* normalised_bck_image ;
   string normalised_bck_filename;
   float rescaling_coefficient;
-  int number_of_coefficients_before_padding;
-  float k_interval;
-  int number_of_discrete_points;
-  //float rescaling_coefficient;
+  mutable float k_interval;
+  int recompute_every_num_subiterations;
+  int recompute_from_subiteration_num;
 
    Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& density);
    // new
