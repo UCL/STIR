@@ -67,8 +67,9 @@ void OSMAPOSLParameters::ask_parameters()
 
   MAPParameters::ask_parameters();
 
-
-  enforce_initial_positivity=ask("Enforce initial positivity condition?",true);
+  // KT 05/07/2000 made enforce_initial_positivity int
+  enforce_initial_positivity=
+    ask("Enforce initial positivity condition?",true) ? 1 : 0;
 
   inter_update_filter_interval=
     ask_num("Do inter-update filtering at sub-iteration intervals of: ",0, num_subiterations, 0);
