@@ -19,7 +19,7 @@
 #include "stir/NumericInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/detail/test_if_1d.h"
-#include <istream>
+#include <iostream>
 
 START_NAMESPACE_STIR
 

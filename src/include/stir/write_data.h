@@ -19,7 +19,7 @@
 
 #include "stir/ByteOrder.h"
 #include <stdio.h>
-#include <istream>
+#include <iostream>
 START_NAMESPACE_STIR
 
 class Succeeded;
