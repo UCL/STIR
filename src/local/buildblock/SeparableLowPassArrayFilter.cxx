@@ -1,7 +1,6 @@
 
 #include "local/stir/SeparableLowPassArrayFilter.h"
-#include "local/stir/ArrayFilter1DUsingConvolution.h"
-#include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/ArrayFilter1DUsingConvolution.h"
 
 
 #include <iostream>
