@@ -3,7 +3,7 @@
 #
 
 
-include ../../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 all: $(DEST)libLogLik_buildblock.a 
 
@@ -24,7 +24,7 @@ OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
-  include $(SOURCES_CXX:%.cxx=$(DEST)%.d)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
 endif
 
 
