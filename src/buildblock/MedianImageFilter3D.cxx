@@ -91,7 +91,7 @@ MedianImageFilter3D<elemT>::initialise_keymap()
   this->parser.add_stop_key("END Median Filter Parameters");
 }
 
-
+template <>
 const char * const 
 MedianImageFilter3D<float>::registered_name =
   "Median";

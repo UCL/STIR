@@ -155,7 +155,7 @@ initialise_keymap()
 }
 
 
-
+template <>
 const char * const 
 SeparableCartesianMetzImageFilter<float>::registered_name =
   "Separable Cartesian Metz";

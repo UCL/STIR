@@ -123,7 +123,7 @@ FilterRootPrior<elemT>::set_defaults()
   filter_ptr = 0;  
 }
 
-
+template <>
 const char * const 
 FilterRootPrior<float>::registered_name =
   "FilterRootPrior";
