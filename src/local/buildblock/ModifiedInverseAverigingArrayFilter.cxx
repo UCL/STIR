@@ -3,6 +3,7 @@
 #include "local/tomo/ArrayFilter1DUsingConvolution.h"
 #include "tomo/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 #include "Array.h"
+#include "IndexRange3D.h"
 #include "local/fft.h"
 #include <iostream>
 #include <fstream>
@@ -117,13 +118,30 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     size =256;
     else
     size =128;  
-  
+
+  int filter_length = floor(filter_coefficients.get_length()/2);
+  //cerr << " FILTER LENGTH IS " << filter_length << endl;
   
   VectorWithOffset<float> filter_coefficients_padded(1,size);
   filter_coefficients_padded.fill(0);
-  filter_coefficients_padded[1] = filter_coefficients[0];
-  filter_coefficients_padded[3] = filter_coefficients[1];
-  filter_coefficients_padded[size-1] = filter_coefficients[-1];
+  // SM 10/12/2001 changed such that all filter sizes could be handeled.  
+  filter_coefficients_padded[1] = filter_coefficients[0];  
+  for ( int i = 1;i<=filter_length;i++)
+  {
+  filter_coefficients_padded[2*i+1] = filter_coefficients[i];    
+  filter_coefficients_padded[size-(2*(i-1)+1)] = filter_coefficients[i];
+ }
+    /*for (int i = 1;i<=size;i++)
+    { cerr << filter_coefficients_padded[i] << "   " ;
+    }*/
+
+
+
+
+  // old  
+  //filter_coefficients_padded[1] = filter_coefficients[0];
+  //filter_coefficients_padded[3] = filter_coefficients[1];
+  //filter_coefficients_padded[size-1] = filter_coefficients[-1];
 
   /*for (int i = 1;i<=size;i++)
     cerr << filter_coefficients_padded[i] << "   " ;
@@ -174,8 +192,7 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
     if (sq_kapas!=1.F)
   {
     
-  int kernel_length=0;
-
+  
   float inverse_sq_kapas;
   if (fabs((double)sq_kapas ) >0.000000000001)
     inverse_sq_kapas = 1/sq_kapas;
@@ -213,6 +230,8 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   for (int i=1;i<=(size/2)-1;i++)
     real_div[i+1] = div[2*i+1];
   
+  int kernel_length=0;
+
    // new - to prevent form aliasing limit the new range for the coefficients to 
    // filter_coefficients_padded.get_length()/4
    // for (int i=1;i<=filter_coefficients_padded.get_length()/2;i++)
@@ -225,7 +244,11 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
    //if (fabs((double) real_div[i])<= real_div[real_div.get_min_index()]*1/10) break;
     else (kernel_length)++;
   }  
-
+  if (kernel_length == filter_coefficients_padded.get_length()/4)
+    warning("ModifiedInverseAverigingArrayFilter: kernel_length reached maximum length %d. "
+            "First filter coefficient %g, last %g\n"
+            "Increase length of FFT array to resolve this problem\n",
+	    kernel_length, real_div[real_div.get_min_index()], real_div[kernel_length]);
   // new
   //if (kernel_length == real_div.get_length())
      new_filter_coefficients.grow(-(kernel_length-1),kernel_length);    
@@ -283,6 +306,10 @@ ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coeffi
   
   // to do only filtering in 2d -> 
   // z-direction is for 0 index
+ kernel_index_range =
+   IndexRange3D(0,0, 
+                new_filter_coefficients.get_min_index(), new_filter_coefficients.get_max_index(),
+		new_filter_coefficients.get_min_index(), new_filter_coefficients.get_max_index());
 
  for (int i=2;i<=num_dimensions;i++)
   {
