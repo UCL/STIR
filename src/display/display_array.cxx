@@ -124,7 +124,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
     if (nr!=plane_stack.get_min_index())
       SC_START_BIG(); // KT 30/05/2002 select bigger window size 
     SC_MASK(SC_M_ALL);
-    SC_CLEAR_BLOCK((SC_C_BACKGROUND+ SC_C_MAX)/3,min_x,max_x-1,min_y,max_y-1);
+    SC_CLEAR_BLOCK((SC_C_BACKGROUND+ SC_C_MAX)/3,0,(int)SC_X_MAX ,0,(int)SC_Y_MAX );
     SC_SCALE(SC_X_MAX-30,30, 20, SC_Y_MAX - 60);
     // output title, making some attempt to centre it
     if (title != 0)      
@@ -181,7 +181,7 @@ void display_bitmap(const Array<3,elemT>& plane_stack,
     SC_STOP();
     for ( i--; i>=0; i--)
     {
-      delete[] (sc_image[i].image);
+      //delete[] (sc_image[i].image); now deleted by XDestroyImage
       delete[] (sc_image[i].text);
     }
     if (plane_stack.get_max_index()>nr)
