@@ -20,6 +20,7 @@
 #include "shared_ptr.h"
 #include "ProjDataInfo.h"
 #include <string>
+#include <iostream>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::string;
@@ -88,7 +89,7 @@ public:
   //! A static member to get the projection data from a file
   static shared_ptr<ProjData> 
     read_from_file(const string& filename,
-		   const ios::openmode openmode = ios::in);
+		   const ios::openmode open_mode = ios::in);
 
   //! Constructors
   inline ProjData();
@@ -100,34 +101,34 @@ public:
     get_proj_data_info_ptr() const;
   //! Get viewgram
   virtual Viewgram<float> 
-    get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = true) const=0;
+    get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
   //! Set viewgram
   virtual Succeeded 
     set_viewgram(const Viewgram<float>&) = 0;
   //! Get sinogram
   virtual Sinogram<float> 
-    get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd = true) const=0;
+    get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
   //! Set sinogram
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
-    const bool make_num_tangential_poss_odd = true) const;
+    const bool make_num_tangential_poss_odd = false) const;
   
   //! Get empty_sinogram
   Sinogram<float> 
     get_empty_sinogram(const int ax_pos_num, const int segment_num,
-    const bool make_num_tangential_poss_odd = true) const;
+    const bool make_num_tangential_poss_odd = false) const;
 
    //! Get empty segment sino
   SegmentByView<float> 
     get_empty_segment_by_view(const int segment_num, 
-		  	   const bool make_num_tangential_poss_odd = true) const;
+		  	   const bool make_num_tangential_poss_odd = false) const;
   //! Get empty segment view
   SegmentBySinogram<float> 
     get_empty_segment_by_sinogram(const int segment_num, 
-				   const bool make_num_tangential_poss_odd = true) const;
+				   const bool make_num_tangential_poss_odd = false) const;
 
 
   //! Get segment by sinogram
@@ -147,7 +148,7 @@ public:
   virtual RelatedViewgrams<float> 
     get_related_viewgrams(const ViewSegmentNumbers&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
-    const bool make_num_tangential_poss_odd = true) const;
+    const bool make_num_tangential_poss_odd = false) const;
   //! Set related viewgrams
   virtual Succeeded set_related_viewgrams(const RelatedViewgrams<float>& viewgrams);
   
@@ -157,7 +158,7 @@ public:
     get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
     //const int view_num, const int segment_num, 
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
-    const bool make_num_tangential_poss_odd = true) const;   
+    const bool make_num_tangential_poss_odd = false) const;   
 
   //! Get number of segments
   inline int get_num_segments() const;
