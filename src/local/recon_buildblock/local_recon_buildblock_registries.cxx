@@ -46,9 +46,11 @@ static QuadraticPrior<float>::RegisterIt dummy21;
 
 static BinNormalisationUsingProfile::RegisterIt dummy101;
 #ifdef HAVE_LLN_MATRIX
+START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 static BinNormalisationFromECAT7::RegisterIt dummy102;
 END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 #endif
 
 
