@@ -46,6 +46,44 @@ run_interactive_tests_$(dir): all_test_exes
 	$(DEST)test/test_interpolate
 	$(DEST)test/test_display
 
+# rules to ignore registries
+# note: have to be before include statement as that changes value of $(dir)
+${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_IndexRange: ${DEST}$(dir)/test_IndexRange.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_coordinates: ${DEST}$(dir)/test_coordinates.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_linear_regression: ${DEST}$(dir)/test_linear_regression.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_interpolate: ${DEST}$(dir)/test_interpolate.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+
+${DEST}$(dir)/test_filename_functions: ${DEST}$(dir)/test_filename_functions.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+${DEST}$(dir)/test_ByteOrder: ${DEST}$(dir)/test_ByteOrder.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
+
+${DEST}$(dir)/test_stir_math: ${DEST}$(dir)/test_stir_math.o $(STIR_LIB) 
+	$(CXX) $(CFLAGS)  -o $@ $< $(STIR_LIB)  $(LINK_OPT) $(SYS_LIBS)
 
 include $(WORKSPACE)/test.mk
 
