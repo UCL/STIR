@@ -60,9 +60,9 @@ public:
 
 protected:
   //! Set defaults before parsing
-  virtual void set_defaults()  = 0;
+  virtual void set_defaults()  {};
   //! Initialise all keywords
-  virtual void initialise_keymap() = 0;
+  virtual void initialise_keymap() {};
     //! This will be called at the end of the parsing
   /*! \return false if everything OK, true if not */
   virtual bool post_processing() 
