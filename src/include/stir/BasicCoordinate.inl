@@ -317,10 +317,18 @@ norm (const BasicCoordinate<num_dimensions, coordT>& p1)
 
 template <int num_dimensions, class coordT>
 double 
+cos_angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
+           const BasicCoordinate<num_dimensions, coordT>& p2)
+{
+  return (inner_product(p1,p2)/norm(p1)/ norm(p2));
+}
+
+template <int num_dimensions, class coordT>
+double 
 angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
        const BasicCoordinate<num_dimensions, coordT>& p2)
 {
-  return acos(inner_product(p1,p2)/norm(p1)/ norm(p2));
+  return acos(cos_angle(p1,p2));
 }
 
 #if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
