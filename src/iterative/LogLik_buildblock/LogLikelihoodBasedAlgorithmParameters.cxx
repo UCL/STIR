@@ -3,8 +3,32 @@
 //
 // $Id$
 //
-//
-#include "recon_buildblock/LogLikelihoodBasedAlgorithmParameters.h"
+/*!
+
+  \file
+  \ingroup LogLikBased_buildblock
+  
+  \brief  implementation of the LogLikelihoodBasedAlgorithmParameters class 
+    
+  \author Matthew Jacobson
+  \author Kris Thielemans
+  \author PARAPET project
+      
+  \date $Date$
+        
+  \version $Revision$
+*/
+
+#include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
+#include "utilities.h"
+#include <iostream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::endl;
+using std::ends;
+#endif
+
+START_NAMESPACE_TOMO
 
 //
 //MJ 01/02/2000 added
@@ -58,7 +82,7 @@ bool LogLikelihoodBasedAlgorithmParameters::post_processing()
 
  
   if (sensitivity_image_filename.length() == 0)
-  { PETerror("You need to specify a sensitivity image\n"); return true; }
+  { warning("You need to specify a sensitivity image\n"); return true; }
  
   return false;
 }
@@ -86,3 +110,5 @@ string LogLikelihoodBasedAlgorithmParameters::parameter_info() const
   
   return s.str();
 }
+
+END_NAMESPACE_TOMO
