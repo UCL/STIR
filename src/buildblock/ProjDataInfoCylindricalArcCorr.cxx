@@ -112,6 +112,18 @@ get_bin(const LOR<float>& lor) const
   if (swap_direction)
     bin.view_num()-=get_num_views();
 
+  bin.tangential_pos_num() = round(lor_coords.s() / get_tangential_sampling());
+  if (swap_direction)
+    bin.tangential_pos_num() *= -1;
+
+  if (bin.tangential_pos_num() < get_min_tangential_pos_num() ||
+      bin.tangential_pos_num() > get_max_tangential_pos_num())
+    {
+      bin.set_bin_value(-1);
+      return bin;
+    }
+
+#if 1
   const int num_rings = 
     get_scanner_ptr()->get_num_rings();
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
@@ -138,16 +150,65 @@ get_bin(const LOR<float>& lor) const
       bin.set_bin_value(-1);
       return bin;
     }
-
-  bin.tangential_pos_num() = round(lor_coords.s() / get_tangential_sampling());
-  if (swap_direction)
-    bin.tangential_pos_num() *= -1;
-
-  if (bin.tangential_pos_num() < get_min_tangential_pos_num() ||
-      bin.tangential_pos_num() > get_max_tangential_pos_num())
-    {
-      bin.set_bin_value(-1);
-    }
+#else
+  // find nearest segment
+  {
+    const float delta =
+      (swap_direction 
+       ? lor_coords.z1()-lor_coords.z2()
+       : lor_coords.z2()-lor_coords.z1()
+       )/get_ring_spacing();
+    // check if out of acquired range
+    // note the +1 or -1, which takes the size of the rings into account
+    if (delta>get_max_ring_difference(get_max_segment_num())+1 ||
+	delta<get_min_ring_difference(get_min_segment_num())-1)
+      {
+	bin.set_bin_value(-1);
+	return bin;
+      } 
+    // code currently relies on symmetric segments
+    // TODO just copy for negative delta
+    // note:we add a small number to delta for the comparison below
+    // otherwise, floating point arithmetic might mean that delta comes out as .99999 instead of 1
+    const float abs_delta = fabs(delta)+.001F;
+    for (bin.segment_num()=0; bin.segment_num()<get_max_segment_num(); ++bin.segment_num())
+      {
+	assert(get_max_ring_difference(bin.segment_num())==-get_min_ring_difference(-bin.segment_num()));
+	if (abs_delta < get_min_ring_difference(bin.segment_num()+1))
+	  break;
+      }
+    if (delta<0)
+      bin.segment_num() *= -1;
+  }
+  // now find nearest axial position
+  {
+    const float m = (lor_coords.z2()+lor_coords.z1())/2;
+#if 0
+    // this uses private member of ProjDataInfoCylindrical
+    // enable when moved
+    if (!ring_diff_arrays_computed)
+      initialise_ring_diff_arrays();
+#ifndef NDEBUG
+    bin.axial_pos_num()=0;
+    assert(get_m(bin)==- m_offset[bin.segment_num()]);
+#endif
+    bin.axial_pos_num() =
+      round((m + m_offset[bin.segment_num()])/
+	    get_axial_sampling(bin.segment_num()));
+#else
+    bin.axial_pos_num()=0;
+    bin.axial_pos_num() =
+      round((m - get_m(bin))/
+	    get_axial_sampling(bin.segment_num()));
+#endif
+    if (bin.axial_pos_num() < get_min_axial_pos_num(bin.segment_num()) ||
+	bin.axial_pos_num() > get_max_axial_pos_num(bin.segment_num()))
+      {
+	bin.set_bin_value(-1);
+	return bin;
+      }
+  }
+#endif
 
   bin.set_bin_value(1);
   return bin;
