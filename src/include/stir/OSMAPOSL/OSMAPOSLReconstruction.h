@@ -127,6 +127,8 @@ public:
 
  
 private:
+  friend void do_sensitivity(const char * const par_filename);
+
   //! operations prior to the iterations
   virtual void recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr);
  
