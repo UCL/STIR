@@ -140,15 +140,15 @@ int main(int argc, char **argv)
 #if 1
         // go to Polaris
         const CartesianCoordinate3D<float> 
-          current_point_Polaris(-current_point.z(),
-                                -current_point.x(),
+          current_point_Polaris(current_point.z(),
+                                current_point.x(),
                                 -current_point.y());
         const CartesianCoordinate3D<float> new_point_Polaris =
           rigid_object_transformation.transform_point(current_point_Polaris);
         const CartesianCoordinate3D<float> 
-          new_point(-new_point_Polaris.z(),
+          new_point(new_point_Polaris.z(),
                     -new_point_Polaris.x(),
-                    -new_point_Polaris.y());
+                    new_point_Polaris.y());
 
 #else
         const CartesianCoordinate3D<float> new_point =
