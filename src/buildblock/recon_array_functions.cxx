@@ -275,7 +275,11 @@ void divide_and_truncate(const int view, // const int view45,
 
 	
 	};
-      }	
+      }
+
+  //	if (f != NULL)
+  //  cerr<<endl<<"f="<<*f<<endl;
+	
 }
 
 // AZ&KT 04/10/99: added rim_truncation_sino
@@ -314,6 +318,10 @@ void divide_and_truncate(PETViewgram& numerator,
 
       };
     }
+
+  //	if (f != NULL)
+  //  cerr<<endl<<"f="<<*f<<endl;
+
 }
 
 // AZ 07/10/99: added
@@ -388,4 +396,80 @@ void divide_array(PETSegmentByView& numerator,PETSegmentByView& denominator)
 
 	}
     
+}
+
+
+
+// MJ 03/01/2000 for loglikelihood computation
+void accumulate_loglikelihood(const int view,
+			 PETSegmentBySinogram& projection_data, 
+			 const PETSegmentBySinogram& estimated_projections,
+			 const int rim_truncation_sino, float *accum)
+{
+
+
+  assert(projection_data.get_num_views() == estimated_projections.get_num_views());
+
+
+  const int view45 = projection_data.get_num_views() / 4;
+
+  const int view90 = view45*2;
+  const int plus90 = view90+view;
+  const int min180 = view45*4-view;
+  const int min90  = view90-view;
+	
+  int v[4],max_index;
+
+  if (view != 0 /* && view != globals.view45 */ ){
+    max_index=3;
+    v[0]=view;v[1]=plus90;v[2]=min90;v[3]=min180;
+  }
+	
+  else{
+    max_index=3;
+    v[0]=view;v[1]=plus90;
+    v[2]=view45;v[3]=view90+view45; 
+  }
+
+  const int rs=estimated_projections.get_min_ring();
+  const int re=estimated_projections.get_max_ring();
+  const int vs=estimated_projections.get_min_view();
+  const int ve=estimated_projections.get_max_view();
+  const int bs=estimated_projections.get_min_bin();
+  const int be=estimated_projections.get_max_bin();
+
+  for(int r=rs;r<=re;r++)
+    for(int i=0;i<=max_index;i++)
+      for(int b=bs;b<=be;b++)	      
+	if(!(estimated_projections[r][v[i]][b]<=ZERO_TOL ||
+	   projection_data[r][v[i]][b]<0.0|| b<bs+rim_truncation_sino 
+	   || b>be-rim_truncation_sino))
+	  *accum -= projection_data[r][v[i]][b]*log(estimated_projections[r][v[i]][b]);
+
+  // cerr<<endl<<"accum="<<*accum<<endl;
+
+}
+
+//  MJ 03/01/2000 for loglikelihood computation
+void accumulate_loglikelihood(PETViewgram& projection_data, 
+			 const PETViewgram& estimated_projections,
+			 const int rim_truncation_sino,
+			 float* accum)
+{
+  
+  const int rs=projection_data.get_min_ring();
+  const int re=projection_data.get_max_ring();
+  const int bs=projection_data.get_min_bin();
+  const int be=projection_data.get_max_bin();
+  
+  for(int r=rs;r<=re;r++)
+    for(int b=bs;b<=be;b++)  
+      if(!(estimated_projections[r][b]<=ZERO_TOL ||
+	 projection_data[r][b]<0.0 ||
+	 b<bs+rim_truncation_sino ||
+	 b>be-rim_truncation_sino ))
+	      *accum -= projection_data[r][b]*log(estimated_projections[r][b]);
+    
+  // cerr<<endl<<"accum="<<*accum<<endl;
+
 }
