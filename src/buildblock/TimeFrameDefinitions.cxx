@@ -97,8 +97,8 @@ TimeFrameDefinitions(const string& filename)
 #ifdef HAVE_LLN_MATRIX
   if (ecat::ecat7::is_ECAT7_file(filename))
     read_ECAT7_frame_definitions(filename);
-#endif
   else
+#endif
     read_fdef_file(filename);
 
 #if 0
