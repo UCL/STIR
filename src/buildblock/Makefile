@@ -3,19 +3,42 @@
 # $Id$: $Date$
 #
 
+# AZ 03/10/99 Added
+__TEST_OS = $(shell uname)
+ifeq ($(__TEST_OS),Linux)
+__TEST_LINUX = 1
+else
+__TEST_LINUX = 0
+endif
 
 WORKSPACE = ${HOME}/PPhead
 INCLUDE_DIR = ${WORKSPACE}/include
 
+#AZ 03/02/99 Added
+
+ifeq ($(DEST),debug/)
+ifeq ($(__TEST_LINUX),1)
+DEBUG = -D_DEBUG -pg
+else # not Linux
+DEBUG = -D_DEBUG
+endif # Linux?
+else # not debug/
+ifeq ($(DEST),opt/)
+ifeq ($(__TEST_LINUX),1)
+#-DNDEBUG is needed by system's assert
+DEBUG = -O3 -finline-functions -ffast-math -m486 -malign-double -malign-functions=2 -malign-loops=2 -malign-jumps=2 -DCPU=686 -Winline -DNDEBUG
+#TODO put this back [incompatible wiht -pg] -fomit-frame-pointer 
+# -fforce-mem
+else # not Linux
+DEBUG = -O3
+endif # Linux?
+endif # opt/ ?
+endif # debug/ ?
 
 CXX = g++
 RM = /bin/rm -f 
-# KT 22/03/99 moved -g to DEBUG
-DEBUG=-D_DEBUG -g
 DEST=debug/
-CFLAGS = $(DEBUG) -I$(INCLUDE_DIR)
-#CXX = xlC
-#CFLAGS = -g -D_DEBUG -I$(INCLUDE_DIR) -DTEMPLATE_ARG
+CFLAGS = -g $(DEBUG) -I$(INCLUDE_DIR)
 
 #KT 27/02/98 use default rules now, .cxx does not work without next line
 .SUFFIXES: .cc .o .cxx .a
