@@ -7,7 +7,7 @@ WORKSPACE = ${HOME}/PPhead
 INCLUDE = ${WORKSPACE}/include
 DISPLAYLIB = ${WORKSPACE}/display/libdisplay.a
 BUILDBLOCKLIB = ${WORKSPACE}/buildblock/libbuildblock.a
-PARAPLUSLIB = /usr/lcoal/lib/libparaplus.a
+PARAPLUSLIB = /usr/local/lib/libparaplus.a
 
 #KT added the last -I option for Solaris, doesn't harm anyone if it's
 # not necessary
@@ -52,7 +52,7 @@ VectorWithOffset: VectorWithOffset.cxx ${INCLUDE}/VectorWithOffset.h
 convert: convert.cxx ${BUILDBLOCKLIB}
 	$(CXX) $(CFLAGS) -o $@ $< 
 
-pplusdummy: pplusdummy.cxx $(PARAPLUSLIB}
+pplusdummy: pplusdummy.cxx $(PARAPLUSLIB)
 	$(PXCXX) -o $@ $(CFLAGS) $< -lparaplus
 
 pplustiny: pplustiny.cxx $(PARAPLUSLIB)
