@@ -13,6 +13,7 @@ SOURCES = \
   sinodata.cxx convert.cxx \
   PETScannerInfo.cxx PETScanInfo.cxx \
   Tensor1D.cxx Tensors.cxx \
+  IndexRange.cxx \
   viewdata.cxx imagedata.cxx \
   PETDataSymmetries.cxx \
   PETSinogramOfVolume.cxx \
