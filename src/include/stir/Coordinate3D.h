@@ -1,4 +1,4 @@
-!#ifndef __Coordinate3D_H__
+#ifndef __Coordinate3D_H__
 #define __Coordinate3D_H__
 //
 // $Id$
