@@ -25,7 +25,7 @@ This utility programme processes (interfile) sinogram data
 
 // TODO get rid of 2 copies of the segments ByView and BySinogram
 // TODO get rid of pos, neg segments (can now do each one separately)
-
+// MJ doesn't think doing each one separately is a good idea (for display)
 
 
 
@@ -125,8 +125,10 @@ void do_math(enum options operation, SegmentByView<float>& sino1,SegmentByView<f
             divide_array(sino1,sino2);
             break;
         }
-	default: 
-	  error("binmath: error in switch: operation invalid\n");
+
+	//MJ 20/6/2000 removed.  _zero_seg option relies on this to fall through
+	//	default: 
+	//  error("manip_projdata: error in switch: operation invalid\n");
 
     } // end switch
 }
@@ -205,8 +207,11 @@ void do_math(enum options operation, SegmentByView<float>& sino1, SegmentBySinog
 	    break;
 	  }
 
-	default: 
-	  error("binmath: error in switch: operation invalid\n");	  
+	  
+	  //MJ 20/6/2000 removed. _zero_seg option relies on this to fall through
+	  //	default: 
+	  //error("manip_projdata: error in switch: operation invalid\n");
+	  
     } //end switch
 }
 
@@ -226,29 +231,30 @@ void show_math_menu()
   assert(_menu == 17);
 
   // KT disabled Pad end planes: 16. Pad end planes of segment 0 \n
-    cerr<<"\n\
-BINMATH MENU:\n\
-0. Quit \n\
+cerr<<"\n\
+MENU:\n\
+0. Quit\n\
 1. Display viewgrams\n\
 2. Display sinograms\n\
-3. Absolute difference between 2 sinograms\n\
-4. Add sinogram\n\
-5. Subtract sinogram\n\
-6. Multiplyby sinogram\n\
-7. Divide with sinogram\n\
+3. Subtract projection array\n\
+          and take absolute value\n\
+4. Add projection array\n\
+5. Subtract projection array\n\
+6. Multiply projection array\n\
+7. Divide projection array\n\
 8. Add scalar\n\
-9. Multiply by scalar\n\
-10. Divide with scalar \n\
-11. Min/Max & counts \n\
-12. Positive indicator \n\
+9. Multiply scalar\n\
+10. Divide scalar \n\
+11. Minimum, maximum & total counts \n\
+12. Binarise array (1 if >0, 0 otherwise) \n\
 13. Truncate negatives \n\
-14. Application of a tangential truncating window\n\
-15. Application of an axial truncating window to segment 0\n\
+14. Apply tangential truncating window\n\
+       (scalar operand = No. of bins to truncate)\n\
+15. Apply axial truncating window to segment 0 \n\
+       (scalar operand = No. of planes to truncate)\n\
 16. Restart\n\
 17. Redisplay menu"<<endl;
 }
-
-
 
 float pos_indicate(float x)
 {
@@ -287,7 +293,7 @@ int main(int argc, char *argv[])
 	      { 
 		if(argc<2)
 		  {
-		    cerr<<endl<<"Usage: binmath <header file name> (*.hs)"<<endl<<endl;
+		    cerr<<endl<<"Usage: manip_projdata <header file name> (*.hs)"<<endl<<endl;
 		    first_operand=ask_proj_data("Input sinogram"); 
 		  }
 		else first_operand= ProjData::read_from_file(argv[1]);
@@ -428,16 +434,28 @@ int main(int argc, char *argv[])
                             for(int j=0;j<*scalar;j++ ) {
                                 seg1[i][seg1.get_min_axial_pos_num()+j].fill(0);
                                 seg1[i][seg1.get_max_axial_pos_num()-j].fill(0);
+
+		
                             }
                     else  do_math(operation,seg1,seg_sinogram,accum_max,accum_min,accum_sum,false,*scalar);
+
+
                 }
+
                 else do_math(operation,seg1,seg_sinogram,accum_max,accum_min,accum_sum,false);
+
+
+
 
                     //Write sinogram result to file
                 if(operation!= _display_view && operation!= _display_sino && operation!= _stats && buffer_opened) 
 		  output_proj_data->set_segment(seg1);
             }
 //Now do other segments
+
+
+
+
             if(limit_segments>0)
                 for (int segment_num = 1; segment_num <= limit_segments ; segment_num++) {
                     if((operation==_display_view || operation==_display_sino) && ask("Abort display",false)) break;
