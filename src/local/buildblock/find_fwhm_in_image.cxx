@@ -96,12 +96,11 @@ CartesianCoordinate3D<float>
                                                                       i), level) : 
                                find_NEMA_level(interpolated_line(input_image,max_location,
                                                                       do_direction,
-                                                                      i), level)): 0);
-
+                                                                      i), level)): 0); 
     list_res_index.push_back(res_index);
     if (maximum_num+1!= num_maxima && dimension==0)
- 	  flexible_mask(input_image,max_location,res_index.resolution,level);         
-  } 
+    flexible_mask(input_image,max_location,res_index.resolution,level);         
+  }
   return list_res_index ;
 }   
               
@@ -115,14 +114,23 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
   RandomAccessIterType current_iter = current_max_iterator;
   while(current_iter!= end_iterator && *current_iter > level_height)   ++current_iter;
   if (current_iter==end_iterator)  
-     return 0.;       //  avoid getting out of the image
+      warning("\n WARNING: A point source is near the borders.\n\
+                  Cannot find the real FWHM of this point source!\n\n");    
+  if (*current_iter < 0)  
+      warning("\n WARNING: A point source is overlapping with another one.\n\
+                  Cannot find the real FWHM of this point source!\n\n");
+  
   float right_level_max = (*current_iter - level_height)/(*current_iter-*(current_iter-1));
   right_level_max = float(current_iter-(begin_iterator+max_position)) - right_level_max ;
   
   current_iter = current_max_iterator;
   while(current_iter!=begin_iterator-1 && *current_iter > level_height) --current_iter;
   if (current_iter == begin_iterator-1) 
-     return 0.;       //  avoid getting out of the image
+     warning("\n WARNING: A point source is near the borders.\n\
+                 Cannot find the real FWHM of this point source!\n\n"); 
+  if (*current_iter < 0)  
+     warning("\n WARNING: A point source is overlapping with another one.\
+                 Cannot find the real FWHM of this point source! \n\n");            
         
   float left_level_max = (*current_iter - level_height)/(*current_iter-*(current_iter+1));
   left_level_max += float(current_iter-(begin_iterator+max_position));
@@ -263,6 +271,7 @@ interpolated_line(const Array<num_dimensions,elemT>& input_array,
 		location_010[2] = y0>0 ? max_location[2]+1 : (y0<0 ? max_location[2]-1 : max_location[2]) ;
 		location_010[3] = max_location[3];
 		
+
 		location_100[1] = z0>0 ? max_location[1]+1 : (z0<0 ? max_location[1]-1 : max_location[1]) ;
 		location_100[2] = max_location[2];	
 		location_100[3] = max_location[3];
@@ -331,10 +340,11 @@ flexible_mask(Array<num_dimensions,elemT>& input_array,
 	    const int min_i_index = input_array[k][j].get_min_index();
 		  const int max_i_index = input_array[k][j].get_max_index();
 		  for ( int i = max(max_location[3]-mask_size_x,min_i_index); i<= min(max_location[3]+mask_size_x,max_i_index); ++i)
-		  input_array[k][j][i] = 0.;
+		  input_array[k][j][i] = -1;
 	  }
   } 
-}    
+}        
+    
 template <class RandomAccessIterType>
 static float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
                                    const RandomAccessIterType& end_iter)  
@@ -365,8 +375,11 @@ Using Langrange's classical formula, equation will be:
 y(x)=((x - x2)*(x - x3)*y1/a1)+ ((x - x1)*(x - x3)*y2/a2) + ((x - x1)*(x - x2)*y3/a3)
 y'(x0) = 0 =>  x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))/(y1*a2*a3+y2*a1*a3+y3*a1*a2)    
 */                 
-    const float x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))/(y1*a2*a3+y2*a1*a3+y3*a1*a2) ; 
-    real_max_value = ((x0 - x2)*(x0 - x3)*y1/a1)+ ((x0 - x1)*(x0 - x3)*y2/a2) + ((x0 - x1)*(x0 - x2)*y3/a3) ;
+    const float x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))
+                        /(y1*a2*a3+y2*a1*a3+y3*a1*a2) ; 
+    real_max_value = ((x0 - x2)*(x0 - x3)*y1/a1) + 
+                     ((x0 - x1)*(x0 - x3)*y2/a2) + 
+                     ((x0 - x1)*(x0 - x2)*y3/a3) ;
 
   }   
    return real_max_value ;
@@ -403,7 +416,8 @@ Using Langrange's classical formula, equation will be:
 y(x)=((x - x2)*(x - x3)*y1/a1)+ ((x - x1)*(x - x3)*y2/a2) + ((x - x1)*(x - x2)*y3/a3)
 y'(x0) = 0 =>  x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))/(y1*a2*a3+y2*a1*a3+y3*a1*a2)    
 */                 
-    float x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))/(y1*a2*a3+y2*a1*a3+y3*a1*a2) ; 
+    float x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))
+                  /(y1*a2*a3+y2*a1*a3+y3*a1*a2) ; 
     return x0 ;     
 }                          
 
