@@ -92,7 +92,9 @@ private:
   Array<2,float> efficiency_factors;
   Array<2,float> crystal_interference_factors;
   shared_ptr<Scanner> scanner_ptr;
-  int num_transaxial_crystals_per_block; 
+  int num_transaxial_crystals_per_block;
+  // TODO move to Scanner
+  int num_axial_blocks_per_singles_unit;
   shared_ptr<ProjDataInfo> proj_data_info_ptr;
   ProjDataInfoCylindricalNoArcCorr const * proj_data_info_cyl_ptr;
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;

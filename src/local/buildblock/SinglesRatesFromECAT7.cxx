@@ -58,16 +58,21 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
   scanner_sptr = find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
 
   if (scanner_sptr->get_type() != Scanner::E966)
-    error("check SinglesRatesFromECAT7 for non-966\n");
+    warning("check SinglesRatesFromECAT7 for non-966\n");
   trans_blocks_per_bucket =scanner_sptr->get_num_transaxial_blocks_per_bucket();
   angular_crystals_per_block =scanner_sptr->get_num_transaxial_crystals_per_block();
   axial_crystals_per_block =scanner_sptr->get_num_axial_crystals_per_block();
+  //TODO move to Scanner
+  if (scanner_sptr->get_type() == Scanner::E966)
+    num_axial_blocks_per_singles_unit = 2;
+  else
+    num_axial_blocks_per_singles_unit = 1;
 
   Main_header* main_header = 
     reinterpret_cast<Main_header*>( mptr->mhptr ) ;
 
   singles =  Array<3,float>(IndexRange3D(1,main_header->num_frames,
-					 0,scanner_sptr->get_num_axial_buckets()-1,
+					 0,scanner_sptr->get_num_axial_blocks()/num_axial_blocks_per_singles_unit-1,
 					 0,scanner_sptr->get_num_transaxial_buckets()-1)); 
   
   MatrixData* matrix ;
@@ -106,17 +111,19 @@ SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,
   const int denom = trans_blocks_per_bucket*angular_crystals_per_block;
   const int axial_pos = det_pos.axial_coord();
   const int transaxial_pos = det_pos.tangential_coord();
-  const int axial_bucket_num = axial_pos/(2*axial_crystals_per_block);//axialCrystalsPerBlock);
+  const int axial_bucket_num = 
+    axial_pos/(num_axial_blocks_per_singles_unit*axial_crystals_per_block);
   const int transaxial_bucket_num = (transaxial_pos/denom) ;
+  const float blocks_per_singles_unit =
+    num_axial_blocks_per_singles_unit*trans_blocks_per_bucket;
 
   int frame_num = get_frame_number(start_time,end_time);
   //cerr << "Frame_num:   " << frame_num << endl;
   //cerr << " Axial pos: " << axial_bucket_num << endl;
   //cerr << " Transax pos: " << transaxial_bucket_num << endl;
   
-  // TODO 4
-  return singles[frame_num][axial_bucket_num][transaxial_bucket_num]/4.0F;  // divide by 4.0 to be consistant with CTIs
-
+  // TODO this is really singles rate per block
+  return singles[frame_num][axial_bucket_num][transaxial_bucket_num]/blocks_per_singles_unit;
 }
 
 

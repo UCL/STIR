@@ -61,6 +61,8 @@ public:
 
 private:
   Array<3,float> singles;
+  // TODO move to Scanner
+  int num_axial_blocks_per_singles_unit;
   //Array<1,float> times;
   vector<double> times;
   string sgl_filename;
