@@ -11,7 +11,6 @@ all: $(DEST)librecon_buildblock.a  $(DEST)recon_buildblock_registries.o
 clean:
 	$(RM) $(DEST)*
 
-# SM 20/05/2001 added FilterRootPrior.cxx
 
 SOURCES= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingRayTracing.cxx \
@@ -34,7 +33,12 @@ SOURCES= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingProjMatrixByBin.cxx \
 	BackProjectorByBinUsingProjMatrixByBin.cxx \
 	RayTraceVoxelsOnCartesianGrid.cxx \
-	FilterRootPrior.cxx
+	FilterRootPrior.cxx \
+	ProjectorByBinPair.cxx \
+	ProjectorByBinPairUsingProjMatrixByBin.cxx \
+	ProjectorByBinPairUsingSeparateProjectors.cxx \
+	BinNormalisationFromProjData.cxx \
+	TrivialBinNormalisation.cxx
 
 
 
