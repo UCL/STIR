@@ -1265,18 +1265,24 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 
 // add any other types you need
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<1,signed char>;
+#endif
 template class Array<1,short>;
 template class Array<1,unsigned short>;
 template class Array<1,float>;
 #endif
 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<2,signed char>;
+#endif
 template class Array<2,short>;
 template class Array<2,unsigned short>;
 template class Array<2,float>;
 
+#if !defined(_MSC_VER) || _MSC_VER>=1300
 template class Array<3, signed char>;
+#endif
 template class Array<3, short>;
 template class Array<3,unsigned short>;
 template class Array<3,float>;
