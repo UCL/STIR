@@ -56,6 +56,7 @@ run_tests: all get_test_files make_stir_math
 	$(DEST)test_proj_data_info
 	$(DEST)test_stir_math ../utilities/$(DEST)stir_math \
         $(DEST)test_OutputFileFormat input/test_InterfileOutputFileFormat.in \
+        $(DEST)test_OutputFileFormat input/test_InterfileOutputFileFormat_short.in \
         $(DEST)test_OutputFileFormat input/test_ECAT6OutputFileFormat.in
 
 # running test_stir_math depends on the stir_math executable itself
