@@ -552,7 +552,7 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
     output_header << "!matrix size [" << order_of_view << "] := "
 		  << pdfs.get_proj_data_info_ptr()->get_num_views() << "\n";
     
-    output_header << "matrix axis label [" << order_of_z << "] := axial_pos\n";
+    output_header << "matrix axis label [" << order_of_z << "] := axial coordinate\n";
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
@@ -567,7 +567,7 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
       output_header << "}\n";
     }
 
-    output_header << "matrix axis label [" << order_of_bin << "] := tangential_pos\n";
+    output_header << "matrix axis label [" << order_of_bin << "] := tangential coordinate\n";
     output_header << "!matrix size [" << order_of_bin << "] := "
 		  <<pdfs.get_proj_data_info_ptr()->get_num_tangential_poss() << "\n";
   }
@@ -575,56 +575,57 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
   const  ProjDataInfoCylindrical* proj_data_info_ptr = 
     dynamic_cast< const  ProjDataInfoCylindrical*> (pdfs.get_proj_data_info_ptr());
 
-   if (proj_data_info_ptr==NULL)
-    error("\ninterfile,\n\
-     Casting failed!");
-
-  output_header << "minimum ring difference per segment := ";    
-  {
-    #ifndef TOMO_NO_NAMESPACES
-      // VC needs this explicitly here
-      std::
-#endif
-    vector<int>::const_iterator seg = segment_sequence.begin();
-   // output_header << "{ " <<((ProjDataInfoCylindrical *)pdfs.get_proj_data_info_ptr())->get_min_ring_difference(*seg);
-    output_header << "{ " << proj_data_info_ptr->get_min_ring_difference(*seg);
-    for (seg++; seg != segment_sequence.end(); seg++)
-      output_header << "," <<proj_data_info_ptr->get_min_ring_difference(*seg);
-    output_header << "}\n";
-  }
-
-  output_header << "maximum ring difference per segment := ";
-  {
+   if (proj_data_info_ptr!=NULL)
+     {
+       // cylindrical scanners
+   
+       output_header << "minimum ring difference per segment := ";    
+       {
 #ifndef TOMO_NO_NAMESPACES
-      // VC needs this explicitly here
-    std::
+	 // VC needs this explicitly here
+	 std::
 #endif
-	vector<int>::const_iterator seg = segment_sequence.begin();
-    //output_header << "{ " <<((ProjDataInfoCylindrical*)pdfs.get_proj_data_info_ptr())->get_max_ring_difference(*seg);
-    output_header << "{ " <<proj_data_info_ptr->get_max_ring_difference(*seg);
-    for (seg++; seg != segment_sequence.end(); seg++)
-     // output_header << "," <<((ProjDataInfoCylindrical*)pdfs.get_proj_data_info_ptr())->get_max_ring_difference(*seg);
-     output_header << "," <<proj_data_info_ptr->get_max_ring_difference(*seg);
-    output_header << "}\n";
-  }
-  
-  output_header << "number of rings := " 
-		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings() << endl;
-  output_header << "number of detectors per ring := " 
-		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_max_num_views()*2 << endl;
-  // KT&SM 22/01/2000 corrected to ring diameter
-  output_header << "ring diameter (cm) := "
-		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_radius()*2/10. << endl;
-  output_header << "distance between rings (cm) := " 
-		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_spacing()/10. << endl;
-  output_header << "bin size (cm) := " 
-		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
+	   vector<int>::const_iterator seg = segment_sequence.begin();
+	 output_header << "{ " << proj_data_info_ptr->get_min_ring_difference(*seg);
+	 for (seg++; seg != segment_sequence.end(); seg++)
+	   output_header << "," <<proj_data_info_ptr->get_min_ring_difference(*seg);
+	 output_header << "}\n";
+       }
 
-  // no view offset... check
- //output_header << "view offset (degrees) := "
-//		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->view_offset<< endl;
- 
-  // SM 22/01/2000 new
+       output_header << "maximum ring difference per segment := ";
+       {
+#ifndef TOMO_NO_NAMESPACES
+	 // VC needs this explicitly here
+	 std::
+#endif
+	   vector<int>::const_iterator seg = segment_sequence.begin();
+	 output_header << "{ " <<proj_data_info_ptr->get_max_ring_difference(*seg);
+	 for (seg++; seg != segment_sequence.end(); seg++)
+	   output_header << "," <<proj_data_info_ptr->get_max_ring_difference(*seg);
+	 output_header << "}\n";
+       }
+  
+       output_header << "number of rings := " 
+		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings() << endl;
+       output_header << "number of detectors per ring := " 
+		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_max_num_views()*2 << endl;
+
+       output_header << "ring diameter (cm) := "
+		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_radius()*2/10. << endl;
+       output_header << "distance between rings (cm) := " 
+		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_ring_spacing()/10. << endl;
+       output_header << "bin size (cm) := " 
+		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
+
+       //output_header << "view offset (degrees) := "
+       //		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->view_offset<< endl;
+
+     } // end of cylindrical scanner
+  else
+    {
+      // TODO something here
+    }
+
   output_header<<"data offset in bytes[1] := "
 	       <<pdfs.get_offset_in_stream()<<endl;
     
