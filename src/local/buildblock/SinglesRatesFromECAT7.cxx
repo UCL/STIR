@@ -146,20 +146,23 @@ SinglesRatesFromECAT7::set_defaults()
 int 
 SinglesRatesFromECAT7::get_frame_number (const double start_time, const double end_time) const
 {
-  assert(end_time >start-time);
-
-  int frame_num=0;
-  for ( int i = 0; i <=time_frame_defs.get_num_frames()-1; i++)
+  assert(end_time >start_time);
+  //cerr << "num frames are" << time_frame_defs.get_num_frames()<<endl;;
+  for ( int i = 1; i <=time_frame_defs.get_num_frames(); i++)
     {
       double start = time_frame_defs.get_start_time(i);
       double end = time_frame_defs.get_end_time(i);
-      if ((start_time-start)<0.00001 && (end_time-end)<0.00001)
+      //cerr << "Start frame" << start <<endl;
+      //cerr << " End frame " << end << endl;
+       if ((start/start_time)<=1 && (end/end_time)>=1)
 	{
-	  frame_num = i;
+	  return i;
 	}
     }
       
-  return frame_num;
+  error("SinglesRatesFromECAT7::get_frame_number didn't find a frame for time interval (%g,%g)\n",
+	start_time, end_time);
+  return 0; // to satisfy compilers
   
 
 }
