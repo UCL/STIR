@@ -543,7 +543,7 @@ float neg_trunc(float x)
 
 
 
-void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int plane_truncation)
+void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int input_num_planes)
 {
 
   // TODO this function does not make a lot of sense in general
@@ -551,18 +551,15 @@ void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int plane_tru
   // this will throw an exception when the cast is invalid
   dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(input_image);
 #endif
+
   const int zs=input_image.get_min_index();
   const int ze=input_image.get_max_index();
 
-  // TODO below it's assumed that we have an odd number of planes
-  assert(input_image.get_length() % 2 == 1);
-#ifdef TOMO_NO_NAMESPACES
-  plane_truncation=min(plane_truncation,(zs-ze+1)/2+1);
-#else
-  plane_truncation=std::min(plane_truncation,(zs-ze+1)/2+1);
-#endif
+  int upper_limit=(input_image.get_length() % 2 == 1)?input_image.get_length()/2+1:input_image.get_length()/2;
 
- for (int j=0;j<plane_truncation;j++ )
+  int num_planes=input_num_planes<=upper_limit?input_num_planes:upper_limit;
+
+ for (int j=0;j<num_planes;j++ )
    {
      input_image[zs+j].fill(0.0);
      input_image[ze-j].fill(0.0);
