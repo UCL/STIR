@@ -95,7 +95,10 @@ word find_CTI_system_type(const Scanner& scanner)
 
   case Scanner::RPT:
     return 128;
-    
+
+  case Scanner::RATPET:
+    return 42;
+
   default:
     warning("\nfind_CTI_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", 
       scanner.get_name().c_str());
@@ -128,6 +131,9 @@ Scanner* find_scanner_from_ECAT6_main_header(const Main_header& mhead)
   case 953 : 
     //camera = cam953; 
     scanner_ptr = new Scanner(Scanner::E953); 
+    break;
+  case 42:
+    scanner_ptr = new Scanner(Scanner::RATPET);
     break;
   default :  
     // enable our support for ECAT6 data for GE Advance
