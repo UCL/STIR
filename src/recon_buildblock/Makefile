@@ -23,6 +23,7 @@ SOURCES= ForwardProjectorByBin.cxx \
 	IterativeReconstruction.cxx \
 	distributable.cxx \
 	DataSymmetriesForBins.cxx \
+	TrivialDataSymmetriesForBins.cxx \
 	DataSymmetriesForBins_PET_CartesianGrid.cxx \
 	SymmetryOperation.cxx \
 	SymmetryOperations_PET_CartesianGrid.cxx \
