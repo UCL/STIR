@@ -24,8 +24,10 @@ SOURCES = \
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(ADVANCED_DEPENDENCIES),1)
   include $(SOURCES:%.cxx=$(DEST)%.d)
+  include $(DEST)Shape_buildblock_registries.d
 else
   -include $(SOURCES:%.cxx=$(DEST)%.P)
+  -include $(DEST)Shape_buildblock_registries.P
 endif
 endif
 
