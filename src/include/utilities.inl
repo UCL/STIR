@@ -14,6 +14,11 @@
   \version $Revision$
 */
 #include <iostream>
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream.h>
+#else
+#include <sstream>
+#endif
 
 #ifndef TOMO_NO_NAMESPACES
 using std::cerr;
@@ -44,7 +49,12 @@ ask_num (const string& str,
          << "[" << minimum_value << "," << maximum_value 
 	 << " D:" << default_value << "]: ";
     fgets(input,30,stdin);
+#ifdef BOOST_NO_STRINGSTREAM
     istrstream ss(input);
+#else
+    std::istringstream ss(input);
+#endif
+    
     NUMBER value = default_value;
     ss >> value;
     if ((value>=minimum_value) && (maximum_value>=value))
