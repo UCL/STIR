@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/utilities.h"
@@ -35,57 +35,49 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-// KT 01/05/2000 moved here from .inl, after getting rid of CHARP template
-bool ask (const string& str, bool default_value)
-{   
-  char input[30];
+bool 
+ask (const string& str, bool default_value)
+{  
+  string input;
   
-  cerr << "\n" << str 
-       << " [Y/N D:" 
-       << (default_value ? 'Y' : 'N') 
-       << "]: ";
-  fgets(input,30,stdin);
-  if (strlen(input)==0)
-    return default_value;
-  char answer = input[0];
-  if (default_value==true)
-  {
-    if (answer=='N' || answer == 'n')
-      return false;
-    else
-      return true;
-  }
-  else
-  {
-    if (answer=='Y' || answer == 'y')
-      return true;
-    else
-      return false;
-    
+  while (true)
+    {
+      cerr << "\n" << str 
+	   << " [Y/N D:" 
+	   << (default_value ? 'Y' : 'N') 
+	   << "]: ";
+      std::getline(std::cin, input);
+      if (input.size()==0)
+	return default_value;
+      const char answer = input[0];
+      switch (answer)
+	{
+	case 'N':
+	case 'n':
+	  return false;
+	case 'Y':
+	case 'y':
+	  return true;
+	default:
+	  cerr << "\nPlease answer Y or N\n";
+    }    
   }
 }
 
 
-// KT 01/05/2000 new
 string ask_string (const string& str, const string& default_value)
 {   
-  // TODO not nice to have a maximum length here
-  char input[1000];
+  string input;
   
   cerr << "\n" << str 
        << "\n(Maximum string length is 1000)\n[default_value : \"" 
        << default_value
        << "\"]: \n";
-  fgets(input,1000,stdin);
-  if (strlen(input)==0)
+  std::getline(std::cin, input);
+  if (input.size()==0)
     return default_value;
   else
-  {
-    // remove trailing newline
-    if (strlen(input) < 1000)
-	input[strlen(input)-1] = '\0';
     return input;
-  }
 }
 
 const char * const 
@@ -318,41 +310,53 @@ prepend_directory_name(char * filename_with_directory,
   return filename_with_directory;
 }
 
-char *ask_filename_with_extension(char *file_in_directory_name,
-				  const char * const prompt,
-				  const char * const default_extension)
+string
+ask_filename_with_extension(
+			    const string& prompt,
+			    const string& default_extension)
 {
-  char ptr[max_filename_length];
-  
-  file_in_directory_name[0]='\0';
-  while (strlen(file_in_directory_name)==0)
+  string file_in_directory_name;
+  while (file_in_directory_name.size()==0)
   { 
-    printf ("\n%s ", prompt);
-    if (strlen(default_extension))
-      printf("(default extension '%s')", default_extension);
-    printf(":");
-    fgets(ptr,max_filename_length,stdin);
-    sscanf(ptr," %s",file_in_directory_name);
+    cerr << prompt;
+    if (default_extension.size()!=0)
+      {
+	cerr << "(default extension '"
+	     << default_extension
+	     << "'):";
+      }
+    std::getline(std::cin, file_in_directory_name);
   }
   add_extension(file_in_directory_name,default_extension);
   return(file_in_directory_name);
 }
 
+char *
+ask_filename_with_extension(char *file_in_directory_name,
+			    const string& prompt,
+			    const string& default_extension)
+{
+  const string answer =
+    ask_filename_with_extension(prompt, default_extension);
+  strcpy(file_in_directory_name, answer.c_str());
+  return(file_in_directory_name);
+}
 
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,
-		      const char * const prompt,
-	              const char * const default_extension,
+		      const string& prompt,
+	              const string& default_extension,
 		      ios::openmode mode,
 		      bool abort_if_failed)
 {
-  char filename[max_filename_length];
+  string filename =
+        ask_filename_with_extension(prompt, default_extension);
   s.open(
-    ask_filename_with_extension(filename, prompt, default_extension),
-    mode);
+	 filename.c_str(),
+	 mode);
   if (abort_if_failed && !s)
-  { error("Error opening file %s\n", filename);  }
+  { error("Error opening file %s\n", filename.c_str());  }
 }
 
 // instantiations
@@ -360,22 +364,22 @@ ask_filename_and_open(FSTREAM& s,
 template 
 void
 ask_filename_and_open(ifstream& s,
-		      const char * const prompt,
-	              const char * const default_extension,
+		      const string& prompt,
+	              const string& default_extension,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 template 
 void
 ask_filename_and_open(ofstream& s,
-		      const char * const prompt,
-	              const char * const default_extension,
+		      const string& prompt,
+	              const string& default_extension,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 template 
 void
 ask_filename_and_open(fstream& s,
-		      const char * const prompt,
-	              const char * const default_extension,
+		      const string& prompt,
+	              const string& default_extension,
 		      ios::openmode mode,
 		      bool abort_if_failed);
 
