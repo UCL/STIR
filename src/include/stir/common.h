@@ -53,13 +53,13 @@
  <LI> #includes cstdio, cstdlib, cstring, cmath
 
  <LI> templates const T& std::min(const T& x, const T& y) and std::max (if not provided)
-   (source files should still include <algorithm> though). Actually, this is now
+   (source files should still include &lt;algorithm&gt; though). Actually, this is now
    done in boost/config.hpp.
 
  <LI> a trick to get ANSI C++ 'for' scoping rules work, even for compilers
    which do not follow the new standard
 
- <LI> #ifdef STIR_ASSERT, then define our own assert, else include <cassert>
+ <LI> #ifdef STIR_ASSERT, then define our own assert, else include &lt;cassert&gt;
 
 </UL>
 
@@ -72,21 +72,21 @@
 <H3> stir namespace members declared here</H3>
   
  <UL>
- <LI> const double _PI
+ <LI> <tt>const double _PI</tt>
  
- <LI> error(const char * const format_string, ...)
+ <LI> <tt>error(const char * const format_string, ...)</tt>
    writes error information a la printf and aborts.
 
- <LI> warning(const char * const format_string, ...)
+ <LI> <tt>warning(const char * const format_string, ...)</tt>
    writes warning information a la printf.
 
- <LI> inline template <class NUMBER> NUMBER square(const NUMBER &x)
+ <LI> <tt>inline template  <class NUMBER> NUMBER square(const NUMBER &x) </tt>
 
  </UL>
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -204,61 +204,7 @@
 #define auto_ptr shared_ptr
 #endif
 
-//*************** min, max
-// STL should have min,max in <algorithm>, 
-// but vanilla VC++ has a conflict between std::min and some preprocessor defs
-// This definition is now provided in boost/config.hpp (boost version 1.21.1)
-// So, disabled next lines (KT 01/05/2001)
-#if 0
-//#if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
-#undef min
-#undef max
 
-namespace std {
-template <class T>
-inline const T& min(const T& a, const T& b) 
-{
-  return b < a ? b : a;
-}
-
-template <class T>
-inline const T& max(const T& a, const T& b) 
-{
-  return  a < b ? b : a;
-}
-
-}
-#endif // min,max defs
-
-
-//*************** !=, >, <= and >= 
-#if 0
-// KT 30/08/2001 disabled these according to discussion in gcc 3.0 library
-#if defined (_MSC_VER) && !defined(__STL_CONFIG_H)
-// general definitions of operator !=, >, <= and >= in terms of == and <
-// (copied from SGI stl_relops.h)
-template <class T>
-inline bool operator!=(const T& x, const T& y) {
-  return !(x == y);
-}
-
-template <class T>
-inline bool operator>(const T& x, const T& y) {
-  return y < x;
-}
-
-template <class T>
-inline bool operator<=(const T& x, const T& y) {
-  return !(y < x);
-}
-
-template <class T>
-inline bool operator>=(const T& x, const T& y) {
-  return !(x < y);
-}
-
-#endif // !=,>,<=,>=
-#endif // 0
 //*************** overload std::copy for built-in types
 
 #include <algorithm>
@@ -369,15 +315,19 @@ END_NAMESPACE_STD
 START_NAMESPACE_STIR
 
 //! The constant pi to high precision.
+/*! \ingroup buildblock */
 const double _PI = 3.14159265358979323846264338327950288419716939937510;
 
 //! Print error with format string a la \c printf and abort
+/*! \ingroup buildblock */
 void error(const char *const s, ...);
 
 //! Print warning with format string a la \c printf
+/*! \ingroup buildblock */
 void warning(const char *const s, ...);
 
 //! returns the square of a number, templated.
+/*! \ingroup buildblock */
 template <class NUMBER> 
 inline NUMBER square(const NUMBER &x) { return x*x; }
 
