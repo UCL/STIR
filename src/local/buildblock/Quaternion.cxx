@@ -1,3 +1,22 @@
+//
+// $Id$
+//
+/*!
+  \file
+  \ingroup buildblock
+
+  \brief Implementation of class Quaternion
+
+  \author: Sanida Mustafovic
+  \author: Kris Thielemans
+  $Date$
+  $Revision$ 
+*/
+
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 
 
 #include "local/stir/Quaternion.h"
