@@ -142,19 +142,19 @@ void scatter_viewgram(
 
 
 // Functions that could be in the BasicCoordinate Class
-
+template<int num_dimensions>
 inline 
-BasicCoordinate<3,float> convert_int_to_float(const BasicCoordinate<3,int>& cint)
+BasicCoordinate<num_dimensions,float> convert_int_to_float(const BasicCoordinate<num_dimensions,int>& cint)
 	{	  
-	  BasicCoordinate<3,float> cfloat;
+	  BasicCoordinate<num_dimensions,float> cfloat;
 
-	  for(int i=1;i<=3;++i)
+	  for(int i=1;i<=num_dimensions;++i)
 		  cfloat[i]=(float)cint[i];
 	  return cfloat;
-	}
+	}	
 template <int num_dimensions, class elemT>
 inline
-float two_points_distance(const BasicCoordinate<num_dimensions,elemT>& c1,
+elemT two_points_distance(const BasicCoordinate<num_dimensions,elemT>& c1,
 						              const BasicCoordinate<num_dimensions,elemT>& c2)
 	{  
 	   BasicCoordinate<num_dimensions,elemT> c=c1-c2;
