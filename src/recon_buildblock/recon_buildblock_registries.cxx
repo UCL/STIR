@@ -32,7 +32,9 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/recon_buildblock/ChainedBinNormalisation.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+#include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
 
 START_NAMESPACE_STIR
 
@@ -50,6 +52,8 @@ static ProjectorByBinPairUsingProjMatrixByBin::RegisterIt dummy71;
 static ProjectorByBinPairUsingSeparateProjectors::RegisterIt dummy72;
 
 static TrivialBinNormalisation::RegisterIt dummy91;
-static BinNormalisationFromProjData::RegisterIt dummy92;
+static ChainedBinNormalisation::RegisterIt dummy92;
+static BinNormalisationFromProjData::RegisterIt dummy93;
+static BinNormalisationFromAttenuationImage::RegisterIt dummy94;
 
 END_NAMESPACE_STIR
