@@ -1,22 +1,38 @@
 //
 // $Id$
 //
-  //MJ 15/05/2000 made post_processing() return bool
+/*!
+
+  \file
+  \ingroup buildblock
+
+  \brief Implementations for class KeyParser
+
+  \author Patrick Valente
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
 
 
-
-// KT 01/08/98 removed ! from keywords
-// KT 14/12 changed <> to "" in next 3 includes
-#include "pet_common.h"
 #include "KeyParser.h"
 #include "line.h"
-// KT 13/11/98 needed for new parse()
-#include <fstream>
 
-// KT 20/06/98 do this pragma only for VC++
-#ifdef _MSC_VER
-#pragma warning(disable: 4786)
+
+#include <fstream>
+#ifndef TOMO_NO_NAMESPACES
+using std::ifstream;
+using std::cerr;
+using std::endl;
 #endif
+
+START_NAMESPACE_TOMO
+
+//! max length of Interfile line
+const int MAX_LINE_LENGTH=512;
 
 // map_element implementation;
 
@@ -348,7 +364,7 @@ int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& 
 {
   {
     // TODO, once we know for sure type type of ASCIIlist_type, we could use STL find()
-    for (int i=0; i<list_of_values.size(); i++)
+    for (unsigned int i=0; i<list_of_values.size(); i++)
       // TODO standardise to lowercase etc
       if (par_ascii == list_of_values[i])
 	return i;
@@ -359,7 +375,7 @@ int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& 
        << par_ascii
        << "\"\n\tshould have been one of:";
   {
-    for (int i=0; i<list_of_values.size(); i++)
+    for (unsigned int i=0; i<list_of_values.size(); i++)
       cerr << "\n\t" << list_of_values[i];
   }
   cerr << endl << endl;
@@ -391,3 +407,5 @@ void KeyParser::process_key()
     (this->*(current->p_object_member))();	//calls appropriate member function
   }
 }
+
+END_NAMESPACE_TOMO
