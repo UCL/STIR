@@ -87,6 +87,9 @@ public:
   inline IndexRange(
 		    const BasicCoordinate<num_dimensions, int>& min,
 		    const BasicCoordinate<num_dimensions, int>& max);
+
+  //! Construct a regular range given by sizes (minimum indices will be 0)
+  inline IndexRange(const BasicCoordinate<num_dimensions, int>& sizes);
   
   //these are derived from VectorWithOffset
   // TODO these should be overloaded, to set regular_range as well.
@@ -144,6 +147,7 @@ public:
 		    const BasicCoordinate<1,int>& max);
 
   inline IndexRange(const int length);
+  inline IndexRange(const BasicCoordinate<1, int>& size);
 
   inline int get_min_index() const;
   inline int get_max_index() const;
