@@ -43,7 +43,7 @@ LIBS = $(LIBS1) -L/usr/X11/lib -lX11 -lcurses
 # KT 09/02/98 added do_linear_regression
 SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx \
  ecat6bysegmspan.cxx conv2cti.cxx vox.cxx correctPSOV.cxx \
- postfilter.cxx binmath.cxx do_linear_regression
+ postfilter.cxx binmath.cxx do_linear_regression.cxx
 
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
