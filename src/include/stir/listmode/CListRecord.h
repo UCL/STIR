@@ -47,6 +47,8 @@ template <typename coordT> class LORAs2Points;
 class CListEvent
 {
 public:
+  virtual ~CListEvent() {}
+
   //! Checks if this is a prompt event or a delayed event
   /*! PET scanners generally have a facility to detect events in a 
       'delayed' coincidence window. This is used to estimate the
@@ -126,6 +128,8 @@ public:
 class CListTime
 {
 public:
+  virtual ~CListTime() {}
+
   virtual unsigned long get_time_in_millisecs() const = 0;
   inline double get_time_in_secs() const
     { return get_time_in_millisecs()/1000.; }
@@ -161,6 +165,8 @@ public:
 class CListRecord
 {
 public:
+  virtual ~CListRecord() {}
+
   virtual bool is_time() const = 0;
 
   virtual bool is_event() const = 0;
