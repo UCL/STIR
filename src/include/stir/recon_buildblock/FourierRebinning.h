@@ -22,7 +22,7 @@
 #define __stir_FORE_FourierRebinning_H__
 
 
-#include "local/stir/recon_buildblock/ProjDataRebinning.h"
+#include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/RegisteredParsingObject.h"
 
 
