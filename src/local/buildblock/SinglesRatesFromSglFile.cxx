@@ -134,10 +134,8 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
 					   const double start_time,  
 					   const double end_time) const
 { 
-#if 0
-  static double start_previous = start_time;
-  static double end_previous =  end_time;
-#endif
+  assert(end_time >= start_time);
+  
   const int denom = trans_blocks_per_bucket*angular_crystals_per_block;
   const int axial_pos = det_pos.axial_coord();
   const int transaxial_pos = det_pos.tangential_coord();
@@ -145,16 +143,22 @@ SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
   const int transaxial_bucket_num = (transaxial_pos/denom) ;
 
   // find out the index in the times vector (time samples are every 2sec, hence divide with 2)
-  int start_index = (int)start_time/2;
-  int end_index = (int)end_time/2;
+  // TODO get rid of hard-wired factor of 2 here
+  const int start_index = (int)start_time/2;
+  const int end_index = (int)end_time/2;
 
-  static float singles_average =0;
-  
+  float singles_average =0;
   for ( int i = start_index; i<=end_index; i++)
   {
-    singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];
+    singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];   
+    
   }
-  return singles_average/4.0; //*count;  // divide by 4.0 to be consistant with CTIs
+  //cerr << singles_average/(4*(end_index-start_index+1))<< "        ";
+    //cerr <<" Start index is :" << start_index << endl;
+    // cerr << "singles_average  " << singles_average << endl;
+    // TODO division by far probably is to get from singles_rate_per_bucket to singles_rate_per_block
+  return singles_average/(4*(end_index-start_index+1));  // divide by 4.0 to be consistant with CTIs
+
 
 }
 #if 0
