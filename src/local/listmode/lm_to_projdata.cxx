@@ -410,7 +410,7 @@ int main(int argc, char * argv[])
       (num_stored_events<=0 ||
        static_cast<unsigned long>(num_stored_events)<num_events_to_store))
     cerr << "Early stop due to EOF. " << endl;
-  cerr <<  "Total number of prompts/trues/delayed in this time period: " << num_events_in_frame << endl;
+  cerr <<  "Total number of prompts/trues/delayed within segment limit in this time period: " << num_events_in_frame << endl;
   cerr << "Total number of prompts/trues/delayed stored: " << num_stored_events << endl;
 
   cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
