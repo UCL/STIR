@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of SSRB functions
 
   \author Kris Thielemans
@@ -34,7 +34,7 @@ class ProjDataInfo;
 
 //! construct new ProjDataInfo that is appropriate for rebinned data
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \param in_proj_data_info input projection data information.
   \param num_segments_to_combine how many segments will be combined into 1 output segment.
   \param max_in_segment_num_to_process rebinned in_proj_data only upto this segment.
@@ -55,7 +55,7 @@ SSRB(const ProjDataInfo& in_proj_data_info,
 
 //! Perform Single Slice Rebinning and write output to file
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \param output_filename filename to write output projection data (will be in 
   Interfile format)
   \param in_projdata input data
@@ -81,7 +81,7 @@ SSRB(const string& output_filename,
 
 //! Perform Single Slice Rebinning and write output to ProjData
 /*! 
-  \ingroup buildblock
+  \ingroup projdata
   \param out_projdata Output projection data. Its projection_data_info is used to 
   determine output characteristics. Data will be 'put' in here using 
   ProjData::set_sinogram().

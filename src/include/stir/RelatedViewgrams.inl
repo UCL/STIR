@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief inline implementations for class RelatedViewgrams
 
   \author Kris Thielemans

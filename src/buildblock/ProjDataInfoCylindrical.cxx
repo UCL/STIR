@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Non-inline implementations of ProjDataInfoCylindrical
 

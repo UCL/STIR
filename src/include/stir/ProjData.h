@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class ProjData
 
   \author Sanida Mustafovic
@@ -46,7 +46,7 @@ class Succeeded;
 
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief The (abstract) base class for the projection data.
 
   Projection data are supposed to be indexed by 4 coordinates

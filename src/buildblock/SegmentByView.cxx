@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Implementations for non-inline functions of class SegmentByView
 
   \author Kris Thielemans

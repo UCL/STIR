@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Definition of class ViewSegmentNumbers
 
@@ -31,7 +31,7 @@ START_NAMESPACE_STIR
 
 /*!
   \brief A very simple class to store view and segment numbers 
-  \ingroup buildblock 
+  \ingroup projdata 
 */
 class ViewSegmentNumbers
 {

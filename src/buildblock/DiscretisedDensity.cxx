@@ -4,7 +4,7 @@
 
 /*!
   \file 
-  \ingroup buildblock
+  \ingroup densitydata
  
   \brief Implementations of non-inline functions of class DiscretisedDensity
 

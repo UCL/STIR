@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class Viewgram
 
@@ -36,7 +36,7 @@ START_NAMESPACE_STIR
 class PMessage;
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class for 2d projection data.
 
   This represents a subset of the full projection. segment_num and tangential_pos_num 

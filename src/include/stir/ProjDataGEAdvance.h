@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class ProjDataGEAdvance
 
@@ -42,7 +42,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class which reads projection data from a GE Advance
   sinogram file.
 

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Inline implementations for class ProjDataFromStream
 
   \author Sanida Mustafovic

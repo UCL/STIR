@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \ingroup buildblock  
+  \ingroup densitydata  
   \brief inline implementations for the VoxelsOnCartesianGrid class 
 
   \author Sanida Mustafovic 

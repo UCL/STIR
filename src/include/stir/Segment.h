@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class Segment
 
   \author Kris Thielemans
@@ -35,7 +35,7 @@ class PMessage;
 
 /*!
   \brief An (abstract base) class for storing 3d projection data
-  \ingroup buildblock
+  \ingroup projdata
 
   This stores a subset of the data accessible via a ProjData object,
   where the segment_num is fixed.

@@ -7,7 +7,7 @@
 
 /*!
   \file 
-  \ingroup buildblock 
+  \ingroup densitydata 
   \brief defines the PixelsOnCartesianGrid class 
 
   \author Sanida Mustafovic 
@@ -32,7 +32,7 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \ingroup buildblock
+  \ingroup densitydata
   \brief This class is used to represent pixelised densities on a
   rectangular grid (2D).
 

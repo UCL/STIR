@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief Declaration of class DataSymmetriesForViewSegmentNumbers
 

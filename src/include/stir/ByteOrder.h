@@ -6,7 +6,7 @@
 
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief This file declares the ByteOrder class.
 
   \author Kris Thielemans 
@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
 
 /*!
   \class ByteOrder
-
+  \ingroup buildblock
   \brief This class provides member functions to 
   find out what byte-order your machine is and to swap numbers.
 

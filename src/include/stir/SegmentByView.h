@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
 
   \brief 
 
@@ -38,7 +38,7 @@ template <typename elemT> class SegmentBySinogram;
 template <typename elemT> class Sinogram;
 
 /*!
-  \ingroup buildblock
+  \ingroup projdata
   \brief A class for storing (3d) projection data with a fixed segment_num.
 
   Storage order is as follows:

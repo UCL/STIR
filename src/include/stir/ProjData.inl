@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Implementations for inline functions of class ProjData
 
   \author Sanida Mustafovic

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup projdata
   \brief Declaration of class RelatedViewgrams
 
   \author Kris Thielemans
@@ -48,7 +48,7 @@ class ProjDataInfo;
 
 /*!
   \brief A class for storing viewgrams which are related by symmetry  
-  \ingroup buildblock
+  \ingroup projdata
 */
 template <typename elemT>
 class RelatedViewgrams
