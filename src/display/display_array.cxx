@@ -488,7 +488,7 @@ void display(const RelatedViewgrams<elemT>& vs,
 				all_of_them.get_max_index());
   
   VectorWithOffset<char *>::iterator text_iter = text.begin();
-  RelatedViewgrams<elemT>::const_iterator vs_iter = vs.begin();
+  typename RelatedViewgrams<elemT>::const_iterator vs_iter = vs.begin();
 
   while(vs_iter != vs.end())
   {
