@@ -3,6 +3,9 @@
 //
 
 
+//MJ 9/11/98 Introduced math mode
+
+
 #include "pet_common.h" 
 #include <iostream> 
 #include <fstream>
@@ -10,6 +13,8 @@
 #include <numeric>
 #include "imagedata.h"
 
+//MJ 2/11/98 include Tensor functions
+#include "TensorFunction.h"
 
 #include "display.h"
 // KT 13/10/98 include interfile 
@@ -21,18 +26,24 @@
 #define ZERO_TOL 0.000001
 #define ROOF 40000000.0
 
-void display_halo(const PETImageOfVolume& input_image);
+//enable this at some point
+//const int rim_trunc_image=2;
 
-void clean_rim(PETImageOfVolume& input_image);
-void get_plane(PETImageOfVolume& input_image);
-void get_plane_row(PETImageOfVolume& input_image);
+void display_halo(const PETImageOfVolume& main_buffer);
+
+void clean_rim(PETImageOfVolume& main_buffer);
+void get_plane(PETImageOfVolume& main_buffer);
+void get_plane_row(PETImageOfVolume& main_buffer);
+
+PETImageOfVolume ask_interfile_image(char *input_query);
+
+void show_menu();
+void show_math_menu();
+void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math);
+
 
 main(int argc, char *argv[]){
 
-  if(argc<2) {
-    cout<<"Usage: vox <input filename>";
-    exit(1);
-  }
 
 
   //  PETScannerInfo::Scanner_type scanner_type = PETScannerInfo::RPT;
@@ -65,7 +76,7 @@ main(int argc, char *argv[]){
       sprintf(scanner_char,"%s","Advance");   
       break;
     default:
-      PETerror("Wrong scanner number\n"); Abort();
+      PETerror("Wrong scanner number\n"); cerr<<endl;Abort();
     }
 
  
@@ -104,7 +115,7 @@ main(int argc, char *argv[]){
 
 
   PETImageOfVolume 
-    input_image(Tensor3D<float>(
+    main_buffer(Tensor3D<float>(
 				0, 2*scanner.num_rings-2,
 				(-scanner.num_bins/2), max_bin,
 				(-scanner.num_bins/2), max_bin),
@@ -115,59 +126,50 @@ main(int argc, char *argv[]){
   // Open file with data
   ifstream input;
   open_read_binary(input, argv[1]);
-  input_image.read_data(input);   
+  main_buffer.read_data(input);   
 #endif // now interfile
 
-  ifstream input(argv[1]);
-  if (!input)
-    { 
-      PETerror("Couldn't open file");
-      exit(1);
-    }
 
   PETImageOfVolume 
-    input_image = read_interfile_image(input);
+    main_buffer = ask_interfile_image("File to load in buffer? ");
+
+
+
    
   int zs,ys,xs, ze,ye,xe,choice;
 
-  zs=input_image.get_min_z();
-  ys=input_image.get_min_y();
-  xs=input_image.get_min_x(); 
+  zs=main_buffer.get_min_z();
+  ys=main_buffer.get_min_y();
+  xs=main_buffer.get_min_x(); 
   
-  ze=input_image.get_max_z();  
-  ye=input_image.get_max_y(); 
-  xe=input_image.get_max_x();
+  ze=main_buffer.get_max_z();  
+  ye=main_buffer.get_max_y(); 
+  xe=main_buffer.get_max_x();
 
  
  
 
-  cerr<<"resx: "<<input_image.get_x_size()<<endl;
-  cerr<<"resy: "<<input_image.get_y_size()<<endl;
-  cerr<<"resz: "<<input_image.get_z_size()<<endl;
-  cerr << "Min and Max in image " << input_image.find_min() 
-       << " " << input_image.find_max() << endl;
+  cerr<<"resx: "<<main_buffer.get_x_size()<<endl;
+  cerr<<"resy: "<<main_buffer.get_y_size()<<endl;
+  cerr<<"resz: "<<main_buffer.get_z_size()<<endl;
+  cerr << "Min and Max in image " << main_buffer.find_min() 
+       << " " << main_buffer.find_max() << endl;
 
 
-  int plane=1;
+  int plane=1,quit_from_math=0;
 
 
-  do{
+    show_menu();
+
+  do{ //start main mode
+
+
+
     // KT 23/10/98 use ask_num
-    choice = ask_num("\n\
-    0. Quit\n\
-    1. Visual\n\
-    2. Data total\n\
-    3. Data plane-wise\n\
-    4. Min/Max for plane\n\
-    5. Show halo\n\
-    6. Clean rim \n\
-    7. Get plane\n\
-    8. Get row\n\
-    9. Counts\n
-    Selection ",0,9,1);
+    choice = ask_num("Selection: ",0,13,13);
 
 
-    switch(choice){
+     switch(choice){
     case 0:
       break;
 
@@ -175,22 +177,22 @@ main(int argc, char *argv[]){
       {  
 	// KT 13/10/98 add text to images
 	VectorWithOffset<float> 
-	  scale_factors(input_image.get_min_index3(), 
-			input_image.get_max_index3());
+	  scale_factors(main_buffer.get_min_index3(), 
+			main_buffer.get_max_index3());
 	scale_factors.fill(1.F);
 	VectorWithOffset<char *> 
-	  text(input_image.get_min_index3(),
-	       input_image.get_max_index3());
-	for (int i=input_image.get_min_index3(); 
-	     i<= input_image.get_max_index3(); 
+	  text(main_buffer.get_min_index3(),
+	       main_buffer.get_max_index3());
+	for (int i=main_buffer.get_min_index3(); 
+	     i<= main_buffer.get_max_index3(); 
 	     i++)
 	  {
 	    char *str = new char [15];
 	    sprintf(str, "image %d", i);
 	    text[i] = str;
 	  }
-	display(input_image, scale_factors, text, 
-		input_image.find_max(), 0, 0);
+	display(main_buffer, scale_factors, text, 
+		main_buffer.find_max(), 0, 0);
  
 	break;
       }
@@ -199,7 +201,7 @@ main(int argc, char *argv[]){
 	for (int z=zs; z<=ze; z++)
 	  for (int y=ys; y <= ye; y++)
 	    for (int x=xs; x<= xe; x++){
-	      cerr<<input_image[z][y][x]<<" ";
+	      cerr<<main_buffer[z][y][x]<<" ";
 	    }
 
 	break;
@@ -216,7 +218,7 @@ main(int argc, char *argv[]){
 	  
 	  for (int y=ys; y <= ye; y++)
 	    for (int x=xs; x<= xe; x++){
-	      cerr<<input_image[zs+plane-1][y][x]<<" ";
+	      cerr<<main_buffer[zs+plane-1][y][x]<<" ";
 	      // pause
 	    }
 	}
@@ -234,8 +236,8 @@ main(int argc, char *argv[]){
 	  if(plane==0) break;	  	 
 
 	  cerr << "Min and Max in plane " 
-	       << input_image[zs+plane-1].find_min() 
-	       << " " << input_image[zs+plane-1].find_max() << endl;
+	       << main_buffer[zs+plane-1].find_min() 
+	       << " " << main_buffer[zs+plane-1].find_max() << endl;
 	  
 	}
 	break;
@@ -244,40 +246,92 @@ main(int argc, char *argv[]){
 
     case 5:
       {
-	display_halo(input_image);
+	//MJ 6/11/98 disabled display halo. Substituted min/max.
+	//	display_halo(main_buffer);
+
+  cerr << "Min and Max in image " << main_buffer.find_min() 
+       << " " << main_buffer.find_max() << endl;
+
 	break;
       }
 
     case 6:
       {
-	clean_rim(input_image);
+	clean_rim(main_buffer);
+
 	break;
       }
 
     case 7:
       {
-	get_plane(input_image);
+	get_plane(main_buffer);
 	break;
       }
 
     case 8:
      {
-       get_plane_row(input_image);
+       get_plane_row(main_buffer);
        break;
      }
 
     case 9:
       {	
-	cerr<<endl<<"The number of counts is: "<<input_image.sum()<<endl;      
+	cerr<<endl<<"The number of counts is: "<<main_buffer.sum()<<endl;      
 	break;
       }
-    }    
+     
+    case 10: 
+      {//math mode
+
+	math_mode(main_buffer,quit_from_math);
+	break;
+
+      } //end case math mode
+
+    case 11:
+      {//reload buffer from main menu
+
+	main_buffer = ask_interfile_image("File to load in buffer? ");
+	break;
+      }
+    
+    case 12:
+      {
+
+    char outfile[max_filename_length];
+    ask_filename_with_extension(outfile, 
+				"Output filename (without extension) ",
+				"");
+    write_basic_interfile(outfile, main_buffer);
+    break;
+      }  
+
+   case 13:
+    {
+
+      show_menu();
+     
   
-  }while(!(choice==0));
+    }
+
+
+     } //end switch main mode
+
+
+
+
+     
+
+  }while(choice>0 && choice<=13 && (!quit_from_math));
 
   return 0;
 
 }
+
+
+  /***************** Miscellaneous Functions  *******/
+
+
 
 void display_halo(const PETImageOfVolume& input_image){
 
@@ -343,6 +397,8 @@ void clean_rim(PETImageOfVolume& input_image){
   float xm=(xs+xe)/2.;
   
   float d;
+
+  int rim_trunc=ask_num("How many voxels to trim? ",0,(int)(xe-xm),4);
  
   for (int z=zs; z<=ze; z++)
     for (int y=ys; y <= ye; y++)
@@ -350,27 +406,19 @@ void clean_rim(PETImageOfVolume& input_image){
 
 	d=sqrt(pow(xm-x,2)+pow(ym-y,2));
 
-	if(d>(xe-xm)-4) {
+	if(d>=(xe-xm)-rim_trunc) {
 	  input_image[z][y][x]=0.0;   
 	}
 
       }
 
-  if(ask("Write trimmed image to file ?",false)){
-    char outfile[max_filename_length];
-    ask_filename_with_extension(outfile, 
-				"Output filename (without extension) ",
-				"");
-    write_basic_interfile(outfile, input_image);
-
-  }
 
 
 }
 
 void get_plane(PETImageOfVolume& input_image){
 
-  char filename[200];
+
   int zs,ys,xs, ze,ye,xe;
 
   zs=input_image.get_min_z();
@@ -401,7 +449,7 @@ void get_plane(PETImageOfVolume& input_image){
 
 void get_plane_row(PETImageOfVolume& input_image){
 
-  char filename[200];
+
   int zs,ys,xs, ze,ye,xe;
 
   zs=input_image.get_min_z();
@@ -460,6 +508,279 @@ void get_plane_row(PETImageOfVolume& input_image){
       profile<<input_image[zcoord+zs-1][y][xcoord+xs-1]<<" ";
 
   }
+
+
+}
+
+PETImageOfVolume ask_interfile_image(char *input_query){
+
+
+    char filename[max_filename_length];
+    ask_filename_with_extension(filename, 
+				input_query,
+				"");
+
+    ifstream image_stream(filename);
+    if (!image_stream)
+    { 
+      PETerror("Couldn't open file %s", filename);
+      cerr<<endl;
+      exit(1);
+    }
+
+return read_interfile_image(image_stream);
+
+}
+
+void show_menu(){
+
+  cerr<<"\n\
+    MAIN MODE:\n\
+    0. Quit\n\
+    1. Display\n\
+    2. Data total\n\
+    3. Data plane-wise\n\
+    4. Min/Max for plane\n\
+    5. Min/Max in image\n\
+    6. Clean rim \n\
+    7. Get plane\n\
+    8. Get row\n\
+    9. Counts\n\
+    10. Math mode\n\
+    11. Reload main buffer\n\
+    12. Buffer to file\n\
+    13. Redisplay menu"<<endl;
+}
+
+
+void show_math_menu(){
+  cerr<<"\n\
+    MATH MODE:\n\
+    0. Quit \n\
+    1. Display math buffer
+    2. Absolute difference\n\
+    3. Add image\n\
+    4. Subtract image\n\
+    5. Multiply image
+    6. Add scalar\n\
+    7. Multiply scalar\n\
+    8. Divide scalar \n\
+    9. Min/Max in image\n\
+    10. Main buffer --> Math buffer
+    11. Math buffer --> Main Buffer
+    12. Reload main buffer\n\
+    13. Redisplay menu\n\
+    14. Main mode"<<endl;
+   
+}
+
+
+void math_mode(PETImageOfVolume &main_buffer, int &quit_from_math){
+
+
+  PETImageOfVolume math_buffer=main_buffer; //initialize math buffer
+
+	int operation;
+	show_math_menu();
+	
+	do{
+
+	operation=ask_num("Choose Operation: ",0,14,13);
+
+       
+
+    switch(operation){ //math mode
+
+    case 0:
+      { 
+	quit_from_math=1;
+	break;
+      }
+
+    case 1:
+    {//display math buffer
+
+       display(math_buffer, math_buffer.find_max());
+
+      break;
+    }
+
+    case 2:
+      { //absolute difference
+
+  PETImageOfVolume 
+    aux_image = ask_interfile_image("What image to compare with?");
+
+  math_buffer-=aux_image;
+  in_place_abs(math_buffer);
+  clean_rim(math_buffer);
+
+  cerr <<endl<< "Min and Max absolute difference " << math_buffer.find_min() 
+       << " " << math_buffer.find_max() << endl;
+
+    cerr<<endl<<"Difference (L1 norm): "<<math_buffer.sum()<<endl;      
+	
+
+
+    break;
+    }
+      
+
+  case 3:
+    {// image addition
+
+
+  PETImageOfVolume 
+    aux_image = ask_interfile_image("What image to add?");
+
+  math_buffer+=aux_image;
+
+
+    break;
+
+      }
+
+
+ case 4: 
+   {//image subtraction
+
+
+  PETImageOfVolume 
+    aux_image = ask_interfile_image("What image to subtract?");
+
+  math_buffer-=aux_image;
+
+
+  if(ask("Display result ?",true))
+    display(Tensor3D<float> (math_buffer), math_buffer.find_max());
+
+    if(ask("Put in input buffer ?",true)) main_buffer=math_buffer;
+
+    break;
+
+      }
+
+ case 5: 
+   {// image multiplication
+
+
+  PETImageOfVolume 
+    aux_image = ask_interfile_image("What image to multiply?");
+
+  math_buffer*=aux_image;
+
+    break;
+
+      }
+
+ //TODO add Kris' image division routine
+
+ case 6: //MJ 6/11/98 new
+   {//scalar addition
+
+  float scalar=ask_num("What scalar to add?", -100000,+100000,0);
+
+  math_buffer+=scalar;
+
+    break;
+
+      }
+
+ case 7: //MJ 6/11/98 new
+   {//scalar mulltiplication
+
+  float scalar=ask_num("What scalar to multiply?", -100000,+100000,1);
+
+  math_buffer*=scalar;
+
+
+
+    break;
+
+      }
+
+ case 8:
+   {//scalar division
+
+	float scalar=0.0;
+
+	  do{
+
+	    scalar=ask_num("What scalar to divide?", -100000,+100000,1);
+
+	    if(scalar==0.0) 
+	      cerr<<endl<<"Illegal -- division by 0"<<endl;
+
+	  }while(scalar==0.0);
+
+
+
+	  math_buffer/=scalar;
+
+	  break;
+
+      }
+
+    case 9:
+      {
+  cerr << "Min and Max in image " << math_buffer.find_min() 
+       << " " << math_buffer.find_max() << endl;
+
+	break;
+      }
+
+    case 10:
+      {//reinitialize math buffer
+
+	math_buffer=main_buffer;
+
+
+	break;
+      }
+
+    case 11:
+      {//dump math buffer to main buffer
+
+	main_buffer=math_buffer;
+
+
+	break;
+      }
+
+
+
+
+    case 12:
+      {//reload main buffer in math mode
+
+	main_buffer = ask_interfile_image("File to load in buffer? ");
+	break;
+      }
+
+
+
+
+
+    case 13:
+      {//redisplay menu
+
+	show_math_menu();
+	break;
+      }
+
+
+    case 14:
+      {//go back to main mode
+
+	show_menu();
+
+      }
+
+
+     }// end switch math mode
+
+
+      }while(operation>0 && operation<14);
 
 
 }
