@@ -1,5 +1,5 @@
 #
-# $Id$: $Date$
+# @(#)Makefile	1.1: 98/05/22
 #
 
 WORKSPACE = ${HOME}/PPhead
@@ -11,7 +11,7 @@ CXX= g++
 SYS = 
 
 #KT 22/05/98 use INCLUDE_DIR and DEBUG and more warnings
-CFLAGS= -g $(DEBUG) -I$(INCLUDE_DIR) -Wconversion -Wstrict-prototypes 
+CFLAGS= -g $(DEBUG) -Decho -I$(INCLUDE_DIR) -Wconversion -Wstrict-prototypes 
 #LDFLAGS= -Iinclude 
 
 #KT 22/05/98 use 'old style' default rule
@@ -39,10 +39,31 @@ LIBS = $(LIBS1)  -lX11 -lcurses
 endif
 #LIBS_SOL = -L/usr/openwin/lib -L../../../LIBECAT/SOL2  -lm -lecat -lnsl -lsocket
 
-
+#ADd this library in order to update automatically when zoomtest is compiled
+LIB_RECON_BUILDINGBLOCK= ${WORKSPACE}/recon_buildblock/librecon_buildblock.a
 
 
 .KEEP_STATE:
 
+.PRECIOUS = $(LIB_DISPLAY) $(LIB_BUILDBLOCK) $(LIB_RECON_BUILDINGBLOCK)
+
+
 all: bcktest fwdtest zoomtest
+
+
+zoomtest:  zoomtest.o $(LIB_RECON_BUILDINGBLOCK)
+	$(CXX) $(CFLAGS) -o $@ $< ${LIBS}
+
+
+
+$(LIB_RECON_BUILDINGBLOCK): FORCE
+	cd $(WORKSPACE)/recon_buildblock; $(MAKE); \cp *[oa] $(SYS)
+
+$(LIB_DISPLAY): FORCE
+	cd $(WORKSPACE)/display; $(MAKE); \cp *[oa] $(SYS)
+
+$(LIB_BUILDBLOCK): FORCE
+	cd $(WORKSPACE)/buildblock; $(MAKE); \cp *[oa] $(SYS)
+
+FORCE:
 
