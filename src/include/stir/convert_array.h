@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,6 +31,40 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup buildblock
+   \brief A function that finds a scale factor to use when converting data to a new type
+
+   The scale factor is such that 
+   (\a data_in / \a scale_factor)
+   will fit in the maximum range for the output type.
+
+   When input and output types are identical, \a scale_factor is set to 1.
+
+   \param scale_factor 
+          a reference to a (float or double) variable which will be
+	  set to the scale factor such that (ignoring types)
+	   \code  data_in == data_out * scale_factor \endcode
+	  If scale_factor is initialised to 0, the maximum range of \a T2
+	  is used. If scale_factor != 0, find_scale_factor attempts to use the
+	  given scale_factor, unless the T2 range doesn't fit.
+	  In that case, the same scale_factor is used as in the 0 case.
+   
+   \param data_in 
+          some Array object, elements are of some numeric type \a T1
+   \param info2
+          \a T2 is the desired output type
+
+   Note that there is an effective threshold at 0 currently (i.e. negative
+   numbers are ignored) when \a T2 is an unsigned type.
+
+   \see convert_array
+*/
+template <int num_dimensions, class T1, class T2, class scaleT>
+void
+find_scale_factor(scaleT& scale_factor,
+		  const Array<num_dimensions,T1>& data_in, 
+		  const NumericInfo<T2> info_for_out_type);
 /*!
   \ingroup buildblock
    \brief A function that returns a new Array (of the same dimension) with elements of type \c T2
@@ -46,10 +80,6 @@ START_NAMESPACE_STIR
           a reference to a (float or double) variable which will be
 	  set to the scale factor such that (ignoring types)
 	   \code  data_in == data_out * scale_factor \endcode
-	  If scale_factor is initialised to 0, the maximum range of T2
-	  is used. If scale_factor != 0, convert_array attempts to use the
-	  given scale_factor, unless the T2 range doesn't fit.
-	  In that case, the same scale_factor is used as in the 0 case.
    
    \param data_in 
           some Array object, elements are of some numeric type \a T1
@@ -64,6 +94,8 @@ START_NAMESPACE_STIR
 
    Note that there is an effective threshold at 0 currently (i.e. negative
    numbers are cut out) when T2 is an unsigned type.
+
+  \see find_scale_factor for more info on the determination of \a scale_factor.
 */
 #if 1
 template <int num_dimensions, class T1, class T2, class scaleT>
