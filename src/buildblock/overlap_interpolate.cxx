@@ -1,28 +1,101 @@
 //
 // $Id$: $Date$
 //
+/*!
 
+  \file
+  \ingroup buildblock
+
+  \brief Implementation of overlap_interpolate
+
+  \author Kris Thielemans (with suggestions by Alexey Zverovich)
+  \author PARAPET project
+
+  \date $Date$
+
+  \version $Revision$
+*/
+#if defined(OLDDESIGN)
 #include "pet_common.h"
+#endif
+
 #include "interpolate.h"
 
-/* 
-  Implementation details:
+
+START_NAMESPACE_TOMO
+
+/*! 
+
+  This is an implementation of 'overlap' interpolation on 
+  arbitrary data types (using templates).
+
+  This type of interpolation considers the data as the samples of
+  a step-wise function. The interpolated array again represents a
+  step-wise function, such that the counts (i.e. integrals) are
+  preserved.
+
+  \param zoom
+  The spacing between the new points is determined by the 'zoom'
+  parameter: e.g. zoom less than 1 stretches the bin size with a factor 1/zoom.
+
+  \param offset (measured in 'units' of the in_data) allows to shift the
+  range of values you want to compute. In particular, having positive
+  offset shifts the data to the left (if in_data and out_data have the same
+  range of indices).
+  Note that a similar (but less general) effect to using 'offset' can be
+  achieved by adjusting the min and max indices of the out_data.
+  
+  \param assign_rest_with_zeroes
+  If \c false does not set values in \c out_data which do not overlap with
+  \c in_data.
+  If \c true those data are set to 0. (The effect being the same as first
+  doing \c out_data.fill(0) before calling overlap_interpolate).
+
+  \warning when T involves integral types, there is no rounding 
+  but truncation.
+
+  For an index x_out (in \c out_data coordinates), the corresponding
+  \c in_data coordinates is x_in = x_out/zoom  + offset
+  (The convention is used that the 'bins' are centered around the
+  coordinate value.)
+
+  \par Examples:
+
+  \verbatim
+  in_data = {a,b,c,d} indices from 0 to 3
+  zoom = .5
+  offset = .5
+  out_data = {a+b, c+d} indices from 0 to 1
+
+  in_data = {a,b,c,d} indices from 0 to 3
+  zoom = .5
+  offset = -.5
+  out_data = {a,b+c,d} indices from 0 to 2
+
+  in_data = {a,b,c} indices from -1 to 1
+  zoom = .5
+  offset = 0
+  out_data = {a/2, a/2+b+c/2, c/2} indices from -1 to 1
+  \endverbatim
+  
+  \par Implementation details:
 
   Because this implementation works for arbitrary (numeric) types T, it
   is slightly more complicated than would be necessary for (say) floats.
-  In particular, 
-  - we do our best to avoid creating temporary objects of type T
-  - we zero values by using multiplication with 0 
+  In particular,<br> 
+  - we do our best to avoid creating temporary objects of type T<br>
+  - we zero values by using multiplication with 0 <br>
   (actually we use T::operator*=(0)). This is to allow the case where
   T::operator=(int) does not exist (in particular, in our higher 
   dimensional arrays).
 
 
-  History:
-  - first version by Kris Thielemans with suggestions by Alexey Zverovich.
+  \par History:
+  <ul>
+  <li> first version by Kris Thielemans with suggestions by Alexey Zverovich.
     (loosely based on a 1D version by Claire Labbe)
+  </ul>
 */
-
 
 template <typename T>
 void
@@ -235,7 +308,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 
 
 
-// Instantiations
+/************************************************
+ Instantiations
+ ************************************************/
 
 template
 void 
@@ -252,6 +327,10 @@ overlap_interpolate<>(VectorWithOffset<double>& out_data,
 		      const float zoom, 
 		      const float offset, 
 		      const bool assign_rest_with_zeroes);
+END_NAMESPACE_TOMO
+
+ // TODO remove
+#if defined(OLDDESIGN)
 
 #include "Tensor2D.h"
 
@@ -271,3 +350,28 @@ overlap_interpolate<>(VectorWithOffset<Tensor2D<float> >& out_data,
 		      const float offset, 
 		      const bool assign_rest_with_zeroes);
 
+
+#else 
+
+#include "Array.h"
+
+START_NAMESPACE_TOMO
+
+template
+void 
+overlap_interpolate<>(VectorWithOffset<Array<1,float> >& out_data, 
+		      const VectorWithOffset<Array<1,float> >& in_data,
+		      const float zoom, 
+		      const float offset, 
+		      const bool assign_rest_with_zeroes);
+
+template
+void 
+overlap_interpolate<>(VectorWithOffset<Array<2,float> >& out_data, 
+		      const VectorWithOffset<Array<2,float> >& in_data,
+		      const float zoom, 
+		      const float offset, 
+		      const bool assign_rest_with_zeroes);
+#endif
+
+END_NAMESPACE_TOMO
