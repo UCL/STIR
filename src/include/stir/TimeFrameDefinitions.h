@@ -13,11 +13,11 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_listmode_TimeFrameDefinitions_H__
-#define __stir_listmode_TimeFrameDefinitions_H__
+#ifndef __stir_TimeFrameDefinitions_H__
+#define __stir_TimeFrameDefinitions_H__
 
 #include "stir/common.h"
 #include <string>
@@ -32,7 +32,14 @@ using std::vector;
 #endif
 
 START_NAMESPACE_STIR
-//! Class used for storing time frame durations
+/*!
+  \ingroup buildblock
+  \brief Class used for storing time frame durations
+
+  Times are supposed to be relative to the scan start time.
+
+  Will probably be superseded by Study classes.
+*/
 class TimeFrameDefinitions
 {
 public:
@@ -50,9 +57,6 @@ public:
   This class in fact allows an extension of the above. Setting 
   \a num_frames_of_this_duration to 0 allows skipping
   a time period of the corresponding \a duration_in_secs.
-
-  \warning Each line in the input file <strong>has to end with a newline</strong>,
-  otherwise it might be ignored on some Operating Systems.
   */
   explicit TimeFrameDefinitions(const string& fdef_filename);
   
@@ -60,11 +64,16 @@ public:
   /*! Times have to be in increasing order*/
   TimeFrameDefinitions(const vector<pair<double, double> >&);
 
-  //! 1 based
+  //! \name get info for 1 frame (frame_num is 1 based)
+  //@{
   double get_start_time(unsigned int frame_num) const;
   double get_end_time(unsigned int frame_num) const;
-  
+  double get_duration(unsigned int frame_num) const;
+  //@}
+
+  //! Get start time of first frame
   double get_start_time() const;
+  //! Get end time of last frame
   double get_end_time() const;
   
   unsigned int get_num_frames() const;
