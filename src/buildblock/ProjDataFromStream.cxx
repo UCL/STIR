@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,6 +31,8 @@
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
 #include "stir/IO/interfile.h"
+#include "stir/IO/write_data.h"
+#include "stir/IO/read_data.h"
 #include <numeric>
 #include <iostream>
 #include <fstream>
@@ -141,8 +143,11 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
     for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++)
     {
       
-      viewgram[ax_pos_num].read_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      assert(scale == 1);
+      if (read_data(*sino_stream, viewgram[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no)
+        error("ProjDataFromStream: error reading data\n");
+      if(scale != 1)
+        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
       sino_stream->seekg(intra_views_offset, ios::cur);
     }
   }
@@ -150,8 +155,11 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   
   else if (get_storage_order() == Segment_View_AxialPos_TangPos)
   {
-    viewgram.read_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    assert(scale == 1);    
+    if(read_data(*sino_stream, viewgram, on_disk_data_type, scale, on_disk_byte_order)
+      == Succeeded::no)
+      error("ProjDataFromStream: error reading data\n");
+    if(scale != 1)
+      error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
   }
 
   viewgram *= scale_factor;
@@ -306,11 +314,12 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
     for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++)
     {
       
-      v[ax_pos_num].write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      if (scale != scale_factor)
+      if (write_data(*sino_stream, v[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order) 
+           == Succeeded::no
+          || scale != scale_factor)
 	{
 	  warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-		  " corrupted due to problems with the scale factor \n",
+		  " corrupted due to problems with writing or the scale factor \n",
 		  view_num, segment_num);
 	  return Succeeded::no;
     }
@@ -321,11 +330,12 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
   }
   else if (get_storage_order() == Segment_View_AxialPos_TangPos)
   {
-    v.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    if (scale != scale_factor)
+    if (write_data(*sino_stream, v, on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no
+          || scale != scale_factor)
       {
 	warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-		" corrupted due to problems with the scale factor \n",
+		" corrupted due to problems with writing or the scale factor \n",
 		view_num, segment_num);
 	return Succeeded::no;
       }
@@ -441,8 +451,11 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
   
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   {    
-      sinogram.read_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      assert(scale == 1);      
+      if(read_data(*sino_stream, sinogram, on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no)
+        error("ProjDataFromStream: error reading data\n");
+      if(scale != 1)
+        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
   }
   
   
@@ -450,8 +463,11 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
   {
    for (int view = get_min_view_num(); view <= get_max_view_num(); view++)
     {
-    sinogram[view].read_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    assert(scale == 1);
+     if (read_data(*sino_stream, sinogram[view], on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no)
+        error("ProjDataFromStream: error reading data\n");
+     if(scale != 1)
+       error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
     sino_stream->seekg(intra_ax_pos_offset, ios::cur);
    }    
   }
@@ -521,11 +537,12 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   
     {
-      s.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      if (scale != scale_factor)
+      if (write_data(*sino_stream, s, on_disk_data_type, scale, on_disk_byte_order)
+          == Succeeded::no
+          || scale != scale_factor)
 	{
 	  warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
-		  " corrupted due to problems with the scale factor \n",
+		  " corrupted due to problems with writing or the scale factor \n",
 		  ax_pos_num, segment_num);
 	  return Succeeded::no;
     }
@@ -537,11 +554,12 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
     {
       for (int view = get_min_view_num();view <= get_max_view_num(); view++)
       {
-	s[view].write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-	if (scale != scale_factor)
+	if (write_data(*sino_stream, s[view], on_disk_data_type, scale, on_disk_byte_order)
+            == Succeeded::no
+          || scale != scale_factor)
 	  {
 	    warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
-		    " corrupted due to problems with the scale factor \n",
+		    " corrupted due to problems with writing or the scale factor \n",
 		    ax_pos_num, segment_num);
 	    return Succeeded::no;
 	  }
@@ -611,8 +629,11 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
     SegmentBySinogram<float> segment(proj_data_info_ptr,segment_num);
     {
       float scale = float(1);
-      segment.read_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      assert(scale == 1);
+      if(read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order)        
+        == Succeeded::no)
+      error("ProjDataFromStream: error reading data\n");
+      if(scale != 1)
+        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");      
     }
     
     segment *= scale_factor;
@@ -657,8 +678,11 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const
     
     {
       float scale = float(1);
-      segment.read_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-      assert(scale == 1);
+      if(read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no)
+      error("ProjDataFromStream: error reading data\n");
+      if(scale != 1)
+        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
     }
     
     segment *= scale_factor;
@@ -714,11 +738,12 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
 		scale_factor); 
       }
     float scale = scale_factor;
-    segmentbysinogram_v.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    if (scale != scale_factor)
+    if (write_data(*sino_stream, segmentbysinogram_v, on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no
+          || scale != scale_factor)
       {
 	warning("ProjDataFromStream::set_segment: segment (%d)"
-		" corrupted due to problems with the scale factor \n",
+		" corrupted due to problems with writing or the scale factor \n",
 	        segment_num);
 	return Succeeded::no;
       }
@@ -782,11 +807,12 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 		scale_factor); 
       }
     float scale = scale_factor;
-    segmentbyview_v.write_data(*sino_stream, on_disk_data_type, scale, on_disk_byte_order);
-    if (scale != scale_factor)
+    if (write_data(*sino_stream, segmentbyview_v, on_disk_data_type, scale, on_disk_byte_order)
+        == Succeeded::no
+          || scale != scale_factor)
       {
 	warning("ProjDataFromStream::set_segment: segment (%d)"
-		" corrupted due to problems with the scale factor \n",
+		" corrupted due to problems with writing or the scale factor \n",
 	        segment_num);
 	return Succeeded::no;
       }
