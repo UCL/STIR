@@ -29,7 +29,7 @@ $(dir)_INTERACTIVE_TEST_SOURCES := \
 run_$(dir)/test_linear_regression: $(DEST)$(dir)/test_linear_regression PHONY_TARGET
 	$<  test/input/test_linear_regression.in
 
-run_$(dir)/test_OutputFileFormat: $(DEST)$(dir)/test_OutputFileFormat$(EXE_SUFFIX) PHONY_TARGET
+run_$(dir)/test_OutputFileFormat: $(DEST)$(dir)/test_OutputFileFormat PHONY_TARGET
 	$< test/input/test_InterfileOutputFileFormat.in 
 	$< test/input/test_InterfileOutputFileFormat_short.in 
 	$< test/input/test_ECAT6OutputFileFormat.in
