@@ -16,47 +16,27 @@ LIB_SOURCES = \
 	LmToProjDataWithMC.cxx \
 	TimeFrameDefinitions.cxx
 
-SOURCES = \
-	lm_to_projdata.cxx \
-	lm_fansums.cxx
 
 LIB_OBJS = $(LIB_SOURCES:%.cxx=${DEST}%.o)
 
-OBJS = $(SOURCES:%.cxx=${DEST}%.o)
-
-EXES = $(SOURCES:%.cxx=${DEST}%)
-
-all: $(EXES)
-
-include $(WORKSPACE)/Makefile_bblibs
+all: $(DEST)liblistmode.a
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(ADVANCED_DEPENDENCIES),1)
-  include $(SOURCES:%.cxx=$(DEST)%.d)
+  include $(LIB_SOURCES:%.cxx=$(DEST)%.d)
 else
-  -include $(SOURCES:%.cxx=$(DEST)%.P)
+  -include $(LIB_SOURCES:%.cxx=$(DEST)%.P)
 endif
 endif
 
 
-#${DEST}lm_to_projdata : ${DEST}lm_to_projdata.o ${LIB_OBJS} $(BB_LIBS) 
-#	$(CXX) $(CFLAGS)  -o $@ $< $(LIB_OBJS) \
-#	$(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS)
-
-#${DEST}lm_fansums : ${DEST}lm_fansums.o ${LIB_OBJS} $(BB_LIBS) 
-#	$(CXX) $(CFLAGS)  -o $@ $< $(LIB_OBJS) \
-#	$(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS)
-
-$(LOCAL_LIB_LISTMODE): $(LIB_OBJS)
+$(DEST)liblistmode.a: $(LIB_OBJS)
 	ar r $@ $?
 	ranlib $@
 
 
 clean :
 	$(RM) $(DEST)*
-
-install: $(EXES)
-	cp $(EXES) $(INSTALL_DIR)
 
 
