@@ -3,7 +3,8 @@
 #define __KEYPARSER_H__
 
 #include <map.h>
-#include <String.h>
+// KT 14/12 changed <String.h> to "pet_string.h"
+#include "pet_string.h"
 
 #include <vector.h>
 #include <fstream.h>
@@ -18,7 +19,6 @@
 
 typedef enum {NONE,ASCII,ASCIIlist,LNUMBER,NUMBER,NUMBERlist,listASCIIlist} argtype;
 typedef vector<int> IntVect;
-
 
 class KeyParser;
 
@@ -37,8 +37,14 @@ public :
 };
 
 
-	
+#if defined (__GNUG__)
+// KT 15/12 g++ doesn't have up-to-date STL yet...
+typedef map<String,map_element, less<String> > Keymap;
+#elif defined(__MSL__)
+typedef map<String,map_element, less<String>, allocator<map_element> > Keymap;
+#elif
 typedef map<String,map_element> Keymap;
+#endif
 
 class KeyParser
 {
@@ -77,7 +83,8 @@ public :
 	vector<String>		matrix_labels;
 	vector<IntVect>		matrix_size;
 	IntVect				sqc;
-	IntVect				image_scaling_factor;
+//KT 14/12 changed from IntVect to vector<float>
+	vector<float>		image_scaling_factor;
 	vector<long int>	data_offset;
 	vector<String>		pettype;
 	vector<String>		index_nesting_level;
