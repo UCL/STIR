@@ -30,11 +30,18 @@ cartesian_grid_info_ptr() const
 }
 #endif
 
-int
+float
 DataSymmetriesForBins_PET_CartesianGrid::
 get_num_planes_per_axial_pos(const int segment_num) const
 {
-  return num_planes_per_axial_pos[segment_num];
+  return static_cast<float>(num_planes_per_axial_pos[segment_num]);
+}
+
+float
+DataSymmetriesForBins_PET_CartesianGrid::
+get_num_planes_per_scanner_ring() const
+{
+  return static_cast<float>(num_planes_per_scanner_ring);
 }
 
 float 
