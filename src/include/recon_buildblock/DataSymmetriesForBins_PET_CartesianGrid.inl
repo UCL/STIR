@@ -84,7 +84,11 @@ find_sym_op_bin0(
   const int z_shift = num_planes_per_axial_pos[segment_num]*axial_pos_num;
   
   const int view180 = num_views;
+#ifndef NDEBUG
+  // This variable is only used in assert() at the moment, so avoid compiler 
+  // warning by defining it only when in debug mode
   const int view0   = 0;
+#endif
   const int view135 = view180/4*3;
   const int view90  = view180/2;
   const int view45  = view180/4;
@@ -137,7 +141,12 @@ find_sym_op_general_bin(
   const int z_shift = num_planes_per_axial_pos[segment_num]*axial_pos_num;
   
   const int view180 = num_views;
+#ifndef NDEBUG
+  // This variable is only used in assert() at the moment, so avoid compiler 
+  // warning by defining it only when in debug mode
   const int view0   = 0;
+#endif
+
   const int view135 = view180/4*3;
   const int view90  = view180/2;
   const int view45  = view180/4;
