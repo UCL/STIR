@@ -2,6 +2,7 @@ OSMAPOSLParameters :=
 
 input file := Utahscat600k_ca_seg4.hs
 output filename prefix := my_test_image
+xy output image size (in pixels) := 97
 
 ; if disabled, defaults to maximum segment number in the file
 maximum absolute segment number to process := 4

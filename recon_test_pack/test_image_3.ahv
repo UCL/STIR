@@ -6,10 +6,10 @@
 !number format := float
 !number of bytes per pixel := 4
 matrix axis label [1] := x
-!matrix size [1] := 129
+!matrix size [1] := 97
 scaling factor (mm/pixel) [1] := 3.1088
 matrix axis label [2] := y
-!matrix size [2] := 129
+!matrix size [2] := 97
 scaling factor (mm/pixel) [2] := 3.1088
 !slice thickness (pixels) := 3.375
 !END OF INTERFILE :=
