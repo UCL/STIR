@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -29,6 +29,8 @@
 #include "stir/Viewgram.h"
 #include "stir/Sinogram.h"
 #include "stir/Scanner.h"
+#include "stir/Succeeded.h"
+#include "stir/IO/read_data.h"
 
 #include <vector>
 #include <algorithm>
@@ -72,10 +74,12 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
   {
     float scale = float(1);
     // KT 18/10/99 added on_disk_byte_order
-    view_scaling_factor.read_data(*sino_stream, 
-      NumericType::FLOAT, 
-      scale,
-      on_disk_byte_order);
+    if (read_data(*sino_stream, view_scaling_factor,
+                  NumericType::FLOAT, 
+                  scale,
+                  on_disk_byte_order) == Succeeded::no
+        || scale != 1)
+      error("ProjDataGEAdvance: error reading scale factors from header\n");
     
     // 	for ( int k=min_view ; k <= max_view ; k++)
     // 	  {
@@ -265,10 +269,12 @@ get_viewgram(const int view_num, const int segment_num,
     {
       {
         float scale = float(1);
-        data[ring].read_data(*sino_stream, 
-          on_disk_data_type, 
-          scale,
-          on_disk_byte_order);
+        if (read_data(*sino_stream, data[ring],
+                      on_disk_data_type, 
+                      scale,
+                      on_disk_byte_order) == Succeeded::no
+            || scale != 1)
+          error("ProjDataGEAdvance: error reading data\n");
       }
       sino_stream->seekg(jump_ring, ios::cur);
     }
@@ -278,9 +284,7 @@ get_viewgram(const int view_num, const int segment_num,
     
     if (make_num_tangential_poss_odd && get_num_tangential_poss()%2==0)
     {
-      // TODO adjust proj_data_info_ptr
-      int new_max_tangential_pos = get_max_tangential_pos_num() + 1;      
-      
+      const int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
       data.grow(
         IndexRange2D(get_min_axial_pos_num(segment_num),
                      get_max_axial_pos_num(segment_num),        
