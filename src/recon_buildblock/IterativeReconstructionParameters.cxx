@@ -100,10 +100,6 @@ void IterativeReconstructionParameters::ask_parameters()
  
   const int view45 = proj_data_ptr->get_proj_data_info_ptr()->get_num_views()/4;
     
-  // KT 15/10/98 correct formula for max
-  max_segment_num_to_process=
-    ask_num("Maximum absolute segment number to process: ",
-	    0, proj_data_ptr->get_max_segment_num(), 0);
   
   // KT 05/07/2000 made int
   zero_seg0_end_planes =
@@ -127,8 +123,7 @@ void IterativeReconstructionParameters::ask_parameters()
     0,num_subsets-1,0);
   
   save_interval=ask_num("Save images at sub-iteration intervals of: ", 
-    1,num_subiterations,num_subiterations);
-  
+    1,num_subiterations,num_subiterations);  
   
   
   inter_iteration_filter_interval=
