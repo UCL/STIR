@@ -243,17 +243,17 @@ dotD2dotP = sed -e 's&$(*)\${O_SUFFIX}&$(DEST)$(*)$(O_SUFFIX)&' < $(df).d > $(df
 
 ${DEST}%${O_SUFFIX} : %.cxx
 	@ -mkdir -p $(dir $@); 
-ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
-	$(MAKEDEPENDCXX);$(dotD2dotP);
-endif
 	$(CXX) $(CFLAGS)  ${O_OUTFLAG}$@  -c $< 
+ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
+	@ $(MAKEDEPENDCXX);$(dotD2dotP);
+endif
 
 ${DEST}%${O_SUFFIX} : %.c
 	@ -mkdir -p $(dir $@); 
-ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
-	$(MAKEDEPENDC); $(dotD2dotP); 
-endif	
 	$(CC) $(CFLAGS) ${O_OUTFLAG}$@ -c $< 
+ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
+	@ $(MAKEDEPENDC); $(dotD2dotP); 
+endif	
 
 
 endif # GCC3
