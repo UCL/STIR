@@ -17,8 +17,9 @@
 	recon.reconstruct(s,v);
  */
 
-extern PETSinogramOfVolume& CorrectForAttenuation(PETSinogramOfVolume s, PETSinogramOfVolume a);
-extern PETSegmentBySinogram& CorrectForAttenuation(PETSegmentBySinogram& s, PETSegmentBySinogram& a);
+//KT 17/11 added const references for efficiency only
+extern PETSinogramOfVolume& CorrectForAttenuation(const PETSinogramOfVolume& s, const PETSinogramOfVolume& a);
+extern PETSegmentBySinogram& CorrectForAttenuation(const PETSegmentBySinogram& s, const PETSegmentBySinogram& a);
  
 class PETReconstruction
 {
@@ -93,10 +94,11 @@ public:
     { return ""; }
   virtual String parameter_info()
     { return ""; }
-  virtual void reconstruct(PETSegmentBySinogram, PETImageOfVolume) 
+  //KT 17/11 added references and const
+  virtual void reconstruct(const PETSegmentBySinogram& , PETImageOfVolume&) 
     = 0;
-  virtual void reconstruct(PETSegmentBySinogram s, 
-			   PETSegmentBySinogram a, PETImageOfVolume v) 
+  virtual void reconstruct(const PETSegmentBySinogram& s, 
+			   const PETSegmentBySinogram& a, PETImageOfVolume& v) 
     { reconstruct(CorrectForAttenuation(s, a), v); }
 };
 
@@ -129,8 +131,8 @@ class Reconstruct2DFBP : public PETAnalyticReconstruction2D
     {}
 
   // CL 27/10 Add virtual
- 
-  virtual void reconstruct(PETSegmentBySinogram segment_0, PETImageOfVolume direct_image);
+  // KT 17/11 added references and const to args
+  virtual void reconstruct(const PETSegmentBySinogram& segment_0, PETImageOfVolume& direct_image);
 };
 
 
