@@ -634,7 +634,7 @@ static void SCX_init(XSizeHints* SCX_hint)
       int i;
       message("Color scales:");
       for (i=0; i<NUMBER_SCALES; i++)
-	printf("%d:  %s",i,all_color_scales[i].name);
+	printf("%d: %s|",i,all_color_scales[i].name);
       CurrentColormap = 
 	asknr("Which one do you want ?",0,NUMBER_SCALES-1, CurrentColormap);
     }  
@@ -807,7 +807,7 @@ int stop;
         break;
       case ButtonPress:
 	if (report.xbutton.button != Button2) break;
-	CurrentColormap = ++CurrentColormap % NUMBER_SCALES;
+	CurrentColormap = (CurrentColormap+1) % NUMBER_SCALES;
 
 	SetColormap(SCX_display, SCX_window, SCX_visual_info,
 		    all_color_scales[CurrentColormap].p, 
