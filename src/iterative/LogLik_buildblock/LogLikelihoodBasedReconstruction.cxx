@@ -13,9 +13,9 @@
   \author Sanida Mustafovic
   \author PARAPET project
       
-  \date $Date$
+  $Date$
         
-  \version $Revision$
+  $Revision$
 */
 
 #include "LogLikBased/LogLikelihoodBasedReconstruction.h"
@@ -24,17 +24,6 @@
 #include "DiscretisedDensityOnCartesianGrid.h"
 // for set_projectors_and_symmetries
 #include "recon_buildblock/distributable.h"
-#ifndef USE_PMRT
-#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#else
-#include "recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#endif
-#ifdef PROJSMOOTH
-#include "recon_buildblock/PostsmoothingForwardProjectorByBin.h"
-#endif
 
 #include "Viewgram.h"
 #include "recon_array_functions.h"
@@ -59,15 +48,15 @@ LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction()
 
 void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr)
 {
-  // TODO move to post_processing
   
   IterativeReconstruction::recon_set_up(target_image_ptr);
   
-  sensitivity_image_ptr=target_image_ptr->get_empty_discretised_density();
   
   if(get_parameters().sensitivity_image_filename=="1")
-    sensitivity_image_ptr->fill(1.0);
-  
+  {
+    sensitivity_image_ptr=target_image_ptr->get_empty_discretised_density();
+    sensitivity_image_ptr->fill(1.0);  
+  }
   else
   {       
     
@@ -104,38 +93,12 @@ void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensi
   
 
   // set projectors to be used for the calculations
-  // TODO get type and parameters for projectors from *Parameters
-#ifndef USE_PMRT
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing(get_parameters().proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-                                             target_image_ptr);
-#else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing( target_image_ptr , get_parameters().proj_data_ptr->get_proj_data_info_ptr()->clone()); 	
-  ForwardProjectorByBin* forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-#endif
-#ifdef PROJSMOOTH
-  if (get_parameters().forward_proj_postsmooth_tang_kernel.get_length() > 1
-      || get_parameters().forward_proj_postsmooth_ax_kernel.get_length() > 1)
-    forward_projector_ptr =
-      new PostsmoothingForwardProjectorByBin(forward_projector_ptr, 
-					     get_parameters().forward_proj_postsmooth_tang_kernel,
-					     get_parameters().forward_proj_postsmooth_ax_kernel,
-					     get_parameters().forward_proj_postsmooth_smooth_segment_0_axially!=0);
-#endif
-
-#ifndef USE_PMRT
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation(get_parameters().proj_data_ptr->get_proj_data_info_ptr()->clone(), 
-                                             target_image_ptr);
-#else
-  BackProjectorByBin* back_projector_ptr =
-    new BackProjectorByBinUsingProjMatrixByBin(PM); 
-#endif
-  set_projectors_and_symmetries(forward_projector_ptr, 
-                                back_projector_ptr, 
-                                back_projector_ptr->get_symmetries_used()->clone());
+  
+  get_parameters().projector_pair_ptr->set_up(get_parameters().proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+                                              target_image_ptr);
+  set_projectors_and_symmetries(get_parameters().projector_pair_ptr->get_forward_projector_sptr(), 
+                                get_parameters().projector_pair_ptr->get_back_projector_sptr(), 
+                                get_parameters().projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
 }
 
 

@@ -1,13 +1,6 @@
 //
 // $Id$
 //
-#ifdef _MSC_VER
-#ifdef PROJSMOOTH
-#pragma message("PROJSMOOTH defined")
-#else
-#pragma message("PROJSMOOTH NOT defined")
-#endif
-#endif
 #ifndef __LogLikelihoodBasedAlgorithmParameters_h__
 #define __LogLikelihoodBasedAlgorithmParameters_h__
 
@@ -23,14 +16,16 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
 */
 
 
 
 #include "recon_buildblock/IterativeReconstructionParameters.h"
+#include "recon_buildblock/ProjectorByBinPair.h"
+#include "shared_ptr.h"
 
 START_NAMESPACE_TOMO
 
@@ -45,9 +40,9 @@ START_NAMESPACE_TOMO
 
 class LogLikelihoodBasedAlgorithmParameters: public IterativeReconstructionParameters
 {
-
-
 public:
+  //! Stores the projectors that are used for the computations
+  shared_ptr<ProjectorByBinPair> projector_pair_ptr;
 
   //! constructor
   LogLikelihoodBasedAlgorithmParameters();
@@ -57,7 +52,6 @@ public:
 
   //! name of the file containing the sensitivity image
   string sensitivity_image_filename;
-
 
 
 
@@ -72,24 +66,14 @@ public:
   //! name of file in which loglikelihood measurements are stored
   string loglikelihood_data_filename;
 
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-
-
-
-// AZ 04/10/99 added
 
   //! the projection data in this file is bin-wise added to forward projection results
   string additive_projection_data_filename;
-#ifdef PROJSMOOTH
-  VectorWithOffset<float> forward_proj_postsmooth_tang_kernel;
-  vector<double> forward_proj_postsmooth_tang_kernel_double;
-  VectorWithOffset<float> forward_proj_postsmooth_ax_kernel;
-  vector<double> forward_proj_postsmooth_ax_kernel_double;
-  int forward_proj_postsmooth_smooth_segment_0_axially;
-#endif
+
 
 protected:
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
