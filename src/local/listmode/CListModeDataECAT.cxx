@@ -19,6 +19,7 @@
 
 #include "local/stir/listmode/CListModeDataECAT.h"
 #include "local/stir/listmode/CListRecordECAT966.h"
+#include "local/stir/listmode/CListRecordECAT962.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #ifdef HAVE_LLN_MATRIX
@@ -102,7 +103,16 @@ CListModeDataECAT::
 get_empty_record_sptr() const
 {
   // TODO differentiate using scanner_ptr
-  return new CListRecordECAT966;
+  if (scanner_ptr->get_type() == Scanner::E966)
+    return new CListRecordECAT966;
+  else   if (scanner_ptr->get_type() == Scanner::E962)
+    return new CListRecordECAT962;
+  else
+    {
+      error("Unsupported scanner\n");
+      return 0;
+    }
+
 }
 
 Succeeded
