@@ -1,12 +1,14 @@
 
 // $Id$
 
+#ifndef __Array_H__
+#define __Array_H__
 #ifndef ARRAY_FULL
 #define ARRAY_FULL
 #endif
-
-#ifndef __Array_H__
-#define __Array_H__
+#ifndef ARRAY_CONST_IT
+#define ARRAY_CONST_IT
+#endif
 
 /*!
   \file 
@@ -16,11 +18,12 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 
-  Not all compilers support the full iterators, so they are disabled by  
-  default.
+  Not all compilers support the full iterators, so you could disabled them by editing 
+  the file and removing the #define ARRAY_FULL. Lots of other things in the library 
+  won't work then.
 */
 #include "NumericVectorWithOffset.h"
 #include "ByteOrder.h"
