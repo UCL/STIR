@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -76,13 +76,15 @@ static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
   //check if it's ECAT 6 
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
 
-  if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
+  if(!cti_fptr ||
+     cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
     {
       // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT6
       return false;
     }
   else
     {
+      fclose(cti_fptr);
       // do some checks on the main header
       return 
 	mhead.sw_version>=0 && mhead.sw_version<=69  &&
