@@ -23,12 +23,18 @@
 #include "local/stir/Quaternion.h"
 #include "stir/listmode/CListRecord.h"
 #include "local/stir/motion/Polaris_MT_File.h"
+#include "stir/VectorWithOffset.h"
 #include "stir/utilities.h"
 #include "stir/stream.h"
 #include "stir/CartesianCoordinate3D.h"
 
 #include <fstream>
-#define MAX_STRING_LENGTH 512
+#include <ctime>
+
+# ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::time_t; using ::tm; using ::localtime; }
+#endif
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::iostream;
@@ -40,13 +46,13 @@ START_NAMESPACE_STIR
 
 // Find and store gating values in a vector from lm_file  
 static  void 
-find_and_store_gate_tag_values_from_lm(vector<unsigned long>& lm_times_in_millisecs, 
-				       vector<unsigned>& lm_random_number,
+find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_times_in_millisecs, 
+				       VectorWithOffset<unsigned>& lm_random_number,
 				       CListModeData& listmode_data);
 #ifndef NEWOFFSET
 // Find and store random numbers from mt_file
 static void 
-find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers,
+find_and_store_random_numbers_from_mt_file(VectorWithOffset<unsigned>& mt_random_numbers,
 					   Polaris_MT_File& mt_file);
 #endif
 
@@ -130,7 +136,7 @@ compute_average_motion(const double start_time, const double end_time) const
 
 void 
 RigidObject3DMotionFromPolaris::
-get_motion(RigidObject3DTransformation& ro3dtrans, const double time) const
+get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const
 {
   Polaris_MT_File::const_iterator iterator_for_record_just_after_this_time =
     mt_file_ptr->begin();
@@ -158,9 +164,24 @@ get_motion(RigidObject3DTransformation& ro3dtrans, const double time) const
 void 
 RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 {
+  std::time_t sec_time = 
+    listmode_data.get_scan_start_time_in_secs_since_1970();
+  // Polaris times are currently in localtime since midnight
+  // This relies on TZ though: bad! (TODO)
+  struct std::tm* lm_start_time_tm = std::localtime( &sec_time  ) ;
+  const unsigned long lm_start_time = 
+    ( lm_start_time_tm->tm_hour * 3600L ) + 
+    ( lm_start_time_tm->tm_min * 60 ) + 
+    lm_start_time_tm->tm_sec ;
+
+  cerr << "\nListmode file says that listmode start time is " 
+       << lm_start_time 
+       << " in secs after midnight local time"<< endl;
+  
+
 #ifdef NEWOFFSET
-  vector<unsigned long> lm_times_in_millisecs;
-  vector<unsigned> lm_random_numbers;
+  VectorWithOffset<unsigned long> lm_times_in_millisecs;
+  VectorWithOffset<unsigned> lm_random_numbers;
   find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
   cerr << "done find and store gate tag values" << endl;
   // TODO remove
@@ -170,7 +191,7 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
     std::ofstream lmtags("lmtags.txt");
     lmtags << lm_random_numbers;
   }
-  const vector<unsigned>::size_type num_lm_tags = lm_random_numbers.size() ;
+  const VectorWithOffset<unsigned>::size_type num_lm_tags = lm_random_numbers.size() ;
   // Peter has size-1 for some reason
 
   const unsigned long num_mt_tags = mt_file_ptr->num_tags();
@@ -252,16 +273,6 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
 	  ++lm_tag_num;
 
-#if 0
-	// check time consistency
-	const float elapsed_lm_tag_time_in_millisecs =
-	  lm_times_in_millisecs[lm_tag_num] - previous_lm_tag_time_in_millisecs;
-
-	if (fabs((elapsed_lm_tag_time_in_millisecs - elapsed_mt_tag_time)/expected_tag_period) >= 1.F)
-	  warning("Time desynchronisation between mt file and lm file after MT time %g",
-		 previous_mt_tag_time);
-
-#endif
 	  const double deviation = fabs(mt_tag_time-time_offset - lm_tag_time_in_millisecs/1000.);
 	  if (deviation>max_deviation)
 	    {
@@ -286,9 +297,9 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
   long int nTags = 0;
   long int nMT_Rand = 0;
   
-  vector<float> lm_times_in_millisecs;
-  vector<unsigned> lm_random_numbers;
-  vector<unsigned> mt_random_numbers;
+  VectorWithOffset<float> lm_times_in_millisecs;
+  VectorWithOffset<unsigned> lm_random_numbers;
+  VectorWithOffset<unsigned> mt_random_numbers;
   // LM_file tags + times
   find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
   cerr << "done find and store gate tag values" << endl;
@@ -405,10 +416,21 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 
 }
 
+template <class T>
+static inline 
+void 
+push_back(VectorWithOffset<T>& v, const T& elem)
+{
+  if (v.capacity()==v.size())
+    v.reserve(v.capacity()*2);
+
+  v.resize(v.size()+1);
+  v[v.size()-1] = elem;
+}
 
 void
-find_and_store_gate_tag_values_from_lm(vector<unsigned long>& lm_time, 
-				       vector<unsigned>& lm_random_number, 
+find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time, 
+				       VectorWithOffset<unsigned>& lm_random_number, 
 				       CListModeData& listmode_data/*const string& lm_filename*/)
 {
   
@@ -444,8 +466,8 @@ find_and_store_gate_tag_values_from_lm(vector<unsigned long>& lm_time,
       {
 	if ( PulseWidth > 5 ) //TODO get rid of number 5
 	{
-	  lm_random_number.push_back(ChState);
-	  lm_time.push_back(StartPulseTime);
+	  push_back(lm_random_number,ChState);
+	  push_back(lm_time,StartPulseTime);
 	}
 	LastChannelState = CurrentChannelState ;
 	PulseWidth = 0 ;
@@ -480,14 +502,14 @@ find_and_store_gate_tag_values_from_lm(vector<unsigned long>& lm_time,
 
 #ifdef NEWOFFSET  
 void 
-find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers,
+find_and_store_random_numbers_from_mt_file(VectorWithOffset<unsigned>& mt_random_numbers,
 					   Polaris_MT_File& mt_file)
 {
   Polaris_MT_File::const_iterator iterator_for_random_num =
     mt_file.begin_all_tags();
   while (iterator_for_random_num!= mt_file.end_all_tags())
   {
-    mt_random_numbers.push_back(iterator_for_random_num->rand_num);
+    push_back(mt_random_numbers,iterator_for_random_num->rand_num);
     ++iterator_for_random_num;
   }
   
@@ -554,7 +576,6 @@ bool RigidObject3DMotionFromPolaris::post_processing()
     return true;
   return false;
 }
-
 
 END_NAMESPACE_STIR
 
