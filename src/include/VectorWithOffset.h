@@ -7,6 +7,10 @@
 
 // KT 26/11 added iterator things
 
+/*
+   KT 27/03/98 use two levels of debugging. For normal debugging #define _DEBUG. 
+   For extensive debugging, use #define _DEBUG 2
+*/
 
 #include "pet_common.h"
 #include <iterator>
@@ -69,9 +73,12 @@ protected:
   // Tensorbase
   void check_state() const
     {
-      assert(((length > 0) ||
+    // KT 27/03/98 disable for normal debugging
+#if _DEBUG>1
+    assert(((length > 0) ||
 	      (length == 0 && start == 0 &&
 	       num == 0 && mem == 0)));
+#endif
     }
 
 public:  
