@@ -19,6 +19,8 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
+#include "stir/ViewSegmentNumbers.h"
+
 START_NAMESPACE_STIR
 
 template <typename elemT>
