@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup recon_buildblock
 
   \brief Declaration of 2 classes: SymmetryOperation and TrivialSymmetryOperation
 
@@ -34,12 +34,25 @@ class Bin;
   \brief Encodes symmetry operation on image coordinates and projection
   data coordinates
 
-  TODOdoc
+  This class is mainly (only?) useful for ProjMatrix classes and their
+  'users'. Together with DataSymmetriesForBins, it provides the basic 
+  way to be able to write generic code without knowing which 
+  particular symmetries the data have.
 
   Ideally, there would be no reference here to ProjMatrixElemsForOneBin,
   but we have to do this for efficiency. Overriding the virtual function
   will allow the compiler to inline the symmetry operations, resulting
   in a dramatic speed-up.
+
+  Price to pay (aside from some tedious repetition in the derived classes): 
+  the need for a
+  SymmetryOperation::transform_proj_matrix_elems_for_one_bin member,
+  and hence knowledge of the ProjMatrixElemsForOneBin class
+  (This is the reason why the DataSymmetriesForBins* and
+  SymmetryOperation* classes are in recon_buildblock.)
+
+  See recon_buildblock/SymmetryOperations_PET_CartesianGrid.cxx for
+  some more info.
 */
 class SymmetryOperation
 {
@@ -58,11 +71,9 @@ public:
     transform_incremental_image_coordinates(BasicCoordinate<3,int>&) const = 0;
 #endif
 
-#ifdef PROJMATRIX
   virtual void 
     transform_proj_matrix_elems_for_one_bin(
       ProjMatrixElemsForOneBin& lor) const;
-#endif
 
 #if 0
   virtual void 
@@ -75,7 +86,7 @@ public:
 
 
 /*!
-  \ingroup buildblock
+  \ingroup recon_buildblock
   \brief A class implementing the trivial case where the symmetry operation
   does nothing at all.
 */
