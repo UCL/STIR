@@ -173,10 +173,9 @@ initialise_det1det2_to_view_tangpos() const
 
   assert(num_detectors%2 == 0);
   assert(get_min_view_num() == 0);
-  assert(get_max_view_num() == num_detectors/2 - 1);
   // check views range from 0 to Pi
   assert(fabs(get_phi(Bin(0,0,0,0))) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,num_detectors/2,0,0)) - _PI) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) - _PI) < 1.E-4);
   const int min_tang_pos_num = -(num_detectors/2);
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   const int max_num_views = num_detectors/2;
