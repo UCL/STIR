@@ -18,16 +18,28 @@
 
 #include "VoxelsOnCartesianGrid.h"
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "Array.h"
 #include "IndexRange4D.h"
-//#include "ProjDataInfoCylindricalArcCorr.h"
+#include "ProjDataInfoCylindricalArcCorr.h"
 
 
 START_NAMESPACE_TOMO
 
+JacobianForIntBP::
+JacobianForIntBP(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, bool exact)
+     
+     : R2(square(proj_data_info_ptr->get_ring_radius())),
+       dxy2(square(proj_data_info_ptr->get_tangential_sampling())),
+       ring_spacing2 (square(proj_data_info_ptr->get_ring_spacing())),
+       backprojection_normalisation 
+      (proj_data_info_ptr->get_ring_spacing()/2/proj_data_info_ptr->get_num_views()),
+      use_exact_Jacobian_now(exact)      
+   {}
 
 const DataSymmetriesForViewSegmentNumbers *
  BackProjectorByBinUsingInterpolation::get_symmetries_used() const
-{ return &symmetries; }
+{ return symmetries_ptr; }
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
@@ -35,7 +47,7 @@ BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_i
 				     const bool use_piecewise_linear_interpolation,
                                      const bool use_exact_Jacobian)			   
   :
-  symmetries(proj_data_info_ptr,image_info_ptr),
+  symmetries_ptr(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr)),
   use_piecewise_linear_interpolation_now(use_piecewise_linear_interpolation),
   use_exact_Jacobian_now(use_exact_Jacobian)
 {}
