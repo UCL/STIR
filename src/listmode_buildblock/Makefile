@@ -2,21 +2,18 @@
 # $Id$
 #
 
-WORKSPACE=$(CURDIR)/../..
+WORKSPACE=$(CURDIR)/..
 
 
 include $(WORKSPACE)/Makefile_common
 
 LIB_SOURCES = \
+	CListEvent.cxx \
 	CListModeData.cxx \
 	CListModeDataFromStream.cxx \
 	CListModeDataECAT.cxx \
-	CListRecordECAT966.cxx \
-	CListRecordECAT962.cxx \
-	LmToProjData.cxx \
-	LmToProjDataBootstrap.cxx \
-	LmToProjDataWithMC.cxx 
-	
+	LmToProjData.cxx 
+
 
 
 LIB_OBJS = $(LIB_SOURCES:%.cxx=${DEST}%.o)
