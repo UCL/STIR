@@ -198,7 +198,7 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
   
   // TODO make sure that enough events is read for synchronisation
   //unsigned long max_num_events = 1UL << 8*sizeof(unsigned long)-1;
-  unsigned long max_num_events = 100000;
+  unsigned long max_num_events = 100000000;
   long more_events = max_num_events;
   
   // reset listmode to the beginning 
@@ -238,8 +238,11 @@ RigidObject3DMotionFromPolaris::find_and_store_gate_tag_values_from_lm(vector<fl
   }
 
   int s = lm_random_number.size();
+
+  for ( int i = 1; i<= lm_random_number.size(); i++)
+    cerr << lm_random_number[i] << "  ";
  
-  if (s==0)
+  if (s <=1)
     error("RigidObject3DMotionFromPolaris: No random numbers stored from lm file \n");
 
   //cerr << " LM random number" << endl; 
