@@ -285,8 +285,8 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
 
   scanner.show_params();
 
-  //CL 03/08/98 Add the option for spanning value
-  int span = ask_num("Span value : ", 1,11,7);
+  // KT 19/10/99 change default to 1
+  int span = ask_num("Span value : ", 1,11,1);
     
   int max_delta = ask_num("Max. ring difference acquired : ",
 			  0,
@@ -334,11 +334,11 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
       }
   }
 
-  // KT 15/03/99 new
+
   ByteOrder byte_order;
   { 
-    // ask byte_order
-    byte_order = ask("Little endian byte order ?", true) ?
+      // KT 19/10/99 change default to false    
+    byte_order = ask("Little endian byte order ?", false) ?
       ByteOrder::little_endian :
       ByteOrder::big_endian;
   }
