@@ -46,7 +46,7 @@
    always listed correctly. However, with the current hierarchies, this 
    problem shows up in only a few places.  For example, the class
    hierarchies of most of the ImageProcessor classes are incomplete on their
-   own documentaiton page. However, they are fine in the main
+   own documentation page. However, they are fine in the main
    'class hierarchy' page.
  </ul>
 
