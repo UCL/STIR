@@ -18,7 +18,7 @@
 #include "stir/Succeeded.h"
 #include <time.h>
 #include "stir/is_null_ptr.h"
-
+#include "stir/stream.h"
 
 START_NAMESPACE_STIR
 
@@ -26,22 +26,23 @@ void
 LmToProjDataWithMC::set_defaults()
 {
   LmToProjData::set_defaults();
-  attenuation_filename ="";
+  // attenuation_filename ="";
   ro3d_ptr = 0;
-  transmission_duration = 300; // default value 5 min.
-  polaris_time_offset =-1234567.F; // note: do not change constant unless changing it below as well
+  //transmission_duration = 300; // default value 5 min.
+ 
 }
 
 void 
 LmToProjDataWithMC::initialise_keymap()
 {
   LmToProjData::initialise_keymap();
-  parser.add_start_key("LmToProjDataWithMC Parametres");
+  parser.add_start_key("LmToProjDataWithMC Parameters");
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
-  parser.add_key("attenuation_filename", &attenuation_filename);
-  parser.add_key("transmission_duration", &transmission_duration);
-  parser.add_key("polaris_time_offset", &polaris_time_offset);
-  parser.add_stop_key("END");
+  //parser.add_key("attenuation_filename", &attenuation_filename);
+  //parser.add_key("transmission_duration", &transmission_duration);
+  //parser.add_key("reference_quaternion", &reference_quaternion);
+  //parser.add_key ("reference_translation", &reference_translation);
+
 }
 
 LmToProjDataWithMC::
@@ -67,7 +68,7 @@ post_processing()
     warning("Invalid Rigid Object 3D Motion object\n");
     return true;
   }
-
+#if 0
    // compute average motion in respect to the transmission scan
   float att_start_time, att_end_time;
   if (attenuation_filename !="")
@@ -76,7 +77,8 @@ post_processing()
 			       attenuation_filename);
 
   RigidObject3DTransformation av_motion = ro3d_ptr->compute_average_motion(att_start_time,att_end_time);
- 
+  cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
+  cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
   ro3d_move_to_reference_position =av_motion.inverse();
     
   }
@@ -84,20 +86,26 @@ post_processing()
   { 
     att_start_time=0;
     att_end_time=0;
-    Quaternion<float> quat(1,0,0,0);
-    RigidObject3DTransformation av_motion(quat,CartesianCoordinate3D<float>(0,0,0));
-    ro3d_move_to_reference_position =av_motion.inverse();
-  }
+    if (reference_translation.size()!=3 || reference_quaternion.size() !=4)
+      {
+	warning ("Invalid reference quaternion or translation\n");
+	return true;
+      }
 
+
+    CartesianCoordinate3D<float>ref_trans(static_cast<float>(reference_translation[0]),static_cast<float>(reference_translation[1]),static_cast<float>(reference_translation[2]));
+    Quaternion<float>ref_quat(static_cast<float>(reference_quaternion[0]),static_cast<float>(reference_quaternion[1]),static_cast<float>(reference_quaternion[2]),static_cast<float>(reference_quaternion[3]));
+    RigidObject3DTransformation av_motion(ref_quat, ref_trans);
+    cerr << "Reference quaternion:  " << av_motion.get_quaternion()<<endl;
+    cerr << "Reference translation:  " << av_motion.get_translation()<<endl;
+   ro3d_move_to_reference_position =av_motion.inverse();
+  }
+#endif
   // TODO move to RigidObject3DMotion
-  if (polaris_time_offset==-1234567.F)
+  if (!ro3d_ptr->is_time_offset_set())
     ro3d_ptr->synchronise(*lm_data_ptr);
-  else
-  {
-    cerr << " Polaris time offset is: " << polaris_time_offset << endl;
-    dynamic_cast<RigidObject3DMotionFromPolaris* >(ro3d_ptr.get())->set_polaris_time_offset(polaris_time_offset);
-  }
 
+  cerr << "Time offset is set to "<< ro3d_ptr->get_time_offset() << endl;
   move_from_scanner =
     RigidObject3DTransformation(Quaternion<float>(0.00525584F, -0.999977F, -0.00166456F, 0.0039961F),
                                CartesianCoordinate3D<float>( -1981.93F, 3.96638F, 20.1226F));
@@ -107,7 +115,7 @@ post_processing()
   return false;
 }
 
-
+#if 0
 void 
 LmToProjDataWithMC::
 find_ref_pos_from_att_file (float& att_start_time, float& att_end_time, 
@@ -126,16 +134,71 @@ find_ref_pos_from_att_file (float& att_start_time, float& att_end_time,
 	att_start_time = ( AttnTime->tm_hour * 3600.0 ) + ( AttnTime->tm_min * 60.0 ) + AttnTime->tm_sec ;
 	att_end_time = att_start_time + transmission_duration;
 }
- 
+
+#endif
+void
+LmToProjDataWithMC::
+process_new_time_event(const CListTime& time_event)
+{
+  assert(fabs(current_time - time_event.get_time_in_secs())<.0001);
+#if 0
+  RigidObject3DTransformation ro3dtrans_1(Quaternion<float>(0.9977, 0.0148, 0.0608, -0.0237), 
+    CartesianCoordinate3D<float>(-1964.4,-69.24,-37.01));
+  RigidObject3DTransformation ro3dtrans_2(Quaternion<float>(0.9977, 0.0154, 0.0606, -0.024), 
+    CartesianCoordinate3D<float>(-1875.15,-67.34,-36.48));
+  RigidObject3DTransformation ro3dtrans_3(Quaternion<float>(0.9977,0.0138, 0.0614, -0.024), 
+    CartesianCoordinate3D<float>(-1876.14,-66.21,-59.69));
+  RigidObject3DTransformation ro3dtrans_4(Quaternion<float>(0.9976, 0.015, 0.0615, -0.0242), 
+    CartesianCoordinate3D<float>(-1877.02,-66.46,27.43));
+  RigidObject3DTransformation ro3dtrans_5 (Quaternion<float>(0.9976, 0.0145, 0.0628, \
+-0.0248), 
+    CartesianCoordinate3D<float>(-1935.34,-65.86,27.01));
+
+  if (current_time >=0 && current_time <=558)
+  {
+    ro3dtrans= ro3dtrans_1;
+  }
+  else if(current_time>=573 && current_time <=906)
+  {
+    ro3dtrans= ro3dtrans_2;
+  }
+  else if (current_time>=936 && current_time <=1185)
+  {
+    ro3dtrans= ro3dtrans_3;
+  }
+  else if ( current_time>=1200 && current_time <=1527)
+  {
+    ro3dtrans= ro3dtrans_4;
+  }
+  else if (current_time>=1566 && current_time <=1860)
+  {
+    ro3dtrans= ro3dtrans_5;
+  }
+  else 
+  { cerr << " STop no more frames " << endl;
+  }
+
+
+#else
+     
+  ro3d_ptr->get_motion(ro3dtrans,current_time);
+#endif
+
+         ro3dtrans = compose(move_to_scanner,
+			     compose(ro3d_ptr->get_transformation_to_reference_position(),
+				     compose(ro3dtrans,move_from_scanner)));
+
+}
+
 void 
 LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_general_type) const
 {
   const CListRecordECAT966& record = 
     static_cast<CListRecordECAT966 const&>(event_of_general_type);// TODO get rid of this
-  const CListEventDataECAT966& event = 
-    static_cast<CListRecordECAT966 const&>(event_of_general_type).event_data;// TODO get rid of this
 
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+
+
     static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
 
 
@@ -152,64 +215,15 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
     find_cartesian_coordinates_of_detection(coord_1,coord_2, bin);
   
   // now do the movement
+#if 1
+ 
+  const CartesianCoordinate3D<float> coord_1_transformed = ro3dtrans.transform_point(coord_1);
+  const CartesianCoordinate3D<float> coord_2_transformed = ro3dtrans.transform_point(coord_2);
+ 
   
-  RigidObject3DTransformation ro3dtrans;
+#else  
 
-  RigidObject3DTransformation ro3dtrans_1(Quaternion<float>(0.9977, 0.0148, 0.0608, -0.0237), 
-    CartesianCoordinate3D<float>(-1964.4,-69.24,-37.01));
-  RigidObject3DTransformation ro3dtrans_2(Quaternion<float>(0.9977, 0.0154, 0.0606, -0.024), 
-    CartesianCoordinate3D<float>(-1875.15,-67.34,-36.48));
-  RigidObject3DTransformation ro3dtrans_3(Quaternion<float>(0.9977,0.0138, 0.0614, -0.024), 
-    CartesianCoordinate3D<float>(-1876.14,-66.21,-59.69));
-  RigidObject3DTransformation ro3dtrans_4(Quaternion<float>(0.9976, 0.015, 0.0615, -0.0242), 
-    CartesianCoordinate3D<float>(-1877.02,-66.46,27.43));
-  RigidObject3DTransformation ro3dtrans_5 (Quaternion<float>(0.9976, 0.0145, 0.0628, \
--0.0248), 
-    CartesianCoordinate3D<float>(-1935.34,-65.86,27.01));
-
-  if (current_time >0 && current_time <=558)
-  {
-    ro3dtrans= ro3dtrans_1;
-  }
-  else if(current_time>573 && current_time <=906)
-  {
-    ro3dtrans= ro3dtrans_2;
-  }
-  else if (current_time>936 && current_time <=1185)
-  {
-    ro3dtrans= ro3dtrans_3;
-  }
-  else if ( current_time>1200 && current_time <=1527)
-  {
-    ro3dtrans= ro3dtrans_4;
-  }
-  else if (current_time>1566 && current_time <=1860)
-  {
-    ro3dtrans= ro3dtrans_5;
-  }
-  else 
-  { cerr << " STop no more frames " << endl;
-  }
-
-
-
-#if 0
-  48588.084`, 15, "A", 0.9977`, 0.0148`, 0.0608`, -0.0237`, -37.01`, -69.24`, \
--1964.4`, 0.2036`}, 
-  {49138.624`, 10, "A", 0.9977`, 0.0154`, 0.0606`, -0.024`, \
--36.48`, -67.34`, -1875.15`, 0.1749`}, 
-  {49500.014`, 14, "A", 0.9977`, \
-0.0138`, 0.0614`, -0.024`, -59.69`, -66.21`, -1876.14`, 0.1374`}, \
-{49763.374`, 15, "A", 0.9976`, 0.015`, 0.0615`, -0.0242`, 27.43`, -66.46`, \
--1877.02`, 0.1372`}, 
-  {50088.044`, 15, "A", 0.9976`, 0.0145`, 0.0628`, \
--0.0248`, 27.01`, -65.86`, -1935.34`, 0.1533
-#endif
-  ro3d_ptr->get_motion(ro3dtrans,current_time);
-   
-
-  
-  const CartesianCoordinate3D<float> coord_1_transformed =
+ const CartesianCoordinate3D<float> coord_1_transformed =
      move_to_scanner.
      transform_point(ro3d_move_to_reference_position.
                    transform_point(
@@ -224,7 +238,7 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
                                    transform_point(move_from_scanner.
                                                    transform_point(coord_2))));
 
-
+#endif
   proj_data_info.
     find_bin_given_cartesian_coordinates_of_detection(bin,
                                                       coord_1_transformed,
@@ -247,27 +261,6 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
 
   
 }
-
-
-void 
-LmToProjDataWithMC::transform_detector_pair_into_view_bin (int& view,int& bin, 
-					    const int det1,const int det2, 
-					    const Scanner& scanner) const
-{ 
-  const int num_detectors = scanner.get_num_detectors_per_ring();
-  const int h=num_detectors/2;
-  const int x = (det1>det2)?det1:det2;
-  const int y = (det1<det2)?det1:det2;
-  const int a=((x+y+h+1)%num_detectors)/2;
-  const int b=a+h;
-  int te=abs(x-y-h);
-  if ((y<a)||(b<x)) te = -te;
-  bin=te;
-  view=a;
-}
-
-
-
 
 
 END_NAMESPACE_STIR
