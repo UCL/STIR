@@ -1,12 +1,22 @@
-//
-// SCCS Revision : $Id$
-//
-//CL 090398 Adapt the header for implementing CTI librairies on PASYSTEC machine
+/*
+ SCCS Revision : $Id$
+*/
 /*******************************************************************************
     cti_utils.c - PET matrix file access routines.
     
     last revised:
 	15 may 94 - akh (add cti_read_image_subheader)
+
+//CL 090398 Adapt the header for implementing CTI librairies on PARSYTEC machine
+//KT 251198 moved  _PLATFORM_TRANSPUTER_ dependency after rcn_config.h
+            moved EXIT_SUCCES definition to rcn_config.h
+	    added SWAP_EM for Macs
+	    removed 2 includes
+	    store data-type when calling get_scanheaders
+            differentiate between data-type when calling get_scandata
+	    changed cti_numcod, cti_numdoc and cti_rings2plane with versions 
+	       from Larry Byars (except for RPT)
+	    word swapping fo get_vax_long and sunltovaxl (note: this name is bad)
 *******************************************************************************/
 
 /*{{{  include files */
@@ -16,20 +26,26 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* KT 30/11/98 replace bcopy with memcpy on PCs  */
+#ifdef _MSC_VER
+#define bcopy(src, dest, length) memcpy(dest, src, length)
+#endif
+
+#include "CTI/cti_utils.h"          /* interface */
+
+/* KT 25/11/98 removed, as already imported in cti_utils.h
+#include "CTI/rcn_config.h"
+#include "CTI/rcn_types.h"
+*/
+
+
+/* KT 25/11/98 moved this after rcn_config, to allow this ifdef to work */
 #ifdef _PLATFORM_TRANSPUTER_
 #include <mathf.h>
 #endif
 #include <math.h>
 
-#include "CTI/cti_utils.h"          /* interface */
-
-#include "CTI/rcn_config.h"
-#include "CTI/rcn_types.h"
-
-#ifndef EXIT_SUCCESS
-#define EXIT_FAILURE 0   /* we must be on Sun */
-#define EXIT_SUCCESS 1
-#endif
+/* KT 25/11/98 moved EXIT_SUCCES to rcn_config.h */
 
 /*#ifdef _PLATFORM_SUN_
 typedef struct div_t {int quot, rem;} div_t;
@@ -40,6 +56,11 @@ typedef struct div_t {int quot, rem;} div_t;
 #ifdef _PLATFORM_SUN_
  #define _SWAPEM_
 #endif
+/* KT 25/11/98 new */
+#ifdef _PLATFORM_MAC_
+ #define _SWAPEM_
+#endif
+
 /*}}}  */
 
 #define toblocks(x) ((x + (MatBLKSIZE - 1))/MatBLKSIZE)
@@ -95,6 +116,14 @@ int get_scanheaders (FILE *fptr, long matnum, Main_header *mhead,
     scanParams->nblks = entry.endblk - entry.strtblk;
     scanParams->nprojs = shead->dimension_1;
     scanParams->nviews = shead->dimension_2;
+    /* KT 25/11/98 added data_type */
+    scanParams->data_type = shead->data_type;
+    if (shead->data_type != mhead->data_type)
+    {
+      printf("\nget_scanheader warning: \n\
+data types differ between main header (%d) and subheader (%d)\n\
+Using value from subheader\n", mhead->data_type, shead->data_type);
+    }
 
     return EXIT_SUCCESS;
 }
@@ -135,9 +164,31 @@ int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
 	#endif
     }
     else {
+        /* KT 25/11/98 differentiate between data-type */
+
 	#ifdef _SWAPEM_
 	/* we have to swap bytes in order to read the ints */
-	swab ((char *) scan, (char *) scan, scanParams->nblks * MatBLKSIZE);
+        if (scanParams->data_type == matI2Data)
+  	  swab ((char *) scan, (char *) scan, scanParams->nblks * MatBLKSIZE);
+        else
+          if (scanParams->data_type != matSunShort)
+	    {
+	      printf("\nget_scandata: unsupported data_type %d\n", 
+		     scanParams->data_type);
+	      return(EXIT_FAILURE);
+	    }
+        #else
+	/* we have to swap bytes in order to read the ints */
+        if (scanParams->data_type == matSunShort)
+  	  swab ((char *) scan, (char *) scan, scanParams->nblks * MatBLKSIZE);
+        else
+          if (scanParams->data_type != matI2Data)
+	    {
+	      printf("\nget_scandata: unsupported data_type %d\n", 
+		     scanParams->data_type);
+	      return(EXIT_FAILURE);
+	    }
+
 	#endif
     }
     return status;
@@ -184,8 +235,10 @@ long cti_numcod (CameraType scanner,
 				int frame, int plane, int gate, int data, int bed)
 {
 
+  /* KT 01/12/98 use the code from Larry Byars (and the LLN distribution) except for RPT.
+     Only difference seems to be that RPT sets gate|=1*/
 	switch (scanner) {
-	
+#if 0	
 		case cam951:      /* ?? */
 			/*  ECAT 953 RTS1       */
 			return ((frame & 0x1FF) | ((bed & 0xF) << 12) 
@@ -194,10 +247,9 @@ long cti_numcod (CameraType scanner,
 					| ((gate & 0x3F) << 24)
 					| ((data & 0x3) << 30));
 			break;
-		
+#endif		
 		case camRPT:    
-		case cam953:
-	
+		/* case cam953: */	
 			/*  ECAT 953 RTS2   */
 			return ((frame & 0x1FF) | ((bed & 0xF) << 12) 
 					| ((plane & 0xFF) << 16) 
@@ -208,7 +260,9 @@ long cti_numcod (CameraType scanner,
 			break;  
 		
 		default:
-			return 0;
+	  	return ((frame)|((bed&0xF)<<12)|((plane&0xFF)<<16)|(((plane&0x300)>>8)<<9)|
+	       ((gate&0x3F)<<24)|((data&0x3)<<30)|((data&0x4)<<9));
+
 			break;
 	}
 }
@@ -225,18 +279,24 @@ long cti_numcod (CameraType scanner,
 void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
 {
 	switch (scanner) {
-	
+	/* KT 01/12/98 use Larry Byras' (and LLN) code, except for RPT */
 		case camRPT:    
-		case cam953:
+		/* case cam953: */
 		/*  Same for both ECAT 953 RTS1 and ECAT 953 RTS2   */
-		matval->frame = matnum & 0x1FF;
-		matval->plane = ((matnum >> 16) & 0xFF) + (((matnum >> 9) & 0x7) << 8);
-		matval->gate  = (matnum >> 24) & 0x3F;
-		matval->data  = (matnum >> 30) & 0x3;
-		matval->bed   = (matnum >> 12) & 0xF;
+		  matval->frame = matnum & 0x1FF;
+		  matval->plane = ((matnum >> 16) & 0xFF) + (((matnum >> 9) & 0x7) << 8);
+		  matval->gate  = (matnum >> 24) & 0x3F;
+		  matval->data  = (matnum >> 30) & 0x3;
+		  matval->bed   = (matnum >> 12) & 0xF;
+		break;
 		
-		default:
-		/* do nothing */
+		default:			  
+		  matval->frame = matnum&0x1FF;
+		  matval->plane = ((matnum>>16)&0xFF) + (((matnum>>9)&0x3)<<8);
+		  matval->gate  = (matnum>>24)&0x3F;
+		  matval->data  = ((matnum>>9)&0x4)|(matnum>>30)&0x3;
+		  matval->bed   = (matnum>>12)&0xF;
+
 		break;
 	}
 }
@@ -249,22 +309,36 @@ void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
 	ring0 - first ring in ring pair
 	ring1 - second ring in ring pair
 ******************************************************************************/
+
 int cti_rings2plane (CameraType scanner, short ring0, short ring1) {
 
 	int d; /* div_t  d; */
 	
+	/* KT TODO this might have to be changed for other scanners as well */
+
 	switch (scanner) {
+	        /* KT 01/12/98 added 921 */
+	        case cam921:
+	                fprintf(stderr, "cti_rings2plane: 921 not supported\n");
+	                return 0;
 		case camRPT:
 		case cam953:
+		  /* KT 01/12/98 added 951 */
+		case cam951:
 			d = (int) (ring0 / 8); /*div (ring0, 8);*/
 
 			/* return (ring1 * 8
 				   + ring0 % 8 + 128 * d.quot + 1); */
 			return (ring1 * 8 + ring0 % 8 + 128 * d + 1);
+			 
 		break;
 		
 		default:
-			return 0;
+		  /* KT 01/12/98 added  */
+		  /* New ACS numbering (2048 planes 0-2047) */
+		        return ((ring0&0x10)<<5)+((ring0&0x08)<<4)+(ring0&7)+
+			   ((ring1&0x10)<<4)+((ring1&15)<<3)+1;
+			
 		break;
 	}
 }
@@ -1205,7 +1279,6 @@ printf ("cti_write_image_subheader: bufr[data_type] = %d, bufr[num_dimensions] =
 	bufr[63], bufr[64]);
 #endif
     bcopy (header->annotation, bbufr + 420, 40);
-
     /* write to matrix file */
     status = cti_wblk (fptr, blknum, bbufr, 1);
     free (bufr);
@@ -2146,6 +2219,7 @@ void swaw (short *from, short *to, int length)
 	bufr - input data buffer.
 	off - offset into buffer of first 16-bit half of the 32-bit value to convert.
 *******************************************************************************/
+
 float get_vax_float (const unsigned short *bufr, int off)
 {
 	unsigned short t1, t2;
@@ -2157,8 +2231,10 @@ float get_vax_float (const unsigned short *bufr, int off)
 	t2 = (((bufr [off]) & 0x7f00) + 0xff00) & 0x7f00;
 	test.t3 = ((long) t1 + (long) t2) << 16;
 	test.t3 = test.t3 + bufr [off + 1];
+	
 	return (test.t4);
 }
+
 /*}}}  */
 
 /*{{{  get_vax_long */
@@ -2172,7 +2248,13 @@ float get_vax_float (const unsigned short *bufr, int off)
 *******************************************************************************/
 long get_vax_long (const unsigned short *bufr, int off)
 {
+  /* KT 30/11/98 new ifdef */
+#ifdef _SWAPEM_
 	return ((bufr [off + 1] << 16) + bufr [off]);
+#else
+	/* KT 30/11/98 new code */
+	return *(long *) (&bufr[off]);
+#endif
 }
 /*}}}  */
 
@@ -2187,8 +2269,15 @@ long get_vax_long (const unsigned short *bufr, int off)
 *******************************************************************************/
 void sunltovaxl (const long in, unsigned short out [2])
 {
+  /* KT 30/11/98 new ifdef */
+#ifdef _SWAPEM_
 	out [0] = (in & 0x0000FFFF);
 	out [1] = (in & 0xFFFF0000) >> 16;
+#else
+	/* KT 30/11/98 new code */
+        out[0] = (in & 0xFFFF0000) >> 16;
+        out [1] = (in & 0x0000FFFF);
+#endif
 }
 /*}}}  */
 
@@ -2201,11 +2290,12 @@ void sunltovaxl (const long in, unsigned short out [2])
 *******************************************************************************/
 void sunftovaxf (const float in, unsigned short out [2])
 {
+
+
 	union {
 		unsigned short t [2]; 
 		float t4;
-	      } test;
-	unsigned short exp;
+	      } test;	unsigned short exp;
 
 	out [0] = 0;
 	out [1] = 0;
@@ -2221,6 +2311,7 @@ void sunftovaxf (const float in, unsigned short out [2])
 	test.t [0] = (test.t [0] & 0x80ff) + exp;  
 	out [0] = ((test.t [1] + 256) & 0xff00) | (test.t [1] & 0x00ff);
 	out [1] = ((test.t [0] - 256) & 0xff00) | (test.t [0] & 0x00ff);
+
 }
 /*}}}  */
 
