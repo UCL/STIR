@@ -19,8 +19,9 @@
 PETImageOfVolume read_interfile_image(istream& input)
 {
   // KT 19/10/98 use new class
-  InterfileImageHeader hdr(input);
-  if (!hdr.parse())
+  // KT 13/10/98 moved stream to parse()
+  InterfileImageHeader hdr;
+  if (!hdr.parse(input))
     {
       PETerror("\nError parsing interfile header, \n\
       I am going to ask you lots of questions...\n");
@@ -66,7 +67,7 @@ PETImageOfVolume read_interfile_image(istream& input)
 
 
 // KT 13/11/98 new
-PETImageOfVolume read_interfile_image(char *filename)
+PETImageOfVolume read_interfile_image(const char *const filename)
 {
     ifstream image_stream(filename);
     if (!image_stream)
@@ -224,8 +225,9 @@ PETSinogramOfVolume read_interfile_PSOV(istream& input)
   fstream *data_in =  new fstream;
   
 
-  InterfilePSOVHeader hdr(input);
-  if (!hdr.parse())
+  // KT 13/11/98 moved stream arg from constructor to parse()
+  InterfilePSOVHeader hdr;
+  if (!hdr.parse(input))
     {
       PETerror("\nError parsing interfile header, \n\
      I am going to ask you lots of questions...\n");
@@ -292,7 +294,7 @@ at the moment. Using the first scale factor only.\n");
 
 
 // KT 13/11/98 new
-PETSinogramOfVolume read_interfile_PSOV(char *filename)
+PETSinogramOfVolume read_interfile_PSOV(const char *const filename)
 {
     ifstream image_stream(filename);
     if (!image_stream)
