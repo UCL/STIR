@@ -1,5 +1,5 @@
 //
-// $Id$ : $Date$
+// $Id$: $Date$
 //
 
 
@@ -7,12 +7,14 @@
   \file
   \brief Implementation of ECAT 6 CTI functions to access data
   \author Larry Byars
+  \author Kris Thielemans (conversions from/to VAX floats, longs)
   \author PARAPET project
   \version $Revision$
-  \date  $Date$
+  \date $Date$
 
-  \warning This file relies on _PLATFORM_xxx preprocessor defines to find out if it 
-  has to byteswap. This needs to be changed. (TODO)
+  \warning This file relies on preprocessor defines to find out if it 
+  has to byteswap. This needs to be changed. (TODO). It does check this
+  by asserts using ByteOrder.
 */
 
 #include <limits.h>
@@ -28,15 +30,15 @@
 #define bcopy(src, dest, length) memcpy(dest, src, length)
 #define toblocks(x) ((x + (MatBLKSIZE - 1))/MatBLKSIZE)
 
-#ifdef _PLATFORM_HP_
-#define _SWAPEM_
+#include "ByteOrder.h"
+
+// TODO get rid of _SWAPEM_ and use ByteOrder
+// currently checked by asserts()
+#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
+#define   _SWAPEM_           // bigendian
 #endif
-#ifdef _PLATFORM_SUN_
-#define _SWAPEM_
-#endif
-#ifdef _PLATFORM_MAC_
-#define _SWAPEM_
-#endif
+
+
 
 START_NAMESPACE_TOMO
 int get_scanheaders (FILE *fptr, long matnum, Main_header *mhead, 
@@ -114,9 +116,9 @@ int get_scandata (FILE *fptr, short *scan, ScanInfoRec *scanParams)
     return status;
 }
 
-long cti_numcod (CameraType scanner, int frame, int plane, int gate, int data, int bed)
+long cti_numcod (int frame, int plane, int gate, int data, int bed)
 {
-
+#if 0
     switch (scanner) {
         case camRPT:    
             return ((frame & 0x1FF) | ((bed & 0xF) << 12) 
@@ -128,14 +130,18 @@ long cti_numcod (CameraType scanner, int frame, int plane, int gate, int data, i
             break;  
 		
         default:
+#endif
             return ((frame)|((bed&0xF)<<12)|((plane&0xFF)<<16)|(((plane&0x300)>>8)<<9)|
                     ((gate&0x3F)<<24)|((data&0x3)<<30)|((data&0x4)<<9));
+#if 0
             break;
     }
+#endif
 }
 
-void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
+void cti_numdoc (long matnum, Matval *matval)
 {
+#if 0
     switch (scanner) {
         case camRPT: // Same for both ECAT 953 RTS1 and ECAT 953 RTS2 
             matval->frame = matnum & 0x1FF;
@@ -145,14 +151,17 @@ void cti_numdoc (CameraType scanner, long matnum, Matval *matval)
             matval->bed   = (matnum >> 12) & 0xF;
             break;
 		
-        default:			  
+        default:
+#endif
             matval->frame = matnum&0x1FF;
             matval->plane = ((matnum>>16)&0xFF) + (((matnum>>9)&0x3)<<8);
             matval->gate  = (matnum>>24)&0x3F;
             matval->data  = ((matnum>>9)&0x4)|(matnum>>30)&0x3;
             matval->bed   = (matnum>>12)&0xF;
+#if 0
             break;
     }
+#endif
 }
 
 int cti_rings2plane (short nrings, short ring0, short ring1) 
@@ -405,7 +414,7 @@ FILE *cti_create (const char *fname, const Main_header *mhead)
     long *bufr;
 
         // open the file and write the header into it.
-    fptr = fopen (fname, "w+");
+    fptr = fopen (fname, "wb+");
     if (!fptr) return fptr;
 
     status = cti_write_main_header (fptr, mhead);
@@ -658,7 +667,7 @@ int cti_write_idata (FILE *fptr, int blk, const short *data, int ibytes)
         // we'll use cti_wblk to write the data via another buffer.
         // this way, if we need to transform the data as we went, we can do it.
     nblks = toblocks (ibytes);
-    for (int i=0; i<nblks; i++) {
+    for (unsigned int i=0; i<nblks; i++) {
 	bcopy (dataptr, bufr, MatBLKSIZE);
 	swab (bufr, bufr, MatBLKSIZE);
 	if ((status = cti_wblk (fptr, blk + i, bufr, 1)) != EXIT_SUCCESS) {
@@ -699,39 +708,39 @@ int cti_write_image_subheader (FILE *fptr, int blknum, const Image_subheader *he
     bufr [64] = header->num_dimensions;
     bufr [66] = header->dimension_1;
     bufr [67] = header->dimension_2;
-    sunftovaxf (header->x_origin, (unsigned short *) &bufr [80]);
-    sunftovaxf (header->y_origin, (unsigned short *) &bufr [82]);
-    sunftovaxf (header->recon_scale, (unsigned short *) &bufr [84]);
-    sunftovaxf (header->quant_scale, (unsigned short *) &bufr [86]);
+    hostftovaxf (header->x_origin, (unsigned short *) &bufr [80]);
+    hostftovaxf (header->y_origin, (unsigned short *) &bufr [82]);
+    hostftovaxf (header->recon_scale, (unsigned short *) &bufr [84]);
+    hostftovaxf (header->quant_scale, (unsigned short *) &bufr [86]);
     bufr [88] = header->image_min;
     bufr [89] = header->image_max;
-    sunftovaxf (header->pixel_size, (unsigned short *) &bufr [92]);
-    sunftovaxf (header->slice_width, (unsigned short *) &bufr [94]);
-    sunltovaxl (header->frame_duration, (unsigned short *) &bufr [96]);
-    sunltovaxl (header->frame_start_time, (unsigned short *) &bufr [98]);
+    hostftovaxf (header->pixel_size, (unsigned short *) &bufr [92]);
+    hostftovaxf (header->slice_width, (unsigned short *) &bufr [94]);
+    hostltovaxl (header->frame_duration, (unsigned short *) &bufr [96]);
+    hostltovaxl (header->frame_start_time, (unsigned short *) &bufr [98]);
     bufr [100] = header->slice_location;
     bufr [101] = header->recon_start_hour;
     bufr [102] = header->recon_start_minute;
     bufr [103] = header->recon_start_sec;
-    sunltovaxl (header->recon_duration, (unsigned short *) &bufr [104]);
+    hostltovaxl (header->recon_duration, (unsigned short *) &bufr [104]);
     bufr [118] = header->filter_code;
-    sunltovaxl (header->scan_matrix_num, (unsigned short *) &bufr [119]);
-    sunltovaxl (header->norm_matrix_num, (unsigned short *) &bufr [121]);
-    sunltovaxl (header->atten_cor_matrix_num, (unsigned short *) &bufr [123]);
-    sunftovaxf (header->image_rotation, (unsigned short *) &bufr [148]);
-    sunftovaxf (header->plane_eff_corr_fctr, (unsigned short *) &bufr [150]);
-    sunftovaxf (header->decay_corr_fctr, (unsigned short *) &bufr [152]);
-    sunftovaxf (header->loss_corr_fctr, (unsigned short *) &bufr [154]);
+    hostltovaxl (header->scan_matrix_num, (unsigned short *) &bufr [119]);
+    hostltovaxl (header->norm_matrix_num, (unsigned short *) &bufr [121]);
+    hostltovaxl (header->atten_cor_matrix_num, (unsigned short *) &bufr [123]);
+    hostftovaxf (header->image_rotation, (unsigned short *) &bufr [148]);
+    hostftovaxf (header->plane_eff_corr_fctr, (unsigned short *) &bufr [150]);
+    hostftovaxf (header->decay_corr_fctr, (unsigned short *) &bufr [152]);
+    hostftovaxf (header->loss_corr_fctr, (unsigned short *) &bufr [154]);
     bufr [188] = header->processing_code;
     bufr [190] = header->quant_units;
     bufr [191] = header->recon_start_day;
     bufr [192] = header->recon_start_month;
     bufr [193] = header->recon_start_year;
-    sunftovaxf (header->ecat_calibration_fctr, (unsigned short *) &bufr [194]);
-    sunftovaxf (header->well_counter_cal_fctr, (unsigned short *) &bufr [196]);
+    hostftovaxf (header->ecat_calibration_fctr, (unsigned short *) &bufr [194]);
+    hostftovaxf (header->well_counter_cal_fctr, (unsigned short *) &bufr [196]);
 
     for (int i=0; i<6; i++)
-        sunftovaxf (header->filter_params [i], (unsigned short *) &bufr [198+2*i]);
+        hostftovaxf (header->filter_params [i], (unsigned short *) &bufr [198+2*i]);
 
 #ifdef _SWAPEM_
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
@@ -767,19 +776,19 @@ int cti_write_main_header (FILE *fptr, const Main_header *header)
     bufr [36] = header->scan_start_hour;
     bufr [37] = header->scan_start_minute;
     bufr [38] = header->scan_start_second;
-    sunftovaxf (header->isotope_halflife, (unsigned short *) &bufr [43]);
-    sunftovaxf (header->gantry_tilt, (unsigned short *) &bufr [61]);
-    sunftovaxf (header->gantry_rotation, (unsigned short *) &bufr [63]);
-    sunftovaxf (header->bed_elevation, (unsigned short *) &bufr [65]);
+    hostftovaxf (header->isotope_halflife, (unsigned short *) &bufr [43]);
+    hostftovaxf (header->gantry_tilt, (unsigned short *) &bufr [61]);
+    hostftovaxf (header->gantry_rotation, (unsigned short *) &bufr [63]);
+    hostftovaxf (header->bed_elevation, (unsigned short *) &bufr [65]);
     bufr [67] = header->rot_source_speed;
     bufr [68] = header->wobble_speed;
     bufr [69] = header->transm_source_type;
-    sunftovaxf (header->axial_fov, (unsigned short *) &bufr [70]);
-    sunftovaxf (header->transaxial_fov, (unsigned short *) &bufr [72]);
+    hostftovaxf (header->axial_fov, (unsigned short *) &bufr [70]);
+    hostftovaxf (header->transaxial_fov, (unsigned short *) &bufr [72]);
     bufr [74] = header->transaxial_samp_mode;
     bufr [75] = header->coin_samp_mode;
     bufr [76] = header->axial_samp_mode;
-    sunftovaxf (header->calibration_factor, (unsigned short *) &bufr [77]);
+    hostftovaxf (header->calibration_factor, (unsigned short *) &bufr [77]);
     bufr [79] = header->calibration_units;
     bufr [80] = header->compression_code;
     bufr [175] = header->acquisition_type;
@@ -789,14 +798,14 @@ int cti_write_main_header (FILE *fptr, const Main_header *header)
     bufr [189] = header->num_frames;
     bufr [190] = header->num_gates;
     bufr [191] = header->num_bed_pos;
-    sunftovaxf (header->init_bed_position, (unsigned short *) &bufr [192]);
+    hostftovaxf (header->init_bed_position, (unsigned short *) &bufr [192]);
     for (int i=0; i<15; i ++)
-	sunftovaxf (header->bed_offset [i], (unsigned short *) &bufr [194 + 2 * i]);
-    sunftovaxf (header->plane_separation, (unsigned short *) &bufr [224]);
+	hostftovaxf (header->bed_offset [i], (unsigned short *) &bufr [194 + 2 * i]);
+    hostftovaxf (header->plane_separation, (unsigned short *) &bufr [224]);
     bufr [226] = header->lwr_sctr_thres;
     bufr [227] = header->lwr_true_thres;
     bufr [228] = header->upr_true_thres;
-    sunftovaxf (header->collimator, (unsigned short *) &bufr [229]);
+    hostftovaxf (header->collimator, (unsigned short *) &bufr [229]);
 
 #ifdef _SWAPEM_
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
@@ -860,28 +869,28 @@ int cti_write_scan_subheader (FILE *fptr, int blknum, const Scan_subheader *head
     bufr[67] = header->dimension_2;         // y_dimension
     bufr[68] = header->smoothing;
     bufr[69] = header->processing_code;
-    sunftovaxf (header->sample_distance, (unsigned short *) &bufr[73]);
-    sunftovaxf (header->isotope_halflife, (unsigned short *) &bufr[83]);
+    hostftovaxf (header->sample_distance, (unsigned short *) &bufr[73]);
+    hostftovaxf (header->isotope_halflife, (unsigned short *) &bufr[83]);
     bufr[85] = header->frame_duration_sec;
-    sunltovaxl (header->gate_duration, (unsigned short *) &bufr[86]);
-    sunltovaxl (header->r_wave_offset, (unsigned short *) &bufr[88]);
-    sunftovaxf (header->scale_factor, (unsigned short *) &bufr[91]);
+    hostltovaxl (header->gate_duration, (unsigned short *) &bufr[86]);
+    hostltovaxl (header->r_wave_offset, (unsigned short *) &bufr[88]);
+    hostftovaxf (header->scale_factor, (unsigned short *) &bufr[91]);
     bufr[96] = header->scan_min;
     bufr[97] = header->scan_max;
-    sunltovaxl (header->prompts, (unsigned short *) &bufr[98]);
-    sunltovaxl (header->delayed, (unsigned short *) &bufr[100]);
-    sunltovaxl (header->multiples, (unsigned short *) &bufr[102]);
-    sunltovaxl (header->net_trues, (unsigned short *) &bufr[104]);
+    hostltovaxl (header->prompts, (unsigned short *) &bufr[98]);
+    hostltovaxl (header->delayed, (unsigned short *) &bufr[100]);
+    hostltovaxl (header->multiples, (unsigned short *) &bufr[102]);
+    hostltovaxl (header->net_trues, (unsigned short *) &bufr[104]);
     for (int i=0; i<16; i++) {
-        sunftovaxf (header->cor_singles [i], (unsigned short *) &bufr [158 + 2 * i]);
-        sunftovaxf (header->uncor_singles [i], (unsigned short *) &bufr [190 + 2 * i]);
+        hostftovaxf (header->cor_singles [i], (unsigned short *) &bufr [158 + 2 * i]);
+        hostftovaxf (header->uncor_singles [i], (unsigned short *) &bufr [190 + 2 * i]);
     }
-    sunftovaxf (header->tot_avg_cor, (unsigned short *) &bufr[222]);
-    sunftovaxf (header->tot_avg_uncor, (unsigned short *) &bufr[224]);
-    sunltovaxl (header->total_coin_rate, (unsigned short *) &bufr[226]);
-    sunltovaxl (header->frame_start_time, (unsigned short *) &bufr[228]);
-    sunltovaxl (header->frame_duration,(unsigned short *)  &bufr[230]);
-    sunftovaxf (header->loss_correction_fctr, (unsigned short *) &bufr[232]);
+    hostftovaxf (header->tot_avg_cor, (unsigned short *) &bufr[222]);
+    hostftovaxf (header->tot_avg_uncor, (unsigned short *) &bufr[224]);
+    hostltovaxl (header->total_coin_rate, (unsigned short *) &bufr[226]);
+    hostltovaxl (header->frame_start_time, (unsigned short *) &bufr[228]);
+    hostltovaxl (header->frame_duration,(unsigned short *)  &bufr[230]);
+    hostftovaxf (header->loss_correction_fctr, (unsigned short *) &bufr[232]);
 
 #ifdef _SWAPEM_
     swab ((char *) bufr, (char *) bufr, MatBLKSIZE);
@@ -982,63 +991,183 @@ void swaw (short *from, short *to, int length)
     }
 }
 
-float get_vax_float (const unsigned short *bufr, int off)
-{
-	unsigned short t1, t2;
-	union {unsigned long t3; float t4;} test;
+/******************* conversions from/to VAX floats to host floats ***************/
+/* rewritten by Kris Thielemans */
 
-	if (bufr [off] == 0 && bufr [off + 1] == 0) return ((float) 0.0);
-	t1 = bufr [off] & 0x80ff;
-	t2 = (((bufr [off]) & 0x7f00) + 0xff00) & 0x7f00;
-	test.t3 = ((long) t1 + (long) t2) << 16;
-	test.t3 = test.t3 + bufr [off + 1];
-	
-	return (test.t4);
+#ifdef VAX
+// conversions are trivial
+typedef float VAXfloat;
+float VAXfl_to_fl(VAXfloat Va) { return Va; }
+VAXfloat fl_to_VAXfl(float a) { return a; }
+
+#else
+
+#ifdef _SWAPEM_
+/* definition for bigendian machines.
+   Do swab, swaw first before using this bit field.
+*/
+typedef struct
+        {
+          unsigned frc2 : 16;
+          unsigned sign : 1;
+          unsigned exp  : 8;
+          unsigned frc1 : 7;
+        } VAXfloat;
+#else
+/* definition for littleendian machines. */
+typedef struct
+        { unsigned frc1 : 7;
+          unsigned exp  : 8;
+          unsigned sign : 1;
+          unsigned frc2 : 16;
+        } VAXfloat;
+#endif
+
+/* routines for converting VAX floating point format into own format.
+   Code is in a generic form that should work on all machines
+   (it also works on VAX).
+   This might be slower than bit-manipulations, but ldexp() et al are probably
+   written in similar bit-manipulations anyway.
+
+   The code has been tested on Decstation, PC, SUN and VAX.
+*/
+float VAXfl_to_fl(VAXfloat Va)
+{ int sign;
+
+  if (Va.sign)
+    sign = -1;
+  else
+  { if (Va.exp==0)
+      return(0.0);
+    sign = 1;
+  }
+  return (float)(sign*ldexp((double)((0x800000 | Va.frc2) + (Va.frc1 * 0x10000)),
+                      Va.exp-128-24));
 }
 
+VAXfloat fl_to_VAXfl(float a)
+{ unsigned long imant;
+  double dmant;
+  int exp;
+  VAXfloat Va;
+
+  if (a==0)
+  { Va.sign = Va.exp = 0;
+    /* set frc to 0, this is not necessary , 
+       but it's easier to check consistency */
+    Va.frc1 = 0;
+    Va.frc2 = 0;
+    return (Va);
+  }
+  if (a>0.0)
+    Va.sign = 0;
+  else
+  { Va.sign = 1;
+    a = -a;
+  }
+  dmant = frexp(a,&exp);
+  if (exp<-127)
+  { Va.sign = Va.exp = 0;
+    return (Va);
+  }
+  if (exp>127)
+    warning("Floating point number %g too big for VAX format: I'll return garbage\n",a);
+
+  Va.exp = exp + 128;
+  imant = (unsigned long)0x7fffff & (unsigned long)ldexp(dmant,24);
+  /* Compiler can give "data conversion" warnings on the following,
+     but it's OK */
+  Va.frc1 = (unsigned)(imant >>16);
+  Va.frc2 = (unsigned)(imant & 0xffff);
+  return(Va);
+}
+
+#endif /* no VAX */
+
+float get_vax_float (const unsigned short *bufr, int off)
+{
+#ifdef _SWAPEM_
+  assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
+#else
+  assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
+#endif
+
+#ifdef VAX
+  return *(float *) (&bufr[off]));
+#else
+
+# ifdef _SWAPEM_
+  short int tmpbufr[2];
+  swaw((short int*) &bufr[off],(short int *) tmpbufr, 2);
+  return VAXfl_to_fl(*(VAXfloat *) (&tmpbufr));
+# else
+  return VAXfl_to_fl(*(VAXfloat *) (&bufr[off]));
+# endif	  
+#endif /* not VAX */
+
+}
+
+void hostftovaxf (const float in, unsigned short out [2])
+{
+#ifdef _SWAPEM_
+  assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
+#else
+  assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
+#endif
+
+  const VAXfloat tmp = fl_to_VAXfl(in);
+
+#ifdef _SWAPEM_         
+  swaw ((short *) &tmp,(short int *) &out[0], 2);
+  // swab is necessary by caller
+#else
+  union {
+    unsigned short t [2]; 
+    VAXfloat t4;
+  } test;
+  test.t4 = tmp;
+  out[0] = test.t[0];
+  out[1] = test.t[1];
+#endif
+}
+
+
+
+/*******************************************************************************
+	get_vax_long - get the indexed value from a buffer, a 32-bit vax long, and
+		convert it by swapping the words.
+		(vax int = vax long int = 32 bits; vax short = 16 bits)
+	
+	bufr - input data buffer.
+	off - index into buffer of first 16-bit word of the 32-bit value to convert.
+*******************************************************************************/
 long get_vax_long (const unsigned short *bufr, int off)
 {
 #ifdef _SWAPEM_
-    return ((bufr [off + 1] << 16) + bufr [off]);
+	return ((bufr [off + 1] << 16) + bufr [off]);
 #else
-    return *(long *) (&bufr[off]);
+	return *(long *) (&bufr[off]);
 #endif
 }
-
-void sunltovaxl (const long in, unsigned short out [2])
-{
+/*******************************************************************************
+	hostltovaxl - convert a sun long int to a vax long int -- i.e. swap the
+		16-bit words of the 32-bit long.
+		(sun long = sun int = 32 bits)
+	
+	in - value to convert.
+	out - result.
+*******************************************************************************/
+void hostltovaxl (const long in, unsigned short out [2])
+{  
 #ifdef _SWAPEM_
-    out [0] = (in & 0x0000FFFF);
-    out [1] = (in & 0xFFFF0000) >> 16;
+	out [0] = (in & 0x0000FFFF);
+	out [1] = (in & 0xFFFF0000) >> 16;
 #else
-    out[0] = (in & 0xFFFF0000) >> 16;
-    out [1] = (in & 0x0000FFFF);
+	out[0] = (in & 0xFFFF0000) >> 16;
+        out [1] = (in & 0x0000FFFF);
 #endif
 }
 
-void sunftovaxf (const float in, unsigned short out [2])
-{
-    union {
-        unsigned short t [2];
-        float t4;
-    } 
-    test;	
-    unsigned short exp;
-
-    out [0] = 0;
-    out [1] = 0;
-
-#ifdef _SWAPEM_
-    swaw ((short *) &in,(short int *) &test.t[0], 2);
-#else
-    test.t4 = in;
-#endif
-    if (test.t4 == 0.0) return; // all set, it is zero!!
-    exp = ((test.t [0] & 0x7f00) + 0x0100) & 0x7f00; 
-    test.t [0] = (test.t [0] & 0x80ff) + exp;  
-    out [0] = ((test.t [1] + 256) & 0xff00) | (test.t [1] & 0x00ff);
-    out [1] = ((test.t [0] - 256) & 0xff00) | (test.t [0] & 0x00ff);
-}
 
 void dump_main_header (FILE *fptr, const Main_header *mhead)
 {
@@ -1146,7 +1275,7 @@ Main_header main_zero_fill()
     v_mhead.num_frames= 1; // used for matnum, so set coherent default values
     v_mhead.num_gates= 0;
     v_mhead.num_bed_pos= 0;
-    v_mhead.sw_version= -1;
+    v_mhead.sw_version= 64;
     v_mhead.data_type= -1;
     v_mhead.system_type= -1;
     v_mhead.file_type= -1;
