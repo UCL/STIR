@@ -36,9 +36,6 @@ $(DEST)%.o : %.cxx
 #I agree that this Makefile become big but it is the only way to update 
 #correctly  all the object files
 
-$(DEST)KeyParser.o: KeyParser.cxx ../include/KeyParser.h \
- ../include/NumericInfo.h ../include/pet_common.h ../include/line.h
-
 $(DEST)NumericInfo.o: NumericInfo.cxx ../include/NumericInfo.h \
  ../include/pet_common.h
 
@@ -48,11 +45,10 @@ $(DEST)PETScanInfo.o: PETScanInfo.cxx ../include/pet_common.h \
 $(DEST)PETScannerInfo.o: PETScannerInfo.cxx ../include/pet_common.h \
  ../include/PETScannerInfo.h
 
+# KT 22/10/98 removed higher dimensional dependencies
 $(DEST)Tensor1D.o: Tensor1D.cxx ../include/pet_common.h ../include/Tensor1D.h \
  ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
- ../include/VectorWithOffset.h ../include/convert.h \
- ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
- ../include/Tensor4D.h
+ ../include/VectorWithOffset.h ../include/convert.h 
 
 $(DEST)convert.o: convert.cxx ../include/pet_common.h ../include/Tensor1D.h \
  ../include/NumericInfo.h ../include/NumericVectorWithOffset.h \
@@ -60,10 +56,17 @@ $(DEST)convert.o: convert.cxx ../include/pet_common.h ../include/Tensor1D.h \
  ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
  ../include/Tensor4D.h
 
-$(DEST)interfilereader.o: interfilereader.cxx
+# KT 22/10/98 removed
+#$(DEST)interfilereader.o: interfilereader.cxx
+
+# KT 22/10/98 moved down to group Interfile stuff
+$(DEST)KeyParser.o: KeyParser.cxx ../include/KeyParser.h \
+ ../include/NumericInfo.h ../include/pet_common.h ../include/line.h
 
 #CL 19/10/98 ADd this file as I have forgotten to include it
+# KT 22/10/98 add InterfileHeader dependency
 $(DEST)interfile.o: interfile.cxx ../include/interfile.h \
+ ../include/InterfileHeader.h \
  ../include/KeyParser.h ../include/NumericInfo.h \
  ../include/pet_common.h ../include/imagedata.h ../include/Tensor2D.h \
  ../include/Tensorbase.h ../include/NumericVectorWithOffset.h \
@@ -72,9 +75,16 @@ $(DEST)interfile.o: interfile.cxx ../include/interfile.h \
  ../include/utilities.h ../include/sinodata.h \
  ../include/PETScannerInfo.h
 
+# KT 22/10/98 add InterfileHeader 
+$(DEST)InterfileHeader.o: InterfileHeader.cxx \
+ ../include/interfile.h \
+ ../include/InterfileHeader.h \
+ ../include/pet_common.h
+
 $(DEST)line.o: line.cxx ../include/line.h
 
-$(DEST)pet_string.o: pet_string.cxx ../include/pet_string.h
+# KT 22/10/98 removed
+#$(DEST)pet_string.o: pet_string.cxx ../include/pet_string.h
 
 $(DEST)sinodata.o: sinodata.cxx ../include/pet_common.h ../include/sinodata.h \
  ../include/Tensor1D.h ../include/NumericInfo.h \
@@ -103,21 +113,18 @@ $(DEST)bbfilters.o: bbfilters.cxx ../include/pet_common.h \
  ../include/NumericInfo.h ../include/Tensor1D.h ../include/Tensor3D.h \
  ../include/Point3D.h ../include/debug.h ../include/TensorFunction.h
 
-# KT 30/07/98 added utilities
-# KT 03/09/98 added NumericInfo
-#CL 300998 added PETScanInfo.cxx  file
+# CL 300998 added PETScanInfo.cxx  file
+# KT 22/10/98 added InterfileHeader.o
 $(DEST)libbuildblock.a: $(DEST)sinodata.o $(DEST)convert.o \
-   	$(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
-	$(DEST)Tensor1D.o $(DEST)viewdata.o \
-   	$(DEST)utilities.o $(DEST)NumericInfo.o \
-   	$(DEST)KeyParser.o $(DEST)line.o \
-	$(DEST)interfile.o $(DEST)bbfilters.o 
+  $(DEST)PETScannerInfo.o $(DEST)PETScanInfo.o \
+  $(DEST)Tensor1D.o $(DEST)viewdata.o \
+  $(DEST)utilities.o $(DEST)NumericInfo.o \
+  ${DEST}KeyParser.o ${DEST}line.o \
+  ${DEST}interfile.o ${DEST}InterfileHeader.o \
+  ${DEST}bbfilters.o
 	ar r $@ $?
 	ranlib $@
 
-
-# KT 03/09/98 removed pet_string
-$(DEST)libinterfile.a: $(DEST)KeyParser.o $(DEST)line.o 
 
 #KT 30/07/98 added DEST
 clean: 
