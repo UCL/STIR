@@ -10,9 +10,9 @@
   \author Kris Thielemans
   \author PARAPET project
   
-  \date $Date$
+  \date 00/06/15
 
-  \version $Revision$
+  \version 1.8
 */
 
 //some miscellaneous operators for sinograms and images
@@ -423,9 +423,10 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 	}
 	else
 	{ 
-	  if(denominator[z][y][x]<=small_value) 
+	  //MJ 20/6/2000 use fabs(). 
+	  if(fabs(denominator[z][y][x])<=small_value) 
 	  {
-	    if(numerator[z][y][x]>small_value) count++;	
+	    if(fabs(numerator[z][y][x])>small_value) count++;	
 	    numerator[z][y][x]=0;
 	  }	      
 	  else 
