@@ -229,441 +229,59 @@ public:
 // we'll assume scaleT==float
 #define scaleT float
 
-/************** float, short *********************/
+#define T1equalT2
 #define T1 float
-#define T2 short
-
-class convert_array_auxiliary<1, T1, T2, scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T2>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    
-    const NumericInfo<T2> info2;
-    
-    find_scale_factor(scale_factor, data_in, info2);
-    if (scale_factor == 0)
-    {
-      // data_in contains only 0
-      data_out.fill(0);
-    }
-    else
-    {
-      // do actual conversion
-      convert_array_fixed_scale_factor(data_out, scale_factor, data_in);
-    }
-  }
-
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T2>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    // KT: I coded the various checks on the data types in the loop.
-    // This is presumably slow, but all these conditionals can be 
-    // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
-    for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
-    {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
-      {
-	// truncate negatives
-	*out_iter = 0;
-      }
-      else
-	*out_iter = 
- 	  NumericInfo<T2>().integer_type() ?
-	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
-            static_cast<T2>(*in_iter / scale_factor);
-    }
-  }
-};
-
-#undef T1
-#undef T2
-
-/************** float, unsigned short *********************/
-#define T1 float
-#define T2 unsigned short
-
-class convert_array_auxiliary<1, T1, T2, scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T2>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    
-    const NumericInfo<T2> info2;
-    
-    find_scale_factor(scale_factor, data_in, info2);
-    if (scale_factor == 0)
-    {
-      // data_in contains only 0
-      data_out.fill(0);
-    }
-    else
-    {
-      // do actual conversion
-      convert_array_fixed_scale_factor(data_out, scale_factor, data_in);
-    }
-  }
-
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T2>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    // KT: I coded the various checks on the data types in the loop.
-    // This is presumably slow, but all these conditionals can be 
-    // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
-    for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
-    {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
-      {
-	// truncate negatives
-	*out_iter = 0;
-      }
-      else
-	*out_iter = 
- 	  NumericInfo<T2>().integer_type() ?
-	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
-            static_cast<T2>(*in_iter / scale_factor);
-    }
-  }
-};
-
-#undef T1
-#undef T2
-
-/************** short, float *********************/
-#define T1 short
 #define T2 float
-
-class convert_array_auxiliary<1, T1, T2, scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T2>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    
-    const NumericInfo<T2> info2;
-    
-    find_scale_factor(scale_factor, data_in, info2);
-    if (scale_factor == 0)
-    {
-      // data_in contains only 0
-      data_out.fill(0);
-    }
-    else
-    {
-      // do actual conversion
-      convert_array_fixed_scale_factor(data_out, scale_factor, data_in);
-    }
-  }
-
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T2>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    // KT: I coded the various checks on the data types in the loop.
-    // This is presumably slow, but all these conditionals can be 
-    // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
-    for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
-    {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
-      {
-	// truncate negatives
-	*out_iter = 0;
-      }
-      else
-	*out_iter = 
- 	  NumericInfo<T2>().integer_type() ?
-	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
-            static_cast<T2>(*in_iter / scale_factor);
-    }
-  }
-};
-
-#undef T1
-#undef T2
-
-/************** short, unsigned short *********************/
+#include "convert_array1d.cxx"
 #define T1 short
-#define T2 unsigned short
-
-class convert_array_auxiliary<1, T1, T2, scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T2>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    
-    const NumericInfo<T2> info2;
-    
-    find_scale_factor(scale_factor, data_in, info2);
-    if (scale_factor == 0)
-    {
-      // data_in contains only 0
-      data_out.fill(0);
-    }
-    else
-    {
-      // do actual conversion
-      convert_array_fixed_scale_factor(data_out, scale_factor, data_in);
-    }
-  }
-
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T2>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    // KT: I coded the various checks on the data types in the loop.
-    // This is presumably slow, but all these conditionals can be 
-    // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
-    for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
-    {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
-      {
-	// truncate negatives
-	*out_iter = 0;
-      }
-      else
-	*out_iter = 
- 	  NumericInfo<T2>().integer_type() ?
-	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
-            static_cast<T2>(*in_iter / scale_factor);
-    }
-  }
-};
-
-#undef T1
-#undef T2
-
-/************** unsigned short, short *********************/
+#define T2 short
+#include "convert_array1d.cxx"
 #define T1 unsigned short
 #define T2 short
+#include "convert_array1d.cxx"
+#define T1 signed char
+#define T2 short
+#include "convert_array1d.cxx"
 
-class convert_array_auxiliary<1, T1, T2, scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T2>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    
-    const NumericInfo<T2> info2;
-    
-    find_scale_factor(scale_factor, data_in, info2);
-    if (scale_factor == 0)
-    {
-      // data_in contains only 0
-      data_out.fill(0);
-    }
-    else
-    {
-      // do actual conversion
-      convert_array_fixed_scale_factor(data_out, scale_factor, data_in);
-    }
-  }
+#undef T1equalT2
 
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T2>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    // KT: I coded the various checks on the data types in the loop.
-    // This is presumably slow, but all these conditionals can be 
-    // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
-    for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
-    {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
-      {
-	// truncate negatives
-	*out_iter = 0;
-      }
-      else
-	*out_iter = 
- 	  NumericInfo<T2>().integer_type() ?
-	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
-            static_cast<T2>(*in_iter / scale_factor);
-    }
-  }
-};
+#define T1 float
+#define T2 signed char
+#include "convert_array1d.cxx"
+#define T1 signed char
+#define T2 float
+#include "convert_array1d.cxx"
+#define T1 short
+#define T2 signed char
+#include "convert_array1d.cxx"
+#define T1 signed char
+#define T2 short
+#include "convert_array1d.cxx"
+#define T1 unsigned short
+#define T2 signed char
+#include "convert_array1d.cxx"
+#define T1 signed char
+#define T2 unsigned short
+#include "convert_array1d.cxx"
 
-#undef T1
-#undef T2
-
-/************** unsigned short, float *********************/
+#define T1 float
+#define T2 short
+#include "convert_array1d.cxx"
+#define T1 float
+#define T2 unsigned short
+#include "convert_array1d.cxx"
+#define T1 short
+#define T2 float
+#include "convert_array1d.cxx"
+#define T1 short
+#define T2 unsigned short
+#include "convert_array1d.cxx"
+#define T1 unsigned short
+#define T2 short
+#include "convert_array1d.cxx"
 #define T1 unsigned short
 #define T2 float
-
-class convert_array_auxiliary<1, T1, T2, scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T2>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    
-    const NumericInfo<T2> info2;
-    
-    find_scale_factor(scale_factor, data_in, info2);
-    if (scale_factor == 0)
-    {
-      // data_in contains only 0
-      data_out.fill(0);
-    }
-    else
-    {
-      // do actual conversion
-      convert_array_fixed_scale_factor(data_out, scale_factor, data_in);
-    }
-  }
-
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T2>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    // KT: I coded the various checks on the data types in the loop.
-    // This is presumably slow, but all these conditionals can be 
-    // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
-    for (;
-         in_iter != data_in.end();
-         in_iter++, out_iter++)
-    {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
-      {
-	// truncate negatives
-	*out_iter = 0;
-      }
-      else
-	*out_iter = 
- 	  NumericInfo<T2>().integer_type() ?
-	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
-            static_cast<T2>(*in_iter / scale_factor);
-    }
-  }
-};
-
-#undef T1
-#undef T2
-
-/******************* float, float ***************/
-#define T1 float
-class convert_array_auxiliary<1,T1,T1,scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T1>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    scale_factor = 1;
-    data_out= data_in;
-  }
-
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T1>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    assert(scale_factor == 1);
-    data_out= data_in;
-  }
-};
-#undef T1
-
-/******************* short, short ***************/
-#define T1 short
-class convert_array_auxiliary<1,T1,T1,scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T1>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    scale_factor = 1;
-    data_out= data_in;
-  }
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T1>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    assert(scale_factor == 1);
-    data_out= data_in;
-  }
-};
-#undef T1
-
-/******************* unsigned short, unsigned short ***************/
-#define T1 unsigned short
-class convert_array_auxiliary<1,T1,T1,scaleT>
-{
-public:
-  static inline void
-    convert_array(Array<1,T1>& data_out, 
-                  scaleT& scale_factor,
-                  const Array<1,T1>& data_in)
-  {
-    scale_factor = 1;
-    data_out= data_in;
-  }
-  static inline void
-    convert_array_fixed_scale_factor(
-       Array<1,T1>& data_out, 
-       const scaleT scale_factor,
-       const Array<1,T1>& data_in)
-  {
-    assert(scale_factor == 1);
-    data_out= data_in;
-  }
-};
-#undef T1
+#include "convert_array1d.cxx"
 
 #undef scaleT
 
@@ -790,14 +408,13 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
    void find_scale_factor<>(float& scale_factor, \
                             const Array<dim,type_in>& data_in, \
 			    const NumericInfo<type_out> info_out);
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(1, float, signed char);
 INSTANTIATE(1, signed char, float);
 INSTANTIATE(1, short, signed char);
 INSTANTIATE(1, signed char, short);
 INSTANTIATE(1, unsigned short, signed char);
 INSTANTIATE(1, signed char, unsigned short);
-#endif
+
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
 INSTANTIATE(1, short, float);
@@ -805,22 +422,19 @@ INSTANTIATE(1, unsigned short, float);
 INSTANTIATE(1, unsigned short, short);
 INSTANTIATE(1, short, unsigned short);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(1, signed char, signed char);
-#endif
 INSTANTIATE(1, short, short);
 INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(2, float, signed char);
 INSTANTIATE(2, signed char, float);
 INSTANTIATE(2, short, signed char);
 INSTANTIATE(2, signed char, short);
 INSTANTIATE(2, unsigned short, signed char);
 INSTANTIATE(2, signed char, unsigned short);
-#endif
+
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
 INSTANTIATE(2, short, float);
@@ -828,21 +442,18 @@ INSTANTIATE(2, unsigned short, float);
 INSTANTIATE(2, unsigned short, short);
 INSTANTIATE(2, short, unsigned short);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(2, signed char, signed char);
-#endif
 INSTANTIATE(2, short, short);
 INSTANTIATE(2, unsigned short, unsigned short);
 INSTANTIATE(2, float, float);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(3, float, signed char);
 INSTANTIATE(3, signed char, float);
 INSTANTIATE(3, short, signed char);
 INSTANTIATE(3, signed char, short);
 INSTANTIATE(3, unsigned short, signed char);
 INSTANTIATE(3, signed char, unsigned short);
-#endif
+
 INSTANTIATE(3, float, short);
 INSTANTIATE(3, float, unsigned short);
 INSTANTIATE(3, short, float);
@@ -850,14 +461,11 @@ INSTANTIATE(3, unsigned short, float);
 INSTANTIATE(3, unsigned short, short);
 INSTANTIATE(3, short, unsigned short);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(3, signed char, signed char);
-#endif
 INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
 INSTANTIATE(4, float, signed char);
 INSTANTIATE(4, signed char, float);
 INSTANTIATE(4, short, signed char);
@@ -865,7 +473,7 @@ INSTANTIATE(4, signed char, short);
 INSTANTIATE(4, unsigned short, signed char);
 INSTANTIATE(4, signed char, unsigned short);
 INSTANTIATE(4, signed char, signed char);
-#endif
+
 INSTANTIATE(4, float, short);
 INSTANTIATE(4, float, unsigned short);
 INSTANTIATE(4, short, float);
@@ -895,7 +503,7 @@ INSTANTIATE(4, float, float);
 
 
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(1, float, signed char);
 INSTANTIATE(1, signed char, float);
 INSTANTIATE(1, short, signed char);
@@ -915,7 +523,7 @@ INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(2, float, signed char);
 INSTANTIATE(2, signed char, float);
 INSTANTIATE(2, short, signed char);
@@ -934,7 +542,7 @@ INSTANTIATE(2, short, short);
 INSTANTIATE(2, unsigned short, unsigned short);
 INSTANTIATE(2, float, float);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(3, float, signed char);
 INSTANTIATE(3, signed char, float);
 INSTANTIATE(3, short, signed char);
@@ -953,7 +561,7 @@ INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
-#if !defined(_MSC_VER) || _MSC_VER>=1300
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(4, float, signed char);
 INSTANTIATE(4, signed char, float);
 INSTANTIATE(4, short, signed char);
