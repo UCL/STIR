@@ -733,10 +733,10 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	  // to prevent form aliasing limit the new range for the coefficients to 
 	  // filter_coefficients_padded.get_length()/4
 	  
-	  
+	  //cerr << " X DIERCTION NOW" << endl;
 	  // do the x -direction first -- fix y and z to the min and look for the max index in x
 	  int jy = new_filter_coefficients_2D_array_tmp.get_min_index();
-	  for (int i=new_filter_coefficients_2D_array_tmp[jy].get_min_index();i<=filter_coefficients_padded[jy].get_max_index()/4;i++)
+	  for (int i=new_filter_coefficients_2D_array_tmp[jy].get_min_index();i<=filter_coefficients_padded[jy].get_max_index()/2;i++)
 	  {
 	    if (fabs((double)new_filter_coefficients_2D_array_tmp[jy][i])
 	      <= new_filter_coefficients_2D_array_tmp[new_filter_coefficients_2D_array_tmp.get_min_index()][new_filter_coefficients_2D_array_tmp.get_min_index()]*1/1000000) break;
@@ -747,7 +747,7 @@ construct_scaled_filter_coefficients_2D(Array<2,float> &new_filter_coefficients_
 	  
 	  
 	  int ix = new_filter_coefficients_2D_array_tmp[new_filter_coefficients_2D_array_tmp.get_min_index()].get_min_index();
-	  for (int j=new_filter_coefficients_2D_array_tmp.get_min_index();j<=filter_coefficients_padded.get_max_index()/4;j++)
+	  for (int j=new_filter_coefficients_2D_array_tmp.get_min_index();j<=filter_coefficients_padded.get_max_index()/2;j++)
 	  {
 	    if (fabs((double)new_filter_coefficients_2D_array_tmp[j][ix])
 	      //= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()]*1/100000000) break;
@@ -883,6 +883,7 @@ ModifiedInverseAveragingImageFilterAll(string proj_data_filename_v,
 				    DiscretisedDensity<3,float>* initial_image_v,
 				    DiscretisedDensity<3,float>* sensitivity_image_v,
 				    DiscretisedDensity<3,float>* precomputed_coefficients_image_v,
+				    DiscretisedDensity<3,float>* normalised_bck_image_v,
 				    int mask_size_v,  int num_dim_v)
 
 				    
@@ -899,6 +900,7 @@ ModifiedInverseAveragingImageFilterAll(string proj_data_filename_v,
   initial_image = initial_image_v;
   sensitivity_image = sensitivity_image_v;
   precomputed_coefficients_image = precomputed_coefficients_image_v;
+  normalised_bck_image = normalised_bck_image_v;
   mask_size= mask_size_v;
   num_dim = num_dim_v;
 }
@@ -934,6 +936,13 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
       DiscretisedDensity<3,float>::read_from_file(precomputed_coefficients_filename);
    else
      precomputed_coefficients_image =NULL; 
+
+   if (normalised_bck_filename !="1")
+     normalised_bck_image = 
+      DiscretisedDensity<3,float>::read_from_file(normalised_bck_filename);
+   else
+     normalised_bck_image =NULL; 
+
 
 
     return Succeeded::yes;
@@ -1159,7 +1168,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
 	  
 	}
 	float sq_kapas;
-	float multiply_with_sensitivity;
+//	float multiply_with_sensitivity;
 	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	{ 
@@ -1472,7 +1481,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	  
 	}
 	float sq_kapas;
-	float multiply_with_sensitivity;
+//	float multiply_with_sensitivity;
 	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	{ 
@@ -2316,9 +2325,43 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	     else
 	     {
 	       Array<2,elemT> single_pixel(IndexRange2D(j,j,i,i));
-	         
-		(*all_filter_coefficients_nonseparable_2D[k][j][i])(single_pixel,in_density[k]);
-		 out_density[k][j][i] = single_pixel[j][i];
+	       if ( k==in_density_cast_0.get_min_z() && j==in_density_cast_0.get_min_y() 
+		 && i==in_density_cast_0.get_min_x() && count == 300)
+	       { 
+		 cerr <<  " IN the LOOP "  << k << "   " << j << "  " <<i << "   " << endl;
+		 for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
+		   for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
+		     for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
+		     { 
+		       Array <2,float> new_coeffs;
+		       if(in_density_cast_0[k][j][i] >0.00001 )
+		       {
+			 VoxelsOnCartesianGrid<float> *  newly_computed_coeff =
+			 new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
+			 in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y(),
+			 in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()),
+			 in_density.get_origin(),in_density_cast_0.get_voxel_size()); 
+
+			 VoxelsOnCartesianGrid<float> *  normalised_bck_image_cast =
+			   dynamic_cast< VoxelsOnCartesianGrid<float> * > (normalised_bck_image);	 			 
+			 VoxelsOnCartesianGrid<float> *  sensitivity_image_cast =
+			   dynamic_cast< VoxelsOnCartesianGrid<float> * > (sensitivity_image);	 
+			
+			 
+			 precompute_filter_coefficients_for_second_apporach(*newly_computed_coeff,
+							in_density_cast_0,
+							*sensitivity_image_cast,
+							*normalised_bck_image_cast);
+			 construct_scaled_filter_coefficients_2D(new_coeffs,filter_coefficients,1/(*newly_computed_coeff)[k][j][i]); 
+			 all_filter_coefficients_nonseparable_2D[k][j][i] = 
+			   new ArrayFilter2DUsingConvolution<float>(new_coeffs);	
+			 delete newly_computed_coeff;
+		       }       
+		       
+		     }
+	       }
+	       (*all_filter_coefficients_nonseparable_2D[k][j][i])(single_pixel,in_density[k]);
+	        out_density[k][j][i] = single_pixel[j][i];
 	     }
 	    
 	     
@@ -2356,6 +2399,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::set_defaults()
   sensitivity_image_filename ='1';
   sensitivity_image = NULL;
   precomputed_coefficients_filename ='1';
+  normalised_bck_filename ='1';
+  normalised_bck_image =NULL;
   precomputed_coefficients_image =NULL;
   attenuation_proj_data_ptr = NULL;
   mask_size = 0;
@@ -2376,6 +2421,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>:: initialise_keymap()
   parser.add_key("mask_size", &mask_size);
   parser.add_key("num_dim", & num_dim);
   parser.add_key ("precomputed_coefficients_filename", &precomputed_coefficients_filename);
+  parser.add_key ("normalised_bck_filename", &normalised_bck_filename);  
   parser.add_stop_key("END Modified Inverse Image Filter All Parameters");
 }
 
