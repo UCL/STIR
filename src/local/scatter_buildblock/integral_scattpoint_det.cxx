@@ -37,11 +37,17 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 	const VoxelsOnCartesianGrid<float>& image =
 			dynamic_cast<const VoxelsOnCartesianGrid<float>& >(discretised_image);
 	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
+	
+	CartesianCoordinate3D<float>  origin = 
+		image.get_origin();
+	const float z_to_middle =
+		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
+	origin.z() -= z_to_middle;
 
 		ProjMatrixElemsForOneBin lor;
 		RayTraceVoxelsOnCartesianGrid(lor, 
-			scatter_point/voxel_size,  // should be in voxel units
-			detector_coord/voxel_size, // should be in voxel units
+			(scatter_point-origin)/voxel_size,  // should be in voxel units
+			(detector_coord-origin)/voxel_size, // should be in voxel units
 			voxel_size, //should be in mm
 #ifdef NEWSCALE
 				  1.F // normalise to mm
@@ -52,7 +58,7 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 		float sum = 0;  // add up values along LOR
 		{     
 			ProjMatrixElemsForOneBin::iterator element_ptr =lor.begin() ;
-			
+			bool we_have_been_within_the_image = false;
 			while (element_ptr != lor.end())
 			{
 				const BasicCoordinate<3,int> coords = element_ptr->get_coords();
@@ -63,9 +69,16 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 					coords[2] <= image[coords[1]].get_max_index() &&
 					coords[3] >= image[coords[1]][coords[2]].get_min_index() && 
 					coords[3] <= image[coords[1]][coords[2]].get_max_index())
+				{
+					we_have_been_within_the_image = true;
 					sum += image[coords] * element_ptr->get_value();				
-				else
-					break;
+				}
+				else if (we_have_been_within_the_image)
+				{
+					// we jump out of the loop as we are now at the other side of 
+					// the image
+					break; 
+				}
 				++element_ptr;		
 			}	      
 		}  		
