@@ -38,6 +38,7 @@ class SeparableGaussianImageFilter :
   public 
     RegisteredParsingObject<
         SeparableGaussianImageFilter<elemT>,
+        ImageProcessor<num_dimensions,elemT>,
         ImageProcessor<num_dimensions,elemT>
     >
 {

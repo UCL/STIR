@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock  
+  \ingroup ImageProcessor  
   \brief Declaration of class multiply_plane_scale_factorsImageProcessor
     
   \author Kris Thielemans
@@ -42,6 +42,7 @@ class multiply_plane_scale_factorsImageProcessor :
   public 
     RegisteredParsingObject<
         multiply_plane_scale_factorsImageProcessor<elemT>,
+        ImageProcessor<3,elemT>,
         ImageProcessor<3,elemT>
     >
 {

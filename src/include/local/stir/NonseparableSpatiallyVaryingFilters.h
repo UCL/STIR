@@ -1,5 +1,5 @@
 //
-// $Id: 
+// $Id$
 //
 /*!
 
@@ -13,8 +13,8 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
       
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$
 */
 /*
     Copyright (C) 2000- $Date$, IRSL
@@ -52,6 +52,7 @@ class NonseparableSpatiallyVaryingFilters:
 public 
     RegisteredParsingObject<
         NonseparableSpatiallyVaryingFilters<elemT>,
+        ImageProcessor<num_dimensions,elemT>,
         ImageProcessor<num_dimensions,elemT>
     >
 {

@@ -36,6 +36,7 @@ class DAVImageFilter3D:
   public 
       RegisteredParsingObject<
 	      DAVImageFilter3D<elemT>,
+              ImageProcessor<3,elemT>,
               ImageProcessor<3,elemT>
 	       >
 

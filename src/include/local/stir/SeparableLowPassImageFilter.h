@@ -38,6 +38,7 @@ class SeparableLowPassImageFilter :
   public 
     RegisteredParsingObject<
         SeparableLowPassImageFilter<elemT>,
+        ImageProcessor<num_dimensions,elemT>,
         ImageProcessor<num_dimensions,elemT>
     >
 {
