@@ -304,7 +304,7 @@ calculate_proj_matrix_elems_for_one_bin(
   // do actual computation for this LOR
     const float halfcosplussin = (1+tphi)/2;
     const float halfcosminsin = (1-tphi)/2;
-    const float bin_size = proj_data_info_ptr->get_sampling_in_s(bin);
+    const float bin_size = proj_data_info_ptr->get_sampling_in_s(bin)*2;// factor 2 necessary for actual detector size TODO
     //? 1/x *2 ?
     const float half_bin_size = bin_size/2/voxel_size.x()/cphi;
     const float fovrad = fovrad_in_mm/voxel_size.x();
@@ -350,7 +350,7 @@ calculate_proj_matrix_elems_for_one_bin(
             SA(s_voxel, half_bin_size, m2,m3,halfcosminsin,halfcosplussin) *
               height_of_trapezoid;
           //assert(Pbv>0);
-          // warning: threshold depends on scale (currently max is about 1)
+          // warning: threshold depends on scale (currently VOI max is 1)
           if (Pbv>.0001)
 	  lor.push_back(ProjMatrixElemsForOneBin::value_type(Coordinate3D<int>(0,Y,X),Pbv)); 
           // this could be made with  break
