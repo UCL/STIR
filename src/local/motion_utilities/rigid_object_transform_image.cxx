@@ -13,14 +13,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
-#include "local/stir/motion/object_3d_transform_image.h"
+#include "local/stir/motion/transform_3d_object.h"
 #include "local/stir/Quaternion.h"
 #include "stir/CPUTimer.h"
 #include <string>
@@ -89,8 +89,12 @@ int main(int argc, char **argv)
   CPUTimer timer;
   timer.start();
 
-  object_3d_transform_image(*out_density_sptr, *in_density_sptr,
-			    rigid_object_transformation);
+  if (transform_3d_object(*out_density_sptr, *in_density_sptr,
+			  rigid_object_transformation) == Succeeded::no)
+    {
+      warning("Error transforming data\n");
+      exit(EXIT_FAILURE);
+    }
 
   timer.stop();
   cerr << "CPU time " << timer.value() << endl;

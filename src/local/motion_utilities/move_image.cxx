@@ -31,7 +31,7 @@
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
-#include "local/stir/motion/object_3d_transform_image.h"
+#include "local/stir/motion/transform_3d_object.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
@@ -222,7 +222,7 @@ process_data()
 	rigid_object_transformation = 
 	  rigid_object_transformation.inverse();
 
-      object_3d_transform_image(*out_density_sptr, *in_density_sptr,
+      transform_3d_object(*out_density_sptr, *in_density_sptr,
 				rigid_object_transformation);
 
 
