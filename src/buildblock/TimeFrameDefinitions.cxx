@@ -10,10 +10,10 @@
   \author Kris Thielemans
   
   $Date$
-  $Revision $
+  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -51,6 +51,13 @@ get_end_time(unsigned int frame_num) const
 
 double
 TimeFrameDefinitions::
+get_duration(unsigned int frame_num) const
+{
+  return get_end_time(frame_num) - get_start_time(frame_num);
+}
+
+double
+TimeFrameDefinitions::
 get_start_time() const
 {
   return get_start_time(1);
@@ -74,8 +81,6 @@ TimeFrameDefinitions::
 TimeFrameDefinitions()
 {}
 
-// TODO linesapparently  have to end with a newline, otherwise they are ignored
-// (but why?)
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& fdef_filename)
 {
@@ -90,7 +95,7 @@ TimeFrameDefinitions(const string& fdef_filename)
     int num;
     double duration;
     in >> num >> duration;
-    if (!in || in.eof())
+    if (!in)
       break;
     if (num<0 || duration<=0)
         error("Reading frame_def file %s: encountered negative numbers (%d, %g)\n",
@@ -107,7 +112,7 @@ TimeFrameDefinitions(const string& fdef_filename)
       previous_end_time+=duration;
     }
   }
-
+#if 0
   cerr << "Frame definitions:\n{";
   for (unsigned frame_num=1; frame_num<=get_num_frames(); ++frame_num)
   {
@@ -118,6 +123,7 @@ TimeFrameDefinitions(const string& fdef_filename)
       cerr << ',';
   }
   cerr << '}' << endl;
+#endif
 }
 
 TimeFrameDefinitions::
