@@ -83,11 +83,16 @@ correct_projdata Parameters :=
   ; scatter term to be subtracted AFTER norm+atten correction
   ; defaults to 0
   ;scatter projdata filename := scatter.hs
+
+  ; to interpolate to uniform sampling in 's', set value to 1
+  ; arc correction := 1
 END:= 
 \endverbatim
 
 Time frame definition is only necessary when the normalisation type uses
 this time info for dead-time correction.
+
+\warning arc-correction can currently not be undone.
 
 The following gives a brief explanation of the non-obvious parameters. 
 
