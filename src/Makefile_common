@@ -9,6 +9,7 @@ BUILD=opt
 
 WORKSPACE = ${HOME}/PPhead
 INCLUDE_DIR = ${WORKSPACE}/include
+INSTALL_DIR = ${HOME}/bin
 
 # location of .o, .a and executables, set DEST if you don't agree with the default
 ifndef DEST
