@@ -56,6 +56,10 @@ public:
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
 
+  virtual 
+    Bin
+    get_bin(const LOR<float>&) const;
+
   virtual string parameter_info() const;
 private:
   
