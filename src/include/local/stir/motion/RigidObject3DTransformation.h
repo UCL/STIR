@@ -25,6 +25,8 @@
 #include "local/stir/Quaternion.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
+#include "stir/Bin.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -53,6 +55,9 @@ public:
   
   //! Transform point 
   CartesianCoordinate3D<float> transform_point(const CartesianCoordinate3D<float>& point) const;
+
+  void transform_bin(Bin& bin,const ProjDataInfoCylindricalNoArcCorr& out_proj_data_info,
+	             const ProjDataInfoCylindricalNoArcCorr& in_proj_data_info) const;
   
   //! Get relative transformation
   void get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference);   
