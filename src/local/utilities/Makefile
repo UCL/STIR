@@ -36,7 +36,7 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   # yes, the LLN files seem to be there, so we can compile 
   # ecat7 stuff as well
-  SOURCES += conv_to_ecat7.cxx change_mhead_file_type.cxx
+  SOURCES += change_mhead_file_type.cxx
   CFLAGS +=  -I $(LLN_INCLUDE_DIR)
   ifeq ($(SYSTEM),SUN)
      EXTRA_LIBS += -lnsl -lsocket
@@ -69,14 +69,6 @@ $(DEST)change_mhead_file_type: $(DEST)change_mhead_file_type.o  \
 	$(CXX) $(CFLAGS) -I $(LLN_INCLUDE_DIR) -o $@ $<  \
 		 $(LLN_LIB_DIR)/libecat.a ${LIB_BUILDINGBLOCK} \
 		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
-
-$(DEST)conv_to_ecat7: $(DEST)conv_to_ecat7.o $(DEST)stir_ecat7.o \
-     $(LLN_LIB_DIR)/libecat.a \
-     ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS) -I $(LLN_INCLUDE_DIR) -o $@ $<  \
-		$(DEST)stir_ecat7.o $(LLN_LIB_DIR)/libecat.a ${LIB_BUILDINGBLOCK} \
-		 $(LINK_OPT) $(SYS_LIBS) $(EXTRA_LIBS)
-
 
 # include dependency files (but only when not doing 'make clean')
 ifneq ($(MAKECMDGOALS),clean)
