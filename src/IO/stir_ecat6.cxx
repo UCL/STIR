@@ -3,7 +3,8 @@
 //
 /*!
   \file
-  \ingroup CTI
+  \ingroup ECAT
+  \ingroup IO
 
   \brief Implementation of routines which convert CTI things into our 
   building blocks and vice versa.
@@ -36,8 +37,8 @@
 #include "stir/utilities.h"
 
 #include "stir/Scanner.h" 
-#include "stir/CTI/cti_utils.h"
-#include "stir/CTI/stir_cti.h"
+#include "stir/IO/ecat6_utils.h"
+#include "stir/IO/stir_ecat6.h"
 
 #include <iostream>
 #include <fstream>
@@ -52,6 +53,7 @@ using std::min;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT6
 
 static void cti_data_to_float_Array(Array<2,float>&out, 
                              char const * const buffer, const float scale_factor, int dtype);
@@ -69,14 +71,12 @@ static void read_sinogram(Sinogram<float>& sino_2D,
 		   int mat_index, 
 		   int frame, int gate, int data, int bed);
 
-static bool is_ecat6_file(Main_header& mhead, const string& filename)
+static bool is_ecat6_file(ECAT6_Main_header& mhead, const string& filename)
 {
   //check if it's ECAT 6 
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
-  if(!cti_fptr) 
-    error("\nError opening input file: %s\n",filename.c_str());
 
-  if(cti_read_main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
+  if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
     {
       // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT6
       return false;
@@ -97,13 +97,13 @@ static bool is_ecat6_file(Main_header& mhead, const string& filename)
   
 bool is_ecat6_file(const string& filename)
 {
-  Main_header mhead;
+  ECAT6_Main_header mhead;
   return is_ecat6_file(mhead, filename);
 }
 
 bool is_ecat6_image_file(const string& filename)
 {
-  Main_header mhead;
+  ECAT6_Main_header mhead;
   return is_ecat6_file(mhead, filename) &&
     mhead.file_type ==matImageFile;
 }
@@ -111,7 +111,7 @@ bool is_ecat6_image_file(const string& filename)
 
 bool is_ecat6_emission_file(const string& filename)
 {
-  Main_header mhead;
+  ECAT6_Main_header mhead;
   return is_ecat6_file(mhead, filename) &&
     mhead.file_type ==matScanFile;
 }
@@ -119,51 +119,14 @@ bool is_ecat6_emission_file(const string& filename)
 
 bool is_ecat6_attenuation_file(const string& filename)
 {
-  Main_header mhead;
+  ECAT6_Main_header mhead;
   return is_ecat6_file(mhead, filename) &&
     mhead.file_type ==matAttenFile;
 }
 
-word find_CTI_system_type(const Scanner& scanner)
-{
-  switch(scanner.get_type())
-  {
-  case Scanner::E921:
-    return 921; 
-    
-  case Scanner::E931:
-    return 931; 
-    
-  case Scanner::E951:
-    return 951; 
-    
-  case Scanner::E953:
-    return 953;
-
-  case Scanner::E961:
-    return 961;
-
-  case Scanner::E962:
-    return 962; 
-    
-  case Scanner::E966:
-    return 966;
-
-  case Scanner::RPT:
-    return 128;
-
-  case Scanner::RATPET:
-    return 42;
-
-  default:
-    warning("\nfind_CTI_system_type: scanner \"%s\" currently unsupported. Returning 0.\n", 
-      scanner.get_name().c_str());
-    return 0;
-  }
-}
 
 
-Scanner* find_scanner_from_ECAT6_main_header(const Main_header& mhead)
+Scanner* find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
 {
   // we could do more effort here by checking some values of other fields than system_type.
   // TODO
@@ -208,7 +171,7 @@ Scanner* find_scanner_from_ECAT6_main_header(const Main_header& mhead)
   return scanner_ptr;
 }
 
-void make_ECAT6_main_header(Main_header& mhead,
+void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
                             const string& orig_name                     
                             )
@@ -221,9 +184,9 @@ void make_ECAT6_main_header(Main_header& mhead,
   strncpy(mhead.original_file_name, orig_name.c_str(), 20);
   mhead.num_frames= 1; //hdr.num_time_frames;
   // cti_utils routines always write data as VAX short
-  mhead.data_type= matI2Data;
+  mhead.data_type= ECAT_I2_little_endian_data_type;
   
-  mhead.system_type= find_CTI_system_type(scanner);
+  mhead.system_type= find_ECAT_system_type(scanner);
   mhead.axial_fov= scanner.get_num_rings()*scanner.get_ring_spacing()/10;
   mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
   
@@ -231,13 +194,13 @@ void make_ECAT6_main_header(Main_header& mhead,
   //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
 }
 
-void make_ECAT6_main_header(Main_header& mhead,
+void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
                             const string& orig_name,
                             DiscretisedDensity<3,float> const & density
                             )
 {
-  make_ECAT6_main_header(mhead, scanner, orig_name);
+  make_ECAT6_Main_header(mhead, scanner, orig_name);
   
   DiscretisedDensityOnCartesianGrid<3,float> const & image =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
@@ -249,13 +212,13 @@ void make_ECAT6_main_header(Main_header& mhead,
   mhead.plane_separation=image.get_grid_spacing()[1]/10; // convert to cm
 }
 
-void make_ECAT6_main_header(Main_header& mhead,
+void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    const string& orig_name,
                             ProjDataInfo const & proj_data_info
                             )
 {
   
-  make_ECAT6_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
+  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
   
   // extra main parameters that depend on data type
   mhead.file_type= matScanFile;
@@ -271,7 +234,7 @@ void make_ECAT6_main_header(Main_header& mhead,
 
 VoxelsOnCartesianGrid<float> *
 ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const int data_num, const int bed_num,
-                      FILE *cti_fptr, const Main_header & mhead)
+                      FILE *cti_fptr, const ECAT6_Main_header & mhead)
 {
   MatDir entry;
   Image_subheader ihead;
@@ -312,7 +275,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
   
   NumericType type;
   ByteOrder byte_order;
-  find_type_from_cti_data_type(type, byte_order, ihead.data_type);
+  find_type_from_ECAT_data_type(type, byte_order, ihead.data_type);
   // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE  
   const size_t cti_data_size = x_size*y_size*type.size_in_bytes()+ MatBLKSIZE;
   char * cti_data= new char[cti_data_size];
@@ -366,14 +329,14 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 
 void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		   int max_ring_diff, bool arccorrected,
-                   const string& data_name, FILE *cti_fptr, const Main_header &mhead)
+                   const string& data_name, FILE *cti_fptr, const ECAT6_Main_header &mhead)
 {
-  shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_main_header(mhead);
-  cout << "Scanner determined from main_header: " << scanner_ptr->get_name() << endl;
+  shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_Main_header(mhead);
+  cout << "Scanner determined from ECAT6_Main_header: " << scanner_ptr->get_name() << endl;
   if (scanner_ptr->get_type() == Scanner::Unknown_Scanner)
   {
     warning("ECAT6_to_PDFS: Couldn't determine the scanner from the \n"
-      "main_header.system_type, defaulting to 953.\n"
+      "ECAT6_Main_header.system_type, defaulting to 953.\n"
       "This will give dramatic problems when the number of rings of your scanner is NOT 16.\n"); 
     scanner_ptr = new Scanner(Scanner::E953);
   }
@@ -432,7 +395,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     // read first subheader for dimensions
     {     
       // use temporary copy to avoid overwriting mhead argument
-      Main_header mhead_copy;
+      ECAT6_Main_header mhead_copy;
 
       long matnum= cti_numcod(frame_num, 1,gate_num, data_num, bed_num);
       switch(mhead.file_type)
@@ -507,7 +470,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
   {
     NumericType type;
     ByteOrder byte_order;
-    find_type_from_cti_data_type(type, byte_order, scanParams.data_type);
+    find_type_from_ECAT_data_type(type, byte_order, scanParams.data_type);
     // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE  
     const size_t cti_data_size = 
       proj_data->get_num_tangential_poss()*proj_data->get_num_views()*type.size_in_bytes()+ MatBLKSIZE;
@@ -577,12 +540,12 @@ void read_sinogram(Sinogram<float>& sino_2D,
 		   int mat_index, 
 		   int frame, int gate, int data, int bed)
 {
-  Main_header mhead;
+  ECAT6_Main_header mhead;
   ScanInfoRec scanParams;
   const long matnum=
     cti_numcod (frame,mat_index,gate,data,bed);
-  if (cti_read_main_header (fptr, &mhead) != EXIT_SUCCESS) 
-    error("read_sinogram: error reading main_header");
+  if (cti_read_ECAT6_Main_header (fptr, &mhead) != EXIT_SUCCESS) 
+    error("read_sinogram: error reading ECAT6_Main_header");
   
   float scale_factor = 0; // intialised to avoid compiler warnings
   switch(mhead.file_type)
@@ -635,90 +598,10 @@ void read_sinogram(Sinogram<float>& sino_2D,
 }
 
 
-void find_type_from_cti_data_type(NumericType& type, ByteOrder& byte_order, const short data_type)
-{
-  switch(data_type)
-  {
-  case matByteData:
-    type = NumericType("signed integer", 1);
-    byte_order=ByteOrder::little_endian;
-    return;
-  case matI2Data:
-    type = NumericType("signed integer", 2);
-    byte_order=ByteOrder::little_endian;
-    return;
-  case matSunShort:
-    type = NumericType("signed integer", 2);
-    byte_order = ByteOrder::big_endian;
-    return;
-  case matVAXR4Data:
-    type = NumericType("float", 4);
-    byte_order=ByteOrder::little_endian;
-    return;
-  case matStdR4:
-    type = NumericType("float", 4);
-    byte_order=ByteOrder::big_endian;
-    return;
-  case matI4Data:
-    type = NumericType("signed integer", 4);
-    byte_order=ByteOrder::little_endian;
-    return;
-  case matSunLong:
-    type = NumericType("signed integer", 4);
-    byte_order=ByteOrder::big_endian;
-    return;    
-  default:
-    error("find_type_from_cti_data_type: unsupported data_type: %d", data_type);
-    // just to avoid compiler warnings
-    return;
-  }
-}
-
-short find_cti_data_type(const NumericType& type, const ByteOrder& byte_order)
-{
-  if (!type.signed_type())
-    warning("find_cti_data_type: CTI data support only signed types. Using the signed equivalent\n");
-  if (type.integer_type())
-  {
-    switch(type.size_in_bytes())
-    {
-    case 1:
-      return matByteData;
-    case 2:
-      return byte_order==ByteOrder::big_endian ? matSunShort : matI2Data;
-    case 4:
-      return byte_order==ByteOrder::big_endian ? matSunLong : matI4Data;
-    default:
-      {
-        // write error message below
-      }
-    }
-  }
-  else
-  {
-    switch(type.size_in_bytes())
-    {
-    case 4:
-      return byte_order==ByteOrder::big_endian ? matStdR4 : matVAXR4Data;
-    default:
-      {
-        // write error message below
-      }
-    }
-  }
-  string number_format;
-  size_t size_in_bytes;
-  type.get_Interfile_info(number_format, size_in_bytes);
-  error("find_cti_data_type: CTI does not support data type '%s' of %d bytes.\n",
-    number_format.c_str(), size_in_bytes);
-  // just to satisfy compilers
-  return short(0);
-}
-
 Succeeded 
 DiscretisedDensity_to_ECAT6(FILE *fptr,
                             DiscretisedDensity<3,float> const & density, 
-			    const Main_header& mhead,
+			    const ECAT6_Main_header& mhead,
                             const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
   
@@ -817,8 +700,8 @@ DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density,
 			    const Scanner& scanner,
                             const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {  
-  Main_header mhead;
-  make_ECAT6_main_header(mhead, scanner, orig_name, density);
+  ECAT6_Main_header mhead;
+  make_ECAT6_Main_header(mhead, scanner, orig_name, density);
 
   
   FILE *fptr= cti_create (cti_name.c_str(), &mhead);
@@ -833,7 +716,7 @@ DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density,
 }
 
 Succeeded 
-ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const Main_header& mhead,
+ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header& mhead,
                   const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		  const bool write_2D_sinograms)
 {
@@ -1009,8 +892,8 @@ ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string con
                   const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		  const bool write_2D_sinograms)
 {  
-  Main_header mhead;
-  make_ECAT6_main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
+  ECAT6_Main_header mhead;
+  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
   
   
   FILE *fptr= cti_create(cti_name.c_str(), &mhead);   
@@ -1033,7 +916,7 @@ void cti_data_to_float_Array(Array<2,float>&out,
 
   switch (dtype)
   {
-  case matByteData:
+  case ECAT_Byte_data_type:
   {
     signed char const *  cti_data = 
       reinterpret_cast<signed char const * const >(buffer);
@@ -1042,8 +925,8 @@ void cti_data_to_float_Array(Array<2,float>&out,
         out[y][x]=scale_factor*(*cti_data++);
     break;
   }
-  case matI2Data:
-  case matSunShort:
+  case ECAT_I2_little_endian_data_type:
+  case ECAT_I2_big_endian_data_type:
   {
     short const * cti_data = 
       reinterpret_cast<short const * const >(buffer);
@@ -1052,8 +935,8 @@ void cti_data_to_float_Array(Array<2,float>&out,
         out[y][x]=scale_factor*(*cti_data++);
     break;
   }
-  case matI4Data:
-  case matSunLong:
+  case ECAT_I4_little_endian_data_type:
+  case ECAT_I4_big_endian_data_type:
     {
      long const * cti_data = 
       reinterpret_cast<long const * const >(buffer);
@@ -1062,8 +945,8 @@ void cti_data_to_float_Array(Array<2,float>&out,
         out[y][x]=scale_factor*(*cti_data++);
     break;
   }
-  case matVAXR4Data:
-  case matStdR4:
+  case ECAT_R4_VAX_data_type:
+  case ECAT_R4_IEEE_big_endian_data_type:
   {
     float const * cti_data = 
       reinterpret_cast<float const * const >(buffer);
@@ -1075,4 +958,5 @@ void cti_data_to_float_Array(Array<2,float>&out,
   }
 }
 
+END_NAMESPACE_ECAT6
 END_NAMESPACE_STIR
