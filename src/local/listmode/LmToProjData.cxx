@@ -28,10 +28,15 @@ USE_SegmentByView
   Currently we work (somewhat tediously) around this problem by using Array classes directly.
   If you want to use the Segment classes (safer and cleaner)
   #define USE_SegmentByView
+
+
+FRAME_BASED_DT_CORR:
+   dead-time correction based on the frame, or on the time of the event
 */   
 // (Note: can currently NOT be disabled)
 #define USE_SegmentByView
 
+#define FRAME_BASED_DT_CORR
 
 #define INCLUDE_NORMALISATION_FACTORS
 
@@ -67,7 +72,7 @@ USE_SegmentByView
 #include "stir/IndexRange3D.h"
 #endif
 #include "stir/ParsingObject.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 #include "stir/CPUTimer.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/is_null_ptr.h"
@@ -146,7 +151,8 @@ set_defaults()
   interactive=false;
   num_segments_in_memory = -1;
   normalisation_ptr = new TrivialBinNormalisation;
-  pre_or_post_normalisation =0;
+  post_normalisation_ptr = new TrivialBinNormalisation;
+  do_pre_normalisation =0;
   num_events_to_store = 0;
   
 }
@@ -161,9 +167,10 @@ initialise_keymap()
   parser.add_key("frame_definition file",&frame_definition_filename);
   parser.add_key("num_events_to_store",&num_events_to_store);
   parser.add_key("output filename prefix",&output_filename_prefix);
-  parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
+  parser.add_parsing_key("Bin Normalisation type for pre normalisation", &normalisation_ptr);
+  parser.add_parsing_key("Bin Normalisation type for post normalisation", &post_normalisation_ptr);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
-  parser.add_key("pre normalisation (1) or post_normalisation(0)", &pre_or_post_normalisation);
+  parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
   //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
@@ -253,7 +260,7 @@ post_processing()
       return true;
     }
 
-  if (pre_or_post_normalisation)
+  if (do_pre_normalisation)
     {
       if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)
@@ -261,7 +268,7 @@ post_processing()
     }
   else
     {
-      if ( normalisation_ptr->set_up(template_proj_data_info_ptr)
+      if ( post_normalisation_ptr->set_up(template_proj_data_info_ptr)
 	   != Succeeded::yes)
 	error("correct_projdata: set-up of normalisation failed\n");
     }
@@ -304,72 +311,115 @@ LmToProjData(const char * const par_filename)
     ask_parameters();
 }
 
+
 void
 LmToProjData::
 get_bin_from_event(Bin& bin, const CListEvent& event) const
 {  
-  const double start_time = current_time;
-    //frame_defs.get_start_time(current_frame_num);
-  const double end_time = current_time;
-    //frame_defs.get_end_time(current_frame_num);
-     
-  if (pre_or_post_normalisation)
-  {
-    event.get_bin(bin, *proj_data_info_cyl_uncompressed_ptr);
-    if (bin.get_bin_value()<=0)
+  if (do_pre_normalisation)
+   {
+     Bin uncompressed_bin;
+     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
+     if (uncompressed_bin.get_bin_value()<=0)
       return; // rejected for some strange reason
 
+
     // do_normalisation
-    {
-       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
+#ifndef FRAME_BASED_DT_CORR
+     const double start_time = current_time;
+     const double end_time = current_time;
+#else
+     const double start_time = frame_defs.get_start_time(current_frame_num);
+     const double end_time =frame_defs.get_end_time(current_frame_num);
+#endif
+     
+      const float bin_efficiency = 
+	normalisation_ptr->get_bin_efficiency(uncompressed_bin,start_time,end_time);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
-	warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
+	{
+	warning("\nBin_efficiency %g too low for uncompressed bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
 		bin_efficiency,
-		bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
-      else
-	bin.set_bin_value(1/bin_efficiency);
-    }
+		uncompressed_bin.segment_num(), uncompressed_bin.view_num(), 
+		uncompressed_bin.axial_pos_num(), uncompressed_bin.tangential_pos_num());
+	bin.set_bin_value(-1);
+	return;
+	}
+     
+      //	bin.set_bin_value(1/bin_efficiency);
     // do motion correction here
 
     // now find 'compressed' bin, i.e. taking mashing, span etc into account
     // Also, adjust the normalisation factor according to the number of
     // uncompressed bins in a compressed bin
 
-    const float bin_value = bin.get_bin_value();
+    const float bin_value = 1/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
-    // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, bin);
+    // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
     event.get_bin(bin, *template_proj_data_info_ptr);
-    const ProjDataInfoCylindrical& proj_data_info =
-      dynamic_cast<const ProjDataInfoCylindrical&>(*template_proj_data_info_ptr);
+   
     if (bin.get_bin_value()>0)
       {
-	bin.set_bin_value(bin_value / 
-			  (proj_data_info.
-			     get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
-									  bin.axial_pos_num())*
-			   proj_data_info.get_view_mashing_factor()));
+	bin.set_bin_value(bin_value);
       }
 
   }
-  else // post_normalisation
-  {
-    event.get_bin(bin, *template_proj_data_info_ptr); 
+  else
+    {
+      event.get_bin(bin, *template_proj_data_info_ptr);
+    }
+
+} 
+
+void 
+LmToProjData::
+do_post_normalisation(Bin& bin) const
+{
     if (bin.get_bin_value()>0)
     {
-      const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
-      // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
-      if (bin_efficiency < 1.E-10)
+      if (do_pre_normalisation)
 	{
-	  warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
-		  bin_efficiency,
-		  bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
-	  bin.set_bin_value(-1);
+	  bin.set_bin_value(bin.get_bin_value()/get_compression_count(bin));
 	}
       else
-	bin.set_bin_value(1/bin_efficiency);
+	{
+#ifndef FRAME_BASED_DT_CORR
+	  const double start_time = current_time;
+	  const double end_time = current_time;
+#else
+	  const double start_time = frame_defs.get_start_time(current_frame_num);
+	  const double end_time =frame_defs.get_end_time(current_frame_num);
+#endif
+	  const float bin_efficiency = post_normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
+	  // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
+	  if (bin_efficiency < 1.E-10)
+	    {
+	      warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
+		      bin_efficiency,
+		      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
+	      bin.set_bin_value(-1);
+	    }
+	  else
+	    {
+	      bin.set_bin_value(1/bin_efficiency);
+	    }	  
+	}
     }
-  }
+}
+
+
+int
+LmToProjData::
+get_compression_count(const Bin& bin) const
+{
+  // TODO this currently works ONLY for cylindrical PET scanners
+
+   const ProjDataInfoCylindrical& proj_data_info =
+      dynamic_cast<const ProjDataInfoCylindrical&>(*template_proj_data_info_ptr);
+
+    return proj_data_info.get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),bin.axial_pos_num())*
+			   proj_data_info.get_view_mashing_factor();
+
 }
 
 void
@@ -483,6 +533,7 @@ process_data()
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
                      get_bin_from_event(bin, record.event());
+		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
@@ -491,6 +542,8 @@ process_data()
 			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
+			 do_post_normalisation(bin);
+
 			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
 			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
             
