@@ -40,7 +40,6 @@ using std::min;
 using std::max;
 using std::swap;
 using std::endl;
-using std::ends;
 #endif
 
 START_NAMESPACE_STIR
@@ -501,8 +500,7 @@ ProjDataInfoCylindrical::parameter_info()  const
   {
     s << '(' << min_ring_diff[segment_num]  << ',' << max_ring_diff[segment_num] <<')';
   }
-  s << "\n";
-  s << ends;
+  s << std::endl;
   return s.str();
 }
 

@@ -53,7 +53,6 @@ using std::vector;
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::ends;
 using std::equal;
 #endif
 
@@ -192,7 +191,6 @@ ProjDataInfo::parameter_info()  const
   s << "}\n";
   s << "Number of tangential positions: " << get_num_tangential_poss() << endl;
 
-  s << ends;
   return s.str();
 
 }

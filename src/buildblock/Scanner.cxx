@@ -39,7 +39,6 @@
 #ifndef STIR_NO_NAMESPACES
 using std::cout;
 using std::endl;
-using std::ends;
 using std::cin;
 #endif
 
@@ -450,7 +449,6 @@ string Scanner::list_names() const
     s << " , " << *iterator ;
     ++iterator;
   }
-  s << ends;
 
   return s.str();
 }
