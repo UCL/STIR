@@ -29,9 +29,10 @@
 #include "stir/CartesianCoordinate3D.h"
 
 #include "stir/RunTests.h"
-#include "stir/interfile.h"
+#include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/SegmentByView.h"
+#include "stir/Succeeded.h"
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
@@ -109,9 +110,13 @@ stir_mathTests::run_tests()
     generate(data2.begin_all(), data2.end_all(), rand);
     generate(data3.begin_all(), data3.end_all(), rand);
     
-    write_basic_interfile("STIRtmp1.v", data1);
-    write_basic_interfile("STIRtmp2.v", data2);
-    write_basic_interfile("STIRtmp3.v", data3);
+    InterfileOutputFileFormat output_file_format;
+    check(output_file_format.write_to_file("STIRtmp1.v", data1)== Succeeded::yes,
+	  "test writing Interfile image STIRtmp1");
+    check(output_file_format.write_to_file("STIRtmp2.v", data2)== Succeeded::yes,
+	  "test writing Interfile image STIRtmp2");
+    check(output_file_format.write_to_file("STIRtmp3.v", data3)== Succeeded::yes,
+	  "test writing Interfile image STIRtmp3");
     
     set_tolerance(data1.find_max()/10000);
     
