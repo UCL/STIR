@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -11,26 +11,24 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #ifndef __BackProjectorByBinUsingInterpolation_h_
 #define __BackProjectorByBinUsingInterpolation_h_
 
 #include "recon_buildblock/BackProjectorByBin.h" 
-
+#include "shared_ptr.h"
 
 START_NAMESPACE_TOMO
 
-template <typename T> class shared_ptr;
 template <typename elemT> class Viewgram;
 template <typename elemT> class RelatedViewgrams;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <int num_dimensions, typename elemT> class Array;
 class ProjDataInfo;
 class ProjDataInfoCylindricalArcCorr;
-class DataSymmetriesForViewSegmentNumbers;
-
+class DataSymmetriesForBins_PET_CartesianGrid;
 /*!
   \brief
   The next class is used in BackProjectorByBinUsingInterpolation 
@@ -91,22 +89,25 @@ public:
   </ul>
   For the latter, see the extended abstract for 3D99 
   "On various approximations for the projectors in iterative reconstruction algorithms for 
-  3D-PET", K. Thielemans, M.W. Jacobson, D. Belluzzo. Available at the
-  PARAPET web-site http://www.brunel.ac.uk/~masrppet.
+  3D-PET", K. Thielemans, M.W. Jacobson, D. Belluzzo. Available at
+  http://www.irsl.org/~kris.
 
   The piecewise linear interpolation is only used when the axial voxel size is half the
   axial_sampling of the projection data (for the segment in question).
 
   \warning This implementation makes various assumptions (for optimal speed):
   <ul>
-  <li> min_tangential_pos_num == -max_tangential_pos_num,
-  <li> arc-corrected data, with bin_size = voxel_size.x() = voxel_size.y()
+  <li> voxel_size.x() = voxel_size.y()
+  <li> arc-corrected data 
   <li> voxel_size.z() is either equal to or half the axial_sampling of the projection data
   </ul>
+  When the bin size is not equal to the voxel_size.x(), zoom_viewgrams() is first called to
+  adjust the bin size, then the usual incremental backprojection is used.
 
-  \warning Currently this implementation has problems on certain processors
+  \bug Currently this implementation has problems on certain processors
   due to floating point rounding errors. Intel *86 and PowerPC give
-  correct results, SunSparc has a problem at tangential_pos_num==0.
+  correct results, SunSparc has a problem at tangential_pos_num==0 (also HP
+  stations give problems).
 */
 class BackProjectorByBinUsingInterpolation : public BackProjectorByBin
 { 
@@ -117,7 +118,11 @@ public:
     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
     const bool use_piecewise_linear_interpolation = true, const bool use_exact_Jacobian = true);
 
-  /*! \brief This BackProjectorByBin implementation requires all symmetries.
+  /*! \brief Gets the symmetries used by this backprojector
+
+  \warning This BackProjectorByBin implementation requires that the 
+  RelatedViewgrams data are constructed with all symmetries corresponding
+  to the current member.
   */
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
   /*! 
@@ -135,8 +140,9 @@ public:
 
 private:
  
-  //shared_ptr<DataSymmetriesForViewSegmentNumbers_PET_CartesianGrid> symmetries;
-  const DataSymmetriesForViewSegmentNumbers * symmetries_ptr;
+  // KT 20/06/2001 changed type to enable use of more methods
+  shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> symmetries_ptr;
+  //const DataSymmetriesForViewSegmentNumbers * symmetries_ptr;
   
   bool use_piecewise_linear_interpolation_now;
 
@@ -264,7 +270,6 @@ static void   backproj2D_Cho_view_viewplus90( PETPlane & image,
 
 END_NAMESPACE_TOMO
 
-//#include "recon_buildblock/BackProjectorByBinUsingInterpolation.inl"
 
 #endif // __BackProjectorByBinUsingInterpolation_h_
 
