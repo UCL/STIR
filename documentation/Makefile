@@ -7,7 +7,9 @@
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 
 
-all: STIR-glossary.pdf STIR-general-overview.pdf STIR-developers-overview.pdf
+all: STIR-glossary.pdf STIR-general-overview.pdf \
+     STIR-developers-overview.pdf \
+     STIR-UsersGuide.pdf
 
 # rule to make pdf from tex source
 # note: need to run twice to get page refs etc ok.
