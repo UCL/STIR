@@ -22,9 +22,20 @@
  */
 
 //KT 17/11 added const references for efficiency only
-extern PETSinogramOfVolume& CorrectForAttenuation(const PETSinogramOfVolume& s, const PETSinogramOfVolume& a);
-extern PETSegmentBySinogram& CorrectForAttenuation(const PETSegmentBySinogram& s, const PETSegmentBySinogram& a);
+//extern PETSinogramOfVolume& CorrectForAttenuation(const PETSinogramOfVolume& s, const PETSinogramOfVolume& a);
+//extern PETSegmentBySinogram& CorrectForAttenuation(const PETSegmentBySinogram& s, const PETSegmentBySinogram& a);
  
+// CL 1/12 These two fonctions should be declared somewherre else
+PETSinogramOfVolume CorrectForAttenuation(const PETSinogramOfVolume &sino, const PETSinogramOfVolume &atten)       
+{
+// Kernel of Attenuation correction
+}
+
+PETSegmentBySinogram CorrectForAttenuation(const PETSegmentBySinogram &sino, const PETSegmentBySinogram &atten)
+{
+// Kernel of Attenuation correction
+}
+
 class PETReconstruction
 {
 public:
