@@ -2,44 +2,45 @@
 // $Id$ : $Date$
 //
 
-/* binmath - process interfile sinogram data (maximum number of segments as input)
-             display by View - by Segment
-             operations between two data
-             operations with a scalar      */
+/*!
+\file
+
+\brief process sinogram data
+
+\author Matthew Jacobson
+\author PARAPET project
+
+\date    $Date$
+\version $Revision$
+
+This utility programme processes (interfile) sinogram data 
+(maximum number of segments as input). It can
+ - display by View - by Segment
+ - do operations between two data
+ - do operations with a scalar     
+*/
+
+#include "pet_common.h"
 
 #include <numeric>
 
 #include "imagedata.h"
 #include "TensorFunction.h" 
-#include "pet_common.h"
 #include "recon_array_functions.h"
 #include "display.h"
-#include "recon_buildblock/bckproj.h" 
-#include "recon_buildblock/fwdproj.h" 
 #include "interfile.h"
 #include "utilities.h"
 
-// includes for ntohs
-#ifdef _WIN32
-
-#ifdef __GNUG__ // Cygwin32
-#include <asm/byteorder.h>
-#define ntohs __ntohs
-#else // Other Windows compilers
-#include <winsock2.h>
-#endif
-
-#else // !_WIN32
-#include <sys/types.h>
-#include <netinet/in.h>
-#endif
-
 #define ZERO_TOL 0.0000001
+
+START_NAMESPACE_TOMO
 
 // in relation with show_math_menu()
 enum options { _quit, _display_view, _display_segm, _absdiff, _add_sino, _subtract_sino, 
                _mult_sino, _div_sino, _add_scalar, _mult_scalar, _div_scalar, _stats,
                _pos_ind, _trunc_neg, _trim, _zero_ends, _restart, _menu};
+
+//*********************** prototypes
 
 // operations between two datas
 void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &sino2,
@@ -57,6 +58,262 @@ void show_math_menu();
 float pos_indicate(float x);
 
 PETSinogramOfVolume ask_interfile_PSOV(char *input_query);
+//*********************** functions
+
+void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &sino2,
+             float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized)
+{
+    switch(operation) {
+        case _absdiff: { //absolute difference
+            sino1-=sino2;
+            in_place_abs(sino1);
+
+            if(!accumulators_initialized) {
+                accum_max=sino1.find_max();
+                accum_min=sino1.find_min();
+                accum_sum=sino1.sum();
+                accumulators_initialized=true;
+            }
+            else {
+                if (accum_max>sino1.find_max()) accum_max= sino1.find_max();
+                if (accum_min<sino1.find_min()) accum_max= sino1.find_min();
+                accum_sum+=sino1.sum();
+            }
+            break;
+        }
+        
+        case _add_sino: { // sinogram addition
+            sino1+=sino2;
+            break;
+        }
+
+
+        case _subtract_sino: { // sinogram subtraction
+            sino1-=sino2;
+            break;
+        }
+
+        case _mult_sino: { // image multiplication
+            sino1*=sino2;
+            break;
+        }
+
+        case _div_sino: { // sinogram division
+            divide_array(sino1,sino2);
+            break;
+        }
+    } // end switch
+}
+
+void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& segment, float &accum_max,
+             float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
+{
+    switch(operation) {
+        case _display_view: { //display math buffer by View
+            display(sino1, sino1.find_max());
+            if(ask("Extract viewgram?",false)) {
+                int vs=sino1.get_min_view();
+                int ve=sino1.get_max_view();
+                int view_num=ask_num("Which viewgram?",vs,ve,vs);
+       
+                PETViewgram viewgram=sino1.get_viewgram(view_num);
+                display(viewgram);
+            }
+            break;
+        }
+
+        case _display_segm: { //display math buffer by Segment
+            display(segment, segment.find_max());
+            break;
+        }
+
+        case _add_scalar: { //scalar addition
+            sino1+=scalar;
+            break;
+        }
+
+        case _mult_scalar: { //scalar multiplication
+            sino1*=scalar;
+            break;
+        }
+
+        case _div_scalar: { //scalar division
+            sino1/=scalar;
+            break;
+        }
+
+        case _stats: { //global min&max + number of counts
+            if(!accumulators_initialized) {
+                accum_max=sino1.find_max();
+                accum_min=sino1.find_min();
+                accum_sum=sino1.sum();
+                accumulators_initialized=true;
+            }
+            else {
+                if (accum_max>sino1.find_max()) accum_max= sino1.find_max();
+                if (accum_min<sino1.find_min()) accum_max= sino1.find_min();
+                accum_sum+=sino1.sum();
+            }
+            break;
+        }
+        
+        case _pos_ind: in_place_apply_function(sino1,pos_indicate); //positive indicator
+ 
+        case _trim: truncate_rim(sino1, (int) scalar); //trim rim
+
+        case _trunc_neg: in_place_apply_function(sino1,neg_trunc);
+    
+    } //end switch
+}
+
+PETSinogramOfVolume ask_interfile_PSOV(char *input_query)
+{
+    char filename[max_filename_length];
+
+    system("ls *hs");
+    ask_filename_with_extension(filename, input_query, ".hs");
+
+    return read_interfile_PSOV(filename);
+}
+
+void show_math_menu()
+{
+    cerr<<"\n\
+BINMATH MENU:\n\
+0. Quit \n\
+1. Display by View\n\
+2. Display by Segment\n\
+3. Absolute difference\n\
+4. Add sinogram\n\
+5. Subtract sinogram\n\
+6. Multiply sinogram\n\
+7. Divide sinogram\n\
+8. Add scalar\n\
+9. Multiply scalar\n\
+10. Divide scalar \n\
+11. Min/Max & counts \n\
+12. Positive indicator \n\
+13. Truncate negatives \n\
+14. Trim end bins\n\
+15. Zero end planes of segment 0 \n\
+16. Restart\n\
+17. Redisplay menu"<<endl;
+}
+
+
+void make_buffer_header(const char *data_filename,const char *header_filename,
+                        PETSinogramOfVolume& input_sino, int limit_segments)
+{
+    // TODO replace by write_interfile_PSOV_header
+
+    int nrings=input_sino.scan_info.get_num_rings();
+    ofstream header;
+    header.open(header_filename, ios::out);
+    if(!header) {
+        cerr<<endl<<"Could not create header"<<endl;
+        exit(1);
+    }
+
+    header<<"!INTERFILE  := \n";
+    header<<"name of data file := "<<data_filename;
+    header<<"\n";
+    header<<"originating system := ";
+//Get the Scanner name
+    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::RPT) header<<"PRT-1 \n";
+    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) header<<"Advance \n";
+    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E953) header<<"ECAT 953 \n";
+    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E951) header<<"ECAT 951 \n";
+    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E966) header<<"EXACT3D \n";
+    else { 
+        error("Tried to create header for unsupported scanner type");
+    }
+
+
+    header<<"!GENERAL DATA := \n";
+    header<<"!GENERAL IMAGE DATA := \n";
+    header<<"!type of data := PET \n";
+    header<<"imagedata byte order := " <<
+      (ByteOrder::get_native_order() == ByteOrder::little_endian 
+       ? "LITTLEENDIAN"
+       : "BIGENDIAN")<< "\n";
+    header<<"!PET STUDY (General) := \n";
+    header<<"!PET data type := Emission \n";
+    header<<"!number format := float \n";
+    header<<"!number of bytes per pixel := 4 \n"; 
+    header<<"number of dimensions := 4 \n";
+    header<<"!matrix size [1] := " <<2*limit_segments+1<<"\n"; 
+    header<<"matrix axis label [1] := segment \n"; 
+    header<<"!matrix size [2] := "<<input_sino.scan_info.get_num_views()<<"\n"; 
+    header<<"matrix axis label [2] := view \n";
+//number of rings per segment
+    header<<"!matrix size [3] := { ";
+    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
+        header<<2*nrings-1;
+        for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-(i+1)<<", "<<nrings-(i+1);
+    }
+    else {
+        header<< nrings;
+        for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-i<<", "<<nrings-i;
+    }
+    header<<"}\n";
+//end -- number of  rings per segment
+    header<<"matrix axis label [3] := z \n"; 
+    header<<"!matrix size [4] := "<< input_sino.scan_info.get_num_bins()<<"\n";
+    header<<"matrix axis label [4] := bin \n";
+//min ring differences per segment
+    header<<"minimum ring difference per segment := {";
+    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
+        header<<"-1";
+        for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
+    }
+    else {
+        header<<"0";
+        for (int i=1; i<=limit_segments; ++i) header<<", "<<i<<", "<<-i;
+    }
+    header<<"}\n";
+//end min ring differences
+
+//max ring differences per segment
+    header<<"maximum ring difference per segment := {";
+    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
+        header<<"1";
+        for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
+    }
+    else {
+        header<<"0";
+        for (int i=1; i<=limit_segments; ++i) header<<", "<<i<<", "<<-i;
+    }
+    header<<"}\n";
+//end max ring differences
+    header<<"number of rings := "<<nrings<<"\n"; 
+    header<<"number of detectors per ring := "<<2*input_sino.scan_info.get_num_views()<<"\n";
+
+    header.setf(ios::fixed);
+
+    header<<"ring diameter (cm) := "<<2*input_sino.scan_info.get_ring_radius()/10.<<"\n";
+    header<<"distance between rings (cm) := "<<input_sino.scan_info.get_ring_spacing()/10.<<"\n";
+    header<<"bin size (cm) := "<< input_sino.scan_info.get_bin_size()/10.<<"\n";
+    header<<"view offset (degrees) := " <<input_sino.scan_info.get_scanner().intrinsic_tilt<<"\n";
+
+    header.unsetf(ios::fixed);
+
+    header<<"number of time frames := 1\n"; 
+    header<<"!END OF INTERFILE :="<<"\n";
+
+    header.close();
+}
+
+
+float pos_indicate(float x)
+{
+    return (x>0.0)?1.0:0.0;
+}
+
+END_NAMESPACE_TOMO
+
+//********************** main
+
+USING_NAMESPACE_TOMO
 
 int main(int argc, char *argv[])
 {
@@ -219,249 +476,5 @@ int main(int argc, char *argv[])
 
     assert(first_operand != NULL);
     delete first_operand;
-    return 0;
+    return EXIT_SUCCESS;
 } //end main
-
-void do_math(enum options operation, PETSegmentByView& sino1,PETSegmentByView &sino2,
-             float &accum_max, float &accum_min, float &accum_sum, bool accumulators_initialized)
-{
-    switch(operation) {
-        case _absdiff: { //absolute difference
-            sino1-=sino2;
-            in_place_abs(sino1);
-
-            if(!accumulators_initialized) {
-                accum_max=sino1.find_max();
-                accum_min=sino1.find_min();
-                accum_sum=sino1.sum();
-                accumulators_initialized=true;
-            }
-            else {
-                if (accum_max>sino1.find_max()) accum_max= sino1.find_max();
-                if (accum_min<sino1.find_min()) accum_max= sino1.find_min();
-                accum_sum+=sino1.sum();
-            }
-            break;
-        }
-        
-        case _add_sino: { // sinogram addition
-            sino1+=sino2;
-            break;
-        }
-
-
-        case _subtract_sino: { // sinogram subtraction
-            sino1-=sino2;
-            break;
-        }
-
-        case _mult_sino: { // image multiplication
-            sino1*=sino2;
-            break;
-        }
-
-        case _div_sino: { // sinogram division
-            divide_array(sino1,sino2);
-            break;
-        }
-    } // end switch
-}
-
-void do_math(enum options operation, PETSegmentByView& sino1, PETSegmentBySinogram& segment, float &accum_max,
-             float &accum_min, float &accum_sum, bool accumulators_initialized,float scalar)
-{
-    switch(operation) {
-        case _display_view: { //display math buffer by View
-            display(sino1, sino1.find_max());
-            if(ask("Extract viewgram?",false)) {
-                int vs=sino1.get_min_view();
-                int ve=sino1.get_max_view();
-                int view_num=ask_num("Which viewgram?",vs,ve,vs);
-       
-                PETViewgram viewgram=sino1.get_viewgram(view_num);
-                display2D(viewgram);
-            }
-            break;
-        }
-
-        case _display_segm: { //display math buffer by Segment
-            display(segment, segment.find_max());
-            break;
-        }
-
-        case _add_scalar: { //scalar addition
-            sino1+=scalar;
-            break;
-        }
-
-        case _mult_scalar: { //scalar multiplication
-            sino1*=scalar;
-            break;
-        }
-
-        case _div_scalar: { //scalar division
-            sino1/=scalar;
-            break;
-        }
-
-        case _stats: { //global min&max + number of counts
-            if(!accumulators_initialized) {
-                accum_max=sino1.find_max();
-                accum_min=sino1.find_min();
-                accum_sum=sino1.sum();
-                accumulators_initialized=true;
-            }
-            else {
-                if (accum_max>sino1.find_max()) accum_max= sino1.find_max();
-                if (accum_min<sino1.find_min()) accum_max= sino1.find_min();
-                accum_sum+=sino1.sum();
-            }
-            break;
-        }
-        
-        case _pos_ind: in_place_apply_function(sino1,pos_indicate); //positive indicator
- 
-        case _trim: truncate_rim(sino1, (int) scalar); //trim rim
-
-        case _trunc_neg: in_place_apply_function(sino1,neg_trunc);
-    
-    } //end switch
-}
-
-PETSinogramOfVolume ask_interfile_PSOV(char *input_query)
-{
-    char filename[max_filename_length];
-
-    system("ls *hs");
-    ask_filename_with_extension(filename, input_query, ".hs");
-
-    return read_interfile_PSOV(filename);
-}
-
-void show_math_menu()
-{
-    cerr<<"\n\
-BINMATH MENU:\n\
-0. Quit \n\
-1. Display by View\n\
-2. Display by Segment\n\
-3. Absolute difference\n\
-4. Add sinogram\n\
-5. Subtract sinogram\n\
-6. Multiply sinogram\n\
-7. Divide sinogram\n\
-8. Add scalar\n\
-9. Multiply scalar\n\
-10. Divide scalar \n\
-11. Min/Max & counts \n\
-12. Positive indicator \n\
-13. Truncate negatives \n\
-14. Trim end bins\n\
-15. Zero end planes of segment 0 \n\
-16. Restart\n\
-17. Redisplay menu"<<endl;
-}
-
-void make_buffer_header(const char *data_filename,const char *header_filename,
-                        PETSinogramOfVolume& input_sino, int limit_segments)
-{
-    int nrings=input_sino.scan_info.get_num_rings();
-    ofstream header;
-    header.open(header_filename, ios::out);
-    if(!header) {
-        cerr<<endl<<"Could not create header"<<endl;
-        exit(1);
-    }
-
-    header<<"!INTERFILE  := \n";
-    header<<"name of data file := "<<data_filename;
-    header<<"\n";
-    header<<"originating system := ";
-//Get the Scanner name
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::RPT) header<<"PRT-1 \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) header<<"Advance \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E953) header<<"ECAT 953 \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E951) header<<"ECAT 951 \n";
-    else if(input_sino.scan_info.get_scanner().type==PETScannerInfo::E966) header<<"EXACT3D \n";
-    else { 
-        PETerror("Tried to create header for unsupported scanner type");
-        Abort();
-    }
-
-
-    header<<"!GENERAL DATA := \n";
-    header<<"!GENERAL IMAGE DATA := \n";
-    header<<"!type of data := PET \n";
-    header<<"imagedata byte order := "<<((ntohs(1) != 1) ? "LITTLEENDIAN" : "BIGENDIAN") <<"\n";
-    header<<"!PET STUDY (General) := \n";
-    header<<"!PET data type := Emission \n";
-    header<<"!number format := float \n";
-    header<<"!number of bytes per pixel := 4 \n"; 
-    header<<"number of dimensions := 4 \n";
-    header<<"!matrix size [1] := " <<2*limit_segments+1<<"\n"; 
-    header<<"matrix axis label [1] := segment \n"; 
-    header<<"!matrix size [2] := "<<input_sino.scan_info.get_num_views()<<"\n"; 
-    header<<"matrix axis label [2] := view \n";
-//number of rings per segment
-    header<<"!matrix size [3] := { ";
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
-        header<<2*nrings-1;
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-(i+1)<<", "<<nrings-(i+1);
-    }
-    else {
-        header<< nrings;
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<nrings-i<<", "<<nrings-i;
-    }
-    header<<"}\n";
-//end -- number of  rings per segment
-    header<<"matrix axis label [3] := z \n"; 
-    header<<"!matrix size [4] := "<< input_sino.scan_info.get_num_bins()<<"\n";
-    header<<"matrix axis label [4] := bin \n";
-//min ring differences per segment
-    header<<"minimum ring difference per segment := {";
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
-        header<<"-1";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
-    }
-    else {
-        header<<"0";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<i<<", "<<-i;
-    }
-    header<<"}\n";
-//end min ring differences
-
-//max ring differences per segment
-    header<<"maximum ring difference per segment := {";
-    if(input_sino.scan_info.get_scanner().type==PETScannerInfo::Advance) {
-        header<<"1";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<(i+1)<<", "<<-(i+1);
-    }
-    else {
-        header<<"0";
-        for (int i=1; i<=limit_segments; ++i) header<<", "<<i<<", "<<-i;
-    }
-    header<<"}\n";
-//end max ring differences
-    header<<"number of rings := "<<nrings<<"\n"; 
-    header<<"number of detectors per ring := "<<2*input_sino.scan_info.get_num_views()<<"\n";
-
-    header.setf(ios::fixed);
-
-    header<<"ring diameter (cm) := "<<2*input_sino.scan_info.get_ring_radius()/10.<<"\n";
-    header<<"distance between rings (cm) := "<<input_sino.scan_info.get_ring_spacing()/10.<<"\n";
-    header<<"bin size (cm) := "<< input_sino.scan_info.get_bin_size()/10.<<"\n";
-    header<<"view offset (degrees) := " <<input_sino.scan_info.get_scanner().intrinsic_tilt<<"\n";
-
-    header.unsetf(ios::fixed);
-
-    header<<"number of time frames := 1\n"; 
-    header<<"!END OF INTERFILE :="<<"\n";
-
-    header.close();
-}
-
-
-float pos_indicate(float x)
-{
-    return (x>0.0)?1.0:0.0;
-}
