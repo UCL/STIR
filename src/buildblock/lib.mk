@@ -11,6 +11,7 @@ $(dir)_LIB_SOURCES := \
   ProjDataInfoCylindrical.cxx \
   ProjDataInfoCylindricalArcCorr.cxx \
   ProjDataInfoCylindricalNoArcCorr.cxx \
+  ArcCorrection.cxx \
   ProjDataFromStream.cxx \
   ProjDataGEAdvance.cxx \
   ProjDataInMemory.cxx \
