@@ -22,7 +22,7 @@ START_NAMESPACE_TOMO
 template <typename elemT>
 Succeeded
 TruncateMinToSmallPositiveValueImageProcessor<elemT>::
-virtual_build_filter(const DiscretisedDensity<3,elemT>& density)
+virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 {
   return Succeeded::yes;  

@@ -26,16 +26,16 @@ START_NAMESPACE_TOMO
 template <int num_dimensions, typename elemT>
 Succeeded
 ChainedImageProcessor<num_dimensions, elemT>::
-virtual_build_filter(const DiscretisedDensity<num_dimensions, elemT>& density)
+virtual_set_up(const DiscretisedDensity<num_dimensions, elemT>& density)
 {
   if (apply_first != 0)
     {
       // note that we cannot really build the filter for the 2nd 
       // as we don't know what the first will do to the dimensions etc. of the image
-      return apply_first->build_filter(density);
+      return apply_first->set_up(density);
     }
   else if (apply_second != 0)
-    return apply_second->build_filter(density);
+    return apply_second->set_up(density);
   else
     return Succeeded::yes;  
 }

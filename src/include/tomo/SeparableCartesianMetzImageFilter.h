@@ -84,7 +84,7 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   
-  Succeeded virtual_build_filter(const DiscretisedDensity<num_dimensions,elemT>& image);
+  Succeeded virtual_set_up(const DiscretisedDensity<num_dimensions,elemT>& image);
   // new
   void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& out_density, const DiscretisedDensity<num_dimensions,elemT>& in_density) const;
   void  virtual_apply(DiscretisedDensity<num_dimensions,elemT>& density) const ;

@@ -36,7 +36,7 @@ MedianImageFilter3D<elemT>:: MedianImageFilter3D()
 
 template <typename elemT>
 Succeeded
-MedianImageFilter3D<elemT>::virtual_build_filter (const DiscretisedDensity<3,elemT>& density)
+MedianImageFilter3D<elemT>::virtual_set_up (const DiscretisedDensity<3,elemT>& density)
 {
 
 /*   if (consistency_check(density) == Succeeded::no)

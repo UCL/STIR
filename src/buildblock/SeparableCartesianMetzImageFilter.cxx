@@ -23,7 +23,7 @@ START_NAMESPACE_TOMO
 template <typename elemT>
 Succeeded
 SeparableCartesianMetzImageFilter<elemT>::
-virtual_build_filter(const DiscretisedDensity<3,elemT>& density)
+virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 {
 /*  if (consistency_check(density) == Succeeded::no)
