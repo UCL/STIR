@@ -305,7 +305,8 @@ write_basic_interfile_image_header(const string& header_file_name,
       output_header << (output_type.signed_type() 
 			? "signed integer\n" : "unsigned integer\n");
     else
-      output_header << "float\n";
+      output_header << (output_type.size_in_bytes()==4 
+                        ? "short float\n" : "long float\n");
     output_header << "!number of bytes per pixel := "
 		  << output_type.size_in_bytes() << endl;
     
@@ -332,8 +333,11 @@ write_basic_interfile_image_header(const string& header_file_name,
 	zsize += 0.00001F;
       // TODO this is what it should be
       // float zsize = voxel_size.z()/ voxel_size.x();
-      
-      output_header << "!slice thickness (pixels) := " 
+      output_header << ";Correct value is of keyword (commented out)\n"
+                    << ";!slice thickness (pixels) := " 
+                    << voxel_size.z()/ voxel_size.x()<< endl;
+      output_header << ";Value for Analyze\n"
+                    << "!slice thickness (pixels) := " 
 		    << zsize << endl;
     }
     output_header << "!END OF INTERFILE :=\n";
