@@ -72,7 +72,7 @@ END:=
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
-
+#include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
 #ifndef USE_PMRT
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -118,23 +118,23 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
   const bool do_scatter = scatter_projdata_ptr.use_count() != 0;
   const bool do_randoms = randoms_projdata_ptr.use_count() != 0;
 
-  /* unfortunately, even when do_attenuation==false, we need the 
-     attenuation_image and the forward projector, just to get the 
-     DataSymmetriesForViewSegmentNumbers (for making RelatedViewgrams objects)
-     TODO, get rid of this
-     */
-  if (!do_attenuation)
-    attenuation_image_ptr = 
-      new VoxelsOnCartesianGrid<float>(*input_projdata.get_proj_data_info_ptr());
 
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr=
-    forward_projector_ptr->get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr = 
+    !do_attenuation ?
+      new TrivialDataSymmetriesForViewSegmentNumbers
+    :
+      forward_projector_ptr->get_symmetries_used()->clone();
 
   // TODO somehow find basic range for loop
-  for (int segment_num = 0; segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
+  const int min_segment_num = 
+    !do_attenuation ? output_projdata.get_min_segment_num() : 0;
+  const int max_view_num = 
+    !do_attenuation ? input_projdata.get_max_view_num() : input_projdata.get_num_views()/4;
+
+  for (int segment_num = min_segment_num; segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
   {
     cerr<<endl<<"Processing segment #"<<segment_num<<endl;
-    for (int view_num=0; view_num<=input_projdata.get_num_views()/4; ++view_num)
+    for (int view_num=0; view_num<=max_view_num; ++view_num)
     {    
       const ViewSegmentNumbers view_seg_nums(view_num,segment_num);
       // ** first fill in the data **
