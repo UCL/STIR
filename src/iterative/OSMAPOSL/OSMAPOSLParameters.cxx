@@ -10,8 +10,8 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-  \date $Date$
-  \version $Revision $
+  $Date$
+  $Revision $
 */
 
 
@@ -19,6 +19,7 @@
 
 #include "NumericInfo.h"
 #include "utilities.h"
+#include "tomo/is_null_ptr.h"
 #include <iostream>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -68,12 +69,8 @@ OSMAPOSLParameters::initialise_keymap()
   parser.add_key("MAP_model", &MAP_model);
   parser.add_key("maximum relative change", &maximum_relative_change);
   parser.add_key("minimum relative change",&minimum_relative_change);
-  parser.add_key("write update image",&write_update_image);
-
-   
+  parser.add_key("write update image",&write_update_image);   
 }
-
-
 
 
 void OSMAPOSLParameters::ask_parameters()
@@ -141,7 +138,7 @@ bool OSMAPOSLParameters::post_processing()
   if (inter_update_filter_interval<0)
     { warning("Range error in inter-update filter interval \n"); return true; }
   
-  if (prior_ptr != 0)
+  if (!is_null_ptr(prior_ptr))
   {
     if (MAP_model != "additive" && MAP_model != "multiplicative")
     {
