@@ -12,14 +12,14 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_listmode_CListModeDataECAT_H__
 #define __stir_listmode_CListModeDataECAT_H__
 
-#include "local/stir/listmode/CListModeDataFromStream.h"
+#include "stir/listmode/CListModeDataFromStream.h"
 #include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
