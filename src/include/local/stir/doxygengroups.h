@@ -17,3 +17,7 @@
 \defgroup motion_utilities Utility programs for motion and motion correction
 \ingroup utilities
 */
+/*!
+\defgroup motion_test Tests of motion transformations etc
+\ingroup alltest
+*/
