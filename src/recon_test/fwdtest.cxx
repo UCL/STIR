@@ -58,6 +58,19 @@ main()
       break;
     }
 
+  
+  // KT 18/03/99 new
+  int span = 1;
+  {
+    if ( scanner.type != PETScannerInfo::Advance )
+      {
+	do 
+	  {
+	    span = ask_num("Span ", 1, scanner.num_rings-1, 1);
+	  }
+	while (span%2==0);
+      }
+  }
 
   // KT 02/07/98 new
   {
@@ -132,16 +145,17 @@ main()
   
   // KT 29/10/98 new
   fstream *out = 0;
-  
-  PETSinogramOfVolume s3d(
-    scanner, 
-    1 /*==span*/, 
-    scanner.type != PETScannerInfo::Advance ?
-    scanner.num_rings-1 : 11,
-    *out, 0UL,
-    PETSinogramOfVolume::SegmentViewRingBin,
-    NumericType::FLOAT,
-    Real(1));
+
+  // KT 18/03/98 removed last argument to have all defaults work, use span
+  PETSinogramOfVolume 
+    s3d(
+	scanner, 
+	span, 
+	scanner.type != PETScannerInfo::Advance ?
+	scanner.num_rings-1 : 11,
+	*out, 0UL,
+	PETSinogramOfVolume::SegmentViewRingBin,
+	NumericType::FLOAT);
   
   
   if (ask("Do full forward projection ?", true))
@@ -221,12 +235,12 @@ do_segments(const PETImageOfVolume& image, const PETSinogramOfVolume& s3d,
 {
   const int nviews = s3d.get_num_views();
 
-  // KT 03/11/98 use get_empty_segment...
+  // KT 18/03/99 use get_empty_segment...
 
   PETSegmentByView 
-    segment_pos = s3d.empty_segment_view_copy(abs_segment_num);
+    segment_pos = s3d.get_empty_segment_view_copy(abs_segment_num);
   PETSegmentByView 
-    segment_neg = s3d.empty_segment_view_copy(-abs_segment_num);
+    segment_neg = s3d.get_empty_segment_view_copy(-abs_segment_num);
   
   {       
     
