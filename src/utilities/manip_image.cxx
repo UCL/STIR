@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// @(#)vox.cxx	1.1: 98/08/07
 //
 
 
@@ -142,16 +142,16 @@ main(int argc, char *argv[]){
 
 
   do{
-    cerr<<endl<<"1. visual"<<endl;
-    cerr<<"2. data total"<<endl;
-    cerr<<"3. data plane-wise"<<endl;
+    cerr<<endl<<"1. Visual"<<endl;
+    cerr<<"2. Data total"<<endl;
+    cerr<<"3. Data plane-wise"<<endl;
     cerr<<"4. Min/Max for plane"<<endl;
     cerr<<"5. Show halo"<<endl;
     //    cerr<<"6. Central profile "<<endl;
     cerr<<"6. Clean rim "<<endl;
     cerr<<"7. Get plane"<<endl;
     cerr<<"8. Get row"<<endl;
-    cerr<<"9. quit"<<endl<<endl;   
+    cerr<<"9. Quit"<<endl<<endl;   
     cerr<<"Input selection: ";
     cin>>choice;
     cerr<<endl;
@@ -225,7 +225,7 @@ main(int argc, char *argv[]){
     case 6:
 
       clean_rim(input_image,scanner);
-
+ 
 
       break;
 
@@ -244,7 +244,7 @@ main(int argc, char *argv[]){
       break;
     }
   
-  }while(!(choice==10));
+  }while(!(choice==9));
 
 
 
@@ -329,6 +329,21 @@ void clean_rim(PETImageOfVolume& input_image, const PETScannerInfo& scanner){
 	}
 
       }
+
+  //MJ 07/09/98 added output feature
+
+  if(ask_num("Write trimmed image to file ? (0: No, 1: Yes)",0,1,0)){
+  char outfile[200],fname[200];
+  cout << endl << "Output filename : ";
+  cin >> outfile;
+  sprintf(fname, "%s.dat",outfile);
+
+  	ofstream image_data;
+	open_write_binary(image_data, fname);
+	input_image.write_data(image_data);
+
+  }
+
 
 }
 
