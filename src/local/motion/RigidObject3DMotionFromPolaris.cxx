@@ -279,46 +279,59 @@ RigidObject3DMotionFromPolaris::find_offset(CListModeData& listmode_data)
 Succeeded 
 RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 {
-  const string sync_filename =
-    list_mode_filename + "_" + 
-    find_filename(mt_filename.c_str()) +
-    ".sync";
-
-  std::ifstream sync_file(sync_filename.c_str());
-  if (sync_file)
+  // TODO add CListModeData::get_filename() or so to avoid the problem below
+  if (list_mode_filename.size() == 0)
     {
-      char line[1000];
-      sync_file.getline(line, 1000);
-      double time_offset_read;
-      if (!sync_file || 
-	  sscanf(line, "time offset := %lf", &time_offset_read)!=1)
-	{
-	  warning("Error while reading synchronisation file \"%s\".\n"
-		"Remove file and start again\n",
-		sync_filename.c_str());
-	  return Succeeded::no;
-	}
-      set_time_offset(time_offset_read);
-      cerr << "\nsynchronisation time offset read from sync file: " << get_time_offset() << endl;
+      cerr << "\nCould not open synchronisation file as listmode filename missing."
+	   << "\nSynchronising..." << endl;
+      
+      find_offset(listmode_data);
     }
   else
-    {
-      cerr << "\nCould not open synchronisation file " << sync_filename
-	   << " for reading.\nSynchronising..." << endl;
-  
-      find_offset(listmode_data);
-      cerr << "\nsynchronisation time offset  " << get_time_offset() << endl;
-      std::ofstream out_sync_file(sync_filename.c_str());
-      if (!out_sync_file)
-	warning("Could not open synchronisation file %s for writing. Proceeding...\n",
-		sync_filename.c_str());
+    {      
+      warning("Looking for synchronisation file: Assuming that listmode corresponds to  \"%s\".\n",
+	      list_mode_filename.c_str());
+
+      const string sync_filename =
+	list_mode_filename + "_" + 
+	find_filename(mt_filename.c_str()) +
+	".sync";
+
+      std::ifstream sync_file(sync_filename.c_str());
+      if (sync_file)
+	{
+	  char line[1000];
+	  sync_file.getline(line, 1000);
+	  double time_offset_read;
+	  if (!sync_file || 
+	      sscanf(line, "time offset := %lf", &time_offset_read)!=1)
+	    {
+	      warning("Error while reading synchronisation file \"%s\".\n"
+		      "Remove file and start again\n",
+		      sync_filename.c_str());
+	      return Succeeded::no;
+	    }
+	  set_time_offset(time_offset_read);
+	  cerr << "\nsynchronisation time offset read from sync file: " << get_time_offset() << endl;
+	}
       else
 	{
-	  out_sync_file << "time offset := " << get_time_offset() << endl;
-	  cerr << "\n(written to file " << sync_filename << ")\n";
+	  cerr << "\nCould not open synchronisation file " << sync_filename
+	       << " for reading.\nSynchronising..." << endl;
+  
+	  find_offset(listmode_data);
+	  cerr << "\nsynchronisation time offset  " << get_time_offset() << endl;
+	  std::ofstream out_sync_file(sync_filename.c_str());
+	  if (!out_sync_file)
+	    warning("Could not open synchronisation file %s for writing. Proceeding...\n",
+		    sync_filename.c_str());
+	  else
+	    {
+	      out_sync_file << "time offset := " << get_time_offset() << endl;
+	      cerr << "\n(written to file " << sync_filename << ")\n";
+	    }
 	}
     }
-
   return Succeeded::yes;
 
 }
