@@ -1166,7 +1166,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     matrix_close(mptr);
     warning("write_basic_interfile_header_for_ECAT7: Matrix not found at \"%d,1,%d,%d,%d\" in file %s\n."
             "I'm not writing any header...\n",
-            frame, 1, gate, data, bed,  ECAT7_filename.c_str());
+            frame, gate, data, bed,  ECAT7_filename.c_str());
     return Succeeded::no;
   }
   
