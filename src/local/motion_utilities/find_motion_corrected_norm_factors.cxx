@@ -290,6 +290,11 @@ post_processing()
 void 
 FindMCNormFactors::process_data()
 {
+#ifdef NEW_ROT
+  cerr << "Using NEW_ROT\n";
+#else
+  cerr << "Using original ROT\n";
+#endif
 
   VectorWithOffset<segment_type *> 
     segments (template_proj_data_info_ptr->get_min_segment_num(), 

@@ -80,6 +80,11 @@ post_processing()
 #else
   cerr << "LmToProjDataWithMC NOT Using FRAME_BASED_DT_CORR\n";
 #endif
+#ifdef NEW_ROT
+  cerr << "and NEW_ROT\n";
+#else
+  cerr << "and original ROT\n";
+#endif
   return false;
 }
 
