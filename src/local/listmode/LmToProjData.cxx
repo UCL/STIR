@@ -308,6 +308,11 @@ void
 LmToProjData::
 get_bin_from_event(Bin& bin, const CListEvent& event) const
 {  
+  const double start_time = current_time;
+    //frame_defs.get_start_time(current_frame_num);
+  const double end_time = current_time;
+    //frame_defs.get_end_time(current_frame_num);
+     
   if (pre_or_post_normalisation)
   {
     event.get_bin(bin, *proj_data_info_cyl_uncompressed_ptr);
@@ -316,7 +321,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
 
     // do_normalisation
     {
-      const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
+       const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	warning("\nBin_efficiency %g too low for bin (s:%d,v:%d,ax_pos:%d,tang_pos:%d). Event ignored\n",
@@ -352,7 +357,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
     event.get_bin(bin, *template_proj_data_info_ptr); 
     if (bin.get_bin_value()>0)
     {
-      const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
+      const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
       // TODO remove arbitrary number. Supposes that these bin_efficiencies are around 1
       if (bin_efficiency < 1.E-10)
 	{
@@ -395,7 +400,7 @@ process_data()
  VectorWithOffset<CListModeData::SavedPosition> 
    frame_start_positions(1, frame_defs.get_num_frames());
 
- for (unsigned int current_frame_num = 1;
+ for (current_frame_num = 1;
       current_frame_num<=frame_defs.get_num_frames();
       ++current_frame_num)
    {
