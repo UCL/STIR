@@ -15,8 +15,8 @@ SOURCES =  \
          OSMAPOSLReconstruction.cxx OSEMMain.cxx
 
 ${DEST}OSEMMain: ${DEST}OSEMMain.o \
-        ${DEST}OSMAPOSLParameters.o ${DEST}OSMAPOSLReconstruction.o \
-	$(NEWBB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
+          ${DEST}OSMAPOSLParameters.o ${DEST}OSMAPOSLReconstruction.o \
+	$(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
 	$(CXX) $(CFLAGS)-o $@ $< \
         ${DEST}OSMAPOSLParameters.o \
 	${DEST}OSMAPOSLReconstruction.o \
