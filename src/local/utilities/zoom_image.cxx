@@ -21,6 +21,7 @@
 #include "stir/zoom.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/utilities.h"
+#include "stir/Succeeded.h"
 
 
 #ifndef STIR_NO_NAMESPACES
