@@ -13,7 +13,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -24,7 +24,8 @@
 
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
-
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBin.h"
 
 START_NAMESPACE_STIR
 
@@ -229,6 +230,9 @@ private:
   // convenience access functions to the above member
   inline VoxelsOnCartesianGrid<float>&  estimated_image();
   inline const VoxelsOnCartesianGrid<float>&  estimated_image() const;
+
+  shared_ptr<ForwardProjectorByBin> forward_projector_sptr; 
+  shared_ptr<BackProjectorByBin> back_projector_sptr;
 
   float alpha_fit;
   float beta_fit;
