@@ -51,7 +51,7 @@ CC=gcc
 #** EXTRA_OPT: for compiler
 # allow the user to get some extra options by using make EXTRA_OPT=bla 
 ifeq ($(CC),gcc)
-EXTRA_OPT =-Wall
+EXTRA_OPT =-Wall -Wno-deprecated
 endif
 
 #** EXTRA_LINK_OPT: for linker
