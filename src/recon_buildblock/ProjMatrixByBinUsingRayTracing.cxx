@@ -137,6 +137,90 @@ static inline int sign(const T& t)
   return t<0 ? -1 : 1;
 }
 
+// just do 1 LOR, returns true if lor is not empty
+static bool
+ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
+                  const float s_in_mm, const float t_in_mm, 
+                  const float cphi, const float sphi, 
+                  const float costheta, const float tantheta, 
+                  const float offset_in_z,
+                  const float fovrad_in_mm,
+                  const CartesianCoordinate3D<float>& voxel_size,
+                  const bool restrict_to_cylindrical_FOV,
+                  const int num_LORs)
+{
+  assert(lor.size() == 0);
+
+  /* Find Intersection points of LOR and image FOV (assuming infinitely long scanner)*/
+  /* (in voxel units) */
+  CartesianCoordinate3D<float> start_point;  
+  CartesianCoordinate3D<float> stop_point;
+  {
+    /* parametrisation of LOR is
+         X= s*cphi + a*sphi, 
+         Y= s*sphi - a*cphi, 
+         Z= t/costheta+offset_in_z - a*tantheta
+       find now min_a, max_a such that end-points intersect border of FOV 
+    */
+    float max_a;
+    float min_a;
+    
+    if (restrict_to_cylindrical_FOV)
+    {
+      if (fabs(s_in_mm) >= fovrad_in_mm) return false;
+      // a has to be such that X^2+Y^2 == fovrad^2      
+      max_a = sqrt(square(fovrad_in_mm) - square(s_in_mm));
+      min_a = -max_a;
+    } // restrict_to_cylindrical_FOV
+    else
+    {
+      // use FOV which is square.
+      // note that we use square and not rectangular as otherwise symmetries
+      // would take us out of the FOV. TODO
+      /*
+        a has to be such that 
+        |X| <= fovrad_in_mm &&  |Y| <= fovrad_in_mm
+      */
+      if (fabs(cphi) < 1.E-3 || fabs(sphi) < 1.E-3) 
+      {
+        if (fovrad_in_mm < fabs(s_in_mm))
+          return false;
+        max_a = fovrad_in_mm;
+        min_a = -fovrad_in_mm;
+      }
+      else
+      {
+        max_a = min((fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+                    (fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
+                    (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+        if (min_a > max_a - 1.E-3*voxel_size.x())
+          return false;
+      }
+      
+    } //!restrict_to_cylindrical_FOV
+    
+    start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
+    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y(); 
+    start_point.z() = (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z();
+    stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
+    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
+    stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
+  
+    // do actual ray tracing for this LOR
+    
+    RayTraceVoxelsOnCartesianGrid(lor, start_point, stop_point, voxel_size,
+#ifdef NEWSCALE
+           1.F/num_LORs // normalise to mm
+#else
+           1/voxel_size.x()/num_LORs // normalise to some kind of 'pixel units'
+#endif
+           );
+
+    return lor.size() != 0;
+  }
+
+}
 //////////////////////////////////////
 void 
 ProjMatrixByBinUsingRayTracing::
@@ -163,8 +247,6 @@ calculate_proj_matrix_elems_for_one_bin(
   const float s_in_mm = proj_data_info_ptr->get_s(bin);
   const float t_in_mm = proj_data_info_ptr->get_t(bin);
 
-
-
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
  
@@ -186,106 +268,36 @@ calculate_proj_matrix_elems_for_one_bin(
 
   // find offset in z, taking into account if there are 1 or 2 LORs
   // KT 20/06/2001 take origin.z() into account
+  // KT 15/05/2002 move +(max_index.z()+min_index.z())/2.F offset here instead of in formulas for Z1f,Z2f
   const float offset_in_z = 
     (num_lors_per_axial_pos == 1 || tantheta == 0 ? 
      0.F : -sampling_distance_of_adjacent_LORs_z/4)
-    - origin.z();
+    - origin.z()
+    +(max_index.z()+min_index.z())/2.F * voxel_size.z();
 
-
-  /* Intersection points of LOR and image FOV (assuming infinitely long scanner)*/
-  /* compute   X1f, Y1f,,Z1f et al in voxelcoordinates. */
-  float X1f, X2f, Y1f, Y2f, Z1f, Z2f;
-  
-  if (restrict_to_cylindrical_FOV)
-    {
-      // use FOV which is cylindrical, and is slightly 'inside' the image to avoid
-      // index out of range
-      const float fovrad_in_mm = 
-	min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
-        (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
-      if (s_in_mm >= fovrad_in_mm) return;
-
-      const float TMP2f = sqrt(square(fovrad_in_mm) - square(s_in_mm));
-      X2f = (s_in_mm * cphi - sphi * TMP2f)/voxel_size.x();
-      X1f = (s_in_mm * cphi + sphi * TMP2f)/voxel_size.x();
-      Y2f = (s_in_mm * sphi + cphi * TMP2f)/voxel_size.y();
-      Y1f = (s_in_mm * sphi - cphi * TMP2f)/voxel_size.y();
-
-      Z1f = 
-	(t_in_mm/costheta - TMP2f*tantheta + offset_in_z)/voxel_size.z() 
-	+ (max_index.z() + min_index.z())/2.F;
-      Z2f = 
-	(t_in_mm/costheta + TMP2f*tantheta + offset_in_z)/voxel_size.z()
-	+ (max_index.z() + min_index.z())/2.F;
-  } // restrict_to_cylindrical_FOV
-  else
-    {
-      // use FOV which is square, and is slightly 'inside' the image to avoid
-      // index out of range
-      // note that we use square and not rectangular as otherwise symmetries
-      // would take us out of the FOV. TODO
-      const float fovrad_in_mm = 
-	min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
+  // use FOV which is cylindrical, and is slightly 'inside' the image to avoid
+  // index out of range
+  const float fovrad_in_mm = 
+    min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
         (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
 
-      /* parametrisation of LOR is
-         X= s*cphi + a*sphi, 
-         Y= s*sphi - a*cphi, 
-         Z= t/costheta+offset_in_z+(max_index.z()+min_index.z())/2.F - a*tantheta
-	 a has to be such that 
-	 |X| <= fovrad_in_mm &&  |Y| <= fovrad_in_mm
-      */
-      float max_a;
-      float min_a;
-      if (fabs(cphi) < 1.E-3 || fabs(sphi) < 1.E-3) 
-      {
-	if (fovrad_in_mm < fabs(s_in_mm))
-          return;
-        max_a = fovrad_in_mm;
-        min_a = -fovrad_in_mm;
-      }
-      else
-      {
-        max_a = min((fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
-	            (fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
-        min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
-	            (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
-        if (min_a > max_a - 1.E-3*voxel_size.x())
-	  return;
-      }
-      X1f= (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
-      Y1f= (s_in_mm*sphi - max_a*cphi)/voxel_size.y(); 
-      Z1f= (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z()
-        +(max_index.z()+min_index.z())/2.F;
-      X2f= (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
-      Y2f= (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
-      Z2f= (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z()
-        +(max_index.z()+min_index.z())/2.F;
-	  
-  } //!restrict_to_cylindrical_FOV
+  const bool not_empty =
+    ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
+                      cphi, sphi, costheta, tantheta, 
+                      offset_in_z, fovrad_in_mm, 
+                      voxel_size,
+                      restrict_to_cylindrical_FOV,
+                      num_lors_per_axial_pos);
+  if (!not_empty)
+    return;
 
-  {
-    const CartesianCoordinate3D<float> start_point(Z1f,Y1f,X1f);  
-    const CartesianCoordinate3D<float> stop_point(Z2f,Y2f,X2f);  
-    
-    // do actual ray tracing for this LOR
-    
-    RayTraceVoxelsOnCartesianGrid(lor, start_point, stop_point, voxel_size,
-#ifdef NEWSCALE
-           1.F/num_lors_per_axial_pos // normalise to mm
-#else
-           1/voxel_size.x()/num_lors_per_axial_pos // normalise to some kind of 'pixel units'
-#endif
-           );
-  }
   // now add on other LORs
   if ( num_lors_per_axial_pos>1)
-  {      
-    
+  {          
     assert(num_lors_per_axial_pos==2);
     if (tantheta==0 ) 
     { 
-      assert(Z1f == -origin.z()/voxel_size.z());
+      assert(lor.begin()->coord1() == -origin.z()/voxel_size.z());
       add_adjacent_z(lor);
     }
     else
