@@ -21,20 +21,31 @@
 #define __ProjDataInMemory_H__
 
 #include "stir/ProjDataFromStream.h" 
-#include <string>
-#ifdef BOOST_NO_STRINGSTREAM
-//#include <memory>
 #include "stir/shared_ptr.h"
-
-#ifndef STIR_NO_NAMESPACES
-#ifndef TOMO_NO_AUTOPTR
-//using std::auto_ptr;
-#endif
-#endif
-#endif // BOOST_NO_STRINGSTREAM
+#include <string>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
+#endif
+
+/* Implementation note (KT)
+   
+   I first used the std::stringstream class (when available).
+   However, this class currently has a problem that you cannot preallocate
+   a buffer size. This means that when we write to the stringstream, it will
+   grow piece by piece. For some implementations (i.e. those that keep the memory
+   contiguous), this might mean multiple reallocations and copying of data.
+   Of course, for 'smart' implementations of stringstream, this wouldn't happen.
+   Still, I've decided to not take the risk, and always use old style strstream instead.
+
+  It's not clear if strstream will ever disappear from C++, but in any case, it won't happen 
+  very soon. Still, if you no longer have strstream, or don't want to use it, you can enable 
+  the stringstream implementation by removing the next line.
+*/
+#define STIR_USE_OLD_STRSTREAM
+
+#if defined(BOOST_NO_STRINGSTREAM) && !defined(STIR_USE_OLD_STRSTREAM)
+#define STIR_USE_OLD_STRSTREAM 
 #endif
 
 START_NAMESPACE_STIR
@@ -65,18 +76,20 @@ public:
   //! constructor that copies data from another ProjData
   ProjDataInMemory (const ProjData& proj_data);
 
+  //! destructor deallocates all memory the object owns
   ~ProjDataInMemory();
 
   //! writes info to a file in Interfile format
-  /*! \warning This will become obsolete as soon as we have proper output of projdata
+  /*! \warning This might change as soon as we have proper output of projdata
   */
   Succeeded
     write_to_file(const string& filename) const;
     
 private:
-#ifdef BOOST_NO_STRINGSTREAM
-  // TODO an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems
-  // auto_ptr<char> buffer;
+#ifdef STIR_USE_OLD_STRSTREAM
+  // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_ptr
+  // note however that the buffer is not shared. we just use it such that its memory gets 
+  // deallocated automatically.
   shared_ptr<char> buffer;
 #else
 #endif

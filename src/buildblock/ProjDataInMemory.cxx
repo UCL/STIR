@@ -17,15 +17,17 @@
     See STIR/LICENSE.txt for details
 */
 
+
 #include "stir/ProjDataInMemory.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/SegmentByView.h"
-#include "stir/utilities.h"
-#include "stir/interfile.h"
+#include "stir/ProjDataInterfile.h"
 #include <fstream>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
+
+
+#ifdef STIR_USE_OLD_STRSTREAM
+#include <strstream>
 #else
 #include <sstream>
 #endif
@@ -34,6 +36,7 @@
 using std::fstream;
 using std::iostream;
 using std::ios;
+using std::strstream;
 #endif
 
 START_NAMESPACE_STIR
@@ -48,7 +51,7 @@ ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool 
   ProjDataFromStream(proj_data_info_ptr, 0) // trick: first initialise sino_stream_ptr to 0
 {
   
-#ifdef BOOST_NO_STRINGSTREAM
+#ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
   buffer = new char[buffer_size];
@@ -78,7 +81,7 @@ ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
 : ProjDataFromStream(proj_data.get_proj_data_info_ptr()->clone(), 0)
 {
-#ifdef BOOST_NO_STRINGSTREAM
+#ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
   buffer = new char[buffer_size];
@@ -131,15 +134,9 @@ write_to_file(const string& output_filename) const
     return Succeeded::no;
   }
 
-  //ProjDataInterfile out_projdata(output_filename, proj_data_info_ptr, ios::out); 
-  ProjDataFromStream out_projdata(proj_data_info_ptr, file_stream); 
-
-  Succeeded success =
-   write_basic_interfile_PDFS_header(output_filename, out_projdata);
-
-  if (success== Succeeded::no)
-    return success;
-
+  ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
+  
+  Succeeded success=Succeeded::yes;
   for (int segment_num = proj_data_info_ptr->get_min_segment_num();
        segment_num <= proj_data_info_ptr->get_max_segment_num();
        ++segment_num)
@@ -155,11 +152,4 @@ write_to_file(const string& output_filename) const
 
 
 END_NAMESPACE_STIR
-
-  
-  
-  
-
-
-
 
