@@ -45,7 +45,9 @@ public :
                    const ByteOrder& = ByteOrder::native);
 
 
-  Succeeded  
+  virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
+
+  virtual Succeeded  
     write_to_file(string& output_filename,
 		  const DiscretisedDensity<3,float>& density) const;
 
