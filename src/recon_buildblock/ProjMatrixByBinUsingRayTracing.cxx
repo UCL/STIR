@@ -382,8 +382,8 @@ calculate_proj_matrix_elems_for_one_bin(
   // use FOV which is slightly 'inside' the image to avoid
   // index out of range
   const float fovrad_in_mm = 
-    min((min(max_index.x(), -min_index.x())-1)*voxel_size.x(),
-        (min(max_index.y(), -min_index.y())-1)*voxel_size.y()); 
+    min((min(max_index.x(), -min_index.x()))*voxel_size.x(),
+        (min(max_index.y(), -min_index.y()))*voxel_size.y()); 
 
   if (num_tangential_LORs == 1)
   {
