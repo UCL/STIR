@@ -4,10 +4,11 @@
 
 //some miscellaneous operators for sinograms and images
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+//MJ 29/02/2000 changed by request of KT
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 
 
 #include "pet_common.h" 
