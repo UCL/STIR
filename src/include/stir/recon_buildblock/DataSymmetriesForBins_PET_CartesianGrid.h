@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief Declaration of class DataSymmetriesForBins_PET_CartesianGrid
 
@@ -36,7 +36,7 @@ template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesia
 template <typename T> class shared_ptr;
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief Symmetries appropriate for a (cylindrical) PET scanner, and 
   a discretised density on a Cartesian grid.
 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief Declares class BackProjectorByBin
 
@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_BackProjectorByBin_h_
@@ -37,7 +37,7 @@ template <typename T> class shared_ptr;
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Abstract base class for all back projectors
 */
 class BackProjectorByBin : 

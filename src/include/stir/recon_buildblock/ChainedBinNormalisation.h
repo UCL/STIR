@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup normalisation
 
   \brief Declaration of class ChainedBinNormalisation
 
@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -25,7 +25,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup normalisation
   \brief A BinNormalisation class that simply multiplies the factors given by
   2 BinNormalisation objects.
 

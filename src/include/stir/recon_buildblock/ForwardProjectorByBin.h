@@ -6,7 +6,7 @@
 #define __stir_recon_buildblock_ForwardProjectorByBin_h__
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief Base class for forward projectors which work on 'large' collections of bins:
   given the whole image, fill in a RelatedViewgrams<float> object.
@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -40,7 +40,7 @@ template <typename T> class shared_ptr;
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Abstract base class for all forward projectors
 */
 class ForwardProjectorByBin : 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief Declares class ProjectorByBinPair
 
@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_ProjectorByBinPair_h_
@@ -31,7 +31,7 @@ class ProjDataInfo;
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Abstract base class for all projector pairs
 
   This class is useful for all algorithms which need both a forward 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup normalisation
 
   \brief Declaration of class BinNormalisation
 
@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -30,7 +30,7 @@ class Succeeded;
 class ProjDataInfo;
 template <typename T> class shared_ptr;
 /*!
-  \ingroup recon_buildblock
+  \ingroup normalisation
   \brief Abstract base class for implementing bin-wise normalisation of data.
 
   As part of the measurement model in PET, there usually is some multiplicative 

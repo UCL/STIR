@@ -3,8 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
-  \ingroup ECAT
+  \ingroup normalisation
 
   \brief Implementation for class ChainedBinNormalisation
 
@@ -13,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

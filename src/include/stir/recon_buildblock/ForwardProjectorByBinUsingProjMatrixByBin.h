@@ -7,7 +7,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
   
   \brief definition of ForwardProjectorByBinUsingProjMatrixByBin
     
@@ -21,7 +21,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -40,7 +40,7 @@ template <typename elemT> class RelatedViewgrams;
 /*!
   \brief This implements the ForwardProjectorByBin interface, given any 
   ProjMatrixByBin object
-  \ingroup recon_buildblock
+  \ingroup projection
 
   It stores a shared_ptr to a ProjMatrixByBin object, which will be used
   to get the relevant elements of the projection matrix.

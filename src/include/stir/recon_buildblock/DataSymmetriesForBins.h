@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief Declaration of class DataSymmetriesForBins
 
@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForBins_H__
@@ -59,7 +59,7 @@ typedef Coordinate2D<int> AxTangPosNumbers;
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief A class for encoding/finding symmetries common to the geometry
   of the projection data and the discretised density. 
 

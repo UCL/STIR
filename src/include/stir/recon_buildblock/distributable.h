@@ -7,7 +7,7 @@
 
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup distributable
 
   \brief Declaration of the main function that performs parallel processing
 
@@ -21,7 +21,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
@@ -37,6 +37,8 @@ class DataSymmetriesForViewSegmentNumbers;
 class ForwardProjectorByBin;
 class BackProjectorByBin;
 
+//!@{
+//! \ingroup distributable
 
 extern bool RPC_slave_sens_zero_seg0_end_planes; // = false;
 
@@ -124,7 +126,7 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
                                     RPC_process_related_viewgrams_type * RPC_process_related_viewgrams);
 
 
-
+//!@}
 
 END_NAMESPACE_STIR
 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup priors
   \brief Declaration of class PriorWithParabolicSurrogate
 
   \author Sanida Mustafovic 
@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -30,7 +30,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup priors
   \brief
    this class implements priors with a parabolic surrogate curvature
  

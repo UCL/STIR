@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief implementations for class DataSymmetriesForBins
 

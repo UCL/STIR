@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief Declares class ProjectorByBinPairUsingSeparateProjectors
 
@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_ProjectorByBinPairUsingSeparateProjectors_h_
@@ -26,7 +26,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief A projector pair based on a single matrix
 */
 class ProjectorByBinPairUsingSeparateProjectors : 

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup normalisation
 
   \brief Declaration of class BinNormalisationFromAttenuationImage
 
@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -33,7 +33,7 @@ using std::string;
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup normalisation
   \brief A BinNormalisation class that gets attenuation correction factors from
   an attenuation image
 
