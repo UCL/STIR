@@ -50,20 +50,34 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   slightly 'inside' the image (i.e. it is about 1 voxel at each side
   smaller than the maximum possible).
 
+  \par Parsing parameters
+
+  The following parameters can be set (default values are indicated):
+  \verbatim
+  Ray Tracing Matrix Parameters :=
+  ; any parameters appropriate for class ProjMatrixByBin
+  restrict to cylindrical FOV := true
+  number of rays in tangential direction to trace for each bin := 1
+  End Ray Tracing Matrix Parameters :=
+  \endverbatim
+                  
+  \par Implementation details
+
   The implementation uses RayTraceVoxelsOnCartesianGrid().
 
   \warning Only appropriate for VoxelsOnCartesianGrid type of images
-  (otherwise a run-time error occurs).
+  (otherwise error() will be called).
   
-  \warning Current implementation assumes that x,y voxel sizes are at least as 
-  large as the sampling in tangential direction, and that z voxel size is either
+  \warning Care should be taken to select the number of rays in tangential direction 
+  such that the sampling is not greater than the x,y voxel sizes.
+  \warning Current implementation assumes that z voxel size is either
   smaller than or exactly twice the sampling in axial direction of the segments.
-
 */
 
 class ProjMatrixByBinUsingRayTracing : 
   public RegisteredParsingObject<
 	      ProjMatrixByBinUsingRayTracing,
+              ProjMatrixByBin,
               ProjMatrixByBin
 	       >
 {
@@ -85,9 +99,10 @@ public :
 private:
   //! variable that determines if a cylindrical FOV or the whole image will be handled
   bool restrict_to_cylindrical_FOV;
+  //! variable that determines how many rays will be traced in tangential direction for one bin
+  int num_tangential_LORs;
 
   // explicitly list necessary members for image details (should use an Info object instead)
-  // ideally these should be const, but I have some trouble initialising them in that case
   CartesianCoordinate3D<float> voxel_size;
   CartesianCoordinate3D<float> origin;  
   CartesianCoordinate3D<int> min_index;
@@ -102,6 +117,7 @@ private:
 
    virtual void set_defaults();
    virtual void initialise_keymap();
+   virtual bool post_processing();
   
 };
 
