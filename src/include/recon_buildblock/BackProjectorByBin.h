@@ -14,8 +14,8 @@
   $Date$
   $Revision$
 */
-#ifndef __BackProjectorByBin_h_
-#define __BackProjectorByBin_h_
+#ifndef __Tomo_recon_buildblock_BackProjectorByBin_h_
+#define __Tomo_recon_buildblock_BackProjectorByBin_h_
 
 #include "tomo/RegisteredObject.h"
 #include "TimedObject.h"
@@ -105,6 +105,6 @@ protected:
 
 END_NAMESPACE_TOMO
 
-#include "BackProjectorByBin.inl"
+#include "recon_buildblock/BackProjectorByBin.inl"
 
 #endif // __BackProjectorByBin_h_

@@ -104,6 +104,6 @@ protected:
 
 END_NAMESPACE_TOMO
 
-#include "Shape3D.inl"
+#include "local/tomo/Shape/Shape3D.inl"
 
 #endif
