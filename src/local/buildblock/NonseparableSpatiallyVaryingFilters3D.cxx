@@ -857,7 +857,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     }
     VoxelsOnCartesianGrid<float>* precomputed_coefficients_image_cast =
 	  dynamic_cast< VoxelsOnCartesianGrid<float>* >(precomputed_coefficients_image); 
-    if (0) //ount > 1000 && count %10 == 0)
+    if (count > 10 && count %10 == 0)
     {
       recompute_filters = true;
       cerr << "recompute coefficients now\n WARNING this is specific to approach 2!\n";
