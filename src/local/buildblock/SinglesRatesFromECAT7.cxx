@@ -26,7 +26,7 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
-using std::fstream;
+using std::streampos;
 #endif
 
 START_NAMESPACE_STIR
@@ -45,6 +45,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
 		   const ios::openmode open_mode)
 
 {
+
   MatrixFile* mptr = matrix_open(ECAT7_filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
 
   if (!(mptr->mhptr->file_type == Byte3dSinogram ||
@@ -83,9 +84,66 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
   return singles; 
   
 }
+Array<3,float> 
+SinglesRatesFromECAT7::read_singles_from_sgl_file (const string& singles_filename, 
+						   TimeFrameDefinitions& time_def)
+{
+
+  ifstream singles_file(singles_filename.c_str(), ios::binary);
+  if (!singles_file)
+  {
+    warning("\nCouldn't open %s.\n", singles_filename.c_str());
+  }
+  
+  sgl_str singles_str;
+  vector<sgl_str> vector_of_records;
+  int num_frames = time_def.get_num_frames();
+
+  singles = Array<3,float>(IndexRange3D(0,num_frames-1,0,2,0,35)); 
+ 
+  // skip the first 512 bytes which are part of ECAT7 header
+  singles_file.seekg(512,ios::beg);
+  
+  while (!singles_file.eof())
+  {
+    singles_file.read((char*)&singles_str,sizeof(singles_str));     
+    vector_of_records.push_back(singles_str);
+  }
+
+  std::vector<sgl_str>::const_iterator singles_iter= vector_of_records.begin();
+  
+  Array<3,float>::full_iterator iter_array = singles.begin_all();
+  for ( int frame = 1; frame <= num_frames; frame++)
+  {
+    double start_frame = time_def.get_start_time(frame);
+    double end_frame =time_def.get_end_time(frame);
+    int number_of_samples =0;
+    long int sum_singles [126];
+
+    while (!((*singles_iter).time !=end_frame))
+    {
+      for(int i =1; i <=126; i++)
+	sum_singles[i] +=(*singles_iter).sgl[i];
+      number_of_samples++;
+      singles_iter++;  
+    }
+
+    for(int i =1; i <=126; i++)
+	sum_singles[i] /=number_of_samples;
+    
+    for( int i=1; i<=126;i++)
+    {
+      *iter_array++ = sum_singles[i];
+    }
+  }
+  return singles;
+}
+ 
 
 float 
-SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,float time) const
+SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,
+					 const float start_time,
+					 const float end_time) const
 { 
   const int denom = transBlocksPerBucket*angularCrystalsPerBlock;
   const int axial_pos = det_pos.axial_coord();
@@ -125,4 +183,12 @@ SinglesRatesFromECAT7::set_defaults()
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
+
+#if 0
+  //first find out the size of the file
+  streampos current  = singles_file.tellg(); 
+  singles_file.seekg(0, ios::end);
+  streampos end_stream_position = singles_file.tellg();
+  singles_file.seekg(0, ios::beg);
+#endif
 
