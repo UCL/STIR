@@ -261,7 +261,7 @@ df = $(DEST)$(*F)
 MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
 MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
 
-dotD2dotP = sed -e 's&\($*\)\.o[ :]*&$(DEST)\1.o &' < $(df).d > $(df).P; \
+dotD2dotP = sed -e 's&\($*\)\.o[ :]*&$(DEST)\1.o :&' < $(df).d > $(df).P; \
 	sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
 	rm -f $(df).d
