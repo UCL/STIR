@@ -62,13 +62,13 @@ SeparableGaussianArrayFilter(const float standard_deviation_v,
   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
   { 
    filter_coefficients[i] /= sum;
-  }*/
+  }
 
   cerr << " here  - rescaled" << endl;
    cerr << "Printing filter coefficients" << endl;
   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
     cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;
-  
+ */
    all_1d_array_filters[2] = 	 
       new ArrayFilter1DUsingConvolution<float>(filter_coefficients);
    all_1d_array_filters[0] = 	 
@@ -88,11 +88,13 @@ calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int n
 
   filter_coefficients.grow(-number_of_coefficients,number_of_coefficients);
   filter_coefficients[0] = 1/sqrt(2*square(standard_deviation)*_PI);
-    //double(exp(double(-(square(1)/(2*square(standard_deviation))))));
-  for (int i = 2; i<=number_of_coefficients;i++)
+
+  for (int i = 1; i<=number_of_coefficients;i++)
   { 
-    filter_coefficients[i-1] = double(exp(double(-(square(i-1)/(2*square(standard_deviation))))))/sqrt(2*square(standard_deviation)*_PI);
-    filter_coefficients[-i+1]= double(exp(double(-(square(i-1)/(2*square(standard_deviation))))))/sqrt(2*square(standard_deviation)*_PI);
+    filter_coefficients[i] = 
+      filter_coefficients[-i]= 
+      exp(-square(i)/(2.*square(standard_deviation)))/
+      sqrt(2*square(standard_deviation)*_PI);
   }
     
 }
