@@ -53,8 +53,7 @@ $(DEST)display.o: display.cxx ../include/VectorWithOffset.h \
  ../include/pet_common.h ../include/Tensor2D.h ../include/Tensorbase.h \
  ../include/NumericVectorWithOffset.h ../include/NumericInfo.h \
  ../include/Tensor1D.h ../include/Tensor3D.h ../include/display.h \
- ../include/sinodata.h ../include/PETScannerInfo.h \
- ../include/PETScanInfo.h gen.h screen.h
+ gen.h screen.h
 
 $(DEST)gen.o: gen.c gen.h
 
