@@ -11,7 +11,10 @@ all: $(DEST)libbuildblock.a $(DEST)buildblock_registries.o
 clean:
 	$(RM) $(DEST)*.[oad]
 
-# KT 25/06/02 added DataSymmetriesForViewSegmentNumbers.cxx
+# KT 08/02/2002
+# added ProjDataInMemory.cxx
+# KT 10/08/2002
+# added ProjDataInterfile.cxx
 SOURCES = \
   Array.cxx convert_array.cxx \
   IndexRange.cxx \
@@ -22,6 +25,7 @@ SOURCES = \
   ProjDataInfoCylindricalNoArcCorr.cxx \
   ProjDataFromStream.cxx \
   ProjDataGEAdvance.cxx \
+  ProjDataInterfile.cxx \
   ProjDataInMemory.cxx \
   Scanner.cxx \
   SegmentBySinogram.cxx \
@@ -50,8 +54,7 @@ SOURCES = \
 	ChainedImageProcessor.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
 	SeparableConvolutionImageFilter.cxx \
-        DataSymmetriesForViewSegmentNumbers.cxx
-
+	DataSymmetriesForViewSegmentNumbers.cxx
  
 
 
