@@ -1,42 +1,21 @@
 //
 // $Id$: $Date$
 //
+/*!
+  \file 
+ 
+  \brief inline implementations for CPUTimer
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
 
 /*
-  For most systems, CPUTimer::value() returns elapsed CPU time using the 
-  ANSI clock() function.  From the man page: "The reported time is the sum
-  of the CPU time of the calling process and its terminated child
-  processes for which it has executed wait, system, or pclose
-  subroutines."
-  clock() has a possible problem of wrap-around. For many Unix systems this
-  occurs very soon. For a SUN, the man page states this is every 2147 secs 
-  of CPU time (36 minutes !). AIX should be similar, as both have 
-  CLOCKS_PER_SEC = 10e6, and clock_t == int == 32 bit.
-
-  So, since version 1.2 the times() function (with the rms_utime field) 
-  is used #if defined(__OS_UNIX__). The  man page states something very similar 
-  to clock():
-  "tms_utime       The CPU time used for executing instructions in the user
-   space of the calling process.
-
-   This information is read from the calling process as well as from
-   each completed child process for which the calling process executed
-   a wait subroutine."
-  As times() returns results measured in clock interrupt clicks (on AIX
-  100 per second), wrap around occurs much later.
-
-
-  Finally, VC++ 5.0 seems to have a bug in clock() that makes its results
-  dependent on the load of the system (i.e. it is more like 'wall clock 
-  time').
-  We now use GetProcessTimes() (with the lpUserTime variable) instead. 
-  The documentation states:
-  "... the amount of time that the process has executed in user mode.
-  The time that each of the threads of the process has executed in user 
-  mode is determined, and then all of those times are summed together to 
-  obtain this value. 
-  Warning: this only works for NT, not for Win95
-
   History:
    1.0 by Kris Thielemans
    1.1 by Kris Thielemans
@@ -44,6 +23,7 @@
    1.2 by Kris Thielemans
      moved inlines to separate file
 */
+START_NAMESPACE_TOMO
 
 // KT 12/01/2000 use for all unixes
 #if defined(__OS_UNIX__)
@@ -103,3 +83,5 @@ double CPUTimer::get_current_value() const
 }
 #endif
 
+
+END_NAMESPACE_TOMO
