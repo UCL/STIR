@@ -150,7 +150,9 @@ O_OUTFLAG := -o
 # extension for object files
 O_SUFFIX := .o
 # flag to be passed to $(LINK) for specifying the name of the executable
-EXE_OUTFLAG := -o
+# warning: there has to be a space after the -o. Otherwise, ld on OSX complains.
+# Note that Visual Studio does not work when there is a space after its EXE_OUTFLAG...
+EXE_OUTFLAG := -o 
 # note: extension for executables is handled somewhat differently
 # CYGWIN make (in Unix mode) appends the .exe in targets etc, so we need 
 # $(EXE_SUFFIX) only for copying, deleting files etc
