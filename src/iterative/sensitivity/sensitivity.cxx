@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// @(#)sensitivity.cxx	1.9: 98/11/13
 //
 
 
@@ -28,6 +28,8 @@
 
 
 #include "TensorFunction.h"
+//MJ 17/11/98 new
+#include "recon_array_functions.h"
 
 #include "recon_buildblock/bckproj.h"
 #include "recon_buildblock/fwdproj.h"
@@ -56,9 +58,6 @@ public:
   virtual void apply(PETSegment&) const {}
 };
 
-// KT 09/11/98 new
-void truncate_rim(PETSegmentByView& seg, const int rim_truncation_sino);
-void truncate_rim(PETSegmentBySinogram& seg, const int rim_truncation_sino);
 
 // KT 09/11/98 use PSOV for construction of segments, added const for globals
 PETImageOfVolume
@@ -450,45 +449,3 @@ PETImageOfVolume compute_sensitivity_image(const PETSinogramOfVolume& s3d,
   return image_result;
 }
 
-
-// KT 09/11/98 new
-void truncate_rim(PETSegmentByView& seg, const int rim_truncation_sino)
-{
-  
-  const int vs=seg.get_min_view();
-  const int ve=seg.get_max_view();
-  const int rs=seg.get_min_ring();
-  const int re=seg.get_max_ring();
-  const int bs=seg.get_min_bin();
-  const int be=seg.get_max_bin();
-  
-  for(int v=vs;v<=ve;v++)
-    for(int r=rs;r<=re;r++)
-    {
-      for(int b=bs;b<bs+rim_truncation_sino;b++)     
-	seg[v][r][b]=0;
-      for(int b=be-rim_truncation_sino+1; b<=be;b++)     
-	seg[v][r][b]=0;        
-    }
-}
-
-// KT 09/11/98 new
-void truncate_rim(PETSegmentBySinogram& seg, const int rim_truncation_sino)
-{
-  
-  const int vs=seg.get_min_view();
-  const int ve=seg.get_max_view();
-  const int rs=seg.get_min_ring();
-  const int re=seg.get_max_ring();
-  const int bs=seg.get_min_bin();
-  const int be=seg.get_max_bin();
-  
-  for(int r=rs;r<=re;r++)
-    for(int v=vs;v<=ve;v++)
-    {
-      for(int b=bs;b<bs+rim_truncation_sino;b++)     
-	seg[r][v][b]=0;
-      for(int b=be-rim_truncation_sino+1; b<=be;b++)     
-	seg[r][v][b]=0;        
-    }
-}
