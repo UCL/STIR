@@ -34,6 +34,7 @@ using std::ostream;
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT7
+#define STIR_DO_IT(x) out_sh.x =in_sh.x;
 
 void copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
 {
@@ -54,7 +55,6 @@ void copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
         short scan_min;	
         short scan_max;	
 */
-#define STIR_DO_IT(x) out_sh.x =in_sh.x;
 
   STIR_DO_IT(frame_start_time);
   STIR_DO_IT(frame_duration);
@@ -72,6 +72,38 @@ void copy_subheader(Scan3D_subheader& out_sh, const Scan3D_subheader& in_sh)
   STIR_DO_IT(total_coin_rate);
   for (int i=0; i<128; ++i)
     STIR_DO_IT(uncor_singles[i]);
+}
+
+void copy_subheader(Attn_subheader& out_sh, const Attn_subheader& in_sh)
+{
+  /*
+	short data_type;
+	short num_dimensions;
+	short attenuation_type;
+	short num_r_elements;
+	short num_angles;
+	short num_z_elements;
+	short ring_difference;
+	float scale_factor;
+	short z_elements[64];
+  */
+  STIR_DO_IT(x_resolution);
+  STIR_DO_IT(y_resolution);
+  STIR_DO_IT(z_resolution);
+  STIR_DO_IT(w_resolution);
+  STIR_DO_IT(x_offset);
+  STIR_DO_IT(y_offset);
+  STIR_DO_IT(x_radius);
+  STIR_DO_IT(y_radius);
+  STIR_DO_IT(tilt_angle);
+  STIR_DO_IT(attenuation_coeff);
+  STIR_DO_IT(attenuation_min);
+  STIR_DO_IT(attenuation_max);
+  STIR_DO_IT(skull_thickness);
+  STIR_DO_IT(num_additional_atten_coeff);
+  STIR_DO_IT(edge_finding_threshold);
+  for (int i=0; i<8; ++i)
+    STIR_DO_IT(additional_atten_coeff[i]);
 }
 
 void copy_subheader(MatrixData * data_out,
@@ -93,17 +125,17 @@ void copy_subheader(MatrixData * data_out,
            *reinterpret_cast<Image_subheader *>(data_out->shptr),
            *reinterpret_cast<Image_subheader *>(data_in->shptr));
 	break;
-    case AttenCor:   		
-	copy_subheader(
-           *reinterpret_cast<Attn_subheader *>(data_out->shptr),
-           *reinterpret_cast<Attn_subheader *>(data_in->shptr));
-	break;
     case Normalization:
 	copy_subheader(
            *reinterpret_cast<Norm_subheader *>(data_out->shptr),
            *reinterpret_cast<Norm_subheader *>(data_in->shptr));
 	break;
 #endif
+    case AttenCor:   		
+	copy_subheader(
+           *reinterpret_cast<Attn_subheader *>(data_out->shptr),
+           *reinterpret_cast<Attn_subheader *>(data_in->shptr));
+	break;
     case Byte3dSinogram:
     case Short3dSinogram:
     case Float3dSinogram :
@@ -308,7 +340,7 @@ int main(int argc, char *argv[])
   if (argc!=5)
     return EXIT_SUCCESS;
 
-  const ecat_dataset_spec out_spec(argv[3]);
+  const ecat_dataset_spec out_spec(argv[2]);
   const ecat_dataset_spec in_spec(argv[4]);
   cerr << "Attempting to read in '" << in_spec <<"' and out '"
        << out_spec << "'" << endl;
