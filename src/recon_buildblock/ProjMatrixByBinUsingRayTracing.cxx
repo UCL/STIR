@@ -30,6 +30,8 @@
    KT 15/05/2002 
    added possibility of multiple LORs in tangential direction
    call ProjMatrixByBin's new parsing functions
+   KT 28/06/02 
+   added option to take actual detector boundaries into account
  */
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -37,6 +39,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/round.h"
 #include <algorithm>
 #include <math.h>
@@ -66,6 +69,9 @@ ProjMatrixByBinUsingRayTracing::initialise_keymap()
   parser.add_key("restrict to cylindrical FOV", &restrict_to_cylindrical_FOV);
   parser.add_key("number of rays in tangential direction to trace for each bin",
                   &num_tangential_LORs);
+  parser.add_key("use actual detector boundaries", &use_actual_detector_boundaries);
+  parser.add_key("do_symmetry_90degrees_min_phi", &do_symmetry_90degrees_min_phi);
+  parser.add_key("do_symmetry_180degrees_min_phi", &do_symmetry_180degrees_min_phi);
   parser.add_stop_key("End Ray Tracing Matrix Parameters");
 }
 
@@ -76,6 +82,9 @@ ProjMatrixByBinUsingRayTracing::set_defaults()
   ProjMatrixByBin::set_defaults();
   restrict_to_cylindrical_FOV = true;
   num_tangential_LORs = 1;
+  use_actual_detector_boundaries = false;
+  do_symmetry_90degrees_min_phi = true;
+  do_symmetry_180degrees_min_phi = true;
 }
 
 
@@ -122,7 +131,9 @@ set_up(
 
   symmetries_ptr = 
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
-                                                density_info_ptr);
+                                                density_info_ptr,
+                                                do_symmetry_90degrees_min_phi,
+                                                do_symmetry_180degrees_min_phi);
   const float sampling_distance_of_adjacent_LORs_xy =
     proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
   
@@ -136,7 +147,40 @@ set_up(
      warning("WARNING: ProjMatrixByBinUsingRayTracing used for pixel size (in x,y) "
              "that is larger than the bin size.\n"
              "Backprojecting with this matrix might have artefacts at views 0 and 90 degrees.\n");
-  
+
+  if (use_actual_detector_boundaries)
+    {
+      const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_ptr =
+	dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
+      if (proj_data_info_cyl_ptr== 0)
+	{
+	  warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+		  " is reset to false as the projection data should be non-arccorected.\n");
+	  use_actual_detector_boundaries = false;
+	}
+      else 
+	{
+	  bool nocompression = 
+	    proj_data_info_cyl_ptr->get_view_mashing_factor()==1;
+	  for (int segment_num=proj_data_info_cyl_ptr->get_min_segment_num();
+	       nocompression && segment_num <= proj_data_info_cyl_ptr->get_max_segment_num();
+	       ++segment_num)
+	    nocompression= 
+	      proj_data_info_cyl_ptr->get_min_ring_difference(segment_num) ==
+	      proj_data_info_cyl_ptr->get_max_ring_difference(segment_num);
+	
+	  if (!nocompression)
+	    {
+	      warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+		      " is reset to false as the projection data as either mashed or uses axial compression\n");
+	      use_actual_detector_boundaries = false;
+	    }
+	}
+
+      if (use_actual_detector_boundaries)
+	warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
+
+    }  
 };
 
 /* this is used when 
@@ -161,7 +205,7 @@ static inline int sign(const T& t)
 }
 
 // just do 1 LOR, returns true if lor is not empty
-static bool
+static void
 ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
                   const float s_in_mm, const float t_in_mm, 
                   const float cphi, const float sphi, 
@@ -190,7 +234,7 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     
     if (restrict_to_cylindrical_FOV)
     {
-      if (fabs(s_in_mm) >= fovrad_in_mm) return false;
+      if (fabs(s_in_mm) >= fovrad_in_mm) return;
       // a has to be such that X^2+Y^2 == fovrad^2      
       max_a = sqrt(square(fovrad_in_mm) - square(s_in_mm));
       min_a = -max_a;
@@ -207,7 +251,7 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
       if (fabs(cphi) < 1.E-3 || fabs(sphi) < 1.E-3) 
       {
         if (fovrad_in_mm < fabs(s_in_mm))
-          return false;
+          return;
         max_a = fovrad_in_mm;
         min_a = -fovrad_in_mm;
       }
@@ -218,7 +262,7 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
         min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
                     (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
         if (min_a > max_a - 1.E-3*voxel_size.x())
-          return false;
+          return;
       }
       
     } //!restrict_to_cylindrical_FOV
@@ -240,7 +284,7 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
 #endif
            );
 
-    return lor.size() != 0;
+    return;
   }
 
 }
@@ -255,15 +299,58 @@ calculate_proj_matrix_elems_for_one_bin(
   assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
 
   assert(lor.size() == 0);
-     
-  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
-  const float costheta = 1/sqrt(1+square(tantheta));
-  const float phi = proj_data_info_ptr->get_phi(bin);
+   
+  float phi;
+  float s_in_mm = proj_data_info_ptr->get_s(bin);
+  /* Implementation note.
+     KT initialised s_in_mm above instead of in the if because this meant
+     that gcc 3.0.1 generated identical results to the previous version of this file.
+     Otherwise, some pixels at the boundary appear to be treated differently
+     (probably due to different floating point rounding errors), at least
+     on Linux on x86.
+     A bit of a mistery that.
+  */
+  if (!use_actual_detector_boundaries)
+  {
+    phi = proj_data_info_ptr->get_phi(bin);
+    //s_in_mm = proj_data_info_ptr->get_s(bin);
+  }
+  else
+  {
+    // can be static_cast later on
+    const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+    // TODO check on 180 degrees for views
+    const int num_detectors =
+      proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
+    const float ring_radius =
+      proj_data_info_ptr->get_scanner_ptr()->get_ring_radius();
+
+    int det_num1=0, det_num2=0;
+    proj_data_info_noarccor.
+      get_det_num_pair_for_view_tangential_pos_num(det_num1,
+						 det_num2,
+						 bin.view_num(),
+						 bin.tangential_pos_num());
+    phi = (det_num1+det_num2)*_PI/num_detectors-_PI/2;
+    const float old_phi=proj_data_info_ptr->get_phi(bin);
+    if (fabs(phi-old_phi)>2*_PI/num_detectors)
+      warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
+
+    s_in_mm = ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2);
+    const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
+    if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
+      warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
+
+  }
+  
   const float cphi = cos(phi);
   const float sphi = sin(phi);
-  const float s_in_mm = proj_data_info_ptr->get_s(bin);
+  
+  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
+  const float costheta = 1/sqrt(1+square(tantheta));
   const float t_in_mm = proj_data_info_ptr->get_t(bin);
-
+   
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
  
@@ -300,36 +387,35 @@ calculate_proj_matrix_elems_for_one_bin(
 
   if (num_tangential_LORs == 1)
   {
-    const bool not_empty =
-      ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
+    ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
                         cphi, sphi, costheta, tantheta, 
                         offset_in_z, fovrad_in_mm, 
                         voxel_size,
                         restrict_to_cylindrical_FOV,
-                        num_lors_per_axial_pos);
-    if (!not_empty)
-      return;
+                        num_lors_per_axial_pos);    
   }
   else
   {
     ProjMatrixElemsForOneBin ray_traced_lor;
 
-    const float s_inc = proj_data_info_ptr->get_sampling_in_s(bin)/num_tangential_LORs;
+    // get_sampling_in_s returns sampling in interleaved case
+    // interleaved case has a sampling which is twice as high
+    const float s_inc = 
+       (!use_actual_detector_boundaries ? 1 : 2) *
+        proj_data_info_ptr->get_sampling_in_s(bin)/num_tangential_LORs;
     float current_s_in_mm =
         s_in_mm - s_inc*(num_tangential_LORs-1)/2.F;
     for (int s_LOR_num=1; s_LOR_num<=num_tangential_LORs; ++s_LOR_num, current_s_in_mm+=s_inc)
     {
       ray_traced_lor.erase();
-      const bool not_empty =
-        ray_trace_one_lor(ray_traced_lor, current_s_in_mm, t_in_mm, 
+      ray_trace_one_lor(ray_traced_lor, current_s_in_mm, t_in_mm, 
                           cphi, sphi, costheta, tantheta, 
                           offset_in_z, fovrad_in_mm, 
                           voxel_size,
                           restrict_to_cylindrical_FOV,
                           num_lors_per_axial_pos*num_tangential_LORs);
       //std::cerr << "ray traced size " << ray_traced_lor.size() << std::endl;
-      if (not_empty)
-        lor.merge(ray_traced_lor);
+      lor.merge(ray_traced_lor);
     }
   }
       
