@@ -144,13 +144,24 @@ fourier_1d_for_real_data(const Array<1,T>& c, const int sign = 1);
 /*! \ingroup DFT
 
   \brief Compute the inverse of the one-dimensional discrete fourier transform of a real array (of even size).
-
-  \warning destroys values in (and resizes) first argument \a c
+  \warning Because of implementation issues, a temporary copy of the input data \c c has to be made. This
+  obviously affects performance.
   \see fourier_1d_for_real_data()
 */
 template <typename T>
 Array<1,T>
-inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign = 1);
+inverse_fourier_1d_for_real_data(const Array<1,std::complex<T> >& c, const int sign = 1);
+
+/*! \ingroup DFT
+
+  \brief As inverse_fourier_1d_for_real_data(), but avoiding the copy of the input array.
+
+  \warning destroys values in (and resizes) first argument \a c
+  \see inverse_fourier_1d_for_real_data()
+*/
+template <typename T>
+Array<1,T>
+  inverse_fourier_1d_for_real_data_corrupting_input(Array<1,std::complex<T> >& c, const int sign);
 
 /*! \ingroup DFT
 
@@ -184,12 +195,24 @@ template <int num_dimensions, typename T>
 
   \brief Compute the inverse of the discrete fourier transform of a real array (with the last dimension of even size).
 
-  \warning destroys values in (and resizes) first argument \a c
+  \warning Because of implementation issues, a temporary copy of the input data \c c has to be made. This
   \see fourier_for_real_data()
 */
 template <int num_dimensions, typename T>
   Array<num_dimensions,T >
-  inverse_fourier_for_real_data(Array<num_dimensions,std::complex<T> >& c, const int sign = 1);
+  inverse_fourier_for_real_data(const Array<num_dimensions,std::complex<T> >& c, const int sign = 1);
+
+
+/*! \ingroup DFT
+
+  \brief As inverse_fourier_for_real_data(), but avoiding the copy of the input array.
+
+  \warning destroys values in (and resizes) first argument \a c
+  \see inverse_fourier_for_real_data()
+*/
+template <int num_dimensions, typename T>
+Array<num_dimensions,T >
+  inverse_fourier_for_real_data_corrupting_input(Array<num_dimensions,std::complex<T> >& c, const int sign);
 
 /*! \ingroup DFT
   \brief Adds negative frequencies to the last dimension of a complex array by complex conjugation.
