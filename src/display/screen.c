@@ -325,8 +325,9 @@ devnam.pointer=device;
 devnam.length=strlen(device);
 
 error_check(sys$assign(&devnam,&channel,0,0));
-/* change November 1997, use malloc_check now */
-buffer=malloc_check("Reading image for display", size);
+/* KT 12/01/2000 replace malloc_check by explicit checking */
+if ((buffer=malloc(size))==NULL)
+    error("Reading image for display: error allocating %d bytes",size);
 
 
 error_check(sys$qiow(0,channel,IO$_SENSEMODE,&mode1,0,0,0,0,0,0,0,0));
@@ -483,6 +484,16 @@ void SCX_START()
   XSetWindowAttributes attrib;
 
   SCX_display = XOpenDisplay ("");
+  /* KT 13/10/98 added some error checking*/
+  if (!SCX_display) 
+    {
+        error("Cannot open DISPLAY\n");
+    }
+  /* KT 25/01/2000 extra error check */
+  if (ScreenCount(SCX_display)==0)
+    {
+        error("Cannot open DISPLAY: screen count = 0\n");
+    }
 /*  XSynchronize (SCX_display, 1);*/
   SCX_hint.x = 50;
   SCX_hint.y = 50;
@@ -518,6 +529,7 @@ void SCX_START()
 	      all_color_scales[CurrentColormap].p, 
 	      all_color_scales[CurrentColormap].size);
   SC_COLOR(SC_C_ANNOTATE);
+
   SC_MASK(SC_M_ANNOTATE);
 }
 
@@ -531,6 +543,17 @@ void SCX_START_BIG()
   XSetWindowAttributes attrib;
 
   SCX_display = XOpenDisplay ("");
+  /* KT 13/10/98 added some error checking*/
+  if (!SCX_display) 
+    {
+        error("Cannot open DISPLAY\n");
+    }
+  /* KT 25/01/2000 extra error check */
+  if (ScreenCount(SCX_display)==0)
+    {
+        error("Cannot open DISPLAY: screen count = 0\n");
+    }
+
 /*  XSynchronize (SCX_display, 1);*/
   SCX_hint.x = (unsigned int) SCREEN_X_MAX/100;
   SCX_hint.y = (unsigned int) SCREEN_Y_MAX/100;
@@ -685,27 +708,28 @@ Both only work while the display window is selected.\n");
 }
 
 unsigned SCX_X_MAX()
-{ int dummy; unsigned udummy; Window wdummy;
-  unsigned width;
+{ Window wdummy;
+/*KT 13/10/98 use different variables to prevent conflicts*/
+  int x,y;
+  unsigned width, height, bw, dep;
 
-  if (SCX_display)   /* ??never occurs , screen.h loaded before exe of SC_start
-                                        POL */
+  if (SCX_display)   
     XGetGeometry(SCX_display, SCX_window, &wdummy,
-        &dummy, &dummy, &width, &udummy,
-        &udummy, &udummy);
+                 &x, &y, &width, &height, &bw, &dep);
   else
     width = SCX_hintX;
   return (width);
 }
 
 unsigned SCX_Y_MAX()
-{ int dummy; unsigned udummy; Window wdummy;
-  unsigned height;
+{ Window wdummy;
+/*KT 13/10/98 use different variables to prevent conflicts*/
+  int x,y;
+  unsigned width, height, bw, dep;
 
   if (SCX_display)
     XGetGeometry(SCX_display, SCX_window, &wdummy,
-        &dummy, &dummy, &udummy, &height,
-        &udummy, &udummy);
+            	 &x, &y, &width, &height, &bw, &dep);
   else
     height = SCX_hintY;
   return (height);
@@ -743,7 +767,7 @@ void SCX_SAVE_TO_FILE
 
   myimage = XGetImage(SCX_display, SCX_window,x_begin,y_begin,
                 width,height, AllPlanes,ZPixmap);
-  fwrite_check(proc,(VOIDP)myimage->data,
+  fwrite_check(proc,(void *)myimage->data,
         (long)sizeof(SC_pixel_t)*width*height,outfile);
 }
 
@@ -1420,20 +1444,25 @@ int sizeX,sizeY;
         WONDER_plane(previous = bank_sel[row] + (addr > left? 1: 0));
       FP_OFF(dest) = left;
       if ((long)left+sizeX > 0x10000L)
-      { fmemcpy(dest, image, -left);  /*left!=0 because sizeX<1024*/
+      { 
+	/* KT 12/01/2000 forget about fmemcpy (old compilers) */
+	memcpy(dest, image, -left);  /*left!=0 because sizeX<1024*/
         if (chiptype == TSENG)
           outp(0x3CD, previous += 9);
         if (chiptype == VGAWONDER)
           WONDER_plane(++previous);
         FP_OFF(dest) = 0;
-        fmemcpy(dest,image+0x10000L-left,left+sizeX);
+        /* KT 12/01/2000 forget about fmemcpy (old compilers) */
+	memcpy(dest,image+0x10000L-left,left+sizeX);
       }
       else
-        fmemcpy(dest,image,sizeX);
+	/* KT 12/01/2000 forget about fmemcpy (old compilers) */
+        memcpy(dest,image,sizeX);
     }
     else
     { FP_OFF(dest) = row_start[row]+col;
-      fmemcpy(dest,image,sizeX);
+      /* KT 12/01/2000 forget about fmemcpy (old compilers) */
+      memcpy(dest,image,sizeX);
     }
   }
 }
