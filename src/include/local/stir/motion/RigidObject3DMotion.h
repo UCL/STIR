@@ -37,6 +37,9 @@ public:
   virtual RigidObject3DTransformation 
     compute_average_motion(const double start_time, const double end_time)const=0;
 
+  RigidObject3DTransformation 
+    compute_average_motion_rel_time(const double start_time, const double end_time)const;
+
   virtual void get_motion(RigidObject3DTransformation& ro3dtrans, const double time) const =0;
 
   virtual Succeeded synchronise(CListModeData&) =0;
@@ -67,6 +70,7 @@ private:
  
   
   string attenuation_filename; 
+  string list_mode_filename;
   double transmission_duration;
   double reference_start_time;
   double reference_end_time;

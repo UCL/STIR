@@ -19,6 +19,7 @@
 
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
+#include "local/stir/listmode/CListModeData.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/stream.h"
 
@@ -57,6 +58,7 @@ RigidObject3DMotion::set_defaults()
 { 
   transmission_duration = 300;
   attenuation_filename ="";
+  list_mode_filename="";
   reference_start_time=time_offset_not_yet_determined;
   reference_end_time=time_offset_not_yet_determined*10;
   time_offset=time_offset_not_yet_determined;
@@ -72,6 +74,7 @@ RigidObject3DMotion::initialise_keymap()
   parser.add_key("reference_start_time", &reference_start_time);
   parser.add_key("reference_end_time", &reference_end_time);
   parser.add_key("time_offset", &time_offset);  
+  parser.add_key("list_mode_filename",&list_mode_filename);
 }
 
 bool
@@ -119,7 +122,23 @@ post_processing()
       cerr << "Reference translation from par file:  " << av_motion.get_translation()<<endl;
       transformation_to_reference_position =av_motion.inverse();
     }
+
+  if (list_mode_filename.size()!=0)
+    {
+      shared_ptr<CListModeData> lm_data_ptr =
+	CListModeData::read_from_file(list_mode_filename);
+
+      synchronise(*lm_data_ptr);
+    }
+
   return false;
+}
+
+RigidObject3DTransformation 
+RigidObject3DMotion::
+compute_average_motion_rel_time(const double start_time, const double end_time) const
+{
+  return compute_average_motion(start_time + time_offset, end_time + time_offset);
 }
 
 const RigidObject3DTransformation &
