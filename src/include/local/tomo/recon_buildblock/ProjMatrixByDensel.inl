@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -8,29 +8,29 @@
 
   \brief Implementations of inline functions for class ProjMatrixByDensel
 
-  \author Mustapha Sadki 
   \author Kris Thielemans
-  \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 #include "recon_buildblock/SymmetryOperation.h"
+#include "tomo/Succeeded.h"
 
 START_NAMESPACE_TOMO
 
 const DataSymmetriesForDensels*
-ProjMatrixByDensel:: get_symmetries_ptr() const
+ProjMatrixByDensel:: 
+get_symmetries_ptr() const
 {
-  return  symmetries_ptr.get();
+  return  symmetries_ptr.get(); 
 }
 
 
-inline void ProjMatrixByDensel::get_proj_matrix_elems_for_one_densel(
-                                                               ProjMatrixElemsForOneDensel& probabilities,
-                                                               const Densel& densel) TOMO_MUTABLE_CONST
+void ProjMatrixByDensel::
+get_proj_matrix_elems_for_one_densel(
+				     ProjMatrixElemsForOneDensel& probabilities,
+				     const Densel& densel) TOMO_MUTABLE_CONST
 {  
   // set to empty
   probabilities.erase();
@@ -40,7 +40,7 @@ inline void ProjMatrixByDensel::get_proj_matrix_elems_for_one_densel(
   Densel basic_densel = densel;
     
   auto_ptr<SymmetryOperation> symm_ptr = 
-    symmetries_ptr->find_symmetry_operation_to_basic_densel(basic_densel);
+    get_symmetries_ptr()->find_symmetry_operation_to_basic_densel(basic_densel);
   
   probabilities.set_densel(basic_densel);
 

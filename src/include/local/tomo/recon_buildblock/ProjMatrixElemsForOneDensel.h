@@ -2,8 +2,8 @@
 // $Id$: $Date$
 //
 
-#ifndef __ProjMatrixElemsForOneDensel__
-#define __ProjMatrixElemsForOneDensel__
+#ifndef __Tomo_recon_buildblock_ProjMatrixElemsForOneDensel__
+#define __Tomo_recon_buildblock_ProjMatrixElemsForOneDensel__
 
 /*!
 
@@ -14,9 +14,8 @@
     
   \author Kris Thielemans
       
-  \date $Date$
-        
-  \version $Revision$
+  $Date$        
+  $Revision$
 */
 
 
@@ -38,7 +37,7 @@ START_NAMESPACE_TOMO
 
 class RelatedDensels;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
-
+class Succeeded;
 
 
 
