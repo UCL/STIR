@@ -11,7 +11,6 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 
   For compilers that do not support partial template specialisation,
@@ -38,17 +37,26 @@ START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT>
 void 
-Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
+Array<num_dimensions, elemT>::
+resize(const IndexRange<num_dimensions>& range)
 {
-  base_type::grow(range.get_min_index(), range.get_max_index());
-  typename base_type::iterator iter = base_type::begin();
+  base_type::resize(range.get_min_index(), range.get_max_index());
+  typename base_type::iterator iter = this->begin();
   typename IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
   for (;
-       iter != base_type::end(); 
+       iter != this->end(); 
        iter++, range_iter++)
-    (*iter).grow(*range_iter);
+    (*iter).resize(*range_iter);
 
   is_regular_range = range.is_regular();
+}
+
+template <int num_dimensions, typename elemT>
+void 
+Array<num_dimensions, elemT>::
+grow(const IndexRange<num_dimensions>& range)
+{
+  resize(range);
 }
 
 template <int num_dimensions, typename elemT>
@@ -86,7 +94,6 @@ Array<num_dimensions, elemT>::begin_all()
     return full_iterator(this->begin(), this->end(), this->begin()->begin_all());
 }
   
-#ifdef ARRAY_CONST_IT
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::begin_all() const
@@ -99,7 +106,6 @@ Array<num_dimensions, elemT>::begin_all() const
   else
     return const_full_iterator(this->begin(), this->end(), this->begin()->begin_all());
 }
-#endif
 
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator 
@@ -114,7 +120,6 @@ Array<num_dimensions, elemT>::end_all()
     return full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
 }
 
-#ifdef ARRAY_CONST_IT
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::end_all() const
@@ -131,7 +136,7 @@ Array<num_dimensions, elemT>::end_all() const
   return const_full_iterator(this->end()-1, really_the_end/*this->end()*/, /*(*(this->end()-1))*/last->end_all());
   }
 }
-#endif
+
 
 #endif // ARRAY_FULL
 
@@ -183,7 +188,7 @@ elemT
 Array<num_dimensions, elemT>::find_max() const
 {
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
     elemT maxval= this->num[this->get_min_index()].find_max();
     for(int i=this->get_min_index()+1; i<=this->get_max_index(); i++)
@@ -208,7 +213,7 @@ elemT
 Array<num_dimensions, elemT>::find_min() const
 {
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
     elemT minval= this->num[this->get_min_index()].find_min();
     for(int i=this->get_min_index()+1; i<=this->get_max_index(); i++)
@@ -320,13 +325,13 @@ Array<num_dimensions,elemT>::operator[](const BasicCoordinate<num_dimensions,int
 
 template <class elemT>
 void
-Array<1, elemT>::grow(const int min_index, const int max_index) 
+Array<1, elemT>::resize(const int min_index, const int max_index) 
 {   
   this->check_state();
   const int oldstart = this->get_min_index();
-  const int oldlength = get_length();
+  const int oldlength = this->size();
   
-  base_type::grow(min_index, max_index);
+  base_type::resize(min_index, max_index);
   if (oldlength == 0)
   {
     for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
@@ -344,6 +349,20 @@ Array<1, elemT>::grow(const int min_index, const int max_index)
     }
   }
   this->check_state();  
+}
+
+template <class elemT>
+void
+Array<1, elemT>::resize(const IndexRange<1>& range) 
+{ 
+  resize(range.get_min_index(), range.get_max_index());
+}
+
+template <class elemT>
+void
+Array<1, elemT>::grow(const int min_index, const int max_index) 
+{
+  resize(min_index, max_index);
 }
 
 template <class elemT>
@@ -451,7 +470,7 @@ elemT
 Array<1, elemT>::find_max() const 
 {		
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
@@ -473,7 +492,7 @@ elemT
 Array<1, elemT>::find_min() const 
 {	
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
@@ -622,13 +641,13 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 #define elemT float
 
 void
-Array<1, float>::grow(const int min_index, const int max_index) 
+Array<1, float>::resize(const int min_index, const int max_index) 
 {  
   this->check_state();
   const int oldstart = this->get_min_index();
-  const int oldlength = get_length();
+  const int oldlength = this->size();
   
-  base_type::grow(min_index, max_index);
+  base_type::resize(min_index, max_index);
   if (oldlength == 0)
   {
     for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
@@ -646,6 +665,18 @@ Array<1, float>::grow(const int min_index, const int max_index)
     }
   }
   this->check_state();  
+}
+
+void
+Array<1, elemT>::resize(const IndexRange<1>& range) 
+{ 
+  resize(range.get_min_index(), range.get_max_index());
+}
+
+void
+Array<1, elemT>::grow(const int min_index, const int max_index) 
+{
+  resize(min_index, max_index);
 }
 
 void
@@ -737,7 +768,7 @@ float
 Array<1, float>::find_max() const 
 {		
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
@@ -757,7 +788,7 @@ float
 Array<1, float>::find_min() const 
 {	
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
@@ -884,13 +915,13 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 #define elemT int
 
 void
-Array<1, int>::grow(const int min_index, const int max_index) 
+Array<1, int>::resize(const int min_index, const int max_index) 
 {   
   this->check_state();
   const int oldstart = this->get_min_index();
-  const int oldlength = get_length();
+  const int oldlength = this->size();
   
-  base_type::grow(min_index, max_index);
+  base_type::resize(min_index, max_index);
   if (oldlength == 0)
   {
     for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
@@ -908,6 +939,18 @@ Array<1, int>::grow(const int min_index, const int max_index)
     }
   }
   this->check_state();  
+}
+
+void
+Array<1, elemT>::resize(const IndexRange<1>& range) 
+{ 
+  resize(range.get_min_index(), range.get_max_index());
+}
+
+void
+Array<1, elemT>::grow(const int min_index, const int max_index) 
+{
+  resize(min_index, max_index);
 }
 
 void
@@ -1001,7 +1044,7 @@ int
 Array<1, int>::find_max() const 
 {		
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
@@ -1022,7 +1065,7 @@ int
 Array<1, int>::find_min() const 
 {	
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
@@ -1150,13 +1193,13 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 #define elemT unsigned short
 
 void
-Array<1, unsigned short>::grow(const int min_index, const int max_index) 
+Array<1, unsigned short>::resize(const int min_index, const int max_index) 
 {  
   this->check_state();
   const int oldstart = this->get_min_index();
-  const int oldlength = get_length();
+  const int oldlength = this->size();
   
-  base_type::grow(min_index, max_index);
+  base_type::resize(min_index, max_index);
   if (oldlength == 0)
   {
     for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
@@ -1174,6 +1217,18 @@ Array<1, unsigned short>::grow(const int min_index, const int max_index)
     }
   }
   this->check_state();  
+}
+
+void
+Array<1, elemT>::resize(const IndexRange<1>& range) 
+{ 
+  resize(range.get_min_index(), range.get_max_index());
+}
+
+void
+Array<1, elemT>::grow(const int min_index, const int max_index) 
+{
+  resize(min_index, max_index);
 }
 
 void
@@ -1265,7 +1320,7 @@ unsigned short
 Array<1, unsigned short>::find_max() const 
 {		
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
@@ -1285,7 +1340,7 @@ unsigned short
 Array<1, unsigned short>::find_min() const 
 {	
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
@@ -1412,13 +1467,13 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 #define elemT short
 
 void
-Array<1, short>::grow(const int min_index, const int max_index) 
+Array<1, short>::resize(const int min_index, const int max_index) 
 {  
   this->check_state();
   const int oldstart = this->get_min_index();
-  const int oldlength = get_length();
+  const int oldlength = this->size();
   
-  base_type::grow(min_index, max_index);
+  base_type::resize(min_index, max_index);
   if (oldlength == 0)
   {
     for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
@@ -1436,6 +1491,18 @@ Array<1, short>::grow(const int min_index, const int max_index)
     }
   }
   this->check_state();  
+}
+
+void
+Array<1, elemT>::resize(const IndexRange<1>& range) 
+{ 
+  resize(range.get_min_index(), range.get_max_index());
+}
+
+void
+Array<1, elemT>::grow(const int min_index, const int max_index) 
+{
+  resize(min_index, max_index);
 }
 
 void
@@ -1527,7 +1594,7 @@ short
 Array<1, short>::find_max() const 
 {		
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::max_element(this->begin(), this->end());	
@@ -1547,7 +1614,7 @@ short
 Array<1, short>::find_min() const 
 {	
   this->check_state();
-  if (length > 0)
+  if (this->size() > 0)
   {
 #ifndef STIR_NO_NAMESPACES
     return *std::min_element(this->begin(), this->end());
