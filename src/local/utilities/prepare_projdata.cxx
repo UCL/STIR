@@ -26,7 +26,7 @@
 #include "stir/ParsingObject.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 
