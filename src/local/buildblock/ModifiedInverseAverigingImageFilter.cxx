@@ -367,7 +367,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     
         for (int  i = in_density_cast_0.get_min_x(); i<=in_density_cast_0.get_max_x();i++)      
 	{
-	 const float sq_kapas = 1000000;
+	// const float sq_kapas = 1000000;
 	  //VectorWithOffset<float> filter_coefficients_tmp;
 	  //filter_coefficients_tmp.grow(0,0);
 	  //filter_coefficients_tmp[0] =1;
@@ -657,7 +657,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    *output << sq_kapas;
 	    *output <<endl;
 	    
-	    //sq_kapas = 1000000;
+	    //sq_kapas = 10;
 	    inverse_filter = 
 	      ModifiedInverseAverigingArrayFilter<3,elemT>(filter_coefficients,sq_kapas);	  
 	    
