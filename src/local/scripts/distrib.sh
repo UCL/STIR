@@ -5,20 +5,21 @@ do_ChangeLog=1
 do_doc=1
 do_zip_source=1
 do_recon_test_pack=1
-do_transfer=1
+do_transfer=0
 
 set -e
 # rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
 VERSION=1.3
+CHECKOUTOPTS="-r rel_1_30"
 cd $WORKSPACE/../..
 DISTRIB=`pwd`/distrib
 LLN=${DISTRIB}/../lln
 WORKSPACE=${DISTRIB}/parapet/PPhead 
 
 destination=krthie@shell.sf.net:stir/htdocs/
-RSYNC_OPTS=--progress
+RSYNC_OPTS=
 #destination=web@wren:htdocs/STIR/
-#RSYNC_OPTS=  --progress --rsync-path=/home/kris/bin/rsync 
+#RSYNC_OPTS=--rsync-path=/home/kris/bin/rsync 
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}
 
@@ -32,7 +33,7 @@ fi
 #tar --exclude VC --exclude CVS -czf ecat.tar.gz ecat
 
 if [ ! -r parapet ]; then
-  cvs -d parapet:/usr/local/cvsroot checkout parapet
+  cvs -d parapet:/usr/local/cvsroot $CHECKOUTOPTS checkout parapet
   cd parapet
 else
   cd parapet
