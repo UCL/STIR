@@ -19,6 +19,7 @@ main()
   
   VectorWithOffset<int> v(-3, 40);
 
+#ifdef DEFINE_ITERATORS
   iota(v.begin(), v.end(), -3);
   assert(v[4] == 4);
 
@@ -27,16 +28,19 @@ main()
     assert(p - v.begin() == 9);
     assert(v.get_index(p) == 6);
   }
+
   {
     VectorWithOffset<int>::reverse_iterator pr = v.rbegin();
     assert((*pr++) == 40);
     assert((*pr++) == 39);
   }
 
-#ifndef __GNUG__
+#if !(defined( __GNUG__)  && (__GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)))
   // sadly doesn't work under g++ 2.7
   sort(v.rbegin(), v.rend());
   assert(v[-3] == 40);
   assert(v[0] == 37);
 #endif
+#endif // DEFINE_ITERATORS
+
 }
