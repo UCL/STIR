@@ -146,7 +146,6 @@ reset()
   stream_ptr->seekg(starting_stream_position, ios::beg);
   if (stream_ptr->bad())
     { 
-      error("Error after seeking to start of data in CListModeDataFromStream::reset()\n");
       if (stream_ptr->eof()) 
 	{ 
 	  // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
@@ -154,6 +153,9 @@ reset()
 	  if (stream_ptr->eof()) 
 	    error("seekg forgot to reset EOF or the file is empty. Can't correct this. Exiting...\n");      
 	}
+      else
+	error("Error after seeking to start of data in CListModeDataFromStream::reset()\n");
+      
     }
   return Succeeded::yes;
 }
