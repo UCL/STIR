@@ -1,18 +1,45 @@
 CXX = g++
-CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST
+CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -I/epx/epx/include -D_CR_LIB_
 #CXX = xlC
 #CFLAGS = -g -D_DEBUG -I${HOME}/PPhead/include -DTEST -DTEMPLATE_ARG
 
-%.o:%.cxx
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-%.o:%.cc
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
-%:%.o
-	$(CXX) $(DEBUG) $(CFLAGS) -o $@  $< 
+all:	ParaProcess.o ParaProcessPattern.o ParaStream.o ParaStreamIn.o ParaStreamOut.o ParaStreamInOps.o ParaStreamOutOps.o sinodata.o
+
+#%.o:	%.cxx
+#.o.cxx:
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#%.o:	%.cc
+#.o.cc:
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+#%:	%.o
+#..o:
+#	$(CXX) $(DEBUG) $(CFLAGS) -o $@  $< 
 
 
 sinodata: sinodata.o
+	$(CXX) $(CFLAGS) -o sinodata sinodata.o
 
 sinodata.o : sinodata.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
 
-test: test.cc
+ParaProcess.o:	ParaProcess.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaProcessPattern.o: ParaProcessPattern.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaStream.o:	ParaStream.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaStreamIn.o:	ParaStreamIn.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaStreamOut.o:	ParaStreamOut.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaStreamInOps.o:	ParaStreamInOps.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
+ParaStreamOutOps.o:	ParaStreamOutOps.cxx
+	$(CXX) $(DEBUG) $(CFLAGS) -o $@ -c $< 
+
