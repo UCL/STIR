@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for detail $, IRSL
     See STIR/LICENSE.txt for details
 */
 #ifdef SANIDA
@@ -20,6 +21,7 @@
 #endif
 
 START_NAMESPACE_STIR
+#ifdef SANIDA
 static ModifiedInverseAverigingImageFilter<float>::RegisterIt dummy2;
 static DAVImageFilter3D<float>::RegisterIt dummy1;
 
@@ -28,6 +30,7 @@ static SeparableLowPassImageFilter<float>::RegisterIt dummy4;
 //static ModifiedInverseAveragingImageFilterAll<float>::RegisterIt dummy6;
 static NonseparableSpatiallyVaryingFilters<float>:: RegisterIt dummy7;
 static NonseparableSpatiallyVaryingFilters3D<float>::RegisterIt dummy8;
+#endif
 
 static cleanup966ImageProcessor<float>::RegisterIt dummy100;
 static multiply_plane_scale_factorsImageProcessor<float>::RegisterIt dummy101;
