@@ -64,6 +64,10 @@ protected:
     the value will be used as a bin-normalisation factor. */
   virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
 
+  int get_compression_count(const Bin& bin) const;
+  //virtual 
+  void do_post_normalisation(Bin& bin) const;
+
   //! parsing functions
   virtual void set_defaults();
   virtual void initialise_keymap();
@@ -74,7 +78,7 @@ protected:
   string output_filename_prefix;
   string template_proj_data_name;
   string frame_definition_filename;
-  bool pre_or_post_normalisation;
+  bool do_pre_normalisation;
   bool store_prompts;
   int delayed_increment;
   int num_segments_in_memory;
@@ -86,6 +90,7 @@ protected:
 
   shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
+  shared_ptr<BinNormalisation> post_normalisation_ptr;
   shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
   shared_ptr<Scanner> scanner_ptr;
   
