@@ -28,7 +28,6 @@
   $Date$
   $Revision$
 */
-
   
 #include "stir/RunTests.h"
 #include "stir/Array.h"
@@ -38,7 +37,6 @@
 //#include "local/stir/BSplines_coef.h"
 #include <vector>
 #include <algorithm>
-
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -90,7 +88,6 @@ void BSplines_Tests::run_tests()
 				check_if_equal(*cur_iter_stir_out, *cur_iter_test,
 				"check BSplines_weight implementation");    		  		  		  
   }
-
   {  
 	  cerr << "Testing BSplines_1st_der_weight function..." << endl;
 	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTests;
@@ -114,7 +111,7 @@ void BSplines_Tests::run_tests()
 			++cur_iter_stir_out, ++cur_iter_test)
 				check_if_equal(*cur_iter_stir_out, *cur_iter_test,
 				"check BSplines_1st_der_weight implementation");    		  		  		  	  		  
-	 }
+  }
   {  
 	  cerr << "Testing BSplines 1st Derivative analytically..." << endl;
 
@@ -127,33 +124,23 @@ void BSplines_Tests::run_tests()
 		  new_input_sample.push_back(1);	  
 	  }
 	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTests(new_input_sample);
-	  BSplines_1st_der_STIR_vector.push_back(0);
-	  BSplines_1st_der_est_vector.push_back(0);
 
-	  const double epsilon = 1;
-	  for(elemT i=1; i<=28 ;++i)
+	  const double epsilon = .0001;
+	  for(double i=0; i<=new_input_sample.size()+3 ;++i)
 	  {
-		  BSplines_1st_der_STIR_vector.push_back(BSplines1DRegularGridTests.BSpline_1st_der(i));
-		//	  cerr << BSplines1DRegularGridTests.BSpline_1st_der((i+3)/30) << endl;
+		  BSplines_1st_der_STIR_vector.push_back(BSplines1DRegularGridTests.BSpline(i,1));
 		  BSplines_1st_der_est_vector.push_back(
 			  (BSplines1DRegularGridTests(i+epsilon) - 
-			  BSplines1DRegularGridTests(i-epsilon)) /epsilon);
-		//  cerr << (BSplines1DRegularGridTests.BSplines_weight(i+0.5)) << endl;// - BSplines1DRegularGridTests(i-epsilon))/epsilon << endl;
+			  BSplines1DRegularGridTests(i-epsilon)) /(2*epsilon));
 	  }	  
-	  BSplines_1st_der_STIR_vector.push_back(0);
-	  BSplines_1st_der_est_vector.push_back(0);
 	
 	  for ( std::vector<elemT>:: iterator cur_iter_stir_out= BSplines_1st_der_est_vector.begin()
 		  , cur_iter_test=BSplines_1st_der_STIR_vector.begin();
-	       // cur_iter_stir_out!=BSplines_1st_der_weight_est_vector.end() &&
-				cur_iter_test!=BSplines_1st_der_STIR_vector.end();	  
+	       	cur_iter_test!=BSplines_1st_der_STIR_vector.end();	  
 			++cur_iter_stir_out, ++cur_iter_test)
 				check_if_equal(*cur_iter_stir_out, *cur_iter_test,
-				"check BSplines_1st_der_est implementation"); 
-		  		 //cout << *cur_iter_test << endl ;	  		     
-	 }
-
-
+				"check BSplines_1st_der_est implementation"); 		  		 
+  }
   {
 	  cerr << "Testing BSplines values and constructor using a vector as input..." << endl;	  
 	  std::vector<elemT>  pre_input_sample/*(30,1)*/;
@@ -203,32 +190,27 @@ void BSplines_Tests::run_tests()
 	  
 	  std::copy(pre_input_sample.begin(), pre_input_sample.end(), input_sample.begin_all());
 
-	  BSplines1DRegularGrid<out_elemT, elemT> BSplines1DRegularGridTests(input_sample.begin(), input_sample.end());
+	  BSplines1DRegularGrid<out_elemT, elemT> BSplines1DRegularGridTests(
+		  input_sample.begin(), input_sample.end());
 	    for (elemT i=0, imax=30; i<imax ;++i)
 	  	  STIR_output_sample.push_back(BSplines1DRegularGridTests(i));
 	  
 	  std::vector<out_elemT>:: iterator cur_iter_stir_out= STIR_output_sample.begin();
 	  input_type::const_iterator cur_iter_input= input_sample.begin();
 
+	  cout << STIR_output_sample;
 	  for (int i=0; cur_iter_stir_out!=STIR_output_sample.end() &&
 		  cur_iter_input!=input_sample.end();	 
 	  		    ++cur_iter_stir_out, ++cur_iter_input, ++i)			  
-				{
-				//check_if_equal(*cur_iter_stir_out, *cur_iter_input,
-				//"check BSplines implementation");    	
-//	cerr << (BSplines1DRegularGridTests.BSplines_coef_vector[i]) << endl;
-					 cout << *cur_iter_stir_out << endl ;
-				}
-	
+		check_if_equal(*cur_iter_stir_out, *cur_iter_input,
+				"check BSplines implementation");    	
   }  
   {
 	  cerr << "Testing BSplines Continuity..." << endl;	  
 	  std::vector<elemT>  new_input_sample(16,1) , STIR_right_output_sample, 
-		  STIR_left_output_sample;
-	  
+		  STIR_left_output_sample;	  
 	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTests(
-		  new_input_sample.begin(), new_input_sample.end());
-	  
+		  new_input_sample.begin(), new_input_sample.end());  
 	  // test if shifted copy of the B-spline functions add to 1
 	  for (double inc=0; inc<1; inc+=.1)
 		  check_if_equal(
@@ -238,35 +220,27 @@ void BSplines_Tests::run_tests()
 		  BSplines_weight(fabs(+inc-1))+
 		  BSplines_weight(fabs(+inc-2)),
 		  1., "test on B-spline function");
-
 	  std::cerr << '\n';
 	  const elemT epsilon = 0.01;
 	  for (elemT i=1, imax=14; i<imax ;++i)
 	  {
 		  STIR_left_output_sample.push_back(BSplines1DRegularGridTests(i-epsilon));	  
 		  STIR_right_output_sample.push_back(BSplines1DRegularGridTests(i+epsilon));
-	  }
-	 
+	  }	 
 	  std::vector<elemT>:: iterator cur_iter_stir_left_out= STIR_left_output_sample.begin(), 
 			  cur_iter_stir_right_out= STIR_right_output_sample.begin();
-
 	  for (; cur_iter_stir_left_out!=STIR_left_output_sample.end() &&
 		  cur_iter_stir_right_out!=STIR_right_output_sample.end();	 
-	  		    ++cur_iter_stir_left_out, ++cur_iter_stir_right_out)			  
-				
-				check_if_equal(*cur_iter_stir_left_out, *cur_iter_stir_right_out,
-				"check BSplines implementation");    	
-			// cout << *cur_iter_stir_out << endl ;
+	  		    ++cur_iter_stir_left_out, ++cur_iter_stir_right_out)					
+		check_if_equal(*cur_iter_stir_left_out, *cur_iter_stir_right_out,
+				"check BSplines implementation");    			
   }
   {
 	  cerr << "Testing BSplines 1st Derivative Continuity..." << endl;	  
 	  std::vector<elemT>  new_input_sample, STIR_right_output_sample, STIR_left_output_sample;
 
-	  for (elemT i=0, imax=15; i<imax ;++i)
-	  {	
-		  new_input_sample.push_back(i);	  
-	  }
-	  
+	  for (elemT i=0, imax=15; i<imax ;++i)  new_input_sample.push_back(i);	  
+	  	  
 	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTests(
 		  new_input_sample.begin(), new_input_sample.end());
 	  	  
@@ -274,23 +248,16 @@ void BSplines_Tests::run_tests()
 	  const elemT epsilon = 0.0001;
 	  for (elemT i=1, imax=14; i<imax ;++i)
 	  {
-		  /*for (double inc=0; inc<1; inc+=.1)
-			  std::cerr << BSplines1DRegularGridTests.BSpline(i+inc) << ' ';	  
-		  std::cerr << '\n';*/
-	  	  STIR_left_output_sample.push_back(BSplines1DRegularGridTests.BSpline_1st_der(i-epsilon));	  
+		  STIR_left_output_sample.push_back(BSplines1DRegularGridTests.BSpline_1st_der(i-epsilon));	  
 		  STIR_right_output_sample.push_back(BSplines1DRegularGridTests.BSpline_1st_der(i+epsilon));
-	  }
-	 
+	  }	 
 	  std::vector<elemT>:: iterator cur_iter_stir_left_out= STIR_left_output_sample.begin(), 
 			  cur_iter_stir_right_out= STIR_right_output_sample.begin();
-
 	  for (; cur_iter_stir_left_out!=STIR_left_output_sample.end() &&
 		  cur_iter_stir_right_out!=STIR_right_output_sample.end();	 
 	  		    ++cur_iter_stir_left_out, ++cur_iter_stir_right_out)			  
-				
-				check_if_equal(*cur_iter_stir_left_out, *cur_iter_stir_right_out,
+		check_if_equal(*cur_iter_stir_left_out, *cur_iter_stir_right_out,
 				"check BSplines implementation");    	
-			// cout << *cur_iter_stir_out << endl ;
   }
   {
 	  cerr << "Testing BSplines values giving a vector as input..." << endl;	  
@@ -305,17 +272,10 @@ void BSplines_Tests::run_tests()
 		std::vector<elemT>:: iterator cur_iter_stir_out = STIR_output_sample.begin(), 
 			  cur_iter_input = input_sample.begin();
 
-	  for (; cur_iter_stir_out!=STIR_output_sample.end(); 
-		  //		  && cur_iter_input!=input_sample.end(); , ++cur_iter_input
-		  ++cur_iter_stir_out)	
-				{	
-			        check_if_equal(*cur_iter_stir_out, (elemT)1, //*cur_iter_input,			
-						  "check BSplines implementation");  					
-					//cerr << cur_iter_stir_out - STIR_output_sample.begin() << " " ;
-					//cout << *cur_iter_stir_out << endl;
-				}
-  }	
-	
+	  for (; cur_iter_stir_out!=STIR_output_sample.end(); ++cur_iter_stir_out)	
+		  check_if_equal(*cur_iter_stir_out, (elemT)1,	
+						  "check BSplines implementation");  							
+  }		
 }
 END_NAMESPACE_STIR
 
