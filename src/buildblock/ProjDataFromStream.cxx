@@ -17,6 +17,7 @@
 */
 
 #include "ProjDataFromStream.h"
+#include "tomo/Succeeded.h"
 #include "Viewgram.h"
 #include "Sinogram.h"
 #include "SegmentBySinogram.h"

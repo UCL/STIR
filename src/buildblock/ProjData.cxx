@@ -14,6 +14,7 @@
   $Revision$
 */
 #include "ProjData.h"
+#include "tomo/Succeeded.h"
 #include "RelatedViewgrams.h"
 #include "SegmentBySinogram.h"
 #include "SegmentByView.h"
