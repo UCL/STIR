@@ -158,6 +158,11 @@ transform_3d_object(ProjData& out_proj_data,
 		    const int min_in_segment_num_to_process,
 		    const int max_in_segment_num_to_process)
 {
+#ifdef NEW_ROT
+  warning( "Using NEW_ROT");
+#else
+  warning("Using original ROT");
+#endif
 #ifndef NEW_ROT
   const ProjDataInfoCylindricalNoArcCorr* const 
    out_proj_data_info_noarccor_ptr = 
