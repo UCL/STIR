@@ -155,6 +155,10 @@ merge( ProjMatrixElemsForOneBin &lor2 )
 {
   assert(check_state() == Succeeded::yes);
   assert(lor2.check_state() == Succeeded::yes);
+
+  if (lor2.size()==0)
+    return;
+
 #ifndef NDEBUG
   // we will check at the end of the total probability is conserved, so we compute it first
   float old_sum = 0;
