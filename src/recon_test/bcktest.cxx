@@ -17,12 +17,14 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/display.h"
+#include "stir/KeyParser.h"
+#include "stir/stream.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
@@ -32,6 +34,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
 
 #include <fstream>
 #include <list>
@@ -155,18 +158,24 @@ USING_NAMESPACE_STIR
 int
 main(int argc, char **argv)
 {  
+  if (argc==1 || argc>7)
+  {
+      cerr <<"Usage: " << argv[0] << " \\\n"
+	   << "\t[output-filename [proj_data_file [backprojector-parfile [template-image]]]]\n";
+      exit(EXIT_FAILURE);
+    }
+  const string output_filename=
+    argc>1? argv[1] : ask_string("Output filename");
+
   shared_ptr<ProjData> proj_data_ptr;
   bool fill;
 
-  switch(argc)
-  {
-  case 2:
+  if (argc>=2)
     { 
-      proj_data_ptr = ProjData::read_from_file(argv[1]); 
+      proj_data_ptr = ProjData::read_from_file(argv[2]); 
       fill = ask("Do you want to backproject all 1s (Y) or the data (N) ?", true);
-      break;
     }
-  case 1:
+  else
     {
       shared_ptr<ProjDataInfo> data_info= ProjDataInfo::ask_parameters();
       // create an empty ProjDataFromStream object
@@ -174,57 +183,61 @@ main(int argc, char **argv)
       proj_data_ptr = 
 	new ProjDataFromStream (data_info,static_cast<iostream *>(NULL));
       fill = true;
-      break;
     }
-  default:
+  shared_ptr<BackProjectorByBin> back_projector_ptr;
+
+  const bool disp = ask("Display images ?", false);
+  
+  const bool save = ask("Save  images ?", true);
+    
+  const bool save_profiles = ask("Save  horizontal profiles ?", false);
+
+  if (argc>=3)
     {
-      cerr <<"Usage: " << argv[0] << "[proj_data_file]\n";
-      exit(EXIT_FAILURE);
+      KeyParser parser;
+      parser.add_start_key("Back Projector parameters");
+      parser.add_parsing_key("type", &back_projector_ptr);
+      parser.add_stop_key("END"); 
+      parser.parse(argv[3]);
     }
-  }
-    
-    
 
-  
-  bool disp = ask("Display images ?", false);
-  
-  bool save = ask("Save  images ?", true);
-    
-  // KT 14/08/98 write profiles
-  bool save_profiles = ask("Save  horizontal profiles ?", false);
-
- 
   const ProjDataInfo * proj_data_info_ptr =
     proj_data_ptr->get_proj_data_info_ptr();
-  
-  const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,100.F,1.F);
-  int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
-  xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
-  int z_size = 2*proj_data_info_ptr->get_scanner_ptr()->get_num_rings()-1;
-  z_size = ask_num("Number of z pixels",1,1000,z_size);
-  VoxelsOnCartesianGrid<float> * vox_image_ptr =
-    new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr,
-				     zoom,
-				     Coordinate3D<float>(0,0,0),
-				     Coordinate3D<int>(z_size,xy_size,xy_size));
-  const float z_origin = 
-    ask_num("Shift z-origin (in pixels)", 
-	    -vox_image_ptr->get_length()/2,
-	    vox_image_ptr->get_length()/2,
-             0)
-    *vox_image_ptr->get_voxel_size().z();
-  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
+ 
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr;
 
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
-  
+  if (argc>=4)
+    {
+      image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[4]);
+    }
+  else
+    {
+      const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,100.F,1.F);
+      int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
+      xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+      int z_size = 2*proj_data_info_ptr->get_scanner_ptr()->get_num_rings()-1;
+      z_size = ask_num("Number of z pixels",1,1000,z_size);
+      VoxelsOnCartesianGrid<float> * vox_image_ptr =
+	new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr,
+					 zoom,
+					 Coordinate3D<float>(0,0,0),
+					 Coordinate3D<int>(z_size,xy_size,xy_size));
+      const float z_origin = 
+	ask_num("Shift z-origin (in pixels)", 
+		-vox_image_ptr->get_length()/2,
+		vox_image_ptr->get_length()/2,
+		0)
+	*vox_image_ptr->get_voxel_size().z();
+      vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
 
-  shared_ptr<BackProjectorByBin> back_projector_ptr;
-  do 
+      image_sptr = vox_image_ptr;
+    }
+
+  while (is_null_ptr(back_projector_ptr))
     {
       back_projector_ptr =
 	BackProjectorByBin::ask_type_and_parameters();
     }
-  while (back_projector_ptr.use_count()==0);
 
   back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			     image_sptr);
@@ -316,9 +329,8 @@ main(int argc, char **argv)
     if (save)
     {
       DefaultOutputFileFormat output_format;
-      char* file = "bcktest";
-      cerr <<"  - Saving " << file << endl;
-      output_format.write_to_file(file, *image_sptr);
+      cerr <<"  - Saving " << output_filename << endl;
+      output_format.write_to_file(output_filename, *image_sptr);
       
     }
 
@@ -330,12 +342,8 @@ main(int argc, char **argv)
       if (!profile)
       { cerr << "Couldn't open " << "bcktest.prof"; }
       
-      for (int z=vox_image_ptr->get_min_z(); z<= vox_image_ptr->get_max_z(); z++) 
-      { 
-	for (int x=vox_image_ptr->get_min_x(); x<= vox_image_ptr->get_max_x(); x++)
-	  profile<<(*vox_image_ptr)[z][0][x]<<" ";
-	profile << "\n";
-      }
+      for (int z=image_sptr->get_min_index(); z<= image_sptr->get_max_index(); z++) 
+	profile << (*image_sptr)[z][0] << '\n';
     }
     
   }
