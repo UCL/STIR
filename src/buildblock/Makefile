@@ -1,5 +1,6 @@
+#AIX Makefile for PPhead/buildblock directory
 #
-# $Id$ 
+# $Id$ : $Date$
 #
 
 
