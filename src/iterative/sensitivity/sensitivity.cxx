@@ -3,12 +3,12 @@
 //
 
 
-/* This is a preliminary program to compute the 'sensitivity' image
-   (backprojection of all 1's).
-   if TEST is defined, results of different ring differences are
-   stored as separated files (seg_x.dat) and the sensitivity image is
+/* This is a program to compute the 'sensitivity' image (detection probabilities per voxel). When no input attenuation file is specified, the result is just the backprojection of all 1's.
+
+   if TEST is defined, results of different ring differences (i.e. the profiles   through the centres of all planes) are
+   stored as separate files (seg_x.dat) and the sensitivity image is
    not computed.
-   if TEST is not defined, output is written to sensitivity.dat
+   if TEST is not defined, output is written to a user-specified output file
 
    By Matthew Jacobson and Kris Thielemans
 
@@ -146,11 +146,11 @@ int main(int argc, char *argv[])
     //else{
     cout<<endl;
     
-    cout << endl << "Get attenuation image from which file (* = 0's): ";
+    cout << endl << "Get attenuation image from which file (0 = 0's): ";
     cin >> atten_name;
     //}
     
-    if(atten_name[0]=='*')
+    if(atten_name[0]=='0')
     {
       do_attenuation = false;
     }
@@ -205,7 +205,8 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 		 attenuation_image.get_voxel_size());
 
   // first do segment 0
-  {
+  { cerr<<endl<<"Processing segment 0"<<endl;
+
     PETSegmentBySinogram
       segment(
 	      Tensor3D<float>(0, scanner.num_rings-1, 
@@ -218,8 +219,12 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
     if (do_attenuation)
     {
       //KT&MJ 11/08/98 use 2D forward projector
-      forward_project_2D(attenuation_image, segment);	  
       
+      cerr<<"Starting forward project"<<endl;
+
+      forward_project_2D(attenuation_image, segment);	  
+
+      cerr<<"Finished forward project"<<endl;
       //display(Tensor3D<float>(segment), segment.find_max());
       
       segment *= -1;
@@ -233,9 +238,10 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
     normalisation.apply(segment);
 
 
-
+    cerr<<endl<<"Starting backproject"<<endl;
     Backprojection_2D(segment, image_result);
-      
+    cerr<<endl<<"Finished backproject"<<endl;
+
     /* cerr << "min and max in image " << image_result.find_min() 
        << " " << image_result.find_max() << endl;
        display(Tensor3D<float> (image_result), image_result.find_max());
@@ -274,6 +280,8 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 
   for (int segment_num = 1; segment_num < scanner.num_rings ; segment_num++){
 
+    cerr<<endl<<"Processing segment #"<<segment_num<<endl;
+
 #ifdef TEST
     image_result.fill(0);
 #endif 
@@ -296,8 +304,10 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 
     if (do_attenuation)
     {
+
+      cerr<<"Starting forward project"<<endl;
       forward_project(attenuation_image, segment_pos, segment_neg);	       
-      
+      cerr<<"Finished forward project"<<endl;
       // display(Tensor3D<float>(segment_pos), segment_pos.find_max());
       
       segment_pos *= -1;
@@ -316,8 +326,11 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
     normalisation.apply(segment_neg);
 
     //KT TODO use by view versions (but also for forward projection)
+
+    cerr<<"Starting backproject"<<endl;
     back_project(segment_pos, segment_neg, image_result);
-    
+    cerr<<"Finished backproject"<<endl;
+
     /*const int nviews = segment_pos.get_num_views();
     const int view90 = nviews / 2;
     for (int view=0; view < segment_pos.get_num_views()/2; view++)
