@@ -106,7 +106,7 @@ void close_file(FILE*& fptr)
 const char * const 
 find_filename(const char * const filename_with_directory)
 {
-  char *name;
+  const char * name;
 
 #if defined(__OS_VAX__)
  name = strrchr(filename_with_directory,']');
@@ -241,7 +241,7 @@ is_absolute_pathname(const char * const filename_with_directory)
 {
 #if defined(__OS_VAX__)
   // relative names either contain no '[', or have '[.'
-  char * ptr = strchr(filename_with_directory,'[');
+  const char * const ptr = strchr(filename_with_directory,'[');
   if (ptr==NULL)
     return false;
   else
@@ -259,7 +259,7 @@ is_absolute_pathname(const char * const filename_with_directory)
  	    );
 #elif defined(__OS_MAC__)
   // relative names either have no ':' or do not start with ':'
-  char * ptr = strchr(filename_with_directory,':');
+  const char * const ptr = strchr(filename_with_directory,':');
   if (ptr == NULL)
     return false;
   else
