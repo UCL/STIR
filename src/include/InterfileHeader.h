@@ -47,6 +47,9 @@ private:
 
 public :
 
+  // KT 26/11/98 new
+  string originating_system;
+  
   ASCIIlist_type PET_data_type_values;	
   int PET_data_type_index;
 
@@ -96,7 +99,6 @@ protected:
 
 };
 
-#if 1
 #include "sinodata.h"
 
 class InterfilePSOVHeader : public InterfileHeader
@@ -123,13 +125,25 @@ public:
   int num_views;
   int num_bins;
   PETSinogramOfVolume::StorageOrder storage_order;
+  // KT 26/11/98 new
+  PETScanInfo scan_info;
 
 private:
   void resize_segments_and_set();
   int find_storage_order();
 
+  // KT 26/11/98 new
+
+  // members that will be used to set scan_info
+  int num_rings;
+  int num_detectors_per_ring;
+  // these 3 distances are in cm
+  double transaxial_FOV_diameter_in_cm;
+  double distance_between_rings_in_cm;
+  double bin_size_in_cm;
+  // this is in degrees
+  double view_offset;
+
 };
-	
-#endif
 
 #endif // __INTERFILEHEADER_H__
