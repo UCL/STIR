@@ -6,6 +6,20 @@
  
   \brief tests for the conversion routines to/from VAX float used for ECAT6 support.
 
+  The functions are checked by comparing the results with data in 
+  an input file.
+
+  \par Usage
+  \verbatim
+  test_VAXfloat --read test/input/test_VAXfloat.in
+  \endverbatim
+  If the input file does not exist, you can write it using
+  \verbatim
+  test_VAXfloat --write test/input/test_VAXfloat.in
+  \endverbatim
+  Of course, the test is then hardly sensible as the point is that
+  you compare to a standard file which is known to be correct.
+
   \author Kris Thielemans
 
   $Date$
@@ -42,6 +56,8 @@ int main(int argc, char **argv)
       fprintf(stderr, "Usage : --read|--write filename\n");
       exit(EXIT_FAILURE);
     }
+  fprintf(stderr, "Testing VAXfloat conversion routines\n");
+
   bool do_read;
   if (strcmp(argv[1], "--read")==0)
     do_read = true;
