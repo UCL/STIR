@@ -6,7 +6,7 @@
   \file
   \ingroup utilities
 
-  \brief Find normalisation factors using an ML approach
+  \brief Apply normalisation factors to projection data
 
   \author Kris Thielemans
 
@@ -48,19 +48,23 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc<6 || argc>7)
+  if (argc<7 || argc>12)
     {
       cerr << "Usage: " << argv[0] 
-	   << " out_filename in_norm_filename_prefix measured_data apply_or_undo eff_iter_num [do_display]\n"
+           << " out_filename in_norm_filename_prefix measured_data apply_or_undo iter_num eff_iter_num [do_eff [ do_geo [ do_block [do_display]]]]\n"
 	   << "apply_or_undo is 1 (multiply) or 0 (divide)\n"
-	   << "do_display is 1 or 0 (defaults to 0)\n";
+	   << "do_eff, do_geo, do_block are 1 or 0 and all default to 1\n"	   
+      	   << "do_display is 1 or 0 (defaults to 0)\n";
       return EXIT_FAILURE;
     }
 
-  const bool do_display = (argc==7 && strcmp(argv[6],"1") == 0);
+  const bool do_display = argc>=11?atoi(argv[10])!=0 : false;
+  bool do_block = argc>=10?atoi(argv[9])!=0: true;
+  bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
+  bool do_eff   = argc>=8?atoi(argv[7])!=0: true;  
 
-  const int iter_num = 1;
-  const int eff_iter_num = atoi(argv[5]);
+  const int eff_iter_num = atoi(argv[6]);
+  const int iter_num = atoi(argv[5]);
   const bool apply_or_undo = atoi(argv[4])!=0;
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[3]);
   const string in_filename_prefix = argv[2];
@@ -88,15 +92,22 @@ int main(int argc, char **argv)
 
   const int num_rings = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
-  const int num_detectors = 
+  const int num_detectors_per_ring = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
-  
-  FanProjData fan_data;
-  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors));
+  const int num_tangential_crystals_per_block = 8;
+  const int num_tangential_blocks = num_detectors_per_ring/num_tangential_crystals_per_block;
+  const int num_axial_crystals_per_block = num_rings/2;
+  warning("TODO num_axial_crystals_per_block == num_rings/2\n");
+  const int num_axial_blocks = num_rings/num_axial_crystals_per_block;
+
+  BlockData3D norm_block_data(num_axial_blocks, num_tangential_blocks,
+                              num_axial_blocks-1, num_tangential_blocks-1);
+  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
     {
 
       // efficiencies
+      if (do_eff)
   	{
 	  char *in_filename = new char[in_filename_prefix.size() + 30];
 	  sprintf(in_filename, "%s_%s_%d_%d.out", 
@@ -106,19 +117,41 @@ int main(int argc, char **argv)
 	    if (!in)
 	      {
 		warning("Error reading %s, using all 1s instead\n", in_filename);
-		efficiencies = Array<2,float>(IndexRange2D(num_rings, num_detectors));
-		efficiencies.fill(1);
+		do_eff = false;
 	      }
-
 	  delete in_filename;
 	}
+      	// block norm
+      if (do_block)
+	{
+	  {
+	    char *in_filename = new char[in_filename_prefix.size() + 30];
+	    sprintf(in_filename, "%s_%s_%d.out", 
+		    in_filename_prefix.c_str(), "block",  iter_num);
+	    ifstream in(in_filename);
+	    in >> norm_block_data;
+	    if (!in)
+	      {
+		warning("Error reading %s, using all 1s instead\n", in_filename);
+	        do_block = false;
+	      }
+	    delete in_filename;
+	  }
+	}
+
       {
+        FanProjData fan_data;
 	make_fan_data(fan_data, *measured_data);
-	apply_efficiencies(fan_data, efficiencies, apply_or_undo);
+	if (do_eff)
+          apply_efficiencies(fan_data, efficiencies, apply_or_undo);
+       	//if (do_geo)
+	//  apply_geo_norm(fan_data, norm_geo_data, apply_or_undo);
+	if (do_block)
+	  apply_block_norm(fan_data, norm_block_data, apply_or_undo);
+
 	if (do_display)
-	  display(fan_data, "model*eff");
-	set_fan_data(*out_proj_data_ptr,
-			  fan_data);
+	  display(fan_data, "input*norm");
+	set_fan_data(*out_proj_data_ptr, fan_data);
       }
     }
 
