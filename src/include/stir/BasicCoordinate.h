@@ -42,10 +42,10 @@ using std::random_access_iterator_tag;
 START_NAMESPACE_STIR
 /*!
   \ingroup Coordinate
-  \brief class BasicCoordinate&lt;\c int \c num_dimensions, \c typename \c coordT&gt; defines \c num_dimensions -dimensional coordinates.
+  \brief class BasicCoordinate\<\c int \c num_dimensions, \c typename \c coordT\> defines \c num_dimensions -dimensional coordinates.
 
 
-   A BasicCoordinate&lt;\c num_dimensions, \c coordT&gt; is essentially a vector of size \c num_dimensions, but 
+   A BasicCoordinate\<\c num_dimensions, \c coordT\> is essentially a vector of size \c num_dimensions, but 
    as the dimension is templated, it has better performance.
 
    Access to the individual coordinates is through operator[].
