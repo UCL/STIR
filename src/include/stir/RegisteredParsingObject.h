@@ -114,7 +114,7 @@ public:
   inline string parameter_info();
 
 public:
-#endif
+
   //! A helper class to allow automatic registration.
   struct RegisterIt
   {
