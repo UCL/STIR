@@ -30,7 +30,11 @@ USING_NAMESPACE_STIR
 
 void print_usage_and_exit(char const * const prog_name)
 {
-  cerr << "Usage:\n" << prog_name << "\\\n"
+  cerr << "Usage:\n" << prog_name << " PARAMETERS\n"
+       << "where PARAMETERS has two possibilities:\n\n"
+       << "1) print number of time frames\n"
+       << "\t--num-time-frames Frame_def_filename\n\n"
+       << "2) print info for one or more time frames\n"
        << "\t[--msecs] \\\n"
        << "\t[--duration | --start-time | --end-time | --mid-time] \\\n"
        << "\tFrame_def_filename start_frame_number [end_frame_number]\n\n"
@@ -52,17 +56,23 @@ main(int argc, char* argv[])
   bool only_start_time = false;
   bool only_end_time = false;
   bool only_mid_time = false;
+  bool only_num_time_frames = false;
 
-  while (argc>2 && argv[1][1]=='-')
+  while (argc>=2 && argv[1][1]=='-')
     {
-      if (strcmp(argv[1], "--msecs")==0)
+      if (strcmp(argv[1], "--num-time-frames")==0)
 	{
-	  units_secs=false;
+	  only_num_time_frames = true;
 	  --argc; ++argv;
 	}
-      else 
+      else
 	{
-	  if (strcmp(argv[1], "--duration")==0 && !only_start_time && !only_end_time && !only_mid_time)
+	  if (strcmp(argv[1], "--msecs")==0)
+	    {
+	      units_secs=false;
+	      --argc; ++argv;
+	    }
+	  else if (strcmp(argv[1], "--duration")==0 && !only_start_time && !only_end_time && !only_mid_time)
 	    {
 	      only_duration = true;
 	      --argc; ++argv;
@@ -87,19 +97,35 @@ main(int argc, char* argv[])
 	}
     }
 
-  if(argc !=3 && argc!=4)
+  // we need at least one argument: the filename
+  if(argc <2)
     print_usage_and_exit(prog_name);
 
-  
   const TimeFrameDefinitions time_def(argv[1]);
+
+  if (only_num_time_frames)
+    {
+      if(argc !=2)
+	  print_usage_and_exit(prog_name);
+      cout << time_def.get_num_frames() << std::endl;
+      exit(EXIT_SUCCESS);
+    }
+
+  // normal case of info for one or more frames
+  if(argc !=3 && argc!=4)
+    print_usage_and_exit(prog_name);
   const unsigned int start_frame_num = atoi(argv[2]);
   const unsigned int end_frame_num = 
     argc>3 ? atoi(argv[3]) : start_frame_num;
+
 
   for (unsigned frame_num = start_frame_num; frame_num<=end_frame_num; ++frame_num)
     {
       if (frame_num > time_def.get_num_frames() || frame_num<1)
 	{
+	  /* Note: we intentionally check this in the loop.
+	     This way, we do get output for valid frames.
+	  */
 	  warning("frame_num should be between 1 and %d\n", 
 		  time_def.get_num_frames());
 	  exit(EXIT_FAILURE);
