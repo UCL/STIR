@@ -24,8 +24,9 @@
 
 #include "DiscretisedDensity.h"
 #include "tomo/SeparableArrayFunctionObject.h"
+#include "local/tomo/SeparableLowPassArrayFilter2.h"
 #include "Array.h"
-
+#include "IndexRange.h"
 #include <vector>
 
 
@@ -50,7 +51,8 @@ class  FFT_routines
 
 
 template <int num_dimensions, typename elemT>
-class ModifiedInverseAverigingArrayFilter:public SeparableArrayFunctionObject <num_dimensions,elemT> 
+class ModifiedInverseAverigingArrayFilter: public SeparableLowPassArrayFilter2 <num_dimensions,elemT>
+//public SeparableArrayFunctionObject <num_dimensions,elemT> 
 {
 public:  
 
@@ -62,8 +64,13 @@ public:
   ModifiedInverseAverigingArrayFilter(const VectorWithOffset<elemT>& filter_coefficients, 
 				      const float kapa0_over_kapa1);
   
+  // temporary (?) member
+  IndexRange<num_dimensions> get_kernel_index_range() const
+  { return kernel_index_range; }
+
 private:
  VectorWithOffset<float> filter_coefficients;
+ IndexRange<num_dimensions> kernel_index_range;
  float kapa0_over_kapa1;
 
 };
