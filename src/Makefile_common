@@ -70,6 +70,14 @@ CURSES=curses
 endif
 endif
 
+
+
+#******** variables used only for ecat7
+# local/Makefile_common can override these defaults
+LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
+LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
+
+
 #********  customisation
 # include local configuration file, possibly overriding any of the above
 # use -include to not warn when it does not exist
@@ -80,7 +88,7 @@ endif
 
 #***********************************************************************
 # from here on, things are noncustomisable anymore 
-# (except by editing this file)
+# (except by editing this file, which is strongly discouraged for 'normal' users)
 #***********************************************************************
 
 
@@ -118,9 +126,9 @@ endif # BUILD ?
 # if so, we should additionally check on ifeq($(CC),gcc)
 # as -Xlinker is only appropriate for gcc
 ifeq ($(SYSTEM),CC)
-LINK_OPT=-Xlinker -bbigtoc $(EXTRA_LINK_OPT) $(LIBS)
+LINK_OPT=-Xlinker -bbigtoc $(EXTRA_LINK_OPT) $(EXTRA_LIBS)
 else
-LINK_OPT=$(EXTRA_LINK_OPT) $(LIBS) 
+LINK_OPT=$(EXTRA_LINK_OPT) $(EXTRA_LIBS) 
 endif
 
 
@@ -150,6 +158,19 @@ endif
 # add any others specific to your system using the SYSTEM macros
 
 
+#******* LLN matrix libraries
+# check if we find the Louvain la Neuve distribution by looking for matrix.h
+ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
+  # yes, the LLN files seem to be there, so we can compile 
+  HAVE_LLN_MATRIX=1
+  CFLAGS +=  -I $(LLN_INCLUDE_DIR) -D HAVE_LLN_MATRIX
+  EXTRA_LIBS += $(LLN_LIB_DIR)/libecat.a
+  ifeq ($(SYSTEM),SUN)
+     SYS_LIBS += -lnsl -lsocket
+  endif
+endif
+
+
 #******** targets
 
 .PHONY: all clean install  # depend
@@ -176,10 +197,15 @@ MAKE_DEPEND_FLAG=-M
 endif
 endif
 
+ADVANCED_DEPENDENCIES=1
+
+ifneq ($(ADVANCED_DEPENDENCIES),1)
+
 # default rule for making 'mini-Makefiles' with the dependency info 
 # for a single source file
 # see GNU make documentation
 # modifications by KT to put .o and .d in $(DEST)
+
 $(DEST)%.d: %.cxx
 	-mkdir -p $(DEST)
 	$(SHELL) -ec '$(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) $< \
@@ -199,6 +225,40 @@ ${DEST}%.o: %.cxx
 ${DEST}%.o: %.c
 	-mkdir -p $(DEST)
 	$(CC) $(CFLAGS) -o $@ -c $< 
+
+else
+
+# more advanced way for handling mini-Makefiles. See http://make.paulandlesley.org/autodep.html
+
+df = $(DEST)$(*F)
+
+
+# alternative choices  for MAKEDEPEND
+#MAKEDEPENDCXX = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
+#MAKEDEPENDC = touch $*.d && makedepend $(CFLAGS) -f $(df).d $<
+MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
+MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
+
+
+${DEST}%.o : %.cxx
+	@ -mkdir -p $(DEST); 
+	$(MAKEDEPENDCXX);  
+	@ cp $(df).d $(df).P;  \
+	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
+	rm -f $(df).d;
+	$(CXX) $(CFLAGS) -o $@ -c $< 
+
+${DEST}%.o : %.c
+	@ -mkdir -p $(DEST); 
+	$(MAKEDEPENDC); 
+	@ cp $(df).d $(df).P; \
+            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
+            rm -f $(df).d;
+	$(CC) $(CFLAGS) -o $@ -c $< 
+
+endif
 
 # default rule for making an executable has to be in Makefile_bblibs
 # BB_LIBS and BB_REGISTRIES are defined in Makefile_bblibs
