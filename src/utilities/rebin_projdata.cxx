@@ -30,7 +30,7 @@ END:=
 */
 
 
-#include "local/stir/recon_buildblock/ProjDataRebinning.h"
+#include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/is_null_ptr.h"
