@@ -22,7 +22,6 @@
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
-#include "stir/common.h"
 #include "stir/round.h"
 #include "stir/ProjData.h"
 #include <vector>
@@ -86,7 +85,7 @@ float scatter_estimate_for_one_scatter_point(
 /*!						
   \ingroup scatter
   \brief computes the differential cross section
-   Better inline?????
+   TODO Better inline?????
 
   This function computes the differential cross section
 	for Compton scatter, based on the Klein-Nishina-Formula
@@ -116,7 +115,6 @@ float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point
 
 */
 float total_cross_section(float energy);
-const float total_cross_section_511keV = total_cross_section(511.);
 
 /*!
   \ingroup scatter
@@ -152,19 +150,6 @@ BasicCoordinate<num_dimensions,float> convert_int_to_float(const BasicCoordinate
 		  cfloat[i]=(float)cint[i];
 	  return cfloat;
 	}	
-template <int num_dimensions, class elemT>
-inline
-elemT two_points_distance(const BasicCoordinate<num_dimensions,elemT>& c1,
-						              const BasicCoordinate<num_dimensions,elemT>& c2)
-	{  
-	   BasicCoordinate<num_dimensions,elemT> c=c1-c2;
-	   float product = 0.;
-	   for (int i=1 ; i<=num_dimensions ; ++i)
-	   	   product += c[i]*c[i];
-	
-	   return sqrt(product);
-	}
-
 
 
 END_NAMESPACE_STIR
