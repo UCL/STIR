@@ -149,7 +149,7 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
 			      const double d_sl,
                               int&X1, int&Y1, int& Z1,
                               double& ds, double& dz, double& dzhor, double& dzvert,
-                              const int num_planes_per_virtual_ring,
+                              const float num_planes_per_virtual_ring,
 			      const float virtual_ring_offset);
 /****************************************************************************
 
@@ -172,7 +172,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90
                                const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                                float delta,
                                float cphi, float sphi, int s, int ring0,
-                               const int num_planes_per_virtual_ring,
+                               const float num_planes_per_virtual_ring,
 			       const float virtual_ring_offset)
 {
   // KT 04/05/2000 new check
@@ -973,7 +973,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
                                                       float delta,
                                                       float cphi, float sphi,
                                                       int s, int ring0,
-                                                      const int num_planes_per_virtual_ring,
+                                                      const float num_planes_per_virtual_ring,
 						      const float virtual_ring_offset)
 {
   // KT 04/05/2000 new check
@@ -2169,7 +2169,7 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
                               const float image_rad, const double d_sl,
                               int&X1, int&Y1, int& Z1,
                               double& ds, double& dz, double& dzhor, double& dzvert,			      
-                              const int num_planes_per_virtual_ring,
+                              const float num_planes_per_virtual_ring,
 			      const float virtual_ring_offset)
 {
   // use notations from Egger's thesis
