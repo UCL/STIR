@@ -1,4 +1,4 @@
-// $Id$: $Date$
+// $Id$
 
 #include "utilities.h"
 
@@ -114,7 +114,7 @@ PETImageOfVolume ask_image_details()
     ios::in | ios::binary);
 
   int scanner_num = 
-    ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);// CL Add ART scanner
+      ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE 4: ART)", 0,4,0);// CL 061298 Add ART scan
  
   PETScannerInfo scanner;
   switch( scanner_num )
@@ -131,8 +131,8 @@ PETImageOfVolume ask_image_details()
     case 3:
       scanner = (PETScannerInfo::Advance); 
       break;
-    case 4:
-      scanner = (PETScannerInfo::ART);
+        case 4:// CL 061298 Add ART scanner
+      scanner = (PETScannerInfo::ART); 
       break;
     default:
       PETerror("Wrong scanner number\n"); Abort();
@@ -252,7 +252,7 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
  
  
 
-  int scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
+  int scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE, 4: ART)", 0,4,0);//CL 290199 Add the ART scanner
   PETScannerInfo scanner;
 
   switch( scanner_num )
@@ -269,6 +269,10 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
     case 3:
       scanner = (PETScannerInfo::Advance); 
       break;
+    case 4://CL 290199 ADd the ART scanner
+      scanner = (PETScannerInfo::ART); 
+      break;
+
     default:
       PETerror("Wrong scanner number\n"); Abort();
     }
