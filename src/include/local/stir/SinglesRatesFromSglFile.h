@@ -1,5 +1,5 @@
 //
-// $Id: 
+// $Id$
 /*!
   \file
   \ingroup local_buildblock
@@ -7,8 +7,8 @@
   \brief Declaration of class SinglesRatesFromSglFile
 
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date: 
-  $Revision:  
+  $Date$ 
+  $Revision$
 */
 
 /*
@@ -16,9 +16,6 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifndef HAVE_LLN_MATRIX
-#error This file can only be compiled when HAVE_LLN_MATRIX is #defined
-#endif
 
 #ifndef __stir_SinglesRatesFromSglFile_H__
 #define __stir_SinglesRatesFromSglFile_H__
@@ -71,9 +68,9 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-//#ifdef HAVE_LLN_MATRIX
+#ifdef HAVE_LLN_MATRIX
   Main_header singles_main_header;
-//#endif
+#endif
   //TODO 
   int trans_blocks_per_bucket;
   int angular_crystals_per_block;
