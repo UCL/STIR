@@ -30,9 +30,11 @@
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
+#include "stir/IO/read_data.h"
 #include <fstream>
 #include <algorithm>
 #include <math.h>
+#include <memory> // for auto_ptr
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
@@ -284,8 +286,8 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
     input, "Enter filename for input image", ".v", 
     ios::in | ios::binary);
 
-   Scanner * scanner_ptr = 
-    Scanner::ask_parameters();
+  std::auto_ptr<Scanner> scanner_ptr = 
+    std::auto_ptr<Scanner>(Scanner::ask_parameters());
 
 
   NumericType data_type;
@@ -344,7 +346,9 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
 
   // TODO handle scale factor in case of not reading float
   float scale = float(1);
-  input_image.read_data(input, data_type, scale);  
+  // note: currently stir:: needed to avoid conflict with Array::read_data
+  stir::read_data(input, input_image,
+            data_type, scale);  
   assert(scale==1);
 
   return input_image; 
