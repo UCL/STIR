@@ -84,7 +84,7 @@ public:
 
 private :				// variables
   Keymap kmap;
-  fstream* input;
+  istream * input;
   int	status;				// parsing 0,end_parsing 1
   map_element* current;
   int current_index;
@@ -161,7 +161,8 @@ public :
   // members
 
   KeyParser();
-  KeyParser(fstream* f);
+  // KT 16/10/98 changed  to istream&
+  KeyParser(istream& f);
   ~KeyParser();
 
   void Init();

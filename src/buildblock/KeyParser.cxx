@@ -57,15 +57,18 @@ map_element& map_element::operator=(const map_element& me)
 
 KeyParser::KeyParser()
 {
+  // KT 15/10/98 added inintialisation of input
+  input=0;
   status=STATUS_PARSING;
   current_index=-1;
   in_stream=NULL;
   current=new map_element();
 }
 
-KeyParser::KeyParser(fstream* f)
+// KT 16/10/98 changed to istream&
+KeyParser::KeyParser(istream& f)
 {
-  input=f;
+  input=&f;
   in_stream=NULL;
   current_index=-1;
   status=STATUS_PARSING;
