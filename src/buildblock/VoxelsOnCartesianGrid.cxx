@@ -11,7 +11,7 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  \date    $Date$
+  \date $Date$
 
   \version $Revision$
 
@@ -19,9 +19,11 @@
 
 #include "VoxelsOnCartesianGrid.h"
 #include "IndexRange3D.h"
+#include "CartesianCoordinate3D.h"
 #include "utilities.h"
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "Scanner.h"
+#include "Bin.h"
 #include <fstream>
 
 #ifndef TOMO_NO_NAMESPACES
@@ -73,7 +75,7 @@ static void find_sampling_and_z_size(
 
     // TODO make this independent on segment etc.
     z_sampling = 
-      proj_data_info_ptr->get_t(0,0,1,0) - proj_data_info_cyl_ptr->get_t(0,0,0,0);
+      proj_data_info_ptr->get_t(Bin(0,0,1,0)) - proj_data_info_cyl_ptr->get_t(Bin(0,0,0,0));
 
     z_size = proj_data_info_cyl_ptr->get_num_axial_poss(0);
   }
@@ -91,7 +93,7 @@ static void find_sampling_and_z_size(
   {   
     // TODO make this independent on segment etc.
     s_sampling = 
-      proj_data_info_ptr->get_s(0,0,0,1) - proj_data_info_cyl_ptr->get_s(0,0,0,0);
+      proj_data_info_ptr->get_s(Bin(0,0,0,1)) - proj_data_info_cyl_ptr->get_s(Bin(0,0,0,0));
   }
 }
 
