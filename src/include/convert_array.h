@@ -15,7 +15,6 @@
   \author PARAPET project
 
   \date    $Date$
-
   \version $Revision$
 
 */
@@ -79,8 +78,7 @@ template <int num_dimensions, class T1, class T2, class scaleT>
 void
 convert_array(Array<num_dimensions, T2>& data_out,
 	      scaleT& scale_factor,
-	      const Array<num_dimensions, T1>& data_in, 
-	      const NumericInfo<T2> info2);
+	      const Array<num_dimensions, T1>& data_in);
 
 #if defined(ARRAY_FULL) 
 #if 1
