@@ -1,3 +1,22 @@
+//
+// $Id$
+//
+/*!
+  \file 
+  \ingroup motion
+
+  \brief Implementation of class Polaris_MT_File
+ 
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    See STIR/LICENSE.txt for details
+*/
 #include "local/stir/motion/Polaris_MT_File.h"
 #include "stir/Succeeded.h"
 
@@ -56,7 +75,7 @@ Polaris_MT_File::get_next(Record& record)
   mt_stream.getline( DataStr, MAX_STRING_LENGTH);
   
     /* Extract elements from string */
-   if (sscanf( DataStr, "%f %d %c %f %f %f %f %f %f %f %f", 
+   if (sscanf( DataStr, "%f %ud %c %f %f %f %f %f %f %f %f", 
 	&record.sample_time, &record.rand_num, &record.total_num, 
 	&record.quat[1], &record.quat[2], &record.quat[3], &record.quat[4], 
 	&record.trans.x(), &record.trans.y(), &record.trans.z(), 
