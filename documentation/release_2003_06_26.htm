@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 1.1 (dated 26/06/2003)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 1.1 (dated 26/06/2003)</h1>
+
+<p>Nearly all work on this update was by Kris Thielemans and
+Sanida Mustafovic. Thanks to Sakari Alenius, Dylan Togane and Frédéric
+Schoenahl, for helping to fix some bugs.
+
+<h2> Summary for endusers (also to be read by developers)</h2>
+
+
+<h3>Bugs removed that affect users</h3>
+<ul>
+<li>Errors in parameters for some scanners such as the ECAT ART
+and HR+ have been corrected (HRRT has been added provisionally).</li>
+
+<li>Removed some errors in
+ifheaders_for_ecat7</li>
+
+<li>FilterRootPrior (i.e. the
+generalisation of MRP) now has explicit checking for division by 0. This solves
+a problem with NaNs occurring on Suns (and apparently very occasionally on
+Intel processors as well). </li>
+
+<li>inter-iteration and inter-update filters are no longer
+constructed twice by OSMAPOSL.</li>
+
+<li>Corrected a bug when parsing parameters from stdin. In
+certain cases the default values were not taken into account when just pressing
+Return.</li>
+
+<li>Changed max in the header of PGM files (output by
+display) from 256 to 255 for GIMP compatibility [S Alenius]</li>
+</ul>
+
+<H3>What’s new for users:</H3>
+<ul>
+<li>IO</li>
+<ul>
+<li>user-selectable output
+formats for images (Interfile with floats or shorts, ECAT6 and ECAT7, but all
+with only basic header info)</li>
+
+<li>better support for reading
+ECAT6 and ECAT7 data, although still only single frame/gate/bed data.
+</li>
+
+<li>more extensive support for
+converting to ECAT6 data, and new conversion utility to ECAT7.</li>
+
+<li>a new utility to perform
+‘corner-swapping’ of ECAT6 or ECAT7 sinogram data.</li>
+
+<li>Interfile reading of .hv file
+now interprets the 'quantification units' keyword. Interfile writing of .ahv
+now uses 'short float' for 4 byte floats, which is according to the Interfile
+3.3 standard.</li>
+</ul>
+
+<li>Extra/changed features relating to reconstructions</li>
+<ul>
+<li>a new filter class that takes an arbitrary separable
+kernel in its parameter file</li>
+
+<li>the median filter should now filter edges as well</li>
+
+<li>the projection matrix ‘ray tracing’ has more options,
+for example to use more than 1 LOR. It also has a slightly different treatment
+of the voxels at the edge of the FOV. There will be slightly more voxels at the
+edge now. The determination of the edge is now much less prone to numerical
+errors.<br>
+<b>WARNING</b> This means that your reconstructions will <i>not</i> be
+identical to the previous release if you use this projection matrix (although
+of course any differences observed just show the need for regularisation). </li>
+
+<li>a new BinNormalisation class (keyword ‘chained’) that
+allows passing both normalisation factors and attenuation correction factors.</li>
+</ul>
+<li>utilities</li>
+<ul>
+<li>new utilities: SSRB, poisson_noise, list_projdata_info,
+stir_math (a command line utility for performing arithmetic on images or
+sinograms).</li>
+
+<li>compare_projdata now has a check if data sizes and
+other characteristics are identical</li>
+
+<li>manip_image can now display images in coronal and
+sagital views as well</li>
+</ul>
+<li>other</li>
+<ul>
+<li>support for 24-bit display on X windows (and other X
+visuals), although some work is needed there (see User’s Guide)</li>
+
+<li>documentation is updated and expanded. A glossary is
+added. </li>
+</ul>
+</ul>
+<H2>What’s new for developers (aside from what should be obvious
+from the above):</H2>
+<ul>
+<li>documentation is updated and considerably expanded. The doxygen
+documentation is much more structured. The developer’s overview has new
+sections to make it easier to start using STIR as a library for your own work.</li>
+
+<li>a new hierarchy OutputFileFormat, and a new sub-library IO
+(which includes now all Interfile, ECAT6 and ECAT7 routines). ECAT6 and ECAT7
+have now their own nested namespaces.</li>
+
+<li>ImageProcessor and ProjMatrixByBin hierarchies have been
+slightly changed such that there is a ParsingObject at the start of the
+hierarchy. This means that derived classes need to use the 3 parameter version
+of RegisteredParsingObject, and that they have to call the set_defaults() et al
+functions from the root of the hierarchy.</li>
+
+<li>a new include file stir/ByteOrderDefine.h that defines
+preprocessor symbols when you need to know native byte order at compile time.</li>
+
+<li>modifications to ProjDataInfoCylindricalNoArccorr to speed up
+some functions by caching. Added functions that to convert between Bins and a
+new class DetectionPositionPair which in the future will replace explicit
+ring,det_num pairs.</li>
+
+<li>more automatic tests</li>
+
+<li>changes to a lot of files to avoid warnings by gcc 3.1 or
+later about the use of 'typename'. We should be conforming to ANSI C++ in that
+respect now.</li>
+
+<li>Makefiles have been improved to sort out dependencies on .h
+and .inl files.</li>
+
+<li>Upgraded boost files to version 1.30.0</li>
+</ul>
+
+
+
+</body>
+
+</html>

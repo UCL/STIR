@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 1.2 (dated 01/04/2004)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 1.2 (dated 01/04/2004)</h1>
+
+<p>Version 1.2 is really a maintenance/bug fix release, but includes some new
+functionality that is still a bit experimental.
+</p>
+<p>Nearly all work on this update was by Kris Thielemans and
+Sanida Mustafovic. <br>
+Thanks to Fr&eacute;d&eacute;ric
+Schoenahl and Oliver Nix for helping to fix some bugs, and to 
+Pablo Aguiar, Fr&eacute;d&eacute;ric Lamare, Fr&eacute;d&eacute;ric
+Schoenahl and &Chi;&alpha;&rho;&alpha;&lambda;&alpha;&mu;&pi;&omicron;&sigmaf;
+&Tau;&sigma;&omicron;&upsilon;&mu;&pi;&alpha;&sigmaf; (Charalampos Tsoumpas)
+for testing.<br>
+Also many thanks to M&eacute;rence Sibomana for updating the LLN ecat matrix library to
+iron out some problems with STIR.
+</p>
+<h2> Summary for endusers (also to be read by developers)</h2>
+
+
+<h3>Bugs removed that affect users</h3>
+<ul>
+<li> converting to ECAT6 sinograms: subheader.sampling_distance was set in mm instead of cm
+</li>
+<li> converting to ECAT7 sinograms: mhead.bin_size was written in
+  mm but should have been cm. As a consequence, the recon_zoom
+  factor for images was set 10 times too large. 
+</li>
+<li> GE Advance parameters are sligthly adjusted to be the same as the VOLPET info [Roman Krais]
+</li>
+<li> ifheaders_for_ecat7 wrote filenames as f#g#b#d#, but it should have been f#g#d#b#. This has now 
+been corrected. Note that the data was alright, only that the filename didn't follow the usual
+ECAT matrix order. Also, we found a bug that caused a crash when writing out a warning that the file
+is not ok :-/
+</li>
+</ul>
+
+<h3>Code changes that influence your results</h3>
+<ul>
+<li> the forward projector using Ray Tracing has changed to be more numerically
+stable, and gives now the same results as the projection matrix using Ray
+Tracing. It is also faster on non-brain dead compilers. However, all this
+means it gives marginally different results from the previous version
+(mainly for non-zero pixels at the edge of the FOV).
+</li>
+</ul>
+
+<h3>New functionality of existing utilities</h3>
+<ul>
+<li> stir_math: - added option of thresholding the data, and adding scalars
+</li>
+<li> SSRB:	  added trimming option
+</li>
+<li> "Ray Tracing" projection matrix: added facilities for disabling symmetries in 
+  segment, s and z 
+</li>
+</ul>
+
+
+<h3>New utilities</h3>
+ (but beware for some of these, as their syntax/interface
+might change in the next release):
+<ul>
+<li> utilities zoom_image, create_projdata_template, generate_image,
+list_ROI_values
+</li>
+<li> list mode (re)binner: go from list mode data to projection data (aka
+sinograms).
+</li>
+</ul>
+
+<h3>Installation procedure changes</h3>
+<ul>
+<li> completely revised the makefiles. Please read the User's guide (or the mailing list).
+Some important changes: 
+<ul>
+ <li>the optional file STIR/local/Makefile_common should now be called
+STIR/local/config.mk. You can probably just rename your existing file (if you have one).</li>
+<li>the variable <tt>INSTALL_DIR</tt> is now renamed <tt>INSTALL_EXE_DIR</tt> (or
+you might prefer to use <tt>INSTALL_PREFIX</tt></li>
+<li><tt>make install-all</tt> will put executables, libstir.a, include files, and
+some associated files in various locations.</li>
+<li><tt>make uninstall</tt> and <tt>make uninstall-all</tt> remove the installed files.
+</li>
+<li>The optional files <tt>local/Makefile_bblibs</tt> and <tt>local/Makefile</tt> are
+now ignored. Please read the developers guide for more info on how to add your own files
+to your local version of STIR.</li>
+</ul>
+</li>
+</ul>
+
+
+<h3>Documentation changes</h3>
+<ul>
+<li> doxygen documentation has improved
+</li>
+<li> STIR_UsersGuide has been updated
+</li>
+<li> STIR_developers_overview has been marginally updated (and some typos
+removed)
+</li>
+</ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li> more checks (please please download it and run!)
+</li>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>New libraries</h3>
+<ul>
+<li> listmode: preliminary version of library for reading and processing list
+mode data. Support included for ECAT 966 and 962 (but this might be broken
+at this point due to moving files around etc). Note that this library is
+still somewhat unstable. Please feel free to discuss it on the developers
+list.
+</li>
+<li> Shape: geometric shapes
+</li>
+<li> evaluation: ROIs
+</li>
+</ul>
+
+<h3>Code changes</h3>
+<ul>
+<li> a bit more tests
+</li>
+<li> put in fixes for new compilers such as gcc 3.3 and VC 7.0
+</li>
+<li> doxygen documentation looks better because of more grouping, corrections
+and of course a new version of doxygen
+</li>
+<li> some bug-fixes (mainly those mentioned on the mailing lists, but a few
+more)
+</li>
+<li> merged Reconstruction*Parameters classes into Reconstruction* classes
+</li>
+<li> added convenience functions to ForwardProjectorByBin and BackProjectorByBin that handle
+all projdata at once.
+</li>
+<li> BinNormalisation functions now include time-info to allow for dead-time corrections (but we
+don't have any implemented in the distribution).
+</li>
+<li> ProjDataInfoCylindrical*.cxx: added more functions such as
+  get_all_ring_pairs_for_segment_axial_pos_num, and make sure that
+  the set_* functions also reset the internal lookup tables [bug fix].
+</li>
+<li> updated to boost 1.31
+</li>
+</ul>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 1.0 (dated 20/12/2001)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 1.0 (dated 20/12/2001)</h1>
+
+<h2> Summary for endusers (also to be read by developers)</h2>
+
+<h3>More functionality</h3>
+<ul>
+<li> allow arbitrary x,y sizes of reconstructed images </li>
+<li> allow zooming (changing x,y voxel size)</li>
+<li> sensitivity allows input of normalisation factors (as a projection data 
+  file), also it now assumes that attenuation images are given in units cm^-1
+  (and writes out a message accordingly). (Units used to be pixel_units^-1).
+<li> filtering is now based on the ImageProcessor hierarchy. At the moment, 
+  there are 2 filters supplied: Metz and Median. This changed the format of 
+  the .par file as you can select at run time which filter you want.</li>
+<li> You can now select at run time which projectors, filters, priors etc you want.
+  (default choice is to use the same projectors as the previous release).</li>
+<li> take arc-correction into account. Some projectors (the ray racing ones)
+  can handle non-arccorrected data as well.</li>
+<li> OSEMMain is renamed to OSMAPOSL as it now can now do priors, based on the 
+  GeneralisedPrior hierarchy. At the moment, only 1 prior is supplied: 
+  FilterRootPrior. This prior takes a ImageProcessor object as input, 
+  and uses it in the same way as the  Median Root Prior (from 
+  Alenius S. et al). </li>
+<li> compare_image has now an option to ignore the(radial) rim of the images</li>
+<li> conv_to_ecat6 can now write multiples files  a single ECAT 6 file.
+  The data will be assigned a frame number in the 
+  order that they occur on the command line.</li>
+<li> new utility correct_projdata.cxx to normalise/attenuation (un)correct
+  projection data.</li>
+</ul>
+
+<h3>Incompatibilities</h3>
+<ul>
+<li> change of .par file format to account for user selectable filters etc.</li>
+<li> change of reconstructions when there are non-zero projection data at
+  the edge of the FOV. This is because we changed our strategy of
+  handling the rim. We used to set edge of FOV to 0 (both in 
+  projection data and image). However, this was really only necessary
+  when dual-projector EM is used. Now we do not truncate anymore
+  (except that the interpolating backprojector).
+
+  When not correcting (or precorrecting) scatter and/or randoms, 
+  you can expect changes of upto 1% in the middle of the FOV for
+  very noisy data. Note that the reason
+  that the reconstruction is sensitive to edge stuff is because scatter 
+ (or random) tails are not properly taken into account.</li>
+</ul>
+
+<h3>Changes in the build process</h3>
+<ul>
+<li> usage of WORKSPACE (while doing make) is essentially obsolete, 
+  you can now put the  distribution anywhere, and a simple 'make' will 
+  compile everything properly.</li>
+<li> moved PPhead/Makefile_common.local to PPhead/local/Makefile_common</li>
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+<li> some fixes mostly in the IO routines. Nothing that would have 
+  influenced your results we think.</li>
+</ul>
+<h2>Summary for developers</h2>
+<ul>
+<li> registry functionality to allow easy why to write your classes 
+  such that user's can select appropriate version at run-time.
+<li> introduced new hierarchies: ImageProcessor, GeneralisedPrior and
+  BinNormalisation</li>
+<li> moved all include files to include/stir. This is  for added protection 
+  against filename conflicts when using libraries outside of STIR.</li>
+<li> enabled easier extension by the user by having links to local/Makefile*</li>
+<li> updated boost/* to boost 1.21.1</li>
+<li> various small fixes to files such that gcc 3.0 compiles (and links) this 
+  without problems</li>
+<li> based ReconstructionParameters hierarchy on ParsingObject, instead of 
+KeyParser</li>
+<li> some bug fixes and extended functionality</li>
+</ul>
+
+<h2>Details</h2>
+There are more changes than listed here. For example all the projector files
+have changed as well according to the summary above.
+
+<h3>Changed files</h3>
+
+<pre>
+include/Tomography_common.h:
+- moved stir/common.h (after moving the definition of Succeeded to stir/Succeeded.h).
+
+
+include/stir/common.h:
+- this was Tomography_common.h, but it doesn't declare class Succeeded anymore
+- updated comments
+- do not define std::min,max here anymore for VC, is it is now done in boost/config.hpp
+
+
+include/stir/Array.h:
+- enabled ARRAY_FULL for full iterators
+
+include/stir/ArrayFunction.h:
+- added  in_place_apply_array_functions_on_each_index,
+  in_place_apply_array_function_on_1st_index,
+  apply_array_functions_on_each_index and
+  apply_array_function_on_1st_index
+- added some documentation
+
+buildblock/InterfileHeader.cxx:
+- BUG removed: corrected default bin size
+
+buildblock/interfile.cxx:
+- in write_basic_interfile_PDFS_header, use data from proj_data_info instead 
+  of scanner for the following 3 keywords:
+  ring_diameter, distance between rings, bin size
+- write arc-correction information for projection data
+- write*interfile* with a single filename now handles filenames ending on 
+  .hs or .hv. They also attempt tohandle paths gracefully
+- write_basic_interfile_PDFS_header now also writes the scale factor
+
+buildblock/InterfileHeader.cxx:
+- read arc-correction information for projection data
+
+
+include/stir/interfile.h, include/stir/ProjData.h,
+buildblock/interfile.cxx, buildblock/ProjData.cxx:
+added openmode parameter to the read_ functions to allow opening it in read-write
+
+include/stir/utilities.h,.inl, buildblock/utilities.cxx:
+- in ask* functions, got rid of template in CHAR_PTR, and replaced it by 
+  a const string&. This works always, and removed the needs for templates.
+- moved ask() to .cxx
+- added ask_string()
+- in .cxx, removed some obsolete junk (which was between #if 0... #endif)
+
+
+include/stir/RelatedViewgrams.h, buildblock/RelatedViewgrams.cxx:
+- added numerical 4 operators *=, /=, +=, -= with another RelatedViewgrams<elemT> object
+- added get_symmetries_ptr
+- added get_basic_view_segment_num
+
+
+include/stir/recon_array_functions.h, buildblock/recon_array_functions.cxx:
+- renamed truncate_min_to_small_positive_value to 
+threshold_min_to_small_positive_value
+
+include/stir/zoom.h, buildblock/zoom.cxx:
+- enable zooming of (Related)Viewgram(s)
+
+
+include/stir/KeyParser.h, buildblock/KeyParser.cxx:
+- added PARSINGOBJECT and SHARED_PARSINGOBJECT type to enable recursive parsing
+- added BOOL,FLOAT types
+- added public member add_*key() which are much easier to use than 
+the protected add_key, and allow KeyParser to be used as a member instead
+of a parent of a class.
+- added ask_parameters() and parameter_info() members. These get info from the 
+keymap to return the relevant results.  TODO doesn't work yet with vectored keys.
+- changed type of keymap from std::map to std::list, such that above new 
+functions use the order in which keys are defined
+- added private functions add_in_keymap() and  find_in_keymap() to make use of 
+map or list transparent.
+
+buildblock/recon_array_functions.cxx:
+- changed handling of singularities in divide_and_truncate for viewgrams. 
+We now put them to a maximum quotient, while they used to be put to 0
+- adjusted accumulate_loglikelihood to gave same result as divide_and_truncate
+
+
+VoxelsOnCartesianGrid.cxx:
+- only a single constructor with ProjDataInfo which allows arbitrary x,y,z sizes (with appropriate default. It also works with arbitrary ProjDataInfo (not only ArcCorr)
+
+VoxelsOnCartesianGrid.h:
+- changed constructors
+- adjusted doxygen
+
+
+recon_buildblock/Reconstruction.cxx:
+- removed obsolete keyword 'output prefix', use 'output filename prefix' instead
+- disabled offset keywords as the projectors can't do it yet
+- changed 'output image size' keyword to 'xy output image size (in pixels)'
+
+recon_buildblock/IterativeReconstruction.cxx:
+- removed warning on zoom et al, they are now in the projectors (if necessary)
+- moved stuff from LogLikBasedReconstruction::end_of_iteration_processing here
+- use ImageProcessor
+
+
+include/stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h, .inl
+- added inline implementations for get_num_planes_per_axial_pos
+  and get_axial_pos_to_z_offset
+
+include/stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h,
+recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.cxx:
+- made constructor argument into a reference
+- changed asserts to run-time check to allow arbitrary min-max tang_pos ranges
+
+include/stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h,
+recon_buildblock/BackProjectorByBinUsingInterpolation.cxx,
+recon_buildblock/BackProjectorByBinUsingInterpolation_3DCho.cxx:
+- can now handle odd-sized images or projection data
+- can now handle arbitrary min,max_tangential_pos_num
+- hopefully can handle z_offset and z_size, but needs testing
+- can now handle zoom (which it does by calling zoom_viewgrams first)
+- changed type of symmetries_ptr to enable use of more methods
+- has now built-in rim-truncation
+- adjusted doxygen to new functionality
+
+recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.cxx:
+- added registry stuff
+- changed mechanism that checked if a lor was in the cache. Instead of a list
+	use a vector. Speeds it up quite a lot.
+
+include/stir/LogLikBased/common.h:
+- set rim_truncations to 0
+
+iterative/LogLik_buildblock/common.cxx:
+- in distributable_compute_sensitivity, divide with the multiplicative_correction 
+  argument instead of multiplying. This makes it more suitable for passing
+  normalisation factors
+- some clean-up
+
+iterative/LogLik_buildblock/LogLikelihoodBasedReconstruction.cxx:
+- added check that sensitivity and target_image are the same size etc.
+
+iterative/LogLik_buildblock/LogLik*.cxx:
+include/stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h:
+- user-selectable projection operators
+- moved LogLikBasedReconstruction::end_of_iteration_processing to IterativeReconstruction
+
+
+
+iterative/OSMAPOSL/OSMAPOSLParameters.cxx, include/stir/OSMAPOSL/OSMAPOSLParameters.h
+- added min/max relative change parameters
+- added  write_update_image parameter
+- added GeneralisedPrior stuff
+- use ImageProcessor
+
+iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
+- added min/max relative change functionality
+- added  write_update_image  functionality
+- added GeneralisedPrior stuff
+- use ImageProcessor
+
+iterative/sensitivity/sensitivity.cxx:
+- parse OSMAPOSL type .par file to get lots of info. This makes sure that
+  the info used when running sensitivity and OSMAPOSL is consistent.
+- added functionality to input normalisation factors
+- check user input "0" and "1" with full strings instead of first character only
+- rescale attenuation image from cm^-1 to something suitable for the projectors
+
+
+utilities/postfilter.cxx:
+- use ImageProcessor
+
+
+utilities/cti_utils.cxx:
+- added a (char *) in a call to swab() with a long * (otherwise crashes on HPUX)
+
+utilities/conv_to_ecat6.cxx:
+- conv_to_ecat6 can now write multiples files  a single ECAT 6 file.
+  The data will be assigned a frame number in the 
+  order that they occur on the command line.
+
+include/stir/CTI/Tomo_cti.h, utilities/Tomo_cti.cxx:
+- renamed into stir_cti.*
+- new functions for writing multiples files  a single ECAT 6 file.
+include/stir/recon_buildblock/ReconstructionParameters:
+- based on ParsingObject, instead of KeyParser
+- added members of z_offset and z_size, rename x_y_size member
+
+
+display_projdata.cxx:
+- allow changing of maximum in colour scale
+
+compare_image:
+- added option for rim_truncation
+
+</pre>
+
+
+
+<h3>new files</h3>
+(probably incomplete) list of new files.
+
+<h4>include files</h4>
+
+<ul>
+<li>stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h</li>
+<li>stir/ArrayFunctionObject.h</li>
+<li>stir/ArrayFunctionObject_1ArgumentImplementation.h</li>
+<li>stir/ArrayFunctionObject_2ArgumentImplementation.h</li>
+<li>stir/ChainedImageProcessor.h</li>
+<li>stir/FactoryRegistry.h</li>
+<li>stir/FactoryRegistry.inl</li>
+<li>stir/ImageProcessor.h</li>
+<li>stir/ImageProcessor.inl</li>
+<li>stir/MedianArrayFilter3D.h</li>
+<li>stir/MedianImageFilter3D.h</li>
+<li>stir/Object.h</li>
+<li>stir/ParsingObject.h</li>
+<li>stir/ProjDataInfoCylindricalNoArcCorr.h   </li>
+<li>stir/ProjDataInfoCylindricalNoArcCorr.inl</li>
+<li>stir/RegisteredObject.h</li>
+<li>stir/RegisteredObject.inl</li>
+<li>stir/RegisteredParsingObject.h</li>
+<li>stir/RegisteredParsingObject.inl</li>
+<li>stir/SeparableArrayFunctionObject.h</li>
+<li>stir/SeparableCartesianMetzImageFilter.h</li>
+<li>stir/SeparableMetzArrayFilter.h</li>
+<li>stir/Succeeded.h</li>
+<li>stir/ThresholdMinToSmallPositiveValueImageProcessor.h</li>
+<li>stir/common.h (replaces Tomography_common.h)</li>
+<li>stir/doxygengroups.h</li>
+<li>stir/doxygenmain.h</li>
+<li>stir/interfile_keyword_functions.h</li>
+<li>stir/is_null_ptr.h</li>
+<li>stir/round.h</li>
+<li>stir/round.inl</li>
+<li>stir/thresholding.h</li>
+<li>stir/recon_buildblock/BinNormalisation.h</li>
+<li>stir/recon_buildblock/GeneralisedPrior.h</li>
+<li>stir/recon_buildblock/BinNormalisationFromProjData.h  </li>
+<li>stir/recon_buildblock/GeneralisedPrior.inl</li>
+<li>stir/recon_buildblock/FilterRootPrior.h               </li>
+<li>stir/recon_buildblock/TrivialBinNormalisation.h</li>
+<li>stir/recon_buildblock/ProjectorByBinPair.h</li>
+<li>stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h</li>
+<li>stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h</li>
+</ul>
+
+<h4>*.cxx</h4>
+.cxx files corresponding to the new .h files above are not listed (yet?).
+
+<ul>
+<li>utilities/correct_projdata.cxx</li>
+<li>recon_buildblock/Reconstruction.cxx</li>
+</ul>
+    <hr>
+<!-- Created: Dec 15 15:26:59 GMT 2001 -->
+<!-- hhmts start -->
+Last modified: Thu Dec 20 22:19:47 GMT 2001
+<!-- hhmts end -->
+  </body>
+</html>
