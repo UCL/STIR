@@ -64,6 +64,10 @@ projection data,...
 looks a lot neater.
 */
 /*!
+\defgroup Array Items relating to (multi-dimensional) arrays
+\ingroup buildblock
+*/
+/*!
 \defgroup projdata Items related to projection data
 \ingroup buildblock
 Basic support for projection data. This is the term generally used in STIR
@@ -98,6 +102,13 @@ from/to file.
 \defgroup ECAT ECAT6 and ECAT7 support in the IO library
 \ingroup IO
 */
+
+
+/*! 
+\defgroup listmode Support classes for reading list mode data
+\ingroup STIR_library
+*/
+
 /*!
 \defgroup recon_buildblock Reconstruction building blocks
 \ingroup STIR_library
@@ -109,6 +120,7 @@ Library with 'general' reconstruction building blocks
 Library with additional building blocks used for algorithms which
 are similar to EM.
 */
+
 
 
 /*!
@@ -157,7 +169,12 @@ Almost all programs that can be executed by the user.
 \ingroup main_programs
 */
 /*!
+\defgroup listmode_utilities Utility programs for list mode data
+\ingroup utilities
+*/
+/*!
 \defgroup ECAT_utilities ECAT6 and ECAT7 utilities
 \ingroup utilities
 Includes conversion programs etc.
 */
+
