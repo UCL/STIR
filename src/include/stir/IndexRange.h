@@ -56,7 +56,7 @@ START_NAMESPACE_STIR
   \code
   IndexRange<3> range = construct_me_an_index_range();
   int outer_index = range.get_min_index();
-  while(index <= range.get_max_index())
+  while(outer_index <= range.get_max_index())
   {
     int level_2_min_index = range[outer_index].get_min_index();
     ...
