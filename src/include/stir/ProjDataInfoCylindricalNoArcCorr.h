@@ -166,11 +166,6 @@ public:
     \return Succeeded::yes when a corresponding bin is found in the range of projection data. Currently,
     the Bin value is always set to 1. 
     \see get_view_tangential_pos_num_for_det_num_pair() for restrictions
-    \todo It might be possible to set the bin value to
-    some weight factor in case there is no many-to-one correspondence
-    between detection positions and bins (for instance for
-    continuous detectors, or rotating scanners). However, those scanners are not
-    really supported yet.
     \todo use member template for the coordT type to support continuous detectors.
   */		       
   inline Succeeded 
@@ -188,6 +183,24 @@ public:
   inline void
     get_det_pos_pair_for_bin(DetectionPositionPair<>&,
 	                 const Bin&) const;
+
+  //! This routine returns the number of detector pairs that correspond to a bin
+  unsigned int
+    get_num_det_pos_pairs_for_bin(const Bin&) const;
+
+  //! This routine fills a vector with all the detector pairs that correspond to a bin.
+  /*!     
+    \see ProjDataInfoCylindrical::get_all_ring_pairs_for_segment_axial_pos_num
+    for restrictions. 
+    \todo It might be possible to return some weight factors in case there is 
+    no many-to-one correspondence between detection positions and bins 
+    (for instance for continuous detectors, or rotating scanners, or 
+    arc-corrected data).
+  */
+  void
+    get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >&,
+				  const Bin&) const;
+
   //! This gets Bin coordinates for a particular detector pair
   /*! 
     \return Succeeded::yes when a corresponding segment is found
@@ -238,16 +251,16 @@ private:
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
   struct Det1Det2 { int det1_num; int det2_num; };
-  mutable VectorWithOffset< VectorWithOffset<Det1Det2> > view_tangpos_to_det1det2;
-  mutable bool view_tangpos_to_det1det2_initialised;
-  void initialise_view_tangpos_to_det1det2() const;
+  mutable VectorWithOffset< VectorWithOffset<Det1Det2> > uncompressed_view_tangpos_to_det1det2;
+  mutable bool uncompressed_view_tangpos_to_det1det2_initialised;
+  void initialise_uncompressed_view_tangpos_to_det1det2() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
   // we prestore a lookup-table in terms for unmashed view/tangpos
   struct ViewTangPosSwap { int view_num; int tang_pos_num; bool swap_detectors; };
-  mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_view_tangpos;
-  mutable bool det1det2_to_view_tangpos_initialised;
-  void initialise_det1det2_to_view_tangpos() const;
+  mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_uncompressed_view_tangpos;
+  mutable bool det1det2_to_uncompressed_view_tangpos_initialised;
+  void initialise_det1det2_to_uncompressed_view_tangpos() const;
 
 };
 
