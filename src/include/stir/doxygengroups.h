@@ -70,7 +70,7 @@ This includes multi-dimensional arrays, images, image processors,
 projection data,...
 */
 /*!
-\defgroup buildblock_detail Implementation details for block 
+\defgroup buildblock_detail Implementation details for buildblock 
 \ingroup buildblock
 */
 /*!
@@ -232,6 +232,11 @@ Implementation of the OSMAP One-Step-Late reconstruction algorithm
 \defgroup FBP2D FBP2D
 \ingroup reconstructors
 Implementation of the 2D Filtered Back Projection algorithm
+*/
+/*!
+\defgroup FBP3DRP FBP3DRP
+\ingroup reconstructors
+Implementation of the 3D Reprojection Filtered Back Projection algorithm
 */
 
 /*!
