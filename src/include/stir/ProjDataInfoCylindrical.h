@@ -172,7 +172,24 @@ protected:
 
   float azimuthal_angle_sampling;
   float ring_radius;
+  //! a variable that is set if the data corresponds to physical rings in the scanner
+  /*! This is (only) used to prevent get_segment_axial_pos_num_for_ring_pair() et al
+      to go wild. Indeed, for cases where there's cylindrical sampling, but not
+      really any physical rings associated to the sampling, those functions will
+      return invalid information.
 
+      The prime case where this is used is for data corresponding to (nearly) 
+      continuous detectors, such as DHCI systems, or the HiDAC.
+
+      Ideally, this would be done by having a separate class for such systems which
+      does not contain the ring-difference et al information. This seems to make
+      the hierarchy too complicated though.
+
+      \bug The value of this variable is currently set by checking if the scanner 
+      is a HiDAC scanner. This needs to be changed.
+      */
+  bool sampling_corresponds_to_physical_rings;
+  
 private:
   float ring_spacing;
   VectorWithOffset<int> min_ring_diff; 
