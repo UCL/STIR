@@ -15,8 +15,20 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details.
 */
 /* Modification history
 */
@@ -34,18 +46,44 @@
 using std::string;
 #endif
 
+
 START_NAMESPACE_STIR
 
 
 class Succeeded;
 
 /*!
-  \brief base class for all ProjDataRebinnings
+  \brief base class for all rebinning algorithms for 3D PET data
   \ingroup recon_buildblock
+
+  TODO describe what rebinning is and why you need it
+
+  \par Usage
+
+  The utility rebin_projdata provides the user interface to this class.
+  What follows is for developers.
+
+  Parameters need to be initialised somehow. This is usually done using the 
+  parse() member functions (see ParsingObject). 
+  For some parameters, <code>set_some_parameter()</code>
+  methods are provided.
+
+  Normal usage is for example as follows
+  \code
+    shared_ptr<ProjDataRebinning> rebinning_sptr;
+    // set parameters somehow
+    if (rebinning_sptr->set_up()!= Succeeded::yes)
+      error("Disaster. Presumably data are inconsistent")
+    if (rebinning_sptr->rebin()!= Succeeded::yes)
+      error("Disaster. Presumably run-time error or so");
+  \endcode
+
+  \par Info for developers
 
   For convenience, the class is derived from TimedObject. It is the 
   responsibility of the derived class to run these timers though.
 
+  \todo there should be a method to rebin the data without writing the result to disk
 */
 
 
@@ -62,31 +100,44 @@ public:
   
   //! executes the rebinning
   /*!
-    At the end of the rebinning, the final image is saved to file as given in
+    At the end of the rebinning, the final 2D projection data are saved to file as given in
     output_filename_prefix.
     \return Succeeded::yes if everything was alright.
    */     
   virtual Succeeded 
     rebin()=0;
-#if 0
-  //! executes the ProjDataRebinning
-  /*!
-    At the end of the rebinning, the final image is saved to file as given in 
-    output_filename_prefix. 
-    \return Succeeded::yes if everything was alright.
-   */     
-  virtual Succeeded 
-    rebin(const ProjData&) = 0;
-#endif
-  // TODO needed at all?
+    
+  /*! \name get/set the number of segments to process
 
+      \see max_segment_num_to_process
+  */
+  //@{
+  void set_max_segment_num_to_process(int ns);
+  int get_max_segment_num_to_process() const;
+  //@}
+  /*! get/set file name for output projdata (should be without extension)
+   */
+  //@{
+  void set_output_filename_prefix(const string& s);
+  string get_output_filename_prefix() const;
+  //@}
+
+  //! set projection data that will be rebinned
+  /*! Usually this will be set via a call to parse() */
+  void set_input_proj_data_sptr(const shared_ptr<ProjData>&);
+  // KTTODO I'm not enthousiastic about the next function
+  // why would you need this?
+  shared_ptr<ProjData> get_proj_data_sptr();
+  
+  // TODO needed at all?
+  // KTTODO: yes, and change parameters
   //! operations prior to the rebinning
   virtual Succeeded set_up();
 
   // parameters
  protected:
 
-  //! file name for output projdata (can be without extension)
+  //! file name for output projdata (should be without extension)
   string output_filename_prefix; 
   //! file name for input projdata
   string input_filename; 
