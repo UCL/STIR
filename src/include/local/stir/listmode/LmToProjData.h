@@ -87,6 +87,8 @@ protected:
   shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
   shared_ptr<BinNormalisation> normalisation_ptr;
   shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<Scanner> scanner_ptr;
+  
 
   bool do_time_frame;
 };
