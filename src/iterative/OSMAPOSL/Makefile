@@ -29,18 +29,15 @@ install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
 
 
-include ../../Makefile_bblibs
+include $(WORKSPACE)/Makefile_bblibs
 
 
 ${DEST}OSMAPOSL: ${DEST}OSMAPOSL.o $(LIB_OBJS) \
-	  ../../buildblock/${DEST}registrystuff.o\
-	  $(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}
+	  $(BB_LIBS) ${LIB_LOGLIK_BUILDINGBLOCK}  $(BB_REGISTRIES)
 	$(CXX) $(CFLAGS)-o $@ $< \
         $(LIB_OBJS) \
-	../../buildblock/${DEST}registrystuff.o \
-	${LIB_LOGLIK_BUILDINGBLOCK} \
-	$(LIB_RECON_BUILDINGBLOCK) \
-	$(LIB_BUILDINGBLOCK) \
+	 $(BB_REGISTRIES) \
+	${LIB_LOGLIK_BUILDINGBLOCK}  $(BB_LIBS) \
 	$(LINK_OPT) $(SYS_LIBS)
 
 
