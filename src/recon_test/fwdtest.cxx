@@ -39,6 +39,7 @@
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
 #include "stir/utilities.h"
+#include "stir/round.h"
 #include "stir/IndexRange3D.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/SegmentByView.h"
@@ -73,16 +74,16 @@ int
 main(int argc, char *argv[])
 {
 
-  if(argc!=2) 
+  if(argc<2 || argc>3) 
   {
-    cerr<<"Usage: " << argv[0] << " [proj_data-file]\n"
+    cerr<<"Usage: " << argv[0] << " [template-proj_data-file [image_to_forward_project]\n"
         <<"The projdata-file will be used to get the scanner, mashing etc. details" 
 	<< endl; 
   }
   
 
   ProjDataInfo* new_data_info_ptr;
-  if(argc==2)
+  if(argc>=2)
   {
     shared_ptr<ProjData> proj_data_ptr = 
       ProjData::read_from_file(argv[1]);
@@ -107,63 +108,66 @@ main(int argc, char *argv[])
        << " and its Interfile header\n";
 
   
-  const int dispstart = 
-    ask_num("Display start image ? no (0), yes (1)", 
-    0,1,0);
-
-  const int save = 
-    ask_num("Save  start images ? no (0), yes (1)",
-    0,1,0);   
+  int dispstart = 0;
+  int save = 0;
   
   shared_ptr<DiscretisedDensity<3,float> > image_sptr = 0;   
   VoxelsOnCartesianGrid<float> * vox_image_ptr = 0;
 
 
-  switch (ask_num("Start image is cuboid (1) or cylinder (2) or on file (3)",1,3,2))
-  {
-  case 1:
+  if (argc<3)
     {
-      const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
-      int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
-      xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
-      int z_size = 2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1;
-      z_size = ask_num("Number of z pixels",1,1000,z_size);
-      image_sptr = vox_image_ptr =
-        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
-                                         zoom,
-                                         CartesianCoordinate3D<float>(0,0,0),
-                                         Coordinate3D<int>(z_size,xy_size,xy_size));
-      fill_cuboid(*vox_image_ptr);
-      break;
-    }
-  case 2:
-    {
-      const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
-      int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
-      xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
-      int z_size = 2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1;
-      z_size = ask_num("Number of z pixels",1,1000,z_size);
-      image_sptr = vox_image_ptr =
-        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
-                                         zoom,
-                                         CartesianCoordinate3D<float>(0,0,0),
-                                         Coordinate3D<int>(z_size,xy_size,xy_size));
-      fill_cylinder(*vox_image_ptr);
-      break;
-    }
-  case 3:
-    {
-      char filename[max_filename_length];
+      switch (const int choice = ask_num("Start image is cuboid (1) or cylinder (2) or on file (3)",1,3,2))
+	{
+	case 1: 
+	case 2:
+	  {
+	    dispstart = 
+	      ask_num("Display start image ? no (0), yes (1)", 0,1,0);
+
+	    save = 
+	      ask_num("Save  start images ? no (0), yes (1)", 0,1,0);   
+	    const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
+	    int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
+	    xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
+	    const float zoom_z = ask_num("Zoom factor in z", 0.F, 10.F, 1.F);
+	    int z_size = 
+	      stir::round((2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1)*zoom_z);
+	    z_size = ask_num("Number of z pixels",1,1000,z_size);
+	    image_sptr = vox_image_ptr =
+	      new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
+					       zoom,
+					       CartesianCoordinate3D<float>(0,0,0),
+					       Coordinate3D<int>(z_size,xy_size,xy_size));
+	    vox_image_ptr->set_grid_spacing(
+					    vox_image_ptr->get_grid_spacing()/
+					    CartesianCoordinate3D<float>(zoom_z,1.F,1.F));
+	    if (choice==1)
+	      fill_cuboid(*vox_image_ptr);
+	    else
+	      fill_cylinder(*vox_image_ptr);
+	    break;
+	  }
+	case 3:
+	  {
+	    char filename[max_filename_length];
       
-      ask_filename_with_extension(filename, "Input file name ?", ".hv");
+	    ask_filename_with_extension(filename, "Input file name ?", ".hv");
       
+	    image_sptr =
+	      DiscretisedDensity<3,float>::read_from_file(filename);
+	    vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
+      
+	    break;
+	  }
+	}
+    }
+  else
+    {
       image_sptr =
-        DiscretisedDensity<3,float>::read_from_file(filename);
+        DiscretisedDensity<3,float>::read_from_file(argv[2]);
       vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
-      
-      break;
     }
-  }
 
   const float z_origin = 
     ask_num("Shift z-origin (in pixels)", 
