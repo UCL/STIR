@@ -13,11 +13,6 @@ clean:
 	$(RM) $(DEST)*
 SOURCES = \
 	ProjMatrixByBinUsingSolidAngle.cxx \
-	oldForwardProjectorByBinUsingRayTracing.cxx \
-	oldForwardProjectorByBinUsingRayTracing_Siddon.cxx \
-	oldBackProjectorByBinUsingInterpolation.cxx \
-	oldBackProjectorByBinUsingInterpolation_linear.cxx \
-	oldBackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
 	PostsmoothingForwardProjectorByBin.cxx \
 	DataSymmetriesForDensels.cxx \
 	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
@@ -28,6 +23,11 @@ SOURCES = \
 	QuadraticPrior.cxx \
 	BinNormalisationUsingProfile.cxx
 
+#	oldForwardProjectorByBinUsingRayTracing.cxx \
+#	oldForwardProjectorByBinUsingRayTracing_Siddon.cxx \
+#	oldBackProjectorByBinUsingInterpolation.cxx \
+#	oldBackProjectorByBinUsingInterpolation_linear.cxx \
+#	oldBackProjectorByBinUsingInterpolation_piecewise_linear.cxx 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
