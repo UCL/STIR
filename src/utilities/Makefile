@@ -20,7 +20,8 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
 	compare_image.cxx \
         conv_to_ecat6.cxx \
 	extract_segments.cxx \
-	correct_projdata.cxx 
+	correct_projdata.cxx \
+	stir_math.cxx
 
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
