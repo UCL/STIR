@@ -18,6 +18,7 @@
 #include "local/stir/listmode/LmToProjData.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/round.h"
@@ -101,7 +102,8 @@ protected:
   int max_segment_num_to_process;
 
   shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_uncompressed_ptr;
+  const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_uncompressed_ptr;
   shared_ptr<Scanner> scanner_ptr;
   
 
@@ -111,6 +113,7 @@ protected:
 private:
 
   shared_ptr<RigidObject3DMotion> ro3d_ptr;
+  shared_ptr<BinNormalisation> normalisation_ptr;
 
   RigidObject3DTransformation move_to_scanner;
   RigidObject3DTransformation move_from_scanner;
@@ -125,6 +128,7 @@ FindMCNormFactors::set_defaults()
 {
   max_segment_num_to_process = -1;
   ro3d_ptr = 0;
+  normalisation_ptr = new TrivialBinNormalisation;
   time_interval=1; 
   min_num_time_intervals_per_frame = 1;
   max_num_time_intervals_per_frame = 100;
@@ -141,6 +145,7 @@ FindMCNormFactors::initialise_keymap()
   parser.add_key("frame_definition file",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
+  parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
 
   parser.add_key("default time interval", &time_interval);
   parser.add_key("minimum number of time intervals per frame", &min_num_time_intervals_per_frame);
@@ -203,13 +208,28 @@ post_processing()
     new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
 
   // TODO this won't work for the HiDAC or so
-  proj_data_info_cyl_uncompressed_ptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+  proj_data_info_uncompressed_ptr =
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
                   1, scanner_ptr->get_num_rings()-1,
                   scanner_ptr->get_num_detectors_per_ring()/2,
                   scanner_ptr->get_default_num_arccorrected_bins(), 
-                  false));
+                  false);
+  proj_data_info_cyl_uncompressed_ptr =
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>
+    (proj_data_info_uncompressed_ptr.get());
+
+  if (is_null_ptr(normalisation_ptr))
+    {
+      //normalisation_ptr = new TrivialBinNormalisation;
+      warning("Invalid normalisation object\n");
+      return true;
+    }
+  if ( normalisation_ptr->set_up(proj_data_info_uncompressed_ptr)
+       != Succeeded::yes)
+    {
+      warning("set-up of normalisation failed\n");
+      return true;
+    }
 
   // handle time frame definitions etc
 
@@ -334,24 +354,24 @@ FindMCNormFactors::process_data()
 				compose(ro3d_ptr->get_transformation_to_reference_position(),
 					compose(ro3dtrans,move_from_scanner)));
 
-	    for (int in_segment_num = proj_data_info_cyl_uncompressed_ptr->get_min_segment_num(); 
-		 in_segment_num <= proj_data_info_cyl_uncompressed_ptr->get_max_segment_num();
+	    for (int in_segment_num = proj_data_info_uncompressed_ptr->get_min_segment_num(); 
+		 in_segment_num <= proj_data_info_uncompressed_ptr->get_max_segment_num();
 		 ++in_segment_num)
 	      {
 
 
-		for (int in_ax_pos_num = proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(in_segment_num); 
-		     in_ax_pos_num  <= proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(in_segment_num);
+		for (int in_ax_pos_num = proj_data_info_uncompressed_ptr->get_min_axial_pos_num(in_segment_num); 
+		     in_ax_pos_num  <= proj_data_info_uncompressed_ptr->get_max_axial_pos_num(in_segment_num);
 		     ++in_ax_pos_num )
 		  {
 	      
-		    for (int in_view_num=proj_data_info_cyl_uncompressed_ptr->get_min_view_num();
-			 in_view_num <= proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
+		    for (int in_view_num=proj_data_info_uncompressed_ptr->get_min_view_num();
+			 in_view_num <= proj_data_info_uncompressed_ptr->get_max_view_num();
 			 ++in_view_num)
 		      {
 		  
-			for (int in_tangential_pos_num=proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num();
-			     in_tangential_pos_num <= proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num();
+			for (int in_tangential_pos_num=proj_data_info_uncompressed_ptr->get_min_tangential_pos_num();
+			     in_tangential_pos_num <= proj_data_info_uncompressed_ptr->get_max_tangential_pos_num();
 			     ++in_tangential_pos_num)
 			  {
 			    Bin bin(in_segment_num,in_view_num,in_ax_pos_num, in_tangential_pos_num, 1);
@@ -375,7 +395,8 @@ FindMCNormFactors::process_data()
 				    // TODO remove scale factor
 				    // it's there to compensate what we have in LmToProjDataWithMC
 				    (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-				      1.F/
+				      normalisation_ptr->
+				      get_bin_efficiency(bin,start_time,end_time)/
 				      (out_proj_data_info_ptr->
 				       get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 										    bin.axial_pos_num())*
