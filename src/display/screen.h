@@ -18,18 +18,29 @@ extern "C" {
 #define ANSI
 #endif
 
+  /* Change 13/02/98: update for more recent compilers */
+#ifdef MSDOS
+#if !defined(__GNUC__) && !defined(_WIN32)
+#define MSDOS16BIT
+#else
+#define SC_XWINDOWS
+#endif
+#endif
+
 #if defined(__osf__) || defined(__unix__) || defined(ultrix)
 #define SC_XWINDOWS
 #endif
 
-#ifdef VAX
+  /* Change 13/02/98, allow for XWindows on VAX */
+#if defined(VAX) && !defined(SC_XWINDOWS)
 #define SC_QG
 #endif
 
 #ifndef SC_pixel_t
 #define SC_pixel_t unsigned char
 
-#ifndef MSDOS
+/* Change 13/02/98 */
+#ifndef MSDOS16BIT
 typedef SC_pixel_t image_t;
 #else
 typedef SC_pixel_t huge image_t;
@@ -92,7 +103,8 @@ extern SC_pixel_t *read_buffer(char *dev,int size);
                         *outptr++=(SC_pixel_t)(((short)w)/256)
 #define OUTDW(w1,w2)    OUTW(w1); OUTW(w2)
 #define OUTS(str)       strncpy(outptr,str,strlen(str));    outptr += strlen(str)
-#ifndef MSDOS
+/* Change 13/02/98 */
+#ifndef MSDOS16BIT
 #define OUTM(buf,nr)    memcpy(outptr,buf,nr); outptr += nr
 #else
 #define OUTM(buf,nr)    fmemcpy((out_t far *)outptr,(void far *)(buf),nr);\
@@ -172,7 +184,6 @@ extern SC_pixel_t *read_buffer(char *dev,int size);
 #endif /* SC_QG */
 
 #ifdef SC_XWINDOWS
-
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
