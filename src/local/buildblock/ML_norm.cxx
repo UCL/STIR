@@ -21,6 +21,7 @@
 #include "local/stir/ML_norm.h"
 #include "stir/display.h"
 #include "stir/SegmentBySinogram.h"
+#include "stir/stream.h"
 
 START_NAMESPACE_STIR
 
@@ -292,6 +293,14 @@ void apply_efficiencies(DetPairData& det_pair_data, const Array<1,float>& effici
       }
 }
 
+float KL(const DetPairData& d1, const DetPairData& d2, const float threshold)
+{
+  float sum=0;
+  for (int a = d1.get_min_index(); a <= d1.get_max_index(); ++a)
+    for (int b = d1.get_min_index(a); b <= d1.get_max_index(a); ++b)      
+      sum += KL(d1(a,b), d2(a,b), threshold);
+  return sum;
+}
 
 //************ 3D
 
@@ -299,32 +308,40 @@ void apply_efficiencies(DetPairData& det_pair_data, const Array<1,float>& effici
 FanProjData::FanProjData()
 {}
 
+FanProjData::~FanProjData()
+{}
+
+#if 0
 FanProjData::FanProjData(const IndexRange<4>& range)
-:base_type(range), num_rings(range.get_length()), num_detectors(range[range.get_min_index()].get_length())
+:base_type(range), num_rings(range.get_length()), num_detectors_per_ring(range[range.get_min_index()].get_length())
 {
 }
+#endif
 
 FanProjData::
-FanProjData(const int num_rings, const int num_detectors, const int max_delta, const int fan_size)
+FanProjData(const int num_rings, const int num_detectors_per_ring, const int max_ring_diff, const int fan_size)
+: num_rings(num_rings), num_detectors_per_ring(num_detectors_per_ring),
+  max_ring_diff(max_ring_diff), half_fan_size(fan_size/2)
 {
-  // fan will range from -half_fan_size to +half_fan_size (i.e. an odd number of elements)
-  const int half_fan_size = fan_size/2;
-
+  assert(num_detectors_per_ring%2 == 0);
+  assert(max_ring_diff<num_rings);
+  assert(fan_size < num_detectors_per_ring);
+  
   IndexRange<4> fan_indices;
   fan_indices.grow(0,num_rings-1);
   for (int ra = 0; ra < num_rings; ++ra)
   {
-    const int min_rb = max(ra-max_delta, 0);
-    const int max_rb = min(ra+max_delta, num_rings-1);
-    fan_indices[ra].grow(0,num_detectors-1);
-    for (int a = 0; a < num_detectors; ++a)
+    const int min_rb = max(ra-max_ring_diff, 0);
+    const int max_rb = min(ra+max_ring_diff, num_rings-1);
+    fan_indices[ra].grow(0,num_detectors_per_ring-1);
+    for (int a = 0; a < num_detectors_per_ring; ++a)
     {
-      fan_indices[ra][a].grow(min_rb, max_rb);
       // store only 1 half of data as ra,a,rb,b = rb,b,ra,a
+      fan_indices[ra][a].grow(max(ra,min_rb), max_rb);
       for (int rb = max(ra,min_rb); rb <= max_rb; ++rb)
       fan_indices[ra][a][rb] = 
-        IndexRange<1>(a+num_detectors/2-half_fan_size,
-                      a+num_detectors/2+half_fan_size);
+        IndexRange<1>(a+num_detectors_per_ring/2-half_fan_size,
+                      a+num_detectors_per_ring/2+half_fan_size);
     }
   }
   grow(fan_indices);
@@ -335,37 +352,45 @@ FanProjData&
 FanProjData::operator=(const FanProjData& other)
 {
   base_type::operator=(other);
-  num_detectors = other.num_detectors;
+  num_detectors_per_ring = other.num_detectors_per_ring;
   num_rings = other.num_rings;
+  max_ring_diff = other.max_ring_diff;
+  half_fan_size = other.half_fan_size;
   return *this;
 }
 
 float & FanProjData::operator()(const int ra, const int a, const int rb, const int b)
 {
+  assert(a>=0);
+  assert(b>=0);
   return 
     ra<rb 
-    ? (*this)[ra][a%num_detectors][rb][b<get_min_b(a) ? b+num_detectors: b]
-    : (*this)[rb][b%num_detectors][ra][a<get_min_b(b%num_detectors) ? a+num_detectors: a];
+    ? (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b]
+    : (*this)[rb][b%num_detectors_per_ring][ra][a<get_min_b(b%num_detectors_per_ring) ? a+num_detectors_per_ring: a];
 }
 
 float FanProjData::operator()(const int ra, const int a, const int rb, const int b) const
-{
+{  
+  assert(a>=0);
+  assert(b>=0);
   return 
     ra<rb 
-    ? (*this)[ra][a%num_detectors][rb][b<get_min_b(a) ? b+num_detectors: b]
-    : (*this)[rb][b%num_detectors][ra][a<get_min_b(b%num_detectors) ? a+num_detectors: a];
+    ? (*this)[ra][a%num_detectors_per_ring][rb][b<get_min_b(a) ? b+num_detectors_per_ring: b]
+    : (*this)[rb][b%num_detectors_per_ring][ra][a<get_min_b(b%num_detectors_per_ring) ? a+num_detectors_per_ring: a];
 }
 
 bool 
 FanProjData::
 is_in_data(const int ra, const int a, const int rb, const int b) const
 {
+  assert(a>=0);
+  assert(b>=0);
   if (rb<(*this)[ra][a].get_min_index() || rb >(*this)[ra][a].get_max_index())
     return false;
   if (b>=get_min_b(a))
     return b<=get_max_b(a);
   else
-    return b+num_detectors<=get_max_b(a);
+    return b+num_detectors_per_ring<=get_max_b(a);
 }
 
 void FanProjData::fill(const float d)
@@ -373,19 +398,21 @@ void FanProjData::fill(const float d)
   base_type::fill(d);
 }
 
+#if 0
 void FanProjData::grow(const IndexRange<4>& range)
 {
   base_type::grow(range);
   num_rings =range.get_length();
-  num_detectors = range[range.get_min_index()].get_length();
+  num_detectors_per_ring = range[range.get_min_index()].get_length();
 }
+#endif
 
-int FanProjData::get_min_index() const
+int FanProjData::get_min_ra() const
 {
   return base_type::get_min_index();
 }
 
-int FanProjData::get_max_index() const
+int FanProjData::get_max_ra() const
 {
   return base_type::get_max_index();
 }
@@ -404,7 +431,9 @@ int FanProjData::get_max_a() const
 
 int FanProjData::get_min_rb(const int ra) const
 {
-  return (*this)[ra][(*this)[ra].get_min_index()].get_min_index();
+  return max(ra-max_ring_diff, 0); 
+  // next is no longer true because we store only half the data
+  //return (*this)[ra][(*this)[ra].get_min_index()].get_min_index();
 }
 
 int FanProjData::get_max_rb(const int ra) const
@@ -427,7 +456,7 @@ float FanProjData::sum() const
 {
   //return base_type::sum();
   float sum = 0;
-  for (int ra=get_min_index(); ra <= get_max_index(); ++ra)
+  for (int ra=get_min_ra(); ra <= get_max_ra(); ++ra)
     for (int a = get_min_a(); a <= get_max_a(); ++a)      
       sum += this->sum(ra,a);
   return sum;
@@ -439,7 +468,7 @@ float FanProjData::sum(const int ra, const int a) const
   float sum = 0;
   for (int rb=get_min_rb(ra); rb <= get_max_rb(ra); ++rb)
     for (int b = get_min_b(a); b <= get_max_b(a); ++b)      
-      sum += (*this)(ra,a,rb,b%num_detectors);
+      sum += (*this)(ra,a,rb,b%num_detectors_per_ring);
   return sum;
 }
 
@@ -453,9 +482,9 @@ float FanProjData::find_min() const
   return base_type::find_min();
 }
 
-int FanProjData::get_num_detectors() const
+int FanProjData::get_num_detectors_per_ring() const
 {
-  return num_detectors;
+  return num_detectors_per_ring;
 }
 
 
@@ -464,18 +493,69 @@ int FanProjData::get_num_rings() const
   return num_rings;
 }
 
+ostream& operator<<(ostream& s, const FanProjData& fan_data)
+{
+  return s << static_cast<FanProjData::base_type>(fan_data);
+}
+
+istream& operator>>(istream& s, FanProjData& fan_data)
+{
+  s >> static_cast<FanProjData::base_type&>(fan_data);
+  if (!s)
+    return s;
+  fan_data.num_detectors_per_ring = fan_data.get_max_a() - fan_data.get_min_a() + 1;
+  fan_data.num_rings = fan_data.get_max_ra() - fan_data.get_min_ra() + 1;
+      
+  //int max_delta = 0;
+  //for (int ra = 0; ra < fan_data.num_rings; ++ra)
+  //  max_delta = max(max_delta,fan_data[ra][0].get_length()-1);
+  const int max_delta = fan_data[0][0].get_length()-1;
+  const int half_fan_size = 
+    fan_data[0][0][0].get_length()/2;
+  fan_data.half_fan_size = half_fan_size;
+  fan_data.max_ring_diff = max_delta;
+
+  for (int ra = 0; ra < fan_data.num_rings; ++ra)
+  {
+    const int min_rb = max(ra-max_delta, 0);
+    const int max_rb = min(ra+max_delta, fan_data.num_rings-1);
+    for (int a = 0; a < fan_data.num_detectors_per_ring; ++a)
+    {
+      if (fan_data[ra][a].get_length() != max_rb - max(ra,min_rb) + 1)
+      {
+        warning("Reading FanProjData: inconsistent length %d for rb at ra=%d, a=%d, "
+                "Expected length %d\n", 
+                fan_data[ra][a].get_length(), ra, a, max_rb - max(ra,min_rb) + 1);
+      }
+      fan_data[ra][a].set_offset(max(ra,min_rb));
+      for (int rb = fan_data[ra][a].get_min_index(); rb <= fan_data[ra][a].get_max_index(); ++rb)
+      {
+        if (fan_data[ra][a][rb].get_length() != 2*half_fan_size+1)
+        {
+          warning("Reading FanProjData: inconsistent length %d for b at ra=%d, a=%d, rb=%d\n"
+                 "Expected length %d\n", 
+                  fan_data[ra][a][rb].get_length(), ra, a, rb, 2*half_fan_size+1);
+        }
+        fan_data[ra][a][rb].set_offset(a+fan_data.num_detectors_per_ring/2-half_fan_size);
+      }
+    }
+  }
+
+  return s;
+}
+
 void display(const FanProjData& fan_data, const char * const title)
 {
   const int num_rings = fan_data.get_num_rings();
-  const int num_detectors = fan_data.get_num_detectors();
-  Array<3,float> full_data(IndexRange3D(num_rings,num_detectors,num_detectors));
-  for (int ra=fan_data.get_min_index(); ra <= fan_data.get_max_index(); ++ra)
+  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
+  Array<3,float> full_data(IndexRange3D(num_rings,num_detectors_per_ring,num_detectors_per_ring));
+  for (int ra=fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
   {
     full_data.fill(0);
-    for (int a = 0; a<num_detectors; ++a)
+    for (int a = 0; a<num_detectors_per_ring; ++a)
       for (int rb=fan_data.get_min_rb(ra); rb <= fan_data.get_max_rb(ra); ++rb)
         for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
-          full_data[rb][a%num_detectors][b%num_detectors] =
+          full_data[rb][a%num_detectors_per_ring][b%num_detectors_per_ring] =
              fan_data(ra,a,rb,b);
       display(full_data, full_data.find_max(), title);
   }
@@ -491,14 +571,14 @@ void make_fan_data(FanProjData& fan_data,
 
   const int num_rings = 
     proj_data_info.get_scanner_ptr()->get_num_rings();
-  const int num_detectors = 
+  const int num_detectors_per_ring = 
     proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
-  const int fan_size = 
-    2*max(proj_data_info.get_max_tangential_pos_num(),
-          -proj_data_info.get_min_tangential_pos_num()) + 1;
+  const int half_fan_size = 
+    min(proj_data_info.get_max_tangential_pos_num(),
+          -proj_data_info.get_min_tangential_pos_num());
   const int max_delta = proj_data_info_ptr->get_max_segment_num();
 
-  fan_data = FanProjData(num_rings, num_detectors, max_delta, fan_size);
+  fan_data = FanProjData(num_rings, num_detectors_per_ring, max_delta, 2*half_fan_size+1);
 
   shared_ptr<SegmentBySinogram<float> > segment_ptr;      
   Bin bin;
@@ -510,9 +590,9 @@ void make_fan_data(FanProjData& fan_data,
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
 	 ++bin.axial_pos_num())
-       for (bin.view_num() = 0; bin.view_num() < num_detectors/2; bin.view_num()++)
-          for (bin.tangential_pos_num() = proj_data.get_min_tangential_pos_num();
-	       bin.tangential_pos_num() <= proj_data.get_max_tangential_pos_num();
+       for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+          for (bin.tangential_pos_num() = -half_fan_size;
+	       bin.tangential_pos_num() <= half_fan_size;
                ++bin.tangential_pos_num())
           {
             int ra = 0, a = 0;
@@ -537,8 +617,11 @@ void set_fan_data(ProjData& proj_data,
 
   const int num_rings = fan_data.get_num_rings();
   assert(num_rings == proj_data_info.get_scanner_ptr()->get_num_rings());
-  const int num_detectors = fan_data.get_num_detectors();
-  assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
+  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
+  assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors_per_ring);
+  const int half_fan_size = 
+    min(proj_data_info.get_max_tangential_pos_num(),
+          -proj_data_info.get_min_tangential_pos_num());
 
     
   Bin bin;
@@ -551,9 +634,9 @@ void set_fan_data(ProjData& proj_data,
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
 	 ++bin.axial_pos_num())
-       for (bin.view_num() = 0; bin.view_num() < num_detectors/2; bin.view_num()++)
-          for (bin.tangential_pos_num() = proj_data.get_min_tangential_pos_num();
-	       bin.tangential_pos_num() <= proj_data.get_max_tangential_pos_num();
+       for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+          for (bin.tangential_pos_num() = -half_fan_size;
+	       bin.tangential_pos_num() <= half_fan_size;
                ++bin.tangential_pos_num())
           {
             int ra = 0, a = 0;
@@ -568,39 +651,49 @@ void set_fan_data(ProjData& proj_data,
   }
 }
 
-#if 0
 
-void apply_block_norm(FanProjData& fan_data, const BlockData& block_data, const bool apply)
+void apply_block_norm(FanProjData& fan_data, const BlockData3D& block_data, const bool apply)
 {
-  const int num_detectors = fan_data.get_num_detectors();
-  const int num_blocks = block_data.get_length();
-  const int num_crystals_per_block = num_detectors/num_blocks;
-  assert(num_blocks * num_crystals_per_block == num_detectors);
+  const int num_axial_detectors = fan_data.get_num_rings();
+  const int num_tangential_detectors = fan_data.get_num_detectors_per_ring();
+  const int num_axial_blocks = block_data.get_num_rings();
+  const int num_tangential_blocks = block_data.get_num_detectors_per_ring();
+  const int num_axial_crystals_per_block = num_axial_detectors/num_axial_blocks;
+  assert(num_axial_blocks * num_axial_crystals_per_block == num_axial_detectors);
+  const int num_tangential_crystals_per_block = num_tangential_detectors/num_tangential_blocks;
+  assert(num_tangential_blocks * num_tangential_crystals_per_block == num_tangential_detectors);
   
-  for (int a = fan_data.get_min_index(); a <= fan_data.get_max_index(); ++a)
-    for (int b = fan_data.get_min_index(a); b <= fan_data.get_max_index(a); ++b)      
+  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+    for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
+      // loop rb from ra to avoid double counting
+      for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
       {
-	// note: add 2*num_detectors to newb to avoid using mod with negative numbers
-	if (fan_data(a,b) == 0)
+	// note: add 2*num_detectors_per_ring to newb to avoid using mod with negative numbers
+	if (fan_data(ra,a,rb,b) == 0)
 	  continue;
         if (apply)
-          fan_data(a,b) *=
-	    block_data[a/num_crystals_per_block][(b/num_crystals_per_block)%num_blocks];
+          fan_data(ra,a,rb,b) *=
+	    block_data(ra/num_axial_crystals_per_block,a/num_tangential_crystals_per_block,
+                       rb/num_axial_crystals_per_block,b/num_tangential_crystals_per_block);
         else
-          fan_data(a,b) /=
-	    block_data[a/num_crystals_per_block][(b/num_crystals_per_block)%num_blocks];
+          fan_data(ra,a,rb,b) /=
+	    block_data(ra/num_axial_crystals_per_block,a/num_tangential_crystals_per_block,
+                       rb/num_axial_crystals_per_block,b/num_tangential_crystals_per_block);
       }
 }
 
+#if 0
+
 void apply_geo_norm(FanProjData& fan_data, const GeoData& geo_data, const bool apply)
 {
-  const int num_detectors = fan_data.get_num_detectors();
+  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
   const int num_crystals_per_block = geo_data.get_length()*2;
 
-  for (int a = fan_data.get_min_index(); a <= fan_data.get_max_index(); ++a)
-    for (int b = fan_data.get_min_index(a); b <= fan_data.get_max_index(a); ++b)      
+  for (int a = fan_data.get_min_ra(); a <= fan_data.get_max_ra(); ++a)
+    for (int b = fan_data.get_min_ra(a); b <= fan_data.get_max_ra(a); ++b)      
       {
-	if (fan_data(a,b) == 0)
+	if (fan_data(ra,a,rb,b) == 0)
 	  continue;
         int newa = a % num_crystals_per_block;
 	int newb = b - (a - newa); 
@@ -609,21 +702,21 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData& geo_data, const bool a
 	    newa = num_crystals_per_block - 1 - newa; 
 	    newb = - newb + num_crystals_per_block - 1;
 	  }
-	// note: add 2*num_detectors to newb to avoid using mod with negative numbers
+	// note: add 2*num_detectors_per_ring to newb to avoid using mod with negative numbers
         if (apply)
-          fan_data(a,b) *=
-	    geo_data[newa][(2*num_detectors + newb)%num_detectors];
+          fan_data(ra,a,rb,b) *=
+	    geo_data[newa][(2*num_detectors_per_ring + newb)%num_detectors_per_ring];
         else
-          fan_data(a,b) /=
-	    geo_data[newa][(2*num_detectors + newb)%num_detectors];
+          fan_data(ra,a,rb,b) /=
+	    geo_data[newa][(2*num_detectors_per_ring + newb)%num_detectors_per_ring];
       }
 }
 #endif
 
 void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficiencies, const bool apply)
 {
-  const int num_detectors = fan_data.get_num_detectors();
-  for (int ra = fan_data.get_min_index(); ra <= fan_data.get_max_index(); ++ra)
+  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
+  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
       // loop rb from ra to avoid double counting
       for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
@@ -633,12 +726,23 @@ void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& effic
 	    continue;
           if (apply)
 	    fan_data(ra,a,rb,b) *=
-	      efficiencies[ra][a]*efficiencies[rb][b%num_detectors];
+	      efficiencies[ra][a]*efficiencies[rb][b%num_detectors_per_ring];
           else
             fan_data(ra,a,rb,b) /=
-	      efficiencies[ra][a]*efficiencies[rb][b%num_detectors];
+	      efficiencies[ra][a]*efficiencies[rb][b%num_detectors_per_ring];
       }
 }
 
+
+float KL(const FanProjData& d1, const FanProjData& d2, const float threshold)
+{
+  float sum=0;
+  for (int ra = d1.get_min_ra(); ra <= d1.get_max_ra(); ++ra)
+    for (int a = d1.get_min_a(); a <= d1.get_max_a(); ++a)
+      for (int rb = max(ra,d1.get_min_rb(ra)); rb <= d1.get_max_rb(ra); ++rb)
+        for (int b = d1.get_min_b(a); b <= d1.get_max_b(a); ++b)      
+          sum += KL(d1(ra,a,rb,b), d2(ra,a,rb,b), threshold);
+  return sum;
+}
 
 END_NAMESPACE_STIR
