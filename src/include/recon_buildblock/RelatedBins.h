@@ -106,6 +106,6 @@ END_NAMESPACE_TOMO
 
 #include "recon_buildblock/RelatedBins.inl"
 
-#endif __RelatedBins_H__
+#endif //__RelatedBins_H__
 
 
