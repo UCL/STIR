@@ -408,12 +408,14 @@ struct color_info bw[4]={{0,0,0,130},{127,127,127,1},{127,127,0,0}};
 /* KT 29/01/98 added inverse greyscale */
 struct color_info inverse_bw[4]={{127,127,127,130},{0,0,0,1},{127,127,0,0}};
 
+/* KT 17/07/2000 added braces for inverse_bw */
 struct
 { char name[10];
   int size;
   struct color_info *p;
 } all_color_scales[NUMBER_SCALES]={{"sm4",5,sm4},{"sm4test",5,sm4test},
-                        {"sm4green",5,sm4green},{"bw",2,bw}, "inverse_bw",2,inverse_bw};
+				   {"sm4green",5,sm4green},{"bw",2,bw},
+				   {"inverse_bw",2,inverse_bw}};
 
 static Colormap SCX_Colormap;
 static int CurrentColormap;
@@ -422,9 +424,7 @@ int SetColormap(Display *mydisplay, Window  mywindow, struct color_info *x, int 
 {
   Colormap nmap;
   XColor cc;
-  char  *procn = "SetColormap";
   int   i,j,k;
-  int   start = 0;
   float tmp_r,tmp_g,tmp_b;
 
 #ifdef TEST
@@ -497,7 +497,6 @@ int SetColormap(Display *mydisplay, Window  mywindow, struct color_info *x, int 
 void SCX_START()
 {
   XSizeHints SCX_hint;
-  int   i, j, k, nnn;
   XSetWindowAttributes attrib;
 
   SCX_display = XOpenDisplay ("");
@@ -557,7 +556,6 @@ void SCX_START()
 void SCX_START_BIG()
 {
   XSizeHints SCX_hint;
-  int   i, j, k, nnn;
   XSetWindowAttributes attrib;
 
   SCX_display = XOpenDisplay ("");
@@ -2124,8 +2122,9 @@ int pos_x, pos_y, size_x, size_y;
   
   SC_PRMFIL(1);
   SC_MOVE(pos_x,pos_y);
+  /* KT 17/06/2000 condition now uses && instead of a ,
   for(p=pos_y-size_y,par=SC_C_BACKGROUND;
-      p<pos_y, par<=SC_C_MAX;
+      p<pos_y && par<=SC_C_MAX;
       p+=(size_y) / (SC_C_MAX-SC_C_BACKGROUND), par++)
     { SC_COLOR(par);
       SC_RECT(pos_x+size_x,p);
