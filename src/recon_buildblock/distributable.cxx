@@ -101,16 +101,16 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
       if (binwise_correction.use_count() != 0) 
       {
 #ifndef _MSC_VER
-        const ViewSegmentNumbers view_segmnet_num(view, segment_num);
+        const ViewSegmentNumbers view_segment_num(view, segment_num);
         additive_binwise_correction_viewgrams =
           new RelatedViewgrams<float>
 	  (binwise_correction->get_related_viewgrams
-	  (view_segmnet_num.view_num(),view_segmnet_num.segment_num(), symmetries_ptr));
+	  (view_segment_num, symmetries_ptr));
 #else
-	const ViewSegmentNumbers view_segmnet_num(view, segment_num);
+	const ViewSegmentNumbers view_segment_num(view, segment_num);
         RelatedViewgrams<float> tmp(binwise_correction->
 	  get_related_viewgrams
-	  (view_segmnet_num, symmetries_ptr));
+	  (view_segment_num, symmetries_ptr));
         additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(tmp);
 #endif      
       }
@@ -119,24 +119,24 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
       if (read_from_proj_dat)
       {
 #ifndef _MSC_VER
-       const ViewSegmentNumbers view_segmnet_num(view, segment_num);
+       const ViewSegmentNumbers view_segment_num(view, segment_num);
         y = new RelatedViewgrams<float>
 	  (proj_dat_ptr->get_related_viewgrams
-	  (view_segmnet_num.view_num(),view_segmnet_num.segment_num(), symmetries_ptr));
+	  (view_segment_num.view_num(),view_segment_num.segment_num(), symmetries_ptr));
 #else
         // workaround VC++ 6.0 bug
-        const ViewSegmentNumbers view_segmnet_num(view, segment_num);
+        const ViewSegmentNumbers view_segment_num(view, segment_num);
         RelatedViewgrams<float> tmp(proj_dat_ptr->
 	  get_related_viewgrams
-	  (view_segmnet_num, symmetries_ptr));
+	  (view_segment_num, symmetries_ptr));
         y = new RelatedViewgrams<float>(tmp);
 #endif        
       }
       else
       {
-      const ViewSegmentNumbers view_segmnet_num(view, segment_num);
+      const ViewSegmentNumbers view_segment_num(view, segment_num);
         y = new RelatedViewgrams<float>
-	  (proj_dat_ptr->get_empty_related_viewgrams(view_segmnet_num, symmetries_ptr));
+	  (proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr));
       }
 
       
