@@ -386,7 +386,8 @@ Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,flo
       }
     
     if (PadS<1 || PadZ<1)
-      warning("PadS=0 (or PadZ=0) should ONLY be used when the non-zero data\n"
+      warning("Transaxial extension for FFT:=0 (or axial) should \n"
+	      "ONLY be used when the non-zero data\n"
 	      "occupy only half of the FOV. Otherwise aliasing will occur!");
       
     if (is_null_ptr(back_projector_sptr))
