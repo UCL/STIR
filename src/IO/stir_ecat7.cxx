@@ -45,7 +45,7 @@
 #include "stir/Scanner.h" 
 #include "stir/Bin.h" 
 #include "stir/Succeeded.h" 
-
+#include "stir/convert_array.h"
 #include "stir/IO/stir_ecat7.h"
 
 #include <iostream>
@@ -59,6 +59,7 @@
 
 
 #ifndef STIR_NO_NAMESPACES
+using std::size_t;
 using std::string;
 using std::ios;
 using std::iostream;
@@ -709,7 +710,7 @@ void make_ECAT7_main_header(Main_header& mhead,
 */
 
 template <typename Subheader>
-void scan_subheader_zero_fill_aux(Subheader& shead) 
+static void scan_subheader_zero_fill_aux(Subheader& shead) 
 { 
   shead.data_type= -1;
   shead.num_dimensions = -1;
@@ -718,7 +719,6 @@ void scan_subheader_zero_fill_aux(Subheader& shead)
   shead.ring_difference = -1;
   shead.storage_order = -1;
   shead.x_resolution = -1.F;
-  shead.v_resolution = -1.F;
   shead.z_resolution = -1.F;
   shead.w_resolution = -1.F;
   shead.scale_factor= -1.F;
@@ -726,7 +726,9 @@ void scan_subheader_zero_fill_aux(Subheader& shead)
 
 void scan_subheader_zero_fill(Scan3D_subheader& shead) 
 { 
-  shead.corrections_applied = -1;
+  scan_subheader_zero_fill_aux(shead);
+  shead.v_resolution = -1.F;
+  shead.corrections_applied = 0;
   for (int i=0; i<64; ++i) shead.num_z_elements[i] = -1;
   shead.axial_compression = -1;
   shead.gate_duration= 0;
@@ -744,12 +746,14 @@ void scan_subheader_zero_fill(Scan3D_subheader& shead)
   shead.frame_start_time= 0;
   shead.frame_duration= 0;
   shead.loss_correction_fctr = -1.F;
-  for(int i=0;i<16;++i) shead.uncor_singles[i] = -1.F;
+  for(int i=0;i<128;++i) shead.uncor_singles[i] = -1.F;
 
 }
 
 void scan_subheader_zero_fill(Attn_subheader& shead) 
 {
+  scan_subheader_zero_fill_aux(shead);
+  shead.y_resolution = -1.F;
   shead.attenuation_type = 1; // default to measured
   shead.num_z_elements = -1;
   for (int i=0; i<64; ++i) shead.z_elements[i] = -1;
@@ -937,6 +941,7 @@ make_subheader_for_ECAT7(Scan3D_subheader& shead,
     warning("make_subheader_for_ECAT7: unknown type of proj_data_info. Setting data to arc-corrected anyway\n");
     shead.corrections_applied = static_cast<short>(ArcPrc);
   }
+  
 }
 
 
@@ -1431,10 +1436,111 @@ DiscretisedDensity_to_ECAT7(DiscretisedDensity<3,float> const & density,
   return result;
 }
 
+
+Succeeded
+update_ECAT7_subheader(MatrixFile *mptr, Scan_subheader& shead,
+		       const MatDir& matdir)
+{
+  const int ERROR=-1;
+  if (mptr->mhptr->file_type !=
+#ifndef STIR_NO_NAMESPACES
+      ::Sinogram
+#else
+      CTISinogram
+#endif
+      )
+    return Succeeded::no;
+  return
+    mat_write_scan_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+			     &shead) == ERROR ?
+    Succeeded::no : Succeeded::yes;
+}
+
+
+Succeeded
+update_ECAT7_subheader(MatrixFile *mptr, Norm_subheader& shead, const MatDir& matdir)
+{
+  const int ERROR=-1;
+  if (mptr->mhptr->file_type != Normalization)
+    return Succeeded::no;
+  return
+    mat_write_norm_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+			     &shead) == ERROR ?
+    Succeeded::no : Succeeded::yes;
+}
+
+
+Succeeded
+update_ECAT7_subheader(MatrixFile *mptr, Image_subheader& shead, const MatDir& matdir)
+{
+  const int ERROR=-1;
+  if (!(mptr->mhptr->file_type == PetImage  ||
+	mptr->mhptr->file_type == ByteVolume  ||
+	mptr->mhptr->file_type == PetVolume))
+    return Succeeded::no;
+  return
+    mat_write_image_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+			     &shead) == ERROR ?
+    Succeeded::no : Succeeded::yes;
+}
+
+Succeeded
+update_ECAT7_subheader(MatrixFile *mptr, Attn_subheader& shead, const MatDir& matdir)
+{
+  const int ERROR=-1;
+  if (mptr->mhptr->file_type != AttenCor)
+    return Succeeded::no;
+  return
+    mat_write_attn_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+			     &shead) == ERROR ?
+    Succeeded::no : Succeeded::yes;
+}
+
+Succeeded
+update_ECAT7_subheader(MatrixFile *mptr, Scan3D_subheader& shead, const MatDir& matdir)
+{
+  const int ERROR=-1;
+  if (!(mptr->mhptr->file_type == Byte3dSinogram  ||
+	mptr->mhptr->file_type == Short3dSinogram  ||
+	mptr->mhptr->file_type == Float3dSinogram))
+    return Succeeded::no;
+  return
+    mat_write_Scan3D_subheader(mptr->fptr, mptr->mhptr, matdir.strtblk,
+			     &shead) == ERROR ?
+    Succeeded::no : Succeeded::yes;
+}
+
+template <class SUBHEADER_TYPE>
+Succeeded
+update_ECAT7_subheader(MatrixFile *mptr, SUBHEADER_TYPE& shead,
+                  const int frame_num, const int gate_num, const int data_num, const int bed_num)
+{
+  const int ERROR=-1;
+    const int matnum = mat_numcod (frame_num, 1, gate_num, data_num, bed_num);
+    MatDir matdir;
+    if (matrix_find(mptr, matnum, &matdir) == ERROR)
+      return  Succeeded::no;
+    
+    return update_ECAT7_subheader(mptr, shead, matdir);
+}
+
+
 Succeeded 
 ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data, 
                   const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {
+  //#define UseFloatOutput
+#ifdef UseFloatOutput
+    typedef float OutputType;
+    const int short cti_data_type = IeeeFloat;
+#else
+    typedef short OutputType;
+    const int short cti_data_type = 
+      ByteOrder::get_native_order() == ByteOrder::little_endian ?
+      VAX_Ix2 : SunShort;
+#endif
+
+
   const Main_header& mhead = *(mptr->mhptr);
   if (mhead.file_type!= Float3dSinogram && mhead.file_type != AttenCor)
   {
@@ -1466,7 +1572,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
   {
     make_subheader_for_ECAT7(attn_shead, mhead, *proj_data.get_proj_data_info_ptr());
     // Setup remaining subheader params
-    attn_shead.data_type= IeeeFloat;
+    attn_shead.data_type= cti_data_type;
     attn_shead.scale_factor= 1.F; 
     attn_shead.storage_order = ElAxVwRd;
   }
@@ -1474,7 +1580,7 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
   {
     make_subheader_for_ECAT7(scan3d_shead, mhead, *proj_data.get_proj_data_info_ptr());
     // Setup remaining subheader params
-    scan3d_shead.data_type= IeeeFloat;
+    scan3d_shead.data_type= cti_data_type;
     scan3d_shead.loss_correction_fctr= 1.F; 
     scan3d_shead.scale_factor= 1.F; 
     scan3d_shead.storage_order = ElAxVwRd;
@@ -1485,9 +1591,8 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
     const int ERROR=-1;
     const int plane_size= proj_data.get_num_tangential_poss() * proj_data.get_num_views();
     
-    // TODO relies on writing floats
     // TODO only ok if main_header.num_planes is set as above
-    int nblks = (mhead.num_planes*plane_size*sizeof(float)+511)/512;
+    int nblks = (mhead.num_planes*plane_size*sizeof(OutputType)+511)/512;
     
     /* 3D sinograms subheader use one more block */
     if (mptr->mhptr->file_type == Byte3dSinogram  ||
@@ -1527,7 +1632,25 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
   find_type_from_ECAT_data_type(data_type, byte_order, 
                  mhead.file_type == AttenCor?attn_shead.data_type:scan3d_shead.data_type);
 
-  cout<<endl<<"Processing segment number:";
+  // find scale factor in case we're not writing floats
+  float scale_factor = 1;
+  if (data_type.integer_type())
+    {
+      scale_factor = 0;// set first to 0 to use maximum range of output type
+      for(int segment_num=proj_data.get_min_segment_num();
+	  segment_num <= proj_data.get_max_segment_num();
+	  ++segment_num)
+	{    
+	  const SegmentByView<float> segment = 
+	    proj_data.get_segment_by_view(segment_num);
+
+	  find_scale_factor(scale_factor,
+			    segment, 
+			    NumericInfo<OutputType>());
+	}
+    }
+  cout << "\nWill use scale factor " << scale_factor;
+  cout<<"\nProcessing segment number:";
   
   for(int segment_num=proj_data.get_min_segment_num();
       segment_num <= proj_data.get_max_segment_num();
@@ -1544,11 +1667,12 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
       offset_in_ECAT_file(mptr,
   			  frame_num, 1, gate_num, data_num, bed_num,
                           segment_num, NULL);
-    // KT 14/05/2002 added error check
-    if (offset_in_ECAT_file<0)
+
+    if (offset_in_file<0)
     { 
       warning("Error in determining offset into ECAT file for segment %d (f%d, g%d, d%d, b%d)\n"
-        "No data written for this segment and all remaining segments\n",
+	      "Maybe the file is too big?\n"
+	      "No data written for this segment and all remaining segments\n",
         segment_num, frame_num, gate_num, data_num, bed_num);
       return Succeeded::no; 
     }
@@ -1563,15 +1687,28 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
     for (int view_num=proj_data.get_min_view_num(); view_num<=proj_data.get_max_view_num(); ++view_num)
       for (int ax_pos_num=proj_data.get_min_axial_pos_num(segment_num); ax_pos_num <= proj_data.get_max_axial_pos_num(segment_num); ++ax_pos_num)
       {
-        Array<1,float>& array = segment[view_num][ax_pos_num];
-
+        Array<1,float>& float_array = segment[view_num][ax_pos_num];
+#ifdef UseFloatOutput
+	Array<1,float>& array = float_array;
+#else
+	float scale_factor_used = scale_factor;
+	Array<1,OutputType> array =
+	  convert_array(scale_factor_used, float_array, NumericInfo<OutputType>());
+	if (scale_factor_used != scale_factor)
+	  {
+	    warning("ProjData_to_ECAT7: error in finding scale factor, segment %d (f%d, g%d, d%d, b%d)\n"
+		    "No data written for this segment and all remaining segments\n",
+		    segment_num, frame_num, gate_num, data_num, bed_num);
+	    return Succeeded::no;
+	  }
+#endif
         // note for byte swapping
         // if necessary, we swap, then write. We really should swap back, but as the
         // data isn't needed after this, we don't.
         // Note that swapping back could be less expensive than copying the data 
         // somewhere and do the swap there
         const size_t size_to_write = 
-          sizeof(*array.begin()) * static_cast<size_t>(array.get_length());
+          sizeof(OutputType) * static_cast<size_t>(array.get_length());
         if (size_to_write==0)
           continue;
         if (!byte_order.is_native_order())
@@ -1581,9 +1718,10 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
           fwrite(reinterpret_cast<const char *>(array.get_data_ptr()), 
                  1, size_to_write, mptr->fptr);
         array.release_data_ptr();
+
         if (size_written != size_to_write)
         {
-          warning("ProjData_to_ECAT7: error in writing for segment %d (f%d, g%d, d%d, b%d)\n"
+          warning("ProjData_to_ECAT7: error in writing segment %d (f%d, g%d, d%d, b%d)\n"
             "Not all data written for this segment and none for all remaining segments\n",
             segment_num, frame_num, gate_num, data_num, bed_num);
           return Succeeded::no;
@@ -1593,6 +1731,36 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
     
   } // end of loop on segments
 
+  // update scale_factor in subheader if necessary
+  if (scale_factor != 1)
+    {
+      Succeeded success = Succeeded::yes;
+      if (mhead.file_type == AttenCor)
+	{
+	  attn_shead.scale_factor = scale_factor;
+	  success = 
+	    update_ECAT7_subheader(mptr, attn_shead,
+		       frame_num, gate_num, data_num, bed_num);
+	}
+      else
+	{
+	  scan3d_shead.scale_factor = scale_factor;
+	  success =
+	    update_ECAT7_subheader(mptr, scan3d_shead,
+				   frame_num, gate_num, data_num, bed_num);
+	}
+      if (success == Succeeded::no) 
+	{
+	  warning("ProjData_to_ECAT7: error updating subheader for correct scale_factor (f%d, g%d, d%d, b%d)\n"
+		  "Data is written, but subheader might be corrupted.\n",
+		  frame_num, gate_num, data_num, bed_num);
+	}
+      cout << endl;
+      return success;
+    }
+
+
+  cout << endl;
   return Succeeded::yes;
 }
 
