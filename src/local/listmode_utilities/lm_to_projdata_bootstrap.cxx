@@ -17,12 +17,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/listmode/LmToProjData.h"
 #include "local/stir/listmode/LmToProjDataBootstrap.h"
-
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-#endif
 
 USING_NAMESPACE_STIR
 
@@ -32,7 +27,7 @@ int main(int argc, char * argv[])
 {
   
   if (argc<1 && argc>3) {
-    cerr << "Usage: " << argv[0] << " [par_file [seed]]\n";
+    std::cerr << "Usage: " << argv[0] << " [par_file [seed]]\n";
     exit(EXIT_FAILURE);
   }
 
