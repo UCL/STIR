@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 /*!
 
@@ -21,8 +21,8 @@
 #include "KeyParser.h"
 #include "line.h"
 
-
 #include <fstream>
+#include <cstring>
 #ifndef TOMO_NO_NAMESPACES
 using std::ifstream;
 using std::cerr;
@@ -44,7 +44,6 @@ map_element::map_element()
   p_object_list_of_values=0;
 }
 
-// KT 29/10/98 use typedef'ed name for 2nd arg
 map_element::map_element(KeyArgument::type t, 
 			 KeyParser::KeywordProcessor pom, 
 			 void* pov,
@@ -66,16 +65,13 @@ map_element& map_element::operator=(const map_element& me)
   type=me.type;
   p_object_member=me.p_object_member;
   p_object_variable=me.p_object_variable;
-  // KT 28/07/98 new
   p_object_list_of_values=me.p_object_list_of_values;
   return *this;
 }
 
-
 // KeyParser implementation
 
 
-// KT 13/11/98 moved istream arg to parse()
 KeyParser::KeyParser()
 {
   
@@ -88,7 +84,6 @@ KeyParser::~KeyParser()
 {
 }
 
-// KT 13/11/98 new
 bool KeyParser::parse(const char * const filename)
 {
    ifstream hdr_stream(filename);
@@ -100,12 +95,65 @@ bool KeyParser::parse(const char * const filename)
     return parse(hdr_stream);
 }
 
-// KT 13/11/98 moved istream arg from constructor
 bool KeyParser::parse(istream& f)
 {
-  //KT 26/10/98 removed init_keys();
+  // print_keywords_to_stream(cerr);
+
   input=&f;
   return (parse_header()==0 && post_processing()==false);
+}
+
+
+// KT 10/07/2000 new function
+/*!
+  This follows Interfile 3.3 conventions:
+  <ul>
+  <li> The characters \c space, \c tab, \c underscore, \c ! are all
+       treated as white space and ignored.       
+  <li> Case is ignored.
+  </ul>
+  Note: in this implementation 'ignoring' white space means 'trimming'
+  at the start and end of the keyword, and replacing repeated white space
+  with a single space.
+
+*/
+string 
+KeyParser::standardise_keyword(const string& keyword) const
+{
+  string::size_type cp =0;		//current index
+  char const * const white_space = " \t_!";
+  
+  // skip white space
+  cp=keyword.find_first_not_of(white_space,0);
+  
+  if(cp==string::npos)
+    return string();
+  
+  // remove trailing white spaces
+  const int eok=keyword.find_last_not_of(white_space);
+  
+  string kw;
+  kw.reserve(eok+1);
+  char previous_was_white_space = false;
+  while (cp <= eok)
+  {
+    if (isspace(static_cast<int>(keyword[cp])) || keyword[cp]=='_' || keyword[cp]=='!')
+    {
+      if (!previous_was_white_space)
+      {
+        kw.append(1,' ');
+        previous_was_white_space = true;
+      }
+      // else: skip this white space character
+    }
+    else
+    {
+      kw.append(1,static_cast<char>(tolower(static_cast<int>(keyword[cp]))));
+      previous_was_white_space = false;
+    }
+    ++cp;
+  }
+  return kw;
 }
 
 
@@ -115,7 +163,7 @@ void KeyParser::add_key(const string& keyword,
 			void* variable,
 			const ASCIIlist_type * const list_of_values)
 {
-  kmap[keyword.c_str()] = 
+  kmap[standardise_keyword(keyword)] = 
     map_element(t, function, variable, list_of_values);
 }
 
@@ -124,9 +172,23 @@ void KeyParser::add_key(const string& keyword,
 			void* variable,
 			const ASCIIlist_type * const list_of_values)
 {
-  kmap[keyword.c_str()] = 
+  kmap[standardise_keyword(keyword)] = 
     map_element(t, &KeyParser::set_variable, variable, list_of_values);
 }
+
+// sadly can't print values at the moment
+// reason is that that there is currently no information if this is
+// is a vectored key or not.
+void
+KeyParser::print_keywords_to_stream(ostream& out) const
+{
+  for (Keymap::const_iterator key = kmap.begin(); key != kmap.end(); ++key)
+  {
+    out << key->first << '\n';
+  }
+  out << endl;
+}
+
   
 int KeyParser::parse_header()
 {
@@ -150,10 +212,8 @@ int KeyParser::parse_line(const bool write_warning)
 {
   Line line;
   
-  // KT 22/10/98 changed EOF check
   if (!input->good())
   {
-    // KT 22/10/98 added warning
     warning("KeyParser warning: early EOF or bad file");
     stop_parsing();
     return 0;
@@ -161,10 +221,21 @@ int KeyParser::parse_line(const bool write_warning)
   {
     char buf[MAX_LINE_LENGTH];
     input->getline(buf,MAX_LINE_LENGTH,'\n');
+    // KT 10/7/2000 added
+    // check if last character is \r, 
+    // in case this is a DOS file, but not a DOS/Windows host
+    if (strlen(buf)>0)
+    {
+      char * last_char = buf+strlen(buf) - 1;
+      if (*last_char == '\r')
+        *last_char = '\0';
+    }
+    // TODO handle the case of a Mac file on a non-Mac host (EOL on Mac is \r)
+
     line=buf;
   }
 		// gets keyword
-  keyword=line.get_keyword();
+  keyword=standardise_keyword(line.get_keyword());
   current_index=line.get_index();
 		// maps keyword to appropriate map_element (sets current)
   if(map_keyword(keyword))	
@@ -174,7 +245,6 @@ int KeyParser::parse_line(const bool write_warning)
     case KeyArgument::NONE :
       break;
     case KeyArgument::ASCII :
-      // KT 28/07/98 new
     case KeyArgument::ASCIIlist :
       line.get_param(par_ascii);
       break;
@@ -205,7 +275,6 @@ int KeyParser::parse_line(const bool write_warning)
     return 1;
   }
 
-  // KT 22/10/98 warning message moved here
   // skip empty lines and comments
   if (keyword.length() != 0 && keyword[0] != ';' && write_warning)
     warning("KeyParser warning: unrecognized keyword: %s\n", keyword.c_str());
@@ -233,22 +302,21 @@ void KeyParser::set_variable()
   if(!current_index)
     {
       switch(current->type)
-	{
-	  // KT 01/08/98 NUMBER->INT
+	{	  
 	case KeyArgument::INT :
 	  {
 	    int* p_int=(int*)current->p_object_variable;	// performs the required casting
 	    *p_int=par_int;
 	    break;
 	  }
-	  // KT 01/08/98 new
+	 
 	case KeyArgument::ULONG :
 	  {
 	    unsigned long* p_ulong=(unsigned long*)current->p_object_variable;	// performs the required casting
 	    *p_ulong=par_ulong;
 	    break;
 	  }
-	  // KT 01/08/98 new
+	 
 	case KeyArgument::DOUBLE :
 	  {
 	    double* p_double=(double*)current->p_object_variable;	// performs the required casting
@@ -261,7 +329,7 @@ void KeyParser::set_variable()
 	    *p_string=par_ascii;
 	    break;
 	  }
-	  // KT 20/06/98 new
+	  
 	case KeyArgument::ASCIIlist :
 	  {
 	    *((int *)current->p_object_variable) =
@@ -287,32 +355,27 @@ void KeyParser::set_variable()
 	    break;
 	  }
 	default :
-	  // KT 29/10/98 added
 	  warning("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
     }
   else														// Sets vector elements using current_index
     {
-      // KT 09/10/98 replaced vector::at with vector::operator[] 
-      // KT 09/10/98 as SGI STL does not have at()
       switch(current->type)
 	{
-	  // KT 01/08/98 NUMBER->INT
 	case KeyArgument::INT :
 	  {
 	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
 	    p_vnumber->operator[](current_index-1)=par_int;
 	    break;
 	  }
-	  // KT 01/08/98 new
 	case KeyArgument::ULONG :
 	  {
 	    UlongVect* p_vnumber=(UlongVect*)current->p_object_variable;	// performs the required casting
 	    p_vnumber->operator[](current_index-1)=par_ulong;
 	    break;
 	  }
-	  // KT 01/08/98 new
+	  
 	case KeyArgument::DOUBLE :
 	  {
 	    DoubleVect* p_vnumber=(DoubleVect*)current->p_object_variable;	// performs the required casting
@@ -325,7 +388,7 @@ void KeyParser::set_variable()
 	    p_vstring->operator[](current_index-1)=par_ascii;
 	    break;
 	  }
-	  // KT 20/06/98 new
+	  
 	case KeyArgument::ASCIIlist :
 	  {
 	    IntVect* p_vnumber=(IntVect*)current->p_object_variable;	// performs the required casting
@@ -352,21 +415,22 @@ void KeyParser::set_variable()
 		break;
 		}*/
 	default :
-	  // KT 29/10/98 added
+	  
 	  warning("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
     }
 }
 
-// KT 20/06/98 new
+
 int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& list_of_values)
 {
   {
-    // TODO, once we know for sure type type of ASCIIlist_type, we could use STL find()
+    // TODO, once we know for sure type of ASCIIlist_type, we could use STL find()
+    // TODO it would be more efficient to call standardise_keyword on the 
+    // list_of_values in add_key()
     for (unsigned int i=0; i<list_of_values.size(); i++)
-      // TODO standardise to lowercase etc
-      if (par_ascii == list_of_values[i])
+      if (standardise_keyword(par_ascii) == standardise_keyword(list_of_values[i]))
 	return i;
   }
   // it was not in the list
