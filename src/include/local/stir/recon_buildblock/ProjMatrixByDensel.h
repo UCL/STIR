@@ -27,7 +27,6 @@
 #include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
 #include "local/stir/Densel.h"
-#include "stir/shared_ptr.h"
 
 #include <map>
 
@@ -46,7 +45,8 @@ START_NAMESPACE_STIR
 	    
 //template <typename elemT> class RelatedViewgrams;	    
 //class Densel;	    
-	    
+template <typename T> class shared_ptr;
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 /*!
 \ingroup recon_buildblock
 \brief 
