@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,8 +12,8 @@
    \author Kris Thielemans
    \author PARAPET project
       
-   \date $Date$        
-   \version $Revision$
+   $Date$        
+   $Revision$
 */
 
 #include "VoxelsOnCartesianGrid.h"
@@ -21,9 +21,9 @@
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "Scanner.h"
 #include "IndexRange.h"
-#include "tomo/round.h"
 
 #include <iostream>
+#include <math.h>
 #include "RunTests.h"
 
 START_NAMESPACE_TOMO
@@ -100,13 +100,13 @@ VoxelsOnCartesianGridTests::run_tests()
 				  /*num_tang_poss=*/16);
   
   {
-    cerr << "Tests with 4th constructor with ProjDataInfo\n";
+    cerr << "Tests with constructor with ProjDataInfo with default sizes\n";
     
     const float zoom=2.3F;
-    const bool make_xy_size_odd = false;
+    //KT 10/12/2001 removed make_xy_size_odd things
     
     VoxelsOnCartesianGrid<float>
-      ob4(*proj_data_info_ptr,zoom,origin,make_xy_size_odd);
+      ob4(*proj_data_info_ptr,zoom,origin);
     
     IndexRange<3> obtained_range = ob4.get_index_range();
     CartesianCoordinate3D<int> low_bound, high_bound;
@@ -118,11 +118,15 @@ VoxelsOnCartesianGridTests::run_tests()
     check(is_arccorrected, "ProjDataInfoCTI should have returned arc-corrected data");
     if (is_arccorrected)
     {
-      const int radius_int = 
-	round(proj_data_info_ptr->get_num_tangential_poss() * zoom/2.F);
-      check_if_equal(low_bound, CartesianCoordinate3D<int>(0,-radius_int,-radius_int),
+      const int FOVradius_in_bins = 
+	max(proj_data_info_ptr->get_max_tangential_pos_num(),
+	    -proj_data_info_ptr->get_min_tangential_pos_num());
+      const int diameter_int = 
+	2*static_cast<int>(ceil(FOVradius_in_bins * zoom)) + 1;
+
+      check_if_equal(low_bound, CartesianCoordinate3D<int>(0,-(diameter_int/2),-(diameter_int/2)),
 		     "test on index range: lower bounds");
-      check_if_equal(high_bound, CartesianCoordinate3D<int>(30,+radius_int,+radius_int),
+      check_if_equal(high_bound, CartesianCoordinate3D<int>(30,+(diameter_int/2),+(diameter_int/2)),
 		     "test on index range: higher bounds");
     }
     check_if_equal(ob4.get_grid_spacing(), 
@@ -134,21 +138,22 @@ VoxelsOnCartesianGridTests::run_tests()
   }
   {
     
-    cerr << "Tests with 5th constructor with ProjDataInfo\n";
-    
+    cerr << "Tests with constructor with ProjDataInfo with non-default sizes\n";
+    // KT 10/12/2001 changed to allow for new format of constructor, and add z_size
     const int xy_size = 100;
     const float zoom=3.1F;
     const int min_xy = -(xy_size/2);
     const int max_xy = -(xy_size/2)+xy_size-1;
-    
+    const int z_size = 9;
+
     VoxelsOnCartesianGrid<float>
-      ob5(*proj_data_info_ptr,zoom,origin,xy_size);
+      ob5(*proj_data_info_ptr,zoom,origin,CartesianCoordinate3D<int>(z_size,xy_size,xy_size));
     IndexRange<3> obtained_range = ob5.get_index_range();
     CartesianCoordinate3D<int> low_bound, high_bound;
     check(obtained_range.get_regular_range(low_bound, high_bound), "test regular range");
     
     check_if_equal(low_bound, CartesianCoordinate3D<int>(0,min_xy,min_xy),"test on index range: lower bounds");
-    check_if_equal(high_bound, CartesianCoordinate3D<int>(30,max_xy,max_xy),"test on index range: higher bounds");
+    check_if_equal(high_bound, CartesianCoordinate3D<int>(z_size-1,max_xy,max_xy),"test on index range: higher bounds");
     check_if_equal(ob5.get_grid_spacing(), 
                    CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing()/2,
                                                 scanner_ptr->get_default_bin_size()/zoom,
