@@ -1,4 +1,9 @@
+#
+# AIX Makefile for PPhead/test directory
+#
 # $Id$: $Date$
+#
+# 
 WORKSPACE = ${HOME}/PPhead
 INCLUDE_DIR = ${WORKSPACE}/include
 
@@ -63,10 +68,11 @@ createdir:
 
 libs: $(LIB_BUILDINGBLOCK) $(LIB_DISPLAY)
 
-
-nopara: $(DEST)tensor $(DEST)display $(DEST)sinodata \
+#CL 12/11/98 Remove $(DEST)sinodata.cxx  as it is a very old version and rename sinodata.cxx
+nopara: $(DEST)tensor $(DEST)display2 \
 	$(DEST)VectorWithOffset $(DEST)testconvert
 
+#$(DEST)sinodata
 
 $(LIB_DISPLAY): FORCE
 	cd $(WORKSPACE)/display; $(MAKE);
@@ -100,14 +106,14 @@ $(DEST)createsino2.o: createsino2.cxx ../include/Tensor3D.h \
  ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
  ../include/NumericInfo.h ../include/Tensor2D.h ../include/Tensor1D.h
 
-$(DEST)display.o: display.cxx ../include/pet_common.h \
+$(DEST)display2.o: display2.cxx ../include/pet_common.h \
  ../include/VectorWithOffset.h ../include/Tensor2D.h \
  ../include/Tensorbase.h ../include/NumericVectorWithOffset.h \
  ../include/NumericInfo.h ../include/Tensor1D.h ../include/Tensor3D.h \
  ../include/display.h ../include/sinodata.h \
  ../include/PETScannerInfo.h ../include/PETScanInfo.h
 
-$(DEST)sinodata.o: sinodata.cxx ../include/pet_common.h ../include/sinodata.h \
+$(DEST)sinodata2.o: sinodata2.cxx ../include/pet_common.h ../include/sinodata.h \
  ../include/Tensor1D.h ../include/NumericInfo.h \
  ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
  ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
