@@ -70,6 +70,7 @@
 #include "VoxelsOnCartesianGrid.h"
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "tomo/round.h"
+#include "tomo/Succeeded.h"
 /*
   KT 22/05/98 drastic revision
 
@@ -116,6 +117,10 @@ span works now by introducing offsets
 introduced MOREZ to handle very oblique segments. This handles the case where Z
 needs to be incremented more than once to find the next voxel in the beam
 
+  KT 25/09/2001
+make sure things are ok for any image size. The main change is
+to let find_start_values return Succeeded::no if there's no voxel in 
+the FOV for this partiuclar tube. If so, we'll just exit.
 
 TODO: 
 solve remaining issues of rounding errors (see backproj2D)
@@ -141,9 +146,12 @@ static const double epsilon = 1e-10;
 
    image_rad: half the image size (in pixels)
    d_sl  : z-voxel size (in mm)
+
+   It returns Succeeded::no when it couldn't find any voxel in the beam.
    */
 
-static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+// KT 25/09/2001 changed return value
+static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
                               const float image_rad,
@@ -223,7 +231,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   const float fovrad_in_mm   = 
     min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
 	(min(image.get_max_y(), -image.get_min_y()))*image.get_voxel_size().y()); 
-  const float image_rad = fovrad_in_mm/image.get_voxel_size().x();
+  const float image_rad = fovrad_in_mm/image.get_voxel_size().x() - 2;
   //const int image_rad = (int)((image.get_x_size()-1)/2);
 
   //KT 20/06/2001 allow min_z!=0 in all comparisons below
@@ -231,13 +239,17 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   const int maxplane =  image.get_max_z(); 
    
 
-  find_start_values(proj_data_info_ptr, 
-		    delta, cphi, sphi, s, ring0,
-		    image_rad, image.get_voxel_size().z(),
-		    X, Y, Z,
-		    ds, dz, dzhor, dzvert,
-                    num_planes_per_axial_pos,
-		    axial_pos_to_z_offset);
+  if (find_start_values(proj_data_info_ptr, 
+			delta, cphi, sphi, s, ring0,
+			image_rad, image.get_voxel_size().z(),
+			X, Y, Z,
+			ds, dz, dzhor, dzvert,
+			num_planes_per_axial_pos,
+			axial_pos_to_z_offset) == Succeeded::no)
+    {
+      // no voxels in the beam
+      return;
+    }
 
     /* 
      The formulas below give the values to update a pixel.
@@ -945,7 +957,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       }
 
     }
-  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=image.get_min_z()));
+  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=minplane));
 
 }
 
@@ -1021,20 +1033,24 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
   const float fovrad_in_mm   = 
     min((min(image.get_max_x(), -image.get_min_x()))*image.get_voxel_size().x(),
 	(min(image.get_max_y(), -image.get_min_y()))*image.get_voxel_size().y()); 
-  const float image_rad = fovrad_in_mm/image.get_voxel_size().x();
+  const float image_rad = fovrad_in_mm/image.get_voxel_size().x() - 2;
   //const int image_rad = (int)((image.get_x_size()-1)/2);
-  // KT XXX
+  //KT 20/06/2001 allow min_z!=0 in all comparisons below
   const int minplane =  image.get_min_z(); 
   const int maxplane =  image.get_max_z(); 
    
 
-  find_start_values(proj_data_info_ptr, 
-		    delta, cphi, sphi, s, ring0,
-		    image_rad, image.get_voxel_size().z(),
-		    X, Y, Z,
-		    ds, dz, dzhor, dzvert,                    
-                    num_planes_per_axial_pos,
-		    axial_pos_to_z_offset);
+  if(find_start_values(proj_data_info_ptr, 
+		       delta, cphi, sphi, s, ring0,
+		       image_rad, image.get_voxel_size().z(),
+		       X, Y, Z,
+		       ds, dz, dzhor, dzvert,                    
+		       num_planes_per_axial_pos,
+		       axial_pos_to_z_offset) == Succeeded::no)
+    {
+      // no voxels in the beam
+      return;
+    }
 
   // K1, K2, K3 invariants
 
@@ -2156,7 +2172,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
       }
 
     }
-  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=image.get_min_z()));
+  while ((X*X + Y*Y <= image_rad*image_rad) && (Z<=maxplane || Q>=minplane));
 
 }
   
@@ -2164,7 +2180,8 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 /****************************************************************************************/
 
 
-static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
+static Succeeded
+find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                               const float delta, const float cphi, const float sphi, 
                               const int s, const int ring0,
                               const float image_rad, const double d_sl,
@@ -2209,8 +2226,13 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
   // First compute X1, Y1
   // KT 16/06/98 added const
   const double t = s + 0.5;		/* In a beam, not on a ray */
-  { 
-    assert(t <= rpix);
+
+  // KT 25/09/2001 replace assert() with return value
+  // check if there is any pixel in the beam
+  if (t > rpix)
+    return Succeeded::no;
+
+  {     
     const double root = sqrt(rpix * rpix - t * t);// Eq 6.12 in EGger Thesis
     const double X1f = t * cphi + sphi * root;	/* Only valid if d_xy = d_p from Eq 6.12 in EGger Thesis  */
     //const double X2f = t * cphi - sphi * root;
@@ -2358,6 +2380,8 @@ static void find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_in
     dzvert=-delta*cphi/root/num_planes_per_axial_pos;  /* Only valid if d_xy = d_p */
     dzhor=-delta*sphi/root/num_planes_per_axial_pos;
   }
+
+  return Succeeded::yes;
 }
 
 END_NAMESPACE_TOMO
