@@ -21,14 +21,17 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"
+#include "local/stir/multiply_plane_scale_factorsImageProcessor.h"
 #include "stir/interfile.h"
 #include "stir/Succeeded.h"
 #include "stir/stream.h"
 #include <fstream>
+#include <vector>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::ifstream;
+using std::vector;
 #endif
 
 USING_NAMESPACE_STIR
@@ -53,25 +56,22 @@ int main(int argc, char **argv)
     DiscretisedDensity<3,float>::read_from_file(input_filename);
 
   // read factors
-  VectorWithOffset<float> rescale_factors;
+  vector<double> rescale_factors;
   {
     ifstream factors(rescale_factors_filename);
     factors >> rescale_factors;
-    if (rescale_factors.get_length() != density_ptr->get_length())
-      error("%s: wrong number of scale factors (%d) found in file %s, should be %d\n",
-            argv[0], rescale_factors.get_length(), 
+    if (rescale_factors.size() != density_ptr->get_length())
+    {
+      warning("%s: wrong number of scale factors (%d) found in file %s, should be %d\n",
+            argv[0], rescale_factors.size(), 
             rescale_factors_filename, density_ptr->get_length());
+      return(EXIT_FAILURE);
+    }
   }
 
-  rescale_factors.set_offset(density_ptr->get_min_index());
-
-
-  // apply them
-  for (int z=density_ptr->get_min_index(); 
-       z<=density_ptr->get_max_index();
-       ++z)
   {
-    (*density_ptr)[z] *= rescale_factors[z];
+    multiply_plane_scale_factorsImageProcessor<float>(rescale_factors) image_processor;
+    image_processor.apply(*density_ptr);
   }
       
 
