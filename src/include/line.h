@@ -2,7 +2,8 @@
 #ifndef __LINE_H__
 #define __LINE_H__
 
-#include <pet_string.h>
+// KT 14/12 changed <> to "" in next  include
+#include "pet_string.h"
 #include <vector.h>
 #define LINE_ERROR -1
 #define LINE_OK		0
