@@ -561,23 +561,51 @@ void display(const FanProjData& fan_data, const char * const title)
   }
 }
 
-void make_fan_data(FanProjData& fan_data,
-	           const ProjData& proj_data)
+shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+get_fan_info(int& num_rings, int& num_detectors_per_ring, 
+	     int& max_ring_diff, int& fan_size, 
+	     const ProjDataInfo& proj_data_info)
 {
-  const ProjDataInfo* proj_data_info_ptr =
-    proj_data.get_proj_data_info_ptr();
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
-
-  const int num_rings = 
+  const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr = 
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(&proj_data_info);
+  if (proj_data_info_ptr == 0)
+  {
+    error("Can only process not arc-corrected data\n");
+  }
+  if (proj_data_info_ptr->get_view_mashing_factor()>1)
+  {
+    error("Can only process data without mashing of views\n");
+  }
+  if (proj_data_info_ptr->get_max_ring_difference(0)>0)
+  {
+    error("Can only process data without axial compression (i.e. span=1)\n");
+  }
+  num_rings = 
     proj_data_info.get_scanner_ptr()->get_num_rings();
-  const int num_detectors_per_ring = 
+  num_detectors_per_ring = 
     proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring();
   const int half_fan_size = 
     min(proj_data_info.get_max_tangential_pos_num(),
           -proj_data_info.get_min_tangential_pos_num());
-  const int max_delta = proj_data_info_ptr->get_max_segment_num();
+  fan_size = 2*half_fan_size+1;
+  max_ring_diff = proj_data_info_ptr->get_max_segment_num();
 
+  return 
+    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr->clone());
+}
+
+void make_fan_data(FanProjData& fan_data,
+	           const ProjData& proj_data)
+{
+  int num_rings;
+  int num_detectors_per_ring;
+  int fan_size;
+  int max_delta;
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
+		 *proj_data.get_proj_data_info_ptr());
+
+  const int half_fan_size = fan_size/2;
   fan_data = FanProjData(num_rings, num_detectors_per_ring, max_delta, 2*half_fan_size+1);
 
   shared_ptr<SegmentBySinogram<float> > segment_ptr;      
@@ -598,7 +626,7 @@ void make_fan_data(FanProjData& fan_data,
             int ra = 0, a = 0;
             int rb = 0, b = 0;
             
-            proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
+            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
             
             fan_data(ra, a, rb, b) =
 	      fan_data(rb, b, ra, a) =
@@ -608,20 +636,19 @@ void make_fan_data(FanProjData& fan_data,
 }
 
 void set_fan_data(ProjData& proj_data,
-                       const FanProjData& fan_data)
+		  const FanProjData& fan_data)
 {
-  const ProjDataInfo* proj_data_info_ptr =
-    proj_data.get_proj_data_info_ptr();
-  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+  int num_rings;
+  int num_detectors_per_ring;
+  int fan_size;
+  int max_delta;
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
+		 *proj_data.get_proj_data_info_ptr());
 
-  const int num_rings = fan_data.get_num_rings();
-  assert(num_rings == proj_data_info.get_scanner_ptr()->get_num_rings());
-  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
-  assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors_per_ring);
-  const int half_fan_size = 
-    min(proj_data_info.get_max_tangential_pos_num(),
-          -proj_data_info.get_min_tangential_pos_num());
+  const int half_fan_size = fan_size/2;
+  assert(num_rings == fan_data.get_num_rings());
+  assert(num_detectors_per_ring == fan_data.get_num_detectors_per_ring());
 
     
   Bin bin;
@@ -642,7 +669,7 @@ void set_fan_data(ProjData& proj_data,
             int ra = 0, a = 0;
             int rb = 0, b = 0;
             
-            proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
+            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
             
             (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
               fan_data(ra, a, rb, b);
@@ -733,6 +760,73 @@ void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& effic
       }
 }
 
+void make_fan_sum_data(Array<2,float>& data_fan_sums, const FanProjData& fan_data)
+{
+  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+    for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
+      data_fan_sums[ra][a] = fan_data.sum(ra,a);
+}
+
+void make_fan_sum_data(Array<2,float>& data_fan_sums,
+		       const ProjData& proj_data)
+{
+  int num_rings;
+  int num_detectors_per_ring;
+  int fan_size;
+  int max_delta;
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+    get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
+		 *proj_data.get_proj_data_info_ptr());
+  const int half_fan_size = fan_size/2;
+  data_fan_sums.fill(0);
+
+  shared_ptr<SegmentBySinogram<float> > segment_ptr;      
+  Bin bin;
+
+  for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
+  {
+    segment_ptr = new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()));
+    
+    for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
+	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
+	 ++bin.axial_pos_num())
+       for (bin.view_num() = 0; bin.view_num() < num_detectors_per_ring/2; bin.view_num()++)
+          for (bin.tangential_pos_num() = -half_fan_size;
+	       bin.tangential_pos_num() <= half_fan_size;
+               ++bin.tangential_pos_num())
+          {
+            int ra = 0, a = 0;
+            int rb = 0, b = 0;
+            
+            proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb, bin);
+
+	    const float value =            
+              (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+	    data_fan_sums[ra][a] += value;
+	    data_fan_sums[rb][b] += value;
+          }
+  }
+}
+
+void make_fan_sum_data(Array<2,float>& data_fan_sums,
+		       const DetectorEfficiencies& efficiencies,
+		       const int max_ring_diff, const int half_fan_size)
+{
+  const int num_rings = data_fan_sums.get_length();
+  assert(data_fan_sums.get_min_index()==0);
+  const int num_detectors_per_ring = 
+    data_fan_sums[0].get_length();
+
+  for (int ra = data_fan_sums.get_min_index(); ra <= data_fan_sums.get_max_index(); ++ra)
+    for (int a = data_fan_sums[ra].get_min_index(); a <= data_fan_sums[ra].get_max_index(); ++a)
+      {
+	float fan_sum = 0;
+	for (int rb = max(ra-max_ring_diff, 0); rb <= min(ra+max_ring_diff, num_rings-1); ++rb)
+	  for (int b = a+num_detectors_per_ring/2-half_fan_size; b <= a+num_detectors_per_ring/2+half_fan_size; ++b)
+	    fan_sum += efficiencies[rb][b%num_detectors_per_ring];
+	data_fan_sums[ra][a] = efficiencies[ra][a]*fan_sum;
+      }
+}
 
 float KL(const FanProjData& d1, const FanProjData& d2, const float threshold)
 {

@@ -141,6 +141,12 @@ typedef FanProjData BlockData3D;
 
 void display(const FanProjData&,const char * const);
 
+
+shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+get_fan_info(int& num_rings, int& num_detectors_per_ring, 
+	     int& max_ring_diff, int& fan_size, 
+	     const ProjDataInfo& proj_data_info);
+
 void make_fan_data(FanProjData& fan_data,
 			const ProjData& proj_data);
 void set_fan_data(ProjData& proj_data,
@@ -154,11 +160,19 @@ void apply_geo_norm(FanProjData& fan_data,
                     const GeoData& geo_data, 
                     const bool apply= true);
 #endif
+
 void apply_efficiencies(FanProjData& fan_data, 
                         const DetectorEfficiencies& efficiencies, 
                         const bool apply=true);
 
+void make_fan_sum_data(Array<2,float>& data_fan_sums, const FanProjData& fan_data);
 
+void make_fan_sum_data(Array<2,float>& data_fan_sums,
+		       const ProjData& proj_data);
+
+void make_fan_sum_data(Array<2,float>& data_fan_sums,
+		       const DetectorEfficiencies& efficiencies,
+		       const int max_ring_diff, const int half_fan_size);
 
 inline float KL(const float a, const float b, const float threshold_a = 0)
 {
