@@ -102,12 +102,12 @@ Scanner::Scanner(Type scanner_type)
     // 283 bins (non-uniform sampling) 
     // 281 bins (uniform sampling)
     /* crystal size 4x8x30*/
-    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,471.875F, 8.5F, 1.970177F, 0,0,0,6,6, 1);
+    set_params(Advance,string_list("GE Advance", "Advance"), 18, 283,281,2*336,471.875F, 8.5F, 1.970177F, 0,3,2,6,6, 1);
   }
   else if (scanner_type == DiscoveryLS)
   {
     // identical to Advance
-    set_params(DiscoveryLS,string_list("GE Discovery LS", "Discovery LS"), 18, 283,281,2*336,471.875F, 8.5F, 1.970177F, 0,0,0,6,6, 1);
+    set_params(DiscoveryLS,string_list("GE Discovery LS", "Discovery LS"), 18, 283,281,2*336,471.875F, 8.5F, 1.970177F, 0,3,2,6,6, 1);
   }
   else if (scanner_type == DiscoveryST)
   {
@@ -117,7 +117,7 @@ Scanner::Scanner(Type scanner_type)
     set_params(DiscoveryST,string_list("GE Discovery ST", "Discovery ST"), 
 	       24, 249,223,2*210,451.5F, 6.52916F, 3.1695F,
 	       static_cast<float>(-4.54224*_PI/180),
-	       0,0,6,6, 1);// TODO not sure about sign of view_offset
+	       4,2,6,6, 1);// TODO not sure about sign of view_offset
   }
   else if (scanner_type == HZLR)
     set_params(HZLR,string_list("Positron HZL/R"), 32, 256,2* 192, 780.0F, 5.1875F, 2.F, 0,0,0,0,0, 1);
