@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$ 
 //
 
 #ifndef __INTERFILEHEADER_H__
@@ -21,7 +21,7 @@ protected:
   //KT 26/10/98 removed virtual void init_keys();
   // If you override the next function, call this one first
   // Returns 0 of OK, 1 of not.
-  virtual int post_processing();
+  virtual bool post_processing();
 
 
 private:
@@ -53,7 +53,7 @@ public :
   ASCIIlist_type PET_data_type_values;	
   int PET_data_type_index;
 
-  // TODO these shouldn't be here, but in PETStudy or something
+  // TODO these should not be here, but in PETStudy or something
 
   // 'Final' variables
 
@@ -95,7 +95,7 @@ public:
 protected:
 
   // Returns 0 of OK, 1 of not.
-  virtual int post_processing();
+  virtual bool post_processing();
 
 };
 
@@ -112,7 +112,7 @@ protected:
 
   //KT 26/10/98 virtual void init_keys();
   // Returns 0 of OK, 1 of not.
-  virtual int post_processing();
+  virtual bool post_processing();
 
 public:
   vector<int> segment_sequence;
