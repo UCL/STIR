@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-#ifndef __LogLikelihoodBasedAlgorithmParameters_h__
-#define __LogLikelihoodBasedAlgorithmParameters_h__
+#ifndef __Tomo_LogLikBased_LogLikelihoodBasedAlgorithmParameters_h__
+#define __Tomo_LogLikBased_LogLikelihoodBasedAlgorithmParameters_h__
 
 
 /*!
@@ -24,11 +24,11 @@
 
 
 #include "recon_buildblock/IterativeReconstructionParameters.h"
-#include "recon_buildblock/ProjectorByBinPair.h"
 #include "shared_ptr.h"
+// need to include full class definition of ProjectorByBinPair to enable shared_ptr to call its destructor
+#include "recon_buildblock/ProjectorByBinPair.h"
 
 START_NAMESPACE_TOMO
-
 
 /*! 
 
