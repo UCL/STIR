@@ -132,6 +132,7 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
   cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
 
 
+  // KT 05/07/2000 made zero_seg0_end_planes int
   distributable_compute_gradient(*multiplicative_update_image_ptr, 
                                  current_image_estimate, 
                                  parameters.proj_data_ptr, 
@@ -139,7 +140,7 @@ void OSMAPOSLReconstruction::update_image_estimate(DiscretisedDensity<3,float> &
                                  parameters.num_subsets, 
                                  0, 
                                  parameters.max_segment_num_to_process, 
-                                 parameters.zero_seg0_end_planes, 
+                                 parameters.zero_seg0_end_planes!=0, 
                                  NULL, 
                                  additive_projection_data_ptr);
 
