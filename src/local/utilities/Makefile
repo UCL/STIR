@@ -23,11 +23,12 @@ SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
 	CoG.cxx \
 	find_ML_normfactors.cxx \
 	threshold_norm_data.cxx \
+	SSRB.cxx \
+	attenuation_coefficients_to_projections.cxx \
 	compute_sum_images_to_random_power.cxx \
 	add_images_and_rescale.cxx \
   	calculate_variance_on_variance_estimate.cxx
 	
-
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
