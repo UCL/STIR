@@ -1,19 +1,18 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup recon_buildblock
 
   \brief Declaration of class DataSymmetriesForBins_PET_CartesianGrid
 
   \author Kris Thielemans
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 #ifndef __DataSymmetriesForBins_PET_CartesianGrid_H__
 #define __DataSymmetriesForBins_PET_CartesianGrid_H__
@@ -32,12 +31,12 @@ template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesia
 template <typename T> class shared_ptr;
 
 /*!
-  \ingroup buildblock
+  \ingroup recon_buildblock
   \brief Symmetries appropriate for a (cylindrical) PET scanner, and 
- a discretised density on a Cartesian grid.
+  a discretised density on a Cartesian grid.
 
-  All operations are inline as timing of the methods of this class is critical.
-
+  All operations (except the constructor) are inline as timing of
+  the methods of this class is critical.
 */
 class DataSymmetriesForBins_PET_CartesianGrid : public DataSymmetriesForBins
 {
