@@ -240,12 +240,12 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
 {
   if (sino_stream == 0)
   {
-    warning("ProjDataFromStream::get_viewgram: stream ptr is 0\n");
+    warning("ProjDataFromStream::set_viewgram: stream ptr is 0\n");
     return Succeeded::no;
   }
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::get_viewgram: error in stream state before reading\n");
+    warning("ProjDataFromStream::set_viewgram: error in stream state before writing\n");
     return Succeeded::no;
   }
 
@@ -294,7 +294,7 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::get_viewgram: error after seekg\n");
+    warning("ProjDataFromStream::set_viewgram: error after seekg\n");
     return Succeeded::no;
   }  
   float scale = float(1);
@@ -462,12 +462,12 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
 {
   if (sino_stream == 0)
   {
-    warning("ProjDataFromStream::get_sinogram: stream ptr is 0\n");
+    warning("ProjDataFromStream::set_sinogram: stream ptr is 0\n");
     return Succeeded::no;
   }
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::get_sinogram: error in stream state before reading\n");
+    warning("ProjDataFromStream::set_sinogram: error in stream state before writing\n");
     return Succeeded::no;
   }
   
@@ -501,7 +501,7 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::get_sinogram: error after seekg\n");
+    warning("ProjDataFromStream::set_sinogram: error after seekg\n");
     return Succeeded::no;
   }  
   float scale = float(1);
@@ -651,21 +651,21 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
 {
   if(sino_stream == 0)
   {
-    error("ProjDataFromStream::set_segment_sino: stream ptr is 0\n");
+    error("ProjDataFromStream::set_segment: stream ptr is 0\n");
   }
   if (! *sino_stream)
   {
-    error("ProjDataFromStream::set_segment_sino: error in stream state before reading\n");
+    error("ProjDataFromStream::set_segment: error in stream state before writing\n");
   }
   
   if (get_num_tangential_poss() != segmentbysinogram_v.get_num_tangential_poss())
   {
-    warning("ProjDataFromStream::set_segment_sino: num_bins is not correct\n"); 
+    warning("ProjDataFromStream::set_segmen: num_bins is not correct\n"); 
     return Succeeded::no;
   }
   if (get_num_views() != segmentbysinogram_v.get_num_views())
   {
-    warning("ProjDataFromStream::set_segment_sino: num_views is not correct\n"); 
+    warning("ProjDataFromStream::set_segment: num_views is not correct\n"); 
     return Succeeded::no;
   }
   
@@ -676,7 +676,7 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::set_segment_sino: error after seekp\n");
+    warning("ProjDataFromStream::set_segment: error after seekp\n");
     return Succeeded::no;
   }  
   
@@ -704,22 +704,22 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 {
   if(sino_stream == 0)
   {
-    error("ProjDataFromStream::set_segment_sino: stream ptr is 0\n");
+    error("ProjDataFromStream::set_segment: stream ptr is 0\n");
   }
   if (! *sino_stream)
-  {
-    error("ProjDataFromStream::set_segment_sino: error in stream state before reading\n");
+  { 
+    error("ProjDataFromStream::set_segment: error in stream state before writing\n");
   }
   
   
   if (get_num_tangential_poss() != segmentbyview_v.get_num_tangential_poss())
   {
-    warning("ProjDataFromStream::set_segment_view: num_bins is not correct\n"); 
+    warning("ProjDataFromStream::set_segment: num_bins is not correct\n"); 
     return Succeeded::no;
   }
   if (get_num_views() != segmentbyview_v.get_num_views())
   {
-    warning("ProjDataFromStream::set_segment_view: num_views is not correct\n"); 
+    warning("ProjDataFromStream::set_segment: num_views is not correct\n"); 
     return Succeeded::no;
   }
   
@@ -730,7 +730,7 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::set_segment_view: error after seekp\n");
+    warning("ProjDataFromStream::set_segment: error after seekp\n");
     return Succeeded::no;
   }    
   
