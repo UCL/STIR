@@ -14,6 +14,12 @@ all: $(EXES)
 clean:
 	$(RM) $(DEST)*
 
+EXES = \
+        $(DEST)sensitivity
+
+
+install: $(EXES)
+        cp $(EXES) $(INSTALL_DIR)
 
 include $(SOURCES:%.cxx=$(DEST)%.d)
 
