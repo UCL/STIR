@@ -91,8 +91,13 @@ ArrayTests::run_tests()
       test += 1;
       check_if_equal( test[0] , 11.5, "test operator+=(float)");
       check_if_equal( test.sum(), 20.5,  "test operator+=(float) and sum()");
-    
       check_if_zero( test - test, "test operator-(Array1D)");
+
+      BasicCoordinate<1,int> c;
+      c[1]=0;	    
+      check_if_equal(test[c] , 11.5 , "test operator[](BasicCoordinate)");   
+      test[c] = 12.5;
+      check_if_equal(test[c] , 12.5 , "test operator[](BasicCoordinate)");  
 
       {
 	// KT 31/01/2000 new
@@ -128,11 +133,11 @@ ArrayTests::run_tests()
 
       in_place_log(test);
       in_place_exp(test);
-      check_if_equal(test , test_copy, "test log/exp of Array1D");
+      check_if_equal(test , test_copy, "test log/exp of Array1D"); 
     }
 #endif
   }
-
+   
   {
     cerr << "Testing 2D stuff" << endl;
     {
@@ -170,6 +175,13 @@ ArrayTests::run_tests()
       t2fp += testfp;
       check_if_equal( t2fp[3][2] , 5.5, "test operator +=(Array2D)");
       check_if_equal(t2  , t2fp, "test comparing Array2D+= and +" );
+     
+      BasicCoordinate<2,int> c;
+      c[1]=3; c[2]=2; 
+      check_if_equal(t2[c], 5.5, "test on operator[](BasicCoordinate)");   
+      t2[c] = 6.;
+      check_if_equal(t2[c], 6., "test on operator[](BasicCoordinate)");   
+
 
       // assert should break on next line if uncommented
       //t2[-4][3]=1.F;
@@ -178,7 +190,7 @@ ArrayTests::run_tests()
       IndexRange<2> larger_range(Coordinate2D<int>(-5,0),Coordinate2D<int>(5,3));
       t2.grow(larger_range);
       t2[-4][3]=1.F;
-      check_if_equal( t2[3][2] , 5.5);
+      check_if_equal( t2[3][2] , 6., "test on grow");
     
       // test assignment
       t2fp = t2;
@@ -248,10 +260,20 @@ ArrayTests::run_tests()
 #endif
     test3[1][0][2] = (float)7.3;
     test3[1][0][1] = -1;
+
     
     check_if_equal( test3.sum() , 12.9, "test on sum");
     check_if_equal( test3.find_max() , 7.3, "test on find_max");
     check_if_equal( test3.find_min() , -1., "test on find_min");
+
+    {
+       Array<3,float> test3copy(test3);
+       BasicCoordinate<3,int> c;
+       c[1]=1; c[2]=0; c[3]=2;
+       check_if_equal(test3[c], 7.3, "test on operator[](BasicCoordinate)");   
+       test3copy[c]=8.;
+       check_if_equal(test3copy[1][0][2], 8., "test on operator[](BasicCoordinate)");   
+    }
 
     Array<3,float> test3bis(range);
     test3bis[1][2][1] = (float)6.6;
@@ -318,7 +340,13 @@ ArrayTests::run_tests()
     Array<4,float> test41 = test4;
     check_if_equal(test4  , test41, "test Array4D copy constructor" );
     check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after grow");
-
+ 
+    BasicCoordinate<4,int> c;
+    c[1]=-2;c[2]=1;c[3]=0;c[4]=2;
+    check_if_equal(test4[c] , 7.3 , "test on operator[](BasicCoordinate)");   
+    test4[c]=1.;
+    check_if_equal(test4[c] , 1. , "test on operator[](BasicCoordinate)");   
+    
     {
       Array<4,float> test4bis(range);
       test4bis[-2][1][2][1] = (float)6.6;
@@ -327,7 +355,7 @@ ArrayTests::run_tests()
 
       test4ter += test4;
       check_if_equal(test4ter[-3][1][0][1] ,2.3, "test on operator+=(Array4D)");
-
+           
       // Note that test4 is bigger in size than test4bis.
       Array<4,float> test4quat = test4bis + test4;
       check_if_equal(test4quat  ,test4ter, "test summing Array4D with grow");
