@@ -1,5 +1,5 @@
 //
-// $Id: 
+// $Id$
 /*!
 
   \file
@@ -9,8 +9,8 @@
     \author Sanida Mustafovic
     \author Kris Thielemans
     
-      $Date:
-      $Revision:
+      $Date$
+      $Revision$
 */
 /*
     Copyright (C) 2000- $Date$, IRSL
@@ -32,12 +32,19 @@
 #include "stir/interfile.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/RelatedViewgrams.h"
+#include "local/stir/fft.h"
+#include "local/stir/ArrayFilter3DUsingConvolution.h"
+#include "local/stir/ArrayFilter2DUsingConvolution.h"
+
+
+#include "stir/CPUTimer.h"
 
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
-
+#include "local/stir/fwd_and_bck_manipulation_for_SAF.h"
 #include "local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
 #include "stir/SegmentByView.h"
 
+#include "stir/round.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -51,239 +58,402 @@ using std::cerr;
 using std::endl;
 #endif
 
+#include "local/stir/local_helping_functions.h"
 
 START_NAMESPACE_STIR
 
-  
-// old stuff before densels
-#if 1
-// the following functions were used locally for kappa estimations.
-void 
-find_inverse(ProjDataFromStream*  proj_data_ptr_out,ProjDataFromStream * proj_data_ptr_in);
 
-void 
-find_inverse(VectorWithOffset<SegmentByView<float> *>& all_segments_inv,VectorWithOffset<SegmentByView<float> *>& all_segments_in);
+static void
+construct_scaled_filter_coefficients(Array<3,float> &new_filter_coefficients_3D_array,   
+				     const VectorWithOffset<float>& kernel_1d,
+				     const bool z_direction_trivial,				     
+				     const float kapa0_over_kapa1);
 
-void 
-do_segments_fwd(const VoxelsOnCartesianGrid<float>& image, ProjData& s3d,
-	    const int start_segment_num, const int end_segment_num,
-	    const int start_axial_pos_num, const int end_axial_pos_num,
-	    const int start_view, const int end_view,
-	    const int start_tangential_pos_num, const int end_tangential_pos_num,	    	    
-	    ForwardProjectorByBin&);
-void
-do_segments_bck(DiscretisedDensity<3,float>& image, 
-		//shared_ptr<ProjDataFromStream>& proj_data_ptr,
-		ProjData& proj_data_org,
-		const int start_segment_num, const int end_segment_num,
-		const int start_axial_pos_num, const int end_axial_pos_num,		
-		const int start_view, const int end_view,
-		const int start_tang_pos_num,const int end_tang_pos_num,
-		BackProjectorByBin* back_projector_ptr,bool fill_with_1);
-void
-fwd_project(ProjData& proj_data,VoxelsOnCartesianGrid<float>* vox_image_ptr,
-		const int start_segment_num, const int end_segment_num,
-		const int start_axial_pos_num, const int end_axial_pos_num,		
-		const int start_view, const int end_view,
-		const int start_tang_pos_num,const int end_tang_pos_num);
-
-void 
-fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
-			      VoxelsOnCartesianGrid<float>* vox_image_ptr_bck,
-			      //VoxelsOnCartesianGrid<float>* vox_image_ptr,
-			      const int start_segment_num, const int end_segment_num,
-			      const int start_axial_pos_num, const int end_axial_pos_num,		
-			      const int start_view, const int end_view,
-			      const int start_tang_pos_num,const int end_tang_pos_num,
-			      const DiscretisedDensity<3,float>& in_density);
-
-void 
-fwd_densels_invert_and_bck_individually(shared_ptr<ProjData > proj_data_ptr,
-					shared_ptr<ProjMatrixByDensel> proj_matrix_ptr,
-					//shared_ptr<ProjDataFromStream> proj_data_ptr,
-	    VoxelsOnCartesianGrid<float>* vox_image_ptr,
-	    const int start_segment_num, const int end_segment_num,
-	    const int start_axial_pos_num, const int end_axial_pos_num,		
-	    const int start_view, const int end_view,
-	    const int start_tang_pos_num,const int end_tang_pos_num,
-	    const DiscretisedDensity<3,float>& in_density);
-
-
-#endif
-
-
-#if 1
+		  //// IMPLEMENTATION /////
+/**********************************************************************************************/
 
 
 
-void 
-find_inverse(VectorWithOffset<SegmentByView<float> *>& all_segments_inv,VectorWithOffset<SegmentByView<float> *>& all_segments_in);
-
-void
-do_segments_densels_fwd(const VoxelsOnCartesianGrid<float>& image, 
-            ProjData& proj_data,
-	    VectorWithOffset<SegmentByView<float> *>& all_segments,
-            const int min_z, const int max_z,
-            const int min_y, const int max_y,
-            const int min_x, const int max_x,
-	    ProjMatrixByDensel& proj_matrix);
-
-
-void
-fwd_densels_all(VectorWithOffset<SegmentByView<float> *>& all_segments,
-		shared_ptr<ProjMatrixByDensel> proj_matrix_ptr, 
-		shared_ptr<ProjData > proj_data_ptr,
-		const int min_z, const int max_z,
-		const int min_y, const int max_y,
-		const int min_x, const int max_x,
-		const DiscretisedDensity<3,float>& in_density);
-
-void
-find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
-			     VectorWithOffset<SegmentByView<float> *>& all_segments,
-			     VectorWithOffset<SegmentByView<float> *>& attenuation_segmnets,			
-				const int min_z, const int max_z,
-				const int min_y, const int max_y,
-				const int min_x, const int max_x,
-				ProjMatrixByDensel& proj_matrix, 
-				bool do_attenuation,
-				const float threshold, bool normalize_result);
-
-void
-find_inverse_and_bck_densels(DiscretisedDensity<3,float>& image,
-			     VectorWithOffset<SegmentByView<float> *>& all_segments,
-			     VectorWithOffset<SegmentByView<float> *>& attenuation_segmnets,			    
-			     const int min_z, const int max_z,
-			     const int min_y, const int max_y,
-			     const int min_x, const int max_x,
-			     ProjMatrixByDensel& proj_matrix, bool do_attenuation, 
-			     const float threshold,bool normalize_result)				
+static void
+construct_scaled_filter_coefficients(Array<3,float> &new_filter_coefficients_3D_array,   
+				     const VectorWithOffset<float>& kernel_1d,
+				     const bool z_direction_trivial,
+				     const float kapa0_over_kapa1)
+				     
 {
- /* VectorWithOffset<SegmentByView<float> *> all_ones(0);
-  all_ones[0] = 
-    new SegmentByView<float>(all_segments[0]->get_empty_segment_by_view(segment_num));		 
-  (*all_ones[0]).fill(1);*/
-	
-  ProjMatrixElemsForOneDensel probs;
-  for (int z = min_z; z<= max_z; ++z)
+  
+  // STUFF FOR THE FFT SIZE 
+  /****************** *********************************************************************/
+  
+  const int length_of_size_array = 16;
+  const float kapa0_over_kapa1_interval_size=10.F;
+  static VectorWithOffset<int> size_for_kapa0_over_kapa1;
+  if (size_for_kapa0_over_kapa1.get_length()==0)
   {
-    for (int y = min_y; y<= max_y; ++y)
-    {
-      for (int x = min_x; x<= max_x; ++x)
-      {
-	Densel densel(z,y,x);
-	proj_matrix.get_proj_matrix_elems_for_one_densel(probs, densel);
-	
-	float denominator = 0;
-//	float sensitivity= 0;
-	for (ProjMatrixElemsForOneDensel::const_iterator element_ptr = probs.begin();
-	element_ptr != probs.end();++element_ptr)
-	{  
-	  //cerr << element_ptr->segment_num() << endl;
-	  const float val=element_ptr->get_value();	  
-	  
-	 if (element_ptr->axial_pos_num()<= all_segments[element_ptr->segment_num()]->get_max_axial_pos_num() &&
-         element_ptr->axial_pos_num()>= all_segments[element_ptr->segment_num()]->get_min_axial_pos_num())
-	 {      
-	  const float bin= 
- 	  max(threshold,(*all_segments[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()]);
-       	  denominator+= square(val);	  
+    size_for_kapa0_over_kapa1.grow(0,length_of_size_array-1);
+    size_for_kapa0_over_kapa1.fill(64);
+  }
+  
+  
+  float sq_kapas = kapa0_over_kapa1; 
+  /******************************************************************************************/
+  
+  if ( sq_kapas > 10000)
+  {
+    new_filter_coefficients_3D_array.grow(IndexRange3D(0,0,0,0,0,0));
+  }
+  else if (sq_kapas!=1.F)
+  {
+    const int kapa0_over_kapa1_interval = 
+      min(static_cast<int>(floor(kapa0_over_kapa1/kapa0_over_kapa1_interval_size)),
+          length_of_size_array-1);
 
-	  if (do_attenuation)
+    while(true)
+    {
+      const int size = size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval];
+      const int size_z = z_direction_trivial ? 1 : size;
+      const int size_y = size; 
+      const int size_x = size;
+      int filter_length = static_cast<int>(floor(kernel_1d.get_length()/2));
+      
+      cerr << "Now doing size " << size << std::endl;
+      
+      
+      float inverse_sq_kapas;
+      if (fabs((double)sq_kapas ) >0.000000000001)
+	inverse_sq_kapas = 1/sq_kapas;
+      else 
+	inverse_sq_kapas = 0;
+      
+     // static Array<1,float> fft_filter_1D_array_16(1,2*(size_z==1?1:16)*16*16);
+     //static Array<1,float> fft_filter_1D_array_32(1,2*(size_z==1?1:32)*32*32);      
+      static Array<1,float> fft_filter_1D_array_64(1,2*(size_z==1?1:64)*64*64);
+      static Array<1,float> fft_filter_1D_array_128(1,2*(size_z==1?1:128)*128*128);
+      static Array<1,float> fft_filter_1D_array_256(1,2*(size_z==1?1:256)*256*256);
+      
+      Array<1,float>* fft_filter_1D_array_ptr = 0;
+      switch (size)
+      {
+      case 64:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_64;
+	break;
+      case 128:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_128;
+	break;
+      case 256:
+	fft_filter_1D_array_ptr = &fft_filter_1D_array_256;
+	break;
+      default:
+	error("\nModifiedInverseAveragingImageFilter: Cannot do this at the moment -- size is too big'.\n");
+	break;
+      }
+      Array<1,float>& fft_filter_1D_array = *fft_filter_1D_array_ptr;
+           
+      Array<1, int> array_lengths(1,3);
+      array_lengths[1] = size_z;
+      array_lengths[2] = size_y;
+      array_lengths[3] = size_x;
+      
+      if ( fft_filter_1D_array[1] == 0.F)
+      {
+	// we have to compute it
+	// FIRST PADD 1D FILTER COEFFICIENTS AND MAKE THEM SYMMETRIC 
+	// ( DO NOT TAKE IMAGINARY PART INTO ACCOUNT YET)
+	/**********************************************************************************/
+	
+	Array<1,float> filter_coefficients_padded_1D_array(1,size);
+	
+	filter_coefficients_padded_1D_array[1] = kernel_1d[0];  
+	for ( int i = 1;i<=filter_length;i++)
+	{
+	  filter_coefficients_padded_1D_array[i+1] = kernel_1d[i];    
+	  filter_coefficients_padded_1D_array[size-(i-1)] = kernel_1d[i];
+	  
+	}
+	
+	/*************************************************************************************/
+	
+
+	Array<3,float> filter_coefficients_padded(IndexRange3D(1,size_z,1,size_y,1,size_x));
+
+
+	create_kernel_3d (filter_coefficients_padded, filter_coefficients_padded_1D_array);
+	
+	// rescale to DC=1
+	filter_coefficients_padded /= filter_coefficients_padded.sum();
+	
+	convert_array_3D_into_1D_array(fft_filter_1D_array,filter_coefficients_padded);
+	
+	// TODO remove probably
+	if (size_z==1)
+	{
+	  Array<1,int> array_lengths_2d(1,2);
+	  array_lengths_2d[1]=array_lengths[2];
+	  array_lengths_2d[2]=array_lengths[3];
+	  fourn(fft_filter_1D_array, array_lengths_2d, 2,1);
+	}
+	else
+	  fourn(fft_filter_1D_array, array_lengths, 3,1);
+	fft_filter_1D_array /= sqrt(static_cast<float>(size_z *size_y*size_x));   
+      }	
+      /*
+      else fft_filter_1D_array[1] != 0 and we have it computed previously
+      */
+/*
+      cerr << " filter coeff after fft" << endl;
+       for ( int i = fft_filter_1D_array.get_min_index(); i<= fft_filter_1D_array.get_max_index();i++)
+	 cerr << fft_filter_1D_array[i] << "    "; */
+
+    
+      Array<3,float> new_filter_coefficients_3D_array_tmp (IndexRange3D(1,size_z,1,size_y,1,size_x));           
+      
+      // WARNING  -- this only works for the FFT where the convention is that the final result
+      // obtained from the FFT is divided with sqrt(N*N*N)   
+      // initialise to 0 to prevent from warnings
+      //fourn(fft_1_1D_array, array_lengths, 3,1); 
+      float  fft_1_1D_array = 1/sqrt(static_cast<float>(size_z*size_y*size_x));
+
+      
+      {        
+	Array<1,float> fft_filter_num_1D_array = fft_filter_1D_array;	
+	fft_filter_num_1D_array *= fft_1_1D_array;	
+	// TODO we make a copy for the denominator here, which isn't necessary
+	Array<1,float> fft_filter_denom_1D_array = fft_filter_1D_array;	
+	fft_filter_denom_1D_array*= (sq_kapas-1);
+	// add fft of 1 (but that's a real constant)
+	for ( int i = fft_filter_1D_array.get_min_index(); i<=fft_filter_1D_array.get_max_index(); i+=2)
+	{
+	  fft_filter_denom_1D_array[i] += fft_1_1D_array;
+	}
+	fft_filter_denom_1D_array /= sq_kapas;
+
+/*	cerr << " filter denominator " << endl;
+	for (int i =1;i<=size_z *size_y*size_x;i++)
+	{
+	  cerr << fft_filter_denom_1D_array[i] << "   ";
+	} 
+	cerr << endl;*/
+
+	
+	divide_complex_arrays(fft_filter_num_1D_array,fft_filter_denom_1D_array);              
+	// TODO remove probably
+	if (size_z==1)
+	{
+	  Array<1,int> array_lengths_2d(1,2);
+	  array_lengths_2d[1]=array_lengths[2];
+	  array_lengths_2d[2]=array_lengths[3];
+	  fourn(fft_filter_num_1D_array, array_lengths_2d, 2,-1);
+	}
+	else
+	  fourn(fft_filter_num_1D_array, array_lengths, 3,-1);
+	
+	
+	// make it consistent with mathemematica -- the output of the       
+	fft_filter_num_1D_array  /= sqrt(static_cast<double>(size_z *size_y*size_x));
+	
+#if 0
+//	cerr << "for kappa_0_over_kappa_1 " << kapa0_over_kapa1 ;
+	cerr << endl;
+	for (int i =1;i<=size_z *size_y*size_x;i++)
+	{
+	  cerr << fft_filter_num_1D_array[i] << "   ";
+	}  
+#endif
+	
+	// take the real part only 
+	/*********************************************************************************/
+	{
+	  Array<1,float> real_div_1D_array(1,size_z *size_y*size_x);
+	  
+	  for (int i=0;i<=(size_z *size_y*size_x)-1;i++)
+	    real_div_1D_array[i+1] = fft_filter_num_1D_array[2*i+1];
+	  
+	  /*********************************************************************************/
+	 	  
+	  
+	  convert_array_1D_into_3D_array(new_filter_coefficients_3D_array_tmp,real_div_1D_array);
+
+#if 0
+	  for (int  k = 1;k<= size_z;k++)
+	      for (int  j = 1;j<= size_y;j++)	  
+		for (int  i = 1;i<= size_x;i++)
+		{
+		  cerr << new_filter_coefficients_3D_array_tmp[k][j][i] << "   ";
+
+		}
+#endif
+	}
+      }
+      	    
+	  int kernel_length_x=0;
+	  int kernel_length_y=0;
+	  int kernel_length_z=0;
+	  
+	  // to prevent form aliasing limit the new range for the coefficients to 
+	  // filter_coefficients_padded.get_length()/4
+	  
+	  
+	  // do the x -direction first -- fix y and z to the min and look for the max index in x
+	  int kx = new_filter_coefficients_3D_array_tmp.get_min_index();
+	  int jx = new_filter_coefficients_3D_array_tmp[kx].get_min_index();
+	  for (int i=new_filter_coefficients_3D_array_tmp[kx][jx].get_min_index();
+	       i<=new_filter_coefficients_3D_array_tmp[kx][jx].get_max_index()/4;i++)
 	  {
-	    float bin_attenuation= 
-	      (*attenuation_segmnets[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()];	  	    
-	    image[z][y][x] += (bin_attenuation/bin) * square(val);
-	   // sensitivity+=bin_attenuation*val;
+	    if (fabs((double)new_filter_coefficients_3D_array_tmp[kx][jx][i])
+	      <= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
+	    else (kernel_length_x)++;
+	  }
+	  
+	  /******************************* Y DIRECTION ************************************/
+	  
+	  
+	  int ky = new_filter_coefficients_3D_array_tmp.get_min_index();
+	  int iy = new_filter_coefficients_3D_array_tmp[ky][new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index();
+	  for (int j=new_filter_coefficients_3D_array_tmp[ky].get_min_index();j<=new_filter_coefficients_3D_array_tmp[ky].get_max_index()/4;j++)
+	  {
+	    if (fabs((double)new_filter_coefficients_3D_array_tmp[ky][j][iy])
+	      //= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()]*1/100000000) break;
+	      <= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
+	    else (kernel_length_y)++;
+	  }
+	  
+	  /********************************************************************************/
+	  
+	  /******************************* z DIRECTION ************************************/
+	  
+	  if (!z_direction_trivial)
+	  {
+	    int jz = new_filter_coefficients_3D_array_tmp.get_min_index();
+	    int iz = new_filter_coefficients_3D_array_tmp[jz][new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index();
+	    for (int k=new_filter_coefficients_3D_array_tmp.get_min_index();k<=new_filter_coefficients_3D_array_tmp.get_max_index()/4;k++)
+	    {
+	      if (fabs((double)new_filter_coefficients_3D_array_tmp[k][jz][iz])
+		//<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()]*1/100000000) break;
+		<= new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()].get_min_index()].get_min_index()]*1/1000000) break;
+	      else (kernel_length_z)++;
+	    }
 	  }
 	  else
+	    kernel_length_z = 1;
+	  
+	  /********************************************************************************/
+	  
+	  if (kernel_length_x == size_x/4)
 	  {
-	    image[z][y][x] += (1.F/bin) * square(val);
-	   // sensitivity+=val;
+	    warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_x reached maximum length %d. "
+	      "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	      "Increasing length of FFT array to resolve this problem\n",
+	      kernel_length_x, new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][kernel_length_x],
+	      kapa0_over_kapa1);
+	    size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	    for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	      size_for_kapa0_over_kapa1[i]=
+	      max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
 	  }
-	 }
-	}
-//	image[z][y][x]/= square(sensitivity);
-	if (normalize_result)      
-	  image[z][y][x]/= denominator;
+	  else if (kernel_length_y == size_y/4)
+	  {
+	    warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_y reached maximum length %d. "
+	      "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	      "Increasing length of FFT array to resolve this problem\n",
+	      kernel_length_y, new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][kernel_length_y][new_filter_coefficients_3D_array_tmp.get_min_index()],
+	      kapa0_over_kapa1);
+	    size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	    for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	      size_for_kapa0_over_kapa1[i]=
+	      max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
+	  }
+	  else if (!z_direction_trivial && kernel_length_z == size_z/4)
+	  {
+	    warning("ModifiedInverseAverigingArrayFilter3D: kernel_length_z reached maximum length %d. "
+	      "First filter coefficient %g, last %g, kappa0_over_kappa1 was %g\n"
+	      "Increasing length of FFT array to resolve this problem\n",
+	      kernel_length_z, 
+	      new_filter_coefficients_3D_array_tmp[new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()], new_filter_coefficients_3D_array_tmp[kernel_length_z][new_filter_coefficients_3D_array_tmp.get_min_index()][new_filter_coefficients_3D_array_tmp.get_min_index()],
+	      kapa0_over_kapa1);
+	    size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]*=2;
+	    for (int i=kapa0_over_kapa1_interval+1; i<size_for_kapa0_over_kapa1.get_length(); ++i)
+	      size_for_kapa0_over_kapa1[i]=
+	      max(size_for_kapa0_over_kapa1[i], size_for_kapa0_over_kapa1[kapa0_over_kapa1_interval]);
+	  }
+	  else
+	  {	 
+	    new_filter_coefficients_3D_array.grow(IndexRange3D(-(kernel_length_z-1),kernel_length_z-1,
+	      -(kernel_length_y-1),kernel_length_y-1,
+	      -(kernel_length_x-1),kernel_length_x-1));
 
-      }
-      
+	    if ( z_direction_trivial !=1)
+	    {
+	    for (int  k = 0;k<= kernel_length_z-1;k++)
+	      for (int  j = 0;j<= kernel_length_y-1;j++)	  
+		for (int  i = 0;i<= kernel_length_x-1;i++)	  
+		{
+		  new_filter_coefficients_3D_array[k][j][i]=
+		    new_filter_coefficients_3D_array[k][j][-i]=
+		    new_filter_coefficients_3D_array[k][-j][-i]=
+		    new_filter_coefficients_3D_array[k][-j][i]=
+		    new_filter_coefficients_3D_array[-k][j][i]=
+		    new_filter_coefficients_3D_array[-k][-j][i]=
+		    new_filter_coefficients_3D_array[-k][j][-i]=
+		    new_filter_coefficients_3D_array[-k][-j][-i]=
+		    new_filter_coefficients_3D_array_tmp[k+1][j+1][i+1];		  
+		}
+	    }
+	    else
+	    {
+	       for (int  j = 0;j<= kernel_length_y-1;j++)	  
+		for (int  i = 0;i<= kernel_length_x-1;i++)	  		  
+		{
+		  new_filter_coefficients_3D_array[0][j][i]=new_filter_coefficients_3D_array_tmp[1][j+1][i+1];
+		  new_filter_coefficients_3D_array[0][-j][-i]=new_filter_coefficients_3D_array_tmp[1][j+1][i+1];
+
+		  new_filter_coefficients_3D_array[0][-j][i]=new_filter_coefficients_3D_array_tmp[1][j+1][i+1];
+		  new_filter_coefficients_3D_array[0][j][-i]=new_filter_coefficients_3D_array_tmp[1][j+1][i+1];
+
+
+		  
+		}
+	    }
+
+
+  	break; // out of while(true)
+	  }
+    } // this bracket is for the while loop
     }
-  }
-  
-
-
-
-  
-  for (DiscretisedDensity<3,float>::full_iterator iter = image.begin_all();
-  iter !=image.end_all();
-  ++iter)
-    *iter = sqrt(*iter);
-}
-
-
-
-void
-do_segments_densels_fwd(const VoxelsOnCartesianGrid<float>& image, 
-            ProjData& proj_data,
-	    VectorWithOffset<SegmentByView<float> *>& all_segments,
-            const int min_z, const int max_z,
-            const int min_y, const int max_y,
-            const int min_x, const int max_x,
-	    ProjMatrixByDensel& proj_matrix)
-{
-  
-  ProjMatrixElemsForOneDensel probs;
-  for (int z = min_z; z<= max_z; ++z)
-  {
-    for (int y = min_y; y<= max_y; ++y)
+    else //sq_kappas == 1
     {
-      for (int x = min_x; x<= max_x; ++x)
-      {
-        if (image[z][y][x] == 0)
-          continue;
-        Densel densel(z,y,x);
-        proj_matrix.get_proj_matrix_elems_for_one_densel(probs, densel);
-
-        for (ProjMatrixElemsForOneDensel::const_iterator element_ptr = probs.begin();
-	element_ptr != probs.end();
-	++element_ptr)
-        {
-          if (element_ptr->axial_pos_num()<= proj_data.get_max_axial_pos_num(element_ptr->segment_num()) &&
-	    element_ptr->axial_pos_num()>= proj_data.get_min_axial_pos_num(element_ptr->segment_num()))
-            (*all_segments[element_ptr->segment_num()])[element_ptr->view_num()][element_ptr->axial_pos_num()][element_ptr->tangential_pos_num()] +=
-	    image[z][y][x] * element_ptr->get_value();
-        }
-      }
+      // in the case where sq_kappas=1 --- scaled_filter == original template filter 
+       new_filter_coefficients_3D_array = 
+	 Array<3,float>(IndexRange3D(z_direction_trivial? 0 : kernel_1d.get_min_index(), z_direction_trivial? 0 : kernel_1d.get_max_index(),
+                                     kernel_1d.get_min_index(), kernel_1d.get_max_index(),
+				     kernel_1d.get_min_index(), kernel_1d.get_max_index()));
+  
+       create_kernel_3d (new_filter_coefficients_3D_array, kernel_1d);  
     }
-  }
-  
-}
 
-void
-fwd_densels_all(VectorWithOffset<SegmentByView<float> *>& all_segments, 
-		shared_ptr<ProjMatrixByDensel> proj_matrix_ptr, 
-		shared_ptr<ProjData > proj_data_ptr,
-		const int min_z, const int max_z,
-		const int min_y, const int max_y,
-		const int min_x, const int max_x,
-		const DiscretisedDensity<3,float>& in_density)
-		
-{
-  
-  const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
-    dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
-  
-  
-  do_segments_densels_fwd(in_density_cast_0, 
-			  *proj_data_ptr,
-			   all_segments,
-			   min_z, max_z,
-			   min_y, max_y,
-			   min_x, max_x,
-			   *proj_matrix_ptr);  
-  
+    /*cerr << " Input kernel" << endl;
+     for ( int i = kernel_1d.get_min_index(); i<=kernel_1d.get_max_index(); i++)
+       cerr << kernel_1d[i] << "   ";
+
+    for ( int k = 0; k<= new_filter_coefficients_3D_array.get_max_index(); k++)
+      for ( int j = 0; j<= new_filter_coefficients_3D_array.get_max_index(); j++)
+	for ( int i = 0; i<= new_filter_coefficients_3D_array.get_max_index(); i++)
+	{
+	  cerr << new_filter_coefficients_3D_array[k][j][i] << "   ";		  
+	  
+	}*/
+	
+	
+         
+    // rescale to DC=1
+    new_filter_coefficients_3D_array /= new_filter_coefficients_3D_array.sum();	
+     /*for (int  k = new_filter_coefficients_3D_array.get_min_index();k<=new_filter_coefficients_3D_array.get_max_index() ;k++)
+	      for (int  j = new_filter_coefficients_3D_array[k].get_min_index();j<= new_filter_coefficients_3D_array[k].get_max_index();j++)	  
+		for (int  i = new_filter_coefficients_3D_array[k][j].get_min_index();i<=new_filter_coefficients_3D_array[k][j].get_max_index();i++)
+		{
+		  cerr << new_filter_coefficients_3D_array[k][j][i] << "   ";
+
+		}*/
+    
 }
 
 
@@ -304,7 +474,7 @@ ModifiedInverseAverigingImageFilter(string proj_data_filename_v,
 				    shared_ptr<ProjData> attenuation_proj_data_ptr_v,
 				    DiscretisedDensity<3,float>* initial_image_v,
 				    DiscretisedDensity<3,float>* sensitivity_image_v,
-				    int mask_size_v)
+				    int mask_size_v,bool z_direction_trivial_v)
 
 				    
 {
@@ -320,6 +490,7 @@ ModifiedInverseAverigingImageFilter(string proj_data_filename_v,
   initial_image = initial_image_v;
   sensitivity_image = sensitivity_image_v;
   mask_size= mask_size_v;
+  z_direction_trivial = z_direction_trivial_v;
 }
 
 
@@ -356,14 +527,23 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 template <typename elemT>
 void 
-ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ModifiedInverseAverigingArrayFilter <3,float> >  > > >& all_filter_coefficients,
+ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ArrayFunctionObject <3,float> >  > > >& all_filter_coefficients,
 									      DiscretisedDensity<3,elemT>* in_density) const
 {
+
+ 
+  VectorWithOffset < shared_ptr <ArrayFunctionObject <3,float> > > filter_lookup;
+  const num_of_elements_in_interval = 500;
+  filter_lookup.grow(1,num_of_elements_in_interval);
+  const int k_min =1;
+  const float k_interval = 0.01F; //0.01F;
   
+
   shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
   VoxelsOnCartesianGrid<float>* in_density_cast =
     dynamic_cast< VoxelsOnCartesianGrid<float>* >(in_density); 
   
+
   VoxelsOnCartesianGrid<float> *  vox_image_ptr_1 =
     new VoxelsOnCartesianGrid<float> (IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
     in_density_cast->get_min_y(),in_density_cast->get_max_y(),
@@ -372,6 +552,8 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
   
   int start_segment_num = proj_data_ptr->get_min_segment_num();
   int end_segment_num = proj_data_ptr->get_max_segment_num();
+  
+
   
   VectorWithOffset<SegmentByView<float> *> all_segments(start_segment_num, end_segment_num);
   VectorWithOffset<SegmentByView<float> *> all_segments_for_kappa0(start_segment_num, end_segment_num);   
@@ -412,11 +594,17 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
     image_sptr);
   cerr << proj_matrix_ptr->parameter_info();
   
-  fwd_densels_all(all_segments,proj_matrix_ptr, proj_data_ptr,
-    in_density_cast->get_min_z(), in_density_cast->get_max_z(),
-    in_density_cast->get_min_y(), in_density_cast->get_max_y(),
-    in_density_cast->get_min_x(), in_density_cast->get_max_x(),
-    *in_density);
+  //fwd_densels_all(all_segments,proj_matrix_ptr, proj_data_ptr,
+    //in_density_cast->get_min_z(), in_density_cast->get_max_z(),
+    //in_density_cast->get_min_y(), in_density_cast->get_max_y(),
+    //in_density_cast->get_min_x(), in_density_cast->get_max_x(),
+    //*in_density);
+
+  do_segments_densels_fwd(*in_density_cast,*proj_data_ptr,all_segments,
+            in_density_cast->get_min_z(), in_density_cast->get_max_z(),
+	    in_density_cast->get_min_y(), in_density_cast->get_max_y(),
+	    in_density_cast->get_min_x(), in_density_cast->get_max_x(),
+	    *proj_matrix_ptr);
   
   VoxelsOnCartesianGrid<float> *  vox_image_ptr_kappa0 =
     new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
@@ -429,6 +617,12 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
     in_density_cast->get_min_y(),in_density_cast->get_max_y(),
     in_density_cast->get_min_x(),in_density_cast->get_max_x()),
     in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
+
+   VoxelsOnCartesianGrid<float> *  kappa_coefficients =
+    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast->get_min_z(),in_density_cast->get_max_z(),
+    in_density_cast->get_min_y(),in_density_cast->get_max_y(),
+    in_density_cast->get_min_x(),in_density_cast->get_max_x()),
+    in_density_cast->get_origin(),in_density_cast->get_voxel_size());
   
   
   shared_ptr<DiscretisedDensity<3,float> > kappa0_ptr_bck =  vox_image_ptr_kappa0;       
@@ -463,6 +657,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
   { 
     delete all_segments[segment_num];
+    delete all_attenuation_segments[segment_num];
   }   
   
   cerr << "min and max in image - kappa1 " <<kappa1_ptr_bck->find_min()
@@ -472,7 +667,6 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
     for (int j =in_density_cast->get_min_y();j<=in_density_cast->get_max_y();j++)
       for (int i =in_density_cast->get_min_x();i<=in_density_cast->get_max_x();i++)	
       {
-	
 	// WARNING - only works for segment zero at the moment
 	// do the calculation of kappa0 here
 	kappa0_ptr_bck->fill(0); 
@@ -483,24 +677,25 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	}
 	if (true) //attenuation_proj_data_filename !="1")
 	{
-	  
-	  
-	  shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
-	    new VoxelsOnCartesianGrid<float>
-	    (IndexRange3D(-mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
-	     mask_size+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2),
+#if 1	
+	  const int new_k_ctr = 
+	    z_direction_trivial==1?0:(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2);
+	  const int mask_size_z = 
+	    z_direction_trivial==1?0:mask_size;
+
+	   shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
+	   new VoxelsOnCartesianGrid<float>
+	    (IndexRange3D(-mask_size_z+new_k_ctr,mask_size_z+new_k_ctr,
 	    -mask_size+6,mask_size+6,
-	    -mask_size+6,mask_size+6),in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
-	  /*shared_ptr< VoxelsOnCartesianGrid<float> > in_density_cast_tmp =
-	    new VoxelsOnCartesianGrid<float>
-	    (IndexRange3D(-mask_size+k,mask_size+k,
-	    -mask_size+6,mask_size+6,
-	    -mask_size+6,mask_size+6),in_density_cast->get_origin(),in_density_cast->get_voxel_size());  */
-	  
+	    -mask_size+6,mask_size+6),
+	    in_density_cast->get_origin(),in_density_cast->get_voxel_size());  
+	  CPUTimer timer;
+	  timer.start();
 	  
 	  	// SM 23/05/2002 mask now 3D
-	  const int min_k = max(in_density_cast->get_min_z(),k-mask_size);
-	  const int max_k = min(in_density_cast->get_max_z(),k+mask_size);			
+	  
+	  const int min_k = max(in_density_cast->get_min_z(),k-mask_size_z);
+	  const int max_k = min(in_density_cast->get_max_z(),k+mask_size_z);			
 	  const int min_j = max(in_density_cast->get_min_y(),j-mask_size);
 	  const int max_j = min(in_density_cast->get_max_y(),j+mask_size);
 	  const int min_i = max(in_density_cast->get_min_x(),i-mask_size);
@@ -512,8 +707,8 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	  for (int j_in =min_j;j_in<=max_j;j_in++)
 	    for (int i_in =min_i;i_in<=max_i;i_in++)	
 	    {
-	      (*in_density_cast_tmp)[k_in-k+(ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2)][j_in-j +6][i_in-i+6] = (*in_density_cast)[k_in][j_in][i_in];
-	      //(*in_density_cast_tmp)[k_in][j_in-j +6][i_in-i+6] = (*in_density_cast)[k_in][j_in][i_in];
+	      (*in_density_cast_tmp)[k_in-k+new_k_ctr][j_in-j +6][i_in-i+6] = (*in_density_cast)[k_in][j_in][i_in];
+	      //(*in_density_cast_tmp)[k][j_in-j +6][i_in-i+6] = (*in_density_cast)[k][j_in][i_in];
 	    }
 	    
 	    fwd_densels_all(all_segments_for_kappa0,proj_matrix_ptr, proj_data_ptr,
@@ -524,16 +719,14 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	    
 	    find_inverse_and_bck_densels(*kappa0_ptr_bck,all_segments_for_kappa0,
 	      all_attenuation_segments,
-	     // k,k,
-	      (ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2,ceil((vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z())/2),
-	      //0,0,0,0,
+	     new_k_ctr,new_k_ctr,
 	      6,6,6,6,
 	      *proj_matrix_ptr,false,threshold, false) ;//true);	  
-	    (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[(ceil(vox_image_ptr_kappa1->get_max_z()-vox_image_ptr_kappa1->get_min_z()))/2][6][6];
+	    (*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[new_k_ctr][6][6];
 	    //(*kappa0_ptr_bck)[k][j][i] = (*kappa0_ptr_bck)[k][6][6];
 	    
-	    
-	    
+	    timer.stop();
+	    //cerr << "kappa0 time "<< timer.value() << endl;
 	}
 	else
 	{
@@ -556,46 +749,73 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	    j,j,i,i,
 	    *proj_matrix_ptr,false,threshold, true);
 	  
-	  
-	  
 	}
 	float sq_kapas;
-	float multiply_with_sensitivity;
+//	float multiply_with_sensitivity;
 	if ( fabs((double)(*kappa1_ptr_bck)[k][j][i]) > 0.00000000000001 && 
 	  fabs((double)(*kappa0_ptr_bck)[k][j][i]) > 0.00000000000001 )
 	{ 
+	  float tmp  = (*kappa0_ptr_bck)[k][j][i];
+	  float tmp1  = (*kappa1_ptr_bck)[k][j][i];
+	  //cerr << "kappa_0 " << (*kappa0_ptr_bck)[k][j][i] << endl;
+	  //cerr << "kappa_1 " << (*kappa1_ptr_bck)[k][j][i] << endl;
+
+
 	  sq_kapas =((*kappa0_ptr_bck)[k][j][i]*(*kappa0_ptr_bck)[k][j][i])/((*kappa1_ptr_bck)[k][j][i]*(*kappa1_ptr_bck)[k][j][i]);
-	  multiply_with_sensitivity = (*sensitivity_image)[ceil(in_density_cast->get_max_z()-in_density_cast->get_min_z())/2][6][6];
-	  multiply_with_sensitivity /= (*sensitivity_image)[k][j][i];
 	  
-	  sq_kapas *= multiply_with_sensitivity;
-	  inverse_filter = 
-	    ModifiedInverseAverigingArrayFilter<3,float>(filter_coefficients,sq_kapas);	  
-	  int min_in= all_filter_coefficients.get_min_index();
-	  int max_in= all_filter_coefficients.get_max_index();
+#else
+	 float sq_kapas = 10.0F;
+#endif
+	  (*kappa_coefficients)[k][j][i] = sq_kapas;
 
+	 
 
-	  all_filter_coefficients[k][j][i] = 
-	    new ModifiedInverseAverigingArrayFilter<3,float>(inverse_filter);		
+	 // cerr << " now printing sq_kappas value:" << "   " << sq_kapas << endl;
+	  int k_index ;
+	    k_index = round(((float)sq_kapas- k_min)/k_interval);
+	   if (k_index < 1) 
+	   {k_index = 1;}
+	    
+	   if ( k_index > num_of_elements_in_interval)
+	   { k_index  = num_of_elements_in_interval;}
 	  
+	  
+	  if ( filter_lookup[k_index]==NULL )
+	  { // first compute the filter and store in filter_loopup
+	    //const bool z_direction_trivial= false;//TODO parse
+				     
+	    Array <3,float> new_coeffs;
+	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
+	    construct_scaled_filter_coefficients(new_coeffs, filter_coefficients,z_direction_trivial,sq_kapas);  
+	    filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);	    
+
+	  }
+	  all_filter_coefficients[k][j][i] = filter_lookup[k_index];
+		    
 	}
 	else
 	{	
-	  sq_kapas = 0;
-	  inverse_filter = 
-	    ModifiedInverseAverigingArrayFilter<3,float>();	  
 	  all_filter_coefficients[k][j][i] =
-	    new ModifiedInverseAverigingArrayFilter<3,float>(inverse_filter);
-	  
+	    new  ArrayFilter3DUsingConvolution<float>();	  
 	}
 	
-      }      
+      }   
+
+      
+ // write_basic_interfile("kappa_coefficients_2D_SENS",*kappa_coefficients);
+  delete kappa_coefficients ;
+
+      
+  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
+  {
+    delete  all_segments_for_kappa0[segment_num];
+  }
+    
       
       
 }
 
 // densel stuff - > apply
-#if 1
 
 template <typename elemT>
 void
@@ -611,7 +831,9 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
     dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
   
-  static VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ModifiedInverseAverigingArrayFilter <3,float> >  > > > all_filter_coefficients;
+  static VectorWithOffset < VectorWithOffset < VectorWithOffset <shared_ptr <ArrayFunctionObject <3,float> >  > > > all_filter_coefficients;
+  
+
   if (initial_image_filename!="1")
   {  
     if (count ==1)
@@ -621,9 +843,12 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
     {
       all_filter_coefficients[k].grow(in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y());
       for (int j = in_density_cast_0.get_min_y(); j<=in_density_cast_0.get_max_y();j++)      
+
       {
         (all_filter_coefficients[k])[j].grow(in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()); 
+      
       }
+
     }
     precalculate_filter_coefficients(all_filter_coefficients,initial_image);
     }
@@ -646,16 +871,9 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	    
 	    for (int  i = in_density_cast_0.get_min_x(); i<=in_density_cast_0.get_max_x();i++)      
 	    {
-	      // const float sq_kapas = 1000000;
-	      //VectorWithOffset<float> filter_coefficients_tmp;
-	      //filter_coefficients_tmp.grow(0,0);
-	      //filter_coefficients_tmp[0] =1;
-	      
-	      //inverse_filter = 
-	      //  ModifiedInverseAverigingArrayFilter<3,elemT>(filter_coefficients,sq_kapas);
+
 	      all_filter_coefficients[k][j][i] =     
 		new ModifiedInverseAverigingArrayFilter<3,elemT>;
-	      //(inverse_filter);
 	      
 	    }
 	  }
@@ -936,20 +1154,14 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		*output <<endl;
 		
 		//sq_kapas = 10;
-		inverse_filter = 
-		  ModifiedInverseAverigingArrayFilter<3,elemT>(filter_coefficients,sq_kapas);	  
-		
 		all_filter_coefficients[k][j][i] = 
-		  new ModifiedInverseAverigingArrayFilter<3,elemT>(inverse_filter);		
+		  new ModifiedInverseAverigingArrayFilter<3,elemT>(filter_coefficients,sq_kapas);
 		
 	      }
 	      else
 	      {	
-		sq_kapas = 0;
-		inverse_filter = 
-		  ModifiedInverseAverigingArrayFilter<3,elemT>();	  
 		all_filter_coefficients[k][j][i] =
-		  new ModifiedInverseAverigingArrayFilter<3,elemT>(inverse_filter);
+		  new ModifiedInverseAverigingArrayFilter<3,elemT>();
 		
 	      }
 	      
@@ -962,718 +1174,18 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	}   
      }
      }
+
      for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
        for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
 	 for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	
 	 {
 	   Array<3,elemT> tmp_out(IndexRange3D(k,k,j,j,i,i));
+
 	   (*all_filter_coefficients[k][j][i])(tmp_out,in_density);
 	   out_density[k][j][i] = tmp_out[k][j][i];	
-	   
-	   
+	   	   
 	 }
-	 
-}
-
-/*const IndexRange<3> kernel_index_range =
-	   all_filter_coefficients[k][j][i]->get_kernel_index_range();
-	   IndexRange<3> index_range;
-	   {
-	   int k_in_min = max(in_density.get_min_index()-k,kernel_index_range.get_min_index());
-	   int k_in_max = min(in_density.get_max_index()-k,kernel_index_range.get_max_index());
-	   index_range.grow(k_in_min, k_in_max);
-	   for (int k_in=k_in_min; k_in<=k_in_max;k_in++)   
-	   {
-	   int j_in_min =max(in_density[k_in+k].get_min_index()-j,kernel_index_range[k_in].get_min_index());
-	   int j_in_max =min(in_density[k_in+k].get_max_index()-j,kernel_index_range[k_in].get_max_index());	      
-	   index_range[k_in].grow(j_in_min, j_in_max);
-	   for (int j_in=j_in_min; j_in<=j_in_max;j_in++)   
-	   {
-	   int i_in_min =max(in_density[k_in+k][j_in+j].get_min_index()-i,kernel_index_range[k_in][j_in].get_min_index());
-	   int i_in_max =min(in_density[k_in+k][j_in+j].get_max_index()-i,kernel_index_range[k_in][j_in].get_max_index());
-	   index_range[k_in][j_in] = IndexRange<1>(i_in_min, i_in_max);
-	   }
-	   }
-	   }  
-	   Array<3,elemT> tmp_out(index_range);
-	   for (int k_in=index_range.get_min_index();
-	   k_in<=index_range.get_max_index();
-	   k_in++)   
-	   for (int j_in =index_range[k_in].get_min_index();
-	   j_in<=index_range[k_in].get_max_index();
-	   j_in++)
-	   for (int i_in =index_range[k_in][j_in].get_min_index();
-	   i_in<=index_range[k_in][j_in].get_max_index();
-	   i_in++)	
-	   {
-	   tmp_out[k_in][j_in][i_in] = in_density[k_in+k][j_in+j][i_in+i];
-	   }
-	   (*all_filter_coefficients[k][j][i])(tmp_out);	  
-	   out_density[k][j][i] = tmp_out[0][0][0];*/
-	   
-	   
-
-#endif
-
-
-// OLD
-# if 1
-
-
-void 
-fwd_inverse_bck_individual_pixels(shared_ptr<ProjDataFromStream> proj_data_ptr,
-			      VoxelsOnCartesianGrid<float>* vox_image_ptr_bck,
-			      //VoxelsOnCartesianGrid<float>* vox_image_ptr,
-			      const int start_segment_num, const int end_segment_num,
-			      const int start_axial_pos_num, const int end_axial_pos_num,		
-			      const int start_view, const int end_view,
-			      const int start_tang_pos_num,const int end_tang_pos_num,
-			      const DiscretisedDensity<3,float>& in_density)
-{
-  const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
-    dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
-   VoxelsOnCartesianGrid<float> *  in_density_ptr =
-     in_density_cast_0.get_empty_voxels_on_cartesian_grid();
-
-  const float z_origin = 0;
-  
-  vox_image_ptr_bck->set_origin(Coordinate3D<float>(z_origin,0,0));  
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr =  in_density_ptr;
-    //vox_image_ptr_bck;
-  // in_density_ptr;
- 
-  string name = "Ray Tracing";
-  
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    ForwardProjectorByBin::read_registered_object(0, name);
-  
-  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
-    image_sptr);
-  
-  cerr << forw_projector_ptr->parameter_info();
-  list<ViewSegmentNumbers> already_processed;  
-  
- 
-  VoxelsOnCartesianGrid<float> * in_density_extracted_ptr =
-    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-    //line source + cylinder filtered
-    -26,26,-13,13),
-    //-10,10,-10,10),
-    in_density.get_origin(),in_density_cast_0.get_voxel_size());  
-  
-    in_density_extracted_ptr ->fill(0);
-  
-  in_density_extracted_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));    
-  
-  //int counter;
-  for ( int k = in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k+=1)
-    // to do all pixels where the cyl and the line source are
-    for ( int j =-3;j<=3;j++)
-     for ( int i =-3;i<=3;i++) 
-      {
-	in_density_extracted_ptr->fill(0);	
-	for (int mask_j = -2; mask_j<=2; mask_j++)
-	  for (int mask_i = -2; mask_i<=2; mask_i++)	 
-	  {
-	    (*in_density_extracted_ptr)[k][j+mask_j][i+mask_i] = in_density[k][j+mask_j][i+mask_i];      	  
-	  }
-	  
-	  // do the fwd
-	  if (proj_data_ptr->get_min_tangential_pos_num()==start_tang_pos_num && 
-	    proj_data_ptr->get_min_view_num() == start_view && 
-	    proj_data_ptr->get_min_axial_pos_num(0)== start_axial_pos_num)
-	  {  	    
-	    do_segments_fwd(*in_density_extracted_ptr,(*proj_data_ptr), 
-	      start_segment_num,  end_segment_num,	
-	      start_axial_pos_num,end_axial_pos_num,
-	      start_view, end_view,
-	      start_tang_pos_num, end_tang_pos_num,
-	      *forw_projector_ptr);  	    
-	  }
-	  else
-	  {    
-	    // first set all data to 0
-	    cerr << "Filling output file with 0\n";
-	    for (int segment_num = proj_data_ptr->get_min_segment_num(); 
-	    segment_num <= proj_data_ptr->get_max_segment_num(); 
-	    ++segment_num)
-	    {
-	      const SegmentByView<float> segment = 
-		proj_data_ptr->get_proj_data_info_ptr()->get_empty_segment_by_view(segment_num, false);
-	      if (!(proj_data_ptr->set_segment(segment) == Succeeded::yes))
-		warning("Error set_segment %d\n", segment_num);            
-	    }
-	    do_segments_fwd(*in_density_extracted_ptr,(*proj_data_ptr), 
-	      start_segment_num,  end_segment_num,	
-	      start_axial_pos_num,end_axial_pos_num,
-	      start_view, end_view,
-	      -13,13,
-	      *forw_projector_ptr);   
-	  }	  
-	  
-	  // now find the inverse
-	  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
-	  
-	  int limit_segments= 0;
-	  new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
-	  
-	  const string output_file_name_kappa0 = "fwd_kappa0.s";
-	  
-	  shared_ptr<iostream> sino_stream_kappa0 = 
-	    new fstream (output_file_name_kappa0.c_str(),ios::trunc|ios::out|ios::in|ios::binary);
-	  
-	  
-	  if (!sino_stream_kappa0->good())
-	  {
-	    error("SV filters: error opening files %s\n",output_file_name_kappa0.c_str());
-	  }
-	  
-	  //DiscretisedDensity<3,float>* in_density_tmp_0 =  in_density.clone();  
-	  
-	  //VoxelsOnCartesianGrid<float> * vox_image_ptr_1 =
-	    //new VoxelsOnCartesianGrid<float>(*new_data_info_ptr);   
-	  
-	  shared_ptr<ProjDataFromStream> proj_data_ptr_kappa0 =
-	    new ProjDataFromStream(new_data_info_ptr,sino_stream_kappa0);
-	  
-	  
-	  // after the kappas are obtained -> find the inverse 
-	  
-	  const string output_file_name_inverse_kappa0 = "inv_kappa0.s";
-	  
-	  shared_ptr<iostream> sino_stream_inv_kappa0 = 
-	    new fstream (output_file_name_inverse_kappa0.c_str(),ios::trunc| ios::out|ios::in|ios::binary);
-	  if (!sino_stream_inv_kappa0->good())
-	  {
-	    error("SV filters: error opening files %s\n",output_file_name_inverse_kappa0.c_str());
-	  }
-	  
-	  shared_ptr<ProjDataFromStream> proj_data_ptr_inv_kappa0 =
-	    new ProjDataFromStream(new_data_info_ptr,sino_stream_inv_kappa0);	  	  
-	  find_inverse(proj_data_ptr_inv_kappa0.get(),proj_data_ptr.get());
-	  
-	  // now do the back_projection
-	  
-	  // sm 05/10/2001 - > use the same image_sptr as for fwd:
-
-	  VoxelsOnCartesianGrid<float> * vox_image_ptr_kappa0 =
-	    in_density_cast_0.get_empty_voxels_on_cartesian_grid();
-	    /*new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-	    in_density_cast_0.get_min_y(),in_density_cast_0.get_max_y(),
-	    in_density_cast_0.get_min_x(),in_density_cast_0.get_max_x()),
-	    in_density.get_origin(),in_density_cast_0.get_voxel_size());  */
-	  
-	  //vox_image_ptr_kappa0 = &in_density_cast_0 ;
-	  shared_ptr<DiscretisedDensity<3,float> > image_sptr_0 =  vox_image_ptr_kappa0;   
-	  
-	  // JUST TO CHECK IT -> BY HAND
-	  const ProjDataInfo * proj_data_info_ptr = 
-	    proj_data_ptr->get_proj_data_info_ptr();
-	  
-	  string name = "Ray Tracing";
-	  shared_ptr<ProjMatrixByBin> PM_0 = 
-	    ProjMatrixByBin::read_registered_object(0, name);
-	  PM_0->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),image_sptr_0); 
-	  BackProjectorByBin*  bck_projector_ptr_0  =
-	    new BackProjectorByBinUsingSquareProjMatrixByBin(PM_0);
-	  
-	  bool fill_with_1 = false;
-	  do_segments_bck(*image_sptr_0, 
-	    *proj_data_ptr_inv_kappa0,   
-	    proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 
-	    proj_data_ptr->get_min_axial_pos_num(0),proj_data_ptr->get_max_axial_pos_num(0),
-	    proj_data_ptr->get_min_view_num(),proj_data_ptr->get_max_view_num(),
-	    proj_data_ptr->get_min_tangential_pos_num(), 
-	    proj_data_ptr->get_max_tangential_pos_num(),
-	    bck_projector_ptr_0, fill_with_1);    
-	  (*vox_image_ptr_bck) [k][j][i] = (*image_sptr_0)[k][j][i];  
-	  
-	  //delete vox_image_ptr_1 ;
-      delete bck_projector_ptr_0 ;
-      }
-
-    //  delete  in_density_ptr ;
-      delete in_density_extracted_ptr;    
-       for (VoxelsOnCartesianGrid<float>::full_iterator iter = vox_image_ptr_bck->begin_all();
-         iter != vox_image_ptr_bck->end_all();
-	 ++iter)
-      *iter = sqrt(*iter);
-     
-     
-}
-
-
-
-void
-fwd_project_individual_pixels(ProjData& proj_data,VoxelsOnCartesianGrid<float>* vox_image_ptr,
-			      const int start_segment_num, const int end_segment_num,
-			      const int start_axial_pos_num, const int end_axial_pos_num,		
-			      const int start_view, const int end_view,
-			      const int start_tang_pos_num,const int end_tang_pos_num,
-			      const DiscretisedDensity<3,float>& in_density)
-{
-  
-  // extract the neighbourhood of the current pixel that is 
-  // being fwd projected
-  const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
-    dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
-  
-  const float z_origin = 0;
-  
-  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));  
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
-  
-  // use shared_ptr such that it cleans up automatically
-  string name = "Ray Tracing";
-  
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    ForwardProjectorByBin::read_registered_object(0, name);
-  
-  forw_projector_ptr->set_up(proj_data.get_proj_data_info_ptr()->clone(),
-    image_sptr);
-
-  cerr << forw_projector_ptr->parameter_info();
-  list<ViewSegmentNumbers> already_processed;  
- 
-  VoxelsOnCartesianGrid<float> * in_density_extracted_ptr =
-    vox_image_ptr->get_empty_voxels_on_cartesian_grid();
-  
-  in_density_extracted_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));    
-  
-  //int counter;
-  for ( int k = 40;k<=40;k+=20)
-    for ( int j =-1;j<=1;j++)
-      for ( int i =-1;i<=1;i++)     
-     {
-	in_density_extracted_ptr->fill(0);	
-	for (int mask_j = -2; mask_j<=2; mask_j++)
-	  for (int mask_i = -2; mask_i<=2; mask_i++)	 
-	  {
-	  (*in_density_extracted_ptr)[k][j+mask_j][i+mask_i] = in_density[k][j+mask_j][i+mask_i];      	  
-	  }
-    
-  if (proj_data.get_min_tangential_pos_num()==start_tang_pos_num && 
-	    proj_data.get_min_view_num() == start_view && 
-	    proj_data.get_min_axial_pos_num(0)== start_axial_pos_num)
-	  {  	    
-	  do_segments_fwd(*in_density_extracted_ptr,proj_data, 
-	    start_segment_num,  end_segment_num,	
-	    start_axial_pos_num,end_axial_pos_num,
-	    start_view, end_view,
-	    start_tang_pos_num, end_tang_pos_num,
-	    *forw_projector_ptr);  	    
-	  }
-	  else
-	  {    
-	    // first set all data to 0
-	    cerr << "Filling output file with 0\n";
-	    for (int segment_num = proj_data.get_min_segment_num(); 
-	    segment_num <= proj_data.get_max_segment_num(); 
-	    ++segment_num)
-	    {
-	      const SegmentByView<float> segment = 
-		proj_data.get_proj_data_info_ptr()->get_empty_segment_by_view(segment_num, false);
-	      if (!(proj_data.set_segment(segment) == Succeeded::yes))
-		warning("Error set_segment %d\n", segment_num);            
-	    }
-	    do_segments_fwd(*in_density_extracted_ptr,proj_data, 
-	    start_segment_num,  end_segment_num,	
-	    start_axial_pos_num,end_axial_pos_num,
-	    start_view, end_view,
-	    //start_tang_pos_num, end_tang_pos_num,
-	    -6,6,
-	    *forw_projector_ptr);   
-	  }	  
-	//*vox_image_ptr= *in_density_extracted_ptr;
-	//(*vox_image_ptr)[k][j][i]= (*in_density_extracted_ptr)[k][j][i];
-	 
-      }
-      	
-}
-
-void
-fwd_project_individual_pixels_cyl(ProjData& proj_data,VoxelsOnCartesianGrid<float>* vox_image_ptr,
-			      const int start_segment_num, const int end_segment_num,
-			      const int start_axial_pos_num, const int end_axial_pos_num,		
-			      const int start_view, const int end_view,
-			      const int start_tang_pos_num,const int end_tang_pos_num,
-			      const DiscretisedDensity<3,float>& in_density)
-{
-  
-  // extract the neighbourhood of the current pixel that is 
-  // being fwd projected
-  const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
-    dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
-  
-  const float z_origin = 0;
-  
-  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
-  
-  // use shared_ptr such that it cleans up automatically
-  string name = "Ray Tracing";
-  
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    ForwardProjectorByBin::read_registered_object(0, name);
-  // ask_type_and_parameters();
-  
-  forw_projector_ptr->set_up(proj_data.get_proj_data_info_ptr()->clone(),
-    image_sptr);
-  
-  //cerr << forw_projector_ptr->parameter_info();
-  list<ViewSegmentNumbers> already_processed;
-  
-  VoxelsOnCartesianGrid<float> * in_density_extracted_ptr =
-    new VoxelsOnCartesianGrid<float>(IndexRange3D(in_density_cast_0.get_min_z(),in_density_cast_0.get_max_z(),
-    -8,21,-8,21),
-    in_density.get_origin(),in_density_cast_0.get_voxel_size());  
-  
-  for ( int k = 40;k<=in_density.get_max_index();k+=20)
-    for ( int j = 11;j<=18;j++)
-      for ( int i =11;i<=18;i++)
-      {
-	in_density_extracted_ptr->fill(0);
-	for (int mask_j = -3; mask_j <= 3; mask_j++)
-	  for (int mask_i = -3; mask_i <= 3; mask_i++)	
-	{
-	  (*in_density_extracted_ptr)[k][j+mask_j][i+mask_i] = in_density[k][j+mask_j][i+mask_i];      
-	}
-		
-	// first set all data to 0
-	//cerr << "Filling output file with 0\n";
-	for (int segment_num = proj_data.get_min_segment_num(); 
-	segment_num <= proj_data.get_max_segment_num(); 
-	++segment_num)
-	{
-	  const SegmentByView<float> segment = 
-	    proj_data.get_proj_data_info_ptr()->get_empty_segment_by_view(segment_num, false);
-	  if (!(proj_data.set_segment(segment) == Succeeded::yes))
-	    warning("Error set_segment %d\n", segment_num);            
-	}
-	
-	for  (int i= start_tang_pos_num ; i<= end_tang_pos_num;i++)
-	  
-	  do_segments_fwd(*in_density_extracted_ptr,proj_data, 
-	  start_segment_num,  end_segment_num,	
-	  start_axial_pos_num,end_axial_pos_num,
-	  start_view, end_view,
-	  start_tang_pos_num, end_tang_pos_num,
-	  *forw_projector_ptr);    
-	  (*vox_image_ptr)[k][j][i] = (*in_density_extracted_ptr)[k][j][i];
-      }
-
-
-	
-}
-
-void
-fwd_project(ProjData& proj_data,VoxelsOnCartesianGrid<float>* vox_image_ptr,
-		const int start_segment_num, const int end_segment_num,	
-		const int start_axial_pos_num, const int end_axial_pos_num,
-		const int start_view, const int end_view,
-		const int start_tang_pos_num,const int end_tang_pos_num)
-{
-   
-  const float z_origin = 0;
-   
-  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
-
-  // use shared_ptr such that it cleans up automatically
-  string name = "Ray Tracing";
-
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    ForwardProjectorByBin::read_registered_object(0, name);
-   // ask_type_and_parameters();
-
-  forw_projector_ptr->set_up(proj_data.get_proj_data_info_ptr()->clone(),
-			     image_sptr);
- 
-  cerr << forw_projector_ptr->parameter_info();
-  list<ViewSegmentNumbers> already_processed;
-
-  if (proj_data.get_min_tangential_pos_num()==start_tang_pos_num && 
-    proj_data.get_min_view_num() == start_view && 
-    proj_data.get_min_axial_pos_num(0)== start_axial_pos_num)
-  {   
-       
-    do_segments_fwd(*vox_image_ptr, proj_data,
-      start_segment_num,  end_segment_num,	
-      start_axial_pos_num,end_axial_pos_num,
-      start_view, end_view,start_tang_pos_num,end_tang_pos_num,
-      *forw_projector_ptr);
-    
-  }
-  else
-  {    
-    // first set all data to 0
-    cerr << "Filling output file with 0\n";
-    for (int segment_num = proj_data.get_min_segment_num(); 
-         segment_num <= proj_data.get_max_segment_num(); 
-         ++segment_num)
-    {
-      const SegmentByView<float> segment = 
-        proj_data.get_proj_data_info_ptr()->get_empty_segment_by_view(segment_num, false);
-      if (!(proj_data.set_segment(segment) == Succeeded::yes))
-        warning("Error set_segment %d\n", segment_num);            
-    }
-   // do
-   // {
-      do_segments_fwd(*vox_image_ptr,proj_data, 
-	          start_segment_num,  end_segment_num,	
-		  start_axial_pos_num,end_axial_pos_num,
-	          start_view, end_view,
-                  start_tang_pos_num, end_tang_pos_num,
-	          *forw_projector_ptr);      
-  //  }
-  }
-   
-}
-
-void
-do_segments_fwd(const VoxelsOnCartesianGrid<float>& image, ProjData& proj_data,
-	    const int start_segment_num, const int end_segment_num,
-	    const int start_axial_pos_num, const int end_axial_pos_num,	    
-	    const int start_view, const int end_view,
-	    const int start_tangential_pos_num, const int end_tangential_pos_num,
-	    ForwardProjectorByBin& forw_projector)
-{
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    forw_projector.get_symmetries_used()->clone();  
-  
-  list<ViewSegmentNumbers> already_processed;
-  
-  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
-    for (int view= start_view; view<=end_view; view++)      
-    {       
-      ViewSegmentNumbers vs(view, segment_num);
-      symmetries_sptr->find_basic_view_segment_numbers(vs);
-      if (find(already_processed.begin(), already_processed.end(), vs)
-        != already_processed.end())
-        continue;
-      
-      already_processed.push_back(vs);
-      
-     /*cerr << "Processing view " << vs.view_num() 
-        << " of segment " <<vs.segment_num()
-        << endl;*/
-      
-      RelatedViewgrams<float> viewgrams = 
-        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr,false);
-      forw_projector.forward_project(viewgrams, image,
-        viewgrams.get_min_axial_pos_num(),
-        viewgrams.get_max_axial_pos_num(),
-        start_tangential_pos_num, end_tangential_pos_num);	  
-        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-        error("Error set_related_viewgrams\n");            
-    }   
-}
-
-void 
-find_inverse(VectorWithOffset<SegmentByView<float> *>& all_segments_inv,VectorWithOffset<SegmentByView<float> *>& all_segments_in)
-{
-  
-  const float max_in_viewgram = 33.52F;
-  const float threshold = 0.0001F*max_in_viewgram;    
-  float inv;
-  
-  for ( int segment_num = all_segments_in.get_min_index(); segment_num <= all_segments_in.get_max_index();segment_num++)
-    for ( int view_num =all_segments_in[all_segments_in.get_min_index()]->get_min_view_num(); view_num <= all_segments_in[all_segments_in.get_min_index()]->get_max_view_num(); view_num++)
-      for ( int axial_pos_num = all_segments_in[all_segments_in.get_min_index()]->get_min_axial_pos_num(); axial_pos_num <= all_segments_in[all_segments_in.get_min_index()]->get_max_axial_pos_num();axial_pos_num++)
-	for ( int tang_pos_num = all_segments_in[all_segments_in.get_min_index()]->get_min_tangential_pos_num(); tang_pos_num <=all_segments_in[all_segments_in.get_min_index()]->get_max_tangential_pos_num();tang_pos_num++)
-	{	
-	  float bin= (*all_segments_in[segment_num])[view_num][axial_pos_num][tang_pos_num] ;
-	  
-	  if (bin >= threshold)
-	  {
-	    inv = 1.F/bin;
-	    (*all_segments_inv[segment_num])[view_num][axial_pos_num][tang_pos_num]  = inv;
-	  }
-	  else
-	  {	  
-	    inv =1/threshold;
-	    (*all_segments_inv[segment_num])[view_num][axial_pos_num][tang_pos_num] = inv;
-	  }
-	  
-	}
-	
-}
-
-void 
-find_inverse(ProjDataFromStream* proj_data_ptr_out, ProjDataFromStream* proj_data_ptr_in)
-{  
-  const ProjDataInfo * proj_data_info_ptr =
-    proj_data_ptr_in->get_proj_data_info_ptr();
-  
-  const ProjDataInfo * proj_data_info_ptr_out =
-    proj_data_ptr_out->get_proj_data_info_ptr();
-  
-  //const ProjDataFromStream*  projdatafromstream_in = 
-   // dynamic_cast< const ProjDataFromStream*>(proj_data_ptr_in);
-  
-  //ProjDataFromStream*  projdatafromstream_out = 
-  //  dynamic_cast<ProjDataFromStream*>(proj_data_ptr_out);
-  float inv;
-  float bin;
-
-  //SegmentByView<float> segment_by_view = 
-//	projdatafromstream_in->get_segment_by_view(0);
-
-  //const float max_in_viewgram = segment_by_view.find_max();
-
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num(); 
-  segment_num<= proj_data_info_ptr->get_max_segment_num();
-  segment_num++)
-
- 
-    for ( int view_num = proj_data_info_ptr->get_min_view_num();
-    view_num<=proj_data_info_ptr->get_max_view_num(); view_num++)
-    {
-      Viewgram<float> viewgram_in = proj_data_ptr_in->get_viewgram(view_num,segment_num);
-      Viewgram<float> viewgram_out = proj_data_ptr_out->get_empty_viewgram(view_num,segment_num);
-
-      // the following const was found in the ls_cyl.hs and the same value will
-      // be used for thresholding both kappa_0 and kappa_1.
-      // threshold  = 10^-4/max_in_sinogram
-      // TODO - find out batter way of finding the threshold
-      //const float max_in_viewgram = 0.01675F;
-     //const float max_in_viewgram = 33.0262F;
-      const float max_in_viewgram = 33.52F;
-
-	//segment_by_view.find_max();
-      //cerr << " Max number in viewgram is:" << max_in_viewgram;
-	//= 33.0262F;
-      const float threshold = 0.0001F*max_in_viewgram;    
-   // const float threshold = 0.0000001F/max_in_viewgram;    
-      
-
-      //cerr << " Print out the threshold" << endl;
-      //cerr << threshold << endl;
-      
-      for (int i= viewgram_in.get_min_axial_pos_num(); i<=viewgram_in.get_max_axial_pos_num();i++)
-	for (int j= viewgram_in.get_min_tangential_pos_num(); j<=viewgram_in.get_max_tangential_pos_num();j++)
-	{
-	  bin= viewgram_in[i][j];
-	 	 	 
-	  if (bin >= threshold)
-	  {
-	    inv = 1.F/bin;
-	    viewgram_out[i][j] = inv;
-	  }
-	 else
-	  {	  
-	   inv =1/threshold;
-	   viewgram_out[i][j] = inv;
-	  }
-
-    	}
-	proj_data_ptr_out->set_viewgram(viewgram_out);
-    }
-
-   //const string output_file_name_inside_inverse = "inside_inverse.s";
-  // write_basic_interfile_PDFS_header(output_file_name_inside_inverse,*proj_data_ptr_out);
- //  cerr << "Finished" << endl;
-    
-}
-
-
-void
-do_segments_bck(DiscretisedDensity<3,float>& image, 
-	    //  shared_ptr<ProjDataFromStream> proj_data_org,
-            ProjData& proj_data_org,
-	    const int start_segment_num, const int end_segment_num,
-	    const int start_axial_pos_num, const int end_axial_pos_num,
-	    const int start_view, const int end_view,
-	    const int start_tang_pos_num,const int end_tang_pos_num,	   
-	    BackProjectorByBin* back_projector_ptr,
-	    bool fill_with_1)
-{
-  
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector_ptr->get_symmetries_used()->clone();  
-  
-  list<ViewSegmentNumbers> already_processed;
-  
-  for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
-    for (int view= start_view; view<=end_view; view++)
-  { 
-    ViewSegmentNumbers vs(view, segment_num);
-    symmetries_sptr->find_basic_view_segment_numbers(vs);
-    if (find(already_processed.begin(), already_processed.end(), vs)
-        != already_processed.end())
-      continue;
-
-    already_processed.push_back(vs);
-    
-    cerr << "Processing view " << vs.view_num()
-      << " of segment " <<vs.segment_num()
-      << endl;
-    
-    if(fill_with_1 )
-    {
-      RelatedViewgrams<float> viewgrams_empty= 
-	proj_data_org.get_empty_related_viewgrams(vs, symmetries_sptr);
-	//proj_data_org.get_empty_related_viewgrams(vs.view_num(),vs.segment_num(), symmetries_sptr);
-      
-      RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams_empty.begin();
-      while(r_viewgrams_iter!=viewgrams_empty.end())
-      {
-	Viewgram<float>&  single_viewgram = *r_viewgrams_iter;
-	if (start_view <= single_viewgram.get_view_num() && 
-	  single_viewgram.get_view_num() <= end_view &&
-	  single_viewgram.get_segment_num() >= start_segment_num &&
-	  single_viewgram.get_segment_num() <= end_segment_num)
-	{
-	  single_viewgram.fill(1.F);
-	}
-	r_viewgrams_iter++;	  
-      } 
-      
-      back_projector_ptr->back_project(image,viewgrams_empty,
-	max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()), 
-	min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()),
-	start_tang_pos_num, end_tang_pos_num);
-    }
-    else
-    {
-      RelatedViewgrams<float> viewgrams = 
-	proj_data_org.get_related_viewgrams(vs,
-	//proj_data_org.get_related_viewgrams(vs.view_num(),vs.segment_num(),
-	symmetries_sptr);
-      RelatedViewgrams<float>::iterator r_viewgrams_iter = viewgrams.begin();
-      
-      while(r_viewgrams_iter!=viewgrams.end())
-      {
-	Viewgram<float>&  single_viewgram = *r_viewgrams_iter;
-	{	  
-	  if (start_view <= single_viewgram.get_view_num() && 
-	    single_viewgram.get_view_num() <= end_view &&
-	  single_viewgram.get_segment_num() >= start_segment_num &&
-	  single_viewgram.get_segment_num() <= end_segment_num)
-	  {
-	    // ok
-	  }
-	  else
-	  { 
-	    // set to 0 to prevent it being backprojected
-	    single_viewgram.fill(0);
-	  }
-	}
-	++r_viewgrams_iter;
-      }
-	
-      back_projector_ptr->back_project(image,viewgrams,
-	  max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()), 
-	  min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()),
-	  start_tang_pos_num, end_tang_pos_num);      
-    } // fill
-  } // for view_num, segment_num    
-    
-}
-
-
-#endif
-
+     }
 
 template <typename elemT>
 void
@@ -1700,6 +1212,7 @@ ModifiedInverseAverigingImageFilter<elemT>::set_defaults()
   sensitivity_image = NULL;
   attenuation_proj_data_ptr = NULL;
   mask_size = 0;
+  z_direction_trivial = true;
  
 }
 
@@ -1714,6 +1227,7 @@ ModifiedInverseAverigingImageFilter<elemT>:: initialise_keymap()
   parser.add_key("initial_image_filename", &initial_image_filename);
   parser.add_key("sensitivity_image_filename", &sensitivity_image_filename);
   parser.add_key("mask_size", &mask_size);
+  parser.add_key("z_direction_trivial", &z_direction_trivial);
   parser.add_stop_key("END Modified Inverse Image Filter Parameters");
 }
 
@@ -1730,6 +1244,8 @@ post_processing()
       static_cast<float>(filter_coefficients_for_parsing[i-min_index]);
   return false;
 }
+
+
 
 
 const char * const 
@@ -1753,4 +1269,10 @@ template ModifiedInverseAverigingImageFilter<float>;
 
 END_NAMESPACE_STIR
 
-#endif
+
+/************************************************************************************************/
+
+
+
+
+
