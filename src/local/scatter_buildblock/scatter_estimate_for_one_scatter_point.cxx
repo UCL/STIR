@@ -23,9 +23,6 @@ using namespace std;
 
 START_NAMESPACE_STIR
 
-static const float total_cross_section_511keV = 
-  total_cross_section(511.); 
-
 float scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -58,7 +55,7 @@ float scatter_estimate_for_one_scatter_point(
 	static const float detection_efficiency_no_scatter =
 	  detection_efficiency_BGO(lower_energy_threshold,
 				   upper_energy_threshold,
-				   512);
+				   511);
 	const float detection_efficiency_scatter =
 	  detection_efficiency_BGO(lower_energy_threshold,
 				   upper_energy_threshold,
@@ -86,7 +83,6 @@ float scatter_estimate_for_one_scatter_point(
 			,act_image_type);
 		if (emiss_to_detA==0 && emiss_to_detB==0)
 		return 0;	
-    // TODO in principle, the scattered photon should have different attenuation
 		atten_to_detA = cached_factors(
 			image_as_density,
 			scatter_point_num, 
@@ -109,13 +105,22 @@ float scatter_estimate_for_one_scatter_point(
 			scatter_point, 
 			detector_coord_B);
 		if (emiss_to_detA==0 && emiss_to_detB==0)
-			return 0;
-		// TODO in principle, the scattered photon should have different attenuation
-		atten_to_detA = exp(-integral_scattpoint_det(
+			return 0;		
+#ifndef NEWSCALE		
+	/* projectors work in pixel units, so convert attenuation data 
+	   from cm^-1 to pixel_units^-1 */
+		const float	rescale = 
+		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(image_as_density).
+		get_grid_spacing()[3]/10;
+#else
+  const float	rescale = 
+		0.1F;
+#endif
+		atten_to_detA = exp(-rescale*integral_scattpoint_det(
 			image_as_density,
 			scatter_point, 
 			detector_coord_A));
-		atten_to_detB = exp(-integral_scattpoint_det(
+		atten_to_detB = exp(-rescale*integral_scattpoint_det(
 			image_as_density,
 			scatter_point, 
 			detector_coord_B));
@@ -124,14 +129,15 @@ float scatter_estimate_for_one_scatter_point(
 	const float dif_cross_section =
 		dif_cross_section_511keV(costheta); 
 	
-	const float rA=norm(scatter_point-detector_coord_A);
-	const float rB=norm(scatter_point-detector_coord_B);
+	const float rAsq=normsq(scatter_point-detector_coord_A);
+	const float rBsq=normsq(scatter_point-detector_coord_B);
 	
 	const float scatter_point_mu=
 		scatt_points_vector[scatter_point_num].mu_value;
-#ifndef NDEBUG
+
+#ifndef NDEBUG		
 	const VoxelsOnCartesianGrid<float>& image =
-		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
+		static_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
 	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
 	CartesianCoordinate3D<float>  origin = 
 		image.get_origin();
@@ -140,19 +146,17 @@ float scatter_estimate_for_one_scatter_point(
 
 	assert(scatter_point_mu==
 		image[round((scatter_point-origin)/voxel_size)]);
-#endif
-	
+#endif	
 	const float scatter_ratio =
 		(emiss_to_detA + emiss_to_detB)
-		/(rB*rB*rA*rA)
+		/(rBsq*rAsq)
 		*dif_cross_section
 		*atten_to_detB
 		*atten_to_detA
 		*scatter_point_mu
 		*detection_efficiency_no_scatter
 		*detection_efficiency_scatter
-		*exp(-total_cross_section(new_energy)/total_cross_section_511keV)
-        /total_cross_section_511keV
+		*exp(-total_cross_section(new_energy)/total_cross_section_511keV)        
 		;	
 
 	if (!use_cosphi)
