@@ -78,7 +78,9 @@ public:
   /*! 
   \param fwhms the FWHM of the underlying Gauss 1D filters (in mm)
   \param metz_powers the powers of the 1D Metz filters
-  \param sampling distances in each dimensions (in mm)
+  \param sampling_distances in each dimensions (in mm)
+  \param max_kernel_sizes maximum number of elements in the kernels.
+          -1 means unrestricted
 
   For each of these parameters, the index range should be from 1 to num_dimensions, 
   with 1 corresponding to the 1st (i.e. slowest) index.
@@ -86,16 +88,18 @@ public:
   \warning the fwhms parameter does \c not give the FWHM of the Metz filter, but of
   the underlying Gauss.
   */
-  SeparableMetzArrayFilter(const VectorWithOffset<elemT>& fwhms,
-			 const VectorWithOffset<elemT>& metz_powers,
-                         const BasicCoordinate<num_dimensions, elemT>& sampling_distances);
+  SeparableMetzArrayFilter(const VectorWithOffset<float>& fwhms,
+			   const VectorWithOffset<float>& metz_powers,
+			   const BasicCoordinate<num_dimensions, float>& sampling_distances,
+			   const VectorWithOffset<int>& max_kernel_sizes);
   
   
   
 private:
-  VectorWithOffset<elemT> fwhms;
-  VectorWithOffset<elemT> metz_powers;
-  BasicCoordinate<num_dimensions, elemT> sampling_distances;
+  VectorWithOffset<float> fwhms;
+  VectorWithOffset<float> metz_powers;
+  BasicCoordinate<num_dimensions, float> sampling_distances;
+  VectorWithOffset<int> max_kernel_sizes;
 };
 
 

@@ -67,14 +67,17 @@ public:
   //Succeeded consistency_check( const DiscretisedDensity<num_dimensions,elemT>& image) const;  
   
   
-  VectorWithOffset<float> get_metz_fwhm();
-  VectorWithOffset<float> get_metz_powers();
-  
+  VectorWithOffset<float> get_metz_fwhms() const;
+  VectorWithOffset<float> get_metz_powers() const;
+  //! Maximum number of elements in the kernels
+  /*! -1 means unrestricted*/
+  VectorWithOffset<int> get_max_kernel_sizes() const;  
   
 private:
   
-  VectorWithOffset<float> fwhm;
-  VectorWithOffset<float> metz_power;
+  VectorWithOffset<float> fwhms;
+  VectorWithOffset<float> metz_powers;
+  VectorWithOffset<int> max_kernel_sizes;  
   
   SeparableMetzArrayFilter<num_dimensions,elemT> metz_filter;
 
