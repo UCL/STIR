@@ -51,6 +51,17 @@ open_lm_file(unsigned int new_lm_file) const
 {
   if (is_null_ptr(current_lm_data_ptr) || new_lm_file != current_lm_file)
     {
+      // first store saved_get_positions
+      if (!is_null_ptr(current_lm_data_ptr))
+	{
+	  if (current_lm_file>=saved_get_positions_for_each_lm_data.size())
+	    saved_get_positions_for_each_lm_data.resize(current_lm_file);
+
+	  saved_get_positions_for_each_lm_data[current_lm_file] =
+	    current_lm_data_ptr->get_saved_get_positions();
+	}
+
+      // now open new file
       string filename = listmode_filename_prefix;
       char rest[50];
       sprintf(rest, "_%d.lm", new_lm_file);
@@ -66,12 +77,24 @@ open_lm_file(unsigned int new_lm_file) const
       current_lm_data_ptr =
 	new CListModeDataFromStream(stream_ptr, scanner_ptr);
       current_lm_file = new_lm_file;
+
+      // now restore saved_get_positions for this file
+      if (!is_null_ptr(current_lm_data_ptr) && 
+	  current_lm_file<saved_get_positions_for_each_lm_data.size())
+	current_lm_data_ptr->
+	  set_saved_get_positions(saved_get_positions_for_each_lm_data[current_lm_file]);
+
       return Succeeded::yes;
     }
   else
     return current_lm_data_ptr->reset();
 }
 
+/*! \todo Currently switches over to the next .lm file whenever 
+    get_next_record() on the current file fails. This even happens
+    when it failed not because of EOF, or if the listmode file is
+    shorter than 2 GB.
+*/
 Succeeded
 CListModeDataECAT::
 get_next_record(CListRecord& record) const
@@ -110,29 +133,23 @@ CListModeData::SavedPosition
 CListModeDataECAT::
 save_get_position() 
 {
-  saved_get_positions.resize(num_saved_get_positions+1);
-  saved_get_positions[num_saved_get_positions].first = 
-    current_lm_file;
-  saved_get_positions[num_saved_get_positions].second = 
-     current_lm_data_ptr->get_stream_ptr()->tellg();
-  assert(num_saved_get_positions+1 != 0);
-  return num_saved_get_positions++;
+  GetPosition current_pos;
+  current_pos.first =  current_lm_file;
+  current_pos.second = current_lm_data_ptr->save_get_position();
+  saved_get_positions.push_back(current_pos);
+  return saved_get_positions.size()-1;
 } 
 
 Succeeded
 CListModeDataECAT::
 set_get_position(const CListModeDataECAT::SavedPosition& pos)
 {
-  assert(pos < num_saved_get_positions);
+  assert(pos < saved_get_positions.size());
   if (open_lm_file(saved_get_positions[pos].first) == Succeeded::no)
     return Succeeded::no;
 
-  current_lm_data_ptr->get_stream_ptr()->
-    seekg(saved_get_positions[pos].second, ios::beg);
-  if (!current_lm_data_ptr->get_stream_ptr()->good())
-    return Succeeded::no;
-  else
-    return Succeeded::yes;
+  return
+    current_lm_data_ptr->set_get_position(saved_get_positions[pos].second);
 }
   
 #if 0
