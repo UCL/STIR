@@ -46,8 +46,9 @@ fourier(T& c, const int sign = 1);
 /*! \ingroup DFT
   \brief Compute the inverse of the multi-dimensional discrete fourier transform.
 
-  The scale factor is such that <tt>inverse(fourier(c,sign),sign)==c</tt>, aside
+  The scale factor is such that <tt>inverse_fourier(fourier(c,sign),sign)==c</tt>, aside
   from numerical error of course.
+  \see fourier
 */
 template <typename T>
 inline void inverse_fourier(T& c, const int sign=1)
@@ -89,6 +90,20 @@ template <typename T>
 void fourier_1d(T& c, const int sign);
 
 /*! \ingroup DFT
+  \brief Compute the inverse of the one-dimensional discrete fourier transform.
+
+  The scale factor is such that <tt>inverse_fourier_1d(fourier_1d(c,sign),sign)==c</tt>, aside
+  from numerical error of course.
+  \see fourier_1d()
+*/
+template <typename T>
+inline void inverse_fourier_1d(T& c, const int sign=1)
+{
+  fourier_1d(c,-sign);
+  c /= c.size();
+}
+
+/*! \ingroup DFT
 
   \brief Compute one-dimensional discrete fourier transform of a real array (of even size).
 
@@ -108,7 +123,7 @@ void fourier_1d(T& c, const int sign);
   This function implements the above and is hence (probably) a faster way to compute
   DFTs of real arrays. Note however, that in contrast to the Numerical Recipes routines,
   the result is not stored in the same memory location as the input. For a recent
-  compiler implement the Named-Return-Value-Optimisation, this should not be a problem
+  compiler that implements the Named-Return-Value-Optimisation, this should not be a problem
   in most cases.
 
   Result is such that  
@@ -122,8 +137,6 @@ void fourier_1d(T& c, const int sign);
   \warning Currently, the array has to have \c get_min_index()==0.
 */
 template <typename T>
-//Array<1,std::complex<typename T::value_type> >
-//fourier_1d_for_real_data(const T& v, const int sign = 1);
 Array<1,std::complex<T> >
 fourier_1d_for_real_data(const Array<1,T>& c, const int sign = 1);
 
@@ -137,49 +150,55 @@ fourier_1d_for_real_data(const Array<1,T>& c, const int sign = 1);
 */
 template <typename T>
 Array<1,T>
-  inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign = 1);
+inverse_fourier_1d_for_real_data(Array<1,std::complex<T> >& c, const int sign = 1);
 
 /*! \ingroup DFT
-  \brief Adds negative frequencies to a complex array of positive frequences by complex conjugation.
 
+  \brief Compute discrete fourier transform of a real array (with the last dimensions of even size).
+
+  \param[in] c The type of \a c should normally be \verbatim Array<d,float > \endverbatim 
+          (or \c double).
+  \param[in] sign  This can be used to implement a different convention for the DFT.
+  \return The positive frequencies of the DFT as an array of complex numbers. That is,
+  if \c c has sizes <tt>(n1,n2,...,nd)</tt>, with <tt>nd</tt> even,
+  the returned array will have sizes
+  <tt>(n1,n2,...,(nd/2)+1)</tt>, with the 0 frequency at index <tt>(0,0,...0)</tt>.
+
+  For a real array, the DFT is such that the values at frequency
+  <tt>(k1,k2,...,kd)</tt> are the complex conjugate of the value at the corresponding 
+  frequency <tt>(-k1,-k2,...,-kd)</tt>. 
   \see fourier_1d_for_real_data()
+
+  This can be used to compute only the 'positive' half of the frequencies. For this 
+  implementation, this means that only results for frequencies <tt>(k1,k2,...,kd)</tt>
+  with <pre>0<=kd<=(nd/2)</pre>, i.e. the 'last' dimension has positive frequencies.
+
+  \warning At present, \c c has to be a regular array with all indices starting from 0.
+  \see pos_frequencies_to_all()
 */
-template <typename T>
-Array<1,std::complex<T> > 
-pos_frequencies_to_all(const VectorWithOffset<std::complex<T> >& c)
-{
-  const unsigned int n = (c.get_length()-1)*2;
-  Array<1,std::complex<T> > result(n);
-  for (int i=1; i<c.get_length()-1; ++i)
-    {
-      result[i] = c[i];
-      result[n-i] = std::conj(c[i]);
-    }
-  result[0] = c[0];
-  result[n/2] = c[n/2];
-  return result;
-}
+template <int num_dimensions, typename T>
+  Array<num_dimensions,std::complex<T> >
+  fourier_for_real_data(const Array<num_dimensions,T>& c, const int sign = 1);
 
-#if 0
-void real_to_complex(const VectorWithOffset< std::complex<float> >& c,
-		VectorWithOffset<float>& nr_data)
-{
-      Array<2,std::complex<float> >::const_full_iterator iter=
-        c2d.begin_all();
+/*! \ingroup DFT
 
-      while(iter != c2d.end_all())
-      {
-        *nr_iter++ = iter->real();
-        *nr_iter++ = iter->imag();
-        ++iter;
-      }
-  for (int i=0; i<c.get_length(); ++i)
-  {
-    nr_data[2*i+1] = c[i].real();
-    nr_data[2*i+2] = c[i].imag();
-  }
-}
-#endif
+  \brief Compute the inverse of the discrete fourier transform of a real array (with the last dimension of even size).
+
+  \warning destroys values in (and resizes) first argument \a c
+  \see fourier_for_real_data()
+*/
+template <int num_dimensions, typename T>
+  Array<num_dimensions,T >
+  inverse_fourier_for_real_data(Array<num_dimensions,std::complex<T> >& c, const int sign = 1);
+
+/*! \ingroup DFT
+  \brief Adds negative frequencies to the last dimension of a complex array by complex conjugation.
+
+  \see fourier_for_real_data()
+*/
+template <int num_dimensions, typename T>
+Array<num_dimensions, std::complex<T> > 
+pos_frequencies_to_all(const Array<num_dimensions, std::complex<T> >& c);
 
 
 END_NAMESPACE_STIR
