@@ -98,7 +98,7 @@ void
 RigidObject3DMotionFromPolaris::
 get_motion(RigidObject3DTransformation& ro3dtrans, const float time) const
 {
-   Polaris_MT_File::const_iterator iterator_for_record_just_after_this_time =
+  Polaris_MT_File::const_iterator iterator_for_record_just_after_this_time =
     mt_file_ptr->begin();
 
   while (iterator_for_record_just_after_this_time!= mt_file_ptr->end() &&
@@ -107,11 +107,13 @@ get_motion(RigidObject3DTransformation& ro3dtrans, const float time) const
 
   if (iterator_for_record_just_after_this_time == mt_file_ptr->end())
   {
-    error("RigidObject3DMotionFromPolaris: reached the end of the file");
+    error("RigidObject3DMotionFromPolaris: motion asked for time %g which is "
+	  "beyond the range of data (time in Polaris units: %g)\n",
+	  time, time + Polaris_time_offset);
   }
   else
   {
-  RigidObject3DTransformation ro3dtrans_tmp (iterator_for_record_just_after_this_time->quat,
+  const RigidObject3DTransformation ro3dtrans_tmp (iterator_for_record_just_after_this_time->quat,
               iterator_for_record_just_after_this_time->trans);
   ro3dtrans=ro3dtrans_tmp;
   }
@@ -404,8 +406,8 @@ bool RigidObject3DMotionFromPolaris::post_processing()
 Succeeded 
 RigidObject3DMotionFromPolaris::set_polaris_time_offset(float mt_offset)
 {
-  float time_offset = (*mt_file_ptr)[mt_offset].sample_time;
-  Polaris_time_offset=time_offset;
+  Polaris_time_offset=(*mt_file_ptr)[mt_offset].sample_time;
+  cerr<< "\tPolaris time offset is:  " <<  Polaris_time_offset << endl;
   return Succeeded::yes;
 }
 
