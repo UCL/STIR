@@ -29,6 +29,7 @@
 #include "Coordinate3D.h"
 #include "IndexRange2D.h"
 #include "IndexRange3D.h"
+#include "Bin.h"
 // include for ask and ask_num
 #include "utilities.h"
 
@@ -47,6 +48,105 @@ using std::equal;
 #endif
 
 START_NAMESPACE_TOMO
+
+
+float 
+ProjDataInfo::get_sampling_in_t(const Bin& bin) const
+{
+  return
+    (get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()+1,bin.tangential_pos_num())) -
+     get_t(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num()-1,bin.tangential_pos_num()))
+     )/2;
+}
+
+
+float 
+ProjDataInfo::get_sampling_in_s(const Bin& bin) const
+{
+  return
+    (get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()+1)) -
+     get_s(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num()-1))
+     )/2;
+}
+
+void 
+ProjDataInfo::set_num_views(const int num_views)
+{
+  min_view_num = 0;
+  max_view_num = num_views-1;
+}
+
+void 
+ProjDataInfo::set_num_tangential_poss(const int num_tang_poss)
+{
+
+  min_tangential_pos_num = -(num_tang_poss/2);
+  max_tangential_pos_num = min_tangential_pos_num + num_tang_poss-1;
+}
+
+/*! Uses as min_axial_pos_per_seg 0 */
+void 
+ProjDataInfo::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_pos_per_segment)
+{
+  // first do assignments to make the members the correct size 
+  // (data will be overwritten)
+  min_axial_pos_per_seg= num_axial_pos_per_segment;
+  max_axial_pos_per_seg= num_axial_pos_per_segment;
+  
+  for (int i=num_axial_pos_per_segment.get_min_index(); 
+       i<=num_axial_pos_per_segment.get_max_index();
+       i++)
+  {
+    min_axial_pos_per_seg[i]=0;
+    max_axial_pos_per_seg[i]=num_axial_pos_per_segment[i]-1;
+  }
+    
+}
+
+/*! No checks are done on validity of the min_ax_pos_num argument */
+void 
+ProjDataInfo::set_min_axial_pos_num(int min_ax_pos_num, const int segment_num)
+{
+  min_axial_pos_per_seg[segment_num] = min_ax_pos_num;
+}
+/*! No checks are done on validity of the max_ax_pos_num argument */
+void 
+ProjDataInfo::set_max_axial_pos_num(int max_ax_pos_num, const int segment_num)
+{
+  max_axial_pos_per_seg[segment_num] = max_ax_pos_num;
+}
+
+
+void
+ProjDataInfo::set_min_tangential_pos_num(int min_tang_poss)
+{
+  min_tangential_pos_num = min_tang_poss;
+}
+
+void
+ProjDataInfo::set_max_tangential_pos_num(int max_tang_poss)
+{
+  max_tangential_pos_num = max_tang_poss;
+}
+
+
+ProjDataInfo::ProjDataInfo()
+{}
+
+
+
+
+ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner> scanner_ptr_v,
+                           const VectorWithOffset<int>& num_axial_pos_per_segment_v, 
+                           const int num_views_v, 
+                           const int num_tangential_poss_v)
+			   :scanner_ptr(scanner_ptr_v)
+
+{ 
+  set_num_views(num_views_v);
+  set_num_tangential_poss(num_tangential_poss_v);
+  set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);
+}
 
 string
 ProjDataInfo::parameter_info()  const
