@@ -21,6 +21,8 @@ SOURCES = \
   ProjData.cxx \
   ProjDataInfo.cxx \
   ProjDataInfoCylindrical.cxx \
+  ProjDataInfoCylindricalArcCorr.cxx \
+  ProjDataInfoCylindricalNoArcCorr.cxx \
   ProjDataFromStream.cxx \
   ProjDataGEAdvance.cxx \
   Scanner.cxx \
@@ -32,7 +34,7 @@ SOURCES = \
   DiscretisedDensity.cxx \
   VoxelsOnCartesianGrid.cxx \
   utilities.cxx \
-  interfile.cxx InterfileHeader.cxx \
+  interfile.cxx InterfileHeader.cxx interfile_keyword_functions.cxx \
   zoom.cxx \
   NumericType.cxx ByteOrder.cxx \
   KeyParser.cxx line.cxx \
