@@ -6,7 +6,8 @@
   \ingroup Array
  
   \brief Implementations of centre_of_gravity.h 
-  \warning Only 1 and 2 dimensional versions are instantiated.
+  \warning Only 1 and 2 dimensional versions are instantiated. Also, 
+  for old compilers, the element type of the vectors has to be float.
   \author Kris Thielemans
   $Date$
   $Revision$
@@ -31,7 +32,11 @@ using std::max;
 
 START_NAMESPACE_STIR
 
+#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#define T float
+#else
 template <class T>
+#endif
 T
 find_unweighted_centre_of_gravity(const Array<1,T>& row)
 {
@@ -41,7 +46,9 @@ find_unweighted_centre_of_gravity(const Array<1,T>& row)
   return CoG;
 }
 
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class T>
+#endif
 BasicCoordinate<2,T> 
 find_unweighted_centre_of_gravity(const Array<2,T>& plane)
 {
@@ -68,6 +75,10 @@ find_unweighted_centre_of_gravity(const Array<2,T>& plane)
   
   return CoG;
 }
+
+#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+#undef T
+#endif
 
 template <int num_dimensions, class T>
 BasicCoordinate<num_dimensions,T> 
