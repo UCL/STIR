@@ -13,10 +13,10 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/Shape/Shape3DWithOrientation.h"
+#include "stir/Shape/Shape3DWithOrientation.h"
 
 START_NAMESPACE_STIR
 

@@ -14,13 +14,13 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/Shape/Ellipsoid.h"
-#include "local/stir/Shape/EllipsoidalCylinder.h"
-#include "local/stir/Shape/DiscretisedShape3D.h"
+#include "stir/Shape/Ellipsoid.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/DiscretisedShape3D.h"
 
 START_NAMESPACE_STIR
 

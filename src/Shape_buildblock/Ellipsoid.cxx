@@ -15,7 +15,7 @@
     Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/Shape/Ellipsoid.h"
+#include "stir/Shape/Ellipsoid.h"
 
 START_NAMESPACE_STIR
 
