@@ -45,11 +45,11 @@ START_NAMESPACE_STIR
 
   After the swapping, the transformation that is applied is as follows
   \f[ r' = \mathrm{conj}(q)(r-t)q \f]
-  where the quaternion is specified as \f$[q0,qx,qy,qz]\f$, while the translation
+  where the quaternion is specified as \f${[}q0,qx,qy,qz{]}\f$, while the translation
   is initialised in the usual (in STIR) reverse order, e.g.
-  \begin{verbatim}
+  \code
   CartesianCoordinate3D<float> t(tz,ty,tx);
-  \end{verbatim}
+  \endcode
   \warning No swapping is performed on the translation. The whole transformation 
   has to be specified in the right-handed system.
 
@@ -114,6 +114,24 @@ private:
 std::ostream&
 operator<<(std::ostream& out,
 	   const RigidObject3DTransformation& rigid_object_transformation);
+
+//! Composition of 2 transformations
+/*! \ingroup motion
+   This provides a way to perform 2 transformations after eachother.
+   The following code will work
+   \code
+    RigidObject3DTransformation tf_1,tf_2; // initialise somehow
+    const RigidObject3DTransformation tf_2_1 = compose(tf_2,tf_1));
+      const CartesianCoordinate3D<float> point(1.F,-5.F,2.F);
+      assert(norm(tf_2.transform_point(tf_1.transform_point(point)) -
+                  tf_2_ 1.transform_point(point))
+             < .01);
+   \endcode
+*/
+
+RigidObject3DTransformation 
+compose (const RigidObject3DTransformation& apply_last,
+	 const RigidObject3DTransformation& apply_first);
 
 END_NAMESPACE_STIR
 
