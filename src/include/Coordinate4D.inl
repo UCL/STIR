@@ -5,7 +5,7 @@
 
 /*!
   \file 
- 
+  \ingroup buildblock  
   \brief inline implementations for the Coordinate4D<coordT> class 
 
   \author Sanida Mustafovic 

@@ -5,7 +5,7 @@
 #define __Coordinate4D_H__
 /*!
   \file 
- 
+  \ingroup buildblock 
   \brief defines the Coordinate4D<coordT> class 
 
   \author Sanida Mustafovic 
@@ -24,7 +24,8 @@
 
 START_NAMESPACE_TOMO
 /*!
-   \brief a templated class for 4-dimensional coordinates.
+  \ingroup buildblock 
+  \brief a templated class for 4-dimensional coordinates.
 
    The only new method is a constructor Coordinate4D<coordT>(c1,c2,c3,c4)
 
