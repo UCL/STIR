@@ -267,7 +267,12 @@ Array<1, elemT>::read_data(istream& s,
   if (s.eof())
   { error("Array::read_data: reading past EOF\n"); }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
+  // note: find num_to_read (using size()) outside of s.read() function call
+  // otherwise check_state() in size() might abort if
+  // get_data_ptr() is called before size() (which is compiler dependent)
+  typename const std::streamsize num_to_read =
+    static_cast<std::streamsize>(base_type::size())* sizeof(elemT));
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
   base_type::release_data_ptr();
   
   if (!s)
@@ -650,7 +655,9 @@ Array<1, float>::read_data(istream& s,
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
+  const std::streamsize num_to_read =
+    static_cast<std::streamsize>(base_type::size())* sizeof(elemT);
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
   base_type::release_data_ptr();
   
   if (!s)
@@ -719,7 +726,9 @@ Array<1, short>::read_data(istream& s,
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
+  const std::streamsize num_to_read =
+    static_cast<std::streamsize>(base_type::size())* sizeof(elemT);
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
   base_type::release_data_ptr();
   
   if (!s)
@@ -788,7 +797,9 @@ Array<1, unsigned short>::read_data(istream& s,
   if (s.eof())
   { error("Reading past EOF in read_data\n");  }
   
-  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), base_type::get_length() * sizeof(elemT));
+  const std::streamsize num_to_read =
+    static_cast<std::streamsize>(base_type::size())* sizeof(elemT);
+  s.read(reinterpret_cast<char *>(base_type::get_data_ptr()), num_to_read);
   base_type::release_data_ptr();
   
   if (!s)
