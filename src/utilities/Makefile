@@ -43,7 +43,7 @@ endif
 
 # KT 09/10/98 use OBJS,EXES to prevent repetition, add displayIF
 #CL 10/10/98 Add readsino
-SOURCES = vox.cxx readsino.cxx displayPSOV.cxx swap_byteorder.cxx displayIF.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx
+SOURCES = readsino.cxx displayPSOV.cxx swap_byteorder.cxx displayIF.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx #vox.cxx CL 20/10/98 Disable vox as Interfile library not compiled properly
 
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
