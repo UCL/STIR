@@ -499,34 +499,8 @@ FindMCNormFactors::process_data()
 			    ro3dtrans.transform_bin(bin, 
 						    *out_proj_data_info_ptr,
 						    *proj_data_info_cyl_uncompressed_ptr);
-#if 0
-			    if ((bin.axial_pos_num()-original_bin.axial_pos_num())> 0.0001 ||  
-				(bin.segment_num()-original_bin.segment_num())> 0.0001 ||
-				(bin.tangential_pos_num()-original_bin.tangential_pos_num()) > 0.0001||
-				(bin.view_num() -original_bin.view_num())> 0.0001) 
-
-			      {
-				Quaternion<float> quat = ro3dtrans.get_quaternion();
-				cerr << quat[1] << "   " << quat[2]<<  "   " << quat[3]<< "   " << quat[4]<< endl;
-				CartesianCoordinate3D<float> trans=ro3dtrans.get_translation();
-				cerr <<  trans.z() << "    " <<  trans.y() << "   " << trans.x() << endl;
-				cerr << " Start" << endl;
-				cerr << " Original bin is " << original_bin.segment_num() << "   " << original_bin.axial_pos_num() << "   " << original_bin.view_num() << "    "  << original_bin.tangential_pos_num() << endl;
-				cerr << " Transformed  bin is " << bin.segment_num() << "   " << bin.axial_pos_num() << "   " << bin.view_num() << "    "  << bin.tangential_pos_num() << endl;
-
-				cerr << " End" << endl;
-			      }
-#endif
-			    if (bin.get_bin_value()>0
-				&& bin.tangential_pos_num()>= out_proj_data_ptr->get_min_tangential_pos_num()
-				&& bin.tangential_pos_num()<= out_proj_data_ptr->get_max_tangential_pos_num()
-				&& bin.axial_pos_num()>=out_proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
-				&& bin.axial_pos_num()<=out_proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-				) 
-			      {
-				assert(bin.view_num()>=out_proj_data_ptr->get_min_view_num());
-				assert(bin.view_num()<=out_proj_data_ptr->get_max_view_num());
-				
+			    if (bin.get_bin_value()>0) 
+			      {				
 				// now check if we have its segment in memory
 				if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
 				  {
