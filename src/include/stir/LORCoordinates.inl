@@ -148,8 +148,8 @@ get_sino_coords(  coordT& _z1,
 		  const LORInCylinderCoordinates<coordT>& cyl_coords)
 {
   // TODO check
-  _beta = to_0_2pi(cyl_coords.p1().psi() - cyl_coords.p2().psi() +  _PI)/2;
-  _phi =  to_0_2pi((cyl_coords.p1().psi() + cyl_coords.p2().psi() -  _PI)/2);
+  _beta = to_0_2pi(cyl_coords.p1().psi() - cyl_coords.p2().psi() +  static_cast<coordT>(_PI))/2;
+  _phi =  to_0_2pi((cyl_coords.p1().psi() + cyl_coords.p2().psi() - static_cast<coordT>( _PI))/2);
   /* Now bring into standard range and set z accordingly */
   if (_phi <  _PI)
     {
@@ -168,6 +168,7 @@ get_sino_coords(  coordT& _z1,
   else
     {
       _phi -= _PI;
+      assert(_phi>=0);
       if (_beta >=  _PI/2)
         {
           _beta -= _PI;
