@@ -20,12 +20,11 @@
 #include "local/stir/motion/Polaris_MT_File.h"
 #include "stir/Succeeded.h"
 #include <fstream>
-
+#include <iostream>
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 #endif
 
-const unsigned int MAX_STRING_LENGTH=512;
 
 START_NAMESPACE_STIR  
 
@@ -34,16 +33,46 @@ Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
   ifstream mt_stream(mt_filename.c_str());
   if (!mt_stream)
   {
-    error( "\n\t\tError Opening Supplied File %s - Does it Exist?\n", mt_filename.c_str()) ;
+    error( "Polaris_MT_File: error opening file %s - Does it Exist?", mt_filename.c_str()) ;
   }
   
-  /* Read opening line - discard */
+  const unsigned int MAX_STRING_LENGTH=512;
   char DataStr[MAX_STRING_LENGTH];
-  if ( !mt_stream.getline( DataStr, MAX_STRING_LENGTH) )
+  /* Read opening line */
   {
-    error("\n\t\tError Reading Line 1 of Supplied File %s\n", mt_filename.c_str());
-  }
+    // it's of the following format
+    //23/5/2003 18:18:32 - 11 1 966_IRSL_II
+    if ( !mt_stream.getline( DataStr, MAX_STRING_LENGTH) )
+      {
+	error("Polaris_MT_File: error reading Line 1 of file %s", 
+	      mt_filename.c_str());
+      }
+#if 0
+    int v1, v2;
+    char toolkit[MAX_STRING_LENGTH];
+    std::tm start_time_tm;
+    if (sscanf(DataStr, "%d/%d/%d %d:%d:%d - %d %d %s",
+	   &start_time_tm.tm_mday,
+	   &start_time_tm.tm_mon,
+	   &start_time_tm.tm_year,
+	   &start_time_tm.tm_hour,
+	   &start_time_tm.tm_min,
+	   &start_time_tm.tm_sec,
+	   &v1,
+	   &v2,
+	   toolkit) != 9)
+      error("Polaris_MT_File: error parsing first line of file %s",
+	    mt_filename.c_str());
+  
+    start_time_in_secs_since_1970 = 
+	mktime(&start_time_tm);
 
+    std::cout << "\nPolaris .mt file info:"
+	      << "\n\tDate: " << asctime(&start_time_tm)
+	      << "\n\tToolkit: " << toolkit
+	      << "\n\tVersion info (?) " << v1 << ' ' << v2 << std::endl;
+#endif
+  }
   Record record; 
   while (!mt_stream.eof() &&
 	 mt_stream.getline( DataStr, MAX_STRING_LENGTH))
@@ -79,6 +108,12 @@ Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
   mt_stream.close();
 } 
 
+std::time_t
+Polaris_MT_File::
+get_start_time_in_secs_since_1970()
+{
+  return  start_time_in_secs_since_1970;
+}
 
 Polaris_MT_File::Record 
 Polaris_MT_File::operator[](unsigned int in) const
