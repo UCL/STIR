@@ -1,8 +1,25 @@
 //
-// $Id$ :$Date$
+// $Id$: $Date$
 //
+/*!
+  \file 
+ 
+  \brief implementations for the InterfileHeader class
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+*/
 
 #include "InterfileHeader.h"
+
+START_NAMESPACE_TOMO
+
+// KT 03/03/2000 changed PETerror to warning
 
 // KT 26/10/98 changed from init_keys
 // KT 13/11/98 moved stream arg from constructor to parse()
@@ -205,16 +222,16 @@ int InterfileImageHeader::post_processing()
     return 1;
 
   if (PET_data_type_values[PET_data_type_index] != "Image")
-    { PETerror("Interfile error: expecting an image\n");  return 1; }
+    { warning("Interfile error: expecting an image\n");  return 1; }
   
   if (num_dimensions != 3)
-    { PETerror("Interfile error: expecting 3D image\n"); return 1; }
+    { warning("Interfile error: expecting 3D image\n"); return 1; }
 
   // KT 29/10/98 moved from asserts in read_interfile_image
   if ( (matrix_size[0].size() != 1) || 
        (matrix_size[1].size() != 1) ||
        (matrix_size[2].size() != 1) )
-  { PETerror("Interfile error: only handling image with homogeneous dimensions\n"); return 1; }
+  { warning("Interfile error: only handling image with homogeneous dimensions\n"); return 1; }
 
   // KT 09/10/98 changed order z,y,x->x,y,z
   // KT 09/10/98 allow no labels at all
@@ -305,14 +322,14 @@ int InterfilePSOVHeader::find_storage_order()
 
   if (num_dimensions != 4)
   { 
-    PETerror("Interfile error: expecting 4D structure "); 
+    warning("Interfile error: expecting 4D structure "); 
     stop_parsing();
     return 1; 
   }
   
   if (matrix_labels[3] != "bin")
   { 
-    PETerror("Interfile error: expecting 'matrix axis label[4] := bin'\n"); 
+    warning("Interfile error: expecting 'matrix axis label[4] := bin'\n"); 
     stop_parsing();
     return 1; 
   }
@@ -358,7 +375,7 @@ int InterfilePSOVHeader::find_storage_order()
   }
   else
   { 
-    PETerror("Interfile error: matrix labels not in expected (or supported) format\n"); 
+    warning("Interfile error: matrix labels not in expected (or supported) format\n"); 
     stop_parsing();
     return 1; 
   }
@@ -415,7 +432,7 @@ find_segment_sequence(const vector<int>& min_ring_difference,
   if (segment_zero_num == num_segments ||
       sum_and_location[segment_zero_num].first > 1E-3)
   {
-    PETerror("This data does not seem to contain segment 0. \n\
+    warning("This data does not seem to contain segment 0. \n\
  We can't handle this at the moment. Sorry.");
     Abort();
   }
@@ -446,7 +463,7 @@ int InterfilePSOVHeader::post_processing()
     return 1;
 
   if (PET_data_type_values[PET_data_type_index] != "Emission")
-    { PETerror("Interfile error: expecting emission data\n");  return 1; }
+    { warning("Interfile error: expecting emission data\n");  return 1; }
   
   // KT 29/10/98 some more checks
   // KT 12/11/98 removed segment_sequence
@@ -455,7 +472,7 @@ int InterfilePSOVHeader::post_processing()
       max_ring_difference.size() != num_segments ||
       num_rings_per_segment.size() != num_segments)
     { 
-      PETerror("Interfile error: per-segment information is inconsistent\n"); 
+      warning("Interfile error: per-segment information is inconsistent\n"); 
       return 1;
     }
 
@@ -509,16 +526,16 @@ int InterfilePSOVHeader::post_processing()
     scanner = PETScannerInfo::HiDAC;
   else
   {
-    char * warning = 0;
+    char * warning_msg = 0;
     if (num_detectors_per_ring < 1)
     {
       num_detectors_per_ring = num_views*2;
-      warning = "\nInterfile warning: I don't recognise 'originating system' value.\n\
+      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n\
 \tI guessed %s from 'num_views' (note: this guess is wrong for mashed data)\n\n";
     }
     else
     {
-       warning = "\nInterfile warning: I don't recognise 'originating system' value.\n\
+       warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n\
 I guessed %s from 'number of detectors per ring'\n";
     }
 
@@ -527,26 +544,26 @@ I guessed %s from 'number of detectors per ring'\n";
      {
      case 96*2:
        scanner = PETScannerInfo::RPT;
-       PETerror(warning, "PRT-1");
+       warning(warning_msg, "PRT-1");
        break;
      case 192*2:
        scanner = PETScannerInfo::E953;
-       PETerror(warning, "ECAT 953");
+       warning(warning_msg, "ECAT 953");
        break;
      case 336*2:
        scanner = PETScannerInfo::Advance;
-       PETerror(warning, "Advance");
+       warning(warning_msg, "Advance");
        break;
      case 288*2:
        scanner = PETScannerInfo::E966;
-       PETerror(warning, "ECAT 966");
+       warning(warning_msg, "ECAT 966");
      // KT 10/01/2000 added
      case 256*2:
        scanner = PETScannerInfo::E951;
-       PETerror(warning, "ECAT 951");
+       warning(warning_msg, "ECAT 951");
        break;
      default:
-       PETerror("\nInterfile warning: I did not recognise the scanner neither from \n\
+       warning("\nInterfile warning: I did not recognise the scanner neither from \n\
 originating_system or 'number of detectors per ring'.\n");;
        scanner = PETScannerInfo::Unknown_Scanner;
        break;
@@ -557,19 +574,19 @@ originating_system or 'number of detectors per ring'.\n");;
   if (scanner == PETScannerInfo::Unknown_Scanner)
   {
     if (num_rings < 1)
-      PETerror("Interfile warning: 'number of rings' invalid.\n");
+      warning("Interfile warning: 'number of rings' invalid.\n");
     if (num_detectors_per_ring < 1)
-      PETerror("Interfile warning: 'num_detectors_per_ring' invalid.\n");
+      warning("Interfile warning: 'num_detectors_per_ring' invalid.\n");
     // KT&SM 26/01/2000 compare with 0 instead of 1 in the next few checks
     // KT 26/01/2000 dropped 'in' from '(in cm)' keywords
     if (transaxial_FOV_diameter_in_cm < 0)
-      PETerror("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
+      warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
     if (ring_diameter_in_cm < 0)
-      PETerror("Interfile warning: 'ring diameter (cm)' invalid.\n");
+      warning("Interfile warning: 'ring diameter (cm)' invalid.\n");
     if (distance_between_rings_in_cm < 0)
-      PETerror("Interfile warning: 'distance between rings (cm)' invalid.\n");
+      warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
     if (bin_size_in_cm < 0)
-      PETerror("Interfile warning: 'bin size (cm)' invalid.\n");
+      warning("Interfile warning: 'bin size (cm)' invalid.\n");
   }
   else
   {
@@ -596,22 +613,22 @@ originating_system or 'number of detectors per ring'.\n");;
     // KT 26/01/2000 use tolerance
     const double tolerance = 10E-4;
     if (num_rings != full_scanner.num_rings)
-      PETerror("Interfile warning: 'number of rings' (%d) is expected to be %d\n",
+      warning("Interfile warning: 'number of rings' (%d) is expected to be %d\n",
 	       num_rings, full_scanner.num_rings);
     if (num_detectors_per_ring != full_scanner.num_views*2)
-      PETerror("Interfile warning: 'number of detectors per ring' (%d) is expected to be %d\n",
+      warning("Interfile warning: 'number of detectors per ring' (%d) is expected to be %d\n",
 	       num_detectors_per_ring, full_scanner.num_views*2);
     if (fabs(transaxial_FOV_diameter_in_cm-full_scanner.FOV_radius*2/10.) > tolerance)
-      PETerror("Interfile warning: 'transaxial FOV diameter (cm)' (%f) is expected to be %f.\n",
+      warning("Interfile warning: 'transaxial FOV diameter (cm)' (%f) is expected to be %f.\n",
 		transaxial_FOV_diameter_in_cm, full_scanner.FOV_radius*2/10.);
     if (fabs(ring_diameter_in_cm-full_scanner.ring_radius*2/10.) > tolerance)
-      PETerror("Interfile warning: 'ring diameter (cm)' (%f) is expected to be %f.\n",
+      warning("Interfile warning: 'ring diameter (cm)' (%f) is expected to be %f.\n",
 		ring_diameter_in_cm, full_scanner.ring_radius*2/10.);
     if (fabs(distance_between_rings_in_cm-full_scanner.ring_spacing/10) > tolerance)
-      PETerror("Interfile warning: 'distance between rings (cm)' (%f) is expected to be %f.\n",
+      warning("Interfile warning: 'distance between rings (cm)' (%f) is expected to be %f.\n",
 		distance_between_rings_in_cm, full_scanner.ring_spacing/10);
     if (fabs(bin_size_in_cm-full_scanner.bin_size/10) > tolerance)
-      PETerror("Interfile warning: 'bin size (cm)' (%f) is expected to be %f.\n",
+      warning("Interfile warning: 'bin size (cm)' (%f) is expected to be %f.\n",
 	       bin_size_in_cm, full_scanner.bin_size/10);
 
   }
@@ -628,3 +645,4 @@ originating_system or 'number of detectors per ring'.\n");;
   return 0;
 }
 
+END_NAMESPACE_TOMO
