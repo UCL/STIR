@@ -18,22 +18,16 @@ $Revision$
     See STIR/LICENSE.txt for details
 */
 
-
-
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/SegmentByView.h"
-#include "stir/interfile.h"
-#include "stir/utilities.h"
 #include "stir/shared_ptr.h"
 
 #include <numeric>
-#include <fstream> 
 #include <iostream> 
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
-using std::fstream;
 #endif
 
 
@@ -63,17 +57,9 @@ main(int argc, char **argv)
   const float max_threshold_in_norm = 
     argc>5 ? atof(argv[4]) : 1.E19F;
 
-  shared_ptr<iostream> sino_stream = 
-    new fstream (output_file_name.c_str(), ios::out|ios::binary);
-  if (!sino_stream->good())
-  {
-    error("threshold_norm_data: error opening file %s\n",output_file_name.c_str());
-  }
-
-  shared_ptr<ProjDataFromStream> proj_data_ptr =
-    new ProjDataFromStream(input_proj_data_ptr->get_proj_data_info_ptr()->clone(),
-			   sino_stream);
-  write_basic_interfile_PDFS_header(output_file_name, *proj_data_ptr);
+  shared_ptr<ProjData> proj_data_ptr =
+    new ProjDataInterfile(input_proj_data_ptr->get_proj_data_info_ptr()->clone(),
+			 output_file_name);
    
   for (int segment_num = input_proj_data_ptr->get_min_segment_num();
        segment_num <=input_proj_data_ptr->get_max_segment_num();

@@ -35,8 +35,7 @@ using std::ofstream;
 using std::fstream;
 using std::string;
 #endif
-#include "stir/ProjDataFromStream.h"
-#include "stir/interfile.h"
+#include "stir/ProjDataInterfile.h"
 
 START_NAMESPACE_STIR
 
@@ -213,17 +212,9 @@ int main(int argc, char **argv)
       display(model_fan_data, "model");
 #if 0
     {
-      const string output_file_name = "testfan.s";
-      shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
-      if (!sino_stream->good())
-      {
-        error("%s: error opening file %s\n",argv[0],output_file_name.c_str());
-      }
-      
-      shared_ptr<ProjDataFromStream> out_proj_data_ptr =
-        new ProjDataFromStream(model_data->get_proj_data_info_ptr()->clone(),sino_stream);
-      
-      write_basic_interfile_PDFS_header(output_file_name, *out_proj_data_ptr);
+      shared_ptr<ProjData> out_proj_data_ptr =
+        new ProjDataInterfile(model_data->get_proj_data_info_ptr()->clone,
+			      output_file_name);      
       
       set_fan_data(*out_proj_data_ptr, model_fan_data);
     }

@@ -20,8 +20,7 @@
 
 #include "local/stir/ML_norm.h"
 
-#include "stir/ProjDataFromStream.h"
-#include "stir/interfile.h"
+#include "stir/ProjDataInterfile.h"
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Scanner.h"
@@ -70,25 +69,9 @@ int main(int argc, char **argv)
   const string in_filename_prefix = argv[2];
   const string output_file_name = argv[1];
   const string program_name = argv[0];
-
-  shared_ptr<ProjDataFromStream> out_proj_data_ptr;
-  {
-    const ProjDataInfo * proj_data_info_ptr = 
-      measured_data->get_proj_data_info_ptr();
-
-    // opening output file
-    shared_ptr<iostream> sino_stream = 
-      new fstream (output_file_name.c_str(), ios::out|ios::binary);
-    if (!sino_stream->good())
-      {
-	error("%s: error opening output file %s\n",
-	      program_name.c_str(), output_file_name.c_str());
-      }
-
-    out_proj_data_ptr =
-      new ProjDataFromStream(proj_data_info_ptr->clone(),sino_stream);
-    write_basic_interfile_PDFS_header(output_file_name, *out_proj_data_ptr);
-  }
+  shared_ptr<ProjData> out_proj_data_ptr=
+      new ProjDataInterfile(measured_data->get_proj_data_info_ptr()->clone(),
+			    output_file_name);
 
   const int num_rings = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();

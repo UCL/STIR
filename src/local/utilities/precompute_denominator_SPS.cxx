@@ -29,8 +29,8 @@
 
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
-#include "stir/interfile.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/IO/interfile.h"
+#include "stir/ProjDataInterfile.h"
 
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
@@ -229,21 +229,18 @@ main(int argc, char *argv[])
 
   
   // find the inverse
-  shared_ptr<ProjDataFromStream >  proj_data_inv_ptr;
+  shared_ptr<ProjData>  proj_data_inv_ptr;
   {
     shared_ptr< ProjDataInfo >  data_info = proj_data_info_ptr->clone();
     data_info->reduce_segment_range(-max_segment_num, max_segment_num);
     
     const string output_file_name = "inverse.s";
-    shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::trunc|ios::out|ios::in|ios::binary);
-    
     proj_data_inv_ptr =
-      new  ProjDataFromStream (data_info,sino_stream);
+      new  ProjDataInterfile(data_info, output_file_name, ios::trunc|ios::out|ios::in|ios::binary);
     
     find_inverse(*proj_data_inv_ptr,*proj_data_ptr,
 		 -max_segment_num, max_segment_num);
     
-    write_basic_interfile_PDFS_header(output_file_name, *proj_data_inv_ptr);
     for (int segment_num = -max_segment_num; segment_num<= max_segment_num;segment_num++) 
       {
 	SegmentByView<float> segmnet_0 = proj_data_inv_ptr->get_segment_by_view(segment_num);

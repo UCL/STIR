@@ -1,23 +1,20 @@
 //
-// $Id: bcktest.cxx,
+// $Id$
 //
 
 /*!
   \file
-  \ingroup 
+  \ingroup utilities
 
   \brief Find the inverse of ProjData
 
 
-  \author Kris Thielemans
   \author Sanida Mustafovic
-  \author PARAPET project
   
-  $Date: 
-  $Revision: 
+  $Date$
+  $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
@@ -28,9 +25,8 @@
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 //#include "stir/display.h"
-#include "stir/interfile.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
 #include "stir/utilities.h"
@@ -169,16 +165,11 @@ main(int argc, char **argv)
 
   ProjDataInfo * data_info = proj_data_info_ptr->clone();
 
- 
- shared_ptr<iostream> sino_stream = new fstream (argv[2], ios::out|ios::binary);
- 
- shared_ptr<ProjDataFromStream> proj_data_inv_ptr =
-   new ProjDataFromStream (data_info,sino_stream);
+ shared_ptr<ProjData> proj_data_inv_ptr =
+   new ProjDataInterfile (data_info,argv[2]);
 
 
   find_inverse(proj_data_inv_ptr.get(),proj_data_ptr.get());
-
-  write_basic_interfile_PDFS_header(argv[2],*proj_data_inv_ptr);
 
   return EXIT_SUCCESS;
 

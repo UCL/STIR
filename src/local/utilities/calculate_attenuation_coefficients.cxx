@@ -22,10 +22,8 @@
 */
 
 
-#include "stir/interfile.h"
 #include "stir/utilities.h"
-#include "stir/ProjData.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Viewgram.h"
@@ -37,14 +35,11 @@
 
 #include "stir/SegmentByView.h"
 
-#include <fstream>
+#include <iostream>
 #include <list>
 #include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
-using std::ofstream;
-using std::fstream;
-using std::iostream;
 using std::endl;
 using std::list;
 using std::find;
@@ -167,31 +162,18 @@ main (int argc, char * argv[])
   cerr << forw_projector_ptr->parameter_info();  
 
   const string output_file_name = argv[1];
-  shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
-  if (!sino_stream->good())
-  {
-    error("calculate_attenuation_coefficients: error opening file %s\n",output_file_name.c_str());
-  }
-
+  shared_ptr<ProjData> out_proj_data_ptr =
+    new ProjDataInterfile(new_data_info_ptr,
+			  output_file_name);
   
-   shared_ptr<ProjDataFromStream> proj_data_from_stream_ptr =
-    new ProjDataFromStream(new_data_info_ptr,sino_stream);
-
-  
-  do_segments(*attenuation_image_ptr,*proj_data_from_stream_ptr,
+  do_segments(*attenuation_image_ptr,*out_proj_data_ptr,
       proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 
       proj_data_ptr->get_min_view_num(), 
       proj_data_ptr->get_max_view_num(),
       proj_data_ptr->get_min_tangential_pos_num(), 
       proj_data_ptr->get_max_tangential_pos_num(),
       *forw_projector_ptr,
-      false); 
-
- 
-  
-  write_basic_interfile_PDFS_header(output_file_name, * proj_data_from_stream_ptr);
-  
-  
+	      false);  
   
   return EXIT_SUCCESS;
 }
