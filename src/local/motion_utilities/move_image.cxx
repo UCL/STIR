@@ -1,30 +1,31 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Internal GE use only
+*/
 /*!
   \file
-  \ingroup listmode
-  \brief Utility to move an image in several steps according to average motion in the frame.
+  \ingroup motion_utilities
+  \brief Utility to move an image according to average motion in the frame.
 
   \author Kris Thielemans
   $Date$
   $Revision$
   
-  \par Example par file
-  \verbatim
-  MoveImage Parameters:=
-  input file:= input_filename
-  time frame_definition filename := frame_definition_filename
-  output filename prefix := output_filename_prefix
-  ;move_to_reference := 1
-  ; next can be set to do only 1 frame, defaults means all frames
-  ;frame_num_to_process := -1
-  Rigid Object 3D Motion Type := type
-  ;Output file format := interfile
-  END :=
+  \par Usage
+\verbatim
+  move_image \\
+     [--move-to-reference 0|1] \\
+     [--frame_num_to_process number]\\
+     [par_file]
 \endverbatim
-}
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
+  See class documentation for stir::MoveImage for more info, including the format
+  of the par_file. 
+
+  Command line switches override any values in the par_file.
+
 */
 
 #include "stir/DiscretisedDensity.h"
@@ -39,7 +40,33 @@
 
 START_NAMESPACE_STIR
 
+/*! \ingroup motion
+  \brief A class for moving an image according to average motion in the frame.
 
+  
+  \par Example par file
+  \verbatim
+  MoveImage Parameters:=
+  input file:= input_filename
+  ; output name
+  ; filenames will be constructed by appending _f#g1d0b0 (and the extension)
+  ; where # is the frame number
+  output filename prefix:= output
+
+  ; see TimeFrameDefinitions
+  time frame_definition filename := frame_definition_filename
+
+  ; next defines
+  ;move_to_reference := 1
+  ; next can be set to do only 1 frame, defaults means all frames
+  ;frame_num_to_process := -1
+  Rigid Object 3D Motion Type := type
+
+  ; Change output file format, defaults to Interfile. See OutputFileFormat.
+  ;Output file format := interfile
+  END :=
+\endverbatim
+*/  
 class MoveImage : public ParsingObject
 {
 public:
