@@ -32,7 +32,8 @@
 // for set_projectors_and_symmetries
 #include "stir/recon_buildblock/distributable.h"
 // for get_symmetries_ptr()
-#include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+
 #include "stir/Viewgram.h"
 #include "stir/recon_array_functions.h"
 #include <iostream>
