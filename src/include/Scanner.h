@@ -2,7 +2,6 @@
 // $Id$: $Date$
 //
 /*!
-
   \file
   \ingroup buildblock
 
@@ -54,7 +53,7 @@ class Scanner
 
   // E931 HAS to be first, Unknown_Scanner HAS to be last
   // also, the list HAS to be consecutive (so DO NOT assign numbers here)
-  enum Type {E931,E951,E953,E921,E925,E961,E962,E966,ART,RPT,HiDAC,Advance, Exact, HZLR, Unknown_Scanner};
+  enum Type {E931,E951,E953,E921,E925,E961,E962,E966,ART,RPT,HiDAC,Advance, HZLR, Unknown_Scanner};
   
 
   //! constructor that takes scanner type as an input argument
