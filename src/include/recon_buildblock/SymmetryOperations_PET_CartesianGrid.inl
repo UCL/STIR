@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -12,10 +12,15 @@
   \author Mustapha Sadki
   \author PARAPET project
 
-  \date $Date$
-
-  \version $Revision$
+  $Date$
+  $Revision$
 */
+/* History:
+   KT 07/10/2001:
+   made sure that the resulting view_num is in the allowed range
+   use that an LOR at {theta,phi,m,s} is equal to the one at {-theta, phi+Pi,m, -s}
+   TODO, didn't do it for the _zq symmetries, as I don't need it there yet
+   */
 
 #include "BasicCoordinate.h"
 #include "ViewSegmentNumbers.h"
@@ -49,12 +54,16 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
 {
   b.axial_pos_num() += axial_pos_shift;
   b.view_num() = view180 - b.view_num();
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
   vs.view_num() = view180 - vs.view_num();
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 void SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
@@ -73,13 +82,18 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
   b.axial_pos_num() += axial_pos_shift;
   b.segment_num() *= -1;
   b.view_num() += view180/2;
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
   vs.segment_num() *= -1;
   vs.view_num() += view180/2;
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 
@@ -99,12 +113,17 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
 {
   b.axial_pos_num() += axial_pos_shift;
   b.view_num() = view180/2 - b.view_num();
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
+
 }
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
   vs.view_num() = view180/2 - vs.view_num();
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 void SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
@@ -123,13 +142,35 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.view_num() += view180/2;
+  if (b.view_num() < view180/2)
+  {
+    b.view_num() += view180/2;
+  }
+  else
+  {
+    b.segment_num() *= -1;
+    b.view_num() -= view180/2;
+    b.tangential_pos_num() *= -1;
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.view_num() += view180/2;
+  if (vs.view_num() < view180/2)
+  {
+    vs.view_num() += view180/2;
+  }
+  else
+  {
+    vs.segment_num() *= -1;
+    vs.view_num() -= view180/2;
+  }
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 void SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
@@ -146,15 +187,34 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.segment_num() *= -1;
-  b.view_num() = view180/2 - b.view_num();
+  if (b.view_num() <= view180/2)
+  {
+    b.segment_num() *= -1;
+    b.view_num() = view180/2 - b.view_num();
+  }
+  else
+  {
+    b.view_num() = 3*view180/2 - b.view_num();
+    b.tangential_pos_num() *= -1;
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.segment_num() *= -1;
-  vs.view_num() = view180/2 - vs.view_num();
+  if (vs.view_num() <= view180/2)
+  {
+    vs.segment_num() *= -1;
+    vs.view_num() = view180/2 - vs.view_num();
+  }
+  else
+  {
+    vs.view_num() = 3*view180/2 - vs.view_num();
+  }
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 
@@ -174,15 +234,32 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.segment_num() *= -1;
-  b.view_num() = view180 - b.view_num();
+  if (b.view_num()!=0)
+  {
+    b.segment_num() *= -1;
+    b.view_num() = view180 - b.view_num();
+  }
+  else
+  {
+    b.tangential_pos_num() *= -1;
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.segment_num() *= -1;
-  vs.view_num() = view180 - vs.view_num();
+  if (vs.view_num()!=0)
+  {
+    vs.segment_num() *= -1;
+    vs.view_num() = view180 - vs.view_num();
+  }
+  else
+  {}
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 
@@ -200,14 +277,32 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.view_num() = view180 - b.view_num();
-  b.tangential_pos_num() *= -1;
+  if (b.view_num()!=0)
+  {
+    b.view_num() = view180 - b.view_num();
+    b.tangential_pos_num() *= -1;
+  }
+  else
+  {
+    b.segment_num() *= -1;
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
 void 
 SymmetryOperation_PET_CartesianGrid_swap_ymy::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.view_num() = view180 - vs.view_num();
+  if (vs.view_num()!=0)
+  {
+    vs.view_num() = view180 - vs.view_num();
+  }
+  else
+  {
+    vs.segment_num() *= -1;
+  }
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 
@@ -227,6 +322,7 @@ SymmetryOperation_PET_CartesianGrid_swap_zq::
   b.axial_pos_num() += axial_pos_shift;
   b.segment_num() *= -1;
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
@@ -237,8 +333,7 @@ SymmetryOperation_PET_CartesianGrid_swap_zq::
 
 void SymmetryOperation_PET_CartesianGrid_swap_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {   		 
-  c[1] = q - c[1] + z_shift;     
-  
+  c[1] = q - c[1] + z_shift;       
 }
 
 ///////////////////////////////////////
@@ -251,6 +346,7 @@ SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
   b.axial_pos_num() += axial_pos_shift;
   b.tangential_pos_num() *= -1;
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
@@ -274,14 +370,36 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.view_num() += view180/2;
-  b.tangential_pos_num() *= -1;
+  if (b.view_num() < view180/2)
+  {
+    b.view_num() += view180/2;
+    b.tangential_pos_num() *= -1;
+  }
+  else
+  {
+    b.segment_num() *= -1;
+    b.view_num() -= view180/2;
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
+
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.view_num() += view180/2;
+  if (vs.view_num() < view180/2)
+  {
+    vs.view_num() += view180/2;
+  }
+  else
+  {
+    vs.segment_num() *= -1;
+    vs.view_num() -= view180/2;
+  }
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 
@@ -301,16 +419,34 @@ SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.segment_num() *= -1;
-  b.view_num() += view180/2;
-  b.tangential_pos_num() *= -1;
+  if (b.view_num() < view180/2)
+  {
+    b.segment_num() *= -1;
+    b.view_num() += view180/2;
+    b.tangential_pos_num() *= -1;
+  }
+  else
+  {
+    b.view_num() -= view180/2;
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.segment_num() *= -1;
-  vs.view_num()+= view180/2;
+  if (vs.view_num() < view180/2)
+  {
+    vs.segment_num() *= -1;
+    vs.view_num() += view180/2;
+  }
+  else
+  {
+    vs.view_num() -= view180/2;
+  }
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 void SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
@@ -329,17 +465,37 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
     transform_bin_coordinates(Bin& b) const
 {
   b.axial_pos_num() += axial_pos_shift;
-  b.view_num() = view180/2 - b.view_num();
-  b.tangential_pos_num() *= -1;
+  if (b.view_num() <= view180/2)
+  {
+    b.view_num() = view180/2 - b.view_num();
+    b.tangential_pos_num() *= -1;
+  }
+  else
+  {
+    b.segment_num() *= -1;
+    b.view_num() = 3*view180/2 - b.view_num();
+  }
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
-  vs.view_num()= view180/2 - vs.view_num();
+  if (vs.view_num() <= view180/2)
+  {
+    vs.view_num() = view180/2 - vs.view_num();
+  }
+  else
+  {
+    vs.segment_num() *= -1;
+    vs.view_num() = 3*view180/2 - vs.view_num();
+  }
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
-
 void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {  
   const int tmp = c[3];
@@ -359,13 +515,18 @@ SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
   b.segment_num() *= -1;
   b.view_num() = view180 - b.view_num();
   b.tangential_pos_num() *= -1;
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
   vs.segment_num() *= -1;
   vs.view_num()= view180 - vs.view_num();
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
 
@@ -411,16 +572,20 @@ SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
   b.segment_num() *= -1;
   b.view_num() = view180/2 - b.view_num();
   b.tangential_pos_num() *= -1;
+  assert(0<=b.view_num());
+  assert(b.view_num()<view180);  
 }
+
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
     transform_view_segment_indices(ViewSegmentNumbers& vs) const
 {
   vs.segment_num() *= -1;
   vs.view_num() = view180/2 - vs.view_num();
+  assert(0<=vs.view_num());
+  assert(vs.view_num()<view180);  
 }
  
-
 void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_image_coordinates(BasicCoordinate<3,int>&c) const
 {
   const int tmp = c[3];
@@ -428,4 +593,5 @@ void SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::transform_image_coordi
   c[2] = -tmp;		
   c[1] = q - c[1] + z_shift;
 }
+
 END_NAMESPACE_TOMO
