@@ -14,17 +14,19 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 //  TODO remove FULL stuff
 
 #include <iostream>
-#include <cmath>
+#include <math.h>
 
+#include "stir/Array.h"
 #include "stir/convert_array.h"
+#include "stir/NumericInfo.h"
 #include "stir/IndexRange3D.h"
-#include "stir/CPUTimer.h"
+#include "stir/CPUTimer.h" 
 #include "stir/RunTests.h"
 
 START_NAMESPACE_STIR
@@ -157,7 +159,6 @@ convert_array_Tests::run_tests()
       check(ti1 == ti2);
     }
     
-#ifdef FULL    
     {
       // float -> short with automatic scale factor
       float scale_factor = 0;
@@ -189,11 +190,10 @@ convert_array_Tests::run_tests()
 
     timer.stop();
     cerr << timer.value() << "secs" << endl;
-#endif // FULL
   }
 #ifdef FULL
   //   3D
-  cerr << "org" << endl;
+  cerr << "FULL" << endl;
 
   {
     CPUTimer timer;
@@ -208,17 +208,16 @@ convert_array_Tests::run_tests()
     {
       // float -> short with a preferred scale factor
       float scale_factor = float(1);
-      Array<3,short> ti2 = convert_array_org(scale_factor, tf1, NumericInfo<short>());
+      Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
       
       check(scale_factor == float(1));
       check(ti1 == ti2);
     }
     
-    
     {
       // float -> short with automatic scale factor
       float scale_factor = 0;
-      Array<3,short> ti2 = convert_array_org(scale_factor, tf1, NumericInfo<short>());
+      Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
       
       check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
       for (Array<3,short>::full_iterator iter= ti2.begin_all();
@@ -232,7 +231,7 @@ convert_array_Tests::run_tests()
     {
       // float -> short with a preferred scale factor that needs to be adjusted
       float scale_factor = 1;
-      Array<3,short> ti2 = convert_array_org(scale_factor, tf1, NumericInfo<short>());
+      Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
 
       check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
       Array<3,short>::full_iterator iter_ti2= ti2.begin_all();
