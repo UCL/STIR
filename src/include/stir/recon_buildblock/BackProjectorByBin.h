@@ -30,6 +30,7 @@ START_NAMESPACE_STIR
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
+class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
 template <typename T> class shared_ptr;
 
@@ -71,6 +72,12 @@ public:
   */
  virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const = 0;
 
+ 
+  //! project whole proj_data into the volume
+  /*! it overwrites the data already present in the volume */
+  void back_project(DiscretisedDensity<3,float>&,
+	            const ProjData&);
+
   /*! \brief projects the viewgrams into the volume
    it adds to the data already present in the volume.*/
  void back_project(DiscretisedDensity<3,float>&,
@@ -96,6 +103,13 @@ protected:
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
 		                   const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+private:
+  void do_segments(DiscretisedDensity<3,float>& image, 
+            const ProjData& proj_data_org,
+	    const int start_segment_num, const int end_segment_num,
+	    const int start_axial_pos_num, const int end_axial_pos_num,
+	    const int start_tang_pos_num,const int end_tang_pos_num,
+	    const int start_view, const int end_view);
 
 
 };

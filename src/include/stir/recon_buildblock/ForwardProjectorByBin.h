@@ -26,7 +26,7 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
-
+#include "stir/VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_STIR
 
@@ -34,6 +34,7 @@ START_NAMESPACE_STIR
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
+class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
 template <typename T> class shared_ptr;
 
@@ -73,8 +74,13 @@ virtual void set_up(
    */
   virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const = 0;
 
-  //! project the volume into the viewgrams
-  /*! it overwrites the data already present in the viewgram */
+  //! project the volume into the whole proj_data
+  /*! it overwrites the data already present in the projection data */
+    void forward_project(ProjData*, 
+		  const shared_ptr<DiscretisedDensity<3,float> > );
+
+   //! project the volume into the viewgrams
+   /*! it overwrites the data already present in the viewgram */
     void forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&);
 
@@ -95,6 +101,12 @@ protected:
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+private:
+  void do_segments(const VoxelsOnCartesianGrid<float>& image, 
+            ProjData& proj_data,
+	    const int start_segment_num, const int end_segment_num,
+	    const int start_view, const int end_view,
+	    const int start_tangential_pos_num, const int end_tangential_pos_num);
 
 };
 
