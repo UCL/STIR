@@ -31,6 +31,7 @@
 START_NAMESPACE_STIR
 
 class CListEvent;
+class CListTime;
 
 class LmToProjData : public ParsingObject
 {
@@ -42,18 +43,26 @@ public:
 
   shared_ptr<CListModeData> lm_data_ptr;
   TimeFrameDefinitions frame_defs;
-  virtual void get_bin_from_event(Bin& bin, const CListEvent& record, 
-				  const double time) const;
 
-  void compute();
-  shared_ptr<BinNormalisation> normalisation_ptr;
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
+  virtual void process_data();
   
 protected:
 
+  //! stores the time (in secs) recorded in the previous timing event
+  double current_time;
+  //! will be called after a new timing event is found in the file
+  virtual void process_new_time_event(const CListTime&);
+  //! will be called to get the bin for a coincidence event
+  /*! If bin.get_bin_value()<=0, the event will be ignored. Otherwise,
+    the value will be used as a bin-normalisation factor. */
+  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
+
+  //! parsing functions
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
+
+  //! parsing variables
   string input_filename;
   string output_filename_prefix;
   string template_proj_data_name;
@@ -69,6 +78,8 @@ protected:
   bool interactive;
 
   shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
+  shared_ptr<BinNormalisation> normalisation_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
 
   bool do_time_frame;
 };
