@@ -1,9 +1,10 @@
 #
-# $Id$: $Date$
+# $Id$
 #
 
+WORKSPACE=$(CURDIR)/..
 
-include ../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 # variables used only for ecat7
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
@@ -46,7 +47,7 @@ clean:
 install: $(EXES)
 	cp $(EXES) $(INSTALL_DIR)
 
-include ../Makefile_bblibs
+include $(WORKSPACE)/Makefile_bblibs
 
 #$(DEST)libcti.a: $(DEST)cti_utils.o
 #	$(AR) r $@ $?

@@ -2,6 +2,8 @@
 # $Id$
 #
 
+WORKSPACE=$(CURDIR)/../..
+
 include $(WORKSPACE)/Makefile_common
 
 

@@ -1,8 +1,9 @@
 #
 # $Id$
 #
+WORKSPACE=$(CURDIR)/..
 
-include ../Makefile_common
+include $(WORKSPACE)/Makefile_common
 
 
 all: $(DEST)librecon_buildblock.a  $(DEST)recon_buildblock_registries.o
@@ -34,10 +35,6 @@ SOURCES= ForwardProjectorByBin.cxx \
 	BackProjectorByBinUsingProjMatrixByBin.cxx \
 	RayTraceVoxelsOnCartesianGrid.cxx \
 	FilterRootPrior.cxx
-
-ifdef PROJSMOOTH
-SOURCES = $(SOURCES) PostsmoothingForwardProjectorByBin.cxx 
-endif	
 
 
 

@@ -7,7 +7,6 @@ BUILD=opt
 
 #******** location of files
 
-WORKSPACE = ${HOME}/PPhead
 INCLUDE_DIR = ${WORKSPACE}/include
 INSTALL_DIR = ${HOME}/bin
 

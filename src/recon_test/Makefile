@@ -1,7 +1,9 @@
 #
-# $Id$: $Date$
+# $Id$
 #
-include ../Makefile_common
+WORKSPACE=$(CURDIR)/..
+
+include $(WORKSPACE)/Makefile_common
 
 SOURCES = bcktest.cxx fwdtest.cxx #zoomtest.cxx
 
@@ -24,5 +26,5 @@ ifneq ($(MAKECMDGOALS),clean)
   include $(SOURCES:%.cxx=$(DEST)%.d)
 endif
 
-include ../Makefile_bblibs
+include $(WORKSPACE)/Makefile_bblibs
 
