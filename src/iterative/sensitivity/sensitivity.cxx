@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
 
@@ -15,8 +15,8 @@
   \author Alexey Zverovich
   \author PARAPET project
 
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 /* 
@@ -263,14 +263,26 @@ int main(int argc, char **argv)
       // as += just adds the appropriate ranges
       *attenuation_image_ptr += *attenuation_image_from_file_ptr;
     }
-#if RESCALE
-    // KT 10/02/99 temporary plug
-    cerr << "WARNING: multiplying by binsize to correct for scale factor in \
-      forward projectors..." << endl;
-    cerr<< "Max before " <<attenuation_image_ptr->find_max();
-    attenuation_image *= proj_data_ptr->get_proj_data_info_ptr()->get_bin_size();
-    cerr<< ", after " <<attenuation_image_ptr->find_max() << endl;
+    cerr << "WARNING: attenuation image data are supposed to be in units cm^-1\n"
+      "Reference: water has mu .096 cm^-1" << endl;
+    cerr<< "Max in attenuation image:" 
+      << attenuation_image_ptr->find_max() << endl;
+#ifndef NORESCALE
+    /*
+      cerr << "WARNING: multiplying attenuation image by x-voxel size "
+      << " to correct for scale factor in forward projectors...\n";
+    */
+    // projectors work in pixel units, so convert attenuation data 
+    // from cm^-1 to pixel_units^-1
+    const float rescale = 
+      dynamic_cast<VoxelsOnCartesianGrid<float> *>(attenuation_image_ptr.get())->
+      get_voxel_size().x()/10;
+#else
+    const float rescale = 
+      dynamic_cast<VoxelsOnCartesianGrid<float> *>(attenuation_image_ptr.get())->
+      10.F;
 #endif
+    *attenuation_image_ptr *= rescale;      
 
   }
 
