@@ -45,7 +45,11 @@ template <typename T> class shared_ptr;
 class Succeeded;
 
 /*!
- \brief base class for all Reconstructions
+  \brief base class for all Reconstructions
+  \ingroup recon_buildblock
+  As there is not a lot of commonality between different reconstruction algorithms,
+  this base class is rather basic. It essentially takes care of constructing a target
+  image, calls the virtual reconstruct() function, and writes the result to file.
 
   For convenience, the class is derived from TimedObject. It is the 
   responsibility of the derived class to run these timers though.
