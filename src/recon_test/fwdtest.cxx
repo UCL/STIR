@@ -34,8 +34,8 @@
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/display.h"
-#include "stir/interfile.h"
-#include "stir/ProjDataFromStream.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
 #include "stir/utilities.h"
@@ -43,6 +43,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/SegmentByView.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/Succeeded.h"
 #include <fstream>
 
 
@@ -98,17 +99,10 @@ main(int argc, char *argv[])
 
   new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
 
+  
   const string output_file_name = "fwdtest_out.s";
-  shared_ptr<iostream> sino_stream = new fstream (output_file_name.c_str(), ios::out|ios::binary);
-  if (!sino_stream->good())
-  {
-    error("fwdtest: error opening file %s\n",output_file_name.c_str());
-  }
-
-  shared_ptr<ProjDataFromStream> proj_data_ptr =
-    new ProjDataFromStream(new_data_info_ptr,sino_stream);
-
-  write_basic_interfile_PDFS_header(output_file_name, *proj_data_ptr);
+  shared_ptr<ProjData> proj_data_ptr =
+    new ProjDataInterfile(new_data_info_ptr, output_file_name);
   cerr << "Output will be written to " << output_file_name 
        << " and its Interfile header\n";
 
@@ -201,7 +195,8 @@ main(int argc, char *argv[])
   if (save)
   {
     cerr << "Saving start image to 'test_image'" << endl;
-    write_basic_interfile("test_image", *image_sptr);
+    DefaultOutputFileFormat output_format;
+    output_format.write_to_file("test_image", *image_sptr);
   }
     
   list<ViewSegmentNumbers> already_processed;
