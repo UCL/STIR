@@ -31,8 +31,7 @@ ProjMatrixByBin:: get_symmetries_ptr() const
   return  symmetries_ptr.get();
 }
 
-
-/*!
+#if 0
   \warning   Preconditions when cache_stores_only_basic_bins==true
   <ul><li>all coordinates non-negative
       <li>segment_num coded in 8 bits
@@ -41,6 +40,9 @@ ProjMatrixByBin:: get_symmetries_ptr() const
       <li>tangential_pos_num in 9 bits   
   </ul>
   Preconditions when cache_stores_only_basic_bins==false
+#endif
+/*!
+  \warning Preconditions
   <ul><li>abs(segment_num) coded in 7 bits
       <li>view non-negative and coded in 9 bits
       <li>axial_pos_num non-negative and in 6 bits
@@ -49,6 +51,10 @@ ProjMatrixByBin:: get_symmetries_ptr() const
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const
 {
+#if 0
+  // this was an attempt to allow more bits for certain numbers by relying on 
+  // the fact that segment_num and tangetnail_pos_num was always positive.
+  // However, this depends on which symmetries you are using.
   if (cache_stores_only_basic_bins)
   {
     assert(bin.segment_num()>=0);
@@ -66,6 +72,7 @@ ProjMatrixByBin::cache_key(const Bin& bin) const
         |  static_cast<unsigned int>(bin.tangential_pos_num() );    	
   }
   else
+#endif
 {
     assert(abs(bin.segment_num()) < (1<<7));
     assert(bin.view_num() >= 0);
