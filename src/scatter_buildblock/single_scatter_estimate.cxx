@@ -34,9 +34,9 @@ float scatter_estimate_for_all_scatter_points(
 	  const float upper_energy_threshold,		
 	  const bool use_cosphi,
 	  const bool use_cache,
-	  const bool find_DS)	
+	  const int scatter_level)	
 {	
-	float scatter_ratio=0, scatter_ratio_2 = 0; 
+	double scatter_ratio=0, scatter_ratio_2 = 0; 
 		
 	const VoxelsOnCartesianGrid<float>& image =
 		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
@@ -47,7 +47,7 @@ float scatter_estimate_for_all_scatter_points(
 		scatter_point_num < scatt_points_vector.size();
 	    ++scatter_point_num)
 	{
-		if(!find_DS)
+		if(scatter_level!=2)
 			scatter_ratio +=
 			scatter_estimate_for_one_scatter_point(
 			image_as_activity, image_as_density, 
@@ -56,7 +56,7 @@ float scatter_estimate_for_all_scatter_points(
 			lower_energy_threshold, 
 			upper_energy_threshold,		
 			use_cosphi, use_cache);	
-		else
+		if(scatter_level!=1)
 			for(std::size_t scatter_point_2_num =0;
 			scatter_point_2_num < scatt_points_vector.size() ;
 			++scatter_point_2_num)			
@@ -73,7 +73,9 @@ float scatter_estimate_for_all_scatter_points(
 	}	
 	return scatter_volume/total_cross_section_511keV*
 		(scatter_ratio+
-		scatter_volume/total_cross_section_511keV*scatter_ratio_2);
+		scatter_ratio_2
+	//	*scatter_volume
+		/total_cross_section_511keV);
 }
 
 END_NAMESPACE_STIR
