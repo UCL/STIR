@@ -84,7 +84,7 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
     warning("Warning: No mashing will be used\n");
 
   // Building filters
-  // This is not really necessary, as build_and_filter would call this anyway.
+  // This is not really necessary, as apply would call this anyway.
   // However, we have it here such that any errors in building the filters would
   // be caught before doing any projections or so done.
   
@@ -115,7 +115,7 @@ void IterativeReconstruction::end_of_iteration_processing(DiscretisedDensity<3,f
      subiteration_num%get_parameters().inter_iteration_filter_interval==0)
     {
       cerr<<endl<<"Applying inter-iteration filter"<<endl;
-      get_parameters().inter_iteration_filter_ptr->build_and_filter(current_image_estimate);
+      get_parameters().inter_iteration_filter_ptr->apply(current_image_estimate);
     }
  
 
@@ -128,7 +128,7 @@ void IterativeReconstruction::end_of_iteration_processing(DiscretisedDensity<3,f
      get_parameters().post_filter_ptr!=0 )
   {
     cerr<<endl<<"Applying post-filter"<<endl;
-    get_parameters().post_filter_ptr->build_and_filter(current_image_estimate);
+    get_parameters().post_filter_ptr->apply(current_image_estimate);
     
     cerr << "  min and max after post-filtering " << current_image_estimate.find_min() 
       << " " << current_image_estimate.find_max() << endl <<endl;

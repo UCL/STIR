@@ -57,7 +57,7 @@ FilterRootPrior<elemT>::compute_gradient(DiscretisedDensity<3,elemT>& prior_grad
   VoxelsOnCartesianGrid<float> filtered_image = current_image_cast;
   
   
-  filter_ptr->build_and_filter(filtered_image,current_image_estimate);  
+  filter_ptr->apply(filtered_image,current_image_estimate);  
   
   
   for (int z=prior_gradient_cast.get_min_z();z<= prior_gradient_cast.get_max_z();z++)
