@@ -25,7 +25,8 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/display.h"
 #include "stir/utilities.h"
-#include "stir/interfile.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
 #include "stir/ArrayFunction.h"
 #include "stir/zoom.h"
@@ -196,7 +197,8 @@ int main(int argc, char *argv[])
             {
                 char outfile[max_filename_length];
                 ask_filename_with_extension(outfile, "Output filename (without extension) ", "");
-                write_basic_interfile(outfile, main_buffer);
+		DefaultOutputFileFormat output_format;
+		output_format.write_to_file(outfile, main_buffer);
                 break;
             }  
 

@@ -66,7 +66,7 @@ Power is taken before multiplication with the scalar.<br>
           the input files.
 \warning The result of using non-integral powers on  negative numbers is probably 
          system-dependent.
-
+\todo allow different output file formats, currently uses DefaultOutputFileFormat
 \author Kris Thielemans 
 
 $Date$
@@ -80,6 +80,8 @@ $Revision$
 #include "stir/ProjDataFromStream.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/SegmentByView.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/Succeeded.h"
 #include "stir/interfile.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
@@ -292,7 +294,8 @@ main(int argc, char **argv)
 
       if (verbose)
 	cout << "Writing output image " << output_file_name << endl;
-      write_basic_interfile(output_file_name, *image_ptr);
+      DefaultOutputFileFormat output_format;
+      output_format.write_to_file(output_file_name, *image_ptr);
     }
   else // do_projdata
     {
