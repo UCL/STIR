@@ -359,8 +359,10 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
       data_out.begin_all();
     typename Array<num_dimensions,T1>::const_full_iterator in_iter = 
       data_in.begin_all();
+    const typename Array<num_dimensions,T1>::const_full_iterator in_iter_end = 
+      data_in.end_all();
     for (;
-         in_iter != data_in.end_all();
+         in_iter != in_iter_end;
          in_iter++, out_iter++)
     {    
 	   //TODO can remove check on <t1>.signed_type
