@@ -1,6 +1,8 @@
 #
-# $Id$: $Date$
+# @(#)Makefile	1.11: 98/07/02
 #
+
+
 CXX = g++
 RM = /bin/rm -f 
 # KT 18/12/97 removed Para++ related CFLAGS
@@ -15,8 +17,15 @@ CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 #KT 27/02/98 use default rules now, .cxx does not work without next line
 .SUFFIXES: .cc .o .cxx .a
 
+.KEEP_STATE:
+
 #KT 16/12 wanted to add interfile...
-all:	${DEST}libbuildblock.a #${DEST}libinterfile.a
+#CL 060798 Add createdir for create directories of debugged or optimized files versions
+all: createdir ${DEST}libbuildblock.a #${DEST}libinterfile.a
+
+createdir: 
+	-mkdir -p $(DEST)
+
 
 #KT
 ${DEST}%.o : %.cxx 

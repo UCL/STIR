@@ -1,4 +1,4 @@
-# @(#)Makefile	$Id$
+# @(#)Makefile	@(#)Makefile	1.3 7/2/98
 CXX = g++
 CC = gcc
 DEBUG= -D_DEBUG
@@ -11,13 +11,21 @@ CFLAGS =  -g $(DEBUG) -I${HOME}/PPhead/include -D__unix__ \
 -I/usr/openwin/include
 #KT 010798 removed as we do not link in this makefile
 #LDFLAGS = -g -L${HOME}/PPhead/display -lX11 -lcurses
+.KEEP_STATE:
 
-${DEST}%.o : %.cxx
-#.cxx.o:
+#CL060798 Add createdir for automtaically create directories
+all: createdir ${DEST}libdisplay.a
+
+createdir: 
+	-mkdir -p $(DEST)
+
+${DEST}%.o: %.cxx
 	$(CXX)  $(CFLAGS) -o $@ -c $< 
-${DEST}%.o:%.cc
+
+${DEST}%.o: %.cc
 	$(CXX)  $(CFLAGS) -o $@ -c $< 
-${DEST}%.o:%.c
+
+${DEST}%.o: %.c
 	$(CC)  $(CFLAGS) -o $@ -c $< 
 
 .PRECIOUS: ${DEST}*.a ${DEST}*.o
