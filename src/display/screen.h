@@ -1,7 +1,7 @@
 /*!
  \file
   
- \brief very basic display routines
+ \brief very basic display routines for bitmaps (internal use only)
   
  \author Kris Thielemans
  \author PARAPET project
@@ -188,6 +188,8 @@ extern unsigned long SC__color;
 extern unsigned SCX_X_MAX(void), SCX_Y_MAX(void);
 
 extern void SCX_START(void);
+/* KT 01/03/2000 added next declaration */
+extern void SCX_START_BIG(void);
 extern void SCX_STOP(int stop);
 extern int SCX_WRITE(int *x,int *y,char *text);
 extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
@@ -228,11 +230,11 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
                         }
 #define SC_RECT(x,y)    ( SC__filled ? \
                           XFillRectangle(SCX_display, SCX_window, SCX_gc,\
-                                Min(x,SC__curPointX), Min(y,SC__curPointY),\
-                                abs(x-SC__curPointX), abs(y-SC__curPointY))\
+                                (int)Min(x,SC__curPointX), (int)Min(y,SC__curPointY),\
+                                (unsigned int)abs(x-SC__curPointX), (unsigned int)abs(y-SC__curPointY))\
                         : XDrawRectangle(SCX_display, SCX_window, SCX_gc,\
-                                Min(x,SC__curPointX), Min(y,SC__curPointY),\
-                                abs(x-SC__curPointX), abs(y-SC__curPointY))\
+                                (int)Min(x,SC__curPointX), (int)Min(y,SC__curPointY),\
+                                (unsigned int)abs(x-SC__curPointX), (unsigned int)abs(y-SC__curPointY))\
                         )
 #define SC_RECTR(x,y)   ( SC__filled ? \
                           XFillRectangle(SCX_display, SCX_window, SCX_gc,\
@@ -255,7 +257,7 @@ extern void SCX_PutImg     (image_t *, int x_begin, int y_begin,
 #define SC_CIRCLE(x)    SC_ELLIPSE(x,x)
 #define SC_TEXT(str)    XDrawString(SCX_display, SCX_window,SCX_gc, \
                                 SC__curPointX, SC__curPointY, \
-                                str, strlen(str))
+                                str, (int)strlen(str))
 #define SC_MASK(par)    XSetPlaneMask(SCX_display, SCX_gc, \
                                 (unsigned long)par)
 #define SC_LINFUN(par)  XSetFunction(SCX_display, SCX_gc, par)
@@ -381,18 +383,14 @@ typedef struct screen_image
 /*****************************************************************************
 	 routines found in screengen.c
 *****************************************************************************/
-extern void put_text      (int x, int y, int nr);
-extern void put_textstr   (int x, int y, char str[]);
+/* KT 01/03/2000 added const */
+extern void put_textstr   (int x, int y, const char * str);
 extern int  center_sc_images(int *Pscale,
 			   int min_x,int max_x,int min_y,int max_y,
                            int  SIZE_X,int SIZE_Y,
                            screen_image_t sc_image[], int nr_sc);
 extern void draw_sc_images(int size_x, int size_y,
                            screen_image_t sc_image[], int no);
-extern void annotation    (short int,short int,short int,short int,short int,short int);
-extern char input (short int *,short int *,short int *,short int *,short int *,
-                  short int *,short int,short int,short int,short int *);
-extern void input_message(void);
 
 
 /* Change November 1997: added next 3 lines: end of extern "C" */
