@@ -32,6 +32,20 @@
 using namespace std;
 
 START_NAMESPACE_STIR
+#if defined(_MSC_VER) && _MSC_VER<=1300
+
+static inline 
+void set_to_zero(double& v)
+{
+	v=0;
+}
+
+static inline 
+void set_to_zero(float& v)
+{
+	v=0;
+}
+#else
 
 template <class T>
 static inline 
@@ -39,6 +53,7 @@ void set_to_zero(T& v)
 {
 	v=0;
 }
+#endif
 
 template <class T, int num_dimensions>
 static inline 
@@ -186,32 +201,25 @@ BSplines_weight(const pos_type abs_relative_position
 					//, enum enum_spline_level
 					) 
 {
+	assert(abs_relative_position>=0);
 	if (abs_relative_position>=2)
 		return 0;
 	if (abs_relative_position>=1)		
 		return pow((2-abs_relative_position),3)/6;
-	if (abs_relative_position>=0)		
-		return 2./3. + (0.5*abs_relative_position-1)*abs_relative_position*abs_relative_position;
-	else
-	//	warning("BSplineWeight does not take negative values as input!");
-		return EXIT_FAILURE;
-//	-100;
+	return 2./3. + (0.5*abs_relative_position-1)*abs_relative_position*abs_relative_position;
 }
 
 template <typename pos_type>
 pos_type 
-BSplines_1st_der_weight(const pos_type abs_relative_position) 
+BSplines_1st_der_weight(const pos_type relative_position) 
 {
+	const pos_type abs_relative_position = fabs(relative_position);
 	if (abs_relative_position>=2)
 		return 0;
+	int sign = relative_position>0?1:-1;
 	if (abs_relative_position>=1)		
-		return -0.5*(abs_relative_position-2)*(abs_relative_position-2);
-	if (abs_relative_position>=0)		
-		return abs_relative_position*(1.5*abs_relative_position-2.);
-	else
-	//	warning("BSplines_1st_der_weight does not take negative values as input!");
-		return EXIT_FAILURE;
-//	-100;
+		return -0.5*sign*(abs_relative_position-2)*(abs_relative_position-2);
+	return sign*abs_relative_position*(1.5*abs_relative_position-2.);	
 }
 
 #if 0
@@ -263,7 +271,7 @@ BSpline_1st_der(const pos_type relative_position)
 		if (k<0) continue;
 		BSpline_value += 
 			BSplines1DRegularGrid<out_elemT,in_elemT>::BSplines_coef_vector[k] *
-			BSplines_1st_der_weight(fabs((pos_type)k-relative_position));
+			BSplines_1st_der_weight((pos_type)k-relative_position);
 	}
 	return BSpline_value;
 }
