@@ -98,15 +98,15 @@ const char * const
 FilterRootPrior<float>::registered_name =
   "FilterRootPrior";
 
-#if 0
-// registration stuff moved to recon_buildblock_registries.cxx
-
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation, 
 // note that we get a linking error if we don't have the explicit instantiation below
 #  pragma warning(disable:4660)
 #  endif
 
+
+#if 0
+// registration stuff moved to recon_buildblock_registries.cxx
 
 // Register this class in the ImageProcessor registry
 static FilterRootPrior<float>::RegisterIt dummy;
