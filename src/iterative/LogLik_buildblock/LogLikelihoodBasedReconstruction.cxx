@@ -1,22 +1,46 @@
 //
 // $Id$
 //
+/*!
 
-#include "recon_buildblock/LogLikelihoodBasedReconstruction.h"
+  \file
+  \ingroup LogLikBased_buildblock
+  
+  \brief  implementation of the LogLikelihoodBasedReconstruction class 
+    
+  \author Matthew Jacobson
+  \author Kris Thielemans
+  \author PARAPET project
+      
+  \date $Date$
+        
+  \version $Revision$
+*/
 
-//
-//
-//---------------LogLikelihoodBasedReconstruction definitions-----------------
-//
-//
+#include "LogLikBased/LogLikelihoodBasedReconstruction.h"
+#include "LogLikBased/common.h"
+// for set_projectors_and_symmetries
+#include "recon_buildblock/distributable.h"
+#include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "DataSymmetriesForViewSegmentNumbers.h"
+
+#include "interfile.h"
+#include "Viewgram.h"
+#include "recon_array_functions.h"
+#include <iostream>
+
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+#endif
+
+START_NAMESPACE_TOMO
 
 
-// LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction(char* parameter_filename)
-//  :IterativeReconstruction(parameter_filename)
-void LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction_ctor(char* parameter_filename)
+LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction()
 {
 
-  IterativeReconstruction_ctor(parameter_filename);
 
   sensitivity_image_ptr=NULL;
   additive_projection_data_ptr = NULL;
@@ -24,73 +48,59 @@ void LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction_ctor(cha
 
 }
 
-//LogLikelihoodBasedReconstruction::~LogLikelihoodBasedReconstruction()
-void LogLikelihoodBasedReconstruction::LogLikelihoodBasedReconstruction_dtor()
+
+
+void LogLikelihoodBasedReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr)
 {
-
-   delete sensitivity_image_ptr;
-   delete additive_projection_data_ptr;
-
-  IterativeReconstruction_dtor();
-
-}
-
-
-//void LogLikelihoodBasedReconstruction::recon_set_up(PETImageOfVolume &target_image)
-void LogLikelihoodBasedReconstruction::loglikelihood_common_recon_set_up(PETImageOfVolume &target_image)
-{
-
-  //IterativeReconstruction::recon_set_up(target_image);
-   iterative_common_recon_set_up(target_image);
-
-
-   sensitivity_image_ptr=new PETImageOfVolume(target_image.get_empty_copy());
-
-   if(get_parameters().sensitivity_image_filename=="1")
-     sensitivity_image_ptr->fill(1.0);
+  // TODO move to post_processing
   
-   else
-     {
-       // MJ 05/03/2000 replaced by interfile
-       // TODO ensure compatable sizes of initial image and sensitivity
-
-       *sensitivity_image_ptr = read_interfile_image(get_parameters().sensitivity_image_filename.c_str());   
-     }
-   /*
-   //MJ 10/04/2000 added zoom
-   zoom_image(*sensitivity_image_ptr,get_parameters().zoom,
-	      get_parameters().Xoffset,
-	      get_parameters().Yoffset,
-	      get_parameters().output_image_size);
-
-	      */
-
+  IterativeReconstruction::recon_set_up(target_image_ptr);
+  
+  sensitivity_image_ptr=target_image_ptr->get_empty_discretised_density();
+  
+  if(get_parameters().sensitivity_image_filename=="1")
+    sensitivity_image_ptr->fill(1.0);
+  
+  else
+  {       
+    // TODO ensure compatible sizes of initial image and sensitivity
+    
+    sensitivity_image_ptr = 
+      DiscretisedDensity<3,float>::read_from_file(get_parameters().sensitivity_image_filename);   
+  }
+  
+  
   if (get_parameters().additive_projection_data_filename != "0")
-    {
-      additive_projection_data_ptr = new PETSinogramOfVolume(read_interfile_PSOV(get_parameters().additive_projection_data_filename.c_str()));
-    };
+  {
+    additive_projection_data_ptr = 
+      ProjData::read_from_file(get_parameters().additive_projection_data_filename);
+  };
+  
 
-
+  // set projectors to be used for the calculations
+  // TODO get type and parameters for projectors from *Parameters
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
+    new ForwardProjectorByBinUsingRayTracing(get_parameters().proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+                                             target_image_ptr);
+  shared_ptr<BackProjectorByBin> back_projector_ptr =
+    new BackProjectorByBinUsingInterpolation(get_parameters().proj_data_ptr->get_proj_data_info_ptr()->clone(), 
+                                             target_image_ptr);
+  set_projectors_and_symmetries(forward_projector_ptr, 
+                                back_projector_ptr, 
+                                back_projector_ptr->get_symmetries_used()->clone());
 }
 
 
 
 
-//void LogLikelihoodBasedReconstruction::end_of_iteration_processing(PETImageOfVolume &current_image_estimate)
-void LogLikelihoodBasedReconstruction::loglikelihood_common_end_of_iteration_processing(PETImageOfVolume &current_image_estimate)
+void LogLikelihoodBasedReconstruction::end_of_iteration_processing(DiscretisedDensity<3,float> &current_image_estimate)
 {
 
-  //IterativeReconstruction::end_of_iteration_processing(current_image_estimate);
-  iterative_common_end_of_iteration_processing(current_image_estimate);
+  IterativeReconstruction::end_of_iteration_processing(current_image_estimate);
 
     // Save intermediate (or last) iteration      
   if((!(subiteration_num%get_parameters().save_interval)) || subiteration_num==get_parameters().num_subiterations ) 
-    {
-      
-    // KTxxx use output_filename_prefix
-      char fname[max_filename_length];
-      sprintf(fname, "%s_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
-	       
+    {      	       
       if(get_parameters().do_post_filtering && subiteration_num==get_parameters().num_subiterations)
 	{
 	  cerr<<endl<<"Applying post-filter"<<endl;
@@ -100,8 +110,14 @@ void LogLikelihoodBasedReconstruction::loglikelihood_common_end_of_iteration_pro
 	       << " " << current_image_estimate.find_max() << endl <<endl;
 	}
  
+      // allocate space for the filename assuming that
+      // we never have more than 10^49 subiterations ...
+      char * fname = new char[get_parameters().output_filename_prefix.size() + 50];
+      sprintf(fname, "%s_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
+
      // Write it to file
       write_basic_interfile(fname, current_image_estimate);
+      delete fname;
  
     }
 
@@ -112,60 +128,64 @@ void LogLikelihoodBasedReconstruction::loglikelihood_common_end_of_iteration_pro
 
 
 //MJ 03/01/2000 computes the negative of the loglikelihood function (minimization).
-void LogLikelihoodBasedReconstruction::compute_loglikelihood(float* accum,
-						       const PETImageOfVolume& current_image_estimate,
-						       const PETImageOfVolume& sensitivity_image,
-						       const PETSinogramOfVolume* proj_dat,
+float LogLikelihoodBasedReconstruction::compute_loglikelihood(
+						       const DiscretisedDensity<3,float>& current_image_estimate,
 						       const int magic_number)
 {
 
+  float accum=0.F;  
 
-
-  *accum=0.0;
-
-  
-
-  distributable_accumulate_loglikelihood(current_image_estimate,proj_dat,
-					 1, 1,
-					 get_parameters().proj_data_ptr->get_num_views()/4,
+  // KT 25/05/2000 subset_num -> 0 (was 1)
+  distributable_accumulate_loglikelihood(current_image_estimate,
+                                         get_parameters().proj_data_ptr,
+					 0,1,
 					 -get_parameters().max_segment_num_to_process, 
 					 get_parameters().max_segment_num_to_process, 
-					 get_parameters().zero_seg0_end_planes, accum,
+					 get_parameters().zero_seg0_end_planes, &accum,
 					 additive_projection_data_ptr);
 
- *accum/=magic_number;
- PETImageOfVolume temp_image=sensitivity_image;
- temp_image*=current_image_estimate;
- *accum+=temp_image.sum()/get_parameters().num_subsets; 
- cerr<<endl<<"Image Energy="<<temp_image.sum()/get_parameters().num_subsets<<endl;
-
+  accum/=magic_number;
+  auto_ptr<DiscretisedDensity<3,float> > temp_image_ptr = 
+    auto_ptr<DiscretisedDensity<3,float> >(sensitivity_image_ptr->clone());
+  *temp_image_ptr *=current_image_estimate;
+  accum+=temp_image_ptr->sum()/get_parameters().num_subsets; 
+  cerr<<endl<<"Image Energy="<<temp_image_ptr->sum()/get_parameters().num_subsets<<endl;
+  
+  return accum;
 }
 
 
 float LogLikelihoodBasedReconstruction::sum_projection_data()
 {
-
-	float counts=0.0;
-       
-	for (int segment_num = -get_parameters().max_segment_num_to_process; segment_num <= get_parameters().max_segment_num_to_process; segment_num++)
-	  {
-	
-	  //first adjust sinograms
-	  PETSegmentByView  sino=get_parameters().proj_data_ptr->get_segment_view_copy(segment_num);
-	 
-	  if(segment_num==0 && get_parameters().zero_seg0_end_planes)
-	    {
-	      sino[sino.get_min_ring()].fill(0.0);
-	      sino[sino.get_max_ring()].fill(0.0);
-	    } 
-   
-	  truncate_rim(sino,rim_truncation_sino);
-	
-	  //now take totals
-	  counts+=sino.sum();
-	   
-	}
- 
-	return counts;
-
+  
+  float counts=0.0F;
+  
+  for (int segment_num = -get_parameters().max_segment_num_to_process; segment_num <= get_parameters().max_segment_num_to_process; segment_num++)
+  {
+    for (int view_num = get_parameters().proj_data_ptr->get_min_view_num();
+         view_num <= get_parameters().proj_data_ptr->get_max_view_num();
+         ++view_num)
+    {
+      
+      Viewgram<float>  viewgram=get_parameters().proj_data_ptr->get_viewgram(view_num,segment_num);
+      
+      //first adjust data
+      
+      if(segment_num==0 && get_parameters().zero_seg0_end_planes)
+      {
+        viewgram[viewgram.get_min_axial_pos_num()].fill(0);
+        viewgram[viewgram.get_max_axial_pos_num()].fill(0);
+      } 
+      
+      truncate_rim(viewgram,rim_truncation_sino);
+      
+      //now take totals
+      counts+=viewgram.sum();
+    }
+  }
+  
+  return counts;
+  
 }
+
+END_NAMESPACE_TOMO
