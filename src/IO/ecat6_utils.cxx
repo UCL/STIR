@@ -9,14 +9,19 @@
   \author Larry Byars
   \author Kris Thielemans (conversions from/to VAX floats, longs)
   \author PARAPET project
-  \version $Revision$
-  \date $Date$
+  $Revision$
+  $Date$
 
   \warning This file relies on preprocessor defines to find out if it 
   has to byteswap. This needs to be changed. (TODO). It does check this
   by asserts using ByteOrder.
+  \todo move to its own namespace
 */
-
+/*
+  Copyright (C) CTI PET Inc.
+  Copyright (C) 2000 PARAPET partners
+  See STIR/LICENSE.txt for details
+  */
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
