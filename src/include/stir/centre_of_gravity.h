@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -30,9 +30,10 @@ template <class elemT> class VoxelsOnCartesianGrid;
 
 
 //! Compute centre of gravity of an Array but without dividing by its sum
-/*! Each coordinate of the unweighted centre of gravity is computed as follows:
+/*! \ingroup Array
+   Each coordinate of the unweighted centre of gravity is computed as follows:
    \f[
-      C_k = sum_{i_1...i_n} i_k A_{i1...i_n}
+      C_k = \sum_{i_1...i_n} i_k A_{i1...i_n}
    \f]
 */
 template <int num_dimensions, class T>
@@ -40,7 +41,8 @@ BasicCoordinate<num_dimensions,T>
 find_unweighted_centre_of_gravity(const Array<num_dimensions,T>& );
 
 //! Compute centre of gravity of an Array
-/*! Calls find_unweighted_centre_of_gravity and divides the result with the
+/*! \ingroup Array
+    Calls find_unweighted_centre_of_gravity and divides the result with the
     sum of all the elements in the array.
 
     \warning When the sum is 0, error() is called.
@@ -51,7 +53,7 @@ BasicCoordinate<num_dimensions,T>
 find_centre_of_gravity(const Array<num_dimensions,T>& );
 
 //! Computes centre of gravity for each plane
-/*!
+/*! \ingroup Array
   The result is in mm, taking the origin (and min/max indices) into account.
   Results are in standard STIR coordinate system.
 
