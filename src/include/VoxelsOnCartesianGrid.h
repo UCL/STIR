@@ -54,13 +54,13 @@ inline VoxelsOnCartesianGrid(const IndexRange<3>& range,
 		      const CartesianCoordinate3D<float>& origin, 
 		      const BasicCoordinate<3,float>& grid_spacing);
 
-//! use PETScanInfo to obtain the size information
+//! use ProjDataInfo to obtain the size information
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const float zoom = 1.F, 
 		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F) ,
 		      const bool make_xy_size_odd = true);
 
-//! use PETScanInfo to obtain the size information, but use non-default size for x,y
+//! use ProjDataInfo to obtain the size information, but use non-default size for x,y
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const float zoom,
 		      const CartesianCoordinate3D<float>& origin, 
