@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \ingroup utilities
+  \ingroup listmode
 
   \brief Program to compute fansums directly from listmode data
  
@@ -17,29 +17,12 @@
     See STIR/LICENSE.txt for details
 */
 
-/* Possible compilation switches:
-  
-HIDACREBINNER: 
-  Enable code specific for the HiDAC
-INCLUDE_NORMALISATION_FACTORS: 
-  Enable code to include normalisation factors while rebinning.
-  Currently only available for the HiDAC.
-*/   
-
-//#define HIDACREBINNER   
-//#define INCLUDE_NORMALISATION_FACTORS
-
 
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
 #include "stir/ParsingObject.h"
-#ifdef HIDACREBINNER
-#include "local/stir/QHidac/lm_qhidac.h"
-
-#else
-#include "local/stir/listmode/lm.h"
-
-#endif
+#include "local/stir/listmode/CListRecord.h"
+#include "local/stir/listmode/CListRecordECAT966.h"// TODO get rid of this
 #include "local/stir/listmode/CListModeData.h"
 #include "local/stir/listmode/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
@@ -120,20 +103,14 @@ initialise_keymap()
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_key("tangential fan_size", &fan_size);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process); 
-
-  if (CListEvent::has_delayeds())
+  // TODO can't do this yet
+  // if (CListEvent::has_delayeds())
   {
     parser.add_key("Store 'prompts'",&store_prompts);
     parser.add_key("increment to use for 'delayeds'",&delayed_increment);
   }
   parser.add_key("List event coordinates",&interactive);
-  parser.add_stop_key("END");
-
-#ifdef HIDACREBINNER     
-  const unsigned int max_converter = 
-    ask_num("Maximum allowed converter",0,15,15);
-#endif
-  
+  parser.add_stop_key("END");  
 
 }
 
@@ -142,17 +119,8 @@ bool
 LmFansums::
 post_processing()
 {
-#ifdef HIDACREBINNER
-  unsigned long input_file_offset = 0;
-  LM_DATA_INFO lm_infos;
-  read_lm_QHiDAC_data_head_only(&lm_infos,&input_file_offset,input_filename);
-  lm_data_ptr =
-    new CListModeDataFromStream(input_filename, input_file_offset);
-#else
-  // something similar will be done for other listmode types. TODO
   lm_data_ptr =
     CListModeData::read_from_file(input_filename);
-#endif
 
   const int num_rings =
       lm_data_ptr->get_scanner_ptr()->get_num_rings();
@@ -222,7 +190,10 @@ compute()
   unsigned int current_frame_num = 1;
   {      
     // loop over all events in the listmode file
-    CListRecord record;
+    shared_ptr<CListRecord> record_sptr =
+      lm_data_ptr->get_empty_record_sptr();
+    CListRecord& record = *record_sptr;
+
     double current_time = 0;
     while (true)
       {
@@ -234,7 +205,7 @@ compute()
         }
         if (record.is_time())
         {
-          const double new_time = record.time.get_time_in_secs();
+          const double new_time = record.time().get_time_in_secs();
           if (new_time >= frame_defs.get_end_time(current_frame_num))
           {
             while (current_frame_num <= frame_defs.get_num_frames() &&
@@ -252,22 +223,17 @@ compute()
 	  {
             // see if we increment or decrement the value in the sinogram
             const int event_increment =
-              record.event.is_prompt() 
+              record.event().is_prompt() 
               ? ( store_prompts ? 1 : 0 ) // it's a prompt
               :  delayed_increment;//it is a delayed-coincidence event
             
             if (event_increment==0)
               continue;
             
-
-#ifdef HIDACREBINNER
-	    if (record.event.conver_1 > max_converter ||
-		record.event.conver_2 > max_converter) 
-	      continue;
-#error dont know how to do this
-#else
             int ra,a,rb,b;
-	    record.event.get_detectors(a,b,ra,rb);
+	    // TODO get rid of this
+	    static_cast<const CListRecordECAT966&>(record).
+	      event_data.get_detectors(a,b,ra,rb);
 	    if (abs(ra-rb)<=max_segment_num_to_process)
 	      {
 		const int det_num_diff =
@@ -275,18 +241,18 @@ compute()
 		if (det_num_diff<=fan_size/2 || 
 		    det_num_diff>=num_detectors_per_ring-fan_size/2)
 		  {
-                  if (interactive)
-                  {
-                    printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g accepted\n",
-                      record.event.is_prompt() ? 'p' : 'd',
-                      ra,a,rb,b,
-                      current_time);
+		    if (interactive)
+		      {
+			printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g accepted\n",
+			       record.event().is_prompt() ? 'p' : 'd',
+			       ra,a,rb,b,
+			       current_time);
                     
-                    Bin bin;
-                    proj_data_info_ptr->get_bin_for_det_pair(bin,a, ra, b, rb);
-                    printf("Seg %4d view %4d ax_pos %4d tang_pos %4d\n", 
-                      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
-                  }
+			Bin bin;
+			proj_data_info_ptr->get_bin_for_det_pair(bin,a, ra, b, rb);
+			printf("    is Seg %4d view %4d ax_pos %4d tang_pos %4d\n", 
+			       bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
+		      }
 		    data_fan_sums[ra][a] += event_increment;
 		    data_fan_sums[rb][b] += event_increment;
 		    num_stored_events += event_increment;
@@ -306,8 +272,6 @@ compute()
 		  printf(" ignored\n");
 #endif
 	      }
-	    // TODO handle do_normalisation
-#endif
 	    
 	  } // end of spatial event processing
       } // end of while loop over all events
