@@ -42,7 +42,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
   lowpass_filter = 
-    SeparableLowPassArrayFilter<3,elemT>(filter_coefficients);
+    SeparableLowPassArrayFilter<3,elemT>(filter_coefficients, z_trivial);
   
   return Succeeded::yes;
   
@@ -94,6 +94,7 @@ set_defaults()
 {
   //for ( int i = 0;i<=filter_coefficients.get_length();i++)
     filter_coefficients.fill(0);
+    z_trivial =1;
 
     
 }
@@ -106,8 +107,6 @@ initialise_keymap()
   parser.add_start_key("Separable Lowpass Filter Parameters");
   parser.add_key("filter_coefficients", &filter_coefficients_for_parsing);
   parser.add_key("z_trivial", &z_trivial);
-  //parser.add_key("filter_coefficients2", &filter_coefficients[0]);
-  //parser.add_key("filter_coefficients3", &filter_coefficients[1]);  
   parser.add_stop_key("END Separable Lowpass Filter Parameters");
 
 }
