@@ -34,7 +34,7 @@ public:
 
   virtual void get_motion(RigidObject3DTransformation& ro3dtrans, const float time) const =0;
 
-  virtual Succeeded synchronise(const CListModeData&) =0;
+  virtual Succeeded synchronise(CListModeData&) =0;
   
 protected:
 
