@@ -196,8 +196,12 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   //float penalisation_factor = parameters.prior_ptr->get_penalisation_factor();
   
   //relaxation_parameter ~1/n where n is iteration number 
-  float relaxation_parameter = get_parameters().relaxation_parameter;
-  relaxation_parameter /= (subiteration_num+parameters.num_subsets)/parameters.num_subsets;
+
+  const float relaxation_parameter = get_parameters().relaxation_parameter*10.F/
+	      (10+subiteration_num/parameters.num_subsets);
+    
+  //float relaxation_parameter = get_parameters().relaxation_parameter;
+  //relaxation_parameter /= (subiteration_num+parameters.num_subsets)/parameters.num_subsets;
   
   parameters.prior_ptr->compute_gradient(*work_image_ptr, current_image_estimate); 
   *numerator_ptr -= *work_image_ptr;   
