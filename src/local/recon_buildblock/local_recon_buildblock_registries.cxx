@@ -18,7 +18,7 @@
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
-#include "local/stir/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
+//#include "local/stir/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
 //#include "local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
 //#include "local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
 #include "local/stir/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
