@@ -22,7 +22,7 @@
 */
 
 
-
+#include "shared_ptr.h"
 #include "tomo/ImageProcessor.h"
 #include "recon_buildblock/ReconstructionParameters.h"
 
@@ -86,12 +86,10 @@ public:
 
 
   //! inter-iteration filter
-  //shared_ptr<
-    ImageProcessor<3,float>* inter_iteration_filter_ptr;
+  shared_ptr<ImageProcessor<3,float> > inter_iteration_filter_ptr;
 
-   //! post-filter
-  //shared_ptr<
-    ImageProcessor<3,float>*  post_filter_ptr;
+  //! post-filter
+  shared_ptr<ImageProcessor<3,float> >  post_filter_ptr;
 
 
   
@@ -107,7 +105,7 @@ public:
 };
 
 END_NAMESPACE_TOMO
-
+ 
 
 
 #endif // __IterativeReconstructionParameters_h__
