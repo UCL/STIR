@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief non-inline implementations for all symmetry operations for PET scanners
   and Cartesian grid images
@@ -23,7 +23,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"

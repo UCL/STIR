@@ -8,7 +8,7 @@
 /*!
 
  \file
-  \ingroup recon_buildblock 
+  \ingroup projection 
   \brief declaration of ProjMatrixByBin and its helpers classes
   
   \author Mustapha Sadki
@@ -20,7 +20,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -54,7 +54,7 @@ class SubsetInfo;
 class Bin;	    
 	    
 /*!
-\ingroup recon_buildblock
+\ingroup projection
 \brief 
   This is the (abstract) base class for all projection matrices 
   which are organised by 'bin'.

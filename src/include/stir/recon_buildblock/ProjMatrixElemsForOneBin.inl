@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief 
 
@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

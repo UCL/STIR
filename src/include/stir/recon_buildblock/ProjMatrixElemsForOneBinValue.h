@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
   
   \brief Declaration of class ProjMatrixElemsForOneBinValue
     
@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -31,7 +31,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename coordT> class BasicCoordinate;
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Stores voxel coordinates and the value of the matrix element. 
  
   (Probably) only useful in class ProjMatrixElemsForOneBin.

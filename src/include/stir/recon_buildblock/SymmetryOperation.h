@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief Declaration of 2 classes: SymmetryOperation and TrivialSymmetryOperation
 
@@ -15,7 +15,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_SymmetryOperation_H__
@@ -89,7 +89,7 @@ public:
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief A class implementing the trivial case where the symmetry operation
   does nothing at all.
 */

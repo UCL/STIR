@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup priors
   \brief Declaration of class FilterRootPriot
 
   \author Kris Thielemans
@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -32,7 +32,7 @@ template <int num_dimensions, typename elemT> class ImageProcessor;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup priors
   \brief
   A class in the GeneralisedPrior hierarchy. This implements 'generalised' 
   priors a la the Median Root Prior (which was invented by

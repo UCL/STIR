@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief Declares class BackProjectorByBinUsingInterpolation
 
@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __BackProjectorByBinUsingInterpolation_h_
@@ -83,7 +83,7 @@ public:
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief does backprojection by interpolating between the bins.
 
   This implementation uses incremental backprojection

@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup normalisation
 
   \brief Declaration of class TrivialBinNormalisation
 
@@ -12,7 +12,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -25,7 +25,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup normalisation
   \brief Trivial class which does not do any normalisation whatsoever.
   \todo Make sure that the keyword value \c None corresponds to this class.
 

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
   
   \brief Declaration of class ForwardProjectorByBinUsingRayTracing
     
@@ -39,7 +39,7 @@ class ProjDataInfoCylindrical;
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief This class implements forward projection using Siddon's algorithm for
   ray tracing. That is, it computes length of intersection with the voxels.
 

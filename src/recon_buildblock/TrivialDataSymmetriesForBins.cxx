@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief non-inline implementations for class 
          TrivialDataSymmetriesForBins
 

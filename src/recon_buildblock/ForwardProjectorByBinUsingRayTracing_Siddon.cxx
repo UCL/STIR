@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief implementation of Siddon's algorithm
 

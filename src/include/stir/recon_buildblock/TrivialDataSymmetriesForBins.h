@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief Declaration of class TrivialDataSymmetriesForBins
 
@@ -26,7 +26,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief A class derived from DataSymmetriesForBins that says that there are
   no symmetries at all.
 

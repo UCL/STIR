@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
   \brief ProjMatrixByBinUsingRayTracing's definition 
 
@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __ProjMatrixByBinUsingRayTracing__
@@ -35,7 +35,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Computes projection matrix elements for VoxelsOnCartesianGrid images
   by using a Length of Intersection (LOI) model. 
 
