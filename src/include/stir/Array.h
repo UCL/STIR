@@ -446,7 +446,13 @@ public:
 #include "stir/Array1d.h"
 #define elemT float
 #include "stir/Array1d.h"
-
+END_NAMESPACE_STIR
+#include <complex>
+START_NAMESPACE_STIR
+#define __stir_Array1d_no_comparisons__
+#define elemT std::complex<float>
+#include "stir/Array1d.h"
+#undef elemT
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
 END_NAMESPACE_STIR
