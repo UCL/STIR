@@ -17,7 +17,8 @@ SOURCES = \
 	RegisteredObject.cxx \
 	RigidObject3DMotion.cxx\
 	RigidObject3DMotionFromPolaris.cxx \
-	RigidObject3DTransformation.cxx 
+	RigidObject3DTransformation.cxx \
+	object_3d_transform_image.cxx
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
