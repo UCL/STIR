@@ -79,7 +79,7 @@ InterfileHeader::InterfileHeader()
   type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
   patient_orientation_index = 0; //head-in
-  int patient_rotation_index = 0; //supine
+  patient_rotation_index = 0; //supine
   num_dimensions = 0;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
