@@ -91,12 +91,17 @@ CartesianCoordinate3D<float>
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
   CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
- 
+ Quaternion<float> quat_norm_tmp = quat;
+   
   //cerr << quat << endl;
   {
     const float quat_norm=square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]);
+     
     if (fabs(quat_norm-1)>1E-3)
-      warning("Non-normalised quaternion: %g", quat_norm);
+    //Quaternion<float> quat_norm = quat;
+    quat_norm_tmp.normalise();
+    //if (fabs(quat_norm-1)>1E-3)
+      //warning("Non-normalised quaternion: %g", quat_norm);
 
   }
 #if 1
@@ -106,10 +111,10 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   
   //transformation with quaternions 
   const Quaternion<float> point_q (0,swapped_point.x(),swapped_point.y(),swapped_point.z());
-  Quaternion<float> conj_quat = quat;
+  Quaternion<float> conj_quat = quat_norm_tmp;
   conj_quat.conjugate();
   
-  Quaternion<float> tmp = quat * point_q * conj_quat;
+  Quaternion<float> tmp = quat_norm_tmp * point_q * conj_quat;
 
   tmp[2] += translation.x();
   tmp[3] += translation.y();
