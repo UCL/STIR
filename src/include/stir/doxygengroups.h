@@ -65,7 +65,7 @@ The whole collection of libraries in STIR.
 /*!
 \defgroup buildblock Basic building blocks
 \ingroup STIR_library
-Library with things that are not not specific to reconstructions.
+Library with things that are not specific to reconstructions.
 This includes multi-dimensional arrays, images, image processors, 
 projection data,...
 */
@@ -80,6 +80,14 @@ projection data,...
 /*!
 \defgroup Array_detail Implementation details used by Array classes
 \ingroup Array
+*/
+/*!
+\defgroup Array_IO Functions that implement IO for Array objects
+\ingroup Array
+*/
+/*!
+\defgroup Array_IO_detail Implementation details for functions that implement IO for Array objects
+\ingroup Array_IO
 */
 /*!
 \defgroup Coordinate Items relating to coordinates
