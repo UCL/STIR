@@ -1,0 +1,18 @@
+#
+# $Id$: $Date$
+#
+
+# TODO check:  DEST et al should default to whatever they are defined here
+# make will pass command lines changes to the submake automatically
+# remove when those Makefiles import Makefile_common
+
+$(LIB_DISPLAY) : FORCE 
+	cd $(WORKSPACE)/display; mkdir -p $(DEST); $(MAKE) all DEST=$(DEST) DEBUG="$(DEBUG)";
+
+$(LIB_BUILDINGBLOCK) : FORCE
+	cd $(WORKSPACE)/buildblock; mkdir -p $(DEST); $(MAKE) all  DEST=$(DEST) DEBUG="$(DEBUG)";
+
+$(LIB_RECON_BUILDINGBLOCK) : FORCE
+	cd $(WORKSPACE)/recon_buildblock; mkdir -p $(DEST); $(MAKE) all  DEST=$(DEST) DEBUG="$(DEBUG)";
+
+FORCE:

@@ -1,0 +1,235 @@
+# 
+# $Id$: $Date$
+#
+
+#******* type of build, if BUILD is not 'debug', we make the optimised version
+BUILD=debug
+
+#******** location of files
+
+WORKSPACE = ${HOME}/PPhead
+INCLUDE_DIR = ${WORKSPACE}/include
+
+# location of .o, .a and executables, set DEST if you don't agree with the default
+ifndef DEST
+ifeq ($(BUILD),debug)
+DEST=debug/
+else # not debug
+DEST=opt/
+endif # debug/ ?
+endif # DEST not defined
+
+
+#******* type of graphics used by display()
+# possible values: X, PGM, MATHLINK, NONE
+# note: only used in display/Makefile and for GRAPH_LIBS
+GRAPHICS=X
+
+#****** find out which system we're on
+
+__TEST_OS = $(shell uname)
+ifeq ($(__TEST_OS),Linux)
+SYSTEM = LINUX
+else
+ifeq ($(__TEST_OS),AIX)
+__TEST_EPX =$(shell csh -f -c "if (-e /epx) echo 1")
+ifeq ($(__TEST_EPX),1)
+SYSTEM = CC
+else
+SYSTEM = AIX
+endif
+else
+ifeq ($(__TEST_OS),CYGWIN_NT-4.0)
+# TODO just check CYGWIN prefix
+SYSTEM = CYGWIN
+else
+ifeq ($(__TEST_OS),SunOS)
+__TEST_AP = $(shell csh -f -c "if (-e `which aprun`) echo 1")
+ifeq ($(__TEST_AP),1)
+SYSTEM = AP3000
+else
+SYSTEM = SUN
+endif
+endif
+endif
+endif
+endif
+
+#******** type of parallel library
+# PARALIB can be EPX or PVM
+ifeq ($(SYSTEM),CC)
+PARALIB=EPX
+else
+PARALIB=PVM
+endif # not CC
+
+#******** compiler that will be used
+
+# for C++ 
+CXX=g++ 
+# for C
+CC=gcc
+
+
+#******** libraries
+
+
+#These libraries will be used as dependencies
+LIB_RECON_BUILDINGBLOCK= \
+   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
+LIB_BUILDINGBLOCK= \
+   ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
+LIB_DISPLAY= \
+   ${WORKSPACE}/display/${DEST}libdisplay.a
+
+BB_LIBS = $(LIB_DISPLAY) $(LIB_BUILDINGBLOCK) $(LIB_RECON_BUILDINGBLOCK)
+
+SYS_LIBS= -lm
+ 
+ifeq "$(GRAPHICS)" "X"
+GRAPH_LIBS = -lcurses -lX11
+else
+ifeq "$(GRAPHICS)" "PGM"
+GRAPH_LIBS =
+else
+ifeq "$(GRAPHICS)" "MATHLINK"
+# this presumably needs a Mathlink library, depends on your system though
+GRAPH_LIBS =
+else
+GRAPH_LIBS =
+endif
+endif
+endif
+
+#******* compiler and linker options
+
+ifeq ($(SYSTEM),LINUX)
+OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
+else
+ifeq ($(SYSTEM),CYGWIN)
+OPTIM_OPT=-O3 -march=i686 -ffast-math -malign-double -malign-functions=2 -malign-loops=2 -DNDEBUG
+else
+OPTIM_OPT=-O3 -DNDEBUG
+endif
+endif
+
+ifeq ($(SYSTEM),LINUX)
+DEBUG_OPT=-D_DEBUG -pg -g
+else
+DEBUG_OPT=-D_DEBUG -g
+endif
+
+# possibly this should check on AIX as well
+ifeq ($(SYSTEM),CC)
+LINK_OPT=-Xlinker -bbigtoc $(LIBS)
+else
+LINK_OPT=$(LIBS)
+endif
+
+
+# allow the user to get some extra options by using make EXTRA_OPT=bla 
+EXTRA_OPT =-Wconversion -Wstrict-prototypes 
+
+# TODO, do not use DEBUG here
+ifeq ($(BUILD),debug)
+DEBUG = $(DEBUG_OPT)  $(EXTRA_OPT) 
+else # release version
+DEBUG = $(OPTIM_OPT)  $(EXTRA_OPT) 
+endif # BUILD ?
+
+# removed -I/usr/lib
+CFLAGS= -g $(DEBUG) -I$(INCLUDE_DIR) 
+
+#******** targets
+
+.PHONY: all clean $(BB_LIBS) #createdir depend
+
+.PRECIOUS: $(BB_LIBS)
+
+#depend:
+#	@echo \*\*\* Rebuilding dependencies...
+#	makedepend -Y -- $(CFLAGS) -- -fMakefile -p${DEST} $(wildcard *.cxx) 2> /dev/null
+
+#createdir: 
+#	-mkdir -p $(DEST)
+
+#********* vpath
+# trickery to find relevant files
+# TODO only needed for sccs ?
+
+vpath %.cxx = ../../parallel
+#AZ 22/03/99 Added
+vpath %.h = ${INCLUDE_DIR} ${INCLUDE_DIR}/FORE ${INCLUDE_DIR}/OSEM ${INCLUDE_DIR}/PROMIS ${INCLUDE_DIR}/recon_buildblock
+vpath %.inl = ${INCLUDE_DIR} ${INCLUDE_DIR}/FORE ${INCLUDE_DIR}/OSEM ${INCLUDE_DIR}/PROMIS ${INCLUDE_DIR}/recon_buildblock
+
+
+#********* default rules
+
+.SUFFIXES: .c .o .cxx .a .d
+
+# KT 22/02/2000 new
+# TODO it's always using -M at the moment, don't know why...
+# To generate dependencies, we use -MM for gcc (or g++) and -M for other compilers
+ifeq ($(CXX),g++)
+MAKE_DEPEND_FLAG=-MM
+else
+ifeq ($(CXX),gcc)
+MAKE_DEPEND_FLAG=-MM
+else
+MAKE_DEPEND_FLAG=-M
+endif
+endif
+
+# default rule for making 'mini-Makefiles' with the dependency info 
+# for a single source file
+# see GNU make documentation
+# modifications by KT to put .o and .d in $(DEST)
+$(DEST)%.d: %.cxx
+	-mkdir -p $(DEST)
+	$(SHELL) -ec '$(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) $< \
+          | sed '\''s&\($*\)\.o[ :]*&$(DEST)\1.o $@ : &g'\'' > $@; \
+            [ -s $@ ] || rm -f $@'                             
+
+$(DEST)%.d: %.c
+	-mkdir -p $(DEST)
+	$(SHELL) -ec '$(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS) $< \
+          | sed '\''s&\($*\)\.o[ :]*&$(DEST)\1.o $@ : &g'\'' > $@; \
+            [ -s $@ ] || rm -f $@'                             
+
+${DEST}%.o: %.cxx 
+	-mkdir -p $(DEST)
+	$(CXX) $(CFLAGS) -o $@ -c $< 
+
+${DEST}%.o: %.c
+	-mkdir -p $(DEST)
+	$(CC) $(CFLAGS) -o $@ -c $< 
+
+
+${DEST}%: ${DEST}%.o $(BB_LIBS)
+	$(CXX) $(CFLAGS)  -o $@ $< $(BB_LIBS)  $(LINK_OPT) $(SYS_LIBS) $(GRAPH_LIBS)
+
+#********** SCCS rules
+
+# get the latest version of the header from SCCS
+
+%.h: $(dir %.h)/SCCS/s.$(notdir %).h
+	@echo \*\*\* Getting $@ from SCCS...
+	(cd $(dir $@) ; sccs get $@)
+
+# get the latest version of the inline from SCCS
+
+%.inl: $(dir %.h)/SCCS/s.$(notdir %).inl
+	@echo \*\*\* Getting $@ from SCCS...
+	(cd $(dir $@) ; sccs get $@)
+
+# get the latest version of the source file from SCCS
+
+%.cxx: $(dir %.cxx)SCCS/s.$(notdir %).cxx
+	@echo \*\*\* Getting $@ from SCCS...
+	sccs get $@
+
+%.c: $(dir %.c)SCCS/s.$(notdir %).c
+	@echo \*\*\* Getting $@ from SCCS...
+	sccs get $@
+
+
