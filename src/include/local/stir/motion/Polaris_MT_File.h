@@ -26,6 +26,7 @@
 #include "stir/Succeeded.h"
 
 #include <vector>
+#include <string>
 
 #ifndef STIR_NO_NAMESPACES
 using std::vector;
@@ -61,7 +62,7 @@ public:
 
    ~Polaris_MT_File () {};
    typedef std::vector<Record>::const_iterator const_iterator;
-   Polaris_MT_File(const string& filename);   
+   Polaris_MT_File(const std::string& filename);   
    
    //! get the \a n-th complete record
    /*! This skips the 'missing data' records*/

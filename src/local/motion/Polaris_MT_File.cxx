@@ -29,7 +29,7 @@ const unsigned int MAX_STRING_LENGTH=512;
 
 START_NAMESPACE_STIR  
 
-Polaris_MT_File::Polaris_MT_File(const string& mt_filename)
+Polaris_MT_File::Polaris_MT_File(const std::string& mt_filename)
 {
   ifstream mt_stream(mt_filename.c_str());
   if (!mt_stream)
