@@ -14,21 +14,21 @@ clean:
 
 ifeq "$(GRAPHICS)" "X"
 GRAPHOPT = -DTOMO_SIMPLE_BITMAPS -DSC_XWINDOWS
-SOURCES_CXX = display.cxx 
+SOURCES_CXX = display_array.cxx 
 SOURCES_C = gen.c screengen.c screen.c
 else
 ifeq "$(GRAPHICS)" "PGM"
 GRAPHOPT = -DTOMO_PGM
-SOURCES_CXX = display.cxx
+SOURCES_CXX = display_array.cxx
 SOURCES_C = 
 else
 ifeq "$(GRAPHICS)" "MATHLINK"
 GRAPHOPT = -DTOMO_MATHLINK
-SOURCES_CXX = display.cxx 
+SOURCES_CXX = display_array.cxx 
 SOURCES_C = mathlinkhelp.c
 else
 GRAPHOPT =
-SOURCES_CXX= display.cxx
+SOURCES_CXX= display_array.cxx
 SOURCES_C = 
 endif
 endif
