@@ -71,6 +71,9 @@ main (int argc, char * argv[])
   VoxelsOnCartesianGrid<float> * output_variance_on_variance_image;
   VoxelsOnCartesianGrid<float> * mean_to_power_four;
   VoxelsOnCartesianGrid<float> * mean_to_power_two;
+  VoxelsOnCartesianGrid<float> * intermidinate;
+
+
   
   if (argc!=5)
   {
@@ -105,7 +108,7 @@ main (int argc, char * argv[])
    output_variance_on_variance_image = cum_sum_power_three_vox->get_empty_voxels_on_cartesian_grid();
    mean_to_power_four = cum_sum_power_three_vox->get_empty_voxels_on_cartesian_grid();
    mean_to_power_two =cum_sum_power_three_vox->get_empty_voxels_on_cartesian_grid();
-     
+   intermidinate = cum_sum_power_three_vox->get_empty_voxels_on_cartesian_grid();
 
    *mean_to_power_two = *mean_image_vox;
    *mean_to_power_two *= *mean_image_vox;
@@ -118,10 +121,11 @@ main (int argc, char * argv[])
    *mean_to_power_two *= *unbiasedvariance_vox;
    *mean_to_power_two *= (6*num_trails -6);
 
+   //int numerator = (square(num_trails)-3);
+
    *unbiasedvariance_vox *= *unbiasedvariance_vox;
-   *unbiasedvariance_vox *=(square(num_trails)-3)/num_trails;
-
-
+   *unbiasedvariance_vox *= (square(num_trails)-3)/(num_trails);
+    
    *mean_image_vox *=*cum_sum_power_three*4;
 
   // now combine all together 
