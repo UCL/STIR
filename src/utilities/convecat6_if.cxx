@@ -1,5 +1,5 @@
 //
-// $Id$ : $Date$
+// $Id$: $Date$
 //
 
 // convecat6_if - conversion from ecat 6 cti to interfile (image and sinogram data)
@@ -53,30 +53,10 @@ main(int argc, char *argv[])
 
     write_if_header(out_name, mhead, cti_fptr);
     fclose(cti_fptr);
+    // KT 12/03/2000 added main return value
+    return EXIT_SUCCESS;
 }
 
-//  includes for ntohs
-#ifdef _WIN32
-
-#ifdef __GNUG__ //  Cygwin32
-//  Cygwin32 does define ntohs(), but it's in some library which
-//  KT couldn not locate. However, __ntohs is defined as inline asm.
-//  so we just use that one.
-#include <asm/byteorder.h>
-#define ntohs __ntohs 
-#else           //  Other Windows compilers
-//  Unfortunately, the definition of ntohs is in an Import Library 
-//  Windows NT, Windows 95: ws2_32.lib; Win32s: wsock32.lib 
-//  The relevant library has to be added to your project. 
-#include <winsock2.h>
-#endif
-
-#else //  !_WIN32
-
-#include <sys/types.h>
-#include <netinet/in.h>
-
-#endif
 
 void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
 {
@@ -85,8 +65,6 @@ void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
     PETScannerInfo scanner;
     CameraType camera;
     MatDir entry;
-    Image_subheader ihead;
-    Scan_subheader shead;
 
     camera=camRPT; // defaulting to camRPT only to read sub headers
 
@@ -100,12 +78,17 @@ void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
     { 
 // IMAGE DATA
         case matImageFile:
+          {
+            // KT 12/03/2000 moved locally
+            Image_subheader ihead;
+
             if(cti_read_image_subheader(cti_fptr, entry.strtblk, &ihead)!=EXIT_SUCCESS) { // get ihead
                 cerr<<endl<<"Unable to look up image subheader"<<endl;
                 exit (EXIT_FAILURE);
             }
 
             // determine camera with dimension parameters (ihead), better than using mhead
+            // TODO does not work !
             if(ihead.dimension_1<=129) {
                 camera=camRPT;
                 scanner=PETScannerInfo::RPT;
@@ -134,7 +117,10 @@ void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
             fprintf(hdr_fptr, "!GENERAL DATA :=\n");
             fprintf(hdr_fptr, "!GENERAL IMAGE DATA :=\n");
             fprintf(hdr_fptr, "!type of data := PET\n");
-            fprintf(hdr_fptr, "imagedata byte order := %s\n", (ntohs(1) != 1) ? "LITTLEENDIAN" : "BIGENDIAN");
+            fprintf(hdr_fptr, "imagedata byte order := %s\n",
+              ByteOrder::get_native_order() == ByteOrder::little_endian 
+              ? "LITTLEENDIAN"
+              : "BIGENDIAN");
             fprintf(hdr_fptr, "!PET STUDY (General) :=\n");
             fprintf(hdr_fptr, "!PET data type := Image\n");
             fprintf(hdr_fptr, "process status :=\n");
@@ -161,21 +147,25 @@ void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
             fclose(hdr_fptr);
             ecat6cti_to_PIOV(data_name, cti_fptr, v_mhead, ihead, camera);
             break;
-
+          }
 // SINOGRAM DATA
         case matScanFile:
+          {
+            // KT 12/03/2000 moved locally, substituted ihead with shead below
+            Scan_subheader shead;
+
             if(cti_read_scan_subheader(cti_fptr, entry.strtblk, &shead)!=EXIT_SUCCESS) { // get shead
                 cerr<<endl<<"Unable to look up image subheader"<<endl;
                 exit (EXIT_FAILURE);
             }
 
             // determine camera with dimension parameters (shead), better than using mhead
-            if(ihead.dimension_1<=128) {
+            if(shead.dimension_1<=128) {
                 camera=camRPT;
                 scanner=PETScannerInfo::RPT;
                 syst_name="PRT-1";
             }
-            else if(ihead.dimension_1<=160) {
+            else if(shead.dimension_1<=160) {
                 camera=cam953;
                 scanner=PETScannerInfo::E953;
                 syst_name="ECAT 953";
@@ -202,7 +192,10 @@ void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
             fprintf(hdr_fptr, "!GENERAL DATA :=\n");
             fprintf(hdr_fptr, "!GENERAL IMAGE DATA :=\n");
             fprintf(hdr_fptr, "!type of data := PET\n");
-            fprintf(hdr_fptr, "imagedata byte order := %s\n", (ntohs(1) != 1) ? "LITTLEENDIAN" : "BIGENDIAN");
+            fprintf(hdr_fptr, "imagedata byte order := %s\n", 
+              ByteOrder::get_native_order() == ByteOrder::little_endian 
+              ? "LITTLEENDIAN"
+              : "BIGENDIAN");
             fprintf(hdr_fptr, "!PET STUDY (General) :=\n");
             fprintf(hdr_fptr, "!PET data type := Emission\n");
             fprintf(hdr_fptr, "!number format := float\n");
@@ -240,11 +233,13 @@ void write_if_header(char *v_out_name, Main_header v_mhead, FILE *cti_fptr)
             fclose(hdr_fptr);
             ecat6cti_to_PSOV(data_name, cti_fptr, v_mhead, shead, camera);
             break;
-
+          }
         default:
+          {
             cerr<<endl<<"Unable to determine file type (either image or scan)."<<endl;
             exit(EXIT_FAILURE);
             break;
+          }
     }
 }
 
@@ -310,8 +305,9 @@ void ecat6cti_to_PSOV(char *v_data_name, FILE *cti_fptr, Main_header v_mhead,
 // positive ring difference
         cerr<<"  "<<w;
         int num_ring= 16-w;
-        for(int ring2=0; ring2<num_ring; ring2++) { // ring order: 0-0,1-1,..,15-15 then 1-0,2-1,..,15-14
-            int ring1=ring2+w; // ring1>ring2
+        // KT 13/03/2000 interchanged
+        for(int ring1=0; ring1<num_ring; ring1++) { // ring order: 0-0,1-1,..,15-15 then 0-1,1-2,..,14-15
+            int ring2=ring1+w; // ring1<=ring2
             int mat_index= cti_rings2plane(16, ring1, ring2);
             long matnum= cti_numcod(camera, v_mhead.num_frames, mat_index,v_mhead.num_gates,0,v_mhead.num_bed_pos);
             get_scanheaders(cti_fptr, matnum, &v_mhead, &v_shead, &scanParams); // get scanParams
@@ -324,8 +320,8 @@ void ecat6cti_to_PSOV(char *v_data_name, FILE *cti_fptr, Main_header v_mhead,
 // negative ring difference
         if(w>0) {
             cerr<<"  "<<-w;
-            for(int ring1=0; ring1<num_ring; ring1++) { // ring order: 0-1,1-2,..,14-15 then 0-2,1-3,..,13-15
-                int ring2=ring1+w; // ring1<ring2
+            for(int ring2=0; ring2<num_ring; ring2++) { // ring order: 0-1,2-1,..,15-14 then 2-0,3-1,..,15-13
+                int ring1=ring2+w; // ring1>ring2
                 int mat_index= cti_rings2plane(16, ring1, ring2);
                 long matnum= cti_numcod(camera, v_mhead.num_frames, mat_index,v_mhead.num_gates,0,v_mhead.num_bed_pos);
                 get_scanheaders(cti_fptr, matnum, &v_mhead, &v_shead, &scanParams); // get scanParams
