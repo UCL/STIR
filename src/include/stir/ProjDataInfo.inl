@@ -77,7 +77,19 @@ int
 ProjDataInfo::get_max_tangential_pos_num()const
 { return max_tangential_pos_num; }
 
+float 
+ProjDataInfo::get_costheta(const Bin& bin) const
+{
+  return
+    1/sqrt(1+square(get_tantheta(bin)));
+}
 
+float
+ProjDataInfo::get_m(const Bin& bin) const
+{
+  return 
+    get_t(bin)/get_costheta(bin);
+}
 
 const 
 Scanner*
