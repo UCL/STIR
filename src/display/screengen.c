@@ -38,7 +38,7 @@ void put_textstr (int  x, int y, const char str[])
   SC_MASK(SC_M_ALL);
 }
 
-
+/* TODO (?) scale should be obeyed if possible, now the smallest scale is used */
 int center_sc_images(int *Pscale,
 			   int min_x,int max_x,int min_y,int max_y,
                            int  SIZE_X,int SIZE_Y,
