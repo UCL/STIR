@@ -185,13 +185,14 @@ transform_3d_object(ProjData& out_proj_data,
 #endif
   const int out_min_segment_num = out_proj_data.get_min_segment_num();
   const int out_max_segment_num = out_proj_data.get_max_segment_num();
+
+#if 0
   VectorWithOffset<shared_ptr<SegmentByView<float> > > out_seg_ptr(out_min_segment_num, out_max_segment_num);
-  for (int segment_num = out_proj_data.get_min_segment_num();
-       segment_num <= out_proj_data.get_max_segment_num();
+  for (int segment_num = out_min_segment_num;
+       segment_num <= out_max_segment_num;
        ++segment_num)    
     out_seg_ptr[segment_num] = 
       new SegmentByView<float>(out_proj_data.get_empty_segment_by_view(segment_num));
-
   for (int segment_num = min_in_segment_num_to_process;
        segment_num <= max_in_segment_num_to_process;
        ++segment_num)    
@@ -230,7 +231,6 @@ transform_3d_object(ProjData& out_proj_data,
 		  bin.get_bin_value();
 	    }
     }
-
   Succeeded succes = Succeeded::yes;
   for (int segment_num = out_proj_data.get_min_segment_num();
        segment_num <= out_proj_data.get_max_segment_num();
@@ -241,6 +241,67 @@ transform_3d_object(ProjData& out_proj_data,
     }
 
   return succes;
+
+
+#else
+
+
+  const RigidObject3DTransformation 
+    inverse_rigid_object_transformation = 
+    rigid_object_transformation.inverse();
+  VectorWithOffset<shared_ptr<SegmentByView<float> > > 
+    in_seg_ptr(min_in_segment_num_to_process,max_in_segment_num_to_process);
+  for (int segment_num = min_in_segment_num_to_process;
+       segment_num <= max_in_segment_num_to_process;
+       ++segment_num)    
+    in_seg_ptr[segment_num] = 
+      new SegmentByView<float>(in_proj_data.get_segment_by_view(segment_num));
+  for (int segment_num = out_min_segment_num;
+       segment_num <= out_max_segment_num;
+       ++segment_num)    
+    {       
+      SegmentByView<float> out_segment = 
+        out_proj_data.get_empty_segment_by_view( segment_num);
+      std::cerr << "segment_num "<< segment_num << std::endl;
+      const int out_max_ax_pos_num = out_segment.get_max_axial_pos_num();
+      const int out_min_ax_pos_num = out_segment.get_min_axial_pos_num();
+      const int out_max_view_num = out_segment.get_max_view_num();
+      const int out_min_view_num = out_segment.get_min_view_num();
+      const int out_max_tang_pos_num = out_segment.get_max_tangential_pos_num();
+      const int out_min_tang_pos_num = out_segment.get_min_tangential_pos_num();
+      for (int view_num=out_min_view_num; view_num<=out_max_view_num; ++view_num)
+	for (int ax_pos_num=out_min_ax_pos_num; ax_pos_num<=out_max_ax_pos_num; ++ax_pos_num)
+	  for (int tang_pos_num=out_min_tang_pos_num; tang_pos_num<=out_max_tang_pos_num; ++tang_pos_num)
+	    {
+	      Bin bin(segment_num, view_num, ax_pos_num, tang_pos_num,1);
+	      inverse_rigid_object_transformation.
+		transform_bin(bin,
+#ifndef NEW_ROT
+			      *in_proj_data_info_noarccor_ptr,
+			      *out_proj_data_info_noarccor_ptr
+#else
+			      in_proj_data_info,
+			      out_proj_data_info
+#endif
+							);
+
+	      if (bin.get_bin_value()>0 &&
+		  bin.segment_num()>=min_in_segment_num_to_process &&
+		  bin.segment_num()<=max_in_segment_num_to_process)
+		{		  
+		  out_segment[view_num][ax_pos_num][tang_pos_num] =
+		    (*in_seg_ptr[bin.segment_num()])[bin.view_num()]
+		    [bin.axial_pos_num()]
+		    [bin.tangential_pos_num()];
+		}
+	    }
+      if (out_proj_data.set_segment(out_segment) == Succeeded::no)
+	return Succeeded::no;
+    }
+
+  return Succeeded::yes;
+#endif
+
 
 }
 
