@@ -84,12 +84,19 @@ public:
   {
     RegisterIt()
     {
-      std::cerr << "Adding " << Derived::registered_name <<" to registry"<<std::endl;
+      //std::cerr << "Adding " << Derived::registered_name <<" to registry"<<std::endl;
       registry().add_to_registry(Derived::registered_name, read_from_stream);  
     }
     ~RegisterIt()
     {
+#if 0
+      // does not work yet, as registry might be destructed before this
+      // RegisterIt object. A solution to this problem is coming up.
+      cerr << "In RegisterIt destructor for " << Derived::registered_name<<endl;
+      cerr <<"Current keys: ";
+      registry().list_keys(cerr);
       registry().remove_from_registry(Derived::registered_name);
+#endif
     }
   };
   // RegisterIt needs to be a friend to have access to registry()
