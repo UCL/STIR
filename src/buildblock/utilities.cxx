@@ -5,9 +5,8 @@
 // KT 09/10/98 new
 PETImageOfVolume ask_image_details()
 {
-  int scanner_num = 0;
-  int span = 1 ;
-  PETScannerInfo scanner;
+ 
+
 
   char filename[256];
   cout << "Enter file name " <<endl;
@@ -17,10 +16,9 @@ PETImageOfVolume ask_image_details()
   ifstream input;
   open_read_binary(input, filename);
 
-  scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
-  // span ==1 only supported now
-  span = 1;
-
+  int scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
+ 
+  PETScannerInfo scanner;
   switch( scanner_num )
     {
     case 0:
@@ -102,12 +100,15 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
 				     const bool on_disk)
 {
 
-  int scanner_num = 0;
-  int span = 1 ;
-  PETScannerInfo scanner;
+ 
+ 
+
 
   char filename[256];
-  cout << "Enter file name " <<endl;
+  cout << endl;
+  system("ls *scn *dat *bin");//CL 14/10/98 ADd this printing out of some data files
+  
+  cout << "\nEnter file name of 3D sinogram data : " ;
   cin >> filename;
 
   if (on_disk)
@@ -148,9 +149,8 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
  
  
 
-  scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
-  // span ==1 only supported now
-  span = 1;
+  int scanner_num = ask_num("Enter scanner number (0: RPT, 1: 953, 2: 966, 3: GE)", 0,3,0);
+  PETScannerInfo scanner;
 
   switch( scanner_num )
     {
@@ -171,7 +171,10 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
     }
   scanner.show_params();
 
-  int max_delta = ask_num("Max. ring difference acquired",
+  //CL 03/08/98 Add the option for spanning value
+    int span = ask_num("Span value : ", 1,11,7);
+    
+  int max_delta = ask_num("Max. ring difference acquired : ",
 			  0,
 			  scanner.num_rings-1,
 			  scanner.type == PETScannerInfo::Advance 
