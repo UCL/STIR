@@ -110,7 +110,21 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
   // This is not really necessary, as apply would call this anyway.
   // However, we have it here such that any errors in building the filters would
   // be caught before doing any projections or so done.
+#if 0 
+  /* 
+  KT 04/06/2003 disabled the explicit calling of inter_iteration_filter_ptr->set_up()
   
+  It was here to catch incompatibilities between the filter and the
+  image early (i.e. before any real reconstruction stuff has been going on). Now
+  this will only be caught when the inter_iteration_filter is called for the first time.
+
+  The reason I disabled this is that OSMAPOSL::recon_setup (and presumably
+  other algorithms that insist on non-negative data) chains the current
+  inter_iteration_filter with a ThresholdMinToSmallPositiveValueImageProcessor. 
+  This meant that the new image processor was not set-up yet, and resulted 
+  in the current filter being set-up twice, which might potentially take a lot 
+  of CPU time.
+  */
   if(get_parameters().inter_iteration_filter_interval>0 && get_parameters().inter_iteration_filter_ptr != 0 )
     {
       cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
@@ -118,7 +132,7 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
           == Succeeded::no)
 	error("Error building inter iteration filter\n");
     }
-
+#endif
  
   if(get_parameters().post_filter_ptr != 0) 
   {
