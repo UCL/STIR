@@ -2,8 +2,17 @@
 #
 # Author Kris Thielemans
 # Copyright 2004- $Date$ Hammersmith Imanet Ltd
-# This file is part of STIR, and is distributed under the 
-# terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
+#   This file is part of STIR.
+#
+#   This file is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Lesser General Public License as published by
+#   the Free Software Foundation; either version 2.1 of the License, or
+#   (at your option) any later version.
+#
+#   This file is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Lesser General Public License for more details.
 #
 # This file will/can be included by a makefile skeleton in a subdirectory
 # Requirements:
@@ -20,7 +29,7 @@
 # Result:
 # targets   build_tests_$(dir), clean_tests_$(dir)
 #           run_tests_$(dir), run_interactive_tests_$(dir)
-#	    run_$(dir)/test_exe for any file in $dir)_TEST_SOURCES
+#	    run_$(dir)/test_exe for any file in $(dir)_TEST_SOURCES
 # some variables (but you shouldn't count on those remaining the same)
 # 
 #
