@@ -17,6 +17,15 @@
 
 */
 
+
+#include "Coordinate3D.h"
+#ifdef OLDDESIGN
+#include "pet_common.h"
+#include "Point3D.h"
+#endif
+
+START_NAMESPACE_TOMO
+
 /*!
   \ingroup buildblock
   \brief a templated class for 3-dimensional coordinates.
@@ -28,14 +37,6 @@
    \warning The constructor uses the order CartesianCoordinate3D<coordT>(z,y,x)
 */
 
-
-#include "Coordinate3D.h"
-#ifdef OLDDESIGN
-#include "pet_common.h"
-#include "Point3D.h"
-#endif
-
-START_NAMESPACE_TOMO
 
 template <typename coordT>
 class CartesianCoordinate3D : public Coordinate3D<coordT>
