@@ -190,7 +190,7 @@ RelatedViewgrams<elemT>::
 find_max() const
 {
   Array<1,elemT> max_per_viewgram(get_num_viewgrams());
-  Array<1,elemT>::iterator max_iter = max_per_viewgram.begin();
+  typename Array<1,elemT>::iterator max_iter = max_per_viewgram.begin();
   const_iterator iter = begin(); 
   while (iter != end())
   {
@@ -206,7 +206,7 @@ RelatedViewgrams<elemT>::
 find_min() const
 {
   Array<1,elemT> min_per_viewgram(get_num_viewgrams());
-  Array<1,elemT>::iterator min_iter = min_per_viewgram.begin();
+  typename Array<1,elemT>::iterator min_iter = min_per_viewgram.begin();
   const_iterator iter = begin(); 
   while (iter != end())
   {

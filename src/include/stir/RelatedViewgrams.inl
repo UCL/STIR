@@ -142,22 +142,22 @@ RelatedViewgrams<elemT>::get_symmetries_ptr() const
 }
 
 template <typename elemT>
-RelatedViewgrams<elemT>::iterator 
+typename RelatedViewgrams<elemT>::iterator 
 RelatedViewgrams<elemT>::begin()
 { return viewgrams.begin();}
 
 template <typename elemT>
-RelatedViewgrams<elemT>::iterator 
+typename RelatedViewgrams<elemT>::iterator 
 RelatedViewgrams<elemT>::end()
 {return viewgrams.end();}
 
 template <typename elemT>
-RelatedViewgrams<elemT>::const_iterator 
+typename RelatedViewgrams<elemT>::const_iterator 
 RelatedViewgrams<elemT>::begin() const
 {return viewgrams.begin();}
 
 template <typename elemT>
-RelatedViewgrams<elemT>::const_iterator 
+typename RelatedViewgrams<elemT>::const_iterator 
 RelatedViewgrams<elemT>::end() const
 {return viewgrams.end();}
 

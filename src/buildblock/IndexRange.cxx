@@ -3,7 +3,7 @@
 //
 /*!
   \file 
-  \buildblock 
+  \ingroup buildblock 
   \brief implementations for the IndexRange class
 
   \author Kris Thielemans
@@ -50,7 +50,7 @@ IndexRange<num_dimensions>::get_regular_range(
   if (is_regular_range == regular_false)
     return false;
 
-  base_type::const_iterator iter=begin();
+  typename base_type::const_iterator iter=begin();
 
   BasicCoordinate<num_dimensions-1, int> lower_dim_min;
   BasicCoordinate<num_dimensions-1, int> lower_dim_max;

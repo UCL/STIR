@@ -89,7 +89,7 @@ return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()][get_min_view_num()
 }
  
 template <typename elemT>
-SegmentBySinogram<elemT>::StorageOrder 
+typename SegmentBySinogram<elemT>::StorageOrder 
 SegmentBySinogram<elemT>::
 get_storage_order() const
   { return StorageBySino; }

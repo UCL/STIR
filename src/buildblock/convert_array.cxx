@@ -121,8 +121,8 @@ public:
        const scaleT scale_factor,
        const Array<num_dimensions,T1>& data_in)
   {
-    Array<num_dimensions,T2>::iterator out_iter = data_out.begin();
-    Array<num_dimensions,T1>::const_iterator in_iter = data_in.begin();
+    typename Array<num_dimensions,T2>::iterator out_iter = data_out.begin();
+    typename Array<num_dimensions,T1>::const_iterator in_iter = data_in.begin();
     for (;
          in_iter != data_in.end();
          in_iter++, out_iter++)
@@ -172,8 +172,8 @@ public:
     // KT: I coded the various checks on the data types in the loop.
     // This is presumably slow, but all these conditionals can be 
     // resolved at compile time, so a good compiler does the work for me.
-    Array<1,T2>::iterator out_iter = data_out.begin();
-    Array<1,T1>::const_iterator in_iter = data_in.begin();
+    typename Array<1,T2>::iterator out_iter = data_out.begin();
+    typename Array<1,T1>::const_iterator in_iter = data_in.begin();
     for (;
          in_iter != data_in.end();
          in_iter++, out_iter++)
@@ -743,8 +743,10 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
     // KT: I coded the various checks on the data types in the loop.
     // This is presumably slow, but all these conditionals can be 
     // resolved at compile time, so a good compiler does the work for me.
-    Array<num_dimensions,T2>::full_iterator out_iter = data_out.begin_all();
-    Array<num_dimensions,T1>::const_full_iterator in_iter = data_in.begin_all();
+    typename Array<num_dimensions,T2>::full_iterator out_iter = 
+      data_out.begin_all();
+    typename Array<num_dimensions,T1>::const_full_iterator in_iter = 
+      data_in.begin_all();
     for (;
          in_iter != data_in.end_all();
          in_iter++, out_iter++)

@@ -25,17 +25,15 @@ using std::cerr;
 using std::endl;
 #endif
 
-
-
 START_NAMESPACE_STIR
 
-template <typename Key, typename Factory, typename Compare> 
+template <class Key, class Factory, class Compare> 
 FactoryRegistry<Key, Factory, Compare>::FactoryRegistry()
 : has_defaults(false)
 {}
 
 
-template <typename Key, typename Factory, typename Compare> 
+template <class Key, class Factory, class Compare> 
 FactoryRegistry<Key, Factory, Compare>::FactoryRegistry(const Key& default_key,
 				 const Factory& default_factory)
 : has_defaults(true),
@@ -45,7 +43,7 @@ FactoryRegistry<Key, Factory, Compare>::FactoryRegistry(const Key& default_key,
   add_to_registry(default_key, default_factory);
 }
 
-template <typename Key, typename Factory, typename Compare>
+template <class Key, class Factory, class Compare>
 FactoryRegistry<Key, Factory, Compare>::~FactoryRegistry()
 {
 // TODO not so sure how to get rid of them
@@ -55,14 +53,14 @@ FactoryRegistry<Key, Factory, Compare>::~FactoryRegistry()
 //         delete i->second;
 }
     
-template <typename Key, typename Factory, typename Compare>
+template <class Key, class Factory, class Compare>
 void 
 FactoryRegistry<Key, Factory, Compare>::
 add_to_registry(const Key& key, Factory const & factory)
 {
   //cerr << "Adding "<< key << "to registry\n";
 #ifndef NDEBUG
-  FactoryMap::iterator iter = m.find(key);
+  typename FactoryMap::iterator iter = m.find(key);
   if (iter != m.end())
   {
     // TODO don't output to cerr, but use only warning()
@@ -74,13 +72,13 @@ add_to_registry(const Key& key, Factory const & factory)
   m.insert(pair<Key, Factory>(key, factory));
 }
 
-template <typename Key, typename Factory, typename Compare>
+template <class Key, class Factory, class Compare>
 void 
 FactoryRegistry<Key, Factory, Compare>::
 remove_from_registry(const Key& key)
 {
   //cerr << "Removing "<< key << "to registry\n";
-  FactoryMap::iterator iter = m.find(key);
+  typename FactoryMap::iterator iter = m.find(key);
   if (iter == m.end())
   {
 #ifndef _NDEBUG
@@ -94,21 +92,21 @@ remove_from_registry(const Key& key)
 
 }
 
-template <typename Key, typename Factory, typename Compare>
+template <class Key, class Factory, class Compare>
 void
 FactoryRegistry<Key, Factory, Compare>::
 list_keys(ostream& s) const
 {
-  for (FactoryMap::const_iterator i = m.begin(); i != m.end(); ++i)
+  for (typename FactoryMap::const_iterator i = m.begin(); i != m.end(); ++i)
     s << i->first << '\n';
 }
 
-template <typename Key, typename Factory, typename Compare>
+template <class Key, class Factory, class Compare>
 Factory const &
 FactoryRegistry<Key, Factory, Compare>::
 find_factory(const Key& key) const /*throw(unknown_typename)*/ 
 {
-  FactoryMap::const_iterator i = m.find(key);
+  typename FactoryMap::const_iterator i = m.find(key);
   if (i != m.end()) 
     return i->second;
 
@@ -137,5 +135,3 @@ find_factory(const Key& key) const /*throw(unknown_typename)*/
 
 
 END_NAMESPACE_STIR
-
-

@@ -49,7 +49,10 @@ class SegmentBySinogram : public Segment<elemT>, public Array<3,elemT>
 {
   
 public:
-  // Constructor that sets the data to a given 3d Array
+  //! typedef such that we do not need to have \a typename wherever we StorageOrder
+  typedef typename Segment<elemT>::StorageOrder StorageOrder;
+
+  //! Constructor that sets the data to a given 3d Array
   inline
   SegmentBySinogram(const Array<3,elemT>(v), 
 		    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,

@@ -40,27 +40,29 @@ START_NAMESPACE_STIR
 /*
   iterators
 */
-template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>::iterator BasicCoordinate<num_dimensions, coordT>::begin() 
+template <int num_dimensions, class coordT>
+typename BasicCoordinate<num_dimensions, coordT>::iterator 
+BasicCoordinate<num_dimensions, coordT>::begin() 
 {
   return coords + 1; 
 }
 
-template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>::const_iterator 
+template <int num_dimensions, class coordT>
+typename BasicCoordinate<num_dimensions, coordT>::const_iterator 
 BasicCoordinate<num_dimensions, coordT>::begin() const 
 { 
   return coords + 1; 
 }
 
-template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>::iterator BasicCoordinate<num_dimensions, coordT>::end() 
+template <int num_dimensions, class coordT>
+typename BasicCoordinate<num_dimensions, coordT>::iterator 
+BasicCoordinate<num_dimensions, coordT>::end() 
 {
   return coords + num_dimensions + 1; 
 }
 
-template <int num_dimensions, typename coordT>
-BasicCoordinate<num_dimensions, coordT>::const_iterator 
+template <int num_dimensions, class coordT>
+typename BasicCoordinate<num_dimensions, coordT>::const_iterator 
 BasicCoordinate<num_dimensions, coordT>::end() const 
 { 
   return coords + num_dimensions + 1; 
@@ -70,7 +72,7 @@ BasicCoordinate<num_dimensions, coordT>::end() const
 /*
   operator[]
 */
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 coordT& 
 BasicCoordinate<num_dimensions, coordT>::operator[](const int d) 
 {
@@ -79,7 +81,7 @@ BasicCoordinate<num_dimensions, coordT>::operator[](const int d)
   return coords[d]; 
 }
  
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 coordT
 BasicCoordinate<num_dimensions, coordT>::operator[](const int d) const
 {
@@ -91,7 +93,7 @@ BasicCoordinate<num_dimensions, coordT>::operator[](const int d) const
 /*
   comparison
  */
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 bool
 BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
@@ -102,7 +104,7 @@ BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_di
     equal(begin(), end(), c.begin());
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 bool
 BasicCoordinate<num_dimensions, coordT>::operator!=(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
@@ -112,7 +114,7 @@ BasicCoordinate<num_dimensions, coordT>::operator!=(const BasicCoordinate<num_di
 /*
   (numerical) assignments
 */
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>&
 BasicCoordinate<num_dimensions, coordT>::operator=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
@@ -121,17 +123,17 @@ BasicCoordinate<num_dimensions, coordT>::operator=(const BasicCoordinate<num_dim
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>::BasicCoordinate()
 {}
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>::BasicCoordinate(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   operator=(c);
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator+=(const BasicCoordinate<num_dimensions, coordT>& c)
@@ -141,7 +143,7 @@ operator+=(const BasicCoordinate<num_dimensions, coordT>& c)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator-=(const BasicCoordinate<num_dimensions, coordT>& c)
@@ -151,7 +153,7 @@ operator-=(const BasicCoordinate<num_dimensions, coordT>& c)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator*=(const BasicCoordinate<num_dimensions, coordT>& c)
@@ -161,7 +163,7 @@ operator*=(const BasicCoordinate<num_dimensions, coordT>& c)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator/=(const BasicCoordinate<num_dimensions, coordT>& c)
@@ -171,7 +173,7 @@ operator/=(const BasicCoordinate<num_dimensions, coordT>& c)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator+=(const coordT& a)
@@ -181,7 +183,7 @@ operator+=(const coordT& a)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator-=(const coordT& a)
@@ -191,7 +193,7 @@ operator-=(const coordT& a)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator*=(const coordT& a)
@@ -201,7 +203,7 @@ operator*=(const coordT& a)
   return *this;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::
 operator/=(const coordT& a)
@@ -215,7 +217,7 @@ operator/=(const coordT& a)
 /*
   numerical operators
 */
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator+(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -224,7 +226,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
 }
 
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator-(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -232,7 +234,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
   return tmp;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator*(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -240,7 +242,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
   return tmp;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator/(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -248,7 +250,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
   return tmp;
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator+(const coordT& a) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -257,7 +259,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
 }
 
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator-(const coordT& a) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -266,7 +268,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
 }
 
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator*(const coordT& a) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -275,7 +277,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
 }
 
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::operator/(const coordT& a) const
 {
   BasicCoordinate<num_dimensions, coordT> tmp(*this);
@@ -289,7 +291,7 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
    External functions
 */
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 coordT
 inner_product (const BasicCoordinate<num_dimensions, coordT>& p1, 
 	       const BasicCoordinate<num_dimensions, coordT>& p2)
@@ -302,14 +304,14 @@ inner_product (const BasicCoordinate<num_dimensions, coordT>& p1,
 }
 
 // TODO specialise for complex coordTs if you need them
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 double
 norm (const BasicCoordinate<num_dimensions, coordT>& p1)
 {
   return sqrt(static_cast<double>(inner_product<num_dimensions,coordT>(p1,p1)));
 }
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 double 
 angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
        const BasicCoordinate<num_dimensions, coordT>& p2)
@@ -320,7 +322,7 @@ angle (const BasicCoordinate<num_dimensions, coordT>& p1,
 #if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
 // only define when not gcc 2.8.1
 
-template <int num_dimensions, typename coordT>
+template <int num_dimensions, class coordT>
 inline BasicCoordinate<num_dimensions+1, coordT> 
 join(const coordT& a, 
      const BasicCoordinate<num_dimensions, coordT>& c)
@@ -339,3 +341,5 @@ join(const coordT& a,
 #endif // gcc 2.8.1
 
 END_NAMESPACE_STIR
+
+

@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup buildblock
+  \ingroup ImageProcessor
   \brief Inline implementations for class ImageProcessor
 
   \author Kris Thielemans
