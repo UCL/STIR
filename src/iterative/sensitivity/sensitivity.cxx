@@ -1,5 +1,5 @@
 //
-// @(#)sensitivity.cxx	1.9: 98/11/13
+// $Id$: $Date$
 //
 
 
@@ -58,7 +58,8 @@ public:
   virtual void apply(PETSegment&) const {}
 };
 
-
+// KT 01/12/98 function which constructs PSOV (nothing else for the moment)
+PETSinogramOfVolume * ask_parameters();
 // KT 09/11/98 use PSOV for construction of segments, added const for globals
 PETImageOfVolume
 compute_sensitivity_image(const PETSinogramOfVolume& s3d,
@@ -69,72 +70,32 @@ compute_sensitivity_image(const PETSinogramOfVolume& s3d,
 
 int main(int argc, char *argv[])
 {
+  // KT 01/12/98 unsatisfying trick to keep the old way of input
+  // but allow a new way using an Interfile header.
+  PETSinogramOfVolume *s3d_ptr = 0;
 
-  if(argc>1) {
-    cout<<"Usage: sensitivity ";
+  if(argc!=2) 
+  {
+    cerr<<"Usage: sensitivity [PSOV-file]\n"
+        <<"The PSOV-file will be used to get the scanner, mashing etc. details" 
+	<< endl; 
+  }
+  if (argc>2)
     exit(1);
+  
+  if(argc==2)
+  {
+    s3d_ptr = new PETSinogramOfVolume(read_interfile_PSOV(argv[1]));
+  }
+  else
+  {
+    s3d_ptr = ask_parameters();
   }
 
+  PETSinogramOfVolume& s3d = *s3d_ptr;
 
-  // KT 05/11/98 use scan_info
-  PETScanInfo scan_info;
- 
-  int scanner_num = 
-    ask_num("Enter scanner number (0: RPT, 1:1: 953, 2: 966, 3: GE, 4: ART) ? ", 
-            0,4,0);
-  switch( scanner_num )
-    {
-    case 0:
-      scan_info = (PETScannerInfo::RPT);
-      break;
-    case 1:
-      scan_info = (PETScannerInfo::E953);
-      break;
-    case 2:
-      scan_info = (PETScannerInfo::E966);
-      break;
-    case 3:
-      scan_info = (PETScannerInfo::Advance);
-      break;
-    case 4:
-      scan_info = (PETScannerInfo::ART);
-      break;
-    }
+  // KT 01/12/98 from here no changes (except 1...)
 
-  {
-    const int new_num_bins = 
-      scan_info.get_num_bins() / ask_num("Reduce num_bins by factor", 1,16,1);
-
-    // keep same radius of FOV
-    scan_info.set_bin_size(
-      (scan_info.get_bin_size()*scan_info.get_num_bins()) / new_num_bins
-      );
-
-    scan_info.set_num_bins(new_num_bins); 
-
-    scan_info.set_num_views(
-      scan_info.get_num_views()/ ask_num("Reduce num_views by factor", 1,16,1)
-      );  
-
-  }    
-
-  // KT 09/11/98 allow span
-  int span = 1;
-  if (scan_info.get_scanner().type != PETScannerInfo::Advance)
-    span = ask_num("Span value", 1, scan_info.get_num_rings()/2, 1);
-
-  // KT 09/11/98 use PETSinogramOfVolume
-  fstream *out = 0;
-  
-  PETSinogramOfVolume s3d(
-    scan_info, 
-    span, 
-    scan_info.get_scanner().type != PETScannerInfo::Advance ?
-    scan_info.get_num_rings()-1 : 11,
-    *out, 0UL,
-    PETSinogramOfVolume::SegmentViewRingBin,
-    NumericType::FLOAT,
-    Real(1));
 
 
   globals.limit_segments=ask_num("Maximum absolute segment number to process: ", 
@@ -165,13 +126,15 @@ int main(int argc, char *argv[])
 
   bool do_attenuation;
   // KT 09/11/98 use new constructor
-  PETImageOfVolume attenuation_image(scan_info);
+  // KT 01/12/98 use the s3d member
+  PETImageOfVolume attenuation_image(s3d.scan_info);
 
   {
     // KT 13/11/98 use ask_
     char atten_name[max_filename_length];
+    // KT 10/02/99 tell it reads interfile
     ask_filename_with_extension(atten_name, 
-				"Get attenuation image from which file (0 = 0's): ",
+				"Get attenuation image from which file (0 = 0's): (use .hv if you can)",
 				"");    
     
     if(atten_name[0]=='0')
@@ -188,6 +151,14 @@ int main(int argc, char *argv[])
       // This in principle should allow us to read an 'even-sized' image
       // as += just adds the appropriate ranges
       attenuation_image += read_interfile_image(atten_name);
+#if RESCALE
+      // KT 10/02/99 temporary plug
+      cerr << "WARNING: multiplying by binsize to correct for scale factor in \
+forward projectors..." << endl;
+      cerr<< "Max before " <<attenuation_image.find_max();
+      attenuation_image *= s3d.scan_info.get_bin_size();
+      cerr<< ", after " <<attenuation_image.find_max() << endl;
+#endif
       /*
       ifstream atten_img;
       open_read_binary(atten_img, atten_name);
@@ -260,7 +231,7 @@ PETImageOfVolume compute_sensitivity_image(const PETSinogramOfVolume& s3d,
     */
 
     PETSegmentBySinogram
-      segment = s3d.empty_segment_sino_copy(0);
+      segment = s3d.get_empty_segment_sino_copy(0);
 
     if (do_attenuation)
     {
@@ -363,9 +334,9 @@ PETImageOfVolume compute_sensitivity_image(const PETSinogramOfVolume& s3d,
 		  -segment_num);
      */
     PETSegmentByView 
-      segment_pos = s3d.empty_segment_view_copy(segment_num);
+      segment_pos = s3d.get_empty_segment_view_copy(segment_num);
     PETSegmentByView 
-      segment_neg = s3d.empty_segment_view_copy(-segment_num);
+      segment_neg = s3d.get_empty_segment_view_copy(-segment_num);
 
     if (do_attenuation)
     {
@@ -449,3 +420,67 @@ PETImageOfVolume compute_sensitivity_image(const PETSinogramOfVolume& s3d,
   return image_result;
 }
 
+
+PETSinogramOfVolume * 
+ask_parameters()
+{
+    // KT 05/11/98 use scan_info
+  PETScanInfo scan_info;
+ 
+  int scanner_num = 
+    ask_num("Enter scanner number (0: RPT, 1:1: 953, 2: 966, 3: GE, 4: ART) ? ", 
+            0,4,0);
+  switch( scanner_num )
+    {
+    case 0:
+      scan_info = (PETScannerInfo::RPT);
+      break;
+    case 1:
+      scan_info = (PETScannerInfo::E953);
+      break;
+    case 2:
+      scan_info = (PETScannerInfo::E966);
+      break;
+    case 3:
+      scan_info = (PETScannerInfo::Advance);
+      break;
+    case 4:
+      scan_info = (PETScannerInfo::ART);
+      break;
+    }
+
+  {
+    const int new_num_bins = 
+      scan_info.get_num_bins() / ask_num("Reduce num_bins by factor", 1,16,1);
+
+    // keep same radius of FOV
+    scan_info.set_bin_size(
+      (scan_info.get_bin_size()*scan_info.get_num_bins()) / new_num_bins
+      );
+
+    scan_info.set_num_bins(new_num_bins); 
+
+    scan_info.set_num_views(
+      scan_info.get_num_views()/ ask_num("Reduce num_views by factor", 1,16,1)
+      );  
+
+  }    
+
+  // KT 09/11/98 allow span
+  int span = 1;
+  if (scan_info.get_scanner().type != PETScannerInfo::Advance)
+    span = ask_num("Span value", 1, scan_info.get_num_rings()/2, 1);
+
+  // KT 09/11/98 use PETSinogramOfVolume
+  fstream *out = 0;
+  
+  return new PETSinogramOfVolume(
+    scan_info, 
+    span, 
+    scan_info.get_scanner().type != PETScannerInfo::Advance ?
+    scan_info.get_num_rings()-1 : 11,
+    *out, 0UL,
+    PETSinogramOfVolume::SegmentViewRingBin,
+    NumericType::FLOAT,
+    Real(1));
+}
