@@ -250,9 +250,7 @@ static void Filter_proj_Colsher(Segment<float>& segment, int i,
 
 
 #ifndef PARALLEL
-
-//CL24/02/00 AS the function without rmin and rmax, and the one with these two variables
-// are quite similar, remove the content of the function without rmin, and rmax, 
+#if 0
 // by calling the other function
 void Filter_proj_Colsher(Segment<float> & segment, 
                          float gamma, float theta_max, float d_a, float d_b,
@@ -268,7 +266,7 @@ void Filter_proj_Colsher(Segment<float> & segment,
                         segment.get_min_axial_pos_num(), segment.get_max_axial_pos_num());
     
 }
-
+#endif
 #if 0
 static void Filter_proj_Colsher(Segment<float> &segment, int i, 
                                 float gamma, float theta_max, float d_a, float d_b,
@@ -277,6 +275,7 @@ static void Filter_proj_Colsher(Segment<float> &segment, int i,
                                 int PadS, int PadZ, int rmin, int rmax);
 #endif
 
+#if 0
 void Filter_proj_Colsher(Segment<float> &segment, 
                          float gamma, float theta_max, float d_a, float d_b,
                          float alpha_colsher_axial, float fc_colsher_axial,
@@ -334,14 +333,14 @@ void Filter_proj_Colsher(Segment<float> &segment,
      
     //stop_timers();
 }
+#endif
 
-//filter all views
 #else  // PARALLEL code 
 
 #error empty for now
 
 #endif  // PARALLEL
-
+#if 0
 void Filter_proj_Colsher(Viewgram<float> & view_i,
 			 Viewgram<float> & view_i1,
                          float theta, float theta0, float d_a, float d_b,
@@ -363,6 +362,8 @@ void Filter_proj_Colsher(Viewgram<float> & view_i,
   Filter_proj_Colsher(view_i, view_i1, Cfilter, PadS, PadZ);
 
 }
+
+#endif
 
 void Filter_proj_Colsher(Viewgram<float> & view_i,
 			 Viewgram<float> & view_i1,
@@ -414,7 +415,9 @@ void Filter_proj_Colsher(Viewgram<float> & view_i,
   
 }
 
+#if 0
 
+// KT not used, and not sure what it does
 
 template <class T>
 void zoom_filter(Array<1,T> &filter, int height, int width, int height_proj, int width_proj)
@@ -669,5 +672,6 @@ template <class T> void Filter2D<T>::padd_scale_filter(int height_proj, int widt
   
 }
 
+#endif
 
 END_NAMESPACE_STIR
