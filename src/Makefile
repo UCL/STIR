@@ -8,6 +8,7 @@
 #
 # This makefile defines dependencies and rules for the 
 # following targets:
+#	how (gives brief usage info)	
 #	all clean lib install 
 #	clean_tests clean_lib clean_exes 
 #	run_tests run_interactive_tests 
@@ -23,7 +24,7 @@
 # build_lib_LIBSUBDIR, clean_lib_LIBSUBDIR
 # See lib.mk, exe.mk and test.mk in this directory for more details.
 #
-.PHONY: all clean lib install \
+.PHONY: how all clean lib install \
 	clean_tests clean_lib clean_exes \
 	run_tests run_interactive_tests all_test_exes \
 	default_target
@@ -32,6 +33,16 @@ WORKSPACE := $(CURDIR)
 
 # make sure that 'all' is also the first target and hence the default
 default_target: all
+
+how:
+	@echo "Usage: make [target] [options]" 
+	@echo "where useful targets are:"
+	@echo "     all clean lib install "
+	@echo "     clean_tests clean_lib clean_exes "
+	@echo "     run_tests run_interactive_tests" 
+	@echo "and options can be for instance:"
+	@echo "     BUILD=debug DEST=somenicesubdir/"
+	@echo "See the STIR User's guide for more info."
 
 # first make a variable that allows us to test if we have gcc 3.0 or later
 # If so, this will allow us to simplify life a lot!
