@@ -18,6 +18,7 @@
 
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
+#include "local/stir/recon_buildblock/ProjMatrixByBinUsingInterpolation.h"
 #include "local/stir/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
 
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
@@ -39,6 +40,7 @@
 START_NAMESPACE_STIR
 
 static ProjMatrixByBinUsingSolidAngle::RegisterIt dummy11;
+static ProjMatrixByBinUsingInterpolation::RegisterIt dummy13;
 static ProjMatrixByBinSinglePhoton::RegisterIt dummy12;
 //static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
 

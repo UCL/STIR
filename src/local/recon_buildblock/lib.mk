@@ -5,6 +5,7 @@
 dir := local/recon_buildblock
 $(dir)_LIB_SOURCES:= \
 	ProjMatrixByBinUsingSolidAngle.cxx \
+	ProjMatrixByBinUsingInterpolation.cxx \
 	PostsmoothingForwardProjectorByBin.cxx \
 	PresmoothingForwardProjectorByBin.cxx \
 	PostsmoothingBackProjectorByBin.cxx \
