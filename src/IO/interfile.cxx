@@ -22,6 +22,7 @@
 #include "InterfileHeader.h"
 #include "IndexRange3D.h"
 #include "utilities.h"
+#include "CartesianCoordinate3D.h"
 #include "VoxelsOnCartesianGrid.h"
 #include "ProjDataFromStream.h"
 #include "ProjDataInfoCylindrical.h"
@@ -121,7 +122,7 @@ compute_file_offsets(int number_of_time_frames,
   return temp;
 }
  
-bool 
+Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
 				   const CartesianCoordinate3D<int>& dimensions, 
@@ -132,14 +133,17 @@ write_basic_interfile_image_header(const string& header_file_name,
 				   const VectorWithOffset<unsigned long>& file_offsets)
 { 
  
-  string header_name = header_file_name;
-  ofstream output_header(header_name.c_str(), ios::out);
+  char *header_name = new char[header_file_name.size() +5];
+  strcpy(header_name, header_file_name.c_str());
+  add_extension(header_name, ".hv");
+  ofstream output_header(header_name, ios::out);
   if (!output_header.good())
     {
       cerr << "Error opening Interfile header '" 
 	   << header_name << " for writing" << endl;
-      return false;
+      return Succeeded::no;
     }  
+  delete header_name;
 
   output_header << "!INTERFILE  :=\n";
   output_header << "name of data file := " << image_file_name << endl;
@@ -147,7 +151,7 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
   output_header << "imagedata byte order := " <<
-    (ByteOrder::get_native_order() == ByteOrder::little_endian 
+    (byte_order == ByteOrder::little_endian 
      ? "LITTLEENDIAN"
      : "BIGENDIAN")
 		<< endl;
@@ -220,7 +224,7 @@ write_basic_interfile_image_header(const string& header_file_name,
       {
 	cerr << "Error opening old-style Interfile header '" 
 	     << header_name << " for writing" << endl;
-	return false;
+        return Succeeded::no;
       }  
     delete header_name;
     
@@ -233,12 +237,11 @@ write_basic_interfile_image_header(const string& header_file_name,
 	output_header << "!data offset in bytes := " <<file_offsets[i-1]<< endl;
       }
     output_header << "!imagedata byte order := " <<
-      (ByteOrder::get_native_order() == ByteOrder::little_endian 
+      (byte_order == ByteOrder::little_endian 
        ? "LITTLEENDIAN"
        : "BIGENDIAN")
 		  << endl;
 
-    // KT 09/11/98 use output_type
     output_header << "!number format := ";
     if (output_type.integer_type() )
       output_header << (output_type.signed_type() 
@@ -278,12 +281,26 @@ write_basic_interfile_image_header(const string& header_file_name,
     output_header << "!END OF INTERFILE :=\n";
     
   }
-  return true;
+  return Succeeded::yes;
 }
 
 
+
+template <class elemT>
+Succeeded 
+write_basic_interfile(const string& filename, 
+		      const Array<3,elemT>& image,
+		      const NumericType output_type)
+{
+  return
+    write_basic_interfile(filename, 
+			  image, 
+			  CartesianCoordinate3D<float>(1,1,1), 
+			  output_type);
+}
+
 template <class NUMBER>
-bool write_basic_interfile(const string&  filename, 
+Succeeded write_basic_interfile(const string&  filename, 
 			   const Array<3,NUMBER>& image,
 			   const CartesianCoordinate3D<float>& voxel_size,
 			   const NumericType output_type)
@@ -293,7 +310,7 @@ bool write_basic_interfile(const string&  filename,
   if (!image.get_regular_range(min_indices, max_indices))
   {
     warning("write_basic_interfile: can handle only regular index ranges\n. No output\n");
-    return false;
+    return Succeeded::no;
   }
   CartesianCoordinate3D<int> dimensions = max_indices - min_indices;
   dimensions += 1;
@@ -329,10 +346,10 @@ bool write_basic_interfile(const string&  filename,
   delete header_name;
   delete data_name;
 
-  return true;
+  return Succeeded::yes;
 }
 
-bool
+Succeeded
 write_basic_interfile(const string&  filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
 		      const NumericType output_type)
@@ -344,7 +361,7 @@ write_basic_interfile(const string&  filename,
 			  output_type);
 }
 
-bool 
+Succeeded 
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
 		      const NumericType output_type)
@@ -429,7 +446,7 @@ read_interfile_PDFS(const string& filename)
 }
 
 // TODO add directory capability
-bool 
+Succeeded 
 write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const string& data_file_name,
 				  const ProjDataFromStream& pdfs)
@@ -440,7 +457,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     {
       cerr << "Error opening Interfile header '" 
 	   << header_file_name << " for writing" << endl;
-      return false;
+      return Succeeded::no;
     }  
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
@@ -604,10 +621,10 @@ defaulting to Segment_View_AxialPos_TangPos.\n Please correct by hand !");
   output_header << "number of time frames := 1\n";
   output_header << "!END OF INTERFILE :=\n";
 
-  return true;
+  return Succeeded::yes;
 }
 
-bool
+Succeeded
 write_basic_interfile_PDFS_header(const string& data_filename,
 			    const ProjDataFromStream& pdfs)
 
@@ -625,19 +642,34 @@ write_basic_interfile_PDFS_header(const string& data_filename,
    **********************************************************************/
 
 
-template bool write_basic_interfile<>(const string&  filename, 
+template Succeeded write_basic_interfile<>(const string&  filename, 
 				      const Array<3,signed short>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
-template bool write_basic_interfile<>(const string&  filename, 
+template Succeeded write_basic_interfile<>(const string&  filename, 
 				      const Array<3,unsigned short>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
-template bool write_basic_interfile<>(const string&  filename, 
+
+template Succeeded write_basic_interfile<>(const string&  filename, 
 				      const Array<3,float>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
 
 
+template Succeeded 
+write_basic_interfile<>(const string& filename, 
+		      const Array<3,signed short>& image,
+		      const NumericType output_type);
+
+template Succeeded 
+write_basic_interfile<>(const string& filename, 
+		      const Array<3,unsigned short>& image,
+		      const NumericType output_type);
+
+template Succeeded 
+write_basic_interfile<>(const string& filename, 
+		      const Array<3,float>& image,
+		      const NumericType output_type);
 
 END_NAMESPACE_TOMO
