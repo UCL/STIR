@@ -334,6 +334,15 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
       }
   }
 
+  // KT 15/03/99 new
+  ByteOrder byte_order;
+  { 
+    // ask byte_order
+    byte_order = ask("Little endian byte order ?", true) ?
+      ByteOrder::little_endian :
+      ByteOrder::big_endian;
+  }
+
   long offset_in_file ;
   {
     // find file size
@@ -348,7 +357,8 @@ PETSinogramOfVolume ask_PSOV_details(iostream * p_in_stream,
 			     *p_in_stream, offset_in_file,
 			     storage_order,
 			     data_type,
-			     Real(1));
+			     // KT 15/03/99 new and removed Real(1) (is default)
+			     byte_order);
 
 }
 
