@@ -18,6 +18,7 @@
 #include "ProjDataInfoCylindricalArcCorr.h"
 #include "ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
+#include <functional>
 
 #ifndef TOMO_NO_NAMESPACES
 using std::binary_function;
@@ -398,8 +399,6 @@ int InterfilePDFSHeader::find_storage_order()
   return false;
   
 }
-
-#include <functional>
 
 // definition for using sort() below.
 // This is a function object that allows comparing the first elements of 2 
