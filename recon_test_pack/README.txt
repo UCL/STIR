@@ -20,6 +20,11 @@ might contain something useful. If you cannot solve the problems, email to
 the user's mailing list (see http://stir.HammersmithImanet.com for info), with all log 
 files attached to the email.
 
+Warning:
+Any existing files called my_*s or my_*v will be deleted before the actual
+tests start. This is because all tests generate such files and we do not
+want to have any confusion with files that remained from a previous run.
+
 
 Run the tests as follows:
 
