@@ -6,7 +6,7 @@ WORKSPACE=$(CURDIR)/../..
 
 include $(WORKSPACE)/Makefile_common
 
-SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
+SOURCES = fillwithotherprojdata.cxx \
 	list_ROI_values.cxx \
 	zoom_image.cxx \
 	compute_plane_rescale_factors.cxx \
@@ -34,7 +34,6 @@ SOURCES = fillwith1.cxx   fillwithotherprojdata.cxx \
 	find_maximum_in_image.cxx \
 	remove_corrupted_sinograms.cxx \
 	fwd_image_and_fill_missing_data.cxx \
-	get_frame_info_from_fdef.cxx \
 	add_planes_to_image.cxx \
 	find_sinogram_rescaling_factors.cxx \
 	move_image.cxx \
