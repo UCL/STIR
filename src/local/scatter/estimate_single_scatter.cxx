@@ -54,7 +54,7 @@ int main(int argc, const char *argv[])
 {         
 	USING_NAMESPACE_STIR
 		using namespace std;
-	if (argc< 3 || argc>12)
+	if (argc< 6 || argc>12)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[activity_image]\n"
