@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file
@@ -110,11 +126,6 @@ This parameter will be removed.
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "stir/utilities.h"
 #include "stir/CPUTimer.h"
@@ -122,8 +133,11 @@ This parameter will be removed.
 #include "stir/ProjDataInterfile.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ParsingObject.h"
+#include "stir/ArcCorrection.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
+#include "stir/recon_buildblock/ChainedBinNormalisation.h"
+#include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
 #include "stir/TimeFrameDefinitions.h"
@@ -160,21 +174,22 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 			const bool use_data_or_set_to_1,
 			const bool apply_or_undo_correction,
                         const shared_ptr<ProjData>& scatter_projdata_ptr,
-			shared_ptr<DiscretisedDensity<3,float> >& attenuation_image_ptr,
 			const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
 			BinNormalisation& normalisation,
                         const shared_ptr<ProjData>& randoms_projdata_ptr, 
+			const shared_ptr<ArcCorrection>& arc_correction_sptr,
 			const int frame_num,
 			const TimeFrameDefinitions& frame_def)
 {
 
-  const bool do_attenuation = attenuation_image_ptr.use_count() != 0;
   const bool do_scatter = scatter_projdata_ptr.use_count() != 0;
   const bool do_randoms = randoms_projdata_ptr.use_count() != 0;
+  const bool do_arc_correction = arc_correction_sptr.use_count() != 0;
 
 
+  // TODO
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr = 
-    !do_attenuation ?
+    is_null_ptr(forward_projector_ptr) ?
       new TrivialDataSymmetriesForViewSegmentNumbers
     :
       forward_projector_ptr->get_symmetries_used()->clone();
@@ -188,44 +203,40 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
       if (!symmetries_ptr->is_basic(view_seg_nums))
         continue;
       
-      // ** first fill in the data **
-      
+      // ** first fill in the data **      
       RelatedViewgrams<float> 
-        viewgrams = output_projdata.get_empty_related_viewgrams(ViewSegmentNumbers(view_num,segment_num),
-	                          symmetries_ptr, false);
+        viewgrams = input_projdata.get_empty_related_viewgrams(view_seg_nums,
+							       symmetries_ptr);
       if (use_data_or_set_to_1)
       {
-	// Unfortunately, segment range in output_projdata and input_projdata can be
-        // different. So, we cannot simply use 
-        // viewgrams = input_projdata.get_related_viewgrams
-        // as this would give it the wrong proj_data_info_ptr 
-        // (resulting in problems when setting the viewgrams in output_projdata).
-        // The trick relies on calling Array::operator+= instead of 
-        // Viewgrams::operator=
         viewgrams += 
           input_projdata.get_related_viewgrams(view_seg_nums,
-	                            symmetries_ptr, false);
+					       symmetries_ptr);
       }	  
       else
       {
         viewgrams.fill(1.F);
       }
       
-	      
-      // display(viewgrams);      
+      if (do_arc_correction && !apply_or_undo_correction)
+	{
+	  error("Cannot undo arc-correction yet. Sorry.");
+	  // TODO
+	  //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
+	}
 
       if (do_scatter && !apply_or_undo_correction)
       {
         viewgrams += 
           scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr, false);
+	                                              symmetries_ptr);
       }
 
       if (do_randoms && apply_or_undo_correction)
       {
         viewgrams -= 
           randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr, false);
+	                                              symmetries_ptr);
       }
 #if 0
       if (frame_num==-1)
@@ -249,9 +260,12 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 	  }
 	}
       }
+
+
+
       else
 #endif
-	{      
+      {      
 	const double start_frame = frame_def.get_start_time(frame_num);
 	const double end_frame = frame_def.get_end_time(frame_num);
 	if (apply_or_undo_correction)
@@ -262,50 +276,43 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 	{
 	  normalisation.undo(viewgrams,start_frame,end_frame);
 	}    
-     }
-       
-
-      // ** attenuation ** 
-      if (do_attenuation)
-      {	
-	RelatedViewgrams<float> attenuation_viewgrams = 
-	  output_projdata.get_empty_related_viewgrams(view_seg_nums,
-	                                  symmetries_ptr, false);	
-	
-	forward_projector_ptr->forward_project(attenuation_viewgrams, *attenuation_image_ptr);
-	
-	// TODO cannot use std::transform ?
-	for (RelatedViewgrams<float>::iterator viewgrams_iter = 
-	             attenuation_viewgrams.begin();
-	     viewgrams_iter != attenuation_viewgrams.end();
-	     ++viewgrams_iter)
-	{
-	  in_place_exp(*viewgrams_iter);
-	}
-	if (apply_or_undo_correction)
-          viewgrams *= attenuation_viewgrams;
-        else
-          viewgrams /= attenuation_viewgrams;
-
-      } // do_attenuation
-      
-
+      }
       if (do_scatter && apply_or_undo_correction)
       {
         viewgrams -= 
           scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr, false);
+	                                              symmetries_ptr);
       }
 
       if (do_randoms && !apply_or_undo_correction)
       {
         viewgrams += 
           randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr, false);
+	                                              symmetries_ptr);
       }
-      
-      if (!(output_projdata.set_related_viewgrams(viewgrams) == Succeeded::yes))
-        error("Error set_related_viewgrams\n");            
+
+      if (do_arc_correction && apply_or_undo_correction)
+	{
+	  viewgrams = arc_correction_sptr->do_arc_correction(viewgrams);
+	}
+
+      // output
+      {
+	// Unfortunately, segment range in output_projdata and input_projdata can be
+	// different. 
+	// Hence, output_projdata.set_related_viewgrams(viewgrams) would not work.
+	// So, we need an extra viewgrams object to take this into account.
+	// The trick relies on calling Array::operator+= instead of 
+	// RelatedViewgrams::operator=
+	RelatedViewgrams<float> 
+	  output_viewgrams = 
+	  output_projdata.get_empty_related_viewgrams(view_seg_nums,
+						    symmetries_ptr);
+	  output_viewgrams += viewgrams;
+
+	  if (!(output_projdata.set_related_viewgrams(viewgrams) == Succeeded::yes))
+	    error("Error set_related_viewgrams\n");            
+      }
       
     }
         
@@ -332,7 +339,10 @@ public:
   int max_segment_num_to_process;
   int frame_num;
   TimeFrameDefinitions frame_defs;
-  private:
+
+  bool do_arc_correction;
+  shared_ptr<ArcCorrection> arc_correction_sptr;
+private:
 
   virtual void set_defaults();
   virtual void initialise_keymap();
@@ -374,6 +384,8 @@ set_defaults()
   forward_projector_ptr =
     new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
 #endif
+
+  do_arc_correction= false;
 }
 
 void 
@@ -395,6 +407,7 @@ initialise_keymap()
   parser.add_key("attenuation image filename", &atten_image_filename);
   parser.add_parsing_key("forward projector type", &forward_projector_ptr);
   parser.add_key("scatter_projdata_filename", &scatter_projdata_filename);
+  parser.add_key("arc correction", &do_arc_correction);
   parser.add_stop_key("END");
 }
 
@@ -455,10 +468,21 @@ CorrectProjDataParameters(const char * const par_filename)
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
-  shared_ptr<ProjDataInfo>  new_data_info_ptr= 
-    input_projdata_ptr->get_proj_data_info_ptr()->clone();
-    
-  new_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
+  shared_ptr<ProjDataInfo>  
+    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_ptr()->clone());
+  shared_ptr<ProjDataInfo> output_proj_data_info_sptr;
+
+  if (!do_arc_correction)
+    output_proj_data_info_sptr = input_proj_data_info_sptr;
+  else
+    {
+      arc_correction_sptr = 
+	shared_ptr<ArcCorrection>(new ArcCorrection);
+      arc_correction_sptr->set_up(input_proj_data_info_sptr);
+      output_proj_data_info_sptr =
+	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
+    }
+  output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
 					  max_segment_num_to_process);
 
   // construct output_projdata
@@ -473,7 +497,7 @@ CorrectProjDataParameters(const char * const par_filename)
 	    char ext[50];
 	    sprintf(ext, "_f%dg1b0d0", current_frame);
 	    const string output_filename_with_ext = output_filename + ext;	
-	    output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename_with_ext);
+	    output_projdata_ptr = new ProjDataInterfile(output_proj_data_info_sptr,output_filename_with_ext);
 	  }
       }
     else
@@ -488,47 +512,39 @@ CorrectProjDataParameters(const char * const par_filename)
 	    output_filename_with_ext += ext;
 	  }
 #endif
-      output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename_with_ext);
+      output_projdata_ptr = new ProjDataInterfile(output_proj_data_info_sptr,output_filename_with_ext);
       }
 
   }
  
+  // read attenuation image and add it to the normalisation object
+  if(atten_image_filename!="0" && atten_image_filename!="")
+    {
+      
+      shared_ptr<BinNormalisation> atten_sptr
+	(new BinNormalisationFromAttenuationImage(atten_image_filename,
+						  forward_projector_ptr));
+      
+      normalisation_ptr = 
+	shared_ptr<BinNormalisation>
+	( new ChainedBinNormalisation(normalisation_ptr,
+				      atten_sptr));
+    }
+  else
+    {
+      // get rid of this object for now
+      // this is currently checked to find the symmetries: bad
+      // TODO
+      forward_projector_ptr = 0;
+    }
+
   // set up normalisation object
   if (
-      normalisation_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone())
+      normalisation_ptr->set_up(input_proj_data_info_sptr)
       != Succeeded::yes)
     error("correct_projdata: set-up of normalisation failed\n");
  
-  // read attenuation data
-  if(atten_image_filename!="0" && atten_image_filename!="")
-  {
-    attenuation_image_ptr = 
-      DiscretisedDensity<3,float>::read_from_file(atten_image_filename.c_str());
-        
-    cerr << "WARNING: attenuation image data are supposed to be in units cm^-1\n"
-      "Reference: water has mu .096 cm^-1" << endl;
-    cerr<< "Max in attenuation image:" 
-      << attenuation_image_ptr->find_max() << endl;
-#ifndef NEWSCALE
-    /*
-      cerr << "WARNING: multiplying attenuation image by x-voxel size "
-      << " to correct for scale factor in forward projectors...\n";
-    */
-    // projectors work in pixel units, so convert attenuation data 
-    // from cm^-1 to pixel_units^-1
-    const float rescale = 
-      dynamic_cast<VoxelsOnCartesianGrid<float> *>(attenuation_image_ptr.get())->
-      get_voxel_size().x()/10;
-#else
-    const float rescale = 
-      0.1F;
-#endif
-    *attenuation_image_ptr *= rescale;
-
-    forward_projector_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone(),
-				  attenuation_image_ptr);
-  }
-
+  
 }
 
 
@@ -559,10 +575,10 @@ int main(int argc, char *argv[])
   correct_projection_data(*parameters.output_projdata_ptr, *parameters.input_projdata_ptr, 
 			  parameters.use_data_or_set_to_1, parameters.apply_or_undo_correction,
                           parameters.scatter_projdata_ptr,
-			  parameters.attenuation_image_ptr,  
 			  parameters.forward_projector_ptr,  
 			  *parameters.normalisation_ptr,
                           parameters.randoms_projdata_ptr,
+			  parameters.arc_correction_sptr,  
 			  parameters.frame_num,
 			  parameters.frame_defs);
  
