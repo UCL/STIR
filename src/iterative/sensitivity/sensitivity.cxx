@@ -42,7 +42,6 @@
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
-#include "stir/interfile.h"
 
 #include "stir/LogLikBased/common.h"
 
@@ -283,7 +282,8 @@ int main(int argc, char **argv)
 			    atten_proj_data_ptr,
 			    norm_proj_data_ptr,
 			    globals);
-  write_basic_interfile(out_filename, *result_ptr, NumericType::FLOAT);
+  parameters.output_file_format_ptr->
+      write_to_file(out_filename, *result_ptr);
 
   cerr << "min and max in image " << result_ptr->find_min() 
        << " " << result_ptr->find_max() << endl;
