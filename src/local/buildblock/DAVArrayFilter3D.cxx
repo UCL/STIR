@@ -4,18 +4,19 @@
 /*!
 
   \file
-
+  \ingroup buildblock
   \brief 
 
   \author Sanida Mustafovic
   \author Kris Thielemans
   
-  \date $Date$
-  \version $Revision$
+  $Date$
+  $Revision$
 */
 
 #include "local/tomo/DAVArrayFilter3D.h"
 #include "Coordinate3D.h"
+#include "Array.h"
 // remove 
 #include <iostream>
 #include <fstream>
