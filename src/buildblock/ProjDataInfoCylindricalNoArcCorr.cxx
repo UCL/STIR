@@ -495,20 +495,24 @@ get_bin(const LOR<float>& lor) const
     }
   const int num_detectors_per_ring = 
     get_scanner_ptr()->get_num_detectors_per_ring();
+  const int num_rings = 
+    get_scanner_ptr()->get_num_rings();
 
   const int det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
   const int det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
-  const int ring1 = round(cyl_coords.p1().z()/get_ring_spacing());
-  const int ring2 = round(cyl_coords.p2().z()/get_ring_spacing());
+  // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
+  const int ring1 = round(cyl_coords.p1().z()/get_ring_spacing() + (num_rings-1)/2.F);
+  const int ring2 = round(cyl_coords.p2().z()/get_ring_spacing() + (num_rings-1)/2.F);
 
   assert(det1 >=0 && det1<num_detectors_per_ring);
   assert(det2 >=0 && det2<num_detectors_per_ring);
 
-  if (ring1 >=0 && ring1<get_scanner_ptr()->get_num_rings() &&
-      ring2 >=0 && ring2<get_scanner_ptr()->get_num_rings() &&
+  if (ring1 >=0 && ring1<num_rings &&
+      ring2 >=0 && ring2<num_rings &&
       get_bin_for_det_pair(bin,
 			   det1, ring1, det2, ring2) == Succeeded::yes)
     {
+      bin.set_bin_value(1);
       return bin;
     }
   else
@@ -526,9 +530,11 @@ get_bin(const LOR<float>& lor) const
       bin.set_bin_value(-1);
       return bin;
     }
+#error probably has problem with shift in origin (LOR w.r.t centre of scanner)
   find_bin_given_cartesian_coordinates_of_detection(bin,
 						    lor_2pts.p1(),
 						    lor_2pts.p2());
+  bin.set_bin_value(1);
   return bin;
 #endif
 }
