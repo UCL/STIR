@@ -1,4 +1,4 @@
-Licensing information for STIR 1.0
+Licensing information for STIR 1.2
 ----------------------------------
 
 See for more info http://stir.irsl.org, section Registration.
@@ -8,18 +8,25 @@ GNU Lesser General Public License (see LGPL.txt for text):
     . (that is, the directory where this file resides)
     buildblock
     recon_buildblock
+    listmode_buildblock
+    Shape_buildblock
+    eval_buildblock
+    IO  (except ecat6_utils.cxx, see below)
     display
     test
     iterative/LogLikBased
-    include
-    include/stir/CTI
+    include/stir
+    include/stir/IO
+    include/stir/listmode
+    include/stir/evaluation
+    include/stir/Shape
     include/stir/recon_buildblock
     include/stir/LogLikBased
 
 Files in the following subdirectories are covered by the 
 GNU General Public License (see GPL.txt for text):
     recon_test
-    utilities (except cti_utils.cxx, see below)
+    utilities 
     iterative/sensitivity
     iterative/OSMAPOSL
     include/stir/OSMAPOSL
@@ -29,7 +36,7 @@ Some files are in addition covered by the PARAPET license
 a complete list is also given at the end of this file.
 
 
-utilities/cti_utils.cxx is based on work by CTI PET Systems Inc. It
+IO/ecat6_utils.cxx is based on work by CTI PET Systems Inc. It
 can be redistributed freely, but not used in any commercial program.
 Please contact CTI PET systems if you need more information.
 
@@ -41,13 +48,7 @@ We hope to replace this routine soon.
 
 Files in include/boost and its subdirectories come from the C++ boost
 project (http://www.boost.org). Each of these files has its own copyright
-statement and a license which generally reads as follows:
-  Permission to copy, use, modify,
-  sell and distribute this software is granted provided this
-  copyright notice appears in all copies. This software is provided
-  "as is" without express or implied warranty, and with no claim as
-  to its suitability for any purpose.
-
+statement and a license.
 
 
 
@@ -131,7 +132,7 @@ utilities/compare_image.cxx
 utilities/compare_projdata.cxx
 utilities/convecat6_if.cxx
 utilities/conv_to_ecat6.cxx
-utilities/cti_utils.cxx
+utilities/ecat6_utils.cxx
 utilities/display_projdata.cxx
 utilities/do_linear_regression.cxx
 utilities/extract_segments.cxx
@@ -139,7 +140,6 @@ utilities/ifheaders_for_ecat7.cxx
 utilities/manip_image.cxx
 utilities/manip_projdata.cxx
 utilities/postfilter.cxx
-utilities/stir_cti.cxx
 iterative/LogLik_buildblock/common.cxx
 iterative/LogLik_buildblock/LogLikelihoodBasedAlgorithmParameters.cxx
 iterative/LogLik_buildblock/LogLikelihoodBasedReconstruction.cxx
@@ -247,9 +247,9 @@ include/stir/ViewSegmentNumbers.inl
 include/stir/VoxelsOnCartesianGrid.h
 include/stir/VoxelsOnCartesianGrid.inl
 include/stir/zoom.h
-include/stir/CTI/cti_types.h
-include/stir/CTI/cti_utils.h
-include/stir/CTI/stir_cti.h
+include/stir/IO/ecat6_types.h
+include/stir/IO/ecat6_utils.h
+include/stir/IO/stir_ecat6.h
 include/stir/LogLikBased/common.h
 include/stir/LogLikBased/LogLikelihoodBasedAlgorithmParameters.h
 include/stir/LogLikBased/LogLikelihoodBasedReconstruction.h
