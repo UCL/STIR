@@ -42,11 +42,6 @@
  - replaced output to cout,cerr with full_log
  - flagged some things that won't work with calls to error()
 
- CL
- moved span_accurate things to fwdproj3D
- corrected fitting in some places
- one more attempt on span...
-
  KT&CL 160899
  3 changes that solve the dependency of the global normalisation
  on max_delta:
@@ -63,7 +58,6 @@
  various other smaller changes
 */
 //CL 1st June 1999
-// Add the FBP3DRP batch mode,
 // DIstinguish the alpha and Nyquist parameters from RAmp and Colsher filter
 // by alpha_ramp and alpha_colsher (i.e for fc)
 
@@ -78,24 +72,7 @@
 //    Colsher filter is done out of the view loop. This will speed up the
 //    FBP3DRP implementation
 
-//CL 15 MARCH 1999
-//NOW DONE:
-// 1 . Implementation of two methods for the forward projection
-// - the accurate method but longest implementation (do_fwdproj_accuarte(...)
-// - the approximate method but shorter implementation (do_fwdproj_approximate(...)
-// 2.  SPlit the old function do_save(tensor3D<float> &data) into two new functions
-//   one for the image (do_save_img(PetImageOfVolume &data
-//   the other one for segment (do_save_SegmentBySinogram<float> &data)
-//***************************************
 //
-// CL 06/11/98 Replace all scanner with scan_info
-// CL 06/11/98 Also replace all .min_axial_pos_nums by get_min_axial_pos_nums() et al.
-// CL 06/11/98 Replcae all M_PI by _PI
-
-// CL 301098 NEW FILE
-//This file contains a lot of local FBP3DRP functions
-// This file shall be called from Main.cxx as it is not anymore a main file
-// but a member function of FBP3DRPReconstruction
 // CL 20/10/98 CHnage theta0 to theta_max for the maximal aperture allowable for reconstruction
 // Also, replaced theta by gamma to be consistent with Egger PhD as theta is a very confused parameter
 
@@ -119,7 +96,8 @@
 #include "local/stir/FBP2D/FBP2DReconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 
-#include "local/stir/merge_direct_sinos.h"
+#include "local/stir/SSRB.h"
+#include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 //#include "stir/mash_views.h"
@@ -207,96 +185,34 @@ static void find_rmin_rmax(int& rmin, int& rmax,
 FBP3DRPReconstruction::~FBP3DRPReconstruction()
 {}
 
-#if 0
-// KT 160899 I needed to initialise the ramp.alpha and .fc here from ramp_filter
-// This is why it needs to be a RampFilter, and not a Filter1D<float> anymore.
-// TODO work around somehow
-FBP3DRPReconstruction::FBP3DRPReconstruction(
-		              const RampFilter &ramp_filter_v,// CL24/02/00 added const
-			      const double alpha_colsher_axial_v,
-                              const double fc_colsher_axial_v,
-                              const double alpha_colsher_planar_v,
-                              const double fc_colsher_planar_v,
-			      const int PadS_v,
-                              const int PadZ_v,
-
-			      const double zoom_v,
-                              const double Xoffset_v,
-                              const double Yoffset_v,
-
-                              const int max_segment_num_to_process_v,
-
-                              const int num_views_to_add_v,
-                              const int process_by_view_v,
-			      const int fwdproj_method_v,
-			      const int already_2Drecon_v,
-                             
-                              const int disp_v,
-                              const int save_intermediate_files_v,
-			      const string output_filename_prefix) // KT 160899 added
-        : PETReconstruction(),
-          FBP3DRPParameters(/*input_file==*/"",
-                                    output_filename_prefix,
-                                    alpha_colsher_axial_v, fc_colsher_axial_v,//CL 250899 Split into 2 subcomponents (axial & planar)
-                                    alpha_colsher_planar_v, fc_colsher_planar_v,
-                                    ramp_filter_v.alpha, ramp_filter_v.fc,
-                                    PadS_v, PadZ_v,
-
-                                        /*new_size_v==*/-1,zoom_v,Xoffset_v,Yoffset_v,
-
-                                    max_segment_num_to_process_v, num_views_to_add_v,
-                                    process_by_view_v,
-                                    fwdproj_method_v,
-                                    already_2Drecon_v,
-                                    disp_v,save_intermediate_files_v),
-    ramp_filter(ramp_filter_v)
-
-         
-{ 
-   
- 
-#ifdef PARALLEL
-   disp = 0;
-   save_intermediate_files = 0;
-#endif     
-}
-
-#endif // 0
-
-
 VoxelsOnCartesianGrid<float>&  
 FBP3DRPReconstruction::estimated_image()
 {
   return static_cast<VoxelsOnCartesianGrid<float>&>(*image_estimate_density_ptr);
 }
+
 const VoxelsOnCartesianGrid<float>&  
 FBP3DRPReconstruction::estimated_image() const
 {
   return static_cast<const VoxelsOnCartesianGrid<float>&>(*image_estimate_density_ptr);
 }
 
-// Apply horrible trick to get the ramp_filter parameters ok:
-// first set to something nonsensical (as there is no default constructor for RampFilter)
-// then initialise with proper alpha,fc, but with length 0
-// all this should be replaced by a Filter1D.initialise(length) or so TODO
 FBP3DRPReconstruction::
 FBP3DRPReconstruction(const string& parameter_filename)
-: FBP3DRPParameters(parameter_filename),
-  ramp_filter(1.F,0)
+: FBP3DRPParameters(parameter_filename)
 {  
   proj_data_info_cyl =
     dynamic_cast<const ProjDataInfoCylindricalArcCorr&> (*(proj_data_ptr->get_proj_data_info_ptr()));
-  ramp_filter = RampFilter(1.F,0,float(alpha_ramp), float(fc_ramp));
-  cerr<</*parameters.*/parameter_info() << endl;
+  cerr<<parameter_info() << endl;
 }
 
 FBP3DRPReconstruction::FBP3DRPReconstruction(const FBP3DRPParameters& parameters)
-  : FBP3DRPParameters(parameters),
-    ramp_filter(1.F,0,float(parameters.alpha_ramp), float(parameters.fc_ramp))
+  : FBP3DRPParameters(parameters)
 {
   proj_data_info_cyl =
     dynamic_cast<const ProjDataInfoCylindricalArcCorr&> (*(proj_data_ptr->get_proj_data_info_ptr()));
-  cerr<</*parameters.*/parameter_info()  << endl;
+
+  cerr<<parameter_info()  << endl;
 }
 
 
@@ -357,116 +273,59 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
   // Use funny convention that -1 means 'use maximum available'
   if (max_segment_num_to_process<0)
     max_segment_num_to_process = proj_data_ptr->get_max_segment_num();
-  {
-    // set ramp filter with appropriate sizes
-    // TODO this should be replaced by a filter.initialise(length) or so
-    const int fft_size = (int) pow(2.,(int) ceil(log((double)(PadS + 1)* proj_data_ptr->get_num_tangential_poss()) / log(2.)));
-    ramp_filter = 
-      RampFilter(proj_data_info_cyl.get_tangential_sampling(), 
-		 fft_size, 
-		 ramp_filter.alpha, 
-		 ramp_filter.fc);   
-    full_log << "Parameters ramp filter which are used in the reconstruction" << endl;
-    full_log << ramp_filter.parameter_info();
-  }
-
-
-#if 0
-  float expected_image_sum=0.F;
-#endif
   
   if(image_for_reprojection_filename == "")
-    {
-      SegmentBySinogram<float> * direct_sinos_ptr = 
-	do_merging_for_direct_planes();
+  {
+    do_2D_reconstruction();
     
-    
-      //do_mashing(*direct_sinos_ptr);
-    
-      do_2D_reconstruction(*direct_sinos_ptr);
-#if 0
-      {
-        full_log << "  - Excluded some outer rings " << endl;
-        
-	for (int ring=direct_sinos_ptr->get_min_axial_pos_num()+5; ring<=direct_sinos_ptr->get_max_axial_pos_num()-5;ring++)
-	  expected_image_sum += direct_sinos[ring].sum();
-      }
-   
-      expected_image_sum/=direct_sinos_ptr->get_num_views();    
-
-#ifdef NEWSCALE
-      expected_image_sum *=(direct_sinos_ptr->proj_data_info_ptr->get_tangential_sampling()
-			    /(image.get_voxel_size().x*image.get_voxel_size().y));
-#endif
-
-#endif
-    
-      fit_projections=0;
+#if 0      
+    if (fit_projections==1){//Fitting between measured and estimaed sinograms
+      full_log << "  - Fitting projections" << endl;  //CL 010699 Forward project measured sinograms and fitting with alpha and beta
       
-      if (fit_projections==1){//Fitting between measured and estimaed sinograms
-	full_log << "  - Fitting projections" << endl;  //CL 010699 Forward project measured sinograms and fitting with alpha and beta
-    
-	// From the paper of  M. Defrise et al., Phys. Med. Biol. 1990 Vol. 35, No 10, pp1361-1372
-	// As the forwrad projected sinograms have, in general, a different scaling factor
-	// to the measured sinograms, it is necessary to rescale the former.
-	// The appropriate scaling factors are obtained by forwarding projecting
-	// a typical measured sinogram and then fitting the forward projected sinogram
-	// to the corresponding measurements using a linear least squares methods
-	// The coefficients from the fit are then used to rescale all forward projected sinograms
-    
-	//  Computes the global coefficients alpha and beta for the best fit of alpha*calculated+beta with measured.
-	// Look for the plane of the highest activity in the measured sinograms
-	int plane_with_max_activity =0;
-	float max_activity = 0.F;
-	for (int plane = estimated_image().get_min_z(); plane <= estimated_image().get_max_z();plane++){
-	  const float current_max = (estimated_image())[plane].find_max();
-	  if (max_activity < current_max){
-	    max_activity = current_max;
-	    plane_with_max_activity = plane;
-	  }
-	}
-    
-	full_log << "  - Maximum activity = " << max_activity << " in plane= " << plane_with_max_activity << endl;
-	if(1){
-              
-              
-	  //Now forward only on this plane
-	  Sinogram<float> sino_fwd_pos = 
-	    direct_sinos_ptr->get_proj_data_info_ptr()->get_empty_sinogram(plane_with_max_activity, 0);
-
-    
-	  full_log << "    Forward projection on one ring which contains maximum activity from seg0" << endl;
-	  //KTTODO forward_project_2D(estimated_image(),sino_fwd_pos, plane_with_max_activity);
-	  error("Fitting not yet implemented\n");
-	  // Calculate the fitting the coefficients alpha_fit and beta_fit
-	  // according to alpha_fit x + beta_fit
-	  do_best_fit(direct_sinos_ptr->get_sinogram(plane_with_max_activity),sino_fwd_pos);
-	}else{
-	  alpha_fit = 1.F;
-	  beta_fit = 0.F;
-	}
-      }else{
-	alpha_fit = 1.F;
-	beta_fit = 0.F;
-      } 
-    
-      delete direct_sinos_ptr;
-
-    } else{  
-    
-      do_read_image2D();
-      // TODO set fit parameters
-
-#if 0    
-      // TODO adjust? note that currently the scale factor is the same as 2D-FBP uses the same trick
-      warning("\nI will rescale the FBP3DRP image according to the total sum in the estimated image (excluding 5 end planes)\n\
-This scale factor might be different from the one you would use when not reading 2D images from file\n");
-
-      expected_image_sum = 0;
-      for (int plane=estimated_image().get_min_z()+5;plane<=estimated_image().get_max_z()-5;plane++)
-	expected_image_sum += (estimated_image())[plane].sum();
+      // From the paper of  M. Defrise et al., Phys. Med. Biol. 1990 Vol. 35, No 10, pp1361-1372
+      // As the forwrad projected sinograms have, in general, a different scaling factor
+      // to the measured sinograms, it is necessary to rescale the former.
+      // The appropriate scaling factors are obtained by forwarding projecting
+      // a typical measured sinogram and then fitting the forward projected sinogram
+      // to the corresponding measurements using a linear least squares methods
+      // The coefficients from the fit are then used to rescale all forward projected sinograms
+      
+      //  Computes the global coefficients alpha and beta for the best fit of alpha*calculated+beta with measured.
+      // Look for the plane of the highest activity in the measured sinograms
+      int plane_with_max_activity =0;
+      float max_activity = 0.F;
+      for (int plane = estimated_image().get_min_z(); plane <= estimated_image().get_max_z();plane++){
+        const float current_max = (estimated_image())[plane].find_max();
+        if (max_activity < current_max){
+          max_activity = current_max;
+          plane_with_max_activity = plane;
+        }
+      }
+      {
+        full_log << "  - Maximum activity = " << max_activity << " in plane= " << plane_with_max_activity << endl;
+        
+        //Now forward only on this plane
+        Sinogram<float> sino_fwd_pos = 
+          direct_sinos_ptr->get_proj_data_info_ptr()->get_empty_sinogram(plane_with_max_activity, 0);
+        
+        full_log << "    Forward projection on one ring which contains maximum activity from seg0" << endl;
+        //KTTODO forward_project_2D(estimated_image(),sino_fwd_pos, plane_with_max_activity);
+        error("Fitting not yet implemented\n");
+        // Calculate the fitting the coefficients alpha_fit and beta_fit
+        // according to alpha_fit x + beta_fit
+        do_best_fit(direct_sinos_ptr->get_sinogram(plane_with_max_activity),sino_fwd_pos);
+      }
+    }else{
+      alpha_fit = 1.F;
+      beta_fit = 0.F;
+    } 
 #endif
-    }
+  } 
+  else
+  {      
+    do_read_image2D();
+    // TODO set fit parameters
+  }
 
   if(max_segment_num_to_process!=0)
     do_3D_Reconstruction(image );
@@ -476,27 +335,6 @@ This scale factor might be different from the one you would use when not reading
       warning("\nOutput image will NOT be zoomed.\n");
       image = estimated_image();
     }
-
-#if 0
-  full_log << " New normalisation merged_direct_sinos_ptr->sum()/NumViews= " <<  expected_image_sum  << endl;
-  float image_sum=0.F;
-  if(1){
- 
-    full_log <<"  - Exclude some few outer plane " << endl;   
-    for (int plane=image.get_min_z()+5;plane<=image.get_max_z()-5;plane++)
-      image_sum += image[plane].sum();
-  }
- 
-    
-  const float factor = expected_image_sum/image_sum;
-  full_log << " Image=" << image_sum << endl;
-  full_log << "Before Normalize  :     Min= " << image.find_min()
-	   << " Max = " << image.find_max() << " Sum = " << image.sum() << endl;
-  //  image*=factor;
-   
-  full_log << "After Normalize by factor= " << factor << " :     Min= " << image.find_min()
-	   << " Max = " << image.find_max() << " Sum = " << image.sum() << endl;
-#endif
 
   stop_timers();
   do_log_file(image);
@@ -512,77 +350,60 @@ This scale factor might be different from the one you would use when not reading
    
 
 
-SegmentBySinogram<float>* 
-FBP3DRPReconstruction::
-do_merging_for_direct_planes()
-{
-  full_log << endl << "------------------------------------------------------" << endl;
-  full_log << "STEP 1: LOADING DIRECT SINOGRAMS (delta=0,+1 and -1)";
 
-  SegmentBySinogram<float>* direct_sinos_ptr = 0;
-                                                        
-  { // construct direct_sinos, how depends on axial compression
-    if (proj_data_info_cyl.get_max_ring_difference(0) == 0)
-      {
-	// We assume now that segment +1,-1 contain ring_differences +1,-1
-	// Merge sinograms with delta =0, +1 and -1
-	full_log << "\n  - Merging sinograms delta = 0 with delta = +1 and -1 " << endl ;
-	direct_sinos_ptr =
-	  merge_direct_sinos(
-			     proj_data_ptr->get_segment_by_sinogram(0), 
-			     proj_data_ptr->get_segment_by_sinogram(1), 
-			     proj_data_ptr->get_segment_by_sinogram(-1));
-      }
+void FBP3DRPReconstruction::do_2D_reconstruction()
+{ // SSRB+2D FBP with ramp filter
+
+  shared_ptr<ProjData> proj_data_to_FBP_ptr = 0;
+
+   int num_segments_to_combine_to_use = num_segments_to_combine;
+    if (num_segments_to_combine==-1)
+    {
+      if (proj_data_info_cyl.get_min_ring_difference(0) != 
+          proj_data_info_cyl.get_max_ring_difference(0))
+        num_segments_to_combine_to_use = 1;
+      else
+        num_segments_to_combine_to_use = 3;
+    }
+
+    if (num_segments_to_combine_to_use>1)
+    {
+      full_log << "\n---------------------------------------------------------\n";
+      full_log << "SSRB combining " << num_segments_to_combine_to_use 
+               << " segments in input file to a new segment 0\n" << endl; 
+  
+      proj_data_to_FBP_ptr = 
+        new ProjDataInMemory (SSRB(proj_data_info_cyl, num_segments_to_combine_to_use,(num_segments_to_combine_to_use-1)/2 ));
+      SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);      
+    }
     else
-      {
-	full_log << endl;
-	full_log << "  - Direct and cross planes already merged (span data case)" << endl;
-#ifndef _MSC_VER
-	direct_sinos_ptr = 
-	  new SegmentBySinogram<float>(proj_data_ptr->get_segment_by_sinogram(0));
-#else
-	// work-around VC bug
-	SegmentBySinogram<float> segment0 = proj_data_ptr->get_segment_by_sinogram(0);
-	direct_sinos_ptr = 
-	  new SegmentBySinogram<float>(segment0);
-#endif
-      }
-        
-  } // direct_sinos now constructed
+    {
+      proj_data_to_FBP_ptr = proj_data_ptr;
+    }
 
-  if(disp>1) {
-    full_log << "  - Displaying direct sinograms " << endl;
-    display(*direct_sinos_ptr, direct_sinos_ptr->find_max(), "Direct sinos"); 
-  }
-  return direct_sinos_ptr;
-}
-
-
-void FBP3DRPReconstruction::do_2D_reconstruction(SegmentBySinogram<float> &direct_sinos)
-{ // 2D FBP with ramp filter
-
-  full_log << endl << "---------------------------------------------------------" << endl;
-  full_log << "STEP 2: 2D FBP OF  DIRECT SINOGRAMS (=> IMAGE_ESTIMATE)" << endl; 
-  full_log << endl; 
- 
-  full_log <<"  - Initialize the real size of estimated image" << endl;
-
+  full_log << "\n---------------------------------------------------------\n";
+  full_log << "2D FBP OF  DIRECT SINOGRAMS (=> IMAGE_ESTIMATE)\n" << endl; 
+  
   
   // image_estimate should have 'default' dimensions, origin and voxel_size
   image_estimate_density_ptr =
     new VoxelsOnCartesianGrid<float>(proj_data_info_cyl);      
-
-  full_log << "Total direct_sinos=" << direct_sinos.sum() << endl;
+  
+  {
+    // set ramp filter with appropriate sizes
+    const int fft_size = (int) pow(2.,(int) ceil(log((double)(PadS + 1)* proj_data_ptr->get_num_tangential_poss()) / log(2.)));
     
-#ifndef PARALLEL
-  FBP2DReconstruction recon2d(direct_sinos, ramp_filter);
-#else
-  ParaFBP2DReconstruction recon2d(direct_sinos, ramp_filter);     
-#endif
+    RampFilter ramp_filter(proj_data_info_cyl.get_tangential_sampling(), 
+                           fft_size, 
+                           float(alpha_ramp), float(fc_ramp));   
+    full_log << "Parameters of the filter used in the 2D FBP reconstruction" << endl;
+    full_log << ramp_filter.parameter_info()<< endl;
+        
+    FBP2DReconstruction recon2d(proj_data_to_FBP_ptr, ramp_filter);
+    recon2d.reconstruct(image_estimate_density_ptr);
+  }
 
-
-  recon2d.reconstruct(image_estimate_density_ptr);
-  full_log << "  - min and max in image " << estimated_image().find_min()
+  full_log << "  - min and max in SSRB+FBP image " << estimated_image().find_min()
 	   << " " << estimated_image().find_max() << " SUM= " << estimated_image().sum() << endl;
       
   if(disp>1) {
@@ -596,7 +417,6 @@ void FBP3DRPReconstruction::do_2D_reconstruction(SegmentBySinogram<float> &direc
       sprintf(file,"%s_estimated",output_filename_prefix.c_str()); 
       do_save_img(file,estimated_image() );      
     }
-
 }
 
 
@@ -629,23 +449,19 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
     VoxelsOnCartesianGrid<float> &image)
 {
 
-  full_log << endl  << "***************************************" << endl;
-  full_log << "STEP 4: 3D PROCESSING" << endl;
-  full_log << "***************************************" << endl;
-
-
+  full_log << "\n---------------------------------------------------------\n";
+  full_log << "3D PROCESSING\n" << endl;
+  
   // KT segment 0 is now handled in here as well
 
   int  oblique_segments_start = 0;
 
  
   do_byview_initialise(image);
-  for (int seg_num= oblique_segments_start; seg_num <= max_segment_num_to_process; seg_num++) {
-    full_log << endl  << "-------------------------------------" << endl;
-    full_log << "PROCESSING SEGMENT  No " << seg_num ;
-    full_log << " (delta = +-" << proj_data_info_cyl.get_average_ring_difference(seg_num) << ") "<< endl ;
-        
-
+  for (int seg_num= oblique_segments_start; seg_num <= max_segment_num_to_process; seg_num++) 
+  {
+    full_log << "\n--------------------------------\n";
+    full_log << "PROCESSING SEGMENT  No " << seg_num << endl ;
 
     // initialise variables to avoid compiler warnings (correct values are set in the function call)
     int rmin=0;
@@ -653,8 +469,8 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
     find_rmin_rmax(rmin, rmax, proj_data_info_cyl, seg_num, image);        
         
     full_log << "Average delta= " <<  proj_data_info_cyl.get_average_ring_difference(seg_num)
-	     << " with span= " << proj_data_info_cyl.get_min_ring_difference(seg_num) - proj_data_info_cyl.get_max_ring_difference(seg_num) +1
-	     << " and rmin= " << rmin << " and rmax= " << rmax  <<endl;//" , in ring unit= ";
+	     << " with span= " << proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) +1
+	     << " and extended axial position numbers: min= " << rmin << " and max= " << rmax  <<endl;
         
     // KT 07/04/98 changed upper boundary of first forward projection from
     // '-1' to proj_data_ptr->get_min_axial_pos_num(seg_num)-1
@@ -679,7 +495,6 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 	proj_data_ptr->get_related_viewgrams(ViewSegmentNumbers(view, seg_num),
 					     forward_projector_ptr->get_symmetries_used()->clone());
         
-
       do_process_viewgrams(
 			   viewgrams,
 			   rmin, rmax, orig_min_axial_pos_num, orig_max_axial_pos_num,
@@ -741,20 +556,13 @@ void FBP3DRPReconstruction::do_best_fit(const Sinogram<float> &sino_measured,con
     
   full_log << "  - Calculated fitted coefficients : alpha= " << alpha_fit << " beta= " << beta_fit
 	   << " with quality factor= " << ((meas_square - alpha_fit * meas_calc - beta_fit * sino_measured.sum()) / meas_square )
-	   << endl;
-    
-           
+	   << endl;          
 }
-
-
-
-
 
           
 void FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float> & viewgrams,
                                                  int rmin, int rmax)
 {        
-  
   // we have to grow the viewgrams along axial direction in the (normal) 
   // case that rmin<get_min_axial_pos_num()
   const int rmin_grow = min(rmin, viewgrams.get_min_axial_pos_num());
@@ -764,8 +572,7 @@ void FBP3DRPReconstruction::do_grow3D_viewgram(RelatedViewgrams<float> & viewgra
 	      rmax_grow, 
 	      viewgrams.get_min_tangential_pos_num(),
 	      viewgrams.get_max_tangential_pos_num());
-  viewgrams.grow(new_range);
-     
+  viewgrams.grow(new_range);     
 }
 
 
@@ -797,7 +604,7 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 					     orig_max_axial_pos_num+1, rmax);
     
     }
-
+#if 0
   if (fit_projections)
     {
       // fitting for viewgrams
@@ -808,10 +615,11 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
       // TODO This is wrong: it adjusts the measured projections as well !!!
       // It needs a loop over rrings from rmin to orig_min_axial_pos_num, etc.
       // Messy !
-      error("This is not correctly implemented at the moment. use either by segment, or disable fitting (recommended)\n");
+      error("This is not correctly implemented at the moment. disable fitting (recommended)\n");
       //viewgrams  *= alpha_fit ;
       //viewgrams += beta_fit;
     }
+#endif
 
   if(disp>2) {
     display( viewgrams,viewgrams.find_max(),"Original+Forward projected");
@@ -821,19 +629,39 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 	
 void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & viewgrams)
 { 
-    
+  static int prev_seg_num = viewgrams.get_proj_data_info_ptr()->get_min_segment_num()-1;  
+  static ColsherFilter colsher_filter(0,0,0,0,0,0,0,0,0,0);
   const int seg_num = viewgrams.get_basic_segment_num();
 
+  if (prev_seg_num != seg_num)
+  {
+    prev_seg_num = seg_num;
+    full_log << "  - Constructing Colsher filter for this segment\n";
+    int nrings = viewgrams.get_num_axial_poss(); 
+    int nprojs = viewgrams.get_num_tangential_poss();
+    
+    int width = (int) pow(2, ((int) ceil(log((PadS + 1) * nprojs) / log(2))));
+    int height = (int) pow(2, ((int) ceil(log((PadZ + 1) * nrings) / log(2))));	
+    
+    
+    const float theta_max = atan(proj_data_info_cyl.get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
+    
+    const float gamma = _PI/2 - atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0)));
+    
+    full_log << "Colsher filter theta_max = " << theta_max << " gamma = " << gamma
+      << " d_a = " << proj_data_info_cyl.get_tangential_sampling()
+      << " d_b = " << proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma) << endl;
+    
+      
+    colsher_filter = 
+      ColsherFilter(height, width, gamma, theta_max, 
+                    proj_data_info_cyl.get_tangential_sampling(), 
+                    proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma),// TODO replace with get_sampling_in_t()
+                    alpha_colsher_axial, fc_colsher_axial,
+                    alpha_colsher_planar, fc_colsher_planar);
+  }
+
   full_log << "  - Apply Colsher filter to complete oblique sinograms" << endl;
-
-  const float theta_max = atan(proj_data_info_cyl.get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
-
-  const float gamma = _PI/2 - atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0)));
-
-  full_log << "Colsher filter theta_max = " << theta_max << " gamma = " << gamma
-	   << " d_a = " << proj_data_info_cyl.get_tangential_sampling()
-	   << " d_b = " << proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma) << endl;
-                   
 
   assert(viewgrams.get_num_viewgrams()%2 == 0);
     
@@ -841,11 +669,8 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 
   for (; viewgram_iter != viewgrams.end(); viewgram_iter+=2) 
     Filter_proj_Colsher(*viewgram_iter, *(viewgram_iter+1),
-                        gamma, theta_max, proj_data_info_cyl.get_tangential_sampling(), 
-			proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma),// TODO replace by get_sampling_in_t() I think
-                        alpha_colsher_axial, fc_colsher_axial,
-                        alpha_colsher_planar, fc_colsher_planar,
-                        PadS, PadZ, viewgrams.get_min_axial_pos_num(), viewgrams.get_max_axial_pos_num() ); 
+                        colsher_filter,
+                        PadS, PadZ); 
 
 
   /* If the segment is really an amalgam of different ring differences,
@@ -905,13 +730,13 @@ void FBP3DRPReconstruction::do_log_file(const VoxelsOnCartesianGrid<float> &imag
     logfile << "Date of the image reconstruction : " << asctime(localtime(&now))
              << parameter_info() ;
              
-    logfile << "\n\nRECONSTRUCTED IMAGE : " << output_filename_prefix.c_str() 
-            << "\nDimensions size : " << image.get_x_size() << "x"
-            << image.get_y_size() << "x" <<image.get_z_size()
-            << "\n\n TIMING RESULTS :\n";
-    
-    // TODO print timers  
-    
+
+#ifndef PARALLEL
+    logfile << "\n\n TIMING RESULTS :\n"    
+            << "Total CPU time : " << get_CPU_timer_value() << '\n' 
+            << "forward projection CPU time : " << forward_projector_ptr->get_CPU_timer_value() << '\n' 
+            << "back projection CPU time : " << back_projector_ptr->get_CPU_timer_value() << '\n';
+#endif    
 }
 
 
