@@ -37,10 +37,30 @@ FilterRootPrior<elemT>::FilterRootPrior(ImageProcessor<3,elemT>* filter, float p
 }
 
 
+static inline int
+sign (const float x)
+{ return x>=0 ? 1: -1;}
+
+/* A function that divides 2 floats while avoiding division by 0 by imposing an upper threshold
+   It essentially returns 
+     sign(numerator)*sign(denominator)*
+       min(fabs(numerator/denominator), max)
+*/
+static inline float
+quotient_with_max(const float numerator, const float denominator, const float max)
+{
+  assert(max>0);
+  return 
+    fabs(numerator)< max*fabs(denominator) ? 
+    numerator/denominator : 
+    max * sign(numerator)*sign(denominator);
+}
+
 template <typename elemT>
 void 
-FilterRootPrior<elemT>::compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
-						     const DiscretisedDensity<3,elemT> &current_image_estimate)
+FilterRootPrior<elemT>::
+compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
+                 const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
   assert(  prior_gradient.get_index_range() == current_image_estimate.get_index_range());  
   if (penalisation_factor==0 || filter_ptr==0)
@@ -49,31 +69,37 @@ FilterRootPrior<elemT>::compute_gradient(DiscretisedDensity<3,elemT>& prior_grad
     return;
   }
   
-  // TODO we don't need the cast stuff here
-  
-  const VoxelsOnCartesianGrid<float>& current_image_cast =
-    dynamic_cast< const VoxelsOnCartesianGrid<float> &>(current_image_estimate);
-  
-  VoxelsOnCartesianGrid<float>& prior_gradient_cast =
-    dynamic_cast<VoxelsOnCartesianGrid<float> &>(prior_gradient);
-  
-  
-  VoxelsOnCartesianGrid<float> filtered_image = current_image_cast;
-  
-  
-  filter_ptr->apply(filtered_image,current_image_estimate);  
-  
-  
-  for (int z=prior_gradient_cast.get_min_z();z<= prior_gradient_cast.get_max_z();z++)
-    for (int y=prior_gradient_cast.get_min_y();y<= prior_gradient_cast.get_max_y();y++)
-      for (int x=prior_gradient_cast.get_min_x();x<= prior_gradient_cast.get_max_x();x++)       
-      {
-	prior_gradient_cast[z][y][x]=
-	  penalisation_factor * 
-	  (current_image_cast[z][y][x]/filtered_image[z][y][x] - 1);	        
-      }  
-      
-      
+
+  // first store filtered image in prior_gradient
+  filter_ptr->apply(prior_gradient,current_image_estimate);  
+
+  /* now set 
+     prior_gradient = current_image_estimate/filtered_image - 1
+                    = current_image_estimate/prior_gradient - 1
+     However, we need to avoid division by 0, as it might cause a NaN or an 'infinity'.
+     (It seems that Intel processors handle 'infinity' alright, but sparc processors do not.)
+
+     So, instead we do
+     prior_gradient = quotient_with_max(current_image_estimate,prior_gradient,1000) - 1
+
+     The code below does this by using a full_iterator loop as we're missing expression templates 
+     at the moment and I did not feel like making a function object just for this ...
+     */
+
+  DiscretisedDensity<3,elemT>::full_iterator iter_through_prior_gradient =
+    prior_gradient.begin_all();
+  DiscretisedDensity<3,elemT>::const_full_iterator iter_through_current_image_estimate =
+    current_image_estimate.begin_all();
+  while (iter_through_current_image_estimate!= current_image_estimate.end_all())
+  {
+    *iter_through_prior_gradient=
+      penalisation_factor * 
+      (quotient_with_max(*iter_through_current_image_estimate,*iter_through_prior_gradient, 1000)
+      - 1);
+    ++iter_through_prior_gradient;
+    ++iter_through_current_image_estimate;
+  }
+  assert(iter_through_prior_gradient == prior_gradient.end_all());
 }
 
 
