@@ -474,6 +474,7 @@ ask_parameters()
   // KT 09/11/98 use PETSinogramOfVolume
   fstream *out = 0;
   
+  // KT 22/03/98 removed last arg Real(1) for appropriate defaults
   return new PETSinogramOfVolume(
     scan_info, 
     span, 
@@ -481,6 +482,5 @@ ask_parameters()
     scan_info.get_num_rings()-1 : 11,
     *out, 0UL,
     PETSinogramOfVolume::SegmentViewRingBin,
-    NumericType::FLOAT,
-    Real(1));
+    NumericType::FLOAT);
 }
