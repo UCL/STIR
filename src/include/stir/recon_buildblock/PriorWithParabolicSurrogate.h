@@ -22,6 +22,7 @@
 #define __stir_recon_buildblock_PriorWithParabolicSurrogate_H__
 
 #include "stir/recon_buildblock/GeneralisedPrior.h"
+#include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
@@ -46,6 +47,11 @@ public:
   //!this should calculate the parabolic surrogate curvature
   virtual void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature, 
 			const DiscretisedDensity<3,elemT> &current_image_estimate) = 0;
+
+  virtual void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
+		const BasicCoordinate<3,int>& coords,
+		const DiscretisedDensity<3,elemT> &current_image_estimate) =0;
+
 
 };
 
