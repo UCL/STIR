@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     {
       main_buffer= 
 	* dynamic_cast<VoxelsOnCartesianGrid<float> *>(
-	DiscretisedDensity<3,float>::read_from_file(argv[1]).get());
+	DiscretisedDensity<3,float>::read_from_file(argv[1]));
     }
     else {
         cerr<<endl<<"Usage: manip_image <header file name> (*.hv)"<<endl<<endl;
