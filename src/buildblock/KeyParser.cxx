@@ -2,7 +2,6 @@
 // $Id$
 //
 /*!
-
   \file
   \ingroup buildblock
 
@@ -22,18 +21,18 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/KeyParser.h"
+#include "stir/Succeeded.h"
 #include "stir/Object.h"
 #include "stir/interfile_keyword_functions.h"
-#include "stir/line.h"
 #include "stir/stream.h"
 #include <typeinfo>
 #include <fstream>
 #include <cstring>
-#ifdef BOOST_NO_STRINGSTREAM
-#include <strstream.h>
-#else
+
+#include <strstream>
+
+#ifndef BOOST_NO_STRINGSTREAM
 #include <sstream>
 #endif
 
@@ -45,6 +44,8 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::ends;
+using std::istrstream;
+using std::ostrstream;
 #endif
 
 START_NAMESPACE_STIR
@@ -65,11 +66,48 @@ START_NAMESPACE_STIR
 static void read_line(istream& input, string& line, 
 		      const char continuation_char = '\\')
 {
-  string thisline;
   line.resize(0);
+  if (!input)
+    return;
+
+  string thisline;
   while(true)
     {
-      getline(input, thisline, '\n');
+#ifndef _MSC_VER
+      getline(input, thisline);
+#else
+      /* VC 6.0 getline does not work properly when input==cin.
+         It only returns after a 2nd CR is entered. (The entered input is 
+         used for the next getline, so that the input is indeed ok. Problem is
+         if that in a sequence
+            getline(cin,...);
+            cout << "prompt";
+            getline(cin,...);
+         the user sees the 'prompt' only after the 2nd CR.
+         So, we replace getline(stream,string) with our own mess...
+      */
+      {
+        const size_t buf_size=512; // arbitrary number here. we'll check if the line was too long below
+        char buf[buf_size];
+        thisline.resize(0);
+        bool more_chars = false;
+        do
+        {
+          buf[0]='\0';        
+          input.getline(buf,buf_size);
+          thisline += buf;
+          if (input.fail() && !input.bad())
+          { 
+            // either no characters (end-of-line somehow) or buf_size-1
+            input.clear();
+            more_chars = strlen(buf)==buf_size-1;        
+          }  
+          else
+            more_chars = false;
+        }  
+        while (more_chars);
+      }
+#endif
       // check if last character is \r, 
       // in case this is a DOS file, but not a DOS/Windows host
       if (thisline.size() != 0)
@@ -195,7 +233,7 @@ bool KeyParser::parse(istream& f)
   // print_keywords_to_stream(cerr);
 
   input=&f;
-  return (parse_header()==0 && post_processing()==false);
+  return (parse_header()==Succeeded::yes && post_processing()==false);
 }
 
 
@@ -216,6 +254,16 @@ string
 KeyParser::standardise_keyword(const string& keyword) const
 {
   return standardise_interfile_keyword(keyword);
+}
+
+// KT 07/10/2002 moved here from Line
+string 
+KeyParser::get_keyword(const string& line) const
+{
+  // keyword stops at either := or an index []	
+  // TODO should check that = follows : to allow keywords with colons in there
+  const string::size_type eok = line.find_first_of(":[",0);
+  return line.substr(0,eok);
 }
 
 map_element* KeyParser::find_in_keymap(const string& keyword)
@@ -301,8 +349,6 @@ void KeyParser::add_key(const string& keyword,
 			void* variable,
 			const ASCIIlist_type * const list_of_values)
 {
-  //kmap[standardise_keyword(keyword)] = 
-  // map_element(t, function, variable, list_of_values);
   add_in_keymap(keyword, map_element(t, function, variable, list_of_values));
 }
 
@@ -311,14 +357,9 @@ void KeyParser::add_key(const string& keyword,
 			void* variable,
 			const ASCIIlist_type * const list_of_values)
 {
-  //kmap[standardise_keyword(keyword)] = 
-  //  map_element(t, &KeyParser::set_variable, variable, list_of_values);
   add_in_keymap(keyword, map_element(t, &KeyParser::set_variable, variable, list_of_values));
 }
 
-// sadly can't print values at the moment
-// reason is that that there is currently no information if this is
-// is a vectored key or not.
 void
 KeyParser::print_keywords_to_stream(ostream& out) const
 {
@@ -330,10 +371,10 @@ KeyParser::print_keywords_to_stream(ostream& out) const
 }
 
   
-int KeyParser::parse_header()
+Succeeded KeyParser::parse_header()
 {
     
-  if (read_and_parse_line(false))	
+  if (read_and_parse_line(false)  == Succeeded::yes)	
     process_key();
   if (status != parsing)
   { 
@@ -346,101 +387,224 @@ int KeyParser::parse_header()
     }
     warning("KeyParser error: required first keyword \"%s\" not found\n",
         start_keyword.c_str());  
-    return 1; 
+    return Succeeded::no; 
   }
 
   while(status==parsing)
     {
-      if(read_and_parse_line(true))	
+    if(read_and_parse_line(true) == Succeeded::yes)	
 	process_key();    
     }
   
-  return 0;
+  return Succeeded::yes;
   
 }	
 
 // KT 13/03/2001 split parse_line() into 2 functions
-int KeyParser::read_and_parse_line(const bool write_warning)
+Succeeded KeyParser::read_and_parse_line(const bool write_warning)
 {
-  Line line;
-  
   if (!input->good())
   {
     warning("KeyParser warning: early EOF or bad file");
     stop_parsing();
-    return 0;
+    return Succeeded::no;
   }
  
-#if 0
-  {
-    char buf[MAX_LINE_LENGTH];
-    input->getline(buf,MAX_LINE_LENGTH,'\n');
-    // check if last character is \r, 
-    // in case this is a DOS file, but not a DOS/Windows host
-    if (strlen(buf)>0)
-    {
-      char * last_char = buf+strlen(buf) - 1;
-      if (*last_char == '\r')
-        *last_char = '\0';
-    }
-    // TODO handle the case of a Mac file on a non-Mac host (EOL on Mac is \r)
-
-    line=buf;
-  }
-#else
+  string line;  
   read_line(*input, line);
 
-#endif
-
-		// gets keyword
-  keyword=standardise_keyword(line.get_keyword());
+  // gets keyword
+  keyword=standardise_keyword(get_keyword(line));
   return parse_value_in_line(line, write_warning);
 }
 
-int KeyParser::parse_value_in_line(Line& line, const bool write_warning)
+
+// functions that get arbitrary type parameters from a string (after '=')
+// unfortunately, the string type needs special case are istream::operator>> stops a string at white space
+// they all return Succeeded::ok when there was  a parameter
+
+template <typename T>
+static int get_param_from_string(T& param, const string& s)
 {
-  current_index=line.get_index();
-		// maps keyword to appropriate map_element (sets current)
-  if(map_keyword(keyword))	
+  const string::size_type cp=s.find('=',0);
+  if(cp==string::npos)
+    return Succeeded::no;
+
+  istrstream str(s.c_str()+cp+1);
+  str >> param;
+  return str.fail() ? Succeeded::no : Succeeded::yes;
+}
+
+template <>
+static int get_param_from_string(string& param, const string& s)
+{
+  
+  const string::size_type cp = s.find('=',0);
+  if(cp!=string::npos)
+  {
+    // skip starting white space
+    const string::size_type sok=s.find_first_not_of(" \t",cp+1); // KT 07/10/2002 now also skips tabs
+    if(sok!=string::npos)
+    {
+      // strip trailing white space
+      const string::size_type eok=s.find_last_not_of(" \t",s.length());
+      param=s.substr(sok,eok-sok+1);
+      return Succeeded::yes;
+    }
+  }
+  return Succeeded::no;
+}
+
+// sadly, VC 6.0 can't resolve get_param_from_string with and without vector template, so I have to call this function differently
+template <typename T>
+static int get_vparam_from_string(vector<T>& param, const string& s)
+{
+  const string::size_type cp = s.find('=',0);
+  if(cp!=string::npos)
+  {
+    // skip starting white space
+    const string::size_type start=s.find_first_not_of(" \t",cp+1); // KT 07/10/2002 now also skips tabs
+    if(start!=string::npos)
+    {
+      istrstream str(s.c_str()+start);
+      
+      if (s[start] == '{')
+        str >> param;
+      else
+      {
+        param.resize(1);
+        str >> param[0];
+      }
+      return Succeeded::yes;
+    }
+  }
+  return Succeeded::no;
+}
+
+template <>
+static int get_vparam_from_string(vector<string>& param, const string& s)
+{
+  string::size_type cp = s.find('=',0);
+  if(cp!=string::npos)
+  {
+    // skip starting white space
+    const string::size_type start=s.find_first_not_of(" \t",cp+1); // KT 07/10/2002 now also skips tabs
+    if(start!=string::npos)
+    {
+      if (s[start] == '{')
+      {
+        bool end=false;
+        cp = start+1;
+        while (!end)
+        {
+          cp=s.find_first_not_of("},",cp);
+          cp=s.find_first_not_of(" \t",cp);
+          
+          if(cp==string::npos)
+          {
+            end=true;
+          }
+          else
+          {
+            string::size_type eop=s.find_first_of(",}",cp);
+            if(eop==string::npos)
+            {
+              end=true;
+              eop=s.length();
+            }
+            // trim ending white space
+            const string::size_type eop2 = s.find_last_not_of(" \t",eop);
+            param.push_back(s.substr(cp,eop2-cp));
+            cp=eop+1;
+          }
+        }
+      }
+      else
+      {
+        param.resize(1);        
+        param[0] = s.substr(start, s.find_last_not_of(" \t",s.size()));
+      }
+      return Succeeded::yes;
+    }
+  }
+  return Succeeded::no;
+}
+
+// function that finds the current_index. work to do here!
+static int get_index(const string& line)
+{
+  // we take 0 as a default value for the index
+  int in=0;
+  // make sure that the index is part of the key (i.e. before :=)
+  const string::size_type cp=line.find_first_of(":[",0);
+  if(cp!=string::npos && line[cp] == '[')
+  {
+    const string::size_type sok=cp+1;
+    const string::size_type eok=line.find_first_of(']',cp);
+    // check if closing bracket really there
+    if (eok == string::npos)
+    {
+      // TODO do something more graceful
+      warning("Interfile warning: invalid vectored key in line \n'%s'.\n%s",
+        line.c_str(), 
+        "Assuming this is not a vectored key.");
+      return 0;
+    }
+    in=atoi(line.substr(sok,eok-sok).c_str());
+  }
+  return in;
+}
+
+Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_warning)
+{
+  // KT 07/10/2002 use return value of get_param to detect if a value was present at all
+  current_index=get_index(line);
+    
+  // maps keyword to appropriate map_element (sets current)
+  if(map_keyword(keyword)==Succeeded::yes)
   {
     switch(current->type)	// depending on the par_type, gets the correct value from the line
     {				// and sets the right temporary variable
     case KeyArgument::NONE :
+      keyword_has_a_value = false;
       break;
     case KeyArgument::ASCII :
     case KeyArgument::ASCIIlist :
       // KT 07/02/2001 new
     case KeyArgument::PARSINGOBJECT:
     case KeyArgument::SHARED_PARSINGOBJECT:
-      line.get_param(par_ascii);
+      keyword_has_a_value = get_param_from_string(par_ascii, line) == Succeeded::yes;
       break;
     case KeyArgument::INT :
     case KeyArgument::BOOL :
-      line.get_param(par_int);
+      keyword_has_a_value = get_param_from_string(par_int, line) == Succeeded::yes; 
       break;
     case KeyArgument::ULONG :
-      line.get_param(par_ulong);
+      keyword_has_a_value = get_param_from_string(par_ulong, line) == Succeeded::yes; 
       break;
     case KeyArgument::DOUBLE :
     case KeyArgument::FLOAT :
-      line.get_param(par_double);
+      keyword_has_a_value = get_param_from_string(par_double, line) == Succeeded::yes; 
       break;
     case KeyArgument::LIST_OF_INTS :
       par_intlist.clear();
-      line.get_param(par_intlist);
+      keyword_has_a_value = get_vparam_from_string(par_intlist, line) == Succeeded::yes; 
       break;
     case KeyArgument::LIST_OF_DOUBLES :
       par_doublelist.clear();
-      line.get_param(par_doublelist);
+      keyword_has_a_value = get_vparam_from_string(par_doublelist, line) == Succeeded::yes; 
       break;
     case KeyArgument::LIST_OF_ASCII :
       par_asciilist.clear();
-      line.get_param(par_asciilist);
+      keyword_has_a_value = get_vparam_from_string(par_asciilist, line) == Succeeded::yes; 
       break;
     default :
-      break;
+      // KT 07/10/2002 now exit with error
+      error ("KeyParser internal error: keyword '%s' has unsupported type of parameters\n",
+        keyword.c_str());
+      return  Succeeded::no; // just a line to avoid compiler warnings
     }
-    return 1;
+    return Succeeded::yes;
   }
 
   // skip empty lines and comments
@@ -448,7 +612,7 @@ int KeyParser::parse_value_in_line(Line& line, const bool write_warning)
     warning("KeyParser warning: unrecognized keyword: %s\n", keyword.c_str());
 
   // do no processing of this key
-  return 0;
+  return Succeeded::no;
 }
 
 void KeyParser::start_parsing()
@@ -464,7 +628,11 @@ void KeyParser::stop_parsing()
 // KT 07/02/2001 new
 void KeyParser::set_parsing_object()
 {
-    // TODO this does not handle the vectored key convention
+  // KT 07/10/2002 new
+  if (!keyword_has_a_value)
+    return;
+
+  // TODO this does not handle the vectored key convention
   
   // current_index is set to 0 when there was no index
   if(current_index!=0)
@@ -477,7 +645,11 @@ void KeyParser::set_parsing_object()
 // KT 20/08/2001 new
 void KeyParser::set_shared_parsing_object()
 {
-    // TODO this does not handle the vectored key convention
+  // KT 07/10/2002 new
+  if (!keyword_has_a_value)
+    return;
+  
+  // TODO this does not handle the vectored key convention
   
   // current_index is set to 0 when there was no index
   if(current_index!=0)
@@ -489,22 +661,26 @@ void KeyParser::set_shared_parsing_object()
 // local function to be used in set_variable below
 template <typename T1, typename T2>
 void static
-assign_to_list(T1& list, const T2& value, const int current_index, 
+assign_to_list(T1& mylist, const T2& value, const int current_index, 
 	       const string& keyword)
 {
-  if(list.size() < static_cast<unsigned>(current_index))
+  if(mylist.size() < static_cast<unsigned>(current_index))
     {
       // this is based on a suggestion by Dylan Togane [dtogane@camhpet.on.ca]
       warning("KeyParser: the list corresponding to the keyword \"%s\" has to be resized "
 	      "to size %d. This might mean you have a problem in the keyword values.\n",
 	      keyword.c_str(), current_index);
-      list.resize(current_index);
+      mylist.resize(current_index);
     }
-  list[current_index-1] = value;
+  mylist[current_index-1] = value;
 }
 
 void KeyParser::set_variable()
 {
+  // KT 07/10/2002 new
+  if (!keyword_has_a_value)
+    return;
+
   // TODO this does not handle the vectored key convention
   
   // current_index is set to 0 when there was no index
@@ -665,24 +841,10 @@ int KeyParser::find_in_ASCIIlist(const string& par_ascii, const ASCIIlist_type& 
   return -1;
 }  	
 
-int KeyParser::map_keyword(const string& keyword)
+Succeeded KeyParser::map_keyword(const string& keyword)
 {
-#if 0
-  Keymap::iterator it;
-  
-  it=kmap.find(keyword);
-  
-  if(it!=kmap.end())
-  {
-    current=&(*it).second;
-    return 1;
-  }
-  
-  return 0;
-#else
   current = find_in_keymap(keyword);
-  return (current==0 ? 0 : 1);
-#endif
+  return (current==0 ? Succeeded::no : Succeeded::yes);
 }
 
 
@@ -815,7 +977,7 @@ void KeyParser::ask_parameters()
   input = 0;
   while(true)
   {
-    Line line;
+    string line;
     
     for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
     {
@@ -829,20 +991,13 @@ void KeyParser::ask_parameters()
 
       cout << keyword << " := ";
       {
-#if 0
-        char buf[MAX_LINE_LENGTH];
-        strcpy(buf, ":= ");
-        cin.getline(buf+strlen(buf),MAX_LINE_LENGTH-strlen(buf),'\n');    
-        line=buf;
-#else
 	read_line(cin, line);
 	// prepend ":=" such that parse_value_in_line can work properly
 	line.insert(0, ":= ");
-#endif
       }
 
-      parse_value_in_line(line, false);
-      process_key();    
+      if (parse_value_in_line(line, false) == Succeeded::yes)
+        process_key();    
     }
     if (post_processing())    
        cout << " Asking all questions again! (Sorry)\n";
