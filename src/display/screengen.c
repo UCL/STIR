@@ -303,7 +303,7 @@ screen_image_t sc_image[];
 
       /*put_textstr(sc_image[i].sx+size_x/2,sc_image[i].sy,sc_image[i].text);*/
 /* CL 280498 Put text more left (by dividing by 4 instead of 2 */
-  put_textstr(sc_image[i].sx+size_x/4,sc_image[i].sy+15,sc_image[i].text); 
+  put_textstr(sc_image[i].sx,sc_image[i].sy+15,sc_image[i].text); 
                                                                                                            
     
   }
