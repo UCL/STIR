@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 
 #ifndef __KEYPARSER_H__
@@ -11,7 +11,6 @@
 #include <string>
 #include <iostream>
 #include <vector>
-
 
 
 typedef vector<int> IntVect;
@@ -112,9 +111,12 @@ protected :
   //KT 26/10/98 removed virtual void init_keys() = 0;
   // Override the next function if you need to
   // Returns 0 of OK, 1 of not.
-  virtual int post_processing() 
-  { return 1; }
+
+  //MJ 15/05/2000 made bool
+  virtual bool post_processing() 
+   { return true; }
 	
+
 
   ////// predefined actions 
 
@@ -122,7 +124,7 @@ protected :
   void start_parsing();
   // to stop parsing
   void stop_parsing();
-  // KT 09/10/98 added for keys which don't do anything
+  // KT 09/10/98 added for keys which do not do anything
   void do_nothing() {};
   // set the variable to the value given as the value of the keyword
   void set_variable();
