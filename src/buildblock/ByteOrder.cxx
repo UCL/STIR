@@ -1,17 +1,29 @@
 //
 // $Id$: $Date$
 //
+/*!
+  \file 
+ 
+  \brief This file initialises ByteOrder::native_order.
 
-/* 
-  Initialisation of the ByteOrder static member.
+  \author Kris Thielemans
+  \author Alexey Zverovich
+  \author PARAPET project
 
-  History:
-   first version Kris Thielemans
+  \date    $Date$
 
-   KT&AZ 08/12/99 avoid using ntohs()
+  \version $Revision$
+*/
+/*
+  Modification history:
+  -first version(s) Kris Thielemans
+
+  -KT&AZ 08/12/99 avoid using ntohs()
 */
 
 #include "ByteOrder.h"
+
+START_NAMESPACE_TOMO
 
 #if 1
 
@@ -69,7 +81,6 @@ const ByteOrder::Order ByteOrder::native_order =
 // KT couldn not locate. However, __ntohs is defined as inline asm.
 // so we just use that one.
 
-// KT 30/10/98 corrected bug: it returned the other byte order
 const ByteOrder::Order ByteOrder::native_order = 
    (__ntohs(1) != 1) ? little_endian : big_endian;
 
@@ -81,3 +92,5 @@ const ByteOrder::Order ByteOrder::native_order =
 #endif // Cygwin32
 
 #endif // old implementation of byte order stuff
+
+END_NAMESPACE_TOMO
