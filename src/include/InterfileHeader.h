@@ -5,7 +5,7 @@
 #ifndef __INTERFILEHEADER_H__
 #define __INTERFILEHEADER_H__
 
-#include <fstream>
+// #include <fstream> // KT 03/11/98 not used anymore
 // KT 20/06/98 used for type_of_numbers and byte_order
 #include "NumericInfo.h"
 #include "KeyParser.h"
@@ -72,9 +72,10 @@ public :
   vector<string>	matrix_labels;
   vector<IntVect>	matrix_size;
   DoubleVect		pixel_sizes;
-  IntVect		sqc;
-  // KT 01/08/98 changed to DoubleVect
-  DoubleVect		image_scaling_factor;
+  // KT 03/11/98 cannot remove 'sqc' because of VC++ compiler bug (it complains about matrix_size.resize(1))
+  IntVect		sqc; 
+  // KT 29/10/98 changed to vector<DoubleVect>
+  vector<DoubleVect>	image_scaling_factors;
   // KT 01/08/98 changed to UlongVect
   UlongVect		data_offset;
 };
