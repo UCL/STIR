@@ -18,7 +18,9 @@
     See STIR/LICENSE.txt for details
 */
 
+#ifdef NRFFT
 #include "stir/Viewgram.h"
+#endif
 #include "local/stir/FBP3DRP/ColsherFilter.h"
 
 #ifdef __DEBUG_COLSHER
@@ -125,7 +127,7 @@ set_up(int height, int width, float theta,
 	  const float nu_a = fa / d_a;
 
 	  float fil = 0;
-	  if (fa < fc_planar || fb < fc_axial) 
+	  if (fa < fc_planar && fb < fc_axial) 
 	    {
 	      /* Colsher filter */
 	      const float omega = atan2(nu_b, nu_a);
@@ -222,10 +224,10 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
                       
                        
                 /* Apodizing Hanning window */;
-                //CL 250899 In order to make simial than the CTI program, we use a damping window
+                //CL 250899 In order to make similar to the CTI program, we use a damping window
                 //for both planar and axial direction
 
-            if (fa < fc_planar || fb < fc_axial) 
+            if (fa < fc_planar && fb < fc_axial) 
                 filter[ii++] = 
 		  static_cast<float>(
 				     fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
@@ -251,7 +253,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
                 fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
 
-            if (-fa < fc_planar || fb < fc_axial) 
+            if (-fa < fc_planar && fb < fc_axial) 
                 filter[ii++] = 
 		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
 				     *(alpha_axial + (1. - alpha_axial)* cos(_PI * fb / fc_axial)));
@@ -278,7 +280,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
                 fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
  
-            if (fa < fc_planar || -fb < fc_axial) 
+            if (fa < fc_planar && -fb < fc_axial) 
                 filter[ii++] = 
 		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * fa / fc_planar))
 				     *(alpha_axial + (1. - alpha_axial)* cos(_PI * (-fb) / fc_axial)));
@@ -300,7 +302,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
             else
                 fil = mod_nu / 4. / asin(sin(theta_max) / sin(psi));
 
-            if (-fa < fc_planar || -fb < fc_axial) 
+            if (-fa < fc_planar && -fb < fc_axial) 
                 filter[ii++] = 
 		  static_cast<float>(fil * (alpha_planar + (1. - alpha_planar) * cos(_PI * (-fa) / fc_planar))
 				      *(alpha_axial + (1. - alpha_axial)* cos(_PI * (-fb) / fc_axial)));
@@ -312,7 +314,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
     }
 
     // KT&Darren Hogg 03/07/2001 inserted correct scale factor 
-    // TODO this assumes current value for the magic_number in bakcprojector
+    // TODO this assumes current value for the magic_number in backprojector
     filter *= static_cast<float>(4*_PI*d_a);
 
     
