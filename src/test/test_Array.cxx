@@ -42,6 +42,8 @@
 #ifndef TOMO_NO_NAMESPACES
 using std::ofstream;
 using std::ifstream;
+using std::plus;
+using std::bind2nd;
 #endif
 
 START_NAMESPACE_TOMO
