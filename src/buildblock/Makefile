@@ -34,13 +34,16 @@ ${DEST}%.o : %.cxx
 
 
 
+# KT 30/07/98 added utilities
 ${DEST}libbuildblock.a: ${DEST}sinodata.o ${DEST}convert.o \
-   ${DEST}PETScannerInfo.o ${DEST}Tensor1D.o ${DEST}viewdata.o
+   ${DEST}PETScannerInfo.o ${DEST}Tensor1D.o ${DEST}viewdata.o \
+   $(DEST)utilities.o
 	ar r $@ $?
 	ranlib $@
 
 ${DEST}libinterfile.a: ${DEST}KeyParser.o ${DEST}line.o ${DEST}pet_string.o
 
+#KT 30/07/98 added DEST
 clean: 
-	$(RM) *.o
-	$(RM) *.a
+	$(RM) $(DEST)*.o
+	$(RM) $(DEST)*.a
