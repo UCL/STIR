@@ -85,9 +85,6 @@ public:
 
   // --- const members returning info ---
 
-  //! returns the number of viewgrams in this object
-  inline int get_num_viewgrams() const;
-
   //! get 'basic' view_num
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline int get_basic_view_num() const;
@@ -95,6 +92,9 @@ public:
   /*! see DataSymmetriesForViewSegmentNumbers for definition of 'basic' */
   inline int get_basic_segment_num() const;
 
+
+  //! returns the number of viewgrams in this object
+  inline int get_num_viewgrams() const;
   inline int get_num_axial_poss() const;
   inline int get_num_tangential_poss() const;
   inline int get_min_axial_pos_num() const;
@@ -106,27 +106,15 @@ public:
 
   // -- members which modify the structure ---
 
+  //! Grow each viewgram
+  void grow(const IndexRange<2>& range);
+
   //TODOvoid zoom(const float zoom, const float Xoffp, const float Yoffp,
   //          const int size, const float itophi);
 
 
-  // --- members which access the viewgrams ---
-  // This works by using an int argument which should be
-  // between 0 and get_num_viewgrams()-1
-  // TODO replace by iterators
 
-  // const access
-#if 0
-  inline const Viewgram<elemT>& get_viewgram_reference(const int) const;
-
-  // a non-const access
-  // Only the data itself should be modified.
-  // sizes and scan_info should remain identical
-  inline Viewgram<elemT>& get_viewgram_reference(const int);
-#endif
-
-  // acccess provided via iterators
-  // basic iterator support
+  // -- basic iterator support --
 
   //! use to initialise an iterator to the first element of the vector
    inline iterator begin();
@@ -139,8 +127,30 @@ public:
 
 
 
+   // numeric operators
 
-  RelatedViewgrams get_empty_copy() const;
+   //! Multiplication of all data elements with a constant
+   RelatedViewgrams& operator*= (const elemT);
+   //! Division of all data elements by a constant
+   RelatedViewgrams& operator/= (const elemT);
+   //! Addition of all data elements by a constant
+   RelatedViewgrams& operator+= (const elemT);
+   //! Subtraction of all data elements by a constant
+   RelatedViewgrams& operator-= (const elemT);
+
+   // numeric functions
+
+   //! Find the maximum of all data elements
+   elemT find_max() const;
+   //! Find the maximum of all data elements
+   elemT find_min() const;
+   //! Set all data elements to n
+   void fill(const elemT &n);
+
+   // other
+
+   //! Return a new object with ProjDataInfo etc., but all data elements set to 0
+   RelatedViewgrams get_empty_copy() const;
 
  
 private:
