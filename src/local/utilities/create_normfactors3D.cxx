@@ -53,16 +53,19 @@ int main(int argc, char **argv)
   const float noise = static_cast<float>(atof(argv[3]));
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
   const string out_filename_prefix = argv[1];
-  const int num_detectors = 
-    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
-  const int num_crystals_per_block = 8;
-  const int num_blocks = num_detectors/num_crystals_per_block;
-
   const int num_rings = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
-  
-  FanProjData fan_data;
-  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors));
+  const int num_detectors_per_ring = 
+    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
+  const int num_tangential_crystals_per_block = 8;
+  const int num_tangential_blocks = num_detectors_per_ring/num_tangential_crystals_per_block;
+  const int num_axial_crystals_per_block = num_rings/2;
+  warning("TODO num_axial_crystals_per_block == num_rings/2\n");
+  const int num_axial_blocks = num_rings/num_axial_crystals_per_block;
+
+  BlockData3D norm_block_data(num_axial_blocks, num_tangential_blocks,
+                              num_axial_blocks-1, num_tangential_blocks-1);
+  DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
   const int iter_num=1;
   const int eff_iter_num = 0;
@@ -73,8 +76,10 @@ int main(int argc, char **argv)
 	  // efficiencies
 	  {
 	    for (int ra = 0; ra < num_rings; ++ra)
-              for (int a = 0; a < num_detectors; ++a)
-	        efficiencies[ra][a] = exp(noise*((2.F*rand())/RAND_MAX - 1));
+              for (int a = 0; a < num_detectors_per_ring; ++a)
+	        efficiencies[ra][a] = 
+		  (2+sin(2*_PI*a/num_detectors_per_ring))*
+		  exp(noise*((2.F*rand())/RAND_MAX - 1));
 	    {
 	      char *out_filename = new char[out_filename_prefix.size() + 30];
 	      sprintf(out_filename, "%s_%s_%d_%d.out", 
@@ -83,7 +88,32 @@ int main(int argc, char **argv)
 	      out << efficiencies;
 	      delete out_filename;
 	    }
-	}
+          } // end efficiencies
+          // block norm
+	  {
+             for (int ra = norm_block_data.get_min_ra(); ra <= norm_block_data.get_max_ra(); ++ra)
+              for (int a = norm_block_data.get_min_a(); a <= norm_block_data.get_max_a(); ++a)
+                // loop rb from ra to avoid double counting
+                for (int rb = max(ra,norm_block_data.get_min_rb(ra)); rb <= norm_block_data.get_max_rb(ra); ++rb)
+                  for (int b = norm_block_data.get_min_b(a); b <= norm_block_data.get_max_b(a); ++b)      
+                  {                  
+		    norm_block_data(ra,a,rb,b) =
+                      exp(noise*((1.F*rand())/RAND_MAX - 0.5F));
+                    if (ra==rb) // it's for direct sinograms, so apply transpose symmetry
+                      norm_block_data(ra,b,rb,a) = norm_block_data(ra,a,rb,b);
+                  } 
+              
+	    {
+	      char *out_filename = new char[out_filename_prefix.size() + 30];
+	      sprintf(out_filename, "%s_%s_%d.out", 
+		      out_filename_prefix.c_str(), "block",  iter_num);
+	      ofstream out(out_filename);
+	      out << norm_block_data;
+	      delete out_filename;
+	    }
+	  
+          } // end block
+
     }
 
   return EXIT_SUCCESS;
