@@ -2,8 +2,8 @@
 // $Id$
 //
  
-#ifndef __ReconstructionParameters_h__
-#define __ReconstructionParameters_h__
+#ifndef __Tomo_recon_buildblock_ReconstructionParameters_h__
+#define __Tomo_recon_buildblock_ReconstructionParameters_h__
 
 /*!
   \file 
@@ -44,12 +44,17 @@ public:
   string input_filename;
 
   //! file name for output reconstructed images
-  string output_filename_prefix; // KT 160899 changed name
+  string output_filename_prefix; 
 
-  //! the output image size
-  /*! convention: if -1, use get_num_tangential_poss()
+  //! the output image size in x and y direction
+  /*! convention: if -1, use get_num_tangential_poss() of the projection data
   */
-  int output_image_size; 
+  int output_image_size_xy; // KT 10122001 appended _xy
+
+  //! the output image size in x and y direction
+  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
+  */
+  int output_image_size_z; // KT 10122001 new
 
   // KT 20/06/2001 disabled
 #if 0
