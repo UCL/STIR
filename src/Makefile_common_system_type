@@ -1,0 +1,38 @@
+#
+# $Id$: $Date$
+#
+# find out which system we are on
+# sets SYSTEM to LINUX, CYGWIN, AIX, SUN, CC, AP3000
+#
+# Alexey Zverovich
+# Kris Thielemans
+
+__TEST_OS = $(shell uname)
+ifeq ($(__TEST_OS),Linux)
+SYSTEM = LINUX
+else
+ifeq ($(__TEST_OS),AIX)
+__TEST_EPX =$(shell csh -f -c "if (-e /epx) echo 1")
+ifeq ($(__TEST_EPX),1)
+SYSTEM = CC
+else
+SYSTEM = AIX
+endif
+else
+ifeq ($(__TEST_OS),CYGWIN_NT-4.0)
+# TODO just check CYGWIN prefix
+SYSTEM = CYGWIN
+else
+ifeq ($(__TEST_OS),SunOS)
+# test if this as the Fujitsu parallel processor
+# TODO
+__TEST_AP = 0# $(shell csh -f -c "if (-e `which aprun`) echo 1")
+ifeq ($(__TEST_AP),1)
+SYSTEM = AP3000
+else
+SYSTEM = SUN
+endif
+endif
+endif
+endif
+endif
