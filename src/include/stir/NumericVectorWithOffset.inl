@@ -49,7 +49,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>
 NumericVectorWithOffset<T, NUMBER>::operator+ (const NumericVectorWithOffset &v) const 
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval += v; 
 }
@@ -59,7 +59,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator- (const NumericVectorWithOffset &v) const 
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval -= v; 
 }
@@ -69,7 +69,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator* (const NumericVectorWithOffset &v) const
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval *= v; 
 }
@@ -79,7 +79,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator/ (const NumericVectorWithOffset &v) const
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval /= v;
 }
@@ -89,7 +89,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator+ (const NUMBER &v) const 
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval += v;
 }
@@ -99,7 +99,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator- (const NUMBER &v) const 
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval -= v; 
 }
@@ -109,7 +109,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator* (const NUMBER &v) const 
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval *= v;
 }
@@ -119,7 +119,7 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER> 
 NumericVectorWithOffset<T, NUMBER>::operator/ (const NUMBER &v) const 
 {
-  check_state();
+  this->check_state();
   NumericVectorWithOffset retval(*this);
   return retval /= v;
 }
@@ -132,20 +132,20 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator+= (const NumericVectorWithOffset &v) 
 {
-  check_state();
+  this->check_state();
   // first check if *this is empty
-  if (get_length() == 0)
+  if (this->get_length() == 0)
   {
     return *this = v;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
+  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
+  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    num[i] += v.num[i];
-  check_state();
+    this->num[i] += v.num[i];
+  this->check_state();
   return *this; 
 }
 
@@ -154,21 +154,21 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator-= (const NumericVectorWithOffset &v)
 {
-  check_state();
+  this->check_state();
   // first check if *this is empty
-  if (get_length() == 0)
+  if (this->get_length() == 0)
   {
     *this = v;
     return *this *= -1;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
+  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
+  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    num[i] -= v.num[i];
-  check_state();
+    this->num[i] -= v.num[i];
+  this->check_state();
   return *this; 
 }
 
@@ -177,22 +177,22 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator*= (const NumericVectorWithOffset &v)
 {
-  check_state();
+  this->check_state();
   // first check if *this is empty
-  if (get_length() == 0)
+  if (this->get_length() == 0)
   {
     // we have to return an object of the same dimensions as v, but filled with 0. 
     *this =v;
     return *this *= 0;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
+  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
+  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    num[i] *= v.num[i];
-  check_state();
+    this->num[i] *= v.num[i];
+  this->check_state();
   return *this; 
 }
 
@@ -201,22 +201,22 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator/= (const NumericVectorWithOffset &v)
 {
-  check_state();
+  this->check_state();
   // first check if *this is empty
-  if (get_length() == 0)
+  if (this->get_length() == 0)
   {
     // we have to return an object of the same dimensions as v, but filled with 0. 
     *this =v;
     return *this *= 0;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(get_min_index(),v.get_min_index()), std::max(get_max_index(),v.get_max_index()));
+  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(get_min_index(),v.get_min_index()), max(get_max_index(),v.get_max_index()));
+  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    num[i] /= v.num[i];
-  check_state();
+    this->num[i] /= v.num[i];
+  this->check_state();
   return *this; 
 }
 
@@ -224,10 +224,10 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator+= (const NUMBER &v) 
 {
-  check_state();
-  for (int i=get_min_index(); i<=get_max_index(); i++)
-    num[i] += v;
-  check_state();
+  this->check_state();
+  for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    this->num[i] += v;
+  this->check_state();
   return *this; 
 }
 
@@ -235,10 +235,10 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator-= (const NUMBER &v) 
 {
-  check_state();
-  for (int i=get_min_index(); i<=get_max_index(); i++)
-    num[i] -= v;
-  check_state();
+  this->check_state();
+  for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    this->num[i] -= v;
+  this->check_state();
   return *this;
 }
 
@@ -246,10 +246,10 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator*= (const NUMBER &v) 
 {
-  check_state();
-  for (int i=get_min_index(); i<=get_max_index(); i++)
-    num[i] *= v;
-  check_state();
+  this->check_state();
+  for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    this->num[i] *= v;
+  this->check_state();
   return *this; 
 }
 
@@ -257,10 +257,10 @@ template <class T, class NUMBER>
 inline NumericVectorWithOffset<T, NUMBER>& 
 NumericVectorWithOffset<T, NUMBER>::operator/= (const NUMBER &v) 
 {
-  check_state();
-  for (int i=get_min_index(); i<=get_max_index(); i++)
-    num[i] /= v;
-  check_state();
+  this->check_state();
+  for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    this->num[i] /= v;
+  this->check_state();
   return *this;
 }
 

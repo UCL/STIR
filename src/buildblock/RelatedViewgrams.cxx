@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -312,6 +312,6 @@ void RelatedViewgrams<elemT>::grow_num_bins(const int new_min_bin_num,
  instantiations
  *************************************/
 
-template RelatedViewgrams<float>;
+template class RelatedViewgrams<float>;
 
 END_NAMESPACE_STIR

@@ -33,7 +33,7 @@ IndexRange<num_dimensions>::get_regular_range(
      BasicCoordinate<num_dimensions, int>& max)  const
 {
   // check if empty range    
-  if (begin() == end())
+  if (base_type::begin() == base_type::end())
   {
 #ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
@@ -50,7 +50,7 @@ IndexRange<num_dimensions>::get_regular_range(
   if (is_regular_range == regular_false)
     return false;
 
-  typename base_type::const_iterator iter=begin();
+  typename base_type::const_iterator iter=base_type::begin();
 
   BasicCoordinate<num_dimensions-1, int> lower_dim_min;
   BasicCoordinate<num_dimensions-1, int> lower_dim_max;
@@ -63,7 +63,7 @@ IndexRange<num_dimensions>::get_regular_range(
     BasicCoordinate<num_dimensions-1, int> lower_dim_min_try;
     BasicCoordinate<num_dimensions-1, int> lower_dim_max_try;
     
-    for (++iter; iter != end(); ++iter)
+    for (++iter; iter != base_type::end(); ++iter)
     {
       if (!iter->get_regular_range(lower_dim_min_try, lower_dim_max_try))
       {
@@ -88,20 +88,20 @@ IndexRange<num_dimensions>::get_regular_range(
 
 #if defined(_MSC_VER) && _MSC_VER<1200
   // bug in VC++ 5.0, needs explicit template args
-  min = join<num_dimensions-1,int>(get_min_index(), lower_dim_min);
-  max = join<num_dimensions-1,int>(get_max_index(), lower_dim_max);
+  min = join<num_dimensions-1,int>(base_type::get_min_index(), lower_dim_min);
+  max = join<num_dimensions-1,int>(base_type::get_max_index(), lower_dim_max);
 #elif defined( __GNUC__) && (__GNUC__ == 2 && __GNUC_MINOR__ < 9)
   // work around gcc 2.8.1 bug. 
   // It cannot call 'join' (it generates a bad mangled name for the function)
   // So, we explicitly insert the code here
-  *min.begin() = get_min_index();
+  *min.begin() = base_type::get_min_index();
    copy(lower_dim_min.begin(), lower_dim_min.end(), min.begin()+1);
-  *max.begin() = get_max_index();
+  *max.begin() = base_type::get_max_index();
    copy(lower_dim_max.begin(), lower_dim_max.end(), max.begin()+1);
 #else
    // lines for good compilers...
-  min = join(get_min_index(), lower_dim_min);
-  max = join(get_max_index(), lower_dim_max);  
+  min = join(base_type::get_min_index(), lower_dim_min);
+  max = join(base_type::get_max_index(), lower_dim_max);  
 #endif
   return true;
 }
@@ -115,14 +115,14 @@ IndexRange<num_dimensions>::get_regular_range(
      BasicCoordinate<num_dimensions, int>& max)  const
 {
   // check if empty range    
-  if (begin() == end())
+  if (base_type::begin() == base_type::end())
   {
 #ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
 #else
-    fill(min,begin(), min.end(), 0);
-    fill(max,begin(), max.end(),-1);
+    fill(min,base_type::begin(), min.end(), 0);
+    fill(max,base_type::begin(), max.end(),-1);
 #endif
     return true;
   }
@@ -131,7 +131,7 @@ IndexRange<num_dimensions>::get_regular_range(
   if (is_regular_range == regular_false)
     return false;
 
-  base_type::const_iterator iter=begin();
+  base_type::const_iterator iter=base_type::begin();
 
   BasicCoordinate<num_dimensions-1, int> lower_dim_min;
   BasicCoordinate<num_dimensions-1, int> lower_dim_max;
@@ -144,7 +144,7 @@ IndexRange<num_dimensions>::get_regular_range(
     BasicCoordinate<num_dimensions-1, int> lower_dim_min_try;
     BasicCoordinate<num_dimensions-1, int> lower_dim_max_try;
     
-    for (++iter; iter != end(); ++iter)
+    for (++iter; iter != base_type::end(); ++iter)
     {
       if (!iter->get_regular_range(lower_dim_min_try, lower_dim_max_try))
       {
@@ -169,11 +169,11 @@ IndexRange<num_dimensions>::get_regular_range(
 
 #if defined(_MSC_VER) && _MSC_VER<1200
   // bug in VC++ 5.0, needs explicit template args
-  min = join<num_dimensions-1,int>(get_min_index(), lower_dim_min);
-  max = join<num_dimensions-1,int>(get_max_index(), lower_dim_max);
+  min = join<num_dimensions-1,int>(base_type::get_min_index(), lower_dim_min);
+  max = join<num_dimensions-1,int>(base_type::get_max_index(), lower_dim_max);
 #else
-  min = join(get_min_index(), lower_dim_min);
-  max = join(get_max_index(), lower_dim_max);
+  min = join(base_type::get_min_index(), lower_dim_min);
+  max = join(base_type::get_max_index(), lower_dim_max);
 #endif
   return true;
 }
@@ -185,14 +185,14 @@ IndexRange<num_dimensions>::get_regular_range(
      BasicCoordinate<num_dimensions, int>& max)
 {
   // check if empty range    
-  if (begin() == end())
+  if (base_type::begin() == base_type::end())
   {
 #ifndef STIR_NO_NAMESPACES  
     std::fill(min.begin(), min.end(), 0);
     std::fill(max.begin(), max.end(),-1);
 #else
-    fill(min,begin(), min.end(), 0);
-    fill(max,begin(), max.end(),-1);
+    fill(min.begin(), min.end(), 0);
+    fill(max.begin(), max.end(),-1);
 #endif
     return true;
   }
@@ -201,7 +201,7 @@ IndexRange<num_dimensions>::get_regular_range(
   if (is_regular_range == regular_false)
     return false;
 
-  base_type::iterator iter=begin();
+  base_type::iterator iter=base_type::begin();
 
   BasicCoordinate<num_dimensions-1, int> lower_dim_min;
   BasicCoordinate<num_dimensions-1, int> lower_dim_max;
@@ -214,7 +214,7 @@ IndexRange<num_dimensions>::get_regular_range(
     BasicCoordinate<num_dimensions-1, int> lower_dim_min_try;
     BasicCoordinate<num_dimensions-1, int> lower_dim_max_try;
     
-    for (++iter; iter != end(); ++iter)
+    for (++iter; iter != base_type::end(); ++iter)
     {
       if (!iter->get_regular_range(lower_dim_min_try, lower_dim_max_try))
       {
@@ -239,11 +239,11 @@ IndexRange<num_dimensions>::get_regular_range(
 
 #if defined(_MSC_VER) && _MSC_VER<1200
   // bug in VC++ 5.0, needs explicit template args
-  min = join<num_dimensions-1,int>(get_min_index(), lower_dim_min);
-  max = join<num_dimensions-1,int>(get_max_index(), lower_dim_max);
+  min = join<num_dimensions-1,int>(base_type::get_min_index(), lower_dim_min);
+  max = join<num_dimensions-1,int>(base_type::get_max_index(), lower_dim_max);
 #else
-  min = join(get_min_index(), lower_dim_min);
-  max = join(get_max_index(), lower_dim_max);
+  min = join(base_type::get_min_index(), lower_dim_min);
+  max = join(base_type::get_max_index(), lower_dim_max);
 #endif
   return true;
 }

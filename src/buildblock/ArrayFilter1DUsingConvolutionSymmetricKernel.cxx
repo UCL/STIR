@@ -164,7 +164,7 @@ cir_shift_to_right(VectorWithOffset<elemT>&output,const VectorWithOffset<elemT>&
 
 // instantiation
 
-template ArrayFilter1DUsingConvolutionSymmetricKernel<float>;
+template class ArrayFilter1DUsingConvolutionSymmetricKernel<float>;
 
 END_NAMESPACE_STIR
 

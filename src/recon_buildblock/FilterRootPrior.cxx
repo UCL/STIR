@@ -33,7 +33,7 @@ template <typename elemT>
 FilterRootPrior<elemT>::FilterRootPrior(ImageProcessor<3,elemT>* filter, float penalisation_factor_v)
 :  filter_ptr(filter)
 {
-  penalisation_factor = penalisation_factor_v;
+  this->penalisation_factor = penalisation_factor_v;
 }
 
 
@@ -63,7 +63,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                  const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
   assert(  prior_gradient.get_index_range() == current_image_estimate.get_index_range());  
-  if (penalisation_factor==0 || filter_ptr==0)
+  if (this->penalisation_factor==0 || filter_ptr==0)
   {
     prior_gradient.fill(0);
     return;
@@ -86,14 +86,14 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
      at the moment and I did not feel like making a function object just for this ...
      */
 
-  DiscretisedDensity<3,elemT>::full_iterator iter_through_prior_gradient =
+  typename DiscretisedDensity<3,elemT>::full_iterator iter_through_prior_gradient =
     prior_gradient.begin_all();
-  DiscretisedDensity<3,elemT>::const_full_iterator iter_through_current_image_estimate =
+  typename DiscretisedDensity<3,elemT>::const_full_iterator iter_through_current_image_estimate =
     current_image_estimate.begin_all();
   while (iter_through_current_image_estimate!= current_image_estimate.end_all())
   {
     *iter_through_prior_gradient=
-      penalisation_factor * 
+      this->penalisation_factor * 
       (quotient_with_max(*iter_through_current_image_estimate,*iter_through_prior_gradient, 1000)
       - 1);
     ++iter_through_prior_gradient;
@@ -109,9 +109,9 @@ void
 FilterRootPrior<elemT>::initialise_keymap()
 {
   GeneralisedPrior<elemT>::initialise_keymap();
-  parser.add_start_key("FilterRootPrior Parameters");
-  parser.add_parsing_key("Filter type", &filter_ptr); 
-  parser.add_stop_key("END FilterRootPrior Parameters");
+  this->parser.add_start_key("FilterRootPrior Parameters");
+  this->parser.add_parsing_key("Filter type", &filter_ptr); 
+  this->parser.add_stop_key("END FilterRootPrior Parameters");
 }
 
 
@@ -142,7 +142,7 @@ FilterRootPrior<float>::registered_name =
 static FilterRootPrior<float>::RegisterIt dummy;
 #endif
 
-template FilterRootPrior<float>;
+template class FilterRootPrior<float>;
 
 END_NAMESPACE_STIR
 

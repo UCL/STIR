@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmtih Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -28,77 +28,77 @@ template <typename elemT>
 int
 SegmentByView<elemT>::get_num_views() const
 {
-  return get_length();
+  return this->get_length();
 }
 
 template <typename elemT>
 int 
 SegmentByView<elemT>::get_min_view_num() const
 {
-  return get_min_index();
+  return this->get_min_index();
 }
 
 template <typename elemT>
 int 
 SegmentByView<elemT>::get_max_view_num() const
 {
-  return get_max_index();
+  return this->get_max_index();
 }
 
 template <typename elemT>
 int
 SegmentByView<elemT>::get_num_axial_poss() const
  {
-     return get_length()==0 ? 0 : (*this)[get_min_view_num()].get_length();
+     return this->get_length()==0 ? 0 : (*this)[get_min_view_num()].get_length();
  }
 
 template <typename elemT>
 int
 SegmentByView<elemT>::get_min_axial_pos_num() const
 {
-   return get_length()==0 ? 0 : (*this)[get_min_view_num()].get_min_index();
+   return this->get_length()==0 ? 0 : (*this)[get_min_view_num()].get_min_index();
 }
 
 template <typename elemT>
 int
 SegmentByView<elemT>::get_max_axial_pos_num() const
 {
- return get_length()==0 ? 0 : (*this)[get_min_view_num()].get_max_index();
+ return this->get_length()==0 ? 0 : (*this)[get_min_view_num()].get_max_index();
 }
 
 template <typename elemT>
 int 
 SegmentByView<elemT>::get_num_tangential_poss() const
 {
-  return get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_length();
+  return this->get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_length();
 }
 
 template <typename elemT>
 int
 SegmentByView<elemT>::get_min_tangential_pos_num() const
 {
-return get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_min_index();
+return this->get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_min_index();
 }
 
 template <typename elemT>
 int 
 SegmentByView<elemT>::get_max_tangential_pos_num()const
 {
-return get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_max_index();
+return this->get_length()==0 ? 0 : (*this)[get_min_view_num()][get_min_axial_pos_num()].get_max_index();
 }
 
 template <typename elemT>
 typename SegmentByView<elemT>::StorageOrder 
 SegmentByView<elemT>::get_storage_order() const
-{ return StorageByView; }
+{ return Segment<elemT>::StorageByView; }
 
 template <typename elemT>
 Viewgram<elemT> 
 SegmentByView<elemT>::get_viewgram(int view_num) const
 { 
   return Viewgram<elemT>(Array<3,elemT>::operator[](view_num), 
-    proj_data_info_ptr->clone(), view_num, 
-    get_segment_num()); }
+			 this->proj_data_info_ptr->clone(), view_num, 
+			 this->get_segment_num()); }
 
 template <typename elemT>
 void 

@@ -84,11 +84,11 @@ void
 MedianImageFilter3D<elemT>::initialise_keymap()
 {
   ImageProcessor<3, elemT>::initialise_keymap();
-  parser.add_start_key("Median Filter Parameters");
-  parser.add_key("mask radius x", &mask_radius_x);
-  parser.add_key("mask radius y", &mask_radius_y);
-  parser.add_key("mask radius z", &mask_radius_z);
-  parser.add_stop_key("END Median Filter Parameters");
+  this->parser.add_start_key("Median Filter Parameters");
+  this->parser.add_key("mask radius x", &mask_radius_x);
+  this->parser.add_key("mask radius y", &mask_radius_y);
+  this->parser.add_key("mask radius z", &mask_radius_z);
+  this->parser.add_stop_key("END Median Filter Parameters");
 }
 
 
@@ -107,6 +107,6 @@ MedianImageFilter3D<float>::registered_name =
 // Register this class in the ImageProcessor registry
 //static MedianImageFilter3D<float>::RegisterIt dummy;
 
-template MedianImageFilter3D<float>;
+template class MedianImageFilter3D<float>;
 
 END_NAMESPACE_STIR

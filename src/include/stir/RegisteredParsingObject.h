@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmtih Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -123,7 +123,7 @@ public:
     {
       //std::cerr << "Adding " << Derived::registered_name <<" to registry"<<std::endl;
       // note: VC 7.0 needs a '&' in front of read_from_stream for some reason
-      registry().add_to_registry(Derived::registered_name, &read_from_stream);  
+      Parent::registry().add_to_registry(Derived::registered_name, &read_from_stream);  
     }
    
     /*! \brief Destructor should remove it from the registry.
@@ -138,8 +138,8 @@ public:
       // RegisterIt object. A solution to this problem is coming up.
       cerr << "In RegisterIt destructor for " << Derived::registered_name<<endl;
       cerr <<"Current keys: ";
-      registry().list_keys(cerr);
-      registry().remove_from_registry(Derived::registered_name);
+      Parent::registry().list_keys(cerr);
+      Parent::registry().remove_from_registry(Derived::registered_name);
 #endif
     }
   };

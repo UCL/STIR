@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -86,8 +86,8 @@ SegmentBySinogram<elemT>::get_viewgram(int view_num) const
     pre_view[r] = Array<3,elemT>::operator[](r)[view_num];
   //KT 9/12 constructed a PETSinogram before...
   // CL&KT 15/12 added ring_difference stuff
-  return Viewgram<elemT>(pre_view, proj_data_info_ptr->clone(), view_num, 
-		     get_segment_num());
+  return Viewgram<elemT>(pre_view, this->proj_data_info_ptr->clone(), view_num, 
+			 this->get_segment_num());
 }
 
 template <typename elemT>
@@ -109,7 +109,7 @@ void
 SegmentBySinogram<elemT>::
 grow(const IndexRange<3>& range)
 {   
-  if (range == get_index_range())
+  if (range == this->get_index_range())
     return;
 
   assert(range.is_regular()==true);
@@ -121,16 +121,16 @@ grow(const IndexRange<3>& range)
   // TODO
   assert(range[ax_min].get_min_index() == 0);
 
-  ProjDataInfo* pdi_ptr = proj_data_info_ptr->clone();
+  ProjDataInfo* pdi_ptr = this->proj_data_info_ptr->clone();
   
-  pdi_ptr->set_min_axial_pos_num(ax_min, get_segment_num());
-  pdi_ptr->set_max_axial_pos_num(ax_max, get_segment_num());
+  pdi_ptr->set_min_axial_pos_num(ax_min, this->get_segment_num());
+  pdi_ptr->set_max_axial_pos_num(ax_max, this->get_segment_num());
   
   pdi_ptr->set_num_views(range[ax_min].get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[ax_min][0].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[ax_min][0].get_max_index());
 
-  proj_data_info_ptr = pdi_ptr;
+  this->proj_data_info_ptr = pdi_ptr;
 
   Array<3,elemT>::grow(range);
 	
@@ -140,6 +140,6 @@ grow(const IndexRange<3>& range)
  instantiations
  *************************************/
 
-template SegmentBySinogram<float>;
+template class SegmentBySinogram<float>;
 
 END_NAMESPACE_STIR

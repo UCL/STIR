@@ -23,10 +23,11 @@
 */
 
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
-class Succeeded;
+
 
 
 // predeclarations to allow cross-referencing
@@ -134,8 +135,6 @@ class LORCylindricalCoordinates_z_and_radius
 
   coordT radius() const { check_state(); return _radius; }
 
- protected:
-
   inline
     void
     set_radius_no_check(const coordT new_radius)
@@ -146,9 +145,11 @@ class LORCylindricalCoordinates_z_and_radius
       _z2 *= new_radius/_radius;
       _radius = new_radius;
     }
+  coordT _radius;
+
+private:
   coordT _z1;
   coordT _z2;
-  coordT _radius;
 };
 
 /*! \ingroup LOR
@@ -158,7 +159,7 @@ class LORCylindricalCoordinates_z_and_radius
 template <class coordT>
 class LORInCylinderCoordinates : public LOR<coordT>
 {
-  typedef  LORInCylinderCoordinates<coordT> self;
+  typedef  LORInCylinderCoordinates<coordT> self_type;
   void check_state() const
   {
     assert(_radius>0);
@@ -215,11 +216,11 @@ class LORInCylinderCoordinates : public LOR<coordT>
 
   virtual
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self* 
+    self_type* 
 #else
       LOR<coordT>*
 #endif    
-    clone() const { return new self(*this); }
+    clone() const { return new self_type(*this); }
 
   virtual
     Succeeded
@@ -252,7 +253,7 @@ class LORInCylinderCoordinates : public LOR<coordT>
 template <class coordT>
 class LORAs2Points : public LOR<coordT>
 {
-  typedef LORAs2Points<coordT> self;
+  typedef LORAs2Points<coordT> self_type;
  public:
   const CartesianCoordinate3D<coordT>& p1() const { return _p1; }
   CartesianCoordinate3D<coordT>& p1() { return _p1; }
@@ -277,11 +278,11 @@ class LORAs2Points : public LOR<coordT>
 
   virtual
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self* 
+    self_type* 
 #else
       LOR<coordT>*
 #endif
-      clone() const { return new self(*this); }
+      clone() const { return new self_type(*this); }
 
   virtual
     Succeeded
@@ -314,29 +315,29 @@ class LORInAxialAndSinogramCoordinates
   : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
-  typedef LORInAxialAndSinogramCoordinates<coordT> self;
-
+  typedef LORInAxialAndSinogramCoordinates<coordT> self_type;
+  typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;
   // sorry: has to be first to give the compiler a better chance of inlining
   void check_state() const
   {
-    assert(_radius>0);
-    assert(_s>-_radius);
-    assert(_s<_radius);
+    assert(private_base_type::_radius>0);
+    assert(_s>-private_base_type::_radius);
+    assert(_s<private_base_type::_radius);
     assert(_phi<static_cast<coordT>(_PI));
     assert(_phi>=0);
   }
 
  public:
-  coordT z1() const     { check_state(); return _z1; }
-  coordT& z1()          { check_state(); return _z1; }
-  coordT z2() const     { check_state(); return _z2; }
-  coordT& z2()          { check_state(); return _z2; }
+  coordT z1() const     { check_state(); return private_base_type::z1(); }
+  coordT& z1()          { check_state(); return private_base_type::z1(); }
+  coordT z2() const     { check_state(); return private_base_type::z2(); }
+  coordT& z2()          { check_state(); return private_base_type::z2(); }
   coordT phi() const    { check_state(); return _phi; }
   coordT& phi()         { check_state(); return _phi; }
   coordT s() const      { check_state(); return _s; }
   coordT& s()           { check_state(); return _s; }
 
-  coordT beta() const   { check_state(); return asin(_s/_radius); }
+  coordT beta() const   { check_state(); return asin(_s/private_base_type::_radius); }
 
   inline explicit
   LORInAxialAndSinogramCoordinates(const coordT radius = 1);
@@ -364,24 +365,24 @@ class LORInAxialAndSinogramCoordinates
 
   virtual
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self* 
+    self_type* 
 #else
       LOR<coordT>*
 #endif
-      clone() const { return new self(*this); }
+      clone() const { return new self_type(*this); }
 
   void reset(coordT radius=1)
     {
       // set such that the new LOR does intersect that cylinder
-      _s=0; _radius=radius; 
+      _s=0; private_base_type::_radius=radius; 
     }
-  coordT radius() const { check_state(); return _radius; }
+  coordT radius() const { check_state(); return private_base_type::_radius; }
 
   inline
     Succeeded
     set_radius(const coordT new_radius)
     {
-      if (_radius==new_radius)
+      if (private_base_type::_radius==new_radius)
 	return Succeeded::yes;
       assert(new_radius>0);
       if(fabs(s())>=new_radius)
@@ -423,41 +424,42 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
-  typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self;
+  typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self_type;
+  typedef LORCylindricalCoordinates_z_and_radius<coordT> private_base_type;
 
   // sorry: has to be first to give the compiler a better chance of inlining
   void check_state() const
   {
-    assert(_radius>0);
+    assert(private_base_type::_radius>0);
     assert(_beta>=static_cast<coordT>(-_PI/2));
     assert(_beta<static_cast<coordT>(_PI/2));
     assert(_phi<static_cast<coordT>(_PI));
     assert(_phi>=0);
   }
  public:
-  coordT z1() const     { check_state(); return _z1; }
-  coordT& z1()          { check_state(); return _z1; }
-  coordT z2() const     { check_state(); return _z2; }
-  coordT& z2()          { check_state(); return _z2; }
+  coordT z1() const     { check_state(); return private_base_type::z1(); }
+  coordT& z1()          { check_state(); return private_base_type::z1(); }
+  coordT z2() const     { check_state(); return private_base_type::z2(); }
+  coordT& z2()          { check_state(); return private_base_type::z2(); }
   coordT phi() const    { check_state(); return _phi; }
   coordT& phi()         { check_state(); return _phi; }
   coordT beta() const   { check_state(); return _beta; }
   coordT& beta()        { check_state(); return _beta; }
 
-  coordT s() const      { check_state(); return _radius*sin(_beta); }
+  coordT s() const      { check_state(); return private_base_type::_radius*sin(_beta); }
 
   void reset(coordT radius=1)
     {
       // set such that the new LOR does intersect that cylinder
-      _beta=0; _radius=radius; 
+      _beta=0; private_base_type::_radius=radius; 
     }
-  coordT radius() const { check_state(); return _radius; }
+  coordT radius() const { check_state(); return private_base_type::_radius; }
 
   inline
     Succeeded
     set_radius(const coordT new_radius)
     {
-      if (_radius==new_radius)
+      if (private_base_type::_radius==new_radius)
 	return Succeeded::yes;
       assert(new_radius>0);
       if(fabs(s())>=new_radius)
@@ -492,11 +494,11 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
 
   virtual
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
-    self* 
+    self_type* 
 #else
       LOR<coordT>*
 #endif
-      clone() const { return new self(*this); }
+      clone() const { return new self_type(*this); }
 
   virtual
     Succeeded

@@ -38,7 +38,7 @@ void
 Sinogram<elemT>::
 grow(const IndexRange<2>& range)
 {   
-  if (range == get_index_range())
+  if (range == this->get_index_range())
     return;
 
   // can only handle min_view==0 at the moment
@@ -62,6 +62,6 @@ grow(const IndexRange<2>& range)
  instantiations
  ****************************/
 
-template Sinogram<float>;
+template class Sinogram<float>;
 
 END_NAMESPACE_STIR

@@ -190,7 +190,12 @@ LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::
 LORInAxialAndNoArcCorrSinogramCoordinates(const LORInCylinderCoordinates<coordT>& cyl_coords)
   :    LORCylindricalCoordinates_z_and_radius<coordT>(cyl_coords.radius())
 {
-  get_sino_coords(_z1, _z2, _phi, _beta,
+#ifndef NDEBUG
+  // set these to prevent assert breaking in check_state()
+  _phi=0;
+  _beta=0;
+#endif
+  get_sino_coords(z1(), z2(), _phi, _beta,
 		  cyl_coords);
 }
 
@@ -200,7 +205,12 @@ LORInAxialAndSinogramCoordinates(const LORInCylinderCoordinates<coordT>& cyl_coo
   :    LORCylindricalCoordinates_z_and_radius<coordT>(cyl_coords.radius())
 {
   coordT beta;
-  get_sino_coords(_z1, _z2, _phi, beta,
+#ifndef NDEBUG
+  // set these to prevent assert breaking in check_state()
+  _phi=0;
+  _s=0;
+#endif
+  get_sino_coords(z1(), z2(), _phi, beta,
 		  cyl_coords);
   _s = _radius*sin(beta);
 }
@@ -439,7 +449,7 @@ TYPE<coordT>::								     \
 get_intersections_with_cylinder(LORAs2Points<coordT>& lor,              \
                                 const double radius) const		     \
 {									     \
-  self tmp = *this;							     \
+  self_type tmp = *this;							     \
   if (tmp.set_radius(radius) == Succeeded::no)			             \
     return Succeeded::no;						     \
   lor = tmp;                                                                 \

@@ -18,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -39,34 +39,34 @@ Viewgram<elemT>::get_view_num() const
 template <typename elemT>
 int
 Viewgram<elemT>::get_min_axial_pos_num() const
-  {return get_min_index();}
+  {return this->get_min_index();}
 
 template <typename elemT>
 int
 Viewgram<elemT>::get_max_axial_pos_num() const
-  { return get_max_index(); }
+  { return this->get_max_index(); }
 
 template <typename elemT>
 int
 Viewgram<elemT>::get_num_axial_poss() const
-  { return get_length();}
+  { return this->get_length();}
 
 
 template <typename elemT>
 int
 Viewgram<elemT>::get_num_tangential_poss() const
-  { return get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_length();}
+  { return this->get_length()==0 ? 0 : (*this)[get_min_axial_pos_num()].get_length();}
 
 
 template <typename elemT>
 int
 Viewgram<elemT>::get_min_tangential_pos_num() const
-  { return get_length()==0 ? 0 :(*this)[get_min_axial_pos_num()].get_min_index();}
+  { return this->get_length()==0 ? 0 :(*this)[get_min_axial_pos_num()].get_min_index();}
 
 template <typename elemT>
 int
 Viewgram<elemT>::get_max_tangential_pos_num() const
-{ return get_length()==0 ? 0 :(*this)[get_min_axial_pos_num()].get_max_index(); }
+{ return this->get_length()==0 ? 0 :(*this)[get_min_axial_pos_num()].get_max_index(); }
 
 
 template <typename elemT>

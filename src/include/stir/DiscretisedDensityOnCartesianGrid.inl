@@ -4,7 +4,6 @@
 /*!
   \file 
   \ingroup densitydata 
-! 
   \brief  inline implementations for DiscretisedDensityOnCartesianGrid
 
   \author Sanida Mustafovic 
@@ -19,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -69,58 +68,58 @@ template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_min_z() const
-{ return get_min_index();} 
+{ return this->get_min_index();} 
 
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_min_y() const
-{ return get_length()==0 ? 0 : (*this)[get_min_z()].get_min_index(); }
+{ return this->get_length()==0 ? 0 : (*this)[get_min_z()].get_min_index(); }
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_min_x() const
-{ return get_length()==0 ? 0 : (*this)[get_min_z()][get_min_y()].get_min_index(); }
+{ return this->get_length()==0 ? 0 : (*this)[get_min_z()][get_min_y()].get_min_index(); }
 
 
 template<int num_dimensions, typename elemT>
 int 
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_x_size() const
-{ return  get_length()==0 ? 0 : (*this)[get_min_z()][get_min_y()].get_length(); }
+{ return  this->get_length()==0 ? 0 : (*this)[get_min_z()][get_min_y()].get_length(); }
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_y_size() const
-{ return get_length()==0 ? 0 : (*this)[get_min_z()].get_length();}
+{ return this->get_length()==0 ? 0 : (*this)[get_min_z()].get_length();}
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_z_size() const
-{ return get_length(); }
+{ return this->get_length(); }
 
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_max_x() const
-{ return get_length()==0 ? 0 : (*this)[get_min_z()][get_min_y()].get_max_index();}
+{ return this->get_length()==0 ? 0 : (*this)[get_min_z()][get_min_y()].get_max_index();}
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_max_y() const
-{ return get_length()==0 ? 0 : (*this)[get_min_z()].get_max_index();}
+{ return this->get_length()==0 ? 0 : (*this)[get_min_z()].get_max_index();}
 
 template<int num_dimensions, typename elemT>
 int
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 get_max_z() const
-{ return get_max_index(); }
+{ return this->get_max_index(); }
 
 
 END_NAMESPACE_STIR					 

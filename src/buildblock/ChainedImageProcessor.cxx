@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/ChainedImageProcessor.h"
@@ -109,10 +109,10 @@ ChainedImageProcessor<num_dimensions, elemT>::
 initialise_keymap()
 {
   ImageProcessor<num_dimensions, elemT>::initialise_keymap();
-  parser.add_start_key("Chained Image Processor Parameters");
-  parser.add_parsing_key("Image Processor to apply first", &apply_first);
-  parser.add_parsing_key("Image Processor to apply second", &apply_second);
-  parser.add_stop_key("END Chained Image Processor Parameters");
+  this->parser.add_start_key("Chained Image Processor Parameters");
+  this->parser.add_parsing_key("Image Processor to apply first", &apply_first);
+  this->parser.add_parsing_key("Image Processor to apply second", &apply_second);
+  this->parser.add_stop_key("END Chained Image Processor Parameters");
 }
 
 
@@ -132,7 +132,7 @@ ChainedImageProcessor<3,float>::registered_name =
 // static ChainedImageProcessor<float>::RegisterIt dummy;
 // have the above variable in a separate file, which you need to pass at link time
 
-template ChainedImageProcessor<3,float>;
+template class ChainedImageProcessor<3,float>;
 
 END_NAMESPACE_STIR
 

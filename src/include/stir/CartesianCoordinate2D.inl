@@ -56,7 +56,7 @@ template <class coordT>
 coordT&
 CartesianCoordinate2D<coordT>::y()
 {
-  return operator[](1);
+  return this->operator[](1);
 }
 
 
@@ -64,7 +64,7 @@ template <class coordT>
 coordT
 CartesianCoordinate2D<coordT>::y() const
 {
-  return operator[](1);
+  return this->operator[](1);
 }
 
 
@@ -72,7 +72,7 @@ template <class coordT>
 coordT&
 CartesianCoordinate2D<coordT>::x()
 {
-  return operator[](2);
+  return this->operator[](2);
 }
 
 
@@ -80,7 +80,7 @@ template <class coordT>
 coordT
 CartesianCoordinate2D<coordT>::x() const
 {
-  return operator[](2);
+  return this->operator[](2);
 }
 
 

@@ -41,10 +41,10 @@ void
 Array<num_dimensions, elemT>::grow(const IndexRange<num_dimensions>& range)
 {
   base_type::grow(range.get_min_index(), range.get_max_index());
-  typename base_type::iterator iter = begin();
+  typename base_type::iterator iter = this->begin();
   typename IndexRange<num_dimensions>::const_iterator range_iter = range.begin();
   for (;
-  iter != end(); 
+  iter != this->end(); 
   iter++, range_iter++)
     (*iter).grow(*range_iter);
 
@@ -78,13 +78,13 @@ template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::begin_all()
 {
-  if (begin() == end())
+  if (this->begin() == this->end())
   {
     // empty array
-    return full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::full_iterator());
+    return full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::full_iterator());
   }
   else
-    return full_iterator(begin(), end(), begin()->begin_all());
+    return full_iterator(this->begin(), this->end(), this->begin()->begin_all());
 }
   
 #ifdef ARRAY_CONST_IT
@@ -92,13 +92,13 @@ template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::begin_all() const
 {
-  if (begin() == end())
+  if (this->begin() == this->end())
   {
     // empty array
-    return const_full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::const_full_iterator());
+    return const_full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::const_full_iterator());
   }
   else
-    return const_full_iterator(begin(), end(), begin()->begin_all());
+    return const_full_iterator(this->begin(), this->end(), this->begin()->begin_all());
 }
 #endif
 
@@ -106,13 +106,13 @@ template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::full_iterator 
 Array<num_dimensions, elemT>::end_all()
 {
-  if (begin() == end())
+  if (this->begin() == this->end())
   {
     // empty array
-    return full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::full_iterator());
+    return full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::full_iterator());
   }
   else
-    return full_iterator(end()-1, end(), (*(end()-1)).end_all());
+    return full_iterator(this->end()-1, this->end(), (*(this->end()-1)).end_all());
 }
 
 #ifdef ARRAY_CONST_IT
@@ -120,16 +120,16 @@ template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::end_all() const
 {
-  if (begin() == end())
+  if (this->begin() == this->end())
   {
     // empty array
-    return const_full_iterator(begin(), end(), Array<num_dimensions-1, elemT>::const_full_iterator());
+    return const_full_iterator(this->begin(), this->end(), Array<num_dimensions-1, elemT>::const_full_iterator());
   }
   else
   { // TODO
-  const_iterator last = ((end()-1));
-  const_iterator really_the_end = end();
-  return const_full_iterator(end()-1, really_the_end/*end()*/, /*(*(end()-1))*/last->end_all());
+  const_iterator last = ((this->end()-1));
+  const_iterator really_the_end = this->end();
+  return const_full_iterator(this->end()-1, really_the_end/*this->end()*/, /*(*(this->end()-1))*/last->end_all());
   }
 }
 #endif
@@ -141,11 +141,11 @@ IndexRange<num_dimensions>
 Array<num_dimensions, elemT>::get_index_range() const
 {
   VectorWithOffset<IndexRange<num_dimensions-1> > 
-    range(get_min_index(), get_max_index());
+    range(this->get_min_index(), this->get_max_index());
 
   typename VectorWithOffset<IndexRange<num_dimensions-1> >::iterator range_iter =
     range.begin();
-  const_iterator array_iter = begin();
+  const_iterator array_iter = this->begin();
 
   for (;
        range_iter != range.end();
@@ -161,10 +161,10 @@ template <int num_dimensions, typename elemT>
 elemT 
 Array<num_dimensions, elemT>::sum() const 
 {
-  check_state();
+  this->check_state();
   elemT acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
-    acc += num[i].sum();
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    acc += this->num[i].sum();
   return acc; 
 }
 
@@ -172,10 +172,10 @@ template <int num_dimensions, typename elemT>
 elemT 
 Array<num_dimensions, elemT>::sum_positive() const 
 {
-  check_state();
+  this->check_state();
   elemT acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
-    acc += num[i].sum_positive();
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    acc += this->num[i].sum_positive();
   return acc; 
 }
 
@@ -183,16 +183,16 @@ template <int num_dimensions, typename elemT>
 elemT 
 Array<num_dimensions, elemT>::find_max() const
 {
-  check_state();
+  this->check_state();
   if (length > 0)
   {
-    elemT maxval= num[get_min_index()].find_max();
-    for(int i=get_min_index()+1; i<=get_max_index(); i++)
+    elemT maxval= this->num[this->get_min_index()].find_max();
+    for(int i=this->get_min_index()+1; i<=this->get_max_index(); i++)
     {
 #ifndef STIR_NO_NAMESPACES
-      maxval = std::max(num[i].find_max(), maxval);
+      maxval = std::max(this->num[i].find_max(), maxval);
 #else
-      maxval = max(num[i].find_max(), maxval);
+      maxval = max(this->num[i].find_max(), maxval);
 #endif
     }
     return maxval;
@@ -208,16 +208,16 @@ template <int num_dimensions, typename elemT>
 elemT 
 Array<num_dimensions, elemT>::find_min() const
 {
-  check_state();
+  this->check_state();
   if (length > 0)
   {
-    elemT minval= num[get_min_index()].find_min();
-    for(int i=get_min_index()+1; i<=get_max_index(); i++)
+    elemT minval= this->num[this->get_min_index()].find_min();
+    for(int i=this->get_min_index()+1; i<=this->get_max_index(); i++)
     {
 #ifndef STIR_NO_NAMESPACES
-      minval = std::min(num[i].find_min(), minval);
+      minval = std::min(this->num[i].find_min(), minval);
 #else
-      minval = min(num[i].find_min(), minval);
+      minval = min(this->num[i].find_min(), minval);
 #endif
     }
     return minval;
@@ -233,10 +233,10 @@ template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::fill(const elemT &n) 
 {
-  check_state();
-  for(int i=get_min_index(); i<=get_max_index();  i++)
-    num[i].fill(n);
-  check_state();
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index();  i++)
+    this->num[i].fill(n);
+  this->check_state();
 }
 
 template <int num_dimensions, typename elemT>
@@ -266,10 +266,10 @@ template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::read_data(istream& s, const ByteOrder byte_order)
 {
-  check_state();
-  for(int i=get_min_index(); i<=get_max_index(); i++)
-    num[i].read_data(s, byte_order);
-  check_state();
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    this->num[i].read_data(s, byte_order);
+  this->check_state();
 }
 
 /*! This member function writes binary data to the stream.
@@ -281,10 +281,10 @@ template <int num_dimensions, typename elemT>
 void 
 Array<num_dimensions, elemT>::write_data(ostream& s, const ByteOrder byte_order) const
 {
-  check_state();
-  for(int i=get_min_index(); i<=get_max_index(); i++)
-    num[i].write_data(s, byte_order);
-  check_state();
+  this->check_state();
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
+    this->num[i].write_data(s, byte_order);
+  this->check_state();
 }		
 
 template <int num_dimension, typename elemT>
@@ -323,28 +323,28 @@ template <class elemT>
 void
 Array<1, elemT>::grow(const int min_index, const int max_index) 
 {   
-  check_state();
-  const int oldstart = get_min_index();
+  this->check_state();
+  const int oldstart = this->get_min_index();
   const int oldlength = get_length();
   
   base_type::grow(min_index, max_index);
   if (oldlength == 0)
   {
-    for (int i=get_min_index(); i<=get_max_index(); i++)
-      num[i] = elemT(0);
+    for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+      this->num[i] = elemT(0);
   }
   else
   {
     {
-      for (int i=get_min_index(); i<oldstart; i++)
-	num[i] = elemT(0);
+      for (int i=this->get_min_index(); i<oldstart; i++)
+	this->num[i] = elemT(0);
     }
     {
-      for (int i=oldstart + oldlength; i<=get_max_index(); i++)
-	num[i] = elemT(0);
+      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
+	this->num[i] = elemT(0);
     }
   }
-  check_state();  
+  this->check_state();  
 }
 
 template <class elemT>
@@ -388,21 +388,21 @@ template <typename elemT>
 typename Array<1, elemT>::full_iterator 
 Array<1, elemT>::begin_all()
 {
-  return begin();
+  return this->begin();
 }
   
 template <typename elemT>
 typename Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all() const
 {
-  return begin();
+  return this->begin();
 }
 
 template <typename elemT>
 typename Array<1, elemT>::full_iterator 
 Array<1, elemT>::end_all()
 {
-  return end();
+  return this->end();
 }
 
 
@@ -410,23 +410,23 @@ template <typename elemT>
 typename Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
 {
-   return end();
+   return this->end();
 }
   
 template <typename elemT>
 IndexRange<1> 
 Array<1, elemT>::get_index_range() const
 {
-  return IndexRange<1>(get_min_index(), get_max_index());
+  return IndexRange<1>(this->get_min_index(), this->get_max_index());
 }
 
 template <class elemT>
 elemT
 Array<1, elemT>::sum() const 
 {
-  check_state();
+  this->check_state();
   elemT acc = 0;
-  for(int i=get_min_index(); i<=get_max_index(); acc+=num[i++])
+  for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
   {}
   return acc; 
 };
@@ -436,12 +436,12 @@ template <class elemT>
 elemT
 Array<1, elemT>::sum_positive() const 
 {	
-  check_state();
+  this->check_state();
   elemT acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
   {
-    if (num[i] > 0)
-      acc += num[i];
+    if (this->num[i] > 0)
+      acc += this->num[i];
   }
   return acc; 
 };
@@ -451,13 +451,13 @@ template <class elemT>
 elemT
 Array<1, elemT>::find_max() const 
 {		
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::max_element(begin(), end());	
+    return *std::max_element(this->begin(), this->end());	
 #else
-    return *max_element(begin(), end());
+    return *max_element(this->begin(), this->end());
 #endif
   }
   else 
@@ -465,7 +465,7 @@ Array<1, elemT>::find_max() const
     // TODO return elemT::minimum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };
 
 
@@ -473,13 +473,13 @@ template <class elemT>
 elemT
 Array<1, elemT>::find_min() const 
 {	
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::min_element(begin(), end());
+    return *std::min_element(this->begin(), this->end());
 #else
-    return *min_element(begin(), end());
+    return *min_element(this->begin(), this->end());
 #endif
   } 
   else 
@@ -487,7 +487,7 @@ Array<1, elemT>::find_min() const
     // TODO return elemT::maximum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };  
 
 template <typename elemT>
@@ -522,7 +522,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator+ (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return retval += iv;
 };
@@ -531,7 +531,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator- (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return retval -= iv;      
 }
@@ -539,7 +539,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator* (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return retval *= iv;      
 }
@@ -548,7 +548,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator/ (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return retval /= iv;      
 }
@@ -557,7 +557,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator+ (const elemT a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return (retval += a);
 };
@@ -566,7 +566,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator- (const elemT a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return (retval -= a);
 };
@@ -575,7 +575,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator* (const elemT a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return (retval *= a);
 };
@@ -584,7 +584,7 @@ template <class elemT>
 Array<1, elemT>
 Array<1, elemT>::operator/ (const elemT a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, elemT> retval(*this);
   return (retval /= a);
 };  
@@ -625,28 +625,28 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 void
 Array<1, float>::grow(const int min_index, const int max_index) 
 {  
-  check_state();
-  const int oldstart = get_min_index();
+  this->check_state();
+  const int oldstart = this->get_min_index();
   const int oldlength = get_length();
   
   base_type::grow(min_index, max_index);
   if (oldlength == 0)
   {
-    for (int i=get_min_index(); i<=get_max_index(); i++)
-      num[i] = float(0);
+    for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+      this->num[i] = float(0);
   }
   else
   {
     {
-      for (int i=get_min_index(); i<oldstart; i++)
-	num[i] = float(0);
+      for (int i=this->get_min_index(); i<oldstart; i++)
+	this->num[i] = float(0);
     }
     {
-      for (int i=oldstart + oldlength; i<=get_max_index(); i++)
-	num[i] = float(0);
+      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
+	this->num[i] = float(0);
     }
   }
-  check_state();  
+  this->check_state();  
 }
 
 void
@@ -682,40 +682,40 @@ Array<1, float>::~Array()
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::begin_all()
 {
-  return begin();
+  return this->begin();
 }
   
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all() const
 {
-  return begin();
+  return this->begin();
 }
 
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::end_all()
 {
-  return end();
+  return this->end();
 }
 
 
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
 {
-   return end();
+   return this->end();
 }
 
 IndexRange<1>
 Array<1, float>::get_index_range() const
 {
-  return IndexRange<1>(get_min_index(), get_max_index());
+  return IndexRange<1>(this->get_min_index(), this->get_max_index());
 }
 
 float
 Array<1, float>::sum() const 
 {
-  check_state();
+  this->check_state();
   float acc = 0;
-  for(int i=get_min_index(); i<=get_max_index(); acc+=num[i++])
+  for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
   {}
   return acc; 
 };
@@ -723,12 +723,12 @@ Array<1, float>::sum() const
 float
 Array<1, float>::sum_positive() const 
 {	
-  check_state();
+  this->check_state();
   float acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
   {
-    if (num[i] > 0)
-      acc += num[i];
+    if (this->num[i] > 0)
+      acc += this->num[i];
   }
   return acc; 
 };
@@ -737,13 +737,13 @@ Array<1, float>::sum_positive() const
 float
 Array<1, float>::find_max() const 
 {		
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::max_element(begin(), end());	
+    return *std::max_element(this->begin(), this->end());	
 #else
-    return *max_element(begin(), end());
+    return *max_element(this->begin(), this->end());
 #endif
   }
   else 
@@ -751,19 +751,19 @@ Array<1, float>::find_max() const
     // TODO return float::minimum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };
 
 float
 Array<1, float>::find_min() const 
 {	
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::min_element(begin(), end());
+    return *std::min_element(this->begin(), this->end());
 #else
-    return *min_element(begin(), end());
+    return *min_element(this->begin(), this->end());
 #endif
   } 
   else 
@@ -771,7 +771,7 @@ Array<1, float>::find_min() const
     // TODO return float::maximum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };  
 
 #ifndef STIR_USE_BOOST
@@ -789,7 +789,7 @@ Complicated...
 Array<1, float>
 Array<1, float>::operator+ (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return retval += iv;
 };
@@ -797,7 +797,7 @@ Array<1, float>::operator+ (const base_type &iv) const
 Array<1, float>
 Array<1, float>::operator- (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return retval -= iv;      
 }
@@ -805,7 +805,7 @@ Array<1, float>::operator- (const base_type &iv) const
 Array<1, float>
 Array<1, float>::operator* (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return retval *= iv;      
 }
@@ -814,7 +814,7 @@ Array<1, float>::operator* (const base_type &iv) const
 Array<1, float>
 Array<1, float>::operator/ (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return retval /= iv;      
 }
@@ -823,7 +823,7 @@ Array<1, float>::operator/ (const base_type &iv) const
 Array<1, float>
 Array<1, float>::operator+ (const float a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return (retval += a);
 };
@@ -832,7 +832,7 @@ Array<1, float>::operator+ (const float a) const
 Array<1, float>
 Array<1, float>::operator- (const float a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return (retval -= a);
 };
@@ -841,7 +841,7 @@ Array<1, float>::operator- (const float a) const
 Array<1, float>
 Array<1, float>::operator* (const float a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return (retval *= a);
 };
@@ -850,7 +850,7 @@ Array<1, float>::operator* (const float a) const
 Array<1, float>
 Array<1, float>::operator/ (const float a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, float> retval(*this);
   return (retval /= a);
 };
@@ -887,28 +887,28 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 void
 Array<1, int>::grow(const int min_index, const int max_index) 
 {   
-  check_state();
-  const int oldstart = get_min_index();
+  this->check_state();
+  const int oldstart = this->get_min_index();
   const int oldlength = get_length();
   
   base_type::grow(min_index, max_index);
   if (oldlength == 0)
   {
-    for (int i=get_min_index(); i<=get_max_index(); i++)
-      num[i] = int(0);
+    for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+      this->num[i] = int(0);
   }
   else
   {
     {
-      for (int i=get_min_index(); i<oldstart; i++)
-	num[i] = int(0);
+      for (int i=this->get_min_index(); i<oldstart; i++)
+	this->num[i] = int(0);
     }
     {
-      for (int i=oldstart + oldlength; i<=get_max_index(); i++)
-	num[i] = int(0);
+      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
+	this->num[i] = int(0);
     }
   }
-  check_state();  
+  this->check_state();  
 }
 
 void
@@ -943,40 +943,40 @@ Array<1, int>::~Array()
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::begin_all()
 {
-  return begin();
+  return this->begin();
 }
   
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all() const
 {
-  return begin();
+  return this->begin();
 }
 
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::end_all()
 {
-  return end();
+  return this->end();
 }
 
 
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
 {
-   return end();
+   return this->end();
 }
 
 IndexRange<1>
 Array<1, int>::get_index_range() const
 {
-  return IndexRange<1>(get_min_index(), get_max_index());
+  return IndexRange<1>(this->get_min_index(), this->get_max_index());
 }
 
 int
 Array<1, int>::sum() const 
 {
-  check_state();
+  this->check_state();
   int acc = 0;
-  for(int i=get_min_index(); i<=get_max_index(); acc+=num[i++])
+  for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
   {}
   return acc; 
 };
@@ -986,12 +986,12 @@ Array<1, int>::sum() const
 int
 Array<1, int>::sum_positive() const 
 {	
-  check_state();
+  this->check_state();
   int acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
   {
-    if (num[i] > 0)
-      acc += num[i];
+    if (this->num[i] > 0)
+      acc += this->num[i];
   }
   return acc; 
 };
@@ -1001,13 +1001,13 @@ Array<1, int>::sum_positive() const
 int
 Array<1, int>::find_max() const 
 {		
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::max_element(begin(), end());	
+    return *std::max_element(this->begin(), this->end());	
 #else
-    return *max_element(begin(), end());
+    return *max_element(this->begin(), this->end());
 #endif
   }
   else 
@@ -1015,20 +1015,20 @@ Array<1, int>::find_max() const
     // TODO return int::minimum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };
 
 
 int
 Array<1, int>::find_min() const 
 {	
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::min_element(begin(), end());
+    return *std::min_element(this->begin(), this->end());
 #else
-    return *min_element(begin(), end());
+    return *min_element(this->begin(), this->end());
 #endif
   } 
   else 
@@ -1036,7 +1036,7 @@ Array<1, int>::find_min() const
     // TODO return int::maximum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };  
 
 #ifndef STIR_USE_BOOST
@@ -1054,7 +1054,7 @@ Complicated...
 Array<1, int>
 Array<1, int>::operator+ (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return retval += iv;
 };
@@ -1063,7 +1063,7 @@ Array<1, int>::operator+ (const base_type &iv) const
 Array<1, int>
 Array<1, int>::operator- (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return retval -= iv;      
 }
@@ -1071,7 +1071,7 @@ Array<1, int>::operator- (const base_type &iv) const
 Array<1, int>
 Array<1, int>::operator* (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return retval *= iv;      
 }
@@ -1080,7 +1080,7 @@ Array<1, int>::operator* (const base_type &iv) const
 Array<1, int>
 Array<1, int>::operator/ (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return retval /= iv;      
 }
@@ -1089,7 +1089,7 @@ Array<1, int>::operator/ (const base_type &iv) const
 Array<1, int>
 Array<1, int>::operator+ (const int a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return (retval += a);
 };
@@ -1098,7 +1098,7 @@ Array<1, int>::operator+ (const int a) const
 Array<1, int>
 Array<1, int>::operator- (const int a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return (retval -= a);
 };
@@ -1107,7 +1107,7 @@ Array<1, int>::operator- (const int a) const
 Array<1, int>
 Array<1, int>::operator* (const int a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return (retval *= a);
 };
@@ -1116,7 +1116,7 @@ Array<1, int>::operator* (const int a) const
 Array<1, int>
 Array<1, int>::operator/ (const int a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, int> retval(*this);
   return (retval /= a);
 };  
@@ -1153,28 +1153,28 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 void
 Array<1, unsigned short>::grow(const int min_index, const int max_index) 
 {  
-  check_state();
-  const int oldstart = get_min_index();
+  this->check_state();
+  const int oldstart = this->get_min_index();
   const int oldlength = get_length();
   
   base_type::grow(min_index, max_index);
   if (oldlength == 0)
   {
-    for (int i=get_min_index(); i<=get_max_index(); i++)
-      num[i] = unsigned short(0);
+    for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+      this->num[i] = unsigned short(0);
   }
   else
   {
     {
-      for (int i=get_min_index(); i<oldstart; i++)
-	num[i] = unsigned short(0);
+      for (int i=this->get_min_index(); i<oldstart; i++)
+	this->num[i] = unsigned short(0);
     }
     {
-      for (int i=oldstart + oldlength; i<=get_max_index(); i++)
-	num[i] = unsigned short(0);
+      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
+	this->num[i] = unsigned short(0);
     }
   }
-  check_state();  
+  this->check_state();  
 }
 
 void
@@ -1210,40 +1210,40 @@ Array<1, unsigned short>::~Array()
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::begin_all()
 {
-  return begin();
+  return this->begin();
 }
   
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all() const
 {
-  return begin();
+  return this->begin();
 }
 
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::end_all()
 {
-  return end();
+  return this->end();
 }
 
 
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
 {
-   return end();
+   return this->end();
 }
 
 IndexRange<1>
 Array<1, unsigned short>::get_index_range() const
 {
-  return IndexRange<1>(get_min_index(), get_max_index());
+  return IndexRange<1>(this->get_min_index(), this->get_max_index());
 }
 
 unsigned short
 Array<1, unsigned short>::sum() const 
 {
-  check_state();
+  this->check_state();
   unsigned short acc = 0;
-  for(int i=get_min_index(); i<=get_max_index(); acc+=num[i++])
+  for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
   {}
   return acc; 
 };
@@ -1251,12 +1251,12 @@ Array<1, unsigned short>::sum() const
 unsigned short
 Array<1, unsigned short>::sum_positive() const 
 {	
-  check_state();
+  this->check_state();
   unsigned short acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
   {
-    if (num[i] > 0)
-      acc += num[i];
+    if (this->num[i] > 0)
+      acc += this->num[i];
   }
   return acc; 
 };
@@ -1265,13 +1265,13 @@ Array<1, unsigned short>::sum_positive() const
 unsigned short
 Array<1, unsigned short>::find_max() const 
 {		
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::max_element(begin(), end());	
+    return *std::max_element(this->begin(), this->end());	
 #else
-    return *max_element(begin(), end());
+    return *max_element(this->begin(), this->end());
 #endif
   }
   else 
@@ -1279,19 +1279,19 @@ Array<1, unsigned short>::find_max() const
     // TODO return unsigned short::minimum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };
 
 unsigned short
 Array<1, unsigned short>::find_min() const 
 {	
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::min_element(begin(), end());
+    return *std::min_element(this->begin(), this->end());
 #else
-    return *min_element(begin(), end());
+    return *min_element(this->begin(), this->end());
 #endif
   } 
   else 
@@ -1299,7 +1299,7 @@ Array<1, unsigned short>::find_min() const
     // TODO return unsigned short::maximum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };  
 
 #ifndef STIR_USE_BOOST
@@ -1317,7 +1317,7 @@ Complicated...
 Array<1, unsigned short>
 Array<1, unsigned short>::operator+ (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return retval += iv;
 };
@@ -1325,7 +1325,7 @@ Array<1, unsigned short>::operator+ (const base_type &iv) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator- (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return retval -= iv;      
 }
@@ -1333,7 +1333,7 @@ Array<1, unsigned short>::operator- (const base_type &iv) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator* (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return retval *= iv;      
 }
@@ -1342,7 +1342,7 @@ Array<1, unsigned short>::operator* (const base_type &iv) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator/ (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return retval /= iv;      
 }
@@ -1351,7 +1351,7 @@ Array<1, unsigned short>::operator/ (const base_type &iv) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator+ (const unsigned short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return (retval += a);
 };
@@ -1360,7 +1360,7 @@ Array<1, unsigned short>::operator+ (const unsigned short a) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator- (const unsigned short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return (retval -= a);
 };
@@ -1369,7 +1369,7 @@ Array<1, unsigned short>::operator- (const unsigned short a) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator* (const unsigned short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return (retval *= a);
 };
@@ -1378,7 +1378,7 @@ Array<1, unsigned short>::operator* (const unsigned short a) const
 Array<1, unsigned short>
 Array<1, unsigned short>::operator/ (const unsigned short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, unsigned short> retval(*this);
   return (retval /= a);
 };
@@ -1415,28 +1415,28 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
 void
 Array<1, short>::grow(const int min_index, const int max_index) 
 {  
-  check_state();
-  const int oldstart = get_min_index();
+  this->check_state();
+  const int oldstart = this->get_min_index();
   const int oldlength = get_length();
   
   base_type::grow(min_index, max_index);
   if (oldlength == 0)
   {
-    for (int i=get_min_index(); i<=get_max_index(); i++)
-      num[i] = short(0);
+    for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
+      this->num[i] = short(0);
   }
   else
   {
     {
-      for (int i=get_min_index(); i<oldstart; i++)
-	num[i] = short(0);
+      for (int i=this->get_min_index(); i<oldstart; i++)
+	this->num[i] = short(0);
     }
     {
-      for (int i=oldstart + oldlength; i<=get_max_index(); i++)
-	num[i] = short(0);
+      for (int i=oldstart + oldlength; i<=this->get_max_index(); i++)
+	this->num[i] = short(0);
     }
   }
-  check_state();  
+  this->check_state();  
 }
 
 void
@@ -1472,40 +1472,40 @@ Array<1, short>::~Array()
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::begin_all()
 {
-  return begin();
+  return this->begin();
 }
   
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::begin_all() const
 {
-  return begin();
+  return this->begin();
 }
 
 Array<1, elemT>::full_iterator 
 Array<1, elemT>::end_all()
 {
-  return end();
+  return this->end();
 }
 
 
 Array<1, elemT>::const_full_iterator 
 Array<1, elemT>::end_all() const
 {
-   return end();
+   return this->end();
 }
 
 IndexRange<1>
 Array<1, short>::get_index_range() const
 {
-  return IndexRange<1>(get_min_index(), get_max_index());
+  return IndexRange<1>(this->get_min_index(), this->get_max_index());
 }
 
 short
 Array<1, short>::sum() const 
 {
-  check_state();
+  this->check_state();
   short acc = 0;
-  for(int i=get_min_index(); i<=get_max_index(); acc+=num[i++])
+  for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
   {}
   return acc; 
 };
@@ -1513,12 +1513,12 @@ Array<1, short>::sum() const
 short
 Array<1, short>::sum_positive() const 
 {	
-  check_state();
+  this->check_state();
   short acc=0;
-  for(int i=get_min_index(); i<=get_max_index(); i++)
+  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
   {
-    if (num[i] > 0)
-      acc += num[i];
+    if (this->num[i] > 0)
+      acc += this->num[i];
   }
   return acc; 
 };
@@ -1527,13 +1527,13 @@ Array<1, short>::sum_positive() const
 short
 Array<1, short>::find_max() const 
 {		
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::max_element(begin(), end());	
+    return *std::max_element(this->begin(), this->end());	
 #else
-    return *max_element(begin(), end());
+    return *max_element(this->begin(), this->end());
 #endif
   }
   else 
@@ -1541,19 +1541,19 @@ Array<1, short>::find_max() const
     // TODO return short::minimum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };
 
 short
 Array<1, short>::find_min() const 
 {	
-  check_state();
+  this->check_state();
   if (length > 0)
   {
 #ifndef STIR_NO_NAMESPACES
-    return *std::min_element(begin(), end());
+    return *std::min_element(this->begin(), this->end());
 #else
-    return *min_element(begin(), end());
+    return *min_element(this->begin(), this->end());
 #endif
   } 
   else 
@@ -1561,7 +1561,7 @@ Array<1, short>::find_min() const
     // TODO return short::maximum or so
     return 0; 
   } 
-  check_state();
+  this->check_state();
 };  
 
 #ifndef STIR_USE_BOOST
@@ -1579,7 +1579,7 @@ Complicated...
 Array<1, short>
 Array<1, short>::operator+ (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return retval += iv;
 };
@@ -1587,7 +1587,7 @@ Array<1, short>::operator+ (const base_type &iv) const
 Array<1, short>
 Array<1, short>::operator- (const base_type &iv) const 
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return retval -= iv;      
 }
@@ -1595,7 +1595,7 @@ Array<1, short>::operator- (const base_type &iv) const
 Array<1, short>
 Array<1, short>::operator* (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return retval *= iv;      
 }
@@ -1604,7 +1604,7 @@ Array<1, short>::operator* (const base_type &iv) const
 Array<1, short>
 Array<1, short>::operator/ (const base_type &iv) const
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return retval /= iv;      
 }
@@ -1613,7 +1613,7 @@ Array<1, short>::operator/ (const base_type &iv) const
 Array<1, short>
 Array<1, short>::operator+ (const short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return (retval += a);
 };
@@ -1622,7 +1622,7 @@ Array<1, short>::operator+ (const short a) const
 Array<1, short>
 Array<1, short>::operator- (const short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return (retval -= a);
 };
@@ -1631,7 +1631,7 @@ Array<1, short>::operator- (const short a) const
 Array<1, short>
 Array<1, short>::operator* (const short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return (retval *= a);
 };
@@ -1640,7 +1640,7 @@ Array<1, short>::operator* (const short a) const
 Array<1, short>
 Array<1, short>::operator/ (const short a) const 
 {
-  check_state();
+  this->check_state();
   Array<1, short> retval(*this);
   return (retval /= a);
 };

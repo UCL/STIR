@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/ThresholdMinToSmallPositiveValueImageProcessor.h"
@@ -75,9 +75,9 @@ ThresholdMinToSmallPositiveValueImageProcessor<elemT>::
 initialise_keymap()
 {
   ImageProcessor<3, elemT>::initialise_keymap();
-  parser.add_start_key("Threshold Min To Small Positive Value Parameters");
-  parser.add_key("rim truncation (in pixels)", &rim_truncation_image);
-  parser.add_stop_key("END Threshold Min To Small Positive Value Parameters");
+  this->parser.add_start_key("Threshold Min To Small Positive Value Parameters");
+  this->parser.add_key("rim truncation (in pixels)", &rim_truncation_image);
+  this->parser.add_stop_key("END Threshold Min To Small Positive Value Parameters");
 }
 
 
@@ -97,7 +97,7 @@ ThresholdMinToSmallPositiveValueImageProcessor<float>::registered_name =
 // static ThresholdMinToSmallPositiveValueImageProcessor<float>::RegisterIt dummy;
 // have the above variable in a separate file, which you need to pass at link time
 
-template ThresholdMinToSmallPositiveValueImageProcessor<float>;
+template class ThresholdMinToSmallPositiveValueImageProcessor<float>;
 
 END_NAMESPACE_STIR
 

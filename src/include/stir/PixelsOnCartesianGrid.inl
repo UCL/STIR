@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 START_NAMESPACE_STIR
@@ -53,46 +53,46 @@ PixelsOnCartesianGrid<elemT>::PixelsOnCartesianGrid
 template<class elemT>
 int
 PixelsOnCartesianGrid<elemT>:: get_min_y() const
-    { return get_length()==0 ? 0 : get_min_index(); }
+    { return this->get_length()==0 ? 0 : this->get_min_index(); }
 
 template<class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_min_x() const
-    { return get_length()==0 ? 0 : (*this)[get_min_y()].get_min_index(); }
+    { return this->get_length()==0 ? 0 : (*this)[get_min_y()].get_min_index(); }
 
 
 template<class elemT>
 int 
 PixelsOnCartesianGrid<elemT>::get_x_size() const
-{ return  get_length()==0 ? 0 : (*this)[get_min_y()].get_length(); }
+{ return  this->get_length()==0 ? 0 : (*this)[get_min_y()].get_length(); }
 
 template<class elemT>
 int
 PixelsOnCartesianGrid<elemT>:: get_y_size() const
-{ return get_length()==0 ? 0 : get_length();}
+{ return this->get_length()==0 ? 0 : this->get_length();}
 
 template<class elemT>
 int
 PixelsOnCartesianGrid<elemT>::get_max_x() const
-{ return get_length()==0 ? 0 : (*this)[get_min_y()].get_max_index();}
+{ return this->get_length()==0 ? 0 : (*this)[get_min_y()].get_max_index();}
 
 template<class elemT>
 int
 PixelsOnCartesianGrid<elemT>:: get_max_y() const
-{ return get_length()==0 ? 0 : get_max_index();}
+{ return this->get_length()==0 ? 0 : this->get_max_index();}
 
 template<class elemT>
 CartesianCoordinate2D<float> 
 PixelsOnCartesianGrid<elemT>::get_pixel_size() const
 {
-  return CartesianCoordinate2D<float>(get_grid_spacing());
+  return CartesianCoordinate2D<float>(this->get_grid_spacing());
 }
 
 template<class elemT>
 void 
 PixelsOnCartesianGrid<elemT>::set_pixel_size(const BasicCoordinate<2,float>& s) const
 {
-  set_grid_spacing(c);
+  this->set_grid_spacing(c);
 }
 
 template<class elemT>
@@ -116,9 +116,9 @@ PixelsOnCartesianGrid<elemT>*
 PixelsOnCartesianGrid<elemT>::get_empty_pixels_on_cartesian_grid() const
 
 {
-  return new PixelsOnCartesianGrid(get_index_range(),
-		                   get_origin(), 
-		                   get_grid_spacing());
+  return new PixelsOnCartesianGrid(this->get_index_range(),
+		                   this->get_origin(), 
+		                   this->get_grid_spacing());
 }
 
 

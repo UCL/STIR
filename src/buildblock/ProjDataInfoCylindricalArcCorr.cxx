@@ -123,7 +123,7 @@ get_bin(const LOR<float>& lor) const
       return bin;
     }
 
-#if 1
+#if 0
   const int num_rings = 
     get_scanner_ptr()->get_num_rings();
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
