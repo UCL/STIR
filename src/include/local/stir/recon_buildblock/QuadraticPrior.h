@@ -78,6 +78,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
   string kappa_filename;
+  Array<2,float> precomputed_weights;
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
 };
 
