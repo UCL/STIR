@@ -42,6 +42,7 @@ public:
 
   virtual void get_motion(RigidObject3DTransformation& ro3dtrans, const double time) const =0;
 
+  //! Has to set \a time_offset and will be used to synchronise listmode time and motion tracking time
   virtual Succeeded synchronise(CListModeData&) =0;
   //!  Option to set  time offset manually in case synchronisation cannot be performed
   void
@@ -60,6 +61,8 @@ protected:
   virtual bool post_processing();
 
   double time_offset;
+  // next member is protected in case it's needed by synchronise()
+  string list_mode_filename;
 
 private:
 
@@ -70,7 +73,6 @@ private:
  
   
   string attenuation_filename; 
-  string list_mode_filename;
   double transmission_duration;
   double reference_start_time;
   double reference_end_time;
