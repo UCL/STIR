@@ -35,14 +35,13 @@ int round(const double x)
     return -static_cast<int>(-x+0.5);
 }
 
-template <class elemT>
-BasicCoordinate<3,int> 
-round(const BasicCoordinate<3,elemT> x)
+template <int num_dimensions, class elemT>
+BasicCoordinate<num_dimensions,int>
+round(const BasicCoordinate<num_dimensions,elemT> x)
 {
-	BasicCoordinate<3,int> rnd_x;
-	rnd_x[1]=round(x[1]);
-	rnd_x[2]=round(x[2]);
-	rnd_x[3]=round(x[3]);
+	BasicCoordinate<num_dimensions,int> rnd_x;
+	for(int i=1;i<=num_dimensions;++i)
+		rnd_x[i]=round(x[i]);	
 	return rnd_x;  
 }
 

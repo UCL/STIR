@@ -10,6 +10,7 @@
   \brief Declaration of the round functions
     
   \author Kris Thielemans
+  \author Charalampos Tsoumpas
       
   $Date$
   $Revision$
@@ -19,6 +20,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
+#include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
 
@@ -44,9 +46,15 @@ inline int round(const float x);
    \see round(const float)
 */
 inline int round(const double x);
-template <class elemT> 
-inline BasicCoordinate<3,int> 
-round(const BasicCoordinate<3,elemT> x);
+
+//! Implements rounding of a BasicCoordinate object
+/*!
+   \ingroup buildblock
+   \see round(const float)
+*/
+template <int num_dimensions, class elemT>
+inline BasicCoordinate<num_dimensions,int>
+round(const BasicCoordinate<num_dimensions,elemT> x);
 
 END_NAMESPACE_STIR
 
