@@ -52,15 +52,19 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
     mptr->mhptr->file_type == Short3dSinogram || mptr->mhptr->file_type == Float3dSinogram))
     error("SinglesRatesFromECAT7: filename %s should be an ECAT7 emission file\n",
        ECAT7_filename.c_str());
-  scanner_ptr = find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
+  scanner_sptr = find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
+
+#if 0
   // TODO expand Scanner class such that these info can be obtaied from there
   EcatModel *ScannerModelInfo =  ecat_model(mptr->mhptr->system_type);
-
   transBlocksPerBucket=ScannerModelInfo->transBlocksPerBucket;
   angularCrystalsPerBlock=ScannerModelInfo->angularCrystalsPerBlock;
   axialCrystalsPerBlock =ScannerModelInfo->axialCrystalsPerBlock ;
-
- 
+#else
+  trans_blocks_per_bucket =scanner_sptr->get_trans_blocks_per_bucket();
+  angular_crystals_per_block =scanner_sptr->get_angular_crystals_per_block();
+  axial_crystals_per_block =scanner_sptr->get_axial_crystals_per_block();
+#endif
   Main_header* main_header = 
     reinterpret_cast<Main_header*>( mptr->mhptr ) ;
 
@@ -76,7 +80,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
       reinterpret_cast<Scan3D_subheader *>(matrix->shptr);
     
     float const* singles_ptr = reinterpret_cast<float const *>(scan_subheader_ptr->uncor_singles);//matrix->data_ptr);
-    for(Array<3,float>::full_iterator iter = singles.begin_all(); iter != singles.end_all();)
+    for(Array<2,float>::full_iterator iter = singles[mat_frame-1].begin_all(); iter != singles[mat_frame-1].end_all();)
     {
       *iter++ = *singles_ptr++;
     }
@@ -84,71 +88,16 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
   return singles; 
   
 }
-Array<3,float> 
-SinglesRatesFromECAT7::read_singles_from_sgl_file (const string& singles_filename, 
-						   TimeFrameDefinitions& time_def)
-{
-
-  ifstream singles_file(singles_filename.c_str(), ios::binary);
-  if (!singles_file)
-  {
-    warning("\nCouldn't open %s.\n", singles_filename.c_str());
-  }
-  
-  sgl_str singles_str;
-  vector<sgl_str> vector_of_records;
-  int num_frames = time_def.get_num_frames();
-
-  singles = Array<3,float>(IndexRange3D(0,num_frames-1,0,2,0,35)); 
- 
-  // skip the first 512 bytes which are part of ECAT7 header
-  singles_file.seekg(512,ios::beg);
-  
-  while (!singles_file.eof())
-  {
-    singles_file.read((char*)&singles_str,sizeof(singles_str));     
-    vector_of_records.push_back(singles_str);
-  }
-
-  std::vector<sgl_str>::const_iterator singles_iter= vector_of_records.begin();
-  
-  Array<3,float>::full_iterator iter_array = singles.begin_all();
-  for ( int frame = 1; frame <= num_frames; frame++)
-  {
-    double start_frame = time_def.get_start_time(frame);
-    double end_frame =time_def.get_end_time(frame);
-    int number_of_samples =0;
-    long int sum_singles [126];
-
-    while (!((*singles_iter).time !=end_frame))
-    {
-      for(int i =1; i <=126; i++)
-	sum_singles[i] +=(*singles_iter).sgl[i];
-      number_of_samples++;
-      singles_iter++;  
-    }
-
-    for(int i =1; i <=126; i++)
-	sum_singles[i] /=number_of_samples;
-    
-    for( int i=1; i<=126;i++)
-    {
-      *iter_array++ = sum_singles[i];
-    }
-  }
-  return singles;
-}
- 
 
 float 
 SinglesRatesFromECAT7:: get_singles_rate(const DetectionPosition<>& det_pos,
-					 const float start_time,
-					 const float end_time) const
+					 const double start_time,
+					 const double end_time) const
 { 
-  const int denom = transBlocksPerBucket*angularCrystalsPerBlock;
+  const int denom = trans_blocks_per_bucket*angular_crystals_per_block;
   const int axial_pos = det_pos.axial_coord();
   const int transaxial_pos = det_pos.tangential_coord();
-  const int axial_bucket_num = axial_pos/(2*axialCrystalsPerBlock);
+  const int axial_bucket_num = axial_pos/(2*axial_crystals_per_block);//axialCrystalsPerBlock);
   const int transaxial_bucket_num = (transaxial_pos/denom) ;
 
   return singles[0][axial_bucket_num][transaxial_bucket_num]/4.0;  // divide by 4.0 to be consistant with CTIs
@@ -184,11 +133,4 @@ END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
-#if 0
-  //first find out the size of the file
-  streampos current  = singles_file.tellg(); 
-  singles_file.seekg(0, ios::end);
-  streampos end_stream_position = singles_file.tellg();
-  singles_file.seekg(0, ios::beg);
-#endif
 
