@@ -52,7 +52,6 @@ USE_SegmentByView
 
 
 #include "stir/utilities.h"
-#include "stir/interfile.h"
 #ifdef HIDACREBINNER
 #include "local/stir/QHidac/lm_qhidac.h"
 #include "stir/ProjDataInfoCylindrical.h"
