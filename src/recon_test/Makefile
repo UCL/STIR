@@ -1,34 +1,46 @@
 #
-# @(#)Makefile	1.1: 98/05/22
+# $Id$: $Date$
 #
 
 WORKSPACE = ${HOME}/PPhead
 INCLUDE_DIR = ${WORKSPACE}/include
 
+#These libraries will be used as dependencies
+LIB_RECON_BUILDINGBLOCK= \
+   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
+LIB_BUILDINGBLOCK= \
+   ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
+LIB_DISPLAY= \
+   ${WORKSPACE}/display/${DEST}libdisplay.a
+
+
 
 DEBUG= -D_DEBUG
+DEST=debug/
 CXX= g++ 
-SYS = 
+
 
 #KT 22/05/98 use INCLUDE_DIR and DEBUG and more warnings
 CFLAGS= -g $(DEBUG) -Decho -I$(INCLUDE_DIR) -Wconversion -Wstrict-prototypes 
 #LDFLAGS= -Iinclude 
 
-#KT 22/05/98 use 'old style' default rule
 .SUFFIXES: .cc .o .cxx .a
 
-.cxx.o:
+${DEST}%.o : %.cxx
+#.cxx.o:
 	$(CXX) $(CFLAGS) -o $@ -c $< 
 
-.cxx:
-	$(CXX) $(CFLAGS) -o $@ $< ${LIBS}
+
+${DEST}% : ${DEST}%.o ${LIB_RECON_BUILDINGBLOCK} ${LIB_BUILDINGBLOCK} ${LIB_DISPLAY}
+#.o:
+	$(CXX) $(CFLAGS) -o $@ $< \
+	    ${LIB_RECON_BUILDINGBLOCK} ${LIB_BUILDINGBLOCK} \
+	    ${LIB_DISPLAY} ${LIBS}
 
 
 RM = /bin/rm -f 
-#KT 22/05/98 use WORKSPACE and add recon_buildblock
-LIBS1 = -L$(WORKSPACE)/display/$(SYS) -L$(WORKSPACE)/buildblock/$(SYS) \
- -L$(WORKSPACE)/recon_buildblock/$(SYS) \
-  -lm  -ldisplay -lbuildblock -lrecon_buildblock 
+
+LIBS1 = -lm
 
 #KT 22/05/98 use GNU make specific syntax to differentiate between systems (sorry)
 ifdef CYGROOT
@@ -39,31 +51,30 @@ LIBS = $(LIBS1)  -lX11 -lcurses
 endif
 #LIBS_SOL = -L/usr/openwin/lib -L../../../LIBECAT/SOL2  -lm -lecat -lnsl -lsocket
 
-#ADd this library in order to update automatically when zoomtest is compiled
-LIB_RECON_BUILDINGBLOCK= ${WORKSPACE}/recon_buildblock/librecon_buildblock.a
-
-
 .KEEP_STATE:
 
-.PRECIOUS = $(LIB_DISPLAY) $(LIB_BUILDBLOCK) $(LIB_RECON_BUILDINGBLOCK)
+#TODO .o files get deleted anyway
+.PRECIOUS = ${DEST}bcktest.o ${DEST}fwdtest.o ${DEST}zoomtest.o \
+    $(LIB_DISPLAY) $(LIB_BUILDBLOCK) $(LIB_RECON_BUILDINGBLOCK)
 
 
-all: bcktest fwdtest zoomtest
+all: ${DEST}bcktest ${DEST}fwdtest ${DEST}zoomtest
 
 
-zoomtest:  zoomtest.o $(LIB_RECON_BUILDINGBLOCK)
-	$(CXX) $(CFLAGS) -o $@ $< ${LIBS}
+#zoomtest:  zoomtest.o $(LIB_RECON_BUILDINGBLOCK)
+#	$(CXX) $(CFLAGS) -o $@ $< ${LIBS}
 
 
 
+#TODO doesn't seem to work when the libraries do not exist yet
 $(LIB_RECON_BUILDINGBLOCK): FORCE
-	cd $(WORKSPACE)/recon_buildblock; $(MAKE); \cp *[oa] $(SYS)
+	cd $(WORKSPACE)/recon_buildblock; $(MAKE);
 
 $(LIB_DISPLAY): FORCE
-	cd $(WORKSPACE)/display; $(MAKE); \cp *[oa] $(SYS)
+	cd $(WORKSPACE)/display; $(MAKE);
 
 $(LIB_BUILDBLOCK): FORCE
-	cd $(WORKSPACE)/buildblock; $(MAKE); \cp *[oa] $(SYS)
+	cd $(WORKSPACE)/buildblock; $(MAKE); 
 
 FORCE:
 
