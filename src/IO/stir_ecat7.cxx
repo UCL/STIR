@@ -973,8 +973,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 {
   shared_ptr<Scanner> scanner_ptr;
   find_scanner(scanner_ptr, *(mptr->mhptr)); 
-  if (scanner_ptr->get_type() == Scanner::Unknown_scanner ||
-      scanner_ptr->get_type() == Scanner::User_defined_scanner)
+  if (scanner_ptr->get_type() == Scanner::Unknown_scanner)
   {
     warning("ECAT7 IO: Couldn't determine the scanner \n"
       "(Main_header.system_type=%d), defaulting to 962.\n"
@@ -982,6 +981,17 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 	    mptr->mhptr->system_type); 
     scanner_ptr = new Scanner(Scanner::E962);
   }
+#ifdef B_JOINT_STIRGATE
+  // zlong, 08-04-2004, add support for Unknown_scanner
+  // we have no idea about the geometry, so, ask user.
+  if(scanner_ptr->get_type() == Scanner::Unknown_scanner)
+  {
+    warning("Joint Gate Stir project warning:\n");
+    warning("I have no idea about your scanner, please give me the scanner info.\n");
+    scanner_ptr = Scanner::ask_parameters();
+  }
+#endif
+
  
   if(sub_header_ptr->num_dimensions != 4)
     warning("Expected subheader.num_dimensions==4. Continuing...\n");
@@ -1025,14 +1035,13 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   ByteOrder byte_order;
   find_type_from_ECAT_data_type(data_type, byte_order, sub_header_ptr->data_type);
 
-  if (bin_size != scanner_ptr->get_default_bin_size())
+  if (fabs(bin_size - scanner_ptr->get_default_bin_size())>.01)
   {
-    warning("Bin size from header (%g) does not agree with expected value %g\nfor scanner %s. Using expected value...\n",
+    warning("Bin size from header (%g) does not agree with expected value %g\nfor scanner %s. Using bin size from header...\n",
 	    bin_size, 
 	    scanner_ptr->get_default_bin_size(), 
 	    scanner_ptr->get_name().c_str());
-    // TODO
-    //scanner_ptr->set_bin_size(bin_size);
+    scanner_ptr->set_default_bin_size(bin_size);
   }
   // TODO more checks on FOV etc.
 
