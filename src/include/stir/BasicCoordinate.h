@@ -148,11 +148,21 @@ norm (const BasicCoordinate<num_dimensions, coordT>& p1);
 
 //! compute angle between 2 directions
 /*! \ingroup Coordinate
+	Implemented in terms of acos(cos_angle(p1,p2)).
     \todo move to a new CartesianCoordinate class */
 template <int num_dimensions, typename coordT>
 inline double 
 angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
        const BasicCoordinate<num_dimensions, coordT>& p2);
+
+//! compute cos of the angle between 2 directions
+/*! \ingroup Coordinate
+    \todo move to a new CartesianCoordinate class      
+*/
+template <int num_dimensions, typename coordT>
+inline double 
+cos_angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
+          const BasicCoordinate<num_dimensions, coordT>& p2);
 
 #if !defined( __GNUC__) || !(__GNUC__ == 2 && __GNUC_MINOR__ < 9)
   // gcc 2.8.1 bug:
