@@ -55,8 +55,8 @@ reconstruct()
   Succeeded success = reconstruct(target_image_ptr);
   if (success == Succeeded::yes)
   {
-    write_basic_interfile(get_parameters().output_filename_prefix, *target_image_ptr);
-    
+    get_parameters().output_file_format_ptr->
+      write_to_file(get_parameters().output_filename_prefix, *target_image_ptr);
   }
   return success;
 }
