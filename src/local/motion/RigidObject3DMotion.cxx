@@ -88,6 +88,19 @@ bool
 RigidObject3DMotion::
 post_processing()
 {
+  if (list_mode_filename.size()!=0)
+    {
+      shared_ptr<CListModeData> lm_data_ptr =
+	CListModeData::read_from_file(list_mode_filename);
+
+      synchronise(*lm_data_ptr);
+    }
+
+  if (!is_synchronised())
+    {
+      warning("RigidObject3DMotion object not synchronised.");
+      return false;
+    }
   /* complicated way of setting reference motion:
      First try attenuation file. If that fails, try values from 
      reference_start_time_in_secs_since_1970/reference_end_time_in_secs_since_1970 keywords. As a last resort,
@@ -131,19 +144,6 @@ post_processing()
       transformation_to_reference_position =av_motion.inverse();
     }
 
-  if (list_mode_filename.size()!=0)
-    {
-      shared_ptr<CListModeData> lm_data_ptr =
-	CListModeData::read_from_file(list_mode_filename);
-
-      synchronise(*lm_data_ptr);
-    }
-
-  if (!is_synchronised())
-    {
-      warning("RigidObject3DMotion object not synchronised.");
-      return false;
-    }
   return false;
 }
 
