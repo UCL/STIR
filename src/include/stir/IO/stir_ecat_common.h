@@ -55,7 +55,12 @@ short find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order);
 
 
 //! Find the value used in the ECAT Main header for a given scanner 
+/*! Returns 0 if the scanner is not recognised */
 short find_ECAT_system_type(const Scanner& scanner);
+
+//! Find the scanner corresponding to the system type in the main header
+/*! Returns a Scanner(Scanner::Unknown_Scanner) object when the scanner is not recognised. */
+Scanner* find_scanner_from_ECAT_system_type(const short system_type);
 
 END_NAMESPACE_STIR
 #endif
