@@ -320,7 +320,8 @@ FanProjData(const int num_rings, const int num_detectors, const int max_delta, c
     for (int a = 0; a < num_detectors; ++a)
     {
       fan_indices[ra][a].grow(min_rb, max_rb);
-      for (int rb = min_rb; rb <= max_rb; ++rb)
+      // store only 1 half of data as ra,a,rb,b = rb,b,ra,a
+      for (int rb = max(ra,min_rb); rb <= max_rb; ++rb)
       fan_indices[ra][a][rb] = 
         IndexRange<1>(a+num_detectors/2-half_fan_size,
                       a+num_detectors/2+half_fan_size);
@@ -341,12 +342,18 @@ FanProjData::operator=(const FanProjData& other)
 
 float & FanProjData::operator()(const int ra, const int a, const int rb, const int b)
 {
-  return (*this)[ra][a][rb][b<get_min_b(a) ? b+num_detectors: b];
+  return 
+    ra<rb 
+    ? (*this)[ra][a%num_detectors][rb][b<get_min_b(a) ? b+num_detectors: b]
+    : (*this)[rb][b%num_detectors][ra][a<get_min_b(b%num_detectors) ? a+num_detectors: a];
 }
 
 float FanProjData::operator()(const int ra, const int a, const int rb, const int b) const
 {
-  return (*this)[ra][a][rb][b<get_min_b(a) ? b+num_detectors: b];
+  return 
+    ra<rb 
+    ? (*this)[ra][a%num_detectors][rb][b<get_min_b(a) ? b+num_detectors: b]
+    : (*this)[rb][b%num_detectors][ra][a<get_min_b(b%num_detectors) ? a+num_detectors: a];
 }
 
 bool 
@@ -418,12 +425,22 @@ int FanProjData::get_max_b(const int a) const
 
 float FanProjData::sum() const
 {
-  return base_type::sum();
+  //return base_type::sum();
+  float sum = 0;
+  for (int ra=get_min_index(); ra <= get_max_index(); ++ra)
+    for (int a = get_min_a(); a <= get_max_a(); ++a)      
+      sum += this->sum(ra,a);
+  return sum;
 }
 
 float FanProjData::sum(const int ra, const int a) const
 {
-  return (*this)[ra][a].sum();
+  //return (*this)[ra][a].sum();
+  float sum = 0;
+  for (int rb=get_min_rb(ra); rb <= get_max_rb(ra); ++rb)
+    for (int b = get_min_b(a); b <= get_max_b(a); ++b)      
+      sum += (*this)(ra,a,rb,b%num_detectors);
+  return sum;
 }
 
 float FanProjData::find_max() const
@@ -608,7 +625,8 @@ void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& effic
   const int num_detectors = fan_data.get_num_detectors();
   for (int ra = fan_data.get_min_index(); ra <= fan_data.get_max_index(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
-      for (int rb = fan_data.get_min_rb(ra); rb <= fan_data.get_max_rb(ra); ++rb)
+      // loop rb from ra to avoid double counting
+      for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
         for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
         {
 	  if (fan_data(ra,a,rb,b) == 0)
