@@ -2,9 +2,8 @@
 // $Id$
 //
 /*!
-
   \file
-  \ingroup buildblock  
+  \ingroup listmode
   \brief Implementation of class CListModeDataFromStream
     
   \author Kris Thielemans
@@ -19,11 +18,10 @@
 
 
 #include "local/stir/listmode/CListModeDataFromStream.h"
-#include "local/stir/listmode/lm.h"
+#include "local/stir/listmode/CListRecord.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
-#include "stir/ByteOrderDefine.h"
 #include "stir/is_null_ptr.h"
 #include <fstream>
 
@@ -36,24 +34,41 @@ using std::streampos;
 START_NAMESPACE_STIR
 CListModeDataFromStream::
 CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
-                        const shared_ptr<Scanner>& scanner_ptr_v)
-  : stream_ptr(stream_ptr)
+                        const shared_ptr<Scanner>& scanner_ptr_v,
+			const bool has_delayeds, 
+			const size_t size_of_record, 
+			const shared_ptr<CListRecord>& empty_record_sptr,
+			const ByteOrder list_mode_file_format_byte_order)
+  : stream_ptr(stream_ptr),
+    value_of_has_delayeds(value_of_has_delayeds),
+    size_of_record(size_of_record),
+    empty_record_sptr(empty_record_sptr),
+    list_mode_file_format_byte_order(list_mode_file_format_byte_order)
 {
+  scanner_ptr =scanner_ptr_v;
   if (is_null_ptr(stream_ptr))
     return;
   starting_stream_position = stream_ptr->tellg();
   if (!stream_ptr->good())
     error("CListModeDataFromStream: error in tellg()\n");
 
-  scanner_ptr = scanner_ptr_v;
+  num_chars_left_in_buffer = 0;
 }
 
 CListModeDataFromStream::
 CListModeDataFromStream(const string& listmode_filename,
                         const shared_ptr<Scanner>& scanner_ptr_v,
+			const bool has_delayeds, 
+			const size_t size_of_record, 
+			const shared_ptr<CListRecord>& empty_record_sptr,
+			const ByteOrder list_mode_file_format_byte_order,
 			const streampos start_of_data)
   : listmode_filename(listmode_filename),
-  starting_stream_position(start_of_data)  
+    starting_stream_position(start_of_data),
+    value_of_has_delayeds(value_of_has_delayeds),
+    size_of_record(size_of_record),
+    empty_record_sptr(empty_record_sptr),
+    list_mode_file_format_byte_order(list_mode_file_format_byte_order)
 {
   fstream* s_ptr = new fstream;
   open_read_binary(*s_ptr, listmode_filename.c_str());
@@ -63,52 +78,41 @@ CListModeDataFromStream(const string& listmode_filename,
 	  listmode_filename.c_str());
 
   scanner_ptr = scanner_ptr_v;
+  num_chars_left_in_buffer = 0;
 }
 
 Succeeded
 CListModeDataFromStream::
-get_next_record(CListRecord& event) const
+get_next_record(CListRecord& record) const
 {
+
+  const bool do_byte_swap =
+    size_of_record>1 &&
+    list_mode_file_format_byte_order != ByteOrder::get_native_order();
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
 
-#ifdef STIRNativeByteOrderIsBigEndian
-  assert(ByteOrder::get_native_order() == ByteOrder::big_endian);
-#else
-  assert(ByteOrder::get_native_order() == ByteOrder::little_endian);
-#endif
-
-  // not sure what sizeof does with references. so check.
-  assert(sizeof(event) == sizeof(CListRecord));
-#if 1
-  // simple implementation that reads the events one by one from the stream
+#if 0
+  // simple implementation that reads the records one by one from the stream
   // rely on file caching by the C++ library or the OS
 
-  /* On Windows XP with CYGWIN and gcc 3.2, rebinning a test file with this method
-     gives the following times:
-     real    0m17.952s
-     user    0m7.811s
-     sys     0m0.770s
-     In contrast, the next ('cached by hand') version takes
-     real    0m50.915s
-     user    0m23.243s
-     sys     0m11.165s
-     This means, that the simplest version is by far faster (even though
-     it requires almost continuous disk access). This is a due to the tellg() call apparently. See next version.
-  */
-
-  // next line will not work if CListRecord is a base-class (replace sizeof())
-  stream_ptr->read(reinterpret_cast<char *>(&event), sizeof(event));
+  stream_ptr->read(record.get_data_ptr(), size_of_record);
   // now byte-swap it if necessary
-  // at the moment rely on STIRListModeFileFormatIsBigEndian preprocessor define
-  // ugly! 
-  // If this would be replaced by some conditional byte-swapping based on
-  // a list_mode_file_format_byte_order member, this implementation would
-  // be completely generic and could be used for arbitrary CListRecord 
-#if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
-    || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
-  ByteOrder::swap_order(event);
-#endif
+  if (do_byte_swap)
+  {
+    //  ByteOrder::swap_order(record);
+   switch (size_of_record)
+     {
+     case 2: revert_region<2>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+     case 4: revert_region<4>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+     case 6: revert_region<6>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+     case 8: revert_region<8>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+     case 10: revert_region<10>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+     default: error("CListModeDataFromStream needs an extra line for this size (%d) of record at line %d\n",
+		    size_of_record, __LINE__);
+     }
+  }
+
   
   if (stream_ptr->good())
     return Succeeded::yes;
@@ -120,49 +124,54 @@ get_next_record(CListRecord& event) const
   return Succeeded::no;
   
 #else
-  // cache the events in a 8 MB buffer
+  // cache the records in a 8 MB buffer
 
-  // TODO this will skip last event in file
-  // TODO this will currently break save_get_position() as the position in 
-  // the buffer will not be taken into account
-  const unsigned int buf_size = 8683520/sizeof(event);
-    // next line will not work if CListRecord is a base-class
-  static CListRecord buffer[buf_size];
-  static unsigned int current_pos = buf_size;
-  static streamsize num_records_in_buffer = 0;
-  static streampos stream_position  = 0;
+  // TODO this might skip last record in file
+  const unsigned int buf_size = 8683520/size_of_record;
+  static char buffer[8683520];
+  static char *current_position_in_buffer = 0;
 
   // first check if we need to refill the buffer
-  if (current_pos == buf_size || stream_position != stream_ptr->tellg())// check if user reset the stream position, if so, reinitialise buffer
+  if (num_chars_left_in_buffer == 0)
   {
     //cerr << "Reading from listmode file \n";
     // read some more data
-    stream_ptr->read(reinterpret_cast<char *>(buffer), sizeof(event)*buf_size);
-    current_pos=0;
+    stream_ptr->read(buffer, buf_size);
+    current_position_in_buffer = buffer;
+    num_chars_left_in_buffer = static_cast<unsigned int>(stream_ptr->gcount());
     if (stream_ptr->eof())
     {
-      num_records_in_buffer = stream_ptr->gcount();
     }
     else
     {
       if (!stream_ptr->good())
       { error("Error after reading from stream in CListModeDataFromStream::get_next_record\n"); }
-      num_records_in_buffer = buf_size;
-      assert(buf_size*sizeof(event)==stream_ptr->gcount());
+      assert(buf_size==num_chars_left_in_buffer);
     }
-    stream_position = stream_ptr->tellg();
-    
   }
 
-  // now get event from buffer
-  if (current_pos != static_cast<unsigned int>(num_records_in_buffer))
+  // now get record from buffer
+  if (num_chars_left_in_buffer!=0)
   {
     // next line will not work if CListRecord is a base-class
-    event = buffer[current_pos++];
-#if (defined(STIRNativeByteOrderIsBigEndian) && !defined(STIRListModeFileFormatIsBigEndian)) \
-    || (defined(STIRNativeByteOrderIsLittleEndian) && defined(STIRListModeFileFormatIsBigEndian)) 
-    ByteOrder::swap_order(event);
-#endif
+    //record = buffer[buffer_position++];
+    memcpy(record.get_data_ptr(), current_position_in_buffer, size_of_record);
+    current_position_in_buffer += size_of_record;
+    num_chars_left_in_buffer-= size_of_record;
+    if (do_byte_swap)
+      {
+	switch (size_of_record)
+	  {
+	  case 2: revert_region<2>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+	  case 4: revert_region<4>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+	  case 6: revert_region<6>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+	  case 8: revert_region<8>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+	  case 10: revert_region<10>::revert(reinterpret_cast<unsigned char*>(record.get_data_ptr())); break;
+	  default: error("CListModeDataFromStream needs an extra line for this size (%d) of record at line %d\n",
+			 size_of_record, __LINE__);
+	  }
+      }
+
     return Succeeded::yes;
   }
   else
@@ -180,7 +189,7 @@ CListModeDataFromStream::
 reset()
 {
   if (is_null_ptr(stream_ptr))
-    return Succeeded::yes;
+    return Succeeded::no;
 
   // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
   if (stream_ptr->eof()) 
@@ -199,7 +208,9 @@ save_get_position()
 {
   assert(!is_null_ptr(stream_ptr));
   // TODO should somehow check if tellg() worked and return an error if it didn't
-  saved_get_positions.push_back(stream_ptr->tellg());
+  streampos pos = stream_ptr->tellg();
+  pos -= num_chars_left_in_buffer;
+  saved_get_positions.push_back(pos);
   return saved_get_positions.size()-1;
 } 
 
@@ -212,6 +223,7 @@ set_get_position(const CListModeDataFromStream::SavedPosition& pos)
 
   assert(pos < saved_get_positions.size());
   stream_ptr->seekg(saved_get_positions[pos]);
+  num_chars_left_in_buffer = 0;
   if (!stream_ptr->good())
     return Succeeded::no;
   else
@@ -237,7 +249,7 @@ unsigned long
 CListModeDataFromStream::
 get_num_records() const
 { 
-  // Determine maximum number of events from file size 
+  // Determine maximum number of records from file size 
   input.seekg(0, ios::end);
   const streampos end_stream_position = input.tellg();
   
