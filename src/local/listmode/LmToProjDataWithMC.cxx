@@ -1,7 +1,7 @@
 
 #include "local/stir/listmode/LmToProjDataWithMC.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "local/stir/listmode/lm.h"
+#include "local/stir/listmode/CListRecordECAT966.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Succeeded.h"
 #include <time.h>
@@ -18,7 +18,6 @@ LmToProjDataWithMC::set_defaults()
   LmToProjData::set_defaults();
  //mt_file_ptr = 0;
   norm_filename = "";
-  mt_filename ="";
   attenuation_filename ="";
   ro3d_ptr = 0;
   transmission_duration = 300; // default value 5 min.
@@ -30,7 +29,6 @@ LmToProjDataWithMC::initialise_keymap()
 {
   LmToProjData::initialise_keymap();
   parser.add_start_key("LmToProjDataWithMC Parametres");
-  parser.add_key("mt_filename", &mt_filename);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_key("attenuation_filename", &attenuation_filename);
   parser.add_key("transmission_duration", &transmission_duration);
@@ -88,8 +86,9 @@ post_processing()
     ro3d_move_to_reference_position =av_motion.inverse();
   }
 
+  // TODO move to RigidObject3DMotion
   if (polaris_time_offset==-1234567.F)
-  ro3d_ptr->synchronise(*lm_data_ptr);
+    ro3d_ptr->synchronise(*lm_data_ptr);
   else
   {
     cerr << " Polaris time offset is: " << polaris_time_offset << endl;
@@ -132,12 +131,19 @@ find_ref_pos_from_att_file (float& att_start_time, float& att_end_time,
 }
  
 void 
-LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
-					const double time,
-					const ProjDataInfoCylindrical& proj_data_info) const
+LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_general_type,
+					const double time) const
 {
+  const CListRecordECAT966& record = 
+    static_cast<CListRecordECAT966 const&>(event_of_general_type);// TODO get rid of this
+  const CListEventDataECAT966& event = 
+    static_cast<CListRecordECAT966 const&>(event_of_general_type).event_data;// TODO get rid of this
+
+  //  const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
+  //  static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
   //first do the normalisation
-  record.event.get_bin(bin, dynamic_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr)); 
+  //event.get_bin(bin, static_cast<const ProjDataInfoCylindrical&>(*proj_data_info_cyl_uncompressed_ptr));
+  record.get_uncompressed_bin(bin);
   const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin);
    
   //Do the motion correction
@@ -147,20 +153,19 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
   int det_num_b;
   int ring_a;
   int ring_b;
-  record.event.get_detectors(det_num_a,det_num_b,ring_a,ring_b);
+  event.get_detectors(det_num_a,det_num_b,ring_a,ring_b);
 
   // find corresponding cartesian coordinates
   CartesianCoordinate3D<float> coord_1;
   CartesianCoordinate3D<float> coord_2;
-  const Scanner * const scanner_ptr = 
-    template_proj_data_info_ptr->get_scanner_ptr();
+  //  const Scanner * const scanner_ptr = 
+  //  template_proj_data_info_ptr->get_scanner_ptr();
 
   find_cartesian_coordinates_given_scanner_coordinates(coord_1,coord_2,
     ring_a,ring_b,det_num_a,det_num_b,*scanner_ptr);
   
   // now do the movement
   
-  //Polaris_MT_File::Record mt_record;
   RigidObject3DTransformation ro3dtrans;
 
   ro3d_ptr->get_motion(ro3dtrans,time);
@@ -189,25 +194,12 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
 							   coord_1_transformed,
 							   coord_2_transformed, 
 							   *scanner_ptr) ==
-      Succeeded::no)
-    bin.set_bin_value(-1);
-
-#if 1  
-  if ( ring_a_trans > scanner_ptr->get_num_rings() 
-	|| ring_a_trans <0 || ring_b_trans <0 || 
-	ring_b_trans > scanner_ptr->get_num_rings() ||
-        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info).
-        get_bin_for_det_pair(bin,
-			 det_num_a_trans, ring_a_trans,
-			 det_num_b_trans, ring_b_trans) == Succeeded::no)
+      Succeeded::no ||
+      static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr).
+       get_bin_for_det_pair(bin,
+			    det_num_a_trans, ring_a_trans,
+			    det_num_b_trans, ring_b_trans) == Succeeded::no)
   {
-    // set to some hopefully sensible value, such that
-    // counts are reported ok by LmToProjData::compute
-    bin.segment_num() = 
-	(ring_b_trans-ring_a_trans)/
-	  (proj_data_info.get_max_ring_difference(0) -
-	  proj_data_info.get_min_ring_difference(0) + 1);
-
     bin.set_bin_value(-1);
   }
   else
@@ -216,34 +208,6 @@ LmToProjDataWithMC::get_bin_from_record(Bin& bin, const CListRecord& record,
     bin.set_bin_value(1/bin_efficiency);
   }
 
-#else
-  int view_t,elem_t; 
-  transform_detector_pair_into_view_bin(view_t,elem_t,det_num_a_trans,det_num_b_trans, 
-    *scanner_ptr);
-  if ( ring_a_trans < scanner_ptr->get_num_rings() 
-	&& ring_a_trans >=0 && ring_b_trans >=0 && 
-	ring_b_trans < scanner_ptr->get_num_rings())
-  {
-    //cerr << "here" <<endl;
-    CListRecord new_record;
-    new_record.event.set_sinogram_and_ring_coordinates(view_t,elem_t,ring_a_trans,ring_b_trans);
-    new_record.event.get_bin(bin, proj_data_info); 
-    if (bin.get_bin_value()>0)
-	bin.set_bin_value(1/bin_efficiency);
-
-  }
-  else
-  {
-    // set to some hopefully sensible value, such that
-    // counts are reported ok by LmToProjData::compute
-    bin.segment_num() = 
-	(ring_b_trans-ring_a_trans)/
-	  (proj_data_info.get_max_ring_difference(0) -
-	  proj_data_info.get_min_ring_difference(0) + 1);
-
-    bin.set_bin_value(-1);
-  }
-#endif  
   
 }
 
@@ -290,7 +254,11 @@ LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& de
   det2 = (int)(round(((2.*_PI)+atan2(coord_2_in.y(),coord_2_in.x()))/(2.*_PI/num_detectors)))% num_detectors;
   ring1 = round(coord_1_in.z()/ring_spacing);
   ring2 = round(coord_2_in.z()/ring_spacing);
-  return Succeeded::yes;
+  if (ring1 >= scanner.get_num_rings() || ring1 <0 || 
+      ring2 <0 ||  ring2 >= scanner.get_num_rings())
+    return Succeeded::no;
+  else
+    return Succeeded::yes;
 }
 #endif
 
@@ -331,8 +299,8 @@ LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& de
   assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
   assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
 
-  det1 = stir::round(((2.*_PI)+atan2(coord_det1.y(),coord_det1.x()))/(2.*_PI/num_detectors))% num_detectors;
-  det2 = stir::round(((2.*_PI)+atan2(coord_det2.y(),coord_det2.x()))/(2.*_PI/num_detectors))% num_detectors;
+  det1 = round(((2.*_PI)+atan2(coord_det1.y(),coord_det1.x()))/(2.*_PI/num_detectors))% num_detectors;
+  det2 = round(((2.*_PI)+atan2(coord_det2.y(),coord_det2.x()))/(2.*_PI/num_detectors))% num_detectors;
   ring1 = round(coord_det1.z()/ring_spacing);
   ring2 = round(coord_det2.z()/ring_spacing);
 
@@ -348,7 +316,11 @@ LmToProjDataWithMC::find_scanner_coordinates_given_cartesian_coordinates(int& de
     assert(norm(coord_det2-check2)<ring_spacing);
   }
 #endif
-  return Succeeded::yes;
+  if (ring1 >= scanner.get_num_rings() || ring1 <0 || 
+      ring2 <0 ||  ring2 >= scanner.get_num_rings())
+    return Succeeded::no;
+  else
+    return Succeeded::yes;
 }
 #endif
 
