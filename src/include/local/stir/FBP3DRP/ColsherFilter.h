@@ -82,7 +82,7 @@ public:
 
 /* Utility functions (shouldn't really be declared here) TODO */
 
-
+#if 0
 /*!
   \brief This method filters Segment<float> data.
 
@@ -115,7 +115,12 @@ void Filter_proj_Colsher(Viewgram<float> & view_i,
                          float gamma, float theta_max, float d_a, float d_b,
                          float alpha_axial, float fc_axial, float alpha_planar, float fc_planar,
                          int PadS, int PadZ, int rmin, int rmax);
+#endif
 
+void Filter_proj_Colsher(Viewgram<float> & view_i,
+			 Viewgram<float> & view_i1,
+                         ColsherFilter& CFilter, 
+                         int PadS, int PadZ);
 END_NAMESPACE_STIR
 
 #endif //  __ColsherFilter_H__

@@ -84,6 +84,8 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
           alpha_planar(alpha_colsher_planar_v), fc_planar(fc_colsher_planar_v)
 {
  
+  if (height==0 || width==0)
+    return;
 
     int             k, j;
     float           fa, fb, omega, psi;
@@ -96,6 +98,7 @@ ColsherFilter::ColsherFilter(int height_v, int width_v, float gamma_v, float the
  
     int ii = 1;//float fmax = 0.F;
 	
+    // TODO suspicious (?) that loop does something for height==0
     for (j = 0; j <= 0.5 * height; j++) {
         fb = (float) j / height;
         nu_b = fb / d_b;
@@ -346,9 +349,30 @@ void Filter_proj_Colsher(Viewgram<float> & view_i,
                          float alpha_colsher_planar, float fc_colsher_planar,
                          int PadS, int PadZ, int rmin, int rmax)
 {
+  int nrings = rmax - rmin + 1; 
+  int nprojs = view_i.get_num_tangential_poss();
   
+  int width = (int) pow(2, ((int) ceil(log((PadS + 1) * nprojs) / log(2))));
+  int height = (int) pow(2, ((int) ceil(log((PadZ + 1) * nrings) / log(2))));	
+  
+
+  ColsherFilter Cfilter(height, width, theta, theta0, d_a, d_b,
+      alpha_colsher_axial, fc_colsher_axial,
+      alpha_colsher_planar, fc_colsher_planar);
+ 
+  Filter_proj_Colsher(view_i, view_i1, Cfilter, PadS, PadZ);
+
+}
+
+void Filter_proj_Colsher(Viewgram<float> & view_i,
+			 Viewgram<float> & view_i1,
+                         ColsherFilter& CFilter, 
+                         int PadS, int PadZ)
+{  
   // start_timers();
   
+  const int rmin = view_i.get_min_axial_pos_num();
+  const int rmax = view_i.get_max_axial_pos_num();
   int nrings = rmax - rmin + 1; 
   int nprojs = view_i.get_num_tangential_poss();
   
@@ -371,10 +395,7 @@ void Filter_proj_Colsher(Viewgram<float> & view_i,
   }
   {
     
-    ColsherFilter Cfilter(height, width, theta, theta0, d_a, d_b,
-      alpha_colsher_axial, fc_colsher_axial,
-      alpha_colsher_planar, fc_colsher_planar);
-    Cfilter.apply(data);
+    CFilter.apply(data);
   }
   
   
