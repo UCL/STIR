@@ -24,7 +24,7 @@ EXTRA_OPT=-D ENABLE_DENSEL
 ifeq ($(SYSTEM),LINUX)
 # our Linux system has Pentium III processors
 EXTRA_OPT+=-g -Wall -march=i686
-ifeq (,$findstring beo, $(host-name)))
+ifeq (,$(findstring beo, $(host-name)))
 LLN_INCLUDE_DIR=/pp2-data/kris/lln/ecat
 endif
 else
