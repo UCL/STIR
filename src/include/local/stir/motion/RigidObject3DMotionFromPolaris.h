@@ -46,18 +46,18 @@ public:
   virtual void get_motion(RigidObject3DTransformation& ro3dtrans, const float time) const;
 
   //! Synchronise motion tracking file and listmode file
-  virtual Succeeded synchronise(const CListModeData& listmode_data);
+  virtual Succeeded synchronise(CListModeData& listmode_data);
   
 //private: 
   //! Find and store gating values in a vector from lm_file  
   void find_and_store_gate_tag_values_from_lm(vector<float>& lm_time, 
 					      vector<unsigned>& lm_random_number,
-					      const CListModeData& listmode_data);
+					      CListModeData& listmode_data);
 
   //! Find and store random numbers from mt_file
   void find_and_store_random_numbers_from_mt_file(vector<unsigned>& mt_random_numbers);
 
-  void find_offset(const CListModeData& listmode_data);
+  void find_offset(CListModeData& listmode_data);
 
   //! The option to set polaris time manualy in case syncronisation cannot be performed
   Succeeded set_polaris_time_offset(float time_offset);
