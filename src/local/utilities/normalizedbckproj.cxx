@@ -179,6 +179,7 @@ main(int argc, char *argv[])
       fill = ask("Do you want to backproject all 1s (Y) or the data (N) ?", true);
       break;
     }
+    /*
   case 2:
     {
       cerr << endl;
@@ -191,10 +192,11 @@ main(int argc, char *argv[])
       fill = true;
       break;
     }
+    */
   default:
     {
-      cerr <<"Usage: " << argv[0] << "[proj_data_file] outputfile name\n";
-      exit(EXIT_FAILURE);
+      cerr <<"Usage: " << argv[0] << "proj_data_file outputfile_name\n";
+      return (EXIT_FAILURE);
     }
 
   }   
