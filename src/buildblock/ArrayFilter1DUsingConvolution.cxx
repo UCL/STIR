@@ -72,13 +72,13 @@ template <typename elemT>
 Succeeded 
 ArrayFilter1DUsingConvolution<elemT>:: 
 get_influenced_indices(IndexRange<1>& influenced_index_range, 
-                       const IndexRange<1>& output_index_range) const
+                       const IndexRange<1>& input_index_range) const
 {
   influenced_index_range = 
     (filter_coefficients.get_length() == 0)
-    ? output_index_range
-    : IndexRange<1>(output_index_range.get_min_index() + filter_coefficients.get_min_index(),
-                    output_index_range.get_max_index() + filter_coefficients.get_max_index());
+    ? input_index_range
+    : IndexRange<1>(input_index_range.get_min_index() + filter_coefficients.get_min_index(),
+                    input_index_range.get_max_index() + filter_coefficients.get_max_index());
   return Succeeded::yes;
 }
 
