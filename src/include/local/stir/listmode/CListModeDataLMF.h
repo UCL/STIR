@@ -12,7 +12,10 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+
+    This software is distributed under the terms 
+    of the GNU Lesser General  Public Licence (LGPL)
     See STIR/LICENSE.txt for details
 */
 
@@ -21,9 +24,9 @@
 
 #include "stir/listmode/CListModeData.h"
 #include "stir/shared_ptr.h"
-#include "lmf.h" // TODO adjust location
-//#include "local/stir/ClearPET/LMF_ClearPET.h" // TODO don't know which is needed
-//#include "local/stir/ClearPET/LMF_Interfile.h" 
+#include "LMF/lmf.h" // TODO adjust location
+//#include "LMF/LMF_ClearPET.h" // TODO don't know which is needed
+//#include "LMF/LMF_Interfile.h" 
 
 #include <stdio.h>
 #include <string>
