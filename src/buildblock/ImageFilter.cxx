@@ -1,5 +1,5 @@
 //
-// $Id$: $Date$
+// $Id$
 //
 /*!
   \file
@@ -567,17 +567,8 @@ void separable_cartesian_3Dfilter(int kerlx,int kerlz, VoxelsOnCartesianGrid<flo
     convolution_1D(outrow,resz,kerlz,onerow,kernelZ);
     reput_row(input_image,axdir,i,outrow); 
  
-
   }      
-
-  // TODO do this only conditionally
-    truncate_min_to_small_positive_value(input_image);
-    cerr<<endl; //MJ 06/03/2000 added 
-
-  /* direction 0 : Z direction */
-  /* direction 1 : Y direction */
-  /* direction 2 : X direction */
-
+ 
 }                 
 
 
@@ -627,7 +618,6 @@ void ImageFilter::build(const DiscretisedDensity<3,float>& representative_densit
    kernels_built=true; //kernels successfully built
 
 
-
 }
 
 ImageFilter::ImageFilter(){
@@ -644,7 +634,7 @@ ImageFilter::~ImageFilter()
 
 
 
-void ImageFilter::apply(DiscretisedDensity<3,float>& input_image){
+void ImageFilter::apply(DiscretisedDensity<3,float>& input_image, bool applying_threshold){
 
   //MJ 03/05/2000
   if(kerlx==0 || kerlz==0) {error("Filter operation attempted with an unconstructed ImageFilter object \n");}
@@ -653,6 +643,15 @@ void ImageFilter::apply(DiscretisedDensity<3,float>& input_image){
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(input_image);
   separable_cartesian_3Dfilter(kerlx,kerlz,input_image_vox,kernelX,kernelZ,onerow,outrow);
 
+  
+  //MJ 10/7/2000 threshold conditionally  
+  if(applying_threshold)
+    {
+    truncate_min_to_small_positive_value(input_image);
+    cerr<<endl; //MJ 06/03/2000 added 
+    }
+
+    
 
 }
 

@@ -43,9 +43,6 @@ IterativeReconstruction::IterativeReconstruction()
 }
 
 
-//MJ possibly we'll have to insert another level into
-//the hierarchy between IterativeReconstruction and LogLikelihoodBasedReconstruction
-// and move the code below there.
 
 Succeeded 
 IterativeReconstruction::
@@ -123,7 +120,7 @@ void IterativeReconstruction::end_of_iteration_processing(DiscretisedDensity<3,f
   if(get_parameters().inter_iteration_filter_interval>0 && subiteration_num%get_parameters().inter_iteration_filter_interval==0)
     {
       cerr<<endl<<"Applying inter-iteration filter"<<endl;
-      get_parameters().inter_iteration_filter.apply(current_image_estimate);
+      get_parameters().inter_iteration_filter.apply(current_image_estimate,true);
     }
 
 
@@ -170,7 +167,6 @@ VectorWithOffset<int> IterativeReconstruction::randomly_permute_subset_order()
 
 
 END_NAMESPACE_TOMO
-
 
 
 
