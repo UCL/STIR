@@ -465,6 +465,45 @@ ArrayTests::run_tests()
     check_if_equal(test3quat  , test3ter, 
 		  "test in_place_apply_function and operator+=(NUMBER)");
 #endif
+    // size_all with irregular range
+    {
+      const IndexRange<3> range(Coordinate3D<int>(-1,1,4),Coordinate3D<int>(1,2,6));
+      Array<3,float> test(range);
+      check(test.is_regular(), "test is_regular() with regular");
+      check_if_equal(test.size(), size_t(3), "test size() with non-zero offset");
+      check_if_equal(test.size_all(), size_t(3*2*3), "test size_all() with non-zero offset");  
+      test[0][1].resize(-1,2);
+      check(!test.is_regular(), "test is_regular() with irregular");
+      check_if_equal(test.size(), size_t(3), "test size() with irregular range");
+      check_if_equal(test.size_all(), size_t(3*2*3+4-3), "test size_all() with irregular range");
+    }
+    // full iterator
+    {
+      IndexRange<3> range(Coordinate3D<int>(0,0,1),Coordinate3D<int>(2,2,3));
+      Array<3,float> test(range);
+      {
+	float value = 1.2F;
+	for (Array<3,float>::full_iterator iter = test.begin_all();
+	     iter != test.end_all(); 
+	     )
+	  *iter++ = value++;
+      }
+      {
+	float value = 1.2F;
+	Array<3,float>::const_full_iterator iter = test.begin_all_const();
+	for (int i=test.get_min_index(); i<= test.get_max_index(); ++i)
+	  for (int j=test[i].get_min_index(); j<= test[i].get_max_index(); ++j)
+	    for (int k=test[i][j].get_min_index(); k<= test[i][j].get_max_index(); ++k)
+	    {
+	      check(iter != test.end_all_const(), "test on 3D full iterator");
+	      check_if_equal(*iter++, test[i][j][k], "test on 3D full iterator vs. index");
+	      check_if_equal(test[i][j][k], value++, "test on 3D full iterator value");
+	    }
+      }
+
+      const Array<3,float> empty;
+      check(empty.begin_all() == empty.end_all(), "test on 3D full iterator for empty range");
+    }
   }
 
 
