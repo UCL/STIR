@@ -1,6 +1,6 @@
 # AIX Makefile for PPhead/utilities directory
 #
-# $Id$ 
+# @(#)Makefile	1.9 11/13/98 
 #
 
 WORKSPACE = ${HOME}/PPhead
@@ -38,7 +38,7 @@ ifdef CYGROOT
 #Cygwin32 doesn't have curses
 LIBS = $(LIBS1) -L/usr/X11R6.3/lib -lX11 
 else
-LIBS = $(LIBS1)  -lX11 -lcurses
+LIBS = $(LIBS1) -L/usr/X11/lib -lX11 -lcurses
 endif
 #LIBS_SOL = -L/usr/openwin/lib -L../../../LIBECAT/SOL2  -lm -lecat -lnsl -lsocket
 
@@ -69,9 +69,8 @@ $(DEST)conv2cti:  $(OBJS_CTI)
 
 #CL 09/03/98 NEW SECTION for conversion of an ECAT6 file to ECAT6 file organized by segment (0, +1, -1, +2, -2,...)
 
-# KT 27/11/98 added buildblock for PETScannerInfo.o
-$(DEST)ecat6bysegm:  ecat6bysegm.cxx $(DEST)libcti.a  ${LIB_BUILDINGBLOCK}
-	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST) -lcti -lm  ${LIB_BUILDINGBLOCK}
+$(DEST)ecat6bysegm:  ecat6bysegm.cxx $(DEST)libcti.a 
+	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST) -lcti -lm 
 
 $(DEST)ecat6bysegmspan: ecat6bysegmspan.cxx $(DEST)libcti.a 
 	$(CXX) $(CFLAGS)  -o $@ ecat6bysegmspan.cxx -L$(DEST)  -lcti -lm 
