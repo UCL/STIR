@@ -212,7 +212,7 @@ template <int num_dimensions, typename T>
 */
 template <int num_dimensions, typename T>
 Array<num_dimensions,T >
-  inverse_fourier_for_real_data_corrupting_input(Array<num_dimensions,std::complex<T> >& c, const int sign);
+  inverse_fourier_for_real_data_corrupting_input(Array<num_dimensions,std::complex<T> >& c, const int sign=1);
 
 /*! \ingroup DFT
   \brief Adds negative frequencies to the last dimension of a complex array by complex conjugation.
