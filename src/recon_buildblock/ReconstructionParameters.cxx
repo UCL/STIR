@@ -14,8 +14,8 @@
   \author Sanida Mustafovic
   \author PARAPET project
       
-  \date $Date$       
-  \version $Revision$
+  $Date$       
+  $Revision$
 */
 
 #include "recon_buildblock/ReconstructionParameters.h" 
@@ -45,8 +45,11 @@ ReconstructionParameters::set_defaults()
   zoom=1.F;
   Xoffset=0.F;
   Yoffset=0.F;
+  // KT 20/06/2001 new
+  Zoffset=0.F;
   max_segment_num_to_process=-1;
-  num_views_to_add=1;  
+  // KT 20/06/2001 disabled
+  //num_views_to_add=1;  
   proj_data_ptr=NULL; //MJ added
 }
 
@@ -63,9 +66,11 @@ ReconstructionParameters::initialise_keymap()
   parser.add_key("output image size",&output_image_size);
   parser.add_key("Xoffset (in mm)", &Xoffset);
   parser.add_key("Yoffset (in mm)", &Yoffset);
+  // KT 20/06/2001 new
+  parser.add_key("Zoffset (in mm)", &Zoffset);
  
-  // KT 180899 new
-  parser.add_key("mash x views", &num_views_to_add);
+  // KT 20/06/2001 disabled
+  //parser.add_key("mash x views", &num_views_to_add);
 
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
  
@@ -127,13 +132,14 @@ bool ReconstructionParameters::post_processing()
   if (zoom < 0)
   { warning("zoom should be positive\n"); return true; }
   // TODO initialise output_image_size from num_bins here or so
-  if (output_image_size!=-1 && output_image_size%2==0)
-  { warning("output image size needs to be odd\n"); return true; }
+  if (output_image_size!=-1 && output_image_size<1)
+  { warning("output image size must be positive (or -1 as default)\n"); return true; }
 
-  // KT 160899 new
+  // KT 20/06/2001 disabled
+#if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
   { warning("The 'mash x views' key has an invalid value (must be 1 or even number)\n"); return true; }
-
+#endif
  
   proj_data_ptr= ProjData::read_from_file(input_filename);
   
