@@ -4,10 +4,10 @@
 
 dir:=utilities
 
-$(dir)_SOURCES = manip_image.cxx \
+$(dir)_SOURCES:=manip_image.cxx \
 	manip_projdata.cxx \
 	display_projdata.cxx \
-        convecat6_if.cxx \
+	convecat6_if.cxx \
 	do_linear_regression.cxx \
 	postfilter.cxx \
 	compare_projdata.cxx \
