@@ -123,6 +123,8 @@ void scatter_viewgram(
 			shift_detector_coordinates_to_origin(proj_data_info.get_m(Bin(0,0,0,0)),
 				                                 0,
 												 0);
+	float total_scatter = 0 ;
+
 	for (bin.segment_num()=proj_data_info.get_min_segment_num();
 	bin.segment_num()<=proj_data_info.get_max_segment_num();
 	++bin.segment_num())
@@ -146,9 +148,11 @@ void scatter_viewgram(
 					proj_data_info.find_cartesian_coordinates_of_detection(
 						detector_coord_A,detector_coord_B,bin);
 					const unsigned det_num_A =
-					  find_in_detection_points_vector(detector_coord_A + shift_detector_coordinates_to_origin);
+					  find_in_detection_points_vector(detector_coord_A + 
+													  shift_detector_coordinates_to_origin);
 					const unsigned det_num_B =
-					  find_in_detection_points_vector(detector_coord_B + shift_detector_coordinates_to_origin);
+					  find_in_detection_points_vector(detector_coord_B + 
+					                                  shift_detector_coordinates_to_origin);
 					bin.set_bin_value(
 						scatter_estimate_for_all_scatter_points(
 						image_as_activity,
@@ -161,6 +165,7 @@ void scatter_viewgram(
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
 						bin.get_bin_value();
+					total_scatter += bin.get_bin_value() ;
 					
 					++bin_counter;
 				}			    	
@@ -180,7 +185,7 @@ void scatter_viewgram(
 				/////////////////// end SCATTER ESTIMATION TIME /////////////////
 		}
 		bin_timer.stop();		
-		writing_time(bin_timer.value(), scatt_points_vector.size(),	scatter_level);
+		writing_time(bin_timer.value(), scatt_points_vector.size(),	scatter_level, total_scatter);
 
 		if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
 		  warning("Expected num detectors: %d, but found %d\n",
