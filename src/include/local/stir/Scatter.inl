@@ -92,7 +92,7 @@ float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point
 }
 
 inline
-float total_cross_section(float energy)
+float total_cross_section(const float energy)
 {
   const float a= energy/511.0;
   const float l= log(1.0+2.0*a);
@@ -101,6 +101,13 @@ float total_cross_section(float energy)
   return( 0.75*sigma0  * ( (1.0+a)/(a*a)*( 2.0*(1.0+a)/(1.0+2.0*a)- l/a ) + l/(2.0*a) - (1.0+3.0*a)/(1.0+2.0*a)/(1.0+2.0*a) ) );
 }
 
+inline
+float total_cross_section_relative_to_511keV(const float energy)
+{
+  const float a= energy/511.0;
+  return //check this in Mathematica
+	  9*((2/(a*a) + 8/a + 9 + a)/(1/a + 4 + 4*a)+(-2/(a*a) - 2/a + 1)*log(1 + 2*a))/a/(40-27*log(3));
+}
 /*!	\ingroup scatter
    \brief detection efficiency for a given energy window
    
@@ -143,7 +150,7 @@ float detection_efficiency_BGO( const float low, const float high,
 						        const float energy)
 {
 	return
-		detection_efficiency(low, high, energy, 511, .25);
+		detection_efficiency(low, high, energy, 511, .25); //SET resolution to 0.22
 }
 
 END_NAMESPACE_STIR
