@@ -1,30 +1,29 @@
+/*!
+ \file 
+  
+ \brief very basic display routines
+  
+ \author Kris Thielemans (with help from Claire Labbe)
+ \author PARAPET project
+ 
+ \date    $Date$
+  
+ \version $Revision$
+
+ Implementations common to all SC_x types
+  
+ \see screen.h
+
+ \internal
+ 
+*/
 #include "gen.h"
 #include <string.h>
 #define SCreen_compiling
 #include "screen.h"
 
-void put_text (x,y,nm)
-int  x,y;
-int  nm;
-{
-  int  xx,yy;
-  char str[11];
 
-  SC_MASK(SC_M_ANNOTATE);
-  SC_COLOR(SC_C_ANNOTATE);
-  SC_TJUST(2,1);
-  xx = x;
-  yy = y - 15;
-  SC_MOVE(xx,yy);
-  sprintf(str,"IMAGE %d",nm);
-  SC_TEXT(str);
-  SC_TJUST(1,1);
-  SC_MASK(SC_M_ALL);
-}
-
-void put_textstr (x,y,str)
-int  x,y;
-char str[];
+void put_textstr (int  x, int y, const char str[])
 {
   int  xx,yy;
 
@@ -39,189 +38,11 @@ char str[];
   SC_MASK(SC_M_ALL);
 }
 
-#ifdef ANSI
-void annotation(short x,short y,short rctx,short rcty,short scale,short color)
-#else
-void annotation(x,y,rctx,rcty,scale,color)
-short int x,y,scale,rctx,rcty,color;
-#endif
-{
- char str[5],delstr[7];
 
- memset(delstr,0xdb,sizeof(delstr)-1);
- delstr[sizeof(delstr)-1] = '\0';
-
- if ((rctx >=100) && (rcty>=30))
- {
- SC_MOVE(x+5*scale,y+18);
- SC_COLOR(SC_C_BACKGROUND);
- SC_TEXT(delstr);
- SC_COLOR(color);
- sprintf(str,"x:%d",x);
- SC_TEXT(str);
- SC_MOVE(x+5*scale,y+6);
- SC_COLOR(SC_C_BACKGROUND);
- SC_TEXT(delstr);
- SC_COLOR(color);
- sprintf(str,"y:%d",y);
- SC_TEXT(str);
- }
- if ((rctx >=55) && (rcty>=20))
- {
- SC_MOVE(x+5*scale,y+rcty-12);
- SC_COLOR(SC_C_BACKGROUND);
- SC_TEXT(delstr);
- SC_COLOR(color);
- sprintf(str,"s:x%d",scale);
- SC_TEXT(str);
- }
- SC_MOVE(x,y);
-}
-
-
-#ifdef ANSI
-char input(short *plx,short *prx,short *ply,short *pry,
-           short *x,short *y,short rx,short ry,short step,short *scale)
-#else
-char input(plx,prx,ply,pry,x,y,rx,ry,step,scale)
-short int *plx,*prx,*ply,*pry,*x,*y,rx,ry,step,*scale;
-#endif
-{
- short int rectx,recty,sx,sy,max,startx,starty;
- short int old_scale;
- char c,ch,ch1;
-
-startx=sx= *x;
-starty=sy= *y;
-rectx=rx * *scale;
-recty=ry * *scale;
-while ((startx+rectx-1 > *prx) || (starty+recty-1 > *pry))
-{
- *scale -=1;
- rectx=rx * *scale;recty=ry * *scale;
-}
-SC_MASK(SC_M_ANNOTATE);
-SC_COLOR(SC_C_ANNOTATE);
-SC_MOVE(sx,sy);
-SC_RECT(startx+rectx-1,starty+recty-1);
-annotation(sx,sy,rectx,recty,*scale,SC_C_ANNOTATE);
-SC_FLUSH();
-while ((ch=c=(char)getch()) != 0x0d)
-{
- if ((ch=='s')|| (ch=='S'))
- {
-      max = 1;
-      while( (startx+rx*(max+1)-1 < *prx) && (starty+ry*(max+1)-1 < *pry))
-        max++;
-      printf("\n\t *************************************************");
-      old_scale= *scale;
-      *scale=asknr("Give a new scale factor",1,max,1);
-      SC_MOVE(startx,starty);
-      SC_COLOR(SC_C_BACKGROUND);
-      SC_RECT(startx+rectx-1,starty+recty-1);
-      annotation(startx,starty,rectx,recty,old_scale,SC_C_BACKGROUND);
-      SC_MASK(SC_M_ALL);
-      SC_FLUSH();
-      *x=sx;
-      *y=sy;
-      return c;
- }
- else
- {
-  if ((ch =='d') || (ch=='D'))
-  {
-       annotation(startx,starty,rectx,recty,*scale,SC_C_BACKGROUND);
-       SC_FLUSH();
-       printf("\n\t ********************************************************");
-       printf("\n\t * Use cursor keys to change the size of the rectangle! *");
-       printf("\n\t * Type Return to end this session !                    *");
-       printf("\n\t ********************************************************");
-       rx=rectx/ *scale;ry=recty/ *scale;
-       while ((ch1=(char)getch()) !=0x0d)
-       {
-       SC_COLOR(SC_C_BACKGROUND);
-       SC_RECT(sx+(rx* *scale)-1,sy+(ry* *scale)-1);
-       if (KB_DIRECTION(ch1))
-       {
-         switch (ch1)
-         {
-          case KB_UPARROW : ry+=step;
-           if (ry>*pry) ry= *pry; break;
-          case KB_DNARROW : ry-=step;
-           if (ry<*ply) ry= *ply; break;
-          case KB_RTARROW : rx+=step;
-           if (rx>*prx) rx= *prx; break;
-          case KB_LTARROW : rx-=step;
-           if (rx<*plx) rx= *plx; break;
-         }
-        SC_COLOR(SC_C_ANNOTATE);
-        SC_RECT(sx+(rx* *scale)-1,sy+(ry* *scale)-1);
-        SC_FLUSH();
-       }
-       }
-       SC_MASK(SC_M_ALL);
-       SC_CLEAR_BLOCK(SC_C_BACKGROUND,sx,sx+(rx* *scale)-1,sy,sy+(ry* *scale)-1);
-       SC_MASK(SC_M_ANNOTATE);
-       SC_COLOR(SC_C_ANNOTATE);
-       SC_MOVE(startx,starty);
-       SC_RECT(startx+rectx-1,starty+recty-1);
-       annotation(startx,starty,rectx,recty,*scale,SC_C_ANNOTATE);
-       SC_FLUSH();
-       rx=recty/ *scale;ry=recty/ *scale;
- }
- else
-   {
-    if (KB_DIRECTION(ch))
-    {  SC_MOVE(sx,sy);
-       SC_COLOR(SC_C_BACKGROUND);
-       SC_RECT(sx+rectx-1,sy+recty-1);
-       switch (ch)
-       {
-       case KB_UPARROW : sy+=step;
-         if ((sy+recty)>*pry) sy= *pry-recty; break;
-       case KB_DNARROW : sy-=step;
-         if ((sy)<*ply) sy= *ply; break;
-       case KB_RTARROW : sx+=step;
-         if ((sx+rectx)>*prx) sx= *prx-rectx; break;
-       case KB_LTARROW : sx-=step;
-         if ((sx)<*plx) sx= *plx; break;
-       }
-       SC_MOVE(sx,sy);
-       SC_COLOR(SC_C_ANNOTATE);
-       SC_RECT(sx+rectx-1,sy+recty-1);
-       startx=sx;
-       starty=sy;
-       annotation(sx,sy,rectx,recty,*scale,SC_C_ANNOTATE);
-       SC_FLUSH();
-    }
-   }
- }
-}
-
-annotation(sx,sy,rectx,recty,*scale,SC_C_BACKGROUND);
-SC_COLOR(SC_C_BACKGROUND);
-SC_RECT(sx+rectx-1,sy+recty-1);
-SC_MASK(SC_M_ALL);
-SC_FLUSH();
-*x=sx;
-*y=sy;
-return c;
-}
-
-void input_message()
-{
-  printf("\n\n\t***************************************************");
-  printf("\n\t*                 KEYPAD:                         *");
-  printf("\n\t*                 -------                         *");
-  printf("\n\t* Use the cursor keys to move the cursor          *");
-  printf("\n\t* S:change scale factor  D:delete array on screen *");
-  printf("\n\t* CR: end the cursor movement                     *");
-  printf("\n\t***************************************************");
-}
-
-int center_sc_images(Pscale,min_x,max_x,min_y,max_y, SIZE_X,SIZE_Y,sc_image,nr_sc)
-int     *Pscale, max_x,max_y,min_x,min_y, SIZE_X,SIZE_Y,nr_sc;
-screen_image_t sc_image[];
+int center_sc_images(int *Pscale,
+			   int min_x,int max_x,int min_y,int max_y,
+                           int  SIZE_X,int SIZE_Y,
+                           screen_image_t sc_image[], int nr_sc)
 { int   inc_x,inc_y,start_x,start_y;
   int   nr_x,nr_y,LENGTH_X,LENGTH_Y;
   int   nr,i,j,x,y,scale;
@@ -237,7 +58,6 @@ screen_image_t sc_image[];
   }
 
   /* Now we find the maximum scale of the images */
-  /* KT&CL 3/12/97 start from 1 now */
   scale = 1;
   do
   {
@@ -293,17 +113,14 @@ screen_image_t sc_image[];
   return(nr_sc);
 }
 
-void draw_sc_images(size_x,size_y,sc_image,no)
-int size_x,size_y,no;
-screen_image_t sc_image[];
+void draw_sc_images(int size_x, int size_y,
+                           screen_image_t sc_image[], int no)
 { int i;
 
   for (i=0; i<no; i++)
-  { SC_PutImg(sc_image[i].image,sc_image[i].sx,sc_image[i].sy,size_x,size_y);
-
-      /*put_textstr(sc_image[i].sx+size_x/2,sc_image[i].sy,sc_image[i].text);*/
-/* CL 280498 Put text more left (by dividing by 4 instead of 2 */
-  put_textstr(sc_image[i].sx,sc_image[i].sy+15,sc_image[i].text); 
+  {
+    SC_PutImg(sc_image[i].image,sc_image[i].sx,sc_image[i].sy,size_x,size_y);
+    put_textstr(sc_image[i].sx,sc_image[i].sy+15,sc_image[i].text); 
                                                                                                            
     
   }
