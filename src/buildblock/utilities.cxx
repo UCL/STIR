@@ -156,6 +156,14 @@ find_pos_of_filename(const string& filename_with_directory)
     return 0;
 }
 
+
+string
+get_filename(const string& filename_with_directory)
+{
+  return 
+    filename_with_directory.substr(find_pos_of_filename(filename_with_directory));
+}
+
 char *
 get_directory_name(char *directory_name, 
 		   const char * const filename_with_directory)
