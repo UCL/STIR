@@ -30,6 +30,9 @@
 */
 
 #include "stir/convert_array.h"
+#include "stir/NumericType.h"
+#include "stir/NumericInfo.h"
+#include "stir/Array.h"
 
 START_NAMESPACE_STIR
 
