@@ -19,7 +19,16 @@
 */
 
 /*
- Modification history:
+ Modification history: (anti-chronological order)
+ KT 05/10/2003
+ - decrease dependency on symmetries by using syymetries_ptr->is_basic().
+   Before this, we relied explicitly on the range 
+   0<=segment_num, 0<=view_num<=num_views()/4
+   This range was fine when using the interpolating backprojector 
+   and x and y voxel size are equal.
+ - moved some 2D-reconstruction stuff to FBP2DReconstruction class.
+ - merged Parameter class into Reconstruction class
+
  KT&SM 05/05/2000
  - corrected bug in z_position while determining rmin,rmax
    (previous result was wrong for span>1)
@@ -80,7 +89,6 @@
 
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/SegmentBySinogram.h"
 #include "stir/Sinogram.h"
 //#include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
@@ -95,8 +103,6 @@
 #include "local/stir/FBP2D/FBP2DReconstruction.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/utilities.h"
-#include "stir/SSRB.h"
-#include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 //#include "stir/mash_views.h"
@@ -460,33 +466,6 @@ occupy only half of the FOV. Otherwise aliasing will occur!\n");
 void FBP3DRPReconstruction::do_2D_reconstruction()
 { // SSRB+2D FBP with ramp filter
 
-  shared_ptr<ProjData> proj_data_to_FBP_ptr = 0;
-
-   int num_segments_to_combine_to_use = num_segments_to_combine;
-    if (num_segments_to_combine==-1)
-    {
-      if (proj_data_info_cyl.get_min_ring_difference(0) != 
-          proj_data_info_cyl.get_max_ring_difference(0))
-        num_segments_to_combine_to_use = 1;
-      else
-        num_segments_to_combine_to_use = 3;
-    }
-
-    if (num_segments_to_combine_to_use>1)
-    {
-      full_log << "\n---------------------------------------------------------\n";
-      full_log << "SSRB combining " << num_segments_to_combine_to_use 
-               << " segments in input file to a new segment 0\n" << endl; 
-  
-      proj_data_to_FBP_ptr = 
-        new ProjDataInMemory (SSRB(proj_data_info_cyl, num_segments_to_combine_to_use,(num_segments_to_combine_to_use-1)/2 ));
-      SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);      
-    }
-    else
-    {
-      proj_data_to_FBP_ptr = proj_data_ptr;
-    }
-
   full_log << "\n---------------------------------------------------------\n";
   full_log << "2D FBP OF  DIRECT SINOGRAMS (=> IMAGE_ESTIMATE)\n" << endl; 
   
@@ -495,17 +474,12 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
   image_estimate_density_ptr =
     new VoxelsOnCartesianGrid<float>(proj_data_info_cyl);      
   
-  {
-    // set ramp filter with appropriate sizes
-    const int fft_size = (int) pow(2.,(int) ceil(log((double)(PadS + 1)* proj_data_ptr->get_num_tangential_poss()) / log(2.)));
-    
-    RampFilter ramp_filter(proj_data_info_cyl.get_tangential_sampling(), 
-                           fft_size, 
-                           float(alpha_ramp), float(fc_ramp));   
-    full_log << "Parameters of the filter used in the 2D FBP reconstruction" << endl;
-    full_log << ramp_filter.parameter_info()<< endl;
-        
-    FBP2DReconstruction recon2d(proj_data_to_FBP_ptr, ramp_filter);
+  {        
+    FBP2DReconstruction recon2d(proj_data_ptr, 
+				alpha_ramp, fc_ramp, PadS,
+				num_segments_to_combine);
+    full_log << "Parameters of the 2D FBP reconstruction" << endl;
+    full_log << recon2d.parameter_info()<< endl;
     recon2d.reconstruct(image_estimate_density_ptr);
   }
 
@@ -557,26 +531,23 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 
   full_log << "\n---------------------------------------------------------\n";
   full_log << "3D PROCESSING\n" << endl;
-  
-  // KT segment 0 is now handled in here as well
-
-  int  oblique_segments_start = 0;
-
  
   do_byview_initialise(image);
-  for (int seg_num= oblique_segments_start; seg_num <= max_segment_num_to_process; seg_num++) 
-  {
-    full_log << "\n--------------------------------\n";
-    full_log << "PROCESSING SEGMENT  No " << seg_num << endl ;
 
-    // initialise variables to avoid compiler warnings (correct values are set in the function call)
+  // TODO check if forward projector and back projector have compatible symmetries
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
+    back_projector_ptr->get_symmetries_used()->clone();
+
+  for (int seg_num= -max_segment_num_to_process; seg_num <= max_segment_num_to_process; seg_num++) 
+  {
+
+    // initialise variables to avoid compiler warnings 
+    // (correct values are set in the function call find_rmin_rmax below)
     int rmin=0;
     int rmax=0;
-    find_rmin_rmax(rmin, rmax, proj_data_info_cyl, seg_num, image);        
-        
-    full_log << "Average delta= " <<  proj_data_info_cyl.get_average_ring_difference(seg_num)
-	     << " with span= " << proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) +1
-	     << " and extended axial position numbers: min= " << rmin << " and max= " << rmax  <<endl;
+
+    // a bool value that will be used to determine if we are starting processing for this segment
+    bool first_view_in_segment = true;
         
     // KT 07/04/98 changed upper boundary of first forward projection from
     // '-1' to proj_data_ptr->get_min_axial_pos_num(seg_num)-1
@@ -586,20 +557,35 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
     // projection from ' proj_data_info_ptr->get_num_axial_poss()-segment_pos.get_average_ring_difference()'
     // to proj_data_ptr->get_max_axial_pos_num(seg_num)+1
   
-    int orig_min_axial_pos_num = proj_data_ptr->get_min_axial_pos_num(seg_num);
-    int orig_max_axial_pos_num = proj_data_ptr->get_max_axial_pos_num(seg_num);
+    const int orig_min_axial_pos_num = proj_data_ptr->get_min_axial_pos_num(seg_num);
+    const int orig_max_axial_pos_num = proj_data_ptr->get_max_axial_pos_num(seg_num);
             
-    // TODO get boundaries from the symmetries 
-    for (int view=0; view <= proj_data_ptr->get_num_views() /4; view++) { 
-      full_log << endl <<"*************************************************************";
-      full_log << endl <<"        Processing views No " << view
-	       << " of segment No " << seg_num << endl;
+    for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) {         
+      const ViewSegmentNumbers vs_num(view_num, seg_num);
+      if (!symmetries_sptr->is_basic(vs_num))
+	continue;
+
+      if (first_view_in_segment)
+	{
+	  full_log << "\n--------------------------------\n";
+	  full_log << "PROCESSING SEGMENT  No " << seg_num << endl ;
+	  find_rmin_rmax(rmin, rmax, proj_data_info_cyl, seg_num, image);        
+	  
+	  full_log << "Average delta= " <<  proj_data_info_cyl.get_average_ring_difference(seg_num)
+		   << " with span= " << proj_data_info_cyl.get_max_ring_difference(seg_num) - proj_data_info_cyl.get_min_ring_difference(seg_num) +1
+		   << " and extended axial position numbers: min= " << rmin << " and max= " << rmax  <<endl;
+	  
+	  first_view_in_segment = false;
+	}
+
+      full_log << "\n*************************************************************";
+      full_log << "\n        Processing view " << vs_num.view_num()
+	       << " of segment " << vs_num.segment_num() << endl;
 	      
-      full_log << endl <<"  - Getting related viewgrams"  << endl;
+      full_log << "\n  - Getting related viewgrams"  << endl;
  
       RelatedViewgrams<float> viewgrams = 
-	proj_data_ptr->get_related_viewgrams(ViewSegmentNumbers(view, seg_num),
-					     forward_projector_ptr->get_symmetries_used()->clone());
+	proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);
         
       do_process_viewgrams(
 			   viewgrams,
@@ -719,8 +705,7 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
       
       full_log << "  - Adjusting all sinograms with alpha = " << alpha_fit << " and beta = " << beta_fit << endl;
       // TODO This is wrong: it adjusts the measured projections as well !!!
-      // It needs a loop over rrings from rmin to orig_min_axial_pos_num, etc.
-      // Messy !
+      // It needs a loop over axial_poss from rmin to orig_min_axial_pos_num, etc.
       error("This is not correctly implemented at the moment. disable fitting (recommended)\n");
       //viewgrams  *= alpha_fit ;
       //viewgrams += beta_fit;
@@ -754,11 +739,13 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
     
     const float gamma = _PI/2 - atan(proj_data_info_cyl.get_tantheta(Bin(seg_num,0,0,0)));
     
-    full_log << "Colsher filter theta_max = " << theta_max << " gamma = " << gamma
+    full_log << "Colsher filter theta_max = " << theta_max << " theta = " << _PI/2-gamma
       << " d_a = " << proj_data_info_cyl.get_tangential_sampling()
       << " d_b = " << proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma) << endl;
     
-      
+    
+    assert(fabs(proj_data_info_cyl.get_axial_sampling(seg_num)*sin(gamma) /
+		proj_data_info_cyl.get_sampling_in_t(Bin(seg_num,0,0,0)) - 1) < .0001);
     colsher_filter = 
       ColsherFilter(height, width, gamma, theta_max, 
                     proj_data_info_cyl.get_tangential_sampling(), 
@@ -850,7 +837,7 @@ void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewg
                                                    int rmin, int rmax,
                                                    int orig_min_axial_pos_num, int orig_max_axial_pos_num,
                                                    VoxelsOnCartesianGrid<float> &image)
-{ //PROCESS BY VIEW              
+{
         do_grow3D_viewgram(viewgrams, rmin, rmax);
         
 	do_forward_project_view(viewgrams,
@@ -871,7 +858,7 @@ void FBP3DRPReconstruction::do_process_viewgrams(RelatedViewgrams<float> & viewg
 	Note the factors 1/2 at the boundary.
 	These are inserted below
 	*/
-	if (viewgrams.get_basic_segment_num() == max_segment_num_to_process)
+	if (abs(viewgrams.get_basic_segment_num()) == max_segment_num_to_process)
 	{
 	  viewgrams /= 2;
 	}

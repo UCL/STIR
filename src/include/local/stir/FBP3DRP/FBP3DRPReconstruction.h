@@ -42,18 +42,37 @@ template <typename T> class shared_ptr;
   \class FBP3DRPReconstruction
   \brief This class contains the implementation of the serial FBP3DRP reconstruction.
 
-        
-  ABout zooming (rescaling + offset),
-         1) The 2D FBP process  works at full resolution
-            i.e on the original number of bins , then after 2D backprojection,
-            a zooming is done on the image
-          2) For the process of oblique sinograms,
+  This class implements the 3DRP algorithm (Kinahan and Rogers) as a specific
+  case of a 3D FBP reconstruction algorithm. 
+
+  Some care is taken to achieve
+  a fairly general implementation. For instance, the number of sinograms
+  in the oblique segments is arbitrary (i.e. does not have to be related
+  to what you would get from a cylindrical PET scanner). Also, scale
+  factors are inserted such that the reconstructed image has (almost)
+  the same scale independent of the number of segments that is used.
+
+  Nevertheless, this is an analytic algorithm, and it implements a discrete
+  version of a continuous inversion formula. This will work best (but of 
+  course slowest) when the number of segments is large. 
+
+  This implementation is specific for data derived from cylindrical PET scanners.
+  This dependency essentially only occurs in the backprojection where a
+  Jacobian is necessary in this case, and where the number of ring differences
+  in each segment is taken into account. It would be not too difficult
+  to make a version that works on e.g. spherical sampling.
+
+  \par About zooming (rescaling + offset):
+  1) The 2D FBP process  works at full resolution, i.e on the original 
+     number of bins, and with a pixel size equal to the bin size.
+  2) For the process of oblique sinograms:
 	  - Forward projection works at full resolution i.e forward projection works
 	  from images without zooming and complete missing projection data on normal sinograms
 	  - Colher filter is then applied on complete data
-	  - Then, at this, zooming is applied on sinograms after Colhser filtering
-	  so that 3D backprojection will work faster if final size is smaller than the original number of bins
-	  - At the final stage, no zooming is needed on the final image as zooming is already done on sinograms
+	  - 3D backprojection then puts this data into an image with 
+	  appropriate voxel sizes, i.e. it is up to the backprojector to perform
+	  the zooming.
+	  - So, no zooming is needed on the final image.
      
 
 */
