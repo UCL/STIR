@@ -33,6 +33,7 @@ install: $(EXES)
 #$(DEST)libcti.a: $(DEST)cti_utils.o
 #	$(AR) r $@ $?
 #	$(RANLIB) $@
+# before enabling this, define RANLIB in Makefile_common
 
 $(DEST)convif_ecat6: convif_ecat6.cxx $(DEST)cti_utils.o ${LIB_BUILDINGBLOCK}
 	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o \
