@@ -1,7 +1,8 @@
 
 
 // line.cxx
-#include <line.h>
+// KT 14/12 changed <> to "" in next include
+#include "line.h"
 #include <stdio.h>
 #include <vector.h>
 
