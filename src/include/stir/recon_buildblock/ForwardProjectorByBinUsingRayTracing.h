@@ -104,7 +104,7 @@ private:
     Here 0<=view < num_views/4 (= 45 degrees)
     */
 
-  virtual void 
+  void 
   forward_project_all_symmetries(
 				Viewgram<float> & pos_view, 
 				 Viewgram<float> & neg_view, 
@@ -116,17 +116,16 @@ private:
 				 Viewgram<float> & neg_min90, 
 				 const VoxelsOnCartesianGrid<float>& image,
 				 const int min_axial_pos_num, const int max_axial_pos_num,
-				 const int min_tangential_pos_num, const int max_tangential_pos_num);
+				 const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
 
   /*
     This function projects 4 viewgrams related by symmetry.
     It will be used for view=0 or 45 degrees 
-    (or all others if the above version is not implemented in 
-    the derived class)
+    (or others if the number of views is not a multiple of 4)
     Here 0<=view < num_views/2 (= 90 degrees)
     */
-  virtual void 
+  void 
   forward_project_view_plus_90_and_delta(
 					 Viewgram<float> & pos_view, 
 					 Viewgram<float> & neg_view, 
@@ -134,21 +133,64 @@ private:
 					 Viewgram<float> & neg_plus90, 
 					 const VoxelsOnCartesianGrid<float> & image,
 					 const int min_axial_pos_num, const int max_axial_pos_num,
-					 const int min_tangential_pos_num, const int max_tangential_pos_num); 
-void forward_project_all_symmetries_2D(
-			       Viewgram<float> & pos_view, 
-			       Viewgram<float> & pos_plus90, 
-			       Viewgram<float> & pos_min180, 
-			       Viewgram<float> & pos_min90, 
-			       const VoxelsOnCartesianGrid<float>& image,
-			       const int min_axial_pos_num, const int max_axial_pos_num,
-			       const int min_tangential_pos_num, const int max_tangential_pos_num);
+					 const int min_tangential_pos_num, const int max_tangential_pos_num) const; 
+  /*
+    This function projects 4 viewgrams related by symmetry.
+    It will be used for view=0 or 45 degrees 
+    (or others if the number of views is not a multiple of 4)
+    Here 0<=view < num_views/2 (= 90 degrees)
+    */
+  void 
+  forward_project_view_min_180_and_delta(
+					 Viewgram<float> & pos_view, 
+					 Viewgram<float> & neg_view, 
+					 Viewgram<float> & pos_min180, 
+					 Viewgram<float> & neg_min180, 
+					 const VoxelsOnCartesianGrid<float> & image,
+					 const int min_axial_pos_num, const int max_axial_pos_num,
+					 const int min_tangential_pos_num, const int max_tangential_pos_num) const; 
+
+  /*
+    This function projects 4 viewgrams related by symmetry.
+    It will be used for view=0 or 45 degrees 
+    (or others if the number of views is not a multiple of 4)
+    Here 0<=view < num_views/2 (= 90 degrees)
+    */
+  void 
+  forward_project_delta(
+			    Viewgram<float> & pos_view, 
+			    Viewgram<float> & neg_view, 
+			    const VoxelsOnCartesianGrid<float> & image,
+			    const int min_axial_pos_num, const int max_axial_pos_num,
+			    const int min_tangential_pos_num, const int max_tangential_pos_num) const; 
+
+  //////////////// 2D 
+  void forward_project_all_symmetries_2D(
+					 Viewgram<float> & pos_view, 
+					 Viewgram<float> & pos_plus90, 
+					 Viewgram<float> & pos_min180, 
+					 Viewgram<float> & pos_min90, 
+					 const VoxelsOnCartesianGrid<float>& image,
+					 const int min_axial_pos_num, const int max_axial_pos_num,
+					 const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+  void 
+forward_project_view_plus_90_2D(Viewgram<float> & pos_view, 
+				Viewgram<float> & pos_plus90, 
+				const VoxelsOnCartesianGrid<float> & image,
+				const int min_axial_pos_num, const int max_axial_pos_num,
+				const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 void 
-forward_project_view_plus_90_and_delta_2D(Viewgram<float> & pos_view, 
-				          Viewgram<float> & pos_plus90, 
+forward_project_view_min_180_2D(Viewgram<float> & pos_view, 
+			       Viewgram<float> & pos_min180, 
+			       const VoxelsOnCartesianGrid<float> & image,
+			       const int min_axial_pos_num, const int max_axial_pos_num,
+			       const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+// no symmetries
+void 
+forward_project_view_2D(Viewgram<float> & pos_view, 
 				          const VoxelsOnCartesianGrid<float> & image,
  				          const int min_axial_pos_num, const int max_axial_pos_num,
-				          const int min_tangential_pos_num, const int max_tangential_pos_num);
+				          const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
 
   // KT 20/06/2001 changed 'int s' parameter to 'float s_in_mm'
