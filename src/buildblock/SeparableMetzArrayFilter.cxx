@@ -36,7 +36,7 @@ const float ZERO_TOL= 0.000001F; //MJ 12/05/98 Made consistent with other files
 #define IMGC(a) 2*(a)+1
 
 #include "ImageFilter.h"
-#include "TensorFunction.h" 
+//#include "ArrayFunction.h" 
 #include <iostream> 
 
 #include <numeric>
