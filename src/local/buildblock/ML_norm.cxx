@@ -304,6 +304,32 @@ FanProjData::FanProjData(const IndexRange<4>& range)
 {
 }
 
+FanProjData::
+FanProjData(const int num_rings, const int num_detectors, const int max_delta, const int fan_size)
+{
+  // fan will range from -half_fan_size to +half_fan_size (i.e. an odd number of elements)
+  const int half_fan_size = fan_size/2;
+
+  IndexRange<4> fan_indices;
+  fan_indices.grow(0,num_rings-1);
+  for (int ra = 0; ra < num_rings; ++ra)
+  {
+    const int min_rb = max(ra-max_delta, 0);
+    const int max_rb = min(ra+max_delta, num_rings-1);
+    fan_indices[ra].grow(0,num_detectors-1);
+    for (int a = 0; a < num_detectors; ++a)
+    {
+      fan_indices[ra][a].grow(min_rb, max_rb);
+      for (int rb = min_rb; rb <= max_rb; ++rb)
+      fan_indices[ra][a][rb] = 
+        IndexRange<1>(a+num_detectors/2-half_fan_size,
+                      a+num_detectors/2+half_fan_size);
+    }
+  }
+  grow(fan_indices);
+  fill(0);
+}
+
 FanProjData& 
 FanProjData::operator=(const FanProjData& other)
 {
@@ -432,7 +458,7 @@ void display(const FanProjData& fan_data, const char * const title)
     for (int a = 0; a<num_detectors; ++a)
       for (int rb=fan_data.get_min_rb(ra); rb <= fan_data.get_max_rb(ra); ++rb)
         for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
-          full_data[ra][a%num_detectors][b%num_detectors] =
+          full_data[rb][a%num_detectors][b%num_detectors] =
              fan_data(ra,a,rb,b);
       display(full_data, full_data.find_max(), title);
   }
@@ -455,41 +481,14 @@ void make_fan_data(FanProjData& fan_data,
           -proj_data_info.get_min_tangential_pos_num()) + 1;
   const int max_delta = proj_data_info_ptr->get_max_segment_num();
 
-  // fan will range from -half_fan_size to +half_fan_size (i.e. an odd number of elements)
-  const int half_fan_size = fan_size/2;
+  fan_data = FanProjData(num_rings, num_detectors, max_delta, fan_size);
 
-  IndexRange<4> fan_indices;
-  fan_indices.grow(0,num_rings-1);
-  for (int ra = 0; ra < num_rings; ++ra)
-  {
-    const int min_rb = max(ra-max_delta, 0);
-    const int max_rb = min(ra+max_delta, num_rings-1);
-    fan_indices[ra].grow(0,num_detectors-1);
-    for (int a = 0; a < num_detectors; ++a)
-    {
-      fan_indices[ra][a].grow(min_rb, max_rb);
-      for (int rb = min_rb; rb <= max_rb; ++rb)
-      fan_indices[ra][a][rb] = 
-        IndexRange<1>(a+num_detectors/2-half_fan_size,
-                      a+num_detectors/2+half_fan_size);
-    }
-  }
-  fan_data.grow(fan_indices);
-  fan_data.fill(0);
-
-  shared_ptr<SegmentBySinogram<float> > pos_segment_ptr;    
-  shared_ptr<SegmentBySinogram<float> > neg_segment_ptr;
-  
+  shared_ptr<SegmentBySinogram<float> > segment_ptr;      
   Bin bin;
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-    pos_segment_ptr = new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()));
-    if (bin.segment_num() == 0)
-      neg_segment_ptr = pos_segment_ptr;
-    else
-      neg_segment_ptr =
-        new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(-bin.segment_num()));
+    segment_ptr = new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()));
     
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
@@ -505,9 +504,8 @@ void make_fan_data(FanProjData& fan_data,
             proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
             
             fan_data(ra, a, rb, b) =
-              (*pos_segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
-            fan_data(rb, b, ra, a) =
-              (*neg_segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
+	      fan_data(rb, b, ra, a) =
+              (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()];
           }
   }
 }
@@ -527,17 +525,11 @@ void set_fan_data(ProjData& proj_data,
 
     
   Bin bin;
-  shared_ptr<SegmentBySinogram<float> > pos_segment_ptr;    
-  shared_ptr<SegmentBySinogram<float> > neg_segment_ptr;
+  shared_ptr<SegmentBySinogram<float> > segment_ptr;    
  
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-    pos_segment_ptr = new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num()));
-    if (bin.segment_num() == 0)
-      neg_segment_ptr = pos_segment_ptr;
-    else
-      neg_segment_ptr =
-        new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(-bin.segment_num()));
+    segment_ptr = new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num()));
     
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
@@ -552,14 +544,10 @@ void set_fan_data(ProjData& proj_data,
             
             proj_data_info.get_det_pair_for_bin(a, ra, b, rb, bin);
             
-            (*pos_segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
+            (*segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
               fan_data(ra, a, rb, b);
-            (*neg_segment_ptr)[bin.axial_pos_num()][bin.view_num()][bin.tangential_pos_num()] =
-              fan_data(rb, b, ra, a);
           }
-    proj_data.set_segment(*pos_segment_ptr);
-    if (bin.segment_num() != 0)
-      proj_data.set_segment(*neg_segment_ptr);
+    proj_data.set_segment(*segment_ptr);
   }
 }
 
@@ -617,7 +605,6 @@ void apply_geo_norm(FanProjData& fan_data, const GeoData& geo_data, const bool a
 
 void apply_efficiencies(FanProjData& fan_data, const DetectorEfficiencies& efficiencies, const bool apply)
 {
-  const int num_rings = fan_data.get_num_rings();
   const int num_detectors = fan_data.get_num_detectors();
   for (int ra = fan_data.get_min_index(); ra <= fan_data.get_max_index(); ++ra)
     for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
