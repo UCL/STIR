@@ -19,5 +19,6 @@
   \warning Obsolete. Use tomo/common.h instead.
 */
 #include "tomo/common.h"
+#include "tomo/Succeeded.h"
 
 #endif 
