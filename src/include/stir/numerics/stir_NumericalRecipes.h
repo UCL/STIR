@@ -112,11 +112,30 @@ inline void nr_to_stir(const VectorWithOffset<float>& nr_data,
           nr_iter+= 2;
           ++row_iter;
         }
-
-
       ++iter;
     }
 }
+
+#if 0
+void real_to_complex(const VectorWithOffset< std::complex<float> >& c,
+		VectorWithOffset<float>& nr_data)
+{
+      Array<2,std::complex<float> >::const_full_iterator iter=
+        c2d.begin_all();
+
+      while(iter != c2d.end_all())
+      {
+        *nr_iter++ = iter->real();
+        *nr_iter++ = iter->imag();
+        ++iter;
+      }
+  for (int i=0; i<c.get_length(); ++i)
+  {
+    nr_data[2*i+1] = c[i].real();
+    nr_data[2*i+2] = c[i].imag();
+  }
+}
+#endif
 
 END_NAMESPACE_STIR
 #endif
