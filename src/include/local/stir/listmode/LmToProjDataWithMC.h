@@ -54,6 +54,7 @@ private:
   string attenuation_filename; 
   string norm_filename;  
   float transmission_duration;
+  float polaris_time_offset;
    
   virtual void set_defaults();
   virtual void initialise_keymap();
