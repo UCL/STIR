@@ -112,8 +112,7 @@ find_ref_pos_from_att_file (float& att_start_time, float& att_end_time,
 }
  
 void 
-LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_general_type,
-					const double time) const
+LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_general_type) const
 {
   const CListRecordECAT966& record = 
     static_cast<CListRecordECAT966 const&>(event_of_general_type);// TODO get rid of this
@@ -148,7 +147,7 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   
   RigidObject3DTransformation ro3dtrans;
 
-  ro3d_ptr->get_motion(ro3dtrans,time);
+  ro3d_ptr->get_motion(ro3dtrans,current_time);
    
 #if 0
   const CartesianCoordinate3D<float> coord_1_transformed = 
