@@ -48,6 +48,26 @@ ParsingObject::operator =(const ParsingObject& par)
   return *this;
 }
 
+void 
+ParsingObject::
+set_defaults()
+{}
+
+void
+ParsingObject::
+initialise_keymap()
+{}
+
+bool 
+ParsingObject::
+post_processing()
+{ return false; }
+
+void 
+ParsingObject::
+set_key_values()
+{}
+
 //void
 bool
 ParsingObject:: parse(istream& in) 
