@@ -42,6 +42,9 @@
   is at the edge of the image, the current
   mechanism of generating the image might miss the shape entirely.
 
+  \warning Does not currently support interactive parsing, so a par file 
+  must be given on the command line.
+
   \author Kris Thielemans
 
   $Date$
@@ -82,11 +85,15 @@ private:
   vector<float> values;
   float current_value;
   string output_filename;
+  shared_ptr<OutputFileFormat> output_file_format_sptr;
+
   void increment_current_shape_num();
 
-  int output_image_size_xy;
+  int output_image_size_x;
+  int output_image_size_y;
   int output_image_size_z;
-  float output_voxel_size_xy;
+  float output_voxel_size_x;
+  float output_voxel_size_y;
   float output_voxel_size_z;
 };
 
@@ -105,13 +112,16 @@ void
 GenerateImage::
 set_defaults()
 {
-  output_image_size_xy=-1;
+  output_image_size_x=128;
+  output_image_size_y=128;
   output_image_size_z=1;
-  output_image_size_xy=1;
-  output_image_size_z=1;
+  output_voxel_size_x=1;
+  output_voxel_size_y=1;
+  output_voxel_size_z=1;
   shape_ptrs.resize(0);
   values.resize(0);
   output_filename.resize(0);
+  output_file_format_sptr = new DefaultOutputFileFormat;
 }
 
 void 
@@ -120,9 +130,12 @@ initialise_keymap()
 {
   add_start_key("generate_image Parameters");
   add_key("output filename",&output_filename);
-  add_key("XY output image size (in pixels)",&output_image_size_xy);
+  add_parsing_key("output file format",&output_file_format_sptr);
+  add_key("X output image size (in pixels)",&output_image_size_x);
+  add_key("Y output image size (in pixels)",&output_image_size_y);
   add_key("Z output image size (in pixels)",&output_image_size_z);
-  add_key("XY voxel size (in mm)",&output_voxel_size_xy);
+  add_key("X voxel size (in mm)",&output_voxel_size_x);
+  add_key("Y voxel size (in mm)",&output_voxel_size_y);
   add_key("Z voxel size (in mm)",&output_voxel_size_z);
   add_parsing_key("shape type", &current_shape_ptr);
   add_key("value", &current_value);
@@ -149,7 +162,41 @@ post_processing()
       warning("You have to specify an output_filename\n");
       return true;
     }
-
+  if (is_null_ptr(output_file_format_sptr))
+    {
+      warning("You have specified an invalid output file format\n");
+      return true;
+    }
+  if (output_image_size_x<=0)
+    {
+      warning("X output_image_size should be strictly positive\n");
+      return true;
+    }
+  if (output_image_size_y<=0)
+    {
+      warning("Y output_image_size should be strictly positive\n");
+      return true;
+    }
+  if (output_image_size_z<=0)
+    {
+      warning("Z output_image_size should be strictly positive\n");
+      return true;
+    }
+  if (output_voxel_size_x<=0)
+    {
+      warning("X output_voxel_size should be strictly positive\n");
+      return true;
+    }
+  if (output_voxel_size_y<=0)
+    {
+      warning("Y output_voxel_size should be strictly positive\n");
+      return true;
+    }
+  if (output_voxel_size_z<=0)
+    {
+      warning("Z output_voxel_size should be strictly positive\n");
+      return true;
+    }
   return false;
 }
 
@@ -197,14 +244,14 @@ compute()
 #else
   VoxelsOnCartesianGrid<float> 
     current_image(IndexRange3D(0,output_image_size_z-1,
-			       -(output_image_size_xy/2),
-			       -(output_image_size_xy/2)+output_image_size_xy-1,
-			       -(output_image_size_xy/2),
-			       -(output_image_size_xy/2)+output_image_size_xy-1),
+			       -(output_image_size_y/2),
+			       -(output_image_size_y/2)+output_image_size_y-1,
+			       -(output_image_size_x/2),
+			       -(output_image_size_x/2)+output_image_size_x-1),
 		  CartesianCoordinate3D<float>(0,0,0),
 		  CartesianCoordinate3D<float>(output_voxel_size_z,
-					       output_voxel_size_xy,
-					       output_voxel_size_xy));
+					       output_voxel_size_y,
+					       output_voxel_size_x));
   shared_ptr<DiscretisedDensity<3,float> > out_density_ptr = 
     current_image.clone();
 #endif
@@ -219,8 +266,8 @@ compute()
       current_image *= *value_iter;
       *out_density_ptr += current_image;
     }
-  DefaultOutputFileFormat output_file_format;
-  return output_file_format.write_to_file(output_filename, *out_density_ptr);  
+  return
+    output_file_format_sptr->write_to_file(output_filename, *out_density_ptr);  
   
 }
 
