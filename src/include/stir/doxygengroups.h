@@ -207,6 +207,11 @@ are similar to EM.
 \ingroup reconstructors
 Implementation of the OSMAP One-Step-Late reconstruction algorithm
 */
+/*!
+\defgroup FBP2D FBP2D
+\ingroup reconstructors
+Implementation of the 2D Filtered Back Projection algorithm
+*/
 
 /*!
 \defgroup display Display functions
