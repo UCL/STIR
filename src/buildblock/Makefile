@@ -55,7 +55,8 @@ SOURCES = \
 	ChainedImageProcessor.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
 	SeparableConvolutionImageFilter.cxx \
-	SSRB.cxx
+	SSRB.cxx \
+	centre_of_gravity.cxx
  
 
 
