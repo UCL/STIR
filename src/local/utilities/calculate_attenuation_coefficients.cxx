@@ -16,6 +16,7 @@
   calculate_attenuation_coefficients  <output filename > <input header file name> <template_proj_data>
   \endcode
 
+  \warning This currently calculates the INVERSE of the attenuation correction factors!
   \warning attenuation image data are supposed to be in units cm^-1.
   Reference: water has mu .096 cm^-1.
 
@@ -55,7 +56,9 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-
+// The start..., end_... parameters could obviously be removed, as we're
+// removing the defaults anyway. However, they're there now, so we can just
+// as well leave them in
 void
 do_segments(const VoxelsOnCartesianGrid<float>& image, 
 	    ProjData& proj_data,
@@ -72,7 +75,7 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     for (int view= start_view; view<=end_view; view++)      
     {       
-      const ViewSegmentNumbers vs(view, segment_num);
+      ViewSegmentNumbers vs(view, segment_num);
       symmetries_sptr->find_basic_view_segment_numbers(vs);
       if (find(already_processed.begin(), already_processed.end(), vs)
 	!= already_processed.end())
@@ -113,9 +116,10 @@ int
 main (int argc, char * argv[])
 {
   
-  if (argc!=3)
+  if (argc!=4)
   {
-    cerr<<"\nUsage: calculate_attenuation_coefficients : <output filename > <input header file name> <template_proj_data> \n"<<endl;
+    cerr<<"\nUsage: calculate_attenuation_coefficients : <output filename > <input header file name> <template_proj_data>"
+	<<"\nWARNING: This currently calculates the INVERSE of the attenuation correction factors! \n"<<endl;
     return EXIT_FAILURE;
   }
   
@@ -142,29 +146,29 @@ main (int argc, char * argv[])
 #endif
     *attenuation_image_ptr *= rescale;
 
-  shared_ptr<ProjData> proj_data_ptr = 
+  shared_ptr<ProjData> template_proj_data_ptr = 
     ProjData::read_from_file(argv[3]);
 
   shared_ptr<ProjMatrixByBin> PM = 
     new  ProjMatrixByBinUsingRayTracing();
-  ForwardProjectorByBin* forw_projector_ptr =
+  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
     new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
   
-  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  forw_projector_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			       attenuation_density_ptr );
-  cerr << forw_projector_ptr->parameter_info();  
+  cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
 
   const string output_file_name = argv[1];
   shared_ptr<ProjData> out_proj_data_ptr =
-    new ProjDataInterfile(new_data_info_ptr,
+    new ProjDataInterfile(template_proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			  output_file_name);
   
   do_segments(*attenuation_image_ptr,*out_proj_data_ptr,
-	      proj_data_ptr->get_min_segment_num(), proj_data_ptr->get_max_segment_num(), 
-	      proj_data_ptr->get_min_view_num(), 
-	      proj_data_ptr->get_max_view_num(),
-	      proj_data_ptr->get_min_tangential_pos_num(), 
-	      proj_data_ptr->get_max_tangential_pos_num(),
+	      out_proj_data_ptr->get_min_segment_num(), out_proj_data_ptr->get_max_segment_num(), 
+	      out_proj_data_ptr->get_min_view_num(), 
+	      out_proj_data_ptr->get_max_view_num(),
+	      out_proj_data_ptr->get_min_tangential_pos_num(), 
+	      out_proj_data_ptr->get_max_tangential_pos_num(),
 	      *forw_projector_ptr);  
   
   return EXIT_SUCCESS;
