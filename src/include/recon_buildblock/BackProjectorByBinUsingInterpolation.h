@@ -18,6 +18,7 @@
 #define __BackProjectorByBinUsingInterpolation_h_
 
 #include "recon_buildblock/BackProjectorByBin.h" 
+#include "tomo/RegisteredParsingObject.h"
 #include "shared_ptr.h"
 
 START_NAMESPACE_TOMO
@@ -109,14 +110,35 @@ public:
   correct results, SunSparc has a problem at tangential_pos_num==0 (also HP
   stations give problems).
 */
-class BackProjectorByBinUsingInterpolation : public BackProjectorByBin
+class BackProjectorByBinUsingInterpolation : 
+  public RegisteredParsingObject<BackProjectorByBinUsingInterpolation,
+                                 BackProjectorByBin>
+
 { 
 public:
-  //! The constructor defaults to using picewise linear interpolation and the exact Jacobian 
+  //! Name which will be used when parsing a BackProjectorByBin object
+  static const char * const registered_name; 
+
+  //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
+  explicit 
+    BackProjectorByBinUsingInterpolation(
+      const bool use_piecewise_linear_interpolation = true, 
+      const bool use_exact_Jacobian = true);
+
+  //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
+  /*! \warning Obsolete */
   BackProjectorByBinUsingInterpolation(
     shared_ptr<ProjDataInfo>const&,
     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
     const bool use_piecewise_linear_interpolation = true, const bool use_exact_Jacobian = true);
+
+  //! Stores all necessary geometric info
+  /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
+  */
+  virtual void set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    );
 
   /*! \brief Gets the symmetries used by this backprojector
 
@@ -228,7 +250,7 @@ struct ProjDataForIntBP
 				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                      float delta,
                                      float cphi, float sphi, int s, int ring0, 
-				     const int num_planes_per_virtual_ring,
+				     const float num_planes_per_virtual_ring,
 				     const float virtual_ring_offset);
 
  static void piecewise_linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
@@ -236,7 +258,7 @@ struct ProjDataForIntBP
 							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                                          float delta,
                                                           float cphi, float sphi, int s, int ring0,
-                                                          const int num_planes_per_virtual_ring,
+                                                          const float num_planes_per_virtual_ring,
 							  const float virtual_ring_offset);
 
   static void linear_interpolation_backproj3D_Cho_view_viewplus90(Array<4, float > const & Projptr,
@@ -244,7 +266,7 @@ struct ProjDataForIntBP
 				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                      float delta,
                                      float cphi, float sphi, int s, int ring0, 
-				     const int num_planes_per_virtual_ring,
+				     const float num_planes_per_virtual_ring,
 				     const float virtual_ring_offset);
 
  static void linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview(Array<4, float > const &Projptr,
@@ -252,7 +274,7 @@ struct ProjDataForIntBP
 							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                                          float delta,
                                                           float cphi, float sphi, int s, int ring0,
-                                                          const int num_planes_per_virtual_ring,
+                                                          const float num_planes_per_virtual_ring,
 							  const float virtual_ring_offset);
 
   /*
@@ -265,6 +287,8 @@ static void   backproj2D_Cho_view_viewplus90( PETPlane & image,
                                     const double cphi, const double sphi, int s);
 
 */
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
 };
 
