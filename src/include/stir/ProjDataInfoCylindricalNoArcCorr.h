@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __ProjDataInfoCylindricalNoArcCorr_H__
@@ -111,6 +111,8 @@ public:
 
   virtual string parameter_info() const;
 
+  //! \name Functions that convert between bins and detection positions
+  //@{ 
   //! This gets view_num and tang_pos_num for a particular detector pair
   /*! This function makes only sense if the scanner is a full-ring scanner 
       with discrete detectors and there is no rotation or wobble.
@@ -226,6 +228,15 @@ public:
 			 int& det2_num, int& ring2_num,
 			 const Bin&) const;
 
+  //@}
+
+  virtual 
+    Bin
+    get_bin(const LOR<float>&) const;
+
+
+  //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
+  //@{
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
@@ -242,7 +253,7 @@ public:
   void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 						  const CartesianCoordinate3D<float>& coord_1,
 						  const CartesianCoordinate3D<float>& coord_2) const;
-
+  //@}
 
 private:
   
