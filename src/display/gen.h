@@ -1,8 +1,22 @@
 /* 
    $Id$: $Date$
+*/
+/*!
+ \file 
+  
+ \brief  Declares some utility functions used by the screen* files
+  
+ \author Kris Thielemans
+ \author PARAPET project
+ 
+ \date    $Date$
+  
+ \version $Revision$
 
-   This is part of a library by Kris Thielemans, mainly written in 1991.
-   Not much documentation around I'm afraid...
+
+ This is part of a library by Kris Thielemans, mainly written in 1991.
+  
+ \internal
 
    Standard include file where some incompatibilities between various
    systems are taken care of (together with gen.c).
@@ -26,6 +40,8 @@ systems.
        #ifdef __MSL__  (Metroworks Standard Library)
 
    As a convenience we include stdio.h and stdlib.h  here.
+
+
 */
 #include <stdio.h>
 
