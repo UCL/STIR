@@ -187,17 +187,12 @@ int main(int argc, char *argv[])
       ProjData::read_from_file(filenames[0]);
   
     Main_header mhead;
-    make_ECAT7_main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
+    make_ECAT7_main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr(),
+			   write_as_attenuation,
+			   NumericType::SHORT);
     mhead.num_frames = filenames.size();
-    if (write_as_attenuation)
+    if (!write_as_attenuation)
       {
-	mhead.file_type = AttenCor;
-	mhead.acquisition_type =
-	  TransmissionScan;
-      }
-    else
-      {
-	mhead.file_type = Float3dSinogram;
 	mhead.acquisition_type =
 	  mhead.num_frames>1 ? DynamicEmission : StaticEmission;
       }
