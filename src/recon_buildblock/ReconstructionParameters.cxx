@@ -46,8 +46,6 @@ ReconstructionParameters::ReconstructionParameters(): KeyParser()
   Yoffset=0.F;
   max_segment_num_to_process=-1;
   num_views_to_add=1;
-  disp=0;
-  save_intermediate_files=1;
 
   
   proj_data_ptr=NULL; //MJ added
@@ -59,12 +57,6 @@ ReconstructionParameters::ReconstructionParameters(): KeyParser()
     KeyArgument::ASCII, &output_filename_prefix);// KT 160899 changed name of variable
   add_key("output filename prefix", 
     KeyArgument::ASCII, &output_filename_prefix);// KT 160899added duplicate key
- 
-  add_key("display (0,1,2)",
-    KeyArgument::INT, &disp);
-  // KT 25/05/2000 Save -> save
-  add_key("save intermediate files",
-    KeyArgument::INT, &save_intermediate_files);
   add_key("zoom",         
     KeyArgument::DOUBLE, &zoom);
   // KT 160899 renamed key
@@ -169,8 +161,6 @@ string ReconstructionParameters::parameter_info() const
     // KT 25/05/2000 file -> filename
     s << "output filename prefix := " << output_filename_prefix << endl;
 // KT 160899 changed name of variable
-    s << "display (0,1,2) := " << disp << endl;
-    s << "save intermediate files := " << save_intermediate_files << endl;
     s << "zoom := " << zoom << endl;
     s << "Xoffset (in mm) := " << Xoffset << endl;
     s << "Yoffset (in mm) := " << Yoffset << endl;
