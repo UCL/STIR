@@ -91,6 +91,22 @@ modulo(const int a, const int b)
   return res2;
 }
 
+//! Performs the modulus operation on each element of the coordinates
+/*! \ingroup buildblock
+   \return A BasicCoordinate such that for all <tt>d</tt>
+     \code result[d] = modulo(a[d], b[d] \endcode
+*/
+template <int num_dimensions, typename T>
+inline
+BasicCoordinate<num_dimensions, T>
+modulo(const BasicCoordinate<num_dimensions, T>& a, const BasicCoordinate<num_dimensions, T>& b)
+{
+  BasicCoordinate<num_dimensions, T> result;
+  for (int d=1; d<=num_dimensions; ++d)
+    result[d] = modulo(a[d], b[d]);
+  return result;
+}
+
 //! A function to convert an angle from one range to another
 /*! \ingroup buildblock
     This is mainly useful for converting results from e.g. std::atan2 to 
