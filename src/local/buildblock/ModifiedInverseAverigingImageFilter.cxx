@@ -31,6 +31,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/interfile.h"
 #include "stir/CartesianCoordinate3D.h"
+#include "stir/RelatedViewgrams.h"
 
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 
