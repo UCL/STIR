@@ -26,7 +26,7 @@ $(dir)_INTERACTIVE_TEST_SOURCES := \
 
 
 # note: do not use $(dir) in the command lines as that variable
-# will by be something else when the command line gets executed! 
+# will be something else when the command line gets executed! 
 # (see e.g. lib.mk)
 run_$(dir)/test_linear_regression: $(DEST)$(dir)/test_linear_regression PHONY_TARGET
 	$<  test/input/test_linear_regression.in
@@ -56,6 +56,8 @@ endif
 ${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
+${DEST}$(dir)/test_ArrayFilter: ${DEST}$(dir)/test_ArrayFilter${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 ${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
