@@ -24,7 +24,7 @@
 #define __DataSymmetriesForBins_H__
 
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
-#include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInfo.h" // is used in .inl
 #include "stir/shared_ptr.h"
 #include <vector>
 #include <memory>
@@ -42,6 +42,7 @@ START_NAMESPACE_STIR
 
 class Bin;
 class SymmetryOperation;
+class ProjDataInfo;
 
 
 #if 0
@@ -75,7 +76,7 @@ class DataSymmetriesForBins : public DataSymmetriesForViewSegmentNumbers
 public:
   DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
 
-  virtual ~DataSymmetriesForBins() {};
+  virtual ~DataSymmetriesForBins();
 
   virtual 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
@@ -155,6 +156,13 @@ public:
   */
   virtual bool
     find_basic_bin(Bin& b) const;
+
+  /*! \brief test if a bin is 'basic' 
+
+  The default implementation uses find_basic_bin
+  */
+  virtual bool
+    is_basic(const Bin& v_s) const;
 
   //! default implementation in terms of find_symmetry_operation_from_basic_bin
   virtual auto_ptr<SymmetryOperation>
