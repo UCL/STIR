@@ -22,7 +22,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
-#include "stir/interfile.h"
+#include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <iostream>
 
@@ -180,8 +180,8 @@ compute()
       current_image *= *value_iter;
       *out_density_ptr += current_image;
     }
-
-  write_basic_interfile(output_filename, *out_density_ptr);  
+  DefaultOutputFileFormat output_file_format;
+  output_file_format.write_to_file(output_filename, *out_density_ptr);  
   
 }
 
