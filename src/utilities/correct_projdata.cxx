@@ -15,7 +15,23 @@
 \verbatim
 correct_projdata Parameters := 
   input file := trues.hs
-  output filename := precorrected.s
+
+  ; Current way of specifying time frames, pending modifications to
+  ; STIR to read time info from the headers
+  ; see class documentation for TimeFrameDefinitions for the format of this file
+  ; time frame definition filename :=  frames.fdef
+
+  ; if a frame definition file is specified, you can say that the input data
+  ; corresponds to a specific time frame
+  ; the number should be between 1 and num_frames and defaults to 1
+  ; this is currently only used to pass the relevant time to the normalisation
+  ; time frame number := 1
+  
+  ; output file
+  ; for future compatibility, do not use an extension in the name of 
+  ; the output file. It will be added automatically
+  output filename := precorrected
+
   ; default value for next is -1, meaning 'all segments'
   ; maximum absolute segment number to process := 
  
@@ -54,18 +70,49 @@ correct_projdata Parameters :=
 END:= 
 \endverbatim
 
+Time frame definition is only necessary when the normalisation type uses
+this time info for dead-time correction.
+
+The following gives a brief explanation of the non-obvious parameters. 
+
+<ul>
+<li> use data (1) or set to one (0):<br>
+Use the data in the input file, or substitute data with all 1's. This is useful to get correction factors only. Its value defaults to 1.
+</li>
+<li>
+apply (1) or undo (0) correction:<br>
+Precorrect data, or undo precorrection. Its value defaults to 1.
+</li>
+<li>
+Bin Normalisation type:<br>
+Normalisation (or binwise multiplication, so can contain attenuation factors 
+as well). \see BinNormalisation
+</li>
+<li>
+attenuation image filename: obsolete<br>
+Specify the attenuation image, which will be forward projected to get 
+attenuation factors. Has to be in units cm^-1.
+This parameter will be removed. Use instead a "chained" bin normalisation 
+with a bin normalisation "from attenuation image" 
+\see ChainedBinNormalisation
+\see BinNormalisationFromAttenuationImage
+</li>
+<li>
+forward_projector type: obsolete
+Forward projector used to estimate attenuation factors, defaults to 
+Ray Tracing. \see ForwardProjectorUsingRayTracing
+This parameter will be removed.
+</li>
+</ul>
+
   \author Kris Thielemans
 
   $Date$
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
-
-  Modification history:
-
-  KT 30/05/2002 loop over segments/views now works for any type of symmetry
 */
 
 
@@ -79,7 +126,7 @@ END:=
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/TrivialDataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ArrayFunction.h"
-#include "local/stir/listmode/TimeFrameDefinitions.h"
+#include "stir/TimeFrameDefinitions.h"
 #ifndef USE_PMRT
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #else
@@ -117,8 +164,8 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 			const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
 			BinNormalisation& normalisation,
                         const shared_ptr<ProjData>& randoms_projdata_ptr, 
-			const int correct_all_frames_or_single_frame,
-			TimeFrameDefinitions& frame_def)
+			const int frame_num,
+			const TimeFrameDefinitions& frame_def)
 {
 
   const bool do_attenuation = attenuation_image_ptr.use_count() != 0;
@@ -180,14 +227,17 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
           randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
 	                                              symmetries_ptr, false);
       }
-      
-      if (correct_all_frames_or_single_frame==-1)
+#if 0
+      if (frame_num==-1)
       {
 	int num_frames = frame_def.get_num_frames();
 	for ( int i = 1; i<=num_frames; i++)
-	{
+	{ 
+	  //cerr << "Doing frame  " << i << endl; 
 	  const double start_frame = frame_def.get_start_time(i);
 	  const double end_frame = frame_def.get_end_time(i);
+	  //cerr << "Start time " << start_frame << endl;
+	  //cerr << " End time " << end_frame << endl;
 	  // ** normalisation **
 	  if (apply_or_undo_correction)
 	  {
@@ -200,9 +250,10 @@ correct_projection_data(ProjData& output_projdata, const ProjData& input_projdat
 	}
       }
       else
-      {
-	const double start_frame = frame_def.get_start_time(correct_all_frames_or_single_frame);
-	const double end_frame = frame_def.get_end_time(correct_all_frames_or_single_frame);
+#endif
+	{      
+	const double start_frame = frame_def.get_start_time(frame_num);
+	const double end_frame = frame_def.get_end_time(frame_num);
 	if (apply_or_undo_correction)
 	{
 	  normalisation.apply(viewgrams,start_frame,end_frame);
@@ -279,7 +330,7 @@ public:
   bool apply_or_undo_correction;
   bool use_data_or_set_to_1;  
   int max_segment_num_to_process;
-  int correct_all_frames_or_single_frame;
+  int frame_num;
   TimeFrameDefinitions frame_defs;
   private:
 
@@ -312,7 +363,7 @@ set_defaults()
   normalisation_ptr = new TrivialBinNormalisation;
   randoms_projdata_filename = "";
   attenuation_image_ptr = 0;
-  correct_all_frames_or_single_frame =-1;
+  frame_num = 1;
 
 #ifndef USE_PMRT
   forward_projector_ptr =
@@ -331,6 +382,9 @@ initialise_keymap()
 {
   parser.add_start_key("correct_projdata Parameters");
   parser.add_key("input file",&input_filename);
+  parser.add_key("time frame definition filename", &frame_definition_filename); 
+  parser.add_key("time frame number", &frame_num);
+
   parser.add_key("output filename",&output_filename);
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
  
@@ -341,9 +395,6 @@ initialise_keymap()
   parser.add_key("attenuation image filename", &atten_image_filename);
   parser.add_parsing_key("forward projector type", &forward_projector_ptr);
   parser.add_key("scatter_projdata_filename", &scatter_projdata_filename);
-  // TODO
-  parser.add_key("correct all frames (-1) or a single frame (frame number) ", &correct_all_frames_or_single_frame);
-  parser.add_key("frame definition filename", &frame_definition_filename); 
   parser.add_stop_key("END");
 }
 
@@ -358,6 +409,28 @@ post_processing()
     return true;
   }
 
+  // read time frame def 
+   if (frame_definition_filename.size()!=0)
+    frame_defs = TimeFrameDefinitions(frame_definition_filename);
+   else
+    {
+      // make a single frame starting from 0 to 1.
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      frame_defs = TimeFrameDefinitions(frame_times);
+    }
+
+  if (frame_num<=0)
+    {
+      warning("frame_num should be >= 1 \n");
+      return true;
+    }
+
+  if (static_cast<unsigned>(frame_num)> frame_defs.get_num_frames())
+    {
+      warning("frame_num is %d, but should be less than the number of frames %d.\n",
+	      frame_num, frame_defs.get_num_frames());
+      return true;
+    }
   return false;
 }
 
@@ -382,26 +455,44 @@ CorrectProjDataParameters(const char * const par_filename)
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
+  shared_ptr<ProjDataInfo>  new_data_info_ptr= 
+    input_projdata_ptr->get_proj_data_info_ptr()->clone();
+    
+  new_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
+					  max_segment_num_to_process);
 
   // construct output_projdata
   {
-    ProjDataInfo*  new_data_info_ptr= 
-      input_projdata_ptr->get_proj_data_info_ptr()->clone();
-    
-    new_data_info_ptr->reduce_segment_range(-max_segment_num_to_process, 
-                                            max_segment_num_to_process);
-     output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename);
-  }
-  // read time frame def 
-   if (frame_definition_filename.size()!=0)
-    frame_defs = TimeFrameDefinitions(frame_definition_filename);
-   else
-    {
-      // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
-      frame_defs = TimeFrameDefinitions(frame_times);
-    }
+#if 0
+    // attempt to do mult-frame data, but then we should have different input data anyway
+    if (frame_definition_filename.size()!=0 && frame_num==-1)
+      {
+	const int num_frames = frame_defs.get_num_frames();
+	for ( int current_frame = 1; current_frame <= num_frames; current_frame++)
+	  {
+	    char ext[50];
+	    sprintf(ext, "_f%dg1b0d0", current_frame);
+	    const string output_filename_with_ext = output_filename + ext;	
+	    output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename_with_ext);
+	  }
+      }
+    else
+#endif
+      {
+	string output_filename_with_ext = output_filename;
+#if 0
+	if (frame_definition_filename.size()!=0)
+	  {
+	    char ext[50];
+	    sprintf(ext, "_f%dg1b0d0", frame_num);
+	    output_filename_with_ext += ext;
+	  }
+#endif
+      output_projdata_ptr = new ProjDataInterfile(new_data_info_ptr,output_filename_with_ext);
+      }
 
+  }
+ 
   // set up normalisation object
   if (
       normalisation_ptr->set_up(output_projdata_ptr->get_proj_data_info_ptr()->clone())
@@ -472,7 +563,7 @@ int main(int argc, char *argv[])
 			  parameters.forward_projector_ptr,  
 			  *parameters.normalisation_ptr,
                           parameters.randoms_projdata_ptr,
-			  parameters.correct_all_frames_or_single_frame,
+			  parameters.frame_num,
 			  parameters.frame_defs);
  
   timer.stop();
