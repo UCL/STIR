@@ -21,7 +21,7 @@
 */
 
 
-#include "stir/interfile.h"
+#include "stir/IO/interfile.h"
 #include "stir/Sinogram.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
