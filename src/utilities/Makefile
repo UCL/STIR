@@ -4,18 +4,12 @@
 
 WORKSPACE=$(CURDIR)/..
 
-include $(WORKSPACE)/Makefile_common
-
 # variables used only for ecat7
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
 LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
+include $(WORKSPACE)/Makefile_common
 
-ifeq ($(SYSTEM),SUN)
-EXTRA_LIBS = -lnsl -lsocket
-else
-EXTRA_LIBS = 
-endif
 
 SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
         convecat6_if.cxx \
@@ -26,6 +20,20 @@ SOURCES = manip_image.cxx manip_projdata.cxx display_projdata.cxx \
         conv_to_ecat6.cxx \
 	extract_segments.cxx \
 	correct_projdata.cxx 
+
+# check if we find the Louvain la Neuve distribution by looking for matrix.h
+__TEST_LLN:=$(shell if [ -e $(LLN_INCLUDE_DIR)/matrix.h ]; then echo 1;  fi)
+
+ifeq ($(__TEST_LLN),1)
+  # yes, the LLN files seem to be there, so we can compile 
+  # ifheaders_for_ecat7 as well
+  SOURCES += ifheaders_for_ecat7.cxx
+  CFLAGS +=  -I $(LLN_INCLUDE_DIR)
+  ifeq ($(SYSTEM),SUN)
+     EXTRA_LIBS += -lnsl -lsocket
+  endif
+endif
+
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
@@ -49,10 +57,10 @@ install: $(EXES)
 
 include $(WORKSPACE)/Makefile_bblibs
 
-#$(DEST)libcti.a: $(DEST)cti_utils.o
+#$(DEST)libcti.a: $(DEST)cti_utils.o  $(DEST)Tomo_cti.o
 #	$(AR) r $@ $?
-#	$(RANLIB) $@
-# before enabling this, define RANLIB in Makefile_common
+#	ranlib $@
+
 
 $(DEST)conv_to_ecat6: $(DEST)conv_to_ecat6.o \
     $(DEST)cti_utils.o $(DEST)Tomo_cti.o ${LIB_BUILDINGBLOCK}
@@ -64,9 +72,6 @@ $(DEST)convecat6_if: $(DEST)convecat6_if.o \
     $(DEST)cti_utils.o $(DEST)Tomo_cti.o ${LIB_BUILDINGBLOCK}
 	$(CXX) $(CFLAGS)  -o $@ $< $(DEST)cti_utils.o $(DEST)Tomo_cti.o \
 		${LIB_BUILDINGBLOCK}  $(LINK_OPT) $(SYS_LIBS) 
-
-$(DEST)ifheaders_for_ecat7.o: ifheaders_for_ecat7.cxx
-	$(CXX) $(CFLAGS)  -I $(LLN_INCLUDE_DIR) -c -o $@ $< 
 
 
 $(DEST)ifheaders_for_ecat7: $(DEST)ifheaders_for_ecat7.o \
