@@ -16,6 +16,8 @@ CFLAGS = -g $(DEBUG) -I${HOME}/PPhead/include
 #KT 27/02/98 use default rules now, .cxx does not work without next line
 .SUFFIXES: .cc .o .cxx .a
 
+.SCCS_GET:
+
 .KEEP_STATE:
 
 #KT 16/12 wanted to add interfile...
