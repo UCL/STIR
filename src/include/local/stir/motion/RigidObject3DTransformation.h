@@ -25,6 +25,7 @@
 #include "local/stir/Quaternion.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
+#include "stir/Array.h"
 #include "stir/Bin.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
