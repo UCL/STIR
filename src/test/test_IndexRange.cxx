@@ -103,7 +103,11 @@ IndexRange_Tests::run_tests()
     const Coordinate3D<int> sizes(3,4,5);
     const IndexRange<3> idx_range3d(sizes);
     
-    check(idx_range3d[3].get_max_index() == 5, 
+    check(idx_range3d.get_max_index() == 2, 
+      "testing constructor from 1 Coordinate object");
+    check(idx_range3d[0].get_max_index() == 3, 
+      "testing constructor from 1 Coordinate object");
+    check(idx_range3d[0][0].get_max_index() == 4, 
       "testing constructor from 1 Coordinate object");
     check(idx_range3d.is_regular()==true, 
       "testing is_regular on regular range");
