@@ -91,7 +91,7 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
   if(get_parameters().inter_iteration_filter_interval>0 && get_parameters().inter_iteration_filter_ptr != 0 )
     {
       cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
-      get_parameters().inter_iteration_filter_ptr->build_filter(*target_image_ptr);
+      get_parameters().inter_iteration_filter_ptr->set_up(*target_image_ptr);
     }
 
  
@@ -99,7 +99,7 @@ recon_set_up(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
   {
     cerr<<endl<<"Building post filter kernel"<<endl;
     
-    get_parameters().post_filter_ptr->build_filter(*target_image_ptr);
+    get_parameters().post_filter_ptr->set_up(*target_image_ptr);
   }
 
 }
