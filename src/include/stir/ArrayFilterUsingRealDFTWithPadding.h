@@ -64,11 +64,12 @@ public:
 
   //! set the real kernel coefficients
   /*
-    The kernel can be given with arbitrary index range, but will be wrapped-around, 
+    The kernel can be given with arbitrary (but regular) index range, 
+    but will be wrapped-around, 
       assuming that it is periodic outside the indexrange of the kernel. So,
       normally, the 0- index corresponds to the middle of the PSF.
 
-      Input data will be zero-padded to the same length as this kernel before
+      Input data will be zero-padded to the same range as this kernel before
       DFT. If you want to avoid aliasing, make sure that the kernel is at least
       twice as long as the input and output arrays.
 
@@ -81,8 +82,9 @@ public:
   /*  The kernel has to be given with index ranges starting from 0.
       So, the 0- index corresponds to the DC component of the filter.
 
-      Input data will be zero-padded to the same length as this kernel before
-      DFT. If you want to avoid aliasing, make sure that the kernel is at least
+      \see fourier_for_real_data() for more info on the range of frequencies
+      Input data will be zero-padded to the index range as the corresponding 
+      'real' kernel before DFT. If you want to avoid aliasing, make sure that the kernel is at least
       twice as long as the input and output arrays.
 
       As this function uses fourier(), see there for restrictions on the possible
@@ -99,9 +101,16 @@ public:
 
 protected:
   Array<num_dimensions, std::complex<elemT> > complex_filter_kernel;
+  //! Performs the convolution
+  /*! \a in_array and \a out_array can have arbitrary (even non-regular)
+      index ranges. However, they will copied (if necessary)
+      using wrap-around to/from
+      an array with the same dimensions as the 'real' kernel.
+  */
+  void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const;
 private:
   IndexRange<num_dimensions> padding_range;
-  void do_it(Array<num_dimensions, elemT>& out_array, const Array<num_dimensions, elemT>& in_array) const;
+  BasicCoordinate<num_dimensions,int> padded_sizes;
   Succeeded set_padding_range();
 };
 
