@@ -1,17 +1,17 @@
 //
-// %W%: %E%
+// $Id$
 //
 /*!
 
   \file
-
-  \brief 
+  \ingroup buildblock
+  \brief Non-linline implementations for class ParsingObject
 
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  \date %E%
-  \version %I%
+  \date $Date$
+  \version $Revision$
 */
 #include "tomo/ParsingObject.h"
 #include <fstream>
