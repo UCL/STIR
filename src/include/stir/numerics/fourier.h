@@ -27,7 +27,7 @@ START_NAMESPACE_STIR
 /*! \ingroup DFT
   \brief Compute multi-dimensional discrete fourier transform.
 
-  \param[in,out] c The type of \a c should normally be \verbatim Array&lt;n,std::complex<T> > \endverbatim.
+  \param[in,out] c The type of \a c should normally be \verbatim Array<n,std::complex<T> > \endverbatim.
   The function will then compute the \a n- dimensional fourier transform of the data,
   and store the result in \a c.
 
@@ -35,7 +35,7 @@ START_NAMESPACE_STIR
 
   \see fourier_1d for conventions
 
-  \warning Currently, the array has to have \c get_min_index()==0 at each dimensions.
+  \warning Currently, the array has to have \c get_min_index()==0 at each dimension.
 */
 template <typename T>
 void 
@@ -43,12 +43,11 @@ fourier(T& c, const int sign = 1);
 //fourier(VectorWithOffset<elemT>& c, const int sign = 1);
 
 
-//TODO multidim inverse_fourier scale factor
 template <typename T>
 inline void inverse_fourier(T& c, const int sign=1)
 {
   fourier(c,-sign);
-  c /= c.get_length();
+  c /= c.size_all();
 }
 
 /*! \ingroup DFT
@@ -93,7 +92,7 @@ Array<1,T>
 
 template <typename T>
 Array<1,std::complex<T> > 
-pos_frequencies_to_all(VectorWithOffset<std::complex<T> > c)
+pos_frequencies_to_all(const VectorWithOffset<std::complex<T> >& c)
 {
   const unsigned int n = (c.get_length()-1)*2;
   Array<1,std::complex<T> > result(n);
