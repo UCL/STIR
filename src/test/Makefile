@@ -39,7 +39,8 @@ LDFLAGS = -g -L${WORKSPACE}/buildblock  -lbuildblock
 
 all: paraplus nopara
 
-nopara: tensor display sinodata VectorWithOffset convert \
+# KT 05/05/98 changed convert to testconvert
+nopara: tensor display sinodata VectorWithOffset testconvert \
 	 displayPSOV
 
 paraplus:	ParaEPXtest pplustiny pplusdummy
@@ -68,7 +69,7 @@ displayPSOV: displayPSOV.cxx ${DISPLAYLIB} ${BUILDBLOCKLIB}
 
 VectorWithOffset: VectorWithOffset.cxx ${INCLUDE_DIR}/VectorWithOffset.h
 
-convert: convert.cxx ${BUILDBLOCKLIB}
+testconvert: testconvert.cxx ${BUILDBLOCKLIB}
  
 testinterfilereader: testinterfilereader.cxx ${INTERFILEFLIB}
 	$(CXX) $(CFLAGS) -o $@ $<  $(LDFLAGS) ${INTERFILELIB}
