@@ -19,7 +19,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -127,10 +127,8 @@ void Reconstruction::ask_parameters()
 
   input_filename=input_filename_char;
 
-  // KT 22/05/2003 disabled, as this is done in post_processing
-  // proj_data_ptr = ProjData::read_from_file(input_filename_char);
+  proj_data_ptr = ProjData::read_from_file(input_filename_char);
 
-  // KT 28/01/2002 moved here from IterativeReconstruction
   max_segment_num_to_process=
     ask_num("Maximum absolute segment number to process: ",
 	    0, proj_data_ptr->get_max_segment_num(), 0);
@@ -182,7 +180,10 @@ void Reconstruction::ask_parameters()
 }
 
 
-
+/*! \bug
+  When parsing twice without calling set_defaults(), we would probably
+  end up with a different input filename, but the same projection data
+*/
 bool Reconstruction::post_processing()
 {
   if (input_filename.length() == 0)
@@ -206,7 +207,16 @@ bool Reconstruction::post_processing()
   { warning("The 'mash x views' key has an invalid value (must be 1 or even number)\n"); return true; }
 #endif
  
-  proj_data_ptr= ProjData::read_from_file(input_filename);
+  /* read projection data
+     however, avoid reading it twice if ask_parameters() did it already
+     this is potentially a bit tricky as if we would parse twice
+     (without calling set_defaults()), we might
+     end up with a different filename, but the same projection data
+     The only solution for this is to have the input_filename key
+     have a callback that immediately calls ProjData::read_from_file
+  */
+  if (is_null_ptr(proj_data_ptr))
+    proj_data_ptr= ProjData::read_from_file(input_filename);
   
   
   return false;
