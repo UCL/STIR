@@ -94,7 +94,7 @@ void truncate_rim(SegmentBySinogram<float>& seg, const int rim_truncation_sino, 
 void truncate_rim(Viewgram<float>& viewgram, const int rim_truncation_sino);
 
 //! sets the end planes of the image to zero
-void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int plane_truncation=1);
+void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int input_num_planes=1);
 
 //! simple division of two sinograms, x/0 = 0
 void divide_array(SegmentByView<float>& numerator, const SegmentByView<float>& denominator);
