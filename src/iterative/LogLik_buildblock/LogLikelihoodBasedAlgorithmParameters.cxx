@@ -18,8 +18,10 @@
 */
 
 #include "LogLikBased/LogLikelihoodBasedAlgorithmParameters.h"
+#include "shared_ptr.h"
 #include "utilities.h"
 #include <iostream>
+// include the following to set defaults
 #ifndef USE_PMRT
 #include "recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "recon_buildblock/BackProjectorByBinUsingInterpolation.h"
@@ -59,7 +61,7 @@ LogLikelihoodBasedAlgorithmParameters::set_defaults()
     new BackProjectorByBinUsingInterpolation();
 #else
   shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing(); 	
+    new  ProjMatrixByBinUsingRayTracing();
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
     new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
   shared_ptr<BackProjectorByBin> back_projector_ptr =
@@ -82,6 +84,7 @@ LogLikelihoodBasedAlgorithmParameters::initialise_keymap()
   parser.add_key("additive sinogram",&additive_projection_data_filename);
 
 }
+
 void LogLikelihoodBasedAlgorithmParameters::ask_parameters()
 {
 
