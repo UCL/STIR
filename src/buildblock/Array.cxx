@@ -1,44 +1,51 @@
 // $Id$: $Date$
 
+/*!
+  \file 
+  \ingroup buildblock 
+  \brief non-inline implementations for the Array class 
 
-/* implementation of Array::read_data and write_data
-   first version : KT
-   */
+  \author Kris Thielemans 
+  \author PARAPET project
+
+  \date    $Date$
+
+  \version $Revision$
+
+  Currently, this file needs to contain only read_data, write_data.
+
+  The end of this file contains instantiations for some
+  common cases. If you have linking problems with non-inline Array member 
+  functions, you might need to add your own types in the list.
+
+  For compilers that do not support partial template specialisation,
+  the 1D implementations are rather tedious: full specialisations
+  for a few common types. Result: lots of code repetition.
+*/
+
 #include "convert_array.h"
 
 START_NAMESPACE_TOMO
 
+/*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT>
 void 
-Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, Real& scale,
+Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
   check_state();
   if (NumericInfo<elemT>().type_id() == type)
     {
       read_data(s, byte_order);
-      // TODO you might want to use the scale even in this case, 
+      // TODO? you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
       return;
     }
-/*
- VC 5.0 has a bug that it cannot resolve the num_dimensions template-arg
- when using convert_array. You have to specify all template args explicitly.
- I do this here with macros to prevent other compilers breaking on it
- (notably VC 6.0...)
- */
-#if defined(_MSC_VER) && (_MSC_VER < 1200)
-#define read_and_convert(type) \
-        Array<num_dimensions,type> data(get_index_range()); \
-	data.read_data(s, byte_order); \
-	operator=( convert_array<num_dimensions,type,elemT,Real>(scale, data, NumericInfo<elemT>()) );
-#else
 #define read_and_convert(type) \
         Array<num_dimensions,type> data(get_index_range()); \
 	data.read_data(s, byte_order); \
 	operator=( convert_array(scale, data, NumericInfo<elemT>()) );
-#endif
 
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
   switch(type.id)
@@ -59,9 +66,9 @@ Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, Real& scal
 	break;
       }
     default:
-      // TODO
-      PETerror("type not yet supported"); Abort();
-    }
+      error("Array::read_data : type not yet supported\n, edit line %d in file %s",
+	       __LINE__, __FILE__);    
+  }
 #undef read_and_convert
 
   check_state();
@@ -83,10 +90,11 @@ Array<num_dimensions, elemT>::read_data(istream& s, NumericType type, Real& scal
 
 #ifndef MEMBER_TEMPLATES
 
+/*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT>
 void 
 Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type, 
-		                         Real& scale,
+		                         float& scale,
 		                         const ByteOrder byte_order ) const
 {
   check_state();
@@ -95,29 +103,16 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
       write_data(s, byte_order);
       // you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
 
   // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
-/*
- VC 5.0 has a bug that it cannot resolve the num_dimensions template-arg
- when using convert_array. You have to specify all template args explicitly.
- I do this here with macros to prevent other compilers breaking on it
- (notably VC 6.0...)
- */
-#if defined(_MSC_VER) && (_MSC_VER < 1200)
-#define convert_and_write(type) \
-	Array<num_dimensions,type> data = \
-	  convert_array<num_dimensions,elemT,type,Real>(scale, *this,  NumericInfo<type>()); \
-	data.write_data(s, byte_order);
-#else
 #define convert_and_write(type) \
 	Array<num_dimensions,type> data = \
 	  convert_array(scale, *this,  NumericInfo<type>()); \
 	data.write_data(s, byte_order);
-#endif
 
   switch(type.id)
     {
@@ -137,8 +132,8 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
 	break;
       }
     default:
-      // TODO
-      PETerror("type not yet supported"); Abort();
+      error("Array::write_data : type not yet supported\n, edit line %d in file %s",
+	       __LINE__, __FILE__);
     }
 #undef convert_and_write
 
@@ -147,6 +142,7 @@ Array<num_dimensions, elemT>::write_data(ostream& s, NumericType type,
 
 #else // MEMBER_TEMPLATES
 
+/*! When \c elemT is equal to \c elemT2, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT, class elemT2, class scaleT>
 void Array<num_dimensions,elemT>::write_data(ostream& s, 
 				  NumericInfo<elemT2> info2, 
@@ -159,6 +155,7 @@ void Array<num_dimensions,elemT>::write_data(ostream& s,
   data.write_data(s, byte_order);
 }
 
+/*! Partial specialisation to \c elemT = \c elemT2, \c scale will always be set to 1. */
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <int num_dimensions, class elemT, class scaleT>
 void 
@@ -175,11 +172,12 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
 }
 #endif
 
+/*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <int num_dimensions, class elemT>
 void 
 Array<num_dimensions,elemT>::write_data(ostream& s, 
 				  NumericType type, 
-				  Real& scale,
+				  float& scale,
 				  const ByteOrder byte_order) const
 {
   check_state();
@@ -188,7 +186,7 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
       write_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
       return;
     }
 
@@ -214,15 +212,21 @@ Array<num_dimensions,elemT>::write_data(ostream& s,
 	break;
       }
     default:
-      // TODO
-      PETerror("Array::write_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); abort();
+      error("Array::write_data : type not yet supported\n, edit line %d in file %s",
+	       __LINE__, __FILE__); 
     }
 }
 
 #endif // MEMBER_TEMPLATES
 
+
+/*************************************
+ 1D specialisation
+ *************************************/
+
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+
+/************************** 2 arg version *******************************/
 
 template <class elemT>
 void
@@ -232,15 +236,15 @@ Array<1, elemT>::read_data(istream& s,
   check_state();
   
   if (!s)
-  { PETerror("Error before reading from stream in read_data\n"); abort(); }
+  { error("Array::read_data: error before reading from stream\n"); }
   if (s.eof())
-  { PETerror("Reading past EOF in read_data\n"); abort(); }
+  { error("Array::read_data: reading past EOF\n"); }
   
   s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
   release_data_ptr();
   
   if (!s)
-  { PETerror("Error after reading from stream in read_data\n"); abort(); }
+  { error("Array::read_data: error after reading from stream \n"); }
   check_state();
   
   if (!byte_order.is_native_order())
@@ -276,13 +280,13 @@ Array<1, elemT>::write_data(ostream& s,
   }
   
   if (!s)
-  { PETerror("Error before writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
   s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
   
   if (!s)
-  { PETerror("Error after writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
@@ -293,11 +297,13 @@ Array<1, elemT>::write_data(ostream& s,
   check_state();
 }
 
+/************************** 4 arg version *******************************/
 
 #ifndef  MEMBER_TEMPLATES
 
+/*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
 template <class elemT>
-void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
+void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
   check_state();
@@ -306,7 +312,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       read_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -340,17 +346,76 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::read_data : type not yet supported\n, at line %d in file %s",
+      error("Array::read_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
 }
 
+// KT 17/05/2000 forgot to add write_data...
+
+/*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
+template <class elemT>
+void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
+				 const ByteOrder byte_order) const
+{
+  check_state();
+  if (NumericInfo<elemT>().type_id() == type)
+    {
+      write_data(s, byte_order);
+      // TODO you might want to use the scale even in this case, 
+      // but at the moment we don't
+      scale = float(1);
+
+      return;
+    }
+
+  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
+  switch(type.id)
+    {
+    case NumericType::SHORT:
+      {
+	typedef signed short type;
+	Array<1,type> data = 
+	  convert_array(scale, *this, NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+    case NumericType::USHORT:
+      {
+	typedef unsigned short type;
+	Array<1,type> data = 
+	  convert_array(scale, *this, NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+    case NumericType::FLOAT:
+      {
+	typedef float type;
+	Array<1,type> data = 
+	  convert_array(scale, *this, NumericInfo<type>());
+	data.write_data(s, byte_order);
+	break;
+      }
+    default:
+      // TODO
+      error("Array::write_data : type not yet supported\n, at line %d in file %s",
+	       __LINE__, __FILE__); 
+      
+    }
+
+  check_state();
+}
 
 #else // MEMBER_TEMPLATES
 
+#error This code has never been checked. It might work, but maybe not...
+
+/********************** read **********************/
+
+/*! When \c elemT is equal to \c elemT2, \c scale will always be set to 1. */
 template <class elemT, class elemT2, class scaleT>
 void Array<1,elemT>::read_data(istream& s, 
 				 NumericInfo<elemT2> info2, 
@@ -364,7 +429,7 @@ void Array<1,elemT>::read_data(istream& s,
   check_state();
 }
 
-// this requires partial template specialisation
+/*! Partial specialisation to \c elemT = \c elemT2, \c scale will always be set to 1. */
 template <class elemT, class scaleT>
 void Array<1,elemT>::read_data(istream& s,
 				 NumericInfo<elemT> info2, 
@@ -383,7 +448,7 @@ void Array<1,elemT>::read_data(istream& s,
 template <class elemT>
 void Array<1,elemT>::read_data(ostream& s, 
 				  NumericType type, 
-				  Real& scale,
+				  float& scale,
 				  const ByteOrder byte_order) const
 {
   check_state();
@@ -392,7 +457,7 @@ void Array<1,elemT>::read_data(ostream& s,
       read_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
       return;
     }
 
@@ -419,9 +484,87 @@ void Array<1,elemT>::read_data(ostream& s,
       }
     default:
       // TODO
-      PETerror("Array::read_data : type not yet supported\n, at line %d in file %s",
-	       __LINE__, __FILE__); abort();
+      error("Array::read_data : type not yet supported\n, at line %d in file %s",
+	       __LINE__, __FILE__); 
     }
+}
+
+/********************** write **********************/
+// KT 17/05/2000 forgot to add write_data...
+
+
+/*! When \c elemT is equal to \c elemT2, \c scale will always be set to 1. */
+template <class elemT, class elemT2, class scaleT>
+void Array<1,elemT>::write_data(ostream& s, 
+				 NumericInfo<elemT2> info2, 
+				 scaleT& scale,
+				 const ByteOrder byte_order) const
+{
+  check_state();
+  Array<elemT2> data = 
+    convert_array(scale, *this, NumericInfo<elemT2>());
+  data.write_data(s, byte_order);
+}
+
+/*! Partial specialisation to \c elemT = \c elemT2, \c scale will always be set to 1. */
+template <class elemT, class scaleT>
+void Array<1,elemT>::write_data(ostream& s,
+				 NumericInfo<elemT> info2, 
+				 scaleT& scale,
+				 const ByteOrder byte_order) const
+{
+  check_state();
+  data.write_data(s, byte_order);
+  // TODO you might want to use the scale even in this case, 
+  // but at the moment we don't
+  scale = scaleT(1);
+}
+
+/*! When the \c type parameter matches \c elemT, \c scale will always be set to 1. */
+template <class elemT>
+void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
+				 const ByteOrder byte_order) const
+{
+  check_state();
+  if (NumericInfo<elemT>().type_id() == type)
+    {
+      write_data(s, byte_order);
+      // TODO you might want to use the scale even in this case, 
+      // but at the moment we don't
+      scale = float(1);
+
+      return;
+    }
+
+  // KT TODO pretty awful way of doings things, but I'm not sure how to handle it
+  switch(type.id)
+    {
+    case NumericType::SHORT:
+      {
+	typedef signed short type;
+	data.write_data(s, NumericInfo<type>(), scale, byte_order);
+	break;
+      }
+    case NumericType::USHORT:
+      {
+	typedef unsigned short type;
+	data.write_data(s, NumericInfo<type>(), scale, byte_order);
+	break;
+      }
+    case NumericType::FLOAT:
+      {
+	typedef float type;
+	data.write_data(s, NumericInfo<type>(), scale, byte_order);
+	break;
+      }
+    default:
+      // TODO
+      error("Array::write_data : type not yet supported\n, at line %d in file %s",
+	       __LINE__, __FILE__); 
+      
+    }
+
+  check_state();
 }
 
 #endif // MEMBER_TEMPLATES
@@ -440,15 +583,15 @@ Array<1, float>::read_data(istream& s,
   check_state();
   
   if (!s)
-  { PETerror("Error before reading from stream in read_data\n"); abort(); }
+  { error("Error before reading from stream in read_data\n");  }
   if (s.eof())
-  { PETerror("Reading past EOF in read_data\n"); abort(); }
+  { error("Reading past EOF in read_data\n");  }
   
   s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
   release_data_ptr();
   
   if (!s)
-  { PETerror("Error after reading from stream in read_data\n"); abort(); }
+  { error("Error after reading from stream in read_data\n");  }
   check_state();
   
   if (!byte_order.is_native_order())
@@ -483,13 +626,13 @@ Array<1, float>::write_data(ostream& s,
   }
   
   if (!s)
-  { PETerror("Error before writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
   s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
   
   if (!s)
-  { PETerror("Error after writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
@@ -509,15 +652,15 @@ Array<1, short>::read_data(istream& s,
   check_state();
   
   if (!s)
-  { PETerror("Error before reading from stream in read_data\n"); abort(); }
+  { error("Error before reading from stream in read_data\n");  }
   if (s.eof())
-  { PETerror("Reading past EOF in read_data\n"); abort(); }
+  { error("Reading past EOF in read_data\n");  }
   
   s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
   release_data_ptr();
   
   if (!s)
-  { PETerror("Error after reading from stream in read_data\n"); abort(); }
+  { error("Error after reading from stream in read_data\n");  }
   check_state();
   
   if (!byte_order.is_native_order())
@@ -552,13 +695,13 @@ Array<1, short>::write_data(ostream& s,
   }
   
   if (!s)
-  { PETerror("Error before writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
   s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
   
   if (!s)
-  { PETerror("Error after writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
@@ -578,15 +721,15 @@ Array<1, unsigned short>::read_data(istream& s,
   check_state();
   
   if (!s)
-  { PETerror("Error before reading from stream in read_data\n"); abort(); }
+  { error("Error before reading from stream in read_data\n");  }
   if (s.eof())
-  { PETerror("Reading past EOF in read_data\n"); abort(); }
+  { error("Reading past EOF in read_data\n");  }
   
   s.read(reinterpret_cast<char *>(get_data_ptr()), length * sizeof(elemT));
   release_data_ptr();
   
   if (!s)
-  { PETerror("Error after reading from stream in read_data\n"); abort(); }
+  { error("Error after reading from stream in read_data\n");  }
   check_state();
   
   if (!byte_order.is_native_order())
@@ -621,13 +764,13 @@ Array<1, unsigned short>::write_data(ostream& s,
   }
   
   if (!s)
-  { PETerror("Error before writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error before writing to stream.\n");  }
   
   // TODO use get_const_data_ptr() when it's a const member function
   s.write(reinterpret_cast<const char *>(begin()), length * sizeof(elemT));   
   
   if (!s)
-  { PETerror("Error after writing to stream in write_data\n"); abort(); }
+  { error("Array::write_data: error after writing to stream.\n");  }
   
   if (!byte_order.is_native_order())
   {
@@ -637,6 +780,8 @@ Array<1, unsigned short>::write_data(ostream& s,
   
   check_state();
 }
+
+#if !defined(_MSC_VER) || (_MSC_VER > 1100)
 
 /************************** 4 arg version *******************************/
 /*
@@ -648,8 +793,8 @@ Array<1, unsigned short>::write_data(ostream& s,
  */
 
 #if defined(_MSC_VER) && (_MSC_VER < 1200)
-#define CONVERT_ARRAY_WRITE convert_array<1,elemT,type,Real>
-#define CONVERT_ARRAY_READ convert_array<1,type,elemT,Real>
+#define CONVERT_ARRAY_WRITE convert_array<1,elemT,type,float>
+#define CONVERT_ARRAY_READ convert_array<1,type,elemT,float>
 #else
 #define CONVERT_ARRAY_WRITE convert_array
 #define CONVERT_ARRAY_READ convert_array
@@ -664,7 +809,7 @@ Array<1, unsigned short>::write_data(ostream& s,
 
 #define elemT float
 
-void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
+void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				  const ByteOrder byte_order) const
 {
   check_state();
@@ -673,7 +818,7 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
       write_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -707,15 +852,15 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::write_data : type not yet supported\n, at line %d in file %s",
+      error("Array::write_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
 }
 
-void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
+void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
   check_state();
@@ -724,7 +869,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       read_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -758,9 +903,9 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::read_data : type not yet supported\n, at line %d in file %s",
+      error("Array::read_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
@@ -774,7 +919,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
 
 #define elemT short
 
-void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
+void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				  const ByteOrder byte_order) const
 {
   check_state();
@@ -783,7 +928,7 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
       write_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -817,15 +962,15 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::write_data : type not yet supported\n, at line %d in file %s",
+      error("Array::write_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
 }
 
-void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
+void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
   check_state();
@@ -834,7 +979,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       read_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -868,9 +1013,9 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::read_data : type not yet supported\n, at line %d in file %s",
+      error("Array::read_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
@@ -883,7 +1028,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
 
 #define elemT unsigned short
 
-void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
+void Array<1,elemT>::write_data(ostream& s, NumericType type, float& scale,
 				  const ByteOrder byte_order) const
 {
   check_state();
@@ -892,7 +1037,7 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
       write_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -926,15 +1071,15 @@ void Array<1,elemT>::write_data(ostream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::write_data : type not yet supported\n, at line %d in file %s",
+      error("Array::write_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
 }
 
-void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
+void Array<1,elemT>::read_data(istream& s, NumericType type, float& scale,
 				 const ByteOrder byte_order)
 {
   check_state();
@@ -943,7 +1088,7 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       read_data(s, byte_order);
       // TODO you might want to use the scale even in this case, 
       // but at the moment we don't
-      scale = Real(1);
+      scale = float(1);
 
       return;
     }
@@ -977,15 +1122,17 @@ void Array<1,elemT>::read_data(istream& s, NumericType type, Real& scale,
       }
     default:
       // TODO
-      PETerror("Array::read_data : type not yet supported\n, at line %d in file %s",
+      error("Array::read_data : type not yet supported\n, at line %d in file %s",
 	       __LINE__, __FILE__); 
-      abort();
+      
     }
 
   check_state();
 }
 
 #undef elemT
+
+#endif  // VC 5
 
 #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
