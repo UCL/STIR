@@ -37,6 +37,14 @@
 #define ZERO_TOL 0.000001
 #define ROOF 40000000.0
 
+
+class parameters{
+  public:
+ int limit_segments, MAP_mode, num_subsets, view45, phase_offset, iteration_num;   
+} globals;
+
+
+
 // A do-nothing class for normalisation
 class Normalisation
 {
@@ -48,7 +56,8 @@ PETImageOfVolume
 compute_sensitivity_image(const PETScannerInfo& scanner,
 			  const PETImageOfVolume& attenuation_image,
 			  const bool do_attenuation,
-			  const Normalisation& normalisation);
+			  const Normalisation& normalisation,
+			  parameters &globals);
 
 int main(int argc, char *argv[])
 {
@@ -102,6 +111,15 @@ int main(int argc, char *argv[])
       scanner.bin_size = 2* scanner.FOV_radius / scanner.num_bins;
       scanner.ring_spacing = scanner.FOV_axial / scanner.num_rings;
     }
+
+
+ globals.limit_segments=ask_num("Maximum absolute segment number to process: ", 0, scanner.type == (PETScannerInfo::Advance) ?
+				11 :
+				scanner.num_rings-1,  scanner.type == (PETScannerInfo::Advance) ?
+				11 :
+				scanner.num_rings-1);
+
+ globals.limit_segments++;
 
   // KT 14/08/98 added conditional
 #ifndef TEST
@@ -169,7 +187,7 @@ int main(int argc, char *argv[])
 
   // Compute the sensitivity image  
   PETImageOfVolume result =
-    compute_sensitivity_image(scanner, attenuation_image,  do_attenuation, Normalisation ());
+    compute_sensitivity_image(scanner, attenuation_image,  do_attenuation, Normalisation (), globals);
 #ifndef TEST
   result+=(float)ZERO_TOL;
 
@@ -191,7 +209,8 @@ int main(int argc, char *argv[])
 PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
 					   const PETImageOfVolume& attenuation_image,
 					   const bool do_attenuation,
-					   const Normalisation& normalisation)
+					   const Normalisation& normalisation,
+					   parameters &globals)
 {
   int max_bin = (-scanner.num_bins/2) + scanner.num_bins-1;
   if (scanner.num_bins % 2 == 0)
@@ -229,6 +248,8 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
       
       segment *= -1;
       in_place_exp(segment);
+
+
     }
     else
     {
@@ -278,7 +299,7 @@ PETImageOfVolume compute_sensitivity_image(const PETScannerInfo& scanner,
   // now do a loop over the other segments
   // now doing all segments
 
-  for (int segment_num = 1; segment_num < scanner.num_rings ; segment_num++){
+  for (int segment_num = 1; segment_num < globals.limit_segments ; segment_num++){
 
     cerr<<endl<<"Processing segment #"<<segment_num<<endl;
 
