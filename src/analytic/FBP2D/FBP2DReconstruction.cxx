@@ -131,7 +131,7 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
       warning("padding factor has to be between 0 and 2 but is %d\n", pad_in_s);
       return true;
     }
-  if (pad_in_s<1))
+  if (pad_in_s<1)
       warning("Transaxial extension for FFT:=0 should ONLY be used when the non-zero data\n"
 	      "occupy only half of the FOV. Otherwise aliasing will occur!");
 
