@@ -8,6 +8,9 @@ INCLUDE_DIR = ${WORKSPACE}/include
 RANLIB= ranlib
 
 #These libraries will be used as dependencies
+# KT 09/02/98 added reconbuildblock
+LIB_RECON_BUILDINGBLOCK= \
+   ${WORKSPACE}/recon_buildblock/${DEST}librecon_buildblock.a
 LIB_BUILDINGBLOCK= \
    ${WORKSPACE}/buildblock/${DEST}libbuildblock.a
 LIB_DISPLAY= \
@@ -45,7 +48,8 @@ endif
 # KT 09/10/98 use OBJS,EXES to prevent repetition, add displayIF
 #CL 10/10/98 Add readsino
 #CL 12/11/98 Remove readsino as now it is obsolete, use either displayPSOV or vox
-SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx 
+# KT 09/02/98 added correctPSOV
+SOURCES = displayPSOV.cxx swap_byteorder.cxx ecat6bysegm.cxx ecat6bysegmspan.cxx conv2cti.cxx vox.cxx correctPSOV.cxx
 #readsino.cxx 
 OBJS=$(SOURCES:%.cxx=$(DEST)%.o)
 EXES=$(SOURCES:%.cxx=$(DEST)%)
@@ -69,8 +73,9 @@ $(DEST)conv2cti:  $(OBJS_CTI)
 
 #CL 09/03/98 NEW SECTION for conversion of an ECAT6 file to ECAT6 file organized by segment (0, +1, -1, +2, -2,...)
 
-$(DEST)ecat6bysegm:  ecat6bysegm.cxx $(DEST)libcti.a 
-	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST) -lcti -lm 
+# KT 27/11/98 added buildblock for PETScannerInfo.o
+$(DEST)ecat6bysegm:  ecat6bysegm.cxx $(DEST)libcti.a  ${LIB_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST) -lcti -lm  ${LIB_BUILDINGBLOCK}
 
 $(DEST)ecat6bysegmspan: ecat6bysegmspan.cxx $(DEST)libcti.a 
 	$(CXX) $(CFLAGS)  -o $@ ecat6bysegmspan.cxx -L$(DEST)  -lcti -lm 
@@ -85,8 +90,13 @@ $(DEST)readsino: readsino.cxx  libs
 	    ${LIB_BUILDINGBLOCK} \
 	    ${LIB_DISPLAY} ${LIBS}
 
+# KT 09/02/98 added correctPSOV
+$(DEST)correctPSOV:  correctPSOV.cxx ${LIB_RECON_BUILDINGBLOCK}
+	$(CXX) $(CFLAGS)  -o $@  $< -L$(DEST)  -lm \
+	${LIB_BUILDINGBLOCK} ${LIB_RECON_BUILDINGBLOCK}
 
-libs: $(LIB_BUILDINGBLOCK) $(LIB_DISPLAY)
+# KT 09/02/98 added reconbuildblock
+libs: $(LIB_RECON_BUILDINGBLOCK) $(LIB_BUILDINGBLOCK) $(LIB_DISPLAY)
 
 
 $(LIB_DISPLAY): FORCE
@@ -95,6 +105,11 @@ $(LIB_DISPLAY): FORCE
 # KT 09/10/98 changed spelling mistake BUILD -> BUILDING
 $(LIB_BUILDINGBLOCK): FORCE
 	cd $(WORKSPACE)/buildblock; $(MAKE); 
+
+# KT 09/02/98 added reconbuildblock
+$(LIB_RECON_BUILDINGBLOCK) : FORCE
+	cd $(WORKSPACE)/recon_buildblock; $(MAKE) 
+
 
 #CL 12/10/98 Add the header files dependencies
 
@@ -124,7 +139,8 @@ $(DEST)readsino.o: readsino.cxx ../include/pet_common.h \
 
 $(DEST)swap_byteorder.o: swap_byteorder.cxx ../include/pet_common.h
 
-$(DEST)/vox.o: vox.cxx ../include/pet_common.h ../include/sinodata.h \
+# KT 09/02/98 removed / after (DEST)
+$(DEST)vox.o: vox.cxx ../include/pet_common.h ../include/sinodata.h \
  ../include/Tensor1D.h ../include/NumericInfo.h \
  ../include/NumericVectorWithOffset.h ../include/VectorWithOffset.h \
  ../include/Tensor2D.h ../include/Tensorbase.h ../include/Tensor3D.h \
