@@ -21,6 +21,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
 #include "stir/Bin.h" 
+#include "stir/CPUTimer.h"
 #include "stir/Viewgram.h"
 
 using namespace std;
@@ -46,7 +47,11 @@ void scatter_viewgram(
 	
 	CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     Bin bin;
-	
+
+	CPUTimer t;
+	t.start();
+	//cerr << t.value();
+
 	for (bin.segment_num()=proj_data_info.get_min_segment_num();
 	bin.segment_num()<=proj_data_info.get_max_segment_num();
 	++bin.segment_num())
@@ -77,14 +82,16 @@ void scatter_viewgram(
 						scatter_points_vector, 
 						detector_coord_A, 
 						detector_coord_B));
-					
+                    
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
-						bin.get_bin_value();
-					
+						bin.get_bin_value();				
 					}			    	
+                    cerr << "segment_num = " << bin.segment_num() << ", view_num = " 
+						 << bin.view_num() << " time elapsed  "<< t.value() << endl;
+					
 				proj_data.set_viewgram(viewgram);
 			}
-		
+		t.stop();		
 	}
 END_NAMESPACE_STIR
 

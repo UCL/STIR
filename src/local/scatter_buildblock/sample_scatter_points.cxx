@@ -64,7 +64,7 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 	   ++current_iter)			   
 		   if(attenuation_map[(*current_iter)]>=att_threshold)
 		   {			
-			   scatt_points.push_back(voxel_size*convert_int_to_float(*current_iter));
+			   scatt_points.push_back(voxel_size*convert_to_float(*current_iter));
 			   ++total_points;
 		   }	
     if (total_points <= max_scatt_points) 
