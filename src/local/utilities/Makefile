@@ -6,7 +6,15 @@ WORKSPACE=$(CURDIR)/../..
 
 include $(WORKSPACE)/Makefile_common
 
-SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx
+SOURCES = fillwith1.cxx  add_poisson.cxx fillwithotherprojdata.cxx \
+	list_ROI_values.cxx \
+	zoom_image.cxx \
+	compute_plane_rescale_factors.cxx \
+	apply_plane_rescale_factors.cxx \
+	rescale_image.cxx \
+	swap_corners.cxx \
+	prepare_projdata.cxx
+
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
 
