@@ -39,7 +39,7 @@ clean_$(dir):
 	rm -f $(DEST)$(@:clean_%=%)/*.[oP]
 
 
-install_$(dir):
+install_$(dir): $(dir)
 	cp $($(@:install_%=%)_EXE_FILENAMES) $(INSTALL_DIR)
 
 ifneq ($(MAKECMDGOALS),clean)
