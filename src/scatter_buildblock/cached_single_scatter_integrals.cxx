@@ -62,10 +62,21 @@ float cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretis
 	}
 	else if(input_image_type==att_image_type)
 	{
+#ifndef NEWSCALE		
+	/* projectors work in pixel units, so convert attenuation data 
+	   from cm^-1 to pixel_units^-1 */
+  const float	rescale = 
+		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(discretised_image).
+		get_grid_spacing()[3]/10;
+#else
+  const float	rescale = 
+		0.1F;
+#endif
 		if (cached_integral_scattpoint_det[1][scatter_point_num][det_num]<0)
 		  {
 		    cached_integral_scattpoint_det[1][scatter_point_num][det_num]=
-		      exp(-integral_scattpoint_det(
+		      exp(-rescale*
+			      integral_scattpoint_det(
 						   discretised_image,	  	
 						   scatt_points_vector[scatter_point_num].coord,
 						   detection_points_vector[det_num]));
