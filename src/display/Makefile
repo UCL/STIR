@@ -39,7 +39,11 @@ endif
 
 OBJS = $(SOURCES_CXX:%.cxx=$(DEST)%.o) $(SOURCES_C:%.c=$(DEST)%.o)
 
-include $(SOURCES_CXX:%.cxx=$(DEST)%.d) $(SOURCES_C:%.c=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES_CXX:%.cxx=$(DEST)%.d) $(SOURCES_C:%.c=$(DEST)%.d)
+endif
+
 
 .PRECIOUS: $(DEST)*.o $(DEST)*.a
 

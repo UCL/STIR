@@ -45,9 +45,13 @@ ${DEST}OSMAPOSL: ${DEST}OSMAPOSL.o $(LIB_OBJS) \
 
 
 
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
 include $(MAIN_SOURCES:%.cxx=$(DEST)%.d)
 
 include $(LIB_SOURCES:%.cxx=$(DEST)%.d)
+endif
+
 
 
 
