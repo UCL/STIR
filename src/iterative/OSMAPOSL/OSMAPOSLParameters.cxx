@@ -139,6 +139,10 @@ bool OSMAPOSLParameters::post_processing()
   if (LogLikelihoodBasedAlgorithmParameters::post_processing())
     return true;
 
+  if( proj_data_ptr->get_num_views()/4 % num_subsets != 0) 
+  { warning("Number of subsets is such that subsets will be very unbalanced. "
+            "OSMAPOSL can not handle this. Choose the number of subsets as a divisor of %d\n",
+            proj_data_ptr->get_num_views()/4); }
 
   if (inter_update_filter_interval<0)
     { warning("Range error in inter-update filter interval \n"); return true; }
