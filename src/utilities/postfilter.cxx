@@ -1,51 +1,92 @@
 //
-// $Id$
+// $Id$: $Date$
 //
 
+/*!
+  \file 
+  \ingroup utilities
+ 
+  \brief  This programme performs filtering on image data
+
+  \author Matthew Jacobson
+  \author (with help from Kris Thielemans)
+  \author PARAPET project
+
+  \date    $Date$
+  \version $Revision$
+
+  \warning It only supports VoxelsOnCartesianGrid type of images.
+*/
 
 
-#include "pet_common.h" 
+#include "Tomography_common.h"
+#include "interfile.h"
+#include "utilities.h"
+#include "DiscretisedDensity.h"
+#include "VoxelsOnCartesianGrid.h"
+#include "ImageFilter.h"
+
 #include <iostream> 
 #include <fstream>
 
-#include <numeric>
-#include "imagedata.h"
+#ifndef TOMO_NO_NAMESPACES
+using std::cerr;
+using std::endl;
+#endif
 
 
-//MJ 2/11/98 include Tensor functions
-#include "TensorFunction.h"
+START_NAMESPACE_TOMO
+
+VoxelsOnCartesianGrid<float>* ask_interfile_image(char *input_query);
 
 
-#include "display.h"
-// KT 13/10/98 include interfile 
-#include "interfile.h"
-// KT 23/10/98 use ask_* version all over the place
-#include "utilities.h"
-//MJ 17/11/98 include new functions
-#include "recon_array_functions.h"
-
-#include "ImageFilter.h"
-
-#define ZERO_TOL 0.000001
 
 
-PETImageOfVolume ask_interfile_image(char *input_query);
+  /***************** Miscellaneous Functions  *******/
 
 
-main(int argc, char *argv[]){
+
+VoxelsOnCartesianGrid<float>* ask_interfile_image(char *input_query){
 
 
-  if (argc<2) error("Usage: postfilter <image file name> \n"); 
+    char filename[max_filename_length];
+    ask_filename_with_extension(filename, 
+				input_query,
+				"");
 
-  PETImageOfVolume input_image=read_interfile_image(argv[1]);
+    return read_interfile_image(filename);
 
+}
+
+END_NAMESPACE_TOMO
+
+USING_NAMESPACE_TOMO
+
+main(int argc, char *argv[])
+{
+
+  VoxelsOnCartesianGrid<float> input_image;
+  if (argc>1)
+  {
+     input_image = 
+	* dynamic_cast<VoxelsOnCartesianGrid<float> *>(
+         DiscretisedDensity<3,float>::read_from_file(argv[1]).get());
+  }
+  else
+  {
+
+    cerr<<endl<<"Usage: postfilter <header file name> (*.hv)"<<endl<<endl;
+    input_image= *ask_interfile_image("Image to process?");
+  }
+   
   //TODO Only require header file?
 
-  if(ask("Filter Dirac function?",true))
+  if(ask("Output Filter PSF function (instead of filtered image)?",false))
     {
 
    
       int zs,ys,xs, ze,ye,xe, zm,ym,xm;
+
 
       zs=input_image.get_min_z();
       ys=input_image.get_min_y();
@@ -60,14 +101,14 @@ main(int argc, char *argv[]){
       xm=(xs+xe)/2;
 
       input_image.fill(0.0);
-      input_image[zm][ym][xm]=1.0F;
+      (input_image)[zm][ym][xm]=1.0F;
 
     }
 
  
 
-  double fwhmx_dir=ask_num(" Full-width half-maximum (x-dir) ?", 0.0,20.0,0.5);
-  double fwhmz_dir=ask_num(" Full-width half-maximum (z-dir) ?", 0.0,20.0,0.5);
+  double fwhmx_dir=ask_num(" Full-width half-maximum (x,y-dir) (in mm)?", 0.0,20.0,0.5);
+  double fwhmz_dir=ask_num(" Full-width half-maximum (z-dir) (in mm)?", 0.0,20.0,0.5);
   float Nx_dir=ask_num(" Metz power (x-dir) ?", 0.0,5.0,0.0);   
   float Nz_dir=ask_num(" Metz power (z-dir) ?", 0.0,5.0,0.0);	
 
@@ -75,35 +116,16 @@ main(int argc, char *argv[]){
 
   filter.build(input_image,fwhmx_dir,fwhmz_dir,Nx_dir,Nz_dir);
   filter.apply(input_image);
- 
-  char outfile[max_filename_length];
 
+ char outfile[max_filename_length];
   ask_filename_with_extension(outfile,
-			      "Output to which file: ", "");
+                               "Output to which file: ", "");
 
 
 
-  write_basic_interfile(outfile, input_image);
+  write_basic_interfile(outfile,input_image);
 
   return EXIT_SUCCESS;
-
-}
-
-  /***************** Miscellaneous Functions  *******/
-
-
-
-
-
-PETImageOfVolume ask_interfile_image(char *input_query){
-
-
-    char filename[max_filename_length];
-    ask_filename_with_extension(filename, 
-				input_query,
-				"");
-
-    return read_interfile_image(filename);
 
 }
 
