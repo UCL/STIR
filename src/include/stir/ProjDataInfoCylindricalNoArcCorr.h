@@ -23,6 +23,7 @@
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/VectorWithOffset.h"
+#include "stir/CartesianCoordinate3D.h"
 
 START_NAMESPACE_STIR
 
@@ -211,6 +212,24 @@ public:
 			 int& det1_num, int& ring1_num,
 			 int& det2_num, int& ring2_num,
 			 const Bin&) const;
+
+  Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
+					             const CartesianCoordinate3D<float>& c1,
+						     const CartesianCoordinate3D<float>& c2) const;
+  
+  void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
+					       CartesianCoordinate3D<float>& coord_2,
+					       const Bin& bin) const;
+
+  void find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<float>& coord_1,
+							     CartesianCoordinate3D<float>& coord_2,
+							     const int Ring_A,const int Ring_B, 
+							     const int det1, const int det2) const;
+ 
+  void find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
+						  const CartesianCoordinate3D<float>& coord_1,
+						  const CartesianCoordinate3D<float>& coord_2) const;
+
 
 private:
   
