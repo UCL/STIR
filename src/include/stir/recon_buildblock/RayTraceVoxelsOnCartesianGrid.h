@@ -15,7 +15,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
@@ -25,14 +25,15 @@ START_NAMESPACE_STIR
 class ProjMatrixElemsForOneBin;
 template <typename elemT> class CartesianCoordinate3D;
 
-/*!
+/*! \ingroup recon_buildblock
+  
   \brief RayTraceVoxelsOnCartesianGrid finds the Length of Intersections (LOIs)
   of an LOR with a grid of voxels and appends them to
   the ProjMatrixElemsForOneBin object.
 
   \param lor object to which the intersected voxels and the LOI will be appended
   \param start_point first point on the LOR. The first voxel will contain this point.
-  \param stop_point last point on the LOR. The last voxel will contain this point.
+  \param end_point last point on the LOR. The last voxel will contain this point.
   \param voxel_size normally in mm
   \param normalisation_constant LOIs will be multiplied with this constant
 
