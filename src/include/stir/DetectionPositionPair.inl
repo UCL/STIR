@@ -59,7 +59,8 @@ DetectionPositionPair<coordT>::
 operator==(const DetectionPositionPair& p) const
 {
   return 
-    pos1() == p.pos1() && pos2() == p.pos2();
+    (pos1() == p.pos1() && pos2() == p.pos2()) ||
+    (pos1() == p.pos2() && pos2() == p.pos1())	;
 }
 
 template <typename coordT>
