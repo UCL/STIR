@@ -19,7 +19,7 @@
 //COPYWRIGHT BY WERLING ETC..............................................
 
 */
-#include "local/stir/scatter.h"
+#include "local/stir/Scatter.h"
 #include <cmath>
 
 using namespace std;
@@ -28,19 +28,23 @@ START_NAMESPACE_STIR
 
 
 float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
-	  const CartesianCoordinate3D<float>& detector_coord, float energy)
+	  const CartesianCoordinate3D<float>& detector_coord_A,
+	  const CartesianCoordinate3D<float>& detector_coord_B, float energy)
 {
-  const CartesianCoordinate3D<float> origin(0,0,0);
-  const CartesianCoordinate3D<float> scatter_point_det =
-	                    detector_coord - scatter_point ;
 
-  const float s = two_points_distance(detector_coord,origin); // the distance of the detector from the origin
-  const float d = two_points_distance(scatter_point,origin);  // the distance of the scatter_point from the origin
-  const float sd = two_points_distance(scatter_point_det,origin); // the distance of the scatter_point from the detector
+  const CartesianCoordinate3D<float> scatter_point_det_A = detector_coord_A - scatter_point ;  //vector from detector_A to scatter_point
+  const CartesianCoordinate3D<float> scatter_point_det_B = detector_coord_B - scatter_point ;  //vector from detector_B to scatter_point
 
-  const float cos_theta = (s*s+sd*sd-d*d)/(2*sd*s)  ;
-  const float sin_theta2= 1-cos_theta*cos_theta;
-  const float P= 1/(1+energy/511.0*(1-cos_theta));
+  float scalar_product = 0.;
+  for(int i=1;i<=3;++i)
+  scalar_product += scatter_point_det_A[i]*scatter_point_det_B[i];
+
+  const float dAS = two_points_distance(detector_coord_A,scatter_point); // the distance of the detector_A to scatter_point S
+  const float dBS = two_points_distance(detector_coord_B,scatter_point); // the distance of the detector_B to scatter_point S
+
+  const float cos_theta = scalar_product/(dAS*dBS) ;
+  const float sin_theta2= 1-cos_theta*cos_theta ;
+  const float P= 1/(1+(energy/511.0)*(1-cos_theta));
 
 
   return(  Re*Re/2* (P - P*P*sin_theta2 + P*P*P) );
@@ -57,3 +61,4 @@ float total_cross_section(float energy)
 }
 
 END_NAMESPACE_STIR
+
