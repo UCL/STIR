@@ -118,7 +118,7 @@ class LORCylindricalCoordinates_z_and_radius
   {
     assert(_radius>0);
   }
- public:
+ protected:
   explicit 
     LORCylindricalCoordinates_z_and_radius(coordT radius=1)
     : _radius(radius)
@@ -311,7 +311,7 @@ class LORAs2Points : public LOR<coordT>
 */
 template <class coordT>
 class LORInAxialAndSinogramCoordinates 
-  : public LOR<coordT>, public LORCylindricalCoordinates_z_and_radius<coordT>
+  : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
   typedef LORInAxialAndSinogramCoordinates<coordT> self;
@@ -420,7 +420,7 @@ class LORInAxialAndSinogramCoordinates
 */
 template <class coordT>
 class LORInAxialAndNoArcCorrSinogramCoordinates
-  : public LOR<coordT>, public LORCylindricalCoordinates_z_and_radius<coordT>
+  : public LOR<coordT>, private LORCylindricalCoordinates_z_and_radius<coordT>
 {
  private:
   typedef LORInAxialAndNoArcCorrSinogramCoordinates<coordT> self;
@@ -516,8 +516,6 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
 				    const double radius) const;
 
  private:
-  coordT _z1;
-  coordT _z2;
   coordT _phi;
   coordT _beta;
 };
