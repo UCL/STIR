@@ -1,0 +1,95 @@
+//
+// $Id$
+//
+/*!
+
+  \file
+  \ingroup buildblock
+  \brief Declaration of class ArrayFilter1DUsingConvolution
+
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+
+  \date $Date$
+  \version $Revision$
+*/
+
+#ifndef __Tomo_ArrayFilter1DUsingConvolution_H__
+#define __Tomo_ArrayFilter1DUsingConvolution_H__
+
+
+#include "tomo/ArrayFunctionObject_2ArgumentImplementation.h"
+
+START_NAMESPACE_TOMO
+
+
+/*!
+  \ingroup buildblock
+  \brief This class implements convolution of a 1D array with an 
+  arbitrary (i.e. potentially non-symmetric) kernel.
+
+  Convolution is non-periodic:
+
+  \f[ out_i = \sum_j kernel_j in_{i-j} \f] 
+
+  Elements of the input array that are outside its
+  index range are considered to be 0.   
+
+  Note that for most kernels, the above convention means that the zero-
+  index of the kernel corresponds to the peak in the kernel. 
+
+  \par Example 1
+  A straightforward low-pass filter, with a symmetric kernel
+  \code
+  VectorWithOffset<float> kernel(-1,1);
+  kernel[-1] = kernel[1] = .25F; kernel[0] = 0.5F;
+  ArrayFilter1DUsingConvolution<float> lowpass_filter(kernel);
+  \endcode
+  \par Example 2
+  A filter which shifts the output 1 index to the right, i.e. \f$ out_i = in_{i-1}\f$
+  \code
+  VectorWithOffset<float> kernel(1,1);
+  kernel[1] = 1.F;
+  ArrayFilter1DUsingConvolution<float> right_shift_filter(kernel);
+  \endcode
+
+  \warning 1 argument operator() currently leaves the array with the
+  the same index range, i.e. it does not extend it with the kernel size or so.
+
+  \see ArrayFilter1DUsingConvolution for an implementation
+  when the kernel is symmetric. (Note: it's not clear if that implementation
+  would result in faster execution).
+  */
+template <typename elemT>
+class ArrayFilter1DUsingConvolution : 
+  public ArrayFunctionObject_2ArgumentImplementation<1,elemT>
+{
+public:
+
+  //! Construct the filter given the kernel coefficients
+  /*! 
+    All the kernel coefficients has to be passed. 
+  */
+  ArrayFilter1DUsingConvolution();
+
+  ArrayFilter1DUsingConvolution(const VectorWithOffset< elemT>& filter_kernel);
+  //! checks if the kernel corresponds to a trivial filter operation
+  /*! 
+    trivial means, either the kernel has 0 length, or length 1 and its only element is 1
+    */
+  bool is_trivial() const;
+
+private:
+  VectorWithOffset< elemT> filter_coefficients;
+  void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
+
+};
+
+
+
+END_NAMESPACE_TOMO
+
+
+#endif //ArrayFilter1DUsingConvolution
+
+
