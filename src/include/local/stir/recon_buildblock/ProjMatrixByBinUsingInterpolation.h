@@ -127,8 +127,8 @@ public:
      if (!arccor)
        tmp *= sqrt(tmp);
      return 
-       (arccor ? tmp : pow(tmp,1.5)) /
-       pow(tmp + ring_spacing2*delta*delta, 1.5)* backprojection_normalisation;
+       (arccor ? tmp : pow(tmp,1.5F)) /
+       pow(tmp + ring_spacing2*delta*delta, 1.5F)* backprojection_normalisation;
    }
 };     
 
