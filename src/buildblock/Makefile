@@ -5,7 +5,7 @@
 include ../Makefile_common
 
 
-all: $(DEST)libbuildblock.a $(DEST)registrystuff.o
+all: $(DEST)libbuildblock.a $(DEST)buildblock_registries.o
 
 clean:
 	$(RM) $(DEST)*
@@ -44,21 +44,29 @@ SOURCES = \
 	SeparableMetzArrayFilter.cxx \
 	MedianArrayFilter3D.cxx \
 	MedianImageFilter3D.cxx \
-	SeparableCartesianMetzImageFilter.cxx \
+	SeparableCartesianMetzImageFilter.cxx 
  
 
-$(DEST)registrystuff.o: registrystuff.cxx 
 
 
 
 OBJS = $(SOURCES:%.cxx=$(DEST)%.o)
+LOBJS = $(DEST)libbuildblock.a($(OBJS))
 
-include $(SOURCES:%.cxx=$(DEST)%.d)
+# include dependency files (but only when not doing 'make clean')
+ifneq ($(MAKECMDGOALS),clean)
+  include $(SOURCES:%.cxx=$(DEST)%.d)
+endif
 
-.PRECIOUS: $(DEST)*.o $(DEST)*.a
 
-$(DEST)libbuildblock.a: $(OBJS)
-	ar r $@ $?
+.PRECIOUS:  $(DEST)*.a $(DEST)*.o
+
+
+test:
+	 echo "$(LOBJS)"
+
+$(DEST)libbuildblock.a: $(LOBJS)
 	ranlib $@
+#	ar r $@ $?
 
 
