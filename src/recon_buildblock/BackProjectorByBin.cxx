@@ -64,7 +64,30 @@ back_project(DiscretisedDensity<3,float>& density,
 	     const int min_axial_pos_num, const int max_axial_pos_num,
 	     const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
+  if (viewgrams.get_num_viewgrams()==0)
+    return;
+
   start_timers();
+
+  // first check symmetries    
+  {
+    const ViewSegmentNumbers basic_vs = viewgrams.get_basic_view_segment_num();
+        
+    if (get_symmetries_used()->num_related_view_segment_numbers(basic_vs) !=
+      viewgrams.get_num_viewgrams())
+      error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+    
+    for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
+	 iter != viewgrams.end();
+	 ++iter)
+      {
+	ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+	get_symmetries_used()->find_basic_view_segment_numbers(vs);
+	if (vs != basic_vs)
+	  error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+    }
+  }
+
   actual_back_project(density,viewgrams,
              min_axial_pos_num,
 	     max_axial_pos_num,
