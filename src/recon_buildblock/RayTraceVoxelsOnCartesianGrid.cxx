@@ -20,6 +20,12 @@
     Copyright (C) 2000- $Date$, IRSL
     See STIR/LICENSE.txt for details
 */
+/* Modification history:
+   KT 30/05/2002 
+   start and stop point can now be arbitrarily located
+   treatment of LORs parallel to planes is now scale independent (and checked with asserts)
+*/
+
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -32,6 +38,7 @@ using std::max;
 #endif
 
 START_NAMESPACE_STIR
+
 
 void 
 RayTraceVoxelsOnCartesianGrid
@@ -47,87 +54,114 @@ RayTraceVoxelsOnCartesianGrid
   // Make sure there's enough space in the LOR to avoid reallocation.
   // This will make it faster, but also avoid over-allocation
   // (as most STL implementations double the allocated size at over-run).
-  lor.reserve(
-              static_cast<unsigned int>(ceil(fabs(difference.z()))) +
-              static_cast<unsigned int>(ceil(fabs(difference.y()))) +
-              static_cast<unsigned int>(ceil(fabs(difference.x()))) +
+  lor.reserve(lor.size() +
+              static_cast<unsigned int>(ceil(fabs(difference.z())) +
+                                        ceil(fabs(difference.y())) +
+                                        ceil(fabs(difference.x()))) +
               3);
-
-  assert(difference.x() <=0);
-  assert(difference.y() >=0);
-  assert(difference.z() >=0);
 
   // d12 is distance between the 2 points
   // it turns out we can multiply here with the normalisation_constant
   // (as that just scales the coordinate system)
   const float d12 = norm(difference*voxel_size) * normalisation_constant;
   
-  
-  const float inc_x = (difference.x()==0) ? 1000000.F : -d12 / difference.x();
-  const float inc_y = (difference.y()==0) ? 1000000.F : d12 / difference.y();
-  const float inc_z = (difference.z()==0) ? 1000000.F : d12 / difference.z();   
+  const int sign_x = difference.x()>=0 ? 1 : -1;
+  const int sign_y = difference.y()>=0 ? 1 : -1;
+  const int sign_z = difference.z()>=0 ? 1 : -1;
 
+  /* parametrise line in grid units as
+     {z,y,x} = start_point + a difference/d12
+     So, a step in x towards stop_point will mean a corresponding step inc_x in a
+       x+sign_x - x = inc_x difference.x()/d12
+     or
+       inc_x = d12*sign_x/difference.x()
+    i.e. inc_x is always positive
+
+    Special treatment is necessary when the line is parallel to one of the 
+    coordinate planes. This is determined by comparing difference with the 
+    constant small_difference below. (Note that difference is in grid-units, so
+    it has a natural scale of 1.)
+  */
+  const float small_difference = 1.E-5F;
+
+  const float inc_x = (fabs(difference.x())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.x());
+  const float inc_y = (fabs(difference.y())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.y());
+  const float inc_z = (fabs(difference.z())<=small_difference) ? d12*1000000.F : d12 / fabs(difference.z());
+  
   // intersection points with  intra-voxel planes : 
-  const float xmin = (int) (floor(start_point.x() + 0.5)) + 0.5;
-  const float ymin = (int) (floor(start_point.y() - 0.5)) + 0.5;
-  const float zmin = (int) (floor(start_point.z() - 0.5)) + 0.5;
+  const float xmin = (int) (floor(start_point.x() - sign_x*0.5F)) + 0.5F;
+  const float ymin = (int) (floor(start_point.y() - sign_y*0.5F)) + 0.5F;
+  const float zmin = (int) (floor(start_point.z() - sign_z*0.5F)) + 0.5F;
 
-  const float xmax = (int) (floor(stop_point.x() - 0.5)) + 0.5;
-  const float ymax = (int) (floor(stop_point.y() + 0.5)) + 0.5;  
-  const float zmax = (int) (floor(stop_point.z() + 0.5)) + 0.5;
+  const float xmax = (int) (floor(stop_point.x() + sign_x*0.5F)) + 0.5F;
+  const float ymax = (int) (floor(stop_point.y() + sign_y*0.5F)) + 0.5F;  
+  const float zmax = (int) (floor(stop_point.z() + sign_z*0.5F)) + 0.5F;
   
-  const float axend = (difference.x()==0) ? 1000000.F : (start_point.x() - xmax) * inc_x;
-  const float ayend = (difference.y()==0) ? 1000000.F : (ymax - start_point.y()) * inc_y;
-  const float azend = (difference.z()==0) ? 1000000.F : (zmax - start_point.z()) * inc_z;
+  /* Find a?end for the last intersections with the coordinate planes. 
+     amax will then be the smallest of all these a?end.
+
+     If the LOR is parallel to a plane, take care that its a?end is larger than all the others.
+     Note that axend <= d12 (difference.x()+1)/difference.x()
+  */
+  const float axend = (fabs(difference.x())<=small_difference) ? d12*1000000.F : (xmax - start_point.x()) * inc_x * sign_x;
+  const float ayend = (fabs(difference.y())<=small_difference) ? d12*1000000.F : (ymax - start_point.y()) * inc_y * sign_y;
+  const float azend = (fabs(difference.z())<=small_difference) ? d12*1000000.F : (zmax - start_point.z()) * inc_z * sign_z;
   
   const float amax = min(axend, min(ayend, azend));
   
-  // x,y,z-coordinates of the first Voxel: 
-  int X = (int) (xmin - 0.5);
-  int Y = (int) (ymin + 0.5);
-  int Z = (int) (zmin + 0.5);
+  // just to be sure, check that axend was set large enough when difference.x() was small.
+  assert(fabs(difference.x())>small_difference || axend>amax);
+  assert(fabs(difference.y())>small_difference || ayend>amax);
+  assert(fabs(difference.z())>small_difference || azend>amax);
+
+  // coordinates of the first Voxel: 
+  CartesianCoordinate3D<int> current_voxel((int) (zmin + sign_z*0.5F), (int) (ymin + sign_y*0.5F), (int) (xmin + sign_x*0.5F));
   
   // intersection point of the LOR :
   // with the previous xy-plane  (z smaller) : 
-  float az = (difference.z()==0) ? -1. : (zmin - start_point.z()) * inc_z;
+  float az = (fabs(difference.z())<=small_difference) ? -1. : (zmin - start_point.z()) * inc_z * sign_z;
   // with the previous yz-plane (x smaller) : 
-  float ax = (difference.x()==0) ? -1 : (start_point.x() - xmin) * inc_x;
-  // with the previous xz-plane (y bigger) : 
-  float ay = (difference.y()==0) ? -1 : (ymin - start_point.y()) * inc_y;
+  float ax = (fabs(difference.x())<=small_difference) ? -1 : (xmin - start_point.x()) * inc_x * sign_x;
+  // with the previous xz-plane (y smaller) : 
+  float ay = (fabs(difference.y())<=small_difference) ? -1 : (ymin - start_point.y()) * inc_y * sign_y;
   
-  // The biggest t?  value gives the start of the alpha-row 
+  // The biggest a?  value gives the start of the a-row 
   float a = max(ax, max(ay,az));      
   ax += inc_x;
   ay += inc_y;
   az += inc_z;
   
+  // just to be sure, check that ax was set large enough when difference.x() was small.
+  assert(fabs(difference.x())>small_difference || ax>amax);
+  assert(fabs(difference.y())>small_difference || ay>amax);
+  assert(fabs(difference.z())>small_difference || az>amax);
+
   {	  
     // go along the LOR 
     while ( a  < amax) {
       if ( ax < ay )    
         if (  ax  < az ) 
         { // LOR leaves voxel through yz-plane               	
-          lor.push_back(ProjMatrixElemsForOneBin::value_type(Coordinate3D<int>(Z,Y,X),ax - a));
+          lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel,ax - a));
           a = ax;ax += inc_x;
-          X--;
+          current_voxel.x()+=sign_x;
         }      	  
         else{ 	// LOR leaves voxel through xy-plane            	      
-          lor.push_back(ProjMatrixElemsForOneBin::value_type(Coordinate3D<int>(Z,Y,X),az - a));	    
+          lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel,az - a));	    
           a = az ;  az +=  inc_z;
-          Z++; 
+          current_voxel.z()+=sign_z;
         } 
         else  if ( ay < az) {	// LOR leaves voxel through xz-plane 		                           
-          lor.push_back(ProjMatrixElemsForOneBin::value_type(Coordinate3D<int>(Z,Y,X),ay - a));
+          lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel,ay - a));
           a = ay;   ay +=  inc_y;
-          Y++;
+          current_voxel.y()+=sign_y;
         }  
         else {// LOR leaves voxel through xy-plane 			                      
-          lor.push_back(ProjMatrixElemsForOneBin::value_type(Coordinate3D<int>(Z,Y,X),az - a ));
+          lor.push_back(ProjMatrixElemsForOneBin::value_type(current_voxel,az - a ));
           a = az; az +=  inc_z;
-          Z++; 
+          current_voxel.z()+=sign_z; 
         }
     }	// end of while (a<amax)           
   }
-
 }
 END_NAMESPACE_STIR

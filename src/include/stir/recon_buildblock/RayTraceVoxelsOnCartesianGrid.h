@@ -44,13 +44,6 @@ template <typename elemT> class CartesianCoordinate3D;
   \warning RayTraceVoxelsOnCartesianGrid appends voxels and intersection lengths to the lor.
   It does NOT reset it first.
 
-  \warning The current implementation assumes that 
-  \code
-  start_point.x() >= stop_point.x()
-  start_point.y() <= stop_point.y()
-  start_point.z() <= stop_point.z()
-  \endcode
-
   RayTraceVoxelsOnCartesianGrid uses Siddon's algorithm.
 
   Siddon's algorithm works by looking at intersections of the 
