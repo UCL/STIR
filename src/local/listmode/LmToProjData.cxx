@@ -234,7 +234,7 @@ post_processing()
 
   // set up normalisation object
 
-  shared_ptr<Scanner> scanner_ptr = 
+    scanner_ptr = 
     new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
 
   // TODO this won't work for the HiDAC or so
