@@ -92,7 +92,7 @@ template<class elemT>
 void 
 PixelsOnCartesianGrid<elemT>::set_pixel_size(const BasicCoordinate<2,float>& s) const
 {
-  this->set_grid_spacing(c);
+  this->set_grid_spacing(s);
 }
 
 template<class elemT>
