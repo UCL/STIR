@@ -71,7 +71,7 @@ main(int argc, char *argv[])
   {
      input_image = 
 	* dynamic_cast<VoxelsOnCartesianGrid<float> *>(
-         DiscretisedDensity<3,float>::read_from_file(argv[1]).get());
+         DiscretisedDensity<3,float>::read_from_file(argv[1]));
   }
   else
   {
