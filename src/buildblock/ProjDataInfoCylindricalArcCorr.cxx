@@ -166,19 +166,23 @@ get_bin(const LOR<float>& lor) const
 	bin.set_bin_value(-1);
 	return bin;
       } 
-    // code currently relies on symmetric segments
-    // TODO just copy for negative delta
-    // note:we add a small number to delta for the comparison below
-    // otherwise, floating point arithmetic might mean that delta comes out as .99999 instead of 1
-    const float abs_delta = fabs(delta)+.001F;
-    for (bin.segment_num()=0; bin.segment_num()<get_max_segment_num(); ++bin.segment_num())
+    if (delta>=0)
       {
-	assert(get_max_ring_difference(bin.segment_num())==-get_min_ring_difference(-bin.segment_num()));
-	if (abs_delta < get_min_ring_difference(bin.segment_num()+1))
-	  break;
+	for (bin.segment_num()=0; bin.segment_num()<get_max_segment_num(); ++bin.segment_num())
+	  {
+	    if (delta < get_max_ring_difference(bin.segment_num())+.5)
+	      break;
+	  }
       }
-    if (delta<0)
-      bin.segment_num() *= -1;
+    else
+      {
+	// delta<0
+	for (bin.segment_num()=0; bin.segment_num()>get_min_segment_num(); --bin.segment_num())
+	  {
+	    if (delta > get_min_ring_difference(bin.segment_num())-.5)
+	      break;
+	  }
+      }
   }
   // now find nearest axial position
   {
