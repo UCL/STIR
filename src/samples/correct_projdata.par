@@ -1,0 +1,36 @@
+correct_projdata Parameters := 
+  input file := trues.hs
+  output filename := precorrected.s
+  ; default value for next is -1, meaning 'all segments'
+  ; maximum absolute segment number to process := 
+ 
+
+  ; use data in the input file, or substitute data with all 1's
+  ; (useful to get correction factors only)
+  ; default is '1'
+  ; use data (1) or set to one (0) := 
+
+  ; precorrect data, or undo precorrection
+  ; default is '1'
+  ; apply (1) or undo (0) correction := 
+
+  ; parameters specifying correction factors
+  ; if no value is given, the corresponding correction will not be performed
+
+  ; random coincidences estimate, subtracted before anything else is done
+  ;randoms projdata filename := random.hs
+  ; normalisation (or binwise multiplication, so can contain attenuation factors as well)
+  Bin Normalisation type := from projdata
+    Bin Normalisation From ProjData :=
+    normalisation projdata filename:= norm.hs
+    End Bin Normalisation From ProjData:=
+  ; attenuation image, will be forward projected to get attenuation factors
+  ;attenuation image filename := attenuation_image.hv
+  
+  ; forward projector used to estimate attenuation factors, defaults to Ray Tracing
+  ;forward_projector type := Ray Tracing
+
+  ; scatter term to be subtracted AFTER norm+atten correction
+  ; defaults to 0
+  ;scatter projdata filename := scatter.hs
+END:= 

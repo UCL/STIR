@@ -1,0 +1,25 @@
+OSMAPOSLParameters :=
+; minimal .par file to illustrate running OSMAPOSL as EMML with 
+; projectors derived from a single projection matrix
+; see OSMAPOSL_osem_with_interfiltering.par for other parameters
+
+input file := input.hs
+output filename prefix := output
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+
+sensitivity image:= sens.hv
+zero end planes of segment 0:= 0
+
+number of subsets:= 1
+number of subiterations:= 24
+Save images at subiteration intervals:= 3
+
+
+END :=
