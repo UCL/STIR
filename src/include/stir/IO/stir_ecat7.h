@@ -25,10 +25,10 @@
 #ifndef __stir_IO_stir_ecat7_H__
 #define __stir_IO_stir_ecat7_H__
 
-#ifdef HAVE_LLN_MATRIX
 
 #include "stir/IO/stir_ecat_common.h"
 
+#ifdef HAVE_LLN_MATRIX
 #ifdef STIR_NO_NAMESPACES
 // terrible trick to avoid conflict between stir::Sinogram and Sinogram defined in matrix.h
 // when we do have namespaces, the conflict can be resolved by using ::Sinogram
