@@ -1193,7 +1193,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 {
  
   VectorWithOffset < shared_ptr <ArrayFilter2DUsingConvolution <float> > > filter_lookup;
-  filter_lookup.grow(1,1000);
+  const int num_elements_in_interval = 500;
+  filter_lookup.grow(1,num_elements_in_interval);
   const int k_min =1;
   const float k_interval = 0.01F; //0.01F;
   
@@ -1417,8 +1418,8 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
 	   if (k_index < 1) 
 	   {k_index = 1;}
 	    
-	   if ( k_index > 1000)
-	   { k_index  = 1000;}
+	   if ( k_index > num_elements_in_interval)
+	   { k_index  = num_elements_in_interval;}
 	  
 	  
 	  if ( filter_lookup[k_index]==NULL )
