@@ -22,6 +22,7 @@
 
 START_NAMESPACE_TOMO
 
+template <typename elemT> class VectorWithOffset;
 
 /*!
   \ingroup buildblock
