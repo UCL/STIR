@@ -79,6 +79,8 @@ class ViewSegmentNumbers;
   allows access to a ProjDataInfo object, which describes the dimensions
   of the data, the scanner type, the geometry ...
 
+  \warning The arguments 'make_num_tangential_poss_odd' are temporary
+  and will be deleted in the next release.
 */
 class ProjData
 {
@@ -134,15 +136,14 @@ public:
     get_segment_by_view(const int segment_num) const;
   //! Set segment by sinogram
   virtual Succeeded 
-    set_segment_by_sinogram(SegmentBySinogram<float>& segmentbysinogram_v);
+    set_segment(const SegmentBySinogram<float>&);
   //! Set segment by view 
   virtual Succeeded 
-    set_segment_by_view(SegmentByView<float>& segmentbyview_v);
+    set_segment(const SegmentByView<float>&);
   
   //! Get related viewgrams
   virtual RelatedViewgrams<float> 
-    get_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-    //const int basic_view_num, const int basic_segment_num,
+    get_related_viewgrams(const ViewSegmentNumbers&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = true) const;
   //! Set related viewgrams

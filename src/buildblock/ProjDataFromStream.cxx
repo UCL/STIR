@@ -4,7 +4,7 @@
 /*!
 
   \file
-
+  \ingroup buildblock
   \brief Implementations for non-inline functions of class ProjDataFromStream
 
   \author Sanida Mustafovic
@@ -13,7 +13,6 @@
   \author PARAPET project
 
   \date $Date$
-
   \version $Revision$
 */
 
@@ -648,7 +647,7 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const
 }
 
 Succeeded
-ProjDataFromStream::set_segment_by_sinogram(SegmentBySinogram<float>& segmentbysinogram_v)
+ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogram_v)
 {
   if(sino_stream == 0)
   {
@@ -661,7 +660,7 @@ ProjDataFromStream::set_segment_by_sinogram(SegmentBySinogram<float>& segmentbys
   
   if (get_num_tangential_poss() != segmentbysinogram_v.get_num_tangential_poss())
   {
-    warning("ProjDataFromStream::set_segment_sino_copy: num_bins is not correct\n"); 
+    warning("ProjDataFromStream::set_segment_sino: num_bins is not correct\n"); 
     return Succeeded::no;
   }
   if (get_num_views() != segmentbysinogram_v.get_num_views())
@@ -677,7 +676,7 @@ ProjDataFromStream::set_segment_by_sinogram(SegmentBySinogram<float>& segmentbys
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::set_segment_sino_copy: error after seekp\n");
+    warning("ProjDataFromStream::set_segment_sino: error after seekp\n");
     return Succeeded::no;
   }  
   
@@ -691,16 +690,17 @@ ProjDataFromStream::set_segment_by_sinogram(SegmentBySinogram<float>& segmentbys
   else 
   {
     // TODO rewrite in terms of set_viewgram
-    SegmentByView<float> segmentbyview= SegmentByView<float>(segmentbysinogram_v);
+    const SegmentByView<float> segmentbyview=
+      SegmentByView<float>(segmentbysinogram_v);
 
-    set_segment_by_view(segmentbyview);   
+    set_segment(segmentbyview);   
     return Succeeded::yes;
   }
   
 }
 
 Succeeded
-ProjDataFromStream::set_segment_by_view(SegmentByView<float>& segmentbyview_v)
+ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 {
   if(sino_stream == 0)
   {
@@ -730,7 +730,7 @@ ProjDataFromStream::set_segment_by_view(SegmentByView<float>& segmentbyview_v)
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::set_segment_view_copy: error after seekp\n");
+    warning("ProjDataFromStream::set_segment_view: error after seekp\n");
     return Succeeded::no;
   }    
   
@@ -744,8 +744,9 @@ ProjDataFromStream::set_segment_by_view(SegmentByView<float>& segmentbyview_v)
   else 
   {
     // TODO rewrite in terms of set_sinogram    
-    SegmentBySinogram<float> segmentbysinogram= SegmentBySinogram<float>(segmentbyview_v);
-    set_segment_by_sinogram(segmentbysinogram);
+    const SegmentBySinogram<float> segmentbysinogram = 
+      SegmentBySinogram<float>(segmentbyview_v);
+    set_segment(segmentbysinogram);
     return Succeeded::yes;
   }
   
