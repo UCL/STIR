@@ -17,7 +17,7 @@
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_Shape_CombinedShape3D_h__
-#define __stir_Shape_CombinedShape3D_h_
+#define __stir_Shape_CombinedShape3D_h__
 
 #include "stir/RegisteredParsingObject.h"
 #include "local/stir/Shape/Shape3D.h"
