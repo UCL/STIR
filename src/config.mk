@@ -189,12 +189,17 @@ AR_OUTFLAG=-out:
 # Normally, you should set the LIB and INCLUDE environment variables. 
 # If not, you could specify the location of your Visual Studio files by hand
 #MSVCLOC:=c:/Program Files/Microsoft Visual C++ Toolkit 2003/
-EXTRA_LINKFLAGS= /nologo  #/libpath:"${MSVCLOC}lib"
-SYS_LIBS=  # get rid of -lm above
+EXTRA_LINKFLAGS= /nologo  
+#/libpath:"${MSVCLOC}lib"
+
+# get rid of -lm above
+SYS_LIBS=  
 
 DEBUG_CFLAGS=/Z7 /Od /D _DEBUG /GS /GZ /MLd 
 OPTIM_CFLAGS=/D NDEBUG /Ox /ML 
-EXTRA_CFLAGS=/nologo /G6 /W3 /GR /GX /D "_WINDOWS"  /D "WIN32" # /I"${MSVCLOC}include" 
+EXTRA_CFLAGS=/nologo /G6 /W3 /GR /GX /D "_WINDOWS"  /D "WIN32" 
+# /I"${MSVCLOC}include" 
+
 OPTIM_LINKFLAGS= /incremental:no
 DEBUG_LINKFLAGS= /debug
 
