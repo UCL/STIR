@@ -30,13 +30,14 @@
 */
 
 #include "stir/ProjDataInterfile.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+//#include "stir/IO/DefaultOutputFileFormat.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/transform_3d_object.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include <iostream>
 
 START_NAMESPACE_STIR
 
@@ -79,7 +80,7 @@ private:
   RigidObject3DTransformation move_to_scanner;
   RigidObject3DTransformation move_from_scanner;
  
-  shared_ptr<OutputFileFormat> output_file_format_sptr;  
+  // shared_ptr<OutputFileFormat> output_file_format_sptr;  
 };
 
 void 
@@ -87,7 +88,7 @@ MoveProjData::set_defaults()
 {
   ro3d_ptr = 0;
   frame_num_to_process = -1;
-  output_file_format_sptr = new DefaultOutputFileFormat;
+  //output_file_format_sptr = new DefaultOutputFileFormat;
   do_move_to_reference = true;
 
   max_in_segment_num_to_process=-1;
@@ -109,7 +110,7 @@ MoveProjData::initialise_keymap()
   parser.add_key("move_to_reference", &do_move_to_reference);
   parser.add_key("frame_num_to_process", &frame_num_to_process);
   parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
-  parser.add_parsing_key("Output file format",&output_file_format_sptr);
+  //parser.add_parsing_key("Output file format",&output_file_format_sptr);
   parser.add_stop_key("END");
 }
 
@@ -245,8 +246,13 @@ process_data()
 	rigid_object_transformation = 
 	  rigid_object_transformation.inverse();
 
+      std::cout << "Applying transformation " 
+		<< rigid_object_transformation
+		<< '\n';
+
       if (transform_3d_object(*out_proj_data_sptr, *in_proj_data_sptr,
-				rigid_object_transformation) == Succeeded::no)
+			      rigid_object_transformation)
+	  == Succeeded::no)
 	return Succeeded::no;
     }
   return Succeeded::yes;
