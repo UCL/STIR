@@ -15,7 +15,8 @@ LIBSUBDIRECTORIES = \
 
 #KT temp removal of QH_utilities as they don't link
 EXESUBDIRECTORIES= \
-        $(WORKSPACE)/local/utilities
+        $(WORKSPACE)/local/utilities \
+        $(WORKSPACE)/local/listmode_utilities
 
 SUBDIRECTORIES = $(LIBSUBDIRECTORIES) $(EXESUBDIRECTORIES)
 
