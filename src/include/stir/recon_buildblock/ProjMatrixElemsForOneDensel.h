@@ -18,20 +18,20 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
 
 
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.h"
-#include "local/stir/Densel.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.h"
+#include "stir/Densel.h"
 #include <vector>
-#include <fstream>
+//#include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::vector;
-using std::fstream;
+//using std::fstream;
 using std::random_access_iterator_tag;
 #endif
 
@@ -45,7 +45,7 @@ class Succeeded;
 
 
 
-/*!
+/*! \ingroup projection
 \brief This stores the non-zero projection matrix elements
   for every 'voxel'.
 
@@ -196,6 +196,6 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.inl"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.inl"
 
 #endif

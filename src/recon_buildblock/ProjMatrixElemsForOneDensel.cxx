@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief non-inline implementations for ProjMatrixElemsForOneDensel
  
   \author Kris Thielemans
@@ -13,16 +13,15 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
-#include "local/stir/recon_buildblock/DataSymmetriesForDensels.h"
-
-#include "local/stir/recon_buildblock/RelatedDensels.h"
+#include "stir/recon_buildblock/DataSymmetriesForDensels.h"
+#include "stir/recon_buildblock/RelatedDensels.h"
 
 #include <fstream>
 

@@ -29,9 +29,8 @@
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/Coordinate3D.h"
-#ifdef ENABLE_DENSEL 
-#include "local/stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
-#endif
+#include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
+
 
 START_NAMESPACE_STIR
 
@@ -56,7 +55,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_z_shift::
 transform_proj_matrix_elems_for_one_densel(
@@ -75,7 +73,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
@@ -97,7 +95,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -116,7 +113,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
@@ -138,7 +135,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -157,7 +153,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
@@ -179,7 +175,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -198,7 +193,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
@@ -220,7 +215,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_yx::
 transform_proj_matrix_elems_for_one_densel(
@@ -239,7 +233,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
@@ -261,7 +255,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_yx::
 transform_proj_matrix_elems_for_one_densel(
@@ -280,7 +273,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx::
@@ -302,7 +295,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx::
 transform_proj_matrix_elems_for_one_densel(
@@ -321,7 +313,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_ymy::
@@ -343,7 +335,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_ymy::
 transform_proj_matrix_elems_for_one_densel(
@@ -362,7 +353,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_zq::
@@ -380,7 +371,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -399,7 +389,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
@@ -421,7 +411,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -440,7 +429,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
@@ -462,7 +451,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -481,7 +469,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
@@ -503,7 +491,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xy_ymx::
 transform_proj_matrix_elems_for_one_densel(
@@ -522,7 +509,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
@@ -544,7 +531,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx::
 transform_proj_matrix_elems_for_one_densel(
@@ -563,7 +549,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
@@ -585,7 +571,6 @@ transform_proj_matrix_elems_for_one_bin(
 }
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_ymy_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -604,7 +589,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
@@ -625,7 +610,6 @@ transform_proj_matrix_elems_for_one_bin(
   }
 }
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmx_ymy::
 transform_proj_matrix_elems_for_one_densel(
@@ -644,7 +628,7 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 void
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
@@ -667,7 +651,6 @@ transform_proj_matrix_elems_for_one_bin(
 
 
 
-#ifdef ENABLE_DENSEL 
 void 
 SymmetryOperation_PET_CartesianGrid_swap_xmy_ymx_zq::
 transform_proj_matrix_elems_for_one_densel(
@@ -686,6 +669,6 @@ transform_proj_matrix_elems_for_one_densel(
     ++element_ptr;
   }
 } 
-#endif
+
 
 END_NAMESPACE_STIR

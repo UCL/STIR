@@ -4,7 +4,7 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup symmetries
 
   \brief Declaration of class RelatedDensels
 
@@ -17,14 +17,14 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __RelatedDensels_H__
 #define __RelatedDensels_H__
 
 #include "stir/shared_ptr.h"
-#include "local/stir/Densel.h"
+#include "stir/Densel.h"
 #include <vector>
 #include <iterator>
 
@@ -37,15 +37,12 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-class ProjData;
-//class Densel;
 class DataSymmetriesForDensels;
 /*! 
-  \ingroup recon_buildblock
+  \ingroup symmetries
   \brief This class contains all information about a set of densels related 
   by symmetry.
 */
-
 class RelatedDensels 
 {
 public:
@@ -110,7 +107,7 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/recon_buildblock/RelatedDensels.inl"
+#include "stir/recon_buildblock/RelatedDensels.inl"
 
 #endif //__RelatedDensels_H__
 
