@@ -332,19 +332,19 @@ int InterfilePDFSHeader::find_storage_order()
     return true; 
   }
   
-  if (matrix_labels[3] != "bin")
+  if (matrix_labels[0] != "tangential_pos")
   { 
-    warning("Interfile error: expecting 'matrix axis label[4] := bin'\n"); 
+    warning("Interfile error: expecting 'matrix axis label[0] := tangetial_pos'\n"); 
     stop_parsing();
     return true; 
   }
-  num_bins = matrix_size[3][0];
+  num_bins = matrix_size[0][0];
   
-  if (matrix_labels[0] == "segment")
+  if (matrix_labels[3] == "segment")
   {
-    num_segments = matrix_size[0][0];
+    num_segments = matrix_size[3][0];
     
-    if (matrix_labels[1] == "z" && matrix_labels[2] == "view")
+    if (matrix_labels[1] == "axial_pos" && matrix_labels[2] == "view")
     {
       storage_order =ProjDataFromStream::Segment_AxialPos_View_TangPos;
       num_views = matrix_size[2][0];
@@ -354,7 +354,7 @@ int InterfilePDFSHeader::find_storage_order()
       num_rings_per_segment = matrix_size[1];
 #endif
     }
-    else if (matrix_labels[1] == "view" && matrix_labels[2] == "z")
+    else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial_pos")
     {
       storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
       num_views = matrix_size[1][0];
