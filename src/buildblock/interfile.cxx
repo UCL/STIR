@@ -452,13 +452,17 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const ProjDataFromStream& pdfs)
 {
 
-  ofstream output_header(header_file_name.c_str(), ios::out);
+  char *header_name = new char[header_file_name.size() +5];
+  strcpy(header_name, header_file_name.c_str());
+  add_extension(header_name, ".hs");
+  ofstream output_header(header_name, ios::out);
   if (!output_header.good())
     {
       cerr << "Error opening Interfile header '" 
-	   << header_file_name << " for writing" << endl;
+	   << header_name << " for writing" << endl;
       return Succeeded::no;
     }  
+  delete header_name;
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
@@ -642,32 +646,41 @@ write_basic_interfile_PDFS_header(const string& data_filename,
    **********************************************************************/
 
 
-template Succeeded write_basic_interfile<>(const string&  filename, 
+template 
+Succeeded 
+write_basic_interfile<>(const string&  filename, 
 				      const Array<3,signed short>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
-template Succeeded write_basic_interfile<>(const string&  filename, 
+template 
+Succeeded 
+write_basic_interfile<>(const string&  filename, 
 				      const Array<3,unsigned short>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
 
-template Succeeded write_basic_interfile<>(const string&  filename, 
+template 
+Succeeded 
+write_basic_interfile<>(const string&  filename, 
 				      const Array<3,float>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
 				      const NumericType output_type);
 
 
-template Succeeded 
+template 
+Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,signed short>& image,
 		      const NumericType output_type);
 
-template Succeeded 
+template 
+Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,unsigned short>& image,
 		      const NumericType output_type);
 
-template Succeeded 
+template 
+Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,float>& image,
 		      const NumericType output_type);
