@@ -24,6 +24,7 @@ $Revision$
 #include <iostream>
 #include <string>
 #include <stdio.h>
+#include <errno.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
