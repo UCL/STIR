@@ -2,9 +2,8 @@
 // $Id$
 //
 /*!
-
   \file
-  \ingroup buildblock  
+  \ingroup listmode
   \brief Declaration of class CListModeData
     
   \author Kris Thielemans
@@ -42,7 +41,6 @@ public:
   static CListModeData* read_from_file(const string& filename);
 
   //! Default constructor
-  /*! Initialises num_saved_get_positions to 0 */
   CListModeData();
 
   virtual
@@ -75,7 +73,6 @@ public:
   
 protected:
   shared_ptr<Scanner> scanner_ptr;
-  unsigned int num_saved_get_positions;
 };
 
 END_NAMESPACE_STIR
