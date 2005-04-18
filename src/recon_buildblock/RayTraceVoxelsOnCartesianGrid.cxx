@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup recon_buildblock
@@ -15,15 +32,12 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 /* Modification history:
    KT 30/05/2002 
    start and stop point can now be arbitrarily located
    treatment of LORs parallel to planes is now scale independent (and checked with asserts)
+   KT 18/05/2005
+   handle LORs in a plane between voxels
 */
 
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
@@ -40,6 +54,12 @@ using std::max;
 
 START_NAMESPACE_STIR
 
+static inline bool
+is_half_integer(const float a)
+{
+  return
+    fabs(floor(a)+.5F - a)<.0001F;
+}
 
 void 
 RayTraceVoxelsOnCartesianGrid
@@ -52,14 +72,14 @@ RayTraceVoxelsOnCartesianGrid
 
   const CartesianCoordinate3D<float> difference = stop_point-start_point;
 
-  // Make sure there's enough space in the LOR to avoid reallocation.
+  // Find number of contributing elements. This will be used to
+  // make sure there's enough space in the LOR to avoid reallocation.
   // This will make it faster, but also avoid over-allocation
   // (as most STL implementations double the allocated size at over-run).
-  lor.reserve(lor.size() +
-              static_cast<unsigned int>(ceil(fabs(difference.z())) +
-                                        ceil(fabs(difference.y())) +
-                                        ceil(fabs(difference.x()))) +
-              3);
+  const int unsigned lor_size =
+    static_cast<unsigned int>(ceil(fabs(difference.z())) +
+			      ceil(fabs(difference.y())) +
+			      ceil(fabs(difference.x()))) + 3;
 
   // d12 is distance between the 2 points
   // it turns out we can multiply here with the normalisation_constant
@@ -88,6 +108,50 @@ RayTraceVoxelsOnCartesianGrid
   const bool zero_diff_in_x = fabs(difference.x())<=small_difference;
   const bool zero_diff_in_y = fabs(difference.y())<=small_difference;
   const bool zero_diff_in_z = fabs(difference.z())<=small_difference;
+
+  /* check if ray is in one of the planes between voxels.
+     If so, we will ray trace twice, i.e. to the 'left' and 'right', and store half 
+     the value for each voxel.
+  */
+  {
+    CartesianCoordinate3D<float> inc(0,0,0);
+    // z
+    if (zero_diff_in_z && is_half_integer(start_point.z()))
+      {
+	inc = CartesianCoordinate3D<float> (.5F,0,0);
+      }
+    else if (zero_diff_in_y && is_half_integer(start_point.y()))
+      {
+	inc = CartesianCoordinate3D<float> (0,.5F,0);
+      }
+    else if (zero_diff_in_x && is_half_integer(start_point.x()))
+      {
+	inc = CartesianCoordinate3D<float> (0,0,.5F);
+      }
+    if (norm(inc)>.1)
+      {
+	lor.reserve(lor.size() + 2*lor_size);
+	RayTraceVoxelsOnCartesianGrid(lor, 
+				      start_point - inc,
+				      stop_point - inc, 
+				      voxel_size,
+				      normalisation_constant/2);
+	
+	RayTraceVoxelsOnCartesianGrid(lor, 
+				      start_point + inc,
+				      stop_point + inc, 
+				      voxel_size,
+				      normalisation_constant/2);
+	return;
+      }
+  }
+
+  // now start the normal case
+  assert(!(zero_diff_in_z && is_half_integer(start_point.z())));
+  assert(!(zero_diff_in_y && is_half_integer(start_point.y())));
+  assert(!(zero_diff_in_x && is_half_integer(start_point.x())));
+
+  lor.reserve(lor.size() + lor_size);
 
   const float inc_x = zero_diff_in_x ? d12*1000000.F : d12 / fabs(difference.x());
   const float inc_y = zero_diff_in_y ? d12*1000000.F : d12 / fabs(difference.y());
