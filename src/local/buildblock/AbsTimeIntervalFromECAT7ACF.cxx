@@ -70,7 +70,7 @@ set_times()
   return Succeeded::yes;
 #else
     warning("Error opening attenuation file %s: compiled without ECAT7 support.", 
-	    attenuation_filename.c_str());
+	    _attenuation_filename.c_str());
     return Succeeded::no;
 #endif
 }
