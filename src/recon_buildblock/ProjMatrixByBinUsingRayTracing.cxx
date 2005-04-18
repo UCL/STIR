@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
@@ -14,11 +31,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 /* History
@@ -308,6 +320,9 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
     stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
 
+#if 0
+    // KT 18/05/2005 this is no longer necessary
+
     // check we're not exactly at the border of 2 planes in the 2D case
     if (tantheta==0)
       {
@@ -327,6 +342,7 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
 	if (fabs(modulo(stop_point.x(),1.F)-.5)<.001)
 	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
       }
+#endif
 
     // find out in which direction we should do the ray tracing to obtain a sorted lor
     // we want to go from small z to large z, 
