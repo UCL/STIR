@@ -86,8 +86,8 @@ float scatter_estimate_for_all_scatter_points(
 					double_scatter_ratio +=
 					scatter_estimate_for_two_scatter_points(
 					image_as_activity, image_as_density, 
-					scatter_point_num,
 					scatter_point_2_num,
+					scatter_point_num,
 					det_num_A, det_num_B,
 					lower_energy_threshold, 
 					upper_energy_threshold,		
@@ -98,7 +98,7 @@ float scatter_estimate_for_all_scatter_points(
 	return 0.75*rAB_squared*scatter_volume/total_cross_section_511keV
 		/detection_efficiency_no_scatter*
 		(single_scatter_ratio+double_scatter_ratio
-		//*scatter_volume
+		*scatter_volume
 		/total_cross_section_511keV)/2/3.1459
 		/(cos_incident_angle_A*cos_incident_angle_A*cos_incident_angle_B*cos_incident_angle_B);
 }
