@@ -65,14 +65,9 @@ int main(int argc, char *argv[])
 
 	string output_profile_string(argv[2]);
 
-	Bin bin;
-    int segment_min, view_min, axial_min, tangential_min, 
-		segment_max, view_max, axial_max, tangential_max;
+    int view_min, axial_min, tangential_min, 
+		view_max, axial_max, tangential_max;
 
-	segment_min=
-		projdata_info_ptr->get_min_segment_num();
-	segment_max=
-		projdata_info_ptr->get_max_segment_num();
 	view_min=
 		projdata_info_ptr->get_min_view_num();
 	view_max=
@@ -89,14 +84,14 @@ int main(int argc, char *argv[])
     float view_mean=(view_min+view_max)/2.F;
     float axial_mean=(axial_min+axial_max)/2.F;
 
-    Viewgram<float> profile_viewgram = input_projdata_sptr->get_viewgram(view_min,0,0);
+    Viewgram<float> profile_viewgram = input_projdata_sptr->get_viewgram(view_mean,0,0);
 	
-	fstream profile_stream("output_profile_string", ios::out); //output file //
-	//	if(!profile_stream)    
-	//		cerr << "Cannot open " << output_profile_string << ".prof file.\n" ;
-	//	else
+	ofstream profile_stream(output_profile_string.c_str(), ios::out); //output file //
+		if(!profile_stream)    
+			cerr << "Cannot open " << output_profile_string << ".prof file.\n" ;
+		else
 			for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
-				profile_stream  << profile_viewgram[axial_min][tang] << " ";
+				profile_stream  << profile_viewgram[axial_mean][tang] << "  ";
 		profile_stream.close();   
 	return EXIT_SUCCESS;
 }
