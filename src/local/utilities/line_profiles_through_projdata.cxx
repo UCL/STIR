@@ -51,7 +51,7 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char *argv[])
 { 
-	if (argc!=2)
+	if (argc!=3)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[proj_data_filename]\n" 
@@ -81,17 +81,17 @@ int main(int argc, char *argv[])
 	tangential_max=
 		projdata_info_ptr->get_max_tangential_pos_num();
 					
-    int view_mean=static_cast<int>((view_min+view_max)/2.F);
-    int axial_mean=static_cast<int>((axial_min+axial_max)/2.F);
+    int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
+    int axial_mean=static_cast<int>(floor((axial_min+axial_max)/2.F));
 
     Viewgram<float> profile_viewgram = input_projdata_sptr->get_viewgram(view_mean,0,0);
 	
 	ofstream profile_stream(output_profile_string.c_str(), ios::out); //output file //
 		if(!profile_stream)    
-			cerr << "Cannot open " << output_profile_string << ".prof file.\n" ;
+			cerr << "Cannot open " << output_profile_string << endl ;
 		else
 			for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
-				profile_stream  << profile_viewgram[axial_mean][tang] << "  ";
+				profile_stream  << profile_viewgram[axial_mean][tang] << endl ;
 		profile_stream.close();   
 	return EXIT_SUCCESS;
 }
