@@ -28,13 +28,14 @@
 */
 
 
- /* This program takes the requested profile of which is then written to a file.   */
+ /* This program extracts the tangential profile of given input_projdata which should be on the center. 
+    The results is the same as if we first run ./extract_segments input_projdata.hs (by sinogram) and then
+    run ./manip_image input_projdata.hs to extract the rows as the defaults.   */
 
 #include "stir/Array.h"
 #include "stir/Viewgram.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <iostream> 
 #include <fstream>
 #ifndef STIR_NO_NAMESPACES
