@@ -89,6 +89,8 @@ printf("\nNUM_ELEMENTS_IN_LIST    target_cylinder = 3");
 printf("\n	REAL	target_zMin = %5.2f",zMin_target);
 printf("\n	REAL	target_zMax = %5.2f",zMax_target);
 printf("\n	REAL	radius =      %5.2f\n\n",radius);		
+
+ return EXIT_SUCCESS;
 }
 
 
