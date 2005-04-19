@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
 	tangential_max=
 		projdata_info_ptr->get_max_tangential_pos_num();
 					
-    float view_mean=(view_min+view_max)/2.F;
-    float axial_mean=(axial_min+axial_max)/2.F;
+    int view_mean=static_cast<int>((view_min+view_max)/2.F);
+    int axial_mean=static_cast<int>((axial_min+axial_max)/2.F);
 
     Viewgram<float> profile_viewgram = input_projdata_sptr->get_viewgram(view_mean,0,0);
 	
