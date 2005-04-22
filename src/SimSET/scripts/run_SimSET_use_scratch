@@ -1,0 +1,67 @@
+#! /bin/sh
+#PBS -k eo 
+#PBS -l vmem=1990mb
+
+
+if [ $# -ne 0 -o -z "${SIM_NUM}" ]; then
+    echo "usage: $0 "
+    echo environment variable SIM_NUM has to be defined
+    exit 1
+fi
+
+# exit on error
+set -e
+
+user=`whoami`
+
+DIR_SIMSET=/data/home/$user/simset
+DIR_INPUT=/data/home/$user/sim_pet/data
+DIR_FINAL_OUTPUT=/data/home/$user/sim_pet/data/RESULTS${SIM_NUM}
+# simset will first write its results in a local disk
+DIR_OUTPUT=/scratch/$user/data/RESULTS${SIM_NUM}
+mkdir -p ${DIR_FINAL_OUTPUT}
+mkdir -p ${DIR_OUTPUT}
+
+
+
+cd ${DIR_FINAL_OUTPUT}
+
+hostname > ${DIR_FINAL_OUTPUT}/hostname.log
+
+PHGREC=${DIR_FINAL_OUTPUT}/phg${SIM_NUM}.rec
+
+sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
+    -e s#INPUT_DIRECTORY#${DIR_INPUT}# \
+    -e s#OUTPUT_DIRECTORY#${DIR_OUTPUT}# \
+    -e s#BIN.REC#${DIR_FINAL_OUTPUT}/bin${SIM_NUM}.rec# \
+  < ${DIR_INPUT}/template_phg.rec > ${PHGREC}
+
+
+sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
+    -e s#INPUT_DIRECTORY#${DIR_INPUT}# \
+    -e s#OUTPUT_DIRECTORY#${DIR_OUTPUT}# \
+  < ${DIR_INPUT}/template_bin.rec > ${DIR_FINAL_OUTPUT}/bin${SIM_NUM}.rec
+
+
+${DIR_INPUT}/../bats/qbatindex $DIR_SIMSET ${DIR_INPUT} ${PHGREC} >& ${DIR_FINAL_OUTPUT}/makeindex.log
+
+$DIR_SIMSET/bin/phg ${PHGREC} > ${DIR_FINAL_OUTPUT}/log
+
+cd ${DIR_OUTPUT}
+#rm -f rec.stat *.weight2 *.count
+
+
+# More things... 
+gzip *weight*
+rm rec.act_indexes rec.activity_image rec.att_indexes rec.attenuation_image
+#rm ../phgmath*
+#rm ../index.dat
+#mv ${DIR_INPUT}/bin${SIM_NUM} .
+#mv DIR_INPUT/phg${SIM_NUM} .
+
+# move everything to our global directory
+mv * ${DIR_FINAL_OUTPUT}
+cd ..
+rmdir ${DIR_OUTPUT}
+
+
