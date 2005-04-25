@@ -1,20 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 1.4 (dated ??/??/2004)</title>
+    <title>Summary of changes in STIR release 1.4 (dated ??/??/2005)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 1.4 (dated ??/??/2004)</h1>
+    <h1>Summary of changes in STIR release 1.4 (dated ??/??/2005)</h1>
 
 <p>
-TODO
+This text is very incomplete. Check the ChangeLog.
 </p>
 <p>Nearly all work on this update was by Kris Thielemans. <br>
 Thanks to Oliver Nix for fixes for (and testing with) Visual Studio Express 2005.
-<br>
-Also many thanks to M&eacute;rence Sibomana for updating the LLN ecat matrix library to
-iron out some problems with STIR.
 </p>
 <h2> Summary for endusers (also to be read by developers)</h2>
 
@@ -39,11 +36,16 @@ normally only have appeared if the last frame was very short.
  
 <h3>New functionality of existing utilities</h3>
 <ul>
+<li> added arc-correction to FBP, 3DRP and correct_projdata
+</li>
 </ul>
 
 
 <h3>Code changes that do not influence your results</h3>
 <ul>
+<li> removed a bug in listmode classes for ECAT 966 and 962 (function get_detectors), which would have caused your program to crash.
+</li>
+
 </ul>
 
 <h3>Installation procedure changes</h3>
@@ -56,6 +58,7 @@ normally only have appeared if the last frame was very short.
  </ul>
 
 <h3>recon_test_pack changes</h3>
+None
 <ul>
 </ul>
 
