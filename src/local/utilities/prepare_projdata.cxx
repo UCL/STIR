@@ -1,21 +1,21 @@
 //
 // $Id$
 //
-
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
 
-  \brief A utility applying/undoing some corrections on projection data
+  \brief A utility preparing some projection data for further processing with 
+  iterative reconstructions
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/utilities.h"
@@ -172,11 +172,22 @@ PrepareProjData(const char * const par_filename)
     precorrected_projdata_ptr = ProjData::read_from_file(precorrected_projdata_filename);
 
   do_Shifted_Poisson = 
-    randoms_projdata_filename.size()!=0 &&
     Shifted_Poisson_numerator_projdata_filename.size() != 0;
+  if (do_Shifted_Poisson && randoms_projdata_filename.size()==0)
+    {
+      warning("Shifted Poisson data asked for, but no randoms present\n");
+      exit(EXIT_FAILURE);
+    }
+
   do_prompts =
-    randoms_projdata_filename.size()!=0 &&
     prompts_denominator_projdata_filename.size() != 0;
+
+  if (do_prompts && randoms_projdata_filename.size()==0)
+    {
+      warning("Prompts data asked for, but no randoms present\n");
+      exit(EXIT_FAILURE);
+    }
+
 
   if (do_Shifted_Poisson || do_prompts)
      randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename);
