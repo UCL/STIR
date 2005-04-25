@@ -36,7 +36,9 @@
 #include "stir/Viewgram.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
+#include "stir/Bin.h"
 #include <iostream> 
+#include <iomanip> 
 #include <fstream>
 #ifndef STIR_NO_NAMESPACES
 using std::iostream;
@@ -46,12 +48,14 @@ using std::ios;
 using std::cerr;
 using std::endl;
 using std::cout;
+using std::setw;
 #endif
-using namespace std;
-USING_NAMESPACE_STIR
+
 
 int main(int argc, char *argv[])
 { 
+	USING_NAMESPACE_STIR
+	using namespace std;
 	if (argc!=3)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
@@ -59,6 +63,7 @@ int main(int argc, char *argv[])
 			<< "\t[output_profile_filename]\n";
 			return EXIT_FAILURE;            
 	}      
+	
 	const shared_ptr<ProjData> input_projdata_sptr = ProjData::read_from_file(argv[1]);  
  
 	const ProjDataInfo * projdata_info_ptr = 
@@ -81,8 +86,9 @@ int main(int argc, char *argv[])
 		projdata_info_ptr->get_min_tangential_pos_num();
 	tangential_max=
 		projdata_info_ptr->get_max_tangential_pos_num();
-					
-    int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
+			
+			
+	int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
     int axial_mean=static_cast<int>(floor((axial_min+axial_max)/2.F));
 
     Viewgram<float> profile_viewgram = input_projdata_sptr->get_viewgram(view_mean,0,0);
@@ -91,9 +97,18 @@ int main(int argc, char *argv[])
 		if(!profile_stream)    
 			cerr << "Cannot open " << output_profile_string << endl ;
 		else
+		//	" X-axis"<<
+		{
+			profile_stream  << " s-Value (mm)" << "\t" <<  "Value" << endl ;
+
 			for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
-				profile_stream  << profile_viewgram[axial_mean][tang] << endl ;
-		profile_stream.close();   
+			{
+				Bin bin(0,view_mean,axial_mean,tang,0);
+				profile_stream  << std::setw(9) << projdata_info_ptr->get_s(bin) << "\t"
+								<< std::setw(7) << profile_viewgram[axial_mean][tang] << endl ;
+			}
+			profile_stream.close();   
+		}
 	return EXIT_SUCCESS;
 }
 
