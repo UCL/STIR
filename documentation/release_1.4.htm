@@ -8,10 +8,10 @@
     <h1>Summary of changes in STIR release 1.4 (dated ??/??/2005)</h1>
 
 <p>
-This text is very incomplete. Check the ChangeLog.
-</p>
 <p>Nearly all work on this update was by Kris Thielemans. <br>
 Thanks to Oliver Nix for fixes for (and testing with) Visual Studio Express 2005.
+Thanks to Fr&eacute;d&eacute;ric Schoenahl for testing with 
+<a href=http://valgrind.org/<a>valgrind</a>.
 </p>
 <h2> Summary for endusers (also to be read by developers)</h2>
 
@@ -28,10 +28,25 @@ buf_size_in_bytes = 8683520). In that case, the repositioning failed and called
 error() and aborted the program. In normal use, this bug would
 normally only have appeared if the last frame was very short.
 </li>
+<li> corrected bug in buildblock/overlap_interpolate.cxx that caused wrong
+  value in the first non-zero output bin if the left edge of the first
+  in_data is to the left of the left edge of the first out_data.
+  This routine is used by <tt>zoom_image</tt>.
+</li>
+<li> buildblock/Scanner.cxx: - corrected value written for "distance between
+  rings (cm)" in parameter_info(). This solves a problem in
+ <tt>list_projdata_info</tt> and others.
+</li>
 </ul>
 
 <h3>Code changes that influence your results</h3>
 <ul>
+<li> reconstruction programs use the projection data to construct an image.
+This now uses the central bin-size to find voxel-size (was Bin(0,0,0,1) before). This will
+  make a tiny difference in the voxel size when using non-arccorrected data.
+</li>
+<li>changes in the interpolating backprojector allow handling data where the
+number of views is nut a multiple of 4 (such as the Discovery ST).</li>
 </ul>
  
 <h3>New functionality of existing utilities</h3>
@@ -45,16 +60,29 @@ normally only have appeared if the last frame was very short.
 <ul>
 <li> removed a bug in listmode classes for ECAT 966 and 962 (function get_detectors), which would have caused your program to crash.
 </li>
-
+<li> recon_buildblock/RayTraceVoxelsOnCartesianGrid.cxx has changed behaviour
+  when LOR is in a plane between 2 voxels. Previous version had ill-defined
+  behaviour (it would put all results in one or the other, depending on
+  round-errors). Now it stores half of the results in each plane.</li>
+<li> the 'ray tracing' type of 'matrix' for projection uses the above
+routine and is now more flexible with respect to zooms etc. The previous
+version aborted when it detected that a line would be in a plne between 2 voxels.</li>
+<li>removed some small memory leaks.</li>
+<li>removed problem in FBP2D, making sure that all variables are initialised 
+(bug spotted by Carole Lartizien)</li>
 </ul>
 
 <h3>Installation procedure changes</h3>
 <ul>
+<li>Projects for Visual Studio 6 have been updated. Some windows libraries
+that were never used have been removed. This might make transfer to 
+Visual Studio Express 2005 easier.
 </ul>
 
 
 <h3>Documentation changes</h3>
 <ul>
+<li>updated doxygen</li>
  </ul>
 
 <h3>recon_test_pack changes</h3>
@@ -70,6 +98,10 @@ from the above):</H2>
 </ul>
 <h3>Other code changes</h3>
 <ul>
+<li>removed a few bugs in LORCoordinates.inl</li>
+<li>a few small changes to the <tt>CListRecord</tt> hierarchy. You 
+will have to adapt your code (implement set/get_time_in_millisecs and remove set/get_time_in_secs (as
+  now in CListRecord)</li>
 </ul>
 </body>
 
