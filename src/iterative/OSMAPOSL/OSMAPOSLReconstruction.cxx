@@ -48,6 +48,7 @@
 // for get_symmetries_ptr()
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ViewSegmentNumbers.h"
+#include "stir/stream.h"
 
 #include <memory>
 #include <iostream>
@@ -60,7 +61,6 @@
 #ifndef STIR_NO_NAMESPACES
 using std::auto_ptr;
 using std::cerr;
-using std::ends;
 using std::endl;
 #endif
 
@@ -258,8 +258,14 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
       {
 	if(num_vs_in_subset[subset_num] != num_vs_in_subset[0])
 	  { 
-	    error("Number of subsets is such that subsets will be very unbalanced.\n"
-		  "OSMAPOSL cannot handle this.\n"
+	    // TODO use error()
+	    std::cerr <<"ERROR: Number of subsets is such that subsets will be very unbalanced.\n"
+		      << "Number of viewgrams in each subset would be:\n"
+		      << num_vs_in_subset
+		      << "which should be "
+		      << num_vs_in_subset.sum()/float(num_subsets)
+		      << "\nOSMAPOSL cannot handle this.\n";
+	    error(
 		  "Either reduce the number of symmetries used by the projector, or\n"
 		  "change the number of subsets. It usually should be a divisor of\n"
 		  "  %d/4 (or if that's not an integer, a divisor of %d/2).\n",
