@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file
@@ -16,11 +33,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/recon_array_functions.h"
@@ -33,6 +45,9 @@
 #include "stir/is_null_ptr.h"
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
+// for get_symmetries_ptr()
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+#include "stir/ViewSegmentNumbers.h"
 
 #include <memory>
 #include <iostream>
@@ -153,14 +168,6 @@ bool OSMAPOSLReconstruction::post_processing()
   if (LogLikelihoodBasedReconstruction::post_processing())
     return true;
 
-  if( proj_data_ptr->get_num_views()/4 % num_subsets != 0) 
-  { warning("Number of subsets is such that subsets will be very unbalanced. "
-            "OSMAPOSL can not handle this. Choose the number of subsets as a divisor of %d\n",
-            proj_data_ptr->get_num_views()/4); }
-
-  if (inter_update_filter_interval<0)
-    { warning("Range error in inter-update filter interval \n"); return true; }
-  
   if (!is_null_ptr(prior_ptr))
   {
     if (MAP_model != "additive" && MAP_model != "multiplicative")
@@ -211,7 +218,6 @@ string OSMAPOSLReconstruction::method_info() const
   else
     s << "MAPOSL";
   if(get_parameters().inter_iteration_filter_interval>0) s<<"S";
-  s<<ends;
 
   return s.str();
 
@@ -225,9 +231,51 @@ void OSMAPOSLReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float
     get_parameters().max_segment_num_to_process =
       get_parameters().proj_data_ptr->get_max_segment_num();
 
+  // check subset balancing
+  {
+    const DataSymmetriesForViewSegmentNumbers& symmetries =
+      *projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used();
+
+    Array<1,int> num_vs_in_subset(num_subsets);
+    num_vs_in_subset.fill(0);
+    for (int subset_num=0; subset_num<num_subsets; ++subset_num)
+      {
+	for (int segment_num = -get_parameters().max_segment_num_to_process; 
+	     segment_num <= get_parameters().max_segment_num_to_process; 
+	     ++segment_num)
+	  for (int view_num = get_parameters().proj_data_ptr->get_min_view_num() + subset_num; 
+	       view_num <= get_parameters().proj_data_ptr->get_max_view_num(); 
+	       view_num += num_subsets)
+	    {
+	      const ViewSegmentNumbers view_segment_num(view_num, segment_num);
+	      if (!symmetries.is_basic(view_segment_num))
+		continue;
+	      num_vs_in_subset[subset_num] +=
+		symmetries.num_related_view_segment_numbers(view_segment_num);
+	    }
+      }
+    for (int subset_num=1; subset_num<num_subsets; ++subset_num)
+      {
+	if(num_vs_in_subset[subset_num] != num_vs_in_subset[0])
+	  { 
+	    error("Number of subsets is such that subsets will be very unbalanced.\n"
+		  "OSMAPOSL cannot handle this.\n"
+		  "Either reduce the number of symmetries used by the projector, or\n"
+		  "change the number of subsets. It usually should be a divisor of\n"
+		  "  %d/4 (or if that's not an integer, a divisor of %d/2).\n",
+		  proj_data_ptr->get_num_views(),
+		  proj_data_ptr->get_num_views());
+	  }
+      }
+  } // end check balancing
+
+
   if(get_parameters().enforce_initial_positivity) 
     threshold_min_to_small_positive_value(*target_image_ptr);
 
+  if (inter_update_filter_interval<0)
+    { error("Range error in inter-update filter interval");  }
+  
   if(get_parameters().inter_update_filter_interval>0 && 
      !is_null_ptr(get_parameters().inter_update_filter_ptr))
     {
