@@ -48,6 +48,7 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 				  1/voxel_size.x() // normalise to some kind of 'pixel units'
 #endif
         );
+		lor.sort();
 		float sum = 0;  // add up values along LOR
 		{     
 			ProjMatrixElemsForOneBin::iterator element_ptr =lor.begin() ;
@@ -69,7 +70,7 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 				{
 					// we jump out of the loop as we are now at the other side of 
 					// the image
-					break; 
+				  //					break; 
 				}
 				++element_ptr;		
 			}	      
