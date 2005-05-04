@@ -95,11 +95,12 @@ float scatter_estimate_for_all_scatter_points(
 			}
 	}	
 		//0.75 is due to the volume of the pyramid approximation!
-	return 0.75*rAB_squared*scatter_volume/total_cross_section_511keV
+	return 
+	  0.75*rAB_squared*scatter_volume/total_cross_section_511keV
 		/detection_efficiency_no_scatter*
 		(single_scatter_ratio+double_scatter_ratio
-		*scatter_volume/1000000.
-		/total_cross_section_511keV)/2/3.1459
+		 *scatter_volume/(1000000.)
+          	/total_cross_section_511keV)/2/3.1459
 		/(cos_incident_angle_A*
 		  cos_incident_angle_B);
 }
