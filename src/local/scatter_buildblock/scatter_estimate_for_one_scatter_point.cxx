@@ -167,8 +167,8 @@ float scatter_estimate_for_one_scatter_point(
 	    
 	    return
 	      scatter_ratio
-		  *cos_incident_angle_AS*cos_incident_angle_AS
-		  *cos_incident_angle_BS*cos_incident_angle_BS;
+	      *cos_incident_angle_AS
+	      *cos_incident_angle_BS;
 ;
 	
 }
