@@ -34,7 +34,7 @@ float scatter_estimate_for_all_scatter_points(
 {	
 	double single_scatter_ratio = 0, 
 		double_scatter_ratio = 0,
-		triple_scatter_ratio = 0; 
+       		triple_scatter_ratio = 0; 
 
 	// TODO: slightly dangerous to use a static here
 	// it would give wrong results when the energy_thresholds are changed...	
@@ -57,7 +57,7 @@ float scatter_estimate_for_all_scatter_points(
 	    const float cos_incident_angle_B = 
 	      cos_angle(detector_coord_A - detector_coord_B,
 			detB_to_ring_center) ;
-		
+	
 	const VoxelsOnCartesianGrid<float>& image =
 		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
 	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
@@ -98,9 +98,10 @@ float scatter_estimate_for_all_scatter_points(
 	return 0.75*rAB_squared*scatter_volume/total_cross_section_511keV
 		/detection_efficiency_no_scatter*
 		(single_scatter_ratio+double_scatter_ratio
-		*scatter_volume
+		*scatter_volume/1000000.F
 		/total_cross_section_511keV)/2/3.1459
-		/(cos_incident_angle_A*cos_incident_angle_A*cos_incident_angle_B*cos_incident_angle_B);
+		/(cos_incident_angle_A*
+		  cos_incident_angle_B);
 }
 
 END_NAMESPACE_STIR
