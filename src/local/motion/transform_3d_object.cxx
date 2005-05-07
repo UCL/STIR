@@ -217,8 +217,13 @@ transform_3d_object(ProjData& out_proj_data,
 		continue;
 #ifndef ROT_INT
 	      rigid_object_transformation.transform_bin(bin,
+# ifndef NEW_ROT
 							*out_proj_data_info_noarccor_ptr,
 							*in_proj_data_info_noarccor_ptr
+# else
+							out_proj_data_info,
+							in_proj_data_info
+# endif
 							);
 	      if (bin.get_bin_value()>0)
 		(*out_seg_ptr[bin.segment_num()])[bin.view_num()]
@@ -226,6 +231,9 @@ transform_3d_object(ProjData& out_proj_data,
 						 [bin.tangential_pos_num()] +=
 		  bin.get_bin_value();
 #else
+# ifndef NEW_ROT
+# error ROT_INT defined but NEW_ROT not
+# endif
 	      LORInAxialAndNoArcCorrSinogramCoordinates<float> transformed_lor;
 	      if (get_transformed_LOR(transformed_lor,
 				      rigid_object_transformation,
