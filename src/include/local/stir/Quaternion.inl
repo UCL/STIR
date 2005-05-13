@@ -1,6 +1,38 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup buildblock
+
+  \brief Implementation of class stir::Quaternion
+
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  $Date$
+  $Revision$ 
+*/
+
 
 
 START_NAMESPACE_STIR
+
+
+template <typename coordT>
+coordT norm_squared(const Quaternion<coordT>& q)
+{
+  return square(q[1]) + square(q[2]) +square(q[3])+ square(q[4]);
+}
+
+template <typename coordT>
+coordT norm(const Quaternion<coordT>& q)
+{
+  return sqrt(norm_squared(q));
+}
 
 template <typename coordT>
 coordT  
@@ -110,7 +142,7 @@ template <typename coordT>
 void 
 Quaternion<coordT>:: conjugate()
 {
-  (*this)[1] =(*this)[1];
+//  (*this)[1] =(*this)[1];
   (*this)[2] =-(*this)[2];
   (*this)[3] =-(*this)[3];
   (*this)[4] =-(*this)[4];
@@ -120,7 +152,7 @@ template <typename coordT>
 void 
 Quaternion<coordT>:: normalise() 
 {
-  const coordT n = sqrt(square((*this)[1]) + square((*this)[2]) +square((*this)[3])+ square((*this)[4]));   
+  const coordT n = norm(*this);
   (*this)[1] /=n;
   (*this)[2] /=n;
   (*this)[3] /=n;
@@ -131,7 +163,7 @@ template <typename coordT>
 void 
 Quaternion<coordT>::inverse()	
 {
-  float dp = dot_product((*this),(*this));
+  const coordT dp = norm_squared(*this);
   (*this)[1] =  (*this)[1]/dp;
   (*this)[2] = -(*this)[2]/dp;
   (*this)[3] = -(*this)[3]/dp;

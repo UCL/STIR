@@ -1,22 +1,22 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup buildblock
-
-  \brief Declaration of class Quaternion
-
-  \author: Sanida Mustafovic
-  \author: Kris Thielemans
-  $Date$
-  $Revision$ 
-*/
-
 /*
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file
+  \ingroup buildblock
+
+  \brief Declaration of class stir::Quaternion
+
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  $Date$
+  $Revision$ 
+*/
+
 
 
 #ifndef __stir_Quaternion_H__
@@ -69,6 +69,13 @@ inline Quaternion<coordT> conjugate(const Quaternion<coordT>&);
 
 template <typename coordT>
 inline Quaternion<coordT> inverse(const Quaternion<coordT>&);
+
+template <typename coordT>
+inline coordT norm_squared(const Quaternion<coordT>& q);
+
+template <typename coordT>
+inline coordT norm(const Quaternion<coordT>& q);
+
 END_NAMESPACE_STIR
 
 #include "local/stir/Quaternion.inl"
