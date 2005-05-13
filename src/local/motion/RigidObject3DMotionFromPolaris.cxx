@@ -85,7 +85,10 @@ compute_average_motion_polaris_time(const double start_time, const double end_ti
     /* Accept motions recorded during trasnmission acquisition */
     if ((iter->sample_time >= start_time ) && ( iter->sample_time<= end_time))
     {
-      const Quaternion<float> quater(iter->quat[1], iter->quat[2], iter->quat[3], iter->quat[4]);	/* Sets the quaternion matrix */
+      Quaternion<float> quater(iter->quat[1], iter->quat[2], iter->quat[3], iter->quat[4]);	/* Sets the quaternion matrix */
+      // make sure that all quaternions use a fixed sign choice, otherwise adding them up does not make a lot of sense
+      if (quater[1]<0)
+	quater *= -1;
       /* Maintain running total euler angles and translations */
       total_tx += iter->trans.x();
       total_ty += iter->trans.y() ;
@@ -99,12 +102,17 @@ compute_average_motion_polaris_time(const double start_time, const double end_ti
  
   if (samples==0)
     {
-      error("RigidObject3DMotionFromPolaris::compute_average_motion:\n"
+      error("RigidObject3DMotionFromPolaris::compute_average_motion_polaris_time:\n"
 	    "\t Start-end range (%g-%g) does not seem to overlap with MT info.",
 	    start_time, end_time);	     
     }
   
   total_q /=static_cast<float>(samples);
+  if (norm(total_q)<.9)
+    warning("RigidObject3DMotionFromPolaris::compute_average_motion_polaris_time:\n"
+	    "\taveraged quaternion has norm %g which is very different from 1.\n"
+	    "\tThis indicates large movement in the range (%g-%g).",
+	    norm(total_q), start_time, end_time);
   total_q.normalise();
   total_tx /= samples; 
   total_ty /= samples;
