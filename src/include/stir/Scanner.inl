@@ -126,6 +126,55 @@ Scanner::get_num_transaxial_buckets() const
   return get_num_transaxial_blocks()/num_transaxial_blocks_per_bucket;
 }
 
+
+
+int
+Scanner::get_num_axial_crystals_per_singles_unit() const
+{
+  return num_axial_crystals_per_singles_unit;
+}
+
+int
+Scanner::get_num_transaxial_crystals_per_singles_unit() const
+{
+  return num_transaxial_crystals_per_singles_unit;
+}
+
+
+int
+Scanner::get_num_axial_singles_units() const
+{
+  if ( num_axial_crystals_per_singles_unit == 0 ) {
+    return 0;
+  } else {
+    return num_rings / num_axial_crystals_per_singles_unit;
+  }
+}
+
+
+int
+Scanner::get_num_transaxial_singles_units() const
+{
+  if ( num_transaxial_crystals_per_singles_unit == 0 ) {
+    return 0;
+  } else {
+    return num_detectors_per_ring / num_transaxial_crystals_per_singles_unit;
+  }
+}
+
+
+int 
+Scanner::get_num_singles_units  () const
+{
+  // TODO Accomodate more complex (multi-layer) geometries.
+  return get_num_axial_singles_units() * get_num_transaxial_singles_units();
+}
+
+
+
+
+
+
 //************************ set ******************************8
 
 void Scanner::set_type(const Type & new_type)
@@ -193,6 +242,67 @@ void Scanner::set_num_transaxial_crystals_per_block(const int& new_num)
 {
   num_transaxial_crystals_per_block = new_num;
 }
+
+
+
+void Scanner::set_num_axial_crystals_per_singles_unit(const int& new_num)
+{
+  num_axial_crystals_per_singles_unit = new_num;
+}
+
+void Scanner::set_num_transaxial_crystals_per_singles_unit(const int& new_num)
+{
+  num_transaxial_crystals_per_singles_unit = new_num;
+}
+
+
+
+
+/********    Calculate singles bin index from detection position    *********/
+
+
+int
+Scanner::get_singles_bin_index(int axial_index, int transaxial_index) const {
+  // TODO: Accomodate more complex geometry.
+  return(transaxial_index + (axial_index * get_num_transaxial_singles_units()));
+}
+
+
+
+int
+Scanner::get_singles_bin_index(const DetectionPosition<>& det_pos) const {
+
+  // TODO: Accomodate more complex geometry.
+        
+  int axial_index = det_pos.axial_coord() / get_num_axial_crystals_per_singles_unit();
+
+  int transaxial_index = det_pos.tangential_coord() / 
+                                get_num_transaxial_crystals_per_singles_unit();
+  
+  //return(transaxial_index + (axial_index * get_num_transaxial_singles_units()));
+  return(get_singles_bin_index(axial_index, transaxial_index));
+
+}
+
+
+
+// Get the axial singles bin coordinate from a singles bin.
+int 
+Scanner::get_axial_singles_unit(int singles_bin_index) const {
+  // TODO: Accomodate more complex geometry.
+  return(singles_bin_index / get_num_transaxial_singles_units());
+}
+
+
+
+// Get the transaxial singles bin coordinate from a singles bin.
+int 
+Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
+  // TODO: Accomodate more complex geometry.
+  return(singles_bin_index % get_num_transaxial_singles_units());
+}
+
+
 
 END_NAMESPACE_STIR
 
