@@ -8,6 +8,7 @@
 
   \author Kris Thielemans
   \author Katie Dinelle
+  \author Tim Borgeaud
   $Date$
   $Revision$
 */
@@ -15,6 +16,7 @@
     Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
+
 
 #include "stir/TimeFrameDefinitions.h"
 #include "local/stir/SinglesRatesFromSglFile.h"
@@ -36,6 +38,7 @@ USING_NAMESPACE_STIR
 int 
 main (int argc, char* argv[])
 {
+
   if (argc!=5)
     {
       cerr << "Usage: " << argv[0] << " output_filename sgl_filename fdef_filename frame_num\n";
@@ -47,62 +50,44 @@ main (int argc, char* argv[])
   const string frame_defs_filename = argv[3];
   const unsigned frame_num = atoi(argv[4]);
 
-  // read singles
+
+  // SinglesRatesFromSglFile object.
   ecat::ecat7::SinglesRatesFromSglFile singles_from_sgl;
-  const Array<3,float> array_sgl = 
-     singles_from_sgl.read_singles_from_sgl_file (sgl_filename);
-  const vector<double> times = 
-    singles_from_sgl.get_times();
+  
+  // Read in the singles file.
+  singles_from_sgl.read_singles_from_sgl_file(sgl_filename);
+  
 
   // read time frame definitions
   const TimeFrameDefinitions frame_defs(frame_defs_filename);
 
-  if (frame_num < 1 || frame_num>frame_defs.get_num_frames())
+  if (frame_num < 1 || frame_num > frame_defs.get_num_frames()) {
     error("Incorrect frame number\n");
+  }
 
   // open output file
   std::ofstream output(output_filename.c_str());
-  if (!output.good())
+  if (!output.good()) {
     error("Error opening output file\n");
+  }
 
-  // compute total singles in this frame
-  Array<2,float> singles_in_this_frame(array_sgl[0].get_index_range());
-  unsigned how_many_entries = 0;
-  // find entry in start of frame
-  int entry_num=array_sgl.get_min_index(); 
-  for (;
-       static_cast<std::size_t>(entry_num+1)<times.size() && entry_num<= array_sgl.get_max_index(); 
-       ++entry_num)
-    {
-      const double current_time = times[entry_num+1];
-      if (current_time >= frame_defs.get_start_time(frame_num) )
-	break;
-    }
-  // now add singles in this frame
-  for (;
-       static_cast<std::size_t>(entry_num)<times.size() && entry_num<= array_sgl.get_max_index(); 
-       ++entry_num)
-    {
-      const double current_time = times[entry_num];
-      if (current_time > frame_defs.get_end_time(frame_num) )
-	break;
-      singles_in_this_frame += array_sgl[entry_num];
-      ++how_many_entries;
-    }
-  // compute average rate
-  singles_in_this_frame /= static_cast<float>(how_many_entries);
+  // Retrieve start and end times for this frame.
+  double start_time = frame_defs.get_start_time(frame_num);
+  double end_time = frame_defs.get_end_time(frame_num);
+  
+  // Create a new FrameSinglesRates object for the frame.
+  FrameSinglesRates frame_singles_rates = 
+    singles_from_sgl.get_rates_for_frame(start_time, end_time);
 
-  // now write to file
-  {
-    Array<2,float>::full_iterator array_iter  = 
-      singles_in_this_frame.begin_all();
-    int singles_num = 0;
-    while (array_iter != singles_in_this_frame.end_all())
-      {
-	output << singles_num << "  " << *array_iter << '\n';
-	++singles_num;
-	++array_iter;
-      }
+  
+  // Get scanner details and, from these, the number of singles units.
+  const Scanner *scanner = frame_singles_rates.get_scanner_ptr();
+  int total_singles_units = scanner->get_num_singles_units();
+  
+  // Now write to file
+  for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+    output << singles_bin << "  " 
+           << frame_singles_rates.get_singles_rate(singles_bin) << '\n';
   }
   
   return EXIT_SUCCESS;

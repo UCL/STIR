@@ -11,6 +11,9 @@ $(dir)_SOURCES = \
 	generate_headcurve.cxx \
 	list_time_events.cxx \
 	get_singles_info.cxx \
-	change_lm_time_tags.cxx
+	change_lm_time_tags.cxx \
+	scan_singles_file.cxx \
+	print_sgl_values.cxx
+
 
 include $(WORKSPACE)/exe.mk

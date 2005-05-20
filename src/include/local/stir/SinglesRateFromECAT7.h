@@ -47,39 +47,61 @@ public RegisteredParsingObject<SinglesRatesFromECAT7, SinglesRates>
 { 
 public:
 
-   //! Name which will be used when parsing a SinglesRatesFromECAT7 object 
-  static const char * const registered_name; 
+    //! Name which will be used when parsing a SinglesRatesFromECAT7 object 
+    static const char * const registered_name; 
+    
+    //! Default constructor 
+    SinglesRatesFromECAT7 ();
 
-  //! Default constructor 
-  SinglesRatesFromECAT7 ();
+    //! Given the detection position get the singles rate   
+    virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
+                                   const double start_time,
+                                   const double end_time) const;
 
-  //!  The function that reads singles from ECAT7 file
-  Array<3,float> read_singles_from_file(const string& ECAT7_filename,
-					const std::ios::openmode open_mode = std::ios::in);
-  
-  //! Given the detection position get the singles rate   
-  virtual float get_singles_rate (const DetectionPosition<>& det_pos, 
-				  const double start_time,
-				  const double end_time) const;
-   int get_frame_number (const double start_time, const double end_time) const;
-  
+
+    
+    //! Generate a FramesSinglesRate - containing the average rates
+    //  for a frame begining at start_time and ending at end_time.
+    FrameSinglesRates get_rates_for_frame(double start_time,
+                                          double end_time) const;
+    
+    
+    int get_frame_number (const double start_time, const double end_time) const;
+
+    /*
+    // Get a starting and ending frame number for the specified time interval.
+    // The starting and ending frames will stretch from the first frame in
+    // which start_time is included to the first frame in which end_time is
+    // included. Therefore the specified time interval will not usually cover
+    // the entire time of all frames between start_frame and end_frame.
+    // If the specified time interval falls outside the set of frames then
+    // both start_time and end_time are set to zero.
+    void get_frame_interval(double start_time, double end_time,
+                            int& start_frame, int& end_frame) const;
+    */
+    
+    //!  The function that reads singles from ECAT7 file
+    int read_singles_from_file(const string& ECAT7_filename,
+                               const std::ios::openmode open_mode = std::ios::in);
+    
+   
 private:
- 
-  Array<3,float> singles;
-  // TODO move to Scanner
-  int num_axial_blocks_per_singles_unit;
+
+  Array<2,float> singles;
+
   string ECAT7_filename;
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
   
-  int trans_blocks_per_bucket;
-  int angular_crystals_per_block;
-  int axial_crystals_per_block;
+  float  SinglesRatesFromECAT7::get_singles_rate(int singles_bin_index,
+                                                 double start_time,
+                                                 double end_time) const;
   
+ 
   TimeFrameDefinitions time_frame_defs;
 
-  
+
   
 };
 

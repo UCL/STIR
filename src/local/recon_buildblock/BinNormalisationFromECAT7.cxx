@@ -69,6 +69,104 @@ START_NAMESPACE_ECAT7
 const char * const 
 BinNormalisationFromECAT7::registered_name = "From ECAT7"; 
 
+
+//
+// Inline functions used in this class.
+//
+
+
+
+inline
+float
+calc_geo_z_correction(const Bin& bin, int span) {
+  const int rtmp = abs(bin.segment_num() * span) ;
+  return( 1.0F + ( ( 0.007F - ( 0.000164F * rtmp ) ) * rtmp ) );
+}
+
+
+
+
+inline 
+int
+calc_ring1_plus_ring2(const Bin& bin, 
+                      const ProjDataInfoCylindricalNoArcCorr *proj_data_cyl) {
+
+  int segment_num = bin.segment_num();
+ 
+  const int min_ring_diff = proj_data_cyl->get_min_ring_difference(segment_num);
+  const int max_ring_diff = proj_data_cyl->get_max_ring_difference(segment_num);
+
+  const int num_rings = proj_data_cyl->get_scanner_ptr()->get_num_rings();
+
+  return( (2 * bin.axial_pos_num() - 
+           (proj_data_cyl->get_min_axial_pos_num(segment_num) + 
+            proj_data_cyl->get_max_axial_pos_num(segment_num))
+           ) / (min_ring_diff != max_ring_diff ? 2 : 1) 
+          + num_rings - 1 );
+  
+}
+
+
+
+inline
+void
+set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+                                const Bin& uncomp_bin, 
+                                DetectionPositionPair<>& detection_position_pair) {
+  int det1_num=0;
+  int det2_num=0;
+  
+  proj_data_cyl_uncomp->get_det_num_pair_for_view_tangential_pos_num(det1_num, det2_num,
+                                                                     uncomp_bin.view_num(),
+                                                                     uncomp_bin.tangential_pos_num());
+  detection_position_pair.pos1().tangential_coord() = det1_num;
+  detection_position_pair.pos2().tangential_coord() = det2_num;
+  
+}
+
+
+
+// Returns the sum of the two axial coordinates. Or -1 if the ring positions are
+// out of range.
+inline
+int
+set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_info_cyl,
+                           int ring1_plus_ring2, const Bin& uncomp_bin,
+                           DetectionPositionPair<>& detection_position_pair) {
+  
+  const int num_rings = proj_data_info_cyl->get_scanner_ptr()->get_num_rings();
+
+  const int ring_diff = uncomp_bin.segment_num();
+
+  const int ring1 = (ring1_plus_ring2 - ring_diff)/2;
+  const int ring2 = (ring1_plus_ring2 + ring_diff)/2;
+  
+  if (ring1<0 || ring2 < 0 || ring1>=num_rings || ring2 >= num_rings) {
+    return(-1);
+  }
+        
+  assert((ring1_plus_ring2 + ring_diff)%2 == 0);
+  assert((ring1_plus_ring2 - ring_diff)%2 == 0);
+  
+  detection_position_pair.pos1().axial_coord() = ring1;
+  detection_position_pair.pos2().axial_coord() = ring2;
+
+  
+  return(ring1 + ring2);
+}
+
+
+
+
+
+
+
+//
+// Member functions
+//
+
+
+
 void 
 BinNormalisationFromECAT7::set_defaults()
 {
@@ -314,9 +412,9 @@ read_norm_data(const string& filename)
 #if 1
 float 
 BinNormalisationFromECAT7::
-get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const 
-{
-  const int num_rings = proj_data_info_cyl_ptr->get_scanner_ptr()->get_num_rings();
+get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const {
+
+
   // TODO disable when not HR+ or HR++
   /*
   Additional correction for HR+ and HR++
@@ -329,8 +427,8 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
   As the axial angle increase the difference in efficiencies between trues and
   scatter become closer
     */
-  const int rtmp = abs(bin.segment_num() * span) ;
-  const float geo_Z_corr = ( 1.0F + ( ( 0.007F - ( 0.000164F * rtmp ) ) * rtmp ) ) ;
+  const float geo_Z_corr = calc_geo_z_correction(bin, span);
+
   
   float	total_efficiency = 0 ;
   
@@ -342,120 +440,152 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
   const int min_ring_diff = proj_data_info_cyl_ptr->get_min_ring_difference(bin.segment_num());
   const int max_ring_diff = proj_data_info_cyl_ptr->get_max_ring_difference(bin.segment_num());
 
-  /* ring1_plus_ring2 is the same for any ring pair that contributes to 
+
+  /* 
+     ring1_plus_ring2 is the same for any ring pair that contributes to 
      this particular bin.segment_num(), bin.axial_pos_num().
      We determine it first here. See ProjDataInfoCylindrical for the
      relevant formulas
-     */
-  const int ring1_plus_ring2 =
-    (2*bin.axial_pos_num() - 
-     (proj_data_info_cyl_ptr->get_min_axial_pos_num(bin.segment_num()) +
-      proj_data_info_cyl_ptr->get_max_axial_pos_num(bin.segment_num()))
-    )/(min_ring_diff!=max_ring_diff ? 2 : 1) 
-    +
-    num_rings - 1;
+  */
+  const int ring1_plus_ring2 = calc_ring1_plus_ring2(bin, proj_data_info_cyl_ptr); 
+                                                      
+
 
   DetectionPositionPair<> detection_position_pair;
   Bin uncompressed_bin(0,0,0,bin.tangential_pos_num());
-   {
-     float view_efficiency = 0.;
-     	
-     for(uncompressed_bin.view_num() = start_view; uncompressed_bin.view_num() < end_view; ++uncompressed_bin.view_num() )
-     {
-       int det1_num=0, det2_num=0;
-       proj_data_info_cyl_uncompressed_ptr->
-	 get_det_num_pair_for_view_tangential_pos_num(det1_num, det2_num,
-						 uncompressed_bin.view_num(),
-						 uncompressed_bin.tangential_pos_num());
-       detection_position_pair.pos1().tangential_coord()=det1_num;
-       detection_position_pair.pos2().tangential_coord()=det2_num;
+
+  {
+
+    float view_efficiency = 0.;
 
 
-       float lor_efficiency= 0.;   
-       /*
-          loop over ring differences that contribute to bin.segment_num() at the current
-	  bin.axial_pos_num().
-	  The ring_difference increments with 2 as the other ring differences do
-	  not give a ring pair with this axial_position. This is because
-	    ring1_plus_ring2%2 == ring_diff%2
-	  (which easily follows by plugging in ring1+ring2 and ring1-ring2).
-	  The starting ring_diff is determined such that the above condition
-	  is satisfied. You can check it by noting that the
-	    start_ring_diff%2
-	    == (min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2)%2
-	    == (2*min_ring_diff+ring1_plus_ring2)%2
-	    == ring1_plus_ring2%2
-       */
-       for(uncompressed_bin.segment_num() = min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2; 
-           uncompressed_bin.segment_num() <= max_ring_diff; 
-           uncompressed_bin.segment_num()+=2 )
-       {
-	 const int ring_diff = uncompressed_bin.segment_num();
-	 const int ring1 = (ring1_plus_ring2 - ring_diff)/2;
-	 const int ring2 = (ring1_plus_ring2 + ring_diff)/2;
-	 if (ring1<0 || ring2 < 0 || ring1>=num_rings || ring2 >= num_rings)
-	   continue;
-	 assert((ring1_plus_ring2 + ring_diff)%2 == 0);
-	 assert((ring1_plus_ring2 - ring_diff)%2 == 0);
-	 detection_position_pair.pos1().axial_coord() = ring1;
-	 detection_position_pair.pos2().axial_coord() = ring2;
+    for(uncompressed_bin.view_num() = start_view;
+        uncompressed_bin.view_num() < end_view;
+        ++uncompressed_bin.view_num() ) {
+
+      set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr,
+                                      uncompressed_bin, detection_position_pair);
+
+      
+        
+      float lor_efficiency= 0.;   
+      
+      /*
+        loop over ring differences that contribute to bin.segment_num() at the current
+        bin.axial_pos_num().
+        The ring_difference increments with 2 as the other ring differences do
+        not give a ring pair with this axial_position. This is because
+        ring1_plus_ring2%2 == ring_diff%2
+        (which easily follows by plugging in ring1+ring2 and ring1-ring2).
+        The starting ring_diff is determined such that the above condition
+        is satisfied. You can check it by noting that the
+        start_ring_diff%2
+        == (min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2)%2
+        == (2*min_ring_diff+ring1_plus_ring2)%2
+        == ring1_plus_ring2%2
+      */
+      for(uncompressed_bin.segment_num() = min_ring_diff + (min_ring_diff+ring1_plus_ring2)%2; 
+          uncompressed_bin.segment_num() <= max_ring_diff; 
+          uncompressed_bin.segment_num()+=2 ) {
+        
+        
+        int geo_plane_num = set_detection_axial_coords(proj_data_info_cyl_ptr,
+                                                       ring1_plus_ring2, uncompressed_bin,
+                                                       detection_position_pair);
+        if ( geo_plane_num < 0 ) {
+          // Ring numbers out of range.
+          continue;
+        }
+
+
 #ifndef NDEBUG
-	   Bin check_bin;
-	   check_bin.set_bin_value(bin.get_bin_value());
-	   assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin, detection_position_pair) ==
-	     Succeeded::yes);
-	   assert(check_bin == bin);
+        Bin check_bin;
+        check_bin.set_bin_value(bin.get_bin_value());
+        assert(proj_data_info_cyl_ptr->get_bin_for_det_pos_pair(check_bin, 
+                                                                detection_position_pair) ==
+               Succeeded::yes);
+        assert(check_bin == bin);
 #endif
-	   const DetectionPosition<>& pos1 = detection_position_pair.pos1();
-	   const DetectionPosition<>& pos2 = detection_position_pair.pos2();
-	   const int geo_plane_num = ring1+ring2;
-	   lor_efficiency += 
-	     efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] * 
-	     efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()] * 
-	     get_deadtime_efficiency(pos1, start_time, end_time) * get_deadtime_efficiency(pos2, start_time, end_time)
+        
+         const DetectionPosition<>& pos1 = detection_position_pair.pos1();
+        const DetectionPosition<>& pos2 = detection_position_pair.pos2();
 
+        
+        lor_efficiency += 
+          efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] * 
+          efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()] * 
+          get_deadtime_efficiency(pos1, start_time, end_time) * 
+          get_deadtime_efficiency(pos2, start_time, end_time)
 #ifdef SAME_AS_PETER
-	     ;
+              ;
 #else	    // this is 3dbkproj (at the moment)
-	     * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
+        * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
 #endif
-	    }
-	   view_efficiency += lor_efficiency * 
-	     crystal_interference_factors[uncompressed_bin.tangential_pos_num()][uncompressed_bin.view_num()%num_transaxial_crystals_per_block] ;
-
-     }
-      /* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
-      // for oblique plaanes use the single radial profile from segment 0 
-
-#ifdef SAME_AS_PETER
-     const int geo_plane_num = /* TODO septa_in ? (z=)bin.get_axial_pos_num() : */0;
-      total_efficiency += view_efficiency * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * geo_Z_corr;            
-#else
-      total_efficiency += view_efficiency*  geo_Z_corr;            
-#endif
-
+      }
+      
+      
+      
+      view_efficiency += lor_efficiency * 
+        crystal_interference_factors[uncompressed_bin.tangential_pos_num()][uncompressed_bin.view_num()%num_transaxial_crystals_per_block] ;
+      
     }
+    
+    /* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
+    // for oblique plaanes use the single radial profile from segment 0 
+    
+#ifdef SAME_AS_PETER
+
+    const int geo_plane_num = /* TODO septa_in ? (z=)bin.get_axial_pos_num() : */0;
+
+    total_efficiency += view_efficiency * 
+      geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
+      geo_Z_corr;
+
+#else
+
+    total_efficiency += view_efficiency * geo_Z_corr;            
+
+#endif
+    
+  }
   return total_efficiency;
 }
 #endif
 
 
 void 
-BinNormalisationFromECAT7::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
+BinNormalisationFromECAT7::apply(RelatedViewgrams<float>& viewgrams,
+                                 const double start_time, const double end_time) const 
 {
+
+  // Generate a single set of average singles values for the interval
+  // start_time to end_time.
+  
+  
+
+
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
  //   if (iter->get_view_num()>8)
  //     continue;
 
     Bin bin(iter->get_segment_num(),iter->get_view_num(), 0, 0);
-    for (bin.axial_pos_num()= iter->get_min_axial_pos_num(); bin.axial_pos_num()<=iter->get_max_axial_pos_num(); ++bin.axial_pos_num())
-      for (bin.tangential_pos_num()= iter->get_min_tangential_pos_num(); bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
-	 (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
+
+    for (bin.axial_pos_num() = iter->get_min_axial_pos_num(); 
+         bin.axial_pos_num() <= iter->get_max_axial_pos_num(); 
+         ++bin.axial_pos_num()) {
+
+      for (bin.tangential_pos_num() = iter->get_min_tangential_pos_num(); 
+           bin.tangential_pos_num() <= iter->get_max_tangential_pos_num(); 
+           ++bin.tangential_pos_num()) {
+
+        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
 #ifndef STIR_NO_NAMESPACES
-         std::
+          std::
 #endif
-         max(1.E-20F, get_bin_efficiency(bin, start_time, end_time));
+          max(1.E-20F, get_bin_efficiency(bin, start_time, end_time));
+      }
+    }
   }
 
 }

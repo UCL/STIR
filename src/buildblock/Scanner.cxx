@@ -191,6 +191,81 @@ set_params(Type type_v,const list<string>& list_of_names_n,
   num_axial_crystals_per_block= num_axial_crystals_per_block_v;
   num_transaxial_crystals_per_block= num_transaxial_crystals_per_block_v;
   num_detector_layers = num_detector_layers_v;
+
+
+  num_axial_crystals_per_singles_unit = 0;
+  num_transaxial_crystals_per_singles_unit = 0;
+
+  // Temporarily set singles units here.
+  switch ( type ) {
+
+    /*
+      trans_blocks_per_bucket =scanner_sptr->get_num_transaxial_blocks_per_bucket();
+      angular_crystals_per_block =scanner_sptr->get_num_transaxial_crystals_per_block();
+      axial_crystals_per_block =scanner_sptr->get_num_axial_crystals_per_block();
+      //TODO move to Scanner
+      if (scanner_sptr->get_type() == Scanner::E966)
+      num_axial_blocks_per_singles_unit = 2;
+      else
+      num_axial_blocks_per_singles_unit = 1;
+    */
+
+  case E931:
+  case E951:
+  case E953:
+  case E921:
+  case E925:
+  case E961:
+  case E962:
+    // All these scanners have a singles unit that comprises 1 transaxial bucket x
+    // 1 axial block.
+    num_axial_crystals_per_singles_unit = num_axial_crystals_per_block;
+    num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_block *
+      num_transaxial_blocks_per_bucket;
+    break;
+
+  case E966:
+    // The singles unit is one transaxial bucket x 2 axial blocks.
+    num_axial_crystals_per_singles_unit = 2 * num_axial_crystals_per_block;
+    num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_block *
+      num_transaxial_blocks_per_bucket;
+    break;
+
+
+  case RPT:
+    break;
+
+  case HiDAC:
+    break;
+
+  case Advance:
+  case DiscoveryLS:
+  case DiscoveryST:
+    // GE scanners record singles per crystal.
+    num_axial_crystals_per_singles_unit = 1;
+    num_transaxial_crystals_per_singles_unit = 1;
+    break;
+
+  case HZLR:
+    break;
+
+  case RATPET:
+    break;
+
+  case HRRT:
+    break;
+
+  case User_defined_scanner:
+    break;
+
+  case Unknown_scanner:
+  default:
+    
+    break;
+
+  }
+  
+
 }
 
 Succeeded 

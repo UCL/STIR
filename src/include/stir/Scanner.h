@@ -25,6 +25,7 @@
 #define __stir_SCANNER_H__
 
 #include "stir/common.h"
+#include "stir/DetectionPosition.h"
 #include <string>
 #include <list>
 
@@ -232,6 +233,21 @@ class Scanner
   inline int get_num_axial_buckets() const;	
   //! get number of axial buckets
   inline int get_num_transaxial_buckets() const;	
+
+  //! get number of axial crystals per singles unit
+  inline int get_num_axial_crystals_per_singles_unit() const;
+  //! get number of transaxial crystals per singles unit.
+  inline int get_num_transaxial_crystals_per_singles_unit() const;
+  // TODO accomodate more complex geometries of singles units.
+  /*  inline int get_num_crystal_layers_per_singles_unit() const; */
+  //! get number of axial singles units
+  inline int get_num_axial_singles_units() const;
+  //! get number of transaxial singles unit
+  inline int get_num_transaxial_singles_units() const;
+  /* inline int get_num_layers_singles_units() const; */
+  inline int get_num_singles_units() const;
+
+
   //@} (end of block/bucket info)
 
   //@} (end of get geometrical info)
@@ -270,9 +286,30 @@ class Scanner
   inline void set_num_transaxial_crystals_per_block(const int & new_num);
   //! set number of crystal layers (for DOI)
   inline int set_num_detector_layers(const int& num_num);	
+  //! set number of axial crystals per singles unit
+  inline void set_num_axial_crystals_per_singles_unit(const int & new_num);	
+  //! set number of transaxial crystals per singles unit
+  inline void set_num_transaxial_crystals_per_singles_unit(const int & new_num);
+  // TODO accomodate more complex geometries of singles units.
+
   //@} (end of block/bucket info)
 
   //@} (end of set info)
+  
+  // Calculate a singles bin index from axial and transaxial singles bin coordinates.
+  inline int get_singles_bin_index(int axial_index, int transaxial_index) const;
+
+  // Method used to calculate a singles bin index from
+  // a detection position.
+  inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const; 
+ 
+
+  // Get the axial singles bin coordinate from a singles bin.
+  inline int get_axial_singles_unit(int singles_bin_index) const;
+
+  // Get the transaxial singles bin coordinate from a singles bin.
+  inline int get_transaxial_singles_unit(int singles_bin_index) const;
+  
 
 private:
   Type type;
@@ -291,6 +328,10 @@ private:
   int num_axial_crystals_per_block;	/* number of crystals in the axial direction */
   int num_transaxial_crystals_per_block;/* number of transaxial crystals */
   int num_detector_layers;
+
+  int num_axial_crystals_per_singles_unit;
+  int num_transaxial_crystals_per_singles_unit;
+
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v,const list<string>& list_of_names,

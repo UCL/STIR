@@ -11,6 +11,7 @@ $(dir)_LIB_SOURCES:= \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
+	SinglesRates.cxx \
 	SinglesRatesFromSglFile.cxx \
 	SinglesRatesFromECAT7.cxx  \
   find_fwhm_in_image.cxx \

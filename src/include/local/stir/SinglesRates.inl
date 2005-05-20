@@ -38,4 +38,13 @@ Scanner* SinglesRates::get_scanner_ptr() const
   return scanner_sptr.get();
 }
 
+
+
+const Scanner *
+FrameSinglesRates::
+get_scanner_ptr() const {
+  return _scanner_sptr.get();
+}
+
+
 END_NAMESPACE_STIR

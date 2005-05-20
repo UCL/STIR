@@ -29,7 +29,8 @@
 */
 
 #include "stir/DetectionPosition.h"
-#include "stir/IndexRange3D.h"
+#include "stir/IndexRange.h"
+#include "stir/IndexRange2D.h"
 #include "local/stir/SinglesRatesFromSglFile.h"
 
 #include <vector>
@@ -50,7 +51,7 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 const unsigned 
-SinglesRatesFromSglFile::size_of_singles_record = 4*128;
+SinglesRatesFromSglFile::SIZE_OF_SINGLES_RECORD = 4*128;
 
 const char * const 
 SinglesRatesFromSglFile::registered_name = "Singles From Sgl File"; 
@@ -59,206 +60,501 @@ static inline
 unsigned long int
 convert_4_bytes(unsigned char * buffer)
 {
-  if (ByteOrder::get_native_order() == ByteOrder::big_endian)
-    return buffer[0] + 256UL*(buffer[1] + 256UL*(buffer[2] + 256UL*buffer[3]));
-  else
-    return buffer[3] + 256UL*(buffer[2] + 256UL*(buffer[1] + 256UL*buffer[0]));
+  // The order from the file is always big endian. The native order doesn't matter
+  // when converting by multiplying and adding the individual bytes.
+  //if (ByteOrder::get_native_order() == ByteOrder::big_endian)
+  //  return buffer[0] + 256UL*(buffer[1] + 256UL*(buffer[2] + 256UL*buffer[3]));
+  //else
+  return buffer[3] + 256UL*(buffer[2] + 256UL*(buffer[1] + 256UL*buffer[0]));
+
 }
 
 
+
+static inline
+void
+convert_int_to_4_bytes(unsigned long int val, unsigned char *buffer) {
+  // Big endian
+  buffer[0] = (val & 0xff000000) >> 24;
+  buffer[1] = (val & 0x00ff0000) >> 16;
+  buffer[2] = (val & 0x0000ff00) >> 8;
+  buffer[3] = (val & 0x000000ff);
+}
+
+
+
+
+
+// Constructor
 SinglesRatesFromSglFile::
 SinglesRatesFromSglFile()
 {}
 
-Array<3,float> 
-SinglesRatesFromSglFile::read_singles_from_sgl_file (const string& sgl_filename)
+
+
+// Get the average singles rate for a particular bin.
+float
+SinglesRatesFromSglFile::
+get_singles_rate(const DetectionPosition<>& det_pos,
+                 const double start_time, const double end_time) const {
+  
+  int singles_bin_index = scanner_sptr->get_singles_bin_index(det_pos);
+  
+  return(get_singles_rate(singles_bin_index, start_time, end_time));
+}
+
+
+
+
+// Generate a FramesSinglesRate - containing the average rates
+// for a frame begining at start_time and ending at end_time.
+FrameSinglesRates
+SinglesRatesFromSglFile::
+get_rates_for_frame(double start_time,
+                    double end_time) const {
+
+  int num_singles_units = scanner_sptr->get_num_singles_units();
+
+  // Create a temporary vector
+  vector<float> average_singles_rates(num_singles_units);
+  
+
+  // Loop over all bins.
+  for(int singles_bin = 0 ; singles_bin < num_singles_units ; ++singles_bin) {
+    average_singles_rates[singles_bin] = get_singles_rate(singles_bin, start_time, end_time);
+  }
+  
+  // Determine that start and end slice indices.
+  int start_slice = get_start_time_slice_index(start_time);
+  int end_slice = get_end_time_slice_index(end_time);
+  
+  double frame_start_time;
+  if ( start_slice == 0 ) {
+    frame_start_time = _times[0] - _singles_time_interval;
+  } else {
+    frame_start_time = _times[start_slice - 1];
+  }
+
+  double frame_end_time = _times[end_slice];
+
+  // Create temp FrameSinglesRate object
+  FrameSinglesRates frame_rates(average_singles_rates,
+                                frame_start_time,
+                                frame_end_time,
+                                scanner_sptr);
+  
+  return(frame_rates);
+  
+}
+
+
+
+
+
+// Get time slice index.
+// Returns the index of the slice that contains the specified time.
+int
+SinglesRatesFromSglFile::
+get_end_time_slice_index(double t) const {
+
+  // Start with an initial estimate.
+  int slice_index = static_cast<int>(floor(t / _singles_time_interval));
+
+  if ( slice_index >= _num_time_slices ) {
+    slice_index = _num_time_slices - 1;
+  } 
+
+
+  // Check estimate and determine whether to look further or backwards.
+  // Note that we could just move fowards first and then backwards but this
+  // method is more intuitive.
+
+  if ( _times[slice_index] < t ) {
+    
+    // Check forwards.
+    while( slice_index < _num_time_slices - 1 &&
+           _times[slice_index] < t ) {
+      slice_index++;
+    }
+
+  } else {
+
+    // Check backwards.
+    while( slice_index > 0 && _times[slice_index - 1] >= t ) {
+      slice_index--;
+    }
+
+  }
+  
+  return(slice_index);
+}
+
+
+
+
+// Get time slice index.
+// Returns first slice ending _after_ t.
+int
+SinglesRatesFromSglFile::
+get_start_time_slice_index(double t) const {
+  
+  // Start with an initial estimate.
+  int slice_index = static_cast<int>(floor(t / _singles_time_interval));
+
+  if ( slice_index >= _num_time_slices ) {
+    slice_index = _num_time_slices - 1;
+  } 
+
+
+  // Check estimate and determine whether to look further or backwards.
+  // Note that we could just move fowards first and then backwards but this
+  // method is more intuitive.
+
+  if ( _times[slice_index] < t ) {
+    
+    // Check forwards.
+    while( slice_index < _num_time_slices - 1 &&
+           _times[slice_index] <= t ) {
+      slice_index++;
+    }
+
+  } else {
+
+    // Check backwards.
+    while( slice_index > 0 && _times[slice_index - 1] > t ) {
+      slice_index--;
+    }
+
+  }
+  
+  return(slice_index);
+}
+
+
+
+
+
+
+// Get rates using time slice and singles bin indices.
+int 
+SinglesRatesFromSglFile::
+get_singles_rate(int singles_bin_index, int time_slice) const {
+  
+  // Check ranges.
+  int total_singles_units = scanner_sptr->get_num_singles_units();
+  
+  if ( singles_bin_index < 0 || singles_bin_index >= total_singles_units ||
+       time_slice < 0 || time_slice >= _num_time_slices ) {
+    return(0);
+  } else {
+    return _singles[time_slice][singles_bin_index];
+  }
+
+}
+
+
+
+// Set a singles rate by time bin index and time slice.
+void 
+SinglesRatesFromSglFile::
+set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
+  
+  int total_singles_units = scanner_sptr->get_num_singles_units();
+  
+  if ( singles_bin_index >= 0 && singles_bin_index < total_singles_units &&
+       time_slice >= 0 && time_slice < _num_time_slices ) {
+    _singles[time_slice][singles_bin_index] = new_rate;
+  }
+}
+
+
+
+ 
+vector<double> 
+SinglesRatesFromSglFile::get_times() const
 {
+  return _times;
+}
+
+
+
+
+int
+SinglesRatesFromSglFile:: 
+get_num_time_slices() const {
+  return(_num_time_slices);
+}
+
+
+
+double
+SinglesRatesFromSglFile:: 
+get_singles_time_interval() const {
+  return(_singles_time_interval);
+}
+
+
+
+
+
+int
+SinglesRatesFromSglFile::
+read_singles_from_sgl_file(const string& sgl_filename)
+{
+
 #ifndef HAVE_LLN_MATRIX
+
   error("Compiled without ECAT7 support\n");
+
 #else
+
   ifstream singles_file(sgl_filename.c_str(), ios::binary);
-  if (!singles_file)
-  {
+  if (!singles_file) {
     error("\nSinglesRatesFromSglFile: Couldn't open \"%s\".\n", sgl_filename.c_str());
   }
-    
+
+  
   //first find out the size of the file
   singles_file.seekg(0, ios::end);
   const streampos end_stream_position = singles_file.tellg();
-  if (!singles_file)
-  {
+  if (!singles_file) {
     error("\nSinglesRatesFromSglFile: Couldn't seek to end of file %s.",sgl_filename.c_str());
   }
+
 
   // go to the beginning and read the singles header
   singles_file.seekg(0, ios::beg);
  
-  if (!singles_file)
+  if (!singles_file) {
     error("\nSinglesRatesFromSglFile: Couldn't seek to start of file %s.",sgl_filename.c_str());
+  }
+  
+
   {
     char buffer[sizeof(Main_header)];
-    singles_file.read(buffer,sizeof(singles_main_header));
+    singles_file.read(buffer,sizeof(_singles_main_header));
     if (!singles_file)
     {
       error("\nSinglesRatesFromSglFile: Couldn't read main_header from %s.",sgl_filename.c_str());
     }
     else
     {
-      unmap_main_header(buffer, &singles_main_header);
-      ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
+      unmap_main_header(buffer, &_singles_main_header);
+      ecat::ecat7::find_scanner(scanner_sptr, _singles_main_header);
     }
-   }
-  if (scanner_sptr->get_type() != Scanner::E966)
-    warning("check SinglesRatesFromSglFile for non-966\n");
+  }
 
-  trans_blocks_per_bucket =scanner_sptr->get_num_transaxial_blocks_per_bucket();
-  angular_crystals_per_block =scanner_sptr->get_num_transaxial_crystals_per_block();
-  axial_crystals_per_block =scanner_sptr->get_num_axial_crystals_per_block();
   
-  //skip the first 512 bytes which are part of ECAT7 header
-  const int number_of_elements = 
-    static_cast<int>((end_stream_position-static_cast<streampos>(512))/size_of_singles_record);
+  if (scanner_sptr->get_type() != Scanner::E966) {
+    warning("check SinglesRatesFromSglFile for non-966\n");
+  }
 
-  //TODO move to Scanner
-  if (scanner_sptr->get_type() == Scanner::E966)
-    num_axial_blocks_per_singles_unit = 2;
-  else
-    num_axial_blocks_per_singles_unit = 1;
 
-  singles = Array<3,float>(IndexRange3D(0,number_of_elements-1,
-					 0,scanner_sptr->get_num_axial_blocks()/num_axial_blocks_per_singles_unit-1,
-					0,scanner_sptr->get_num_transaxial_buckets()-1)); 
-  Array<3,float>::full_iterator array_iter  = singles.begin_all();
- 
-  int singles_record_num=0;
-  singles_file.seekg(512,ios::beg);
-  while (singles_file && singles_record_num<=number_of_elements)
-  {
+  // Get total number of bins for this type of scanner.
+  const int total_singles_units = scanner_sptr->get_num_singles_units();
+
+  // Calculate number of time slices from the length of the data (file size minus header).
+  _num_time_slices =  
+    static_cast<int>((end_stream_position - static_cast<streampos>(512)) /
+                     SIZE_OF_SINGLES_RECORD);
+
+   // Allocate the main array.
+  _singles = Array<2, int>(IndexRange2D(0, _num_time_slices - 1, 0, total_singles_units - 1));
+
+  
+  int slice = 0;
+  singles_file.seekg(512, ios::beg);
+  
+  while (singles_file && slice < _num_time_slices) {
+    
+    // Temporary space to store file data.
     sgl_str singles_str;
+
+
     {
-      unsigned char buffer[size_of_singles_record];
-      singles_file.read(reinterpret_cast<char *>(buffer),size_of_singles_record);
-      if (!singles_file)
-	{
-	  if (!singles_file.eof())
-	    warning("Error reading singles file record %d. Stopped reading from this point.", singles_record_num);
-	  break;
-	}
+      unsigned char buffer[SIZE_OF_SINGLES_RECORD];
+      
+      singles_file.read(reinterpret_cast<char *>(buffer), SIZE_OF_SINGLES_RECORD);
+      if (!singles_file) {
+        
+        if (!singles_file.eof()) {
+          warning("Error reading singles file record %d. Stopped reading from this point.", 
+                  slice);
+        }
+
+        break;
+      }
+
       singles_str.time = convert_4_bytes(buffer);
       singles_str.num_sgl = convert_4_bytes(buffer+4);
-      for (unsigned int i=0; i<(size_of_singles_record-8)/4; ++i)
-	  singles_str.sgl[i] = convert_4_bytes(buffer+8+4*i);
+      
+      for (unsigned int i = 0; i < ( SIZE_OF_SINGLES_RECORD - 8)/4; ++i) {
+        singles_str.sgl[i] = convert_4_bytes(buffer+8+4*i);
+      }
     }
-    const int num_singles_units =
-      scanner_sptr->get_num_transaxial_buckets() *
-      (scanner_sptr->get_num_axial_blocks()/num_axial_blocks_per_singles_unit);
 
-    if (singles_str.num_sgl != num_singles_units)
-      error("Number of singles units should be %d, but is %d in singles file",
-	    num_singles_units,  singles_str.num_sgl);
     
-    for ( int i = 0; i<num_singles_units;i++, ++array_iter)
-    {
-      assert(array_iter !=singles.end_all());
-      *array_iter = static_cast<float>(singles_str.sgl[i]);
+    if (singles_str.num_sgl != total_singles_units) {
+      error("Number of singles units should be %d, but is %d in singles file",
+	    total_singles_units,  singles_str.num_sgl);
     }
+    
+
+
+    // Copy the singles values to the main array.
+    
+    // Note. The singles values are arranged num_axial sets of num_transaxial
+    // values.
+    //
+    // For a singles values for a unit at axial_index, transaxial_index
+    // the values is found at single_str.sgl[]
+    // singles_str.sgl[ transaxial_index + (axial_index * num_transaxial) ]
+    //
+    // The singles values are stored in the _singles array in the same order.
+    // For other file formats the ordering of the units may be different.
+    for (int singles_bin = 0; singles_bin < total_singles_units; ++singles_bin) {
+      _singles[slice][singles_bin] = static_cast<int>(singles_str.sgl[singles_bin]);
+    }
+    
+    
     // singles in the sgl file given in msec.multiply with 0.001 to convert into sec.
-    times.push_back(singles_str.time*0.001);
-    ++singles_record_num;
+    _times.push_back(singles_str.time*0.001);
+
+    // Add the last two words - total prompts and total randoms.
+    _total_prompts.push_back(singles_str.sgl[total_singles_units]);
+    _total_randoms.push_back(singles_str.sgl[total_singles_units + 1]);
+    
+    // Increment the slice index.
+    ++slice;
+    
   }
   
-  assert(times.size()!=0);
-  singles_time_interval = times[1] - times[0];
-      
-  if (singles_record_num!= number_of_elements)
+  assert(_times.size()!=0);
+  _singles_time_interval = _times[1] - _times[0];
+  
+  if (slice != _num_time_slices)
   {
     error("\nSinglesRatesFromSglFile: Couldn't read all records in the .sgl file %s. Read %d of %d. Exiting\n",
-	  sgl_filename.c_str(), singles_record_num, number_of_elements);
+	  sgl_filename.c_str(), slice, _num_time_slices);
     //TODO resize singles to return array with new sizes
   }
+
 #endif
-   return singles;
+
+  // Return number of time slices read.
+  return slice; 
     
 }
-  
-vector<double> 
-SinglesRatesFromSglFile::get_times() const
-{
-  return times;
-}
 
-float 
-SinglesRatesFromSglFile::get_singles_rate(const DetectionPosition<>& det_pos,
-					   const double start_time,  
-					   const double end_time) const
-{ 
-  assert(end_time >= start_time);
-  //cerr << start_time << "   ";
-  // cerr << end_time << "   ";
-  
-  const int denom = trans_blocks_per_bucket*angular_crystals_per_block;
-  const int axial_pos = det_pos.axial_coord();
-  const int transaxial_pos = det_pos.tangential_coord();
-  const int axial_bucket_num = axial_pos/(num_axial_blocks_per_singles_unit*axial_crystals_per_block);
-  const int transaxial_bucket_num = (transaxial_pos/denom) ;
 
-  const float blocks_per_singles_unit =
-    num_axial_blocks_per_singles_unit*trans_blocks_per_bucket;
-  // SM this is pretty ugly but since sgl file has times from 2.008 all times less than this 
-  // do not get assigned a value. In this case we take singles[0][ax][tang] for all times <2.008
-  //TODO
-  if ( start_time==end_time && start_time <=2.1)
-    { 
-      // TODO 4 966
-     return  singles[0][axial_bucket_num][transaxial_bucket_num]/blocks_per_singles_unit;       
-    }
-    
-#if 1
-  // find out the index in the times vector (assumes almost constant sampling in time)
 
-  /* The funny ranges below are made to reproduce Peter Bloomfield's code.
 
-     For a given frame, the last singles to consider is found by
-     taking the maximum index such that
-       singles[last].time <  end_time_for_that_frame
-     So, to find the first index, you have to find the last index in the previous frame,
-     and then add 1.
 
-     Instead of walking through the whole array to find the first index, we jump 
-     to start_time/singles_time_interval (which is about 2 secs for the 966)
-     which should get us pretty close. However, to be safe, we go a bit earlier,
-     and then loop till we find the actual start.
-  */
-  //  const int min_index = singles.get_min_index();
-  //const double singles_time_interval = singles[min_index+1].time - singles[min_index].time;
-  const int min_index = 0;
-  
-  std::size_t start_index = 
-    static_cast<std::size_t>(max(static_cast<int>(start_time/singles_time_interval) - 3, min_index));
-  while (start_index<times.size() && times[start_index+1]<start_time)
-  //while (start_index<times.get_max_index() && singles[start_index+1].time<start_time)
-    ++start_index;
+// Write SinglesRatesFromSglFile to a singles file.
+std::ostream& 
+SinglesRatesFromSglFile::write(std::ostream& output) {
 
-  float singles_average =0;
-  std::size_t i;
-  //for (i = start_index; i<=singles.get_max_index() && singles[i].time<end_time; i++)
-  // SM correced upper range as times[i]<end_time is incorrect
-  for (i = start_index; i<=times.size() && times[i]<end_time; i++)
-    {
-    singles_average += singles[i][axial_bucket_num][transaxial_bucket_num];       
-    }
-    return singles_average/(blocks_per_singles_unit*(i-start_index));
+#ifndef HAVE_LLN_MATRIX
+
+  error("Compiled without ECAT7 support\n");
+
 #else
+  
+  char header_buffer[sizeof(Main_header)];
+  unsigned char buffer[SIZE_OF_SINGLES_RECORD];
+  
+  // Write header to buffer.
+  map_main_header(header_buffer, &(this->_singles_main_header));
+  
+  // Write buffer to output.
+  output.write(header_buffer, sizeof(Main_header));
 
-    int i= (int)start_time/2;
+  if (!output) {
+    error("\nSinglesRatesFromSglFile: Failed to write to output.");
+    return(output);
+  }
+  
+
+
+  // Empty buffer.
+  memset(buffer, 0, SIZE_OF_SINGLES_RECORD);
+  
+  int total_singles_units =  scanner_sptr->get_num_singles_units();
+  unsigned long millisecs;
+  
+  // Write 512 byte blocks. One for each time slice recorded.
+  for(int slice = 0 ; slice < _num_time_slices ; ++slice) {
     
-    return  singles[i][axial_bucket_num][transaxial_bucket_num]/blocks_per_singles_unit;       
+    // Write data to buffer.
+    millisecs = static_cast<unsigned long>(floor(_times[slice]));
+                                 
+    // Time and number of singles units
+    convert_int_to_4_bytes(millisecs, buffer + ((2 + total_singles_units) * 4));
+    convert_int_to_4_bytes(total_singles_units, buffer + ((2 + total_singles_units + 1) * 4));
 
+    // Singles units
+    // Note that the order of values in _singles is the same as that of the file.
+    // This may not be the case for other file formats.
+    for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+      convert_int_to_4_bytes(_singles[slice][singles_bin], buffer + ((2 + singles_bin) * 4));
+    }
+    
+    // Total prompts and total trues
+    convert_int_to_4_bytes(_total_prompts[slice], buffer + ((2 + total_singles_units) * 4));
+    convert_int_to_4_bytes(_total_randoms[slice], buffer + ((2 + total_singles_units + 1) * 4));
+    
+    
+    // Write buffer to output.
+    output.write(reinterpret_cast<char *>(buffer), SIZE_OF_SINGLES_RECORD);
+    
+    if (!output) {
+      error("\nSinglesRatesFromSglFile: Failed to write to output.");
+      break;
+    }
+
+  }
+  
 
 #endif
-   
 
+  return output;
 }
+
+
+
+
+
+
+
+float
+SinglesRatesFromSglFile::
+get_singles_rate(int singles_bin_index,
+                 const double start_time, const double end_time) const {
+
+  // Calculate an inclusive range. start_time_slice is the 
+  // the first slice with an ending time greater than start_time.
+  // end_time_slice is the first time slice that ends at, or after,
+  // end_time.
+  int start_time_slice = this->get_start_time_slice_index(start_time);
+  int end_time_slice = this->get_end_time_slice_index(end_time);
+  
+  double total_singles = 0.0;
+
+  for(int slice = start_time_slice ; slice <= end_time_slice ; ++slice) {
+    total_singles += _singles[slice][singles_bin_index];
+  }
+
+  return( static_cast<float>(total_singles / (end_time_slice - start_time_slice + 1)) );
+  
+}
+
+
+
+
+
+
+
+
 
 
 void 
@@ -266,7 +562,7 @@ SinglesRatesFromSglFile::
 initialise_keymap()
 {
   parser.add_start_key("Singles Rates From Sgl File");
-  parser.add_key("sgl_filename", &sgl_filename);
+  parser.add_key("sgl_filename", &_sgl_filename);
   parser.add_stop_key("End Singles Rates From Sgl File");
 }
 
@@ -274,7 +570,7 @@ bool
 SinglesRatesFromSglFile::
 post_processing()
 {
-  read_singles_from_sgl_file(sgl_filename);
+  read_singles_from_sgl_file(_sgl_filename);
   return false;
 }
 
@@ -282,8 +578,14 @@ post_processing()
 void 
 SinglesRatesFromSglFile::set_defaults()
 {
-  sgl_filename = "";
+  _sgl_filename = "";
 }
+
+
+
+
+
+
 
 
 END_NAMESPACE_ECAT7
