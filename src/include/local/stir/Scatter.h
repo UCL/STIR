@@ -225,6 +225,31 @@ void scatter_viewgram(
 	const float lower_energy_threshold, const float upper_energy_threshold,		
 	const bool use_cache, const int scatter_level, const bool random);
 
+/////////////////////////
+	float att_estimate_for_no_scatter(	 
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B);
+	
+	float estimate_scale_factor(
+		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
+		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
+		const ProjData& att_proj_data, 
+		const float attenuation_threshold);
+
+	void estimate_att_viewgram(ProjData& proj_data,					  
+		const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density);
+void substract_scatter(
+		ProjData& corrected_scatter_proj_data, 
+		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
+		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
+		const ProjData& att_proj_data, 
+		const float global_scatter_factor) ;
+
+/////////////////////////
+
+
+
 #ifdef _MSC_VER
 /* !\ingroup scatter
      \brief Temporary implementation of the error function for Visual C++
