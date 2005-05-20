@@ -302,6 +302,8 @@ SinglesRatesFromSglFile::
 read_singles_from_sgl_file(const string& sgl_filename)
 {
 
+  int slice = 0;
+
 #ifndef HAVE_LLN_MATRIX
 
   error("Compiled without ECAT7 support\n");
@@ -362,7 +364,6 @@ read_singles_from_sgl_file(const string& sgl_filename)
   _singles = Array<2, int>(IndexRange2D(0, _num_time_slices - 1, 0, total_singles_units - 1));
 
   
-  int slice = 0;
   singles_file.seekg(512, ios::beg);
   
   while (singles_file && slice < _num_time_slices) {
