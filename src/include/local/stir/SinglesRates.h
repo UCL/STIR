@@ -131,35 +131,6 @@ protected:
 
 
 
-//
-// A set of singles rates for a set of discrete frames.
-//
-/*
-class SinglesFrameRates : public SinglesRates
-{
-
- public:
-
-    // The SinglesRates class constitues the public interface of SinglesFrameRates.
-    
-
-
- private:
-
-    // The actual array of singles rates. Indexed by frame and singles bin.
-    Array<2, float> _singles;
-    
-    // Time frame definitions.
-    vector< pair<double, double> > _frame_times;
-    
-    // Method to get the start frame index for a start and end time.
-    int start_frame(double start_time, double end_time);
-
-    // Method to get the end frame index for a start and end time.
-    int end_frame(double start_time, double end_time);
-    
-};
-*/
 
 
 END_NAMESPACE_STIR

@@ -22,7 +22,10 @@
 
   \brief Declaration of class SinglesRatesFromSglFile
 
-  \author  Sanida Mustafovic and Kris Thielemans
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author Tim Borgeaud
+
   $Date$ 
   $Revision$
 */
@@ -63,7 +66,7 @@ public:
 
 
  //! Default constructor 
- SinglesRatesFromSglFile ();
+ SinglesRatesFromSglFile();
 
 
  //! Given the detection position get the singles rate   
@@ -131,6 +134,9 @@ public:
  void set_singles_rate(int singles_bin_index, int time_slice, int new_rate);
 
 
+ //! Rebin the sgl slices into a different set of consecutive slices.
+ int rebin(vector<double>& new_end_times);
+ 
   
  //! Get the vector of time values for each time slice index.
  vector<double> get_times() const;
@@ -144,8 +150,8 @@ public:
  
  //! Return the time interval per slice of singles data.
  double get_singles_time_interval() const;
- 
 
+ 
  // IO Methods
 
  //! The function that reads singles from *.sgl file.
@@ -174,12 +180,23 @@ private:
 #endif
  
  int _num_time_slices;
+
+ // A value of zero for _singles_time_interval indicates that the time slices
+ // are of different lengths.
  double _singles_time_interval;
 
  string _sgl_filename;
  
  float get_singles_rate(int singles_bin_index, 
                         double start_time, double end_time) const;
+
+
+ // Calculate and set _singles_time_interval.
+ void set_time_interval();
+
+ // get slice start time.
+ double get_slice_start(int slice_index);
+ 
 
  virtual void set_defaults();
  virtual void initialise_keymap();

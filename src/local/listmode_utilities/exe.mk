@@ -13,7 +13,8 @@ $(dir)_SOURCES = \
 	get_singles_info.cxx \
 	change_lm_time_tags.cxx \
 	scan_singles_file.cxx \
-	print_sgl_values.cxx
+	print_sgl_values.cxx \
+	rebin_singles_file.cxx
 
 
 include $(WORKSPACE)/exe.mk

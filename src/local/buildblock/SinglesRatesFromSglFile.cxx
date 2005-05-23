@@ -56,6 +56,10 @@ SinglesRatesFromSglFile::SIZE_OF_SINGLES_RECORD = 4*128;
 const char * const 
 SinglesRatesFromSglFile::registered_name = "Singles From Sgl File"; 
 
+
+const double MAX_INTERVAL_DIFFERENCE = 0.05; // 5% max difference.
+
+
 static inline 
 unsigned long int
 convert_4_bytes(unsigned char * buffer)
@@ -157,8 +161,12 @@ int
 SinglesRatesFromSglFile::
 get_end_time_slice_index(double t) const {
 
+  int slice_index = 0;
+
   // Start with an initial estimate.
-  int slice_index = static_cast<int>(floor(t / _singles_time_interval));
+  if ( _singles_time_interval != 0 ) {
+    slice_index = static_cast<int>(floor(t / _singles_time_interval));
+  }
 
   if ( slice_index >= _num_time_slices ) {
     slice_index = _num_time_slices - 1;
@@ -197,9 +205,13 @@ get_end_time_slice_index(double t) const {
 int
 SinglesRatesFromSglFile::
 get_start_time_slice_index(double t) const {
-  
+
+  int slice_index = 0;
+
   // Start with an initial estimate.
-  int slice_index = static_cast<int>(floor(t / _singles_time_interval));
+  if ( _singles_time_interval != 0 ) {
+    slice_index = static_cast<int>(floor(t / _singles_time_interval));
+  }
 
   if ( slice_index >= _num_time_slices ) {
     slice_index = _num_time_slices - 1;
@@ -267,6 +279,125 @@ set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
   }
 }
 
+
+
+
+int 
+SinglesRatesFromSglFile::
+rebin(vector<double>& new_end_times) {
+
+  const int num_new_slices = new_end_times.size();
+  const int total_singles_units = scanner_sptr->get_num_singles_units();
+  
+  // Create the new array of singles data.
+  Array<2, int> new_singles = Array<2, int>(IndexRange2D(0, num_new_slices - 1, 
+                                                         0, total_singles_units - 1));
+  
+
+  // Start with initial time of 0.0 seconds.
+  double start_time = 0;
+
+
+  // Sort the set of new time slices.
+  sort(new_end_times.begin(), new_end_times.end());
+  
+  
+  // Loop over new time slices.
+  for(unsigned int new_slice = 0 ; new_slice < new_end_times.size(); ++new_slice) {
+    
+    double end_time = new_end_times[new_slice];
+    
+    // Get start and end slices.
+    int start_slice = get_start_time_slice_index(start_time);
+    int end_slice = get_end_time_slice_index(end_time);
+    
+
+    if ( start_slice == end_slice ) {
+      
+      // Only one slice contributes so use this value.
+      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+        new_singles[new_slice][singles_bin] = _singles[start_slice][singles_bin];
+      }
+      
+    } else {
+      
+      // Start and end times for original slices.
+      double slice_start_time;
+      double slice_end_time;
+      double included_duration; 
+      double old_duration;
+      double fraction;
+
+      // Total slices included (including fractional amounts).
+      double total_slices;
+
+
+      // Calculate the fraction of the start_slice to include.
+      slice_start_time = get_slice_start(start_slice);
+      slice_end_time = _times[start_slice];
+      
+      old_duration = slice_end_time - slice_start_time;
+      included_duration = slice_end_time - start_time;
+      
+      fraction = included_duration / old_duration;
+
+      
+      // Add this fraction of each bin to the new set of singles rates.
+      total_slices = fraction;
+      
+      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+        new_singles[new_slice][singles_bin] = 
+          static_cast<int>(rint(fraction * _singles[start_slice][singles_bin]));
+      }
+
+      
+     
+      // Calculate the fraction of the end_slice to include.
+      slice_start_time = get_slice_start(end_slice);
+      slice_end_time = _times[end_slice];
+      
+      old_duration = slice_end_time - slice_start_time;
+      included_duration = end_time - slice_start_time;
+      
+      fraction = included_duration / old_duration;
+
+      total_slices += fraction;
+      
+      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+        new_singles[new_slice][singles_bin] += 
+          static_cast<int>(rint(fraction * _singles[end_slice][singles_bin]));
+      }
+
+      
+      // Add all intervening slices.
+      for(int slice = start_slice + 1; slice < end_slice ; ++slice, total_slices += 1.0) {
+        for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+          new_singles[new_slice][singles_bin] += static_cast<int>(_singles[slice][singles_bin]);
+        }
+      }
+      
+      
+      // Divide by total amount of contributing slices.
+      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+        double new_val = (1.0/total_slices) * new_singles[new_slice][singles_bin];
+        new_singles[new_slice][singles_bin] = static_cast<int>(rint(new_val));
+      }
+      
+    }
+
+    // Next slice starts at the end of this slice.
+    start_time = end_time;
+
+  }
+
+  
+  // Set the singles and times using the new sets.
+  _singles = new_singles;
+  _times = new_end_times;
+  _num_time_slices = _times.size();
+  
+  return(_num_time_slices);
+}
 
 
  
@@ -461,37 +592,38 @@ SinglesRatesFromSglFile::write(std::ostream& output) {
 
 #else
   
-  char header_buffer[sizeof(Main_header)];
+  char header_buffer[SIZE_OF_SINGLES_RECORD];
   unsigned char buffer[SIZE_OF_SINGLES_RECORD];
   
+  memset(header_buffer, 0, SIZE_OF_SINGLES_RECORD);
+
   // Write header to buffer.
   map_main_header(header_buffer, &(this->_singles_main_header));
   
   // Write buffer to output.
-  output.write(header_buffer, sizeof(Main_header));
+  output.write(header_buffer, SIZE_OF_SINGLES_RECORD);
 
   if (!output) {
     error("\nSinglesRatesFromSglFile: Failed to write to output.");
     return(output);
   }
   
-
-
+  
   // Empty buffer.
   memset(buffer, 0, SIZE_OF_SINGLES_RECORD);
   
-  int total_singles_units =  scanner_sptr->get_num_singles_units();
+  int total_singles_units = scanner_sptr->get_num_singles_units();
   unsigned long millisecs;
   
   // Write 512 byte blocks. One for each time slice recorded.
   for(int slice = 0 ; slice < _num_time_slices ; ++slice) {
     
     // Write data to buffer.
-    millisecs = static_cast<unsigned long>(floor(_times[slice]));
-                                 
+    millisecs = static_cast<unsigned long>(floor(_times[slice] * 1000.0));
+ 
     // Time and number of singles units
-    convert_int_to_4_bytes(millisecs, buffer + ((2 + total_singles_units) * 4));
-    convert_int_to_4_bytes(total_singles_units, buffer + ((2 + total_singles_units + 1) * 4));
+    convert_int_to_4_bytes(millisecs, buffer);
+    convert_int_to_4_bytes(total_singles_units, buffer + 4);
 
     // Singles units
     // Note that the order of values in _singles is the same as that of the file.
@@ -524,6 +656,12 @@ SinglesRatesFromSglFile::write(std::ostream& output) {
 
 
 
+/*
+ *
+ * Private methods.
+ *
+ */
+
 
 
 
@@ -551,8 +689,57 @@ get_singles_rate(int singles_bin_index,
 
 
 
+void 
+SinglesRatesFromSglFile::
+set_time_interval() {
+
+  // Run through the _times vector and calculate an average difference 
+  // between the starts of consecutive time slices.
+  
+  // Min and max differences (slice durations).
+  double min_diff = 0;
+  double max_diff = 0;
+  double total = 0;
+
+  for(vector<double>::const_iterator t = _times.begin(); t < _times.end() - 1; ++t) {
+    double diff = *(t + 1) - *t; 
+    total += diff;
+
+    if ( min_diff == 0 || diff < min_diff ) {
+      min_diff = diff;
+    }
+
+    if ( diff > max_diff ) {
+      max_diff = diff;
+    }
+  }
+  
+  _singles_time_interval = total / (_times.size() - 1);
+  
+  if ( (max_diff - min_diff) / (_singles_time_interval) > MAX_INTERVAL_DIFFERENCE ) {
+    // Slice durations are not consistent enough to be considered the same.
+    _singles_time_interval = 0;
+  }
+  
+}
 
 
+// get slice start time.
+double 
+SinglesRatesFromSglFile::
+get_slice_start(int slice_index) {
+
+  if ( slice_index >= _num_time_slices ) {
+    slice_index = _num_time_slices - 1;
+  }
+  
+  if ( slice_index == 0 ) {
+    return(0);
+  } else {
+    return(_times[slice_index - 1]);
+  }
+}
+ 
 
 
 
