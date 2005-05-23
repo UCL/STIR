@@ -306,85 +306,94 @@ rebin(vector<double>& new_end_times) {
   for(unsigned int new_slice = 0 ; new_slice < new_end_times.size(); ++new_slice) {
     
     double end_time = new_end_times[new_slice];
-    
-    // Get start and end slices.
-    int start_slice = get_start_time_slice_index(start_time);
-    int end_slice = get_end_time_slice_index(end_time);
-    
 
-    if ( start_slice == end_slice ) {
-      
-      // Only one slice contributes so use this value.
+
+    // If start time is beyond last end time in original data, then use zeros.
+    if ( start_time > _times[_num_time_slices - 1] ) {
       for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-        new_singles[new_slice][singles_bin] = _singles[start_slice][singles_bin];
+        new_singles[new_slice][singles_bin] = 0;
       }
-      
     } else {
-      
-      // Start and end times for original slices.
-      double slice_start_time;
-      double slice_end_time;
-      double included_duration; 
-      double old_duration;
-      double fraction;
-
-      // Total slices included (including fractional amounts).
-      double total_slices;
-
-
-      // Calculate the fraction of the start_slice to include.
-      slice_start_time = get_slice_start(start_slice);
-      slice_end_time = _times[start_slice];
-      
-      old_duration = slice_end_time - slice_start_time;
-      included_duration = slice_end_time - start_time;
-      
-      fraction = included_duration / old_duration;
 
       
-      // Add this fraction of each bin to the new set of singles rates.
-      total_slices = fraction;
-      
-      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-        new_singles[new_slice][singles_bin] = 
-          static_cast<int>(rint(fraction * _singles[start_slice][singles_bin]));
-      }
+      // Get start and end slices.
+      int start_slice = get_start_time_slice_index(start_time);
+      int end_slice = get_end_time_slice_index(end_time);
+    
 
-      
-     
-      // Calculate the fraction of the end_slice to include.
-      slice_start_time = get_slice_start(end_slice);
-      slice_end_time = _times[end_slice];
-      
-      old_duration = slice_end_time - slice_start_time;
-      included_duration = end_time - slice_start_time;
-      
-      fraction = included_duration / old_duration;
-
-      total_slices += fraction;
-      
-      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-        new_singles[new_slice][singles_bin] += 
-          static_cast<int>(rint(fraction * _singles[end_slice][singles_bin]));
-      }
-
-      
-      // Add all intervening slices.
-      for(int slice = start_slice + 1; slice < end_slice ; ++slice, total_slices += 1.0) {
+      if ( start_slice == end_slice ) {
+        
+        // Only one slice contributes so use this value.
         for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-          new_singles[new_slice][singles_bin] += static_cast<int>(_singles[slice][singles_bin]);
+          new_singles[new_slice][singles_bin] = _singles[start_slice][singles_bin];
+        }
+        
+      } else {
+        
+        // Start and end times for original slices.
+        double slice_start_time;
+        double slice_end_time;
+        double included_duration; 
+        double old_duration;
+        double fraction;
+        
+        // Total slices included (including fractional amounts).
+        double total_slices;
+        
+        
+        // Calculate the fraction of the start_slice to include.
+        slice_start_time = get_slice_start(start_slice);
+        slice_end_time = _times[start_slice];
+        
+        old_duration = slice_end_time - slice_start_time;
+        included_duration = slice_end_time - start_time;
+        
+        fraction = included_duration / old_duration;
+        
+        
+        // Add this fraction of each bin to the new set of singles rates.
+        total_slices = fraction;
+        
+        for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+          new_singles[new_slice][singles_bin] = 
+            static_cast<int>(rint(fraction * _singles[start_slice][singles_bin]));
+        }
+        
+        
+        
+        // Calculate the fraction of the end_slice to include.
+        slice_start_time = get_slice_start(end_slice);
+        slice_end_time = _times[end_slice];
+        
+        old_duration = slice_end_time - slice_start_time;
+        included_duration = end_time - slice_start_time;
+        
+        fraction = included_duration / old_duration;
+        
+        total_slices += fraction;
+        
+        for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+          new_singles[new_slice][singles_bin] += 
+            static_cast<int>(rint(fraction * _singles[end_slice][singles_bin]));
+        }
+        
+        
+        // Add all intervening slices.
+        for(int slice = start_slice + 1; slice < end_slice ; ++slice, total_slices += 1.0) {
+          for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+            new_singles[new_slice][singles_bin] += static_cast<int>(_singles[slice][singles_bin]);
+          }
+        }
+        
+        
+        // Divide by total amount of contributing slices.
+        for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
+          double new_val = (1.0/total_slices) * new_singles[new_slice][singles_bin];
+          new_singles[new_slice][singles_bin] = static_cast<int>(rint(new_val));
         }
       }
-      
-      
-      // Divide by total amount of contributing slices.
-      for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-        double new_val = (1.0/total_slices) * new_singles[new_slice][singles_bin];
-        new_singles[new_slice][singles_bin] = static_cast<int>(rint(new_val));
-      }
-      
     }
-
+    
     // Next slice starts at the end of this slice.
     start_time = end_time;
 
