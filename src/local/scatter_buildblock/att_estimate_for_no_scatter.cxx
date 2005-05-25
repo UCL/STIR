@@ -40,12 +40,12 @@ float att_estimate_for_no_scatter(
   const float	rescale = 
 		0.1F;
 #endif		
-	float atten_detA_to_detB = -rescale*integral_scattpoint_det(
+	float atten_detA_to_detB = rescale*integral_scattpoint_det(
 			image_as_density,
 			detector_coord_A, 
 			detector_coord_B);
     
-	return atten_detA_to_detB;	
+	return exp(atten_detA_to_detB);	
 }
 
 END_NAMESPACE_STIR
