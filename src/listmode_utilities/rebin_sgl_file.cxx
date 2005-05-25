@@ -18,10 +18,12 @@
 
 
 #include "local/stir/SinglesRatesFromSglFile.h"
+#include "stir/TimeFrameDefinitions.h"
 
 #include <string>
 #include <fstream>
 #include <vector>
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -34,34 +36,102 @@ USING_NAMESPACE_STIR
 
 
 
+void
+usage(const char *progname) {
+  cerr << "A program to rebin an sgl file.\n\n";
+  cerr << "There are two ways to use this program.\n"; 
+  cerr << "1) " << progname
+       << " sgl_input_file sgl_output_file frame_end [frame_ends ...]\n\n";
+  cerr << "2) " << progname
+       << " -f frame_definition_file sgl_input_file sgl_output_file\n\n";
+  cerr << "Frame end times are floating point numbers of seconds\n";
+}
+
 
 
 int 
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
 
   // Check arguments. 
   // Singles filename + optional output filename
-  if (argc < 4) {
-    cerr << "A program to rebin an sgl file.\n\n";
-    cerr << "Usage: " << argv[0] << 
-      " sgl_input_file sgl_output_file frame_end [frame_ends ...]\n\n";
-    cerr << "Frame end times are floating point numbers of seconds\n";
+  if (argc < 4 ) {
+    usage(argv[0]);
     exit(EXIT_FAILURE);
   }
 
-
-  const string input_filename = argv[1];
-  const string output_filename = argv[2];
   
 
-  vector<double> new_times(argc - 3);
+  string input_filename;
+  string output_filename;
+  vector<double> new_times; 
 
-  // Read frame end times
-  for(int arg = 3 ; arg < argc ; arg++) {
-    new_times[arg - 3] = atof(argv[arg]);
+ 
+
+  // Check to see if -f was supplied as the first argument.
+  if ( argv[1][0] == '-' ) {
+    // Option supplied
+    
+    int arg_len = strlen(argv[1]);
+
+    if ( arg_len != 2 || argv[1][1] != 'f' ) {
+      
+      for (int i = 1 ; i < arg_len ; ++i ) {
+        if ( argv[1][i] != 'f' ) {
+          cerr << "Unknown option " << argv[1][i] << endl;
+        }
+      }
+      
+      usage(argv[0]);
+      exit(EXIT_FAILURE);
+    }
+    
+    const string fdef_filename = argv[2];
+    input_filename = argv[3];
+    output_filename = argv[4];
+
+
+    TimeFrameDefinitions time_frames(fdef_filename);
+  
+    double last_end = 0.0;
+
+    // Create the new ending times by looping over the frames.
+    for (unsigned int frame = 1 ; frame <= time_frames.get_num_frames() ; ++frame) {
+
+      double frame_start = time_frames.get_start_time(frame);
+      double frame_end = time_frames.get_end_time(frame);
+
+      //cerr << "Start: " << frame_start << " End: " << frame_end << endl;
+      
+      if ( frame_start != last_end ) {
+        //cerr << "Added frame at: " << frame_start << endl;
+        // Add an additional frame that ends at the start of this frame.
+        new_times.push_back(frame_start);
+      }
+
+      // Add the frame end.
+      new_times.push_back(frame_end);
+      
+      last_end = frame_end;
+    }
+    
+
+  } else {
+    
+    input_filename = argv[1];
+    output_filename = argv[2];
+    
+    // Set up vector of new ending times.
+    new_times = vector<double>(argc - 3);
+    
+    // Read frame end times
+    for(int arg = 3 ; arg < argc ; arg++) {
+      new_times[arg - 3] = atof(argv[arg]);
+    }
+    
   }
-  
+
+
   
   
   // Singles file object.
