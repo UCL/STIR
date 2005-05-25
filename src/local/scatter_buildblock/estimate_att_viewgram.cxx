@@ -29,8 +29,8 @@
 using namespace std;
 
 START_NAMESPACE_STIR
-std::vector<CartesianCoordinate3D<float> > detection_points_vector;
-int total_detectors;
+/*std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+int total_detectors;*/
 static
 unsigned 
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
