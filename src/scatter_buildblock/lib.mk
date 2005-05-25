@@ -13,7 +13,12 @@ $(dir)_LIB_SOURCES:= \
 	scatter_estimate_for_two_scatter_points.cxx\
 	scatter_estimate_for_all_scatter_points.cxx\
 	scatter_viewgram.cxx \
-	write_statistics.cxx
+	write_statistics.cxx \
+	scale_factors_per_sinogram.cxx \
+	att_estimate_for_no_scatter.cxx \
+	estimate_att_viewgram.cxx \
+	scale_scatter_per_sinogra.cxx
+
 
 #$(dir)_REGISTRY_SOURCES:= local_scatter_buildblock_registries.cxx
 
