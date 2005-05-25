@@ -1,18 +1,6 @@
 //
 // $Id$
 //
-
-/*!
-  \file 
-  \ingroup buildblock 
-  \brief defines the RunTests class
-
-  \author Kris Thielemans
-  \author PARAPET project
-
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -30,6 +18,17 @@
 
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file 
+  \ingroup buildblock 
+  \brief defines the stir::RunTests class
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  $Date$
+  $Revision$
+*/
 
 #include "stir/VectorWithOffset.h"
 #include "stir/BasicCoordinate.h"
@@ -37,6 +36,7 @@
 #include "stir/stream.h"
 #include <iostream>
 #include <typeinfo>
+#include <vector>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -129,6 +129,28 @@ public:
       }
     }
     return true;
+  }
+  // VC 6.0 needs definition of template members in the class def unfortunately.
+  template <class T>
+	  bool check_if_equal(const std::vector<T>& t1, const std::vector<T>& t2, 
+                        const char * const str = "")
+  {
+    if (t1.size() != t2.size())
+    {
+      cerr << "Error: unequal ranges. " << str << endl;
+      return everything_ok = false;
+    }
+
+	bool all_equal=true;
+    for (unsigned int i=0; i< t1.size(); i++)
+    {
+      if(!check_if_equal(t1[i], t2[i], str))
+      {
+        cerr << "(at vector<" << typeid(T).name() << ">  mismatch at index " << i << ")\n";
+        all_equal=false;
+      }
+    }
+    return all_equal;
   }
   
   // VC 6.0 needs definition of template members in the class def unfortunately.
