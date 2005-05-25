@@ -53,6 +53,11 @@ public:
     //! Default constructor 
     SinglesRatesFromECAT7 ();
 
+    float get_singles_rate(int singles_bin_index, int frame_number) const;
+    
+    float get_singles_rate(int singles_bin_index, 
+                           double start_time, double end_time) const;
+    
     //! Given the detection position get the singles rate   
     virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
                                    const double start_time,
@@ -66,19 +71,13 @@ public:
                                           double end_time) const;
     
     
-    int get_frame_number (const double start_time, const double end_time) const;
+    int get_frame_number(const double start_time, const double end_time) const;
 
-    /*
-    // Get a starting and ending frame number for the specified time interval.
-    // The starting and ending frames will stretch from the first frame in
-    // which start_time is included to the first frame in which end_time is
-    // included. Therefore the specified time interval will not usually cover
-    // the entire time of all frames between start_frame and end_frame.
-    // If the specified time interval falls outside the set of frames then
-    // both start_time and end_time are set to zero.
-    void get_frame_interval(double start_time, double end_time,
-                            int& start_frame, int& end_frame) const;
-    */
+    int get_num_frames() const;
+    double get_frame_start(unsigned int frame_number) const;
+    double get_frame_end(unsigned int frame_number) const;
+
+
     
     //!  The function that reads singles from ECAT7 file
     int read_singles_from_file(const string& ECAT7_filename,
@@ -94,10 +93,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
   
-  float  SinglesRatesFromECAT7::get_singles_rate(int singles_bin_index,
-                                                 double start_time,
-                                                 double end_time) const;
-  
+ 
  
   TimeFrameDefinitions time_frame_defs;
 
