@@ -230,21 +230,33 @@ void scatter_viewgram(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B);
-	
-	float estimate_scale_factor(
-		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
+
+	Array<2,float>
+		scale_factors_per_sinogram(const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
 		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
 		const ProjData& att_proj_data, 
 		const float attenuation_threshold);
 
+	void scale_scatter_per_sinogram(
+		ProjData& scaled_scatter_proj_data, 		
+		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
+		const Array<2,float> scale_factor_per_sinogram);
+	
+/*	float estimate_scale_factor(
+		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
+		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
+		const ProjData& att_proj_data, 
+		const float attenuation_threshold);*/
+
 	void estimate_att_viewgram(ProjData& proj_data,					  
 		const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density);
-void substract_scatter(
+
+	/*void substract_scatter(
 		ProjData& corrected_scatter_proj_data, 
 		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
 		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
 		const ProjData& att_proj_data, 
-		const float global_scatter_factor) ;
+		const float global_scatter_factor) ;*/
 
 /////////////////////////
 
