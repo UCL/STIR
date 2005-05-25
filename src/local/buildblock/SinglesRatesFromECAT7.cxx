@@ -54,6 +54,72 @@ SinglesRatesFromECAT7()
 {}
 
 
+
+
+
+float 
+SinglesRatesFromECAT7::
+get_singles_rate(int singles_bin_index, int frame_number) const
+{ 
+  int axial_crystals_per_singles_unit = 
+    scanner_sptr->get_num_axial_crystals_per_singles_unit();
+
+  int transaxial_crystals_per_singles_unit =
+    scanner_sptr->get_num_transaxial_crystals_per_singles_unit();
+
+  if ( axial_crystals_per_singles_unit == 0 || transaxial_crystals_per_singles_unit == 0 ) {
+    return(0.0);
+  }
+  
+  int axial_crystals_per_block = 
+    scanner_sptr->get_num_axial_crystals_per_block();
+
+  //cerr << "Axial crystals per block: " << axial_crystals_per_block << endl;
+
+  int transaxial_crystals_per_block = 
+    scanner_sptr->get_num_transaxial_crystals_per_block();
+  
+  //cerr << "Transaxial crystals per block: " << transaxial_crystals_per_block << endl;
+
+  int axial_blocks_per_singles_unit = 
+    axial_crystals_per_singles_unit / axial_crystals_per_block;
+ 
+  //cerr << "Axial blocks per singles unit: " << axial_blocks_per_singles_unit << endl;
+  
+  int transaxial_blocks_per_singles_unit = 
+    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
+  
+  //cerr << "Transaxial blocks per singles unit: " << transaxial_blocks_per_singles_unit << endl;
+
+  float blocks_per_singles_unit = 
+    axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
+  
+  //cerr << "Frame_num:   " << frame_num << endl;
+  //cerr << " Axial pos: " << axial_bucket_num << endl;
+  //cerr << " Transax pos: " << transaxial_bucket_num << endl;
+
+
+  // TODO this is really singles rate per block
+  return(singles[frame_number][singles_bin_index] / blocks_per_singles_unit);
+}
+
+
+
+
+
+float
+SinglesRatesFromECAT7::get_singles_rate(int singles_bin_index,
+                                        double start_time,
+                                        double end_time) const
+{
+  int frame_number = get_frame_number(start_time, end_time);
+  return(get_singles_rate(singles_bin_index, frame_number));
+}
+
+
+
+
+
 float 
 SinglesRatesFromECAT7::
 get_singles_rate(const DetectionPosition<>& det_pos,
@@ -65,69 +131,6 @@ get_singles_rate(const DetectionPosition<>& det_pos,
   return(get_singles_rate(singles_bin_index, start_time, end_time));
 }
 
-
-
-/*
-//  Generate a FramesSinglesRate - containing the average rates
-//  for a frame begining at start_time and ending at end_time.
-FrameSinglesRates 
-SinglesRatesFromECAT7::
-get_rates_for_frame(double start_time, double end_time) const {
-
-  int start_frame;
-  int end_frame;
-  
-  
-  // Determine which frames to include in the average.
-  get_frame_interval(start_time, end_time, start_frame, end_frame); 
-  
-  
-  // Determine the number of singles units.
-  int total_singles_units = scanner_sptr->get_num_singles_units();
-  
-  // Prepare a temporary vector.
-  vector<float> average_singles_rates(total_singles_units);
-  
-  if ( start_frame == 0 ) {
-
-    // Set average to 0 counts.
-    for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-      average_singles_rates[singles_bin] = 0;
-    }
-    
-    FrameSinglesRates frame_rates(average_singles_rates,
-                                  start_time,
-                                  end_time,
-                                  scanner_sptr);
-    
-    return(frame_rates);
-
-  } else {
-    
-    for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-      
-      double total_rate = 0;
-      
-      // Loop over these frames and generate an average.
-      for(int frame = start_frame; frame <= end_frame ; ++frame) {
-        total_rate += singles[frame][singles_bin]; 
-      }
-      
-      average_singles_rates[singles_bin] = 
-        static_cast<float>(total_rate / (end_frame - start_frame + 1));
-    }
-    
-    FrameSinglesRates frame_rates(average_singles_rates,
-                                  time_frame_defs.get_start_time(start_frame),
-                                  time_frame_defs.get_end_time(end_frame),
-                                  scanner_sptr);
-    
-    return(frame_rates);
-    
-  }
-  
-}
-*/
 
 
 
@@ -160,44 +163,37 @@ get_frame_number(const double start_time, const double end_time) const
 
 
 
-/*
-void
-SinglesRatesFromECAT7::
-get_frame_interval(double start_time, double end_time, 
-                   int& start_frame, int& end_frame) const {
 
-  assert(end_time >=start_time);
-
-  start_frame = 0;
-  end_frame = 0;
-
-  int num_frames = time_frame_defs.get_num_frames();
-  
-  if ( num_frames == 0 || end_time < time_frame_defs.get_start_time(1) ) {
-    return;
-  }
-    
-  for(int frame = 1 ; frame <= num_frames ; ++frame) {
-    if ( time_frame_defs.get_start_time(frame) >= start_time ) {
-      start_frame = frame;
-      break;
-    }
-  }
-  
-  if ( start_frame == 0 ) {
-    return;
-  }
-  
-  // end_frame will be num_frames if a frame with a later ending than
-  // end_time is not found earlier.
-  for(end_frame = start_frame ; end_frame < num_frames ; ++end_frame) {
-    if ( time_frame_defs.get_end_time(end_frame) >= end_time ) {
-      break;
-    }
-  }
-  
+int 
+SinglesRatesFromECAT7::get_num_frames() const {
+  return(time_frame_defs.get_num_frames());
 }
-*/
+
+
+
+double 
+SinglesRatesFromECAT7::get_frame_start(unsigned int frame_number) const {
+  if ( frame_number < 1 || frame_number > time_frame_defs.get_num_frames() ) {
+    return(0.0);
+  } else {
+    return(time_frame_defs.get_start_time(frame_number));
+  }
+}
+ 
+
+
+double 
+SinglesRatesFromECAT7::get_frame_end(unsigned int frame_number) const {
+  if ( frame_number < 1 || frame_number > time_frame_defs.get_num_frames() ) {
+    return(0.0);
+  } else {
+    return(time_frame_defs.get_end_time(frame_number));
+  }
+}
+
+
+
+
 
 
 
@@ -286,55 +282,6 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
   
 }
 
-
-
-
-
-
-
-
-float 
-SinglesRatesFromECAT7::get_singles_rate(int singles_bin_index,
-                                        double start_time,
-                                        double end_time) const
-{ 
-  int axial_crystals_per_singles_unit = 
-    scanner_sptr->get_num_axial_crystals_per_singles_unit();
-
-  int transaxial_crystals_per_singles_unit =
-    scanner_sptr->get_num_transaxial_crystals_per_singles_unit();
-
-  if ( axial_crystals_per_singles_unit == 0 || transaxial_crystals_per_singles_unit == 0 ) {
-    return(0.0);
-  }
-  
-  int axial_crystals_per_block = 
-    scanner_sptr->get_num_axial_crystals_per_block();
-
-  int transaxial_crystals_per_block = 
-    scanner_sptr->get_num_transaxial_crystals_per_block();
- 
-  
-  int axial_blocks_per_singles_unit = 
-    axial_crystals_per_block / axial_crystals_per_singles_unit;
- 
-  int transaxial_blocks_per_singles_unit = 
-    transaxial_crystals_per_block / transaxial_crystals_per_singles_unit;
-  
-
-  float blocks_per_singles_unit = 
-    axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
-  
-  
-  int frame_num = get_frame_number(start_time, end_time);
-  
-  //cerr << "Frame_num:   " << frame_num << endl;
-  //cerr << " Axial pos: " << axial_bucket_num << endl;
-  //cerr << " Transax pos: " << transaxial_bucket_num << endl;
-  
-  // TODO this is really singles rate per block
-  return(singles[frame_num][singles_bin_index] / blocks_per_singles_unit);
-}
 
 
 

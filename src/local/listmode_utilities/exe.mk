@@ -14,7 +14,8 @@ $(dir)_SOURCES = \
 	change_lm_time_tags.cxx \
 	scan_singles_file.cxx \
 	print_sgl_values.cxx \
-	rebin_singles_file.cxx
+	rebin_singles_file.cxx \
+	print_ecat_singles_values.cxx
 
 
 include $(WORKSPACE)/exe.mk
