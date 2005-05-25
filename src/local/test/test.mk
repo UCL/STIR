@@ -6,7 +6,9 @@ dir := local/test
 $(dir)_TEST_SOURCES :=  \
 test_RigidObject3DTransformation.cxx \
 	test_Quaternion.cxx \
-	test_proj_data_info_LOR.cxx
+	test_proj_data_info_LOR.cxx \
+	test_IR_filters.cxx \
+	test_BSplines.cxx        
 
 # rule to ignore registries
 # note: has to be before include statement as that changes value of $(dir)
