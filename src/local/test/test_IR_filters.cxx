@@ -1,8 +1,37 @@
+//
+// $Id$
+//
+/*!
+  \file 
+  \ingroup test
+  \brief tests the implementation of the IR_filters
+
+  \author Charalampos Tsoumpas
+
+  $Date$
+  $Revision$
+*/
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
   
 #include "stir/RunTests.h"
 #include "local/stir/IR_filters.h"
-#include <list>
+#include <vector>
 #include <algorithm>
 
 
@@ -33,13 +62,13 @@ void IR_filterTests::run_tests()
 {  
   cerr << "Testing IR_filter function..." << endl;
 
-  set_tolerance(1.0);
+  set_tolerance(0.001);
  
-  std::list<int>  input_test_signal, input_factors, poles, 
+  std::vector<int>  input_test_signal, input_factors, poles, 
 				  output_FIR_test_value, output_IIR_test_value,
 				  stir_FIR_output, stir_IIR_output;
 	  
-  for (int i=1; i<=10 ;++i)
+  for (int i=1, imax=11; i<imax ;++i)
 	  {
 		  input_test_signal.push_back(i);
 	 	  
@@ -47,7 +76,7 @@ void IR_filterTests::run_tests()
 		  stir_IIR_output.push_back(0);
 		  
 		 
-		  input_factors.push_front(i);	
+		  input_factors.push_back(imax-i);	
 		  if (i==10)
 			  break;
 		  
@@ -103,7 +132,7 @@ void IR_filterTests::run_tests()
 			  input_test_signal.begin(), input_test_signal.end(),
 			  input_factors.begin(), input_factors.end(),0);
 		  
-		  std::list<int>:: iterator cur_iter_stir_out= stir_FIR_output.begin(), 
+		  std::vector<int>:: iterator cur_iter_stir_out= stir_FIR_output.begin(), 
 			  cur_iter_FIR_out= output_FIR_test_value.begin();
 
 		  for (;
@@ -120,7 +149,7 @@ void IR_filterTests::run_tests()
 			  input_test_signal.begin(), input_test_signal.end(),
 			  input_factors.begin(), input_factors.end(),
 			  poles.begin(), poles.end(),0);		  
-		  std::list<int>:: iterator cur_iter_stir_IIR_out= 
+		  std::vector<int>:: iterator cur_iter_stir_IIR_out= 
 			  stir_IIR_output.begin(), 
 			  cur_iter_IIR_out= output_IIR_test_value.begin();
 		  for (;
