@@ -266,7 +266,7 @@ get_singles_rate(int singles_bin_index, int time_slice) const {
 
 
 
-// Set a singles rate by time bin index and time slice.
+// Set a singles rate by bin index and time slice.
 void 
 SinglesRatesFromSglFile::
 set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
