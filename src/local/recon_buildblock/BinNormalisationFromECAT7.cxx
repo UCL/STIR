@@ -259,16 +259,16 @@ read_norm_data(const string& filename)
   // Calculate the number of axial blocks per singles unit and 
   // total number of blocks per singles unit.
   int axial_crystals_per_singles_unit = 
-    scanner_sptr->get_num_axial_crystals_per_singles_unit();
+    scanner_ptr->get_num_axial_crystals_per_singles_unit();
   
   int transaxial_crystals_per_singles_unit =
-    scanner_sptr->get_num_transaxial_crystals_per_singles_unit();
+    scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
   
   int axial_crystals_per_block = 
-    scanner_sptr->get_num_axial_crystals_per_block();
+    scanner_ptr->get_num_axial_crystals_per_block();
 
   int transaxial_crystals_per_block = 
-    scanner_sptr->get_num_transaxial_crystals_per_block();
+    scanner_ptr->get_num_transaxial_crystals_per_block();
   
   // Axial blocks.
   num_axial_blocks_per_singles_unit = 
