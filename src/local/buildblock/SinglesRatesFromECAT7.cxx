@@ -61,46 +61,8 @@ float
 SinglesRatesFromECAT7::
 get_singles_rate(int singles_bin_index, int frame_number) const
 { 
-  int axial_crystals_per_singles_unit = 
-    scanner_sptr->get_num_axial_crystals_per_singles_unit();
-
-  int transaxial_crystals_per_singles_unit =
-    scanner_sptr->get_num_transaxial_crystals_per_singles_unit();
-
-  if ( axial_crystals_per_singles_unit == 0 || transaxial_crystals_per_singles_unit == 0 ) {
-    return(0.0);
-  }
-  
-  int axial_crystals_per_block = 
-    scanner_sptr->get_num_axial_crystals_per_block();
-
-  //cerr << "Axial crystals per block: " << axial_crystals_per_block << endl;
-
-  int transaxial_crystals_per_block = 
-    scanner_sptr->get_num_transaxial_crystals_per_block();
-  
-  //cerr << "Transaxial crystals per block: " << transaxial_crystals_per_block << endl;
-
-  int axial_blocks_per_singles_unit = 
-    axial_crystals_per_singles_unit / axial_crystals_per_block;
- 
-  //cerr << "Axial blocks per singles unit: " << axial_blocks_per_singles_unit << endl;
-  
-  int transaxial_blocks_per_singles_unit = 
-    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
-  
-  //cerr << "Transaxial blocks per singles unit: " << transaxial_blocks_per_singles_unit << endl;
-
-  float blocks_per_singles_unit = 
-    axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
-  
-  //cerr << "Frame_num:   " << frame_num << endl;
-  //cerr << " Axial pos: " << axial_bucket_num << endl;
-  //cerr << " Transax pos: " << transaxial_bucket_num << endl;
-
-
-  // TODO this is really singles rate per block
-  return(singles[frame_number][singles_bin_index] / blocks_per_singles_unit);
+  // Return singles rate for the singles unit.
+  return(singles[frame_number][singles_bin_index]);
 }
 
 

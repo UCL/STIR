@@ -53,12 +53,27 @@ public:
     //! Default constructor 
     SinglesRatesFromECAT7 ();
 
+
+    //! get the singles rate for a particular singles unit and frame number.   
+    //
+    // The singles rate returned is the rate for a whole singles unit.
+    //
     float get_singles_rate(int singles_bin_index, int frame_number) const;
     
+    
+    //! get the singles rate for a particular singles unit and a frame with 
+    // the specified start and end times.   
+    //
+    // The singles rate returned is the rate for a whole singles unit.
+    //
     float get_singles_rate(int singles_bin_index, 
                            double start_time, double end_time) const;
     
-    //! Given the detection position get the singles rate   
+    //! Given the detection position and frame start and end times, get the 
+    // singles rate.   
+    //
+    // The singles rate returned is the rate for a whole singles unit.
+    //
     virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
                                    const double start_time,
                                    const double end_time) const;
@@ -70,13 +85,18 @@ public:
     FrameSinglesRates get_rates_for_frame(double start_time,
                                           double end_time) const;
     
-    
+    //! Get the frame number associated with a frame starting and start_time and
+    // ending at end_time.
     int get_frame_number(const double start_time, const double end_time) const;
 
+    //! Get the number of frames for which singles rates are recorded.
     int get_num_frames() const;
-    double get_frame_start(unsigned int frame_number) const;
-    double get_frame_end(unsigned int frame_number) const;
 
+    //! Get the frame start time for a particular frame.
+    double get_frame_start(unsigned int frame_number) const;
+
+    //! Get the frame end time for a particular frame.
+    double get_frame_end(unsigned int frame_number) const;
 
     
     //!  The function that reads singles from ECAT7 file

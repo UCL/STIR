@@ -255,11 +255,33 @@ read_norm_data(const string& filename)
   
   num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
 
-  //TODO move to Scanner
-  if (scanner_ptr->get_type() == Scanner::E966)
-    num_axial_blocks_per_singles_unit = 2;
-  else
-    num_axial_blocks_per_singles_unit = 1;
+
+  // Calculate the number of axial blocks per singles unit and 
+  // total number of blocks per singles unit.
+  int axial_crystals_per_singles_unit = 
+    scanner_sptr->get_num_axial_crystals_per_singles_unit();
+  
+  int transaxial_crystals_per_singles_unit =
+    scanner_sptr->get_num_transaxial_crystals_per_singles_unit();
+  
+  int axial_crystals_per_block = 
+    scanner_sptr->get_num_axial_crystals_per_block();
+
+  int transaxial_crystals_per_block = 
+    scanner_sptr->get_num_transaxial_crystals_per_block();
+  
+  // Axial blocks.
+  num_axial_blocks_per_singles_unit = 
+    axial_crystals_per_singles_unit / axial_crystals_per_block;
+  
+  int transaxial_blocks_per_singles_unit = 
+    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
+  
+  // Total blocks.
+  num_blocks_per_singles_unit = 
+    num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
+  
+
 
   if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
     error("BinNormalisationFromECAT7: "
@@ -611,14 +633,20 @@ BinNormalisationFromECAT7::get_deadtime_efficiency (const DetectionPosition<>& d
 						    const double start_time,
 						    const double end_time) const
 {
-  if (is_null_ptr(singles_rates_ptr))
+  if (is_null_ptr(singles_rates_ptr)) {
     return 1;
-  const float rate = singles_rates_ptr->get_singles_rate(det_pos,start_time,end_time);
-  return
-     ( 1.0 + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
-       axial_t2_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate * rate );
-						//* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
+  }
 
+  // Get singles rate per block (rate per singles unit / blocks per singles unit).
+  const float rate = singles_rates_ptr->get_singles_rate(det_pos, start_time, end_time) / 
+    num_blocks_per_singles_unit;
+  
+  return
+    ( 1.0 + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
+      axial_t2_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate * rate );
+  
+  //* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
+  
 }
 
 

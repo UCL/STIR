@@ -112,6 +112,7 @@ private:
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_uncompressed_ptr;
   int span;
   int mash;
+  int num_blocks_per_singles_unit;
 
   void read_norm_data(const string& filename);
   float get_deadtime_efficiency ( const DetectionPosition<>& det_pos,

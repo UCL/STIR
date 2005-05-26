@@ -70,9 +70,15 @@ class FrameSinglesRates
 
 
     //! Get singles rate for a particular singles bin index.
+    //
+    // The singles rate returned is the rate for a whole singles unit.
+    //
     float get_singles_rate(int singles_bin_index) const;
     
     //! Get singles rate for a detection position.
+    //
+    // The singles rate returned is the rate for a whole singles unit.
+    //
     float get_singles_rate(const DetectionPosition<>& det_pos) const;
 
     //! Get the start time of the frame whose rates are recorded.

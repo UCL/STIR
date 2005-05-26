@@ -69,7 +69,10 @@ public:
  SinglesRatesFromSglFile();
 
 
- //! Given the detection position get the singles rate   
+ //! Given the detection position get the singles rate
+ //
+ // The singles rate returned is the rate for a whole singles unit.
+ //
  virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
                                 const double start_time,
                                 const double end_time) const;
@@ -128,9 +131,15 @@ public:
 
 
  //! Get rates using time slice and singles bin indices.
+ //
+ // The singles rate returned is the rate for a whole singles unit.
+ //
  int get_singles_rate(int singles_bin_index, int time_slice) const;
 
  //! Set a singles rate by time bin index and time slice.
+ //
+ // The singles rate returned is the rate for a whole singles unit.
+ //
  void set_singles_rate(int singles_bin_index, int time_slice, int new_rate);
 
 
@@ -163,7 +172,7 @@ public:
   */
  std::ostream& write(std::ostream& output);
 
-
+ 
 
 private:
  
