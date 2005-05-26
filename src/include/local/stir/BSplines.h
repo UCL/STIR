@@ -204,6 +204,10 @@ pos_type
 BSplines_weight(const pos_type relative_position);
 
 template <typename pos_type>
+pos_type 
+oMoms_weight(const pos_type relative_position);
+
+template <typename pos_type>
 inline 
 pos_type 
 BSplines_1st_der_weight(const pos_type relative_position) ;
