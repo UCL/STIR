@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup ECAT
@@ -19,10 +35,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #ifdef HAVE_LLN_MATRIX
@@ -566,7 +578,10 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.num_frames= 1; 
   
   mhead.system_type= find_ECAT_system_type(scanner);
-  mhead.transaxial_fov= scanner.get_default_num_arccorrected_bins()*scanner.get_default_bin_size()/10;
+  mhead.transaxial_fov= 
+    scanner.get_ring_radius()*2*
+    sin(_PI/scanner.get_num_detectors_per_ring()*
+	scanner.get_max_num_non_arccorrected_bins()/2.)/10;
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
   mhead.bin_size = scanner.get_default_bin_size()/10;
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
