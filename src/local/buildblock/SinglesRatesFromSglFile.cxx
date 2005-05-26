@@ -40,6 +40,7 @@
 #include "stir/IO/stir_ecat7.h"
 #endif
 #include <fstream>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
@@ -296,7 +297,7 @@ rebin(vector<double>& new_end_times) {
   
   
   // Sort the set of new time slices.
-  sort(new_end_times.begin(), new_end_times.end());
+  std::sort(new_end_times.begin(), new_end_times.end());
 
   // Start with initial time of 0.0 seconds.
   double start_time = 0;
@@ -702,7 +703,7 @@ set_time_interval() {
   double max_diff = 0;
   double total = 0;
 
-  for(vector<double>::const_iterator t = _times.begin(); t < _times.end() - 1; ++t) {
+  for(std::vector<double>::const_iterator t = _times.begin(); t < _times.end() - 1; ++t) {
     double diff = *(t + 1) - *t; 
     total += diff;
 
