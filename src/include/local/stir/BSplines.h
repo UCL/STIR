@@ -151,15 +151,15 @@ template <class IterT>
 
 inline 
 out_elemT
-BSpline(const pos_type relative_position) ;
+BSplines(const pos_type relative_position) ;
 
 inline 
 out_elemT
-BSpline_1st_der(const pos_type relative_position) ;
+BSplines_1st_der(const pos_type relative_position) ;
 
 inline
 out_elemT
-BSpline_product(const int index, const pos_type relative_position);
+BSplines_product(const int index, const pos_type relative_position);
 
 inline
 const out_elemT 
@@ -171,11 +171,11 @@ operator() (const pos_type relative_position);
 
 inline
 const std::vector<out_elemT> 
-BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
+BSplines_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
 						RandIterOut output_relative_position_end_iterator);
 inline
 const std::vector<out_elemT> 
-BSpline_output_sequence(std::vector<pos_type> output_relative_position);
+BSplines_output_sequence(std::vector<pos_type> output_relative_position);
 };
 
 template <class IterT>

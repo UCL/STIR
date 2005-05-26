@@ -119,12 +119,12 @@ void
 template <typename out_elemT, typename in_elemT>
 out_elemT 
 BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline(const pos_type relative_position)
+BSplines(const pos_type relative_position)
 {
 	assert(relative_position>-input_size+2);
 	assert(relative_position<2*input_size-4);
-	out_elemT BSpline_value;
-	set_to_zero(BSpline_value);
+	out_elemT BSplines_value;
+	set_to_zero(BSplines_value);
 	const int int_pos =(int)floor(relative_position);
 #if 0
 	for (int k=int_pos-2; k<int_pos+3; ++k)		
@@ -135,7 +135,7 @@ BSpline(const pos_type relative_position)
 		else if (k>=input_size) index=2*input_size-2-k;
 		else index = k;
 		assert(0<=index && index<input_size);
-		BSpline_value += BSpline_product(index, k-relative_position);
+		BSplines_value += BSplines_product(index, k-relative_position);
 	}
 #else
 	const int kmin= int_pos-2;
@@ -146,39 +146,39 @@ BSpline(const pos_type relative_position)
 	{		
 		const int index=-k;
 		assert(0<=index && index<input_size);
-		BSpline_value += BSpline_product(index, k-relative_position);
+		BSplines_value += BSplines_product(index, k-relative_position);
 
 	}
 	for (; k<=kmax_in_range; ++k)		
 	{		
 		const int index=k;
 		assert(0<=index && index<input_size);
-		BSpline_value += BSpline_product(index, k-relative_position);
+		BSplines_value += BSplines_product(index, k-relative_position);
 	}
 	for (; k<=kmax; ++k)		
 	{		
 		const int index=2*input_size-2-k;
 		assert(0<=index && index<input_size);
-		BSpline_value += BSpline_product(index, k-relative_position);
+		BSplines_value += BSplines_product(index, k-relative_position);
 	}
 #endif
-	if_deriv= false; //temporarily. BSpline_1st_der is used to set this.
-	return BSpline_value;
+	if_deriv= false; //temporarily. BSplines_1st_der is used to set this.
+	return BSplines_value;
 }
 
 template <typename out_elemT, typename in_elemT>
 out_elemT 
 BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline_1st_der(const pos_type relative_position) 
+BSplines_1st_der(const pos_type relative_position) 
 {	
 	if_deriv = true;
-	return BSpline(relative_position);
+	return BSplines(relative_position);
 }
 
 template <typename out_elemT, typename in_elemT>
 out_elemT
 BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline_product(const int index, const pos_type relative_position)
+BSplines_product(const int index, const pos_type relative_position)
 {
 	if (if_deriv==true)		
 		return BSplines_coef_vector[index]*BSplines_1st_der_weight(relative_position);	
@@ -195,19 +195,19 @@ const out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
 operator() (const pos_type relative_position) const 
 {
 	return BSplines1DRegularGrid<out_elemT,in_elemT>::
-		BSpline(relative_position);		
+		BSplines(relative_position);		
 }
 template <typename out_elemT, typename in_elemT>
 out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
 operator() (const pos_type relative_position)
 {
 	return BSplines1DRegularGrid<out_elemT,in_elemT>::
-		BSpline(relative_position);		
+		BSplines(relative_position);		
 }
 //*
 template <typename out_elemT, typename in_elemT>
 const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
+BSplines_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
 						RandIterOut output_relative_position_end_iterator)
 {
 	std::vector<pos_type> output_vector(output_relative_position_end_iterator-
@@ -219,15 +219,15 @@ BSpline_output_sequence(RandIterOut output_relative_position_begin_iterator,  //
 			current_relative_position_iterator!=output_relative_position_end_iterator; 
 		++current_iterator,++current_relative_position_iterator)
 			*current_iterator = BSplines1DRegularGrid<out_elemT,in_elemT>:: 
-			BSpline(*current_relative_position_iterator);		
+			BSplines(*current_relative_position_iterator);		
 
 	return output_vector;		
 }
 template <typename out_elemT, typename in_elemT>
 const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
-BSpline_output_sequence(std::vector<pos_type> output_relative_position)
+BSplines_output_sequence(std::vector<pos_type> output_relative_position)
 {
-	return BSpline_output_sequence(output_relative_position.begin(),
+	return BSplines_output_sequence(output_relative_position.begin(),
 						output_relative_position.end());
 }
 
