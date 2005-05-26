@@ -2,11 +2,11 @@
 template <typename T, int num_dimensions>
 inline 
 T 
-BSplines(const Array<num_dimensions, T>& coeffs,
+BSplines_dim(const Array<num_dimensions, T>& coeffs,
 	 const BasicCoordinate<num_dimensions,pos_type>& relative_positions,
 	 const BSplineType spline_type = cubic)
 {
-  T BSpline_value=0;
+  T BSplines_value=0;
 
   	for (int k=int_pos-2; k<int_pos+3; ++k)		
 	{	
@@ -15,9 +15,9 @@ BSplines(const Array<num_dimensions, T>& coeffs,
 		else if (k>=input_size) index=2*input_size-2-k;
 		else index = k;
 		assert(0<=index && index<input_size);
-		BSpline_value += 
-		  BSplines_weight(k-relative_positions[1], spline_type)*
-		  BSplines(coeffs[index], cut_first_dimension(relative_positions));	
+		BSplines_value += 
+		  BSplines_dim_weight(k-relative_positions[1], spline_type)*
+		  BSplines_dim(coeffs[index], cut_first_dimension(relative_positions));	
 
 	}
 }
@@ -30,10 +30,10 @@ template <typename T>
 #endif
 inline 
 T 
-BSplines(const Array<1, T>& coeffs,
+BSplines_dim(const Array<1, T>& coeffs,
 	 const BasicCoordinate<1,pos_type>& relative_positions)
 {
-  T BSpline_value=0;
+  T BSplines_value=0;
 
   for (int k=int_pos-2; k<int_pos+3; ++k)		
     {	
@@ -42,10 +42,9 @@ BSplines(const Array<1, T>& coeffs,
       else if (k>=input_size) index=2*input_size-2-k;
       else index = k;
       assert(0<=index && index<input_size);
-      BSpline_value += 
-	BSplines_weight(k-relative_positions[1])*
-	coeffs[index];
-      
+      BSplines_value += 
+	BSplines_dim_weight(k-relative_positions[1])*
+	coeffs[index];      
     }
 }
 #if defined( _MSC_VER) &&  _MSC_VER<=1300)
@@ -59,7 +58,7 @@ void
   {	
 	
     Array<num_dimensions,elemT> temp ( input.get_index_range());
-    BSplines_coef(temp.begin(),temp.end(), 
+    BSplines_dim_coef(temp.begin(),temp.end(), 
 		  input.begin(), input.end(), z1, z2, lamda);
 
     for (int i=coefs.get_min_index(); i<=coefs.get_max_index(); ++i)
@@ -77,7 +76,7 @@ void
 	   z1,z2,lambda)
   {	
 	
-    BSplines_coef(coefs.begin(),coefs.end(), 
+    BSplines_dim_coef(coefs.begin(),coefs.end(), 
 		  input.begin(), input.end(), z1, z2, lamda);
   }
 
@@ -101,11 +100,11 @@ convolution(const Array<num_dimensions, T>& coeffs,
 	    const BasicCoordinate<num_dimensions,pos_type>& relative_positions,
 	    FunctionT f)
 {
-  T BSpline_value=0;
+  T BSplines_value=0;
 
   	for (int k=int_pos-2; k<int_pos+3; ++k)		
 	{	
-		BSpline_value += 
+		BSplines_value += 
 		  f(k-relative_positions[1])*
 		  convolution(get_value(coeffs,index), cut_first_dimension(relative_positions), f);	
 
@@ -121,7 +120,7 @@ convolution(const Array<1, T>& coeffs,
 	 const BasicCoordinate<1,pos_type>& relative_positions,
 	 FunctionT f)
 {
-  T BSpline_value=0;
+  T BSplines_value=0;
 
   for (int k=int_pos-2; k<int_pos+3; ++k)		
     {	
@@ -130,7 +129,7 @@ convolution(const Array<1, T>& coeffs,
       else if (k>=input_size) index=2*input_size-2-k;
       else index = k;
       assert(0<=index && index<input_size);
-      BSpline_value += 
+      BSplines_value += 
 	f(k-relative_positions[1])*
 	get_value(coeffs,index);
       
@@ -141,16 +140,16 @@ convolution(const Array<1, T>& coeffs,
 template <typename T, int num_dimensions>
 inline 
 T 
-BSplines(const Array<num_dimensions, T>& coeffs,
+BSplines_dim(const Array<num_dimensions, T>& coeffs,
 	 const BasicCoordinate<num_dimensions,pos_type>& relative_positions)
 {
-  convolution(coeffs, relative_positions, BSpline_weight<T>);
+  convolution(coeffs, relative_positions, BSplines_weight<T>);
 }
 
 template <typename T, int num_dimensions>
 inline 
 T 
-BSplines(const Array<num_dimensions, T>& coeffs,
+BSplines_dim(const Array<num_dimensions, T>& coeffs,
 	 const BasicCoordinate<num_dimensions,pos_type>& relative_positions)
 
 #endif
