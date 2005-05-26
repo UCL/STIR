@@ -144,6 +144,8 @@ public:
 
 
  //! Rebin the sgl slices into a different set of consecutive slices.
+ //
+ // Returns the number of new bins.
  int rebin(vector<double>& new_end_times);
  
   
@@ -204,7 +206,7 @@ private:
  void set_time_interval();
 
  // get slice start time.
- double get_slice_start(int slice_index);
+ double get_slice_start(int slice_index) const;
  
 
  virtual void set_defaults();
