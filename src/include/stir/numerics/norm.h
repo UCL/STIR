@@ -1,31 +1,54 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
-#ifndef __stir_norm_H__
-#define __stir_norm_H__
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
 
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
+#ifndef __stir_numerics_norm_H__
+#define __stir_numerics_norm_H__
 /*!
   \file 
-  \ingroup buildblock
-  \brief defines the norm() function and NormSquared unary function
+  \ingroup numerics
+  \brief Declaration of the stir::norm(), stir::norm_squared() functions and 
+  stir::NormSquared unary function
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 
 #include "stir/common.h"
 #include <complex>
-#include <functional>
+#include <cmath>
+# ifdef BOOST_NO_STDC_NAMESPACE
+ namespace std { using ::fabs; }
+# endif
 
 START_NAMESPACE_STIR
+
+template <int num_dimensions, class elemT> class Array;
+
+/*!
+ \ingroup numerics
+ \name Functions to compute the norm
+*/
+//@{
 
 //! A helper class that computes the square of the norm of numeric data
 /*! It's there to avoid unnecessary sqrts when computing norms of vectors.
@@ -36,6 +59,8 @@ START_NAMESPACE_STIR
     It's derived from std::unary_function such that it follows
     the conventions for a function object.
 */    
+
+// specialisations for complex numbers are in .inl file for clarity of this file.
 template <typename T>
 struct NormSquared :
   public std::unary_function<T, double>
@@ -46,35 +71,11 @@ struct NormSquared :
   }
 };
 
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <typename T>
-struct NormSquared<std::complex<T> >
-  :   public std::unary_function<const std::complex<T>&, double>
-{
-  double operator()(const std::complex<T>& x) const
-  { return square(x.real())+ square(x.imag()); }
-};
-
-#else //  BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
-// handle float and double separately. (sigh)
-#define INSTANTIATE_NormSquared(T)                              \
-  template <>                                                    \
-  struct NormSquared<std::complex<T> >                          \
-  :   public std::unary_function<const std::complex<T>&, double> \
-{                                                                \
-  double operator()(const std::complex<T>& x) const              \
-  { return square(x.real())+ square(x.imag()); }                 \
-};
-INSTANTIATE_NormSquared(float)
-INSTANTIATE_NormSquared(double)
-#undef INSTANTIATE_NormSquared
-#endif
 
 //! Returns the square of the norm of a number
 /*! \see norm(elemT)*/
 template <typename elemT>
-double
+inline double
 norm_squared (const elemT t)
 { return NormSquared<elemT>()(t); }
 
@@ -82,22 +83,55 @@ norm_squared (const elemT t)
 //! Returns the norm of a number
 /*! This is the same as the absolute value, but works also for std::complex<T>.*/
 template <typename elemT>
-double
+inline double
 norm (const elemT t)
 { return sqrt(norm_squared(t)); }
 
-//! Returns the l2-norm of a sequence
+// 2 overloads to avoid doing sqrt(t*t)
+inline double
+norm (const double t)
+{ return std::fabs(t); }
+
+inline double
+norm (const float t)
+{ return std::fabs(t); }
+
+//! Returns the square of the l2-norm of a sequence
 /*! The l2-norm is defined as the sqrt of the sum of squares of the norms
     of each element in the sequence.
 */
 template <class Iter>
-double norm (Iter begin, Iter end)
-{ 
-  double res = 0;
-  for (Iter iter= begin; iter != end; ++iter)
-      res+= norm_squared(*iter);
-  return sqrt(res);
-}
+inline double norm_squared (Iter begin, Iter end);
+
+//! Returns the l2-norm of a sequence
+/*! The l2-norm is defined as the sqrt of the sum of squares of the norms
+    of each element in the sequence.
+
+    \see norm(const Array<1,elemT>&) for a convenience function for Array objects.
+*/
+template <class Iter>
+inline double norm (Iter begin, Iter end);
+
+//! l2 norm of a 1D array
+/*! 
+  This returns the sqrt of the sum of the square of the absolute values 
+  of the elements of \a v1.
+ */
+template<class elemT>
+inline double 
+norm (const Array<1,elemT> & v1);
+
+
+//! square of the l2 norm of a 1D array
+/*! 
+  This returns the sum of the square of the absolute values of the  
+  elements of \a v1.
+ */
+template<class elemT>
+inline double 
+norm_squared (const Array<1,elemT> & v1);
+
+//@}
 
 END_NAMESPACE_STIR
 #endif
