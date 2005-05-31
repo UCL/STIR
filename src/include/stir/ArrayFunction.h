@@ -1,10 +1,26 @@
 // $Id$
-/*!
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
   \file
   \ingroup Array
 
-  \brief This include file provides some additional functionality for Array objects.
+  \brief This include file provides some additional functionality for stir::Array objects.
 
   \author Kris Thielemans (loosely based on some earlier work by Darren Hague)
   \author PARAPET project
@@ -14,31 +30,21 @@
 
   <ul>
   <li>
-   functions which work on all Array objects, and which change every element of the
+   functions which work on all stir::Array objects, and which change every element of the
    array: 
    <ul>
-     <li> in_place_log, in_place_exp (these work only well when elements are float or double)
-     <li>in_place_abs
-     <li>in_place_apply_function
-     <li>in_place_apply_array_function_on_1st_index
-     <li>in_place_apply_array_functions_on_each_index
+     <li> stir::in_place_log, stir::in_place_exp (these work only well when elements are float or double)
+     <li>stir::in_place_abs (does not work on complex numbers)
+     <li>stir::in_place_apply_function
+     <li>stir::in_place_apply_array_function_on_1st_index
+     <li>stir::in_place_apply_array_functions_on_each_index
    </ul>
    All these functions return a reference to the (modified) array
    <li>
    Analoguous functions that take out_array and in_array
    <ul>
-      <li>apply_array_function_on_1st_index
-      <li>apply_array_functions_on_each_index
-   </ul>
-   <li>
-   functions specific to Array<1,elemT>:
-   <ul>
-     <li>inner_product, norm, angle
-   </ul>
-   <li>
-   functions specific to Array<2,elemT>:
-   <ul>
-     <li>matrix_transpose, matrix_multiply (both currently disabled as they need testing)
+      <li>stir::apply_array_function_on_1st_index
+      <li>stir::apply_array_functions_on_each_index
    </ul>
    </ul>
 
@@ -46,11 +52,6 @@
    catered for by explicit instantiations. If you need it for any other
    types, you'd have to add them by hand.
  */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 /* History:
 
@@ -68,9 +69,6 @@
   
 #include "stir/Array.h"
 #include "stir/shared_ptr.h"
-
-#include <cmath>
-
 #include "stir/ArrayFunctionObject.h"
 
 START_NAMESPACE_STIR
@@ -115,7 +113,9 @@ inline Array<num_dimensions, elemT>&
 in_place_exp(Array<num_dimensions, elemT>& v);
 
 //! Replace elements by their absolute value, 1D version
-/*! \ingroup Array */
+/*! \ingroup Array 
+  \warning The implementation does not work with complex numbers.
+*/
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 template <class elemT>
 inline Array<1,elemT>& 
@@ -126,7 +126,9 @@ in_place_abs(Array<1,float>& v);
 #endif
 
 //! store absolute value of each element of the multi-dimensional array
-/*! \ingroup Array */
+/*! \ingroup Array 
+  \warning The implementation does not work with complex numbers.
+*/
 template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
 in_place_abs(Array<num_dimensions, elemT>& v);
@@ -344,37 +346,6 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 #undef elemT
 #undef FunctionObjectPtrIter
 #endif
-
-
-//----------------------------------------------------------------------
-// some functions specific for 1D Arrays
-//----------------------------------------------------------------------
-
-//! Inner product of 2 1D arrays
-/*! \ingroup Array 
-  This returns the sum of multiplication of elements of \a v1 and \a v2.
-    \warning Implementation is not appropriate for complex numbers.
- */
-template<class elemT>
-inline elemT 
-inner_product (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
-
-//! l2 norm of a 1D array
-/*! \ingroup Array 
-  This returns the sqrt of the sum of the square elements of \a v1.
-    \warning Implementation is not appropriate for complex numbers.
- */
-template<class elemT>
-inline double 
-norm (const Array<1,elemT> & v1);
-
-//! angle between 2 1D arrays
-/*! \ingroup Array 
-  This is not appropriate for complex numbers.
- */
-template<class elemT>
-inline double
-angle (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
 
 
 END_NAMESPACE_STIR
