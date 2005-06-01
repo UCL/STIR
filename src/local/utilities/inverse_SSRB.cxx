@@ -40,11 +40,11 @@
 
 	  \endcode	  
 */
-
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
 #include "local/stir/inverse_SSRB.h"
 #include "stir/Succeeded.h"
