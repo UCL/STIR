@@ -28,6 +28,7 @@ $(dir)_SOURCES = \
 	find_sinogram_rescaling_factors.cxx \
         find_fwhm_in_image.cxx \
 	line_profiles_through_projdata.cxx \
+	inverse_SSRB.cxx \
 	calculate_attenuation_coefficients.cxx 
 
 #	CoG.cxx \
