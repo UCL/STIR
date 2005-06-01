@@ -252,7 +252,7 @@ public:
   /*! For some coordinate systems, this might depend on the Bin. The 
       default implementation computes it as 
       \code
-      1/2(get_s(..., tang_pos+1)-get_t(..., tang_pos_pos-1)))
+      1/2(get_s(..., tang_pos+1)-get_s(..., tang_pos_pos-1)))
       \endcode
   */
   virtual float get_sampling_in_s(const Bin&) const;
