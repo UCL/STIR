@@ -14,7 +14,8 @@ $(dir)_LIB_SOURCES:= \
 	SinglesRates.cxx \
 	SinglesRatesFromSglFile.cxx \
 	SinglesRatesFromECAT7.cxx  \
-  find_fwhm_in_image.cxx \
+	inverse_SSRB.cxx \
+  	find_fwhm_in_image.cxx \
         AbsTimeIntervalFromECAT7ACF.cxx \
         AbsTimeIntervalWithParsing.cxx
 
