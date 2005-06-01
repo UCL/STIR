@@ -62,7 +62,7 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
 {
   
   azimuthal_angle_sampling = static_cast<float>(_PI/num_views);
-  ring_radius = get_scanner_ptr()->get_ring_radius();
+  ring_radius = get_scanner_ptr()->get_effective_ring_radius();
   ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
 
   // TODO this info should probably be provided via the constructor, or at

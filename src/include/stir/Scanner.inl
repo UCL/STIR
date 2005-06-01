@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup buildblock
@@ -15,11 +32,7 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+
 START_NAMESPACE_STIR
 
 bool 
@@ -54,14 +67,31 @@ Scanner::get_default_num_arccorrected_bins() const
 }
 
 float
-Scanner::get_ring_radius() const
+Scanner::get_inner_ring_radius() const
+{ 
+  return inner_ring_radius;
+}
 
-{ return ring_radius;}
+float
+Scanner::get_average_depth_of_interaction() const
+{
+  return average_depth_of_interaction;
+}
+
+
+float
+Scanner::get_effective_ring_radius() const
+{
+  return inner_ring_radius + average_depth_of_interaction;
+}
+
 
 float
 Scanner::get_ring_spacing() const
 {
-  return ring_spacing;}
+  return ring_spacing;
+}
+
 
 float
 Scanner::get_default_bin_size() const
@@ -203,10 +233,17 @@ void Scanner::set_default_num_arccorrected_bins(const int&  new_num)
 }
 
 
-void Scanner::set_ring_radius(const float & new_radius)
+void Scanner::set_inner_ring_radius(const float & new_radius)
 {
-  ring_radius = new_radius;
+  inner_ring_radius = new_radius;
 }
+
+void Scanner::set_average_depth_of_interaction(const float & new_depth_of_interaction)
+{
+  average_depth_of_interaction = new_depth_of_interaction;
+}
+
+
 
 void Scanner::set_ring_spacing(const float&  new_spacing)
 {

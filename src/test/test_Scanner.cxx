@@ -87,7 +87,7 @@ test_scanner(const Scanner& scanner)
       scanner.get_type() != Scanner::HZLR*/)
   {
     const float natural_bin_size =
-      scanner.get_ring_radius()*float(_PI)/scanner.get_num_detectors_per_ring();
+      scanner.get_effective_ring_radius()*float(_PI)/scanner.get_num_detectors_per_ring();
     if (fabs(natural_bin_size - scanner.get_default_bin_size())> .1)
       warning("central bin size (derived from ring radius and num detectors) %g\n"
 	      "differs from given default bin size %g\n"
@@ -116,6 +116,7 @@ test_scanner(const Scanner& scanner)
     EcatModel * ecat_scanner_info = ecat_model(static_cast<int>(ecat_type));
     if (ecat_scanner_info==0)
       return;
+    this->set_tolerance(1.E-5);
     cerr << "Comparing STIR scanner info with LLN matrix\n";
     check_if_equal(scanner.get_num_axial_buckets(), ecat_scanner_info->rings,
 		   "number of rings of buckets");
@@ -134,7 +135,7 @@ test_scanner(const Scanner& scanner)
 		   "number of crystals in the axial direction");
     check_if_equal(scanner.get_num_transaxial_crystals_per_block(), ecat_scanner_info->angularCrystalsPerBlock,
 		   "number of transaxial crystals");
-    check_if_equal(scanner.get_ring_radius(), ecat_scanner_info->crystalRad*10,
+    check_if_equal(scanner.get_inner_ring_radius(), ecat_scanner_info->crystalRad*10,
 		   "detector radius");
     check_if_equal(scanner.get_ring_spacing()/2, ecat_scanner_info->planesep*10,
 		   "plane separation");

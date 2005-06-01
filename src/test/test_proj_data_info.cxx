@@ -481,7 +481,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       // Get s
       float s = ob2.get_s(bin);
       
-      float thetatest = 2*ob2.get_axial_sampling(1)/(2*sqrt(square(scanner_ptr->get_ring_radius())-square(s)));
+      float thetatest = 2*ob2.get_axial_sampling(1)/(2*sqrt(square(scanner_ptr->get_effective_ring_radius())-square(s)));
       
       check_if_equal( theta, thetatest,"test on get_tantheta, seg 1");
       check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 1");

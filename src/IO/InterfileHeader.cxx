@@ -378,9 +378,12 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("transaxial FOV diameter (cm)",
     KeyArgument::DOUBLE, &transaxial_FOV_diameter_in_cm);
   // KT 31/03/99 new
-  ring_diameter_in_cm = -1;
-  add_key("ring diameter (cm)",
-    KeyArgument::DOUBLE, &ring_diameter_in_cm);
+  inner_ring_diameter_in_cm = -1;
+  add_key("inner ring diameter (cm)",
+          KeyArgument::DOUBLE, &inner_ring_diameter_in_cm);
+  average_depth_of_interaction_in_mm = -1;
+  add_key("average depth of interaction (mm)",
+          KeyArgument::DOUBLE, &average_depth_of_interaction_in_mm);
   distance_between_rings_in_cm = -1;
   add_key("distance between rings (cm)",
     KeyArgument::DOUBLE, &distance_between_rings_in_cm);
@@ -403,6 +406,13 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   num_transaxial_crystals_per_block = 0;
   add_key("number of crystals_per_block in transaxial direction",
 	  &num_transaxial_crystals_per_block);
+  num_axial_crystals_per_singles_unit = -1;
+  add_key("number of crystals_per_singles_unit in axial direction",
+	  &num_axial_crystals_per_singles_unit);
+  num_transaxial_crystals_per_singles_unit = -1;
+  add_key("number of crystals_per_singles_unit in transaxial direction",
+	  &num_transaxial_crystals_per_singles_unit);
+  
   // sensible default
   num_detector_layers = 1;
   add_key("number of detector layers",
@@ -852,8 +862,10 @@ bool InterfilePDFSHeader::post_processing()
     if (transaxial_FOV_diameter_in_cm < 0)
       transaxial_FOV_diameter_in_cm = guessed_scanner_ptr->FOV_radius*2/10.;
 #endif
-    if (ring_diameter_in_cm < 0)
-      ring_diameter_in_cm = guessed_scanner_ptr->get_ring_radius()*2/10.;
+    if (inner_ring_diameter_in_cm < 0)
+      inner_ring_diameter_in_cm = guessed_scanner_ptr->get_inner_ring_radius()*2/10.;
+    if (average_depth_of_interaction_in_mm < 0)
+      average_depth_of_interaction_in_mm = guessed_scanner_ptr->get_average_depth_of_interaction();
     if (distance_between_rings_in_cm < 0)
       distance_between_rings_in_cm = guessed_scanner_ptr->get_ring_spacing()/10;
     if (bin_size_in_cm < 0)
@@ -867,6 +879,12 @@ bool InterfilePDFSHeader::post_processing()
       num_axial_crystals_per_block = guessed_scanner_ptr->get_num_axial_crystals_per_block();
     if (num_transaxial_crystals_per_block<=0)
       num_transaxial_crystals_per_block = guessed_scanner_ptr->get_num_transaxial_crystals_per_block();
+    if (num_axial_crystals_per_singles_unit < 0) 
+      num_axial_crystals_per_singles_unit = 
+        guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit();
+    if (num_transaxial_crystals_per_singles_unit < 0) 
+      num_transaxial_crystals_per_singles_unit = 
+        guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
     if (num_detector_layers<=0)
       num_detector_layers = guessed_scanner_ptr->get_num_detector_layers();
     
@@ -884,10 +902,18 @@ bool InterfilePDFSHeader::post_processing()
 		num_detectors_per_ring, guessed_scanner_ptr->get_num_detectors_per_ring());
 	mismatch_between_header_and_guess = true;
       }
-    if (fabs(ring_diameter_in_cm-guessed_scanner_ptr->get_ring_radius()*2/10.) > .1)
+    if (fabs(inner_ring_diameter_in_cm - guessed_scanner_ptr->get_inner_ring_radius()*2/10.) > .1)
       {
-	warning("Interfile warning: 'ring diameter (cm)' (%f) is expected to be %f.\n",
-		ring_diameter_in_cm, guessed_scanner_ptr->get_ring_radius()*2/10.);
+	warning("Interfile warning: 'inner ring diameter (cm)' (%f) is expected to be %f.\n",
+		inner_ring_diameter_in_cm, guessed_scanner_ptr->get_inner_ring_radius()*2/10.);
+	mismatch_between_header_and_guess = true;
+      }
+    if (fabs(average_depth_of_interaction_in_mm - 
+             guessed_scanner_ptr->get_average_depth_of_interaction()) > .1)
+      {
+	warning("Interfile warning: 'average depth of interaction (mm)' (%f) is expected to be %f.\n",
+		average_depth_of_interaction_in_mm, 
+                guessed_scanner_ptr->get_average_depth_of_interaction());
 	mismatch_between_header_and_guess = true;
       }
     if (fabs(distance_between_rings_in_cm-guessed_scanner_ptr->get_ring_spacing()/10) > .01)
@@ -934,6 +960,24 @@ bool InterfilePDFSHeader::post_processing()
 		num_transaxial_crystals_per_block, guessed_scanner_ptr->get_num_transaxial_crystals_per_block());
 	mismatch_between_header_and_guess = true;
       }
+    if ( guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit() > 0 &&
+         num_axial_crystals_per_singles_unit != 
+         guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit() ) 
+      {
+        warning("Interfile warning: axial crystals per singles unit (%d) is expected to be %d.\n",
+		num_axial_crystals_per_singles_unit, 
+                guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit());
+	mismatch_between_header_and_guess = true;
+      }
+    if ( guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit() > 0 &&
+         num_transaxial_crystals_per_singles_unit != 
+         guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit() ) 
+      {
+        warning("Interfile warning: transaxial crystals per singles unit (%d) is expected to be %d.\n",
+		num_transaxial_crystals_per_singles_unit, 
+                guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit());
+	mismatch_between_header_and_guess = true;
+      }
     if (
 	guessed_scanner_ptr->get_num_detector_layers()>0 &&
 	num_detector_layers != guessed_scanner_ptr->get_num_detector_layers())
@@ -968,22 +1012,32 @@ bool InterfilePDFSHeader::post_processing()
     if (transaxial_FOV_diameter_in_cm < 0)
       warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
 #endif
-    if (ring_diameter_in_cm <= 0)
+    if (inner_ring_diameter_in_cm <= 0)
       warning("Interfile warning: 'ring diameter (cm)' invalid.\n");
+    if (average_depth_of_interaction_in_mm <= 0)
+      warning("Interfile warning: 'average depth of interaction (mm)' invalid.\n");
     if (distance_between_rings_in_cm <= 0)
       warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
     if (bin_size_in_cm <= 0)
       warning("Interfile warning: 'bin size (cm)' invalid.\n");
+    if (num_axial_crystals_per_singles_unit <= 0)
+      warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
+    if (num_transaxial_crystals_per_singles_unit <= 0)
+      warning("Interfile warning: 'transaxial crystals per singles unit' invalid.\n");
+
   }
 
   // finally, we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
   shared_ptr<Scanner> scanner_ptr_from_file =
-    new Scanner(guessed_scanner_ptr->get_type(), originating_system,
-		num_detectors_per_ring, num_rings, 
+    new Scanner(guessed_scanner_ptr->get_type(), 
+                originating_system,
+		num_detectors_per_ring, 
+                num_rings, 
 		guessed_scanner_ptr->get_max_num_non_arccorrected_bins(), 
 		guessed_scanner_ptr->get_default_num_arccorrected_bins(),
-		static_cast<float>(ring_diameter_in_cm*10./2),
+		static_cast<float>(inner_ring_diameter_in_cm*10./2),
+                static_cast<float>(average_depth_of_interaction_in_mm),
 		static_cast<float>(distance_between_rings_in_cm*10.),
 		static_cast<float>(bin_size_in_cm*10),
 		static_cast<float>(view_offset_in_degrees*_PI/180),
@@ -991,7 +1045,9 @@ bool InterfilePDFSHeader::post_processing()
 		num_transaxial_blocks_per_bucket,
 		num_axial_crystals_per_block,
 		num_transaxial_crystals_per_block,
-		num_detector_layers);
+		num_axial_crystals_per_singles_unit,
+                num_transaxial_crystals_per_singles_unit,
+                num_detector_layers);
 
   bool is_consistent =
     scanner_ptr_from_file->check_consistency() == Succeeded::yes;

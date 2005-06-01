@@ -1,6 +1,24 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
 /*!
   \file
   \ingroup buildblock
@@ -15,11 +33,7 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+
 
 #ifndef __stir_SCANNER_H__
 #define __stir_SCANNER_H__
@@ -79,59 +93,43 @@ class Scanner
   
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);
+
+
   //! constructor -(list of names)
   /*! size info is in mm
       \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
-  Scanner(Type type,const list<string>& list_of_names,
-	  int num_detectors_per_ring, int NoRings, 
-	  int max_num_non_arccorrected_bins,
-	  int default_num_arccorrected_bins,
-	  float RingRadius, float RingSpacing, 
-	  float BinSize, float intrinsic_tilt,
-	  int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket,
-	  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
-	  int num_detector_layers);
+  Scanner(Type type_v, const list<string>& list_of_names_v,
+	  int num_detectors_per_ring_v, int num_rings_v, 
+	  int max_num_non_arccorrected_bins_v,
+	  int default_num_arccorrected_bins_v,
+          float inner_ring_radius_v, float average_depth_of_interaction_v, 
+          float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+	  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+	  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_axial_crystals_per_singles_unit_v, 
+          int num_transaxial_crystals_per_singles_unit_v,
+	  int num_detector_layers_v);
 
   //! constructor ( a single name)
   /*! size info is in mm
       \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
-  Scanner(Type type_v,const string& name,
-	  int num_detectors_per_ring, int NoRings_v, 
-	  int max_num_non_arccorrected_bins,
-	  int default_num_arccorrected_bins,
-	  float RingRadius_v, float RingSpacing_v, 
-	  float BinSize_v, float intrinsic_tilt,
-	  int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket,
-	  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
-	  int num_detector_layers);
-#if 0
-  //! constructor with list of names, putting max_num_non_arccorrected bins and default_num_arccorrected_bins equal
-  /*! size info is in mm
-      \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
-      \warning calls error() when block/bucket info are inconsistent
-   */
-  Scanner(Type type_v,const list<string>& list_of_names,
-         int num_detectors_per_ring, int NoRings_v, 
-	 int max_num_non_arccorrected_bins,
-	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v,
-	  int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket,
-	  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
-	  int num_detector_layers);
+  Scanner(Type type_v, const string& name,
+	  int num_detectors_per_ring_v, int num_rings_v, 
+	  int max_num_non_arccorrected_bins_v,
+	  int default_num_arccorrected_bins_v,
+          float inner_ring_radius_v, float average_depth_of_interaction_v, 
+          float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+	  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+	  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_axial_crystals_per_singles_unit_v, 
+          int num_transaxial_crystals_per_singles_unit_v,
+	  int num_detector_layers_v);
 
- //! constructor - one name given and max_num_non_arccorrected bins only
-  Scanner(Type type_v,const string names,
-         int num_detectors_per_ring, int NoRings_v, 
-	 int max_num_non_arccorrected_bins, 
-	 float RingRadius_v, float RingSpacing_v, 
-         float BinSize_v, float intrTilt_v,
-	 int num_axial_blocks_per_bucket=0, int num_transaxial_blocks_per_bucket=0,
-         int num_axial_crystals_per_block=0,int num_transaxial_crystals_per_block=0);
-#endif
+
 
   //! get scanner parameters as a string
   string parameter_info() const;
@@ -180,9 +178,13 @@ class Scanner
   //! get maximum number of views
   /*! This is simply get_num_detectors_per_ring()/2 */
   inline int get_max_num_views() const;
- //! get ring radius
-  inline float get_ring_radius() const;
- //! get ring spacing 
+  //! get inner ring radius
+  inline float get_inner_ring_radius() const;
+  //! get effective ring radius
+  inline float get_effective_ring_radius() const;
+  //! get average depth of interaction
+  inline float get_average_depth_of_interaction() const;
+  //! get ring spacing 
   inline float get_ring_spacing() const;
   //! get default arc-corrected bin size
   inline float get_default_bin_size() const;
@@ -266,9 +268,11 @@ class Scanner
   inline void set_max_num_non_arccorrected_bins(const int & new_num) ;
   //! set the default number of arccorrected_bins
   inline void set_default_num_arccorrected_bins(const int & new_num) ;
- //! set ring radius
-  inline void set_ring_radius(const float & new_radius);
- //! set ring spacing 
+  //! set inner ring radius
+  inline void set_inner_ring_radius(const float & new_radius);
+  //! set average depth of interaction
+  inline void set_average_depth_of_interaction(const float& new_depth_of_interaction);
+  //! set ring spacing 
   inline void set_ring_spacing(const float & new_spacing);
   //! set default arc-corrected bin size
   inline void set_default_bin_size(const float &new_size);
@@ -318,7 +322,9 @@ private:
   int max_num_non_arccorrected_bins; 
   int default_num_arccorrected_bins; /* default number of bins */
   int num_detectors_per_ring;	
-  float ring_radius;	/*! detector radius in mm*/
+
+  float inner_ring_radius;	/*! detector inner radius in mm*/
+  float average_depth_of_interaction; /*! Average interaction depth in detector crystal */
   float ring_spacing;	/*! ring separation in mm*/
   float bin_size;		/*! arc-corrected bin size in mm (spacing of transaxial elements) */
   float intrinsic_tilt;		/*! intrinsic tilt in radians*/
@@ -334,29 +340,36 @@ private:
 
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
-  void set_params(Type type_v,const list<string>& list_of_names,
-                  int NoRings_v, 
-		  int max_num_non_arccorrected_bins,
-		  int num_detectors_per_ring,
-		  float RingRadius_v,
-		  float RingSpacing_v,
-		  float BinSize_v, float intrTilt_v,
-		  int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket, 
-		  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
-		  int num_detector_layers);
+  void set_params(Type type_v, const list<string>& list_of_names_v,
+                  int num_rings_v, 
+		  int max_num_non_arccorrected_bins_v,
+		  int num_detectors_per_ring_v,
+                  float inner_ring_radius_v,
+                  float average_depth_of_interaction_v,
+		  float ring_spacing_v,
+		  float bin_size_v, float intrinsic_tilt_v,
+		  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+		  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_axial_crystals_per_singles_unit_v,
+                  int num_transaxial_crystals_per_singles_unit_v,
+		  int num_detector_layers_v);
 
   // ! set all parameters
-  void set_params(Type type_v,const list<string>& list_of_names,
-                  int NoRings_v, 
-		  int max_num_non_arccorrected_bins,
-		  int default_num_arccorrected_bins,
-		  int num_detectors_per_ring,
-		  float RingRadius_v,
-		  float RingSpacing_v,
-		  float BinSize_v, float intrTilt_v,
-		  int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket,
-		  int num_axial_crystals_per_block,int num_transaxial_crystals_per_block,
-		  int num_detector_layers);
+  void set_params(Type type_v, const list<string>& list_of_names_v,
+                  int num_rings_v, 
+		  int max_num_non_arccorrected_bins_v,
+                  int default_num_arccorrected_bins_v,
+		  int num_detectors_per_ring_v,
+                  float inner_ring_radius_v,
+                  float average_depth_of_interaction_v,
+		  float ring_spacing_v,
+		  float bin_size_v, float intrinsic_tilt_v,
+		  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+		  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  int num_axial_crystals_per_singles_unit_v,
+                  int num_transaxial_crystals_per_singles_unit_v,
+		  int num_detector_layers_v);
+
 
 };
 
