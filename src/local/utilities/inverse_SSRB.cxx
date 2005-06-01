@@ -60,7 +60,7 @@ using namespace std;
 int main(int argc, const char *argv[])                                  
 {         
 
-	if (argc< 2 || argc>3)
+	if (argc< 3 || argc>4)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"		
 		   << "\t[projdata_4D_filename]\n" 
