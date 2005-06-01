@@ -579,7 +579,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   
   mhead.system_type= find_ECAT_system_type(scanner);
   mhead.transaxial_fov= 
-    scanner.get_ring_radius()*2*
+    scanner.get_inner_ring_radius()*2*
     sin(_PI/scanner.get_num_detectors_per_ring()*
 	scanner.get_max_num_non_arccorrected_bins()/2.)/10;
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();

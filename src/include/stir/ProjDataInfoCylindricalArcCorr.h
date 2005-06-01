@@ -55,6 +55,8 @@ public:
   void set_tangential_sampling(const float bin_size);
   //! Get tangential sampling
   inline float get_tangential_sampling() const;
+  virtual float get_sampling_in_s(const Bin&) const
+  {return bin_size; }
 
   virtual 
     Bin

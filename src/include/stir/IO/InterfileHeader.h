@@ -1,6 +1,24 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
+
 /*! 
   \file
   \ingroup InterfileIO
@@ -19,11 +37,7 @@
   See http://www.HammersmithImanet.com/~kris for a description of the full
   proposal for Interfile headers for 3D PET.
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+
 
 #ifndef __INTERFILEHEADER_H__
 #define __INTERFILEHEADER_H__
@@ -175,7 +189,8 @@ private:
   int num_detectors_per_ring;
   
   double transaxial_FOV_diameter_in_cm;
-  double ring_diameter_in_cm;
+  double inner_ring_diameter_in_cm;
+  double average_depth_of_interaction_in_mm;
   double distance_between_rings_in_cm;
   double bin_size_in_cm;
   // this intrinsic tilt
@@ -185,6 +200,9 @@ private:
   int num_transaxial_blocks_per_bucket;
   int num_axial_crystals_per_block;
   int num_transaxial_crystals_per_block;
+  int num_axial_crystals_per_singles_unit;
+  int num_transaxial_crystals_per_singles_unit;
+  
   int num_detector_layers;
 
   bool is_arccorrected;

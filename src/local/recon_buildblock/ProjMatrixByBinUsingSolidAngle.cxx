@@ -310,7 +310,8 @@ calculate_proj_matrix_elems_for_one_bin(
     const float fovrad = fovrad_in_mm/voxel_size.x();
     const float half_voxel_size = cphi;
     const float half_tube_length =
-      sqrt(square(proj_data_info_ptr->get_scanner_ptr()->get_ring_radius())-square(s_in_mm))/voxel_size.x();
+      sqrt(square(proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius()) -
+           square(s_in_mm))/voxel_size.x();
     { 
       // Compute first pixel in a beam (not on a ray )
       const float max_s = halfcosplussin*2 + half_bin_size +0.01F;

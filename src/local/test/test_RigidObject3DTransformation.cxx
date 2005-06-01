@@ -478,7 +478,7 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lorNAC;
     LORAs2Points<float> lor2pts;
     const double ring_radius =
-      static_cast<double>(proj_data_info_sptr->get_scanner_ptr()->get_ring_radius());
+      static_cast<double>(proj_data_info_sptr->get_scanner_ptr()->get_effective_ring_radius());
     for (ProjMatrixElemsForOneDensel::const_iterator bin_iter = bins.begin();
 	 bin_iter != bins.end();
 	 ++bin_iter)

@@ -71,7 +71,7 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           num_views, num_tangential_poss)
 {
   assert(scanner_ptr.use_count()!=0);
-  ring_radius = scanner_ptr->get_ring_radius();
+  ring_radius = scanner_ptr->get_effective_ring_radius();
   angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
@@ -316,7 +316,7 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
 {
   const int num_detectors=get_scanner_ptr()->get_num_detectors_per_ring();
   const float ring_spacing=get_scanner_ptr()->get_ring_spacing();
-  const float ring_radius=get_scanner_ptr()->get_ring_radius();
+  const float ring_radius=get_scanner_ptr()->get_effective_ring_radius();
 
 #if 0
   const CartesianCoordinate3D<float> d = c2 - c1;
@@ -409,10 +409,10 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
 #if 0
   const float df1 = (2.*_PI/num_detectors_per_ring)*(det1);
   const float df2 = (2.*_PI/num_detectors_per_ring)*(det2);
-  const float x1 = get_scanner_ptr()->get_ring_radius()*cos(df1);
-  const float y1 = get_scanner_ptr()->get_ring_radius()*sin(df1);
-  const float x2 = get_scanner_ptr()->get_ring_radius()*cos(df2);
-  const float y2 = get_scanner_ptr()->get_ring_radius()*sin(df2);
+  const float x1 = get_scanner_ptr()->get_effective_ring_radius()*cos(df1);
+  const float y1 = get_scanner_ptr()->get_effective_ring_radius()*sin(df1);
+  const float x2 = get_scanner_ptr()->get_effective_ring_radius()*cos(df2);
+  const float y2 = get_scanner_ptr()->get_effective_ring_radius()*sin(df2);
   const float z1 = Ring_A*get_scanner_ptr()->get_ring_spacing();
   const float z2 = Ring_B*get_scanner_ptr()->get_ring_spacing();
   // make sure the return values are in STIR coordinates
@@ -431,7 +431,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   assert(0<=det2);
   assert(det2<num_detectors_per_ring);
 
-  LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_ring_radius());
+  LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_effective_ring_radius());
   cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
   cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
   cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing();

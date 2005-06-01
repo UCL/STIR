@@ -282,7 +282,7 @@ file.
     const int num_detectors =
       proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
     const float ring_radius =
-      proj_data_info_ptr->get_scanner_ptr()->get_ring_radius();
+      proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius();
 
     int det_num1=0, det_num2=0;
     proj_data_info_noarccor.
