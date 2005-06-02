@@ -665,7 +665,7 @@ free to find a neat way around all this ugly stuff and let us
 know.
 
 \textbf{Note:} The projects and workspaces in the distribution contain references to
-files and projects called \texttt{local_*}. You will probably have to delete those
+files and projects called \texttt{local*}. You will probably have to delete those
 maually from the projects.
 
 
@@ -1116,7 +1116,7 @@ will also be used to compute the attenuation factors (unless
 the parameter files for the reconstruction and sensitivity are 
 not identical). While this is usually not a problem, it does 
 mean that when a single projection matrix is used (see section 
-\ref{sec:projmatrix}), 
+\ref{sec:projectorpairusingmatrix}), 
 attenuation image and output image must have identical sizes 
 and voxel sizes.
 
@@ -2999,7 +2999,7 @@ not the default due to historical reasons.
 
 { \subsubsubsection{Matrix}
 }
-\label{sec:projmatrix}
+\label{sec:projectorpairusingmatrix}
 Both projectors are based on a single projection matrix, as given 
 in Section \ref{sec:projmatrix}.
 
@@ -3505,7 +3505,7 @@ Files that declare classes and functions
 
 \item[buildblock]
   Basic building blocks such as arrays, images, projection data, filters etc.
-\item[data_buildblock]
+\item[data\_buildblock]
   Building blocks for storing acquired data etc. Currently for instance
   singles rates. Projection data might be moved here at some point.
 \item[display]
