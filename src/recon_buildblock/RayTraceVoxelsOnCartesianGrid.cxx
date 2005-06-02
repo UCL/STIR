@@ -158,10 +158,6 @@ RayTraceVoxelsOnCartesianGrid
   const float inc_z = zero_diff_in_z ? d12*1000000.F : d12 / fabs(difference.z());
   
   // intersection points with intra-voxel planes : 
-  // find voxel which contains the start_point, and go to its 'left' edge
-  const float xmin = round(start_point.x()) - sign_x*0.5F;
-  const float ymin = round(start_point.y()) - sign_y*0.5F;
-  const float zmin = round(start_point.z()) - sign_z*0.5F;
   // find voxel which contains the end_point, and go to its 'right' edge
   const float xmax = round(stop_point.x()) + sign_x*0.5F;
   const float ymax = round(stop_point.y()) + sign_y*0.5F;  
@@ -177,10 +173,10 @@ RayTraceVoxelsOnCartesianGrid
      with a factor .9999). This is to avoid rounding errors in the loop below. In this loop,
      we try to detect the end of the LOR by comparing a (which is either ax,ay or az) with
      aend. With exact arithmetic, a? would have been incremented exactly to 
-       a?_end_actual = a?start + (?max-?end)*inc_?*sign_?, 
-     so we could loop until a==aend_actual. However, because of numerical precision,
-     a? might turn out be a tiny bit smaller then a?_end_actual. So, we set aend a tiny bit 
-     smaller than aend_actual.
+       a?end_exact = a?start + (?max-?end)*inc_?*sign_?, 
+     so we could loop until a==aend_exact. However, because of numerical precision,
+     a? might turn out be a tiny bit smaller then a?end_exact. So, we set aend a tiny bit 
+     smaller than aend_exact.
   */
 const float axend = zero_diff_in_x ? d12*1000000.F : (xmax - start_point.x()) * inc_x * sign_x *.9999F;
   const float ayend = zero_diff_in_y ? d12*1000000.F : (ymax - start_point.y()) * inc_y * sign_y *.9999F;
@@ -193,12 +189,20 @@ const float axend = zero_diff_in_x ? d12*1000000.F : (xmax - start_point.x()) * 
   assert(fabs(difference.y())>small_difference || ayend>amax);
   assert(fabs(difference.z())>small_difference || azend>amax);
 
-  // coordinates of the first Voxel: (same as round(start_point))
-  CartesianCoordinate3D<int> current_voxel(round(zmin + sign_z*0.5F), 
-					   round(ymin + sign_y*0.5F), 
-					   round(xmin + sign_x*0.5F));
+  // coordinates of the first Voxel:
+  CartesianCoordinate3D<int> current_voxel = round(start_point);
   
-  /* Find the a? values of the intersection points of the LOR with the planes between voxels.
+  /* Find the a? values of the intersection points of the LOR with the planes between voxels
+     at the 'left' side of the start_point..
+     This normally goes as follows:
+
+     const float xmin = current_voxel.x() - sign_x*0.5F;
+     float ax=(xmin - start_point.x()) * inc_x * sign_x;
+
+     We will compute this slightly differently below to increase numerical precision:
+     xmin - start_point.x() is between -1 and 1, while start_point.x() is potentially large.
+     Subtracting 2 large floating point numbers to get a small number causes loss
+     of numerical precision.
 
      Note on special handling of rays parallel to one of the planes:
      
@@ -209,17 +213,22 @@ const float axend = zero_diff_in_x ? d12*1000000.F : (xmax - start_point.x()) * 
        a? = (?min-start_point.?) * inc_? * sign_?
      Because the start voxel includes the start_point, we have that
        a? <= -inc_?
-     As inc_? is set to some large number when the ray is parallel, this is
-     a good value for the ray.
+     As inc_? is set to some large number when the ray is parallel, we can use
+     -inc_? is a very low number.
   */
   // with the previous xy-plane
- float az = zero_diff_in_z ? -inc_z : (zmin - start_point.z()) * inc_z * sign_z;
+  float az = zero_diff_in_z ? -inc_z : 
+    ((current_voxel.z() - start_point.z()) - sign_z*0.5F) * inc_z * sign_z;
   // with the previous yz-plane
-  float ax = zero_diff_in_x ? -inc_x : (xmin - start_point.x()) * inc_x * sign_x;
+  float ax = zero_diff_in_x ? -inc_x : 
+    ((current_voxel.x() - start_point.x()) - sign_x*0.5F) * inc_x * sign_x;
   // with the previous xz-plane
-  float ay = zero_diff_in_y ? -inc_y : (ymin - start_point.y()) * inc_y * sign_y;
+  float ay = zero_diff_in_y ? -inc_y : 
+    ((current_voxel.y() - start_point.y()) - sign_y*0.5F) * inc_y * sign_y;
   
   // The biggest a?  value gives the start of the a-row 
+  // Note that we should use a=0 if we want to start from start_point
+  // (and not from the 'left' edge of the voxel containing start_point)
   float a = max(ax, max(ay,az));      
 
   // now go the intersections with next plane
