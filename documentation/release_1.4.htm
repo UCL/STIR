@@ -9,6 +9,7 @@
 
 <p>
 <p>Nearly all work on this update was by Kris Thielemans. <br>
+Timothy Borgeaud helped with the updates for Scanner and SinglesRates.
 Thanks to Oliver Nix for fixes for (and testing with) Visual Studio Express 2005.
 Thanks to Fr&eacute;d&eacute;ric Schoenahl for testing with 
 <a href=http://valgrind.org/<a>valgrind</a>.
@@ -20,10 +21,11 @@ Thanks to Fr&eacute;d&eacute;ric Schoenahl for testing with
 </ul>
 
 
-<h3>Bugs removed that affect users</h3>
+<h3>Bugs removed that might affect users</h3>
 <ul>
-<li> corrected bug in CListModeData::save_get_position/set_get_position occured 
-in the last chunk of the listmode file (where chunk size was determined by 
+<li> corrected bug in CListModeData::save_get_position/set_get_position
+if they were called  
+for the last chunk of the listmode file (where chunk size was determined by 
 buf_size_in_bytes = 8683520). In that case, the repositioning failed and called
 error() and aborted the program. In normal use, this bug would
 normally only have appeared if the last frame was very short.
@@ -33,26 +35,64 @@ normally only have appeared if the last frame was very short.
   in_data is to the left of the left edge of the first out_data.
   This routine is used by <tt>zoom_image</tt>.
 </li>
-<li> buildblock/Scanner.cxx: - corrected value written for "distance between
+<li> <tt>buildblock/Scanner.cxx</tt>: corrected value written for "distance between
   rings (cm)" in parameter_info(). This solves a problem in
  <tt>list_projdata_info</tt> and others.
 </li>
-</ul>
+<li> <tt>recon_buildblock/ProjMatrixByBinUsingRayTracing.cxx</tt>:
+ corrected a BUG in add_adjacent_z. This function is used for segment 0 in case voxel_size.z()
+ is less than axial_sampling_in_m (e.g. the 'span=1' case). If you were unlucky, a sensitivity to 
+ rounding errors could mean that the last plane of voxels contributing to a sinogram was 
+ignored.
+ </ul>
 
 <h3>Code changes that influence your results</h3>
 <ul>
-<li> reconstruction programs use the projection data to construct an image.
-This now uses the central bin-size to find voxel-size (was Bin(0,0,0,1) before). This will
-  make a tiny difference in the voxel size when using non-arccorrected data.
+<li>The Interfile header for projection data now uses a different
+   convention for the specifying the ring diameter. Current keywords are
+   <pre>
+   inner ring diameter (cm) := ...
+   average depth of interaction (mm) := ...
+   </pre>
+   The previous keyword <tt>ring diameter (cm)</tt> is now <strong>ignored</strong>.
+   This is done to prevent reading the wrong ring radius from old files (see next item).
+   <br>
+   If you want to get the same reconstructions as before, set
+   <tt>inner_ring_diameter + 2*average_depth_of_interaction/10</tt> equal to
+   the old <tt>ring_diameter</tt>.
 </li>
-<li>changes in the interpolating backprojector allow handling data where the
-number of views is nut a multiple of 4 (such as the Discovery ST).</li>
+<li>The ring diameter for most <strong>CTI/Siemens scanners</strong> is changed. 
+   Values now match to what is used by CTI. In particular, an average 
+   depth-of-interaction is
+   added to give an <i>effective</i> ring radius. As this changes the 
+   scanner dimensions slightly (about 1.5% larger) you will get slightly
+   different values in the reconstructed images. This change will be tiny
+   for arc-corrected data, but somewhat larger for non-arccorrected data
+   (tests indicate again less than 1% difference).
+   Note however that changes in the sensitivity image as used by OSMAPOSL
+   are larger. So, <strong>do not re-use existing sensitivity images</strong>.
+   <br>
+   Values for GE scanners are not changed.
+</li>
+<li> Reconstruction programs now get the pixel size from
+ <tt>default_bin_size*zoom</tt> (default bin size either specified in the Interfile header
+or in Scanner.cxx). (It used to be <tt>get_sampling_in_s(Bin(0,0,0,1))</tt>
+ before). This will
+  make a <strong>difference in the voxel size when using non-arccorrected data</strong>.
+ However, it makes the voxel size consistent between using arc-corrected and non-arccorrected
+data as input.
+</li>
 </ul>
  
 <h3>New functionality of existing utilities</h3>
 <ul>
 <li> added arc-correction to FBP, 3DRP and correct_projdata
 </li>
+<li> added classes to use ECAT7 normalisation files. You can now
+normalise and dead-time correct your ECAT7 sinograms.
+</li>
+<li>changes in the interpolating backprojector allow handling data where the
+number of views is not a multiple of 4 (such as the Discovery ST).</li>
 </ul>
 
 
@@ -61,16 +101,18 @@ number of views is nut a multiple of 4 (such as the Discovery ST).</li>
 <li> interfile (and in general Array) IO can now use 1-byte integers.</li>
 <li> removed a bug in listmode classes for ECAT 966 and 962 (function get_detectors), which would have caused your program to crash.
 </li>
+<li>removed a few bugs in LORCoordinates.inl</li>
 <li> recon_buildblock/RayTraceVoxelsOnCartesianGrid.cxx has changed behaviour
   when LOR is in a plane between 2 voxels. Previous version had ill-defined
   behaviour (it would put all results in one or the other, depending on
   round-errors). Now it stores half of the results in each plane.</li>
 <li> the 'ray tracing' type of 'matrix' for projection uses the above
 routine and is now more flexible with respect to zooms etc. The previous
-version aborted when it detected that a line would be in a plne between 2 voxels.</li>
+version aborted when it detected that a line would be in a plane between 2 voxels.</li>
 <li>removed some small memory leaks.</li>
 <li>removed problem in FBP2D, making sure that all variables are initialised 
 (bug spotted by Carole Lartizien)</li>
+<li> updated boost include files to 1.32.0.</li>
 </ul>
 
 <h3>Installation procedure changes</h3>
@@ -83,7 +125,7 @@ Visual Studio Express 2005 easier.
 
 <h3>Documentation changes</h3>
 <ul>
-<li>updated doxygen</li>
+<li>updated doxygen and User's Guide</li>
  </ul>
 
 <h3>recon_test_pack changes</h3>
@@ -96,13 +138,17 @@ from the above):</H2>
 
 <h3>New functionality</h3>
 <ul>
+<li>a new hierarchy <tt>SinglesRates</tt> in data_buildblock. This encodes singles rates
+during a PET scan.</li>
 </ul>
 <h3>Other code changes</h3>
 <ul>
-<li>removed a few bugs in LORCoordinates.inl</li>
 <li>a few small changes to the <tt>CListRecord</tt> hierarchy. You 
 will have to adapt your code (implement set/get_time_in_millisecs and remove set/get_time_in_secs (as
   now in CListRecord)</li>
+<li><tt>Scanner</tt>  has more members for singles. It also differentiates between the inner ring radius
+and an effective ring radius (using some average depth of interaction as supplied by the
+scanner manufacturer). Multiple detector-layer scanners are not really supported though.</tt>
 </ul>
 </body>
 
