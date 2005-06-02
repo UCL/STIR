@@ -56,7 +56,35 @@ class Succeeded;
   \ingroup buildblock
   \brief A class for storing some info on the scanner
 
-  Currently really only appropriate for cylindrical PET scanners
+  This class stores geometrical info etc on the scanner.
+  \warning Currently really only appropriate for cylindrical PET scanners
+
+  \par information on blocks, buckets etc
+   At present, these functions follow CTI terminology, but the concepts
+      are similar for other scanners.
+   
+      \li \c crystal the smallest detection unit
+      \li \c block several crystals are grouped in a block, this can be in
+          3 dimensions (see layer). This information could be useful for finding the
+	  geometry of the scanner, but we would plenty more
+	  size info presumably.
+      \li \c layer Some scanners have multiple layers of detectors to give
+          Depth Of Interaction information
+      \li \c bucket several \c blocks send detected events to one \c bucket.
+          This has consequences for the dead-time modelling. For instance,
+	  one bucket could have much more singles than another, and hence
+	  presumably higher singles-dead-time.
+      \li \c singles_unit (non-standard terminology)
+          Most scanners report the singles detected during the acquisition.
+          Some scanners (such as GE scanners) report singles for every crystal,
+	  while others (such as CTI scanners) give only singles for a 
+	  collection of blocks. A \c singles_unit is then a set of crystals
+	  for which we can get singles rates.
+
+      \warning This information is only sensible for discrete detector-based scanners.
+      \todo Some scanners do not have all info filled in at present. Values are then
+      set to 0.
+
   \todo  
     a hierarchy distinguishing between different types of scanners
   \todo derive from ParsingObject
@@ -199,23 +227,6 @@ class Scanner
   */
   inline float get_default_intrinsic_tilt() const;
   //! \name Info on crystals per block etc.
-  /*! At present, these functions follow CTI terminology, but the concepts
-      are similar for other scanners.
-      \li \c crystal the smallest detection unit
-      \li \c block several crystals are grouped in a block, this can be in
-          3 dimensions (see layer). This information could be useful for finding the
-	  geometry of the scanner, but we would plenty more
-	  size info presumably.
-      \li \c layer Some scanners have multiple layers of detectors to give
-          Depth Of Interaction information
-      \li \c bucket several \c blocks send detected events to one \c bucket.
-          This has consequences for the dead-time modelling. For instance,
-	  one bucket could have much more singles than another, and hence
-	  presumably higher singles-dead-time.
-
-      \warning Only sensible for discrete detector-based scanners.
-      \todo Most scanners do not have this info filled in at present.
-  */      
   //@{
   //! get number of transaxial blocks per bucket
   inline int get_num_transaxial_blocks_per_bucket() const;
@@ -225,6 +236,10 @@ class Scanner
   inline int get_num_axial_crystals_per_block() const;	
   //! get number of transaxial crystals 
   inline int get_num_transaxial_crystals_per_block() const;
+  //! get crystals in a bucket
+  inline int get_num_transaxial_crystals_per_bucket() const;
+  //! get crystals in a bucket
+  inline int get_num_axial_crystals_per_bucket() const;
   //! get number of crystal layers (for DOI)
   inline int get_num_detector_layers() const;	
   //! get number of axial blocks
