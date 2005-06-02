@@ -19,9 +19,9 @@
 */
 /*!
   \file
-  \ingroup buildblock
+  \ingroup data_buildblock
 
-  \brief Declaration of class SinglesRates
+  \brief Implementation of class stir::SinglesRates
 
   \author Kris Thielemans and Sanida Mustafovic
   $Date$
