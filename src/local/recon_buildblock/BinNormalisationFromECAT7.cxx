@@ -70,13 +70,14 @@ const char * const
 BinNormalisationFromECAT7::registered_name = "From ECAT7"; 
 
 
+namespace detail
+{
+
 //
-// Inline functions used in this class.
+// helper functions used in this class.
 //
 
-
-
-inline
+static 
 float
 calc_geo_z_correction(const Bin& bin, int span) {
   const int rtmp = abs(bin.segment_num() * span) ;
@@ -86,7 +87,7 @@ calc_geo_z_correction(const Bin& bin, int span) {
 
 
 
-inline 
+static 
 int
 calc_ring1_plus_ring2(const Bin& bin, 
                       const ProjDataInfoCylindricalNoArcCorr *proj_data_cyl) {
@@ -108,7 +109,7 @@ calc_ring1_plus_ring2(const Bin& bin,
 
 
 
-inline
+static
 void
 set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin, 
@@ -128,7 +129,8 @@ set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> pro
 
 // Returns the sum of the two axial coordinates. Or -1 if the ring positions are
 // out of range.
-inline
+// sets axial_coord of detection_position_pair
+static
 int
 set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_info_cyl,
                            int ring1_plus_ring2, const Bin& uncomp_bin,
@@ -157,6 +159,7 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_inf
 
 
 
+} // end of namespace detail
 
 
 
@@ -449,7 +452,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
   As the axial angle increase the difference in efficiencies between trues and
   scatter become closer
     */
-  const float geo_Z_corr = calc_geo_z_correction(bin, span);
+  const float geo_Z_corr = detail::calc_geo_z_correction(bin, span);
 
   
   float	total_efficiency = 0 ;
@@ -469,7 +472,7 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
      We determine it first here. See ProjDataInfoCylindrical for the
      relevant formulas
   */
-  const int ring1_plus_ring2 = calc_ring1_plus_ring2(bin, proj_data_info_cyl_ptr); 
+  const int ring1_plus_ring2 = detail::calc_ring1_plus_ring2(bin, proj_data_info_cyl_ptr); 
                                                       
 
 
@@ -485,8 +488,8 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
         uncompressed_bin.view_num() < end_view;
         ++uncompressed_bin.view_num() ) {
 
-      set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr,
-                                      uncompressed_bin, detection_position_pair);
+      detail::set_detection_tangential_coords(proj_data_info_cyl_uncompressed_ptr,
+					      uncompressed_bin, detection_position_pair);
 
       
         
@@ -511,9 +514,10 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
           uncompressed_bin.segment_num()+=2 ) {
         
         
-        int geo_plane_num = set_detection_axial_coords(proj_data_info_cyl_ptr,
-                                                       ring1_plus_ring2, uncompressed_bin,
-                                                       detection_position_pair);
+        int geo_plane_num = 
+	  detail::set_detection_axial_coords(proj_data_info_cyl_ptr,
+					     ring1_plus_ring2, uncompressed_bin,
+					     detection_position_pair);
         if ( geo_plane_num < 0 ) {
           // Ring numbers out of range.
           continue;
