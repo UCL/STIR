@@ -1,21 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup test
 
-  \brief Test program for Scanner hierarchy
+  \brief Test program for stir::Scanner hierarchy
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/RunTests.h"
@@ -64,7 +75,7 @@ void
 ScannerTests::
 test_scanner(const Scanner& scanner)
 {
-  set_tolerance(.01);
+  set_tolerance(.00001);
   cerr << "Tests for scanner model " << scanner.get_name()<<'\n';
 
   check(scanner.check_consistency() == Succeeded::yes, "check_consistency");
@@ -105,10 +116,11 @@ test_scanner(const Scanner& scanner)
 		   "get_scanner_from_name");
   }
 #ifdef HAVE_LLN_MATRIX
-  if (scanner.get_type() <= Scanner::E966)
+  if (scanner.get_type() <= Scanner::E966) // TODO relies on ordering of enum
   {
     // compare with info from ecat_model
 
+    cerr << "Comparing STIR scanner info with LLN matrix\n";
     short ecat_type = ecat::find_ECAT_system_type(scanner);
     if (ecat_type==0)
       return;
@@ -116,8 +128,6 @@ test_scanner(const Scanner& scanner)
     EcatModel * ecat_scanner_info = ecat_model(static_cast<int>(ecat_type));
     if (ecat_scanner_info==0)
       return;
-    this->set_tolerance(1.E-5);
-    cerr << "Comparing STIR scanner info with LLN matrix\n";
     check_if_equal(scanner.get_num_axial_buckets(), ecat_scanner_info->rings,
 		   "number of rings of buckets");
     if (scanner.get_type() != Scanner::E925) // ART is a partial ring tomograph
