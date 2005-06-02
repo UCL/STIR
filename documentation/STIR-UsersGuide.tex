@@ -3330,6 +3330,31 @@ End Bin Normalisation From ProjData:=
 
 See also online documentation for class BinNormalisationFromProjData.
 
+{ \subsubsubsection{From ECAT7}
+}
+
+This can be used when normalising ECAT7 data. CTI/Siemens stores
+the normalisation data in a files normally ending on
+\texttt{.n} or \texttt{.N}. Dead-time correction is also
+supported, although awkwardly. To get dead-time correction
+to work, you need to specify the singles rates for the 
+scan\footnote{In future, hopefully this will not be necessary.
+This work-around is needed because STIR currently does not
+directly read any of the meta-data in the headers of sinograms etc.}
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation From ECAT7:=
+  normalisation_ECAT7_filename:= STUDY.n
+  singles rates := Singles From ECAT7 File
+  Singles Rates From ECAT7 File:=
+      ECAT7_filename := ecat7_sinogram.S
+  End Singles Rates From ECAT7:=
+End Bin Normalisation From ECAT7:=
+\end{verbatim}
+
+See also online documentation for class BinNormalisationFromECAT7.
+
 { \subsubsubsection{From Attenuation Image}
 }
 \label{sec:binnormalisationfromattenuationimage}
@@ -3480,6 +3505,9 @@ Files that declare classes and functions
 
 \item[buildblock]
   Basic building blocks such as arrays, images, projection data, filters etc.
+\item[data_buildblock]
+  Building blocks for storing acquired data etc. Currently for instance
+  singles rates. Projection data might be moved here at some point.
 \item[display]
   Functions for simple display of arrays and images  
 \item[eval\_buildblock]
@@ -3566,7 +3594,7 @@ and are willing to help, let us know.
 \item
 More automatic testing programs
 \item
-More algorithms: 3DRP, OSSPS (potentially ART, FORE [Def95], 
+More algorithms: OSSPS (potentially ART, FORE [Def95], 
 OSCB [Ben99b] )
 \item
 More projectors
