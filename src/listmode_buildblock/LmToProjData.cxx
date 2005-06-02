@@ -625,9 +625,9 @@ process_data()
 			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
                             
 			     if (interactive)
-			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored\n", 
+			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
 				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
-				      current_time);
+				      current_time, event_increment);
 			     else
 			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
 			       bin.get_bin_value() * 
