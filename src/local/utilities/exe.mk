@@ -5,6 +5,7 @@
 dir:=local/utilities
 
 $(dir)_SOURCES = \
+	fillwith1.cxx \
 	fillwithotherprojdata.cxx \
 	compute_plane_rescale_factors.cxx \
 	apply_plane_rescale_factors.cxx \
