@@ -28,7 +28,7 @@
   \ingroup recon_buildblock
   \ingroup ECAT
 
-  \brief Implementation for class BinNormalisationFromECAT7
+  \brief Implementation for class stir::ecat::ecat7::BinNormalisationFromECAT7
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -40,7 +40,7 @@
 // (and hence old versions of Bkproj_3d)
 // #define SAME_AS_PETER
 
-#include "local/stir/recon_buildblock/BinNormalisationFromECAT7.h"
+#include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/IO/stir_ecat7.h"
