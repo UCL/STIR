@@ -490,7 +490,9 @@ calculate_proj_matrix_elems_for_one_bin(
      results due to rounding errors.
      In addition, we can give a weight to the rays according to how much the 
      voxel overlaps with the TOR (in axial direction).
-     TODO sort this out for arbitrary origin.z() and adjust code in add_adjacent_z
+     Note that RayTracing* now sorts this out itself, so we could dispense with this 
+     complication here. However, we can do it slightly more efficient here as
+     we might be using 2 rays for one ring.
   */
   const float z_position_of_first_LOR_wrt_centre_of_TOR =
     (-sampling_distance_of_adjacent_LORs_z/(2*num_lors_per_axial_pos)*
@@ -621,20 +623,20 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
   // first reserve enough memory for the whole vector
   // otherwise the iterators can be invalidated by memory allocation
   const int num_overlapping_voxels =
-    round(ceil(right_edge_of_TOR-z_of_first_voxel+.5001));
+    round(ceil(right_edge_of_TOR-z_of_first_voxel+.5));
   lor.reserve(lor.size() * num_overlapping_voxels);
   
   // point to end of original LOR, i.e. first plane
   const ProjMatrixElemsForOneBin::const_iterator element_end = lor.end();
-  
-  for (int z_index= 1; z_index<=right_edge_of_TOR-z_of_first_voxel; ++z_index)
+
+  for (int z_index= 1; /* no end condition here */; ++z_index)
     {
       const float overlap_of_voxel_with_TOR =
 	std::min(right_edge_of_TOR, z_of_first_voxel + z_index + .5F) -
 	std::max(0.F, z_of_first_voxel + z_index - .5F);
-      if (overlap_of_voxel_with_TOR<=0)
+      if (overlap_of_voxel_with_TOR<=0.0001) // check if beyond TOR or overlap too small to bother
 	{
-	  assert(num_overlapping_voxels==z_index);
+	  assert(num_overlapping_voxels>=z_index);
 	  break;
 	}
       assert(overlap_of_voxel_with_TOR < 1.0001);
