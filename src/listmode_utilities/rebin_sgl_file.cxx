@@ -1,23 +1,24 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
-  \brief Utilitiy program scans the singles file looking for anomolous values
+  \ingroup utilities
+  \brief Utility program scans the singles file looking for anomolous values
 
   \author Kris Thielemans
   \author Tim Borgeaud
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 
-#include "local/stir/SinglesRatesFromSglFile.h"
+#include "stir/data/SinglesRatesFromSglFile.h"
 #include "stir/TimeFrameDefinitions.h"
 
 #include <string>
