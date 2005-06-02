@@ -40,7 +40,7 @@
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "local/stir/SinglesRates.h"
+#include "stir/data/SinglesRates.h"
 #include "stir/Scanner.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Array.h"

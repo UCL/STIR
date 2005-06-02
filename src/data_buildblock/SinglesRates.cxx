@@ -20,7 +20,8 @@
 /*!
 
   \file
-  \brief Implementation of FrameSinglesRates
+  \ingroup singles_buildblock
+  \brief Implementation of stir::FrameSinglesRates 
 
   \author Kris Thielemans
   \author Tim Borgeaud
@@ -28,7 +29,7 @@
   $Revision$
 */
 
-#include "local/stir/SinglesRates.h"
+#include "stir/data/SinglesRates.h"
 
 
 START_NAMESPACE_STIR

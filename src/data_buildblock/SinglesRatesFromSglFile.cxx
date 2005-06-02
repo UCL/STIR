@@ -20,7 +20,8 @@
 /*!
 
   \file
-  \brief Implementation of SinglesRatesFromECAT7
+  \ingroup singles_buildblock
+  \brief Implementation of stir::ecat::ecat7::SinglesRatesFromECAT7
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -31,7 +32,7 @@
 #include "stir/DetectionPosition.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange2D.h"
-#include "local/stir/SinglesRatesFromSglFile.h"
+#include "stir/data/SinglesRatesFromSglFile.h"
 #include "stir/round.h"
 
 #include <vector>

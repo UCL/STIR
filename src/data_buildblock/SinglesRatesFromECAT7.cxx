@@ -19,7 +19,8 @@
 */
 /*!
   \file
-  \brief Implementation of SinglesRatesFromECAT7
+  \ingroup singles_buildblock
+  \brief Implementation of stir::ecat::ecat7::SinglesRatesFromECAT7
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -27,7 +28,7 @@
   $Revision$
 */
 
-#include "local/stir/SinglesRateFromECAT7.h"
+#include "stir/data/SinglesRatesFromECAT7.h"
 #include "stir/DetectionPosition.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/IndexRange2D.h"

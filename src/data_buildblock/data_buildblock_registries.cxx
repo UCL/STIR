@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,32 +19,29 @@
 */
 /*!
   \file
-  \ingroup singles_buildblock
+  \ingroup data_buildblock
 
-  \brief Implementation of class stir::SinglesRates
+  \brief File that registers all RegisterObject children in data_buildblock
 
-  \author Kris Thielemans and Sanida Mustafovic
+  \author Kris Thielemans
+  
   $Date$
-  $Revision$ 
+  $Revision$
 */
-
+#ifdef HAVE_LLN_MATRIX
+#include "stir/data/SinglesRatesFromECAT7.h"
+#include "stir/data/SinglesRatesFromSglFile.h"
+#endif
 
 START_NAMESPACE_STIR
-
-
-const 
-Scanner* SinglesRates::get_scanner_ptr() const
-{ 
-  return scanner_sptr.get();
-}
-
-
-
-const Scanner *
-FrameSinglesRates::
-get_scanner_ptr() const {
-  return _scanner_sptr.get();
-}
-
+#ifdef HAVE_LLN_MATRIX
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT7
+static SinglesRatesFromECAT7::RegisterIt dummy100;
+static SinglesRatesFromSglFile::RegisterIt dummy200;
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
+#endif
 
 END_NAMESPACE_STIR
+

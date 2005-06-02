@@ -19,17 +19,17 @@
 */
 /*!
   \file
-  \ingroup buildblock
+  \ingroup singles_buildblock
 
-  \brief Declaration of class SinglesRates
+  \brief Declaration of class stir::SinglesRates
 
   \author Kris Thielemans and Sanida Mustafovic
   $Date$
   $Revision$ 
 */
 
-#ifndef __stir_SinglesRates_H__
-#define __stir_SinglesRates_H__
+#ifndef __stir_data_SinglesRates_H__
+#define __stir_data_SinglesRates_H__
 
 //#include "stir/Array.h"
 #include "stir/DetectionPosition.h"
@@ -52,8 +52,10 @@ START_NAMESPACE_STIR
 
 
 
-/*
- * A single frame of singles information.
+/*!
+  \ingroup singles_buildblock
+
+ \brief A single frame of singles information.
  */
 class FrameSinglesRates
 {
@@ -105,8 +107,17 @@ class FrameSinglesRates
 
 
 
+/*!
+  \ingroup singles_buildblock
+  \brief The base-class for using singles info
 
+  <i>Singles</i> in PET are photons detected by a single detector. In PET they
+  are useful to estimate  dead-time.
 
+  This class allows to get the rate of singles during an acquisition.
+  There will be 1 rate per <i>singles unit</i>. See Scanner for
+  some more info.
+*/
 class SinglesRates : public RegisteredObject<SinglesRates>
 {
 public: 
@@ -141,6 +152,6 @@ protected:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/SinglesRates.inl"
+#include "stir/data/SinglesRates.inl"
 #endif
 

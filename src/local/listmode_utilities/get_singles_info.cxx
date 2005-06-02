@@ -4,7 +4,8 @@
 /*!
 
   \file
-  \brief Utilitiy program that lists the singles per bucket in a frame to a text file
+  \ingroup utilities
+  \brief Utility program that lists the singles per bucket in a frame to a text file
 
   \author Kris Thielemans
   \author Katie Dinelle
@@ -19,7 +20,7 @@
 
 
 #include "stir/TimeFrameDefinitions.h"
-#include "local/stir/SinglesRatesFromSglFile.h"
+#include "stir/data/SinglesRatesFromSglFile.h"
 
 #include <string>
 #include <fstream>
