@@ -38,6 +38,11 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	GeneralisedPrior.cxx \
 	ProjDataRebinning.cxx
 
+ifeq ($(HAVE_LLN_MATRIX),1)
+$(dir)_LIB_SOURCES += \
+	BinNormalisationFromECAT7.cxx
+endif
+
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 
