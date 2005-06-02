@@ -126,6 +126,24 @@ Scanner::get_num_transaxial_crystals_per_block()const
   return num_transaxial_crystals_per_block;
 }
 
+
+int
+Scanner::get_num_axial_crystals_per_bucket() const
+{
+  return
+    get_num_axial_blocks_per_bucket() *
+    get_num_axial_crystals_per_block();
+}
+
+
+int
+Scanner::get_num_transaxial_crystals_per_bucket() const
+{
+  return
+    get_num_transaxial_blocks_per_bucket() *
+    get_num_transaxial_crystals_per_block();
+}
+
 int
 Scanner::get_num_detector_layers() const
 {
