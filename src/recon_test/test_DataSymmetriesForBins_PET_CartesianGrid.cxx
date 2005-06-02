@@ -1,21 +1,35 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup test
   
-  \brief Test program for DataSymmetriesForBins_PET_CartesianGrid
+  \brief Test program for stir::DataSymmetriesForBins_PET_CartesianGrid
+
+  Uses stir::ProjMatrixByBinUsingRayTracing.
     
    \author Kris Thielemans
       
    $Date$        
    $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -51,6 +65,10 @@ coordinates_less(const BasicCoordinate<3,T>& el1, const BasicCoordinate<3,T>& el
 /*!
   \ingroup test
   \brief Test class for DataSymmetriesForBins_PET_CartesianGrid
+
+
+  Uses ProjMatrixByBinUsingRayTracing to compute matrix elements with using various
+  symmetries. Checks if results are independent of which symmetries we use.
 
 */
 class DataSymmetriesForBins_PET_CartesianGridTests : public RunTests
@@ -634,28 +652,33 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 				    image.get_min_x(), image.get_max_x()));
     run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
   }
-#if 0 //pending resize()
-  {
-    cerr << "\tTests with z voxel size 2 times larger than usual\n";    
-    density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
-    image.set_grid_spacing(org_voxel_size*
-			   CartesianCoordinate3D<float>(2,1,1));
-    density_sptr->resize(IndexRange3D(0, (org_z_length+1)/2-1,
-				    image.get_min_y(), image.get_max_y(),
-				    image.get_min_x(), image.get_max_x()));
-    run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
-  }
-  {
-    cerr << "\tTests with usual z voxel size 2 times larger, 1 extra plane\n";    
-    density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
-    image.set_grid_spacing(org_voxel_size*
-			   CartesianCoordinate3D<float>(2,1,1));
-    density_sptr->grow(IndexRange3D(0, (org_z_length+1)/2,
-				    image.get_min_y(), image.get_max_y(),
-				    image.get_min_x(), image.get_max_x()));
-    run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
-  }
-#endif
+
+  if (proj_data_info_sptr->get_sampling_in_m(Bin(0,0,0,0))/org_voxel_size.z()>=1.999)
+    {
+      // currently symmetries do not work when the voxel size is larger than the ring_spacing
+      // so we only perform these tests when they can work
+      {
+	cerr << "\tTests with z voxel size 2 times larger than usual\n";    
+	density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+	image.set_grid_spacing(org_voxel_size*
+			       CartesianCoordinate3D<float>(2,1,1));
+	density_sptr->resize(IndexRange3D(0, (org_z_length+1)/2-1,
+					  image.get_min_y(), image.get_max_y(),
+					  image.get_min_x(), image.get_max_x()));
+	run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+      }
+      {
+	cerr << "\tTests with usual z voxel size 2 times larger, 1 extra plane\n";    
+	density_sptr->set_origin(CartesianCoordinate3D<float>(0,0,0));
+	image.set_grid_spacing(org_voxel_size*
+			       CartesianCoordinate3D<float>(2,1,1));
+	density_sptr->grow(IndexRange3D(0, (org_z_length+1)/2,
+					image.get_min_y(), image.get_max_y(),
+					image.get_min_x(), image.get_max_x()));
+	run_tests_all_symmetries(proj_data_info_sptr, density_sptr);
+      }
+    }
+
 }
 
 void
