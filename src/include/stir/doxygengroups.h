@@ -124,6 +124,18 @@ be selected at run-time.
 
 */
 
+
+/*!
+\defgroup data_buildblock Acquisition data building blocks
+\ingroup STIR_library
+Library with building blocks for reading scan data
+\todo move projection data etc in here
+*/
+\*! 
+\defgroup singles_buildblock Singles rates etc
+\ingroup data_buildblock
+*/
+
 /*!
 \defgroup numerics Numerical algorithms
 \ingroup STIR_library
