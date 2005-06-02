@@ -1,19 +1,19 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup recon_buildblock
 
-  \brief Declaration of class BinNormalisationSinogramRescaling
+  \brief Declaration of class stir::BinNormalisationSinogramRescaling
 
   \author Sanida Mustafovic
   $Date$
   $Revision$ 
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -25,10 +25,8 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "local/stir/SinglesRates.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/Scanner.h"
-#include "stir/IO/stir_ecat7.h"
 #include "stir/Array.h"
 #include <string>
 
