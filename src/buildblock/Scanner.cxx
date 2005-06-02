@@ -99,8 +99,17 @@ Scanner::Scanner(Type scanner_type)
   //
 
   
-  // before arc-correction, central_bin_size = ring_radius* pi/num_detectors for CTI scanners
-  
+  /* for CTI scanners (at least upto 966):
+
+    before arc-correction, central_bin_size ~= ring_radius* pi/num_detectors 
+    num_transaxial_crystals_per_singles_unit= 
+       transaxial_blocks_per_bucket*transaxial_crystals_per_block
+
+    num_axial_crystals_per_singles_unit= 
+       axial_crystals_per_block * x
+    where x=1 except for the 966 where x=2
+  */
+
   
   switch ( scanner_type ) {
 
@@ -177,11 +186,12 @@ Scanner::Scanner(Type scanner_type)
     set_params(RPT, string_list("PRT-1", "RPT"), 
                16, 128, 2 * 192, 
                380.0F - 7.0F, 7.0F, 6.75F, 3.1088F, 0.0F, 
-               0, 0, 8, 8, 1, 1, 1);
+               0, 0, 8, 8, 8, 0, 1);
 
     // Default 7.0mm average interaction depth.
     // This 7mm taken off the inner ring radius so that the effective radius remains 380mm
-    // Default 1 x 1 crystals per singles unit.
+    // 8 x 0 crystals per singles unit because not known
+    // although likely transaxial_blocks_per_bucket*transaxial_crystals_per_block
     break;    
 
   case RATPET:
@@ -189,10 +199,11 @@ Scanner::Scanner(Type scanner_type)
     set_params(RATPET, string_list("RATPET"), 
                8, 56, 2 * 56, 
                115 / 2.F,  7.0F, 6.25F, 1.65F, 0.0F, 
-               1, 16, 8, 7, 1, 1, 1); // HR block, 4 buckets per ring
+               1, 16, 8, 7, 8, 0, 1); // HR block, 4 buckets per ring
     
     // Default 7.0mm average interaction depth.
-    // Default 1 x 1 crystals per singles unit.
+    // 8 x 0 crystals per singles unit because not known 
+    // although likely transaxial_blocks_per_bucket*transaxial_crystals_per_block
     break;
 
   case Advance:
@@ -231,9 +242,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(HZLR, string_list("Positron HZL/R"), 
                32, 256, 2 * 192, 
                780.0F, 7.0F, 5.1875F, 2.F, 0.0F, 
-               0, 0, 0, 0, 1, 1, 1);
+               0, 0, 0, 0, 0,0, 1);
     // Default 7.0mm average interaction depth.
-    // Default 1 x 1 crystals per singles unit.
+    //  crystals per singles unit etc unknown
     break;
 
   case HRRT:
@@ -241,9 +252,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(HRRT, string_list("HRRT"), 
                104, 288, 2 * 288, 
                234.765F, 7.0F, 2.4375F, 1.21875F, 0.0F, 
-               0, 0, 0, 0, 1, 1, 2); // added by Dylan Togane
-    // Default 7.0mm average interaction depth.
-    // Default 1 x 1 crystals per singles unit.
+               0, 0, 0, 0, 0, 0, 2); // added by Dylan Togane
+    // warning: used 7.0mm average interaction depth.
+    // crystals per singles unit etc unknown
     break;
 
   case HiDAC:
@@ -493,6 +504,55 @@ check_consistency() const
 	  }
       }
   }
+  // checks on singles units
+  {
+    if (get_num_transaxial_crystals_per_singles_unit() <= 0)
+      warning("Scanner %s: transaxial singles_unit info is not set",
+	      this->get_name().c_str());
+    else
+      {
+	if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
+		    "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_detectors_per_ring(), get_num_transaxial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+	if ( get_num_transaxial_crystals_per_bucket() % get_num_transaxial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
+		    "\tnum_transaxial_crystals_per_bucket %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_transaxial_crystals_per_bucket(), get_num_transaxial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+      }
+  }
+  {
+    if (get_num_axial_crystals_per_singles_unit() <= 0)
+      warning("Scanner %s: axial singles_unit info is not set",
+	      this->get_name().c_str());
+    else
+      {
+	if ( get_num_rings() % get_num_axial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent axial singles unit info:\n"
+		    "\tnum_rings %d should be a multiple of num_axial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_rings(), get_num_axial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+	if ( get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent axial singles unit info:\n"
+		    "\tnum_axial_crystals_per_bucket %d should be a multiple of num_axial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_axial_crystals_per_bucket(), get_num_axial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+      }
+  }
 
   return Succeeded::yes;
 }
@@ -682,7 +742,7 @@ Scanner* Scanner::ask_parameters()
         
 
       int num_detector_layers =
-	ask_num("Enter number of layers per block: ",1,100,1);
+	ask_num("Enter number of detector layers per block: ",1,100,1);
       Type type = User_defined_scanner;
   
       Scanner* scanner_ptr =
