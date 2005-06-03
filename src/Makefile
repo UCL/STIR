@@ -92,7 +92,7 @@ EXEDIRS += utilities recon_test \
 	analytic/FBP2D \
 	analytic/FBP3DRP
 
-TESTDIRS += test recon_test
+TESTDIRS += test recon_test test/numerics
 
 STIR_LIB:=$(DEST)$(LIB_PREFIX)stir$(LIB_SUFFIX)
 
