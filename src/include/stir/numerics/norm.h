@@ -134,4 +134,7 @@ norm_squared (const Array<1,elemT> & v1);
 //@}
 
 END_NAMESPACE_STIR
+
+#include "stir/numerics/norm.inl"
+
 #endif
