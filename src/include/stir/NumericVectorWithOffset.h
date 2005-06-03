@@ -1,26 +1,36 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __NumericVectorWithOffset_H__
 #define __NumericVectorWithOffset_H__
 /*!
   \file 
  
-  \brief defines the NumericVectorWithOffset class
+  \brief defines the stir::NumericVectorWithOffset class
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
-
   $Revision$
-
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -29,11 +39,16 @@
 START_NAMESPACE_STIR
 /*! 
   \ingroup Array
-  \brief like VectorWithOffset, but with various numeric operations defined
+  \brief like VectorWithOffset, but with changes in various numeric operators 
 
-  Extra operations compared to VectorWithOffset are all the numeric
-  operators +,-,*,/ with NumericVectorWithOffset objects of the
-  same type, but also with objects of type \c elemT.
+  Compared to VectorWithOffset, the numeric operators +,-,*,/ with 
+  NumericVectorWithOffset objects return an object with the largest
+  index range of its arguments. Similarly operators +=,-=,*=,/=
+  potentially grow the <code>*this</code> object.
+
+  In addition, operators +=,-=,*=,/= with objects of type \c elemT are defined.
+
+  \warning It is likely that the automatic growing feature will be removed at some point.
  */
  
 template <class T, class elemT>
@@ -52,6 +67,8 @@ public:
   //! Construct a NumericVectorWithOffset of elements with offset \c min_index
   inline NumericVectorWithOffset(const int min_index, const int max_index);
 
+  //! Constructor from an object of this class' base_type
+  inline NumericVectorWithOffset(const base_type& t);
 
   // arithmetic operations with a vector, combining element by element
 
