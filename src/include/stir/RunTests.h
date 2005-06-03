@@ -37,6 +37,7 @@
 #include <iostream>
 #include <typeinfo>
 #include <vector>
+#include <complex>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -109,6 +110,13 @@ public:
   bool check_if_equal(const unsigned int a, const unsigned int b, char const * const str = "");
   bool check_if_equal(const unsigned long a, const unsigned long b, char const * const str = "");
   // VC 6.0 needs definition of template members in the class def unfortunately.
+  template <class T>
+    bool check_if_equal(const std::complex<T> a, const std::complex<T> b, char const * const str = "")
+    {
+      return 
+	check_if_equal(a.real(), b.real(), str) &&
+	check_if_equal(a.imag(), b.imag(), str);
+    }
   template <class T>
     bool check_if_equal(const VectorWithOffset<T>& t1, const VectorWithOffset<T>& t2, 
                         const char * const str = "")
