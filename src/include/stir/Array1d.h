@@ -155,26 +155,6 @@ public:
 
 #endif // boost
   
-  //!  read data from stream, only valid for 'simple' type elemT    
-  void read_data(istream& s, 
-    const ByteOrder byte_order = ByteOrder::native);
-  
-  //! write data to stream, only valid for 'simple' type elemT    
-  void write_data(ostream& s,
-		  const ByteOrder byte_order = ByteOrder::native) const;
-  
-#ifdef MEMBER_TEMPLATES
-  template <class elemT2, class scaleT>
-  void 
-    read_data(istream& s, NumericInfo<elemT2> info2, scaleT& scale,
-              const ByteOrder byte_order = ByteOrder::native);
-  
-  template <class elemT2, class scaleT>
-  void 
-    write_data(ostream& s, NumericInfo<elemT2> info2, scaleT& scale,
-               const ByteOrder byte_order = ByteOrder::native) const;
-#endif
-
     //! allow array-style access, read/write
   inline elemT&	operator[] (int i);
 
@@ -187,17 +167,7 @@ public:
   //! array access giving its BasicCoordinate, read-only
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
   
-
-  //! read data of different type from stream
-  void 
-    read_data(istream& s, NumericType type, float& scale,
-              const ByteOrder byte_order = ByteOrder::native);
-  
-  //! write data to stream as different type 
-  void 
-    write_data(ostream& s, NumericType type, float& scale,
-	       const ByteOrder byte_order = ByteOrder::native) const;
-   
+ 
 };
 
 

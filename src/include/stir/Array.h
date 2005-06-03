@@ -1,5 +1,22 @@
 
 // $Id$
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __stir_Array_H__
 #define __stir_Array_H__
@@ -22,11 +39,6 @@
   Not all compilers support the full iterators, so you could disabled them by editing 
   the file and removing the #define ARRAY_FULL. Lots of other things in the library 
   won't work then.
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/NumericVectorWithOffset.h"
 #include "stir/ByteOrder.h"
@@ -186,12 +198,6 @@ public:
   bool get_regular_range(
      BasicCoordinate<num_dimensions, int>& min,
      BasicCoordinate<num_dimensions, int>& max) const;
-  
-  //! read data from stream
-  inline void read_data(istream& s, const ByteOrder byte_order = ByteOrder::native);
-  
-  //! write data to stream
-  inline void write_data(ostream& s, const ByteOrder byte_order = ByteOrder::native) const;    
    
   //! allow array-style access, read/write
   inline Array<num_dimensions-1, elemT>& 
@@ -209,28 +215,6 @@ public:
   // TODO alternative return value: elemT
   inline const elemT&
   operator[](const BasicCoordinate<num_dimensions,int> &c) const;
-  
-#ifdef MEMBER_TEMPLATES
-  template <class elemT2, class scaleT>
-  void 
-    read_data(istream& s, NumericInfo<elemT2> info2, scaleT& scale,
-              const ByteOrder byte_order = ByteOrder::native);
-  
-  template <class elemT2, class scaleT>
-  void 
-    write_data(ostream& s, NumericInfo<elemT2> info2, scaleT& scale,
-               const ByteOrder byte_order = ByteOrder::native) const;
-#endif
-  
-  //! read data of different type from stream
-  void 
-    read_data(istream& s, NumericType type, float& scale,
-              const ByteOrder byte_order = ByteOrder::native);
-  
-  //! write data to stream as different type 
-  void 
-    write_data(ostream& s, NumericType type, float& scale,
-	       const ByteOrder byte_order = ByteOrder::native) const;
 };
 
 
@@ -390,37 +374,6 @@ public:
 
   //! array access giving its BasicCoordinate, read-only
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
-  
-
-  //!  read data from stream, only valid for 'simple' type elemT    
-  void read_data(istream& s, 
-    const ByteOrder byte_order = ByteOrder::native);
-  
-  //! write data to stream, only valid for 'simple' type elemT    
-  void write_data(ostream& s,
-		  const ByteOrder byte_order = ByteOrder::native) const;
-  
-#ifdef MEMBER_TEMPLATES
-  template <class elemT2, class scaleT>
-  void 
-    read_data(istream& s, NumericInfo<elemT2> info2, scaleT& scale,
-              const ByteOrder byte_order = ByteOrder::native);
-  
-  template <class elemT2, class scaleT>
-  void 
-    write_data(ostream& s, NumericInfo<elemT2> info2, scaleT& scale,
-               const ByteOrder byte_order = ByteOrder::native) const;
-#endif
-  
-  //! read data of different type from stream
-  void 
-    read_data(istream& s, NumericType type, float& scale,
-              const ByteOrder byte_order = ByteOrder::native);
-  
-  //! write data to stream as different type 
-  void 
-    write_data(ostream& s, NumericType type, float& scale,
-	       const ByteOrder byte_order = ByteOrder::native) const;
   
 };
 

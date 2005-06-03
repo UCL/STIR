@@ -1,7 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup Array 
@@ -13,11 +29,6 @@
   $Date$
   $Revision$
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 // include for min,max definitions
 #include <algorithm>
@@ -264,36 +275,6 @@ Array<num_dimensions, elemT>::get_regular_range(
   const IndexRange<num_dimensions> range = get_index_range();
   return range.get_regular_range(min,max);
 }
-
-/*! This member function reads binary data from the stream.
-  \warning The stream has to be opened with ios::binary.
-  \warning read_data only works properly if elemT is a 'simple' type whose objects
-  can be read using \c fread.
-*/
-template <int num_dimensions, typename elemT>
-void 
-Array<num_dimensions, elemT>::read_data(istream& s, const ByteOrder byte_order)
-{
-  this->check_state();
-  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
-    this->num[i].read_data(s, byte_order);
-  this->check_state();
-}
-
-/*! This member function writes binary data to the stream.
-  \warning The stream has to be opened with ios::binary.
-  \warning write_data only works properly if elemT is a 'simple' type whose objects
-  can be read using \c fwrite.
-*/
-template <int num_dimensions, typename elemT>
-void 
-Array<num_dimensions, elemT>::write_data(ostream& s, const ByteOrder byte_order) const
-{
-  this->check_state();
-  for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
-    this->num[i].write_data(s, byte_order);
-  this->check_state();
-}		
 
 template <int num_dimension, typename elemT>
 Array<num_dimension-1,elemT>& 
