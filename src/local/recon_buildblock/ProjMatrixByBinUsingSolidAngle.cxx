@@ -1,12 +1,17 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup recon_buildblock
 
-  \brief non-inline implementations for ProjMatrixByBinUsingSolidAngle
+  \brief non-inline implementations for stir::ProjMatrixByBinUsingSolidAngle
 
   \author Mustapha Sadki
   \author Kris Thielemans
@@ -14,11 +19,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -284,17 +284,17 @@ calculate_proj_matrix_elems_for_one_bin(
   /* compute   X1f, Y1f,,Z1f et al in voxelcoordinates. */
   
   const float TMP2f = sqrt(square(fovrad_in_mm) - square(s_in_mm));
-  const float X2f = (s_in_mm * cphi - sphi * TMP2f)/voxel_size.x();
+  //const float X2f = (s_in_mm * cphi - sphi * TMP2f)/voxel_size.x();
   const float X1f = (s_in_mm * cphi + sphi * TMP2f)/voxel_size.x();
-  const float Y2f = (s_in_mm * sphi + cphi * TMP2f)/voxel_size.y();
+  //const float Y2f = (s_in_mm * sphi + cphi * TMP2f)/voxel_size.y();
   const float Y1f = (s_in_mm * sphi - cphi * TMP2f)/voxel_size.y();
 
   const float Z1f = 
     (t_in_mm/costheta - TMP2f*tantheta + offset_in_z)/voxel_size.z() 
     + (max_index.z() + min_index.z())/2.F;
-  const float Z2f = 
-    (t_in_mm/costheta + TMP2f*tantheta + offset_in_z)/voxel_size.z()
-    + (max_index.z() + min_index.z())/2.F;
+  //const float Z2f = 
+  // (t_in_mm/costheta + TMP2f*tantheta + offset_in_z)/voxel_size.z()
+  //  + (max_index.z() + min_index.z())/2.F;
 
   const CartesianCoordinate3D<float> start_point(Z1f,Y1f,X1f);  
   //const CartesianCoordinate3D<float> stop_point(Z2f,Y2f,X2f);  
@@ -308,7 +308,7 @@ calculate_proj_matrix_elems_for_one_bin(
     //? 1/x *2 ?
     const float half_bin_size = bin_size/2/voxel_size.x()/cphi;
     const float fovrad = fovrad_in_mm/voxel_size.x();
-    const float half_voxel_size = cphi;
+    //const float half_voxel_size = cphi;
     const float half_tube_length =
       sqrt(square(proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius()) -
            square(s_in_mm))/voxel_size.x();
