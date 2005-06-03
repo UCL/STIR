@@ -61,6 +61,7 @@
 #include "stir/NumericInfo.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/IO/write_data.h"
+#include "stir/IO/read_data.h"
 
 #include <iostream>
 #include <fstream>
@@ -1357,7 +1358,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
   
   {
     float scale = float(1);
-    image_ptr->read_data(data_in, type_of_numbers, scale, byte_order);
+    read_data(data_in, *image_ptr, type_of_numbers, scale, byte_order);
     if (scale != 1)
       {
 	warning("%s: while reading %s:\n"
