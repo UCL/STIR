@@ -30,9 +30,10 @@
   $Revision$
 */
 #include "stir/IndexRange2D.h"
+#include <complex>
 #include <cmath>
 # ifdef BOOST_NO_STDC_NAMESPACE
- namespace std { using ::acod; }
+ namespace std { using ::acos; }
 # endif
 
 START_NAMESPACE_STIR
@@ -50,21 +51,21 @@ inner_product (const Array<1,elemT> & v1, const Array<1,elemT> &v2)
   elemT tmp = 0;
   typename Array<1,elemT>::const_iterator i1=v1.begin();
   typename Array<1,elemT>::const_iterator i2=v2.begin();
-  for (; i1+=v1.end(); ++i1, ++i2)
-    tmp += (*i1) * (*i2);
+  for (; i1!=v1.end(); ++i1, ++i2)
+    tmp += ((*i1) * (*i2));
   return tmp;
 }
 
 template<class elemT>
-inline elemT 
+inline std::complex<elemT> 
 inner_product (const Array<1,std::complex<elemT> > & v1, const Array<1,std::complex<elemT> > &v2)
 {
   assert(v1.get_index_range() == v2.get_index_range());
   std::complex<elemT> tmp = 0;
   typename Array<1,std::complex<elemT> >::const_iterator i1=v1.begin();
   typename Array<1,std::complex<elemT> >::const_iterator i2=v2.begin();
-  for (; i1+=v1.end(); ++i1, ++i2)
-    tmp += std::conj(*i1) * (*i2);
+  for (; i1!=v1.end(); ++i1, ++i2)
+    tmp += (std::conj(*i1) * (*i2));
   return tmp;
 }
 
@@ -89,16 +90,16 @@ matrix_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec)
   if (m.size()==0)
     { Array<1,elemT> retval; return retval; }
 
-  const int m_min_col = m.get_min_index();
-  const int m_max_col = m.get_max_index();
-  const int m_min_row = m[m_min_col].get_min_index();
-  const int m_max_row = m[m_min_col].get_max_index();
+  const int m_min_row = m.get_min_index();
+  const int m_max_row = m.get_max_index();
+  const int m_min_col = m[m_min_row].get_min_index();
+  const int m_max_col = m[m_min_row].get_max_index();
   // make sure matrices are conformable for multiplication
   assert(vec.get_min_index() == m_min_col);
   assert(vec.get_max_index() == m_max_col);
-  Array<1,elemT> retval(IndexRange1D(m_min_row, m_max_row));
-  for(int i=m_min_col; i<=m_max_col; ++i)
-    for(int j=m_min_row; j<=m_max_row; ++j)
+  Array<1,elemT> retval(m_min_row, m_max_row);
+  for(int i=m_min_row; i<=m_max_row; ++i)
+    for(int j=m_min_col; j<=m_max_col; ++j)
       retval[i] += m[i][j]*vec[j];
   return retval;
 }
@@ -114,24 +115,24 @@ matrix_multiply(const Array<2,elemT> &m1, const Array<2,elemT>& m2)
   if (m1.size()==0 || m2.size()==0)
     { Array<2,elemT> retval; return retval; }
 
-  const int m1_min_col = m1.get_min_index();
-  const int m1_max_col = m1.get_max_index();
-  const int m2_min_col = m2.get_min_index();
-  const int m2_max_col = m2.get_max_index();
-  const int m2_min_row = m2[m2_min_col].get_min_index();
-  const int m2_max_row = m2[m2_min_col].get_max_index();
+  const int m1_min_row = m1.get_min_index();
+  const int m1_max_row = m1.get_max_index();
+  const int m2_min_row = m2.get_min_index();
+  const int m2_max_row = m2.get_max_index();
+  const int m2_min_col = m2[m2_min_row].get_min_index();
+  const int m2_max_col = m2[m2_min_row].get_max_index();
   // make sure matrices are conformable for multiplication
-  assert(m1[m1_min_col].get_min_index() == m2_min_col);
-  assert(m1[m1_min_col].get_max_index() == m2_max_col);
+  assert(m1[m1_min_row].get_min_index() == m2_min_row);
+  assert(m1[m1_min_row].get_max_index() == m2_max_row);
 	        
-  Array<2,elemT> retval(IndexRange2D(m1_min_col, m2_min_col,
-				     m2_min_row, m2_min_col));
+  Array<2,elemT> retval(IndexRange2D(m1_min_row, m1_max_row,
+				     m2_min_col, m2_max_col));
 
-  for (int i=m1.get_min_index(); i<=m1.get_max_index(); ++i)
+  for (int i=m1_min_row; i<=m1_max_row; ++i)
     {
-      for(int k=m2_min_col; k<=m2_max_col; ++k)
+      for(int j=m2_min_col; j<=m2_max_col; ++j) 
 	{
-	  for(int j=m2_min_row; j<=m2_max_row; ++j) 
+	  for(int k=m2_min_row; k<=m2_max_row; ++k)
 	    retval[i][j] += m1[i][k]*m2[k][j];
 	}
     }
@@ -147,18 +148,38 @@ matrix_transpose (const Array<2,elemT>& m)
   if (m.size()==0)
     { Array<2,elemT> retval; return retval; }
 
-  const int m_min_col = m.get_min_index();
-  const int m_max_col = m.get_max_index();
-  const int m_min_row = m[m_min_col].get_min_index();
-  const int m_max_row = m[m_min_col].get_max_index();
-  Array<2,elemT> new_m(IndexRange2D(m_min_row, m_max_row,
-				    m_min_col, m_max_col));
+  const int m_min_row = m.get_min_index();
+  const int m_max_row = m.get_max_index();
+  const int m_min_col = m[m_min_row].get_min_index();
+  const int m_max_col = m[m_min_row].get_max_index();
+  Array<2,elemT> new_m(IndexRange2D(m_min_col, m_max_col,
+				    m_min_row, m_max_row));
   for(int j=m_min_row; j<=m_max_row; ++j)
     for(int i=m_min_col; i<=m_max_col; ++i)
       new_m[i][j] = m[j][i];
   return new_m; 
 }
 
+template <class elemT>
+inline 
+Array<2,elemT>
+  diagonal_matrix(const unsigned dimension, const elemT value)
+{
+  Array<2,elemT> m(IndexRange2D(dimension,dimension));
+  for (unsigned int i=0; i<dimension; ++i)
+    m[i][i]=value;
+  return m;
+}
 
+template <int dimension, class elemT>
+inline 
+Array<2,elemT>
+  diagonal_matrix(const BasicCoordinate<dimension,elemT>& values)
+{
+  Array<2,elemT> m(IndexRange2D(dimension,dimension));
+  for (unsigned int i=0; i<dimension; ++i)
+    m[i][i]=values[i+1];
+  return m;
+}
 
 END_NAMESPACE_STIR
