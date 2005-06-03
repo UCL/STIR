@@ -37,10 +37,32 @@
 
 START_NAMESPACE_STIR
 
+// TODO move somewhere else
+template <class iterT> 
+inline iterT abs_max_element(iterT start, iterT end)
+{
+  if (start == end)
+    return start;
+  iterT current_max_iter=start;
+  double current_max=norm_squared(*start);
+  iterT iter=start; ++iter;
+
+  while(iter != end)
+    {
+      const double n=norm_squared(*iter);
+      if (n>current_max)
+	{
+	  current_max=n; current_max_iter=iter;
+	}
+      ++iter;
+    }
+  return current_max_iter;
+}
+      
 /*!
   \ingroup numerics
   \brief Compute the eigenvalue with the largest absolute value 
-  and corresponding eigenvector of a matrix.
+  and corresponding eigenvector of a matrix by using the power method.
 
   \param[out] max_eigenvalue will be set to the eigenvalue found
   \param[out] max_eigenvector will be set to the eigenvector found, and
@@ -71,12 +93,12 @@ START_NAMESPACE_STIR
   quotient 
   \f[v.m.v \over v.v \f]
 
-  This will converge to the eigenvector with eigenvalue which has
+  This will converge to the eigenvector which has
   the largest absolute eigenvalue. The method fails when the matrix
   has more than 1 largest absolute eigenvalue
   (e.g. with opposite sign).
 
-*/  
+*/
 template <class elemT>	
 inline 
 Succeeded 
@@ -84,36 +106,31 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
 					    Array<1,elemT>& max_eigenvector,
 					    const Array<2,elemT>& m, 
 					    const Array<1,elemT>& start,
-					    const double tolerance = .03,
-					    const unsigned long max_num_iterations = 10000000L)
+					    const double tolerance = .01,
+					    const unsigned long max_num_iterations = 10000UL)
 {
   assert(m.is_regular());
   if (m.size()==0)
-    { max_eigenvalue=0; max_eigenvector=start; return; }
+    { max_eigenvalue=0; max_eigenvector=start; return Succeeded::yes; }
 
-#ifndef NDEBUG
-  const int m_min = m.get_min_index();
-  const int m_max = m.get_max_index();
-  assert(m_min_row = m[m_min].get_min_index());
-  assert(m_max_row = m[m_min].get_max_index());
-  assert(start.get_min_index() == m_min);
-  assert(start.get_max_index() == m_max);
-#endif
-
+  const double tolerance_squared = square(tolerance);
   Array<1,elemT> current = start;
-  current /= norm(current);
+  current /= (*abs_max_element(current.begin(), current.end()));
   unsigned long remaining_num_iterations = max_num_iterations;
 
+  double change;
   do
     {
       max_eigenvector = matrix_multiply(m, current);
-      max_eigenvector /= norm(max_eigenvector);
-      const double change = norm(max_eigenvector - current);
+      const elemT norm_factor = *abs_max_element(max_eigenvector.begin(), max_eigenvector.end());
+      max_eigenvector /= norm_factor;
+      change = norm_squared(max_eigenvector - current);
       current = max_eigenvector;
       --remaining_num_iterations;
     }
-  while (change > tolerance && remaining_num_iterations!=0);
+  while (change > tolerance_squared && remaining_num_iterations!=0);
   
+  current /= norm(current);
   max_eigenvector = matrix_multiply(m, current);
   // compute eigenvalue using Rayleigh quotient
   max_eigenvalue = 
@@ -126,4 +143,113 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
   /*norm( max_eigenvector*max_eigenvalue -
 	       matrix_multiply(m, max_eigenvector));*/
 }
+
+/*!
+  \ingroup numerics
+  \brief Compute the eigenvalue with the largest absolute value 
+  and corresponding eigenvector of a matrix by using the shifted power method.
+
+  \see absolute_max_eigenvector_using_shifted_power_method().
+
+  The current method calls the normal power method for <code>m-shift*I</code>
+  and shifts the eigenvalue back to the eigenvalue for <code>m</code>.
+
+  This method can be used to enhance the convergence rate if you know more 
+  about the eigenvalues. It can also be used to find another
+  eigenvalue by shifting with the maximum eigenvalue.
+  */  
+template <class elemT>	
+inline 
+Succeeded 
+absolute_max_eigenvector_using_shifted_power_method(elemT& max_eigenvalue,
+						    Array<1,elemT>& max_eigenvector,
+						    const Array<2,elemT>& m, 
+						    const Array<1,elemT>& start,
+						    const elemT shift,
+						    const double tolerance = .03,
+						    const unsigned long max_num_iterations = 10000UL)
+{
+  if (m.get_min_index()!=0 || m[0].get_min_index()!=0)
+    error("absolute_max_eigenvector_using_shifted_power_method:\n"
+	  "  implementation needs work for indices that don't start from 0. sorry");
+
+  Succeeded success =
+    absolute_max_eigenvector_using_power_method(max_eigenvalue,
+						max_eigenvector,
+						// sadly need to explicitly convert result of subtraction back to Array
+						Array<2,elemT>(m - diagonal_matrix(m.size(), shift)), 
+						start,
+						tolerance,
+						max_num_iterations);
+  max_eigenvalue += shift;
+  return success;
+}
+
+
+/*!
+  \ingroup numerics
+  \brief Compute the eigenvalue with the largest value 
+  and corresponding eigenvector of a matrix by using the power method.
+
+  \warning This assumes that all eigenvalues are real.
+
+  \see absolute_max_eigenvector_using_shifted_power_method().
+
+  \param[in] m is the input matrix, which has to be real-symmetric
+
+
+  This will attempt to find the eigenvector which has
+  the largest eigenvalue. The method fails when the matrix
+  has a negative eigenvalue of the same magnitude as the 
+  largest eigenvalue.
+
+  \todo the algorithm would work with hermitian matrices, but the code needs one small adjustment.
+*/  
+template <class elemT>	
+inline 
+Succeeded 
+max_eigenvector_using_power_method(elemT& max_eigenvalue,
+				   Array<1,elemT>& max_eigenvector,
+				   const Array<2,elemT>& m, 
+				   const Array<1,elemT>& start,
+				   const double tolerance = .03,
+				   const unsigned long max_num_iterations = 10000UL)
+{
+
+  Succeeded success =
+    absolute_max_eigenvector_using_power_method(max_eigenvalue,
+						max_eigenvector,
+						m,
+						start,
+						tolerance,
+						max_num_iterations);
+  if (success == Succeeded::no)
+    return Succeeded::no;
+
+  if (max_eigenvalue>=0) // TODO would need to take real value for complex case
+    return Succeeded::yes;
+
+  // we found a negative eigenvalue
+  // try again with a shift equal to the previously found max_eigenvalue
+  // this shift will effectively put that eigenvalue to 0 during the
+  // power method iterations
+  // also it will make all eigenvalues positive (as we subtract the 
+  // smallest negative eigenvalue)
+  success =
+    absolute_max_eigenvector_using_shifted_power_method(max_eigenvalue,
+							max_eigenvector,
+							m,
+							start,
+							max_eigenvalue,
+							tolerance,
+							max_num_iterations);
+  if (success == Succeeded::no)
+    return Succeeded::no;
+
+  assert(max_eigenvalue>=0);
+  return Succeeded::yes;
+}
+
 END_NAMESPACE_STIR
+
+#endif
