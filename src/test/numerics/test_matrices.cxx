@@ -28,6 +28,7 @@
 #include "stir/numerics/max_eigenvector.h"
 #include "stir/numerics/norm.h"
 #include "stir/make_array.h"
+#include "stir/more_algorithms.h"
 #include "stir/Coordinate2D.h"
 #include "stir/Coordinate3D.h"
 #include "stir/Succeeded.h"
@@ -36,7 +37,7 @@
 #include <complex>
 #include <cmath>
 # ifdef BOOST_NO_STDC_NAMESPACE
- namespace std { using ::sqrt; }
+ namespace std { using ::sqrt; using ::sin; using ::cos}
 # endif
 
 START_NAMESPACE_STIR
@@ -57,7 +58,28 @@ private:
   void run_tests_max_eigenvector();
 };
 
-
+// local function, copied from the Shape library
+// takes Euler angles and make an orthogonal matrix
+// note that because of STIR conventions, this matrix has determinant -1.
+static 
+Array<2,float>
+make_orthogonal_matrix(const float alpha, const float beta, const float gamma)
+{
+  return
+    make_array(make_1d_array(
+			     std::sin(beta)*std::sin(gamma),
+			     std::cos(gamma)*std::sin(alpha) + std::cos(alpha)*std::cos(beta)*std::sin(gamma),
+			     std::cos(alpha)*std::cos(gamma) - std::cos(beta)*std::sin(alpha)*std::sin(gamma)),
+	       make_1d_array(
+			     std::cos(gamma)*std::sin(beta),
+			     std::cos(alpha)*std::cos(beta)*std::cos(gamma) - std::sin(alpha)*std::sin(gamma),
+			     -(std::cos(beta)*std::cos(gamma)*std::sin(alpha)) - std::cos(alpha)*std::sin(gamma)),
+	       make_1d_array(
+			     std::cos(beta),
+			     -(std::cos(alpha)*std::sin(beta)),
+			     std::sin(alpha)*std::sin(beta))
+	       );
+}
 
 void
 MatrixTests::
@@ -174,9 +196,9 @@ run_tests_max_eigenvector()
 {
   std::cerr << "Testing max_eigenvector stuff" << std::endl;
   set_tolerance(.01);
+  float max_eigenvalue;
+  Array<1,float> max_eigenvector;
   {
-    float max_eigenvalue;
-    Array<1,float> max_eigenvector;
     {
       const Array<2,float> d = 
 	diagonal_matrix(Coordinate3D<float>(3.F,4.F,-2.F));
@@ -240,6 +262,105 @@ run_tests_max_eigenvector()
       check_if_equal(max_eigenvector, make_1d_array(0.F,0.F,1.F), 
 		     "max_using_power: eigenvector (float diagonal matrix with large negative value)");
     }
+  }
+
+  {
+      const float pi2=_PI/2;
+    const Array<2,float> rotation =
+      //      make_orthogonal_matrix(.2F,.4F,-1.F);
+      make_orthogonal_matrix(pi2,pi2,pi2);
+    std::cerr << rotation;
+    check_if_equal(matrix_multiply(rotation, matrix_transpose(rotation)),
+		   diagonal_matrix(3,1.F),
+		   "construct orthogonal matrix O.O^t");
+    check_if_equal(matrix_multiply(matrix_transpose(rotation), rotation),
+		   diagonal_matrix(3,1.F),
+		   "construct orthogonal matrix O^t.O");
+
+    const Array<2,float> d = 
+      diagonal_matrix(Coordinate3D<float>(3.F,4.F,-2.F));
+
+    const Array<2,float> m =
+      matrix_multiply(rotation, matrix_multiply(d, matrix_transpose(rotation)));
+    Array<1,float> the_max_eigenvector =
+      matrix_multiply(rotation,make_1d_array(0.F,1.F,0.F));
+    the_max_eigenvector /= (*abs_max_element(the_max_eigenvector.begin(), the_max_eigenvector.end()));
+
+    // now repetition of tests with diagonal matrix
+    Succeeded success =
+	absolute_max_eigenvector_using_power_method(max_eigenvalue,
+						    max_eigenvector,
+						    m, 
+						    make_1d_array(1.F,2.F,3.F),
+						    /*tolerance=*/ .001,
+						    1000UL);
+      check(success == Succeeded::yes, 
+	    "abs_max_using_power: succeeded (float non-diagonal matrix)");
+      
+      check_if_equal(max_eigenvalue, 4.F, 
+		     "abs_max_using_power: eigenvalue (float non-diagonal matrix)");
+      check_if_equal(max_eigenvector, the_max_eigenvector, 
+		     "abs_max_using_power: eigenvector (float non-diagonal matrix)");
+      success =
+	absolute_max_eigenvector_using_shifted_power_method(max_eigenvalue,
+							    max_eigenvector,
+							    m, 
+							    make_1d_array(1.F,2.F,3.F),
+							    .5F, // note: shift should be small enough that it doesn't make the most negative eigenvalue 'larger'
+							    /*tolerance=*/ .001,
+							    1000UL);
+      check(success == Succeeded::yes, 
+	    "abs_max_using_shifted_power: succeeded (float non-diagonal matrix)");
+      
+      check_if_equal(max_eigenvalue, 4.F, 
+		     "abs_max_using_shifted_power: eigenvalue (float non-diagonal matrix)");
+      check_if_equal(max_eigenvector, the_max_eigenvector, 
+		     "abs_max_using_shifted_power: eigenvector (float non-diagonal matrix)");
+
+      success =
+	max_eigenvector_using_power_method(max_eigenvalue,
+					   max_eigenvector,
+					   m, 
+					   make_1d_array(1.F,-2.F,-3.F),
+					   /*tolerance=*/ .001,
+					   1000UL);
+      check(success == Succeeded::yes, 
+	    "max_using_power: succeeded (float non-diagonal matrix)");
+      
+      check_if_equal(max_eigenvalue, 4.F, 
+		     "max_using_power: eigenvalue (float non-diagonal matrix)");
+      check_if_equal(max_eigenvector, the_max_eigenvector, 
+		     "max_using_power: eigenvector (float non-diagonal matrix)");
+
+      success =
+	max_eigenvector_using_power_method(max_eigenvalue,
+					   max_eigenvector,
+					   Array<2,float>(m*(-1.F)), 
+					   make_1d_array(1.F,2.F,3.F),
+					   /*tolerance=*/ .001,
+					   1000UL);
+      check(success == Succeeded::yes, 
+	    "max_using_power: succeeded (float non-diagonal matrix with large negative value)");
+      
+      check_if_equal(max_eigenvalue, 2.F, 
+		     "max_using_power: eigenvalue (float non-diagonal matrix with large negative value)");
+      check_if_equal(max_eigenvector, matrix_multiply(rotation,make_1d_array(0.F,0.F,1.F)), 
+		     "max_using_power: eigenvector (float non-diagonal matrix with large negative value)");
+  }
+
+  {
+    // now test for a case where the power-method fails
+      const Array<2,float> d = 
+	diagonal_matrix(Coordinate2D<float>(3.F,-3.F));
+      Succeeded success =
+	absolute_max_eigenvector_using_power_method(max_eigenvalue,
+						    max_eigenvector,
+						    d, 
+						    make_1d_array(1.F,2.F),
+						    /*tolerance=*/ .001,
+						    100UL);
+      check(success == Succeeded::no, 
+	    "abs_max_using_power should have failed (float diagonal matrix with opposite max eigenvalues)");
   }
 }
 
