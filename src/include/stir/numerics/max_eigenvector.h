@@ -17,8 +17,8 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_max_eigenvector_H__
-#define __stir_max_eigenvector_H__
+#ifndef __stir_numerics_max_eigenvector_H__
+#define __stir_numerics_max_eigenvector_H__
 /*!
   \file
   \ingroup numerics
@@ -33,32 +33,11 @@
 */
 #include "stir/numerics/MatrixFunction.h"
 #include "stir/numerics/norm.h"
+#include "stir/more_algorithms.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
-// TODO move somewhere else
-template <class iterT> 
-inline iterT abs_max_element(iterT start, iterT end)
-{
-  if (start == end)
-    return start;
-  iterT current_max_iter=start;
-  double current_max=norm_squared(*start);
-  iterT iter=start; ++iter;
-
-  while(iter != end)
-    {
-      const double n=norm_squared(*iter);
-      if (n>current_max)
-	{
-	  current_max=n; current_max_iter=iter;
-	}
-      ++iter;
-    }
-  return current_max_iter;
-}
-      
 /*!
   \ingroup numerics
   \brief Compute the eigenvalue with the largest absolute value 
@@ -66,7 +45,8 @@ inline iterT abs_max_element(iterT start, iterT end)
 
   \param[out] max_eigenvalue will be set to the eigenvalue found
   \param[out] max_eigenvector will be set to the eigenvector found, and
-    is normalised to 1 (using the l2-norm).
+    is normalised to 1 (using the l2-norm). The sign choice is
+    determined by normalising the largest element in the eigenvector to 1.
   \param[in] m is the input matrix
   \param[in] start is a starting vector for the iterations
   \param[in] tolerance determines when iterations can stop
