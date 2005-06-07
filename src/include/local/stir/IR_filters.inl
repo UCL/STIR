@@ -1,17 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file 
-  \ingroup numerics_buildblock
-  \brief implements the IR_filters
-
-  \author Charalampos Tsoumpas
-  \author Kris Thielemans
-
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -27,6 +16,17 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+/*!
+  \file 
+  \ingroup numerics_buildblock
+  \brief implements the IR_filters
+
+  \author Charalampos Tsoumpas
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
 */
 
 using namespace std;
