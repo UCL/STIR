@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup buildblock
@@ -11,10 +27,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2001- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_ML_norm_H__
 #define __stir_ML_norm_H__
@@ -94,6 +106,24 @@ void apply_efficiencies(DetPairData& det_pair_data,
                         const Array<1,float>& efficiencies, 
                         const bool apply=true);
 
+
+void make_fan_sum_data(Array<1,float>& data_fan_sums, const DetPairData& det_pair_data);
+
+void make_geo_data(GeoData& geo_data, const DetPairData& det_pair_data);
+ 
+void make_block_data(BlockData& block_data, const DetPairData& det_pair_data);
+ 
+void iterate_efficiencies(Array<1,float>& efficiencies,
+			  const Array<1,float>& data_fan_sums,
+			  const DetPairData& model);
+
+void iterate_geo_norm(GeoData& norm_geo_data,
+		      const GeoData& measured_geo_data,
+		      const DetPairData& model);
+
+void iterate_block_norm(BlockData& norm_block_data,
+			const BlockData& measured_block_data,
+			const DetPairData& model);
 
 //******3 D
 typedef Array<2,float> DetectorEfficiencies;
@@ -178,6 +208,23 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
 void make_fan_sum_data(Array<2,float>& data_fan_sums,
 		       const DetectorEfficiencies& efficiencies,
 		       const int max_ring_diff, const int half_fan_size);
+
+
+void make_block_data(BlockData3D& block_data, const FanProjData& fan_data);
+
+
+void iterate_efficiencies(DetectorEfficiencies& efficiencies,
+			  const Array<2,float>& data_fan_sums,
+			  const FanProjData& model);
+
+// version without model
+void iterate_efficiencies(DetectorEfficiencies& efficiencies,
+			  const Array<2,float>& data_fan_sums,
+			  const int max_ring_diff, const int half_fan_size);
+
+void iterate_block_norm(BlockData3D& norm_block_data,
+			const BlockData3D& measured_block_data,
+			const FanProjData& model);
 
 inline float KL(const float a, const float b, const float threshold_a = 0)
 {

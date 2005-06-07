@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
@@ -13,10 +29,7 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
+
 #include "local/stir/ML_norm.h"
 
 #include "stir/stream.h"
@@ -27,67 +40,9 @@
 #include <fstream>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::ofstream;
-using std::string;
-#endif
 START_NAMESPACE_STIR
 
-// temporary stuff to write results every subiteration
-//#define WRITE_ALL
-
-//************** 3D
-
-// version without model
-void iterate_efficiencies(DetectorEfficiencies& efficiencies,
-			  const Array<2,float>& data_fan_sums,
-			  const int max_ring_diff, const int half_fan_size)
-{
-  const int num_rings = data_fan_sums.get_length();
-  const int num_detectors_per_ring = data_fan_sums[data_fan_sums.get_min_index()].get_length();
-#ifdef WRITE_ALL
-  static int sub_iter_num = 0;
-#endif
-  for (int ra = data_fan_sums.get_min_index(); ra <= data_fan_sums.get_max_index(); ++ra)
-    for (int a = data_fan_sums[ra].get_min_index(); a <= data_fan_sums[ra].get_max_index(); ++a)
-    {
-      if (data_fan_sums[ra][a] == 0)
-	efficiencies[ra][a] = 0;
-      else
-	{
-     	  float denominator = 0;
-	  for (int rb = max(ra-max_ring_diff, 0); rb <= min(ra+max_ring_diff, num_rings-1); ++rb)
-             for (int b = a+num_detectors_per_ring/2-half_fan_size; b <= a+num_detectors_per_ring/2+half_fan_size; ++b)
-  	       denominator += efficiencies[rb][b%num_detectors_per_ring];
-	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
-	}
-#ifdef WRITE_ALL
-          {
-            char out_filename[100];
-            sprintf(out_filename, "MLresult_subiter_eff_1_%d.out", 
-		    sub_iter_num++);
-            ofstream out(out_filename);
-	    if (!out)
-	      {
-		warning("Error opening output file %s\n", out_filename);
-		exit(EXIT_FAILURE);
-	      }
-            out << efficiencies;
-	    if (!out)
-	      {
-		warning("Error writing data to output file %s\n", out_filename);
-		exit(EXIT_FAILURE);
-	      }
-          }
-#endif
-    }
-}
-
-unsigned long compute_num_bins(const int num_rings, const int num_detectors_per_ring,
+static unsigned long compute_num_bins(const int num_rings, const int num_detectors_per_ring,
 	             const int max_ring_diff, const int half_fan_size)
 {
   unsigned long num = 0;
@@ -157,7 +112,7 @@ int main(int argc, char **argv)
 	fan_sum_name.erase(fan_sum_name.begin() + fan_sum_name.rfind('.'), 
 			   fan_sum_name.end());
 	fan_sum_name += ".dat"; 
-	ofstream out(fan_sum_name.c_str());
+	std::ofstream out(fan_sum_name.c_str());
 	if (!out)
 	  {
 	    warning("Error opening output file %s\n", fan_sum_name.c_str());
@@ -175,7 +130,7 @@ int main(int argc, char **argv)
     {
       max_ring_diff = atoi(argv[5]);
       fan_size = atoi(argv[6]);
-      ifstream in(argv[3]);
+      std::ifstream in(argv[3]);
       if (!in)
 	{
 	  warning("Error opening input file %s\n", argv[3]);
@@ -232,14 +187,14 @@ int main(int argc, char **argv)
       {
         for (int eff_iter_num = 1; eff_iter_num<=num_eff_iterations; ++eff_iter_num)
         {
-          cout << "Starting iteration " << eff_iter_num << endl;
+          std::cout << "Starting iteration " << eff_iter_num << std::endl;
           iterate_efficiencies(efficiencies, data_fan_sums, max_ring_diff, half_fan_size);
           if (eff_iter_num==num_eff_iterations || (do_save_interval>0 && eff_iter_num%do_save_interval==0))
           {
             char *out_filename = new char[out_filename_prefix.size() + 30];
             sprintf(out_filename, "%s_%s_%d_%d.out", 
 		    out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
-            ofstream out(out_filename);
+            std::ofstream out(out_filename);
 	    if (!out)
 	      {
 		warning("Error opening output file %s\n", out_filename);
@@ -258,7 +213,7 @@ int main(int argc, char **argv)
           {
 	    Array<2,float> estimated_fan_sums(data_fan_sums.get_index_range());
 	    make_fan_sum_data(estimated_fan_sums, efficiencies, max_ring_diff, half_fan_size);
-	    cout << "\tKL " << KL(data_fan_sums, estimated_fan_sums, threshold_for_KL) << endl;
+	    std::cout << "\tKL " << KL(data_fan_sums, estimated_fan_sums, threshold_for_KL) << std::endl;
 
           }
           if (do_display_interval>0 && eff_iter_num%do_display_interval==0)		 
@@ -272,6 +227,6 @@ int main(int argc, char **argv)
     }
   }    
   timer.stop();
-  cout << "CPU time " << timer.value() << " secs" << endl;
+  std::cout << "CPU time " << timer.value() << " secs" << std::endl;
   return EXIT_SUCCESS;
 }

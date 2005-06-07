@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
@@ -12,10 +28,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2001- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/ML_norm.h"
@@ -303,6 +315,131 @@ void apply_efficiencies(DetPairData& det_pair_data, const Array<1,float>& effici
         else
           det_pair_data(a,b) /=
 	    efficiencies[a]*efficiencies[b%num_detectors];
+      }
+}
+
+
+void make_fan_sum_data(Array<1,float>& data_fan_sums, const DetPairData& det_pair_data)
+{
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    data_fan_sums[a] = det_pair_data.sum(a);
+}
+
+void make_geo_data(GeoData& geo_data, const DetPairData& det_pair_data)
+{
+  const int num_detectors = det_pair_data.get_num_detectors();
+  const int num_crystals_per_block = geo_data.get_length()*2;
+  const int num_blocks = num_detectors / num_crystals_per_block;
+  assert(num_blocks * num_crystals_per_block == num_detectors);
+
+  // TODO optimise
+  DetPairData work = det_pair_data;
+  work.fill(0);
+
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)      
+        {
+	// mirror symmetry
+	work(a,b) = 
+	  det_pair_data(a,b) + 
+	  det_pair_data(num_detectors-1-a,(2*num_detectors-1-b)%num_detectors);
+      }
+
+  geo_data.fill(0);
+
+  for (int crystal_num_a = 0; crystal_num_a < num_crystals_per_block/2; ++crystal_num_a)
+    for (int det_num_b = det_pair_data.get_min_index(crystal_num_a); det_num_b <= det_pair_data.get_max_index(crystal_num_a); ++det_num_b)      
+      {
+	for (int block_num = 0; block_num<num_blocks; ++block_num)
+	  {
+	    const int det_inc = block_num * num_crystals_per_block;
+            const int new_det_num_a = (crystal_num_a+det_inc)%num_detectors;
+            const int new_det_num_b = (det_num_b+det_inc)%num_detectors;
+            if (det_pair_data.is_in_data(new_det_num_a,new_det_num_b))
+	      geo_data[crystal_num_a][det_num_b] +=
+	        work(new_det_num_a,new_det_num_b);
+	  }
+      }
+  geo_data /= 2*num_blocks;
+  // TODO why normalisation?
+}
+ 
+void make_block_data(BlockData& block_data, const DetPairData& det_pair_data)
+{
+  const int num_detectors = det_pair_data.get_num_detectors();
+  const int num_blocks = block_data.get_length();
+  const int num_crystals_per_block = num_detectors/num_blocks;
+  assert(num_blocks * num_crystals_per_block == num_detectors);
+
+  block_data.fill(0);
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)      
+      {
+	block_data[a/num_crystals_per_block][(b/num_crystals_per_block)%num_blocks] += 
+	  det_pair_data(a,b);
+      }
+  
+  block_data /= square(num_crystals_per_block);
+  // TODO why normalisation?
+}
+ 
+void iterate_efficiencies(Array<1,float>& efficiencies,
+			  const Array<1,float>& data_fan_sums,
+			  const DetPairData& model)
+{
+  const int num_detectors = efficiencies.get_length();
+
+  for (int a = 0; a < num_detectors; ++a)
+    {
+      if (data_fan_sums[a] == 0)
+	efficiencies[a] = 0;
+      else
+	{
+          //const float denominator = inner_product(efficiencies,model[a]);
+	  float denominator = 0;
+           for (int b = model.get_min_index(a); b <= model.get_max_index(a); ++b)      
+  	    denominator += efficiencies[b%num_detectors]*model(a,b);
+	  efficiencies[a] = data_fan_sums[a] / denominator;
+	}
+    }
+}
+
+void iterate_geo_norm(GeoData& norm_geo_data,
+		      const GeoData& measured_geo_data,
+		      const DetPairData& model)
+{
+  make_geo_data(norm_geo_data, model);
+  //norm_geo_data = measured_geo_data / norm_geo_data;
+  const int num_detectors = model.get_num_detectors();
+  const int num_crystals_per_block = measured_geo_data.get_length()*2;
+  const float threshold = measured_geo_data.find_max()/10000.F;
+  for (int a = 0; a < num_crystals_per_block/2; ++a)
+    for (int b = 0; b < num_detectors; ++b)      
+      {
+	norm_geo_data[a][b] =
+	  (measured_geo_data[a][b]>=threshold ||
+	   measured_geo_data[a][b] < 10000*norm_geo_data[a][b])
+	  ? measured_geo_data[a][b] / norm_geo_data[a][b]
+	  : 0;
+      }
+}
+  
+void iterate_block_norm(BlockData& norm_block_data,
+		      const BlockData& measured_block_data,
+		      const DetPairData& model)
+{
+  make_block_data(norm_block_data, model);
+  //norm_block_data = measured_block_data / norm_block_data;
+  const int num_blocks = norm_block_data.get_length();
+  const float threshold = measured_block_data.find_max()/10000.F;
+  for (int a = 0; a < num_blocks; ++a)
+    for (int b = 0; b < num_blocks; ++b)      
+      {
+	norm_block_data[a][b] =
+	  (measured_block_data[a][b]>=threshold ||
+	   measured_block_data[a][b] < 10000*norm_block_data[a][b])
+	  ? measured_block_data[a][b] / norm_block_data[a][b]
+	  : 0;
       }
 }
 
@@ -840,6 +977,124 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
 	data_fan_sums[ra][a] = efficiencies[ra][a]*fan_sum;
       }
 }
+
+
+void make_block_data(BlockData3D& block_data, const FanProjData& fan_data)
+{
+  const int num_axial_detectors = fan_data.get_num_rings();
+  const int num_transaxial_detectors = fan_data.get_num_detectors_per_ring();
+  const int num_axial_blocks = block_data.get_num_rings();
+  const int num_transaxial_blocks = block_data.get_num_detectors_per_ring();
+  const int num_axial_crystals_per_block = num_axial_detectors/num_axial_blocks;
+  assert(num_axial_blocks * num_axial_crystals_per_block == num_axial_detectors);
+  const int num_transaxial_crystals_per_block = num_transaxial_detectors/num_transaxial_blocks;
+  assert(num_transaxial_blocks * num_transaxial_crystals_per_block == num_transaxial_detectors);
+  
+  block_data.fill(0);
+  for (int ra = fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+    for (int a = fan_data.get_min_a(); a <= fan_data.get_max_a(); ++a)
+      // loop rb from ra to avoid double counting
+      for (int rb = max(ra,fan_data.get_min_rb(ra)); rb <= fan_data.get_max_rb(ra); ++rb)
+        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)      
+        {
+          block_data(ra/num_axial_crystals_per_block,a/num_transaxial_crystals_per_block,
+                     rb/num_axial_crystals_per_block,b/num_transaxial_crystals_per_block) +=
+	  fan_data(ra,a,rb,b);
+        }  
+}
+
+void iterate_efficiencies(DetectorEfficiencies& efficiencies,
+			  const Array<2,float>& data_fan_sums,
+			  const FanProjData& model)
+{
+  const int num_detectors_per_ring = model.get_num_detectors_per_ring();
+  
+  assert(model.get_min_ra() == data_fan_sums.get_min_index());
+  assert(model.get_max_ra() == data_fan_sums.get_max_index());
+  assert(model.get_min_a() == data_fan_sums[data_fan_sums.get_min_index()].get_min_index());
+  assert(model.get_max_a() == data_fan_sums[data_fan_sums.get_min_index()].get_max_index());
+  for (int ra = model.get_min_ra(); ra <= model.get_max_ra(); ++ra)
+    for (int a = model.get_min_a(); a <= model.get_max_a(); ++a)
+    {
+      if (data_fan_sums[ra][a] == 0)
+	efficiencies[ra][a] = 0;
+      else
+	{
+     	  float denominator = 0;
+           for (int rb = model.get_min_rb(ra); rb <= model.get_max_rb(ra); ++rb)
+             for (int b = model.get_min_b(a); b <= model.get_max_b(a); ++b)
+  	       denominator += efficiencies[rb][b%num_detectors_per_ring]*model(ra,a,rb,b);
+	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
+	}
+    }
+}
+
+// version without model
+void iterate_efficiencies(DetectorEfficiencies& efficiencies,
+			  const Array<2,float>& data_fan_sums,
+			  const int max_ring_diff, const int half_fan_size)
+{
+  const int num_rings = data_fan_sums.get_length();
+  const int num_detectors_per_ring = data_fan_sums[data_fan_sums.get_min_index()].get_length();
+#ifdef WRITE_ALL
+  static int sub_iter_num = 0;
+#endif
+  for (int ra = data_fan_sums.get_min_index(); ra <= data_fan_sums.get_max_index(); ++ra)
+    for (int a = data_fan_sums[ra].get_min_index(); a <= data_fan_sums[ra].get_max_index(); ++a)
+    {
+      if (data_fan_sums[ra][a] == 0)
+	efficiencies[ra][a] = 0;
+      else
+	{
+     	  float denominator = 0;
+	  for (int rb = max(ra-max_ring_diff, 0); rb <= min(ra+max_ring_diff, num_rings-1); ++rb)
+             for (int b = a+num_detectors_per_ring/2-half_fan_size; b <= a+num_detectors_per_ring/2+half_fan_size; ++b)
+  	       denominator += efficiencies[rb][b%num_detectors_per_ring];
+	  efficiencies[ra][a] = data_fan_sums[ra][a] / denominator;
+	}
+#ifdef WRITE_ALL
+          {
+            char out_filename[100];
+            sprintf(out_filename, "MLresult_subiter_eff_1_%d.out", 
+		    sub_iter_num++);
+            ofstream out(out_filename);
+	    if (!out)
+	      {
+		warning("Error opening output file %s\n", out_filename);
+		exit(EXIT_FAILURE);
+	      }
+            out << efficiencies;
+	    if (!out)
+	      {
+		warning("Error writing data to output file %s\n", out_filename);
+		exit(EXIT_FAILURE);
+	      }
+          }
+#endif
+    }
+}
+
+void iterate_block_norm(BlockData3D& norm_block_data,
+		      const BlockData3D& measured_block_data,
+		      const FanProjData& model)
+{
+  make_block_data(norm_block_data, model);
+  //norm_block_data = measured_block_data / norm_block_data;
+  const float threshold = measured_block_data.find_max()/10000.F;
+  for (int ra = norm_block_data.get_min_ra(); ra <= norm_block_data.get_max_ra(); ++ra)
+    for (int a = norm_block_data.get_min_a(); a <= norm_block_data.get_max_a(); ++a)
+      // loop rb from ra to avoid double counting
+      for (int rb = max(ra,norm_block_data.get_min_rb(ra)); rb <= norm_block_data.get_max_rb(ra); ++rb)
+        for (int b = norm_block_data.get_min_b(a); b <= norm_block_data.get_max_b(a); ++b)      
+      {
+	norm_block_data(ra,a,rb,b) =
+	  (measured_block_data(ra,a,rb,b)>=threshold ||
+	   measured_block_data(ra,a,rb,b) < 10000*norm_block_data(ra,a,rb,b))
+	  ? measured_block_data(ra,a,rb,b) / norm_block_data(ra,a,rb,b)
+	  : 0;
+      }
+}
+
 
 float KL(const FanProjData& d1, const FanProjData& d2, const float threshold)
 {
