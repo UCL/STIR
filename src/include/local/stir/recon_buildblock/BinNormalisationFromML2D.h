@@ -1,19 +1,31 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup recon_buildblock
 
-  \brief Declaration of class BinNormalisationFromML2D
+  \brief Declaration of class stir::BinNormalisationFromML2D
 
   \author Kris Thielemans
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_recon_buildblock_BinNormalisationFromML2D_H__
@@ -26,26 +38,32 @@
 #include "stir/ProjDataInMemory.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 /*!
   \ingroup recon_buildblock
   \brief A BinNormalisation class that gets the normalisation factors from
-  a ProjData object
+  the files output by find_ML_normfactors.
 
-  \warning the ProjData object containing the normalisation factors should 
-  currently have exactly the same dimensions as the data it is applied on.
+  \warning the ProjData object has to be 2D, no mashing, no span, no arc-correction. 
+  I'm not sure if this is properly checked at run-time.
 
   \par Parsing details
-  \verbatim
-  Bin Normalisation From ProjData:=
-  normalisation projdata filename := <ASCII>
-  End Bin Normalisation From ProjData:=
-  \endverbatim
+
+  Default values are given below, except for the filename.
+\verbatim
+  bin normalisation type := From ML2D
+  Bin Normalisation From ML2D:=
+  normalisation_filename_prefix:=<ASCII>
+  use block factors:=1
+  use geometric factors:=1
+  use crystal_efficiencies:=1
+  efficiency iteration number:=0
+  iteration number:=0
+  End Bin Normalisation From ML2D:=
+\endverbatim
+
+
 */
 class BinNormalisationFromML2D :
    public RegisteredParsingObject<BinNormalisationFromML2D, BinNormalisation>
@@ -84,7 +102,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  string normalisation_filename_prefix;
+  std::string normalisation_filename_prefix;
   bool do_block;
   bool do_geo;
   bool do_eff;
