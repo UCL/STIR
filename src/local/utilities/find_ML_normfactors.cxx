@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
@@ -13,10 +29,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2001- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 #include "local/stir/ML_norm.h"
 
 #include "stir/Scanner.h"
@@ -28,12 +40,6 @@
 #include <fstream>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-using std::ofstream;
-using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -163,6 +169,8 @@ void iterate_block_norm(BlockData& norm_block_data,
 }
   
 #if 0
+// this is a test routine for the code
+// should really be in a test class
 void check_geo_data()
 {
   const int num_detectors = 392;
@@ -182,8 +190,8 @@ void check_geo_data()
   make_geo_data(measured_geo_data, det_pair_data);
   {
     GeoData diff = measured_geo_data-norm_geo_data;
-    cerr << "(org geo) min max: " << norm_geo_data.find_min() << ',' << norm_geo_data.find_max() << endl;
-    cerr << "(-org geo + make geo) min max: " << diff.find_min() << ',' << diff.find_max() << endl;
+    std::cerr << "(org geo) min max: " << norm_geo_data.find_min() << ',' << norm_geo_data.find_max() << std::endl;
+    std::cerr << "(-org geo + make geo) min max: " << diff.find_min() << ',' << diff.find_max() << std::endl;
   }
 
   {
@@ -196,8 +204,8 @@ void check_geo_data()
       apply_geo_norm(det_pair_data, norm_geo_data);
       apply_geo_norm(det_pair_data, norm_geo_data,false);
       DetPairData diff = det_pair_data - model_det_pair_data;
-      cerr << "(org model) min max: " << model_det_pair_data.find_min() << ',' << model_det_pair_data.find_max() << endl;
-      cerr << "(-org model + apply/undo model) min max: " << diff.find_min() << ',' << diff.find_max() << endl;
+      std::cerr << "(org model) min max: " << model_det_pair_data.find_min() << ',' << model_det_pair_data.find_max() << std::endl;
+      std::cerr << "(-org model + apply/undo model) min max: " << diff.find_min() << ',' << diff.find_max() << std::endl;
       //display(diff,  "model- apply/undo model");
       //display(det_pair_data,  "apply/undo model");
       //display(model_det_pair_data,  " model");
@@ -213,8 +221,8 @@ void check_geo_data()
 		     measured_geo_data,
 		     model_det_pair_data);
     GeoData diff = new_norm_geo_data-norm_geo_data;
-    cerr << "(org geo) min max: " << norm_geo_data.find_min() << ',' << norm_geo_data.find_max() << endl;
-    cerr << "(-org geo + iterate geo) min max: " << diff.find_min() << ',' << diff.find_max() << endl;
+    std::cerr << "(org geo) min max: " << norm_geo_data.find_min() << ',' << norm_geo_data.find_max() << std::endl;
+    std::cerr << "(-org geo + iterate geo) min max: " << diff.find_min() << ',' << diff.find_max() << std::endl;
   }
 
 }
@@ -232,7 +240,7 @@ int main(int argc, char **argv)
   //check_geo_data();
   if (argc!=6)
     {
-      cerr << "Usage: " << argv[0] 
+      std::cerr << "Usage: " << argv[0] 
 	   << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
 	   << " set num_iterations to 0 to do only efficiencies\n";
       return EXIT_FAILURE;
@@ -243,13 +251,18 @@ int main(int argc, char **argv)
   const int num_iterations = atoi(argv[4]);
   shared_ptr<ProjData> model_data = ProjData::read_from_file(argv[3]);
   shared_ptr<ProjData> measured_data = ProjData::read_from_file(argv[2]);
-  const string out_filename_prefix = argv[1];
-  const int num_rings = 
+  const std::string out_filename_prefix = argv[1];
+  /*  const int num_rings = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings();
+  */
   const int num_detectors = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();
-  const int num_crystals_per_block = 8;
-  const int num_blocks = num_detectors/num_crystals_per_block;
+  const int num_crystals_per_block = 
+    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    get_num_transaxial_crystals_per_block();
+  const int num_blocks = 
+    measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->
+    get_num_transaxial_blocks();
 
   CPUTimer timer;
   timer.start();
@@ -276,7 +289,7 @@ int main(int argc, char **argv)
       {
 	make_det_pair_data(measured_det_pair_data, *measured_data, segment_num, ax_pos_num);
 	threshold_for_KL = measured_det_pair_data.find_max()/100000.F;
-	cerr << "ax_pos " << ax_pos_num << endl;
+	std::cerr << "ax_pos " << ax_pos_num << std::endl;
 	//display(measured_det_pair_data, "measured data");
 	
 	make_fan_sum_data(data_fan_sums, measured_det_pair_data);
@@ -288,7 +301,7 @@ int main(int argc, char **argv)
 	  char *out_filename = new char[20];
 	  sprintf(out_filename, "%s_%d.out", 
 	  "fan", ax_pos_num);
-	  ofstream out(out_filename);
+	  std::ofstream out(out_filename);
 	  out << data_fan_sums;
 	  delete out_filename;
 	  }
@@ -320,7 +333,7 @@ int main(int argc, char **argv)
 		  char *out_filename = new char[out_filename_prefix.size() + 30];
 		  sprintf(out_filename, "%s_%s_%d_%d_%d.out", 
 			  out_filename_prefix.c_str(), "eff", ax_pos_num, iter_num, eff_iter_num);
-		  ofstream out(out_filename);
+		  std::ofstream out(out_filename);
 		  out << efficiencies;
 		  delete out_filename;
 		}
@@ -330,9 +343,9 @@ int main(int argc, char **argv)
 		    apply_efficiencies(model_times_norm, efficiencies);
 		    if (do_display)
 		      display( model_times_norm, "model_times_norm");
-		    //cerr << "model_times_norm min max: " << model_times_norm.find_min() << ',' << model_times_norm.find_max() << endl;
+		    //std::cerr << "model_times_norm min max: " << model_times_norm.find_min() << ',' << model_times_norm.find_max() << std::endl;
 
-		    cerr << "KL " << KL(measured_det_pair_data, model_times_norm, threshold_for_KL) << endl;		  
+		    std::cerr << "KL " << KL(measured_det_pair_data, model_times_norm, threshold_for_KL) << std::endl;		  
 		  }
 		if (do_display)		 
 		  {
@@ -363,7 +376,7 @@ int main(int argc, char **argv)
 	      char *out_filename = new char[out_filename_prefix.size() + 30];
 	      sprintf(out_filename, "%s_%s_%d_%d.out", 
 		      out_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
-	      ofstream out(out_filename);
+	      std::ofstream out(out_filename);
 	      out << norm_geo_data;
 	      delete out_filename;
 	    }
@@ -375,7 +388,7 @@ int main(int argc, char **argv)
 		    if (det_pair_data(a,b)==0 && measured_det_pair_data(a,b)!=0)
 		      warning("geo 0 at a=%d b=%d measured value=%g\n",
 			      a,b,measured_det_pair_data(a,b));
-		cerr << "KL " << KL(measured_det_pair_data, det_pair_data, threshold_for_KL) << endl;
+		std::cerr << "KL " << KL(measured_det_pair_data, det_pair_data, threshold_for_KL) << std::endl;
 	      }
 	    if (do_display)		 
 	      {
@@ -402,14 +415,14 @@ int main(int argc, char **argv)
 	      char *out_filename = new char[out_filename_prefix.size() + 30];
 	      sprintf(out_filename, "%s_%s_%d_%d.out", 
 		      out_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
-	      ofstream out(out_filename);
+	      std::ofstream out(out_filename);
 	      out << norm_block_data;
 	      delete out_filename;
 	    }
 	    if (do_KL)
 	      {
 		apply_block_norm(det_pair_data, norm_block_data);
-		cerr << "KL " << KL(measured_det_pair_data, det_pair_data, threshold_for_KL) << endl;
+		std::cerr << "KL " << KL(measured_det_pair_data, det_pair_data, threshold_for_KL) << std::endl;
 	      }
 	    if (do_display)		 
 	      {
@@ -423,6 +436,6 @@ int main(int argc, char **argv)
 	}
     }
   timer.stop();
-  cerr << "CPU time " << timer.value() << " secs" << endl;
+  std::cerr << "CPU time " << timer.value() << " secs" << std::endl;
   return EXIT_SUCCESS;
 }

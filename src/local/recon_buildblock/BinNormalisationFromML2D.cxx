@@ -1,40 +1,34 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup recon_buildblock
 
-  \brief Implementation for class BinNormalisationFromML2D
+  \brief Implementation for class stir::BinNormalisationFromML2D
 
   \author Kris Thielemans
   $Date$
   $Revision$
-
-  \par Sample .par file
-
-  Default values are used, except for the filename.
-\verbatim
-  bin normalisation type := From ML2D
-  Bin Normalisation From ML2D:=
-  normalisation_filename_prefix:=sometext
-  use block factors:=1
-  use geometric factors:=1
-  use crystal_efficiencies:=1
-  efficiency iteration number:=0
-  iteration number:=0
-  End Bin Normalisation From ML2D:=
-\endverbatim
-*/
-/*
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 
 #include "local/stir/recon_buildblock/BinNormalisationFromML2D.h"
-#include "stir/ProjData.h"
-#include "stir/shared_ptr.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/Succeeded.h"
@@ -96,8 +90,12 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
   norm_factors_ptr= new ProjDataInMemory(proj_data_info_ptr, false /* i.e. do not initialise */);
   const int num_detectors = 
     proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
-  const int num_crystals_per_block = 8;
-  const int num_blocks = num_detectors/num_crystals_per_block;
+  const int num_crystals_per_block = 
+    proj_data_info_ptr->get_scanner_ptr()->
+    get_num_transaxial_crystals_per_block();
+  const int num_blocks = 
+    proj_data_info_ptr->get_scanner_ptr()->
+    get_num_transaxial_blocks();
 
   const int segment_num = 0;
   Array<1,float> efficiencies(num_detectors);
