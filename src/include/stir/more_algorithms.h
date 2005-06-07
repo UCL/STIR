@@ -40,7 +40,9 @@ START_NAMESPACE_STIR
   This function using stir::norm_squared(), so works for complex numbers as well.
 */
 template <class iterT> 
-inline iterT abs_max_element(iterT start, iterT end);
+inline
+iterT abs_max_element(iterT start, iterT end);
 END_NAMESPACE_STIR
 
+#include "stir/more_algorithms.inl"
 #endif
