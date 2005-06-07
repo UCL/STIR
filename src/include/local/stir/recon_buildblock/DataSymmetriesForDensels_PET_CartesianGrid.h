@@ -1,24 +1,36 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$,  Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup recon_buildblock
 
-  \brief Declaration of class DataSymmetriesForDensels_PET_CartesianGrid
+  \brief Declaration of class stir::DataSymmetriesForDensels_PET_CartesianGrid
 
   \author Kris Thielemans
   
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2001- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-#ifndef __DataSymmetriesForDensels_PET_CartesianGrid_H__
-#define __DataSymmetriesForDensels_PET_CartesianGrid_H__
+#ifndef __stir_recon_buildblock_DataSymmetriesForDensels_PET_CartesianGrid_H__
+#define __stir_recon_buildblock_DataSymmetriesForDensels_PET_CartesianGrid_H__
 
 
 #include "stir/recon_buildblock/DataSymmetriesForDensels.h"
@@ -51,7 +63,6 @@ public:
 
 
   virtual 
-    inline 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
     DataSymmetriesForDensels_PET_CartesianGrid *
 #else
