@@ -55,5 +55,42 @@ iterT abs_max_element(iterT start, iterT end)
   return current_max_iter;
 }
 
+template <class IterT, class elemT>	
+inline 
+elemT
+sum(IterT start, IterT end, elemT init)
+{
+  elemT tmp = init;
+  for (IterT iter=start; iter!=end; ++iter)
+    tmp += *iter;
+  return tmp;
+}
+
+template <class IterT>	
+inline 
+typename std::iterator_traits<IterT>::value_type
+sum(IterT start, IterT end)
+{
+  if (start==end)
+    {
+      typename std::iterator_traits<IterT>::value_type tmp;
+      tmp *= 0;
+      return tmp;
+    }
+  return sum(start+1,end,*start);
+}
+
+template <class IterT>	
+inline 
+typename std::iterator_traits<IterT>::value_type
+average(IterT start, IterT end)
+{
+  typename std::iterator_traits<IterT>::value_type tmp =
+    sum(start, end);
+  tmp /= (end - start);
+  return tmp;
+}
+
+
 END_NAMESPACE_STIR
 
