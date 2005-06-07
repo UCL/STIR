@@ -59,9 +59,9 @@ int main(int argc, char **argv)
     }
 
   const bool do_display = argc>=11?atoi(argv[10])!=0 : false;
-  const bool do_block = argc>=10?atoi(argv[9])!=0: true;
-  const bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
-  const bool do_eff   = argc>=8?atoi(argv[7])!=0: true;  
+  bool do_block = argc>=10?atoi(argv[9])!=0: true;
+  bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
+  bool do_eff   = argc>=8?atoi(argv[7])!=0: true;  
 
   if (do_geo)
     error("Cannot do geometric factors in 3D yet");
