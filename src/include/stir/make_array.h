@@ -204,7 +204,7 @@ template <int num_dimensions, class T>
 inline
 Array<num_dimensions+1,T>
 make_array(const Array<num_dimensions-1,T>& a0, const Array<num_dimensions-1,T>& a1, const Array<num_dimensions-1,T>& a2, const Array<num_dimensions-1,T>& a3, const Array<num_dimensions-1,T>& a4,
-	   Array<num_dimensions-1,T>& a5, const Array<num_dimensions-1,T>& a6, const Array<num_dimensions-1,T>& a7, const Array<num_dimensions-1,T>& a8, const Array<num_dimensions-1,T>& a8);
+	   Array<num_dimensions-1,T>& a5, const Array<num_dimensions-1,T>& a6, const Array<num_dimensions-1,T>& a7, const Array<num_dimensions-1,T>& a8, const Array<num_dimensions-1,T>& a9);
 
 
 END_NAMESPACE_STIR
