@@ -1603,9 +1603,17 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   shared_ptr<Scanner> scanner_ptr;
   find_scanner(scanner_ptr, mhead);
 
+  const float depth_of_interaction_factor =
+    1 + 
+    scanner_ptr->get_average_depth_of_interaction() /
+    scanner_ptr->get_inner_ring_radius();
+  // note: CTI uses shead.x_resolution instead of mhead.bin_size
+  // but they are equal at this point.
   ihead.recon_zoom= 
     mhead.bin_size/voxel_size_x *
-    scanner_ptr->get_default_num_arccorrected_bins()/128.F;
+    scanner_ptr->get_default_num_arccorrected_bins()/
+    float(image[0].size()) *
+    depth_of_interaction_factor;
 
   ihead.decay_corr_fctr= 1;
 
