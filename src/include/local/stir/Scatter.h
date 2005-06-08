@@ -33,6 +33,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/round.h"
+#include "local/stir/numerics/erf.h"
 #include "stir/ProjData.h"
 #include <vector>
 #include <cmath>
@@ -274,13 +275,13 @@ void scatter_viewgram(
 
 
 
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
 /* !\ingroup scatter
      \brief Temporary implementation of the error function for Visual C++
 */
-extern "C" double erf(const double x);
+/*extern "C" double erf(const double x);
 #endif
-
+*/
 /* !\ingroup scatter
      \brief Temporary implementation of writing log information
 	 The log information is written in the statistics.txt file
