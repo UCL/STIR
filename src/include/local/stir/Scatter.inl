@@ -19,16 +19,6 @@
 //using namespace std;
 START_NAMESPACE_STIR
 
-template<int num_dimensions>
-inline 
-BasicCoordinate<num_dimensions,float> convert_int_to_float(const BasicCoordinate<num_dimensions,int>& cint)
-	{	  
-	  BasicCoordinate<num_dimensions,float> cfloat;
-
-	  for(int i=1;i<=num_dimensions;++i)
-		  cfloat[i]=(float)cint[i];
-	  return cfloat;
-	}
 inline
 float dif_cross_section(const float cos_theta, float energy)
 { 

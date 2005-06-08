@@ -52,7 +52,7 @@ cplus0(const IterT input_begin_iterator,
 #endif
 	
 	const int input_size = input_end_iterator - input_begin_iterator;	
-	assert(input_size>=4);
+//	assert(input_size>BSplines_coef_vector.size());
 	out_elemT sum=*input_begin_iterator;
 	for(int i=1; 
 		i<(int)ceil(log(precision)/log(fabs(z1))) && i<=2*input_size-3;
