@@ -8,9 +8,9 @@ test_RigidObject3DTransformation.cxx \
 	test_Quaternion.cxx \
 	test_proj_data_info_LOR.cxx \
 	test_IR_filters.cxx \
-	test_BSplines.cxx \ 
+	test_BSplines.cxx \
 #	test_BSplinesRegularGrid.cxx\
-	test_erf       
+	test_erf.cxx       
 
 # rule to ignore registries
 # note: has to be before include statement as that changes value of $(dir)
