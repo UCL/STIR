@@ -1,23 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
-  \brief Utilitiy program that prints out values from an sgl file.
+  \brief Utility program that prints out values from an sgl file.
 
   \author Kris Thielemans
   \author Tim Borgeaud
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 
-#include "local/stir/SinglesRateFromECAT7.h"
+#include "stir/data/SinglesRatesFromECAT7.h"
 
 
 #include <fstream>
