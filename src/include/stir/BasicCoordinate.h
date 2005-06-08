@@ -221,6 +221,14 @@ template <int num_dimensions, typename coordT>
 inline BasicCoordinate<num_dimensions-1, coordT> 
 cut_first_dimension(const BasicCoordinate<num_dimensions, coordT>& c) ;    
 
+//! converts a BasicCoordinate<int> to BasicCoordinate<float>
+/*! \ingroup Coordinate */
+template<int num_dimensions>
+inline 
+BasicCoordinate<num_dimensions,float> 
+convert_int_to_float(const BasicCoordinate<num_dimensions,int>& cint);
+
+
 END_NAMESPACE_STIR
 
 #include "stir/BasicCoordinate.inl"
