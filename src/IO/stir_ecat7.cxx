@@ -694,7 +694,20 @@ make_ECAT7_main_header(Main_header& mhead,
     mhead.num_planes+= proj_data_info.get_num_axial_poss(segment_num);
   
 
-  mhead.bin_size =proj_data_info.get_sampling_in_s(Bin(0,0,0,0))/10;
+  const float natural_bin_size =
+    proj_data_info.get_sampling_in_s(Bin(0,0,0,0));
+  const float default_bin_size =
+    proj_data_info.get_scanner_ptr()->get_default_bin_size();
+
+  if (fabs(natural_bin_size - default_bin_size)>.02)
+    {
+      warning("CTI default bin size (%g) differs from STIR sampling in s (%g)\n"
+	      "for this data. Using default bin size for field main header anyway.\n"
+	      "However, you better check this out, especially for arc-corrected data.",
+	      default_bin_size, natural_bin_size);
+    }
+  mhead.bin_size = default_bin_size/10;
+
 
   mhead.angular_compression = find_angular_compression(proj_data_info);
   // guess septa state
@@ -947,7 +960,45 @@ make_subheader_for_ECAT7_aux(SUBHEADERPTR sub_header_ptr,
     sub_header_ptr->ring_difference = -1;    
   }
   
-  sub_header_ptr->x_resolution = proj_data_info.get_sampling_in_s(Bin(0,0,0,0))/10;
+
+  float x_resolution;
+  const Scanner& scanner =
+    *proj_data_info.get_scanner_ptr();
+  if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const * const>(&proj_data_info) != 0)
+    {
+      const float depth_of_interaction_factor =
+	1 + 
+	scanner.get_average_depth_of_interaction() /
+	scanner.get_inner_ring_radius();
+      x_resolution =
+	proj_data_info.get_sampling_in_s(Bin(0,0,0,0))/
+	depth_of_interaction_factor;
+      if (fabs(x_resolution - scanner.get_default_bin_size()) > .005)
+	{
+	  warning("ECAT7 IO: Bin size derived from data (%g) does not agree with expected value %g\n"
+		  "for scanner %s. Using default bin size for header.x_resolution...",
+		  x_resolution, 
+		  scanner.get_default_bin_size(), 
+		  scanner.get_name().c_str());
+	}
+      // always use default because there's a small discrepancy between the 
+      // default bin size and the value derived from the ring radius etc
+      x_resolution = scanner.get_default_bin_size(); 
+    }
+  else
+    {
+      x_resolution =
+	proj_data_info.get_sampling_in_s(Bin(0,0,0,0));
+      if (fabs(x_resolution - scanner.get_default_bin_size()) > .001)
+	{
+	  warning("ECAT7 IO: Bin size derived from data (%g) does not agree with expected value %g\n"
+		  "for scanner %s. Using data-derived value for header.x_resolution...",
+		  x_resolution, 
+		  scanner.get_default_bin_size(), 
+		  scanner.get_name().c_str());
+	}
+    }
+  sub_header_ptr->x_resolution = x_resolution/10;
   sub_header_ptr->storage_order = ElAxVwRd;
 
   
@@ -1044,7 +1095,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 
  
   if(sub_header_ptr->num_dimensions != 4)
-    warning("Expected subheader.num_dimensions==4. Continuing...\n");
+    warning("ECAT7 IO: Expected subheader.num_dimensions==4. Continuing...");
   const int num_tangential_poss = sub_header_ptr->num_r_elements;
   const int num_views = sub_header_ptr->num_angles;
 
@@ -1078,16 +1129,17 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
     storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
     break;
   default:
-    warning("Funny value for subheader.storage_order. Assuming ElVwAxRd\n");
+    warning("ECAT7 IO: Funny value for subheader.storage_order. Assuming ElVwAxRd");
     storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
   }
   NumericType data_type;
   ByteOrder byte_order;
   find_type_from_ECAT_data_type(data_type, byte_order, sub_header_ptr->data_type);
 
-  if (fabs(bin_size - scanner_ptr->get_default_bin_size())>.01)
+  if (fabs(bin_size - scanner_ptr->get_default_bin_size())>.00001)
   {
-    warning("Bin size from header (%g) does not agree with expected value %g\nfor scanner %s. Using bin size from header...\n",
+    warning("ECAT7 IO: Bin size from header.x_resolution (%g) does not agree with expected value %g\n"
+	    "for scanner %s. Using bin size from header...",
 	    bin_size, 
 	    scanner_ptr->get_default_bin_size(), 
 	    scanner_ptr->get_name().c_str());
@@ -1163,7 +1215,7 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 	  reinterpret_cast<Attn_subheader const*>(matrix->shptr);
 	
 	// CTI does not provide corrections_applied to check if the data
-	// is arc-corrected. Presumably it's attenuation data is always 
+	// is arc-corrected. Presumably its attenuation data is always 
 	// arccorrected
 	const bool arc_corrected = true;
 	warning("Assuming data is arc-corrected (info not available in CTI attenuation subheader)\n");
@@ -1608,7 +1660,8 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
     scanner_ptr->get_average_depth_of_interaction() /
     scanner_ptr->get_inner_ring_radius();
   // note: CTI uses shead.x_resolution instead of mhead.bin_size
-  // but they are equal at this point.
+  // but we don't have access to the sinogram here, and these 2 fields 
+  // should be equal anyway.
   ihead.recon_zoom= 
     mhead.bin_size/voxel_size_x *
     scanner_ptr->get_default_num_arccorrected_bins()/
