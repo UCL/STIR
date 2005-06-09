@@ -98,9 +98,9 @@ test_scanner(const Scanner& scanner)
       scanner.get_type() != Scanner::HZLR*/)
   {
     const float natural_bin_size =
-      scanner.get_effective_ring_radius()*float(_PI)/scanner.get_num_detectors_per_ring();
-    if (fabs(natural_bin_size - scanner.get_default_bin_size())> .1)
-      warning("central bin size (derived from ring radius and num detectors) %g\n"
+      scanner.get_inner_ring_radius()*float(_PI)/scanner.get_num_detectors_per_ring();
+    if (fabs(natural_bin_size - scanner.get_default_bin_size())> .03)
+      warning("central bin size (derived from inner ring radius and num detectors) %g\n"
 	      "differs from given default bin size %g\n"
 	      "(unequal values do not necessarily mean there's an error as "
 	      "it's a convention used by the scanner manufacturer)\n",
