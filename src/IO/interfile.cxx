@@ -1,21 +1,6 @@
 //
 // $Id$
 //
-
-/*!
-  \file 
-  \ingroup InterfileIO
- 
-  \brief  Implementation of functions which read/write Interfile data
-
-  \author Kris Thielemans 
-  \author Sanida Mustafovic
-  \author PARAPET project
-
-  $Date$
-  $Revision$
-    
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -32,6 +17,20 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+/*!
+  \file 
+  \ingroup InterfileIO
+ 
+  \brief  Implementation of functions which read/write Interfile data
+
+  \author Kris Thielemans 
+  \author Sanida Mustafovic
+  \author PARAPET project
+
+  $Date$
+  $Revision$
+    
 */
 //   Pretty horrible implementations at the moment...
 
@@ -510,8 +509,8 @@ read_interfile_PDFS(istream& input,
   for (unsigned int i=1; i<hdr.image_scaling_factors[0].size(); i++)
     if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
       { 
-	warning("Interfile warning: all image scaling factors should be equal \n\
-at the moment. Using the first scale factor only.\n");
+	warning("Interfile warning: all image scaling factors should be equal \n"
+		"at the moment. Using the first scale factor only.\n");
 	break;
       }
   
@@ -521,7 +520,9 @@ at the moment. Using the first scale factor only.\n");
      new fstream (full_data_file_name, open_mode | ios::binary);
    if (!data_in->good())
      {
-       error("error opening file %s\n",full_data_file_name);
+       delete data_in;
+       warning("interfile parsing: error opening file %s",full_data_file_name);
+       return 0;
      }
 
   return new ProjDataFromStream(hdr.data_info_ptr,			    
@@ -665,11 +666,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
-#ifndef STIR_NO_NAMESPACES
-      // VC needs this explicitly here
-      std::
-#endif
-      vector<int>::const_iterator seg = segment_sequence.begin();
+      std::vector<int>::const_iterator seg = segment_sequence.begin();
       output_header << "{ " <<pdfs.get_proj_data_info_ptr()->get_num_axial_poss(*seg);
       for (seg++; seg != segment_sequence.end(); seg++)
 	output_header << "," << pdfs.get_proj_data_info_ptr()->get_num_axial_poss(*seg);
@@ -690,11 +687,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
    
        output_header << "minimum ring difference per segment := ";    
        {
-#ifndef STIR_NO_NAMESPACES
-	 // VC needs this explicitly here
-	 std::
-#endif
-	   vector<int>::const_iterator seg = segment_sequence.begin();
+	 std::vector<int>::const_iterator seg = segment_sequence.begin();
 	 output_header << "{ " << proj_data_info_ptr->get_min_ring_difference(*seg);
 	 for (seg++; seg != segment_sequence.end(); seg++)
 	   output_header << "," <<proj_data_info_ptr->get_min_ring_difference(*seg);
@@ -703,50 +696,35 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
        output_header << "maximum ring difference per segment := ";
        {
-#ifndef STIR_NO_NAMESPACES
-	 // VC needs this explicitly here
-	 std::
-#endif
-	   vector<int>::const_iterator seg = segment_sequence.begin();
+	 std::vector<int>::const_iterator seg = segment_sequence.begin();
 	 output_header << "{ " <<proj_data_info_ptr->get_max_ring_difference(*seg);
 	 for (seg++; seg != segment_sequence.end(); seg++)
 	   output_header << "," <<proj_data_info_ptr->get_max_ring_difference(*seg);
 	 output_header << "}\n";
        }
   
-       output_header << "number of rings := " 
-		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings() << endl;
-       output_header << "number of detectors per ring := " 
-		     << pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_max_num_views()*2 << endl;
-
-       // KT 18/01/2001 use data from proj_data_info instead of scanner
-       output_header << "ring diameter (cm) := "
-		     << proj_data_info_ptr->get_ring_radius()*2/10. << endl;
-       output_header << "distance between rings (cm) := " 
-		     << proj_data_info_ptr->get_ring_spacing()/10. << endl;
-       output_header << "bin size (cm) := " 
-		     << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
-		     //pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10. << endl;
-       // TODO should use Scanner::parameter_info() but overlaps with above (but data is not necessarily the same)
        const Scanner& scanner = *proj_data_info_ptr->get_scanner_ptr();
-       if (scanner.get_num_axial_blocks_per_bucket()>0)
-	 output_header << "number of blocks_per_bucket in axial direction := "
-		       << scanner.get_num_axial_blocks_per_bucket() << '\n';
-       if (scanner.get_num_transaxial_blocks_per_bucket()>0)
-	 output_header << "number of blocks_per_bucket in transaxial direction := "
-		       << scanner.get_num_transaxial_blocks_per_bucket() << '\n';
-       if (scanner.get_num_axial_crystals_per_block()>0)
-	 output_header << "number of crystals_per_block in axial direction := "
-		       << scanner.get_num_axial_crystals_per_block() << '\n';
-       if (scanner.get_num_transaxial_crystals_per_block()>0)
-	 output_header << "number of crystals_per_block in transaxial direction := "
-		       << scanner.get_num_transaxial_crystals_per_block() << '\n';
-       if (scanner.get_num_detector_layers()>0)
-	 output_header << "number of detector layers := "
-		       << scanner.get_num_detector_layers() << '\n';
+       if (fabs(proj_data_info_ptr->get_ring_radius()-
+		scanner.get_effective_ring_radius()) > .1)
+	 warning("write_basic_interfile_PDFS_header: inconsistent effective ring radius:\n"
+		 "\tproj_data_info has %g, scanner has %g.\n"
+		 "\tThis really should not happen and signifies a bug.\n"
+		 "\tYou will have a problem reading this data back in.",
+		 proj_data_info_ptr->get_ring_radius(),
+		 scanner.get_effective_ring_radius());
+       if (fabs(proj_data_info_ptr->get_ring_spacing()-
+		scanner.get_ring_spacing()) > .1)
+	 warning("write_basic_interfile_PDFS_header: inconsistent ring spacing:\n"
+		 "\tproj_data_info has %g, scanner has %g.\n"
+		 "\tThis really should not happen and signifies a bug.\n"
+		 "\tYou will have a problem reading this data back in.",
+		 proj_data_info_ptr->get_ring_spacing(),
+		 scanner.get_ring_spacing());
 
-       //output_header << "view offset (degrees) := "
-       //		<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->view_offset<< endl;
+       output_header << scanner.parameter_info();
+
+       output_header << "effective central bin size (cm) := " 
+		     << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
 
      } // end of cylindrical scanner
   else
