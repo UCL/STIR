@@ -1,9 +1,25 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
 
-#ifndef __VoxelsOnCartesianGrid_H__
-#define __VoxelsOnCartesianGrid_H__
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
+#ifndef __stir_VoxelsOnCartesianGrid_H__
+#define __stir_VoxelsOnCartesianGrid_H__
 
 /*!
   \file 
@@ -17,11 +33,6 @@
   $Date$
   $Revision$
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -77,10 +88,14 @@ VoxelsOnCartesianGrid(const IndexRange<3>& range,
 
    Actual index ranges start from 0 for z, but from -(x_size_used/2) for x (and similar for y).
 
-   x,y grid spacing are set to the sampling distance in s (for bin 0).
+   x,y grid spacing are set to the 
+   <code>proj_data_info_ptr-\>get_scanner_ptr()-\>get_default_bin_size()/zoom</code>.
+   This is to make sure that the voxel size is independent on if arc-correction is used or not.
+   If the default bin size is 0, the sampling distance in s (for bin 0) is used.
+
    z grid spacing is set to half the scanner ring distance.
 
-   All elements are set 0.
+   All voxel values are set 0.
 
 */
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
