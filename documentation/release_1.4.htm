@@ -49,13 +49,18 @@ ignored.
 <h3>Code changes that influence your results</h3>
 <ul>
 <li>The Interfile header for projection data now uses a different
-   convention for the specifying the ring diameter. Current keywords are
+   convention for the specifying the ring diameter etc. Current keywords are
    <pre>
    inner ring diameter (cm) := ...
-   average depth of interaction (mm) := ...
+   average depth of interaction (cm) := ...
+   default bin size (cm) :=
+   effective central bin size (cm) :=
    </pre>
-   The previous keyword <tt>ring diameter (cm)</tt> is now <strong>ignored</strong>.
-   This is done to prevent reading the wrong ring radius from old files (see next item).
+   For arc-corrected data, it is the last keyword that is used to
+   set the tangential sampling.<br>
+   The previous keywords <tt>ring diameter (cm)</tt> 
+   and <tt>bin size</tt> are now <strong>ignored</strong>.
+   This is done to prevent reading the wrong ring radius etc from old files (see next item).
    <br>
    If you want to get the same reconstructions as before, set
    <tt>inner_ring_diameter + 2*average_depth_of_interaction/10</tt> equal to
@@ -78,10 +83,22 @@ ignored.
  <tt>default_bin_size*zoom</tt> (default bin size either specified in the Interfile header
 or in Scanner.cxx). (It used to be <tt>get_sampling_in_s(Bin(0,0,0,1))</tt>
  before). This will
-  make a <strong>difference in the voxel size when using non-arccorrected data</strong>.
+  make a <strong>difference in the voxel size when using non-arccorrected data</strong>
+  (and with arc-corrected data if the bin size is different from the default value).
  However, it makes the voxel size consistent between using arc-corrected and non-arccorrected
 data as input.
 </li>
+<li>Handling of 3 header fields when writing ECAT7 data has changed somewhat. 
+<ul>
+<li>The <tt>bin_size</tt> field in the main header is now always set to the
+default_bin_size of the scanner. For sinogram data, the <tt>x_resolution</tt>
+in the subheader is normally also set to the default bin size. 
+Only for arc-corrected data, the x_resolution is always set to the sampling_in_s.
+</li>
+<li>The corrected correspondence between zoom and voxel size in the ECAT7 
+header to follow the CTI convention, so recon_zoom will now have a slightly 
+different value.</li>
+</ul>
 </ul>
  
 <h3>New functionality of existing utilities</h3>
@@ -99,7 +116,8 @@ number of views is not a multiple of 4 (such as the Discovery ST).</li>
 <h3>Code changes that do not influence your results</h3>
 <ul>
 <li> interfile (and in general Array) IO can now use 1-byte integers.</li>
-<li> removed a bug in listmode classes for ECAT 966 and 962 (function get_detectors), which would have caused your program to crash.
+<li> removed a bug in listmode classes for ECAT 966 and 962 (function get_detectors), 
+which would have caused your program to crash.
 </li>
 <li>removed a few bugs in LORCoordinates.inl</li>
 <li> recon_buildblock/RayTraceVoxelsOnCartesianGrid.cxx has changed behaviour
