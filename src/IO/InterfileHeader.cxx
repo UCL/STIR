@@ -1,10 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup InterfileIO 
-  \brief implementations for the InterfileHeader class
+  \brief implementations for the stir::InterfileHeader class
 
   \author Kris Thielemans
   \author PARAPET project
@@ -12,11 +29,6 @@
   $Date$
   $Revision$
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/IO/InterfileHeader.h"
@@ -348,14 +360,6 @@ InterfilePDFSHeader::InterfilePDFSHeader()
 {
   num_segments = -1;
 
-  //KT 26/10/98 changed INT->LIST_OF_INTS
-  /* KT 12/11/98 removed
-  add_key("segment sequence", 
-    KeyArgument::LIST_OF_INTS, 
-    (KeywordProcessor)&InterfilePSOVHeader::resize_segments_and_set, 
-    &segment_sequence);
-  */
-  //KT 26/10/98 added 'per segment'
   add_key("minimum ring difference per segment",
     KeyArgument::LIST_OF_INTS, 
     (KeywordProcessor)&InterfilePDFSHeader::resize_segments_and_set, 
@@ -366,34 +370,47 @@ InterfilePDFSHeader::InterfilePDFSHeader()
     &max_ring_difference);
   
   
+  // warning these keys should match what is in Scanner::parameter_info()
+  // TODO get Scanner to parse these
+  add_key("Scanner parameters",
+	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  // this is currently ignored (use "originating system" instead)
+  add_key("Scanner type",
+	  KeyArgument::NONE,	&KeyParser::do_nothing);
 
   // first set to some crazy values
   num_rings = -1;
-  add_key("number of rings",
-    KeyArgument::INT, &num_rings);
+  add_key("number of rings", 
+	  &num_rings);
   num_detectors_per_ring = -1;
-  add_key("number of detectors per ring",
-    KeyArgument::INT, &num_detectors_per_ring);
+  add_key("number of detectors per ring", 
+	  &num_detectors_per_ring);
   transaxial_FOV_diameter_in_cm = -1;
   add_key("transaxial FOV diameter (cm)",
-    KeyArgument::DOUBLE, &transaxial_FOV_diameter_in_cm);
-  // KT 31/03/99 new
+	  &transaxial_FOV_diameter_in_cm);
   inner_ring_diameter_in_cm = -1;
   add_key("inner ring diameter (cm)",
-          KeyArgument::DOUBLE, &inner_ring_diameter_in_cm);
-  average_depth_of_interaction_in_mm = -1;
-  add_key("average depth of interaction (mm)",
-          KeyArgument::DOUBLE, &average_depth_of_interaction_in_mm);
+	   &inner_ring_diameter_in_cm);
+  average_depth_of_interaction_in_cm = -1;
+  add_key("average depth of interaction (cm)",
+	  &average_depth_of_interaction_in_cm);
   distance_between_rings_in_cm = -1;
   add_key("distance between rings (cm)",
-    KeyArgument::DOUBLE, &distance_between_rings_in_cm);
-  bin_size_in_cm = -1;
-  add_key("bin size (cm)",
-    KeyArgument::DOUBLE, &bin_size_in_cm);
+	  &distance_between_rings_in_cm);
+  default_bin_size_in_cm = -1;
+  add_key("default bin size (cm)",
+	  &default_bin_size_in_cm);
   // this is a good default value
   view_offset_in_degrees = 0;
   add_key("view offset (degrees)",
-    KeyArgument::DOUBLE, &view_offset_in_degrees);
+	  &view_offset_in_degrees);
+  max_num_non_arccorrected_bins=0;
+  default_num_arccorrected_bins=0;
+  add_key("Maximum number of non-arc-corrected bins",
+	  &max_num_non_arccorrected_bins);
+  add_key("Default number of arc-corrected bins",
+	  &default_num_arccorrected_bins);
+
   num_axial_blocks_per_bucket = 0;
   add_key("number of blocks_per_bucket in axial direction",
 	  &num_axial_blocks_per_bucket);
@@ -412,12 +429,17 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   num_transaxial_crystals_per_singles_unit = -1;
   add_key("number of crystals_per_singles_unit in transaxial direction",
 	  &num_transaxial_crystals_per_singles_unit);
-  
   // sensible default
   num_detector_layers = 1;
   add_key("number of detector layers",
 	  &num_detector_layers);
 
+  add_key("end scanner parameters",
+	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  
+  effective_central_bin_size_in_cm = -1;
+  add_key("effective central bin size (cm)",
+	  &effective_central_bin_size_in_cm);
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
 
@@ -864,13 +886,19 @@ bool InterfilePDFSHeader::post_processing()
 #endif
     if (inner_ring_diameter_in_cm < 0)
       inner_ring_diameter_in_cm = guessed_scanner_ptr->get_inner_ring_radius()*2/10.;
-    if (average_depth_of_interaction_in_mm < 0)
-      average_depth_of_interaction_in_mm = guessed_scanner_ptr->get_average_depth_of_interaction();
+    if (average_depth_of_interaction_in_cm < 0)
+      average_depth_of_interaction_in_cm = guessed_scanner_ptr->get_average_depth_of_interaction()/10;
     if (distance_between_rings_in_cm < 0)
       distance_between_rings_in_cm = guessed_scanner_ptr->get_ring_spacing()/10;
-    if (bin_size_in_cm < 0)
-      bin_size_in_cm = 
+    if (default_bin_size_in_cm < 0)
+      default_bin_size_in_cm = 
          guessed_scanner_ptr->get_default_bin_size()/10;
+    if (max_num_non_arccorrected_bins <= 0)
+      max_num_non_arccorrected_bins = guessed_scanner_ptr->get_max_num_non_arccorrected_bins();
+    if (default_num_arccorrected_bins <= 0)
+      default_num_arccorrected_bins = guessed_scanner_ptr->get_default_num_arccorrected_bins();
+
+
     if (num_axial_blocks_per_bucket<=0)
       num_axial_blocks_per_bucket = guessed_scanner_ptr->get_num_axial_blocks_per_bucket();
     if (num_transaxial_blocks_per_bucket<=0)
@@ -902,30 +930,42 @@ bool InterfilePDFSHeader::post_processing()
 		num_detectors_per_ring, guessed_scanner_ptr->get_num_detectors_per_ring());
 	mismatch_between_header_and_guess = true;
       }
-    if (fabs(inner_ring_diameter_in_cm - guessed_scanner_ptr->get_inner_ring_radius()*2/10.) > .1)
+    if (fabs(inner_ring_diameter_in_cm - guessed_scanner_ptr->get_inner_ring_radius()*2/10.) > .001)
       {
 	warning("Interfile warning: 'inner ring diameter (cm)' (%f) is expected to be %f.\n",
 		inner_ring_diameter_in_cm, guessed_scanner_ptr->get_inner_ring_radius()*2/10.);
 	mismatch_between_header_and_guess = true;
       }
-    if (fabs(average_depth_of_interaction_in_mm - 
-             guessed_scanner_ptr->get_average_depth_of_interaction()) > .1)
+    if (fabs(average_depth_of_interaction_in_cm - 
+             guessed_scanner_ptr->get_average_depth_of_interaction()/10) > .001)
       {
-	warning("Interfile warning: 'average depth of interaction (mm)' (%f) is expected to be %f.\n",
-		average_depth_of_interaction_in_mm, 
-                guessed_scanner_ptr->get_average_depth_of_interaction());
+	warning("Interfile warning: 'average depth of interaction (cm)' (%f) is expected to be %f.\n",
+		average_depth_of_interaction_in_cm, 
+                guessed_scanner_ptr->get_average_depth_of_interaction()/10);
 	mismatch_between_header_and_guess = true;
       }
-    if (fabs(distance_between_rings_in_cm-guessed_scanner_ptr->get_ring_spacing()/10) > .01)
+    if (fabs(distance_between_rings_in_cm-guessed_scanner_ptr->get_ring_spacing()/10) > .001)
       {
 	warning("Interfile warning: 'distance between rings (cm)' (%f) is expected to be %f.\n",
 		distance_between_rings_in_cm, guessed_scanner_ptr->get_ring_spacing()/10);
 	mismatch_between_header_and_guess = true;
       }
-    if (fabs(bin_size_in_cm-guessed_scanner_ptr->get_default_bin_size()/10) > .01)
+    if (fabs(default_bin_size_in_cm-guessed_scanner_ptr->get_default_bin_size()/10) > .001)
       {
-	warning("Interfile warning: 'bin size (cm)' (%f) is expected to be %f.\n",
-		bin_size_in_cm, guessed_scanner_ptr->get_default_bin_size()/10);
+	warning("Interfile warning: 'default bin size (cm)' (%f) is expected to be %f.\n",
+		default_bin_size_in_cm, guessed_scanner_ptr->get_default_bin_size()/10);
+	mismatch_between_header_and_guess = true;
+      }
+    if (max_num_non_arccorrected_bins - guessed_scanner_ptr->get_max_num_non_arccorrected_bins())
+      {
+	warning("Interfile warning: 'max_num_non_arccorrected_bins' (%d) is expected to be %d",
+		max_num_non_arccorrected_bins, guessed_scanner_ptr->get_max_num_non_arccorrected_bins());
+	mismatch_between_header_and_guess = true;
+      }
+    if (default_num_arccorrected_bins - guessed_scanner_ptr->get_default_num_arccorrected_bins())
+      {
+	warning("Interfile warning: 'default_num_arccorrected_bins' (%d) is expected to be %d",
+		default_num_arccorrected_bins, guessed_scanner_ptr->get_default_num_arccorrected_bins());
 	mismatch_between_header_and_guess = true;
       }
     if (
@@ -1013,13 +1053,13 @@ bool InterfilePDFSHeader::post_processing()
       warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
 #endif
     if (inner_ring_diameter_in_cm <= 0)
-      warning("Interfile warning: 'ring diameter (cm)' invalid.\n");
-    if (average_depth_of_interaction_in_mm <= 0)
-      warning("Interfile warning: 'average depth of interaction (mm)' invalid.\n");
+      warning("Interfile warning: 'inner ring diameter (cm)' invalid. This might disastrous\n");
+    if (average_depth_of_interaction_in_cm <= 0)
+      warning("Interfile warning: 'average depth of interaction (cm)' invalid. This might be disastrous.\n");
     if (distance_between_rings_in_cm <= 0)
       warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
-    if (bin_size_in_cm <= 0)
-      warning("Interfile warning: 'bin size (cm)' invalid.\n");
+    if (default_bin_size_in_cm <= 0)
+      warning("Interfile warning: 'default_bin size (cm)' invalid.\n");
     if (num_axial_crystals_per_singles_unit <= 0)
       warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
     if (num_transaxial_crystals_per_singles_unit <= 0)
@@ -1034,12 +1074,12 @@ bool InterfilePDFSHeader::post_processing()
                 originating_system,
 		num_detectors_per_ring, 
                 num_rings, 
-		guessed_scanner_ptr->get_max_num_non_arccorrected_bins(), 
-		guessed_scanner_ptr->get_default_num_arccorrected_bins(),
+		max_num_non_arccorrected_bins, 
+		default_num_arccorrected_bins,
 		static_cast<float>(inner_ring_diameter_in_cm*10./2),
-                static_cast<float>(average_depth_of_interaction_in_mm),
+                static_cast<float>(average_depth_of_interaction_in_cm/10),
 		static_cast<float>(distance_between_rings_in_cm*10.),
-		static_cast<float>(bin_size_in_cm*10),
+		static_cast<float>(default_bin_size_in_cm*10),
 		static_cast<float>(view_offset_in_degrees*_PI/180),
 		num_axial_blocks_per_bucket, 
 		num_transaxial_blocks_per_bucket,
@@ -1067,23 +1107,47 @@ bool InterfilePDFSHeader::post_processing()
    
   
   if (is_arccorrected)
-    data_info_ptr = 
-    new ProjDataInfoCylindricalArcCorr (
-                                        scanner_ptr_from_file,
-                                        float(bin_size_in_cm*10.),
-                                        sorted_num_rings_per_segment,
-                                        sorted_min_ring_diff,
-                                        sorted_max_ring_diff,
-                                        num_views,num_bins);
+    {
+      if (effective_central_bin_size_in_cm <= 0)
+	effective_central_bin_size_in_cm =
+	  scanner_ptr_from_file->get_default_bin_size()/10;
+      else if (fabs(effective_central_bin_size_in_cm - 
+		    scanner_ptr_from_file->get_default_bin_size()/10)>.001)	
+	warning("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
+		"Value in header is %g while the default for the scanner is %g\n"
+		"Using value from header.",
+		effective_central_bin_size_in_cm,
+		scanner_ptr_from_file->get_default_bin_size()/10);
+      
+      data_info_ptr = 
+	new ProjDataInfoCylindricalArcCorr (
+					    scanner_ptr_from_file,
+					    float(effective_central_bin_size_in_cm*10.),
+					    sorted_num_rings_per_segment,
+					    sorted_min_ring_diff,
+					    sorted_max_ring_diff,
+					    num_views,num_bins);
+    }
   else
-    data_info_ptr = 
-    new ProjDataInfoCylindricalNoArcCorr (
-                                        scanner_ptr_from_file,
-                                        sorted_num_rings_per_segment,
-                                        sorted_min_ring_diff,
-                                        sorted_max_ring_diff,
-                                        num_views,num_bins);
-  
+    {
+      data_info_ptr = 
+	new ProjDataInfoCylindricalNoArcCorr (
+					      scanner_ptr_from_file,
+					      sorted_num_rings_per_segment,
+					      sorted_min_ring_diff,
+					      sorted_max_ring_diff,
+					      num_views,num_bins);
+      if (effective_central_bin_size_in_cm>0 &&
+	  fabs(effective_central_bin_size_in_cm - 
+	       data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+	{
+	  warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+		  "Value in header is %g while I expect %g from the inner ring radius etc\n"
+		  "Ignoring value in header",
+		  effective_central_bin_size_in_cm,
+		  data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+	}
+    }
   //cerr << data_info_ptr->parameter_info() << endl;
   
   return false;
