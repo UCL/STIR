@@ -37,7 +37,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/utilities.h"
-#include "stir/ProjDataInfoCylindrical.h"
+#include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
 #include "stir/IO/read_data.h"
@@ -103,9 +103,26 @@ static void find_sampling_and_z_size(
   }
 
   // now do s_sampling
-  // TODO make this independent on segment etc.
-    s_sampling = 
-      proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+
+  {
+    s_sampling =
+      proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size();
+    if (s_sampling ==0)
+      {
+	// TODO make this independent on segment etc.
+	s_sampling = 
+	  proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+	warning("Determining voxel size from default_bin_size failed.\n"
+		"Using sampling_in_s for central bin %g.",
+		s_sampling);
+      }
+    else
+      {
+	warning("Determined voxel size by dividing default_bin_size (%g) by zoom",
+		s_sampling);
+      }
+
+  }
 
 }
 
