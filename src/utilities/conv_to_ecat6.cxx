@@ -1,7 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*! 
 \file
 \ingroup ECAT_utilities
@@ -39,11 +55,6 @@ overwritten.</li>
 Note that to store projection data in ECAT6, a 3D sinogram cannot be axially compressed 
 (CTI span=1).
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -270,7 +281,7 @@ int main(int argc, char *argv[])
       if (interactive)
 	{
 	  current_frame_num= 
-	    ask_num("Frame number ? ", min_frame_num, max_frame_num, current_frame_num);
+	    ask_num("Frame number ? ", min_frame_num, max_frame_num, min_frame_num);
 	  current_bed_num= 
 	    ask_num("Bed number ? ", min_bed_num, max_bed_num, min_bed_num);
 	  current_gate_num=
