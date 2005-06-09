@@ -611,6 +611,7 @@ Scanner::get_name() const
 string
 Scanner::parameter_info() const
 {
+  // warning: these should match the parsing keywords in InterfilePDFSHeader
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
   char str[10000];
@@ -618,18 +619,22 @@ Scanner::parameter_info() const
 #else
   std::ostringstream s;
 #endif
-  s<<"Scanner parameters:= "<<'\n';
+  s << "Scanner parameters:= "<<'\n';
 
   s << "Scanner type := " << get_name() <<'\n';     
 
-  s << "Number of Rings                        := " << num_rings << '\n';
-  s << "Number of detectors per ring           := " << get_num_detectors_per_ring() << '\n';
+  s << "Number of rings                          := " << num_rings << '\n';
+  s << "Number of detectors per ring             := " << get_num_detectors_per_ring() << '\n';
 
-  s << "inner ring diameter (cm)               := " << get_inner_ring_radius()*2./10 << '\n'
-    << "average depth of interaction (cm)      := " << get_average_depth_of_interaction() / 10 << '\n'
-    << "distance between rings (cm)            := " << get_ring_spacing()/10 << '\n'
-    << "bin size (cm)                          := " << get_default_bin_size()/10. << '\n'
-    << "view offset (degrees)                  := " << get_default_intrinsic_tilt()*180/_PI << '\n';
+  s << "Inner ring diameter (cm)                 := " << get_inner_ring_radius()*2./10 << '\n'
+    << "Average depth of interaction (cm)        := " << get_average_depth_of_interaction() / 10 << '\n'
+    << "Distance between rings (cm)              := " << get_ring_spacing()/10 << '\n'
+    << "Default bin size (cm)                    := " << get_default_bin_size()/10. << '\n'
+    << "View offset (degrees)                    := " << get_default_intrinsic_tilt()*180/_PI << '\n';
+  s << "Maximum number of non-arc-corrected bins := "
+    << get_max_num_non_arccorrected_bins() << '\n'
+    << "Default number of arc-corrected bins     := "
+    << get_default_num_arccorrected_bins() << '\n';
 
   // block/bucket description
   s << "Number of blocks per bucket in transaxial direction         := "
@@ -647,11 +652,7 @@ Scanner::parameter_info() const
     << "Number of crystals per singles unit in transaxial direction := "
     << get_num_transaxial_crystals_per_singles_unit() << '\n';
   
-  s << "Maximum number of nonarccorrected bins := "
-     << get_max_num_non_arccorrected_bins() << '\n'
-    << "Default number of arccorrected bins    := "
-    << get_default_num_arccorrected_bins() << '\n';
-  s<<"end Scanner parameters:= "<<'\n';
+  s << "end scanner parameters:=\n";
 
   return s.str();
 }
