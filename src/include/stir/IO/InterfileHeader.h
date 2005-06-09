@@ -17,13 +17,11 @@
 
     See STIR/LICENSE.txt for details
 */
-
-
 /*! 
   \file
   \ingroup InterfileIO
-  \brief  This file declares the classes InterfileHeader,
-          InterfileImageHeader, InterfilePDFSHeader  
+  \brief  This file declares the classes stir::InterfileHeader,
+          stir::InterfileImageHeader, stir::InterfilePDFSHeader  
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -32,7 +30,7 @@
   $Date$
   $Revision$
 
-  \warning Different datasets in 1 header are not yet supported.
+  \todo Different datasets in 1 header are not yet supported.
 
   See http://www.HammersmithImanet.com/~kris for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -185,16 +183,20 @@ private:
   int find_storage_order();
 
   // members that will be used to set Scanner
+  // TODO parsing should be moved to Scanner
   int num_rings;
   int num_detectors_per_ring;
   
   double transaxial_FOV_diameter_in_cm;
   double inner_ring_diameter_in_cm;
-  double average_depth_of_interaction_in_mm;
+  double average_depth_of_interaction_in_cm;
   double distance_between_rings_in_cm;
-  double bin_size_in_cm;
+  double default_bin_size_in_cm;
   // this intrinsic tilt
   double view_offset_in_degrees;
+  int max_num_non_arccorrected_bins;
+  int default_num_arccorrected_bins;
+
 
   int num_axial_blocks_per_bucket;
   int num_transaxial_blocks_per_bucket;
@@ -202,9 +204,10 @@ private:
   int num_transaxial_crystals_per_block;
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
-  
   int num_detector_layers;
+  // end scanner parameters
 
+  double effective_central_bin_size_in_cm;
   bool is_arccorrected;
 };
 
