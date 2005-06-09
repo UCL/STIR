@@ -1,7 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) CTI PET Inc
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
 
+    This file is part of STIR.
+
+    The dets_to_ve() and compute_swap_lors_mashed() functions are from CTI, and
+    come under a somewhat restrictive license.
+
+    The main() function of this file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+  
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
@@ -81,11 +101,6 @@
   data has to be corner-swapped or not. So, it can do the wrong thing.
 
 */
-/*
-    Copyright (C) CTI PET Inc
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
 #include "stir/SegmentBySinogram.h"
@@ -102,7 +117,7 @@ using std::swap;
 
 USING_NAMESPACE_STIR
 
-void dets_to_ve( int da, int db, int *v, int *e, int ndets)
+static void dets_to_ve( int da, int db, int *v, int *e, int ndets)
 {
 	int h,x,y,a,b,te;
 
@@ -121,7 +136,7 @@ typedef unsigned char byte;
 
 // Magic stuff that computes which bins are in the wrong corner
 // A mistery to KT...
-int * 
+static int * 
 compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 {
 	static byte ring_16[8][3] = {
@@ -140,18 +155,19 @@ compute_swap_lors_mashed( int nprojs, int nviews, int nmash, int *nptr)
 	*/ 
 	int ndets, deta, detb, v, e, a, b, *list, i, j, n, m;
 	int db = 32, off, nodup;
-	byte *fixer;
+	byte *fixer = 0;
 
 	if (nviews%2 == 0) fixer = (byte *)ring_16;
 	if (nviews%7 == 0) fixer = (byte *)ring_14;
 	if (nviews%7 == 0) db = 8*7;
 	if (nviews%3 == 0) fixer = (byte *)ring_12;
 
+	if (fixer == 0)
+	  error("ecat_swap_corners: num_views not compatible with what this routine can cope with");
+
 	n = 0;
 	ndets = nviews*2*nmash;
         cerr<< "swap_corners: guessing "<< ndets << " detectors per ring\n";
-	// KT guess
-	//if (nviews%9 == 0) fixer = (byte *)ring_18;
 	if (nviews%9 == 0) db = ndets/12;
 	list = (int*) malloc( db*db*8*sizeof(int));
 	for (i=0; i<8; i++)
