@@ -17,13 +17,13 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __PixelsOnCartesianGrid_H__
-#define __PixelsOnCartesianGrid_H__
+#ifndef __stir_PixelsOnCartesianGrid_H__
+#define __stir_PixelsOnCartesianGrid_H__
 
 /*!
   \file 
   \ingroup densitydata 
-  \brief defines the PixelsOnCartesianGrid class 
+  \brief defines the stir::PixelsOnCartesianGrid class 
 
   \author Sanida Mustafovic 
   \author Kris Thielemans (with help from Alexey Zverovich)
@@ -66,6 +66,8 @@ inline PixelsOnCartesianGrid(const IndexRange<2>& range,
 		      const CartesianCoordinate3D<float>& origin, 
 		      const BasicCoordinate<2,float>& grid_spacing);
 
+#if 0
+// disabled these 2 constructors. they were never implemented.
 //! The next two constructors use ProjDataInfo to obtain the relevant information
 /*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,const float zoom,const CartesianCoordinate3D<float>&,const CartesianCoordinate3D<int>&) for more details
  */
@@ -78,6 +80,7 @@ PixelsOnCartesianGrid(const ProjDataInfo * proj_data_info_ptr,
 		      const float zoom,
 		      const CartesianCoordinate3D<float>& origin, 
 		      const int xy_size);
+#endif
 
 
 //! Definition of the pure virtual defined in DiscretisedDensity
