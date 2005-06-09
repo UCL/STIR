@@ -1,7 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __PixelsOnCartesianGrid_H__
 #define __PixelsOnCartesianGrid_H__
 
@@ -18,11 +33,6 @@
 
   $Revision$
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/CartesianCoordinate2D.h"
@@ -57,6 +67,8 @@ inline PixelsOnCartesianGrid(const IndexRange<2>& range,
 		      const BasicCoordinate<2,float>& grid_spacing);
 
 //! The next two constructors use ProjDataInfo to obtain the relevant information
+/*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,const float zoom,const CartesianCoordinate3D<float>&,const CartesianCoordinate3D<int>&) for more details
+ */
 PixelsOnCartesianGrid(const ProjDataInfo * proj_data_info_ptr,
 		      const float zoom, 
 		      const CartesianCoordinate3D<float>& origin,
