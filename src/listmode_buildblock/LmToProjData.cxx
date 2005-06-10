@@ -234,9 +234,13 @@ post_processing()
   if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
     {
       warning("Scanner from list mode data (%s) is different from\n"
-	      "scanner from template projdata (%s)\n",
+	      "scanner from template projdata (%s).\n"
+	      "Full definition of scanner from list mode data:\n%s\n"
+	      "Full definition of scanner from template:\n%s\n",
 	      lm_data_ptr->get_scanner_ptr()->get_name().c_str(),
-	      scanner_ptr->get_name().c_str());
+	      scanner_ptr->get_name().c_str(),
+	      lm_data_ptr->get_scanner_ptr()->parameter_info().c_str(),
+	      scanner_ptr->parameter_info().c_str());
       return true;
     }
   
