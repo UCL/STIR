@@ -1077,7 +1077,7 @@ bool InterfilePDFSHeader::post_processing()
 		max_num_non_arccorrected_bins, 
 		default_num_arccorrected_bins,
 		static_cast<float>(inner_ring_diameter_in_cm*10./2),
-                static_cast<float>(average_depth_of_interaction_in_cm/10),
+                static_cast<float>(average_depth_of_interaction_in_cm*10),
 		static_cast<float>(distance_between_rings_in_cm*10.),
 		static_cast<float>(default_bin_size_in_cm*10),
 		static_cast<float>(view_offset_in_degrees*_PI/180),
