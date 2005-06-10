@@ -35,44 +35,29 @@ This file is part of STIR.
 START_NAMESPACE_STIR
 
 namespace BSpline {
-	
-
+		
 	typedef double pos_type;
+	
 	template <int num_dimensions, typename out_elemT, typename in_elemT>
 		class BSplinesRegularGrid
 	{
-
+		
 private:
-	//typedef typename std::vector<out_elemT>::iterator RandIterOut; 
-	//int input_size; // create in the constructor 
+	
 	BasicCoordinate<num_dimensions,double> _z1s;
 	BasicCoordinate<num_dimensions,double> _z2s;
 	BasicCoordinate<num_dimensions,double> _lambdas;
 	Array<num_dimensions,out_elemT> _coeffs;  
     BasicCoordinate<num_dimensions,BSplineType> _spline_types;
-
+	
     inline
 		void
 		set_coef(const Array<num_dimensions,in_elemT> & input);
-
-	inline
-		void
-		set_coef(Array<num_dimensions, out_elemT>& coeffs, const Array<num_dimensions, in_elemT>& input,
-		const BasicCoordinate<num_dimensions,double>& z1s,
-		const BasicCoordinate<num_dimensions,double>& z2s,
-		const BasicCoordinate<num_dimensions,double>& lambdas);
-
-	inline
-		void
-		set_coef(Array<1, out_elemT>& coeffs, const Array<1, in_elemT>& input,
-		const BasicCoordinate<1,double>& z1s,
-		const BasicCoordinate<1,double>& z2s,
-		const BasicCoordinate<1,double>& lambdas);
-
+		
 public:
 	// only there for tests
 	Array<num_dimensions,out_elemT> get_coefficients() const
-	{ return coeffs;  }
+	{ return _coeffs;  }
 	
 	
 	//! default constructor: no input
@@ -80,54 +65,36 @@ public:
 	
 	//! constructor given an array as an input which estimates the Coefficients 
 	inline 
-	BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
-		                const BSplineType & this_type = cubic)
+		BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
+		const BSplineType & this_type = cubic)
 	{
 		set_private_values(this_type);	  
-		set_coef(this->_coeffs, input, this->_z1s, this->_z2s, this->_lambdas);		
+		set_coef(input);		
 	} 	
-
+	
 	inline 
-	BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
-						const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
+		BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
+		const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
 	{	 
 		set_private_values(this_type);	  
-		set_coef(this->_coeffs, input, this->_z1s, this->_z2s, this->_lambdas);
+		set_coef(input);
 	}  	
-
-	void inline
+	
+	inline void 
 		set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type);
-	void inline
+	inline void 
 		set_private_values(const BSplineType & this_type);
-
-	template <int num_dimensions, typename T>
-		inline 
-		T 
-		compute_BSplines_value(const Array<num_dimensions, T>& coeffs,
-		                       const BasicCoordinate<num_dimensions,pos_type>& relative_positions,
-							   const BasicCoordinate<num_dimensions,BSplineType>& spline_types);
-
-#if defined( _MSC_VER) && _MSC_VER<=1300
-#define T float
-#else
-	template <typename T>
-#endif
-		inline 
-		T 
-		compute_BSplines_value(const Array<1, T>& coeffs,
-		             const BasicCoordinate<1,pos_type>& relative_positions,
-		             const BasicCoordinate<1,BSplineType>& spline_types);
-#undef T
 	//! destructor
 	inline ~BSplinesRegularGrid();
-
+	
 	inline
 		const out_elemT 
 		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;	
-};
-
+	};
+	
 } // end BSpline namespace
 
 END_NAMESPACE_STIR
 
 #include "local/stir/BSplinesRegularGrid.inl"
+
