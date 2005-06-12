@@ -78,15 +78,18 @@ class RigidObject3DTransformationTests: public RunTests
 public:  
   void run_tests();
 private:
+  void test_transform_bin();
   void test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info);
   void test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
-
+  void test_find_closest_transformation();
 };
 
 void
 RigidObject3DTransformationTests::run_tests()
 {
-  // testing inverse
+  std::cerr << "\nTesting RigidObject3DTransformation\n";
+
+  std::cerr << "\tTesting inverse and check if it's a rigid transformation\n";
   {
     Quaternion<float> quat(1,-2,3,8);
     quat.normalise();
@@ -109,16 +112,17 @@ RigidObject3DTransformationTests::run_tests()
     }      
 
     
-    for (int i=0; i<1000; ++i)
+    const CartesianCoordinate3D<float> transformed_origin =
+      ro3dtrans.transform_point(CartesianCoordinate3D<float>(0,0,0));
+    for (int i=0; i<100; ++i)
     {
       const CartesianCoordinate3D<float> point(210.F*i,-55.F-i,2.F+2*i);
       const CartesianCoordinate3D<float> transformed_point =ro3dtrans.transform_point(point);
       //Testing norm of the original and transformed point 
       {
-	const float norm_original = std::sqrt(square(point.z()) +square(point.y())+square(point.x()));
-	const float norm_transformed = std::sqrt(square(point.z()) +square(point.y())+square(point.x()));
-	
-	check_if_equal(norm_original, norm_transformed, "test on norm");
+	const float original_distance = norm(point /* - origin*/);
+	const float transformed_distance = norm(transformed_point-transformed_origin);
+	check_if_equal(original_distance, transformed_distance, "test on distance to see if it's a rigid transformation");
       }
       // Testing to see if inverse gets us back
       {
@@ -135,7 +139,7 @@ RigidObject3DTransformationTests::run_tests()
   }
 
 #if 0
-  std::cerr << "Testing reading of mt files" <<std::endl;
+  std::cerr << "\n\tTesting reading of mt files" <<std::endl;
   
   const string fdef_filename = "H09990.fdef";
   TimeFrameDefinitions tfdef(fdef_filename);
@@ -176,7 +180,7 @@ RigidObject3DTransformationTests::run_tests()
     }  
   }
 #endif
-  // std::cerr << " Testing compose " << std::endl;
+  std::cerr << "\n\tTesting compose " << std::endl;
   {
     Quaternion<float> quat_1(1,-2,3,8);
     quat_1.normalise();
@@ -233,15 +237,24 @@ RigidObject3DTransformationTests::run_tests()
 #endif
   }
 
-  // tests using transform_bin
-  {
+  test_find_closest_transformation();
+
+  test_transform_bin();
+}
+
+
+
+void 
+RigidObject3DTransformationTests::
+test_transform_bin()
+{
     shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
     // we make the scanner longer to avoid problems with rotations 
     // (almost) orthogonal to the scanner axis. Otherwise most
     // LORs would be transformed out of the scanner, and we won't get
     // a get intersection of the backprojections
     scanner_ptr->set_num_rings(40); 
-    std::cerr << "\nTests with proj_data_info without mashing and axial compression, no arc-correction\n";
+    std::cerr << "\n\tTests with proj_data_info without mashing and axial compression, no arc-correction\n";
     shared_ptr<ProjDataInfo> proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				    /*span*/1, scanner_ptr->get_num_rings()-1,
@@ -256,7 +269,7 @@ RigidObject3DTransformationTests::run_tests()
     // test_transform_bin_vs_transform_point(proj_data_info_sptr);
 #ifdef NEW_ROT
     // old get_bin() cannot handle spanned data, so tests disabled ifndef NEW_ROT
-    std::cerr << "\nTests with proj_data_info with mashing and axial compression, no arc-correction\n";
+    std::cerr << "\n\tTests with proj_data_info with mashing and axial compression, no arc-correction\n";
     proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				    /*span*/3, scanner_ptr->get_num_rings()-1,
@@ -266,7 +279,7 @@ RigidObject3DTransformationTests::run_tests()
     test_transform_bin_with_inverse(*proj_data_info_sptr);
     test_transform_bin_vs_transform_point(proj_data_info_sptr);
 
-    std::cerr << "\nTests with proj_data_info without mashing and axial compression, arc-correction\n";
+    std::cerr << "\n\tTests with proj_data_info without mashing and axial compression, arc-correction\n";
     proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				    /*span*/1, scanner_ptr->get_num_rings()-1,
@@ -277,7 +290,7 @@ RigidObject3DTransformationTests::run_tests()
     // TODO ProjMatrixByDensel cannot do span=1 yet 
     // test_transform_bin_vs_transform_point(proj_data_info_sptr);
 
-    std::cerr << "\nTests with proj_data_info with mashing and axial compression, arc-correction\n";
+    std::cerr << "\n\tTests with proj_data_info with mashing and axial compression, arc-correction\n";
     proj_data_info_sptr =
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				    /*span*/3, scanner_ptr->get_num_rings()-1,
@@ -290,7 +303,6 @@ RigidObject3DTransformationTests::run_tests()
 
   }
 
-}
 
 static Bin
 abs_bin_diff_no_reorder(const Bin& org_bin, const Bin& transformed_bin)
@@ -341,7 +353,7 @@ void
 RigidObject3DTransformationTests::
 test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info)
 {
-  std::cerr <<"\ttesting transform_bin and inverse()\n";
+  std::cerr <<"\n\t\ttesting transform_bin and inverse()\n";
   Quaternion<float> quat(1,0,0,0.1F);
   /*TODO too large deviations when using rotation (1,0,.1,.1) or (1,.1,0,0)
    (in axial compression case only)
@@ -547,6 +559,63 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
   }
   std::cerr << "\tmax deviation via backprojection (in index units) : " << max_deviation << '\n';
 
+}
+
+void
+RigidObject3DTransformationTests::
+test_find_closest_transformation()
+{
+  std::cerr << "\n\tTests for find_closest_transformation\n";
+
+  // set fairly low tolerance as we don't find the closest transformation to very high precision
+  const double old_tolerance = this->get_tolerance();
+  this->set_tolerance(.01);
+
+  Quaternion<float> quat(.7F,.2F,-.1F,.1F);
+  quat.normalise();
+  const CartesianCoordinate3D<float> translation(-11,-12,15);    
+  const RigidObject3DTransformation transformation(quat, translation);
+
+  std::vector<CartesianCoordinate3D<float> > points;
+  points.push_back(CartesianCoordinate3D<float>(1,2,3));
+  points.push_back(CartesianCoordinate3D<float>(1,3,-3));
+  points.push_back(CartesianCoordinate3D<float>(-1.4F,2,6));
+  points.push_back(CartesianCoordinate3D<float>(1,2,33.3F));
+
+  std::vector<CartesianCoordinate3D<float> > transformed_points;
+  for (std::vector<CartesianCoordinate3D<float> >::const_iterator iter = points.begin();
+       iter != points.end();
+       ++iter)
+    transformed_points.push_back(transformation.transform_point(*iter));
+
+  check_if_zero(RigidObject3DTransformation::RMS(transformation, points.begin(), points.end(), transformed_points.begin()),
+		"RMS for exact match is too large");
+
+  RigidObject3DTransformation result;
+  if (!check(
+	    RigidObject3DTransformation::
+	    find_closest_transformation(result,
+					points.begin(), points.end(), transformed_points.begin(),
+					Quaternion<float>(1,0,0,0)) ==
+	    Succeeded::yes,
+	    "find_closest_transformation for exact match returned Succeeded::no"))
+    return;
+  if (!check_if_zero(norm(quat-result.get_quaternion()), 
+		     "find_closest_transformation for exact match: non-matching quaternion") ||
+      !check_if_zero(norm(translation-result.get_translation()), 
+		     "find_closest_transformation for exact match: non-matching translation"))
+    {
+      std::cerr << "Transformation found: " << result
+		<< "\nbut should have been " << transformation
+		<< "\nInput was:\nPoints : \n" << points
+		<< "Transformed points : \n" << transformed_points
+		<< '\n';
+    }
+
+  check_if_zero(RigidObject3DTransformation::RMS(result, points.begin(), points.end(), transformed_points.begin()),
+		"find_closest_transformation for exact match: RMS is too large");
+
+  this->set_tolerance(old_tolerance);
 }
 
 END_NAMESPACE_STIR
