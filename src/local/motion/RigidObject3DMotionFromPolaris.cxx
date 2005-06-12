@@ -40,6 +40,14 @@ START_NAMESPACE_STIR
 
 static const double time_not_yet_determined=-1234567.8;
 
+static 
+RigidObject3DTransformation
+make_transformation_from_polaris_data(Polaris_MT_File::Record const& record)
+{
+  return
+    RigidObject3DTransformation(record.quat, record.trans);
+}
+
 // Find and store gating values in a vector from lm_file  
 static  void 
 find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_times_in_millisecs, 
@@ -73,27 +81,31 @@ compute_average_motion_polaris_time(const double start_time, const double end_ti
 {
   // CartesianCoordinate3D<float> euler_angles;
   int samples = 0 ;
-  float total_tx=0.F;
-  float total_ty=0.F;
-  float total_tz=0.F; 
+  CartesianCoordinate3D<float> total_t(0,0,0);
   Quaternion<float> total_q(0,0,0,0);
  
   Polaris_MT_File::const_iterator iter=mt_file_ptr->begin();
 
   while (iter!= mt_file_ptr->end())
   {
-    /* Accept motions recorded during trasnmission acquisition */
+    /* Accept motions recorded during time interval */
     if ((iter->sample_time >= start_time ) && ( iter->sample_time<= end_time))
     {
-      Quaternion<float> quater(iter->quat[1], iter->quat[2], iter->quat[3], iter->quat[4]);	/* Sets the quaternion matrix */
+#if 0
+      Quaternion<float> quater = iter->quat;	/* Sets the quaternion matrix */
+      const CartesianCoordinate3D<float>& trans =  iter->trans; 
+#else
+     RigidObject3DTransformation transf =
+       make_transformation_from_polaris_data(*iter);
+     Quaternion<float> quater = transf.get_quaternion();
+     const CartesianCoordinate3D<float> trans= transf.get_translation();
+#endif
       // make sure that all quaternions use a fixed sign choice, otherwise adding them up does not make a lot of sense
       if (quater[1]<0)
 	quater *= -1;
-      /* Maintain running total euler angles and translations */
-      total_tx += iter->trans.x();
-      total_ty += iter->trans.y() ;
-      total_tz += iter->trans.z() ;
-      total_q +=quater;
+      /* Maintain running total quaternions and translations */
+      total_t += trans;
+      total_q += quater;
       samples += 1;
     }
     ++iter;
@@ -114,12 +126,9 @@ compute_average_motion_polaris_time(const double start_time, const double end_ti
 	    "\tThis indicates large movement in the range (%g-%g).",
 	    norm(total_q), start_time, end_time);
   total_q.normalise();
-  total_tx /= samples; 
-  total_ty /= samples;
-  total_tz /= samples;
+  total_t /= samples; 
   
-  return RigidObject3DTransformation(total_q,
-				     CartesianCoordinate3D<float>(total_tz,total_ty,total_tx));  
+  return RigidObject3DTransformation(total_q, total_t);
 }
 
 double 
@@ -160,9 +169,13 @@ get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) c
   }
   else
   {
+#if 0
   const RigidObject3DTransformation ro3dtrans_tmp (iterator_for_record_just_after_this_time->quat,
               iterator_for_record_just_after_this_time->trans);
   ro3dtrans=ro3dtrans_tmp;
+#else
+  ro3dtrans = make_transformation_from_polaris_data(*iterator_for_record_just_after_this_time);
+#endif
   }
 
 }
