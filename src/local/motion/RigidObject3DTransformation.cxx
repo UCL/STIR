@@ -20,7 +20,13 @@
 #include "stir/IndexRange2D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/stream.h"
-#include <math.h>
+#include "stir/IndexRange2D.h"
+#include "stir/Succeeded.h"
+#include "stir/stream.h"
+#include "stir/more_algorithms.h"
+#include "stir/numerics/max_eigenvector.h"
+#include <vector>
+#include <cmath>
 #ifndef NEW_ROT
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #endif
@@ -30,40 +36,33 @@ using std::cerr;
 using std::endl;
 #endif
 
+#define DO_XY_SWAP
+
 #define EPSILON	 0.00001
+#if 0
 #define usqrt(x)(float)sqrt((double)(x))
 #define uatan2(y, x)(float)atan2((double)(y), (double)(x))
 #define ucos(x)	(float)cos((double)(x))
 #define usin(x)	(float)sin((double)(x))
+#else
+#define usqrt(x) std::sqrt(x)
+#define uatan2(y,x) std::atan2(y,x)
+#define ucos(x) std::cos(x)
+#define usin(x) std::sin(x)
+#endif
 
-START_NAMESPACE_STIR
-//#define FIRSTROT  /* rotate first before translation */
+//#define FIRSTROT  /* rotate first before translation. Note: FIRSTROT code effectively computes inverse transformation of !FIRSTROT */
 #define WITHQUAT  /* implements transformation using matrices (same result, but slower) */
 
 #if !defined(WITHQUAT) && !defined(FIRSTROT)
 #error did not implement FIRSTROT yet with matrices
 #endif
 
-Array<1,float> 
-matrix_multiply( Array<2,float>&matrix, Array<1,float>& vec)
-{
-  
-  Array<1,float> tmp (vec.get_min_index(), vec.get_max_index());
-  for ( int i= matrix.get_min_index(); i<=matrix.get_max_index(); i++)
-  {
-    float elem =0;
-    const Array<1,float> row = matrix[i];
-    for ( int j = row.get_min_index(); j<=row.get_max_index();j++)
-    {
-      elem= vec[j]*row[j];
-      tmp[i] += elem;
-    }
-    
-  }
-  return tmp;
-}
-  
+#ifndef WITHQUAT
+#include "stir/numerics/MatrixFunction.h"
+#endif
 
+START_NAMESPACE_STIR
 
 RigidObject3DTransformation::
 RigidObject3DTransformation ()
@@ -160,9 +159,12 @@ RigidObject3DTransformation::set_euler_angles()
 CartesianCoordinate3D<float> 
 RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
 {
-  //CartesianCoordinate3D<float> swapped_point(-point.z(), -point.y(), -point.x());
-  CartesianCoordinate3D<float> swapped_point(point.z(), point.x(), point.y());
-
+  CartesianCoordinate3D<float> swapped_point =
+#ifndef DO_XY_SWAP
+    point;
+#else
+      stir_to_right_handed(point);
+#endif
 
   const Quaternion<float> quat_norm_tmp = quat;
 #if 0 // no longer normalise here, but in Polaris_MT_File   
@@ -180,9 +182,6 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
 #endif
 #ifdef WITHQUAT
 
-#if 1 // put to 0 for translation only!!!
-  
-  
   //transformation with quaternions 
   const Quaternion<float> point_q (0,swapped_point.x(),swapped_point.y(),swapped_point.z());
   
@@ -196,7 +195,6 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
 #else  
   // first include transation and then do the transfromation with quaternion where the other is now 
   // swapped
-  // SM include the point tmp =point+q
   Quaternion<float> tmp1=point_q;
   tmp1[2] -= translation.x();
   tmp1[3] -= translation.y();
@@ -205,13 +203,6 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   const Quaternion<float> tmp =  conjugate(quat_norm_tmp) * tmp1 *quat_norm_tmp ;
 
   const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
-#endif
-#else
-  //translation only
- 
-  const CartesianCoordinate3D<float> transformed_point (swapped_point.z()+translation.z(),
-						  swapped_point.y()+translation.y(),
-						  swapped_point.x()+translation.x());
 #endif
 
 #else // for rotational matrix 
@@ -238,9 +229,13 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   const CartesianCoordinate3D<float> transformed_point(out[out.get_max_index()],out[out.get_min_index()+1],out[out.get_min_index()]);
 
 #endif
- // return CartesianCoordinate3D<float> (-transformed_point.z(), -transformed_point.y(), -transformed_point.x());
-//}
-    return CartesianCoordinate3D<float> (transformed_point.z(), transformed_point.x(), transformed_point.y());
+
+  return 
+#ifndef DO_XY_SWAP
+    transformed_point;
+#else
+    right_handed_to_stir(transformed_point);
+#endif
 }
 
 void 
@@ -447,4 +442,194 @@ operator<<(std::ostream& out,
       << "}";
   return out;
 }
+
+
+/****************** find_closest_transformation **************/
+namespace detail
+{
+
+  template <class Iter1T, class Iter2T>
+  static
+  Array<2,float> 
+  construct_Horn_matrix(Iter1T start_orig_points,
+			Iter1T end_orig_points,
+			Iter2T start_transformed_points,
+			const CartesianCoordinate3D<float>& orig_average,
+			const CartesianCoordinate3D<float>& transf_average)
+  {
+    Array<2,float> m(IndexRange2D(4,4));
+    Iter1T orig_iter=start_orig_points;
+    Iter2T transf_iter=start_transformed_points;
+    while (orig_iter!=end_orig_points)
+      {
+	const CartesianCoordinate3D<float> orig=*orig_iter - orig_average; 
+	const CartesianCoordinate3D<float> transf=*transf_iter - transf_average; 
+	m[0][0] +=
+	  -(-orig.x()*transf.x()-orig.y()*transf.y()-orig.z()*transf.z());
+	m[0][1] +=
+	  -(-transf.y()*orig.z()+orig.y()*transf.z());
+	m[0][2] +=
+          -(transf.x()*orig.z()-orig.x()*transf.z());
+	m[0][3] +=
+	  -(-transf.x()*orig.y()+orig.x()*transf.y());
+
+	m[1][1] +=
+	  -(-orig.x()*transf.x()+orig.y()*transf.y()+orig.z()*transf.z());
+	m[1][2] +=
+	  -(-transf.x()*orig.y()-orig.x()*transf.y());
+	m[1][3] +=
+	  -(-transf.x()*orig.z()-orig.x()*transf.z());
+
+	m[2][2] +=
+	  -(orig.x()*transf.x()-orig.y()*transf.y()+orig.z()*transf.z());
+	m[2][3] +=
+	  -(-transf.y()*orig.z()-orig.y()*transf.z());
+
+	m[3][3] +=
+	  -(orig.x()*transf.x()+orig.y()*transf.y()-orig.z()*transf.z());
+
+	++orig_iter;
+	++transf_iter;
+      }
+
+    // now make symmetric
+    m[1][0] = m[0][1];
+    m[2][0] = m[0][2];
+    m[3][0] = m[0][3];
+    m[2][1] = m[1][2];
+    m[3][1] = m[1][3];
+    m[3][2] = m[2][3];
+
+    //std::cerr << "\nHorn: " << m;
+    return m;
+  }
+
+  template <class Iter1T, class Iter2T>
+  static
+  Array<2,float> 
+  construct_Horn_matrix(Iter1T start_orig_points,
+			Iter1T end_orig_points,
+			Iter2T start_transformed_points)
+  {
+    const CartesianCoordinate3D<float> orig_average =
+      average(start_orig_points, end_orig_points);
+    const CartesianCoordinate3D<float> transf_average =
+      average(start_transformed_points, 
+	      start_transformed_points + (end_orig_points - start_orig_points));
+
+    return construct_Horn_matrix(start_orig_points, end_orig_points,
+				 orig_average, transf_average);
+  }
+} // end of namespace detail
+
+template <class Iter1T, class Iter2T>
+double
+RigidObject3DTransformation::
+RMS(const RigidObject3DTransformation& transformation,
+    Iter1T start_orig_points,
+    Iter1T end_orig_points,
+    Iter2T start_transformed_points)
+{
+  double result = 0;
+  Iter1T orig_iter=start_orig_points;
+  Iter2T transf_iter=start_transformed_points;
+  while (orig_iter!=end_orig_points)
+    {
+      result += norm_squared(transformation.transform_point(*orig_iter) -
+			     *transf_iter);
+      ++orig_iter;
+      ++transf_iter;
+    }
+  
+  return std::sqrt(result / (end_orig_points - start_orig_points));
+}
+
+template <class Iter1T, class Iter2T>
+Succeeded
+RigidObject3DTransformation::
+find_closest_transformation(RigidObject3DTransformation& result,
+			    Iter1T start_orig_points,
+			    Iter1T end_orig_points,
+			    Iter2T start_transformed_points,
+			    const Quaternion<float>& initial_rotation)
+{
+#ifdef DO_XY_SWAP
+  error("Currently find_closest_transformation does not work with these conventions");
+#endif
+    const CartesianCoordinate3D<float> orig_average =
+      average(start_orig_points, end_orig_points);
+    const CartesianCoordinate3D<float> transf_average =
+      average(start_transformed_points, 
+	      start_transformed_points + (end_orig_points - start_orig_points));
+
+  const Array<2,float> horn_matrix = 
+    detail::construct_Horn_matrix(start_orig_points,
+				  end_orig_points,
+				  start_transformed_points,
+				  orig_average, transf_average);
+  
+  float max_eigenvalue;
+  Array<1,float> max_eigenvector;
+  Array<1,float> start(4);
+  std::copy(initial_rotation.begin(), initial_rotation.end(), start.begin());
+  if (max_eigenvector_using_power_method(max_eigenvalue,
+					 max_eigenvector,
+					 horn_matrix,
+					 start,
+					 /* tolerance*/ .0005,
+					 /*max_num_iterations*/ 10000UL)
+      == Succeeded::no)
+    {
+      warning("find_closest_transformation failed because power method did not converge");
+      return Succeeded::no;
+    }
+  Quaternion<float> q;
+  std::copy(max_eigenvector.begin(), max_eigenvector.end(), q.begin());
+
+  const RigidObject3DTransformation 
+    centred_transf(conjugate(q),CartesianCoordinate3D<float>(0,0,0));
+
+  const CartesianCoordinate3D<float> translation =
+    orig_average - centred_transf.transform_point(transf_average);
+
+  result = RigidObject3DTransformation(q, translation);
+
+  return Succeeded::yes;
+}
+
+
+template 
+Succeeded
+RigidObject3DTransformation::
+find_closest_transformation<>(RigidObject3DTransformation& result,
+			      std::vector<CartesianCoordinate3D<float> >::const_iterator start_orig_points,
+			      std::vector<CartesianCoordinate3D<float> >::const_iterator end_orig_points,
+			      std::vector<CartesianCoordinate3D<float> >::const_iterator start_transformed_points,
+			      const Quaternion<float>& initial_rotation);
+template 
+Succeeded
+RigidObject3DTransformation::
+find_closest_transformation<>(RigidObject3DTransformation& result,
+			      std::vector<CartesianCoordinate3D<float> >::iterator start_orig_points,
+			      std::vector<CartesianCoordinate3D<float> >::iterator end_orig_points,
+			      std::vector<CartesianCoordinate3D<float> >::iterator start_transformed_points,
+			      const Quaternion<float>& initial_rotation);
+
+
+template
+double
+RigidObject3DTransformation::
+RMS<>(const RigidObject3DTransformation&,
+      std::vector<CartesianCoordinate3D<float> >::const_iterator start_orig_points,
+      std::vector<CartesianCoordinate3D<float> >::const_iterator end_orig_points,
+      std::vector<CartesianCoordinate3D<float> >::const_iterator start_transformed_points);
+
+template
+double
+RigidObject3DTransformation::
+RMS<>(const RigidObject3DTransformation&,
+      std::vector<CartesianCoordinate3D<float> >::iterator start_orig_points,
+      std::vector<CartesianCoordinate3D<float> >::iterator end_orig_points,
+      std::vector<CartesianCoordinate3D<float> >::iterator start_transformed_points);
+
 END_NAMESPACE_STIR

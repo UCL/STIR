@@ -26,8 +26,10 @@
 #include "stir/Array.h"
 #include "stir/Bin.h"
 #include "stir/ProjDataInfo.h"
+#include <algorithm>
 
 START_NAMESPACE_STIR
+class Succeeded;
 
 /*! \ingroup  motion
   \brief Class to perform rigid object transformations in 3 dimensions
@@ -42,6 +44,8 @@ START_NAMESPACE_STIR
   In particular, STIR uses a left-handed coordinate-system, while the Polaris uses
   a right-handed system. To solve this issue, STIR coordinates are x,y swapped before
   performing any actual transformation (and the result is swapped back of course).
+  Use the functions right_handed_to_stir() and stir_to_right_handed() if you need to do
+  this explicitly..
 
   After the swapping, the transformation that is applied is as follows
   \f[ r' = \mathrm{conj}(q)(r-t)q \f]
@@ -63,7 +67,32 @@ START_NAMESPACE_STIR
 class RigidObject3DTransformation
 {
 public:
-  
+  //! a function to convert a coordinate in a right-handed system to a left-handed system as used by STIR
+  static inline 
+    CartesianCoordinate3D<float>
+    right_handed_to_stir(const CartesianCoordinate3D<float>& p)
+    { return CartesianCoordinate3D<float>(p.z(), p.x(), p.y()); }
+  //! a function to convert a coordinate in a left-handed system as used by STIR to a right-handed system
+  static inline
+    CartesianCoordinate3D<float>
+    stir_to_right_handed(const CartesianCoordinate3D<float>& p)
+    { return CartesianCoordinate3D<float>(p.z(), p.x(), p.y()); }
+  template <class Iter1T, class Iter2T>
+    static
+    Succeeded
+    find_closest_transformation(RigidObject3DTransformation& result,
+				Iter1T start_orig_points,
+				Iter1T end_orig_points,
+				Iter2T start_transformed_points,
+				const Quaternion<float>& initial_rotation);
+
+  template <class Iter1T, class Iter2T>
+    static  double
+    RMS(const RigidObject3DTransformation& transformation,
+	Iter1T start_orig_points,
+	Iter1T end_orig_points,
+	Iter2T start_transformed_points);
+
   RigidObject3DTransformation ();
 
   //! Constructor taking quaternion and translation info
