@@ -39,7 +39,8 @@ using std::endl;
 #define DO_XY_SWAP
 
 #define EPSILON	 0.00001
-#if 0
+# ifdef BOOST_NO_STDC_NAMESPACE
+// avoid some problems with overloaded function
 #define usqrt(x)(float)sqrt((double)(x))
 #define uatan2(y, x)(float)atan2((double)(y), (double)(x))
 #define ucos(x)	(float)cos((double)(x))
