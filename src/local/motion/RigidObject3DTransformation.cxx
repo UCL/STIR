@@ -36,15 +36,16 @@ using std::cerr;
 using std::endl;
 #endif
 
-#define DO_XY_SWAP
+//#define DO_XY_SWAP
 
-#define EPSILON	 0.00001
+
 # ifdef BOOST_NO_STDC_NAMESPACE
 // avoid some problems with overloaded function
 #define usqrt(x)(float)sqrt((double)(x))
 #define uatan2(y, x)(float)atan2((double)(y), (double)(x))
 #define ucos(x)	(float)cos((double)(x))
 #define usin(x)	(float)sin((double)(x))
+namespace std { using ::fabs; }
 #else
 #define usqrt(x) std::sqrt(x)
 #define uatan2(y,x) std::atan2(y,x)
@@ -52,8 +53,15 @@ using std::endl;
 #define usin(x) std::sin(x)
 #endif
 
-//#define FIRSTROT  /* rotate first before translation. Note: FIRSTROT code effectively computes inverse transformation of !FIRSTROT */
-#define WITHQUAT  /* implements transformation using matrices (same result, but slower) */
+/* decide on convention: FIRSTROT defined: rotate first before translation. 
+   Note: FIRSTROT code effectively computes inverse transformation of !FIRSTROT
+   WARNING: if FIRSTROT is defined, the Polaris code needs to be modified
+*/
+//#define FIRSTROT
+/* if next not defined, implements transformation using matrices (same result, but slower)
+   (implementation should be faster if matrices are stored instead of quaternions 
+*/  
+#define WITHQUAT  
 
 #if !defined(WITHQUAT) && !defined(FIRSTROT)
 #error did not implement FIRSTROT yet with matrices
@@ -64,6 +72,56 @@ using std::endl;
 #endif
 
 START_NAMESPACE_STIR
+
+#ifdef DO_XY_SWAP
+  //! a function to convert a coordinate in a right-handed system to a left-handed system as used by STIR
+  static inline 
+    CartesianCoordinate3D<float>
+    right_handed_to_stir(const CartesianCoordinate3D<float>& p)
+    { return CartesianCoordinate3D<float>(p.z(), p.x(), p.y()); }
+  //! a function to convert a coordinate in a left-handed system as used by STIR to a right-handed system
+  static inline
+    CartesianCoordinate3D<float>
+    stir_to_right_handed(const CartesianCoordinate3D<float>& p)
+    { return CartesianCoordinate3D<float>(p.z(), p.x(), p.y()); }
+
+#endif
+
+/* Functions to convert coordinates to quaternions and back (see e.g. Horn's paper).
+   These functions fix the convention of how to specify the quaternion.
+   The rest of the code is written independent of the convention used.
+*/
+#if 1
+static inline 
+Quaternion<float>
+point2quat(const CartesianCoordinate3D<float>& p)
+{ return Quaternion<float>(0,p.z(),p.y(),p.x());}
+
+static inline 
+CartesianCoordinate3D<float>
+quat2point(const Quaternion<float>& q)
+{ 
+  assert(std::fabs(q[1])<.1);
+  //    return CartesianCoordinate3D<float>(q[4],q[3],q[2]); 
+  return CartesianCoordinate3D<float>(q[2],q[3],q[4]); 
+}
+#else
+/* other convention as used in Horn's paper
+   but it's in contrast to the usual STIR convention of specifying
+   coordinates as z,y,x
+*/
+static inline 
+Quaternion<float>
+point2quat(const CartesianCoordinate3D<float>& p)
+{ return Quaternion<float>(0,p.x(),p.y(),p.z());}
+static inline 
+CartesianCoordinate3D<float>
+quat2point(const Quaternion<float>& q)
+{ 
+  assert(std::fabs(q[1])<.1);
+  return CartesianCoordinate3D<float>(q[4],q[3],q[2]); 
+}
+#endif
 
 RigidObject3DTransformation::
 RigidObject3DTransformation ()
@@ -78,7 +136,7 @@ RigidObject3DTransformation (const Quaternion<float>& quat_v, const CartesianCoo
 {
   // test if quaternion normalised
   assert(fabs(square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]) - 1)<1E-3);
-  // alternatively wwe could just normalise it here
+  // alternatively we could just normalise it here
 }
 
 RigidObject3DTransformation 
@@ -94,15 +152,8 @@ RigidObject3DTransformation::inverse() const
 		invq*(q*point*conj(q)+trans)*conj(invq) -
                 invq*trans*conj(invq)
             = point
+	so  -invq*trans*conj(invq) + -invtrans==0
    */
-  const Quaternion<float> invq = stir::inverse(quat);
-  const Quaternion<float>
-    qtrans(0,translation.x(),translation.y(),translation.z());
-  const Quaternion<float> qinvtrans =
-    invq * qtrans * conjugate(invq);
-  const CartesianCoordinate3D<float>
-    invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
-  return RigidObject3DTransformation(invq, invtrans*(-1));
 #else
     /* Formula for inverse is a bit complicated because of
     fixed order of first translation and then rotation
@@ -115,15 +166,12 @@ RigidObject3DTransformation::inverse() const
             = point
 	so -conj(q)*(trans)*q + -invtrans==0
    */
-  const Quaternion<float> invq = stir::inverse(quat);
-  const Quaternion<float>
-    qtrans(0,translation.x(),translation.y(),translation.z());
-  const Quaternion<float> qinvtrans =
-    conjugate(quat) * qtrans * quat;
-  const CartesianCoordinate3D<float>
-    invtrans(qinvtrans[4],qinvtrans[3],qinvtrans[2]);
-  return RigidObject3DTransformation(invq, invtrans*(-1));
 #endif
+  // note: both FIRSTROT and !FIRSTROT end up with the same formula
+  const Quaternion<float> qtrans = point2quat(translation);
+  const Quaternion<float> qinvtrans = conjugate(quat) * qtrans * quat;
+  const CartesianCoordinate3D<float> invtrans = quat2point(qinvtrans);
+  return RigidObject3DTransformation(conjugate(quat), invtrans*(-1));
 }
 
 Quaternion<float>
@@ -137,22 +185,22 @@ RigidObject3DTransformation::get_translation() const
 {
   return translation;
 }
-    
+
+#if 0    
 Coordinate3D<float> 
 RigidObject3DTransformation::get_euler_angles() const
 {
   Coordinate3D<float> euler_angles;
-  quaternion_2_euler(euler_angles, (*this).get_quaternion());
+  quaternion2euler(euler_angles, (*this).get_quaternion());
   
   return euler_angles;
-
 }
-#if 0
+
 Succeeded 
 RigidObject3DTransformation::set_euler_angles()
 {
-
-
+  #error not implemented
+  return Succeeded::no;
 }
 
 #endif
@@ -167,50 +215,24 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
       stir_to_right_handed(point);
 #endif
 
-  const Quaternion<float> quat_norm_tmp = quat;
-#if 0 // no longer normalise here, but in Polaris_MT_File   
-  //cerr << quat << endl;
-  {
-    const float quat_norm=square(quat[1]) + square(quat[2]) + square(quat[3]) +square(quat[4]);
-     
-    if (fabs(quat_norm-1)>1E-3)
-    //Quaternion<float> quat_norm = quat;
-    quat_norm_tmp.normalise();
-    //if (fabs(quat_norm-1)>1E-3)
-      //warning("Non-normalised quaternion: %g", quat_norm);
-
-  }
-#endif
 #ifdef WITHQUAT
 
   //transformation with quaternions 
-  const Quaternion<float> point_q (0,swapped_point.x(),swapped_point.y(),swapped_point.z());
-  
+ 
 #ifdef FIRSTROT
-  Quaternion<float> tmp = quat_norm_tmp * point_q * conjugate(quat_norm_tmp);
-
-  tmp[2] += translation.x();
-  tmp[3] += translation.y();
-  tmp[4] += translation.z();
-  const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
+  const CartesianCoordinate3D<float> transformed_point = 
+    quat2point(quat * point2quat(swapped_point) * conjugate(quat)) +
+    translation;
 #else  
-  // first include transation and then do the transfromation with quaternion where the other is now 
-  // swapped
-  Quaternion<float> tmp1=point_q;
-  tmp1[2] -= translation.x();
-  tmp1[3] -= translation.y();
-  tmp1[4] -= translation.z();
-  
-  const Quaternion<float> tmp =  conjugate(quat_norm_tmp) * tmp1 *quat_norm_tmp ;
-
-  const CartesianCoordinate3D<float> transformed_point (tmp[4],tmp[3],tmp[2]);
+  const CartesianCoordinate3D<float> transformed_point = 
+    quat2point(conjugate(quat) * point2quat(swapped_point - translation) * quat);
 #endif
 
 #else // for rotational matrix 
   // transformation with rotational matrix
   Array<2,float> matrix = Array<2,float>(IndexRange2D(0,2,0,2));
 
-  quaternion_2_m3(matrix,quat); 
+  quaternion2m3(matrix,quat); 
 
     
   Array<1,float> tmp(matrix.get_min_index(), matrix.get_max_index());
@@ -219,9 +241,8 @@ RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>&
   tmp[matrix.get_min_index()+1]=swapped_point.y();
   tmp[matrix.get_max_index()]=swapped_point.z();
 
-  Array<1,float> out(matrix.get_min_index(), matrix.get_max_index());
   // rotation
-  out = matrix_multiply(matrix,tmp);
+  Array<1,float> out = matrix_multiply(matrix,tmp);
   //translation
   out[matrix.get_min_index()] += translation.x();
   out[matrix.get_min_index()+1] += translation.y();
@@ -258,12 +279,12 @@ transform_bin(Bin& bin,const ProjDataInfo& out_proj_data_info,
     coord_1_transformed = transform_point(coord_1);
   
   const CartesianCoordinate3D<float> 
-    coord_2_transformed = transform_point(coord_2);
+    coord2transformed = transform_point(coord_2);
   
   dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(out_proj_data_info).
     find_bin_given_cartesian_coordinates_of_detection(bin,
                                                       coord_1_transformed,
-					              coord_2_transformed);
+					              coord2transformed);
 #else
   LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
   in_proj_data_info.get_LOR(lor, bin);
@@ -300,8 +321,10 @@ void
 RigidObject3DTransformation::get_relative_transformation(RigidObject3DTransformation& output, const RigidObject3DTransformation& reference)
 {
 #if 1
-  error("RigidObject3DTransformation::get_relative_transformatio not implemented\n");
+  error("RigidObject3DTransformation::get_relative_transformation not implemented\n");
 #else
+  // this is very wrong.
+  // correct code needs to transform translation (KT has it in Mathematica)
   CartesianCoordinate3D<float> trans;
   Quaternion<float> quat; 
   quat = (*this).quat-reference.quat;
@@ -312,19 +335,21 @@ RigidObject3DTransformation::get_relative_transformation(RigidObject3DTransforma
 
 }
 
-
+#if 0
+// next functions are not tested and hence disabled
+// they probably work when FIRSTROT is defined
 void 
 RigidObject3DTransformation::
-quaternion_2_euler(Coordinate3D<float>& Euler_angles, const Quaternion<float>& quat)
+quaternion2euler(Coordinate3D<float>& Euler_angles, const Quaternion<float>& quat)
 {
     Array<2,float> matrix = Array<2,float>(IndexRange2D(0,2,0,2));
-    quaternion_2_m3(matrix,quat);
-    m3_2_euler(Euler_angles, matrix);
+    quaternion2m3(matrix,quat);
+    m32euler(Euler_angles, matrix);
 }
 
 
 void 
-RigidObject3DTransformation::quaternion_2_m3(Array<2,float>& mat, const Quaternion<float>& quat)	/* Quaternion to 3x3 non-homogeneous rotation matrix */
+RigidObject3DTransformation::quaternion2m3(Array<2,float>& mat, const Quaternion<float>& quat)	
 {
     //assert( mat.get_min_index() == 0 && mat.get_max_index()==2)
 	//scalar s, xs, ys, zs;
@@ -361,15 +386,16 @@ RigidObject3DTransformation::quaternion_2_m3(Array<2,float>& mat, const Quaterni
 }
 
 void 
-RigidObject3DTransformation::m3_2_euler(Coordinate3D<float>& Euler_angles, const Array<2,float>& mat)      /* 3x3 non-homogeneous rotation matrix to Euler angles */
+RigidObject3DTransformation::m32euler(Coordinate3D<float>& Euler_angles, const Array<2,float>& mat)      /* 3x3 non-homogeneous rotation matrix to Euler angles */
 { 
-    //assert ( mat.get_min_index() ==0 && mat.get_max_inedx()==2)
+    //assert ( mat.get_min_index() ==0 && mat.get_max_index()==2)
 
 	float cx, cy, cz;
 	float sx, sy, sz;
 
 	sy = -mat[2][0];
 	cy = 1-(sy*sy);
+	const double EPSILON = 0.00001;
 	if (cy > EPSILON) {
 		cy = usqrt(cy);
 		cx = mat[2][2]/cy;
@@ -396,7 +422,7 @@ RigidObject3DTransformation::m3_2_euler(Coordinate3D<float>& Euler_angles, const
 }
 
 void 
-RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const Coordinate3D<float>& Euler_angles)		/* Euler angles to a Quaternion */
+RigidObject3DTransformation::euler2quaternion(Quaternion<float>& quat,const Coordinate3D<float>& Euler_angles)		/* Euler angles to a Quaternion */
 {
 	float cx, cy, cz;
 	float sx, sy, sz;
@@ -415,21 +441,31 @@ RigidObject3DTransformation::euler_2_quaternion(Quaternion<float>& quat,const Co
 	if (quat[1] < 0.0)
 		quat.neg_quaternion();
 }
+#endif
 
 RigidObject3DTransformation 
 compose (const RigidObject3DTransformation& apply_last,
 	 const RigidObject3DTransformation& apply_first)
 {
- const Quaternion<float> quat_tmp (0,apply_last.get_translation().x(),apply_last.get_translation().y(),apply_last.get_translation().z());
+#ifdef FIRSTROT
+  const Quaternion<float> q2 = apply_last.get_quaternion();
+  const CartesianCoordinate3D<float> trans = 
+    quat2point(q2 *
+		 point2quat(apply_first.get_translation())*
+		 conjugate(q2));
 
- const Quaternion<float> rotated_last_translation_quat =
-   apply_first.get_quaternion()*quat_tmp*conjugate(apply_first.get_quaternion());
- const CartesianCoordinate3D<float> trans(rotated_last_translation_quat[4],
-					  rotated_last_translation_quat[3],
-					  rotated_last_translation_quat[2]);
+ return RigidObject3DTransformation(q2 * apply_first.get_quaternion(),
+				    apply_last.get_translation()+trans);
+#else
+  const Quaternion<float> q1 = apply_first.get_quaternion();
+  const CartesianCoordinate3D<float> trans = 
+    quat2point(q1 *
+		 point2quat(apply_last.get_translation())*
+		 conjugate(q1));
 
- return RigidObject3DTransformation(apply_first.get_quaternion()*apply_last.get_quaternion(),
-				     apply_first.get_translation()+trans);
+ return RigidObject3DTransformation(q1*apply_last.get_quaternion(),
+				    apply_first.get_translation()+trans);
+#endif
 }
 
 std::ostream&
@@ -442,6 +478,38 @@ operator<<(std::ostream& out,
       << rigid_object_transformation.get_translation()
       << "}";
   return out;
+}
+
+
+std::istream&
+operator>>(std::istream& in,
+	   RigidObject3DTransformation& rigid_object_transformation)
+{
+  char c;
+  in >> std::ws >> c;
+  if (!in || c != '{')
+    {
+      in.setstate( std::ios::failbit);
+      return in;
+    }
+  Quaternion<float> q;
+  in >> q;
+  in >> std::ws >> c;
+  if (!in || c != ',')
+    {
+      in.setstate( std::ios::failbit);
+      return in;
+    }
+  CartesianCoordinate3D<float> t;
+  in >> t;
+  in >> std::ws >> c;
+  if (!in || c != '}')
+    {
+      in.setstate( std::ios::failbit);
+      return in;
+    }
+  rigid_object_transformation = RigidObject3DTransformation(q,t);
+  return in;
 }
 
 
@@ -463,6 +531,23 @@ namespace detail
     Iter2T transf_iter=start_transformed_points;
     while (orig_iter!=end_orig_points)
       {
+#if 1
+	const Quaternion<float> q1 =point2quat(*orig_iter - orig_average); 
+	const Quaternion<float> q2 = point2quat(*transf_iter - transf_average);
+	m[0][0] += q1[2]*q2[2] + q1[3]*q2[3] + q1[4]*q2[4];
+	m[0][1] += q1[4]*q2[3] - q1[3]*q2[4];
+	m[0][2] += -q1[4]*q2[2] + q1[2]*q2[4];
+	m[0][3] += q1[3]*q2[2] - q1[2]*q2[3];
+	m[1][1] += q1[2]*q2[2] - q1[3]*q2[3] - q1[4]*q2[4];
+	m[1][2] += q1[3]*q2[2] + q1[2]*q2[3];
+	m[1][3] += q1[4]*q2[2] + q1[2]*q2[4];
+	m[2][2] += -q1[2]*q2[2] + q1[3]*q2[3] - q1[4]*q2[4];
+	m[2][3] += q1[4]*q2[3] + q1[3]*q2[4];
+	m[3][3] += -q1[2]*q2[2] - q1[3]*q2[3] + q1[4]*q2[4];
+#else
+	// This is the original formulatino as given in e.g. R. Fulton's thesis
+	// However, it is specific to the convention used for point2quat
+	// while the above is independent of the convention
 	const CartesianCoordinate3D<float> orig=*orig_iter - orig_average; 
 	const CartesianCoordinate3D<float> transf=*transf_iter - transf_average; 
 	m[0][0] +=
@@ -488,7 +573,7 @@ namespace detail
 
 	m[3][3] +=
 	  -(orig.x()*transf.x()+orig.y()*transf.y()-orig.z()*transf.z());
-
+#endif
 	++orig_iter;
 	++transf_iter;
       }
@@ -526,10 +611,10 @@ namespace detail
 template <class Iter1T, class Iter2T>
 double
 RigidObject3DTransformation::
-RMS(const RigidObject3DTransformation& transformation,
-    Iter1T start_orig_points,
-    Iter1T end_orig_points,
-    Iter2T start_transformed_points)
+RMSE(const RigidObject3DTransformation& transformation,
+     Iter1T start_orig_points,
+     Iter1T end_orig_points,
+     Iter2T start_transformed_points)
 {
   double result = 0;
   Iter1T orig_iter=start_orig_points;
@@ -586,13 +671,20 @@ find_closest_transformation(RigidObject3DTransformation& result,
     }
   Quaternion<float> q;
   std::copy(max_eigenvector.begin(), max_eigenvector.end(), q.begin());
+#ifdef FIRSTROT
+  q = conjugate(q);
+  const RigidObject3DTransformation 
+    centred_transf(q,CartesianCoordinate3D<float>(0,0,0));
+  const CartesianCoordinate3D<float> translation =
+    transf_average - centred_transf.transform_point(orig_average);
+#else
 
   const RigidObject3DTransformation 
     centred_transf(conjugate(q),CartesianCoordinate3D<float>(0,0,0));
 
   const CartesianCoordinate3D<float> translation =
     orig_average - centred_transf.transform_point(transf_average);
-
+#endif
   result = RigidObject3DTransformation(q, translation);
 
   return Succeeded::yes;
@@ -620,17 +712,17 @@ find_closest_transformation<>(RigidObject3DTransformation& result,
 template
 double
 RigidObject3DTransformation::
-RMS<>(const RigidObject3DTransformation&,
-      std::vector<CartesianCoordinate3D<float> >::const_iterator start_orig_points,
-      std::vector<CartesianCoordinate3D<float> >::const_iterator end_orig_points,
-      std::vector<CartesianCoordinate3D<float> >::const_iterator start_transformed_points);
+RMSE<>(const RigidObject3DTransformation&,
+       std::vector<CartesianCoordinate3D<float> >::const_iterator start_orig_points,
+       std::vector<CartesianCoordinate3D<float> >::const_iterator end_orig_points,
+       std::vector<CartesianCoordinate3D<float> >::const_iterator start_transformed_points);
 
 template
 double
 RigidObject3DTransformation::
-RMS<>(const RigidObject3DTransformation&,
-      std::vector<CartesianCoordinate3D<float> >::iterator start_orig_points,
-      std::vector<CartesianCoordinate3D<float> >::iterator end_orig_points,
-      std::vector<CartesianCoordinate3D<float> >::iterator start_transformed_points);
+RMSE<>(const RigidObject3DTransformation&,
+       std::vector<CartesianCoordinate3D<float> >::iterator start_orig_points,
+       std::vector<CartesianCoordinate3D<float> >::iterator end_orig_points,
+       std::vector<CartesianCoordinate3D<float> >::iterator start_transformed_points);
 
 END_NAMESPACE_STIR
