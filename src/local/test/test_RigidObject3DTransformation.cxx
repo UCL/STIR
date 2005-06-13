@@ -414,8 +414,14 @@ test_transform_bin_with_inverse(const ProjDataInfo& proj_data_info, const bool i
   unsigned num_bins_checked = 0;
   unsigned num_bins_in_range = 0;
   Coordinate4D<float> max_diff(0,0,0,0);
+#ifdef NEW_ROT
   const float allowed_diff =
     is_uncompressed ? 1.1F : 1.1F;
+#else
+  const float allowed_diff =
+    2.1F;
+#endif
+
   for (int segment_num=proj_data_info.get_min_segment_num();
        segment_num<=proj_data_info.get_max_segment_num();
        ++segment_num)
