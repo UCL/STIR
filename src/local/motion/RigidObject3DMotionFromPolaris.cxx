@@ -32,6 +32,12 @@
 #include <fstream>
 #include <ctime>
 
+#ifndef BOOST_NO_STRINGSTREAM
+#include <sstream>
+#else
+#include <strstream>
+#endif
+
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; using ::tm; using ::localtime; }
 #endif
@@ -40,12 +46,75 @@ START_NAMESPACE_STIR
 
 static const double time_not_yet_determined=-1234567.8;
 
-static 
+/*! Convert from Polaris transformation to STIR conventions
+
+   The Polaris records info as q0 qx qy qz tx ty tz, where the
+   coordinate system is right-handed (see the Polaris manual).
+   The STIR coordinate system is left-handed. We do take
+   a coordinate transformation into account when applying 
+   Polaris transformations to scanner coordinates. However,
+   that coordinate transformation uses RigidObject3DTransformation,
+   and hence cannot swap right-handed to left-handed.
+   So, we convert the Polaris transformation to a left-handed
+   transformation by swapping x and y.
+
+   The exact form then depends heavily on conventions in RigidObject3DTransformation,
+   which currently takes its info as
+   \code
+   Quaternion<float>(q0,qZ,qY,qX), CartesianCoordinate3D<float>(tZ,tY,tX)
+   \endcode
+   where I've used capitals to denote the left-handed coordinate system:
+   \code
+    x=Y,y=X,z=Z.
+   \endcode
+   Some careful checks in e.g. Mathematica then show that
+   \code
+    qx=qY,qy=qX,qz=qZ.
+   \endcode
+   This not so obvious as it sounds as there is a potential sign here. 
+   For instance, the Polaris convention uses a quaternion 
+   <code>(0,x,y,z)</code> for a point,
+   while RigidObject3DTransformation uses </code>(0,z,y,x)</code> 
+   (see the point2quat function in RigidObject3DTransformation.cxx ).
+   So, effectively there are 2 coordinate swaps between Polaris conventions and 
+   RigidObject3DTransformation:
+   \code
+   Quaternion<float>(q0,qZ,qY,qX) = Quaternion<float>(q0,qz,qx,qy)
+   \endcode
+   and <code>qz,qx,qy</code> is an even permutation of <code>qx,qy,qz</code>
+*/
 RigidObject3DTransformation
+RigidObject3DMotionFromPolaris::
 make_transformation_from_polaris_data(Polaris_MT_File::Record const& record)
 {
+  /* WARNING:
+     This depends conventions in RigidObject3DTransformation.
+
+     Note that Polaris_MT_File already sets the record.trans as (tz,ty,tx).
+
+     Some other examples:
+
+     point2quat(z,y,x)->(0,x,y,z) and DO_XY_SWAP (i.e. explicit xy swap in transform_point)
+     return RigidObject3DTransformation(record.quat, record.trans);
+
+     point2quat(z,y,x)->(0,z,y,x) and no DO_XY_SWAP
+     return 
+        RigidObject3DTransformation(Quaternion<float>(record.quat[1],
+	                                              -record.quat[3],
+						      -record.quat[2],
+						      -record.quat[4]),
+				CartesianCoordinate3D<float>(record.trans.z(),
+							     record.trans.x(),
+							     record.trans.y()));
+  */ 
   return
-    RigidObject3DTransformation(record.quat, record.trans);
+    RigidObject3DTransformation(Quaternion<float>(record.quat[1],
+						  record.quat[4],
+						  record.quat[2],
+						  record.quat[3]),
+				CartesianCoordinate3D<float>(record.trans.z(),
+							     record.trans.x(),
+							     record.trans.y()));
 }
 
 // Find and store gating values in a vector from lm_file  
@@ -638,6 +707,7 @@ bool RigidObject3DMotionFromPolaris::post_processing()
       return true;
     }
   {
+#if 0
     std::ifstream move_from_scanner_file(transformation_from_scanner_coordinates_filename.c_str());
     if (!move_from_scanner_file.good())
       {
@@ -659,6 +729,60 @@ bool RigidObject3DMotionFromPolaris::post_processing()
 
     move_from_scanner_coords = 
       RigidObject3DTransformation(quat, trans);
+#else
+    {
+      std::string conventions;
+      std::string transformation_as_string;
+      KeyParser parser;
+      parser.add_start_key("Move from scanner to tracker coordinates");
+      parser.add_key("conventions", &conventions);
+      parser.add_key("transformation",&transformation_as_string);
+      parser.add_stop_key("END"); 
+      if (parser.parse(transformation_from_scanner_coordinates_filename.c_str()) == false)
+	{
+	  warning("Error reading transformation_from_scanner_coordinates_filename:\n'%s'",
+		  transformation_from_scanner_coordinates_filename.c_str());
+	  return true;
+	}
+      if (conventions != "q0qzqyqx and left-handed")
+	{
+	  warning("Error reading transformation_from_scanner_coordinates_filename:\n'%s'"
+		  "\nvalue for 'conventions' keyword has to be 'q0qzqyqx and left-handed'",
+		  "\nbut is '%s'",
+		  transformation_from_scanner_coordinates_filename.c_str(),
+		  conventions.c_str());
+	  return true;
+	}
+      std::stringstream transformation_as_stream(transformation_as_string);
+      transformation_as_stream >> move_from_scanner_coords;
+      if (!transformation_as_stream.good())
+	{
+	  warning("Error reading transformation_from_scanner_coordinates_filename:\n'%s'"
+		  "\nvalue for 'transformation' keyword is invalid."
+		  "\nIt should be something like '{{q0,qz,qy,qx},{tz,ty,tx}}'",
+		  transformation_from_scanner_coordinates_filename.c_str());
+	  return true;
+	}
+      if (std::fabs(norm(move_from_scanner_coords.get_quaternion())-1)>.01)
+      {
+#ifdef BOOST_NO_STRINGSTREAM
+	// dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+	char str[100000];
+	ostrstream s(str, 100000);
+#else
+	std::ostringstream s;
+#endif
+	s << move_from_scanner_coords;
+	warning("Error reading transformation_from_scanner_coordinates_filename:\n'%s'"
+		"\nvalue for 'transformation' keyword is invalid:"
+		"\nquaternion should be normalised to 1."
+		"\ntransformation read:\n%s",
+		transformation_from_scanner_coordinates_filename.c_str(),
+		s.str().c_str());
+	return true;
+	}
+    }
+#endif
     cerr << "'Move_from_scanner' quaternion  " << move_from_scanner_coords.get_quaternion()<<endl;
     cerr << "'Move_from_Scanner' translation  " << move_from_scanner_coords.get_translation()<<endl;
     move_to_scanner_coords = move_from_scanner_coords.inverse();

@@ -32,6 +32,22 @@ START_NAMESPACE_STIR
   If present, this file is read and actual synchronisation is skipped.
   (This is useful, as the synchronisation is slow as it walks through the
   whole list mode file).
+
+  \par Parsing info
+  The class can parse a file for the coordinate transformation that goes from
+  scanner to tracker coordinates. This file has to have the following
+  format.
+\verbatim
+  Move from scanner to tracker coordinates:=
+   conventions := q0qzqyqx and left-handed
+   transformation:= \
+    {{-0.00525584, -0.0039961, 0.999977,0.00166456},\
+     {-1981.93, 20.1226, 3.96638}}
+ end:=
+\endverbatim
+  Obviously the numbers will depend on your systems.
+
+  \todo move synchronisation out of this class
 */
 class RigidObject3DMotionFromPolaris: 
   public 
@@ -43,6 +59,13 @@ class RigidObject3DMotionFromPolaris:
 public:
   //! Name which will be used when parsing a MotionTracking object 
   static const char * const registered_name; 
+
+  //! Convert from Polaris transformation to STIR conventions
+  /* see more info in .cxx file */
+  static 
+    RigidObject3DTransformation
+    make_transformation_from_polaris_data(Polaris_MT_File::Record const& record);
+
 
   // only need this to enable LmToProjDataWithMC(const char * const par_filename) function
   RigidObject3DMotionFromPolaris();
