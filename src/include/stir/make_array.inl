@@ -72,7 +72,7 @@ VectorWithOffset<T>
 make_vector(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4)
 {
   VectorWithOffset<T> a(5);
-  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=4;
+  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4;
   return a;
 }
 
@@ -82,7 +82,7 @@ make_vector(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4,
 	    const T& a5)
 {
   VectorWithOffset<T> a(6);
-  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=4; a[5]=a5;
+  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; a[5]=a5;
   return a;
 }
 
@@ -92,7 +92,7 @@ make_vector(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4,
 	    const T& a5, const T& a6)
 {
   VectorWithOffset<T> a(7);
-  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=4; a[5]=a5; a[6]=a6;
+  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; a[5]=a5; a[6]=a6;
   return a;
 }
 
@@ -102,7 +102,7 @@ make_vector(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4,
 	    const T& a5, const T& a6, const T& a7)
 {
   VectorWithOffset<T> a(8);
-  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=4; a[5]=a5; a[6]=a6; a[7]=a7;
+  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; a[5]=a5; a[6]=a6; a[7]=a7;
   return a;
 }
 
@@ -113,7 +113,7 @@ make_vector(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4,
 	    const T& a5, const T& a6, const T& a7, const T& a8)
 {
   VectorWithOffset<T> a(9);
-  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=4; 
+  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; 
   a[5]=a5; a[6]=a6; a[7]=a7; a[8]=a8;
   return a;
 }
@@ -124,7 +124,7 @@ make_vector(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4,
 	    const T& a5, const T& a6, const T& a7, const T& a8, const T& a9)
 {
   VectorWithOffset<T> a(10);
-  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=4; 
+  a[0]=a0; a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; 
   a[5]=a5; a[6]=a6; a[7]=a7; a[8]=a8; a[9]=a9;
   return a;
 }
