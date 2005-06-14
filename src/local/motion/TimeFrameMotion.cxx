@@ -118,8 +118,8 @@ post_processing()
       return true;
     }
     {
-      RigidObject3DTransformation av_motion = 
-	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+      const RigidObject3DTransformation av_motion = 
+	ro3d_ptr->compute_average_motion_in_scanner_coords(*_reference_abs_time_sptr);
       _transformation_to_reference_position =av_motion.inverse();    
     }
 
@@ -157,15 +157,10 @@ set_frame_num_to_process(const int value)
   cerr << "\nDoing frame " << frame_num_to_process
        << ": from " << start_time << " to " << end_time << endl;
   
-  
   _current_rigid_object_transformation =
-    ro3d_ptr->compute_average_motion_rel_time(start_time, end_time);
-  
-  _current_rigid_object_transformation = 
-    compose(ro3d_ptr->get_transformation_to_scanner_coords(),
-	    compose(_transformation_to_reference_position,
-		    compose(_current_rigid_object_transformation,
-			    ro3d_ptr->get_transformation_from_scanner_coords())));
+    compose(_transformation_to_reference_position,
+	    ro3d_ptr->
+	    compute_average_motion_in_scanner_coords_rel_time(start_time, end_time));
   if (!do_move_to_reference)
     _current_rigid_object_transformation = 
       _current_rigid_object_transformation.inverse();

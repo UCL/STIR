@@ -367,7 +367,7 @@ post_processing()
     }
     {
       RigidObject3DTransformation av_motion = 
-	ro3d_ptr->compute_average_motion(*_reference_abs_time_sptr);
+	ro3d_ptr->compute_average_motion_in_scanner_coords(*_reference_abs_time_sptr);
       _transformation_to_reference_position =av_motion.inverse();    
     }
 
@@ -462,13 +462,11 @@ FindMCNormFactors::process_data()
 
 	    if (current_time+time_interval_this_frame > end_time + time_interval_this_frame*.01)
 	      error("\ntime interval goes beyond end of frame. Check code!\n");
-	    RigidObject3DTransformation ro3dtrans =
-	      ro3d_ptr->compute_average_motion_rel_time(current_time, current_time+time_interval_this_frame);
-	    ro3dtrans = 
-	      compose(ro3d_ptr->get_transformation_to_scanner_coords(),
-		      compose(_transformation_to_reference_position,
-			      compose(ro3dtrans,
-				ro3d_ptr->get_transformation_from_scanner_coords())));
+	    const RigidObject3DTransformation ro3dtrans =
+	      compose(_transformation_to_reference_position,
+		      ro3d_ptr->
+		      compute_average_motion_in_scanner_coords_rel_time(current_time, 
+									current_time+time_interval_this_frame));
             
 	    for (int in_segment_num = proj_data_info_uncompressed_ptr->get_min_segment_num(); 
 		 in_segment_num <= proj_data_info_uncompressed_ptr->get_max_segment_num();
