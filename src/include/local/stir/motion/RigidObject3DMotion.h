@@ -55,16 +55,33 @@ class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>,
 public:
   virtual ~RigidObject3DMotion() {}
 
-  //virtual RigidObject3DTransformation 
-  //  compute_average_motion(const double start_time, const double end_time)const=0;
+  //! get motion in tracker coordinates  
+  virtual
+    RigidObject3DTransformation 
+    get_motion_in_tracker_coords_rel_time(const double time) const =0;
+
+  //! get motion in scanner coordinates
+  virtual 
+    RigidObject3DTransformation 
+    get_motion_in_scanner_coords_rel_time(const double time) const;
+
+  //! \name Average motion for a time interval
+  //@{
+  virtual 
+  RigidObject3DTransformation
+  compute_average_motion_in_tracker_coords(const AbsTimeInterval&) const;
+
+  virtual 
+  RigidObject3DTransformation
+  compute_average_motion_in_scanner_coords(const AbsTimeInterval&) const;
 
   virtual RigidObject3DTransformation 
-    compute_average_motion_rel_time(const double start_time, const double end_time)const = 0;
+    compute_average_motion_in_tracker_coords_rel_time(const double start_time, const double end_time)const = 0;
 
-  virtual void get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const =0;
+  virtual RigidObject3DTransformation 
+    compute_average_motion_in_scanner_coords_rel_time(const double start_time, const double end_time)const;
 
-  RigidObject3DTransformation
-  compute_average_motion(const AbsTimeInterval&) const;
+  //@}
 
   //! Has to be called and will be used to synchronise listmode time and motion tracking time
   /*! This should make sure that a 'rel_time' of 0 corresponds to the start of the list mode data

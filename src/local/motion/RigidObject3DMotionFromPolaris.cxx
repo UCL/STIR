@@ -210,15 +210,15 @@ rel_time_to_polaris_time(const double time) const
 
 RigidObject3DTransformation 
 RigidObject3DMotionFromPolaris::
-compute_average_motion_rel_time(const double start_time, const double end_time) const
+compute_average_motion_in_tracker_coords_rel_time(const double start_time, const double end_time) const
 {
   return compute_average_motion_polaris_time(rel_time_to_polaris_time(start_time),
 					     rel_time_to_polaris_time(end_time));
 }
 
-void 
+RigidObject3DTransformation 
 RigidObject3DMotionFromPolaris::
-get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const
+get_motion_in_tracker_coords_rel_time(const double time) const
 {
   const double polaris_time =
     rel_time_to_polaris_time(time);
@@ -235,15 +235,18 @@ get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) c
     error("RigidObject3DMotionFromPolaris: motion asked for time %g which is "
 	  "beyond the range of data (time in Polaris units: %g)\n",
 	  time, polaris_time);
+    // statement to avoid compiler warning
+    return RigidObject3DTransformation();
   }
   else
   {
 #if 0
   const RigidObject3DTransformation ro3dtrans_tmp (iterator_for_record_just_after_this_time->quat,
               iterator_for_record_just_after_this_time->trans);
-  ro3dtrans=ro3dtrans_tmp;
+  return ro3dtrans_tmp;
 #else
-  ro3dtrans = make_transformation_from_polaris_data(*iterator_for_record_just_after_this_time);
+  return
+    make_transformation_from_polaris_data(*iterator_for_record_just_after_this_time);
 #endif
   }
 

@@ -71,10 +71,11 @@ public:
   RigidObject3DMotionFromPolaris();
 
   virtual RigidObject3DTransformation 
-    compute_average_motion_rel_time(const double start_time, const double end_time) const;
+    compute_average_motion_in_tracker_coords_rel_time(const double start_time, const double end_time) const;
 
-  //! Given the time obtain motion info, i.e. RigidObject3DTransformation
-  virtual void get_motion_rel_time(RigidObject3DTransformation& ro3dtrans, const double time) const;
+  virtual 
+    RigidObject3DTransformation
+    get_motion_in_tracker_coords_rel_time(const double time) const;
 
   //! Synchronise motion tracking file and listmode file
   virtual Succeeded synchronise(CListModeData& listmode_data);
