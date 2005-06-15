@@ -43,8 +43,7 @@ namespace BSpline {
 			const BasicCoordinate<num_dimensions,double>& z2s,
 			const BasicCoordinate<num_dimensions,double>& lambdas)
 		{		
-			Array<num_dimensions,out_elemT> temp ( input.get_index_range());
-			
+			Array<num_dimensions,out_elemT> temp ( input.get_index_range());			
 			BSplines_coef(temp.begin(),temp.end(), 
 				input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
 			
@@ -67,6 +66,7 @@ namespace BSpline {
 			const BasicCoordinate<1,double>& z2s,
 			const BasicCoordinate<1,double>& lambdas)
 		{		
+			//coeffs = Array<1,out_elemT>(input.get_index_range());
 			BSplines_coef(coeffs.begin(), coeffs.end(), 
 				input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
 		}
@@ -82,8 +82,10 @@ namespace BSpline {
 			const BasicCoordinate<num_dimensions,pos_type>& relative_positions,
 			const BasicCoordinate<num_dimensions,BSplineType>& spline_types)
 		{
-			T BSplines_value=0;
+			T BSplines_value;
+			set_to_zero(BSplines_value);
 			const int int_pos =(int)floor(relative_positions[1]);
+			const int input_size = coeffs.size();
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
 			{	
 				const int input_size = coeffs.size();
@@ -116,10 +118,11 @@ namespace BSpline {
 			const BasicCoordinate<1,pos_type>& relative_positions,
 			const BasicCoordinate<1,BSplineType>& spline_types)
 		{
-			T BSplines_value=static_cast<T>(0);		
+			T BSplines_value;
+			set_to_zero(BSplines_value);
 			const int int_pos =(int)floor(relative_positions[1]);
 			const int input_size = coeffs.size();
-#if 0
+#if 1
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
 			{	
 				int index;
@@ -179,7 +182,8 @@ namespace BSpline {
 			const BasicCoordinate<num_dimensions,pos_type>& relative_positions,
 			FunctionT f)
 		{
-			T BSplines_value=0;		
+			T BSplines_value;
+			set_to_zero(BSplines_value);		
 			const int int_pos =(int)floor(relative_position);
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
 			{	
@@ -187,6 +191,7 @@ namespace BSpline {
 					f(k-relative_positions[1])*
 					convolution(get_value(coeffs,index), cut_first_dimension(relative_positions), f);				
 			}
+			return BSplines_value ;
 		}
 		
 		// 1d specialisation
@@ -197,7 +202,8 @@ namespace BSpline {
 			const BasicCoordinate<1,pos_type>& relative_positions,
 			FunctionT f)
 		{
-			T BSplines_value=0;		
+			T BSplines_value;
+			set_to_zero(BSplines_value);		
 			const int int_pos =(int)floor(relative_position);
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
 			{	
@@ -210,6 +216,7 @@ namespace BSpline {
 					f(k-relative_positions[1])*
 					get_value(coeffs,index);			
 			}
+		return BSplines_value ;
 		}
 		
 		template <int num_dimensions , typename T >
@@ -219,6 +226,7 @@ namespace BSpline {
 			const BasicCoordinate<num_dimensions,pos_type>& relative_positions)
 		{
 			convolution(coeffs, relative_positions, BSplines_weight<T>);
+			return BSplines_value ;
 		}
 		
 		template <typename T >
@@ -228,6 +236,7 @@ namespace BSpline {
 			const BasicCoordinate<1,pos_type>& relative_positions)
 		{	
 			convolution(coeffs, relative_positions, BSplines_weight<T>);
+			return BSplines_value ;
         }
 #endif
   } // end of namespace detail	

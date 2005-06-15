@@ -50,9 +50,9 @@ namespace BSpline {
 		void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
 		set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type)
 	{
-		_spline_types = this_type;
+		this->_spline_types = this_type;
 		for ( int i = 1 ; i<=num_dimensions; ++i)
-			detail::set_BSpline_values(_z1s[i],_z2s[i],_lambdas[i],this_type[i]);
+			detail::set_BSpline_values(this->_z1s[i],this->_z2s[i],this->_lambdas[i],this_type[i]);
 	}
 	
 	template <int num_dimensions, typename out_elemT, typename in_elemT>
@@ -61,8 +61,8 @@ namespace BSpline {
 	{		
 		for ( int i = 1 ; i<=num_dimensions; ++i)
 		{
-			_spline_types[i] = this_type;
-			detail::set_BSpline_values(_z1s[i],_z2s[i],_lambdas[i],this_type);
+			this->_spline_types[i] = this_type;
+			detail::set_BSpline_values(this->_z1s[i],this->_z2s[i],this->_lambdas[i],this_type);
 		}
 	}
 	
@@ -70,7 +70,8 @@ namespace BSpline {
 		void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT> ::
 		set_coef(const Array<num_dimensions,in_elemT> & input)
 	{	
-		detail::set_coef(_coeffs, input, _z1s, _z2s, _lambdas);
+		this->_coeffs = Array<num_dimensions,out_elemT>(input.get_index_range());
+		detail::set_coef(this->_coeffs, input, this->_z1s, this->_z2s, this->_lambdas);
 	}
 	
 	
@@ -79,7 +80,7 @@ namespace BSpline {
 		BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
 		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const
 	{
-		return detail::compute_BSplines_value(_coeffs, relative_positions, _spline_types);
+		return detail::compute_BSplines_value(this->_coeffs, relative_positions, this->_spline_types);
 	}
 	
 } // end of namespace BSpline

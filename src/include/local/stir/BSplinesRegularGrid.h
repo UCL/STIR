@@ -57,7 +57,7 @@ private:
 public:
 	// only there for tests
 	Array<num_dimensions,out_elemT> get_coefficients() const
-	{ return _coeffs;  }
+	{ return this->_coeffs;  }
 	
 	
 	//! default constructor: no input
@@ -89,7 +89,8 @@ public:
 	
 	inline
 		const out_elemT 
-		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;	
+		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;		
+
 	};
 	
 } // end BSpline namespace
