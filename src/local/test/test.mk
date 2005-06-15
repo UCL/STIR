@@ -9,12 +9,16 @@ test_RigidObject3DTransformation.cxx \
 	test_proj_data_info_LOR.cxx \
 	test_IR_filters.cxx \
 	test_BSplines.cxx \
-	test_BSplinesRegularGrid \
+	test_BSplinesRegularGrid1D.cxx \
+	test_BSplinesRegularGrid.cxx \
 	test_erf.cxx   
 
 # rule to ignore registries
 # note: has to be before include statement as that changes value of $(dir)
 ${DEST}$(dir)/test_Fourier: ${DEST}$(dir)/test_Fourier$(O_SUFFIX) $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_BSplinesRegularGrid: ${DEST}$(dir)/test_BSplinesRegularGrid$(O_SUFFIX) $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 # need to add this as it's not in the TEST_SOURCES macro
