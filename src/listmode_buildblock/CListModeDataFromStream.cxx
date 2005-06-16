@@ -31,6 +31,9 @@ using std::streamsize;
 using std::streampos;
 #endif
 
+// enable this at your peril
+//#define __STIR_DO_OUR_OWN_BUFFERED_IO
+
 START_NAMESPACE_STIR
 CListModeDataFromStream::
 CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
@@ -60,8 +63,9 @@ CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
   starting_stream_position = stream_ptr->tellg();
   if (!stream_ptr->good())
     error("CListModeDataFromStream: error in tellg()\n");
-
+#ifdef __STIR_DO_OUR_OWN_BUFFERED_IO
   num_chars_left_in_buffer = 0;
+#endif
 }
 
 CListModeDataFromStream::
@@ -95,7 +99,9 @@ CListModeDataFromStream(const string& listmode_filename,
 	  listmode_filename.c_str());
 
   scanner_ptr = scanner_ptr_v;
+#ifdef __STIR_DO_OUR_OWN_BUFFERED_IO
   num_chars_left_in_buffer = 0;
+#endif
 }
 
 std::time_t 
@@ -126,7 +132,7 @@ get_next_record(CListRecord& record_of_general_type) const
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
 
-#if 0
+#ifndef __STIR_DO_OUR_OWN_BUFFERED_IO
   // simple implementation that reads the records one by one from the stream
   // rely on file caching by the C++ library or the OS
 
@@ -226,8 +232,10 @@ reset()
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
 
+#ifdef __STIR_DO_OUR_OWN_BUFFERED_IO
   // make sure we forget about any contents in the buffer
   num_chars_left_in_buffer = 0;
+#endif
 
   // Strangely enough, once you read past EOF, even seekg(0) doesn't reset the eof flag
   if (stream_ptr->eof()) 
@@ -247,9 +255,27 @@ save_get_position()
   assert(!is_null_ptr(stream_ptr));
   // TODO should somehow check if tellg() worked and return an error if it didn't
   streampos pos;
+#ifndef __STIR_DO_OUR_OWN_BUFFERED_IO
   if (!stream_ptr->eof())
     {
       pos = stream_ptr->tellg();
+      if (!stream_ptr->good())
+	error("CListModeDataFromStream::save_get_position\n"
+	      "Error after getting position in file");
+    }
+  else
+    {
+      // use -1 to signify eof 
+      // (this is probably the behaviour of tellg anyway, but this way we're sure).
+      pos = streampos(-1); 
+    }
+#else
+  if (!stream_ptr->eof())
+    {
+      pos = stream_ptr->tellg();
+      if (!stream_ptr->good())
+	error("CListModeDataFromStream::save_get_position\n"
+	      "Error after getting position in file");
       pos -= num_chars_left_in_buffer;
     }
   else
@@ -259,7 +285,15 @@ save_get_position()
       if (num_chars_left_in_buffer!=0)
 	{
 	  stream_ptr->seekg(-num_chars_left_in_buffer, std::ios::end);
+	  if (!stream_ptr->good())
+	    error("CListModeDataFromStream::save_get_position\n"
+		  "Error after seeking %lu bytes from end of file",
+		  static_cast<unsigned long>(num_chars_left_in_buffer));
 	  pos = stream_ptr->tellg();
+	  if (!stream_ptr->good())
+	    error("CListModeDataFromStream::save_get_position\n"
+		  "Error after getting position in file (after seeking %lu bytes from end of file)",
+		  static_cast<unsigned long>(num_chars_left_in_buffer));
 	}
       else
 	{
@@ -268,6 +302,7 @@ save_get_position()
 	  pos = streampos(-1); 
 	}
     }
+#endif
   saved_get_positions.push_back(pos);
   return saved_get_positions.size()-1;
 } 
@@ -285,7 +320,9 @@ set_get_position(const CListModeDataFromStream::SavedPosition& pos)
   else
     stream_ptr->seekg(saved_get_positions[pos]);
     
+#ifdef __STIR_DO_OUR_OWN_BUFFERED_IO
   num_chars_left_in_buffer = 0;
+#endif
   if (!stream_ptr->good())
     return Succeeded::no;
   else
