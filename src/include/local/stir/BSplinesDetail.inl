@@ -68,7 +68,7 @@ namespace BSpline {
 			BSplines_coef(coeffs.begin(), coeffs.end(), 
 				input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
 		}
-
+		
 #if defined( _MSC_VER) && _MSC_VER<=1300
 #define T float
 		template <int num_dimensions>
@@ -82,15 +82,15 @@ namespace BSpline {
 		{
 			T BSplines_value;
 			set_to_zero(BSplines_value);
+			const int input_size = coeffs.size();
 			const int int_pos =(int)floor(relative_positions[1]);
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
-			{	
-				const int input_size = coeffs.size();
+			{					
 				int index;
 				if (k<0) index=-k;
 				else if (k>=input_size) index=2*input_size-2-k;
 				else index = k;
-				assert(0<=index && index<input_size);
+				assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
 				BSplines_value += 
 					BSplines_weights(k-relative_positions[1], spline_types[1])*
 					compute_BSplines_value(coeffs[index], 
@@ -119,48 +119,19 @@ namespace BSpline {
 			set_to_zero(BSplines_value);
 			const int int_pos =(int)floor(relative_positions[1]);
 			const int input_size = coeffs.size();
-#if 1
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
 			{	
 				int index;
 				if (k<0) index=-k;
 				else if (k>=input_size) index=2*input_size-2-k;
 				else index = k;
-				assert(0<=index && index<input_size);
+				assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
 				BSplines_value += 
 					BSplines_weights(k-relative_positions[1], spline_types[1])*
 					coeffs[index];      
 			}
-
-#else	
-			const int kmin= int_pos-2;
-			const int kmax= int_pos+2;
-			const int kmax_in_range = std::min(kmax, input_size-1);
-			int k=kmin;
-			for (; k<0; ++k)		
-			{		
-				const int index=-k;
-				assert(0<=index && index<input_size);
-				BSplines_value += BSplines_weights(k-relative_positions[1], spline_types[1])*
-					coeffs[index];      
-			}
-			for (; k<=kmax_in_range; ++k)		
-			{		
-				const int index=k;	
-				assert(0<=index && index<input_size);
-				BSplines_value += BSplines_weights(k-relative_positions[1], spline_types[1])*
-					coeffs[index];      
-				for (; k<=kmax; ++k)		
-				{		
-					const int index=2*input_size-2-k;
-					assert(0<=index && index<input_size);
-					BSplines_value += BSplines_weights(k-relative_positions[1], spline_types[1])*
-					coeffs[index];      
-				}
-			}
-#endif
 			return BSplines_value ;
-			}
+		}
 #if 0
 		// TODO later
 		// fancy stuff to avoid having to repeat above convolution formulas for different kernels
@@ -208,12 +179,12 @@ namespace BSpline {
 				if (k<0) index=-k;
 				else if (k>=input_size) index=2*input_size-2-k;
 				else index = k;
-				assert(0<=index && index<input_size);
+				assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
 				BSplines_value += 
 					f(k-relative_positions[1])*
 					get_value(coeffs,index);			
 			}
-		return BSplines_value ;
+			return BSplines_value ;
 		}
 		
 		template <int num_dimensions , typename T >
