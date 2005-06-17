@@ -55,8 +55,7 @@ namespace BSpline {
 					cut_first_dimension(z2s), 
 					cut_first_dimension(lambdas));
 			}
-		}	
-		
+		}			
 		
 		// 1d specialisation
 		template <typename out_elemT, typename in_elemT>
@@ -65,8 +64,7 @@ namespace BSpline {
 			const BasicCoordinate<1,double>& z1s,
 			const BasicCoordinate<1,double>& z2s,
 			const BasicCoordinate<1,double>& lambdas)
-		{		
-			//coeffs = Array<1,out_elemT>(input.get_index_range());
+		{				
 			BSplines_coef(coeffs.begin(), coeffs.end(), 
 				input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
 		}
@@ -85,7 +83,6 @@ namespace BSpline {
 			T BSplines_value;
 			set_to_zero(BSplines_value);
 			const int int_pos =(int)floor(relative_positions[1]);
-			const int input_size = coeffs.size();
 			for (int k=int_pos-2; k<int_pos+3; ++k)		
 			{	
 				const int input_size = coeffs.size();
