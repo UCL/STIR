@@ -41,6 +41,10 @@
 #include <typeinfo>
 #include <fstream>
 #include <cstring>
+#include <cstdlib>
+# ifdef BOOST_NO_STDC_NAMESPACE
+ namespace std { using ::getenv; }
+# endif
 
 #include <strstream>
 
@@ -49,7 +53,6 @@
 #endif
 
 #ifndef STIR_NO_NAMESPACES
-using std::getline;
 using std::ifstream;
 using std::cerr;
 using std::cout;
@@ -85,7 +88,7 @@ static void read_line(istream& input, string& line,
   while(true)
     {
 #ifndef _MSC_VER
-      getline(input, thisline);
+      std::getline(input, thisline);
 #else
       /* VC 6.0 getline does not work properly when input==cin.
          It only returns after a 2nd CR is entered. (The entered input is 
@@ -155,6 +158,34 @@ static void read_line(istream& input, string& line,
 	}
     }
 
+  // replace ${text} with value of environment variable
+  {
+    string::size_type start_of_env_string;
+    while ((start_of_env_string = line.find("${")) != string::npos)
+      {
+	const string::size_type end_of_env_string = line.find('}',start_of_env_string+2);
+	if (end_of_env_string == string::npos)
+	  break;
+	const string::size_type size_of_env_string =
+	  end_of_env_string-start_of_env_string+1;
+	const string name_of_env_variable = line.substr(start_of_env_string+2, size_of_env_string-3);
+	const char * const value_of_env_variable = std::getenv(name_of_env_variable.c_str());
+	if (value_of_env_variable == 0)
+	  {
+	    warning("KeyParser: environment variable '%s' not found. Replaced by empty string.\n"
+		    "This happened while parsing the following line:\n%s",
+		    name_of_env_variable.c_str(),
+		    line.c_str());
+	    line.erase(start_of_env_string, size_of_env_string);
+	  }
+	else
+	  {
+	    line.replace(start_of_env_string, 
+			 size_of_env_string,
+			 value_of_env_variable);
+	  }
+      }
+  }
 }
 
 // map_element implementation;

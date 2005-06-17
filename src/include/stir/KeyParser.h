@@ -129,7 +129,8 @@ public :
   \ingroup buildblock
   \brief A class to parse Interfile headers
 
-  Currently, Interfile 3.3 parsing rules are hard-coded. 
+  Currently, Interfile 3.3 parsing rules are hard-coded, with
+  some extensions.
 
   KeyParser reads input line by line and parses each line separately.
   It allows for '\\r' at the end of the line (as in files
@@ -140,14 +141,18 @@ public :
 
   Lines can have arbitrary length.
 
-  \warning The backslash HAS to be the last character. Even
-  spaces after it will stop the 'continuation'.
+  A special facility is provided for using the value of environment
+  variables: after reading the whole line, the text is checked for
+  occurences of the form <tt>${some_text}$</tt>. These text strings
+  are then replaced by the value of the corresponding environment
+  variables (using the std::getenv function).
+
+  \warning For end-of-line continuation, the backslash HAS to be
+  the last character. Even spaces after it will stop the 'continuation'.
   
   \warning Vectored keys are treated very dangerously: when a keyword
   is assumed to be vectored, run-time errors occur when it is used without [].
   \warning The use of the [*] index for vectored keys is NOT supported.
-
-  \warning All this is going to change to a more general purpose parser...
 
   Main problem: when non-trivial callback functions have to be used, you need to do it
   via a derived class (as KeyParser requires  pointers to member functions.)
