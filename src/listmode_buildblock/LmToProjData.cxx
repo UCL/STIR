@@ -227,13 +227,20 @@ post_processing()
   else
     num_segments_in_memory =
       min(num_segments_in_memory, num_segments);
+  if (num_segments == 0)
+    {
+      warning("LmToProjData: num_segments_in_memory cannot be 0");
+      return true;
+    }
+  
+
 
   Scanner const * const scanner_ptr = 
     template_proj_data_info_ptr->get_scanner_ptr();
 
   if (*scanner_ptr != *lm_data_ptr->get_scanner_ptr())
     {
-      warning("Scanner from list mode data (%s) is different from\n"
+      warning("LmToProjData:\nScanner from list mode data (%s) is different from\n"
 	      "scanner from template projdata (%s).\n"
 	      "Full definition of scanner from list mode data:\n%s\n"
 	      "Full definition of scanner from template:\n%s\n",
@@ -489,8 +496,8 @@ start_new_time_frame(const unsigned int)
 /**************************************************************
  Here follows the actual rebinning code (finally).
 
- It's simple, but looks ugly because of the facility to store only
- part of the segments in memory.
+ It's essentially simple, but is complicate because of the facility
+ to store only part of the segments in memory.
  This really should be cleared up (maybe using ProjDataInMemory?)
 
  This code will also simplify when we have Study objects allowing multiple frames.
@@ -501,26 +508,30 @@ process_data()
 { 
   CPUTimer timer;
   timer.start();
-  
+
+  // assume list mode data starts at time 0
+  // we have to do this because the first time tag might occur only after a
+  // few coincidence events (as happens with ECAT scanners)
+  current_time = 0;
+
   double time_of_last_stored_event = 0;
   long num_stored_events = 0;
   VectorWithOffset<segment_type *> 
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
   
-  /* Here starts the main loop which will store the listmode data. */
  VectorWithOffset<CListModeData::SavedPosition> 
    frame_start_positions(1, frame_defs.get_num_frames());
+ shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+ CListRecord& record = *record_sptr;
 
+  /* Here starts the main loop which will store the listmode data. */
  for (current_frame_num = 1;
       current_frame_num<=frame_defs.get_num_frames();
       ++current_frame_num)
    {
-     long num_events_in_frame = 0;
-
-     // TODO could be improved by first skipping events not in the frame
-     frame_start_positions[current_frame_num] = 
-       lm_data_ptr->save_get_position();
+     long num_prompts_in_frame = 0;
+     long num_delayeds_in_frame = 0;
 
      const double start_time = frame_defs.get_start_time(current_frame_num);
      const double end_time = frame_defs.get_end_time(current_frame_num);
@@ -549,7 +560,6 @@ process_data()
 	    start_segment_index += num_segments_in_memory) 
 	 {
 	 
-	   cerr << "Processing next batch of segments" <<endl;
 	   const int end_segment_index = 
 	     min( proj_data_ptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
     
@@ -564,14 +574,34 @@ process_data()
 	   long more_events = 
 	     do_time_frame? 1 : num_events_to_store;
 
-	   // go to the beginning of the listmode data for this frame
-	   lm_data_ptr->set_get_position(frame_start_positions[current_frame_num]);
+	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
+	     {
+	       // we're going once more through the data (for the next batch of segments)
+	       cerr << "\nProcessing next batch of segments\n";
+	       // go to the beginning of the listmode data for this frame
+	       lm_data_ptr->set_get_position(frame_start_positions[current_frame_num]);
+	       current_time = start_time;
+	     }
+	   else
+	     {
+	       cerr << "\nProcessing time frame " << current_frame_num << '\n';
+
+	       // Note: we already have current_time from previous frame, so don't 
+	       // need to set it. In fact, setting it to start_time would be wrong
+	       // as we first might have to skip some events before we get to start_time.
+	       // So, let's do that now.
+	       while (current_time < start_time && 
+		      lm_data_ptr->get_next_record(record) == Succeeded::yes) 
+		 {
+		   if (record.is_time())
+		     current_time = record.time().get_time_in_secs();
+		 }
+	       // now save position such that we can go back
+	       frame_start_positions[current_frame_num] = 
+		 lm_data_ptr->save_get_position();
+	     }
 	   {      
 	     // loop over all events in the listmode file
-	     shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-	     CListRecord& record = *record_sptr;
-
-	     current_time = start_time;
 	     while (more_events)
 	       {
 		 if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
@@ -581,15 +611,18 @@ process_data()
 		   }
 		 if (record.is_time())
 		   {
-		     const double new_time = record.time().get_time_in_secs();
-		     if (do_time_frame && new_time >= end_time)
+		     current_time = record.time().get_time_in_secs();
+		     if (do_time_frame && current_time >= end_time)
 		       break; // get out of while loop
-		     current_time = new_time;
-		     if (current_time>=start_time)
-		       process_new_time_event(record.time());
+		     assert(current_time>=start_time);
+		     process_new_time_event(record.time());
 		   }
-		 else if (record.is_event() && start_time <= current_time)
+		 // note: could do "else if" here if we would be sure that
+		 // a record can never be both timing and coincidence event
+		 // and there might be a scanner around that has them both combined.
+		 if (record.is_event())
 		   {
+		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
@@ -624,8 +657,12 @@ process_data()
 			   {
 			     do_post_normalisation(bin);
 			 
-			     num_events_in_frame += event_increment;               
 			     num_stored_events += event_increment;
+			     if (record.event().is_prompt())
+			       ++num_prompts_in_frame;
+			     else
+			       ++num_delayeds_in_frame;
+
 			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
                             
 			     if (interactive)
@@ -656,17 +693,19 @@ process_data()
 				    start_segment_index, end_segment_index, 
 				    *proj_data_ptr);  
 	 } // end of for loop for segment range
-       cerr <<  "\nTotal number of counts stored in this time period: " << num_events_in_frame << endl;
+       cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
+	    <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
+	    << '\n';
    } // end of loop over frames
 
  timer.stop();
 
- cerr << "Last stored event was recorded after time-tick at " << time_of_last_stored_event << " secs\n";
+ cerr << "Last stored event was recorded before time-tick at " << time_of_last_stored_event << " secs\n";
  if (!do_time_frame && 
      (num_stored_events<=0 ||
       /*static_cast<unsigned long>*/(num_stored_events)<num_events_to_store))
    cerr << "Early stop due to EOF. " << endl;
- cerr << "Total number of prompts/trues/delayeds stored: " << num_stored_events << endl;
+ cerr << "Total number of counts (either prompts/trues/delayeds) stored: " << num_stored_events << endl;
 
  cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
 
