@@ -1,0 +1,348 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    For GE Internal use only
+*/
+/*!
+  \file
+  \ingroup motion_utilities
+  \brief A utility  for finding the coordinate transfomration between tracker and scanner coordinate systems
+
+  \author Kris Thielemans
+
+  
+  $Date$
+  $Revision$
+*/
+#include "local/stir/motion/RigidObject3DTransformation.h"
+#include "stir/TimeFrameDefinitions.h"
+#include "stir/shared_ptr.h"
+#include "stir/stream.h"
+#include "stir/round.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/TimeFrameDefinitions.h"
+#include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
+#include "stir/shared_ptr.h"
+#include "stir/ParsingObject.h"
+#include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
+#include "stir/index_at_maximum.h"
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <cmath>
+# ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::sqrt; }
+# endif
+
+START_NAMESPACE_STIR
+/*! \ingroup motion
+  \brief A class for finding the coordinate transfomration between tracker and scanner coordinate systems
+
+
+  \par Example par file
+  \verbatim
+  MoveImage Parameters:=
+  ; see TimeFrameDefinitions
+  time frame_definition filename := frame_definition_filename
+  
+  ; next parameter is optional (and not normally necessary)
+  ; it can be used if the frame definitions are relative to another scan as what 
+  ; is used to for the rigid object motion (i.e. currently the list mode data used
+  ;  for the Polaris synchronisation)
+  ; scan_start_time_secs_since_1970_UTC
+
+
+  ; specify motion, see stir::RigidObject3DMotion
+  Rigid Object 3D Motion Type := type
+
+  ; prefix for finding the images
+  ; filenames will be constructed by appending _f#g1d0b0 (and the extension .hv)
+  image_filename_prefix :=
+  END :=
+\endverbatim
+*/  
+class MatchTrackerAndScanner : public ParsingObject
+{
+public:
+  MatchTrackerAndScanner(const char * const par_filename);
+
+
+  const TimeFrameDefinitions&
+    get_time_frame_defs() const;
+
+  double get_frame_start_time(unsigned frame_num) const
+  { return frame_defs.get_start_time(frame_num) + scan_start_time; }
+
+  double get_frame_end_time(unsigned frame_num) const
+  { return frame_defs.get_end_time(frame_num) + scan_start_time; }
+
+  const string& get_image_filename_prefix() const
+  { return _image_filename_prefix; }
+  
+  const RigidObject3DMotion& get_motion() const
+  { return *_ro3d_sptr; }
+
+protected:
+
+  // all of these really should be in a AbsTimeFrameDefinitions class or so
+  TimeFrameDefinitions frame_defs;
+  int scan_start_time_secs_since_1970_UTC;
+  double _current_frame_end_time;
+  double _current_frame_start_time;
+  
+  //! parsing functions
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+
+  //! parsing variables
+  string frame_definition_filename;
+
+  double scan_start_time;
+
+  string _image_filename_prefix;
+
+private:
+  shared_ptr<RigidObject3DMotion> _ro3d_sptr;
+  
+};
+
+
+void 
+MatchTrackerAndScanner::set_defaults()
+{
+  _ro3d_sptr = 0;
+  scan_start_time_secs_since_1970_UTC=-1;
+}
+
+void 
+MatchTrackerAndScanner::initialise_keymap()
+{
+
+  parser.add_start_key("Match Tracker and Scanner Parameters");
+  parser.add_key("scan_start_time_secs_since_1970_UTC", 
+		 &scan_start_time_secs_since_1970_UTC);
+  parser.add_key("time frame definition filename",&frame_definition_filename);
+  parser.add_parsing_key("Rigid Object 3D Motion Type", &_ro3d_sptr); 
+  parser.add_key("image_filename_prefix", &_image_filename_prefix);
+
+  parser.add_stop_key("END");
+}
+
+MatchTrackerAndScanner::
+MatchTrackerAndScanner(const char * const par_filename)
+{
+  set_defaults();
+  if (par_filename!=0)
+    {
+      if (parse(par_filename)==false)
+	exit(EXIT_FAILURE);
+    }
+  else
+    ask_parameters();
+
+}
+
+bool
+MatchTrackerAndScanner::
+post_processing()
+{
+
+  if (scan_start_time_secs_since_1970_UTC==-1)
+    {
+      warning("scan_start_time_secs_since_1970_UTC not set."
+	      "Will use relative time (to RigidObjectMotion object, which for Polaris means relative to the list mode data).");
+      scan_start_time = 0;
+    }
+  else 
+    {
+      if (scan_start_time_secs_since_1970_UTC<1000)
+	{
+	  warning("scan_start_time_secs_since_1970_UTC too small");
+	  return true;
+	}
+      {
+	// convert to time_in_secs since midnight
+	time_t sec_time = scan_start_time_secs_since_1970_UTC;
+	
+	scan_start_time = 
+	  _ro3d_sptr->secs_since_1970_to_rel_time(sec_time);
+      }
+    }
+  
+  // handle time frame definitions etc
+
+  if (frame_definition_filename.size()==0)
+    {
+      warning("Have to specify 'time frame_definition_filename'");
+      return true;
+    }
+
+  frame_defs = TimeFrameDefinitions(frame_definition_filename);
+
+  if (is_null_ptr(_ro3d_sptr))
+  {
+    warning("Invalid Rigid Object 3D Motion object");
+    return true;
+  }
+
+
+  if (_image_filename_prefix.size()==0)
+  {
+    warning("have to specify 'image_filename_prefix'");
+    return true;
+  }
+
+  return false;
+
+}
+
+const TimeFrameDefinitions&
+MatchTrackerAndScanner::
+get_time_frame_defs() const
+{
+  return frame_defs;
+}
+
+
+END_NAMESPACE_STIR
+
+int main(int argc, char ** argv)
+{
+
+USING_NAMESPACE_STIR
+
+  if (argc!=1 && argc!=2) {
+    cerr << "Usage: " << argv[0] << " \\\n"
+	 << "\t[par_file]\n";
+    exit(EXIT_FAILURE);
+  }
+  MatchTrackerAndScanner application(argc==2 ? argv[1] : 0);
+
+
+  std::vector<CartesianCoordinate3D<float> > polaris_points;
+  std::vector<CartesianCoordinate3D<float> > positions_in_scanner;
+
+  for (unsigned current_frame_num=1U;
+       current_frame_num<=application.get_time_frame_defs().get_num_frames(); 
+       ++current_frame_num)
+    {
+      // read image and find maximum
+      CartesianCoordinate3D<float> location_of_image_max_in_mm;
+      {
+	char rest[50];
+	sprintf(rest, "_f%dg1d0b0.hv", current_frame_num);
+	const string input_filename = application.get_image_filename_prefix() + rest;
+	
+	shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr = 
+	  DiscretisedDensity<3,float>::read_from_file(input_filename);
+
+	const DiscretisedDensityOnCartesianGrid <3,float>*  input_image_cartesian_ptr = 
+	  dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (input_image_sptr.get());
+
+	if (input_image_cartesian_ptr== 0)
+	  {
+	    error("Image '%s' should be on a cartesian grid",
+		  input_filename.c_str());
+	  }
+
+	const CartesianCoordinate3D<float> grid_spacing = 
+	  input_image_cartesian_ptr->get_grid_spacing();
+
+	const BasicCoordinate<3,int> max_index = 
+	  indices_at_maximum(*input_image_sptr);
+
+	location_of_image_max_in_mm =
+	  grid_spacing * BasicCoordinate<3,float>(max_index);
+      }
+
+      // now go through tracker data for this frame
+      {
+	const double start_time = 
+	  application.get_frame_start_time(current_frame_num);
+	const double end_time = 
+	  application.get_frame_end_time(current_frame_num);
+
+	cerr << "\nDoing frame " << current_frame_num
+	     << ": from " << start_time << " to " << end_time << endl;
+
+	const std::vector<double> sample_times =
+	  application.get_motion().
+	  get_rel_time_of_samples(start_time, end_time);
+
+	if (sample_times.size() == 0)
+	  error("No tracker samples between %g and %g (relative to scan start)",
+		start_time, end_time);
+
+	// some variables that will be used to compute the stddev over the frame
+	// to check intra-frame movement
+	CartesianCoordinate3D<float> sum_location_in_tracker_coords(0,0,0);
+	CartesianCoordinate3D<float> sum_square_location_in_tracker_coords(0,0,0);
+	CartesianCoordinate3D<float> first_location_in_tracker_coords =
+	      application.get_motion().
+	      get_motion_in_tracker_coords_rel_time(sample_times[0]).inverse().
+	      transform_point(CartesianCoordinate3D<float>(0,0,0));
+
+	for (std::vector<double>::const_iterator iter=sample_times.begin();
+	     iter != sample_times.end();
+	     ++iter)
+	  {
+	    CartesianCoordinate3D<float> location_in_tracker_coords =
+	      application.get_motion().
+	      get_motion_in_tracker_coords_rel_time(*iter).inverse().
+	      transform_point(CartesianCoordinate3D<float>(0,0,0));
+	    polaris_points.push_back(location_in_tracker_coords);
+	    positions_in_scanner.push_back(location_of_image_max_in_mm);
+
+	    sum_location_in_tracker_coords +=
+	      location_in_tracker_coords - first_location_in_tracker_coords;
+	    sum_square_location_in_tracker_coords +=
+	      square(location_in_tracker_coords - first_location_in_tracker_coords);
+	  }
+	// check if frame is uniform
+	const unsigned num_samples = sample_times.size();
+	const CartesianCoordinate3D<float> variance =
+	  (sum_square_location_in_tracker_coords -
+	   square(sum_location_in_tracker_coords)/num_samples)/
+	  (num_samples-1);
+	//std::cerr << sum_location_in_tracker_coords/num_samples
+	//	  << sum_square_location_in_tracker_coords/num_samples
+	//	  << variance;
+	// note: threshold with 0 before sqrt to avoid problems with rounding errors
+	const double stddev = 
+	  std::sqrt(std::max(0.F,(variance[1]+variance[2]+variance[3])/3));
+
+	if (stddev>4)
+	  warning("Intra-frame motion for frame %d is too large: stddev w.r.t. mean position : %g",
+		  current_frame_num, stddev);
+	else
+	  std::cerr << "Intra-frame motion for frame " << current_frame_num
+		    << " (stddev w.r.t. mean position) : " << stddev;	
+      }
+    } // end of loop over frames
+
+  //std::cout << positions_in_scanner;
+  //std::cout << polaris_points;
+
+  // now find match
+  RigidObject3DTransformation transformation;
+  if (RigidObject3DTransformation::
+      find_closest_transformation(transformation,
+				  positions_in_scanner.begin(), positions_in_scanner.end(), polaris_points.begin(),
+				  Quaternion<float>(1,0,0,0)) ==
+      Succeeded::no)
+    error("Could not find match");
+  
+  std::cout << "\n\nResult: " << transformation;
+  std::cout << "\nRMSE= "
+	    <<RigidObject3DTransformation::RMSE(transformation, 
+					       positions_in_scanner.begin(), positions_in_scanner.end(), 
+					       polaris_points.begin())
+	    << '\n';
+  
+  return EXIT_SUCCESS;
+}
