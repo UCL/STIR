@@ -739,7 +739,7 @@ Scanner* Scanner::ask_parameters()
       int AxialCrstalsPerSinglesUnit = 
         ask_num("Enter number of axial crystals per singles unit: ", 0, NoRings, 1);
       int TransaxialCrystalsPerSinglesUnit = 
-        ask_num("Enter number of axial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
+        ask_num("Enter number of transaxial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
         
 
       int num_detector_layers =
