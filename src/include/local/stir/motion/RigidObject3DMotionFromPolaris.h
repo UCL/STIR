@@ -77,6 +77,9 @@ public:
     RigidObject3DTransformation
     get_motion_in_tracker_coords_rel_time(const double time) const;
 
+  virtual std::vector<double>
+    get_rel_time_of_samples(const double start_time, const double end_time) const;
+
   //! Synchronise motion tracking file and listmode file
   virtual Succeeded synchronise(CListModeData& listmode_data);
   virtual double secs_since_1970_to_rel_time(std::time_t) const;
@@ -113,6 +116,7 @@ private:
   virtual bool is_synchronised() const;
 
   double rel_time_to_polaris_time(const double time) const;
+  double polaris_time_to_rel_time(const double time) const;
 
  RigidObject3DTransformation 
   compute_average_motion_polaris_time(const double start_time, const double end_time)const;

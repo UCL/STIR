@@ -144,6 +144,41 @@ get_transformation_from_scanner_coords() const
 { return move_from_scanner_coords; }
 
 
+double 
+RigidObject3DMotionFromPolaris::
+rel_time_to_polaris_time(const double time) const
+{
+  return time*time_drift + time_offset;
+}
+
+double 
+RigidObject3DMotionFromPolaris::
+polaris_time_to_rel_time(const double time) const
+{
+  return (time - time_offset)/time_drift;
+}
+
+std::vector<double>
+RigidObject3DMotionFromPolaris::
+get_rel_time_of_samples(const double start_time, const double end_time) const
+{
+  const double polaris_start_time = this->rel_time_to_polaris_time(start_time);
+  const double polaris_end_time = this->rel_time_to_polaris_time(end_time);
+  std::vector<double> result;
+  Polaris_MT_File::const_iterator iter=this->mt_file_ptr->begin();
+
+  while (iter!= this->mt_file_ptr->end() && iter->sample_time< polaris_start_time)
+    ++iter;
+
+  while (iter!= this->mt_file_ptr->end() && iter->sample_time<= polaris_end_time)
+  {
+    result.push_back(this->polaris_time_to_rel_time(iter->sample_time));
+    ++iter;
+  }
+  return result;
+}
+
+
 RigidObject3DTransformation
 RigidObject3DMotionFromPolaris::
 compute_average_motion_polaris_time(const double start_time, const double end_time) const
@@ -160,15 +195,10 @@ compute_average_motion_polaris_time(const double start_time, const double end_ti
     /* Accept motions recorded during time interval */
     if ((iter->sample_time >= start_time ) && ( iter->sample_time<= end_time))
     {
-#if 0
-      Quaternion<float> quater = iter->quat;	/* Sets the quaternion matrix */
-      const CartesianCoordinate3D<float>& trans =  iter->trans; 
-#else
      RigidObject3DTransformation transf =
        make_transformation_from_polaris_data(*iter);
      Quaternion<float> quater = transf.get_quaternion();
      const CartesianCoordinate3D<float> trans= transf.get_translation();
-#endif
       // make sure that all quaternions use a fixed sign choice, otherwise adding them up does not make a lot of sense
       if (quater[1]<0)
 	quater *= -1;
@@ -199,14 +229,6 @@ compute_average_motion_polaris_time(const double start_time, const double end_ti
   
   return RigidObject3DTransformation(total_q, total_t);
 }
-
-double 
-RigidObject3DMotionFromPolaris::
-rel_time_to_polaris_time(const double time) const
-{
-  return time*time_drift + time_offset;
-}
-
 
 RigidObject3DTransformation 
 RigidObject3DMotionFromPolaris::
@@ -240,14 +262,8 @@ get_motion_in_tracker_coords_rel_time(const double time) const
   }
   else
   {
-#if 0
-  const RigidObject3DTransformation ro3dtrans_tmp (iterator_for_record_just_after_this_time->quat,
-              iterator_for_record_just_after_this_time->trans);
-  return ro3dtrans_tmp;
-#else
-  return
-    make_transformation_from_polaris_data(*iterator_for_record_just_after_this_time);
-#endif
+    return
+      make_transformation_from_polaris_data(*iterator_for_record_just_after_this_time);
   }
 
 }
