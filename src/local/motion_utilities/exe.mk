@@ -13,6 +13,7 @@ $(dir)_SOURCES = \
 	fwd_image_and_fill_missing_data.cxx \
 	add_planes_to_image.cxx \
 	sync_polaris.cxx \
-	find_motion_corrected_norm_factors.cxx
+	find_motion_corrected_norm_factors.cxx \
+	match_tracker_and_scanner.cxx
 
 include $(WORKSPACE)/exe.mk
