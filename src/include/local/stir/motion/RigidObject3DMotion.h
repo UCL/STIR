@@ -22,7 +22,7 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
-
+#include <vector>
 
 START_NAMESPACE_STIR
 
@@ -41,11 +41,7 @@ class AbsTimeInterval;
     absolute times are currently depending on the derived class. It would be far 
     better to stick to secs_since_1970.
 
-  - synchronisation: currently uses a list mode file
-
-  - motion parameters are w.r.t. a tracker dependent coordinate system. There is then
-    some stuff to go to scanner systems etc. But it's largely left up to the application to 
-    do this properly.
+  - synchronisation: currently uses a list mode file. This needs to be moved out.
     
 */
 class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>,
@@ -83,6 +79,18 @@ public:
 
   //@}
 
+  //! Info on when the motion was determined
+  /*! Will return a vector of doubles filled with the sampling times between
+      \a start_time and \a end_time.
+
+      \todo Really only makes sense for motion tracking that happens via sampling.
+      One could imagine having simulated motion, and then this function wouldn't make
+      a lot of sense. So, it probably should be moved to a derived class
+      \c SampledRigidObject3DMotion or so.
+  */
+  virtual std::vector<double>
+    get_rel_time_of_samples(const double start_time, const double end_time)const = 0;
+
   //! Has to be called and will be used to synchronise listmode time and motion tracking time
   /*! This should make sure that a 'rel_time' of 0 corresponds to the start of the list mode data
    */
@@ -90,6 +98,7 @@ public:
 
 
   virtual double secs_since_1970_to_rel_time(std::time_t) const = 0;
+
 
  protected:
 #if 0
