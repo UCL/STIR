@@ -32,7 +32,41 @@ the Free Software Foundation; either version 2.1 of the License, or
 	  
 		This is a utility program converts a transmission image into SimSET attenuation input file.
 		This is done by converting the values of the transmission image, which are close to the given 
-		values found in the file "phg_att_table" of SimSET to the corresponding index values. 
+		values found in the table below: 
+
+Material              Attenuation index
+--------------      ---------------------
+Air                          0
+Water                        1
+Blood                        2
+Bone                         3
+Brain                        4
+Heart                        5
+Lung                         6
+Muscle                       7
+Lead                         8
+Sodium Iodide                9
+BGO                         10
+Iron                        11
+Graphite                    12
+Tin                         13
+GI Tract                    14
+Connective tissue           15
+Copper                      16
+Perfect absorber            17
+LSO                         18
+GSO                         19
+Aluminum                    20
+Tungsten                    21
+Liver                       22
+Fat                         23
+LaBr3                       24 
+Low viscosity polycarbonate 25 
+NEMA polyethylene           26 
+Polymethyl methylcrylate    27 
+Polystyrene fibers          28 
+
+ 
 		See the SimSET documentation for more details.
 		
 		  \endcode	  
@@ -115,9 +149,9 @@ int main(int argc, char *argv[])
 				if (abs(input_image[in_k][in_j][in_i]-0.00)<0.004) // Air
 					output_image[out_k][out_j][out_i] = 0;
 				if (abs(input_image[in_k][in_j][in_i]-2.2)<0.004) // Bone
-					output_image[out_k][out_j][out_i] = 3; // Check for the 3.
+					output_image[out_k][out_j][out_i] = 3; 
 				if (abs(input_image[in_k][in_j][in_i]-0.26)<0.004) // Lung
-					output_image[out_k][out_j][out_i] = 6; // Check for the 6.
+					output_image[out_k][out_j][out_i] = 6;
 			}			
 			return 1;
 }
