@@ -383,13 +383,15 @@ template <class elemT>
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
-		      const NumericType output_type)
+		      const NumericType output_type,
+			  const float scale)
 {
   return
     write_basic_interfile(filename, 
 			  image, 
 			  CartesianCoordinate3D<float>(1,1,1), 
-			  output_type);
+			  output_type,
+			  scale);
 }
 #ifdef _MSC_VER
 #undef elemT 
@@ -399,7 +401,8 @@ template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename, 
 			   const Array<3,NUMBER>& image,
 			   const CartesianCoordinate3D<float>& voxel_size,
-			   const NumericType output_type)
+			   const NumericType output_type,
+		       const float scale)
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
@@ -429,11 +432,11 @@ Succeeded write_basic_interfile(const string&  filename,
   ofstream output_data;
   open_write_binary(output_data, data_name);
 
-  float scale = 0;
-  write_data(output_data, image, output_type, scale);
+  float scale_to_use = scale;
+  write_data(output_data, image, output_type, scale_to_use);
 
   VectorWithOffset<float> scaling_factors(1);
-  scaling_factors[0] = scale;
+  scaling_factors[0] = scale_to_use;
   VectorWithOffset<unsigned long> file_offsets(1);
   file_offsets.fill(0);
 
@@ -455,25 +458,29 @@ Succeeded write_basic_interfile(const string&  filename,
 Succeeded
 write_basic_interfile(const string&  filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
-		      const NumericType output_type)
+		      const NumericType output_type,
+			  const float scale)
 {
   return
     write_basic_interfile(filename, 
 			  image, // use automatic reference to base class
 			  image.get_grid_spacing(), 
-			  output_type);
+			  output_type,
+			  scale);
 }
 
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
-		      const NumericType output_type)
+		      const NumericType output_type,
+			  const float scale)
 {
   // dynamic_cast will throw an exception when it's not valid
   return
     write_basic_interfile(filename,
                           dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image),
-                          output_type);
+                          output_type,
+						  scale);
 }
 
 
@@ -781,20 +788,23 @@ Succeeded
 write_basic_interfile<>(const string&  filename, 
 				      const Array<3,signed short>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
-				      const NumericType output_type);
+				      const NumericType output_type,
+			          const float scale);
 template 
 Succeeded 
 write_basic_interfile<>(const string&  filename, 
 				      const Array<3,unsigned short>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
-				      const NumericType output_type);
+				      const NumericType output_type,
+			          const float scale);
 
 template 
 Succeeded 
 write_basic_interfile<>(const string&  filename, 
 				      const Array<3,float>&,
 				      const CartesianCoordinate3D<float>& voxel_size,
-				      const NumericType output_type);
+				      const NumericType output_type,
+			          const float scale);
 
 #ifndef _MSC_VER
 
@@ -802,19 +812,22 @@ template
 Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,signed short>& image,
-		      const NumericType output_type);
+		      const NumericType output_type,
+			  const float scale);
 
 template 
 Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,unsigned short>& image,
-		      const NumericType output_type);
+		      const NumericType output_type,
+			  const float scale);
 
 template 
 Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,float>& image,
-		      const NumericType output_type);
+		      const NumericType output_type,
+			  const float scale);
 #endif
 
 END_NAMESPACE_STIR

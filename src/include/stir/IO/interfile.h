@@ -3,6 +3,23 @@
 //
 #ifndef __stir_Interfile_h__
 #define __stir_Interfile_h__
+
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup InterfileIO
@@ -15,11 +32,6 @@
 
   $Date$
   $Revision$  
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/NumericType.h"
@@ -144,7 +156,8 @@ Succeeded
 write_basic_interfile(const string&filename, 
 			   const Array<3,elemT>& image,
 			   const CartesianCoordinate3D<float>& voxel_size,
-			   const NumericType output_type = NumericType::FLOAT);
+			   const NumericType output_type = NumericType::FLOAT,
+			   const float scale= 0);
 
 //! This outputs an Interfile header and data for a Array<3,elemT> object, assuming unit voxel sizes
 /*!
@@ -164,7 +177,8 @@ template <class elemT>
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
-		      const NumericType output_type = NumericType::FLOAT);
+		      const NumericType output_type = NumericType::FLOAT,
+			  const float scale= 0);
 #ifdef _MSC_VER
 #undef elemT 
 #endif
@@ -178,7 +192,8 @@ write_basic_interfile(const string& filename,
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
-		      const NumericType output_type = NumericType::FLOAT);
+		      const NumericType output_type = NumericType::FLOAT,
+			  const float scale= 0);
 
 
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
@@ -193,7 +208,8 @@ write_basic_interfile(const string& filename,
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
-		      const NumericType output_type = NumericType::FLOAT);
+		      const NumericType output_type = NumericType::FLOAT,
+			  const float scale= 0);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a stream
 /*!
