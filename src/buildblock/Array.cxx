@@ -43,11 +43,13 @@ START_NAMESPACE_STIR
  instantiations
  **************************************************/
 
+#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 // add any other types you need
 template class Array<1,signed char>;
 template class Array<1,short>;
 template class Array<1,unsigned short>;
 template class Array<1,float>;
+#endif
 
 template class Array<2,signed char>;
 template class Array<2,short>;
