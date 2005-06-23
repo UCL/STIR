@@ -95,14 +95,14 @@ namespace BSpline {
 
 	void BSplinesRegularGrid_Tests::run_tests()
 	{    
-		cerr << "Testing BSplinesRegularGrid class..." << endl;
+		cerr << "\nTesting BSplinesRegularGrid class..." << endl;
 		set_tolerance(0.001);
 		typedef double elemT;  		
 		Array<1,elemT> const_input_sample =  make_1d_array(1., 1., 1., 1., 1., 1.);
 		Array<1,elemT> linear_input_sample =  make_1d_array(1., 2., 3., 4., 5., 6.);
 		Array<1,elemT> random_input_sample =  make_1d_array(-14., 8., -1., 13., -1., -2., 11., 1., -8.);		
 		{
-			cerr << "Testing BSplinesRegularGrid: Nearest Neighbour values and constructor using an 1D array as input..." << endl;	  	  	  	  
+			cerr << "\nTesting BSplinesRegularGrid: Nearest Neighbour values and constructor using an 1D array as input..." << endl;	  	  	  	  
 			{		 
 				BSplinesRegularGrid<1, elemT, elemT> BSplinesRegularGridTest_const(
 					const_input_sample, near_n);		  
@@ -138,7 +138,7 @@ namespace BSpline {
 			}
 		}		
 		{
-			cerr << "Testing BSplinesRegularGrid: Linear interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
+			cerr << "\nTesting BSplinesRegularGrid: Linear interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
 			{		 
 				BSplinesRegularGrid<1, elemT, elemT> BSplinesRegularGridTest_const(
 					const_input_sample, linear);		  
@@ -174,7 +174,7 @@ namespace BSpline {
 			}
 		}
 		{
-			cerr << "Testing BSplinesRegularGrid: Quadratic interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
+			cerr << "\nTesting BSplinesRegularGrid: Quadratic interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
 			{		 
 				BSplinesRegularGrid<1, elemT, elemT> BSplinesRegularGridTest_const(
 					const_input_sample, quadratic);		  
@@ -210,7 +210,7 @@ namespace BSpline {
 			}
 		}
 		{
-			cerr << "Testing BSplinesRegularGrid: Cubic interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
+			cerr << "\nTesting BSplinesRegularGrid: Cubic interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
 			{		 
 				BSplinesRegularGrid<1, elemT, elemT> BSplinesRegularGridTest_const(
 					const_input_sample, cubic);		  
@@ -246,7 +246,7 @@ namespace BSpline {
 			}
 		}
 		{
-			cerr << "Testing BSplinesRegularGrid: oMoms interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
+			cerr << "\nTesting BSplinesRegularGrid: oMoms interpolation values and constructor using an 1D array as input..." << endl;	  	  	  	  
 			{		 
 				BSplinesRegularGrid<1, elemT, elemT> BSplinesRegularGridTest_const(
 					const_input_sample, oMoms);		  
