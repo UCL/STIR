@@ -17,6 +17,9 @@ This file is part of STIR.
 	
 	  See STIR/LICENSE.txt for details
 */
+#ifndef __stir_numerics_BSplines__H__
+#define __stir_numerics_BSplines__H__
+
 /*!
 \file 
 \ingroup numerics_buildblock
@@ -188,3 +191,5 @@ END_NAMESPACE_STIR
 #include "local/stir/BSplines.inl"
 #include "local/stir/BSplines_weights.inl"
 #include "local/stir/BSplines_coef.inl"
+
+#endif

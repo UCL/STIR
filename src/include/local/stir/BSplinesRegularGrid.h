@@ -17,6 +17,8 @@ This file is part of STIR.
 	
 	  See STIR/LICENSE.txt for details
 */
+#ifndef __stir_numerics_BSplinesRegularGrid__H__
+#define __stir_numerics_BSplinesRegularGrid__H__
 /*!
 \file 
 \ingroup numerics_buildblock
@@ -90,7 +92,6 @@ public:
 	inline
 		const out_elemT 
 		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;		
-
 	};
 	
 } // end BSpline namespace
@@ -99,3 +100,4 @@ END_NAMESPACE_STIR
 
 #include "local/stir/BSplinesRegularGrid.inl"
 
+#endif
