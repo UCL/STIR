@@ -104,7 +104,7 @@ RayTraceVoxelsOnCartesianGrid
     constant small_difference below. (Note that difference is in grid-units, so
     it has a natural scale of 1.)
   */
-  const float small_difference = 1.E-5F;
+  const float small_difference = 1.E-4F;
   const bool zero_diff_in_x = fabs(difference.x())<=small_difference;
   const bool zero_diff_in_y = fabs(difference.y())<=small_difference;
   const bool zero_diff_in_z = fabs(difference.z())<=small_difference;
@@ -142,6 +142,7 @@ RayTraceVoxelsOnCartesianGrid
 				      stop_point + inc, 
 				      voxel_size,
 				      normalisation_constant/2);
+	lor.sort();
 	return;
       }
   }
