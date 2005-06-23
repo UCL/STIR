@@ -28,9 +28,9 @@
 */
 
 
-#include "stir/common.h"
-#include "stir/local/BSplines.h"
-#include "stir/local/BSplinesRegularGrid.h"
+#include "local/stir/BSplines.h"
+#include "local/stir/BSplinesRegularGrid.h"
+
 
 START_NAMESPACE_STIR
 
@@ -54,10 +54,11 @@ class Succeeded;
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
 		const ProjData& proj_data_in,
-		const BasicCoordinate<3, BSplineType> & this_type);
+		const BasicCoordinate<3, BSpline::BSplineType> & this_type);
+/*
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-		const ProjData& proj_data_in, const BSplineType this_type);
+		const ProjData& proj_data_in, const BSplineType this_type);*/
 
 
 END_NAMESPACE_STIR
