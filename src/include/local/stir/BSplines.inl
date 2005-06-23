@@ -29,8 +29,9 @@
   $Revision$
 */
 
-using namespace std;
+
 #include "stir/modulo.h"
+#include "stir/Array.h"
 START_NAMESPACE_STIR
 namespace BSpline {
 
