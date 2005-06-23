@@ -115,21 +115,19 @@ interpolate_projdata(ProjData& proj_data_out,
 	
 	length_in = (max_in-min_in+1.) ;
 	length_out = (max_out-min_out+1.) ;
-	step = length_in/(length_out +1.);
-	step[2] -= .5/(length_out[2] +1.);
-
-	//zoom = length_out/length_in OR 1/step ???;
+	step = length_in/length_out;
+  //zoom = length_out/length_in ;
 	
 	int k_out=kmin, j_out=jmin, i_out=imin;
 			
-	for (double k_in=min_in[1]-0.5+step[1] ; 
-	         k_out<=max_out[1] && k_in<=max_in[1]+0.5-step[1] ; 
+	for (double k_in=min_in[1]+0.5*(step[1]-1) ; 
+	         k_out<=max_out[1] && k_in<=max_in[1]+0.5*(step[1]-1) ; 
 		   ++k_out, k_in+=step[1])	
 		for (double j_in=min_in[2] ; 
-		         j_out<=max_out[2] && j_in<=max_in[2]+0.5-step[2] ; 
+		         j_out<=max_out[2] && j_in<=max_in[2]+1-step[2] ; 
 		       ++j_out, j_in+=step[2])	
-			for (double i_in=min_in[3]-0.5+step[3] ; 
-			         i_out<=max_out[3] && i_in<=max_in[3]+0.5-step[3] ; 
+			for (double i_in=min_in[3]+0.5*(step[3]-1); 
+			         i_out<=max_out[3] && i_in<=max_in[3]-0.5*(step[3]-1) ; 
 				   ++i_out, i_in+=step[3])	
 			{				
 				relative_positions[1]=k_in;
