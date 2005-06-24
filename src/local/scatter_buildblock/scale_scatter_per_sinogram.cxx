@@ -54,23 +54,8 @@ void scale_scatter_per_sinogram(
 			Sinogram<float> scaled_sinogram =
 				scatter_sinogram;
 			 scaled_sinogram*=scale_factors[bin.segment_num()][bin.axial_pos_num()];
-			/*
-			Sinogram<float> scaled_sinogram =
-				scaled_scatter_proj_data.get_empty_sinogram(bin.axial_pos_num(), bin.segment_num());
-              for (bin.view_num()=proj_data_info.get_min_view_num();
-		bin.view_num()<=proj_data_info.get_max_view_num();
-		++bin.view_num())
-	for (bin.tangential_pos_num()=
-					proj_data_info.get_min_tangential_pos_num();
-				bin.tangential_pos_num()<=
-					proj_data_info.get_max_tangential_pos_num();
-				++bin.tangential_pos_num())
-				{  						
-					scaled_sinogram[bin.view_num()][bin.tangential_pos_num()]=					
-						scale_factors[bin.segment_num()][bin.axial_pos_num()]
-						*scatter_sinogram[bin.view_num()][bin.tangential_pos_num()];					
-				}			    */
-					scaled_scatter_proj_data.set_sinogram(scaled_sinogram);
+		
+			 scaled_scatter_proj_data.set_sinogram(scaled_sinogram);
 		}
 }
 	END_NAMESPACE_STIR
