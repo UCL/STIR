@@ -1,12 +1,30 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+	Copyright (C) 2000 - $Date$, Hammersmith Imanet Ltd
+
+    This file is part of STIR.
+	This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup Array
   \brief implementation of convert_array
 
   \author Kris Thielemans
+  \author Charalampos Tsoumpas (UCHAR instatiations)
   \author PARAPET project
 
   $Date$
@@ -27,12 +45,6 @@
   supported by all compilers. Also, it is somewhat slower at the moment.
 
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 // Because of support for compilers which cannot do partial
 // template specialisation, this file is terribly messy.
 // Try to read only the 'modern' stuff.
@@ -352,7 +364,6 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
       return;
     }
     
-    
     // do actual conversion
     // KT: I coded the various checks on the data types in the loop.
     // This is presumably slow, but all these conditionals can be 
@@ -378,13 +389,10 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
  	  NumericInfo<T2>().integer_type() ?
 	    static_cast<T2>(floor(*in_iter / scale_factor + 0.5)) :
             static_cast<T2>(*in_iter / scale_factor);
-    }
-    
+    } 
 }
 #endif
-
 #endif
-
 /***************************************************************
   Template instantiations :
    for num_dimensions=1,2,3
@@ -413,11 +421,17 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
                             const Array<dim,type_in>& data_in, \
 			    const NumericInfo<type_out> info_out);
 INSTANTIATE(1, float, signed char);
+INSTANTIATE(1, float, unsigned char);
 INSTANTIATE(1, signed char, float);
+INSTANTIATE(1, unsigned char, float);
 INSTANTIATE(1, short, signed char);
 INSTANTIATE(1, signed char, short);
 INSTANTIATE(1, unsigned short, signed char);
 INSTANTIATE(1, signed char, unsigned short);
+INSTANTIATE(1, short, unsigned char);
+INSTANTIATE(1, unsigned char, short);
+INSTANTIATE(1, unsigned short, unsigned char);
+INSTANTIATE(1, unsigned char, unsigned short);
 
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
@@ -427,17 +441,23 @@ INSTANTIATE(1, unsigned short, short);
 INSTANTIATE(1, short, unsigned short);
 
 INSTANTIATE(1, signed char, signed char);
+INSTANTIATE(1, unsigned char, unsigned char);
 INSTANTIATE(1, short, short);
 INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
-
 INSTANTIATE(2, float, signed char);
+INSTANTIATE(2, float, unsigned char);
 INSTANTIATE(2, signed char, float);
+INSTANTIATE(2, unsigned char, float);
 INSTANTIATE(2, short, signed char);
 INSTANTIATE(2, signed char, short);
 INSTANTIATE(2, unsigned short, signed char);
 INSTANTIATE(2, signed char, unsigned short);
+INSTANTIATE(2, short, unsigned char);
+INSTANTIATE(2, unsigned char, short);
+INSTANTIATE(2, unsigned short, unsigned char);
+INSTANTIATE(2, unsigned char, unsigned short);
 
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
@@ -447,16 +467,25 @@ INSTANTIATE(2, unsigned short, short);
 INSTANTIATE(2, short, unsigned short);
 
 INSTANTIATE(2, signed char, signed char);
+INSTANTIATE(2, unsigned char, unsigned char);
 INSTANTIATE(2, short, short);
 INSTANTIATE(2, unsigned short, unsigned short);
 INSTANTIATE(2, float, float);
 
 INSTANTIATE(3, float, signed char);
+INSTANTIATE(3, float, unsigned char);
 INSTANTIATE(3, signed char, float);
+INSTANTIATE(3, unsigned char, float);
+
 INSTANTIATE(3, short, signed char);
 INSTANTIATE(3, signed char, short);
 INSTANTIATE(3, unsigned short, signed char);
 INSTANTIATE(3, signed char, unsigned short);
+
+INSTANTIATE(3, short, unsigned char);
+INSTANTIATE(3, unsigned char, short);
+INSTANTIATE(3, unsigned short, unsigned char);
+INSTANTIATE(3, unsigned char, unsigned short);
 
 INSTANTIATE(3, float, short);
 INSTANTIATE(3, float, unsigned short);
@@ -466,17 +495,25 @@ INSTANTIATE(3, unsigned short, short);
 INSTANTIATE(3, short, unsigned short);
 
 INSTANTIATE(3, signed char, signed char);
+INSTANTIATE(3, unsigned char, unsigned char);
 INSTANTIATE(3, short, short);
 INSTANTIATE(3, unsigned short, unsigned short);
 INSTANTIATE(3, float, float);
 
 INSTANTIATE(4, float, signed char);
+INSTANTIATE(4, float, unsigned char);
 INSTANTIATE(4, signed char, float);
+INSTANTIATE(4, unsigned char, float);
+
 INSTANTIATE(4, short, signed char);
 INSTANTIATE(4, signed char, short);
 INSTANTIATE(4, unsigned short, signed char);
 INSTANTIATE(4, signed char, unsigned short);
-INSTANTIATE(4, signed char, signed char);
+
+INSTANTIATE(4, short, unsigned char);
+INSTANTIATE(4, unsigned char, short);
+INSTANTIATE(4, unsigned short, unsigned char);
+INSTANTIATE(4, unsigned char, unsigned short);
 
 INSTANTIATE(4, float, short);
 INSTANTIATE(4, float, unsigned short);
@@ -485,10 +522,11 @@ INSTANTIATE(4, unsigned short, float);
 INSTANTIATE(4, unsigned short, short);
 INSTANTIATE(4, short, unsigned short);
 
+INSTANTIATE(4, unsigned char, unsigned char);
+INSTANTIATE(4, signed char, signed char);
 INSTANTIATE(4, short, short);
 INSTANTIATE(4, unsigned short, unsigned short);
 INSTANTIATE(4, float, float);
-
 
 #undef INSTANTIATE
 
@@ -505,15 +543,19 @@ INSTANTIATE(4, float, float);
 		              const Array<dim,type_in>& data_in, \
 			      const NumericInfo<type_out> info2); 
 
-
-
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(1, float, signed char);
+INSTANTIATE(1, float, unsigned char);
 INSTANTIATE(1, signed char, float);
+INSTANTIATE(1, unsigned char, float);
 INSTANTIATE(1, short, signed char);
 INSTANTIATE(1, signed char, short);
 INSTANTIATE(1, unsigned short, signed char);
 INSTANTIATE(1, signed char, unsigned short);
+INSTANTIATE(1, short, unsigned char);
+INSTANTIATE(1, unsigned char, short);
+INSTANTIATE(1, unsigned short, unsigned char);
+INSTANTIATE(1, unsigned char, unsigned short);
 #endif
 INSTANTIATE(1, float, short);
 INSTANTIATE(1, float, unsigned short);
@@ -526,14 +568,19 @@ INSTANTIATE(1, short, short);
 INSTANTIATE(1, unsigned short, unsigned short);
 INSTANTIATE(1, float, float);
 
-
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(2, float, signed char);
+INSTANTIATE(2, float, unsigned char);
 INSTANTIATE(2, signed char, float);
+INSTANTIATE(2, unsigned char, float);
 INSTANTIATE(2, short, signed char);
 INSTANTIATE(2, signed char, short);
 INSTANTIATE(2, unsigned short, signed char);
 INSTANTIATE(2, signed char, unsigned short);
+INSTANTIATE(2, short, unsigned char);
+INSTANTIATE(2, unsigned char, short);
+INSTANTIATE(2, unsigned short, unsigned char);
+INSTANTIATE(2, unsigned char, unsigned short);
 #endif
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
@@ -548,11 +595,17 @@ INSTANTIATE(2, float, float);
 
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(3, float, signed char);
+INSTANTIATE(3, float, unsigned char);
 INSTANTIATE(3, signed char, float);
 INSTANTIATE(3, short, signed char);
 INSTANTIATE(3, signed char, short);
 INSTANTIATE(3, unsigned short, signed char);
 INSTANTIATE(3, signed char, unsigned short);
+INSTANTIATE(3, unsigned char, float);
+INSTANTIATE(3, short, unsigned char);
+INSTANTIATE(3, unsigned char, short);
+INSTANTIATE(3, unsigned short, unsigned char);
+INSTANTIATE(3, unsigned char, unsigned short);
 #endif
 INSTANTIATE(3, float, short);
 INSTANTIATE(3, float, unsigned short);
@@ -567,11 +620,17 @@ INSTANTIATE(3, float, float);
 
 #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 INSTANTIATE(4, float, signed char);
+INSTANTIATE(4, float, unsigned char);
 INSTANTIATE(4, signed char, float);
 INSTANTIATE(4, short, signed char);
 INSTANTIATE(4, signed char, short);
 INSTANTIATE(4, unsigned short, signed char);
 INSTANTIATE(4, signed char, unsigned short);
+INSTANTIATE(4, unsigned char, float);
+INSTANTIATE(4, short, unsigned char);
+INSTANTIATE(4, unsigned char, short);
+INSTANTIATE(4, unsigned short, unsigned char);
+INSTANTIATE(4, unsigned char, unsigned short);
 INSTANTIATE(4, signed char, signed char);
 #endif
 INSTANTIATE(4, float, short);
