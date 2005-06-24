@@ -118,7 +118,6 @@ namespace BSpline {
 			T BSplines_value;
 			set_to_zero(BSplines_value);
 			const int int_not_only_pos =(int)floor(relative_positions[1]);
-			const int input_size = coeffs.size();
 			for (int k=int_not_only_pos-2; k<int_not_only_pos+3; ++k)		
 			{	
 				int index;
