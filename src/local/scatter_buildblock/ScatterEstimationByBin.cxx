@@ -1,6 +1,21 @@
 //
 // $Id$
 //
+
+/*
+Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
+This file is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 2.1 of the License, or
+(at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details. 
+  
+	See STIR/LICENSE.txt for details
+*/
 /*!
 \file
 \ingroup scatter
@@ -12,9 +27,6 @@
   
 	$Date$
 	$Revision$
-	
-	  Copyright (C) 2004- $Date$, Hammersmith Imanet
-	  See STIR/LICENSE.txt for details
 */
 #include "local/stir/Scatter.h"
 #include "stir/ProjData.h"
@@ -158,7 +170,7 @@ void scatter_viewgram(
 						image_as_activity, image_as_density, 
 						det_num_A, det_num_B,
 						lower_energy_threshold, 
-						upper_energy_threshold));	
+						upper_energy_threshold));  //It is not devided by the prompting anlge. This is expected to take place in the normalisation procedure.	
 					else if(scatter_level==120)
 					bin.set_bin_value(scatter_estimate_for_none_scatter_point(
 						image_as_activity, image_as_density, 
