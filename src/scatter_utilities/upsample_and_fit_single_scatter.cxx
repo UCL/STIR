@@ -60,15 +60,14 @@ int main(int argc, const char *argv[])
 			<< "\t[attenuation_image]\n"
 			<< "\t[no_scatter_projdata]\n"
 			<< "\t[scatter_projdata]\n" 
-			<< "\t[scaled_scatter_filename]\n"
+			<< "\t[scale_factor_per_sinogram]\n"
 			<< "\t[attenuation_threshold]\n"
 			<< "\t[scale_factor_per_sinogram]\n"
-			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
-			<< "\tusing defaults to 0 for global scaling"
-			<< "\tother value for manual scaling based AttProjData(EmProjData-scale*ScatterProjData)";
+			<< "\tattenuation_threshold defaults to 1 cm^-1\n" 
+			<< "\tusing defaults to 1 for scaling per sinogram"	;		
 		return EXIT_FAILURE;            
 	}      
-	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
+	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 1 ;
 	const int est_scale_factor_per_sino = argc>=7 ? atoi(argv[6]) : 1 ; 
 	
 	shared_ptr< DiscretisedDensity<3,float> >  	
@@ -95,7 +94,7 @@ int main(int argc, const char *argv[])
 	ProjDataInterfile scaled_scatter_proj_data(proj_data_info_ptr->clone(), scaled_scatter_filename);
 	
 	string att_proj_data_filename("att_proj_data");
-	ProjDataInterfile att_proj_data(proj_data_info_ptr->clone(), att_proj_data_filename,ios::in|ios::out);
+	ProjDataInterfile att_proj_data(proj_data_info_ptr->clone(), att_proj_data_filename,ios::out);
 
 	const shared_ptr<ProjData> no_scatter_proj_data_sptr = ProjData::read_from_file(argv[2]);  
 	//const ProjDataInfo * projdata_info_ptr = 
@@ -105,13 +104,8 @@ int main(int argc, const char *argv[])
 	//const ProjDataInfo * projdata_info_ptr = 
     //(*scatter_proj_data_sptr).get_proj_data_info_ptr();
 
-//	inverse_SSRB(att_proj_data, proj_data_3D)
-
 	estimate_att_viewgram(att_proj_data, density_image);
-
-
 	Array<2,float> scale_factors;
-
 	if (est_scale_factor_per_sino==1)
 	scale_factors =
 	scale_factors_per_sinogram(
@@ -121,9 +115,9 @@ int main(int argc, const char *argv[])
 		attenuation_threshold);
 
 	std::cerr << scale_factors;
-
 	scale_scatter_per_sinogram(scaled_scatter_proj_data, 
 		scatter_proj_data_sptr, scale_factors) ;
+//	inverse_SSRB(scaled_proj_data_3D, scaled_scatter_proj_data);
 
 	return EXIT_SUCCESS;
 }                 
