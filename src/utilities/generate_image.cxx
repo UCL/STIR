@@ -1,7 +1,22 @@
 //
 // $Id$
 //
+/*
+	Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+	This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
@@ -17,7 +32,7 @@
   Z output image size (in pixels):= 15
   X voxel size (in mm):= 4
   Y voxel size (in mm):= 4
-  Z voxel size (in mm) := 5
+  Z voxel size (in mm):= 5
 
   ; parameters that determine subsampling of border voxels
   ; to obtain smooth edges
@@ -60,10 +75,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/Shape/Shape3D.h"
 #include "stir/KeyParser.h"
