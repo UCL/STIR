@@ -17,8 +17,7 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
-
- */
+*/
 /*!
 \file
 \ingroup utilities
@@ -70,19 +69,22 @@
 		  NEMA polyethylene			  26 
 		  Polymethyl methylcrylate	  27 
 		  Polystyrene fibers		  28 
-		  
-			See the SimSET documentation for more details.
+		
+		See the SimSET documentation for more details.
+  
+			If at least one attenuation value in the transmission image is not segmented either 
+			implement the new attenuation indices or change the input image. 
+			HINT: If the image is produced by the STIR utility: generate_image,
+			the subsampling parameters should be set to 1 when small voxels sizes are used.
 			
 			  \endcode	  
 */
-
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/interfile.h"
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include <iostream> 
-
 /***********************************************************/     
 int main(int argc, char *argv[])                                  
 {         
@@ -96,39 +98,44 @@ int main(int argc, char *argv[])
 		shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr = 
 			DiscretisedDensity<3,float>::read_from_file(argv[2]);
 		string output_image_filename(argv[1]);
-		shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = input_image_sptr->clone();
-		
+		shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = input_image_sptr->clone();		
 		//Array<3,unsigned char>::full_iterator out_iter = output_image.begin_all();
+		bool is_implemented=true;
 		DiscretisedDensity<3,float>::full_iterator out_iter = output_image_sptr->begin_all();
 		DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();
 		while( in_iter != input_image_sptr->end_all_const())
 		{
 			if (fabs(*in_iter-0.096)<0.004)     // Water
 				*out_iter = 1.F;
-			else if (fabs(*in_iter-0.00)<0.004) // Air
+			else if (fabs(*in_iter-0.01)<0.010001) // Air
 				*out_iter = 0.F;
 			else if (fabs(*in_iter-2.2)<0.004)  // Bone
 				*out_iter = 3.F; 
 			else if (fabs(*in_iter-0.26)<0.004) // Lung
 				*out_iter = 6.F;
+			else
+			{
+				is_implemented=false;
+				std::cerr  << "\t" << *out_iter ;	
+			}
 			++in_iter; ++out_iter;
 		}
 
+		if(is_implemented==false)
+			std::cerr << "\n At least one attenuation value which has the above shown values"
+					  << "\n is not corresponded to a SimSET attenuation index in the segmentation."
+					  << "\nImplement the new attenuation indices or change the input image. \n" 
+					  << "HINT: If produced by generate_image set the subsampling parameters to 1, \n."
+					  << "when small voxels sizes are used.\n";			
 		/*
 		std::ofstream out_stream(output_image_filename.c_str(), std::ios::out | std::ios::binary);
 		if (!out_stream)
 		error()
-		Succeeded succes = write_data(out_stream, output_image);
-		*/			
+		Succeeded succes = write_data(out_stream, output_image);		*/			
 		// write to file as 1 byte without changing the scale
 		Succeeded success = 
 			write_basic_interfile(output_image_filename, *output_image_sptr,
 			NumericType::UCHAR, 1.F);
-		return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-		
+		return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;		
 }
-
-
-
-
 
