@@ -27,16 +27,21 @@ the Free Software Foundation; either version 2.1 of the License, or
 	
 	  \par Usage:
 	  \code
-	  interpolate_projdata [projdata_output_filename]
+	  interpolate_projdata 
+	  [projdata_output_filename]
 	  [projdata_input]
 	  [projdata_template]
 	  [spline_type]
+
+  or for different interpolation for each dimension 
+	  [spline_type[2]]
+	  [spline_type[3]]
 	  
 		Output: "projdata_output".hs "projdata_output_filename".s files
 		
 		  This is a utility program which uses the interpolate_projdata function 
 		  in order to interpolate a 3D set of projection data using B-SPlines interpolation. 
-		  See the ../numerics_buildblock/interpolate_projdata.cxx for more details.
+		  See the ../buildblock/interpolate_projdata.cxx for more details.
 		  \endcode	  
 */
 #include <iostream>
@@ -64,22 +69,36 @@ using namespace std;
 int main(int argc, const char *argv[])                                  
 {         
 	
-	if (argc< 3 || argc>7)
+	if (argc< 4 || argc>7)
 	{
 		cerr << "Usage:" << argv[0] << "\n"		
 			<< "\t[projdata_out_filename]\n" 
 			<< "\t[projdata_in]\n"
 			<< "\t[projdata_out_template]\n" 
-			<< "\t[spline_type[1]]\n"
+			<< "\t[spline_type]\n"
+			<< " All dimensions use cubic splines.\n"
+			<< " For Nearest Neighbour set to: 0 \n"
+			<< " For Linear set to: 1 \n"
+			<< " For Quadratic set to: 2 \n"
+			<< " For Cubic set to: 3 \n"
+			<< " For Cubic oMoms set to: 6 \n"
+			<< " Different interpolation for each dimension takes extra input:\n"
 			<< "\t[spline_type[2]]\n"
-			<< "\t[spline_type[3]]\n";
+			<< "\t[spline_type[3]]\n"
+			<< " If spline_type[3] not given assumed to be the same with spline_type.\n";
 		return EXIT_FAILURE;            
 	}      		
 	
 	BasicCoordinate<3, BSplineType> these_types ;
-	these_types[1]= cubic;//argc==3 ? 3 : atoi(argv[4]) ;
-	these_types[2]= cubic;//argc==3 ? 3 : (=argc>4 ? atoi(argv[5]) : these_types[1]);	
-	these_types[3]= cubic;//argc==3 ? 3 : (=argc>4 ? atoi(argv[6]) : these_types[1]);	
+	BasicCoordinate<3, int> input_types ;
+
+	input_types[1]= (argc==4) ? 3 : atoi(argv[4]) ;
+	input_types[2]= (argc==4) ? 3 : (argc>5 ? atoi(argv[5]) : input_types[1]);	
+	input_types[3]= (argc==4) ? 3 : (argc>6 ? atoi(argv[6]) : input_types[1]);	
+
+	these_types[1]= (BSplineType)input_types[1];
+	these_types[2]= (BSplineType)input_types[2];
+	these_types[3]= (BSplineType)input_types[3];
 	
 	shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
 	const ProjDataInfo* proj_data_info_ptr =
