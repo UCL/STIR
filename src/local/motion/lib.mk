@@ -10,6 +10,7 @@ $(dir)_LIB_SOURCES:= \
 	RigidObject3DMotionFromPolaris.cxx \
 	RigidObject3DTransformation.cxx \
 	MatchTrackerAndScanner.cxx \
+	TimeFrameMotion.cxx \
 	transform_3d_object.cxx
 
 $(dir)_REGISTRY_SOURCES:= local_motion_registries.cxx
