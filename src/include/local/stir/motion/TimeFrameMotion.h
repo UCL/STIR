@@ -24,7 +24,6 @@
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
 #include "stir/ParsingObject.h"
-#include <time.h> // for localtime
 
 START_NAMESPACE_STIR
 /***********************************************************/     
@@ -33,13 +32,10 @@ START_NAMESPACE_STIR
 
 
   \par Example par file
+  These are the parameters set by this class. The derived classes will
+  add more.
+
   \verbatim
-  MoveImage Parameters:=
-  input file:= input_filename
-  ; output name
-  ; filenames will be constructed by appending _f#g1d0b0 (and the extension)
-  ; where # is the frame number
-  output filename prefix:= output
 
   ; see TimeFrameDefinitions
   time frame_definition filename := frame_definition_filename
@@ -62,8 +58,6 @@ START_NAMESPACE_STIR
   ; specify reference position, see stir::AbsTimeInterval
   time interval for reference position type:= type
 
-  ; Change output file format, defaults to Interfile. See OutputFileFormat.
-  ;Output file format := interfile
   END :=
 \endverbatim
 */  
@@ -76,7 +70,7 @@ public:
   TimeFrameMotion(const char * const par_filename);
   */
 
-  //virtual void process_data();
+  virtual Succeeded process_data() = 0;
 
   void move_to_reference(const bool);
   void set_frame_num_to_process(const int);
@@ -88,9 +82,17 @@ public:
   const TimeFrameDefinitions&
     get_time_frame_defs() const;
 
+  double get_frame_start_time(unsigned frame_num) const
+  { return _frame_defs.get_start_time(frame_num) + _scan_start_time; }
+
+  double get_frame_end_time(unsigned frame_num) const
+  { return _frame_defs.get_end_time(frame_num) + _scan_start_time; }
+  
+  const RigidObject3DMotion& get_motion() const
+  { return *_ro3d_sptr; }
+
 protected:
 
-  TimeFrameDefinitions frame_defs;
 
   
   //! parsing functions
@@ -98,22 +100,22 @@ protected:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  //! parsing variables
-  string frame_definition_filename;
 
-  double scan_start_time;
-
-  bool do_move_to_reference;
-
-  int frame_num_to_process;     
 private:
-  shared_ptr<RigidObject3DMotion> ro3d_ptr;
+  string _frame_definition_filename;
+  bool _do_move_to_reference;
+
+  TimeFrameDefinitions _frame_defs;
+  shared_ptr<RigidObject3DMotion> _ro3d_sptr;
   shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;
   RigidObject3DTransformation _current_rigid_object_transformation;
   
   RigidObject3DTransformation _transformation_to_reference_position;
 
-  int scan_start_time_secs_since_1970_UTC;
+  int _scan_start_time_secs_since_1970_UTC;
+  double _scan_start_time;
+
+  int _frame_num_to_process;     
 };
 
 END_NAMESPACE_STIR
