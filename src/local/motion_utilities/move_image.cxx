@@ -30,14 +30,10 @@
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
-#include "local/stir/motion/RigidObject3DTransformation.h"
-#include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/transform_3d_object.h"
-#include "local/stir/AbsTimeInterval.h"
-#include "stir/TimeFrameDefinitions.h"
+#include "local/stir/motion/TimeFrameMotion.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
-#include <time.h> // for localtime
 
 START_NAMESPACE_STIR
 
@@ -49,6 +45,7 @@ START_NAMESPACE_STIR
 		    const RigidObject3DTransformation& rigid_object_transformation)
 
   \par Example par file
+  \see TimeFrameMotion for other parameters
   \verbatim
   MoveImage Parameters:=
   input file:= input_filename
@@ -57,43 +54,24 @@ START_NAMESPACE_STIR
   ; where # is the frame number
   output filename prefix:= output
 
-  ; see TimeFrameDefinitions
-  time frame_definition filename := frame_definition_filename
-  
-  ; next parameter is optional (and not normally necessary)
-  ; it can be used if the frame definitions are relative to another scan as what 
-  ; is used to for the rigid object motion (i.e. currently the list mode data used
-  ;  for the Polaris synchronisation)
-  ; scan_start_time_secs_since_1970_UTC
-
-  ; next parameter defines transformation 'direction', defaults to 1
-  ;move_to_reference := 1
-
-  ; next can be set to do only 1 frame, defaults means all frames
-  ;frame_num_to_process := -1
-
-  ; specify motion, see stir::RigidObject3DMotion
-  Rigid Object 3D Motion Type := type
-
-  ; specify reference position, see stir::AbsTimeInterval
-  time interval for reference position type:= type
-
   ; Change output file format, defaults to Interfile. See OutputFileFormat.
   ;Output file format := interfile
+
+  ; parameters from TimeFrameMotion
+
   END :=
 \endverbatim
 */  
-class MoveImage : public ParsingObject
+class MoveImage : public TimeFrameMotion
 {
+private:
+  typedef TimeFrameMotion base_type;
 public:
   MoveImage(const char * const par_filename);
 
-  TimeFrameDefinitions frame_defs;
 
-  virtual void process_data();
+  virtual Succeeded process_data();
 
-  void move_to_reference(const bool);
-  void set_frame_num_to_process(const int);
 protected:
 
   
@@ -105,51 +83,29 @@ protected:
   //! parsing variables
   string input_filename;
   string output_filename_prefix;
-  string frame_definition_filename;
-
-  double scan_start_time;
-
-  bool do_move_to_reference;
-
-  int frame_num_to_process;     
 private:
   shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr; 
-  shared_ptr<RigidObject3DMotion> ro3d_ptr;
-  shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;
-  
-  RigidObject3DTransformation _transformation_to_reference_position;
   shared_ptr<OutputFileFormat> output_file_format_sptr;  
-
-  int scan_start_time_secs_since_1970_UTC;
 };
 
 void 
 MoveImage::set_defaults()
 {
-  ro3d_ptr = 0;
-  _reference_abs_time_sptr = 0;
-  frame_num_to_process = -1;
+  base_type::set_defaults();
   output_file_format_sptr = new DefaultOutputFileFormat;
-  do_move_to_reference = true;
-  scan_start_time_secs_since_1970_UTC=-1;
 }
 
 void 
 MoveImage::initialise_keymap()
 {
-
   parser.add_start_key("MoveImage Parameters");
 
   parser.add_key("input file",&input_filename);
-  parser.add_key("scan_start_time_secs_since_1970_UTC", 
-		 &scan_start_time_secs_since_1970_UTC);
-  parser.add_key("time frame definition filename",&frame_definition_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
-  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
-  parser.add_key("move_to_reference", &do_move_to_reference);
-  parser.add_key("frame_num_to_process", &frame_num_to_process);
-  parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   parser.add_parsing_key("Output file format",&output_file_format_sptr);
+
+  base_type::initialise_keymap();
+
   parser.add_stop_key("END");
 }
 
@@ -171,104 +127,22 @@ bool
 MoveImage::
 post_processing()
 {
+  if (base_type::post_processing() == true)
+    return true;
 
-  if (scan_start_time_secs_since_1970_UTC==-1)
-    {
-      warning("scan_start_time_secs_since_1970_UTC not set.\n"
-	      "Will use relative time (to RigidObjectMotion object, which for Polaris means relative to the list mode data).");
-      scan_start_time = 0;
-    }
-  else 
-    {
-      if (scan_start_time_secs_since_1970_UTC<1000)
-	{
-	  warning("scan_start_time_secs_since_1970_UTC too small");
-	  return true;
-	}
-      {
-	// convert to time_in_secs since midnight
-	time_t sec_time = scan_start_time_secs_since_1970_UTC;
-	
-	scan_start_time = 
-	  ro3d_ptr->secs_since_1970_to_rel_time(sec_time);
-      }
-    }
-
-  
   if (output_filename_prefix.size()==0)
     {
-      warning("You have to specify an output_filename_prefix\n");
+      warning("You have to specify an output_filename_prefix");
       return true;
     }
   in_density_sptr = 
     DiscretisedDensity<3,float>::read_from_file(input_filename);
 
-
-  // handle time frame definitions etc
-
-  if (frame_definition_filename.size()==0)
-    {
-      warning("Have to specify 'time frame_definition_filename'\n");
-      return true;
-    }
-
-  frame_defs = TimeFrameDefinitions(frame_definition_filename);
-
-  if (is_null_ptr(ro3d_ptr))
-  {
-    warning("Invalid Rigid Object 3D Motion object\n");
-    return true;
-  }
-
-  if (frame_num_to_process!=-1 &&
-      (frame_num_to_process<1 || 
-       static_cast<unsigned>(frame_num_to_process)>frame_defs.get_num_frames()))
-    {
-      warning("Frame number should be between 1 and %d\n",
-	      frame_defs.get_num_frames());
-      return true;
-    }
-
-#if 0
-  // TODO move to RigidObject3DMotion
-  if (!ro3d_ptr->is_time_offset_set())
-    {
-      warning("You have to specify a time_offset (or some other way to synchronise the time\n");
-      return true;
-    }
-#endif
-
-  // set transformation_to_reference_position
-  if (is_null_ptr(_reference_abs_time_sptr))
-    {
-      warning("time interval for reference position is not set");
-      return true;
-    }
-    {
-      const RigidObject3DTransformation av_motion = 
-	ro3d_ptr->compute_average_motion_in_scanner_coords(*_reference_abs_time_sptr);
-      _transformation_to_reference_position =av_motion.inverse();    
-    }
   return false;
 }
 
- 
 
-void 
-MoveImage::
-move_to_reference(const bool value)
-{
-  do_move_to_reference=value;
-}
-
-void
-MoveImage::
-set_frame_num_to_process(const int value)
-{
-  frame_num_to_process=value;
-}
-
-void 
+Succeeded 
 MoveImage::
 process_data()
 {
@@ -276,34 +150,23 @@ process_data()
     in_density_sptr->get_empty_discretised_density();
 
   const unsigned int min_frame_num =
-    frame_num_to_process==-1 ? 1 : frame_num_to_process;
+    this->get_frame_num_to_process()==-1
+    ? 1 : this->get_frame_num_to_process();
   const unsigned int max_frame_num =
-    frame_num_to_process==-1 ? frame_defs.get_num_frames() : frame_num_to_process;
+    this->get_frame_num_to_process()==-1 
+    ? this->get_time_frame_defs().get_num_frames() 
+    : this->get_frame_num_to_process();
 
   for (unsigned int current_frame_num = min_frame_num;
        current_frame_num<=max_frame_num;
        ++current_frame_num)
     {
-      const double start_time = 
-	frame_defs.get_start_time(current_frame_num) + scan_start_time;
-      const double end_time = 
-	frame_defs.get_end_time(current_frame_num) +  scan_start_time;
-      cerr << "\nDoing frame " << current_frame_num
-	   << ": from " << start_time << " to " << end_time << endl;
-
+      set_frame_num_to_process(current_frame_num);
 
       out_density_sptr->fill(0);
 
-      RigidObject3DTransformation rigid_object_transformation =
-	compose(_transformation_to_reference_position,
-		ro3d_ptr->
-		compute_average_motion_in_scanner_coords_rel_time(start_time, end_time));
-      if (!do_move_to_reference)
-	rigid_object_transformation = 
-	  rigid_object_transformation.inverse();
-
       transform_3d_object(*out_density_sptr, *in_density_sptr,
-				rigid_object_transformation);
+			  this->get_current_rigid_object_transformation());
 
 
       //*********** open output file
@@ -315,12 +178,13 @@ process_data()
 	if (output_file_format_sptr->write_to_file(output_filename, *out_density_sptr)
 	    == Succeeded::no)
 	  {
-	    error("Error writing file %s. Exiting\n",
+	    warning("Error writing file %s. Exiting\n",
 		  output_filename.c_str());
+	    return Succeeded::no;
 	  }
 	}
     }
-  
+  return Succeeded::yes;
 }
 
 
@@ -369,7 +233,8 @@ int main(int argc, char * argv[])
     application.move_to_reference(move_to_reference);
   if (set_frame_num_to_process)
     application.set_frame_num_to_process(frame_num_to_process);
-  application.process_data();
+  Succeeded success =
+    application.process_data();
 
-  return EXIT_SUCCESS;
+  return success == Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }

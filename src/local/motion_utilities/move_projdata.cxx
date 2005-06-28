@@ -29,11 +29,8 @@
 */
 #include "stir/ProjDataInterfile.h"
 //#include "stir/IO/DefaultOutputFileFormat.h"
-#include "local/stir/motion/RigidObject3DTransformation.h"
-#include "local/stir/motion/RigidObject3DMotion.h"
+#include "local/stir/motion/TimeFrameMotion.h"
 #include "local/stir/motion/transform_3d_object.h"
-#include "stir/TimeFrameDefinitions.h"
-#include "local/stir/AbsTimeInterval.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
@@ -50,6 +47,7 @@ START_NAMESPACE_STIR
 		    const RigidObject3DTransformation& rigid_object_transformation)
   
   \par Example par file
+  \see TimeFrameMotion for other parameters
   \verbatim
   MoveProjData Parameters:=
   input file:= input_filename
@@ -62,34 +60,18 @@ START_NAMESPACE_STIR
   ; alternative way to reduce number of segments (defaults to: use all)
   ;max_out_segment_num_to_process:=-1
 
-  ; see TimeFrameDefinitions
-  time frame_definition filename := frame_definition_filename
-
-  ; next defines
-  ;move_to_reference := 1
-  ; next can be set to do only 1 frame, defaults means all frames
-  ;frame_num_to_process := -1
-
-  ; specify motion, see stir::RigidObject3DMotion
-  Rigid Object 3D Motion Type := type
-
-  ; specify reference position, see stir::AbsTimeInterval
-  time interval for reference position type:= type
-
   END :=
 \endverbatim
 */  
-class MoveProjData : public ParsingObject
+class MoveProjData : public TimeFrameMotion
 {
+private:
+  typedef TimeFrameMotion base_type;
 public:
   MoveProjData(const char * const par_filename);
 
-  TimeFrameDefinitions frame_defs;
-
   virtual Succeeded process_data();
 
-  void move_to_reference(const bool);
-  void set_frame_num_to_process(const int);
 protected:
 
   
@@ -102,21 +84,12 @@ protected:
   string input_filename;
   string output_filename_prefix;
   string output_template_filename;
-  string frame_definition_filename;
- 
-  bool do_move_to_reference;
-
-  int frame_num_to_process;     
 
   int max_in_segment_num_to_process;
   int max_out_segment_num_to_process;
 
 private:
   shared_ptr<ProjData >  in_proj_data_sptr; 
-  shared_ptr<RigidObject3DMotion> ro3d_ptr;
-  shared_ptr<AbsTimeInterval> _reference_abs_time_sptr;  
-  RigidObject3DTransformation _transformation_to_reference_position;
-
   shared_ptr<ProjDataInfo> proj_data_info_ptr; // template for output
   // shared_ptr<OutputFileFormat> output_file_format_sptr;  
 };
@@ -124,11 +97,8 @@ private:
 void 
 MoveProjData::set_defaults()
 {
-  ro3d_ptr = 0;
-  _reference_abs_time_sptr = 0;
-  frame_num_to_process = -1;
+  base_type::set_defaults();
   //output_file_format_sptr = new DefaultOutputFileFormat;
-  do_move_to_reference = true;
 
   max_in_segment_num_to_process=-1;
   max_out_segment_num_to_process=-1;
@@ -141,17 +111,15 @@ MoveProjData::initialise_keymap()
   parser.add_start_key("MoveProjData Parameters");
 
   parser.add_key("input file",&input_filename);
-  parser.add_key("time frame definition filename",&frame_definition_filename);
   parser.add_key("output template filename",&output_template_filename);
   parser.add_key("output filename prefix",&output_filename_prefix);
   parser.add_key("max_out_segment_num_to_process", &max_out_segment_num_to_process);
   parser.add_key("max_in_segment_num_to_process", &max_in_segment_num_to_process);
 
-  parser.add_parsing_key("time interval for reference position type", &_reference_abs_time_sptr);
-  parser.add_key("move_to_reference", &do_move_to_reference);
-  parser.add_key("frame_num_to_process", &frame_num_to_process);
-  parser.add_parsing_key("Rigid Object 3D Motion Type", &ro3d_ptr); 
   //parser.add_parsing_key("Output file format",&output_file_format_sptr);
+
+  base_type::initialise_keymap();
+
   parser.add_stop_key("END");
 }
 
@@ -173,7 +141,8 @@ bool
 MoveProjData::
 post_processing()
 {
-   
+  if (base_type::post_processing() == true)
+    return true;
 
   if (output_filename_prefix.size()==0)
     {
@@ -203,68 +172,8 @@ post_processing()
   else
     proj_data_info_ptr->reduce_segment_range(-max_out_segment_num_to_process,max_out_segment_num_to_process);
 
-  // handle time frame definitions etc
-
-  if (frame_definition_filename.size()==0)
-    {
-      warning("Have to specify either 'time frame_definition_filename'\n");
-      return true;
-    }
-
-  frame_defs = TimeFrameDefinitions(frame_definition_filename);
-
-  if (is_null_ptr(ro3d_ptr))
-  {
-    warning("Invalid Rigid Object 3D Motion object\n");
-    return true;
-  }
-
-  if (frame_num_to_process!=-1 &&
-      (frame_num_to_process<1 || 
-       static_cast<unsigned>(frame_num_to_process)>frame_defs.get_num_frames()))
-    {
-      warning("Frame number should be between 1 and %d\n",
-	      frame_defs.get_num_frames());
-      return true;
-    }
-
-#if 0
-  // TODO move to RigidObject3DMotion
-  if (!ro3d_ptr->is_synchronised())
-    {
-      warning("You have to specify a time_offset (or some other way to synchronise the time\n");
-      return true;
-    }
-#endif
-  // set transformation_to_reference_position
-  if (is_null_ptr(_reference_abs_time_sptr))
-    {
-      warning("time interval for reference position is not set");
-      return true;
-    }
-    {
-      const RigidObject3DTransformation av_motion = 
-	ro3d_ptr->compute_average_motion_in_scanner_coords(*_reference_abs_time_sptr);
-      _transformation_to_reference_position =av_motion.inverse();    
-    }
 
   return false;
-}
-
- 
-
-void 
-MoveProjData::
-move_to_reference(const bool value)
-{
-  do_move_to_reference=value;
-}
-
-void
-MoveProjData::
-set_frame_num_to_process(const int value)
-{
-  frame_num_to_process=value;
 }
 
 Succeeded 
@@ -274,19 +183,18 @@ process_data()
   shared_ptr<ProjData> out_proj_data_sptr;
 
   const unsigned int min_frame_num =
-    frame_num_to_process==-1 ? 1 : frame_num_to_process;
+    this->get_frame_num_to_process()==-1
+    ? 1 : this->get_frame_num_to_process();
   const unsigned int max_frame_num =
-    frame_num_to_process==-1 ? frame_defs.get_num_frames() : frame_num_to_process;
+    this->get_frame_num_to_process()==-1 
+    ? this->get_time_frame_defs().get_num_frames() 
+    : this->get_frame_num_to_process();
 
   for (unsigned int current_frame_num = min_frame_num;
        current_frame_num<=max_frame_num;
        ++current_frame_num)
     {
-      const double start_time = frame_defs.get_start_time(current_frame_num);
-      const double end_time = frame_defs.get_end_time(current_frame_num);
-      cerr << "\nDoing frame " << current_frame_num
-	   << ": from " << start_time << " to " << end_time << endl;
-
+      set_frame_num_to_process(current_frame_num);
       {
 	char rest[50];
 	sprintf(rest, "_f%dg1d0b0", current_frame_num);
@@ -295,20 +203,12 @@ process_data()
 	  new ProjDataInterfile (proj_data_info_ptr, output_filename, ios::out); 
       }
 
-      RigidObject3DTransformation rigid_object_transformation =
-	compose(_transformation_to_reference_position,
-		ro3d_ptr->
-		compute_average_motion_in_scanner_coords_rel_time(start_time, end_time));
-      if (!do_move_to_reference)
-	rigid_object_transformation = 
-	  rigid_object_transformation.inverse();
-
       std::cout << "Applying transformation " 
-		<< rigid_object_transformation
+		<< this->get_current_rigid_object_transformation()
 		<< '\n';
 
       if (transform_3d_object(*out_proj_data_sptr, *in_proj_data_sptr,
-			      rigid_object_transformation)
+			      this->get_current_rigid_object_transformation())
 	  == Succeeded::no)
 	return Succeeded::no;
     }
