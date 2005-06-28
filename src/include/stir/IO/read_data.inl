@@ -146,6 +146,7 @@ read_data(IStreamT& s,
 
       // now list cases that we want
       CASE(NumericType::SCHAR);
+	  CASE(NumericType::UCHAR);
       CASE(NumericType::SHORT);
       CASE(NumericType::USHORT);
       CASE(NumericType::FLOAT);
