@@ -51,10 +51,6 @@ private:
 	BasicCoordinate<num_dimensions,double> _lambdas;
 	Array<num_dimensions,out_elemT> _coeffs;  
     BasicCoordinate<num_dimensions,BSplineType> _spline_types;
-	
-    inline
-		void
-		set_coef(const Array<num_dimensions,in_elemT> & input);
 		
 public:
 	// only there for tests
@@ -81,7 +77,24 @@ public:
 		set_private_values(this_type);	  
 		set_coef(input);
 	}  	
-	
+
+	inline 
+		BSplinesRegularGrid(
+		const BSplineType & this_type = cubic)
+	{
+		set_private_values(this_type);	  
+	} 	
+
+    inline 
+		BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
+	{	 
+		set_private_values(this_type);	  
+	}  	
+			
+    inline
+		void
+		set_coef(const Array<num_dimensions,in_elemT> & input);
+
 	inline void 
 		set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type);
 	inline void 
