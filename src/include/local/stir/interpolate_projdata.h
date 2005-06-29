@@ -22,21 +22,18 @@
   \file Declaration of stir::interpolate_projdata
   
   \author Charalampos Tsoumpas
+  \author Kris Thielemans
 
   $Date$
   $Revision$
 */
 
-
-#include "local/stir/BSplines.h"
-#include "local/stir/BSplinesRegularGrid.h"
-
+//#include "local/stir/BSplines.h"
+//#include "local/stir/BSplinesRegularGrid.h"
 
 START_NAMESPACE_STIR
 
-class ProjData;
-class Succeeded;
-//! Perform B-Splines Interpolation
+//! \brief Perform B-Splines Interpolation
 /*! 
   \ingroup projdata
   \param[out] proj_data_out Its projection_data_info is used to 
@@ -51,15 +48,23 @@ class Succeeded;
 
   See STIR documentation about B-Spline interpolation or scatter correction.     
 */  
+//@{
+/*!						  
+\ingroup projdata
+\brief Extension of the 2D sinograms in view direction.
+	Functions that interpolate the given input projection 3D data to the given output projection
+	3D template using B-Splines interpolators.
+*/
+Succeeded 
+interpolate_projdata(ProjData& proj_data_out,
+					 const ProjData& proj_data_in, const BSpline::BSplineType this_type);
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
 		const ProjData& proj_data_in,
 		const BasicCoordinate<3, BSpline::BSplineType> & this_type);
-/*
-Succeeded 
-interpolate_projdata(ProjData& proj_data_out,
-		const ProjData& proj_data_in, const BSplineType this_type);*/
-
+//@}
 
 END_NAMESPACE_STIR
+
+
 
