@@ -426,6 +426,10 @@ INSTANTIATE(1, signed char, float);
 INSTANTIATE(1, unsigned char, float);
 INSTANTIATE(1, short, signed char);
 INSTANTIATE(1, signed char, short);
+
+INSTANTIATE(1, unsigned char, signed char);
+INSTANTIATE(1, signed char, unsigned char);
+
 INSTANTIATE(1, unsigned short, signed char);
 INSTANTIATE(1, signed char, unsigned short);
 INSTANTIATE(1, short, unsigned char);
@@ -458,6 +462,8 @@ INSTANTIATE(2, short, unsigned char);
 INSTANTIATE(2, unsigned char, short);
 INSTANTIATE(2, unsigned short, unsigned char);
 INSTANTIATE(2, unsigned char, unsigned short);
+INSTANTIATE(2, unsigned char, signed char);
+INSTANTIATE(2, signed char, unsigned char);
 
 INSTANTIATE(2, float, short);
 INSTANTIATE(2, float, unsigned short);
@@ -476,7 +482,8 @@ INSTANTIATE(3, float, signed char);
 INSTANTIATE(3, float, unsigned char);
 INSTANTIATE(3, signed char, float);
 INSTANTIATE(3, unsigned char, float);
-
+INSTANTIATE(3, unsigned char, signed char);
+INSTANTIATE(3, signed char, unsigned char);
 INSTANTIATE(3, short, signed char);
 INSTANTIATE(3, signed char, short);
 INSTANTIATE(3, unsigned short, signed char);
@@ -521,6 +528,8 @@ INSTANTIATE(4, short, float);
 INSTANTIATE(4, unsigned short, float);
 INSTANTIATE(4, unsigned short, short);
 INSTANTIATE(4, short, unsigned short);
+INSTANTIATE(4, unsigned char, signed char);
+INSTANTIATE(4, signed char, unsigned char);
 
 INSTANTIATE(4, unsigned char, unsigned char);
 INSTANTIATE(4, signed char, signed char);
@@ -548,6 +557,8 @@ INSTANTIATE(1, float, signed char);
 INSTANTIATE(1, float, unsigned char);
 INSTANTIATE(1, signed char, float);
 INSTANTIATE(1, unsigned char, float);
+INSTANTIATE(1, unsigned char, signed char);
+INSTANTIATE(1, signed char, unsigned char);
 INSTANTIATE(1, short, signed char);
 INSTANTIATE(1, signed char, short);
 INSTANTIATE(1, unsigned short, signed char);
@@ -579,6 +590,8 @@ INSTANTIATE(2, unsigned short, signed char);
 INSTANTIATE(2, signed char, unsigned short);
 INSTANTIATE(2, short, unsigned char);
 INSTANTIATE(2, unsigned char, short);
+INSTANTIATE(2, unsigned char, signed char);
+INSTANTIATE(2, signed char, unsigned char);
 INSTANTIATE(2, unsigned short, unsigned char);
 INSTANTIATE(2, unsigned char, unsigned short);
 #endif
@@ -604,6 +617,8 @@ INSTANTIATE(3, signed char, unsigned short);
 INSTANTIATE(3, unsigned char, float);
 INSTANTIATE(3, short, unsigned char);
 INSTANTIATE(3, unsigned char, short);
+INSTANTIATE(3, unsigned char, signed char);
+INSTANTIATE(3, signed char, unsigned char);
 INSTANTIATE(3, unsigned short, unsigned char);
 INSTANTIATE(3, unsigned char, unsigned short);
 #endif
@@ -627,6 +642,8 @@ INSTANTIATE(4, signed char, short);
 INSTANTIATE(4, unsigned short, signed char);
 INSTANTIATE(4, signed char, unsigned short);
 INSTANTIATE(4, unsigned char, float);
+INSTANTIATE(4, unsigned char, signed char);
+INSTANTIATE(4, signed char, unsigned char);
 INSTANTIATE(4, short, unsigned char);
 INSTANTIATE(4, unsigned char, short);
 INSTANTIATE(4, unsigned short, unsigned char);
