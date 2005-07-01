@@ -3,10 +3,10 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-	Copyright (C) 2000 - $Date$, Hammersmith Imanet Ltd
-
+    Copyright (C) 2000 - $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
-	This file is free software; you can redistribute it and/or modify
+
+    This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
     (at your option) any later version.
@@ -21,10 +21,9 @@
 /*!
   \file 
   \ingroup Array
-  \brief implementation of convert_array
+  \brief implementation of stir::convert_array
 
   \author Kris Thielemans
-  \author Charalampos Tsoumpas (UCHAR instatiations)
   \author PARAPET project
 
   $Date$
@@ -58,6 +57,50 @@
 
 START_NAMESPACE_STIR
 
+// anonymous namespace for local functions
+namespace 
+{
+
+  /* Declaration of auxiliary function is_negative() with the obvious
+     implementation.
+     However, we overload it for unsigned types to return always false.
+     The compiler would do this automatically for us. However, many 
+     compilers (including gcc) will warn when you do
+     unsigned x=...;
+     if (x<0)
+     { 
+       // never get here
+     }
+     This file relies on templated definitions of convert_array. So,
+     if we use if-statements as above with templated code, we will get
+     warnings when instantiating the code with unsigned types.
+
+     Summary, instead of the above if, write
+     T x;
+     if (is_negative(x))
+     { 
+       // never get here if T is an unsigned type
+     }
+     and you won't get a warning message
+  */
+
+  template <class T> 
+  inline bool is_negative(const T x)
+  { return x<0; }
+
+  inline bool is_negative(const unsigned char x)
+  { return false; }
+
+  inline bool is_negative(const unsigned short x)
+  { return false; }
+
+  inline bool is_negative(const unsigned int x)
+  { return false; }
+
+  inline bool is_negative(const unsigned long x)
+  { return false; }
+
+}
 
 template <int num_dimensions, class T1, class T2, class scaleT>
 void
@@ -193,7 +236,7 @@ public:
          in_iter != in_iter_end;
          ++in_iter, ++out_iter)
     {    
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
+      if (!NumericInfo<T2>().signed_type() && is_negative(*in_iter))
       {
 	// truncate negatives
 	*out_iter = 0;
@@ -378,8 +421,7 @@ convert_array_FULL(Array<num_dimensions, T2>& data_out,
          in_iter != in_iter_end;
          ++in_iter, ++out_iter)
     {    
-	   //TODO can remove check on <t1>.signed_type
-      if (NumericInfo<T1>().signed_type() && !NumericInfo<T2>().signed_type() && *in_iter < 0)
+      if (!NumericInfo<T2>().signed_type() && is_negative(*in_iter))
       {
 	// truncate negatives
 	*out_iter = 0;
@@ -477,6 +519,7 @@ INSTANTIATE(2, unsigned char, unsigned char);
 INSTANTIATE(2, short, short);
 INSTANTIATE(2, unsigned short, unsigned short);
 INSTANTIATE(2, float, float);
+
 
 INSTANTIATE(3, float, signed char);
 INSTANTIATE(3, float, unsigned char);
