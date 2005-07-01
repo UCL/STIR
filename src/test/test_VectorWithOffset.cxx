@@ -77,15 +77,61 @@ VectorWithOffsetTests::run_tests()
   v.release_data_ptr();
   check_if_equal(v[4], 5, "test get_data_tr/release_data_ptr");
 
-  { 
-    int value = -3;
-    for (VectorWithOffset<int>::iterator iter = v.begin();
-       iter != v.end();
-       iter++, value++)
-       *iter = value;
-  }
+  // iterator tests
+  {
+    { 
+      int value = -3;
+      for (VectorWithOffset<int>::iterator iter = v.begin();
+	   iter != v.end();
+	   iter++, value++)
+	*iter = value;
+      check_if_equal(v[4], 4, "test iterators operator++ and *");
+    }
+    {
+      VectorWithOffset<int>::const_iterator iter = v.begin();
+      check_if_equal(*(iter+4-v.get_min_index()), 4, "test iterators operator+ and *");
+      iter += 4-v.get_min_index();
+      check_if_equal(*iter, 4, "test iterators operator+= and *");
+      ++iter;
+      check_if_equal(*(iter-1), 4, "test iterators operator+= and *");
+      --iter;
+      check_if_equal(*iter, 4, "test iterators operator+= and *");
+    }
+    {
+      const VectorWithOffset<int>& const_v = v;
+      VectorWithOffset<int>::const_iterator iter = const_v.begin();
+      check_if_equal(*(iter+4-v.get_min_index()), 4, "test iterators operator+ and *");
+      iter += 4-v.get_min_index();
+      check_if_equal(*iter, 4, "test iterators operator+= and *");
+      ++iter;
+      check_if_equal(*(iter-1), 4, "test iterators operator+= and *");
+      --iter;
+      check_if_equal(*iter, 4, "test iterators operator+= and *");
+    }
 
-  check_if_equal(v[4], 4, "test iterators");
+
+    {
+      VectorWithOffset<int>::iterator p=find(v.begin(), v.end(), 6);
+      check_if_equal(p - v.begin(), 9, "test iterators: find");
+      check_if_equal(*p, 6, "test iterators: find");
+    }
+
+    sort(v.begin(), v.end(), greater<int>());
+    check_if_equal(v[-3], 40, "test iterators: sort");
+    check_if_equal(v[0], 37, "test iterators: sort");
+
+    {
+      VectorWithOffset<int>::reverse_iterator pr = v.rbegin();
+      check_if_equal(*pr++, -3, "test reverse iterator operator++ and *");
+      check_if_equal(*(pr+2), 0, "test reverse iterator operator++ and *");
+    }
+
+    sort(v.rbegin(), v.rend(), greater<int>());
+    check_if_equal(v[-3], -3, "test reverse iterators after sort");
+    check_if_equal(v[0], 0, "test reverse iterators after sort");
+
+  } // end test iterators
+
 
   {
     VectorWithOffset<int> test = v;
@@ -94,28 +140,6 @@ VectorWithOffsetTests::run_tests()
     check( test.capacity()==v.capacity(), "test set_min_index (capacity)");
     check_if_equal( test[-1], v[v.get_min_index()], "test set_min_index (operator[])");
   }
-  {
-    int *p=find(v.begin(), v.end(), 6);
-    check_if_equal(p - v.begin(), 9, "test iterators: find");
-    check_if_equal(*p, 6, "test iterators: find");
-  }
-
-  sort(v.begin(), v.end(), greater<int>());
-  check_if_equal(v[-3], 40, "test iterators: sort");
-  check_if_equal(v[0], 37, "test iterators: sort");
-
-#if 0
-  // no reverse iterators yet...
-  {
-    VectorWithOffset<int>::reverse_iterator pr = v.rbegin();
-    assert((*pr++) == 40);
-    assert((*pr++) == 39);
-  }
-
-  sort(v.rbegin(), v.rend());
-  check_if_equal(v[-3], 40, "test reverse iterators");
-  check_if_equal(v[0], 37, "test reverse iterators");
-#endif //0 (reverse iterators)
 
   /**********************************************************************/
   // tests on reserve()
