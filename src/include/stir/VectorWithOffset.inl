@@ -21,7 +21,7 @@
 /*!
   \file 
   \ingroup Array
-  \brief inline implementations of VectorWithOffset
+  \brief inline implementations of stir::VectorWithOffset
 
   \author Kris Thielemans
   \author PARAPET project
@@ -137,7 +137,7 @@ typename VectorWithOffset<T>::iterator
 VectorWithOffset<T>::begin() 
 { 
   this->check_state();
-  return num+this->get_min_index(); 
+  return typename VectorWithOffset<T>::iterator(num+this->get_min_index()); 
 }
 
 template <class T>
@@ -145,7 +145,7 @@ typename VectorWithOffset<T>::const_iterator
 VectorWithOffset<T>::begin() const 
 {
   this->check_state();
-  return num+this->get_min_index(); 
+  return typename VectorWithOffset<T>::const_iterator(num+this->get_min_index()); 
 }
 
 template <class T>
@@ -153,7 +153,7 @@ typename VectorWithOffset<T>::iterator
 VectorWithOffset<T>::end() 
 {
   this->check_state();
-  return num+this->get_max_index()+1; 
+  return typename VectorWithOffset<T>::iterator(num+this->get_max_index()+1); 
 }
 
 template <class T>
@@ -161,11 +161,42 @@ typename VectorWithOffset<T>::const_iterator
 VectorWithOffset<T>::end() const 
 { 
   this->check_state();
-  return num+this->get_max_index()+1; 
+  return typename VectorWithOffset<T>::const_iterator(num+this->get_max_index()+1); 
 }
 
 template <class T>
+typename VectorWithOffset<T>::reverse_iterator 
+VectorWithOffset<T>::rbegin() 
+{ 
+  this->check_state();
+  return boost::make_reverse_iterator(end());
+}
 
+template <class T>
+typename VectorWithOffset<T>::const_reverse_iterator 
+VectorWithOffset<T>::rbegin() const
+{ 
+  this->check_state();
+  return boost::make_reverse_iterator(end());
+}
+
+template <class T>
+typename VectorWithOffset<T>::reverse_iterator 
+VectorWithOffset<T>::rend() 
+{ 
+  this->check_state();
+  return boost::make_reverse_iterator(begin());
+}
+
+template <class T>
+typename VectorWithOffset<T>::const_reverse_iterator 
+VectorWithOffset<T>::rend() const
+{ 
+  this->check_state();
+  return boost::make_reverse_iterator(begin());
+}
+
+template <class T>
 VectorWithOffset<T>::VectorWithOffset()
 { 
   pointer_access = false;  
