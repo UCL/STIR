@@ -92,22 +92,25 @@ typename Array<num_dimensions, elemT>::full_iterator
 Array<num_dimensions, elemT>::end_all()
 {
   // note this value is fixed by the current convention in full_iterator::operator++()
-  return  full_iterator(this->end(), this->end(), 0,0);
-}
-
-template <int num_dimensions, typename elemT>
-typename Array<num_dimensions, elemT>::const_full_iterator 
-Array<num_dimensions, elemT>::end_all() const
-{
-  // note this value is fixed by the current convention in full_iterator::operator++()
-  return  const_full_iterator(this->end(), this->end(), 0,0);
+  return  full_iterator(this->end(), this->end(), 
+			typename Array<num_dimensions-1, elemT>::full_iterator(0),
+			typename Array<num_dimensions-1, elemT>::full_iterator(0));
 }
 
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
 Array<num_dimensions, elemT>::end_all_const() const
 {
-  return static_cast<const Array<num_dimensions, elemT>&>(*this).end_all();
+  return  const_full_iterator(this->end(), this->end(), 
+			      typename Array<num_dimensions-1, elemT>::const_full_iterator(0),
+			      typename Array<num_dimensions-1, elemT>::const_full_iterator(0));
+}
+
+template <int num_dimensions, typename elemT>
+typename Array<num_dimensions, elemT>::const_full_iterator 
+Array<num_dimensions, elemT>::end_all() const
+{
+  return this->end_all_const();
 }
 
 template <int num_dimensions, typename elemT>
@@ -126,7 +129,7 @@ Array<num_dimensions, elemT>::begin_all()
   
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
-Array<num_dimensions, elemT>::begin_all() const
+Array<num_dimensions, elemT>::begin_all_const() const
 {
   if (this->begin() == this->end())
   {
@@ -135,14 +138,14 @@ Array<num_dimensions, elemT>::begin_all() const
   }
   else
     return const_full_iterator(this->begin(), this->end(), 
-                         this->begin()->begin_all(), this->begin()->end_all());
+                         this->begin()->begin_all_const(), this->begin()->end_all_const());
 }
 
 template <int num_dimensions, typename elemT>
 typename Array<num_dimensions, elemT>::const_full_iterator 
-Array<num_dimensions, elemT>::begin_all_const() const
+Array<num_dimensions, elemT>::begin_all() const
 {
-  return static_cast<const Array<num_dimensions, elemT>&>(*this).begin_all();
+  return begin_all_const();
 }
 
 template <int num_dimensions, class elemT>
