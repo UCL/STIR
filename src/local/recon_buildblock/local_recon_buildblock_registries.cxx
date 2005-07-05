@@ -22,6 +22,8 @@
 #include "local/stir/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
 #include "local/stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 
+#include "local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h"
+
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
 //#include "local/stir/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
 //#include "local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
@@ -39,6 +41,9 @@ static ProjMatrixByBinUsingSolidAngle::RegisterIt dummy11;
 static ProjMatrixByBinUsingInterpolation::RegisterIt dummy13;
 static ProjMatrixByBinSinglePhoton::RegisterIt dummy12;
 static ProjMatrixByBinFromFile::RegisterIt dumy14;
+
+static BackProjectorByBinDistanceDriven::RegisterIt dummy1001;
+
 //static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
 
 //static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;

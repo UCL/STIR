@@ -694,6 +694,49 @@ VectorWithOffset<T>::operator/= (const VectorWithOffset &v)
   return *this; 
 }
 
+/**** operator+=(T) etc *****/
+#if 0
+// disabled for now
+// warning: not tested
+template <class T>
+inline VectorWithOffset<T>& 
+VectorWithOffset<T>::operator+= (const T &t)
+{
+  typename iterator iter = this->begin();
+  const typename iterator end_iter = this->end();
+  while (iter != end_iter)
+    *iter++ += t;
+}
+
+template <class T>
+inline VectorWithOffset<T>& 
+VectorWithOffset<T>::operator-= (const T &t)
+{
+  typename iterator iter = this->begin();
+  const typename iterator end_iter = this->end();
+  while (iter != end_iter)
+    *iter++ -= t;
+}
+template <class T>
+inline VectorWithOffset<T>& 
+VectorWithOffset<T>::operator*= (const T &t)
+{
+  typename iterator iter = this->begin();
+  const typename iterator end_iter = this->end();
+  while (iter != end_iter)
+    *iter++ *= t;
+}
+template <class T>
+inline VectorWithOffset<T>& 
+VectorWithOffset<T>::operator/= (const T &t)
+{
+  typename iterator iter = this->begin();
+  const typename iterator end_iter = this->end();
+  while (iter != end_iter)
+    *iter++ /= t;
+}
+
+#endif
 
 /**** operator* etc ********/
 

@@ -150,7 +150,7 @@ public:
   */
   inline void recycle();
 
-  //! assignment operator
+  //! assignment operator with another vector
   inline VectorWithOffset & operator= (const VectorWithOffset &il) ;
 
   //! \name index range operations
@@ -291,6 +291,30 @@ public:
   //! dividing all elements of the current vector by elements of \c v
   inline VectorWithOffset & operator/= (const VectorWithOffset &v);
   //@}
+#if 0
+  // next operators are disabled for now
+  // if enabling then, you should also put them in NumericVectorWithOffset probably
+  /*! \name arithmetic assignment operators with objects of the type \c T
+
+     Note that currently the corresponding arithmetic operator are currently not implemented.
+     One of the reasons is that the temporary copy it would involve is normally to
+     be avoided at all costs.
+   */
+  //@{
+  //! adding  \c t to the all elements of the current vector
+  inline VectorWithOffset & operator+= (const T &t);
+
+  //! subtracting \c t from the all elements of the current vector
+  inline VectorWithOffset & operator-= (const T &t);
+
+  //! multiplying elements of the current vector with \c t 
+  inline VectorWithOffset & operator*= (const T &t);
+
+  //! dividing all elements of the current vector by \c t
+  inline VectorWithOffset & operator/= (const T &t);
+  //@}
+#endif
+
   /*! \name arithmetic operators with objects of the same type
    
      \warning Arguments must have matching index ranges. Otherwise error() is called. 
