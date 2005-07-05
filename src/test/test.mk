@@ -45,11 +45,11 @@ endif
 
 
 ifeq ("$(IS_MS_VC)","")
-run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math$(EXE_SUFFIX) PHONY_TARGET
-	$< $(DEST)/utilities/stir_math$(EXE_SUFFIX) 
+run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math PHONY_TARGET
+	$< $(DEST)utilities/stir_math$(EXE_SUFFIX) 
 else
 run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_math PHONY_TARGET
-	$< `cygpath -w $(DEST)/utilities/stir_math.exe`
+	$< `cygpath -w $(DEST)utilities/stir_math.exe`
 endif
 
 run_$(dir)/test_VAXfloat:  $(DEST)$(dir)/test_VAXfloat PHONY_TARGET
@@ -64,8 +64,15 @@ ${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} $(STIR_LIB)
 ${DEST}$(dir)/test_ArrayFilter: ${DEST}$(dir)/test_ArrayFilter${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} $(STIR_LIB) 
+ifeq ("$(FAST_test_VectorWithOffset)","")
+${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} $(STIR_LIB)
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+else
+  # rule for test_VectorWithOffset that ignores $(STIR_LIB) completely as it's all inline (except for error())
+  # somewhat dangerous though in case files/rules change
+${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} ${DEST}/buildblock/error.o
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  ${DEST}/buildblock/error.o $(LINKFLAGS) $(SYS_LIBS)
+endif
 
 
 ${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array${O_SUFFIX} $(STIR_LIB) 
