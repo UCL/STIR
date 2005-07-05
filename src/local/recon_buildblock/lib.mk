@@ -18,8 +18,9 @@ $(dir)_LIB_SOURCES:= \
 	BinNormalisationUsingProfile.cxx \
 	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx \
-	ProjMatrixByBinFromFile.cxx \
-	BackProjectorByBinDistanceDriven.cxx
+	ProjMatrixByBinFromFile.cxx
+
+#	BackProjectorByBinDistanceDriven.cxx
   
 #	oldForwardProjectorByBinUsingRayTracing.cxx \
 #	oldForwardProjectorByBinUsingRayTracing_Siddon.cxx \
