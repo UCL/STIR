@@ -56,7 +56,7 @@ uninstall_exes_$(dir):
 
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
   -include \
-	$(patsubst %.cxx, $(DEST)%.P, $(filter %.cxx, $($(dir)_SOURCES)))) \
+	$(patsubst %.cxx, $(DEST)%.P, $(filter %.cxx, $($(dir)_SOURCES))) \
 	$(patsubst %.c, $(DEST)%.P, $(filter %.c, $($(dir)_SOURCES)))
 endif
 
