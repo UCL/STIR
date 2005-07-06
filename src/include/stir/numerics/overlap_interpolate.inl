@@ -27,6 +27,7 @@
   $Revision$
 */
 #include <algorithm>
+#include "boost/iterator/iterator_traits.hpp"
 
 START_NAMESPACE_STIR
 template <typename out_iter_t, typename out_coord_iter_t,
@@ -80,61 +81,61 @@ void
   assert(*(out_coord_iter+1) > *in_coord_iter);
   assert(*(in_coord_iter+1) > *out_coord_iter);
 
+  // a typedef for the coordinate type
+  typedef typename boost::iterator_value<out_coord_iter_t>::type coord_t;
+
+  // find small number for comparisons.
+  // we'll take it 1000 times smaller than the minimum of the average out_box size or in_box size
+  const coord_t epsilon = 
+    std::min(((*(out_coord_end-1)) - (*out_coord_begin)) /
+	     ((out_coord_end-1 - out_coord_begin)*1000),
+	     ((*(in_coord_end-1)) - (*in_coord_begin)) /
+	     ((in_coord_end-1 - in_coord_begin)*1000));
+  
   // do actual interpolation
   // we walk through the boxes, checking the overlap.
   // after each step, we'll advance either in_iter or out_iter.
-  float current_coord = std::max(*in_coord_iter, *out_coord_iter);
+  coord_t current_coord = std::max(*in_coord_iter, *out_coord_iter);
   bool first_time_for_this_out_box = true;
   while (true)
     {
-      if (*(in_coord_iter+1) > *(out_coord_iter+1))
+      // right edge of in-box is beyond out-box
+      const bool in_beyond_out =  
+	*(in_coord_iter+1) > *(out_coord_iter+1);
+      const coord_t new_coord =
+	in_beyond_out ? *(out_coord_iter+1) : *(in_coord_iter+1);
+      const coord_t overlap = new_coord - current_coord;
+      assert(overlap>-epsilon);
+
+      if (first_time_for_this_out_box)
 	{
-	  // right edge of in-box is beyond out-box
-	  const float overlap =  *(out_coord_iter+1) - current_coord;
-	  if (first_time_for_this_out_box)
-	    {
-	      if (overlap>0)
-		 *out_iter = *in_iter * overlap;
-	       else
-		 *out_iter *= 0;
-	    }
+	  if (overlap>epsilon)
+	    *out_iter = *in_iter * overlap;
 	  else
-	    {
-	      if (overlap>0)
-		*out_iter += *in_iter * overlap;
-	    }
-	  current_coord = *(out_coord_iter+1);
+	    *out_iter *= 0;
+	  first_time_for_this_out_box = false;
+	}
+      else
+	{
+	  if (overlap>epsilon)
+	    *out_iter += *in_iter * overlap;
+	}
+      current_coord = new_coord;
+      if (in_beyond_out)
+	{
 	  ++out_coord_iter; ++out_iter; 
 	  if (out_iter == out_end)
 	    {
 	      assert(out_coord_iter+1 == out_coord_end);	      
 	      return; // all out-boxes are done
 	    }
-	  assert (out_coord_iter+1 != out_coord_end);
 	  first_time_for_this_out_box = true;
 	}
       else
 	{
-	  // right edge of in-box is inside out-box
-	  const float overlap =  *(in_coord_iter+1) - current_coord;
-	  if (first_time_for_this_out_box)
-	    {
-	      first_time_for_this_out_box = false;
-	       if (overlap>0)
-		 *out_iter = *in_iter * overlap;
-	       else
-		 *out_iter *= 0;
-	    }
-	  else
-	    {
-	      if (overlap>0)
-		*out_iter += *in_iter * overlap;
-	    }
-	  current_coord = *(in_coord_iter+1);
 	  ++in_coord_iter; ++in_iter; 
 	  if (in_iter == in_end)
 	    break;
-	  assert (in_coord_iter+1 != in_coord_end);
 	}
     } // end of while
 
