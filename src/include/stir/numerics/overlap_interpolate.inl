@@ -21,7 +21,7 @@
   \file
   \ingroup numerics
 
-  \brief Implementation of inline versions of overlap_interpolate()
+  \brief Implementation of inline versions of stir::overlap_interpolate
   \author Kris Thielemans
   $Date$
   $Revision$
@@ -44,6 +44,12 @@ void
   if (in_begin == in_end)
     return;
 
+  // check sizes.
+  // these asserts can be disabled if we ever use this function with iterators
+  // that don't support the next 2 lines
+  assert(out_coord_end - out_coord_begin - 1 == (out_end - out_begin)); 
+  assert(in_coord_end - in_coord_begin - 1 == (in_end - in_begin)); 
+
   out_iter_t out_iter = out_begin;
   out_coord_iter_t out_coord_iter = out_coord_begin;
 
@@ -52,10 +58,8 @@ void
 
   // skip input to the left of the output range
   assert(in_coord_iter+1 != in_coord_end);
-  while (true)
+  while (*(in_coord_iter+1) <= *out_coord_iter)
     {
-      if (*(in_coord_iter+1) > *out_coord_iter)
-	break;
       ++in_coord_iter; ++in_iter; 
       if (in_coord_iter+1 == in_coord_end)
 	return;
@@ -63,10 +67,8 @@ void
 
   // skip output to the left of the input range
   assert(out_coord_iter+1 != out_coord_end);
-  while (true)
+  while (*(out_coord_iter+1) <= *in_coord_iter)
     {
-      if (*(out_coord_iter+1) > *in_coord_iter)
-	break;
       if (assign_rest_with_zeroes)
 	*out_iter *= 0; // note: use *= such that it works for multi-dim arrays
       ++out_coord_iter; ++out_iter; 
@@ -152,8 +154,8 @@ void
 	    break;
 	  *out_iter *= 0;  // note: use *= such that it works for multi-dim arrays
 	}
+      assert(out_coord_iter+1 == out_coord_end);	      
     }
-  assert(out_coord_iter+1 == out_coord_end);	      
 }
 
 END_NAMESPACE_STIR
