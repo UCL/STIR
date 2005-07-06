@@ -34,10 +34,11 @@ template <typename out_iter_t, typename out_coord_iter_t,
 	  typename in_iter_t, typename in_coord_iter_t>
 void
  overlap_interpolate(const out_iter_t out_begin, const out_iter_t out_end, 
-		    const out_coord_iter_t out_coord_begin, const out_coord_iter_t out_coord_end,
-		    const in_iter_t in_begin, in_iter_t in_end,
-		    const in_coord_iter_t in_coord_begin, const in_coord_iter_t in_coord_end,
-		    const bool assign_rest_with_zeroes)
+		     const out_coord_iter_t out_coord_begin, const out_coord_iter_t out_coord_end,
+		     const in_iter_t in_begin, in_iter_t in_end,
+		     const in_coord_iter_t in_coord_begin, const in_coord_iter_t in_coord_end,
+		     const bool only_add_to_output,
+		     const bool assign_rest_with_zeroes)
 {
 
   if (out_begin == out_end)
@@ -70,7 +71,7 @@ void
   assert(out_coord_iter+1 != out_coord_end);
   while (*(out_coord_iter+1) <= *in_coord_iter)
     {
-      if (assign_rest_with_zeroes)
+      if (!only_add_to_output && assign_rest_with_zeroes)
 	*out_iter *= 0; // note: use *= such that it works for multi-dim arrays
       ++out_coord_iter; ++out_iter; 
       if (out_coord_iter+1 == out_coord_end)
@@ -107,7 +108,7 @@ void
       const coord_t overlap = new_coord - current_coord;
       assert(overlap>-epsilon);
 
-      if (first_time_for_this_out_box)
+      if (!only_add_to_output && first_time_for_this_out_box)
 	{
 	  if (overlap>epsilon)
 	    *out_iter = *in_iter * overlap;
@@ -141,7 +142,7 @@ void
 
   assert(in_coord_iter+1 == in_coord_end);	      
   // fill rest of output with 0
-  if (assign_rest_with_zeroes)
+  if (!only_add_to_output && assign_rest_with_zeroes)
     {
       while (true)
 	{

@@ -22,7 +22,7 @@
   \file
   \ingroup numerics
 
-  \brief Declaration of overlap_interpolate()
+  \brief Declaration of stir::overlap_interpolate
 
   \author Kris Thielemans
   \author PARAPET project
@@ -70,6 +70,10 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
   should be one more coordinate than data (i.e. you have to specify
   the last edge as well). This is (only) checked with assert() statements.
   
+  \param only_add_to_output
+  If \c false will overwrite any data present in the output (aside from possibly
+  the tails: see \c assign_rest_with_zeroes).
+  If \c true, results will be added to the data.
   \param assign_rest_with_zeroes
   If \c false does not set values in the \c out range which do not overlap with
   \c in range.
@@ -121,6 +125,7 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
   \par History:
   <ul>
   <li> first version by Kris Thielemans</li>
+  </ul>
  */
 template <typename out_iter_t, typename out_coord_iter_t,
 	  typename in_iter_t, typename in_coord_iter_t>
@@ -130,7 +135,7 @@ void
 		     const out_coord_iter_t out_coord_begin, const out_coord_iter_t out_coord_end,
 		     const in_iter_t in_begin, in_iter_t in_end,
 		     const in_coord_iter_t in_coord_begin, const in_coord_iter_t in_coord_end,
-		     const bool assign_rest_with_zeroes=true);
+		     const bool only_add_to_output=false, const bool assign_rest_with_zeroes=true);
 
 END_NAMESPACE_STIR
 
