@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup buildblock
@@ -14,11 +31,6 @@
   $Date$
   $Revision$
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 /* Modification history:
    - First versions by CL and KT (sinogram version based on C code by Matthias Egger (using linear interpolation).
@@ -218,9 +230,9 @@ zoom_viewgram (Viewgram<float>& out_view,
   const float offset = 
     (x_offset_in_mm*cos(phi) +y_offset_in_mm*sin(phi))/ in_bin_size;
 
-  for (int axial_pos_num= out_view.get_min_axial_pos_num(); axial_pos_num <= out_view.get_max_axial_pos_num(); axial_pos_num++)
+  for (int axial_pos_num= out_view.get_min_axial_pos_num(); axial_pos_num <= out_view.get_max_axial_pos_num(); ++axial_pos_num)
     {
-      overlap_interpolate(out_view[axial_pos_num], in_view[axial_pos_num], zoom, offset, false);
+      overlap_interpolate(out_view[axial_pos_num], in_view[axial_pos_num], zoom, offset);
     }    
 }
 
