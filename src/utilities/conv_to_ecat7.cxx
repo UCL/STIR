@@ -64,59 +64,125 @@ USING_NAMESPACE_ECAT7
 
 
 
+
+void usage() {
+
+    cerr << "\nConversion from data to ECAT7 CTI.\n"
+         << "Multiples files can be written to a single ECAT 7 file.\n"
+         << "The data will be assigned a frame number in the "
+         << "order that they occur on the command line.\n\n"
+         << "Usage: 3 possible forms depending on data type\n"
+         << "For sinogram data:\n"
+         << "\tconv_to_ecat7 -s [-n] output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
+         << "For sinogram-attenuation data:\n"
+         << "\tconv_to_ecat7 -a [-n] output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
+         << "For image data:\n"
+         << "\tconv_to_ecat7 output_ECAT7_name orig_filename1 [orig_filename2 ...] scanner_name\n"
+         << "scanner_name has to be recognised by the Scanner class\n"
+         << "Examples are : \"ECAT 953\", \"RPT\" etc.\n"
+         << "(the quotes are required when used as a command line argument)\n\n";
+}
+
+
+
+
+
+
 int main(int argc, char *argv[])
 {
   char cti_name[1000], scanner_name[1000] = "";
   vector<string> filenames;
   bool its_an_image = true;
   bool write_as_attenuation = false;
+  float scale_factor = 0.0;
   
-  if(argc>=4)
-  {
-    if (strcmp(argv[1],"-s")==0 || strcmp(argv[1],"-a")==0)
-      {
-	its_an_image = false;
-        write_as_attenuation = strcmp(argv[1],"-a")==0;
-        strcpy(cti_name,argv[2]);
-        int num_files = argc-3;
-        argv+=3;
-        filenames.reserve(num_files);
-        for (; num_files>0; --num_files, ++argv)
-          filenames.push_back(*argv);	
+
+   
+  int arg_index = 1;
+    
+  /* Check options - single letters only */
+  while ( arg_index < argc && argv[arg_index][0] == '-' ) {
+    
+    int i = 1;
+    char c;
+    
+    while ( (c = argv[arg_index][i]) != '\0' ) {
+      
+      switch ( c ) {
+        
+      case 's':
+        its_an_image = false;
+        break;
+        
+      case 'a':
+        its_an_image = false;
+        write_as_attenuation = true;
+        break;
+        
+      case 'n':
+        scale_factor = 1.0F;
+        break;
+        
+      default:
+        cerr << "Error: Unknown option " << c << " \n\n";
+        usage();
+        exit(0);
+        break;
+        
       }
-    else 
-      {
-	its_an_image = true;
-	strcpy(cti_name,argv[1]);	
-        int num_files = argc-3;
-        argv+=2;
-        filenames.reserve(num_files);
-        for (; num_files>0; --num_files, ++argv)
-          filenames.push_back(*argv);	
-	strcpy(scanner_name,*argv);
+        
+      i++;
+    }
+    
+    arg_index++;
+  }
+    
+  
+  /* Check number of remaining arguments */
+  if ( (its_an_image == false && argc - arg_index >= 1) || argc - arg_index >= 2) {
+    
+    // Warn about scaling option on it's own.
+    if ( its_an_image == true && scale_factor != 0.0F ) {
+      cerr << "Warning: option -n has no effect when converting images.\n\n";
+    }
+    
+    
+    /* Parse remaining arguments */
+    strcpy(cti_name, argv[arg_index]);
+    arg_index++;
+    
+    int num_files;
+
+    if ( its_an_image ) {
+    
+      for (num_files = argc - arg_index; num_files > 0; --num_files, arg_index++) {
+        filenames.push_back(argv[arg_index]);
       }
-  }  
-  else 
-  {
-    cerr<< "\nConversion from data to ECAT7 CTI.\n"
-	<< "Multiples files can be written to a single ECAT 7 file.\n"
-        << "The data will be assigned a frame number in the "
-        << "order that they occur on the command line.\n\n"
-        << "Usage: 3 possible forms depending on data type\n"
-	<< "For sinogram data:\n"
-	<< "\tconv_to_ecat7 -s output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
-	<< "For sinogram-attenuation data:\n"
-	<< "\tconv_to_ecat7 -a output_ECAT7_name orig_filename1 [orig_filename2 ...]\n"
-	<< "For image data:\n"
-	<< "\tconv_to_ecat7 output_ECAT7_name orig_filename1 [orig_filename2 ...] scanner_name\n"
-	<< "scanner_name has to be recognised by the Scanner class\n"
-	<< "Examples are : \"ECAT 953\", \"RPT\" etc.\n"
-	<< "(the quotes are required when used as a command line argument)\n\n"
-	<< "I will now ask you the same info interactively...\n\n";
+
+      strcpy(scanner_name, argv[arg_index]);
+      
+    } else {
+      
+      for (num_files = argc - arg_index + 1; num_files>0; --num_files, arg_index++) {
+        filenames.push_back(argv[arg_index]);
+      }
+    }
+
+  } else {
+    
+    usage();
+
+    cerr << "I will now ask you the same info interactively...\n\n";
     
     its_an_image = ask("Converting images?",true);
-    if (!its_an_image)
+    
+    if (!its_an_image) {
       write_as_attenuation = ask("Write as attenuation data?",false);
+    } else {
+      if ( ask("Fix scale factor to 1.0?", false) ) {
+        scale_factor = 1.0F;
+      }
+    }
 
     int num_files = ask_num("Number of files",1,10000,1);
     filenames.reserve(num_files);
@@ -128,8 +194,11 @@ int main(int argc, char *argv[])
     }
     
     ask_filename_with_extension(cti_name,"Name of the ECAT7 file? ",
-      its_an_image ? ".img" : ".scn");
+                                its_an_image ? ".img" : ".scn");
+    
   }
+    
+
 
   if (its_an_image)
   {
@@ -207,10 +276,8 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-      if (ProjData_to_ECAT7(mptr,
-                            *proj_data_ptr, 
-                            frame_num)
-                            == Succeeded::no)
+      if (ProjData_to_ECAT7(mptr, *proj_data_ptr, 
+                            frame_num, 1, 0, 0, scale_factor) == Succeeded::no)
       {
         matrix_close(mptr);
         return EXIT_FAILURE;

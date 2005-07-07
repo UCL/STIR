@@ -141,7 +141,8 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
 		  string const & cti_name, string const & orig_name,
 		  const int frame_num = 1, const int gate_num = 1, 
 		  const int data_num = 0, const int bed_num = 0,
-		  const bool write_as_attenuation = false);
+		  const bool write_as_attenuation = false,
+                  float scale_factor = 0.0F);
 
 //! Write an (extra) set of sinograms to an existing ECAT7 file 
 /*! 
@@ -155,10 +156,11 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
   \warning This does NOT write the main header.
 */
 Succeeded 
-ProjData_to_ECAT7(MatrixFile *mptr, 
+ProjData_to_ECAT7(MatrixFile *mptr,
 		  ProjData const& proj_data, 
 		  const int frame_num = 1, const int gate_num = 1, 
-                  const int data_num = 0, const int bed_num = 0);
+                  const int data_num = 0, const int bed_num = 0,
+                  float scale_factor = 0.0F);
 
 
 //! Fill in most of the main header given a Scanner object and orig_name.
