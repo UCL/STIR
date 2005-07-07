@@ -1853,8 +1853,10 @@ template <class OutputType>
 Succeeded 
 static 
 ProjData_to_ECAT7_help(MatrixFile *mptr, const NumericInfo<OutputType>& output_type_info,
-		       ProjData const& proj_data, 
-		       const int frame_num, const int gate_num, const int data_num, const int bed_num)
+                       ProjData const& proj_data, 
+		       const int frame_num, const int gate_num, 
+                       const int data_num, const int bed_num,
+                       float scale_factor)
 {
   const ByteOrder output_byte_order =
  //   output_type_info.integer_type() ? ByteOrder::get_native_order() : ByteOrder::big_endian;
@@ -1881,23 +1883,30 @@ ByteOrder::big_endian;
     }
   }  
   
-  // find scale factor in case we're not writing floats
-  float scale_factor = 1;
-  if (output_type_info.integer_type())
-    {
-      scale_factor = 0;// set first to 0 to use maximum range of output type
-      for(int segment_num=proj_data.get_min_segment_num();
-	  segment_num <= proj_data.get_max_segment_num();
-	  ++segment_num)
-	{    
-	  const SegmentByView<float> segment = 
-	    proj_data.get_segment_by_view(segment_num);
 
-	  find_scale_factor(scale_factor,
-			    segment, 
-			    NumericInfo<OutputType>());
-	}
-    }
+  // If scale_factor is not set (=0) then calculate the scale factor to apply.
+  if ( scale_factor == 0.0 ) {
+    scale_factor = 1;
+  
+    // If a integers are being written, and the suppress_scaling
+    // find scale factor in case we're not writing floats
+    if (output_type_info.integer_type())
+      {
+        scale_factor = 0;// set first to 0 to use maximum range of output type
+        for(int segment_num=proj_data.get_min_segment_num();
+            segment_num <= proj_data.get_max_segment_num();
+            ++segment_num)
+          {    
+            const SegmentByView<float> segment = 
+              proj_data.get_segment_by_view(segment_num);
+            
+            find_scale_factor(scale_factor,
+                              segment, 
+                              NumericInfo<OutputType>());
+          }
+      }
+  }
+  
   cout << "\nProjData_to_ECAT7: Will use scale factor " << scale_factor;
 
   Scan3D_subheader scan3d_shead; 
@@ -2023,8 +2032,10 @@ ByteOrder::big_endian;
 } // end of namespace detail
 
 Succeeded 
-ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data, 
-                  const int frame_num, const int gate_num, const int data_num, const int bed_num)
+ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
+                  const int frame_num, const int gate_num, 
+                  const int data_num, const int bed_num,
+                  float scale_factor)
 {
   switch (mptr->mhptr->file_type)
     {
@@ -2032,20 +2043,20 @@ ProjData_to_ECAT7(MatrixFile *mptr, ProjData const& proj_data,
       // always use float to prevent problems with CTI utilities
       return
 	detail::ProjData_to_ECAT7_help(mptr, NumericInfo<float>(), proj_data,
-			       frame_num, gate_num,data_num, bed_num);
+                                       frame_num, gate_num,data_num, bed_num, scale_factor);
     case Float3dSinogram:
       return 
 	detail::ProjData_to_ECAT7_help(mptr, NumericInfo<float>(), proj_data,
-			       frame_num, gate_num,data_num, bed_num);
+                                       frame_num, gate_num,data_num, bed_num, scale_factor);
     case Short3dSinogram:
       // Note: this relies on sizeof(short)==2. However, find_ECAT_data_type will find out later if this is not true
       return 
 	detail::ProjData_to_ECAT7_help(mptr, NumericInfo<short>(), proj_data,
-			       frame_num, gate_num,data_num, bed_num);
+                                       frame_num, gate_num,data_num, bed_num, scale_factor);
     case Byte3dSinogram:
       return 
 	detail::ProjData_to_ECAT7_help(mptr, NumericInfo<signed char>(), proj_data,
-			       frame_num, gate_num,data_num, bed_num);
+                                       frame_num, gate_num,data_num, bed_num, scale_factor);
     default:
       warning("ProjData_to_ECAT7: unsupported file type %d. No data written.",
 	      mptr->mhptr->file_type);
@@ -2058,15 +2069,18 @@ Succeeded
 ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
 		  string const & cti_name, string const & orig_name,
                   const int frame_num, const int gate_num, const int data_num, const int bed_num,
-                  const bool write_as_attenuation)
+                  const bool write_as_attenuation,
+                  float scale_factor)
 {  
   Main_header mhead;
+
   make_ECAT7_main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr(),
-			   write_as_attenuation, output_type);
+                         write_as_attenuation, output_type);
+
   MatrixFile *mptr= matrix_create(cti_name.c_str(), MAT_CREATE, &mhead);   
+
   Succeeded result =
-    ProjData_to_ECAT7(mptr, proj_data, 
-                      frame_num, gate_num,data_num, bed_num);
+    ProjData_to_ECAT7(mptr, proj_data, frame_num, gate_num,data_num, bed_num, scale_factor);
   
   matrix_close(mptr);    
   return result;
