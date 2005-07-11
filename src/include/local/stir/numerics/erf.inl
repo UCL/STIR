@@ -154,12 +154,22 @@
 #define infnan(x) 0.0
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER<=1300
+
+#include <cmath>
+using std::fabs;
+using std::exp;
+
+
+
+#if defined(_MSC_VER)
 #include <float.h>
 #define isnan _isnan 
 #define finite _finite 
+#else
+using std::isnan;
 #endif
-#include <cmath>
+
+
 
 START_NAMESPACE_STIR
 
