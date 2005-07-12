@@ -1,0 +1,92 @@
+OSSPSParameters :=
+; sample file for OSSPS
+; parameters used here are for illustrative purposes only
+; i.e. they are not recommended values
+
+input file :=some_projdata
+; if next disabled, defaults to maximum segment number in the file
+;Maximum absolute segment number to process := 4
+
+output filename prefix := ossps_sub4_or_whatever_fancy_name_you_prefer
+; parameters to define out image sizes etc
+; (ignored when specifying an initial image below)
+zoom := 1
+; number of x,y pixels (-1 takes default value to cover the FOV)
+xy output image size (in pixels) := -1
+
+; projectors to use. here we're using the ray tracing matrix as an example
+projector pair type := Matrix
+Projector Pair Using Matrix Parameters :=
+Matrix type := Ray Tracing
+Ray Tracing Matrix Parameters:=
+  ; use a slightly better approximation than simple ray tracing
+  number of rays in tangential direction to trace for each bin:=10
+End Ray Tracing Matrix Parameters:=
+End Projector Pair Using Matrix Parameters :=
+
+; background term (i.e. randoms and scatter)
+additive sinogram := normalised_randoms.hs
+
+; see STIR doc:  use 1 if segment 0 has only ring difference 0
+zero_segment 0_end_planes:= 0
+
+sensitivity image:= sens_image.hv
+
+; regularisation parameters
+
+;inter-iteration filter subiteration interval:= 0
+;inter-iteration filter type := none
+
+prior type:= Quadratic
+quadratic prior parameters :=
+penalisation factor := .5
+only 2D:=1
+;kappa filename := kappas_a_la_fessler.hv
+end quadratic prior parameters:=
+
+; iteration scheme
+
+number of subsets:= 4
+;start at subset:= 0
+;start at subiteration number := 1
+number of subiterations:= 1000
+Save images at subiteration intervals:= 40
+;write update image := 0
+
+; if next is disabled, defaults to image full of 1s (but that's not good for OSSPS)
+; in particular, make sure it has the correct scale
+initial image:= maybe_a_smoothed_fbp_image.hv
+enforce initial positivity condition := 0
+
+
+; here start OSSPS specific values
+
+; values to use for the 'precomputed denominator'
+; specify either procomputed denomiator or normalisation type
+  ; use the following if you have it already (e.g. from previous run)
+  ; note: setting the value to 1 will use an images full of ones.
+  ; precomputed denominator := my_precomputed_denominator.hv
+
+  ; object to normalise (and/or attenuation correct) the data 
+  ; (HAS to be used if input file is not yet normalised)
+  ; WARNING: this is ignored when computing the sensitivity
+  ;Normalisation type:= None
+
+  ; optional value
+  ; you can use the next variable if you have projdata already stored
+  ; which is the (geometric) forward projection of an image full of ones
+  ;forward_projection of all ones:=
+
+; specify relaxation scheme
+; lambda = relaxation_parameter/ (1+relaxation_gamma*(subiteration_num/num_subsets)
+relaxation parameter := 1
+relaxation gamma:=.1
+
+
+END :=
+
+
+
+
+
+
