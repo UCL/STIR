@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
   bool write_as_attenuation = false;
   float scale_factor = 0.0;
   
-
    
   int arg_index = 1;
     
@@ -137,7 +136,9 @@ int main(int argc, char *argv[])
     arg_index++;
   }
     
+
   
+
   /* Check number of remaining arguments */
   if ( (its_an_image == false && argc - arg_index >= 1) || argc - arg_index >= 2) {
     
@@ -151,19 +152,20 @@ int main(int argc, char *argv[])
     strcpy(cti_name, argv[arg_index]);
     arg_index++;
     
+
     int num_files;
 
     if ( its_an_image ) {
-    
-      for (num_files = argc - arg_index; num_files > 0; --num_files, arg_index++) {
+      
+      for (num_files = argc - arg_index - 1; num_files > 0; --num_files, arg_index++) {
         filenames.push_back(argv[arg_index]);
       }
-
+      
       strcpy(scanner_name, argv[arg_index]);
       
     } else {
       
-      for (num_files = argc - arg_index + 1; num_files>0; --num_files, arg_index++) {
+      for (num_files = argc - arg_index; num_files>0; --num_files, arg_index++) {
         filenames.push_back(argv[arg_index]);
       }
     }
