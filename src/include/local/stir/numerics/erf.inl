@@ -135,7 +135,15 @@
 *	   	erfc/erf(NaN) is NaN
 */
 
-/* Modified for STIR library Jun 05, 2005 Ch Tsoumpas and K Thielemans.*/
+/* Modified for STIR library Jun 05, 2005 Ch Tsoumpas and K Thielemans.
+
+   WARNING:
+   There are some assumptions here about IEEE artihmetic etc.
+   On non-IEEE machines you're bound to have problems.
+
+   We put in some work-arounds to have a (hopefully) portable STIR_isnan,
+   but probably the same woul dneed to be done for finite(x).
+*/
 
 
 #ifdef _IEEE_LIBM
@@ -146,12 +154,14 @@
 #endif
 
 #if defined(__vax__) || defined(tahoe)
+// non-IEEE machines
 #define _IEEE	0
 #define TRUNC(x) (double)(x) = (float)(x)
 #else
+// assume everything uses IEEE floating point arithmetic
 #define _IEEE	1
+// warning: strange definition of TRUNC that will go very weird on non-IEEE machines
 #define TRUNC(x) *(((int *) &x) + 1) &= 0xf8000000
-#define infnan(x) 0.0
 #endif
 
 
@@ -165,16 +175,30 @@ using std::exp;
 #include <float.h>
 #define isnan _isnan 
 #define finite _finite 
-#else
- // terrible hack to try and find isnan in std
- // will only work for gcc
- #if _GLIBCPP_USE_C99 && !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
-   using std::isnan;
- #else
-   #include <ieeefp.h>
- #endif
-
 #endif
+
+#ifdef isnan
+
+  #define STIR_isnan isnan
+
+#else
+
+# if 0
+  //attempt to get to find isnan but it didn't work on some systems
+  // terrible hack to try and find isnan in std
+  // will only work for gcc
+  #if _GLIBCPP_USE_C99 && !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
+    using std::isnan;
+  #else
+    #include <ieeefp.h> // this file doesn't exist always
+  #endif
+# else //portable version
+  // according to IEEE rules if x is NaN, then x!=x
+  // so, the following will work even on non-IEEE systems
+  #define STIR_isnan(x) (x)!=(x)
+# endif
+
+#endif // end of STIR_isnan definitions
 
 
 
@@ -186,23 +210,23 @@ half	    = 0.5,
 one	    = 1.0,
 two	    = 2.0,
 c 	    = 8.45062911510467529297e-01, /* (float)0.84506291151 */
-									  /*
-									  * Coefficients for approximation to erf in [0,0.84375]
-									  */
-									  p0t8 = 1.02703333676410051049867154944018394163280,
-									  p0 =   1.283791670955125638123339436800229927041e-0001,
-									  p1 =  -3.761263890318340796574473028946097022260e-0001,
-									  p2 =   1.128379167093567004871858633779992337238e-0001,
-									  p3 =  -2.686617064084433642889526516177508374437e-0002,
-									  p4 =   5.223977576966219409445780927846432273191e-0003,
-									  p5 =  -8.548323822001639515038738961618255438422e-0004,
-									  p6 =   1.205520092530505090384383082516403772317e-0004,
-									  p7 =  -1.492214100762529635365672665955239554276e-0005,
-									  p8 =   1.640186161764254363152286358441771740838e-0006,
-									  p9 =  -1.571599331700515057841960987689515895479e-0007,
-									  p10=   1.073087585213621540635426191486561494058e-0008;
-									  /*
-									  * Coefficients for approximation to erf in [0.84375,1.25]
+  /*
+   * Coefficients for approximation to erf in [0,0.84375]
+   */
+  p0t8 = 1.02703333676410051049867154944018394163280,
+  p0 =   1.283791670955125638123339436800229927041e-0001,
+  p1 =  -3.761263890318340796574473028946097022260e-0001,
+  p2 =   1.128379167093567004871858633779992337238e-0001,
+  p3 =  -2.686617064084433642889526516177508374437e-0002,
+  p4 =   5.223977576966219409445780927846432273191e-0003,
+  p5 =  -8.548323822001639515038738961618255438422e-0004,
+  p6 =   1.205520092530505090384383082516403772317e-0004,
+  p7 =  -1.492214100762529635365672665955239554276e-0005,
+  p8 =   1.640186161764254363152286358441771740838e-0006,
+  p9 =  -1.571599331700515057841960987689515895479e-0007,
+  p10=   1.073087585213621540635426191486561494058e-0008;
+/*
+ * Coefficients for approximation to erf in [0.84375,1.25]
 */
 static const double
 pa0 =  -2.362118560752659485957248365514511540287e-0003,
@@ -289,7 +313,7 @@ erf(double x)
 {
 	double R,S,P,Q,ax,s,y,z,r;
 	if(!finite(x)) {		/* erf(nan)=nan */
-		if (isnan(x))
+		if (STIR_isnan(x))
 			return(x);
 		return (x > 0 ? one : -one); /* erf(+/-inf)= +/-1 */
 	}
@@ -348,7 +372,7 @@ erfc(double x)
 {
 	double R,S,P,Q,s,ax,y,z,r;
 	if (!finite(x)) {
-		if (isnan(x))		/* erfc(NaN) = NaN */
+		if (STIR_isnan(x))		/* erfc(NaN) = NaN */
 			return(x);
 		else if (x > 0)		/* erfc(+-inf)=0,2 */
 			return 0.0;
@@ -424,4 +448,9 @@ erfc(double x)
 		2. - (exp(-x*x - lsqrtPI_hi + R + y))/x;
 	//	return two-r;
 }
+
+
+#undef STIR_isnan
+#undef TRUNC
+#undef _IEEE
 END_NAMESPACE_STIR
