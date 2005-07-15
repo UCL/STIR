@@ -166,7 +166,14 @@ using std::exp;
 #define isnan _isnan 
 #define finite _finite 
 #else
-using std::isnan;
+ // terrible hack to try and find isnan in std
+ // will only work for gcc
+ #if _GLIBCPP_USE_C99 && !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
+   using std::isnan;
+ #else
+   #include <ieeefp.h>
+ #endif
+
 #endif
 
 
