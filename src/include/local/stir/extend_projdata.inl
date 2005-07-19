@@ -87,7 +87,7 @@ extend_sinogram(const  Array<2,float>& sino_positive_segment,
 	for (int view_num=min_in[1]; view_num<=max_in[1]; ++view_num)
 	{
 		bool use_extension=false;
-		int symmetric_view_num;
+		int symmetric_view_num=0;
 		if (view_num<org_min_view_num && min_is_extended==true)
 		{
 			use_extension=true;
@@ -98,6 +98,7 @@ extend_sinogram(const  Array<2,float>& sino_positive_segment,
 			use_extension=true;
 			symmetric_view_num = view_num - num_views_for_180;
 		}
+
 		if (!use_extension)
 			input_extended_view[view_num]=
 			sino_positive_segment[view_num]; 
@@ -129,7 +130,7 @@ extend_segment(const SegmentBySinogram<float>& sino,
 		
 		min[1]=sino.get_min_axial_pos_num();
 		max[1]=sino.get_max_axial_pos_num();
-	    min[2]=sino.get_min_view_num();
+  	        min[2]=sino.get_min_view_num();
 		max[2]=sino.get_max_view_num();
 		min[3]=sino.get_min_tangential_pos_num();
 		max[3]=sino.get_max_tangential_pos_num();
