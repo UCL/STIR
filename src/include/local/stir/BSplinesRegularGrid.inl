@@ -34,13 +34,7 @@ START_NAMESPACE_STIR
 
 namespace BSpline {
 	/////////////////////////////////////////////////////////////////////////
-	
-	template <int num_dimensions, typename out_elemT, typename in_elemT>
-		BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT>::
-		BSplinesRegularGrid()
-	{}
-	
-	
+		
 	template <int num_dimensions, typename out_elemT, typename in_elemT>
 		BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT>::
 		~BSplinesRegularGrid()

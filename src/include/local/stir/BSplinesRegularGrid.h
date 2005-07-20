@@ -2,38 +2,38 @@
 // $Id$
 //
 /*
-Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
-This file is part of STIR.
+  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
   (at your option) any later version.
   
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-	
-	  See STIR/LICENSE.txt for details
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+  
+  See STIR/LICENSE.txt for details
 */
 #ifndef __stir_numerics_BSplinesRegularGrid__H__
 #define __stir_numerics_BSplinesRegularGrid__H__
 /*!
-\file 
-\ingroup numerics_buildblock
-\brief Implementation of the n-dimensional B-Splines Interpolation 
+  \file 
+  \ingroup numerics
+  \brief Implementation of the n-dimensional B-Splines Interpolation 
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   
-	$Date$
-	$Revision$
+  $Date$
+  $Revision$
 */
 
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
-
+#include "local/stir/BSplines.h"
 START_NAMESPACE_STIR
 
 namespace BSpline {
@@ -58,8 +58,6 @@ public:
 	{ return this->_coeffs;  }
 	
 	
-	//! default constructor: no input
-	inline BSplinesRegularGrid();
 	
 	//! constructor given an array as an input which estimates the Coefficients 
 	inline 
@@ -79,32 +77,37 @@ public:
 	}  	
 
 	inline 
-		BSplinesRegularGrid(
-		const BSplineType & this_type = cubic)
+	  explicit
+	  BSplinesRegularGrid(
+			      const BSplineType & this_type = cubic)
 	{
 		set_private_values(this_type);	  
 	} 	
-
-    inline 
-		BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
+	
+	inline 
+	  explicit
+	  BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
 	{	 
 		set_private_values(this_type);	  
 	}  	
+
+	//! destructor
+	inline ~BSplinesRegularGrid();
 			
-    inline
+	inline
 		void
 		set_coef(const Array<num_dimensions,in_elemT> & input);
+
+	inline
+		const out_elemT 
+		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;		
+	private:
 
 	inline void 
 		set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type);
 	inline void 
 		set_private_values(const BSplineType & this_type);
-	//! destructor
-	inline ~BSplinesRegularGrid();
 	
-	inline
-		const out_elemT 
-		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;		
 	};
 	
 } // end BSpline namespace
