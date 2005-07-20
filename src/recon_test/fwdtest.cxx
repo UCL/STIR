@@ -1,12 +1,29 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
 
   \file
   \ingroup recontest
-  \brief Testing programme for forward projection
+  \brief Testing program for forward projection
 
   \author Kris Thielemans
   \author PARAPET project
@@ -14,22 +31,16 @@
   $Date$
   $Revision$
 
-  This programme allows forward projection of a few segments/views
+  This program allows forward projection of a few segments/views
   only, or of the full data set. 
 
   Usage:
   \verbatim
-  fwdtest [proj_data_file]
+  fwdtest output-filename template_proj_data_file [image_to_forward_project [forwardprojector-parfile ]]]\n"
   \endverbatim
-  The proj_data_file will be used to get the scanner, mashing etc. details
+  The template_proj_data_file will be used to get the scanner, mashing etc. details
   (its data will \e not be used, nor will it be overwritten).
-  If no proj_data_file is given, some questions are asked to use 'standard'
-  characteristics.        
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
+  If some of these parameters are not given, some questions are asked.        
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
@@ -45,6 +56,8 @@
 #include "stir/SegmentByView.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
+#include "stir/KeyParser.h"
+#include "stir/is_null_ptr.h"
 #include <fstream>
 
 
@@ -74,19 +87,22 @@ int
 main(int argc, char *argv[])
 {
 
-  if(argc<2 || argc>3) 
+  if(argc<3 || argc>5) 
   {
-    cerr<<"Usage: " << argv[0] << " [template-proj_data-file [image_to_forward_project]\n"
-        <<"The projdata-file will be used to get the scanner, mashing etc. details" 
-	<< endl; 
+    std::cerr <<"Usage:\n"
+	      << argv[0] << " \\\n"
+	      << "    output-filename template_proj_data_file [image_to_forward_project [forwardprojector-parfile ]]]\n"
+        <<"The template_proj_data_file will be used to get the scanner, mashing etc. details.\n";
+    exit(EXIT_FAILURE);
   }
   
+  const string output_file_name = argv[1];
 
   ProjDataInfo* new_data_info_ptr;
-  if(argc>=2)
+  if(argc>=3)
   {
     shared_ptr<ProjData> proj_data_ptr = 
-      ProjData::read_from_file(argv[1]);
+      ProjData::read_from_file(argv[2]);
     new_data_info_ptr= proj_data_ptr->get_proj_data_info_ptr()->clone();
   }
   else
@@ -101,7 +117,6 @@ main(int argc, char *argv[])
   new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
 
   
-  const string output_file_name = "fwdtest_out.s";
   shared_ptr<ProjData> proj_data_ptr =
     new ProjDataInterfile(new_data_info_ptr, output_file_name);
   cerr << "Output will be written to " << output_file_name 
@@ -114,8 +129,7 @@ main(int argc, char *argv[])
   shared_ptr<DiscretisedDensity<3,float> > image_sptr = 0;   
   VoxelsOnCartesianGrid<float> * vox_image_ptr = 0;
 
-
-  if (argc<3)
+  if (argc<4)
     {
       switch (int choice = ask_num("Start image is cuboid (1) or cylinder (2) or on file (3)",1,3,2))
 	{
@@ -165,7 +179,7 @@ main(int argc, char *argv[])
   else
     {
       image_sptr =
-        DiscretisedDensity<3,float>::read_from_file(argv[2]);
+        DiscretisedDensity<3,float>::read_from_file(argv[3]);
       vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
     }
 
@@ -178,12 +192,21 @@ main(int argc, char *argv[])
   vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
   // use shared_ptr such that it cleans up automatically
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
-  do 
+
+  if (argc<=5)
+    {
+      KeyParser parser;
+      parser.add_start_key("Forward Projector parameters");
+      parser.add_parsing_key("type", &forw_projector_ptr);
+      parser.add_stop_key("END"); 
+      parser.parse(argv[4]);
+    }
+
+  while (is_null_ptr(forw_projector_ptr))
     {
     forw_projector_ptr=
       ForwardProjectorByBin::ask_type_and_parameters();
     }
-  while (forw_projector_ptr.use_count()==0);
 
   forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			     image_sptr);
