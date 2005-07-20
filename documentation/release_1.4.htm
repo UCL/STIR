@@ -99,6 +99,14 @@ Only for arc-corrected data, the x_resolution is always set to the sampling_in_s
 header to follow the CTI convention, so recon_zoom will now have a slightly 
 different value.</li>
 </ul>
+<li><strong>WARNING</strong>: changed format of command line parameters if <tt>fwdtest</tt>to 
+an incompatible format.
+<tt>fwdtest</tt> can now take a parameter file with the forward projector parameters 
+(similar to <tt>bcktest</tt>).
+This makes it possible to run complete forward projections without user input (should work by 
+redirecting <tt>stdin</tt> to <tt>/dev/null</tt> such that all questions are answered with their 
+default values).
+</li>
 </ul>
  
 <h3>New functionality of existing utilities</h3>
