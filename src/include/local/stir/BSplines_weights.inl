@@ -40,11 +40,13 @@ BSplines_weight(const pos_type relative_position)
 {	
 	const pos_type abs_relative_position = fabs(relative_position);
 	assert(abs_relative_position>=0);
+	if (abs_relative_position<1)		
+	  return 2./3. + (0.5*abs_relative_position-1)*abs_relative_position*abs_relative_position;
 	if (abs_relative_position>=2)
-		return 0;
-	if (abs_relative_position>=1)		
-		return pow((2-abs_relative_position),3)/6;
-	return 2./3. + (0.5*abs_relative_position-1)*abs_relative_position*abs_relative_position;
+	  return 0;
+	const pos_type tmp=2-abs_relative_position;
+	return tmp*tmp*tmp/6;
+	
 }
 
 template <typename pos_type>
