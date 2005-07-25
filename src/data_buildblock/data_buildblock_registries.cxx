@@ -21,13 +21,14 @@
   \file
   \ingroup data_buildblock
 
-  \brief File that registers all RegisterObject children in data_buildblock
+  \brief File that registers all stir::RegisterObject children in data_buildblock
 
   \author Kris Thielemans
   
   $Date$
   $Revision$
 */
+#include "stir/common.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/data/SinglesRatesFromECAT7.h"
 #include "stir/data/SinglesRatesFromSglFile.h"
