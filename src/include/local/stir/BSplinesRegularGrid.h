@@ -37,78 +37,122 @@
 START_NAMESPACE_STIR
 
 namespace BSpline {
+
+  //! The type used for relative positions between the grid points.
+  typedef double pos_type;
+
+  /*! \ingroup BSpline
+      \brief A class for n-dimensional BSpline interpolation when the input samples
+      are on a regular grid.
+
+      This class is essentially an n-dimensional function, so can be used as a function object.
+
+      \par Example
+      \code
+      Array<3,float> some_data = ....;
+      
+      BSplinesRegularGrid<3, float> interpolator(cubic);
+
+      interpolator.set_coef(some_data);
+
+      Coordinate3D<double> position(1.2, 3.4, 5.6);
+
+      float value = interpolator(position);
+      \endcode
+   */
+  template <int num_dimensions, typename out_elemT, typename in_elemT = out_elemT>
+    class BSplinesRegularGrid
+    {
 		
-	typedef double pos_type;
-	
-	template <int num_dimensions, typename out_elemT, typename in_elemT>
-		class BSplinesRegularGrid
-	{
-		
-private:
-	
-	BasicCoordinate<num_dimensions,double> _z1s;
-	BasicCoordinate<num_dimensions,double> _z2s;
-	BasicCoordinate<num_dimensions,double> _lambdas;
-	Array<num_dimensions,out_elemT> _coeffs;  
-    BasicCoordinate<num_dimensions,BSplineType> _spline_types;
-		
-public:
-	// only there for tests
-	Array<num_dimensions,out_elemT> get_coefficients() const
+    public:
+      // only there for tests
+      Array<num_dimensions,out_elemT> get_coefficients() const
 	{ return this->_coeffs;  }
 	
 	
 	
-	//! constructor given an array as an input which estimates the Coefficients 
-	inline 
-		BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
-		const BSplineType & this_type = cubic)
+      //! constructor given an array of samples and the spline type
+      inline
+	explicit
+	BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
+			    const BSplineType & this_type = cubic)
 	{
-		set_private_values(this_type);	  
-		set_coef(input);		
+	  this->set_private_values(this_type);	  
+	  this->set_coef(input);		
 	} 	
 	
-	inline 
-		BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
-		const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
+      //! constructor given an array of samples and a different spline type for every dimension
+      inline 
+	BSplinesRegularGrid(const Array<num_dimensions,in_elemT> & input,
+			    const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
 	{	 
-		set_private_values(this_type);	  
-		set_coef(input);
+	  this->set_private_values(this_type);	  
+	  this->set_coef(input);
 	}  	
 
-	inline 
-	  explicit
-	  BSplinesRegularGrid(
-			      const BSplineType & this_type = cubic)
+      //! constructor that only sets the spline type
+      /*! You need to call set_coef() first before you will get a sensible result.*/
+      inline 
+	explicit
+	BSplinesRegularGrid(
+			    const BSplineType & this_type = cubic)
 	{
-		set_private_values(this_type);	  
+	  this->set_private_values(this_type);	  
 	} 	
 	
-	inline 
-	  explicit
-	  BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
+      //! constructor that only sets a different spline type for every dimension
+      /*! You need to call set_coef() first before you will get a sensible result.*/
+      inline 
+	explicit
+	BSplinesRegularGrid(const BasicCoordinate<num_dimensions, BSplineType> & this_type)	
 	{	 
-		set_private_values(this_type);	  
+	  this->set_private_values(this_type);	  
 	}  	
 
-	//! destructor
-	inline ~BSplinesRegularGrid();
+      //! destructor
+      inline ~BSplinesRegularGrid();
 			
-	inline
-		void
-		set_coef(const Array<num_dimensions,in_elemT> & input);
+      //! Compute the coefficients for the B-splines from an array of samples.
+      /*! When the order of the spline is larger than 1, the coefficients multiplying
+	  the basic splines are not equal to the samples. This variable stores them
+	  for further use.
+	  \todo rename
+      */
+      inline
+	void
+	set_coef(const Array<num_dimensions,in_elemT> & input);
 
-	inline
-		const out_elemT 
-		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;		
-	private:
+      //! Compute value of the interpolator
+      /*! \param relative_positions
+	     A coordinate with respect to the original grid coordinates as used by the 
+	     input array. In particular, if the input array was not 0-based, your 
+	     \c  relative_positions should not be either.
+	  \return the interpolated value.
 
-	inline void 
-		set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type);
-	inline void 
-		set_private_values(const BSplineType & this_type);
+	  
+	  \todo should probably be templated in pos_type.
+      */
+      inline
+	const out_elemT 
+	operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;
+
+    private:
+
+      // variables that store numbers for the spline type
+      // TODO these coefficients and the spline type could/should be integrated into 1 class
+      BasicCoordinate<num_dimensions,BSplineType> _spline_types;
+      BasicCoordinate<num_dimensions,double> _z1s;
+      BasicCoordinate<num_dimensions,double> _z2s;
+      BasicCoordinate<num_dimensions,double> _lambdas;
+      //! coefficients for B-splines
+      Array<num_dimensions,out_elemT> _coeffs;  
+		
+      inline void 
+	set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type);
+      inline void 
+	set_private_values(const BSplineType & this_type);
 	
-	};
+    };
 	
 } // end BSpline namespace
 
