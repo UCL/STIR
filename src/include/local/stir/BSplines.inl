@@ -19,7 +19,7 @@
 */
 /*!
   \file 
-  \ingroup numerics_buildblock
+  \ingroup BSpline
   \brief Implementation of the B-Splines Interpolation 
 
   \author Charalampos Tsoumpas
@@ -239,14 +239,10 @@ out_elemT
 BSplines1DRegularGrid<out_elemT,in_elemT>::
 BSplines_product(const int index, const pos_type relative_position, const bool if_deriv) const
 {
-	if (if_deriv==true)		
-		return BSplines_coef_vector[index]*BSplines_1st_der_weight(relative_position);	
-	if (spline_type==cubic)
-		return BSplines_coef_vector[index]*BSplines_weight(relative_position);	
-	if (spline_type==oMoms)
-		return BSplines_coef_vector[index]*oMoms_weight(relative_position);
-	else 
-		return BSplines_coef_vector[index]*BSplines_weights(relative_position,spline_type);	
+  if (if_deriv==true)		
+    return BSplines_coef_vector[index]*BSplines_1st_der_weight(relative_position, spline_type);	
+  else 	
+    return BSplines_coef_vector[index]*BSplines_weights(relative_position,spline_type);	
 }
 
 template <typename out_elemT, typename in_elemT>

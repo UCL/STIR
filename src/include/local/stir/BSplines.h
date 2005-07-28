@@ -2,41 +2,39 @@
 // $Id$
 //
 /*
-Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
-This file is part of STIR.
+  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
   (at your option) any later version.
   
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-	
-	  See STIR/LICENSE.txt for details
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+  
+  See STIR/LICENSE.txt for details
 */
 #ifndef __stir_numerics_BSplines__H__
 #define __stir_numerics_BSplines__H__
 
 /*!
 \file 
-\ingroup numerics_buildblock
-\brief Implementation of the (cubic) B-Splines Interpolation 
+\ingroup BSpline
+\brief Implementation of the B-Splines Interpolation 
 
-  \author Charalampos Tsoumpas
-  \author Kris Thielemans
+\author Charalampos Tsoumpas
+\author Kris Thielemans
   
-	$Date$
-	$Revision$
+$Date$
+$Revision$
 */
 
 #include "stir/shared_ptr.h"
 #include <vector>
 #include <algorithm>
-#include <iostream>
-#include <cmath>
 #include "local/stir/IR_filters.h"
 
 START_NAMESPACE_STIR
@@ -48,7 +46,11 @@ namespace BSpline {
 	enum BSplineType 
 	{near_n, linear, quadratic, cubic, quartic, quintic, oMoms} ;
 	
-	template <typename out_elemT, typename in_elemT>
+	/*! \ingroup BSpline
+	  \brief Temporary class for 1D B-splines
+	  \todo implement as template specialisation of the n-dimensional version
+	*/
+	template <typename out_elemT, typename in_elemT=out_elemT>
 		class BSplines1DRegularGrid
 	{
 private:
@@ -162,20 +164,12 @@ BSplines_coef(RandIterOut c_begin_iterator,
 template <typename pos_type>
 inline 
 pos_type 
-BSplines_weight(const pos_type relative_position);
+BSplines_1st_der_weight(const pos_type relative_position, const BSplineType spline_type) ;
 
 template <typename pos_type>
+inline
 pos_type 
-oMoms_weight(const pos_type relative_position);
-
-template <typename pos_type>
-inline 
-pos_type 
-BSplines_1st_der_weight(const pos_type relative_position) ;
-
-template <typename pos_type>
-pos_type 
-BSplines_weights(const pos_type relative_position, const BSplineType spline_type) ;
+BSplines_weights(const pos_type relative_position, const BSplineType spline_type);
 
 template <typename in_elemT>
 inline
