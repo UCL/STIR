@@ -174,10 +174,10 @@ void BSplines_Tests::run_tests()
 	  std::vector<elemT> BSplines_1st_der_weight_STIR_vector, BSplines_1st_der_weight_correct_vector, 
 		  BSplines_1st_der_weight_est_vector;
 	  
-	  BSplines_1st_der_weight_STIR_vector.push_back(BSplines_1st_der_weight(0.));
+	  BSplines_1st_der_weight_STIR_vector.push_back(BSplines_1st_der_weight(0.,cubic));
 
 	  for(elemT i=0.3; i<=3 ;++i)
-	  	  BSplines_1st_der_weight_STIR_vector.push_back(BSplines_1st_der_weight(i));		 	  	  	
+	  	  BSplines_1st_der_weight_STIR_vector.push_back(BSplines_1st_der_weight(i,cubic));
 	  BSplines_1st_der_weight_correct_vector.push_back(0.); //1
 	  BSplines_1st_der_weight_correct_vector.push_back(-0.465); //2
 	  BSplines_1st_der_weight_correct_vector.push_back(-0.245); //3
@@ -350,12 +350,12 @@ void BSplines_Tests::run_tests()
 	  // test if shifted copy of the B-spline functions add to 1
 	  for (double inc=0; inc<1; inc+=.1)
 		  check_if_equal(
-		  BSplines_weight(+inc)+
-		  BSplines_weight(fabs(+inc+1))+
-		  BSplines_weight(fabs(+inc+2))+
-		  BSplines_weight(fabs(+inc-1))+
-		  BSplines_weight(fabs(+inc-2)),
-		  1., "test on B-spline function");
+		  BSplines_weights(+inc,cubic)+
+		  BSplines_weights(+inc+1,cubic)+
+		  BSplines_weights(+inc+2,cubic)+
+		  BSplines_weights(+inc-1,cubic)+
+		  BSplines_weights(+inc-2,cubic),
+		  1., "test on cubic B-spline function");
 	  std::cerr << '\n';
 	  const elemT epsilon = 0.01;
 	  for (elemT i=1, imax=10; i<imax ;++i)
