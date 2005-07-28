@@ -21,7 +21,7 @@
 #define __stir_numerics_BSplinesRegularGrid__H__
 /*!
   \file 
-  \ingroup numerics
+  \ingroup BSpline
   \brief Implementation of the n-dimensional B-Splines Interpolation 
 
   \author Charalampos Tsoumpas
@@ -38,7 +38,9 @@ START_NAMESPACE_STIR
 
 namespace BSpline {
 
-  //! The type used for relative positions between the grid points.
+  //*! \brief The type used for relative positions between the grid points.
+     \ingroup BSpline
+   */
   typedef double pos_type;
 
   /*! \ingroup BSpline
