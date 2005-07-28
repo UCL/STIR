@@ -144,6 +144,10 @@ Library with building blocks for reading scan data
 \defgroup DFT Discrete Fourier transforms
 \ingroup numerics
 */
+/*! 
+\defgroup BSpline Classes and functions for B-spline interpolation.
+\ingroup numerics
+*/
 /*!
 \defgroup IO Input/Output Library
 \ingroup STIR_library
