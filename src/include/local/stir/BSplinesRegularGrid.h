@@ -38,7 +38,7 @@ START_NAMESPACE_STIR
 
 namespace BSpline {
 
-  //*! \brief The type used for relative positions between the grid points.
+  /*! \brief The type used for relative positions between the grid points.
      \ingroup BSpline
    */
   typedef double pos_type;
