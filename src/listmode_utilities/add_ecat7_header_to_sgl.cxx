@@ -22,34 +22,56 @@ $Revision$
 
 #include <string>
 #include <stdio.h>
-
+#include <errno.h>
 
 USING_NAMESPACE_STIR
 USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 
-static void update_main_header(Main_header& mh)
+static void update_main_header(Main_header& mh, const bool is_3d_scan)
   {
     strcpy(mh.study_description, "listmode");
     mh.acquisition_type = DynamicEmission;
-    mh.septa_state = SeptaRetracted; // TODO get from acquisition script
-    mh.file_type = 0;
+    mh.septa_state = 
+      is_3d_scan ? SeptaRetracted : SeptaExtended;
+    // we set this to a sinogram-type such that header_doc can display the data
+    mh.file_type = Short3dSinogram; 
   }
 
 
+void print_usage_and_exit(const char * const program_name)
+  {
+    std::cerr<< "\nPrepend contents of ECAT7 header to a sgl file.\n"
+	     << "Usage: \n"
+	     << "\t" << program_name << " [--2d|--3d] output_sgl_name input_sgl_name input_ECAT7_name \n"
+	     << "Defaults to 3D (is used to set septa_state)\n";
+    exit(EXIT_FAILURE); 
+  }
 
 
 int main(int argc, char *argv[])
 {
 
+  bool is_3d_scan = true;
+  const char * const program_name = argv[0];
 
+  if (argc >= 3 && argv[1][0] == '-')
+    {
+      if (strcmp(argv[1], "--2d") == 0)
+	{
+	  is_3d_scan = false;
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[1], "--3d") == 0)
+	{
+	  is_3d_scan = true;
+	  --argc; ++argv;
+	}
+      else
+	print_usage_and_exit(program_name);
+    }
   if(argc!=4)
-  {
-    std::cerr<< "\nPrepend contents of ECAT7 header to a sgl file.\n"
-        << "Usage: \n"
-	<< "\t" << argv[0] << "  output_sgl_name input_sgl_name input_ECAT7_name \n";
-    return EXIT_FAILURE; 
-  }
+    print_usage_and_exit(program_name);
 
   const std::string output_name = argv[1];
   const std::string input_name_sgl = argv[2];
@@ -82,7 +104,7 @@ int main(int argc, char *argv[])
       fclose(ecat7_fptr);
       }
 
-      update_main_header(mh_in);
+      update_main_header(mh_in, is_3d_scan);
       if (mat_write_main_header(out_fptr, &mh_in))
 	    error("Error writing main header to %s", output_name.c_str());
       // copy rest of sgl file into output	
