@@ -20,7 +20,7 @@
   \file
   \ingroup modelling
 
-  \brief Implementations of inline functions of class stir::PlasmaSampling
+  \brief Implementations of inline functions of class stir::PlasmaData
 
   \author Charalampos Tsoumpas
 
@@ -63,6 +63,7 @@ PlasmaData::PlasmaData()
 PlasmaData::~PlasmaData()
 { }
 
+//! Implementation to read the input function from ONLY a 2-columns data file (Time-Radioactivity).
 void  PlasmaData::read_plasma_data(const std::string input_string) 
 { 
   std::ifstream data_stream(input_string.c_str()); 
@@ -80,6 +81,7 @@ void  PlasmaData::read_plasma_data(const std::string input_string)
 	(this->_plasma_plot).push_back(current_sample);		     	     
       }
 }     
+  //! Implementation to set the input units not currently used.
 void
  PlasmaData::set_input_units( SamplingTimeUnits input_sampling_time_units, 
 		        PlasmaVolumeUnits input_plasma_volume_units, 

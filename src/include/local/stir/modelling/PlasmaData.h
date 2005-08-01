@@ -21,7 +21,7 @@
   \file
   \ingroup modelling
 
-  \brief Declaration of class stir::PlasmaSampling  
+  \brief Declaration of class stir::PlasmaData
 
   \author Charalampos Tsoumpas
  
@@ -94,7 +94,10 @@ typedef plot_type::const_iterator const_iterator;
     { seconds , minutes };
   enum RadioactivityUnits
     { counts_per_sec , counts_per_min , kBq };
+
+  //! Implementation to read the input function from ONLY a 2-columns data file (Time-Radioactivity).
   inline void read_plasma_data(const std::string input_string) ;
+  //! Implementation to set the input units not currently used.
   inline void set_input_units(const SamplingTimeUnits input_sampling_time_units, 
 			      const PlasmaVolumeUnits input_plasma_volume_units, 
 			      const RadioactivityUnits input_radioactivity_units ) ;
@@ -104,7 +107,7 @@ typedef plot_type::const_iterator const_iterator;
   //! default constructor
   inline ~PlasmaData();
 
-  //  void get begin() and end() iterators for the plasma curve ;
+  //!  void begin() and end() iterators for the plasma curve ;
 inline const_iterator begin() const ;
 inline const_iterator end() const ;
 // non const_iterator should be defined if the plasma data needs to be changed 
