@@ -114,9 +114,12 @@ BSplines_weights(const pos_type relative_position, const BSplineType spline_type
 		else return 0;
 	}
 	case linear:
-		return 	std::max(0.,-1 + relative_position) - 
-		      2*std::max(0.,relative_position) + 
-			  std::max(0.,1 + relative_position);
+	  {
+	    if (fabs(relative_position)<1)
+	      return 1-fabs(relative_position);
+	    else
+	      return 0;
+	  }
 	case quadratic:
 		return 	-pow(std::max(0.,-1.5 + relative_position),2)/2. + 
 		(3*pow(std::max(0.,-0.5 + relative_position),2))/2. - 
@@ -124,10 +127,10 @@ BSplines_weights(const pos_type relative_position, const BSplineType spline_type
 		pow(std::max(0.,1.5 + relative_position),2)/2.;		
 	case quintic:
 		return 	
-		(pow(std::max(0.,-3 + relative_position),5) -  6*pow(std::max(0.,-2 + relative_position),5) +
-	      15*pow(std::max(0.,-1 + relative_position),5) - 20*pow(std::max(0.,relative_position),5) + 
-		  15*pow(std::max(0.,1 + relative_position),5) -   6*pow(std::max(0.,2 + relative_position),5) + 
-		     pow(std::max(0.,3 + relative_position),5))/ 120. ;		
+		(pow(std::max(0.,-3. + relative_position),5) -  6*pow(std::max(0.,-2. + relative_position),5) +
+		 15*pow(std::max(0.,-1. + relative_position),5) - 20*pow(std::max(static_cast<pos_type>(0),relative_position),5) + 
+		  15*pow(std::max(0.,1. + relative_position),5) -   6*pow(std::max(0.,2. + relative_position),5) + 
+		     pow(std::max(0.,3. + relative_position),5))/ 120. ;		
 	case oMoms:
 		return oMoms_weight(relative_position);	
 	default:
