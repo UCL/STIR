@@ -38,7 +38,7 @@
 	  \param random points defaults to true
 	  \param use_cache defaults to true
 	  \param scatter_level defaults to 1 (Single Scatter)
-	  \param resolution defaults for BGO to 22.5%
+	  \param resolution defaults for BGO to 22%
 */
 /*
 Copyright (C) 2004- $Date$, Hammersmith Imanet
@@ -91,7 +91,7 @@ int main(int argc, const char *argv[])
 			<< "\tuse 1 for only SSS\n"
 			<< "\t    2 for only DSS\n" 
 			<< "\tor  0 for no scatter sinogram\n"
-		        << "\tresolution defaults for BGO to 22.5%\n\n" ;
+		        << "\tresolution defaults for BGO to 22%\n\n" ;
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
