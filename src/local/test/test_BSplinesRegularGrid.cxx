@@ -32,6 +32,7 @@ This file is part of STIR.
 #include "stir/Array.h"
 #include "stir/make_array.h"
 #include "stir/IndexRange2D.h"
+#include "stir/Coordinate2D.h"
 #include "stir/stream.h"
 #include <fstream>
 #include "local/stir/BSplines.h"
@@ -68,8 +69,8 @@ namespace BSpline {
 		{	
 			Array<2,elemT> out(v.get_index_range());			
 			BasicCoordinate<2, elemT> relative_positions;
-			for (elemT j=out.get_min_index() ; j<=out.get_max_index() ; ++j)	
-				for (elemT i=out[j].get_min_index() ; i<=out[j].get_max_index() ; ++i)	
+			for (int j=out.get_min_index() ; j<=out.get_max_index() ; ++j)	
+				for (int i=out[j].get_min_index() ; i<=out[j].get_max_index() ; ++i)	
 				{
 					relative_positions[1]=j;
 					relative_positions[2]=i;
@@ -87,8 +88,8 @@ namespace BSpline {
 		{	
 			Array<2,elemT> out_near(v.get_index_range());			
 			BasicCoordinate<2, elemT> relative_positions;
-			for (elemT j=out_near.get_min_index() ; j<=out_near.get_max_index() ; ++j)	
-				for (elemT i=out_near[j].get_min_index() ; i<=out_near[j].get_max_index() ; ++i)	
+			for (int j=out_near.get_min_index() ; j<=out_near.get_max_index() ; ++j)	
+				for (int i=out_near[j].get_min_index() ; i<=out_near[j].get_max_index() ; ++i)	
 				{
 					relative_positions[1]=j+epsilon[1];
 					relative_positions[2]=i+epsilon[2];
@@ -107,8 +108,8 @@ namespace BSpline {
 		{	
 			Array<2,elemT> out_at_half(v_at_half.get_index_range()), dv(v_at_half.get_index_range());			
 			BasicCoordinate<2, elemT> relative_positions;
-			for (elemT j=out_at_half.get_min_index() ; j<=out_at_half.get_max_index() ; ++j)	
-				for (elemT i=out_at_half[j].get_min_index() ; i<=out_at_half[j].get_max_index() ; ++i)		
+			for (int j=out_at_half.get_min_index() ; j<=out_at_half.get_max_index() ; ++j)	
+				for (int i=out_at_half[j].get_min_index() ; i<=out_at_half[j].get_max_index() ; ++i)		
 				{
 					relative_positions[1]=j+0.5;
 					relative_positions[2]=i+0.5;
@@ -122,7 +123,7 @@ namespace BSpline {
 				cout << "The mean deviation from the correct value is: " 
 					<< sqrt(dv.sum()/dv.size_all()) << endl;
 				return 
-					check_if_equal(0., sqrt(dv.sum()/dv.size_all()), message);
+				  check_if_zero(sqrt(dv.sum()/dv.size_all()), message);
 		}
 
 		template <class elemT>
@@ -131,8 +132,8 @@ namespace BSpline {
 		{	
 			Array<2,elemT> out(v.get_index_range());			
 			BasicCoordinate<2, elemT> relative_positions;
-			for (elemT j=out.get_min_index() ; j<=out.get_max_index() ; ++j)	
-				for (elemT i=out[j].get_min_index() ; i<=out[j].get_max_index() ; ++i)		
+			for (int j=out.get_min_index() ; j<=out.get_max_index() ; ++j)	
+				for (int i=out[j].get_min_index() ; i<=out[j].get_max_index() ; ++i)		
 				{
 					relative_positions[1]=j+0.5;
 					relative_positions[2]=i+0.5;
@@ -154,7 +155,32 @@ namespace BSpline {
 			return 
 				check_if_equal(v, out,  message);
 		}
+
+	  template <int num_dimensions, class elemT>
+	  bool check_gradient(const BSplinesRegularGrid<num_dimensions, elemT>& interpolator,
+			      const BasicCoordinate<num_dimensions,pos_type>& p,
+			      const char * const message)
+	  {	
+	    const elemT epsilon = static_cast<elemT>(1.E-3);
+	    BasicCoordinate<num_dimensions,elemT> gradient =
+	      interpolator.gradient(p);
+	    const elemT value =
+	      interpolator(p);
+	    BasicCoordinate<num_dimensions,elemT> numerical_gradient;
+	    BasicCoordinate<num_dimensions,elemT> multidim_epsilon;
+	    for (int d=1; d<=num_dimensions; ++d)
+	      {
+		set_to_zero(multidim_epsilon);
+		multidim_epsilon[d]=epsilon;
+		numerical_gradient[d] =
+		  (interpolator( p+multidim_epsilon) - value) / epsilon;
+	      }
+	    return 
+	      this->check_if_equal(gradient, numerical_gradient, message);
+	  }
 	};
+
+
 	void BSplinesRegularGrid_Tests::run_tests()
 	{    
 		cerr << "\nTesting BSplinesRegularGrid class..." << endl;
@@ -167,7 +193,7 @@ namespace BSpline {
 		BasicCoordinate<2, elemT> epsilon_4; epsilon_4[1]=test_tolerance; epsilon_4[2]=test_tolerance;
 
 		Array<1,elemT> const_1D  =  make_1d_array(1., 1., 1., 1., 1., 1.);
-		Array<1,elemT> linear_1D =  make_1d_array(1., 2., 3., 4., 5., 6.);
+		Array<1,elemT> linear_1D =  make_1d_array(1., 2., 3., 4., 5., 6.,7.,8.,9.,10.);
 		Array<1,elemT> random_1D_1 =  make_1d_array(-14., 8., -1., 13., -1., -2., 11., 1., -8.);		
 		Array<1,elemT> random_1D_2 =  make_1d_array(6., 11., -14., 6., -3., 10., 1., 7., -2.);		
 		Array<1,elemT> random_1D_3 =  make_1d_array(-5., -9., -9., 6., -5., 2., -10., 6., -3.);		
@@ -223,6 +249,22 @@ namespace BSpline {
 					(static_cast<double>(j)+0.5-10.)*(static_cast<double>(j)+0.5-10.))/400.);
 				
 			}
+
+		{
+		  BSplinesRegularGrid<1, elemT> BSplinesRegularGridTest_const(const_1D, cubic);		  
+		  BSplinesRegularGrid<1, elemT> BSplinesRegularGridTest_linear(linear_1D, cubic);		  
+		  BSplinesRegularGrid<1, elemT> BSplinesRegularGridTest_random(random_1D_1, cubic);		  
+		  BSplinesRegularGrid<1, elemT> BSplinesRegularGridTest_gaussian(gaussian_input_sample[14], cubic);		  
+		  //////// gradient
+		  {
+		    BasicCoordinate<1,pos_type> p;				     
+		    p[1] = 8.4; check_gradient(BSplinesRegularGridTest_gaussian, p, "Gaussian");
+		    p[1] = 4.4; check_gradient(BSplinesRegularGridTest_gaussian, p, "Gaussian");
+		    p[1] = 3.4; check_gradient(BSplinesRegularGridTest_linear, p, "linear");
+		    p[1] = 2.4; check_gradient(BSplinesRegularGridTest_const, p, "const");
+		  }
+
+		}
 			{
 				cerr << "\nTesting BSplinesRegularGrid: Nearest Neighbour values and constructor using a 2D array as input..." << endl;	  	  	  	  
 				{		 
@@ -347,6 +389,16 @@ namespace BSpline {
 					check_at_half_way(gaussian_input_sample, gaussian_check_sample,
 						BSplinesRegularGridTest_gaussian, 
 						"check BSplines implementation for cubic interpolation.\nProblems at half way!");
+
+
+					//////// gradient
+					{
+				     
+					  check_gradient(BSplinesRegularGridTest_gaussian, Coordinate2D<pos_type>(1.1,2.2), "Gaussian");
+					  check_gradient(BSplinesRegularGridTest_gaussian, Coordinate2D<pos_type>(3.1,4.2), "Gaussian");
+					  check_gradient(BSplinesRegularGridTest_linear_const, Coordinate2D<pos_type>(3.1,4.2), "linear const");
+					}
+					
 				}			
 			}
 			{
