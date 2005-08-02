@@ -74,7 +74,15 @@ namespace BSpline {
 		BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
 		operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const
 	{
-		return detail::compute_BSplines_value(this->_coeffs, relative_positions, this->_spline_types);
+	  return detail::compute_BSplines_value<num_dimensions, in_elemT>()(this->_coeffs, relative_positions, this->_spline_types);
+	}
+
+	template <int num_dimensions, typename out_elemT, typename in_elemT>
+	const BasicCoordinate<num_dimensions, out_elemT> 
+	BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
+	gradient(const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const
+	{
+	  return detail::compute_BSplines_gradient<num_dimensions, in_elemT>()(this->_coeffs, relative_positions, this->_spline_types);
 	}
 	
 } // end of namespace BSpline
