@@ -70,7 +70,7 @@ void scatter_viewgram(
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 					  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 					  int& scatt_points, const float att_threshold, 
-					  const float lower_energy_threshold, const float upper_energy_threshold,		
+					  const float lower_energy_threshold, const float upper_energy_threshold, const float resolution,
 					  const bool use_cache, const int scatter_level, const bool random)
 {		
 	const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
@@ -170,20 +170,21 @@ void scatter_viewgram(
 						image_as_activity, image_as_density, 
 						det_num_A, det_num_B,
 						lower_energy_threshold, 
-						upper_energy_threshold));  //It is not devided by the prompting anlge. This is expected to take place in the normalisation procedure.	
+						upper_energy_threshold, resolution));  
+//It is not devided by the prompting angle. This is expected to take place in the normalisation procedure.	
 					else if(scatter_level==120)
 					bin.set_bin_value(scatter_estimate_for_none_scatter_point(
 						image_as_activity, image_as_density, 
 						det_num_A, det_num_B,
 						lower_energy_threshold, 
-						upper_energy_threshold)+
+						upper_energy_threshold, resolution )+
 						scatter_estimate_for_all_scatter_points(
 						image_as_activity,
 						image_as_density,
 						det_num_A, 
 						det_num_B,
 						lower_energy_threshold,
-						upper_energy_threshold,
+						upper_energy_threshold,resolution,
 						use_cache,scatter_level));	
 					else
 					bin.set_bin_value(
@@ -193,7 +194,7 @@ void scatter_viewgram(
 						det_num_A, 
 						det_num_B,
 						lower_energy_threshold,
-						upper_energy_threshold,
+						upper_energy_threshold,resolution,
 						use_cache,scatter_level));
 
 					viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =

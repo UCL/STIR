@@ -138,7 +138,8 @@ float scatter_estimate_for_one_scatter_point(
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B,
 	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,		
+	  const float upper_energy_threshold,
+	  const float resolution,		
 	  const bool use_cache);
 double scatter_estimate_for_two_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
@@ -148,7 +149,8 @@ double scatter_estimate_for_two_scatter_points(
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B,
 	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,		
+	  const float upper_energy_threshold,
+	  const float resolution,		
 	  const bool use_cache);
 float scatter_estimate_for_all_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
@@ -156,7 +158,8 @@ float scatter_estimate_for_all_scatter_points(
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B,
 	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,		
+	  const float upper_energy_threshold,
+	  const float resolution,		
 	  const bool use_cache,
 	  const int scatter_level);
 float scatter_estimate_for_none_scatter_point(
@@ -165,7 +168,8 @@ float scatter_estimate_for_none_scatter_point(
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B,
 	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold);
+	  const float upper_energy_threshold,
+	  const float resolution);
 //@}
 /*!	\name Klein-Nishina functions					
   \ingroup scatter
@@ -235,7 +239,7 @@ void scatter_viewgram(
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
     int& scatt_points, const float att_threshold, 
-	const float lower_energy_threshold, const float upper_energy_threshold,		
+	const float lower_energy_threshold, const float upper_energy_threshold,	const float resolution,	
 	const bool use_cache, const int scatter_level, const bool random);
 
 /////////////////////////
@@ -293,7 +297,8 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const float given_attenuation_threshold,
 				 const int total_scatt_points,
 				 const float lower_energy_threshold, 
-				 const float upper_energy_threshold,		
+				 const float upper_energy_threshold,
+		 const float resolution,
 				 const bool use_cache,
 				 const bool random, 
 				 const char *argv[]);

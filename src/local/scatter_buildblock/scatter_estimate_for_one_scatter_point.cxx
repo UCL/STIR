@@ -31,12 +31,13 @@ float scatter_estimate_for_one_scatter_point(
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B,
 	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,		
+	  const float upper_energy_threshold,
+	  const float resolution,		
 	  const bool use_cache)
 {	
-	static const float max_single_scatter_cos_angle=max_cos_angle_BGO(lower_energy_threshold,2.);
+	static const float max_single_scatter_cos_angle=max_cos_angle(lower_energy_threshold,2.,resolution);
 
-	static const float min_energy=energy_lower_limit_BGO(lower_energy_threshold,2.);
+	static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,resolution);
 
 	const CartesianCoordinate3D<float>& scatter_point =
 		scatt_points_vector[scatter_point_num].coord;
@@ -56,9 +57,9 @@ float scatter_estimate_for_one_scatter_point(
 	  energy_after_scatter_511keV(costheta);
 
 	const float detection_efficiency_scatter =
-	  detection_efficiency_BGO(lower_energy_threshold,
+	  detection_efficiency(lower_energy_threshold,
 				   upper_energy_threshold,
-				   new_energy);
+				   new_energy,511.F,resolution);
 	if (detection_efficiency_scatter==0)
 		return 0;
 
