@@ -33,7 +33,7 @@
     run ./manip_image input_projdata.hs to extract the rows as the defaults.   */
 
 #include "stir/Array.h"
-#include "stir/Viewgram.h"
+#include "stir/Sinogram.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Bin.h"
@@ -54,61 +54,87 @@ using std::setw;
 
 int main(int argc, char *argv[])
 { 
-	USING_NAMESPACE_STIR
-	using namespace std;
-	if (argc!=3)
-	{
-	   cerr << "Usage:" << argv[0] << "\n"
-			<< "\t[proj_data_filename]\n" 
-			<< "\t[output_profile_filename]\n";
-			return EXIT_FAILURE;            
-	}      
+  USING_NAMESPACE_STIR
+    using namespace std;
+  if (argc!=3)
+    {
+      cerr << "Usage:" << argv[0] << "\n"
+	   << "\t[proj_data_filename]\n" 
+	   << "\t[output_profile_filename]\n";
+      return EXIT_FAILURE;            
+    }      
 	
-	const shared_ptr<ProjData> input_projdata_sptr = ProjData::read_from_file(argv[1]);  
+  const shared_ptr<ProjData> input_projdata_sptr = ProjData::read_from_file(argv[1]);  
  
-	const ProjDataInfo * projdata_info_ptr = 
+  const ProjDataInfo * projdata_info_ptr = 
     (*input_projdata_sptr).get_proj_data_info_ptr();
 
-	string output_profile_string(argv[2]);
+  string output_profile_string(argv[2]);
 
-    int view_min, axial_min, tangential_min, 
-		view_max, axial_max, tangential_max;
+  int view_min, axial_min, tangential_min, 
+    view_max, axial_max, tangential_max;
 
-	view_min=
-		projdata_info_ptr->get_min_view_num();
-	view_max=
-		projdata_info_ptr->get_max_view_num();	
-	axial_min=
-		projdata_info_ptr->get_min_axial_pos_num(0);
-	axial_max=
-		projdata_info_ptr->get_max_axial_pos_num(0);
-	tangential_min=
-		projdata_info_ptr->get_min_tangential_pos_num();
-	tangential_max=
-		projdata_info_ptr->get_max_tangential_pos_num();
+  view_min=
+    projdata_info_ptr->get_min_view_num();
+  view_max=
+    projdata_info_ptr->get_max_view_num();	
+  axial_min=
+    projdata_info_ptr->get_min_axial_pos_num(0);
+  axial_max=
+    projdata_info_ptr->get_max_axial_pos_num(0);
+  tangential_min=
+    projdata_info_ptr->get_min_tangential_pos_num();
+  tangential_max=
+    projdata_info_ptr->get_max_tangential_pos_num();
 			
 			
-	int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
-    int axial_mean=static_cast<int>(floor((axial_min+axial_max)/2.F));
-
-    Viewgram<float> profile_viewgram = input_projdata_sptr->get_viewgram(view_mean,0,0);
+  int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
+  int axial_mean=static_cast<int>(floor((axial_min+axial_max)/2.F));
+  int tangential_mean=static_cast<int>(floor((tangential_min+tangential_max)/2.F));
 	
-	ofstream profile_stream(output_profile_string.c_str(), ios::out); //output file //
-		if(!profile_stream)    
-			cerr << "Cannot open " << output_profile_string << endl ;
-		else
-		//	" X-axis"<<
-		{
-			profile_stream  << " s-Value (mm)" << "\t" <<  "Value" << endl ;
+  const Sinogram<float> profile_sinogram = input_projdata_sptr->get_sinogram(axial_mean,0);
+	
+  // along tangential direction
+  {
+    const std::string name=output_profile_string+"_tang.prof";
+    ofstream profile_stream(name.c_str(), ios::out); //output file //
+    if(!profile_stream)    
+      cerr << "Cannot open " << name << endl ;
+    else
+      //	" X-axis"<<
+      {
+	profile_stream  << " s-Value (mm)" << "\t" <<  "Value" << endl ;
 
-			for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
-			{
-				Bin bin(0,view_mean,axial_mean,tang,0);
-				profile_stream  << std::setw(9) << projdata_info_ptr->get_s(bin) << "\t"
-								<< std::setw(7) << profile_viewgram[axial_mean][tang] << endl ;
-			}
-			profile_stream.close();   
-		}
-	return EXIT_SUCCESS;
+	for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
+	  {
+	    Bin bin(0,view_mean,axial_mean,tang,0);
+	    profile_stream  << std::setw(9) << projdata_info_ptr->get_s(bin) << "\t"
+			    << std::setw(7) << profile_sinogram[view_mean][tang] << endl ;
+	  }
+	profile_stream.close();   
+      }
+  }
+  // along view direction
+  {
+    const std::string name=output_profile_string+"_view.prof";
+    ofstream profile_stream(name.c_str(), ios::out); //output file //
+    if(!profile_stream)    
+      cerr << "Cannot open " << name << endl ;
+    else
+      //	" X-axis"<<
+      {
+	profile_stream  << " phi (radians)" << "\t" <<  "Value" << endl ;
+	      
+	for (int view_num=view_min ; view_num<= view_max ; ++view_num)		
+	  {
+	    Bin bin(0,view_num,axial_mean,tangential_mean,0);
+	    profile_stream  << std::setw(9) << projdata_info_ptr->get_phi(bin) << "\t"
+			    << std::setw(7) << profile_sinogram[view_num][tangential_mean] << endl ;
+	  }
+	profile_stream.close();   
+      }
+  }
+
+  return EXIT_SUCCESS;
 }
 
