@@ -138,6 +138,19 @@ namespace BSpline {
 	const out_elemT 
 	operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;
 
+      //! Compute gradient of the interpolator
+      /*! \param relative_positions
+	     A coordinate with respect to the original grid coordinates as used by the 
+	     input array. In particular, if the input array was not 0-based, your 
+	     \c  relative_positions should not be either.
+	  \return the gradient
+
+	  \todo should probably be templated in pos_type.
+      */
+      inline
+	const BasicCoordinate<num_dimensions, out_elemT> 
+	gradient(const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const;
+
     private:
 
       // variables that store numbers for the spline type
