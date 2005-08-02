@@ -194,6 +194,9 @@ void BSplines_Tests::run_tests()
 	  cerr << "Testing BSplines 1st Derivative analytically..." << endl;	  
 	  std::vector<elemT> BSplines_1st_der_STIR_vector, 
 		  BSplines_1st_der_est_vector, new_input_sample(15,1);	  
+	  new_input_sample[5]=7.;
+	  new_input_sample[6]=9.;
+	  new_input_sample[10]=91.;
 	  BSplines1DRegularGrid<elemT, elemT> BSplines1DRegularGridTest(new_input_sample,cubic);
 	  const double epsilon = .0001;
 	  for(double i=0; i<=new_input_sample.size()+3 ;++i)
