@@ -26,6 +26,7 @@
 							  [random points]
 							  [use_cache]
 							  [scatter_level]
+							  [resolution]
   	
 	  Output: Viewgram with name scatter_viewgram_filename
               statistics.txt
@@ -37,6 +38,7 @@
 	  \param random points defaults to true
 	  \param use_cache defaults to true
 	  \param scatter_level defaults to 1 (Single Scatter)
+	  \param resolution defaults for BGO to 22.5%
 */
 /*
 Copyright (C) 2004- $Date$, Hammersmith Imanet
@@ -76,7 +78,8 @@ int main(int argc, const char *argv[])
 			<< "\t[maximum_scatter_points]\n"
 			<< "\t[random points]\n"
 			<< "\t[use_cache]\n"
-			<< "\t[scatter_level]\n\n"
+			<< "\t[scatter_level]\n"
+			<< "\t[resolution]\n\n"
 			<< "\tattenuation_threshold defaults to .05 cm^-1\n"
 			<< "\tlower_energy_threshold defaults to 350 keV\n"
 			<< "\tupper_energy_threshold defaults to 650 keV\n"			
@@ -87,13 +90,15 @@ int main(int argc, const char *argv[])
 			<< "\tscatter_level to 12 finds the SSS+DSS\n"
 			<< "\tuse 1 for only SSS\n"
 			<< "\t    2 for only DSS\n" 
-			<< "\tor  0 for no scatter sinogram\n" ;
+			<< "\tor  0 for no scatter sinogram\n"
+		        << "\tresolution defaults for BGO to 22.5%\n\n" ;
 		return EXIT_FAILURE;            
 	}      
 	float attenuation_threshold = argc>=6 ? atof(argv[5]) : 0.05 ;
 	const float lower_energy_threshold = argc>=7 ? atof(argv[6]) : 350 ;
 	const float upper_energy_threshold = argc>=8 ? atof(argv[7]) : 650 ;
 	int scatt_points = argc>=9 ? atoi(argv[8]) : 1000 ;
+	const float resolution = argc>=10 ? atoi(argv[9]) : 0.22 ;
 	bool random = true;
 	if (argc>=10 && atoi(argv[9])==0)
 		random = false;
@@ -138,7 +143,7 @@ int main(int argc, const char *argv[])
 	scatter_viewgram(output_proj_data,
 		activity_image, density_image,
 		scatt_points,attenuation_threshold,
-		lower_energy_threshold,upper_energy_threshold,
+			 lower_energy_threshold,upper_energy_threshold,resolution,
 		use_cache,scatter_level,random);  
 
 	writing_log(activity_image,
@@ -148,6 +153,7 @@ int main(int argc, const char *argv[])
 		scatt_points,
 		lower_energy_threshold,
 		upper_energy_threshold,
+	        resolution,
 		use_cache,
 		random,argv);
 
