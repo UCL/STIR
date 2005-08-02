@@ -69,7 +69,7 @@ namespace BSpline {
 			IndexRange<1> out_range(v.size());
 			Array<1,elemT> out(out_range);			
 			BasicCoordinate<1, elemT> relative_positions;
-			for (elemT i=0, imax=v.size(); i<imax ; ++i)	
+			for (int i=0, imax=v.size(); i<imax ; ++i)	
 			{
 				relative_positions[1]=i;
 				out[i]=interpolator(relative_positions);
