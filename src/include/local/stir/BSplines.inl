@@ -32,6 +32,7 @@
 
 #include "stir/modulo.h"
 #include "stir/Array.h"
+#include <algorithm> // for std::fill
 START_NAMESPACE_STIR
 namespace BSpline {
 
@@ -63,6 +64,13 @@ static inline
 void set_to_zero(Array<num_dimensions,T>& v)
 {
 	v.fill(0);
+}
+
+template <class T, int num_dimensions>
+static inline 
+void set_to_zero(BasicCoordinate<num_dimensions,T>& c)
+{
+  std::fill(c.begin(), c.end(), 0);
 }
 
 template <class T>
@@ -188,7 +196,7 @@ compute_BSplines_value(const pos_type relative_position, const bool if_deriv) co
 		else if (k>=input_size) index=2*input_size-2-k;
 		else index = k;
 		assert(0<=index && index<input_size);
-		BSplines_value += BSplines_product(index, k-relative_position,if_deriv);
+		BSplines_value += BSplines_product(index, relative_position-k,if_deriv);
 	}
 #else
 	const int kmin= int_pos-2;
@@ -199,20 +207,20 @@ compute_BSplines_value(const pos_type relative_position, const bool if_deriv) co
 	{		
 		const int index=-k;
 		assert(0<=index && index<input_size);
-		BSplines_value += BSplines_product(index, k-relative_position,if_deriv);
+		BSplines_value += BSplines_product(index, relative_position-k,if_deriv);
 
 	}
 	for (; k<=kmax_in_range; ++k)		
 	{		
 		const int index=k;
 		assert(0<=index && index<input_size);
-		BSplines_value += BSplines_product(index, k-relative_position,if_deriv);
+		BSplines_value += BSplines_product(index, relative_position-k,if_deriv);
 	}
 	for (; k<=kmax; ++k)		
 	{		
 		const int index=2*input_size-2-k;
 		assert(0<=index && index<input_size);
-		BSplines_value += BSplines_product(index, k-relative_position,if_deriv);
+		BSplines_value += BSplines_product(index, relative_position-k,if_deriv);
 	}
 #endif
 	return BSplines_value;
