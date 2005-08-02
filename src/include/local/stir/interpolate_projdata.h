@@ -28,10 +28,13 @@
   $Revision$
 */
 
-//#include "local/stir/BSplines.h"
+#include "local/stir/BSplines.h"
 //#include "local/stir/BSplinesRegularGrid.h"
 
 START_NAMESPACE_STIR
+
+class ProjData;
+template <int num_dimensions, class T> class BasicCoordinate;
 
 //! \brief Perform B-Splines Interpolation
 /*! 
