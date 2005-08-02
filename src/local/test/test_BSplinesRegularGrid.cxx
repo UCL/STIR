@@ -64,7 +64,7 @@ namespace BSpline {
   private:  
     template <class elemT>
     bool check_at_sample_points(const Array<2,elemT>& v,
-				BSplinesRegularGrid<2, elemT, elemT>& interpolator,
+				const BSplinesRegularGrid<2, elemT, elemT>& interpolator,
 				const char * const message)
     {	
       Array<2,elemT> out(v.get_index_range());			
@@ -82,7 +82,7 @@ namespace BSpline {
     }
     template <class elemT>
     bool check_near_sample_points(const Array<2,elemT>& v,
-				  BSplinesRegularGrid<2, elemT, elemT>& interpolator, 
+				  const BSplinesRegularGrid<2, elemT, elemT>& interpolator, 
 				  const BasicCoordinate<2, elemT>& epsilon,
 				  const char * const message)
     {	
@@ -103,7 +103,7 @@ namespace BSpline {
     template <class elemT>
     bool check_at_half_way(const Array<2,elemT>& v, 
 			   const Array<2,elemT>& v_at_half,
-			   BSplinesRegularGrid<2, elemT, elemT>& interpolator,
+			   const BSplinesRegularGrid<2, elemT, elemT>& interpolator,
 			   const char * const message)
     {	
       Array<2,elemT> out_at_half(v_at_half.get_index_range()), dv(v_at_half.get_index_range());			
@@ -128,7 +128,7 @@ namespace BSpline {
 
     template <class elemT>
     bool check_at_half_way(const Array<2,elemT>& v,
-			   BSplinesRegularGrid<2, elemT, elemT>& interpolator)
+			   const BSplinesRegularGrid<2, elemT, elemT>& interpolator)
     {	
       Array<2,elemT> out(v.get_index_range());			
       BasicCoordinate<2, elemT> relative_positions;
@@ -147,7 +147,7 @@ namespace BSpline {
 		
     template <class elemT>
     bool check_coefficients(const Array<2,elemT>& v,
-			    BSplinesRegularGrid<2, elemT, elemT>& interpolator,
+			    const BSplinesRegularGrid<2, elemT, elemT>& interpolator,
 			    const char * const message)
     {	
       const Array<2,elemT> out=interpolator.get_coefficients();			
@@ -177,6 +177,16 @@ namespace BSpline {
 	}
       return 
 	this->check_if_equal(gradient, numerical_gradient, message);
+    }
+
+
+    template <int num_dimensions, class elemT>
+    bool check_continuity_of_gradient(const BSplinesRegularGrid<num_dimensions, elemT>& interpolator,
+				      const BasicCoordinate<num_dimensions,pos_type>& p,
+				      const char * const message)
+    {
+      // TODO
+      return true;
     }
   };
 
@@ -258,10 +268,10 @@ namespace BSpline {
       //////// gradient
       {
 	BasicCoordinate<1,pos_type> p;				     
-	p[1] = 8.4; check_gradient(BSplinesRegularGridTest_gaussian, p, "Gaussian");
-	p[1] = 4.4; check_gradient(BSplinesRegularGridTest_gaussian, p, "Gaussian");
-	p[1] = 3.4; check_gradient(BSplinesRegularGridTest_linear, p, "linear");
-	p[1] = 2.4; check_gradient(BSplinesRegularGridTest_const, p, "const");
+	p[1] = 8.4; check_gradient(BSplinesRegularGridTest_gaussian, p, "gradient of cubic B-spline with Gaussian input");
+	p[1] = 4.4; check_gradient(BSplinesRegularGridTest_gaussian, p, "gradient of cubic B-spline with Gaussian input");
+	p[1] = 3.4; check_gradient(BSplinesRegularGridTest_linear, p, "gradient of cubic B-spline with linear input");
+	p[1] = 2.4; check_gradient(BSplinesRegularGridTest_const, p, "gradient of cubic B-spline with const input");
       }
 
     }
