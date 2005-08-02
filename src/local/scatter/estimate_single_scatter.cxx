@@ -65,7 +65,7 @@ int main(int argc, const char *argv[])
 {         
 	USING_NAMESPACE_STIR
 		using namespace std;
-	if (argc< 6 || argc>13)
+	if (argc< 7 || argc>14)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
 			<< "\t[activity_image]\n"
@@ -98,7 +98,6 @@ int main(int argc, const char *argv[])
 	const float lower_energy_threshold = argc>=7 ? atof(argv[6]) : 350 ;
 	const float upper_energy_threshold = argc>=8 ? atof(argv[7]) : 650 ;
 	int scatt_points = argc>=9 ? atoi(argv[8]) : 1000 ;
-	const float resolution = argc>=10 ? atoi(argv[9]) : 0.22 ;
 	bool random = true;
 	if (argc>=10 && atoi(argv[9])==0)
 		random = false;
@@ -106,6 +105,7 @@ int main(int argc, const char *argv[])
 	if (argc>=11 && atoi(argv[10])==0)
 		use_cache = false;
 	const int scatter_level = argc>= 12 ? atoi(argv[11]) : 10 ;
+	const float resolution = argc>=13 ? atoi(argv[12]) : 0.22 ;
 	
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
