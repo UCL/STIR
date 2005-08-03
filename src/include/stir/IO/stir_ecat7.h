@@ -99,6 +99,10 @@ bool is_ECAT7_emission_file(const string& filename);
 */
 bool is_ECAT7_attenuation_file(const string& filename);
 
+/*!
+  \brief read an ECAT7 main header from a file
+*/
+Succeeded read_ECAT7_main_header(Main_header& mhead, const string& filename);
 
 //! determine scanner type from the main_header
 /*! 
