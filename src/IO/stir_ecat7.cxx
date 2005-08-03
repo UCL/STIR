@@ -122,7 +122,7 @@ static int print_debug (char const * const fname, char *format, ...)
 }
 
 
-static bool is_ECAT7_file(Main_header& mhead, const string& filename)
+Succeeded read_ECAT7_main_header(Main_header& mhead, const string& filename)
 {
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
   // first check 'magic_number' before going into LLN routines 
@@ -133,22 +133,29 @@ static bool is_ECAT7_file(Main_header& mhead, const string& filename)
     if (! cti_fptr ||
 	fread(magic, 1, 7, cti_fptr) != 7 ||
 	strncmp(magic, "MATRIX7",7)!=0)
-      return false;
+      return Succeeded::no;
   }
   if(mat_read_main_header(cti_fptr, &mhead)!=0) 
     {
       // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT7
-      return false;
+      return Succeeded::no;
     }
   else
     {
       // do some checks on the main header
       fclose(cti_fptr);
-      return 
-	mhead.sw_version>=70 && mhead.sw_version<=79  &&
-	( mhead.file_type >= 1 && mhead.file_type <= Float3dSinogram) &&
-	mhead.num_frames>0;
+      if (mhead.sw_version>=70 && mhead.sw_version<=79  &&
+	  ( mhead.file_type >= 1 && mhead.file_type <= Float3dSinogram) &&
+	  mhead.num_frames>0)
+	return Succeeded::yes;
+      else
+	return Succeeded::no;
     }
+}
+
+static bool is_ECAT7_file(Main_header& mhead, const string& filename)
+{
+  return read_ECAT7_main_header(mhead, filename) == Succeeded::yes;
 }
 
 bool is_ECAT7_file(const string& filename)
