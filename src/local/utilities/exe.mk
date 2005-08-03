@@ -31,8 +31,9 @@ $(dir)_SOURCES = \
 	line_profiles_through_projdata.cxx \
 	inverse_SSRB.cxx \
 	interpolate_projdata.cxx \
-	calculate_attenuation_coefficients.cxx 
-
+	read_input_function.cxx \
+	read_frame_images.cxx \
+	calculate_attenuation_coefficients.cxx
 #	CoG.cxx \
 #	make_cylinder.cxx 
 
@@ -41,5 +42,10 @@ ifeq ($(HAVE_LLN_MATRIX),1)
   # ecat7 stuff as well
   $(dir)_SOURCES += change_mhead_file_type.cxx copy_ecat7_header.cxx
 endif
+
+${DEST}$(dir)/read_input_function: ${DEST}$(dir)/read_input_function$(O_SUFFIX) \
+   $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$@ $< \
+		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 include $(WORKSPACE)/exe.mk
