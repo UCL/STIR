@@ -171,6 +171,44 @@ float scatter_estimate_for_none_scatter_point(
 	  const float upper_energy_threshold,
 	  const float resolution);
 //@}
+/*!
+  \ingroup scatter
+ \brief Splits the double scatter in two terms: DS_1_1 and DS_0_2+DS_2_0
+*/
+double scatter_estimate_for_two_scatter_points_splitted(
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	  const std::size_t scatter_point_1_num, 
+	  const std::size_t scatter_point_2_num, 
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold, 
+	  const float resolution,		
+	  const bool use_cache,
+          const int split);
+float scatter_estimate_for_all_scatter_points_splitted(
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& smooth_image_as_density,
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold, 
+	  const float resolution,		
+	  const bool use_cache,
+	  const int scatter_level,
+          const int split);
+void scatter_viewgram_splitted( 
+	ProjData& proj_data,
+	ProjData& proj_data2,
+	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+	const DiscretisedDensityOnCartesianGrid<3,float>& smooth_image_as_density,
+        int& scatt_points, const float att_threshold, 
+	const float lower_energy_threshold, const float upper_energy_threshold, const float resolution, 
+        const bool use_cache, const int scatter_level, const bool random);
+
 /*!	\name Klein-Nishina functions					
   \ingroup scatter
   \brief computes the differential cross section
@@ -258,7 +296,7 @@ void scatter_viewgram(
 		ProjData& scaled_scatter_proj_data, 		
 		const ProjData& scatter_proj_data, 
 		const Array<2,float> scale_factor_per_sinogram);
-	
+
 /*	float estimate_scale_factor(
 		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
 		const shared_ptr<ProjData> & scatter_proj_data_sptr, 
