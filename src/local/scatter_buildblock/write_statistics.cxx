@@ -93,9 +93,9 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 	   << " tangential_bins\n"  
 	   << "\n - The energy window was set to: [" 
 	   << lower_energy_threshold << "," << upper_energy_threshold 
-           << "\n and the energy resolution was set to:" << resolution
-	   << "]\n - Attenuation threshold was set to: " << given_attenuation_threshold
-	   << "\n - Scatter Points are taken all above the threshold";		
+           << "]\n and the energy resolution was set to:" << resolution
+	   << ".\n- Attenuation threshold was set to: " << given_attenuation_threshold
+	   << " cm^2/g\n - Scatter Points are taken all above the threshold";		
   if (random)
     mystream << " and have picked randomly\n";
   if (!random)
