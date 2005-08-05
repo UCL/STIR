@@ -128,7 +128,7 @@ float cached_factors_2(const DiscretisedDensityOnCartesianGrid<3,float>& discret
 					   const image_type input_image_type);
 /*!
   \ingroup scatter
- \brief 
+ \brief Estimate of the scatter probability for a number of scatter points.
 */
 //@{
 float scatter_estimate_for_one_scatter_point(
