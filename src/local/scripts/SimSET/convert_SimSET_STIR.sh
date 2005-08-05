@@ -32,7 +32,7 @@ do
  scatter_bin_num=$(( ${num_scatter_bins} * $i + $j ))
  echo extracting scatter bin $scatter_bin_num
 
-~/parapet/PPhead/opt/local/SimSET/conv_SimSET_STIR \
+conv_SimSET_STIR \
 rec.weight fl \
 `~/simset/bin/printheader rec.weight |grep "Binning: number of AA bins" |awk '{ print $6 }'` \
 `~/simset/bin/printheader rec.weight |grep "Binning: number of TD bins" |awk '{ print $6 }'` \
