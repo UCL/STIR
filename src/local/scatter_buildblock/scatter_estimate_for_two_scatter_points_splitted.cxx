@@ -180,7 +180,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 		(emiss_to_detA*
 		 dif_cross_section_A_sc1_sc2*
 		 dif_cross_section_A_sc1_sc2_B*
-//		 total_cross_section_scatter_at_2/total_cross_section_scatter_at_1*
 		 detection_efficiency_scatter_at_1_then_2*
 		 pow(atten_sc1_to_sc2,total_cross_section_scatter_at_1-1)*
 		 pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy_scatter_at_1_then_2)-1)				 
@@ -188,7 +187,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 		 emiss_to_detB*
 		 dif_cross_section_sc1_sc2_B*
 		 dif_cross_section_B_sc2_sc1_A*
-//		 total_cross_section_scatter_at_1/total_cross_section_scatter_at_2*
 		 detection_efficiency_scatter_at_2_then_1*
 		 pow(atten_sc1_to_sc2,total_cross_section_scatter_at_2-1)*
 		 pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy_scatter_at_2_then_1)-1)
@@ -221,8 +219,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 
 	    return
 	      scatter_ratio*cos_incident_angle_AS1*
-	      //cos_incident_angle_AS1
-	      //	      *cos_incident_angle_BS2*
 	      cos_incident_angle_BS2 ;
 	 }
 
@@ -232,7 +228,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 		(emiss_to_detA*
 		 dif_cross_section_A_sc1_sc2*
 		 dif_cross_section_A_sc1_sc2_B*
-//		 total_cross_section_scatter_at_2/total_cross_section_scatter_at_1*
 		 detection_efficiency_scatter_at_1_then_2*
 		 pow(atten_sc1_to_sc2,total_cross_section_scatter_at_1-1)*
 		 pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy_scatter_at_1_then_2)-1)				 
@@ -240,7 +235,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 		 emiss_to_detB*
 		 dif_cross_section_sc1_sc2_B*
 		 dif_cross_section_B_sc2_sc1_A*
-//		 total_cross_section_scatter_at_1/total_cross_section_scatter_at_2*
 		 detection_efficiency_scatter_at_2_then_1*
 		 pow(atten_sc1_to_sc2,total_cross_section_scatter_at_2-1)*
 		 pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy_scatter_at_2_then_1)-1)
@@ -265,8 +259,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 
 	    return
 	      scatter_ratio*cos_incident_angle_AS1*
-	      //cos_incident_angle_AS1
-	      //	      *cos_incident_angle_BS2*
 	      cos_incident_angle_BS2 ;
 	 }
 
@@ -300,8 +292,6 @@ double scatter_estimate_for_two_scatter_points_splitted(
 
 	    return
 	      scatter_ratio*cos_incident_angle_AS1*
-	      //cos_incident_angle_AS1
-	      //	      *cos_incident_angle_BS2*
 	      cos_incident_angle_BS2 ;
 	 }
 
