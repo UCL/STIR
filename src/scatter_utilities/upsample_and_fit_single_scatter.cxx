@@ -18,7 +18,7 @@ See STIR/LICENSE.txt for details
 	
   \par Usage:
   \code
-  correct_for_scatter [attenuation_image]
+  correct_for_scatter [attenuation_correction_factors]
   [no_scatter_viewgram]
   [scatter_viewgram]
   [scaled_scatter_filename]
@@ -27,8 +27,8 @@ See STIR/LICENSE.txt for details
 							
   Output: Viewgram with name scaled_scatter_filename
               
-	  \endcode
-	  \param attenuation_threshold defaults to .05 cm^-1	  
+  \endcode
+  \param attenuation_threshold defaults to 1.01 (should be larger than 1)	  
 */
 
 #include <iostream>
@@ -37,7 +37,6 @@ See STIR/LICENSE.txt for details
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "local/stir/inverse_SSRB.h"
 #include "local/stir/Scatter.h"
 #include "local/stir/interpolate_projdata.h"
@@ -45,46 +44,35 @@ See STIR/LICENSE.txt for details
 #include "stir/IndexRange2D.h" 
 #include "stir/stream.h"
 #include "stir/Succeeded.h"
-//#include "stir/Bin.h" 
-#ifndef STIR_NO_NAMESPACES
-using std::endl;
-using std::cout;
-using std::cerr;
-#endif
+#include "stir/is_null_ptr.h"
 
 /***********************************************************/     
 
 int main(int argc, const char *argv[])                                  
 {         
 	USING_NAMESPACE_STIR
-		using namespace std;
 	if (argc< 5 || argc>7)
 	{
 	   cerr << "Usage:" << argv[0] << "\n"
-			<< "\t[attenuation_image]\n"
+			<< "\t[attenuation_correction_factors]\n"
 			<< "\t[emission_projdata]\n"
 			<< "\t[scatter_projdata]\n" 
 			<< "\t[output_filename]\n"
 			<< "\t[attenuation_threshold]\n"
 			<< "\t[scale_factor_per_sinogram]\n"
-			<< "\tattenuation_threshold defaults to .01 cm^-1\n" 
-			<< "\tusing defaults to 1 for scaling per sinogram"	;		
+			<< "\tattenuation_threshold defaults to 1.01\n" 
+			<< "\tscale_factor_per_sinogram defaults to 1 for scaling per sinogram"	;		
 		return EXIT_FAILURE;            
 	}      
-	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : .01 ;
+	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 1.01 ;
 	const int est_scale_factor_per_sino = argc>=7 ? atoi(argv[6]) : 1 ; 
 	
-	shared_ptr< DiscretisedDensity<3,float> >  	
-		density_image_sptr= 
-		DiscretisedDensity<3,float>::read_from_file(argv[1]);
+	shared_ptr< ProjData >  	
+		attenuation_correct_factors_sptr= 
+		ProjData::read_from_file(argv[1]);
 	
-	if (density_image_sptr==0)
-		error("Check the input files\n");
-
-	warning("\nWARNING: Attenuation image data are supposed to be in units cm^-1\n"
-		"\tReference: water has mu .096 cm^-1\n" 
-		"\tMax in attenuation image: %g\n" ,
-		density_image_sptr->find_max());
+	if (is_null_ptr(attenuation_correct_factors_sptr))
+	  error("Check the attenuation_correct_factors file\n");
 
 	const shared_ptr<ProjData> emission_proj_data_sptr = ProjData::read_from_file(argv[2]);  
 
@@ -96,9 +84,6 @@ int main(int argc, const char *argv[])
 	string scaled_scatter_filename(argv[4]);    			
 	ProjDataInterfile scaled_scatter_proj_data(emission_proj_data_info_sptr, scaled_scatter_filename);
 	
-	string att_proj_data_filename("att_proj_data");
-	ProjDataInterfile att_proj_data(emission_proj_data_info_sptr, att_proj_data_filename,ios::out);
-
 	// interpolate scatter sinogram
 	// first call interpolate_projdata to 'expand' segment 0 to appropriate size (i.e. same as emission data)
 	// then call inverse_SSRB to generate oblique segments
@@ -107,26 +92,25 @@ int main(int argc, const char *argv[])
 	  emission_proj_data_sptr->get_proj_data_info_ptr()->clone();
 	interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
+	std::cout << "Interpolating scatter estimate to size of emission data" << std::endl;
 	ProjDataInMemory interpolated_direct_scatter(interpolated_direct_scatter_proj_data_info_sptr);	
 	interpolate_projdata(interpolated_direct_scatter, *scatter_proj_data_sptr, BSpline::linear);
 
 	ProjDataInMemory interpolated_scatter(emission_proj_data_info_sptr);
 	inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
-	const DiscretisedDensityOnCartesianGrid<3,float>& density_image = 
-		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
-		(*density_image_sptr.get());
-	estimate_att_viewgram(att_proj_data, density_image);
+	std::cout << "Finding scale factors" << std::endl;
 	Array<2,float> scale_factors;
 	if (est_scale_factor_per_sino==1)
 	  scale_factors =
 	    scale_factors_per_sinogram(
 				       *emission_proj_data_sptr, 
 				       interpolated_scatter,
-				       att_proj_data,
+				       *attenuation_correct_factors_sptr,
 				       attenuation_threshold);
 
-	std::cerr << scale_factors;
+	std::cout << scale_factors;
+	std::cout << "applying scale factors" << std::endl;
 	scale_scatter_per_sinogram(scaled_scatter_proj_data, 
 				   interpolated_scatter,
 				   scale_factors) ;
