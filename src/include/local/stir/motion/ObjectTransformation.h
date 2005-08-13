@@ -41,6 +41,11 @@ public:
   /* \todo should be CartesianCoordinate<num_dimensions,elemT>, but we don't have that class yet*/
   virtual BasicCoordinate<num_dimensions,elemT> 
     transform_point(const BasicCoordinate<num_dimensions,elemT>& point) const = 0;
+
+  //! Returns the determinant of the Jacobian matrix
+  /*! This is related to the volume-element change due to the transformation. */
+  virtual float
+    jacobian(const BasicCoordinate<num_dimensions,elemT>& point) const = 0;
 };
 
 END_NAMESPACE_STIR
