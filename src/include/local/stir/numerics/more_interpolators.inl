@@ -23,24 +23,49 @@
 
 START_NAMESPACE_STIR
 
+template <class elemT, class positionT>
+elemT
+pull_nearest_neighbour_interpolate(const Array<3, elemT>& in, 
+			const BasicCoordinate<3, positionT>& point_in_input_coords) 
+{
+  // find nearest neighbour 
+  const Coordinate3D<int> 
+    nearest_neighbour = round(point_in_input_coords);
+
+  if (nearest_neighbour[1] <= in.get_max_index() &&
+      nearest_neighbour[1] >= in.get_min_index() &&
+      nearest_neighbour[2] <= in[nearest_neighbour[1]].get_max_index() &&
+      nearest_neighbour[2] >= in[nearest_neighbour[1]].get_min_index() &&
+      nearest_neighbour[3] <= in[nearest_neighbour[1]][nearest_neighbour[2]].get_max_index() &&
+      nearest_neighbour[3] >= in[nearest_neighbour[1]][nearest_neighbour[2]].get_min_index())
+    {
+      return in[nearest_neighbour];
+    }
+  else
+    return 0;
+}
+
 template <int num_dimensions, class elemT, class positionT, class valueT>
 void
 push_nearest_neighbour_interpolate(Array<num_dimensions, elemT>& out, 
 				   const BasicCoordinate<num_dimensions, positionT>& point_in_output_coords,
 				   valueT value)
 {
+  if (value==0)
+   return;
   const BasicCoordinate<num_dimensions, int> nearest_neighbour =
     round(point_in_output_coords);
   
-        if (nearest_neighbour[1] <= out.get_max_index() &&
-            nearest_neighbour[1] >= out.get_min_index() &&
-            nearest_neighbour[2] <= out[nearest_neighbour[1]].get_max_index() &&
-            nearest_neighbour[2] >= out[nearest_neighbour[1]].get_min_index() &&
-            nearest_neighbour[3] <= out[nearest_neighbour[1]][nearest_neighbour[2]].get_max_index() &&
-            nearest_neighbour[3] >= out[nearest_neighbour[1]][nearest_neighbour[2]].get_min_index())
-          out[nearest_neighbour] +=
-            static_cast<elemT>(value);
+  if (nearest_neighbour[1] <= out.get_max_index() &&
+      nearest_neighbour[1] >= out.get_min_index() &&
+      nearest_neighbour[2] <= out[nearest_neighbour[1]].get_max_index() &&
+      nearest_neighbour[2] >= out[nearest_neighbour[1]].get_min_index() &&
+      nearest_neighbour[3] <= out[nearest_neighbour[1]][nearest_neighbour[2]].get_max_index() &&
+      nearest_neighbour[3] >= out[nearest_neighbour[1]][nearest_neighbour[2]].get_min_index())
+    out[nearest_neighbour] +=
+      static_cast<elemT>(value);
 }
+
 
 
 template <class elemT, class positionT>
@@ -97,6 +122,8 @@ push_transpose_linear_interpolate(Array<3, elemT>& out,
 				  const BasicCoordinate<3, positionT>& point_in_output_coords,
 				  valueT value)
 {
+  if (value==0)
+   return;
   // find left neighbour
   const Coordinate3D<int> 
     left_neighbour(round(std::floor(point_in_output_coords[1])),
