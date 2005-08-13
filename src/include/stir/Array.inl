@@ -32,6 +32,8 @@
 */
 // include for min,max definitions
 #include <algorithm>
+#include "stir/assign.h"
+
 #ifndef STIR_NO_NAMESPACES
 using std::max;
 using std::min;
@@ -184,7 +186,8 @@ elemT
 Array<num_dimensions, elemT>::sum() const 
 {
   this->check_state();
-  elemT acc=0;
+  elemT acc;
+  assign(acc,0);
   for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
     acc += this->num[i].sum();
   return acc; 
@@ -195,7 +198,8 @@ elemT
 Array<num_dimensions, elemT>::sum_positive() const 
 {
   this->check_state();
-  elemT acc=0;
+  elemT acc;
+  assign(acc,0);
   for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
     acc += this->num[i].sum_positive();
   return acc; 
@@ -211,11 +215,7 @@ Array<num_dimensions, elemT>::find_max() const
     elemT maxval= this->num[this->get_min_index()].find_max();
     for(int i=this->get_min_index()+1; i<=this->get_max_index(); i++)
     {
-#ifndef STIR_NO_NAMESPACES
       maxval = std::max(this->num[i].find_max(), maxval);
-#else
-      maxval = max(this->num[i].find_max(), maxval);
-#endif
     }
     return maxval;
   } 
@@ -323,16 +323,16 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
   if (oldlength == 0)
   {
     for (int i=this->get_min_index(); i<=this->get_max_index(); i++)
-      this->num[i] = elemT(0);
+      assign(this->num[i], 0);
   }
   else
   {
     for (int i=this->get_min_index(); i<oldstart && i<=this->get_max_index(); ++i)
-      this->num[i] = elemT(0);
+      assign(this->num[i], 0);
     for (int i=std::max(static_cast<int>(oldstart + oldlength), this->get_min_index()); 
-	i<=this->get_max_index(); 
-	++i)
-      this->num[i] = elemT(0);
+	 i<=this->get_max_index(); 
+	 ++i)
+      assign(this->num[i], 0);
   }
   this->check_state();  
 }
@@ -450,7 +450,8 @@ elemT
 Array<1, elemT>::sum() const 
 {
   this->check_state();
-  elemT acc = 0;
+  elemT acc;
+  assign(acc,0);
   for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
   {}
   return acc; 
@@ -462,7 +463,8 @@ elemT
 Array<1, elemT>::sum_positive() const 
 {	
   this->check_state();
-  elemT acc=0;
+  elemT acc;
+  assign(acc,0);
   for(int i=this->get_min_index(); i<=this->get_max_index(); i++)
   {
     if (this->num[i] > 0)
