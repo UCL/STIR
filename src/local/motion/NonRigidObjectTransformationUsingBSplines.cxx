@@ -18,6 +18,8 @@
 
 #include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"
 #include "stir/stream.h"//xxx
+#include "stir/numerics/determinant.h"
+#include "stir/IndexRange2D.h"
 #include <iostream>
 START_NAMESPACE_STIR
 
@@ -96,6 +98,25 @@ transform_point(const BasicCoordinate<num_dimensions,elemT>& point) const
   return result + point;
 }
 
+template <int num_dimensions, class elemT>
+float
+NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
+jacobian(const BasicCoordinate<num_dimensions,elemT>& point) const
+{
+  // note: current Bspline needs double here
+  const BasicCoordinate<num_dimensions,double> point_in_grid_coords =
+    BasicCoordinate<num_dimensions,double>((point - this->_origin)/this->_grid_spacing);
+  Array<2,float> jacobian_matrix(IndexRange2D(num_dimensions,num_dimensions));
+  for (int i=1; i<=num_dimensions; ++i)
+    {
+      BasicCoordinate<num_dimensions,elemT> gradient =
+	this->interpolator[i].gradient(point_in_grid_coords);
+    std::copy(gradient.begin(), gradient.end(), jacobian_matrix[i].begin());
+    }
+  return 
+    determinant(jacobian_matrix);
+}
+  
 
 
 ////////////////////// instantiations
