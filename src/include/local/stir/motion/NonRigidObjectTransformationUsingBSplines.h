@@ -63,6 +63,8 @@ public:
     BasicCoordinate<num_dimensions,elemT>
     transform_point(const BasicCoordinate<num_dimensions,elemT>& point) const;
 
+  float jacobian(const BasicCoordinate<num_dimensions,elemT>& point) const;
+
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
@@ -71,9 +73,11 @@ private:
   BasicCoordinate<num_dimensions, BSpline::BSplinesRegularGrid<num_dimensions,elemT,elemT> > interpolator;
   BasicCoordinate<num_dimensions,elemT> _grid_spacing;
   BasicCoordinate<num_dimensions,elemT> _origin;
+  BSpline::BSplineType _bspline_type;
 
   // use for parsing only
   shared_ptr< DeformationFieldOnCartesianGrid<num_dimensions,elemT> > deformation_field_sptr;
+  int _bspline_order;
 };
 #if 0
 //! Output to (text) stream
