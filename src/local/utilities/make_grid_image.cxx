@@ -31,8 +31,9 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if(argc!=3) {
-    cerr<<"Usage: " << argv[0] << " <output image filename> <input image filename> \n";
+  if(argc<3 || argc>5) {
+    cerr<<"Usage: " << argv[0] << " <output image filename> <input image filename> [spacing [size]]\n"
+	<< "spacing defaults to 2, size to 1";
     exit(EXIT_FAILURE);
   }
   
@@ -40,7 +41,8 @@ int main(int argc, char **argv)
 
   char const * const output_filename = argv[1];
   char const * const input_filename = argv[2];
-  
+  const int spacing = argc>3?atoi(argv[3]):2;
+  const int size = argc>4?atoi(argv[4]):1;
   // read image 
 
   shared_ptr<DiscretisedDensity<3,float> >  density_sptr = 
@@ -60,7 +62,10 @@ int main(int argc, char **argv)
 	  const int max3=(*density_sptr)[c[1]][c[2]].get_max_index();
 	  for (c[3]=min3; c[3]<=max3; ++c[3])
 	    {
-	      (*density_sptr)[c] = modulo(c[2],2)*modulo(c[3],2);
+	      if (modulo(c[2],spacing)<size && modulo(c[3],spacing)<size)
+		(*density_sptr)[c] = 1;
+	      else
+		(*density_sptr)[c] = 0;
 	    }
 	}
     }
