@@ -38,6 +38,7 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/Array.h"
+#include "boost/any.hpp"
 
 //#include <map>
 #include <list>
@@ -84,6 +85,8 @@ public:
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
     ARRAY2D_OF_FLOATS,
     ARRAY3D_OF_FLOATS,
+	     BASICCOORDINATE3D_OF_FLOATS,
+	     BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS,
     PARSINGOBJECT, 
     SHARED_PARSINGOBJECT,
     FLOAT, BOOL};
@@ -199,10 +202,16 @@ public:
   void add_key(const string& keyword, vector<double> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 2d array of floats and put its value in *variable_ptr
-  void add_key(const string& keyword, Array<2,float>* variable);
+  void add_key(const string& keyword, Array<2,float>* variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 3d array of floats and put its value in *variable_ptr
-  void add_key(const string& keyword, Array<3,float>* variable);
+  void add_key(const string& keyword, Array<3,float>* variable_ptr);
+
+  //! add a keyword. When parsing, parse its value as a 3d BasicCoordinate of floats and put its value in *variable_ptr
+  void add_key(const string& keyword,BasicCoordinate<3,float>* variable_ptr);
+
+  //! add a keyword. When parsing, parse its value as a 3d BasicCoordinate of a 3d array of floats and put its value in *variable_ptr
+  void add_key(const string& keyword, BasicCoordinate<3,Array<3,float> >* variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a string and put it in *variable_ptr
   /*! The 'value' can contain spaces. */
@@ -424,6 +433,7 @@ private :
   int		par_int;	
   double	par_double;	
   unsigned long par_ulong;
+  boost::any    parameter;
 
   ////// methods
 
