@@ -384,6 +384,18 @@ KeyParser::add_key(const string& keyword, Array<3,float>* variable)
   }
 
 void
+KeyParser::add_key(const string& keyword, BasicCoordinate<3,float>* variable)
+  {
+    add_key(keyword, KeyArgument::BASICCOORDINATE3D_OF_FLOATS, variable);
+  }
+
+void
+KeyParser::add_key(const string& keyword, BasicCoordinate<3,Array<3,float> >* variable)
+  {
+    add_key(keyword, KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS, variable);
+  }
+
+void
 KeyParser::add_key(const string& keyword, string * variable)
   {
     add_key(keyword, KeyArgument::ASCII, variable);
@@ -487,11 +499,14 @@ Succeeded KeyParser::read_and_parse_line(const bool write_warning)
 
 
 // functions that get arbitrary type parameters from a string (after '=')
-// unfortunately, the string type needs special case are istream::operator>> stops a string at white space
-// they all return Succeeded::ok when there was  a parameter
+// unfortunately, the string type needs special case as istream::operator>> stops a string at white space
+// we also do special things for vectors
+// they all return Succeeded::yes when there was  a parameter
 
 template <typename T>
-static int get_param_from_string(T& param, const string& s)
+static 
+Succeeded
+get_param_from_string(T& param, const string& s)
 {
   const string::size_type cp=s.find('=',0);
   if(cp==string::npos)
@@ -503,9 +518,10 @@ static int get_param_from_string(T& param, const string& s)
 }
 
 template <>
-static int get_param_from_string(string& param, const string& s)
+static
+Succeeded
+get_param_from_string(string& param, const string& s)
 {
-  
   const string::size_type cp = s.find('=',0);
   if(cp!=string::npos)
   {
@@ -522,9 +538,13 @@ static int get_param_from_string(string& param, const string& s)
   return Succeeded::no;
 }
 
-// sadly, VC 6.0 can't resolve get_param_from_string with and without vector template, so I have to call this function differently
+// special handling for vectors if we desire that no {} means only 1 element
+// this is currently only used for the matrix_size keywords in InterfileHeader.
+
 template <typename T>
-static int get_vparam_from_string(vector<T>& param, const string& s)
+static
+Succeeded
+get_vparam_from_string(vector<T>& param, const string& s)
 {
   const string::size_type cp = s.find('=',0);
   if(cp!=string::npos)
@@ -542,14 +562,16 @@ static int get_vparam_from_string(vector<T>& param, const string& s)
         param.resize(1);
         str >> param[0];
       }
-      return Succeeded::yes;
+      return str.fail() ? Succeeded::no : Succeeded::yes;
     }
   }
   return Succeeded::no;
 }
 
 template <typename T>
-static int get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
+static
+Succeeded
+get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
 {
   const string::size_type cp = s.find('=',0);
   if(cp!=string::npos)
@@ -568,14 +590,19 @@ static int get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
 	param.grow(0,0);
         str >> param[0];
       }
-      return Succeeded::yes;
+      return str.fail() ? Succeeded::no : Succeeded::yes;
     }
   }
   return Succeeded::no;
 }
 
+// vectors of strings are also special as we need to split the string up if there are commas
+// TODO this would better be called get_param_for_string, but need to check if VC 6 can handle it
+// (but I don't see why not)
 template <>
-static int get_vparam_from_string(vector<string>& param, const string& s)
+static 
+Succeeded
+get_vparam_from_string(vector<string>& param, const string& s)
 {
   string::size_type cp = s.find('=',0);
   if(cp!=string::npos)
@@ -648,6 +675,37 @@ static int get_index(const string& line)
   return in;
 }
 
+// more template trickery such that we can use boost::any
+
+// this class comes from "Modern C++ Design" by Andrei Alexandrescu
+template <class T>
+struct Type2Type
+{
+  typedef T type;
+};
+
+template <class T>
+static
+Succeeded 
+get_any_param_from_string(boost::any& parameter, Type2Type<T>,  const string& s)
+{
+  parameter = T();
+  // note: don't use cast to reference as it might break VC 6.0
+  return
+    get_param_from_string(*boost::any_cast<T>(&parameter), s);
+}
+
+template <class T>
+static
+Succeeded 
+get_any_vparam_from_string(boost::any& parameter, Type2Type<T>,  const string& s)
+{
+  parameter = T();
+  // note: don't use cast to reference as it might break VC 6.0
+  return
+    get_vparam_from_string(*boost::any_cast<T>(&parameter), s);
+}
+
 Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_warning)
 {
   // KT 07/10/2002 use return value of get_param to detect if a value was present at all
@@ -698,6 +756,14 @@ Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_wa
     case KeyArgument::ARRAY3D_OF_FLOATS:
       par_array3d_of_floats = Array<3,float>();
       keyword_has_a_value = get_vparam_from_string(par_array3d_of_floats, line) == Succeeded::yes; 
+      break;
+    case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<BasicCoordinate<3,float> >(), line) == Succeeded::yes; 
+      break;
+    case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<BasicCoordinate<3,Array<3,float> > >(), line) == Succeeded::yes; 
       break;
     default :
       // KT 07/10/2002 now exit with error
@@ -874,6 +940,20 @@ void KeyParser::set_variable()
 	  {
 	    *reinterpret_cast<Array<3,float>*>(current->p_object_variable) =
 	      par_array3d_of_floats;
+	    break;
+	  }
+	  case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
+	  {
+	    typedef BasicCoordinate<3,float> type;
+	    *reinterpret_cast<type*>(current->p_object_variable) =
+				      * boost::any_cast<type>(&parameter);
+	    break;
+	  }
+	  case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
+	  {
+	    typedef BasicCoordinate<3,Array<3,float> > type;
+	    *reinterpret_cast<type*>(current->p_object_variable) =
+				      * boost::any_cast<type>(&parameter);
 	    break;
 	  }
 	case KeyArgument::LIST_OF_ASCII :
@@ -1080,6 +1160,18 @@ string KeyParser::parameter_info() const
 	s << *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable); break;
       case KeyArgument::ARRAY3D_OF_FLOATS:
 	s << *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable); break;
+      case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
+	{
+	    typedef BasicCoordinate<3,float> type;
+	    s << *reinterpret_cast<type*>(i->second.p_object_variable);
+	    break;
+	}
+      case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
+	{
+	    typedef BasicCoordinate<3,Array<3,float> > type;
+	    s << *reinterpret_cast<type*>(i->second.p_object_variable);
+	    break;
+	}
       case KeyArgument::LIST_OF_ASCII:
         s << *reinterpret_cast<vector<string>*>(i->second.p_object_variable); break;	  	  
       default :
