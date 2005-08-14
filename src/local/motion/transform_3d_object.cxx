@@ -26,115 +26,110 @@
 #include "stir/shared_ptr.h"
 #include "stir/round.h"
 #include "stir/Succeeded.h"
+#include "local/stir/motion/ObjectTransformation.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
+#include "local/stir/numerics/more_interpolators.h"
 #ifdef ROT_INT
 #include "local/stir/motion/bin_interpolate.h"
 #endif
+
 START_NAMESPACE_STIR
+
 
 Succeeded 
 transform_3d_object(DiscretisedDensity<3,float>& out_density, 
-    		    const DiscretisedDensity<3,float>& in_density, 
-			  const RigidObject3DTransformation& rigid_object_transformation)
+		    const DiscretisedDensity<3,float>& in_density, 
+		    const RigidObject3DTransformation& transformation_in_to_out)
 {
+  return
+    transform_3d_object_pull_interpolation(out_density,
+					   in_density,
+					   transformation_in_to_out.inverse(),
+					   PullLinearInterpolator<float>(),
+					   /*do_jacobian=*/false ); // jacobian is 1 anyway
+}
 
-  const VoxelsOnCartesianGrid<float>& in_image =
-    dynamic_cast<VoxelsOnCartesianGrid<float> const&>(in_density);
-  VoxelsOnCartesianGrid<float>& out_image =
-    dynamic_cast<VoxelsOnCartesianGrid<float>&>(out_density);
+Succeeded
+transpose_of_transform_3d_object(DiscretisedDensity<3,float>& out_density, 
+				 const DiscretisedDensity<3,float>& in_density, 
+				 const RigidObject3DTransformation& transformation_in_to_out)
+{
+  return
+    transform_3d_object_push_interpolation(out_density,
+					   in_density,
+					   transformation_in_to_out.inverse(),
+					   PushTransposeLinearInterpolator<float>(),
+					   /*do_jacobian=*/false ); // jacobian is 1 anyway
+}
 
-#if 0
-  for (int z= in_image.get_min_index(); z<= in_image.get_max_index(); ++z)
-    for (int y= in_image[z].get_min_index(); y<= in_image[z].get_max_index(); ++y)
-      for (int x= in_image[z][y].get_min_index(); x<= in_image[z][y].get_max_index(); ++x)
-      {
-        const CartesianCoordinate3D<float> current_point =
-          CartesianCoordinate3D<float>(z,y,x) * in_image.get_voxel_size() +
-          in_image.get_origin();
-        const CartesianCoordinate3D<float> new_point =
-          rigid_object_transformation.transform_point(current_point);
-        const CartesianCoordinate3D<float> new_point_in_image_coords =
-           (new_point - out_image.get_origin()) / out_image.get_voxel_size();
-        // now find nearest neighbour
-        const CartesianCoordinate3D<int> 
-           left_neighbour(round(floor(new_point_in_image_coords.z())),
-                             floor(round(new_point_in_image_coords.y())),
-                             floor(round(new_point_in_image_coords.x())));
+////////////////////////////////////////
+// ugly functions for storing transformed points.
+// TODO clean up at some point
 
-        if (left_neighbour[1] <= out_image.get_max_index() &&
-            left_neighbour[1] >= out_image.get_min_index() &&
-            left_neighbour[2] <= out_image[left_neighbour[1]].get_max_index() &&
-            left_neighbour[2] >= out_image[left_neighbour[1]].get_min_index() &&
-            left_neighbour[3] <= out_image[left_neighbour[1]][left_neighbour[2]].get_max_index() &&
-            left_neighbour[3] >= out_image[left_neighbour[1]][left_neighbour[2]].get_min_index())
-          out_image[left_neighbour[1]][left_neighbour[2]][left_neighbour[3]] +=
-            in_image[z][y][x];
-      }
-#else
+Array<3, BasicCoordinate<3,float> >
+find_grid_coords_of_transformed_centres(const DiscretisedDensity<3,float>& source_density, 
+					const DiscretisedDensity<3,float>& target_density, 
+					const ObjectTransformation<3,float>& transformation_source_to_target)
+{
+  Array<3, BasicCoordinate<3,float> > transformed_centre_coords(source_density.get_index_range());
+  const VoxelsOnCartesianGrid<float>& target_image =
+    dynamic_cast<VoxelsOnCartesianGrid<float> const&>(target_density);
+  const VoxelsOnCartesianGrid<float>& source_image =
+    dynamic_cast<VoxelsOnCartesianGrid<float> const&>(source_density);
 
-  const RigidObject3DTransformation inverse_rigid_object_transformation =
-    rigid_object_transformation.inverse();
-
-  for (int z= out_image.get_min_index(); z<= out_image.get_max_index(); ++z)
-    for (int y= out_image[z].get_min_index(); y<= out_image[z].get_max_index(); ++y)
-      for (int x= out_image[z][y].get_min_index(); x<= out_image[z][y].get_max_index(); ++x)
+  for (int z= source_image.get_min_index(); z<= source_image.get_max_index(); ++z)
+    for (int y= source_image[z].get_min_index(); y<= source_image[z].get_max_index(); ++y)
+      for (int x= source_image[z][y].get_min_index(); x<= source_image[z][y].get_max_index(); ++x)
       {
         const CartesianCoordinate3D<float> current_point =
           CartesianCoordinate3D<float>(static_cast<float>(z),
 				       static_cast<float>(y),
 				       static_cast<float>(x)) * 
-	  out_image.get_voxel_size() +
-          out_image.get_origin();
+	  source_image.get_voxel_size() +
+          source_image.get_origin();
         const CartesianCoordinate3D<float> new_point =
-          inverse_rigid_object_transformation.transform_point(current_point);
-        const CartesianCoordinate3D<float> new_point_in_image_coords =
-           (new_point - in_image.get_origin()) / in_image.get_voxel_size();
-        // now find left neighbour
-        const CartesianCoordinate3D<int> 
-           left_neighbour(round(floor(new_point_in_image_coords.z())),
-                             round(floor(new_point_in_image_coords.y())),
-                             round(floor(new_point_in_image_coords.x())));
-
-        if (left_neighbour[1] < in_image.get_max_index() &&
-            left_neighbour[1] > in_image.get_min_index() &&
-            left_neighbour[2] < in_image[left_neighbour[1]].get_max_index() &&
-            left_neighbour[2] > in_image[left_neighbour[1]].get_min_index() &&
-            left_neighbour[3] < in_image[left_neighbour[1]][left_neighbour[2]].get_max_index() &&
-            left_neighbour[3] > in_image[left_neighbour[1]][left_neighbour[2]].get_min_index())
-	  {
-	    const int x1=left_neighbour[3];
-	    const int y1=left_neighbour[2];
-	    const int z1=left_neighbour[1];
-	    const int x2=left_neighbour[3]+1;
-	    const int y2=left_neighbour[2]+1;
-	    const int z2=left_neighbour[1]+1;
-	    const float ix = new_point_in_image_coords[3]-x1;
-	    const float iy = new_point_in_image_coords[2]-y1;
-	    const float iz = new_point_in_image_coords[1]-z1;
-	    const float ixc = 1 - ix;
-	    const float iyc = 1 - iy;
-	    const float izc = 1 - iz;
-	    out_image[z][y][x] =
-	      ixc * (iyc * (izc * in_image[z1][y1][x1]
-			    + iz  * in_image[z2][y1][x1])
-		     + iy * (izc * in_image[z1][y2][x1]
-			      + iz  * in_image[z2][y2][x1])) 
-	      + ix * (iyc * (izc * in_image[z1][y1][x2]
-			     + iz  * in_image[z2][y1][x2])
-		      + iy * (izc * in_image[z1][y2][x2]
-			      + iz  * in_image[z2][y2][x2]));
-	  }
-	else
-	  out_image[z][y][x] = 0;
-
-      }
-#endif
-
-  return Succeeded::yes;
+          transformation_source_to_target.transform_point(current_point);
+        const CartesianCoordinate3D<float> new_point_target_image_coords =
+           (new_point - target_image.get_origin()) / target_image.get_voxel_size();
+	transformed_centre_coords[z][y][x] = new_point_target_image_coords;
+     }
+  return transformed_centre_coords;
 }
 
+Array<3, std::pair<BasicCoordinate<3,float>, float> >
+find_grid_coords_of_transformed_centres_and_jacobian(const DiscretisedDensity<3,float>& source_density, 
+						     const DiscretisedDensity<3,float>& target_density, 
+						     const ObjectTransformation<3,float>& transformation_source_to_target)
+{
+  Array<3, std::pair<BasicCoordinate<3,float>, float> > transformed_centre_coords(source_density.get_index_range());
+  const VoxelsOnCartesianGrid<float>& target_image =
+    dynamic_cast<VoxelsOnCartesianGrid<float> const&>(target_density);
+  const VoxelsOnCartesianGrid<float>& source_image =
+    dynamic_cast<VoxelsOnCartesianGrid<float> const&>(source_density);
 
+  for (int z= source_image.get_min_index(); z<= source_image.get_max_index(); ++z)
+    for (int y= source_image[z].get_min_index(); y<= source_image[z].get_max_index(); ++y)
+      for (int x= source_image[z][y].get_min_index(); x<= source_image[z][y].get_max_index(); ++x)
+      {
+        const CartesianCoordinate3D<float> current_point =
+          CartesianCoordinate3D<float>(static_cast<float>(z),
+				       static_cast<float>(y),
+				       static_cast<float>(x)) * 
+	  source_image.get_voxel_size() +
+          source_image.get_origin();
+        const CartesianCoordinate3D<float> new_point =
+          transformation_source_to_target.transform_point(current_point);
+        const CartesianCoordinate3D<float> new_point_target_image_coords =
+           (new_point - target_image.get_origin()) / target_image.get_voxel_size();
+	transformed_centre_coords[z][y][x].first = new_point_target_image_coords;
+	transformed_centre_coords[z][y][x].second = 
+	            transformation_source_to_target.jacobian(current_point);
+     }
+  return transformed_centre_coords;
+}
 
+/////////////////////////////////
+// transform ProjData
 Succeeded
 transform_3d_object(ProjData& out_proj_data,
 		    const ProjData& in_proj_data,
