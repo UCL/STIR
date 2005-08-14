@@ -21,7 +21,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/stream.h"
-
+#include "stir/CPUTimer.h"
 START_NAMESPACE_STIR
 
 template<>
@@ -47,7 +47,9 @@ initialise_keymap()
 #else
   this->parser.add_parsing_key("transformation type",&this->transformation_sptr);
 #endif
+  this->parser.add_key("do jacobian", &this->_do_jacobian);
   this->parser.add_key("do transpose", &this->_do_transpose);
+  this->parser.add_key("cache_transformed_coords", &this->_cache_transformed_coords);
   this->parser.add_stop_key("END Transformation Parameters");
 
 }
@@ -87,6 +89,7 @@ post_processing()
       return true;
     }
 #endif
+  this->_transformed_coords.recycle();
   return false;
 }
 
@@ -102,6 +105,32 @@ Succeeded
 Transform3DObjectImageProcessor<elemT>::
 virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 {
+  if (this->_cache_transformed_coords)
+    {
+      CPUTimer timer;
+      timer.start();
+      if (this->_do_jacobian )
+	{
+	  this->_transformed_coords =
+	    find_grid_coords_of_transformed_centres(density, 
+						    density, 
+						    *this->transformation_sptr);
+	}
+      else
+	{
+	  this->_transformed_coords_and_jacobian =
+	    find_grid_coords_of_transformed_centres_and_jacobian(density, 
+								 density, 
+								 *this->transformation_sptr);
+	}
+      timer.stop();
+      std::cerr<< "\nCPU time for computing centre coords " << timer.value();
+    }
+  else
+    {
+      this->_transformed_coords.recycle();
+      this->_transformed_coords_and_jacobian.recycle();
+    }
   return Succeeded::yes;  
 }
 
@@ -136,16 +165,76 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density,
 			in_density, 
 			this->transformation);
 #else
-  if (this->_do_transpose)
-    transform_3d_object_push_interpolation(out_density,
-					   in_density,
-					   *this->transformation_sptr,
-					   PushTransposeLinearInterpolator<float>() );
-  else
-    transform_3d_object_pull_interpolation(out_density,
-					   in_density,
-					   *this->transformation_sptr,
-					   PullLinearInterpolator<float>() );
+
+  if (this->_cache_transformed_coords)
+    {
+      if (this->_do_transpose)
+	{
+	  PushTransposeLinearInterpolator<float> interpolator;
+	  //PushNearestNeighbourInterpolator<float> interpolator;
+	  interpolator.set_output(out_density);
+
+	  for (int z= in_density.get_min_index(); z<= in_density.get_max_index(); ++z)
+	    for (int y= in_density[z].get_min_index(); y<= in_density[z].get_max_index(); ++y)
+	      for (int x= in_density[z][y].get_min_index(); x<= in_density[z][y].get_max_index(); ++x)
+		{
+		  if (this->_do_jacobian )
+		    {
+		      const float jacobian =
+			this->_transformed_coords_and_jacobian[z][y][x].second;
+		      if (jacobian<.01)
+			error("jacobian too small : %g at z=%d,y=%d,x=%d",
+			      jacobian,z,y,x);
+		      interpolator.add_to(this->_transformed_coords_and_jacobian[z][y][x].first,
+					  in_density[z][y][x]*jacobian);
+		    }
+		  else
+		    interpolator.add_to(this->_transformed_coords[z][y][x], in_density[z][y][x]);
+		}
+	}
+      else
+	{
+	  PullLinearInterpolator<float> interpolator;
+	  //PullNearestNeighbourInterpolator<float> interpolator;
+	  interpolator.set_input(in_density);
+	  for (int z= out_density.get_min_index(); z<= out_density.get_max_index(); ++z)
+	    for (int y= out_density[z].get_min_index(); y<= out_density[z].get_max_index(); ++y)
+	      for (int x= out_density[z][y].get_min_index(); x<= out_density[z][y].get_max_index(); ++x)
+		{
+		  if (this->_do_jacobian )
+		    {
+		      const float jacobian =
+			this->_transformed_coords_and_jacobian[z][y][x].second;
+		      if (jacobian<.01)
+			error("jacobian too small : %g at z=%d,y=%d,x=%d",
+			      jacobian,z,y,x);
+		      // TODO thnk about divide or multiply jacobian
+		      out_density[z][y][x] =
+			interpolator(this->_transformed_coords[z][y][x])*jacobian;
+		    }
+		  else
+		    out_density[z][y][x] =
+		      interpolator(this->_transformed_coords[z][y][x]);
+		}
+	}
+    }
+  else // !_cache_transformed_coords
+    {
+      if (this->_do_transpose)
+	transform_3d_object_push_interpolation(out_density,
+					       in_density,
+					       *this->transformation_sptr,
+					       PushTransposeLinearInterpolator<float>(),
+					       //PushNearestNeighbourInterpolator<float>(),
+					       this->_do_jacobian);
+      else
+	transform_3d_object_pull_interpolation(out_density,
+					       in_density,
+					       *this->transformation_sptr,
+					       PullLinearInterpolator<float>(),
+					       //PullNearestNeighbourInterpolator<float>(),
+					       this->_do_jacobian );
+    }
 #endif
 }
 
@@ -157,6 +246,8 @@ set_defaults()
 {
   ImageProcessor<3, elemT>::set_defaults();
   this->_do_transpose=false;
+  this->_do_jacobian=false;
+  this->_cache_transformed_coords=false;
 #if XXX
   this->transformation = RigidObject3DTransformation(Quaternion<float>(1,0,0,0), 
 					       CartesianCoordinate3D<float>(0,0,0));
