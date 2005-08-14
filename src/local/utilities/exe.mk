@@ -32,8 +32,9 @@ $(dir)_SOURCES = \
 	inverse_SSRB.cxx \
 	interpolate_projdata.cxx \
 	read_input_function.cxx \
+	calculate_attenuation_coefficients.cxx \
+	make_grid_image.cxx
 #	read_dynamic_images.cxx \
-	calculate_attenuation_coefficients.cxx
 #	CoG.cxx \
 #	make_cylinder.cxx 
 
