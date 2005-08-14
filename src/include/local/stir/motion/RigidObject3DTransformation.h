@@ -128,6 +128,10 @@ public:
   //! Transform point 
   CartesianCoordinate3D<float> transform_point(const CartesianCoordinate3D<float>& point) const;
 
+  //! Computes the jacobian for the transformation (which is always 1)
+  float jacobian(const BasicCoordinate<3,float>& point) const
+    { return 1; }
+
   //! Transform bin from some projection data
   /*!  Finds 'closest' (in some sense) bin to the transformed LOR.
 
