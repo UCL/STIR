@@ -235,7 +235,7 @@ make_1d_array(const T& a0, const T& a1, const T& a2, const T& a3, const T& a4,
 
 
 template <int num_dimensions, class T>
-Array<num_dimensions,T>
+Array<num_dimensions+1,T>
 make_array(const Array<num_dimensions,T>& a0)
 {
   const Array<1,T> a = NumericVectorWithOffset<T,T>(make_vector(a0));
