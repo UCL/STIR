@@ -11,7 +11,9 @@ $(dir)_LIB_SOURCES:= \
 	RigidObject3DTransformation.cxx \
 	MatchTrackerAndScanner.cxx \
 	TimeFrameMotion.cxx \
-	transform_3d_object.cxx
+	transform_3d_object.cxx \
+	Transform3DObjectImageProcessor.cxx \
+	NonRigidObjectTransformationUsingBSplines.cxx
 
 $(dir)_REGISTRY_SOURCES:= local_motion_registries.cxx
 
