@@ -23,6 +23,8 @@
 #include "stir/ImageProcessor.h"
 #include "stir/shared_ptr.h"
 #include "local/stir/motion/ObjectTransformation.h"
+// next is currently needed to get Array<pair<>> to compile (definition of assign() in there)
+#include "local/stir/motion/transform_3d_object.h"
 
 
 START_NAMESPACE_STIR
@@ -57,7 +59,11 @@ private:
   //motion
   shared_ptr<ObjectTransformation<3,float> > transformation_sptr;
   bool _do_transpose;
-  
+  bool _do_jacobian;  
+  bool _cache_transformed_coords;
+
+  Array<3, BasicCoordinate<3,float> > _transformed_coords;
+  Array<3, std::pair<BasicCoordinate<3,float>, float> > _transformed_coords_and_jacobian;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
