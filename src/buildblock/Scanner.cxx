@@ -232,7 +232,7 @@ Scanner::Scanner(Type scanner_type)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryST, string_list("GE Discovery ST", "Discovery ST"), 
 	       24, 249, 223, 2 * 210,
-               451.5F - 8.4F, 8.4F, 6.52916F, 3.1695F, static_cast<float>(-4.54224*_PI/180),
+               451.5F - 8.4F, 8.4F, 6.52916F, 3.195F, static_cast<float>(-4.54224*_PI/180),
 	       4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
@@ -243,16 +243,14 @@ Scanner::Scanner(Type scanner_type)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryRX, string_list("GE Discovery RX", "Discovery RX"), 
 	       24, 
-	       444, //? 
-	       444, //?
+	       367, 
+	       331, 
 	       630,
                443.F, 
 	       8.4F, //? 
-	       157.F/24.F, 
-	       4.26/2.F, //?
-	       static_cast<float>(-4.54224*_PI/180), //?,
-	       4,//?
-	       2,// ?
+	       6.52916F, 2.13F, static_cast<float>(-4.54224*_PI/180),
+	       4,
+	       2,
 	       6, 9, 1, 1, 1);// TODO not sure about sign of view_offset    
     break;
   
