@@ -106,7 +106,7 @@ jacobian(const BasicCoordinate<num_dimensions,elemT>& point) const
   // note: current Bspline needs double here
   const BasicCoordinate<num_dimensions,double> point_in_grid_coords =
     BasicCoordinate<num_dimensions,double>((point - this->_origin)/this->_grid_spacing);
-  Array<2,float> jacobian_matrix(IndexRange2D(num_dimensions,num_dimensions));
+  Array<2,float> jacobian_matrix(IndexRange2D(1,num_dimensions,1,num_dimensions));
   for (int i=1; i<=num_dimensions; ++i)
     {
       BasicCoordinate<num_dimensions,elemT> gradient =
