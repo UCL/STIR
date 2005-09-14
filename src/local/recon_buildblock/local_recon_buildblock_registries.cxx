@@ -1,6 +1,10 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    For GE internal use only.
+*/
 /*!
   \file
   \ingroup recon_buildblock
@@ -11,10 +15,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
@@ -23,6 +23,7 @@
 #include "local/stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 
 //#include "local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h"
+//#include "local/stir/recon_buildblock/ForwardProjectorByBinDistanceDriven.h"
 
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
 //#include "local/stir/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
@@ -43,6 +44,7 @@ static ProjMatrixByBinSinglePhoton::RegisterIt dummy12;
 static ProjMatrixByBinFromFile::RegisterIt dumy14;
 
 //static BackProjectorByBinDistanceDriven::RegisterIt dummy1001;
+//static ForwardProjectorByBinDistanceDriven::RegisterIt dummy1002;
 
 //static NonquadraticPriorWithNaturalLogarithm<float>::RegisterIt dummy22;
 
