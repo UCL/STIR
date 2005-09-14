@@ -16,10 +16,12 @@
   $Revision$
 */
 
-#ifndef __stir_RigidObject3DTransformation_H__
-#define __stir_RigidObject3DTransformation_H__
+#ifndef __stir_motion_RigidObject3DTransformation_H__
+#define __stir_motion_RigidObject3DTransformation_H__
 
 
+#include "local/stir/motion/ObjectTransformation.h"
+#include "stir/RegisteredParsingObject.h"
 #include "local/stir/Quaternion.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
@@ -64,8 +66,14 @@ class Succeeded;
   \todo define Euler angles (the code is derived from the Polaris manual)
 */
 class RigidObject3DTransformation
+  : 
+  public
+  RegisteredParsingObject<RigidObject3DTransformation,
+                          ObjectTransformation<3,float>,
+                          ObjectTransformation<3,float> >
 {
 public:
+  static const char * const registered_name;
   /*! 
      \brief Find the rigid transformation that gives the closest match between 2 sets of points.
 
@@ -126,7 +134,14 @@ public:
 #endif
 
   //! Transform point 
-  CartesianCoordinate3D<float> transform_point(const CartesianCoordinate3D<float>& point) const;
+  // can't return CartesianCoordinate3D<float> anymore because virtual function
+  virtual
+    BasicCoordinate<3,float>
+    transform_point(const BasicCoordinate<3,float>& point) const;
+
+   //! Computes the jacobian for the transformation (which is always 1)
+  float jacobian(const BasicCoordinate<3,float>& point) const
+    { return 1; }
 
   //! Computes the jacobian for the transformation (which is always 1)
   float jacobian(const BasicCoordinate<3,float>& point) const
