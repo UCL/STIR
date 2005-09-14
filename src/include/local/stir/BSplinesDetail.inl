@@ -70,6 +70,7 @@ namespace detail {
 		  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
   }
 
+#if 0
   template <typename pos_type>
   struct BW
   {
@@ -89,6 +90,27 @@ namespace detail {
       return BSplines_1st_der_weight(p, type);
     }
   };
+#else
+  template <typename pos_type>
+  struct BW
+  {
+    typedef pos_type result_type;
+    pos_type operator()(const pos_type pos, int piece, const PieceWiseFunction<pos_type>& f)
+    {
+      return f.function_piece(pos, piece);
+    }
+  };
+
+  template <typename pos_type>
+  struct Bder
+  {
+    typedef pos_type result_type;
+    pos_type operator()(const pos_type pos, int piece, const PieceWiseFunction<pos_type>& f)
+    {
+      return f.derivative_piece(pos, piece);
+    }
+  };
+#endif
 
   // TODO later
   /*
@@ -105,16 +127,26 @@ namespace detail {
 		     SplineFunctionT g)
   {
     const int current_dimension = num_dimensions2 - num_dimensions + 1;
+    const PieceWiseFunction<pos_type>& bspline =
+      bspline_function(spline_types[current_dimension]);
+
     typename SplineFunctionT::result_type value;
     set_to_zero(value);
-    const int kernel_left=
-      (spline_types[current_dimension]==BSpline::near_n || spline_types[current_dimension]==BSpline::linear) 
-      ? 0 : 2;
-    const int kernel_right=
-      (spline_types[current_dimension]==BSpline::near_n || spline_types[current_dimension]==BSpline::linear) 
-      ? 1 : 2;      
-    const int int_not_only_pos =round(floor(relative_positions[current_dimension]));
-    for (int k=int_not_only_pos-kernel_left; k<=int_not_only_pos+kernel_right; ++k)		
+    const int kmin= static_cast<int>(std::ceil(relative_positions[current_dimension]-bspline.kernel_length_right()));
+    const int kmax=kmin+bspline.kernel_total_length()-1;
+    int k=kmin;
+    pos_type current_pos=relative_positions[current_dimension]-k;
+    #define NNN
+#ifdef NNN
+    // TODO doesn't work yet when relative_position is an integer: kmin then becomes highest_piece+1
+    //int p=bspline.find_highest_piece();
+    //assert(p == bspline.find_piece(current_pos));
+    int p=bspline.find_piece(current_pos);
+#define DECR_P , --p
+#else
+#define DECR_P
+#endif
+    for (; k<=kmax; ++k, --current_pos DECR_P)
       {	
 	int index;
 	if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
@@ -123,7 +155,11 @@ namespace detail {
 	assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
 	value += 
 	  g(coeffs[index], relative_positions, spline_types) *
-	  f(relative_positions[current_dimension]-k, spline_types[current_dimension]);
+#ifdef NNN
+	  f(current_pos, p, bspline);
+#else
+	f(current_pos, spline_types[current_dimension]);
+#endif
       }
     return value ;
   }
@@ -137,16 +173,25 @@ namespace detail {
 		     FunctionT f)
   {
     const int current_dimension = num_dimensions2;
+    const PieceWiseFunction<pos_type>& bspline =
+      bspline_function(spline_types[current_dimension]);
     T value;
     set_to_zero(value);		
-    const int kernel_left=
-      (spline_types[current_dimension]==BSpline::near_n || spline_types[current_dimension]==BSpline::linear) 
-      ? 0 : 2;
-    const int kernel_right=
-      (spline_types[current_dimension]==BSpline::near_n || spline_types[current_dimension]==BSpline::linear) 
-      ? 1 : 2;      
-    const int int_not_only_pos =round(floor(relative_positions[current_dimension]));
-    for (int k=int_not_only_pos-kernel_left; k<=int_not_only_pos+kernel_right; ++k)		
+    //x-1.5<k<x+1.5
+    const int kmin= static_cast<int>(std::ceil(relative_positions[current_dimension]-bspline.kernel_length_right()));
+    const int kmax=kmin+bspline.kernel_total_length()-1;
+    int k=kmin;
+    pos_type current_pos=relative_positions[current_dimension]-k;
+#ifdef NNN
+    // TODO doesn't work yet when relative_position is an integer: kmin then becomes highest_piece+1
+    //int p=bspline.find_highest_piece();
+    //assert(p == bspline.find_piece(current_pos));
+    int p=bspline.find_piece(current_pos);
+#define DECR_P , --p
+#else
+#define DECR_P
+#endif
+    for (; k<=kmax; ++k, --current_pos DECR_P)
       {	
 	int index;
 	if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
@@ -155,7 +200,12 @@ namespace detail {
 	assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
 	value += 
 	  coeffs[index] *
-	  f(relative_positions[current_dimension]-k, spline_types[current_dimension]);
+#ifdef NNN
+	  f(current_pos, p, bspline);
+	//	  bspline.function_piece(current_pos, p);
+#else
+	  f(current_pos, spline_types[current_dimension]);
+#endif
       }
     return value ;
   }
@@ -172,6 +222,7 @@ namespace detail {
       return
 	spline_convolution(coeffs, relative_positions, spline_types,
 			   BW<pos_type>(),
+			   //BSplineFunction<quadratic,pos_type>(),
 			   compute_BSplines_value<num_dimensions-1,num_dimensions2,T>());
     }
   };
@@ -193,6 +244,7 @@ namespace detail {
       return
 	spline_convolution(coeffs, relative_positions, spline_types,
 			   BW<pos_type>()
+			   //BSplineFunction<quadratic,pos_type>()
 			   );
     }
   };
@@ -214,10 +266,12 @@ namespace detail {
       const T first_value =
 	spline_convolution(coeffs, relative_positions, spline_types,
 			   Bder<pos_type>(),
+			   //BSplineFunction<quadratic,pos_type>(),
 			   compute_BSplines_value<num_dimensions-1,num_dimensions2,T>());
       const BasicCoordinate<num_dimensions-1,T> rest_value = 
 	spline_convolution(coeffs, relative_positions, spline_types,
 			   BW<pos_type>(),
+			   //BSplineFunction<quadratic,pos_type>(),
 			   compute_BSplines_gradient<num_dimensions-1,num_dimensions2,T>());
       return join(first_value, rest_value);
     }
@@ -243,6 +297,7 @@ namespace detail {
       result[1] = 
 	spline_convolution(coeffs, relative_positions, spline_types,
 			   Bder<pos_type>()
+			   //BSplineFunction<quadratic,pos_type>()
 			   );
       return result;
     }
