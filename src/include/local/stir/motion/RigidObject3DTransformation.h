@@ -139,10 +139,6 @@ public:
     BasicCoordinate<3,float>
     transform_point(const BasicCoordinate<3,float>& point) const;
 
-   //! Computes the jacobian for the transformation (which is always 1)
-  float jacobian(const BasicCoordinate<3,float>& point) const
-    { return 1; }
-
   //! Computes the jacobian for the transformation (which is always 1)
   float jacobian(const BasicCoordinate<3,float>& point) const
     { return 1; }
