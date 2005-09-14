@@ -73,6 +73,9 @@ namespace std { using ::fabs; }
 
 START_NAMESPACE_STIR
 
+const char * const 
+RigidObject3DTransformation::registered_name = "rigid";
+
 #ifdef DO_XY_SWAP
   //! a function to convert a coordinate in a right-handed system to a left-handed system as used by STIR
   static inline 
@@ -205,8 +208,10 @@ RigidObject3DTransformation::set_euler_angles()
 
 #endif
 
-CartesianCoordinate3D<float> 
-RigidObject3DTransformation::transform_point(const CartesianCoordinate3D<float>& point) const
+//CartesianCoordinate3D<float> 
+BasicCoordinate<3,float> 
+RigidObject3DTransformation::transform_point(const //CartesianCoordinate3D<float>& 
+					     BasicCoordinate<3,float>& point) const
 {
   CartesianCoordinate3D<float> swapped_point =
 #ifndef DO_XY_SWAP
