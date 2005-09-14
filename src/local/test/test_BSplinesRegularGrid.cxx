@@ -161,7 +161,7 @@ namespace BSpline {
 			const BasicCoordinate<num_dimensions,pos_type>& p,
 			const char * const message)
     {	
-      const elemT epsilon = static_cast<elemT>(1.E-3);
+      const elemT epsilon = static_cast<elemT>(1.E-4);
       BasicCoordinate<num_dimensions,elemT> gradient =
 	interpolator.gradient(p);
       const elemT value =
@@ -197,10 +197,10 @@ namespace BSpline {
     double test_tolerance = 0.001;
     set_tolerance(test_tolerance);
     typedef double elemT;  		
-    BasicCoordinate<2, elemT> epsilon_1; epsilon_1[1]=-test_tolerance; epsilon_1[2]=test_tolerance;
-    BasicCoordinate<2, elemT> epsilon_2; epsilon_2[1]=-test_tolerance; epsilon_2[2]=-test_tolerance;
-    BasicCoordinate<2, elemT> epsilon_3; epsilon_3[1]=test_tolerance; epsilon_3[2]=-test_tolerance;
-    BasicCoordinate<2, elemT> epsilon_4; epsilon_4[1]=test_tolerance; epsilon_4[2]=test_tolerance;
+    BasicCoordinate<2, elemT> epsilon_1; epsilon_1[1]=-test_tolerance/50; epsilon_1[2]=test_tolerance/50;
+    BasicCoordinate<2, elemT> epsilon_2; epsilon_2[1]=-test_tolerance/50; epsilon_2[2]=-test_tolerance/50;
+    BasicCoordinate<2, elemT> epsilon_3; epsilon_3[1]=test_tolerance/50; epsilon_3[2]=-test_tolerance/50;
+    BasicCoordinate<2, elemT> epsilon_4; epsilon_4[1]=test_tolerance/50; epsilon_4[2]=test_tolerance/50;
 
     Array<1,elemT> const_1D  =  make_1d_array(1., 1., 1., 1., 1., 1.);
     Array<1,elemT> linear_1D =  make_1d_array(1., 2., 3., 4., 5., 6.,7.,8.,9.,10.);
@@ -296,6 +296,14 @@ namespace BSpline {
 	check_at_sample_points(random_input_sample, BSplinesRegularGridTest_random,
 			       "check BSplines implementation for nearest interpolation");				
 	//					check_at_half_way(random_input_sample, BSplinesRegularGridTest_random);
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_1, "Check BSplines implementation for nearest neighbour interpolation near samples: random test case 1");
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_2, "Check BSplines implementation for nearest neighbour interpolation near samples: random test case 2");
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_3, "Check BSplines implementation for nearest neighbour interpolation near samples: random test case 3");
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_4, "Check BSplines implementation for nearest neighbour interpolation near samples: random test case 4");
       }			
     }
     {
@@ -319,6 +327,14 @@ namespace BSpline {
 	check_at_sample_points(random_input_sample, BSplinesRegularGridTest_random,
 			       "check BSplines implementation for linear interpolation");				
 	//					check_at_half_way(random_input_sample, BSplinesRegularGridTest_random);
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_1, "Check BSplines implementation for linear interpolation near samples: random test case 1");
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_2, "Check BSplines implementation for linear interpolation near samples: random test case 2");
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_3, "Check BSplines implementation for linear interpolation near samples: random test case 3");
+	check_near_sample_points(random_input_sample, BSplinesRegularGridTest_random, 
+				 epsilon_4, "Check BSplines implementation for linear interpolation near samples: random test case 4");
       }			
     }
     {
@@ -404,9 +420,9 @@ namespace BSpline {
 	//////// gradient
 	{
 				     
-	  check_gradient(BSplinesRegularGridTest_gaussian, Coordinate2D<pos_type>(1.1,2.2), "Gaussian");
-	  check_gradient(BSplinesRegularGridTest_gaussian, Coordinate2D<pos_type>(3.1,4.2), "Gaussian");
-	  check_gradient(BSplinesRegularGridTest_linear_const, Coordinate2D<pos_type>(3.1,4.2), "linear const");
+	  check_gradient(BSplinesRegularGridTest_gaussian, Coordinate2D<pos_type>(1.1,2.2), "cubic-spline gradient: Gaussian test-case 1");
+	  check_gradient(BSplinesRegularGridTest_gaussian, Coordinate2D<pos_type>(3.1,4.2), "cubic-spline gradient: Gaussian test-case 2");
+	  check_gradient(BSplinesRegularGridTest_linear_const, Coordinate2D<pos_type>(3.1,4.2), "cubic-spline gradient: test-case linear const");
 	}
 					
       }			
@@ -438,13 +454,13 @@ namespace BSpline {
 	check_at_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian,
 			       "check BSplines implementation for oMoms interpolation");			
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_1, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_1, "Check BSplines implementation for oMoms interpolation near samples");	
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_2, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_2, "Check BSplines implementation for oMoms interpolation near samples");	
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_3, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_3, "Check BSplines implementation for oMoms interpolation near samples");	
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_4, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_4, "Check BSplines implementation for oMoms interpolation near samples");	
 
 	check_at_half_way(gaussian_input_sample, gaussian_check_sample,
 			  BSplinesRegularGridTest_gaussian, 
@@ -483,13 +499,13 @@ namespace BSpline {
 	check_at_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian,
 			       "check BSplines implementation for linear_cubic interpolation");			
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_1, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_1, "Check BSplines implementation for linear-cubic interpolation near samples: gaussian test 1");	
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_2, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_2, "Check BSplines implementation for linear-cubic interpolation near samples: gaussian test 2");	
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_3, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_3, "Check BSplines implementation for linear-cubic interpolation near samples: gaussian test 3");
 	check_near_sample_points(gaussian_input_sample, BSplinesRegularGridTest_gaussian, 
-				 epsilon_4, "Check BSplines implementation for cubic interpolation near samples");	
+				 epsilon_4, "Check BSplines implementation for linear-cubic interpolation near samples: gaussian test 4");
 
 	check_at_half_way(gaussian_input_sample, gaussian_check_sample,
 			  BSplinesRegularGridTest_gaussian, 
