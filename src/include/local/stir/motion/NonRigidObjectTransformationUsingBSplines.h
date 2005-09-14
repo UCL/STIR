@@ -78,6 +78,9 @@ private:
   // use for parsing only
   shared_ptr< DeformationFieldOnCartesianGrid<num_dimensions,elemT> > deformation_field_sptr;
   int _bspline_order;
+  // for NCAT only
+  std::string _deformation_field_from_NCAT_file;
+  CartesianCoordinate3D<int> _deformation_field_from_NCAT_size;
 };
 #if 0
 //! Output to (text) stream
