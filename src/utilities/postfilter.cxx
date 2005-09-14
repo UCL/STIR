@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file 
@@ -19,13 +36,17 @@
   This program enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
-   postfilter <output filename > <input header file name> <filter .par filename>
+   postfilter [[-verbose] <output filename > <input header file name> <filter .par filename>
   \endverbatim
   This is done to make it easy to process a lot of files with the same 
   ImageProcessor. However, if the number of command line arguments is not 
   correct, appropriate questions will be asked interactively.
 
+  If the <tt>--verbose</tt> option is used, the filter-parameters that are going to be
+  used will be written to stdout. This is useful for checking/debugging.
+
   \par Example .par file
+  (but see stir::MedianImageFilter3D to see if the following example is still correct)
   \verbatim
   PostFilteringParameters :=
   Postfilter type :=Median   
@@ -38,11 +59,6 @@
   \endverbatim
 
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 #include "stir/utilities.h"
 #include "stir/KeyParser.h"
@@ -50,6 +66,7 @@
 #include "stir/ImageProcessor.h"
 #include "stir/IO/DefaultOutputFileFormat.h"
 #include "stir/is_null_ptr.h"
+#include "stir/Succeeded.h"
 
 #include <iostream> 
 
@@ -97,6 +114,12 @@ END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
+static void
+print_usage()
+{
+  cerr<<"\nUsage: postfilter [--verbose] <output filename > <input header file name> <filter .par filename>\n"<<endl;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -104,10 +127,25 @@ main(int argc, char *argv[])
   shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
   PostFiltering post_filtering;
   string out_filename;
-  
+  bool verbose = false;
+
+  // option processing
+  if (argc>1 && argv[1][0] == '-')
+    {
+      if (strcmp(argv[1], "--verbose") == 0)
+	{
+	  verbose = true;
+	}
+      else
+	{
+	  print_usage();
+	  return EXIT_FAILURE;
+	}
+    }
+
   if (argc!=4)
     {
-      cerr<<"\nUsage: postfilter <output filename > <input header file name> <filter .par filename>\n"<<endl;
+      print_usage();
     }
   if (argc>1)
     {
@@ -131,7 +169,11 @@ main(int argc, char *argv[])
     }
   if (argc>3)
     {
-      post_filtering.parser.parse(argv[3]);
+      if (post_filtering.parser.parse(argv[3]) == false)
+	{
+	  warning("postfilter aborting because error in parsing. Not writing any output");
+	  return EXIT_FAILURE;
+	}
     }
   else
     {     
@@ -141,8 +183,6 @@ main(int argc, char *argv[])
       
       post_filtering.parser.ask_parameters();    
     }
-
-  cerr << "PostFilteringParameters:\n" << post_filtering.parser.parameter_info();
 
   if (is_null_ptr(post_filtering.filter_ptr))
     {
@@ -156,12 +196,18 @@ main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
     
+  if (verbose)
+    {
+      cerr << "PostFilteringParameters:\n" << post_filtering.parser.parameter_info();
+    }
+
   post_filtering.filter_ptr->apply(*input_image_ptr);
   
   DefaultOutputFileFormat output_file_format;
-  output_file_format.write_to_file(out_filename,*input_image_ptr);
-
-  return EXIT_SUCCESS;
+  if (output_file_format.write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
+    return EXIT_SUCCESS;
+  else
+    return EXIT_FAILURE;
 }
 
 
