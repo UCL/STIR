@@ -109,7 +109,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
     {
       CPUTimer timer;
       timer.start();
-      if (this->_do_jacobian )
+      if (!this->_do_jacobian )
 	{
 	  this->_transformed_coords =
 	    find_grid_coords_of_transformed_centres(density, 
@@ -210,7 +210,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density,
 			      jacobian,z,y,x);
 		      // TODO thnk about divide or multiply jacobian
 		      out_density[z][y][x] =
-			interpolator(this->_transformed_coords[z][y][x])*jacobian;
+			interpolator(this->_transformed_coords_and_jacobian[z][y][x].first)*jacobian;
 		    }
 		  else
 		    out_density[z][y][x] =
