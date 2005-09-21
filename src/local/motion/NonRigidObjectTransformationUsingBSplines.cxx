@@ -132,7 +132,7 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
 	  != Succeeded::yes)
 	return Succeeded::no;
       const CartesianCoordinate3D<float> current_displacement_in_mm = 
-	current_displacement * grid_spacing + origin;
+	current_displacement * grid_spacing;
       if (current_voxel[1] < deformation_field[1].get_min_index() ||
 	  current_voxel[1] > deformation_field[1].get_max_index() ||
 	  current_voxel[2] < deformation_field[1][current_voxel[1]].get_min_index() ||
@@ -222,9 +222,11 @@ post_processing()
 	}
     }
 
+  std::cerr << "\nStarting to compute interpolators";
   for (int i=1; i<=num_dimensions; ++i)
     this->interpolator[i] = 
       BSpline::BSplinesRegularGrid<num_dimensions,elemT,elemT>((*this->deformation_field_sptr)[i],this->_bspline_type);
+  std::cerr << "\nDone computing interpolators";
   // deallocate data for deformation field
   // at present, have to do this by assigning an object as opposed to 0
   // in case we want to parse twice
