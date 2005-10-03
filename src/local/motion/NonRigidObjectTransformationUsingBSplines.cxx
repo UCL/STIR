@@ -30,6 +30,9 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 
+// for binary file
+#include "stir/VoxelsOnCartesianGrid.h"
+
 START_NAMESPACE_STIR
 
 template <>
@@ -155,6 +158,53 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
 /////////////// end of NCAT parsing stuff //////////////
 
 
+/////////////// binary /////////////////////////////////
+static 
+Succeeded
+set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deformation_field,
+				const std::string& deformation_field_from_file_x,
+				const std::string& deformation_field_from_file_y,
+				const std::string& deformation_field_from_file_z,
+				CartesianCoordinate3D<float>& grid_spacing,
+				CartesianCoordinate3D<float>& origin)
+{
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr =
+    DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_z);
+  if (is_null_ptr(image_sptr))
+    {
+      warning("Error reading %s", deformation_field_from_file_z.c_str());
+      return Succeeded::no;
+    }
+  VoxelsOnCartesianGrid<float> const * voxels_ptr =
+    dynamic_cast<VoxelsOnCartesianGrid<float> const *>(image_sptr.get());
+  if (is_null_ptr(voxels_ptr))
+    {
+      warning("Error reading %s: should be of type VoxelsOnCartesianGrid", deformation_field_from_file_z.c_str());
+      return Succeeded::no;
+    }
+  deformation_field[1] = *image_sptr;
+  origin = image_sptr->get_origin();
+  grid_spacing = voxels_ptr->get_grid_spacing();
+
+    DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_y);
+  if (is_null_ptr(image_sptr))
+    {
+      warning("Error reading %s", deformation_field_from_file_y.c_str());
+      return Succeeded::no;
+    }
+  deformation_field[2] = *image_sptr;
+
+    DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_x);
+  if (is_null_ptr(image_sptr))
+    {
+      warning("Error reading %s", deformation_field_from_file_x.c_str());
+      return Succeeded::no;
+    }
+  deformation_field[3] = *image_sptr;
+
+  return Succeeded::yes;
+}
+
 template <int num_dimensions, class elemT>
 void
 NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
@@ -177,6 +227,10 @@ initialise_keymap()
   this->parser.add_key("deformation field from NCAT x-size", &this->_deformation_field_from_NCAT_size.x());
   this->parser.add_key("deformation field from NCAT y-size", &this->_deformation_field_from_NCAT_size.y());
   this->parser.add_key("deformation field from NCAT z-size", &this->_deformation_field_from_NCAT_size.z());
+
+  this->parser.add_key("deformation field from file x-component", &this->_deformation_field_from_file_x);
+  this->parser.add_key("deformation field from file y-component", &this->_deformation_field_from_file_y);
+  this->parser.add_key("deformation field from file z-component", &this->_deformation_field_from_file_z);
   this->parser.add_key("bspline order", &this->_bspline_order);
   this->parser.add_start_key("BSplines Transformation Parameters");
   this->parser.add_stop_key("End BSplines Transformation Parameters");
@@ -206,9 +260,24 @@ post_processing()
     {
       if (this->_deformation_field_from_NCAT_file.size() == 0)
 	{
-	  warning("NonRigidObjectTransformationUsingBSplines:\n"
-		  "you need to set either deformation_field or deformation_field_from_NCAT_file");
-	  return false;
+	  if (this->_deformation_field_from_file_z.size() == 0)
+	    {
+	      warning("NonRigidObjectTransformationUsingBSplines:\n"
+		      "you need to set either deformation_field or deformation_field_from_NCAT_file");
+	      return false;
+	    }
+	  else
+	    {
+	      if (set_deformation_field_from_file(*(this->deformation_field_sptr),
+						  this->_deformation_field_from_file_x,
+						  this->_deformation_field_from_file_y,
+						  this->_deformation_field_from_file_z,
+						  this->_grid_spacing,
+						  this->_origin) 
+		  == Succeeded::no)
+		return false;
+	}
+
 	}
       else
 	{

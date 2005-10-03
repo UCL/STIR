@@ -71,8 +71,10 @@ public:
   virtual void set_key_values();
 private:
   BasicCoordinate<num_dimensions, BSpline::BSplinesRegularGrid<num_dimensions,elemT,elemT> > interpolator;
-  BasicCoordinate<num_dimensions,elemT> _grid_spacing;
-  BasicCoordinate<num_dimensions,elemT> _origin;
+  //BasicCoordinate<num_dimensions,elemT> _grid_spacing;
+  //BasicCoordinate<num_dimensions,elemT> _origin;
+  CartesianCoordinate3D<elemT> _grid_spacing;
+  CartesianCoordinate3D<elemT> _origin;
   BSpline::BSplineType _bspline_type;
 
   // use for parsing only
@@ -81,6 +83,10 @@ private:
   // for NCAT only
   std::string _deformation_field_from_NCAT_file;
   CartesianCoordinate3D<int> _deformation_field_from_NCAT_size;
+  // from file
+  std::string _deformation_field_from_file_x;
+  std::string _deformation_field_from_file_y;
+  std::string _deformation_field_from_file_z;
 };
 #if 0
 //! Output to (text) stream
