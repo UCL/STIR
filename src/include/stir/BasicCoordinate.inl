@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup Coordinate
  
-  \brief (inline) implementations for BasicCoordinate
+  \brief (inline) implementations for stir::BasicCoordinate
 
   \author Kris Thielemans
   \author Alexey Zverovich
@@ -13,11 +30,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/detail/test_if_1d.h"
@@ -44,28 +56,28 @@ template <int num_dimensions, class coordT>
 typename BasicCoordinate<num_dimensions, coordT>::iterator 
 BasicCoordinate<num_dimensions, coordT>::begin() 
 {
-  return coords + 1; 
+  return coords; 
 }
 
 template <int num_dimensions, class coordT>
 typename BasicCoordinate<num_dimensions, coordT>::const_iterator 
 BasicCoordinate<num_dimensions, coordT>::begin() const 
 { 
-  return coords + 1; 
+  return coords; 
 }
 
 template <int num_dimensions, class coordT>
 typename BasicCoordinate<num_dimensions, coordT>::iterator 
 BasicCoordinate<num_dimensions, coordT>::end() 
 {
-  return coords + num_dimensions + 1; 
+  return coords + num_dimensions; 
 }
 
 template <int num_dimensions, class coordT>
 typename BasicCoordinate<num_dimensions, coordT>::const_iterator 
 BasicCoordinate<num_dimensions, coordT>::end() const 
 { 
-  return coords + num_dimensions + 1; 
+  return coords + num_dimensions; 
 }
 
 
@@ -78,16 +90,16 @@ BasicCoordinate<num_dimensions, coordT>::operator[](const int d)
 {
   assert(d>0);
   assert(d<=num_dimensions);
-  return coords[d]; 
+  return coords[d-1]; 
 }
  
 template <int num_dimensions, class coordT>
-coordT
+coordT const&
 BasicCoordinate<num_dimensions, coordT>::operator[](const int d) const
 {
   assert(d>0);
   assert(d<=num_dimensions);
-  return coords[d]; 
+  return coords[d-1]; 
 }
 
 /*
@@ -98,21 +110,17 @@ bool
 BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_dimensions, coordT>& c) const
 {
   return 
-#ifndef STIR_NO_NAMESPACES
-    std:: // VC needs this explicitly
-#endif
-    equal(begin(), end(), c.begin());
+    std::equal(begin(), end(), c.begin());
 }
 
 /*
   (numerical) assignments
-*/
-template <int num_dimensions, class coordT>
+*/ template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>&
 BasicCoordinate<num_dimensions, coordT>::operator=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] = c[i];
+    (*this)[i] = c[i];
   return *this;
 }
 
@@ -133,7 +141,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator+=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] += c[i];
+    (*this)[i] += c[i];
   return *this;
 }
 
@@ -143,7 +151,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator-=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] -= c[i];
+    (*this)[i] -= c[i];
   return *this;
 }
 
@@ -153,7 +161,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator*=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] *= c[i];
+    (*this)[i] *= c[i];
   return *this;
 }
 
@@ -163,7 +171,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator/=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] /= c[i];
+    (*this)[i] /= c[i];
   return *this;
 }
 
@@ -173,7 +181,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator+=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] += a;
+    (*this)[i] += a;
   return *this;
 }
 
@@ -183,7 +191,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator-=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] -= a;
+    (*this)[i] -= a;
   return *this;
 }
 
@@ -193,7 +201,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator*=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] *= a;
+    (*this)[i] *= a;
   return *this;
 }
 
@@ -203,7 +211,7 @@ BasicCoordinate<num_dimensions, coordT>::
 operator/=(const coordT& a)
 {
   for (int i=1; i<=num_dimensions; i++)
-    coords[i] /= a;
+    (*this)[i] /= a;
   return *this;
 }
 
@@ -284,6 +292,63 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
 /*
    External functions
 */
+
+
+template <class T>
+BasicCoordinate<1,T>
+make_coordinate(const T& a1)
+{
+  BasicCoordinate<1,T> a;
+  a[1]=a1;
+  return a;
+}
+
+template <class T>
+BasicCoordinate<2,T>
+make_coordinate(const T& a1, const T& a2)
+{
+  BasicCoordinate<2,T> a;
+  a[1]=a1; a[2]=a2;
+  return a;
+}
+
+template <class T>
+BasicCoordinate<3,T>
+make_coordinate(const T& a1, const T& a2, const T& a3)
+{
+  BasicCoordinate<3,T> a;
+  a[1]=a1; a[2]=a2; a[3]=a3;
+  return a;
+}
+
+template <class T>
+BasicCoordinate<4,T>
+make_coordinate(const T& a1, const T& a2, const T& a3, const T& a4)
+{
+  BasicCoordinate<4,T> a;
+  a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4;
+  return a;
+}
+
+template <class T>
+BasicCoordinate<5,T>
+make_coordinate(const T& a1, const T& a2, const T& a3, const T& a4, const T& a5)
+{
+  BasicCoordinate<5,T> a;
+  a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; a[5]=a5;
+  return a;
+}
+
+template <class T>
+BasicCoordinate<6,T>
+make_coordinate(const T& a1, const T& a2, const T& a3, const T& a4, const T& a5,
+	    const T& a6)
+{
+  BasicCoordinate<6,T> a;
+  a[1]=a1; a[2]=a2; a[3]=a3; a[4]=a4; a[5]=a5; a[6]=a6;
+  return a;
+}
+
 
 template <int num_dimensions, class coordT>
 coordT

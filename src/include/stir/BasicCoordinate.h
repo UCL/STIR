@@ -3,13 +3,30 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file 
   \ingroup Coordinate
  
-  \brief This file declares class BasicCoordinate<num_dimensions, coordT> and 
-  some functions acting on BasicCoordinate objects.
+  \brief This file declares class stir::BasicCoordinate and 
+  some functions acting on stir::BasicCoordinate objects.
 
   \author Kris Thielemans
   \author Alexey Zverovich
@@ -18,14 +35,9 @@
   $Date$
   $Revision$
 
-  \todo The arithmetic operations will at some point be moved to a
-  derived class CartesianCoordinate. 
+  \todo The arithmetic operations might at some point be moved to a
+  derived class stir::CartesianCoordinate. 
 
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -88,7 +100,7 @@ public:
     BasicCoordinate(const BasicCoordinate<num_dimensions, coordT2>& c)
     {
       for (int i=1; i<=num_dimensions;++ i)
-	coords[i] = static_cast<coordT>(c[i]);
+	(*this)[i] = static_cast<coordT>(c[i]);
     }
   // virtual destructor, not implemented at the moment 
   // It's only needed whenever there is a chance that an object will be deleted
@@ -110,8 +122,16 @@ public:
 #endif
 
   // access to elements
+  //! Return value at index \c t (which is 1-based)
   inline coordT& operator[](const int d);
-  inline coordT operator[](const int d) const;
+  //! Return value at index \c t (which is 1-based) if the BasicCoordinate object is const
+  /*! Note that the return type is not simply \c coordT. This mimics the design of
+      std::vector. One can argue about this (see e.g.
+http://groups.google.com/group/comp.lang.c%2B%2B.moderated/browse_thread/thread/e5c4898a5c259cc1/434f5a25df51781f%23434f5a25df51781f?sa=X&oi=groupsr&start=2&num=3),
+     However, this alternative can have a severe performance penalties if \c coordT
+     is a large object.
+  */
+  inline coordT const& operator[](const int d) const;
 
   // arithmetic assignment operators
   inline BasicCoordinate & operator+= (const BasicCoordinate& c);
@@ -143,11 +163,48 @@ public:
   inline const_iterator end() const;
 
  private:
-  // allocate 1 too many to leave space for coords[0] (which is never used)
-  coordT coords[num_dimensions+1];
+  coordT coords[num_dimensions];
 
 };
 
+/*!
+  \ingroup Coordinate
+  \name Utility functions to make BasicCoordinate objects.
+
+  \warning Because of template rules of C++, all arguments of the
+  make_coordinate function have to have exactly the same type. For instance,
+  \code
+  const BasicCoordinate<3,float> a = make_coordinate(1.F,2.F,0.F);
+  \endcode
+*/
+//@{
+
+template <class T>
+inline BasicCoordinate<1,T>
+  make_coordinate(const T& a1);
+
+template <class T>
+inline BasicCoordinate<2,T>
+  make_coordinate(const T& a1, const T& a2);
+
+template <class T>
+inline BasicCoordinate<3,T>
+  make_coordinate(const T& a1, const T& a2, const T& a3);
+
+template <class T>
+inline BasicCoordinate<4,T>
+  make_coordinate(const T& a1, const T& a2, const T& a3, const T& a4);
+
+template <class T>
+inline BasicCoordinate<5,T>
+  make_coordinate(const T& a1, const T& a2, const T& a3, const T& a4, const T& a5);
+
+template <class T>
+inline BasicCoordinate<6,T>
+make_coordinate(const T& a1, const T& a2, const T& a3, const T& a4, const T& a5,
+		const T& a6);
+
+//@}
 
 /*
   General functions on BasicCoordinate objects, like in ArrayFunction.h
