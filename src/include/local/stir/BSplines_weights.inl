@@ -76,7 +76,8 @@ namespace BSpline {
   {
   public:
     pos_type kernel_length_left() const { return static_cast<pos_type>(.5); }
-    int kernel_total_length() const  { return 1; }
+    BOOST_STATIC_CONSTANT(int, kernel_total_length_value=1);
+    int kernel_total_length() const  { return kernel_total_length_value; }
     pos_type function_piece(const pos_type x, int p) const
     {
       switch (p)
@@ -116,7 +117,8 @@ namespace BSpline {
   {
   public:
     pos_type kernel_length_left() const { return static_cast<pos_type>(1); }
-    int kernel_total_length() const  { return 2; }
+    BOOST_STATIC_CONSTANT(int, kernel_total_length_value=2);
+    int kernel_total_length() const  { return kernel_total_length_value; }
     pos_type function_piece(const pos_type x, int p) const
     {
       switch (p)
@@ -157,7 +159,8 @@ namespace BSpline {
   {
   public:
     pos_type kernel_length_left() const { return static_cast<pos_type>(1.5); }
-    int kernel_total_length() const  { return 3; }
+    BOOST_STATIC_CONSTANT(int, kernel_total_length_value=3);
+    int kernel_total_length() const  { return kernel_total_length_value; }
     pos_type function_piece(const pos_type x, int p) const
     {
       switch (std::abs(p))
@@ -240,7 +243,8 @@ namespace BSpline {
   {
   public:
     pos_type kernel_length_left() const { return static_cast<pos_type>(2); }
-    int kernel_total_length() const  { return 4; }
+    BOOST_STATIC_CONSTANT(int, kernel_total_length_value=4);
+    int kernel_total_length() const  { return kernel_total_length_value; }
     pos_type function_piece(const pos_type x, int p) const
     {
       const pos_type absx = std::fabs(x);
@@ -291,7 +295,8 @@ namespace BSpline {
   {
   public:
     pos_type kernel_length_left() const { return static_cast<pos_type>(2); }
-    int kernel_total_length() const  { return 4; }
+    BOOST_STATIC_CONSTANT(int, kernel_total_length_value=4);
+    int kernel_total_length() const  { return kernel_total_length_value; }
     pos_type function_piece(const pos_type x, int p) const
     {
       const pos_type absx = std::fabs(x);
