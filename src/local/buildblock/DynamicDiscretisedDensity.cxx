@@ -31,9 +31,26 @@
 #include "local/stir/DynamicDiscretisedDensity.h"
 #include "stir/IO/stir_ecat7.h"
 #include <iostream>
+#include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
+#include <fstream>
+
+#ifndef STIR_NO_NAMESPACES
+using std::fstream;
+#endif
 
 START_NAMESPACE_STIR
+
+  /*!
+    \warning This function is
+ likely to disappear later, and is dangerous to use.
+  */
+  void DynamicDiscretisedDensity::set_density(shared_ptr<DiscretisedDensity<3,float> > density, unsigned int frame_num)
+{
+  _densities[frame_num]=density; 
+};
+
 
 DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::read_from_file(const string& filename)
@@ -43,7 +60,7 @@ DynamicDiscretisedDensity::read_from_file(const string& filename)
 
   // read signature
   {
-    fstream input(filename.c_str(), ios::in | ios::binary);
+ fstream input(filename.c_str(), ios::in | ios::binary);
     if (!input)
       error("DynamicDiscretisedDensity::read_from_file: error opening file %s\n", filename.c_str());
     
@@ -82,7 +99,7 @@ DynamicDiscretisedDensity::read_from_file(const string& filename)
 	   dynamic_image_ptr->_densities[frame_num] =
 	    ECAT7_to_VoxelsOnCartesianGrid(filename,
 					   frame_num, /*gate_num, data_num, bed_num*/1,0,0);
-	  if (!is_null_ptr(densities[frame_num])
+	  if (!is_null_ptr(_densities[frame_num])
 	      error();
 	}
     }

@@ -48,15 +48,16 @@ public:
   DynamicDiscretisedDensity() {};
 
   DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
-	       shared_ptr<Scanner>)
-    :
+	       shared_ptr<Scanner> scanner_sptr)
   {
-    _densities.resize(get_num_time_frames());
+    _densities.resize(time_frame_definitions.get_num_frames());
+    _time_frame_definitions=time_frame_definitions;
+    _scanner_sptr=scanner_sptr;
   }
   /*!
     \warning This function is likely to disappear later, and is dangerous to use.
   */
-  void set_density(shared_ptr<DiscretisedDensity<3,float> >, unsigned frame_num);
+  void set_density(shared_ptr<DiscretisedDensity<3,float> > density, unsigned int frame_num);
   /*
   DynamicDiscretisedDensity(  TimeFrameDefinitions tiem_frame_defintions,shared_ptr<Scanner>,
 		 std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
@@ -66,8 +67,8 @@ public:
 
 private:
   TimeFrameDefinitions _time_frame_definitions;
-  std::vector<shared_ptr<DiscretisedDensity<3,float> > _densities;
-  shared_ptr<Scanner> scanner_sptr;
+  std::vector<shared_ptr<DiscretisedDensity<3,float> > >_densities;
+  shared_ptr<Scanner> _scanner_sptr;
 };
 
 END_NAMESPACE_STIR
