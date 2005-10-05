@@ -11,6 +11,7 @@ test_RigidObject3DTransformation.cxx \
 	test_BSplines.cxx \
 	test_BSplinesRegularGrid1D.cxx \
 	test_BSplinesRegularGrid.cxx \
+	test_linear_integral.cxx \
 	test_erf.cxx   
 
 # rule to ignore registries
