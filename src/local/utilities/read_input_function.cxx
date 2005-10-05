@@ -43,11 +43,14 @@ int main(int argc, char *argv[])
   PlasmaData testing_plasma_data;
 
   testing_plasma_data.read_plasma_data(argv[1]);
+  testing_plasma_data.shift_time(13.F);
 
   PlasmaData::const_iterator cur_iter;
   for (cur_iter=testing_plasma_data.begin(); 
        cur_iter!=testing_plasma_data.end() ; ++cur_iter)
-    std::cout << (*cur_iter).get_time_in_s() << " "<< (*cur_iter).get_counts_in_kBq() << std::endl ;
+    std::cout << (*cur_iter).get_time_in_s() << " " << (*cur_iter).get_plasma_counts_in_kBq() <<  " " << (*cur_iter).get_blood_counts_in_kBq() << std::endl ;
+
+
 
   return EXIT_SUCCESS;
 }
