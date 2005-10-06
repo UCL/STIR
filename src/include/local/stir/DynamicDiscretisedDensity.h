@@ -43,12 +43,12 @@ class DynamicDiscretisedDensity
 public:
   static
   DynamicDiscretisedDensity*
-  DynamicDiscretisedDensity::read_from_file(const std::string& filename);
+    read_from_file(const std::string& filename);
 
   DynamicDiscretisedDensity() {};
 
   DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
-	       shared_ptr<Scanner> scanner_sptr)
+			    const shared_ptr<Scanner>& scanner_sptr)
   {
     _densities.resize(time_frame_definitions.get_num_frames());
     _time_frame_definitions=time_frame_definitions;
@@ -57,13 +57,25 @@ public:
   /*!
     \warning This function is likely to disappear later, and is dangerous to use.
   */
-  void set_density(shared_ptr<DiscretisedDensity<3,float> > density, unsigned int frame_num);
+  void 
+    set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
+		     const unsigned int frame_num);
   /*
-  DynamicDiscretisedDensity(  TimeFrameDefinitions tiem_frame_defintions,shared_ptr<Scanner>,
+  DynamicDiscretisedDensity(  TimeFrameDefinitions time_frame_defintions,shared_ptr<Scanner>,
 		 std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
   */
+  const DiscretisedDensity<3,float> & 
+    get_density(const unsigned int frame_num) const ;
 
-  Succeeded write_to_ecat7(const std::string&filename) const;
+  const DiscretisedDensity<3,float> & 
+    operator[](const unsigned int frame_num) const 
+    { return this->get_density(frame_num); }
+
+  const TimeFrameDefinitions & 
+    get_time_frame_definitions() const ;
+
+  Succeeded 
+    write_to_ecat7(const std::string& filename) const;
 
 private:
   TimeFrameDefinitions _time_frame_definitions;

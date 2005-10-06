@@ -29,12 +29,17 @@
 */
 
 #include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/stir_ecat7.h"
 #include <iostream>
-#include "stir/IO/read_data.h"
+//#include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <fstream>
+#include "stir/IO/interfile.h"
+//#include "stir/IO/ecat6_utils.h"
+//#include "stir/IO/stir_ecat6.h"
+//#include <typeinfo>
 
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;
@@ -42,28 +47,37 @@ using std::fstream;
 
 START_NAMESPACE_STIR
 
-  /*!
-    \warning This function is
- likely to disappear later, and is dangerous to use.
-  */
-  void DynamicDiscretisedDensity::set_density(shared_ptr<DiscretisedDensity<3,float> > density, unsigned int frame_num)
+void 
+DynamicDiscretisedDensity::
+set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
+		 const unsigned int frame_num)
 {
-  _densities[frame_num]=density; 
-};
-
-
+  this->_densities[frame_num]=density_sptr; 
+}  
+const DiscretisedDensity<3,float> & 
+DynamicDiscretisedDensity::
+get_density(const unsigned int frame_num) const 
+{
+  return *this->_densities[frame_num] ; 
+}
+const TimeFrameDefinitions & 
+DynamicDiscretisedDensity::
+get_time_frame_definitions() const
+{
+ return this->_time_frame_definitions; 
+}
 DynamicDiscretisedDensity*
-DynamicDiscretisedDensity::read_from_file(const string& filename)
+DynamicDiscretisedDensity::
+read_from_file(const string& filename)
 {
   const int max_length=300;
   char signature[max_length];
 
   // read signature
   {
- fstream input(filename.c_str(), ios::in | ios::binary);
+    fstream input(filename.c_str(), ios::in | ios::binary);
     if (!input)
       error("DynamicDiscretisedDensity::read_from_file: error opening file %s\n", filename.c_str());
-    
     input.read(signature, max_length);
     signature[max_length-1]='\0';
   }
@@ -94,13 +108,15 @@ DynamicDiscretisedDensity::read_from_file(const string& filename)
       dynamic_image_ptr->_time_frame_definitions =
         TimeFrameDefinitions(filename);      
 
-      for (unsigned int frame_num=1; frame_num <= _time_frame_definitions.get_num_time_frames(); ++ frame_num)
+      dynamic_image_ptr->_densities.resize(dynamic_image_ptr->_time_frame_definitions.get_num_frames());
+      for (unsigned int frame_num=1; frame_num <= (dynamic_image_ptr->_time_frame_definitions).get_num_frames(); ++ frame_num)
 	{
-	   dynamic_image_ptr->_densities[frame_num] =
+	  dynamic_image_ptr->_densities[frame_num] =
 	    ECAT7_to_VoxelsOnCartesianGrid(filename,
 					   frame_num, /*gate_num, data_num, bed_num*/1,0,0);
-	  if (!is_null_ptr(_densities[frame_num])
-	      error();
+
+	   if (!is_null_ptr(dynamic_image_ptr->_densities[frame_num]))
+	      error("None frame available\n");
 	}
     }
     else
@@ -110,36 +126,37 @@ DynamicDiscretisedDensity::read_from_file(const string& filename)
     }
   }
 #endif // end of HAVE_LLN_MATRIX
-  }
+    // }
   return dynamic_image_ptr;
 }
 
 
 Succeeded 
-DynamicDiscretisedDensity::write_to_ecat7(const string&filename) const
+DynamicDiscretisedDensity::
+write_to_ecat7(const string& filename) const
 {
 #ifndef HAVE_LLN_MATRIX
   return Succeeded::no;
 #else
 
   Main_header mhead;
-  make_ECAT7_main_header(mhead, _scanner_sptr, filename, this->get_density(1));
-  mhead.num_frames = this->get_num_time_frames();
+  ecat::ecat7::make_ECAT7_main_header(mhead, *_scanner_sptr, filename, get_density(1) );
+  mhead.num_frames = (_time_frame_definitions).get_num_frames();
   mhead.acquisition_type =
     mhead.num_frames>1 ? DynamicEmission : StaticEmission;
 
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
     {
-      warning("DynamicDiscretisedDensity::write_to_ecat7 cannot write output file %s\n", cti_name);
+      warning("DynamicDiscretisedDensity::write_to_ecat7 cannot write output file %s\n", filename.c_str());
       return Succeeded::no;
     }
-  for (  unsigned int frame_num = 1 ; frame_num<=this->get_num_time_frames() ;  ++frame_num )
+  for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num )
     {
-      if (DiscretisedDensity_to_ECAT7(mptr,
-                                      this->get_density(frame_num),
-                                      frame_num)
-                                      == Succeeded::no)
+      if (ecat::ecat7::DiscretisedDensity_to_ECAT7(mptr,
+						   get_density(frame_num),
+						   frame_num)
+	  == Succeeded::no)
       {
         matrix_close(mptr);
         return Succeeded::no;
