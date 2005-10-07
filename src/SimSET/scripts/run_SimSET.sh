@@ -54,7 +54,7 @@ fi
 if [ $# -ne 0 -o -z "${ATTEN_DATA}" ]; then
     echo "usage: $0 "
     echo environment variable ATTEN_DATA has to be defined
-    echo Attenuation Data Filename (in mu-values units cm^-1)
+    echo "Attenuation Data Filename (in mu-values units cm^-1)"
     exit 1
 fi
 
