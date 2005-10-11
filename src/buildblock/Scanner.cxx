@@ -259,7 +259,7 @@ Scanner::Scanner(Type scanner_type)
 	       367, 
 	       331, 
 	       2 * 315,
-               886.2.F/2.F, 
+               886.2F/2.F, 
 	       9.4F,  
 	       6.39F, 2.13F,
 	       static_cast<float>(-4.54224*_PI/180),//?
