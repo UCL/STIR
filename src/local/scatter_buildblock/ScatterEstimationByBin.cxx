@@ -68,8 +68,8 @@ void
 ScatterEstimationByBin::
 initialise_keymap()
 {
-  this->parser.add_start_key("ScatterEstimation Parameters");
-  this->parser.add_stop_key("end ScatterEstimation Parameters");
+  this->parser.add_start_key("Scatter Estimation Parameters");
+  this->parser.add_stop_key("end Scatter Estimation Parameters");
   this->parser.add_key("attenuation_threshold", &this->attenuation_threshold);
   this->parser.add_key("random", &this->random);
   this->parser.add_key("use_cache", &this->use_cache);
