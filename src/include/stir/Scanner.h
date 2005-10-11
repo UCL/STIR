@@ -28,6 +28,7 @@
   \author Claire Labbe
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Charalampos Tsoumpas
   \author PARAPET project
 
   $Date$
@@ -112,8 +113,8 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931,E951,E953,E921,E925,E961,E962,E966,RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoveryRX,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966,RPT,HiDAC,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX,
 	     HZLR, RATPET,HRRT,
 	     User_defined_scanner,
 	     Unknown_scanner};
