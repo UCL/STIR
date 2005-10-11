@@ -25,6 +25,7 @@
 
   \brief Implementations for class Scanner
 
+  \author Charalampos Tsoumpas
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
@@ -224,31 +225,44 @@ Scanner::Scanner(Type scanner_type)
                471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, 
                3, 2, 6, 6, 1, 1, 1);
     break;
-
   case DiscoveryST: 
 
     // 249 bins (non-uniform sampling) 
-    // 223 bins (uniform sampling)
+    // 221 bins (uniform sampling)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryST, string_list("GE Discovery ST", "Discovery ST"), 
-	       24, 249, 223, 2 * 210,
-               451.5F - 8.4F, 8.4F, 6.52916F, 3.195F, static_cast<float>(-4.54224*_PI/180),
+	       24, 249, 221, 2 * 210,
+               886.F/2.F, 9.5F, 6.39F, 3.19F, 
+	       static_cast<float>(-4.54224*_PI/180),//?
 	       4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
+    break;
+
+ case DiscoverySTE: 
+
+    // 249 bins (non-uniform sampling) 
+    // 221 bins (uniform sampling)
+    /* crystal size: 6.3 x 6.3 x 30 mm*/
+    set_params(DiscoverySTE, string_list("GE Discovery STE", "Discovery STE"), 
+	       24, 327, 295, 2 * 280, 
+               886.F/2.F, 9.5F, 6.39F, 2.397F, 
+	       static_cast<float>(-4.54224*_PI/180),//?
+	       4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
  case DiscoveryRX: 
 
     // 249 bins (non-uniform sampling) 
-    // 223 bins (uniform sampling)
+    // 221 bins (uniform sampling)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryRX, string_list("GE Discovery RX", "Discovery RX"), 
 	       24, 
 	       367, 
 	       331, 
-	       630,
+	       2 * 315,
                443.F, 
-	       8.4F, //? 
-	       6.52916F, 2.13F, static_cast<float>(-4.54224*_PI/180),
+	       8.4F, //?? 
+	       6.39F, 2.13F,
+	       static_cast<float>(-4.54224*_PI/180),//?
 	       4,
 	       2,
 	       6, 9, 1, 1, 1);// TODO not sure about sign of view_offset    
