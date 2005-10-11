@@ -96,9 +96,6 @@ inline
 float detection_efficiency( const float low, const float high, 
 						    const float energy, 
 							const float reference_energy, const float resolution);
-inline 
-float detection_efficiency_BGO( const float low, const float high, 
-						        const float energy);
 //@}
 
 /*!						  
@@ -141,7 +138,10 @@ float scatter_estimate_for_one_scatter_point(
 	  const float upper_energy_threshold,
 	  const float resolution,		
 	  const bool use_cache);
-double scatter_estimate_for_two_scatter_points(
+void
+scatter_estimate_for_two_scatter_points(
+					double& scatter_ratio_11,
+					double& scatter_ratio_02,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const std::size_t scatter_point_1_num, 
@@ -152,7 +152,24 @@ double scatter_estimate_for_two_scatter_points(
 	  const float upper_energy_threshold,
 	  const float resolution,		
 	  const bool use_cache);
-float scatter_estimate_for_all_scatter_points(
+void
+ scatter_estimate_for_all_scatter_points(
+					       double& scatter_ratio_01,
+					       double& scatter_ratio_11,
+					       double& scatter_ratio_02,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+					       const float scatter_volume,
+	  const unsigned det_num_A, 
+	  const unsigned det_num_B,
+	  const float lower_energy_threshold, 
+	  const float upper_energy_threshold,
+	  const float resolution,		
+	  const bool use_cache,
+	  const int scatter_level);
+
+float
+ scatter_estimate_for_all_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const unsigned det_num_A, 
@@ -162,6 +179,7 @@ float scatter_estimate_for_all_scatter_points(
 	  const float resolution,		
 	  const bool use_cache,
 	  const int scatter_level);
+
 float scatter_estimate_for_none_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -262,12 +280,8 @@ float total_cross_section_relative_to_511keV(const float energy);
 //@{
 inline
 float max_cos_angle(const float low, const float approx, const float resolution);
-inline
-float max_cos_angle_BGO(const float low, const float approx);
 inline 
 float energy_lower_limit(const float low, const float approx, const float resolution);
-inline
-float energy_lower_limit_BGO(const float low, const float approx);
 //@}
 /*!  \ingroup scatter
   \brief uses the given proj_data writes the scatter viewgram 
