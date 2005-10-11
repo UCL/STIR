@@ -418,7 +418,7 @@ write_log(const double simulation_time,
 
   std::string log_filename = 
     this->output_proj_data_filename + ".log";
-  std::fstream mystream(log_filename.c_str(), std::ios::out | std::ios::app);
+  std::ofstream mystream(log_filename.c_str());
   if(!mystream)    
     {
       warning("Cannot open log file '%s'", log_filename.c_str()) ;
