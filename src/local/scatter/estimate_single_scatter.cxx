@@ -105,8 +105,14 @@ int main(int argc, const char *argv[])
 	if (argc>=11 && atoi(argv[10])==0)
 		use_cache = false;
 	const int scatter_level = argc>= 12 ? atoi(argv[11]) : 10 ;
-	const float resolution = argc>=13 ? atoi(argv[12]) : 0.22 ;
-	
+	const float resolution = argc>=13 ? atof(argv[12]) : 0.22 ;
+	if (resolution>.99 || resolution<=0)
+	  {
+	    std::cerr << "\nEnergy resolution should be between 0 and .99, but was "
+		      << resolution
+		      <<"\nExiting\n";
+	    exit(EXIT_FAILURE);
+	  }
 	shared_ptr< DiscretisedDensity<3,float> >  
 		activity_image_sptr= 
 		DiscretisedDensity<3,float>::read_from_file(argv[1]), 
