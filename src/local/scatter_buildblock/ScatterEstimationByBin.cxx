@@ -82,7 +82,7 @@ initialise_keymap()
   this->parser.add_key("density_image_filename", &this->density_image_filename);
   this->parser.add_key("density_image_for_scatter_points_filename", &this->density_image_for_scatter_points_filename);
   this->parser.add_key("template_proj_data_filename", &this->template_proj_data_filename);
-  this->parser.add_key("output_proj_data_filename", &this->output_proj_data_filename);
+  this->parser.add_key("output_filename_prefix", &this->output_proj_data_filename);
   
   this->parser.add_key("write_scatter_orders_in_separate_files", &this->write_scatter_orders_in_separate_files);
 }
