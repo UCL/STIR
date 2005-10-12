@@ -58,6 +58,11 @@ if [ $# -ne 0 -o -z "${ATTEN_DATA}" ]; then
     exit 1
 fi
 
+if [ $# -ne 0 -o -z "${TEMPLATE_PHG}" ]; then
+    TEMPLATE_PHG=template_phg.rec
+fi
+echo "Using ${TEMPLATE_PHG}"
+
 # exit on error
 set -e
 
@@ -95,7 +100,7 @@ sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
     -e s#OUTPUT_DIRECTORY#${DIR_OUTPUT}# \
     -e s#BIN.REC#bin.rec# \
     -e s#PHOTONS#${PHOTONS}# \
-  < template_phg.rec > phg.rec
+  < ${TEMPLATE_PHG} > phg.rec
 
 
 sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
