@@ -107,7 +107,7 @@ int main(int argc, const char *argv[])
 	if (argc>=12 && atoi(argv[11])==0)
 		use_cache = false;
 	const int scatter_level = argc>= 13 ? atoi(argv[12]) : 10 ;
-	const float resolution = argc>=13 ? atof(argv[12]) : 0.22 ;
+	const float resolution = argc>=14 ? atof(argv[13]) : 0.22 ;
 	if (resolution>.99 || resolution<=0)
 	  {
 	    std::cerr << "\nEnergy resolution should be between 0 and .99, but was "
