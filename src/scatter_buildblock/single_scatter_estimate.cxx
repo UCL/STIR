@@ -138,18 +138,27 @@ void
 							use_cache);
 	  }
     }	
+
+  // we will divide by the effiency of the detector pair for unscattered photons
+  // (computed with the same detection model as used in the scatter code)
+  // This way, the scatter estimate will correspond to a 'normalised' scatter estimate.
+
+  // there is a scatter_volume factor for every scatter point, as the sum over scatter points
+  // is an approximation for the integral over the scatter point.
+
+  // the factors total_cross_section_511keV should probably be moved to the scatter_computation code
+
+  //0.75 is due to the volume of the pyramid approximation!
   const double common_factor =
+    0.75/2./_PI *
     rAB_squared*scatter_volume/total_cross_section_511keV
     /detection_efficiency_no_scatter/
     (cos_incident_angle_A*
      cos_incident_angle_B);
 
-  //0.75 is due to the volume of the pyramid approximation!
-  scatter_ratio_01 *= 0.75/2./_PI * common_factor;
-  scatter_ratio_02 *= scatter_volume*2./(1000000.)
-    /total_cross_section_511keV * common_factor;
-  scatter_ratio_11 *= scatter_volume*2./(1000000.)
-    /total_cross_section_511keV * common_factor;
+  scatter_ratio_01 *= common_factor;
+  scatter_ratio_02 *= scatter_volume/total_cross_section_511keV * common_factor;
+  scatter_ratio_11 *= scatter_volume/total_cross_section_511keV * common_factor;
 }
 
 END_NAMESPACE_STIR
