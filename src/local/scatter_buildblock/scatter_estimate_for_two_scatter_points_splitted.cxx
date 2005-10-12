@@ -174,7 +174,8 @@ double scatter_estimate_for_two_scatter_points_splitted(
 		total_cross_section_relative_to_511keV(new_energy_scatter_at_1);
 	const float total_cross_section_scatter_at_2 =
 		total_cross_section_relative_to_511keV(new_energy_scatter_at_2);
- 
+
+	const double fudge_factor = 2./(1000000.)/( 0.75/2./_PI ); // funny factor for historical reasons. TODO remove
 	  if(split == 0){ // 2-ScatterBlue and 0-ScatterPink + 0-ScatterBlue and 2-ScatterPink + 1-ScatterBlue and 1-ScatterPink
 	     const double scatter_ratio =
 		(emiss_to_detA*
@@ -219,7 +220,7 @@ double scatter_estimate_for_two_scatter_points_splitted(
 
 	    return
 	      scatter_ratio*cos_incident_angle_AS1*
-	      cos_incident_angle_BS2 ;
+	      cos_incident_angle_BS2 * fudge_factor;
 	 }
 
  
@@ -259,7 +260,7 @@ double scatter_estimate_for_two_scatter_points_splitted(
 
 	    return
 	      scatter_ratio*cos_incident_angle_AS1*
-	      cos_incident_angle_BS2 ;
+	      cos_incident_angle_BS2 * fudge_factor;
 	 }
 
  
@@ -292,7 +293,7 @@ double scatter_estimate_for_two_scatter_points_splitted(
 
 	    return
 	      scatter_ratio*cos_incident_angle_AS1*
-	      cos_incident_angle_BS2 ;
+	      cos_incident_angle_BS2 * fudge_factor;
 	 }
 
 

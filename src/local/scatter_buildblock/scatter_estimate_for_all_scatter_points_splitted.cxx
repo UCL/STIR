@@ -97,9 +97,9 @@ float scatter_estimate_for_all_scatter_points_splitted(
   return 
     rAB_squared*scatter_volume/total_cross_section_511keV
     /detection_efficiency_no_scatter*
-    (0.75*single_scatter_ratio/2./_PI+
-     double_scatter_ratio*scatter_volume*2./(1000000.)
-     /total_cross_section_511keV)
+    (0.75/2./_PI)*
+    (single_scatter_ratio+
+     double_scatter_ratio*scatter_volume/total_cross_section_511keV)
     /(cos_incident_angle_A*
       cos_incident_angle_B);
 }
