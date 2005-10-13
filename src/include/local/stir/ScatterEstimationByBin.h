@@ -110,7 +110,9 @@ virtual
   void
   find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const; 
 
- private:
+ unsigned 
+  find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const;
+// private:
   const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
   CartesianCoordinate3D<float>  shift_detector_coordinates_to_origin;
 };

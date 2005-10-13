@@ -170,9 +170,9 @@ post_processing()
 }
 
 
-static
 unsigned 
-find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
+ScatterEstimationByBin::
+find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
 {
   std::vector<CartesianCoordinate3D<float> >::const_iterator iter=
     std::find(detection_points_vector.begin(),
@@ -201,11 +201,11 @@ find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
     find_cartesian_coordinates_of_detection(
 					    detector_coord_A,detector_coord_B,bin);
   det_num_A =
-    find_in_detection_points_vector(detector_coord_A + 
-				    this->shift_detector_coordinates_to_origin);
+    this->find_in_detection_points_vector(detector_coord_A + 
+					  this->shift_detector_coordinates_to_origin);
   det_num_B =
-    find_in_detection_points_vector(detector_coord_B + 
-				    this->shift_detector_coordinates_to_origin);
+    this->find_in_detection_points_vector(detector_coord_B + 
+					  this->shift_detector_coordinates_to_origin);
 }
 
 Succeeded 
