@@ -169,6 +169,7 @@ post_processing()
   return false;
 }
 
+
 static
 unsigned 
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
@@ -191,13 +192,29 @@ find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord)
     }
 }
 
+void
+ScatterEstimationByBin::
+find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
+{
+  CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
+  this->proj_data_info_ptr->
+    find_cartesian_coordinates_of_detection(
+					    detector_coord_A,detector_coord_B,bin);
+  det_num_A =
+    find_in_detection_points_vector(detector_coord_A + 
+				    this->shift_detector_coordinates_to_origin);
+  det_num_B =
+    find_in_detection_points_vector(detector_coord_B + 
+				    this->shift_detector_coordinates_to_origin);
+}
+
 Succeeded 
 ScatterEstimationByBin::
 process_data()
 {		
-  const ProjDataInfoCylindricalNoArcCorr &proj_data_info = 
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&> 
-    (*this->output_proj_data_sptr->get_proj_data_info_ptr());
+  this->proj_data_info_ptr = 
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *> 
+    (this->output_proj_data_sptr->get_proj_data_info_ptr());
 	
   const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
     dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
@@ -221,8 +238,8 @@ process_data()
   
   // find final size of detection_points_vector
   total_detectors = 
-    proj_data_info.get_scanner_ptr()->get_num_rings()*
-    proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring ();
+    this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
+    this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
   // reserve space to avoid reallocation, but the actual size will grow dynamically
   detection_points_vector.reserve(total_detectors);
 #if 0
@@ -235,7 +252,6 @@ process_data()
     std::cerr << scatt_points_vector.size() << " scatter points selected!" << std::endl;				
   }
 #endif
-  CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
   Bin bin;
 	
   /* ////////////////// SCATTER ESTIMATION TIME ////////////////
@@ -244,17 +260,17 @@ process_data()
   int bin_counter = 0;
   bin_timer.start();
   int axial_bins = 0 ;
-  for (bin.segment_num()=proj_data_info.get_min_segment_num();
-       bin.segment_num()<=proj_data_info.get_max_segment_num();
+  for (bin.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
+       bin.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
        ++bin.segment_num())	
-    axial_bins += proj_data_info.get_num_axial_poss(bin.segment_num());
+    axial_bins += this->proj_data_info_ptr->get_num_axial_poss(bin.segment_num());
   const int total_bins = 
-    proj_data_info.get_num_views() * axial_bins *
-    proj_data_info.get_num_tangential_poss();
+    this->proj_data_info_ptr->get_num_views() * axial_bins *
+    this->proj_data_info_ptr->get_num_tangential_poss();
 
   /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
    */
-
+	
   /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
      coordinate in a coordinate system where z=0 in the first ring of the scanner.
      We want to shift this to a coordinate system where z=0 in the middle 
@@ -264,26 +280,28 @@ process_data()
   */
 #ifndef NDEBUG
   // check above statement
-  proj_data_info.find_cartesian_coordinates_of_detection(
+  this->proj_data_info_ptr->find_cartesian_coordinates_of_detection(
 							 detector_coord_A,detector_coord_B,Bin(0,0,0,0));
   assert(detector_coord_A.z()==0);
   assert(detector_coord_B.z()==0);
   // check that get_m refers to the middle of the scanner
-  const float m_first =proj_data_info.get_m(Bin(0,0,proj_data_info.get_min_axial_pos_num(0),0));
-  const float m_last =proj_data_info.get_m(Bin(0,0,proj_data_info.get_max_axial_pos_num(0),0));
+  const float m_first =
+    this->proj_data_info_ptr->get_m(Bin(0,0,this->proj_data_info_ptr->get_min_axial_pos_num(0),0));
+  const float m_last =
+    this->proj_data_info_ptr->get_m(Bin(0,0,this->proj_data_info_ptr->get_max_axial_pos_num(0),0));
   assert(fabs(m_last + m_first)<m_last*10E-4);
 #endif
-  const CartesianCoordinate3D<float>  
-    shift_detector_coordinates_to_origin(proj_data_info.get_m(Bin(0,0,0,0)),0, 0);
-	
+  this->shift_detector_coordinates_to_origin =
+    CartesianCoordinate3D<float>(this->proj_data_info_ptr->get_m(Bin(0,0,0,0)),0, 0);
+
   float total_scatter = 0 ;
 
-  for (bin.segment_num()=proj_data_info.get_min_segment_num();
-       bin.segment_num()<=proj_data_info.get_max_segment_num();
+  for (bin.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
+       bin.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
        ++bin.segment_num())
     {
-      for (bin.view_num()=proj_data_info.get_min_view_num();
-	   bin.view_num()<=proj_data_info.get_max_view_num();
+      for (bin.view_num()=this->proj_data_info_ptr->get_min_view_num();
+	   bin.view_num()<=this->proj_data_info_ptr->get_max_view_num();
 	   ++bin.view_num())
 	{
 	  Viewgram<float> viewgram_00 =
@@ -294,23 +312,18 @@ process_data()
 	  Viewgram<float> viewgram_total_scatter = viewgram_00;
 	      
 			
-	  for (bin.axial_pos_num()=proj_data_info.get_min_axial_pos_num(bin.segment_num());
-	       bin.axial_pos_num()<=proj_data_info.get_max_axial_pos_num(bin.segment_num());
+	  for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
+	       bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
 	       ++bin.axial_pos_num())
 	    {
-	      for (bin.tangential_pos_num()=proj_data_info.get_min_tangential_pos_num();
-		   bin.tangential_pos_num()<=proj_data_info.get_max_tangential_pos_num();
+	      for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
+		   bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
 		   ++bin.tangential_pos_num())
 		{  
-		  // have now all bin coordinates
-		  proj_data_info.find_cartesian_coordinates_of_detection(
-									 detector_coord_A,detector_coord_B,bin);
-		  const unsigned det_num_A =
-		    find_in_detection_points_vector(detector_coord_A + 
-						    shift_detector_coordinates_to_origin);
-		  const unsigned det_num_B =
-		    find_in_detection_points_vector(detector_coord_B + 
-						    shift_detector_coordinates_to_origin);
+
+		  unsigned det_num_A = 0; // initialise to avoid compiler warnings
+		  unsigned det_num_B = 0;
+		  this->find_detectors(det_num_A, det_num_B, bin);
 
 		  double no_scatter = 0;
 		  double scatter_ratio_01 = 0;

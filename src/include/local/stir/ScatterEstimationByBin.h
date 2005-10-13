@@ -38,11 +38,12 @@
 #include "stir/ParsingObject.h"
 #include <vector>
 #include <cmath>
-
+#include "stir/CartesianCoordinate3D.h"
 START_NAMESPACE_STIR
 
-template <class coordT> class CartesianCoordinate3D;
 class Succeeded;
+class ProjDataInfoCylindricalNoArcCorr;
+
 #if 0
 struct ScatterPoint
 { 
@@ -105,6 +106,13 @@ class ScatterEstimationByBin : public ParsingObject
   shared_ptr<ProjData> output_proj_data_11_sptr;
   shared_ptr<ProjData> output_proj_data_02_sptr;
 
+virtual 
+  void
+  find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const; 
+
+ private:
+  const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
+  CartesianCoordinate3D<float>  shift_detector_coordinates_to_origin;
 };
 
 END_NAMESPACE_STIR
