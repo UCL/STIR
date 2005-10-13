@@ -13,7 +13,8 @@ $(dir)_LIB_SOURCES:= \
 	TimeFrameMotion.cxx \
 	transform_3d_object.cxx \
 	Transform3DObjectImageProcessor.cxx \
-	NonRigidObjectTransformationUsingBSplines.cxx
+	NonRigidObjectTransformationUsingBSplines.cxx \
+	ScatterSimulationByBinWithMotion.cxx
 
 $(dir)_REGISTRY_SOURCES:= local_motion_registries.cxx
 
