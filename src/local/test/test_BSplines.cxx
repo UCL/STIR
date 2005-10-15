@@ -20,7 +20,7 @@
 /*!
   \file 
   \ingroup test
-  \brief tests the BSplines_1st_der_weight function
+  \brief tests the BSplines 
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
@@ -50,7 +50,7 @@ START_NAMESPACE_STIR
 namespace BSpline {
   /*!
     \ingroup test
-    \brief A simple class to test the BSplines_coef function.
+    \brief A simple class to test the BSplines function.
   */
   class BSplines_Tests : public RunTests
   {
