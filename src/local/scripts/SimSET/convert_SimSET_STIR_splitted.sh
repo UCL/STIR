@@ -1,3 +1,14 @@
+#
+# $Id$
+#
+#
+#  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+#      See STIR/LICENSE.txt for details
+#      
+# Author /Kris Thielemans
+# Author /Charalampos Tsoumpas 
+# This script is used to convert SimSET output into STIR projdata format, splitting double scatter sinogram into different files.
+
 #! /bin/bash
 #
 if [ $# -ne 1 ]; then
@@ -7,7 +18,6 @@ if [ $# -ne 1 ]; then
 fi
 
 max_ring_difference=$1
-
 
 set -e
 trap "echo ERROR in script " ERR
