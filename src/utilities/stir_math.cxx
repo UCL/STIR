@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2.0 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
 \file
@@ -12,7 +28,7 @@ with a somewhat awkward syntax.
 The command line arguments are as follows (but everything has to fit on 1 line):
 \code
   [--output-format parameter-filename ]
-  [-s] 
+  [-s [--max_segment_num_to_process number] ] 
   [--add | --mult] 
   [--power power_float] 
   [--times-scalar mult_scalar_float] 
@@ -52,6 +68,10 @@ used for input AND output. Note that when using this option together with
 first filename will first be manipulated according to '--power' and '--times-scalar'.<br>
 The '-s' option is necessary if the arguments are projection data.
 Otherwise, it is assumed the data are images.<br>
+For projection data, you can restrict the number of segments read/written
+using the --max_segment_num_to_process option (unless --accumulate is used).
+For example, using 2 as an argument of this option, will read/write
+segments -2,-1,0,1,2.<br>
 Multiple occurences of '--times-scalar' and '--divide-scalar' are
 allowed and will just result in accumulation of the factors.<P>
 The order of the manipulations is as follows:<br>
@@ -95,10 +115,6 @@ See the stir::OutputFileFormat hierarchy for possible values.
 
 $Date$
 $Revision$ 
-*/
-/*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/ArrayFunction.h"
@@ -166,7 +182,8 @@ main(int argc, char **argv)
   {
     cerr<< "Usage: " << argv[0] << "\n\t"
 	<< "[--output-format parameter-filename ]\n\t"
-	<< "[-s] [--accumulate] [--add | --mult]\n\t"
+	<< "[-s [--max_segment_num_to_process number] ]\n\t"
+	<< "[--accumulate] [--add | --mult]\n\t"
 	<< "[--power power_float]\n\t"
 	<< "[--times-scalar mult_scalar_float]\n\t"
 	<< "[--divide-scalar div_scalar_float]\n\t"
@@ -192,6 +209,10 @@ main(int argc, char **argv)
 	<< "(1) thresholding (2) power (3) scalar multiplication (4) scalar addition.\n\n"
 	<< "The '-s' option is necessary if the arguments are projection data."
 	<< " Otherwise, it is assumed the data are images.\n\n"
+	<< "For projection data, you can restrict the number of segments read/written\n"
+	<< "using the --max_segment_num_to_process option (unless --accumulate is used).\n"
+	<< "For example, using 2 as an argument of this option, will read/write"
+	<< "segments -2,-1,0,1,2.\n\n"
 	<< "WARNING: there is no check that the data sizes and other info are compatible "
 	<< "and the output will have the largest data size in the input, "
 	<< "and the characteristics (like voxel-size or so) are taken from the first input data. "
@@ -217,6 +238,7 @@ main(int argc, char **argv)
   bool except_first = true;
   bool verbose = false;
   bool do_projdata = false;
+  int max_segment_num_to_process = -1;
   shared_ptr<OutputFileFormat> output_format_sptr =
     new DefaultOutputFileFormat;
 
@@ -225,7 +247,14 @@ main(int argc, char **argv)
 
   while (argc>0 && argv[0][0]=='-')
   {
-    if (strcmp(argv[0], "--output-format")==0)
+    if (strcmp(argv[0], "--max_segment_num_to_process")==0)
+      {
+	if (argc<2)
+	  { cerr << "Option '--max_segment_num_to_process' expects a (int) argument\n"; exit(EXIT_FAILURE); }
+	max_segment_num_to_process = atoi(argv[1]);
+	argc-=2; argv+=2;
+      } 
+    else if (strcmp(argv[0], "--output-format")==0)
       {
 	if (argc<2)
 	  { 
@@ -398,13 +427,23 @@ main(int argc, char **argv)
       {
         all_proj_data[0] = ProjData::read_from_file(argv[0], ios::in | ios::out);
         out_proj_data_ptr = all_proj_data[0];
+
+	if (max_segment_num_to_process>=0)
+	  warning("Parameter max_segment_num_to_process will be ignored.");
       }
       else
       {
         all_proj_data[0] = ProjData::read_from_file(argv[0]);
-
+	shared_ptr<ProjDataInfo> output_proj_data_info_sptr =
+	  (*all_proj_data[0]).get_proj_data_info_ptr()->clone();
+	if (max_segment_num_to_process>=0)
+	  {
+	    output_proj_data_info_sptr->
+	      reduce_segment_range(-max_segment_num_to_process,
+				   max_segment_num_to_process);
+	  }
         out_proj_data_ptr =
-          new ProjDataInterfile((*all_proj_data[0]).get_proj_data_info_ptr()->clone(), 
+          new ProjDataInterfile(output_proj_data_info_sptr, 
                                 output_file_name);        
       }
 
@@ -413,12 +452,12 @@ main(int argc, char **argv)
 	all_proj_data[i] =  ProjData::read_from_file(argv[i]); 
 
       // do reading/writing in a loop over segments
-      for (int segment_num = (*all_proj_data[0]).get_min_segment_num();
-	   segment_num <= (*all_proj_data[0]).get_max_segment_num();
+      for (int segment_num = out_proj_data_ptr->get_min_segment_num();
+	   segment_num <= out_proj_data_ptr->get_max_segment_num();
 	   ++segment_num)
 	{   
 	  if (verbose)
-	    cout << "Processing segment num " << segment_num << "for all files" << endl;
+	    cout << "Processing segment num " << segment_num << " for all files" << endl;
 	  SegmentByView<float> segment_by_view = 
 	    (*all_proj_data[0]).get_segment_by_view(segment_num);
 	  if (!no_math_on_data && !except_first )
