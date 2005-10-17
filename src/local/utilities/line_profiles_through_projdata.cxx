@@ -56,11 +56,11 @@ int main(int argc, char *argv[])
 { 
   USING_NAMESPACE_STIR
     using namespace std;
-  if (argc!=3)
+  if (argc!=9)
     {
       cerr << "Usage:" << argv[0] << "\n"
 	   << "\t[proj_data_filename]\n" 
-	   << "\t[output_profile_filename]\n";
+	   << "\t[output_profile_filename] ax_min/max view_min/max tang_min/max\n";
       return EXIT_FAILURE;            
     }      
 	
@@ -71,8 +71,15 @@ int main(int argc, char *argv[])
 
   string output_profile_string(argv[2]);
 
-  int view_min, axial_min, tangential_min, 
-    view_max, axial_max, tangential_max;
+  const int axial_min = atoi(argv[3]);
+  const int axial_max = atoi(argv[4]);
+  const int view_min = atoi(argv[5]);
+  const int view_max = atoi(argv[6]);
+  const int tangential_min = atoi(argv[7]);
+  const int tangential_max = atoi(argv[8]);
+  /*
+  int view_min, tangential_min, 
+    view_max, tangential_max;
 
   view_min=
     projdata_info_ptr->get_min_view_num();
@@ -81,19 +88,22 @@ int main(int argc, char *argv[])
   axial_min=
     projdata_info_ptr->get_min_axial_pos_num(0);
   axial_max=
-    projdata_info_ptr->get_max_axial_pos_num(0);
+  projdata_info_ptr->get_max_axial_pos_num(0);
   tangential_min=
     projdata_info_ptr->get_min_tangential_pos_num();
   tangential_max=
     projdata_info_ptr->get_max_tangential_pos_num();
 			
-			
-  int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
-  int axial_mean=static_cast<int>(floor((axial_min+axial_max)/2.F));
+  */
+  /*  int view_mean=static_cast<int>(ceil((view_min+view_max)/2.F));
+  //int axial_mean=static_cast<int>(floor((axial_min+axial_max)/2.F));
   int tangential_mean=static_cast<int>(floor((tangential_min+tangential_max)/2.F));
-	
-  const Sinogram<float> profile_sinogram = input_projdata_sptr->get_sinogram(axial_mean,0);
-	
+  */
+  Sinogram<float> profile_sinogram = input_projdata_sptr->get_sinogram(axial_min,0);
+  for (int ax = axial_min+1; ax<=axial_max; ++ax)
+    profile_sinogram += input_projdata_sptr->get_sinogram(ax,0);
+  profile_sinogram /= (axial_max-axial_min+1);
+
   // along tangential direction
   {
     const std::string name=output_profile_string+"_tang.prof";
@@ -104,12 +114,16 @@ int main(int argc, char *argv[])
       //	" X-axis"<<
       {
 	profile_stream  << " s-Value (mm)" << "\t" <<  "Value" << endl ;
-
-	for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
+	Array<1,float> prof = profile_sinogram[view_min];
+	for (int view_num=view_min ; view_num<= view_max ; ++view_num)
+	  prof +=profile_sinogram[view_num];
+	prof /= (view_max-view_min+1);
+	for (int tang=projdata_info_ptr->get_min_tangential_pos_num() ; 
+	     tang<=projdata_info_ptr->get_max_tangential_pos_num() ; ++tang)
 	  {
-	    Bin bin(0,view_mean,axial_mean,tang,0);
+	    Bin bin(0,view_min,axial_min,tang,0);
 	    profile_stream  << std::setw(9) << projdata_info_ptr->get_s(bin) << "\t"
-			    << std::setw(7) << profile_sinogram[view_mean][tang] << endl ;
+			    << std::setw(7) << prof[tang] << endl ;
 	  }
 	profile_stream.close();   
       }
@@ -124,12 +138,17 @@ int main(int argc, char *argv[])
       //	" X-axis"<<
       {
 	profile_stream  << " phi (radians)" << "\t" <<  "Value" << endl ;
-	      
-	for (int view_num=view_min ; view_num<= view_max ; ++view_num)		
+	for (int view_num=projdata_info_ptr->get_min_view_num() ; 
+	     view_num<= projdata_info_ptr->get_max_view_num();
+	     ++view_num)		
 	  {
-	    Bin bin(0,view_num,axial_mean,tangential_mean,0);
+	    float value=0;
+	    for (int tang=tangential_min ; tang<= tangential_max ; ++tang)		
+	      value += profile_sinogram[view_num][tang];
+	    value /= tangential_max-tangential_min+1;
+		  Bin bin(0,view_num,axial_min,tangential_min,0);
 	    profile_stream  << std::setw(9) << projdata_info_ptr->get_phi(bin) << "\t"
-			    << std::setw(7) << profile_sinogram[view_num][tangential_mean] << endl ;
+			    << std::setw(7) << value << endl ;
 	  }
 	profile_stream.close();   
       }
