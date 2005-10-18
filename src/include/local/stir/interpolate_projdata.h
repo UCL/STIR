@@ -35,6 +35,27 @@ START_NAMESPACE_STIR
 
 class ProjData;
 template <int num_dimensions, class T> class BasicCoordinate;
+template <class elemT> class Sinogram;
+template <class elemT> class SegmentBySinogram;
+
+shared_ptr<ProjDataInfo>
+make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info);
+
+void
+make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
+			      const Sinogram<float>& in_sinogram);
+
+Sinogram<float>
+make_non_interleaved_sinogram(const ProjDataInfo& non_interleaved_proj_data_info,
+			      const Sinogram<float>& in_sinogram);
+
+void
+make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
+			     const SegmentBySinogram<float>& in_segment);
+
+SegmentBySinogram<float>
+make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info,
+			     const SegmentBySinogram<float>& in_segment);
 
 //! \brief Perform B-Splines Interpolation
 /*! 
@@ -60,11 +81,14 @@ template <int num_dimensions, class T> class BasicCoordinate;
 */
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-					 const ProjData& proj_data_in, const BSpline::BSplineType this_type);
+		     const ProjData& proj_data_in, 
+		     const BSpline::BSplineType this_type,
+		     const bool remove_interleaving = false);
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-		const ProjData& proj_data_in,
-		const BasicCoordinate<3, BSpline::BSplineType> & this_type);
+		     const ProjData& proj_data_in,
+		     const BasicCoordinate<3, BSpline::BSplineType> & this_type,
+		     const bool remove_interleaving = false);
 //@}
 
 END_NAMESPACE_STIR
