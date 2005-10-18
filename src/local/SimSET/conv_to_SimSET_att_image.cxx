@@ -105,13 +105,14 @@ int main(int argc, char *argv[])
 		DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();
 		while( in_iter != input_image_sptr->end_all_const())
 		{
+		  // values from standard Simset file at 511keV
 			if (fabs(*in_iter-0.096)<0.004)     // Water
 				*out_iter = 1.F;
 			else if (fabs(*in_iter-0.01)<0.010001) // Air
 				*out_iter = 0.F;
-			else if (fabs(*in_iter-2.2)<0.004)  // Bone
+			else if (fabs(*in_iter-0.19669)<0.004)  // Bone
 				*out_iter = 3.F; 
-			else if (fabs(*in_iter-0.26)<0.004) // Lung
+			else if (fabs(*in_iter-0.02468)<0.004) // Lung
 				*out_iter = 6.F;
 			else
 			{
