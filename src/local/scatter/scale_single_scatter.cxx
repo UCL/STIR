@@ -17,17 +17,12 @@ See STIR/LICENSE.txt for details
   $Revision$
 	
   \par Usage:
-  \code
-  correct_for_scatter [attenuation_correction_factors]
-  [no_scatter_viewgram]
-  [scatter_viewgram]
-  [scaled_scatter_filename]
-  [attenuation_threshold]
-  [global_scale_factor]
-							
+  see .cxx file  
+\code
+  \endcode
+  						
   Output: Viewgram with name scaled_scatter_filename
               
-  \endcode
   \param attenuation_threshold defaults to 1.01 (should be larger than 1)	  
 */
 
@@ -51,21 +46,24 @@ See STIR/LICENSE.txt for details
 int main(int argc, const char *argv[])                                  
 {         
 	USING_NAMESPACE_STIR
-	if (argc< 5 || argc>7)
+	if (argc< 5 || argc>8)
 	{
-	   cerr << "Usage:" << argv[0] << "\n"
-			<< "\t[attenuation_correction_factors]\n"
-			<< "\t[emission_projdata]\n"
-			<< "\t[scatter_projdata]\n" 
-			<< "\t[output_filename]\n"
-			<< "\t[attenuation_threshold]\n"
-			<< "\t[scale_factor_per_sinogram]\n"
-			<< "\tattenuation_threshold defaults to 1.01\n" 
-			<< "\tscale_factor_per_sinogram defaults to 1 for scaling per sinogram"	;		
+	   std::cerr << "Usage:\n" << argv[0] << "\n"
+		     << "\tattenuation_correction_factors\n"
+		     << "\temission_projdata\n"
+		     << "\tscatter_projdata\n" 
+		     << "\toutput_filename\n"
+		     << "\t[attenuation_threshold \n"
+		     << "\t[correct_for_interleaving]\n"
+		     << "\t[estimate_scale_factor_per_sinogram]]]\n"
+		     << "correct_for_interleaving default to 1\n"
+		     << "attenuation_threshold defaults to 1.01\n" 
+		     << "scale_factor_per_sinogram defaults to 1 for scaling per sinogram (otherwise no scaling)\n";		
 		return EXIT_FAILURE;            
 	}      
 	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 1.01 ;
-	const int est_scale_factor_per_sino = argc>=7 ? atoi(argv[6]) : 1 ; 
+	const bool remove_interleaving = argc>=7 ? atoi(argv[6]) : 1 ; 
+	const int est_scale_factor_per_sino = argc>=8 ? atoi(argv[7]) : 1 ; 
 	
 	shared_ptr< ProjData >  	
 		attenuation_correct_factors_sptr= 
@@ -94,26 +92,29 @@ int main(int argc, const char *argv[])
 
 	std::cout << "Interpolating scatter estimate to size of emission data" << std::endl;
 	ProjDataInMemory interpolated_direct_scatter(interpolated_direct_scatter_proj_data_info_sptr);	
-	interpolate_projdata(interpolated_direct_scatter, *scatter_proj_data_sptr, BSpline::linear);
+	interpolate_projdata(interpolated_direct_scatter, *scatter_proj_data_sptr, BSpline::linear, remove_interleaving);
 
-	ProjDataInMemory interpolated_scatter(emission_proj_data_info_sptr);
-	inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
-
-	std::cout << "Finding scale factors" << std::endl;
-	Array<2,float> scale_factors;
-	if (est_scale_factor_per_sino==1)
-	  scale_factors =
+	if (est_scale_factor_per_sino)
+	  {
+	    ProjDataInMemory interpolated_scatter(emission_proj_data_info_sptr);
+	    inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
+	    
+	    std::cout << "Finding scale factors" << std::endl;
+	    Array<2,float> scale_factors =
 	    scale_factors_per_sinogram(
 				       *emission_proj_data_sptr, 
 				       interpolated_scatter,
 				       *attenuation_correct_factors_sptr,
 				       attenuation_threshold);
-
-	std::cout << scale_factors;
-	std::cout << "applying scale factors" << std::endl;
-	scale_scatter_per_sinogram(scaled_scatter_proj_data, 
-				   interpolated_scatter,
-				   scale_factors) ;
-
+	    std::cout << scale_factors;
+	    std::cout << "applying scale factors" << std::endl;
+	    scale_scatter_per_sinogram(scaled_scatter_proj_data, 
+				       interpolated_scatter,
+				       scale_factors) ;
+	  }
+	else
+	  {
+	    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+	  }
 	return EXIT_SUCCESS;
 }                 
