@@ -33,7 +33,8 @@ $(dir)_SOURCES = \
 	interpolate_projdata.cxx \
 	read_input_function.cxx \
 	calculate_attenuation_coefficients.cxx \
-	make_grid_image.cxx
+	make_grid_image.cxx \
+	add_side_shields.cxx
 #	read_dynamic_images.cxx \
 #	CoG.cxx \
 #	make_cylinder.cxx 
