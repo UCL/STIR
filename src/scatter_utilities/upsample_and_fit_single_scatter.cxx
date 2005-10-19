@@ -55,10 +55,11 @@ int main(int argc, const char *argv[])
 		     << "\toutput_filename\n"
 		     << "\t[attenuation_threshold \n"
 		     << "\t[correct_for_interleaving]\n"
-		     << "\t[estimate_scale_factor_per_sinogram]]]\n"
+		     << "\t[estimate_scale_factor]]]\n"
 		     << "correct_for_interleaving default to 1\n"
 		     << "attenuation_threshold defaults to 1.01\n" 
-		     << "scale_factor_per_sinogram defaults to 1 for scaling per sinogram (otherwise no scaling)\n";		
+		     << "estimate_scale_factor defaults to 1 for scaling per sinogram\n"
+		     << "0 for  no scaling, 2 for by viewgram\n";		
 		return EXIT_FAILURE;            
 	}      
 	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 1.01 ;
@@ -94,12 +95,12 @@ int main(int argc, const char *argv[])
 	ProjDataInMemory interpolated_direct_scatter(interpolated_direct_scatter_proj_data_info_sptr);	
 	interpolate_projdata(interpolated_direct_scatter, *scatter_proj_data_sptr, BSpline::linear, remove_interleaving);
 
-	if (est_scale_factor_per_sino)
+	if (est_scale_factor_per_sino == 1)
 	  {
 	    ProjDataInMemory interpolated_scatter(emission_proj_data_info_sptr);
 	    inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 	    
-	    std::cout << "Finding scale factors" << std::endl;
+	    std::cout << "Finding scale factors by sinogram" << std::endl;
 	    Array<2,float> scale_factors =
 	    scale_factors_per_sinogram(
 				       *emission_proj_data_sptr, 
@@ -109,6 +110,24 @@ int main(int argc, const char *argv[])
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_sinogram(scaled_scatter_proj_data, 
+				       interpolated_scatter,
+				       scale_factors) ;
+	  }
+	else if (est_scale_factor_per_sino == 2)
+	  {
+	    ProjDataInMemory interpolated_scatter(emission_proj_data_info_sptr);
+	    inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
+	    
+	    std::cout << "Finding scale factors by viewgram" << std::endl;
+	    Array<2,float> scale_factors =
+	    scale_factors_per_viewgram(
+				       *emission_proj_data_sptr, 
+				       interpolated_scatter,
+				       *attenuation_correct_factors_sptr,
+				       attenuation_threshold);
+	    std::cout << scale_factors;
+	    std::cout << "applying scale factors" << std::endl;
+	    scale_scatter_per_viewgram(scaled_scatter_proj_data, 
 				       interpolated_scatter,
 				       scale_factors) ;
 	  }

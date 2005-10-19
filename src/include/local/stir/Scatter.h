@@ -305,11 +305,22 @@ void scatter_viewgram(
 		const ProjData& scatter_proj_data, 
 		const ProjData& att_proj_data, 
 		const float attenuation_threshold);
+	Array<2,float>
+		scale_factors_per_viewgram(const ProjData& no_scatter_proj_data, 
+		const ProjData& scatter_proj_data, 
+		const ProjData& att_proj_data, 
+		const float attenuation_threshold);
 
 	void scale_scatter_per_sinogram(
 		ProjData& scaled_scatter_proj_data, 		
 		const ProjData& scatter_proj_data, 
 		const Array<2,float> scale_factor_per_sinogram);
+
+
+	void scale_scatter_per_viewgram(
+		ProjData& scaled_scatter_proj_data, 		
+		const ProjData& scatter_proj_data, 
+		const Array<2,float> scale_factor_per_viewgram);
 
 /*	float estimate_scale_factor(
 		const shared_ptr<ProjData> & no_scatter_proj_data_sptr, 
