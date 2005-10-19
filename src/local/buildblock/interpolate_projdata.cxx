@@ -126,8 +126,8 @@ void
 make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
 			     const SegmentBySinogram<float>& in_segment)
 {
-  for (int axial_pos_num = out_segment.get_min_axial_pos_num()+1;
-       axial_pos_num <= out_segment.get_max_axial_pos_num()-1;
+  for (int axial_pos_num = out_segment.get_min_axial_pos_num();
+       axial_pos_num <= out_segment.get_max_axial_pos_num();
        ++axial_pos_num)
     {
       Sinogram<float> out_sinogram = out_segment.get_sinogram(axial_pos_num);
@@ -214,15 +214,37 @@ interpolate_projdata(ProjData& proj_data_out,
       make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
 				   proj_data_in.get_segment_by_sinogram(0));
     //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
-    const Array<3,float> input_extended_view = 
+    Array<3,float> extended = 
       extend_segment(non_interleaved_segment, 2, 2);
-    proj_data_interpolator.set_coef(input_extended_view);
+    for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
+      {
+	for (int y=extended[z].get_min_index(); y<= extended[z].get_max_index(); ++y)
+	  {
+	    const int old_min = extended[z][y].get_min_index();
+	    const int old_max = extended[z][y].get_max_index();
+	    extended[z][y].grow(old_min-1, old_max+1);
+	    extended[z][y][old_min-1] = extended[z][y][old_min];
+	    extended[z][y][old_max+1] = extended[z][y][old_max];
+	  }
+      }
+    proj_data_interpolator.set_coef(extended);
   }
   else
   {
-    const Array<3,float> input_extended_view = 
+    Array<3,float> extended = 
       extend_segment(proj_data_in.get_segment_by_sinogram(0), 2, 2);
-    proj_data_interpolator.set_coef(input_extended_view);
+    for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
+      {
+	for (int y=extended[z].get_min_index(); y<= extended[z].get_max_index(); ++y)
+	  {
+	    const int old_min = extended[z][y].get_min_index();
+	    const int old_max = extended[z][y].get_max_index();
+	    extended[z][y].grow(old_min-1, old_max+1);
+	    extended[z][y][old_min-1] = extended[z][y][old_min];
+	    extended[z][y][old_max+1] = extended[z][y][old_max];
+	  }
+      }
+    proj_data_interpolator.set_coef(extended);
   }
 	
   // now do interpolation		
