@@ -29,7 +29,7 @@ This file is part of STIR.
 	$Revision$
 */
 #include "stir/ProjData.h"
-#include "stir/display.h"
+//#include "stir/display.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/IndexRange.h"
@@ -213,7 +213,7 @@ interpolate_projdata(ProjData& proj_data_out,
     const SegmentBySinogram<float> non_interleaved_segment =
       make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
 				   proj_data_in.get_segment_by_sinogram(0));
-    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
+    //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
     const Array<3,float> input_extended_view = 
       extend_segment(non_interleaved_segment, 2, 2);
     proj_data_interpolator.set_coef(input_extended_view);
