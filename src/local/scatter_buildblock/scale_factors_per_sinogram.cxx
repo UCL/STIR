@@ -90,16 +90,23 @@ scale_factors_per_sinogram(const ProjData& emission_proj_data,
 	cerr << total_outside_emission[bin.segment_num()][bin.axial_pos_num()] << " " <<
 	  total_outside_scatter[bin.segment_num()][bin.axial_pos_num()] << '\n';
 #endif
-	if (total_outside_scatter[bin.segment_num()][bin.axial_pos_num()]<=
-	    scatter_sinogram.sum()/
-	    (proj_data_info.get_num_views() * proj_data_info.get_num_tangential_poss()) * .001
-	    )
-	  {
-	    error("Problem in finding scatter scaling factor.\nScatter data in mask too small. Adjust threshold?");
+	if (scatter_sinogram.sum()==0)
+	  {  
+	    scale_factors[bin.segment_num()][bin.axial_pos_num()] = 0;
 	  }
-	scale_factors[bin.segment_num()][bin.axial_pos_num()] = 
-	  total_outside_emission[bin.segment_num()][bin.axial_pos_num()]/
-	  total_outside_scatter[bin.segment_num()][bin.axial_pos_num()];
+	else
+	  {
+	    if (total_outside_scatter[bin.segment_num()][bin.axial_pos_num()]<=
+		scatter_sinogram.sum()/
+		(proj_data_info.get_num_views() * proj_data_info.get_num_tangential_poss()) * .001
+		)
+	      {
+		error("Problem in finding scatter scaling factor.\nScatter data in mask too small. Adjust threshold?");
+	      }
+	    scale_factors[bin.segment_num()][bin.axial_pos_num()] = 
+	      total_outside_emission[bin.segment_num()][bin.axial_pos_num()]/
+	      total_outside_scatter[bin.segment_num()][bin.axial_pos_num()];
+	  }
       }
 			
   return scale_factors;		
