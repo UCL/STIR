@@ -46,7 +46,7 @@ See STIR/LICENSE.txt for details
 int main(int argc, const char *argv[])                                  
 {         
 	USING_NAMESPACE_STIR
-	if (argc< 5 || argc>8)
+	if (argc< 5 || argc>9)
 	{
 	   std::cerr << "Usage:\n" << argv[0] << "\n"
 		     << "\tattenuation_correction_factors\n"
@@ -55,17 +55,20 @@ int main(int argc, const char *argv[])
 		     << "\toutput_filename\n"
 		     << "\t[attenuation_threshold \n"
 		     << "\t[correct_for_interleaving]\n"
-		     << "\t[estimate_scale_factor]]]\n"
+		     << "\t[estimate_scale_factor]\n"
+		     << "\t[mask_radius_in_mm]]]\n"
 		     << "correct_for_interleaving default to 1\n"
 		     << "attenuation_threshold defaults to 1.01\n" 
 		     << "estimate_scale_factor defaults to 1 for scaling per sinogram\n"
-		     << "0 for  no scaling, 2 for by viewgram\n";		
+		     << "0 for  no scaling, 2 for by viewgram\n"
+		     << "If mask_radius_in_mm is not specified, will use all available data\n";
 		return EXIT_FAILURE;            
 	}      
 	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 1.01 ;
 	const bool remove_interleaving = argc>=7 ? atoi(argv[6]) : 1 ; 
 	const int est_scale_factor_per_sino = argc>=8 ? atoi(argv[7]) : 1 ; 
-	
+	const float mask_radius_in_mm = argc>=9 ? atof(argv[8]) : -1 ; 
+
 	shared_ptr< ProjData >  	
 		attenuation_correct_factors_sptr= 
 		ProjData::read_from_file(argv[1]);
@@ -106,7 +109,8 @@ int main(int argc, const char *argv[])
 				       *emission_proj_data_sptr, 
 				       interpolated_scatter,
 				       *attenuation_correct_factors_sptr,
-				       attenuation_threshold);
+				       attenuation_threshold,
+				       mask_radius_in_mm);
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_sinogram(scaled_scatter_proj_data, 
@@ -124,7 +128,8 @@ int main(int argc, const char *argv[])
 				       *emission_proj_data_sptr, 
 				       interpolated_scatter,
 				       *attenuation_correct_factors_sptr,
-				       attenuation_threshold);
+				       attenuation_threshold,
+                                       mask_radius_in_mm);
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_viewgram(scaled_scatter_proj_data, 
