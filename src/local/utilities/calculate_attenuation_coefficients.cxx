@@ -37,12 +37,9 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Viewgram.h"
 #include "stir/ArrayFunction.h"
-#if 1
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
-#else
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#endif
 #include <iostream>
 #include <list>
 #include <algorithm>
@@ -106,9 +103,9 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
 
 static void print_usage_and_exit()
 {
-    cerr<<"\nUsage: calculate_attenuation_coefficients --AF|--ACF <output filename > <input header file name> <template_proj_data>\n"
-	<<"\t--ACF  calculates the attenuation correction factors\n"
-	<<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n";
+    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT]  --AF|--ACF <output filename > <input header file name> <template_proj_data>\n"
+	     <<"\t--ACF  calculates the attenuation correction factors\n"
+	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n";
     exit(EXIT_FAILURE);
 }
 
@@ -120,6 +117,14 @@ int
 main (int argc, char * argv[])
 {
 
+  // variable to decide to use the ray-tracing projection matrix or not
+  bool use_PMRT=false;
+
+  if (argc>1 && strcmp(argv[1],"--PMRT")==0)
+    {
+      use_PMRT=true; 
+      --argc; ++argv;
+    }
   if (argc!=5 )
     print_usage_and_exit();
 
@@ -159,15 +164,20 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_ptr = 
     ProjData::read_from_file(argv[3]);
 
-#if 0
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing();
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-#else
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing();
-#endif
+  shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
+  if (use_PMRT)
+    {
+      shared_ptr<ProjMatrixByBin> PM = 
+	new  ProjMatrixByBinUsingRayTracing();
+      forw_projector_ptr =
+	new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
+    }
+  else
+  {
+    forw_projector_ptr =
+      new ForwardProjectorByBinUsingRayTracing();
+  }
+
   forw_projector_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->clone(),
 			       attenuation_density_ptr );
   cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
