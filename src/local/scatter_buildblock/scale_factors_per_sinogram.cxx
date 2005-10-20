@@ -2,32 +2,29 @@
 // $Id$
 //
 /*!
-\file
-\ingroup scatter
-\brief Implementations of functions defined in Scatter.h
+  \file
+  \ingroup scatter
+  \brief Implementations of functions defined in Scatter.h
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
   \author Kris Thielemans
   
-	$Date$
-	$Revision$
+  $Date$
+  $Revision$
 	
-	  Copyright (C) 2004- $Date$, Hammersmith Imanet
-	  See STIR/LICENSE.txt for details
+  Copyright (C) 2004- $Date$, Hammersmith Imanet
+  See STIR/LICENSE.txt for details
 */
 #include "local/stir/Scatter.h"
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
 #include "stir/Bin.h"
-#include "stir/stream.h"
 #include "stir/CPUTimer.h"
 #include "stir/Sinogram.h"
 #include <stir/IndexRange2D.h> 
-#include <fstream>
-#include <cstdio>
-using namespace std;
+#include <iostream>
+
 
 START_NAMESPACE_STIR
 
@@ -35,7 +32,8 @@ Array<2,float>
 scale_factors_per_sinogram(const ProjData& emission_proj_data, 
 			   const ProjData & scatter_proj_data, 
 			   const ProjData& att_proj_data, 
-			   const float attenuation_threshold
+			   const float attenuation_threshold,
+			   const float mask_radius_in_mm
 			   ) 
 {
 	
@@ -71,6 +69,8 @@ scale_factors_per_sinogram(const ProjData& emission_proj_data,
 										  bin.axial_pos_num(),bin.segment_num());
 	const Sinogram<float> att_sinogram = att_proj_data.get_sinogram(
 									bin.axial_pos_num(),bin.segment_num());
+
+	int  count=0;
 	for (bin.view_num()=proj_data_info.get_min_view_num();
 	     bin.view_num()<=proj_data_info.get_max_view_num();
 	     ++bin.view_num())
@@ -79,17 +79,20 @@ scale_factors_per_sinogram(const ProjData& emission_proj_data,
 	       bin.tangential_pos_num()<=
 		 proj_data_info.get_max_tangential_pos_num();
 	       ++bin.tangential_pos_num())
-	    if (att_sinogram[bin.view_num()][bin.tangential_pos_num()]<attenuation_threshold)
-	      {						
+	    if (att_sinogram[bin.view_num()][bin.tangential_pos_num()]<attenuation_threshold &&
+		(mask_radius_in_mm<0 || mask_radius_in_mm>= std::fabs(scatter_proj_data.get_proj_data_info_ptr()->get_s(bin))))
+	      {
+		++count;
 		total_outside_scatter[bin.segment_num()][bin.axial_pos_num()] += 
 		  scatter_sinogram[bin.view_num()][bin.tangential_pos_num()] ;					
 		total_outside_emission[bin.segment_num()][bin.axial_pos_num()] += 
 		  emission_sinogram[bin.view_num()][bin.tangential_pos_num()] ;										
 	      }
 #ifndef NDEBUG
-	cerr << total_outside_emission[bin.segment_num()][bin.axial_pos_num()] << " " <<
+	std::cout << total_outside_emission[bin.segment_num()][bin.axial_pos_num()] << " " <<
 	  total_outside_scatter[bin.segment_num()][bin.axial_pos_num()] << '\n';
 #endif
+	std::cout << count << " bins in mask\n";
 	if (scatter_sinogram.sum()==0)
 	  {  
 	    scale_factors[bin.segment_num()][bin.axial_pos_num()] = 0;

@@ -300,16 +300,19 @@ void scatter_viewgram(
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B);
 
-	Array<2,float>
-		scale_factors_per_sinogram(const ProjData& no_scatter_proj_data, 
-		const ProjData& scatter_proj_data, 
-		const ProjData& att_proj_data, 
-		const float attenuation_threshold);
-	Array<2,float>
-		scale_factors_per_viewgram(const ProjData& no_scatter_proj_data, 
-		const ProjData& scatter_proj_data, 
-		const ProjData& att_proj_data, 
-		const float attenuation_threshold);
+// give mask_radius_in_mm negative to ignore it
+Array<2,float>
+  scale_factors_per_sinogram(const ProjData& no_scatter_proj_data, 
+			     const ProjData& scatter_proj_data, 
+			     const ProjData& att_proj_data, 
+			     const float attenuation_threshold,
+			     const float mask_radius_in_mm);
+Array<2,float>
+  scale_factors_per_viewgram(const ProjData& no_scatter_proj_data, 
+			     const ProjData& scatter_proj_data, 
+			     const ProjData& att_proj_data, 
+			     const float attenuation_threshold,
+			     const float mask_radius_in_mm);
 
 	void scale_scatter_per_sinogram(
 		ProjData& scaled_scatter_proj_data, 		

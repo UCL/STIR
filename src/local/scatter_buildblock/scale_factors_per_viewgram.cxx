@@ -29,7 +29,8 @@ Array<2,float>
 scale_factors_per_viewgram(const ProjData& emission_proj_data, 
 			   const ProjData & scatter_proj_data, 
 			   const ProjData& att_proj_data, 
-			   const float attenuation_threshold
+			   const float attenuation_threshold,
+			   const float mask_radius_in_mm
 			   ) 
 {
 	
@@ -65,6 +66,7 @@ scale_factors_per_viewgram(const ProjData& emission_proj_data,
 										  bin.view_num(),bin.segment_num());
 	const Viewgram<float> att_viewgram = att_proj_data.get_viewgram(
 									bin.view_num(),bin.segment_num());
+	int count=0;
 	for (bin.axial_pos_num()=proj_data_info.get_min_axial_pos_num(bin.segment_num());
 	     bin.axial_pos_num()<=proj_data_info.get_max_axial_pos_num(bin.segment_num());
 	     ++bin.axial_pos_num())
@@ -73,17 +75,21 @@ scale_factors_per_viewgram(const ProjData& emission_proj_data,
 	       bin.tangential_pos_num()<=
 		 proj_data_info.get_max_tangential_pos_num();
 	       ++bin.tangential_pos_num())
-	    if (att_viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]<attenuation_threshold)
+	    if (att_viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]<attenuation_threshold &&
+		(mask_radius_in_mm<0 || mask_radius_in_mm>= std::fabs(scatter_proj_data.get_proj_data_info_ptr()->get_s(bin))))
 	      {						
+		++count;
 		total_outside_scatter[bin.segment_num()][bin.view_num()] += 
 		  scatter_viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] ;					
 		total_outside_emission[bin.segment_num()][bin.view_num()] += 
 		  emission_viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] ;										
 	      }
 #ifndef NDEBUG
-	std::cerr << total_outside_emission[bin.segment_num()][bin.view_num()] << " " <<
+	std::cout << total_outside_emission[bin.segment_num()][bin.view_num()] << " " <<
 	  total_outside_scatter[bin.segment_num()][bin.view_num()] << '\n';
 #endif
+	std::cout << count << " bins in mask\n";
+
 	if (total_outside_scatter[bin.segment_num()][bin.view_num()]<=
 	    scatter_viewgram.sum()/
 	    (proj_data_info.get_num_axial_poss(bin.segment_num()) * proj_data_info.get_num_tangential_poss()) * .001
