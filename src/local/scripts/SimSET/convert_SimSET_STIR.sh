@@ -30,8 +30,8 @@ if [ ! -r rec.weight ]; then
 gunzip rec.weight.gz 
 fi
 
-min_scatter_bin_num=`~/simset/bin/printheader rec.weight |grep "Binning: min number of scatters" |awk '{ print $6 }'`
-max_scatter_bin_num=`~/simset/bin/printheader rec.weight |grep "Binning: max number of scatters" |awk '{ print $6 }'`
+min_scatter_bin_num=`${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: min number of scatters" |awk '{ print $6 }'`
+max_scatter_bin_num=`${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: max number of scatters" |awk '{ print $6 }'`
 
 num_scatter_bins=$(( $max_scatter_bin_num - $min_scatter_bin_num + 1 ))
 
@@ -45,10 +45,10 @@ do
 
 conv_SimSET_STIR \
 rec.weight fl \
-`~/simset/bin/printheader rec.weight |grep "Binning: number of AA bins" |awk '{ print $6 }'` \
-`~/simset/bin/printheader rec.weight |grep "Binning: number of TD bins" |awk '{ print $6 }'` \
-`~/simset/bin/printheader rec.weight |grep "Binning: number of Z bins" |awk '{ print $6 }'` $max_ring_difference \
-`~/simset/bin/printheader rec.weight |grep "Binning: max Transaxial Distance" |awk '{ print $5 }'` \
+`${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: number of AA bins" |awk '{ print $6 }'` \
+`${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: number of TD bins" |awk '{ print $6 }'` \
+`${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: number of Z bins" |awk '{ print $6 }'` $max_ring_difference \
+`${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: max Transaxial Distance" |awk '{ print $5 }'` \
 ${scatter_bin_num}  blue${i}_pink${j} ;
 done ; done 
 
