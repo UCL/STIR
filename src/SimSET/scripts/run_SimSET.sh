@@ -14,11 +14,12 @@
 ####################### Script inputs ##################################
 
 # These directories have to be changed for differents users
-DIR_SIMSET=/data/home/${USER}/simset
+#SIMSET_DIR=/data/home/${USER}/simset
 
 
 
 ########################  Script code ###################################
+
 
 if [ $# -ne 0 -o -z "${DIR_INPUT}" ]; then
     echo Environment variable DIR_INPUT will default to current directory.
@@ -58,6 +59,11 @@ if [ $# -ne 0 -o -z "${ATTEN_DATA}" ]; then
     exit 1
 fi
 
+convert_att_to_simset=1
+if [ ! -z "${CONVERT_ATT_TO_SIMSET}" ]; then
+convert_att_to_simset=${CONVERT_ATT_TO_SIMSET}
+fi
+
 if [ $# -ne 0 -o -z "${TEMPLATE_PHG}" ]; then
     TEMPLATE_PHG=template_phg.rec
 fi
@@ -91,11 +97,14 @@ stir_math  --output-format output_format_1byte.par \
    act.dat ${DIR_INPUT}/${EMISS_DATA}
 rm -f output_format_1byte.par
 
-# convert attenuation image to simset indices
-conv_to_SimSET_att_image att.dat ${DIR_INPUT}/${ATTEN_DATA}
-
+if [ $convert_att_to_simset == 1 ]; then
+  # convert attenuation image to simset indices
+  conv_to_SimSET_att_image att.dat ${DIR_INPUT}/${ATTEN_DATA}
+else
+  cp ${DIR_INPUT}/${ATTEN_DATA} att.dat
+fi
 # Building bin.rec and phg.rec from templates
-sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
+sed -e s#SIMSET_DIRECTORY#${SIMSET_DIR}# \
     -e s#INPUT_DIRECTORY#${DIR_INPUT}# \
     -e s#OUTPUT_DIRECTORY#${DIR_OUTPUT}# \
     -e s#BIN.REC#bin.rec# \
@@ -103,7 +112,7 @@ sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
   < ${TEMPLATE_PHG} > phg.rec
 
 
-sed -e s#SIMSET_DIRECTORY#${DIR_SIMSET}# \
+sed -e s#SIMSET_DIRECTORY#${SIMSET_DIR}# \
     -e s#INPUT_DIRECTORY#${DIR_INPUT}# \
     -e s#OUTPUT_DIRECTORY#${DIR_OUTPUT}# \
   < template_bin.rec > bin.rec
@@ -132,12 +141,12 @@ echo 1 >> index.dat
 echo n >> index.dat
 echo n >> index.dat
 
-$DIR_SIMSET/bin/makeindexfile < index.dat >& ${DIR_OUTPUT}/makeindex.log
-$DIR_SIMSET/bin/phg phg.rec > ${DIR_OUTPUT}/log
+$SIMSET_DIR/bin/makeindexfile < index.dat >& ${DIR_OUTPUT}/makeindex.log
+$SIMSET_DIR/bin/phg phg.rec > ${DIR_OUTPUT}/log
 
 rm -f ${DIR_OUTPUT}/rec.stat ${DIR_OUTPUT}/*.weight2 ${DIR_OUTPUT}/*.count ${DIR_OUTPUT}/index.dat
 # gzip ${DIR_OUTPUT}/*weight*
-rm ${DIR_OUTPUT}/rec.act_indexes ${DIR_OUTPUT}/rec.activity_image ${DIR_OUTPUT}/rec.att_indexes ${DIR_OUTPUT}/rec.attenuation_image
+#rm ${DIR_OUTPUT}/rec.act_indexes ${DIR_OUTPUT}/rec.activity_image ${DIR_OUTPUT}/rec.att_indexes ${DIR_OUTPUT}/rec.attenuation_image
 if [ ${DIR_INPUT} != ${DIR_OUTPUT} ]; then
   rm ${DIR_OUTPUT}/template_*
 fi
