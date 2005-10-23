@@ -21,7 +21,7 @@
 /*!
   \file
   \ingroup projdata
-  \brief Implementation of SSRB
+  \brief Implementation of stir::SSRB
 
   \author Kris Thielemans
 
@@ -53,20 +53,22 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      const int num_segments_to_combine,
      const int num_views_to_combine,
      const int num_tang_poss_to_trim,
-     const int max_in_segment_num_to_process
+     const int max_in_segment_num_to_process_argument
      )
 {
   if (num_segments_to_combine%2==0)
     error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
 	  num_segments_to_combine);
+  const int max_in_segment_num_to_process =
+    max_in_segment_num_to_process_argument >= 0
+    ? max_in_segment_num_to_process_argument 
+    : in_proj_data_info.get_max_segment_num();
+
   if (in_proj_data_info.get_max_segment_num() < max_in_segment_num_to_process)
     error("SSRB: max_in_segment_num_to_process (%d) is too large\n"
 	  "Input data has maximum segment number %d.",
 	  max_in_segment_num_to_process,
 	  in_proj_data_info.get_max_segment_num());
-  if (max_in_segment_num_to_process < 0)
-    error("SSRB: max_in_segment_num_to_process (%d) is negative.",
-	  max_in_segment_num_to_process);
   if (in_proj_data_info.get_num_tangential_poss() <=
       num_tang_poss_to_trim)
     error("SSRB: too large number of tangential positions to trim (%d)\n",
