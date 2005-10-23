@@ -49,6 +49,7 @@ do for j in $all_scatter_bin_nums ;
         `${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: number of Z bins" |awk '{ print $6 }'` \
         $max_ring_difference \
         `${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: max Transaxial Distance" |awk '{ print $5 }'` \
+        `${SIMSET_DIR}/bin/printheader rec.weight |grep "Binning: range on Z value" |awk '{ print $6 }'` \
         ${scatter_bin_num} blue${i}_pink${j};
   done 
 done 

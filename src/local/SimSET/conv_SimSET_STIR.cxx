@@ -19,7 +19,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
-#define NUMARG 10
+#define NUMARG 11
 
 
 int main(int argc,char **argv)
@@ -39,8 +39,9 @@ static char *opcions[]={
     "argv[5]  Axial slices in SimSET file\n",
     "argv[6]  Segment\n",
     "argv[7]  FOV_radius in cm as given to simset binning module (max_td)\n",
-    "argv[8]  index of 3d-sinogram in file (0-based)\n"
-    "argv[9]  STIR file name\n"
+    "argv[8]  range on Z value in cm as given to simset binning module\n",
+    "argv[9]  index of 3d-sinogram in file (0-based)\n"
+    "argv[10] STIR file name\n"
     };
 if (argc!=NUMARG){
   printf("\n\nConvert SimSET to STIR\n\n");
@@ -56,8 +57,9 @@ ncol=atoi(argv[4]);
 slices=atoi(argv[5]);
 segment=atoi(argv[6]);
  const float FOV_radius = atof(argv[7])*10; // times 10 for mm
-const int dataset_num = atoi(argv[8]);
-strcpy(fima,argv[9]);
+ const float scanner_length = atof(argv[8])*10; // times 10 for mm
+const int dataset_num = atoi(argv[9]);
+strcpy(fima,argv[10]);
 nitems=nfil*ncol;
 
 
@@ -66,9 +68,24 @@ if( (file=fopen(fseq,"rb")) ==NULL){
     printf("\n\nCannot open the simset file\n\n");
     exit(EXIT_FAILURE);
     }
- shared_ptr<Scanner> scanner_sptr = new Scanner(Scanner::E962);
- const float scanner_length = 
-   scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
+ shared_ptr<Scanner> scanner_sptr;
+ {
+  scanner_sptr = new Scanner(Scanner::E966);
+  const float this_scanner_length = 
+    scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
+  if (fabs(this_scanner_length - scanner_length)>1.0)
+    {
+      scanner_sptr = new Scanner(Scanner::E962);
+      const float this_scanner_length = 
+	scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
+      if (fabs(this_scanner_length - scanner_length)>1.0)
+	{
+	  warning("scanner length %g does not match 966 nor 962. Using 962 anyway");
+	}
+    }
+ }
+ warning("Selected scanner %s", scanner_sptr->get_name().c_str());
+
  scanner_sptr->set_num_rings(slices);
  scanner_sptr->set_ring_spacing(scanner_length/slices);
  scanner_sptr->set_num_detectors_per_ring(nfil*2);
@@ -91,8 +108,11 @@ if(strncmp(tipoin,"fl",2)==0){
   //seq=vector(0,(slices*slices*nitems)-1);
    //q=vector(0,num_ima_extr*nitems-1);
    }
-else printf("\nFORMATO DE FICHERO NO VALIDO\n\n");
-//fread(seq,4,slices*slices*nitems,file);
+else 
+  {
+    error("\nfile format %s not valid. Only fl at present", tipoin);
+  }
+
 
 // skip simset header
   if (fseek(file, 32768 + dataset_num*slices*slices*nitems*4, SEEK_SET) != 0)
