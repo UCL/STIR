@@ -1,11 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup utilities
-  \brief Main program for SSRB
+  \brief Main program for stir::SSRB
 
   \author Kris Thielemans
 
@@ -36,19 +52,15 @@
   normalised (at least as far as SSRB concerns). \a num_segments_to_combine=3
   results in ring differences -1,0,1 to be combined all into segment 0, etc. 
   \see 
-  SSRB(const string& output_filename,
-     const ProjData& in_projdata,
-     const int num_segments_to_combine,
-     const int num_views_to_combine,
-     const int num_tang_poss_to_trim,
-     const bool do_normalisation,
-     const int max_in_segment_num_to_process
+  stir::SSRB(const std::string& output_filename,
+             const stir::ProjData& in_projdata,
+	     const int num_segments_to_combine,
+	     const int num_views_to_combine,
+	     const int num_tang_poss_to_trim,
+	     const bool do_normalisation,
+	     const int max_in_segment_num_to_process
      )
   for info on parameters and restrictions.
-*/
-/*
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -92,13 +104,7 @@ int main(int argc, char **argv)
   const int span = argc<=3?1 : atoi(argv[3]);
   const int num_views_to_combine = argc<=4 ? 1 : atoi(argv[4]);
   const bool do_norm = argc<=5 ? true : atoi(argv[5]) != 0;
-  const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[5]);
-  if (max_segment_num_to_process>0 && max_segment_num_to_process%2==0)
-    {
-      warning("SSRB: the 'extra_span' argument has to be odd, but it is %d. Aborting\n", 
-	      max_segment_num_to_process);
-      return EXIT_FAILURE;
-    }
+  const int max_segment_num_to_process = argc <=6 ? -1 : atoi(argv[6]);
   SSRB(output_filename,
        *in_projdata_ptr,
        span,
