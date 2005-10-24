@@ -83,17 +83,17 @@ int main(int argc, char **argv)
 	error("error parsing transformation");
   }
 
-  const int max_in_segment_num_to_process = argc <=4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[3]);
+  const int max_in_segment_num_to_process = argc <4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[3]);
 
   shared_ptr<ProjDataInfo> proj_data_info_ptr; // template for output
   int max_out_segment_num_to_process=-1;
-  if (argc<=5)
+  if (argc>=5)
     {
       shared_ptr<ProjData> template_proj_data_sptr = 
 	ProjData::read_from_file(argv[4]);
       proj_data_info_ptr =
 	template_proj_data_sptr->get_proj_data_info_ptr()->clone();
-      if (argc<=6)
+      if (argc>=6)
 	max_out_segment_num_to_process = atoi(argv[5]);
     }
   else
