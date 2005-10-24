@@ -1,3 +1,5 @@
+#! /bin/bash
+#
 #
 # $Id$
 #
@@ -9,8 +11,6 @@
 # Author Charalampos Tsoumpas 
 # This script is used to convert SimSET output into STIR projdata format, splitting double scatter sinogram into different files.
 
-#! /bin/bash
-#
 if [ $# -ne 1 ]; then
     echo "usage:"
     echo "$0 max_ring_difference"
@@ -20,11 +20,9 @@ fi
 max_ring_difference=$1
 
 set -e
-trap "echo ERROR in script " ERR
+script_name="$0"
+trap "echo ERROR in script $script_name" ERR
 PRINTHEADER=${SIMSET_DIR}/bin/printheader
-
-#echo dir $DIR
-#cd ~/sim_pet/data/${DIR}
 
 if [ ! -r rec.weight ]; then
 gunzip rec.weight.gz 
