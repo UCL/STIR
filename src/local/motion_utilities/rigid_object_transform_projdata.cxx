@@ -43,37 +43,58 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc < 10 || argc > 13)
+  const char * const program_name = argv[0];
+  // skip program name
+  --argc;
+  ++argv;
+
+  bool do_origin_shift = true;
+  while (argc>0 && argv[0][0]=='-')
+  {
+    if (strcmp(argv[0], "--no_origin_shift")==0)
+    {
+      do_origin_shift = false;
+      argc-=1; argv+=1;
+    }
+    else
+      { std::cerr << "Unknown option '" << argv[0] <<"'\n"; exit(EXIT_FAILURE); }
+  }
+
+  if (argc < 3 || argc > 6)
     {
       std::cerr << "Usage:\n"
-	   << argv[0] << " output_filename input_projdata_name q0 qx qy qz tx ty tz [max_in_segment_num_to_process [template_projdata_name [max_out_segment_num_to_process ]]]\n"
-	   << "max_in_segment_num_to_process defaults to all segments\n"
+		<< program_name 
+		<< "\n\t --no_origin_shift\\"
+		<< "\n\t output_filename input_projdata_name  \\"
+		<< "\n\t \"{{q0, qz, qy, qx},{ tz, ty, tx}}\"\\"
+		<<"\n\t [max_in_segment_num_to_process [template_projdata_name [max_out_segment_num_to_process ]]]\n"
+		<< "max_in_segment_num_to_process defaults to all segments\n"
 		<< "max_out_segment_num_to_process defaults to all segments in template\n";
       exit(EXIT_FAILURE);
     }
-  const std::string  output_filename = argv[1];
-  shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[2]);  
+  const std::string  output_filename = argv[0];
+  shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[1]);  
   //const float angle_around_x =  atof(argv[3]) *_PI/180;
-  Quaternion<float> quat(static_cast<float>(atof(argv[3])),
-			 static_cast<float>(atof(argv[4])),
-			 static_cast<float>(atof(argv[5])),
-			 static_cast<float>(atof(argv[6])));
-  quat.normalise();
-  const CartesianCoordinate3D<float> translation(static_cast<float>(atof(argv[9])),
-						 static_cast<float>(atof(argv[8])),
-						 static_cast<float>(atof(argv[7])));
-  const int max_in_segment_num_to_process = argc <=10 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[10]);
+  RigidObject3DTransformation rigid_object_transformation;
+  {
+    std::istringstream s(argv[2]);
+    s >> rigid_object_transformation;
+    if (!s)
+	error("error parsing transformation");
+  }
+
+  const int max_in_segment_num_to_process = argc <=4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[3]);
 
   shared_ptr<ProjDataInfo> proj_data_info_ptr; // template for output
   int max_out_segment_num_to_process=-1;
-  if (argc>11)
+  if (argc<=5)
     {
       shared_ptr<ProjData> template_proj_data_sptr = 
-	ProjData::read_from_file(argv[11]);
+	ProjData::read_from_file(argv[4]);
       proj_data_info_ptr =
 	template_proj_data_sptr->get_proj_data_info_ptr()->clone();
-      if (argc>12)
-	max_out_segment_num_to_process = atoi(argv[12]);
+      if (argc<=6)
+	max_out_segment_num_to_process = atoi(argv[5]);
     }
   else
     {
@@ -88,11 +109,28 @@ int main(int argc, char **argv)
 
   ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
 
+  if (do_origin_shift)
+    {
+      const float in_z_shift =
+	-in_projdata_ptr->get_proj_data_info_ptr()->get_m(Bin(0,0,0,0));
+      const float out_z_shift =
+	-proj_data_info_ptr->get_m(Bin(0,0,0,0));
+
+      RigidObject3DTransformation from_centre_to_out(Quaternion<float>(1,0,0,0),
+						     CartesianCoordinate3D<float>(-out_z_shift,0,0));
+      RigidObject3DTransformation from_in_to_centre(Quaternion<float>(1,0,0,0),
+						 CartesianCoordinate3D<float>(in_z_shift,0,0));
+      rigid_object_transformation = 
+	compose(from_centre_to_out,
+		compose(rigid_object_transformation, from_in_to_centre));
+      std::cout << "\nTransformation after shift: " << rigid_object_transformation;
+    }
+
   CPUTimer timer;
   timer.start();
   Succeeded succes =
     transform_3d_object(out_projdata, *in_projdata_ptr,
-			RigidObject3DTransformation(quat, translation),
+			rigid_object_transformation,
 			-max_in_segment_num_to_process,
 			max_in_segment_num_to_process);
   timer.stop();
