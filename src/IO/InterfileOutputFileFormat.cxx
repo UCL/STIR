@@ -78,7 +78,8 @@ InterfileOutputFileFormat::
   // TODO modify write_basic_interfile to return filename
   
   Succeeded success =
-    write_basic_interfile(filename, density, type_of_numbers);
+    write_basic_interfile(filename, density, 
+			  this->type_of_numbers, this->scale_to_write_data);
   if (success == Succeeded::yes)
     replace_extension(filename, ".hv");
   return success;

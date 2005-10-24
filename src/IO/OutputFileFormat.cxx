@@ -1,21 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup IO
   
-  \brief  implementation of the OutputFileFormat class 
+  \brief  implementation of the stir::OutputFileFormat class 
   \author Kris Thielemans
       
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
@@ -41,6 +52,7 @@ set_defaults()
 {
   file_byte_order = ByteOrder::native;
   type_of_numbers = NumericType::FLOAT;
+  scale_to_write_data = 0.F;
 
   set_key_values();
 }
@@ -70,6 +82,8 @@ initialise_keymap()
 		 &number_format_values);
   parser.add_key("number of bytes per pixel",
 		 &bytes_per_pixel);
+  parser.add_key("scale_to_write_data",
+		 &scale_to_write_data);
 }
 
 void 
@@ -151,6 +165,11 @@ OutputFileFormat::
 get_byte_order()
 { return file_byte_order; }
 
+float
+OutputFileFormat::
+get_scale_to_write_data() const
+{ return scale_to_write_data; }
+
 NumericType 
 OutputFileFormat::
 set_type_of_numbers(const NumericType& new_type, const bool warn)
@@ -160,6 +179,11 @@ ByteOrder
 OutputFileFormat::
 set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 { return file_byte_order = new_byte_order; }
+
+float
+OutputFileFormat::
+set_scale_to_write_data(const float new_scale_to_write_data, const bool warn)
+{ return scale_to_write_data = new_scale_to_write_data; }
 
 void
 OutputFileFormat::
