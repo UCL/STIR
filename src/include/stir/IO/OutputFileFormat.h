@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup IO
-  \brief Declaration of class OutputFileFormat
+  \brief Declaration of class stir::OutputFileFormat
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003-$Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_IO_OutputFileFormat_H__
@@ -41,6 +53,17 @@ class Succeeded;
   \brief 
   Base class for classes that create output files.
 
+  \par Parsing
+  The following keywords can be parsed (defaults indicated).
+  \verbatim
+   ; byte order defaults to native order
+   byte order := littleendian
+   ; type specification as in Interfile
+   number format:=float
+   number of bytes per pixel:=4
+
+   scale_to_write_data:=0
+  \endverbatim
   \todo Support projection data
   \todo  Provide functions that enable the user to inquire about
   capabilities. For instance, supports_multi_time_frames(),
@@ -89,11 +112,17 @@ public:
                   const DiscretisedDensity<3,float>& density) const;
 
 
-  //! get type used for outputing numbers 
+  //! get type used for outputting numbers 
   NumericType get_type_of_numbers() const;
   //! get byte order used for output 
   ByteOrder get_byte_order();
-  //! set type used for outputing numbers 
+  //! get scale to write the data
+  /*! \see set_scale_to_write_data
+   */
+  float get_scale_to_write_data() const;
+
+
+  //! set type used for outputting numbers 
   /*! Returns type actually used. 
      Calls warning() with some text if the requested type is not supported.
   
@@ -117,12 +146,27 @@ public:
   */ 
   virtual void set_byte_order_and_type_of_numbers(ByteOrder&, NumericType&, const bool warn = false);
 
+  //! set scale outputting numbers 
+  /*! Returns scale actually used. 
+     Calls warning() with some text if the requested scale is not supported.
+  
+     If \a scale_to_write_data is 0 (which is the default), the output will
+     be rescaled such that the maximum range of the output type of numbers is used,
+     except for floats and doubles in which case no rescaling occurs.
+
+     Default implementation accepts any scale.
+  */
+  virtual float set_scale_to_write_data(const float new_scale_to_write_data, const bool warn=false);
 
 protected:
-  //! type used for outputing numbers 
+  //! type used for outputting numbers 
   NumericType type_of_numbers;
   //! byte order used for output 
   ByteOrder file_byte_order;
+  //! scale to write the data
+  /*! \see set_scale_to_write_data
+   */
+  float scale_to_write_data;
 
   //! virtual function called by write_to_file()
   /*! This function has to be overloaded by the derived class.
@@ -161,7 +205,6 @@ private:
 
   int number_format_index;
   int byte_order_index;
-
   int bytes_per_pixel;
 };
 
