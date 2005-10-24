@@ -23,15 +23,18 @@ if [ $# -eq 0 ]; then
 fi
 
 set -e
+script_name="$0"
+trap "echo ERROR in script $script_name" ERR
+PRINTHEADER=${SIMSET_DIR}/bin/printheader
 
 while [ $# -ne 0 ]; do
-  pushd $1
-  num_photons=`grep num_to_simulate phg.rec|awk '{print $4}'`
-  for f in doubles11  doubles20  multiples  singles  trues; do
+  all=`SimSET_STIR_names.sh $1/rec.weight`
+  dir="$1/"
+  num_photons=`grep num_to_simulate ${dir}phg.rec|awk '{print $4}'`
+  for f in $all; do
     stir_math -s --including-first --times-scalar $num_photons --divide-scalar 100000000 \
-      ${f}_norm.hs ${f}.hs 2> /dev/null
+      ${dir}${f}_norm.hs ${dir}${f}.hs 2> /dev/null
   done
-  popd
   shift
 done
 

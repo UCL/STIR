@@ -13,8 +13,8 @@ set -e
 trap "echo ERROR in script " ERR
 
 mult_num_photons.sh $*
+all=(`SimSET_STIR_names.sh $1/rec.weight`)
 
-all=(doubles11  doubles20  multiples  singles  trues)
 
 for i in `count 0 $(( ${#all[*]} - 1))`; do
   all_files=""
