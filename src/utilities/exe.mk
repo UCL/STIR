@@ -30,7 +30,7 @@ $(dir)_SOURCES:=manip_image.cxx \
 ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
   # ifheaders_for_ecat7 etc as well
-  $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx
+  $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx print_ecat_singles_values.cxx
 endif
 
 ${DEST}$(dir)/poisson_noise: ${DEST}$(dir)/poisson_noise$(O_SUFFIX) \
