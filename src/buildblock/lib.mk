@@ -47,6 +47,7 @@ $(dir)_LIB_SOURCES := \
 	ArrayFilter1DUsingConvolution.cxx \
 	SeparableConvolutionImageFilter.cxx \
 	SSRB.cxx \
+	inverse_SSRB.cxx \
 	centre_of_gravity.cxx
  
 

@@ -30,7 +30,7 @@
 */
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
-#include "local/stir/inverse_SSRB.h"
+#include "stir/inverse_SSRB.h"
 #include "stir/Sinogram.h"
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
