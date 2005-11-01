@@ -47,6 +47,23 @@ inverse_SSRB(ProjData& proj_data_4D,
 	const ProjDataInfo * const proj_data_4D_info_ptr =
 		dynamic_cast<ProjDataInfo const * >
 		(proj_data_4D.get_proj_data_info_ptr());
+	if ((proj_data_3D_info_ptr->get_min_view_num() !=
+	     proj_data_4D_info_ptr->get_min_view_num()) ||
+	    (proj_data_3D_info_ptr->get_min_view_num() !=
+	     proj_data_4D_info_ptr->get_min_view_num()))
+	  {
+	    warning("inverse_SSRB: incompatible view-information");
+	    return Succeeded::no;
+	  }
+	if ((proj_data_3D_info_ptr->get_min_tangential_pos_num() !=
+	     proj_data_4D_info_ptr->get_min_tangential_pos_num()) ||
+	    (proj_data_3D_info_ptr->get_min_tangential_pos_num() !=
+	     proj_data_4D_info_ptr->get_min_tangential_pos_num()))
+	  {
+	    warning("inverse_SSRB: incompatible tangential_pos-information");
+	    return Succeeded::no;
+	  }
+
  	// keep sinograms out of the loop to avoid reallocations
 	// initialise to something because there's no default constructor
 	Sinogram<float> sino_4D = 
@@ -89,7 +106,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 
 					if (fabs(out_m - .5F*(in_m + in_m_next)) < 1E-2)
 					{	
-						sino_4D += sino_3D;		
+						sino_4D += sino_3D;
 						sino_4D += proj_data_3D.get_sinogram(in_ax_pos_num+1,0);
 						sino_4D *= .5F;
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
