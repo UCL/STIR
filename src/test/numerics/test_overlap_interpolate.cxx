@@ -49,6 +49,22 @@ class overlap_interpolateTests : public RunTests
 public:
   void run_tests();
 private:
+#ifndef STIR_OVERLAP_NORMALISATION
+  template <class ValueT, class BoundaryT>
+  static 
+  void
+  divide_by_out_size(
+		     ValueT& outvalues,
+		     const BoundaryT& outboundaries)
+  {
+    typename ValueT::iterator iter = outvalues.begin();
+    typename BoundaryT::const_iterator bound_iter = outboundaries.begin();
+    for (; iter != outvalues.end(); ++iter, ++bound_iter)
+      {
+	*iter /= (*(bound_iter+1)) - (*bound_iter);
+      }
+  }
+#endif
 
   template <class ValueT, class BoundaryT>
   Succeeded
@@ -63,6 +79,10 @@ private:
 			outboundaries.begin(), outboundaries.end(),
 			invalues.begin(), invalues.end(),
 			inboundaries.begin(), inboundaries.end());
+#ifndef STIR_OVERLAP_NORMALISATION
+    divide_by_out_size(my_outvalues, outboundaries);
+#endif
+
     const bool ret = check_if_equal(my_outvalues, outvalues,description);
     if (!ret)
       std::cerr << "\nres: " << my_outvalues << "should be " << outvalues;
@@ -82,10 +102,12 @@ private:
     ValueT my_outvalues = outvalues;
     overlap_interpolate(my_outvalues,
 			invalues, zoom, offset);
+#ifndef STIR_OVERLAP_NORMALISATION
     std::for_each(my_outvalues.begin(), my_outvalues.end(), _1 *= zoom);
+#endif
     const bool ret = check_if_equal(my_outvalues, outvalues,description);
     if (!ret)
-      std::cerr << "\nres: " << my_outvalues << "should be " << outvalues;
+      std::cerr << "\nres: " << my_outvalues << "should be " << outvalues << '\n';
     return 
       ret  ? Succeeded::yes : Succeeded::no;
   }
