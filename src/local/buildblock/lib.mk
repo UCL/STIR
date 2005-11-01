@@ -11,7 +11,6 @@ $(dir)_LIB_SOURCES:= \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
-	inverse_SSRB.cxx \
 	interpolate_projdata.cxx \
   	find_fwhm_in_image.cxx \
         AbsTimeIntervalFromECAT7ACF.cxx \
