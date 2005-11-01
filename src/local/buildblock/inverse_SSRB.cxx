@@ -2,31 +2,31 @@
 // $Id$
 //
 /*
-Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
-This file is part of STIR.
+  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
   (at your option) any later version.
   
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 	
-	  See STIR/LICENSE.txt for details
+  See STIR/LICENSE.txt for details
 */
 /*!
-\file
-\ingroup projdata
-\brief Implementation of inverse_SSRB
+  \file
+  \ingroup projdata
+  \brief Implementation of stir::inverse_SSRB
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   
-	$Date$
-	$Revision$
+  $Date$
+  $Revision$
 */
 #include "stir/ProjData.h"
 #include "stir/ProjDataInfo.h"
@@ -96,7 +96,9 @@ inverse_SSRB(ProjData& proj_data_4D,
 							return Succeeded::no;
 						break;
 					}
-				}					
+				}
+				warning("inverse_SSRB: no sinogram contributes to segment %d, axial_pos_num %d",
+					out_segment_num, out_ax_pos_num);
 		}
 	}
 	return Succeeded::yes;
