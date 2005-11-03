@@ -1,0 +1,18 @@
+!INTERFILE  :=
+!name of data file := test_image_PM_QP_6.v
+!total number of images := 31
+!data offset in bytes := 0
+!imagedata byte order := LITTLEENDIAN
+!number format := short float
+!number of bytes per pixel := 4
+matrix axis label [1] := x
+!matrix size [1] := 60
+scaling factor (mm/pixel) [1] := 4.44114
+matrix axis label [2] := y
+!matrix size [2] := 60
+scaling factor (mm/pixel) [2] := 4.44114
+;Correct value is of keyword (commented out)
+;!slice thickness (pixels) := 0.75994
+;Value for Analyze
+!slice thickness (pixels) := 3.375
+!END OF INTERFILE :=
