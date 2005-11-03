@@ -39,6 +39,7 @@
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
+#include <string>
 
 START_NAMESPACE_STIR
 
@@ -64,8 +65,6 @@ START_NAMESPACE_STIR
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel_size divided by the Euclidean distance between the points.
  
-  \todo include set_weights etc functions
-
   \par Parsing
   These are the keywords that can be used in addition to the ones in GeneralPrior.
   \verbatim
