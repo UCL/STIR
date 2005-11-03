@@ -1,19 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup recon_buildblock
-  \brief  implementation of the QuadraticPrior class 
+  \brief  implementation of the stir::QuadraticPrior class 
     
   \author Kris Thielemans
+  \author Sanida Mustafovic
 
   $Date$        
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/recon_buildblock/QuadraticPrior.h"
@@ -34,13 +47,10 @@ QuadraticPrior<elemT>::initialise_keymap()
   this->parser.add_start_key("Quadratic Prior Parameters");
   this->parser.add_key("only 2D", &only_2D); 
   this->parser.add_key("kappa filename", &kappa_filename);
-  this->parser.add_key("precomputed weights", &precomputed_weights);
-  this->parser.add_key ("precomputed weights 3D", &precomputed_weights_3D);
-
-  this->parser.add_key("gradient filename", &gradient_filename);
+  this->parser.add_key("weights", &weights);
+  this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
   this->parser.add_stop_key("END Quadratic Prior Parameters");
 }
-
 
 template <typename elemT>
 bool 
@@ -49,50 +59,49 @@ QuadraticPrior<elemT>::post_processing()
   if (GeneralisedPrior<elemT>::post_processing()==true)
     return true;
   if (kappa_filename.size() != 0)
-    kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
+    this->kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
 
-  if (precomputed_weights.get_length() !=0 || precomputed_weights_3D.get_length() !=0)
-  {
-     unsigned int size_z=0;
-     unsigned int size_y=0;
-     unsigned int size_x=0;
-    if (precomputed_weights_3D.get_length() !=0)
-    {
-    size_z = precomputed_weights_3D.get_length();
-    size_y = precomputed_weights_3D[0].get_length();
-    size_x = precomputed_weights_3D[0][0].get_length();  
-    }
-    else
-    {
-      size_z = 1;
-     size_y = precomputed_weights.get_length();
-     size_x = precomputed_weights[0].get_length();  
-    }
-    const int min_index_z = -static_cast<int>(size_z/2);
-    const int min_index_y = -static_cast<int>(size_y/2);
-    const int min_index_x = -static_cast<int>(size_x/2);
-    
-    weights.grow(IndexRange3D(min_index_z, min_index_z+size_z-1,
-			      min_index_y, min_index_y + size_y - 1,
-			      min_index_x, min_index_x + size_x - 1 ));
+  bool warn_about_even_size = false;
 
- for (int k = min_index_z; k<= weights.get_max_index(); ++k)
-  for (int j = min_index_y; j<= weights[k].get_max_index(); ++j)
-    for (int i = min_index_x; i<= weights[k][j].get_max_index(); ++i)
+  if (this->weights.size() ==0)
     {
-   if (precomputed_weights_3D.get_length() !=0)
-   {
-    weights[k][j][i] = 
-      static_cast<float>(precomputed_weights_3D[k-min_index_z][j-min_index_y][i-min_index_x]);
-   }
-   else
-   {
-    weights[0][j][i] = 
-      static_cast<float>(precomputed_weights[j-min_index_y][i-min_index_x]);
-   }
-
+      // will call compute_weights() to fill it in
     }
-  }
+  else
+    {
+      if (!this->weights.is_regular())
+	{
+	  warning("Sorry. QuadraticPrior currently only supports regular arrays for the weights");
+	  return true;
+	}
+
+      const unsigned int size_z = this->weights.size();
+      if (size_z%2==0)
+	warn_about_even_size = true;
+      const int min_index_z = -static_cast<int>(size_z/2);
+      this->weights.set_min_index(min_index_z);
+
+      for (int z = min_index_z; z<= this->weights.get_max_index(); ++z)
+	{
+	  const unsigned int size_y = this->weights[z].size();
+	  if (size_y%2==0)
+	    warn_about_even_size = true;
+	  const int min_index_y = -static_cast<int>(size_y/2);
+	  this->weights[z].set_min_index(min_index_y);
+	  for (int y = min_index_y; y<= this->weights[z].get_max_index(); ++y)
+	    {
+	      const unsigned int size_x = this->weights[z][y].size();
+	      if (size_x%2==0)
+		warn_about_even_size = true;
+	      const int min_index_x = -static_cast<int>(size_x/2);
+	      this->weights[z][y].set_min_index(min_index_x);
+	    }
+	}
+    }
+
+  if (warn_about_even_size)
+    warning("Parsing QuadraticPrior: even number of weights occured in either x,y or z dimension.\n"
+	    "I'll (effectively) make this odd by appending a 0 at the end.");
   return false;
 
 }
@@ -102,10 +111,9 @@ void
 QuadraticPrior<elemT>::set_defaults()
 {
   GeneralisedPrior<elemT>::set_defaults();
-  only_2D = false;
-  kappa_ptr = 0;  
-  precomputed_weights.fill(0);
-  precomputed_weights_3D.fill(0);
+  this->only_2D = false;
+  this->kappa_ptr = 0;  
+  this->weights.recycle();
 }
 
 template <>
@@ -132,16 +140,20 @@ QuadraticPrior<elemT>::QuadraticPrior(const bool only_2D_v, float penalisation_f
 // TODO move to set_up
 // initialise to 1/Euclidean distance
 static void 
-compute_weights(Array<3,float>& weights, const CartesianCoordinate3D<float>& grid_spacing)
+compute_weights(Array<3,float>& weights, const CartesianCoordinate3D<float>& grid_spacing, const bool only_2D)
 {
-  static bool already_computed = false;
-
-  if (already_computed)
-    return;
-
-  already_computed = true;
-  weights = Array<3,float>(IndexRange3D(-1,1,-1,1,-1,1));
-  for (int z=-1;z<=1;++z)
+  int min_dz, max_dz;
+  if (only_2D)
+    {
+      min_dz = max_dz = 0;
+    }
+  else
+    {
+      min_dz = -1;
+      max_dz = 1;
+    }
+  weights = Array<3,float>(IndexRange3D(min_dz,max_dz,-1,1,-1,1));
+  for (int z=min_dz;z<=max_dz;++z)
     for (int y=-1;y<=1;++y)
       for (int x=-1;x<=1;++x)
 	{
@@ -178,9 +190,9 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   DiscretisedDensityOnCartesianGrid<3,float>& prior_gradient_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_gradient);
 
-  if (weights.get_length() ==0)
+  if (this->weights.get_length() ==0)
   {
-    compute_weights(weights, current_image_cast.get_grid_spacing());
+    compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }
  
  
@@ -192,16 +204,8 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
   for (int z=prior_gradient_cast.get_min_z();z<= prior_gradient_cast.get_max_z();z++)
     {
-	int min_dz, max_dz;
-	if (only_2D)
-	  {
-	    min_dz = max_dz = 0;
-	  }
-	else
-	  {
-	    min_dz = max(weights.get_min_index(), prior_gradient_cast.get_min_z()-z);
-	    max_dz = min(weights.get_max_index(), prior_gradient_cast.get_max_z()-z);
-	  }
+      const int min_dz = max(weights.get_min_index(), prior_gradient_cast.get_min_z()-z);
+      const int max_dz = min(weights.get_max_index(), prior_gradient_cast.get_max_z()-z);
 	
 	for (int y=prior_gradient_cast.get_min_y();y<= prior_gradient_cast.get_max_y();y++)
 	  {
@@ -291,10 +295,10 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
   static int count = 0;
   ++count;
-  if (gradient_filename.size()>0)
+  if (gradient_filename_prefix.size()>0)
     {
-      char *filename = new char[gradient_filename.size()+100];
-      sprintf(filename, "%s%d.v", gradient_filename.c_str(), count);
+      char *filename = new char[gradient_filename_prefix.size()+100];
+      sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
       DefaultOutputFileFormat output_file_format;
       output_file_format.
 	write_to_file(filename, prior_gradient);
@@ -325,7 +329,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
 
   if (weights.get_length() ==0)
   {
-    compute_weights(weights, current_image_cast.get_grid_spacing());
+    compute_weights(weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }
  
    
@@ -337,16 +341,9 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
-  int min_dz, max_dz;
-  if (only_2D)
-  {
-    min_dz = max_dz = 0;
-  }
-  else
-  {
-    min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel_cast.get_min_z()-z);
-    max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel_cast.get_max_z()-z);
-  }
+  const int min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel_cast.get_min_z()-z);
+  const int max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel_cast.get_max_z()-z);
+  
   // TODO use z,y,x
   const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_y()-y);
   const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_y()-y);
@@ -396,7 +393,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 
   if (weights.get_length() ==0)
   {
-    compute_weights(weights, current_image_cast.get_grid_spacing());
+    compute_weights(weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }  
    
   const bool do_kappa = kappa_ptr.use_count() != 0;
@@ -406,16 +403,8 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 
   for (int z=parabolic_surrogate_curvature_cast.get_min_z();z<= parabolic_surrogate_curvature_cast.get_max_z();z++)
     {
-	int min_dz, max_dz;
-	if (only_2D)
-	  {
-	    min_dz = max_dz = 0;
-	  }
-	else
-	  {
-	    min_dz = max(weights.get_min_index(), parabolic_surrogate_curvature_cast.get_min_z()-z);
-	    max_dz = min(weights.get_max_index(), parabolic_surrogate_curvature_cast.get_max_z()-z);
-	  }
+      const int min_dz = max(weights.get_min_index(), parabolic_surrogate_curvature_cast.get_min_z()-z);
+      const int max_dz = min(weights.get_max_index(), parabolic_surrogate_curvature_cast.get_max_z()-z);
 	
 	for (int y=parabolic_surrogate_curvature_cast.get_min_y();y<= parabolic_surrogate_curvature_cast.get_max_y();y++)
 	  {
