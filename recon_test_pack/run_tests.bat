@@ -109,15 +109,15 @@ echo Running %INSTALL_DIR%compare_image
 %INSTALL_DIR%compare_image  RPTsens_seg3_PM.hv my_RPTsens_seg3_PM.hv
 if ERRORLEVEL 1 goto sensPM_problem
 echo ---- This test seems to be ok !
-goto run_OSEMPM
+goto run_OSEMPMMRP
 :sensPM_problem
 echo There were problems here!
 set ThereWereErrors=1
 
-:run_OSEMPM
+:run_OSEMPMMRP
 
 echo.
-echo ------------- Running OSMAPOSL ------------- 
+echo ----------- Running OSMAPOSL with MRP prior ------------- 
 
 echo Running %INSTALL_DIR%OSMAPOSL 
 %INSTALL_DIR%OSMAPOSL OSMAPOSL_test_PM_MRP.par 1> OSMAPOSL_PM_MRP.log 2> OSMAPOSL_PM_MRP_stderr.log
@@ -128,8 +128,46 @@ echo Running %INSTALL_DIR%compare_image
 %INSTALL_DIR%compare_image test_image_PM_MRP_6.hv my_test_image_PM_MRP_6.hv
 if ERRORLEVEL 1 goto OSEMPM_problem
 echo ---- This test seems to be ok !
-goto run_CORRECT_PROJDATA
+goto run_OSEMPMQP
 :OSEMPM_problem
+echo There were problems here!
+set ThereWereErrors=1
+
+:run_OSEMPMQP
+
+echo.
+echo ----------- Running OSMAPOSL with Quadratic prior ------------- 
+
+echo Running %INSTALL_DIR%OSMAPOSL 
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_PM_QP.par 1> OSMAPOSL_PM_QP.log 2> OSMAPOSL_PM_QP_stderr.log
+
+
+echo ---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)
+echo Running %INSTALL_DIR%compare_image 
+%INSTALL_DIR%compare_image test_image_PM_QP_6.hv my_test_image_PM_QP_6.hv
+if ERRORLEVEL 1 goto OSEMQP_problem
+echo ---- This test seems to be ok !
+goto run_OSEMQPweights
+:OSEMQP_problem
+echo There were problems here!
+set ThereWereErrors=1
+
+:run_OSEMPMQPweights
+
+echo.
+echo ----------- Running OSMAPOSL with Quadratic prior ------------- 
+
+echo Running %INSTALL_DIR%OSMAPOSL 
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_PM_QPweights.par 1> OSMAPOSL_PM_QPweights.log 2> OSMAPOSL_PM_QPweights_stderr.log
+
+
+echo ---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)
+echo Running %INSTALL_DIR%compare_image 
+%INSTALL_DIR%compare_image test_image_PM_QPweights_6.hv my_test_image_PM_QPweights_6.hv
+if ERRORLEVEL 1 goto OSEMQPweights_problem
+echo ---- This test seems to be ok !
+goto run_CORRECT_PROJDATA
+:OSEMQPweights_problem
 echo There were problems here!
 set ThereWereErrors=1
 
