@@ -26,7 +26,6 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingProjMatrixByBin.cxx \
 	BackProjectorByBinUsingProjMatrixByBin.cxx \
 	RayTraceVoxelsOnCartesianGrid.cxx \
-	FilterRootPrior.cxx \
 	ProjectorByBinPair.cxx \
 	ProjectorByBinPairUsingProjMatrixByBin.cxx \
 	ProjectorByBinPairUsingSeparateProjectors.cxx \
@@ -36,6 +35,8 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	TrivialBinNormalisation.cxx \
     BinNormalisationFromAttenuationImage.cxx \
 	GeneralisedPrior.cxx \
+	QuadraticPrior.cxx \
+	FilterRootPrior.cxx \
 	ProjDataRebinning.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)

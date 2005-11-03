@@ -35,6 +35,8 @@
 */
 
 #include "stir/recon_buildblock/FilterRootPrior.h"
+#include "stir/recon_buildblock/QuadraticPrior.h"
+
 #include "stir/ImageProcessor.h"
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -59,6 +61,8 @@
 START_NAMESPACE_STIR
 
 static FilterRootPrior<float>::RegisterIt dummy4;
+static QuadraticPrior<float>::RegisterIt dummy5;
+
 
 static ProjMatrixByBinUsingRayTracing::RegisterIt dummy11;
 
