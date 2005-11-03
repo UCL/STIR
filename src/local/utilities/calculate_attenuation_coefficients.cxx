@@ -147,7 +147,7 @@ main (int argc, char * argv[])
 	  "Reference: water has mu .096 cm^-1\n"
 	  "Max in attenuation image: %g", 
 	  attenuation_image_ptr->find_max());
-#ifndef NORESCALE
+#ifndef NEWSCALE
     /*
       cerr << "WARNING: multiplying attenuation image by x-voxel size "
       << " to correct for scale factor in forward projectors...\n";
@@ -157,7 +157,7 @@ main (int argc, char * argv[])
     const float rescale = attenuation_image_ptr->get_voxel_size().x()/10;
 #else
     const float rescale = 
-      10.F;
+      .1F;
 #endif
     *attenuation_image_ptr *= rescale;
 
