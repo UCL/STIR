@@ -192,13 +192,43 @@ ThereWereErrors=1;
 fi
 
 echo
-echo ------------- Running OSMAPOSL ------------- 
+echo -------- Running OSMAPOSL  with the MRP prior -------- 
 echo Running ${INSTALL_DIR}OSMAPOSL
 ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_MRP.par 1> OSMAPOSL_PM_MRP.log 2> OSMAPOSL_PM_MRP_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
 if ${INSTALL_DIR}compare_image test_image_PM_MRP_6.hv my_test_image_PM_MRP_6.hv;
+then
+echo ---- This test seems to be ok !;
+else
+echo There were problems here!;
+ThereWereErrors=1;
+fi
+
+echo
+echo -------- Running OSMAPOSL with a quadratic prior -------- 
+echo Running ${INSTALL_DIR}OSMAPOSL
+${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QP.par 1> OSMAPOSL_PM_QP.log 2> OSMAPOSL_PM_QP_stderr.log
+
+echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
+echo Running ${INSTALL_DIR}compare_image
+if ${INSTALL_DIR}compare_image test_image_PM_QP_6.hv my_test_image_PM_QP_6.hv;
+then
+echo ---- This test seems to be ok !;
+else
+echo There were problems here!;
+ThereWereErrors=1;
+fi
+
+echo
+echo -------- Running OSMAPOSL with a quadratic prior with given weights -------- 
+echo Running ${INSTALL_DIR}OSMAPOSL
+${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QPweights.par 1> OSMAPOSL_PM_QPweights.log 2> OSMAPOSL_PM_QPweights_stderr.log
+
+echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
+echo Running ${INSTALL_DIR}compare_image
+if ${INSTALL_DIR}compare_image test_image_PM_QPweights_6.hv my_test_image_PM_QPweights_6.hv;
 then
 echo ---- This test seems to be ok !;
 else
@@ -254,7 +284,7 @@ then
 echo "Check what went wrong. The *.log files might help you."
 else
 echo "Everything seems to be fine !"
-echo 'You could remove all generated files using "rm my_* *.log"'
+echo 'You could remove all generated files using "rm -f my_* *.log"'
 fi
 
 
