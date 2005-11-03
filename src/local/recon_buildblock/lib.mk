@@ -14,7 +14,6 @@ $(dir)_LIB_SOURCES:= \
 	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
-	QuadraticPrior.cxx \
 	BinNormalisationUsingProfile.cxx \
 	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx \

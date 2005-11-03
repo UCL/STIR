@@ -25,7 +25,6 @@
 //#include "local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h"
 //#include "local/stir/recon_buildblock/ForwardProjectorByBinDistanceDriven.h"
 
-#include "local/stir/recon_buildblock/QuadraticPrior.h"
 //#include "local/stir/recon_buildblock/NonquadraticPriorWithNaturalLogarithm.h"
 //#include "local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
 //#include "local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
@@ -53,8 +52,6 @@ static PostsmoothingForwardProjectorByBin::RegisterIt dummy2;
 static PresmoothingForwardProjectorByBin::RegisterIt dummy3;
 static PostsmoothingBackProjectorByBin::RegisterIt dummy4;
 //static oldBackProjectorByBinUsingInterpolation::RegisterIt dummy5;
-
-static QuadraticPrior<float>::RegisterIt dummy21;
 
 
 static BinNormalisationUsingProfile::RegisterIt dummy101;
