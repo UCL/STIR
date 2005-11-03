@@ -1,0 +1,43 @@
+OSMAPOSLParameters :=
+; $Id$
+; test file for OSMAPOSL with a quadratic prior (and ray tracing projection matrix)
+
+input file := Utahscat600k_ca_seg4.hs
+output filename prefix := my_test_image_PM_QP
+; choose size of pixels
+; x,y pixel size = zoom * bin_size
+zoom := .7
+; number of x,y pixels (-1 takes default value to cover the FOV)
+xy output image size (in pixels) := 60
+
+; if disabled, defaults to maximum segment number in the file
+maximum absolute segment number to process := 3
+
+sensitivity image:= RPTsens_seg3_PM.hv
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   number of rays in tangential direction to trace for each bin := 2
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+number of subsets:= 12
+start at subset:= 0
+number of subiterations:= 6
+save images at subiteration intervals:= 6
+
+zero end planes of segment 0:= 1
+
+prior type := quadratic
+  Quadratic Prior Parameters:=
+  penalisation factor := .5
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  gradient filename prefix:= gradient
+  END Quadratic Prior Parameters:=
+
+map model := multiplicative
+END :=
