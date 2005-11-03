@@ -29,12 +29,10 @@
   $Revision$
 */
 
-#include "local/stir/recon_buildblock/QuadraticPrior.h"
+#include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
-#include "stir/IndexRange2D.h"
-
 #include "stir/IO/DefaultOutputFileFormat.h"
 
 START_NAMESPACE_STIR

@@ -21,7 +21,7 @@
 \file
 \ingroup OSSPS  
 \ingroup reconstructors
-\brief  implementation of the OSSPSReconstruction class 
+\brief  implementation of the stir::OSSPSReconstruction class 
 
 \author Sanida Mustafovic
 \author Kris Thielemans
@@ -35,7 +35,7 @@ $Revision$
 #include "stir/DiscretisedDensity.h"
 #include "stir/LogLikBased/common.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
-#include "local/stir/recon_buildblock/QuadraticPrior.h" // necessary for recompute_penalty_term_in_denominator
+#include "stir/recon_buildblock/QuadraticPrior.h" // necessary for recompute_penalty_term_in_denominator
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
