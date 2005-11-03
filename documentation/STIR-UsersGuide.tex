@@ -2953,13 +2953,15 @@ See also the online documentation for the class \textbf{GeneralisedPrior}.
 
 { \subsubsubsubsection{Parameters}
 }
-  These are the keywords that can be used for all priors.
+
+These are the keywords that can be used for all priors.
   \begin{verbatim}
    penalisation factor := <float>
   \end{verbatim}
   \noindent where the \texttt{penalisation factor} is usually called
   $\beta$ in the literature, and is just a global scale factor for the
   prior.
+
 { \subsubsubsection{FilterRootPrior}
 }
 
@@ -2986,7 +2988,8 @@ as Image Processor.
 
 { \subsubsubsubsection{Parameters}
 }
-  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+
+These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
   \begin{verbatim}
   FilterRootPrior Parameters :=
   penalisation factor := 1
@@ -3004,7 +3007,8 @@ as Image Processor.
 
 { \subsubsubsection{Quadratic}
 }
- This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
+
+This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
   
  \[
   g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
