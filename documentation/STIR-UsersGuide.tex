@@ -507,9 +507,9 @@ Luckily, the file STIR/local/config.mk comes to your rescue.
 This file is imported (if it exists) by every make (after reading 
 STIR/config.mk), and hence can be used to override the defaults 
 of all of the above make flags, \textit{except} the \textit{WORKSPACE} flag. 
-The distribution contains a sample file STIR/samples/local/config.mk, 
+The distribution contains a sample file \textbf{STIR/samples/local/config.mk}, 
 but check it out if it is appropriate for you before copying 
-it to STIR/local/.
+it to \textbf{STIR/local/}.
 
 \subsubsection{
 Enabling ECAT7 support}
@@ -1608,8 +1608,8 @@ phenomenon does not arise.
 Filtered back projection (FBP2D)}
 
 This implements SSRB+FBP. Currently, data have to be completely 
-precorrected before-hand. In particular, only arc-corrected data 
-are supported.\\
+precorrected before-hand (arc-correction will be performed automatically
+if necessary).\\
 The implementation is careful about the implementation of the 
 ramp-filter to avid problems with the DC component (see RampFilter.cxx 
 for more details).
@@ -2251,7 +2251,7 @@ name\texttt{>} {\textbackslash}\\
 
 where the square brackets denote optional parameters (their value 
 will be asked interactively). Example postfilter.par files can 
-be found in the STIR/samples directory.
+be found in the \textbf{STIR/samples} directory.
 
 
 \subsubsection{
@@ -2933,7 +2933,7 @@ Which priors are available to programs is fully extendable (at
 compile time). How to do this is beyond the scope of this document. 
 Here we only discuss how to specify a particular prior, and list 
 the currently available ones. Samples of their parameters should 
-be available in STIR/samples.
+be available in \textbf{STIR/samples}.
 
 
 
@@ -2950,6 +2950,16 @@ is the default for all prior keywords.
 
 See also the online documentation for the class \textbf{GeneralisedPrior}.
 
+
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used for all priors.
+  \begin{verbatim}
+   penalisation factor := <float>
+  \end{verbatim}
+  \noindent where the \texttt{penalisation factor} is usually called
+  $\beta$ in the literature, and is just a global scale factor for the
+  prior.
 { \subsubsubsection{FilterRootPrior}
 }
 
@@ -2974,6 +2984,62 @@ the Hessian will not be symmetric.
 The Median Root Prior is obtained by using Median (see \ref{sec:median}) 
 as Image Processor.
 
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  FilterRootPrior Parameters :=
+  penalisation factor := 1
+  ; you can use any image processor here
+  ; the next parameters specify a 3x3x3 median
+  Filter type := Median
+    Median Filter Parameters :=
+    mask radius x := 1   
+    mask radius y := 1
+    mask radius z := 1
+    End Median Filter Parameters:=
+
+  END FilterRootPrior Parameters :=
+ \end{verbatim}
+
+{ \subsubsubsection{Quadratic}
+}
+ This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
+  
+ \[
+  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  \]
+  \noindent where $\lambda$ is the image where the gradient is computed
+   and $r$ and $dr$ are indices and the sum
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.
+
+  The $\kappa$ image can be used to have spatially-varying penalties such as in 
+  Jeff Fessler's papers. It should have identical dimensions to the image for which the
+  penalty is computed. If $\kappa$ is not set, this class will effectively
+  use 1 for all $\kappa$'s.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  x-voxel_size divided by the Euclidean distance between the points.
+ 
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  Quadratic Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  gradient filename prefix:= 
+  END Quadratic Prior Parameters:=
+  \end{verbatim}
 
 \subsubsection{
 Selecting different projector pairs}
@@ -2992,7 +3058,7 @@ to be given in the.par file (or will be asked interactively).
 
 
 Samples of OSMAPOSL reconstruction parameter files selecting 
-different types of projectors should be available in STIR/samples.\\
+different types of projectors should be available in \textbf{STIR/samples}.\\
 \textbf{Warning:} for most iterative algorithms, it is recommended 
 to use matching forward and back-projector. This is unfortunately 
 not the default due to historical reasons.
