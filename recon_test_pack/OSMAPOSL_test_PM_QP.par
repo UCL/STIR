@@ -35,8 +35,6 @@ prior type := quadratic
   penalisation factor := .5
   ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
   only 2D:= 0
-  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  gradient filename prefix:= gradient
   END Quadratic Prior Parameters:=
 
 map model := multiplicative
