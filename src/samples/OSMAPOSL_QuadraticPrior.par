@@ -1,0 +1,36 @@
+OSMAPOSLParameters :=
+; example file for using a quadratic prior (with One Step Late and subsets)
+; this is a minimal file. check other sample files and doc for more options
+; prior specific things are at the end
+
+input file := test.hs
+output filename prefix := test_QP
+
+sensitivity image:= sens.hv
+number of subsets:= 12
+number of subiterations:= 24
+save images at subiteration intervals:= 12
+
+; here comes the prior stuff
+
+prior type := quadratic
+  Quadratic Prior Parameters:=
+  penalisation factor := 1
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  gradient filename prefix:= 
+  END Quadratic Prior Parameters:=
+
+; enable this for multiplicative form of OSMAPOSL (see User's Guide)
+;MAP model := multiplicative
+
+END :=
