@@ -119,7 +119,21 @@ public:
 		const DiscretisedDensity<3,elemT> &current_image_estimate);
 
 
+  //! get penalty weights for the neigbourhood
+  Array<3,float> get_weights() const;
 
+  //! set penalty weights for the neigbourhood
+  void set_weights(const Array<3,float>&);
+
+  //! get current kappa image
+  /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
+      modify the image by manipulating the image refered to by this pointer.
+      Unpredictable results will occur.
+  */
+  shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+
+  //! set kappa image
+  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case

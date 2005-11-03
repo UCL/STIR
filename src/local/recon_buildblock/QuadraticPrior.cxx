@@ -136,6 +136,38 @@ QuadraticPrior<elemT>::QuadraticPrior(const bool only_2D_v, float penalisation_f
 }
 
 
+  //! get penalty weights for the neigbourhood
+template <typename elemT>
+Array<3,float>  
+QuadraticPrior<elemT>::
+get_weights() const
+{ return this->weights; }
+
+  //! set penalty weights for the neigbourhood
+template <typename elemT>
+void 
+QuadraticPrior<elemT>::
+set_weights(const Array<3,float>& w)
+{ this->weights = w; }
+
+  //! get current kappa image
+  /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
+      modify the image by manipulating the image refered to by this pointer.
+      Unpredictable results will occur.
+  */
+template <typename elemT>
+shared_ptr<DiscretisedDensity<3,elemT> >  
+QuadraticPrior<elemT>::
+get_kappa_sptr() const
+{ return this->kappa_ptr; }
+
+  //! set kappa image
+template <typename elemT>
+void 
+QuadraticPrior<elemT>::
+set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
+{ this->kappa_ptr = k; }
+
 
 // TODO move to set_up
 // initialise to 1/Euclidean distance
