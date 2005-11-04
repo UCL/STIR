@@ -18,6 +18,9 @@ Thanks to Fr&eacute;d&eacute;ric Schoenahl for testing with
 
 <h3>New utilities</h3>
 <ul>
+<li>Some utilities (located in <tt>listmode_utilities</tt>) for viewing info in the
+.sgl file produced by ECAT HR+ or ECAT EXACT 3D scanners.
+</li>
 </ul>
 
 
@@ -76,8 +79,10 @@ ignored.
    (tests indicate again less than 1% difference).
    Note however that changes in the sensitivity image as used by OSMAPOSL
    are larger. So, <strong>do not re-use existing sensitivity images</strong>.
-   <br>
-   Values for GE scanners are not changed.
+</li>
+<li>Sizes such as ring-spacing and bin-size for the <strong>GE Discovery ST</strong> 
+have changed a according to info from Ravindra Manjeshwar (GE Research). The Advance
+data were ok. 
 </li>
 <li> Reconstruction programs now get the pixel size from
  <tt>default_bin_size*zoom</tt> (default bin size either specified in the Interfile header
@@ -118,6 +123,9 @@ normalise and dead-time correct your ECAT7 sinograms.
 </li>
 <li>changes in the interpolating backprojector allow handling data where the
 number of views is not a multiple of 4 (such as the Discovery ST).</li>
+<li>added a quadratic prior to be used by OSMAPOSL</li>
+<li>Added data for the <strong>GE Discovery STE</strong>, <strong>GE Discovery RX</strong>  
+and <strong>Philips Allegro</strong>.
 </ul>
 
 
@@ -145,7 +153,9 @@ version aborted when it detected that a line would be in a plane between 2 voxel
 <ul>
 <li>Projects for Visual Studio 6 have been updated. Some windows libraries
 that were never used have been removed. This might make transfer to 
-Visual Studio Express 2005 easier.
+Visual Studio Express 2005 easier. However, these projects have not been tested for 
+a while. Search the mailing list for more info if you want to try this.
+</li>
 </ul>
 
 
@@ -155,8 +165,8 @@ Visual Studio Express 2005 easier.
  </ul>
 
 <h3>recon_test_pack changes</h3>
-None
 <ul>
+<li>Added tests for the quadratic prior</li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious
