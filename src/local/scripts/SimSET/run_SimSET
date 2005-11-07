@@ -151,4 +151,4 @@ if [ ${DIR_INPUT} != ${DIR_OUTPUT} ]; then
   rm ${DIR_OUTPUT}/template_*
 fi
 
-convert_SimSET_STIR_splitted.sh 0 > /dev/null
+convert_SimSET_STIR_splitted.sh 0 >& log_convert_SimSET_STIR
