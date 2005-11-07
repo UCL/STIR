@@ -32,7 +32,7 @@ See STIR/LICENSE.txt for details
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInMemory.h"
-#include "local/stir/inverse_SSRB.h"
+#include "stir/inverse_SSRB.h"
 #include "local/stir/Scatter.h"
 #include "local/stir/interpolate_projdata.h"
 #include "stir/utilities.h"
