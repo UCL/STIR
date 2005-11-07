@@ -80,7 +80,8 @@ if( (file=fopen(fseq,"rb")) ==NULL){
 	scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
       if (fabs(this_scanner_length - scanner_length)>1.0)
 	{
-	  warning("scanner length %g does not match 966 nor 962. Using 962 anyway");
+	  warning("scanner length %g does not match 966 nor 962. Using 962 anyway", 
+		  scanner_length);
 	}
     }
  }
