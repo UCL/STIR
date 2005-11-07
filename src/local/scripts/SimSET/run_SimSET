@@ -142,7 +142,7 @@ echo n >> index.dat
 echo n >> index.dat
 
 $SIMSET_DIR/bin/makeindexfile < index.dat >& ${DIR_OUTPUT}/makeindex.log
-$SIMSET_DIR/bin/phg phg.rec > ${DIR_OUTPUT}/log
+$SIMSET_DIR/bin/phg phg.rec >& ${DIR_OUTPUT}/log
 
 rm -f ${DIR_OUTPUT}/rec.stat ${DIR_OUTPUT}/*.weight2 ${DIR_OUTPUT}/*.count ${DIR_OUTPUT}/index.dat
 # gzip ${DIR_OUTPUT}/*weight*
