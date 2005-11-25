@@ -36,7 +36,7 @@
 #include "stir/stream.h"
 #include <fstream>
 #include "local/stir/DynamicDiscretisedDensity.h"
-#include "stir/DiscretisedDensityOnCartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
 #include "stir/TimeFrameDefinitions.h"
@@ -67,8 +67,10 @@ START_NAMESPACE_STIR
   };
 
  void DynamicDiscretisedDensityTests::run_tests()
-{  
-  cerr << "Testing DynamicDiscretisedDensity class..." << endl;
+{
+  {
+    // Simple Test of one voxel  
+  cerr << "Testing DynamicDiscretisedDensity class for one voxel..." << endl;
 
   set_tolerance(0.000000000000001);
   const CartesianCoordinate3D< float > origin (0.F,0.F,0.F);
@@ -77,31 +79,92 @@ START_NAMESPACE_STIR
   grid_spacing[2] = 1.F;
   grid_spacing[3] = 1.F;
   BasicCoordinate<3,int> sizes ;
-  sizes[1]=0;
-  sizes[2]=0;
-  sizes[3]=0;
+  sizes[1]=1;
+  sizes[2]=1;
+  sizes[3]=1;
   IndexRange<3> range(sizes);
-
-  DiscretisedDensityOnCartesianGrid<3,float> >  frame1_sptr(range, origin,  grid_spacing) ;
-  frame1_sptr[0][0][0]=1.F;
-  shared_ptr<DiscretisedDensityOnCartesianGrid<3,float>  > * (frame1_sptr(range, origin,  grid_spacing) ;////
   
+  const shared_ptr<DiscretisedDensity<3,float>  > frame1_sptr = 
+    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
+  (*frame1_sptr)[0][0][0] = 1.F;
+
   std::vector< std::pair< double, double > > time_frame_definitions_vector(1) ;
   std::pair< double, double > time_frame_pair(1.,1.) ;
-  time_frame_definitions_vector[0]=time_pair;
+  time_frame_definitions_vector[0]=time_frame_pair;
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
-  Type test_scanner=E966;
-
-  shared_ptr<Scanner> * scanner_sptr(test_scanner);
+  Scanner::Type test_scanner=Scanner::E966;
+  shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,scanner_sptr); 
+  dynamic_image.set_density_sptr(frame1_sptr, 1);
+  check_if_equal(dynamic_image[1][0][0][0],1.F,"check DynamicDiscretisedDensity class implementation");
+  }
+  {
+  //  Test of three frame images, read voxel  
+  cerr << "Testing DynamicDiscretisedDensity class for three frames..." << endl;
 
-  dynamic_image.set_density( *frame1_sptr, 1);
-  std::string dyn_image_filename("dynamic_image_test");
+  set_tolerance(0.000000000000001);
+  const CartesianCoordinate3D< float > origin (0.F,0.F,0.F);
+  BasicCoordinate<3, float > grid_spacing ;
+  grid_spacing[1] = 1.F;
+  grid_spacing[2] = 1.F;
+  grid_spacing[3] = 1.F;
+  BasicCoordinate<3,int> sizes ;
+  sizes[1]=10;
+  sizes[2]=10;
+  sizes[3]=10;
+  IndexRange<3> range(sizes);
+  
+  const shared_ptr<DiscretisedDensity<3,float>  > frame1_sptr = 
+    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
+  const shared_ptr<DiscretisedDensity<3,float>  > frame2_sptr = 
+    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
+  const shared_ptr<DiscretisedDensity<3,float>  > frame3_sptr = 
+    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
 
-  check_if_equal((*frame1_sptr)[0][0][0][1],1.F,"check DynamicDiscretisedDensity class implementation");
+      for(int k=0;k<10;++k)
+	for(int j=0;j<10;++j)  
+	  for(int i=0;i<10;++i)
+	    {
+	      (*frame1_sptr)[k][j][i] = 1*(i+j*5.F-k*10.F) ;
+	      (*frame2_sptr)[k][j][i] = 2*(i+j*5.F-k*10.F) ;
+	      (*frame3_sptr)[k][j][i] = 3*(i+j*5.F-k*10.F) ;
+	    }
 
-  return EXIT_SUCCESS;
+      std::vector< std::pair< double, double > > time_frame_definitions_vector(4) ; //Check if correct:give one more than the number of frames?
+  std::pair< double, double > first_time_frame_pair(1.,3.) ;
+  std::pair< double, double > second_time_frame_pair(3.,6.) ;
+  std::pair< double, double > third_time_frame_pair(6.5,7.) ;
+
+  time_frame_definitions_vector[0]=first_time_frame_pair;
+  time_frame_definitions_vector[1]=second_time_frame_pair;
+  time_frame_definitions_vector[2]=third_time_frame_pair;
+
+  const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
+  Scanner::Type test_scanner=Scanner::E966;
+  shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
+  DynamicDiscretisedDensity dynamic_image(time_frame_definitions,scanner_sptr); 
+  dynamic_image.set_density_sptr(frame1_sptr, 1);
+  dynamic_image.set_density_sptr(frame2_sptr, 2);
+  dynamic_image.set_density_sptr(frame3_sptr, 3);
+
+  for(int k=0;k<10;++k)
+     for(int j=0;j<10;++j)  
+	for(int i=0;i<10;++i)
+	{
+	    check_if_equal(dynamic_image[1][k][j][i],(*frame1_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");  	  
+	    check_if_equal(dynamic_image[2][k][j][i],(*frame2_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");
+	    check_if_equal(dynamic_image[3][k][j][i],(*frame3_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");
+	}
+    check_if_equal((dynamic_image.get_time_frame_definitions()).get_end_time(1),3.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(1),1.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dynamic_image.get_time_frame_definitions()).get_end_time(2),6.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(2),3.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dynamic_image.get_time_frame_definitions()).get_end_time(3),7.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(3),6.5,"check DynamicDiscretisedDensity class implementation");
+
+   }  
 }
+
 END_NAMESPACE_STIR
 USING_NAMESPACE_STIR
 
