@@ -31,7 +31,7 @@
 #include "stir/IO/read_data_1d.h"
 #include "stir/IO/read_data.h"
 #include "stir/Array.h"
-#include "stir/ByteOrder.h"
+#include "local/stir/DynamicDiscretisedDensity.h"
 #include <cstring>
 #include <iostream>
 
@@ -39,35 +39,20 @@ int main(int argc, char *argv[])
 { 
   USING_NAMESPACE_STIR
   
-  if (argc<2 || argc>3)
+  if (argc<2 || argc>2)
     {
       std::cerr << "Usage:" << argv[0] << "\n"
-	   << "\t[dynamic_image_filename]\n" 
-	   << "\t[byte_order]\n";
+	   << "\t[dynamic_image_filename]\n";
       return EXIT_FAILURE;            
     }       
-  BasicCoordinate<2,float> min_index ;
-  BasicCoordinate<2,float> max_index ;
 
-  IndexRange<2> this_range(1,4,1,4);
-  Array<2,float> dyn_image(this_range) ;
+  shared_ptr< DynamicDiscretisedDensity >  dyn_image_sptr= 
+  DynamicDiscretisedDensity::read_from_file(argv[1]);
 
-  ByteOrder::Order this_order = ByteOrder::little_endian; //argc!=3 ? argv[2] : ByteOrder::little_endian ; // Convert string into OrderType!!
-  ByteOrder byte_order(this_order);
-  std::string dyn_image_filename(argv[1]);
-  std::ifstream dyn_image_stream(dyn_image_filename.c_str()); 
-   dyn_image.read_data(dyn_image_stream,ByteOrder::native);
+  const DynamicDiscretisedDensity & dyn_image = *dyn_image_sptr;
+  std::cout << dyn_image[1][1][1][1] << "\n" ;
 
-  std::cout << dyn_image[1][1] << "\n" ;
-  if (read_data(dyn_image_stream,dyn_image,byte_order)==Succeeded::no)
-      error("error reading image stream");
 
-      /*
-  PlasmaData::const_iterator cur_iter;
-  for (cur_iter=testing_plasma_data.begin(); 
-       cur_iter!=testing_plasma_data.end() ; ++cur_iter)
-    std::cout << (*cur_iter).get_time_in_s() << " "<< (*cur_iter).get_counts_in_kBq() << std::endl ;
-      */
   return EXIT_SUCCESS;
 }
 
