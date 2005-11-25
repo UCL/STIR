@@ -61,6 +61,28 @@ parse_line(const string& deformation_field_from_NCAT_file,
   CartesianCoordinate3D<float> new_voxel_coords;
   CartesianCoordinate3D<float> current_voxel_coords;
   int frame_num1, frame_num2;
+#if 1
+  if (
+      std::sscanf(line.c_str() + position,
+		  "FRAME%d %f %f %f FRAME%d %f %f %f",
+		  &frame_num1,
+		  &current_voxel_coords.x(), &current_voxel_coords.y(), &current_voxel_coords.z(),
+		  &frame_num2,
+		  &new_voxel_coords.x(), &new_voxel_coords.y(), &new_voxel_coords.z())
+      != 8)
+    {
+      warning("Error parsing line in NCAT file %s:\n\"%s\"\nstart position %d\ntext to parse:\n%s", 
+	      deformation_field_from_NCAT_file.c_str(),
+	      line.c_str(),
+	      position,
+	      line.c_str() + position);
+      return Succeeded::no;
+    }
+  current_displacement = new_voxel_coords - current_voxel_coords;
+
+#else
+
+  // old version of NCAT output is slightly different
   if (
       std::sscanf(line.c_str() + position,
 		  "FRAME%d %f %f %f FRAME%d %f %f %f VECTOR %f %f %f",
@@ -87,6 +109,8 @@ parse_line(const string& deformation_field_from_NCAT_file,
 		<< new_voxel_coords - current_voxel_coords - current_displacement << std::endl;
       return Succeeded::no;
     }
+#endif
+
     current_voxel = round(current_voxel_coords);
     if (norm(BasicCoordinate<3,float>(current_voxel) - current_voxel_coords) > .01)
     {
