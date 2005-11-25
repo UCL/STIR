@@ -13,6 +13,7 @@ $(dir)_LIB_SOURCES:= \
 	cleanup966ImageProcessor.cxx \
 	interpolate_projdata.cxx \
   	find_fwhm_in_image.cxx \
+	DynamicDiscretisedDensity.cxx \
         AbsTimeIntervalFromECAT7ACF.cxx \
         AbsTimeIntervalWithParsing.cxx
 
