@@ -24,7 +24,7 @@
   \file 
   \ingroup FBP2D
  
-  \brief declares the FBP2DReconstruction class
+  \brief declares the stir::FBP2DReconstruction class
 
   \author Kris Thielemans
   \author PARAPET project
@@ -87,7 +87,7 @@ end :=
 */
 class FBP2DReconstruction : public Reconstruction
 {
-
+  typedef Reconstruction base_type;
 public:
   //! Default constructor (calls set_defaults())
   FBP2DReconstruction (); 

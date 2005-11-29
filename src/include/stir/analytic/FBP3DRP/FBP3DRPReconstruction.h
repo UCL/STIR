@@ -22,7 +22,7 @@
 /*! 
   \file 
   \ingroup FBP3DRP
-  \brief Class for serial FBP3DRP reconstruction
+  \brief Declaration of class stir::FBP3DRPReconstruction
   \author Claire LABBE
   \author Kris Thielemans
   \author PARAPET project
@@ -30,8 +30,8 @@
   $Revision$
 */
 
-#ifndef __FBP3DRPRECONSTRUCTION_H__
-#define __FBP3DRPRECONSTRUCTION_H__
+#ifndef __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__
+#define __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__
 
 
 
@@ -97,7 +97,7 @@ class Succeeded;
 */
 class FBP3DRPReconstruction: public Reconstruction
 {
-
+  typedef Reconstruction base_type;
 public:
 
 

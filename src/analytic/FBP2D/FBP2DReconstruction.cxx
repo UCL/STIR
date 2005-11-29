@@ -54,7 +54,7 @@ void
 FBP2DReconstruction::
 set_defaults()
 {
-  Reconstruction::set_defaults();
+  base_type::set_defaults();
 
   alpha_ramp = 1;
   fc_ramp = 0.5;
@@ -71,7 +71,7 @@ set_defaults()
 void 
 FBP2DReconstruction::initialise_keymap()
 {
-  Reconstruction::initialise_keymap();
+  base_type::initialise_keymap();
 
   parser.add_start_key("FBP2DParameters");
   parser.add_stop_key("End");
@@ -89,7 +89,7 @@ FBP2DReconstruction::
 ask_parameters()
 { 
    
-  Reconstruction::ask_parameters();
+  base_type::ask_parameters();
 
   num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
   alpha_ramp =  ask_num(" Alpha parameter for Ramp filter ? ",0.,1., 1.);    
@@ -111,7 +111,7 @@ ask_parameters()
 
 bool FBP2DReconstruction::post_processing()
 {
-  if (Reconstruction::post_processing())
+  if (base_type::post_processing())
     return true;
   return post_processing_only_FBP2D_parameters();
 }
@@ -211,7 +211,7 @@ FBP2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
 Succeeded FBP2DReconstruction::
 reconstruct()
 {
-  return Reconstruction::reconstruct();
+  return base_type::reconstruct();
 }
 
 Succeeded 

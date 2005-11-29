@@ -191,7 +191,7 @@ void
 FBP3DRPReconstruction::
 set_defaults()
 {
-  Reconstruction::set_defaults();
+  base_type::set_defaults();
 
   alpha_colsher_axial = 1;
   fc_colsher_axial = 0.5;
@@ -222,7 +222,7 @@ set_defaults()
 void 
 FBP3DRPReconstruction::initialise_keymap()
 {
-  Reconstruction::initialise_keymap();
+  base_type::initialise_keymap();
 
   parser.add_start_key("FBP3DRPParameters");
   parser.add_stop_key("End");
@@ -265,7 +265,7 @@ void
 FBP3DRPReconstruction::ask_parameters()
 { 
    
-  Reconstruction::ask_parameters();
+  base_type::ask_parameters();
     
    // bool on_disk =  !ask("(1) Read data into memory all at once ?", false);
 // TODO move to Reconstruction
@@ -368,7 +368,7 @@ FBP3DRPReconstruction::FBP3DRPReconstruction()
 
 Succeeded FBP3DRPReconstruction::reconstruct()
 {
-  return Reconstruction::reconstruct();
+  return base_type::reconstruct();
 }
 
 Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
