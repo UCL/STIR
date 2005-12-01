@@ -34,6 +34,7 @@
 #include "stir/RunTests.h"
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
+#include "stir/Succeeded.h"
 #include <fstream>
 #include "local/stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -98,11 +99,12 @@ START_NAMESPACE_STIR
   dynamic_image.set_density_sptr(frame1_sptr, 1);
   check_if_equal(dynamic_image[1][0][0][0],1.F,"check DynamicDiscretisedDensity class implementation");
   }
+
   {
   //  Test of three frame images, read voxel  
   cerr << "Testing DynamicDiscretisedDensity class for three frames..." << endl;
 
-  set_tolerance(0.000000000000001);
+  set_tolerance(0.001);
   const CartesianCoordinate3D< float > origin (0.F,0.F,0.F);
   BasicCoordinate<3, float > grid_spacing ;
   grid_spacing[1] = 1.F;
@@ -113,24 +115,23 @@ START_NAMESPACE_STIR
   sizes[2]=10;
   sizes[3]=10;
   IndexRange<3> range(sizes);
-  
-  const shared_ptr<DiscretisedDensity<3,float>  > frame1_sptr = 
+  const shared_ptr<DiscretisedDensity<3,float>  > frame1_3_sptr = 
     new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
-  const shared_ptr<DiscretisedDensity<3,float>  > frame2_sptr = 
+  const shared_ptr<DiscretisedDensity<3,float>  > frame2_3_sptr = 
     new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
-  const shared_ptr<DiscretisedDensity<3,float>  > frame3_sptr = 
+  const shared_ptr<DiscretisedDensity<3,float>  > frame3_3_sptr = 
     new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
 
       for(int k=0;k<10;++k)
 	for(int j=0;j<10;++j)  
 	  for(int i=0;i<10;++i)
 	    {
-	      (*frame1_sptr)[k][j][i] = 1*(i+j*5.F-k*10.F) ;
-	      (*frame2_sptr)[k][j][i] = 2*(i+j*5.F-k*10.F) ;
-	      (*frame3_sptr)[k][j][i] = 3*(i+j*5.F-k*10.F) ;
+	      (*frame1_3_sptr)[k][j][i] = 1*(i+j*5.F-k*10.F) ;
+	      (*frame2_3_sptr)[k][j][i] = 2*(i+j*5.F-k*10.F) ;
+	      (*frame3_3_sptr)[k][j][i] = 3*(i+j*5.F-k*10.F) ;
 	    }
 
-      std::vector< std::pair< double, double > > time_frame_definitions_vector(4) ; //Check if correct:give one more than the number of frames?
+      std::vector< std::pair< double, double > > time_frame_definitions_vector(3) ;
   std::pair< double, double > first_time_frame_pair(1.,3.) ;
   std::pair< double, double > second_time_frame_pair(3.,6.) ;
   std::pair< double, double > third_time_frame_pair(6.5,7.) ;
@@ -143,17 +144,28 @@ START_NAMESPACE_STIR
   Scanner::Type test_scanner=Scanner::E966;
   shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,scanner_sptr); 
-  dynamic_image.set_density_sptr(frame1_sptr, 1);
-  dynamic_image.set_density_sptr(frame2_sptr, 2);
-  dynamic_image.set_density_sptr(frame3_sptr, 3);
+  dynamic_image.set_density_sptr(frame1_3_sptr, 1);
+  dynamic_image.set_density_sptr(frame2_3_sptr, 2);
+  dynamic_image.set_density_sptr(frame3_3_sptr, 3);
+  string string_test("./local/samples/STIRtmp_dyn.v");//TODO: Use the path info!!!
+  //  string string_test2("./local/samples/dyn_image_write_to_ecat7_test2.v");
+  //  dynamic_image.write_to_ecat7(string_test);
+  check(dynamic_image.write_to_ecat7(string_test)==Succeeded::yes,"check DynamicDiscretisedDensity::write_to_ecat7 implementation");
+  shared_ptr< DynamicDiscretisedDensity >  dyn_image_read_test_sptr =  
+    DynamicDiscretisedDensity::read_from_file(string_test);
+  const DynamicDiscretisedDensity & dyn_image_read_test = *dyn_image_read_test_sptr;
+  //  dyn_image_read_test.write_to_ecat7(string_test2);
 
   for(int k=0;k<10;++k)
      for(int j=0;j<10;++j)  
 	for(int i=0;i<10;++i)
 	{
-	    check_if_equal(dynamic_image[1][k][j][i],(*frame1_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");  	  
-	    check_if_equal(dynamic_image[2][k][j][i],(*frame2_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");
-	    check_if_equal(dynamic_image[3][k][j][i],(*frame3_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");
+	  check_if_equal(dynamic_image[1][k][j][i],(*frame1_3_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");  	     
+	  check_if_equal(dynamic_image[2][k][j][i],(*frame2_3_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");
+	  check_if_equal(dynamic_image[3][k][j][i],(*frame3_3_sptr)[k][j][i],"check DynamicDiscretisedDensity class implementation");
+	  check_if_equal(dyn_image_read_test[1][k][j-5][i-5],(*frame1_3_sptr)[k][j][i],"check DynamicDiscretisedDensity::read_from_file implementation"); // The written image is read in respect to its center as origin!!!
+	  check_if_equal(dyn_image_read_test[2][k][j-5][i-5],(*frame2_3_sptr)[k][j][i],"check DynamicDiscretisedDensity::read_from_file implementation");
+	  check_if_equal(dyn_image_read_test[3][k][j-5][i-5],(*frame3_3_sptr)[k][j][i],"check DynamicDiscretisedDensity::read_from_file implementation");	
 	}
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_end_time(1),3.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(1),1.,"check DynamicDiscretisedDensity class implementation");
@@ -161,7 +173,14 @@ START_NAMESPACE_STIR
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(2),3.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_end_time(3),7.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(3),6.5,"check DynamicDiscretisedDensity class implementation");
-
+    /* To be tested when write_time_frame_definitions() will be implemented.
+    check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(1),3.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(1),1.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(2),6.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(2),3.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(3),7.,"check DynamicDiscretisedDensity class implementation");
+    check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(3),6.5,"check DynamicDiscretisedDensity class implementation");
+    */
    }  
 }
 
