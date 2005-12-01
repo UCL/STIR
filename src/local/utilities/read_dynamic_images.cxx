@@ -47,11 +47,8 @@ int main(int argc, char *argv[])
     }       
 
   shared_ptr< DynamicDiscretisedDensity >  dyn_image_sptr= 
-  DynamicDiscretisedDensity::read_from_file(argv[1]);
-
+  DynamicDiscretisedDensity::read_from_file(argv[1]); // The written image is read in respect to its center as origin!!!
   const DynamicDiscretisedDensity & dyn_image = *dyn_image_sptr;
-  std::cout << dyn_image[1][1][1][1] << "\n" ;
-
 
   return EXIT_SUCCESS;
 }
