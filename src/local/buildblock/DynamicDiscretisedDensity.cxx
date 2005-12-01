@@ -43,6 +43,7 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;
+using std::cerr;
 #endif
 
 START_NAMESPACE_STIR
@@ -52,13 +53,13 @@ DynamicDiscretisedDensity::
 set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
 		 const unsigned int frame_num)
 {
-  this->_densities[frame_num]=density_sptr; 
+  this->_densities[frame_num-1]=density_sptr; 
 }  
 const DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num) const 
 {
-  return *this->_densities[frame_num] ; 
+  return *this->_densities[frame_num-1] ; 
 }
 const TimeFrameDefinitions & 
 DynamicDiscretisedDensity::
@@ -68,7 +69,7 @@ get_time_frame_definitions() const
 }
 DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::
-read_from_file(const string& filename)
+read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
   const int max_length=300;
   char signature[max_length];
@@ -81,9 +82,9 @@ read_from_file(const string& filename)
     input.read(signature, max_length);
     signature[max_length-1]='\0';
   }
- 
-  DynamicDiscretisedDensity * dynamic_image_ptr =
-    new DynamicDiscretisedDensity;
+
+    DynamicDiscretisedDensity * dynamic_image_ptr =
+      new DynamicDiscretisedDensity;
 
 #ifdef HAVE_LLN_MATRIX
   if (strncmp(signature, "MATRIX", 6) == 0)
@@ -109,15 +110,21 @@ read_from_file(const string& filename)
         TimeFrameDefinitions(filename);      
 
       dynamic_image_ptr->_densities.resize(dynamic_image_ptr->_time_frame_definitions.get_num_frames());
+
+      const shared_ptr<VoxelsOnCartesianGrid<float>  > read_sptr = 
+	    new VoxelsOnCartesianGrid<float> ; 
+
       for (unsigned int frame_num=1; frame_num <= (dynamic_image_ptr->_time_frame_definitions).get_num_frames(); ++ frame_num)
 	{
-	  dynamic_image_ptr->_densities[frame_num] =
-	    ECAT7_to_VoxelsOnCartesianGrid(filename,
-					   frame_num, /*gate_num, data_num, bed_num*/1,0,0);
+	  const CartesianCoordinate3D< float > origin (0.F,0.F,0.F);
 
-	   if (!is_null_ptr(dynamic_image_ptr->_densities[frame_num]))
-	      error("None frame available\n");
+	  dynamic_image_ptr->_densities[frame_num-1] =
+	    ECAT7_to_VoxelsOnCartesianGrid(filename,
+					   frame_num, 
+	 /* gate_num, data_num, bed_num */ 1,0,0);
 	}
+      if (is_null_ptr(dynamic_image_ptr->_densities[0]))
+	      error("DynamicDiscretisedDensity: None frame available\n");
     }
     else
     {
@@ -125,15 +132,20 @@ read_from_file(const string& filename)
 	warning("DynamicDiscretisedDensity::read_from_file ECAT7 file %s should be an image\n", filename.c_str());
     }
   }
+  else 
+    error("DynamicDiscretisedDensity::read_from_file %s seems to correspond to ECAT6 image\n");
 #endif // end of HAVE_LLN_MATRIX
-    // }
+    // }    
+  
+  if (is_null_ptr(dynamic_image_ptr))   
+  error("DynamicDiscretisedDensity::read_from_file %s pointer is NULL\n");
   return dynamic_image_ptr;
 }
 
-
+//Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
 Succeeded 
 DynamicDiscretisedDensity::
-write_to_ecat7(const string& filename) const
+write_to_ecat7(const string& filename) const 
 {
 #ifndef HAVE_LLN_MATRIX
   return Succeeded::no;
@@ -151,7 +163,7 @@ write_to_ecat7(const string& filename) const
       warning("DynamicDiscretisedDensity::write_to_ecat7 cannot write output file %s\n", filename.c_str());
       return Succeeded::no;
     }
-  for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num )
+  for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
     {
       if (ecat::ecat7::DiscretisedDensity_to_ECAT7(mptr,
 						   get_density(frame_num),
@@ -164,7 +176,7 @@ write_to_ecat7(const string& filename) const
     }
   matrix_close(mptr);
   return Succeeded::yes;
-#endif // HAVE_LLN_MATRIX
+#endif // end of HAVE_LLN_MATRIX
 }
 
 END_NAMESPACE_STIR
