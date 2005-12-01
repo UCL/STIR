@@ -61,4 +61,10 @@ linear_integral(std::vector<float> f , std::vector<float> t , int approx)
 	return integral_result;
 }
 
+linear_integral(std::vector<float> f , std::vector<float> t)
+{
+return 
+  linear_integral(std::vector<float> f , std::vector<float> t, 1);
+}
+
 END_NAMESPACE_STIR

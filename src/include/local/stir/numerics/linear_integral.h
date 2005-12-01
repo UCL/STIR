@@ -39,9 +39,14 @@
 #include <fstream>
 
 START_NAMESPACE_STIR
-
+/*!
+  This is a simple linear integral implementation using rectangular (=0) or trapzoidal (=1) approximation
+*/
 inline float 
 linear_integral(std::vector<float> f , std::vector<float> t, int approx);
+
+inline float 
+linear_integral(std::vector<float> f , std::vector<float> t);
 
 END_NAMESPACE_STIR
 
