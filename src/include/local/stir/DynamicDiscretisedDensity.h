@@ -41,6 +41,9 @@ class Succeeded;
 class DynamicDiscretisedDensity
 {
 public:
+  /*
+    \warning the image is read in respect to its center as origin!!!
+  */
   static
   DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
@@ -64,9 +67,14 @@ public:
   DynamicDiscretisedDensity(  TimeFrameDefinitions time_frame_defintions,shared_ptr<Scanner>,
 		 std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
   */
+  /*
+    \warning The frame_num starts from 1
+  */
   const DiscretisedDensity<3,float> & 
     get_density(const unsigned int frame_num) const ;
-
+  /*
+    \warning The frame_num starts from 1
+  */
   const DiscretisedDensity<3,float> & 
     operator[](const unsigned int frame_num) const 
     { return this->get_density(frame_num); }
@@ -74,8 +82,11 @@ public:
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;
 
-  Succeeded 
-    write_to_ecat7(const std::string& filename) const;
+ /*
+   \Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
+ */
+  Succeeded   
+ write_to_ecat7(const std::string& filename) const;
 
 private:
   TimeFrameDefinitions _time_frame_definitions;
