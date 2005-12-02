@@ -54,18 +54,32 @@ void linear_integralTests::run_tests()
 {  
   std::cerr << "Testing Linear Integral Functions..." << std::endl;
 
+  
   set_tolerance(0.000001);
-  std::vector<float> input_vector_f(10), input_vector_t(10);
-  //  float integral_result, STIR_rect_result;
+  //  float STIR_rect_result;
 
-  for (int i=0;i<10;++i)
+  // Give a simple linear function. The analytical estimation of the integral is E=(tmax-tmin)*(fmax+fmin)/2
+  const int Nmin=2;
+  const int Nmax=333;
+
+  const float tmin=12;
+  const float tmax=123; 
+  const float fmin=113;
+  const float fmax=1113; 
+
+  const float cor_integral_value=(tmax-tmin)*(fmax+fmin)*0.5;
+  std::vector<float> input_vector_f(Nmax-Nmin+1), input_vector_t(Nmax-Nmin+1);
+
+  for (int i=0;i<=Nmax-Nmin;++i)
     {
-       input_vector_f[i]=i;
-       input_vector_t[i]=i+1;
+       input_vector_t[i]=tmin+i*(tmax-tmin)/(Nmax-Nmin);
+       input_vector_f[i]=fmin+i*(fmax-fmin)/(Nmax-Nmin);
     }
     
-  check_if_equal(linear_integral(input_vector_f,input_vector_t,0), 36.F,
-				  "check linear_integral implementation");  		  		  
+  check_if_equal(linear_integral(input_vector_f,input_vector_t,0),cor_integral_value,
+				  "check linear_integral implementation using rectangular approximation");  		  		  
+  check_if_equal(linear_integral(input_vector_f,input_vector_t), cor_integral_value,
+				  "check linear_integral implementation using trapezoidal approximation");  		  		  
 }
 
 END_NAMESPACE_STIR
