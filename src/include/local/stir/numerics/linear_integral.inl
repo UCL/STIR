@@ -35,36 +35,37 @@ linear_integral(std::vector<float> f , std::vector<float> t , int approx)
 {
 	std::vector<float>::const_iterator cur_iter_f=f.begin();
  	std::vector<float>::const_iterator cur_iter_t=t.begin();
+	const unsigned int f_size=f.size();
+	const unsigned int t_size=t.size();
 	float integral_result=0;
+	assert(f_size==t_size);
+	if(f_size!=t_size) 
+	warning("The linear integral requires equal size of the two input vectors!!!");
 
+	const unsigned int imax=f_size;
 	if (approx==0)
-{
-	integral_result=-(*cur_iter_f)*(*cur_iter_t);
-	integral_result+=*cur_iter_f*(*(cur_iter_t+1));
-
-	for (++cur_iter_f , ++cur_iter_t ; 
-	 cur_iter_f!=(f.end()-1) , cur_iter_t!=(t.end()-1) ; 
-       ++cur_iter_f , ++cur_iter_t)
-	integral_result += *cur_iter_f*(*(cur_iter_t+1)-(*(cur_iter_t-1)))*0.5;
-	
-	++cur_iter_f; ++cur_iter_t;
-
-	integral_result += *cur_iter_f*(*(cur_iter_t)-(*(cur_iter_t-1)));
-}
-	if (approx==1)
-{	
-	for (++cur_iter_f , ++cur_iter_t ; 
-	 cur_iter_f!=(f.end()-1) , cur_iter_t!=(t.end()-1) ; 
-      ++cur_iter_f , ++cur_iter_t)
-	integral_result += (*cur_iter_f+(*(cur_iter_f+1)))*(*(cur_iter_t+1)-(*(cur_iter_t)))*0.5;
-}
+	  //Rectangular Formula:
+	  // If not at the borders apply: (t_next-t_previous)*0.5*f
+	  // If at the borders apply: (t2-t1)*0.5*f, (tN-TN_previous)*0.5*f
+	  { 
+	    integral_result=f[0]*(t[1]-t[0])*0.5F;
+	    for (unsigned int i=1;i<imax-1;++i)
+ 	      integral_result += f[i]*(t[i+1]-t[i-1])*0.5F;
+	    integral_result += f[f_size-1]*(t[t_size-1]-t[t_size-2])*0.5F;
+	  }
+	if (approx==1)//trapezoidal
+	  // Simply apply the formula: (f_next+f)*(t_next-t)*0.5
+	  {	
+	    for (unsigned int i=0 ; i<imax-1 ; ++i)
+	      integral_result += (f[i]+f[i+1])*(t[i+1]-t[i])*0.5F;
+	  }
 	return integral_result;
 }
-
+float
 linear_integral(std::vector<float> f , std::vector<float> t)
 {
 return 
-  linear_integral(std::vector<float> f , std::vector<float> t, 1);
+  linear_integral(f , t, 1);
 }
 
 END_NAMESPACE_STIR
