@@ -94,7 +94,9 @@ test_scanner(const Scanner& scanner)
   */
   if (scanner.get_type() != Scanner::Advance &&
       scanner.get_type() != Scanner::DiscoveryLS &&
-      scanner.get_type() != Scanner::DiscoveryST/* &&
+      scanner.get_type() != Scanner::DiscoveryST &&
+      scanner.get_type() != Scanner::DiscoverySTE &&
+      scanner.get_type() != Scanner::DiscoveryRX/* &&
       scanner.get_type() != Scanner::HZLR*/)
   {
     const float natural_bin_size =
