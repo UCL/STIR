@@ -288,6 +288,39 @@ Scanner::Scanner(Type scanner_type)
     // crystals per singles unit etc unknown
     break;
 
+  case Allegro:
+
+    /* 
+       The following info is partially from
+ 
+       Journal of Nuclear Medicine Vol. 45 No. 6 1040-1049
+       Imaging Characteristics of a 3-Dimensional GSO Whole-Body PET Camera 
+       Suleman Surti, PhD and Joel S. Karp, PhD 
+       http://jnm.snmjournals.org/cgi/content/full/45/6/1040
+
+       Other info is from Ralph Brinks (Philips Research Lab, Aachen).
+ 
+       The Allegro scanner is comprised of 28 flat modules of a 22 x 29 array
+       of 4 x 6 x 20 mm3 GSO crystals. The output sinograms however consist
+       of 23 x 29 logical crystals per module. 
+       This creates problems for the current version of STIR as the current
+       Scanner object does not support does. At present, KT put the 
+       transaxial info on crystals to 0.
+       For 662keV photons the mean positron range in GSO is about 14 mm,
+       so we put in 12mm for 511 keV, but we don't really know.
+       Ralph Brinks things there is only one singles rate for the whole
+       scanner.
+    */
+    set_params(Allegro,string_list("Allegro", "Philips Allegro"), 
+	       29, 295, 28*23, 
+	       430.05F, 12.F,
+	       6.3F, 4.3F, 0.0F, 
+	       1, 0, 
+	       29, 0 /* 23* or 22*/,
+	       29, 0 /*  all detectors in a ring? */, 
+	       1);
+    break;
+
   case HiDAC:
 
     // all of these don't make any sense for the HiDAC
