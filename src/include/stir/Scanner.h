@@ -23,7 +23,7 @@
   \file
   \ingroup buildblock
 
-  \brief Declaration of class Scanner
+  \brief Declaration of class stir::Scanner
 
   \author Claire Labbe
   \author Kris Thielemans
@@ -34,12 +34,9 @@
   $Date$
   $Revision$
 */
+#ifndef __stir_buildblock_SCANNER_H__
+#define __stir_buildblock_SCANNER_H__
 
-
-#ifndef __stir_SCANNER_H__
-#define __stir_SCANNER_H__
-
-#include "stir/common.h"
 #include "stir/DetectionPosition.h"
 #include <string>
 #include <list>
@@ -115,7 +112,7 @@ class Scanner
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966,RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX,
-	     HZLR, RATPET,HRRT,
+	     HZLR, RATPET,HRRT, Allegro,
 	     User_defined_scanner,
 	     Unknown_scanner};
   
