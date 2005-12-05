@@ -35,8 +35,9 @@
 #include "stir/RegisteredObject.h"
 #ifdef __STIR_REGISTRY_NOT_INLINE
 
-//#pragma message("instantiating RegisteredObject< >")
-// include
+#pragma message("instantiating RegisteredObject<SinglesRates >")
+#include "stir/data/SinglesRates.h"
+
 
 // and others
 START_NAMESPACE_STIR
@@ -56,7 +57,7 @@ RegisteredObject<Root>::registry ()
 #  endif
 
 
-// template RegisteredObject< >;
+template RegisteredObject<SinglesRates >;
 
 END_NAMESPACE_STIR
 
