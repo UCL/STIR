@@ -34,6 +34,7 @@ $(dir)_SOURCES = \
 	calculate_attenuation_coefficients.cxx \
 	make_grid_image.cxx \
 	read_dynamic_images.cxx \
+	apply_patlak_on_images.cxx \
 	add_side_shields.cxx
 
 #	CoG.cxx \
