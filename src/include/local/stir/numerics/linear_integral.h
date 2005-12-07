@@ -40,13 +40,10 @@
 
 START_NAMESPACE_STIR
 /*!
-  This is a simple linear integral implementation using rectangular (=0) or trapzoidal (=1) approximation
+  This is a simple linear integral implementation using rectangular (=0) or trapzoidal (=1) approximation.
 */
 inline float 
-linear_integral(std::vector<float> f , std::vector<float> t, int approx);
-
-inline float 
-linear_integral(std::vector<float> f , std::vector<float> t);
+linear_integral(const std::vector<float> & f , const std::vector<float> & t, const int approx = 1);
 
 END_NAMESPACE_STIR
 
