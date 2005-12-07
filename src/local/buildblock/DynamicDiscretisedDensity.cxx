@@ -52,21 +52,28 @@ void
 DynamicDiscretisedDensity::
 set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
 		 const unsigned int frame_num)
-{
-  this->_densities[frame_num-1]=density_sptr; 
-}  
+{  this->_densities[frame_num-1]=density_sptr; }  
+
 const DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num) const 
-{
-  return *this->_densities[frame_num-1] ; 
-}
+{  return *this->_densities[frame_num-1] ; }
+
+const float 
+DynamicDiscretisedDensity::
+get_isotope_halflife() const
+{ return this->_isotope_halflife; }
+
+const float  
+DynamicDiscretisedDensity::
+get_calibration_factor() const
+{ return this->_calibration_factor; }
+
 const TimeFrameDefinitions & 
 DynamicDiscretisedDensity::
 get_time_frame_definitions() const
-{
- return this->_time_frame_definitions; 
-}
+{ return this->_time_frame_definitions; }
+
 DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
@@ -106,6 +113,12 @@ read_from_file(const string& filename) // The written image is read in respect t
       dynamic_image_ptr->_scanner_sptr =
 	find_scanner_from_ECAT_system_type(mhead.system_type);
 
+      dynamic_image_ptr->_calibration_factor =
+	mhead.calibration_factor;
+
+      dynamic_image_ptr->_isotope_halflife =
+	mhead.isotope_halflife;
+
       dynamic_image_ptr->_time_frame_definitions =
         TimeFrameDefinitions(filename);      
 
@@ -121,7 +134,7 @@ read_from_file(const string& filename) // The written image is read in respect t
 	  dynamic_image_ptr->_densities[frame_num-1] =
 	    ECAT7_to_VoxelsOnCartesianGrid(filename,
 					   frame_num, 
-	 /* gate_num, data_num, bed_num */ 1,0,0);
+	 /* gate_num, data_num, bed_num */ 1,0,0) ;
 	}
       if (is_null_ptr(dynamic_image_ptr->_densities[0]))
 	      error("DynamicDiscretisedDensity: None frame available\n");
@@ -133,7 +146,7 @@ read_from_file(const string& filename) // The written image is read in respect t
     }
   }
   else 
-    error("DynamicDiscretisedDensity::read_from_file %s seems to correspond to ECAT6 image\n");
+    error("DynamicDiscretisedDensity::read_from_file %s not corresponds to ECAT7 image\n");
 #endif // end of HAVE_LLN_MATRIX
     // }    
   
@@ -156,7 +169,8 @@ write_to_ecat7(const string& filename) const
   mhead.num_frames = (_time_frame_definitions).get_num_frames();
   mhead.acquisition_type =
     mhead.num_frames>1 ? DynamicEmission : StaticEmission;
-
+  mhead.calibration_factor=_calibration_factor;
+  mhead.isotope_halflife=_isotope_halflife;
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
     {
@@ -177,6 +191,36 @@ write_to_ecat7(const string& filename) const
   matrix_close(mptr);
   return Succeeded::yes;
 #endif // end of HAVE_LLN_MATRIX
+}
+
+ void DynamicDiscretisedDensity::
+ calibrate_frames() const 
+{
+  for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
+    {
+      *(_densities[frame_num-1])*=_calibration_factor;
+    }
+}
+
+void  DynamicDiscretisedDensity::
+set_if_decay_corrected(const bool is_decay_corrected) 
+{  this->_is_decay_corrected=is_decay_corrected; }
+
+ void DynamicDiscretisedDensity::
+ decay_correct_frames()  
+{
+  if (_is_decay_corrected==true)
+    warning("DynamicDiscretisedDensity is already decay corrected");
+  else
+    {
+      for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
+	{
+	  //	  _corrected_densities[frame_num-1]=_densities[frame_num-1].clone();
+	  const double mean_time=0.5*(_time_frame_definitions.get_start_time(frame_num)-_time_frame_definitions.get_end_time(frame_num));
+	  *(_densities[frame_num-1])*=std::exp(mean_time*std::log(2.)/_isotope_halflife);	
+	}
+      _is_decay_corrected=true;
+    }
 }
 
 END_NAMESPACE_STIR

@@ -54,12 +54,15 @@ public:
 			    const shared_ptr<Scanner>& scanner_sptr)
   {
     _densities.resize(time_frame_definitions.get_num_frames());
+    //    _corrected_densities.resize(time_frame_definitions.get_num_frames());
     _time_frame_definitions=time_frame_definitions;
+    _calibration_factor=-1.F;
+    _isotope_halflife=-1.F;
     _scanner_sptr=scanner_sptr;
   }
   /*!
     \warning This function is likely to disappear later, and is dangerous to use.
-  */
+ */
   void 
     set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
 		     const unsigned int frame_num);
@@ -79,6 +82,10 @@ public:
     operator[](const unsigned int frame_num) const 
     { return this->get_density(frame_num); }
 
+  const float get_isotope_halflife() const;
+
+  const float get_calibration_factor() const;
+
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;
 
@@ -88,10 +95,20 @@ public:
   Succeeded   
  write_to_ecat7(const std::string& filename) const;
 
+ void calibrate_frames() const ;
+  /*!
+    \warning This function should be used only if the _decay_corrected is false. Time of a frame is taken as the mean time for each frame
+ */
+ void decay_correct_frames()  ;
+ void set_if_decay_corrected(const bool is_decay_corrected)  ;
 private:
   TimeFrameDefinitions _time_frame_definitions;
-  std::vector<shared_ptr<DiscretisedDensity<3,float> > >_densities;
+  std::vector<shared_ptr<DiscretisedDensity<3,float> > > _densities;
+  //  std::vector<shared_ptr<DiscretisedDensity<3,float> > > _corrected_densities;
   shared_ptr<Scanner> _scanner_sptr;
+  float _calibration_factor;
+  float _isotope_halflife;
+  bool _is_decay_corrected; 
 };
 
 END_NAMESPACE_STIR
