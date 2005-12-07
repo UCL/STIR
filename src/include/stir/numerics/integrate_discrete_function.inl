@@ -31,7 +31,7 @@
 START_NAMESPACE_STIR
 
 float 
-linear_integral(std::vector<float> f , std::vector<float> t , int approx)
+linear_integral(const std::vector<float>& f , const std::vector<float>& t , const int approx )
 {
 	std::vector<float>::const_iterator cur_iter_f=f.begin();
  	std::vector<float>::const_iterator cur_iter_t=t.begin();
@@ -60,12 +60,6 @@ linear_integral(std::vector<float> f , std::vector<float> t , int approx)
 	      integral_result += (f[i]+f[i+1])*(t[i+1]-t[i])*0.5F;
 	  }
 	return integral_result;
-}
-float
-linear_integral(std::vector<float> f , std::vector<float> t)
-{
-return 
-  linear_integral(f , t, 1);
 }
 
 END_NAMESPACE_STIR
