@@ -101,7 +101,7 @@ typedef plot_type::const_iterator const_iterator;
 
   //! Implementation to read the input function from ONLY a 3-columns data file (Time-InputFunctionRadioactivity-TotalBloodRadioactivity).
   inline void read_plasma_data(const std::string input_string) ;
-  //! Implementation to set the input units not currently used.
+  //! Implementation to set the input units not currently used. Always, it assumed to use kBq, seconds, ml.
   inline void set_input_units(const SamplingTimeUnits input_sampling_time_units, 
 			      const VolumeUnits input_volume_units, 
 			      const RadioactivityUnits input_radioactivity_units ) ;
