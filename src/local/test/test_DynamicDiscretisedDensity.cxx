@@ -131,7 +131,7 @@ START_NAMESPACE_STIR
 	      (*frame3_3_sptr)[k][j][i] = 3*(i+j*5.F-k*10.F) ;
 	    }
 
-      std::vector< std::pair< double, double > > time_frame_definitions_vector(3) ;
+  std::vector< std::pair< double, double > > time_frame_definitions_vector(3) ;
   std::pair< double, double > first_time_frame_pair(1.,3.) ;
   std::pair< double, double > second_time_frame_pair(3.,6.) ;
   std::pair< double, double > third_time_frame_pair(6.5,7.) ;
@@ -147,7 +147,7 @@ START_NAMESPACE_STIR
   dynamic_image.set_density_sptr(frame1_3_sptr, 1);
   dynamic_image.set_density_sptr(frame2_3_sptr, 2);
   dynamic_image.set_density_sptr(frame3_3_sptr, 3);
-  string string_test("./local/samples/STIRtmp_dyn.v");//TODO: Use the path info!!!
+  string string_test("STIRtmp_dyn.v");//TODO: Use the path info!!!
   //  string string_test2("./local/samples/dyn_image_write_to_ecat7_test2.v");
   //  dynamic_image.write_to_ecat7(string_test);
   check(dynamic_image.write_to_ecat7(string_test)==Succeeded::yes,"check DynamicDiscretisedDensity::write_to_ecat7 implementation");
