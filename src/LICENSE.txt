@@ -1,4 +1,4 @@
-Licensing information for STIR 1.3
+Licensing information for STIR 1.4beta
 ----------------------------------
 
 See for more info http://stir.HammersmithImanet.com, section Registration.
@@ -113,6 +113,7 @@ Explicit list of files that carry the PARAPET license
 ./eval_buildblock/ROIValues.cxx
 ./include/local/stir/fft.h
 ./include/local/stir/Filter.h
+./include/local/stir/IO/ProjDataVOLPET.h
 ./include/local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h
 ./include/local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h
 ./include/local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h
@@ -168,16 +169,17 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/IO/ecat6_utils.h
 ./include/stir/IO/interfile.h
 ./include/stir/IO/InterfileHeader.h
-./include/stir/IO/ProjDataVOLPET.h
 ./include/stir/IO/stir_ecat6.h
 ./include/stir/IO/stir_ecat7.h
 ./include/stir/IO/stir_ecat_common.h
 ./include/stir/KeyParser.h
 ./include/stir/line.h
 ./include/stir/linear_regression.h
+./include/stir/linear_regression.inl
 ./include/stir/LogLikBased/common.h
 ./include/stir/LogLikBased/LogLikelihoodBasedReconstruction.h
 ./include/stir/NumericInfo.h
+./include/stir/numerics/overlap_interpolate.h
 ./include/stir/NumericType.h
 ./include/stir/NumericType.inl
 ./include/stir/NumericVectorWithOffset.h
@@ -317,4 +319,3 @@ Explicit list of files that carry the PARAPET license
 ./utilities/manip_image.cxx
 ./utilities/manip_projdata.cxx
 ./utilities/postfilter.cxx
-./xx
