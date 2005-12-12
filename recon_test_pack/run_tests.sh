@@ -86,7 +86,7 @@ echo There were problems here!;
 ThereWereErrors=1;
 fi
 
-if test $DO_ECAT7_TESTS=1; then
+if test $DO_ECAT7_TESTS -eq 1; then
 
 echo ------------- Converting Interfile to ECAT7 file ------------- 
 echo Running ${INSTALL_DIR}conv_to_ecat7
