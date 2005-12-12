@@ -124,8 +124,8 @@ int main(int argc, char * argv[])
   int new_max_xy = 
     std::max(current_image[0].size()/2+1,
 	     std::max(current_image[0][0].size()/2+1,
-		      std::max(static_cast<unsigned int>(ceil(shield_outer_radius / voxel_size.x())),
-			       static_cast<unsigned int>(ceil(shield_outer_radius / voxel_size.y())))));
+		      std::max(static_cast<size_t>(ceil(shield_outer_radius / voxel_size.x())),
+			       static_cast<size_t>(ceil(shield_outer_radius / voxel_size.y())))));
   //const BasicCoordinate<3,int> new_min_indices = 
   //  make_coord(old_index_to_new, -new_max_xy, -new_max_xy);
   //const BasicCoordinate<3,int> new_max_indices = 
