@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2.0 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file
@@ -8,17 +25,33 @@
 
   \brief Test program for back projection
 
+  This program is mainly intended for testing backprojectors, but it can be
+  used (somewhat awkwardly) to backproject sinograms onto images.
+
+  \par Usage
+
+  \verbatim
+  bcktest [output-filename [proj_data_file \
+       [template-image [backprojector-parfile ]]]]
+  \endverbatim
+  If some command line parameter is not given, the program will ask 
+  the user interactively.
+
+  The format of the parameter file to specifiy the backproejctor is 
+  as follows:
+  \verbatim
+      Back Projector parameters:=
+      type:= some_type
+      END:=
+  \endverbatim
+  \see stir::BackprojectorByBin for derived classes and their parameters.
+
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
   
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/recon_buildblock/BackProjectorByBin.h"
@@ -161,7 +194,7 @@ main(int argc, char **argv)
   if (argc==1 || argc>7)
   {
       cerr <<"Usage: " << argv[0] << " \\\n"
-	   << "\t[output-filename [proj_data_file [backprojector-parfile [template-image]]]]\n";
+	   << "\t[output-filename [proj_data_file [template-image [backprojector-parfile ]]]]\n";
       exit(EXIT_FAILURE);
     }
   const string output_filename=
@@ -192,13 +225,15 @@ main(int argc, char **argv)
     
   const bool save_profiles = ask("Save  horizontal profiles ?", false);
 
-  if (argc>3)
+  // note: first check 4th parameter for historical reasons 
+  // (could be switched with 3rd without problems)
+  if (argc>4)
     {
       KeyParser parser;
       parser.add_start_key("Back Projector parameters");
       parser.add_parsing_key("type", &back_projector_ptr);
       parser.add_stop_key("END"); 
-      parser.parse(argv[3]);
+      parser.parse(argv[4]);
     }
 
   const ProjDataInfo * proj_data_info_ptr =
@@ -206,9 +241,9 @@ main(int argc, char **argv)
  
   shared_ptr<DiscretisedDensity<3,float> > image_sptr;
 
-  if (argc>4)
+  if (argc>3)
     {
-      image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[4]);
+      image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[3]);
     }
   else
     {
