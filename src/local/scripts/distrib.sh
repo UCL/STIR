@@ -1,17 +1,19 @@
 #! /bin/sh
-do_update=1
+do_lln=0
+do_update=0
 do_license=0
-do_ChangeLog=1
-do_doc=1
+do_ChangeLog=0
+do_doc=0
+do_doxygen=1
 do_zip_source=1
-do_recon_test_pack=0
+do_recon_test_pack=1
 do_transfer=0
 
 set -e
 # rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
-VERSION=1.4alpha
+VERSION=1.4beta
 # TODO  problems with LICENSE.txt
-# need to get it without tag, and then update and then assign tag
+# need to get it without tag, and then update and then assign tag (potentially remove tag first)
 #CHECKOUTOPTS="-r rel_1_30"
 cd $WORKSPACE/../..
 DISTRIB=`pwd`/distrib
@@ -34,20 +36,25 @@ fi
 
 mkdir -p ${DISTRIB}
 
+if [ $do_lln = 1 ]; then
 echo "LLN stuff "
 cd ${LLN}
+  trap "echo ERROR in LLN update" ERR
   cvs up
   tar -v --exclude VC --exclude CVS -czf ecat.tar.gz \
     ecat/*[ch] ecat/Makefile.*   ecat/utils/*[ch] ecat/utils/Makefile.* 
+fi
 
 cd ${DISTRIB}
 
+  trap "echo ERROR in cvs update" ERR
 if [ ! -r parapet ]; then
-
+    cvs checkout -P  $CHECKOUTOPTS
   cd parapet
 else
   cd parapet
   if [ $do_update = 1 ]; then
+     trap "echo ERROR in CVS update" ERR
     cvs up -dP  $CHECKOUTOPTS
   fi
 fi
@@ -56,11 +63,16 @@ ln -s PPhead STIR
 cd PPhead
 
 # update VERSION.txt
+echo "updating VERSION.txt"
+echo "TODO update PROJECT_NUMBER in Doxyfile"
+trap "echo ERROR in updating VERSION.txt" ERR
 echo $VERSION > VERSION.txt
 cvs commit -m "- updated for release of version $VERSION" VERSION.txt
 
 # update LICENSE.txt
 if [ $do_license = 1 ]; then
+  echo "updating LICENSE.txt"
+  trap "echo ERROR in updating LICENSE.txt" ERR
   cd $WORKSPACE
   # put version in there
   cat LICENSE.txt | \
@@ -84,6 +96,7 @@ fi
 
 # make ChangeLog file
 if [ $do_ChangeLog = 1 ]; then
+  trap "echo ERROR in updating ChangeLog" ERR
   echo Do ChangeLog
   cd $WORKSPACE
   # maybe use --accum
@@ -94,14 +107,19 @@ if [ $do_ChangeLog = 1 ]; then
 fi
 
 if [ $do_doc = 1 ]; then
+  trap "echo ERROR in updating doc" ERR
   cd $WORKSPACE
   # make doxygen
-  #doxygen
+  if [ $do_doxygen = 1 ]; then
+    doxygen
+  fi
   # make documentation PDFs BY HAND
   cd ../documentation
   make
-  zip -ur ${DISTRIB}/STIR_doc_${VERSION}.zip *.pdf *.htm  doxy
+  zip -ur ${DISTRIB}/STIR_doc_${VERSION}.zip *.pdf *.htm  doxy >/dev/null
 fi
+
+trap "echo ERROR after creating doc" ERR
 
 if [ $do_zip_source ]; then
   echo Do zip source
@@ -115,8 +133,11 @@ fi
 
 if [ $do_recon_test_pack = 1 ]; then
   cd ${DISTRIB}/parapet/
+  echo Do zip recon_test_pack
   #rm -rf recon_test_pack/CVS
-  zip -ulr ../recon_test_pack_${VERSION}.zip recon_test_pack -i CVS/ CVS/*
+  zip -ur ../recon_test_pack_${VERSION}.zip recon_test_pack \
+     -x  recon_test_pack/CVS/ recon_test_pack/CVS/* recon_test_pack/local/* recon_test_pack/local/ \
+   > /dev/null
   #tar zcvf ../recon_test_pack_${VERSION}.tar.gz recon_test_pack
 fi
 
