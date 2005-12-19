@@ -33,6 +33,7 @@ float
 	  const float upper_energy_threshold,
 	  const float resolution,		
 	  const bool use_cache,
+	  const bool use_sintheta, const bool use_polarization,
 	  const int scatter_level)	
 {	
   double scatter_ratio_01 = 0;
@@ -55,6 +56,7 @@ float
 					  upper_energy_threshold,
 					  resolution,		
 					  use_cache,
+					  use_sintheta, use_polarization,
 					  scatter_level);
   return scatter_ratio_01 + scatter_ratio_11 + scatter_ratio_02;
 }      
@@ -74,6 +76,8 @@ void
 	  const float upper_energy_threshold,
 	  const float resolution,		
 	  const bool use_cache,
+	  const bool use_sintheta,
+	  const bool use_polarization,
 	  const int scatter_level)	
 {	
   scatter_ratio_01 = 0;
@@ -117,7 +121,7 @@ void
 						 lower_energy_threshold, 
 						 upper_energy_threshold,
 						 resolution,
-						 use_cache);	
+						 use_cache, use_sintheta);	
 
       if(scatter_level==2||scatter_level==12||scatter_level==120)
 	for(std::size_t scatter_point_2_num =0;
@@ -135,7 +139,7 @@ void
 							lower_energy_threshold, 
 							upper_energy_threshold,
 							resolution,
-							use_cache);
+							use_cache, use_sintheta, use_polarization);
 	  }
     }	
 
