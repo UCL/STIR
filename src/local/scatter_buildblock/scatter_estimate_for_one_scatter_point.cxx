@@ -33,7 +33,7 @@ float scatter_estimate_for_one_scatter_point(
 	  const float lower_energy_threshold, 
 	  const float upper_energy_threshold,
 	  const float resolution,		
-	  const bool use_cache)
+	  const bool use_cache, const bool use_sintheta)
 {	
 	static const float max_single_scatter_cos_angle=max_cos_angle(lower_energy_threshold,2.,resolution);
 
@@ -104,7 +104,9 @@ float scatter_estimate_for_one_scatter_point(
 			scatter_point, 
 			detector_coord_B);
 		if (emiss_to_detA==0 && emiss_to_detB==0)
-			return 0;		
+			return 0;	
+
+	
 #ifndef NEWSCALE		
 	/* projectors work in pixel units, so convert attenuation data 
 	   from cm^-1 to pixel_units^-1 */
@@ -126,6 +128,9 @@ float scatter_estimate_for_one_scatter_point(
 	}	
 	const float dif_cross_section =
 		dif_cross_section_511keV(costheta); 
+
+	const float dif_cross_section_sin =
+		dif_cross_section_sin_511keV(costheta); 
 	
 	const float rA_squared=norm_squared(scatter_point-detector_coord_A);
 	const float rB_squared=norm_squared(scatter_point-detector_coord_B);
@@ -144,8 +149,24 @@ float scatter_estimate_for_one_scatter_point(
 
 	assert(scatter_point_mu==
 		image[round((scatter_point-origin)/voxel_size)]);
-#endif	                           
-	const float scatter_ratio =
+#endif	          
+
+	float scatter_ratio=0 ;
+
+	if (use_sintheta)
+        	scatter_ratio= 
+		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
+		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
+		/(rA_squared*rB_squared) 
+		*dif_cross_section_sin
+		*atten_to_detB
+		*atten_to_detA
+		*scatter_point_mu
+		*detection_efficiency_scatter
+		;
+                 
+	if (!use_sintheta)
+	scatter_ratio =
 		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
 		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
 		/(rA_squared*rB_squared) 
@@ -155,6 +176,8 @@ float scatter_estimate_for_one_scatter_point(
 		*scatter_point_mu
 		*detection_efficiency_scatter
 		;	
+
+
 	    const CartesianCoordinate3D<float> 
 	      detA_to_ring_center(0,-detector_coord_A[2],-detector_coord_A[3]);
 	    const CartesianCoordinate3D<float> 

@@ -84,6 +84,8 @@ class ScatterEstimationByBin : public ParsingObject
 
   bool random;
   bool use_cache;
+  bool use_sintheta;
+  bool use_polarization;
   int scatter_level;
   bool write_scatter_orders_in_separate_files;
   

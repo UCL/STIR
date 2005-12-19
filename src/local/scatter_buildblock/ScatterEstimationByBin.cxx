@@ -50,6 +50,8 @@ set_defaults()
   this->attenuation_threshold =  0.01 ;
   this->random = true;
   this->use_cache = true;
+  this->use_sintheta = false;
+  this->use_polarization = false;
   this->scatter_level = 10 ;
   this->energy_resolution = .22 ;
   this->lower_energy_threshold = 350 ;
@@ -73,6 +75,8 @@ initialise_keymap()
   this->parser.add_key("attenuation_threshold", &this->attenuation_threshold);
   this->parser.add_key("random", &this->random);
   this->parser.add_key("use_cache", &this->use_cache);
+  this->parser.add_key("use_sintheta", &this->use_sintheta);
+  this->parser.add_key("use_polarization", &this->use_polarization);
   this->parser.add_key("scatter_level", &this->scatter_level);
   this->parser.add_key("energy_resolution", &this->energy_resolution);
   this->parser.add_key("lower_energy_threshold", &this->lower_energy_threshold);
@@ -361,7 +365,9 @@ process_data()
 			 this->upper_energy_threshold,
 			 this->energy_resolution,
 			 this->use_cache,
-			 this->scatter_level
+			 this->scatter_level,
+			 this->use_sintheta,
+			 this->use_polarization
 			 );
 		    }
 		  

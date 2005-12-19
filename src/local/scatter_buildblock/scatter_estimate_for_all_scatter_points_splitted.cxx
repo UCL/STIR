@@ -31,6 +31,8 @@ float scatter_estimate_for_all_scatter_points_splitted(
 	  const float lower_energy_threshold, 
 	  const float upper_energy_threshold, const float resolution,		
 	  const bool use_cache,
+	  const bool use_sintheta,
+	  const bool use_polarization,
 	  const int scatter_level,
           const int split)	
 {	
@@ -85,7 +87,7 @@ float scatter_estimate_for_all_scatter_points_splitted(
 								 lower_energy_threshold, 
 								 upper_energy_threshold,
 								 resolution,		
-								 use_cache,
+								 use_cache, use_sintheta, use_polarization,
 								 split);
 	  }
     }
