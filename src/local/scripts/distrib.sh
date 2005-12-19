@@ -5,9 +5,9 @@ do_license=0
 do_ChangeLog=0
 do_doc=0
 do_doxygen=1
-do_zip_source=1
-do_recon_test_pack=1
-do_transfer=0
+do_zip_source=0
+do_recon_test_pack=0
+do_transfer=1
 
 set -e
 # rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
@@ -100,6 +100,7 @@ if [ $do_ChangeLog = 1 ]; then
   echo Do ChangeLog
   cd $WORKSPACE
   # maybe use --accum
+  rm -rf xxlocal
   mv local xxlocal
   cvs2cl.pl -I 'xxlocal/' -I 'include/local'  --no-indent -F trunk
   mv xxlocal local
@@ -121,7 +122,7 @@ fi
 
 trap "echo ERROR after creating doc" ERR
 
-if [ $do_zip_source ]; then
+if [ $do_zip_source = 1 ]; then
   echo Do zip source
   cd ${DISTRIB}
   rm -f parapet/all.zip parapet/VCprojects.zip
@@ -134,8 +135,9 @@ fi
 if [ $do_recon_test_pack = 1 ]; then
   cd ${DISTRIB}/parapet/
   echo Do zip recon_test_pack
+  rm -f ../recon_test_pack_${VERSION}.zip
   #rm -rf recon_test_pack/CVS
-  zip -ur ../recon_test_pack_${VERSION}.zip recon_test_pack \
+  zip -r ../recon_test_pack_${VERSION}.zip recon_test_pack \
      -x  recon_test_pack/CVS/ recon_test_pack/CVS/* recon_test_pack/local/* recon_test_pack/local/ \
    > /dev/null
   #tar zcvf ../recon_test_pack_${VERSION}.tar.gz recon_test_pack
