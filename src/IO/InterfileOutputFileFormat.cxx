@@ -48,6 +48,13 @@ InterfileOutputFileFormat(const NumericType& type,
 
 void 
 InterfileOutputFileFormat::
+set_defaults()
+{
+  OutputFileFormat::set_defaults();
+}
+
+void 
+InterfileOutputFileFormat::
 initialise_keymap()
 {
   parser.add_start_key("Interfile Output File Format Parameters");
