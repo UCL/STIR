@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,41 +31,13 @@
 START_NAMESPACE_STIR
 
   //! default constructor
-PlasmaSample::PlasmaSample()
-{ }
-  //! constructor
-PlasmaSample::PlasmaSample(const float sample_time, const float plasma_sample_counts, const float blood_sample_counts)
-{
-  PlasmaSample::set_time_in_s( sample_time );
-  PlasmaSample::set_blood_counts_in_kBq( blood_sample_counts );  
-  PlasmaSample::set_plasma_counts_in_kBq( plasma_sample_counts );  
-}
-  //! default destructor
-PlasmaSample::~PlasmaSample()
-{ }
-  
-  //! set the time of the sample
-void PlasmaSample::set_time_in_s( const float time )
-{ PlasmaSample::_time=time ; }
-  //! get the time of the sample
-float PlasmaSample::get_time_in_s() const
-{  return PlasmaSample::_time ; }
-  //! set the blood counts of the sample 
-void PlasmaSample::set_blood_counts_in_kBq( const float blood_counts )
-{ PlasmaSample::_blood_counts=blood_counts ; }
-  //! get the blood counts of the sample 
-float PlasmaSample::get_blood_counts_in_kBq() const
-{  return PlasmaSample::_blood_counts ; }
-  //! get the plasma counts of the sample 
-void PlasmaSample::set_plasma_counts_in_kBq( const float plasma_counts )
-{ PlasmaSample::_plasma_counts=plasma_counts ; }
-  //! get the plasma counts of the sample 
-float PlasmaSample::get_plasma_counts_in_kBq() const
-{  return PlasmaSample::_plasma_counts ; }
-
-  //! default constructor
 PlasmaData::PlasmaData()
 { } 
+
+  //! constructor giving a vector //ChT::ToDO: Better to use iterators
+PlasmaData::PlasmaData(std::vector<PlasmaSample> plasma_blood_plot)
+{this->_plasma_blood_plot=plasma_blood_plot;}
+
   //! default destructor
 PlasmaData::~PlasmaData()
 { }
@@ -75,9 +47,9 @@ void  PlasmaData::read_plasma_data(const std::string input_string)
 { 
   std::ifstream data_stream(input_string.c_str()); 
   if(!data_stream)    
-    std::cerr << "Cannot open " << input_string << std::endl ;
+    error("cannot read plasma data from file.\n");    
   else
-	data_stream >> _sample_size ;
+    data_stream >> _sample_size ;
 
     while(true)
       {
@@ -88,9 +60,10 @@ void  PlasmaData::read_plasma_data(const std::string input_string)
 	if(!data_stream) 
 	  break;
 	const PlasmaSample current_sample(sample_time,plasma_sample_radioactivity,blood_sample_radioactivity);
-	(this->_plasma_plot).push_back(current_sample);		     	     
+	(this->_plasma_blood_plot).push_back(current_sample);		     	     
       }
 }     
+
   //! Implementation to set the input units not currently used.
 void
  PlasmaData::set_input_units( SamplingTimeUnits input_sampling_time_units, 
@@ -106,23 +79,58 @@ void
   void PlasmaData::shift_time(float time_shift)
 {	
 	_time_shift=time_shift;
-	for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_plot.begin() ;
-	    cur_iter!=this->_plasma_plot.end() ; ++cur_iter)
+	for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
+	    cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
 	  cur_iter->set_time_in_s(cur_iter->get_time_in_s()+time_shift);		     	     
 }
   //!Function to get the time data
   float PlasmaData::get_time_shift()
 {  return PlasmaData::_time_shift ; }
 
+void  PlasmaData::set_isotope_halflife(const float isotope_halflife) 
+{ _isotope_halflife=isotope_halflife; }
+
+void  PlasmaData::
+set_if_decay_corrected(const bool is_decay_corrected) 
+{  this->_is_decay_corrected=is_decay_corrected; }
+
+ void PlasmaData::
+ decay_correct_PlasmaData()  
+{
+	    
+  if (PlasmaData::_is_decay_corrected==true)
+    warning("PlasmaData are already decay corrected");
+  else
+    {
+	for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
+	    cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
+	{
+		cur_iter->set_plasma_counts_in_kBq(cur_iter->get_plasma_counts_in_kBq()*std::exp(cur_iter->get_time_in_s()*std::log(2.)/_isotope_halflife));
+		cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*std::exp(cur_iter->get_time_in_s()*std::log(2.)/_isotope_halflife));	
+	}	
+	 PlasmaData::set_if_decay_corrected(true);
+	}
+}
+
 
 //PlasmaData begin() and end() of the PlasmaData ;
 PlasmaData::const_iterator
 PlasmaData::begin() const
-{ return this->_plasma_plot.begin() ; }
+{ return this->_plasma_blood_plot.begin() ; }
 
 PlasmaData::const_iterator
 PlasmaData::end() const
-{ return this->_plasma_plot.end() ; }
+{ return this->_plasma_blood_plot.end() ; }
 
+/*
+//PlasmaData begin() and end() of the PlasmaData ;
+PlasmaData::iterator
+PlasmaData::begin() 
+{ return this->_plasma_blood_plot.begin() ; }
+
+PlasmaData::iterator
+PlasmaData::end() 
+{ return this->_plasma_blood_plot.end() ; }
+*/
 
 END_NAMESPACE_STIR

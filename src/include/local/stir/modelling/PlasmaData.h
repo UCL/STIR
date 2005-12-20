@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,52 +29,14 @@
   $Revision$
 */
 
-#ifndef __stir_PlasmaSampling_H__
-#define __stir_PlasmaSampling_H__
+#ifndef __stir_modelling_PlasmaData_H__
+#define __stir_modelling_PlasmaData_H__
 
-
-#include "stir/common.h"
+#include "local/stir/modelling/PlasmaSample.h"
 #include <vector>
-#include <iostream> 
-#include <cstring>
-#include <iomanip> 
-#include <fstream>
-
-
 
 START_NAMESPACE_STIR
 
-
-class PlasmaSample
-{ 
-public:
-   //! default constructor
-  inline PlasmaSample();
-
-  //!  A constructor : constructs a PlasmaSample object  
-  inline PlasmaSample( const float sample_time, const float plasma_sample_counts, const float blood_sample_counts);
-
-  //! default constructor
-  inline ~PlasmaSample();
-   
- //! set the time of the sample
-  inline void set_time_in_s( const float time );
- //! get the time of the sample
-  inline float get_time_in_s() const; 
- //! set the blood counts of the sample
-  inline void set_blood_counts_in_kBq( const float blood_counts );
- //! get the blood counts of the sample
-  inline float get_blood_counts_in_kBq() const; 
- //! set the plasma counts of the sample
-  inline void set_plasma_counts_in_kBq( const float plasma_counts );
- //! get the plasma counts of the sample
-  inline float get_plasma_counts_in_kBq() const; 
-  
-private : 
-  float _blood_counts;
-  float _plasma_counts;
-  float _time;
-};
 
 /*!   
    \ingroup modelling
@@ -82,18 +44,14 @@ private :
  A class for storing plasma samples of a single study.
 */
 
-class PlasmaData:PlasmaSample
+class PlasmaData
 {
  typedef std::vector<PlasmaSample> plot_type;
  
  public: 
-typedef plot_type::const_iterator const_iterator;
-  enum PlasmaType 
-    { arterial , arterialized , venous };
+ typedef plot_type::const_iterator const_iterator;
   enum VolumeUnits 
-    { ml , litre };
-  enum SamplingType
-    { non_regular , regular };
+    { ml , litre };  
   enum SamplingTimeUnits
     { seconds , minutes };
   enum RadioactivityUnits
@@ -105,14 +63,27 @@ typedef plot_type::const_iterator const_iterator;
   inline void set_input_units(const SamplingTimeUnits input_sampling_time_units, 
 			      const VolumeUnits input_volume_units, 
 			      const RadioactivityUnits input_radioactivity_units ) ;
+
   //!Function to shift the time data
   inline void shift_time(float time_shift);
 
   //!Function to get the time data
   inline float get_time_shift();
 
+  //!Function to set the isotope halflife
+  inline void set_isotope_halflife(const float isotope_halflife);
+
+  //!Function to set _is_decay_corrected boolean true ar false
+  inline void set_if_decay_corrected(const bool is_decay_corrected);
+
+  //!Function to decay correct the data
+  inline void decay_correct_PlasmaData();
+
   //! default constructor
   inline PlasmaData();
+
+  //! constructor giving a vector //ChT::ToDO: Better to use iterators
+  inline PlasmaData(std::vector<PlasmaSample> plasma_blood_plot);
 
   //! default constructor
   inline ~PlasmaData();
@@ -121,15 +92,17 @@ typedef plot_type::const_iterator const_iterator;
 inline const_iterator begin() const ;
 inline const_iterator end() const ;
   // non const_iterator should be defined if the plasma data needs to be changed 
-
+//inline iterator begin() ;
+//inline iterator end()  ;
   
  private:
-  PlasmaType _plasma_type ;
+  PlasmaSample _plasma_type ;
   VolumeUnits _input_volume_units ; 
-  SamplingType _sampling_type ;
   SamplingTimeUnits _input_sampling_time_units ;
   RadioactivityUnits _input_radioactivity_units ;
-  std::vector<PlasmaSample> _plasma_plot ;
+  bool _is_decay_corrected ;
+  float _isotope_halflife;
+  std::vector<PlasmaSample> _plasma_blood_plot ;
   int _sample_size;
   float _time_shift ;
 };
@@ -140,4 +113,4 @@ END_NAMESPACE_STIR
 
 #include "local/stir/modelling/PlasmaData.inl"
 
-#endif //__PlasmaSampling_H__
+#endif //__stir_modelling_PlasmaData_H__
