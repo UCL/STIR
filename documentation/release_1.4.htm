@@ -48,11 +48,11 @@ normally only have appeared if the last frame was very short.
  rounding errors could mean that the last plane of voxels contributing to a sinogram was 
 ignored.
 </li>
-<li>corrected behaviour for of the SSRB routines for 
+<li>corrected behaviour of the SSRB routines for 
 max_in_segment_num_to_process=-1. Now uses the maximum present in the
 input data. This fixes a minor problem with FBP2D noticed by Hagen Moelle.
 </li>
-<li><tt>utilities/SSRB.cxx</ltt> had wrong command line processing. The last
+<li><tt>utilities/SSRB.cxx</tt> had wrong command line processing. The last
   argument (max_in_segment_num_to_process) had to be present, but was then
   ignored (as it was initialised from the previous argument).
 </li>
@@ -70,8 +70,8 @@ input data. This fixes a minor problem with FBP2D noticed by Hagen Moelle.
    </pre>
    For arc-corrected data, it is the last keyword that is used to
    set the tangential sampling.<br>
-   The previous keywords <tt>ring diameter (cm)</tt> 
-   and <tt>bin size</tt> are now <strong>ignored</strong>.
+   The previous keywords <strong><tt>ring diameter (cm)</tt></strong> 
+   and <strong><tt>bin size</tt></strong> are now <strong>ignored</strong>.
    This is done to prevent reading the wrong ring radius etc from old files (see next item).
    <br>
    If you want to get the same reconstructions as before, set
@@ -90,7 +90,7 @@ input data. This fixes a minor problem with FBP2D noticed by Hagen Moelle.
    are larger. So, <strong>do not re-use existing sensitivity images</strong>.
 </li>
 <li>Sizes such as ring-spacing and bin-size for the <strong>GE Discovery ST</strong> 
-have changed a according to info from Ravindra Manjeshwar (GE Research). The Advance
+have changed according to info from Ravindra Manjeshwar (GE Research). The Advance
 data were ok. 
 </li>
 <li> Reconstruction programs now get the pixel size from
@@ -143,12 +143,12 @@ and <strong>Philips Allegro</strong>.
 <li> a new option --verbose to postfilter
 </li>
 <li> a new option -n to conv_to_ecat7 that attempts to fix the scale factor used to 1</li>
+<li> interfile (and in general Array) IO can now use 1-byte integers.</li>
 </ul>
 
 
 <h3>Code changes that do not influence your results</h3>
 <ul>
-<li> interfile (and in general Array) IO can now use 1-byte integers.</li>
 <li> removed a bug in listmode classes for ECAT 966 and 962 (function get_detectors), 
 which would have caused your program to crash.
 </li>
@@ -199,7 +199,7 @@ from the above):</H2>
 <li>a new hierarchy <tt>SinglesRates</tt> in data_buildblock. This encodes singles rates
 during a PET scan.</li>
 <li>some extra files for manipulating matrices in <tt>include/stir/numerics</tt>
-v</li>
+</li>
 </ul>
 <h3>Other code changes</h3>
 <ul>
