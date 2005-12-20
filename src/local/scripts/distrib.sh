@@ -4,7 +4,7 @@ do_update=0
 do_license=0
 do_ChangeLog=0
 do_doc=0
-do_doxygen=1
+do_doxygen=0
 do_zip_source=0
 do_recon_test_pack=0
 do_transfer=1
@@ -16,22 +16,29 @@ VERSION=1.4beta
 # need to get it without tag, and then update and then assign tag (potentially remove tag first)
 #CHECKOUTOPTS="-r rel_1_30"
 cd $WORKSPACE/../..
+
+#destination=krthie@shell.sf.net:stir/htdocs/
+#RSYNC_OPTS=
+#destination=web@wren:htdocs/STIR/
+#RSYNC_OPTS=--rsync-path=/home/kris/bin/rsync 
+destination=$WORKSPACE/../web-site/
+RSYNC_OPTS=
+
 DISTRIB=`pwd`/distrib
 LLN=${DISTRIB}/../lln
 WORKSPACE=${DISTRIB}/parapet/PPhead 
 
-#destination=krthie@shell.sf.net:stir/htdocs/
-#RSYNC_OPTS=
-destination=web@wren:htdocs/STIR/
-RSYNC_OPTS=--rsync-path=/home/kris/bin/rsync 
+# disable warnings as we currently get rid of any existing zip files
+# reasons:
+# - this will make sure we do not have files that are removed in the distro in the zip file
+# - zip -u returns funny error code when updating a zip file
 
-
-if [ $do_doc = 1 -a -r ${DISTRIB}/STIR_doc_${VERSION}.zip ]; then
-  echo WARNING: updating existing zip file ${DISTRIB}/STIR_doc_${VERSION}.zip
-fi
-if [ $do_recon_test_pack = 1 -a -r ${DISTRIB}/recon_test_pack_${VERSION}.zip ]; then
-  echo "WARNING: updating existing zip file ${DISTRIB}/recon_test_pack_${VERSION}.zip"
-fi
+#if [ $do_doc = 1 -a -r ${DISTRIB}/STIR_doc_${VERSION}.zip ]; then
+#  echo WARNING: updating existing zip file ${DISTRIB}/STIR_doc_${VERSION}.zip
+#fi
+#if [ $do_recon_test_pack = 1 -a -r ${DISTRIB}/recon_test_pack_${VERSION}.zip ]; then
+#  echo "WARNING: updating existing zip file ${DISTRIB}/recon_test_pack_${VERSION}.zip"
+#fi
 
 
 mkdir -p ${DISTRIB}
@@ -117,7 +124,8 @@ if [ $do_doc = 1 ]; then
   # make documentation PDFs BY HAND
   cd ../documentation
   make
-  zip -ur ${DISTRIB}/STIR_doc_${VERSION}.zip *.pdf *.htm  doxy >/dev/null
+  rm -f ${DISTRIB}/STIR_doc_${VERSION}.zip
+  zip -r ${DISTRIB}/STIR_doc_${VERSION}.zip *.pdf *.htm  doxy >/dev/null
 fi
 
 trap "echo ERROR after creating doc" ERR
@@ -153,13 +161,15 @@ if [ $do_transfer = 1 ]; then
     STIR_${VERSION}.zip VCprojects_${VERSION}.zip \
     recon_test_pack_${VERSION}.zip \
     ${destination}registered
-  rsync --progress -uavz ${RSYNC_OPTS} ChangeLog STIR_doc_${VERSION}.zip  \
+  rsync --progress -uavz ${RSYNC_OPTS} \
+    ChangeLog STIR_doc_${VERSION}.zip  \
     ${destination}documentation
+  echo "If you don't extract STIR_doc.zip, you might have to transfer parapet/documentation/release_${VERSION}.htm or similar explicitly."
 fi
 
 exit 
 # remote
-VERSION=1.3
+VERSION=1.4
 cd registered
 echo EDIT documentation/history.htm
 rm  recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
