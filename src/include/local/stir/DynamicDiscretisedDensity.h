@@ -54,7 +54,6 @@ public:
 			    const shared_ptr<Scanner>& scanner_sptr)
   {
     _densities.resize(time_frame_definitions.get_num_frames());
-    //    _corrected_densities.resize(time_frame_definitions.get_num_frames());
     _time_frame_definitions=time_frame_definitions;
     _calibration_factor=-1.F;
     _isotope_halflife=-1.F;
@@ -97,14 +96,15 @@ public:
 
  void calibrate_frames() const ;
   /*!
-    \warning This function should be used only if the _decay_corrected is false. Time of a frame is taken as the mean time for each frame
+    \warning This function should be used only if the _decay_corrected is false. Time of a frame is taken as the mean time for each frame which is an accurate approximation only if frame_duration <<< isotope_halflife.
  */
  void decay_correct_frames()  ;
  void set_if_decay_corrected(const bool is_decay_corrected)  ;
+ void  DynamicDiscretisedDensity::set_isotope_halflife(const float isotope_halflife);
+ void set_calibration_factor(const float calibration_factor) ;
 private:
   TimeFrameDefinitions _time_frame_definitions;
   std::vector<shared_ptr<DiscretisedDensity<3,float> > > _densities;
-  //  std::vector<shared_ptr<DiscretisedDensity<3,float> > > _corrected_densities;
   shared_ptr<Scanner> _scanner_sptr;
   float _calibration_factor;
   float _isotope_halflife;

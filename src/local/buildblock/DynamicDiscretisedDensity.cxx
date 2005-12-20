@@ -119,6 +119,11 @@ read_from_file(const string& filename) // The written image is read in respect t
       dynamic_image_ptr->_isotope_halflife =
 	mhead.isotope_halflife;
 
+      // TODO get this from the subheader fields or so
+      // dynamic_image_ptr->_is_decay_corrected =
+      //  shead.processing_code & DecayPrc
+      dynamic_image_ptr->_is_decay_corrected = false;
+
       dynamic_image_ptr->_time_frame_definitions =
         TimeFrameDefinitions(filename);      
 
@@ -203,8 +208,16 @@ write_to_ecat7(const string& filename) const
 }
 
 void  DynamicDiscretisedDensity::
+set_calibration_factor(const float calibration_factor) 
+{ _calibration_factor=calibration_factor; }
+
+void  DynamicDiscretisedDensity::
 set_if_decay_corrected(const bool is_decay_corrected) 
 {  this->_is_decay_corrected=is_decay_corrected; }
+
+void  DynamicDiscretisedDensity::
+set_isotope_halflife(const float isotope_halflife) 
+{ _isotope_halflife=isotope_halflife; }
 
  void DynamicDiscretisedDensity::
  decay_correct_frames()  
