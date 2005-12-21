@@ -31,15 +31,13 @@
 #include "local/stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/stir_ecat7.h"
+#include "local/stir/decay_correct.h"
 #include <iostream>
-//#include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <fstream>
 #include "stir/IO/interfile.h"
-//#include "stir/IO/ecat6_utils.h"
-//#include "stir/IO/stir_ecat6.h"
-//#include <typeinfo>
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;
@@ -227,10 +225,8 @@ set_isotope_halflife(const float isotope_halflife)
   else
     {
       for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
-	{
-	  //	  _corrected_densities[frame_num-1]=_densities[frame_num-1].clone();
-	  const double mean_time=0.5*(_time_frame_definitions.get_start_time(frame_num)-_time_frame_definitions.get_end_time(frame_num));
-	  *(_densities[frame_num-1])*=std::exp(mean_time*std::log(2.)/_isotope_halflife);	
+	{ 
+	  *(_densities[frame_num-1])*=decay_correct_factor(_isotope_halflife,_time_frame_definitions.get_start_time(frame_num),_time_frame_definitions.get_end_time(frame_num));	
 	}
       _is_decay_corrected=true;
     }
