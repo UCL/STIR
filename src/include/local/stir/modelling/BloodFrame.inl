@@ -34,11 +34,12 @@ START_NAMESPACE_STIR
 BloodFrame::BloodFrame()
 { }
   //! constructor, time in s
-BloodFrame::BloodFrame(const unsigned int frame_num, const float sample_time, const float blood_sample_counts)
+BloodFrame::BloodFrame(const unsigned int frame_num, const float frame_start_time_in_s, const float frame_end_time_in_s, const float blood_counts)
 {
   BloodFrame::set_frame_num( frame_num );
-  BloodFrame::set_time_in_s( sample_time );
-  BloodFrame::set_blood_counts_in_kBq( blood_sample_counts );  
+  BloodFrame::set_frame_start_time_in_s( frame_start_time_in_s );
+  BloodFrame::set_frame_end_time_in_s( frame_end_time_in_s );
+  BloodFrame::set_blood_counts_in_kBq( blood_counts );  
 }
 
  //! constructor, frame number, if the plasma is based on the acquired image. 
@@ -52,13 +53,21 @@ BloodFrame::BloodFrame(const unsigned int frame_num, const float blood_sample_co
 BloodFrame::~BloodFrame()
 { }
   
-  //! set the time of the sample
-void BloodFrame::set_time_in_s( const float time )
-{ BloodFrame::_time=time ; }
+  //! set the start_time of the sample
+void BloodFrame::set_frame_start_time_in_s( const float frame_start_time_in_s )
+{ BloodFrame::_frame_start_time_in_s=frame_start_time_in_s ; }
 
-  //! get the time of the sample
-float BloodFrame::get_time_in_s() const
-{  return BloodFrame::_time ; }
+  //! get the start_time of the sample
+float BloodFrame::get_frame_start_time_in_s() const
+{  return BloodFrame::_frame_start_time_in_s ; }
+
+  //! set the start_time of the sample
+void BloodFrame::set_frame_end_time_in_s( const float frame_end_time_in_s )
+{ BloodFrame::_frame_end_time_in_s=frame_end_time_in_s ; }
+
+  //! get the start_time of the sample
+float BloodFrame::get_frame_end_time_in_s() const
+{  return BloodFrame::_frame_end_time_in_s ; }
 
   //! set the frame number of the sample, if the plasma is based on the acquired image. 
 void BloodFrame::set_frame_num( const unsigned int frame_num )
