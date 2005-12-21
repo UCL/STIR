@@ -33,6 +33,7 @@
 #define __stir_modelling_PlasmaData_H__
 
 #include "local/stir/modelling/PlasmaSample.h"
+#include "local/stir/decay_correct.h"
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -65,7 +66,7 @@ class PlasmaData
 			      const RadioactivityUnits input_radioactivity_units ) ;
 
   //!Function to shift the time data
-  inline void shift_time(float time_shift);
+  inline void shift_time(const float time_shift);
 
   //!Function to get the time data
   inline float get_time_shift();
@@ -83,7 +84,7 @@ class PlasmaData
   inline PlasmaData();
 
   //! constructor giving a vector //ChT::ToDO: Better to use iterators
-  inline PlasmaData(std::vector<PlasmaSample> plasma_blood_plot);
+  inline PlasmaData(const std::vector<PlasmaSample> & plasma_blood_plot);
 
   //! default constructor
   inline ~PlasmaData();

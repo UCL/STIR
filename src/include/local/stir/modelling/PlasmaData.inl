@@ -35,7 +35,7 @@ PlasmaData::PlasmaData()
 { } 
 
   //! constructor giving a vector //ChT::ToDO: Better to use iterators
-PlasmaData::PlasmaData(std::vector<PlasmaSample> plasma_blood_plot)
+PlasmaData::PlasmaData(const std::vector<PlasmaSample> & plasma_blood_plot)
 {this->_plasma_blood_plot=plasma_blood_plot;}
 
   //! default destructor
@@ -76,7 +76,7 @@ void
 } 
 
   //!Function to shift the time data
-  void PlasmaData::shift_time(float time_shift)
+  void PlasmaData::shift_time(const float time_shift)
 {	
 	_time_shift=time_shift;
 	for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
@@ -105,13 +105,12 @@ set_if_decay_corrected(const bool is_decay_corrected)
 	for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
 	    cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
 	{
-		cur_iter->set_plasma_counts_in_kBq(cur_iter->get_plasma_counts_in_kBq()*std::exp(cur_iter->get_time_in_s()*std::log(2.)/_isotope_halflife));
-		cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*std::exp(cur_iter->get_time_in_s()*std::log(2.)/_isotope_halflife));	
+		cur_iter->set_plasma_counts_in_kBq(cur_iter->get_plasma_counts_in_kBq()*decay_correct_factor(_isotope_halflife,cur_iter->get_time_in_s()));
+		cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*decay_correct_factor(_isotope_halflife,cur_iter->get_time_in_s()));	
 	}	
 	 PlasmaData::set_if_decay_corrected(true);
 	}
 }
-
 
 //PlasmaData begin() and end() of the PlasmaData ;
 PlasmaData::const_iterator
