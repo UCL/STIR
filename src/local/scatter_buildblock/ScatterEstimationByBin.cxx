@@ -365,9 +365,9 @@ process_data()
 			 this->upper_energy_threshold,
 			 this->energy_resolution,
 			 this->use_cache,
-			 this->scatter_level,
 			 this->use_sintheta,
-			 this->use_polarization
+			 this->use_polarization,
+			 this->scatter_level
 			 );
 		    }
 		  
