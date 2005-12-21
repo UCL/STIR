@@ -33,7 +33,8 @@ float scatter_estimate_for_one_scatter_point(
 	  const float lower_energy_threshold, 
 	  const float upper_energy_threshold,
 	  const float resolution,		
-	  const bool use_cache, const bool use_sintheta)
+	  const bool use_cache, 
+	  const bool use_sintheta)
 {	
 	static const float max_single_scatter_cos_angle=max_cos_angle(lower_energy_threshold,2.,resolution);
 
@@ -129,8 +130,8 @@ float scatter_estimate_for_one_scatter_point(
 	const float dif_cross_section =
 		dif_cross_section_511keV(costheta); 
 
-	const float dif_cross_section_sin =
-		dif_cross_section_sin_511keV(costheta); 
+	const float dif_cross_section_sin_value =
+		dif_cross_section_sin(costheta, 511); 
 	
 	const float rA_squared=norm_squared(scatter_point-detector_coord_A);
 	const float rB_squared=norm_squared(scatter_point-detector_coord_B);
@@ -158,7 +159,7 @@ float scatter_estimate_for_one_scatter_point(
 		(emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
 		+emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
 		/(rA_squared*rB_squared) 
-		*dif_cross_section_sin
+		*dif_cross_section_sin_value
 		*atten_to_detB
 		*atten_to_detA
 		*scatter_point_mu
