@@ -261,7 +261,7 @@ void apply_patlak_to_images_plasma_based(DiscretisedDensity<3,float>& y_intersec
 
   // Initialise the vector where the blood values for each frame to 0. 
   std::vector<float>  blood_vector(num_frames,0); 
-  std::vector<float>  blood_sum_vector(num_frames,0) ; //I use sum instead of mean, since PET frames estimate the sum.
+  std::vector<float>  blood_sum_vector(num_frames,0) ;
   float blood_frame_sum=0; //used to store the previous frame values
   BloodFrameData::const_iterator cur_iter=blood_frame_data.begin();
   unsigned int frame_num;
@@ -271,7 +271,7 @@ void apply_patlak_to_images_plasma_based(DiscretisedDensity<3,float>& y_intersec
     {         
       blood_vector[frame_num-1]=cur_iter->get_blood_counts_in_kBq();
       // The reconstructed CTI images and the STIR (when using reconstruction script) are always devided by the time frame duration.;
-      blood_frame_sum+=(dyn_image.get_time_frame_definitions()).get_duration(frame_num)*blood_vector[frame_num-1];
+      blood_frame_sum+=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s())*cur_iter->get_blood_counts_in_kBq();
       blood_sum_vector[frame_num-1]=blood_frame_sum ;
       std::cerr << "Frame_Value: " << blood_vector[frame_num-1] << "   \n";
       std::cerr << "Sum: " << blood_sum_vector[frame_num-1] << "   \n";
