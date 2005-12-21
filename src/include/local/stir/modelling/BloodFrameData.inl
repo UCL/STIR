@@ -35,7 +35,7 @@ BloodFrameData::BloodFrameData()
 { } 
 
 //! constructor giving a vector //ChT::ToDO: Better to use iterators
-BloodFrameData::BloodFrameData(std::vector<BloodFrame> blood_plot)
+BloodFrameData::BloodFrameData(const std::vector<BloodFrame> & blood_plot)
 {this->_blood_plot=blood_plot;}
 
 //! default destructor
@@ -77,12 +77,15 @@ BloodFrameData::set_input_units( SamplingTimeUnits input_sampling_time_units,
 } 
 
 //!Function to shift the time data
-void BloodFrameData::shift_time(float time_shift)
+void BloodFrameData::shift_time(const float time_shift)
 {	
   _time_shift=time_shift;
   for(std::vector<BloodFrame>::iterator cur_iter=this->_blood_plot.begin() ;
       cur_iter!=this->_blood_plot.end() ; ++cur_iter)
-    cur_iter->set_time_in_s(cur_iter->get_time_in_s()+time_shift);		     	     
+    {
+      cur_iter->set_frame_start_time_in_s(cur_iter->get_frame_start_time_in_s()+time_shift);
+      cur_iter->set_frame_end_time_in_s(cur_iter->get_frame_end_time_in_s()+time_shift);
+    }
 }
 //!Function to get the time data
 float BloodFrameData::get_time_shift()
@@ -97,17 +100,15 @@ set_if_decay_corrected(const bool is_decay_corrected)
 
 void BloodFrameData::
 decay_correct_BloodFrameData()  
-{
-	    
+{	    
   if (BloodFrameData::_is_decay_corrected==true)
     warning("BloodFrameData are already decay corrected");
   else
     {
       for(std::vector<BloodFrame>::iterator cur_iter=this->_blood_plot.begin() ;
 	  cur_iter!=this->_blood_plot.end() ; ++cur_iter)
-	{
-	  cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*std::exp(cur_iter->get_time_in_s()*std::log(2.)/_isotope_halflife));	
-	}	
+	 cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()
+					  *decay_correct_factor(_isotope_halflife,cur_iter->get_frame_start_time_in_s(),cur_iter->get_frame_end_time_in_s()));
       BloodFrameData::set_if_decay_corrected(true);
     }
 }
