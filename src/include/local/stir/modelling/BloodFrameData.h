@@ -58,13 +58,14 @@ class BloodFrameData
 
   //! Implementation to read the input function from ONLY a 2-columns frame data (FrameNumber-InputFunctionRadioactivity).
   inline void read_blood_frame_data(const std::string input_string) ;
+
   //! Implementation to set the input units not currently used. Always, it assumed to use kBq, seconds, ml.
   inline void set_input_units(const SamplingTimeUnits input_sampling_time_units, 
 			      const VolumeUnits input_volume_units, 
 			      const RadioactivityUnits input_radioactivity_units ) ;
 
   //!Function to shift the time data
-  inline void shift_time(float time_shift);
+  inline void shift_time(const float time_shift);
 
   //!Function to get the time data
   inline float get_time_shift();
@@ -82,7 +83,7 @@ class BloodFrameData
   inline BloodFrameData();
 
   //! constructor giving a vector //ChT::ToDO: Better to use iterators
-  inline BloodFrameData(std::vector<BloodFrame> blood_plot);
+  inline BloodFrameData(const std::vector<BloodFrame> & blood_plot);
 
   //! default constructor
   inline ~BloodFrameData();
