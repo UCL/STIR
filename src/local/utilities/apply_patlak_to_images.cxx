@@ -1,6 +1,6 @@
 
 //
-// $id: apply_patlak_on_images.cxx,v 1.1 2005/12/02 16:22:23 ctsoumpas Exp $
+// $id: apply_patlak_to_images.cxx,v 1.1 2005/12/02 16:22:23 ctsoumpas Exp $
 //
 /*!
   \file
@@ -136,11 +136,10 @@ int main(int argc, char *argv[])
     for( BloodFrameData::const_iterator cur_iter=blood_frame_data_temp.begin() ; cur_iter!=blood_frame_data_temp.end() ; ++cur_iter)
       {
 	const unsigned int cur_frame=(*cur_iter).get_frame_num() ;
-	const float mean_time=(dyn_image.get_time_frame_definitions()).get_start_time(cur_frame)//ChT::ThinkAgain
-	  +(0.5F*(dyn_image.get_time_frame_definitions()).get_duration(cur_frame));
-	const BloodFrame blood_frame(cur_frame,mean_time,cur_iter->get_blood_counts_in_kBq());	  
+	const float frame_start_time=(dyn_image.get_time_frame_definitions()).get_start_time(cur_frame);
+	const float frame_end_time=(dyn_image.get_time_frame_definitions()).get_end_time(cur_frame);
+	const BloodFrame blood_frame(cur_frame,frame_start_time,frame_end_time,cur_iter->get_blood_counts_in_kBq());	  
 	blood_plot.push_back(blood_frame); 
-	cerr <<  mean_time <<" "; 
       }
     BloodFrameData blood_frame_data(blood_plot);
     apply_patlak_to_images_plasma_based(y_intersection_image,
