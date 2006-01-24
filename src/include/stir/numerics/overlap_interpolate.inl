@@ -105,7 +105,12 @@ void
 	*(in_coord_iter+1) > *(out_coord_iter+1);
       const coord_t new_coord =
 	in_beyond_out ? *(out_coord_iter+1) : *(in_coord_iter+1);
-      const coord_t overlap = new_coord - current_coord;
+#ifndef STIR_OVERLAP_NORMALISATION
+      const coord_t overlap = (new_coord - current_coord);
+#else
+      const coord_t overlap = (new_coord - current_coord)/
+      	(*(out_coord_iter+1) - *(out_coord_iter));
+#endif
       assert(overlap>-epsilon);
 
       if (!only_add_to_output && first_time_for_this_out_box)
