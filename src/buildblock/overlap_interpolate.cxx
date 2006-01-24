@@ -167,7 +167,9 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	if(x1 >= in_data.get_min_index()) 
 	{
 	  out_data[x2] = in_data[x1];
+#ifndef STIR_OVERLAP_NORMALISATION
 	  out_data[x2] /= zoom;
+#endif
 	}
 	else 
 	{
@@ -203,7 +205,11 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
 	  out_data[x2] -= in_data[x1+1];
 	}
 	
+#ifndef STIR_OVERLAP_NORMALISATION
 	out_data[x2] *= static_cast<float>(diff_between_right_edges/zoom);
+#else
+	out_data[x2] *= static_cast<float>(diff_between_right_edges);
+#endif
 	
 	// advance 'in' bin
 	x1++;
@@ -317,6 +323,12 @@ overlap_interpolate(VectorWithOffset<T>& out_data,
            x2++)
 	out_data[x2] *= 0;
     }
+#ifdef STIR_OVERLAP_NORMALISATION
+      for (x2 = out_data.get_min_index();
+           x2 <= out_data.get_max_index(); 
+           x2++)
+	out_data[x2] *= static_cast<float>(zoom);
+#endif
     
     
   }// End of if(zoom>1)
