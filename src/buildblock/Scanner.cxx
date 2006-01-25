@@ -187,7 +187,7 @@ Scanner::Scanner(Type scanner_type)
     set_params(RPT, string_list("PRT-1", "RPT"), 
                16, 128, 2 * 192, 
                380.0F - 7.0F, 7.0F, 6.75F, 3.1088F, 0.0F, 
-               0, 0, 8, 8, 8, 0, 1);
+               0, 0, 8, 8, 8, 32, 1);
 
     // Default 7.0mm average interaction depth.
     // This 7mm taken off the inner ring radius so that the effective radius remains 380mm
