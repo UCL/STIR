@@ -1,4 +1,4 @@
-Licensing information for STIR 1.4beta
+Licensing information for STIR 1.4
 ----------------------------------
 
 See for more info http://stir.HammersmithImanet.com, section Registration.
