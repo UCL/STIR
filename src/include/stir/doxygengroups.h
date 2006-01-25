@@ -131,7 +131,7 @@ be selected at run-time.
 Library with building blocks for reading scan data
 \todo move projection data etc in here
 */
-\*! 
+\!* 
 \defgroup singles_buildblock Singles rates etc
 \ingroup data_buildblock
 */
