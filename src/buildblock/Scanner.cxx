@@ -187,12 +187,10 @@ Scanner::Scanner(Type scanner_type)
     set_params(RPT, string_list("PRT-1", "RPT"), 
                16, 128, 2 * 192, 
                380.0F - 7.0F, 7.0F, 6.75F, 3.1088F, 0.0F, 
-               0, 0, 8, 8, 8, 32, 1);
+               1, 4, 8, 8, 8, 32, 1);
 
     // Default 7.0mm average interaction depth.
     // This 7mm taken off the inner ring radius so that the effective radius remains 380mm
-    // 8 x 0 crystals per singles unit because not known
-    // although likely transaxial_blocks_per_bucket*transaxial_crystals_per_block
     break;    
 
   case RATPET:
