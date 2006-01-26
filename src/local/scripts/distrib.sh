@@ -1,26 +1,28 @@
 #! /bin/sh
 do_lln=0
-do_update=0
-do_license=0
-do_ChangeLog=0
-do_doc=0
-do_doxygen=0
-do_zip_source=0
-do_recon_test_pack=0
+do_update=1
+do_license=1
+do_ChangeLog=1
+do_doc=1
+do_doxygen=1
+do_zip_source=1
+do_recon_test_pack=1
 do_transfer=1
 
+do_website_final_version=0
+do_website_sync=0
+
 set -e
-# rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
-VERSION=1.4beta
+VERSION=1.4
+
+CVSOPTS="-d ha-beo-1:/data/home/kris/devel/cvsroot"
+CVS="cvs $CVSOPTS"
+
 # TODO  problems with LICENSE.txt
 # need to get it without tag, and then update and then assign tag (potentially remove tag first)
 #CHECKOUTOPTS="-r rel_1_30"
 cd $WORKSPACE/../..
 
-#destination=krthie@shell.sf.net:stir/htdocs/
-#RSYNC_OPTS=
-#destination=web@wren:htdocs/STIR/
-#RSYNC_OPTS=--rsync-path=/home/kris/bin/rsync 
 destination=$WORKSPACE/../web-site/
 RSYNC_OPTS=
 
@@ -47,7 +49,7 @@ if [ $do_lln = 1 ]; then
 echo "LLN stuff "
 cd ${LLN}
   trap "echo ERROR in LLN update" ERR
-  cvs up
+  $CVS up
   tar -v --exclude VC --exclude CVS -czf ecat.tar.gz \
     ecat/*[ch] ecat/Makefile.*   ecat/utils/*[ch] ecat/utils/Makefile.* 
 fi
@@ -56,13 +58,13 @@ cd ${DISTRIB}
 
   trap "echo ERROR in cvs update" ERR
 if [ ! -r parapet ]; then
-    cvs checkout -P  $CHECKOUTOPTS
+    $CVS checkout -P  $CHECKOUTOPTS
   cd parapet
 else
   cd parapet
   if [ $do_update = 1 ]; then
      trap "echo ERROR in CVS update" ERR
-    cvs up -dP  $CHECKOUTOPTS
+    $CVS up -dP  $CHECKOUTOPTS
   fi
 fi
 rm -f STIR
@@ -74,7 +76,7 @@ echo "updating VERSION.txt"
 echo "TODO update PROJECT_NUMBER in Doxyfile"
 trap "echo ERROR in updating VERSION.txt" ERR
 echo $VERSION > VERSION.txt
-cvs commit -m "- updated for release of version $VERSION" VERSION.txt
+$CVS commit -m "- updated for release of version $VERSION" VERSION.txt
 
 # update LICENSE.txt
 if [ $do_license = 1 ]; then
@@ -98,7 +100,7 @@ if [ $do_license = 1 ]; then
   #then add new list on again
   find . -path ./local -prune -path ./include/local -prune \
      -o -name "*[xhlkc]"  -print|grep -v CVS | xargs grep -l PARAPET >>LICENSE.txt 
-  cvs commit  -m "- updated for release of version $VERSION" LICENSE.txt
+  $CVS commit  -m "- updated for release of version $VERSION" LICENSE.txt
 fi
 
 # make ChangeLog file
@@ -109,12 +111,13 @@ if [ $do_ChangeLog = 1 ]; then
   # maybe use --accum
   rm -rf xxlocal
   mv local xxlocal
-  cvs2cl.pl -I 'xxlocal/' -I 'include/local'  --no-indent -F trunk
+  cvs2cl.pl -g "$CVSOPTS" -I 'xxlocal/' -I 'include/local'  --no-indent -F trunk
   mv xxlocal local
   cp ChangeLog ${DISTRIB}
 fi
 
 if [ $do_doc = 1 ]; then
+  echo "Making doc"
   trap "echo ERROR in updating doc" ERR
   cd $WORKSPACE
   # make doxygen
@@ -167,19 +170,25 @@ if [ $do_transfer = 1 ]; then
   echo "If you don't extract STIR_doc.zip, you might have to transfer parapet/documentation/release_${VERSION}.htm or similar explicitly."
 fi
 
-exit 
-# remote
-VERSION=1.4
-cd registered
-echo EDIT documentation/history.htm
-rm  recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
-ln -s STIR_${VERSION}.zip STIR.zip 
-ln -s VCprojects_${VERSION}.zip  VCprojects.zip
-#ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
-ln -s recon_test_pack_${VERSION}.zip recon_test_pack.zip
-cd ../documentation
-rm STIR_doc.zip
-ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
-rm -fr doxy
-unzip -u STIR_doc
+if [ $do_website_final_version = 1 ]; then
+    cd $destination
+    cd registered
+    rm  recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
+    ln -s STIR_${VERSION}.zip STIR.zip 
+    ln -s VCprojects_${VERSION}.zip  VCprojects.zip
+    #ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
+    ln -s recon_test_pack_${VERSION}.zip recon_test_pack.zip
+	cd ../documentation
+    rm STIR_doc.zip
+    ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
+    rm -fr doxy
+    unzip -u STIR_doc
+    cd ..
+fi
 
+if [ $do_website_sync = 1 ]; then
+    # rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
+    cd $destination
+    rsync  -auCzv --rsync-path=/home/kris/bin/rsync ./ web@wren:htdocs/STIR/
+    rsync  -auCzv ./ krthie@shell.sf.net:stir/htdocs/    
+fi
