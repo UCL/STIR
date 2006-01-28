@@ -94,8 +94,12 @@ done
 # TODO we currently pipe all output to /dev/null because there's a lot of stuff because blocksizes do not work
 stir_math -s --add trues $all_trues >& /dev/null
 stir_math -s --add singles $all_singles >& /dev/null
-stir_math -s --add doubles11 $all_singles12 >& /dev/null
-stir_math -s --add doubles20 $all_doubles1 $all_doubles2 >& /dev/null
+if [ ! -z "$all_singles12" ]; then
+  stir_math -s --add doubles11 $all_singles12 >& /dev/null
+fi
+if [ ! -z "$all_doubles1" ]; then
+  stir_math -s --add doubles20 $all_doubles1 $all_doubles2 >& /dev/null
+fi
 stir_math -s --add multiples $all_multiples >& /dev/null
 
 rm -f blue*s
