@@ -173,6 +173,11 @@ post_processing()
   return false;
 }
 
+ScatterEstimationByBin::
+ScatterEstimationByBin()
+{
+  this->set_defaults();
+}
 
 unsigned 
 ScatterEstimationByBin::

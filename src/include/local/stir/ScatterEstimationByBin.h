@@ -64,6 +64,8 @@ extern int total_detectors;
 class ScatterEstimationByBin : public ParsingObject
 {
  public:
+  //! Default constructor (calls set_defaults())
+  ScatterEstimationByBin();
   Succeeded process_data();
   /*  virtual float scatter_estimate(
 			 const unsigned det_num_A, 
