@@ -60,6 +60,7 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 	{ // Initialize Pseudo Random Number generator using time  
 				srand((unsigned)time( NULL ));
 	}
+	scatt_points_vector.resize(0); // make sure we don't keep scatter points from a previous run
 	scatt_points_vector.reserve(std::min(1000, scatt_points));  
 
 	// coord[] is in voxels units       
