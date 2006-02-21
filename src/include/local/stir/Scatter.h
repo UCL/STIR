@@ -135,8 +135,7 @@ float scatter_estimate_for_one_scatter_point(const DiscretisedDensityOnCartesian
 					     const float lower_energy_threshold, 
 					     const float upper_energy_threshold,
 					     const float resolution,		
-					     const bool use_cache,	
-					     const bool use_sintheta);
+					     const bool use_cache);
 void
 scatter_estimate_for_two_scatter_points(double& scatter_ratio_11,
 					double& scatter_ratio_02,
@@ -150,7 +149,6 @@ scatter_estimate_for_two_scatter_points(double& scatter_ratio_11,
 					const float upper_energy_threshold,
 					const float resolution,		
 					const bool use_cache,	
-					const bool use_sintheta,
 					const bool use_polarization);
 void
 scatter_estimate_for_all_scatter_points(double& scatter_ratio_01,
@@ -164,9 +162,8 @@ scatter_estimate_for_all_scatter_points(double& scatter_ratio_01,
 					const float lower_energy_threshold, 
 					const float upper_energy_threshold,
 					const float resolution,		
-					const bool use_cache,	
-					const bool use_sintheta,
-					const bool use_polarization,
+					const bool use_cache, 
+					const bool use_polarization,	
 					const int scatter_level);
 
 float
@@ -177,8 +174,7 @@ scatter_estimate_for_all_scatter_points(const DiscretisedDensityOnCartesianGrid<
 					const float lower_energy_threshold, 
 					const float upper_energy_threshold,
 					const float resolution,		
-					const bool use_cache,
-					const bool use_sintheta,
+					const bool use_cache, 
 					const bool use_polarization,
 					const int scatter_level);
 
@@ -205,7 +201,6 @@ double scatter_estimate_for_two_scatter_points_splitted(  // splitted 11 case di
 							const float upper_energy_threshold, 
 							const float resolution,		
 							const bool use_cache, 	
-							const bool use_sintheta,
 							const bool use_polarization,
 							const int split);
 
@@ -221,8 +216,8 @@ float scatter_estimate_for_all_scatter_points_splitted(             // ? all sca
 						       const float upper_energy_threshold, 
 						       const float resolution,		
 						       const bool use_cache,
-						       const bool use_sintheta,
 						       const bool use_polarization,
+						 
 						       const int scatter_level,
 						       const int split);
 void scatter_viewgram_splitted( 
@@ -234,7 +229,10 @@ void scatter_viewgram_splitted(
 			       int& scatt_points, const float att_threshold, 
 			       const float lower_energy_threshold, const float upper_energy_threshold, 
 			       const float resolution, 
-			       const bool use_cache, const bool use_sintheta, const bool use_polarization, const int scatter_level, const bool random);
+			       const bool use_cache,
+			       const bool use_polarization, 
+			       
+			       const int scatter_level, const bool random);
 
 /*!	\name Klein-Nishina functions					
   \ingroup scatter
@@ -248,85 +246,10 @@ void scatter_viewgram_splitted(
 */ 
 //@{
 inline
-float dif_cross_section_511keV(const float cos_theta); 
-
-inline
 float dif_cross_section(const float cos_theta, float energy);
-
-inline
-float dif_cross_section_sin_511keV(const float cos_theta); 
-
-inline
-float dif_cross_section_sin(const float cos_theta, float energy);
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-inline 
-float dif_polarized_cross_section_511keV(const float cos_theta1, const float cos_theta2, const float cos_phi);
 
 inline 
 float dif_polarized_cross_section(const float cos_theta1, const float cos_theta2, const float cos_phi, float energy1, float energy2 );
- 
-
-inline 
-float dif_polarized_cross_section(const CartesianCoordinate3D<float>& scatter_point_1,
-				  const CartesianCoordinate3D<float>& scatter_point_2,
-				  const CartesianCoordinate3D<float>& detector_coord_A,
-				  const CartesianCoordinate3D<float>& detector_coord_B,
-				  const float energy1, const float energy2);
-
-inline 
-float dif_polarized_cross_section_sin_511keV(const float cos_theta1, const float cos_theta2, const float cos_phi);
-
-inline 
-float dif_polarized_cross_section_sin(const float cos_theta1, const float cos_theta2, const float cos_phi, float energy1, float energy2 );
- 
-
-inline 
-float dif_polarized_cross_section_sin(const CartesianCoordinate3D<float>& scatter_point_1,
-				  const CartesianCoordinate3D<float>& scatter_point_2,
-				  const CartesianCoordinate3D<float>& detector_coord_A,
-				  const CartesianCoordinate3D<float>& detector_coord_B,
-				  const float energy1, const float energy2);
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
- 
-inline 
-float dif_polarized_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point_1,
-				  const CartesianCoordinate3D<float>& scatter_point_2,
-				  const CartesianCoordinate3D<float>& detector_coord_A,
-				  const CartesianCoordinate3D<float>& detector_coord_B);
-
- 
-inline 
-float dif_polarized_cross_section_sin_511keV(const CartesianCoordinate3D<float>& scatter_point_1,
-				  const CartesianCoordinate3D<float>& scatter_point_2,
-				  const CartesianCoordinate3D<float>& detector_coord_A,
-				  const CartesianCoordinate3D<float>& detector_coord_B);
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-inline
-float dif_cross_section(const CartesianCoordinate3D<float>& scatter_point,
-			const CartesianCoordinate3D<float>& detector_coord_A,
-			const CartesianCoordinate3D<float>& detector_coord_B,
-			const float energy);	
-inline
-float dif_cross_section_511keV(const CartesianCoordinate3D<float>& scatter_point,
-			       const CartesianCoordinate3D<float>& detector_coord_A,
-			       const CartesianCoordinate3D<float>& detector_coord_B);
-
-
-inline
-float dif_cross_section_sin(const CartesianCoordinate3D<float>& scatter_point,
-			const CartesianCoordinate3D<float>& detector_coord_A,
-			const CartesianCoordinate3D<float>& detector_coord_B,
-			const float energy);	
-inline
-float dif_cross_section_sin_511keV(const CartesianCoordinate3D<float>& scatter_point,
-			       const CartesianCoordinate3D<float>& detector_coord_A,
-			       const CartesianCoordinate3D<float>& detector_coord_B);
 
 
 /*!						
@@ -368,7 +291,9 @@ void scatter_viewgram(
 	const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	int& scatt_points, const float att_threshold, 
 	const float lower_energy_threshold, const float upper_energy_threshold,	const float resolution,	
-	const bool use_cache,const bool use_sintheta, const bool use_polarization, const int scatter_level, const bool random);
+	const bool use_cache, 
+	const bool use_polarization,
+	const int scatter_level, const bool random);
 
 /////////////////////////
 float att_estimate_for_no_scatter(const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -432,25 +357,26 @@ Array<2,float>
 	 The log information is written in the statistics.txt file
 */
 //@{
-void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
-				 const DiscretisedDensityOnCartesianGrid<3,float>& density_image,
-				 const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr,
-				 const float given_attenuation_threshold,
-				 const int total_scatt_points,
-				 const float lower_energy_threshold, 
-				 const float upper_energy_threshold,
+	void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
+		 const DiscretisedDensityOnCartesianGrid<3,float>& density_image,
+		 const ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr,
+		 const float given_attenuation_threshold,
+		 const int total_scatt_points,
+		 const float lower_energy_threshold, 
+		 const float upper_energy_threshold,
 		 const float resolution,
-		 const bool use_cache, const bool use_sintheta, 
+		 const bool use_cache,  
 		 const bool use_polarization,
-				 const bool random, 
-				 const char *argv[]);
+		 const bool random, 
+		 const char *argv[]);
+
 void writing_time(const int simulation_time, 
-				  const int scatt_points_vector_size,
-				  const int scatter_level);
+		  const int scatt_points_vector_size,
+		  const int scatter_level);
 void writing_time(const double simulation_time, 
-				  const int scatt_points_vector_size,
-				  const int scatter_level, 
-				  const float total_scatter);
+		  const int scatt_points_vector_size,
+		  const int scatter_level, 
+		  const float total_scatter);
 //@}
 
 END_NAMESPACE_STIR
