@@ -233,7 +233,7 @@ float dif_cross_section_511keV(const float cos_theta)
 {
   const float sin_theta2= 1-cos_theta*cos_theta ;
   const float P= 1/(2-cos_theta);
-  return(  Re*Re/2*P* (1 - P*sin_theta2 + P*P)*sqrt(sin_theta2));
+  return(  Re*Re/2*P* (1 - P*sin_theta2 + P*P));
 }
 
 
