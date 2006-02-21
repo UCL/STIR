@@ -51,8 +51,10 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
 				 const float lower_energy_threshold, 
 		 const float upper_energy_threshold,
 		 const float resolution,
-				 const bool use_cache,
-				 const bool random, const char *argv[])
+		 const bool use_cache, 
+		 const bool use_polarization,
+		 const bool random, 
+		 const char *argv[])
 {	
   Bin bin;
   int axial_bins = 0 ;
@@ -107,9 +109,9 @@ void writing_log(const DiscretisedDensityOnCartesianGrid<3,float>& activity_imag
   mystream <<"\n\n\t ****************** END ****************\n\n\n\n\n\a";
 }
 void writing_time(const double simulation_time, 
-				  const int scatt_points_vector_size, 
-				  const int scatter_level,
-				  const float total_scatter)
+		  const int scatt_points_vector_size, 
+		  const int scatter_level,
+		  const float total_scatter)
 {
 	{
 		fstream mystream("statistics.txt", ios::out | ios::app); //output file //
