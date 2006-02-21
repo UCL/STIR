@@ -20,7 +20,7 @@
 using namespace std;
 START_NAMESPACE_STIR
 static const float total_cross_section_511keV = 
-  total_cross_section(511.); 
+  total_cross_section(511.F); 
 
 // for compatiblity with scatter_viewgram.cxx 
 float
@@ -33,7 +33,7 @@ float
 	  const float upper_energy_threshold,
 	  const float resolution,		
 	  const bool use_cache,
-	  const bool use_sintheta, const bool use_polarization,
+	  const bool use_polarization,
 	  const int scatter_level)	
 {	
   double scatter_ratio_01 = 0;
@@ -56,8 +56,9 @@ float
 					  upper_energy_threshold,
 					  resolution,		
 					  use_cache,
-					  use_sintheta, use_polarization,
+					  use_polarization,
 					  scatter_level);
+
   return scatter_ratio_01 + scatter_ratio_11 + scatter_ratio_02;
 }      
 
@@ -67,22 +68,23 @@ void
 					 double& scatter_ratio_01,
 					 double& scatter_ratio_11,
 					 double& scatter_ratio_02,
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+					 const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
+					 const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 					 const float scatter_volume,
-	  const unsigned det_num_A, 
-	  const unsigned det_num_B,
-	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,
-	  const float resolution,		
-	  const bool use_cache,
-	  const bool use_sintheta,
-	  const bool use_polarization,
-	  const int scatter_level)	
+					 const unsigned det_num_A, 
+					 const unsigned det_num_B,
+					 const float lower_energy_threshold, 
+					 const float upper_energy_threshold,
+					 const float resolution,		
+					 const bool use_cache,
+					 const bool use_polarization,
+					 const int scatter_level)	
 {	
   scatter_ratio_01 = 0;
   scatter_ratio_11 = 0;
   scatter_ratio_02 = 0;
+
+ 
 
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...
@@ -121,7 +123,7 @@ void
 						 lower_energy_threshold, 
 						 upper_energy_threshold,
 						 resolution,
-						 use_cache, use_sintheta);	
+						 use_cache);	
 
       if(scatter_level==2||scatter_level==12||scatter_level==120)
 	for(std::size_t scatter_point_2_num =0;
@@ -139,7 +141,8 @@ void
 							lower_energy_threshold, 
 							upper_energy_threshold,
 							resolution,
-							use_cache, use_sintheta, use_polarization);
+							use_cache, 
+							use_polarization);
 	  }
     }	
 
