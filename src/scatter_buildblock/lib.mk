@@ -10,7 +10,7 @@ $(dir)_LIB_SOURCES:= \
 	cached_factors_2.cxx \
 	scatter_estimate_for_one_scatter_point.cxx \
 	scatter_estimate_for_none_scatter_point.cxx \
-	scatter_polarized_estimate_for_two_scatter_points.cxx \
+	scatter_estimate_for_two_scatter_points.cxx \
 	scatter_estimate_for_all_scatter_points.cxx \
 	scatter_viewgram.cxx \
 	write_statistics.cxx \
