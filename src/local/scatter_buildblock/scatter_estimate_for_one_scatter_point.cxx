@@ -37,18 +37,18 @@ float scatter_estimate_for_one_scatter_point(
 {	
 	static const float max_single_scatter_cos_angle=max_cos_angle(lower_energy_threshold,2.,resolution);
 
-	static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,resolution);
+	//static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,resolution);
 
 	const CartesianCoordinate3D<float>& scatter_point =
-		scatt_points_vector[scatter_point_num].coord;
+	  scatt_points_vector[scatter_point_num].coord;
 	const CartesianCoordinate3D<float>& detector_coord_A =
-		detection_points_vector[det_num_A];
-    const CartesianCoordinate3D<float>& detector_coord_B =
-		detection_points_vector[det_num_B];
+	  detection_points_vector[det_num_A];
+	const CartesianCoordinate3D<float>& detector_coord_B =
+	  detection_points_vector[det_num_B];
 	// note: costheta is -cos_angle such that it is 1 for zero scatter angle
 	const float costheta =
-		-cos_angle(detector_coord_A - scatter_point,
-		           detector_coord_B - scatter_point);
+	  -cos_angle(detector_coord_A - scatter_point,
+		     detector_coord_B - scatter_point);
 	// note: costheta is identical for scatter to A or scatter to B
 	// Hence, the cross_section and energy are identical for both cases as well.
 	if(max_single_scatter_cos_angle>costheta)
@@ -64,9 +64,9 @@ float scatter_estimate_for_one_scatter_point(
 		return 0;
 
 	float emiss_to_detA, 
-		emiss_to_detB,
-		atten_to_detA,
-		atten_to_detB;
+	  emiss_to_detB,
+	  atten_to_detA,
+	  atten_to_detB;
 
 	if (use_cache)
 	{			
@@ -95,14 +95,16 @@ float scatter_estimate_for_one_scatter_point(
 	}
 	else
 	{
-		emiss_to_detA = integral_scattpoint_det( 
-			image_as_activity,
-			scatter_point, 
-			detector_coord_A);
-		emiss_to_detB = integral_scattpoint_det(
-			image_as_activity,
-			scatter_point, 
-			detector_coord_B);
+	  emiss_to_detA = 
+	    integral_over_activity_image_between_scattpoint_det (image_as_activity,
+								 scatter_point,
+								 detector_coord_A);
+	  
+	  emiss_to_detB = 
+	    integral_over_activity_image_between_scattpoint_det (image_as_activity,
+								 scatter_point,
+								 detector_coord_B);
+
 		if (emiss_to_detA==0 && emiss_to_detB==0)
 			return 0;	
 
@@ -127,11 +129,11 @@ float scatter_estimate_for_one_scatter_point(
 			detector_coord_B));
 	}	
 	const float dif_cross_section_value =
-		dif_cross_section(costheta, 511.F); 
+	  dif_cross_section(costheta, 511.F); 
 	
 	const float rA_squared=norm_squared(scatter_point-detector_coord_A);
 	const float rB_squared=norm_squared(scatter_point-detector_coord_B);
-	
+
 	const float scatter_point_mu=
 		scatt_points_vector[scatter_point_num].mu_value;
 
