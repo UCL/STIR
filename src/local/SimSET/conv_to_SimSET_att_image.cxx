@@ -112,8 +112,16 @@ int main(int argc, char *argv[])
 				*out_iter = 0.F;
 			else if (fabs(*in_iter-0.19669)<0.004)  // Bone
 				*out_iter = 3.F; 
-			else if (fabs(*in_iter-0.02468)<0.004) // Lung
+			else if (fabs(*in_iter-0.02468)<0.005) // Lung
 				*out_iter = 6.F;
+			else if (fabs(*in_iter-0.0011)<0.005) // air
+				*out_iter = 30.F;
+			// WARNING: next value is really not aluminum (should be 0.22548)
+			// However, this is currently a work-around to handle the
+			// sphere used for our experiments
+			else if (fabs(*in_iter-0.898)<0.005) // Aluminum
+			        *out_iter = 20.F;
+
 			else
 			{
 				is_implemented=false;
