@@ -46,7 +46,7 @@ float cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretis
 		if (cached_integral_scattpoint_det[0][scatter_point_num][det_num]<0)
 		  {
 		    cached_integral_scattpoint_det[0][scatter_point_num][det_num]=
-		      integral_scattpoint_det(
+		      integral_over_activity_image_between_scattpoint_det(
 					      discretised_image,	  	
 					      scatt_points_vector[scatter_point_num].coord,
 					      detection_points_vector[det_num]);
