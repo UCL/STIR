@@ -116,7 +116,7 @@ float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>&
 			       const CartesianCoordinate3D<float>& scatter_point, 
 			       const CartesianCoordinate3D<float>& detector_coord);
 
-float integral_emispoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
+float integral_over_activity_image_between_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
 			      const CartesianCoordinate3D<float>& scatter_point,
 			      const CartesianCoordinate3D<float>& detector_coord); 
 
