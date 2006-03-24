@@ -64,6 +64,7 @@ do for j in $all_scatter_bin_nums ;
   do 
      scatter_bin_num=$(( ${num_scatter_bins} * $i + $j ))
      echo extracting scatter bin $scatter_bin_num
+     echo ${conv_cmdline} ${scatter_bin_num} blue${i}_pink${j};
      ${conv_cmdline} ${scatter_bin_num} blue${i}_pink${j};
   done 
 done 
