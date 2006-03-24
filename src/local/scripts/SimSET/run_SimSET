@@ -1,7 +1,7 @@
 #! /bin/sh
 # $Id$
 #PBS -k eo 
-#PBS -l vmem=1990mb
+#PBS -l vmem=1900mb
 
 # Script to run simset simulations
 # Authors: Pablo Aguiar, Kris Thielemans
