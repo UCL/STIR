@@ -111,9 +111,22 @@ float detection_efficiency( const float low, const float high,
 	 The cached_factors_2() stores the values in of the two integrals 
 	 (scatter_point_1-scatter_point_2) in an static array.
 */
+
 float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
 			       const CartesianCoordinate3D<float>& scatter_point, 
-			       const CartesianCoordinate3D<float>& detector_coord);  
+			       const CartesianCoordinate3D<float>& detector_coord);
+
+float integral_emispoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
+			      const CartesianCoordinate3D<float>& scatter_point,
+			      const CartesianCoordinate3D<float>& detector_coord); 
+
+ 
+
+float integral_over_activity_image_between_scattpoints (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
+							const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
+							const CartesianCoordinate3D<float>& scatter_point_1, 
+							const CartesianCoordinate3D<float>& scatter_point_2);
+
 float  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
 		      const unsigned scatter_point_num, 
 		      const unsigned det_num,
