@@ -42,6 +42,7 @@
 	uninstall uninstall-all uninstall-exes uninstall-lib uninstall-include \
 	clean_tests clean_lib clean_exes \
 	run_tests run_interactive_tests all_test_exes \
+	print-make-vars \
 	default_target
 
 # WORKSPACE macro should be set to the root of the source files
@@ -63,6 +64,7 @@ how:
 	@echo "     uninstall uninstall-all"
 	@echo "     clean_tests clean_lib clean_exes "
 	@echo "     run_tests run_interactive_tests" 
+	@echo "     print-make-vars"
 	@echo "and options can be for instance:"
 	@echo "     BUILD=debug DEST=somenicedir/ INSTALL_PREFIX=/usr/local"
 	@echo "See the STIR User's guide for more info."
@@ -175,6 +177,15 @@ install-include:
 
 uninstall-include:
 	$(RM) -r $(INSTALL_INCLUDE_DIR)/stir
+
+print-make-vars:
+	@echo CC: $(CC)
+	@echo CXX: $(CXX)
+	@echo LINK: $(LINK)
+	@echo CFLAGS: $(CFLAGS)
+	@echo LINKFLAGS: $(LINKFLAGS)
+	@echo SYS_LIBS: $(SYS_LIBS)
+	@echo DEST: $(DEST)
 
 #********* default rules
 
