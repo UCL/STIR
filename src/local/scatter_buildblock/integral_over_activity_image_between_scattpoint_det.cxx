@@ -69,6 +69,11 @@ float integral_over_activity_image_between_scattpoint_det (const DiscretisedDens
 				    coords[3] >= image[coords[1]][coords[2]].get_min_index() && 
 				    coords[3] <= image[coords[1]][coords[2]].get_max_index())
 				  {
+				    if (image[coords] == 0)
+				      {
+					++element_ptr;		
+					continue;
+				      }
 				  we_have_been_within_the_image = true;
 					
 				  const CartesianCoordinate3D<float> emis_point=
