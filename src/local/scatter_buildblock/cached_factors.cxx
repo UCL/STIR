@@ -56,23 +56,12 @@ cached_factors(const unsigned scatter_point_num,
 	}
 	else if(input_image_type==att_image_type)
 	{
-#ifndef NEWSCALE		
-	/* projectors work in pixel units, so convert attenuation data 
-	   from cm^-1 to pixel_units^-1 */
-  const float	rescale = 
-		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(*density_image_sptr).
-		get_grid_spacing()[3]/10;
-#else
-  const float	rescale = 
-		0.1F;
-#endif
 		if (cached_integral_scattpoint_det[1][scatter_point_num][det_num]<0)
 		  {
 		    cached_integral_scattpoint_det[1][scatter_point_num][det_num]=
-		      exp(-rescale*
-			      integral_over_attenuation_image_between_scattpoint_det(
+		      exp_integral_over_attenuation_image_between_scattpoint_det(
 						   scatt_points_vector[scatter_point_num].coord,
-						   detection_points_vector[det_num]));
+						   detection_points_vector[det_num]);
 		  }
 		return 
 		  cached_integral_scattpoint_det[1][scatter_point_num][det_num];

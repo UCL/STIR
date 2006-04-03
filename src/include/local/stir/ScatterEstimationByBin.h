@@ -151,8 +151,8 @@ virtual
 			      const CartesianCoordinate3D<float>& detector_coord);
 
   float 
-    integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
-							    const CartesianCoordinate3D<float>& detector_coord);
+    exp_integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
+								const CartesianCoordinate3D<float>& detector_coord);
 	
 
 
@@ -164,8 +164,12 @@ virtual
 
   float 
     integral_over_activity_image_between_scattpoints (const CartesianCoordinate3D<float>& scatter_point_1, 
-						      const CartesianCoordinate3D<float>& scatter_point_2);
-  
+							  const CartesianCoordinate3D<float>& scatter_point_2);
+
+  float 
+    exp_integral_over_attenuation_image_between_scattpoints (const CartesianCoordinate3D<float>& scatter_point_1, 
+							     const CartesianCoordinate3D<float>& scatter_point_2);
+    
 
   float 
     cached_factors(const unsigned scatter_point_num, 

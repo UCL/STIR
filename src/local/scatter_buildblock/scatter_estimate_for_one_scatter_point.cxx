@@ -98,23 +98,12 @@ ScatterEstimationByBin::
 		if (emiss_to_detA==0 && emiss_to_detB==0)
 			return 0;	
 
-	
-#ifndef NEWSCALE		
-	/* projectors work in pixel units, so convert attenuation data 
-	   from cm^-1 to pixel_units^-1 */
-		const float	rescale = 
-		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(*density_image_sptr).
-		get_grid_spacing()[3]/10;
-#else
-  const float	rescale = 
-		0.1F;
-#endif
-		atten_to_detA = exp(-rescale*integral_over_attenuation_image_between_scattpoint_det(
+		atten_to_detA = exp_integral_over_attenuation_image_between_scattpoint_det(
 			scatter_point, 
-			detector_coord_A));
-		atten_to_detB = exp(-rescale*integral_over_attenuation_image_between_scattpoint_det(
+			detector_coord_A);
+		atten_to_detB = exp_integral_over_attenuation_image_between_scattpoint_det(
 			scatter_point, 
-			detector_coord_B));
+			detector_coord_B);
 	}	
 	const float dif_cross_section_value =
 	  dif_cross_section(costheta, 511.F); 

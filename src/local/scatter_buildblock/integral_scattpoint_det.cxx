@@ -26,13 +26,50 @@ START_NAMESPACE_STIR
 
 float 
 ScatterEstimationByBin::
-integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
+exp_integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
 			 const CartesianCoordinate3D<float>& detector_coord)
 {	
+#ifndef NEWSCALE		
+  /* projectors work in pixel units, so convert attenuation data 
+     from cm^-1 to pixel_units^-1 */
+  const float	rescale = 
+    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(*density_image_sptr).
+    get_grid_spacing()[3]/10;
+#else
+  const float	rescale = 
+    0.1F;
+#endif
+
   return
-    integral_between_2_points(*density_image_sptr,
-			      scatter_point,
-			      detector_coord);
+    exp(-rescale*
+	integral_between_2_points(*density_image_sptr,
+				  scatter_point,
+				  detector_coord)
+	);
+}
+
+float 
+ScatterEstimationByBin::
+exp_integral_over_attenuation_image_between_scattpoints (const CartesianCoordinate3D<float>& scatter_point_1, 
+						     const CartesianCoordinate3D<float>& scatter_point_2)
+{
+#ifndef NEWSCALE		
+  /* projectors work in pixel units, so convert attenuation data 
+     from cm^-1 to pixel_units^-1 */
+  const float	rescale = 
+    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(*density_image_sptr).
+    get_grid_spacing()[3]/10;
+#else
+  const float	rescale = 
+    0.1F;
+#endif
+  
+  return
+    exp(-rescale*
+	integral_between_2_points(*density_image_sptr,
+				  scatter_point_1,
+				  scatter_point_2)
+	);
 }
 
 float 
