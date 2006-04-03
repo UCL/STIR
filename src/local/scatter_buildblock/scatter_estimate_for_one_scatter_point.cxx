@@ -17,24 +17,17 @@
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/ScatterEstimationByBin.h"
-#ifndef NEWSCATTER
-#include "local/stir/Scatter.h"
-#endif
 #include "stir/round.h"
 #include <math.h>
 using namespace std;
 START_NAMESPACE_STIR
 
 static const float total_cross_section_511keV = 
-#ifdef NEWSCATTER
 ScatterEstimationByBin::
-#endif
   total_cross_section(511.F); 
 
 float
-#ifdef NEWSCATTER
 ScatterEstimationByBin::
-#endif
  scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,

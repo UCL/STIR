@@ -22,19 +22,13 @@ Function calculates the integral along LOR in an emission image
 */
 
 #include "local/stir/ScatterEstimationByBin.h"
-#ifndef NEWSCATTER
-#include "local/stir/Scatter.h"
-#include "local/stir/compute_solid_angle_factors.h"
-#endif
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 START_NAMESPACE_STIR
 
 float
-#ifdef NEWSCATTER
 ScatterEstimationByBin::
-#endif
 integral_over_activity_image_between_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
 							   const CartesianCoordinate3D<float>& scatter_point, 
 							   const CartesianCoordinate3D<float>& detector_coord)

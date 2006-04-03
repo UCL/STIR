@@ -122,8 +122,6 @@ virtual
 
   /*************** functions that do the work **********/
 
-#define NEWSCATTER
-#ifdef NEWSCATTER
 enum image_type{act_image_type, att_image_type};
 struct ScatterPoint
 { 
@@ -299,8 +297,6 @@ int total_detectors;
 	  inline float  
 	    compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
 							  const CartesianCoordinate3D<float>& detector_coord) ;
-	  
-#endif
 
 };
 
