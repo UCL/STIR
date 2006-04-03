@@ -90,7 +90,8 @@ class ScatterEstimationByBin : public ParsingObject
   bool use_polarization;
   int scatter_level;
   bool write_scatter_orders_in_separate_files;
-  
+  //! reference used when specifying the energy
+  float reference_energy; 
   float energy_resolution;
   float lower_energy_threshold;
   float upper_energy_threshold;
@@ -122,135 +123,93 @@ virtual
 
   /*************** functions that do the work **********/
 
-enum image_type{act_image_type, att_image_type};
-struct ScatterPoint
-{ 
-  CartesianCoordinate3D<float> coord;
-  float mu_value;
-};
-
-std::vector< ScatterPoint> scatt_points_vector;
+  enum image_type{act_image_type, att_image_type};
+  struct ScatterPoint
+  { 
+    CartesianCoordinate3D<float> coord;
+    float mu_value;
+  };
+  
+  std::vector< ScatterPoint> scatt_points_vector;
+  float scatter_volume;
 // next needs to be mutable because find_in_detection_points_vector is const
-mutable std::vector<CartesianCoordinate3D<float> > detection_points_vector;
-int total_detectors;
-       
+  mutable std::vector<CartesianCoordinate3D<float> > detection_points_vector;
+  int total_detectors;
+
+  // fill in scatt_points_vector and scatter_volume       
   void 
-    sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,
-			  float>& attenuation_map,
-			  int & scatt_points,
-			  const float att_threshold, 
-			  const bool random);
+    sample_scatter_points();
 	
 
-	inline float 
-	  detection_efficiency( const float low, 
-				const float high, 
-				const float energy, 
-				const float reference_energy, 
-				const float resolution);
+  inline float 
+    detection_efficiency(const float energy);
 	
+  static
+    float 
+    integral_between_2_points(const DiscretisedDensity<3,float>& density,
+			      const CartesianCoordinate3D<float>& scatter_point, 
+			      const CartesianCoordinate3D<float>& detector_coord);
 
-	float 
-	  integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-				   const CartesianCoordinate3D<float>& scatter_point, 
-				   const CartesianCoordinate3D<float>& detector_coord);
+  float 
+    integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
+							    const CartesianCoordinate3D<float>& detector_coord);
 	
 
 
-	float 
-	  integral_over_activity_image_between_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
-							       const CartesianCoordinate3D<float>& scatter_point,
-							       const CartesianCoordinate3D<float>& detector_coord);
-	
+  float 
+    integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point,
+							 const CartesianCoordinate3D<float>& detector_coord);
+  
  
 
-	float 
-	  integral_over_activity_image_between_scattpoints (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
-							    const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-							    const CartesianCoordinate3D<float>& scatter_point_1, 
-							    const CartesianCoordinate3D<float>& scatter_point_2);
-	
+  float 
+    integral_over_activity_image_between_scattpoints (const CartesianCoordinate3D<float>& scatter_point_1, 
+						      const CartesianCoordinate3D<float>& scatter_point_2);
+  
 
-	float 
-	  cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-			 const unsigned scatter_point_num, 
-			 const unsigned det_num,
-			 const image_type input_image_type);
+  float 
+    cached_factors(const unsigned scatter_point_num, 
+		   const unsigned det_num,
+		   const image_type input_image_type);
 	
 	
-	float 
-	  cached_factors_2(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-			   const unsigned scatter_point_1_num, 
-			   const unsigned scatter_point_2_num,
-			   const image_type input_image_type);
+  float 
+    cached_factors_2(const unsigned scatter_point_1_num, 
+		     const unsigned scatter_point_2_num,
+		     const image_type input_image_type);
 	
 
 	
-	float 
-	scatter_estimate_for_one_scatter_point(const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-					       const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-					       const std::size_t scatter_point_num,    // scatter volume misses
-					       const unsigned det_num_A, 
-					       const unsigned det_num_B,
-					       const float lower_energy_threshold, 
-					       const float upper_energy_threshold,
-					       const float resolution,		
-					       const bool use_cache);
-	void
-	  scatter_estimate_for_two_scatter_points(double& scatter_ratio_11,
-						  double& scatter_ratio_02,
-						  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-						  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-						  const std::size_t scatter_point_1_num, 
-						const std::size_t scatter_point_2_num, 
-						  const unsigned det_num_A, 
-						  const unsigned det_num_B,
-						  const float lower_energy_threshold, 
-						  const float upper_energy_threshold,
-						  const float resolution,		
-						  const bool use_cache,	
-						  const bool use_polarization);
+  float 
+    scatter_estimate_for_one_scatter_point(const std::size_t scatter_point_num,
+					   const unsigned det_num_A, 
+					   const unsigned det_num_B);
+  void
+    scatter_estimate_for_two_scatter_points(double& scatter_ratio_11,
+					    double& scatter_ratio_02,
+					    const std::size_t scatter_point_1_num, 
+					    const std::size_t scatter_point_2_num, 
+					    const unsigned det_num_A, 
+					    const unsigned det_num_B);
 	
 	
-	void
-	  scatter_estimate_for_all_scatter_points(double& scatter_ratio_01,
-						  double& scatter_ratio_11,
-						  double& scatter_ratio_02,
-						  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-						  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-						  const float scatter_volume,
-						  const unsigned det_num_A, 
-						  const unsigned det_num_B,
-						  const float lower_energy_threshold, 
-						  const float upper_energy_threshold,
-						  const float resolution,		
-						  const bool use_cache, 
-						  const bool use_polarization,	
-						  const int scatter_level);
+  void
+    scatter_estimate_for_all_scatter_points(double& scatter_ratio_01,
+					    double& scatter_ratio_11,
+					    double& scatter_ratio_02,
+					    const unsigned det_num_A, 
+					    const unsigned det_num_B);
 
       
-	float
-	  scatter_estimate_for_all_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-						  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-						  const unsigned det_num_A, 
-						  const unsigned det_num_B,
-						  const float lower_energy_threshold, 
-						  const float upper_energy_threshold,
-						  const float resolution,		
-						  const bool use_cache, 
-						  const bool use_polarization,
-						  const int scatter_level);
-
+  float
+    scatter_estimate_for_all_scatter_points(const unsigned det_num_A, 
+					    const unsigned det_num_B);
+  
 
       
-	float 
-	  scatter_estimate_for_none_scatter_point(const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-						  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-						  const unsigned det_num_A, 
-						  const unsigned det_num_B,
-						  const float lower_energy_threshold, 
-						  const float upper_energy_threshold,
-						  const float resolution);
+  float 
+    scatter_estimate_for_none_scatter_point(const unsigned det_num_A, 
+					    const unsigned det_num_B);
  public:
 	static
 	inline float 

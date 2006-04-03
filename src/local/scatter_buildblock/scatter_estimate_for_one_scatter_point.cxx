@@ -29,19 +29,13 @@ ScatterEstimationByBin::
 float
 ScatterEstimationByBin::
  scatter_estimate_for_one_scatter_point(
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const std::size_t scatter_point_num, 
 	  const unsigned det_num_A, 
-	  const unsigned det_num_B,
-	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,
-	  const float resolution,		
-	  const bool use_cache)
+	  const unsigned det_num_B)
 {	
-	static const float max_single_scatter_cos_angle=max_cos_angle(lower_energy_threshold,2.,resolution);
+	static const float max_single_scatter_cos_angle=max_cos_angle(lower_energy_threshold,2.,energy_resolution);
 
-	//static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,resolution);
+	//static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,energy_resolution);
 
 	const CartesianCoordinate3D<float>& scatter_point =
 	  scatt_points_vector[scatter_point_num].coord;
@@ -61,9 +55,7 @@ ScatterEstimationByBin::
 	  energy_after_scatter_511keV(costheta);
 
 	const float detection_efficiency_scatter =
-	  detection_efficiency(lower_energy_threshold,
-				   upper_energy_threshold,
-				   new_energy,511.F,resolution);
+	  detection_efficiency(new_energy);
 	if (detection_efficiency_scatter==0)
 		return 0;
 
@@ -75,24 +67,20 @@ ScatterEstimationByBin::
 	if (use_cache)
 	{			
 		emiss_to_detA = cached_factors(
-			image_as_activity,
 			scatter_point_num, 
 			det_num_A
 			, act_image_type);		
 		emiss_to_detB = cached_factors(
-			image_as_activity,
 			scatter_point_num, 
 			det_num_B
 			,act_image_type);
 		if (emiss_to_detA==0 && emiss_to_detB==0)
 		return 0;	
 		atten_to_detA = cached_factors(
-			image_as_density,
 			scatter_point_num, 
 			det_num_A
 			, att_image_type);
 		atten_to_detB = cached_factors(
-			image_as_density,
 			scatter_point_num, 
 			det_num_B
 			, att_image_type);
@@ -100,13 +88,11 @@ ScatterEstimationByBin::
 	else
 	{
 	  emiss_to_detA = 
-	    integral_over_activity_image_between_scattpoint_det (image_as_activity,
-								 scatter_point,
+	    integral_over_activity_image_between_scattpoint_det (scatter_point,
 								 detector_coord_A);
 	  
 	  emiss_to_detB = 
-	    integral_over_activity_image_between_scattpoint_det (image_as_activity,
-								 scatter_point,
+	    integral_over_activity_image_between_scattpoint_det (scatter_point,
 								 detector_coord_B);
 
 		if (emiss_to_detA==0 && emiss_to_detB==0)
@@ -117,18 +103,16 @@ ScatterEstimationByBin::
 	/* projectors work in pixel units, so convert attenuation data 
 	   from cm^-1 to pixel_units^-1 */
 		const float	rescale = 
-		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(image_as_density).
+		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(*density_image_sptr).
 		get_grid_spacing()[3]/10;
 #else
   const float	rescale = 
 		0.1F;
 #endif
-		atten_to_detA = exp(-rescale*integral_scattpoint_det(
-			image_as_density,
+		atten_to_detA = exp(-rescale*integral_over_attenuation_image_between_scattpoint_det(
 			scatter_point, 
 			detector_coord_A));
-		atten_to_detB = exp(-rescale*integral_scattpoint_det(
-			image_as_density,
+		atten_to_detB = exp(-rescale*integral_over_attenuation_image_between_scattpoint_det(
 			scatter_point, 
 			detector_coord_B));
 	}	
@@ -143,7 +127,8 @@ ScatterEstimationByBin::
 
 #ifndef NDEBUG		
 	const DiscretisedDensityOnCartesianGrid<3,float>& image =
-		image_as_density;
+	dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&>
+	  (*density_image_sptr);
 	const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
 	CartesianCoordinate3D<float>  origin = 
 		image.get_origin();

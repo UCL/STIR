@@ -53,6 +53,7 @@ set_defaults()
   this->use_polarization = false;
   this->scatter_level = 10 ;
   this->energy_resolution = .22 ;
+  this->reference_energy = 511.F;
   this->lower_energy_threshold = 350 ;
   this->upper_energy_threshold = 650 ;
   this->activity_image_filename = "";
@@ -222,25 +223,8 @@ process_data()
   this->proj_data_info_ptr = 
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *> 
     (this->output_proj_data_sptr->get_proj_data_info_ptr());
-	
-  const DiscretisedDensityOnCartesianGrid<3,float>& activity_image = 
-    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
-    (*this->activity_image_sptr);
-  const DiscretisedDensityOnCartesianGrid<3,float>& density_image = 
-    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
-    (*this->density_image_sptr);
 
-  // fill in scatt_points_vector
-
-  const DiscretisedDensityOnCartesianGrid<3,float>& density_image_for_scatter_points = 
-    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&  > 
-    (*this->density_image_for_scatter_points_sptr);
-  int scatt_points=0; // not used by the function
-  sample_scatter_points(density_image_for_scatter_points,scatt_points,
-			this->attenuation_threshold,this->random);
-  const CartesianCoordinate3D<float> voxel_size = 
-    density_image_for_scatter_points.get_grid_spacing();
-  const float scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
+  this->sample_scatter_points();
 
   
   // find final size of detection_points_vector
@@ -344,12 +328,7 @@ process_data()
 		    {
 		      no_scatter = 
 			scatter_estimate_for_none_scatter_point
-			(
-			 activity_image, density_image, 
-			 det_num_A, det_num_B,
-			 this->lower_energy_threshold, 
-			 this->upper_energy_threshold,
-			 this->energy_resolution
+			(det_num_A, det_num_B
 			 );
 		    }
 		  if(this->scatter_level!= 0)
@@ -359,17 +338,8 @@ process_data()
 			 scatter_ratio_01,
 			 scatter_ratio_11,
 			 scatter_ratio_02,
-			 activity_image,
-			 density_image,
-			 scatter_volume,
 			 det_num_A, 
-			 det_num_B,
-			 this->lower_energy_threshold,
-			 this->upper_energy_threshold,
-			 this->energy_resolution,
-			 this->use_cache,
-			 this->use_polarization,
-			 this->scatter_level
+			 det_num_B
 			 );
 		    }
 		  

@@ -159,19 +159,17 @@ total_cross_section_relative_to_511keV(const float energy)
 
 float
 ScatterEstimationByBin::
-detection_efficiency( const float low, const float high, 
-			    const float energy, 
-			    const float reference_energy, const float resolution)
+detection_efficiency(const float energy)
 {
-	// factor 2.35482 is used to convert FWHM to sigma
+  // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
-    sqrt(2.*energy*reference_energy)*resolution/2.35482;  // 2.35482=2 * sqrt( 2 * ( log(2) )
+    sqrt(2.*energy*this->reference_energy)*this->energy_resolution/2.35482;  // 2.35482=2 * sqrt( 2 * ( log(2) )
   
   // sigma_times_sqrt2= sqrt(2) * sigma   // resolution proportional to FWHM 	
   
 	const float efficiency =
-	  0.5*( erf((high-energy)/sigma_times_sqrt2) 
-		      - erf((low-energy)/sigma_times_sqrt2 ));	
+	  0.5*( erf((this->upper_energy_threshold-energy)/sigma_times_sqrt2) 
+		- erf((this->lower_energy_threshold-energy)/sigma_times_sqrt2 ));	
                 /* Maximum efficiency is 1.*/
 	return efficiency;
 }

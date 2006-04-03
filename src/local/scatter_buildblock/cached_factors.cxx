@@ -26,8 +26,7 @@ START_NAMESPACE_STIR
 
 float 
 ScatterEstimationByBin::
-cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-	       const unsigned scatter_point_num, 
+cached_factors(const unsigned scatter_point_num, 
 	       const unsigned det_num,
 	       const image_type input_image_type)
 {		 
@@ -49,7 +48,6 @@ cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_ima
 		  {
 		    cached_integral_scattpoint_det[0][scatter_point_num][det_num]=
 		      integral_over_activity_image_between_scattpoint_det(
-					      discretised_image,	  	
 					      scatt_points_vector[scatter_point_num].coord,
 					      detection_points_vector[det_num]);
 		  }
@@ -62,7 +60,7 @@ cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_ima
 	/* projectors work in pixel units, so convert attenuation data 
 	   from cm^-1 to pixel_units^-1 */
   const float	rescale = 
-		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(discretised_image).
+		dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> &>(*density_image_sptr).
 		get_grid_spacing()[3]/10;
 #else
   const float	rescale = 
@@ -72,8 +70,7 @@ cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_ima
 		  {
 		    cached_integral_scattpoint_det[1][scatter_point_num][det_num]=
 		      exp(-rescale*
-			      integral_scattpoint_det(
-						   discretised_image,	  	
+			      integral_over_attenuation_image_between_scattpoint_det(
 						   scatt_points_vector[scatter_point_num].coord,
 						   detection_points_vector[det_num]));
 		  }

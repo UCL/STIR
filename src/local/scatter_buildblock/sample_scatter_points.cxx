@@ -34,20 +34,16 @@ static inline float random_point(const float low, const float high){
 
 void
 ScatterEstimationByBin::
-sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
-					  int & scatt_points, 
-					  const float att_threshold,
-					  const bool random)
+sample_scatter_points()
 { 
-	const DiscretisedDensityOnCartesianGrid<3,float>* attenuation_map_cartesian_ptr=
-		&attenuation_map;   
-	if (attenuation_map_cartesian_ptr == 0)
-		warning("Didn't take an attenuation map as input");
-	
+
+const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map =
+    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
+    (*density_image_for_scatter_points_sptr);
+
 	BasicCoordinate<3,int> min_index, max_index ;
 	CartesianCoordinate3D<int> coord;
-	
-	if(!attenuation_map_cartesian_ptr->get_regular_range(min_index, max_index))
+	if(!density_image_for_scatter_points_sptr->get_regular_range(min_index, max_index))
 		error("scatter points sampling works only on regular ranges, at the moment\n");    
 	const VoxelsOnCartesianGrid<float>& image =
 		dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
@@ -58,18 +54,20 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
 	origin.z() -= z_to_middle;
 
+	this->scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
+
 	if(random)
 	{ // Initialize Pseudo Random Number generator using time  
 				srand((unsigned)time( NULL ));
 	}
 	scatt_points_vector.resize(0); // make sure we don't keep scatter points from a previous run
-	scatt_points_vector.reserve(std::min(1000, scatt_points));  
+	scatt_points_vector.reserve(1000);  
 
 	// coord[] is in voxels units       
 	for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
 		for(coord[2]=min_index[2];coord[2]<=max_index[2];++coord[2])
 			for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])   
-				if(attenuation_map[coord] >= att_threshold)
+				if(attenuation_map[coord] >= this->attenuation_threshold)
 				{
 					ScatterPoint scatter_point;					
 					scatter_point.coord = convert_int_to_float(coord);
@@ -83,6 +81,5 @@ sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuat
 					scatter_point.mu_value = attenuation_map[coord];
 					scatt_points_vector.push_back(scatter_point);
 				}					
-	scatt_points = scatt_points_vector.size(); //this is the number of total scatt_points that is a refernece to the call
 }
 END_NAMESPACE_STIR 

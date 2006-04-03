@@ -26,40 +26,18 @@ ScatterEstimationByBin::
 // for compatiblity with scatter_viewgram.cxx 
 float
 ScatterEstimationByBin::
- scatter_estimate_for_all_scatter_points(
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-	  const unsigned det_num_A, 
-	  const unsigned det_num_B,
-	  const float lower_energy_threshold, 
-	  const float upper_energy_threshold,
-	  const float resolution,		
-	  const bool use_cache,
-	  const bool use_polarization,
-	  const int scatter_level)	
-{	
+scatter_estimate_for_all_scatter_points(const unsigned det_num_A, 
+					const unsigned det_num_B)	
+{
   double scatter_ratio_01 = 0;
   double scatter_ratio_11 = 0;
   double scatter_ratio_02 = 0;
-  const CartesianCoordinate3D<float> voxel_size = 
-    image_as_density.get_grid_spacing();
-  const float scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
 
-  scatter_estimate_for_all_scatter_points(
-					  scatter_ratio_01,
-					   scatter_ratio_11,
-					  scatter_ratio_02,
-					  image_as_activity,
-					  image_as_density,
-					  scatter_volume,
-					  det_num_A, 
-					  det_num_B,
-					  lower_energy_threshold, 
-					  upper_energy_threshold,
-					  resolution,		
-					  use_cache,
-					  use_polarization,
-					  scatter_level);
+ scatter_estimate_for_all_scatter_points(scatter_ratio_01,
+					 scatter_ratio_11,
+					 scatter_ratio_02,
+					 det_num_A, 
+					 det_num_B);
 
   return scatter_ratio_01 + scatter_ratio_11 + scatter_ratio_02;
 }      
@@ -67,36 +45,22 @@ ScatterEstimationByBin::
 
 void
 ScatterEstimationByBin::
- scatter_estimate_for_all_scatter_points(
-					 double& scatter_ratio_01,
-					 double& scatter_ratio_11,
-					 double& scatter_ratio_02,
-					 const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
-					 const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
-					 const float scatter_volume,
-					 const unsigned det_num_A, 
-					 const unsigned det_num_B,
-					 const float lower_energy_threshold, 
-					 const float upper_energy_threshold,
-					 const float resolution,		
-					 const bool use_cache,
-					 const bool use_polarization,
-					 const int scatter_level)	
-{	
+    scatter_estimate_for_all_scatter_points(double& scatter_ratio_01,
+					    double& scatter_ratio_11,
+					    double& scatter_ratio_02,
+					    const unsigned det_num_A, 
+					    const unsigned det_num_B)
+{
+
   scatter_ratio_01 = 0;
   scatter_ratio_11 = 0;
   scatter_ratio_02 = 0;
 
- 
 
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...
   static const float detection_efficiency_no_scatter =
-    detection_efficiency(lower_energy_threshold,
-			 upper_energy_threshold,
-			 511.F,
-			 511.F,
-			 resolution);
+    detection_efficiency(511.F);
   const CartesianCoordinate3D<float>& detector_coord_A =
     detection_points_vector[det_num_A];
   const CartesianCoordinate3D<float>& detector_coord_B =
@@ -120,13 +84,8 @@ ScatterEstimationByBin::
       if(scatter_level==1||scatter_level==12||scatter_level==10||scatter_level==120)
 	scatter_ratio_01 +=
 	  scatter_estimate_for_one_scatter_point(
-						 image_as_activity, image_as_density, 
 						 scatter_point_num,
-						 det_num_A, det_num_B,
-						 lower_energy_threshold, 
-						 upper_energy_threshold,
-						 resolution,
-						 use_cache);	
+						 det_num_A, det_num_B);	
 
       if(scatter_level==2||scatter_level==12||scatter_level==120)
 	for(std::size_t scatter_point_2_num =0;
@@ -137,15 +96,9 @@ ScatterEstimationByBin::
 	      scatter_estimate_for_two_scatter_points(
 							scatter_ratio_11,
 							scatter_ratio_02,
-							image_as_activity, image_as_density, 
 							scatter_point_2_num,
 							scatter_point_num,
-							det_num_A, det_num_B,
-							lower_energy_threshold, 
-							upper_energy_threshold,
-							resolution,
-							use_cache, 
-							use_polarization);
+							det_num_A, det_num_B);
 	  }
     }	
 

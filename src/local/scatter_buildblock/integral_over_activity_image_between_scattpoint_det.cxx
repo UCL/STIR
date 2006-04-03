@@ -29,13 +29,15 @@ START_NAMESPACE_STIR
 
 float
 ScatterEstimationByBin::
-integral_over_activity_image_between_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& activity_image,
-							   const CartesianCoordinate3D<float>& scatter_point, 
-							   const CartesianCoordinate3D<float>& detector_coord)
-{				
-  const VoxelsOnCartesianGrid<float>& image =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>& >(activity_image);
-  const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
+integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
+						     const CartesianCoordinate3D<float>& detector_coord)
+{
+ const DiscretisedDensityOnCartesianGrid<3,float>& image =
+  dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
+  (*activity_image_sptr);
+				
+ 
+  const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
   
 	CartesianCoordinate3D<float>  origin = 
 	  image.get_origin();
