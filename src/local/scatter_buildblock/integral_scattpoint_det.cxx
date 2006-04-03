@@ -18,13 +18,20 @@ Function calculates the integral along LOR in an image (attenuation or emission)
 		  Copyright (C) 2004- $Date$, Hammersmith Imanet
 		  See STIR/LICENSE.txt for details
 */
+#include "local/stir/ScatterEstimationByBin.h"
+#ifndef NEWSCATTER
 #include "local/stir/Scatter.h"
+#endif
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 START_NAMESPACE_STIR
 
-float integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
+float 
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
+integral_scattpoint_det (const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
 							   const CartesianCoordinate3D<float>& scatter_point, 
 							   const CartesianCoordinate3D<float>& detector_coord)
 {				

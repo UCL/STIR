@@ -17,7 +17,11 @@
 	  See STIR/LICENSE.txt for details
 */
 
+#include "local/stir/ScatterEstimationByBin.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#ifndef NEWSCATTER
 #include "local/stir/Scatter.h"
+#endif
 #include <fstream>
 #include <ctime>
 using namespace std;
@@ -32,6 +36,9 @@ static inline float random_point(const float low, const float high){
 }
 
 void
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
 sample_scatter_points(const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map,
 					  int & scatt_points, 
 					  const float att_threshold,

@@ -17,17 +17,24 @@ Function calculates the integral along LOR in an image (attenuation or emission)
 		  Copyright (C) 2004- $Date$, Hammersmith Imanet
 		  See STIR/LICENSE.txt for details
 */
+#include "local/stir/ScatterEstimationByBin.h"
+#ifndef NEWSCATTER
 #include "local/stir/Scatter.h"
+#endif
 #include "stir/IndexRange.h" 
 #include "stir/Array.h"
 #include "stir/Coordinate3D.h"
 #include "stir/CartesianCoordinate2D.h" 
 START_NAMESPACE_STIR
 
-float cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
-	  			     const unsigned scatter_point_num, 
-					 const unsigned det_num,
-					 const image_type input_image_type)
+float 
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
+cached_factors(const DiscretisedDensityOnCartesianGrid<3,float>& discretised_image,
+	       const unsigned scatter_point_num, 
+	       const unsigned det_num,
+	       const image_type input_image_type)
 {		 
   static IndexRange<3> range (Coordinate3D<int> (0,0,0), 
 			      Coordinate3D<int> (1,

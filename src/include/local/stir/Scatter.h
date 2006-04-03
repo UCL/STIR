@@ -37,8 +37,12 @@
 #include "stir/ProjData.h"
 #include <vector>
 #include <cmath>
+// include this for now just to get at NEWSCATTER
+#include "local/stir/ScatterEstimationByBin.h"
 
 START_NAMESPACE_STIR
+
+#ifndef NEWSCATTER
 
 const double Qe = 1.602E-19;  // charge of the electron    
 const double Me = 9.109E-31;  // mass of the electron
@@ -313,6 +317,8 @@ float att_estimate_for_no_scatter(const DiscretisedDensityOnCartesianGrid<3,floa
 				  const unsigned det_num_A, 
 				  const unsigned det_num_B);
 
+#endif // NEWSCATTER
+
 // give mask_radius_in_mm negative to ignore it
 Array<2,float>
   scale_factors_per_sinogram(const ProjData& no_scatter_proj_data, 
@@ -356,6 +362,7 @@ Array<2,float>
 
 /////////////////////////
 
+#ifndef NEWSCATTER
 
 
 //#ifdef _MSC_VER
@@ -391,7 +398,10 @@ void writing_time(const double simulation_time,
 		  const int scatter_level, 
 		  const float total_scatter);
 //@}
+#endif // NEWSCATTER
 
 END_NAMESPACE_STIR
 
+#ifndef NEWSCATTER
 #include "local/stir/Scatter.inl"
+#endif // NEWSCATTER

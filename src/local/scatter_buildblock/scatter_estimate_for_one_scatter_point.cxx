@@ -16,15 +16,26 @@
     Copyright (C) 2004- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
+#include "local/stir/ScatterEstimationByBin.h"
+#ifndef NEWSCATTER
 #include "local/stir/Scatter.h"
+#endif
+#include "stir/round.h"
 #include <math.h>
 using namespace std;
 START_NAMESPACE_STIR
 
 static const float total_cross_section_511keV = 
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
   total_cross_section(511.F); 
 
-float scatter_estimate_for_one_scatter_point(
+float
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
+ scatter_estimate_for_one_scatter_point(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
 	  const std::size_t scatter_point_num, 
@@ -138,9 +149,9 @@ float scatter_estimate_for_one_scatter_point(
 		scatt_points_vector[scatter_point_num].mu_value;
 
 #ifndef NDEBUG		
-	const VoxelsOnCartesianGrid<float>& image =
-		static_cast<const VoxelsOnCartesianGrid<float>&>(image_as_density);
-	const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
+	const DiscretisedDensityOnCartesianGrid<3,float>& image =
+		image_as_density;
+	const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
 	CartesianCoordinate3D<float>  origin = 
 		image.get_origin();
 	origin.z() -= 
@@ -153,9 +164,8 @@ float scatter_estimate_for_one_scatter_point(
 	float scatter_ratio=0 ;
 
         	scatter_ratio= 
-		  (emiss_to_detA*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
-		   +emiss_to_detB*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1))
-		  /(rA_squared*rB_squared) 
+		  (emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_cross_section_relative_to_511keV(new_energy)-1) 
+		   +emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_cross_section_relative_to_511keV(new_energy)-1)) 
 		  *atten_to_detB
 		  *atten_to_detA
 		  *scatter_point_mu
