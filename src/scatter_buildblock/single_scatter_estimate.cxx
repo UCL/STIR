@@ -16,14 +16,23 @@
     Copyright (C) 2004- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
+#include "local/stir/ScatterEstimationByBin.h"
+#ifndef NEWSCATTER
 #include "local/stir/Scatter.h"
+#endif
 using namespace std;
 START_NAMESPACE_STIR
 static const float total_cross_section_511keV = 
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
   total_cross_section(511.F); 
 
 // for compatiblity with scatter_viewgram.cxx 
 float
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
  scatter_estimate_for_all_scatter_points(
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_activity,
 	  const DiscretisedDensityOnCartesianGrid<3,float>& image_as_density,
@@ -64,6 +73,9 @@ float
 
 
 void
+#ifdef NEWSCATTER
+ScatterEstimationByBin::
+#endif
  scatter_estimate_for_all_scatter_points(
 					 double& scatter_ratio_01,
 					 double& scatter_ratio_11,
