@@ -170,19 +170,23 @@ virtual
     exp_integral_over_attenuation_image_between_scattpoints (const CartesianCoordinate3D<float>& scatter_point_1, 
 							     const CartesianCoordinate3D<float>& scatter_point_2);
     
-
   float 
-    cached_factors(const unsigned scatter_point_num, 
-		   const unsigned det_num,
-		   const image_type input_image_type);
-	
-	
+    cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num, 
+							       const unsigned det_num);
+  
   float 
-    cached_factors_2(const unsigned scatter_point_1_num, 
-		     const unsigned scatter_point_2_num,
-		     const image_type input_image_type);
-	
+    cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num, 
+								      const unsigned det_num);
 
+  float
+    cached_integral_over_activity_image_between_scattpoints(unsigned scatter_point_num_1, 
+									  unsigned scatter_point_num_2);	
+  
+  float
+    cached_exp_integral_over_attenuation_image_between_scattpoints(unsigned scatter_point_num_1, 
+									     unsigned scatter_point_num_2);	
+  
+  
 	
   float 
     scatter_estimate_for_one_scatter_point(const std::size_t scatter_point_num,
@@ -260,6 +264,15 @@ virtual
 	  inline float  
 	    compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
 							  const CartesianCoordinate3D<float>& detector_coord) ;
+
+private:
+  Array<2,float> cached_activity_integral_scattpoint_det;
+  Array<2,float> cached_attenuation_integral_scattpoint_det;
+  void initialise_cache_for_scattpoint_det();
+
+  Array<2,float> cached_activity_integral_scattpoints;
+  Array<2,float> cached_attenuation_integral_scattpoints;
+  void initialise_cache_for_scattpoints();
 
 };
 

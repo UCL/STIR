@@ -233,6 +233,10 @@ process_data()
     this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
   // reserve space to avoid reallocation, but the actual size will grow dynamically
   detection_points_vector.reserve(total_detectors);
+
+  initialise_cache_for_scattpoint_det();
+  initialise_cache_for_scattpoints();
+
 #if 0
   {
     std::ofstream scatter_points_file("scatter_points.txt"); 

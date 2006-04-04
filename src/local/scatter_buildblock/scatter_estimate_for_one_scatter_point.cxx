@@ -59,52 +59,25 @@ ScatterEstimationByBin::
 	if (detection_efficiency_scatter==0)
 		return 0;
 
-	float emiss_to_detA, 
-	  emiss_to_detB,
-	  atten_to_detA,
-	  atten_to_detB;
+	const float emiss_to_detA =
+	  cached_integral_over_activity_image_between_scattpoint_det
+	  (scatter_point_num, 
+	   det_num_A);		
+	const float emiss_to_detB = 
+	  cached_integral_over_activity_image_between_scattpoint_det
+	  (scatter_point_num, 
+	   det_num_B);
+	if (emiss_to_detA==0 && emiss_to_detB==0)
+	  return 0;	
+	const float atten_to_detA = 
+	  cached_exp_integral_over_attenuation_image_between_scattpoint_det
+	  (scatter_point_num, 
+	   det_num_A);
+	const float atten_to_detB = 
+	  cached_exp_integral_over_attenuation_image_between_scattpoint_det
+	  (scatter_point_num, 
+	   det_num_B);
 
-	if (use_cache)
-	{			
-		emiss_to_detA = cached_factors(
-			scatter_point_num, 
-			det_num_A
-			, act_image_type);		
-		emiss_to_detB = cached_factors(
-			scatter_point_num, 
-			det_num_B
-			,act_image_type);
-		if (emiss_to_detA==0 && emiss_to_detB==0)
-		return 0;	
-		atten_to_detA = cached_factors(
-			scatter_point_num, 
-			det_num_A
-			, att_image_type);
-		atten_to_detB = cached_factors(
-			scatter_point_num, 
-			det_num_B
-			, att_image_type);
-	}
-	else
-	{
-	  emiss_to_detA = 
-	    integral_over_activity_image_between_scattpoint_det (scatter_point,
-								 detector_coord_A);
-	  
-	  emiss_to_detB = 
-	    integral_over_activity_image_between_scattpoint_det (scatter_point,
-								 detector_coord_B);
-
-		if (emiss_to_detA==0 && emiss_to_detB==0)
-			return 0;	
-
-		atten_to_detA = exp_integral_over_attenuation_image_between_scattpoint_det(
-			scatter_point, 
-			detector_coord_A);
-		atten_to_detB = exp_integral_over_attenuation_image_between_scattpoint_det(
-			scatter_point, 
-			detector_coord_B);
-	}	
 	const float dif_cross_section_value =
 	  dif_cross_section(costheta, 511.F); 
 	
