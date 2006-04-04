@@ -69,7 +69,13 @@ compute_sc1_to_sc2_solid_angle_factor_doubles20(const CartesianCoordinate3D<floa
 
   const float dist_sp1_sp2_squared = norm_squared(dist_vector);
 
-  const float scatter_points_solid_angle_factor = 1.F  / dist_sp1_sp2_squared ;
+  // attempt to avoid overflow by saying that the maximum
+  // solid angle is about 4Pi/9
+  // However, this doesn't work very well yet as the 1/d^2
+  // would need to be multiplied with the area of the voxel
+  // to have a solid angle
+  const float scatter_points_solid_angle_factor = 
+    std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_sp2_squared);
  
   return scatter_points_solid_angle_factor ;
 } 
