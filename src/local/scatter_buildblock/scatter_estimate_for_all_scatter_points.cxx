@@ -60,7 +60,10 @@ ScatterEstimationByBin::
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...
   static const float detection_efficiency_no_scatter =
-    detection_efficiency(511.F);
+    detection_efficiency(511.F) > 0 
+    ? detection_efficiency(511.F)
+    : (std::cerr << "Zero detection efficiency for 511. Will normalise to 1\n", 1.F);
+
   const CartesianCoordinate3D<float>& detector_coord_A =
     detection_points_vector[det_num_A];
   const CartesianCoordinate3D<float>& detector_coord_B =
