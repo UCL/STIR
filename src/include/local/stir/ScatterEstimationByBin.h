@@ -274,6 +274,7 @@ private:
   Array<2,float> cached_attenuation_integral_scattpoints;
   void initialise_cache_for_scattpoints();
 
+  bool use_solid_angle_for_points;
 };
 
 

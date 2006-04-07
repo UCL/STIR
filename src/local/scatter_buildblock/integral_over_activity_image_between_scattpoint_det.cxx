@@ -32,7 +32,8 @@ ScatterEstimationByBin::
 integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
 						     const CartesianCoordinate3D<float>& detector_coord)
 {
-#if 1
+  if (!this->use_solid_angle_for_points)
+  {
   const CartesianCoordinate3D<float> dist_vector = scatter_point - detector_coord ;
 
   const float dist_sp1_sp2_squared = norm_squared(dist_vector);
@@ -45,8 +46,10 @@ integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D
     integral_between_2_points(*activity_image_sptr,
 			      scatter_point,
 			      detector_coord);
-#else
- const DiscretisedDensityOnCartesianGrid<3,float>& image =
+  }
+  else
+  {
+  const DiscretisedDensityOnCartesianGrid<3,float>& image =
   dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
   (*activity_image_sptr);
 				
@@ -113,7 +116,7 @@ integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D
 			  }	      
 		}  		
 		return sum;	
-#endif
+  } // use_points
 }						   
 END_NAMESPACE_STIR
 

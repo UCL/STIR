@@ -63,6 +63,8 @@ set_defaults()
   this->output_proj_data_filename = "";
 
   this->write_scatter_orders_in_separate_files = true;
+
+  this->use_solid_angle_for_points = false;
 }
 
 void
@@ -88,6 +90,8 @@ initialise_keymap()
   this->parser.add_key("output_filename_prefix", &this->output_proj_data_filename);
   
   this->parser.add_key("write_scatter_orders_in_separate_files", &this->write_scatter_orders_in_separate_files);
+
+  this->parser.add_key("use_solid_angle_for_points",&this->use_solid_angle_for_points);
 }
 
 bool
