@@ -85,7 +85,8 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
   }
 
 #else
-  warning("CListModeDataECAT: .sgl file not read! Assuming ECAT 962");
+  warning("CListModeDataECAT: .sgl file not read (because compiled without ECAT7 support)!\n"
+	  "Assuming this is ECAT 962, but couldn't find scan start time etc");
   scanner_ptr = new Scanner(Scanner::E962);
 #endif
 
