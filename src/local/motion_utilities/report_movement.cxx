@@ -2,13 +2,13 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
     Internal GE use only
 */
 /*!
   \file
   \ingroup motion_utilities
-  \brief Utility to report RMSE within a frame w.r.t. reference position
+  \brief Utility to report RMSE w.r.t. reference position and within the frames
 
   \author Kris Thielemans
   $Date$
@@ -30,6 +30,7 @@
 #include "local/stir/motion/TimeFrameMotion.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/CartesianCoordinate3D.h"
 
 START_NAMESPACE_STIR
 
@@ -42,6 +43,10 @@ START_NAMESPACE_STIR
   ReportMovement Parameters:=
 
   ; parameters from TimeFrameMotion
+
+  reference point 1:={50,0,0} 
+  reference point 2:={100,0,30} 
+  reference point 3:={100,0,-30} 
 
   END :=
 \endverbatim
@@ -56,7 +61,7 @@ public:
   virtual Succeeded process_data();
 
 protected:
-
+  std::vector<CartesianCoordinate3D<float> > reference_points;
   
   //! parsing functions
   virtual void set_defaults();
@@ -69,6 +74,7 @@ void
 ReportMovement::set_defaults()
 {
   base_type::set_defaults();
+  reference_points.resize(3, make_coordinate(0.F,0.F,0.F));
 }
 
 void 
@@ -77,6 +83,9 @@ ReportMovement::initialise_keymap()
   parser.add_start_key("ReportMovement Parameters");
 
   base_type::initialise_keymap();
+  parser.add_key("reference point 1", &reference_points[0]);
+  parser.add_key("reference point 2", &reference_points[1]);
+  parser.add_key("reference point 3", &reference_points[2]);
 
   parser.add_stop_key("END");
 }
@@ -123,13 +132,61 @@ process_data()
        current_frame_num<=max_frame_num;
        ++current_frame_num)
     {
-      set_frame_num_to_process(current_frame_num);
+      const double start_time = 
+	this->get_frame_start_time(current_frame_num);
+      const double end_time = 
+	this->get_frame_end_time(current_frame_num);
 
-      transform_3d_object(*out_density_sptr, *in_density_sptr,
-			  this->get_current_rigid_object_transformation());
+      cerr << "\nDoing frame " << current_frame_num
+	   << ": from " << start_time << " to " << end_time << endl;
 
+      //set_frame_num_to_process(current_frame_num);
 
-    }
+      const RigidObject3DTransformation frame_transformation_to_reference =
+	compose(this->get_rigid_object_transformation_to_reference(),
+		this->get_motion().
+		compute_average_motion_in_scanner_coords_rel_time(start_time, end_time));
+
+      // now go through tracker data for this frame
+      {
+	const std::vector<double> sample_times =
+	  this->get_motion().
+	  get_rel_time_of_samples(start_time, end_time);
+
+	if (sample_times.size() == 0)
+	  error("No tracker samples between %g and %g (relative to scan start)",
+		start_time, end_time);
+
+	for (std::vector<double>::const_iterator iter=sample_times.begin();
+	     iter != sample_times.end();
+	     ++iter)
+	  {
+	    const RigidObject3DTransformation current_transformation_to_reference =
+	      compose(this->get_rigid_object_transformation_to_reference(),
+		      this->get_motion().
+		      get_motion_in_scanner_coords_rel_time(*iter));
+
+	    const RigidObject3DTransformation current_transformation_to_frame_ref =
+	      compose(frame_transformation_to_reference,
+		      current_transformation_to_reference.inverse());
+
+	    const double RMSE_within_frame =
+	      RigidObject3DTransformation::
+	      RMSE(current_transformation_to_frame_ref,
+		   this->reference_points.begin(), this->reference_points.end(),
+		   this->reference_points.begin());
+
+	    const double RMSE_from_ref =
+	      RigidObject3DTransformation::
+	      RMSE(current_transformation_to_reference,
+		   this->reference_points.begin(), this->reference_points.end(),
+		   this->reference_points.begin());
+
+	    std::cout << *iter << " " << RMSE_within_frame << " " << RMSE_from_ref << '\n';
+	  } // end of loop over tracker samples
+      }
+    } // end of loop over frames
+
   return Succeeded::yes;
 }
 
@@ -148,13 +205,7 @@ int main(int argc, char * argv[])
   int frame_num_to_process=-1;
   while (argc>=2 && argv[1][1]=='-')
     {
-      if (strcmp(argv[1],"--move-to-reference")==0)
-	{
-	  set_move_to_reference=true;
-	  move_to_reference=atoi(argv[2]);
-	  argc-=2; argv+=2;
-	}
-      else if (strcmp(argv[1], "--frame_num_to_process")==0)
+      if (strcmp(argv[1], "--frame_num_to_process")==0)
 	{
 	  set_frame_num_to_process=true;
 	  frame_num_to_process=atoi(argv[2]);
@@ -169,7 +220,6 @@ int main(int argc, char * argv[])
 
   if (argc!=1 && argc!=2) {
     cerr << "Usage: " << argv[0] << " \\\n"
-	 << "\t[--move-to-reference 0|1] \\\n"
 	 << "\t[--frame_num_to_process number]\\\n"
 	 << "\t[par_file]\n";
     exit(EXIT_FAILURE);
