@@ -323,7 +323,10 @@ read_fdef_file(const string& fdef_filename)
     in >> num >> duration;
     if (!in)
       break;
-    if (num<0 || duration<=0)
+    // check if input is ok
+    // note: allow negative 'duration' if num==0 to be able to skip in negative direction 
+    // (useful for starting the first frame at negative time)
+    if (num<0 || (num>0 && duration<=0))
         error("TimeFrameDefinitions: Reading frame_def file \"%s\":\n"
 	      "encountered negative numbers (%d, %g)\n",
 	      fdef_filename.c_str(), num, duration);
