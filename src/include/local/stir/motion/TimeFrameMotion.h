@@ -37,7 +37,7 @@ START_NAMESPACE_STIR
 
   \verbatim
 
-  ; see TimeFrameDefinitions
+  ; see stir::TimeFrameDefinitions
   time frame_definition filename := frame_definition_filename
   
   ; next parameter is optional (and not normally necessary)
@@ -76,8 +76,18 @@ public:
   void set_frame_num_to_process(const int);
 
   int get_frame_num_to_process() const;
+  //! get transformation from (or to) reference for current frame
+  /*! This is computed using 
+    RigidObject3DTransformation::compute_average_motion_in_scanner_coords
+    for the current frame.
+  */
   const RigidObject3DTransformation& 
     get_current_rigid_object_transformation() const;
+
+  //! Get the transformation to the reference as returned by the RigidObject3DMotion object
+  const RigidObject3DTransformation& 
+    get_rigid_object_transformation_to_reference() const
+    { return _transformation_to_reference_position; }
 
   const TimeFrameDefinitions&
     get_time_frame_defs() const;
