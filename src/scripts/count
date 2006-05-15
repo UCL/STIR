@@ -36,9 +36,6 @@ default:
 endsw
 end
 
-echo $#argv
-echo $argv
-
 if ($#argv != 2 && $#argv != 3) then
   echo "usage: count [--pre prefixtext] [--post postfixtest] minimum maximum [increment]"
   exit 1
