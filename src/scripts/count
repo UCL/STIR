@@ -1,6 +1,36 @@
 #! /bin/csh -fe
+
+# option processing
+set prefix=
+set postfix=
+# check if more than 2 args and first arg starts with a -
+while ( $#argv > 2 && "$1" =~ -* )
+
+switch ("$1")
+case --pre:
+    set prefix = "$2"
+    shift
+    shift
+    breaksw
+
+case --post:
+    set postfix = "$2"
+    shift
+    shift
+    breaksw
+
+default:
+    echo count: Unrecognised option "$1"
+    exit 1
+
+endsw
+end
+
+echo $#argv
+echo $argv
+
 if ($#argv != 2 && $#argv != 3) then
-  echo "usage: count minimum maximum [increment]"
+  echo "usage: count [--pre prefixtext] [--post postfixtest] minimum maximum [increment]"
   exit 1
 endif
 
@@ -13,7 +43,7 @@ endif
 set all =
 set frame = $1
 while ($frame <= $2 )
-  set all = "$all $frame"
+  set all = "$all $prefix$frame$postfix"
   @ frame+= $increment
 end
 echo $all
