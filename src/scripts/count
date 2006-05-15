@@ -1,4 +1,14 @@
 #! /bin/csh -fe
+# A script to write a sequence of numbered strings to stdout
+# Kris Thielemans
+# $Id$
+# Examples:
+# count 3 5
+# => 3 4 5
+# count 3 9 2
+# => 3 5 7 9
+# count -pre A --post B 3 5
+# => A3B A4B A5B
 
 # option processing
 set prefix=
