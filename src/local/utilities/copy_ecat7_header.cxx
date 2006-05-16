@@ -61,17 +61,18 @@ void copy_subheader(Image_subheader& out_sh, const Image_subheader& in_sh)
 	short align_2;
 	short align_3;
   */
-  //  if (out_sh.recon_zoom==0)
+  if (out_sh.recon_zoom==0)
     {
-      warning("Filling in recon_zoom as well\n");
+      warning("Copying recon_zoom from template as original zoom is 0. I didn't check the pixel sizes though");
       STIR_DO_IT(recon_zoom);
     }
-#if 0
     else
     {
-      warning("Keeping recon_zoom\n");
+      if (fabs(in_sh.recon_zoom - out_sh.recon_zoom)<.05)
+	warning("recon_zoom field in template (%g) and output (%g) is different.\n"
+		"Keeping original value for zoom (%g) (also keeping the original voxel sizes)",
+		out_sh.recon_zoom, in_sh.recon_zoom, in_sh.recon_zoom);
     }
-#endif
 
   STIR_DO_IT(frame_duration);
   STIR_DO_IT(frame_start_time);
