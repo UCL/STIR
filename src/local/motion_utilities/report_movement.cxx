@@ -128,17 +128,24 @@ process_data()
     ? this->get_time_frame_defs().get_num_frames() 
     : this->get_frame_num_to_process();
 
+  double MSE_within_frame_all_frames = 0;
+  double MSE_from_ref_all_frames = 0;
+  unsigned num_samples_all_frames = 0;
+
   for (unsigned int current_frame_num = min_frame_num;
        current_frame_num<=max_frame_num;
        ++current_frame_num)
     {
+      double MSE_within_frame_this_frame = 0;
+      double MSE_from_ref_this_frame = 0;
+      unsigned num_samples_this_frame = 0;
       const double start_time = 
 	this->get_frame_start_time(current_frame_num);
       const double end_time = 
 	this->get_frame_end_time(current_frame_num);
 
-      cerr << "\nDoing frame " << current_frame_num
-	   << ": from " << start_time << " to " << end_time << endl;
+      //cerr << "\nDoing frame " << current_frame_num
+      //   << ": from " << start_time << " to " << end_time << endl;
 
       //set_frame_num_to_process(current_frame_num);
 
@@ -183,9 +190,23 @@ process_data()
 		   this->reference_points.begin());
 
 	    std::cout << *iter << " " << RMSE_within_frame << " " << RMSE_from_ref << '\n';
+
+	    ++num_samples_this_frame;
+	    MSE_within_frame_this_frame += square(RMSE_within_frame);
+	    MSE_from_ref_this_frame += square(RMSE_from_ref);
 	  } // end of loop over tracker samples
       }
+      std::cerr << "Total RMSE frame " << current_frame_num << " "
+		<< std::sqrt(MSE_within_frame_this_frame/num_samples_this_frame) << " "
+		<< std::sqrt(MSE_from_ref_this_frame/num_samples_this_frame) << '\n';
+      MSE_within_frame_all_frames += MSE_within_frame_this_frame;
+      MSE_from_ref_all_frames += MSE_from_ref_this_frame;
+      num_samples_all_frames += num_samples_this_frame;
     } // end of loop over frames
+
+      std::cerr << "\n\nTotal RMSE all frames " 
+		<< std::sqrt(MSE_within_frame_all_frames/num_samples_all_frames) << " "
+		<< std::sqrt(MSE_from_ref_all_frames/num_samples_all_frames) << '\n';
 
   return Succeeded::yes;
 }
@@ -218,10 +239,13 @@ int main(int argc, char * argv[])
 	}
     }
 
-  if (argc!=1 && argc!=2) {
+  if (argc!=2) {
     cerr << "Usage: " << argv[0] << " \\\n"
 	 << "\t[--frame_num_to_process number]\\\n"
-	 << "\t[par_file]\n";
+	 << "\tpar_file\n\n"
+	 << "Currently works best if redirecting stdout to a file.\n"
+	 << "This file will contain RMSE for each sample of the motion tracker.\n"
+	 << "RMSE is reported first within frame, then w.r.t. reference position\n";
     exit(EXIT_FAILURE);
   }
   ReportMovement application(argc==2 ? argv[1] : 0);
