@@ -31,6 +31,8 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/CartesianCoordinate3D.h"
+#include <algorithm>
+#include <fstream>
 
 START_NAMESPACE_STIR
 
@@ -48,6 +50,8 @@ START_NAMESPACE_STIR
   reference point 2:={100,0,30} 
   reference point 3:={100,0,-30} 
 
+  ; next defaults to 'report_movement'
+  output filename prefix := somestring
   END :=
 \endverbatim
 */  
@@ -62,6 +66,7 @@ public:
 
 protected:
   std::vector<CartesianCoordinate3D<float> > reference_points;
+  std::string output_filename_prefix;
   
   //! parsing functions
   virtual void set_defaults();
@@ -75,6 +80,7 @@ ReportMovement::set_defaults()
 {
   base_type::set_defaults();
   reference_points.resize(3, make_coordinate(0.F,0.F,0.F));
+  output_filename_prefix = "report_movement";
 }
 
 void 
@@ -120,6 +126,13 @@ ReportMovement::
 process_data()
 {
 
+  std::string filename_all = this->output_filename_prefix + "_all.log";
+  std::ofstream output_all(filename_all.c_str());
+  std::string filename_summary = this->output_filename_prefix + "_summary.log";
+  std::ofstream output_summary(filename_summary.c_str());
+
+  std::cout << "\nI will write output in " << filename_all << " and " << filename_summary << '\n';
+
   const unsigned int min_frame_num =
     this->get_frame_num_to_process()==-1
     ? 1 : this->get_frame_num_to_process();
@@ -130,6 +143,8 @@ process_data()
 
   double MSE_within_frame_all_frames = 0;
   double MSE_from_ref_all_frames = 0;
+  double max_RMSE_within_frame = 0;
+  double max_RMSE_from_ref = 0;
   unsigned num_samples_all_frames = 0;
 
   for (unsigned int current_frame_num = min_frame_num;
@@ -189,24 +204,31 @@ process_data()
 		   this->reference_points.begin(), this->reference_points.end(),
 		   this->reference_points.begin());
 
-	    std::cout << *iter << " " << RMSE_within_frame << " " << RMSE_from_ref << '\n';
+	    output_all << *iter << " " << RMSE_within_frame << " " << RMSE_from_ref << '\n';
 
 	    ++num_samples_this_frame;
 	    MSE_within_frame_this_frame += square(RMSE_within_frame);
 	    MSE_from_ref_this_frame += square(RMSE_from_ref);
+
+	    max_RMSE_within_frame = std::max(max_RMSE_within_frame, RMSE_within_frame);
+	    max_RMSE_from_ref = std::max(max_RMSE_from_ref, RMSE_from_ref);
 	  } // end of loop over tracker samples
       }
-      std::cerr << "Total RMSE frame " << current_frame_num << " "
-		<< std::sqrt(MSE_within_frame_this_frame/num_samples_this_frame) << " "
-		<< std::sqrt(MSE_from_ref_this_frame/num_samples_this_frame) << '\n';
+      output_summary << "Total RMSE frame " << current_frame_num << " "
+		     << std::sqrt(MSE_within_frame_this_frame/num_samples_this_frame) << " "
+		     << std::sqrt(MSE_from_ref_this_frame/num_samples_this_frame) << '\n';
       MSE_within_frame_all_frames += MSE_within_frame_this_frame;
       MSE_from_ref_all_frames += MSE_from_ref_this_frame;
       num_samples_all_frames += num_samples_this_frame;
     } // end of loop over frames
 
-      std::cerr << "\n\nTotal RMSE all frames " 
-		<< std::sqrt(MSE_within_frame_all_frames/num_samples_all_frames) << " "
-		<< std::sqrt(MSE_from_ref_all_frames/num_samples_all_frames) << '\n';
+  output_summary << "\n\nTotal RMSE all frames " 
+		 << std::sqrt(MSE_within_frame_all_frames/num_samples_all_frames) << " "
+		 << std::sqrt(MSE_from_ref_all_frames/num_samples_all_frames) << '\n'
+		 << "Maximum RMSE occuring at a certain time "
+		 << max_RMSE_within_frame <<" "
+		 << max_RMSE_from_ref << '\n';
+
 
   return Succeeded::yes;
 }
@@ -243,8 +265,8 @@ int main(int argc, char * argv[])
     cerr << "Usage: " << argv[0] << " \\\n"
 	 << "\t[--frame_num_to_process number]\\\n"
 	 << "\tpar_file\n\n"
-	 << "Currently works best if redirecting stdout to a file.\n"
-	 << "This file will contain RMSE for each sample of the motion tracker.\n"
+	 << "file *_all.log will contain RMSE for each sample of the motion tracker.\n"
+	 << "file *_summary.log will contain global RMSE for frame and scan\n"
 	 << "RMSE is reported first within frame, then w.r.t. reference position\n";
     exit(EXIT_FAILURE);
   }
