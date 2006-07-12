@@ -1,7 +1,10 @@
 //
 // $Id$
 //
-
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
@@ -13,10 +16,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 
 #include "stir/ProjData.h"
@@ -24,15 +23,7 @@
 #include "stir/Succeeded.h"
 
 #include <iostream> 
-#include <fstream>
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-using std::fstream;
-using std::ifstream;
-using std::cout;
-#endif
 
 
 USING_NAMESPACE_STIR
@@ -42,8 +33,8 @@ int main(int argc, char *argv[])
   
   if(argc!=2) 
   {
-    cerr<<"Usage: " << argv[0] << " projdata_file\n"
-       	<< endl; 
+    std::cerr<<"Usage: " << argv[0] << " projdata_file\n"
+       	<< std::endl; 
   }
 
   shared_ptr<ProjData> projdata_ptr = 
@@ -56,7 +47,9 @@ int main(int argc, char *argv[])
     {
       SegmentByView<float> segment = projdata_ptr->get_empty_segment_by_view(segment_num,false);
       segment.fill(1);
-      projdata_ptr->set_segment(segment);
+      if (projdata_ptr->set_segment(segment) != Succeeded::yes)
+	error("fillwith1 failed writing segment %d of file %s",
+	      segment_num, argv[1]);
     }
   return EXIT_SUCCESS;
 
