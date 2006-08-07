@@ -33,6 +33,7 @@
 // for binary file
 #include "stir/VoxelsOnCartesianGrid.h"
 
+#include <cmath> // for fabs
 START_NAMESPACE_STIR
 
 template <>
@@ -370,7 +371,7 @@ jacobian(const BasicCoordinate<num_dimensions,elemT>& point) const
       std::copy(gradient.begin(), gradient.end(), jacobian_matrix[i].begin());
     }
   return 
-    determinant(jacobian_matrix);
+    std::fabs(determinant(jacobian_matrix));
 }
 
 ////////////////////// instantiations
