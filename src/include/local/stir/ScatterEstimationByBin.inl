@@ -38,7 +38,20 @@ compute_emis_to_scatter_points_solid_angle_factor_doubles11(const CartesianCoord
 								      const CartesianCoordinate3D<float>& emis_point)
 
 {
+#if 1
+  const CartesianCoordinate3D<float> dist_vector = scatter_point_2 - scatter_point_1 ;
 
+  const float dist_sp1_sp2_squared = norm_squared(dist_vector);
+
+  // attempt to avoid overflow by saying that the maximum
+  // solid angle is about 4Pi/9
+  // However, this doesn't work very well yet as the 1/d^2
+  // would need to be multiplied with the area of the voxel
+  // to have a solid angle
+  return
+    std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_sp2_squared);
+ 
+#else
 const CartesianCoordinate3D<float> dist_vector_1 = scatter_point_1 - emis_point ; 
    
   const CartesianCoordinate3D<float> dist_vector_2 = scatter_point_2 - emis_point ; 
@@ -55,7 +68,7 @@ const CartesianCoordinate3D<float> dist_vector_1 = scatter_point_1 - emis_point 
      std::min(std::min(emis_to_scatter_point_1_solid_angle_factor,
 		       emis_to_scatter_point_2_solid_angle_factor),
 	      static_cast<float>(_PI/2.F));
-
+#endif
 }
 
 float
