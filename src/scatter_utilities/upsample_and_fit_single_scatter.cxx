@@ -56,7 +56,11 @@ int main(int argc, const char *argv[])
 		     << "\t[attenuation_threshold \n"
 		     << "\t[correct_for_interleaving]\n"
 		     << "\t[estimate_scale_factor]\n"
+#ifdef SCFOLD
 		     << "\t[mask_radius_in_mm]]]\n"
+#else
+		     << "\t[back_off_size]]\n"
+#endif
 		     << "correct_for_interleaving default to 1\n"
 		     << "attenuation_threshold defaults to 1.01\n" 
 		     << "estimate_scale_factor defaults to 1 for scaling per sinogram\n"
@@ -67,7 +71,11 @@ int main(int argc, const char *argv[])
 	const float attenuation_threshold = argc>=6 ? atof(argv[5]) : 1.01 ;
 	const bool remove_interleaving = argc>=7 ? atoi(argv[6]) : 1 ; 
 	const int est_scale_factor_per_sino = argc>=8 ? atoi(argv[7]) : 1 ; 
+#ifdef SCFOLD
 	const float mask_radius_in_mm = argc>=9 ? atof(argv[8]) : -1 ; 
+#else
+	const std::size_t back_off = argc>=9 ? atoi(argv[8]) : 0 ; 
+#endif
 
 	shared_ptr< ProjData >  	
 		attenuation_correct_factors_sptr= 
@@ -110,7 +118,12 @@ int main(int argc, const char *argv[])
 				       interpolated_scatter,
 				       *attenuation_correct_factors_sptr,
 				       attenuation_threshold,
-				       mask_radius_in_mm);
+#ifdef SCFOLD
+				       mask_radius_in_mm
+#else
+				       back_off
+#endif
+				       );
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_sinogram(scaled_scatter_proj_data, 
@@ -129,7 +142,12 @@ int main(int argc, const char *argv[])
 				       interpolated_scatter,
 				       *attenuation_correct_factors_sptr,
 				       attenuation_threshold,
-                                       mask_radius_in_mm);
+#ifdef SCFOLD
+                                       mask_radius_in_mm
+#else
+				       -1.F // TODO back_off not implemented yet
+#endif
+);
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_viewgram(scaled_scatter_proj_data, 
