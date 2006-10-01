@@ -42,7 +42,12 @@ Array<2,float>
 			     const ProjData& scatter_proj_data, 
 			     const ProjData& att_proj_data, 
 			     const float attenuation_threshold,
-			     const float mask_radius_in_mm);
+#ifdef SCFOLD
+			     const float mask_radius_in_mm
+#else
+			     const std::size_t back_off
+#endif
+			     );
 Array<2,float>
   scale_factors_per_viewgram(const ProjData& no_scatter_proj_data, 
 			     const ProjData& scatter_proj_data, 
