@@ -107,7 +107,7 @@ public:
   */
 
   //! check if each voxel occurs only once
-  Succeeded ProjMatrixElemsForOneDensel::check_state() const;
+  Succeeded check_state() const;
   
   //! get the Densel coordinates corresponding to this row
   inline Densel get_densel() const;
