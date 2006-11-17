@@ -1,7 +1,7 @@
 #! /bin/sh
 # $Id$
 #PBS -k eo 
-#PBS -l vmem=1900mb
+# better to add this in the qsub statement PBS -l vmem=1900mb
 
 # Script to run simset simulations
 # Authors: Pablo Aguiar, Kris Thielemans
@@ -69,6 +69,11 @@ if [ $# -ne 0 -o -z "${TEMPLATE_PHG}" ]; then
 fi
 echo "Using ${TEMPLATE_PHG}"
 
+if [ $# -ne 0 -o -z "${TEMPLATE_BIN}" ]; then
+    TEMPLATE_BIN=template_bin.rec
+fi
+echo "Using ${TEMPLATE_BIN}"
+
 # exit on error
 set -e
 
@@ -115,7 +120,7 @@ sed -e s#SIMSET_DIRECTORY#${SIMSET_DIR}# \
 sed -e s#SIMSET_DIRECTORY#${SIMSET_DIR}# \
     -e s#INPUT_DIRECTORY#${DIR_INPUT}# \
     -e s#OUTPUT_DIRECTORY#${DIR_OUTPUT}# \
-  < template_bin.rec > bin.rec
+  < ${TEMPLATE_BIN} > bin.rec
 
 
 # Building index.dat to input in makeindexfile
