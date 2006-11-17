@@ -42,7 +42,7 @@
 		  -----------------      ---------------------
 		  Air                          0    //Implemented
 		  Water                        1	//Implemented
-		  Blood                        2
+		  Blood                        2        //implemented
 		  Bone                         3	//Implemented	
 		  Brain                        4	
 		  Heart                        5
@@ -108,6 +108,8 @@ int main(int argc, char *argv[])
 		  // values from standard Simset file at 511keV
 			if (fabs(*in_iter-0.096)<0.004)     // Water
 				*out_iter = 1.F;
+			if (fabs(*in_iter-0.102)<0.004)     // Blood
+				*out_iter = 2.F;
 			else if (fabs(*in_iter-0.01)<0.010001) // Air
 				*out_iter = 0.F;
 			else if (fabs(*in_iter-0.19669)<0.004)  // Bone
