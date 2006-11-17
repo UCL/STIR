@@ -115,7 +115,7 @@ public:
   */
 
   //! check if each voxel occurs only once
-  Succeeded ProjMatrixElemsForOneBin::check_state() const;
+  Succeeded check_state() const;
   
   //! get the bin coordinates corresponding to this row
   inline Bin get_bin() const;
