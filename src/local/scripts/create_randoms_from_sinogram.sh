@@ -1,7 +1,7 @@
 #! /bin/sh
 # /author: Charalampos Tsoumpas
 # /date: 21 12 2006
-# /brief Script to create randoms based on their similarities with the efficiencies normalisation factors.
+# /brief Script that creates randoms based on their similarities with the efficiencies normalisation factors.
 if [ $# -ne 3 ]; then
     echo "usage: $0 \\"
     echo "    Randoms_Output_Filename ECAT7_Projection_Data Normalisation_ECAT7_File"
