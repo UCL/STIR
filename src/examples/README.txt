@@ -83,10 +83,7 @@ First you need to create some data.
       generate_image generate_image.par
 
 #Generate projection data (you will have to answer questions by fwdtest)
-      fwdtest small.hs image.hv
-
-#Rename projection data interfile header
-       mv fwdtest_out.hs sino.hs
+      fwdtest sino.hs small.hs image.hv
 
 # Run the demos.
 
