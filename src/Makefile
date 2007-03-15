@@ -89,6 +89,7 @@ LIBDIRS += buildblock recon_buildblock display IO \
 
 EXEDIRS += utilities recon_test \
 	listmode_utilities \
+	utilities/ecat \
 	iterative/OSMAPOSL \
 	iterative/sensitivity \
 	analytic/FBP2D \
