@@ -220,6 +220,29 @@ endif # end of settings for MS VC
 # (except by editing this file, which is strongly discouraged for 'normal' users)
 #***********************************************************************
 
+#****** AVW libraries
+# AVW is a C library for image processing, developed at the Mayo and distributed with Analyze
+
+ifneq ($(HAVE_AVW), 0)
+  AVW_INCLUDE_DIR=$(AVW)/include
+  AVW_LIBS=$(AVW)/$(TARGET)/lib/libAVW.so
+# $(warning AVW $(AVW_INCLUDE_DIR) $(AVW_LIBS) )
+  ifeq ($(wildcard $(AVW_INCLUDE_DIR)/AVW.h),$(AVW_INCLUDE_DIR)/AVW.h)
+    # $(warning found AVW include)
+    # $(warning wild $(wildcard $(AVW_LIBS) ) )
+    ifeq ($(wildcard $(AVW_LIBS) ),$(AVW_LIBS))
+    #  $(warning found AVW library)
+     HAVE_AVW=1
+     CFLAGS += -I $(AVW_INCLUDE_DIR) -D HAVE_AVW
+     # we include the library-name for linking
+     # an alternative would be to use -L $(AVW)/$(TARGET)/lib -l AVW
+     # This seems to have the effect that the system doesn't necessarily find
+     # the shared library (which can be remedied via ldconfig on Linux, crle on Solaris, or
+     # environment variables such as LD_RUN_PATH or LD_LIBRARY_PATH).
+     EXTRA_LIBS += $(AVW_LIBS)
+    endif
+  endif
+endif
 
 
 
