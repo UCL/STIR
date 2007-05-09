@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
       {
 	profile_stream  << " s-Value (mm)" << "\t" <<  "Value" << endl ;
 	Array<1,float> prof = profile_sinogram[view_min];
-	for (int view_num=view_min ; view_num<= view_max ; ++view_num)
+	for (int view_num=view_min+1 ; view_num<= view_max ; ++view_num)
 	  prof +=profile_sinogram[view_num];
 	prof /= (view_max-view_min+1);
 	for (int tang=projdata_info_ptr->get_min_tangential_pos_num() ; 
