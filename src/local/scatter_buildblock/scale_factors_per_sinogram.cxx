@@ -101,20 +101,26 @@ scale_factors_per_sinogram(const ProjData& emission_proj_data,
 	      }
 #else
 	  const Array<1,float>& att_line=att_sinogram[bin.view_num()];
+	  // find left and right mask sizes
+	  // sorry: a load of ugly casting to make sure we allow all datatypes
 	  std::size_t mask_left_size =
-	    std::max(std::size_t(0),
-		     static_cast<std::size_t>
+	    static_cast<std::size_t>(
+	    std::max(0,
+		     static_cast<int>
 		     (std::find_if(att_line.begin(), att_line.end(),
 				   _1>=attenuation_threshold) -
 		      att_line.begin()) -
-		     back_off);
+		     static_cast<int>(back_off))
+	    );
 	  std::size_t mask_right_size =
-	    std::max(std::size_t(0),
-		     static_cast<std::size_t>
+	    static_cast<std::size_t>(
+	    std::max(0,
+		     static_cast<int>
 		     (std::find_if(att_line.rbegin(), att_line.rend() - mask_left_size,
 				   _1>=attenuation_threshold) -
 		      att_line.rbegin()) -
-		     back_off);
+		     static_cast<int>(back_off))
+	    );
 	  std::cout << "mask sizes " << mask_left_size << ", " << mask_right_size << '\n';
 	  total_outside_scatter[bin.segment_num()][bin.axial_pos_num()] +=  
 	    std::accumulate(scatter_sinogram[bin.view_num()].begin(),
