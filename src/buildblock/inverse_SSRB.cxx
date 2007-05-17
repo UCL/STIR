@@ -76,7 +76,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 	for (int out_segment_num = proj_data_4D.get_min_segment_num(); 
 	     out_segment_num <= proj_data_4D.get_max_segment_num();
 	     ++out_segment_num)
-    {					
+	  {
 		for (int out_ax_pos_num = proj_data_4D.get_min_axial_pos_num(out_segment_num); 
 		     out_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(out_segment_num);
 		     ++out_ax_pos_num )
@@ -85,6 +85,7 @@ inverse_SSRB(ProjData& proj_data_4D,
 				const float out_m = 
 					proj_data_4D_info_ptr->
 					get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));				
+				int num_contributing_sinos = 0;
 								
 				for (int in_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); 
 				     in_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0);
@@ -95,7 +96,8 @@ inverse_SSRB(ProjData& proj_data_4D,
 						proj_data_3D_info_ptr->get_m(Bin(0, 0, in_ax_pos_num, 0));
 
 					if (fabs(out_m - in_m) < 1E-2)
-					{		
+					{
+					        ++num_contributing_sinos;
 						sino_4D += sino_3D;	
 						if (proj_data_4D.set_sinogram(sino_4D) == Succeeded::no)
 							return Succeeded::no;
@@ -105,7 +107,8 @@ inverse_SSRB(ProjData& proj_data_4D,
 						-1000000.F : proj_data_3D_info_ptr->get_m(Bin(0, 0, in_ax_pos_num+1, 0));
 
 					if (fabs(out_m - .5F*(in_m + in_m_next)) < 1E-2)
-					{	
+					{
+					        ++num_contributing_sinos;
 						sino_4D += sino_3D;
 						sino_4D += proj_data_3D.get_sinogram(in_ax_pos_num+1,0);
 						sino_4D *= .5F;
@@ -114,8 +117,9 @@ inverse_SSRB(ProjData& proj_data_4D,
 						break;
 					}
 				}
-				warning("inverse_SSRB: no sinogram contributes to segment %d, axial_pos_num %d",
-					out_segment_num, out_ax_pos_num);
+				if (num_contributing_sinos == 0)
+				  warning("inverse_SSRB: no sinogram contributes to segment %d, axial_pos_num %d",
+					  out_segment_num, out_ax_pos_num);
 		}
 	}
 	return Succeeded::yes;
