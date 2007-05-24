@@ -33,7 +33,7 @@ fi
 if [ $# == 3 ]; then
   Output_hv_file=$3
 else
-  Output_hv_file=${Target_bin_file%.*}.${Input_hv_file#*.}
+  Output_hv_file=${Target_bin_file%.*}.${Input_hv_file##*.}
 fi
 
 
