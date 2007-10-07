@@ -71,7 +71,7 @@ small.*s
 
 How to compile
 --------------
-mv extra_dirs.mk ../local/extra_dirs.mk
+cp extra_dirs.mk ../local/extra_dirs.mk
 cd ..
 make examples
 
