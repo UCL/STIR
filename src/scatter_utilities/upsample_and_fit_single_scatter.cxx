@@ -41,7 +41,7 @@ See STIR/LICENSE.txt for details
 #include "stir/Succeeded.h"
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
-
+#include "stir/ArrayFilter1DUsingConvolution.h"
 /***********************************************************/     
 
 static void
@@ -156,6 +156,13 @@ int main(int argc, const char *argv[])
 			    scale_factors.end_all(),
 			    min_scale_factor);
 	    std::cout << "After thresholding:\n";
+	    std::cout << scale_factors;
+	    VectorWithOffset<float> kernel(-1,1);
+	    kernel[-1] = kernel[1] = kernel[0]= .33333333333333333F;
+	    ArrayFilter1DUsingConvolution<float> lowpass_filter(kernel);
+	    std::for_each(scale_factors.begin(), 
+			  scale_factors.end(),
+			  lowpass_filter);
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_sinogram(scaled_scatter_proj_data, 

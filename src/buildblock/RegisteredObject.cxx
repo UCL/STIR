@@ -4,7 +4,7 @@
 /*!
 
   \file
-
+  \ingroup buildblock
   \brief Instantiations of RegisteredObject
 
   Currently only necessary for VC 6.0
@@ -24,8 +24,10 @@
 #include "stir/RegisteredObject.h"
 
 #ifdef __STIR_REGISTRY_NOT_INLINE
-#pragma message("instantiating RegisteredObject<ImageProcessor<3,float> >")
-#include "stir/ImageProcessor.h"
+#pragma message("instantiating RegisteredObject<DataProcessor<DiscretisedDensity<3,float> > >")
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
+
 // add here all roots of hierarchies based on RegisteredObject
 
 START_NAMESPACE_STIR
@@ -38,7 +40,7 @@ RegisteredObject<Root>::registry ()
   return the_registry;
 }
 
-template RegisteredObject<ImageProcessor<3,float> >;
+template RegisteredObject<DataProcessor<DiscretisedDensity<3,float> > >;
 // add here all roots of hierarchies based on RegisteredObject
 
 END_NAMESPACE_STIR

@@ -4,6 +4,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -24,7 +25,7 @@
 /*!
   \file 
   \ingroup densitydata 
-  \brief defines the VoxelsOnCartesianGrid class 
+  \brief defines the stir::VoxelsOnCartesianGrid class 
 
   \author Sanida Mustafovic 
   \author Kris Thielemans (with help from Alexey Zverovich)
@@ -55,8 +56,10 @@ class VoxelsOnCartesianGrid:public DiscretisedDensityOnCartesianGrid<3,elemT>
 
 public:
 
+#if 0
   //! Asks for filename etc, and returns an image
 static VoxelsOnCartesianGrid ask_parameters();
+#endif
 
 //! Construct an empty VoxelsOnCartesianGrid (empty range, 0 origin, 0 grid_spacing)
 VoxelsOnCartesianGrid();
@@ -110,13 +113,17 @@ DiscretisedDensity<3,elemT>*
 #else
 VoxelsOnCartesianGrid<elemT>*
 #endif
- get_empty_discretised_density() const;
+ get_empty_copy() const;
 
-//! Like get_empty_discretised_density, but returning a pointer to a VoxelsOnCartesianGrid
+//! Like get_empty_copy, but returning a pointer to a VoxelsOnCartesianGrid
 VoxelsOnCartesianGrid<elemT>* get_empty_voxels_on_cartesian_grid() const;
 
-//TODO covariant return types
-virtual DiscretisedDensity<3, elemT>* clone() const;
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
+virtual DiscretisedDensity<3,elemT>*
+#else
+virtual VoxelsOnCartesianGrid<elemT>*
+#endif
+clone() const;
 
 //! Extract a single plane
 PixelsOnCartesianGrid<elemT> get_plane(const int z) const;
@@ -132,6 +139,34 @@ void set_voxel_size(const BasicCoordinate<3,float>&);
 
 //! Growing of outer dimension only
 void grow_z_range(const int min_z, const int max_z);
+
+  //! \name Convenience functions for regular grids in 3D
+  /*! It is assumed that \c z is the highest dimension and \c x the lowest.
+  */
+  //@{
+  inline int get_x_size() const;
+  
+  inline int get_y_size() const;
+  
+  inline int get_z_size() const;
+  
+  inline int get_min_x() const;
+  
+  inline int get_min_y() const;
+
+  inline int get_min_z() const;
+  
+  inline int get_max_x() const;
+  
+  inline int get_max_y() const;
+  
+  inline int get_max_z() const;
+
+  BasicCoordinate<3,int> get_lengths() const;
+  BasicCoordinate<3,int> get_min_indices() const;
+  BasicCoordinate<3,int> get_max_indices() const;
+
+  //@}
 
 };
 

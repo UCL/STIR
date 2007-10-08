@@ -56,6 +56,9 @@ template <typename T> class shared_ptr;
 */
 class DataSymmetriesForDensels_PET_CartesianGrid : public DataSymmetriesForDensels
 {
+private:
+  typedef DataSymmetriesForDensels base_type;
+  typedef DataSymmetriesForDensels_PET_CartesianGrid self_type;
 public:
 
   DataSymmetriesForDensels_PET_CartesianGrid(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
@@ -69,6 +72,10 @@ public:
     DataSymmetriesForDensels *
 #endif
      clone() const;
+
+  bool
+    operator ==(const DataSymmetriesForDensels_PET_CartesianGrid&) const;
+
 #if 0
   TODO!
   //! returns the range of the indices for basic Densels
@@ -125,6 +132,7 @@ private:
     cartesian_grid_info_ptr() const;
 #endif
 
+  virtual bool blindly_equals(const root_type * const) const;
   
   inline SymmetryOperation* 
     find_sym_op_general_densel( const int z, const int y, const int x) const;  

@@ -1,9 +1,9 @@
 // $Id$
 /*
-	Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
-    This file is part of STIR.
+  Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
-	This file is free software; you can redistribute it and/or modify
+    This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
     (at your option) any later version.
@@ -18,7 +18,7 @@
 /*!
   \file 
   \ingroup Array_IO 
-  \brief Implementation of write_data() functions for writing Arrays to file
+  \brief Implementation of stir::write_data() functions for writing stir::Array's to file
 
   \author Kris Thielemans
 
@@ -238,7 +238,12 @@ write_data(OStreamT& s,
 	  CASE(NumericType::UCHAR);
       CASE(NumericType::SHORT);
       CASE(NumericType::USHORT);
+      CASE(NumericType::INT);
+      CASE(NumericType::UINT);
+      CASE(NumericType::LONG);
+      CASE(NumericType::ULONG);
       CASE(NumericType::FLOAT);
+      CASE(NumericType::DOUBLE);
 #undef CASE
 #undef TYPENAME
     default:

@@ -1,22 +1,34 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projdata
 
-  \brief Declaration of class DataSymmetriesForViewSegmentNumbers
+  \brief Declaration of class stir::DataSymmetriesForViewSegmentNumbers
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #ifndef __DataSymmetriesForViewSegmentNumbers_H__
 #define __DataSymmetriesForViewSegmentNumbers_H__
@@ -38,6 +50,7 @@ class ViewSegmentIndexRange;
 
 
 /*!
+  \ingroup projdata
   \brief A class for encoding/finding symmetries. Works only on
   ViewSegmentNumbers (instead of Bin).
 
@@ -56,6 +69,14 @@ public:
   virtual ~DataSymmetriesForViewSegmentNumbers();
 
   virtual DataSymmetriesForViewSegmentNumbers * clone() const = 0;
+
+  //! Check equality
+  /*! Implemented in terms of blindly_equals, after checking the type */
+  bool operator ==(const DataSymmetriesForViewSegmentNumbers&) const;
+
+  //! Check inequality
+  /*! Implemented in terms of operator==() */
+  bool operator !=(const DataSymmetriesForViewSegmentNumbers&) const;
 
 #if 0
   // TODO
@@ -88,6 +109,11 @@ public:
   */
   virtual bool
     is_basic(const ViewSegmentNumbers& v_s) const;
+
+ protected:
+  typedef DataSymmetriesForViewSegmentNumbers root_type;
+
+  virtual bool blindly_equals(const root_type * const) const = 0;
 };
 
 END_NAMESPACE_STIR

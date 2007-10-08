@@ -211,6 +211,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
   origin = image_sptr->get_origin();
   grid_spacing = voxels_ptr->get_grid_spacing();
 
+  image_sptr =
     DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_y);
   if (is_null_ptr(image_sptr))
     {
@@ -219,6 +220,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
     }
   deformation_field[2] = *image_sptr;
 
+  image_sptr =
     DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_x);
   if (is_null_ptr(image_sptr))
     {
@@ -236,6 +238,7 @@ NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
 set_defaults()
 {
   this->_bspline_type = BSpline::cubic;
+  this->_origin = make_coordinate(0.F,0.F,0.F);
 }
 
 
@@ -267,10 +270,11 @@ NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
 set_key_values()
 {
   // TODO following is only correct if bspline coefficients are equal to samples
+  /* 
   for (int i=1; i<=num_dimensions; ++i)
     (*this->deformation_field_sptr)[i] =
       this->interpolator[i].get_coefficients();
-
+  */
   this->_bspline_order = static_cast<int>(this->_bspline_type);
 }
     
@@ -289,7 +293,7 @@ post_processing()
 	    {
 	      warning("NonRigidObjectTransformationUsingBSplines:\n"
 		      "you need to set either deformation_field or deformation_field_from_NCAT_file");
-	      return false;
+	      return true;
 	    }
 	  else
 	    {
@@ -300,7 +304,7 @@ post_processing()
 						  this->_grid_spacing,
 						  this->_origin) 
 		  == Succeeded::no)
-		return false;
+		return true;
 	}
 
 	}
@@ -312,7 +316,7 @@ post_processing()
 						   this->_grid_spacing,
 						   this->_origin) 
 	      == Succeeded::no)
-	    return false;
+	    return true;
 	}
     }
 

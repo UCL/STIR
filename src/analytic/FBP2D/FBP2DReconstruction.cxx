@@ -208,24 +208,18 @@ FBP2DReconstruction(const shared_ptr<ProjData>& proj_data_ptr_v,
     error("FBP2D: Wrong parameter values. Aborting\n");
 }
 
-Succeeded FBP2DReconstruction::
-reconstruct()
-{
-  return base_type::reconstruct();
-}
-
 Succeeded 
 FBP2DReconstruction::
-reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
+actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
-
-  const ProjDataInfoCylindrical& proj_data_info_cyl =
-    dynamic_cast<const ProjDataInfoCylindrical&>
-    (*proj_data_ptr->get_proj_data_info_ptr());
 
   // perform SSRB
   if (num_segments_to_combine>1)
     {  
+      const ProjDataInfoCylindrical& proj_data_info_cyl =
+	dynamic_cast<const ProjDataInfoCylindrical&>
+	(*proj_data_ptr->get_proj_data_info_ptr());
+
       //  full_log << "SSRB combining " << num_segments_to_combine 
       //           << " segments in input file to a new segment 0\n" << endl; 
 
@@ -343,9 +337,25 @@ reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   } 
  
   // Normalise the image
-  // KT & Darren Hogg 17/05/2000 finally found the scale factor!
-  // TODO remove magic, is a scale factor in the backprojector 
-  const float magic_number=2*proj_data_info_cyl.get_ring_radius()*proj_data_info_cyl.get_num_views()/proj_data_info_cyl.get_ring_spacing();
+  const ProjDataInfoCylindrical& proj_data_info_cyl =
+    dynamic_cast<const ProjDataInfoCylindrical&>
+    (*proj_data_ptr->get_proj_data_info_ptr());
+
+  float magic_number = 1.F;
+  if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) != 0)
+    {
+      // KT & Darren Hogg 17/05/2000 finally found the scale factor!
+      // TODO remove magic, is a scale factor in the backprojector 
+      magic_number=2*proj_data_info_cyl.get_ring_radius()*proj_data_info_cyl.get_num_views()/proj_data_info_cyl.get_ring_spacing();
+    }
+  else
+    {
+      if (proj_data_info_cyl.get_min_ring_difference(0)!=
+	  proj_data_info_cyl.get_max_ring_difference(0))
+	{
+	  magic_number=.5F;
+	}
+    }
 #ifdef NEWSCALE
   // added binsize etc here to get units ok
   // only do this when the forward projector units are appropriate

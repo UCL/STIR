@@ -18,10 +18,12 @@ $(dir)_LIB_SOURCES:= \
 	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx \
 	ProjMatrixByBinFromFile.cxx \
+	ParametricQuadraticPrior.cxx \
+	PatlakObjectiveFunctionFromDynamicProjectionData.cxx 
 
+#	PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData.cxx \
 #	BackProjectorByBinDistanceDriven.cxx \
 #	ForwardProjectorByBinDistanceDriven.cxx
-  
 #	oldForwardProjectorByBinUsingRayTracing.cxx \
 #	oldForwardProjectorByBinUsingRayTracing_Siddon.cxx \
 #	oldBackProjectorByBinUsingInterpolation.cxx \

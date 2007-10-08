@@ -72,11 +72,23 @@ angle (const Array<1,elemT> & v1, const Array<1,elemT> &v2);
 //@{
 
 //! matrix with vector multiplication
+/*! Index ranges have to be compatible (checked with assert).
+ */
 template <class elemT>	
 inline Array<1,elemT> 
   matrix_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec);
 
+//! matrix multiplication with vector (given as BasicCoordinate) 
+/*! matrix size has to be compatible with \c dimension. Matrix index range has to start from 1.
+   All of this is only checked with assert().
+*/
+template <int dimension, class elemT>	
+inline BasicCoordinate<dimension,elemT> 
+  matrix_multiply(const Array<2,elemT>& m, const BasicCoordinate<dimension,elemT>& vec);
+
 //! matrix multiplication
+/*! Index ranges have to be compatible (checked with assert).
+ */
 template <class elemT>	
 inline Array<2,elemT>
   matrix_multiply(const Array<2,elemT> &m1, const Array<2,elemT>& m2);
@@ -113,7 +125,7 @@ Array<2,elemT>
     \par Example
     \code
     // a 3x3 diagonal matrix with values 1,2,3 on the diagonal
-    Array<2,float> iden = diagonal_matrix(Coordinate3D<float>(1,2,3));
+    Array<2,float> diag = diagonal_matrix(Coordinate3D<float>(1,2,3));
     \endcode
 
     Index-range of the matrix will be <code>0</code> till 
@@ -124,6 +136,7 @@ template <int dimension, class elemT>
 inline 
 Array<2,elemT>
   diagonal_matrix(const BasicCoordinate<dimension,elemT>& values);
+
 
 //@}
 

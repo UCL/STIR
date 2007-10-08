@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR. 
+ 
+    This file is free software; you can redistribute it and/or modify 
+    it under the terms of the GNU Lesser General Public License as published by 
+    the Free Software Foundation; either version 2.1 of the License, or 
+    (at your option) any later version. 
+ 
+    This file is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+    GNU Lesser General Public License for more details. 
+ 
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup buildblock
@@ -14,15 +31,11 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 //some miscellaneous operators for sinograms and images
 
 #include "stir/recon_array_functions.h"
+#include "stir/min_positive_element.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/Viewgram.h"
@@ -40,69 +53,6 @@ using std::endl;
 START_NAMESPACE_STIR
 
 const float SMALL_NUM = 0.000001F;
-
-void threshold_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image){
-
-
-  long nuneg;
-  float Minneg;
-
-  nuneg=0;
-  Minneg = 0.0F;
-
-  // TODO the 'rim_truncate' part of this function does not make a lot of sense in general
-  DiscretisedDensityOnCartesianGrid<3,float>& input_image_cartesian =
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(input_image);
-
-  const int zs=input_image_cartesian.get_min_z();
-  const int ys=input_image_cartesian.get_min_y();
-  const int xs=input_image_cartesian.get_min_x(); 
-  
-  const int ze=input_image_cartesian.get_max_z();  
-  const int ye=input_image_cartesian.get_max_y(); 
-  const int xe=input_image_cartesian.get_max_x();
-  
-  // TODO check what happens with even-sized images (i.e. where is the centre?)
- 
-  const int ym=(ys+ye)/2;
-  const int xm=(xs+xe)/2;
-
-
-  float small_value=min_positive_value(input_image,rim_truncation_image);
-  small_value=(small_value>0.F)?small_value*SMALL_NUM:SMALL_NUM;
-
-  const float truncated_radius = 
-    static_cast<float>((xe-xs)/2 - rim_truncation_image);
-
-
-  for (int z=zs; z<=ze; z++)
-    for (int y=ys; y <= ye; y++)
-      for (int x=xs; x<= xe; x++)
-	{
-
-	//MJ 12/104/2000 '<0.0' ---> '<=0.0'and limit to FOV
-	//KT&MJ 23/05/2000 changed comparison with 0 to small_value
-	//MJ 13/07/2000 changed it back, equivalent under new thresholding strategy 
-	if(square(xm-x)+square(ym-y)<=square(truncated_radius) && 
-	   input_image[z][y][x]<=0.F)
-	  {
-	    if (input_image[z][y][x]<Minneg) Minneg = input_image[z][y][x];
-	    nuneg++;       
-	    input_image[z][y][x]=small_value; 
-       
-	  }
-
-	//MJ optimal implementation would disregard voxels outside FOV
-	else if (square(xm-x)+square(ym-y)>square(truncated_radius))
-	  input_image[z][y][x]=0.0;
-	
-	}
-
-  cout << nuneg <<" negative numbers found\n";
-  cout <<"Minimal negative number " << Minneg << endl;
-  cout << "All negative numbers were set to: " << small_value << endl;
-
-}
 
 
 // AZ 07/10/99: added
@@ -180,19 +130,23 @@ void truncate_rim(SegmentBySinogram<float>& seg, const int rim_truncation_sino)
 
 //MJ 18/9/98 new
 void truncate_rim(DiscretisedDensity<3,float>& input_image,
-			 const int rim_truncation_image)
+		  const int rim_truncation_image,
+		  const bool strictly_less_than_radius)
 {      
   // TODO the 'rim_truncate' part of this function does not make a lot of sense in general
   DiscretisedDensityOnCartesianGrid<3,float>& input_image_cartesian =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(input_image);
 
-  const int zs=input_image_cartesian.get_min_z();
-  const int ys=input_image_cartesian.get_min_y();
-  const int xs=input_image_cartesian.get_min_x(); 
+  if (!input_image_cartesian.is_regular())
+    error("truncate_rim called for non-regular grid. Not implemented");
+
+  const int zs=input_image_cartesian.get_min_index();
+  const int ys=input_image_cartesian[zs].get_min_index();
+  const int xs=input_image_cartesian[zs][ys].get_min_index(); 
   
-  const int ze=input_image_cartesian.get_max_z();  
-  const int ye=input_image_cartesian.get_max_y(); 
-  const int xe=input_image_cartesian.get_max_x();
+  const int ze=input_image_cartesian.get_max_index();  
+  const int ye=input_image_cartesian[zs].get_max_index(); 
+  const int xe=input_image_cartesian[zs][ys].get_max_index();
   
   // TODO check what happens with even-sized images (i.e. where is the centre?)
   
@@ -204,19 +158,27 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
     static_cast<float>((xe-xs)/2 - rim_truncation_image);
    
 
-  for (int z=zs; z<=ze; z++)
-    for (int y=ys; y <= ye; y++)
-      for (int x=xs; x<= xe; x++)
-      {
-
-	if(square(xm-x)+square(ym-y)>=square(truncated_radius))
-	{
-	  input_image[z][y][x]=0;
-	}
-
-      }
+  if (strictly_less_than_radius)
+    {
+      for (int z=zs; z<=ze; z++)
+	for (int y=ys; y <= ye; y++)
+	  for (int x=xs; x<= xe; x++)
+	    {
+	      if(square(xm-x)+square(ym-y)>=square(truncated_radius))
+		  input_image[z][y][x]=0;
+	    }
+    }
+  else
+    {
+      for (int z=zs; z<=ze; z++)
+	for (int y=ys; y <= ye; y++)
+	  for (int x=xs; x<= xe; x++)
+	    {
+	      if(square(xm-x)+square(ym-y)>square(truncated_radius))
+		  input_image[z][y][x]=0;
+	    }
+    }
 }
-
 
 
 
@@ -330,62 +292,6 @@ void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgr
 }
 
 
-void divide_and_truncate(DiscretisedDensity<3,float>& numerator, 
-			 const DiscretisedDensity<3,float>& denominator,
-			 const int rim_truncation,
-			 int & count)
-{      
-   assert(numerator.get_index_range() == denominator.get_index_range());
-
-  // TODO the 'truncate' part of this function does not make a lot of sense in general
-  DiscretisedDensityOnCartesianGrid<3,float>& numerator_cartesian =
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(numerator);
-
-  const int zs=numerator_cartesian.get_min_z();
-  const int ys=numerator_cartesian.get_min_y();
-  const int xs=numerator_cartesian.get_min_x(); 
-  
-  const int ze=numerator_cartesian.get_max_z();  
-  const int ye=numerator_cartesian.get_max_y(); 
-  const int xe=numerator_cartesian.get_max_x();
-  
-  // TODO check what happens with even-sized images (i.e. where is the centre?)
-  //const int zm=(zs+ze)/2;
-  const int ym=(ys+ye)/2;
-  const int xm=(xs+xe)/2;
-  
-  const float truncated_radius = 
-    static_cast<float>((xe-xs)/2 - rim_truncation);
-
-  float small_value= (float) numerator.find_max()*SMALL_NUM;
-  small_value=(small_value>0.0F)?small_value:0.0F;   
-
-  for (int z=zs; z<=ze; z++)
-    for (int y=ys; y <= ye; y++)
-      for (int x=xs; x<= xe; x++)
-      {
-
-	if(square(xm-x)+square(ym-y)>=square(truncated_radius))
-	{
-	  numerator[z][y][x]=0;
-	}
-	else
-	{ 
-	  //MJ 20/6/2000 use fabs(). 
-	  if(fabs(denominator[z][y][x])<=small_value) 
-	  {
-	    if(fabs(numerator[z][y][x])>small_value) count++;	
-	    numerator[z][y][x]=0;
-	  }	      
-	  else 
-	    numerator[z][y][x]/=denominator[z][y][x];
-	} 
-
-      }
-
-}
-
-
 void divide_array(SegmentByView<float>& numerator,const SegmentByView<float>& denominator)
 {
   
@@ -445,7 +351,15 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   const int bs=projection_data.get_min_tangential_pos_num();
   const int be=projection_data.get_max_tangential_pos_num();
 
-  
+  /* note for implementation:
+     First compute result for this viewgram in a local variable,
+     then add to accum.
+     This avoids problems with adding small numbers to large numbers
+     For instance if there are a large number of bins in the projection data,
+     each with about the same contribution. After about 1e6 bins, the value of
+     accum would be no longer change because of the finite precision.
+  */
+  float result = 0;
   const float small_value= 
     max(projection_data.find_max()*SMALL_NUM, 0.F);
   const float max_quotient = 10000.F;
@@ -453,16 +367,19 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
   for(int r=rs;r<=re;r++)
     for(int b=bs;b<=be;b++)  
       if(!(
-	   projection_data[r][b]<=small_value ||
 	   b<bs+rim_truncation_sino ||
 	   b>be-rim_truncation_sino ))
 	{
 	  const float new_estimate =
 	    max(estimated_projections[r][b], 
-		max_quotient/projection_data[r][b]);
-	  *accum -= projection_data[r][b]*log(new_estimate);
+		projection_data[r][b]/max_quotient);
+	  if (projection_data[r][b]<=small_value)
+	    result += - new_estimate;
+	  else
+	    result += projection_data[r][b]*log(new_estimate) - new_estimate;
 	}
 
+  *accum += result;
 }
 
 
@@ -518,67 +435,4 @@ void truncate_end_planes(DiscretisedDensity<3,float> &input_image, int input_num
 
 
 }
-
-//MJ 13/07/2000 new
-//TODO template? generalize to other Arrays?
-
-float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image)
-{
-
-
-  DiscretisedDensityOnCartesianGrid<3,float>& input_image_cartesian =
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float>&>(input_image);
-
-  const int zs=input_image_cartesian.get_min_z();
-  const int ys=input_image_cartesian.get_min_y();
-  const int xs=input_image_cartesian.get_min_x(); 
-  
-  const int ze=input_image_cartesian.get_max_z();  
-  const int ye=input_image_cartesian.get_max_y(); 
-  const int xe=input_image_cartesian.get_max_x();
-  
-  const int ym=(ys+ye)/2;
-  const int xm=(xs+xe)/2;
-
-  const float truncated_radius = 
-    static_cast<float>((xe-xs)/2 - rim_truncation_image);
-
-  float current_estimate=0.F;
-
-  bool found_positive_value=false;
-
-  for (int z=zs; z<=ze; z++)
-    for (int y=ys; y <= ye; y++)
-      for (int x=xs; x<= xe; x++)
-	{
-    
-	  if(square(xm-x)+square(ym-y)<=square(truncated_radius))
-	    {
-
-	      if(found_positive_value)
-		{
-		  if(input_image[z][y][x]>0.F && input_image[z][y][x]<current_estimate)
-		    current_estimate=input_image[z][y][x];
-		}
-
-	      else if (input_image[z][y][x]>0.F)
-		{
-
-		found_positive_value=true;
-		current_estimate=input_image[z][y][x];
-
-		}
-
-	    }
-
-	}
-
-  return current_estimate;
-	
-
-}
-
-
-
-
 END_NAMESPACE_STIR

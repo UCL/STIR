@@ -1,23 +1,35 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup symmetries
 
-  \brief implementations for class DataSymmetriesForBins
+  \brief implementations for class stir::DataSymmetriesForBins
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
@@ -36,6 +48,19 @@ DataSymmetriesForBins::
 DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 : proj_data_info_ptr(proj_data_info_ptr)
 {}
+
+bool
+DataSymmetriesForBins::
+blindly_equals(const root_type * const sym_ptr) const
+{ 
+  if (!base_type::blindly_equals(sym_ptr))
+    return false;
+
+  return 
+    *this->proj_data_info_ptr == 
+    *static_cast<const self_type&>(*sym_ptr).proj_data_info_ptr;
+}
+
 
 /*! default implementation in terms of get_related_bins, will be slow of course */
 int

@@ -13,13 +13,12 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, HammersmithImanet
     See STIR/LICENSE.txt for details
 */
 
 #include "local/stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
-//#include "stir/RelatedViewgrams.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
 
 START_NAMESPACE_STIR
@@ -67,7 +66,7 @@ PostsmoothingBackProjectorByBin::
 PostsmoothingBackProjectorByBin::
 PostsmoothingBackProjectorByBin(
                        const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
-		       const shared_ptr<ImageProcessor<3,float> >& image_processor_ptr)
+		       const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >& image_processor_ptr)
                        : original_back_projector_ptr(original_back_projector_ptr),
 			 image_processor_ptr(image_processor_ptr)
 {}

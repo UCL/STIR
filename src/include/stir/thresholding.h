@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_thresholding_H__
 #define  __stir_thresholding_H__
 /*!
@@ -15,10 +31,7 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+
 #include "stir/min_positive_element.h"
 #include <algorithm>
 
@@ -39,7 +52,7 @@ START_NAMESPACE_STIR
     <ul>
     <li>\c forw_iterT is a forward iterator
     <li>\c elemT must be assignable to <tt>*forw_iterT</tt>
-    <li><tt>bool operator>(*forw_iterT, elemT)</tt> must exist
+    <li><tt>bool operator&gt;(*forw_iterT, elemT)</tt> must exist
     </ul>
 */
 template <typename forw_iterT, typename elemT>
@@ -89,7 +102,6 @@ threshold_lower(forw_iterT begin, forw_iterT end,
 
 //! sets non-positive values in the sequence to small positive ones
 /*!
-  
   Thresholds the sequence from below to  
   <tt> *min_positive_element()*small_number</tt>.
   However, if all values are less than or equal to 0, they are 

@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/multiply_plane_scale_factorsImageProcessor.h"
@@ -39,7 +39,7 @@ void
 multiply_plane_scale_factorsImageProcessor<elemT>::
 set_defaults()
 {
-  ImageProcessor<3,elemT>::set_defaults();
+  base_type::set_defaults();
   plane_scale_factors.resize(0);
 }
 
@@ -48,7 +48,7 @@ void
 multiply_plane_scale_factorsImageProcessor<elemT>::
 initialise_keymap()
 {
-  ImageProcessor<3,elemT>::initialise_keymap();
+  base_type::initialise_keymap();
   this->parser.add_start_key("multiply_plane_scale_factors Parameters");
   this->parser.add_key("plane_scale_factors",&plane_scale_factors);
   this->parser.add_stop_key("END multiply_plane_scale_factors Parameters");

@@ -1,11 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projdata
 
-  \brief Declaration of class ProjDataInfo
+  \brief Declaration of class stir::ProjDataInfo
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -13,11 +29,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_ProjDataInfo_H__
 #define __stir_ProjDataInfo_H__
@@ -53,7 +64,9 @@ class PMessage;
 */
 class ProjDataInfo
 {
-  
+protected:
+  typedef ProjDataInfo root_type;
+
 public:
 
   /********** static members **************/
@@ -280,9 +293,9 @@ public:
   //! \name Equality of ProjDataInfo objects
   //@{
   //! check equality
-  virtual bool operator ==(const ProjDataInfo& proj) const; 
+  bool operator ==(const ProjDataInfo& proj) const; 
   
-  inline bool operator !=(const ProjDataInfo& proj) const; 
+  bool operator !=(const ProjDataInfo& proj) const; 
   //@}
 
   //! \name Functions that return sinograms etc (filled with 0)
@@ -317,6 +330,9 @@ public:
   //! Return a string describing the object
   virtual string parameter_info() const;
   
+protected:
+  virtual bool blindly_equals(const root_type * const) const = 0;
+
 private:
   shared_ptr<Scanner> scanner_ptr;
   int min_view_num;

@@ -1,0 +1,19 @@
+generate_image Parameters :=
+output filename:= p0005
+X output image size (in pixels):=21
+Y output image size (in pixels):=21
+Z output image size (in pixels):=17
+X voxel size (in mm):=20
+Y voxel size (in mm):=20
+Z voxel size (in mm):=6.75
+shape type:= ellipsoidal cylinder
+Ellipsoidal Cylinder Parameters:=
+   radius-x (in mm):=50
+   radius-y (in mm):=50
+   length-z (in mm):=6
+   origin (in mm):={54, 0, 0}
+   END:=
+value :=0.0005
+
+END:=
+

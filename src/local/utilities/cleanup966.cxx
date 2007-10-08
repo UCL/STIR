@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+  Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
+
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup utilities
@@ -11,16 +27,15 @@
   \see cleanup966ImageProcessor
 
   \author Kris Thielemans
+  \author Charalampos Tsoumpas [updates for the STIR release 2.0, but takes no credit for it. ]
+
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2003- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
+
 #include "stir/DiscretisedDensity.h"
 #include "local/stir/cleanup966ImageProcessor.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 
 #ifndef STIR_NO_NAMESPACES
@@ -56,14 +71,10 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
     }
   image_processor.apply(*density_ptr);
+
   // write image
-  DefaultOutputFileFormat output_file_format;
-  Succeeded res = 
-    output_file_format.write_to_file(output_filename, *density_ptr);
+  const Succeeded writing_succeeded=OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->  
+    write_to_file(output_filename,*density_ptr); 
 
-  return res==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+  return writing_succeeded==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-
-
-

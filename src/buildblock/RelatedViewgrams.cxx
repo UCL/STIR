@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
 
-  \brief Implementations for class RelatedViewgrams
+  \brief Implementations for class stir::RelatedViewgrams
 
   \author Kris Thielemans
   \author PARAPET project
@@ -14,13 +31,9 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 #include "stir/RelatedViewgrams.h"
+#include "boost/format.hpp"
 
 #ifdef _MSC_VER
 // disable warning that constructor with PMessage is not implemented
@@ -76,6 +89,83 @@ RelatedViewgrams<elemT> RelatedViewgrams<elemT>::get_empty_copy() const
 
   return RelatedViewgrams<elemT>(empty_viewgrams,
                           symmetries_used);
+}
+
+template<typename elemT>
+bool
+RelatedViewgrams<elemT>::
+has_same_characteristics(self_type const& other,
+			 string& explanation) const
+{
+  using boost::format;
+  using boost::str;
+
+  if (*this->get_proj_data_info_ptr() !=
+      *other.get_proj_data_info_ptr())
+    {
+      explanation = 
+	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
+	    % this->get_proj_data_info_ptr()->parameter_info()
+	    % other.get_proj_data_info_ptr()->parameter_info()
+	    );
+      return false;
+    }
+  if (*this->get_symmetries_ptr() !=
+      *other.get_symmetries_ptr())
+    {
+      explanation = 
+	str(format("Differing symmetries")
+	    );
+      return false;
+    }
+  if (this->get_basic_view_num() !=
+      other.get_basic_view_num())
+    {
+      explanation = 
+	str(format("Differing basic view number: %1% vs %2%")
+	    % this->get_basic_view_num()
+	    % other.get_basic_view_num()
+	    );
+      return false;
+    }
+  if (this->get_basic_segment_num() !=
+      other.get_basic_segment_num())
+    {
+      explanation = 
+	str(format("Differing basic segment number: %1% vs %2%")
+	    % this->get_basic_segment_num()
+	    % other.get_basic_segment_num()
+	    );
+      return false;
+    }
+  return true;
+}
+
+template<typename elemT>
+bool
+RelatedViewgrams<elemT>::
+has_same_characteristics(self_type const& other) const
+{
+  std::string explanation;
+  return this->has_same_characteristics(other, explanation);
+}
+
+template<typename elemT>
+bool 
+RelatedViewgrams<elemT>::
+operator ==(const self_type& that) const
+{
+  return
+    this->has_same_characteristics(that) &&
+    std::equal(this->begin(), this->end(), that.begin());
+}
+  
+template<typename elemT>
+bool 
+RelatedViewgrams<elemT>::
+operator !=(const self_type& that) const
+{
+  return !((*this) == that);
 }
 
 /*! \warning: this uses multiplication according to elemT (careful for overflow for integer types!) */

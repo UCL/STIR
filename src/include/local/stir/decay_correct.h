@@ -17,6 +17,8 @@
 
     See STIR/LICENSE.txt for details
 */
+#ifndef __stir_decay_correct_H__
+#define __stir_decay_correct_H__
 /*!
   \file 
   \brief Implementation of simple function to provide the decay factor. 
@@ -36,13 +38,19 @@ START_NAMESPACE_STIR
 //  For FDG is not necessary to use this approximation, because it will be slower. 
 inline double
 decay_correct_factor(const double isotope_halflife, const double start_time, const double end_time)  
-{  return std::log(2.)*(end_time-start_time)/(isotope_halflife
+{ 
+  assert(end_time-start_time>0.001);
+  return std::log(2.)*(end_time-start_time)/(isotope_halflife
 	 *(std::exp(-start_time*std::log(2.)/isotope_halflife)-std::exp(-end_time*std::log(2.)/isotope_halflife)));
 }
 //! This function uses the approximation: C(t)=C0*2^(-t/halftime), in order to find C0.
 //For FDG is fine to use this approximation, becaus it will be slower. 
 inline double decay_correct_factor(const double isotope_halflife, const double mean_time)
-{  return   std::exp(mean_time*std::log(2.)/isotope_halflife); }
+{ 
+  assert(mean_time>0.001); 
+  return   std::exp(mean_time*std::log(2.)/isotope_halflife); 
+}
 
 END_NAMESPACE_STIR
 
+#endif

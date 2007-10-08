@@ -5,6 +5,7 @@ dir := IO
 
 $(dir)_LIB_SOURCES := \
   OutputFileFormat.cxx \
+  OutputFileFormat_default.cxx \
   InterfileOutputFileFormat.cxx \
   interfile.cxx InterfileHeader.cxx \
   ECAT6OutputFileFormat.cxx \
@@ -16,6 +17,9 @@ ifeq ($(HAVE_LLN_MATRIX),1)
   $(dir)_LIB_SOURCES += ECAT7OutputFileFormat.cxx stir_ecat7.cxx
 endif
 
+ifeq ($(HAVE_AVW),1)
+  $(dir)_LIB_SOURCES += stir_AVW.cxx
+endif
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 

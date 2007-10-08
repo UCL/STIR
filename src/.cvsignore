@@ -5,3 +5,5 @@ STIRtmp.v
 debug
 opt
 opt64
+VCdebug
+VCopt

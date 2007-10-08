@@ -288,6 +288,12 @@ void Scanner::set_num_axial_blocks_per_bucket(const int&  new_num)
   num_axial_blocks_per_bucket = new_num;
 }
 
+void Scanner::set_num_detector_layers(const int& new_num)
+{
+  num_detector_layers = new_num;
+}
+
+
 void Scanner::set_num_axial_crystals_per_block(const int&  new_num)
 {
   num_axial_crystals_per_block = new_num;

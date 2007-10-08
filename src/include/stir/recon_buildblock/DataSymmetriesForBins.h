@@ -1,12 +1,29 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup symmetries
 
-  \brief Declaration of class DataSymmetriesForBins
+  \brief Declaration of class stir::DataSymmetriesForBins
 
   \author Kris Thielemans
   \author PARAPET project
@@ -15,13 +32,8 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-#ifndef __DataSymmetriesForBins_H__
-#define __DataSymmetriesForBins_H__
+#ifndef __stir_recon_buildblock_DataSymmetriesForBins_H__
+#define __stir_recon_buildblock_DataSymmetriesForBins_H__
 
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ProjDataInfo.h" // is used in .inl
@@ -68,11 +80,15 @@ typedef Coordinate2D<int> AxTangPosNumbers;
   way to be able to write generic code without knowing which 
   particular symmetries the data have.
 
-  TODO? I've used Bin here to have the 4 coordinates, but Bin has data as well 
+  \todo I have used Bin here to have the 4 coordinates, but Bin has data as well 
   which is not really necessary here.
 */
 class DataSymmetriesForBins : public DataSymmetriesForViewSegmentNumbers
 {
+private:
+  typedef DataSymmetriesForViewSegmentNumbers base_type;
+  typedef DataSymmetriesForBins self_type;
+
 public:
   DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
 
@@ -172,6 +188,9 @@ public:
 protected:
   //! Member storing the info needed by get_related_bins() et al
   const shared_ptr<ProjDataInfo> proj_data_info_ptr;
+
+  //! Check equality
+  virtual bool blindly_equals(const root_type * const) const = 0;
 };
 
 END_NAMESPACE_STIR

@@ -1,26 +1,32 @@
 #! /bin/sh
 do_lln=0
-do_update=1
-do_license=1
-do_ChangeLog=1
+do_update=0
+do_version=0
+do_license=0
+do_ChangeLog=0
 do_doc=1
 do_doxygen=1
 do_zip_source=1
-do_recon_test_pack=1
-do_transfer=1
+do_recon_test_pack=0
+do_transfer=0
 
 do_website_final_version=0
 do_website_sync=0
 
 set -e
-VERSION=1.4
+VERSION=2.0alpha
 
-CVSOPTS="-d ha-beo-1:/data/home/kris/devel/cvsroot"
+# for cvs2cl.pl
+BRANCH=trunk
+#BRANCH=OBJFUNCbranch
+
+#CVSOPTS="-d ha-beo-1:/data/home/kris/devel/cvsroot"
 CVS="cvs $CVSOPTS"
 
 # TODO  problems with LICENSE.txt
 # need to get it without tag, and then update and then assign tag (potentially remove tag first)
 #CHECKOUTOPTS="-r rel_1_30"
+CHECKOUTOPTS=""
 cd $WORKSPACE/../..
 
 destination=$WORKSPACE/../web-site/
@@ -58,7 +64,7 @@ cd ${DISTRIB}
 
   trap "echo ERROR in cvs update" ERR
 if [ ! -r parapet ]; then
-    $CVS checkout -P  $CHECKOUTOPTS
+    $CVS checkout -P  $CHECKOUTOPTS parapet
   cd parapet
 else
   cd parapet
@@ -69,14 +75,17 @@ else
 fi
 rm -f STIR
 ln -s PPhead STIR
+
 cd PPhead
 
 # update VERSION.txt
+if [ $do_version = 1 ]; then
 echo "updating VERSION.txt"
 echo "TODO update PROJECT_NUMBER in Doxyfile"
 trap "echo ERROR in updating VERSION.txt" ERR
 echo $VERSION > VERSION.txt
 $CVS commit -m "- updated for release of version $VERSION" VERSION.txt
+fi
 
 # update LICENSE.txt
 if [ $do_license = 1 ]; then
@@ -111,7 +120,7 @@ if [ $do_ChangeLog = 1 ]; then
   # maybe use --accum
   rm -rf xxlocal
   mv local xxlocal
-  cvs2cl.pl -g "$CVSOPTS" -I 'xxlocal/' -I 'include/local'  --no-indent -F trunk
+  cvs2cl.pl -g "$CVSOPTS" -I 'xxlocal/' -I 'include/local'  --no-indent -F $BRANCH
   mv xxlocal local
   cp ChangeLog ${DISTRIB}
 fi

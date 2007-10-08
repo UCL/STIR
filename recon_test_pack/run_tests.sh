@@ -4,7 +4,7 @@
 # see README.txt
 # Author: Kris Thielemans
 
-echo This script should work with STIR version 1.2 and 1.3. If you have
+echo This script should work with STIR version 2.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -134,9 +134,9 @@ if test $NOINTBP = 0; then
 echo
 echo --------- TESTS THAT USE INTERPOLATING BACKPROJECTOR --------
 echo
-echo ------------- Running sensitivity ------------- 
-echo Running ${INSTALL_DIR}sensitivity 
-${INSTALL_DIR}sensitivity OSMAPOSL_test_for_sensitivity.par 1> sensitivity.log 2> sensitivity_stderr.log < sensitivity.inp
+echo ------------- Running OSMAPOSL for sensitivity ------------- 
+echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
+${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log 
 
 echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -151,7 +151,7 @@ fi
 echo
 echo ------------- Running OSMAPOSL ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test.par 1> OSMAPOSL.log 2> OSMAPOSL_stderr.log
+${INSTALL_DIR}OSMAPOSL OSMAPOSL_test.par 1> OSMAPOSL_test.log 2> OSMAPOSL_test_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 3 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -177,9 +177,13 @@ fi # end of NOINTBP = 0
 echo
 echo --------- TESTS THAT USE PROJECTION MATRIX --------
 echo
-echo ------------- Running sensitivity ------------- 
-echo Running ${INSTALL_DIR}sensitivity 
-${INSTALL_DIR}sensitivity OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log < sensitivity.inp
+echo Generating initial image
+# echo TODO check results
+${INSTALL_DIR}generate_image generate_uniform_image.par
+${INSTALL_DIR}postfilter my_uniform_image_circular.hv my_uniform_image.hv postfilter_truncate_circular_FOV.par
+echo ------------- Running OSMAPOSL for sensitivity ------------- 
+echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
+${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
 
 echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image

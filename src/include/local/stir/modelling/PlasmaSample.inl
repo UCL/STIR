@@ -16,10 +16,10 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
-
+*/
+/*!
   \file
   \ingroup modelling
-
   \brief Implementations of inline functions of class stir::PlasmaData
 
   \author Charalampos Tsoumpas

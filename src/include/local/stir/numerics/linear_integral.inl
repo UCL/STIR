@@ -39,6 +39,7 @@ linear_integral(const std::vector<float>& f , const std::vector<float>& t , cons
 	const unsigned int t_size=t.size();
 	float integral_result=0;
 	assert(f_size==t_size);
+	assert(f_size>1);
 	if(f_size!=t_size) 
 	warning("The linear integral requires equal size of the two input vectors!!!");
 
@@ -47,7 +48,7 @@ linear_integral(const std::vector<float>& f , const std::vector<float>& t , cons
 	  //Rectangular Formula:
 	  // If not at the borders apply: (t_next-t_previous)*0.5*f
 	  // If at the borders apply: (t2-t1)*0.5*f, (tN-TN_previous)*0.5*f
-	  { 
+	  {	   
 	    integral_result=f[0]*(t[1]-t[0])*0.5F;
 	    for (unsigned int i=1;i<imax-1;++i)
  	      integral_result += f[i]*(t[i+1]-t[i-1])*0.5F;

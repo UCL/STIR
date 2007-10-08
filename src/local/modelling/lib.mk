@@ -4,9 +4,11 @@
 
 dir := local/modelling
 $(dir)_LIB_SOURCES:= \
-	apply_patlak_to_images.cxx 
+	KineticModel.cxx \
+	PatlakPlot.cxx \
+	ParametricDiscretisedDensity.cxx
 
-#$(dir)_REGISTRY_SOURCES:= local_modelling_registries.cxx
+$(dir)_REGISTRY_SOURCES:= modelling_registries.cxx
 
 include $(WORKSPACE)/lib.mk
 

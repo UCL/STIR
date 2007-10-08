@@ -1,11 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projdata
 
-  \brief Implementation of non-inline functions of class ProjDataInfo
+  \brief Implementation of non-inline functions of class stir::ProjDataInfo
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -13,11 +29,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -529,11 +540,15 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
     
 }
 
-bool 
-ProjDataInfo::operator ==(const ProjDataInfo& proj) const
-{  
+/*! Default implementation checks common variables. Needs to be overloaded.
+ */
+bool
+ProjDataInfo::
+blindly_equals(const root_type * const that) const
+{ 
+  const root_type & proj = *that;
+
   return
-    (typeid (*this) == typeid(proj)) &&
    (get_min_view_num()==proj.get_min_view_num()) &&
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
@@ -541,9 +556,25 @@ ProjDataInfo::operator ==(const ProjDataInfo& proj) const
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
    (*get_scanner_ptr()== *(proj.get_scanner_ptr()));
-
 }
 
+bool
+ProjDataInfo::
+operator ==(const root_type& that) const
+{ 
+  return
+    typeid(*this) == typeid(that) &&
+    (this == &that ||
+     this->blindly_equals(&that)
+     );
+}
+
+bool
+ProjDataInfo::
+operator !=(const root_type& that) const
+{ 
+  return !((*this) == that);
+}
 
 
 END_NAMESPACE_STIR

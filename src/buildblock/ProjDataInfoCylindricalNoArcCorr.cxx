@@ -1,22 +1,33 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
 
   \brief Implementation of non-inline functions of class 
-  ProjDataInfoCylindricalNoArcCorr
+  stir::ProjDataInfoCylindricalNoArcCorr
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -85,6 +96,27 @@ ProjDataInfoCylindricalNoArcCorr::clone() const
 {
   return static_cast<ProjDataInfo*>(new ProjDataInfoCylindricalNoArcCorr(*this));
 }
+
+bool
+ProjDataInfoCylindricalNoArcCorr::
+operator==(const self_type& that) const
+{
+  if (!base_type::blindly_equals(&that))
+    return false;
+  return
+    this->ring_radius == that.ring_radius &&
+    this->angular_increment == that.angular_increment;
+}
+
+bool
+ProjDataInfoCylindricalNoArcCorr::
+blindly_equals(const root_type * const that_ptr) const
+{
+  assert(dynamic_cast<const self_type * const>(that_ptr) != 0);
+  return
+    this->operator==(static_cast<const self_type&>(*that_ptr));
+}
+
 
 string
 ProjDataInfoCylindricalNoArcCorr::parameter_info()  const

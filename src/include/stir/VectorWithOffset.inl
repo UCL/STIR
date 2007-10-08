@@ -15,7 +15,7 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -44,6 +44,13 @@ VectorWithOffset<T>::init()
   num = 0;	// and no data.
   begin_allocated_memory = 0;
   end_allocated_memory = 0;
+}
+
+template <class T>
+bool
+VectorWithOffset<T>::owns_memory_for_data() const
+{
+  return this->_owns_memory_for_data;
 }
 
 /*!
@@ -80,8 +87,8 @@ _destruct_and_deallocate()
   // Check on capacity probably not really necessary
   // as begin_allocated_memory is == 0 in that case, and delete[] 0 doesn't do anything
   // (I think). Anyway, we're on the safe side now...
-  if (this->capacity() != 0)
-    delete[] begin_allocated_memory; 
+  if (this->owns_memory_for_data() && this->capacity() != 0)
+    delete[] this->begin_allocated_memory; 
 }
 
 template <class T>
@@ -89,11 +96,8 @@ void
 VectorWithOffset<T>::recycle() 
 {
   this->check_state();
-  if (length > 0)
-  {
-    _destruct_and_deallocate();
-    this->init();
-  }
+  this->_destruct_and_deallocate();
+  this->init();
 }
 
 template <class T>
@@ -198,6 +202,7 @@ VectorWithOffset<T>::rend() const
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset()
+: _owns_memory_for_data(true)
 { 
   pointer_access = false;  
   this->init();
@@ -207,7 +212,8 @@ template <class T>
 VectorWithOffset<T>::VectorWithOffset(const int hsz)
   : length(hsz),
     start(0),
-    pointer_access(false)
+    pointer_access(false),
+    _owns_memory_for_data(true)
 {	
   if ((hsz > 0))
   {
@@ -221,11 +227,11 @@ VectorWithOffset<T>::VectorWithOffset(const int hsz)
 }			
 
 template <class T>
-
 VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)   
   : length(static_cast<unsigned>(max_index - min_index) + 1),
     start(min_index),
-    pointer_access(false)
+    pointer_access(false),
+    _owns_memory_for_data(true)
 {   
   if (max_index >= min_index) 
   {
@@ -239,12 +245,41 @@ VectorWithOffset<T>::VectorWithOffset(const int min_index, const int max_index)
   this->check_state();
 }
 
-template <class T>
 
+template <class T>
+VectorWithOffset<T>::
+VectorWithOffset(const int sz, 
+		 T * const data_ptr, T * const end_of_data_ptr)   
+  : length(static_cast<unsigned>(sz)),
+    start(0),
+    pointer_access(false),
+    _owns_memory_for_data(false)
+{   
+  this->begin_allocated_memory = data_ptr;
+  this->end_allocated_memory = end_of_data_ptr;
+  this->num = this->begin_allocated_memory - this->start;
+  this->check_state();
+}
+
+template <class T>
+VectorWithOffset<T>::
+VectorWithOffset(const int min_index, const int max_index, 
+		 T * const data_ptr, T * const end_of_data_ptr)   
+  : length(static_cast<unsigned>(max_index - min_index) + 1),
+    start(min_index),
+    pointer_access(false),
+    _owns_memory_for_data(false)
+{   
+  this->begin_allocated_memory = data_ptr;
+  this->end_allocated_memory = end_of_data_ptr;
+  this->num = this->begin_allocated_memory - this->start;
+  this->check_state();
+}
+
+template <class T>
 VectorWithOffset<T>::~VectorWithOffset()
 { 
-  if (end_allocated_memory!=begin_allocated_memory)
-    _destruct_and_deallocate();
+  _destruct_and_deallocate();
 }		
 
 template <class T>
@@ -328,6 +363,7 @@ reserve(const int new_capacity_min_index, const int new_capacity_max_index)
   this->_destruct_and_deallocate();
   begin_allocated_memory = newmem;
   end_allocated_memory = begin_allocated_memory + new_capacity;
+  _owns_memory_for_data =true;
   num = begin_allocated_memory + extra_at_the_left - (length>0?start:0); 
   this->check_state();
 }
@@ -433,11 +469,6 @@ VectorWithOffset<T>::operator= (const VectorWithOffset &il)
 {
   this->check_state();
   if (this == &il) return *this;		// in case of x=x
-  if (il.size() == 0)
-  {
-    this->recycle();
-  }
-  else
   {		
     if (this->capacity() < il.size())
     {

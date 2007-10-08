@@ -74,14 +74,10 @@ public:
  //! Default constructor 
  SinglesRatesFromSglFile();
 
-
- //! Given the detection position get the singles rate
- //
- // The singles rate returned is the rate for a whole singles unit.
- //
- virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
-                                const double start_time,
-                                const double end_time) const;
+ // implementation of pure virtual in SinglesRates
+ virtual float
+   get_singles_rate(const int singles_bin_index, 
+		    const double start_time, const double end_time) const;
 
 
  //! Generate a FramesSinglesRate - containing the average rates
@@ -142,7 +138,7 @@ public:
  //
  int get_singles_rate(int singles_bin_index, int time_slice) const;
 
- //! Set a singles rate by time bin index and time slice.
+ //! Set a singles rate by singles bin index and time slice.
  //
  // The singles rate returned is the rate for a whole singles unit.
  //
@@ -203,10 +199,6 @@ private:
  double _singles_time_interval;
 
  string _sgl_filename;
- 
- float get_singles_rate(int singles_bin_index, 
-                        double start_time, double end_time) const;
-
 
  // Calculate and set _singles_time_interval.
  void set_time_interval();

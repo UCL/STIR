@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projection
 
-  \brief Declares class ProjectorByBinPairUsingProjMatrixByBin
+  \brief Declares class stir::ProjectorByBinPairUsingProjMatrixByBin
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_ProjectorByBinPairUsingProjMatrixByBin_h_
 #define __stir_recon_buildblock_ProjectorByBinPairUsingProjMatrixByBin_h_
@@ -32,8 +44,15 @@ START_NAMESPACE_STIR
 */
 class ProjectorByBinPairUsingProjMatrixByBin : 
   public RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin,
+                                 ProjectorByBinPair,
                                  ProjectorByBinPair> 
 { 
+ private:
+  typedef
+    RegisteredParsingObject<ProjectorByBinPairUsingProjMatrixByBin,
+                            ProjectorByBinPair,
+                            ProjectorByBinPair> 
+    base_type;
 public:
   //! Name which will be used when parsing a ProjectorByBinPair object
   static const char * const registered_name; 
@@ -42,21 +61,21 @@ public:
   ProjectorByBinPairUsingProjMatrixByBin();
 
   //! Constructor that sets the pair
-  ProjectorByBinPairUsingProjMatrixByBin(const shared_ptr<ProjMatrixByBin>& proj_matrix_ptr);
-
+  ProjectorByBinPairUsingProjMatrixByBin(const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr);
+#if 0
   //! Stores all necessary geometric info
-  virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+  virtual Succceeded set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     );
-
+#endif
 
   ProjMatrixByBin const * 
     get_proj_matrix_ptr() const;
 
 private:
 
-  shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
+  shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
   void set_defaults();
   void initialise_keymap();
   bool post_processing();

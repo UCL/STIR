@@ -14,7 +14,8 @@ $(dir)_LIB_SOURCES:= \
 	transform_3d_object.cxx \
 	Transform3DObjectImageProcessor.cxx \
 	NonRigidObjectTransformationUsingBSplines.cxx \
-	ScatterSimulationByBinWithMotion.cxx
+	ScatterSimulationByBinWithMotion.cxx \
+	PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
 
 $(dir)_REGISTRY_SOURCES:= local_motion_registries.cxx
 

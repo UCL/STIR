@@ -49,7 +49,7 @@ clean_exes_$(dir):
 
 install_exes_$(dir): $(dir)
 	mkdir -p $(INSTALL_EXE_DIR)
-	$(INSTALL) $($(@:install_exes_%=%)_EXE_FILENAMES) $(INSTALL_EXE_DIR)
+	if [ ! -z "$($(@:install_exes_%=%)_EXE_FILENAMES)" ]; then $(INSTALL) $($(@:install_exes_%=%)_EXE_FILENAMES) $(INSTALL_EXE_DIR); fi
 
 uninstall_exes_$(dir):
 	$(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_EXE_FILENAMES)))

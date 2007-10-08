@@ -1,26 +1,41 @@
-#if 1
+// $Id$
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup utilities
+  \brief Extracting profiles from an image
+  \author Sanide Mustafovic
+  \author Kris Thielemans
+  $Date$
+  $Revision$
+*/
+#if 0
+// these comments apply to the disabled version
+/* This program finds the max value in the plane and takes the profile 
+ which is then written to a file. 
+ Note: only certain number of planes are taken, e.g only those that actually
+ contain the object itself, since only for those the max value and the profile make sense.
+ */
+#endif
 
-
-#include "stir/interfile.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
 
 #include "stir/IndexRange2D.h"
-//#include "eval_buildblock/eval_common.h"
 #include "stir/Array.h"
-#include "stir/recon_array_functions.h"
-#include "stir/ArrayFunction.h"
 
 
 #include <iostream> 
 #include <fstream>
-#include <numeric>
 
 
 #define SMALL_VALUE = 0.0000001;
 
 
-#ifndef TOMO_NO_NAMESPACES
+#ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::ofstream;
 using std::ifstream;
@@ -34,21 +49,6 @@ using std::cout;
 #endif
 
 
-// Date:24/080/2000
-
-
-
-/* This program finds the max value in the plane and takes the profile 
- which is then written to a file. 
- Note: only certain number of planes are taken, e.g only those that actually
- contain the object itself, since only for those the max value and the profile make sense.
- */
-
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 USING_NAMESPACE_STIR
 
@@ -73,73 +73,35 @@ VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query);
 
 //bool check_if_sensible(Array<1,float> array_input);
 
-#if 0
+#if 1
 int main(int argc, char *argv[])
 { 
-  VoxelsOnCartesianGrid<float> input_image;
   
-  if (argc!= 8)
-    cerr << "Usage: image_list"<<endl<<endl;    
-  
-  ifstream in (argv[1]);  
-  const int maxsize_length = 100;
-  char filename[80];
-  
-  if (!in)
+  if (argc!= 9)
   {
-    cout<< "Cannot open input file.\n";
-    return 1;
+    cerr << "Usage:\n" << argv[0] << " output_profile_name input_image min_plane max_plane  min_col max_col min_row max_row"<<endl<<endl;    
+    return(EXIT_FAILURE);
   }
-  bool profile;
-  int xcoord_of_max_value;
-  int ycoord_of_max_value; 
-  
-  while(!in.eof())
+
+  const char * const output_filename = argv[1];
+  const char * const input_filename = argv[2];
+  // while(!in.eof())
   {      
-    in.getline(filename,maxsize_length);
-    if(strlen(filename)==0)
-      break;
-    int file_counter = atoi(get_file_index(filename).c_str());
     
-    input_image= (*read_interfile_image(filename));
+    shared_ptr<DiscretisedDensity<3,float> > input_image_sptr= 
+      DiscretisedDensity<3,float>::read_from_file(input_filename);
+    const DiscretisedDensity<3,float>& input_image =
+      *input_image_sptr;
     
-    ofstream profile_file;    
-    string exten;     
-    int zs,ys,xs, ze,ye,xe;
+    int min_plane_num = atoi(argv[3]);
+    int max_plane_num = atoi(argv[4]);    
+    int min_colum_num = atoi(argv[5]);
+    int max_colum_num = atoi(argv[6]);    
+    int min_row_num   = atoi(argv[7]);
+    int max_row_num   = atoi(argv[8]);  
     
-    zs=input_image.get_min_z();
-    ys=input_image.get_min_y();
-    xs=input_image.get_min_x(); 
-    
-    ze=input_image.get_max_z();  
-    ye=input_image.get_max_y(); 
-    xe=input_image.get_max_x();
-    int counter = 0;
-    int min_plane_num = atoi(argv[2]);
-    int max_plane_num = atoi(argv[3]);    
-    int min_colum_num = atoi(argv[4]);
-    int max_colum_num = atoi(argv[5]);    
-    int min_row_num   = atoi(argv[6]);
-    int max_row_num   = atoi(argv[7]);  
-
-    cerr << min_plane_num << endl;
-    cerr << max_plane_num << endl;
-
-    
-    Array<1,float> row(min_row_num,max_row_num);
-    Array<1,float> row_out(min_row_num,max_row_num);
-    Array<1,float> colum(min_colum_num,max_colum_num);
-    Array<1,float> colum_out(min_colum_num,max_colum_num);
-    Array<2,float> plane_tmp(IndexRange2D(min_colum_num,max_colum_num,min_row_num,max_row_num));  
-    
-    string out_file = filename;
-    int str_len = strlen(filename);
-    out_file.insert(str_len-3,"out");
-    int strnewlenght = strlen(out_file.c_str());
-    out_file.erase(strnewlenght-2,2);
-    out_file.append(exten);
-    profile_file.open(out_file.c_str(),ios::out);
-    profile_file << " plane number        " <<                " row" << endl;
+    std::ofstream  profile_file(output_filename);
+    //    profile_file << " plane number        " <<                " row" << endl;
    
   for (int plane = min_plane_num;plane <=max_plane_num;plane++) 
     for (int row = min_row_num;row <=max_row_num;row++)
@@ -149,8 +111,6 @@ int main(int argc, char *argv[])
       }
       
       profile_file << endl << endl;	  
-      
-      profile_file.close();
   }
   
   
@@ -160,9 +120,7 @@ int main(int argc, char *argv[])
 }
 
 
-#endif 
-
-#if 1
+#else
  
 int main(int argc, char *argv[])
 { 
@@ -321,8 +279,6 @@ int main(int argc, char *argv[])
 }
 
 
-#endif
-
 void put_end_points_to_zero( Array<1,float>& row_out,const Array<1,float>& row_in)
 {  
   int min_index = row_in.get_min_index();
@@ -415,21 +371,6 @@ bool check_if_sensible(Array<1,float> array_input)
   if ( array_input[0] ==0 && array_input[array_input_get_max_index]==0]*/
 
 
-
-
-VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query)
-{
-    char filename[max_filename_length];
-
-    system("ls *hv");
-    ask_filename_with_extension(filename, input_query, ".hv");
-
-    shared_ptr<DiscretisedDensity<3,float> > image_ptr =
-      DiscretisedDensity<3,float>::read_from_file(filename);
-    return 
-      * dynamic_cast<VoxelsOnCartesianGrid<float>*>(image_ptr.get());
-
-}
 
 
 string get_file_index(const string filename)

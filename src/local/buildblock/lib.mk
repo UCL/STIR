@@ -14,6 +14,9 @@ $(dir)_LIB_SOURCES:= \
 	interpolate_projdata.cxx \
   	find_fwhm_in_image.cxx \
 	DynamicDiscretisedDensity.cxx \
+	MultipleProjData.cxx \
+	DynamicProjData.cxx \
+	GatedProjData.cxx \
         AbsTimeIntervalFromECAT7ACF.cxx \
         AbsTimeIntervalWithParsing.cxx
 

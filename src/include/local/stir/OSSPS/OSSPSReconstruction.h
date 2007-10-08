@@ -1,3 +1,4 @@
+
 //
 // $Id$ 
 //
@@ -20,7 +21,7 @@
 /*!
   \file
   \ingroup OSSPS
-  \brief Declaration of class OSSPSReconstruction
+  \brief Declaration of class stir::OSSPSReconstruction
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -32,10 +33,9 @@
 #ifndef __stir_OSSPS_OSSPSReconstruction_h__
 #define __stir_OSSPS_OSSPSReconstruction_h__
 
-#include "stir/LogLikBased/LogLikelihoodBasedReconstruction.h"
-#include "stir/recon_buildblock/GeneralisedPrior.h"
+#include "stir/recon_buildblock/IterativeReconstruction.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
-#include "stir/ImageProcessor.h"
+#include "stir/ProjData.h"
 
 START_NAMESPACE_STIR
 
@@ -43,19 +43,46 @@ START_NAMESPACE_STIR
   \brief Implementation of the  relaxed Ordered Subsets Separable
   Paraboloidal Surrogate ( OSSPS)
   
-  See Ahn&Fessler, TMI.
+  See Ahn&Fessler, TMI. This is a relaxed preconditioned sub-gradient descent algorithm:
 
-  When no prior info is specified, this reduces to 'standard' ML (but not MLEM!).
+  \f[ \lambda^\mathrm{new} = \lambda + \zeta D \nabla \Psi \f]
+
+  with \f$\lambda\f$ the parameters to be estimated,
+  \f$\Psi\f$ the objective function (see class GeneralisedObjectiveFunction)
+  \f$D\f$ a dagional matrix (the preconditioner)
+  and \f$\zeta\f$ an iteration-dependent number called the relaxation parameter (see below).
+
+  \f$D\f$ depends on \f$\Psi\f$. At present, we only implement this for the PET emission case.
+
+  When no prior info is specified, this should converge to the Maximum Likelihood solution 
+  (but in a very different way from MLEM!).
   
   Note that this implementation assumes 'balanced subsets', i.e. 
   
-    \f[\sum_{b \in \rm{subset}} p_{bv} = 
-       \sum_b p_{bv} \over \rm{numsubsets} \f]
+    \f[\sum_{b \in \rm{subset}} P_{bv} = 
+       \sum_b P_{bv} \over \rm{numsubsets} \f]
 
-  \warning This class should be the last in a Reconstruction hierarchy.
+  \par Relaxation scheme
+  
+  The relaxation value for the additive update follows the suggestion from Ahn&Fessler:
+
+  \f[ \lambda= { \alpha \over 1+ \gamma n } \f ]
+
+  with \f$n\f$ the (full) iteration number. The parameter \f$\alpha\f$ corresponds to the
+  class member <code>relaxation_parameter</code>, and \f$\fgamma\f$ to
+  <code>relaxation_gamma</code>. Ahn&Fessler recommend to set \f$\alpha \approx 1\f$ and
+  \f$\gamma\f$ small (e.g. 0.1).
+
+  \warning This class should be the last in the Reconstruction hierarchy.
+  \todo split into a preconditioned subgradient descent class and something that computes
+  the preconditioner.
 */
-class OSSPSReconstruction: public LogLikelihoodBasedReconstruction
+template <class TargetT>
+class OSSPSReconstruction: 
+public IterativeReconstruction<TargetT>
 {
+ private:
+  typedef IterativeReconstruction<TargetT > base_type;
 public:
 
   //! Default constructor (calls set_defaults())
@@ -89,22 +116,28 @@ public:
     is given by :  
     \f[ d_j = -\sum_i P_{ij} \gamma_i h_i^{''}(y_i) \f]
     where
-    \f[ h_(l) = y_i log (l) - l; h_i^{''}(y_i) ~= -1/y_i; \f]
-    \f[gamma_i = sum_k P_{ik}\f]
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) ~= -1/y_i; \f]
+    \f[ \gamma_i = \sum_k P_{ik}\f]
     and \f$P_{ij} \f$ is the probability matrix. 
     Hence
     \f[ d_j = \sum_i P_{ij}(1/y_i) \sum_k P_{ik} \f]
 
     In the above, we've used the plug-in approximation by replacing 
     forward projection of the true image by the measured data. However, the
-    later are noisy. The circumvent that, we smooth the data before 
-    performing the quotient. This is done after normalisation to avoid 
+    later are noisy and this can create problems. Two work-arounds are
+    listed below, but they are currently not implemented.
+
+    The circumvent that, one could smooth the data before 
+    performing the quotient. This should be done after normalisation to avoid 
     problems with the high-frequency components in the normalisation factors.
     So, the \f$d_j\f$ is computed as
     \f[ d_j = \sum_i G_{ij}{1 \over n_i \mathrm{smooth}( n_i y_i)} \sum_k G_{ik} \f]
     where the probability matrix is factorised in a detection efficiency part (i.e. the
     normalisation factors \f$n_i\f$) times a geometric part:
     \f[ P_{ij} = {1 \over n_i } G_{ij}\f]
+
+    It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson.
+   
 */
   Succeeded 
     precompute_denominator_of_conditioner_without_penalty();
@@ -113,15 +146,6 @@ public:
  protected: // could be private, but this way the doxygen comments are always listed
   //! determines whether non-positive values in the initial image will be set to small positive ones
   int enforce_initial_positivity;
-
-#if 0
-  //inter-update filter disabled as it doesn't make a lot of sense with relaxation
-  //! subiteration interval at which to apply inter-update filters 
-  int inter_update_filter_interval;
-
-  //! inter-update filter object
-  shared_ptr<ImageProcessor<3,float> > inter_update_filter_ptr;
-#endif
 
   //! restrict updates (larger relative updates will be thresholded)
   double maximum_relative_change;
@@ -132,23 +156,15 @@ public:
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
 
-  //! the prior that will be used
-  shared_ptr<GeneralisedPrior<float> > prior_ptr;
-
-  //! name of the file containing the "precomputed denominator" - see Erdogan & Fessler for more info
+  //! optional name of the file containing the "precomputed denominator" - see Erdogan & Fessler for more info
+  /*! If not specified, the corresponding object will be computed. */
   string precomputed_denominator_filename;
-  //! optional name of a file containing the forward projection of an image of all ones.
-  /*! Specifying the file will speed up the computation of the 'precomputed denominator',
-      but is not necessary.
-  */
-  string forward_projection_of_all_ones_filename;
 
-  //! Normalisation object used as part of the projection model
-  shared_ptr<BinNormalisation> normalisation_sptr;
+  bool do_line_search;
 
-  //! relaxation parameter used (should be around 1)
+  //! relaxation parameter used (should be around 1) (see class documentation)
   float relaxation_parameter;
-  //! parameter determining how fast relaxation goes down
+  //! parameter determining how fast relaxation goes down  (see class documentation)
   float relaxation_gamma;
 
   virtual void set_defaults();
@@ -159,19 +175,25 @@ public:
 private:
 
   //! pointer to the precomputed denominator 
-  shared_ptr<DiscretisedDensity<3,float> > precomputed_denominator_ptr;
+  shared_ptr<TargetT > precomputed_denominator_ptr;
 
-  //! data corresponding to the forward projection of an image full of ones
+  //! data corresponding to the gometric forward projection of an image full of ones
   /*! This is needed for the precomputed denominator. However, if the parameter is 
       not set, precompute_denominator_without_penalty_of_conditioner() will compute it.
   */
   shared_ptr<ProjData> fwd_ones_sptr;
 
   //! operations prior to the iterations
-  virtual void recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr);
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
  
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate);
+  virtual void update_estimate(TargetT &current_image_estimate);
+
+  GeneralisedPrior<TargetT> * get_prior_ptr()
+    { return this->get_objective_function().get_prior_ptr(); }
+
+  float
+    line_search(const TargetT& current_estimate, const TargetT& additive_update);
 
 };
 

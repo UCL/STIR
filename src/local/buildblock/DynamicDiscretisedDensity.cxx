@@ -46,21 +46,59 @@ using std::cerr;
 
 START_NAMESPACE_STIR
 
+// The assignement is necessary to prevent running the other than the copy-constructor. 
+DynamicDiscretisedDensity::
+DynamicDiscretisedDensity(const DynamicDiscretisedDensity& argument)
+{
+  (*this) = argument;
+}
+
+DynamicDiscretisedDensity&
+DynamicDiscretisedDensity::
+operator=(const DynamicDiscretisedDensity& argument)
+{
+  this->_time_frame_definitions = argument._time_frame_definitions;
+  this->_densities.resize(argument._densities.size());
+  for (unsigned int i=0; i<argument._densities.size(); ++i)
+    this->_densities[i] = argument._densities[i]->clone();
+
+  this->_scanner_sptr = argument._scanner_sptr;
+  this->_calibration_factor = argument._calibration_factor;
+  this->_isotope_halflife = argument._isotope_halflife;
+  this->_is_decay_corrected = argument._is_decay_corrected; 
+  return *this;
+}
+
 void 
 DynamicDiscretisedDensity::
 set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
 		 const unsigned int frame_num)
 {  this->_densities[frame_num-1]=density_sptr; }  
 
+const std::vector<shared_ptr<DiscretisedDensity<3,float> > > &
+DynamicDiscretisedDensity::
+get_densities() const 
+{  return this->_densities ; }
+
 const DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num) const 
+{  return *this->_densities[frame_num-1] ; }
+
+DiscretisedDensity<3,float> & 
+DynamicDiscretisedDensity::
+get_density(const unsigned int frame_num)
 {  return *this->_densities[frame_num-1] ; }
 
 const float 
 DynamicDiscretisedDensity::
 get_isotope_halflife() const
 { return this->_isotope_halflife; }
+
+const float  
+DynamicDiscretisedDensity::
+get_scanner_default_bin_size() const
+{ return this->_scanner_sptr->get_default_bin_size(); }
 
 const float  
 DynamicDiscretisedDensity::
@@ -88,10 +126,11 @@ read_from_file(const string& filename) // The written image is read in respect t
     signature[max_length-1]='\0';
   }
 
-    DynamicDiscretisedDensity * dynamic_image_ptr =
+  DynamicDiscretisedDensity * dynamic_image_ptr = 0;
+#ifdef HAVE_LLN_MATRIX
+  dynamic_image_ptr =
       new DynamicDiscretisedDensity;
 
-#ifdef HAVE_LLN_MATRIX
   if (strncmp(signature, "MATRIX", 6) == 0)
   {
 #ifndef NDEBUG
@@ -132,8 +171,6 @@ read_from_file(const string& filename) // The written image is read in respect t
 
       for (unsigned int frame_num=1; frame_num <= (dynamic_image_ptr->_time_frame_definitions).get_num_frames(); ++ frame_num)
 	{
-	  const CartesianCoordinate3D< float > origin (0.F,0.F,0.F);
-
 	  dynamic_image_ptr->_densities[frame_num-1] =
 	    ECAT7_to_VoxelsOnCartesianGrid(filename,
 					   frame_num, 
@@ -159,6 +196,8 @@ read_from_file(const string& filename) // The written image is read in respect t
 }
 
 //Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
+/*	    sheader_ptr->frame_start_time=this->get_start_time(frame_num)*1000.;  //Start Time in Milliseconds
+	    sheader_ptr->frame_duration=this->get_duration(frame_num)*1000.;	    //Duration in Milliseconds */
 Succeeded 
 DynamicDiscretisedDensity::
 write_to_ecat7(const string& filename) const 

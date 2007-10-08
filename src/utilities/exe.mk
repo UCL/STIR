@@ -17,6 +17,7 @@ $(dir)_SOURCES:=manip_image.cxx \
 	correct_projdata.cxx \
 	stir_math.cxx \
 	list_projdata_info.cxx \
+	list_image_info.cxx \
 	create_projdata_template.cxx \
 	SSRB.cxx \
 	ecat_swap_corners.cxx \
@@ -31,6 +32,10 @@ ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
   # ifheaders_for_ecat7 etc as well
   $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx print_ecat_singles_values.cxx
+endif
+
+ifeq ($(HAVE_AVW),1)
+  $(dir)_SOURCES += conv_AVW.cxx
 endif
 
 ${DEST}$(dir)/poisson_noise: ${DEST}$(dir)/poisson_noise$(O_SUFFIX) \

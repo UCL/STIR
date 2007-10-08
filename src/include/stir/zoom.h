@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_ZOOM_H__
 #define  __stir_ZOOM_H__
 
@@ -19,7 +36,7 @@
 
   These functions can be used for zooming of projection data or image data.
   Zooming requires interpolation. Currently, this is done using 
-  overlap_interpolate.
+  stir::overlap_interpolate.
   
   The first set of functions allows zooming and translation in transaxial
   planes only. These parameters are the same for projection data or image data.
@@ -49,7 +66,7 @@
 
   It allows three-dimensional
   zooming and translation. Parameters are derived either from
-  CartesianCoordinate3D objects, or from the information in the \a in and \a out
+  stir::CartesianCoordinate3D objects, or from the information in the \a in and \a out
   images.
 	 
   In the case that the offsets are 0, the following holds:
@@ -63,7 +80,7 @@
   \warning Because overlap_interpolate is used, the zooming is 'count-preserving',
   i.e. when the output range is large enough, the in.sum() == out.sum().
 
-  \warning Origins are taken relative to the centre of the coordinate range:
+  \warning In STIR 1.x, origins were taken relative to the centre of the coordinate range:
 \code 
     x_in_mm = (x_index - x_ctr_index) * voxel_size.x() + origin.x() 
 \endcode
@@ -71,11 +88,8 @@
 \code 
    x_ctr_index = (x_max_index + x_min_index)/2
 \endcode
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
+  This is no longer true. Instead we use 
+  DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices.
 */
 
 #include "stir/common.h"
@@ -87,6 +101,7 @@ template <typename elemT> class RelatedViewgrams;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class PixelsOnCartesianGrid;
 template <typename elemT> class CartesianCoordinate3D;
+template <int num_dimensions, typename elemT> class BasicCoordinate;
 
 /*!
  \ingroup buildblock
@@ -126,35 +141,63 @@ zoom_viewgram (Viewgram<float>& out_viewgram,
 	       const float x_offset_in_mm = 0, const float y_offset_in_mm = 0);
 
 
+
 /*!
-  \brief zoom \a image, replacing the first argument with the new data
+  \brief zoom \a image, returning the new image
   \see zoom.h for parameter info
+
+  \see zoom_image_in_place
 */
-void
-zoom_image(VoxelsOnCartesianGrid<float> &image,
-	   const float zoom,
-	   const float x_offset_in_mm, const float y_offset_in_mm, 
-	   const int new_size);
+VoxelsOnCartesianGrid<float>
+zoom_image(const VoxelsOnCartesianGrid<float> &image,
+	   const CartesianCoordinate3D<float>& zooms,
+	   const CartesianCoordinate3D<float>& offsets_in_mm,
+	   const BasicCoordinate<3,int>& new_sizes);
 
 /*! 
   \brief 
   zoom \a image, replacing the first argument with the new data. 
   Full 3D shifts and zooms. 
   \see zoom.h for parameter info.
+
+  Zooming is done such that the physical coordinates of a point
+  (as returned by 
+  DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices)
+  remain the same.
+
+  The index range of the new image is according to the standard STIR
+  conventions (z starts from 0, but x and y from -(new_size/2)).
+  The origin is then chosen such that the geometric centres of the
+  images satisfy
+  \verbatim
+  offsets_in_mm == new_middle - old_middle
+  \endverbatim
+  The geometric centre is determined by the average of the physical
+  coordinates of the min and max indices.
+
+  \warning: For even-sized images, this convention can lead to somewhat
+  non-intuitive results (half-pixel shifts etc).
 */
 void
-zoom_image(VoxelsOnCartesianGrid<float> &image,
-	   const CartesianCoordinate3D<float>& zooms,
-	   const CartesianCoordinate3D<float>& offsets_in_mm,
-	   const CartesianCoordinate3D<int>& new_sizes);
+zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
+		    const CartesianCoordinate3D<float>& zooms,
+		    const CartesianCoordinate3D<float>& offsets_in_mm,
+		    const BasicCoordinate<3,int>& new_sizes);
 
 /*!
  \brief zoom \a image_in according to dimensions, origin and voxel_size of \a image_out.
   \see zoom.h for parameter info
+
+  Zooming is done such that the physical coordinates of a point
+  (as returned by 
+  DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices)
+  remain the same.
 */
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
 	   const VoxelsOnCartesianGrid<float> &image_in);
+
+//------------------ 2D zooms---------------------
 
 /*! 
 \brief 
@@ -165,6 +208,26 @@ zoom \a image2D_in according to dimensions, origin and pixel_size of
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
            const PixelsOnCartesianGrid<float> &image2D_in);
+
+/*!
+  \brief zoom \a image, replacing the first argument with the new data
+  \see zoom.h for parameter info
+*/
+VoxelsOnCartesianGrid<float>
+zoom_image(const VoxelsOnCartesianGrid<float> &image,
+	   const float zoom,
+	   const float x_offset_in_mm, const float y_offset_in_mm, 
+	   const int new_size);
+
+/*!
+  \brief zoom \a image, replacing the first argument with the new data
+  \see zoom.h for parameter info
+*/
+void
+zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
+		    const float zoom,
+		    const float x_offset_in_mm, const float y_offset_in_mm, 
+		    const int new_size);
 
 //@}
 

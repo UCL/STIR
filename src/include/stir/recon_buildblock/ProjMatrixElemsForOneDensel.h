@@ -95,11 +95,12 @@ public:
 
 
   //! constructor
+  ProjMatrixElemsForOneDensel(); 
   /*!
     \param Densel effectively calls set_densel(Densel)
     \param default_capacity effectively calls reserve(default_capacity)
   */
-  explicit ProjMatrixElemsForOneDensel(const Densel& Densel= Densel(), const int default_capacity = 300); 
+  explicit ProjMatrixElemsForOneDensel(const Densel& Densel, const int default_capacity = 300); 
   
   /* rely on compiler-generated versions 
   ProjMatrixElemsForOneDensel( const ProjMatrixElemsForOneDensel&);

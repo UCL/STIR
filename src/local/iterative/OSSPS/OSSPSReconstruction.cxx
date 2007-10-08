@@ -32,35 +32,41 @@ $Revision$
 
 #include "local/stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/min_positive_element.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/LogLikBased/common.h"
+#include "stir/recon_array_functions.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
-#include "stir/recon_buildblock/QuadraticPrior.h" // necessary for recompute_penalty_term_in_denominator
-#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
+
+//not used anymore 
+#if 0
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/RelatedViewgrams.h"
+#endif
 #include <iostream>
 
 #include <memory>
 #include <iostream>
+#include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
 #include <sstream>
 #endif
+#include "boost/lambda/lambda.hpp"
 
 #ifndef STIR_NO_NAMESPACES
 using std::auto_ptr;
 using std::cerr;
-using std::ends;
 using std::endl;
+using boost::lambda::_1;
+using boost::lambda::_2;
 #endif
 
 
@@ -69,58 +75,56 @@ START_NAMESPACE_STIR
 //*************** parameters *************
 
 
+template <class TargetT>
 void 
-OSSPSReconstruction::set_defaults()
+OSSPSReconstruction<TargetT>::
+set_defaults()
 {
-  LogLikelihoodBasedReconstruction::set_defaults();
-  enforce_initial_positivity = 1;
-  // KT 17/08/2000 3 new parameters
+  base_type::set_defaults();
+  enforce_initial_positivity = 0;
   maximum_relative_change = NumericInfo<float>().max_value();
   minimum_relative_change = 0;
   write_update_image = 0;
   precomputed_denominator_filename = "";
-  forward_projection_of_all_ones_filename = "";
-
-  normalisation_sptr = new TrivialBinNormalisation;
 
   //MAP_model="additive"; 
-  prior_ptr = 0;
-  relaxation_parameter = 0;
+  relaxation_parameter = 1;
   relaxation_gamma = 0.1F;
+
+  this->do_line_search = false;
 }
 
-void
-OSSPSReconstruction::initialise_keymap()
+template <class TargetT>
+void 
+OSSPSReconstruction<TargetT>::
+initialise_keymap()
 {
-  LogLikelihoodBasedReconstruction::initialise_keymap();
-  parser.add_start_key("OSSPSParameters");
-  parser.add_stop_key("End");
+  base_type::initialise_keymap();
+  this->parser.add_start_key("OSSPSParameters");
+  this->parser.add_stop_key("End");
   
-  parser.add_key("enforce initial positivity condition",&enforce_initial_positivity);
-  // parser.add_key("inter-update filter subiteration interval",&inter_update_filter_interval);
-  // //add_key("inter-update filter type", KeyArgument::ASCII, &inter_update_filter_type);
-  // parser.add_parsing_key("inter-update filter type", &inter_update_filter_ptr);
-  parser.add_parsing_key("Prior type", &prior_ptr);
-  //parser.add_key("MAP_model", &MAP_model);
-  parser.add_key("maximum relative change", &maximum_relative_change);
-  parser.add_key("minimum relative change",&minimum_relative_change);
-  parser.add_key("write update image",&write_update_image);   
-  parser.add_key("precomputed denominator", &precomputed_denominator_filename);
-  parser.add_key("forward_projection of all ones", &forward_projection_of_all_ones_filename);
+  this->parser.add_key("enforce initial positivity condition",&enforce_initial_positivity);
+  //this->parser.add_key("MAP_model", &MAP_model);
+  this->parser.add_key("maximum relative change", &maximum_relative_change);
+  this->parser.add_key("minimum relative change",&minimum_relative_change);
+  this->parser.add_key("write update image",&write_update_image);   
+  this->parser.add_key("precomputed denominator", &precomputed_denominator_filename);
 
-  parser.add_parsing_key("Normalisation type", &normalisation_sptr);
+  this->parser.add_key("relaxation parameter", &relaxation_parameter);
+  this->parser.add_key("relaxation gamma", &relaxation_gamma);
 
-  parser.add_key("relaxation parameter", &relaxation_parameter);
-  parser.add_key("relaxation gamma", &relaxation_gamma);
-  
+  this->parser.add_key("do_line_search", &this->do_line_search);
 }
 
 
-void OSSPSReconstruction::ask_parameters()
+template <class TargetT>
+void 
+OSSPSReconstruction<TargetT>::
+ask_parameters()
 {
   error("Currently incomplete code. Use a parameter file. Sorry.");
 
-  LogLikelihoodBasedReconstruction::ask_parameters();
+  base_type::ask_parameters();
   
   // KT 05/07/2000 made enforce_initial_positivity int
   enforce_initial_positivity=
@@ -134,16 +138,14 @@ void OSSPSReconstruction::ask_parameters()
   
 
 
-  if(ask("Include prior?",false))
-  {       
+ {       
     
-    cerr<<endl<<"Supply prior type:\nPossible values:\n";
-    GeneralisedPrior<float>::list_registered_names(cerr);
+    cerr<<endl<<"Supply objective function type:\nPossible values:\n";
+    GeneralisedObjectiveFunction<TargetT>::list_registered_names(cerr); 
+    const string objective_function_type = ask_string("");
     
-    const string prior_type = ask_string("");
-    
-    prior_ptr = 
-      GeneralisedPrior<float>::read_registered_object(0, prior_type); 
+    this->objective_function_sptr = 
+      GeneralisedObjectiveFunction<TargetT>::read_registered_object(0, objective_function_type); 
     
   } 
   
@@ -162,43 +164,37 @@ void OSSPSReconstruction::ask_parameters()
 
 
 
-bool OSSPSReconstruction::post_processing()
+template <class TargetT>
+bool 
+OSSPSReconstruction<TargetT>::
+post_processing()
 {
-  if (LogLikelihoodBasedReconstruction::post_processing())
+  if (base_type::post_processing())
     return true;
-    
-  // KT 09/12/2002 one more check
-  if (!is_null_ptr(prior_ptr) && dynamic_cast<PriorWithParabolicSurrogate<float>*>(prior_ptr.get())==0)
-  {
-    warning("Prior must be of a type derived from PriorWithParabolicSurrogate\n");
-    return true;
-  }
-
-  if (is_null_ptr(normalisation_sptr))
-  {
-    warning("bin normalisation object invalid");
-    return true;
-  }
-
   return false;
 }
 
 //*************** other functions *************
 
-OSSPSReconstruction::
+template <class TargetT>
+OSSPSReconstruction<TargetT>::
 OSSPSReconstruction()
 {  
   set_defaults();
 }
 
-OSSPSReconstruction::
+template <class TargetT>
+OSSPSReconstruction<TargetT>::
 OSSPSReconstruction(const string& parameter_filename)
 {    
-  initialise(parameter_filename);
-  cerr<<parameter_info();
+  this->initialise(parameter_filename);
+  cerr<<this->parameter_info();
 }
 
-string OSSPSReconstruction::method_info() const
+template <class TargetT>
+std::string 
+OSSPSReconstruction<TargetT>::
+method_info() const
 {
   
   // TODO add prior name?
@@ -211,18 +207,19 @@ string OSSPSReconstruction::method_info() const
 #endif
   
   // if(inter_update_filter_interval>0) s<<"IUF-";
-  if (!is_null_ptr(prior_ptr) && prior_ptr->get_penalisation_factor() != 0)
+  if (!this->objective_function_sptr->prior_is_zero())
     s << "MAP-";
-  if(num_subsets>1) 
+  if(this->num_subsets>1) 
     s<<"OS-";
   s << "SPS";
-  if(inter_iteration_filter_interval>0) s<<"S";  
+  if(this->inter_iteration_filter_interval>0) s<<"S";  
 
   return s.str();
 }
 
+template <class TargetT>
 Succeeded 
-OSSPSReconstruction::
+OSSPSReconstruction<TargetT>::
 precompute_denominator_of_conditioner_without_penalty()
 {
             
@@ -230,28 +227,53 @@ precompute_denominator_of_conditioner_without_penalty()
   timer.reset();
   timer.start();
 
-  assert(precomputed_denominator_ptr->find_min() == 0);
-  assert(precomputed_denominator_ptr->find_max() == 0);
+  assert(*std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) == 0);
+  assert(*std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) == 0);
+
+#if 1
+  // TODO replace by boost::scoped_ptr
+  std::auto_ptr<TargetT > data_full_of_ones_aptr =
+	std::auto_ptr<TargetT >
+	( precomputed_denominator_ptr->clone());
+  std::fill(data_full_of_ones_aptr->begin_all(),
+	    data_full_of_ones_aptr->end_all(),
+	    1);
+
+  this->objective_function_sptr->
+    add_multiplication_with_approximate_Hessian_without_penalty(
+								*precomputed_denominator_ptr, 
+								*data_full_of_ones_aptr);
+#else
+
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&
+    objective_function =
+    static_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&>
+    (*this->objective_function_sptr);
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    projector_pair_ptr->get_symmetries_used()->clone();
+    objective_function.get_projector_pair().get_symmetries_used()->clone();
 
   // TODO replace by boost::scoped_ptr
-  std::auto_ptr<DiscretisedDensity<3,float> > image_full_of_ones_aptr;
+  std::auto_ptr<TargetT > image_full_of_ones_aptr;
   if (is_null_ptr(fwd_ones_sptr))
     {
       image_full_of_ones_aptr =
-	std::auto_ptr<DiscretisedDensity<3,float> >
+	std::auto_ptr<TargetT >
 	( precomputed_denominator_ptr->clone());
       image_full_of_ones_aptr->fill(1);
     }
 
-  for (int segment_num = -max_segment_num_to_process;
-       segment_num<= max_segment_num_to_process;
+  const double start_time =
+    objective_function.get_time_frame_definitions().get_start_time(objective_function.get_time_frame_num());
+  const double end_time =
+    objective_function.get_time_frame_definitions().get_end_time(objective_function.get_time_frame_num());
+
+  for (int segment_num = -objective_function.get_max_segment_num_to_process();
+       segment_num<= objective_function.get_max_segment_num_to_process();
        ++segment_num) 
     {      
-      for (int view = proj_data_ptr->get_min_view_num(); 
-	   view <= proj_data_ptr->get_max_view_num(); 
+      for (int view = objective_function.get_proj_data().get_min_view_num(); 
+	   view <= objective_function.get_proj_data().get_max_view_num(); 
 	   ++view)
 	{
 	  const ViewSegmentNumbers view_segment_num(view, segment_num);
@@ -259,24 +281,23 @@ precompute_denominator_of_conditioner_without_penalty()
 	  if (!symmetries_sptr->is_basic(view_segment_num))
 	    continue;
 
-	  // first compute data-term: y/norm^2
+	  // first compute data-term: y*norm^2
 	  RelatedViewgrams<float> viewgrams =
-	    proj_data_ptr->get_related_viewgrams(view_segment_num, symmetries_sptr);
+	    objective_function.get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+	  // TODO add 1 for 1/(y+1) approximation
 
-	  // TODO insert sensible frame start and end times
-	  normalisation_sptr->apply(viewgrams, 0,1);
+	  objective_function.get_normalisation().apply(viewgrams, start_time, end_time);
 
 	  // smooth TODO
 
-	  // TODO insert sensible frame start and end times
-	  normalisation_sptr->apply(viewgrams, 0,1);
+	  objective_function.get_normalisation().apply(viewgrams, start_time, end_time);
 
 	  RelatedViewgrams<float> tmp_viewgrams;
 	  // set tmp_viewgrams to geometric forward projection of all ones
 	  if (is_null_ptr(fwd_ones_sptr))
 	    {
-	      tmp_viewgrams = proj_data_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
-	      projector_pair_ptr->get_forward_projector_sptr()->
+	      tmp_viewgrams = objective_function.get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+	      objective_function.get_projector_pair().get_forward_projector_sptr()->
 		forward_project(tmp_viewgrams, *image_full_of_ones_aptr);
 	    }
 	  else
@@ -291,68 +312,295 @@ precompute_denominator_of_conditioner_without_penalty()
 	  }
 
 	  // back-project
-	  projector_pair_ptr->get_back_projector_sptr()->back_project(*precomputed_denominator_ptr, tmp_viewgrams);
+	  objective_function.get_projector_pair().get_back_projector_sptr()->
+	    back_project(*precomputed_denominator_ptr, tmp_viewgrams);
       }
 
   } // end of loop over segments
+#endif
 
   timer.stop();
   cerr << "Precomputing denominator took " << timer.value() << " s CPU time\n";
-  cerr << "min and max in precomputed denominator " << precomputed_denominator_ptr->find_min()
-       << ", " << precomputed_denominator_ptr->find_max() << endl;
+  cerr << "min and max in precomputed denominator " 
+       << *std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all())
+       << ", "
+       << *std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all())
+       << std::endl;
   
 
   // Write it to file
   {
     std::string fname =  
-      get_parameters().output_filename_prefix +
+      this->output_filename_prefix +
       "_precomputed_denominator";
     
       cerr <<"  - Saving " << fname << endl;
-      get_parameters().output_file_format_ptr->
+      this->output_file_format_ptr->
 	write_to_file(fname, *precomputed_denominator_ptr);
   }
 
   return Succeeded::yes;
 }
 
-void OSSPSReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr)
+#if 0
+// only used in (disabled) line_search below
+static
+void accumulate_loglikelihood(RelatedViewgrams<float>& projection_data, 
+			      const RelatedViewgrams<float>& estimated_projections,
+			      float* accum)
 {
-  LogLikelihoodBasedReconstruction::recon_set_up(target_image_ptr);
+  RelatedViewgrams<float>::iterator p_iter = projection_data.begin();
+  RelatedViewgrams<float>::iterator p_end = projection_data.end();
+  RelatedViewgrams<float>::const_iterator e_iter = estimated_projections.begin();
+  while (p_iter!= p_end)
+    {
+      accumulate_loglikelihood(*p_iter, *e_iter, /* rim_truncation_sino*/0, accum);
+      ++p_iter; ++e_iter;
+    }
+}
+#endif
+
   
-  if (max_segment_num_to_process==-1)
-    max_segment_num_to_process =
-    proj_data_ptr->get_max_segment_num();
-  
+template <class TargetT>
+float 
+OSSPSReconstruction<TargetT>::
+line_search(const TargetT& current_estimate, const TargetT& additive_update)
+{
+
+  if (!this->do_line_search)
+    return 1;
+
+#if 1
+  error("OSSPS line search disabled for now");
+  return 0;
+#else
+  float result;
+            
+  CPUTimer timer;
+  timer.reset();
+  timer.start();
+
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&
+    objective_function =
+    static_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&>
+    (*this->objective_function_sptr);
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
+    objective_function.get_projector_pair().get_symmetries_used()->clone();
+
+  const double start_time =
+    objective_function.get_time_frame_definitions().get_start_time(objective_function.get_time_frame_num());
+  const double end_time =
+    objective_function.get_time_frame_definitions().get_end_time(objective_function.get_time_frame_num());
+
+  //for (int segment_num = -objective_function.get_max_segment_num_to_process();
+  //     segment_num<= objective_function.get_max_segment_num_to_process();
+  //     ++segment_num) 
+  //     {      
+  //    for (int view = objective_function.get_proj_data().get_min_view_num(); 
+  //	   view <= objective_function.get_proj_data().get_max_view_num(); 
+  //	   ++view)
+  const int segment_num=0;
+  const int view_num=0;
+
+  {
+    const ViewSegmentNumbers view_segment_num(view_num, segment_num);
+    
+    if (!symmetries_sptr->is_basic(view_segment_num))
+      error("line search:seg 0, view 0 is not basic");
+
+    RelatedViewgrams<float> measured_viewgrams =
+      objective_function.get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+    RelatedViewgrams<float> forward_model_viewgrams =
+      measured_viewgrams.get_empty_copy();
+    {
+      objective_function.get_projector_pair().get_forward_projector_sptr()->
+	forward_project(forward_model_viewgrams, current_estimate);
+      
+      objective_function.get_normalisation().undo(forward_model_viewgrams, start_time, end_time);
+      
+      const ProjData * const additive_ptr = 
+	objective_function.get_additive_proj_data_sptr().get();
+      if (!is_null_ptr(additive_ptr))
+	forward_model_viewgrams +=
+	  additive_ptr->get_related_viewgrams(view_segment_num, symmetries_sptr);
+    }
+
+    RelatedViewgrams<float> forward_model_update_viewgrams =
+      measured_viewgrams.get_empty_copy();
+    {
+      objective_function.get_projector_pair().get_forward_projector_sptr()->
+	forward_project(forward_model_update_viewgrams, additive_update);
+    }
+
+    RelatedViewgrams<float> tmp_viewgrams =
+      measured_viewgrams.get_empty_copy();
+    
+#define FUNC(value, alpha) \
+    {\
+      value = 0; \
+    tmp_viewgrams = forward_model_update_viewgrams; \
+    tmp_viewgrams *= alpha; \
+    tmp_viewgrams += forward_model_viewgrams; \
+    accumulate_loglikelihood(measured_viewgrams,\
+			     tmp_viewgrams, 	\
+			     &value);\
+    }
+
+    // simple bisection
+    float min_alpha=.2;// used to be .1
+    float max_alpha=10;// used to be 1000
+    int iter_num=0;
+    float current = 1;
+    float previous=-1; // set somewhere crazy such that we do at least 1 iteration
+
+    float value_at_min;
+    float value_at_max;
+    float value_at_current;
+    FUNC(value_at_min, min_alpha);
+    FUNC(value_at_max, max_alpha);
+    while (iter_num++ != 100 && fabs(previous/current -1)>.02)
+      {
+	previous = current;
+	FUNC(value_at_current, current);
+	std::cerr << "line search at " << current << " value " << value_at_current << '\n';
+	if (value_at_current <= value_at_min &&
+	    value_at_max <= value_at_current)
+	  {
+	    min_alpha = current;
+	    value_at_min = value_at_current;
+	    current = (current + max_alpha)/2;
+	  }
+	else if (value_at_current <= value_at_max && value_at_min <= value_at_current)
+	  {
+	    max_alpha = current;
+	    value_at_max = value_at_current;
+	    current = (current + min_alpha)/2;
+	  }
+	else
+	  {
+	    if (value_at_current > value_at_max ||
+		value_at_current > value_at_min)
+	      {
+	      const float scale=(value_at_min+value_at_max)/2;
+	      if (std::fabs((value_at_current - value_at_max)/scale) < .01 ||
+		  std::fabs((value_at_current - value_at_min)/scale) < .01)
+		{
+		  // it's probably just rounding error, so we have converged
+		  break; // out of while
+		}
+	      warning("line search error. Function non-convex?\n"
+		      "min %g (%g), curr %g (delta %g), max %g (delta %g)",
+		    min_alpha, value_at_min,
+		    current, value_at_current-value_at_min,
+		    max_alpha, value_at_max-value_at_min
+		    );
+	      const float list_from = std::max(0.F,min_alpha-1);
+	      const float list_to = std::min(100.F,max_alpha+1);
+	      const float increment = (list_to - list_from)/100;
+	      for (current=list_from; current<=list_to; current += increment)
+		{
+		  FUNC(value_at_current, current);
+		  std::cerr << current << " d " << value_at_current-value_at_min << '\n';
+		}
+	      exit(EXIT_FAILURE);
+	      }
+	    // need to decide if we go left or right
+	    float half_way_left = (current + min_alpha)/2;
+	    float value_at_half_way_left;
+	    FUNC(value_at_half_way_left, half_way_left);
+	    if (value_at_half_way_left > value_at_current)
+	      {
+		// it has to be at the right
+		min_alpha = current;
+		value_at_min = value_at_current;
+		current = (current + max_alpha)/2;
+	      }
+	    else
+	      {
+		// it's at the left.
+		// TODO we'll be recomputing the value here
+		max_alpha = current;
+		value_at_max = value_at_current;
+		current = (current + min_alpha)/2;
+	      }
+	  }
+      } // end of while
+    result = current;
+  }
+  timer.stop();
+  std::cerr << "line search  took " << timer.value() << " s CPU time\n";
+  std::cerr << "value for alpha " << result << '\n';
+  /*
+  this->output_file_format_ptr->
+	write_to_file("curr_est", current_estimate);
+  this->output_file_format_ptr->
+	write_to_file("upd", additive_update);
+
+  exit(0);
+  */
+  return result;
+#endif
+}
+
+template <class TargetT>
+Succeeded 
+OSSPSReconstruction<TargetT>::
+set_up(shared_ptr <TargetT > const& target_image_ptr)
+{
+  if (base_type::set_up(target_image_ptr) == Succeeded::no)
+    return Succeeded::no;
+
+  if (this->relaxation_parameter<=0)
+    {
+      warning("OSSPS: relaxation parameter should be positive but is %g",
+	      this->relaxation_parameter);
+      return Succeeded::no;
+    }
+  if (this->relaxation_gamma<0)
+    {
+      warning("OSSPS: relaxation_gamma parameter should be non-negative but is %g",
+	      this->relaxation_gamma);
+      return Succeeded::no;
+    }
+
+  if (!is_null_ptr(this->get_prior_ptr())&& 
+      dynamic_cast<PriorWithParabolicSurrogate<TargetT>*>(this->get_prior_ptr())==0)
+  {
+    warning("OSSPS: Prior must be of a type derived from PriorWithParabolicSurrogate\n");
+    return Succeeded::no;
+  }
+
   if(enforce_initial_positivity) 
     threshold_min_to_small_positive_value(target_image_ptr->begin_all(),
 					  target_image_ptr->end_all(),
 					  10.E-6F);
   
-  if (get_parameters().forward_projection_of_all_ones_filename!="")
-    fwd_ones_sptr = ProjData::read_from_file(forward_projection_of_all_ones_filename);
-
-  if(get_parameters().precomputed_denominator_filename=="")
+  if(this->precomputed_denominator_filename=="")
   {
-    precomputed_denominator_ptr=target_image_ptr->get_empty_discretised_density();
+    precomputed_denominator_ptr=target_image_ptr->get_empty_copy();
     precompute_denominator_of_conditioner_without_penalty();
   }
-  else if(get_parameters().precomputed_denominator_filename=="1")
+  else if(this->precomputed_denominator_filename=="1")
   {
-    precomputed_denominator_ptr=target_image_ptr->get_empty_discretised_density();
-    precomputed_denominator_ptr->fill(1.0);  
+    precomputed_denominator_ptr=target_image_ptr->get_empty_copy();
+    std::fill(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all(), 1.F);
   }
   else
   {       
     precomputed_denominator_ptr = 
-      DiscretisedDensity<3,float>::read_from_file(get_parameters().precomputed_denominator_filename);   
-    if (precomputed_denominator_ptr->get_index_range() != 
-        target_image_ptr->get_index_range())
+      TargetT::read_from_file(this->precomputed_denominator_filename);   
     {
-      error("OSSPS: precomputed_denominator should have same index range as target image.");
-      // TODO return Succeeded::no;
-    }    
+      string explanation;
+      if (!precomputed_denominator_ptr->has_same_characteristics(*target_image_ptr, explanation))
+	{
+	  warning("OSSPS: precomputed_denominator should have same characteristics as target image: %s",
+		  explanation.c_str());
+	  return Succeeded::no;
+	}    
+    }
   }  
+  return Succeeded::yes;
 }
 
 
@@ -361,20 +609,44 @@ void OSSPSReconstruction::recon_set_up(shared_ptr <DiscretisedDensity<3,float> >
   \warning This modifies *precomputed_denominator_ptr. So, you <strong>have to</strong>
   call recon_set_up() before running a new reconstruction.
   */
-void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate)
+template <class TargetT>
+void 
+OSSPSReconstruction<TargetT>::
+update_estimate(TargetT &current_image_estimate)
 {
   static int count=0;
   // every time it's called, counter is incremented
   count++;
-  
-  // KT 09/12/2202 new variable
-  // Check if we need to recompute the penalty yerm in the denominator.
+
+  if (count==1)
+    {
+      // set all voxels to 0 for which the sensitivity is 0. These cannot be estimated.
+      PoissonLogLikelihoodWithLinearModelForMean<TargetT> * const
+	Poisson_objective_function_ptr =
+	dynamic_cast<PoissonLogLikelihoodWithLinearModelForMean<TargetT> *const>
+	(this->objective_function_sptr.get());
+      if (Poisson_objective_function_ptr != 0)
+	{
+	  typename TargetT::full_iterator image_iter = current_image_estimate.begin_all();
+	  // TODO really should use total sensitivity, not subset
+	  typename TargetT::const_full_iterator sens_iter = 
+	    Poisson_objective_function_ptr->get_sensitivity(0).begin_all_const();
+       
+	  for (;
+	       image_iter != current_image_estimate.end_all();
+	       ++image_iter, ++sens_iter)
+	    if (*sens_iter == 0)
+	      *image_iter = 0;
+	}
+    }
+  // Check if we need to recompute the penalty term in the denominator during iterations .
   // For the quadratic prior, this is independent of the image (only on kappa's)
   // And of course, it's also independent when there is no prior
+  // TODO by default, this should be off probably (to save time).
   const bool recompute_penalty_term_in_denominator =
-    relaxation_parameter>0 && !is_null_ptr(prior_ptr) &&
-    prior_ptr->get_penalisation_factor()>0 &&
-    is_null_ptr(dynamic_cast<QuadraticPrior<float> const* >(get_parameters().prior_ptr.get())) ;
+    !this->objective_function_sptr->prior_is_zero() &&
+    static_cast<PriorWithParabolicSurrogate<TargetT> const&>(*this->get_prior_ptr()).
+     parabolic_surrogate_curvature_depends_on_argument();
 #ifndef PARALLEL
   //CPUTimer subset_timer;
   //subset_timer.start();
@@ -383,168 +655,154 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
   timerSubset.Start();
 #endif // PARALLEL
   
-  //For ordered set processing  
-  static VectorWithOffset<int> subset_array(get_parameters().num_subsets);  
-  if(randomise_subset_order && (subiteration_num-1)%num_subsets==0)
-  {
-    subset_array = randomly_permute_subset_order();    
-    cerr<<endl<<"current subset order:"<<endl;    
-    for(int i=subset_array.get_min_index();i<=subset_array.get_max_index();i++) 
-      cerr<<subset_array[i]<<" ";
-  };
+  //For ordered set processing  (TODO move somewhere else)
+  static VectorWithOffset<int> subset_array(this->num_subsets);  
+  if(this->randomise_subset_order && (this->subiteration_num-1)%this->num_subsets==0)
+    {
+      subset_array = this->randomly_permute_subset_order();    
+      cerr<<endl<<"current subset order:"<<endl;    
+      for(int i=subset_array.get_min_index();i<=subset_array.get_max_index();i++) 
+	cerr<<subset_array[i]<<" ";
+    };
   
-  const int subset_num=randomise_subset_order 
-    ? subset_array[(subiteration_num-1)%num_subsets] 
-    : (subiteration_num+start_subset_num-1)%num_subsets;
+  const int subset_num=this->randomise_subset_order 
+    ? subset_array[(this->subiteration_num-1)%this->num_subsets] 
+    : (this->subiteration_num+this->start_subset_num-1)%this->num_subsets;
   
   cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
     
   // TODO make member or static parameter to avoid reallocation all the time
-  auto_ptr< DiscretisedDensity<3,float> > numerator_ptr =
-    auto_ptr< DiscretisedDensity<3,float> >(current_image_estimate.get_empty_discretised_density());
-  
+  auto_ptr< TargetT > numerator_ptr =
+    auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
 
-  // KT 05/07/2000 made zero_seg0_end_planes int
-  // This is L' term (upto the (sub)sensitivity)
-  distributable_compute_gradient(*numerator_ptr, 
-				 current_image_estimate, 
-				 proj_data_ptr, 
-				 subset_num, 
-				 num_subsets, 
-				 -max_segment_num_to_process, // KT 30/05/2002 use new convention of distributable_* functions
-				 max_segment_num_to_process, 
-				 zero_seg0_end_planes!=0, 
-				 NULL, 
-				 additive_projection_data_ptr);
-  
-  // subtract sensitivity image
-  *numerator_ptr *= num_subsets;
-  *numerator_ptr -= *sensitivity_image_ptr;
-  
-  cerr << "num_subsets*subgradient L : max " << numerator_ptr->find_max();
-  cerr << ", min " << numerator_ptr->find_min() << endl;
+  this->objective_function_sptr->compute_sub_gradient(*numerator_ptr, current_image_estimate, subset_num);
+  //*numerator_ptr *= this->num_subsets;
+  std::transform(numerator_ptr->begin_all(), numerator_ptr->end_all(),
+		 numerator_ptr->begin_all(),
+		 _1 * this->num_subsets);
 
-  
-  auto_ptr< DiscretisedDensity<3,float> > work_image_ptr = 
-    auto_ptr< DiscretisedDensity<3,float> >(current_image_estimate.get_empty_discretised_density());
-      
-  //relaxation_parameter ~1/n where n is iteration number 
-  // KT 09/12/2002 added brackets around subiteration_num/num_subsets to force integer division
-  const float relaxation_parameter = get_parameters().relaxation_parameter/
-	      (1+get_parameters().relaxation_gamma*(subiteration_num/num_subsets));
-    
-  // subtract gradient of penalty
-  // KT 09/12/2002 avoid work (or crash) when penalty is 0
-  if (relaxation_parameter>0 && !is_null_ptr(prior_ptr)
-      && prior_ptr->get_penalisation_factor()>0)
-  {
-    prior_ptr->compute_gradient(*work_image_ptr, current_image_estimate); 
-    *numerator_ptr -= *work_image_ptr;   
+  cerr<< "num subsets " << this->num_subsets << '\n';  
+  cerr << "this->num_subsets*subgradient : max " 
+       << *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all());
+  cerr << ", min " 
+       << *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
+       << endl;
 
-    cerr << "total gradient max " << numerator_ptr->find_max();
-    cerr << ", min " << numerator_ptr->find_min() << endl;
-  }
-  
   // now divide by denominator
 
-  // KT 09/12/2002 only recompute it when necessary
   if (recompute_penalty_term_in_denominator || count==1)
-  {
-    // KT 09/12/2002 avoid work (or crash) when penalty is 0
-    if (relaxation_parameter>0 && !is_null_ptr(prior_ptr)
-      && prior_ptr->get_penalisation_factor()>0)
     {
-      static_cast<PriorWithParabolicSurrogate<float>&>(*prior_ptr).
-        parabolic_surrogate_curvature(*work_image_ptr, current_image_estimate);   
-      *work_image_ptr *= 2;
-      *work_image_ptr += *precomputed_denominator_ptr ;
+      auto_ptr< TargetT > work_image_ptr = 
+	auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
+      
+      // avoid work (or crash) when penalty is 0
+      if (!this->objective_function_sptr->prior_is_zero())
+	{
+	  static_cast<PriorWithParabolicSurrogate<TargetT>&>(*get_prior_ptr()).
+	    parabolic_surrogate_curvature(*work_image_ptr, current_image_estimate);   
+	  //*work_image_ptr *= 2;
+	  //*work_image_ptr += *precomputed_denominator_ptr ;
+	  std::transform(work_image_ptr->begin_all(), work_image_ptr->end_all(),
+			 precomputed_denominator_ptr->begin_all(), 
+			 work_image_ptr->begin_all(),
+			 _1 * 2 + _2);
+	}
+      else
+	*work_image_ptr = *precomputed_denominator_ptr ;
+    
+      // KT 09/12/2002 new
+      // avoid division by 0 by thresholding the denominator to be strictly positive
+      // note that zeroes should really only occur where the sensitivity is 0
+      threshold_min_to_small_positive_value(work_image_ptr->begin_all(),
+					    work_image_ptr->end_all(),
+					    10.E-6F);
+      cerr << " denominator max " 
+	   << *std::max_element(work_image_ptr->begin_all(), work_image_ptr->end_all());
+      cerr << ", min " 
+	   << *std::min_element(work_image_ptr->begin_all(), work_image_ptr->end_all())
+	   << endl;
+
+      if (!recompute_penalty_term_in_denominator)
+	{
+	  // store for future use
+	  *precomputed_denominator_ptr = *work_image_ptr;
+	}
+    
+      //*numerator_ptr /= *work_image_ptr;
+      std::transform(numerator_ptr->begin_all(), numerator_ptr->end_all(),
+		     work_image_ptr->begin_all(),
+		     numerator_ptr->begin_all(), 
+		     _1 / _2);
+
     }
-    else
-      *work_image_ptr = *precomputed_denominator_ptr ;
-    
-    // KT 09/12/2002 new
-    // avoid division by 0 by thresholding the denominator to be strictly positive
-    // note that zeroes should really only occur where the sensitivity is 0
-    threshold_min_to_small_positive_value(work_image_ptr->begin_all(),
-					  work_image_ptr->end_all(),
-					  10.E-6F);
-    cerr << " denominator max " << work_image_ptr->find_max();
-    cerr << ", min " << work_image_ptr->find_min() << endl;
-
-    if (!recompute_penalty_term_in_denominator)
-      {
-	// store for future use
-	*precomputed_denominator_ptr = *work_image_ptr;
-      }
-    
-    *numerator_ptr /= *work_image_ptr;
-  }
   else
-  {
-    // we have computed the denominator already 
-    *numerator_ptr /= *precomputed_denominator_ptr;
-  }
+    {
+      // we have computed the denominator already 
+      //*numerator_ptr /= *precomputed_denominator_ptr;
+      std::transform(numerator_ptr->begin_all(), numerator_ptr->end_all(),
+		     precomputed_denominator_ptr->begin_all(),
+		     numerator_ptr->begin_all(), 
+		     _1 / _2);
 
-  if ( relaxation_parameter>0)
-   *numerator_ptr *= relaxation_parameter;  
+    }
+
+  //relaxation_parameter ~1/(1+n) where n is iteration number 
+  const float relaxation_parameter = this->relaxation_parameter/
+    (1+this->relaxation_gamma*(this->subiteration_num/this->num_subsets));
+
+
+  std::cerr << "relaxation parameter = " << relaxation_parameter << '\n';
+
+  const float alpha =
+    line_search(current_image_estimate, *numerator_ptr);
+  // *numerator_ptr *= relaxation_parameter * alpha;  
+  std::transform(numerator_ptr->begin_all(), numerator_ptr->end_all(),
+		 numerator_ptr->begin_all(),
+		 _1 * relaxation_parameter * alpha);
+
   
-  // TODO move below thresholding?
   if (write_update_image)
-  {
-    // allocate space for the filename assuming that
-    // we never have more than 10^49 subiterations ...
-    char * fname = new char[output_filename_prefix.size() + 60];
-    sprintf(fname, "%s_update_%d", get_parameters().output_filename_prefix.c_str(), subiteration_num);
-    
-    // Write it to file
-    output_file_format_ptr->write_to_file(fname, *numerator_ptr);
-    delete fname;
-  }
+    {
+      // Write it to file
+      const std::string fname =
+	this->make_filename_prefix_subiteration_num(this->output_filename_prefix + "_update");
+      this->output_file_format_ptr->
+	write_to_file(fname, *numerator_ptr);
+    }
   
   {
     cerr << "additive update image min,max: " 
-	 << numerator_ptr->find_min()
+	 << *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
 	 << ", " 
-	 << numerator_ptr->find_max()
+	 << *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
 	 << endl;
   }  
   current_image_estimate += *numerator_ptr; 
- 
-  // set all voxels to 0 for which the sensitivity is 0. These cannot be estimated.
-  // Any such nonzero voxel results from a 0 backprojection, but non-zero prior gradient.
-  {
-    DiscretisedDensity<3,float>::full_iterator image_iter = current_image_estimate.begin_all();
-    DiscretisedDensity<3,float>::const_full_iterator sens_iter = sensitivity_image_ptr->begin_all_const();
-       
-    for (;
-       image_iter != current_image_estimate.end_all();
-       ++image_iter, ++sens_iter)
-      if (*sens_iter == 0)
-        *image_iter = 0;
-    assert(sens_iter == sensitivity_image_ptr->end_all_const());
-  }
+
   // now threshold image
   {
     const float current_min =
-      current_image_estimate.find_min();
+      *std::min_element(current_image_estimate.begin_all(),
+			current_image_estimate.end_all()); 
     const float current_max = 
-      current_image_estimate.find_max();
+      *std::max_element(current_image_estimate.begin_all(),
+			current_image_estimate.end_all()); 
     const float new_min = 0.F;
     const float new_max = 
       static_cast<float>(maximum_relative_change);
     cerr << "current image old min,max: " 
-      << current_min
-      << ", " 
-      << current_max
-      << ", new min,max " 
-      << max(current_min, new_min) << ", " << min(current_max, new_max)
-      << endl;
+	 << current_min
+	 << ", " 
+	 << current_max
+	 << ", new min,max " 
+	 << max(current_min, new_min) << ", " << min(current_max, new_max)
+	 << endl;
     
     threshold_upper_lower(current_image_estimate.begin_all(),
 			  current_image_estimate.end_all(), 
 			  new_min, new_max);      
   }  
-  
+
 #ifndef PARALLEL
   //cerr << "Subset : " << subset_timer.value() << "secs " <<endl;
 #else // PARALLEL
@@ -554,6 +812,22 @@ void OSSPSReconstruction::update_image_estimate(DiscretisedDensity<3,float> &cur
 #endif
   
 }
+END_NAMESPACE_STIR
 
+
+///////// instantiations
+#include "stir/DiscretisedDensity.h"
+START_NAMESPACE_STIR
+
+template class OSSPSReconstruction<DiscretisedDensity<3,float> >;
 
 END_NAMESPACE_STIR
+
+
+#ifdef STIR_DEVEL
+#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "local/stir/modelling/KineticParameters.h"
+namespace stir {
+  template class OSSPSReconstruction<ParametricVoxelsOnCartesianGrid >; 
+}
+#endif

@@ -6,7 +6,7 @@
   \file
   \ingroup utilities
 
-  \brief Implementation of class ProjMatrixByBinFromFile
+  \brief Implementation of class stir::ProjMatrixByBinFromFile
 
   \author Kris Thielemans
   
@@ -22,7 +22,7 @@
 #include "local/stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/KeyParser.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/utilities.h"
@@ -267,8 +267,8 @@ write_to_file(const string& output_filename_prefix,
   string template_density_filename =
     output_filename_prefix + "_template_density";
   {
-    DefaultOutputFileFormat output_format;
-    if (output_format.write_to_file(template_density_filename,
+    if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+	write_to_file(template_density_filename,
 				    template_density) != Succeeded::yes)
       {
 	warning("Error writing template image\n");

@@ -41,15 +41,29 @@
 
 USING_NAMESPACE_STIR
 
+static void print_usage_and_exit()
+{
+  std::cerr<<"\nUsage:\nattenuation_coefficients_to_projections\n\t"
+	   << " --AF|--ACF <output filename > <input proj_data file name>  \n";
+  exit(EXIT_FAILURE);
+}
+
 int 
 main (int argc, char * argv[])
 {
   
-  if (argc!=3)
-  {
-    std::cerr<<"\nUsage: " <<argv[0] << " <output filename > <input proj_data file name>  \n";
-    return EXIT_FAILURE;
-  }
+  if (argc!=4)
+    print_usage_and_exit();
+
+  bool doACF;
+  if (strcmp(argv[1],"--ACF")==0)
+    doACF=true;
+  else if (strcmp(argv[1],"--AF")==0)
+    doACF=false;
+  else
+    print_usage_and_exit();
+
+  ++argv; --argc;
   
   shared_ptr <ProjData> attenuation_proj_data_ptr =
     ProjData::read_from_file(argv[2]);
@@ -69,10 +83,20 @@ main (int argc, char * argv[])
     {
       Viewgram<float> viewgram = attenuation_proj_data_ptr->get_viewgram(view_num,segment_num);
       
-      // threshold minimum to arbitrary value as log will otherwise explode)
-      threshold_lower(viewgram.begin_all(), viewgram.end_all(), .1F);
+      if (doACF)
+	{
+	  // threshold minimum to arbitrary value as log will otherwise explode)
+	  threshold_lower(viewgram.begin_all(), viewgram.end_all(), .1F);
+	  in_place_log(viewgram);
+	}
+      else
+	{
+	  // threshold maximum to arbitrary value as log will otherwise explode)
+	  threshold_upper(viewgram.begin_all(), viewgram.end_all(), 10.F);
+	  in_place_log(viewgram);
+	  viewgram *= -1.F;
+	}
 
-      in_place_log(viewgram);
       if (out_proj_data_ptr->set_viewgram(viewgram) != Succeeded::yes)
 	{
 	  warning("Error setting output viewgram at segment %d view %d. Exiting",

@@ -1,0 +1,73 @@
+###############################################################################
+#       PARAMETER FILE FOR THE PHG BINNING MODULE
+#
+#       The particular binning module is created for the Siemens HR+ scanner
+#		
+#       Author: Pablo Aguiar - University of Barcelona (Nov 2004) 
+#	Updated and added to the archive by Charalampos Tsoumpas
+#
+# $Id$
+#        
+###############################################################################
+# BINNING OPTIONS
+
+
+# Scatter bin ####
+# Scatter params = 0 for 1 scatter bin
+# Scatter params = 1 for 2 scatter bins (primary vs all other [set min_s to 0])
+# Scatter params = 2 for num scatter bins = (max_s - min_s + 1)
+INT     scatter_param   =       1
+INT     min_s           =       0
+INT     max_s           =       1
+
+# Z axis binning ####
+INT     num_z_bins              =       32
+REAL    min_z                   =       0
+REAL    max_z                   =       15.52
+
+# Azimuthal angle bins ####
+INT     num_aa_bins             =       144
+
+# Transaxial binning.####
+# NOTE: Take note if you are setting min_td and max_td to any value less than the radius of your object cylinder.
+INT     num_td_bins             =       288
+REAL    min_td                  =       -29.16815
+REAL    max_td                  =        29.16815
+# Energy bins ####
+# Note: e2 is ignored for (SPECT)
+INT     num_e1_bins             =       1
+INT     num_e2_bins             =       1
+REAL    min_e                   =       350
+REAL    max_e                   =       650
+
+# Specification of output file data type ####
+# Weight weight_image_type = 0 for two byte integers  (1 byte= 0..255 numero)
+# Weight weight_image_type = 1 for four byte integers
+# Weight weight_image_type = 2 for four byte reals
+# Weight weight_image_type = 3 for 8 byte reals
+INT             weight_image_type       = 2
+
+# Specification of output file data type
+# Weight weight_image_type = 0 for one byte integers
+# Weight weight_image_type = 1 for two byte integers
+# Weight weight_image_type = 2 for four byte integers
+INT		count_image_type	= 2
+
+
+# Flag to indicate whether or not to add to existing images
+BOOL	add_to_existing_img = false
+
+# Path to the binned values of photon weights
+STR             weight_image_path 		= "OUTPUT_DIRECTORY/rec.weight"
+
+# Path to the binned values of photon weights squared.
+STR             weight_squared_image_path       = "OUTPUT_DIRECTORY/rec.weight2"
+
+# Path to the binned values of absolute photons count
+STR             count_image_path                = "OUTPUT_DIRECTORY/rec.count"
+
+# Specify history file name for photons reaching the binning parameter
+STR             history_file       = ""
+
+# Specify history file parameter name for histogram history file
+STR             history_params_file       = ""

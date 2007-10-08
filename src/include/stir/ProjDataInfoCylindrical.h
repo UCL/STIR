@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
-  \brief Declaration of class ProjDataInfoCylindrical
+  \brief Declaration of class stir::ProjDataInfoCylindrical
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -14,13 +31,8 @@
   $Date$
   $Revision$
   */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-#ifndef __ProjDataInfoCylindrical_H__
-#define __ProjDataInfoCylindrical_H__
+#ifndef __stir_ProjDataInfoCylindrical_H__
+#define __stir_ProjDataInfoCylindrical_H__
 
 
 #include "stir/ProjDataInfo.h"
@@ -49,6 +61,9 @@ class Succeeded;
 // TODOdoc more
 class ProjDataInfoCylindrical: public ProjDataInfo
 {
+private:
+  typedef ProjDataInfo base_type;
+  typedef ProjDataInfoCylindrical self_type;
 
 public:
   //! Type used by get_all_ring_pairs_for_segment_axial_pos_num()
@@ -237,6 +252,9 @@ protected:
       */
   bool sampling_corresponds_to_physical_rings;
   
+protected:
+  virtual bool blindly_equals(const root_type * const) const = 0;
+
 private:
   float ring_spacing;
   VectorWithOffset<int> min_ring_diff; 

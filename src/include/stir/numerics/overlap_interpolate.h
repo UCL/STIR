@@ -44,8 +44,12 @@ template <class T> class VectorWithOffset;
   \ingroup numerics
  
   \brief 'overlap' interpolation (i.e. count preserving) for vectors.
+  \see  overlap_interpolate(const out_iter_t out_begin, const out_iter_t out_end, 
+		     const out_coord_iter_t out_coord_begin, const out_coord_iter_t out_coord_end,
+		     const in_iter_t in_begin, in_iter_t in_end,
+		     const in_coord_iter_t in_coord_begin, const in_coord_iter_t in_coord_end,
+		     const bool only_add_to_output=false, const bool assign_rest_with_zeroes)
 */
-// more doc is currently in overlap_interpolate.cxx
 template <typename T>
 void
 overlap_interpolate(VectorWithOffset<T>& out_data, 

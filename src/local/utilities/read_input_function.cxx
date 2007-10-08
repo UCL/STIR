@@ -1,14 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup utilities
-  \brief Extracting plasma data
-  \author Charalampos Tsoumpas
-  $Date$
-  $Revision$
-*/
 /*
   Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
   This file is part of STIR.
@@ -25,8 +17,26 @@
 
   See STIR/LICENSE.txt for details
 */
-/* This program extracts time and activity input plasma data. 
- */
+/*!
+  \file
+  \ingroup utilities
+  \brief Extracting plasma data
+  \author Charalampos Tsoumpas
+
+  This program extracts time and activity input plasma data. 
+
+  \par Usage:
+  \code 
+  read_input_function [data_filename] [0 or 1]
+  \endcode
+  \param data can be either as in PlasmaData.h or BloodFrameData.h
+  \param boolean is default set to 1 for \a PlasmaData and 0 for \a BloodFrameData.
+  \note \a BloodFrameData are for the case of an image-based inpute function, where the RoI values of the image are stored to a text file.
+  \warning \a BloodFrameData needs reimplementation.
+
+  $Date$
+  $Revision$
+*/
 #include "local/stir/modelling/PlasmaData.h"
 #include "local/stir/modelling/PlasmaSample.h"
 #include "local/stir/modelling/BloodFrame.h"

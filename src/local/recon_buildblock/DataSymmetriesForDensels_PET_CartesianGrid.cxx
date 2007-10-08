@@ -1,22 +1,34 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd 
+    This file is part of STIR. 
+ 
+    This file is free software; you can redistribute it and/or modify 
+    it under the terms of the GNU Lesser General Public License as published by 
+    the Free Software Foundation; either version 2.1 of the License, or 
+    (at your option) any later version. 
+ 
+    This file is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+    GNU Lesser General Public License for more details. 
+ 
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup buildblock
   \brief non-inline implementations for class 
-         DataSymmetriesForDensels_PET_CartesianGrid
+  stir::DataSymmetriesForDensels_PET_CartesianGrid
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #include "local/stir/recon_buildblock/DataSymmetriesForDensels_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
@@ -89,7 +101,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     
     // KT 20/06/2001 take origin.z() into account
     axial_pos_to_z_offset[segment_num] = 
-      (cartesian_grid_info_ptr->get_max_z() + cartesian_grid_info_ptr->get_min_z())/2.F
+      (cartesian_grid_info_ptr->get_max_index() + cartesian_grid_info_ptr->get_min_index())/2.F
       - cartesian_grid_info_ptr->get_origin().z()/image_plane_spacing
       -
       (num_planes_per_axial_pos[segment_num]
@@ -201,5 +213,33 @@ clone() const
 {
   return new DataSymmetriesForDensels_PET_CartesianGrid(*this);
 }
+
+bool
+DataSymmetriesForDensels_PET_CartesianGrid::
+operator ==(const DataSymmetriesForDensels_PET_CartesianGrid& that) const
+{ 
+  if (!base_type::operator==(that))
+    return false;
+
+  return 
+    *this->proj_data_info_ptr == *that.proj_data_info_ptr &&
+    this->num_planes == that.num_planes &&
+    this->num_independent_planes == that.num_independent_planes &&
+    this->num_views == that.num_views &&
+    this->num_planes_per_scanner_ring == that.num_planes_per_scanner_ring &&
+    this->num_planes_per_axial_pos == that.num_planes_per_axial_pos &&
+    this->axial_pos_to_z_offset == that.axial_pos_to_z_offset;
+}
+
+
+bool 
+DataSymmetriesForDensels_PET_CartesianGrid::
+blindly_equals(const root_type * const sym_ptr) const
+{
+  assert(dynamic_cast<const self_type * const>(sym_ptr) != 0);
+  return
+    this->operator==(static_cast<const self_type&>(*sym_ptr));
+}
+
 
 END_NAMESPACE_STIR

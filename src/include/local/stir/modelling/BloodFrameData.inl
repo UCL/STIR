@@ -66,6 +66,7 @@ void  BloodFrameData::read_blood_frame_data(const std::string input_string)
 }
 
 //! Implementation to set the input units not currently used.
+/*
 void
 BloodFrameData::set_input_units( SamplingTimeUnits input_sampling_time_units, 
 				 VolumeUnits input_volume_units, 
@@ -75,7 +76,7 @@ BloodFrameData::set_input_units( SamplingTimeUnits input_sampling_time_units,
   _input_volume_units=input_volume_units ;
   _input_radioactivity_units=input_radioactivity_units ;
 } 
-
+*/
 //!Function to shift the time data
 void BloodFrameData::shift_time(const float time_shift)
 {	
@@ -98,6 +99,10 @@ void  BloodFrameData::
 set_if_decay_corrected(const bool is_decay_corrected) 
 {  this->_is_decay_corrected=is_decay_corrected; }
 
+bool BloodFrameData::
+get_if_decay_corrected() 
+{  return this->_is_decay_corrected; }
+
 void BloodFrameData::
 decay_correct_BloodFrameData()  
 {	    
@@ -113,6 +118,11 @@ decay_correct_BloodFrameData()
     }
 }
 
+
+void BloodFrameData::set_plot(const std::vector<BloodFrame> & blood_plot)
+{this->_blood_plot=blood_plot;}
+
+
 //BloodFrameData begin() and end() of the BloodFrameData ;
 BloodFrameData::const_iterator
 BloodFrameData::begin() const
@@ -121,6 +131,9 @@ BloodFrameData::begin() const
 BloodFrameData::const_iterator
 BloodFrameData::end() const
 { return this->_blood_plot.end() ; }
+unsigned int
+BloodFrameData::size() const
+{ return this->_blood_plot.size() ; }
 
 /*
 //BloodFrameData begin() and end() of the BloodFrameData ;

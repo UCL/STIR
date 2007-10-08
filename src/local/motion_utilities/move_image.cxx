@@ -29,7 +29,7 @@
 */
 
 #include "stir/DiscretisedDensity.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "local/stir/motion/transform_3d_object.h"
 #include "local/stir/motion/TimeFrameMotion.h"
 #include "stir/Succeeded.h"
@@ -85,14 +85,16 @@ protected:
   string output_filename_prefix;
 private:
   shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr; 
-  shared_ptr<OutputFileFormat> output_file_format_sptr;  
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > >
+  output_file_format_sptr;  
 };
 
 void 
 MoveImage::set_defaults()
 {
   base_type::set_defaults();
-  output_file_format_sptr = new DefaultOutputFileFormat;
+  output_file_format_sptr =
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void 

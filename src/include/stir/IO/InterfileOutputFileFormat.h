@@ -2,8 +2,9 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003-$Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002-$Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
+
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
@@ -36,6 +37,7 @@
 
 START_NAMESPACE_STIR
 
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
   \ingroup InterfileIO
@@ -45,9 +47,16 @@ START_NAMESPACE_STIR
 class InterfileOutputFileFormat : 
   public RegisteredParsingObject<
         InterfileOutputFileFormat,
-        OutputFileFormat,
-        OutputFileFormat>
+        OutputFileFormat<DiscretisedDensity<3,float> >,
+        OutputFileFormat<DiscretisedDensity<3,float> > >
 {
+ private:
+  typedef 
+     RegisteredParsingObject<
+        InterfileOutputFileFormat,
+        OutputFileFormat<DiscretisedDensity<3,float> >,
+        OutputFileFormat<DiscretisedDensity<3,float> > >
+    base_type;
 public :
     //! Name which will be used when parsing an OutputFileFormat object
   static const char * const registered_name;

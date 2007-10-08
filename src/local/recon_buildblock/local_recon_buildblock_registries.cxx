@@ -33,7 +33,12 @@
 #include "local/stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 #include "local/stir/recon_buildblock/BinNormalisationUsingProfile.h"
 #include "local/stir/recon_buildblock/BinNormalisationSinogramRescaling.h"
-
+//#include "stir/recon_buildblock/FilterRootPrior.h"
+#include "local/stir/recon_buildblock/ParametricQuadraticPrior.h"
+#include "local/stir/recon_buildblock/PatlakObjectiveFunctionFromDynamicProjectionData.h"
+#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "local/stir/DynamicDiscretisedDensity.h"
+#include "local/stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData.h"
 
 START_NAMESPACE_STIR
 
@@ -41,7 +46,13 @@ static ProjMatrixByBinUsingSolidAngle::RegisterIt dummy11;
 static ProjMatrixByBinUsingInterpolation::RegisterIt dummy13;
 static ProjMatrixByBinSinglePhoton::RegisterIt dummy12;
 static ProjMatrixByBinFromFile::RegisterIt dumy14;
+static PatlakObjectiveFunctionFromDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
 
+//static FilterRootPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dummy44;
+static ParametricQuadraticPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dummy5;
+
+
+//static PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData<DynamicDiscretisedDensity>::RegisterIt Dummyyyy;
 //static BackProjectorByBinDistanceDriven::RegisterIt dummy1001;
 //static ForwardProjectorByBinDistanceDriven::RegisterIt dummy1002;
 

@@ -89,13 +89,19 @@ DiscretisedDensity<2,elemT>*
 #else
 PixelsOnCartesianGrid<elemT>*
 #endif
- get_empty_discretised_density() const;
+ get_empty_copy() const;
 
 //! Like get_empty_discretised_density, but returning a pointer to a PixelsOnCartesianGrid
 PixelsOnCartesianGrid<elemT>* get_empty_pixels_on_cartesian_grid() const;
 
 //TODO covariant return types
-virtual DiscretisedDensity<2, elemT>* clone() const;
+virtual
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
+DiscretisedDensity<2,elemT>*
+#else
+PixelsOnCartesianGrid<elemT>*
+#endif
+clone() const;
     
 inline int get_x_size() const;
 

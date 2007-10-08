@@ -1,0 +1,6 @@
+PostFilteringParameters :=
+postfilter type := Truncate To Cylindrical FOV
+Truncate To Cylindrical FOV Parameters:=
+strictly_less_than_radius:=0
+End Truncate To Cylindrical FOV Parameters:=
+END PostFiltering Parameters:=

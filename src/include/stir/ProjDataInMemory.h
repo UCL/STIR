@@ -1,24 +1,35 @@
 //
 // $Id$
 //
-/*!
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
   \file
   \ingroup projdata
-  \brief Declaration of class ProjDataInMemory
+  \brief Declaration of class stir::ProjDataInMemory
 
   \author Kris Thielemans
 
   $Date$
-
   $Revision$
 */
-/*
-    Copyright (C) 2002- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-#ifndef __ProjDataInMemory_H__
-#define __ProjDataInMemory_H__
+
+#ifndef __stir_ProjDataInMemory_H__
+#define __stir_ProjDataInMemory_H__
 
 #include "stir/ProjDataFromStream.h" 
 #include "stir/shared_ptr.h"
@@ -84,6 +95,9 @@ public:
   */
   Succeeded
     write_to_file(const string& filename) const;
+ 
+  //! Returns a  value of a bin
+  float get_bin_value(Bin& bin);
     
 private:
 #ifdef STIR_USE_OLD_STRSTREAM

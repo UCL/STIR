@@ -81,11 +81,12 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
 	  if (weight ==0)
 	    continue;
 	  volume += weight;
-	  const float value = weight * (*image_iter);
-	  if (value<ROI_min) ROI_min=value;
-	  if (value>ROI_max) ROI_max=value;
-	  if (value==0)
+	  const float org_value = (*image_iter);
+	  if (org_value<ROI_min) ROI_min=org_value;
+	  if (org_value>ROI_max) ROI_max=org_value;
+	  if (org_value==0)
 	    continue;
+	  const float value = weight * (*image_iter);
 	  integral += value;
 	  integral_square += value * (*image_iter);
 	}

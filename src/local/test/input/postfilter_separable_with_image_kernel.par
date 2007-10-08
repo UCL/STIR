@@ -1,0 +1,8 @@
+PostFilteringParameters :=
+  Postfilter type := Separable Convolution  
+Separable Convolution Filter Parameters :=
+	x-dir filter coefficients := { 0.25, 0.5, 0.25 }  
+	y-dir filter coefficients := { 0.25, 1, 0.25 }
+        z-dir filter coefficients := { 0, 1, 0 }
+  End Separable Convolution Filter Parameters :=
+End PostFiltering Parameters :=

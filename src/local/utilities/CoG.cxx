@@ -94,15 +94,12 @@ main(int argc, char *argv[])
   find_centre_of_gravity_in_mm_per_plane(allCoG,
 				   weights,
 				   *image_ptr);
-  const float centre_z = 
-    (image_ptr->get_min_index()+image_ptr->get_max_index())/2.F*
-    image_ptr->get_voxel_size().z();
   {
     const string filename = output_filename_prefix + ".x";
     ofstream xout(filename.c_str());
     xout << image_ptr->get_length() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-      xout << allCoG[z].z()-centre_z  << "\n";
+      xout << allCoG[z].z()<< "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       xout << allCoG[z].x() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
@@ -115,7 +112,7 @@ main(int argc, char *argv[])
 
     yout << image_ptr->get_length() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
-      yout << allCoG[z].z() -centre_z << "\n";
+      yout << allCoG[z].z() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)
       yout << allCoG[z].y() << "\n";
     for (int z=image_ptr->get_min_index(); z<=image_ptr->get_max_index(); z++)

@@ -1,10 +1,11 @@
 %&LaTeX
 \batchmode
 \documentclass{article}
-\usepackage{setspace}
+%\usepackage{setspace}
 \usepackage{graphicx}
-\usepackage{amsmath}
+%\usepackage{amsmath}
 \usepackage{hyperref}
+\usepackage{a4wide}
 \def\R2Lurl#1#2{\mbox{\href{#1}{\tt #2}}}
 
 \newcommand{\tab}{\hspace{5mm}}
@@ -15,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 1.3}}
+\textbf{\textit{version 2.0}}
 
 
 \end{center}
@@ -530,7 +531,63 @@ We provide the convenience function \textit{stir::is\_null\_ptr()}
 to test if a pointer is `null', i.e. does not point to anything. \textit{is\_null\_ptr} 
 works with ordinary pointers, shared\_ptrs and auto\_ptrs. Use 
 it to avoid that your code depends on what type of (smart) pointer 
-you're using.
+you are using.
+
+\subsection{Generic functionality of STIR classes}
+This is a (very incomplete) section describing some functionality that
+many STIR classes have in common.
+
+\subsubsection{Copying objects}
+When using pointers or references to objects of an abstract type, you can copy 
+them using \texttt{clone()}, see \ref{sect:sharedptr}.
+
+
+When you only want to create an object of the same characteristics, but without
+copying the data itself (e.g. images of the same size), use \texttt{get\_empty\_copy()}.
+
+\subsubsection{Comparing objects}
+Many STIR classes implement comparison using the usual \texttt{==} and 
+\texttt{!=} operators. The implementation of these operators is somewhat 
+tricky in class hierarchies. We try to follow the approach described in
+\textit{Overriding the C++ Operator==, An approach that uses the 
+Template Method design pattern} By Daniel E. Stevenson and Andrew T. Phillips,
+Dr. Dobb's Journal, June 2003, 
+\R2Lurl{http://www.ddj.com/184405409}{http://www.ddj.com/184405409}.
+
+For some classes, you might want to check only if two objects are of the same
+type. For instance, if images have the same sizes, origin etc, but not 
+necessarily the same voxel values. This can be done using the member
+function \texttt{has\_same\_characterics}.
+
+\subsubsection{Parsing from text files}
+Many class-hierarchies allow to construct an object by parsing a 
+text file, which uses an Interfile-like syntax. Examples
+are given in the User's guide. See \ref{sect:parsing}.
+
+All these classes (and some others) have a member function 
+\texttt{parameter\_info()} which returns a string with all parameters
+of the object.
+
+Note that many STIR classes are not completely constructed by parsing.
+Usually, it is necessary to call a \texttt{set\_up} function to make
+the object usable.
+
+\subsubsection{typedefs}
+Many class hierarchies use the same typedefs. For example:
+\begin{verbatim}
+class ProjDataInfo
+{
+protected:
+  typedef ProjDataInfo root_type; // root of hierarchy
+  
+};
+class ProjDataInfoCylindrical: public ProjDataInfo
+{
+private:
+  typedef ProjDataInfo base_type;
+  typedef ProjDataInfoCylindrical self_type;
+};
+\end{verbatim}
 
 \section{
 Overview of classes}
@@ -666,13 +723,16 @@ Currently missing is support for fan-beam data.\\
 List-mode data is experimentally supported since version 1.2.
 
 \subsection{
-Image processor hierarchy}
+Data (or image) processor hierarchy}
 
 We provide a hierarchy for functions that modify an image, \textit{e.g.} by 
-filtering or thresholding it. The base class is \textit{ImageProcessor}. 
+filtering or thresholding it. The base class is \textit{DataProcessor},
+which is templated in \texttt{DataT}, to allow using other types, not
+only images.
 Aside from the virtual functions that specify the interface to 
 an image processor, it also provides the basics for a registry 
-of all image processors. See section \ref{sect:registries} for some details.
+of all data processors. See section \ref{sect:registries} for some details.
+Note that the registry is specific to every \texttt{DataT}.
 
 \subsection{
 Projector classes}
@@ -683,7 +743,7 @@ the measurement. Generally, reconstruction algorithms are some
 kind of inversion procedure for the following problem
 
 
-$y_{b} =\sum\limits_{v}P_{bv} \lambda _{v}  $
+\[y_{b} =\sum\limits_{v}P_{bv} \lambda _{v}  \]
 
 
 where $y_b$ are the measured data. The exact interpretation 
@@ -845,6 +905,42 @@ in between. For instance, image indices are not stored incrementally,
 as although it would allow very compact storage, it is detrimental 
 for speed.
 
+\subsection{Objective functions}
+Many iterative (reconstruction) algorithms can be formulated in terms
+of an objective function, which is the algorithms tries to 
+maximise (or minimise). Since STIR 2.0, this is implemented
+as a class hierarchy based on \texttt{GeneralisedObjectiveFunction},
+where we use the convention that the objective function is maximised. 
+
+Some iterative algorithms use an 'objective function' only in a 
+loose sense. They might for instance allow generalisations 
+which no longer optimise a function. For example in the case
+of EMML with non-matching forward and back projectors, the 'gradient' 
+that is computed is generally not the gradient of the
+log-likelihood that corresponds to the forward projector.
+However, one hopes that it still points towards the optimum.
+The corresponding objective function is implemented in the class
+\texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.
+
+There can be different objective function that use common operations.
+For instance, the objective function could implement a least squares
+criterion, or a Poisson log-likelihood. Both of these have a model
+for the mean of the measured data (given an image). Generally speaking,
+STIR implements those common operations using a separate class.
+As an example, projection operations are implemented via a pointer to a 
+\texttt{ProjectorByBinPair}, which in itself is a small
+class hierarchy using either a \texttt{ProjMatrixByBin} object, 
+or a \texttt{ForwardProjectorByBin/BackProjectorByBin} pair.
+
+Often, one includes a penalty (or prior) in the objective function
+(see doxygen documentation for the class \texttt{GeneralisedPrior}).
+The penalty is expected to be a function that increases with higher 
+penalty, so it will be \textit{subtracted}
+from the unregularised case.
+
+See the doxygen documentation \texttt{GeneralisedObjectiveFunction} for
+more details.
+
 \subsection{
 Reconstruction classes}
 
@@ -852,25 +948,32 @@ The final ingredient for performing reconstructions is the reconstruction
 algorithm itself. We also have a hierarchy for this, as many 
 iterative algorithms are similar, and differ only in some minor 
 steps. We do not discuss the actual 'leaves' of the Reconstruction 
-tree here, as this document discusses the building blocks only. 
+tree here.
 \\
 The tree starts at the abstract Reconstruction base class. Classes 
 ending in ``\textit{Reconstruction}'' are abstract base classes for 
 a family of algorithms. Classes including the name of an algorithm 
 are concrete ones whose principal purpose is to implement the 
-reconstruction method of the algorithm. Whenever, an algorithm's 
-reconstruction method uses functionality that is common to many 
-algorithms, these functions are implemented through a (shared) 
-pointer to an appropriate object. As an example, projection operations 
-are implemented via pointers to a \textit{ProjMatrixByBin} object, 
-or a \textit{ForwardProjectorByBin/BackProjectorByBin} pair. As an 
-additional example, \textit{LogLikelihoodBasedReconstruction} objects 
-contain pointers to \textit{PriorInformation} objects to implement 
-appropriate versions of MAP. This arrangement gives the users 
+reconstruction method of the algorithm. 
+
+Certain algorithms will only work with particular objective functions,
+while others (such as gradient ascent) might work with arbitrary
+objective functions.
+
+This arrangement gives the users 
 of the library a flexible range of implementation choices, allowing 
 them to experiment with new algorithms and new variations of 
 old ones with minimal coding effort.
-All these classes are based on the ParsingObject class, and hence 
+
+The \texttt{Reconstruction} hierarchy is (since STIR 2.0) templated in 
+\texttt{TargetT}. This is the type of the output, i.e. normally
+the image type. Templating this type gives flexibility to have
+different output-types, such as parametric images or even 
+normalisation factors.
+
+\section{
+Parsing from text files (or strings)\label{sect:parsing}}
+Many STIR classes are based on the \texttt{ParsingObject} class, and hence 
 are able to
 \begin{itemize}
 \item 
@@ -882,6 +985,49 @@ return parameter info such that an Interfile-style input file
 can be created from the current set of parameters.
 \end{itemize}
 
+In the simplest case, the only thing you need to do is to add the variables
+and keywords to the keymap. All functionality will then follow. See the
+following example.
+
+\begin{verbatim}
+  class A : public ParsingObject
+  {
+    private:
+    typedef ParsingObject base_type;
+
+    int number; float a;
+
+    void initialise_keymap()
+    {
+      base_type::initialise_keymap();
+      this->parser.add_start_key("My Class Parameters");
+      this->parser.add_key("number", &number);
+      this->parser.add_key("width", &a);
+      this->parser.add_stop_key("END My Class Parameters");
+    }
+
+    void set_defaults()
+    {
+      base_type::set_defaults();
+      // specify defaults for the parameters in case they are not set.
+      number = 1;
+      a = 2.4F;
+    }
+  };
+
+  int main(int argc, char **argv)
+  {
+    A a;
+    // parse a file (first argument on the command line)
+    a.parse(argv[1]);
+    // list them back to cout
+    std::cout << a.parameter_info();
+    return EXIT_SUCCESS;
+  }
+\end{verbatim}
+
+Check the doxygen documentation for
+\texttt{ParsingObject}.
 
 \section{
 Registries of classes \label{sect:registries}}

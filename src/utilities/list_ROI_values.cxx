@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
@@ -38,15 +54,11 @@
   $Revision$
 
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/utilities.h"
 #include "stir/evaluation/compute_ROI_values.h"
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
@@ -73,13 +85,11 @@ public:
   std::vector<shared_ptr<Shape3D> > shape_ptrs;
   std::vector<string> shape_names;
   CartesianCoordinate3D<int> num_samples;
-  shared_ptr<ImageProcessor<3,float> > filter_ptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr;
 private:
   shared_ptr<Shape3D> current_shape_sptr;
   string current_shape_name;
-  void increment_current_shape_num();
-
-  
+  void increment_current_shape_num();  
 };
 
 ROIValuesParameters::ROIValuesParameters()
@@ -165,6 +175,7 @@ int
 main(int argc, char *argv[])
 {
   bool do_CV=false;
+  bool do_V=false;
   const char * const progname = argv[0];
 
   if (argc>1 && strcmp(argv[1],"--CV")==0)
@@ -172,13 +183,24 @@ main(int argc, char *argv[])
       do_CV=true;
       --argc; ++argv;
     }
-  if(argc!=6 && argc!=4 && argc!=3) 
+  if (argc>1 && strcmp(argv[1],"--V")==0)
+    {
+      do_V=true;
+      --argc; ++argv;
+      if(strcmp(argv[1],"--CV")==0)
+      {
+	do_CV=true;
+	--argc;++argv;
+      }
+    }
+  if(argc!=6 && argc!=5 && argc!=4 && argc!=3) 
   {
     cerr<<"\nUsage: " << progname << " \\\n"
-	<< "\t[--CV] output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
+	<< "\t[--CV] [--V] output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
     cerr << "Normally, only mean and stddev are listed.\n"
-	 << "Use the option --CV to output the Coefficient of Variation as well.\n";
-    cerr << "Plane numbers start from 1\n";
+	 << "Use the option --CV to output the Coefficient of Variation as well.\n"
+	 << "Use the option --V to output the Total Volume, as well.\n";;
+    cerr << "If [min_plane_num] is set to 0 and no [max_plane_num given] then sum of the plane values will be listed.\n";
     cerr << "When ROI_filename.par is not given, the user will be asked for the parameters.\n"
       "Use this to see what a .par file should look like.\n."<<endl;
     exit(EXIT_FAILURE);
@@ -193,10 +215,8 @@ main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   
-  
   shared_ptr<DiscretisedDensity<3,float> > image_ptr =
     DiscretisedDensity<3,float>::read_from_file(input_file);
-
   ROIValuesParameters parameters;
   if (argc<4)
     parameters.ask_parameters();
@@ -213,19 +233,23 @@ main(int argc, char *argv[])
   const int max_plane_number = 
     argc==6 ? atoi(argv[5])-1 : image_ptr->get_max_index();
 
-  
+  const bool by_plane=argc==5 ? atoi(argv[4]):true ;  
+
   if (parameters.filter_ptr!=0)
     parameters.filter_ptr->apply(*image_ptr);
 
   out << input_file << '\n';
-  out << std::setw(15) << "ROI"
-      << std::setw(10) << "Plane_num" 
-      << std::setw(15) << "Mean "
-      << std::setw(15) << "Stddev";
-  if (do_CV)
-    out << std::setw(15) << "CV";
-  out  <<'\n';
-  
+  out << std::setw(15) << "ROI";
+
+    if(by_plane)
+      out    << std::setw(10) << "Plane_num" ;
+    out << std::setw(15) << "Mean "
+	<< std::setw(15) << "Stddev";
+    if (do_CV)
+      out << std::setw(15) << "CV";
+    if (do_V)
+      out << std::setw(15) << "Volume";
+    out  <<'\n';
   {
     std::vector<shared_ptr<Shape3D> >::const_iterator current_shape_iter =
       parameters.shape_ptrs.begin();
@@ -235,9 +259,11 @@ main(int argc, char *argv[])
 	 current_shape_iter != parameters.shape_ptrs.end();
 	 ++current_shape_iter, ++current_name_iter)
       {  
+    if(by_plane)
+      {
 	VectorWithOffset<ROIValues> values;
 	compute_ROI_values_per_plane(values, *image_ptr, **current_shape_iter, parameters.num_samples);
-  
+
 	for (int i=min_plane_number;i<=max_plane_number;i++)
 	  {
 	    out << std::setw(15) << *current_name_iter
@@ -246,10 +272,24 @@ main(int argc, char *argv[])
 		<< std::setw(15) << values[i].get_stddev();
 	    if (do_CV)
 	      out << std::setw(15) << values[i].get_CV();
+	    if (do_V)
+	      out << std::setw(15) << values[i].get_roi_volume();
 	    out <<'\n';
 	  }
-
-  
+      }
+    if(!by_plane)
+      {
+	ROIValues values;
+	values=compute_total_ROI_values(*image_ptr, **current_shape_iter, parameters.num_samples);
+	out << std::setw(15) << *current_name_iter
+	    << std::setw(15) << values.get_mean()
+	    << std::setw(15) << values.get_stddev();
+	    if (do_CV)
+	      out << std::setw(15) << values.get_CV();
+	    if (do_V)
+	      out << std::setw(15) << values.get_roi_volume();
+	    out <<'\n';
+      }  
 #if 0
 	for (VectorWithOffset<ROIValues>::const_iterator iter = values.begin();
 	     iter != values.end();

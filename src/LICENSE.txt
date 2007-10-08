@@ -1,12 +1,10 @@
-Licensing information for STIR 1.4
+Licensing information for STIR 2.0alpha
 ----------------------------------
 
-See for more info http://stir.HammersmithImanet.com, section Registration.
+See for more info http://stir.irsl.org, section Registration.
 
-Most files in STIR are covered by the 
-GNU Lesser General Public License (see LGPL.txt for text),
-unless specified otherwise below.
-This includes all files in the following subdirectories 
+Files in the following subdirectories are covered by the 
+GNU Lesser General Public License (see LGPL.txt for text):
     . (that is, the directory where this file resides)
     analytic/FBP2D
     analytic/FBP3DRP/Colsher*
@@ -102,7 +100,6 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/VoxelsOnCartesianGrid.cxx
 ./buildblock/warning.cxx
 ./buildblock/zoom.cxx
-./ChangeLog.bak
 ./display/display_array.cxx
 ./display/gen.c
 ./display/gen.h
@@ -176,9 +173,9 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/line.h
 ./include/stir/linear_regression.h
 ./include/stir/linear_regression.inl
-./include/stir/LogLikBased/common.h
-./include/stir/LogLikBased/LogLikelihoodBasedReconstruction.h
 ./include/stir/NumericInfo.h
+./include/stir/numerics/divide.h
+./include/stir/numerics/divide.inl
 ./include/stir/numerics/overlap_interpolate.h
 ./include/stir/NumericType.h
 ./include/stir/NumericType.inl
@@ -199,6 +196,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/ProjDataInfoCylindricalArcCorr.h
 ./include/stir/ProjDataInfoCylindricalArcCorr.inl
 ./include/stir/recon_array_functions.h
+./include/stir/recon_buildblock/AnalyticReconstruction.h
 ./include/stir/recon_buildblock/BackProjectorByBin.h
 ./include/stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h
 ./include/stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h
@@ -267,11 +265,10 @@ Explicit list of files that carry the PARAPET license
 ./IO/InterfileHeader.cxx
 ./IO/stir_ecat6.cxx
 ./IO/stir_ecat_common.cxx
-./iterative/LogLik_buildblock/common.cxx
-./iterative/LogLik_buildblock/LogLikelihoodBasedReconstruction.cxx
 ./iterative/OSMAPOSL/OSMAPOSL.cxx
 ./iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
 ./iterative/sensitivity/sensitivity.cxx
+./recon_buildblock/AnalyticReconstruction.cxx
 ./recon_buildblock/BackProjectorByBin.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation_3DCho.cxx
@@ -287,6 +284,7 @@ Explicit list of files that carry the PARAPET license
 ./recon_buildblock/ForwardProjectorByBinUsingRayTracing.cxx
 ./recon_buildblock/ForwardProjectorByBinUsingRayTracing_Siddon.cxx
 ./recon_buildblock/IterativeReconstruction.cxx
+./recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx
 ./recon_buildblock/ProjMatrixByBin.cxx
 ./recon_buildblock/ProjMatrixByBinUsingRayTracing.cxx
 ./recon_buildblock/ProjMatrixElemsForOneBin.cxx

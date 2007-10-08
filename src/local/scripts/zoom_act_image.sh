@@ -28,21 +28,24 @@ zoom_z=$4 # 0.5 for having
 
 voxels_x=`less ${input_image} | grep -F "matrix size [1]" |awk '{print $5}'`
 voxels_y=`less ${input_image} | grep -F "matrix size [2]" |awk '{print $5}'`
+if [ $voxels_x -ne $voxels_y ] ; then 
+echo "The voxels in the x and y dimensions are different. Cannot zoom...  " 
+exit 1 
+fi
+voxels_xy=${voxels_x}
 voxels_z=`less ${input_image} | grep -F "matrix size [3]" |awk '{print $5}'`
-new_voxels_xy=`echo ${voxels_x} ${voxels_y} ${zoom_xy} | awk ' { a=($1+$2)*$3/2; if (a%2==0) ++a; print a }'`
+new_voxels_xy=`echo ${voxels_xy} ${zoom_xy} | awk ' { printf ("%.0f", $1*$2) }'` 
 new_voxels_z=`echo ${voxels_z} ${zoom_z} | awk ' { printf ("%.0f", $1*$2) }'` 
 scale_att=`echo ${zoom_z} ${zoom_xy} | awk ' { printf ("%.5f", $1*$2*$2)}'` 
 
-
-
 #voxel_size_z=`less ${input_image} | grep -F "scaling factor (mm/pixel) [3]" |awk '{print $6}'` 
 #offset_z=`echo ${voxels_z} ${new_voxels_z} ${zoom_z} ${voxel_size_z} | awk ' { printf ("%.5f", -0.5*$4*($2/$3-$1))}'`
-echo "voxels_x=${voxels_x}"
-echo "voxels_y=${voxels_y}"
-echo "voxels_z=${voxels_z}"
-echo "new_voxels_xy=${new_voxels_xy}"
-echo "new_voxels_z=${new_voxels_z}"
-echo "offset_z=$offset_z"
+echo "voxels_xy= ${voxels_xy}"
+echo "voxels_y= ${voxels_y}"
+echo "voxels_z= ${voxels_z}"
+echo "new_voxels_xy= ${new_voxels_xy}"
+echo "new_voxels_z= ${new_voxels_z}"
+echo "offset_z= $offset_z"
 
 zoom_image ${output_image_filename} ${input_image} ${new_voxels_xy} ${zoom_xy} 0 0 ${new_voxels_z} ${zoom_z} 0
 

@@ -27,7 +27,7 @@
 START_NAMESPACE_STIR
 
 template <typename elemT> class Viewgram;
-template <int num_dimensions, typename elemT> class ImageProcessor;
+template <typename DataT> class DataProcessor;
 /*!
   \brief A very preliminary class that first smooths the image, then forward projects.
 
@@ -59,7 +59,7 @@ public:
 
   PresmoothingForwardProjectorByBin(
                        const shared_ptr<ForwardProjectorByBin>& original_forward_projector_ptr,
-		       const shared_ptr<ImageProcessor<3,float> >&);
+		       const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >&);
 
   // Informs on which symmetries the projector handles
   // It should get data related by at least those symmetries.
@@ -71,7 +71,7 @@ public:
 private:
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
-  shared_ptr<ImageProcessor<3,float> > image_processor_ptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
 
   void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,

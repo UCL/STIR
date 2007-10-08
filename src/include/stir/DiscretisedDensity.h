@@ -1,13 +1,30 @@
 //
 // $Id$
 //
-#ifndef __DiscretisedDensity_H__
-#define __DiscretisedDensity_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_DiscretisedDensity_H__
+#define __stir_DiscretisedDensity_H__
 
 /*!
   \file 
   \ingroup densitydata 
-  \brief defines the DiscretisedDensity class 
+  \brief defines the stir::DiscretisedDensity class 
 
   \author Sanida Mustafovic 
   \author Kris Thielemans 
@@ -19,12 +36,6 @@
   $Revision$
 
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
@@ -41,7 +52,7 @@ START_NAMESPACE_STIR
   \ingroup densitydata
   \brief This abstract class is the basis for all image representations.
   
-  This class is templated with the number of dimensions (should be 2 or 3) 
+  This class is templated with the number of dimensions (should be 1, 2 or 3) 
   and the type of the data.
 
   It defines functionality common to all discretised densities: the
@@ -49,7 +60,8 @@ START_NAMESPACE_STIR
  
   \warning The origin is always a CartesianCoordinate3D<float>, 
   independent of what coordinate system (or even dimension) this
-  class represents.
+  class represents. Similarly, the functions that translate from
+  indices to physical coordinates assume that the later is 3D.
 
   Iterative algorithms generally assume that the activity density can
   be discretised in some way. That is, the continuous density can be
@@ -92,6 +104,9 @@ template<int num_dimensions, typename elemT>
 class DiscretisedDensity : public Array<num_dimensions,elemT>
 
 { 
+ private:
+  typedef Array<num_dimensions,elemT> base_type;
+  typedef DiscretisedDensity<num_dimensions,elemT> self_type;
 public:
   //! A static member to read an image from file
   static DiscretisedDensity * read_from_file(const string& filename);
@@ -105,18 +120,159 @@ public:
   
   //! Return the origin 
   inline const CartesianCoordinate3D<float>& get_origin()  const;
-  
+
   //! Set the origin
   inline void set_origin(const CartesianCoordinate3D<float> &origin);
-  
+
+  //! \name Translation between indices and physical coordinates
+  /*! We distinguish between physical coordinates, relative coordinates (which are
+    physical coordinates relative to the origin) and index coordinates (which run
+    over the index range (but are allowed to have float values).
+
+    This class provides 3-way conversion functions. The derived classes have to implement
+    the actual conversion between relative and index coordinates.
+  */
+  //@{
+  //! Return the coordinates of the centre of the basis-function corresponding to \c indices.
+  /*! The return value is in the same coordinate system as get_origin().
+      Implemented as 
+      \code
+      get_relative_coordinates_for_indices(indices)+get_origin()
+      \endcode
+  */
+  inline 
+    CartesianCoordinate3D<float>
+    get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>& indices) const;
+
+  //! Return the coordinates of the centre of the basis-function corresponding to non-integer coordinate in 'index' coordinates.
+  /*! \see get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>&)
+   */    
+  inline 
+    CartesianCoordinate3D<float>
+    get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const;
+
+  //! Return the relative coordinates of the centre of the basis-function corresponding to \c indices.
+  /*! Implementation uses actual_get_relative_coordinates_for_indices
+  */
+  inline
+    CartesianCoordinate3D<float>
+    get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>& indices) const;
+
+  //! Return the relative coordinates of the centre of the basis-function corresponding to the non-integer coordinates in 'index' coordinates.
+  /*! The return value is relative to the origin.
+
+   Implementation uses actual_get_relative_coordinates_for_indices
+      \see get_physical_coordinates_for_indices()
+  */
+  inline
+    CartesianCoordinate3D<float>
+    get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const;
+
+  //! Return the indices of the basis-function closest to the given point.
+  /*! The input argument should be in the same coordinate system as get_origin().
+      Implemented as 
+      \code
+      get_indices_closest_to_relative_coordinates(coords-get_origin())
+      \endcode
+  */
+  inline 
+    BasicCoordinate<num_dimensions,int>
+    get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //! Return the indices of the basis-function closest to the given point.
+  /*! The input argument should be in 'physical' coordinates relative to the origin.
+      Implementation uses
+      stir::round on the result of get_index_coordinates_for_relative_coordinates.
+  */
+  inline
+    BasicCoordinate<num_dimensions,int>
+    get_indices_closest_to_relative_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //! Return the indices of the basis-function closest to the given point.
+  /*! The input argument should be in 'physical' coordinates.
+      Implementation uses get_index_coordinates_for_relative_coordinates.
+  */
+  inline
+    BasicCoordinate<num_dimensions,float>
+    get_index_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //! Return the indices of the basis-function closest to the given point.
+  /*! The input argument should be in 'physical' coordinates relative to the origin.
+    Implementation uses actual_get_index_coordinates_for_relative_coordinates.
+  */
+  inline
+    BasicCoordinate<num_dimensions,float>
+    get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  //@}
+
   //! Allocate a new DiscretisedDensity object with same characteristics as the current one.
-  virtual DiscretisedDensity<num_dimensions, elemT>* get_empty_discretised_density() const=0;
+  virtual DiscretisedDensity<num_dimensions, elemT>* get_empty_copy() const = 0;
 
   //! Allocate a new DiscretisedDensity object which is a copy of the current one.
   virtual DiscretisedDensity<num_dimensions, elemT>* clone() const = 0;
+
+  //! Allocate a new DiscretisedDensity object with same characteristics as the current one.
+  //*! \deprecated Use get_empty_copy() instead
+  DiscretisedDensity<num_dimensions, elemT>* get_empty_discretised_density() const
+    { return get_empty_copy(); }
+
+  //! \name Equality
+  //@{
+  //! Checks if the 2 objects have the same type, index range, origin etc
+  /*! If they do \c not have the same characteristics, the string \a explanation
+      explains why.
+  */
+  inline bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
+
+  //! Checks if the 2 objects have the same type, index range, origin etc
+  /*! Use this version if you do not need to know why they do not match.
+   */
+  inline bool
+    has_same_characteristics(self_type const&) const;
+
+  //! check equality (data has to be identical)
+  /*! Uses has_same_characteristics() and Array::operator==.
+      \warning This function uses \c ==, which might not be what you 
+      need to check when \c elemT has data with float or double numbers.
+  */
+  inline bool operator ==(const self_type&) const; 
   
+  //! negation of operator==
+  inline bool operator !=(const self_type&) const; 
+  //@}
+
+ protected:
+  //! Implementation used by  has_same_characteristics
+  /*! \warning Has to be overloaded by the derived classes to check for other
+      parameters. Also, the overloaded function has to call the current one.
+
+      \par Developer's note
+
+      We need this function as C++ rules say that if you overload a function, you hide all 
+      functions of the same name.
+  */
+  virtual bool
+    actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&,
+				    string& explanation) const;
+
+  //! Implementation used by get_relative_coordinates_for_indices
+  /*!  \par Developer's note
+
+      We need this function as C++ rules say that if you overload a function, you hide all 
+      functions of the same name.
+  */
+  virtual
+    CartesianCoordinate3D<float>
+    actual_get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const = 0;
+
+  virtual
+    BasicCoordinate<num_dimensions,float>
+    actual_get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const = 0;
+
 private:
-  typedef Array<num_dimensions,elemT> base_type;
   CartesianCoordinate3D<float> origin;
   
 };

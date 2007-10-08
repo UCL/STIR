@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
-  \brief Implementations for non-inline functions of class SegmentBySinogram
+  \brief Implementations for non-inline functions of class stir::SegmentBySinogram
 
   \author Kris Thielemans
   \author PARAPET project
@@ -13,11 +30,6 @@
   $Date$
 
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/SegmentBySinogram.h"
@@ -72,6 +84,16 @@ SegmentBySinogram(const SegmentByView<elemT>& s_v )
   
   for (int r=get_min_axial_pos_num(); r<= get_max_axial_pos_num(); r++)
     set_sinogram(s_v.get_sinogram(r));
+}
+
+template<typename elemT>
+bool 
+SegmentBySinogram<elemT>::
+operator ==(const Segment<elemT>& that) const
+{
+  return
+    this->has_same_characteristics(that) &&
+    Array<3,elemT>::operator==(static_cast<const self_type&>(that));
 }
 
 

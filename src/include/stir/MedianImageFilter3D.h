@@ -22,9 +22,9 @@
 #define __stir_MedianImageFilter3D_H__
 
 
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
 #include "stir/MedianArrayFilter3D.h"
-
+#include "stir/DiscretisedDensity.h"
 #include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
@@ -46,11 +46,18 @@ class MedianImageFilter3D:
   public 
       RegisteredParsingObject<
 	      MedianImageFilter3D<elemT>,
-              ImageProcessor<3,elemT>,
-              ImageProcessor<3,elemT>
+              DataProcessor<DiscretisedDensity<3,elemT> >,
+              DataProcessor<DiscretisedDensity<3,elemT> >
 	       >
-
 {
+ private:
+  typedef
+    RegisteredParsingObject<
+	      MedianImageFilter3D<elemT>,
+              DataProcessor<DiscretisedDensity<3,elemT> >,
+              DataProcessor<DiscretisedDensity<3,elemT> >
+	       >
+    base_type;
 public:
   static const char * const registered_name; 
 

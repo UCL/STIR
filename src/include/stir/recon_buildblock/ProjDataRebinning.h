@@ -1,19 +1,6 @@
 //
 // $Id$
 //
-#ifndef __stir_recon_buildblock_ProjDataRebinning_H__
-#define __stir_recon_buildblock_ProjDataRebinning_H__
-/*!
-  \file 
-  \ingroup recon_buildblock
- 
-  \brief declares the ProjDataRebinning class
-
-  \author Kris Thielemans
-
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -29,6 +16,19 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details.
+*/
+#ifndef __stir_recon_buildblock_ProjDataRebinning_H__
+#define __stir_recon_buildblock_ProjDataRebinning_H__
+/*!
+  \file 
+  \ingroup recon_buildblock
+ 
+  \brief declares the stir::ProjDataRebinning class
+
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
 */
 /* Modification history
 */

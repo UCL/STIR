@@ -1,17 +1,25 @@
 /*
  * $Id$
+ */
+/*
+ * Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+ * See STIR/LICENSE.txt for details
+ */
+/* \brief Implementations for class stir::GE_IO::Niff.
  *
- *
+ * \author T. Borgeaud
  * $Date$
  *
  * $Revision$
  *
  *
+ * \ingroup GE_IO
  */
 
 #include "stir/BasicCoordinate.h"
 #include "stir/IndexRange.h"
 
+START_NAMESPACE_STIR
 
 namespace GE_IO {
   
@@ -188,3 +196,5 @@ namespace GE_IO {
     
   
 } // End of namespace.
+
+END_NAMESPACE_STIR

@@ -1,22 +1,34 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projdata  
 
-  \brief Implementations for non-inline functions of class ProjData
+  \brief Implementations for non-inline functions of class stir::ProjData
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/ProjData.h"
 #include "stir/Succeeded.h"
@@ -33,7 +45,14 @@
 #ifndef STIR_DEVEL
 #include "stir/ProjDataGEAdvance.h"
 #else
-#include "local/stir/IO/ProjDataVOLPET.h"
+#include "local/stir/IO/GE/ProjDataVOLPET.h"
+#ifdef HAVE_RDF
+#include "local/stir/IO/GE/stir_RDF.h"
+#include "local/stir/IO/GE/ProjDataRDF.h"
+#endif
+#endif
+#ifdef HAVE_IE
+#include "local/stir/IO/GE/ProjDataIE.h"
 #endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"
@@ -76,9 +95,19 @@ ProjData::
 read_from_file(const string& filename,
 	       const ios::openmode openmode)
 {
-  fstream * input = new fstream(filename.c_str(), openmode | ios::binary);
+  std::string actual_filename = filename;
+  // parse filename to see if it's like filename,options
+  {
+    const std::size_t comma_pos = filename.find(',');
+    if (comma_pos != std::string::npos)
+      {
+	actual_filename.resize(comma_pos);
+      }
+  }
+
+  fstream * input = new fstream(actual_filename.c_str(), openmode | ios::binary);
   if (! *input)
-    error("ProjData::read_from_file: error opening file %s", filename.c_str());
+    error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
 
   const int max_length=300;
   char signature[max_length];
@@ -105,12 +134,25 @@ read_from_file(const string& filename,
 		filename.c_str());
 #endif
 	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
-	return shared_ptr<ProjData>( new ProjDataVOLPET(filename) );
+	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename) );
       }
 #endif // STIR_DEVEL to differentiate between Advance and VOLPET code
   }
 
   delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
+
+#ifdef HAVE_IE
+  // GE IE file format 
+  if (GE_IO::is_IE_signature(signature))
+    {
+#ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as GE IE file", 
+	      filename.c_str());
+#endif
+      return shared_ptr<ProjData>( new GE_IO::ProjDataIE(filename) );
+    }
+#endif // HAVE_IE
+      
 
 #ifdef HAVE_LLN_MATRIX
   // ECAT 7
@@ -122,16 +164,16 @@ read_from_file(const string& filename,
     USING_NAMESPACE_ECAT;
     USING_NAMESPACE_ECAT7;
 
-    if (is_ECAT7_emission_file(filename) || is_ECAT7_attenuation_file(filename))
+    if (is_ECAT7_emission_file(actual_filename) || is_ECAT7_attenuation_file(actual_filename))
     {
       warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s",
-	      filename.c_str());
+	      actual_filename.c_str());
       return ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/1,1,0,0);
     }
     else
     {
-      if (is_ECAT7_file(filename))
-	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type", filename.c_str());
+      if (is_ECAT7_file(actual_filename))
+	warning("ProjData::read_from_file ECAT7 file %s is of unsupported file type", actual_filename.c_str());
     }
   }
 #endif // HAVE_LLN_MATRIX
@@ -148,6 +190,20 @@ read_from_file(const string& filename,
       return ptr;
   }
 
+
+#ifdef HAVE_RDF
+  if (GE_IO::is_RDF_file(actual_filename))
+    {
+#ifndef NDEBUG
+      warning("ProjData::read_from_file trying to read %s as RDF", filename.c_str());
+#endif
+    ProjData * ptr =
+      new GE_IO::ProjDataRDF(filename);
+    if (!is_null_ptr(ptr))
+      return ptr;
+  }
+#endif // RDF
+      
 
   error("\nProjData::read_from_file could not read projection data %s.\n"
 	"Unsupported file format? Aborting.",

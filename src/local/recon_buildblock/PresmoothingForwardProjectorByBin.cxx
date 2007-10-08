@@ -18,8 +18,7 @@
 */
 
 #include "local/stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
-//#include "stir/RelatedViewgrams.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
 
 START_NAMESPACE_STIR
@@ -67,7 +66,7 @@ PresmoothingForwardProjectorByBin::
 PresmoothingForwardProjectorByBin::
 PresmoothingForwardProjectorByBin(
                        const shared_ptr<ForwardProjectorByBin>& original_forward_projector_ptr,
-		       const shared_ptr<ImageProcessor<3,float> >& image_processor_ptr)
+		       const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >& image_processor_ptr)
                        : original_forward_projector_ptr(original_forward_projector_ptr),
 			 image_processor_ptr(image_processor_ptr)
 {}

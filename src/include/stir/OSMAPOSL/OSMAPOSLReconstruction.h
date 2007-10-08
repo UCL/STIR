@@ -1,10 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2.0 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup OSMAPOSL
-  \brief Declaration of class OSMAPOSLReconstruction
+  \brief Declaration of class stir::OSMAPOSLReconstruction
 
   \author Matthew Jacobson
   \author Kris Thielemans
@@ -13,20 +30,16 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
-*/
 
 #ifndef __stir_OSMAPOSL_OSMAPOSLReconstruction_h__
 #define __stir_OSMAPOSL_OSMAPOSLReconstruction_h__
 
-#include "stir/LogLikBased/LogLikelihoodBasedReconstruction.h"
-#include "stir/recon_buildblock/GeneralisedPrior.h"
-#include "stir/ImageProcessor.h"
+#include "stir/recon_buildblock/IterativeReconstruction.h"
 
 START_NAMESPACE_STIR
+
+template <typename TargetT> 
+class PoissonLogLikelihoodWithLinearModelForMean;
 
 /*! \ingroup OSMAPOSL
   \brief Implementation of the Ordered Subsets version of Green's 
@@ -64,8 +77,12 @@ START_NAMESPACE_STIR
 
   \warning This class should be the last in a Reconstruction hierarchy.
 */
-class OSMAPOSLReconstruction: public LogLikelihoodBasedReconstruction
+template <typename TargetT>
+class OSMAPOSLReconstruction:
+public IterativeReconstruction<TargetT >
 {
+ private:
+  typedef IterativeReconstruction<TargetT > base_type;
 public:
 
   //! Default constructor (calling set_defaults())
@@ -87,6 +104,31 @@ public:
   //! gives method information
   virtual string method_info() const;
 
+  /*! \name Functions to set parameters
+    This can be used as alternative to the parsing mechanism.
+   \warning Be careful with setting shared pointers. If you modify the objects in 
+   one place, all objects that use the shared pointer will be affected.
+  */
+  //@{
+  //! subiteration interval at which to apply inter-update filters 
+  void set_inter_update_filter_interval(const int);
+
+  //! inter-update filter object
+  void set_inter_update_filter_ptr(const shared_ptr<DataProcessor<TargetT > > &);
+
+  //! restrict updates (larger relative updates will be thresholded)
+  void set_maximum_relative_change(const double);
+
+  //! restrict updates (smaller relative updates will be thresholded)
+  void set_minimum_relative_change(const double);
+  
+  //! boolean value to determine if the update images have to be written to disk
+  void set_write_update_image(const int);
+
+  //! should be either additive or multiplicative
+  void set_MAP_model(const string&); 
+  //@}
+
  protected:
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
@@ -104,8 +146,7 @@ public:
   int inter_update_filter_interval;
 
   //! inter-update filter object
-  //ImageProcessor inter_update_filter;
-  shared_ptr<ImageProcessor<3,float> > inter_update_filter_ptr;
+  shared_ptr<DataProcessor<TargetT > > inter_update_filter_ptr;
 
   // KT 17/08/2000 3 new parameters
 
@@ -117,10 +158,6 @@ public:
   
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
-
-  //KT&SM 02/05/2001 new
-  //! the prior that will be used
-  shared_ptr<GeneralisedPrior<float> > prior_ptr;
 
   //! should be either additive or multiplicative
   string MAP_model; 
@@ -136,11 +173,16 @@ private:
   friend void do_sensitivity(const char * const par_filename);
 
   //! operations prior to the iterations
-  virtual void recon_set_up(shared_ptr <DiscretisedDensity<3,float> > const& target_image_ptr);
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
  
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_image_estimate(DiscretisedDensity<3,float> &current_image_estimate);
+  virtual void update_estimate (TargetT& current_image_estimate);
 
+  PoissonLogLikelihoodWithLinearModelForMean<TargetT >&
+    objective_function();
+
+  PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
+    objective_function() const;
 };
 
 END_NAMESPACE_STIR

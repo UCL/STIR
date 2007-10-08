@@ -15,7 +15,7 @@
   $Revision$
 */
 #include "stir/DiscretisedDensity.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/modulo.h"
 
@@ -75,9 +75,9 @@ int main(int argc, char **argv)
   
 
   // write image
-  DefaultOutputFileFormat output_file_format;
   Succeeded res = 
-    output_file_format.write_to_file(output_filename, *density_sptr);
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    write_to_file(output_filename, *density_sptr);
 
   return res==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -59,7 +59,7 @@ START_NAMESPACE_STIR
   (compared to max_eigenvalue).  
 
 
-  Computation uses the <i>power</a> method, see for instance
+  Computation uses the <i>power</i> method, see for instance
   http://www.maths.lth.se/na/courses/FMN050/FMN050-05/eigenE.pdf.
 
   The method consists in computing 

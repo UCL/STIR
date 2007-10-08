@@ -27,6 +27,10 @@
 
     See STIR/LICENSE.txt for details
 */
+
+#ifndef __stir_DynamicDiscretisedDensity_H__
+#define __stir_DynamicDiscretisedDensity_H__
+
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
 #include "stir/TimeFrameDefinitions.h"
@@ -38,17 +42,22 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 
+/*! \class 
+  \brief Class of multiple image frames.
+*/
+
+
 class DynamicDiscretisedDensity
 {
 public:
-  /*
-    \warning the image is read in respect to its center as origin!!!
-  */
+  //! \warning the image is read in respect to its center as origin!!!
   static
   DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
 
-  DynamicDiscretisedDensity() {};
+  DynamicDiscretisedDensity() {}
+
+  DynamicDiscretisedDensity(const DynamicDiscretisedDensity&argument);
 
   DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
 			    const shared_ptr<Scanner>& scanner_sptr)
@@ -59,6 +68,24 @@ public:
     _isotope_halflife=-1.F;
     _scanner_sptr=scanner_sptr;
   }
+  //!  Construct an empty DynamicDiscretisedDensity based on a shared_ptr<DiscretisedDensity<3,float> >
+  DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
+			    const shared_ptr<Scanner>& scanner_sptr,
+			    const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
+    {  
+    _densities.resize(time_frame_definitions.get_num_frames());
+    _time_frame_definitions=time_frame_definitions;
+    _calibration_factor=-1.F;
+    _isotope_halflife=-1.F;
+    _scanner_sptr=scanner_sptr;
+    
+    for (unsigned int frame_num=0; frame_num<time_frame_definitions.get_num_frames(); ++frame_num)
+      this->_densities[frame_num] = density_sptr->get_empty_discretised_density(); 
+    }  
+
+  DynamicDiscretisedDensity&
+    operator=(const DynamicDiscretisedDensity& argument);
+
   /*!
     \warning This function is likely to disappear later, and is dangerous to use.
  */
@@ -69,24 +96,45 @@ public:
   DynamicDiscretisedDensity(  TimeFrameDefinitions time_frame_defintions,shared_ptr<Scanner>,
 		 std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
   */
-  /*
+  /*!
     \warning The frame_num starts from 1
   */
+
+  const std::vector<shared_ptr<DiscretisedDensity<3,float> > > &
+    get_densities() const ;
+
   const DiscretisedDensity<3,float> & 
     get_density(const unsigned int frame_num) const ;
-  /*
-    \warning The frame_num starts from 1
-  */
+
   const DiscretisedDensity<3,float> & 
     operator[](const unsigned int frame_num) const 
+    { return this->get_density(frame_num); }
+  /*!
+    \warning The frame_num starts from 1
+  */
+ DiscretisedDensity<3,float> & 
+    get_density(const unsigned int frame_num);
+
+  DiscretisedDensity<3,float> & 
+    operator[](const unsigned int frame_num)  
     { return this->get_density(frame_num); }
 
   const float get_isotope_halflife() const;
 
   const float get_calibration_factor() const;
 
+  const float get_scanner_default_bin_size() const;
+
+  void set_time_frame_definitions(TimeFrameDefinitions time_frame_definitions) 
+    {this->_time_frame_definitions=time_frame_definitions;}
+
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;
+
+  unsigned get_num_time_frames() const
+    {
+      return this->get_time_frame_definitions().get_num_time_frames();
+    }
 
  /*
    \Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
@@ -100,9 +148,10 @@ public:
  */
  void decay_correct_frames()  ;
  void set_if_decay_corrected(const bool is_decay_corrected)  ;
- void  DynamicDiscretisedDensity::set_isotope_halflife(const float isotope_halflife);
+ void DynamicDiscretisedDensity::set_isotope_halflife(const float isotope_halflife);
  void set_calibration_factor(const float calibration_factor) ;
 private:
+ // warning: if adding any new members, you have to change the copy constructor as well.
   TimeFrameDefinitions _time_frame_definitions;
   std::vector<shared_ptr<DiscretisedDensity<3,float> > > _densities;
   shared_ptr<Scanner> _scanner_sptr;
@@ -112,3 +161,5 @@ private:
 };
 
 END_NAMESPACE_STIR
+
+#endif //__stir_DynamicDiscretisedDensity_H__

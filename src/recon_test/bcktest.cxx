@@ -58,7 +58,7 @@
 #include "stir/display.h"
 #include "stir/KeyParser.h"
 #include "stir/stream.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
@@ -367,9 +367,9 @@ main(int argc, char **argv)
     
     if (save)
     {
-      DefaultOutputFileFormat output_format;
       cerr <<"  - Saving " << output_filename << endl;
-      output_format.write_to_file(output_filename, *image_sptr);
+      OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+	write_to_file(output_filename, *image_sptr);
       
     }
 

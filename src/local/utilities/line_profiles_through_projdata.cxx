@@ -1,15 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup utilities
-  \brief Extracting profiles from projection data
-  \author Charalampos Tsoumpas
-  \author Kris Thielemans
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -27,10 +18,39 @@
     See STIR/LICENSE.txt for details
 */
 
+/*!
+  \file
+  \ingroup utilities
+  \brief Extracting profiles from projection data
+  \author Charalampos Tsoumpas
+  \author Kris Thielemans
 
- /* This program extracts the tangential profile of given input_projdata which should be on the center. 
-    The results is the same as if we first run ./extract_segments input_projdata.hs (by sinogram) and then
-    run ./manip_image input_projdata.hs to extract the rows as the defaults.   */
+  \todo put the output profile name as a first argument after the command, to follow \a STIR conventions.
+
+  \par Usage:
+  \code
+   line_profiles_through_projdata [proj_data_filename] [output_profile_filename] ax_min/max view_min/max tang_min/max 
+  \endcode
+  \par ax_min/max, view_min/max, tang_min/max:
+  These are the minimum and maximum values of the profile for the correspondig direction (axial - angular - tangential). \n
+
+  \retval output_profile_filename Is a prefix of two text file with postfix: \n
+  (a)\a _tang for tangential profiles. \n
+  (b)\a _view for profiles through views.\n
+  The output profile will represent the sum over all the line profiles through min/max for the directions and will produce:
+
+  \attention Take special care of the min/max values of the direction that the profiles will be estimated. The should be the same.
+
+
+  This program extracts the profile of given input_projdata which should be on the center. 
+  The results is the same as if we first run 
+  \a ./extract_segments \a input_projdata.hs (by sinogram) 
+  and then run 
+  \a ./manip_image \a input_projdata.hs to extract the rows as the defaults.  
+
+  $Date$
+  $Revision$
+*/
 
 #include "stir/Array.h"
 #include "stir/Sinogram.h"
@@ -50,7 +70,6 @@ using std::endl;
 using std::cout;
 using std::setw;
 #endif
-
 
 int main(int argc, char *argv[])
 { 

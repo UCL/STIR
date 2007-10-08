@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup symmetries
   \brief non-inline implementations for class 
-         TrivialDataSymmetriesForBins
+         stir::TrivialDataSymmetriesForBins
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
@@ -138,6 +150,13 @@ TrivialDataSymmetriesForBins::
 find_basic_view_segment_numbers(ViewSegmentNumbers&) const
 {
   return false;
+}
+
+bool 
+TrivialDataSymmetriesForBins::
+blindly_equals(const root_type * const) const
+{
+  return true;
 }
 
 END_NAMESPACE_STIR

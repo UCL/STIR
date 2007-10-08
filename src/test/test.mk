@@ -3,7 +3,7 @@
 # 
 dir := test
 
-$(dir)_TEST_SOURCES := test_Array.cxx \
+$(dir)_TEST_SOURCES := test_Array.cxx test_NestedIterator.cxx \
 	test_VectorWithOffset.cxx \
 	test_ArrayFilter.cxx \
         test_convert_array.cxx \
@@ -13,6 +13,7 @@ $(dir)_TEST_SOURCES := test_Array.cxx \
 	test_filename_functions.cxx \
 	test_coordinates.cxx \
 	test_VoxelsOnCartesianGrid.cxx \
+	test_zoom_image.cxx \
 	test_proj_data_info.cxx \
 	test_stir_math.cxx \
 	test_OutputFileFormat.cxx \
@@ -58,25 +59,49 @@ run_$(dir)/test_VAXfloat:  $(DEST)$(dir)/test_VAXfloat PHONY_TARGET
 ##################################################
 # rules to ignore registries
 # note: have to be before include statement as that changes value of $(dir)
-${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} $(STIR_LIB) 
-	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
-
 ${DEST}$(dir)/test_ArrayFilter: ${DEST}$(dir)/test_ArrayFilter${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-ifeq ("$(FAST_test_VectorWithOffset)","")
+ifeq ("$(FAST_test)","")
 ${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} $(STIR_LIB)
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
-else
-  # rule for test_VectorWithOffset that ignores $(STIR_LIB) completely as it's all inline (except for error())
-  # somewhat dangerous though in case files/rules change
-${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} ${DEST}/buildblock/error.o
-	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  ${DEST}/buildblock/error.o $(LINKFLAGS) $(SYS_LIBS)
-endif
 
+${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 ${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+
+
+else
+  # rules for test_VectorWithOffset et al that ignores $(STIR_LIB) completely as it's all inline (except for error())
+  # somewhat dangerous though in case files/rules change
+${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} \
+    ${DEST}buildblock/error${O_SUFFIX}
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  ${DEST}buildblock/error${O_SUFFIX} $(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} \
+   ${DEST}buildblock/error${O_SUFFIX} ${DEST}buildblock/warning${O_SUFFIX} \
+   $(DEST)buildblock/IndexRange${O_SUFFIX} ${DEST}buildblock/ByteOrder${O_SUFFIX}  \
+   $(DEST)buildblock/utilities${O_SUFFIX}
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< \
+	${DEST}buildblock/error${O_SUFFIX}  $(DEST)buildblock/IndexRange${O_SUFFIX} \
+	${DEST}buildblock/warning${O_SUFFIX} ${DEST}buildblock/ByteOrder${O_SUFFIX}  \
+	$(DEST)buildblock/utilities${O_SUFFIX} \
+	$(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_NestedIterator: ${DEST}$(dir)/test_NestedIterator${O_SUFFIX} ${DEST}buildblock/error${O_SUFFIX}  $(DEST)buildblock/IndexRange${O_SUFFIX}
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  ${DEST}buildblock/error${O_SUFFIX}  $(DEST)buildblock/IndexRange${O_SUFFIX} $(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array${O_SUFFIX} \
+   ${DEST}buildblock/error${O_SUFFIX} ${DEST}buildblock/warning${O_SUFFIX} 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< \
+	${DEST}buildblock/error${O_SUFFIX}  \
+	${DEST}buildblock/warning${O_SUFFIX}   \
+$(LINKFLAGS) $(SYS_LIBS)
+
+endif
+
 
 
 ${DEST}$(dir)/test_IndexRange: ${DEST}$(dir)/test_IndexRange${O_SUFFIX} $(STIR_LIB) 

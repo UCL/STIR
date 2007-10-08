@@ -1,13 +1,30 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_recon_buildblock_Reconstruction_H__
 #define __stir_recon_buildblock_Reconstruction_H__
 /*!
   \file 
   \ingroup recon_buildblock
  
-  \brief declares the Reconstruction class
+  \brief declares the stir::Reconstruction class
 
   \author Kris Thielemans
   \author Matthew Jacobson
@@ -17,22 +34,11 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-/* Modification history
-
-   KT 10122001
-   - added construct_target_image_ptr and 0 argument reconstruct()
-*/
-
 
 #include "stir/TimedObject.h"
 #include "stir/ParsingObject.h"
 #include "stir/shared_ptr.h"
-#include "stir/ProjData.h"
+#include "stir/DataProcessor.h"
 #include "stir/IO/OutputFileFormat.h"
 #include <string>
 
@@ -43,7 +49,7 @@ using std::string;
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+
 class Succeeded;
 
 /*!
@@ -56,8 +62,27 @@ class Succeeded;
   For convenience, the class is derived from TimedObject. It is the 
   responsibility of the derived class to run these timers though.
 
+  \par Parsing parameters
+
+  \verbatim
+  ; post-processing after image reconstruction,see DataProcessor<TargetT>
+  ; defaults to no processing ("None")
+  post-filter type :=
+
+  ; output file(s) will be written with the following file name
+  output filename prefix := 
+  ; output file(s) will use the following file format
+  ; see OutputFileFormat<TargetT>
+  output file format :=
+  \endverbatim
+
+  \todo Currently reconstruct() always write to an output_file, which is not desirable
+  when running a reconstruction inside some other code. Maybe this should
+  be moved into post_filter_sptr?
+
 */
 
+template <typename TargetT>
 class Reconstruction : public TimedObject, public ParsingObject 
 {
 public:
@@ -67,102 +92,68 @@ public:
   //! gives method information
   virtual string method_info() const = 0;
   
-
-  //! Creates a suitable target_image as determined by the parameters
-  virtual DiscretisedDensity<3,float>* 
-    construct_target_image_ptr() const; // KT 10122001 new
-  
   //! executes the reconstruction
   /*!
-    Calls construct_target_image_ptr() and then 1 argument reconstruct().
-    At the end of the reconstruction, the final image is saved to file as given in 
-    ReconstructionParameters::output_filename_prefix. 
-
-    This behaviour can be modified by a derived class (for instance see 
-    IterativeReconstruction::reconstruct()).
-
     \return Succeeded::yes if everything was alright.
    */     
   virtual Succeeded 
-    reconstruct(); // KT 10122001 new
+    reconstruct() = 0;
 
-  //! executes the reconstruction
+  //! executes the reconstruction storing result in \c target_image_sptr
   /*!
-    \param target_image_ptr The result of the reconstruction is stored in *target_image_ptr.
-    For iterative reconstructions, *target_image_ptr is used as an initial estimate.
+   \param target_image_sptr The result of the reconstruction is stored in 
+   \c *target_image_sptr.
     \return Succeeded::yes if everything was alright.
-   */     
+
+   \par Developer\'s note
+
+   Because of C++ rules, overloading one of the reconstruct() functions
+   in a derived class, will hide the other. So you have to overload both.
+  */     
   virtual Succeeded 
-    reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr) = 0;
+    reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
 
-  //! accessor for the external parameters
-  Reconstruction& get_parameters()
-    {
-      return *this;
-    }
+  //! operations prior to the reconstruction
+  /*! Will do various consistency checks and return Succeeded::no 
+    if something is wrong.
 
-  //! accessor for the external parameters
-  const Reconstruction& get_parameters() const
-    {
-      return *this;
-    }
+    \todo Currently, set_up() is called by reconstruct(). This is in
+    contrast with some other class hierarchies in STIR where set_up()
+    has to be called before any actual processing. Maybe this should
+    be made consistent.
+  */
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_sptr);
+
+  /*! \name Functions to set parameters
+    This can be used as alternative to the parsing mechanism.
+   \warning Be careful with setting shared pointers. If you modify the objects in 
+   one place, all objects that use the shared pointer will be affected.
+  */
+  //@{
+
+  //! file name for output reconstructed images
+  void set_output_filename_prefix(const string&); 
+
+  //! defines the format of the output files
+  void set_output_file_format_ptr(const shared_ptr<OutputFileFormat<TargetT> >&);
+
+  //! post-filter
+  void set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > &);
+  //@}
 
   // parameters
  protected:
 
-  //! the input projection data file name
-  string input_filename;
-
   //! file name for output reconstructed images
   string output_filename_prefix; 
 
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int output_image_size_xy; // KT 10122001 appended _xy
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int output_image_size_z; // KT 10122001 new
-
-  // KT 20/06/2001 disabled
-#if 0
-  //! number of views to add (i.e. mashing)
-  int num_views_to_add;
-#endif
-  //! the zoom factor
-  double zoom;
-
-  //! offset in the x-direction
-  double Xoffset;
-
-  //! offset in the y-direction
-  double Yoffset;
-
-  // KT 20/06/2001 new
-  //! offset in the z-direction
-  double Zoffset;
-
-  //! the maximum absolute ring difference number to use in the reconstruction
-  /*! convention: if -1, use get_max_segment_num()*/
-  int max_segment_num_to_process;
-
-
-  //! prompts the user to enter parameter values manually
-  virtual void ask_parameters();
-
-
-  //! points to the object for the total input projection data
-  shared_ptr<ProjData> proj_data_ptr;
-
   //! defines the format of the output files
-  shared_ptr<OutputFileFormat> output_file_format_ptr; 
+  shared_ptr<OutputFileFormat<TargetT> > output_file_format_ptr; 
+
+  //! post-filter
+  shared_ptr<DataProcessor<TargetT> >  post_filter_sptr;
 
 protected:
- 
-  //! used to check acceptable parameter ranges, etc...
-  virtual bool post_processing();
 
   /*! 
   \brief 
@@ -173,17 +164,33 @@ protected:
   hierarchy. At that time, all Interfile keys will have been
   initialised, and ask_parameters() will be the appropriate virtual
   function, such that questions are asked for all parameters.
+
+  \todo It currently calls error() when something goes wrong. It should
+  return Succeeded (or throw an exception).
   */
   void initialise(const string& parameter_filename);
   
   virtual void set_defaults();
   virtual void initialise_keymap();
+  //! used to check acceptable parameters after parsing
+  /*!
+    The function should be used to set members that have 
+    are not set directly by the parsing. For example,
+    parsing might set \c input_filename, and \c post_processing()
+    might then read in the data and set the corresponding 
+    Reconstruction parameter.
+
+    Consistency checks mostly belong in \c set_up(). The reason for this
+    is that for instance a GUI might not use the parsing mechanism and 
+    set parameters by calling various \c set_ functions (such as
+    \c set_post_processor_sptr() ).
+  */
+  virtual bool post_processing();
 
 
 };
 
 END_NAMESPACE_STIR
 
-    
 #endif
 

@@ -27,18 +27,36 @@ $(dir)_SOURCES = \
 	fit_cylinder.cxx \
 	find_maximum_in_image.cxx \
 	find_sinogram_rescaling_factors.cxx \
-        find_fwhm_in_image.cxx \
+	find_fwhm_in_image.cxx \
 	line_profiles_through_projdata.cxx \
 	interpolate_projdata.cxx \
 	read_input_function.cxx \
 	calculate_attenuation_coefficients.cxx \
 	make_grid_image.cxx \
-	read_dynamic_images.cxx \
-	apply_patlak_on_images.cxx \
+	make_binary_image.cxx \
 	apply_patlak_to_images.cxx \
-	add_side_shields.cxx 
+	apply_logan_to_images.cxx \
+	list_TAC_ROI_values.cxx \
+	Bland_Altman_plot.cxx \
+	get_dynamic_images_from_parametric_images.cxx \
+	get_total_counts.cxx \
+	mult_model_with_dyn_images.cxx \
+	read_dynamic_images.cxx \
+	extract_direct_sinograms.cxx \
+	image_flip_x.cxx \
+	write_patlak_matrix.cxx \
+	abs_image.cxx \
+	mult_image_parameters.cxx \
+	precompute_denominator_SPS.cxx \
+	cleanup966.cxx \
+	create_some_points.cxx \
+	create_a_point.cxx \
+	print_voxel_value.cxx \
+	extract_kernel.cxx \
+	Hounsfield2mu.cxx
 
 #	CoG.cxx \
+#	add_time_frame_info.cxx \
 #	make_cylinder.cxx 
 
 ifeq ($(HAVE_LLN_MATRIX),1)
@@ -46,6 +64,11 @@ ifeq ($(HAVE_LLN_MATRIX),1)
   # ecat7 stuff as well
   $(dir)_SOURCES += change_mhead_file_type.cxx copy_ecat7_header.cxx
 endif
+
+ifeq ($(HAVE_RDF),1)
+  $(dir)_SOURCES += print_rdf_singles.cxx
+endif
+
 
 ${DEST}$(dir)/read_input_function: ${DEST}$(dir)/read_input_function$(O_SUFFIX) \
    $(STIR_LIB) 

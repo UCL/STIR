@@ -16,7 +16,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -27,7 +27,7 @@
 
 #include "local/stir/ModifiedInverseAverigingArrayFilter.h"
 #include "stir/DiscretisedDensity.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/ProjData.h"
@@ -51,10 +51,18 @@ class NonseparableSpatiallyVaryingFilters3D:
 public 
     RegisteredParsingObject<
         NonseparableSpatiallyVaryingFilters3D<elemT>,
-        ImageProcessor<num_dimensions,elemT>,
-        ImageProcessor<num_dimensions,elemT>
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
     >
 {
+ private:
+  typedef
+    RegisteredParsingObject<
+        NonseparableSpatiallyVaryingFilters3D<elemT>,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
+    >
+    base_type;
 public:  
   static const char * const registered_name;   
 

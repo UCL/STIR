@@ -1,17 +1,6 @@
 //
 // $Id$
 //
-/*!
-  \file
-  \ingroup projdata
-
-  \brief Declaration of class ProjDataInfoCylindricalNoArcCorr
-
-  \author Kris Thielemans
-
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -28,8 +17,19 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __ProjDataInfoCylindricalNoArcCorr_H__
-#define __ProjDataInfoCylindricalNoArcCorr_H__
+/*!
+  \file
+  \ingroup projdata
+
+  \brief Declaration of class stir::ProjDataInfoCylindricalNoArcCorr
+
+  \author Kris Thielemans
+
+  $Date$
+  $Revision$
+*/
+#ifndef __stir_ProjDataInfoCylindricalNoArcCorr_H__
+#define __stir_ProjDataInfoCylindricalNoArcCorr_H__
 
 
 #include "stir/ProjDataInfoCylindrical.h"
@@ -90,6 +90,9 @@ class Succeeded;
   */
 class ProjDataInfoCylindricalNoArcCorr : public ProjDataInfoCylindrical
 {
+private:
+  typedef ProjDataInfoCylindrical base_type;
+  typedef ProjDataInfoCylindricalNoArcCorr self_type;
 
 public:
   //! Default constructor (leaves object in ill-defined state)
@@ -113,6 +116,8 @@ public:
     const int num_views,const int num_tangential_poss);
 
   ProjDataInfo* clone() const;
+
+  bool operator==(const self_type&) const;
 
   //! Gets s coordinate in mm
   /*! \warning   
@@ -287,6 +292,8 @@ private:
   mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_uncompressed_view_tangpos;
   mutable bool det1det2_to_uncompressed_view_tangpos_initialised;
   void initialise_det1det2_to_uncompressed_view_tangpos() const;
+
+  virtual bool blindly_equals(const root_type * const) const;
 
 };
 

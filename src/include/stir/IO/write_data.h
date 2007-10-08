@@ -1,26 +1,36 @@
 // $Id$
 #ifndef __stir_IO_write_data_H__
 #define __stir_IO_write_data_H__
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup Array_IO 
-  \brief declarations of write_data() functions for writing Arrays to file
+  \brief declarations of stir::write_data() functions for writing Arrays to file
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
-#include "stir/common.h"
+#include "stir/ByteOrder.h"
 START_NAMESPACE_STIR
 
-class ByteOrder;
 class Succeeded;
 class NumericType;
 template <class T> class NumericInfo;

@@ -33,7 +33,7 @@
   $Revision$
 */
 
-#include "stir/recon_buildblock/Reconstruction.h"
+#include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include <string>
 
@@ -85,9 +85,9 @@ end :=
   \endverbatim
  
 */
-class FBP2DReconstruction : public Reconstruction
+class FBP2DReconstruction : public AnalyticReconstruction
 {
-  typedef Reconstruction base_type;
+  typedef AnalyticReconstruction base_type;
 public:
   //! Default constructor (calls set_defaults())
   FBP2DReconstruction (); 
@@ -105,14 +105,6 @@ public:
 		      const int num_segments_to_combine=-1
 		      );
   
-  Succeeded reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
-  
-   //! Reconstruction that gets target_image info from the parameters
-   /*! sadly have to repeat that here, as Reconstruct::reconstruct() gets hidden by the 
-       1-argument version.
-       */
-  virtual Succeeded reconstruct();
-
   virtual string method_info() const;
 
   virtual void ask_parameters();
@@ -139,6 +131,8 @@ public:
    */
   int display_level;
  private:
+  Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
+
   shared_ptr<BackProjectorByBin> back_projector_sptr;
 
   virtual void set_defaults();

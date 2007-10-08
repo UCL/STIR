@@ -22,27 +22,20 @@ the Free Software Foundation; either version 2.1 of the License, or
 
   \author Charalampos Tsoumpas
   
-	$Date$
-	$Revision$
+  $Date$
+  $Revision$
 	
-	  \par Usage:
-	  \code
-	  interpolate_projdata 
-	  [projdata_output_filename]
-	  [projdata_input]
-	  [projdata_template]
-	  [spline_type]
+  \par Usage:
+  \code
+  interpolate_projdata [projdata_output_filename] [projdata_input] [projdata_template] [spline_type]
+  and to have different interpolation for each dimension [spline_type[2]] [spline_type[3]]
+  Output: [projdata_output_filename].hs [projdata_output_filename].s files
+  \endcode	  
+  
 
-  or for different interpolation for each dimension 
-	  [spline_type[2]]
-	  [spline_type[3]]
-	  
-		Output: "projdata_output".hs "projdata_output_filename".s files
-		
-		  This is a utility program which uses the interpolate_projdata function 
-		  in order to interpolate a 3D set of projection data using B-SPlines interpolation. 
-		  See the ../buildblock/interpolate_projdata.cxx for more details.
-		  \endcode	  
+  \par
+  This is a utility program which uses the interpolate_projdata function in order to interpolate a 3D set of projection data using B-SPlines interpolation. \sa "local/stir/interpolate_projdata.h" for more details.
+  
 */
 #include <iostream>
 #include <iomanip>

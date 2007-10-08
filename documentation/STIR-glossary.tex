@@ -14,7 +14,7 @@
 \end{center}
 
 \begin{center}
-\textit{Version 1.0}\\
+\textit{Version 1.1}\\
 Based on PARAPET Deliverable 4.1
 
 
@@ -38,10 +38,9 @@ the inner dimensions of the positron tomograph.
 \item[Detector ring ] 
 Geometrically associated to the cylindrical volume defined by 
 the dimensions of a detector ring. Note that because currently 
-Depth of Interaction is not taken into account, the ring radius 
-in the building blocks is \ensuremath{\sim} 1cm larger than the actual 
-ring radius (corresponding to the average depth of interaction 
-for BGO). 
+Depth of Interaction is not taken into account, the effective ring radius 
+used in the building blocks is the sum of the inner ring radius 
+and an average depth of interaction (e.g. \ensuremath{\sim} 1cm for BGO).
 % ROW 5
 \item[Detector] 
 Sometimes called \textbf{detector crystal}. Geometrically associated 
@@ -68,11 +67,11 @@ Tube joining two \textbf{detectors}.
 Set of \textbf{bins} corresponding to 1 segment and 1 \textbf{axial} position. 
 Before \textbf{axial compression,} this corresponds to LORs in a \textbf{detector} \textbf{ring} 
 (\textit{direct} \textit{sinogram}) or between two different \textbf{detector} \textbf{rings} 
-(\textit{oblique} \textit{sinogram}). For a \textbf{scanner} of \textit{n} \textbf{detector 
-rings}, there are \textit{n} \textbf{direct sinograms} and \textit{n}\textit{{\small 2}}--1 \textbf{oblique 
-sinograms} for a total of \textit{n}\textit{{\small 2}} \textbf{sinograms}. With \textbf{axial 
-compression}, the number of \textbf{direct sinograms} is \textit{2n-1}. Conventionally, 
-the \textbf{view} angle in an oblique sinograms runs only over 180 
+(\textit{oblique} \textit{sinogram}). For a \textbf{scanner} of $n$ \textbf{detector 
+rings}, there are $n$ \textbf{direct sinograms} and $n^2-1$ \textbf{oblique 
+sinograms} for a total of $n^2$ \textbf{sinograms}. With \textbf{axial 
+compression}, the number of \textbf{direct sinograms} is $2n-1$. Conventionally, 
+the \textbf{view} angle in an oblique sinogram runs only over 180 
 degrees, meaning that only half of the detectors in each ring 
 are covered. The other half corresponds to the \textbf{sinogram} in 
 the opposite \textbf{segment} (with minus the average ring difference),
@@ -109,6 +108,11 @@ difference} as shown in Annex 1.
 \item[Viewgram] 
 Set of equal azimuth \textbf{merged} \textbf{LORs} of a \textbf{segment}.
 % ROW 15
+\item[Projection data]
+The set of all (measured) LORs, normally split into \textbf{segments} etc.
+The word ``projection'' is used because after various corrections and
+ignoring noise, the measured data can be approximated as line integrals 
+through the object.
 \item[FOV (Field-Of-View)] 
 Geometrically associated to the volume for which there is at 
 least 1 \textbf{bin} with non-zero detection probability\textbf{.} In many 
@@ -164,10 +168,10 @@ where segment 0 has span 3, while other segments have span 1.
 
 Michelogram of data for the ART scanner with a maximum \textbf{ring 
 difference} of 17 and a \textbf{span} of 7. \\
-Segment 0 is in the middle. \\
+Segment 0 is on the diagonal. \\
 Each dot would correspond to a single sinogram if no axial compression 
 would be used. Axial compression consists in adding sinograms 
-together such that their central LORs intersect the scanner axis 
+together whose central LORs intersect the scanner axis 
 in the same point. This can be seen as a generalization of the 
 Single Slice Rebinning Algorithm. In the drawing below, the diagonal 
 lines connecting the dots indicate the sinograms that are added 
@@ -176,13 +180,16 @@ was introduced because for some axial positions, 4 sinograms
 are added, while for others only 3. Note that \textbf{span} is always 
 odd.).\\
 Note that STIR supports data with different \textbf{span} for each \textbf{segment}. 
-In particular, the GE Advance uses segment 0 with span=3, while 
+In particular, STIR currently interpretes the (3D) data organisation of the
+GE Advance and Discovery scanners as using segment 0 with span=3, while 
 other segments are span=1.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=6.in, height=6in]{graphics/STIR-glossaryFig1}
-\caption{Michelogram with span=7}
+\caption{Michelogram with span=7. \textbf{Warning}: due to historical 
+reasons, the axis labels are wrong. The horizontal axis corresponds to
+\textit{ringB}.}
 \end{center}
 \end{figure}
 

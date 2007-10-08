@@ -25,7 +25,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange3D.h"
-#include "stir/norm.h"
+#include "stir/numerics/norm.h"
 #include "stir/numerics/stir_NumericalRecipes.h"
 #include "stir/numerics/fourier.h"
 #include <iostream>
@@ -167,8 +167,15 @@ int main()
     nr_to_stir(nr_data, nr_c);
     nr_c -= c;
 
-    cout << "\nResidual norm " <<  norm(nr_c.begin(), nr_c.end())/norm(c.begin(), c.end()) << std::endl;
-
+    {
+      const float tmp = norm(nr_c.begin(), nr_c.end())/norm(c.begin(), c.end());
+      cout << "\nResidual norm " <<  tmp << std::endl;
+      if (tmp > .1)
+	{
+	  std::cout << "NR : " << nr_c
+		    << "STIR " << c;
+	}
+    }
     stir_to_nr(c, nr_data);
 
     {
@@ -292,7 +299,7 @@ int main()
       norm(c.begin(), c.end())/norm(v.begin(), v.end());
 
     ArrayF1 again_v =
-      inverse_fourier_1d_for_real_data(pos_frequencies,sign);
+      inverse_fourier_for_real_data(pos_frequencies,sign);
     //cout <<"\nv,test "<< v << again_v << again_v/v;
     again_v -= v;
     cout << "\ninverse Real FT Residual norm "  <<

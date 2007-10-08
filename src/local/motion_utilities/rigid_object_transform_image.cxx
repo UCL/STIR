@@ -31,7 +31,7 @@ namespace stir { // for doxygen
 } // end namespace stir
 
 #include "stir/DiscretisedDensity.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -89,8 +89,9 @@ int main(int argc, char **argv)
   // skip program name
   --argc;
   ++argv;
-  shared_ptr<OutputFileFormat> output_format_sptr =
-    new DefaultOutputFileFormat;
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > >
+    output_format_sptr =
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
   int interpolation_order = 1;
   bool do_origin_shift = true;
 

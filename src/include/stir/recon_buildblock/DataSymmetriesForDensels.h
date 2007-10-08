@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup symmetries
 
-  \brief Declaration of class DataSymmetriesForDensels
+  \brief Declaration of class stir::DataSymmetriesForDensels
 
   \author Kris Thielemans
  
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_DataSymmetriesForDensels_H__
 #define __stir_recon_buildblock_DataSymmetriesForDensels_H__
@@ -68,6 +80,10 @@ public:
     DataSymmetriesForDensels 
     * clone() const = 0;
 
+  bool operator ==(const DataSymmetriesForDensels&) const;
+
+  bool operator !=(const DataSymmetriesForDensels&) const;
+
 #if 0
   TODO!
   //! returns the range of the indices for basic Densels
@@ -112,6 +128,10 @@ public:
   virtual bool
     find_basic_densel(Densel& b) const;
 
+ protected:
+  typedef DataSymmetriesForDensels root_type;
+
+  virtual bool blindly_equals(const root_type * const) const = 0;
 
 };
 

@@ -25,7 +25,7 @@
   building blocks and vice versa.
 
   \author Kris Thielemans
-  \author Cristina de Oliveira (offset_in_ECAT_file function)
+  \author Cristina de Oliveira (stir::ecat::ecat7::offset_in_ECAT_file function)
   \warning This only works with some CTI file_types. In particular, it does NOT
   work with the ECAT6-like files_types, as then there are subheaders 'in' the 
   datasets.
@@ -613,7 +613,7 @@ void make_ECAT7_main_header(Main_header& mhead,
   
   // extra main parameters that depend on data type
   mhead.file_type= PetVolume;
-  mhead.num_planes=image.get_z_size();
+  mhead.num_planes=image.get_length();
   mhead.plane_separation=image.get_grid_spacing()[1]/10; // convert to cm
 
 }
@@ -706,7 +706,8 @@ make_ECAT7_main_header(Main_header& mhead,
   const float default_bin_size =
     proj_data_info.get_scanner_ptr()->get_default_bin_size();
 
-  if (fabs(natural_bin_size - default_bin_size)>.02)
+  if (fabs(natural_bin_size - default_bin_size)>.02 &&
+      dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(&proj_data_info) == 0)
     {
       warning("CTI default bin size (%g) differs from STIR sampling in s (%g)\n"
 	      "for this data. Using default bin size for field main header anyway.\n"
@@ -980,7 +981,7 @@ make_subheader_for_ECAT7_aux(SUBHEADERPTR sub_header_ptr,
       x_resolution =
 	proj_data_info.get_sampling_in_s(Bin(0,0,0,0))/
 	depth_of_interaction_factor;
-      if (fabs(x_resolution - scanner.get_default_bin_size()) > .005)
+      if (fabs(x_resolution - scanner.get_default_bin_size()) > .01)
 	{
 	  warning("ECAT7 IO: Bin size derived from data (%g) does not agree with expected value %g\n"
 		  "for scanner %s. Using default bin size for header.x_resolution...",
@@ -996,7 +997,7 @@ make_subheader_for_ECAT7_aux(SUBHEADERPTR sub_header_ptr,
     {
       x_resolution =
 	proj_data_info.get_sampling_in_s(Bin(0,0,0,0));
-      if (fabs(x_resolution - scanner.get_default_bin_size()) > .001)
+      if (fabs(x_resolution - scanner.get_default_bin_size()) > .01)
 	{
 	  warning("ECAT7 IO: Bin size derived from data (%g) does not agree with expected value %g\n"
 		  "for scanner %s. Using data-derived value for header.x_resolution...",
@@ -1143,7 +1144,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   ByteOrder byte_order;
   find_type_from_ECAT_data_type(data_type, byte_order, sub_header_ptr->data_type);
 
-  if (fabs(bin_size - scanner_ptr->get_default_bin_size())>.00001)
+  if (fabs(bin_size - scanner_ptr->get_default_bin_size())>.01)
   {
     warning("ECAT7 IO: Bin size from header.x_resolution (%g) does not agree with expected value %g\n"
 	    "for scanner %s. Using bin size from header...",
@@ -1389,6 +1390,8 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
       return 0;
     }
 
+  // WARNING: this has to be consistent with the writing
+  // in write_basic_interfile_header_for_ECAT7 and DiscretisedDensity_to_ECAT7
   const IndexRange3D range_3D (0,dimensions.z()-1,
 			       -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
 			       -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
@@ -1543,8 +1546,14 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       file_offsets[0] = static_cast<unsigned long>(offset_in_file);
       strcat(header_filename, ".hv");
       interfile_header_filename = header_filename;
+      // WARNING: this has to be consistent with the reading
+      // in ECAT7_to_VoxelsOnCartesianGrid
+      const IndexRange3D range_3D (0,dimensions.z()-1,
+				   -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
+				   -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
       write_basic_interfile_image_header(header_filename, ECAT7_filename,
-					 dimensions, voxel_size, type_of_numbers, byte_order,
+					 range_3D, voxel_size, origin,
+					 type_of_numbers, byte_order,
 					 scaling_factors,
 					 file_offsets);
       break;
@@ -1596,7 +1605,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     return Succeeded::no;
   }
   
-  delete header_filename;
+  delete[] header_filename;
   matrix_close(mptr);
   return Succeeded::yes;
 }
@@ -1620,11 +1629,11 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
             frame_num, gate_num, data_num, bed_num);
     return Succeeded::no;
   }
-  if (mhead.num_planes!=image.get_z_size())
+  if (mhead.num_planes!=image.get_length())
   {
     warning("DiscretisedDensity_to_ECAT7: converting (f%d, g%d, d%d, b%d)\n"
             "Main header.num_planes should be %d\n",
-            frame_num, gate_num, data_num, bed_num,image.get_z_size());
+            frame_num, gate_num, data_num, bed_num,image.get_length());
     return Succeeded::no;
   }
   const float voxel_size_z = image.get_grid_spacing()[1]/10;// convert to cm
@@ -1642,9 +1651,9 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   Image_subheader ihead;
   img_subheader_zero_fill(ihead);
   
-  const int z_size= image.get_z_size();
-  const int y_size= image.get_y_size();
-  const int x_size= image.get_x_size();
+  const int z_size= image.get_length();
+  const int y_size= image[0].get_length();
+  const int x_size= image[0][0].get_length();
   
   // Setup subheader params
   // ihead.data_type set by save_volume7;
@@ -1656,6 +1665,20 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   ihead.z_pixel_size= voxel_size_z;
   
   ihead.num_dimensions= 3;
+  // STIR origin depends on the index range, but the index range is lost
+  // after writing to file.
+  // ECAT7 origin is somewhere in the middle of the image
+  // WARNING this has to be consistent with reading
+  if (image[0][0].get_min_index() != -(x_size/2) ||
+      image[0][0].get_max_index() != -(x_size/2) + x_size - 1 ||
+      image[0].get_min_index() != -(y_size/2) ||
+      image[0].get_max_index() != -(y_size/2) + y_size - 1 ||
+      image.get_min_index() != 0)
+    {
+      warning("DiscretisedDensity_to_ECAT7 is currently limited to input images in the standard STIR index range.\n"
+	      "Data not written.");
+      return Succeeded::no;
+    }
   ihead.x_offset= image.get_origin().x()/10;
   ihead.y_offset= image.get_origin().y()/10;
   ihead.z_offset= image.get_origin().z()/10;

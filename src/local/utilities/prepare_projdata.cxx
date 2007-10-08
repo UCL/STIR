@@ -10,7 +10,7 @@
   \ingroup utilities
 
   \brief A utility preparing some projection data for further processing with 
-  iterative reconstructions
+  iterative reconstructions. See stir::PrepareProjData.
 
   \author Kris Thielemans
 
@@ -49,7 +49,49 @@ START_NAMESPACE_STIR
 
 
 
+/*! \ingroup recon_buildblock
+  \brief A preliminary class to prepare files for iterative reconstruction
 
+  The intention of this class is to read measured data (and some processed data)
+  and construct from these the projection data that are used in ML/MAP estimates, i.e.
+  - normalisation times attenuation file
+  - additive terms
+
+  \par Parameter file format
+  \verbatim
+  Prepare projdata Parameters:=
+  ; next defaults to using all segments
+  ; maximum absolute segment number to process:= ...
+  
+  ;;;;;;;;; input, some is optional depending on what you ask for as output 
+  prompts_projdata_filename:= ...
+  trues_projdata_filename:= ...
+  precorrected_projdata_filename:= ...
+  randoms_projdata_filename:= ...
+
+  time frame definition filename:= ...
+  time frame number:= ...
+  ; normalisation (should contain attenuation as well)
+  Bin Normalisation type:= ...
+
+  ; if (prompts+randoms or trues) and precorrected data are given
+  ;   construct scatter term by subtraction and write to file
+  ; else if following is set, use it for scatter term
+  ; else scatter term will be set to 0
+  scatter_projdata_filename:= ...
+
+  ;;;;;;;; output files
+
+  normatten_projdata_filename:= ...
+
+  Shifted_Poisson_numerator_projdata_filename:= ...
+  Shifted_Poisson_denominator_projdata_filename:= ...
+  ; name for additive term in denominator of a prompts reconstruction
+  prompts_denominator_projdata_filename:= ...
+ 
+  END Prepare projdata Parameters:=
+  \endverbatim
+*/
 class PrepareProjData : public ParsingObject
 {
 public:
@@ -59,6 +101,7 @@ public:
 
 private:
   // shared_ptr's such that they clean up automatically at exit
+  shared_ptr<ProjData> prompts_projdata_ptr;
   shared_ptr<ProjData> trues_projdata_ptr;
   shared_ptr<ProjData> precorrected_projdata_ptr;
   shared_ptr<ProjData> randoms_projdata_ptr;
@@ -76,9 +119,10 @@ private:
   int max_segment_num_to_process;
   int current_frame_num;
 private:
+  bool can_make_trues; // if prompts and randoms are given
   bool do_Shifted_Poisson;
-  bool do_prompts;
-  bool do_scatter;
+  bool do_prompts; // if we need to construct the additive term in the denominator for a reconstruction of prompts
+  bool do_scatter; // if we need to find scatter by subtracting precorrected data from the trues
 
   // used to create new viewgrams etc
   shared_ptr<ProjDataInfo>  output_data_info_ptr;
@@ -87,6 +131,7 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
+  string prompts_projdata_filename;
   string trues_projdata_filename;
   string precorrected_projdata_filename;
   string randoms_projdata_filename;
@@ -104,12 +149,14 @@ void
 PrepareProjData::
 set_defaults()
 {
+  prompts_projdata_ptr = 0;
   trues_projdata_ptr = 0;
   precorrected_projdata_ptr = 0;
   randoms_projdata_ptr = 0;
   normalisation_ptr = new TrivialBinNormalisation;
   scatter_projdata_ptr=0;
   max_segment_num_to_process = -1;
+  prompts_projdata_filename = "";
   trues_projdata_filename = "";
   precorrected_projdata_filename = "";
   randoms_projdata_filename = "";
@@ -128,6 +175,7 @@ initialise_keymap()
 {
   parser.add_start_key("Prepare projdata Parameters");
   parser.add_parsing_key("Bin Normalisation type", &normalisation_ptr);
+  parser.add_key("prompts_projdata_filename", &prompts_projdata_filename);
   parser.add_key("trues_projdata_filename", &trues_projdata_filename);
   parser.add_key("precorrected_projdata_filename", &precorrected_projdata_filename);
   parser.add_key("randoms_projdata_filename", &randoms_projdata_filename);
@@ -160,10 +208,16 @@ PrepareProjData(const char * const par_filename)
       warning("Invalid normalisation type\n");
       exit(EXIT_FAILURE);
     }
+  can_make_trues =
+    prompts_projdata_filename.size()!=0 && 
+    randoms_projdata_filename.size()!=0;
 
   do_scatter = 
-    trues_projdata_filename.size()!=0 && 
+    (trues_projdata_filename.size()!=0 || can_make_trues) && 
     precorrected_projdata_filename.size()!=0;
+
+  if (prompts_projdata_filename.size()!=0)
+    prompts_projdata_ptr = ProjData::read_from_file(prompts_projdata_filename);
 
   if (trues_projdata_filename.size()!=0)
     trues_projdata_ptr = ProjData::read_from_file(trues_projdata_filename);
@@ -176,6 +230,11 @@ PrepareProjData(const char * const par_filename)
   if (do_Shifted_Poisson && randoms_projdata_filename.size()==0)
     {
       warning("Shifted Poisson data asked for, but no randoms present\n");
+      exit(EXIT_FAILURE);
+    }
+  if (do_Shifted_Poisson && trues_projdata_filename.size()==0)
+    {
+      warning("Shifted Poisson data asked for, but no trues present\n");
       exit(EXIT_FAILURE);
     }
 
@@ -290,6 +349,7 @@ doit()
   // take these out of the loop to avoid reallocation (but it's ugly)
   RelatedViewgrams<float> normatten_viewgrams;
   RelatedViewgrams<float> scatter_viewgrams;
+  RelatedViewgrams<float> trues_viewgrams;
   RelatedViewgrams<float> randoms_viewgrams;
   RelatedViewgrams<float> Shifted_Poisson_numerator_viewgrams;
   RelatedViewgrams<float> Shifted_Poisson_denominator_viewgrams;
@@ -305,6 +365,8 @@ doit()
 
       if (!symmetries_ptr->is_basic(view_seg_num))
 	continue;
+
+      bool already_read_randoms = false;
 
       // ** first do normalisation (and fill in  normatten) **
       
@@ -327,8 +389,19 @@ doit()
       {
         // scatter = trues_emission * norm * atten - fully_precorrected_emission
 
+	if (!is_null_ptr(trues_projdata_ptr))
+	  {
+	    trues_viewgrams = trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+	  }
+	else
+	  {
+	    randoms_viewgrams = randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+	    already_read_randoms = true;
+	    trues_viewgrams = prompts_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+	    trues_viewgrams -= randoms_viewgrams;
+	  }
         scatter_viewgrams *= 
-          trues_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+	    trues_viewgrams;
         scatter_viewgrams -= 
           precorrected_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
         
@@ -345,8 +418,12 @@ doit()
 
       if (do_Shifted_Poisson)
       {
-        /*RelatedViewgrams<float>*/ randoms_viewgrams =
-          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+        if (!already_read_randoms)
+	  {
+	    randoms_viewgrams =
+	      randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+	  }
+
         // multiply with 2 for Shifted Poisson
         randoms_viewgrams *= 2;
 
@@ -368,12 +445,17 @@ doit()
           Shifted_Poisson_denominator_viewgrams += randoms_viewgrams;
           Shifted_Poisson_denominator_projdata_ptr->set_related_viewgrams(Shifted_Poisson_denominator_viewgrams);
         }
+	// we force re-reading the randoms as we modified them above
+        already_read_randoms = false;
       }
     
       if (do_prompts)
       {
-        /*RelatedViewgrams<float>*/ randoms_viewgrams =
-          randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+        if (!already_read_randoms)
+	  {
+	    randoms_viewgrams =
+	      randoms_projdata_ptr->get_related_viewgrams(view_seg_num, symmetries_ptr);
+	  }
                
         {
           // denominator of prompts is scatter+ randoms*norm*atten

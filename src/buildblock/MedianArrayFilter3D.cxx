@@ -38,9 +38,9 @@ START_NAMESPACE_STIR
 template <typename elemT>
 MedianArrayFilter3D<elemT>::MedianArrayFilter3D(const Coordinate3D<int>& mask_radius)
 {
-  mask_radius_x = mask_radius[3];
-  mask_radius_y = mask_radius[2];
-  mask_radius_z = mask_radius[1];
+  this->mask_radius_x = mask_radius[3];
+  this->mask_radius_y = mask_radius[2];
+  this->mask_radius_z = mask_radius[1];
 
  /* assert(mask_radius_x>0);
   assert(mask_radius_x%2 == 1);
@@ -48,6 +48,14 @@ MedianArrayFilter3D<elemT>::MedianArrayFilter3D(const Coordinate3D<int>& mask_ra
   assert(mask_radius_y%2 == 1);
   assert(mask_radius_z>0);
   assert(mask_radius_z%2 == 1);*/
+}
+
+template <typename elemT>
+MedianArrayFilter3D<elemT>::MedianArrayFilter3D()
+{
+  this->mask_radius_x = 0;
+  this->mask_radius_y = 0;
+  this->mask_radius_z = 0;
 }
 
 

@@ -89,11 +89,18 @@ START_NAMESPACE_STIR
 template <typename elemT>
 class QuadraticPrior:  public  
 		       RegisteredParsingObject< QuadraticPrior<elemT>,
-      		       			        GeneralisedPrior<elemT>,  			      	   
-						PriorWithParabolicSurrogate<elemT>
+      		       			        GeneralisedPrior<DiscretisedDensity<3,elemT> >,
+						PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
 	                                      >
 {
-public:
+ private:
+  typedef
+    RegisteredParsingObject< QuadraticPrior<elemT>,
+                             GeneralisedPrior<DiscretisedDensity<3,elemT> >,
+                             PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> > >
+    base_type;
+
+ public:
   //! Name which will be used when parsing a GeneralisedPrior object
   static const char * const registered_name; 
 
@@ -103,6 +110,14 @@ public:
   //! Constructs it explicitly
   QuadraticPrior(const bool only_2D, float penalization_factor);
   
+  virtual bool
+    parabolic_surrogate_curvature_depends_on_argument() const
+    { return false; }
+
+  //! compute the value of the function
+  double
+    compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate);
+
   //! compute gradient 
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
 			const DiscretisedDensity<3,elemT> &current_image_estimate);
@@ -117,6 +132,9 @@ public:
 		const BasicCoordinate<3,int>& coords,
 		const DiscretisedDensity<3,elemT> &current_image_estimate);
 
+  virtual Succeeded 
+    add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
+						const DiscretisedDensity<3,elemT>& input) const;
 
   //! get penalty weights for the neigbourhood
   Array<3,float> get_weights() const;
@@ -145,7 +163,11 @@ protected:
   string gradient_filename_prefix;
 
   //! penalty weights
-  Array<3,float> weights;
+  /*! 
+     \todo This member is mutable at present because some const functions initialise it.
+     That initialisation should be moved to a new set_up() function.
+  */
+  mutable Array<3,float> weights;
   //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
   std::string kappa_filename;
 

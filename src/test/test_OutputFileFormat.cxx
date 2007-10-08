@@ -6,7 +6,7 @@
   \file
   \ingroup test
 
-  \brief A simple programme to test the OutputFileFormat function.
+  \brief A simple program to test the stir::OutputFileFormat function.
 
   \author Kris Thielemans
 
@@ -16,12 +16,12 @@
   
   To run the test, you should use a command line argument with the name of a file.
   This should contain a test par file.
-  See OutputFileFormatTests class documentation for file contents.
+  See stir::OutputFileFormatTests class documentation for file contents.
 
   \warning Overwrites files STIRtmp.* in the current directory
 
   \todo The current implementation requires that the output file format as also
-  readable by DiscretisedDensity::read_from_file. At least we should provide a
+  readable by stir::DiscretisedDensity::read_from_file. At least we should provide a
   run-time switch to not run that part of the tests.
 */
 /*
@@ -93,7 +93,7 @@ public:
   void run_tests();
 private:
   istream& in;
-  shared_ptr<OutputFileFormat> output_file_format_ptr;
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_ptr;
   KeyParser parser;
 };
 
@@ -135,15 +135,19 @@ void OutputFileFormatTests::run_tests()
     const bool supports_different_xy_pixel_sizes =
       dynamic_cast<ECAT6OutputFileFormat const * const>(output_file_format_ptr.get()) == 0
       ? true : false;
-    const bool supports_origin_xy_shift =
-      dynamic_cast<InterfileOutputFileFormat const * const>(output_file_format_ptr.get()) == 0
+    const bool supports_origin_z_shift =
+      dynamic_cast<ECAT6OutputFileFormat const * const>(output_file_format_ptr.get()) == 0
       ? true : false;
+    const bool supports_origin_xy_shift =
+      true;
 
-    CartesianCoordinate3D<float> origin (0,0,0);
+    CartesianCoordinate3D<float> origin (0.F,0.F,0.F);
     if (supports_origin_xy_shift)
       {  origin.x()=2.4F; origin.y() = -3.5F; }
+    if (supports_origin_z_shift)
+      {  origin.z()=6.4F; }
 
-    CartesianCoordinate3D<float> grid_spacing (3,4,supports_different_xy_pixel_sizes?5:4); 
+    CartesianCoordinate3D<float> grid_spacing (3.F,4.F,supports_different_xy_pixel_sizes?5.F:4.F); 
   
     IndexRange<3> 
       range(CartesianCoordinate3D<int>(0,-15,-14),
@@ -157,7 +161,7 @@ void OutputFileFormatTests::run_tests()
 	  for (int x=image.get_min_x(); x<=image.get_max_x(); ++x)
 	    image[z][y][x]=
 	      300*sin(static_cast<float>(x*_PI)/image.get_max_x())
-	      *sin(static_cast<float>(y*_PI)/image.get_max_y())
+	      *sin(static_cast<float>(y+10*_PI)/image.get_max_y())
 	      *cos(static_cast<float>(z*_PI/3)/image.get_max_z());
     }
 

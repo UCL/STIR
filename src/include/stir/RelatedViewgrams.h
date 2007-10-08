@@ -1,19 +1,6 @@
 //
 // $Id$
 //
-/*!
-
-  \file
-  \ingroup projdata
-  \brief Declaration of class RelatedViewgrams
-
-  \author Kris Thielemans
-  \author PARAPET project
-
-  $Date$
-
-  $Revision$
-*/
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -30,6 +17,19 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+/*!
+
+  \file
+  \ingroup projdata
+  \brief Declaration of class stir::RelatedViewgrams
+
+  \author Kris Thielemans
+  \author PARAPET project
+
+  $Date$
+
+  $Revision$
 */
 
 #ifndef __RelatedViewgrams_h__
@@ -65,6 +65,8 @@ class ProjDataInfo;
 template <typename elemT>
 class RelatedViewgrams
 {
+private:
+  typedef RelatedViewgrams<elemT> self_type;
 
 public:
   //! typedefs for iterator support
@@ -186,6 +188,32 @@ public:
    //! Return a new object with ProjDataInfo etc., but all data elements set to 0
    RelatedViewgrams get_empty_copy() const;
 
+  //! \name Equality
+  //@{
+  //! Checks if the 2 objects have the proj_data_info, segment_num etc.
+  /*! If they do \c not have the same characteristics, the string \a explanation
+      explains why.
+  */
+  bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
+
+  //! Checks if the 2 objects have the proj_data_info, segment_num etc.
+  /*! Use this version if you do not need to know why they do not match.
+   */
+  bool
+    has_same_characteristics(self_type const&) const;
+
+  //! check equality (data has to be identical)
+  /*! Uses has_same_characteristics() and Array::operator==.
+      \warning This function uses \c ==, which might not be what you 
+      need to check when \c elemT has data with float or double numbers.
+  */
+  bool operator ==(const self_type&) const; 
+  
+  //! negation of operator==
+  bool operator !=(const self_type&) const; 
+  //@}
  
 private:
   

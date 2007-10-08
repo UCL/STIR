@@ -33,6 +33,7 @@
 #define __stir_modelling_BloodFrameData_H__
 
 #include "local/stir/modelling/BloodFrame.h"
+#include "local/stir/decay_correct.h"
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -48,21 +49,24 @@ class BloodFrameData
  typedef std::vector<BloodFrame> plot_type;
  
  public: 
+
  typedef plot_type::const_iterator const_iterator;
-  enum VolumeUnits 
+ /*  enum VolumeUnits 
     { ml , litre };
   enum SamplingTimeUnits
     { seconds , minutes };
   enum RadioactivityUnits
     { counts_per_sec , counts_per_min , kBq };
 
-  //! Implementation to read the input function from ONLY a 2-columns frame data (FrameNumber-InputFunctionRadioactivity).
-  inline void read_blood_frame_data(const std::string input_string) ;
-
-  //! Implementation to set the input units not currently used. Always, it assumed to use kBq, seconds, ml.
   inline void set_input_units(const SamplingTimeUnits input_sampling_time_units, 
 			      const VolumeUnits input_volume_units, 
 			      const RadioactivityUnits input_radioactivity_units ) ;
+
+ */
+  //! Implementation to read the input function from ONLY a 2-columns frame data (FrameNumber-InputFunctionRadioactivity).
+  inline void read_blood_frame_data(const std::string input_string) ;
+  inline void set_plot(const std::vector<BloodFrame> & blood_plot) ;
+  //! Implementation to set the input units not currently used. Always, it assumed to use kBq, seconds, ml.
 
   //!Function to shift the time data
   inline void shift_time(const float time_shift);
@@ -75,6 +79,9 @@ class BloodFrameData
 
   //!Function to set _is_decay_corrected boolean true ar false
   inline void set_if_decay_corrected(const bool is_decay_corrected);
+
+  //!Function to set _is_decay_corrected boolean true ar false
+  inline bool get_if_decay_corrected();
 
   //!Function to decay correct the data
   inline void decay_correct_BloodFrameData();
@@ -91,14 +98,15 @@ class BloodFrameData
   //!  void begin() and end() iterators for the plasma curve ;
 inline const_iterator begin() const ;
 inline const_iterator end() const ;
+ inline unsigned int size() const ;
   // non const_iterator should be defined if the plasma data needs to be changed 
 //inline iterator begin() ;
 //inline iterator end()  ;
   
  private:
-  VolumeUnits _input_volume_units ; 
+ /*  VolumeUnits _input_volume_units ; 
   SamplingTimeUnits _input_sampling_time_units ;
-  RadioactivityUnits _input_radioactivity_units ;
+  RadioactivityUnits _input_radioactivity_units ;*/
   bool _is_decay_corrected ;
   float _isotope_halflife;
   std::vector<BloodFrame> _blood_plot ;

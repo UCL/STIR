@@ -29,7 +29,7 @@
 #include "stir/Coordinate4D.h"
 #include "stir/stream.h"
 #include "stir/round.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneDensel.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -596,10 +596,10 @@ test_transform_bin_vs_transform_point(const shared_ptr<ProjDataInfo>& proj_data_
       {
 	std::cerr << "Org: " << densel << " transformed: " << transformed_densel_float << " by bin: " << densel_from_bins << "\n"
 	     << "\t(all are in index-units, not in mm)\n";
-	DefaultOutputFileFormat output_file_format;
 	(*density_sptr)[round(transformed_densel_float)] =
 	  density_sptr->find_max()*2;
-	output_file_format.write_to_file("STIRImage", *density_sptr);
+	OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+	  write_to_file("STIRImage", *density_sptr);
 	std::cerr << "Image written as STIRImage.* (with transformed densel at twice max value)\n";
       }
     check(max_deviation_org<allowed_deviation,"deviation of pixel with original LOR is too large");

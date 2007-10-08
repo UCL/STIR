@@ -1,19 +1,31 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Declaration of class DiscretisedShape3D
+  \brief Declaration of class stir::DiscretisedShape3D
 
   \author Kris Thielemans
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_Shape_DiscretisedShape3D_H__
 #define __stir_Shape_DiscretisedShape3D_H__
@@ -44,15 +56,53 @@ public:
 
   DiscretisedShape3D();
 
+  //! Constructor that will copy the image to an internal member
+  /*! The \c filename member is set to "FROM MEMORY" such that parameter_info() 
+      returns somewhat useful info. This has a consequence that the object cannot
+      be constructed from its own parameter_info(). This is in contrast with most
+      other shapes.
+  */
   DiscretisedShape3D(const VoxelsOnCartesianGrid<float>& image);
 
+  //! Constructor that will copy the shared_ptr image
+  /*! The \c filename member is set to "FROM MEMORY" such that parameter_info() 
+      returns somewhat useful info. This has a consequence that the object cannot
+      be constructed from its own parameter_info(). This is in contrast with most
+      other shapes.
+
+      \warning any modifications to the object that this shared_ptr points to
+      (and hence any modifications to this shape) will have
+      confusing consequences.
+  */
   DiscretisedShape3D(const shared_ptr<DiscretisedDensity<3,float> >& density_ptr);
 
+  //! Compare shapes
+  /*! \todo currently not implemented (will call error() */
+  virtual bool
+    operator==(const Shape3D&) const
+  { error("DiscretisedShape3D::operator== not implemented. Sorry"); return false;}
+
+  //! set origin of the shape
+  /*! \warning this will shift the origin of the object pointed to by \a density_ptr.
+     This is dangerous if you used the constructor taking a shared_ptr argument.*/
+  virtual void set_origin(const CartesianCoordinate3D<float>&);
+
+#ifdef DOXYGEN_SKIP
+  // following lines here are only read by doxygen. 
+  // They include a comment to warn the user. 
+  // In actual fact, the function does not need to be reimplemented as it uses set_origin()
   //! translate the object by shifting its origin
-  /*! \warning this will shift the origin of the object pointed to by \a density_ptr.*/
+  /*! \warning this will shift the origin of the object pointed to by \a density_ptr as it uses set_origin().
+      \warning This function is in fact not reimplemented from the
+      base_type.
+  */
   void translate(const CartesianCoordinate3D<float>& direction);
-  // TODO
- // void scale(const CartesianCoordinate3D<float>& scale3D);
+#endif
+
+  //! Scale shape
+  /*! \todo Not implemented (will call error()) */
+  virtual void scale(const CartesianCoordinate3D<float>& scale3D) 
+  { error ("TODO: DiscretisedShape3D::scale not implemented. Sorry.");}
 
   //! determine if a point is inside a non-zero voxel or not
   /*! 
@@ -78,11 +128,24 @@ public:
    const CartesianCoordinate3D<float>& voxel_size, 
    const CartesianCoordinate3D<int>& num_samples) const;
 
+ //! Construct a new image (using zoom_image) from the underlying density
+ /*! 
+   If the images do not have the same characteristics, zoom_image is called for interpolation.
+   The result is scaled such that mean ROI values remain the same (at least for ROIs which avoid edges).
+
+   The argument \a num_samples is ignored.
+  */
   void construct_volume(VoxelsOnCartesianGrid<float> &image, const CartesianCoordinate3D<int>& num_samples) const;
  //void construct_slice(PixelsOnCartesianGrid<float> &plane, const CartesianCoordinate3D<int>& num_samples) const;
  
  
  virtual Shape3D* clone() const;
+
+ //! provide access to the underlying density
+ DiscretisedDensity<3,float>& get_discretised_density();
+
+ //! provide (const) access to the underlying density
+ const DiscretisedDensity<3,float>& get_discretised_density() const;
   
 private:
   shared_ptr<DiscretisedDensity<3,float> > density_ptr;
@@ -96,7 +159,8 @@ private:
   virtual void initialise_keymap();
   //! Checks validity of parameters
   /*! As currently there are 2 origin parameters (in Shape3D and
-      DiscretisedDensity, this function checks for consistency).
+      DiscretisedDensity), this function checks for consistency.
+      However, the origin in Shape3D will be ignored.
   */
   virtual bool post_processing();
   //@}

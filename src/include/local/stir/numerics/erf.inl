@@ -1,3 +1,6 @@
+//
+// $Id$
+//
 /*-
 * Copyright (c) 1992, 1993
 *	The Regents of the University of California.  All rights reserved.
@@ -138,11 +141,11 @@
 /* Modified for STIR library Jun 05, 2005 Ch Tsoumpas and K Thielemans.
 
    WARNING:
-   There are some assumptions here about IEEE artihmetic etc.
+   There are some assumptions here about IEEE arithmetic etc.
    On non-IEEE machines you're bound to have problems.
 
-   We put in some work-arounds to have a (hopefully) portable STIR_isnan,
-   but probably the same woul dneed to be done for finite(x).
+   We put in some work-arounds by using (hopefully) portable STIR_isnan,
+   and STIR_finite().
 */
 
 
@@ -169,37 +172,7 @@
 using std::fabs;
 using std::exp;
 
-
-
-#if defined(_MSC_VER)
-#include <float.h>
-#define isnan _isnan 
-#define finite _finite 
-#endif
-
-#ifdef isnan
-
-  #define STIR_isnan isnan
-
-#else
-
-# if 0
-  //attempt to get to find isnan but it didn't work on some systems
-  // terrible hack to try and find isnan in std
-  // will only work for gcc
-  #if _GLIBCPP_USE_C99 && !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
-    using std::isnan;
-  #else
-    #include <ieeefp.h> // this file doesn't exist always
-  #endif
-# else //portable version
-  // according to IEEE rules if x is NaN, then x!=x
-  // so, the following will work even on non-IEEE systems
-  #define STIR_isnan(x) (x)!=(x)
-# endif
-
-#endif // end of STIR_isnan definitions
-
+#include "stir/numerics/ieeefp.h"
 
 
 START_NAMESPACE_STIR
@@ -312,7 +285,7 @@ double
 erf(double x)
 {
 	double R,S,P,Q,ax,s,y,z,r;
-	if(!finite(x)) {		/* erf(nan)=nan */
+	if(!STIR_finite(x)) {		/* erf(nan)=nan */
 		if (STIR_isnan(x))
 			return(x);
 		return (x > 0 ? one : -one); /* erf(+/-inf)= +/-1 */
@@ -371,7 +344,7 @@ double
 erfc(double x)
 {
 	double R,S,P,Q,s,ax,y,z,r;
-	if (!finite(x)) {
+	if (!STIR_finite(x)) {
 		if (STIR_isnan(x))		/* erfc(NaN) = NaN */
 			return(x);
 		else if (x > 0)		/* erfc(+-inf)=0,2 */
@@ -450,7 +423,6 @@ erfc(double x)
 }
 
 
-#undef STIR_isnan
 #undef TRUNC
 #undef _IEEE
 END_NAMESPACE_STIR

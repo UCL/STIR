@@ -73,7 +73,8 @@ template <int num_dimensions, typename coordT>
 { 
 
 public:
-  // typedefs for iterator support
+  //! \name typedefs for iterator support
+  //@{
   typedef random_access_iterator_tag iterator_category;
   typedef coordT value_type;
   typedef value_type& reference;
@@ -82,9 +83,12 @@ public:
   typedef const value_type* const_iterator;
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
-	
+  //@}
+
   //! default constructor. NO initialisation
   inline BasicCoordinate();
+  //! constructor that sets all elements equal to \a value.
+  explicit inline BasicCoordinate(const coordT&);
 #if 0
   /* disabled. It overlaps with the constructor below and VC 6.0 can't sort it out.
     We don't seem to need it anyway
@@ -128,12 +132,22 @@ public:
   /*! Note that the return type is not simply \c coordT. This mimics the design of
       std::vector. One can argue about this (see e.g.
 http://groups.google.com/group/comp.lang.c%2B%2B.moderated/browse_thread/thread/e5c4898a5c259cc1/434f5a25df51781f%23434f5a25df51781f?sa=X&oi=groupsr&start=2&num=3),
-     However, this alternative can have a severe performance penalties if \c coordT
-     is a large object.
+     However, this alternative can have severe performance penalties if \c coordT
+     is a type for large objects.
   */
   inline coordT const& operator[](const int d) const;
 
-  // arithmetic assignment operators
+  //! \name Functions as in VectorWithOffset
+  //@{
+  inline static int get_min_index();
+  inline static int get_max_index();
+  inline static unsigned size();
+  //! fill elements with value
+  inline void fill(const coordT&);
+  //@}
+
+  //! \name arithmetic assignment operators
+  //@{
   inline BasicCoordinate & operator+= (const BasicCoordinate& c);
   inline BasicCoordinate & operator-= (const BasicCoordinate& c);
   inline BasicCoordinate & operator*= (const BasicCoordinate& c);
@@ -143,26 +157,35 @@ http://groups.google.com/group/comp.lang.c%2B%2B.moderated/browse_thread/thread/
   inline BasicCoordinate & operator-= (const coordT& a);
   inline BasicCoordinate & operator*= (const coordT& a);
   inline BasicCoordinate & operator/= (const coordT& a);
+  //@}
 
-  // arithmetic operations with a BasicCoordinate, combining element by element
+  //! \name arithmetic operations with a BasicCoordinate, combining element by element
+  //@{
   inline BasicCoordinate operator+ (const BasicCoordinate& c) const;
   inline BasicCoordinate operator- (const BasicCoordinate& c) const;
   inline BasicCoordinate operator* (const BasicCoordinate& c) const;
   inline BasicCoordinate operator/ (const BasicCoordinate& c) const;
+  //@}
 
-  // arithmetic operations with a coordT
+  //! \name arithmetic operations with a coordT
+  //@{
   inline BasicCoordinate operator+ (const coordT& a) const;
   inline BasicCoordinate operator- (const coordT& a) const;
   inline BasicCoordinate operator* (const coordT& a) const;	      
   inline BasicCoordinate operator/ (const coordT& a) const;
+  //@}
 
-  // basic iterator support
+  //! \name basic iterator support
+  //@{
   inline iterator begin();
   inline const_iterator begin() const;
   inline iterator end();
   inline const_iterator end() const;
+  //@}
 
  private:
+  //! storage
+  /*! \warning 0-based */
   coordT coords[num_dimensions];
 
 };

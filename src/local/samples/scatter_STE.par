@@ -1,0 +1,23 @@
+Scatter Estimation Parameters:=
+
+attenuation_threshold :=.01
+random :=0
+use_cache :=1
+scatter_level :=${SCATTER_LEVEL}
+energy_resolution :=.16
+lower_energy_threshold :=425
+upper_energy_threshold :=650
+
+activity_image_filename := ${ACTIVITY_IMAGE}
+density_image_filename := ${DENSITY_IMAGE}
+density_image_for_scatter_points_filename := ${LOW_DENSITY_IMAGE}
+template_proj_data_filename :=  ${TEMPLATE}
+
+write_scatter_orders_in_separate_files :=0
+; output filename without extension
+; files will be called "out"_0_0.hs etc if above is 1, or "out".hs otherwise
+; and "out".log
+output_filename_prefix :=${OUTPUT_PREFIX}
+
+
+End Scatter Estimation Parameters:=

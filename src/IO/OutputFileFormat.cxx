@@ -29,25 +29,38 @@
 */
 
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
+template <typename DataT>
 ASCIIlist_type
-OutputFileFormat::number_format_values;
+OutputFileFormat<DataT>::number_format_values;
 
+template <typename DataT>
 ASCIIlist_type
-OutputFileFormat::byte_order_values;
+OutputFileFormat<DataT>::byte_order_values;
 
-OutputFileFormat::
+template <typename DataT>
+shared_ptr<OutputFileFormat<DataT> >
+OutputFileFormat<DataT>::
+default_sptr()
+{
+  return OutputFileFormat<DataT>::_default_sptr;
+}
+
+template <typename DataT>
+OutputFileFormat<DataT>::
 OutputFileFormat(const NumericType& type,
 		 const ByteOrder& byte_order)
   : type_of_numbers(type), file_byte_order(byte_order)
 { 
 }
 
+template <typename DataT>
 void 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 set_defaults()
 {
   file_byte_order = ByteOrder::native;
@@ -57,8 +70,9 @@ set_defaults()
   set_key_values();
 }
 
+template <typename DataT>
 void 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 initialise_keymap()
 {
 
@@ -86,8 +100,9 @@ initialise_keymap()
 		 &scale_to_write_data);
 }
 
+template <typename DataT>
 void 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 set_key_values()
 {
   byte_order_index =
@@ -104,8 +119,9 @@ set_key_values()
 
 }
 
+template <typename DataT>
 bool
-OutputFileFormat::
+OutputFileFormat<DataT>::
 post_processing()
 {
   if (number_format_index<0 ||
@@ -155,61 +171,80 @@ post_processing()
   return false;
 }
 
+template <typename DataT>
 NumericType 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 get_type_of_numbers() const
 { return type_of_numbers; }
 
+template <typename DataT>
 ByteOrder 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 get_byte_order()
 { return file_byte_order; }
 
+template <typename DataT>
 float
-OutputFileFormat::
+OutputFileFormat<DataT>::
 get_scale_to_write_data() const
 { return scale_to_write_data; }
 
+template <typename DataT>
 NumericType 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 set_type_of_numbers(const NumericType& new_type, const bool warn)
 { return type_of_numbers =  new_type; }
 
+template <typename DataT>
 ByteOrder 
-OutputFileFormat::
+OutputFileFormat<DataT>::
 set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 { return file_byte_order = new_byte_order; }
 
+template <typename DataT>
 float
-OutputFileFormat::
+OutputFileFormat<DataT>::
 set_scale_to_write_data(const float new_scale_to_write_data, const bool warn)
 { return scale_to_write_data = new_scale_to_write_data; }
 
+template <typename DataT>
 void
-OutputFileFormat::
+OutputFileFormat<DataT>::
 set_byte_order_and_type_of_numbers(ByteOrder& new_byte_order, NumericType& new_type, const bool warn)
 {
   new_byte_order = set_byte_order(new_byte_order, warn);
   new_type = set_type_of_numbers(new_type, warn);
 }
 
+template <typename DataT>
 Succeeded  
-OutputFileFormat::
+OutputFileFormat<DataT>::
 write_to_file(string& filename, 
-	      const DiscretisedDensity<3,float>& density) const
+	      const DataT& density) const
 {
   return actual_write_to_file(filename, density);
 }
 
+template <typename DataT>
 Succeeded  
-OutputFileFormat::
+OutputFileFormat<DataT>::
 write_to_file(const string& filename, 
-	      const DiscretisedDensity<3,float>& density) const
+	      const DataT& density) const
 {
   string filename_to_use = filename;
   return 
     write_to_file(filename_to_use, density);
 };
  
+template class OutputFileFormat<DiscretisedDensity<3,float> >; 
 
 END_NAMESPACE_STIR
+
+#ifdef STIR_DEVEL 
+#include "local/stir/modelling/ParametricDiscretisedDensity.h" 
+#include "local/stir/modelling/KineticParameters.h" 
+namespace stir { 
+  template class OutputFileFormat<ParametricVoxelsOnCartesianGrid >;  
+} 
+#endif 
+

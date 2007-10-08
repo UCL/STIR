@@ -31,8 +31,15 @@ START_NAMESPACE_STIR
 */
 class ProjectorByBinPairUsingSeparateProjectors : 
   public RegisteredParsingObject<ProjectorByBinPairUsingSeparateProjectors,
+                                 ProjectorByBinPair,
                                  ProjectorByBinPair> 
 { 
+ private:
+  typedef
+    RegisteredParsingObject<ProjectorByBinPairUsingSeparateProjectors,
+                            ProjectorByBinPair,
+                            ProjectorByBinPair> 
+    base_type;
 public:
   //! Name which will be used when parsing a ProjectorByBinPair object
   static const char * const registered_name; 
@@ -41,14 +48,15 @@ public:
   ProjectorByBinPairUsingSeparateProjectors();
 
    //! Constructor that sets the pair
-  ProjectorByBinPairUsingSeparateProjectors(const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
-                                            const shared_ptr<BackProjectorByBin>& back_projector_ptr);
+  ProjectorByBinPairUsingSeparateProjectors(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr);
 
 
 private:
 
   void set_defaults();
   void initialise_keymap();
+  bool post_processing();
 };
 
 END_NAMESPACE_STIR

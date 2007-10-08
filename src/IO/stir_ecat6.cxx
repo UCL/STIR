@@ -51,6 +51,9 @@
 #include "stir/IO/ecat6_utils.h"
 #include "stir/IO/stir_ecat6.h"
 
+#include "boost/cstdint.hpp" 
+#include "boost/static_assert.hpp" 
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -190,7 +193,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
   
   // extra main parameters that depend on data type
   mhead.file_type= matImageFile;
-  mhead.num_planes=image.get_z_size();
+  mhead.num_planes=image.get_length();
   mhead.plane_separation=image.get_grid_spacing()[1]/10; // convert to cm
 }
 
@@ -601,11 +604,11 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
             frame_num, gate_num, data_num, bed_num);
     return Succeeded::no;
   }
-  if (mhead.num_planes!=image.get_z_size())
+  if (mhead.num_planes!=image.get_length())
   {
     warning("DiscretisedDensity_to_ECAT6: converting (f%d, g%d, d%d, b%d)\n"
             "Main header.num_planes should be %d\n",
-            frame_num, gate_num, data_num, bed_num,image.get_z_size());
+            frame_num, gate_num, data_num, bed_num,image.get_length());
     return Succeeded::no;
   }
   const float voxel_size_z = image.get_grid_spacing()[1]/10;// convert to cm
@@ -622,13 +625,13 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   
   Image_subheader ihead= img_zero_fill();
   
-  const int min_z= image.get_min_z();
-  const int min_y= image.get_min_y();
-  const int min_x= image.get_min_x();
+  const int min_z= image.get_min_index();
+  const int min_y= image[min_z].get_min_index();
+  const int min_x= image[min_z][min_y].get_min_index();
   
-  const int z_size= image.get_z_size();
-  const int y_size= image.get_y_size();
-  const int x_size= image.get_x_size();
+  const int z_size= image.get_length();
+  const int y_size= image[min_z].get_length();
+  const int x_size= image[min_z][min_y].get_length();
   
   const int plane_size= y_size * x_size;
   
@@ -897,10 +900,7 @@ void cti_data_to_float_Array(Array<2,float>&out,
                              char const * const buffer, const float scale_factor, int dtype)
 {
 
-  // CTI stuff always assumes this
-  assert(sizeof(short) == 2);
-  assert(sizeof(long)==4);
-  assert(sizeof(float)==4);
+  BOOST_STATIC_ASSERT(sizeof(float)==4);
 
   switch (dtype)
   {
@@ -916,8 +916,8 @@ void cti_data_to_float_Array(Array<2,float>&out,
   case ECAT_I2_little_endian_data_type:
   case ECAT_I2_big_endian_data_type:
   {
-    short const * cti_data = 
-      reinterpret_cast<short const * const >(buffer);
+    boost::int16_t const * cti_data = 
+      reinterpret_cast<boost::int16_t const * const >(buffer);
     for(int y=out.get_min_index(); y<=out.get_max_index(); y++)
       for(int x=out[y].get_min_index(); x<=out[y].get_max_index(); x++)
         out[y][x]=scale_factor*(*cti_data++);
@@ -926,8 +926,8 @@ void cti_data_to_float_Array(Array<2,float>&out,
   case ECAT_I4_little_endian_data_type:
   case ECAT_I4_big_endian_data_type:
     {
-     long const * cti_data = 
-      reinterpret_cast<long const * const >(buffer);
+      boost::int32_t const * cti_data = 
+	reinterpret_cast<boost::int32_t const * const >(buffer);
     for(int y=out.get_min_index(); y<=out.get_max_index(); y++)
       for(int x=out[y].get_min_index(); x<=out[y].get_max_index(); x++)
         out[y][x]=scale_factor*(*cti_data++);

@@ -5,7 +5,7 @@ rem see README.txt
 rem Author: Kris Thielemans
 
 
-echo This script should work with STIR version 1.2 and 1.3. If you have
+echo This script should work with STIR version 2.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo.

@@ -103,7 +103,7 @@ void close_file(FILE*& fptr)
   fptr=0;
 }
 
-const char * const 
+const char *
 find_filename(const char * const filename_with_directory)
 {
   const char * name;

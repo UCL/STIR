@@ -63,8 +63,8 @@
 #include "stir/utilities.h"
 #include "stir/KeyParser.h"
 #include "stir/DiscretisedDensity.h"
-#include "stir/ImageProcessor.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/DataProcessor.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 
@@ -94,7 +94,7 @@ class PostFiltering
 {
 public:
   PostFiltering();
-  shared_ptr<ImageProcessor<3,float> > filter_ptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr;
 public:
   KeyParser parser;
   
@@ -135,6 +135,7 @@ main(int argc, char *argv[])
       if (strcmp(argv[1], "--verbose") == 0)
 	{
 	  verbose = true;
+	  --argc; ++argv;
 	}
       else
 	{
@@ -179,7 +180,7 @@ main(int argc, char *argv[])
     {     
       cerr << "\nI'm going to ask you for the type of filter (or image processor)\n"
 	"Possible values:\n";
-      ImageProcessor<3,float>::list_registered_names(cerr);
+      DataProcessor<DiscretisedDensity<3,float> >::list_registered_names(cerr);
       
       post_filtering.parser.ask_parameters();    
     }
@@ -203,8 +204,8 @@ main(int argc, char *argv[])
 
   post_filtering.filter_ptr->apply(*input_image_ptr);
   
-  DefaultOutputFileFormat output_file_format;
-  if (output_file_format.write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
+  if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+      write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
     return EXIT_SUCCESS;
   else
     return EXIT_FAILURE;

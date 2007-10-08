@@ -238,31 +238,90 @@ zoom_viewgram (Viewgram<float>& out_view,
 
 
 
+
+static
+VoxelsOnCartesianGrid<float>
+construct_new_image_from_zoom_parameters(const VoxelsOnCartesianGrid<float> &image,
+					 const CartesianCoordinate3D<float>& zooms,
+					 const CartesianCoordinate3D<float>& offsets_in_mm,
+					 const BasicCoordinate<3,int>& new_sizes_arg)
+{
+  CartesianCoordinate3D<int> new_sizes = new_sizes_arg;
+  assert(new_sizes.x()>=0);
+  assert(new_sizes.y()>=0);
+  assert(new_sizes.z()>=0);
+  CartesianCoordinate3D<float>
+    voxel_size = image.get_grid_spacing() / zooms;
+
+  // first set origin to 0
+  CartesianCoordinate3D<float>
+    origin(0.F,0.F,0.F);
+  
+  VoxelsOnCartesianGrid<float> 
+    new_image(IndexRange3D(0, new_sizes.z()-1,
+			   -new_sizes.y()/2, -new_sizes.y()/2+new_sizes.y()-1,
+			   -new_sizes.x()/2, -new_sizes.x()/2+new_sizes.x()-1),
+	      origin,
+	      voxel_size);
+
+  // find coordinates of middle of images
+  BasicCoordinate<3,int> min_indices, max_indices;
+  if (!image.get_regular_range(min_indices, max_indices))
+    error("zoom_image: Non-regular range of coordinates in input image. That's strange.");
+  BasicCoordinate<3,int> new_min_indices, new_max_indices;
+  if (!new_image.get_regular_range(new_min_indices, new_max_indices))
+    error("zoom_image: Non-regular range of coordinates in output image. That's a bug.");
+
+  const BasicCoordinate<3,float> middle =
+    (image.get_physical_coordinates_for_indices(min_indices) +
+     image.get_physical_coordinates_for_indices(max_indices))/2;
+  const BasicCoordinate<3,float> new_middle =
+    (new_image.get_physical_coordinates_for_indices(new_min_indices) +
+     new_image.get_physical_coordinates_for_indices(new_max_indices))/2;
+  // now make sure that these are shifted as required
+  new_image.set_origin(offsets_in_mm + middle - new_middle);
+  // check
+  {
+    const BasicCoordinate<3,float> final_middle =
+      (new_image.get_physical_coordinates_for_indices(new_min_indices) +
+       new_image.get_physical_coordinates_for_indices(new_max_indices))/2;
+    if (norm(final_middle - middle - offsets_in_mm) > 1)
+      error("zoom_image bug in finding new origin");
+  }
+
+  return new_image;
+}
 void
-zoom_image(VoxelsOnCartesianGrid<float> &image,
+zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
+		    const float zoom,
+		    const float x_offset_in_mm, const float y_offset_in_mm, 
+		    const int new_size )      
+{
+  VoxelsOnCartesianGrid<float> new_image =
+    zoom_image(image, zoom, x_offset_in_mm, y_offset_in_mm, new_size);
+  image = new_image;
+}
+
+VoxelsOnCartesianGrid<float>
+zoom_image(const VoxelsOnCartesianGrid<float> &image,
            const float zoom,
 	   const float x_offset_in_mm, const float y_offset_in_mm, 
 	   const int new_size )                          
 {
   assert(new_size>=0);
   if(zoom==1 && x_offset_in_mm==0 && y_offset_in_mm==0 && new_size== image.get_x_size()) 
-    return;
+    return image;
    
-  CartesianCoordinate3D<float>
-    voxel_size(image.get_voxel_size().z()/zoom,
-	       image.get_voxel_size().y()/zoom,
-	       image.get_voxel_size().x());
-  CartesianCoordinate3D<float>
-    origin(image.get_origin().z(),
-	   image.get_origin().y() + y_offset_in_mm,
-	   image.get_origin().x() + x_offset_in_mm);
+  const CartesianCoordinate3D<float> zooms(1,zoom,zoom);
+  const CartesianCoordinate3D<float> offsets_in_mm(0.F, y_offset_in_mm, x_offset_in_mm);
+  const BasicCoordinate<3,int> new_sizes =
+    make_coordinate(image.get_length(), new_size, new_size);
 
-  VoxelsOnCartesianGrid<float> 
-    new_image(IndexRange3D(image.get_min_z(), image.get_max_z(),
-			   -new_size/2, -new_size/2+new_size-1,
-			   -new_size/2, -new_size/2+new_size-1),
-	      origin,
-	      voxel_size);
+  VoxelsOnCartesianGrid<float> new_image =
+    construct_new_image_from_zoom_parameters(image,
+					     zooms,
+					     offsets_in_mm,
+					     new_sizes);
 
   PixelsOnCartesianGrid<float> 
     new_image2D = new_image.get_plane(new_image.get_min_z());
@@ -271,37 +330,37 @@ zoom_image(VoxelsOnCartesianGrid<float> &image,
       zoom_image(new_image2D, image.get_plane(plane));
       new_image.set_plane(new_image2D, plane);
     }
-  image=new_image;
     
-  assert(image.get_voxel_size() == voxel_size);
+  assert(norm(new_image.get_voxel_size() - image.get_voxel_size()/zooms)<1);
+
+  return new_image;
 }
 
-
 void
-zoom_image(VoxelsOnCartesianGrid<float> &image,
+zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
+		    const CartesianCoordinate3D<float>& zooms,
+		    const CartesianCoordinate3D<float>& offsets_in_mm,
+		    const BasicCoordinate<3,int>& new_sizes)
+{
+  const VoxelsOnCartesianGrid<float> new_image =
+    zoom_image(image, zooms, offsets_in_mm, new_sizes);
+  image = new_image;
+}
+
+VoxelsOnCartesianGrid<float>
+zoom_image(const VoxelsOnCartesianGrid<float> &image,
 	   const CartesianCoordinate3D<float>& zooms,
 	   const CartesianCoordinate3D<float>& offsets_in_mm,
-	   const CartesianCoordinate3D<int>& new_sizes)
+	   const BasicCoordinate<3,int>& new_sizes)
 {
 
-  assert(new_sizes.x()>=0);
-  assert(new_sizes.y()>=0);
-  assert(new_sizes.z()>=0);
-  CartesianCoordinate3D<float>
-    voxel_size = image.get_grid_spacing() / zooms;
-  
-  CartesianCoordinate3D<float>
-    origin = image.get_origin() + offsets_in_mm;
-  
-  VoxelsOnCartesianGrid<float> 
-    new_image(IndexRange3D(-new_sizes.z()/2, -new_sizes.z()/2+new_sizes.z()-1,
-			   -new_sizes.y()/2, -new_sizes.y()/2+new_sizes.y()-1,
-			   -new_sizes.x()/2, -new_sizes.x()/2+new_sizes.x()-1),
-	      origin,
-	      voxel_size);
+  VoxelsOnCartesianGrid<float> new_image =
+    construct_new_image_from_zoom_parameters(image,
+					     zooms,
+					     offsets_in_mm,
+					     new_sizes);
   zoom_image(new_image, image);
-
-  image = new_image;
+  return new_image;
 }
 
 void 
@@ -314,17 +373,28 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
          x_in_index = x_out_index/zoom  + offset
 
      compare to 'physical' coordinates
-         x_phys = (x_index - x_ctr_index) * voxel_size.x + origin.x
+         x_phys = (x_index) * voxel_size.x + origin.x
        
      as x_in_phys == x_out_phys, we find
-         (x_in_index - x_in_ctr_index)* voxel_size_in.x + origin_in.x ==
-           (x_out_index - x_out_ctr_index)* voxel_size_out.x + origin_out.x
+         (x_in_index)* voxel_size_in.x + origin_in.x ==
+           (x_out_index )* voxel_size_out.x + origin_out.x
         <=>
-         x_in_index = x_in_ctr_index +
-                      ((x_out_index- x_out_ctr_index) * voxel_size_out.x 
+         x_in_index = (x_out_index * voxel_size_out.x 
 	                + origin_out.x - origin_in.x) 
 		      / voxel_size_in.x
+
+     so, zoom= voxel_size_in.x/ voxel_size_out.x
+         offset = (origin_out.x - origin_in.x)/ voxel_size_in.x
+
   */
+  // check relation between indices and physical coordinates
+  {
+    const BasicCoordinate<3,int> indices = make_coordinate(1,2,3);
+    if (norm(image_in.get_physical_coordinates_for_indices(indices)
+	     - (image_in.get_voxel_size() * BasicCoordinate<3,float>(indices) + image_in.get_origin())
+	     ) > 2.F)
+      error("zoom_image is confused about the relation between indices and physical coordinates");
+  }
   const float zoom_x = 
     image_in.get_voxel_size().x() / image_out.get_voxel_size().x();
   const float zoom_y = 
@@ -332,22 +402,14 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   const float zoom_z = 
     image_in.get_voxel_size().z() / image_out.get_voxel_size().z();
   const float x_offset = 
-    ((image_out.get_origin().x() - image_in.get_origin().x()) 
-     / image_in.get_voxel_size().x()) + 
-    (image_in.get_max_x() + image_in.get_min_x())/2.F -
-    (image_out.get_max_x() + image_out.get_min_x())/2.F / zoom_x;
+    (image_out.get_origin().x() - image_in.get_origin().x()) 
+     / image_in.get_voxel_size().x();
   const float y_offset = 
-    ((image_out.get_origin().y() - image_in.get_origin().y()) 
-     / image_in.get_voxel_size().y()
-    ) + 
-    (image_in.get_max_y() + image_in.get_min_y())/2.F -
-    (image_out.get_max_y() + image_out.get_min_y())/2.F / zoom_y;
+    (image_out.get_origin().y() - image_in.get_origin().y()) 
+    / image_in.get_voxel_size().y();
   const float z_offset = 
-    ((image_out.get_origin().z() - image_in.get_origin().z()) 
-     / image_in.get_voxel_size().z()
-    ) + 
-    (image_in.get_max_z() + image_in.get_min_z())/2.F -
-    (image_out.get_max_z() + image_out.get_min_z())/2.F / zoom_z;
+    (image_out.get_origin().z() - image_in.get_origin().z()) 
+    / image_in.get_voxel_size().z();
 
   
   if(zoom_x==1.0F && zoom_y==1.0F && zoom_z==1.0F &&
@@ -376,6 +438,8 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   for (int z=image_in.get_min_z(); z<=image_in.get_max_z(); z++)
     overlap_interpolate(temp2[z], temp[z], zoom_y, y_offset);
 
+  temp.recycle();
+
   overlap_interpolate(image_out, temp2, zoom_z, z_offset);
 
 }
@@ -395,15 +459,11 @@ zoom_image(PixelsOnCartesianGrid<float> &image2D_out,
   const float x_offset = 
     ((image2D_out.get_origin().x() - image2D_in.get_origin().x()) 
      / image2D_in.get_pixel_size().x()
-    ) + 
-    (image2D_in.get_max_x() + image2D_in.get_min_x())/2.F -
-    (image2D_out.get_max_x() + image2D_out.get_min_x())/2.F / zoom_x;
+    );
   const float y_offset = 
     ((image2D_out.get_origin().y() - image2D_in.get_origin().y()) 
      / image2D_in.get_pixel_size().y()
-    ) + 
-    (image2D_in.get_max_y() + image2D_in.get_min_y())/2.F -
-    (image2D_out.get_max_y() + image2D_out.get_min_y())/2.F / zoom_y;
+    );
   
   if(zoom_x==1.0F && zoom_y==1.0F &&
      x_offset == 0.F && y_offset == 0.F &&

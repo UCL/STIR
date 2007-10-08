@@ -230,18 +230,15 @@ Scanner::Scanner(Type scanner_type)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryST, string_list("GE Discovery ST", "Discovery ST"), 
 	       24, 249, 221, 2 * 210,
-               886.2F/2.F, 8.4F, 6.54F, 3.19F, 
+               886.2F/2.F, 8.4F, 6.54F, 3.195F, 
 	       static_cast<float>(-4.54224*_PI/180),//?
 	       4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
  case DiscoverySTE: 
 
-    // 249 bins (non-uniform sampling) 
-    // 221 bins (uniform sampling)
-    /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoverySTE, string_list("GE Discovery STE", "Discovery STE"), 
-	       24, 327, 295, 2 * 280, 
+	       24, 329, 293, 2 * 280, 
                886.2F/2.F, 8.4F, 6.54F, 2.397F, 
 	       static_cast<float>(-4.54224*_PI/180),//?
 	       4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
@@ -249,9 +246,6 @@ Scanner::Scanner(Type scanner_type)
 
  case DiscoveryRX: 
 
-    // 249 bins (non-uniform sampling) 
-    // 221 bins (uniform sampling)
-    /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryRX, string_list("GE Discovery RX", "Discovery RX"), 
 	       24, 
 	       367, 

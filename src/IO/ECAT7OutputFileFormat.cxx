@@ -20,7 +20,7 @@
 
   \file
   \ingroup ECAT
-  \brief Implementation of class stir::ECAT7OutputFileFormat
+  \brief Implementation of class stir::ecat::ecat7::ECAT7OutputFileFormat
 
   \author Kris Thielemans
 
@@ -47,7 +47,7 @@ ECAT7OutputFileFormat::
 ECAT7OutputFileFormat(const NumericType& type, 
                    const ByteOrder& byte_order) 
 {
-  OutputFileFormat::set_defaults();
+  base_type::set_defaults();
   set_type_of_numbers(type);
   set_byte_order(byte_order);
 }
@@ -59,7 +59,7 @@ initialise_keymap()
   parser.add_start_key("ECAT7 Output File Format Parameters");
   parser.add_stop_key("End ECAT7 Output File Format Parameters");
   parser.add_key("default scanner name", &default_scanner_name);
-  OutputFileFormat::initialise_keymap();
+  base_type::initialise_keymap();
 }
 
 void 
@@ -67,7 +67,7 @@ ECAT7OutputFileFormat::
 set_defaults()
 {
   default_scanner_name = "ECAT 962";
-  OutputFileFormat::set_defaults();
+  base_type::set_defaults();
   file_byte_order = ByteOrder::big_endian;
   type_of_numbers = NumericType::SHORT;
 
@@ -79,7 +79,7 @@ bool
 ECAT7OutputFileFormat::
 post_processing()
 {
-  if (OutputFileFormat::post_processing())
+  if (base_type::post_processing())
     return true;
 
   shared_ptr<Scanner> scanner_ptr = 

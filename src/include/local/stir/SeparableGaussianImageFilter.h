@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -24,7 +24,8 @@
 
 #include "local/stir/SeparableGaussianArrayFilter.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
 
 
 START_NAMESPACE_STIR
@@ -38,10 +39,18 @@ class SeparableGaussianImageFilter :
   public 
     RegisteredParsingObject<
         SeparableGaussianImageFilter<elemT>,
-        ImageProcessor<num_dimensions,elemT>,
-        ImageProcessor<num_dimensions,elemT>
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
     >
 {
+ private:
+  typedef
+    RegisteredParsingObject<
+        SeparableGaussianImageFilter<elemT>,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
+    >
+    base_type;
 public:
   static const char * const registered_name; 
   

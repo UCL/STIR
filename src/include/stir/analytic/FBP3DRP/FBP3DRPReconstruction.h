@@ -35,7 +35,7 @@
 
 
 
-#include "stir/recon_buildblock/Reconstruction.h"
+#include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
@@ -95,9 +95,9 @@ class Succeeded;
      
 
 */
-class FBP3DRPReconstruction: public Reconstruction
+class FBP3DRPReconstruction: public AnalyticReconstruction
 {
-  typedef Reconstruction base_type;
+  typedef AnalyticReconstruction base_type;
 public:
 
 
@@ -117,6 +117,10 @@ public:
   // because it doesn't know ~DiscretisedDensity.
   ~FBP3DRPReconstruction();
 
+//! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
+   virtual string method_info() const;
+
+protected:
 /*!
   \brief Implementation of the reconstruction
   
@@ -125,18 +129,7 @@ public:
   and returns the output reconstructed image
 */
 
-   virtual Succeeded reconstruct(shared_ptr<DiscretisedDensity<3,float> > const&);
-
-   //! Reconstruction that gets target_image info from the parameters
-   /*! sadly have to repeat that here, as Reconstruct::reconstruct() gets hidden by the 
-       1-argument version.
-       */
-   virtual Succeeded reconstruct();
-
-//! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
-   virtual string method_info() const;
-
-protected:
+   virtual Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const&);
     
 //! Best fit of forward projected sinograms
     void do_best_fit(const Sinogram<float> &sino_measured, const Sinogram<float> &sino_calculated);

@@ -24,7 +24,8 @@
 
 #include "local/stir/SeparableLowPassArrayFilter.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
 
 
 START_NAMESPACE_STIR
@@ -38,10 +39,18 @@ class SeparableLowPassImageFilter :
   public 
     RegisteredParsingObject<
         SeparableLowPassImageFilter<elemT>,
-        ImageProcessor<num_dimensions,elemT>,
-        ImageProcessor<num_dimensions,elemT>
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
     >
 {
+ private:
+  typedef 
+    RegisteredParsingObject<
+        SeparableLowPassImageFilter<elemT>,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >,
+        DataProcessor<DiscretisedDensity<num_dimensions,elemT> >
+    >
+    base_type;
 public:
   static const char * const registered_name; 
   

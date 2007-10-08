@@ -1,0 +1,102 @@
+OSSPSParameters :=
+; filter specific things are at the end
+
+objective function type:=PatlakObjectiveFunctionFromDynamicProjectionData
+PatlakObjectiveFunctionFromDynamicProjectionData Parameters:=
+
+input file := SOME_DYNAMIC_PROJDATA.S
+
+; if disabled, defaults to maximum segment number in the file
+maximum absolute segment number to process := -1
+; see User's Guide to see when you need this
+zero end planes of segment 0:= 0
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+; normalisation (and attenuation correction)
+  Bin Normalisation type := Chained
+	Chained Bin Normalisation Parameters:=
+	Bin Normalisation to apply first:= From ECAT7
+	  Bin Normalisation From ECAT7:=
+		  normalisation_ECAT7_filename:= NORMFILE.n
+		  singles rates := Singles From ECAT7 
+		  Singles Rates From ECAT7:=
+		     ECAT7_filename :=  SOME_DYNAMIC_PROJDATA.S
+		  End Singles Rates From ECAT7:= 
+	  End Bin Normalisation From ECAT7:=
+	 Bin Normalisation to apply second:= From ProjData
+	   Bin Normalisation From ProjData :=
+	     normalisation projdata filename:= AN_ATTENUATION_SINOGRAM_tr1_meas_zoom1_a_f1g1d0b0.hs
+	 End Bin Normalisation From ProjData:=
+  END Chained Bin Normalisation Parameters:=
+
+; if the next parameter is disabled, 
+; the sensitivity will be computed using the normalisation object
+sensitivity filename:= sens.img
+; if next is set to 1, sensitivity will be recomputed
+; and written to file (if "sensitivity filename" is set)
+recompute sensitivity := 1
+use subset sensitivities := 0
+; specify additive projection data to handle randoms or so
+; see User's Guide for more info
+additive sinograms := SCATTER_AND_RANDOMS_ADDED_ECAT7.S
+
+; output image sizes
+; warning: will likely disappear. Use "initial estimate" instead
+
+; choose size of pixels
+; x,y pixel size = zoom * bin_size
+;zoom := 1.02273
+; number of x,y pixels (-1 takes default value to cover the FOV)
+;xy output image size (in pixels) := 128
+
+; patlak related files
+Kinetic Model type := Patlak Plot
+Patlak Plot Parameters :=
+time frame definition filename := TIMEFRAMES.fdef
+starting frame := FRAME_NUM
+calibration factor := 1
+scale factor := 1 # This should be the bin_size/xy_voxelsize 
+blood data filename := TEXTFILE-TIME-PLASMA-BLOOD.if 
+; Time Shift in seconds
+Time Shift := 0
+; boolean - direct reconstructions and STIR, 0: CTI scale
+In total counts := 0 
+; 0 (default), if 1 it automatically scale with xy_voxel_size/bin_size
+;In correct scale := 1 
+end Patlak Plot Parameters :=
+
+end PatlakObjectiveFunctionFromDynamicProjectionData Parameters:=
+
+; Number of subsets should be a divisor of num_views/4
+number of subsets:=NUM_SUBSETS
+; Use for starting the numbering from something else than 1
+start at subiteration number:=1
+; Use if you want to start from another subset than 0 (but why?)
+start at subset:= 0
+number of subiterations:= NUM_SUBITERATIONS
+save estimates at subiteration intervals:= NUM_SUBITERATIONS_INTERVALS
+
+initial estimate := PARAMETRIC_IMAGE_OF_TWO_PARAMETERS.img
+; enable this when you read an initial estimate with negative data
+enforce initial positivity condition:=1
+write update image := 0
+
+;inter-update filter subiteration interval:= 0
+;inter-update filter type := None
+
+;inter-iteration filter subiteration interval:= 0
+
+;post-filter type := None
+
+relaxation parameter := 1
+relaxation gamma:=.1
+
+output filename prefix:=OUTPUT_PARAMETRIC_IMAGE.img
+
+END :=

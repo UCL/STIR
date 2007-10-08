@@ -354,6 +354,12 @@ KeyParser::add_key(const string& keyword, int * variable)
   }
 
 void
+KeyParser::add_key(const string& keyword, unsigned int * variable)
+  {
+    add_key(keyword, KeyArgument::UINT, variable);
+  }
+
+void
 KeyParser::add_key(const string& keyword, unsigned long * variable)
   {
     add_key(keyword, KeyArgument::ULONG, variable);
@@ -369,6 +375,12 @@ void
 KeyParser::add_key(const string& keyword, vector<double>* variable)
   {
     add_key(keyword, KeyArgument::LIST_OF_DOUBLES, variable);
+  }
+
+void
+KeyParser::add_key(const string& keyword, vector<std::string>* variable)
+  {
+    add_key(keyword, KeyArgument::LIST_OF_ASCII, variable);
   }
 
 void
@@ -597,8 +609,6 @@ get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
 }
 
 // vectors of strings are also special as we need to split the string up if there are commas
-// TODO this would better be called get_param_for_string, but need to check if VC 6 can handle it
-// (but I don't see why not)
 template <>
 static 
 Succeeded
@@ -724,38 +734,50 @@ Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_wa
       // KT 07/02/2001 new
     case KeyArgument::PARSINGOBJECT:
     case KeyArgument::SHARED_PARSINGOBJECT:
-      keyword_has_a_value = get_param_from_string(par_ascii, line) == Succeeded::yes;
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<std::string>(), line) == Succeeded::yes; 
       break;
     case KeyArgument::INT :
     case KeyArgument::BOOL :
-      keyword_has_a_value = get_param_from_string(par_int, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<int>(), line) == Succeeded::yes; 
+      break;
+    case KeyArgument::UINT :
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<unsigned int>(), line) == Succeeded::yes; 
       break;
     case KeyArgument::ULONG :
-      keyword_has_a_value = get_param_from_string(par_ulong, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<unsigned long>(), line) == Succeeded::yes; 
       break;
     case KeyArgument::DOUBLE :
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<double>(), line) == Succeeded::yes; 
+      break;
     case KeyArgument::FLOAT :
-      keyword_has_a_value = get_param_from_string(par_double, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<float>(), line) == Succeeded::yes; 
       break;
     case KeyArgument::LIST_OF_INTS :
-      par_intlist.clear();
-      keyword_has_a_value = get_vparam_from_string(par_intlist, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_vparam_from_string(this->parameter, Type2Type<std::vector<int> >(), line) == Succeeded::yes; 
       break;
     case KeyArgument::LIST_OF_DOUBLES :
-      par_doublelist.clear();
-      keyword_has_a_value = get_vparam_from_string(par_doublelist, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_vparam_from_string(this->parameter, Type2Type<std::vector<double> >(), line) == Succeeded::yes; 
       break;
     case KeyArgument::LIST_OF_ASCII :
-      par_asciilist.clear();
-      keyword_has_a_value = get_vparam_from_string(par_asciilist, line) == Succeeded::yes; 
+      // TODO enforce {} by writing get_param_from_string for vector<string>
+      keyword_has_a_value = 
+	get_any_vparam_from_string(this->parameter, Type2Type<std::vector<std::string> >(), line) == Succeeded::yes; 
       break;
     case KeyArgument::ARRAY2D_OF_FLOATS:
-      par_array2d_of_floats = Array<2,float>();
-      keyword_has_a_value = get_vparam_from_string(par_array2d_of_floats, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<Array<2,float> >(), line) == Succeeded::yes; 
       break;
     case KeyArgument::ARRAY3D_OF_FLOATS:
-      par_array3d_of_floats = Array<3,float>();
-      keyword_has_a_value = get_vparam_from_string(par_array3d_of_floats, line) == Succeeded::yes; 
+      keyword_has_a_value = 
+	get_any_param_from_string(this->parameter, Type2Type<Array<3,float> >(), line) == Succeeded::yes; 
       break;
     case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
       keyword_has_a_value = 
@@ -804,6 +826,7 @@ void KeyParser::set_parsing_object()
   // current_index is set to 0 when there was no index
   if(current_index!=0)
     error("KeyParser::PARSINGOBJECT can't handle vectored keys yet\n");
+  const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
   *reinterpret_cast<Object **>(current->p_object_variable) =
     (*current->parser)(input, par_ascii);	    
 }
@@ -821,6 +844,7 @@ void KeyParser::set_shared_parsing_object()
   // current_index is set to 0 when there was no index
   if(current_index!=0)
     error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet\n");
+  const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
   *reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable) =
     (*current->parser)(input, par_ascii);	    
 }
@@ -854,8 +878,14 @@ void KeyParser::set_variable()
     {
       switch(current->type)
 	{	  
+#define KP_case_assign(KeyArgumentValue, type) \
+	case KeyArgumentValue : \
+	    *reinterpret_cast<type *>(current->p_object_variable) = \
+				      * boost::any_cast<type >(&this->parameter); break
+
 	case KeyArgument::BOOL :
 	  {
+	    const int par_int = * boost::any_cast<int>(&parameter);
 	    if (par_int !=0 && par_int != 1)
 	      warning("KeyParser: keyword %s expects a bool value which should be 0 or 1\n"
                       " (actual value is %d). A non-zero value will be assumed to mean 'true'\n",
@@ -864,42 +894,16 @@ void KeyParser::set_variable()
 	    *p_bool=par_int != 0;
 	    break;
 	  }
-	case KeyArgument::INT :
-	  {
-	    int* p_int=(int*)current->p_object_variable;	// performs the required casting
-	    *p_int=par_int;
-	    break;
-	  }
-	 
-	case KeyArgument::ULONG :
-	  {
-	    unsigned long* p_ulong=(unsigned long*)current->p_object_variable;	// performs the required casting
-	    *p_ulong=par_ulong;
-	    break;
-	  }
-	 
-	case KeyArgument::DOUBLE :
-	  {
-	    double* p_double=(double*)current->p_object_variable;	// performs the required casting
-	    *p_double=par_double;
-	    break;
-	  }
-	case KeyArgument::FLOAT :
-	  {
-	    float* p_float=(float*)current->p_object_variable;	// performs the required casting
-	    // TODO check range
-	    *p_float=static_cast<float>(par_double);
-	    break;
-	  }
-	case KeyArgument::ASCII :
-	  {
-	    string* p_string=(string*)current->p_object_variable;	// performs the required casting
-	    *p_string=par_ascii;
-	    break;
-	  }
-	  
+	  KP_case_assign(KeyArgument::INT, int);
+	  KP_case_assign(KeyArgument::UINT, unsigned int);
+	  KP_case_assign(KeyArgument::ULONG,unsigned long);
+	  KP_case_assign(KeyArgument::DOUBLE,double);
+	  KP_case_assign(KeyArgument::FLOAT,float);
+	  KP_case_assign(KeyArgument::ASCII, std::string);
+
 	case KeyArgument::ASCIIlist :
 	  {
+	    const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
 	    const int index =
               find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
 	    *((int *)current->p_object_variable) = index;
@@ -917,84 +921,44 @@ void KeyParser::set_variable()
             }
 	    break;
 	  }
-	case KeyArgument::LIST_OF_INTS :
-	  {
-	    IntVect* p_vectint=(IntVect*)current->p_object_variable;
-	    *p_vectint=par_intlist;
-	    break;
-	  }
-	case KeyArgument::LIST_OF_DOUBLES :
-	  {
-            // KT 07/02/2001 bug corrected: was a straight copy of the INT case above
-	    DoubleVect* p_vect=(DoubleVect*)current->p_object_variable;
-	    *p_vect=par_doublelist;
-	    break;
-	  }
-        case KeyArgument::ARRAY2D_OF_FLOATS:
-	  {
-	    *reinterpret_cast<Array<2,float>*>(current->p_object_variable) =
-	      par_array2d_of_floats;
-	    break;
-	  }
-	  case KeyArgument::ARRAY3D_OF_FLOATS:
-	  {
-	    *reinterpret_cast<Array<3,float>*>(current->p_object_variable) =
-	      par_array3d_of_floats;
-	    break;
-	  }
-	  case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
-	  {
-	    typedef BasicCoordinate<3,float> type;
-	    *reinterpret_cast<type*>(current->p_object_variable) =
-				      * boost::any_cast<type>(&parameter);
-	    break;
-	  }
-	  case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
-	  {
-	    typedef BasicCoordinate<3,Array<3,float> > type;
-	    *reinterpret_cast<type*>(current->p_object_variable) =
-				      * boost::any_cast<type>(&parameter);
-	    break;
-	  }
-	case KeyArgument::LIST_OF_ASCII :
-	  {
-	    vector<string>* p_vectstring=(vector<string>*)current->p_object_variable;
-	    *p_vectstring=par_asciilist;
-	    break;
-	  }
+	  KP_case_assign(KeyArgument::LIST_OF_INTS, IntVect);
+	  KP_case_assign(KeyArgument::LIST_OF_DOUBLES, DoubleVect);
+	  // sigh... macro expansion fails of type contain commas.... 
+	  // Work-around: use typedefs.
+	  typedef Array<2,float> KP_array2d;
+	  typedef Array<3,float> KP_array3d;
+	  typedef BasicCoordinate<3,float> KP_coord;
+	  typedef BasicCoordinate<3,Array<3,float> > KP_coord_array3d;
+	  KP_case_assign(KeyArgument::ARRAY2D_OF_FLOATS, KP_array2d);
+	  KP_case_assign(KeyArgument::ARRAY3D_OF_FLOATS, KP_array3d);
+	  KP_case_assign(KeyArgument::BASICCOORDINATE3D_OF_FLOATS, KP_coord);
+	  KP_case_assign(KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS,KP_coord_array3d);
+	  KP_case_assign(KeyArgument::LIST_OF_ASCII, std::vector<std::string>);
 	default :
 	  warning("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
+#undef KP_case_assign
     }
   else	// Sets vector elements using current_index
     {
       switch(current->type)
 	{
-	case KeyArgument::INT :
-	  {
-	    assign_to_list(*(IntVect*)current->p_object_variable, par_int, current_index, keyword);
-	    break;
-	  }
-	case KeyArgument::ULONG :
-	  {
-	    assign_to_list(*(UlongVect*)current->p_object_variable, par_ulong, current_index, keyword);
-	    break;
-	  }
-	  
-	case KeyArgument::DOUBLE :
-	  {
-	    assign_to_list(*(DoubleVect*)current->p_object_variable, par_double, current_index, keyword);
-	    break;
-	  }
-	case KeyArgument::ASCII :
-	  {
-	    assign_to_list(*(vector<string>*)current->p_object_variable, par_ascii, current_index, keyword);
-	    break;
-	  }
-	  
+#define KP_case_assign(KeyArgumentValue, type) \
+	case KeyArgumentValue : \
+	  assign_to_list(*reinterpret_cast<std::vector<type> *>(current->p_object_variable), \
+			 * boost::any_cast<type>(&this->parameter), current_index, keyword); \
+	  break
+
+	  KP_case_assign(KeyArgument::INT, int);
+	  KP_case_assign(KeyArgument::UINT,unsigned int);
+	  KP_case_assign(KeyArgument::ULONG,unsigned long);
+	  KP_case_assign(KeyArgument::DOUBLE,double);
+	  KP_case_assign(KeyArgument::FLOAT,float);
+	  KP_case_assign(KeyArgument::ASCII, std::string);
 	case KeyArgument::ASCIIlist :
 	  {
+	    const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
 	    const int index_in_asciilist =
               find_in_ASCIIlist(par_ascii, *(current->p_object_list_of_values));
 	    assign_to_list(*(IntVect*)current->p_object_variable, 
@@ -1012,26 +976,14 @@ void KeyParser::set_variable()
             }
 	    break;
 	  }
-	case KeyArgument::LIST_OF_INTS :
-	  {
-	    assign_to_list(*(vector<IntVect>*)current->p_object_variable, par_intlist, current_index, keyword);
-	    break;
-	  }
-	case KeyArgument::LIST_OF_DOUBLES :
-	  {
-	    assign_to_list(*(vector<DoubleVect>*)current->p_object_variable, par_doublelist, current_index, keyword);
-	    break;
-	  }
-	/*	case LIST_OF_ASCII :
-		{
-		assign_to_list(*(vector<string>*)current->p_object_variable, par_asciilist, current_index, keyword);
-		break;
-		}*/
+	  KP_case_assign(KeyArgument::LIST_OF_INTS, IntVect);
+	  KP_case_assign(KeyArgument::LIST_OF_DOUBLES, DoubleVect);
 	default :
 	  
 	  warning("KeyParser error: unknown type. Implementation error");
 	  break;
 	}
+#undef KP_case_assign
     }
 }
 
@@ -1065,7 +1017,54 @@ void KeyParser::process_key()
   }
 }
 
-// KT 07/02/2001 new 
+namespace detail
+{
+  /* A local helper function, essentially equivalent to operator<<(ostream&, const T& var).
+     However, it will insert \ characters in front of end-of-line.
+     This is used for types for which operator<< can result in multi-line strings.
+     If this is not fixed, it would mean that the output of parameter_info() is
+     not immediatelly suitable for parsing back.
+     Example: suppose there's a keyword that needs a 2d array. If at parsing we have
+     my array:={{1,2},{3}}
+     then parameter_info would give
+     my_array:={{1,2}
+     , {3}
+     }
+     and this would not follow standard syntax. When using the following function
+     in parameter_info(), the output will be
+     my_array:={{1,2}\
+     , {3}\
+     }
+  */
+  template <class T>
+  static void to_stream(ostream& s, const T& var, const char continuation_char = '\\')
+  {
+    // we will first write everything to a temporary stringstream
+    // and then read it back, inserting the backslash
+#ifdef BOOST_NO_STRINGSTREAM
+    // dangerous for out-of-range, but 'old-style' ostrstream seems to need this
+    char str[100000];
+    strstream stemp(str, 100000);
+#else
+    std::stringstream stemp;
+#endif
+    // write to stemp
+    stemp << var;
+    
+    // now read it back, character by character
+    while (true)
+      {
+	char c;
+	stemp.get(c);
+	if (!stemp)
+	  break;
+	if (c == '\n')
+	    s << continuation_char; // insert continuation character
+	s << c;
+      }
+  }
+}
+
 // TODO breaks with vectored keys (as there is no way of finding out if the
 // variable is actually a vector of the relevant type
 string KeyParser::parameter_info() const
@@ -1103,6 +1102,8 @@ string KeyParser::parameter_info() const
         s << *reinterpret_cast<int*>(i->second.p_object_variable); break;
       case KeyArgument::BOOL:
         s << (*reinterpret_cast<bool*>(i->second.p_object_variable) ? 1 : 0); break;
+      case KeyArgument::UINT:
+        s << *reinterpret_cast<unsigned int*>(i->second.p_object_variable); break;
       case KeyArgument::ULONG:
         s << *reinterpret_cast<unsigned long*>(i->second.p_object_variable); break;
       case KeyArgument::NONE:
@@ -1144,7 +1145,7 @@ string KeyParser::parameter_info() const
             //std::cerr << "\nBefore *parsing_object_ptr" << endl;	  
             //std::cerr << "\ntypename *parsing_object_ptr " << typeid(*parsing_object_ptr).name() <<std::endl<<std::endl;
 	    s << parsing_object_ptr->get_registered_name() << endl;
-	    s << parsing_object_ptr->parameter_info() << endl;
+	    s << parsing_object_ptr->parameter_info();
 	  }
 	  else
 	    s << "None";
@@ -1157,9 +1158,9 @@ string KeyParser::parameter_info() const
       case KeyArgument::LIST_OF_INTS:
         s << *reinterpret_cast<IntVect*>(i->second.p_object_variable); break;	  
       case KeyArgument::ARRAY2D_OF_FLOATS:
-	s << *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable); break;
+	detail::to_stream(s, *reinterpret_cast<Array<2,float>*>(i->second.p_object_variable)); break;
       case KeyArgument::ARRAY3D_OF_FLOATS:
-	s << *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable); break;
+	detail::to_stream(s, *reinterpret_cast<Array<3,float>*>(i->second.p_object_variable)); break;
       case KeyArgument::BASICCOORDINATE3D_OF_FLOATS:
 	{
 	    typedef BasicCoordinate<3,float> type;
@@ -1169,7 +1170,7 @@ string KeyParser::parameter_info() const
       case KeyArgument::BASICCOORDINATE3D_OF_ARRAY3D_OF_FLOATS:
 	{
 	    typedef BasicCoordinate<3,Array<3,float> > type;
-	    s << *reinterpret_cast<type*>(i->second.p_object_variable);
+	    detail::to_stream(s, *reinterpret_cast<type*>(i->second.p_object_variable));
 	    break;
 	}
       case KeyArgument::LIST_OF_ASCII:

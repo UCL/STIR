@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, IRSL
+    Copyright (C) 2003- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -22,7 +22,8 @@
 
 
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
 #include <vector>
 
 #ifndef STIR_NO_NAMESPACES
@@ -42,10 +43,18 @@ class multiply_plane_scale_factorsImageProcessor :
   public 
     RegisteredParsingObject<
         multiply_plane_scale_factorsImageProcessor<elemT>,
-        ImageProcessor<3,elemT>,
-        ImageProcessor<3,elemT>
+        DataProcessor<DiscretisedDensity<3,elemT> >,
+        DataProcessor<DiscretisedDensity<3,elemT> >
     >
 {
+private:
+  typedef
+    RegisteredParsingObject<
+        multiply_plane_scale_factorsImageProcessor<elemT>,
+        DataProcessor<DiscretisedDensity<3,elemT> >,
+        DataProcessor<DiscretisedDensity<3,elemT> >
+    >
+    base_type;
 public:
   static const char * const registered_name;   
   multiply_plane_scale_factorsImageProcessor();

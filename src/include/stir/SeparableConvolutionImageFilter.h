@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -23,7 +23,8 @@
 
 #include "stir/SeparableArrayFunctionObject.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
 #include "stir/VectorWithOffset.h"
 #include <vector>
 
@@ -42,7 +43,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup ImageProcessor  
-  \brief A class derived from ImageProcessor for performing separable
+  \brief A class derived from DataProcessor for performing separable
     non-periodic convolutions.
 
     This filter applies a 1D convolution in all directions (z,y,x)
@@ -85,10 +86,18 @@ class SeparableConvolutionImageFilter :
   public 
     RegisteredParsingObject<
         SeparableConvolutionImageFilter<elemT>,
-        ImageProcessor<3,elemT>,
-        ImageProcessor<3,elemT>
+        DataProcessor<DiscretisedDensity<3,elemT> >,
+        DataProcessor<DiscretisedDensity<3,elemT> >
     >
 {
+ private:
+  typedef
+    RegisteredParsingObject<
+              SeparableConvolutionImageFilter<elemT>,
+              DataProcessor<DiscretisedDensity<3,elemT> >,
+              DataProcessor<DiscretisedDensity<3,elemT> >
+	       >
+    base_type;
 public:
   //! Name for parsing registry
   static const char * const registered_name; 

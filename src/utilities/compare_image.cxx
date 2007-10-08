@@ -10,7 +10,7 @@
 \author Matthew Jacobson
 \author Kris Thielemans
 \author PARAPET project
-
+\author Charalampos Tsoumpas: Add the tolerance as input
 $Date$
 $Revision$
 
@@ -54,30 +54,49 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char *argv[])
 {
-
-  const float tolerance=0.0005F;
-  int rim_truncation_image = -1;
-  if(argc!=3 && argc!=5 || (argc==5 && strcmp(argv[1],"-r")!=0))
+  if(argc<3 || argc>7)
   {
-    cerr << "Usage: \n" << argv[0] << " [-r rimsize] old_image new_image\n"
-	 << "\t 'rimsize' has to be a nonnegative integer.\n"
-	 << "\t When the -r option is used, the (radial) rim of the\n"
-	 << "\t images will be set to 0, for 'rimsize' pixels.\n";
+    cerr << "Usage: \n" << argv[0] << "\n\t"
+	 << "[-r rimsize] \n\t"
+	 << "[-t tolerance] \n\t"
+	 << "old_image new_image \n\t"
+	 << "'rimsize' has to be a nonnegative integer.\n\t"
+	 << "'tolerance' is by default .0005 \n\t"
+	 << "When the -r option is used, the (radial) rim of the\n\t"
+	 << "images will be set to 0, for 'rimsize' pixels.\n";
     return(EXIT_FAILURE);
   }
+  // skip program name
+  --argc;
+  ++argv;
+  int rim_truncation_image = -1;
+  float tolerance = .0005F ;
 
-  if (argc==5)
+  // first process command line options
+
+  while (argc>0 && argv[0][0]=='-')
     {
-      // argv[1] already checked above
-      rim_truncation_image = atoi(argv[2]);
-      argv+=2;
+      if (strcmp(argv[0], "-r")==0)
+	{
+	  if (argc<2)
+ 	    { cerr << "Option '-r' expects a nonnegative (integer) argument\n"; exit(EXIT_FAILURE); }
+	      rim_truncation_image = atoi(argv[1]);
+	      argc-=2; argv+=2;	    
+	} 
+      if (strcmp(argv[0], "-t")==0)
+	{
+	  if (argc<2)
+	    { cerr << "Option '-t' expects a (float) argument\n"; exit(EXIT_FAILURE); }
+	  tolerance = static_cast<float>(atof(argv[1]));
+	  argc-=2; argv+=2;
+	}      
     }
 
   shared_ptr< DiscretisedDensity<3,float> >  first_operand= 
-    DiscretisedDensity<3,float>::read_from_file(argv[1]);
+    DiscretisedDensity<3,float>::read_from_file(argv[0]);
 
   shared_ptr< DiscretisedDensity<3,float> >  second_operand= 
-    DiscretisedDensity<3,float>::read_from_file(argv[2]);
+    DiscretisedDensity<3,float>::read_from_file(argv[1]);
 
   if (rim_truncation_image>=0)
   {

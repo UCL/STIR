@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-  Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Succeeded.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <iostream>
 
@@ -77,25 +77,21 @@ int main(int argc, char * argv[])
   shared_ptr<Shape3D>
     front_shield_outer_sptr =
     new EllipsoidalCylinder(shield_thickness, shield_outer_radius, shield_outer_radius,
-			    front_shield_centre,
-			    0,0,0);
+			    front_shield_centre);
   shared_ptr<Shape3D>
     front_shield_inner_sptr =
     new EllipsoidalCylinder(shield_thickness, shield_inner_radius, shield_inner_radius,
-			    front_shield_centre,
-			    0,0,0);
+			    front_shield_centre);
   //  CombinedShape3D<logical_and_not<bool> > front_shield(front_shield_outer_sptr,
   //						       front_shield_inner_sptr);
   shared_ptr<Shape3D>
     back_shield_outer_sptr =
     new EllipsoidalCylinder(shield_thickness, 433, 433,
-			    back_shield_centre,
-			    0,0,0);
+			    back_shield_centre);
   shared_ptr<Shape3D>
     back_shield_inner_sptr = 
     new EllipsoidalCylinder(shield_thickness, 379, 379,
-			    back_shield_centre,
-			    0,0,0);
+			    back_shield_centre);
   //CombinedShape3D<logical_and_not<bool> > back_shield(back_shield_outer_sptr,
   //						      back_shield_inner_sptr);
 
@@ -173,9 +169,9 @@ int main(int argc, char * argv[])
 	output_image[z][y][x] += current_image[z][y][x];
 
 
-  DefaultOutputFileFormat output_file_format;
-  Succeeded success =
-    output_file_format.write_to_file(output_filename, output_image);  
+ Succeeded success =
+   OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+   write_to_file(output_filename, output_image);  
   
   return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }

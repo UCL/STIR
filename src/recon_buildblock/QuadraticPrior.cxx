@@ -33,7 +33,10 @@
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
+
+/* Pretty horrible code because we don't have an iterator of neigbhourhoods yet
+ */
 
 START_NAMESPACE_STIR
 
@@ -41,7 +44,7 @@ template <typename elemT>
 void 
 QuadraticPrior<elemT>::initialise_keymap()
 {
-  GeneralisedPrior<elemT>::initialise_keymap();
+  base_type::initialise_keymap();
   this->parser.add_start_key("Quadratic Prior Parameters");
   this->parser.add_key("only 2D", &only_2D); 
   this->parser.add_key("kappa filename", &kappa_filename);
@@ -54,7 +57,7 @@ template <typename elemT>
 bool 
 QuadraticPrior<elemT>::post_processing()
 {
-  if (GeneralisedPrior<elemT>::post_processing()==true)
+  if (base_type::post_processing()==true)
     return true;
   if (kappa_filename.size() != 0)
     this->kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
@@ -108,7 +111,7 @@ template <typename elemT>
 void
 QuadraticPrior<elemT>::set_defaults()
 {
-  GeneralisedPrior<elemT>::set_defaults();
+  base_type::set_defaults();
   this->only_2D = false;
   this->kappa_ptr = 0;  
   this->weights.recycle();
@@ -201,12 +204,87 @@ compute_weights(Array<3,float>& weights, const CartesianCoordinate3D<float>& gri
 }
 
 template <typename elemT>
+double
+QuadraticPrior<elemT>::
+compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
+{
+  if (this->penalisation_factor==0)
+  {
+    return 0.;
+  }
+  
+  
+  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
+  
+  if (this->weights.get_length() ==0)
+  {
+    compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
+  }
+    
+  const bool do_kappa = kappa_ptr.use_count() != 0;
+  
+  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
+    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
+
+
+  double result = 0.;
+  const int min_z = current_image_estimate.get_min_index(); 
+  const int max_z = current_image_estimate.get_max_index(); 
+  for (int z=min_z; z<=max_z; z++)
+    {
+      const int min_dz = max(weights.get_min_index(), min_z-z);
+      const int max_dz = min(weights.get_max_index(), max_z-z);
+	
+      const int min_y = current_image_estimate[z].get_min_index();
+      const int max_y = current_image_estimate[z].get_max_index();
+
+	for (int y=min_y;y<= max_y;y++)
+	  {
+	    const int min_dy = max(weights[0].get_min_index(), min_y-y);
+	    const int max_dy = min(weights[0].get_max_index(), max_y-y);	    
+
+	    const int min_x = current_image_estimate[z][y].get_min_index(); 
+	    const int max_x = current_image_estimate[z][y].get_max_index(); 
+
+	    for (int x=min_x;x<= max_x;x++)       
+	      {
+		const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
+		const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
+		
+		/* formula:
+		  sum_dx,dy,dz
+		   1/2 weights[dz][dy][dx] *
+		   (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
+		   (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+		*/
+		for (int dz=min_dz;dz<=max_dz;++dz)
+		  for (int dy=min_dy;dy<=max_dy;++dy)
+		    for (int dx=min_dx;dx<=max_dx;++dx)
+		      {
+			elemT current =
+			  weights[dz][dy][dx] *
+			  square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])/2;
+
+			if (do_kappa)
+			  current *= 
+			    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+
+			result += static_cast<double>(current);
+		      }
+	      }              
+	  }
+    }
+  return result * this->penalisation_factor;
+}
+
+template <typename elemT>
 void 
 QuadraticPrior<elemT>::
 compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
 		 const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-  assert(  prior_gradient.get_index_range() == current_image_estimate.get_index_range());  
+  assert(  prior_gradient.has_same_characteristics(current_image_estimate));  
   if (this->penalisation_factor==0)
   {
     prior_gradient.fill(0);
@@ -214,12 +292,9 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   }
   
   
-  const DiscretisedDensityOnCartesianGrid<3,float>& current_image_cast =
-    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> &>(current_image_estimate);
+  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
-  DiscretisedDensityOnCartesianGrid<3,float>& prior_gradient_cast =
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_gradient);
-
   if (this->weights.get_length() ==0)
   {
     compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
@@ -229,23 +304,31 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   
   const bool do_kappa = kappa_ptr.use_count() != 0;
   
-  if (do_kappa && kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
+  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
-  for (int z=prior_gradient_cast.get_min_z();z<= prior_gradient_cast.get_max_z();z++)
-    {
-      const int min_dz = max(weights.get_min_index(), prior_gradient_cast.get_min_z()-z);
-      const int max_dz = min(weights.get_max_index(), prior_gradient_cast.get_max_z()-z);
-	
-	for (int y=prior_gradient_cast.get_min_y();y<= prior_gradient_cast.get_max_y();y++)
-	  {
-	    const int min_dy = max(weights[0].get_min_index(), prior_gradient_cast.get_min_y()-y);
-	    const int max_dy = min(weights[0].get_max_index(), prior_gradient_cast.get_max_y()-y);	    
-
-	    for (int x=prior_gradient_cast.get_min_x();x<= prior_gradient_cast.get_max_x();x++)       
-	      {
-		const int min_dx = max(weights[0][0].get_min_index(), prior_gradient_cast.get_min_x()-x);
-		const int max_dx = min(weights[0][0].get_max_index(), prior_gradient_cast.get_max_x()-x);
+  const int min_z = current_image_estimate.get_min_index();  
+  const int max_z = current_image_estimate.get_max_index();  
+  for (int z=min_z; z<=max_z; z++) 
+    { 
+      const int min_dz = max(weights.get_min_index(), min_z-z); 
+      const int max_dz = min(weights.get_max_index(), max_z-z); 
+      
+      const int min_y = current_image_estimate[z].get_min_index(); 
+      const int max_y = current_image_estimate[z].get_max_index(); 
+      
+      for (int y=min_y;y<= max_y;y++) 
+	{ 
+	  const int min_dy = max(weights[0].get_min_index(), min_y-y); 
+	  const int max_dy = min(weights[0].get_max_index(), max_y-y);             
+	  
+	  const int min_x = current_image_estimate[z][y].get_min_index();
+	  const int max_x = current_image_estimate[z][y].get_max_index();  
+	  
+	  for (int x=min_x;x<= max_x;x++)
+	    {
+	      const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
+	      const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
 		
 		/* formula:
 		  sum_dx,dy,dz
@@ -329,8 +412,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     {
       char *filename = new char[gradient_filename_prefix.size()+100];
       sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
-      DefaultOutputFileFormat output_file_format;
-      output_file_format.
+      OutputFileFormat<DiscretisedDensity<3,elemT> >::default_sptr()->
 	write_to_file(filename, prior_gradient);
       delete filename;
     }
@@ -343,7 +425,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
 		const BasicCoordinate<3,int>& coords,
 		const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-  assert(  prior_Hessian_for_single_densel.get_index_range() == current_image_estimate.get_index_range());  
+  assert(  prior_Hessian_for_single_densel.has_same_characteristics(current_image_estimate));
   prior_Hessian_for_single_densel.fill(0);
   if (this->penalisation_factor==0)
   {
@@ -351,11 +433,11 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   }
   
   
-  const DiscretisedDensityOnCartesianGrid<3,float>& current_image_cast =
-    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> &>(current_image_estimate);
+  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
-  DiscretisedDensityOnCartesianGrid<3,float>& prior_Hessian_for_single_densel_cast =
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(prior_Hessian_for_single_densel);
+  DiscretisedDensityOnCartesianGrid<3,elemT>& prior_Hessian_for_single_densel_cast =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(prior_Hessian_for_single_densel);
 
   if (weights.get_length() ==0)
   {
@@ -365,21 +447,20 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
    
   const bool do_kappa = kappa_ptr.use_count() != 0;
   
-  if (do_kappa && kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
+  if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
   const int z = coords[1];
   const int y = coords[2];
   const int x = coords[3];
-  const int min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel_cast.get_min_z()-z);
-  const int max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel_cast.get_max_z()-z);
+  const int min_dz = max(weights.get_min_index(), prior_Hessian_for_single_densel.get_min_index()-z);
+  const int max_dz = min(weights.get_max_index(), prior_Hessian_for_single_densel.get_max_index()-z);
   
-  // TODO use z,y,x
-  const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_y()-y);
-  const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_y()-y);
+  const int min_dy = max(weights[0].get_min_index(), prior_Hessian_for_single_densel[z].get_min_index()-y);
+  const int max_dy = min(weights[0].get_max_index(), prior_Hessian_for_single_densel[z].get_max_index()-y);
   
-  const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel_cast.get_min_x()-x);
-  const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel_cast.get_max_x()-x);
+  const int min_dx = max(weights[0][0].get_min_index(), prior_Hessian_for_single_densel[z][y].get_min_index()-x);
+  const int max_dx = min(weights[0][0].get_max_index(), prior_Hessian_for_single_densel[z][y].get_max_index()-x);
   
   elemT diagonal = 0;
   for (int dz=min_dz;dz<=max_dz;++dz)
@@ -407,7 +488,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
 			const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
 
-  assert( parabolic_surrogate_curvature.get_index_range() == current_image_estimate.get_index_range());  
+  assert( parabolic_surrogate_curvature.has_same_characteristics(current_image_estimate));
   if (this->penalisation_factor==0)
   {
     parabolic_surrogate_curvature.fill(0);
@@ -415,12 +496,9 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
   }
   
   
-  const DiscretisedDensityOnCartesianGrid<3,float>& current_image_cast =
-    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> &>(current_image_estimate);
+  const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
+    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
   
-  DiscretisedDensityOnCartesianGrid<3,float>& parabolic_surrogate_curvature_cast =
-    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> &>(parabolic_surrogate_curvature);
-
   if (weights.get_length() ==0)
   {
     compute_weights(weights, current_image_cast.get_grid_spacing(), this->only_2D);
@@ -428,23 +506,30 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
    
   const bool do_kappa = kappa_ptr.use_count() != 0;
   
-  if (do_kappa && kappa_ptr->get_index_range() != current_image_estimate.get_index_range())
+  if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
-  for (int z=parabolic_surrogate_curvature_cast.get_min_z();z<= parabolic_surrogate_curvature_cast.get_max_z();z++)
-    {
-      const int min_dz = max(weights.get_min_index(), parabolic_surrogate_curvature_cast.get_min_z()-z);
-      const int max_dz = min(weights.get_max_index(), parabolic_surrogate_curvature_cast.get_max_z()-z);
-	
-	for (int y=parabolic_surrogate_curvature_cast.get_min_y();y<= parabolic_surrogate_curvature_cast.get_max_y();y++)
-	  {
-	    const int min_dy = max(weights[0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_y()-y);
-	    const int max_dy = min(weights[0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_y()-y);
-
-	    for (int x=parabolic_surrogate_curvature_cast.get_min_x();x<= parabolic_surrogate_curvature_cast.get_max_x();x++)       
-	      {  	        	     
-		const int min_dx = max(weights[0][0].get_min_index(), parabolic_surrogate_curvature_cast.get_min_x()-x);
-		const int max_dx = min(weights[0][0].get_max_index(), parabolic_surrogate_curvature_cast.get_max_x()-x);
+  const int min_z = current_image_estimate.get_min_index();   
+  const int max_z = current_image_estimate.get_max_index();   
+  for (int z=min_z; z<=max_z; z++)  
+    {  
+      const int min_dz = max(weights.get_min_index(), min_z-z);  
+      const int max_dz = min(weights.get_max_index(), max_z-z);  
+       
+      const int min_y = current_image_estimate[z].get_min_index();  
+      const int max_y = current_image_estimate[z].get_max_index();  
+       
+      for (int y=min_y;y<= max_y;y++)  
+        {  
+          const int min_dy = max(weights[0].get_min_index(), min_y-y);  
+          const int max_dy = min(weights[0].get_max_index(), max_y-y);              
+           
+          const int min_x = current_image_estimate[z][y].get_min_index(); 
+          const int max_x = current_image_estimate[z][y].get_max_index();   
+          for (int x=min_x;x<= max_x;x++) 
+            { 
+              const int min_dx = max(weights[0][0].get_min_index(), min_x-x); 
+              const int max_dx = min(weights[0][0].get_max_index(), max_x-x); 
 		
 		elemT gradient = 0;
 		for (int dz=min_dz;dz<=max_dz;++dz)
@@ -476,6 +561,78 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
     sprintf(filename, "normalised_gradient%d.v",count);
     write_basic_interfile(filename, parabolic_surrogate_curvature);
   }*/
+}
+
+template <typename elemT>
+Succeeded 
+QuadraticPrior<elemT>::
+add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
+					    const DiscretisedDensity<3,elemT>& input) const
+{
+  // TODO this function overlaps enormously with parabolic_surrogate_curvature
+  // the only difference is that parabolic_surrogate_curvature uses input==1
+
+  assert( output.has_same_characteristics(input));  
+  if (this->penalisation_factor==0)
+  {
+    return Succeeded::yes;
+  }
+  
+  DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
+    dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(output);
+
+  if (weights.get_length() ==0)
+  {
+    compute_weights(weights, output_cast.get_grid_spacing(), this->only_2D);
+  }  
+   
+  const bool do_kappa = kappa_ptr.use_count() != 0;
+  
+  if (do_kappa && !kappa_ptr->has_same_characteristics(input))
+    error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
+
+  const int min_z = output.get_min_index();   
+  const int max_z = output.get_max_index();   
+  for (int z=min_z; z<=max_z; z++)  
+    {  
+      const int min_dz = max(weights.get_min_index(), min_z-z);  
+      const int max_dz = min(weights.get_max_index(), max_z-z);  
+      
+      const int min_y = output[z].get_min_index();  
+      const int max_y = output[z].get_max_index();  
+       
+      for (int y=min_y;y<= max_y;y++)  
+        {  
+          const int min_dy = max(weights[0].get_min_index(), min_y-y);  
+          const int max_dy = min(weights[0].get_max_index(), max_y-y);              
+           
+          const int min_x = output[z][y].get_min_index(); 
+          const int max_x = output[z][y].get_max_index();   
+
+          for (int x=min_x;x<= max_x;x++) 
+            { 
+              const int min_dx = max(weights[0][0].get_min_index(), min_x-x); 
+              const int max_dx = min(weights[0][0].get_max_index(), max_x-x); 
+		
+		elemT result = 0;
+		for (int dz=min_dz;dz<=max_dz;++dz)
+		  for (int dy=min_dy;dy<=max_dy;++dy)
+		    for (int dx=min_dx;dx<=max_dx;++dx)
+		      {
+			elemT current =
+			  weights[dz][dy][dx] * input[z+dz][y+dy][x+dx];
+
+			 if (do_kappa)
+			  current *= 
+			    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+			 result += current;
+		      }
+		
+		output[z][y][x] += result * this->penalisation_factor;
+	    }              
+	}
+    }
+  return Succeeded::yes;
 }
 
 #  ifdef _MSC_VER

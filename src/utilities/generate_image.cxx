@@ -2,10 +2,10 @@
 // $Id$
 //
 /*
-	Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    This file is part of STIR.
+  Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
-	This file is free software; you can redistribute it and/or modify
+    This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
     (at your option) any later version.
@@ -27,6 +27,19 @@
   \code
   generate_image Parameters :=
   output filename:= somefile
+  ; optional keyword to specify the output file format
+  ; example below uses Interfile with 16-bit unsigned integers
+  output file format:= Interfile
+  interfile Output File Format Parameters:=
+    number format := unsigned integer
+    number_of_bytes_per_pixel:=2
+    ; fix the scale factor to 1
+    ; comment out next line to let STIR use the full dynamic 
+    ; range of the output type
+    scale_to_write_data:= 1
+  End Interfile Output File Format Parameters:=
+
+
   X output image size (in pixels):= 13
   Y output image size (in pixels):= 13
   Z output image size (in pixels):= 15
@@ -49,9 +62,7 @@
      radius-x (in mm):= 1 
      radius-y (in mm):= 2
      length-z (in mm):= 3
-     origin-x (in mm):= 0
-     origin-y (in mm):= 15
-     origin-z (in mm):= 10
+     origin (in mm):= {z,y,x}
      END:=
   value := 10
 
@@ -82,7 +93,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Succeeded.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <iostream>
 
@@ -107,7 +118,8 @@ private:
   vector<float> values;
   float current_value;
   string output_filename;
-  shared_ptr<OutputFileFormat> output_file_format_sptr;
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > >
+     output_file_format_sptr;
 
   void increment_current_shape_num();
 
@@ -147,7 +159,8 @@ set_defaults()
   shape_ptrs.resize(0);
   values.resize(0);
   output_filename.resize(0);
-  output_file_format_sptr = new DefaultOutputFileFormat;
+  output_file_format_sptr = 
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void 

@@ -55,113 +55,6 @@ SinglesRatesFromECAT7()
 {}
 
 
-
-
-
-float 
-SinglesRatesFromECAT7::
-get_singles_rate(int singles_bin_index, int frame_number) const
-{ 
-  // Return singles rate for the singles unit.
-  return(singles[frame_number][singles_bin_index]);
-}
-
-
-
-
-
-float
-SinglesRatesFromECAT7::get_singles_rate(int singles_bin_index,
-                                        double start_time,
-                                        double end_time) const
-{
-  int frame_number = get_frame_number(start_time, end_time);
-  return(get_singles_rate(singles_bin_index, frame_number));
-}
-
-
-
-
-
-float 
-SinglesRatesFromECAT7::
-get_singles_rate(const DetectionPosition<>& det_pos,
-                 const double start_time,
-                 const double end_time) const
-{ 
-  int singles_bin_index = scanner_sptr->get_singles_bin_index(det_pos);
-  
-  return(get_singles_rate(singles_bin_index, start_time, end_time));
-}
-
-
-
-
-
-
-int 
-SinglesRatesFromECAT7::
-get_frame_number(const double start_time, const double end_time) const
-{
-  assert(end_time >=start_time);
-  //cerr << "num frames are" << time_frame_defs.get_num_frames()<<endl;;
-  for (unsigned int i = 1; i <=time_frame_defs.get_num_frames(); i++)
-    {
-      const double start = time_frame_defs.get_start_time(i);
-      const double end = time_frame_defs.get_end_time(i);
-      //cerr << "Start frame" << start <<endl;
-      //cerr << " End frame " << end << endl;
-       if (start<=start_time+.001 && end>=end_time-.001)
-	{
-	  return static_cast<int>(i);
-	}
-    }
-      
-  error("SinglesRatesFromECAT7::get_frame_number didn't find a frame for time interval (%g,%g)\n",
-	start_time, end_time);
-  return 0; // to satisfy compilers
-  
-
-}
-
-
-
-
-int 
-SinglesRatesFromECAT7::get_num_frames() const {
-  return(time_frame_defs.get_num_frames());
-}
-
-
-
-double 
-SinglesRatesFromECAT7::get_frame_start(unsigned int frame_number) const {
-  if ( frame_number < 1 || frame_number > time_frame_defs.get_num_frames() ) {
-    return(0.0);
-  } else {
-    return(time_frame_defs.get_start_time(frame_number));
-  }
-}
- 
-
-
-double 
-SinglesRatesFromECAT7::get_frame_end(unsigned int frame_number) const {
-  if ( frame_number < 1 || frame_number > time_frame_defs.get_num_frames() ) {
-    return(0.0);
-  } else {
-    return(time_frame_defs.get_end_time(frame_number));
-  }
-}
-
-
-
-
-
-
-
-
-
 int
 SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
                                               const ios::openmode open_mode)
@@ -172,7 +65,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
 
 #ifndef HAVE_LLN_MATRIX
 
-  error("Compiled without ECAT7 support\n");
+  error("SinglesRatesFromECAT7 compiled without ECAT7 support\n");
 
 #else
 
@@ -206,7 +99,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
 
   if ( total_singles_units > 0 ) {
     // Create the main array of data.
-    singles = Array<2,float>(IndexRange2D(1, main_header->num_frames,
+    this->_singles = Array<2,float>(IndexRange2D(1, main_header->num_frames,
                                           0, total_singles_units - 1));
   }
 
@@ -233,12 +126,12 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
     // The order of the singles units in the sub header is the same as required
     // by the main singles array. This may not be the case for other file formats.
     for (int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
-      singles[mat_frame][singles_bin] = *(singles_ptr + singles_bin);
+      this->_singles[mat_frame][singles_bin] = *(singles_ptr + singles_bin);
     }
     
   }
 
-  time_frame_defs = TimeFrameDefinitions(time_frames);
+  this->_time_frame_defs = TimeFrameDefinitions(time_frames);
 #endif
 
   return(num_frames); 

@@ -4,6 +4,7 @@
 /*
     Copyright (C) 2002-$Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
+
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
@@ -47,7 +48,7 @@ ECAT6OutputFileFormat::
 ECAT6OutputFileFormat(const NumericType& type, 
                    const ByteOrder& byte_order) 
 {
-  OutputFileFormat::set_defaults();
+  base_type::set_defaults();
   set_type_of_numbers(type);
   set_byte_order(byte_order);
 }
@@ -59,7 +60,7 @@ initialise_keymap()
   parser.add_start_key("ECAT6 Output File Format Parameters");
   parser.add_stop_key("End ECAT6 Output File Format Parameters");
   parser.add_key("default scanner name", &default_scanner_name);
-  OutputFileFormat::initialise_keymap();
+  base_type::initialise_keymap();
 }
 
 void 
@@ -67,7 +68,7 @@ ECAT6OutputFileFormat::
 set_defaults()
 {
   default_scanner_name = "ECAT 953";
-  OutputFileFormat::set_defaults();
+  base_type::set_defaults();
   file_byte_order = ByteOrder::little_endian;
   type_of_numbers = NumericType::SHORT;
 
@@ -77,7 +78,7 @@ bool
 ECAT6OutputFileFormat::
 post_processing()
 {
-  if (OutputFileFormat::post_processing())
+  if (base_type::post_processing())
     return true;
 
   shared_ptr<Scanner> scanner_ptr = 

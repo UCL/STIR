@@ -39,7 +39,7 @@ void
 Transform3DObjectImageProcessor<elemT>::
 initialise_keymap()
 {
-  ImageProcessor<3, elemT>::initialise_keymap();
+  base_type::initialise_keymap();
 
   this->parser.add_start_key("Transformation Parameters");
 #if XXX
@@ -59,7 +59,7 @@ bool
 Transform3DObjectImageProcessor<elemT>::
 post_processing()
 {
-  if (ImageProcessor<3, elemT>::post_processing() != false)
+  if (base_type::post_processing() != false)
     return true;
 
 #if XXX
@@ -95,9 +95,10 @@ post_processing()
 
 template <typename elemT>
 Transform3DObjectImageProcessor<elemT>::
-Transform3DObjectImageProcessor()
+Transform3DObjectImageProcessor(const shared_ptr<ObjectTransformation<3,elemT> > & transf)
 {
   set_defaults();
+  this->transformation_sptr = transf;
 }
 
 template <typename elemT>
@@ -124,7 +125,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 								 *this->transformation_sptr);
 	}
       timer.stop();
-      std::cerr<< "\nCPU time for computing centre coords " << timer.value();
+      std::cerr<< "\nCPU time for computing centre coords " << timer.value() << " secs";
     }
   else
     {
@@ -244,7 +245,7 @@ void
 Transform3DObjectImageProcessor<elemT>::
 set_defaults()
 {
-  ImageProcessor<3, elemT>::set_defaults();
+  base_type::set_defaults();
   this->_do_transpose=false;
   this->_do_jacobian=false;
   this->_cache_transformed_coords=false;
@@ -256,6 +257,54 @@ set_defaults()
 #endif
 }
 
+
+template <typename elemT>
+bool
+Transform3DObjectImageProcessor<elemT>::
+get_do_transpose() const
+{
+  return this->_do_transpose;
+}
+
+template <typename elemT>
+void
+Transform3DObjectImageProcessor<elemT>::
+set_do_transpose(const bool value)
+{
+  this->_do_transpose = value;
+}
+
+template <typename elemT>
+bool
+Transform3DObjectImageProcessor<elemT>::
+get_do_jacobian() const
+{
+  return this->_do_jacobian;
+}
+
+template <typename elemT>
+void
+Transform3DObjectImageProcessor<elemT>::
+set_do_jacobian(const bool value)
+{
+  this->_do_jacobian = value;
+}
+
+template <typename elemT>
+bool
+Transform3DObjectImageProcessor<elemT>::
+get_do_cache() const
+{
+  return this->_cache_transformed_coords;
+}
+
+template <typename elemT>
+void
+Transform3DObjectImageProcessor<elemT>::
+set_do_cache(const bool value)
+{
+  this->_cache_transformed_coords = value;
+}
 
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation, 

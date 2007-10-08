@@ -59,6 +59,11 @@ if [ $# -ne 0 -o -z "${ATTEN_DATA}" ]; then
     exit 1
 fi
 
+num_seg=0
+if [ ! -z "${NUM_SEG}" ]; then
+num_seg=${NUM_SEG}
+fi
+
 convert_att_to_simset=1
 if [ ! -z "${CONVERT_ATT_TO_SIMSET}" ]; then
 convert_att_to_simset=${CONVERT_ATT_TO_SIMSET}
@@ -156,4 +161,4 @@ if [ ${DIR_INPUT} != ${DIR_OUTPUT} ]; then
   rm ${DIR_OUTPUT}/template_*
 fi
 
-convert_SimSET_STIR_splitted.sh 0 >& log_convert_SimSET_STIR
+convert_SimSET_STIR_splitted.sh ${num_seg} >& log_convert_SimSET_STIR

@@ -4,9 +4,17 @@ OSMAPOSLParameters :=
 ; 2 separate projectors 
 ; see OSMAPOSL_osem_with_interfiltering.par for other parameters
 
-input file := input.hs
-output filename prefix := output
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
+input file := test.hs
+
+; specify additive projection data to handle randoms or so
+; see User's Guide for more info
+additive sinogram := 0
+
+
+; here comes the projector stuff
 projector pair type := Separate Projectors
   Projector Pair Using Separate Projectors Parameters:=
   Forward projector type := Ray Tracing
@@ -18,11 +26,13 @@ projector pair type := Separate Projectors
   End Projector Pair Using Separate Projectors Parameters:=
 
 
-sensitivity image:= sens.hv
-zero end planes of segment 0:= 0
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+initial estimate:= some_image
+output filename prefix := output
 
 number of subsets:= 1
 number of subiterations:= 24
-Save images at subiteration intervals:= 3
+Save estimates at subiteration intervals:= 3
 
 END :=
