@@ -98,6 +98,18 @@ int main(int argc, char *argv[])
   shared_ptr< DiscretisedDensity<3,float> >  second_operand= 
     DiscretisedDensity<3,float>::read_from_file(argv[1]);
 
+  // check if images are compatible
+  {
+    string explanation;
+    if (!first_operand->has_same_characteristics(*second_operand, 
+						 explanation))
+      {
+	warning("input images do not have the same characteristics.\n%s",
+		explanation.c_str());
+	return EXIT_FAILURE;
+      }
+  }
+
   if (rim_truncation_image>=0)
   {
     truncate_rim(*first_operand, rim_truncation_image);
