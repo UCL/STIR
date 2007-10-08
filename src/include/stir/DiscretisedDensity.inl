@@ -79,7 +79,7 @@ actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&
       return false;
     }
 
-  if (norm(other.get_origin() - this->get_origin()) > 1.E-4)
+  if (norm(other.get_origin() - this->get_origin()) > 1.E-2)
     { 
       explanation = "Not the same origin.";
       return false;
