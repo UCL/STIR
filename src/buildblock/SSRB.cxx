@@ -140,7 +140,8 @@ SSRB(const ProjDataInfo& in_proj_data_info,
                 (in_proj_data_info_ptr->get_max_ring_difference(in_segment_num) -
                  in_proj_data_info_ptr->get_min_ring_difference(in_segment_num) +
                  1))
-              error("SSRB: can currently only handle in_proj_data_info with identical axial compression for all segments\n");;
+              warning("SSRB: in_proj_data_info with non-identical axial compression for all segments.\n"
+		      "That's ok, but results might not be what you expect.\n");
 
 	    min_m =
 	      min(min_m,

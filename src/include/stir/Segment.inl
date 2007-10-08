@@ -1,10 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, IRSL
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup projdata
-  \brief implementation of inline functions of class Segment
+  \brief implementation of inline functions of class stir::Segment
 
   \author Kris Thielemans
   \author PARAPET project
@@ -12,11 +29,6 @@
   $Date$
 
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #include "stir/Sinogram.h"
 
@@ -42,10 +54,5 @@ Segment<elemT>::get_proj_data_info_ptr() const
 {
   return proj_data_info_ptr.get();
 }
-
-template <typename elemT>
-void 
-Segment<elemT>::set_sinogram(const Sinogram<elemT>& s)
-{ set_sinogram(s,s.get_num_axial_poss()); }
  
 END_NAMESPACE_STIR

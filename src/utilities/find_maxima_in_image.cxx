@@ -71,13 +71,6 @@ int main(int argc, char *argv[])
   const DiscretisedDensityOnCartesianGrid <3,float>*  input_image_cartesian_ptr = 
     dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (input_image_sptr.get());
 
-  const bool is_cartesian_grid = 
-    input_image_cartesian_ptr!=0;
-
-  CartesianCoordinate3D<float> grid_spacing;
-  if (is_cartesian_grid)
-    grid_spacing = input_image_cartesian_ptr->get_grid_spacing();
-
   for (unsigned int maximum_num=0; maximum_num!=num_maxima; ++ maximum_num)
     {
       const float current_maximum = input_image.find_max();
@@ -106,13 +99,15 @@ int main(int argc, char *argv[])
 			     << setw(3) << max_k 
 			     << ',' << setw(3) << max_j 
 			     << ',' << setw(3)  << max_i;
-			if (is_cartesian_grid)
 			  {
+			    BasicCoordinate<3,float> phys_coord = 
+			      input_image.
+			      get_physical_coordinates_for_indices(make_coordinate(max_k, max_j, max_i));
 			    cout << " which is "
-			     << setw(6) << max_k*grid_spacing[1] 
-			     << ',' << setw(6) << max_j*grid_spacing[2] 
-			     << ',' << setw(6)  << max_i*grid_spacing[3]
-				 << "in mm relative to origin";
+				 << setw(6) << phys_coord[1] 
+				 << ',' << setw(6) << phys_coord[2] 
+				 << ',' << setw(6)  <<phys_coord[3]
+				 << " in mm in physical coordinates";
 			  }
 			cout << '\n';
 			found = true;		  
@@ -137,7 +132,7 @@ int main(int argc, char *argv[])
 		const int min_i_index = input_image[k][j].get_min_index(); 
 		const int max_i_index = input_image[k][j].get_max_index();
 		for ( int i = max(max_i-mask_size_xy,min_i_index); i<= min(max_i+mask_size_xy,max_i_index); ++i)
-		  input_image[k][j][i] = 0;
+		  input_image[k][j][i] = -1.E20F;
 	      }
 	    }
 	  }

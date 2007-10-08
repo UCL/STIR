@@ -39,6 +39,10 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
+#ifdef STIR_DEVEL
+#include "local/stir/IO/niff.h"
+#endif
+
 #include <typeinfo>
 #include <fstream>
 
@@ -141,6 +145,48 @@ DiscretisedDensity<num_dimensions,elemT>::
   }
 #endif // HAVE_LLN_MATRIX
 
+#ifdef STIR_DEVEL
+  // NIFF file format (a simple almost raw format from GE)
+  {
+    using namespace GE_IO;
+    if (Niff::isReadableNiffFile(filename))
+      {
+	Niff::Niff input_niff(filename, std::ios::in | std::ios::out);
+	if (input_niff.get_num_dimensions() != 3)
+	  {
+	    warning("DiscretisedDensity::read_from_file:\n"
+		    "File %s is a NIFF file but has %d dimensions (should be 3)",
+		    filename.c_str(), input_niff.get_num_dimensions());
+	    return 0;
+	  }
+	CartesianCoordinate3D<float> voxel_size;
+	{
+	  std::vector<float> pixel_spacing = input_niff.get_pixel_spacing();
+	  std::copy(pixel_spacing.begin(), pixel_spacing.end(), voxel_size.begin()); 
+	}
+	Array<3, float> data;	
+	{
+	  input_niff.fill_array(data);
+	  // change sizes to standard STIR convention
+	  for (int z=data.get_min_index(); z<= data.get_max_index(); ++z)
+	    {
+	      data[z].set_min_index(-(data[z].get_length()/2));
+	      for (int y=data[z].get_min_index(); y<= data[z].get_max_index(); ++y)
+		{
+		  data[z][y].set_min_index(-(data[z][y].get_length()/2));
+		}
+	    }
+	}
+	CartesianCoordinate3D<float> origin;
+	origin.fill(0);
+	
+	return 
+	  new VoxelsOnCartesianGrid<float>(data,
+					  origin,
+					  voxel_size);
+      }
+  }
+#endif	
   {
     // Try ECAT6
     // ECAT6  does not have a signature

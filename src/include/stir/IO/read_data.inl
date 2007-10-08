@@ -1,17 +1,29 @@
 // $Id$
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup Array_IO 
-  \brief Implementation of read_data() functions for reading Arrays from file
+  \brief Implementation of stir::read_data() functions for reading stir::Array's from file
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/Array.h"
 #include "stir/convert_array.h"
@@ -146,10 +158,15 @@ read_data(IStreamT& s,
 
       // now list cases that we want
       CASE(NumericType::SCHAR);
-	  CASE(NumericType::UCHAR);
+      CASE(NumericType::UCHAR);
       CASE(NumericType::SHORT);
       CASE(NumericType::USHORT);
+      CASE(NumericType::INT);
+      CASE(NumericType::UINT);
+      CASE(NumericType::LONG);
+      CASE(NumericType::ULONG);
       CASE(NumericType::FLOAT);
+      CASE(NumericType::DOUBLE);
 #undef CASE
 #undef TYPENAME
     default:

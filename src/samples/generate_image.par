@@ -1,21 +1,45 @@
 generate_image Parameters :=
 output filename:=image
-X output image size (in pixels):=128
-Y output image size (in pixels):=128
-Z output image size (in pixels):=95
-X voxel size (in mm):= 2.05941
-Y voxel size (in mm):= 2.05941
-Z voxel size (in mm) :=2.425
+; optional keyword to specify the output file format
+; example below uses Interfile with 16-bit unsigned integers
+output file format:= Interfile
+  interfile Output File Format Parameters:=
+    number format := unsigned integer
+    number_of_bytes_per_pixel:=2
+    ; fix the scale factor to 1
+    ; comment out next line to let STIR use the full dynamic 
+    ; range of the output type
+    scale_to_write_data:= 1
+  End Interfile Output File Format Parameters:=
+
+X output image size (in pixels) := 128
+Y output image size (in pixels) := 128
+Z output image size (in pixels) := 95
+X voxel size (in mm) := 2.05941
+Y voxel size (in mm) := 2.05941
+Z voxel size (in mm) := 2.425
+
+; parameters that determine subsampling of border voxels
+; to obtain smooth edges
+; setting these to 1 will just check if the centre of the voxel is in or out
+; default to 5
+; Z number of samples to take per voxel := 5
+; Y number of samples to take per voxel := 5
+; X number of samples to take per voxel := 5
+	    
 shape type:= ellipsoidal cylinder
 Ellipsoidal Cylinder Parameters:=
-   radius-x (in mm):=100
-   radius-y (in mm):=100
-   length-z (in mm):=400
-   origin-x (in mm):=-0.590588
-   origin-y (in mm):=3.01092
-   origin-z (in mm):=230.375
+   radius-x (in mm) := 100
+   radius-y (in mm) := 100
+   length-z (in mm) := 400
+   ; next keyword can be used for non-default axes
+   ; values below are give a rotation around y for 90 degrees (swapping x and z)
+   ; Warning: this uses the STIR convention {z,y,x}
+   ; direction vectors (in mm):= { {0,0,1}, {0,1,0}, {-1,0,0}}
+   ; origin w.r.t. to standard STIR coordinate system (middle of first plane)
+   origin (in mm):={230.375, 3.0192, -0.590588}
    END:=
-value :=1
+value := 1
 
 ; next shape :=
 ; see Shape3D hierarhcy for possibly shapes

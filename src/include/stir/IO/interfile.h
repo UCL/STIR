@@ -39,6 +39,7 @@
 // declaring the class. Otherwise every file that used write_*interfile*
 // has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
+#include "stir/ByteOrder.h"
 #include <iostream>
 #include <string>
 
@@ -51,7 +52,7 @@ using std::ios;
 
 START_NAMESPACE_STIR
 
-class ByteOrder;
+template <int num_dimensions> class IndexRange;
 template <int num_dimensions, typename elemT> class Array;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <typename elemT> class VectorWithOffset;
@@ -125,8 +126,9 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
 Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
-				   const CartesianCoordinate3D<int>& dimensions,
+				   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
+				   const CartesianCoordinate3D<float>& origin,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
@@ -154,10 +156,12 @@ compute_file_offsets(int number_of_time_frames,
 template <class elemT>
 Succeeded 
 write_basic_interfile(const string&filename, 
-			   const Array<3,elemT>& image,
-			   const CartesianCoordinate3D<float>& voxel_size,
-			   const NumericType output_type = NumericType::FLOAT,
-			   const float scale= 0);
+		      const Array<3,elemT>& image,
+		      const CartesianCoordinate3D<float>& voxel_size,
+		      const CartesianCoordinate3D<float>& origin,
+		      const NumericType output_type = NumericType::FLOAT,
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
 
 //! This outputs an Interfile header and data for a Array<3,elemT> object, assuming unit voxel sizes
 /*!
@@ -165,11 +169,12 @@ write_basic_interfile(const string&filename,
  Extension .v will be added to the parameter 'filename' (if no extension present).
  Extensions .hv (and .ahv) will be used for the header filename. 
 
- \warning For Visual Studio, only the float version is defined to work around a 
+ \warning For Visual Studio 7.0 or earlier, only the float version is defined
+   to work around a 
   compiler bug. (Otherwise, the float version is not instantiated for some reason).
 */
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || (_MSC_VER > 1300)
 template <class elemT>
 #else
 #define elemT float
@@ -178,8 +183,9 @@ Succeeded
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
 		      const NumericType output_type = NumericType::FLOAT,
-			  const float scale= 0);
-#ifdef _MSC_VER
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
+#if defined(_MSC_VER) && (_MSC_VER <= 1300)
 #undef elemT 
 #endif
 
@@ -193,7 +199,8 @@ Succeeded
 write_basic_interfile(const string& filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
 		      const NumericType output_type = NumericType::FLOAT,
-			  const float scale= 0);
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
 
 
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
@@ -209,7 +216,8 @@ Succeeded
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
 		      const NumericType output_type = NumericType::FLOAT,
-			  const float scale= 0);
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a stream
 /*!

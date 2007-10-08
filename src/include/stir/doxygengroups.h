@@ -116,8 +116,17 @@ Classes for LORs.
 Basic support for image (or discretised density) data. 
 */
 /*!
+\defgroup DataProcessor Data processors
+\ingroup buildblock
+A hierarchy of classes for performing data processing. Mechanisms
+for parsing are provided such that different image processors can
+be selected at run-time.
+*/
+/*!
 \defgroup ImageProcessor Image processors
 \ingroup densitydata
+\see Doxygen group DataProcessor for other members!
+
 A hierarchy of classes for performing image processing. Mechanisms
 for parsing are provided such that different image processors can
 be selected at run-time.
@@ -220,8 +229,14 @@ every detector-pair. More generally, it can be used to the process of
 'correcting' projection data by multiplying every bin with a factor.
 */
 /*!
-\defgroup priors Priors and penalties for MAP
+\defgroup GeneralisedObjectiveFunction Objective functions for iterative estimation of variables
 \ingroup recon_buildblock
+Everything related to objective functions, i.e. functions that need to
+be 'optimised' in some way.
+*/
+/*!
+\defgroup priors Priors and penalties for MAP
+\ingroup GeneralisedObjectiveFunction
 Everything related to priors, which are used for MAP-type (also knows as
 'penalised') reconstructions.
 */
@@ -231,13 +246,6 @@ Everything related to priors, which are used for MAP-type (also knows as
 Classes and functions that are used to make a common interface for the serial
 and parallel implementation of the reconstruction algorithms.
 */
-/*!
-\defgroup LogLikBased_buildblock Reconstruction building blocks for loglikelihood based algorithms
-\ingroup recon_buildblock
-Library with additional building blocks used for algorithms which
-are similar to EM.
-*/
-
 
 
 /*!
@@ -248,6 +256,11 @@ are similar to EM.
 \defgroup OSMAPOSL OSMAPOSL
 \ingroup reconstructors
 Implementation of the OSMAP One-Step-Late reconstruction algorithm
+*/
+/*!
+\defgroup OSSPS OSSPS
+\ingroup reconstructors
+Implementation of the OS Separable Paraboloidal Surrogate reconstruction algorithm
 */
 /*!
 \defgroup FBP2D FBP2D

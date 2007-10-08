@@ -1,10 +1,26 @@
 // $Id$
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
  \file 
  \ingroup display
   
- \brief  Functions to display Array objects (2d and 3d) and RelatedViewgrams
+ \brief  Functions to display stir::Array objects (2d and 3d) and stir::RelatedViewgrams
   
  \author Kris Thielemans
  \author PARAPET project
@@ -15,7 +31,8 @@
 
  \see display.h for some comments on the interface.
 
- Three implementations now:
+ Three implementations now, depending on which preprocessor symbols are defined
+ at compile-time:
 
 <ul>
  <li> STIR_SIMPLE_BITMAPS is based on some functions KT wrote in 1991,
@@ -30,22 +47,42 @@
 
 </ul>
 
- if both STIR_SIMPLE_BITMAPS and STIR_MATHLINK are defined, display()
+ if both STIR_SIMPLE_BITMAPS and STIR_MATHLINK are defined, stir::display
  asks which version you want to use
  
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
+// further doxygen comments. Only enabled when running doxygen
+#ifdef DOXYGEN_SKIP
+// we need to define these to get doxygen to process their comments
+#define STIR_SIMPLE_BITMAPS
+#define STIR_MATHLINK
+#define STIR_PGM
+#endif
+/*! \def STIR_SIMPLE_BITMAPS
+    \brief Preprocessor symbol that needs to be defined to enable X-windows 
+    functionality for stir::display.
+
+    \see display_array.cxx for some info
 */
- 
- 
+/*! \def STIR_MATHLINK
+    \brief Preprocessor symbol that needs to be defined to enable MathLink
+    functionality for stir::display.
+
+    \see display_array.cxx for some info
+*/
+/*! \def STIR_SIMPLE_BITMAPS
+    \brief Preprocessor symbol that needs to be defined to enable PGM 
+    functionality for stir::display.
+
+    \see display_array.cxx for some info
+*/
 
 #include "stir/display.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
 #include "stir/RelatedViewgrams.h"
+#include <iostream>
+
   
 // First we define the different implementations. 
 // See end of file for display() itself.
@@ -393,7 +430,7 @@ display_pgm (const Array<3,elemT>& plane_stack,
     }
   }
   
-  cerr << "Scaled maximum in image = " << scaled_max << endl;
+  std::cerr << "Scaled maximum in image = " << scaled_max << std::endl;
 
   for ( int z = min_indices[1]; z <= max_indices[1]; z++)
   {
@@ -413,19 +450,13 @@ display_pgm (const Array<3,elemT>& plane_stack,
     }			  
   }
   fclose ( pgm);
-  fprintf(stderr, "Wrote PGM plane_stack to file %s \n", name);
+  std::cerr<< "Wrote PGM plane_stack to file " <<  name << std::endl;
 }
 
 END_NAMESPACE_STIR
 
 #endif // STIR_PGM
 
-
-#include <iostream>
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -445,7 +476,7 @@ void display(const Array<3,elemT>& plane_stack,
   assert(plane_stack.get_min_index() == text.get_min_index());
   assert(plane_stack.get_max_index() == text.get_max_index());
 
-  cerr << "Displaying " << (title==0 ? "" : title) << endl;
+  std::cerr << "Displaying " << (title==0 ? "" : title) << std::endl;
 #if defined(STIR_PGM)
   display_pgm(plane_stack, scale_factors, 
                    text, maxi, title,  scale);
@@ -479,10 +510,7 @@ void display(const RelatedViewgrams<elemT>& vs,
     all_of_them(IndexRange3D(0,vs.get_num_viewgrams()-1,
                              vs.get_min_axial_pos_num(),vs.get_max_axial_pos_num(), 
       	                     vs.get_min_tangential_pos_num(),vs.get_max_tangential_pos_num()));
-#ifndef STIR_NO_NAMESPACES
-    std::
-#endif
-      copy(vs.begin(), vs.end(), all_of_them.begin());
+    std::copy(vs.begin(), vs.end(), all_of_them.begin());
     
   VectorWithOffset<char *> text(all_of_them.get_min_index(), 
 				all_of_them.get_max_index());

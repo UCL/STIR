@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
-  \brief Implementations for non-inline functions of class Sinogram
+  \brief Implementations for non-inline functions of class stir::Sinogram
 
   \author Kris Thielemans
   \author PARAPET project
@@ -14,19 +31,84 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
 
 #include "stir/Sinogram.h"
+#include "boost/format.hpp"
 
 #ifdef _MSC_VER
 // disable warning that not all functions have been implemented when instantiating
 #pragma warning(disable: 4661)
 #endif // _MSC_VER
 START_NAMESPACE_STIR
+
+template<typename elemT>
+bool
+Sinogram<elemT>::
+has_same_characteristics(self_type const& other,
+			 string& explanation) const
+{
+  using boost::format;
+  using boost::str;
+
+  if (*this->get_proj_data_info_ptr() !=
+      *other.get_proj_data_info_ptr())
+    {
+      explanation = 
+	str(format("Differing projection data info:\n%1%\n-------- vs-------\n %2%")
+	    % this->get_proj_data_info_ptr()->parameter_info()
+	    % other.get_proj_data_info_ptr()->parameter_info()
+	    );
+      return false;
+    }
+  if (this->get_axial_pos_num() !=
+      other.get_axial_pos_num())
+    {
+      explanation = 
+	str(format("Differing axial position number: %1% vs %2%")
+	    % this->get_axial_pos_num()
+	    % other.get_axial_pos_num()
+	    );
+      return false;
+    }
+  if (this->get_segment_num() !=
+      other.get_segment_num())
+    {
+      explanation = 
+	str(format("Differing segment number: %1% vs %2%")
+	    % this->get_segment_num()
+	    % other.get_segment_num()
+	    );
+      return false;
+    }
+  return true;
+}
+
+template<typename elemT>
+bool
+Sinogram<elemT>::
+has_same_characteristics(self_type const& other) const
+{
+  std::string explanation;
+  return this->has_same_characteristics(other, explanation);
+}
+
+template<typename elemT>
+bool 
+Sinogram<elemT>::
+operator ==(const self_type& that) const
+{
+  return
+    this->has_same_characteristics(that) &&
+    base_type::operator==(that);
+}
+  
+template<typename elemT>
+bool 
+Sinogram<elemT>::
+operator !=(const self_type& that) const
+{
+  return !((*this) == that);
+}
 
 
 /*!

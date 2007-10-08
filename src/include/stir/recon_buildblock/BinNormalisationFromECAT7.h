@@ -21,7 +21,7 @@
   \file
   \ingroup recon_buildblock
 
-  \brief Declaration of class BinNormalisationFromECAT7
+  \brief Declaration of class stir::ecat::ecat7::BinNormalisationFromECAT7
 
   \author Kris Thielemans
   $Date$
@@ -59,6 +59,28 @@ START_NAMESPACE_ECAT7
   \ingroup ECAT
   \brief A BinNormalisation class that gets the normalisation factors from
   an ECAT7 3D normalisation file
+
+  \par Parsing example
+  \verbatim
+  Bin Normalisation type := from ecat7
+  Bin Normalisation From ECAT7:=
+  normalisation filename:= myfile.n
+  ; next keyword gives the singles to be used for dead-time correction
+  ; normally set to get the info from the ECAT7 sinogram
+  ;
+  singles rates:= Singles From ECAT7
+    Singles Rates From ECAT7 :=
+       ecat7_filename := ${ecat7_filename}
+     End Singles Rates From ECAT7:=
+
+  ; next keywords can be used to switch off some of the normalisation components
+  ; do not use unless you know why
+  ; use_detector_efficiencies:=1
+  ; use_dead_time:=1
+  ; use_geometric_factors:=1
+  ; use_crystal_interference_factors:=1
+  End Bin Normalisation From ECAT7:=
+  \endverbatim
  
 */
 class BinNormalisationFromECAT7 :
@@ -81,19 +103,11 @@ public:
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
-  //! Normalise some data
-  /*! 
-    This means \c multiply with the data in the projdata object 
-    passed in the constructor. 
-  */
-  virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  //! Undo the normalisation of some data
-  /*! 
-    This means \c divide with the data in the projdata object 
-    passed in the constructor. 
-  */
-  virtual void undo(RelatedViewgrams<float>& viewgrams, const double start_time, const double end_time) const;
+  bool use_detector_efficiencies() const;
+  bool use_dead_time() const;
+  bool use_geometric_factors() const;
+  bool use_crystal_interference_factors() const;
 
 private:
   Array<1,float> axial_t1_array;
@@ -114,8 +128,13 @@ private:
   int mash;
   int num_blocks_per_singles_unit;
 
+  bool _use_detector_efficiencies;
+  bool _use_dead_time;
+  bool _use_geometric_factors;
+  bool _use_crystal_interference_factors;
+
   void read_norm_data(const string& filename);
-  float get_deadtime_efficiency ( const DetectionPosition<>& det_pos,
+  float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
 				  const double start_time, const double end_time) const;
 
   // parsing stuff

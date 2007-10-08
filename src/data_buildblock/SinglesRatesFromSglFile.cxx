@@ -98,21 +98,6 @@ SinglesRatesFromSglFile()
 {}
 
 
-
-// Get the average singles rate for a particular bin.
-float
-SinglesRatesFromSglFile::
-get_singles_rate(const DetectionPosition<>& det_pos,
-                 const double start_time, const double end_time) const {
-  
-  int singles_bin_index = scanner_sptr->get_singles_bin_index(det_pos);
-  
-  return(get_singles_rate(singles_bin_index, start_time, end_time));
-}
-
-
-
-
 // Generate a FramesSinglesRate - containing the average rates
 // for a frame begining at start_time and ending at end_time.
 FrameSinglesRates
@@ -595,19 +580,9 @@ SinglesRatesFromSglFile::write(std::ostream& output) {
 
 
 
-
-/*
- *
- * Private methods.
- *
- */
-
-
-
-
 float
 SinglesRatesFromSglFile::
-get_singles_rate(int singles_bin_index,
+get_singles_rate(const int singles_bin_index,
                  const double start_time, const double end_time) const {
 
   // First Calculate an inclusive range. start_time_slice is the 
@@ -688,6 +663,15 @@ get_singles_rate(int singles_bin_index,
   return( static_cast<float>(total_singles) );
   
 }
+
+
+
+/*
+ *
+ * Private methods.
+ *
+ */
+
 
 
 

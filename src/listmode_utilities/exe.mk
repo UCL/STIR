@@ -12,8 +12,8 @@ ifeq ($(HAVE_LLN_MATRIX),1)
 $(dir)_SOURCES += \
 	scan_sgl_file.cxx \
 	print_sgl_values.cxx \
-	rebin_sgl_file.cxx 
-
+	rebin_sgl_file.cxx \
+	add_ecat7_header_to_sgl.cxx
 endif
 
 include $(WORKSPACE)/exe.mk

@@ -35,6 +35,12 @@ ProjMatrixElemsForOneDensel(const Densel& densel, const int default_capacity)
   elements.reserve(default_capacity); 
 }
 
+ProjMatrixElemsForOneDensel::
+ProjMatrixElemsForOneDensel()
+{
+  elements.reserve(300); 
+}
+
 
 void 
 ProjMatrixElemsForOneDensel::

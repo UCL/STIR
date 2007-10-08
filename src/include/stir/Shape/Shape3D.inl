@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Inline-implementations of class Shape3D
+  \brief Inline-implementations of class stir::Shape3D
 
   \author Kris Thielemans
   \author Sanida Mustafovic
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 START_NAMESPACE_STIR
@@ -26,6 +38,21 @@ Shape3D::Shape3D()
 Shape3D::Shape3D(const CartesianCoordinate3D<float>& origin)
 : origin(origin)
 {}
+
+bool
+Shape3D::
+operator==(const Shape3D& s) const
+{
+  return norm(this->origin - s.origin) < .001F;
+}
+
+
+bool
+Shape3D::
+operator!=(const Shape3D& s) const
+{ 
+  return !(*this == s);
+}
   
 void 
 Shape3D::scale_around_origin(const CartesianCoordinate3D<float>& scale3D)

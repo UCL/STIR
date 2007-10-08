@@ -1,12 +1,29 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
 
-  \brief Declaration of class ProjDataInfoCylindricalArcCorr
+  \brief Declaration of class stir::ProjDataInfoCylindricalArcCorr
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -16,13 +33,8 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-#ifndef __ProjDataInfoCylindricalArcCorr_H__
-#define __ProjDataInfoCylindricalArcCorr_H__
+#ifndef __stir_ProjDataInfoCylindricalArcCorr_H__
+#define __stir_ProjDataInfoCylindricalArcCorr_H__
 
 
 #include "stir/ProjDataInfoCylindrical.h"
@@ -38,6 +50,8 @@ START_NAMESPACE_STIR
   */
 class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 {
+  typedef ProjDataInfoCylindrical base_type;
+  typedef ProjDataInfoCylindricalArcCorr self_type;
 
 public:
   //! Constructors
@@ -50,6 +64,8 @@ public:
 
   ProjDataInfo* clone() const;
   
+  bool operator==(const self_type&) const;
+
   inline virtual float get_s(const Bin&) const;
   //! Set tangential sampling
   void set_tangential_sampling(const float bin_size);
@@ -66,7 +82,8 @@ public:
 private:
   
   float bin_size;
-  
+
+  virtual bool blindly_equals(const root_type * const) const;
 
 };
 

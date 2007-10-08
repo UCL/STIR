@@ -30,6 +30,11 @@ class Shape3D;
 
 /*! \ingroup evaluation
     \name Functions to compute ROI values
+    
+    Shapes are first discretised using Shape3D::construct_volume. This can make fuzzy 
+    boundaries (when the \a num_samples argument is not (1,1,1), or when DiscretisedShape3D 
+    needs zooming). Mean and stddev are computed using weighted versions, taking this smoothness 
+    into account, while ROI_min and max are ignore those weights.
 */
 //@{
 

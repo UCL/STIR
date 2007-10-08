@@ -1,71 +1,105 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup priors
-  \brief  implementation of the FilterRootPrior class 
+  \brief  implementation of the stir::FilterRootPrior class 
     
   \author Kris Thielemans
   \author Sanida Mustafovic      
   $Date$        
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 #include "stir/recon_buildblock/FilterRootPrior.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/DataProcessor.h"
 
 START_NAMESPACE_STIR
 
-template <typename elemT>
-FilterRootPrior<elemT>::FilterRootPrior()
+template <typename DataT>
+FilterRootPrior<DataT>::FilterRootPrior()
 {
   set_defaults();
 }
 
 
-template <typename elemT>
-FilterRootPrior<elemT>::FilterRootPrior(ImageProcessor<3,elemT>* filter, float penalisation_factor_v)
-:  filter_ptr(filter)
+template <typename DataT>
+FilterRootPrior<DataT>::
+FilterRootPrior(shared_ptr<DataProcessor<DataT> >const& filter_sptr, float penalisation_factor_v)
+:  filter_ptr(filter_sptr)
 {
   this->penalisation_factor = penalisation_factor_v;
 }
 
 
+template < class T>
 static inline int
-sign (const float x)
+sign (const T& x)
 { return x>=0 ? 1: -1;}
+
+template < class T>
+static inline T    // can't call this abs() as it overlaps with std::abs
+my_abs(const T& x)
+{ return x>=0 ? x: -x;}
 
 /* A function that divides 2 floats while avoiding division by 0 by imposing an upper threshold
    It essentially returns 
      sign(numerator)*sign(denominator)*
-       min(fabs(numerator/denominator), max)
+       min(my_abs(numerator/denominator), max)
 */
-static inline float
-quotient_with_max(const float numerator, const float denominator, const float max)
+template < class T>
+static inline T
+quotient_with_max(const T numerator, const T denominator, const T max)
 {
   assert(max>0);
   return 
-    fabs(numerator)< max*fabs(denominator) ? 
+    my_abs(numerator)< max*my_abs(denominator) ? 
     numerator/denominator : 
     max * sign(numerator)*sign(denominator);
 }
 
-template <typename elemT>
+template <typename DataT>
+double
+FilterRootPrior<DataT>::
+compute_value(const DataT &current_estimate)
+{
+  static bool first_time=true;
+  if (first_time)
+    {
+      warning("FilterRootPrior:compute_value does not make sense. Just returning 0.");
+      first_time=false;
+    }
+  return 0.;
+}
+
+template <typename DataT>
 void 
-FilterRootPrior<elemT>::
-compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
-                 const DiscretisedDensity<3,elemT> &current_image_estimate)
+FilterRootPrior<DataT>::
+compute_gradient(DataT& prior_gradient, 
+                 const DataT &current_image_estimate)
 {
   assert(  prior_gradient.get_index_range() == current_image_estimate.get_index_range());  
   if (this->penalisation_factor==0 || filter_ptr==0)
   {
-    prior_gradient.fill(0);
+    std::fill(prior_gradient.begin_all(), prior_gradient.end_all(), 0);
     return;
   }
   
@@ -86,15 +120,17 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
      at the moment and I did not feel like making a function object just for this ...
      */
 
-  typename DiscretisedDensity<3,elemT>::full_iterator iter_through_prior_gradient =
+  typename DataT::full_iterator iter_through_prior_gradient =
     prior_gradient.begin_all();
-  typename DiscretisedDensity<3,elemT>::const_full_iterator iter_through_current_image_estimate =
+  typename DataT::const_full_iterator iter_through_current_image_estimate =
     current_image_estimate.begin_all();
   while (iter_through_current_image_estimate!= current_image_estimate.end_all())
   {
     *iter_through_prior_gradient=
       this->penalisation_factor * 
-      (quotient_with_max(*iter_through_current_image_estimate,*iter_through_prior_gradient, 1000)
+      (quotient_with_max(*iter_through_current_image_estimate,
+			 *iter_through_prior_gradient, 
+			 static_cast</*DataT::value_type*/float>(1000))
       - 1);
     ++iter_through_prior_gradient;
     ++iter_through_current_image_estimate;
@@ -104,28 +140,29 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
 
 
-template <typename elemT>
+template <typename DataT>
 void 
-FilterRootPrior<elemT>::initialise_keymap()
+FilterRootPrior<DataT>::initialise_keymap()
 {
-  GeneralisedPrior<elemT>::initialise_keymap();
+  base_type::initialise_keymap();
   this->parser.add_start_key("FilterRootPrior Parameters");
   this->parser.add_parsing_key("Filter type", &filter_ptr); 
   this->parser.add_stop_key("END FilterRootPrior Parameters");
 }
 
 
-template <typename elemT>
+template <typename DataT>
 void
-FilterRootPrior<elemT>::set_defaults()
+FilterRootPrior<DataT>::set_defaults()
 {
-  GeneralisedPrior<elemT>::set_defaults();
+  base_type::set_defaults();
   filter_ptr = 0;  
 }
 
 template <>
 const char * const 
-FilterRootPrior<float>::registered_name =
+FilterRootPrior<DiscretisedDensity<3,float> >::
+registered_name =
   "FilterRootPrior";
 
 #  ifdef _MSC_VER
@@ -142,7 +179,22 @@ FilterRootPrior<float>::registered_name =
 static FilterRootPrior<float>::RegisterIt dummy;
 #endif
 
-template class FilterRootPrior<float>;
+template class FilterRootPrior<DiscretisedDensity<3,float> >;
 
 END_NAMESPACE_STIR
 
+
+#if 1
+#ifdef STIR_DEVEL
+#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "local/stir/modelling/KineticParameters.h"
+namespace stir {
+  template <>
+  const char * const 
+  FilterRootPrior<ParametricVoxelsOnCartesianGrid >::
+  registered_name =
+  "FilterRootPrior";
+  template class FilterRootPrior<ParametricVoxelsOnCartesianGrid >; 
+}
+#endif
+#endif

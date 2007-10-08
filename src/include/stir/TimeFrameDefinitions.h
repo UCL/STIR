@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup buildblock  
-  \brief Declaration of class TimeFrameDefinitions
+  \brief Declaration of class stir::TimeFrameDefinitions
     
   \author Kris Thielemans
       
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_TimeFrameDefinitions_H__
 #define __stir_TimeFrameDefinitions_H__
@@ -70,6 +82,10 @@ public:
   /*! Times have to be in increasing order*/
   TimeFrameDefinitions(const vector<pair<double, double> >&);
 
+  //! Construct from a list of start times and durations
+  /*! start times have to be in increasing order*/
+  TimeFrameDefinitions(const vector<double>& start_times, const vector<double>& durations);
+
   //! \name get info for 1 frame (frame_num is 1 based)
   //@{
   double get_start_time(unsigned int frame_num) const;
@@ -81,9 +97,17 @@ public:
   double get_start_time() const;
   //! Get end time of last frame
   double get_end_time() const;
-  
+
+  //! Get number of frames
   unsigned int get_num_frames() const;
+  //! Get number of frames
+  unsigned int get_num_time_frames() const;
   
+  //! Get the frame number associated with a frame starting and start_time and ending at end_time.
+  /*! \return frame number (between 1 and get_num_time_frames()) or 0 if frame not found.
+   */
+    unsigned int get_time_frame_num(const double start_time, const double end_time) const;
+
 private:
   //! Stores start and end time for each frame
   vector<pair<double, double> > frame_times;

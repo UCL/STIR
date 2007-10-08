@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -24,7 +24,8 @@
 
 #include "stir/SeparableMetzArrayFilter.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/ImageProcessor.h"
+#include "stir/DataProcessor.h"
+#include "stir/DiscretisedDensity.h"
 
 
 START_NAMESPACE_STIR
@@ -57,10 +58,18 @@ class SeparableCartesianMetzImageFilter :
   public 
     RegisteredParsingObject<
         SeparableCartesianMetzImageFilter<elemT>,
-        ImageProcessor<3,elemT>,
-        ImageProcessor<3,elemT>
+        DataProcessor<DiscretisedDensity<3,elemT> >,
+        DataProcessor<DiscretisedDensity<3,elemT> >
     >
 {
+ private:
+  typedef
+    RegisteredParsingObject<
+              SeparableCartesianMetzImageFilter<elemT>,
+              DataProcessor<DiscretisedDensity<3,elemT> >,
+              DataProcessor<DiscretisedDensity<3,elemT> >
+	       >
+    base_type;
 public:
   static const char * const registered_name; 
   

@@ -3,8 +3,9 @@ OSMAPOSLParameters :=
 ; projectors derived from a single projection matrix
 ; see OSMAPOSL_osem_with_interfiltering.par for other parameters
 
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 input file := input.hs
-output filename prefix := output
 
 projector pair type := Matrix
   Projector Pair Using Matrix Parameters :=
@@ -13,13 +14,14 @@ projector pair type := Matrix
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
-sensitivity image:= sens.hv
-zero end planes of segment 0:= 0
+initial estimate:= some_image
+output filename prefix := output
 
 number of subsets:= 1
 number of subiterations:= 24
-Save images at subiteration intervals:= 3
+Save estimates at subiteration intervals:= 3
 
 
 END :=

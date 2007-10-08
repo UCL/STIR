@@ -97,6 +97,13 @@ class VectorWithOffset_iter
   horribly inefficient for the current class (ok, except if you would have
   called reserve() first).
 
+  It is possible to construct a VectorWithOffset that uses existing memory.
+  It will then never deallocate that memory obviously. Note that when growing
+  the vector (or assigning a bigger vector), the vector will allocate new 
+  memory. Any modifications to the vector then will no longer be connected
+  to the original data block. This can always be tested using
+  owns_memory_for_data().
+
   \warning This class does not satisfy full Container requirements.
   \warning Current implementation relies on shifting a \c T* outside the range
   of allocated data. This is not guaranteed to be valid by ANSI C++. It is fine
@@ -137,6 +144,18 @@ public:
   
   //! Construct a VectorWithOffset with offset \c min_index (initialised with \c  T())
   inline VectorWithOffset(const int min_index, const int max_index);
+
+  //! Construct a VectorWithOffset of given length using existing data (no initialisation)
+  inline explicit 
+    VectorWithOffset(const int hsz, 
+		     T * const data_ptr,
+		     T * const end_of_data_ptr);
+  
+  //! Construct a VectorWithOffset with offset \c min_index using existing data (no initialisation)
+  inline 
+    VectorWithOffset(const int min_index, const int max_index, 
+		     T * const data_ptr,
+		     T * const end_of_data_ptr);
 
   //! copy constructor
   inline VectorWithOffset(const VectorWithOffset &il) ;
@@ -188,6 +207,13 @@ public:
   inline void grow(const unsigned int new_size);
 
   //! change the range of the vector, new elements are set to \c T()
+  /*! New memory is allocated if the range grows outside the range specified by
+      get_capacity_min_index() till get_capacity_max_index(). Data is then copied
+      and old memory deallocated (unless owns_memory_for_data() is false).
+
+      \todo in principle reallocation could be avoided when the new range would fit in the
+      old one by shifting.
+    */
   inline virtual void resize(const int min_index, const int max_index);
 
   //! change the range of the vector from 0 to new_size-1, new elements are set to \c T()
@@ -202,6 +228,12 @@ public:
 
   //! get allocated size
   inline size_t capacity() const;
+
+  //! check if this object owns the memory for the data
+  /*! Will be false if one of the constructors is used that passes in a data block.
+   */
+  inline bool
+    owns_memory_for_data() const;
 
   //! get min_index within allocated range
   /*! This value depends on get_min_index() and hence will change 
@@ -364,7 +396,7 @@ private:
   mutable
 #endif
   bool pointer_access;
-
+  bool _owns_memory_for_data;
 };
 
 END_NAMESPACE_STIR

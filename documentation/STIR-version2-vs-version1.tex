@@ -1,0 +1,400 @@
+%&LaTeX
+\batchmode
+\documentclass{article}
+\usepackage{a4wide}
+\usepackage{setspace}
+%\usepackage{graphicx}
+\usepackage{hyperref}
+\def\R2Lurl#1#2{\mbox{\href{#1}{\tt #2}}}
+%\newcommand{\tab}{\hspace{5mm}}
+
+\begin{document}
+
+\begin{center}
+\begin{spacing}{1.5}
+\textbf{{\huge Upgrading from STIR version 1.4 to 2.0}}\\
+\textbf{Kris Thielemans}
+\end{spacing}
+\end{center}
+
+\tableofcontents 
+
+\section{Overview}
+This document summarises what the differences are
+between STIR version 2 and 1.4.
+
+The main change in STIR 2.0 is in the reconstruction code. 
+All iterative reconstructions use now an objective function hierarchy. See 
+the doxygen documentation for \texttt{GeneralisedObjectiveFunction}. This
+will make it far easier to add different types of reconstruction 
+algorithms, and in particular applicable to something else than PET
+emission data. For instance, in STIR 2.0 there is now a facility to reconstruct
+list mode data as well. In addition, reconstruction classes have now been
+templated in the type of the ``target'' data, i.e. the parameters that 
+need to be estimated. In STIR 1.4 this was fixed to images
+(or in fact \texttt{DiscretisedDensity<3,float>} objects. 
+The following describes what the consequences are for you.
+
+\section{For Users}
+Generally, all utilities work in the same way as before. There are
+changes in some parameters used for parsing.
+
+\subsection{Incompatible behaviour}
+\begin{itemize}
+\item Old OSMAPOSL parameter files no longer work. See the section below on OSMAPOSL,
+   and sample files in the \texttt{samples} directory. Also, output is not necessarily
+   identical. See section \ref{sec:Reconstruction_programs} for details.
+\item The format for the parameter files for \texttt{generate\_image} and
+   \texttt{list\_ROI\_values} changes somewhat. The only difference is the
+   specification of the origin of the shape as a single keyword specifying \{z,y,x\}.
+\item Image-origin is now read from and saved to file for those file formats that
+    support it (at time of writing: Interfile, ECAT7 and ECAT6 for x,y info).
+    As this was ignored before (origin was set to 0,0,0), this might mean that 
+    the images are now forward projected/reconstructed differently.\\
+    \textbf{WARNING:} At present, origin info is not set/preserved for
+    projection data. This is a major deficiency and will be fixed at a later stage.
+   At present, the first sinogram of segment 0 is supposed to be at \texttt{z=0} and
+   the axis of the scanner at \texttt{x=y=0}.
+\end{itemize}
+
+\subsection{New utilities}
+\begin{description}
+\item[conv\_AVW]
+If you have the \textit{AVW}\texttrademark{} library
+\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}{www.mayo.edu/bir/Software/AVW/AVW1.html}.
+} installed on your system, the make process should have built \texttt{utilities/conv\_AVW}.
+This utility allows to use the \textit{AVW} library to read an image, and then write it out
+using STIR as Interfile.\\
+\textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
+on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
+to STIR.
+\end{description}
+
+\subsection{Filters \textit{aka} data processors}
+The \texttt{ImageProcessor} hierarchy is now generalised to 
+\texttt{DataProcessor<DataT>} that can work on different types than images. This is reflected
+in the name of the parameters of some data processors.
+
+\begin{description}
+\item[Chained Image Processor]
+is now renamed to \texttt{Chained Data Processor}. 
+This data processor is used to allow you to specify two
+data processors that will run in sequence. So, all its keywords have
+been changed accordingly.
+\begin{verbatim}
+Chained Data Processor Parameters:=
+Data Processor to apply first:= 
+Data Processor to apply second:=
+END Chained Data Processor Parameters:=
+\end{verbatim}
+
+\item[Threshold Min To Small Positive Value]
+used to truncate to a cylindrical FOV. This facility no longer
+exists. There is a new filter for this \texttt{Truncate To Cylindrical FOV}.
+See also section \ref{sec:changes_in_OSMAPOSL_images}.
+\end{description}
+
+
+\subsection{Shapes}
+The code to specify Euler angles is disabled
+as it was buggy (get after set was not consistent).
+You now have to  use a matrix to define direction vectors. 
+(Note that in previous version the direction
+vectors were ignored during parsing (this was a bug).)
+
+The origin is now also specified with a single keyword.
+\begin{verbatim}
+; next keyword can be used for non-default axes
+; values below are give a rotation around y for 90 degrees (swapping x and z)
+; Warning: this uses the STIR convention {z,y,x}
+direction vectors (in mm):= { {0,0,1}, {0,1,0}, {-1,0,0}}
+; origin w.r.t. to standard STIR coordinate system (middle of first plane)
+origin (in mm):= {z,y,x}
+\end{verbatim}
+
+\subsection{Reconstruction programs}
+\label{sec:Reconstruction_programs}
+Analytic reconstruction algorithms have not changed, except that there
+is now a new keyword
+\begin{verbatim}
+post filter type:=
+\end{verbatim}
+However, as mentioned above, iterative reconstruction code has been 
+changed dramatically. Because of this, the parameter format for 
+\texttt{OSMAPOSL} has changed.
+Previous .par files are incompatible. However, this is mostly a
+question of reordering the keywords. Generally speaking, everything
+related to the input data, sensitivity and the prior 
+(except the \texttt{MAP model} keyword)
+has now to be between
+\begin{verbatim}
+objective function type:= \
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+; input, sensitivity and prior parameters here
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+\end{verbatim}
+Also, the \texttt{sensitivity} program no longer exists. Its functionality
+is now fully integrated into \texttt{OSMAPOSL} (and other forthcoming
+algorithms). See below for details.
+.
+\subsubsection{Keyword name changes}
+Some keywords changed because the \texttt{OSMAPOSL} code can now work
+on different ``target types'', i.e. not only images.
+\begin{description}
+\item[sensitivity image] is now \texttt{sensitivity filename}.
+\item[save image at subiteration intervals] is now
+  \texttt{save estimate at subiteration intervals}.
+\item[initial image] is now \texttt{initial estimate}.
+\end{description}
+
+\subsubsection{Keywords (and functionality) that are no longer present}
+\begin{description}
+\item[do rim truncation] is now effectively always set to 0. See also
+section \ref{sec:changes_in_OSMAPOSL_images}.
+\end{description}
+
+\subsubsection{Changes for computing the sensitivity image}
+In STIR 1.4, a separate executable \texttt{sensitivity} was used to compute
+the sensitivity image. This is now a part of \texttt{OSMAPOSL} with 
+relevant keywords (with defaults indicated)
+\begin{verbatim}
+time frame definition filename:=
+time frame number:= 1
+Bin Normalisation type:= None
+sensitivity filename:=
+recompute sensitivity := 0
+\end{verbatim}
+The first three are used to specify normalisation and attenuation factors 
+as in \texttt{correct\_projdata}. 
+See the User\'s Guide for more information.
+
+\subsubsection{New functionality in OSMAPOSL}
+There is a new keyword
+\begin{verbatim}
+use_subset_sensitivities
+\end{verbatim}
+which defaults to 0, which is the old behaviour. If set to 1, the denominator
+term in OSMAPOSL uses sub-sensitivities as opposed to the total sensitivity image
+(divided by the number of subsets). This avoids artefacts when using a larger
+number of subsets and attenuation and/or normalisation in the model, at the 
+expense of using more memory.
+At time of writing, this has to be combined with
+\begin{verbatim}
+recompute sensitivity := 1 
+\end{verbatim} 
+The sub-sensitivities are not written to file.
+
+\subsubsection{Changes in reconstructed images when using OSMAPOSL}
+\label{sec:changes_in_OSMAPOSL_images}
+
+In STIR 1.4, \texttt{OSMAPOSL} used ``rim truncation'' by default. This 
+set all voxels outside a cylindrical FOV to zero. In version 2.x, this facility
+no longer exists. The main reason for this is that the
+\texttt{OSMAPOSLReconstruction} class now works for target types which are 
+not images. In addition, you no longer have to jump through a lot of hoops 
+if you want to use a square FOV. 
+
+Also, a bug was removed that prevented\\
+\texttt{enforce initial positivity condition:=1}\\
+to work.
+
+As a consequence, reconstructed images might not be identical. In the first
+few iterations, the difference is only in the rim, but this then
+induces differences in the whole image during subsequent iterations. Of course,
+if you do see appreciable differences, it shows that there probably is something
+wrong with your reconstructions, as most likely there should be no activity
+in those rim voxels in any case. One potential reason is that you are
+using randoms or scatter pre-corrected data, or do not use this corrections 
+at all. The theoretically recommended, and most numerically stable,
+ way is to use the \texttt{additive sinogram} parameter.\\
+
+
+\paragraph{Recommendations}
+\begin{itemize}
+\item No longer use rim truncation. If you need a cylindrical FOV, let the
+projectors do this for you (they do this by default).
+\item If you see pixels at the edge of the FOV which are very high, you
+probably can solve this by using  \texttt{additive sinogram} appropriately.
+\end{itemize}
+
+\paragraph{Guidelines on how to obtain identical reconstructions\\}
+Read this section if you really need compatibility. This is a bit 
+messy though, as there were some problems
+with the rim truncation in STIR 1.4. So, we need to explain first
+what happened.
+
+Rim truncation was applied in 3 different processing steps:
+\begin{itemize}
+\item After reading the initial image, if
+\texttt{enforce initial positivity condition} was set to 1 (the default).
+\item After dividing the updated image with the sensitivity image, if
+\texttt{do rim truncation} was set to 1 (the default).
+\item After applying the inter-iteration or inter-update filter (but
+only if they were set).
+\end{itemize}
+This first and third step were a (potentially unexpected) consequence of using
+the image processor \texttt{ThresholdMinToSmallPositiveValueImageProcessor}. 
+
+Unfortunately, the first and third step used a FOV that could be
+a few pixels larger than the second step. This is 
+because they
+\footnote{Routines \texttt{threshold\_min\_to\_small\_positive\_value}
+and \texttt{min\_positive\_value}.}
+ used a test $x^2+y^2 <= R^2$, while the explicit rim
+truncation
+\footnote{Routines \texttt{divide\_and\_truncate} and \texttt{truncate\_rim}}
+ used $x^2+y^2 < R^2$.
+Finally, the origin used for this computation was shifted half a pixel in 
+x and y for even-sized images w.r.t. the standard STIR origin.
+
+The final piece of the puzzle is that the interpolating backprojector has a 
+FOV which is slightly smaller than the rim truncation routines used in 
+STIR 1.4.
+
+Conclusions
+\begin{itemize}
+\item Reconstructions should be identical if \texttt{OSMAPOSL} in 
+STIR 1.4 used\\
+\texttt{
+do rim truncation:=0\\
+enforce initial positivity condition:=0
+}\\
+and there was no inter-update nor inter-iteration filtering.
+
+\item Most likely, differences will be negligible if you use the interpolating
+backprojector.
+
+\item Otherwise, you can use the \texttt{Truncate To Cylindrical FOV}
+data processor in STIR 2.0. Use it with
+\begin{verbatim}
+strictly_less_than_radius:=0
+\end{verbatim}
+to reproduce the first and third step in STIR 1.4 processing, and with
+\begin{verbatim}
+strictly_less_than_radius:=1
+\end{verbatim}
+for the second step. Note however, that if
+\texttt{do\_rim\_truncation} was switched on, the 
+\texttt{Truncate To Cylindrical FOV} filter would have to be used
+as inter-iteration filter at every sub-iteration, which might not be 
+possible if you are using another inter-iteration filter.\\
+See the \texttt{OSMAPOSL\_test\_PM\_MRP.par}
+and \texttt{postfilter\_truncate\_circular\_FOV.par} files in the 
+\textbf{recon\_test\_pack} for examples. 
+\end{itemize}
+
+
+\section{For Developers}
+
+Before reading this, it is recommended that you read the section for
+users first.
+
+As mentioned before, the main changes are in the \texttt{Reconstruction}
+hierarchy. This is now templated in \texttt{TargetT}. Moreover,
+\texttt{IterativeReconstruction} now use an objective function hierarchy. See 
+the doxygen documentation for \texttt{GeneralisedObjectiveFunction}. This
+reorganisation has had repercusions in various other places. Examples are
+\begin{itemize}
+\item Class \texttt{OutputFileFormat} is now also templated to allow
+other types than images (or in fact \texttt{DiscretisedDensity<3,float>}).
+\item Class \texttt{ImageProcessor} is now replaced by the templated
+class \texttt{DataProcessor<DataT>}.
+\item Most functions in \texttt{buildblock/recon\_array\_functions.cxx}
+were specific to images samples on cartesian grids 
+(or even (\texttt{VoxelsOnCartesianGrid<float>} objects), and hence
+could no longer be used. In addition, they had some ugly quircks
+(see section \ref{sec:changes_in_OSMAPOSL_images}). So most of these
+functions have now been removed.
+\end{itemize}
+
+Other relatively important changes are listed below
+\begin{itemize}
+\item On request, the reconstruction hierarchy has now \texttt{get/set} functions for 
+most parameters. Please email if some are missing.
+\item There is now a new class \texttt{AnalyticReconstruction}.
+\item \texttt{VectorWithOffset}: added
+  constructors and 1 member to be able to have vectors that uses existing
+  data. This is useful when for example a C array with data needs to be
+  manipulated.
+
+\item \texttt{KeyParser}: 
+  \begin{itemize} 
+  \item use the 'parameter' member (of type
+  boost::any) for storing all values, making par\_int, par\_double etc
+  obsolete and enabling some nice use of macros to shorten the switch
+  statements.  
+  \item made IntVect and DoubleVect private typedefs (and removed
+  UlongVect) 
+  \item fix parameter\_info() for types that
+  output to more than 1 line (such as 2D arrays). We now add the usual
+  continuation character (a backslash), such that the output of
+  parameter\_info can be parsed without problems.  
+  \item in parameter\_info(),
+  deleted an extra newline after calling parameter\_info() for a parsing
+  object.
+  \end{itemize}
+
+\item \texttt{distributable}:
+  no longer use global variables (for
+  projectors etc) in distributable\_computation. This means (among other
+  things) a better chance of thread-safety, although there's still work to
+  do there.
+
+\item in Reconstruction hierarchy:  moved most checks
+  from post\_processing() to set\_up() and clarified in doxygen which function 
+  is for what purpose
+
+\item \texttt{DiscretisedDensity}
+ \begin{itemize}
+  \item renamed get\_empty\_discretised\_density() to get\_empty\_copy(), using 
+  covariant return types 
+  \item added has\_same\_characteristics() 
+  \item added functions to convert between \textit{physical} coordinates (in mm)
+    and index coordinates.
+  \end{itemize}
+
+\item New variables defined for \texttt{make} for \textit{AVW} support:
+\texttt{AVW\_INCLUDE\_DIR}, \texttt{AVW\_LIBS} and \texttt{HAVE\_AVW}. They
+are set in \texttt{config.mk} according to recommend \textit{AVW} values,
+i.e. using the environment variables \texttt{AVW} and \texttt{TARGET}.
+See the Users Guide.
+\end{itemize}
+
+In addition, I have taken the opportunity to do some other bug fixing.
+The main affected area is the \texttt{Shape3D} hierarchy, where the 
+Euler code had to be disabled and a different mechanism is now used to
+spcify direction vectors. This means that most of this code is now
+ready for templating in the number of dimensions. For other smaller
+changes, please refer to the ChangeLog.
+
+\subsection{Additional new functionality}
+This list is incomplete. Please refer to the ChangeLog.
+\begin{itemize}
+\item added \texttt{has\_same\_characteristics()} to \texttt{Sinogram}, \texttt{Viewgram}, 
+       \texttt{RelatedViewgrams}, \texttt{Segment*}
+\item added \texttt{operator==} to \texttt{Sinogram}, \texttt{Viewgram}, 
+       \texttt{RelatedViewgrams}, \texttt{Segment*}, \texttt{DiscretisedDensity} 
+       and symmetry classes. Updated \texttt{operator==} for \texttt{ProjDataInfo}
+       classes to check also fields specific to the leaf classes.
+\item added \texttt{find\_centre\_of\_gravity\_in\_mm} for \texttt{VoxelsOnCartesianGrid} objects.
+\end{itemize}
+
+\subsection{Additional incompatibilities}
+This list is incomplete. Please refer to the ChangeLog.
+\begin{itemize}
+\item The \texttt{zoom\_image} functions have now much better defined behaviour
+	w.r.t the new index ranges and the origin (see the doxygen). In particular,
+	the z-range now starts from index 0, and the origin is updated such that
+	it remains physically correct. Another incompatibility is that previously, 
+	the multiple argument versions of \texttt{zoom\_image} (i.e. specifying zoom etc 
+	explicitly) modified the image in place. Now, the function with the same name 
+	returns a new image instead. The previous functionality is now provided by 
+	\texttt{zoom\_image\_in\_place}.
+
+\item \texttt{find\_centre\_of\_gravity\_in\_mm\_per\_plane} now returns a result that takes 
+    \texttt{image.get\_origin()} into account properly. It no longer
+    shifts the z-direction to the centre of the image. There is currently no
+    utility that depends on this behaviour though.
+\end{itemize}
+\end{document}

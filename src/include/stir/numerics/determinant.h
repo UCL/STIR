@@ -17,8 +17,8 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_numerics_MatrixFunction_H__
-#define __stir_numerics_MatrixFunction_H__
+#ifndef __stir_numerics_determinant_H__
+#define __stir_numerics_determinant_H__
 /*!
   \file
   \ingroup numerics
@@ -38,6 +38,8 @@ template <int num_dimensions, class elemT> class Array;
 
 /*! \ingroup numerics
   \brief Compute the determinant of a matrix
+  
+  Matrix indices can start from any number.
 
   \todo Only works for low dimensions for now.
 */

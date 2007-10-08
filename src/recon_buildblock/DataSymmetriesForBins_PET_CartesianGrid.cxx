@@ -1,22 +1,34 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup symmetries
   \brief non-inline implementations for class 
-         DataSymmetriesForBins_PET_CartesianGrid
+         stir::DataSymmetriesForBins_PET_CartesianGrid
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoCylindrical.h"
@@ -56,15 +68,15 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
         
     num_planes_per_scanner_ring = round(num_planes_per_scanner_ring_float);
     
-    if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-5)
+    if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-2)
       error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
 	    "equal to the ring spacing of the scanner divided by an integer. Sorry\n");
   }
   
-  if (fabs( cartesian_grid_info_ptr->get_origin().x()) > 1.E-5)
+  if (fabs( cartesian_grid_info_ptr->get_origin().x()) > 1.E-2)
     error("DataSymmetriesForBins_PET_CartesianGrid can currently only support x-origin = 0 "
 	  "Sorry\n");
-  if (fabs( cartesian_grid_info_ptr->get_origin().y()) > 1.E-5)
+  if (fabs( cartesian_grid_info_ptr->get_origin().y()) > 1.E-2)
     error("DataSymmetriesForBins_PET_CartesianGrid can currently only support y-origin = 0 "
 	  "Sorry\n");
       
@@ -88,7 +100,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     
     // KT 20/06/2001 take origin.z() into account
     axial_pos_to_z_offset[segment_num] = 
-      (cartesian_grid_info_ptr->get_max_z() + cartesian_grid_info_ptr->get_min_z())/2.F
+      (cartesian_grid_info_ptr->get_max_index() + cartesian_grid_info_ptr->get_min_index())/2.F
       - cartesian_grid_info_ptr->get_origin().z()/image_plane_spacing
       -
       (num_planes_per_axial_pos[segment_num]
@@ -161,7 +173,7 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_180degrees_min_phi = false;
 
   // check on segment symmetry
-  if (proj_data_info_ptr->get_tantheta(Bin(0,0,0,0)) != 0)
+  if (fabs(proj_data_info_ptr->get_tantheta(Bin(0,0,0,0)))> 1.E-4F)
     error("DataSymmetriesForBins_PET_CartesianGrid can only handle projection data "
 	  "with segment 0 corresponding to direct planes (i.e. theta==0)\n");
 
@@ -199,6 +211,35 @@ DataSymmetriesForBins_PET_CartesianGrid::
 clone() const
 {
   return new DataSymmetriesForBins_PET_CartesianGrid(*this);
+}
+
+
+bool 
+DataSymmetriesForBins_PET_CartesianGrid::
+operator==(const DataSymmetriesForBins_PET_CartesianGrid& sym) const
+{
+  if (!base_type::operator==(sym))
+    return false;
+
+  return
+    this->do_symmetry_90degrees_min_phi == sym.do_symmetry_90degrees_min_phi &&
+    this->do_symmetry_180degrees_min_phi == sym.do_symmetry_180degrees_min_phi &&
+    this->do_symmetry_swap_segment == sym.do_symmetry_swap_segment &&
+    this->do_symmetry_swap_s == sym.do_symmetry_swap_s &&
+    this->do_symmetry_shift_z == sym.do_symmetry_shift_z &&
+    this->num_views == sym.num_views &&
+    this->num_planes_per_scanner_ring == sym.num_planes_per_scanner_ring &&
+    this->num_planes_per_axial_pos == sym.num_planes_per_axial_pos &&
+    this->axial_pos_to_z_offset == sym.axial_pos_to_z_offset;
+}
+
+bool 
+DataSymmetriesForBins_PET_CartesianGrid::
+blindly_equals(const root_type * const that_ptr) const
+{
+  assert(dynamic_cast<const self_type * const>(that_ptr) != 0);
+  return
+    this->operator==(static_cast<const self_type&>(*that_ptr));
 }
 
 END_NAMESPACE_STIR

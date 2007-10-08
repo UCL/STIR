@@ -25,16 +25,6 @@ are wrong, even though the programs might run till the end.
 forward project images with smaller or larger number of planes
 will show up some problems, which we thought to have removed already :-/ .
 </li>
-<li>When specifying shapes (e.g. for generate_image or list_ROI_values),
-the code to specify Euler angles is buggy
-(get after set is not consistent).
-Also, the direction vectors are ignored during parsing.
-</li>
-<li>OSMAPOSL by default uses a truncation to a cylindrical FOV. 
-However, for even-sized images, this FOV is half a pixel 
-displaced w.r.t. to the origin used in the rest of STIR.
-The same routine is used in manip_image and compare_image.
-</li>
 <li>  CPU times reported are invalid on Windows 9?, maybe ME as well. They are
 fine on NT and presumably 2000 and XP. There doesn't seem to be a way to get 
 CPU times in the older Windows versions. 
@@ -46,7 +36,7 @@ CPU times in the older Windows versions.
 
 <!-- Created: Wed Dec 19 10:03:02 BST 2000 -->
 <!-- hhmts start -->
-Last modified: Wed Jan 25 11:48:26 GMTST 2006
+Last modified: Sat Jan 28 00:25:32 GMT 2006
 <!-- hhmts end -->
   </body>
 </html>

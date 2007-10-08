@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Non-inline implementations for class Shape3D
+  \brief Non-inline implementations for class stir::Shape3D
 
   \author Kris Thielemans
   \author Sanida Mustafovic
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/Shape/Shape3D.h"
 #include "stir/Shape/DiscretisedShape3D.h"
@@ -38,6 +50,37 @@ Shape3D* Shape3D::read_from_file(const string& filename)
     DiscretisedShape3D(DiscretisedDensity<3,float>::read_from_file(filename));
 }
 */
+
+void
+Shape3D::
+set_origin(const CartesianCoordinate3D<float>& new_origin)
+{
+  this->origin = new_origin;
+}
+
+
+void
+Shape3D::
+translate(const CartesianCoordinate3D<float>& direction)
+{ 
+  this->set_origin(this->get_origin() + direction); 
+}
+
+float 
+Shape3D::
+get_geometric_volume() const
+{
+  return -1.F;
+}
+
+#if 0
+float 
+Shape3D::
+get_geometric_area() const
+{
+  return -1.F;
+}
+#endif
 
 float 
 Shape3D::
@@ -195,9 +238,14 @@ void
 Shape3D::
 initialise_keymap()
 {
-  parser.add_key("origin-z (in mm)", &origin.z());
-  parser.add_key("origin-y (in mm)", &origin.y());
-  parser.add_key("origin-x (in mm)", &origin.x());
+  this->parser.add_key("origin (in mm)", &origin);
 }
+
+std::string 
+Shape3D::parameter_info()
+{
+  return ParsingObject::parameter_info();
+}
+
 
 END_NAMESPACE_STIR

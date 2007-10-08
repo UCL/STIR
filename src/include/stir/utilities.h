@@ -243,7 +243,7 @@ const int max_filename_length = 1000;
     \warning This function works only with string manipulations. There is no check
     if the 'filename' part actually corresponds to a directory on disk.
 */
-extern const char * const 
+extern const char * 
 find_filename(const char * const filename_with_directory);
 
 //! return the position of the start of the filename (i.e. after directory specifications)

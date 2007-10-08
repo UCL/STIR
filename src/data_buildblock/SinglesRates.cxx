@@ -21,7 +21,7 @@
 
   \file
   \ingroup singles_buildblock
-  \brief Implementation of stir::FrameSinglesRates 
+  \brief Implementation of stir::FrameSinglesRates and stir::SinglesRates
 
   \author Kris Thielemans
   \author Tim Borgeaud
@@ -42,13 +42,13 @@ FrameSinglesRates::
 FrameSinglesRates(vector<float>& avg_singles_rates,
                   double start_time,
                   double end_time,
-                  shared_ptr<Scanner> scanner) :
+                  shared_ptr<Scanner> scanner_sptr) :
   _start_time(start_time),
   _end_time(end_time),
   _singles(avg_singles_rates),
-  _scanner_sptr(scanner)
+  _scanner_sptr(scanner_sptr)
 {
-  // Empty body.
+  assert(avg_singles_rates.size() == static_cast<std::size_t>(scanner_sptr->get_num_singles_units()));
 }
 
 
@@ -81,6 +81,18 @@ double
 FrameSinglesRates::
 get_end_time() const {
   return(_end_time);
+}
+
+
+
+// Get the average singles rate for a particular bin.
+float
+SinglesRates::
+get_singles_rate(const DetectionPosition<>& det_pos,
+                 const double start_time, const double end_time) const 
+{
+  const int singles_bin_index = scanner_sptr->get_singles_bin_index(det_pos);
+  return(get_singles_rate(singles_bin_index, start_time, end_time));
 }
 
 

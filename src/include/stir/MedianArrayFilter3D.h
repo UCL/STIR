@@ -52,7 +52,8 @@ template <typename elemT>
 class MedianArrayFilter3D: public ArrayFunctionObject_2ArgumentImplementation<3,elemT>
 {
 public:
-  MedianArrayFilter3D (const Coordinate3D<int>& mask_radius = Coordinate3D<int>());    
+  explicit MedianArrayFilter3D (const Coordinate3D<int>& mask_radius);    
+  MedianArrayFilter3D ();    
   bool is_trivial() const;
   
 private:

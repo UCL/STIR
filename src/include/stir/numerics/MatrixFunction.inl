@@ -82,28 +82,52 @@ angle (const Array<1,elemT> & v1, const Array<1,elemT> &v2)
 //  functions for matrices
 
 // matrix with vector multiplication
+// first define a help function that works with both types of vectors)
+namespace detail 
+{
+  template <class elemT, class vecT>	
+  inline 
+  void
+  matrix_multiply_help(vecT& retval, const Array<2,elemT>& m, const vecT& vec)
+  {
+    assert(m.is_regular());
+    if (m.size()==0)
+      { return; }
+
+    const int m_min_row = m.get_min_index();
+    const int m_max_row = m.get_max_index();
+    const int m_min_col = m[m_min_row].get_min_index();
+    const int m_max_col = m[m_min_row].get_max_index();
+    // make sure matrices are conformable for multiplication
+    assert(vec.get_min_index() == m_min_col);
+    assert(vec.get_max_index() == m_max_col);
+    for(int i=m_min_row; i<=m_max_row; ++i)
+      {
+	int j=m_min_col;
+	retval[i] = m[i][j]*vec[j];
+	for(++j; j<=m_max_col; ++j)
+	  retval[i] += m[i][j]*vec[j];
+      }
+  }
+}
+
 template <class elemT>	
 inline Array<1,elemT> 
 matrix_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec)
 {
-  assert(m.is_regular());
-  if (m.size()==0)
-    { Array<1,elemT> retval; return retval; }
-
-  const int m_min_row = m.get_min_index();
-  const int m_max_row = m.get_max_index();
-  const int m_min_col = m[m_min_row].get_min_index();
-  const int m_max_col = m[m_min_row].get_max_index();
-  // make sure matrices are conformable for multiplication
-  assert(vec.get_min_index() == m_min_col);
-  assert(vec.get_max_index() == m_max_col);
-  Array<1,elemT> retval(m_min_row, m_max_row);
-  for(int i=m_min_row; i<=m_max_row; ++i)
-    for(int j=m_min_col; j<=m_max_col; ++j)
-      retval[i] += m[i][j]*vec[j];
-  return retval;
+  Array<1,elemT> ret(m.get_min_index(), m.get_max_index());
+  detail::matrix_multiply_help(ret, m, vec);
+  return ret;
 }
 
+template <int num_dimensions, class elemT>	
+inline BasicCoordinate<num_dimensions,elemT> 
+matrix_multiply(const Array<2,elemT>& m, const BasicCoordinate<num_dimensions,elemT>& vec)
+{
+  BasicCoordinate<num_dimensions,elemT> ret;
+  detail::matrix_multiply_help(ret, m, vec);
+  return ret;
+}
 
 // matrix multiplication
 template <class elemT>	

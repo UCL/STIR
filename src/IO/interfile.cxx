@@ -103,22 +103,39 @@ read_interfile_image(istream& input,
   
   ifstream data_in;
   open_read_binary(data_in, full_data_file_name);
-  
-  CartesianCoordinate3D<float> origin(0,0,0);
-  
+    
   CartesianCoordinate3D<float> voxel_size(static_cast<float>(hdr.pixel_sizes[2]), 
 					  static_cast<float>(hdr.pixel_sizes[1]), 
 					  static_cast<float>(hdr.pixel_sizes[0]));
   
+  const int z_size =  hdr.matrix_size[2][0];
   const int y_size =  hdr.matrix_size[1][0];
   const int x_size =  hdr.matrix_size[0][0];
+  const BasicCoordinate<3,int> min_indices = 
+    make_coordinate(0, -y_size/2, -x_size/2);
+  const BasicCoordinate<3,int> max_indices = 
+    min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+
+  CartesianCoordinate3D<float> origin(0,0,0);
+  if (hdr.first_pixel_offsets[2] != InterfileHeader::double_value_not_set)
+    {
+      // make sure that origin is such that 
+      // first_pixel_offsets =  min_indices*voxel_size + origin
+      origin =
+	make_coordinate(float(hdr.first_pixel_offsets[2]),
+			float(hdr.first_pixel_offsets[1]),
+			float(hdr.first_pixel_offsets[0]))
+	- voxel_size * BasicCoordinate<3,float>(min_indices);
+      // TODO remove
+      warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)",
+	      origin.z(), origin.y(), origin.x());
+    }
+
   VoxelsOnCartesianGrid<float>* image_ptr =
     new VoxelsOnCartesianGrid<float>
-            (IndexRange3D(0,hdr.matrix_size[2][0]-1,
-			  -y_size/2, (-y_size/2) + y_size - 1,
-			  -x_size/2, (-x_size/2) + x_size - 1), 
-	  origin,
-	  voxel_size);
+    (IndexRange<3>(min_indices, max_indices),
+     origin,
+     voxel_size);
   
   data_in.seekg(hdr.data_offset[0]);
   
@@ -206,13 +223,22 @@ interfile_get_data_file_name_in_header(const string& header_file_name,
 Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
-				   const CartesianCoordinate3D<int>& dimensions, 
+				   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
+				   const CartesianCoordinate3D<float>& origin,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
 				   const VectorWithOffset<unsigned long>& file_offsets)
 {
+  CartesianCoordinate3D<int> min_indices;
+  CartesianCoordinate3D<int> max_indices;
+  if (!index_range.get_regular_range(min_indices, max_indices))
+  {
+    warning("write_basic_interfile: can handle only regular index ranges\n. No output\n");
+    return Succeeded::no;
+  }
+  CartesianCoordinate3D<int> dimensions = max_indices - min_indices + 1;
   string header_name = header_file_name;
   add_extension(header_name, ".hv");
   ofstream output_header(header_name.c_str(), ios::out);
@@ -267,6 +293,18 @@ write_basic_interfile_image_header(const string& header_file_name,
 		<< dimensions.z()<< endl;
   output_header << "scaling factor (mm/pixel) [3] := " 
 		<< voxel_size.z() << endl;
+
+  if (origin.z() != InterfileHeader::double_value_not_set)
+    {
+      const CartesianCoordinate3D<float> first_pixel_offsets =
+	voxel_size * BasicCoordinate<3,float>(min_indices) + origin;
+      output_header << "first pixel offset (mm) [1] := " 
+		    << first_pixel_offsets.x() << '\n';
+      output_header << "first pixel offset (mm) [2] := " 
+		    << first_pixel_offsets.y() << '\n';
+      output_header << "first pixel offset (mm) [3] := " 
+		    << first_pixel_offsets.z() << '\n';
+    }
 
   output_header << "number of time frames := " << scaling_factors.get_length() << endl;
   
@@ -375,7 +413,7 @@ write_basic_interfile_image_header(const string& header_file_name,
 
 
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || (_MSC_VER > 1300)
 template <class elemT>
 #else
 #define elemT float
@@ -384,35 +422,33 @@ Succeeded
 write_basic_interfile(const string& filename, 
 		      const Array<3,elemT>& image,
 		      const NumericType output_type,
-			  const float scale)
+		      const float scale,
+		      const ByteOrder byte_order)
 {
+  CartesianCoordinate3D<float> origin;
+  origin.fill(InterfileHeader::double_value_not_set);
   return
     write_basic_interfile(filename, 
 			  image, 
 			  CartesianCoordinate3D<float>(1,1,1), 
+			  origin,
 			  output_type,
-			  scale);
+			  scale,
+			  byte_order);
 }
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER <= 1300)
 #undef elemT 
 #endif
 
 template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename, 
-			   const Array<3,NUMBER>& image,
-			   const CartesianCoordinate3D<float>& voxel_size,
-			   const NumericType output_type,
-		       const float scale)
+				const Array<3,NUMBER>& image,
+				const CartesianCoordinate3D<float>& voxel_size,
+				const CartesianCoordinate3D<float>& origin,
+				const NumericType output_type,
+				const float scale,
+				const ByteOrder byte_order)
 {
-  CartesianCoordinate3D<int> min_indices;
-  CartesianCoordinate3D<int> max_indices;
-  if (!image.get_regular_range(min_indices, max_indices))
-  {
-    warning("write_basic_interfile: can handle only regular index ranges\n. No output\n");
-    return Succeeded::no;
-  }
-  CartesianCoordinate3D<int> dimensions = max_indices - min_indices;
-  dimensions += 1;
 
   char * data_name = new char[filename.size() + 5];
   char * header_name = new char[filename.size() + 5];
@@ -433,7 +469,8 @@ Succeeded write_basic_interfile(const string&  filename,
   open_write_binary(output_data, data_name);
 
   float scale_to_use = scale;
-  write_data(output_data, image, output_type, scale_to_use);
+  write_data(output_data, image, output_type, scale_to_use,
+	     byte_order);
 
   VectorWithOffset<float> scaling_factors(1);
   scaling_factors[0] = scale_to_use;
@@ -441,46 +478,52 @@ Succeeded write_basic_interfile(const string&  filename,
   file_offsets.fill(0);
 
 
-  write_basic_interfile_image_header(header_name,
-				   data_name,
-				   dimensions, 
-				   voxel_size,
-				   output_type,
-				   ByteOrder::native,
-				   scaling_factors,
-				   file_offsets);
+  const Succeeded success =
+    write_basic_interfile_image_header(header_name,
+				       data_name,
+				       image.get_index_range(), 
+				       voxel_size,
+				       origin,
+				       output_type,
+				       byte_order,
+				       scaling_factors,
+				       file_offsets);
   delete[] header_name;
   delete[] data_name;
 
-  return Succeeded::yes;
+  return success;
 }
 
 Succeeded
 write_basic_interfile(const string&  filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
 		      const NumericType output_type,
-			  const float scale)
+		      const float scale,
+		      const ByteOrder byte_order)
 {
   return
     write_basic_interfile(filename, 
 			  image, // use automatic reference to base class
 			  image.get_grid_spacing(), 
+			  image.get_origin(),
 			  output_type,
-			  scale);
+			  scale,
+			  byte_order);
 }
 
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
 		      const NumericType output_type,
-			  const float scale)
+		      const float scale,
+		      const ByteOrder byte_order)
 {
   // dynamic_cast will throw an exception when it's not valid
   return
     write_basic_interfile(filename,
                           dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image),
                           output_type,
-						  scale);
+			  scale, byte_order);
 }
 
 
@@ -786,48 +829,57 @@ write_basic_interfile_PDFS_header(const string& data_filename,
 template 
 Succeeded 
 write_basic_interfile<>(const string&  filename, 
-				      const Array<3,signed short>&,
-				      const CartesianCoordinate3D<float>& voxel_size,
-				      const NumericType output_type,
-			          const float scale);
+			const Array<3,signed short>&,
+			const CartesianCoordinate3D<float>& voxel_size,
+			const CartesianCoordinate3D<float>& origin,
+			const NumericType output_type,
+			const float scale,
+			const ByteOrder byte_order);
 template 
 Succeeded 
 write_basic_interfile<>(const string&  filename, 
-				      const Array<3,unsigned short>&,
-				      const CartesianCoordinate3D<float>& voxel_size,
-				      const NumericType output_type,
-			          const float scale);
+			const Array<3,unsigned short>&,
+			const CartesianCoordinate3D<float>& voxel_size,
+			const CartesianCoordinate3D<float>& origin,
+			const NumericType output_type,
+			const float scale,
+			const ByteOrder byte_order);
 
 template 
 Succeeded 
 write_basic_interfile<>(const string&  filename, 
-				      const Array<3,float>&,
-				      const CartesianCoordinate3D<float>& voxel_size,
-				      const NumericType output_type,
-			          const float scale);
+			const Array<3,float>&,
+			const CartesianCoordinate3D<float>& voxel_size,
+			const CartesianCoordinate3D<float>& origin,
+			const NumericType output_type,
+			const float scale,
+			const ByteOrder byte_order);
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || (_MSC_VER > 1300)
 
 template 
 Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,signed short>& image,
 		      const NumericType output_type,
-			  const float scale);
+			const float scale,
+			const ByteOrder byte_order);
 
 template 
 Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,unsigned short>& image,
 		      const NumericType output_type,
-			  const float scale);
+			const float scale,
+			const ByteOrder byte_order);
 
 template 
 Succeeded 
 write_basic_interfile<>(const string& filename, 
 		      const Array<3,float>& image,
 		      const NumericType output_type,
-			  const float scale);
+			const float scale,
+			const ByteOrder byte_order);
 #endif
 
 END_NAMESPACE_STIR

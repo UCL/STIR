@@ -1,34 +1,46 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Non-inline implementations for class DiscretisedShape3D
+  \brief Non-inline implementations for class stir::DiscretisedShape3D
 
   \author Kris Thielemans
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/round.h"
+#include "stir/zoom.h"
 #include "stir/is_null_ptr.h"
 START_NAMESPACE_STIR
 
 void
 DiscretisedShape3D::
-translate(const CartesianCoordinate3D<float>& direction)
+set_origin(const CartesianCoordinate3D<float>& new_origin)
 { 
-  assert(origin == density_ptr->get_origin());
-  origin += direction; 
-  density_ptr->set_origin(origin);
+  assert(this->get_origin() == density_ptr->get_origin());
+  Shape3D::set_origin(new_origin);
+  density_ptr->set_origin(new_origin);
 }
-
 
 // TODO check code
 float 
@@ -38,10 +50,12 @@ get_voxel_weight(
                  const CartesianCoordinate3D<float>& voxel_size, 
                  const CartesianCoordinate3D<int>& num_samples) const
 {
-  assert(origin == density_ptr->get_origin());
+  assert(this->get_origin() == density_ptr->get_origin());
 
   assert(voxel_size == image().get_voxel_size());
-  const CartesianCoordinate3D<float> r = (voxel_centre - origin)/image().get_voxel_size();
+  const CartesianCoordinate3D<float> r = 
+    this->density_ptr->get_index_coordinates_for_physical_coordinates(voxel_centre);
+
   const int x = round(r.x());
   const int y = round(r.y());
   const int z = round(r.z());
@@ -61,7 +75,7 @@ bool
 DiscretisedShape3D::
 is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 {
-  assert(origin == density_ptr->get_origin());
+  assert(this->get_origin() == density_ptr->get_origin());
   return 
     get_voxel_weight(coord, 
                      image().get_voxel_size(), 
@@ -72,25 +86,36 @@ void
 DiscretisedShape3D::
 construct_volume(VoxelsOnCartesianGrid<float> &new_image, const CartesianCoordinate3D<int>& num_samples) const
 {
-  // TODO
-  if (origin != new_image.get_origin())
-    error("DiscretisedShape3D::construct_volume: cannot handle shifting of origin yet\n");
-  if (image().get_voxel_size() != new_image.get_voxel_size())
-    error("DiscretisedShape3D::construct_volume: cannot handle different voxel sizes yet\n");  
-  if (image().get_index_range() != new_image.get_index_range())
-    error("DiscretisedShape3D::construct_volume: cannot handle different index ranges yet (i.e  the size of the 2 images is different)\n");  
-  new_image = image();
+  zoom_image(new_image, this->image());
+  const float factor =
+    (image().get_voxel_size().x()*image().get_voxel_size().y()*image().get_voxel_size().z())/
+    (new_image.get_voxel_size().x()*new_image.get_voxel_size().y()*new_image.get_voxel_size().z());
+  if (fabs(factor-1)>.01)
+    new_image *= factor;
 }
 
 Shape3D* 
 DiscretisedShape3D::
 clone() const
 {
-  assert(origin == density_ptr->get_origin());
+  assert(this->get_origin() == density_ptr->get_origin());
 
   return new DiscretisedShape3D(*this);
 }
 
+DiscretisedDensity<3,float>& 
+DiscretisedShape3D::
+get_discretised_density()
+{
+  return *density_ptr;
+}
+
+const DiscretisedDensity<3,float>& 
+DiscretisedShape3D::
+get_discretised_density() const
+{
+  return *density_ptr;
+}
 
 DiscretisedShape3D::
 DiscretisedShape3D()
@@ -102,7 +127,8 @@ DiscretisedShape3D::
 DiscretisedShape3D(const VoxelsOnCartesianGrid<float>& image_v)
    : density_ptr(image_v.clone())
 {
-  origin = image_v.get_origin();
+  this->set_origin(image_v.get_origin());
+  this->filename = "FROM MEMORY";
 }
   
 
@@ -115,7 +141,8 @@ DiscretisedShape3D(const shared_ptr<DiscretisedDensity<3,float> >& density_ptr_v
   {
     error("DiscretisedShape3D can currently only handle images of type VoxelsOnCartesianGrid.\n"); 
   }
-  origin = density_ptr_v->get_origin();
+  this->set_origin(density_ptr_v->get_origin());
+  this->filename = "FROM MEMORY";
 }
 
 
@@ -146,10 +173,10 @@ post_processing()
   density_ptr = DiscretisedDensity<3,float>::read_from_file(filename);
   if (!is_null_ptr(density_ptr))
     {
-      if (origin != density_ptr->get_origin())
+      if (this->get_origin() != density_ptr->get_origin())
 	{
-	  warning("DiscretisedShape3D: Shape3D::origin and image origin are inconsistent. Don't know which to use\n");
-	  return true;
+	  warning("DiscretisedShape3D: Shape3D::origin and image origin are inconsistent. Using origin from image\n");
+	  this->set_origin(density_ptr->get_origin());
 	}
     }
   return is_null_ptr(density_ptr);

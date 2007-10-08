@@ -133,18 +133,6 @@ template <int num_dimensions, class elemT>
 inline Array<num_dimensions, elemT>& 
 in_place_abs(Array<num_dimensions, elemT>& v);
 
-// this generic function does not seem to work of f is an overloaded function
-//! apply any function(object) to each element of the 1-dimensional array
-/*! \ingroup Array */
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <class elemT, class FUNCTION>
-inline Array<1,elemT>& 
-in_place_apply_function(Array<1,elemT>& v, FUNCTION f);
-#else
-inline Array<1,float>& 
-in_place_apply_function(Array<1,float>& v, float (*f)(float));
-#endif
-
 
 //! apply any function(object) to each element of the multi-dimensional array
 /*! \ingroup Array 
@@ -152,10 +140,13 @@ in_place_apply_function(Array<1,float>& v, float (*f)(float));
     \code
     elem = f(elem);
     \endcode
+
+ Requires that type \c T has \c begin_all() and \c end_all() functions.
+
 */
-template <int num_dimensions, class elemT, class FUNCTION>
-inline Array<num_dimensions, elemT>& 
-in_place_apply_function(Array<num_dimensions, elemT>& v, FUNCTION f);
+template <class T, class FUNCTION>
+inline T& 
+in_place_apply_function(T& v, FUNCTION f);
 
 //! Apply a function object on all possible 1d arrays extracted by keeping all indices fixed, except the first one
 /*! \ingroup Array 
@@ -347,6 +338,15 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 #undef FunctionObjectPtrIter
 #endif
 
+
+template <int num_dim, typename elemT> 
+inline void 
+transform_array_to_periodic_indices(Array<num_dim, elemT>& out_array, 
+				    const Array<num_dim, elemT>& in_array);
+template <int num_dim, typename elemT> 
+inline void 
+transform_array_from_periodic_indices(Array<num_dim, elemT>& out_array, 
+				      const Array<num_dim, elemT>& in_array);
 
 END_NAMESPACE_STIR
 

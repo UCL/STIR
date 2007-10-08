@@ -1,0 +1,51 @@
+#  (C) Copyright David Abrahams 2001. Permission to copy, use, modify, sell and
+#  distribute this software is granted provided this copyright notice appears
+#  in all copies. This software is provided "as is" without express or implied
+#  warranty, and with no claim as to its suitability for any purpose.
+#
+# Stir.Python library Jamfile
+
+
+# declare the location of this subproject relative to the root
+subproject buildblock ;
+
+    
+local local_sources ;
+
+local_sources =
+  Array.cxx 
+  IndexRange.cxx
+  ProjData.cxx
+  ProjDataInfo.cxx
+  ProjDataInfoCylindrical.cxx
+  ProjDataInfoCylindricalArcCorr.cxx
+  ProjDataInfoCylindricalNoArcCorr.cxx
+  ArcCorrection.cxx
+  ProjDataFromStream.cxx
+  ProjDataGEAdvance.cxx
+  ProjDataInMemory.cxx
+  ProjDataInterfile.cxx
+  Scanner.cxx
+  SegmentBySinogram.cxx
+  SegmentByView.cxx
+  Viewgram.cxx
+  Sinogram.cxx
+  RelatedViewgrams.cxx
+  DiscretisedDensity.cxx
+  VoxelsOnCartesianGrid.cxx
+  utilities.cxx
+  interfile_keyword_functions.cxx
+  zoom.cxx
+  NumericType.cxx
+  ByteOrder.cxx
+  KeyParser.cxx 
+  recon_array_functions.cxx
+  linear_regression.cxx 
+  overlap_interpolate.cxx
+  error.cxx
+  warning.cxx 
+    ;
+
+sources += buildblock/$(local_sources) ;
+
+

@@ -45,14 +45,7 @@
 	print-make-vars \
 	default_target
 
-# WORKSPACE macro should be set to the root of the source files
-# it is now (largely?) irrelevant is make is only
-# executed in 1 directory.
-# WORKSPACE default to the current directory
-# this can be done simply using . (as it's no longer a recursive make)
-# Using . instead of $(CURDIR) avoids problems with spaces in filename
-WORKSPACE := .
-#$(CURDIR)
+WORKSPACE := $(CURDIR)
 
 # make sure that 'all' is also the first target and hence the default
 default_target: all
@@ -82,7 +75,6 @@ LIBDIRS += buildblock recon_buildblock display IO \
 	numerics_buildblock \
 	eval_buildblock Shape_buildblock \
 	listmode_buildblock \
-	iterative/LogLik_buildblock \
 	iterative/OSMAPOSL \
 	analytic/FBP2D \
 	analytic/FBP3DRP
@@ -91,7 +83,6 @@ EXEDIRS += utilities recon_test \
 	listmode_utilities \
 	utilities/ecat \
 	iterative/OSMAPOSL \
-	iterative/sensitivity \
 	analytic/FBP2D \
 	analytic/FBP3DRP
 
@@ -246,24 +237,19 @@ df = $(DEST)$*
 # alternative choices  for MAKEDEPEND
 ifeq ("$(IS_MS_VC)","")
 # normal case
-MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS) > $(df).d $<
-MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS)  > $(df).d $<
+MAKEDEPENDCXX = $(CXX) $(MAKE_DEPEND_FLAG) $(CFLAGS)  $< > $(df).d
+MAKEDEPENDC = $(CC) $(MAKE_DEPEND_FLAG) $(CFLAGS)  $< > $(df).d
 else
 # use when your compiler cannot generate dependencies in text form
 # (Visual C++ can generate a database file, but we cannot read that)
 # of course, this only works when you have makedepend, touch, sed
 
-# for VC, the -Y option disables looking for system includes
-# it wouldn't work for other compilers presumably
+# the -Y option disables looking for system includes
 MAKEDEPENDCXX = touch $(df).d && makedepend $(CFLAGS) -f $(df).d $< -Y -o$(O_SUFFIX) 2> /dev/null
 MAKEDEPENDC = $(MAKEDEPENDCXX)
 endif
 
-# note: first sed line put $(DEST) in front of the object target
-# it uses s& to avoid problems with / in paths
-# also, the \ in front of ${O_SUFFIX} is to 'escape' the . at the start of ${O_SUFFIX}
-# as a . in the sed pattern means 'any character'
-dotD2dotP = sed -e 's&$(*)\${O_SUFFIX}&$(DEST)$(*)$(O_SUFFIX)&' < $(df).d > $(df).P; \
+dotD2dotP = sed -e 's&$(*F)\.o&$(DEST)$(*).o&' < $(df).d > $(df).P; \
 	sed -e 's/\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P; \
 	$(RM) $(df).d
@@ -271,17 +257,17 @@ dotD2dotP = sed -e 's&$(*)\${O_SUFFIX}&$(DEST)$(*)$(O_SUFFIX)&' < $(df).d > $(df
 
 ${DEST}%${O_SUFFIX} : %.cxx
 	@ -mkdir -p $(dir $@); 
-	$(CXX) $(CFLAGS)  ${O_OUTFLAG}$@  -c $< 
 ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
-	@ $(MAKEDEPENDCXX);$(dotD2dotP);
+	$(MAKEDEPENDCXX);$(dotD2dotP);
 endif
+	$(CXX) $(CFLAGS)  ${O_OUTFLAG}$@  -c $< 
 
 ${DEST}%${O_SUFFIX} : %.c
 	@ -mkdir -p $(dir $@); 
-	$(CC) $(CFLAGS) ${O_OUTFLAG}$@ -c $< 
 ifeq ("$(DISABLE_DEPENDENCY_GENERATION)","")
-	@ $(MAKEDEPENDC); $(dotD2dotP); 
+	$(MAKEDEPENDC); $(dotD2dotP); 
 endif	
+	$(CC) $(CFLAGS) ${O_OUTFLAG}$@ -c $< 
 
 
 endif # GCC3

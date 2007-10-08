@@ -1,7 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup Array
@@ -63,6 +78,8 @@ next_help(is_1d, BasicCoordinate<1, int>& index,
 {
   if (a.get_min_index()>a.get_max_index())
     return false;
+  assert(index[1]>=a.get_min_index());
+  assert(index[1]<=a.get_max_index());
   index[1]++;
   return index[1]<=a.get_max_index();
 }
@@ -76,13 +93,15 @@ next_help(is_not_1d,
 {
   if (a.get_min_index()>a.get_max_index())
     return false;
-  index[num_dimensions]++;
   BasicCoordinate<num_dimensions-1, int> upper_index= cut_last_dimension(index);
-  if (index[num_dimensions]<=get(a,cut_last_dimension(index)).get_max_index())
+  assert(index[num_dimensions]>=get(a,upper_index).get_min_index());
+  assert(index[num_dimensions]<=get(a,upper_index).get_max_index());
+  index[num_dimensions]++;
+  if (index[num_dimensions]<=get(a,upper_index).get_max_index())
     return true;
   if (!next(upper_index, a))
     return false;
-  index=join(upper_index, get(a,cut_last_dimension(index)).get_min_index());
+  index=join(upper_index, get(a,upper_index).get_min_index());
   return true;
 }
 
@@ -193,6 +212,8 @@ next(BasicCoordinate<1, int>& index, \
      const Array<num_dimensions2, T>& a) \
 { if (a.get_min_index()>a.get_max_index())\
     return false;\
+  assert(index[1]>=a.get_min_index()); \
+  assert(index[1]<=a.get_max_index()); \
   index[1]++;\
   return index[1]<=a.get_max_index();\
 }
@@ -205,14 +226,15 @@ next(BasicCoordinate<num_dimensions, int>& index, \
 {\
   if (a.get_min_index()>a.get_max_index()) \
     return false; \
-  index[num_dimensions]++; \
-  BasicCoordinate<num_dimensions-1, int> upper_index= cut_last_dimension(index); \
-  if (index[num_dimensions]<=get(a,cut_last_dimension(index)).get_max_index()) \
-    return true; \
-  if (!next(upper_index, a)) \
-    return false; \
-  index=join(upper_index, get(a,cut_last_dimension(index)).get_min_index()); \
-  return true; \
+  BasicCoordinate<num_dimensions-1, int> upper_index= cut_last_dimension(index);\
+  assert(index[num_dimensions]>=get(a,upper_index).get_min_index());\
+  assert(index[num_dimensions]<=get(a,upper_index).get_max_index());\
+  index[num_dimensions]++;\
+  if (index[num_dimensions]<=get(a,upper_index).get_max_index())\
+    return true;\
+  if (!next(upper_index, a))\
+    return false;\
+  index=join(upper_index, get(a,upper_index).get_min_index());\
 }
 
 

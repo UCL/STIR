@@ -1,12 +1,29 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
-  \ingroup distributable
+  \ingroup recon_buildblock
 
-  \brief Implementation of distributable_computation() and related functions
+  \brief Implementation of stir::distributable_computation()
 
   \author Kris Thielemans  
   \author Alexey Zverovich 
@@ -15,11 +32,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 /* Modification history:
    KT 30/05/2002
@@ -43,25 +55,13 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-bool RPC_slave_sens_zero_seg0_end_planes = false;
-
-
-shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
-shared_ptr<BackProjectorByBin> back_projector_ptr;
-shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr;
-
-void set_projectors_and_symmetries(
-       const shared_ptr<ForwardProjectorByBin>& current_forward_projector_ptr,
-       const shared_ptr<BackProjectorByBin>& current_back_projector_ptr,
-       const shared_ptr<DataSymmetriesForViewSegmentNumbers>& current_symmetries_ptr)
-{
-  forward_projector_ptr = current_forward_projector_ptr;
-  back_projector_ptr = current_back_projector_ptr;
-  symmetries_ptr = current_symmetries_ptr;
-}
 
 #ifndef PARALLEL
-void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
+void distributable_computation(
+			       const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
+			       const shared_ptr<BackProjectorByBin>& back_projector_ptr,
+			       const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
+			       DiscretisedDensity<3,float>* output_image_ptr,
 				    const DiscretisedDensity<3,float>* input_image_ptr,
 				    const shared_ptr<ProjData>& proj_dat_ptr, 
                                     const bool read_from_proj_dat,
@@ -85,8 +85,6 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
   {
     (*log_likelihood_ptr) = 0.0;
   };
-  
-  RPC_slave_sens_zero_seg0_end_planes = zero_seg0_end_planes;
   
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
   {
@@ -190,7 +188,9 @@ void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
       }
       
       
-      RPC_process_related_viewgrams(output_image_ptr, input_image_ptr, y, count, count2, log_likelihood_ptr, additive_binwise_correction_viewgrams);
+      RPC_process_related_viewgrams(forward_projector_ptr,
+				    back_projector_ptr,
+				    output_image_ptr, input_image_ptr, y, count, count2, log_likelihood_ptr, additive_binwise_correction_viewgrams);
       
       if (additive_binwise_correction_viewgrams != NULL)
       {

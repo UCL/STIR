@@ -1,22 +1,38 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Non-inline implementations for class EllipsoidalCylinder
+  \brief Non-inline implementations for class stir::EllipsoidalCylinder
 
   \author Sanida Mustafovic
   \author Kris Thielemans
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/Shape/EllipsoidalCylinder.h"
+#include "stir/numerics/MatrixFunction.h"
+#include "stir/Succeeded.h"
+#include <algorithm>
+#include <cmath>
 
 START_NAMESPACE_STIR
 
@@ -76,53 +92,58 @@ EllipsoidalCylinder::EllipsoidalCylinder(const float length_v,
                          const float radius_xv,
 	                 const float radius_yv,
 	                 const CartesianCoordinate3D<float>& centre_v,
-	                 const CartesianCoordinate3D<float>& dir_xv,
-			 const CartesianCoordinate3D<float>& dir_yv,
-			 const CartesianCoordinate3D<float>& dir_zv) 
-                    ://Shape3DWithOrientation(centre_v,dir_xv,dir_yv,dir_zv), 
+	                 const Array<2,float>& direction_vectors) 
+                    :
                      length(length_v),
 		     radius_x(radius_xv),
 		     radius_y(radius_yv)
 		    
 {
-  origin = centre_v;
-  dir_x = dir_xv;
-  dir_y = dir_yv;
-  dir_z = dir_zv;
+  assert(length>0);
+  assert(radius_x>0);
+  assert(radius_y>0);
+  this->set_origin(centre_v);
+  if (this->set_direction_vectors(direction_vectors) == Succeeded::no)
+    error("Ellipsoid constructor called with wrong direction_vectors");
 }  
 
-
-
-EllipsoidalCylinder::EllipsoidalCylinder(const float length_v, 
-                     const float radius_xv,
-	             const float radius_yv,
-	             const CartesianCoordinate3D<float>& centre_v,
-		     const float alpha_v,
-	             const float beta_v,
-                     const float gamma_v) 
-		    ://Shape3DWithOrientation(centre_v,alpha_v,beta_v,gamma_v),
-                     length(length_v),
-		     radius_x(radius_xv),
-		     radius_y(radius_yv)		    
+void
+EllipsoidalCylinder::
+set_length(const float new_length)
 {
-  origin = centre_v;
-  set_directions_from_Euler_angles(alpha_v, beta_v, gamma_v);
+  assert(new_length>0);
+  length = new_length;
+}
+
+void
+EllipsoidalCylinder::
+set_radius_x(const float new_radius_x)
+{
+  assert(new_radius_x>0);
+  radius_x = new_radius_x;
+}
+
+void
+EllipsoidalCylinder::
+set_radius_y(const float new_radius_y)
+{
+  assert(new_radius_y>0);
+  radius_y = new_radius_y;
 }
 
 
-bool EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& index) const
+
+bool EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 
 {
-
-  const CartesianCoordinate3D<float> r = index - origin;
+  const CartesianCoordinate3D<float> r = 
+    this->transform_to_shape_coords(coord);
   
-  const float distance_along_axis=
-      inner_product(r,dir_z);
+  const float distance_along_axis= r.z();
   
   if (fabs(distance_along_axis)<length/2)
   { 
-    if ((square(inner_product(r,dir_x))/square(radius_x) + 
-         square(inner_product(r,dir_y))/square(radius_y))<=1)
+    if (square(r.x()/radius_x) + square(r.y()/radius_y) <=1)
       return true;
     else 
       return false;
@@ -130,42 +151,54 @@ bool EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& in
   else return false;
 }
 
-
-void 
-EllipsoidalCylinder::scale(const CartesianCoordinate3D<float>& scale3D)
-{
-  if (norm(dir_z - CartesianCoordinate3D<float>(1,0,0)) > 1E-5F ||
-      norm(dir_y - CartesianCoordinate3D<float>(0,1,0)) > 1E-5F ||	
-      norm(dir_x - CartesianCoordinate3D<float>(0,0,1)) > 1E-5F)
-    error("EllipsoidalCylinder::scale cannot handle rotated case yet.\n");
-  // TODO it's probably better to scale dir_x et al, but then other things might brake  (such as geometric_volume)
-
-  origin *= scale3D;
-  length *= scale3D.z();
-  radius_y *= scale3D.y();
-  radius_x *= scale3D.x();
-}
-
 float 
 EllipsoidalCylinder:: 
 get_geometric_volume()const
  {
-   return static_cast<float>(radius_x*radius_y*_PI*length);
+   return static_cast<float>(radius_x*radius_y*_PI*length) / get_volume_of_unit_cell();
  }
 
-
+#if 0
+// formula is incorrect (does not include end planes, and does not handle ellips)
+// also, scaling of axes does not simply scale area
 float 
 EllipsoidalCylinder:: 
 get_geometric_area()const
 {
-  return static_cast<float>(2*sqrt(radius_x*radius_y)*_PI*length);
+  return static_cast<float>(2*sqrt(radius_x*radius_y)*_PI*length) / get_volume_of_unit_cell();
 }
+#endif
 
 Shape3D* 
 EllipsoidalCylinder:: 
 clone() const
 {
   return static_cast<Shape3D *>(new EllipsoidalCylinder(*this));
+}
+
+bool
+EllipsoidalCylinder:: 
+operator==(const EllipsoidalCylinder& cylinder) const
+{
+  const float tolerance = 
+    std::min(length, std::min(radius_x, radius_y))/1000;
+  return
+    std::fabs(this->length - cylinder.length) < tolerance
+    && std::fabs(this->radius_x - cylinder.radius_x) < tolerance
+    && std::fabs(this->radius_y - cylinder.radius_y) < tolerance
+    && Shape3DWithOrientation::operator==(cylinder);
+
+;
+}
+
+bool
+EllipsoidalCylinder:: 
+operator==(const Shape3D& shape) const
+{
+  EllipsoidalCylinder const * cylinder_ptr =
+    dynamic_cast<EllipsoidalCylinder const *>(&shape);
+  return
+    cylinder_ptr != 0 && (*this == *cylinder_ptr);
 }
 
 END_NAMESPACE_STIR

@@ -9,7 +9,8 @@
 
 all: STIR-glossary.pdf STIR-general-overview.pdf \
      STIR-developers-overview.pdf \
-     STIR-UsersGuide.pdf
+     STIR-UsersGuide.pdf \
+     STIR-version2-vs-version1.pdf
 
 clean:
 	$(RM) STIR-*.pdf *.log *.dvi *.aux *.toc *.out

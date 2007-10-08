@@ -59,9 +59,6 @@ using std::ostream;
 
 START_NAMESPACE_STIR
 
-typedef vector<int> IntVect;
-typedef vector<unsigned long> UlongVect;
-typedef vector<double> DoubleVect;
 typedef vector<string> ASCIIlist_type;
 
 class Object;
@@ -81,7 +78,7 @@ class KeyParser;
 class KeyArgument
 {
 public:
-  enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist, ULONG,INT,
+  enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist,UINT, ULONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
     ARRAY2D_OF_FLOATS,
     ARRAY3D_OF_FLOATS,
@@ -170,6 +167,9 @@ public :
 */
 class KeyParser
 {
+  // historical typedefs
+  typedef std::vector<int> IntVect;
+  typedef std::vector<double> DoubleVect;
 
 public:
   KeyParser();
@@ -191,6 +191,10 @@ public:
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const string& keyword, int * variable_ptr);
+
+  //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
+  void add_key(const string& keyword, unsigned int * variable_ptr);
+
   //! add a keyword. When parsing, parse its value as an unsigned long and put it in *variable_ptr
   void add_key(const string& keyword, unsigned long * variable_ptr);
 
@@ -200,6 +204,9 @@ public:
   
   //! add a keyword. When parsing, parse its value as a list of doubles and put its value in *variable_ptr
   void add_key(const string& keyword, vector<double> * variable_ptr);
+
+  //! add a keyword. When parsing, parse its value as a list of comma-separated strings and put its value in *variable_ptr
+  void add_key(const string& keyword, vector<std::string> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 2d array of floats and put its value in *variable_ptr
   void add_key(const string& keyword, Array<2,float>* variable_ptr);
@@ -423,16 +430,6 @@ private :
   // maybe should be protected (or even public?). At the moment, this is only used by set_variable().
   // That should cover most cases.
   bool keyword_has_a_value;
-  // could be made into a union, but should use boost::any instead
-  vector<string>  par_asciilist;
-  IntVect	par_intlist;
-  DoubleVect	par_doublelist;
-  Array<2,float> par_array2d_of_floats;
-  Array<3,float> par_array3d_of_floats;
-  string	par_ascii;
-  int		par_int;	
-  double	par_double;	
-  unsigned long par_ulong;
   boost::any    parameter;
 
   ////// methods

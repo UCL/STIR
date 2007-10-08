@@ -1,15 +1,32 @@
 //
 // $Id$
 //
-#ifndef __convert_array_H__
-#define  __convert_array_H__
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_convert_array_H__
+#define  __stir_convert_array_H__
 
 /*!
   \file 
   \ingroup Array
  
-  \brief This file declares the convert_array templates.
-  This are functions to convert Array objects to a different numeric type.
+  \brief This file declares the stir::convert_array functions.
+  This is a function to convert stir::Array objects to a different numeric type.
 
   \author Kris Thielemans
   \author PARAPET project
@@ -18,13 +35,6 @@
   $Revision$
 
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
-// TODO enable FULL 
 
 #include "stir/common.h"
 
@@ -64,10 +74,11 @@ template <int num_dimensions, class elemT> class Array;
    \see convert_array
 */
 template <int num_dimensions, class T1, class T2, class scaleT>
-void
+inline void
 find_scale_factor(scaleT& scale_factor,
 		  const Array<num_dimensions,T1>& data_in, 
 		  const NumericInfo<T2> info_for_out_type);
+
 /*!
   \ingroup Array
    \brief A function that returns a new Array (of the same dimension) with elements of type \c T2
@@ -100,13 +111,12 @@ find_scale_factor(scaleT& scale_factor,
    numbers are cut out) when T2 is an unsigned type.
 
 */
-#if 1
 template <int num_dimensions, class T1, class T2, class scaleT>
+inline 
 Array<num_dimensions, T2>
 convert_array(scaleT& scale_factor,
 	      const Array<num_dimensions, T1>& data_in, 
 	      const NumericInfo<T2> info2);
-#endif
 /*!
   \ingroup Array
   \brief Converts the \c data_in Array to \c data_out (with elements of different types) such that \c data_in == \c data_out * \c scale_factor
@@ -120,36 +130,15 @@ convert_array(scaleT& scale_factor,
 */
 
 template <int num_dimensions, class T1, class T2, class scaleT>
-void
+inline void
 convert_array(Array<num_dimensions, T2>& data_out,
 	      scaleT& scale_factor,
 	      const Array<num_dimensions, T1>& data_in);
 
-#if defined(ARRAY_FULL) 
-#if 1
-template <int num_dimensions, class T1, class T2, class scaleT>
-Array<num_dimensions, T2>
-convert_array_FULL(scaleT& scale_factor,
-	      const Array<num_dimensions, T1>& data_in, 
-	      const NumericInfo<T2> info2);
-#endif
-/*
-   Second version:
-
-   example :
-      convert_array(data_out, scale_factor, data_in)
-*/
-
-template <int num_dimensions, class T1, class T2, class scaleT>
-void
-convert_array_FULL(Array<num_dimensions, T2>& data_out,
-	      scaleT& scale_factor,
-	      const Array<num_dimensions, T1>& data_in, 
-	      const NumericInfo<T2> info2);
-
-// #define convert_array convert_array_FULL
-#endif // ARRAY_FULL
 
 END_NAMESPACE_STIR
 
+#include "stir/convert_array.inl"
+
 #endif
+

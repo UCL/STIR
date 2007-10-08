@@ -1,14 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANRETTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
-
-  \brief 
-
-  \brief Declaration of class SegmentByView
+  \brief Declaration of class stir::SegmentByView
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -19,13 +33,8 @@
 
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-#ifndef __SegmentByView_H__
-#define __SegmentByView_H__
+#ifndef __stir_SegmentByView_H__
+#define __stir_SegmentByView_H__
 
 
 #include "stir/Segment.h"
@@ -49,6 +58,9 @@ template <typename elemT> class Sinogram;
 
 template <typename elemT> class SegmentByView : public Segment<elemT>, public Array<3,elemT>
 {
+private:
+  typedef SegmentByView<elemT> self_type;
+
 public:
   //! typedef such that we do not need to have \a typename wherever we StorageOrder
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
@@ -104,6 +116,7 @@ public:
   //! Overloading Array::resize
   void resize(const IndexRange<3>& range);
 
+  virtual bool operator ==(const Segment<elemT>&) const;
 };
 
 END_NAMESPACE_STIR

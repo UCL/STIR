@@ -1,10 +1,26 @@
 // $Id$
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup test
 
-  \brief Test program for VectorWithOffset
+  \brief Test program for stir::VectorWithOffset
 
   \author Kris Thielemans
   \author PARAPET project
@@ -12,11 +28,6 @@
   $Date$
 
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef NDEBUG
 // set to high level of debugging
@@ -492,6 +503,94 @@ VectorWithOffsetTests::run_tests()
     check_if_equal(v0.get_max_index(), 40-1, "test 1-arg constructor and get_max_index");
     check_if_equal(v0.size(), size_t(40), "test 1-arg constructor and size");
     check_if_equal(v0.capacity(), size_t(40), "test 1-arg constructor and capacity");
+  }
+
+  // checks on using existing data_ptr with constructor indices starting at 0
+  {
+    const int size=100;
+    int data[size];
+    std::fill(data, data+size, 12345);
+    check_if_equal(data[0], 12345, "test filling data block at 0");
+    check_if_equal(data[size-1], 12345, "test filling data block at end");
+    // set data_ptr to somewhere in the block to check overrun
+    int * data_ptr = data+10;
+
+    const int vsize = size-20;
+    VectorWithOffset<int> v(vsize, data_ptr, data + size);
+    check(!v.owns_memory_for_data(), "test vector using data_ptr: should not allocate new memory");
+    check(data_ptr == v.get_data_ptr(), "test vector using data_ptr: get_data_ptr()");
+    v.release_data_ptr();
+    check_if_equal(v[1], 12345, "test vector using data_ptr: vector at 1 after construction");
+    v[1]=1;
+    check_if_equal(data_ptr[1], 1, "test filling vector using data_ptr: data at 1 after setting");
+    check_if_equal(v[1], 1, "test filling vector using data_ptr: vector at 1 after setting");
+    v.fill(2);
+    check_if_equal(std::accumulate(v.begin(), v.end(), 0), 2*vsize , "test filling vector using data_ptr");
+    check_if_equal(data_ptr[0], 2, "test filling vector using data_ptr: data at 0");
+    check_if_equal(data_ptr[-1], 12345, "test filling vector using data_ptr: data block before vector");
+    check_if_equal(data_ptr[vsize], 12345, "test filling vector using data_ptr: data block after vector");
+
+    // test resize using existing memory
+    v[1]=5;
+    v.resize(1,vsize-5);
+    check(!v.owns_memory_for_data(), "test vector using data_ptr: resize should not allocate new memory");
+    check(data_ptr+1 == v.get_data_ptr(), "test vector using data_ptr: get_data_ptr() after resize");
+    v.release_data_ptr();
+    check_if_equal(v[1], 5 , "test resizing vector using data_ptr: data at 1");
+    v[1]=6;
+    check_if_equal(data_ptr[1], 6, "test resizing vector using data_ptr: data should still be refered to");
+    check_if_equal(std::accumulate(v.begin(), v.end(), 0), 6+v[2]*(v.get_length()-1) , "test resizing vector using data_ptr");
+
+    // test resize that should allocate new memory
+    v.resize(-1,vsize-2);
+    check(v.owns_memory_for_data(), "test vector using data_ptr: resize should allocate new memory");
+    v.fill(7);
+    check_if_equal(data[9], 12345, "test vector using data_ptr: after resize data block at 9");
+    check_if_equal(data[size-9], 12345, "test vector using data_ptr: after resize data block at end-9");
+    check_if_equal(data_ptr[1], 6, "test vector using data_ptr: after resize data 1");
+  }
+
+  // checks on using existing data_ptr with constructor indices starting at -3
+  {
+    const int size=100;
+    int data[size];
+    std::fill(data, data+size, 12345);
+    check_if_equal(data[0], 12345, "test filling data block at 0");
+    check_if_equal(data[size-1], 12345, "test filling data block at end");
+    // set data_ptr to somewhere in the block to check overrun
+    int * data_ptr = data+10;
+
+    const int vsize = size-20;
+    VectorWithOffset<int> v(-3, vsize-4, data_ptr, data + size);
+    check_if_equal(v.get_length(), vsize, "test vector using data_ptr (negative min_index):size");
+    // first essentially same tests as above
+    check(!v.owns_memory_for_data(), "test vector using data_ptr (negative min_index): should not allocate new memory");
+    check(data_ptr == v.get_data_ptr(), "test vector using data_ptr (negative min_index): get_data_ptr()");
+    v.release_data_ptr();
+    check_if_equal(v[1], 12345, "test vector using data_ptr (negative min_index): vector at 1 after construction");
+    check_if_equal(v[-3], 12345, "test vector using data_ptr (negative min_index): vector at -3 after construction");
+    v[-3]=1;
+    check_if_equal(data_ptr[0], 1, "test filling vector using data_ptr (negative min_index) data at -3 after setting");
+    check_if_equal(v[-3], 1, "test filling vector using data_ptr (negative min_index) vector at -3 after setting");
+    v.fill(2);
+    check_if_equal(std::accumulate(v.begin(), v.end(), 0), 2*vsize , "test filling vector using data_ptr (negative min_index)");
+    check_if_equal(data_ptr[0], 2, "test filling vector using data_ptr (negative min_index) data at 0");
+    check_if_equal(data_ptr[-1], 12345, "test filling vector using data_ptr (negative min_index) data block before vector");
+    check_if_equal(data_ptr[vsize], 12345, "test filling vector using data_ptr (negative min_index) data block after vector");
+
+    // assignment that doesn't reallocate
+    v = VectorWithOffset<int>(2,6);
+    check(!v.owns_memory_for_data(), "test vector using data_ptr (negative min_index): assignment should not allocate new memory");
+    v[4]=4;
+    check_if_equal(v[4], 4, "test vector using data_ptr (negative min_index): vector at 4 after assignment and setting");
+    // vector will again start at data_ptr
+    check_if_equal(data_ptr[4-v.get_min_index()], 4, "test vector using data_ptr (negative min_index): data at 4-min_index after assignment and setting");
+    // another assignment that does not reallocate
+    v = VectorWithOffset<int>(size-(data_ptr-data) );
+    check(!v.owns_memory_for_data(), "test vector using data_ptr (negative min_index): 2nd assignment should not allocate new memory");
+    // assignment that does reallocate
+    v = VectorWithOffset<int>(size-(data_ptr-data)+1 );
+    check(v.owns_memory_for_data(), "test vector using data_ptr (negative min_index): 3rd assignment should allocate new memory");     
   }
 }
 

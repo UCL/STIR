@@ -1,11 +1,45 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Declaration of class EllipsoidalCylinder
+  \brief Declaration of class stir::EllipsoidalCylinder
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  $Date$
+  $Revision$
+*/
+
+#ifndef __stir_Shape_EllipsoidalCylinder_h__
+#define __stir_Shape_EllipsoidalCylinder_h__
+
+#include "stir/RegisteredParsingObject.h"
+#include "stir/Shape/Shape3DWithOrientation.h"
+
+START_NAMESPACE_STIR
+
+/*!
+  \ingroup Shape
+  \brief Three-dimensional ellipsoidal cylinder
+  
 
   \par Description
   A point with coordinates \a coord is inside the shape if for
@@ -21,40 +55,18 @@
   Shape3DWithOrientation.
 
   \par Parameters
+   To specify an ellipsoidal cylinder with the dimensions 
+  (radius_x,radius_y,length), where radius_x assumed to be
+   in x direction, radius_y in y direction, length in z-direction,
+   before any rotations, use:
   \verbatim
-      Ellipsoidal Cylinder Parameters:=
+     Ellipsoidal Cylinder Parameters:=
      radius-x (in mm):= <float>
      radius-y (in mm):= <float>
      length-z (in mm):= <float>
      ; any parameters of Shape3DWithOrientation
      End:=
   \endverbatim
-  \author Sanida Mustafovic
-  \author Kris Thielemans
-  $Date$
-  $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
-#ifndef __stir_Shape_EllipsoidalCylinder_h__
-#define __stir_Shape_EllipsoidalCylinder_h__
-
-#include "stir/RegisteredParsingObject.h"
-#include "stir/Shape/Shape3DWithOrientation.h"
-
-START_NAMESPACE_STIR
-
-/*!
-  \ingroup Shape
-  \brief Three-dimensional ellipsoidal cylinder
-  
-   Ellipsoidal cylinder with the dimensions 
-  (radius_x,radius_y,length), where radius_x assumed to be
-   in x direction, radius_y in y direction, length in z-direction,
-   before any rotation with Euler angles.
 */
 class EllipsoidalCylinder: 
    public RegisteredParsingObject<EllipsoidalCylinder, Shape3D, Shape3DWithOrientation>
@@ -64,35 +76,47 @@ public:
   //! Name which will be used when parsing a Shape3D object
   static const char * const registered_name; 
   
+  //! Default constructor (calls set_defaults())
   EllipsoidalCylinder();
 
-  EllipsoidalCylinder(const float length, 
-                      const float radius_x,
+  //! Constructor
+  /*! \warning: note order of arguments */
+  EllipsoidalCylinder(const float length_z, 
                       const float radius_y,
-                      const CartesianCoordinate3D<float>& centre,
-                      const CartesianCoordinate3D<float>& dir_x,
-                      const CartesianCoordinate3D<float>& dir_y,
-                      const CartesianCoordinate3D<float>& dir_z);
-  
-  
-  EllipsoidalCylinder(const float length, 
                       const float radius_x,
-                      const float radius_y,
                       const CartesianCoordinate3D<float>& centre,
-                      const float alpha,
-                      const float beta,
-                      const float gamma); 
+		      const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
+  
   Shape3D* clone() const; 
-  
 
-  //! Scale the cylinder
-  /*! \todo This cannot handle a rotated cylinder yet. Instead, it will call error(). */
-  void scale(const CartesianCoordinate3D<float>& scale3D);
+  //! Compare cylinders
+  /*! Uses a tolerance determined by the smallest dimension of the object divided by 1000.*/
+  bool
+    operator==(const EllipsoidalCylinder& cylinder) const;
+
+  virtual bool
+    operator==(const Shape3D& shape) const;
+
+  //! get volume
   float get_geometric_volume() const;
+#if 0
+  //! Get approximate geometric area
   float get_geometric_area() const;
+#endif
 
   bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
   
+  inline float get_length() const
+    { return length; }
+  inline float get_radius_x() const
+    { return radius_x; }
+  inline float get_radius_y() const
+    { return radius_y; }
+
+  void set_length(const float);
+  void set_radius_x(const float);
+  void set_radius_y(const float);
+
 protected:
 
   //! Length of the cylinder
@@ -102,7 +126,8 @@ protected:
   //! Radius in y-direction if the shape is not rotated
   float radius_y;
 
-private:
+  //! set defaults before parsing
+  /*! sets radii and length to 0 and calls Shape3DWithOrientation::set_defaults() */
   virtual void set_defaults();  
   virtual void initialise_keymap();    
   virtual bool post_processing();

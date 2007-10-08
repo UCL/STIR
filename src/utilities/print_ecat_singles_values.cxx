@@ -98,8 +98,8 @@ main (int argc, char **argv)
     
     // Ouput frame number, start and end times.
     cout << setw(2) << frame << "  " 
-         << setw(8) << singles_from_ecat7.get_frame_start(frame) << " to  "
-         << setw(8) << singles_from_ecat7.get_frame_end(frame) << "   ";
+         << setw(8) << singles_from_ecat7.get_time_frame_definitions().get_start_time(frame) << " to  "
+         << setw(8) << singles_from_ecat7.get_time_frame_definitions().get_end_time(frame) << "   ";
 
     for (vector<int>::iterator col = columns.begin() ; col < columns.end() ; ++col) {
       

@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Declaration of class Shape3D
+  \brief Declaration of class stir::Shape3D
 
   \author Kris Thielemans
   \author Sanida Mustafovic
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_Shape_Shape3D_h__
@@ -57,9 +69,8 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   \par Parsing
   This base class defines the following keywords for parsing
   \verbatim
-  origin-z (in mm):= <float> ;defaults to 0
-  origin-y (in mm):= <float> ;defaults to 0
-  origin-x (in mm):= <float> ;defaults to 0
+  ; specify origin as {z,y,x}
+  origin (in mm):= <float> ;defaults to {0,0,0}
   \endverbatim
 */
 class Shape3D :
@@ -70,6 +81,20 @@ public:
 
   
   virtual ~Shape3D() {}
+  
+  //! Compare shapes
+  /*!
+      \par Implementation note
+      
+      This virtual function has to be implemented in each final class of the hierarchy.
+      However, Shape3D::operator== has an implementation that checks equality of the
+      origin (up-to a tolerance of .001). Derived classes can call this implementation.
+      */
+  virtual 
+    inline bool operator==(const Shape3D&) const = 0;
+
+  //! Compare shapes
+  inline bool operator!=(const Shape3D&) const;
 
   /*! 
     \brief Determine (approximately) the intersection volume of a voxel with the shape.
@@ -105,12 +130,16 @@ public:
   */
   virtual bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const = 0;
   
-  //! translate the whole shape (see scale)
-  virtual void translate(const CartesianCoordinate3D<float>& direction) = 0;
+  //! translate the whole shape by shifting its origin 
+  /*! Uses set_origin().
+
+    \see scale()
+  */
+  virtual void translate(const CartesianCoordinate3D<float>& direction);
   //! scale the whole shape 
   /*! 
-  Scaling the shape also shifts the centre of the shape: 
-  new_centre = old_centre * scale3D.
+  Scaling the shape also shifts the origin of the shape: 
+  new_origin = old_origin * scale3D.
   This is necessary such that combined shapes keep their correct relative
   positions. This means that scaling and translating is non-commutative.
   \code
@@ -121,8 +150,7 @@ public:
   assert(shape1==shape2);
   \endcode
  */
-  virtual void scale(const CartesianCoordinate3D<float>& scale3D) 
-  { error ("TODO: Shape3D::scale");}
+  virtual void scale(const CartesianCoordinate3D<float>& scale3D) = 0;
   
   //! scale the whole shape, keeping the centre at the same place
   inline void scale_around_origin(const CartesianCoordinate3D<float>& scale3D);
@@ -143,28 +171,49 @@ public:
   */
   virtual void construct_volume(VoxelsOnCartesianGrid<float> &image, const CartesianCoordinate3D<int>& num_samples) const;
   //virtual void construct_slice(PixelsOnCartesianGrid<float> &plane, const CartesianCoordinate3D<int>& num_samples) const;
-  //virtual float get_geometric_volume() const =0;
+
+  //! Compute approximate volume
+  /*! As this is not possible/easy for all shapes, the default implementation 
+    returns a negative number. The user should check this to see if the returned 
+    value makes sense.
+  */
+  virtual float get_geometric_volume() const;
+#if 0
+  //! Compute approximate geometric area
+  /*! As this is not possible/easy for all shapes, the default implementation 
+    returns a negative number. The user should check this to see if the returned 
+    value makes sense.
+  */
+  virtual float get_geometric_area() const;
+#endif
   
   //TODO get_bounding_box() const;
-  //! get the centre of the shape
+
+  //! get the origin of the shape-coordinate system
   inline CartesianCoordinate3D<float> get_origin() const;
+  //! set the origin of the shape-coordinate system
+  virtual void set_origin(const CartesianCoordinate3D<float>&);
   
   //! Allocate a new Shape3D object which is a copy of the current one.
   virtual Shape3D* clone() const = 0;
- 
+  
+
+  // need to overload this to avoid ambiguity between Object::parameter_info and ParsingObject::parameter_info()
+  virtual std::string parameter_info();
+
 protected:
   inline Shape3D();
-  inline Shape3D(const CartesianCoordinate3D<float>& origin);
-
-  //! origin of the shape
-  /*! \todo replace by virtual function */
-  CartesianCoordinate3D<float> origin;
+  inline explicit Shape3D(const CartesianCoordinate3D<float>& origin);
 
   //! \name Parsing functions
   //@{
   virtual void set_defaults();  
   virtual void initialise_keymap();
   //@}
+private:
+  //! origin of the shape
+  CartesianCoordinate3D<float> origin;
+
 };
 
 END_NAMESPACE_STIR

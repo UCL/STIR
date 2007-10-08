@@ -6,7 +6,7 @@
   \file
   \ingroup symmetries
 
-  \brief Declaration of class DataSymmetriesForBins_PET_CartesianGrid
+  \brief Declaration of class stir::DataSymmetriesForBins_PET_CartesianGrid
 
   \author Kris Thielemans
   \author PARAPET project
@@ -31,8 +31,8 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __DataSymmetriesForBins_PET_CartesianGrid_H__
-#define __DataSymmetriesForBins_PET_CartesianGrid_H__
+#ifndef __stir_recon_buildblock_DataSymmetriesForBins_PET_CartesianGrid_H__
+#define __stir_recon_buildblock_DataSymmetriesForBins_PET_CartesianGrid_H__
 
 
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
@@ -52,11 +52,15 @@ template <typename T> class shared_ptr;
   \brief Symmetries appropriate for a (cylindrical) PET scanner, and 
   a discretised density on a Cartesian grid.
 
-  All operations (except the constructor) are inline as timing of
+  Nearly all operations (except the constructor) are inline as timing of
   the methods of this class is critical.
 */
 class DataSymmetriesForBins_PET_CartesianGrid : public DataSymmetriesForBins
 {
+private:
+  typedef DataSymmetriesForBins base_type;
+  typedef DataSymmetriesForBins_PET_CartesianGrid self_type;
+
 public:
 
   //! Constructor with optional selection of symmetries
@@ -81,7 +85,7 @@ public:
       </ul>
 
       Note that when \a do_symmetry_90degrees_min_phi=true, the value of
-      \a do_symmetry_180degrees_min_phi is irrelevant. This because otherwise a
+      \a do_symmetry_180degrees_min_phi is irrelevant. This is because otherwise a
       non-consecutive range in phi would have to be used.<br>
 
       The symmetry in phi is automatically reduced for non-square grids or when the number of
@@ -103,6 +107,10 @@ public:
     DataSymmetriesForViewSegmentNumbers
 #endif
     * clone() const;
+
+  //! Check equality
+  virtual bool operator==(const DataSymmetriesForBins_PET_CartesianGrid&) const;
+
 #if 0
   TODO!
   //! returns the range of the indices for basic bins
@@ -185,6 +193,9 @@ private:
   inline const DiscretisedDensityOnCartesianGrid<3,float> *
     cartesian_grid_info_ptr() const;
 #endif
+
+  virtual bool blindly_equals(const root_type * const) const;
+
 
   inline bool
   find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangential_pos_num) const;

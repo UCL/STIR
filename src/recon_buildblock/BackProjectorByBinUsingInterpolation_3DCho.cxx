@@ -2376,6 +2376,9 @@ find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
     const double t2dp2 = t * t * d_p * d_p;//Eq 6.12 in EGger thesis
     //const double ttheta =(delta * d_sl / sqrt(R2 - t2dp2));//Equivalent to tan(theta) see Eq 6.10 in Egger thesis except that d_r/2  has been replaced to d_sl
     
+    if (t2dp2 >= R2 || t2dp2 > r2)
+      return Succeeded::no;
+
     const double root1 = sqrt(R2 - t2dp2);
     const double root2 = sqrt(r2 - t2dp2);    
 

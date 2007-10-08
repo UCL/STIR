@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __stir_recon_buildblock_DISTRIBUTABLE_H__
 #define __stir_recon_buildblock_DISTRIBUTABLE_H__
@@ -19,11 +36,6 @@
    $Date$
    $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
@@ -40,21 +52,6 @@ class BackProjectorByBin;
 //!@{
 //! \ingroup distributable
 
-extern bool RPC_slave_sens_zero_seg0_end_planes; // = false;
-
-extern shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
-extern shared_ptr<BackProjectorByBin> back_projector_ptr;
-extern shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr;
-
-//! Sets projectors and the symmetries to be used by distributable_computation.
-/*! \warning It is assumed (but not checked) that the projectors can handle RelatedViewgrams
-    as constructed by \a current_symmetries_ptr.
- */
-void set_projectors_and_symmetries(
-       const shared_ptr<ForwardProjectorByBin>& current_forward_projector_ptr,
-       const shared_ptr<BackProjectorByBin>& current_back_projector_ptr,
-       const shared_ptr<DataSymmetriesForViewSegmentNumbers>& current_symmetries_ptr);
-
 //! typedef for callback functions for distributable_computation()
 /*! Pointers will be NULL when they are not to be used by the callback function.
 
@@ -64,11 +61,14 @@ void set_projectors_and_symmetries(
     \warning The data in *measured_viewgrams_ptr are allowed to be overwritten, but the new data 
     will not be used. 
 */
-typedef  void RPC_process_related_viewgrams_type (DiscretisedDensity<3,float>* output_image_ptr, 
-                                             const DiscretisedDensity<3,float>* input_image_ptr, 
-			   RelatedViewgrams<float>* measured_viewgrams_ptr,
-			   int& count, int& count2, float* log_likelihood_ptr,
-			   const RelatedViewgrams<float>* additive_binwise_correction_ptr);
+typedef  void RPC_process_related_viewgrams_type (
+						  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+						  const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+						  DiscretisedDensity<3,float>* output_image_ptr, 
+						  const DiscretisedDensity<3,float>* input_image_ptr, 
+						  RelatedViewgrams<float>* measured_viewgrams_ptr,
+						  int& count, int& count2, float* log_likelihood_ptr,
+						  const RelatedViewgrams<float>* additive_binwise_correction_ptr);
 
 /*!
   \brief This function essentially implements a loop over segments and all views in the current subset.
@@ -114,7 +114,11 @@ typedef  void RPC_process_related_viewgrams_type (DiscretisedDensity<3,float>* o
   \todo The subset-scheme should be moved somewhere else (a Subset class?).
 
  */
-void distributable_computation(DiscretisedDensity<3,float>* output_image_ptr,
+void distributable_computation(
+			       const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+			       const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+			       const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
+			       DiscretisedDensity<3,float>* output_image_ptr,
 				    const DiscretisedDensity<3,float>* input_image_ptr,
 				    const shared_ptr<ProjData>& proj_data_ptr,
                                     const bool read_from_proj_data,

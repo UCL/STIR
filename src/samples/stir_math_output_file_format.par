@@ -1,0 +1,14 @@
+output file format parameters:=
+output file format:=Interfile
+Interfile Output File Format Parameters:=
+   ; optional to specify non-native byte-order
+   ; byte order := littleendian
+   ; type specification as in Interfile
+   number format:=unsigned integer
+   number of bytes per pixel:=2
+   ; optional to fix the scale factor used when writing the data
+   ; otherwise the maximum range of the output data will be used
+   ; if it's an integer type
+   ;scale_to_write_data:=1
+End Interfile Output File Format Parameters:=
+END:=

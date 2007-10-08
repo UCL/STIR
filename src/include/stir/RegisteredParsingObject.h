@@ -1,21 +1,32 @@
 //
 // $Id$
 //
-/*!
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
   \file
   \ingroup buildblock
-  \brief Declaration of class 
+  \brief Declaration of class stir::RegisteredParsingObject
 
   \author Kris Thielemans
   \author Sanida Mustafovic
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmtih Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_RegisteredParsingObject_H__
@@ -71,19 +82,19 @@ class AddParser : public Base, public ParsingObject
   hierarchy yet. However, we recommend to immediately derive \a Base from
   ParsingObject. 
 
-  \par How to add a leave to the registry at run-time.
+  \par How to add a leaf to the registry at run-time.
   Constructing the hierarchy as above makes sure that everything is
   ready. However, the registry needs to be filled at run-time.
   This could be done with user selection of the desired leaves
   (based on their \a registered_name), or just by entering all leaves
   in the registry.
 
-  A leave will be entered in the hierarchy by declaring a variable as
+  A leaf will be entered in the hierarchy by declaring a variable as
   follows:
   \code
    Derived::RegisterIt dummy;
   \endcode
-  As soon as the variable is destructed, the leave will be taken out of
+  As soon as the variable is destructed, the leaf will be taken out of
   the registry (but see todo). If you want to add it as long as the program runs, use 
   a static variable.
 

@@ -1,37 +1,31 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Declaration of class Ellipsoid
-
-  \par Description
-  A point with coordinates \a coord is inside the shape if for
-  \f$r = coord - origin\f$:
-  \f[
-  {(r.dir_x)^2 \over R_y^2} + {(r.dir_y)^2 \over R_y^2}+ + {(r.dir_z)^2 \over R_z^2} <= 1
-  \f]
-  where \f$dir_x, dir_y, dir_z\f$ are described in the documentation for class
-  Shape3DWithOrientation.
-
-  \par Parameters
-  \verbatim
-      Ellipsoidal Cylinder Parameters:=
-     radius-x (in mm):= <float>
-     radius-y (in mm):= <float>
-     radius-z (in mm):= <float>
-     ; any parameters of Shape3DWithOrientation
-     End:=
-  \endverbatim
+  \brief Declaration of class stir::Ellipsoid
   \author Sanida Mustafovic
+  \author Kris Thielemans
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_Shape_Ellipsoid_h__
 #define __stir_Shape_Elliposoid_h__
@@ -46,10 +40,25 @@ START_NAMESPACE_STIR
   \ingroup Shape
   \brief Three-dimensional ellipsoid
   
-   Ellipsoid with the dimensions 
-  (radius_x,radius_y,radius_z), where radius_x assumed to be
-   in x direction, radius_y in y direction,radius_z in z-direction,
-   before any rotation with Euler angles.
+
+  \par Description
+  A point with coordinates \a coord is inside the shape if for
+  \f$r = coord - origin\f$:
+  \f[
+  {(r.dir_x)^2 \over R_y^2} + {(r.dir_y)^2 \over R_y^2}+ + {(r.dir_z)^2 \over R_z^2} <= 1
+  \f]
+  where \f$dir_x, dir_y, dir_z\f$ are described in the documentation for class
+  stir::Shape3DWithOrientation.
+
+  \par Parameters
+  \verbatim
+      Ellipsoid Parameters:=
+     radius-x (in mm):= <float>
+     radius-y (in mm):= <float>
+     radius-z (in mm):= <float>
+     ; any parameters of Shape3DWithOrientation
+     End:=
+  \endverbatim
 */
 class Ellipsoid: 
    public RegisteredParsingObject<Ellipsoid, Shape3D, Shape3DWithOrientation>
@@ -59,35 +68,45 @@ public:
   static const char * const registered_name; 
 
  Ellipsoid();
- Ellipsoid( const float radius_x,
-	    const float radius_y,
-	    const float radius_z,
-	    const CartesianCoordinate3D<float>& centre,
-	    const float alpha,
-	    const float beta,
-	    const float gamma); 
- Ellipsoid(  const float radius_x, 
-             const float radius_y,
-	     const float radius_z,
+ Ellipsoid(  const CartesianCoordinate3D<float>& radii, 
 	     const CartesianCoordinate3D<float>& centre,
-             const CartesianCoordinate3D<float>& dir_x,
-             const CartesianCoordinate3D<float>& dir_y,
-             const CartesianCoordinate3D<float>& dir_z);
+	     const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
+  //! get volume
   float get_geometric_volume() const;
+#if 0
+  //! Get approximate geometric area
   float get_geometric_area() const;
+#endif
 
   bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
 
   Shape3D* clone() const;
 
+  //! Compare cylinders
+  /*! Uses a tolerance determined by the smallest dimension of the object divided by 1000.*/
+  bool
+    operator==(const Ellipsoid&) const;
+
+  virtual bool
+    operator==(const Shape3D& shape) const;
+
+  inline float get_radius_x() const
+    { return radii.x(); }
+  inline float get_radius_y() const
+    { return radii.y(); }
+  inline float get_radius_z() const
+    { return radii.z(); }
+  inline CartesianCoordinate3D<float> get_radii() const
+    { return radii; }
+  void set_radii(const CartesianCoordinate3D<float>& new_radii);
+
+
 protected:
-  //! Radius in x-direction if the shape is not rotated
-  float radius_x;
-  //! Radius in y-direction if the shape is not rotated
-  float radius_y;
-  //! Radius in z-direction if the shape is not rotated
-  float radius_z;
-private:
+  //! Radii in 3 directions (before using the direction vectors)
+  CartesianCoordinate3D<float> radii;
+
+  //! set defaults before parsing
+  /*! sets radii to 0 and calls Shape3DWithOrientation::set_defaults() */
   virtual void set_defaults();  
   virtual void initialise_keymap();
   virtual bool post_processing();

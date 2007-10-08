@@ -1,12 +1,29 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
 
-  \brief Declaration of class Sinogram
+  \brief Declaration of class stir::Sinogram
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -15,11 +32,6 @@
   $Date$
 
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #ifndef __Sinogram_h__
 #define __Sinogram_h__
@@ -47,7 +59,10 @@ class PMessage;
 template <typename elemT>
 class Sinogram : public Array<2,elemT>
 {
-  
+private:
+  typedef Sinogram<elemT> self_type;
+  typedef Array<2,elemT> base_type;
+
 public:
   //! Construct sinogram from proj_data_info pointer, ring and segment number.  Data are set to 0.
   inline Sinogram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
@@ -91,6 +106,33 @@ public:
   inline const ProjDataInfo* get_proj_data_info_ptr() const;
 
   //inline Sinogram operator = (const Sinogram &s) const;
+
+  //! \name Equality
+  //@{
+  //! Checks if the 2 objects have the proj_data_info, segment_num etc.
+  /*! If they do \c not have the same characteristics, the string \a explanation
+      explains why.
+  */
+  bool
+    has_same_characteristics(self_type const&,
+			     string& explanation) const;
+
+  //! Checks if the 2 objects have the proj_data_info, segment_num etc.
+  /*! Use this version if you do not need to know why they do not match.
+   */
+  bool
+    has_same_characteristics(self_type const&) const;
+
+  //! check equality (data has to be identical)
+  /*! Uses has_same_characteristics() and Array::operator==.
+      \warning This function uses \c ==, which might not be what you 
+      need to check when \c elemT has data with float or double numbers.
+  */
+  bool operator ==(const self_type&) const; 
+  
+  //! negation of operator==
+  bool operator !=(const self_type&) const; 
+  //@}
   
 private:
   

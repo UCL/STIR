@@ -1,11 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2.0 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup utilities
  
-  \brief  This programme performs operations on image data
+  \brief  This program performs operations on image data
 
   \author Matthew Jacobson
   \author (with help from Kris Thielemans)
@@ -14,18 +31,13 @@
   $Date$
   $Revision$
 
-  \warning It only supports VoxelsOnCartesianGrid type of images.
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
+  \warning It only supports stir::VoxelsOnCartesianGrid type of images.
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/display.h"
 #include "stir/utilities.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
 #include "stir/ArrayFunction.h"
@@ -244,8 +256,8 @@ int main(int argc, char *argv[])
             {
                 char outfile[max_filename_length];
                 ask_filename_with_extension(outfile, "Output filename (without extension) ", "");
-		DefaultOutputFileFormat output_format;
-		output_format.write_to_file(outfile, main_buffer);
+		OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+		  write_to_file(outfile, main_buffer);
                 break;
             }  
 
@@ -475,19 +487,10 @@ void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math)
 
             case 6: // image division
             { 
-//TODO modify divide_and_truncate so that count argument is not required
-                int count; 
-
-                const int xe=math_buffer.get_max_x();
-                const int xs=math_buffer.get_min_x();
-                const int xm=(xs+xe)/2;
-
                 VoxelsOnCartesianGrid<float> aux_image= 
                     ask_interfile_image("What image to divide?");
 
-                const int rim_trunc=ask_num("By how many voxels to trim the FOV? ",0,(int)(xe-xm),2);
-
-                divide_and_truncate(math_buffer, aux_image, rim_trunc, count);
+                divide_array(math_buffer, aux_image);
                 break;
             }
 
@@ -557,10 +560,10 @@ void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math)
 		  ask_num("New z size (pixels)", 1, 
 			  static_cast<int>(math_buffer.get_z_size()*zoom_z * 2), 
 			  static_cast<int>(math_buffer.get_z_size()*zoom_z));
-                zoom_image(math_buffer, 
-			   CartesianCoordinate3D<float>(zoom_z, zoom_y, zoom_x),
-                           CartesianCoordinate3D<float>(offset_z, offset_y, offset_x),
-                           CartesianCoordinate3D<int>(new_size_z, new_size_y, new_size_x));
+                zoom_image_in_place(math_buffer, 
+				    CartesianCoordinate3D<float>(zoom_z, zoom_y, zoom_x),
+				    CartesianCoordinate3D<float>(offset_z, offset_y, offset_x),
+				    CartesianCoordinate3D<int>(new_size_z, new_size_y, new_size_x));
                 break;
 	      }
 

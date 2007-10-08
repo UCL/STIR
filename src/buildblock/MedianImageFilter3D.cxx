@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
@@ -72,7 +72,7 @@ template <typename elemT>
 void
 MedianImageFilter3D<elemT>::set_defaults()
 {
-  ImageProcessor<3, elemT>::set_defaults();
+  base_type::set_defaults();
 
   mask_radius_x = 0;
   mask_radius_y = 0;
@@ -83,7 +83,7 @@ template <typename elemT>
 void 
 MedianImageFilter3D<elemT>::initialise_keymap()
 {
-  ImageProcessor<3, elemT>::initialise_keymap();
+  base_type::initialise_keymap();
   this->parser.add_start_key("Median Filter Parameters");
   this->parser.add_key("mask radius x", &mask_radius_x);
   this->parser.add_key("mask radius y", &mask_radius_y);

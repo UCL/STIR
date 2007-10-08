@@ -35,7 +35,7 @@ void
 SeparableConvolutionImageFilter<elemT>::
 initialise_keymap()
 {
-  ImageProcessor<3, elemT>::initialise_keymap();
+  base_type::initialise_keymap();
 
   this->parser.add_start_key("Separable Convolution Filter Parameters");
   this->parser.add_key("x-dir filter coefficients", &(*(filter_coefficients_for_parsing.begin()+2)));
@@ -50,7 +50,7 @@ bool
 SeparableConvolutionImageFilter<elemT>::
 post_processing()
 {
-  if (ImageProcessor<3, elemT>::post_processing() != false)
+  if (base_type::post_processing() != false)
     return true;
 
   // copy filter_coefficients_for_parsing to filter_coefficients 
@@ -209,7 +209,7 @@ void
 SeparableConvolutionImageFilter<elemT>::
 set_defaults()
 {
-  ImageProcessor<3, elemT>::set_defaults();
+  base_type::set_defaults();
   filter_coefficients = 
       VectorWithOffset< VectorWithOffset<elemT> >(3);    
 }

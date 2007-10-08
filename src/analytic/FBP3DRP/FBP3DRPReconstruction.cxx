@@ -365,13 +365,9 @@ FBP3DRPReconstruction::FBP3DRPReconstruction()
   set_defaults();
 }
 
-
-Succeeded FBP3DRPReconstruction::reconstruct()
-{
-  return base_type::reconstruct();
-}
-
-Succeeded FBP3DRPReconstruction::reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
+Succeeded 
+FBP3DRPReconstruction::
+actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_ptr)
 {
   VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<VoxelsOnCartesianGrid<float> &>(*target_image_ptr);
@@ -725,6 +721,13 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
       }
 #endif 
   }
+  // Normalise the image
+  if (dynamic_cast<BackProjectorByBinUsingInterpolation const *>(back_projector_sptr.get()) == 0)
+    {
+      // TODO remove magic, is a scale factor in the interpolating backprojector (for which we compensate in the Colsher filter)
+      const float magic_number=2*input_proj_data_info_cyl().get_ring_radius()*input_proj_data_info_cyl().get_num_views()/input_proj_data_info_cyl().get_ring_spacing();
+      image /= magic_number;
+    }
 
   do_byview_finalise(image);
         

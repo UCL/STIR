@@ -32,6 +32,10 @@
    catered for by explicit instantiations. If you need it for any other
    types, you'd have to add them by hand.
  */
+#include "stir/BasicCoordinate.h"
+#include "stir/array_index_functions.h"
+#include "stir/modulo.h"
+
 #include <cmath>
 #include <complex>
 # ifdef BOOST_NO_STDC_NAMESPACE
@@ -135,33 +139,17 @@ in_place_abs(Array<num_dimensions, elemT>& v)
 }
 
 
-// this generic function does not seem to work of f is an overloaded function
-#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-template <class elemT, class FUNCTION>
-inline Array<1,elemT>& 
-in_place_apply_function(Array<1,elemT>& v, FUNCTION f)  
-{	
-  for(int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    v[i] = f(v[i]); 
-  return v; 
-}
-#else
-inline Array<1,float>& 
-in_place_apply_function(Array<1,float>& v, float (*f)(float))  
-{	
-  for(int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    v[i] = f(v[i]); 
-  return v; 
-}
-#endif
-
-
-template <int num_dimensions, class elemT, class FUNCTION>
-inline Array<num_dimensions, elemT>& 
-in_place_apply_function(Array<num_dimensions, elemT>& v, FUNCTION f)  
-{	
-  for(int i=v.get_min_index(); i<=v.get_max_index(); i++)
-    in_place_apply_function(v[i], f); 
+template <class T, class FUNCTION>
+inline T& 
+in_place_apply_function(T& v, FUNCTION f)  
+{      
+  typename T::full_iterator iter = v.begin_all();
+  const typename T::full_iterator end_iter = v.end_all();
+  while (iter != end_iter)
+    {
+      *iter = f(*iter);
+       ++iter;
+    }
   return v; 
 }
 
@@ -405,6 +393,53 @@ apply_array_functions_on_each_index(Array<1, elemT>& out_array,
 #undef FunctionObjectPtrIter
 #endif
 
+
+
+/******************* functions that copy arrays using transformed indices *****/
+
+template <int num_dimensions, typename elemT> 
+inline void 
+transform_array_to_periodic_indices(Array<num_dimensions, elemT>& out_array, 
+				    const Array<num_dimensions, elemT>& in_array)
+{
+  assert(norm(get_min_indices(out_array))<.01);// check out_array is 0-based
+
+  BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+
+  assert(out_array.get_regular_range(min_indices, max_indices));
+  out_array.get_regular_range(min_indices, max_indices);
+  const BasicCoordinate<num_dimensions, int> out_sizes = max_indices - min_indices +1;
+  {
+    BasicCoordinate<num_dimensions, int> index = get_min_indices(in_array);
+    do
+      {
+	out_array[modulo(index, out_sizes)] = in_array[index];
+      }
+    while(next(index, in_array));
+  }
+}
+
+
+template <int num_dimensions, typename elemT> 
+inline void 
+transform_array_from_periodic_indices(Array<num_dimensions, elemT>& out_array, 
+				      const Array<num_dimensions, elemT>& in_array)
+{
+  assert(norm(get_min_indices(in_array))<.01);// check in_array is 0-based
+
+  BasicCoordinate<num_dimensions, int> min_indices, max_indices;
+
+  assert(in_array.get_regular_range(min_indices, max_indices));
+  in_array.get_regular_range(min_indices, max_indices);
+  const BasicCoordinate<num_dimensions, int> in_sizes = max_indices - min_indices +1;
+
+  BasicCoordinate<num_dimensions, int> index = get_min_indices(out_array);
+  do
+    {
+      out_array[index] = in_array[modulo(index, in_sizes)];
+    }
+  while(next(index, out_array));
+}
 
 
 END_NAMESPACE_STIR

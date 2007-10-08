@@ -1,12 +1,28 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$,  Hammersmith Imanet Ltd 
+    This file is part of STIR. 
+ 
+    This file is free software; you can redistribute it and/or modify 
+    it under the terms of the GNU Lesser General Public License as published by 
+    the Free Software Foundation; either version 2.1 of the License, or 
+    (at your option) any later version. 
+ 
+    This file is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+    GNU Lesser General Public License for more details. 
+ 
+    See STIR/LICENSE.txt for details
+*/
 /*!
-
   \file
   \ingroup test
   
-  \brief Test programme for VoxelsOnCartesianGrid and image hierarchy
+  \brief Test program for stir::VoxelsOnCartesianGrid and image hierarchy
     
    \author Sanida Mustafovic
    \author Kris Thielemans
@@ -14,11 +30,6 @@
       
    $Date$        
    $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -93,7 +104,25 @@ VoxelsOnCartesianGridTests::run_tests()
     check( ob3.get_index_range() == range, "test on range");
     check_if_equal( ob3.get_grid_spacing(),grid_spacing, "test on grid_spacing");
     check_if_equal( ob3.get_origin(), origin, "test on origin");
-    
+
+    const BasicCoordinate<3,int> indices = make_coordinate(1,2,3);
+    const CartesianCoordinate3D<float> coord =
+      ob3.get_physical_coordinates_for_indices(indices);
+    const CartesianCoordinate3D<float> rel_coord =
+      ob3.get_relative_coordinates_for_indices(indices);
+
+    check_if_equal(coord, rel_coord + origin, 
+		   "test on get_physical_coordinates_for_indices");
+    check_if_equal(rel_coord, grid_spacing*BasicCoordinate<3,float>(indices), 
+		   "test on get_relative_coordinates_for_indices");
+    check_if_equal(indices, ob3.get_indices_closest_to_relative_coordinates(rel_coord),
+		   "test on get_indices_closest_to_relative_coordinates");
+    check_if_equal(indices, ob3.get_indices_closest_to_physical_coordinates(coord),
+		   "test on get_indices_closest_to_relative_coordinates");
+    check_if_equal(indices,ob3.get_indices_closest_to_relative_coordinates(rel_coord + grid_spacing/3),
+		   "test on get_indices_closest_to_relative_coordinates (not on grid point)");
+
+
   }
   
   shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
@@ -153,6 +182,10 @@ VoxelsOnCartesianGridTests::run_tests()
 
     VoxelsOnCartesianGrid<float>
       ob5(*proj_data_info_ptr,zoom,origin,CartesianCoordinate3D<int>(z_size,xy_size,xy_size));
+    // put in some data for further testing
+    ob5.fill(1.F);
+    ob5[1][1][1]=5.F;
+
     IndexRange<3> obtained_range = ob5.get_index_range();
     CartesianCoordinate3D<int> low_bound, high_bound;
     check(obtained_range.get_regular_range(low_bound, high_bound), "test regular range");
@@ -179,19 +212,44 @@ VoxelsOnCartesianGridTests::run_tests()
     }
     
     {
-      cerr << "Tests get_empty_discretised_density()\n";
+      cerr << "Tests get_empty_copy()\n";
       
-      shared_ptr<DiscretisedDensity<3,float> > emp = ob5.get_empty_discretised_density(); 
+      shared_ptr<DiscretisedDensity<3,float> > emp = ob5.get_empty_copy(); 
       
       VoxelsOnCartesianGrid<float>* emp1 =
         dynamic_cast<VoxelsOnCartesianGrid<float>* >(emp.get());
-      check(emp1 != 0, "test on pointer conversion from get_empty_discretised_density");
+      check(emp1 != 0, "test on pointer conversion from get_empty_copy");
       
       IndexRange<3> obtained_range3 = emp1->get_index_range();
       check_if_equal( emp->get_origin(), ob5.get_origin(), "test on origin");  
       check_if_equal( emp1->get_grid_spacing(), ob5.get_grid_spacing(),"test on grid_spacing");
       check(emp->get_index_range() == ob5.get_index_range(),"test on index range");
     }
+    {
+      cerr << "Tests has_same_characteristics()\n";
+      shared_ptr<DiscretisedDensity<3,float> > emp = ob5.get_empty_copy(); 
+      check(ob5.has_same_characteristics(*emp), "test on has_same_characteristics after get_empty_copy");
+      check(ob5 != *emp, "test on operator!= after get_empty_copy");
+      *emp += ob5;
+      check(ob5 == *emp, "test on operator== after get_empty_copy and operator+=");
+      emp->set_origin(ob5.get_origin()+1.F);
+      check(ob5 != *emp, "test on operator!= after shifting origin");
+      emp->set_origin(ob5.get_origin());
+      check(ob5 == *emp, "test on operator== after shifting origin back to original");
+      dynamic_cast<VoxelsOnCartesianGrid<float>& >(*emp).
+	set_grid_spacing(ob5.get_grid_spacing()+.3F);
+      check(ob5 != *emp, "test on operator!= after changing voxel size");
+      dynamic_cast<VoxelsOnCartesianGrid<float>& >(*emp).
+	set_grid_spacing(ob5.get_grid_spacing());
+      check(ob5 == *emp, "test on operator== after changing voxel size back to original");
+      {
+	IndexRange<3> range = emp->get_index_range();
+	range.resize(0,0);
+	emp->resize(range);
+	check(!ob5.has_same_characteristics(*emp), "test on has_same_characteristics after resize");
+      }
+    }
+
   }
 }
 

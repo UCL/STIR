@@ -33,11 +33,13 @@
   $Date$
   $Revision$
 */
+#include "stir/DiscretisedDensity.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.h"
 
 #include "stir/recon_buildblock/FilterRootPrior.h"
+#include "stir/DataProcessor.h"
 #include "stir/recon_buildblock/QuadraticPrior.h"
-
-#include "stir/ImageProcessor.h"
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
@@ -54,15 +56,18 @@
 #include "stir/recon_buildblock/ChainedBinNormalisation.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
 
 START_NAMESPACE_STIR
 
-static FilterRootPrior<float>::RegisterIt dummy4;
-static QuadraticPrior<float>::RegisterIt dummy5;
+static PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3,float> >::RegisterIt dummy1;
+static PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<DiscretisedDensity<3,float> >::RegisterIt dummy2;
 
+static FilterRootPrior<DiscretisedDensity<3,float> >::RegisterIt dummy4;
+static QuadraticPrior<float>::RegisterIt dummy5;
 
 static ProjMatrixByBinUsingRayTracing::RegisterIt dummy11;
 

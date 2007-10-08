@@ -1,12 +1,29 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup projdata
 
-  \brief Non-inline implementations of ProjDataInfoCylindrical
+  \brief Non-inline implementations of stir::ProjDataInfoCylindrical
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -14,11 +31,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 #include "stir/ProjDataInfoCylindrical.h"
@@ -267,6 +279,25 @@ initialise_ring_diff_arrays() const
     allocate_segment_axial_pos_to_ring_pair();
 
   ring_diff_arrays_computed = true;
+}
+
+/*! Default implementation checks common variables. Needs to be overloaded. 
+ */
+bool
+ProjDataInfoCylindrical::
+blindly_equals(const root_type * const that) const
+{ 
+  if (!base_type::blindly_equals(that))
+    return false;
+
+  const self_type& proj_data_info = static_cast<const self_type&>(*that);
+  return
+    this->azimuthal_angle_sampling == proj_data_info.azimuthal_angle_sampling &&
+    this->ring_radius == proj_data_info.ring_radius &&
+    this->sampling_corresponds_to_physical_rings == proj_data_info.sampling_corresponds_to_physical_rings &&
+    this->ring_spacing == proj_data_info.ring_spacing &&
+    this->min_ring_diff == proj_data_info.min_ring_diff &&
+    this->max_ring_diff == proj_data_info.max_ring_diff;
 }
 
 void

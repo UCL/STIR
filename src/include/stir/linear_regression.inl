@@ -2,13 +2,13 @@
 // $Id$
 //
 /*!
-
   \file
   \ingroup buildblock
 
   \brief Implementation of inline functions for linear_regression()
 
   \author Kris Thielemans
+  \author Charalampos Tsoumpas 
   \author PARAPET project
 
   $Date$
@@ -16,10 +16,19 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    This software is distributed under the terms 
-    of the GNU Lesser General  Public Licence (LGPL)
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -182,6 +191,37 @@ linear_regression(Value& constant, Value& scale,
 		    coordinates.begin(),
 		    weights.begin(),
 		    use_estimated_variance);
+}
+
+template <class ValueIter, class DataIter, class CoordinatesIter, class WeightsIter>
+inline void 
+linear_regression(ValueIter value_begin,
+		  DataIter data_begin, DataIter data_end,
+		  CoordinatesIter coords_begin, 
+		  WeightsIter weights_begin,
+		  const bool use_estimated_variance)
+{
+  double Sy = 0;
+  double Sx = 0;  
+  double S = 0;
+  double Syy = 0;
+  double Stt = 0;
+  double Sty = 0;
+
+  detail::linear_regression_compute_S(S,Sx,Sy, Syy, Stt, Sty,
+				      data_begin,  data_end,
+				      coords_begin, 
+				      weights_begin);
+
+  ValueIter value_iter=value_begin;
+
+  detail::linear_regression_compute_fit_from_S(*value_iter, *(value_iter+1),
+					       *(value_iter+2),*(value_iter+3),
+					       *(value_iter+4),*(value_iter+5),
+					       S, Sx, Sy, Syy, Stt, Sty,
+					       data_end - data_begin,
+					       use_estimated_variance);
+  *(value_iter+6)=  *(value_iter)*Sx/Sy;				      
 }
 
 END_NAMESPACE_STIR

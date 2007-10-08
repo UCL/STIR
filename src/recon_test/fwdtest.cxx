@@ -45,7 +45,7 @@
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/display.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
@@ -193,7 +193,7 @@ main(int argc, char *argv[])
   // use shared_ptr such that it cleans up automatically
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
 
-  if (argc<=5)
+  if (argc>=5)
     {
       KeyParser parser;
       parser.add_start_key("Forward Projector parameters");
@@ -222,8 +222,8 @@ main(int argc, char *argv[])
   if (save)
   {
     cerr << "Saving start image to 'test_image'" << endl;
-    DefaultOutputFileFormat output_format;
-    output_format.write_to_file("test_image", *image_sptr);
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+      write_to_file("test_image", *image_sptr);
   }
     
   list<ViewSegmentNumbers> already_processed;

@@ -21,7 +21,7 @@
   \file
   \ingroup projection
 
-  \brief Declares class ProjectorByBinPair
+  \brief Declares class stir::ProjectorByBinPair
 
   \author Kris Thielemans
 
@@ -34,6 +34,7 @@
 #include "stir/RegisteredObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/ParsingObject.h"
 #include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
@@ -52,7 +53,8 @@ class ProjDataInfo;
   file.
 */
 class ProjectorByBinPair : 
-  public RegisteredObject<ProjectorByBinPair> 
+public RegisteredObject<ProjectorByBinPair> ,
+public ParsingObject
 { 
 public:
 
@@ -68,9 +70,10 @@ public:
   Derived classes can assume that the projectors  will be called
   with input corresponding to the arguments of the last call to set_up(). 
   */
-  virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+  virtual Succeeded
+    set_up(		 
+	   const shared_ptr<ProjDataInfo>&,
+	   const shared_ptr<DiscretisedDensity<3,float> >& // TODO should be Info only
     );
 
 
@@ -98,8 +101,8 @@ public:
 
 protected:
 
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr;
-  shared_ptr<BackProjectorByBin> back_projector_ptr;
+  shared_ptr<ForwardProjectorByBin> forward_projector_sptr;
+  shared_ptr<BackProjectorByBin> back_projector_sptr;
 
 };
 

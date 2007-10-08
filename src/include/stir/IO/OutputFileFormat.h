@@ -44,7 +44,6 @@ using std::string;
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Succeeded;
 
 
@@ -69,11 +68,17 @@ class Succeeded;
   capabilities. For instance, supports_multi_time_frames(),
   supports_different_xy_pixel_size() etc.
  */
+template <typename DataT>
 class OutputFileFormat : 
-  public RegisteredObject<OutputFileFormat >,
+  public RegisteredObject<OutputFileFormat<DataT> >,
   public ParsingObject
 {
 public:
+  //! A function to return a default output file format
+  static 
+    shared_ptr<OutputFileFormat<DataT> >
+    default_sptr();
+
   OutputFileFormat(const NumericType& = NumericType::FLOAT, 
                    const ByteOrder& = ByteOrder::native);
 
@@ -84,7 +89,7 @@ public:
 	   If there is an extension, the derived class should try to honour it.
 	   On return, the parameter will be overwritten with the actual filename
 	   used, such that the file can be read back using this string.
-    \param density the image to write to file.
+    \param data the data to write to file.
     \return Succeeded::yes if the file was successfully written.
 
     \warning In the case of file formats that use a separate header file, the \a
@@ -93,15 +98,10 @@ public:
        will/should be returned. This is all a bit messy, so it's 
        <strong>recommended</strong> to 
        <strong>not</strong> use an extension for the output filename.
-
-  \todo 
-      Unfortunately, C++ does not allow virtual member templates (and this function calls
-      actual_write_to_file()), so we'd need
-      other versions of this for other data types or dimensions.
   */
   Succeeded  
     write_to_file(string& filename, 
-                  const DiscretisedDensity<3,float>& density) const;
+                  const DataT& data) const;
 		  
   //! write a single image to file
   /*! See the version with non-const \a filename. This version does not return the 
@@ -109,7 +109,7 @@ public:
   */
   Succeeded  
     write_to_file(const string& filename, 
-                  const DiscretisedDensity<3,float>& density) const;
+                  const DataT& density) const;
 
 
   //! get type used for outputting numbers 
@@ -179,7 +179,7 @@ protected:
   */
   virtual Succeeded  
     actual_write_to_file(string& filename, 
-                  const DiscretisedDensity<3,float>& density) const = 0;
+                  const DataT& density) const = 0;
 
   // parsing stuff
 
@@ -197,6 +197,7 @@ protected:
   virtual void set_key_values();
 
 private:
+  static shared_ptr<OutputFileFormat<DataT> > _default_sptr;
   // Lists of possible values for some keywords
   static ASCIIlist_type number_format_values;
   static ASCIIlist_type byte_order_values;

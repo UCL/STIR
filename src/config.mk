@@ -6,7 +6,7 @@
 # This file is part of STIR, and is distributed under the 
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 
-#******* type of build, if BUILD is not 'debug', we make the optimised version
+#******* type of build, if BUILD is not set, we make the optimised version
 BUILD=opt
 
 #******** location of files
@@ -22,7 +22,11 @@ ifndef DEST
 ifeq ($(BUILD),debug)
 DEST=debug/
 else # not debug
+ifeq ($(BUILD),nonopt)
+DEST=nonopt/
+else
 DEST=opt/
+endif # nonopt
 endif # debug/ ?
 endif # DEST not defined
 
@@ -86,7 +90,17 @@ EXTRA_LINKFLAGS=
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
 LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
+#******** variables used only for GE RDF IO
+# local/config.mk can override these defaults
+RDF_BASE_DIR=$(WORKSPACE)/../rdf
+RDF_LIB_DIR=${RDF_BASE_DIR}/src
+RDF_INCLUDE_DIR=${RDF_BASE_DIR}/include
 
+#******** variables used only for GE IE IO
+# local/config.mk can override these defaults
+IE_BASE_DIR=$(WORKSPACE)/../IE
+IE_LIB_DIR=${IE_BASE_DIR}
+IE_INCLUDE_DIR=${IE_BASE_DIR}
 
 #******* compiler and linker options
 
@@ -102,15 +116,22 @@ OPTIM_CFLAGS=-O3 -DNDEBUG
 endif
 endif
 
+NONOPTIM_CFLAGS=-g
 DEBUG_CFLAGS=-D_DEBUG -g
 
 OPTIM_LINKFLAGS=
+NONOPTIM_LINKFLAGS=-g
 DEBUG_LINKFLAGS=-g
 
 ifeq ($(BUILD),debug)
 CFLAGS = $(DEBUG_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
-else # release version
+else 
+ifeq ($(BUILD),nonopt)
+CFLAGS = $(NONOPTIM_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+else
+# release version
 CFLAGS = $(OPTIM_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+endif
 endif 
 
 
@@ -127,9 +148,14 @@ endif
 
 ifeq ($(BUILD),debug)
 LINKFLAGS+= $(DEBUG_LINKFLAGS)
-else # release version
+else 
+ifeq ($(BUILD),nonopt)
+LINKFLAGS+= $(NONOPTIM_LINKFLAGS) 
+else 
+# release version
 LINKFLAGS+= $(OPTIM_LINKFLAGS) 
 endif 
+endif
 
 
 #******** system libraries
@@ -250,6 +276,7 @@ endif
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
 ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   ifneq ($(HAVE_LLN_MATRIX),0)
+  # $(warning found LLN library)
 
   # yes, the LLN files seem to be there, so we can compile 
   HAVE_LLN_MATRIX=1
@@ -258,6 +285,30 @@ ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   ifeq ($(SYSTEM),SUN)
      SYS_LIBS += -lnsl -lsocket
   endif
+  endif
+endif
+
+#******* GE RDF library
+# check if we find it by looking for rdfUtils.h
+ifeq ($(wildcard $(RDF_INCLUDE_DIR)/rdfUtils.h),$(RDF_INCLUDE_DIR)/rdfUtils.h)
+  ifneq ($(HAVE_RDF),0)
+     # $(warning found RDF library)
+     HAVE_RDF=1
+     CFLAGS+=-I ${RDF_INCLUDE_DIR} -DHAVE_RDF
+     # note: this won't work for MS VC
+     EXTRA_LIBS += ${RDF_LIB_DIR}/$(LIB_PREFIX)RDFIO$(LIB_SUFFIX)
+  endif
+endif
+
+#******* GE IE library
+# check if we find it by looking for IEUtils.h
+ifeq ($(wildcard $(IE_INCLUDE_DIR)/IEUtils.h),$(IE_INCLUDE_DIR)/IEUtils.h)
+  ifneq ($(HAVE_IE),0)
+     # $(warning found IE library)
+     HAVE_IE=1
+     CFLAGS+=-I ${IE_INCLUDE_DIR} -DHAVE_IE
+     # note: this won't work for MS VC
+     EXTRA_LIBS += ${IE_LIB_DIR}/$(LIB_PREFIX)IEIO$(LIB_SUFFIX)
   endif
 endif
 

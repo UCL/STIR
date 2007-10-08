@@ -7,9 +7,13 @@ ROIValues Parameters :=
    radius-x (in mm):=90
    radius-y (in mm):=90
    length-z (in mm):=1000
-   origin-x (in mm):=2.48019
-   origin-y (in mm):=-41.2201
-   origin-z (in mm):=152.775
+   ; next keyword can be used for non-default axes
+   ; values below are give a rotation around y for 90 degrees (swapping x and z)
+   ; Warning: this uses the STIR convention {z,y,x}
+   ; direction vectors (in mm):= { {0,0,1}, {0,1,0}, {-1,0,0}}
+   
+   ; origin w.r.t. to standard STIR coordinate system (middle of first plane)
+   origin (in mm):={152.775,-41.2201, 2.48019}
    END:=
 
   ; if more than 1 ROI is desired, you can uncomment this                              

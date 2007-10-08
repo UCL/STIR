@@ -46,6 +46,10 @@ using std::endl;
 #endif
 
 START_NAMESPACE_STIR
+const double
+InterfileHeader::
+double_value_not_set = -12345.60789;
+
 InterfileHeader::InterfileHeader()
      : KeyParser()
 {
@@ -167,6 +171,12 @@ InterfileHeader::InterfileHeader()
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("IMAGE DATA DESCRIPTION", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
+
+  add_key("image relative start time (sec)",
+	  KeyArgument::DOUBLE, &image_relative_start_times);
+  add_key("image duration (sec)",
+	  KeyArgument::DOUBLE, &image_durations);
+    //image start time[<f>] := <TimeFormat>
 
   //TODO
   add_key("maximum pixel count", 
@@ -293,7 +303,11 @@ bool InterfileHeader::post_processing()
                lln_quantification_units);
     }      
   } // lln_quantification_units
-  
+
+
+  time_frame_definitions = 
+    TimeFrameDefinitions(image_relative_start_times, image_durations);
+
   return false;
 
 }
@@ -315,10 +329,28 @@ void InterfileHeader::read_frames_info()
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
   data_offset.resize(num_time_frames, 0UL);
-  
+  image_relative_start_times.resize(num_time_frames, 0.);
+  image_durations.resize(num_time_frames, 0.);
 }
 
 /***********************************************************************/
+InterfileImageHeader::InterfileImageHeader()
+  : InterfileHeader()
+{
+  add_key("first pixel offset (mm)",
+	   KeyArgument::DOUBLE, &first_pixel_offsets);
+
+}
+
+void 
+InterfileImageHeader::
+read_matrix_info()
+{
+  base_type::read_matrix_info();
+  this->first_pixel_offsets.resize(num_dimensions);
+  std::fill(this->first_pixel_offsets.begin(), this->first_pixel_offsets.end(),
+	    base_type::double_value_not_set);
+}
 
 // MJ 17/05/2000 made bool
 bool InterfileImageHeader::post_processing()
@@ -347,7 +379,7 @@ bool InterfileImageHeader::post_processing()
       warning("Interfile: only supporting x,y,z order of coordinates now.\n");
       return true; 
     }
-
+  std::vector<double>	first_pixel_offsets;
 
   return false;
 }

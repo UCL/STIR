@@ -128,7 +128,7 @@ void
 SeparableCartesianMetzImageFilter<elemT>::
 set_defaults()
 {
-  ImageProcessor<3, elemT>::set_defaults();
+  base_type::set_defaults();
   fwhms.fill(0);
   metz_powers.fill(0);  
   max_kernel_sizes.fill(-1);
@@ -139,9 +139,8 @@ void
 SeparableCartesianMetzImageFilter<elemT>::
 initialise_keymap()
 {
-  ImageProcessor<3, elemT>::initialise_keymap();
+  base_type::initialise_keymap();
   this->parser.add_start_key("Separable Cartesian Metz Filter Parameters");
-
   this->parser.add_key("x-dir filter FWHM (in mm)", &fwhms[3]);
   this->parser.add_key("y-dir filter FWHM (in mm)", &fwhms[2]);
   this->parser.add_key("z-dir filter FWHM (in mm)", &fwhms[1]);

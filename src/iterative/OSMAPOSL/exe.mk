@@ -4,7 +4,7 @@
 dir := iterative/OSMAPOSL
 
 $(dir)_SOURCES :=  \
-         OSMAPOSL.cxx 
+	OSMAPOSL.cxx
 
 include $(WORKSPACE)/exe.mk
 

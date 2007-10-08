@@ -11,6 +11,7 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	BackProjectorByBinUsingInterpolation_linear.cxx \
 	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
 	Reconstruction.cxx \
+	AnalyticReconstruction.cxx \
 	IterativeReconstruction.cxx \
 	distributable.cxx \
 	DataSymmetriesForBins.cxx \
@@ -29,15 +30,21 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	ProjectorByBinPair.cxx \
 	ProjectorByBinPairUsingProjMatrixByBin.cxx \
 	ProjectorByBinPairUsingSeparateProjectors.cxx \
-    BinNormalisation.cxx \
+	BinNormalisation.cxx \
 	ChainedBinNormalisation.cxx \
 	BinNormalisationFromProjData.cxx \
 	TrivialBinNormalisation.cxx \
-    BinNormalisationFromAttenuationImage.cxx \
+	BinNormalisationFromAttenuationImage.cxx \
+	GeneralisedPrior.cxx \
+	ProjDataRebinning.cxx \
 	GeneralisedPrior.cxx \
 	QuadraticPrior.cxx \
 	FilterRootPrior.cxx \
-	ProjDataRebinning.cxx
+	GeneralisedObjectiveFunction.cxx \
+	PoissonLogLikelihoodWithLinearModelForMean.cxx \
+	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx \
+	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx \
+	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
 $(dir)_LIB_SOURCES += \

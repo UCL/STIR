@@ -1,10 +1,26 @@
 // $Id$
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup test
  
-  \brief tests for the Array class
+  \brief tests for the stir::Array class
 
   \author Kris Thielemans
   \author PARAPET project
@@ -14,11 +30,7 @@
   $Revision$
 
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+
 #ifndef NDEBUG
 // set to high level of debugging
 #ifdef _DEBUG
@@ -39,6 +51,7 @@
 #include "stir/RunTests.h"
 
 #include "stir/ArrayFunction.h"
+#include "stir/array_index_functions.h"
 #include <functional>
 
 // for open_read/write_binary
@@ -67,6 +80,27 @@ START_NAMESPACE_STIR
 class ArrayTests : public RunTests
 {
 private:
+  // this function tests the next() function and compare it to using full_iterators
+  // sadly needs to be declared in the class for VC 6.0
+  template <int num_dimensions, class elemT>
+  void
+  run_tests_on_next(const Array<num_dimensions, elemT>& test)
+  {
+    // exit if empty array (as do..while() loop would fail)
+    if (test.size() == 0)
+      return;
+
+    BasicCoordinate<num_dimensions,elemT> index = get_min_indices(test);
+    typename Array<num_dimensions, elemT>::const_full_iterator iter = test.begin_all();
+    do
+      {
+	check(*iter == test[index], "test on next(): element out of sequence?");
+	++iter;
+      }
+    while (next(index, test) && (iter != test.end_all()));
+    check (iter == test.end_all(), "test on next() : did we cover all elements?");
+  }
+
   // functions that runs IO tests for an array of arbitrary dimension
   // sadly needs to be declared in the class for VC 6.0
   template <int num_dimensions>
@@ -224,7 +258,6 @@ private:
 public:
   void run_tests();
 };
-
 
 
 void
@@ -429,6 +462,34 @@ ArrayTests::run_tests()
 
       const Array<2,float> empty;
       check(empty.begin_all() == empty.end_all(), "test on 2D full iterator for empty range");
+    }
+    // tests for next()
+    {
+      const IndexRange<2> range(Coordinate2D<int>(-1,1),Coordinate2D<int>(1,2));
+      Array<2,int> test(range);
+      // fill array with numbers in sequence
+      {
+	Array<2,int>::full_iterator iter = test.begin_all();
+	for (int i=0; iter!= test.end_all(); ++iter, ++i)
+	  {
+	    *iter = i;
+	  }
+      }
+      std::cerr << "\tTest on next() with regular array\n";
+      this->run_tests_on_next(test);
+      // now do test with irregular array
+      test[0].resize(0,2);
+      test[0][2] = 10;
+      std::cerr << "\tTest on next() with irregular array, case 1\n";
+      this->run_tests_on_next(test);
+      test[1].resize(-2,2);
+      test[1][-2] = 20;
+      std::cerr << "\tTest on next() with irregular array, case 2\n";
+      this->run_tests_on_next(test);
+      test[-1].resize(-2,0);
+      test[-1][-2] = 30;
+      std::cerr << "\tTest on next() with irregular array, case 3\n";
+      this->run_tests_on_next(test);
     }
   }
 

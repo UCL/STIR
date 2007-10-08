@@ -9,7 +9,7 @@
     Some parts of this file originate in CTI code, distributed as
     part of the matrix library from Louvain-la-Neuve, and hence carries
     its restrictive license. Affected parts are the dead-time correction
-    in get_deadtime_efficiency and geo_Z_corr related code.
+    in get_dead_time_efficiency and geo_Z_corr related code.
 
     Most of this file is free software; you can redistribute that part and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -173,17 +173,27 @@ set_detection_axial_coords(const ProjDataInfoCylindricalNoArcCorr *proj_data_inf
 void 
 BinNormalisationFromECAT7::set_defaults()
 {
-  normalisation_ECAT7_filename = "";
+  this->normalisation_ECAT7_filename = "";
+  this->_use_detector_efficiencies = true;
+  this->_use_dead_time = true;
+  this->_use_geometric_factors = true;
+  this->_use_crystal_interference_factors = true;  
 }
 
 void 
 BinNormalisationFromECAT7::
 initialise_keymap()
 {
-  parser.add_start_key("Bin Normalisation From ECAT7");
-  parser.add_key("normalisation_ECAT7_filename", &normalisation_ECAT7_filename);
-  parser.add_parsing_key("singles rates", &singles_rates_ptr);
-  parser.add_stop_key("End Bin Normalisation From ECAT7");
+  this->parser.add_start_key("Bin Normalisation From ECAT7");
+  // todo remove obsolete keyword
+  this->parser.add_key("normalisation_ECAT7_filename", &this->normalisation_ECAT7_filename);
+  this->parser.add_key("normalisation_filename", &this->normalisation_ECAT7_filename);
+  this->parser.add_parsing_key("singles rates", &this->singles_rates_ptr);
+  this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
+  this->parser.add_key("use_dead_time", &this->_use_dead_time);
+  this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
+  this->parser.add_key("use_crystal_interference_factors", &this->_use_crystal_interference_factors);
+  this->parser.add_stop_key("End Bin Normalisation From ECAT7");
 }
 
 bool 
@@ -356,9 +366,9 @@ read_norm_data(const string& filename)
       *iter++ = *data_ptr++;
   }
   // TODO mvoe dead-time stuff to a separate function
-  /* Set up equation parameters for deadtime correction */
-  float *axial_t1 = nrm_subheader_ptr->ring_dtcor1 ;		/* 'Paralyzing deadtimes' for each axial Xstal */
-  float *axial_t2 = nrm_subheader_ptr->ring_dtcor2 ;		/* 'Non-paralyzing deadtimes' for each axial Xstal */
+  /* Set up equation parameters for dead_time correction */
+  float *axial_t1 = nrm_subheader_ptr->ring_dtcor1 ;		/* 'Paralyzing dead_times' for each axial Xstal */
+  float *axial_t2 = nrm_subheader_ptr->ring_dtcor2 ;		/* 'Non-paralyzing dead_times' for each axial Xstal */
   /* for 966
      24 entries for axial_t1 & axial_t2
      Each entry accounts for 2 crystal rings
@@ -375,8 +385,8 @@ read_norm_data(const string& filename)
          iter != axial_t2_array.end_all();)
       *iter++ = *axial_t2++;
 #if 0
-  // this is currently not used by CTI and hence not by get_deadtime_efficiency
-  float *trans_t1 = nrm_subheader_ptr->crystal_dtcor ;		/* 'Non-paralyzing deadtimes' for each transaxial Xstal in block */
+  // this is currently not used by CTI and hence not by get_dead_time_efficiency
+  float *trans_t1 = nrm_subheader_ptr->crystal_dtcor ;		/* 'Non-paralyzing dead_times' for each transaxial Xstal in block */
   trans_t1_array = Array<1,float>(0,num_transaxial_crystals_per_block-1);
   for (Array<1,float>::full_iterator iter = trans_t1_array.begin_all();
          iter != trans_t1_array.end_all();)
@@ -432,6 +442,34 @@ read_norm_data(const string& filename)
   display(efficiency_factors, "eff");
   display(crystal_interference_factors, "crystal_interference_factors");
 #endif
+}
+
+bool 
+BinNormalisationFromECAT7::
+use_detector_efficiencies() const
+{
+  return this->_use_detector_efficiencies;
+}
+
+bool 
+BinNormalisationFromECAT7::
+use_dead_time() const
+{
+  return this->_use_dead_time;
+}
+
+bool 
+BinNormalisationFromECAT7::
+use_geometric_factors() const
+{
+  return this->_use_geometric_factors;
+}
+
+bool 
+BinNormalisationFromECAT7::
+use_crystal_interference_factors() const
+{
+  return this->_use_crystal_interference_factors;
 }
 
 #if 1
@@ -536,104 +574,69 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
          const DetectionPosition<>& pos1 = detection_position_pair.pos1();
         const DetectionPosition<>& pos2 = detection_position_pair.pos2();
 
-        
-        lor_efficiency += 
-          efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] * 
-          efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()] * 
-          get_deadtime_efficiency(pos1, start_time, end_time) * 
-          get_deadtime_efficiency(pos2, start_time, end_time)
+	float lor_efficiency_this_pair = 1.F;
+	if (this->use_detector_efficiencies())
+	  {
+	    lor_efficiency_this_pair =
+	      efficiency_factors[pos1.axial_coord()][pos1.tangential_coord()] * 
+	      efficiency_factors[pos2.axial_coord()][pos2.tangential_coord()];
+	  }
+	if (this->use_dead_time())
+	  {
+	    lor_efficiency_this_pair *=
+	      get_dead_time_efficiency(pos1, start_time, end_time) * 
+	      get_dead_time_efficiency(pos2, start_time, end_time);
+	  }
+	if (this->use_geometric_factors())
+	  {
+	    lor_efficiency_this_pair *=
 #ifdef SAME_AS_PETER
-              ;
+              1.F;
 #else	    // this is 3dbkproj (at the moment)
-        * geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
+	    geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()];
 #endif
+	  }
+	lor_efficiency += lor_efficiency_this_pair;
       }
-      
-      
-      
-      view_efficiency += lor_efficiency * 
-        crystal_interference_factors[uncompressed_bin.tangential_pos_num()][uncompressed_bin.view_num()%num_transaxial_crystals_per_block] ;
-      
+
+      if (this->use_crystal_interference_factors())
+	{
+	  view_efficiency += lor_efficiency * 
+	    crystal_interference_factors[uncompressed_bin.tangential_pos_num()][uncompressed_bin.view_num()%num_transaxial_crystals_per_block] ;
+	}
+      else
+	{
+	  view_efficiency += lor_efficiency;
+	}
     }
     
-    /* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
-    // for oblique plaanes use the single radial profile from segment 0 
-    
-#ifdef SAME_AS_PETER
-
-    const int geo_plane_num = /* TODO septa_in ? (z=)bin.get_axial_pos_num() : */0;
-
-    total_efficiency += view_efficiency * 
-      geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
-      geo_Z_corr;
-
+    if (this->use_geometric_factors())
+      {
+	/* z==bin.get_axial_pos_num() only when min_axial_pos_num()==0*/
+	// for oblique plaanes use the single radial profile from segment 0 
+	
+#ifdef SAME_AS_PETER	
+	const int geo_plane_num = 0;
+	
+	total_efficiency += view_efficiency * 
+	  geometric_factors[geo_plane_num][uncompressed_bin.tangential_pos_num()]  * 
+	  geo_Z_corr;
 #else
-
-    total_efficiency += view_efficiency * geo_Z_corr;            
-
+	total_efficiency += view_efficiency * geo_Z_corr;
 #endif
-    
+      }
+    else
+      {
+	total_efficiency += view_efficiency;
+      }
   }
   return total_efficiency;
 }
 #endif
 
 
-void 
-BinNormalisationFromECAT7::apply(RelatedViewgrams<float>& viewgrams,
-                                 const double start_time, const double end_time) const 
-{
-
-  // Generate a single set of average singles values for the interval
-  // start_time to end_time.
-  
-  
-
-
-  for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
-  {
- //   if (iter->get_view_num()>8)
- //     continue;
-
-    Bin bin(iter->get_segment_num(),iter->get_view_num(), 0, 0);
-
-    for (bin.axial_pos_num() = iter->get_min_axial_pos_num(); 
-         bin.axial_pos_num() <= iter->get_max_axial_pos_num(); 
-         ++bin.axial_pos_num()) {
-
-      for (bin.tangential_pos_num() = iter->get_min_tangential_pos_num(); 
-           bin.tangential_pos_num() <= iter->get_max_tangential_pos_num(); 
-           ++bin.tangential_pos_num()) {
-
-        (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] /= 
-#ifndef STIR_NO_NAMESPACES
-          std::
-#endif
-          max(1.E-20F, get_bin_efficiency(bin, start_time, end_time));
-      }
-    }
-  }
-
-}
-
-void 
-BinNormalisationFromECAT7::
-undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
-{
-  for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
-
-  {
-    Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0);
-    for (bin.axial_pos_num()= iter->get_min_axial_pos_num(); bin.axial_pos_num()<=iter->get_max_axial_pos_num(); ++bin.axial_pos_num())
-      for (bin.tangential_pos_num()= iter->get_min_tangential_pos_num(); bin.tangential_pos_num()<=iter->get_max_tangential_pos_num(); ++bin.tangential_pos_num())
-         (*iter)[bin.axial_pos_num()][bin.tangential_pos_num()] *= get_bin_efficiency(bin,start_time, end_time);
-  }
-
-}
-
-
 float 
-BinNormalisationFromECAT7::get_deadtime_efficiency (const DetectionPosition<>& det_pos,
+BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& det_pos,
 						    const double start_time,
 						    const double end_time) const
 {

@@ -1,3 +1,4 @@
+
 //
 // $Id$
 //
@@ -61,12 +62,21 @@ class FrameSinglesRates
 {
 
  public:
+  typedef std::vector<float>::iterator iterator;
+  typedef std::vector<float>::const_iterator const_iterator;
 
-    /*
-     *! FrameSinglesRates constructor.
-     */
+    //! Constructor taking all arguments
+    /*! \warning only checks sizes with an \c assert.
+    */
     FrameSinglesRates(vector<float>& avg_singles_rates,
                       double start_time,
+                      double end_time,
+                      shared_ptr<Scanner> scanner);
+    //! Constructor without singles rates
+    /*! Initialises the size of the internal object that stores the singles rates
+        but does not initialise its values.
+    */
+    FrameSinglesRates(double start_time,
                       double end_time,
                       shared_ptr<Scanner> scanner);
 
@@ -82,6 +92,18 @@ class FrameSinglesRates
     // The singles rate returned is the rate for a whole singles unit.
     //
     float get_singles_rate(const DetectionPosition<>& det_pos) const;
+
+    const_iterator begin() const
+    { return this->_singles.begin(); }
+
+    iterator begin()
+    { return this->_singles.begin(); }
+
+    const_iterator end() const
+    { return this->_singles.end(); }
+
+    iterator end()
+    { return this->_singles.end(); }
 
     //! Get the start time of the frame whose rates are recorded.
     double get_start_time() const;
@@ -122,11 +144,28 @@ class SinglesRates : public RegisteredObject<SinglesRates>
 {
 public: 
 
-  virtual ~SinglesRates () {};
-  //! Virtual function that return singles rate given the detection positions and/or time or detection 
+  virtual ~SinglesRates () {}
+  //! Get the singles rate for a particular singles unit and a frame with the specified start and end times.   
+  /*! The behaviour of this function is specified by the derived classes.
+    \warning Currently might return -1 if the \a start_time, \a end_time
+    are invalid (e.g. out of the measured range).
+  */
+  virtual float
+    get_singles_rate(const int singles_bin_index, 
+		     const double start_time, 
+		     const double end_time) const = 0;
+  
+  //! Virtual function that returns the average singles rate given the detection positions and time-interval of detection 
+  /*! The behaviour of this function is specified by the derived classes.
+    \warning Currently might return -1 if the \a start_time, \a end_time
+    are invalid (e.g. out of the measured range).
+
+    Default implementation uses Scanner::get_singles_bin_index().
+  */
+
   virtual float get_singles_rate(const DetectionPosition<>& det_pos, 
 				 const double start_time,
-				 const double end_time) const =0;
+				 const double end_time) const;
   
   //! Get the scanner pointer
   inline const Scanner * get_scanner_ptr() const;

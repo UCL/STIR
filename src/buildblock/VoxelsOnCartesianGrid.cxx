@@ -228,13 +228,17 @@ DiscretisedDensity<3,elemT>*
 #else
 VoxelsOnCartesianGrid<elemT>*
 #endif
-VoxelsOnCartesianGrid<elemT>::get_empty_discretised_density() const
+VoxelsOnCartesianGrid<elemT>::get_empty_copy() const
 {
   return get_empty_voxels_on_cartesian_grid();
 }
 
 template<class elemT>
-DiscretisedDensity<3, elemT>* 
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
+DiscretisedDensity<3,elemT>*
+#else
+VoxelsOnCartesianGrid<elemT>*
+#endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
   return new VoxelsOnCartesianGrid(*this);
@@ -296,6 +300,37 @@ VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
   max_indices.z() = max_z;
   this->grow(IndexRange<3>(min_indices, max_indices));
 }
+
+template<class elemT>
+BasicCoordinate<3,int>
+VoxelsOnCartesianGrid<elemT>::
+get_lengths() const
+{
+  return make_coordinate(this->get_z_size(), this->get_y_size(), this->get_x_size());
+}
+
+template<class elemT>
+BasicCoordinate<3,int>
+VoxelsOnCartesianGrid<elemT>::
+get_min_indices() const
+{
+  CartesianCoordinate3D<int> min_indices;
+  CartesianCoordinate3D<int> max_indices;
+  this->get_regular_range(min_indices, max_indices);
+  return min_indices;
+}
+
+template<class elemT>
+BasicCoordinate<3,int>
+VoxelsOnCartesianGrid<elemT>::
+get_max_indices() const
+{
+  CartesianCoordinate3D<int> min_indices;
+  CartesianCoordinate3D<int> max_indices;
+  this->get_regular_range(min_indices, max_indices);
+  return max_indices;
+}
+#if 0
 
 /****************************
  static members
@@ -381,6 +416,7 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
   return input_image; 
 
 }
+#endif
 
 /**********************************************
  instantiations
@@ -388,3 +424,12 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
 template class VoxelsOnCartesianGrid<float>;
 
 END_NAMESPACE_STIR
+
+#ifdef STIR_DEVEL
+#include "local/stir/modelling/KineticParameters.h"
+namespace stir {
+  template class VoxelsOnCartesianGrid<KineticParameters<1,float> >; 
+  template class VoxelsOnCartesianGrid<KineticParameters<2,float> >; 
+  template class VoxelsOnCartesianGrid<KineticParameters<3,float> >; 
+}
+#endif

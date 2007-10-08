@@ -37,7 +37,7 @@
 #include <numeric>
 // for sqrt and acos
 #include <cmath>
-// for equal
+// for equal and fill
 #include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
@@ -114,8 +114,9 @@ BasicCoordinate<num_dimensions, coordT>::operator==(const BasicCoordinate<num_di
 }
 
 /*
-  (numerical) assignments
-*/ template <int num_dimensions, class coordT>
+  assignments and onstructors
+*/
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>&
 BasicCoordinate<num_dimensions, coordT>::operator=(const BasicCoordinate<num_dimensions, coordT>& c)
 {
@@ -125,8 +126,23 @@ BasicCoordinate<num_dimensions, coordT>::operator=(const BasicCoordinate<num_dim
 }
 
 template <int num_dimensions, class coordT>
+void
+BasicCoordinate<num_dimensions, coordT>::
+fill(const coordT& c)
+{
+  std::fill(this->begin(), this->end(), c);
+}
+
+template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>::BasicCoordinate()
 {}
+
+template <int num_dimensions, class coordT>
+BasicCoordinate<num_dimensions, coordT>::
+BasicCoordinate(const coordT& c)
+{
+  this->fill(c);
+}
 
 #if 0
 template <int num_dimensions, class coordT>
@@ -135,6 +151,28 @@ BasicCoordinate<num_dimensions, coordT>::BasicCoordinate(const BasicCoordinate<n
   operator=(c);
 }
 #endif
+
+template <int num_dimensions, class coordT>
+int
+BasicCoordinate<num_dimensions, coordT>::
+get_min_index()
+{ return 1; }
+
+template <int num_dimensions, class coordT>
+int
+BasicCoordinate<num_dimensions, coordT>::
+get_max_index()
+{ return num_dimensions; }
+
+template <int num_dimensions, class coordT>
+unsigned 
+BasicCoordinate<num_dimensions, coordT>::
+size()
+{ return num_dimensions; }
+
+/*
+  numerical assignments
+*/
 template <int num_dimensions, class coordT>
 BasicCoordinate<num_dimensions, coordT>& 
 BasicCoordinate<num_dimensions, coordT>::

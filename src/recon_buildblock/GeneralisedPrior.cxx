@@ -1,39 +1,72 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup priors
-  \brief  implementation of the GeneralisedPrior
+  \brief  implementation of the stir::GeneralisedPrior
     
   \author Kris Thielemans
   \author Sanida Mustafovic      
   $Date$  
   $Revision$
 */
-/*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 
 #include "stir/recon_buildblock/GeneralisedPrior.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
 
-template <typename elemT>
+template <typename TargetT>
 void 
-GeneralisedPrior<elemT>::initialise_keymap()
+GeneralisedPrior<TargetT>::initialise_keymap()
 {
-  parser.add_key("penalisation factor", &penalisation_factor); 
+  this->parser.add_key("penalisation factor", &this->penalisation_factor); 
 }
 
 
-template <typename elemT>
+template <typename TargetT>
 void
-GeneralisedPrior<elemT>::set_defaults()
+GeneralisedPrior<TargetT>::set_defaults()
 {
-  penalisation_factor = 0;  
+  this->penalisation_factor = 0;  
+}
+
+template <typename TargetT>
+Succeeded 
+GeneralisedPrior<TargetT>::
+set_up(shared_ptr<TargetT> const&)
+{
+  return Succeeded::yes;
+}
+
+template <typename TargetT>
+Succeeded 
+GeneralisedPrior<TargetT>::
+add_multiplication_with_approximate_Hessian(TargetT& output,
+					    const TargetT& input) const
+{
+  error("GeneralisedPrior:\n"
+	"add_multiplication_with_approximate_Hessian implementation is not overloaded by your prior.");
+  return Succeeded::no;
 }
 
 #  ifdef _MSC_VER
@@ -41,7 +74,15 @@ GeneralisedPrior<elemT>::set_defaults()
 #  pragma warning(disable:4661)
 #  endif
 
-template class GeneralisedPrior<float>;
+template class GeneralisedPrior<DiscretisedDensity<3,float> >;
 
 END_NAMESPACE_STIR
 
+
+#ifdef STIR_DEVEL
+#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "local/stir/modelling/KineticParameters.h"
+namespace stir {
+  template class GeneralisedPrior<ParametricVoxelsOnCartesianGrid >; 
+}
+#endif

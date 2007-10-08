@@ -1,0 +1,30 @@
+###############################################################################
+#       PARAMETER FILE FOR THE DETECTOR MODULE
+#
+#       The particular detector module is created for the Siemens HR+ scanner
+#		
+#       Author: Pablo Aguiar - University of Barcelona (Nov 2004) 
+#	Updated and added to the archive by Charalampos Tsoumpas
+#
+# $Id$
+#        
+###############################################################################
+# No se ha hecho ninguna modificacion para SSS (a dia 15Junio2004)
+# Hay que tener en cuenta que estamos haciendo la simulacion de detector mas sencilla de todas porque simplemente se aplica una distribucion Gaussiana de probabilidad al valor de energia del foton con la que incide, este sorteo hace que la energia que se procesa en los fotomultiplicadores sea otra entornoa la energia de llegada, posteriormente se comprueba si ese valor esta dentro de la ventana o no. OJO: No se hace tracking del foton en el detector, por lo tanto toda la energia con la que llega el foton es depositada, siempre hay interaccion, es como si tuviesemos una eficiencia de 1.
+#      Pablo Aguiar Fernadez
+#############################################################################
+
+#	Specify the detector type.
+#	Select detector_type = 1 for simple Gaussian blur
+
+#	This detector will be modelled with a Gaussian
+INT	detector_type = 1
+
+#	Specify the energy resolution as a percentage of FWHM (25% es BGO)
+REAL	energy_resolution_percentage = 22
+
+#	Specify the reference energy of the detected photons
+REAL	reference_energy_keV = 511
+
+#	Specify the name of the history file (empty for no file)
+STR	history_file = ""

@@ -4,7 +4,7 @@
 dir:=buildblock
 
 $(dir)_LIB_SOURCES := \
-  Array.cxx  convert_array.cxx \
+  Array.cxx  \
   IndexRange.cxx \
   ProjData.cxx \
   ProjDataInfo.cxx \
@@ -18,6 +18,7 @@ $(dir)_LIB_SOURCES := \
   ProjDataInterfile.cxx \
   Scanner.cxx \
   SegmentBySinogram.cxx \
+  Segment.cxx \
   SegmentByView.cxx \
   Viewgram.cxx \
   Sinogram.cxx \
@@ -41,11 +42,15 @@ $(dir)_LIB_SOURCES := \
 	SeparableMetzArrayFilter.cxx \
 	MedianArrayFilter3D.cxx \
 	MedianImageFilter3D.cxx \
+	MinimalArrayFilter3D.cxx \
+	MinimalImageFilter3D.cxx \
 	SeparableCartesianMetzImageFilter.cxx \
-	ThresholdMinToSmallPositiveValueImageProcessor.cxx \
-	ChainedImageProcessor.cxx \
+	TruncateToCylindricalFOVImageProcessor.cxx \
+	ThresholdMinToSmallPositiveValueDataProcessor.cxx \
+	ChainedDataProcessor.cxx \
 	ArrayFilter1DUsingConvolution.cxx \
 	SeparableConvolutionImageFilter.cxx \
+	NonseparableConvolutionUsingRealDFTImageFilter.cxx \
 	SSRB.cxx \
 	inverse_SSRB.cxx \
 	centre_of_gravity.cxx

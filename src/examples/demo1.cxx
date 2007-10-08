@@ -28,7 +28,7 @@
 */
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
@@ -65,9 +65,8 @@ int main()
   back_projector.back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-  DefaultOutputFileFormat output_file_format;
-
-  output_file_format.write_to_file("output", *density_sptr);
+    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+      write_to_file("output", *density_sptr);
 
   return EXIT_SUCCESS;
 }

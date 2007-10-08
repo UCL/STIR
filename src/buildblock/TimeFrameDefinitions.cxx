@@ -21,7 +21,7 @@
   \file 
   \ingroup buildblock
 
-  \brief Implementation of class TimeFrameDefinitions
+  \brief Implementation of class stir::TimeFrameDefinitions
  
   \author Kris Thielemans
   
@@ -36,6 +36,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #ifndef STIR_NO_NAMESPACES
 using std::make_pair;
@@ -93,9 +94,36 @@ get_num_frames() const
   return frame_times.size();
 }
 
+unsigned int
+TimeFrameDefinitions::
+get_num_time_frames() const
+{
+  return frame_times.size();
+}
+
 TimeFrameDefinitions::
 TimeFrameDefinitions()
 {}
+
+unsigned int 
+TimeFrameDefinitions::
+get_time_frame_num(const double start_time, const double end_time) const
+{
+  assert(end_time >=start_time);
+  for (unsigned int i = 1; i <=this->get_num_frames(); i++)
+    {
+      const double start = this->get_start_time(i);
+      const double end = this->get_end_time(i);
+      if (std::fabs(start-start_time)<.01 && std::fabs(end-end_time)<.01)
+	{
+	  return i;
+	}
+    }
+  // not found
+  return 0;
+}
+
+
 
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& filename)
@@ -360,17 +388,38 @@ TimeFrameDefinitions(const vector<pair<double, double> >& frame_times)
 
   // check times are in sequence
   double current_time = get_start_time(1);
-  for (unsigned int current_frame = 1; current_frame != get_num_frames(); ++ current_frame)
+  for (unsigned int current_frame = 1; current_frame <= get_num_frames(); ++ current_frame)
     {
-      if (current_time > get_start_time(current_frame))
+      if (current_time > get_start_time(current_frame) + .001) // add .001 to avoid numerical errors
 	error("TimeFrameDefinitions: frame number %d start_time (%g) is smaller than "
 	      "previous end_time (%g)\n",
 	      current_frame, get_start_time(current_frame), current_time);
-      if (get_start_time(current_frame) > get_end_time(current_frame))
+      if (get_start_time(current_frame) > get_end_time(current_frame) + .01) // add .01 to avoid numerical errors
 	error("TimeFrameDefinitions: frame number %d start_time (%g) is larger than "
 	      "end_time (%g)\n",
 	      current_frame, get_start_time(current_frame), get_end_time(current_frame));
       current_time = get_end_time(current_frame);
+    }
+}
+
+TimeFrameDefinitions::
+TimeFrameDefinitions(const vector<double>& start_times, 
+		     const vector<double>& durations)
+{
+  if (start_times.size() != durations.size())
+    error("TimeFrameDefinitions: constructed with start_times "
+	  "and durations of different length");
+
+  this->frame_times.resize(start_times.size());
+
+  for (unsigned int current_frame = 1; 
+       current_frame <= this->get_num_frames(); 
+       ++ current_frame)
+    {
+      frame_times[current_frame-1].first = 
+	start_times[current_frame-1];
+      frame_times[current_frame-1].second = 
+	start_times[current_frame-1] + durations[current_frame-1];
     }
 }
 

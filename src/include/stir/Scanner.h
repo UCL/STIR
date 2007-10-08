@@ -302,7 +302,7 @@ class Scanner
   //! set number of transaxial crystals 
   inline void set_num_transaxial_crystals_per_block(const int & new_num);
   //! set number of crystal layers (for DOI)
-  inline int set_num_detector_layers(const int& num_num);	
+  inline void set_num_detector_layers(const int& new_num);	
   //! set number of axial crystals per singles unit
   inline void set_num_axial_crystals_per_singles_unit(const int & new_num);	
   //! set number of transaxial crystals per singles unit

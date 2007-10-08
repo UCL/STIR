@@ -390,6 +390,7 @@ set_defaults()
   randoms_projdata_filename = "";
   attenuation_image_ptr = 0;
   frame_num = 1;
+  frame_definition_filename = "";
 
 #ifndef USE_PMRT
   forward_projector_ptr =

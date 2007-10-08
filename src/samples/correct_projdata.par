@@ -54,4 +54,7 @@ correct_projdata Parameters :=
   ; defaults to 0
   ;scatter projdata filename := scatter.hs
 
+  ; to interpolate to uniform sampling in 's', set value to 1
+  ; arc correction := 0
+
 END:= 

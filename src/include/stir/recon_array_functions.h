@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __stir_recon_array_functions_h_
 #define __stir_recon_array_functions_h_
@@ -18,12 +35,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "stir/common.h"
 
@@ -39,9 +50,10 @@ template <typename elemT> class Viewgram;
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
-
+#if 0
 //! scales an image and adds it to another
 void multiply_and_add(DiscretisedDensity<3,float> &image_res, const DiscretisedDensity<3,float> &image_scaled, float scalar);
+#endif
 
 //! truncates negative values to zero
 float neg_trunc(float x);
@@ -50,23 +62,18 @@ float neg_trunc(float x);
 // gives 1 if negative, 0 otherwise
 //float neg_indicate(float x){return (x<=0.0)?1.0:0.0;}
 
-//! sets non-positive voxel values to small positive ones
-void threshold_min_to_small_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image=0);
+#if 0
+//! sets non-positive voxel values to small positive ones AND truncate to circular FOV
+/*! \warning Really makes only sense for images of type DiscretisedDensityOnCartesianGrid
+  (or derived types)
+ */
+void threshold_min_to_small_positive_value_and_truncate_rim(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image=0);
 
 //! divide sinograms and set 'edge bins' to zero, put answer in numerator
 void divide_and_truncate(DiscretisedDensity<3,float>& numerator, 
 			 const DiscretisedDensity<3,float>& denominator,
 			 const int rim_truncation,
 			 int & count);
-
-#if 0
-// AZ 04/10/99: added
-//! divide sinograms and set 'edge bins' to zero, put answer in numerator
-void divide_and_truncate(const int view, // const int view45,
-			 SegmentBySinogram<float>& numerator, const SegmentBySinogram<float>& denominator,
-			 const int rim_truncation_sino,
-			 int& count, int& count2, float* f = NULL);
-
 #endif
 
 //! divide viewgrams and set 'edge bins' to zero, put answer in numerator
@@ -79,21 +86,15 @@ void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgr
 			 const int rim_truncation_sino,
 			 int& count, int& count2, float* f = NULL);
 
-
 //! sets to zero voxels within rim_truncation_image of the FOV rim
 void truncate_rim(DiscretisedDensity<3,float>& image_input, 
-		  const int rim_truncation_image);
+		  const int rim_truncation_image,
+		  const bool strictly_less_than_radius = true);
 
 
 
 //! sets the first and last rim_truncation_sino bins at the 'edges' to zero
 void truncate_rim(SegmentByView<float>& seg, const int rim_truncation_sino);
-//! sets the first and last rim_truncation_sino bins at the 'edges' to zero
-void truncate_rim(SegmentBySinogram<float>& seg, const int rim_truncation_sino);
-#if 0
-//! sets the first and last rim_truncation_sino bins at the 'edges' to zero
-void truncate_rim(SegmentBySinogram<float>& seg, const int rim_truncation_sino, const int view);
-#endif
 
 //! sets the first and last rim_truncation_sino bins at the 'edges' to zero
 void truncate_rim(Viewgram<float>& viewgram, const int rim_truncation_sino);
@@ -120,7 +121,6 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 			 const int rim_truncation_sino,
 			 float* accum);
 
-float min_positive_value(DiscretisedDensity<3,float>& input_image, const int rim_truncation_image);
 
 END_NAMESPACE_STIR
 #endif // __recon_array_functions_h_

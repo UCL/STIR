@@ -514,9 +514,10 @@ it to \textbf{STIR/local/}.
 \subsubsection{
 Enabling ECAT7 support}
 \label{sec:ECAT7support}
-At present, STIR uses parts of the Louvain la Neuve ecat library, 
+At present, STIR uses parts of the Louvain la Neuve ecat library (called LLN in
+the rest of this document), 
 which is now available on the STIR web-site thanks to Merence 
-Sibomana. However, the most recent version is available at \R2Lurl{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z_matrix_70/ }{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z\_matrix\_70/}. 
+Sibomana. However, the most recent version is available at \R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat/z_matrix_70/ }{ftp://ftp.topo.ucl.ac.be/pub/ecat/z\_matrix\_70/}. 
 In any case, use only a version dated after 20 July 2004. You 
 have to download that library and issue 'make --f Makefile.unix' 
 (or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
@@ -557,6 +558,54 @@ Once these options are set correctly (for example in STIR/local/config.mk),
 ECAT7 support will be automatically enabled after issuing \textit{make}. 
 If the file ifheaders\_for\_ecat7 is not compiled, it probably 
 means that the above flags point to an incorrect location.
+
+\subsubsection{
+Enabling AVW support}
+\label{sec:AVWsupport}
+If you have the \textit{AVW}\texttrademark{}  library
+\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
+{www.mayo.edu/bir/Software/AVW/AVW1.html}.
+} installed on your system, the make process should automatically built
+some STIR routines to be to use it for IO (see \ref{sec:convAVW}).
+
+To compile and link \textit{AVW} support, \textit{STIR} needs to know the location 
+of the \textit{AVW} files. 
+They are set in \texttt{config.mk} according to recommend \textit{AVW} values,
+i.e. using the environment variables \texttt{AVW} and \texttt{TARGET}
+The following \textit{make} options allow you 
+to set this:
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+% ROW 1
+\raggedright
+\textit{AVW\_INCLUDE\_DIR=\linebreak
+/loc/of/includes} &
+This needs to point to the path of the AVW include files. Default 
+value is \textit{\$(AVW)/include}\\
+\hline
+% ROW 2
+{\raggedright \textit{AVW\_LIBS= \linebreak
+/loc/of/lib}} & 
+{\raggedright This needs to point to the AVW library.
+Default value is \textit{\$(AVW)/\$(TARGET)/lib/libAVW.so}.
+Note that this default is inappropriate on Windows.} \\
+\hline
+% ROW 3
+{\raggedright \textit{HAVE\_AVW= \linebreak
+0 or 1}} & 
+Can be used to remove AVW support even if the library is found.\\
+\hline
+\end{longtable}
+Note that the preprocessor symbol \texttt{HAVE\_AVW} will be defined 
+if all files have been found (see \texttt{config.mk}).
+
+
+Once these options are set correctly (for example in \texttt{local/config.mk}), 
+AVW support will be automatically enabled after issuing \textit{make}. 
+If the file \texttt{conv\_AVW} is not compiled, it probably 
+means that the above flags point to incorrect locations.
+
 
 \subsubsection{
 Compilation using Visual C++}
@@ -963,12 +1012,14 @@ images written by \textit{STIR} in Interfile.
 
 
 
-The native GE Advance sinogram format is supported for reading, 
+The GE VOLPET sinogram format is supported for reading, but for
+the Advance only, 
 however data files must have a single data set, maximum ring 
 difference 11 and contain 281 bins * 256 segments * 336 views. 
-We currently do not read the GE header in great detail. Contributions 
-welcome.
-
+We do have software taht read VOLPET headers for all GE scanners, but can currently
+not distribute it due to licensing restrictions. If you have the
+GE Research Tools package you can ask Kris Thielemans for VOLPET
+support in STIR.
 
  
 ECAT6 images can be read without conversion. However, only the 
@@ -980,8 +1031,11 @@ When ECAT7 support is enabled during compilation of \textit{STIR},
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
 will be read.
+\textbf{Warning} The calibration factor field in the main header of ECAT7 images
+is currently ignored.
 
-
+First steps are made to be able to use the \textit{AVW} library. See the
+\texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
 Currently supported list mode formats are specific to the ECAT 
 HR+ and ECAT EXACT 3D scanners.
@@ -1093,66 +1147,10 @@ Maximum Likelihood Estimation algorithms}
 The Maximum Likelihood Estimation (MLE) type reconstruction algorithm 
 currently supported is called \textbf{OSMAPOSL}. It is an implementation 
 of the OSEM-One Step Late algorithm with various additional refinements 
-and capabilities.\\
-All MLE algorithms supported require the pre-computation of the 
-sensitivity image of the scanner. The program \textbf{sensitivity} 
- implements this computation 
-as described in [Jac00], currently attenuation and/or normalisation 
-may be incorporated into the computation.
-
-{ \subsubsubsection{Sensitivity image pre-computation}
-}
-\label{sec:sensitivity}
-Currently, the \textbf{sensitivity} program is run by passing the \textbf{OSMAPOSL} parameter 
-file (see next section) on the command line:
-\cmdline{sensitivity myOSMAPOSLparameter\_filename}
-
-
-This file is used to get information on the projection data, \textit{i.e.} about 
-the sizes, the scanner and data reduction (e.g. mashing), name 
-and size of the output image, and the projectors to use. Unfortunately, 
-this means that currently the forward projector used in the reconstruction 
-will also be used to compute the attenuation factors (unless 
-the parameter files for the reconstruction and sensitivity are 
-not identical). While this is usually not a problem, it does 
-mean that when a single projection matrix is used (see section 
-\ref{sec:projectorpairusingmatrix}), 
-attenuation image and output image must have identical sizes 
-and voxel sizes.
-
-
-The user is also prompted for the following input:
-
-
-\texttt{>}\textit{Get attenuation from which file (0=0's) :}
-
-
-The file name for the input attenuation image. If ``0'' is entered, 
-the program assumes zero attenuation. Attenuation image data 
-have to be in units cm$^{-1}$.
-
-
-\textit{\texttt{>}Get normalisation factors from which file (1 = 1's):}
-
-
-The file name for the normalisation data. These have to be stored 
-as a projection data file of \textit{exactly} the same dimensions 
-as the input projection data. (So, for example, CTI's ECAT7 component 
-based normalisation files are \textit{not} supported). Note that this 
-can also be used to pass attenuation factors.
-
-
-If you have the attenuation factors already (produced by some 
-other program), you could multiply them with the normalisation 
-factors (for instance by using the \textit{stir\_math} program (see 
-section \ref{sec:stir_math}), and give the resulting file as 'normalisation 
-factors'. This is because both are multiplicative corrections.
-
-
-Note that when the attenuation is specified as 0 and the normalisation 
-as 1, the sensitivity program computes the geometrically based 
-sensitivity image. The latter should be used when reconstructing 
-from pre-corrected projection data.
+and capabilities. See [Jac00] for a description of many details of the
+implementation.\\
+Note that additional reconstruction algorithms are being prepared. For instance, 
+OSMAPOSL on list mode data.
 
 { \subsubsubsection{Running OSMAPOSL}
 }
@@ -1193,11 +1191,6 @@ are named with a pre-specified output file prefix with the subiteration
 number appended after an underscore.
 
 
-The first step in running \textbf{OSMAPOSL} is to compute an appropriate 
-sensitivity image file (see Section \ref{sec:sensitivity}). This file is required 
-input for the \textbf{OSMAPOSL} program.
-
-
 As described in Section \ref{sec:conventions}, 
 the recommended manner of running \textbf{OSMAPOSL} 
 is to pass the executable a parameter file argument which specifies 
@@ -1212,13 +1205,44 @@ The form of a typical parameter file is as follows:
 \begin{verbatim}
 OSMAPOSLParameters :=
 ;lines starting with semicolons are comments
+objective function type:= \
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+; input, sensitivity and prior parameters here
 
 input file := projection_data_filename.hs
-output filename prefix := out_file
-zoom := 1
 
+; use -1 to use the maximum available
+maximum absolute segment number to process := 4
+zero end planes of segment 0 := 1
+
+; keywords that specify the projectors to be used
+Projector pair type := Matrix 
+ Projector Pair Using Matrix Parameters := 
+   Matrix type := Ray Tracing
+     Ray Tracing Matrix Parameters:=
+   End Ray Tracing Matrix Parameters:= 
+ End Projector Pair Using Matrix Parameters :=
+
+; background (e.g. randoms)
+additive sinogram := 0
+
+; sensitivity related keywords
+time frame definition filename:=
+time frame number:= 1
+Bin Normalisation type:= None
+sensitivity filename:=
+recompute sensitivity := 0
+
+; keywords for specifying the prior information
+prior type := None
+
+; next keywords can be used to specify image size, but will be removed
+zoom := 1
 ; use --1 for default sizes that cover the whole field of view
 XY output image size (in pixels) := -1
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
 
 ; set output file format, if omitted a default value will be used
 Output file format := Interfile 
@@ -1228,23 +1252,17 @@ Interfile Output File Format Parameters :=
 ; number of bytes per pixel := 2 
 End Interfile Output File Format Parameters :=
 
-; use --1 to use the maximum available
-maximum absolute segment number to process := 4
-
-initial image:= initial_image_filename.hv
+initial estimate:= initial_image_filename.hv
 enforce initial positivity condition:=0
 number of subsets:= 6
 start at subset:= 0
 number of subiterations:= 30
 start at subiteration number:=1
-save images at subiteration intervals:= 2
+
+output filename prefix := out_file
+save estimates at subiteration intervals:= 2
 uniformly randomise subset order:= 1
 
-zero end planes of segment 0 := 1
-
-additive sinogram := 0
-
-sensitivity image:= sensitivity_image_filename
 
 ; keywords that specify the filtering that occurs after every 
 subiteration
@@ -1271,16 +1289,6 @@ post-filter type := None
 inter-update filter subiteration interval := 4
 inter-update filter type := None
 
-; keywords that specify the projectors to be used
-Projector pair type := Matrix 
- Projector Pair Using Matrix Parameters := 
-   Matrix type := Ray Tracing
-     Ray Tracing Matrix Parameters:=
-   End Ray Tracing Matrix Parameters:= 
- End Projector Pair Using Matrix Parameters :=
-
-; keywords for specifying the prior information
-prior type := None
 map model := additive
 
 ; keywords for preventing too drastic (multiplicative) updates
@@ -1319,7 +1327,7 @@ The zoom factor. Defaults to 1 which gives x,y voxel size equal
 to the bin size of the projection data\footnote{{\small This is different 
 from the CTI convention which involves some factors like the 
 number of elements and 128.}}. Larger than 1 means smaller voxel 
-size. This parameter is ignored when an \textit{initial image} is specified.
+size. This parameter is ignored when an \textit{initial estimate} is specified.
 
 
 \item[XY output image size (in pixels)]
@@ -1342,7 +1350,7 @@ that the reconstruction will be carried out using segment numbers
 projection data. Defaults to use all segments in the input data.
 
 
-\item[initial image]
+\item[initial estimate]
 The name of the image file with which the algorithm is initialised. 
 The default is an image which is uniformly 1 over all voxels. 
 The default can be specified by giving the parameter an input 
@@ -1352,12 +1360,13 @@ is inappropriate for OSMAPOSL.
 
 \item[enforce initial positivity condition]
 If this parameter is not set to 0, the program will set all non-positive 
-voxel values in the initial image to small positive ones.
+voxel values in the initial estimate to small positive ones.
 
 
-\item[number of subsets] [1, num\_views/4, 1 {]}
+\item[number of subsets] [1, num\_views, 1 {]}
 The number of subsets. For symmetric balancing among subsets, 
-it is advisable to select a number which divides evenly into \textit{num\_views/4.}
+it is advisable to select a number which divides evenly into \textit{num\_views},
+or even \textit{num\_views/4}, depending on the symmetries used by the projector.
 
 
 \item[uniformly randomise subset order]
@@ -1379,7 +1388,7 @@ for resuming reconstructions (for example, the continuity of
 output image file numbering may be preserved).
 
 
-\item[save images at subiteration intervals] [1, num\_subiterations,0{]} 
+\item[save estimates at subiteration intervals] [1, num\_subiterations,0{]} 
 Specifies at what intervals (in subiterations) the iterates of 
 the algorithm are saved. The final iteration is always saved.
 
@@ -1406,15 +1415,46 @@ for the list of possible values.
 The type name of the post filter. See Section \ref{sec:filters} for the list 
 of possible values.
 
+\item[time frame definition filename]
+See \textit{Bin Normalisation type}
 
-\item[sensitivity image]
+\item[time frame number]
+Defaults to 1. See \textit{Bin Normalisation type}.
+
+\item[Bin Normalisation type]
+This keyword is used to set both normalisation factors and attenuation
+correction factors. See section \ref{sec:binnormalisation}.
+
+\item[recompute sensitivity]
+Defaults to 0. If \textit{sensitivity filename} is specified and 
+recomputation is switched off, it will be read, and the 
+\textit{Bin Normalisation type} keyword will be effectively ignored.
+However, if the filename is set and recomputation is switched on, the
+sensitivity will be written to that filename. This might be useful
+to avoid recomputing the sensitivity if it does not change.
+
+\item[sensitivity filename]
+The sensitivity image is an important ingredient of 
+likelihood-based reconstruction algorithms of PET or SPET emission data
+\footnote{In STIR 2.0, this is generalised to the sensitivity for
+any problem with Poisson statistics where the data are linear
+combinations of the variables of interest.}
+For each voxel, it represents the total probability of detection of an 
+event originating in that voxel (up to a global proportionality factor).
+It is computed by backprojecting projection data with all elements set to 1.
+
 The name of the file containing the sensitivity image. The 
-default is an image which is uniformly 1 over all voxels. The 
-default can be specified by giving the parameter an input of 
-1. Using this default is generally a bad idea however. It is 
+default is to compute it from the previous keywords. You could 
+set it to 1, which is am image uniformly 1 over all voxels. 
+Using this is generally a bad idea however. It is 
 only somewhat appropriate when using fully precorrected data 
 in 2D PET. Even in that case, you will get an image with the 
 wrong scale factor.
+
+Note that when no attenuation nor normalisation was used, 
+the sensitivity will be computed based on geometrical backprojection
+only. This only appropriate when reconstructing 
+from pre-corrected projection data.
 
 
 \item[inter-update filter subiteration interval] [0, num\_subiterations, 0{]}
@@ -1571,9 +1611,7 @@ to pretend that the detector pairs in the extreme-most detector
 rings detected no counts. For the scanners currently supported 
 by the library, we have verified that only the measurements of 
 these detector pairs can be influenced by the end gap activity. 
-For consistency, we further advise that in the pre-computation 
-of the sensitivity image (see section \ref{sec:sensitivity}), one also selects 
-the ``zero end planes of segment 0'' option. Doing so, one models 
+By setting this option, one models 
 the acquisition as one where the end ring detector pairs had 
 zero efficiency. This provides a more realistic model for the 
 truncated projection data. Note also that the acquisition software 
@@ -1585,7 +1623,8 @@ use the ``zero end planes of segment 0'' in these cases as well.
 
 The method of zeroing end planes, unfortunately, does not apply 
 well to scanners whose 2D projection data includes merged cross-planes 
-(e.g. the GE Advance). This is because the currently supported 
+(e.g. the GE scanners or all recent Siemens scanners). 
+This is because the currently supported 
 projectors yield a relatively poor model of the detection probabilities 
 associated with the end planes of such scanners. Excluding the 
 end detector pairs from the computation degrades the model still 
@@ -1649,6 +1688,10 @@ xy output image size (in pixels) := 180
 alpha parameter for ramp filter := 1
 cut-off for ramp filter (in cycles) := 0.5
 
+; keywords that specify the filtering that occurs at the end
+; of the reconstruction
+post-filter type := None
+
 end := 
 \end{verbatim}
 
@@ -1668,8 +1711,8 @@ Also, the Colsher filter is numerically computed at a finer grid
 in an initial stage to avoid DC problems.
 
 
-The current implementation is somewhat preliminary, so the parameters 
-are likely to change. A sample.par file can be found in the \textbf{samples/} 
+The current implementation is stable, except maybe for the parameters 
+which might change. A sample.par file can be found in the \textbf{samples/} 
 directory. See the doxygen documentation (or the source) for 
 more info.\\
 \textbf{Warning:} the current version of the interpolating backprojector, 
@@ -1759,7 +1802,6 @@ may be set to 0).
 \item application of an axial truncating window to segment 0 (e.g. 
 end plane data may be set to zero).
 \end{itemize}
-
 Each time an operation results in a new projection data array, 
 the user is prompted for the name of an output file, to which 
 the result is written. This output file then automatically becomes 
@@ -2146,6 +2188,9 @@ are subheaders 'in' the datasets.\\
 Note that you do not have to use this utility if you want to 
 read only ``frame 1, gate 1, data 0, bed 0''. In this case, you 
 can pass the ECAT7 file directly to any STIR program.
+\\
+\textbf{Warning} The calibration factor field in the main header of ECAT7 images
+is currently ignored.
 
 { \subsubsubsection{ecat\_swap\_corners}
 }
@@ -2227,6 +2272,26 @@ discontinuities appeared.
 \textbf{Warning} This utility does not (and cannot) check for you 
 if the data has to be corner-swapped or not. So, it can do the 
 wrong thing.
+
+{ \subsubsubsection{conv\_AVW}
+}
+
+\label{sec:convAVW}
+If you have the \textit{AVW}\texttrademark  library
+\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
+{www.mayo.edu/bir/Software/AVW/AVW1.html}.
+} installed on your system, the make process should have built \texttt{utilities/conv\_AVW}.
+See also \ref{sec:AVWsupport}.
+This utility allows to use the \textit{AVW} library to read an image, and then write it out
+using STIR as Interfile.\\
+\textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
+on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
+to STIR.
+
+It normally should be run as follows:
+\cmdline{conv\_AVW [ --flip\_z ] imagefile}
+
+It will require access to a run-time license for \textit{AVW}.
 
 
 \subsubsection{
@@ -2539,7 +2604,7 @@ image\_filename.v}\\
 where \textit{image\_filename.hv} is the header text file and \textit{image\_filename.v} 
 is the data file. In addition, we currently write a \textit{.ahv} 
 file which uses Interfile 3.3 conventions, with a tweak for the 
-\texttt{slice thickness} keyword to work-around an Analyze$^{TM}$ 
+\texttt{slice thickness} keyword to work-around an Analyze\texttrademark{} 
 bug (see the comments for write\_basic\_interfile\_image\_header() 
 in \textbf{STIR}/\textbf{IO/interfile.cxx}). The \textit{.ahv} file is probably 
 also readable by other programs capable of reading Interfile 
@@ -2653,18 +2718,23 @@ and only signed short data are supported.
 
 
 \subsubsection{
-Available filters or image processors}
+Available filters or data processors}
 \label{sec:filters}
-The type of filters (or in general any image processing algorithm) 
+Reconstruction algorithms and some utilities use filters, or in 
+general data processing algorithm. In STIR 1.x the data-type was restricted
+to images, but now other data-types can in principle be used. Some
+of the available data processors can work on any data type, but most
+only work on images.
+
+The type of data processors 
 available to programs is fully extendable (at compile time). 
 How to do this is beyond the scope of this document. Here we 
-only discuss how to specify a particular image processor at run-time, 
+only discuss how to specify a particular data processor at run-time, 
 and list the currently available ones. Samples of their parameters 
 should be available in \textbf{STIR/samples}.
 
 
-
-Each image processor has a unique name associated to it (given 
+Each data processor has a unique name associated to it (given 
 as the head of its subsection below). This name has to be used 
 as value of a filter type keyword (or interactive question). 
 Depending on the filter type, different parameters have to be 
@@ -2672,10 +2742,11 @@ given in the.par file (or will be asked interactively).
 
 
 In addition, it is possible to specify the name \textit{None}. This 
-is the default for all image processor keywords.
+is the default for all keywords that ask for the type of 
+the data processor .
 
 
-See also the online documentation for the class \textbf{ImageProcessor}.
+See also the online documentation for the class \textbf{DataProcessor}.
 
 { \subsubsubsection{Separable Convolution}
 }
@@ -2875,32 +2946,46 @@ A radius of 0 means no filtering in that direction, a radius
 of 1 means the median will be computed over a mask of 3 pixels, 
 and so on.
 
-{ \subsubsubsection{Threshold Min To Small Positive Value}
+
+{ \subsubsubsection{Truncate To Cylindrical FOV}
+}
+This image processor will set all voxels to 0 outside a certain radius.
+TODO this needs updating.
+{ \subsubsubsubsection{Parameters}
 }
 
+Sample parameters are given below
+
+\begin{verbatim}
+Truncate To Cylindrical FOV Parameters:=
+; default use x^2 + y^2 < R^2
+; if set to 0, will use <=
+strictly_less_than_radius:=1 
+End Truncate To Cylindrical FOV Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{Threshold Min To Small Positive Value}
+}
+This is a generic data processor that will work on any type of data.
+
 Since strict positivity is a preferred property of images in 
-many circumstances, a post-thresholding of the filtered image 
+many circumstances, a post-thresholding of the filtered data 
 is sometimes applied to truncate non-positive values. The thresholding 
 rule currently used is:\\
 (1)\tab 
-If the entire filtered image is non-positive, the image is uniformly 
+If the entire filtered data is non-positive, the data is uniformly 
 set to a hard-coded strictly positive parameter SMALL\_NUM\texttt{<}\texttt{<}1.\\
 (2)\tab 
-Otherwise, all non-positive entries in the image are set to SMALL\_NUM 
-times the minimum strictly positive image value.
+Otherwise, all non-positive entries in the data are set to SMALL\_NUM 
+times the minimum strictly positive value.
 
 
-In addition, this image processor allows truncating the outer 
-(cylindrical) rim of the image, potentially to get rid of rim 
-artefacts. This currently works by specifying a number of pixels 
-(0 means truncation to the cylinder of maximum radius that fits 
-in the image). 
-
-{ \subsubsubsection{Chained Image Processor}
+{ \subsubsubsection{Chained Data Processor}
 }
+This is a generic data processor that will work on any type of data.
 
-This image processor allows subsequent application of 2 other 
-image processors on the image. It can for example be used to 
+This data processor allows subsequent application of 2 other 
+data processors on the image. It can for example be used to 
 first Metz filter an image and then threshold it.
 
 { \subsubsubsubsection{Parameters}
@@ -2909,15 +2994,15 @@ first Metz filter an image and then threshold it.
 Example parameters are given by
 
 \begin{verbatim}
-Chained Image Processor Parameters :=
-Image Processor to apply first := None
-Image Processor to apply second := None
-END Chained Image Processor Parameters :=
+Chained Data Processor Parameters :=
+Data Processor to apply first := None
+Data Processor to apply second := None
+END Chained Data Processor Parameters :=
 \end{verbatim}
 
-Obviously, in normal practice the Image Processor keywords will 
-have values given by any of the listed image processors in this 
-section (including Chained Image Processor again).
+Obviously, in normal practice the Data Processor keywords will 
+have values given by any of the listed data processors in this 
+section (including Chained Data Processor again).
 
 
 
@@ -2966,7 +3051,7 @@ These are the keywords that can be used for all priors.
 }
 
 This prior is an extension of the idea first developed for the 
-Median Root Prior [Ale97]. The prior takes any Image Processor 
+Median Root Prior [Ale97]. The prior takes any Data Processor 
 (i.e. a filter), and computes the prior 'gradient' as 
 \[
 G_{v\,} =\lambda _{v} /F_{v}  -1
@@ -2984,7 +3069,7 @@ the Hessian will not be symmetric.
 
 
 The Median Root Prior is obtained by using Median (see \ref{sec:median}) 
-as Image Processor.
+as Data Processor.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -2993,7 +3078,7 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
   \begin{verbatim}
   FilterRootPrior Parameters :=
   penalisation factor := 1
-  ; you can use any image processor here
+  ; you can use any data processor here
   ; the next parameters specify a 3x3x3 median
   Filter type := Median
     Median Filter Parameters :=
@@ -3415,7 +3500,7 @@ directly read any of the meta-data in the headers of sinograms etc.}
 }
 \begin{verbatim}
 Bin Normalisation From ECAT7:=
-  normalisation_ECAT7_filename:= STUDY.n
+  normalisation filename:= STUDY.n
   singles rates := Singles From ECAT7 File
   Singles Rates From ECAT7 File:=
       ECAT7_filename := ecat7_sinogram.S
@@ -3532,9 +3617,9 @@ Greyscale Map format, which can be read by various graphics programs
 \subsubsection{
 MathLink display}
 
-This mode is (somewhat) useful if you have \textit{Mathematica}$^{\mathit{TM}}$, 
+This mode is (somewhat) useful if you have \textit{Mathematica\texttrademark}, 
 and want to pipe the data into \textit{Mathematica}. (It is probably 
-easier to read the binary data from file though using the \textit{Mathematica} command \texttt{Experimental\`{}BinaryImport\`{}}). 
+easier to read the binary data from file though using the \textit{Mathematica} command \texttt{BinaryRead}). 
 Sample \textit{Mathematica} statements:
 
 \begin{verbatim}

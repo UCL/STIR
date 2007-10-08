@@ -1,10 +1,26 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup priors
-  \brief Declaration of class FilterRootPriot
+  \brief Declaration of class stir::FilterRootPriot
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -12,11 +28,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #ifndef __stir_recon_buildblock_FilterRootPrior_H__
 #define __stir_recon_buildblock_FilterRootPrior_H__
@@ -28,8 +39,7 @@
 
 START_NAMESPACE_STIR
 
-template <int num_dimensions, typename elemT> class ImageProcessor;
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
+template <typename DataT> class DataProcessor;
 
 /*!
   \ingroup priors
@@ -38,11 +48,11 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   priors a la the Median Root Prior (which was invented by
   Sakari Alenius).
 
-  This class takes an ImageProcessor object (i.e. a filter), and computes 
+  This class takes an DataProcessor object (i.e. a filter), and computes 
   the prior 'gradient' as
   \f[ G_v = \beta ( {\lambda_v \over F_v} - 1) \f]
-  where \f$ \lambda\f$ is the image where to compute the gradient, and
-  \f$F\f$ is the image obtained by filtering \f$\lambda\f$.
+  where \f$ \lambda\f$ is the data where to compute the gradient, and
+  \f$F\f$ is the data obtained by filtering \f$\lambda\f$.
 
   However, we need to avoid division by 0, as it might cause a NaN or an 
   'infinity'. So, we replace the quotient above by<br>
@@ -59,16 +69,24 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   symmetric.
 
   The Median Root Prior is obtained by using a MedianImageFilter3D as 
-  ImageProcessor.
+  DataProcessor.
 */
-template <typename elemT>
+template <typename DataT>
 class FilterRootPrior:  public 
       RegisteredParsingObject<
-	      FilterRootPrior<elemT>,
-              GeneralisedPrior<elemT>,
-	      GeneralisedPrior<elemT>
+	      FilterRootPrior<DataT>,
+              GeneralisedPrior<DataT >,
+	      GeneralisedPrior<DataT >
 	       >
 {
+ private:
+  typedef 
+      RegisteredParsingObject<
+	      FilterRootPrior<DataT>,
+              GeneralisedPrior<DataT >,
+	      GeneralisedPrior<DataT >
+	       >
+    base_type;
 public:
   //! Name which will be used when parsing a GeneralisedPrior object
   static const char * const registered_name; 
@@ -77,16 +95,23 @@ public:
   FilterRootPrior();
 
   //! Constructs it explicitly
-  /*! \todo first argument should be shared_ptr */
-  FilterRootPrior(ImageProcessor<3,elemT>* filter, float penalization_factor);
+  FilterRootPrior(shared_ptr<DataProcessor<DataT> >const&, 
+		  const float penalization_factor);
+
+ //! compute the value of the function
+  /*! \warning Generally there is no function associated to this prior,
+    so we just return 0 and write a warning the first time it's called.
+   */
+  virtual double
+    compute_value(const DataT &current_estimate);
   
   //! compute gradient by applying the filter
-  void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
-			const DiscretisedDensity<3,elemT> &current_image_estimate);
+  void compute_gradient(DataT& prior_gradient, 
+			const DataT &current_estimate);
   
   
 private:  
-   shared_ptr<ImageProcessor<3,elemT> > filter_ptr;   
+   shared_ptr<DataProcessor<DataT> > filter_ptr;   
    virtual void set_defaults();
    virtual void initialise_keymap();
 

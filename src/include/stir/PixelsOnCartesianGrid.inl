@@ -110,7 +110,7 @@ DiscretisedDensity<2,elemT>*
 #else
 PixelsOnCartesianGrid<elemT>*
 #endif
-PixelsOnCartesianGrid<elemT>::get_empty_discretised_density() const
+PixelsOnCartesianGrid<elemT>::get_empty_copy() const
 {
   return get_empty_pixels_on_cartesian_grid();
 }
@@ -132,7 +132,11 @@ PixelsOnCartesianGrid<elemT>::get_empty_pixels_on_cartesian_grid() const
 
 
 template<class elemT>
-DiscretisedDensity<2, elemT>* 
+#ifdef STIR_NO_COVARIANT_RETURN_TYPES
+DiscretisedDensity<2,elemT>*
+#else
+PixelsOnCartesianGrid<elemT>*
+#endif
 PixelsOnCartesianGrid<elemT>::clone() const
 {
   return new PixelsOnCartesianGrid(*this);

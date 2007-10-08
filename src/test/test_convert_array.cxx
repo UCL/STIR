@@ -1,10 +1,27 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file 
   \ingroup test 
-  \brief tests for the convert_array function
+  \brief tests for the stir::convert_array functions
 
   \author Kris Thielemans
   \author PARAPET project
@@ -12,22 +29,15 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-//  TODO remove FULL stuff
-
-#include <iostream>
-#include <math.h>
 
 #include "stir/Array.h"
 #include "stir/convert_array.h"
 #include "stir/NumericInfo.h"
 #include "stir/IndexRange3D.h"
-#include "stir/CPUTimer.h" 
 #include "stir/RunTests.h"
+#include <vector>
+#include <iostream>
+#include <math.h>
 
 START_NAMESPACE_STIR
 
@@ -141,9 +151,6 @@ convert_array_Tests::run_tests()
   //   3D
 
   {
-    CPUTimer timer;
-    timer.start();
-    
     Array<3,float> tf1(IndexRange3D(1,30,1,182,-2,182));
     tf1.fill(100.F);
     
@@ -191,72 +198,40 @@ convert_array_Tests::run_tests()
 	check(fabs(double(*iter_ti2) *scale_factor / *iter_tf1 - 1) < 1E-4) ;
 #endif      
     }
-
-    timer.stop();
-    cerr << timer.value() << "secs" << endl;
   }
-#ifdef FULL
-  //   3D
-  cerr << "FULL" << endl;
-
+  // tests on convert_range
   {
-    CPUTimer timer;
-    timer.start();
-    
-    Array<3,float> tf1(IndexRange3D(1,30,1,182,-2,182));
-    tf1.fill(100.F);
-    
-    Array<3,short> ti1(tf1.get_index_range());
-    ti1.fill(100);
-    
+    std::vector<signed char> vin(10,2);
+    std::vector<int> vout(10);
+    float scale_factor=0;
+    convert_range(vout.begin(), scale_factor, vin.begin(), vin.end());
     {
-      // float -> short with a preferred scale factor
-      float scale_factor = float(1);
-      Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
-      
-      check(scale_factor == float(1));
-      check(ti1 == ti2);
-    }
-    
-    {
-      // float -> short with automatic scale factor
-      float scale_factor = 0;
-      Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
-      
-#ifndef DO_TIMING_ONLY
-      check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
-      const Array<3,short>::full_iterator iter_end= ti2.end_all();
-      for (Array<3,short>::full_iterator iter= ti2.begin_all();
-           iter != iter_end;
-	   ++iter)
-	*iter = short( double((*iter)) *scale_factor);
-      check(ti1 == ti2);
-#endif
-    }
-    
-    tf1 *= 1E20F;
-    {
-      // float -> short with a preferred scale factor that needs to be adjusted
-      float scale_factor = 1;
-      Array<3,short> ti2 = convert_array_FULL(scale_factor, tf1, NumericInfo<short>());
-
-#ifndef DO_TIMING_ONLY
-      check(fabs(NumericInfo<short>().max_value()/1.01 / (*ti2.begin_all()) -1) < 1E-4);
-      Array<3,short>::full_iterator iter_ti2= ti2.begin_all();
-      const Array<3,short>::full_iterator iter_ti2_end= ti2.end_all();
-      Array<3,float>::full_iterator iter_tf1= tf1.begin_all();
+      std::vector<int>::const_iterator iter_out= vout.begin();
+      std::vector<signed char>::const_iterator iter_in= vin.begin();
       for (;
-           iter_ti2 != iter_ti2_end;
-	   ++iter_ti2, ++iter_tf1)
-	check(fabs(double(*iter_ti2) *scale_factor / *iter_tf1 - 1) < 1E-4) ;
-      
-#endif
+	   iter_out != vout.end();
+	   ++iter_in, ++iter_out)
+	check(fabs(double(*iter_out) *scale_factor / *iter_in - 1) < 1E-4,
+	      "convert_range signed char->int") ;
     }
-    timer.stop();
-    cerr << timer.value() << "secs" << endl;
   }
-
-#endif  
+  // equal type
+  {
+    std::vector<int> vin(10,2);
+    std::vector<int> vout(10);
+    float scale_factor=3;
+    convert_range(vout.begin(), scale_factor, vin.begin(), vin.end());
+    {
+      check_if_equal(scale_factor, 1.F, "scale_factor should be 1 when using equal types");
+      std::vector<int>::const_iterator iter_out= vout.begin();
+      std::vector<int>::const_iterator iter_in= vin.begin();
+      for (;
+	   iter_out != vout.end();
+	   ++iter_in, ++iter_out)
+	check(fabs(double(*iter_out) *scale_factor / *iter_in - 1) < 1E-4,
+	      "convert_range equal types") ;
+    }
+  }
 }
 
 END_NAMESPACE_STIR

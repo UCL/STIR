@@ -1,26 +1,43 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
 
-  \brief Non-inline implementations for class Shape3DWithOrientation
+  \brief Non-inline implementations for class stir::Shape3DWithOrientation
 
   \author Sanida Mustafovic
   \author Kris Thielemans
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
 #include "stir/Shape/Shape3DWithOrientation.h"
+#include "stir/numerics/determinant.h"
+#include "stir/numerics/norm.h"
+#include "stir/Succeeded.h"
+#include <cmath>
 
 START_NAMESPACE_STIR
 
 
+#if 0
 void 
 Shape3DWithOrientation::
 set_directions_from_Euler_angles(
@@ -53,67 +70,79 @@ set_directions_from_Euler_angles(
 	-(cos(alpha)*sin(beta)),
 	sin(alpha)*sin(beta));
 }
+#endif
 
 
 
 Shape3DWithOrientation::Shape3DWithOrientation()
-   :Shape3D(), 
-    dir_x(0,0,1),
-    dir_y(0,1,0),
-    dir_z(1,0,0)
 {}
 
+
 Shape3DWithOrientation::Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin,
-                                               const float alpha,
-					       const float beta,
-					       const float gamma)
-: 
-  Shape3D(origin)
+                                               const Array<2,float>& direction_vectors)
+: Shape3D(origin)
 {
-  set_directions_from_Euler_angles(alpha, beta, gamma);
+  if (this->set_direction_vectors(direction_vectors) == Succeeded::no)
+    error("Shaped3DWithOrientation constructor called with wrong direction_vectors");
 }
 
-Shape3DWithOrientation::Shape3DWithOrientation(const CartesianCoordinate3D<float>& origin,
-                                               const CartesianCoordinate3D<float>& dir_xv,
-					       const CartesianCoordinate3D<float>& dir_yv,
-					       const CartesianCoordinate3D<float>& dir_zv)
-: Shape3D(origin),
-  dir_x(dir_xv),
-  dir_y(dir_yv),
-  dir_z(dir_zv)
-{}
+Succeeded
+Shape3DWithOrientation::
+set_direction_vectors(const Array<2,float>& directions)
+{
+  this->_directions = directions;
+  if (this->_directions.size() != 3)
+    return Succeeded::no;
 
+  // set index offset to 1, such that matrix_multiply can be used with BasicCoordinate
+  this->_directions.set_min_index(1);
+  for (int i=1; i<=this->_directions.get_max_index(); ++i)
+    {
+      this->_directions[i].set_min_index(1);
+        if (this->_directions[i].size() != 3)
+	  return Succeeded::no;
+    }
+  return Succeeded::yes;
+}
 
-void Shape3DWithOrientation::translate(const CartesianCoordinate3D<float>& direction)
-{ origin += direction; }
+bool
+Shape3DWithOrientation::
+operator==(const Shape3DWithOrientation& s) const
+{
+  const float tolerance = .001F;
+  return 
+    norm(this->get_origin() - s.get_origin()) < tolerance
+    && norm(this->_directions[1] - s._directions[1]) < tolerance
+    && norm(this->_directions[2] - s._directions[2]) < tolerance
+    && norm(this->_directions[3] - s._directions[3]) < tolerance
+    && base_type::operator==(s);
+}
 
+float 
+Shape3DWithOrientation::
+get_volume_of_unit_cell() const
+{
+  return std::fabs(determinant(this->get_direction_vectors()));
+}
 
-/*
+CartesianCoordinate3D<float>
+Shape3DWithOrientation::
+transform_to_shape_coords(const CartesianCoordinate3D<float>& coord) const
+{
+  return 
+    matrix_multiply(this->get_direction_vectors(), coord - this->get_origin());
+}
+
 void Shape3DWithOrientation::scale(const CartesianCoordinate3D<float>& scale3D)
 {
-  dir_x /= scale3D;
-  dir_y /= scale3D;
-  dir_z /= scale3D;
+  this->_directions[1] /= scale3D[1];
+  this->_directions[2] /= scale3D[2];
+  this->_directions[3] /= scale3D[3];
 
-  origin *= scale3D;
-}
-*/
-
-CartesianCoordinate3D<float> Shape3DWithOrientation::get_dir_x() const
-{
-  return dir_x;
+  this->set_origin(this->get_origin() * scale3D);
 }
 
-CartesianCoordinate3D<float> Shape3DWithOrientation::get_dir_y() const
-{
-  return dir_y;
-}
-
-CartesianCoordinate3D<float> Shape3DWithOrientation::get_dir_z() const
-{
-  return dir_z;
-}
-
+#if 0
 float Shape3DWithOrientation::get_angle_alpha() const
 {
   return atan2(dir_z.y(),dir_z.x());
@@ -126,18 +155,23 @@ float Shape3DWithOrientation::get_angle_beta()const
 
 float Shape3DWithOrientation::get_angle_gamma()const			   
 {
-  return atan2(-dir_y.z(),dir_x.z());
+  return atan2(-dir_y.z(),_directions.x().z());
 }
+#endif
   		   
 void 
 Shape3DWithOrientation::
 set_defaults()
 {
   Shape3D::set_defaults();
-  dir_x = CartesianCoordinate3D<float>(0,0,1);
-  dir_y = CartesianCoordinate3D<float>(0,1,0);
-  dir_z = CartesianCoordinate3D<float>(1,0,0);
+  this->set_direction_vectors(diagonal_matrix(3,1.F));
 
+#if 0
+  // set alpha,beta,gamma to non-sensical values for parsing
+  // this is necessary because we need to detect if they are used or not
+  // see post_processing()
+  alpha_in_degrees = beta_in_degrees = gamma_in_degrees = 10000000.F;
+#endif
 }
 
 void 
@@ -145,41 +179,48 @@ Shape3DWithOrientation::
 initialise_keymap()
 {
   Shape3D::initialise_keymap();
+#if 0
   parser.add_key("Euler angle alpha (in degrees)", &alpha_in_degrees);
   parser.add_key("Euler angle beta (in degrees)", &beta_in_degrees);
   parser.add_key("Euler angle gamma (in degrees)", &gamma_in_degrees);
-  parser.add_key("direction-x (in mm)", &dir_x_vector);
-  parser.add_key("direction-y (in mm)", &dir_y_vector);
-  parser.add_key("direction-z (in mm)", &dir_z_vector);
+#endif
+  parser.add_key("direction vectors (in mm)", &_directions);
 }
 
 bool
 Shape3DWithOrientation::
 post_processing()
 {
-  if (dir_x_vector.size()==0 && dir_y_vector.size()==0 && dir_z_vector.size()==0)
-    set_directions_from_Euler_angles(                                 
-				     static_cast<float>(alpha_in_degrees * _PI/180.),
-				     static_cast<float>(beta_in_degrees * _PI/180.),
-				     static_cast<float>(gamma_in_degrees * _PI/180.));
-  else if (dir_x_vector.size()==3 && dir_y_vector.size()==3 && dir_z_vector.size()==3)
+#if 0
+  if (alpha_in_degrees != 10000000.F 
+      || beta_in_degrees != 10000000.F 
+      || gamma_in_degrees != 10000000.F)
     {
-      
+      // one of the Euler angles was set. Now check if all were set
+      if (!(alpha_in_degrees != 10000000.F 
+	    && beta_in_degrees != 10000000.F 
+	    && gamma_in_degrees != 10000000.F))
+	{
+	  warning("Shape3DWithOrientation: one of the Euler angles was set, but not all");
+	  return true;
+	}
+      set_directions_from_Euler_angles(                                 
+				       static_cast<float>(alpha_in_degrees * _PI/180.),
+				       static_cast<float>(beta_in_degrees * _PI/180.),
+				       static_cast<float>(gamma_in_degrees * _PI/180.));
     }
   else
     {
-      warning("Either specify Euler angles or the directions (which each be a list of 3 numbers.\n");
-      return false;
-      dir_x = CartesianCoordinate3D<float>(static_cast<float>(dir_x_vector[0]),
-					   static_cast<float>(dir_x_vector[1]),
-					   static_cast<float>(dir_x_vector[2]));
-      dir_y = CartesianCoordinate3D<float>(static_cast<float>(dir_y_vector[0]),
-					   static_cast<float>(dir_y_vector[1]),
-					   static_cast<float>(dir_y_vector[2]));
-      dir_z = CartesianCoordinate3D<float>(static_cast<float>(dir_z_vector[0]),
-					   static_cast<float>(dir_z_vector[1]),
-					   static_cast<float>(dir_z_vector[2]));
+      // assume that directions have been set
     }
+#endif
+  // make sure that indices etc are ok
+  if (this->set_direction_vectors(_directions) == Succeeded::no)
+    {
+      warning("Direction vectors should be a 3x3 matrix");
+      return true;
+    }
+
   return Shape3D::post_processing();
 }
 
@@ -187,8 +228,11 @@ void
 Shape3DWithOrientation::
 set_key_values()
 {
+  base_type::set_key_values();
+#if 0
   alpha_in_degrees = static_cast<float>(get_angle_alpha()*180./_PI);
   beta_in_degrees = static_cast<float>(get_angle_beta()*180./_PI);
   gamma_in_degrees = static_cast<float>(get_angle_gamma()*180./_PI);
+#endif
 }
 END_NAMESPACE_STIR

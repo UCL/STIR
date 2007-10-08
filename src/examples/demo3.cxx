@@ -30,7 +30,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/IO/DefaultOutputFileFormat.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
@@ -50,14 +50,14 @@ private:
   std::string input_filename;
   std::string template_filename;
   shared_ptr<BackProjectorByBin> back_projector_sptr;
-  shared_ptr<OutputFileFormat> output_file_format_sptr;
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
 void
 MyStuff::set_defaults()
 {
   back_projector_sptr = new BackProjectorByBinUsingInterpolation;
-  output_file_format_sptr = new DefaultOutputFileFormat;
+  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void 

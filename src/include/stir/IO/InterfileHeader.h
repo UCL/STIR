@@ -30,22 +30,20 @@
   $Date$
   $Revision$
 
-  \todo Different datasets in 1 header are not yet supported.
-
   See http://www.HammersmithImanet.com/~kris for a description of the full
   proposal for Interfile headers for 3D PET.
 */
 
 
-#ifndef __INTERFILEHEADER_H__
-#define __INTERFILEHEADER_H__
+#ifndef __stir_INTERFILEHEADER_H__
+#define __stir_INTERFILEHEADER_H__
 
 #include "stir/ByteOrder.h"
 #include "stir/NumericInfo.h"
 #include "stir/KeyParser.h"
 #include "stir/PatientPosition.h"
 #include "stir/ProjDataFromStream.h"
-
+#include "stir/TimeFrameDefinitions.h"
 
 
 START_NAMESPACE_STIR
@@ -60,12 +58,14 @@ class ProjDataInfo;
 class InterfileHeader : public KeyParser
 {
 public:
+  //! A value that can be used to signify that a variable has not been set during parsing.
+  static const double double_value_not_set;
+
   InterfileHeader();
 
   virtual ~InterfileHeader() {}
 
 protected:
-
   // Returns false if OK, true if not.
   virtual bool post_processing();
 
@@ -93,8 +93,8 @@ private:
 
   // Louvain la Neuve style of 'image scaling factors'
   double lln_quantification_units;
-
-  void read_matrix_info();
+ protected:
+  virtual void read_matrix_info();
   void read_frames_info();
 
 public :
@@ -119,13 +119,15 @@ public :
 	
   int			num_dimensions;
   int			num_time_frames;
-  vector<string>	matrix_labels;
-  vector<IntVect>	matrix_size; 
-  DoubleVect		pixel_sizes;
-  // KT 03/11/98 cannot remove 'sqc' because of VC++ compiler bug (it complains about matrix_size.resize(1))
-  IntVect		sqc; 
-  vector<DoubleVect>	image_scaling_factors;
-  UlongVect		data_offset;
+  std::vector<std::string>	matrix_labels;
+  std::vector<std::vector<int> > matrix_size; 
+  std::vector<double>	pixel_sizes;
+  std::vector<double> image_relative_start_times;
+  std::vector<double> image_durations;
+  std::vector<std::vector<double> > image_scaling_factors;
+  std::vector<unsigned long> data_offset;
+
+  TimeFrameDefinitions time_frame_definitions;
 };
 
 
@@ -135,13 +137,15 @@ public :
   */
 class InterfileImageHeader : public InterfileHeader
 {
+ private:
+  typedef InterfileHeader base_type;
+
 public:
-  InterfileImageHeader()
-     : InterfileHeader()
-   {}
+  InterfileImageHeader();
+  std::vector<double>	first_pixel_offsets;
 
 protected:
-
+  virtual void read_matrix_info();
   //! Returns false if OK, true if not.
   virtual bool post_processing();
 
@@ -213,4 +217,4 @@ private:
 
 END_NAMESPACE_STIR
 
-#endif // __INTERFILEHEADER_H__
+#endif // __stir_INTERFILEHEADER_H__

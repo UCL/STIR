@@ -88,7 +88,14 @@ coordinateTests::run_tests()
     check_if_zero(a- a_plus_b, "testing operator+=(BasicCoordinate)");
     a -= b;
     check_if_equal(a, copy_of_a, "testing operator-=(BasicCoordinate)");
-    
+
+    {
+      BasicCoordinate<3, float> b2(3.F);
+      check_if_zero(norm(b2-3.F), "testing constructor with single element, and operator-");
+      b2.fill(4.F);
+      check_if_zero(norm(b2-4.F), "testing fill, and operator-");
+    } 
+
     {
       BasicCoordinate<3, float> b1 = b;
       check_if_zero(norm(b1-b), "testing copy constructor, and operator-");
