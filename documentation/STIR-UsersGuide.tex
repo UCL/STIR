@@ -515,9 +515,10 @@ it to \textbf{STIR/local/}.
 Enabling ECAT7 support}
 \label{sec:ECAT7support}
 At present, STIR uses parts of the Louvain la Neuve ecat library (called LLN in
-the rest of this document), 
-which is now available on the STIR web-site thanks to Merence 
-Sibomana. However, the most recent version is available at \R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat/z_matrix_70/ }{ftp://ftp.topo.ucl.ac.be/pub/ecat/z\_matrix\_70/}. 
+the rest of this document). Unfortunately, this library is no longer
+available via the Louvain la Neuve website. Please check the STIR
+mailing lists for more information.
+
 In any case, use only a version dated after 20 July 2004. You 
 have to download that library and issue 'make --f Makefile.unix' 
 (or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
@@ -718,11 +719,10 @@ files and projects called \texttt{local*}. You will probably have to delete thos
 maually from the projects.
 
 
-At present, STIR uses parts of the Louvain la Neuve ecat library, 
-which is now available on the STIR web-site thanks to Merence 
-Sibomana. However, the most recent version is available at\\
- \R2Lurl{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z_matrix_70/ }{ftp://dormeur.topo.ucl.ac.be/pub/ecat/z\_matrix\_70/}. \\
-In any case, use only a version dated after 20 July 2004. Extract 
+At present, STIR uses parts of the Louvain la Neuve ecat library, see \ref{sec:ECAT7support}. 
+The following are instructions specific to using VC projects.
+
+Extract 
 the library in the following subdirectory of your home directory: \textbf{lln{\textbackslash}ecat}.\footnote{{\small You 
 no longer have to issue 'nmake /f Makefile.win32' in the ecat 
 directory first. The ecat.dsp project takes care of that. Using 
@@ -1023,8 +1023,10 @@ support in STIR.
 
  
 ECAT6 images can be read without conversion. However, only the 
-first frame (ECAT matrix 1,1,1,0,0) will be read.
-
+first frame (ECAT matrix 1,1,1,0,0) will be read.\\
+\textbf{Warning} Due to license problems, the ECAT6 code is no longer distributed
+with STIR. This might be fixable by using the LLN library instead, but this
+will require external contributions. Please check the STIR mailing lists.
 
 
 When ECAT7 support is enabled during compilation of \textit{STIR}, 
