@@ -51,8 +51,9 @@ echo.
 echo --------- TESTS THAT USE INTERPOLATING BACKPROJECTOR --------
 echo.
 echo ------------- Running sensitivity ------------- 
-echo Running %INSTALL_DIR%sensitivity 
-%INSTALL_DIR%sensitivity OSMAPOSL_test_for_sensitivity.par 1> sensitivity.log 2> sensitivity_stderr.log < sensitivity.inp
+echo Running %INSTALL_DIR%OSMAPOSL for sensitivity 
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> sensitivity.log 2> sensitivity_stderr.log < sensitivity.inp
+
 
 echo ---- Comparing output of sensitivity (should be identical up to tolerance)
 echo Running %INSTALL_DIR%compare_image 
@@ -101,8 +102,8 @@ echo.
 echo --------- TESTS THAT USE PROJECTION MATRIX --------
 echo.
 echo ------------- Running sensitivity ------------- 
-echo Running %INSTALL_DIR%sensitivity 
-%INSTALL_DIR%sensitivity OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log < sensitivity.inp
+echo Running %INSTALL_DIR%OSMAPOSL for sensitivity 
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log < sensitivity.inp
 
 echo ---- Comparing output of sensitivity (should be identical up to tolerance)
 echo Running %INSTALL_DIR%compare_image 
