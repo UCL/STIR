@@ -49,6 +49,7 @@ print_usage_and_exit(const char * const prog_name)
 {
   std::cerr << "\nUsage:\n" << prog_name << "\n"
 	    << "\t[--min-scale-factor number]\n"
+	    << "\t[--max-scale-factor number]\n"
 	    << "\tattenuation_correction_factors\n"
 	    << "\temission_projdata\n"
 	    << "\tscatter_projdata\n" 
@@ -75,6 +76,7 @@ int main(int argc, const char *argv[])
   const char * const prog_name = argv[0];
 
   float min_scale_factor = 1.E-5F;
+  float max_scale_factor = 1.E5F;
   // option processing
   while (argc>1 && argv[1][1] == '-')
     {
@@ -83,7 +85,13 @@ int main(int argc, const char *argv[])
 	  min_scale_factor = atof(argv[2]);
 	  argc-=2; argv +=2;
 	}
+      else if (strcmp(argv[1], "--max-scale-factor")==0)
+	{
+	  max_scale_factor = atof(argv[2]);
+	  argc-=2; argv +=2;
+	}
       else
+
 	{
 	  std::cerr << "\nUnknown option: " << argv[1];
 	  print_usage_and_exit(prog_name);
@@ -155,6 +163,9 @@ int main(int argc, const char *argv[])
 	    threshold_lower(scale_factors.begin_all(), 
 			    scale_factors.end_all(),
 			    min_scale_factor);
+	    threshold_upper(scale_factors.begin_all(), 
+			    scale_factors.end_all(),
+			    max_scale_factor);
 	    std::cout << "After thresholding:\n";
 	    std::cout << scale_factors;
 	    VectorWithOffset<float> kernel(-1,1);
@@ -191,6 +202,9 @@ int main(int argc, const char *argv[])
 	    threshold_lower(scale_factors.begin_all(), 
 			    scale_factors.end_all(),
 			    min_scale_factor);
+	    threshold_upper(scale_factors.begin_all(), 
+			    scale_factors.end_all(),
+			    max_scale_factor);
 	    std::cout << "After thresholding:\n";
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
