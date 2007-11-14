@@ -678,7 +678,8 @@ ArrayTests::run_tests()
 	  sum_check += test4[i].sum()*(i+10.F);
 	check_if_equal(test4bis.sum() ,sum_check, "test operator *=(Array4D)");
       }
-      const Array<4,float> test4quat = test4bis / test4;
+      // divide test4, but add a tiny number to avoid division by zero
+      const Array<4,float> test4quat = test4bis / (test4+.00001F);
       test4ter.grow(test4.get_index_range());
       check_if_equal(test4ter ,test4quat, "test operator /(Array4D)");
     } 
