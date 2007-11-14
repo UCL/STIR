@@ -151,9 +151,9 @@ NestedIteratorTests::run_tests()
 
     const Array<2,elemT> test2 = test;
 
-    check(test2.begin()->begin() == BeginEndFunction<Array<2,elemT>::const_iterator>().begin(test2.begin()), "begin");
-    check((test2.begin()+1)->begin() == BeginEndFunction<Array<2,elemT>::const_iterator>().begin(test2.begin()+1), "begin");
-    typedef NestedIterator<Array<2,elemT>::const_iterator>	
+    check(test2.begin()->begin() == ConstBeginEndFunction<Array<2,elemT>::const_iterator>().begin(test2.begin()), "begin");
+    check((test2.begin()+1)->begin() == ConstBeginEndFunction<Array<2,elemT>::const_iterator>().begin(test2.begin()+1), "begin");
+    typedef NestedIterator<Array<2,elemT>::const_iterator, ConstBeginEndFunction<Array<2,elemT>::const_iterator> >	
       FullIter;
     FullIter fiter1;
     FullIter fiter(test2.begin(),test2.end());
