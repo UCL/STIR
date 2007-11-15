@@ -150,10 +150,16 @@ NestedIteratorTests::run_tests()
     }
 
     const Array<2,elemT> test2 = test;
+# if defined __GNUC__ &&  __GNUC__ <= 4 
+    // sadly, we seem to need a work-around for gcc 3 or earlier
+    typedef  BeginEndFunction<Array<2,elemT>::const_iterator> constbeginendfunction_type;
+#else
+    typedef ConstBeginEndFunction<Array<2,elemT>::const_iterator> constbeginendfunction_type;
+#endif
 
-    check(test2.begin()->begin() == ConstBeginEndFunction<Array<2,elemT>::const_iterator>().begin(test2.begin()), "begin");
-    check((test2.begin()+1)->begin() == ConstBeginEndFunction<Array<2,elemT>::const_iterator>().begin(test2.begin()+1), "begin");
-    typedef NestedIterator<Array<2,elemT>::const_iterator, ConstBeginEndFunction<Array<2,elemT>::const_iterator> >	
+    check(test2.begin()->begin() == constbeginendfunction_type().begin(test2.begin()), "begin");
+    check((test2.begin()+1)->begin() == constbeginendfunction_type().begin(test2.begin()+1), "begin");
+    typedef NestedIterator<Array<2,elemT>::const_iterator, constbeginendfunction_type>	
       FullIter;
     FullIter fiter1;
     FullIter fiter(test2.begin(),test2.end());
