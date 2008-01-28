@@ -30,18 +30,15 @@ $(dir)_SOURCES = \
 	find_fwhm_in_image.cxx \
 	line_profiles_through_projdata.cxx \
 	interpolate_projdata.cxx \
-	read_input_function.cxx \
 	calculate_attenuation_coefficients.cxx \
 	make_grid_image.cxx \
 	make_binary_image.cxx \
 	apply_patlak_to_images.cxx \
-	apply_logan_to_images.cxx \
 	list_TAC_ROI_values.cxx \
 	Bland_Altman_plot.cxx \
 	get_dynamic_images_from_parametric_images.cxx \
 	get_total_counts.cxx \
 	mult_model_with_dyn_images.cxx \
-	read_dynamic_images.cxx \
 	extract_direct_sinograms.cxx \
 	image_flip_x.cxx \
 	write_patlak_matrix.cxx \
@@ -49,10 +46,6 @@ $(dir)_SOURCES = \
 	mult_image_parameters.cxx \
 	precompute_denominator_SPS.cxx \
 	cleanup966.cxx \
-	create_some_points.cxx \
-	create_a_point.cxx \
-	print_voxel_value.cxx \
-	extract_kernel.cxx \
 	Hounsfield2mu.cxx
 
 #	CoG.cxx \
