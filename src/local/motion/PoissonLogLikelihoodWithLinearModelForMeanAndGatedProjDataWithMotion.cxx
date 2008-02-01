@@ -423,8 +423,10 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 		//forward_transformer_ptr->clone();
 		new Transform3DObjectImageProcessor<float>(*forward_transformer_ptr);
 	      // TODO get rid if dynamic cast when using boost::shared_ptr
-	      dynamic_cast<Transform3DObjectImageProcessor<float> &>(*transpose_transformer_sptr).
-	      set_do_transpose(!forward_transformer_ptr->get_do_transpose());
+	      Transform3DObjectImageProcessor<float> & transpose_transformer =
+		dynamic_cast<Transform3DObjectImageProcessor<float> &>(*transpose_transformer_sptr);
+	      transpose_transformer.
+		set_do_transpose(!forward_transformer_ptr->get_do_transpose());
 	      shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate =
 		new PostsmoothingBackProjectorByBin(this->projector_pair_ptr->
 						      get_back_projector_sptr(),
