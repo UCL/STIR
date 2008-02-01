@@ -148,7 +148,7 @@ public:
  */
  void decay_correct_frames()  ;
  void set_if_decay_corrected(const bool is_decay_corrected)  ;
- void DynamicDiscretisedDensity::set_isotope_halflife(const float isotope_halflife);
+ void set_isotope_halflife(const float isotope_halflife);
  void set_calibration_factor(const float calibration_factor) ;
 private:
  // warning: if adding any new members, you have to change the copy constructor as well.
