@@ -82,7 +82,6 @@ public:
   typedef std::vector<Record>::const_iterator const_iterator;
 
    ~Polaris_MT_File () {};
-   typedef std::vector<Record>::const_iterator const_iterator;
    Polaris_MT_File(const std::string& filename);   
    
    //! get the \a n-th complete record
