@@ -39,6 +39,8 @@ namespace BSpline {
   public:
     typedef pos_type result_type;
 
+    virtual ~PieceWiseFunction() {}
+
     virtual pos_type kernel_length_left() const = 0;
     virtual int kernel_total_length() const = 0;
     pos_type kernel_length_right() const 
