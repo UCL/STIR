@@ -42,7 +42,11 @@
 // for read_from_file
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
-#ifndef STIR_DEVEL
+#ifdef STIR_DEVEL
+//#define STIR_USE_GE_IO
+#endif
+
+#ifndef STIR_USE_GE_IO
 #include "stir/ProjDataGEAdvance.h"
 #else
 #include "local/stir/IO/GE/ProjDataVOLPET.h"
@@ -50,7 +54,7 @@
 #include "local/stir/IO/GE/stir_RDF.h"
 #include "local/stir/IO/GE/ProjDataRDF.h"
 #endif
-#endif
+#endif // STIR_USE_GE_IO
 #ifdef HAVE_IE
 #include "local/stir/IO/GE/ProjDataIE.h"
 #endif
@@ -118,7 +122,7 @@ read_from_file(const string& filename,
   if (strncmp(signature, "2D3D", 4) == 0)
   {
 //    if (ask("Read with old code (Y) or new (N)?",false))
-#ifndef STIR_DEVEL 
+#ifndef STIR_USE_GE_IO 
       {
 #ifndef NDEBUG
 	warning("ProjData::read_from_file trying to read %s as GE Advance file", 
@@ -136,7 +140,7 @@ read_from_file(const string& filename,
 	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
 	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename) );
       }
-#endif // STIR_DEVEL to differentiate between Advance and VOLPET code
+#endif // STIR_USE_GE_IO to differentiate between Advance and VOLPET code
   }
 
   delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
