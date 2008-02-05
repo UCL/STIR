@@ -178,81 +178,86 @@ private:
 	check(write_data(os, floats, NumericInfo<float>(), scale)==Succeeded::yes, "write_data could not write float array");
         close_file(os);
 	check_if_equal(scale ,1., "test out/in: floats written as floats" );
-    }
+      }
       float scale = 1;
+      bool write_data_ok;
       {
 	ofstream os;
 	open_write_binary(os, "output.other");
-	check(write_data(os,floats, output_type_info, scale)==Succeeded::yes, "write_data could not write float array as other_type");
+	write_data_ok=check(write_data(os,floats, output_type_info, scale)==Succeeded::yes, "write_data could not write float array as other_type");
         close_file(os);
       }
 
-      Array<num_dimensions,output_type> data_read_back(floats.get_index_range());
-      {
-	open_read_binary(is, "output.other");
-	check(read_data(is, data_read_back)==Succeeded::yes, "read_data could not read from output.other");
-        close_file(is);        
-      }
-
-      // compare write_data of floats as other_type with convert()
-      {
-	float newscale = scale;
-	Array<num_dimensions,output_type> floatsconverted = 
-	  convert_array(newscale, floats, NumericInfo<output_type>());
-	check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
-	check_if_equal(floatsconverted ,data_read_back, "test read_data <-> convert : data");
-      }
-
-      // compare floats with data_read_back*scale
-      {
-	Array<num_dimensions,float> diff = floats;
-	diff /= scale;
-	{
-	  typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
-	  typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back.begin_all_const();
-	  while(diff_iter!=diff.end_all())
-	    {
-	      *diff_iter++ -= *data_read_back_iter++;
-	    }
-	}
-	 
-	// difference should be maximum .5
-	// the next test relies on how check_if_zero works
-	diff *= float(2*get_tolerance());
-	check_if_zero(diff, "test out/in: floats written as other_type" );
-      }
-
-
-      // compare read_data of floats as other_type with above
-      {
-	Array<num_dimensions,output_type> data_read_back2(floats.get_index_range());
-	
-	ifstream is;
-	open_read_binary(is, "output.flt");
-	
-	float in_scale = 0;
-	check(read_data(is, data_read_back2, NumericType::FLOAT, in_scale)==Succeeded::yes, "read_data could not read from output.other");
-	// compare floats with data_read_back2*scale
-	{
-	  Array<num_dimensions,float> diff = floats;
-	  diff /= in_scale;
+      if (write_data_ok)
+	{ 
+	  // only do reading test if data was written
+	  Array<num_dimensions,output_type> data_read_back(floats.get_index_range());
 	  {
-	    typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
-	    typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back2.begin_all_const();
-	    while(diff_iter!=diff.end_all())
-	      {
-		*diff_iter++ -= *data_read_back_iter++;
-	      }
+	    open_read_binary(is, "output.other");
+	    check(read_data(is, data_read_back)==Succeeded::yes, "read_data could not read from output.other");
+	    close_file(is);        
 	  }
+
+	  // compare write_data of floats as other_type with convert()
+	  {
+	    float newscale = scale;
+	    Array<num_dimensions,output_type> floatsconverted = 
+	      convert_array(newscale, floats, NumericInfo<output_type>());
+	    check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
+	    check_if_equal(floatsconverted ,data_read_back, "test read_data <-> convert : data");
+	  }
+
+	  // compare floats with data_read_back*scale
+	  {
+	    Array<num_dimensions,float> diff = floats;
+	    diff /= scale;
+	    {
+	      typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
+	      typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back.begin_all_const();
+	      while(diff_iter!=diff.end_all())
+		{
+		  *diff_iter++ -= *data_read_back_iter++;
+		}
+	    }
 	 
-	  // difference should be maximum .5
-	  // the next test relies on how check_if_zero works
-	  diff *= float(2*get_tolerance());
-	  check_if_zero(diff, "test out/in: floats written as other_type" );
-	}
-      }
+	    // difference should be maximum .5
+	    // the next test relies on how check_if_zero works
+	    diff *= float(2*get_tolerance());
+	    check_if_zero(diff, "test out/in: floats written as other_type" );
+	  }
+
+
+	  // compare read_data of floats as other_type with above
+	  {
+	    Array<num_dimensions,output_type> data_read_back2(floats.get_index_range());
+	
+	    ifstream is;
+	    open_read_binary(is, "output.flt");
+	
+	    float in_scale = 0;
+	    check(read_data(is, data_read_back2, NumericType::FLOAT, in_scale)==Succeeded::yes, "read_data could not read from output.other");
+	    // compare floats with data_read_back2*scale
+	    {
+	      Array<num_dimensions,float> diff = floats;
+	      diff /= in_scale;
+	      {
+		typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
+		typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back2.begin_all_const();
+		while(diff_iter!=diff.end_all())
+		  {
+		    *diff_iter++ -= *data_read_back_iter++;
+		  }
+	      }
+	 
+	      // difference should be maximum .5
+	      // the next test relies on how check_if_zero works
+	      diff *= float(2*get_tolerance());
+	      check_if_zero(diff, "test out/in: floats written as other_type" );
+	    }
+	  }
+	  remove("output.other");
+	} // end of if(write_data_ok)
       remove("output.flt");
-      remove("output.other");
     }
 
 public:
