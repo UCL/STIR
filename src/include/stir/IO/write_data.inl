@@ -136,7 +136,7 @@ namespace detail
 	ScaleT new_scale_factor=scale_factor;
 	Array<1,OutputType> data_tmp = 
 	  convert_array(new_scale_factor, data, NumericInfo<OutputType>());
-	if (new_scale_factor!=scale_factor)
+	if (std::fabs(new_scale_factor-scale_factor)> scale_factor*.001)
 	  return Succeeded::no;
 	return 
           write_data_1d(s, data_tmp, byte_order, /*can_corrupt_data*/ true);
