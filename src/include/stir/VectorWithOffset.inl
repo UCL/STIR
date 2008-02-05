@@ -490,7 +490,8 @@ VectorWithOffset<T>::operator= (const VectorWithOffset &il)
 
 template <class T>
 VectorWithOffset<T>::VectorWithOffset(const VectorWithOffset &il) 
-  : pointer_access(false)
+  : pointer_access(false),
+    _owns_memory_for_data(true)
 {
   this->init();
   *this = il;		// Uses assignment operator (above)
