@@ -618,7 +618,7 @@ find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time,
 {
   
   unsigned  LastChannelState=0;
-  unsigned  ChState;
+  unsigned  ChState=0;;
   int PulseWidth = 0 ;
   unsigned long StartPulseTime=0;
  
