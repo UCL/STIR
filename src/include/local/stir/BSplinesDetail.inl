@@ -36,6 +36,18 @@ namespace BSpline {
   ///// implementation functions Out Of the Class ////////
 namespace detail {
 		
+  // 1d specialisation
+  template <typename out_elemT, typename in_elemT>
+  void 
+  set_coef(Array<1, out_elemT>& coeffs, const Array<1, in_elemT>& input,
+	   const BasicCoordinate<1,double>& z1s,
+	   const BasicCoordinate<1,double>& z2s,
+	   const BasicCoordinate<1,double>& lambdas)
+  {				
+    BSplines_coef(coeffs.begin(), coeffs.end(), 
+		  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
+  }
+
   template <int num_dimensions, typename out_elemT, typename in_elemT>
   void
   set_coef(Array<num_dimensions, out_elemT>& coeffs, 
@@ -58,18 +70,6 @@ namespace detail {
       }
   }			
 		
-  // 1d specialisation
-  template <typename out_elemT, typename in_elemT>
-  void 
-  set_coef(Array<1, out_elemT>& coeffs, const Array<1, in_elemT>& input,
-	   const BasicCoordinate<1,double>& z1s,
-	   const BasicCoordinate<1,double>& z2s,
-	   const BasicCoordinate<1,double>& lambdas)
-  {				
-    BSplines_coef(coeffs.begin(), coeffs.end(), 
-		  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
-  }
-
 #if 0
   template <typename pos_type>
   struct BW
