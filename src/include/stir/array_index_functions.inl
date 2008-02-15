@@ -55,7 +55,9 @@ get_min_indices_help(is_not_1d, const Array<num_dimensions, T>& a)
     return join(a.get_min_index(), get_min_indices(*a.begin()));
   else
     { 
-      BasicCoordinate<num_dimensions, int> tmp;
+      // a is empty.  Not clear what to return, so we just return 0
+      // It would be better to throw an exception.
+      BasicCoordinate<num_dimensions, int> tmp(0);
       return tmp;
     }
 }

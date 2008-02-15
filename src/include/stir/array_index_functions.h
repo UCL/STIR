@@ -1,6 +1,22 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 #ifndef __stir_array_index_functions_h_
 #define __stir_array_index_functions_h_
@@ -9,16 +25,12 @@
   \file 
   \ingroup Array
  
-  \brief a variety of useful functions for indexing Array objects
+  \brief a variety of useful functions for indexing stir::Array objects
 
   \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -51,6 +63,9 @@ get(const Array<num_dimensions,elemT>& a, const BasicCoordinate<num_dimensions,i
 
 
 //! Get the first multi-dimensional index of the array
+/*! \todo If the array \arg a is empty, we return an object where all indices are 0.
+    It would be better to throw an exception.
+*/
 template <int num_dimensions, typename T>
 inline
 BasicCoordinate<num_dimensions, int>
