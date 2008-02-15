@@ -150,8 +150,8 @@ NestedIteratorTests::run_tests()
     }
 
     const Array<2,elemT> test2 = test;
-# if defined __GNUC__ &&  __GNUC__ < 4 
-    // sadly, we seem to need a work-around for gcc 3 or earlier
+# if defined __GNUC__ &&  __GNUC__ < 3
+    // at some point, it seemed we needed a work-around for gcc 3 or earlier, but that is no longer the case
     typedef  BeginEndFunction<Array<2,elemT>::const_iterator> constbeginendfunction_type;
 #else
     typedef ConstBeginEndFunction<Array<2,elemT>::const_iterator> constbeginendfunction_type;
