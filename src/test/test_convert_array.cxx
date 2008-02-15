@@ -69,8 +69,8 @@ convert_array_Tests::run_tests()
       float scale_factor = float(1);
       Array<1,short> ti2 = convert_array(scale_factor, tf1, NumericInfo<short>());
       
-      check(scale_factor == float(1));
-      check(ti1 == ti2);
+      check(scale_factor == float(1),"test convert_array float->short 1D");
+      check_if_equal(ti1, ti2, "test convert_array float->short 1D");
     }
     
     
