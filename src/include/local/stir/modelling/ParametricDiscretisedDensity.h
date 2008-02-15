@@ -34,7 +34,6 @@
 // for ParametricVoxelsOnCartesianGrid typedef 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "local/stir/modelling/KineticParameters.h"
-#define NUM_PARAMS 2
 START_NAMESPACE_STIR
 template <typename DiscDensT>
 class ParametricDiscretisedDensity;
@@ -76,20 +75,21 @@ public DiscDensT
   //! A static member to read an image from file
   static ParametricDiscretisedDensity * read_from_file(const std::string& filename);
 
+  //! Get number of parameters in a single densel
+  static unsigned int
+    get_num_params();
+
   ParametricDiscretisedDensity(const base_type& density)
     : base_type(density)
     {}
 
-  ParametricDiscretisedDensity(const VectorWithOffset<SingleDiscretisedDensityType> & densities);
+  // implementation works, although only for VoxelsOnCartesianGrid , but not needed for now
+  // ParametricDiscretisedDensity(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > & densities);
 
-  ParametricDiscretisedDensity create_parametric_image(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > &  densities) const;
+  // implementation works, but not needed for now
+  // void update_parametric_image(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > &  densities);
 
-  ParametricDiscretisedDensity update_parametric_image(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > &  densities);
-
-  ParametricDiscretisedDensity update_parametric_image(const shared_ptr<SingleDiscretisedDensityType> &  single_density_sptr, const unsigned int param_num);
-#if 0
-  SingleDiscretisedDensityType & update_parametric_image(const unsigned int param_num);
-#endif
+  void update_parametric_image(const SingleDiscretisedDensityType &  single_density, const unsigned int param_num);
 
   full_iterator begin_all()
     { return full_iterator(base_type::begin_all(), base_type::end_all()); }
@@ -168,6 +168,7 @@ public DiscDensT
    //@}
 };
 
+#define NUM_PARAMS 2
 /*! 
   \var typedef VoxelsOnCartesianGrid<KineticParameters<NUM_PARAMS,float> > ParametricVoxelsOnCartesianGridBaseType
   \warning At the moment only Cartesian Voxelised Parametric Images, with just two paramaters have been implemented.
@@ -183,10 +184,10 @@ typedef VoxelsOnCartesianGrid<KineticParameters<NUM_PARAMS,float> >
 //!\var typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType> ParametricVoxelsOnCartesianGrid
 typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>
    ParametricVoxelsOnCartesianGrid;
+#undef NUM_PARAMS
 
 
 END_NAMESPACE_STIR
-#undef NUM_PARAMS
 //#include "local/stir/modelling/ParametricDiscretisedDensity.inl"
 
 #endif //__stir_modelling_ParametricDiscretisedDensity_H__
