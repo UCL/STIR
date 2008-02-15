@@ -44,9 +44,6 @@
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT7ImageInputFileFormat.h"
 #endif
-#ifdef STIR_DEVEL
-#include "local/stir/IO/GE/NiffImageInputFileFormat.h"
-#endif
 #endif
 
 START_NAMESPACE_STIR
@@ -70,9 +67,6 @@ static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4);
 #endif
 static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000); // very low priority it doesn't have a signature 
-#ifdef STIR_DEVEL
-static RegisterInputFileFormat<GE_IO::NiffImageInputFileFormat> idummy5(5);
-#endif
 #else
 // TODO
 InputFileFormatRegistry<DiscretisedDensity<3,float> >  registry;
@@ -82,8 +76,5 @@ InputFileFormatRegistry<DiscretisedDensity<3,float> >  registry;
   registry.add_to_registry(new ecat::ecat7::ECAT7ImageInputFileFormat,4);
 #endif
   registry.add_to_registry(new ecat::ecat6::ECAT6ImageInputFileFormat,100000); // last as it doesn't have a signature 
-#ifdef STIR_DEVEL
-  registry.add_to_registry(new GE_IO::NiffImageInputFileFormat,5);
-#endif
 #endif
 END_NAMESPACE_STIR
