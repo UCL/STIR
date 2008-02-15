@@ -63,7 +63,7 @@ ParametricQuadraticPrior<TargetT>::post_processing()
     }
   else
     {
-      for (unsigned int param_num=1; param_num<=2; ++param_num)
+      for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
 	{
 	  this->_single_quadratic_priors[param_num].set_weights(this->get_weights()); // ChT: At the moment weights are treated equally.
 	  //ChT: ToCheck
@@ -106,7 +106,7 @@ ParametricQuadraticPrior<TargetT>::ParametricQuadraticPrior(const bool only_2D_v
   this->penalisation_factor = penalisation_factor_v; // should be able to ommit it
  // construct _single_quadratic_priors
   this->_single_quadratic_priors.resize(1,2);
-   for (unsigned int param_num=1; param_num<=2; ++param_num)
+   for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
 	  this->_single_quadratic_priors[param_num].set_penalisation_factor(penalisation_factor_v);
    //What to do for the only 2D?
 }
@@ -149,7 +149,7 @@ ParametricQuadraticPrior<TargetT>::
 compute_value(const TargetT &current_image_estimate)
 {
   double sum=0.; // At the moment I will have equal weights... so it is the sum (or the mean???) value of the two methods
-  for (unsigned int param_num=1; param_num<=2; ++param_num)
+  for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     sum+=this->_single_quadratic_priors[param_num].compute_value(current_image_estimate.construct_single_density(param_num));  
   return sum;
 }  
@@ -160,11 +160,11 @@ ParametricQuadraticPrior<TargetT>::
 compute_gradient(TargetT& prior_gradient, 
 		 const TargetT &current_image_estimate)
 {
-  for (unsigned int param_num=1; param_num<=2; ++param_num)
+  for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
-      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType single_density = prior_gradient.construct_single_density(param_num);
+      typename TargetT::SingleDiscretisedDensityType single_density = prior_gradient.construct_single_density(param_num);
       this->_single_quadratic_priors[param_num].compute_gradient(single_density,current_image_estimate.construct_single_density(param_num));  
-      prior_gradient.update_parametric_image(single_density.clone(),param_num);
+      prior_gradient.update_parametric_image(single_density,param_num);
     }
   if (gradient_filename_prefix.size()>0)
     {
@@ -186,9 +186,9 @@ compute_Hessian(TargetT& prior_Hessian_for_single_densel,
 		const BasicCoordinate<3,int>& coords, const unsigned int input_param_num,
 		const TargetT &current_image_estimate)
 {
-  for (unsigned int param_num=1; param_num<=2; ++param_num)
+  for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
-      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType single_density = prior_Hessian_for_single_densel.construct_single_density(param_num);
+      typename TargetT::SingleDiscretisedDensityType single_density = prior_Hessian_for_single_densel.construct_single_density(param_num);
       if (param_num == input_param_num)
 	{	  
 	  this->_single_quadratic_priors[param_num].compute_Hessian(single_density,
@@ -206,11 +206,11 @@ void
 ParametricQuadraticPrior<TargetT>::parabolic_surrogate_curvature(TargetT& parabolic_surrogate_curvature, 
 			const TargetT &current_image_estimate)
 {
-  for (unsigned int param_num=1; param_num<=2; ++param_num)
+  for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
-      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType single_density = parabolic_surrogate_curvature.construct_single_density(param_num);
+      typename TargetT::SingleDiscretisedDensityType single_density = parabolic_surrogate_curvature.construct_single_density(param_num);
       this->_single_quadratic_priors[param_num].parabolic_surrogate_curvature(single_density,current_image_estimate.construct_single_density(param_num));
-      parabolic_surrogate_curvature.update_parametric_image(single_density.clone(),param_num);
+      parabolic_surrogate_curvature.update_parametric_image(single_density,param_num);
     }
 }
 
@@ -220,15 +220,15 @@ ParametricQuadraticPrior<TargetT>::
 add_multiplication_with_approximate_Hessian(TargetT& output,
 					    const TargetT& input) const
 {
-  for (unsigned int param_num=1; param_num<=2; ++param_num)
+  for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
-      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType single_density = output.construct_single_density(param_num);
+      typename TargetT::SingleDiscretisedDensityType single_density = output.construct_single_density(param_num);
       Succeeded if_success=this->_single_quadratic_priors[param_num].add_multiplication_with_approximate_Hessian(single_density,
 														 input.construct_single_density(param_num));
       if(if_success==Succeeded::no)
 	return if_success;
       else
-	output.update_parametric_image(single_density.clone(),param_num);
+	output.update_parametric_image(single_density,param_num);
     }
   return Succeeded::yes;
 }
