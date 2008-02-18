@@ -5,7 +5,6 @@
 dir := local/IO
 
 $(dir)_LIB_SOURCES:= \
-	niff.cxx \
 	InterfileDynamicDiscretisedDensityOutputFileFormat.cxx \
 	InterfileParametricDensityOutputFileFormat.cxx \
 	OutputFileFormat_default.cxx
