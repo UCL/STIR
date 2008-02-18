@@ -99,6 +99,12 @@ public:
 
   //! serialisation ctor
   RelatedViewgrams(PMessage& msg);
+  
+#ifdef _MPI
+  //made public for parallel version
+  inline RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
+                   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used);
+#endif
 
 
 
@@ -231,10 +237,11 @@ private:
   //! actual implementation of the above function
   void debug_check_state() const;
 
+#ifndef _MPI
   //! a private constructor which simply sets the members
   inline RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
                    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used);
-
+#endif
 };
 
 END_NAMESPACE_STIR
