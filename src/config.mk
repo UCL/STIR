@@ -79,6 +79,35 @@ ifeq ($(CC),gcc)
 EXTRA_CFLAGS =-Wall -Wno-deprecated
 endif
 
+#** PARALLEL FLAGS***
+
+ifeq ($(CXX),mpicxx)
+MPICFLAGS =-DMPICH_IGNORE_CXX_SEEK -D_MPI
+ifeq ($(TIMINGS),TRUE)
+  MPICFLAGS =-DMPICH_IGNORE_CXX_SEEK -D_MPI -DTIMINGS
+endif  
+endif
+
+ifeq ($(CXX),mpic++)
+MPICFLAGS =-DMPICH_IGNORE_CXX_SEEK -D_MPI
+ifeq ($(TIMINGS),TRUE)
+  MPICFLAGS =-DMPICH_IGNORE_CXX_SEEK -D_MPI -DTIMINGS
+endif  
+endif
+
+ifeq ($(CXX),mpiCC)
+MPICFLAGS =-DMPICH_IGNORE_CXX_SEEK -D_MPI
+ifeq ($(TIMINGS),TRUE)
+  MPICFLAGS =-DMPICH_IGNORE_CXX_SEEK -D_MPI -DTIMINGS
+endif  
+endif
+
+ifeq ($(USE_OPENMP),TRUE)
+  OPENMPCFLAGS=-fopenmp
+else
+  OPENMPCFLAGS=
+endif
+
 #** EXTRA_LINKFLAGS: for linker
 #allow the user to get extra options for link time
 EXTRA_LINKFLAGS=
@@ -124,13 +153,13 @@ NONOPTIM_LINKFLAGS=-g
 DEBUG_LINKFLAGS=-g
 
 ifeq ($(BUILD),debug)
-CFLAGS = $(DEBUG_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+CFLAGS = $(DEBUG_CFLAGS) $(OPENMPCFLAGS) $(MPICFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
 else 
 ifeq ($(BUILD),nonopt)
-CFLAGS = $(NONOPTIM_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+CFLAGS = $(NONOPTIM_CFLAGS)  $(OPENMPCFLAGS) $(MPICFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
 else
 # release version
-CFLAGS = $(OPTIM_CFLAGS)  $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+CFLAGS = $(OPTIM_CFLAGS)  $(OPENMPCFLAGS) $(MPICFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
 endif
 endif 
 
@@ -147,13 +176,13 @@ LINKFLAGS=$(EXTRA_LINKFLAGS) $(EXTRA_LIBS)
 endif
 
 ifeq ($(BUILD),debug)
-LINKFLAGS+= $(DEBUG_LINKFLAGS)
+LINKFLAGS+= $(DEBUG_LINKFLAGS) $(OPENMPCFLAGS)
 else 
 ifeq ($(BUILD),nonopt)
-LINKFLAGS+= $(NONOPTIM_LINKFLAGS) 
+LINKFLAGS+= $(NONOPTIM_LINKFLAGS) $(OPENMPCFLAGS)
 else 
 # release version
-LINKFLAGS+= $(OPTIM_LINKFLAGS) 
+LINKFLAGS+= $(OPTIM_LINKFLAGS) $(OPENMPCFLAGS)
 endif 
 endif
 
@@ -285,6 +314,16 @@ ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
   ifeq ($(SYSTEM),SUN)
      SYS_LIBS += -lnsl -lsocket
   endif
+  endif
+endif
+
+#******* GE IO
+# check if we find it by looking for niff.h
+$(warning $(INCLUDE_DIR)/local/stir/IO/GE/niff.h)
+ifeq ($(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h),$(INCLUDE_DIR)/local/stir/IO/GE/niff.h)
+  ifneq ($(HAVE_GE_IO),0)
+     HAVE_GE_IO=1
+     CFLAGS+=-DSTIR_USE_GE_IO
   endif
 endif
 
