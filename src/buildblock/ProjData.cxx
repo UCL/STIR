@@ -42,9 +42,6 @@
 // for read_from_file
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
-#ifdef STIR_DEVEL
-//#define STIR_USE_GE_IO
-#endif
 
 #ifndef STIR_USE_GE_IO
 #include "stir/ProjDataGEAdvance.h"
