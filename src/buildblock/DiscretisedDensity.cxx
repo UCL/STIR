@@ -145,7 +145,7 @@ DiscretisedDensity<num_dimensions,elemT>::
   }
 #endif // HAVE_LLN_MATRIX
 
-#ifdef STIR_DEVEL
+#ifdef STIR_USE_GE_IO
   // NIFF file format (a simple almost raw format from GE)
   {
     using namespace GE_IO;
