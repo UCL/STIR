@@ -319,7 +319,6 @@ endif
 
 #******* GE IO
 # check if we find it by looking for niff.h
-$(warning $(INCLUDE_DIR)/local/stir/IO/GE/niff.h)
 ifeq ($(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h),$(INCLUDE_DIR)/local/stir/IO/GE/niff.h)
   ifneq ($(HAVE_GE_IO),0)
      HAVE_GE_IO=1
