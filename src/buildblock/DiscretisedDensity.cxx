@@ -39,8 +39,8 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
-#ifdef STIR_DEVEL
-#include "local/stir/IO/niff.h"
+#ifdef STIR_USE_GE_IO
+#include "local/stir/IO/GE/niff.h"
 #endif
 
 #include <typeinfo>
