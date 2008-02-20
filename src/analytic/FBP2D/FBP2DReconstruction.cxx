@@ -302,9 +302,36 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
     back_projector_sptr->get_symmetries_used()->clone();
+    
+#ifdef STIR_OPENMP
+  if (getenv("OMP_NUM_THREADS")==NULL) 
+    {
+      omp_set_num_threads(omp_get_num_procs());
+      if (omp_get_num_procs()==1) 
+	warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
+      cerr<<"Using OpenMP-version of FBP2D with thread-count = processor-count (="<<omp_get_num_procs()<<")."<<endl;
+    }
+  else 
+    {
+      cerr<<"Using OpenMP-version of FBP2D with "<<getenv("OMP_NUM_THREADS")<<" threads on "<<omp_get_num_procs()<<" processors."<<endl;
+      if (atoi(getenv("OMP_NUM_THREADS"))==1) 
+	warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
+    }
+  cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\""<<endl;
+  shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr=density_ptr->clone();
+#endif
+
+#pragma omp parallel for
   for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
   {         
     const ViewSegmentNumbers vs_num(view_num, 0);
+    
+#ifndef NDEBUG
+#ifdef STIR_OPENMP
+    cerr<<"Thread "<<omp_get_thread_num()<<" calculating view_num: "<<view_num<<endl;
+#endif 
+#endif
+    
     if (!symmetries_sptr->is_basic(vs_num))
       continue;
 
@@ -332,8 +359,29 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   if(display_level>1) 
     display( viewgrams,viewgrams.find_max(),"Ramp filter");
 
+#ifdef STIR_OPENMP 
+  //clone density_ptr and backproject    
+    shared_ptr<DiscretisedDensity<3,float> > omp_density_ptr=empty_density_ptr->clone();
+           
+    back_projector_sptr->back_project(*omp_density_ptr, viewgrams);
+    #pragma omp critical
+    {	//reduction
+      
+      DiscretisedDensity<3,float>::full_iterator density_iter = density_ptr->begin_all();
+      DiscretisedDensity<3,float>::full_iterator density_end = density_ptr->end_all();
+      DiscretisedDensity<3,float>::full_iterator omp_density_iter = omp_density_ptr->begin_all();
+      
+      while (density_iter!= density_end)
+	{
+	  *density_iter += (*omp_density_iter);
+	  ++density_iter;
+	  ++omp_density_iter;
+	}
+    }
+#else
     //  and backproject
     back_projector_sptr->back_project(*density_ptr, viewgrams);
+#endif
   } 
  
   // Normalise the image
