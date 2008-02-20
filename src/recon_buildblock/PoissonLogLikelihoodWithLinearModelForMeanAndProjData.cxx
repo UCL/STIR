@@ -43,6 +43,10 @@
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 
 #include "stir/DiscretisedDensity.h"
+#ifdef _MPI
+#include "stir/recon_buildblock/DistributedCachingInformation.h"
+#include "stir/recon_buildblock/distributableMPICacheEnabled.h"  
+#endif
 #include "stir/recon_buildblock/distributable.h"
 // for get_symmetries_ptr()
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
@@ -64,6 +68,14 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#ifdef _MPI
+#include "stir/recon_buildblock/distributed_functions.h"
+#include "stir/recon_buildblock/distributed_test_functions.h"
+#define PARAMETER_INFO_TAG 21
+#define REGISTERED_NAME_TAG 25
+#define ARBITRARY_TAG 8
+#endif
+#include "stir/CPUTimer.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::ends;
@@ -131,7 +143,15 @@ set_defaults()
   this->Yoffset=0.F;
   // KT 20/06/2001 new
   this->Zoffset=0.F;
-
+  
+#ifdef _MPI
+  //distributed stuff
+  this->distributed_cache_enabled = false;
+  this->distributed_tests_enabled = false;
+  this->message_timings_enabled = false;
+  this->message_timings_threshold = 0.1;
+  this->rpc_timings_enabled = false;
+#endif
 }
 
 template<typename TargetT>
@@ -166,7 +186,14 @@ initialise_keymap()
   this->parser.add_key("time frame number", &this->frame_num);
   this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
 
-
+#ifdef _MPI
+  //distributed stuff 
+  this->parser.add_key("enable distributed caching", &distributed_cache_enabled);
+  this->parser.add_key("enable distributed tests", &distributed_tests_enabled);
+  this->parser.add_key("enable message timings", &message_timings_enabled);
+  this->parser.add_key("message timings threshold", &message_timings_threshold);
+  this->parser.add_key("enable rpc timings", &rpc_timings_enabled);
+#endif
 }
 
 template<typename TargetT>
@@ -215,6 +242,65 @@ post_processing()
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
+#ifndef _MPI
+#if 0
+   //check caching enabled value
+   if (this->distributed_cache_enabled==true) 
+     {
+       warning("STIR must be compiled with MPI-compiler to use distributed caching.\n\tDistributed Caching support will be disabled!");
+       this->distributed_cache_enabled=false;
+     }
+   //check tests enabled value
+   if (this->distributed_tests_enabled==true || rpc_timings_enabled==true || message_timings_enabled==true)
+     {
+       warning("STIR must be compiled with MPI-compiler and debug symbols to use distributed testing.\n\tDistributed tests will not be performed!");
+       this->distributed_tests_enabled=false;
+     }
+#endif
+#else 
+   //check caching enabled value
+   if (this->distributed_cache_enabled==true) 
+     cerr<<"\nWill use distributed caching!"<<endl;
+   else cerr<<"\nDistributed caching is disabled. Will use standard distributed version without forced caching!"<<endl;
+   
+#ifndef NDEBUG 
+   //check tests enabled value
+   if (this->distributed_tests_enabled==true) 
+     {
+       warning("\nWill perform distributed tests! Beware that this decreases the performance");
+       distributed::test=true;
+     }
+#else 
+   //check tests enabled value
+   if (this->distributed_tests_enabled==true) 
+     {
+       warning("\nDistributed tests only abvailable in debug mode!");
+       distributed::test=false;
+     }
+#endif
+   
+#ifdef TIMINGS
+   //check timing values
+   if (this->message_timings_enabled==true)
+     {
+       cerr<<"\nWill print timings of MPI-Messages! This is used to find bottlenecks!"<<endl;
+       distributed::test_send_receive_times=true;
+     }
+   //set timing threshold
+   distributed::min_threshold=this->message_timings_threshold; 
+#else
+   //check timing values
+   if (this->message_timings_enabled==true)
+     cerr<<"\nTo show times of MPI-Messages STIR must be compiled with -DTIMINGS cflag!"<<endl;
+#endif
+   
+   if (this->rpc_timings_enabled==true)
+     {
+       cerr<<"\nWill print run-times of processing RPC_process_related_viewgrams_gradient for every slave! This will give an idea of the parallelization effect!"<<endl;
+       distributed::rpc_time=true;
+     }  	
+   
+#endif
 
   return false;
 }
@@ -373,7 +459,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>& arg) 
 {
   this->projector_pair_ptr = arg;
-
 }
 
 template<typename TargetT>
@@ -478,6 +563,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr =
     this->proj_data_sptr->get_proj_data_info_ptr()->clone();
+
   proj_data_info_sptr->
     reduce_segment_range(-this->max_segment_num_to_process,
 			 +this->max_segment_num_to_process);
@@ -486,9 +572,66 @@ set_up(shared_ptr<TargetT > const& target_sptr)
     { warning("You need to specify a projector pair"); return Succeeded::no; }
 
   // set projectors to be used for the calculations
-  
+
+#ifdef _MPI
+	//broadcast objective_function (200=PoissonLogLikelihoodWithLinearModelForMeanAndProjData)
+	distributed::send_int_value(200, -1);
+
+	//broadcast zero_seg0_end_planes
+	distributed::send_bool_value(zero_seg0_end_planes, -1, -1);
+	
+	//broadcast target_sptr
+	distributed::send_image_parameters(target_sptr.get(), -1, -1);
+	distributed::send_image_estimate(target_sptr.get(), -1);
+	
+	//sending Projection_Data_info
+	distributed::send_proj_data_info(const_cast<ProjDataInfo*>(this->proj_data_sptr->get_proj_data_info_ptr()->clone()), -1);
+	
+	//TODO: use shared_ptr instead
+	//set up distributed caching object
+	if (distributed_cache_enabled) 
+	{
+		DistributedCachingInformation* caching_info_ptr_temp = new DistributedCachingInformation(proj_data_sptr->get_num_segments(), proj_data_sptr->get_num_views(), this->num_subsets);
+		caching_info_ptr = caching_info_ptr_temp;
+	}
+	else caching_info_ptr = NULL;
+#else 
+	//non parallel version
+	caching_info_ptr = NULL;
+#endif 
+
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
 				   target_sptr);
+
+#ifdef _MPI
+	//send configuration values for distributed computation
+	int * configurations = new int[4];
+	configurations[0]=distributed::test?1:0;
+	configurations[1]=distributed::test_send_receive_times?1:0;
+	configurations[2]=distributed::rpc_time?1:0;
+	configurations[3]=distributed_cache_enabled?1:0;
+	distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
+	
+	double * threshold= new double[1];
+	threshold[0]=distributed::min_threshold;
+	distributed::send_double_values(threshold, 1, ARBITRARY_TAG, -1);
+		
+	//send registered name of projector pair
+	distributed::send_string(get_projector_pair_sptr()->get_registered_name(), REGISTERED_NAME_TAG, -1);
+	
+	//send parameter info of projector pair
+	distributed::send_string(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, -1);
+
+#ifndef NDEBUG
+	//test sending parameter_info
+	if (distributed::test) 
+		distributed::test_parameter_info_master(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), 1, "projector_pair_ptr");
+#endif
+
+	delete configurations;
+	delete threshold;
+#endif
+				   
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr =
      this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone();
@@ -503,7 +646,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
      current implementation of compute_sub_gradient does not use subsensitivity
   */
   if(!this->subsets_are_approximately_balanced())
-    {
+  {
       warning("Number of subsets %d is such that subsets will be very unbalanced.\n"
 	      "Current implementation of PoissonLogLikelihoodWithLinearModelForMean cannot handle this.",
 	      this->num_subsets);
@@ -574,7 +717,9 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 				 this->max_segment_num_to_process, 
 				 this->zero_seg0_end_planes!=0, 
 				 NULL, 
-				 this->additive_proj_data_sptr);
+				 this->additive_proj_data_sptr 
+				 , caching_info_ptr
+				 );
   
 
 }
@@ -587,7 +732,8 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
 						  const int subset_num)
 {
   float accum=0.F;  
-  distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
+  
+	distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
 					 this->projector_pair_ptr->get_back_projector_sptr(), 
 					 this->symmetries_sptr,
 					 current_estimate,
@@ -596,7 +742,10 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
 					 -this->max_segment_num_to_process, 
 					 this->max_segment_num_to_process, 
 					 this->zero_seg0_end_planes != 0, &accum,
-					 this->additive_proj_data_sptr);
+					 this->additive_proj_data_sptr
+					 , caching_info_ptr
+					 );
+		
     
   return accum;
 }
@@ -652,6 +801,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   // warning: has to be same as subset scheme used as in distributable_computation
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
   {
+  	//CPUTimer timer;
+	//timer.start();
+	
     for (int view = this->proj_data_sptr->get_min_view_num() + subset_num; 
         view <= this->proj_data_sptr->get_max_view_num(); 
         view += this->num_subsets)
@@ -662,6 +814,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
         continue;
       this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
     }
+      //    cerr<<timer.value()<<endl;
   }
 }
 
@@ -778,11 +931,19 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 /*********************** distributable_* ***************************/
 // TODO all this stuff is specific to DiscretisedDensity, so wouldn't work for TargetT
 
+#ifdef _MPI
+//! Call-back function for compute_gradient
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+
+//! Call-back function for accumulate_loglikelihood
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
+#else 
 //! Call-back function for compute_gradient
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
+#endif
 
 void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
 				    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
@@ -794,9 +955,14 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
 				    int min_segment, int max_segment,
 				    bool zero_seg0_end_planes,
 				    float* log_likelihood_ptr,
-				    shared_ptr<ProjData> const& additive_binwise_correction)
+				    shared_ptr<ProjData> const& additive_binwise_correction
+				    ,DistributedCachingInformation* caching_info_ptr
+				    )
 {
-  distributable_computation(forward_projector_sptr,
+	
+  //switch between caching enabled and caching disabled version
+  if (caching_info_ptr == NULL)
+  		 distributable_computation(forward_projector_sptr,
 			    back_projector_sptr,
 			    symmetries_sptr,
 			    &output_image, &input_image,
@@ -806,7 +972,23 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                             zero_seg0_end_planes,
                             log_likelihood_ptr,
                             additive_binwise_correction,
-                            &RPC_process_related_viewgrams_gradient);
+                            &RPC_process_related_viewgrams_gradient
+                            );
+#ifdef _MPI                            
+   else distributable_computation_cache_enabled(forward_projector_sptr,
+			    back_projector_sptr,
+			    symmetries_sptr,
+			    &output_image, &input_image,
+                            proj_dat, true, //i.e. do read projection data
+                            subset_num, num_subsets,
+                            min_segment, max_segment,
+                            zero_seg0_end_planes,
+                            log_likelihood_ptr,
+                            additive_binwise_correction,
+                            &RPC_process_related_viewgrams_gradient
+                            , caching_info_ptr
+                            );
+#endif
 }
 
 
@@ -814,25 +996,46 @@ void distributable_accumulate_loglikelihood(
 					    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
 					    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
 					    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
-				    const DiscretisedDensity<3,float>& input_image,
-				    const shared_ptr<ProjData>& proj_dat,
-				    int subset_num, int num_subsets,
-				    int min_segment, int max_segment,
-				    bool zero_seg0_end_planes,
-				    float* log_likelihood_ptr,
-				    shared_ptr<ProjData> const& additive_binwise_correction)
+					    const DiscretisedDensity<3,float>& input_image,
+					    const shared_ptr<ProjData>& proj_dat,
+					    int subset_num, int num_subsets,
+					    int min_segment, int max_segment,
+					    bool zero_seg0_end_planes,
+					    float* log_likelihood_ptr,
+					    shared_ptr<ProjData> const& additive_binwise_correction,
+					    DistributedCachingInformation* caching_info_ptr
+					    )
+					    
 {
-  distributable_computation(forward_projector_sptr,
-			    back_projector_sptr,
-			    symmetries_sptr,
-			    NULL, &input_image, 
+	//switch between caching enabled and caching disabled version
+  	if (caching_info_ptr == NULL)
+  			distributable_computation(forward_projector_sptr,
+						   back_projector_sptr,
+						    symmetries_sptr,
+						    NULL, &input_image, 
                             proj_dat, true, //i.e. do read projection data
                             subset_num, num_subsets,
                             min_segment, max_segment,
                             zero_seg0_end_planes,
                             log_likelihood_ptr,
                             additive_binwise_correction,
-                            &RPC_process_related_viewgrams_accumulate_loglikelihood);
+                            &RPC_process_related_viewgrams_accumulate_loglikelihood
+                            );
+#ifdef _MPI                            
+    else distributable_computation_cache_enabled(forward_projector_sptr,
+						    back_projector_sptr,
+						    symmetries_sptr,
+						    NULL, &input_image, 
+                            proj_dat, true, //i.e. do read projection data
+                            subset_num, num_subsets,
+                            min_segment, max_segment,
+                            zero_seg0_end_planes,
+                            log_likelihood_ptr,
+                            additive_binwise_correction,
+                            &RPC_process_related_viewgrams_accumulate_loglikelihood,
+                            caching_info_ptr
+                            );
+#endif
 }
 
 //////////// RPC functions
@@ -846,20 +1049,57 @@ void RPC_process_related_viewgrams_gradient(
                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                             int& count, int& count2, float* log_likelihood_ptr /* = NULL */,
                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr)
-{
-
+{	
   assert(output_image_ptr != NULL);
   assert(input_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
+  
+  /*if (distributed::first_iteration) 
+    {
+    	stir::RelatedViewgrams<float>::iterator viewgrams_iter = measured_viewgrams_ptr->begin();
+		stir::RelatedViewgrams<float>::iterator viewgrams_end = measured_viewgrams_ptr->end();
+		while (viewgrams_iter!= viewgrams_end)
+		{
+			printf("\nSLAVE VIEWGRAM\n");
+			int pos=0;
+			for ( int tang_pos = -144 ;tang_pos  <= 143 ;++tang_pos)  
+		    	for ( int ax_pos = 0; ax_pos <= 62 ;++ax_pos)
+		    	{ 
+					if (pos>3616 && pos <3632) printf("%f, ",(*viewgrams_iter)[ax_pos][tang_pos]);
+					pos++;
+		    	}
+			viewgrams_iter++;
+		}
+    }
+*/
+	stir::DiscretisedDensity<3,float>::full_iterator density_iter = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).begin_all();
+	stir::DiscretisedDensity<3,float>::full_iterator density_end = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).end_all();
+	 
+	/*if (distributed::first_iteration) 
+	{
+		int pos=0;
+		while (density_iter!= density_end)
+		{
+			if (pos>433422 && pos <433632) printf("Bild %f, ",*density_iter);
+			pos++;
+			density_iter++;
+		}
+	}*/
 
   forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
-
+  	
+  	
+	
   if (additive_binwise_correction_ptr != NULL)
   {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
   }
+  
+
+    
+
 
 
   // for sinogram division
