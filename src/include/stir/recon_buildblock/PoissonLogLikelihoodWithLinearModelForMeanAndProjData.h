@@ -32,6 +32,7 @@
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_H__
 #define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_H__
 
+class DistributedCachingInformation;
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
@@ -137,6 +138,19 @@ public:
 
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char * const registered_name; 
+  
+  //TODO: move to protected area
+  //! points to the information object needed to support distributed caching
+  /*! Only used when _MPI is enabled. */
+  DistributedCachingInformation * caching_info_ptr;
+ #ifdef _MPI 
+  //enable/disable key for distributed caching 
+  bool distributed_cache_enabled;
+  bool distributed_tests_enabled;
+  bool message_timings_enabled;
+  double message_timings_threshold;
+  bool rpc_timings_enabled;
+#endif
 
   //! Default constructor calls set_defaults()
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
@@ -301,6 +315,18 @@ protected:
   void
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
 };
+
+#ifdef _MPI
+//made available to be called from DistributedWorker object
+void RPC_process_related_viewgrams_gradient(
+					    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+					    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+					    DiscretisedDensity<3,float>* output_image_ptr, 
+                                            const DiscretisedDensity<3,float>* input_image_ptr, 
+                                            RelatedViewgrams<float>* measured_viewgrams_ptr,
+                                            int& count, int& count2, float* log_likelihood_ptr /* = NULL */,
+                                            const RelatedViewgrams<float>* additive_binwise_correction_ptr);
+#endif
 
 END_NAMESPACE_STIR
 
