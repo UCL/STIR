@@ -19,6 +19,7 @@
 
 /*!
  \file 
+ \ingroup buildblock
 
  \brief Class stir::TimedBlock
 
@@ -32,7 +33,10 @@
 #define _stir_TimedBlock_H_
 namespace stir {
 
+  class Timer;
+
   /*! \brief Helper class for measuring execution time of a block of code.
+  \ingroup buildblock
 
   It starts the timer in ctor, stops in dtor.
   Do not create unnamed instances of this class, as they are quite
@@ -45,29 +49,34 @@ namespace stir {
   SomeTimer t;
   // do whatever you want here
   {
-  TimedBlock tb(t);
+  TimedBlock<SomeTimer> tb(t);
   do_something_1();
   do_something_2();
   };
   // do whatever you want here
   {
-  TimedBlock tb(t);
+  TimedBlock<SomeTimer> tb(t);
   do_something_3();
   };
   // do whatever you want here
   cout << "It took " << t.GetTime() << "sec to execute do_something_1..3()" << endl;
 
   \endcode
-  */
 
-  class TimedBlock
+  \par Template argument requirements
+
+  \c TimerT has to have a start() and stop() member function. This is the case for 
+  stir::Timer (and derived functions) and stir::HighResWallClockTimer.
+  */
+  template <class TimerT>
+  class TimedBlock<TimerT=Timer>
   {
   public:
 
     //! Create a timed block
-    TimedBlock(Timer& Timer);
+    inline TimedBlock(Timer& Timer);
     //! Destroy a timed block
-    virtual ~TimedBlock(void);
+    inline virtual ~TimedBlock(void);
 
   protected:
   private:
@@ -75,22 +84,24 @@ namespace stir {
     TimedBlock(const TimedBlock&);            // Not defined
     TimedBlock& operator=(const TimedBlock&); // Not defined
 
-    Timer& m_Timer;
+    TimerT& m_Timer;
 
   };
 
 
   /*! */
-  inline TimedBlock::TimedBlock(Timer& Timer)
-    :   m_Timer(Timer)
+  template <class TimerT>
+    TimedBlock::TimedBlock(TimerT& timer)
+    :   m_Timer(timer)
     {
-      m_Timer.Start();
+      m_Timer.start();
     }
 
     /*! */
-    inline TimedBlock::~TimedBlock(void)
+    template <class TimerT>
+      TimedBlock::~TimedBlock(void)
       {
-	m_Timer.Stop();
+	m_Timer.stop();
       }
 }
 
