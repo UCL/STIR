@@ -32,7 +32,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 1.4}}
+ Version 2.0}}
 \end{center}
 
 \end{spacing}
@@ -59,8 +59,6 @@ The objective of this document is to give practical information
 about the use of the object-oriented library for 3D Reconstruction 
 of PET data, called \textit{STIR}. The most recent version of this 
 document (and the library) can be found on \\
-\R2Lurl{http://stir.HammersmithImanet.com}{http://stir.HammersmithImanet.com}, 
-mirrored at\\
 \R2Lurl{http://stir.sourceforge.net}{http://stir.sourceforge.net}.
 
 
@@ -74,7 +72,7 @@ that comes with the distribution.
 
 
 Pending a publication on the current library, please put references 
-to [Lab99a], [Lab99b] in your own publications.
+to {[}Thi06{]} in your own publications (for STIR 1.x, use [Lab99a], [Lab99b]).
 
 
 
@@ -115,7 +113,7 @@ Installing source files}
 
 Download the source at the \textit{STIR} site: 
 \begin{center}
-\R2Lurl{http://stir.HammersmithImanet.com }{http://stir.HammersmithImanet.com} 
+\R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
 \noindent (Section \textbf{Registered Users}).\\
 Download the source files in the zip format and use unzip from \\
@@ -137,34 +135,47 @@ not have to be your home directory).
 The result is a STIR directory and subdirectories, described 
 in the annex section.
 
+\subsection{Download/install boost}
+STIR uses the well-respected \textit{boost} library. This library
+is currently installed in many systems (especially on Linux). If it
+is not, you can download it from 
+\R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently STIR only
+uses the include files from \textit{boost} (so you do not need to build
+the boost libraries). However, you will need to tell your compiler
+where to find the \textt{boost/} directory with all the include files.
+See the Compilation section for some info (use \textit{make} variable 
+\textit{EXTRA\_CFLAGS}).
 
 \subsection{
 C++ Compiler and make}
 
 In order to compile and run the STIR programs, we currently recommend 
 using a recent version of the GNU gcc compiler, at least version 
-3.0.1. Version 2.95.2 might still work for the current STIR release 
-but has not been tested. In addition, later versions will give 
-you better functionality in some STIR executables\footnote{{\small Specifically, 
+3.0.1. The final release of STIR 2.0 should work with gcc 4.1.
+Check the mailing lists for more info.
+\footnote{{\small A few years ago, some work-arounds were put in place to 
+keep STIR compatible with gcc version 2.95.2, but this version is unlikely to
+to be usable for recent versions of STIR. It is known that with this
+old version, some functionality is not supported. Specifically, 
 some programs that take a parameter file as input also list the 
 actual parameters used on stdout. This is especially useful if 
 you used the interactive version and want to copy this output 
 to a file. There is a bug in gcc 2.95.2 though such that this 
 info cannot be listed correctly for the hierarchies based on 
 registries (pretty much everything in section 
-\ref{sec:user-selectablecomponents}). 
-Aside from this, 
-everything works fine with gcc 2.95.2.}}. 
+\ref{sec:user-selectablecomponents}).}}. 
 
 
 \textbf{Warning} Please note that many Linux distributions come with 
-gcc 2.96, which was never an official release of gcc, and has 
-some known bugs. We discourage using this version for STIR (check 
-with gcc -v).
+prerelease versions of gcc. These versions are sometimes not as stable
+as the normal gcc releases, especially for C++ code.
+We discourage using such versions for STIR (check with gcc -v).
 
 
 
-Other recent C++ compilers should be ok as well. We would love 
+Other recent C++ compilers should be ok as well. Intel's compiler
+version 9.x seems to work for everything except fourier transforms.
+We would love 
 to hear from any attempts of using another compiler. See Section 
 \ref{sec:VC}
 on how to use Visual Studio's C++ compiler.
@@ -242,13 +253,17 @@ If you want to remove the installed files, do
 These are only the most basic options. For more targets, 
 type
 \cmdline{make how}
+The following line is useful to check what settings will be used for some
+variables (such as \texttt{CFLAGS}). This can be useful to find out
+if a particular external library (such as the LLN ecat library) was 
+found by the Makefile
+\cmdline{make print-make-vars}
 
 
-
-You might see numerous warnings when \textbf{buildblock/convert\_array.cxx} 
-and the \textbf{display/*.c} files are compiled. These are harmless. 
-One should normally not see warnings when compiling other files 
-(except possibly 'variable not used' type of warnings).
+One should normally not see warnings when compiling STIR
+except possibly 'variable not used' type of warnings (although when using
+optimization of at least level 2, gcc 3.4 
+generates warnings about uninitialised variables in the system library).
 
 
 The following table gives a summary of all available build options. 
@@ -271,7 +286,8 @@ In this table, the notation \$(VAR) means: substitute the value of the
 {\raggedright
 Specifies whether the debugging or optimised version of the 
 binaries will be produced. 'BUILD=debug' builds the debugging 
-version, 'BUILD=opt' builds the optimised version (default).} \\
+version, 'BUILD=opt' builds the optimised version (default).
+'BUILD=nonopt' builds a debugging version without asserts.} \\
 \hline
 % ROW 2
 
@@ -279,7 +295,8 @@ version, 'BUILD=opt' builds the optimised version (default).} \\
 \textit{DEST=dir/}} & 
 
 {\raggedright
-Put the compilation files in an alternative place} \\
+Put the compilation files in an alternative place. Default is the value
+of the \textit{BUILD} make variable (with trailing slash appended).} \\
 \hline
 % ROW 3
 
@@ -340,7 +357,11 @@ permissions there).} \\
 'some options'}} & 
 
 {\raggedright
-Use to pass extra options to the compiler} \\
+Use to pass extra options to the compiler. For example, if you
+use a version of the \textit{boost} files that is not in the standard
+include path, you can add the location of its include files to the 
+search path of the compiler, e.g. \linebreak
+\texttt{EXTRA\_CFLAGS=\"-I /someloc/boost_1_34_1\"}} \\
 \hline
 % ROW 9
 
@@ -350,6 +371,26 @@ Use to pass extra options to the compiler} \\
 
 {\raggedright
 Use to pass extra options to the compiler when linking} \\
+\hline
+% ROW 10
+
+{\raggedright
+\textit{OPTIM\_CFLAGS, \linebreak
+NONOPTIM\_CFLAGS, \linebreak
+DEBUG\_CFLAGS}} & 
+
+{\raggedright
+Use to pass replace the default optimization options for the compiler when using BUILD=opt, nonopt and debug respectively.} \\
+\hline
+% ROW 9
+
+{\raggedright
+\textit{OPTIM\_LINKFLAGS, \linebreak
+NONOPTIM\_LINKFLAGS, \linebreak
+DEBUG\_LINKFLAGS}} & 
+
+{\raggedright
+Use to pass replace the default optimization options for the linker when using BUILD=opt, nonopt and debug respectively.} \\
 \hline
 % ROW 10
 
@@ -402,9 +443,9 @@ GENERATION=1}} &
 {\raggedright
 By default, the makefile is set-up to generate dependencies 
 on the include files. This means that if an include file is changed, 
-the relevant.cxx files will be recompiled. This feature is really 
+the relevant .cxx files will be recompiled. This feature is really 
 only necessary when you are modifying the STIR source files, 
-so you could switch it off.} \\
+so you could switch it off to saved a little bit of time.} \\
 \hline
 \end{longtable}
 
@@ -423,7 +464,7 @@ to what is specified above
 % ROW 1
 {\raggedright \textit{GRAPHICS=value}} & 
 {\raggedright Possible values: X, PGM, MATHLINK, NONE. X (default) uses basic 
-X windows graphics, PGM writes the graphics to a.pgm file, MATHLINK 
+X windows graphics, PGM writes the graphics to a .pgm file, MATHLINK 
 uses the (external) MathLink library which could be used to send 
 data directly to Mathematica, NONE switches off all graphics.} \\
 \hline
@@ -443,61 +484,6 @@ Additional options available for parallel code}
 [ The current distribution does not contain any parallel functionality. 
 So, skip this section]
 
-
-The following compiler options can be specified when building 
-a parallel executable. Please note that these should not be passed 
-to the Makefile\_parallel directly, but rather included in the 
-EXTRA\_CFLAGS='\dots ' parameter. For example, to enable high-level 
-tracing of the interprocess communications, use:
-
-
-\textit{\texttt{>} make -f Makefile\_parallel EXTRA\_CFLAGS='-DP\_INFO' all}
-
-
-\textit{-DP\_PVM} and --\textit{DP\_EPX}
-These options can be passed to Makefile\_parallel in order to 
-choose which message passing environment should be used. If neither 
-is defined, an automatic choice is made (EPX is used if detected, 
-otherwise PVM is used)
-
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-% ROW 2
-{\raggedright \textit{-DP\_TRACE}} & 
-{\raggedright P\_TRACE displays detailed trace of the internal operations of 
-the parallel library; when this option is defined, huge amounts 
-of output are produced. Useful for debugging the parallel library.} \\
-\hline
-% ROW 3
-{\raggedright \textit{-DP\_INFO}} & 
-{\raggedright P\_INFO prints a higher-level debug trace. Useful for debugging 
-high-level parallel code.} \\
-\hline
-% ROW 4
-{\raggedright \textit{-DP\_MEMDEBUG}} & 
-{\raggedright P\_MEMDEBUG activates internal memory debugger; useful only for 
-debugging memory problems within the parallel library.} \\
-\hline
-% ROW 5
-{\raggedright \textit{-DP\_MT\_COMM}} & 
-{\raggedright P\_MT\_COMM enables multithreaded communications under EPX; this 
-is an experimental feature and may cause some algorithms to exhibit 
-erratic behaviour.} \\
-\hline
-% ROW 6
-{\raggedright \textit{-DP\_NO\_TREE\_BCAST}} & 
-{\raggedright Specifying P\_NO\_TREE\_BCAST disables the default binary-tree 
-based implementation of broadcast and multicast operations under 
-EPX; a less efficient algorithm is used instead. \linebreak
-} \\
-\hline
-\end{longtable}
-
-
-The above options are described here for completeness. Most of 
-them are only useful for tracking problems or debugging new features 
-in the parallel library.
 \subsubsection{
 Usage of STIR/local/config.mk}
 \label{sec:local_config.mk}
@@ -512,15 +498,18 @@ but check it out if it is appropriate for you before copying
 it to \textbf{STIR/local/}.
 
 \subsubsection{
-Enabling ECAT7 support}
-\label{sec:ECAT7support}
+Enabling ECAT 6 or 7 support}
+\label{sec:ECAT67support}
+Older CTI (Siemens) scanners use a file format called ECAT.
 At present, STIR uses parts of the Louvain la Neuve ecat library (called LLN in
-the rest of this document). Unfortunately, this library is no longer
+the rest of this document).\footnote{\textit{STIR} versions 1.? came with
+specific files for ECAT6 support without the need for the LLN library. 
+However, due to license restrictions this is now no longer the case.} 
+Unfortunately, this library is no longer
 available via the Louvain la Neuve website. Please check the STIR
 mailing lists for more information.
 
-In any case, use only a version dated after 20 July 2004. You 
-have to download that library and issue 'make --f Makefile.unix' 
+You have to download that library and issue 'make --f Makefile.unix' 
 (or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
 in the new ecat directory first. Please get a recent version 
 of this library (dated 20 July 2004 or later) as Merence Sibomana 
@@ -530,7 +519,7 @@ files.
 
 
 To compile and link ifheaders\_for\_ecat7.cxx and the other files 
-that enable ECAT7 support, \textit{STIR} needs to know the location 
+that enable ECAT support, \textit{STIR} needs to know the location 
 of the LLN files. The following 2 \textit{make} options allow you 
 to set this:
 
@@ -556,7 +545,7 @@ Default value for \textit{LLN\_LIB\_DIR} is \textit{\$(LLN\_INCLUDE\_DIR).}} \\
 
 
 Once these options are set correctly (for example in STIR/local/config.mk), 
-ECAT7 support will be automatically enabled after issuing \textit{make}. 
+ECAT support will be automatically enabled after issuing \textit{make}. 
 If the file ifheaders\_for\_ecat7 is not compiled, it probably 
 means that the above flags point to an incorrect location.
 
@@ -612,8 +601,9 @@ means that the above flags point to incorrect locations.
 Compilation using Visual C++}
 \label{sec:VC}
 
-You need at least Visual C++ 6.0, service pack 5. 
-Version 7.1 (i.e. 2003) seems to be fine as well. 
+You need at least Visual C++ 6.0, service pack 5 but there are no recent 
+reports if this version still works. 
+Version 7.1 (i.e. 2003) seems to be fine. 
 Oliver Nix (Heidelberg) 
 has done a few preliminary tests that indicate that Visual Studio 2005 also 
 works. 
@@ -654,7 +644,7 @@ simple as typing
 \cmdline{make CXX=cl}
 
 
-KT has tested this with the make program included in the CYGWIN 
+Kris Thielemans has tested this with the make program included in the CYGWIN 
 distribution (\R2Lurl{http://cygwin.com }{http://cygwin.com}). 
 
 
@@ -687,27 +677,30 @@ a possibly more realistic line is
 RM=del GRAPHICS=PGM install}
 
 
-Getting ECAT7 support is even more of an adventure, as it requires 
+Getting ECAT support is even more of an adventure, as it requires 
 some changes to the Makefile supplied with the LLN Matrix library. 
 See the mailing lists.
 
 { \subsubsubsection{Using the Visual Studio interface}
 }
 
-Note that since STIR 1.3, the Visual Studio projects might be 
-out of date.
-
-
 In addition to the source files, you will need to download VCprojects.zip. 
 Extract it in the same place as you extracted the source files. 
+
+Note that since STIR 1.3, the Visual Studio projects might be 
+out of date. You essentially have to add all source files in the
+STIR sub-directories to a relevant project (e.g., add 
+all .cxx files in \texttt{buildblock} directory to the \textt{buildblock}
+project.
+
 You will find several workspaces in the \textbf{STIR{\textbackslash}VC} subdirectory. 
 In particular, \textit{reconstructors.dsw} contains all reconstruction 
 programs.
 
 
 
-\textbf{Note:} The distribution enables ECAT7 support by default. 
-If you do not want ECAT7 support (i.e. if you do not (want to) 
+\textbf{Note:} The project files enable ECAT6 and 7 support by default. 
+If you do not want ECAT support (i.e. if you do not (want to) 
 have the LLN ecat library), you probably have to remove the \textit{HAVE\_LLN\_MATRIX} preprocessor 
 define, and remove dependencies on the ecat project. This might 
 all be avoidable, but we didn't do this for you. Please feel 
@@ -719,7 +712,7 @@ files and projects called \texttt{local*}. You will probably have to delete thos
 maually from the projects.
 
 
-At present, STIR uses parts of the Louvain la Neuve ecat library, see \ref{sec:ECAT7support}. 
+At present, STIR uses parts of the Louvain la Neuve ecat library, see \ref{sec:ECAT67support}. 
 The following are instructions specific to using VC projects.
 
 Extract 
@@ -734,7 +727,7 @@ subdirectory \textbf{lln{\textbackslash}ecat{\textbackslash}VC}.
 
 
 When opening the workpackages the first time, and if you want
-ECAT7 support, you will need to tell Visual 
+ECAT 6 and 7 support, you will need to tell Visual 
 Studio the location of the \textbf{ecat.dsp} project file (which should 
 be in the VC subdirectory of the ecat distribution).
 
@@ -865,14 +858,14 @@ script (you might want to modify this a bit to suit your taste).
 
 
 
-Other decent X servers should work as well (KT used Exceed at 
+Other decent X servers should work as well (Kris Thielemans used Exceed at 
 some point).
 
 
 \subsubsection{
 Running tests}
 
-We highly recommend running test programs after building. Change 
+We \textbf{highly recommend} running test programs after building. Change 
 to your \textbf{STIR} directory, and type
 \cmdline{make run\_tests}
 
@@ -897,12 +890,14 @@ tests on Windows when using Visual Studio and the VCprojects.zip
 files. This will currently not run any tests in \textbf{STIR/recon\_test} though.
 
 
-On our Web page, we also provide test reconstructions, with an 
+On our Web page, we also provide test reconstructions as part of the
+\textbf{recon\_test\_pack}, with an 
 automated procedure to see if you can reproduce the correct results. 
 You really should download this and run it.
 
 
-Also, you might want to run one reconstruction on your data with 
+Also, if you are using a non-standard scanner, 
+you might want to run one reconstruction on your data with 
 the debug version of the reconstruction program, to see if everything 
 works as intended. You'll probably want to choose a small value 
 for the `maximum absolute segment number to process' parameter 
@@ -995,7 +990,7 @@ in separate files (e.g. interfile). In other formats, data files
 carry header information (e.g. the native GE Advance sinogram 
 format).
 
-
+\subsubsection{Interfile}
 
 The most comprehensively supported file format in the library 
 is a newly proposed version of interfile. More details about 
@@ -1010,37 +1005,34 @@ where \textit{projdata\_filename.hs} is the header text file and \textit{projdat
 is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
 images written by \textit{STIR} in Interfile.
 
-
+\subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
 the Advance only, 
 however data files must have a single data set, maximum ring 
 difference 11 and contain 281 bins * 256 segments * 336 views. 
-We do have software taht read VOLPET headers for all GE scanners, but can currently
+We do have software that read VOLPET headers for all GE scanners, but can currently
 not distribute it due to licensing restrictions. If you have the
 GE Research Tools package you can ask Kris Thielemans for VOLPET
 support in STIR.
 
- 
+\subsubsection{ECAT6 and ECAT7 data} 
+See section \ref{sec:ECAT67support} for enabling support for ECAT data.
+
 ECAT6 images can be read without conversion. However, only the 
-first frame (ECAT matrix 1,1,1,0,0) will be read.\\
-\textbf{Warning} Due to license problems, the ECAT6 code is no longer distributed
-with STIR. This might be fixable by using the LLN library instead, but this
-will require external contributions. Please check the STIR mailing lists.
+first frame (ECAT matrix 1,1,1,0,0) will be read.
 
-
-When ECAT7 support is enabled during compilation of \textit{STIR}, 
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
 will be read.
 \textbf{Warning} The calibration factor field in the main header of ECAT7 images
 is currently ignored.
 
+For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
+
+\subsubsection{Image IO using the AVW library}
 First steps are made to be able to use the \textit{AVW} library. See the
 \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
-
-Currently supported list mode formats are specific to the ECAT 
-HR+ and ECAT EXACT 3D scanners.
 
 
 
@@ -1058,6 +1050,9 @@ Some scanners produce list mode data, which is essentially a
 list of events. Although it is possible to reconstruct this data 
 directly, this is currently not supported by STIR. 
 
+Currently supported list mode formats are specific to the ECAT 
+HR+ and ECAT EXACT 3D scanners. The OpenGATE project distributes files
+to enable STIR to read \textit{LMF} format files.
 
 \subsubsection{
 lm\_to\_projdata}
@@ -1131,11 +1126,6 @@ produced), as 9 input segments would be necessary to produce
 3 'complete' output segments.
 \end{description}
 
-\textbf{Restriction}: Currently, the input data needs to have the 
-same number of ring differences in each segment. This is not 
-the case for GE Advance data, which has ring differences --1 to 
-1 in segment 0, but only 1 ring difference in all other segments.
-
 
 \subsection{
 Image reconstruction programs}
@@ -1203,6 +1193,8 @@ is not used, the program prompts the user for the required information.
 
 
 The form of a typical parameter file is as follows:
+
+\todo
 
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -1713,10 +1705,9 @@ Also, the Colsher filter is numerically computed at a finer grid
 in an initial stage to avoid DC problems.
 
 
-The current implementation is stable, except maybe for the parameters 
-which might change. A sample.par file can be found in the \textbf{samples/} 
-directory. See the doxygen documentation (or the source) for 
-more info.\\
+A sample.par file can be found in the \textbf{samples/} 
+directory. See separate documentation on FBP3DRP, the doxygen documentation 
+(or the source) for more info.\\
 \textbf{Warning:} the current version of the interpolating backprojector, 
 the default backprojector used by FBP3DRP, has a central artefact 
 on some systems (including Sparc and Opterons).
@@ -2134,7 +2125,7 @@ data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
 This program is used to convert image or projection data into 
 CTI ECAT7 data (input can be any format currently supported by 
 the library). \textbf{conv\_to\_ecat7} uses the Louvain la Neuve ecat 
-library, see section \ref{sec:ECAT7support}. This means it will only work on those 
+library, see section \ref{sec:ECAT67support}. This means it will only work on those 
 systems supported by that library. It normally should be run 
 as follows
 
@@ -2170,7 +2161,7 @@ The current release includes some support for making Interfile
 headers that point towards and ECAT 7 file. This is possible 
 because ECAT7 normally stores the data with single subheaders 
 per frame/gate/bed/data. \textbf{ifheaders\_for\_ecat} uses the Louvain 
-la Neuve ecat library, see section \ref{sec:ECAT7support}. 
+la Neuve ecat library, see section \ref{sec:ECAT67support}. 
 This means it will only work on those systems 
 supported by that library. \\
 This program writes Interfile headers that 'point into' an ECAT 
@@ -2691,7 +2682,7 @@ and only signed short data are supported.
 }
 
 The file format is only available when the ECAT7 support is enabled 
-during compilation, see section \ref{sec:ECAT7support}.\\
+during compilation, see section \ref{sec:ECAT67support}.\\
 If this output file format is used, and a filename without extension 
 is specified for output, \textit{.img} will be added to the filename.
 
@@ -3736,7 +3727,7 @@ listmode reconstruction algorithms
 While support for the library is on a voluntary basis, users 
 of the library are encouraged to subscribe to relevant \textit{STIR} 
 mailing lists (see the `Mailing Lists' section of the STIR website 
-\R2Lurl{http://stir.HammersmithImanet.com/ }{http://stir.HammersmithImanet.com}) 
+\R2Lurl{http://stir.sourceforge.net/ }{http://stir.sourceforge.net}) 
 where they can follow developments of the software and obtain 
 helpful information from other users. Questions will ONLY be 
 answered (if at all) when directed to the mailing list.
@@ -3903,25 +3894,18 @@ reconstruction problem. Submitted to \textit{IEEE Trans. Med. Im}.
 
 {[}Mus01] Mustafovic S, Thielemans K, \textbf{(2001)} Additive and Multiplicative 
 versions of the Maximum A Posteriori Algorithm with the Median 
-Root Prior. poster at \textit{IEEE Med. Img. Conf. 2001.} \\
-Available 
-at \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/ } 
-
+Root Prior. poster at \textit{IEEE Med. Img. Conf. 2001.}
 
 
 {[}Mus04] S. Mustafovic, K.Thielemans, \textbf{(200}\textbf{4}\textbf{)} \textit{Object 
 Dependency of Resolution in Reconstruction Algorithms with Inter-Iteration 
 Filtering Applied to PET} , IEEE Trans. Med. Im. 23 (4): (2004) 
-433-446\\
-Available at \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/ }
-
+433-446.
 
 {[}Mus02] S. Mustafovic, K.Thielemans\textit{,} \textbf{(2002)}  Comparison 
 of Unconventional Inter-Filtering Methods to Penalised-likelihood 
 for Space-invariant Tomographs, poster at \textit{IEEE Medical Imaging 
-Conf. 2002}. \\
-Available at \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris/papers/ }
-
+Conf. 2002}.
 
 {[}Nem78] Nemirovski A and Yudin D \textbf{(1978)} Problem complexity 
 and method efficiency in optimization. \textit{Nauka Publishers, 
@@ -3933,7 +3917,7 @@ Sons, 1983}.
 C \textbf{(1997)} Determination of a Set of Existing Algorithms for 
 Comparative Evaluation. \textit{PARAPET documentation for D1.3, Geneva 
 University Hospital and Technion}. \\
-Available at \R2Lurl{http://stir.HammersmithImanet.com }{http://stir.HammersmithImanet.com}. 
+Available at \R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net}. 
 
 
 
@@ -3952,6 +3936,9 @@ A smoothed EM approach to indirect estimation problems, with
 particular reference to stereology and emission tomography. \textit{J. 
 Roy. Stat. Soc}., 52: 271-324. 
 
-
+{[}Thi06{]}Kris Thielemans, Sanida Mustafovic, Charalampos Tsoumpas \textbf{(2006)},
+STIR: Software for Tomographic Image
+Reconstruction Release 2, 
+<i>Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.</i>
 \end{document}
 
