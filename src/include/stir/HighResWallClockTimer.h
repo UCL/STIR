@@ -31,11 +31,11 @@
  Modification history:
 
   <TT>
-  18 Aug 99 -- Mustapha Sadki -- corrected the formula for HighResWallClockTimer::Stop() & HighResWallClockTimer::GetTime() for WIN32\n
+  18 Aug 99 -- Mustapha Sadki -- corrected the formula for HighResWallClockTimer::stop() & HighResWallClockTimer::GetTime() for WIN32\n
   08 Jul 99 -- Mustapha Sadki -- added global Ptimers and #define manipulations\n
   10 Apr 99 -- Alexey Zverovich -- Ported to Linux\n
   19 Oct 98 -- Alexey Zverovich -- Ported to Win32;\n
-  19 Oct 98 -- Alexey Zverovich -- Slightly reorganised HighResWallClockTimer::Start() to reduce overhead\n
+  19 Oct 98 -- Alexey Zverovich -- Slightly reorganised HighResWallClockTimer::start() to reduce overhead\n
   16 Oct 98 -- Alexey Zverovich -- created
   </TT>
 
@@ -68,17 +68,21 @@ namespace stir {
 
   /*! \brief High-resolution timer
 
-  Typical usage:
+  This timer measures wall-clock time. Implementation is OS specific to try to use
+  high-resolution timers. It is \b not derived from stir::Timer to avoid the
+  overhead of calling a virtual function.
+
+  \par Typical usage:
 
   \code
   HighResWallClockTimer t;
-  t.Start();
+  t.start();
   do_something();
-  t.Stop();
+  t.stop();
   cout << "do_something took " << t.GetTime() << " seconds" << endl;
   \endcode
 
-  You have to call Reset() if you wish to use the same timer to measure
+  You have to call reset() if you wish to use the same timer to measure
   several separate time intervals, otherwise the time will be accumulated.
   */
 
@@ -87,30 +91,30 @@ namespace stir {
   public:
 
     //! Create a timer
-    HighResWallClockTimer(void);
+    inline HighResWallClockTimer(void);
     //! Destroy a timer
-    virtual ~HighResWallClockTimer(void);
+    inline virtual ~HighResWallClockTimer(void);
 
     // Default copy ctor & assignment op are just fine
 
     //! Start a timer
-    void Start(bool bReset = false);
+    inline void start(bool bReset = false);
     //! Stop a running timer
-    void Stop(void);
+    inline void stop(void);
     //! Reset a timer
-    void Reset(void);
+    inline void reset(void);
     //! Check if a timer is running
-    bool IsRunning(void);
+    inline bool is_running(void);
 
     //! Returns the number of whole seconds elapsed
-    int GetSec(void);
-    //! Returns the number of nanoseconds that elapsed on top of whatever GetSec() returned
-    int GetNanosec(void);
+    inline int get_sec(void);
+    //! Returns the number of nanoseconds that elapsed on top of whatever get_sec() returned
+    inline int get_nanosec(void);
     //! Returns the elapsed time (in seconds)
-    double GetTime(void);
+    inline double value(void);
 
     //! Attempts to \e guess the timer resolution
-    static int GetResolution(void); // in nanoseconds
+    static int get_resolution_in_nanosecs(void); // in nanoseconds
 
   protected:
   private:
@@ -142,7 +146,7 @@ namespace stir {
   inline HighResWallClockTimer::HighResWallClockTimer(void)
     :   m_bRunning(false)
     {
-      Reset();
+      reset();
     };
 
     /*! The timer must not be running. */
@@ -155,30 +159,36 @@ namespace stir {
       \param bReset indicates whether the elapsed time should be reset before the timer is started.
       The timer must not be running.
     */
-    inline void HighResWallClockTimer::Start(bool bReset /* = false */)
+    inline void HighResWallClockTimer::start(bool bReset /* = false */)
       {
 	assert(!m_bRunning);
-	if (bReset) Reset();
+	if (bReset) reset();
 	m_bRunning = true;
 #if defined(_AIX)
 	read_real_time(&m_Start, TIMEBASE_SZ);
 #elif defined(__sun)
 	m_Start = gethrtime();
 #elif defined(WIN32)
-	BOOL Result = QueryPerformanceCounter(&m_Start);
+#ifndef NDEBUG
+	BOOL Result = 
+#endif
+	  QueryPerformanceCounter(&m_Start);
 	assert(Result); // if failed, high-resolution timers are not supported by this hardware
 #elif defined(__linux__)
 	// TODO: what will happen if the time gets changed?
-	int Result = gettimeofday(&m_Start, NULL);
+#ifndef NDEBUG
+	int Result = 
+#endif
+	  gettimeofday(&m_Start, NULL);
 	assert(Result == 0);
 #endif
       };
 
     /*!
-      When a timer is stopped (=not running), GetSec(), GetNanosec(), and GetTime() can be
+      When a timer is stopped (=not running), get_sec(), get_nanosec(), and value() can be
       used to obtain elapsed time.
     */
-    inline void HighResWallClockTimer::Stop(void)
+    inline void HighResWallClockTimer::stop(void)
       {
 	assert(m_bRunning);
 
@@ -249,7 +259,7 @@ namespace stir {
 	}
 	// and commented out 
 	/*
-	  int Resolution = GetResolution();
+	  int Resolution = get_resolution_in_nanosecs();
 
 	  m_Secs += static_cast<int>(Delta / Resolution);
 	  m_Nanosecs += static_cast<int>(Delta % Resolution);
@@ -261,7 +271,10 @@ namespace stir {
 	*/
 #elif defined(__linux__)
 
-	int Result = gettimeofday(&m_Finish, NULL);
+#ifndef NDEBUG
+	int Result = 
+#endif
+	  gettimeofday(&m_Finish, NULL);
 	assert(Result == 0);
 
 	m_Secs += (m_Finish.tv_sec - m_Start.tv_sec);
@@ -283,44 +296,44 @@ namespace stir {
       };
 
     /*! Sets the elapsed time to zero. The timer must not be running. */
-    inline void HighResWallClockTimer::Reset(void)
+    inline void HighResWallClockTimer::reset(void)
       {
 	assert(!m_bRunning);
 	m_Secs = m_Nanosecs = 0;
       };
 
     /*! Returns true if the timer is running, or false otherwise */
-    inline bool HighResWallClockTimer::IsRunning(void)
+    inline bool HighResWallClockTimer::is_running(void)
       {
 	return m_bRunning;
       };
 
     /*! The timer must not be running */
-    inline int HighResWallClockTimer::GetSec(void)
+    inline int HighResWallClockTimer::get_sec(void)
       {
 	assert(!m_bRunning);
 	return m_Secs;
       };
 
     /*! The timer must not be running */
-    inline int HighResWallClockTimer::GetNanosec(void)
+    inline int HighResWallClockTimer::get_nanosec(void)
       {
 	assert(!m_bRunning);
 	return m_Nanosecs;
       };
 
     /*! The timer must not be running */
-    inline double HighResWallClockTimer::GetTime(void)
+    inline double HighResWallClockTimer::value(void)
       {
 	// MS 18-8-99 added 
 #ifdef WIN32
 	LARGE_INTEGER Freq;
 	BOOL          Result;
 	Result = QueryPerformanceFrequency(&Freq);         
-	return GetSec() + double(GetNanosec()) / (double)Freq.QuadPart;
+	return get_sec() + double(get_nanosec()) / (double)Freq.QuadPart;
 
 #else
-	return GetSec() + double(GetNanosec()) / 1e9;
+	return get_sec() + double(get_nanosec()) / 1e9;
 #endif
       };
 
@@ -331,9 +344,9 @@ namespace stir {
     //  19 Oct 98 -- Alexey Zverovich -- created
 
     /*!
-      GetResolution() is by no means accurate.
+      get_resolution_in_nanosecs() is by no means accurate.
       The only thing that is guranteed is that timer resolution
-      is not less than the value returned by GetResolution().
+      is not less than the value returned by get_resolution_in_nanosecs().
 
       On Win32, returns more or less precise resolution (can be
       slightly rounded if the actual resolution can't be expressed
@@ -342,7 +355,7 @@ namespace stir {
       \return Estimated timer resolution (in nanoseconds)
     */
 
-    inline int HighResWallClockTimer::GetResolution(void)
+    inline int HighResWallClockTimer::get_resolution_in_nanosecs(void)
       {
 
 	/*static*/ int Resolution = -1; // cached resolution
