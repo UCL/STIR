@@ -38,7 +38,7 @@
 #include "stir/recon_buildblock/DistributedWorker.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
-#include "stir/PTimer.h"
+#include "stir/HighResWallClockTimer.h"
 
 
 
@@ -50,9 +50,9 @@ int master_main(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
-  PTimer t;
-  t.Reset();
-  t.Start();
+  HighResWallClockTimer t;
+  t.reset();
+  t.start();
    
 #ifdef _MPI	
   //processor-id within parallel Communicator
@@ -88,11 +88,11 @@ int main(int argc, char **argv)
       //    EXIT_SUCCESS : EXIT_FAILURE;
       if (reconstruction_object.reconstruct() == Succeeded::yes) 
 	{	
-	  t.Stop();
+	  t.stop();
 #ifdef _MPI 
 	  if (distributed::total_rpc_time_slaves!=0) cout << "Total time used for RPC-processing: "<< distributed::total_rpc_time_slaves << endl;
 #endif
-	  cout << "Total Wall clock time: " << t.GetTime() << " seconds" << endl;
+	  cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
 	  return EXIT_SUCCESS;
 	}
       else	
