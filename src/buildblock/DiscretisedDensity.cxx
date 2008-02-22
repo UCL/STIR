@@ -6,7 +6,7 @@
   \file 
   \ingroup densitydata
  
-  \brief Implementations of non-inline functions of class DiscretisedDensity
+  \brief Implementations of non-inline functions of class stir::DiscretisedDensity
 
   \author Kris Thielemans 
   \author PARAPET project
@@ -34,9 +34,11 @@
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/interfile.h"
+#ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ecat6_utils.h"
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/stir_ecat7.h"
+#endif
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #ifdef STIR_USE_GE_IO
@@ -56,11 +58,11 @@ START_NAMESPACE_STIR
 // This is slightly funny as it does work in ProjData.cxx. 
 // Maybe because here it's in a template?
 #   if __GNUC__ == 2 
-USING_NAMESPACE_ECAT
 #ifdef HAVE_LLN_MATRIX
+USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
-#endif
 USING_NAMESPACE_ECAT6
+#endif
 #endif
 
 /*! 
@@ -187,6 +189,8 @@ DiscretisedDensity<num_dimensions,elemT>::
       }
   }
 #endif	
+
+#ifdef HAVE_LLN_MATRIX
   {
     // Try ECAT6
     // ECAT6  does not have a signature
@@ -215,6 +219,7 @@ DiscretisedDensity<num_dimensions,elemT>::
 	return tmp;
       }
   }
+#endif // HAVE_LLN_MATRIX
 
 
   error("DiscretisedDensity::read_from_file: %s seems to be in an unsupported file format\n",

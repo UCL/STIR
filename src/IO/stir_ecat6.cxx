@@ -50,6 +50,9 @@
 #include "stir/Scanner.h" 
 #include "stir/IO/ecat6_utils.h"
 #include "stir/IO/stir_ecat6.h"
+#ifndef STIR_ORIGINAL_ECAT6
+#include "stir/IO/stir_ecat7.h"
+#endif
 
 #include "boost/cstdint.hpp" 
 #include "boost/static_assert.hpp" 
@@ -161,6 +164,11 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
                             const string& orig_name                     
                             )
 {
+#ifndef STIR_ORIGINAL_ECAT6
+  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name);
+  strcpy(mhead.magic_number, "MATRIX6.4");
+  mhead.sw_version= 64;
+#else
   mhead= main_zero_fill();
   mhead.calibration_factor = 1.F;
   
@@ -177,6 +185,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
   
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
   //WRONG mhead.gantry_tilt= scanner.get_default_intrinsic_tilt();
+#endif // STIR_ORIGINAL_ECAT6
 }
 
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
@@ -231,30 +240,42 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
   {
     long matnum = cti_numcod(frame_num, 1,gate_num, data_num, bed_num);
     
-    if(!cti_lookup(cti_fptr, matnum, &entry)) { // get entry
+    if(!cti_lookup(cti_fptr, &mhead,  matnum, &entry)) { // get entry
       error("\nCouldn't find matnum %d in specified file.\n", matnum);            
     }
-    
-    if(cti_read_image_subheader(cti_fptr, entry.strtblk, &ihead)!=EXIT_SUCCESS)
+    if(cti_read_image_subheader(cti_fptr, &mhead, entry.strtblk, &ihead)!=EXIT_SUCCESS)
       { 
 	error("\nUnable to look up image subheader\n");
       }
   }
   
+#ifndef STIR_ORIGINAL_ECAT6
+  const int x_size = ihead.x_dimension;
+  const int y_size = ihead.y_dimension;
+  const int z_size = ihead.z_dimension;
+#else
   const int x_size = ihead.dimension_1;
   const int y_size = ihead.dimension_2;
   const int z_size = mhead.num_planes;
+#endif
   const int min_z = 0; 
   
   IndexRange3D range_3D (0,z_size-1,
 			 -y_size/2,(-y_size/2)+y_size-1,
 			 -x_size/2,(-x_size/2)+x_size-1);
   
+#ifndef STIR_ORIGINAL_ECAT6
+  CartesianCoordinate3D<float> 
+    voxel_size(ihead.z_pixel_size*10,ihead.y_pixel_size*10,ihead.x_pixel_size*10);
+  CartesianCoordinate3D<float> 
+    origin(ihead.z_offset, ihead.y_offset*10, ihead.x_offset*10);
+#else
   CartesianCoordinate3D<float> 
     voxel_size(ihead.slice_width*10,ihead.pixel_size*10,ihead.pixel_size*10);
-  
   CartesianCoordinate3D<float> 
     origin(0, ihead.y_origin*10, ihead.x_origin*10);
+#endif
+  
   
   image_ptr = new VoxelsOnCartesianGrid<float> (range_3D, origin, voxel_size);
   
@@ -270,15 +291,19 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
       
       long matnum = cti_numcod(frame_num, z+1,gate_num, data_num, bed_num);
         
-      if(!cti_lookup(cti_fptr, matnum, &entry)) { // get entry
+      if(!cti_lookup(cti_fptr, &mhead, matnum, &entry)) { // get entry
 	error("\nCouldn't find matnum %d in specified file.\n", matnum);     
       }
-        
-      if(cti_read_image_subheader(cti_fptr, entry.strtblk, &ihead)!=EXIT_SUCCESS) { // get ihead for plane z
+
+      if(cti_read_image_subheader(cti_fptr, &mhead, entry.strtblk, &ihead)==EXIT_FAILURE) { // get ihead for plane z
 	error("\nUnable to look up image subheader\n");
       }
         
+#ifndef STIR_ORIGINAL_ECAT6
+      const CartesianCoordinate3D<float> sub_head_origin(ihead.z_offset, ihead.y_offset*10, ihead.x_offset*10);        
+#else // STIR_ORIGINAL_ECAT6
       const CartesianCoordinate3D<float> sub_head_origin(0, ihead.y_origin*10, ihead.x_origin*10);
+#endif // STIR_ORIGINAL_ECAT6
       {
 	if (norm(image_ptr->get_origin() - sub_head_origin) > .01F)
           {
@@ -287,8 +312,11 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
           }
       }
 
+#ifndef STIR_ORIGINAL_ECAT6
+      float scale_factor = ihead.scale_factor; 
+#else // STIR_ORIGINAL_ECAT6
       float scale_factor = ihead.quant_scale;
-      
+#endif
       if(cti_rblk (cti_fptr, entry.strtblk+1, cti_data, entry.endblk-entry.strtblk)!=EXIT_SUCCESS) { // get data
 	error("\nUnable to read data\n");            
       }
@@ -340,7 +368,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     const int mat_index= cti_rings2plane(num_rings, 5,5); 
     const long matnum= cti_numcod(frame_num, mat_index,gate_num, data_num, bed_num);
     // KT 18/08/2000 add !=0 to prevent compiler warning on conversion from int to bool
-    is_3D_file = cti_lookup (cti_fptr, matnum, &entry)!=0;
+    is_3D_file = cti_lookup (cti_fptr, &mhead, matnum, &entry)!=0;
   }
   int span = 1;
 
@@ -370,8 +398,8 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       (2*max_ring_diff+1) * num_rings  - (max_ring_diff+1)*max_ring_diff;
     
     if (num_sinos > mhead.num_planes)
-    warning("\n\aWarning: header says not enough planes in the file: %d (expected %d).\
-    Continuing anyway...\n", mhead.num_planes, num_sinos);
+    warning("\n\aWarning: header says not enough planes in the file: %d (expected %d)."
+	    "Continuing anyway...", mhead.num_planes, num_sinos);
   }
 	
   // construct a ProjDataFromStream object
@@ -419,7 +447,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     const int num_tangential_poss = scanParams.nprojs; 
     
     
-    ProjDataInfo* p_data_info= 
+    shared_ptr<ProjDataInfo> p_data_info= 
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,span,max_ring_diff,num_views,num_tangential_poss,arccorrected); 
     
     
@@ -437,7 +465,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       else
         add_extension(actual_data_name.get(), ".s");
     }
-    iostream * sino_stream =
+    shared_ptr<iostream> sino_stream =
       new fstream (actual_data_name.get(), ios::out| ios::binary);
     
     if (!sino_stream->good())
@@ -477,8 +505,9 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
         for(int ring1=0; ring1<num_axial_poss; ring1++) { // ring order: 0-0,1-1,..,15-15 then 0-1,1-2,..,14-15
           int ring2=ring1+w; // ring1<=ring2
           int mat_index= cti_rings2plane(num_rings, ring1, ring2);          
-          Sinogram<float> sino_2D = proj_data->get_empty_sinogram(ring1,w,false);
-          proj_data->set_sinogram(sino_2D);          
+          Sinogram<float> sino_2D = proj_data->get_empty_sinogram(ring1,w);
+          //TODO remove as will be set below
+	  proj_data->set_sinogram(sino_2D);  
           read_sinogram(sino_2D, cti_data, cti_fptr, mat_index, 
             frame_num, gate_num, data_num, bed_num);
           proj_data->set_sinogram(sino_2D);                     
@@ -636,6 +665,50 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   const int plane_size= y_size * x_size;
   
   // Setup subheader params
+#ifndef STIR_ORIGINAL_ECAT6
+  ihead.data_type=ECAT_I2_little_endian_data_type;
+  ihead.x_dimension= x_size;
+  ihead.y_dimension= y_size;
+  ihead.z_dimension= z_size;
+  ihead.x_pixel_size= voxel_size_x;
+  ihead.y_pixel_size= voxel_size_x;
+  ihead.z_pixel_size= voxel_size_z;
+  
+  ihead.num_dimensions= 3;
+  // STIR origin depends on the index range, but the index range is lost
+  // after writing to file.
+  // ECAT6 origin is somewhere in the middle of the image
+  // WARNING this has to be consistent with reading
+  if (image[0][0].get_min_index() != -(x_size/2) ||
+      image[0][0].get_max_index() != -(x_size/2) + x_size - 1 ||
+      image[0].get_min_index() != -(y_size/2) ||
+      image[0].get_max_index() != -(y_size/2) + y_size - 1 ||
+      image.get_min_index() != 0)
+    {
+      warning("DiscretisedDensity_to_ECAT6 is currently limited to input images in the standard STIR index range.\n"
+	      "Data not written.");
+      return Succeeded::no;
+    }
+  ihead.x_offset= image.get_origin().x()/10;
+  ihead.y_offset= image.get_origin().y()/10;
+  ihead.z_offset= image.get_origin().z()/10;
+  shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_Main_header(mhead);
+
+  const float depth_of_interaction_factor =
+    1 + 
+    scanner_ptr->get_average_depth_of_interaction() /
+    scanner_ptr->get_inner_ring_radius();
+  // note: CTI uses shead.x_resolution instead of mhead.bin_size
+  // but we don't have access to the sinogram here, and these 2 fields 
+  // should be equal anyway.
+  ihead.recon_zoom= 
+    mhead.bin_size/voxel_size_x *
+    scanner_ptr->get_default_num_arccorrected_bins()/
+    float(image[0].size()) *
+    depth_of_interaction_factor;
+
+  ihead.decay_corr_fctr= 1;
+#else // STIR_ORIGINAL_ECAT6
   ihead.data_type= mhead.data_type;
   ihead.dimension_1= x_size;
   ihead.dimension_2= y_size;
@@ -650,6 +723,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   ihead.loss_corr_fctr= 1;
   ihead.ecat_calibration_fctr= 1;
   ihead.well_counter_cal_fctr=1;
+#endif // STIR_ORIGINAL_ECAT6
   
   // make sure we have a large enough multiple of MatBLKSIZE
   int cti_data_size = plane_size*2;
@@ -663,7 +737,11 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
     convert_array(plane, scale_factor, image[z+min_z]);
     ihead.image_min= plane.find_min();
     ihead.image_max= plane.find_max();
+#ifndef STIR_ORIGINAL_ECAT6
+    ihead.scale_factor= scale_factor==0 ? 1.F : scale_factor;
+#else
     ihead.quant_scale= scale_factor==0 ? 1.F : scale_factor;
+#endif // STIR_ORIGINAL_ECAT6
     
     for(int y=0; y<y_size; y++)
     {
@@ -673,7 +751,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
     
     // write data
     long matnum= cti_numcod(frame_num, z-min_z+1, gate_num, data_num, bed_num);
-    if(cti_write_image(fptr, matnum, &ihead, cti_data, cti_data_size)!=EXIT_SUCCESS) {
+    if(cti_write_image(fptr, matnum, &mhead, &ihead, cti_data, cti_data_size)!=EXIT_SUCCESS) {
       warning("Unable to write image plane %d at (f%d, g%d, d%d, b%d) to file, exiting.\n",
                z-min_z+1, frame_num, gate_num, data_num, bed_num);
       delete[] cti_data;      
@@ -755,9 +833,15 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
   const int plane_size= num_view * num_bin;
   
   // Setup subheader params
+#ifndef STIR_ORIGINAL_ECAT6
+  shead.data_type=ECAT_I2_little_endian_data_type;
+  shead.num_r_elements= num_bin;
+  shead.num_angles= num_view;
+#else
   shead.data_type= mhead.data_type;
   shead.dimension_1= num_bin;
   shead.dimension_2= num_view;
+#endif // STIR_ORIGINAL_ECAT6
   shead.loss_correction_fctr= 1; 
   // find sample_distance
   {
@@ -768,12 +852,20 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
     if (proj_data_info_cyl_ptr==NULL)
     {
       warning("This is not arc-corrected data. Filling in default_bin_size from scanner \n");
+#ifndef STIR_ORIGINAL_ECAT6
+      shead.x_resolution= 
+#else
       shead.sample_distance= 
+#endif
         proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10;
     }
     else
     {
+#ifndef STIR_ORIGINAL_ECAT6
+      shead.x_resolution= 
+#else
       shead.sample_distance= 
+#endif
         proj_data_info_cyl_ptr->get_tangential_sampling()/10;
     }
   }
@@ -863,7 +955,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
 	? z+1
 	: cti_rings2plane( num_rings, ring1, ring2); // change indexation into CTI
       const long matnum= cti_numcod(frame_num, indexcod, gate_num, data_num, bed_num);
-      if(cti_write_scan(fptr, matnum, &shead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) 
+      if(cti_write_scan(fptr, matnum, &mhead, &shead, cti_data, plane_size*sizeof(short))!=EXIT_SUCCESS) 
       {
         warning("Unable to write short_sinogram for rings %d,%d to file, exiting.\n",ring1,ring2);
         delete[] cti_data;
@@ -947,5 +1039,5 @@ void cti_data_to_float_Array(Array<2,float>&out,
 }
 
 END_NAMESPACE_ECAT6
-END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
