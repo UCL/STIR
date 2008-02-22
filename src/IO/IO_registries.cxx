@@ -31,8 +31,8 @@
 */
 
 #include "stir/IO/InterfileOutputFileFormat.h"
-#include "stir/IO/ECAT6OutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
+#include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
 
@@ -40,8 +40,8 @@
 #if 1
 #include "stir/IO/InputFileFormatRegistry.h"
 #include "stir/IO/InterfileImageInputFileFormat.h"
-#include "stir/IO/ECAT6ImageInputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
+#include "stir/IO/ECAT6ImageInputFileFormat.h"
 #include "stir/IO/ECAT7ImageInputFileFormat.h"
 #endif
 #endif
@@ -49,11 +49,11 @@
 START_NAMESPACE_STIR
 
 static InterfileOutputFileFormat::RegisterIt dummy1;
+#ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 static ECAT6OutputFileFormat::RegisterIt dummy2;
 END_NAMESPACE_ECAT6
-#ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT7
 static ECAT7OutputFileFormat::RegisterIt dummy3;
 END_NAMESPACE_ECAT7
@@ -65,8 +65,8 @@ END_NAMESPACE_ECAT
 static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 #ifdef HAVE_LLN_MATRIX
 static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4);
-#endif
 static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000); // very low priority it doesn't have a signature 
+#endif
 #else
 // TODO
 InputFileFormatRegistry<DiscretisedDensity<3,float> >  registry;
@@ -74,7 +74,7 @@ InputFileFormatRegistry<DiscretisedDensity<3,float> >  registry;
   registry.add_to_registry(new InterfileImageInputFileFormat, 0);
 #ifdef HAVE_LLN_MATRIX
   registry.add_to_registry(new ecat::ecat7::ECAT7ImageInputFileFormat,4);
-#endif
   registry.add_to_registry(new ecat::ecat6::ECAT6ImageInputFileFormat,100000); // last as it doesn't have a signature 
+#endif
 #endif
 END_NAMESPACE_STIR

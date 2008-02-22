@@ -30,10 +30,16 @@
 */
 
 #include "stir/TimeFrameDefinitions.h"
+#ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/ecat6_utils.h"     
 #include "stir/IO/stir_ecat7.h"
-
+#else
+#ifdef STIR_ORIGINAL_ECAT6
+#include "stir/IO/stir_ecat6.h"
+#include "stir/IO/ecat6_utils.h"     
+#endif
+#endif
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -128,10 +134,17 @@ get_time_frame_num(const double start_time, const double end_time) const
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& filename)
 {
+#ifdef STIR_ORIGINAL_ECAT6
   if (ecat::ecat6::is_ECAT6_file(filename))
     read_ECAT6_frame_definitions(filename);
   else
+#endif
 #ifdef HAVE_LLN_MATRIX
+#ifndef STIR_ORIGINAL_ECAT6
+  if (ecat::ecat6::is_ECAT6_file(filename))
+    read_ECAT7_frame_definitions(filename); // note: using ECAT7 function as it will work as well
+  else
+#endif
   if (ecat::ecat7::is_ECAT7_file(filename))
     read_ECAT7_frame_definitions(filename);
   else
@@ -249,6 +262,9 @@ void
 TimeFrameDefinitions::
 read_ECAT6_frame_definitions(const string& filename)
 {
+#ifndef STIR_ORIGINAL_ECAT6
+  error("TODO: Should never get here");
+#else
   USING_NAMESPACE_ECAT;
   USING_NAMESPACE_ECAT6;
 
@@ -293,7 +309,7 @@ read_ECAT6_frame_definitions(const string& filename)
     {
       MatDir entry;
       const long matnum = cti_numcod(frame_num, 1,gate_num, data_num, bed_num);    
-      if(!cti_lookup(cti_fptr, matnum, &entry))  // get entry
+      if(!cti_lookup(cti_fptr, &mhead, matnum, &entry))  // get entry
 	{
 	  warning("TimeFrameDefinitions: there seems to be no frame %d in this ECAT6 file \"%s\".\n",
 		  frame_num, cti_name);
@@ -305,7 +321,7 @@ read_ECAT6_frame_definitions(const string& filename)
 	  {
 	    Image_subheader shead;
 	    // read subheader
-	    if(cti_read_image_subheader(cti_fptr, entry.strtblk, &shead)!=EXIT_SUCCESS)
+	    if(cti_read_image_subheader(cti_fptr, &mhead, entry.strtblk, &shead)!=EXIT_SUCCESS)
 	      { 
 		error("\nTimeFrameDefinitions: Unable to look up image subheader for frame %d\n", frame_num);
 	      }
@@ -318,7 +334,7 @@ read_ECAT6_frame_definitions(const string& filename)
 	case matScanFile:
 	  {     
 	    Scan_subheader shead;
-	    if(cti_read_scan_subheader (cti_fptr, entry.strtblk, &shead)!=EXIT_SUCCESS)
+	    if(cti_read_scan_subheader (cti_fptr, &mhead, entry.strtblk, &shead)!=EXIT_SUCCESS)
 	      { 
 		error("\nTimeFrameDefinitions: Unable to look up scan subheader for frame %d\n", frame_num);
 	      }
@@ -331,6 +347,7 @@ read_ECAT6_frame_definitions(const string& filename)
 	}
     }
   fclose(cti_fptr);
+#endif // STIR_ORIGINAL_ECAT6
 }    
 
     
