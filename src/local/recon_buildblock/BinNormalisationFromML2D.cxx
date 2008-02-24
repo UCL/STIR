@@ -120,11 +120,11 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 	    if (!in)
 	      {
 		warning("BinNormalisationFromML2D: Error reading %s\n", normalisation_filename);
-		delete normalisation_filename;
+		delete[] normalisation_filename;
 		return Succeeded::no;
 	      }
 
-	  delete normalisation_filename;
+	  delete[] normalisation_filename;
 	}
 	// geo norm
       if (do_geo)
@@ -138,10 +138,10 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 	    if (!in)
 	      {
 		warning("BinNormalisationFromML2D: Error reading %s\n", normalisation_filename);
-		delete normalisation_filename;
+		delete[] normalisation_filename;
 		return Succeeded::no;
 	      }
-	    delete normalisation_filename;
+	    delete[] normalisation_filename;
 	  }
 	}
 	// block norm
@@ -156,10 +156,10 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 	    if (!in)
 	      {
 		warning("BinNormalisationFromML2D: Error reading %s\n", normalisation_filename);
-		delete normalisation_filename;
+		delete[] normalisation_filename;
 		return Succeeded::no;
 	      }
-	    delete normalisation_filename;
+	    delete[] normalisation_filename;
 	  }
 	}
       {

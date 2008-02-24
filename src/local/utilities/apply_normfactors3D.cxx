@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 		warning("Error reading %s, using all 1s instead\n", in_filename);
 		do_eff = false;
 	      }
-	  delete in_filename;
+	  delete[] in_filename;
 	}
       	// block norm
       if (do_block)
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 		warning("Error reading %s, using all 1s instead\n", in_filename);
 	        do_block = false;
 	      }
-	    delete in_filename;
+	    delete[] in_filename;
 	  }
 	}
 

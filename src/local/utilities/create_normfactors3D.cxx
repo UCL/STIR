@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 		      out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
 	      ofstream out(out_filename);
 	      out << efficiencies;
-	      delete out_filename;
+	      delete[] out_filename;
 	    }
           } // end efficiencies
           // block norm
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 		      out_filename_prefix.c_str(), "block",  iter_num);
 	      ofstream out(out_filename);
 	      out << norm_block_data;
-	      delete out_filename;
+	      delete[] out_filename;
 	    }
 	  
           } // end block

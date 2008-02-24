@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         "fan", ax_pos_num);
         std::ofstream out(out_filename);
         out << data_fan_sums;
-        delete out_filename;
+        delete[] out_filename;
         }
       */
     }
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
               out_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
 	    std::ofstream out(out_filename);
             out << efficiencies;
-            delete out_filename;
+            delete[] out_filename;
           }
           if (do_KL)
           {
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
             out_filename_prefix.c_str(), "block", iter_num);
           std::ofstream out(out_filename);
           out << norm_block_data;
-          delete out_filename;
+          delete[] out_filename;
         }
         if (do_KL)
         {

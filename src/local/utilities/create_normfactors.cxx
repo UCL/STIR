@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 		      out_filename_prefix.c_str(), "eff", ax_pos_num, iter_num, eff_iter_num);
 	      ofstream out(out_filename);
 	      out << efficiencies;
-	      delete out_filename;
+	      delete[] out_filename;
 	    }
 	  // geo norm
 	  {
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 		      out_filename_prefix.c_str(), "geo", ax_pos_num, iter_num);
 	      ofstream out(out_filename);
 	      out << norm_geo_data;
-	      delete out_filename;
+	      delete[] out_filename;
 	    }
 	  }
           // block norm
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 		      out_filename_prefix.c_str(), "block", ax_pos_num, iter_num);
 	      ofstream out(out_filename);
 	      out << norm_block_data;
-	      delete out_filename;
+	      delete[] out_filename;
 	    }
 	  }
 	}

@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	      }
 
-            delete out_filename;
+            delete[] out_filename;
           }
           if (eff_iter_num==num_eff_iterations || (do_KL_interval>0 && eff_iter_num%do_KL_interval==0))
           {

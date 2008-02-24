@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 		efficiencies.fill(1);
 	      }
 
-	  delete in_filename;
+	  delete[] in_filename;
 	}
 	// geo norm
       if (do_geo)
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 		norm_geo_data= GeoData(IndexRange2D(num_crystals_per_block/2, num_detectors));
 		norm_geo_data.fill(1);
 	      }
-	    delete in_filename;
+	    delete[] in_filename;
 	  }
 	}
 	// block norm
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 		norm_block_data = BlockData(IndexRange2D(num_blocks, num_blocks));
 		norm_block_data.fill(1);
 	      }
-	    delete in_filename;
+	    delete[] in_filename;
 	  }
 	}
       {
