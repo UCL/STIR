@@ -214,7 +214,7 @@ main(int argc, char *argv[])
 			      max_ring_diff, arccorrected,
 			      new_out_filename, cti_fptr, mhead);
 	      }
-	delete new_out_filename;
+	delete[] new_out_filename;
         break;
       }
     default:
