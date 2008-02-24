@@ -56,7 +56,7 @@
 
 #include "boost/cstdint.hpp" 
 #include "boost/static_assert.hpp" 
-
+#include "boost/scoped_array.hpp" 
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -455,7 +455,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       ProjDataFromStream::Segment_AxialPos_View_TangPos;
     
     // TODO replace these char* things with string based extension stuff
-    shared_ptr<char> actual_data_name = new char[data_name.size() + 4];
+    boost::scoped_array<char> actual_data_name(new char[data_name.size() + 4]);
     strcpy(actual_data_name.get(), data_name.c_str());
     // KT 30/05/2002 make sure that a filename ending on .hs is treated correctly
     {
@@ -489,7 +489,9 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     // allocation for buffer. Provide enough space for a multiple of MatBLKSIZE  
     const size_t cti_data_size = 
       proj_data->get_num_tangential_poss()*proj_data->get_num_views()*type.size_in_bytes()+ MatBLKSIZE;
-    char * cti_data= new char[cti_data_size];
+    //use scoped_array to auto-delete the memory
+    boost::scoped_array<char> cti_data_sptr(new char[cti_data_size]);
+    char * cti_data= cti_data_sptr.get();
      
     cout<<"\nProcessing segment number:";
     
@@ -544,7 +546,6 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     } // end of 2D case
     
     cout<<endl;
-    delete cti_data;
   } // end of write
 }
 
