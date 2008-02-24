@@ -174,7 +174,7 @@ compute_gradient(TargetT& prior_gradient,
       sprintf(filename, "%s%d.img", gradient_filename_prefix.c_str(), count);
       // This works only for ParametricVoxelsOnCartesianGrid and maybe for other ecat7 format files.    
       const Succeeded writing_succeeded=OutputFileFormat<TargetT>::default_sptr()->write_to_file(filename, prior_gradient); 
-      delete filename;
+      delete[] filename;
     }
 }
 
