@@ -414,7 +414,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
       sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
       OutputFileFormat<DiscretisedDensity<3,elemT> >::default_sptr()->
 	write_to_file(filename, prior_gradient);
-      delete filename;
+      delete[] filename;
     }
 }
 
