@@ -532,7 +532,7 @@ update_estimate(TargetT &current_image_estimate)
     // Write it to file
     this->output_file_format_ptr->
       write_to_file(fname, *multiplicative_update_image_ptr);
-    delete fname;
+    delete[] fname;
   }
   
   if (this->subiteration_num != 1)
