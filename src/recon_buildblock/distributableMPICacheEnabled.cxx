@@ -422,7 +422,7 @@ void distributable_computation_cache_enabled(
       distributed::total_rpc_time_slaves+=receive[0];
     }
 	
-  delete int_values;
+  delete[] int_values;
 }
 
 END_NAMESPACE_STIR
