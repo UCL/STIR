@@ -133,7 +133,7 @@ namespace distributed
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending string took " << t.GetTime() << " seconds" << endl;
 #endif
 
-    delete buf;
+    delete[] buf;
   }
 	
   void send_bool_value(bool value, int tag, int destination)
@@ -255,8 +255,8 @@ namespace distributed
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending image dimensions took " << t.GetTime() << " seconds" << endl;
 #endif
 		
-    delete sizes;
-    delete parameters;
+    delete[] sizes;
+    delete[] parameters;
   }
 	
   void send_image_estimate(const stir::DiscretisedDensity<3,float>* input_image_ptr, int destination)
@@ -339,7 +339,7 @@ namespace distributed
     if( remove( "for_slave.s" ) != 0 )
       stir::warning( "Error deleting temporary file" );		
     		
-    delete file_buffer;
+    delete[] file_buffer;
   }	
 	
   void send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination)
@@ -400,8 +400,8 @@ namespace distributed
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master: sending viewgram took " << t.GetTime() << " seconds" << endl;
 #endif
 		
-    delete viewgram_buf;
-    delete viewgram_values;
+    delete[] viewgram_buf;
+    delete[] viewgram_values;
   }
 	
   //--------------------------------------Receive Operations-------------------------------------
@@ -442,7 +442,7 @@ namespace distributed
 		
     //convert to string
     string str(buf);
-    delete buf;
+    delete[] buf;
     return str;
   }
 	
@@ -464,7 +464,7 @@ namespace distributed
 		
     //convert to string
     string registered_name_proj_pair(buf);
-    delete buf;
+    delete[] buf;
 		
     //Receive parameter info		
 #ifdef TIMINGS
@@ -483,7 +483,7 @@ namespace distributed
 		
     //convert to string 
     string parameter_info(buf3);
-    delete buf3;
+    delete[] buf3;
 		
     //construct new Backprojector and Forward Projector, projector_pair_ptr
     std::istringstream parameter_info_stream(parameter_info);
@@ -610,7 +610,7 @@ namespace distributed
 		
     if (status.MPI_TAG==END_RECONSTRUCTION_TAG) 
       {
-	delete buffer;
+	delete[] buffer;
 	return status;
       }
     else 
@@ -625,7 +625,7 @@ namespace distributed
 	    pos++;
 	    density_iter++;
 	  }
-	delete buffer;
+	delete[] buffer;
       }
     return status;  		   	
   }
@@ -684,7 +684,9 @@ namespace distributed
    		
     //use viewgram-vector and symmetries-pointer to construct related viewgrams element
     stir::RelatedViewgrams<float>* tmp_viewgrams = new stir::RelatedViewgrams<float>(viewgrams_vector, symmetries_sptr);
-   		
+
+    delete[] int_values;
+
     //point viewgrams to newly constructed related-viewgrams
     viewgrams= tmp_viewgrams;
   }
@@ -731,8 +733,8 @@ namespace distributed
 
     //point viegram to newly created tmp_viewgram
     viewgram=tmp_viewgram;
-    delete viewgram_buf;
-    delete viewgram_values;
+    delete[] viewgram_buf;
+    delete[] viewgram_values;
   }	
     
   //--------------------------------------Reduce Operations-------------------------------------
@@ -770,8 +772,8 @@ namespace distributed
 	pos++;
 	density_iter++;
       }
-    delete image_buf;
-    delete output_buf;
+    delete[] image_buf;
+    delete[] output_buf;
   }
 	
   void reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &output_image_ptr, int image_buffer_size, int my_rank, int destination)
@@ -802,8 +804,8 @@ namespace distributed
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: reduced output_image after " << t.GetTime() << " seconds" << endl;
 #endif		
-    delete image_buf;
-    delete output_buf;
+    delete[] image_buf;
+    delete[] output_buf;
   }
 	
 }

@@ -370,7 +370,7 @@ void distributable_computation(
 		distributed::total_rpc_time_slaves+=receive[0];
 	}
 	
-	delete int_values;
+	delete[] int_values;
 #endif
 }
 #endif // !PARALLEL
