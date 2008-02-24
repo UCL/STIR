@@ -199,7 +199,7 @@ main(int argc, char *argv[])
 		InterfileOutputFileFormat output_file_format;
 		output_file_format.write_to_file(new_out_filename,*image_ptr);
 	      }
-	delete new_out_filename;
+	delete[] new_out_filename;
         break;
       }
     case matScanFile:
