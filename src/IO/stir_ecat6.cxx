@@ -525,8 +525,8 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
             read_sinogram(sino_2D, cti_data,
               cti_fptr, mat_index, 
               frame_num, gate_num, data_num, bed_num);
-            
-            proj_data->set_sinogram(sino_2D);           
+
+	    proj_data->set_sinogram(sino_2D);           
           }
         }
       } // end of loop on segment number
