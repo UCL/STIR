@@ -44,6 +44,19 @@ namespace std { using ::time_t; using ::tm; using ::localtime; }
 
 START_NAMESPACE_STIR
 
+template <class T>
+static inline 
+void 
+push_back(VectorWithOffset<T>& v, const T& elem)
+{
+  if (v.capacity()==v.size())
+    v.reserve(v.capacity()*2);
+
+  v.resize(v.size()+1);
+  v[v.size()-1] = elem;
+}
+
+
 static const double time_not_yet_determined=-1234567.8;
 
 /*! Convert from Polaris transformation to STIR conventions
@@ -121,7 +134,8 @@ make_transformation_from_polaris_data(Polaris_MT_File::Record const& record)
 static  void 
 find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_times_in_millisecs, 
 				       VectorWithOffset<unsigned>& lm_random_number,
-				       CListModeData& listmode_data);
+				       CListModeData& listmode_data,
+				       const unsigned int mask_for_tags);
 
 const char * const 
 RigidObject3DMotionFromPolaris::registered_name = "Motion From Polaris"; 
@@ -275,8 +289,8 @@ do_synchronisation(CListModeData& listmode_data)
 {
   VectorWithOffset<unsigned long> lm_times_in_millisecs;
   VectorWithOffset<unsigned> lm_random_numbers;
-  find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data); 
-  cerr << "done find and store gate tag values" << endl;
+  find_and_store_gate_tag_values_from_lm(lm_times_in_millisecs,lm_random_numbers,listmode_data, this->_mask_for_tags); 
+  cout << "done find and store gate tag values" << endl;
   const VectorWithOffset<unsigned>::size_type num_lm_tags = lm_random_numbers.size() ;
   if (num_lm_tags==0)
     error("RigidObject3DMotionFromPolaris: no time data in list mode file");
@@ -290,48 +304,92 @@ do_synchronisation(CListModeData& listmode_data)
 
     WARNING: assumes that mt is started BEFORE lm
   */
+  double start_MT_time_of_matching_sequence = 0;
+  // copy mt times into a vector
+  Array<1,double> mt_match_times;
+  Array<1,double> lm_match_times;
+  mt_match_times.reserve(lm_times_in_millisecs.size());
+  lm_match_times.reserve(lm_times_in_millisecs.size());
+
   for (long int mt_offset = 0; mt_offset + num_lm_tags <= num_mt_tags; ++mt_offset )
   {
     // check if tags match from current position
     Polaris_MT_File::const_iterator iterator_for_random_num =
       mt_file_ptr->begin_all_tags() + mt_offset;
     // check if first tag matches
-    if (iterator_for_random_num->rand_num != lm_random_numbers[0])
+    if ((iterator_for_random_num->rand_num & this->_mask_for_tags) != lm_random_numbers[0])
       continue; 
 
     unsigned long int num_matched_tags = 1;
+    start_MT_time_of_matching_sequence = (double)iterator_for_random_num->sample_time;
 
-    float previous_mt_tag_time = iterator_for_random_num->sample_time;
+    mt_match_times.resize(0);
+    lm_match_times.resize(0);
+    push_back(mt_match_times, (double)start_MT_time_of_matching_sequence);
+    push_back(lm_match_times, (double)lm_times_in_millisecs[0]);
     ++iterator_for_random_num;
     unsigned int lm_tag_num = 1;
     while (iterator_for_random_num!= mt_file_ptr->end_all_tags() &&
 	   lm_tag_num < num_lm_tags)
       { 
-	if (iterator_for_random_num->rand_num != lm_random_numbers[lm_tag_num])
+	if ((iterator_for_random_num->rand_num & this->_mask_for_tags) != lm_random_numbers[lm_tag_num])
 	  {
 	    // no match
+	    if (num_matched_tags > 10)
+	      {
+		warning("Matching sequence of length %d (starting at MT time %g) breaks at MT time %g",
+			num_matched_tags, start_MT_time_of_matching_sequence, 
+			(double)iterator_for_random_num->sample_time);
+	      }
 	    num_matched_tags = 0;
 	    break; // get out of loop over tags
 	  }
+	push_back(mt_match_times, (double)iterator_for_random_num->sample_time);
+	push_back(lm_match_times, (double)lm_times_in_millisecs[lm_tag_num]);
 
 	++num_matched_tags;	
-	previous_mt_tag_time = iterator_for_random_num->sample_time;
+
+	// The code that finds the list mode tags only stores a new tag when the channels change value,
+	// assuming that a different random number will be used every time. This assumption is no
+	// no longer valid when a cable isn't connected.
+	// We get around this problem by deleting repeated occurences in both data streams.
+	// In addition, we'll ignore 0 tags (which might occur because we're masking out a channel).
+	const unsigned int current_rand_num = iterator_for_random_num->rand_num & this->_mask_for_tags;
 	++iterator_for_random_num;
+	while (iterator_for_random_num!= mt_file_ptr->end_all_tags() &&
+	       ((iterator_for_random_num->rand_num & this->_mask_for_tags) == current_rand_num ||
+		(iterator_for_random_num->rand_num & this->_mask_for_tags) == 0))
+	  {
+	    ++iterator_for_random_num;
+	  }
+	const unsigned int current_lm_rand_num = lm_random_numbers[lm_tag_num]  & this->_mask_for_tags;
 	++lm_tag_num;
+	while (lm_tag_num < num_lm_tags &&
+	       ((lm_random_numbers[lm_tag_num] & this->_mask_for_tags) == current_lm_rand_num ||
+		(lm_random_numbers[lm_tag_num] & this->_mask_for_tags) == 0))
+	  {
+	    ++lm_tag_num;
+	  }
       } // end of loop that checks current offset
     
     if (num_matched_tags!=0)
     {
       // yes, they match
-      cerr << "\n\tFound " << num_matched_tags << " matching tags between mt file and list mode data\n";
-      cerr << "\tEntry " << mt_offset << " in .mt file corresponds to start of list mode data \n";
-      time_offset = 
-	(mt_file_ptr->begin_all_tags()+mt_offset)->sample_time;
+      cout << "\n\tFound " << num_matched_tags << " matching tags between mt file and list mode data\n";
+      cout << "\tEntry " << mt_offset << " in .mt file (MT time "
+	   << start_MT_time_of_matching_sequence << ") corresponds to start of list mode data \n";
+      this->time_offset = start_MT_time_of_matching_sequence;
 
       // fit
-      // note: initialise to 0 to avoid compiler warnings
-      double constant = 0; double scale = 0;
       {
+	// note: initialise to 0 to avoid compiler warnings
+	double constant = 0; double scale = 0;
+	// first shift mt times according to our initial estimate
+	// and scale lm_times to secs.
+	// This will make the fit a bit more stable.
+	mt_match_times -= this->time_offset;
+	lm_match_times /= 1000.;
+
 	VectorWithOffset<float> weights(num_matched_tags);
 	weights.fill(1.F);
 	// ignore first data point
@@ -339,16 +397,6 @@ do_synchronisation(CListModeData& listmode_data)
 	weights[0]=0;
 
 	// copy mt times into a vector
-	VectorWithOffset<double> mt_times(num_matched_tags);
-	{
-	  Polaris_MT_File::const_iterator mt_iter =
-	       mt_file_ptr->begin_all_tags() + mt_offset;
-	  VectorWithOffset<double>::iterator mt_time_iter = mt_times.begin();
-	  for (;
-	       mt_time_iter != mt_times.end();
-	       ++mt_iter, ++mt_time_iter)
-	    *mt_time_iter =mt_iter->sample_time - time_offset;
-	}
 	// note: initialise to 0 to avoid compiler warnings
 	double chi_square = 0;
 	double variance_of_constant = 0;
@@ -359,8 +407,8 @@ do_synchronisation(CListModeData& listmode_data)
 			  variance_of_constant,
 			  variance_of_scale,
 			  covariance_of_constant_with_scale,
-			  mt_times.begin(), mt_times.end(),
-			  lm_times_in_millisecs.begin(),
+			  mt_match_times.begin(), mt_match_times.end(),
+			  lm_match_times.begin(),
 			  weights.begin(),
 			  /* use_estimated_variance = */true
                        );
@@ -369,11 +417,19 @@ do_synchronisation(CListModeData& listmode_data)
 		  << ", cst = " << constant << " +- " << sqrt(variance_of_constant)
 		  << "\n\tchi_square = " << chi_square
 		  << "\n\tcovariance = " << covariance_of_constant_with_scale
-       << endl;
+		  << endl;
+	this->time_offset += constant;
+	this->time_drift = scale;
 
-      }
-      time_offset += constant;
-      time_drift = scale*1000.;
+	// report max-difference
+	{
+	  Array<1,double> diff = lm_match_times * scale + constant - mt_match_times;
+	  // ignore first
+	  diff.resize(1,diff.size()-1);
+	  std::cout << "\nDeviation between Polaris and listmode time is between "
+		    << diff.find_min() << " and " << diff.find_max() << '\n';
+	}
+      } // end of fit
 
       std::cout << "\n\tTime offset " <<  time_offset << " drift " << time_drift << '\n';
       // do some reporting of time discrepancies 
@@ -386,14 +442,9 @@ do_synchronisation(CListModeData& listmode_data)
 	  ((mt_file_ptr->end_all_tags()-1) -
 	   mt_file_ptr->begin_all_tags());
 
-	double max_deviation = 0;
-	double time_of_max_deviation = 0;
 	Polaris_MT_File::const_iterator mt_iter =
 	  mt_file_ptr->begin_all_tags() + mt_offset;	
-	unsigned int lm_tag_num = 0;
 	double previous_mt_tag_time = mt_iter->sample_time;
-	// skip first
-	++mt_iter; ++lm_tag_num;
 	while (mt_iter!= mt_file_ptr->end_all_tags() && 
 	       lm_tag_num < num_lm_tags)
 	{
@@ -407,29 +458,63 @@ do_synchronisation(CListModeData& listmode_data)
 		      elapsed_mt_tag_time, previous_mt_tag_time);
 	    }
 	  previous_mt_tag_time = mt_tag_time;
-
-	  const double lm_tag_time_in_millisecs = lm_times_in_millisecs[lm_tag_num];
-	  ++lm_tag_num;
-
-	  const double deviation = 
-	    fabs(mt_tag_time - rel_time_to_polaris_time(lm_tag_time_in_millisecs/1000.));
-	  if (deviation>max_deviation)
-	    {
-	      max_deviation = deviation;
-	      time_of_max_deviation = lm_tag_time_in_millisecs/1000.;
-	    }
 	}
-	warning("Max deviation between Polaris and listmode is:\n"
-		"\t%g, at %g secs (in list mode time)",
-		max_deviation, time_of_max_deviation);
       }
       return;
     }
   }
 
   // if we get here, we didn't find a match
-  error( "\n\n\t\tNo matching data found\n" ) ;  
+  warning( "No matching data found" );
+  std::cerr << "Some diagnostics\n";
+  {
+    const std::time_t listmode_data_start_time_in_secs = 
+      listmode_data.get_scan_start_time_in_secs_since_1970();
+    if (listmode_data_start_time_in_secs!=std::time_t(-1))
+      {
+	std::cerr << "List mode data started at " 
+		  << listmode_data_start_time_in_secs
+		  << " secs since 1970\n";
+	// Polaris times are currently in localtime since midnight
+	// This relies on TZ though: bad! (TODO)
+	struct std::tm* lm_start_time_tm = std::localtime( &listmode_data_start_time_in_secs  ) ;
+	const double lm_start_time = 
+	  ( lm_start_time_tm->tm_hour * 3600. ) + 
+	  ( lm_start_time_tm->tm_min * 60. ) + 
+	  lm_start_time_tm->tm_sec ;
+	
+	std::cerr <<"Listmode file says that listmode start time is " 
+		  << lm_start_time 
+		  << " in secs after midnight local time"<< endl;
+      }
+    else
+      {
+	std::cerr <<"Listmode file has scan_start_time not filled in\n";
+      }
+    std::cerr << "Polaris tracking started at " 
+	      << mt_file_ptr->get_start_time_in_secs_since_1970()
+	      << " secs since 1970\n";
+    std::cerr << "Polaris first and last tags are at " 
+	      << mt_file_ptr->begin_all_tags()->sample_time << ", "
+	      << (mt_file_ptr->end_all_tags()-1)->sample_time 
+	      << " in secs after midnight local time\n";
+
+    std::cerr << "\nFirst 50 list mode tags:\n";
+    for (unsigned int lm_tag_num = 1; lm_tag_num <= std::min(std::size_t(50),num_lm_tags); ++lm_tag_num)
+      { 
+	std::cerr << lm_random_numbers[lm_tag_num] << ", ";
+      }
+    std::cerr << "... \n";
+  }      
+  error( "\n\t\tNo matching data found" ) ;  
   
+}
+
+void 
+RigidObject3DMotionFromPolaris::
+set_mask_for_tags(const unsigned int mask_for_tags)
+{
+  this->_mask_for_tags = mask_for_tags;
 }
 
 
@@ -540,7 +625,7 @@ RigidObject3DMotionFromPolaris::synchronise(CListModeData& listmode_data)
 	( lm_start_time_tm->tm_min * 60. ) + 
 	lm_start_time_tm->tm_sec ;
 
-      cerr << "\nListmode file says that listmode start time is " 
+      cout << "\nListmode file says that listmode start time is " 
 	   << lm_start_time 
 	   << " in secs after midnight local time"<< endl;
 
@@ -598,23 +683,11 @@ secs_since_1970_to_rel_time(std::time_t secs) const
       -static_cast<double>(listmode_data_start_time_in_secs-secs);
 }
   
-
-template <class T>
-static inline 
-void 
-push_back(VectorWithOffset<T>& v, const T& elem)
-{
-  if (v.capacity()==v.size())
-    v.reserve(v.capacity()*2);
-
-  v.resize(v.size()+1);
-  v[v.size()-1] = elem;
-}
-
 void
 find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time, 
 				       VectorWithOffset<unsigned>& lm_random_number, 
-				       CListModeData& listmode_data/*const string& lm_filename*/)
+				       CListModeData& listmode_data/*const string& lm_filename*/,
+				       const unsigned int mask_for_tags)
 {
   
   unsigned  LastChannelState=0;
@@ -642,7 +715,7 @@ find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time,
     }
     if (record.is_time())
     {
-      unsigned CurrentChannelState =  record.time().get_gating();
+      unsigned CurrentChannelState =  record.time().get_gating() & mask_for_tags;
       unsigned long CurrentTime = record.time().get_time_in_millisecs();
       
       if ( LastChannelState != CurrentChannelState && CurrentChannelState )
@@ -700,6 +773,7 @@ RigidObject3DMotionFromPolaris::set_defaults()
   time_offset = time_not_yet_determined;
   max_time_drift_deviation = .01;
   max_time_offset_deviation = 3.;
+  this->_mask_for_tags= 0xffffffff;
 }
 
 
@@ -715,6 +789,8 @@ RigidObject3DMotionFromPolaris::initialise_keymap()
 		 &max_time_drift_deviation);
   parser.add_key("maximum time offset deviation",
 		 &max_time_offset_deviation);
+  parser.add_key("mask for tags",
+		 &this->_mask_for_tags);
   parser.add_stop_key("End Rigid Object 3D Motion From Polaris");
 }
 
