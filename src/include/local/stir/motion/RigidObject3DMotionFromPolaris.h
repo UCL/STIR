@@ -80,6 +80,9 @@ public:
   virtual std::vector<double>
     get_rel_time_of_samples(const double start_time, const double end_time) const;
 
+  //! set mask to be able to ignore one or more channels in the listmode gating data
+  void set_mask_for_tags(const unsigned int mask_for_tags);
+
   //! Synchronise motion tracking file and listmode file
   virtual Succeeded synchronise(CListModeData& listmode_data);
   virtual double secs_since_1970_to_rel_time(std::time_t) const;
@@ -127,6 +130,9 @@ private:
  
 
  private:
+  //! allow masking out certain bits of the tags in case a cable is not connected
+  unsigned int _mask_for_tags;
+
   // TODO this should probably be moved to RigidObject3DMotion
   string transformation_from_scanner_coordinates_filename;
   RigidObject3DTransformation move_to_scanner_coords;
