@@ -35,7 +35,7 @@ scatter_parameter=`${PRINTHEADER} rec.weight |grep "Binning: scatter parameter" 
 
 num_scatter_bins=$(( $max_scatter_bin_num - $min_scatter_bin_num + 1 ))
 
-conv_cmdline="conv_SimSET_STIR \
+conv_cmdline="conv_SimSET_projdata_to_STIR \
         rec.weight fl \
         `${PRINTHEADER} rec.weight |grep "Binning: number of AA bins" |awk '{ print $6 }'` \
         `${PRINTHEADER} rec.weight |grep "Binning: number of TD bins" |awk '{ print $6 }'` \
