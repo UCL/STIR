@@ -32,12 +32,13 @@
 	  \par Usage:
 	  \code
 	  conv_to_SimSET_image [SimSET_image_filename][original_image]
+          \endcode
 	  Output: "SimSET_image_filename".hv AND "SimSET_image_filename".v 
 	  
 		This is a utility program converts a transmission image into SimSET attenuation input file.
 		This is done by a simple segmentation of the transmission image, based on index values found 
 		in the table below (http://depts.washington.edu/simset/html/user_guide/user_guide_index.html): 
-		
+  \verbatim
 		  Material              Attenuation index
 		  -----------------      ---------------------
 		  Air                          0    //Implemented
@@ -60,7 +61,7 @@
 		  Perfect absorber			  17
 		  LSO                         18
 		  GSO                         19
-		  Aluminum		              20
+		  Aluminum		              20 //Implemented
 		  Tungsten					  21
 		  Liver						  22
 		  Fat                         23
@@ -69,21 +70,18 @@
 		  NEMA polyethylene			  26 
 		  Polymethyl methylcrylate	  27 
 		  Polystyrene fibers		  28 
-		
+   \endverbatim
 		See the SimSET documentation for more details.
   
 			If at least one attenuation value in the transmission image is not segmented either 
 			implement the new attenuation indices or change the input image. 
 			HINT: If the image is produced by the STIR utility: generate_image,
 			the subsampling parameters should be set to 1 when small voxels sizes are used.
-			
-			  \endcode	  
 */
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/interfile.h"
 #include "stir/Succeeded.h"
-#include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include <iostream> 
 /***********************************************************/     
 int main(int argc, char *argv[])                                  
@@ -99,7 +97,6 @@ int main(int argc, char *argv[])
 			DiscretisedDensity<3,float>::read_from_file(argv[2]);
 		string output_image_filename(argv[1]);
 		shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = input_image_sptr->clone();		
-		//Array<3,unsigned char>::full_iterator out_iter = output_image.begin_all();
 		bool is_implemented=true;
 		DiscretisedDensity<3,float>::full_iterator out_iter = output_image_sptr->begin_all();
 		DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();
@@ -118,10 +115,7 @@ int main(int argc, char *argv[])
 				*out_iter = 6.F;
 			else if (fabs(*in_iter-0.0011)<0.005) // air
 				*out_iter = 30.F;
-			// WARNING: next value is really not aluminum (should be 0.22548)
-			// However, this is currently a work-around to handle the
-			// sphere used for our experiments
-			else if (fabs(*in_iter-0.898)<0.005) // Aluminum
+			else if (fabs(*in_iter-0.22548)<0.005) // Aluminum
 			        *out_iter = 20.F;
 
 			else
@@ -138,11 +132,6 @@ int main(int argc, char *argv[])
 					  << "\nImplement the new attenuation indices or change the input image. \n" 
 					  << "HINT: If produced by generate_image set the subsampling parameters to 1, \n."
 					  << "when small voxels sizes are used.\n";			
-		/*
-		std::ofstream out_stream(output_image_filename.c_str(), std::ios::out | std::ios::binary);
-		if (!out_stream)
-		error()
-		Succeeded succes = write_data(out_stream, output_image);		*/			
 		// write to file as 1 byte without changing the scale
 		Succeeded success = 
 			write_basic_interfile(output_image_filename, *output_image_sptr,
