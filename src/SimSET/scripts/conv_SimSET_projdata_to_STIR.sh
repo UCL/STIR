@@ -18,32 +18,39 @@ if [ $# -ne 1 ]; then
 fi
 
 max_ring_difference=$1
+simset_file=rec.weight
+scanner_name="ECAT 962"
 
 set -e
 script_name="$0"
 trap "echo ERROR in script $script_name" ERR
 PRINTHEADER=${SIMSET_DIR}/bin/printheader
 
-if [ ! -r rec.weight ]; then
-gunzip rec.weight.gz 
+if [ ! -r ${simset_file} ]; then
+  if [ -r ${simset_file}.gz ]; then
+    gunzip ${simset_file}.gz 
+  else
+    echo "Simset file ${simset_file} not found"
+    exit 1
+  fi
 fi
 
-min_scatter_bin_num=`${PRINTHEADER} rec.weight |grep "Binning: min number of scatters" |awk '{ print $6 }'`
-max_scatter_bin_num=`${PRINTHEADER} rec.weight |grep "Binning: max number of scatters" |awk '{ print $6 }'`
+min_scatter_bin_num=`${PRINTHEADER} ${simset_file} |grep "Binning: min number of scatters" |awk '{ print $6 }'`
+max_scatter_bin_num=`${PRINTHEADER} ${simset_file} |grep "Binning: max number of scatters" |awk '{ print $6 }'`
 
-scatter_parameter=`${PRINTHEADER} rec.weight |grep "Binning: scatter parameter" |awk '{ print $4 }'`
+scatter_parameter=`${PRINTHEADER} ${simset_file} |grep "Binning: scatter parameter" |awk '{ print $4 }'`
 
 num_scatter_bins=$(( $max_scatter_bin_num - $min_scatter_bin_num + 1 ))
 
 conv_cmdline="conv_SimSET_projdata_to_STIR \
-        rec.weight fl \
-        `${PRINTHEADER} rec.weight |grep "Binning: number of AA bins" |awk '{ print $6 }'` \
-        `${PRINTHEADER} rec.weight |grep "Binning: number of TD bins" |awk '{ print $6 }'` \
-        `${PRINTHEADER} rec.weight |grep "Binning: number of Z bins" |awk '{ print $6 }'` \
-        $max_ring_difference \
-        `${PRINTHEADER} rec.weight |grep "Binning: max Transaxial Distance" |awk '{ print $5 }'` \
-        `${PRINTHEADER} rec.weight |grep "Binning: range on Z value" |awk '{ print $6 }'` "
-
+        ${simset_file} fl \
+        `${PRINTHEADER} ${simset_file} |grep "Binning: number of AA bins" |awk '{ print $6 }'` \
+        `${PRINTHEADER} ${simset_file} |grep "Binning: number of TD bins" |awk '{ print $6 }'` \
+        `${PRINTHEADER} ${simset_file} |grep "Binning: number of Z bins" |awk '{ print $6 }'` \
+        `${PRINTHEADER} ${simset_file} |grep "Binning: max Transaxial Distance" |awk '{ print $5 }'` \
+        `${PRINTHEADER} ${simset_file} |grep "Binning: range on Z value" |awk '{ print $6 }'` \
+        \"${scanner_name}\" \
+        $max_ring_difference "
 all_scatter_bin_nums=`count $min_scatter_bin_num $max_scatter_bin_num`
 
 case $scatter_parameter in 
