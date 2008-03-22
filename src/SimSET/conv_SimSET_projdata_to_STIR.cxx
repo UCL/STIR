@@ -39,10 +39,11 @@
 #include "stir/Sinogram.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
+#include "stir/is_null_ptr.h"
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
 #include <iostream>
-#define NUMARG 11
+#define NUMARG 12
 
 
 int main(int argc,char **argv)
@@ -55,11 +56,12 @@ int main(int argc,char **argv)
     "argv[3]  Angles in SimSET file\n",
     "argv[4]  Bins in SimSET filele\n",
     "argv[5]  Axial slices in SimSET file\n",
-    "argv[6]  maximum ring difference to use for writing\n",
-    "argv[7]  FOV_radius in cm as given to simset binning module (max_td)\n",
-    "argv[8]  range on Z value in cm as given to simset binning module\n",
-    "argv[9]  index of 3d-sinogram in file (0-based)\n"
-    "argv[10] STIR file name\n"
+    "argv[6]  FOV_radius in cm as given to simset binning module (max_td)\n",
+    "argv[7]  range on Z value in cm as given to simset binning module\n",
+    "argv[8]  STIR scanner name\n"
+    "argv[9]  maximum ring difference to use for writing\n",
+    "argv[10]  index of 3d-sinogram in file (0-based)\n"
+    "argv[11] STIR file name\n"
   };
   if (argc!=NUMARG){
     std::cerr << "\n\nConvert SimSET to STIR\n\n";
@@ -73,11 +75,12 @@ int main(int argc,char **argv)
   const int num_views=atoi(argv[3]);
   const int num_tangential_poss=atoi(argv[4]);
   const int num_rings=atoi(argv[5]);
-  const int max_ring_difference=atoi(argv[6]);
-  const float FOV_radius = atof(argv[7])*10; // times 10 for mm
-  const float scanner_length = atof(argv[8])*10; // times 10 for mm
-  const int dataset_num = atoi(argv[9]);
-  const char * const stir_filename = argv[10];
+  const float FOV_radius = atof(argv[6])*10; // times 10 for mm
+  const float scanner_length = atof(argv[7])*10; // times 10 for mm
+  const char * const scanner_name = argv[8];
+  const int max_ring_difference=atoi(argv[9]);
+  const int dataset_num = atoi(argv[10]);
+  const char * const stir_filename = argv[11];
   const int nitems=num_views*num_tangential_poss;
 
   if (num_tangential_poss%2 != 1)
@@ -88,25 +91,20 @@ int main(int argc,char **argv)
   if( (file=fopen(simset_filename,"rb")) ==NULL){
     error("Cannot open the simset file %s", simset_filename);
   }
-  shared_ptr<Scanner> scanner_sptr;
+  shared_ptr<Scanner> scanner_sptr = Scanner::get_scanner_from_name(scanner_name);
+  if (is_null_ptr(scanner_sptr))
+    error("Scanner '%s' is not a valid name", scanner_name);
+
   {
-    scanner_sptr = new Scanner(Scanner::E966);
-    const float this_scanner_length = 
+    const float STIR_scanner_length = 
       scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
-    if (fabs(this_scanner_length - scanner_length)>1.0)
+    if (fabs(STIR_scanner_length - scanner_length)>1.0)
       {
-	scanner_sptr = new Scanner(Scanner::E962);
-	const float this_scanner_length = 
-	  scanner_sptr->get_num_rings() * scanner_sptr->get_ring_spacing();
-	if (fabs(this_scanner_length - scanner_length)>1.0)
-	  {
-	    warning("scanner length %g does not match 966 nor 962. Using 962 anyway", 
-		    scanner_length);
-	  }
+	warning("scanner length from SimSET %g does not match STIR scanner length %g.\n"
+		"Continuing anyway, but this is bad.",
+		scanner_length, STIR_scanner_length);
       }
   }
-  warning("Selected scanner %s", scanner_sptr->get_name().c_str());
-
   scanner_sptr->set_num_rings(num_rings);
   scanner_sptr->set_ring_spacing(scanner_length/num_rings);
   scanner_sptr->set_num_detectors_per_ring(num_views*2);
