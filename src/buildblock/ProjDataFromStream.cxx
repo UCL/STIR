@@ -5,7 +5,7 @@
 
   \file
   \ingroup projdata
-  \brief Implementations for non-inline functions of class ProjDataFromStream
+  \brief Implementations for non-inline functions of class stir::ProjDataFromStream
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -18,6 +18,18 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -289,7 +301,13 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
  
   if (*get_proj_data_info_ptr() != *(v.get_proj_data_info_ptr()))
   {
-    warning("ProjDataFromStream::set_viewgram: viewgram has incompatible ProjDataInfo member\n");
+    warning("ProjDataFromStream::set_viewgram: viewgram has incompatible ProjDataInfo member\n"
+	    "Original ProjDataInfo: %s\n"
+	    "ProjDataInfo From viewgram: %s",
+	    this->get_proj_data_info_ptr()->parameter_info().c_str(),
+	    v.get_proj_data_info_ptr()->parameter_info().c_str()
+	    );
+
    return Succeeded::no;
   }
   int segment_num = v.get_segment_num(); 
@@ -516,7 +534,13 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   
   if (*get_proj_data_info_ptr() != *(s.get_proj_data_info_ptr()))
   {
-    warning("ProjDataFromStream::set_sinogram: Sinogram<float> has incompatible ProjDataInfo member\n");
+    warning("ProjDataFromStream::set_sinogram: Sinogram<float> has incompatible ProjDataInfo member.\n"
+	    "Original ProjDataInfo: %s\n"
+	    "ProjDataInfo From sinogram: %s",
+	    this->get_proj_data_info_ptr()->parameter_info().c_str(),
+	    s.get_proj_data_info_ptr()->parameter_info().c_str()
+	    );
+
     return Succeeded::no;
   }
   int segment_num = s.get_segment_num(); 
