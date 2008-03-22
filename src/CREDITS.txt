@@ -1,13 +1,3 @@
-Institutions who contributed code after the PARAPET EU project:
-
-1. Imaging Research Solutions Ltd (now called Hammersmith Imanet)
-   London UK   
-   (14/02/2001 - )
-
-2. Hammersmith Hospital - Medical Research Council (MRC)
-   London, UK
-   (1/4/2000 - 13/02/2001)
-
 
 Institutions in the original PARAPET EU project
 (end date 30/03/2000)
@@ -77,4 +67,32 @@ Design II:
 	Mustafovic, Sanida (MRC, IRSL)
 	Jacobson, Matthew (MOC)
 
-Overall technical development supervisor: Thielemans, Kris (MRC, IRSL) 
+Overall technical development supervisor during the PARAPET project: Thielemans, Kris (MRC, IRSL) 
+
+
+Institutions/individuals who contributed code after the PARAPET EU project:
+
+
+1. Hammersmith Hospital - Medical Research Council (MRC)
+   London, UK
+   (1/4/2000 - 13/02/2001)
+
+2. Imaging Research Solutions Ltd (now called Hammersmith Imanet)
+   London UK   
+   (14/02/2001 - )
+   Thielemans, Kris 
+   Mustafovic, Sanida
+   Tsoumpas, Charalampos
+
+3. Univ of Barcelona, Spain
+   (2005)
+   Basic support for SimSET
+   Pablo Aguiar
+
+4. Univ of Paderborn, Germany
+   (2007)
+   Initial version for parallelisation of OSMAPOSL using MPI
+   Beisel, Tobias
+   supervisor Lietsch, Stefan
+
+Overall technical development supervisor after the PARAPET project: Thielemans, Kris (Hammersmith Imanet) 
