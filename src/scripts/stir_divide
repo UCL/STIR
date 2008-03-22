@@ -1,3 +1,28 @@
 #! /bin/sh
+# A simple script that call stir_math for division
+#
+#  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+#      
+# Author Kris Thielemans
+# $Id$
+# 
+# Example:
+# stir_divide output file1 file2
+# => will set output to file1/file2
+# Usual stir_math options can be used to change all this
+
 echo "stir_math --mult --power -1 $*"
 stir_math --mult --power -1 $*
