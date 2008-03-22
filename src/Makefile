@@ -84,7 +84,8 @@ EXEDIRS += utilities recon_test \
 	utilities/ecat \
 	iterative/OSMAPOSL \
 	analytic/FBP2D \
-	analytic/FBP3DRP
+	analytic/FBP3DRP \
+	SimSET
 
 TESTDIRS += test recon_test test/numerics
 
