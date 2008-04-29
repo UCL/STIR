@@ -62,8 +62,17 @@ ifeq ($(HAVE_RDF),1)
   $(dir)_SOURCES += print_rdf_singles.cxx
 endif
 
+ifeq ($(HAVE_AVW),1)
+  $(dir)_SOURCES += AVWROI.cxx
+endif
+
 
 ${DEST}$(dir)/read_input_function: ${DEST}$(dir)/read_input_function$(O_SUFFIX) \
+   $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$@ $< \
+		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/AVWROI: ${DEST}$(dir)/AVWROI$(O_SUFFIX) \
    $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$@ $< \
 		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
