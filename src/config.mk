@@ -327,14 +327,14 @@ ifeq ($(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h),$(INCLUDE_DIR)/local/st
 endif
 
 #******* GE RDF library
-# check if we find it by looking for rdfUtils.h
-ifeq ($(wildcard $(RDF_INCLUDE_DIR)/rdfUtils.h),$(RDF_INCLUDE_DIR)/rdfUtils.h)
+# check if we find it by looking for GErdfUtils.h
+ifeq ($(wildcard $(RDF_INCLUDE_DIR)/GErdfUtils.h),$(RDF_INCLUDE_DIR)/GErdfUtils.h)
   ifneq ($(HAVE_RDF),0)
      # $(warning found RDF library)
      HAVE_RDF=1
      CFLAGS+=-I ${RDF_INCLUDE_DIR} -DHAVE_RDF
      # note: this won't work for MS VC
-     EXTRA_LIBS += ${RDF_LIB_DIR}/$(LIB_PREFIX)RDFIO$(LIB_SUFFIX)
+     EXTRA_LIBS += ${RDF_LIB_DIR}/$(LIB_PREFIX)GEio$(LIB_SUFFIX)
   endif
 endif
 
