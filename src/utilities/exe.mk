@@ -43,6 +43,10 @@ ${DEST}$(dir)/poisson_noise: ${DEST}$(dir)/poisson_noise$(O_SUFFIX) \
 	$(LINK) $(EXE_OUTFLAG)$@ $< \
 		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
+${DEST}$(dir)/conv_AVW: ${DEST}$(dir)/conv_AVW$(O_SUFFIX) \
+   $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$@ $< \
+		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
 include $(WORKSPACE)/exe.mk
