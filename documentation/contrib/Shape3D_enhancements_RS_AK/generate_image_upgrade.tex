@@ -1,0 +1,133 @@
+\documentclass[10pt]{article}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{fancybox}
+\usepackage{graphicx}
+\usepackage{times}
+\usepackage{rotating}
+\usepackage{makeidx}
+\usepackage{rotate}
+\newcommand{\X}[1]{#1\index{#1}}
+
+\title{Adding features to STIR's generate image utility}
+
+\author{C. Ross Schmidtlein, and Assen S. Kirov}
+
+%\address{Department of Medical Physics\\
+%Memorial Sloan-Kettering Cancer Center\\
+%1275 York Avenue\\
+%New York, New York  10021}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Several features are added to the generate\_image function in STIR.  These are the the ability to model sectors of elliptical cylinders and generate a three dimensional box type shape.  In addition, the volumes and surface areas of these new shapes are accurately calculated.
+\end{abstract}
+
+\section{Changed/added files}
+
+The following files were modified or added:\\
+
+\noindent Modified files:
+\begin{itemize}
+\parskip 0.01 pt
+\item EllipsoidalCylinder.h 
+\item EllipsoidalCylinder.cxx
+\item Shape\_buildblock\_registries.cxx
+\item test\_ROIs.cxx
+\item lib.mk
+\end{itemize}
+
+\noindent New Files:
+\begin{itemize}
+\parskip 0.01 pt
+\item Box3D.h
+\item Box3D.cxx
+\end{itemize}
+
+\section{Changes to EllipsoidalCylinder}
+
+In the shape EllipsoidalCylinder modifications were made to allow sectors of cylindrical ellipses to be generated via the generate\_image program.  
+
+\subsection{Functions: EllipsoidalCylinder(), ~initialize\_keymap(), ~set\_defaults(), ~and ~post\_processing()}
+
+To do this two new overload functions were defined for the function EllipsoidalCylinder().  These functions added the angular variables theta\_1 and theta\_2 used to define the start and end of an elliptical cylinder.  One function is defined to allow the use of direction vectors and the other to allow the user of Euler angles in order to allow the object to pitch, yaw, and roll to a specified orientation.  Also, the initialize\_keymap(), set\_defaults(), and post\_processing() functions were modified to allow parsing the sector angles, defining a default sector size (0 to 360 degrees, a full ellipse), and to produce error messages if the user defined values are nonsensical.  
+
+\subsection{Functions: is\_inside\_shape()}
+
+This function has been modified to determine if a point in within the sector of ellipsoidal cylinder.  Special care was take to account for the branch cuts of the arctangent function.
+
+\subsection{Functions: get\_geometric\_volume()}
+
+This function has been modified to calculate the volume of an sector of an ellipsoidal cylinder.  The volume is defined by the equation:
+
+\begin{equation}
+V = \pi ~a ~b ~l ~(atan(a/b~ tan(\theta_2)) - atan(a/b ~tan(\theta_1))),
+\end{equation}
+
+\noindent where $a$ is the semi-major axis, $b$ is the semi-minor axis, $l$ is the length, $\theta_1$ is the beginning of the sector and $\theta_2$ is the end of the sector.  Again, special care was take to account for the branch cuts of the arctangent function.
+
+\subsection{Functions: get\_geometric\_area()}
+
+This function has been modified to calculate the area of an sector of an ellipsoidal cylinder including the end caps and the sector's planes.  No closed form solution exists that exactly calculates the perimeter of a full or partial  ellipse.  For a full ellipsoid the sector length is estimated via Cantrell's approximation which is a modification to Ramanujan's second approximation of an ellipsoid's perimeter.  This is given by
+
+\begin{equation}
+L = \pi ~a ~b  ~[1 + 3 h/(10 +\sqrt{4-3 h}) + 4 ~h^{12} (1/\pi - 7/22)],
+\end{equation}
+
+\noindent where $h = [(a-b)/(a+b)]^2$.  This approximation is never worse than $\pm ~15$ ppm.\\
+
+ For a sector of an ellipse the arc length is defined by the equation:
+
+\begin{equation}
+L = \int_{\theta_1}^{\theta_2}{a \sqrt{1-e^2 ~sin^2(\theta)}~d\theta},
+\end{equation}
+
+\noindent where $e^2 = 1 - b^2/a^2$ is the eccentricity of the ellipse.  This integral is an incomplete elliptic integral of the second kind and has no closed form solution.  It is approximated here via Simpson rule due to it's reasonable accuracy and ease of implementation.  Because the quadrature method uses a uniform step size with respect to angle it should be expected that the accuracy of this method will be worse for $e \sim 1$ than for more circular ellipses.  
+
+In addition, the area of the plane of the sector is calculated by the equation of the ellipse.  It is given by,
+
+\begin{equation}
+r_{\theta_1} = \sqrt{a^2 ~cos^2(\theta_1)+ b^2~sin^2(\theta_1)}, ~\mbox{and}~ r_{\theta_2} = \sqrt{a^2 ~cos^2(\theta_2)+ b^2~sin^2(\theta_2)},
+\end{equation}
+
+\noindent the calculation of the surface area, $S$, is thus given by
+
+\begin{equation}
+S = (L + r_{\theta_1} + r_{\theta_2}) ~l + 2 \pi ~a ~b ~(atan(a/b ~tan(\theta_2)) - atan(a/b ~tan(\theta_1))).
+\end{equation}
+
+\section{Additions in Box3D}
+
+\subsection{Box3D.h and Box3D.cxx}
+
+In order to generate box shaped images in the generate\_image program the Class Box3D was created. 
+
+Functions: 
+\begin{itemize}
+\item registered\_name()
+\item initialize\_keymap()
+\item set\_defaults()
+\item post\_processing()
+\item Box3D()
+\item is\_inside\_shape()
+\item scale()
+\item get\_geometric\_volume()
+\item get\_geometric\_area()
+\item clone()
+\end{itemize}
+
+These function mirror those in Class EllipsiodialCylinder. 
+
+\subsection{Modifications in files Shape\_buildblock\_registries.cxx, and lib.mk}
+
+Additions were made in these files to add the Class Box3D.
+
+\section{Tests}
+
+The file test\_ROIs.cxx tests the implementation of the the various shapes used in the generate\_image program.  An additional test was added for Box3D that mirrors those used by the Class Ellipsoid. No additional tests were added for EllipsiodialCylinder to examine the behavior of the sectors addition.  However, many sector values were tested including those where $\theta_1$ was greater than $\theta_2$.
+
+\end{document}
