@@ -52,6 +52,7 @@ public RegisteredParsingObject<Box3D, Shape3D, Shape3DWithOrientation>
   static const char * const registered_name; 
   
   Box3D();
+#if 0
   Box3D( const float length_x,
 	 const float length_y,
 	 const float length_z,
@@ -59,20 +60,28 @@ public RegisteredParsingObject<Box3D, Shape3D, Shape3DWithOrientation>
 	 const float alpha,
 	 const float beta,
 	 const float gamma);
+#endif
+
   Box3D( const float length_x, 
 	 const float length_y,
 	 const float length_z,
 	 const CartesianCoordinate3D<float>& centre,
-	 const CartesianCoordinate3D<float>& dir_x,
-	 const CartesianCoordinate3D<float>& dir_y,
-	 const CartesianCoordinate3D<float>& dir_z);
-  void scale(const CartesianCoordinate3D<float>& scale3D);
+	 const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
+
   float get_geometric_volume() const;
   float get_geometric_area() const;
   
   bool is_inside_shape(const CartesianCoordinate3D<float>& coord) const;
   
   Shape3D* clone() const;
+
+  //! Compare boxes
+  /*! Uses a tolerance determined by the smallest dimension of the object divided by 1000.*/
+  bool
+    operator==(const Box3D&) const;
+
+  virtual bool
+    operator==(const Shape3D& shape) const;
   
  protected:
   //! Length in x-direction if the shape is not rotated
