@@ -24,6 +24,9 @@
   \brief Declaration of class stir::EllipsoidalCylinder
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author C. Ross Schmidtlein (Added overload functions to define sectors of a cylinder)
+
+
   $Date$
   $Revision$
 */
@@ -56,14 +59,19 @@ START_NAMESPACE_STIR
 
   \par Parameters
    To specify an ellipsoidal cylinder with the dimensions 
-  (radius_x,radius_y,length), where radius_x assumed to be
+  (radius_x,radius_y,length, theta_1, theta_2), where radius_x is
    in x direction, radius_y in y direction, length in z-direction,
-   before any rotations, use:
+   theta_1 is defined counter clockwise from the positive x-axis 
+   about the z-axis, and theta_2 is defined counter clockwise from 
+   the positive x-axisc about the z-axis 
+   (before any rotations), use:
   \verbatim
      Ellipsoidal Cylinder Parameters:=
      radius-x (in mm):= <float>
      radius-y (in mm):= <float>
      length-z (in mm):= <float>
+     theta_1 (in deg):= <float>
+     theta_2 (in deg):= <float>
      ; any parameters of Shape3DWithOrientation
      End:=
   \endverbatim
@@ -87,6 +95,16 @@ public:
                       const CartesianCoordinate3D<float>& centre,
 		      const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
   
+  //! Constructor
+  /*! \warning: note order of arguments */
+  EllipsoidalCylinder(const float length_z, 
+                      const float radius_y,
+                      const float radius_x,
+	              const float theta_1,
+	              const float theta_2,
+                      const CartesianCoordinate3D<float>& centre,
+		      const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
+
   Shape3D* clone() const; 
 
   //! Compare cylinders
@@ -112,7 +130,7 @@ public:
     { return radius_x; }
   inline float get_radius_y() const
     { return radius_y; }
-
+  //TODOXXX add theta_1,2
   void set_length(const float);
   void set_radius_x(const float);
   void set_radius_y(const float);
@@ -125,9 +143,13 @@ protected:
   float radius_x;
   //! Radius in y-direction if the shape is not rotated
   float radius_y;
+  //! initial theta if the shape is not rotated
+    float theta_1;
+  //! final theta if the shape is not rotated
+    float theta_2;
 
   //! set defaults before parsing
-  /*! sets radii and length to 0 and calls Shape3DWithOrientation::set_defaults() */
+  /*! sets radii and length to 0, theta_1=0, theta_2=360 and calls Shape3DWithOrientation::set_defaults() */
   virtual void set_defaults();  
   virtual void initialise_keymap();    
   virtual bool post_processing();
