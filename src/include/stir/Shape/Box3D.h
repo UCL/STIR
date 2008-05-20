@@ -1,19 +1,34 @@
+//
+// $Id$
+//
+/*
+    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup Shape
   
-  \brief Declaration of class Box3D
+  \brief Declaration of class stir::Box3D
   
   \par Description
   A point with coordinates \a coord is inside the shape if for
-  \f$x = coord - origin\f$:
-  \f$y = coord - origin\f$:
-  \f$z = coord - origin\f$:
+  x,y,z given by <code>Shape3DWithOrientation::transform_to_original_coords(coord)</code>
   \f[
   abs(x), abs(y), abs(z) <= length_x/2, length_y/2, length_z/2
 \f]
-  where \f$dir_x, dir_y, dir_z\f$ are described in the documentation for class
-  Shape3DWithOrientation.
   
   \par Parameters
   \verbatim
