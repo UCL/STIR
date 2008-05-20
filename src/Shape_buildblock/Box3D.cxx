@@ -2,12 +2,13 @@
   \file
   \ingroup Shape
 
-  \brief Non-inline implementations for class Box3D
+  \brief Non-inline implementations for class stir::Box3D
 
   \author C. Ross Schmidtlein
-
+  \author Kris Thielemans (brought up-to-date to STIR 2.0)
 */
 #include "stir/Shape/Box3D.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -68,19 +69,17 @@ Box3D::Box3D(const float length_xv,
 	     const float length_yv,
 	     const float length_zv,
 	     const CartesianCoordinate3D<float>& centre_v,
-	     const CartesianCoordinate3D<float>& dir_xv,
-	     const CartesianCoordinate3D<float>& dir_yv,
-	     const CartesianCoordinate3D<float>& dir_zv) 
-  ://Shape3DWithOrientation(centre_v,dir_xv,dir_yv,dir_zv), 
+	     const Array<2,float>& direction_vectors) 
+  :
   length_x(length_xv),
   length_y(length_yv),
   length_z(length_zv)
 {
-  origin = centre_v;
-  dir_x = dir_xv;
-  dir_y = dir_yv;
-  dir_z = dir_zv;
+  this->set_origin(centre_v);
+  if (this->set_direction_vectors(direction_vectors) == Succeeded::no)
+    error("Box3D constructor called with wrong direction_vectors");
 }  
+#if 0
 
 Box3D::Box3D(const float length_xv,
 	     const float length_yv,
@@ -89,62 +88,42 @@ Box3D::Box3D(const float length_xv,
 	     const float alpha_v,
 	     const float beta_v,
 	     const float gamma_v) 
-  ://Shape3DWithOrientation(centre_v,alpha_v,beta_v,gamma_v),
+  :
   length_x(length_xv),
   length_y(length_yv),
   length_z(length_zv)
 {
-  origin = centre_v;
-  set_directions_from_Euler_angles(alpha_v, beta_v, gamma_v);
+  this->set_origin(centre_v);
+  this->set_directions_from_Euler_angles(alpha_v, beta_v, gamma_v);
 }
 
+#endif
 
-bool Box3D::is_inside_shape(const CartesianCoordinate3D<float>& index) const
+bool Box3D::is_inside_shape(const CartesianCoordinate3D<float>& coord) const
 {
-  const CartesianCoordinate3D<float> r = index - origin;
+  const CartesianCoordinate3D<float> r = 
+    this->transform_to_shape_coords(coord);
   
-  const float distance_along_x_axis=
-      inner_product(r,dir_x);
-  const float distance_along_y_axis=
-    inner_product(r,dir_y);
-  const float distance_along_z_axis=
-    inner_product(r,dir_z);
+  const float distance_along_x_axis= r.x();
+  const float distance_along_y_axis= r.y();
+  const float distance_along_z_axis= r.z();
   
-  if (fabs(distance_along_x_axis)<length_x/2)
-    { 
-      if (fabs(distance_along_y_axis)<length_y/2)
-	{
-	  if (fabs(distance_along_z_axis)<length_z/2) 
-	    return true;
-	}
-    }
-  else return false;
-  return false;
-}
-
-void 
-Box3D::scale(const CartesianCoordinate3D<float>& scale3D)
-{
-  if (norm(dir_z - CartesianCoordinate3D<float>(1,0,0)) > 1E-5F ||
-      norm(dir_y - CartesianCoordinate3D<float>(0,1,0)) > 1E-5F ||	
-      norm(dir_x - CartesianCoordinate3D<float>(0,0,1)) > 1E-5F)
-    error("Box3D::scale cannot handle rotated case yet.\n");
-  // TODO it's probably better to scale dir_x et al, but then other things might brake  (such as geometric_volume)
-
-  origin *= scale3D;
-  length_z *= scale3D.z();
-  length_y *= scale3D.y();
-  length_x *= scale3D.x();
+  return
+    fabs(distance_along_x_axis)<length_x/2
+    && fabs(distance_along_y_axis)<length_y/2
+    && fabs(distance_along_z_axis)<length_z/2;
 }
 
 float 
 Box3D:: 
 get_geometric_volume()const
 {
-   return static_cast<float>(length_x*length_y*length_z);
+   return static_cast<float>(length_x*length_y*length_z) / this->get_volume_of_unit_cell();
 }
 
 
+#if 0
+// doesn't take scaling into account
 float 
 Box3D:: 
 get_geometric_area()const
@@ -152,12 +131,36 @@ get_geometric_area()const
   return static_cast<float>(2*(length_x*length_y+length_x
 			       *length_z+length_y*length_z));
 }
+#endif
 
 Shape3D* 
 Box3D:: 
 clone() const
 {
   return static_cast<Shape3D *>(new Box3D(*this));
+}
+
+bool
+Box3D:: 
+operator==(const Box3D& box) const
+{
+  const float tolerance = 
+    std::min(length_z, std::min(length_x, length_y))/1000;
+  return
+    std::fabs(this->length_x - box.length_x) < tolerance
+    && std::fabs(this->length_y - box.length_y) < tolerance
+    && std::fabs(this->length_z - box.length_z) < tolerance
+    && Shape3DWithOrientation::operator==(box);
+}
+
+bool
+Box3D:: 
+operator==(const Shape3D& shape) const
+{
+  Box3D const * box_ptr =
+    dynamic_cast<Box3D const *>(&shape);
+  return
+    box_ptr != 0 && (*this == *box_ptr);
 }
 
 END_NAMESPACE_STIR
