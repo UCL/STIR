@@ -141,6 +141,8 @@ ${DEST}$(dir)/test_proj_data_info: ${DEST}$(dir)/test_proj_data_info${O_SUFFIX} 
 ${DEST}$(dir)/test_ArcCorrection: ${DEST}$(dir)/test_ArcCorrection${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
+${DEST}$(dir)/test_ROIs: ${DEST}$(dir)/test_ROIs${O_SUFFIX} $(STIR_LIB)  $(Shape_buildblock_REGISTRY_OBJS)
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS) $(Shape_buildblock_REGISTRY_OBJS)
 
 include $(WORKSPACE)/test.mk
 
