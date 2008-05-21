@@ -7,12 +7,10 @@ dir:=utilities
 $(dir)_SOURCES:=manip_image.cxx \
 	manip_projdata.cxx \
 	display_projdata.cxx \
-	convecat6_if.cxx \
 	do_linear_regression.cxx \
 	postfilter.cxx \
 	compare_projdata.cxx \
 	compare_image.cxx \
-        conv_to_ecat6.cxx \
 	extract_segments.cxx \
 	correct_projdata.cxx \
 	stir_math.cxx \
@@ -20,7 +18,6 @@ $(dir)_SOURCES:=manip_image.cxx \
 	list_image_info.cxx \
 	create_projdata_template.cxx \
 	SSRB.cxx \
-	ecat_swap_corners.cxx \
 	poisson_noise.cxx \
 	get_time_frame_info.cxx \
 	generate_image.cxx \
@@ -30,8 +27,11 @@ $(dir)_SOURCES:=manip_image.cxx \
 
 ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
-  # ifheaders_for_ecat7 etc as well
-  $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx print_ecat_singles_values.cxx
+  # ecat utilities as well
+  $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx print_ecat_singles_values.cxx \
+	convecat6_if.cxx \
+        conv_to_ecat6.cxx \
+	ecat_swap_corners.cxx 
 endif
 
 ifeq ($(HAVE_AVW),1)
