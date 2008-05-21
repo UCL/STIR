@@ -25,9 +25,15 @@
   \brief Test program for ROI functionality (and a bit of stir::Shape3D hierarchy)
     
   \author Kris Thielemans
+  \author C. Ross Schmidtlein (added stir::Box3D test)
       
    $Date$        
    $Revision$
+*/
+
+/*! 
+ \def test_ROIs_DISPLAY
+ Enable visual display of the ROIs
 */
 
 // uncomment for visual display of the ROIs
@@ -38,6 +44,7 @@
 #include "stir/MinimalImageFilter3D.h"
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Ellipsoid.h"
+#include "stir/Shape/Box3D.h"
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/evaluation/ROIValues.h"
 #include "stir/evaluation/compute_ROI_values.h"
@@ -58,21 +65,36 @@ START_NAMESPACE_STIR
   \ingroup test
   \brief Test class for compute_ROI_values and Shape3D hierarchy
 
+  Visual tests can be enabled by setting the compiler define test_ROIs_DISPLAY.
+
   \todo Tests are currently somewhat simplistic
+  
 */
 class ROITests : public RunTests
 {
 public:
   void run_tests();
 private:
-  // warning fills /changes image and shape
+  //! Run a series of tests for a shape
+  /*!
+    This function tests ROI values and Shape3D::geometric_volume before and after 
+    translating and scaling the shape.
+    \warning fills /changes image and shape
+    \warning
+    If you want to add new tests, the "scale" and "set_direction_vectors" test-code 
+    does not work for all shapes as it assumes that the
+    transformed shape is inside the original one.
+    You can disable the "set_direction_vectors" test by setting  the do_rotated_ROI_test to false.
+  */
   void run_tests_one_shape(Shape3D& shape,
-		      VoxelsOnCartesianGrid<float>& image);
+			   VoxelsOnCartesianGrid<float>& image,
+			   const bool do_rotated_ROI_test=true);
 };
 
 void
 ROITests::run_tests_one_shape(Shape3D& shape,
-			      VoxelsOnCartesianGrid<float>& image)
+			      VoxelsOnCartesianGrid<float>& image,
+			      const bool do_rotated_ROI_test)
 {
     shape.construct_volume(image, Coordinate3D<int>(1,1,1));
 
@@ -195,11 +217,11 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       image2 *= 4;
       image2 -= image;
       image2 += 2;
-      display(image2, image2.find_max(), "(image corresponding to scale shape)*2 - (original shape) + 1");
+      display(image2, image2.find_max(), "(image corresponding to scaled (.5,.9,.8) shape)*2 - (original shape) + 1");
 #endif
     }
 
-    // test on setting direction vectors (test only works new shape is smalle rthan original)
+    // test on setting direction vectors (test only works if new shape is smaller than original)
     if (dynamic_cast<Shape3DWithOrientation const *>(&shape) != 0)
     {
       const float volume_before_scale = shape.get_geometric_volume();
@@ -217,10 +239,13 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       const ROIValues ROI_values =
 	compute_total_ROI_values(image, *new_shape_sptr, Coordinate3D<int>(1,1,1));
       
-      check_if_equal(ROI_values.get_mean(), 2.F, "ROI mean after changing direction vectors");
-      check_if_equal(ROI_values.get_stddev(), 0.F, "ROI stddev after changing direction vectors");
+      if (do_rotated_ROI_test)
+	{
+	  check_if_equal(ROI_values.get_mean(), 2.F, "ROI mean after changing direction vectors");
+	  check_if_equal(ROI_values.get_stddev(), 0.F, "ROI stddev after changing direction vectors");
+	  check_if_equal(ROI_values.get_min(), 2.F, "ROI min after changing direction vectors");
+	}
       check_if_equal(ROI_values.get_max(), 2.F, "ROI max after changing direction vectors");
-      check_if_equal(ROI_values.get_min(), 2.F, "ROI min after changing direction vectors");
       // check volume 
       // test supposes that shape is entirely within the volume
       const float volume = new_shape_sptr->get_geometric_volume();
@@ -238,7 +263,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       image2 *= 4;
       image2 -= image;
       image2 += 2;
-      display(image2, image2.find_max(), "(image corresponding to scale shape)*2 - (original shape) + 1");
+      display(image2, image2.find_max(), "(image corresponding to rotated and scaled (x,y) shape)*2 - (original shape) + 1");
 #endif
     }
     // test on parsing
@@ -281,6 +306,12 @@ ROITests::run_tests()
           Coordinate3D<int>(24,44,45));
   VoxelsOnCartesianGrid<float>  image(range,origin, grid_spacing);
 
+  /* WARNING:
+     If you want to add new tests, the "scale" and "set_direction_vectors" test-code 
+     in run_tests_one_shape() does not work for all shapes as it assumes that the
+     transformed shape is inside the original one.
+     You can disable the "set_direction_vectors" test by setting  the do_rotated_ROI_test to false.
+  */
   {
     std::cerr << "\tTests with ellipsoidal cylinder.\n";
     // object at centre of image
@@ -289,12 +320,20 @@ ROITests::run_tests()
 	       /*radius_x*/image[0][0].size()*grid_spacing.x()/4,
 	       /*radius_y*/image[0].size()*grid_spacing.y()/4,
 	       /*centre*/CartesianCoordinate3D<float>((image.get_min_index()+image.get_max_index())/2*grid_spacing.z(), 0,0));
-    const float volume = cylinder.get_geometric_volume();
-    check_if_equal(volume, 
-		   cylinder.get_length() * static_cast<float>(_PI) 
-		   * cylinder.get_radius_x() * cylinder.get_radius_y(),
-		   "volume of cylinder");
-    //XXXrun_tests_one_shape(cylinder, image);
+    this->run_tests_one_shape(cylinder, image);
+  }
+  image.set_origin(origin);
+  {
+    std::cerr << "\tTests with ellipsoidal cylinder and wedge.\n";
+    // object at centre of image
+    EllipsoidalCylinder
+      cylinder(/*length*/image.size()*grid_spacing.z()/3, 
+	       /*radius_x*/image[0][0].size()*grid_spacing.x()/4,
+	       /*radius_y*/image[0].size()*grid_spacing.y()/4,
+	       /* theta_1 */ 10.F,
+	       /* theta_2 */ 280.F,
+	       /*centre*/CartesianCoordinate3D<float>((image.get_min_index()+image.get_max_index())/2*grid_spacing.z(), 0,0));
+    this->run_tests_one_shape(cylinder, image, /*do_rotated_ROI_test=*/ false);
   }
   image.set_origin(origin);
   {
@@ -305,8 +344,18 @@ ROITests::run_tests()
 					     /*radius_y*/image[0].size()*grid_spacing.y()/5,
 					     /*radius_x*/image[0][0].size()*grid_spacing.x()/4),
 		/*centre*/CartesianCoordinate3D<float>((image.get_min_index()+image.get_max_index())/2*grid_spacing.z(), 0,0));
-    //XXXrun_tests_one_shape(ellipsoid, image);
+    this->run_tests_one_shape(ellipsoid, image);
   }
+  {
+    std::cerr << "\tTests with Box3D.\n";
+    // object at centre of image
+    Box3D
+      box(/*length_x*/image[0][0].size()*grid_spacing.x()/4,
+	  /*length_y*/image[0].size()*grid_spacing.y()/5,
+	  /*length_z*/image.size()*grid_spacing.z()/3,
+	  /*centre*/CartesianCoordinate3D<float>((image.get_min_index()+image.get_max_index())/2*grid_spacing.z(), 0,0));
+    this->run_tests_one_shape(box, image);
+    }
   {
     std::cerr << "\tTests with DiscretisedShape3D.\n";
     // object at centre of image
@@ -338,6 +387,7 @@ ROITests::run_tests()
       VoxelsOnCartesianGrid<float>  other_image(other_range,other_origin, other_grid_spacing);
       this->run_tests_one_shape(discretised_shape, other_image);
     }
+
   }
 
 }
