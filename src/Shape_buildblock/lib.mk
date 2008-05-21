@@ -8,7 +8,8 @@ $(dir)_LIB_SOURCES = \
   DiscretisedShape3D.cxx \
   Shape3DWithOrientation.cxx \
   Ellipsoid.cxx \
-  EllipsoidalCylinder.cxx
+  EllipsoidalCylinder.cxx \
+  Box3D.cxx
 
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
