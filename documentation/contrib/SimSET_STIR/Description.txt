@@ -1,0 +1,12 @@
+Description of the work
+
+The intention of this work was to be able to run the SimSET Monte Carlo package 
+on images written using STIR routines, and to convert the SimSET output 
+to a file format which is readable by STIR.
+
+Contributors:
+Pablo Aguiar (Biophysics and Bioengineering Unit of the University of Barcelona, Spain)
+Nikolaos Dikaios (University of Patras and National Technical University of Athens, Greece)
+Charalampos Tsoumpas (Imperial College London)
+Kris Thielemans (Hammersmith Imanet Ltd)
+ 
