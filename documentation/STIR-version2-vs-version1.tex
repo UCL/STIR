@@ -115,6 +115,16 @@ direction vectors (in mm):= { {0,0,1}, {0,1,0}, {-1,0,0}}
 origin (in mm):= {z,y,x}
 \end{verbatim}
 
+\subsubsection{Box3D}
+A contribution by C. Ross Schmidtlein and Assen S. Kirov. Allows
+to specify 3D boxes.
+
+\subsubsection{EllipsoidalCylinder}
+A contribution by C. Ross Schmidtlein and Assen S. Kirov. Allows
+to specify specify angle parameters to specify a wedge of the
+cylinder.
+
+
 \subsection{Reconstruction programs}
 \label{sec:Reconstruction_programs}
 Analytic reconstruction algorithms have not changed, except that there
@@ -287,6 +297,13 @@ and \texttt{postfilter\_truncate\_circular\_FOV.par} files in the
 \textbf{recon\_test\_pack} for examples. 
 \end{itemize}
 
+
+\subsubsection{Parallelisation of OSMAPOSL using MPI}
+Contribution by Tobias Beisel. Allows running OSMAPOSL in master-slave mode.
+\subsubsection{Parallelisation of FBP2D using OPEN_MP}
+Contribution by Tobias Beisel. Allows running FBP2D using threads.
+However, this does not really speed-up the reconstruction. This code could
+serve as a basis for FBP3DRP however.
 
 \section{For Developers}
 
