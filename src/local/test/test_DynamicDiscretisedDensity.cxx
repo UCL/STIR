@@ -20,7 +20,7 @@
 /*!
   \file
   \ingroup test
-  \brief tests the DynamicDiscretisedDensity class
+  \brief tests the stir::DynamicDiscretisedDensity class
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
@@ -147,7 +147,9 @@ START_NAMESPACE_STIR
   string string_test("STIRtmp_dyn2f.img");
   string string_empty_test("STIRtmp_dyn2f_empty.img");
 
+#ifdef HAVE_LLN_MATRIX
   check(dynamic_image.write_to_ecat7(string_test)==Succeeded::yes,"check DynamicDiscretisedDensity::write_to_ecat7 implementation");
+#endif
   check_if_equal((empty_dynamic_image.get_density(1)).find_min(),0.F,"check DynamicDiscretisedDensity constructor implementation");  	     
   check_if_equal((empty_dynamic_image.get_density(1)).find_max(),0.F,"check DynamicDiscretisedDensity constructor implementation");  	     
   check_if_equal((empty_dynamic_image.get_density(2)).find_min(),0.F,"check DynamicDiscretisedDensity constructor implementation");  	     
@@ -199,6 +201,9 @@ START_NAMESPACE_STIR
   dynamic_image.set_density_sptr(frame1_3_sptr, 1);
   dynamic_image.set_density_sptr(frame2_3_sptr, 2);
   dynamic_image.set_density_sptr(frame3_3_sptr, 3);
+#ifndef HAVE_LLN_MATRIX
+  warning("write_to_ecat7 not tested as LLN library not present");
+#else
   string string_test("STIRtmp_dyn3f.img");//TODO: Use the path info!!!
   //  string string_test2("./local/samples/dyn_image_write_to_ecat7_test2.img");
   //  dynamic_image.write_to_ecat7(string_test);
@@ -233,6 +238,7 @@ START_NAMESPACE_STIR
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(3),7.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(3),6.5,"check DynamicDiscretisedDensity class implementation");
     */
+#endif
    }  
 }
 
