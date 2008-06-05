@@ -57,8 +57,8 @@ END_NAMESPACE_ECAT6
 START_NAMESPACE_ECAT7
 static ECAT7OutputFileFormat::RegisterIt dummy3;
 END_NAMESPACE_ECAT7
-#endif
 END_NAMESPACE_ECAT
+#endif
 
 
 #if 1
