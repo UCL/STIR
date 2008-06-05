@@ -1,4 +1,4 @@
-// @(#)PTimer.h	1.6: 00/03/23
+// $Id$
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
@@ -31,6 +31,7 @@
  Modification history:
 
   <TT>
+  May 2008 -- Kris Thielemans -- renamed PTimer to HighResWallClockTimer and renamed functions to by compatible with stir::Timer
   18 Aug 99 -- Mustapha Sadki -- corrected the formula for HighResWallClockTimer::stop() & HighResWallClockTimer::GetTime() for WIN32\n
   08 Jul 99 -- Mustapha Sadki -- added global Ptimers and #define manipulations\n
   10 Apr 99 -- Alexey Zverovich -- Ported to Linux\n
@@ -44,10 +45,10 @@
 #ifndef __stir_HIGHRESWALLCLOCKTIMER_H__
 #define __stir_HIGHRESWALLCLOCKTIMER_H__
 
-#if defined(_AIX) || defined(__sun) || defined(__linux__)
-#   include <sys/time.h>
-#elif defined(WIN32)
+#if defined(WIN32)
 #   include <windows.h>
+#else
+#   include <sys/time.h>
 #endif
 
 #include <assert.h>
@@ -79,7 +80,7 @@ namespace stir {
   t.start();
   do_something();
   t.stop();
-  cout << "do_something took " << t.GetTime() << " seconds" << endl;
+  cout << "do_something took " << t.value() << " seconds" << endl;
   \endcode
 
   You have to call reset() if you wish to use the same timer to measure
@@ -132,11 +133,11 @@ namespace stir {
 #elif defined(WIN32)
     LARGE_INTEGER    m_Start;
     LARGE_INTEGER    m_Finish;
-#elif defined(__linux__)
+#else
+    //default to using gettimeofday which is on most unix (and all Linux) systems
+    #define STIR_HRWCT_Use_gettimeofday
     timeval          m_Start;
     timeval          m_Finish;
-#else
-#error Do not know how to operate high-resolution timers on this OS
 #endif
 
   };
@@ -174,7 +175,7 @@ namespace stir {
 #endif
 	  QueryPerformanceCounter(&m_Start);
 	assert(Result); // if failed, high-resolution timers are not supported by this hardware
-#elif defined(__linux__)
+#elif defined(STIR_HRWCT_Use_gettimeofday)
 	// TODO: what will happen if the time gets changed?
 #ifndef NDEBUG
 	int Result = 
@@ -269,7 +270,7 @@ namespace stir {
 	  m_Nanosecs -= 1000000000;
 	  };
 	*/
-#elif defined(__linux__)
+#elif defined(STIR_HRWCT_Use_gettimeofday)
 
 #ifndef NDEBUG
 	int Result = 
@@ -467,7 +468,7 @@ namespace stir {
 
 	Resolution = static_cast<int>(1000000000 / Freq.QuadPart);
 
-#elif defined(__linux__)
+#elif defined(STIR_HRWCT_Use_gettimeofday)
 
 	//TODO
 
