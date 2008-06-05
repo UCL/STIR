@@ -51,6 +51,16 @@ $(dir)_LIB_SOURCES += \
 	BinNormalisationFromECAT7.cxx
 endif
 
+ifeq ($(STIR_MPI),1)
+$(dir)_LIB_SOURCES += \
+	distributableMPICacheEnabled.cxx \
+	distributed_functions.cxx \
+	DistributedWorker.cxx \
+	DistributedCachingInformation.cxx \
+	distributed_test_functions.cxx
+endif
+
+
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 
