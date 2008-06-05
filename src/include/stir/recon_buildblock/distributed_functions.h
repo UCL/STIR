@@ -27,20 +27,43 @@
  
   \brief Declaration of functions in the distributed namespace
 
+  \author Tobias Beisel
+
+  $Date$
+*/
+
+/*!
+  namespace distributed
+
   This is a collection of functions to send and receive objects and data 
   needed for distributed computation with MPI. They all come in a separate 
   namespace "distibuted". There was no need to have an object providing this
   functionality as that would have been more costly.
 	
   Note that every send function has a corresponding receive function.
-	
-  There are a lot of time measurements included which print times from start to end of a single
+
+  \see STIR_MPI
+  \see STIR_MPI_TIMINGS
+
+*/
+/*!
+  \def STIR_MPI
+  \brief Precompiler-define that needs to be set to enable the parallel version of OSMAPOSL.
+*/
+
+/*!
+  \def STIR_MPI_TIMINGS
+  \brief Precompiler-define that needs to be set to enable timings in the parallel version of OSMAPOSL.
+
+  The functions in the distributable namespace can include run-time
+  measurements included which print times from start to end of a single
   Send or Receive command. This will uncover some maybe unnecessary long waiting times.
   It was actually used while developing the parallel version to check whether some code
   rearrangements would lead to faster computation. 
-  To enable these timings, compile the MPI-Version with flag TIMINGS=TRUE .
+  To enable these timings, compile the MPI-Version with the preprocessor variable
+  STIR_MPI_TIMINGS defined.
 	
-  If compiled with TIMINGS=TRUE, you still have the possibility to enable/disable the timings by
+  If compiled with STIR_MPI_TIMINGS defined, you still have the possibility to enable/disable the timings by
   using the parsing parameter 
   \verbatim
   enable message timings := 1
@@ -49,10 +72,6 @@
   \verbatim
   message timings threshold := 0.1
   \endverbatim
-	
-  \author Tobias Beisel
-
-  $Date$
 */
 
 #include "mpi.h"
@@ -62,7 +81,6 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/ProjDataInterfile.h"
-#include "stir/recon_buildblock/DistributedFunctions.h"
 #include "stir/recon_buildblock/DistributedCachingInformation.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/DiscretisedDensity.h"
@@ -73,7 +91,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
-#include "stir/PTimer.h"
+#include "stir/HighResWallClockTimer.h"
 
 namespace distributed
 {
@@ -381,6 +399,31 @@ namespace distributed
    * Alternatively it can be calculated by the image parameters.
    */
   void reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3,float> > &output_image_ptr, int image_buffer_size, int my_rank, int destination);
+
+  /* Tag-names currently used */
+#define AVAILABLE_NOTIFICATION_TAG 2
+#define END_ITERATION_TAG 3
+#define END_RECONSTRUCTION_TAG 4
+#define END_NOTIFICATION_TAG 5
+
+#define BINWISE_CORRECTION_TAG 6
+#define INT_TAG 7
+#define ARBITRARY_TAG 8
+
+#define REUSE_VIEWGRAM_TAG 10
+#define NEW_VIEWGRAM_TAG 11
+
+#define PARAMETER_INFO_TAG 21
+#define IMAGE_ESTIMATE_TAG 23
+#define IMAGE_PARAMETER_TAG 24
+#define REGISTERED_NAME_TAG 25
+
+#define VIEWGRAM_DIMENSIONS_TAG 27
+#define VIEWGRAM_TAG 28
+#define VIEWGRAM_COUNT_TAG 29
+
+#define PROJECTION_DATA_INFO_TAG 30
+
 }
 
 #endif

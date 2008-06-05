@@ -43,6 +43,11 @@ class DistributedCachingInformation;
 
 START_NAMESPACE_STIR
 
+//#ifdef STIR_MPI_CLASS_DEFINITION
+//#define PoissonLogLikelihoodWithLinearModelForMeanAndProjData PoissonLogLikelihoodWithLinearModelForMeanAndProjData_MPI
+//#endif
+
+
 
 /*!
   \ingroup GeneralisedObjectiveFunction
@@ -138,19 +143,26 @@ public:
 
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char * const registered_name; 
-  
-  //TODO: move to protected area
+
+  //
+  /*! \name Variables for STIR_MPI
+
+  Only used when STIR_MPI is enabled. 
+  \todo move to protected area
+  */
+  //@{
   //! points to the information object needed to support distributed caching
-  /*! Only used when _MPI is enabled. */
   DistributedCachingInformation * caching_info_ptr;
- #ifdef _MPI 
-  //enable/disable key for distributed caching 
+  //#ifdef STIR_MPI
+  //!enable/disable key for distributed caching 
   bool distributed_cache_enabled;
   bool distributed_tests_enabled;
   bool message_timings_enabled;
   double message_timings_threshold;
   bool rpc_timings_enabled;
-#endif
+  //#endif
+  //@}
+
 
   //! Default constructor calls set_defaults()
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
@@ -316,7 +328,7 @@ protected:
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
 };
 
-#ifdef _MPI
+#ifdef STIR_MPI
 //made available to be called from DistributedWorker object
 void RPC_process_related_viewgrams_gradient(
 					    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,

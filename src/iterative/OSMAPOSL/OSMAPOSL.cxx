@@ -34,7 +34,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include "stir/CPUTimer.h"
-#ifdef _MPI
+#ifdef STIR_MPI
 #include "stir/recon_buildblock/DistributedWorker.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   t.reset();
   t.start();
    
-#ifdef _MPI	
+#ifdef STIR_MPI	
   //processor-id within parallel Communicator
   int my_rank;	
 	
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
       if (reconstruction_object.reconstruct() == Succeeded::yes) 
 	{	
 	  t.stop();
-#ifdef _MPI 
+#ifdef STIR_MPI 
 	  if (distributed::total_rpc_time_slaves!=0) cout << "Total time used for RPC-processing: "<< distributed::total_rpc_time_slaves << endl;
 #endif
 	  cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 	  return EXIT_FAILURE;
 	}
             
-#ifdef _MPI
+#ifdef STIR_MPI
     }
   else //slaves
     {		
