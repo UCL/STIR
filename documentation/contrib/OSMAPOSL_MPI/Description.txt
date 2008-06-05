@@ -1,0 +1,94 @@
+Description of the work
+
+To customize the STIR reconstruction for a parallel use on multi-core or
+cluster systems, a parallelization concept was designed and implemented in
+parts. The idea of a parallelization is a logical consequence of the
+technical progress towards architectures with multiple processing cores. It
+intends to achieve faster reconstruction and better system utilization.
+
+The parallelization was achieved by distributing the independently
+computable reconstruction of related viewgrams among the available slave
+nodes. To achieve a good load balancing a workpool approach was used, where
+some slaves ask a master node for additional work as soon as they are
+available again. Within every iteration, every segment and the currently
+processed subset, the related viewgrams of every single view are
+distributed to the working nodes.  The master component was implemented in
+the loop over the views within the distributable.cxx, where the current
+viewgram is sent to the next requesting slave. The slave is realized by an
+infinite loop over a receiving routine, which is implemented within the
+DistributedWorker.cxx. The slave needs to be initialized with all objects
+needed for the actual reconstruction. When receiving a related viewgrams
+object, the slave simply calls the reonstruction and saves the computed
+results within a local target image. These target images are reduced at the
+master at the end of every subiteration to get a new image estimate. The
+current image estimate is broadcasted between the slaves at the beginning
+of each iteration.
+
+In addition a caching concept is used to save computation time for
+calculating the projection matrix elements and to save communication
+time. The latter is achieved by assigning the viewgrams to the slaves in
+the same way they were distributed in a previous iteration. That way a
+simple identifier is enough to tell each slave which of its saved related
+viewgram objects shall be reconstructed again. Additionally this leads to a
+better reuse of already cached parts of the projection matrix. This
+algorithm is performed within the distributableMPICacheEnabled.cxx, which
+is a replacement for the distributable.cxx in the sequential case. To
+differ between the two parallel versions (with and without caching) the
+parameter enable distributed caching can be set to 0 or 1 within the
+par-file. To realize that algorithm the master needs to save the
+distribution scheme of the initial distribution. This is implemented in the
+DistributedCachingInformation class, which computes the next
+view-segment.number for a given slave and subset. A load balancing approach
+was integrated by reallocating the related viewgrams if needed.
+
+The parallelization was implemented using the Message Passing Interface
+(MPI). The package distributed provides functions for sending, receiving
+and reducing objects with the facilities of MPI. These functions are
+implemented in DistributedFunctions.cxx. DistributedTestFunctions.cxx
+implements some test functions which where needed to verify the
+functionality of the send and receive operations. The tests can be
+activated by the parameter enable distributed tests. Having all send and
+receive functions within one file allows easy reuse and extensions.
+
+The following files were modified:
+
+(ii)	config.mk
+This had to be adapted to the use of MPI compilers.
+(iii)	distributable.cxx
+The parallel case was integrated by using preprocessor directives and 
+distributing the related viewgrams objects.
+(iv)	FBP2DReconstruction.cxx
+The filtered backprojection was parallelized using OpenMP. That was easily 
+integrated by using a parallel for directive on the main loop over the views.
+(v)	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx
+The list-mode case was not implemented, so the parallel case had to be 
+handled here as a warning.   
+(vi)	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx and 
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h
+These had to be modified for intialization purposes. All needed objects 
+are sent to the slave within the set_up() method and some parameter 
+processing had to be added.
+(vii)	RelatedViewgrams.h
+The constructor had to be made public for the parallel version.
+(viii)	OSMAPOSL.cxx
+Here the slave components are started.
+
+New files:
+a.	DistributedFunctions.cxx
+b.	DistributedFunctions.h
+c.	DistributedTestFunctions.cxx
+d.	DistributedTestFunctions.h
+
+e.	distributableMPICacheEnabled.cxx
+f.	distributableMPICacheEnabled.h
+g.	DistributedCachingInformation.cxx
+h.	DistributedCachingInformation.h
+i.	DistributedWorker.cxx
+j.	DistributedWorker.h
+
+
+Contributors:
+Tobias Beisel (University of Paderborn)
+
+Based on previous parallellisation work by the PARAPET project 
+and discussions with Kris Thielemans (Hammersmith Imanet Ltd)
