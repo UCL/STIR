@@ -52,7 +52,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 
-#ifdef _MPI
+#ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #define AVAILABLE_NOTIFICATION_TAG 2
@@ -90,7 +90,7 @@ void distributable_computation(
 				    const shared_ptr<ProjData>& binwise_correction,
                                     RPC_process_related_viewgrams_type * RPC_process_related_viewgrams)
 {
-#ifdef _MPI	
+#ifdef STIR_MPI	
 	//test distributed functions (see DistributedTestFunctions.h for details)
 
 #ifndef NDEBUG
@@ -133,7 +133,7 @@ void distributable_computation(
     (*log_likelihood_ptr) = 0.0;
   };
 
-#ifdef _MPI
+#ifdef STIR_MPI
 	// needed for several send/receive operations
 	int * int_values = new int[2];
 	
@@ -172,7 +172,7 @@ void distributable_computation(
         first_view_in_segment = false;
       }
 
-#ifdef _MPI      
+#ifdef STIR_MPI      
       //array for sending vs-num
       int_values[0]=view;
       int_values[1]=segment_num;
@@ -254,7 +254,7 @@ void distributable_computation(
         }
       }
       
-#ifdef _MPI     
+#ifdef STIR_MPI     
 	
       //test sending related viewgrams
 
@@ -313,11 +313,11 @@ void distributable_computation(
         additive_binwise_correction_viewgrams = NULL;
       };
       delete y;
-#ifdef _MPI
+#ifdef STIR_MPI
       sent_count++;
 #endif
     }
-#ifdef _MPI
+#ifdef STIR_MPI
     //in case of the last segment, receive remaining available notifications
 	if (segment_num == max_segment_num)
 	{
@@ -343,11 +343,11 @@ void distributable_computation(
     }
   }
   
-#ifndef _MPI  
+#ifndef STIR_MPI  
 	//printf("Total Iteration Wall clock time used for RPC processing: %.6lf seconds\n", total_seq_rpc_time);
 #endif
 
-#ifdef _MPI
+#ifdef STIR_MPI
 	//end of iteration processing
 	distributed::first_iteration=false;	
 	

@@ -31,28 +31,7 @@
 #include "stir/recon_buildblock/DistributedWorker.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
-#include "stir/PTimer.h"
-
-#define AVAILABLE_NOTIFICATION_TAG 2
-#define END_ITERATION_TAG 3
-#define END_RECONSTRUCTION_TAG 4
-#define END_NOTIFICATION_TAG 5
-
-#define BINWISE_CORRECTION_TAG 6
-#define ARBITRARY_TAG 8
-
-#define REUSE_VIEWGRAM_TAG 10
-#define NEW_VIEWGRAM_TAG 11
-
-#define PARAMETER_INFO_TAG 21
-#define IMAGE_ESTIMATE_TAG 23
-#define IMAGE_PARAMETER_TAG 24
-#define REGISTERED_NAME_TAG 25
-
-#define VIEWGRAM_DIMENSIONS_TAG 27
-#define VIEWGRAM_TAG 28
-
-#define PROJECTION_DATA_INFO_TAG 30
+#include "stir/HighResWallClockTimer.h"
 
   
 namespace stir 
@@ -182,7 +161,7 @@ namespace stir
     int v_num, s_num;
    		 
     int count, count2;
-    PTimer t;
+    HighResWallClockTimer t;
    		
     //loop over the iterations until received END_RECONSTRUCTION_TAG
     while (true)
@@ -264,7 +243,7 @@ namespace stir
 	    else if (status.MPI_TAG==END_RECONSTRUCTION_TAG) return;
 	    
 	    //measure time used for parallelized part
-	    if (distributed::rpc_time) {t.Reset(); t.Start();}
+	    if (distributed::rpc_time) {t.reset(); t.start();}
 	    		
 	    //call the actual Reconstruction
 	    RPC_process_related_viewgrams_gradient(
@@ -277,9 +256,9 @@ namespace stir
 				
 	    if (distributed::rpc_time)
 	      {
-		t.Stop();
-		distributed::total_rpc_time=distributed::total_rpc_time + t.GetTime();
-		distributed::total_rpc_time_2=distributed::total_rpc_time_2 + t.GetTime();
+		t.stop();
+		distributed::total_rpc_time=distributed::total_rpc_time + t.value();
+		distributed::total_rpc_time_2=distributed::total_rpc_time_2 + t.value();
 	      } 
 				
 	    int_values[0]=count;

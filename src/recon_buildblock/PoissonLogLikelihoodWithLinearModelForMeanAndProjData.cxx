@@ -43,7 +43,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 
 #include "stir/DiscretisedDensity.h"
-#ifdef _MPI
+#ifdef STIR_MPI
 #include "stir/recon_buildblock/DistributedCachingInformation.h"
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"  
 #endif
@@ -68,7 +68,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
-#ifdef _MPI
+#ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #define PARAMETER_INFO_TAG 21
@@ -144,7 +144,7 @@ set_defaults()
   // KT 20/06/2001 new
   this->Zoffset=0.F;
   
-#ifdef _MPI
+#ifdef STIR_MPI
   //distributed stuff
   this->distributed_cache_enabled = false;
   this->distributed_tests_enabled = false;
@@ -186,7 +186,7 @@ initialise_keymap()
   this->parser.add_key("time frame number", &this->frame_num);
   this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
 
-#ifdef _MPI
+#ifdef STIR_MPI
   //distributed stuff 
   this->parser.add_key("enable distributed caching", &distributed_cache_enabled);
   this->parser.add_key("enable distributed tests", &distributed_tests_enabled);
@@ -242,7 +242,7 @@ post_processing()
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
-#ifndef _MPI
+#ifndef STIR_MPI
 #if 0
    //check caching enabled value
    if (this->distributed_cache_enabled==true) 
@@ -279,7 +279,6 @@ post_processing()
      }
 #endif
    
-#ifdef TIMINGS
    //check timing values
    if (this->message_timings_enabled==true)
      {
@@ -288,11 +287,6 @@ post_processing()
      }
    //set timing threshold
    distributed::min_threshold=this->message_timings_threshold; 
-#else
-   //check timing values
-   if (this->message_timings_enabled==true)
-     cerr<<"\nTo show times of MPI-Messages STIR must be compiled with -DTIMINGS cflag!"<<endl;
-#endif
    
    if (this->rpc_timings_enabled==true)
      {
@@ -573,7 +567,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 
   // set projectors to be used for the calculations
 
-#ifdef _MPI
+#ifdef STIR_MPI
 	//broadcast objective_function (200=PoissonLogLikelihoodWithLinearModelForMeanAndProjData)
 	distributed::send_int_value(200, -1);
 
@@ -603,7 +597,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
 				   target_sptr);
 
-#ifdef _MPI
+#ifdef STIR_MPI
 	//send configuration values for distributed computation
 	int * configurations = new int[4];
 	configurations[0]=distributed::test?1:0;
@@ -931,7 +925,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 /*********************** distributable_* ***************************/
 // TODO all this stuff is specific to DiscretisedDensity, so wouldn't work for TargetT
 
-#ifdef _MPI
+#ifdef STIR_MPI
 //! Call-back function for compute_gradient
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
@@ -974,7 +968,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                             additive_binwise_correction,
                             &RPC_process_related_viewgrams_gradient
                             );
-#ifdef _MPI                            
+#ifdef STIR_MPI                            
    else distributable_computation_cache_enabled(forward_projector_sptr,
 			    back_projector_sptr,
 			    symmetries_sptr,
@@ -1021,7 +1015,7 @@ void distributable_accumulate_loglikelihood(
                             additive_binwise_correction,
                             &RPC_process_related_viewgrams_accumulate_loglikelihood
                             );
-#ifdef _MPI                            
+#ifdef STIR_MPI                            
     else distributable_computation_cache_enabled(forward_projector_sptr,
 						    back_projector_sptr,
 						    symmetries_sptr,

@@ -51,20 +51,10 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 
-#ifdef _MPI
+#ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #include "stir/recon_buildblock/DistributedCachingInformation.h"
-#define AVAILABLE_NOTIFICATION_TAG 2
-
-#define END_ITERATION_TAG 3
-#define END_RECONSTRUCTION_TAG 4
-#define END_NOTIFICATION_TAG 5
-
-#define BINWISE_CORRECTION_TAG 6
-
-#define REUSE_VIEWGRAM_TAG 10
-#define NEW_VIEWGRAM_TAG 11
 #endif
 
 #ifndef STIR_NO_NAMESPACES

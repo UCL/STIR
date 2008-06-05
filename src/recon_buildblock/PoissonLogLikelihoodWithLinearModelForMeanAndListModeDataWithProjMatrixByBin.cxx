@@ -49,7 +49,7 @@
 #include "stir/ProjData.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/Viewgram.h"
-#ifdef _MPI
+#ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
 
@@ -120,7 +120,7 @@ template <typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::set_up(shared_ptr <TargetT > const& target_sptr) 
 { 
-#ifdef _MPI
+#ifdef STIR_MPI
 	//broadcast objective_function (100=PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)
 	distributed::send_int_value(100, -1);
 #endif

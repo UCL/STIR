@@ -29,29 +29,6 @@
   $Date$
 */
 
-#define AVAILABLE_NOTIFICATION_TAG 2
-#define END_ITERATION_TAG 3
-#define END_RECONSTRUCTION_TAG 4
-#define END_NOTIFICATION_TAG 5
-
-#define BINWISE_CORRECTION_TAG 6
-#define INT_TAG 7
-#define ARBITRARY_TAG 8
-
-#define REUSE_VIEWGRAM_TAG 10
-#define NEW_VIEWGRAM_TAG 11
-
-#define PARAMETER_INFO_TAG 21
-#define IMAGE_ESTIMATE_TAG 23
-#define IMAGE_PARAMETER_TAG 24
-#define REGISTERED_NAME_TAG 25
-
-#define VIEWGRAM_DIMENSIONS_TAG 27
-#define VIEWGRAM_TAG 28
-#define VIEWGRAM_COUNT_TAG 29
-
-#define PROJECTION_DATA_INFO_TAG 30
-
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
@@ -82,7 +59,7 @@ namespace distributed
   float parameters[6]; //array for receiving image parameters
   int sizes[6];	//array for receiving image dimensions		
    	
-  PTimer t;
+  stir::HighResWallClockTimer t;
    		
    	
   //--------------------------------------Send Operations-------------------------------------
@@ -91,14 +68,14 @@ namespace distributed
   {		
     int i = value;
 
-#ifdef	TIMINGS	
+#ifdef	STIR_MPI_TIMINGS	
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
     if (destination == -1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
     else MPI_Send(&i, 1, MPI_INT, destination, INT_TAG,  MPI_COMM_WORLD);
 
-#ifdef TIMINGS		
+#ifdef STIR_MPI_TIMINGS		
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending int value took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -112,7 +89,7 @@ namespace distributed
     strcpy(buf, str.c_str());	
 		
     //send parameter info 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
@@ -128,7 +105,7 @@ namespace distributed
 	MPI_Send(buf, length, MPI_CHAR, destination, tag, MPI_COMM_WORLD);
       }
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending string took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -142,14 +119,14 @@ namespace distributed
     if (value==true) i=1;
     else i=0; 
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 	
     if (destination==-1||tag ==-1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
     else MPI_Send(&i, 1, MPI_INT, destination, tag, MPI_COMM_WORLD);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending bool value took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -158,7 +135,7 @@ namespace distributed
 	
   void send_int_values(int * values, int count, int tag, int destination)
   {
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
@@ -169,7 +146,7 @@ namespace distributed
       }
     else MPI_Send(values, count, MPI_INT, destination, tag, MPI_COMM_WORLD);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending int values took " << t.GetTime() << " seconds"<< endl;
 #endif
@@ -179,7 +156,7 @@ namespace distributed
   void send_double_values(double * values, int count, int tag, int destination)
   {
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
@@ -190,7 +167,7 @@ namespace distributed
       }
     else MPI_Send(values, count, MPI_DOUBLE, destination, tag, MPI_COMM_WORLD);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master: sending double values took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -230,27 +207,27 @@ namespace distributed
 		
 		
     //Sending image parameters
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     if (tag == -1 || destination == -1) MPI_Bcast(parameters, 6, MPI_FLOAT, 0,  MPI_COMM_WORLD);
     else MPI_Send(parameters, 6, MPI_FLOAT, destination, tag, MPI_COMM_WORLD);
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending image parameters took " << t.GetTime() << " seconds" << endl;
 #endif
 		
     //send dimensions to construct IndexRange-object
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     if (tag == -1 || destination == -1) MPI_Bcast(sizes, 6, MPI_INT, 0,  MPI_COMM_WORLD);
     else MPI_Send(sizes, 6, MPI_INT, destination, tag, MPI_COMM_WORLD);
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending image dimensions took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -276,7 +253,7 @@ namespace distributed
       }
 		
     //send input image
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
@@ -285,7 +262,7 @@ namespace distributed
 	MPI_Send(image_buf, image_buffer_size, MPI_FLOAT, processor, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD);
     else MPI_Send(image_buf, image_buffer_size, MPI_FLOAT, destination, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending image values took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -311,7 +288,7 @@ namespace distributed
     is.read (file_buffer,length-1);
     is.close();
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
@@ -328,7 +305,7 @@ namespace distributed
 	MPI_Send(file_buffer, length, MPI_CHAR, destination, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD);
       }
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master: sending projection_data_info took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -389,13 +366,13 @@ namespace distributed
 	}
 	
     //send array
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     MPI_Send(viewgram_buf, buffer_size, MPI_FLOAT, destination, VIEWGRAM_TAG, MPI_COMM_WORLD);			
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master: sending viewgram took " << t.GetTime() << " seconds" << endl;
 #endif
@@ -409,14 +386,14 @@ namespace distributed
   int receive_int_value(int source)
   {	
     int i;
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 	
     if (source==-1) MPI_Bcast(&i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
     else MPI_Recv(&i, 1, MPI_INT, source, INT_TAG, MPI_COMM_WORLD, &status);
 	
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received int value after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -427,7 +404,7 @@ namespace distributed
   string receive_string(int tag, int source)
   {		
     //Receive projector-pair registered_keyword
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 	
@@ -435,7 +412,7 @@ namespace distributed
     char * buf= new char[length];
     MPI_Recv(buf, length, MPI_CHAR, source, tag, MPI_COMM_WORLD, & status);
 	
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received string value after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -449,7 +426,7 @@ namespace distributed
   void receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair> &projector_pair_ptr, int source)
   {			
     //Receive projector-pair registered_keyword
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
@@ -457,7 +434,7 @@ namespace distributed
     char * buf= new char[length];
     MPI_Recv(buf, length, MPI_CHAR, source, REGISTERED_NAME_TAG, MPI_COMM_WORLD, & status);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received REGISTERED_NAME_TAG value after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -467,7 +444,7 @@ namespace distributed
     delete[] buf;
 		
     //Receive parameter info		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
@@ -476,7 +453,7 @@ namespace distributed
     char * buf3= new char[length];	
     MPI_Recv(buf3, length, MPI_CHAR, source, PARAMETER_INFO_TAG, MPI_COMM_WORLD, & status);
 
-#ifdef TIMINGS		
+#ifdef STIR_MPI_TIMINGS		
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received parameter info value after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -496,14 +473,14 @@ namespace distributed
   {
     int * i=new int[sizeof(int)];
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
     if (tag==-1 || source == -1) MPI_Bcast(i, 1, MPI_INT, 0,  MPI_COMM_WORLD);
     MPI_Recv(i, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received bool value after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -515,14 +492,14 @@ namespace distributed
   MPI_Status receive_int_values(int * values, int count, int tag)
   {
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     if (tag == ARBITRARY_TAG) MPI_Recv(values, count, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     else MPI_Recv(values, count, MPI_INT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: received int values after " << t.GetTime() << " seconds"<< endl;
 #endif
@@ -533,14 +510,14 @@ namespace distributed
   MPI_Status receive_double_values(double * values, int count, int tag)
   {
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
     if (tag == ARBITRARY_TAG) MPI_Recv(values, count, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     else MPI_Recv(values, count, MPI_DOUBLE, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
 		
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received double values after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -551,14 +528,14 @@ namespace distributed
   void receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &image_ptr, int &buffer, int tag, int source)
   {
     //receive image parameters (origin and grid_spacing)
-#ifdef TIMINGS   		
+#ifdef STIR_MPI_TIMINGS   		
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 	
     if (tag==-1) MPI_Bcast(parameters, 6, MPI_FLOAT, source,  MPI_COMM_WORLD);
     else MPI_Recv(parameters, 6, MPI_FLOAT, source, tag,  MPI_COMM_WORLD, &status);
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received origin and grid_spacing after " << t.GetTime() << " seconds" << endl;
 		
@@ -569,7 +546,7 @@ namespace distributed
     if (tag==-1) MPI_Bcast(sizes, 6, MPI_INT, source,  MPI_COMM_WORLD);
     else MPI_Recv(sizes, 6, MPI_INT, source, tag,  MPI_COMM_WORLD, &status);
 
-#ifdef TIMINGS   	
+#ifdef STIR_MPI_TIMINGS   	
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received image dimensions after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -597,13 +574,13 @@ namespace distributed
     //buffer for input_image
     float * buffer = new float[buffer_size]; 
 
-#ifdef TIMINGS   		
+#ifdef STIR_MPI_TIMINGS   		
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 		
     MPI_Recv(buffer, buffer_size, MPI_FLOAT, source, IMAGE_ESTIMATE_TAG, MPI_COMM_WORLD, & status);
 
-#ifdef TIMINGS		
+#ifdef STIR_MPI_TIMINGS		
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received image values after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -634,7 +611,7 @@ namespace distributed
   {
     int len;
     //receive projection data info pointer
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 	
@@ -642,7 +619,7 @@ namespace distributed
     char * proj_data_info_buf= new char[len];
     MPI_Recv(proj_data_info_buf, len, MPI_CHAR, source, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD, & status);
 
-#ifdef TIMINGS	
+#ifdef STIR_MPI_TIMINGS	
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received proj_data_info after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -711,13 +688,13 @@ namespace distributed
 		
     //receive viewgram array
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     MPI_Recv(viewgram_buf, buffer_size, MPI_FLOAT, source, VIEWGRAM_TAG, MPI_COMM_WORLD, &status);
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: received viewgram_array after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -748,13 +725,13 @@ namespace distributed
     for (int i=0; i<image_buffer_size;i++) output_buf[i]=0.0;
 			
     //receive output image values
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     MPI_Reduce(image_buf, output_buf, image_buffer_size, MPI_FLOAT, MPI_SUM, destination, MPI_COMM_WORLD);		
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master: reduced output_image after " << t.GetTime() << " seconds" << endl;
 #endif
@@ -794,13 +771,13 @@ namespace distributed
       }
 		
     //reduction of output_image at master
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
 
     MPI_Reduce(image_buf, output_buf, image_buffer_size, MPI_FLOAT, MPI_SUM, destination, MPI_COMM_WORLD);
 
-#ifdef TIMINGS
+#ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.Stop();
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Slave: reduced output_image after " << t.GetTime() << " seconds" << endl;
 #endif		
