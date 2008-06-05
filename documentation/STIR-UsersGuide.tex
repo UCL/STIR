@@ -142,7 +142,7 @@ is not, you can download it from
 \R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently STIR only
 uses the include files from \textit{boost} (so you do not need to build
 the boost libraries). However, you will need to tell your compiler
-where to find the \textt{boost/} directory with all the include files.
+where to find the \texttt{boost/} directory with all the include files.
 See the Compilation section for some info (use \textit{make} variable 
 \textit{EXTRA\_CFLAGS}).
 
@@ -361,7 +361,7 @@ Use to pass extra options to the compiler. For example, if you
 use a version of the \textit{boost} files that is not in the standard
 include path, you can add the location of its include files to the 
 search path of the compiler, e.g. \linebreak
-\texttt{EXTRA\_CFLAGS=\"-I /someloc/boost_1_34_1\"}} \\
+\texttt{EXTRA\_CFLAGS='-I /someloc/boost\_1\_34\_1'}} \\
 \hline
 % ROW 9
 
@@ -481,8 +481,70 @@ See also section \ref{sec:display}..
 \subsubsection{
 Additional options available for parallel code}
 
-[ The current distribution does not contain any parallel functionality. 
-So, skip this section]
+STIR 2.0 contains somewhat preliminary code for running \texttt{OSMAPOSL} in parallel-mode
+(contribution by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
+and compiler to get this to work. Normal build process would be something like
+
+\cmdline{make CXX=mpic++ DEST=mpiopt/ iterative/OSMAPOSL}
+
+All the make variables of the previous section apply. Note that at present it is 
+recommended that you build this version in a differerent destination directory then
+your usual (non-parallel) build. This is because conditional compilation is used
+in a few files.
+
+Additional make variables for the parallel version:
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+{\raggedright \textit{STIR\_MPI=1}} & 
+{\raggedright
+Can be used to force compilation for MPI if the CXX compiler is not recognized (see 
+\texttt{STIR/config.mk}).
+} \\
+\hline
+{\raggedright \textit{STIR\_MPI\_TIMINGS=1}} & 
+{\raggedright
+Can be used to enable additional timings for all send/receive pairs 
+(see \texttt{distributed\_functions.h} in \texttt{include/stir/recon\_buildblock}. 
+This should only be used for testing purposes as it can slow down
+the program dramatically.
+} \\
+\hline
+{\raggedright
+\textit{MPI\_CFLAGS=...}} & 
+{\raggedright
+Can be used to change the default MPI compilation flags which currently includes
+\texttt{-DMPICH\_IGNORE\_CXX\_SEEK} (see 
+\texttt{STIR/config.mk}).
+} \\
+\hline
+\end{longtable}
+
+\subsubsection{
+Additional options available for threaded code}
+
+STIR 2.0 contains preliminary code for running \texttt{FBP2D} in threaded mode
+(contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
+supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
+in a decent speed-up of \texttt{FBP2D}. Normal build process would be something like
+
+\cmdline{make DEST=openmpopt/ analytic/FBP2D STIR\_OPENMP=1}
+
+
+Additional make variables for the parallel version:
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+
+{\raggedright
+\textit{OPENMP\_CFLAGS=...}} &
+{\raggedright
+Can be used to change the default OPEN-MP compilation flags which currently includes
+\texttt{-fopenmp} (see 
+\texttt{STIR/config.mk}).
+} \\
+\hline
+\end{longtable}
 
 \subsubsection{
 Usage of STIR/local/config.mk}
@@ -561,7 +623,7 @@ some STIR routines to be to use it for IO (see \ref{sec:convAVW}).
 To compile and link \textit{AVW} support, \textit{STIR} needs to know the location 
 of the \textit{AVW} files. 
 They are set in \texttt{config.mk} according to recommend \textit{AVW} values,
-i.e. using the environment variables \texttt{AVW} and \texttt{TARGET}
+i.e. using the environment variables \texttt{AVW} and \texttt{TARGET}.
 The following \textit{make} options allow you 
 to set this:
 
@@ -690,7 +752,7 @@ Extract it in the same place as you extracted the source files.
 Note that since STIR 1.3, the Visual Studio projects might be 
 out of date. You essentially have to add all source files in the
 STIR sub-directories to a relevant project (e.g., add 
-all .cxx files in \texttt{buildblock} directory to the \textt{buildblock}
+all .cxx files in \texttt{buildblock} directory to the \texttt{buildblock}
 project.
 
 You will find several workspaces in the \textbf{STIR{\textbackslash}VC} subdirectory. 
@@ -1195,9 +1257,8 @@ is not used, the program prompts the user for the required information.
 
 
 
-The form of a typical parameter file is as follows:
-
-\todo
+The form of a typical parameter file\footnote{Parameter values used here are for
+illustration only and are \textit{not} recommended.} is as follows:
 
 \begin{verbatim}
 OSMAPOSLParameters :=
@@ -3939,7 +4000,7 @@ A smoothed EM approach to indirect estimation problems, with
 particular reference to stereology and emission tomography. \textit{J. 
 Roy. Stat. Soc}., 52: 271-324. 
 
-{[}Thi06{]}Kris Thielemans, Sanida Mustafovic, Charalampos Tsoumpas \textbf{(2006)},
+{[}Thi06{]} Kris Thielemans, Sanida Mustafovic, Charalampos Tsoumpas \textbf{(2006)},
 STIR: Software for Tomographic Image
 Reconstruction Release 2, 
 <i>Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.</i>
