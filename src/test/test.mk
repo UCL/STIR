@@ -20,8 +20,12 @@ $(dir)_TEST_SOURCES := test_Array.cxx test_NestedIterator.cxx \
 	test_ByteOrder.cxx \
 	test_Scanner.cxx \
 	test_ROIs.cxx \
-	test_VAXfloat.cxx \
 	test_ArcCorrection.cxx
+
+ifeq ($(HAVE_LLN_MATRIX),1)
+$(dir)_LIB_SOURCES += \
+	test_VAXfloat.cxx 
+endif
 
 $(dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \
@@ -37,8 +41,8 @@ run_$(dir)/test_linear_regression: $(DEST)$(dir)/test_linear_regression PHONY_TA
 run_$(dir)/test_OutputFileFormat: $(DEST)$(dir)/test_OutputFileFormat PHONY_TARGET
 	$< test/input/test_InterfileOutputFileFormat.in 
 	$< test/input/test_InterfileOutputFileFormat_short.in 
-	$< test/input/test_ECAT6OutputFileFormat.in
 ifeq ($(HAVE_LLN_MATRIX),1)
+	$< test/input/test_ECAT6OutputFileFormat.in
 	$< test/input/test_ECAT7OutputFileFormat.in
 else
 	@echo No ECAT7 support compiled, so no tests for this file format
