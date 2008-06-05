@@ -17,8 +17,12 @@ $(dir)_LIB_SOURCES:= \
 	MultipleProjData.cxx \
 	DynamicProjData.cxx \
 	GatedProjData.cxx \
-        AbsTimeIntervalFromECAT7ACF.cxx \
         AbsTimeIntervalWithParsing.cxx
+
+ifeq ($(HAVE_LLN_MATRIX),1)
+$(dir)_LIB_SOURCES += \
+        AbsTimeIntervalFromECAT7ACF.cxx
+endif
 
 currently_disabled:=	DAVArrayFilter3D.cxx \
 	DAVImageFilter3D.cxx \
