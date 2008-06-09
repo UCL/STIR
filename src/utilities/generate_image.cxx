@@ -169,7 +169,7 @@ initialise_keymap()
 {
   add_start_key("generate_image Parameters");
   add_key("output filename",&output_filename);
-  add_parsing_key("output file format",&output_file_format_sptr);
+  add_parsing_key("output file format type",&output_file_format_sptr);
   add_key("X output image size (in pixels)",&output_image_size_x);
   add_key("Y output image size (in pixels)",&output_image_size_y);
   add_key("Z output image size (in pixels)",&output_image_size_z);
