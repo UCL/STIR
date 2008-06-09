@@ -67,7 +67,7 @@ MyStuff::initialise_keymap()
   parser.add_key("input file", &input_filename);
   parser.add_key("template image file", &template_filename);
   parser.add_parsing_key("back projector type", &back_projector_sptr);
-  parser.add_parsing_key("output file format", &output_file_format_sptr);
+  parser.add_parsing_key("output file format type", &output_file_format_sptr);
   parser.add_stop_key("End");
 }
 

@@ -64,7 +64,7 @@ Reconstruction<TargetT>::initialise_keymap()
 {
 
   this->parser.add_key("output filename prefix",&this->output_filename_prefix);
-  this->parser.add_parsing_key("output file format", &this->output_file_format_ptr);
+  this->parser.add_parsing_key("output file format type", &this->output_file_format_ptr);
   this->parser.add_parsing_key("post-filter type", &this->post_filter_sptr); 
  
 //  parser.add_key("END", &KeyParser::stop_parsing);
