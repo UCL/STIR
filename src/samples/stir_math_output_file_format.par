@@ -1,14 +1,22 @@
 output file format parameters:=
-output file format:=Interfile
+; sample .par file that can be used with stir_math to specify the
+; output file format
+;
+; See the stir::OutputFileFormat hierarchy for possible values.
+; in this example, we write the data as Interfile with 2-byte signed integers
+
+output file format type:=Interfile
 Interfile Output File Format Parameters:=
    ; optional to specify non-native byte-order
    ; byte order := littleendian
    ; type specification as in Interfile
    number format:=unsigned integer
-   number of bytes per pixel:=2
+   number of bytes per pixel:=1
    ; optional to fix the scale factor used when writing the data
-   ; otherwise the maximum range of the output data will be used
-   ; if it's an integer type
+   ; otherwise the maximum range of the output type will be used
+   ; if it's an integer type.
+   ; warning: the scale factor might be ignored by many programs that read 
+   ; interfile as it is not part of the standard
    ;scale_to_write_data:=1
 End Interfile Output File Format Parameters:=
 END:=
