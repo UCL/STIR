@@ -321,7 +321,9 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr=density_ptr->clone();
 #endif
 
+#ifdef STIR_OPENMP
 #pragma omp parallel for
+#endif
   for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
   {         
     const ViewSegmentNumbers vs_num(view_num, 0);
