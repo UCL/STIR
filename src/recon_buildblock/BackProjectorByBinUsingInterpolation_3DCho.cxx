@@ -157,7 +157,7 @@ static const double epsilon = 1e-10;
 
 // KT 25/09/2001 changed return value
 static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
-                              const float delta, const float cphi, const float sphi, 
+                              const float delta, const double cphi, const double sphi, 
                               const int s, const int ring0,
                               const float image_rad,
 			      const double d_sl,
@@ -169,7 +169,7 @@ static Succeeded find_start_values(const ProjDataInfoCylindricalArcCorr* proj_da
 
 inline void 
 check_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
-	     const float delta, const float cphi, const float sphi, 
+	     const float delta, const double cphi, const double sphi, 
 	     const int s, const int ring0,
 	     const int X1, const int Y1, const int Z1,
 	     const double ds, const double dz,
@@ -224,7 +224,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90
 			       VoxelsOnCartesianGrid<float>& image,                               
                                const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                                float delta,
-                               float cphi, float sphi, int s, int ring0,
+                               const double cphi, const double sphi, int s, int ring0,
                                const int num_planes_per_axial_pos,
 			       const float axial_pos_to_z_offset)
 {
@@ -1038,7 +1038,7 @@ linear_interpolation_backproj3D_Cho_view_viewplus90_180minview_90minview
 						     VoxelsOnCartesianGrid<float>& image,                                                     
                                                      const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
                                                       float delta,
-                                                      float cphi, float sphi,
+                                                      const double cphi, const double sphi,
                                                       int s, int ring0,
                                                       const int num_planes_per_axial_pos,
 						      const float axial_pos_to_z_offset)
@@ -2247,7 +2247,7 @@ Recompile %s with ALTERNATIVE not #defined", __FILE__);
 
 static Succeeded
 find_start_values(const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr, 
-                              const float delta, const float cphi, const float sphi, 
+                              const float delta, const double cphi, const double sphi, 
                               const int s, const int ring0,
                               const float image_rad, const double d_sl,
                               int&X1, int&Y1, int& Z1,
