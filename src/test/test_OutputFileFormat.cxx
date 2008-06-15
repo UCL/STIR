@@ -43,8 +43,8 @@
 */
   
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/InputFileFormatRegistry.h"
 #include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
-#include "stir/IO/InterfileOutputFileFormat.h" // need this for test on pixel_size
 #include "stir/RunTests.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -56,6 +56,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
@@ -176,8 +177,8 @@ void OutputFileFormatTests::run_tests()
 
 	// now read it back
 	
-	shared_ptr<DiscretisedDensity<3,float> >
-	  density_ptr = DiscretisedDensity<3,float>::read_from_file(filename);
+	std::auto_ptr<DiscretisedDensity<3,float> >
+	  density_ptr = read_from_file<DiscretisedDensity<3,float> >(filename);
 	
 	const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =
 	  dynamic_cast< VoxelsOnCartesianGrid<float> const *>
