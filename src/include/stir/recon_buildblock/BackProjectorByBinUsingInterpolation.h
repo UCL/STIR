@@ -277,7 +277,7 @@ struct ProjDataForIntBP
                                      VoxelsOnCartesianGrid<float>& image,				     
 				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                      float delta,
-                                     float cphi, float sphi, int s, int ax_pos0, 
+                                     const double cphi, const double sphi, int s, int ax_pos0, 
 				     const int num_planes_per_axial_pos,
 				     const float axial_pos_to_z_offset);
 
@@ -285,7 +285,7 @@ struct ProjDataForIntBP
                                                          VoxelsOnCartesianGrid<float>& image,							 
 							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                                          float delta,
-                                                          float cphi, float sphi, int s, int ax_pos0,
+                                                          const double cphi, const double sphi, int s, int ax_pos0,
                                                           const int num_planes_per_axial_pos,
 							  const float axial_pos_to_z_offset);
 
@@ -293,7 +293,7 @@ struct ProjDataForIntBP
                                      VoxelsOnCartesianGrid<float>& image,				     
 				     const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                      float delta,
-                                     float cphi, float sphi, int s, int ax_pos0, 
+                                     const double cphi, const double sphi, int s, int ax_pos0, 
 				     const int num_planes_per_axial_pos,
 				     const float axial_pos_to_z_offset);
 
@@ -301,7 +301,7 @@ struct ProjDataForIntBP
                                                          VoxelsOnCartesianGrid<float>& image,							 
 							 const ProjDataInfoCylindricalArcCorr* proj_data_info_ptr,
                                                          float delta,
-                                                          float cphi, float sphi, int s, int ax_pos0,
+                                                          const double cphi, const double sphi, int s, int ax_pos0,
                                                           const int num_planes_per_axial_pos,
 							  const float axial_pos_to_z_offset);
 
