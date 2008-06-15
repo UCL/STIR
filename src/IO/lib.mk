@@ -8,7 +8,7 @@ $(dir)_LIB_SOURCES := \
   OutputFileFormat_default.cxx \
   InterfileOutputFileFormat.cxx \
   interfile.cxx InterfileHeader.cxx \
- 
+  InputFileFormatRegistry.cxx 
 
 ifeq ($(HAVE_LLN_MATRIX),1)
   $(dir)_LIB_SOURCES += ECAT7OutputFileFormat.cxx stir_ecat7.cxx \
