@@ -33,6 +33,9 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"
+#if 1
+#include "stir/IO/InputFileFormatRegistry.h"
+#else
 #include "stir/IO/interfile.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ecat6_utils.h"
@@ -44,6 +47,7 @@
 #ifdef STIR_USE_GE_IO
 #include "local/stir/IO/GE/niff.h"
 #endif
+#endif
 
 #include <typeinfo>
 #include <fstream>
@@ -54,6 +58,7 @@ using std::fstream;
 
 START_NAMESPACE_STIR
 
+#if 0
 // sadly, gcc 2.95.* does not support local namespaces as used below
 // This is slightly funny as it does work in ProjData.cxx. 
 // Maybe because here it's in a template?
@@ -63,6 +68,8 @@ USING_NAMESPACE_ECAT
 USING_NAMESPACE_ECAT7
 USING_NAMESPACE_ECAT6
 #endif
+#endif
+
 #endif
 
 /*! 
@@ -89,9 +96,15 @@ DiscretisedDensity<num_dimensions,elemT> *
 DiscretisedDensity<num_dimensions,elemT>::
  read_from_file(const string& filename)
 {
+
+#if 1
+  std::auto_ptr<DiscretisedDensity<num_dimensions,elemT> > density_aptr = 
+    stir::read_from_file<DiscretisedDensity<num_dimensions,elemT> >(filename);
+  return density_aptr.release();
+
+#else
   if (num_dimensions != 3 || typeid(elemT) != typeid(float))
     error("DiscretisedDensity::read_from_file currently only supports 3d float images\n");
-
   const int max_length=300;
   char signature[max_length];
 
@@ -225,6 +238,7 @@ DiscretisedDensity<num_dimensions,elemT>::
   error("DiscretisedDensity::read_from_file: %s seems to be in an unsupported file format\n",
 	filename.c_str());
   return 0;
+#endif
 
 }
 
