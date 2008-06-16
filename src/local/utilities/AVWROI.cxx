@@ -1,4 +1,4 @@
-//
+x//
 // $Id$
 //
 /*
@@ -122,8 +122,8 @@ main(int argc, char **argv)
 	  replace_extension(header_filename, "_");
 	  strcat(header_filename, object_name);
 	}
-	warning("Setting voxel size to 962 defaults\n");
-	stir_volume_sptr->set_voxel_size(Coordinate3D<float>(2.425F,2.25F,2.25F));
+	//warning("Setting voxel size to 962 defaults\n");
+	//stir_volume_sptr->set_voxel_size(Coordinate3D<float>(2.425F,2.25F,2.25F));
 	if (output_file_format_sptr->write_to_file(header_filename, *stir_volume_sptr)
 	    == stir::Succeeded::no)
 	  {
