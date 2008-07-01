@@ -156,4 +156,4 @@ END_NAMESPACE_STIR
 
 #endif
 // __DistributedWorker_h__
-k
+
