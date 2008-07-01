@@ -32,8 +32,6 @@
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_H__
 #define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_H__
 
-class DistributedCachingInformation;
-
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/ProjData.h"
@@ -42,6 +40,8 @@ class DistributedCachingInformation;
 #include "stir/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
+
+class DistributedCachingInformation;
 
 //#ifdef STIR_MPI_CLASS_DEFINITION
 //#define PoissonLogLikelihoodWithLinearModelForMeanAndProjData PoissonLogLikelihoodWithLinearModelForMeanAndProjData_MPI
