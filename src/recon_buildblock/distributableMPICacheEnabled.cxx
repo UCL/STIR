@@ -76,7 +76,7 @@ void distributable_computation_cache_enabled(
 					     int subset_num, int num_subsets,
 					     int min_segment_num, int max_segment_num,
 					     bool zero_seg0_end_planes,
-					     float* log_likelihood_ptr,
+					     double* log_likelihood_ptr,
 					     const shared_ptr<ProjData>& binwise_correction,
 					     RPC_process_related_viewgrams_type * RPC_process_related_viewgrams, 
 					     DistributedCachingInformation* caching_info_ptr

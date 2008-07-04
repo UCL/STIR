@@ -219,7 +219,7 @@ public:
 							  const TargetT &current_estimate, 
 							  const int subset_num); 
 
-  virtual float 
+  virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						      const int subset_num);
 

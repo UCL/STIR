@@ -79,12 +79,12 @@ void divide_and_truncate(DiscretisedDensity<3,float>& numerator,
 //! divide viewgrams and set 'edge bins' to zero, put answer in numerator
 void divide_and_truncate(Viewgram<float>& numerator, const Viewgram<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, float* f = NULL);
+			 int& count, int& count2, double* f = NULL);
 
 //! divide related viewgrams and set 'edge bins' to zero, put answer in numerator
 void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, float* f = NULL);
+			 int& count, int& count2, double* f = NULL);
 
 //! sets to zero voxels within rim_truncation_image of the FOV rim
 void truncate_rim(DiscretisedDensity<3,float>& image_input, 
@@ -111,15 +111,10 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 //MJ 03/01/2000  Trying to adhoc parallelize a loglikelihood computation
 
 //! compute the log term of the loglikelihood function for given part of the projection space
-void accumulate_loglikelihood(const int view,
-			 SegmentBySinogram<float>& projection_data, 
-			 const SegmentBySinogram<float>& estimated_projections,
-			 const int rim_truncation_sino, float *accum);
-//! compute the log term of the loglikelihood function for given part of the projection space
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
 			 const int rim_truncation_sino,
-			 float* accum);
+			 double* accum);
 
 
 END_NAMESPACE_STIR
