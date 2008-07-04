@@ -398,20 +398,11 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 	this->_single_frame_obj_funcs[frame_num].set_frame_definitions(this->_patlak_plot_sptr->get_time_frame_definitions());
 	this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisation_sptr);
 	this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->recompute_sensitivity);
+	this->_single_frame_obj_funcs[frame_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
 	if(this->_single_frame_obj_funcs[frame_num].set_up(density_template_sptr) != Succeeded::yes)
 	  error("Single frame objective functions is not set correctly!");
       }
-    /* TODO
-       current implementation of compute_sub_gradient does not use subsensitivity
-    */ 
   }//_single_frame_obj_funcs[frame_num]
-  if(!this->subsets_are_approximately_balanced())
-    {
-      warning("Number of subsets %d is such that subsets will be very unbalanced.\n"
-	      "Current implementation of PoissonLogLikelihoodWithLinearModelForMean cannot handle this.",
-	      this->num_subsets);
-      return Succeeded::no;
-    }
 
   if(this->recompute_sensitivity)
     {
@@ -472,7 +463,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 }
 
 template<typename TargetT>
-float
+double
 PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						  const int subset_num)
@@ -480,7 +471,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
 
-  float result = 0;
+  double result = 0.;
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;
 
   // TODO why fill with 1?
@@ -490,7 +481,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
 	      1.F);
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
  
-  // loop over single_frame and use model_matrix
+  // loop over single_frame
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();
       frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();
       ++frame_num)
