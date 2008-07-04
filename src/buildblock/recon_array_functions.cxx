@@ -186,7 +186,7 @@ void truncate_rim(DiscretisedDensity<3,float>& input_image,
 void divide_and_truncate(Viewgram<float>& numerator, 
 			 const Viewgram<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, float* log_likelihood_ptr /* = NULL */)
+			 int& count, int& count2, double* log_likelihood_ptr /* = NULL */)
 {
   
   const int rs=numerator.get_min_axial_pos_num();
@@ -254,13 +254,13 @@ void divide_and_truncate(Viewgram<float>& numerator,
 		  // cancel singularity
 		  count++;
 		  if (log_likelihood_ptr != NULL) 
-		    *log_likelihood_ptr -= num*log(num/max_quotient);
+		    *log_likelihood_ptr -= double(num*log(num/max_quotient));
 		  num = max_quotient;
 		}
 	      else
 		{
 		  if (log_likelihood_ptr != NULL) 
-		    *log_likelihood_ptr -= num*log(denom);
+		    *log_likelihood_ptr -= double(num*log(denom));
 		  num = num/denom;
 		}
 	    }
@@ -274,7 +274,7 @@ void divide_and_truncate(Viewgram<float>& numerator,
 
 void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgrams<float>& denominator,
 			 const int rim_truncation_sino,
-			 int& count, int& count2, float* log_likelihood_ptr )
+			 int& count, int& count2, double* log_likelihood_ptr )
 {
   assert(numerator.get_num_viewgrams() == denominator.get_num_viewgrams());
   assert(*(numerator.get_proj_data_info_ptr()) == (*denominator.get_proj_data_info_ptr()));
@@ -343,7 +343,7 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
 			 const int rim_truncation_sino,
-			 float* accum)
+			 double* accum)
 {
   
   const int rs=projection_data.get_min_axial_pos_num();
@@ -379,7 +379,7 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 	    result += projection_data[r][b]*log(new_estimate) - new_estimate;
 	}
 
-  *accum += result;
+  *accum += double(result);
 }
 
 

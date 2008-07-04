@@ -155,11 +155,11 @@ get_num_subsets() const
 }
 
 template <typename TargetT>
-float
+double
 GeneralisedObjectiveFunction<TargetT>::
 compute_objective_function_without_penalty(const TargetT& current_estimate)
 {
-  float result = 0;
+  double result = 0.;
   for (int subset_num=0; subset_num<this->get_num_subsets(); ++subset_num)
     result += 
       this->compute_objective_function_without_penalty(current_estimate, subset_num);
@@ -167,7 +167,7 @@ compute_objective_function_without_penalty(const TargetT& current_estimate)
 }
 
 template <typename TargetT>
-float
+double
 GeneralisedObjectiveFunction<TargetT>::
 compute_objective_function_without_penalty(const TargetT& current_estimate,
 					   const int subset_num)

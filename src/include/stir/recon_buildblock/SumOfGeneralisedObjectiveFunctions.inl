@@ -113,14 +113,14 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
 }
 
 template <typename ObjFuncT, typename TargetT, typename Parent>
-float
+double
 SumOfGeneralisedObjectiveFunctions<ObjFuncT, TargetT, Parent>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						  const int subset_num)
 {
   _functions_iterator_type iter = this->_functions.begin();
   _functions_iterator_type end_iter = this->_functions.end();
-  float result = 0;
+  double result = 0;
   while (iter != end_iter)
     {
       result +=

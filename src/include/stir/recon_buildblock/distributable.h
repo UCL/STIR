@@ -67,7 +67,7 @@ typedef  void RPC_process_related_viewgrams_type (
 						  DiscretisedDensity<3,float>* output_image_ptr, 
 						  const DiscretisedDensity<3,float>* input_image_ptr, 
 						  RelatedViewgrams<float>* measured_viewgrams_ptr,
-						  int& count, int& count2, float* log_likelihood_ptr,
+						  int& count, int& count2, double* log_likelihood_ptr,
 						  const RelatedViewgrams<float>* additive_binwise_correction_ptr);
 
 /*!
@@ -100,7 +100,7 @@ typedef  void RPC_process_related_viewgrams_type (
   \param max_segment_num Maximum segment_num to process.
   \param zero_seg0_end_planes if true, the end planes for segment_num=0 in measured_viewgrams_ptr
          (and additive_binwise_correction_ptr when applicable) will be set to 0.
-  \param float_out_ptr a potential float output parameter for the call back function.
+  \param double_out_ptr a potential double output parameter for the call back function (which needs to be accumulated).
   \param additive_binwise_correction Additional input projection data (when the shared_ptr is not 0).
   \param RPC_process_related_viewgrams function that does the actual work.
   
@@ -125,7 +125,7 @@ void distributable_computation(
 				    int subset_num, int num_subsets,
 				    int min_segment_num, int max_segment_num,
 				    bool zero_seg0_end_planes,
-				    float* float_out_ptr,
+				    double* double_out_ptr,
 				    const shared_ptr<ProjData>& additive_binwise_correction,
                                     RPC_process_related_viewgrams_type * RPC_process_related_viewgrams);
 

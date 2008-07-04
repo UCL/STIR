@@ -720,14 +720,14 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
 
 template<typename TargetT>
-float 
+double 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						  const int subset_num)
 {
-  float accum=0.F;  
+  double accum=0.;  
   
-	distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
+  distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
 					 this->projector_pair_ptr->get_back_projector_sptr(), 
 					 this->symmetries_sptr,
 					 current_estimate,
@@ -948,7 +948,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
 				    int subset_num, int num_subsets,
 				    int min_segment, int max_segment,
 				    bool zero_seg0_end_planes,
-				    float* log_likelihood_ptr,
+				    double* log_likelihood_ptr,
 				    shared_ptr<ProjData> const& additive_binwise_correction
 				    ,DistributedCachingInformation* caching_info_ptr
 				    )
@@ -995,7 +995,7 @@ void distributable_accumulate_loglikelihood(
 					    int subset_num, int num_subsets,
 					    int min_segment, int max_segment,
 					    bool zero_seg0_end_planes,
-					    float* log_likelihood_ptr,
+					    double* log_likelihood_ptr,
 					    shared_ptr<ProjData> const& additive_binwise_correction,
 					    DistributedCachingInformation* caching_info_ptr
 					    )
@@ -1041,7 +1041,7 @@ void RPC_process_related_viewgrams_gradient(
 					    DiscretisedDensity<3,float>* output_image_ptr, 
                                             const DiscretisedDensity<3,float>* input_image_ptr, 
                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                            int& count, int& count2, float* log_likelihood_ptr /* = NULL */,
+                                            int& count, int& count2, double* log_likelihood_ptr /* = NULL */,
                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr)
 {	
   assert(output_image_ptr != NULL);
@@ -1110,7 +1110,7 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
 							    DiscretisedDensity<3,float>* output_image_ptr,
                                                             const DiscretisedDensity<3,float>* input_image_ptr, 
                                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                                            int& count, int& count2, float* log_likelihood_ptr,
+                                                            int& count, int& count2, double* log_likelihood_ptr,
                                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr)
 {
 

@@ -131,14 +131,14 @@ public:
 
   //! Compute the value of the unregularised sub-objective function at the \a current_estimate
   /*! Implemented in terms of actual_compute_objective_function_without_penalty. */
-  virtual float
+  virtual double
     compute_objective_function_without_penalty(const TargetT& current_estimate,
 					       const int subset_num);
 
   //! Compute the value of the unregularised objective function at the \a current_estimate
   /*! Computed by summing over all subsets.
    */
-  virtual float
+  virtual double
     compute_objective_function_without_penalty(const TargetT& current_estimate);
 
   //! Compute the value of the sub-penalty at the \a current_estimate
@@ -283,7 +283,7 @@ protected:
      in a derived class, hides all functions of the 
      same name.
   */
-  virtual float
+  virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						      const int subset_num) = 0;
 
