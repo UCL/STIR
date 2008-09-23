@@ -270,13 +270,22 @@ by your successor).
 \subsection{
 File conventions }
 
-Most classes have their own \textit{.h,} .\textit{inl} and \textit{.cxx} files. 
+Most classes have their own \textit{.h,} .\textit{inl}, \textit{.txx} and/or \textit{.cxx} files. 
 File names of such classes are simply \textit{ClassName.h} {\nobreakspace}etc. 
-(preserving capitals). The \textit{.inl} files contain inline code 
-for functions. The main purpose for this is to keep the \textit{.h} 
-files as short and clean as possible. In general, looking at 
+(preserving capitals). In general, looking at 
 the \textit{.h} file should give enough information on what a class/function 
 does. \\
+The \textit{.inl} files contain inline code 
+for functions. The main purpose for this is to keep the \textit{.h} 
+files as short and clean as possible. \\
+The \textit{.txx} files are similar to the \textit{.inl} files. They contain non-inline 
+definitions of template classes (or functions). They should only be included by the
+corresponding \textit{.cxx} file where the template is then instantiated for any desired types.
+This makes it easier or a user to instantiate a template for a new type without modifying the
+original STIR code.\footnote(The \textit{.txx} extension as used because the Insight Toolkit (ITK) 
+uses it as well. It stands for template C++ presumably.}
+
+\\
 All STIR include files should be included as \textit{\#include ``stir/maybe\_a\_subdir/name.h''}\\
 The \textit{doxygen} comments generally occur in the \textit{.h} file, unless 
 they are very extensive. In this case, the \textit{.h} file contains 
