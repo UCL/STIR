@@ -39,6 +39,10 @@
 #endif
 
 #include "matrix.h"
+extern "C" {
+  int map_main_header(char *bufr, Main_header *header);
+  int mh_update(MatrixFile*);
+}
 
 #ifdef STIR_NO_NAMESPACES
 #undef Sinogram
