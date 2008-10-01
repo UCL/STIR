@@ -1,7 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+	See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_common_H__
 #define __stir_common_H__
 
@@ -37,6 +53,11 @@
  <LI> #defines STIR_NO_COVARIANT_RETURN_TYPES when the compiler does not
    support virtual functions of a derived class differing only in the return
    type.
+   Define when your compiler does not handle the following:
+   \code
+   class A { virtual A* f();}
+   class B:A { virtual B* f(); }
+   \endcode
 
  <LI> #defines STIR_NO_AUTO_PTR when the compiles has no std::auto_ptr support.
  In that case, we #define auto_ptr to shared_ptr
@@ -81,37 +102,19 @@
 
  </UL>
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
+#if defined(_MSC_VER)
+#include "stir/config/visualc.h"
+#endif
+#if defined(__GNUC__)
+#include "stir/config/gcc.h"
+#endif
+
 #include "boost/config.hpp"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-
-
-//*************** preprocessor definitions for old compilers
-
-//**** namespace support
-
-#if defined __GNUC__
-# if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
-#  define STIR_NO_NAMESPACES
-# endif
-#endif
-
-//**** STIR_NO_COVARIANT_RETURN_TYPES
-/* Define when your compiler does not handle the following:
-   class A { virtual A* f();}
-   class B:A { virtual B* f(); }
-*/
-#if defined(_MSC_VER) && _MSC_VER<=1300
-#define STIR_NO_COVARIANT_RETURN_TYPES
-#endif
 
 
 //*************** namespace macros
@@ -178,11 +181,6 @@
 #endif // !defined(__OS_xxx_)
 
 //************** auto_ptr
-#if defined __GNUC__
-# if __GNUC__ == 2 && __GNUC_MINOR__ <= 8
-#  define STIR_NO_AUTO_PTR
-# endif
-#endif
 #if defined(BOOST_NO_AUTO_PTR) && !defined(STIR_NO_AUTO_PTR)
 #  define STIR_NO_AUTO_PTR
 #endif
@@ -208,11 +206,6 @@
    take care of this themselves. So, we only do this 
    conditionally.
 */
-#if defined(_MSC_VER) && _MSC_VER<=1300
-// do this only up to VC 7.0
-#define STIR_SPEED_UP_STD_COPY
-#endif
-
 #ifdef STIR_SPEED_UP_STD_COPY
 #include <algorithm>
 
@@ -293,7 +286,7 @@ END_NAMESPACE_STD
    At the moment, we only need it for VC++ 
    */
    
-#if defined(_MSC_VER) && _MSC_VER<=1300
+#if defined(STIR_ENABLE_FOR_SCOPE_WORKAROUND)
 #	ifndef for
 #		define for if (0) ; else for
 #	else
