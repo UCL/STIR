@@ -190,25 +190,6 @@ struct RegisterInputFileFormat
   }
 };
 
-template <class DataT, class File>
-inline 
-std::auto_ptr<DataT>
-read_from_file(const FileSignature& signature, File file)
-{
-  const InputFileFormat<DataT>& factory = 
-    InputFileFormatRegistry<DataT>::default_sptr()->
-    find_factory(signature, file);
-  return factory.read_from_file(file);
-}
-
-template <class DataT, class File>
-inline
-std::auto_ptr<DataT>
-read_from_file(File file)
-{
-  const FileSignature signature(file);
-  return read_from_file<DataT>(signature, file);
-}
 
 
 END_NAMESPACE_STIR
