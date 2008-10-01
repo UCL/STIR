@@ -649,7 +649,7 @@ BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& 
     num_blocks_per_singles_unit;
   
   return
-    ( 1.0 + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
+    ( 1.0F + axial_t1_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate + 
       axial_t2_array[ det_pos.axial_coord()/num_axial_blocks_per_singles_unit] * rate * rate );
   
   //* ( 1. + ( trans_t1_array[ det_pos.tangential_coord() % num_transaxial_crystals_per_block ] * rate ) ) ;
