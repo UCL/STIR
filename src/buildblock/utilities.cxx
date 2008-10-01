@@ -194,7 +194,10 @@ find_pos_of_extension(const string& file_in_directory_name)
   else
     return string::npos;
 }
- 
+
+#if 0
+// terribly dangerous for memory overrun.
+// will only work if enough memor was allocated
 char *add_extension(char *file_in_directory_name, 
 		    const char * const extension)
 
@@ -203,6 +206,7 @@ char *add_extension(char *file_in_directory_name,
     strcat (file_in_directory_name,extension);
   return file_in_directory_name;
 }
+#endif
 
 string& 
 add_extension(string& file_in_directory_name, 
@@ -217,10 +221,13 @@ add_extension(string& file_in_directory_name,
 
 
 
+#if 0
+// terribly dangerous for memory overrun.
+// will only work if new extension is shorter than old
 char *replace_extension(char *file_in_directory_name, 
 		        const char * const extension)
 {
-  char * location_of_dot = 
+  const char * location_of_dot = 
     strchr(find_filename(file_in_directory_name),'.');
 
   // first truncate at extension
@@ -230,6 +237,7 @@ char *replace_extension(char *file_in_directory_name,
   strcat (file_in_directory_name,extension);
   return file_in_directory_name;
 }
+#endif
 
 string& 
 replace_extension(string& file_in_directory_name, 

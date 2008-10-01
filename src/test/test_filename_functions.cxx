@@ -50,12 +50,15 @@ void FilenameTests::run_tests()
   cerr << "(using VAX-VMS filesystem conventions)" << endl;
   
   // relative names either contain no '[', or have '[.'
+#if 0
+  // tests disabled as add_extension is disabled
   strcpy(filename_with_directory, "[dir.name]filename");
   add_extension(filename_with_directory, ".img");
   check(strcmp(filename_with_directory, "[dir.name]filename.img") == 0);
   strcpy(filename_with_directory, "[dir.name]filename.v");
   add_extension(filename_with_directory, ".img");
   check(strcmp(filename_with_directory, "[dir.name]filename.v") == 0);
+#endif
 
   strcpy(filename_with_directory, "[dir.name]filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
@@ -102,7 +105,8 @@ void FilenameTests::run_tests()
   
   // relative names do not start with '\' or '?:\'
   // but we allow forward slashes as well
-
+#if 0
+  // tests disabled as add_extension is disabled
   strcpy(filename_with_directory, "dir.name\\filename");
   add_extension(filename_with_directory, ".img");
   check(strcmp(filename_with_directory, "dir.name\\filename.img") == 0);
@@ -115,7 +119,7 @@ void FilenameTests::run_tests()
   strcpy(filename_with_directory, "dir.name/filename.v");
   add_extension(filename_with_directory, ".img");
   check(strcmp(filename_with_directory, "dir.name/filename.v") == 0);
-
+#endif
   strcpy(filename_with_directory, "dir.name\\filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   strcpy(filename_with_directory, "dir.name/filename.v");
@@ -212,6 +216,8 @@ void FilenameTests::run_tests()
   cerr << "(using MacOS filesystem conventions)" << endl;
 
   // relative names either have no ':' or do not start with ':'
+#if 0
+  // tests disabled as add_extension is disabled
   strcpy(filename_with_directory, "dir.name:filename");
   add_extension(filename_with_directory, ".img");
   check(strcmp(filename_with_directory, "dir.name:filename.img") == 0);
@@ -223,7 +229,7 @@ void FilenameTests::run_tests()
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
-
+#endif
 
   {
     // same checks with string versions
@@ -272,6 +278,8 @@ void FilenameTests::run_tests()
 
   cerr << "(using Unix filesystem conventions)" << endl;
 
+#if 0
+  // tests disabled as add_extension is disabled
   strcpy(filename_with_directory, "dir.name/filename");
   add_extension(filename_with_directory, ".img");
   check(strcmp(filename_with_directory, "dir.name/filename.img") == 0);
@@ -283,7 +291,7 @@ void FilenameTests::run_tests()
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
-  
+#endif  
 
   {
     // same checks with string versions

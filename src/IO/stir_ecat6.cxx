@@ -454,6 +454,16 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     ProjDataFromStream::StorageOrder  storage_order=
       ProjDataFromStream::Segment_AxialPos_View_TangPos;
     
+#if 1
+    string actual_data_name=data_name;
+    {
+      string::size_type pos=find_pos_of_extension(data_name);
+      if (pos!=string::npos && data_name.substr(pos)==".hs")
+	replace_extension(actual_data_name, ".s");
+      else
+	add_extension(actual_data_name, ".s");
+    }
+#else
     // TODO replace these char* things with string based extension stuff
     boost::scoped_array<char> actual_data_name(new char[data_name.size() + 4]);
     strcpy(actual_data_name.get(), data_name.c_str());
@@ -465,19 +475,20 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       else
         add_extension(actual_data_name.get(), ".s");
     }
+#endif
     shared_ptr<iostream> sino_stream =
-      new fstream (actual_data_name.get(), ios::out| ios::binary);
+      new fstream (actual_data_name.c_str(), ios::out| ios::binary);
     
     if (!sino_stream->good())
     {
-      error("ECAT6cti_to_PDFS: error opening file %s\n",actual_data_name.get());
+      error("ECAT6cti_to_PDFS: error opening file %s\n",actual_data_name.c_str());
     }
     
     
     proj_data = 
       new ProjDataFromStream(p_data_info,sino_stream, streamoff(0), storage_order);
     
-    write_basic_interfile_PDFS_header(actual_data_name.get(), *proj_data);
+    write_basic_interfile_PDFS_header(actual_data_name, *proj_data);
   }
 
 
