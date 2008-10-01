@@ -21,7 +21,7 @@
   \warning Overwrites files STIRtmp.* in the current directory
 
   \todo The current implementation requires that the output file format as also
-  readable by stir::DiscretisedDensity::read_from_file. At least we should provide a
+  readable by stir::read_from_file. At least we should provide a
   run-time switch to not run that part of the tests.
 */
 /*
@@ -43,8 +43,10 @@
 */
   
 #include "stir/IO/OutputFileFormat.h"
-#include "stir/IO/InputFileFormatRegistry.h"
+#include "stir/IO/read_from_file.h"
+#ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
+#endif
 #include "stir/RunTests.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -129,6 +131,7 @@ void OutputFileFormatTests::run_tests()
   cerr << "Now writing to file and reading it back." << endl; 
   // construct density and write to file
   {
+#ifdef HAVE_LLN_MATRIX
     USING_NAMESPACE_ECAT
     USING_NAMESPACE_ECAT6
     // TODO get next info from OutputFileFormat class instead of hard-wiring
@@ -141,6 +144,12 @@ void OutputFileFormatTests::run_tests()
       ? true : false;
     const bool supports_origin_xy_shift =
       true;
+#else
+    const bool supports_different_xy_pixel_sizes = true;
+    const bool supports_origin_z_shift = true;
+    const bool supports_origin_xy_shift =
+      true;
+#endif
 
     CartesianCoordinate3D<float> origin (0.F,0.F,0.F);
     if (supports_origin_xy_shift)
@@ -193,7 +202,7 @@ void OutputFileFormatTests::run_tests()
 	    if (output_file_format_ptr->get_type_of_numbers().integer_type())
 	      {
 		set_tolerance(image.find_max()/
-			      pow(2.,output_file_format_ptr->get_type_of_numbers().size_in_bits()));
+			      pow(2.,static_cast<double>(output_file_format_ptr->get_type_of_numbers().size_in_bits())));
 	      }
 
 	    check_if_equal(image, *density_ptr, "test on data read back from file");
