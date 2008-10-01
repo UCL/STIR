@@ -324,6 +324,8 @@ prepend_directory_name(char * filename_with_directory,
 */
 string::size_type
 find_pos_of_extension(const string& file_in_directory_name);
+#if 0
+// terribly dangerous for memory overrun.
 
 /*! 
 \brief
@@ -339,17 +341,20 @@ find_pos_of_extension(const string& file_in_directory_name);
  \endcode
    results in 'filename' pointing to "dir.name/filename.img"
 
- On Windows systems, both forward and backslash can be used.
  \deprecated
  */
 extern char *
 add_extension(char * file_in_directory_name, 
 	      const char * const extension);
+#endif
 
-//! Append extension when input parameters are strings
+//! Append extension if none present
 string& 
 add_extension(string& file_in_directory_name, 
 	      const string& extension);
+
+#if 0
+// disabled because possible memory overrun
 
 /*! 
   \brief
@@ -370,8 +375,9 @@ add_extension(string& file_in_directory_name,
 extern char *
 replace_extension(char *file_in_directory_name, 
  	          const char * const extension);
+#endif
 
-//! Replace extension when input parameters are strings
+//! Replace extension (or append if none present)
 string& 
 replace_extension(string& file_in_directory_name, 
 		  const string& extension);

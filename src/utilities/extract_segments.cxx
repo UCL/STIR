@@ -21,7 +21,19 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 #include "stir/ProjData.h"
@@ -29,6 +41,7 @@
 #include "stir/SegmentBySinogram.h"
 #include "stir/IO/interfile.h"
 #include "stir/utilities.h"
+#include "boost/format.hpp"
 
 
 #ifndef STIR_NO_NAMESPACES
@@ -56,20 +69,20 @@ int main(int argc, char *argv[])
          segment_num <=  s3d->get_max_segment_num();
          ++segment_num)
     {
-        char output_filename[max_filename_length];
-        strcpy(output_filename, filename);
+        string output_filename=filename;
         replace_extension(output_filename, "");
-        sprintf(output_filename+strlen(output_filename), "seg%d", segment_num);
+        output_filename+="seg";
+	output_filename+=boost::str(boost::format("%d") % segment_num);
 
         if (extract_by_view)
         {
             SegmentByView <float> segment= s3d->get_segment_by_view(segment_num);
 
-            write_basic_interfile(strcat(output_filename, "_by_view"), segment);
+            write_basic_interfile(output_filename + "_by_view", segment);
 	}
         else {
             SegmentBySinogram<float> segment = s3d->get_segment_by_sinogram(segment_num);  
-            write_basic_interfile(strcat(output_filename, "_by_sino"), segment);
+            write_basic_interfile(output_filename + "_by_sino", segment);
 	}
     }
 

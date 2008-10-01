@@ -49,8 +49,18 @@ void
 ProjDataInterfile ::
 create_stream(const string& filename, const ios::openmode open_mode)
 {
+#if 1
+  string data_name=filename;
+  {
+    string::size_type pos=find_pos_of_extension(filename);
+    if (pos!=string::npos && filename.substr(pos)==".hs")
+      replace_extension(data_name, ".s");
+    else
+      add_extension(data_name, ".s");
+  }
+  string header_name=filename;
+#else
   char * data_name = new char[filename.size() + 5];
-  char * header_name = new char[filename.size() + 5];
   {
     strcpy(data_name, filename.c_str());
     const char * const extension = strchr(find_filename(data_name),'.');
@@ -59,19 +69,23 @@ create_stream(const string& filename, const ios::openmode open_mode)
     else
       add_extension(data_name, ".s");
   }
+  char * header_name = new char[filename.size() + 5];
   strcpy(header_name, data_name);
+#endif
   replace_extension(header_name, ".hs");
   write_basic_interfile_PDFS_header(header_name, data_name,
                                     *this);
 
   sino_stream = 
-    new fstream (data_name, open_mode|ios::binary);
+    new fstream (data_name.c_str(), open_mode|ios::binary);
   if (!sino_stream->good())
   {
-    error("ProjDataInterfile: error opening output file %s\n", data_name);      
+    error("ProjDataInterfile: error opening output file %s\n", data_name.c_str());
   }
+#if 0
   delete[] header_name;
   delete[] data_name;
+#endif
 }
 
 ProjDataInterfile ::

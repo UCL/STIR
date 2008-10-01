@@ -450,6 +450,17 @@ Succeeded write_basic_interfile(const string&  filename,
 				const ByteOrder byte_order)
 {
 
+#if 1
+  string data_name=filename;
+  {
+    string::size_type pos=find_pos_of_extension(filename);
+    if (pos!=string::npos && filename.substr(pos)==".hv")
+      replace_extension(data_name, ".v");
+    else
+      add_extension(data_name, ".v");
+  }
+  string header_name=filename;
+#else
   char * data_name = new char[filename.size() + 5];
   char * header_name = new char[filename.size() + 5];
 
@@ -463,10 +474,11 @@ Succeeded write_basic_interfile(const string&  filename,
      add_extension(data_name, ".v");
   }
   strcpy(header_name, data_name);
+#endif
   replace_extension(header_name, ".hv");
 
   ofstream output_data;
-  open_write_binary(output_data, data_name);
+  open_write_binary(output_data, data_name.c_str());
 
   float scale_to_use = scale;
   write_data(output_data, image, output_type, scale_to_use,
@@ -488,9 +500,10 @@ Succeeded write_basic_interfile(const string&  filename,
 				       byte_order,
 				       scaling_factors,
 				       file_offsets);
+#if 0
   delete[] header_name;
   delete[] data_name;
-
+#endif
   return success;
 }
 
@@ -800,12 +813,22 @@ write_basic_interfile_PDFS_header(const string& data_filename,
 			    const ProjDataFromStream& pdfs)
 
 {
-  char header_file_name[max_filename_length];
   // KT 26/08/2001 make sure that a data_filename ending on .hs is treated correctly
+#if 1
+  string header_file_name = data_filename;
+  string new_data_file_name = data_filename;
+  {
+    string::size_type pos=find_pos_of_extension(data_filename);
+    if (pos!=string::npos && data_filename.substr(pos)==".hs")
+      replace_extension(new_data_file_name, ".s");
+    else
+      add_extension(new_data_file_name, ".s");
+  }
+#else
+  char header_file_name[max_filename_length];
   char new_data_file_name[max_filename_length];
   strcpy(header_file_name,data_filename.c_str());
   strcpy(new_data_file_name,data_filename.c_str());
-
   {
    const char * const extension = strchr(find_filename(new_data_file_name),'.');
    if (extension!=NULL && strcmp(extension, ".hs")==0)
@@ -813,6 +836,8 @@ write_basic_interfile_PDFS_header(const string& data_filename,
    else
      add_extension(new_data_file_name, ".s");
   }
+#endif
+
   replace_extension(header_file_name,".hs");
 
   return 
