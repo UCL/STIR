@@ -588,8 +588,8 @@ void make_ECAT7_main_header(Main_header& mhead,
   mhead.system_type= find_ECAT_system_type(scanner);
   mhead.transaxial_fov= 
     scanner.get_inner_ring_radius()*2*
-    sin(_PI/scanner.get_num_detectors_per_ring()*
-	scanner.get_max_num_non_arccorrected_bins()/2.)/10;
+    static_cast<float>(sin(_PI/scanner.get_num_detectors_per_ring()*
+	scanner.get_max_num_non_arccorrected_bins()/2.)/10);
   mhead.intrinsic_tilt = scanner.get_default_intrinsic_tilt();
   mhead.bin_size = scanner.get_default_bin_size()/10;
   mhead.plane_separation= scanner.get_ring_spacing()/2/10;
@@ -1506,9 +1506,9 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
     strcpy(header_filename, ECAT7_filename.c_str());
     // keep extension, just in case we would have conflicts otherwise
     // but replace the . with a _
-    char * dot_ptr = strchr(find_filename(header_filename),'.');
+    const char * dot_ptr = strchr(find_filename(header_filename),'.');
     if (dot_ptr != NULL)
-      *dot_ptr = '_';
+      header_filename[dot_ptr - header_filename] = '_';
     // now add stuff to say which frame, gate, bed, data this was
     sprintf(header_filename+strlen(header_filename), "_f%dg%dd%db%d", 
 	    frame_num, gate_num, data_num, bed_num);
