@@ -198,13 +198,13 @@ bool EllipsoidalCylinder::is_inside_shape(const CartesianCoordinate3D<float>& co
 	const float y_pos=
 	  r.y();
 	const float phi_1 = 
-	  _PI*theta_1/180.0;
+	  static_cast<float>(_PI*theta_1/180.0);
 	const float phi_2 = 
-	  _PI*theta_2/180.0;
+	  static_cast<float>(_PI*theta_2/180.0);
 	// Adding theta cuts for partial cylinders from theta_1 to theta_2
 	float theta_r = atan2(y_pos,x_pos);
 	if (theta_r < 0.0) 
-	  theta_r = 2.0 * _PI + theta_r;
+	  theta_r = static_cast<float>(2.0 * _PI + theta_r);
 	return
 	  (((phi_1 < phi_2)&&((theta_r >= phi_1)&&(theta_r <= phi_2))) ||
 	   ((phi_1 > phi_2)&&((theta_r >= phi_1)||(theta_r <= phi_2))));
@@ -230,8 +230,8 @@ get_geometric_volume()const
      }
    if (theta_1 == 360.0) T1 = 0.0;
    if (theta_2 ==   0.0) T2 = 360.0;
-   const float phi_1 = T1*_PI/180.0;
-   const float phi_2 = T2*_PI/180.0;
+   const float phi_1 = static_cast<float>(T1*_PI/180.0);
+   const float phi_2 = static_cast<float>(T2*_PI/180.0);
    
    // Begin Volume Calculation
    if (T1 == 0.0 && T2 == 360.0)
@@ -251,18 +251,18 @@ get_geometric_volume()const
    if (T2 >=  90.0 && T2 < 180.0) //branch two
      A2 = atan2(radius_x/radius_y * fabs(tan(phi_2)),-1);
    if (T2 >= 180.0 && T2 < 270.0) //branch three
-     A2 = 2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_2)),-1);
+     A2 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_2)),-1));
    if (T2 >= 270.0 && T2 <= 360.0) //branch four
-     A2 = 2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_2)),1);
+     A2 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_2)),1));
    
    if (T1 >=   0.0 && T1 <  90.0) //branch one
      A1 = atan2(radius_x/radius_y * fabs(tan(phi_1)),1);
    if (T1 >=  90.0 && T1 < 180.0) //branch two
      A1 = atan2(radius_x/radius_y * fabs(tan(phi_1)),-1);
    if (T1 >= 180.0 && T1 < 270.0) //branch three
-     A1 = 2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_1)),-1);
+     A1 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_1)),-1));
    if (T1 >= 270.0 && T1 <= 360.0) //branch four
-     A1 = 2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_1)),1);
+     A1 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_1)),1));
    
    if (T1 > T2)
      return static_cast<float>(radius_x*radius_y/2.0*
