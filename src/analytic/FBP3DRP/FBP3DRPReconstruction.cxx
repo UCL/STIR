@@ -868,8 +868,8 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
     const int nrings = viewgrams.get_num_axial_poss(); 
     const int nprojs = viewgrams.get_num_tangential_poss();
     
-    const int width = (int) pow(2, ((int) ceil(log((PadS + 1.) * nprojs) / log(2.))));
-    const int height = (int) pow(2, ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
+    const int width = (int) pow(2., ((int) ceil(log((PadS + 1.) * nprojs) / log(2.))));
+    const int height = (int) pow(2., ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
     
     
     const float theta_max = atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
