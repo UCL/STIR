@@ -34,7 +34,7 @@
 */
 #include "stir/DiscretisedDensity.h"
 #if 1
-#include "stir/IO/InputFileFormatRegistry.h"
+#include "stir/IO/read_from_file.h"
 #else
 #include "stir/IO/interfile.h"
 #ifdef HAVE_LLN_MATRIX
