@@ -92,7 +92,7 @@ public:
   virtual Viewgram<elemT> get_viewgram(int view_num) const = 0;
 
   //! set data in segment according to sinogram \c s
-  inline void set_sinogram(const Sinogram<elemT>& s);
+  virtual void set_sinogram(const Sinogram<elemT>& s) = 0;
   //! set sinogram at a different axial_pos_num
   virtual void set_sinogram(const Sinogram<elemT> &s, int axial_pos_num) = 0;
   //! set data in segment according to viewgram \c v
