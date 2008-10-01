@@ -303,7 +303,8 @@ and \texttt{postfilter\_truncate\_circular\_FOV.par} files in the
 
 \subsubsection{Parallelisation of OSMAPOSL using MPI}
 Contribution by Tobias Beisel. Allows running OSMAPOSL in master-slave mode.
-\subsubsection{Parallelisation of FBP2D using OPEN_MP}
+See some more info in the User's Guide.
+\subsubsection{Parallelisation of FBP2D using OPENMP}
 Contribution by Tobias Beisel. Allows running FBP2D using threads.
 However, this does not really speed-up the reconstruction. This code could
 serve as a basis for FBP3DRP however.
@@ -329,6 +330,9 @@ were specific to images samples on cartesian grids
 could no longer be used. In addition, they had some ugly quircks
 (see section \ref{sec:changes_in_OSMAPOSL_images}). So most of these
 functions have now been removed.
+\item Removed replace_extension and add_extension functions that work on char * as they were 
+unsafe (in case the array didn't have enough memory). Use std::string versions instead.
+
 \end{itemize}
 
 Other relatively important changes are listed below
@@ -337,7 +341,7 @@ Other relatively important changes are listed below
 most parameters. Please email if some are missing.
 \item There is now a new class \texttt{AnalyticReconstruction}.
 \item \texttt{VectorWithOffset}: added
-  constructors and 1 member to be able to have vectors that uses existing
+  constructors and 1 member to be able to have vectors that use existing
   data. This is useful when for example a C array with data needs to be
   manipulated.
 
@@ -376,6 +380,10 @@ most parameters. Please email if some are missing.
   \item added functions to convert between \textit{physical} coordinates (in mm)
     and index coordinates.
   \end{itemize}
+
+\item New global function \texttt{read\_from\_file()} using an input file format 
+registry. This makes it much easier to add support for a new file format. See
+class \texttt{InputFileFormatRegistry}.
 
 \item New variables defined for \texttt{make} for \textit{AVW} support:
 \texttt{AVW\_INCLUDE\_DIR}, \texttt{AVW\_LIBS} and \texttt{HAVE\_AVW}. They
