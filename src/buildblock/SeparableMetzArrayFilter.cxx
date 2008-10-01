@@ -125,8 +125,8 @@ void discrete_fourier_transform(VectorWithOffset<elemT>&data, unsigned int nn, i
     for (m=1;m<mmax;m+=2) {
       for (i=m;i<=n;i+=istep) {
         j=i+mmax;
-        tempr=wr*data[j]-wi*data[j+1];
-        tempi=wr*data[j+1]+wi*data[j];
+        tempr=static_cast<elemT>(wr*data[j]-wi*data[j+1]);
+        tempi=static_cast<elemT>(wr*data[j+1]+wi*data[j]);
         data[j]=data[i]-tempr;
         data[j+1]=data[i+1]-tempi;
         data[i] += tempr;
