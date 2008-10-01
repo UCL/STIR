@@ -46,6 +46,7 @@ Classes for projection data (i.e. the measured data)
 Forward projection, back projection and projection matrix classes.
 \item 
 Classes for iterative reconstruction algorithms
+\item IO
 \end{itemize}
 
 The documentation
@@ -282,10 +283,10 @@ The \textit{.txx} files are similar to the \textit{.inl} files. They contain non
 definitions of template classes (or functions). They should only be included by the
 corresponding \textit{.cxx} file where the template is then instantiated for any desired types.
 This makes it easier or a user to instantiate a template for a new type without modifying the
-original STIR code.\footnote(The \textit{.txx} extension as used because the Insight Toolkit (ITK) 
+original STIR code.\footnote{The \textit{.txx} extension as used because the Insight Toolkit (ITK) 
 uses it as well. It stands for template C++ presumably.}
 
-\\
+
 All STIR include files should be included as \textit{\#include ``stir/maybe\_a\_subdir/name.h''}\\
 The \textit{doxygen} comments generally occur in the \textit{.h} file, unless 
 they are very extensive. In this case, the \textit{.h} file contains 
@@ -548,7 +549,7 @@ many STIR classes have in common.
 
 \subsubsection{Copying objects}
 When using pointers or references to objects of an abstract type, you can copy 
-them using \texttt{clone()}, see \ref{sect:sharedptr}.
+them using \texttt{clone()}, see section \ref{sect:sharedptr}.
 
 
 When you only want to create an object of the same characteristics, but without
@@ -571,7 +572,7 @@ function \texttt{has\_same\_characterics}.
 \subsubsection{Parsing from text files}
 Many class-hierarchies allow to construct an object by parsing a 
 text file, which uses an Interfile-like syntax. Examples
-are given in the User's guide. See \ref{sect:parsing}.
+are given in the User's guide. see section \ref{sect:parsing}.
 
 All these classes (and some others) have a member function 
 \texttt{parameter\_info()} which returns a string with all parameters
@@ -1039,21 +1040,84 @@ Check the doxygen documentation for
 \texttt{ParsingObject}.
 
 \section{
+IO \label{sect:IO}}
+
+\subsection{Images}
+For images, output file formats and (since version 2.0) input file format are represented 
+by objects as well, as instantiations of classes derived from 
+\texttt{OutputFileFormat} and \texttt{InputFileFormat} respectively. All of
+the file formats supported by STIR are stored in registries (see section \ref{sect:registries}).
+
+Currently recommended way to read an image is as follows:
+\begin{verbatim}
+    typedef DiscretisedDensity<3,float> DataType ;
+    std::auto_ptr<DataType> density_aptr = read_from_file<DataType>(filename);
+\end{verbatim}
+You will have to include \texttt{stir/IO/read\_from\_file.h} for this to work. The function
+\texttt{read\_from\_file} will open the file, read an initial block of data, check
+if that corresponds to the signature of any of the file formats in the
+default registry, and use the first matching file format to read the data.
+
+For output, you can use
+\begin{verbatim}
+    typedef DiscretisedDensity<3,float> DataType ;
+    shared_ptr<OutputFileFormat<DataType > output_format_sptr =
+       OutputFileFormat<DataType >::default_sptr();
+   output_format_sptr->write_to_file(filename, density);
+\end{verbatim}
+You will have to include \texttt{stir/IO/OutputFileFormat.h} for this to work.
+Currently, the default output file format in STIR is Interfile (see the User's Guide).
+
+At present, STIR does not provide a way to open an image file for reading and writing.
+Patient/study information etc is currently ignored. More dangerously, image orientation
+as well.
+
+It is relatively straightforward to add a new file format by deriving a new class
+from \texttt{InputFileFormat} (for input), and adding that to the default registry
+(see section \ref{sect:registries} for more details).
+
+\subsection{Numerical arrays}
+There are some functions to read/write numerical vectors/arrays from
+file. Check \texttt{stir/IO/read\_data.h} (and \texttt{write\_data.h}) for
+binary IO, and \texttt{stir/stream.h} for text-based IO.
+
+\subsection{Projection data}
+At present, there is no registry yet for file formats of projection data. For reading, use
+\begin{verbatim}
+   shared_ptr<ProjData> proj_data_sptr = ProjData::read_from_file(filename);
+\end{verbatim}
+This has an optional argument for read/write access to the file.
+
+For writing, you could use
+\begin{verbatim}
+   ProjDataInterfile proj_data(proj_data_info_sptr, filename);
+\end{verbatim}
+We currently have no easy way to copy all data across from one \texttt{ProjData}
+object to another. You will have to write an explicit loop over segments.
+
+\subsection{Dynamic or gated data}
+STIR 2.0 does not provide any direct facilities for reading 4D data (aside from
+the ECAT conversion utilities). Basic support should come in version 2.1.
+In the mean time, there is some preliminary functionality via the 
+\texttt{TimeFrameDefinitions} class and the \texttt{get\_time\_frame\_info}
+utility.
+
+\section{
 Registries of classes \label{sect:registries}}
 
 Several class hierarchies in STIR keep a registry of all \textit{leaf} 
 derived classes (i.e. classes at the end of the hierarchy). This 
 registry allows the user to select \textit{at run-time} which image 
-processor , projector, matrix, output file format etc. (s)he 
+processor, projector, matrix, output file format etc. (s)he 
 wants to use. It is fairly easy to add your own leaf class to 
 the hierarchy such that it will be added to the registry\textit{.} How 
-to do this needs probably more documentation, but see the online 
+to do this needs more documentation, but see the doxygen 
 documentation of classes \textit{RegisteredObject} and \textit{RegisteredParsingObject.} 
 \\
 The recommended way to add your own class (as always) is to take 
 a look at an existing leaf in the hierarchy, copy the files and 
 change what you need. Also make sure you new class gets linked 
-in by adding it to one of the *buildblock\_registries.cxx files. 
+in by adding it to one of the *registries.cxx files. 
 \\
 See also section \ref{sect:extendingSTIR}.
 
