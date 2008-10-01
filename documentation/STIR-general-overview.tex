@@ -17,7 +17,7 @@
 \textbf{{\huge STIR \\
 General Overview}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 1.3}}
+\textbf{\textit{version 2.0}}
 
 
 \end{spacing}
@@ -174,10 +174,10 @@ independence of the computer platform on which the software runs.
 Reconstruction algorithms currently distributed}
 
 We have an implementation of FORE  [Def97] working which will 
-be released in the near future. Implementations of 
-OSCB [Mar99] and OSSPS [Ahn03] are partly finished. 
-Please let us know if you 
-want to help..
+be released in the near future (pending final legal issues). Implementation of 
+OSSPS [Ahn03] will be included in version 2.1. PARAPET code for OSCB [Mar99] exists but needs
+a bit of work to convert to STIR. Please let us know if you 
+want to help.
 
 \subsection{FBP}
 Optionally with SSRB first.
@@ -360,15 +360,17 @@ SunSparc based systems using Solaris
 We currently have a problem 
 in the incremental backprojection routines due to different rounding 
 of floating point calculations on Sparc, HP and Opteron processors. 
-Please use 
-another backprojector. See the User's Guide.
+Thanks to a fix of Bing Bai this problem might have disappeared on your processor.
+You will find out if this problem still exists when you run the 
+recon\_text\_pack available on the STIR web-site. Please let us know.
+See the User's Guide for how to use another backprojector.
 
 
 \subsubsection{
 Parallel versions of algorithms}
 \begin{itemize}
-\item 
-Parsytec CC with either EPX or PVM 
+\item a parallel version of \texttt{OSMAPOSL} using MPI 
+\item a threaded version of FBP2D using OPENMP, but for most systems, there is no performance gain.
 \end{itemize}
 
 
@@ -376,12 +378,17 @@ Parsytec CC with either EPX or PVM
 Compilers}
 \begin{itemize}
 \item 
-gcc 2.95.2 or higher (gcc 3.0.1 or higher highly recommended). 
+The original STIR version compiled with gcc 2.95.2. It is unlikely that this still works
+though. gcc 3.0.1 or higher is highly recommended. STIR compiles fine with gcc 3.4 up to 4.1,
+and should work with more recent versions.
 (Do not use non-official gcc releases often distributed with 
 Linux systems such as Red Hat's 2.96. It's buggy!)
+\item Intel's C++ compiler works fine, except for some problems with Fourier transforms.
 \item 
-on Windows, Visual C++ 6.0 Service Pack 3 or higher. VC 2003 works fine. We have 
+on Windows, Visual C++ 6.0 Service Pack 3 was originally supported, but might have problems
+with more recent STIR versions. VC 2003 works fine. We have 
 no reports on VC 7.0. 
+
 \end{itemize}
 
 
@@ -389,13 +396,14 @@ no reports on VC 7.0.
 PET scanners}
 \begin{itemize}
 \item 
-GE Advance, Discovery LS, Discovery ST 
+GE Advance, Discovery LS, Discovery ST, Discvoery STE, Discovery RX 
 \item 
 PRT-1 
 \item 
 ECAT 921, 931, 953, 951, 962, 966 (and most other ECAT systems) 
 \item 
 HRRT apparently works as well
+\item Philips Allegro (using its convention of having a ``virtual'' extra crystal to cover the gaps).
 \end{itemize}
 
 Other cylindrical PET scanners can easily be added.
@@ -406,10 +414,12 @@ Other cylindrical PET scanners can easily be added.
 File formats}
 \begin{itemize}
 \item 
-An extension of the Interfile standard (see \R2Lurl{http://www.HammersmithImanet.com/~kris/ }{http://www.HammersmithImanet.com/~kris/}) 
+An extension of the Interfile standard (see the ''Other info'' section of the STIR website.)
 \item 
-GE Advance native sinogram format, but for reading only (with 
-very limited support for the header). Discovery ST data not yet supported.
+GE Advance VOLPET sinogram format, but for reading only (with 
+very limited support for the header). If you have a research contract with GE,
+you might be able to get a STIR extension to read Discovery ST, STE and RX data in both 
+VOLPET and RDF format.
 \item 
 ECAT 6 matrix format by using conversion utilities to and from 
 Interfile. Single frame/gate/bed images can be directly read 
