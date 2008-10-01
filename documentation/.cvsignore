@@ -1,5 +1,6 @@
 *.aux
 *.log
 *.out
-STIR-version2-vs-version1.pdf
+*.pdf
 *.toc
+*.dvi
