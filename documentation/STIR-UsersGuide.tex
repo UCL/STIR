@@ -487,6 +487,11 @@ and compiler to get this to work. Normal build process would be something like
 
 \cmdline{make CXX=mpic++ DEST=mpiopt/ iterative/OSMAPOSL}
 
+This assumes that the file \texttt{mpi.h} is the search-path of the compiler. If not,
+you could include its location for instance by using the \texttt{EXTRA\_CFLAGS} \textit{make} variable.
+
+\cmdline{make ... EXTRA\_CFLAGS=''-I /where/ever/it/is''}
+
 All the make variables of the previous section apply. Note that at present it is 
 recommended that you build this version in a differerent destination directory then
 your usual (non-parallel) build. This is because conditional compilation is used
@@ -520,6 +525,7 @@ Can be used to change the default MPI compilation flags which currently includes
 \hline
 \end{longtable}
 
+
 \subsubsection{
 Additional options available for threaded code}
 
@@ -530,8 +536,13 @@ in a decent speed-up of \texttt{FBP2D}. Normal build process would be something 
 
 \cmdline{make DEST=openmpopt/ analytic/FBP2D STIR\_OPENMP=1}
 
+This assumes that the file \texttt{omp.h} is the search-path of the compiler. If not,
+you could include its location for instance by using the \texttt{EXTRA\_CFLAGS} \textit{make} variable.
 
-Additional make variables for the parallel version:
+\cmdline{make ... EXTRA\_CFLAGS=''-I /where/ever/it/is''}
+
+
+Additional make variables for the threaded version:
 
 \begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
 \hline
@@ -545,6 +556,10 @@ Can be used to change the default OPEN-MP compilation flags which currently incl
 } \\
 \hline
 \end{longtable}
+
+When running a threaded executable, the environment variable \texttt{OMP\_NUM\_THREADS} can be set
+to the number of processes to be used for OpenMP. Without using this, the number of threads is 
+defined as the number of processors available.
 
 \subsubsection{
 Usage of STIR/local/config.mk}
@@ -1056,8 +1071,8 @@ format).
 
 The most comprehensively supported file format in the library 
 is a newly proposed version of interfile. More details about 
-this type can be found on\\
-\R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}. 
+this type can be found in the ''Other info'' section of the STIR website.
+
 It is currently the only format supported for writing projection 
 data (except by the \textit{conv\_to\_ecat?} utilities\textit{)}. Projection 
 data files are written in pairs:\\
@@ -1311,7 +1326,7 @@ Interfile Output File Format Parameters :=
 End Interfile Output File Format Parameters :=
 
 initial estimate:= initial_image_filename.hv
-enforce initial positivity condition:=0
+enforce initial positivity condition:=1
 number of subsets:= 6
 start at subset:= 0
 number of subiterations:= 30
@@ -1322,8 +1337,7 @@ save estimates at subiteration intervals:= 2
 uniformly randomise subset order:= 1
 
 
-; keywords that specify the filtering that occurs after every 
-subiteration
+; keywords that specify the filtering that occurs after every subiteration
 inter-iteration filter subiteration interval := 4
 inter-iteration filter type := Separable Cartesian Metz
  ; keywords below will depend on the filter type (see text)
@@ -1699,7 +1713,33 @@ Finally, for phantom studies in which the activity is known to
 lie within the space covered by the voxel grid, the end plane 
 phenomenon does not arise.
 
+{\subsubsubsection{Extra parameters the MPI version}}\\
+When running the MPI version of \texttt{OSMAPOSL} on distributed memory
+systems, the following extra parameters can be set in the .par files.
 
+\begin{description}
+\item[enable distributed caching] (default: 0)
+Enables/disables the caching algorithm to save some communication overhead (according
+to Tobias Beisel's tests, this makes only makes a difference with very large files). 
+
+\item[enable distributed tests] (default : 0)
+Tests to check whether the distributed functions work. This is of no use if you're 
+not developing new code for the parallel version. It could be thrown out of the code at some point.
+
+\item[enable message timings] (default : 0)
+Prints timings of send and receive operations, to see where the time gets lost. 
+Could be used for later optimization. 
+
+\item[message timings threshold] (default : 1.0)
+Defines a threshold of the above timings, so that not all messages are timed, but those which 
+consume a serious amount of time. 
+
+\item[enable rpc timings] (default : 0)
+Measures the total time and the average slave time spend on RPC\_process\_related\_viewgrams\_gradient() function. 
+Gives some indication of how much time you save by calculating in parallel. 
+\end{description}
+
+See [Bei08] for some info on performance.
 
 \subsubsection{
 Filtered back projection (FBP2D)}
@@ -1917,88 +1957,23 @@ of sinograms (one for each axial position). (See the STIR glossary).
 
 This is a command line utility for adding or multiplying data 
 and other numerical operations, with a somewhat awkward syntax. 
-The command line arguments are as follows (but everything has 
-to fit on 1 line):
-\begin{verbatim}
-stir_math \
-[-s] \
-[--add {\textbar} --mult] \
-[--min-threshold min_threshold] \
-[--max-threshold max_threshold] \
-[--power power_float] \
-[--times-scalar mult_scalar_float] \
-[--divide-scalar div_scalar_float] \
-[--add-scalar add_scalar_float] \
-[--including-first] \
-[--verbose]\
-output_filename_with_extension in_data1 \
-[in_data2 [in_data3...]]
-\end{verbatim}
-
-or
-
-\begin{verbatim}
-stir_math \
---accumulate \
-[-s] \
-[--add {\textbar} --mult] \
-[--min-threshold min_threshold] \
-[--max-threshold max_threshold] \
-[--power power_float] \
-[--times-scalar mult_scalar_float] \
-[--divide-scalar div_scalar_float] \
-[--add-scalar add_scalar_float] \
-[--including-first] \
-[--verbose]\
-out_and_input_filename in_data2 [in_data3 [in_data4...]]
-\end{verbatim}
-
-\noindent
-\texttt{'--add'} is default, and outputs the sum of the result of 
-processed data.\\
-\texttt{'--mult'} outputs the multiplication of the result of processed 
-data.
-
-
-The \texttt{'--include-first'} option can be used such that power and 
-scalar operations such as multiplication/division are done on 
-the first input argument as well. Otherwise these manipulations 
-are done only on the 2nd, 3rd,.. argument.
-
-
-The \texttt{'--accumulate'} option can be used to say that the first filename 
-given will be used for input AND output. Note that when using 
-this option together with \texttt{'--including-first'}, the data in the 
-first filename will first be manipulated according to \texttt{'--power'}, 
-\texttt{'--times-scalar'} and \texttt{'--divide-scalar'}.
-
-
-The \texttt{'-s'} option is necessary if the arguments are projection 
-data. Otherwise, it is assumed the data are images.\\
-Multiple occurrences of \texttt{'--times-scalar'} and \texttt{'--divide-scalar'} 
-are allowed and will just result in accumulation of the factors.
-
-
-The order of the manipulations is as follows:\\
-(1) thresholding (2) power (3) scalar multiplication (4) scalar 
-addition.\\
+Just execute \texttt{stir\_math} for a usage message.
 
 \textit{Examples}
 \begin{itemize}
 \item
-Adding 3 files
+Adding 3 images
 \cmdline{stir\_math output in1 in2 in3}
-
 
 Sets \textit{output=in1+in2+in3}\\
 \item
-Subtracting 2 files
+Subtracting 2 images
 \cmdline{stir\_math --times-scalar -1 output in1 in2}
 
 
 Sets \textit{output=in1-in2}\\
 \item
-Sum the square of each file
+Sum the square of each images
 \cmdline{stir\_math --power 2 --including-first output in1 in2}
 
 
@@ -2012,7 +1987,7 @@ Sets \textit{output=in1/in2}\\
 \item
 Dividing 2 projection data files avoiding division by 0 by thresholding 
 the 2$^{nd}$ data-set.
-\cmdline{stir\_math -s --mult --min-threshold.1 --power -1 {\textbackslash}\\
+\cmdline{stir\_math -s --mult --min-threshold .1 --power -1 {\textbackslash}\\
 output in1 in2}
 
 
@@ -3843,6 +3818,9 @@ report \#5/99, October 1999, MINERVA Optimization Center, Faculty
 of Industrial Engineering and Management, Technion -- Israel Institute 
 of Technology.}
 
+[Bei08] Tobias Beisel, Stefan Lietsch, and Kris Thielemans \textbf{(2008)}
+A Method for OSEM PET Reconstruction on Parallel Architectures Using STIR.
+\textit{Proc. of the IEEE Medical Imaging Conference, Dresden, Germany, 2008}.
 
 {[}Bou97] Boudraa \textsc{A E O} \textbf{(1997)} Automated detection of the 
 left ventricular region in magnetic resonance images by Fuzzy 
