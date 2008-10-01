@@ -45,7 +45,7 @@ ifeq ($(HAVE_LLN_MATRIX),1)
 	$< test/input/test_ECAT6OutputFileFormat.in
 	$< test/input/test_ECAT7OutputFileFormat.in
 else
-	@echo No ECAT7 support compiled, so no tests for this file format
+	@echo No ECAT6/7 support compiled, so no tests for this file format
 endif
 
 
