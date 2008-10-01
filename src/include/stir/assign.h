@@ -36,7 +36,24 @@
 #include <vector>
 
 START_NAMESPACE_STIR
+/*! \ingroup buildblock
+  \name templated functions for assigning values
 
+  When writing templated code, it is sometimes not possible to use \c operator=() 
+  for assignment, e.g. when the classes do not support that operator. The
+  \c assign template tries to alleviate this problem by providing several
+  overloads when the first argument is a (STIR) container. 
+
+  \par Usage
+  \code
+  assign(x,y); // logically equivalent to x=y;
+  \endcode
+
+  \par Design consideration
+  We could have overloaded \c operator=() instead, but that would probably
+  lead to surprising conversions.
+*/
+//@{
 // TODO hopefully next ifdef is not necessary. Otherwise we need to have more for ints etc
 #if defined(_MSC_VER) && _MSC_VER<=1300
 inline 
@@ -86,6 +103,20 @@ void assign(VectorWithOffset<T>& v, const T2& y)
        iter != v.end(); ++iter)
     assign(*iter, y);
 }
+
+// a few common cases given explictly here such that we don't get conversion warnings all the time.
+inline 
+void assign(double& x, const int y)
+{
+  x=static_cast<double>(y);
+}
+
+inline 
+void assign(float& x, const int y)
+{
+  x=static_cast<float>(y);
+}
+//@}
 
 END_NAMESPACE_STIR
 
