@@ -28,6 +28,8 @@ $Date$
 $Revision$ 
 */
 
+#ifdef HAVE_AVW
+
 #include "stir/IO/stir_AVW.h"
 #include "stir/IndexRange3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -165,3 +167,4 @@ AVW_Volume_to_VoxelsOnCartesianGrid(AVW_Volume const* const avw_volume,
 
 END_NAMESPACE_STIR
 
+#endif
