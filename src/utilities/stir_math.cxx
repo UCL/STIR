@@ -118,10 +118,10 @@
 */
 
 #include "stir/ArrayFunction.h"
-#include "stir/ProjDataFromStream.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/SegmentByView.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/utilities.h"
@@ -138,6 +138,7 @@
 #include <iostream> 
 #include <functional>
 #include <algorithm>
+#include <memory>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::cout;
@@ -183,8 +184,8 @@ void process_data(const string& output_file_name,
 		  const FunctionObjectT& pow_times_add_object,
 		  const OutputFileFormat<DataT>& output_format)
 {
-  shared_ptr< DataT >  image_ptr = 
-    DataT::read_from_file(*argv);
+  std::auto_ptr< DataT >  image_ptr = 
+    read_from_file<DataT>(*argv);
   if (!no_math_on_data && !except_first )
     in_place_apply_function(*image_ptr, pow_times_add_object);
 
