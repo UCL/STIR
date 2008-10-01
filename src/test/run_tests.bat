@@ -10,8 +10,10 @@
 @pause
 VC\test_VectorWithOffset\%1\test_VectorWithOffset
 @pause Press any key to continue to next test programme
+VC\test_ArcCorrection\%1\test_ArcCorrection
+@pause Press any key to continue to next test programme
 VC\test_Array\%1\test_Array
-@pause 
+@pause
 VC\test_convert_array\%1\test_convert_array
 @pause 
 VC\test_IndexRange\%1\test_IndexRange
@@ -19,12 +21,19 @@ VC\test_IndexRange\%1\test_IndexRange
 VC\test_coordinates\%1\test_coordinates
 @pause 
 VC\test_ArrayFilter\%1\test_ArrayFilter
-@pause 
+@pause
+VC\test_NestedIterator\%1\test_NestedIterator
+@pause
 VC\test_filename_functions\%1\test_filename_functions
 @pause 
 VC\test_linear_regression\%1\test_linear_regression  input\test_linear_regression.in
+rem net test is interactive
+rem @pause 
+rem VC\test_interpolate\%1\test_interpolate
 @pause 
 VC\test_VoxelsOnCartesianGrid\%1\test_VoxelsOnCartesianGrid
+@pause 
+VC\test_zoom_image\%1\test_zoom_image
 @pause 
 VC\test_proj_data_info\%1\test_proj_data_info
 
