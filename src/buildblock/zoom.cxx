@@ -22,7 +22,7 @@
   \file 
   \ingroup buildblock
 
-  \brief Implementations of the zoom functions
+  \brief Implementations of the stir::zoom functions
 
   \author Kris Thielemans
   \author Claire Labbe
@@ -40,7 +40,6 @@
    - KT converted to new design
  */
    
-#include <cmath>
 #include "stir/interpolate.h"
 #include "stir/zoom.h"
 #include "stir/VoxelsOnCartesianGrid.h" 
@@ -50,6 +49,7 @@
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
+#include <cmath>
 
 START_NAMESPACE_STIR
 
