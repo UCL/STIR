@@ -428,12 +428,12 @@ calculate_proj_matrix_elems_for_one_bin(
 						 det_num2,
 						 bin.view_num(),
 						 bin.tangential_pos_num());
-    phi = (det_num1+det_num2)*_PI/num_detectors-_PI/2;
+    phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
     const float old_phi=proj_data_info_ptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
       warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
-    s_in_mm = ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2);
+    s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
     const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
     if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
       warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
