@@ -130,8 +130,8 @@ ${DEST}$(dir)/test_filename_functions: ${DEST}$(dir)/test_filename_functions${O_
 ${DEST}$(dir)/test_ByteOrder: ${DEST}$(dir)/test_ByteOrder${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-${DEST}$(dir)/test_stir_math: ${DEST}$(dir)/test_stir_math${O_SUFFIX} $(STIR_LIB) 
-	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+${DEST}$(dir)/test_stir_math: ${DEST}$(dir)/test_stir_math${O_SUFFIX} $(STIR_LIB) $(filter %IO_registries${O_SUFFIX},$(STIR_REGISTRIES))  $(EXTRA_LIBS) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  $(filter %IO_registries${O_SUFFIX},$(STIR_REGISTRIES))  $(EXTRA_LIBS) $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 ${DEST}$(dir)/test_OutputFileFormat: ${DEST}$(dir)/test_OutputFileFormat${O_SUFFIX} \
    $(STIR_LIB) $(filter %IO_registries${O_SUFFIX},$(STIR_REGISTRIES))  $(EXTRA_LIBS) 
