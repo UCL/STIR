@@ -127,8 +127,9 @@ read_interfile_image(istream& input,
 			float(hdr.first_pixel_offsets[0]))
 	- voxel_size * BasicCoordinate<3,float>(min_indices);
       // TODO remove
-      warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)",
-	      origin.z(), origin.y(), origin.x());
+      if (norm(origin)>.01)
+	warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)",
+		origin.z(), origin.y(), origin.x());
     }
 
   VoxelsOnCartesianGrid<float>* image_ptr =
