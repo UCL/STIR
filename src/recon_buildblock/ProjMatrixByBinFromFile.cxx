@@ -1,10 +1,25 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
-  \ingroup utilities
+  \ingroup projection
 
   \brief Implementation of class stir::ProjMatrixByBinFromFile
 
@@ -13,26 +28,22 @@
   $Date$
   $Revision$
 */
-/*
-  Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
-  See STIR/LICENSE.txt for details
-*/
 
 #include "stir/ProjDataInterfile.h"
-#include "local/stir/recon_buildblock/ProjMatrixByBinFromFile.h"
+#include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/KeyParser.h"
 #include "stir/IO/OutputFileFormat.h"
-#include "stir/ProjDataFromStream.h"
+//#include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
+#include "boost/scoped_ptr.hpp"
 #include <fstream>
 #include <algorithm>
-#include <list>
 
 
 START_NAMESPACE_STIR
@@ -52,19 +63,26 @@ void
 ProjMatrixByBinFromFile::
 initialise_keymap()
 {
-  parser.add_start_key("ProjMatrixByBinFromFile Parameters");
+  parser.add_start_key("Projection Matrix By Bin From File Parameters");
   ProjMatrixByBin::initialise_keymap();
 
   parser.add_key("template_density_filename", &template_density_filename);
   parser.add_key("template_proj_data_filename", &template_proj_data_filename);
-    parser.add_key("data_filename", &data_filename);
+  parser.add_key("data_filename", &data_filename);
 
+  parser.add_key("Version", &this->parsed_version);
+  parser.add_key("symmetries type", &this->symmetries_type) ;
+    
+  //parser.add_key("PET_CartesianGrid symmetries parameters",
+  //		 KeyArgument::NONE,	&KeyParser::do_nothing);
   parser.add_key("do_symmetry_90degrees_min_phi", &do_symmetry_90degrees_min_phi);
   parser.add_key("do_symmetry_180degrees_min_phi", &do_symmetry_180degrees_min_phi);
   parser.add_key("do_symmetry_swap_segment", &do_symmetry_swap_segment);
   parser.add_key("do_symmetry_swap_s", &do_symmetry_swap_s);
   parser.add_key("do_symmetry_shift_z", &do_symmetry_shift_z);
-  parser.add_stop_key("End ProjMatrixByBinFromFile Parameters");
+  //parser.add_key("End PET_CartesianGrid symmetries parameters",
+  //		 KeyArgument::NONE,	&KeyParser::do_nothing);
+  parser.add_stop_key("End Projection Matrix By Bin From File Parameters");
 }
 
 
@@ -90,6 +108,17 @@ ProjMatrixByBinFromFile::post_processing()
   if (ProjMatrixByBin::post_processing() == true)
     return true;
 
+  if (this->parsed_version != "1.0")
+    { 
+      warning("version has to be 1.0");
+      return true;
+    }
+  if (this->symmetries_type != "PET_CartesianGrid")
+    { 
+      warning("symmetries type has to be PET_CartesianGrid");
+      return true;
+    }
+
   if (template_density_filename.size()==0)
     {
       warning("template_density_filename has to be specified.\n");
@@ -112,13 +141,13 @@ ProjMatrixByBinFromFile::post_processing()
       proj_data_sptr->get_proj_data_info_ptr()->clone();
   }
   shared_ptr<DiscretisedDensity<3,float> > density_info_sptr =
-      DiscretisedDensity<3,float>::read_from_file(template_density_filename);
+    DiscretisedDensity<3,float>::read_from_file(template_density_filename);
   {
     const VoxelsOnCartesianGrid<float> * image_info_ptr =
       dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_sptr.get());
 
     if (image_info_ptr == NULL)
-      error("ProjMatrixByBinFromFile initialised with a wrong type of DiscretisedDensity\n");
+      error("ProjMatrixByBinFromFile initialised with a wrong type of DiscretisedDensity");
  
     densel_range = image_info_ptr->get_index_range();
     voxel_size = image_info_ptr->get_voxel_size();
@@ -153,7 +182,8 @@ set_up(
 
   if (image_info_ptr == NULL)
     error("ProjMatrixByBinFromFile set-up with a wrong type of DiscretisedDensity\n");
- 
+
+  // TODO allow for smaller range
   if (densel_range != image_info_ptr->get_index_range())
     error("ProjMatrixByBinFromFile set-up with image with wrong index range\n");
   if (voxel_size != image_info_ptr->get_voxel_size())
@@ -161,8 +191,32 @@ set_up(
   if (origin != image_info_ptr->get_origin())
     error("ProjMatrixByBinFromFile set-up with image with wrong origin\n");
 
-  if (*proj_data_info_ptr_v != *proj_data_info_ptr)
-    error("ProjMatrixByBinFromFile set-up with proj data with wrong characteristics\n");
+  /* do consistency checks on projection data.
+     It's safe as long as the stored range is larger than what we need.
+  */
+  {
+    boost::scoped_ptr<ProjDataInfo> smaller_proj_data_info_sptr(this->proj_data_info_ptr->clone());
+    // first reduce to input segment-range
+    {
+      const int new_max = std::min(proj_data_info_ptr_v->get_max_segment_num(),
+				   this->proj_data_info_ptr->get_max_segment_num());
+      const int new_min = std::max(proj_data_info_ptr_v->get_min_segment_num(),
+				   this->proj_data_info_ptr->get_min_segment_num());
+      smaller_proj_data_info_sptr->reduce_segment_range(new_min, new_max);
+    }
+    // same for tangential_pos range
+    {
+      const int new_max = std::min(proj_data_info_ptr_v->get_max_tangential_pos_num(),
+				   this->proj_data_info_ptr->get_max_tangential_pos_num());
+      const int new_min = std::max(proj_data_info_ptr_v->get_min_tangential_pos_num(),
+				   this->proj_data_info_ptr->get_min_tangential_pos_num());
+      smaller_proj_data_info_sptr->set_min_tangential_pos_num(new_min);
+      smaller_proj_data_info_sptr->set_max_tangential_pos_num(new_max);
+    }
+
+    if (*proj_data_info_ptr_v != *smaller_proj_data_info_sptr)
+      error("ProjMatrixByBinFromFile set-up with proj data with wrong characteristics");
+  }
 
   if (read_data() ==Succeeded::no)
     error("Exiting\n");
@@ -224,7 +278,9 @@ read(std::istream&fst, ProjMatrixElemsForOneBin& lor )
     bin.set_bin_value(0);
     if (bin != lor.get_bin())
       {
-	warning("Read bin in wrong order?\n");
+	warning("Read bin in wrong order.\nRequired:(s:%d,a:%d,v:%d,t:%d). Read:(s:%d,a:%d,v:%d,t:%d)",
+		bin.segment_num(),bin.axial_pos_num(),bin.view_num(),bin.tangential_pos_num(),
+		lor.get_bin().segment_num(),lor.get_bin().axial_pos_num(),lor.get_bin().view_num(),lor.get_bin().tangential_pos_num());
 	return Succeeded::no;
       }
   }
@@ -236,10 +292,21 @@ read(std::istream&fst, ProjMatrixElemsForOneBin& lor )
 
   lor.reserve(count);
 
-  // todo handle the compression 
+#if 1
+  std::size_t buffer_size=count*(sizeof(short)*3+sizeof(float));
+  char buffer[buffer_size];
+  fst.read(buffer, buffer_size);
+  if (!fst)
+    return Succeeded::no;
+  // todo handle any compression
+
+  std::size_t offset=std::size_t(0);
+#endif
+
   for ( std::size_t i=0; i < count; ++i) 
     { 
       short c1,c2,c3;
+#if 0
       fst.read ( (char*)&c1, sizeof(short));
       fst.read ( (char*)&c2, sizeof(short));
       fst.read ( (char*)&c3, sizeof(short));
@@ -248,7 +315,17 @@ read(std::istream&fst, ProjMatrixElemsForOneBin& lor )
 
       if (!fst)
 	return Succeeded::no;
-
+#else
+      memcpy(buffer + offset, (char*)&c1, sizeof(short));
+      offset += sizeof(short);
+      memcpy(buffer + offset, (char*)&c2, sizeof(short));
+      offset += sizeof(short);
+      memcpy(buffer + offset, (char*)&c3, sizeof(short));
+      offset += sizeof(short);
+      float value;
+      memcpy(buffer + offset, (char*)&value, sizeof(float));
+      offset += sizeof(float);
+#endif
       const ProjMatrixElemsForOneBin::value_type 
 	elem(Coordinate3D<int>(c1,c2,c3), value);      
       lor.push_back( elem);		
@@ -271,21 +348,20 @@ write_to_file(const string& output_filename_prefix,
 	write_to_file(template_density_filename,
 				    template_density) != Succeeded::yes)
       {
-	warning("Error writing template image\n");
+	warning("Error writing template image");
 	return Succeeded::no;
       }
   }
   string template_proj_data_filename =
     output_filename_prefix + "_template_proj_data";
   {
+    // the following constructor will write an interfile header (and empty data) to disk
     ProjDataInterfile template_projdata(proj_data_info_sptr,
 					template_proj_data_filename);
-    // TODO ideally ProjDataInterfile would add the extension but it doesn't yet
-    add_extension(template_proj_data_filename, ".hs");
   }
 
   string header_filename = output_filename_prefix;
-  add_extension(header_filename, ".hpm");
+  replace_extension(header_filename, ".hpm");
   string data_filename = output_filename_prefix;
   add_extension(data_filename, ".pm");
 
@@ -293,12 +369,12 @@ write_to_file(const string& output_filename_prefix,
     std::ofstream header(header_filename.c_str());
     if (!header)
       {
-	warning("Error opening header %s\n",
+	warning("Error opening header %s",
 		header_filename.c_str());
 	return Succeeded::no;
       }
 
-    header << "ProjMatrixByBinFromFile Parameters:=\n"
+    header << "Projection Matrix By Bin From File Parameters:=\n"
 	   << "Version := 1.0\n";
     // TODO symmetries should not be hard-coded
     const DataSymmetriesForBins_PET_CartesianGrid& symmetries =
@@ -318,7 +394,7 @@ write_to_file(const string& output_filename_prefix,
 
     header << "data_filename:=" << data_filename << '\n';
 
-    header << "End ProjMatrixByBinFromFile:=";
+    header << "End Projection Matrix By Bin From File Parameters:=";
   }
 
   std::ofstream fst;
@@ -329,8 +405,16 @@ write_to_file(const string& output_filename_prefix,
     // defined here to avoid reallocation for every bin
     ProjMatrixElemsForOneBin lor;
 
+#if 0
     std::list<Bin> already_processed;
+#else
+    typedef VectorWithOffset<bool> tpos_t;
+    typedef VectorWithOffset<shared_ptr<tpos_t> > vpos_t;
+    typedef VectorWithOffset<shared_ptr<vpos_t> > apos_t;
+    typedef VectorWithOffset<shared_ptr<apos_t> > spos_t;
 
+    spos_t already_processed(proj_data_info_sptr->get_min_segment_num(), proj_data_info_sptr->get_max_segment_num()); 
+#endif
     for (int segment_num = proj_data_info_sptr->get_min_segment_num(); 
 	 segment_num <= proj_data_info_sptr->get_max_segment_num();
 	 ++segment_num)
@@ -346,11 +430,36 @@ write_to_file(const string& output_filename_prefix,
 	  {
 	    Bin  bin(segment_num,view_num, axial_pos_num, tang_pos_num);
 	    proj_matrix.get_symmetries_ptr()->find_basic_bin(bin);
+#if 0
             if (std::find(already_processed.begin(), already_processed.end(), bin)
 		!= already_processed.end())
 	      continue;
 
 	    already_processed.push_back(bin);
+#else
+	    if (is_null_ptr(already_processed[bin.segment_num()]))
+	      {
+		already_processed[bin.segment_num()]=new apos_t(proj_data_info_sptr->get_min_axial_pos_num(bin.segment_num()),
+								proj_data_info_sptr->get_max_axial_pos_num(bin.segment_num()));
+	      }
+	    if (is_null_ptr((*already_processed[bin.segment_num()])[bin.axial_pos_num()]))
+	      {
+		(*already_processed[bin.segment_num()])[bin.axial_pos_num()]=
+		  new vpos_t(proj_data_info_sptr->get_min_view_num(),
+			     proj_data_info_sptr->get_max_view_num());
+	      }
+	    if (is_null_ptr((*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()]))
+	      {
+		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()] =
+		  new tpos_t(proj_data_info_sptr->get_min_tangential_pos_num(),
+			     proj_data_info_sptr->get_max_tangential_pos_num()+1);
+		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()]->fill(false);
+	      }
+	    if ((*(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()])[bin.tangential_pos_num()])
+	      continue;
+
+	    (*(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()])[bin.tangential_pos_num()]=true;
+#endif
 	    //if (!proj_matrix.get_symmetries_ptr()->is_basic(bin))
 	    //  continue;
 	    
@@ -370,16 +479,10 @@ read_data()
   open_read_binary(fst, data_filename.c_str());
   
   // loop over bins
+  // TODO replace by a loop that just reads elements one by one as they come
   {
     // defined here to avoid reallocation for every bin
     ProjMatrixElemsForOneBin lor;
-
-    std::list<Bin> already_processed;
-    /* no std::list.reserove() obviously
-    already_processed.reserve((proj_data_info_ptr->get_num_tangential_poss()/2)*
-			      (proj_data_info_ptr->get_num_views()/4)*
-			      ((proj_data_info_ptr->get_num_segments()+1)/2));
-    */    
     for (int segment_num = proj_data_info_ptr->get_min_segment_num(); 
 	 segment_num <= proj_data_info_ptr->get_max_segment_num();
 	 ++segment_num)
@@ -395,18 +498,22 @@ read_data()
 	  {
 	    Bin  bin(segment_num,view_num, axial_pos_num, tang_pos_num);
 	    bin.set_bin_value(0);
-	    get_symmetries_ptr()->find_basic_bin(bin);
-            if (std::find(already_processed.begin(), already_processed.end(), bin)
-		!= already_processed.end())
-	      continue;
+	    Bin bin_copy=bin;
+	    this->get_symmetries_ptr()->find_basic_bin(bin);
+#if 0
+	    warning("org:(s:%d,a:%d,v:%d,t:%d). sym:(s:%d,a:%d,v:%d,t:%d)",
+		    bin_copy.segment_num(),bin_copy.axial_pos_num(),bin_copy.view_num(),bin_copy.tangential_pos_num(),
+		    bin.segment_num(),bin.axial_pos_num(),bin.view_num(),bin.tangential_pos_num());
+#endif		    
 
-	    already_processed.push_back(bin);
+	    lor.set_bin(bin);
+	    if (this->get_cached_proj_matrix_elems_for_one_bin(lor) == Succeeded::yes)
+	      continue;
 	    //if (!get_symmetries_ptr()->is_basic(bin))
 	    //  continue;
-	    lor.set_bin(bin);
 	    if (read(fst, lor) == Succeeded::no)
 	      return Succeeded::no;
-	    cache_proj_matrix_elems_for_one_bin(lor);
+	    this->cache_proj_matrix_elems_for_one_bin(lor);
 	  }
   }
   return Succeeded::yes;
@@ -418,7 +525,7 @@ ProjMatrixByBinFromFile::
 calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& 
 					) const
 {
-  error("ProjMatrixByBinFromFile element not found in cache (and hence file)\n");
+  error("ProjMatrixByBinFromFile element not found in cache (and hence file)");
 }
 END_NAMESPACE_STIR
 
