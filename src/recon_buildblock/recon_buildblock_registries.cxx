@@ -37,6 +37,8 @@
 #include "stir/recon_buildblock/QuadraticPrior.h"
 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -56,7 +58,10 @@
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
 
+//#include "stir/IO/InputFileFormatRegistry.h"
+
 START_NAMESPACE_STIR
+//static RegisterInputFileFormat<InterfileProjMatrixByBinInputFileFormat> idummy0(0);
 
 static PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3,float> >::RegisterIt dummy1;
 static PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<DiscretisedDensity<3,float> >::RegisterIt dummy2;
@@ -65,6 +70,8 @@ static FilterRootPrior<DiscretisedDensity<3,float> >::RegisterIt dummy4;
 static QuadraticPrior<float>::RegisterIt dummy5;
 
 static ProjMatrixByBinUsingRayTracing::RegisterIt dummy11;
+static ProjMatrixByBinUsingInterpolation::RegisterIt dummy12;
+static ProjMatrixByBinFromFile::RegisterIt dumy13;
 
 static ForwardProjectorByBinUsingProjMatrixByBin::RegisterIt dummy31;
 static ForwardProjectorByBinUsingRayTracing::RegisterIt dummy32;

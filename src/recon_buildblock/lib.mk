@@ -24,6 +24,8 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	ProjMatrixElemsForOneDensel.cxx \
 	ProjMatrixByBin.cxx \
 	ProjMatrixByBinUsingRayTracing.cxx \
+	ProjMatrixByBinUsingInterpolation.cxx \
+	ProjMatrixByBinFromFile.cxx \
 	ForwardProjectorByBinUsingProjMatrixByBin.cxx \
 	BackProjectorByBinUsingProjMatrixByBin.cxx \
 	RayTraceVoxelsOnCartesianGrid.cxx \
@@ -44,7 +46,9 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	PoissonLogLikelihoodWithLinearModelForMean.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx \
-	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx
+	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx \
+	
+#InputFileFormatRegistry_recon_buildblock.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
 $(dir)_LIB_SOURCES += \
