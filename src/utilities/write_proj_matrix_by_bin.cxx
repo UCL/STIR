@@ -18,10 +18,10 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/recon_buildblock/ProjMatrixByBinFromFile.h"
+#include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 #include "stir/KeyParser.h"
-#include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
+#include "stir/ProjData.h"
 // for ask_filename...
 #include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -43,25 +43,21 @@ main(int argc, char **argv)
   if (argc==1 || argc>5)
   {
     cerr <<"Usage: " << argv[0] << " \\\n"
-	 << "\t[output-filename [proj_data_file [projmatrixbybin-parfile [template-image]]]]\n";
+	 << "\toutput-filename [proj_data_file [projmatrixbybin-parfile [template-image]]]\n";
     exit(EXIT_FAILURE);
   }
   const string output_filename_prefix=
     argc>1? argv[1] : ask_string("Output filename prefix");
   
-  shared_ptr<ProjData> proj_data_ptr;
-  
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;  
   if (argc>2)
     { 
-      proj_data_ptr = ProjData::read_from_file(argv[2]); 
+      shared_ptr<ProjData> proj_data_sptr = ProjData::read_from_file(argv[2]);
+      proj_data_info_sptr=proj_data_sptr->get_proj_data_info_ptr()->clone();
     }
   else
     {
-      shared_ptr<ProjDataInfo> data_info= ProjDataInfo::ask_parameters();
-      // create an empty ProjDataFromStream object
-      // such that we don't have to differentiate between code later on
-      proj_data_ptr = 
-	new ProjDataFromStream (data_info,static_cast<iostream *>(NULL));
+      proj_data_info_sptr = ProjDataInfo::ask_parameters();
     }
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
 
@@ -73,9 +69,6 @@ main(int argc, char **argv)
       parser.add_stop_key("END"); 
       parser.parse(argv[3]);
     }
-
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
-    proj_data_ptr->get_proj_data_info_ptr()->clone();
  
   shared_ptr<DiscretisedDensity<3,float> > image_sptr;
 
@@ -86,7 +79,7 @@ main(int argc, char **argv)
   else
     {
       const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,100.F,1.F);
-      int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
+      int xy_size = static_cast<int>(proj_data_info_sptr->get_num_tangential_poss()*zoom);
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
       int z_size = 2*proj_data_info_sptr->get_scanner_ptr()->get_num_rings()-1;
       z_size = ask_num("Number of z pixels",1,1000,z_size);
