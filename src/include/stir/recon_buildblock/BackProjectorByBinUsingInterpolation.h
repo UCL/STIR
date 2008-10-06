@@ -6,7 +6,7 @@
   \file
   \ingroup projection
 
-  \brief Declares class BackProjectorByBinUsingInterpolation
+  \brief Declares class stir::BackProjectorByBinUsingInterpolation
 
   \author Kris Thielemans
   \author PARAPET project
@@ -105,10 +105,15 @@ public:
   <li> ordinary linear interpolation
   <li> piecewise linear interpolation in the axial direction
   </ul>
+  The former is an implementation of
+  "Incremental beamwise backprojection using geometrical symmetries for 3D PET reconstruction 
+  in a cylindrical scanner geometry"
+  M L Egger, C Joseph, C Morel, Phys. Med. Biol. (1998) 43 3009-3024   
+  http://dx.doi.org/10.1088/0031-9155/43/10/023
+
   For the latter, see the extended abstract for 3D99 
   "On various approximations for the projectors in iterative reconstruction algorithms for 
-  3D-PET", K. Thielemans, M.W. Jacobson, D. Belluzzo. Available at
-  http://www.irsl.org/~kris.
+  3D-PET", K. Thielemans, M.W. Jacobson, D. Belluzzo. Available on the STIR web-site.
 
   The piecewise linear interpolation is only used when the axial voxel size is half the
   axial_sampling of the projection data (for the segment in question).
