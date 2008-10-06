@@ -1,20 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
-  \ingroup recon_buildblock
+  \ingroup projection
 
-  \brief ProjMatrixByBinUsingInterpolation's definition 
+  \brief stir::ProjMatrixByBinUsingInterpolation's definition 
 
-  \author Kris 
+  \author Kris Thielemans
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_ProjMatrixByBinUsingInterpolation__
 #define __stir_recon_buildblock_ProjMatrixByBinUsingInterpolation__
@@ -32,10 +44,19 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class Bin;
 /*!
-  \ingroup recon_buildblock
+  \ingroup projection
   \brief Computes projection matrix elements for VoxelsOnCartesianGrid images
-  by using a Interpolation model. 
+  by using an interpolation model. 
 
+  This class implements a projection model that interpolates in projection space.
+  When used for back-projection, it should give the same results as 
+  BackProjectorByByUsingInterpolation, but is probably much slower.
+
+  The current implementation uses some quite generic code to handle symmetries, but
+  is very very slow to compute the elements. Once they are cached, performance is 
+  as usual of course.
+
+  \warning Preliminary code, not tested to usual STIR standards.
 */
 
 class ProjMatrixByBinUsingInterpolation : 
@@ -113,7 +134,7 @@ private:
   bool use_exact_Jacobian_now;
 
 public:
-  // default consructor needed as now member of projector class (better to make set_up)
+  // default constructor needed as now member of projector class (better to make set_up)
   JacobianForIntBP() {}
    explicit JacobianForIntBP(const ProjDataInfoCylindrical* proj_data_info_ptr, bool exact);
    // s in mm here!
@@ -145,14 +166,15 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
+   float
+     get_element(const Bin& bin, 
+		 const CartesianCoordinate3D<float>& densel_ctr) const;
+ private:
    void 
      find_tang_ax_pos_diff(float& tang_pos_diff,
 			   float& ax_pos_diff,
 			   const Bin& bin,
 			   const CartesianCoordinate3D<float>& point) const;
-   float
-     get_element(const Bin& bin, 
-		 const CartesianCoordinate3D<float>& densel_ctr) const;
    
 };
 
