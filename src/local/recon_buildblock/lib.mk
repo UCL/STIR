@@ -5,7 +5,6 @@
 dir := local/recon_buildblock
 $(dir)_LIB_SOURCES:= \
 	ProjMatrixByBinUsingSolidAngle.cxx \
-	ProjMatrixByBinUsingInterpolation.cxx \
 	PostsmoothingForwardProjectorByBin.cxx \
 	PresmoothingForwardProjectorByBin.cxx \
 	PostsmoothingBackProjectorByBin.cxx \
@@ -17,7 +16,6 @@ $(dir)_LIB_SOURCES:= \
 	BinNormalisationUsingProfile.cxx \
 	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx \
-	ProjMatrixByBinFromFile.cxx \
 	ParametricQuadraticPrior.cxx \
 	PatlakObjectiveFunctionFromDynamicProjectionData.cxx 
 

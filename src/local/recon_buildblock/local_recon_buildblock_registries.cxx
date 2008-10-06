@@ -18,9 +18,7 @@
 
 
 #include "local/stir/recon_buildblock/ProjMatrixByBinUsingSolidAngle.h"
-#include "local/stir/recon_buildblock/ProjMatrixByBinUsingInterpolation.h"
 #include "local/stir/recon_buildblock/ProjMatrixByBinSinglePhoton.h"
-#include "local/stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 
 //#include "local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h"
 //#include "local/stir/recon_buildblock/ForwardProjectorByBinDistanceDriven.h"
@@ -43,9 +41,7 @@
 START_NAMESPACE_STIR
 
 static ProjMatrixByBinUsingSolidAngle::RegisterIt dummy11;
-static ProjMatrixByBinUsingInterpolation::RegisterIt dummy13;
 static ProjMatrixByBinSinglePhoton::RegisterIt dummy12;
-static ProjMatrixByBinFromFile::RegisterIt dumy14;
 static PatlakObjectiveFunctionFromDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
 
 //static FilterRootPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dummy44;
