@@ -13,7 +13,7 @@ echo
 # Options
 #
 NOINTBP=0
-DO_ECAT7_TESTS=0
+DO_ECAT_TESTS=0
 
 
 #
@@ -28,14 +28,19 @@ do
   then
     NOINTBP=1
 
-  elif test "$1" = "--ecat7"
+  elif test "$1" = "--ecat"
   then
-    DO_ECAT7_TESTS=1;
+    DO_ECAT_TESTS=1;
 
+  elif test "$1" = "--help"
+  then
+    echo "Usage: run_tests.sh [--nointbp] [--ecat] [install_dir]"
+    echo "See README.txt for more info."
+    exit 1
   else
     echo Warning: Unknown option "$1"
-    echo
-
+    echo rerun with --help for more info.
+    exit 1
   fi
 
   shift 1
@@ -54,12 +59,12 @@ else
 fi
 
 
-if test $DO_ECAT7_TESTS -eq 1; then
-  echo Executing tests on ecat7 file format conversion
+if test $DO_ECAT_TESTS -eq 1; then
+  echo Executing tests on ecat file format conversion
   echo
 else
-  echo Not testing ecat7 file format conversion.
-  echo If this is not what you want, rerun this script with the option --ecat7
+  echo Not testing ecat file format conversion.
+  echo If this is not what you want, rerun this script with the option --ecat
   echo
 fi
 
@@ -73,6 +78,9 @@ rm -f my_*v my_*s
 INSTALL_DIR=$1
 
 ThereWereErrors=0
+
+if test $DO_ECAT_TESTS -eq 1; then
+
 echo ------------- Converting ECAT6 file to Interfile ------------- 
 echo Running ${INSTALL_DIR}convecat6_if
 ${INSTALL_DIR}convecat6_if my_Utahscat600k_ca_seg4 Utahscat600k_ca.scn 1> convecat6_if.log 2> convecat6_if_stderr.log <  convecat6_if.inp
@@ -85,8 +93,6 @@ else
 echo There were problems here!;
 ThereWereErrors=1;
 fi
-
-if test $DO_ECAT7_TESTS -eq 1; then
 
 echo ------------- Converting Interfile to ECAT7 file ------------- 
 echo Running ${INSTALL_DIR}conv_to_ecat7
@@ -233,6 +239,34 @@ ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QPweights.par 1> OSMAPOSL_PM_QPweights.l
 echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
 if ${INSTALL_DIR}compare_image test_image_PM_QPweights_6.hv my_test_image_PM_QPweights_6.hv;
+then
+echo ---- This test seems to be ok !;
+else
+echo There were problems here!;
+ThereWereErrors=1;
+fi
+
+echo
+echo -------- Writing ray tracing projection matrix to file for further checks -------
+echo
+if ${INSTALL_DIR}write_proj_matrix_by_bin  my_PMRT Utahscat600k_ca_seg4.hs write_proj_matrix_by_bin.par my_uniform_image_circular.hv 1> write_proj_matrix_by_bin.log 2> write_proj_matrix_by_bin_stderr.log;
+then
+echo ---- Projection matrix probably written ok!;
+else
+echo There were problems here!;
+ThereWereErrors=1;
+fi
+
+echo
+echo -------- Running OSMAPOSL stored projection matrix with a quadratic prior with given weights -------- 
+echo Running ${INSTALL_DIR}OSMAPOSL
+# Note: for this test, it is important that the projection matrix parameters in
+# write_proj_matrix_by_bin.par and OSMAPOSL_test_PM_QPweights.par are the same.
+${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PMFromFile_QPweights.par 1> OSMAPOSL_PMFromFile_QPweights.log 2> OSMAPOSL_PMFromFile_QPweights_stderr.log
+
+echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
+echo Running ${INSTALL_DIR}compare_image
+if ${INSTALL_DIR}compare_image test_image_PM_QPweights_6.hv my_test_image_PMFromFile_QPweights_6.hv;
 then
 echo ---- This test seems to be ok !;
 else
