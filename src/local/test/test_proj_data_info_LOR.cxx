@@ -94,7 +94,7 @@ main(int argc,char *argv[])
 
        proj_matrix_ptr->get_proj_matrix_elems_for_one_densel(probs, densel);
      
-       Bin bin0, bin90;
+       Bin bin0(-1000,-1000,-1000,-1000,1), bin90(-10000,-10000,-10000,-10000,1); // note: initialise to crazy values to make the tests below fail in case the loop below doesn't find them
        for (ProjMatrixElemsForOneDensel::const_iterator element_ptr = probs.begin();
 	    element_ptr != probs.end();
 	    ++element_ptr)
