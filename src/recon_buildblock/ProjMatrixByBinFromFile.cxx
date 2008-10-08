@@ -43,6 +43,7 @@
 #include "stir/Coordinate3D.h"
 //#include "boost/format.hpp"
 //#include "stir/info.h"
+#include "boost/cstdint.hpp"
 #include "boost/scoped_ptr.hpp"
 #include <fstream>
 #include <algorithm>
@@ -233,15 +234,15 @@ namespace {
   {  
     const Bin bin = lor.get_bin();
     {
-      int c;
-      c = bin.segment_num(); fst.write ( (char*)&c, sizeof(int));
-      c = bin.view_num(); fst.write ( (char*)&c, sizeof(int));
-      c = bin.axial_pos_num(); fst.write ( (char*)&c, sizeof(int));
-      c = bin.tangential_pos_num(); fst.write ( (char*)&c, sizeof(int));
+      boost::int32_t c;
+      c = bin.segment_num(); fst.write ( (char*)&c, sizeof(boost::int32_t));
+      c = bin.view_num(); fst.write ( (char*)&c, sizeof(boost::int32_t));
+      c = bin.axial_pos_num(); fst.write ( (char*)&c, sizeof(boost::int32_t));
+      c = bin.tangential_pos_num(); fst.write ( (char*)&c, sizeof(boost::int32_t));
     }
     {
-      std::size_t c= lor.size();
-      fst.write( (char*)&c , sizeof(std::size_t));  
+      boost::uint32_t c= static_cast<boost::uint32_t>(lor.size());
+      fst.write( (char*)&c , sizeof(boost::uint32_t));  
     }
     if (!fst)
       return Succeeded::no;
@@ -249,13 +250,13 @@ namespace {
     // todo add compression in this loop 
     while (element_ptr != lor.end())
       {           
-	short c;
-	c = static_cast<short>(element_ptr->coord1());
-	fst.write ( (char*)&c, sizeof(short));
-	c = static_cast<short>(element_ptr->coord2());
-	fst.write ( (char*)&c, sizeof(short));
-	c = static_cast<short>(element_ptr->coord3());
-	fst.write ( (char*)&c, sizeof(short));
+	boost::int16_t c;
+	c = static_cast<boost::int16_t>(element_ptr->coord1());
+	fst.write ( (char*)&c, sizeof(boost::int16_t));
+	c = static_cast<boost::int16_t>(element_ptr->coord2());
+	fst.write ( (char*)&c, sizeof(boost::int16_t));
+	c = static_cast<boost::int16_t>(element_ptr->coord3());
+	fst.write ( (char*)&c, sizeof(boost::int16_t));
 	const float value = element_ptr->get_value();
 	fst.write ( (char*)&value, sizeof(float));
 	if (!fst)
@@ -287,37 +288,37 @@ namespace {
 
     {
       Bin bin;
-      int c;
-      fst.read( (char*)&c, sizeof(int)); bin.segment_num()=c;
+      boost::int32_t c;
+      fst.read( (char*)&c, sizeof(boost::int32_t)); bin.segment_num()=c;
       if (fst.gcount()==0 && fst.eof())
 	{
 	  // we were at EOF
 	  return readReturnType::eof;
 	}
 
-      fst.read( (char*)&c, sizeof(int)); bin.view_num()=c;
-      fst.read( (char*)&c, sizeof(int)); bin.axial_pos_num()=c;
-      fst.read( (char*)&c, sizeof(int)); bin.tangential_pos_num()=c;
+      fst.read( (char*)&c, sizeof(boost::int32_t)); bin.view_num()=c;
+      fst.read( (char*)&c, sizeof(boost::int32_t)); bin.axial_pos_num()=c;
+      fst.read( (char*)&c, sizeof(boost::int32_t)); bin.tangential_pos_num()=c;
       bin.set_bin_value(0);
       lor.set_bin(bin);
       // info(boost::format("Read bin (s:%d,a:%d,v:%d,t:%d)") %
       //		       bin.segment_num()%bin.axial_pos_num()%bin.view_num()%bin.tangential_pos_num());
 
     }
-    std::size_t count;
-    fst.read ( (char*)&count, sizeof(std::size_t));
+    boost::uint32_t count;
+    fst.read ( (char*)&count, sizeof(boost::uint32_t));
 
     if (!fst)
       return readReturnType::problem;
 
     lor.reserve(count);
 
-    for ( std::size_t i=0; i < count; ++i) 
+    for ( boost::uint32_t i=0; i < count; ++i) 
       { 
-	short c1,c2,c3;
-	fst.read ( (char*)&c1, sizeof(short));
-	fst.read ( (char*)&c2, sizeof(short));
-	fst.read ( (char*)&c3, sizeof(short));
+	boost::int16_t c1,c2,c3;
+	fst.read ( (char*)&c1, sizeof(boost::int16_t));
+	fst.read ( (char*)&c2, sizeof(boost::int16_t));
+	fst.read ( (char*)&c3, sizeof(boost::int16_t));
 	float value;
 	fst.read ( (char*)&value, sizeof(float));
 
