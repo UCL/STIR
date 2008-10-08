@@ -41,7 +41,8 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
-#include "stir/info.h"
+//#include "boost/format.hpp"
+//#include "stir/info.h"
 #include "boost/scoped_ptr.hpp"
 #include <fstream>
 #include <algorithm>
@@ -223,116 +224,112 @@ set_up(
     error("Exiting\n");
 }
 
-Succeeded
-ProjMatrixByBinFromFile::
-write (std::ostream&fst, const ProjMatrixElemsForOneBin& lor) 
-{  
-  const Bin bin = lor.get_bin();
+// anonymous namespace for local functions
+namespace {
+
+  // static (i.e. private) function to write the data
+  static Succeeded
+  write_lor(std::ostream&fst, const ProjMatrixElemsForOneBin& lor) 
+  {  
+    const Bin bin = lor.get_bin();
+    {
+      int c;
+      c = bin.segment_num(); fst.write ( (char*)&c, sizeof(int));
+      c = bin.view_num(); fst.write ( (char*)&c, sizeof(int));
+      c = bin.axial_pos_num(); fst.write ( (char*)&c, sizeof(int));
+      c = bin.tangential_pos_num(); fst.write ( (char*)&c, sizeof(int));
+    }
+    {
+      std::size_t c= lor.size();
+      fst.write( (char*)&c , sizeof(std::size_t));  
+    }
+    if (!fst)
+      return Succeeded::no;
+    ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+    // todo add compression in this loop 
+    while (element_ptr != lor.end())
+      {           
+	short c;
+	c = static_cast<short>(element_ptr->coord1());
+	fst.write ( (char*)&c, sizeof(short));
+	c = static_cast<short>(element_ptr->coord2());
+	fst.write ( (char*)&c, sizeof(short));
+	c = static_cast<short>(element_ptr->coord3());
+	fst.write ( (char*)&c, sizeof(short));
+	const float value = element_ptr->get_value();
+	fst.write ( (char*)&value, sizeof(float));
+	if (!fst)
+	  return Succeeded::no;
+
+	++element_ptr;
+      } 
+    return Succeeded::yes;
+  } 
+
+  // return type for read_lor()
+  class readReturnType
   {
-    int c;
-    c = bin.segment_num(); fst.write ( (char*)&c, sizeof(int));
-    c = bin.view_num(); fst.write ( (char*)&c, sizeof(int));
-    c = bin.axial_pos_num(); fst.write ( (char*)&c, sizeof(int));
-    c = bin.tangential_pos_num(); fst.write ( (char*)&c, sizeof(int));
+  public:
+    enum value { ok, eof, problem };
+    readReturnType(const value& v) : v(v) {}
+    bool operator==(const readReturnType &v2) const { return v == v2.v; }
+    bool operator!=(const readReturnType &v2) const { return v != v2.v; }
+  private:
+    value v;
+  };
+
+  // static (i.e. private) function to read an lor
+  static
+  readReturnType
+  read_lor(std::istream&fst, ProjMatrixElemsForOneBin& lor )
+  {   
+    lor.erase();
+
+    {
+      Bin bin;
+      int c;
+      fst.read( (char*)&c, sizeof(int)); bin.segment_num()=c;
+      if (fst.gcount()==0 && fst.eof())
+	{
+	  // we were at EOF
+	  return readReturnType::eof;
+	}
+
+      fst.read( (char*)&c, sizeof(int)); bin.view_num()=c;
+      fst.read( (char*)&c, sizeof(int)); bin.axial_pos_num()=c;
+      fst.read( (char*)&c, sizeof(int)); bin.tangential_pos_num()=c;
+      bin.set_bin_value(0);
+      lor.set_bin(bin);
+      // info(boost::format("Read bin (s:%d,a:%d,v:%d,t:%d)") %
+      //		       bin.segment_num()%bin.axial_pos_num()%bin.view_num()%bin.tangential_pos_num());
+
+    }
+    std::size_t count;
+    fst.read ( (char*)&count, sizeof(std::size_t));
+
+    if (!fst)
+      return readReturnType::problem;
+
+    lor.reserve(count);
+
+    for ( std::size_t i=0; i < count; ++i) 
+      { 
+	short c1,c2,c3;
+	fst.read ( (char*)&c1, sizeof(short));
+	fst.read ( (char*)&c2, sizeof(short));
+	fst.read ( (char*)&c3, sizeof(short));
+	float value;
+	fst.read ( (char*)&value, sizeof(float));
+
+	if (!fst)
+	  return readReturnType::problem;
+	const ProjMatrixElemsForOneBin::value_type 
+	  elem(Coordinate3D<int>(c1,c2,c3), value);      
+	lor.push_back( elem);		
+      }  
+    return readReturnType::ok;
   }
-  {
-    std::size_t c= lor.size();
-    fst.write( (char*)&c , sizeof(std::size_t));  
-  }
-  if (!fst)
-    return Succeeded::no;
-  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
-  // todo add compression in this loop 
-  while (element_ptr != lor.end())
-    {           
-      short c;
-      c = static_cast<short>(element_ptr->coord1());
-      fst.write ( (char*)&c, sizeof(short));
-      c = static_cast<short>(element_ptr->coord2());
-      fst.write ( (char*)&c, sizeof(short));
-      c = static_cast<short>(element_ptr->coord3());
-      fst.write ( (char*)&c, sizeof(short));
-      const float value = element_ptr->get_value();
-      fst.write ( (char*)&value, sizeof(float));
-      if (!fst)
-	return Succeeded::no;
-
-      ++element_ptr;
-    } 
-  return Succeeded::yes;
-} 
-
-//! Read probabilities from stream
-Succeeded
-ProjMatrixByBinFromFile::
-read(std::istream&fst, ProjMatrixElemsForOneBin& lor )
-{   
-  lor.erase();
-
-  {
-    Bin bin;
-    int c;
-    fst.read( (char*)&c, sizeof(int)); bin.segment_num()=c;
-    fst.read( (char*)&c, sizeof(int)); bin.view_num()=c;
-    fst.read( (char*)&c, sizeof(int)); bin.axial_pos_num()=c;
-    fst.read( (char*)&c, sizeof(int)); bin.tangential_pos_num()=c;
-    bin.set_bin_value(0);
-    if (bin != lor.get_bin())
-      {
-	warning("Read bin in wrong order.\nRequired:(s:%d,a:%d,v:%d,t:%d). Read:(s:%d,a:%d,v:%d,t:%d)",
-		bin.segment_num(),bin.axial_pos_num(),bin.view_num(),bin.tangential_pos_num(),
-		lor.get_bin().segment_num(),lor.get_bin().axial_pos_num(),lor.get_bin().view_num(),lor.get_bin().tangential_pos_num());
-	return Succeeded::no;
-      }
-  }
-  std::size_t count;
-  fst.read ( (char*)&count, sizeof(std::size_t));
-
-  if (!fst)
-    return Succeeded::no;
-
-  lor.reserve(count);
-
-#if 0
-  std::size_t buffer_size=count*(sizeof(short)*3+sizeof(float));
-  char buffer[buffer_size];
-  fst.read(buffer, buffer_size);
-  if (!fst)
-    return Succeeded::no;
-  // todo handle any compression
-
-  std::size_t offset=std::size_t(0);
-#endif
-
-  for ( std::size_t i=0; i < count; ++i) 
-    { 
-      short c1,c2,c3;
-#if 1
-      fst.read ( (char*)&c1, sizeof(short));
-      fst.read ( (char*)&c2, sizeof(short));
-      fst.read ( (char*)&c3, sizeof(short));
-      float value;
-      fst.read ( (char*)&value, sizeof(float));
-
-      if (!fst)
-	return Succeeded::no;
-#else
-      memcpy(buffer + offset, (char*)&c1, sizeof(short));
-      offset += sizeof(short);
-      memcpy(buffer + offset, (char*)&c2, sizeof(short));
-      offset += sizeof(short);
-      memcpy(buffer + offset, (char*)&c3, sizeof(short));
-      offset += sizeof(short);
-      float value;
-      memcpy(buffer + offset, (char*)&value, sizeof(float));
-      offset += sizeof(float);
-#endif
-      const ProjMatrixElemsForOneBin::value_type 
-	elem(Coordinate3D<int>(c1,c2,c3), value);      
-      lor.push_back( elem);		
-    }  
-  return Succeeded::yes;
-}
+} // end of anonymous namespace
     
 Succeeded
 ProjMatrixByBinFromFile::
@@ -483,7 +480,7 @@ write_to_file(const string& output_filename_prefix,
 	    //  continue;
 	    
 	    proj_matrix.get_proj_matrix_elems_for_one_bin(lor,bin);
-	    if (write(fst, lor) == Succeeded::no)
+	    if (write_lor(fst, lor) == Succeeded::no)
 	      return Succeeded::no;
 	  }
   }
@@ -497,45 +494,17 @@ read_data()
   std::ifstream fst;
   open_read_binary(fst, data_filename.c_str());
   
-  // loop over bins
-  // TODO replace by a loop that just reads elements one by one as they come
-  {
-    // defined here to avoid reallocation for every bin
-    ProjMatrixElemsForOneBin lor;
-    for (int segment_num = proj_data_info_ptr->get_min_segment_num(); 
-	 segment_num <= proj_data_info_ptr->get_max_segment_num();
-	 ++segment_num)
-    for (int axial_pos_num = proj_data_info_ptr->get_min_axial_pos_num(segment_num);
-         axial_pos_num <= proj_data_info_ptr->get_max_axial_pos_num(segment_num);
-         ++axial_pos_num)
-      for (int view_num = proj_data_info_ptr->get_min_view_num();
-	   view_num <= proj_data_info_ptr->get_max_view_num();
-	   ++view_num)
-	for (int tang_pos_num = proj_data_info_ptr->get_min_tangential_pos_num();
-	     tang_pos_num <= proj_data_info_ptr->get_max_tangential_pos_num();
-	     ++tang_pos_num)
-	  {
-	    Bin  bin(segment_num,view_num, axial_pos_num, tang_pos_num);
-	    bin.set_bin_value(0);
-	    Bin bin_copy=bin;
-	    this->get_symmetries_ptr()->find_basic_bin(bin);
-#if 0
-	    info("org:(s:%d,a:%d,v:%d,t:%d). sym:(s:%d,a:%d,v:%d,t:%d)",
-		    bin_copy.segment_num(),bin_copy.axial_pos_num(),bin_copy.view_num(),bin_copy.tangential_pos_num(),
-		    bin.segment_num(),bin.axial_pos_num(),bin.view_num(),bin.tangential_pos_num());
-#endif		    
-
- 	    lor.set_bin(bin);
-	    if (this->get_cached_proj_matrix_elems_for_one_bin(lor) == Succeeded::yes)
-	      continue;
-	    //if (!get_symmetries_ptr()->is_basic(bin))
-	    //  continue;
- 	    lor.set_bin(bin);
-	    if (read(fst, lor) == Succeeded::no)
-	      return Succeeded::no;
-	    this->cache_proj_matrix_elems_for_one_bin(lor);
-	  }
-  }
+  // defined here to avoid reallocation for every bin
+  ProjMatrixElemsForOneBin lor;
+  while(!fst.eof())
+    {
+      readReturnType return_value=read_lor(fst, lor);
+      if (return_value == readReturnType::problem)
+	return Succeeded::no;
+      if (return_value == readReturnType::eof)
+	return Succeeded::yes;
+      this->cache_proj_matrix_elems_for_one_bin(lor);
+    }
   return Succeeded::yes;
 }
 
