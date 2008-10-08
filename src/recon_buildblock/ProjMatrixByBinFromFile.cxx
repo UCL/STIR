@@ -41,6 +41,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
+#include "stir/info.h"
 #include "boost/scoped_ptr.hpp"
 #include <fstream>
 #include <algorithm>
@@ -292,7 +293,7 @@ read(std::istream&fst, ProjMatrixElemsForOneBin& lor )
 
   lor.reserve(count);
 
-#if 1
+#if 0
   std::size_t buffer_size=count*(sizeof(short)*3+sizeof(float));
   char buffer[buffer_size];
   fst.read(buffer, buffer_size);
@@ -306,7 +307,7 @@ read(std::istream&fst, ProjMatrixElemsForOneBin& lor )
   for ( std::size_t i=0; i < count; ++i) 
     { 
       short c1,c2,c3;
-#if 0
+#if 1
       fst.read ( (char*)&c1, sizeof(short));
       fst.read ( (char*)&c2, sizeof(short));
       fst.read ( (char*)&c3, sizeof(short));
@@ -401,6 +402,17 @@ write_to_file(const string& output_filename_prefix,
   open_write_binary(fst, data_filename.c_str());
   
   // loop over bins
+  // the complication here is that we cannot just test if each bin in the range is 'basic'
+  // and write only those. The reason is that symmetry operations can construct a
+  // 'basic' bin outside of the input range (e.g. for tangential_pos_num ranging from -128 to 127).
+  // So, we can only loop over all bins, convert to basic bins, and write those.
+  // The complication is then that we need to keep track which one we wrote already.
+  // Originally, I did this via a std::list<Bin>. Checking if a bin was already written
+  // is terribly slow however. Instead, I currently use a vector of shared_ptrs.
+  // This wastes only a little bit of memory, but the bounds are difficult to 
+  // determine in general.
+  // A better approach (and simpler) would be to have access to the internal cache of the 
+  // projection matrix.
   {
     // defined here to avoid reallocation for every bin
     ProjMatrixElemsForOneBin lor;
@@ -413,7 +425,11 @@ write_to_file(const string& output_filename_prefix,
     typedef VectorWithOffset<shared_ptr<vpos_t> > apos_t;
     typedef VectorWithOffset<shared_ptr<apos_t> > spos_t;
 
-    spos_t already_processed(proj_data_info_sptr->get_min_segment_num(), proj_data_info_sptr->get_max_segment_num()); 
+    // vector that will contain (vectors of bools) to check if we wrote a bin already or not
+    // upper boundary takes into account that symmetries convert negative segment_num to positive
+    spos_t already_processed(proj_data_info_sptr->get_min_segment_num(), 
+			     std::max(proj_data_info_sptr->get_max_segment_num(),
+				      -proj_data_info_sptr->get_min_segment_num())); 
 #endif
     for (int segment_num = proj_data_info_sptr->get_min_segment_num(); 
 	 segment_num <= proj_data_info_sptr->get_max_segment_num();
@@ -439,8 +455,9 @@ write_to_file(const string& output_filename_prefix,
 #else
 	    if (is_null_ptr(already_processed[bin.segment_num()]))
 	      {
-		already_processed[bin.segment_num()]=new apos_t(proj_data_info_sptr->get_min_axial_pos_num(bin.segment_num()),
-								proj_data_info_sptr->get_max_axial_pos_num(bin.segment_num()));
+		// range attempts to take into account that symmetries normally bring axial_pos_num back to 0 or 1
+		already_processed[bin.segment_num()]=new apos_t(std::min(0,proj_data_info_sptr->get_min_axial_pos_num(bin.segment_num())),
+								std::max(1,proj_data_info_sptr->get_max_axial_pos_num(bin.segment_num())));
 	      }
 	    if (is_null_ptr((*already_processed[bin.segment_num()])[bin.axial_pos_num()]))
 	      {
@@ -450,9 +467,11 @@ write_to_file(const string& output_filename_prefix,
 	      }
 	    if (is_null_ptr((*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()]))
 	      {
+		// range takes into account that symmetries bring negative tangential_pos_num to positive
 		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()] =
 		  new tpos_t(proj_data_info_sptr->get_min_tangential_pos_num(),
-			     proj_data_info_sptr->get_max_tangential_pos_num()+1);
+			     std::max(proj_data_info_sptr->get_max_tangential_pos_num(),
+				      -proj_data_info_sptr->get_min_tangential_pos_num()));
 		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()]->fill(false);
 	      }
 	    if ((*(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()])[bin.tangential_pos_num()])
@@ -501,16 +520,17 @@ read_data()
 	    Bin bin_copy=bin;
 	    this->get_symmetries_ptr()->find_basic_bin(bin);
 #if 0
-	    warning("org:(s:%d,a:%d,v:%d,t:%d). sym:(s:%d,a:%d,v:%d,t:%d)",
+	    info("org:(s:%d,a:%d,v:%d,t:%d). sym:(s:%d,a:%d,v:%d,t:%d)",
 		    bin_copy.segment_num(),bin_copy.axial_pos_num(),bin_copy.view_num(),bin_copy.tangential_pos_num(),
 		    bin.segment_num(),bin.axial_pos_num(),bin.view_num(),bin.tangential_pos_num());
 #endif		    
 
-	    lor.set_bin(bin);
+ 	    lor.set_bin(bin);
 	    if (this->get_cached_proj_matrix_elems_for_one_bin(lor) == Succeeded::yes)
 	      continue;
 	    //if (!get_symmetries_ptr()->is_basic(bin))
 	    //  continue;
+ 	    lor.set_bin(bin);
 	    if (read(fst, lor) == Succeeded::no)
 	      return Succeeded::no;
 	    this->cache_proj_matrix_elems_for_one_bin(lor);
