@@ -887,6 +887,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\ProjMatrixByBinFromFile.cxx"
+				>
+			</File>
+			<File
+				RelativePath="..\ProjMatrixByBinUsingInterpolation.cxx"
+				>
+			</File>
+			<File
 				RelativePath="..\ProjMatrixByBinUsingRayTracing.cxx"
 				>
 				<FileConfiguration
@@ -1223,6 +1231,14 @@
 			</File>
 			<File
 				RelativePath="..\..\include\stir\recon_buildblock\ProjMatrixByBin.inl"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stir\recon_buildblock\ProjMatrixByBinFromFile.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stir\recon_buildblock\ProjMatrixByBinUsingInterpolation.h"
 				>
 			</File>
 			<File
