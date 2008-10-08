@@ -112,10 +112,6 @@ static Succeeded
     );
 
 private:
-  static Succeeded
-    write(std::ostream&fst, const ProjMatrixElemsForOneBin& lor );
-  static Succeeded
-    read(std::istream&fst, ProjMatrixElemsForOneBin& lor );
 
   string parsed_version;
   string template_density_filename;
