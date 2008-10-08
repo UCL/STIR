@@ -48,9 +48,9 @@ START_NAMESPACE_STIR
 
   \par Example
   \code
-  info(boost::format("Running sub-iteration %" % subiter_num));
+  info(boost::format("Running sub-iteration %)" % subiter_num));
 
-  info("Running a really complicated algorithm"));
+  info("Running a really complicated algorithm");
   \endcode
 */
 template <class STRING>
