@@ -81,7 +81,7 @@ namespace distributed
 #endif
   }
 	
-  void send_string(string str, int tag, int destination)
+  void send_string(const string& str, int tag, int destination)
   {
     //prepare sending parameter info
     length=str.length()+1;
@@ -180,7 +180,7 @@ namespace distributed
       dynamic_cast<const stir::VoxelsOnCartesianGrid<float>* >(input_image_ptr);
 			  
     //input_image dimensions
-    int * sizes = new int[6];
+    int sizes[6];
     sizes[0] = image->get_min_x();
     sizes[1] = image->get_min_y();
     sizes[2] = image->get_min_z();
@@ -197,7 +197,7 @@ namespace distributed
     //get grid_spacing of input_image_ptr
     stir::CartesianCoordinate3D<float> grid_spacing = image->get_grid_spacing();
 		
-    float * parameters = new float[6];
+    float parameters[6];
     parameters[0] = origin.x();
     parameters[1] = origin.y();
     parameters[2] = origin.z();
@@ -232,8 +232,6 @@ namespace distributed
     if (test_send_receive_times && t.GetTime()>min_threshold) cout << "Master/Slave: sending image dimensions took " << t.GetTime() << " seconds" << endl;
 #endif
 		
-    delete[] sizes;
-    delete[] parameters;
   }
 	
   void send_image_estimate(const stir::DiscretisedDensity<3,float>* input_image_ptr, int destination)
@@ -328,7 +326,7 @@ namespace distributed
     stir::RelatedViewgrams<float>::iterator viewgrams_iter = viewgrams->begin();
     stir::RelatedViewgrams<float>::iterator viewgrams_end = viewgrams->end();
 		
-    int * viewgram_counts = new int[1];
+    int viewgram_counts[1];
     viewgram_counts[0] = num_viewgrams;
 	
     send_int_values(viewgram_counts, 1, VIEWGRAM_COUNT_TAG, destination);
@@ -340,10 +338,10 @@ namespace distributed
       }
   }
 	
-  void send_viewgram(stir::Viewgram<float> viewgram, int destination)
+  void send_viewgram(const stir::Viewgram<float>& viewgram, int destination)
   {
     //send dimensions of viewgram (axial and tangential positions and the view and segment numbers)
-    int * viewgram_values = new int[6];
+    int viewgram_values[6];
     viewgram_values[0] = viewgram.get_min_axial_pos_num();
     viewgram_values[1] = viewgram.get_max_axial_pos_num();
     viewgram_values[2] = viewgram.get_min_tangential_pos_num();
@@ -378,7 +376,6 @@ namespace distributed
 #endif
 		
     delete[] viewgram_buf;
-    delete[] viewgram_values;
   }
 	
   //--------------------------------------Receive Operations-------------------------------------
@@ -429,6 +426,7 @@ namespace distributed
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
 #endif
+    // KT TODO. use receive_string() to clean-up code
 		
     MPI_Recv(&length, 1, MPI_INT, source, REGISTERED_NAME_TAG, MPI_COMM_WORLD, &status);
     char * buf= new char[length];
@@ -471,7 +469,7 @@ namespace distributed
 	
   bool receive_bool_value(int tag, int source)
   {
-    int * i=new int[sizeof(int)];
+    int i[1];
 		
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.Reset(); t.Start();} 
@@ -640,7 +638,7 @@ namespace distributed
 					       int source)
   {
     //receive count of viewgrams
-    int * int_values = new int[1];
+    int int_values[1];
     status=distributed::receive_int_values(int_values, 1, VIEWGRAM_COUNT_TAG);
    	
     vector<stir::Viewgram<float> > viewgrams_vector;
@@ -662,8 +660,6 @@ namespace distributed
     //use viewgram-vector and symmetries-pointer to construct related viewgrams element
     stir::RelatedViewgrams<float>* tmp_viewgrams = new stir::RelatedViewgrams<float>(viewgrams_vector, symmetries_sptr);
 
-    delete[] int_values;
-
     //point viewgrams to newly constructed related-viewgrams
     viewgrams= tmp_viewgrams;
   }
@@ -673,7 +669,7 @@ namespace distributed
 				      int source)
   {
     //receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5)
-    int * viewgram_values = new int[6];
+    int viewgram_values[6];
    		
     status = receive_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG);
 		
@@ -711,7 +707,6 @@ namespace distributed
     //point viegram to newly created tmp_viewgram
     viewgram=tmp_viewgram;
     delete[] viewgram_buf;
-    delete[] viewgram_values;
   }	
     
   //--------------------------------------Reduce Operations-------------------------------------
