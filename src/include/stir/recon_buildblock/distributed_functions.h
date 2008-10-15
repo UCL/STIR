@@ -135,7 +135,7 @@ namespace distributed
    * \param tag identifier to associate messages
    * \param destination the process id where to send the string. If set to -1 a Broadcast will be done
    */
-  void send_string(string str, int tag, int destination);
+  void send_string(const string& str, int tag, int destination);
 	
 	
   /*! \brief send or broadcast a bool value
@@ -229,7 +229,7 @@ namespace distributed
    * 1. The dimensions of the viewgram and the vs_num
    * 2. The values detwermined by iterating through the viewgram and serializing it to a one-dimensional array
    */
-  void send_viewgram(stir::Viewgram<float> viewgram, int destination);
+  void send_viewgram(const stir::Viewgram<float>& viewgram, int destination);
 	
 	
   //----------------------Receive operations----------------------------------
