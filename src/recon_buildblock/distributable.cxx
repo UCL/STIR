@@ -135,7 +135,7 @@ void distributable_computation(
 
 #ifdef STIR_MPI
 	// needed for several send/receive operations
-	int * int_values = new int[2];
+	int int_values[2];
 	
 	int sent_count=1; 			//counts the work packages sent 
 	int working_slaves_count=0; //counts the number of slaves which are currently working
@@ -361,7 +361,7 @@ void distributable_computation(
 	if(distributed::rpc_time)
 	{
 		printf("Master: Reducing timer value\n");
-		double * send = new double[1];
+		double * send = new double[1]; //TODO MEMORY LEAK HERE. Probably just use variable, not  a pointer
 		double * receive = new double[1];
 		MPI_Reduce(send, receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		distributed::total_rpc_time+=(receive[0]/(distributed::num_processors-1));
@@ -370,7 +370,6 @@ void distributable_computation(
 		distributed::total_rpc_time_slaves+=receive[0];
 	}
 	
-	delete[] int_values;
 #endif
 }
 #endif // !PARALLEL
