@@ -124,7 +124,7 @@ void distributable_computation_cache_enabled(
     };
   	
   // needed for several send/receive operations
-  int * int_values = new int[2];
+  int int_values[2];
 	
   int processed_count=0;		//counts the number of processed vs_nums 
   int sent_count=0;			//counts the work packages sent
@@ -412,7 +412,6 @@ void distributable_computation_cache_enabled(
       distributed::total_rpc_time_slaves+=receive[0];
     }
 	
-  delete[] int_values;
 }
 
 END_NAMESPACE_STIR
