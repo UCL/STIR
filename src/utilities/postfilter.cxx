@@ -78,7 +78,7 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-DiscretisedDensity<3,float>* ask_image(char *input_query)
+DiscretisedDensity<3,float>* ask_image(const char *const input_query)
 {
   
   char filename[max_filename_length];

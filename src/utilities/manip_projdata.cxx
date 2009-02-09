@@ -85,7 +85,7 @@ void show_math_menu();
 
 float pos_indicate(float x);
 
-shared_ptr<ProjData> ask_proj_data(char *input_query);
+shared_ptr<ProjData> ask_proj_data(const char *const input_query);
 //*********************** functions
 
 void do_math(enum options operation, SegmentByView<float>& sino1,SegmentByView<float> &sino2,
@@ -232,11 +232,11 @@ void do_math(enum options operation, SegmentByView<float>& sino1, SegmentBySinog
       } //end switch
 }
 
-shared_ptr<ProjData> ask_proj_data(char *input_query)
+shared_ptr<ProjData> ask_proj_data(const char *const input_query)
 {
     char filename[max_filename_length];
 
-    system("ls *hs");
+    //system("ls *hs");
     ask_filename_with_extension(filename, input_query, ".hs");
 
     return 
