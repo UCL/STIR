@@ -36,7 +36,6 @@ $(dir)_SOURCES = \
 	get_dynamic_images_from_parametric_images.cxx \
 	get_total_counts.cxx \
 	mult_model_with_dyn_images.cxx \
-	extract_direct_sinograms.cxx \
 	image_flip_x.cxx \
 	write_patlak_matrix.cxx \
 	abs_image.cxx \
