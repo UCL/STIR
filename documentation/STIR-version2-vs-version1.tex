@@ -74,6 +74,13 @@ to STIR.
 \item[SimSET support]
 There are some preliminary files for make it easier to use SimSET and STIR together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
+\item[list\_image\_values, find\_maxima\_in\_image]
+Utilities for getting data from images from the command line
+\item[attenuation\_coefficients\_to\_projections, calculate\_attenuation\_coefficients]
+Utilities for processing of attenuation coefficients.
+\item[copy\_ecat7\_header]
+Allows copying header info between ECAT7 files.
+Note that all ECAT utilities are now in the \texttt{utilities/ecat} sub-directory.
 \end{description}
 
 \subsection{Filters \textit{aka} data processors}
@@ -330,8 +337,8 @@ were specific to images samples on cartesian grids
 could no longer be used. In addition, they had some ugly quircks
 (see section \ref{sec:changes_in_OSMAPOSL_images}). So most of these
 functions have now been removed.
-\item Removed replace_extension and add_extension functions that work on char * as they were 
-unsafe (in case the array didn't have enough memory). Use std::string versions instead.
+\item Removed replace\_extension and add\_extension functions that work on char * as they were 
+unsafe (in case the array did not have enough memory). Use std::string versions instead.
 
 \end{itemize}
 
