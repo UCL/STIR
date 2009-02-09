@@ -1,10 +1,32 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
-  \brief List coordinates of maxima in the image
+  \brief List coordinates of maxima in the image to stdout
+
+  If more than 1 maximum is asked for, repeat the following:
+
+  # find the current maximum, and then
+  # mask the neighbourhood (specified as a box) out
+  # go to step 1
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -14,15 +36,11 @@
 
   \par Usage:
    \code
-   find_maximum_in_image filename [num_maxima [ mask_size_xy [mask_size z]] ]
+   find_maxima_in_image filename [num_maxima [ half_mask_size_xy [half_mask_size z]] ]
    \endcode
    \param num_maxima defaults to 1
-   \param mask_size_xy defaults to 1
-    \param mask_size_z defaults to \a mask_size_xy
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
+   \param half_mask_size_xy defaults to 1
+   \param half_mask_size_z defaults to \a half_mask_size_xy
 */
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
@@ -49,10 +67,10 @@ int main(int argc, char *argv[])
   
   if (argc< 2 || argc>5)
   {
-    cerr << "Usage:" << argv[0] << " input_image [num_maxima [ mask_size_xy [mask_size z]] ]\n"
+    cerr << "Usage:" << argv[0] << " input_image [num_maxima [ half_mask_size_xy [half_mask_size z]] ]\n"
 	 << "\tnum_maxima defaults to 1\n"
-	 << "\tmask_size_xy defaults to 1\n"
-	 << "\tmask_size_z defaults to mask_size_xy" <<endl;    
+	 << "\thalf_mask_size_xy defaults to 1\n"
+	 << "\thalf_mask_size_z defaults to half_mask_size_xy" <<endl;    
     return (EXIT_FAILURE);
   }
 
