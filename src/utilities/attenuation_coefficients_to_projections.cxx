@@ -1,21 +1,8 @@
 //
 // $Id$
 //
-
-/*!
-  \file
-  \ingroup utilities
-
-  \brief Takes the logarithm of attenuation coefficients to 'convert'
-  them to line integrals.
-  \author Kris Thielemans
-  
-  $Date$
-  $Revision$
-*/
 /*
     Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
-
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,6 +16,26 @@
     Lesser GNU General Public License for more details.
 
     See STIR/LICENSE.txt for details
+*/
+
+/*!
+  \file
+  \ingroup utilities
+
+  \brief Takes the logarithm of attenuation coefficients to 'convert' them to line integrals.
+
+  \par Usage
+  \verbatim
+  attenuation_coefficients_to_projections \
+       --AF|--ACF <output filename > <input proj_data file name>
+  \endverbatim
+  Use AF to output attenuation factors, ACF for attenuation correction factors (i.e. the
+  inverse of the former).
+
+  \author Kris Thielemans
+  
+  $Date$
+  $Revision$
 */
 
 

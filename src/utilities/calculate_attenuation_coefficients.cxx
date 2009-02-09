@@ -1,22 +1,40 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file
   \ingroup utilities
 
-  \brief Calculates attenuation coefficients 
+  \brief Calculates attenuation coefficients (as an alternative to <tt>correct_projdata</tt>).
 
-    Attenuation_image has to contain an estimate of the mu-map for the image. It will used
-    to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
+  \par Usage
+  \verbatim
+     calculate_attenuation_coefficients
+             [--PMRT]  --AF|--ACF <output filename > <input header file name> <template_proj_data>
+  \endverbatim
+  <tt>--ACF</tt>  calculates the attenuation correction factors, <tt>--AF</tt>  calculates
+  the attenuation factor (i.e. the inverse of the ACFs).
 
-  \par Usage: 
-  \code 
-  calculate_attenuation_coefficients  <output filename > <input header file name> <template_proj_data>
-  \endcode
+  The attenuation_image has to contain an estimate of the mu-map for the image. It will be used
+  to estimate attenuation factors as exp(-forw_proj(*attenuation_image_ptr)).
 
-  \warning This currently calculates the INVERSE of the attenuation correction factors!
   \warning attenuation image data are supposed to be in units cm^-1.
   Reference: water has mu .096 cm^-1.
 
@@ -26,11 +44,6 @@
   $Date$
   $Revision$
 */
-/*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
-*/
-
 
 #include "stir/ProjDataInterfile.h"
 #include "stir/RelatedViewgrams.h"
