@@ -1,19 +1,45 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*! 
 \file
 \ingroup utilities
 \ingroup ECAT
-\brief Copy contents of ECAT7 header from 1 file to another
+\brief Copy contents of an ECAT7 header from 1 file to another
+
+\par Usage
+
+To copy the main header:
+\verbatim
+  copy_ecat7_header [--copy]  output_ECAT7_name input_ECAT7_name
+\endverbatim
+without --copy, num_planes etc are preserved.
+
+To copy a subheader (but keeping essential info)
+\verbatim
+  copy_ecat7_header output_ECAT7_name f,g,d,b input_ECAT7_name f,g,d,b
+\endverbatim
+
 \author Kris Thielemans
 $Date$
 $Revision$
-*/
-/*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -514,10 +540,10 @@ int main(int argc, char *argv[])
   {
     cerr<< "\nCopy contents of ECAT7 headers.\n"
         << "Usage: \n"
-	<< "To copy the main header (but keeping num_planes etc)\n"
-	<< "\t [--copy] " << argv[0] << "  output_ECAT7_name input_ECAT7_name \n"
+	<< "To copy the main header:\n"
+	<< "\t" << argv[0] << " [--copy] output_ECAT7_name input_ECAT7_name\n"
+        << "   without --copy, num_planes etc are preserved.\n"
 	<< "or to copy a subheader (but keeping essential info)\n"
-
 	<< "\t" << argv[0] << "  output_ECAT7_name f,g,d,b input_ECAT7_name f,g,d,b\n\n";
     return EXIT_FAILURE; 
   }
