@@ -30,16 +30,6 @@ $(dir)_SOURCES:=manip_image.cxx \
 	calculate_attenuation_coefficients.cxx \
 	attenuation_coefficients_to_projections.cxx 
 
-
-ifeq ($(HAVE_LLN_MATRIX),1)
-  # yes, the LLN files seem to be there, so we can compile 
-  # ecat utilities as well
-  $(dir)_SOURCES += ifheaders_for_ecat7.cxx conv_to_ecat7.cxx print_ecat_singles_values.cxx \
-	convecat6_if.cxx \
-        conv_to_ecat6.cxx \
-	ecat_swap_corners.cxx 
-endif
-
 ifeq ($(HAVE_AVW),1)
   $(dir)_SOURCES += conv_AVW.cxx
 endif
