@@ -1824,10 +1824,15 @@ Programs are given in the \textbf{STIR/utilities} directory, that
 allow the user to display, manipulate and convert \textbf{interfile} 
 data, either image or projection data.
 
+Utilities specific to files in ECAT 6 or 7 format or in the \textbf{ecat}
+sub-directory.
+
 \subsubsection{
 Displaying and performing operations on data}
 
-The programs are \textbf{manip\_image} for image data and \textbf{manip\_projdata}, 
+The programs are \textbf{manip\_image}, \textbf{list\_image\_info}, 
+\textbf{list\_image\_values} and \textbf{find\_maxima\_in\_image}
+for image data and \textbf{manip\_projdata}, 
  \textbf{display\_projdata}, \textbf{extract\_segments}, 
 \textbf{list\_projdata\_info} for 
 projection data and \textbf{stir\_math} for both. Run them with the 
@@ -2305,6 +2310,11 @@ discontinuities appeared.
 if the data has to be corner-swapped or not. So, it can do the 
 wrong thing.
 
+{ \subsubsubsection{copy\_ecat7\_header}
+}
+Allows copying header info between ECAT7 files. Check doxygen, or run without 
+parameters for usage info.
+
 { \subsubsubsection{conv\_AVW}
 }
 
@@ -2480,6 +2490,16 @@ to Ray Tracing. See Section \ref{sec:forwardprojectors}.
 
 This parameter will be removed.
 \end{description}
+
+The \textbf{calculate\_attenuation\_coefficients} utility (located in STIR/\textbf{utilities})
+can also convert an attenuation image to attenuation (correction) factors. It is less
+flexible than \textbf{correct\_projdata} though.
+
+The \textbf{attenuation\_coefficients\_to\_projections} utility 
+(located in STIR/\textbf{utilities}) is a (simplistic) example to convert
+attenuation (correction) coefficients to projections by taking the logarithm.
+For real-world use, it is recommended to pre-filter the data first, to reduce noise
+and remove negatives.
 
 
 \subsubsection{
