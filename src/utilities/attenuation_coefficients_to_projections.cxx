@@ -29,8 +29,12 @@
   attenuation_coefficients_to_projections \
        --AF|--ACF <output filename > <input proj_data file name>
   \endverbatim
-  Use AF to output attenuation factors, ACF for attenuation correction factors (i.e. the
-  inverse of the former).
+  Use <tt>--AF</tt> if input are attenuation factors, <tt>--ACF</tt> for 
+  attenuation correction factors (i.e. the inverse of the former).
+
+  \warning Currently thresholds ACF values to maximum 150 (and AF to minimum 1/150)
+   to prevent log() to grow too large.
+  \todo get threshold from command line
 
   \author Kris Thielemans
   
@@ -58,6 +62,9 @@ static void print_usage_and_exit()
 int 
 main (int argc, char * argv[])
 {
+
+  // TODO get this from cmdline
+  const float acf_threshold=150.F;
   
   if (argc!=4)
     print_usage_and_exit();
@@ -93,13 +100,13 @@ main (int argc, char * argv[])
       if (doACF)
 	{
 	  // threshold minimum to arbitrary value as log will otherwise explode)
-	  threshold_lower(viewgram.begin_all(), viewgram.end_all(), .1F);
+	  threshold_lower(viewgram.begin_all(), viewgram.end_all(), 1/acf_threshold);
 	  in_place_log(viewgram);
 	}
       else
 	{
 	  // threshold maximum to arbitrary value as log will otherwise explode)
-	  threshold_upper(viewgram.begin_all(), viewgram.end_all(), 10.F);
+	  threshold_upper(viewgram.begin_all(), viewgram.end_all(), acf_threshold);
 	  in_place_log(viewgram);
 	  viewgram *= -1.F;
 	}
