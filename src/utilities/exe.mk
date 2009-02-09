@@ -16,6 +16,8 @@ $(dir)_SOURCES:=manip_image.cxx \
 	stir_math.cxx \
 	list_projdata_info.cxx \
 	list_image_info.cxx \
+	list_image_values.cxx \
+	find_maxima_in_image.cxx \
 	create_projdata_template.cxx \
 	SSRB.cxx \
 	poisson_noise.cxx \
@@ -24,7 +26,10 @@ $(dir)_SOURCES:=manip_image.cxx \
 	list_ROI_values.cxx \
 	zoom_image.cxx \
   	rebin_projdata.cxx \
-	write_proj_matrix_by_bin.cxx
+	write_proj_matrix_by_bin.cxx \
+	calculate_attenuation_coefficients.cxx \
+	attenuation_coefficients_to_projections.cxx 
+
 
 ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 

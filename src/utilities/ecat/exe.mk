@@ -8,7 +8,7 @@ $(dir)_SOURCES:=""
 ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile 
   # ifheaders_for_ecat7 etc as well
-  $(dir)_SOURCES += is_ecat7_file.cxx
+  $(dir)_SOURCES += is_ecat7_file.cxx copy_ecat7_header.cxx
 endif
 
 ${DEST}$(dir)/is_ecat7_file: ${DEST}$(dir)/is_ecat7_file$(O_SUFFIX) \
@@ -16,6 +16,10 @@ ${DEST}$(dir)/is_ecat7_file: ${DEST}$(dir)/is_ecat7_file$(O_SUFFIX) \
 	$(LINK) $(EXE_OUTFLAG)$@ $< \
 		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
+${DEST}$(dir)/copy_ecat7_header: ${DEST}$(dir)/copy_ecat7_header$(O_SUFFIX) \
+   $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$@ $< \
+		 $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
 include $(WORKSPACE)/exe.mk
