@@ -530,7 +530,6 @@ get_param_from_string(T& param, const string& s)
 }
 
 template <>
-static
 Succeeded
 get_param_from_string(string& param, const string& s)
 {
@@ -610,7 +609,6 @@ get_vparam_from_string(VectorWithOffset<T>& param, const string& s)
 
 // vectors of strings are also special as we need to split the string up if there are commas
 template <>
-static 
 Succeeded
 get_vparam_from_string(vector<string>& param, const string& s)
 {
