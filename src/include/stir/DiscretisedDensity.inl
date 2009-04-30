@@ -37,6 +37,7 @@
 #ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif
+#include <typeinfo>
 
 START_NAMESPACE_STIR
 
