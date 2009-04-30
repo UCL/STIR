@@ -94,7 +94,7 @@ START_NAMESPACE_ECAT7
 /* ------------------------------------
  *	print_debug
  * ------------------------------------*/
-static int print_debug (char const * const fname, char *format, ...) 
+static int print_debug (char const * const fname, char const * const format, ...) 
 {
     va_list ap;
     char *fmt;
