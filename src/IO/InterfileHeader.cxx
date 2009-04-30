@@ -848,7 +848,7 @@ bool InterfilePDFSHeader::post_processing()
   {
     // feable attempt to guess the system by checking the num_views etc
 
-    char * warning_msg = 0;
+    char const * warning_msg = 0;
     if (num_detectors_per_ring < 1)
     {
       num_detectors_per_ring = num_views*2;

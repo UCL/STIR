@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 {
   using namespace stir;
 
-  static char *options[]={
+  static const char * const options[]={
     "argv[1]  SimSET file\n",
     "argv[2]  SimSET file format\n",
     "argv[3]  Angles in SimSET file\n",
