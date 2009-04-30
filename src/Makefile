@@ -60,7 +60,12 @@ how:
 	@echo "     print-make-vars"
 	@echo "and options can be for instance:"
 	@echo "     BUILD=debug DEST=somenicedir/ INSTALL_PREFIX=/usr/local"
+	@echo "In addition, you can build all files in a directory with e.g."
+	@echo "   make utilities"
+	@echo "or make a single file, e.g."
+	@echo "   make utilities/stir_math"
 	@echo "See the STIR User's guide for more info."
+
 
 
 include config.mk
