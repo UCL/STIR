@@ -61,7 +61,7 @@ Shape3D::scale_around_origin(const CartesianCoordinate3D<float>& scale3D)
   translate(old_origin * (-1));
   scale(scale3D);
   translate(old_origin);
-  assert(norm(get_origin())==0 && norm(old_origin)==0||
+  assert((norm(get_origin())==0 && norm(old_origin)==0)||
 	     norm(get_origin() - old_origin) < norm(get_origin())*10E-5);
 }
   
