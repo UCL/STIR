@@ -35,9 +35,22 @@ need to be estimated. In STIR 1.4 this was fixed to images
 (or in fact \texttt{DiscretisedDensity<3,float>} objects. 
 The following describes what the consequences are for you.
 
+Another change is that the ECAT6 code now relies on the LLN Matrix library, to avoid
+problems with copyright issues. However, as the Matrix library is somewhat out-dated, this
+is likely to generate problems (there are known aliasing problems on 64-bit systems). As a result,
+ECAT6 support in STIR is now problematic.
+
 \section{For Users}
 Generally, all utilities work in the same way as before. There are
 changes in some parameters used for parsing.
+
+\subsection{Bugs fixed}
+Various small bugs were fixed, but I am not aware of bugs that caused major problems, except
+things listed below, such as a bug when using Euler angles when constructing shapes.
+
+Bing Bai found a work-around for the problem with the incremental interpolating backprojector.
+This seems now to work on all system where we tested it. The code is still inherently unstable 
+though.
 
 \subsection{Incompatible behaviour}
 \begin{itemize}
@@ -68,9 +81,9 @@ If you have the \textit{AVW}\texttrademark{} library
 } installed on your system, the make process should have built \texttt{utilities/conv\_AVW}.
 This utility allows to use the \textit{AVW} library to read an image, and then write it out
 using STIR as Interfile.\\
-\textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
+\textbf{Warning:} the \textit{AVW} library seems to flip some images depending
 on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
-to STIR.
+to STIR. In general, STIR ignores any image orientation fields. This is dangerous of course.
 \item[SimSET support]
 There are some preliminary files for make it easier to use SimSET and STIR together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
@@ -78,6 +91,12 @@ There are some preliminary files for make it easier to use SimSET and STIR toget
 Utilities for getting data from images from the command line
 \item[attenuation\_coefficients\_to\_projections, calculate\_attenuation\_coefficients]
 Utilities for processing of attenuation coefficients.
+\item[find\_maxima\_in\_image, list\_image\_values]
+Utilities to list voxel values and coordinates of maxima.
+\item[write\_proj\_matrix\_by\_bin]
+Write the elements of a projection matrix to a file (in a STIR-specific format).
+This can later be used to re-read the same data as opposed to having to recalculate
+all elements.
 \item[copy\_ecat7\_header]
 Allows copying header info between ECAT7 files.
 Note that all ECAT utilities are now in the \texttt{utilities/ecat} sub-directory.
@@ -308,6 +327,12 @@ and \texttt{postfilter\_truncate\_circular\_FOV.par} files in the
 \end{itemize}
 
 
+\subsubsection{New projection matrices}
+A new ``Using Interpolation'' matrix attempts to reproduce results of the interpolating 
+backprojector. It is currently very slow though.
+
+A new ``From File'' matrix allows you to read a matrix (saved with \texttt{write\_proj\_matrix\_by\_bin}).
+
 \subsubsection{Parallelisation of OSMAPOSL using MPI}
 Contribution by Tobias Beisel. Allows running OSMAPOSL in master-slave mode.
 See some more info in the User's Guide.
@@ -390,7 +415,7 @@ most parameters. Please email if some are missing.
 
 \item New global function \texttt{read\_from\_file()} using an input file format 
 registry. This makes it much easier to add support for a new file format. See
-class \texttt{InputFileFormatRegistry}.
+class \texttt{InputFileFormatRegistry}. This is currently not yet used for ProjData though.
 
 \item New variables defined for \texttt{make} for \textit{AVW} support:
 \texttt{AVW\_INCLUDE\_DIR}, \texttt{AVW\_LIBS} and \texttt{HAVE\_AVW}. They
