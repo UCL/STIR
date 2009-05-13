@@ -29,7 +29,7 @@
   output filename:= somefile
   ; optional keyword to specify the output file format
   ; example below uses Interfile with 16-bit unsigned integers
-  output file format:= Interfile
+  output file format type:= Interfile
   interfile Output File Format Parameters:=
     number format := unsigned integer
     number_of_bytes_per_pixel:=2
