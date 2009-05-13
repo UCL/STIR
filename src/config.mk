@@ -138,6 +138,7 @@ OPTIM_CFLAGS=-O3  -ffast-math -DNDEBUG
 else
 ifeq ($(SYSTEM),CYGWIN)
 OPTIM_CFLAGS=-O3  -ffast-math -malign-double -DNDEBUG
+EXTRA_LINKFLAGS+=-Xlinker --enable-auto-import
 else
 OPTIM_CFLAGS=-O3 -DNDEBUG
 endif
