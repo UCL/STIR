@@ -1,6 +1,23 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_UTILITIES_H__
 #define  __stir_UTILITIES_H__
 /*!
@@ -13,11 +30,6 @@
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 #include "stir/common.h"
 #include <stdio.h>
@@ -78,7 +90,8 @@ ask (const string& prompt, bool default_value);
  Asks for a filename (appending an extension if none is provided)
  and stores the string where file_in_directory_name points to.
 
- \deprecated
+ \deprecated Use ask_filename_with_extension(const string&, const string&);
+
  Example:
  \code
      char filename[max_filename_length];
@@ -239,7 +252,7 @@ const int max_filename_length = 1000;
     (filename_with_directory+strlen(filename_with_directory)+1). This
     highest value is used when it looks like a directory name.
 
-    \deprecated
+    \deprecated use find_pos_of_filename()
     \warning This function works only with string manipulations. There is no check
     if the 'filename' part actually corresponds to a directory on disk.
 */
@@ -271,7 +284,7 @@ get_filename(const string& filename_with_directory);
  if the 'filename' part actually corresponds to a directory on disk.
 
  \warning assumes that directory_name points to enough allocated space
- \deprecated
+ \deprecated Use get_directory_name(const string&)
 */
 char *
 get_directory_name(char *directory_name, 
