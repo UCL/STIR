@@ -1,22 +1,34 @@
 // 
 // $Id$
 //
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup buildblock
 
-  \brief This declares the Timer class.
+  \brief This declares the stir::Timer class.
 
   \author Kris Thielemans
   \author PARAPET project
 
   $Date$
   $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_TIMER_H__
@@ -56,10 +68,6 @@ public:
   inline void start();
   inline void stop();
   inline void reset();
-#ifdef OLDDESIGN
-  // TODO remove
-  inline void restart() ;
-#endif
   //! return value is undefined when start() is not called first.
   inline double value() const;
 
@@ -75,10 +83,5 @@ END_NAMESPACE_STIR
 
 
 #include "stir/Timer.inl"
-
-// TODO remove
-#ifdef OLDDESIGN
-#include "stir/CPUTimer.h"
-#endif
 
 #endif // __TIMER_H__
