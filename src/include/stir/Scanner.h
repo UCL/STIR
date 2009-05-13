@@ -123,7 +123,7 @@ class Scanner
 
   //! constructor -(list of names)
   /*! size info is in mm
-      \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
+      \param intrinsic_tilt_v value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const list<string>& list_of_names_v,
