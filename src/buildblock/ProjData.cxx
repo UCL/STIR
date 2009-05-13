@@ -94,7 +94,7 @@ START_NAMESPACE_STIR
 shared_ptr<ProjData> 
 ProjData::
 read_from_file(const string& filename,
-	       const ios::openmode openmode)
+	       const std::ios::openmode openmode)
 {
   std::string actual_filename = filename;
   // parse filename to see if it's like filename,options
