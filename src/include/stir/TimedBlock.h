@@ -74,7 +74,7 @@ namespace stir {
   public:
 
     //! Create a timed block
-    inline TimedBlock(Timer& Timer);
+    inline TimedBlock(TimerT& Timer);
     //! Destroy a timed block
     inline virtual ~TimedBlock(void);
 
@@ -89,17 +89,15 @@ namespace stir {
   };
 
 
-  /*! */
   template <class TimerT>
-    TimedBlock::TimedBlock(TimerT& timer)
+    TimedBlock<TimerT>::TimedBlock(TimerT& timer)
     :   m_Timer(timer)
     {
       m_Timer.start();
     }
 
-    /*! */
     template <class TimerT>
-      TimedBlock::~TimedBlock(void)
+      TimedBlock<TimerT>::~TimedBlock(void)
       {
 	m_Timer.stop();
       }
