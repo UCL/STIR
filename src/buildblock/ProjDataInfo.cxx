@@ -113,21 +113,21 @@ ProjDataInfo::set_num_tangential_poss(const int num_tang_poss)
   max_tangential_pos_num = min_tangential_pos_num + num_tang_poss-1;
 }
 
-/*! Uses as min_axial_pos_per_seg 0 */
+/*! Sets min_axial_pos_per_seg to 0 */
 void 
-ProjDataInfo::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_pos_per_segment)
+ProjDataInfo::set_num_axial_poss_per_segment(const VectorWithOffset<int>& num_axial_poss_per_segment)
 {
   // first do assignments to make the members the correct size 
   // (data will be overwritten)
-  min_axial_pos_per_seg= num_axial_pos_per_segment;
-  max_axial_pos_per_seg= num_axial_pos_per_segment;
+  min_axial_pos_per_seg= num_axial_poss_per_segment;
+  max_axial_pos_per_seg= num_axial_poss_per_segment;
   
-  for (int i=num_axial_pos_per_segment.get_min_index(); 
-       i<=num_axial_pos_per_segment.get_max_index();
+  for (int i=num_axial_poss_per_segment.get_min_index(); 
+       i<=num_axial_poss_per_segment.get_max_index();
        i++)
   {
     min_axial_pos_per_seg[i]=0;
-    max_axial_pos_per_seg[i]=num_axial_pos_per_segment[i]-1;
+    max_axial_pos_per_seg[i]=num_axial_poss_per_segment[i]-1;
   }
     
 }
