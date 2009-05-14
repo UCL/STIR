@@ -9,11 +9,11 @@
 
 <ul>
 <li>Currently the implementation if the incremental interpolating
-backprojector has problems on certain processors due to floating point
-rounding errors. Intel *86 and PowerPC give correct results, SunSparc and Opteron
-has a problem at tangential_pos_num==0 (also HP Risc stations give
-problems). (You would notice problems in the central voxel, which
-will influence neighboring voxels in the iterative algorithms.) 
+backprojector can have problems on certain processors due to floating point
+rounding errors. You would notice problems in the central voxel, which
+will influence neighboring voxels in the iterative algorithms. 
+Running the recon_test_pack will tell you if you have the problem (but
+there might still be a problem for your particular scanner/pixel size).
 
 <strong>Update</strong> Thanks to an update by Bing Bai, this seems less of 
 an issue now. Please notify the mailing list if this problem still occurs
@@ -22,7 +22,7 @@ on your system (give details of OS, processor, compiler and compiler switches).
 See the User's Guide for details on how to choose another backprojector.
 </li>
 <li>Currently the implementation if the incremental interpolating
-backprojector fails when the number of views in not even. Images
+backprojector fails when the number of views is not even. Images
 are wrong, even though the programs might run till the end.
 </li>
 <li>Images have to have the default number of planes. Trying to 
@@ -30,7 +30,7 @@ forward project images with smaller or larger number of planes
 will show up some problems, which we thought to have removed already :-/ .
 </li>
 <li>  CPU times reported are invalid on Windows 9?, maybe ME as well. They are
-fine on NT and presumably 2000 and XP. There doesn't seem to be a way to get 
+fine on NT and later.There doesn't seem to be a way to get 
 CPU times in the older Windows versions. 
 </li>
 </ul>
@@ -40,7 +40,7 @@ CPU times in the older Windows versions.
 
 <!-- Created: Wed Dec 19 10:03:02 BST 2000 -->
 <!-- hhmts start -->
-Last modified: Mon Feb  9 01:29:57 GMT 2009
+Last modified: Thu May 14 21:21:26 GMT 2009
 <!-- hhmts end -->
   </body>
 </html>
