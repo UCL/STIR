@@ -14,7 +14,7 @@ do_website_final_version=0
 do_website_sync=0
 
 set -e
-VERSION=2.0alpha
+VERSION=2.0beta
 
 # for cvs2cl.pl
 BRANCH=trunk
@@ -29,7 +29,7 @@ CVS="cvs $CVSOPTS"
 CHECKOUTOPTS=""
 cd $WORKSPACE/../..
 
-destination=$WORKSPACE/../web-site/
+destination=$WORKSPACE/../../STIR-website/
 RSYNC_OPTS=
 
 DISTRIB=`pwd`/distrib
@@ -50,15 +50,6 @@ WORKSPACE=${DISTRIB}/parapet/PPhead
 
 
 mkdir -p ${DISTRIB}
-
-if [ $do_lln = 1 ]; then
-echo "LLN stuff "
-cd ${LLN}
-  trap "echo ERROR in LLN update" ERR
-  $CVS up
-  tar -v --exclude VC --exclude CVS -czf ecat.tar.gz \
-    ecat/*[ch] ecat/Makefile.*   ecat/utils/*[ch] ecat/utils/Makefile.* 
-fi
 
 cd ${DISTRIB}
 
@@ -120,7 +111,12 @@ if [ $do_ChangeLog = 1 ]; then
   # maybe use --accum
   rm -rf xxlocal
   mv local xxlocal
-  cvs2cl.pl -g "$CVSOPTS" -I 'xxlocal/' -I 'include/local'  --no-indent -F $BRANCH
+  if [ -z "$CVSOPTS" ]; then
+    # can't run cvs2cl.pl -g with empty CVSOPTS
+    cvs2cl.pl -I 'xxlocal/' -I 'include/local'  --no-indent -F $BRANCH
+  else
+    cvs2cl.pl -g "$CVSOPTS" -I 'xxlocal/' -I 'include/local'  --no-indent -F $BRANCH
+  fi
   mv xxlocal local
   cp ChangeLog ${DISTRIB}
 fi
@@ -133,11 +129,17 @@ if [ $do_doc = 1 ]; then
   if [ $do_doxygen = 1 ]; then
     doxygen
   fi
-  # make documentation PDFs BY HAND
   cd ../documentation
+  echo "make rtf->PDFs BY HAND"
+  #cygstart /cygdrive/c/Program\ Files/Microsoft\ Office/OFFICE11/winword STIR_FBP3DRP.rtf 
   make
+  pushd contrib/Shape3D_enhancements_RS_AK/
+  pdflatex generate_image_upgrade.tex
+  pdflatex generate_image_upgrade.tex
+  rm *log *aux
+  popd
   rm -f ${DISTRIB}/STIR_doc_${VERSION}.zip
-  zip -r ${DISTRIB}/STIR_doc_${VERSION}.zip *.pdf *.htm  doxy >/dev/null
+  zip -r ${DISTRIB}/STIR_doc_${VERSION}.zip *.rtf *.pdf *.htm contrib doxy >/dev/null
 fi
 
 trap "echo ERROR after creating doc" ERR
@@ -145,6 +147,7 @@ trap "echo ERROR after creating doc" ERR
 if [ $do_zip_source = 1 ]; then
   echo Do zip source
   cd ${DISTRIB}
+  cp ${destination}/credits.htm parapet/PPhead/
   rm -f parapet/all.zip parapet/VCprojects.zip
   zipit --distrib > /dev/null
   zipproj --distrib > /dev/null
@@ -169,7 +172,7 @@ if [ $do_transfer = 1 ]; then
   chmod go-wx *${VERSION}* ChangeLog
 
   # put it all there
-  rsync --progress -uavz ${RSYNC_OPTS}  ${LLN}/ecat/VC/ecat.dsp ${LLN}/ecat.tar.gz \
+  rsync --progress -uavz ${RSYNC_OPTS} \
     STIR_${VERSION}.zip VCprojects_${VERSION}.zip \
     recon_test_pack_${VERSION}.zip \
     ${destination}registered
@@ -182,7 +185,7 @@ fi
 if [ $do_website_final_version = 1 ]; then
     cd $destination
     cd registered
-    rm  recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
+    rm -f recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
     ln -s STIR_${VERSION}.zip STIR.zip 
     ln -s VCprojects_${VERSION}.zip  VCprojects.zip
     #ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
@@ -196,8 +199,7 @@ if [ $do_website_final_version = 1 ]; then
 fi
 
 if [ $do_website_sync = 1 ]; then
-    # rsync of website note: stalls on gluon,wren,hurricane, but works fine from shark
     cd $destination
-    rsync  -auCzv --rsync-path=/home/kris/bin/rsync ./ web@wren:htdocs/STIR/
-    rsync  -auCzv ./ krthie@shell.sf.net:stir/htdocs/    
+    rsync  --exclude previous -auCzv ./ krthie,stir@web.sf.net:htdocs/ --del
 fi
+
