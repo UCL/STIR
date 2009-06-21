@@ -14,7 +14,7 @@ do_website_final_version=0
 do_website_sync=0
 
 set -e
-VERSION=2.0beta
+VERSION=2.0
 
 # for cvs2cl.pl
 BRANCH=trunk
