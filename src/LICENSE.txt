@@ -1,4 +1,4 @@
-Licensing information for STIR 2.0beta
+Licensing information for STIR 2.0
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -56,7 +56,6 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/recon_array_functions.cxx
 ./buildblock/RelatedViewgrams.cxx
 ./buildblock/Scanner.cxx
-./buildblock/ScannerWithTests.cxx
 ./buildblock/Segment.cxx
 ./buildblock/SegmentBySinogram.cxx
 ./buildblock/SegmentByView.cxx
@@ -66,6 +65,7 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/VoxelsOnCartesianGrid.cxx
 ./buildblock/warning.cxx
 ./buildblock/zoom.cxx
+./ChangeLog.bak
 ./display/display_array.cxx
 ./display/gen.c
 ./display/gen.h
