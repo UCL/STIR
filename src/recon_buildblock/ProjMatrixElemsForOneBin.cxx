@@ -22,7 +22,7 @@
 
   \file
   \ingroup projection
-  \brief non-inline implementations for ProjMatrixElemsForOneBin
+  \brief non-inline implementations for stir::ProjMatrixElemsForOneBin
  
   \author Mustapha Sadki
   \author Kris Thielemans

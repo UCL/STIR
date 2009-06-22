@@ -3,7 +3,7 @@
 //
 /*
     Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
-    Copyright (C) CTI
+    Copyright CTI
     This file is part of STIR.
 
     Some parts of this file originate in CTI code, distributed as
