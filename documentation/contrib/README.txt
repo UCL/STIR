@@ -6,7 +6,7 @@ Kris Thielemans
 This directory contains some documentation on 'external' contributions to STIR
 (i.e. not by the original PARAPET partners or Hammersmith Imanet Ltd (HIL)).
 Note that the authors have all kindly assigned their copyright to 
-HIL, such that HIL con distribute the whole of STIR under a uniform license
+HIL, such that HIL can distribute the whole of STIR under a uniform license
 condition.
 
 Current contributions integrated into STIR (see sub-directories for more info):
