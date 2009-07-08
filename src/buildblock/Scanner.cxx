@@ -23,7 +23,7 @@
   \file
   \ingroup buildblock
 
-  \brief Implementations for class Scanner
+  \brief Implementations for class stir::Scanner
 
   \author Charalampos Tsoumpas
   \author Sanida Mustafovic
@@ -212,7 +212,7 @@ Scanner::Scanner(Type scanner_type)
     /* crystal size 4x8x30*/
     set_params(Advance, string_list("GE Advance", "Advance"), 
                18, 283, 281, 2 * 336, 
-               471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, 
+               471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, //TODO view offset shouldn't be zero
                3, 2, 6, 6, 1, 1, 1);
     break;  
 
@@ -220,7 +220,7 @@ Scanner::Scanner(Type scanner_type)
     // identical to Advance
     set_params(DiscoveryLS, string_list("GE Discovery LS", "Discovery LS"), 
                18, 283, 281, 2 * 336, 
-               471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, 
+               471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, //TODO view offset shouldn't be zero
                3, 2, 6, 6, 1, 1, 1);
     break;
   case DiscoveryST: 
@@ -231,7 +231,7 @@ Scanner::Scanner(Type scanner_type)
     set_params(DiscoveryST, string_list("GE Discovery ST", "Discovery ST"), 
 	       24, 249, 221, 2 * 210,
                886.2F/2.F, 8.4F, 6.54F, 3.195F, 
-	       static_cast<float>(-4.54224*_PI/180),//?
+	       static_cast<float>(-4.54224*_PI/180),//sign?
 	       4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
@@ -240,7 +240,7 @@ Scanner::Scanner(Type scanner_type)
     set_params(DiscoverySTE, string_list("GE Discovery STE", "Discovery STE"), 
 	       24, 329, 293, 2 * 280, 
                886.2F/2.F, 8.4F, 6.54F, 2.397F, 
-	       static_cast<float>(-4.54224*_PI/180),//?
+	       static_cast<float>(-4.5490*_PI/180),//sign?
 	       4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
@@ -254,7 +254,7 @@ Scanner::Scanner(Type scanner_type)
                886.2F/2.F, 
 	       9.4F,  
 	       6.54F, 2.13F,
-	       static_cast<float>(-4.54224*_PI/180),//?
+	       static_cast<float>(-4.5950*_PI/180),//sign?
 	       4,
 	       2,
 	       6, 9, 1, 1, 1);// TODO not sure about sign of view_offset    
