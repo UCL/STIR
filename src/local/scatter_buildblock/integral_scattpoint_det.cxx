@@ -2,21 +2,21 @@
 // $Id$
 //
 /*!
-\file
-\ingroup scatter
-\brief Implementations of functions defined in Scatter.h
-Function calculates the integral along LOR in an image (attenuation or emission). 
-(From scatter point to detector coordinate)
-
+  \file
+  \ingroup scatter
+  \brief Implementations of functions defined in Scatter.h
+  Function calculates the integral along LOR in an image (attenuation or emission). 
+  (From scatter point to detector coordinate)
+  
   \author Pablo Aguiar
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  		  
-		$Date$
-		$Revision$
-		
-		  Copyright (C) 2004- $Date$, Hammersmith Imanet
-		  See STIR/LICENSE.txt for details
+  
+  $Date$
+  $Revision$
+  
+  Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+  See STIR/LICENSE.txt for details
 */
 #include "local/stir/ScatterEstimationByBin.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -80,7 +80,7 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
 {	
 
 
-  const DiscretisedDensityOnCartesianGrid<3,float>& image =
+  const VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
     (density);
   
@@ -91,6 +91,7 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
 	const float z_to_middle =
 		(image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
 	origin.z() -= z_to_middle;
+	/* TODO replace with image.get_index_coordinates_for_physical_coordinates */
 		ProjMatrixElemsForOneBin lor;
 		RayTraceVoxelsOnCartesianGrid(lor, 
 			(scatter_point-origin)/voxel_size,  // should be in voxel units
