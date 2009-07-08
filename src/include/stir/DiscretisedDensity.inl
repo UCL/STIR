@@ -132,24 +132,6 @@ operator !=(const self_type& that) const
 template<int num_dimensions, typename elemT>
 CartesianCoordinate3D<float>
 DiscretisedDensity<num_dimensions, elemT>::
-get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>& indices) const
-{
-  return
-    this->get_relative_coordinates_for_indices(indices) + this->get_origin();
-}
-
-template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
-DiscretisedDensity<num_dimensions, elemT>::
-get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const
-{
-  return
-    this->get_relative_coordinates_for_indices(indices) + this->get_origin();
-}
-
-template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
-DiscretisedDensity<num_dimensions, elemT>::
 get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>& indices) const
 {
   return
@@ -168,16 +150,6 @@ get_relative_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>
 }
 
 template<int num_dimensions, typename elemT>
-BasicCoordinate<num_dimensions,int>
-DiscretisedDensity<num_dimensions, elemT>::
-get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& coords) const
-{
-  return
-    this->get_indices_closest_to_relative_coordinates(coords - this->get_origin());
-}
-
-
-template<int num_dimensions, typename elemT>
 BasicCoordinate<num_dimensions,float>
 DiscretisedDensity<num_dimensions, elemT>::
 get_index_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const
@@ -193,6 +165,34 @@ get_indices_closest_to_relative_coordinates(const CartesianCoordinate3D<float>& 
 {
   return
     round(this->actual_get_index_coordinates_for_relative_coordinates(coords));
+}
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>& indices) const
+{
+  return
+    this->get_relative_coordinates_for_indices(indices) + this->get_origin();
+}
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const
+{
+  return
+    this->get_relative_coordinates_for_indices(indices) + this->get_origin();
+}
+
+
+template<int num_dimensions, typename elemT>
+BasicCoordinate<num_dimensions,int>
+DiscretisedDensity<num_dimensions, elemT>::
+get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& coords) const
+{
+  return
+    this->get_indices_closest_to_relative_coordinates(coords - this->get_origin());
 }
 
 END_NAMESPACE_STIR
