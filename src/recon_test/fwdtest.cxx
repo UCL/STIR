@@ -34,13 +34,25 @@
   This program allows forward projection of a few segments/views
   only, or of the full data set. 
 
-  Usage:
+  \par Usage:
   \verbatim
   fwdtest output-filename template_proj_data_file [image_to_forward_project [forwardprojector-parfile ]]]\n"
   \endverbatim
   The template_proj_data_file will be used to get the scanner, mashing etc. details
   (its data will \e not be used, nor will it be overwritten).
   If some of these parameters are not given, some questions are asked.        
+
+  \par Example parameter file for specifying the forward projector
+  \verbatim
+  Forward Projector parameters:=
+    type := Matrix
+      Forward projector Using Matrix Parameters :=
+        Matrix type := Ray Tracing
+         Ray tracing matrix parameters :=
+         End Ray tracing matrix parameters :=
+        End Forward Projector Using Matrix Parameters :=
+  End:=
+  \endverbatim
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
@@ -189,7 +201,7 @@ main(int argc, char *argv[])
              vox_image_ptr->get_length()/2,
              0) *vox_image_ptr->get_voxel_size().z();
   
-  vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
+  vox_image_ptr->set_origin(make_coordinate(z_origin,0.F,0.F) + vox_image_ptr->get_origin());
   // use shared_ptr such that it cleans up automatically
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
 
