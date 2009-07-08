@@ -196,7 +196,7 @@ public:
     BasicCoordinate<num_dimensions,float>
     get_index_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
-  //! Return the indices of the basis-function closest to the given point.
+  //! Return the index-coordinates of the basis-function closest to the given point.
   /*! The input argument should be in 'physical' coordinates relative to the origin.
     Implementation uses actual_get_index_coordinates_for_relative_coordinates.
   */
