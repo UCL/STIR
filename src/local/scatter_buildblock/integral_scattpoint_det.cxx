@@ -81,7 +81,7 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
 
 
   const VoxelsOnCartesianGrid<float>& image =
-    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
+    dynamic_cast<const VoxelsOnCartesianGrid<float>& >
     (density);
   
 	const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
