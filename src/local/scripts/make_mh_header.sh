@@ -1,5 +1,7 @@
 #! /bin/sh
 # copy MetaIO header (normally called .mhd) for new target binary file
+# This works by replacing the value of the ElementDataFile in the template header
+# Author: Kris Thielemans
 
 if [ $# -ne 3 ]; then
     echo "usage: $0 \\"
@@ -9,9 +11,6 @@ if [ $# -ne 3 ]; then
 fi
 
 set -e # exit on error
-
-
-#echo "$USER give the Input_mh_file, Target_bin_file, Output_mh_hile"
 
 Input_mh_file=$1
 Target_bin_file=$2 
@@ -29,9 +28,19 @@ then
     exit 1
 fi
 
-previous_bin_file=`grep "ElementDataFile"  ${Input_mh_file} |awk 'BEGIN { FS="=" } {print $2}'`
-echo "Replacing ${previous_bin_file} with ${Target_bin_file} in header"
+# remove directory info from target_bin_file if it's the same as for the header
+Target_bin_dir=${Target_bin_file%/*}
+Output_mh_dir=${Output_mh_file%/*}
+if [ "$Output_mh_dir" == "$Target_bin_dir" ]; then
+  Target_bin_file=${Target_bin_file##*/}
+fi
 
-sed -e "s/${previous_bin_file}/ ${Target_bin_file}/" <  ${Input_mh_file} > ${Output_mh_file}
+# find bin_file in original header
+previous_bin_file=`grep "ElementDataFile"  ${Input_mh_file} |awk 'BEGIN { FS="=" } {print $2}'`
+echo "Making $Output_mh_file from $Input_mh_file, replacing ${previous_bin_file} with ${Target_bin_file} in header"
+
+# now create Output_mh_file by using sed
+# warning: next line will fail if the filenames contain a #
+sed -e "s#${previous_bin_file}# ${Target_bin_file}#"  ${Input_mh_file} > ${Output_mh_file}
 
 
