@@ -281,10 +281,10 @@ ifneq ($(HAVE_AVW), 0)
   AVW_INCLUDE_DIR=$(AVW)/include
   AVW_LIBS=$(AVW)/$(TARGET)/lib/libAVW.so
 # $(warning AVW $(AVW_INCLUDE_DIR) $(AVW_LIBS) )
-  ifeq ($(wildcard $(AVW_INCLUDE_DIR)/AVW.h),$(AVW_INCLUDE_DIR)/AVW.h)
+  ifneq ($(wildcard $(AVW_INCLUDE_DIR)/AVW.h),"")
     # $(warning found AVW include)
     # $(warning wild $(wildcard $(AVW_LIBS) ) )
-    ifeq ($(wildcard $(AVW_LIBS) ),$(AVW_LIBS))
+    ifneq ("$(wildcard $(AVW_LIBS) )","")
     #  $(warning found AVW library)
      HAVE_AVW=1
      CFLAGS += -I $(AVW_INCLUDE_DIR) -D HAVE_AVW
@@ -302,14 +302,18 @@ endif
 
 #******* LLN matrix libraries
 # check if we find the Louvain la Neuve distribution by looking for matrix.h
-ifeq ($(wildcard $(LLN_INCLUDE_DIR)/matrix.h),$(LLN_INCLUDE_DIR)/matrix.h)
-  ifneq ($(HAVE_LLN_MATRIX),0)
-  # $(warning found LLN library)
-
+ifneq ($(HAVE_LLN_MATRIX),0)
+  ifneq ("$(wildcard $(LLN_INCLUDE_DIR)/matrix.h)","")
+  # $(warning found LLN matrix.h)
+  LLN_LIB=$(LLN_LIB_DIR)/$(LIB_PREFIX)ecat$(LIB_SUFFIX)
+  ifeq ("$(wildcard $(LLN_LIB))","")
+     $(error --- Found LLN include files, but no library at $(LLN_LIB). Please build this first, or set HAVE_LLN_MATRIX=0 )
+  endif
+  # $(warning found $(wildcard $(LLN_LIB)))
   # yes, the LLN files seem to be there, so we can compile 
   HAVE_LLN_MATRIX=1
   CFLAGS +=  -I $(LLN_INCLUDE_DIR) -D HAVE_LLN_MATRIX
-  EXTRA_LIBS += $(LLN_LIB_DIR)/$(LIB_PREFIX)ecat$(LIB_SUFFIX)
+  EXTRA_LIBS += ${ECAT_LIB}
   ifeq ($(SYSTEM),SUN)
      SYS_LIBS += -lnsl -lsocket
   endif
@@ -318,8 +322,8 @@ endif
 
 #******* GE IO
 # check if we find it by looking for niff.h
-ifeq ($(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h),$(INCLUDE_DIR)/local/stir/IO/GE/niff.h)
-  ifneq ($(HAVE_GE_IO),0)
+ifneq ($(HAVE_GE_IO),0)
+  ifneq ("$(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h)"","")
      HAVE_GE_IO=1
      CFLAGS+=-DSTIR_USE_GE_IO
   endif
@@ -327,25 +331,33 @@ endif
 
 #******* GE RDF library
 # check if we find it by looking for GErdfUtils.h
-ifeq ($(wildcard $(RDF_INCLUDE_DIR)/GErdfUtils.h),$(RDF_INCLUDE_DIR)/GErdfUtils.h)
-  ifneq ($(HAVE_RDF),0)
+ifneq ($(HAVE_RDF),0)
+  ifneq (""$(wildcard $(RDF_INCLUDE_DIR)/GErdfUtils.h)","")
+     RDF_LIB=${RDF_LIB_DIR}/$(LIB_PREFIX)GEio$(LIB_SUFFIX)
+     ifeq ("$(wildcard $(RDF_LIB))","")
+        $(error --- Found RDF include files, but no library at $(RDF_LIB). Please build this first, or set HAVE_RDF=0 )
+     endif
      # $(warning found RDF library)
      HAVE_RDF=1
      CFLAGS+=-I ${RDF_INCLUDE_DIR} -DHAVE_RDF
      # note: this won't work for MS VC
-     EXTRA_LIBS += ${RDF_LIB_DIR}/$(LIB_PREFIX)GEio$(LIB_SUFFIX)
+     EXTRA_LIBS += $(RDF_LIB)
   endif
 endif
 
 #******* GE IE library
 # check if we find it by looking for IEUtils.h
-ifeq ($(wildcard $(IE_INCLUDE_DIR)/IEUtils.h),$(IE_INCLUDE_DIR)/IEUtils.h)
-  ifneq ($(HAVE_IE),0)
+ifneq ($(HAVE_IE),0)
+  ifneq ("$(wildcard $(IE_INCLUDE_DIR)/IEUtils.h)","")
+     IE_LIB=${IE_LIB_DIR}/$(LIB_PREFIX)IEIO$(LIB_SUFFIX)
+     ifeq ("$(wildcard $(IE_LIB))","")
+        $(error --- Found IE include files, but no library at $(IE_LIB). Please build this first, or set HAVE_IE=0 )
+     endif
      # $(warning found IE library)
      HAVE_IE=1
      CFLAGS+=-I ${IE_INCLUDE_DIR} -DHAVE_IE
      # note: this won't work for MS VC
-     EXTRA_LIBS += ${IE_LIB_DIR}/$(LIB_PREFIX)IEIO$(LIB_SUFFIX)
+     EXTRA_LIBS += $(IE_LIB)
   endif
 endif
 
