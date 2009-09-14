@@ -139,6 +139,9 @@ if [ $do_doc = 1 ]; then
   pdflatex generate_image_upgrade.tex
   rm *log *aux
   popd
+  chmod go+x doxy
+  chmod go+x doxy/html
+  chmod -R go+r *
   rm -f ${DISTRIB}/STIR_doc_${VERSION}.zip
   zip -r ${DISTRIB}/STIR_doc_${VERSION}.zip *.rtf *.pdf *.htm contrib doxy >/dev/null
 fi
@@ -191,7 +194,9 @@ if [ $do_website_final_version = 1 ]; then
     ln -s VCprojects_${VERSION}.zip  VCprojects.zip
     #ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
     ln -s recon_test_pack_${VERSION}.zip recon_test_pack.zip
-	cd ../documentation
+    rm -f .htaccess
+    ln -s .htaccessSF .htaccess
+    cd ../documentation
     rm STIR_doc.zip
     ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
     rm -fr doxy
