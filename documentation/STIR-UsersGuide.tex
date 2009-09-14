@@ -860,19 +860,25 @@ the archive of the stir\_users mailing list.
 \subsubsection{
 Operating system specifics}
 
-{ \subsubsubsection{All Unix flavours}
+{ \subsubsubsection{All Unix/Linux flavours}
 }
 
 If you want to use the X windows display routines, the Makefile 
-supplied should work out-of-the-box. If you experience compilation 
+supplied should work out-of-the-box if you have suitable libraries installed. 
+You can diagnose this as follows.
+
+{ \subsubsubsubsection{X development libraries}
+}
+
+If you experience compilation 
 or linking problems mentioning X11, you have to check if the 
 X development libraries are installed on your system. You can 
 check this by doing
 \cmdline{find /usr -name Xlib.h -print}
 
-
 If this file is not found, you'll have to install these libraries 
-somehow. If after this, Xlib.h is not found while compiling, 
+somehow (on Linux you would normally use \texttt{apt-get} or \texttt{rpm}).
+If after this, Xlib.h is not found while compiling, 
 either set the environment variable C\_INCLUDE\_PATH (when using 
 gcc) or use \\
 \texttt{EXTRA\_CFLAGS='-I /usr/X11R6/include' }\\
@@ -883,25 +889,32 @@ If while linking the libX11.a library is not found, it is not
 in the default path of your linker. First find out where it is:
 \cmdline{find /usr -name libX11.a --print}
 
-
 Then either set the environment variable LIBRARY\_PATH or use \\
 \texttt{EXTRA\_LINKFLAGS='-L /usr/X11R6/lib/'}\\
  or a suitable path.
 
+{ \subsubsubsubsection{curses library}
+}
+
+You also need to install the curses or ncurses package (for some reason, KT experienced 
+a linking error when trying to use the curses library). On Ubuntu and
+Debian, you can do
+
+\cmdline{apt-get install libncurses5}
+\cmdline{apt-get install libncurses5-dev}
+
+prefixed with \texttt{sudo} if you are not logged in as root. For other Linux versions, 
+you should be able to find similar RPM packages online.
+
+{ \subsubsubsubsection{X display depth}
+}
 
 \textit{STIR} version 1.0 required that your Xserver worked in 8bit 
 mode (or Pseudocolor mode in X terminology). This is no longer 
 necessary. However, if you are experiencing problems with the 
 display, you could try 8bit mode anyway.
 
-{ \subsubsubsection{Linux}
-}
 
-If you want to use the X windows display routines, read the previous 
-section. The X development libraries are generally available 
-as an RPM package (depends on your Linux flavour). You also need 
-to install the ncurses package (for some reason, KT experienced 
-a linking error when trying to uses the curses library).
 
 { \subsubsubsection{Cygwin on Windows}
 }
@@ -921,9 +934,10 @@ Net setup).
 \item make sure that /usr/X11R6/bin is in your PATH (necessary 
 for DLLs)
 \item
-make sure gcc will find the X11 files, either by setting the 
-environment variables C\_INCLUDE\_PATH and LIBRARY\_PATH, or by 
-doing
+make sure gcc will find the X11 files. This should happen automatically, 
+but if not you either set the 
+environment variables C\_INCLUDE\_PATH and LIBRARY\_PATH, or 
+do
 \cmdline{make GRAPHICS=X EXTRA\_CFLAGS='-I /usr/X11R6/include' 
 {\textbackslash} \\
 EXTRA\_LINKFLAGS='-L 
