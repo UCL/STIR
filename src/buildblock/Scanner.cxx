@@ -259,6 +259,23 @@ Scanner::Scanner(Type scanner_type)
 	       2,
 	       6, 9, 1, 1, 1);// TODO not sure about sign of view_offset    
     break;
+
+ case Discovery600: 
+
+    set_params(Discovery600, string_list("GE Discovery 600", "Discovery 600"), 
+	       24, 
+	       339, 
+	       293, // TODO
+	       2 * 256,
+               826.70F/2.F - 8.4F, 
+	       8.4F,  
+	       6.54F,
+	       2.3974F,
+	       static_cast<float>(-4.5490*_PI/180),//sign? TODO value
+	       4,
+	       2,
+	       6, 8, 1, 1, 1);
+    break;
   
   case HZLR:
 

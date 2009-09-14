@@ -111,7 +111,7 @@ class Scanner
      any given parameters.
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966,RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
 	     HZLR, RATPET,HRRT, Allegro,
 	     User_defined_scanner,
 	     Unknown_scanner};
