@@ -313,7 +313,7 @@ ifneq ($(HAVE_LLN_MATRIX),0)
   # yes, the LLN files seem to be there, so we can compile 
   HAVE_LLN_MATRIX=1
   CFLAGS +=  -I $(LLN_INCLUDE_DIR) -D HAVE_LLN_MATRIX
-  EXTRA_LIBS += ${ECAT_LIB}
+  EXTRA_LIBS += ${LLN_LIB}
   ifeq ($(SYSTEM),SUN)
      SYS_LIBS += -lnsl -lsocket
   endif
