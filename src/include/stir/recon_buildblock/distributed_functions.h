@@ -33,11 +33,12 @@
 */
 
 /*!
-  namespace distributed
+  \namespace distributed
+  \brief Namespace for distributed computation with MPI
 
   This is a collection of functions to send and receive objects and data 
   needed for distributed computation with MPI. They all come in a separate 
-  namespace "distibuted". There was no need to have an object providing this
+  namespace "distributed". There was no need to have an object providing this
   functionality as that would have been more costly.
 	
   Note that every send function has a corresponding receive function.
@@ -45,7 +46,13 @@
   \see STIR_MPI
   \see STIR_MPI_TIMINGS
 
+  Compilation instructions are in the Users Guide.
 */
+#ifdef DOXYGEN_SKIP
+// need to define the following to get the documentation
+#define STIR_MPI
+#define STIR_MPI_TIMINGS
+#endif
 /*!
   \def STIR_MPI
   \brief Precompiler-define that needs to be set to enable the parallel version of OSMAPOSL.

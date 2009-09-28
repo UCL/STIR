@@ -123,23 +123,23 @@ class CListTime;
   <li> 'online' subtraction of delayeds<br>
        This is the default, and adds prompts but subtracts delayeds.
        \code
-    store 'prompts' := 1 
-    store 'delayeds' := 1
+    store prompts := 1 
+    store delayeds := 1
        \endcode
   </li>
   <li> store prompts only<br>
        Use 
        \code
-    store 'prompts' := 1 
-    store 'delayeds' := 0
+    store prompts := 1 
+    store delayeds := 0
        \endcode
 
   </li>
   <li> store delayeds only<br>
        Use 
        \code
-    store 'prompts' := 0 
-    store 'delayeds' := 1
+    store prompts := 0 
+    store delayeds := 1
        \endcode
        Note that now the delayted events will be <strong>added</strong>,
        not subtracted.

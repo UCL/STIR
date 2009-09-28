@@ -33,7 +33,7 @@
   \par Usage: 
   <pre>convecat6_if [output_file_name_without_extension cti_data_file_name [scanner_name]]
   </pre>
-  The optional \a scanner_name can be used to force to a particular scanner"
+  The optional \a scanner_name can be used to force to a particular scanner
   (ignoring the system_type in the main header).
   \a scanner_name has to be recognised by the Scanner class.
   Examples are : ECAT 953, RPT, ECAT HR+, Advance etc. If the \a scanner_name 

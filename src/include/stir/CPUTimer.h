@@ -46,9 +46,9 @@ START_NAMESPACE_STIR
   children. 
   \warning If too long CPU times are measured, wrap-around will occur. 
   \warning Currently, CPUTimer returns garbage on Win95 (and probably Win98). It does
-  work fine on NT though.
+  work fine on NT, XP etc though.
   
-  \e Details
+  \par Implementation details
 
   For most systems, CPUTimer::value() returns elapsed CPU time using the 
   ANSI clock() function.  From the man page: 
@@ -64,16 +64,17 @@ START_NAMESPACE_STIR
   CLOCKS_PER_SEC = 10e6, and clock_t == int == 32 bit.
 
   So, since version 1.2 the times() function (with the rms_utime field) 
-  is used #if defined(__OS_UNIX__). The  man page for times() states something 
+  is used if <code>defined(__OS_UNIX__)</code>. The  man page for times() states something 
   very similar to clock():
-  \verbatim
+
+  <i>
   tms_utime : The CPU time used for executing instructions in the user
    space of the calling process.
 
    This information is read from the calling process as well as from
    each completed child process for which the calling process executed
    a wait subroutine.
-   \endverbatim
+  </i>
 
   As times() returns results measured in clock interrupt clicks (on AIX
   100 per second), wrap around occurs much later.
@@ -84,10 +85,14 @@ START_NAMESPACE_STIR
   time').
   We now use GetProcessTimes() (with the lpUserTime variable) instead. 
   The documentation states:
-  "... the amount of time that the process has executed in user mode.
+  
+  <i>
+  ... the amount of time that the process has executed in user mode.
   The time that each of the threads of the process has executed in user 
   mode is determined, and then all of those times are summed together to 
   obtain this value. 
+  </i>
+
   Warning: this only works for NT, not for Win95
 */
 // TODO do Win95 test
