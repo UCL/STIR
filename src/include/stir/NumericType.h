@@ -63,8 +63,7 @@ using std::string;
 
 /*!
   \ingroup buildblock
-  \brief 
-  provides names for some numeric types and methods for finding their properties.
+  \brief provides names for some numeric types and methods for finding their properties.
 
   \warning CHAR itself is missing (there's only signed and unsigned versions).
   This is because this class is only used where you have to know if the type
@@ -91,7 +90,7 @@ public:
   //! A constructor to work from named types a la Interfile
   /*!
    Possible values for \a number_format are 
-   "bit, "signed integer", "unsigned integer", "float"
+   <tt>bit</tt>, <tt>signed integer</tt>, <tt>unsigned integer</tt>, <tt>float</tt>
    Exact types are determined via the size_in_bytes parameter.
   */
   NumericType(const string& number_format, const size_t size_in_bytes);
