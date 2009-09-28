@@ -57,7 +57,7 @@ SinglesRatesFromECAT7()
 
 int
 SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
-                                              const ios::openmode open_mode)
+                                              const std::ios::openmode open_mode)
 
 {
   
@@ -65,7 +65,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
 
 #ifndef HAVE_LLN_MATRIX
 
-  error("SinglesRatesFromECAT7 compiled without ECAT7 support\n");
+  error("SinglesRatesFromECAT7 compiled without ECAT7 support");
 
 #else
 
