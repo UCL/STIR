@@ -2,7 +2,7 @@
 # $Id$
 #
 
-dir := local/modelling
+dir := modelling_buildblock
 $(dir)_LIB_SOURCES:= \
 	KineticModel.cxx \
 	PatlakPlot.cxx \
