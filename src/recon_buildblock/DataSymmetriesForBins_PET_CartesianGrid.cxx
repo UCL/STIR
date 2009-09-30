@@ -21,8 +21,7 @@
 /*!
   \file
   \ingroup symmetries
-  \brief non-inline implementations for class 
-         stir::DataSymmetriesForBins_PET_CartesianGrid
+  \brief non-inline implementations for class stir::DataSymmetriesForBins_PET_CartesianGrid
 
   \author Kris Thielemans
   \author PARAPET project
@@ -73,13 +72,14 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
 	    "equal to the ring spacing of the scanner divided by an integer. Sorry\n");
   }
   
+  /* disabled as we support this now
   if (fabs( cartesian_grid_info_ptr->get_origin().x()) > 1.E-2)
     error("DataSymmetriesForBins_PET_CartesianGrid can currently only support x-origin = 0 "
 	  "Sorry\n");
   if (fabs( cartesian_grid_info_ptr->get_origin().y()) > 1.E-2)
     error("DataSymmetriesForBins_PET_CartesianGrid can currently only support y-origin = 0 "
 	  "Sorry\n");
-      
+  */
   
   for (int segment_num=min_segment_num; segment_num<=max_segment_num; ++segment_num)  
   {
@@ -152,7 +152,7 @@ DataSymmetriesForBins_PET_CartesianGrid
   const float z_origin_in_planes =
     image_info_ptr->get_origin().z()/cartesian_grid_info_ptr->get_grid_spacing()[1];
   // z_origin_in_planes should be an integer
-  if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-4F)
+  if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
     error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
           "z-direction of the origin (which is %g) should be a multiple of the plane "
           "separation (%g)\n",
@@ -161,7 +161,7 @@ DataSymmetriesForBins_PET_CartesianGrid
 
   // check if unequal voxel size in x,y, if so, use less symmetry
   if (fabs(cartesian_grid_info_ptr->get_grid_spacing()[2]-
-           cartesian_grid_info_ptr->get_grid_spacing()[3])>1.E-3F)
+           cartesian_grid_info_ptr->get_grid_spacing()[3])>2.E-3F)
     do_symmetry_90degrees_min_phi = false;
 
   num_views= proj_data_info_ptr->get_num_views();
@@ -193,6 +193,22 @@ DataSymmetriesForBins_PET_CartesianGrid
            proj_data_info_ptr->get_s(Bin(0,0,0,-1))) > 1.E-4F)
     error("DataSymmetriesForBins_PET_CartesianGrid can only handle projection data "
 	  "with tangential_pos_num s.t. get_s(...,tang_pos_num)==-get_s(...,-tang_pos_num)\n");
+
+  if (fabs(image_info_ptr->get_origin().x())>.01F || fabs(image_info_ptr->get_origin().y())>.01F)
+    {
+      // disable symmetries with shifted images
+      if (this->do_symmetry_90degrees_min_phi||
+	  this->do_symmetry_180degrees_min_phi||
+	  this->do_symmetry_swap_segment||
+	  this->do_symmetry_swap_s)
+	{
+	  warning("Disabling symmetries in transaxial plane as image is shifted");
+	  this->do_symmetry_90degrees_min_phi =
+	    this->do_symmetry_180degrees_min_phi =
+	    this->do_symmetry_swap_segment =
+	    this->do_symmetry_swap_s = false;
+	}
+    }
   
   find_relation_between_coordinate_systems(num_planes_per_scanner_ring,
                                          num_planes_per_axial_pos,
