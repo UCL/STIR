@@ -67,8 +67,8 @@ case $ElementType in
 esac
 
 case $BinaryDataByteOrderMSB in
-  [fF]alse) byte_order=LITTLEENDIAN;;
-  [tT]rue) byte_order=BIGENDIAN;;
+  [fF][aA][lL][sS][eE]) byte_order=LITTLEENDIAN;;
+  [tT][rR][uU][eE]) byte_order=BIGENDIAN;;
   *)  echo "Unsupported BinaryDataByteOrderMSB $BinaryDataByteOrderMSB" 1>&2; exit 1;;
 esac
 
