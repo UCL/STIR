@@ -20,7 +20,7 @@
 /*!
   \file
   \ingroup numerics
-  \brief Declaration of linear_integral functions 
+  \brief Declaration of stir::integrate_discrete_function function
 
   \author Charalampos Tsoumpas
  
@@ -28,8 +28,8 @@
   $Revision$
 */
 
-#ifndef __stir_linear_integral_H__
-#define __stir_linear_integral_H__
+#ifndef __stir_integrate_discrete_function_H__
+#define __stir_integrate_discrete_function_H__
 
 #include "stir/common.h"
 #include <vector>
@@ -40,13 +40,23 @@
 
 START_NAMESPACE_STIR
 /*!
-  This is a simple linear integral implementation using rectangular (=0) or trapzoidal (=1) approximation.
+  \brief numerical integration of a 1D function
+  \ingroup numerics
+
+  This is a simple integral implementation using rectangular (=0) or trapezoidal (=1) approximation.
+  It currently integrates over the complete range specified.
+
+  \param coordinates Coordinates at which the function samples are given
+  \param values Function values
+  \param interpolation_order has to be 0 or 1
+  \warning Type \c elemT should not be an integral type.
 */
-inline float 
-linear_integral(const std::vector<float> & f , const std::vector<float> & t, const int approx = 1);
+template <typename elemT>
+inline elemT 
+integrate_discrete_function(const std::vector<elemT> & coordinates, const std::vector<elemT> & values, const int interpolation_order = 1);
 
 END_NAMESPACE_STIR
 
-#include "local/stir/numerics/linear_integral.inl"
+#include "stir/numerics/integrate_discrete_function.inl"
 
-#endif //__linear_integral_H__
+#endif //__integrate_discrete_function_H__
