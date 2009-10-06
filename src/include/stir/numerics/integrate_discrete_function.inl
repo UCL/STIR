@@ -34,17 +34,12 @@ template <typename elemT>
 elemT 
 integrate_discrete_function(const std::vector<elemT>& t , const std::vector<elemT>& f , const int interpolation_order )
 {
-  std::vector<elemT>::const_iterator cur_iter_f=f.begin();
-  std::vector<elemT>::const_iterator cur_iter_t=t.begin();
-  const unsigned int f_size=f.size();
-  const unsigned int t_size=t.size();
+  const std::size_t num_samples=f.size();
   elemT integral_result=0;
-  assert(f_size==t_size);
-  assert(f_size>1);
-  if(f_size!=t_size) 
+  assert(num_samples>1);
+  if(num_samples!=t.size()) 
     error("integrate_discrete_function requires equal size of the two input vectors!!!");
   
-  const unsigned int imax=f_size;
   switch (interpolation_order)
     {
     case 0:
@@ -53,16 +48,16 @@ integrate_discrete_function(const std::vector<elemT>& t , const std::vector<elem
       // If at the borders apply: (t2-t1)*0.5*f, (tN-TN_previous)*0.5*f
       {	   
 	integral_result=f[0]*(t[1]-t[0])*0.5F;
-	for (unsigned int i=1;i<imax-1;++i)
+	for (std::size_t i=1;i<num_samples-1;++i)
 	  integral_result += f[i]*(t[i+1]-t[i-1])*0.5F;
-	integral_result += f[f_size-1]*(t[t_size-1]-t[t_size-2])*0.5F;
+	integral_result += f[num_samples-1]*(t[num_samples-1]-t[num_samples-2])*0.5F;
       }
       break;
     case 1:
       //trapezoidal
       // Simply apply the formula: (f_next+f)*(t_next-t)*0.5
       {	
-	for (unsigned int i=0 ; i<imax-1 ; ++i)
+	for (std::size_t i=0 ; i<num_samples-1 ; ++i)
 		integral_result += (f[i]+f[i+1])*(t[i+1]-t[i])*0.5F;
       }
       break;
