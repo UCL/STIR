@@ -17,11 +17,12 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_decay_correct_H__
-#define __stir_decay_correct_H__
+#ifndef __stir_decay_correction_factor_H__
+#define __stir_decay_correction_factor_H__
 /*!
   \file 
-  \brief Implementation of simple function to provide the decay factor. 
+  \ingroup buildblock
+  \brief Simple functions to compute the decay correction factor. 
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
@@ -31,24 +32,38 @@
 */
 
 #include "stir/common.h"
+#include <cmath>
 
 START_NAMESPACE_STIR
 
-//! This function uses the approximation: C(t)*(t2-t1)=C0*Integral[t1->t2](2^(-t/halftime)dt), in order to find C0.
-//  For FDG is not necessary to use this approximation, because it will be slower. 
+//! Compute decay-correction factor for a time frame
+/*!
+   \ingroup buildblock 
+   This function computes the factor eneded to convert <i>average number of counts per second</i> to
+   <i>activity at time 0</i>, i.e. it returns
+   \f[ \frac{(t2-t1)}{ \int_t1^t2 \! (2^{-t/\mathrm{halflife}} \, dt} \f]
+ */
 inline double
-decay_correct_factor(const double isotope_halflife, const double start_time, const double end_time)  
+decay_correction_factor(const double isotope_halflife, const double start_time, const double end_time)  
 { 
-  assert(end_time-start_time>0.001);
-  return std::log(2.)*(end_time-start_time)/(isotope_halflife
-	 *(std::exp(-start_time*std::log(2.)/isotope_halflife)-std::exp(-end_time*std::log(2.)/isotope_halflife)));
+  assert(end_time-start_time>0);
+  const double lambda=std::log(2.)/isotope_halflife;
+
+  return 
+    std::fabs(lambda*(end_time-start_time)) < .01
+    ? std::exp(-start_time*lambda) // if very short frame, we can ignore the duration
+    : lambda*(end_time-start_time)/
+      (std::exp(-start_time*lambda)-std::exp(-end_time*lambda));
 }
-//! This function uses the approximation: C(t)=C0*2^(-t/halftime), in order to find C0.
-//For FDG is fine to use this approximation, becaus it will be slower. 
-inline double decay_correct_factor(const double isotope_halflife, const double mean_time)
+
+//! Computes the decay-correction factor for activity at a given time point
+/*! \ingroup buildblock
+  This function computes the correction factor to convert activity at t0 + \a rel_time to activity at t0, i.e.
+  \f[ 2^(\mathrm{rel\_time} / \mathrm{halflife}) \f]
+*/
+inline double decay_correction_factor(const double isotope_halflife, const double rel_time)
 { 
-  assert(mean_time>0.001); 
-  return   std::exp(mean_time*std::log(2.)/isotope_halflife); 
+  return std::exp(rel_time*std::log(2.)/isotope_halflife); 
 }
 
 END_NAMESPACE_STIR
