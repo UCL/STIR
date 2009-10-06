@@ -3,8 +3,8 @@
 //
 /*!
   \file
-  \ingroup utilities
-  \brief Integrating plasma data
+  \ingroup test
+  \brief Test integrate_discrete_function
   \author Charalampos Tsoumpas
   $Date$
   $Revision$
@@ -33,26 +33,26 @@
 
 #include "stir/RunTests.h"
 #include <vector>
-#include "local/stir/numerics/linear_integral.h"
+#include "stir/numerics/integrate_discrete_function.h"
 
 START_NAMESPACE_STIR
 
 /*!
   \ingroup test
-  \brief A simple class to test the linear_integral function.
+  \brief A simple class to test the integrate_discrete_function function.
 */
-class linear_integralTests : public RunTests
+class integrate_discrete_functionTests : public RunTests
 {
 public:
-  linear_integralTests() 
+  integrate_discrete_functionTests() 
   {}
   void run_tests();
 };
 
 
-void linear_integralTests::run_tests()
+void integrate_discrete_functionTests::run_tests()
 {  
-  std::cerr << "Testing Linear Integral Functions..." << std::endl;
+  std::cerr << "Testing integrate_discrete_function..." << std::endl;
 
   
   set_tolerance(0.000001);
@@ -76,10 +76,10 @@ void linear_integralTests::run_tests()
        input_vector_f[i]=fmin+i*(fmax-fmin)/(Nmax-Nmin);
     }
     
-  check_if_equal(linear_integral(input_vector_f,input_vector_t,0),cor_integral_value,
-				  "check linear_integral implementation using rectangular approximation");  		  		  
-  check_if_equal(linear_integral(input_vector_f,input_vector_t), cor_integral_value,
-				  "check linear_integral implementation using trapezoidal approximation");  		  		  
+  check_if_equal(integrate_discrete_function(input_vector_t,input_vector_f,0),cor_integral_value,
+				  "check integrate_discrete_function implementation for linear function using rectangular approximation");  		  		  
+  check_if_equal(integrate_discrete_function(input_vector_t,input_vector_f), cor_integral_value,
+				  "check integrate_discrete_function implementation for linear function using trapezoidal approximation");  		  		  
 }
 
 END_NAMESPACE_STIR
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     std::cerr << "Usage : " << argv[0] << " \n";
     return EXIT_FAILURE;
   }
-  linear_integralTests tests;
+  integrate_discrete_functionTests tests;
   tests.run_tests();
   return tests.main_return_value();
 }
