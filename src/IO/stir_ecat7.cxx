@@ -125,18 +125,24 @@ static int print_debug (char const * const fname, char const * const format, ...
 Succeeded read_ECAT7_main_header(Main_header& mhead, const string& filename)
 {
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
+  if (!cti_fptr)
+    return Succeeded::no;
+
   // first check 'magic_number' before going into LLN routines 
   // to avoid crashes and error messages there
   // an ECAT7 file should start with MATRIX7
   {
     char magic[7];
-    if (! cti_fptr ||
-	fread(magic, 1, 7, cti_fptr) != 7 ||
+    if (fread(magic, 1, 7, cti_fptr) != 7 ||
 	strncmp(magic, "MATRIX7",7)!=0)
-      return Succeeded::no;
+      {
+	fclose(cti_fptr);
+	return Succeeded::no;
+      }
   }
   if(mat_read_main_header(cti_fptr, &mhead)!=0) 
     {
+      fclose(cti_fptr);
       // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT7
       return Succeeded::no;
     }
