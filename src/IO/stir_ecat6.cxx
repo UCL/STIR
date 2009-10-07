@@ -96,10 +96,25 @@ static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
   //check if it's ECAT 6 
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
 
-  if(!cti_fptr ||
-     cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
+  if(!cti_fptr)
+    return false;
+
+  // we first need to check if the file size is large enough, due to a bug
+  // in the LLN MATRIX library (it will only read a buffer large enough
+  // for the data, but use 512 bytes of that buffer anyway).
+  // we suppose that any sensible file will be larger than 2048 bytes
+  if (!fseek(cti_fptr, 2048L, SEEK_SET) ||
+      ftell(cti_fptr) != 2048L)
+    {
+      // not enough bytes, so not ECAT6
+      fclose(cti_fptr);
+      return false;
+    }
+
+  if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
     {
       // this is funny as it's just reading a bunch of bytes. anyway. we'll assume it isn't ECAT6
+      fclose(cti_fptr);
       return false;
     }
   else
