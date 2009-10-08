@@ -308,7 +308,7 @@ int     cti_rblk (FILE *fptr, int blkno, void *bufr, int nblks)
 
 int     cti_wblk (FILE *fptr, int blkno, void *bufr, int nblks)
 {
-  const int cti_status = cti_wblk (fptr, blkno, bufr, nblks);
+  const int cti_status = mat_wblk (fptr, blkno, reinterpret_cast<char *>(bufr), nblks);
   return cti_status==0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
