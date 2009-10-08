@@ -1,15 +1,31 @@
 //
 // $Id$
 //
+/*
+  Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
+
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+  
+  See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
   \ingroup test
 
-  \brief A simple programme to test the test_find_fwhm_in_image
+  \brief A simple program to test the stir::test_find_fwhm_in_image
 
+  \author Pablo Aguiar
   \author Kris Thielemans
-  \author PARAPET project
 
   $Date$
 
@@ -20,18 +36,13 @@
   This should contain a number of test cases for the fit.
   
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
-    See STIR/LICENSE.txt for details
-*/
   
 #include "stir/RunTests.h"
 #include "stir/ArrayFunction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
-#include "stir/display.h"
-#include "local/stir/find_fwhm_in_image.h"
+//#include "stir/display.h"
+#include "stir/find_fwhm_in_image.h"
 #include "stir/Coordinate3D.h"
 #include <fstream>
 #include <iostream>
