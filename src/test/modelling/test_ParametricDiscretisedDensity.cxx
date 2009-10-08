@@ -49,9 +49,8 @@ $Revision$
 #include <algorithm>
 #include <iomanip>
 //-----------
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
-#include "stir/IO/OutputFileFormat.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -106,12 +105,14 @@ void ParametricDiscretisedDensityTests::run_tests()
 
   {
     //  Test of two frame images, read voxel  
-    cerr << "Writing ParametricDiscretisedDensity class for more voxels: 63x128x128..." << endl;
+    cerr << "Testing ParametricDiscretisedDensity class for more voxels: 63x128x128..." << endl;
 
     const CartesianCoordinate3D<int> sizes (63,128,128);
   
     //const shared_ptr<ParametricVoxelsOnCartesianGrid> parametric_image_sptr = 
     // new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(proj_data_info,zoom,grid_spacing,sizes));
+    //ParametricVoxelsOnCartesianGrid & parametric_image = *parametric_image_sptr;
+
     //ParametricVoxelsOnCartesianGrid & parametric_image = *parametric_image_sptr;
     ParametricVoxelsOnCartesianGrid parametric_image(ParametricVoxelsOnCartesianGridBaseType(proj_data_info,zoom,grid_spacing,sizes));
     for(int k=0;k<63;++k)
@@ -124,9 +125,9 @@ void ParametricDiscretisedDensityTests::run_tests()
     for(int k=0;k<63;++k)
       for(int j=-64;j<63;++j)  
 	for(int i=-64;i<63;++i)
-	    for(unsigned int par_num=1; par_num<=num_params; ++par_num)
-	      check_if_equal(parametric_image[k][j][i][par_num],static_cast<float> (par_num*(i*1.F+j*5.F-k*10.F)),
-			     "Please, check the [] operator implementation");   
+	  for(unsigned int par_num=1; par_num<=num_params; ++par_num)
+	    check_if_equal(parametric_image[k][j][i][par_num],static_cast<float> (par_num*(i*1.F+j*5.F-k*10.F)),
+			   "Please, check the [] operator implementation");   
 
 
     cerr << "- Checking construct_single_density(param_num) implementation." << endl;
@@ -169,33 +170,33 @@ void ParametricDiscretisedDensityTests::run_tests()
     // test disabled as function currently removed from class
     cerr << "- Checking constructor from(VectorWithOffset single_densities) implementation." << endl;
     {
-    ParametricVoxelsOnCartesianGrid test_create_par(v_test);
+      ParametricVoxelsOnCartesianGrid test_create_par(v_test);
+      
+      // test origin and index-range
+      check_if_equal(v_test[1]->get_origin(), test_create_par.get_origin(),
+		     "test if origin is equal after create_parametric_image");
+      check_if_equal(v_test[1]->get_index_range(), test_create_par.get_index_range(),
+		     "test if index_range is equal after create_parametric_image");
+      // test grid-spacing (only appropriate for VoxelsOnCartesianGrid)
+      check_if_equal(v_test[1]->get_grid_spacing(), test_create_par.get_grid_spacing(),
+		     "test if grid-spacing is equal after create_parametric_image");
 
-    // test origin and index-range
-    check_if_equal(v_test[1]->get_origin(), test_create_par.get_origin(),
-		   "test if origin is equal after create_parametric_image");
-    check_if_equal(v_test[1]->get_index_range(), test_create_par.get_index_range(),
-		   "test if index_range is equal after create_parametric_image");
-    // test grid-spacing (only appropriate for VoxelsOnCartesianGrid)
-    check_if_equal(v_test[1]->get_grid_spacing(), test_create_par.get_grid_spacing(),
-		   "test if grid-spacing is equal after create_parametric_image");
-
-    // test values
-    { 
-      bool still_equal = true;
-      for(int k=0;still_equal && k<63;++k)
-	for(int j=-64;still_equal && j<63;++j)  
-	  for(int i=-64;still_equal && i<63;++i)
-	    for(unsigned int par_num=1;par_num<=num_params;++par_num)
-	    {
-	      still_equal =
-		check_if_equal(test_create_par[k][j][i][par_num],static_cast<float> (par_num),
-			     "Please, check create_parametric_image(VectorWithOffset single_denisties) implementation");   
-	      // next test doesn't have anything to do with test_create_par
-	      //check_if_equal(parametric_image[k][j][i][par_num],static_cast<double> (par_num*(i*1.F+j*5.F-k*10.F)),
-	      //	     "Please, check the create_parametric_image(VectorWithOffset single_densities)");   
-	    }
-    }
+      // test values
+      { 
+	bool still_equal = true;
+	for(int k=0;still_equal && k<63;++k)
+	  for(int j=-64;still_equal && j<63;++j)  
+	    for(int i=-64;still_equal && i<63;++i)
+	      for(unsigned int par_num=1;par_num<=num_params;++par_num)
+		{
+		  still_equal =
+		    check_if_equal(test_create_par[k][j][i][par_num],static_cast<float> (par_num),
+				   "Please, check create_parametric_image(VectorWithOffset single_denisties) implementation");   
+		  // next test doesn't have anything to do with test_create_par
+		  //check_if_equal(parametric_image[k][j][i][par_num],static_cast<double> (par_num*(i*1.F+j*5.F-k*10.F)),
+		  //	     "Please, check the create_parametric_image(VectorWithOffset single_densities)");   
+		}
+      }
     }
 #endif
 #if 0
@@ -224,7 +225,7 @@ void ParametricDiscretisedDensityTests::run_tests()
 	  for(int i=-64;still_equal && i<63;++i)
 	    for(unsigned int par_num=1;still_equal && par_num<=num_params;++par_num)
 	      still_equal = check_if_equal(parametric_image[k][j][i][par_num],static_cast<float> (2+1-par_num),
-					  "Please, check update_parametric_image(VectorWithOffset) implementation");   
+					   "Please, check update_parametric_image(VectorWithOffset) implementation");   
     }
 #endif
   }

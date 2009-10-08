@@ -41,7 +41,7 @@
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include <algorithm>
 #include <unistd.h>
 

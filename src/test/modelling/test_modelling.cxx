@@ -30,18 +30,11 @@
 
   
 #include "stir/RunTests.h"
-#include "local/stir/modelling/PatlakPlot.h"
-#include "local/stir/modelling/ModelMatrix.h"
-#include "local/stir/modelling/BloodFrameData.h"
-#include "local/stir/decay_correct.h"
-#include "local/stir/modelling/PlasmaData.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/PatlakPlot.h"
+#include "stir/modelling/ModelMatrix.h"
+#include "stir/modelling/PlasmaData.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/TimeFrameDefinitions.h"
-
-#ifndef STIR_NO_NAMESPACES
-using std::ifstream;
-using std::istream;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -68,7 +61,7 @@ void modellingTests::run_tests()
       std::cerr << "Testing the reading of PlasmaData ..." << std::endl;
 
       PlasmaData file_plasma_data, testing_plasma_data;
-      file_plasma_data.read_plasma_data("local/test/input/triple_plasma.if");
+      file_plasma_data.read_plasma_data("test/modelling/input/triple_plasma.if");
       std::vector<PlasmaSample> this_plasma_blood_plot;
       const PlasmaSample sample_1(0.5F,.999947F,.0999947F);
       const PlasmaSample sample_2(7573.3F,.450739F,.0450739F);
@@ -92,39 +85,11 @@ void modellingTests::run_tests()
   }
 
   {
-      std::cerr << "Testing the reading of BloodFrameData ..." << std::endl;
-
-      BloodFrameData file_blood_frame_data, testing_blood_frame_data;
-      file_blood_frame_data.read_blood_frame_data("local/test/input/triple_blood_data.tac");
-      TimeFrameDefinitions time_frame_def("local/test/input/short_triple_frame.fdef"); 
-      std::vector<BloodFrame> this_blood_plot;
-      const BloodFrame frame_1(1,.0,.1,1.F);
-      const BloodFrame frame_2(2,.1,.2,2.F);
-      const BloodFrame frame_3(3,.2,.3,3.F);
-      this_blood_plot.push_back(frame_1);
-      this_blood_plot.push_back(frame_2);
-      this_blood_plot.push_back(frame_3);
-      testing_blood_frame_data.set_plot(this_blood_plot);
-
-      BloodFrameData::const_iterator cur_iter_1, cur_iter_2;
-
-      for (cur_iter_1=file_blood_frame_data.begin(), cur_iter_2=testing_blood_frame_data.begin(); 
-	   cur_iter_1!=file_blood_frame_data.end(), cur_iter_2!=testing_blood_frame_data.end() ; 
-	   ++cur_iter_1, ++cur_iter_2)
-	{
-	//check_if_equal((*cur_iter_1).get_frame_start_time_in_s(),(*cur_iter_2).get_frame_start_time_in_s(), "Check Start Time of a Frame Num of PlasmaData ");
-	//check_if_equal((*cur_iter_1).get_frame_end_time_in_s(),(*cur_iter_2).get_frame_end_time_in_s(), "Check End Time of a Frame Num of BloodFrameData ");
-	  check_if_equal((*cur_iter_1).get_frame_num(),(*cur_iter_2).get_frame_num(), "Check Reading Frame Num of BloodFrameData ");
-	  check_if_equal((*cur_iter_1).get_blood_counts_in_kBq(),(*cur_iter_2).get_blood_counts_in_kBq(), "Check Blood Counts of BloodFrameData ");
-	}       
-  }
-
-  {
       std::cerr << "Testing the reading and writing of the ModelMatrix ..." << std::endl;
 
       ModelMatrix<2> file_model_matrix, correct_model_matrix;
-      file_model_matrix.read_from_file("local/test/input/model_array.in");
-      file_model_matrix.write_to_file("local/test/input/model_array.out");
+      file_model_matrix.read_from_file("test/modelling/input/model_array.in");
+      file_model_matrix.write_to_file("test/modelling/input/model_array.out");
 
       BasicCoordinate<2,int> min_range;
       BasicCoordinate<2,int> max_range;
@@ -151,56 +116,13 @@ void modellingTests::run_tests()
 	    check_if_equal(file_model_array[param_num][frame_num],correct_model_array[param_num][frame_num],"Check ModelMatrix reading. ");  
 	  }
   }
-  /*
-    { 
-      // This is not very realistic test beacuse it has only one plasma sample for every frame which means that the sample_data_in_frames is not very effective.
-      // This might be better to change for BloodFrameData.
-
-      cerr << "\nTesting the sampling of a single PlasmaSample into its single frame ..." << endl;
-      
-      PlasmaData file_plasma_data, testing_plasma_data;
-      file_plasma_data.read_plasma_data("local/test/input/triple_plasma.if");
-      TimeFrameDefinitions time_frame_def("local/test/input/triple_frame.fdef"); 
-      std::vector<PlasmaSample> this_plasma_blood_plot;
-      file_plasma_data.set_isotope_halflife(6586.2F);
-      testing_plasma_data.set_isotope_halflife(6586.2F);
-
-      const PlasmaSample sample_1(0.5F,
-				  .999947F,
-				  .0999947F);
-      const PlasmaSample sample_2(7573.8F,
-				  .450739F,
-				  .0450739F);
-      const PlasmaSample sample_3(30292.2F,
-				  .0412893F,
-				  .00412893F);
-
-      this_plasma_blood_plot.push_back(sample_1);
-      this_plasma_blood_plot.push_back(sample_2);
-      this_plasma_blood_plot.push_back(sample_3);
-      testing_plasma_data.set_plot(this_plasma_blood_plot);
-      testing_plasma_data.decay_correct_PlasmaData();
-      const PlasmaData sample_plasma_data_in_frames = file_plasma_data.get_sample_data_in_frames(time_frame_def);
-
-      PlasmaData::const_iterator cur_iter_1, cur_iter_2;
-
-      for (cur_iter_1=sample_plasma_data_in_frames.begin(), cur_iter_2=testing_plasma_data.begin(); 
-	   cur_iter_1!=sample_plasma_data_in_frames.end(), cur_iter_2!=testing_plasma_data.end() ; 
-	   ++cur_iter_1, ++cur_iter_2)
-	{
-	  check_if_equal((*cur_iter_1).get_time_in_s(),(*cur_iter_2).get_time_in_s(),"Check Time when sampling PlasmaData into frames");
-	  check_if_equal((*cur_iter_1).get_plasma_counts_in_kBq(),(*cur_iter_2).get_plasma_counts_in_kBq(),"Check Plasma when sampling PlasmaData into frames");
-	  check_if_equal((*cur_iter_1).get_blood_counts_in_kBq(),(*cur_iter_2).get_blood_counts_in_kBq(),"Check Blood when sampling PlasmaData into frames");
-	}       
-	}
-*/
   {
     // This tests uses the results from the Mathematica. The used plasma and frame files are parts of the t00196 scan.
     std::cerr << "\nTesting the sampling of PlasmaData into frames ..." << std::endl;  
     PlasmaData file_plasma_data, testing_plasma_data;
-    file_plasma_data.read_plasma_data("local/test/input/plasma.if");
+    file_plasma_data.read_plasma_data("test/modelling/input/plasma.if");
     std::vector<PlasmaSample> this_plasma_blood_plot;
-    TimeFrameDefinitions time_frame_def("local/test/input/time.fdef"); 
+    TimeFrameDefinitions time_frame_def("test/modelling/input/time.fdef"); 
     file_plasma_data.set_isotope_halflife(6586.2F);
     PlasmaData sample_plasma_data_in_frames = file_plasma_data.get_sample_data_in_frames(time_frame_def);
 
@@ -240,7 +162,7 @@ void modellingTests::run_tests()
       const unsigned int starting_frame=23;
       ModelMatrix<2> stir_model_matrix=(patlak_plot.get_model_matrix(sample_plasma_data_in_frames,time_frame_def,starting_frame));
       ModelMatrix<2> mathematica_model_matrix;
-      mathematica_model_matrix.read_from_file("local/test/input/math_model_matrix.in");
+      mathematica_model_matrix.read_from_file("test/modelling/input/math_model_matrix.in");
       stir_model_matrix.uncalibrate(10);
       //     stir_model_matrix.convert_to_total_frame_counts(time_frame_def);
       Array<2,float> stir_model_array=stir_model_matrix.get_model_array();
@@ -252,20 +174,7 @@ void modellingTests::run_tests()
 	  check_if_equal(mathematica_model_array[2][frame_num]/10.F,stir_model_array[2][frame_num],"Check _model_array-2nd column in ModelMatrix");
 	}
   }
-#if 0
-      std::cerr << "\nTesting the creation of Model Matrix based on Blood Frame Data..." << std::endl;
-     
-      PatlakPlot patlak_plot;      
-      const unsigned int starting_frame=3;
-      Array<2,float> stir_model_array=(patlak_plot.get_model_matrix(testing_blood_frame_data,starting_frame)).get_model_array();
-      //      stir_model_array.uncalibrate(100);
-      const float cor_val_sum = 1.F+2.F+3.F ;
-      const float cor_val_blood = 3.F;
 
-      check_if_equal(cor_val_sum, stir_model_array[1][3], "Check Time when sampling BloodFrameData into frames");
-      check_if_equal(cor_val_blood, stir_model_array[2][3], "Check Blood when sampling BloodFrameData into frames");
-
-#endif 
 }
 
 

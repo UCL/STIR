@@ -34,8 +34,8 @@ $(dir)_LIB_SOURCES := \
   linear_regression.cxx overlap_interpolate.cxx \
   error.cxx warning.cxx  \
   DataSymmetriesForViewSegmentNumbers.cxx \
-	TimeFrameDefinitions.cxx \
-	ParsingObject.cxx \
+  TimeFrameDefinitions.cxx \
+  ParsingObject.cxx \
 	ArrayFilter1DUsingConvolutionSymmetricKernel.cxx \
 	ArrayFilterUsingRealDFTWithPadding.cxx \
 	SeparableArrayFunctionObject.cxx \
@@ -53,8 +53,14 @@ $(dir)_LIB_SOURCES := \
 	NonseparableConvolutionUsingRealDFTImageFilter.cxx \
 	SSRB.cxx \
 	inverse_SSRB.cxx \
-	centre_of_gravity.cxx
- 
+	centre_of_gravity.cxx \
+	DynamicDiscretisedDensity.cxx \
+	DynamicProjData.cxx \
+	MultipleProjData.cxx \
+	GatedProjData.cxx \
+	ArrayFilter2DUsingConvolution.cxx \
+	ArrayFilter3DUsingConvolution.cxx \
+	find_fwhm_in_image.cxx
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 

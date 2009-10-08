@@ -34,7 +34,7 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/RegisteredParsingObject.h"
-//#include "local/stir/modelling/ModelMatrix.h"
+//#include "stir/modelling/ModelMatrix.h"
 
 START_NAMESPACE_STIR
 
@@ -48,7 +48,7 @@ public:
   KineticModel();
 
   //! default destructor
-  ~KineticModel();
+  virtual ~KineticModel();
 
   //  virtual float get_compartmental_activity_at_time(const int param_num, const int sample_num) const;
   //  virtual float get_total_activity_at_time(const int sample_num) const;

@@ -61,20 +61,11 @@ END_NAMESPACE_ECAT
 #endif
 
 
-#if 1
 static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 #ifdef HAVE_LLN_MATRIX
 static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4);
 static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000); // very low priority it doesn't have a signature 
 #endif
-#else
-// TODO
-InputFileFormatRegistry<DiscretisedDensity<3,float> >  registry;
-  //  *InputFileFormatRegistry<DiscretisedDensity<3,float> >::default_sptr();
-  registry.add_to_registry(new InterfileImageInputFileFormat, 0);
-#ifdef HAVE_LLN_MATRIX
-  registry.add_to_registry(new ecat::ecat7::ECAT7ImageInputFileFormat,4);
-  registry.add_to_registry(new ecat::ecat6::ECAT6ImageInputFileFormat,100000); // last as it doesn't have a signature 
-#endif
-#endif
+
+
 END_NAMESPACE_STIR

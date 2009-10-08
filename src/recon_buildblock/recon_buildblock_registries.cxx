@@ -54,6 +54,10 @@
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
 
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
@@ -86,6 +90,8 @@ static TrivialBinNormalisation::RegisterIt dummy91;
 static ChainedBinNormalisation::RegisterIt dummy92;
 static BinNormalisationFromProjData::RegisterIt dummy93;
 static BinNormalisationFromAttenuationImage::RegisterIt dummy94;
+static PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
+
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7

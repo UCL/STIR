@@ -30,8 +30,8 @@
 
 #ifdef HAVE_LLN_MATRIX
 
-#include "local/stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include "stir/NumericType.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Scanner.h"

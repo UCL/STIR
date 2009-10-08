@@ -28,7 +28,7 @@
   $Date$
   $Revision$
 */
-#include "local/stir/MultipleProjData.h"
+#include "stir/MultipleProjData.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/SegmentByView.h"
 #include "stir/Succeeded.h"

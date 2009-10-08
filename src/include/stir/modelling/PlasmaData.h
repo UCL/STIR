@@ -30,10 +30,8 @@
 #ifndef __stir_modelling_PlasmaData_H__
 #define __stir_modelling_PlasmaData_H__
 
-#include "local/stir/modelling/PlasmaSample.h"
-#include "local/stir/decay_correct.h"
+#include "stir/modelling/PlasmaSample.h"
 #include "stir/TimeFrameDefinitions.h"
-#include "local/stir/numerics/linear_integral.h"
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -128,6 +126,6 @@ class PlasmaData
 
 END_NAMESPACE_STIR
 
-#include "local/stir/modelling/PlasmaData.inl"
+#include "stir/modelling/PlasmaData.inl"
 
 #endif //__stir_modelling_PlasmaData_H__

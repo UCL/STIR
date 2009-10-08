@@ -32,10 +32,9 @@
 #ifndef __stir_modelling_PatlakPlot_H__
 #define __stir_modelling_PatlakPlot_H__
 
-#include "local/stir/modelling/KineticModel.h"
-#include "local/stir/modelling/ModelMatrix.h"
-#include "local/stir/modelling/BloodFrameData.h"
-#include "local/stir/modelling/PlasmaData.h"
+#include "stir/modelling/KineticModel.h"
+#include "stir/modelling/ModelMatrix.h"
+#include "stir/modelling/PlasmaData.h"
 #include "stir/Succeeded.h"
 #include "stir/RegisteredParsingObject.h"
 
@@ -91,11 +90,6 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
     //! Returns the TimeFrameDefinitions that the PatlakPlot linearization is assumed to be valid: ChT::Check
     TimeFrameDefinitions 
       get_time_frame_definitions() const ;
-#if 0
-    /*! Creates model matrix from blood frame data.
-    /todo It has to get re-implemented. At the moment it is inactivated using the preprocessor.    */
-    ModelMatrix<2> get_model_matrix(const BloodFrameData& blood_frame_data, const unsigned int starting_frame);
-#endif
     //!@}
     //! \name Functions to set parameters
     void set_model_matrix(ModelMatrix<2> model_matrix) ;     //!< Simply set model matrix 
@@ -128,20 +122,9 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
   bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale factor.
   bool _in_total_cnt;   //!< Switch to choose the values of the model to be in total counts or in mean counts.
   string _blood_data_filename;   //!< Name of file in which the input function is stored
-  BloodFrameData _blood_frame_data;   //!< Stores the blood frame data for cardiac studies
   PlasmaData _plasma_frame_data;    //!< Stores the plasma data into frames for brain studies
   string _time_frame_definition_filename;   //!< name of file to get frame definitions
   TimeFrameDefinitions _frame_defs;   //!< TimeFrameDefinitions
-#if 0
-  //! name of file to use as dynamic image
-  string _dyn_image_filename;
-  //! name of file to use as parametric image 
-  string _par_image_filename;
-  //! dynamic image pointer
-  DynamicDiscretisedDensity _dyn_image_sptr;
-  //! parametric image pointer
-  ParametricVoxelsOnCartesianGrid _par_image_sptr;  
-#endif
 
  private:
   void create_model_matrix();  //!< Creates model matrix from private members

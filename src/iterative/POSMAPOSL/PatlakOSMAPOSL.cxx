@@ -32,8 +32,8 @@
 */
 #include "stir/Succeeded.h"
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
-#include "local/stir/recon_buildblock/PatlakObjectiveFunctionFromDynamicProjectionData.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 
 
 

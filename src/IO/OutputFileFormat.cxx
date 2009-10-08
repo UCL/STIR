@@ -31,6 +31,8 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h" 
+#include "stir/modelling/KineticParameters.h" 
 
 START_NAMESPACE_STIR
 
@@ -237,14 +239,7 @@ write_to_file(const string& filename,
 };
  
 template class OutputFileFormat<DiscretisedDensity<3,float> >; 
+template class OutputFileFormat<ParametricVoxelsOnCartesianGrid >;  
 
 END_NAMESPACE_STIR
-
-#ifdef STIR_DEVEL 
-#include "local/stir/modelling/ParametricDiscretisedDensity.h" 
-#include "local/stir/modelling/KineticParameters.h" 
-namespace stir { 
-  template class OutputFileFormat<ParametricVoxelsOnCartesianGrid >;  
-} 
-#endif 
 

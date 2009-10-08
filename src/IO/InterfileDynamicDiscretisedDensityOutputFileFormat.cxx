@@ -29,8 +29,8 @@ $Date$
 $Revision$
 */
 
-#include "local/stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
-#include "local/stir/DynamicDiscretisedDensity.h" 
+#include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/DynamicDiscretisedDensity.h" 
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
 

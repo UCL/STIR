@@ -79,6 +79,6 @@ private :
 
 END_NAMESPACE_STIR
 
-#include "local/stir/modelling/PlasmaSample.inl"
+#include "stir/modelling/PlasmaSample.inl"
 
 #endif //__stir_modelling_PlasmaSample_H__

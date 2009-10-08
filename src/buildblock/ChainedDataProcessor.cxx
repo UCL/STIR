@@ -29,6 +29,8 @@
 */
 #include "stir/ChainedDataProcessor.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"  
+#include "stir/modelling/KineticParameters.h"  
 #include "stir/is_null_ptr.h"
 #include <memory>
 
@@ -143,16 +145,10 @@ ChainedDataProcessor<DataT>::registered_name =
 // have the above variable in a separate file, which you need to pass at link time
 
 template class ChainedDataProcessor<DiscretisedDensity<3,float> >;
-
+template class ChainedDataProcessor<ParametricVoxelsOnCartesianGrid >;   
 END_NAMESPACE_STIR
 
 
-#ifdef STIR_DEVEL  
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"  
-#include "local/stir/modelling/KineticParameters.h"  
-namespace stir {  
-  template class ChainedDataProcessor<ParametricVoxelsOnCartesianGrid >;   
-}  
-#endif  
+
 
 

@@ -40,6 +40,8 @@
 #include "stir/is_null_ptr.h"
 #include <iostream>
 
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 
 START_NAMESPACE_STIR
 
@@ -155,13 +157,6 @@ set_up(shared_ptr<TargetT> const& target_data_sptr)
 }
 
 template class Reconstruction<DiscretisedDensity<3,float> >; 
+template class Reconstruction<ParametricVoxelsOnCartesianGrid >; 
 END_NAMESPACE_STIR
 
-
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class Reconstruction<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif

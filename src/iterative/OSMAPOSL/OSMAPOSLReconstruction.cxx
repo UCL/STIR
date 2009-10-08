@@ -50,6 +50,10 @@
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ViewSegmentNumbers.h"
 
+
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
+
 #include <memory>
 #include <iostream>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -582,16 +586,9 @@ update_estimate(TargetT &current_image_estimate)
 }
 
 template class OSMAPOSLReconstruction<DiscretisedDensity<3,float> >;
+template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >; 
 
 
 END_NAMESPACE_STIR
 
 
-
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif

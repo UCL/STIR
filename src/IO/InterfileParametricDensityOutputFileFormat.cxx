@@ -29,9 +29,9 @@
   $Revision$
 */
 
-#include "local/stir/IO/InterfileParametricDensityOutputFileFormat.h"
-#include "local/stir/modelling/KineticParameters.h" 
-#include "local/stir/modelling/ParametricDiscretisedDensity.h" 
+#include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
+#include "stir/modelling/KineticParameters.h" 
+#include "stir/modelling/ParametricDiscretisedDensity.h" 
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
 

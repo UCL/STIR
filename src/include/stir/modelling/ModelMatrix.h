@@ -33,8 +33,8 @@
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
 #include "stir/VectorWithOffset.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include <fstream>
 #include <iostream>
@@ -116,6 +116,6 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "local/stir/modelling/ModelMatrix.inl"
+#include "stir/modelling/ModelMatrix.inl"
 
 #endif //__stir_modelling_ModelMatrix_H__

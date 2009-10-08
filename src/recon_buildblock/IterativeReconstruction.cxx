@@ -43,6 +43,8 @@
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
 #include "stir/is_null_ptr.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 #include <algorithm>
 // for time(), used as seed for random stuff
 #include <ctime>
@@ -601,16 +603,9 @@ randomly_permute_subset_order()
 #  endif
 
 template class IterativeReconstruction<DiscretisedDensity<3,float> >;
-
+template class IterativeReconstruction<ParametricVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
 
 
 
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class IterativeReconstruction<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif

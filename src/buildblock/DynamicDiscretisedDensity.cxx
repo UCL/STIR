@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup utilities
+  \ingroup buildblock
   \brief Implementation of class stir::DynamicDiscretisedDensity
   \author Kris Thielemans
   \author Charalampos Tsoumpas
@@ -28,10 +28,10 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/stir_ecat7.h"
-#include "local/stir/decay_correct.h"
+#include "stir/decay_correction_factor.h"
 #include <iostream>
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
@@ -46,7 +46,6 @@ using std::cerr;
 
 START_NAMESPACE_STIR
 
-// The assignement is necessary to prevent running the other than the copy-constructor. 
 DynamicDiscretisedDensity::
 DynamicDiscretisedDensity(const DynamicDiscretisedDensity& argument)
 {
@@ -265,7 +264,7 @@ set_isotope_halflife(const float isotope_halflife)
     {
       for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
 	{ 
-	  *(_densities[frame_num-1])*=decay_correct_factor(_isotope_halflife,_time_frame_definitions.get_start_time(frame_num),_time_frame_definitions.get_end_time(frame_num));	
+	  *(_densities[frame_num-1])*=decay_correction_factor(_isotope_halflife,_time_frame_definitions.get_start_time(frame_num),_time_frame_definitions.get_end_time(frame_num));	
 	}
       _is_decay_corrected=true;
     }

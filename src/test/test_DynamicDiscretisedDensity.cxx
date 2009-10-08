@@ -35,8 +35,8 @@
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
 #include "stir/Succeeded.h"
-#include <fstream>
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include <iostream>
+#include "stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
@@ -47,13 +47,9 @@
 #include <string>
 
 #include <algorithm>
-#include <iomanip>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
-using std::ifstream;
-using std::istream;
-using std::setw;
 #endif
 
 START_NAMESPACE_STIR
