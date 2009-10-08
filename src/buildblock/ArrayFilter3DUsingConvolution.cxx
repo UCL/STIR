@@ -18,8 +18,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/ArrayFilter3DUsingConvolution.h"
-//#include "local/stir/ArrayFilter2DUsingConvolution.h"
+#include "stir/ArrayFilter3DUsingConvolution.h"
+//#include "stir/ArrayFilter2DUsingConvolution.h"
 #include "stir/IndexRange.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"

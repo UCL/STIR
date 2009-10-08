@@ -33,12 +33,10 @@
 #include "stir/ArrayFilterUsingRealDFTWithPadding.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-#ifdef STIR_DEVEL
-#include "local/stir/ArrayFilter2DUsingConvolution.h"
+#include "stir/ArrayFilter2DUsingConvolution.h"
 #include "stir/IndexRange2D.h"
-#include "local/stir/ArrayFilter3DUsingConvolution.h"
+#include "stir/ArrayFilter3DUsingConvolution.h"
 #include "stir/IndexRange3D.h"
-#endif
 #include "stir/Succeeded.h"
 #include "stir/modulo.h"
 #include "stir/RunTests.h"
@@ -253,7 +251,6 @@ ArrayFilterTests::run_tests()
     }
   } // 1D
 
-#ifdef STIR_DEVEL
   std::cerr << "\nTesting 2D\n";
   {
     const int size1=6;const int size2=20;
@@ -368,7 +365,7 @@ ArrayFilterTests::run_tests()
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
   }
-#endif
+
 }
 
 END_NAMESPACE_STIR
