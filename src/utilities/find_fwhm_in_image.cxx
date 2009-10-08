@@ -44,7 +44,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
-#include "local/stir/find_fwhm_in_image.h"
+#include "stir/find_fwhm_in_image.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>

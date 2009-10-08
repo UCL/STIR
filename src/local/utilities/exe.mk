@@ -25,7 +25,6 @@ $(dir)_SOURCES = \
 	remove_sinograms.cxx \
 	fit_cylinder.cxx \
 	find_sinogram_rescaling_factors.cxx \
-	find_fwhm_in_image.cxx \
 	line_profiles_through_projdata.cxx \
 	interpolate_projdata.cxx \
 	make_grid_image.cxx \
@@ -34,7 +33,6 @@ $(dir)_SOURCES = \
 	Bland_Altman_plot.cxx \
 	get_total_counts.cxx \
 	image_flip_x.cxx \
-	abs_image.cxx \
 	precompute_denominator_SPS.cxx \
 	cleanup966.cxx \
 	Hounsfield2mu.cxx
