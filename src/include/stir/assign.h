@@ -104,6 +104,18 @@ void assign(VectorWithOffset<T>& v, const T2& y)
     assign(*iter, y);
 }
 
+// Even though we have VectorWithOffset above, we still seem to need a version for Arrays as well 
+// for when calling assign(vector<array<1,float> >, 0).
+// We're not sure why...
+template <int num_dimensions, class T, class T2>
+inline 
+  void assign(Array<num_dimensions, T>& v, const T2& y)
+{
+  for (typename Array<num_dimensions, T>::iterator iter = v.begin_all(); 
+       iter != v.end_all(); ++iter)
+    assign(*iter, y);
+}
+
 // a few common cases given explictly here such that we don't get conversion warnings all the time.
 inline 
 void assign(double& x, const int y)
