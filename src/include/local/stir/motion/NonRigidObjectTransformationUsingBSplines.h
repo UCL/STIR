@@ -22,8 +22,8 @@
 
 #include "local/stir/motion/ObjectTransformation.h"
 #include "stir/CartesianCoordinate3D.h"
-#include "local/stir/BSplines.h"
-#include "local/stir/BSplinesRegularGrid.h"
+#include "stir/numerics/BSplines.h"
+#include "stir/numerics/BSplinesRegularGrid.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
 //#include "stir/DiscretisedDensityOnCartesianGrid.h"

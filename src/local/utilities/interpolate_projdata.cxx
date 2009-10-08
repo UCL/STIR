@@ -44,8 +44,7 @@ the Free Software Foundation; either version 2.1 of the License, or
 #include "stir/ProjDataInterfile.h"
 #include "stir/BasicCoordinate.h"
 #include "stir/utilities.h"
-#include "local/stir/BSplines.h"
-#include "local/stir/BSplinesRegularGrid.h"
+#include "stir/numerics/BSplines.h"
 #include "local/stir/interpolate_projdata.h"
 #include "stir/Succeeded.h"
 #ifndef STIR_NO_NAMESPACES

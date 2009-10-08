@@ -33,7 +33,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
 #include <fstream>
-#include "local/stir/BSplines1DRegularGrid.h"
+#include "stir/numerics/BSplines1DRegularGrid.h"
 #include <vector>
 #include <algorithm>
 #include <string>

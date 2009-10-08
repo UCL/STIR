@@ -28,8 +28,8 @@
   $Revision$
 */
 
-#include "local/stir/BSplines.h"
-//#include "local/stir/BSplinesRegularGrid.h"
+#include "stir/numerics/BSplines.h"
+//#include "stir/numerics/BSplinesRegularGrid.h"
 
 START_NAMESPACE_STIR
 

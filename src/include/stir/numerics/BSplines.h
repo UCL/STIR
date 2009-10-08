@@ -35,7 +35,7 @@ $Revision$
 #include "stir/shared_ptr.h"
 #include <vector>
 #include <algorithm>
-#include "local/stir/IR_filters.h"
+#include "stir/numerics/IR_filters.h"
 
 START_NAMESPACE_STIR
 
@@ -71,7 +71,7 @@ namespace BSpline {
 
 END_NAMESPACE_STIR
 
-#include "local/stir/BSplines_weights.inl"
-#include "local/stir/BSplines_coef.inl"
+#include "stir/numerics/BSplines_weights.inl"
+#include "stir/numerics/BSplines_coef.inl"
 
 #endif

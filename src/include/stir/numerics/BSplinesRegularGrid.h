@@ -33,7 +33,7 @@
 
 #include "stir/Array.h"
 #include "stir/BasicCoordinate.h"
-#include "local/stir/BSplines.h"
+#include "stir/numerics/BSplines.h"
 START_NAMESPACE_STIR
 
 namespace BSpline {
@@ -173,6 +173,6 @@ namespace BSpline {
 
 END_NAMESPACE_STIR
 
-#include "local/stir/BSplinesRegularGrid.inl"
+#include "stir/numerics/BSplinesRegularGrid.inl"
 
 #endif

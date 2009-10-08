@@ -29,7 +29,7 @@
   $Revision$
 */
 
-#include "local/stir/BSplinesDetail.inl"
+#include "stir/numerics/BSplinesDetail.inl"
 START_NAMESPACE_STIR
 
 namespace BSpline {

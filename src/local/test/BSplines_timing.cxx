@@ -37,8 +37,8 @@ $Revision$
 
 #include "local/stir/numerics/more_interpolators.h"
 
-#include "local/stir/BSplines.h"
-#include "local/stir/BSplinesRegularGrid.h"
+#include "stir/numerics/BSplines.h"
+#include "stir/numerics/BSplinesRegularGrid.h"
 
 
 #include <fstream>

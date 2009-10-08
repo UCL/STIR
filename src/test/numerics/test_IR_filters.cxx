@@ -30,7 +30,7 @@
 
   
 #include "stir/RunTests.h"
-#include "local/stir/IR_filters.h"
+#include "stir/numerics/IR_filters.h"
 #include <vector>
 #include <algorithm>
 

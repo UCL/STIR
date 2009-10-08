@@ -29,7 +29,7 @@
   $Revision$
 */
 
-#include "local/stir/BSplinesDetail.inl"
+#include "stir/numerics/BSplinesDetail.inl"
 #include "stir/assign.h"
 START_NAMESPACE_STIR
 

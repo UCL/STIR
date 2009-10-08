@@ -6,10 +6,6 @@ dir := local/test
 $(dir)_TEST_SOURCES :=  \
 	test_Quaternion.cxx \
 	test_proj_data_info_LOR.cxx \
-	test_IR_filters.cxx \
-	test_BSplines.cxx \
-	test_BSplinesRegularGrid1D.cxx \
-	test_BSplinesRegularGrid.cxx \
 	test_erf.cxx 
 
 ifeq ($(STIR_DEVEL_MOTION),1)
@@ -34,21 +30,6 @@ run_$(dir)/test_proj_data_info_LOR: $(DEST)$(dir)/test_proj_data_info_LOR PHONY_
 run_$(dir)/test_IO_ParametricDiscretisedDensity: $(DEST)$(dir)/test_IO_ParametricDiscretisedDensity PHONY_TARGET
 	$< STIRtmp_dyn2f.img STIRtmp_dyn2f_out.img 
 
-ifeq ("$(FAST_test)","")
-
-${DEST}$(dir)/test_BSplinesRegularGrid: ${DEST}$(dir)/test_BSplinesRegularGrid$(O_SUFFIX) $(STIR_LIB) 
-	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
-
-else
-
-${DEST}$(dir)/test_BSplinesRegularGrid: ${DEST}$(dir)/test_BSplinesRegularGrid${O_SUFFIX} \
-    ${DEST}buildblock/error${O_SUFFIX}
-	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  ${DEST}buildblock/error${O_SUFFIX} $(LINKFLAGS) $(SYS_LIBS)
-
-${DEST}$(dir)/test_BSplines: ${DEST}$(dir)/test_BSplines${O_SUFFIX} \
-    ${DEST}buildblock/error${O_SUFFIX}
-	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $<  ${DEST}buildblock/error${O_SUFFIX} $(LINKFLAGS) $(SYS_LIBS)
-endif
 
 ${DEST}$(dir)/test_RigidObject3DTransformation: ${DEST}$(dir)/test_RigidObject3DTransformation$(O_SUFFIX) $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
