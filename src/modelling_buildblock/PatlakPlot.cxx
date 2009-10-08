@@ -78,7 +78,7 @@ void PatlakPlot::set_model_matrix(ModelMatrix<2> model_matrix)
   this->_matrix_is_stored=true;
 }
 
- //! Create model matrix from plasma data (has to be in appropriate frames)
+//! Create model matrix from plasma data (has to be in appropriate frames)
 ModelMatrix<2>
 PatlakPlot::
 get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_frame_definitions,const unsigned int starting_frame)
@@ -115,8 +115,9 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
 	  patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
 	  if(plasma_data.get_if_decay_corrected())
 	    {
-	      const float dec_fact=decay_correction_factor(6586.2F,plasma_data.get_time_frame_definitions().get_start_time(sample_num),
-						  plasma_data.get_time_frame_definitions().get_end_time(sample_num));
+	      const float dec_fact=
+		decay_correction_factor(plasma_data.get_isotope_halflife(),plasma_data.get_time_frame_definitions().get_start_time(sample_num),
+					plasma_data.get_time_frame_definitions().get_end_time(sample_num));
 	      patlak_array[1][sample_num]/=dec_fact;
 	      patlak_array[2][sample_num]/=dec_fact;							
 	      time_vector[sample_num]=0.5*(time_frame_definitions.get_end_time(sample_num)+time_frame_definitions.get_start_time(sample_num)) ;
@@ -169,8 +170,9 @@ create_model_matrix()
 
       if(this->_plasma_frame_data.get_if_decay_corrected())
 	{
-	  const float dec_fact=decay_correction_factor(6586.2F,this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
-						    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num));
+	  const float dec_fact=
+	    decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
+				    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num));
 	  patlak_array[1][sample_num]/=dec_fact;
 	  patlak_array[2][sample_num]/=dec_fact;							
 	  time_vector[sample_num]=0.5*(this->_frame_defs.get_end_time(sample_num)+this->_frame_defs.get_start_time(sample_num)) ;
@@ -347,6 +349,7 @@ initialise_keymap()
   this->parser.add_stop_key("end Patlak Plot Parameters");
 }
 
+/*! \todo This currently hard-wired F-18 decay for the plasma data */
 bool
 PatlakPlot::
 post_processing()
@@ -373,6 +376,8 @@ post_processing()
        this->_if_cardiac=false;
        PlasmaData plasma_data_temp;
        plasma_data_temp.read_plasma_data(this->_blood_data_filename);   // The implementation assumes three list file. 
+       // TODO have parameter
+       warning("Assuming F-18 tracer for plasma data!!!");
        plasma_data_temp.set_isotope_halflife(6586.2F);
        plasma_data_temp.shift_time(this->_time_shift);
        this->_plasma_frame_data=plasma_data_temp.get_sample_data_in_frames(this->_frame_defs);
@@ -406,7 +411,7 @@ get_model_matrix(const BloodFrameData& blood_frame_data, const unsigned int star
 	  const float blood=cur_iter->get_blood_counts_in_kBq();
 	  const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
 	  sum_value+=blood*durat
-	  *decay_correct_factor(6586.2F,
+	  *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
 				cur_iter->get_frame_start_time_in_s(),
 				cur_iter->get_frame_end_time_in_s()) ;
 	}
@@ -416,11 +421,11 @@ get_model_matrix(const BloodFrameData& blood_frame_data, const unsigned int star
 	  const float blood=cur_iter->get_blood_counts_in_kBq();
 	  const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
 	  sum_value+=blood*durat
-	  *decay_correct_factor(6586.2F,
+	    *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
 				cur_iter->get_frame_start_time_in_s(),
 				cur_iter->get_frame_end_time_in_s()) ;
 	  // Normalize with the decay correct factor now.
-	  patlak_array[1][sample_num]=sum_value/decay_correct_factor(6586.2F,
+	  patlak_array[1][sample_num]=sum_value/decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
 	    						     cur_iter->get_frame_start_time_in_s(),
 	    						     cur_iter->get_frame_end_time_in_s()) ;
 	  patlak_array[2][sample_num]=blood;
