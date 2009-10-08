@@ -73,26 +73,8 @@ include config.mk
 LIBDIRS :=
 EXEDIRS :=
 TESTDIRS:=
+-include stir_dirs.mk
 -include local/extra_dirs.mk
-
-LIBDIRS += buildblock recon_buildblock display IO \
-	data_buildblock \
-	numerics_buildblock \
-	eval_buildblock Shape_buildblock \
-	listmode_buildblock \
-	iterative/OSMAPOSL \
-	analytic/FBP2D \
-	analytic/FBP3DRP
-
-EXEDIRS += utilities recon_test \
-	listmode_utilities \
-	utilities/ecat \
-	iterative/OSMAPOSL \
-	analytic/FBP2D \
-	analytic/FBP3DRP \
-	SimSET
-
-TESTDIRS += test recon_test test/numerics
 
 STIR_LIB:=$(DEST)$(LIB_PREFIX)stir$(LIB_SUFFIX)
 
