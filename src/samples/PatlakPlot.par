@@ -1,0 +1,13 @@
+Patlak Plot Parameters:=
+
+time frame definition filename := 
+starting frame := UNSIGNEDINT
+calibration factor := FLOAT
+scale factor := FLOAT
+blood data filename :=  
+; In seconds
+Time Shift := 0
+In total counts := 1
+In correct scale := 1
+
+end Patlak Plot Parameters:=
