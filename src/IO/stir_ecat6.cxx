@@ -102,14 +102,31 @@ static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
   // we first need to check if the file size is large enough, due to a bug
   // in the LLN MATRIX library (it will only read a buffer large enough
   // for the data, but use 512 bytes of that buffer anyway).
-  // we suppose that any sensible file will be larger than 2048 bytes
-  if (!fseek(cti_fptr, 2048L, SEEK_SET) ||
-      ftell(cti_fptr) != 2048L)
-    {
-      // not enough bytes, so not ECAT6
-      fclose(cti_fptr);
-      return false;
-    }
+  // we suppose that any sensible file will be larger than 2048+512 bytes
+  // Because of some undefined behaviour of fseek and ftell when you try to 
+  // beyond the file size, our tests is 3 staged:
+  // fseek, ftell, fread. All of these should work.
+  {
+    int ret= fseek(cti_fptr, 2048L, SEEK_SET);
+    long pos=ftell(cti_fptr);
+    if (ret || pos != 2048L)
+      {
+	// not enough bytes, so not ECAT6
+	fclose(cti_fptr);
+	return false;
+      }
+   
+    char buffer[512];
+    ret=fread(buffer,1, 512, cti_fptr);
+    if (ret != 512)
+      {
+	// failure to read
+	fclose(cti_fptr);
+	return false;
+      }
+  }
+  // seek back to start
+  fseek(cti_fptr, 0L, SEEK_SET);
 
   if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) 
     {
@@ -267,12 +284,11 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 #ifndef STIR_ORIGINAL_ECAT6
   const int x_size = ihead.x_dimension;
   const int y_size = ihead.y_dimension;
-  const int z_size = ihead.z_dimension;
 #else
   const int x_size = ihead.dimension_1;
   const int y_size = ihead.dimension_2;
-  const int z_size = mhead.num_planes;
 #endif
+  const int z_size = mhead.num_planes;
   const int min_z = 0; 
   
   IndexRange3D range_3D (0,z_size-1,
