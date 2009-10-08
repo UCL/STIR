@@ -63,8 +63,8 @@ class PlasmaData
 
   // Implementation to set the input units not currently used. Always, it assumed to use kBq, seconds, ml.
   /*  inline void set_input_units(const SamplingTimeUnits input_sampling_time_units, 
-			      const VolumeUnits input_volume_units, 
-			      const RadioactivityUnits input_radioactivity_units ) ;
+                              const VolumeUnits input_volume_units, 
+                              const RadioactivityUnits input_radioactivity_units ) ;
   */
 
 
@@ -82,13 +82,14 @@ class PlasmaData
   inline PlasmaData get_sample_data_in_frames(TimeFrameDefinitions time_frame_def);
 
   /*!Function to shift the time data
-    This is useful if the start time of the scan and the start time of the plasma are not precicely correct. 
-    \n This can be measured by the plasma peak and the very first frames of the dynamic images.   
-    \note This cannot not be estimated in the current implementation of the direct reconstructions. Thus, it is given externally. */
+    This is useful if the start time of the scan and the start time of the plasma are not precisely correct. 
+    This can be measured by the plasma peak and the very first frames of the dynamic images.   
+    \note This cannot be estimated in the current implementation of the direct reconstructions. Thus, it is given externally. */
 
    //! \name Functions to get parameters @{
   inline float get_time_shift();
   inline bool get_if_decay_corrected() const ;
+  inline float get_isotope_halflife() const;  
   inline TimeFrameDefinitions get_time_frame_definitions() const;  //!@}
   //! \name Functions to set parameters 
   //!@{
