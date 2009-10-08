@@ -31,7 +31,7 @@
   $Revision$
 */
 #include "stir/VectorWithOffset.h"
-#include "stir/ByteOrder.h"
+#include "stir/Array.h"
 #include "stir/BasicCoordinate.h"   
 #include <vector>
 
@@ -111,7 +111,7 @@ template <int num_dimensions, class T, class T2>
 inline 
   void assign(Array<num_dimensions, T>& v, const T2& y)
 {
-  for (typename Array<num_dimensions, T>::iterator iter = v.begin_all(); 
+  for (typename Array<num_dimensions, T>::full_iterator iter = v.begin_all(); 
        iter != v.end_all(); ++iter)
     assign(*iter, y);
 }
