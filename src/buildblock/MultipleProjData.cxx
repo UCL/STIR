@@ -27,7 +27,7 @@
   $Revision$
 */
 
-#include "local/stir/MultipleProjData.h"
+#include "stir/MultipleProjData.h"
 #include "stir/is_null_ptr.h"
 #include <fstream>
 

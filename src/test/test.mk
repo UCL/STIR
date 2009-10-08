@@ -20,14 +20,16 @@ $(dir)_TEST_SOURCES := test_Array.cxx test_NestedIterator.cxx \
 	test_ByteOrder.cxx \
 	test_Scanner.cxx \
 	test_ROIs.cxx \
-	test_ArcCorrection.cxx
+	test_ArcCorrection.cxx \
+	test_DynamicDiscretisedDensity.cxx 
+
 
 ifeq ($(HAVE_LLN_MATRIX),1)
 $(dir)_LIB_SOURCES += \
 	test_VAXfloat.cxx 
 endif
 
-$(dir)_INTERACTIVE_TEST_SOURCES := \
+(dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \
 	test_interpolate.cxx 
 

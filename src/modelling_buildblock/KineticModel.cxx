@@ -30,7 +30,7 @@
 */
 
 
-#include "local/stir/modelling/KineticModel.h"
+#include "stir/modelling/KineticModel.h"
 
 
 START_NAMESPACE_STIR

@@ -25,20 +25,18 @@
 /*!
   \file
   \ingroup modelling
-  \brief File that registers all RegisterObject children in modelling
+  \brief File that registers all stir::RegisterObject children in modelling
 
   \author Charalampos Tsoumpas
   
   $Date$
   $Revision$
 */
-#include "local/stir/modelling/PatlakPlot.h"
-//#include "local/stir/modelling/KineticModel.h"
+#include "stir/modelling/PatlakPlot.h"
 
 START_NAMESPACE_STIR
 
 static PatlakPlot::RegisterIt dummy113;
-//static KineticModel::RegisterIt dummy213; // ChT::It seems to work fine without it. I have not understand yet why.
 
 END_NAMESPACE_STIR
 

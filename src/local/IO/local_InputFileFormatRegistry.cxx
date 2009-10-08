@@ -29,13 +29,7 @@
 
 #include "stir/IO/InputFileFormatRegistry.txx"
 
-// instantiations
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"  
-#include "local/stir/DynamicDiscretisedDensity.h" 
-
 START_NAMESPACE_STIR
 
-template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid >;
-template class InputFileFormatRegistry<DynamicDiscretisedDensity>;
 
 END_NAMESPACE_STIR

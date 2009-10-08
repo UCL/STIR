@@ -28,7 +28,7 @@
   $Revision$
 */
 
-#include "local/stir/GatedProjData.h"
+#include "stir/GatedProjData.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ProjDataFromStream.h"
 #include <iostream>

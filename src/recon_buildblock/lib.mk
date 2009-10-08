@@ -47,7 +47,8 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx \
-	
+	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx	
+
 #InputFileFormatRegistry_recon_buildblock.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)

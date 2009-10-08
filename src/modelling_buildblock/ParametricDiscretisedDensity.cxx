@@ -29,10 +29,10 @@
   $Revision$
 */
 
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 #include "boost/lambda/lambda.hpp"
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include <iostream>
 
 START_NAMESPACE_STIR

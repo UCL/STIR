@@ -26,44 +26,8 @@
   $Revision$
 */
 
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"  
-#include "local/stir/DynamicDiscretisedDensity.h" 
-#ifdef HAVE_LLN_MATRIX
-#include "local/stir/IO/ECAT7ParametricDensityOutputFileFormat.h" 
-#include "local/stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h" 
-#else
-#include "local/stir/modelling/KineticParameters.h"  
-#include "local/stir/IO/InterfileParametricDensityOutputFileFormat.h" 
-#include "local/stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h" 
-#endif
 
 START_NAMESPACE_STIR
-#if 0
-  template <>
-  shared_ptr<OutputFileFormat<ParametricDiscretisedDensity<3,KineticParameters<2,float> > > > 
-  OutputFileFormat<ParametricDiscretisedDensity<3,KineticParameters<2,float> > >::_default_sptr = 
-  new InterfileParametricDensityOutputFileFormat<3,KineticParameters<2,float> >;
-#else
-  template <>
-  shared_ptr<OutputFileFormat<ParametricVoxelsOnCartesianGrid > >
-  OutputFileFormat<ParametricVoxelsOnCartesianGrid>::_default_sptr = 
-#ifdef HAVE_LLN_MATRIX
-  new ecat::ecat7::ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;
-#else
-  new InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType >;
-#endif
-#endif
-#if 0
-  template <>
-  shared_ptr<OutputFileFormat<DynamicDiscretisedDensity > >
-  OutputFileFormat<DynamicDiscretisedDensity>::
-  _default_sptr = 
-#ifdef HAVE_LLN_MATRIX
-  new ecat::ecat7::ECAT7DynamicDiscretisedDensityOutputFileFormat;
-#else
-  new InterfileDynamicDiscretisedDensityOutputFileFormat;
-#endif
-#endif
 
 END_NAMESPACE_STIR
 

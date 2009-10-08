@@ -29,7 +29,7 @@
 */
 
 
-#include "local/stir/modelling/PatlakPlot.h"
+#include "stir/modelling/PatlakPlot.h"
 #include "stir/linear_regression.h"
 
 START_NAMESPACE_STIR
@@ -39,8 +39,6 @@ PatlakPlot::
 set_defaults()
 {
   base_type::set_defaults();
-  //  this->_dyn_image_filename="";
-  //  this->_par_image_filename="";
   this->_blood_data_filename="";
   this->_cal_factor=1.F;
   this->_starting_frame=0;
@@ -106,14 +104,6 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
       for(sample_num=1 ; sample_num<starting_frame; ++sample_num, ++cur_iter )
 	{
 	  sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
-#if 0
-	  std::cerr << sample_num << " " << plasma_data.get_time_frame_definitions().get_start_time(sample_num) 
-		    << " " <<time_frame_definitions.get_start_time(sample_num) 
-		    << " " <<plasma_data.get_time_frame_definitions().get_duration(sample_num) 
-		    << " " <<time_frame_definitions.get_duration(sample_num)
-		    << " " <<plasma_data.get_time_frame_definitions().get_end_time(sample_num) 
-		    << " " <<time_frame_definitions.get_end_time(sample_num) << "\n";
-#endif
 	}
       
       assert(cur_iter==plasma_data.begin()+starting_frame-1);
@@ -121,19 +111,11 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
       for(sample_num=starting_frame ; cur_iter!=plasma_data.end() ; ++sample_num, ++cur_iter )
 	{
 	 sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
-#if 0
-	  std::cerr << sample_num << " " <<plasma_data.get_time_frame_definitions().get_start_time(sample_num) 
-		    << " " <<time_frame_definitions.get_start_time(sample_num) 
-		    << " " <<plasma_data.get_time_frame_definitions().get_duration(sample_num) 
-		    << " " <<time_frame_definitions.get_duration(sample_num)
-		    << " " <<plasma_data.get_time_frame_definitions().get_end_time(sample_num) 
-		    << " " <<time_frame_definitions.get_end_time(sample_num) << "\n";
-#endif
 	  patlak_array[1][sample_num]=sum_value;
 	  patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
 	  if(plasma_data.get_if_decay_corrected())
 	    {
-	      const float dec_fact=decay_correct_factor(6586.2F,plasma_data.get_time_frame_definitions().get_start_time(sample_num),
+	      const float dec_fact=decay_correction_factor(6586.2F,plasma_data.get_time_frame_definitions().get_start_time(sample_num),
 						  plasma_data.get_time_frame_definitions().get_end_time(sample_num));
 	      patlak_array[1][sample_num]/=dec_fact;
 	      patlak_array[2][sample_num]/=dec_fact;							
@@ -187,7 +169,7 @@ create_model_matrix()
 
       if(this->_plasma_frame_data.get_if_decay_corrected())
 	{
-	  const float dec_fact=decay_correct_factor(6586.2F,this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
+	  const float dec_fact=decay_correction_factor(6586.2F,this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
 						    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num));
 	  patlak_array[1][sample_num]/=dec_fact;
 	  patlak_array[2][sample_num]/=dec_fact;							

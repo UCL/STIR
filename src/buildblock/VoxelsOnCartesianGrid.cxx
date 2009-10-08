@@ -425,11 +425,9 @@ template class VoxelsOnCartesianGrid<float>;
 
 END_NAMESPACE_STIR
 
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/KineticParameters.h"
+#include "stir/modelling/KineticParameters.h"
 namespace stir {
   template class VoxelsOnCartesianGrid<KineticParameters<1,float> >; 
   template class VoxelsOnCartesianGrid<KineticParameters<2,float> >; 
   template class VoxelsOnCartesianGrid<KineticParameters<3,float> >; 
 }
-#endif

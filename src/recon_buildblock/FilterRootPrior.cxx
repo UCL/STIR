@@ -30,6 +30,8 @@
 
 #include "stir/recon_buildblock/FilterRootPrior.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 #include "stir/DataProcessor.h"
 
 START_NAMESPACE_STIR
@@ -159,9 +161,9 @@ FilterRootPrior<DataT>::set_defaults()
   filter_ptr = 0;  
 }
 
-template <>
+template <typename DataT>
 const char * const 
-FilterRootPrior<DiscretisedDensity<3,float> >::
+FilterRootPrior<DataT>::
 registered_name =
   "FilterRootPrior";
 
@@ -172,29 +174,7 @@ registered_name =
 #  endif
 
 
-#if 0
-// registration stuff moved to recon_buildblock_registries.cxx
-
-// Register this class in the ImageProcessor registry
-static FilterRootPrior<float>::RegisterIt dummy;
-#endif
-
 template class FilterRootPrior<DiscretisedDensity<3,float> >;
+template class FilterRootPrior<ParametricVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
-
-
-#if 1
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template <>
-  const char * const 
-  FilterRootPrior<ParametricVoxelsOnCartesianGrid >::
-  registered_name =
-  "FilterRootPrior";
-  template class FilterRootPrior<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif
-#endif

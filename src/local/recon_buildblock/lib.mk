@@ -16,8 +16,8 @@ $(dir)_LIB_SOURCES:= \
 	BinNormalisationUsingProfile.cxx \
 	BinNormalisationSinogramRescaling.cxx \
 	ProjMatrixByBinSinglePhoton.cxx \
-	ParametricQuadraticPrior.cxx \
-	PatlakObjectiveFunctionFromDynamicProjectionData.cxx 
+	ParametricQuadraticPrior.cxx 
+
 
 #	PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData.cxx \
 #	BackProjectorByBinDistanceDriven.cxx \

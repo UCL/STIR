@@ -30,16 +30,11 @@ $(dir)_SOURCES = \
 	interpolate_projdata.cxx \
 	make_grid_image.cxx \
 	make_binary_image.cxx \
-	apply_patlak_to_images.cxx \
 	list_TAC_ROI_values.cxx \
 	Bland_Altman_plot.cxx \
-	get_dynamic_images_from_parametric_images.cxx \
 	get_total_counts.cxx \
-	mult_model_with_dyn_images.cxx \
 	image_flip_x.cxx \
-	write_patlak_matrix.cxx \
 	abs_image.cxx \
-	mult_image_parameters.cxx \
 	precompute_denominator_SPS.cxx \
 	cleanup966.cxx \
 	Hounsfield2mu.cxx

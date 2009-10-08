@@ -33,7 +33,7 @@
 #include "stir/NestedIterator.h"
 // for ParametricVoxelsOnCartesianGrid typedef 
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "local/stir/modelling/KineticParameters.h"
+#include "stir/modelling/KineticParameters.h"
 START_NAMESPACE_STIR
 template <typename DiscDensT>
 class ParametricDiscretisedDensity;
@@ -188,6 +188,6 @@ typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>
 
 
 END_NAMESPACE_STIR
-//#include "local/stir/modelling/ParametricDiscretisedDensity.inl"
+//#include "stir/modelling/ParametricDiscretisedDensity.inl"
 
 #endif //__stir_modelling_ParametricDiscretisedDensity_H__

@@ -31,6 +31,8 @@
 #include "stir/ThresholdMinToSmallPositiveValueDataProcessor.h"
 #include "stir/thresholding.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"  
+#include "stir/modelling/KineticParameters.h"  
 
 START_NAMESPACE_STIR
 
@@ -111,16 +113,12 @@ ThresholdMinToSmallPositiveValueDataProcessor<DataT>::
 // have the above variable in a separate file, which you need to pass at link time
 
 template class ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3,float> >;
-
+template class ThresholdMinToSmallPositiveValueDataProcessor< ParametricVoxelsOnCartesianGrid >;
+//template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<1,float> > >;
+//template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<2,float> > >;
+//template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<3,float> > >;
 END_NAMESPACE_STIR
 
-#ifdef STIR_DEVEL  
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"  
-#include "local/stir/modelling/KineticParameters.h"  
-namespace stir {  
-  template class ThresholdMinToSmallPositiveValueDataProcessor<ParametricVoxelsOnCartesianGrid >;   
-}  
-#endif  
 
 
 

@@ -2,8 +2,8 @@ OSMAPOSLParameters :=
 ; example file for running OSEM with interfiltering
 ; filter specific things are at the end
 
-objective function type:=PatlakObjectiveFunctionFromDynamicProjectionData
-PatlakObjectiveFunctionFromDynamicProjectionData Parameters:=
+objective function type:=PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
 
 input file := SOME_DYNAMIC_PROJDATA.S
 
@@ -62,7 +62,7 @@ In total counts := 0
 ;In correct scale := 1
 end Patlak Plot Parameters :=
 
-end PatlakObjectiveFunctionFromDynamicProjectionData Parameters:=
+end PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:=
 
 ; Number of subsets should be a divisor of num_views/4
 number of subsets:=NUM_SUBSETS

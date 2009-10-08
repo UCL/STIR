@@ -34,6 +34,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include <algorithm>
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 
 START_NAMESPACE_STIR
 
@@ -272,14 +274,8 @@ compute_sensitivities()
 #  endif
 
 template class PoissonLogLikelihoodWithLinearModelForMean<DiscretisedDensity<3,float> >;
+template class PoissonLogLikelihoodWithLinearModelForMean<ParametricVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
 
 
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class PoissonLogLikelihoodWithLinearModelForMean<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif

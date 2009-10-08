@@ -33,6 +33,8 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 
 START_NAMESPACE_STIR
 
@@ -358,13 +360,8 @@ subsets_are_approximately_balanced(std::string& warning_message) const
 #  endif
 
 template class GeneralisedObjectiveFunction<DiscretisedDensity<3,float> >;
+template class GeneralisedObjectiveFunction<ParametricVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
 
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class GeneralisedObjectiveFunction<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif
+

@@ -130,8 +130,8 @@
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
 #ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #endif
 
 #include <fstream> 

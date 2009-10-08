@@ -20,7 +20,7 @@
 /*!
   \file
   \ingroup GeneralisedObjectiveFunction
-  \brief Implementation of class stir::PatlakObjectiveFunctionFromDynamicProjectionData
+  \brief Implementation of class stir::PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -58,20 +58,20 @@
 #include <algorithm>
 #include <string> 
 // For the Patlak Plot Modelling
-#include "local/stir/modelling/ModelMatrix.h"
-#include "local/stir/recon_buildblock/PatlakObjectiveFunctionFromDynamicProjectionData.h"
+#include "stir/modelling/ModelMatrix.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
 
 START_NAMESPACE_STIR
 
 template<typename TargetT>
 const char * const 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 registered_name = 
-"PatlakObjectiveFunctionFromDynamicProjectionData";
+"PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData";
 
 template<typename TargetT>
 void
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_defaults()
 {
   base_type::set_defaults();
@@ -118,12 +118,12 @@ set_defaults()
 
 template<typename TargetT>
 void
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 initialise_keymap()
 {
   base_type::initialise_keymap();
-  this->parser.add_start_key("PatlakObjectiveFunctionFromDynamicProjectionData Parameters");
-  this->parser.add_stop_key("End PatlakObjectiveFunctionFromDynamicProjectionData Parameters");
+  this->parser.add_start_key("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters");
+  this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters");
   this->parser.add_key("input file",&this->_input_filename);
 
   // parser.add_key("mash x views", &num_views_to_add);   // KT 20/06/2001 disabled
@@ -155,7 +155,7 @@ initialise_keymap()
 
 template<typename TargetT>
 bool
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 post_processing()
 {
   if (base_type::post_processing() == true)
@@ -192,15 +192,15 @@ post_processing()
 }
 
 template <typename TargetT>
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
-PatlakObjectiveFunctionFromDynamicProjectionData()
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData()
 {
   this->set_defaults();
 }
 
 template <typename TargetT>
 TargetT *
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 construct_target_ptr() const
 {  
   return
@@ -220,11 +220,11 @@ construct_target_ptr() const
 
 template<typename TargetT>
 bool
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {  // call actual_subsets_are_approximately_balanced( for first single_frame_obj_func
   if (this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames() == 0 || this->_single_frame_obj_funcs.size() == 0)
-    error("PatlakObjectiveFunctionFromDynamicProjectionData:\n"
+    error("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
 	  "actual_subsets_are_approximately_balanced called but not frames yet.\n");
   else if(this->_single_frame_obj_funcs.size() != 0)
     {
@@ -234,7 +234,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
       return frames_are_balanced;
     }
   else 
-    warning("Something stange happened in PatlakObjectiveFunctionFromDynamicProjectionData:\n"
+    warning("Something stange happened in PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
 	    "actual_subsets_are_approximately_balanced \n");
   return 
     false;    
@@ -245,61 +245,61 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 ***************************************************************/
 template <typename TargetT>
 const DynamicProjData& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_dyn_proj_data() const
 { return *this->_dyn_proj_data_sptr; }
 
 template <typename TargetT>
 const shared_ptr<DynamicProjData>& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_dyn_proj_data_sptr() const
 { return this->_dyn_proj_data_sptr; }
 
 template <typename TargetT>
 const int 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_max_segment_num_to_process() const
 { return this->_max_segment_num_to_process; }
 
 template <typename TargetT>
 const bool 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_zero_seg0_end_planes() const
 { return this->_zero_seg0_end_planes; }
 
 template <typename TargetT>
 const DynamicProjData& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_additive_dyn_proj_data() const
 { return *this->_additive_dyn_proj_data_sptr; }
 
 template <typename TargetT>
 const shared_ptr<DynamicProjData>& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_additive_dyn_proj_data_sptr() const
 { return this->_additive_dyn_proj_data_sptr; }
 
 template <typename TargetT>
 const ProjectorByBinPair& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_projector_pair() const
 { return *this->_projector_pair_ptr; }
 
 template <typename TargetT>
 const shared_ptr<ProjectorByBinPair>& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_projector_pair_sptr() const
 { return this->_projector_pair_ptr; }
 
 template <typename TargetT>
 const BinNormalisation& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_normalisation() const
 { return *this->_normalisation_sptr; }
 
 template <typename TargetT>
 const shared_ptr<BinNormalisation>& 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 get_normalisation_sptr() const
 { return this->_normalisation_sptr; }
 
@@ -309,7 +309,7 @@ get_normalisation_sptr() const
 ***************************************************************/
 template<typename TargetT>
 int
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_num_subsets(const int num_subsets)
 {
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
@@ -327,7 +327,7 @@ set_num_subsets(const int num_subsets)
 ***************************************************************/
 template<typename TargetT>
 Succeeded 
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_up(shared_ptr<TargetT > const& target_sptr)
 {
   if (base_type::set_up(target_sptr) != Succeeded::yes)
@@ -426,7 +426,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 
 template<typename TargetT>
 void
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
 						      const TargetT &current_estimate, 
 						      const int subset_num)
@@ -464,7 +464,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
 template<typename TargetT>
 double
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						  const int subset_num)
 {
@@ -496,7 +496,7 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
 
 template<typename TargetT>
 void
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
   // TODO this will NOT add to the subset sensitivity, but overwrite
@@ -517,7 +517,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
 template<typename TargetT>
 Succeeded
-PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>::
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								       const TargetT& input,
 								       const int subset_num) const
@@ -527,7 +527,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     if (!input.has_same_characteristics(*this->sensitivity_sptrs[0],  /////////////////////1
 					explanation))
       {
-	warning("PatlakObjectiveFunctionFromDynamicProjectionData:\n"
+	warning("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
 		"sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
 		"should have the same characteristics.\n%s",
 		explanation.c_str());
@@ -619,13 +619,6 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   return Succeeded::yes;
 }
 
-
-#  ifdef _MSC_VER
-// prevent warning message on instantiation of abstract class 
-#  pragma warning(disable:4661)
-#  endif // _MSC_VER
-
-template class PatlakObjectiveFunctionFromDynamicProjectionData<ParametricVoxelsOnCartesianGrid >;
 
 END_NAMESPACE_STIR
 

@@ -1,7 +1,7 @@
 #
 # $Id$
 #
-dir := local/iterative/POSMAPOSL
+dir := iterative/POSMAPOSL
 
 $(dir)_SOURCES :=  \
 	PatlakOSMAPOSL.cxx

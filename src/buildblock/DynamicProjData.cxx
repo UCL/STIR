@@ -28,7 +28,7 @@
   $Revision$
 */
 
-#include "local/stir/DynamicProjData.h"
+#include "stir/DynamicProjData.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ProjDataFromStream.h"
 #include <iostream>

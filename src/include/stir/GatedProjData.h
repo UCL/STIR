@@ -26,7 +26,7 @@
   $Date$
   $Revision$
 */
-#include "local/stir/MultipleProjData.h"
+#include "stir/MultipleProjData.h"
 #include <string>
 
 START_NAMESPACE_STIR

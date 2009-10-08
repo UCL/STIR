@@ -9,18 +9,18 @@ trap "echo ERROR" ERR
 #Run Parametric Reconstruction
 WORKSPACE=`pwd`
 
-INPUTDIR=$WORKSPACE/local/recon_test/input/
+INPUTDIR=$WORKSPACE/recon_test/input/
 NUMSUBS=4 # 16 subsets create a difference in the direct method of more than 8%!!!
 ITER=40
 SAVITER=40
-MAXSEG=-1
+MAXSEG=3
 export INPUTDIR
 export NUMSUBS
 export ITER
 export MAXSEG
 export SAVITER
 
-PATH=${WORKSPACE}/local/scripts:$WORKSPACE/$DEST/local/utilities:$WORKSPACE/$DEST/local/iterative/POSMAPOSL:$WORKSPACE/$DEST/local/iterative/POSSPS:$WORKSPACE/$DEST/utilities:$PATH
+PATH=${WORKSPACE}/local/scripts:$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/iterative/POSMAPOSL:~/binnew:$PATH
 
 mkdir -p test_modelling_output
 cd test_modelling_output
@@ -45,7 +45,7 @@ generate_image ${INPUTDIR}generate_all1.par
 conv_to_ecat7 all1.img all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv "ECAT 931" # 28 frames
 fi
 
-copy_frame_info.sh --frame-info-only  t00196.fdef all1.img 
+#copy_frame_info.sh --frame-info-only  t00196.fdef all1.img 
 
 if [ ! -r all1-all1000.img ]; then
 stir_math --including-first --times-scalar 1000 all1000 all1.hv
@@ -57,7 +57,7 @@ cp all1.img dyn_sens.img
 cp all1-all1000.img indirect_Patlak.img
 
 get_dynamic_images_from_parametric_images dyn_from_p0005-p5.img p0005-p5.img  ${INPUTDIR}PatlakPlot.par
-copy_frame_info.sh --frame-info-only  ${INPUTDIR}t00196.fdef dyn_from_p0005-p5.img
+#copy_frame_info.sh --frame-info-only  ${INPUTDIR}t00196.fdef dyn_from_p0005-p5.img
 apply_patlak_to_images indirect_Patlak.img dyn_from_p0005-p5.img ${INPUTDIR}PatlakPlot.par
 
 echo "Test the 'get_dynamic_images_from_parametric_images'"
@@ -74,26 +74,30 @@ type :=  ray tracing
 end :=
 EOF
 
-for fr in `count 1 28`; do
+for fr in `count 23 28`; do
     fwdtest fwd_dyn_from_p0005-p5_f${fr}g1d0b0 ${INPUTDIR}ECAT_931_projdata_template.hs dyn_from_p0005-p5_img_f${fr}g1d0b0.hv fwd.par < /dev/null
 done
 fi
 
 tmpvar="" ;
-for fr in `count 1 28 `; do
+for fr in `count 1 23 `; do
+ tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f23g1d0b0.hs"
+done
+for fr in `count 24 28 `; do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f${fr}g1d0b0.hs"
 done
+
 
 #tmpvar=`count --pre  "fwd_dyn_from_p0005-p5_f" --post "g1d0b0.hs" 1 28`
 conv_to_ecat7 -s fwd_dyn_from_p0005-p5.S $tmpvar
 
-copy_frame_info.sh --frame-info-only  t00196.fdef fwd_dyn_from_p0005-p5.S
+#copy_frame_info.sh --frame-info-only  t00196.fdef fwd_dyn_from_p0005-p5.S
 #copy_frame_info.sh --frame-info-only t00196.fdef dyn_from_p0005-p5.img
-for direct in OSMAPOSL OSSPS; do
+for direct in OSMAPOSL ; do 
 cp ${INPUTDIR}P${direct}.par .
 echo "Test the direct P${direct} Patlak Plot reconstruction"
 rm -f P${direct}.txt; Patlak${direct} P${direct}.par > P${direct}.txt
-echo "Multiply the parametric images with the model matrix to get the correspoding dynamic images."
+echo "Multiply the parametri8c images with the model matrix to get the correspoding dynamic images."
 get_dynamic_images_from_parametric_images dyn_from_recon_p0005-p5.img P${direct}_${ITER}.img  ${INPUTDIR}PatlakPlot.par
 get_dynamic_images_from_parametric_images dyn_sens.img sens.img ${INPUTDIR}PatlakPlot.par
 ifheaders_for_ecat7 p0005-p5.img < /dev/null
@@ -128,9 +132,11 @@ fi
 mult_model_with_dyn_images test_mult_dyn_with_model.img dyn_from_p0005-p5.img ${INPUTDIR}PatlakPlot.par
 ifheaders_for_ecat7 test_mult_dyn_with_model.img < /dev/null
 
+rm -f manip_image_counts.inp ; echo 9 > manip_image_counts.inp ; echo 0 >> manip_image_counts.inp
 echo " "
 echo "Min Counts for Par 1 "
-value_1=`sh min_counts_in_images.sh test_mult_dyn_with_model_img_f1g1d0b0.hv`
+
+value_1=`manip_image test_mult_dyn_with_model_img_f1g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $6}' `
 is_differ=`echo ${value_1} | nawk ' { print ($1>.0001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate min_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
@@ -140,7 +146,7 @@ else
 fi
 
 echo "Min Counts for Par 2 "
-value_2=`sh min_counts_in_images.sh test_mult_dyn_with_model_img_f2g1d0b0.hv`
+value_2=`manip_image test_mult_dyn_with_model_img_f2g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $6}' `
 is_differ=`echo ${value_2} | nawk ' { print ($1>.0001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate min_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
@@ -150,7 +156,7 @@ else
 fi
 
 echo "Max Counts for Par 1 "
-value_3=`sh max_counts_in_images.sh test_mult_dyn_with_model_img_f1g1d0b0.hv`
+value_3=`manip_image test_mult_dyn_with_model_img_f1g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $7}' `
 # 6.391818 is the scale due to the zoom factor.
 is_differ=`echo ${value_3} | nawk ' { print (($1-1619.32*6.391818*6.391818)*($1-1619.32*6.391818*6.391818)>.5*6.391818*6.391818*6.391818*6.391818*.5) } '` 
 if [  ${is_differ} -eq 1 ]; then   
@@ -161,7 +167,7 @@ else
 fi
 
 echo "Max Counts for Par 2 "
-value_4=`sh max_counts_in_images.sh test_mult_dyn_with_model_img_f2g1d0b0.hv`
+value_4=`manip_image test_mult_dyn_with_model_img_f2g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $7}' `
 is_differ=`echo ${value_4} | nawk ' { print (($1-0.356552*6.391818*6.391818)*($1-0.356552*6.391818*6.391818)>.001*6.391818*6.391818*.001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate max_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
@@ -171,7 +177,7 @@ else
 fi
 
 # Extract Sensitivity Frames
-sh extract_frames.sh sens.img  < /dev/null
+ifheaders_for_ecat7 sens.img  < /dev/null
 
 echo "The sensitivity image is not tested, yet!!!"
 # Multiply the parametric images with the sensitivity images ### NOT IMPLEMENTED YET
@@ -183,8 +189,6 @@ for it in ${ITER}; do
     for fr in `count 24 28`; do
     stir_math --including-first --accumulate sum_over_frames_test_${it}.hv mult_${it}_f${fr}.hv
     done
-# Estimate the total counts of the sum of the dynamic images
-#    sh total_counts_in_images.sh sum_over_frames_test_${it}.hv 
 done
 
 stir_math -s sum_frame_sinograms fwd_dyn_from_p0005-p5_f23g1d0b0.hs
@@ -195,4 +199,4 @@ done # POSMAPOSL POSSPS#
 cd .. ;  rm -fr test_modelling_output
 
 echo " " 
-echo "The Direct Reconstructions tests are OK. " 
+echo "The Direct Reconstructions tests are OK. "

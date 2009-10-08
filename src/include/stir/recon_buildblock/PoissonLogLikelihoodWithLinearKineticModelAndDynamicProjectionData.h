@@ -19,7 +19,7 @@
 /*!
   \file
   \ingroup GeneralisedObjectiveFunction
-  \brief Declaration of class stir::PatlakObjectiveFunctionFromDynamicProjectionData
+  \brief Declaration of class stir::PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -29,19 +29,17 @@
   $Revision$
 */
 
-#ifndef __stir_recon_buildblock_PatlakObjectiveFunctionFromDynamicProjectionData_H__
-#define __stir_recon_buildblock_PatlakObjectiveFunctionFromDynamicProjectionData_H__
+#ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData_H__
+#define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData_H__
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/VectorWithOffset.h"
-#include "local/stir/DynamicProjData.h"
-#include "local/stir/decay_correct.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/OneParamModel.h"
-#include "local/stir/modelling/KineticParameters.h"
-#include "local/stir/modelling/PatlakPlot.h"
+#include "stir/DynamicProjData.h"
+#include "stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
+#include "stir/modelling/PatlakPlot.h"
 
 START_NAMESPACE_STIR
 
@@ -55,13 +53,13 @@ START_NAMESPACE_STIR
 */
 
 template <typename TargetT>
-class PatlakObjectiveFunctionFromDynamicProjectionData: 
-public  RegisteredParsingObject<PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>,
+class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData: 
+public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
 				GeneralisedObjectiveFunction<TargetT>,
 				PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
 {
  private:
-  typedef  RegisteredParsingObject<PatlakObjectiveFunctionFromDynamicProjectionData<TargetT>,
+  typedef  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
 				GeneralisedObjectiveFunction<TargetT>,
 				PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
   typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float> > SingleFrameObjFunc ;
@@ -71,7 +69,7 @@ public  RegisteredParsingObject<PatlakObjectiveFunctionFromDynamicProjectionData
   //! Name which will be used when parsing a GeneralisedObjectiveFunction object
   static const char * const registered_name; 
 
-  PatlakObjectiveFunctionFromDynamicProjectionData();
+  PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData();
 
   //! Returns a pointer to a newly allocated target object (with 0 data).
   /*! Dimensions etc are set from the \a dyn_proj_data_sptr and other information set by parsing,
@@ -197,6 +195,6 @@ public  RegisteredParsingObject<PatlakObjectiveFunctionFromDynamicProjectionData
 
 END_NAMESPACE_STIR
 
-//#include "stir/recon_buildblock/PatlakObjectiveFunctionFromDynamicProjectionData.inl"
+//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.inl"
 
 #endif

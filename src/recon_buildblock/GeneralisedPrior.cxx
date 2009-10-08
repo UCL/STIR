@@ -31,6 +31,8 @@
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/KineticParameters.h"
 
 START_NAMESPACE_STIR
 
@@ -75,14 +77,6 @@ add_multiplication_with_approximate_Hessian(TargetT& output,
 #  endif
 
 template class GeneralisedPrior<DiscretisedDensity<3,float> >;
+template class GeneralisedPrior<ParametricVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
-
-
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class GeneralisedPrior<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif

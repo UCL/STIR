@@ -30,8 +30,8 @@
 
 #ifdef HAVE_LLN_MATRIX
 
-#include "local/stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/NumericType.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Scanner.h"

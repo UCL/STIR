@@ -38,8 +38,8 @@
 
 */
 
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/PatlakPlot.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/modelling/PatlakPlot.h"
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"

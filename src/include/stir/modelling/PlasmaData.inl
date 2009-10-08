@@ -27,6 +27,8 @@
   $Date$
   $Revision$
 */
+#include "stir/decay_correction_factor.h"
+#include "stir/numerics/integrate_discrete_function.h"
 
 START_NAMESPACE_STIR
 
@@ -123,23 +125,23 @@ bool  PlasmaData::
 get_if_decay_corrected() const
 {  return this->_is_decay_corrected; }
 
- void PlasmaData::
- decay_correct_PlasmaData()  
+void PlasmaData::
+decay_correct_PlasmaData()  
 {
 	    
-  if (PlasmaData::_is_decay_corrected==true)
+  if (this->_is_decay_corrected==true)
     warning("PlasmaData are already decay corrected");
   else
     {
-      assert(-1*_isotope_halflife<0);
-	for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
-	    cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
+      assert(this->_isotope_halflife>0);
+      for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
+	  cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
 	{
-		cur_iter->set_plasma_counts_in_kBq(cur_iter->get_plasma_counts_in_kBq()*decay_correct_factor(_isotope_halflife,cur_iter->get_time_in_s()));
-		cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*decay_correct_factor(_isotope_halflife,cur_iter->get_time_in_s()));	
+	  cur_iter->set_plasma_counts_in_kBq(cur_iter->get_plasma_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s()));
+	  cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s()));	
 	}	
-	 PlasmaData::set_if_decay_corrected(true);
-	}
+      PlasmaData::set_if_decay_corrected(true);
+    }
 }
 
   //! Sorts the plasma_data into frames
@@ -158,7 +160,7 @@ PlasmaData PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame
   PlasmaData::const_iterator cur_iter;
   std::vector<PlasmaSample>::iterator frame_iter=samples_in_frames_vector.begin();
 
-  // Estimate the plasma_frame_vector and the plasma_frame_sum_vector using the linear_integral() implementation
+  // Estimate the plasma_frame_vector and the plasma_frame_sum_vector using the integrate_discrete_function() implementation
   for (unsigned int frame_num=1; frame_num<=num_frames && frame_iter!=samples_in_frames_vector.end() ; ++frame_num, ++frame_iter )
     {     
       std::vector<float> time_frame_vector ; 
@@ -199,9 +201,9 @@ PlasmaData PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame
 	}
       if(time_frame_vector.size()!=1)
 	{
-  	  frame_iter->set_blood_counts_in_kBq(linear_integral(blood_frame_vector,time_frame_vector)/
+  	  frame_iter->set_blood_counts_in_kBq(integrate_discrete_function(time_frame_vector,blood_frame_vector)/
 					      (time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0])) ;
-	  frame_iter->set_plasma_counts_in_kBq(linear_integral(plasma_frame_vector,time_frame_vector)/
+	  frame_iter->set_plasma_counts_in_kBq(integrate_discrete_function(time_frame_vector,plasma_frame_vector)/
 					       (time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0]));
 	  frame_iter->set_time_in_s(0.5*(time_frame_vector[time_frame_vector.size()-1]+time_frame_vector[0]));
 	  start_times_vector.push_back(time_frame_vector[0]); 

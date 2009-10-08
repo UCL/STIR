@@ -10,10 +10,6 @@ $(dir)_TEST_SOURCES :=  \
 	test_BSplines.cxx \
 	test_BSplinesRegularGrid1D.cxx \
 	test_BSplinesRegularGrid.cxx \
-	test_linear_integral.cxx \
-	test_DynamicDiscretisedDensity.cxx \
-	test_modelling.cxx \
-	test_ParametricDiscretisedDensity.cxx \
 	test_erf.cxx 
 
 ifeq ($(STIR_DEVEL_MOTION),1)
@@ -21,8 +17,6 @@ $(dir)_TEST_SOURCES +=  \
   test_RigidObject3DTransformation.cxx
 endif
 
-$(dir)_INTERACTIVE_TEST_SOURCES :=\
-	test_IO_ParametricDiscretisedDensity.cxx
 
 # rule to ignore registries
 # note: has to be before include statement as that changes value of $(dir)
