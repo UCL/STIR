@@ -29,101 +29,11 @@
   $Revision$
 */
 
-
-#include "stir/modulo.h"
-#include "stir/Array.h"
-#include <algorithm> // for std::fill
+#include "local/stir/BSplinesDetail.inl"
+#include "stir/assign.h"
 START_NAMESPACE_STIR
+
 namespace BSpline {
-
-#if defined(_MSC_VER) && _MSC_VER<=1300
-
-  static inline 
-  void set_to_zero(double& v)
-  {
-    v=0;
-  }
-
-  static inline 
-  void set_to_zero(float& v)
-  {
-    v=0;
-  }
-#else
-
-  template <class T>
-  static inline 
-  void set_to_zero(T& v)
-  {
-    v=0;
-  }
-#endif
-
-  template <class T, int num_dimensions>
-  static inline 
-  void set_to_zero(Array<num_dimensions,T>& v)
-  {
-    v.fill(0);
-  }
-
-  template <class T, int num_dimensions>
-  static inline 
-  void set_to_zero(BasicCoordinate<num_dimensions,T>& c)
-  {
-    std::fill(c.begin(), c.end(), 0);
-  }
-
-  template <class T>
-  static inline 
-  void set_to_zero(std::vector<T>& v)
-  {
-    for (typename std::vector<T>::iterator iter = v.begin(); 
-	 iter != v.end(); ++iter)
-      set_to_zero(*iter);
-  }
-
-  namespace detail {
-    static inline void 
-    set_BSpline_values(double& z1, double& z2, double& lambda,
-		       const BSplineType spline_type)
-    {
-      switch(spline_type)
-	{
-	case near_n:
-	  z1=0.;
-	  z2=0.;
-	  break;
-	case linear:
-	  z1=0.;
-	  z2=0.;
-	  break;
-	case quadratic:
-	  z1 = sqrt(8.)-3.;
-	  z2=0.;
-	  break;
-	case cubic:
-	  z1 = sqrt(3.)-2.;
-	  z2=0.;
-	  break;
-	case quartic:
-	  z1 = sqrt(664.-sqrt(438976.))+sqrt(304.)-19.;
-	  z2 = sqrt(664.-sqrt(438976.))-sqrt(304.)-19.;
-	  break;
-	case quintic:
-	  z1 = 0.5*(sqrt(270.-sqrt(70980.))+sqrt(105.)-13.);
-	  z2 = 0.5*(sqrt(270.-sqrt(70980.))-sqrt(105.)-13.);
-	  break;
-	case oMoms:
-	  z1 = (sqrt(105.)-13.)/8.;	
-	  z2 = 0.;		
-	  break;
-	}
-      lambda = (1.-z1)*(1. - (1./z1));
-      if (z2!=0.)
-	lambda *= (1.-z2)*(1. - (1./z2));
-    }
-	
-  } // namespace detail
 
   template <typename out_elemT, typename in_elemT>
   BSplines1DRegularGrid<out_elemT,in_elemT>::
@@ -185,7 +95,7 @@ namespace BSpline {
     assert(relative_position>-input_size+2);
     assert(relative_position<2*input_size-4);
     out_elemT BSplines_value;
-    set_to_zero(BSplines_value);
+    assign(BSplines_value,0);
     const int int_pos =(int)floor(relative_position);
 #if 0
     for (int k=int_pos-2; k<int_pos+3; ++k)		
@@ -286,14 +196,6 @@ namespace BSpline {
   {
     return BSplines_output_sequence(output_relative_position.begin(),
 				    output_relative_position.end());
-  }
-
-  template <typename in_elemT>
-  void
-  linear_extrapolation(std::vector<in_elemT> &input_vector) 
-  {
-    input_vector.push_back(*(input_vector.end()-1)*2 - *(input_vector.end()-2));
-    input_vector.insert(input_vector.begin(), *input_vector.begin()*2 - *(input_vector.begin()+1));
   }
 
 } // end BSpline namespace

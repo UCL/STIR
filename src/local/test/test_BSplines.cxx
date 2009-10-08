@@ -33,7 +33,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
 #include <fstream>
-#include "local/stir/BSplines.h"
+#include "local/stir/BSplines1DRegularGrid.h"
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -336,13 +336,6 @@ namespace BSpline {
 	check_at_sample_points(linear_input, BSplines1DRegularGridTesti,
 			       "check BSplines implementation for o-Moms interpolation");
       }
-      {
-	linear_extrapolation(pre_input_sample);
-	BSplines1DRegularGrid<elemT, elemT> 
-	  BSplines1DRegularGridTest(pre_input_sample, oMoms);
-	check_at_sample_points(pre_input_sample, BSplines1DRegularGridTest,
-			       "check BSplines implementation for o-Moms or linear extrapolation interpolation");
-      }  
     }    
     {
       cerr << "Testing BSplines Continuity..." << endl;	  
@@ -414,15 +407,6 @@ namespace BSpline {
       for (; cur_iter_stir_out!=STIR_output_sample.end(); ++cur_iter_stir_out)	
 	check_if_equal(*cur_iter_stir_out, (elemT)1,	
 		       "check BSplines implementation");  							
-    }		
-    {
-      cerr << "Testing Linear Extrapolation giving a vector as input..." << endl;	  
-      std::vector<elemT>  input_sample(9,1);
-      *input_sample.begin()=10;
-      input_sample.push_back(10);	  
-      linear_extrapolation(input_sample);
-      check_if_equal(*input_sample.begin() *(*(input_sample.end()-1)) , (elemT)361, 
-		     "check BSplines implementation");    	
     }		
     /*  {
 	cerr << "Testing interpolation results. Look at the text files!" << endl;	  

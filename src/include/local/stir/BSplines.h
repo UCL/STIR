@@ -45,112 +45,6 @@ namespace BSpline {
 	
   enum BSplineType 
     {near_n, linear, quadratic, cubic, quartic, quintic, oMoms} ;
-	
-  /*! \ingroup BSpline
-    \brief Temporary class for 1D B-splines
-    \todo remove overlap with the n-dimensional version BSplinesRegularGrid 
-  */
-  template <typename out_elemT, typename in_elemT=out_elemT>
-    class BSplines1DRegularGrid
-    {
-      private:
-      typedef typename std::vector<out_elemT>::iterator RandIterOut; 
-      int input_size; // create in the constructor 
-      double z1;
-      double z2;
-      double lambda;
-	
-	
-      inline
-      out_elemT
-      BSplines_product(const int index, const pos_type relative_position, const bool if_deriv) const;
-
-      inline
-      void
-      set_private_values(BSplineType);
-
-      inline 
-      out_elemT
-      compute_BSplines_value(const pos_type relative_position, const bool if_deriv) const;
-
-      // sadly,VC6.0 needs definition of template members in the class definition
-      template <class IterT>
-      inline
-      void
-      set_coef(IterT input_begin_iterator, IterT input_end_iterator)
-      {		
-	BSplines1DRegularGrid::input_size = input_end_iterator - input_begin_iterator;
-	BSplines_coef_vector.resize(input_size);
-	BSplines_coef(BSplines_coef_vector.begin(),BSplines_coef_vector.end(), 
-		      input_begin_iterator, input_end_iterator, z1, z2, lambda);				
-      }
-	
-      public:
-      std::vector<out_elemT> BSplines_coef_vector;  
-      BSplineType spline_type;
-	
-	
-      //! default constructor: no input
-      inline BSplines1DRegularGrid();
-	
-      //! constructor given a vector as an input, estimates the Coefficients 
-      inline explicit BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector);
-  		
-      //! constructor given a begin_ and end_ iterator as input, estimates the Coefficients 
-      template <class IterT>
-      inline BSplines1DRegularGrid(const IterT input_begin_iterator, 
-				   const IterT input_end_iterator)
-      {	 
-	set_private_values(cubic);	  	
-	set_coef(input_begin_iterator, input_end_iterator);
-      }
-      //! constructor given a begin_ and end_ iterator as input, estimates the Coefficients 
-      template <class IterT>
-      inline BSplines1DRegularGrid(const IterT input_begin_iterator, 
-				   const IterT input_end_iterator, const BSplineType this_type)
-      {	 
-	set_private_values(this_type);	  	
-	set_coef(input_begin_iterator, input_end_iterator);
-      }  
-	
-      inline
-      BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector, const BSplineType this_type); 
-	
-      //! destructor
-      inline ~BSplines1DRegularGrid();
-	
-      inline 
-      out_elemT
-      BSplines(const pos_type relative_position) const;
-	
-      inline 
-      out_elemT
-      BSplines_1st_der(const pos_type relative_position) const;
-	
-      //! same as BSplines()
-      inline
-      const out_elemT 
-      operator() (const pos_type relative_position) const;
-	
-      inline
-      const std::vector<out_elemT> 
-      BSplines_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
-			       RandIterOut output_relative_position_end_iterator);
-      inline
-      const std::vector<out_elemT> 
-      BSplines_output_sequence(std::vector<pos_type> output_relative_position);
-    };
-
-  template <class IterT>
-    inline 
-#if defined(_MSC_VER) && _MSC_VER<=1300
-    float
-#else
-    typename std::iterator_traits<IterT>::value_type
-#endif
-    cplus0(const IterT input_iterator,  
-	   const IterT input_end_iterator,
-	   double pole, const double precision, const bool periodicity);
 
   template <class RandIterOut, class IterT>
     inline  
@@ -171,18 +65,12 @@ namespace BSpline {
     pos_type 
     BSplines_weights(const pos_type relative_position, const BSplineType spline_type);
 
-  template <typename in_elemT>
-    inline
-    void
-    linear_extrapolation(std::vector<in_elemT> &input_vector);
-
 
   //*/
 } // end BSpline namespace
 
 END_NAMESPACE_STIR
 
-#include "local/stir/BSplines.inl"
 #include "local/stir/BSplines_weights.inl"
 #include "local/stir/BSplines_coef.inl"
 

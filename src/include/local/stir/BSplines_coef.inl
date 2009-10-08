@@ -30,11 +30,13 @@
 */
 
 #include "stir/modulo.h"
+#include "stir/assign.h"
 START_NAMESPACE_STIR
 namespace BSpline {
 
-
+  namespace detail {
   template <class IterT>
+  inline 
 #if defined(_MSC_VER) && _MSC_VER<=1300
   float
 #else
@@ -66,6 +68,8 @@ namespace BSpline {
 		
     return	sum/(1-pow(z1,2*input_size-2));
   }   
+  } // end of namespace detail
+
 
   template <class RandIterOut, class IterT>
   void
@@ -109,11 +113,11 @@ namespace BSpline {
 	  cminus(c_end_iterator-c_begin_iterator);
 	std::vector<double>
 	  input_factor_for_cminus(1, -z1), pole_for_cplus(1, -z1), pole_for_cminus(1,-z1);
-	set_to_zero(cplus);
-	set_to_zero(cminus);
+	assign(cplus,0);
+	assign(cminus,0);
 	std::vector<double> input_factor_for_cplus(1, (double)1);
 			
-	*(cplus.begin())=cplus0(
+	*(cplus.begin())=detail::cplus0(
 				input_begin_iterator,input_end_iterator, z1,.00001,0); //k or Nmax_precision
 			
 	IIR_filter(cplus.begin(), cplus.end(),

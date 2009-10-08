@@ -29,12 +29,53 @@
   $Revision$
 */
 #include "stir/round.h"
+#include "stir/assign.h"
 
 START_NAMESPACE_STIR
 
 namespace BSpline {
   ///// implementation functions Out Of the Class ////////
-namespace detail {
+  namespace detail {
+    static inline void 
+    set_BSpline_values(double& z1, double& z2, double& lambda,
+		       const BSplineType spline_type)
+    {
+      switch(spline_type)
+	{
+	case near_n:
+	  z1=0.;
+	  z2=0.;
+	  break;
+	case linear:
+	  z1=0.;
+	  z2=0.;
+	  break;
+	case quadratic:
+	  z1 = sqrt(8.)-3.;
+	  z2=0.;
+	  break;
+	case cubic:
+	  z1 = sqrt(3.)-2.;
+	  z2=0.;
+	  break;
+	case quartic:
+	  z1 = sqrt(664.-sqrt(438976.))+sqrt(304.)-19.;
+	  z2 = sqrt(664.-sqrt(438976.))-sqrt(304.)-19.;
+	  break;
+	case quintic:
+	  z1 = 0.5*(sqrt(270.-sqrt(70980.))+sqrt(105.)-13.);
+	  z2 = 0.5*(sqrt(270.-sqrt(70980.))-sqrt(105.)-13.);
+	  break;
+	case oMoms:
+	  z1 = (sqrt(105.)-13.)/8.;	
+	  z2 = 0.;		
+	  break;
+	}
+      lambda = (1.-z1)*(1. - (1./z1));
+      if (z2!=0.)
+	lambda *= (1.-z2)*(1. - (1./z2));
+    }
+	
 		
   // 1d specialisation
   template <typename out_elemT, typename in_elemT>
@@ -131,7 +172,7 @@ namespace detail {
       bspline_function(spline_types[current_dimension]);
 
     typename SplineFunctionT::result_type value;
-    set_to_zero(value);
+    assign(value,0);
     const int kmin= static_cast<int>(std::ceil(relative_positions[current_dimension]-bspline.kernel_length_right()));
     const int kmax=kmin+bspline.kernel_total_length()-1;
     int k=kmin;
@@ -176,7 +217,7 @@ namespace detail {
     const PieceWiseFunction<pos_type>& bspline =
       bspline_function(spline_types[current_dimension]);
     T value;
-    set_to_zero(value);		
+    assign(value,0);		
     //x-1.5<k<x+1.5
     const int kmin= static_cast<int>(std::ceil(relative_positions[current_dimension]-bspline.kernel_length_right()));
     const int kmax=kmin+bspline.kernel_total_length()-1;
