@@ -32,7 +32,7 @@ $Date$
 $Revision$
 */
 
-#include "local/stir/BSplines.h"
+#include "stir/numerics/BSplines.h"
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -138,6 +138,6 @@ namespace BSpline {
 
 END_NAMESPACE_STIR
 
-#include "local/stir/BSplines1DRegularGrid.inl"
+#include "stir/numerics/BSplines1DRegularGrid.inl"
 
 #endif

@@ -34,8 +34,8 @@
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
 #include <fstream>
-#include "local/stir/BSplines.h"
-#include "local/stir/BSplinesRegularGrid.h"
+#include "stir/numerics/BSplines.h"
+#include "stir/numerics/BSplinesRegularGrid.h"
 #include <vector>
 #include <algorithm>
 #include <string>
