@@ -2,8 +2,8 @@ OSMAPOSLParameters :=
 ; example file for running OSEM with interfiltering
 ; filter specific things are at the end
 
-objective function type:=PatlakObjectiveFunctionFromDynamicProjectionData
-PatlakObjectiveFunctionFromDynamicProjectionData Parameters:=
+objective function type:=PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
 
 input file := fwd_dyn_from_p0005-p5.S
 
@@ -38,16 +38,16 @@ additive sinograms := 0
 ; patlak related files
 Kinetic Model type := Patlak Plot
 Patlak Plot Parameters :=
-time frame definition filename := fwd_dyn_from_p0005-p5.S 
+time frame definition filename := time.fdef
 starting frame := 23
 calibration factor := 9432.31
-blood data filename := t00196.if 
+blood data filename := plasma.if 
 Time Shift := 0
 In total counts := 1
 ;In correct scale := 0
 end Patlak Plot Parameters :=
 
-end PatlakObjectiveFunctionFromDynamicProjectionData Parameters:=
+end PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
 
 ; Number of subsets should be a divisor of num_views/4
 number of subsets:=${NUMSUBS}

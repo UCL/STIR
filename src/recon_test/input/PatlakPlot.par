@@ -1,9 +1,9 @@
 Patlak Plot Parameters:=
 
-time frame definition filename :=t00196.fdef
+time frame definition filename := time.fdef
 starting frame := 23
 calibration factor := 9432.31
-blood data filename := t00196.if 
+blood data filename := plasma.if 
 Time Shift := 0
 In total counts := 1
 In correct scale := 0
