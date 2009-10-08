@@ -20,14 +20,14 @@ export ITER
 export MAXSEG
 export SAVITER
 
-PATH=${WORKSPACE}/local/scripts:$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/iterative/POSMAPOSL:~/binnew:$PATH
+PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/iterative/POSMAPOSL:$PATH
 
 mkdir -p test_modelling_output
 cd test_modelling_output
 rm -f *img
 
-cp ${INPUTDIR}t00196.fdef .
-cp ${INPUTDIR}t00196.if .
+cp ${INPUTDIR}time.fdef .
+cp ${INPUTDIR}plasma.if .
 
 # Create images
 # IF NOT EXIST
@@ -45,7 +45,7 @@ generate_image ${INPUTDIR}generate_all1.par
 conv_to_ecat7 all1.img all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv all1.hv "ECAT 931" # 28 frames
 fi
 
-#copy_frame_info.sh --frame-info-only  t00196.fdef all1.img 
+#copy_frame_info.sh --frame-info-only  time.fdef all1.img 
 
 if [ ! -r all1-all1000.img ]; then
 stir_math --including-first --times-scalar 1000 all1000 all1.hv
@@ -57,7 +57,7 @@ cp all1.img dyn_sens.img
 cp all1-all1000.img indirect_Patlak.img
 
 get_dynamic_images_from_parametric_images dyn_from_p0005-p5.img p0005-p5.img  ${INPUTDIR}PatlakPlot.par
-#copy_frame_info.sh --frame-info-only  ${INPUTDIR}t00196.fdef dyn_from_p0005-p5.img
+#copy_frame_info.sh --frame-info-only  ${INPUTDIR}time.fdef dyn_from_p0005-p5.img
 apply_patlak_to_images indirect_Patlak.img dyn_from_p0005-p5.img ${INPUTDIR}PatlakPlot.par
 
 echo "Test the 'get_dynamic_images_from_parametric_images'"
@@ -91,8 +91,8 @@ done
 #tmpvar=`count --pre  "fwd_dyn_from_p0005-p5_f" --post "g1d0b0.hs" 1 28`
 conv_to_ecat7 -s fwd_dyn_from_p0005-p5.S $tmpvar
 
-#copy_frame_info.sh --frame-info-only  t00196.fdef fwd_dyn_from_p0005-p5.S
-#copy_frame_info.sh --frame-info-only t00196.fdef dyn_from_p0005-p5.img
+#copy_frame_info.sh --frame-info-only  time.fdef fwd_dyn_from_p0005-p5.S
+#copy_frame_info.sh --frame-info-only time.fdef dyn_from_p0005-p5.img
 for direct in OSMAPOSL ; do 
 cp ${INPUTDIR}P${direct}.par .
 echo "Test the direct P${direct} Patlak Plot reconstruction"
