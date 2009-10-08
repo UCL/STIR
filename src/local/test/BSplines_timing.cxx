@@ -20,7 +20,7 @@
 /*!
 \file 
 \ingroup test
-\brief Allows executing timing tests for the BSplinesRegularGrid class
+\brief Allows executing timing tests for the stir::BSpline::BSplinesRegularGrid class
 
 \author Tim Borgeaud
 \author Kris Thielemans
@@ -70,9 +70,9 @@ void usage(char *name) {
   cerr << "A program to test the BSplines interpolation implementation\n\n";
   
   cerr << "Usage: " << name << " [-n number of interpolations] [-s grid size]\n";
-  cerr << "             [-i interpolator] [-2]\n\n";
+  cerr << "             [-i interpolator] [-d 2]\n\n";
   
-  cerr << "   interpolator: near, linear, cubic, quadratic, omoms\n\n";
+  cerr << "   interpolator: near, linear, quadratic, cubic, omoms\n\n";
   
 }
 
