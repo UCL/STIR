@@ -28,20 +28,6 @@ echo.
 set INSTALL_DIR=%1
 
 set ThereWereErrors=0
-echo ------------- Converting ECAT6 file to Interfile ------------- 
-echo Running %INSTALL_DIR%convecat6_if
-%INSTALL_DIR%convecat6_if my_Utahscat600k_ca_seg4 Utahscat600k_ca.scn 1> convecat6_if.log 2> convecat6_if_stderr.log < convecat6_if.inp
-echo ---- Comparing output of convecat6 (error should be 0)
-echo Running %INSTALL_DIR%compare_projdata 
-%INSTALL_DIR%compare_projdata my_Utahscat600k_ca_seg4.hs Utahscat600k_ca_seg4.hs 2>compare_projdata_stderr.log
-echo Running if 
-if ERRORLEVEL 1 goto conv_ecat6_problem
-echo ---- This test seems to be ok !
-goto run_INTBP
-:conv_ecat6_problem
-echo There were problems here!
-set ThereWereErrors=1
-
 
 :run_INTBP
 
@@ -52,7 +38,7 @@ echo --------- TESTS THAT USE INTERPOLATING BACKPROJECTOR --------
 echo.
 echo ------------- Running sensitivity ------------- 
 echo Running %INSTALL_DIR%OSMAPOSL for sensitivity 
-%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> sensitivity.log 2> sensitivity_stderr.log < sensitivity.inp
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> sensitivity.log 2> sensitivity_stderr.log
 
 
 echo ---- Comparing output of sensitivity (should be identical up to tolerance)
@@ -100,10 +86,15 @@ set ThereWereErrors=1
 :run_PM
 echo.
 echo --------- TESTS THAT USE PROJECTION MATRIX --------
+echo Generating initial image
+rem TODO check results
+%INSTALL_DIR%generate_image generate_uniform_image.par
+%INSTALL_DIR%postfilter my_uniform_image_circular.hv my_uniform_image.hv postfilter_truncate_circular_FOV.par
+
 echo.
 echo ------------- Running sensitivity ------------- 
 echo Running %INSTALL_DIR%OSMAPOSL for sensitivity 
-%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log < sensitivity.inp
+%INSTALL_DIR%OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
 
 echo ---- Comparing output of sensitivity (should be identical up to tolerance)
 echo Running %INSTALL_DIR%compare_image 
@@ -148,7 +139,7 @@ echo Running %INSTALL_DIR%compare_image
 %INSTALL_DIR%compare_image test_image_PM_QP_6.hv my_test_image_PM_QP_6.hv
 if ERRORLEVEL 1 goto OSEMQP_problem
 echo ---- This test seems to be ok !
-goto run_OSEMQPweights
+goto run_OSEMPMQPweights
 :OSEMQP_problem
 echo There were problems here!
 set ThereWereErrors=1
