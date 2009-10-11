@@ -27,6 +27,7 @@ $(dir)_SOURCES:=manip_image.cxx \
 	zoom_image.cxx \
 	find_fwhm_in_image.cxx \
 	abs_image.cxx \
+        convert_to_binary_image.cxx \
 	rebin_projdata.cxx \
 	write_proj_matrix_by_bin.cxx \
 	calculate_attenuation_coefficients.cxx \
