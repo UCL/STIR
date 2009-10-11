@@ -99,6 +99,19 @@ public:
   int get_subiteration_num() const
     {return subiteration_num;}
 
+  //! accessor for finding the current subset number
+  /*! The subset number is determined from the subiteration number.
+      If randomise_subset_order is false, the subset number is found
+      as follows:
+      \code
+      (subiteration_num+start_subset_num-1)%num_subsets
+      \endcode
+      When randomise subsets are used, a new random order is initialised
+      before every full iteration. In this case, start_subset_num is ignored
+      (as it doesn't make any sense).
+  */
+  int get_subset_num();
+
   //! Gets a pointer to the initial data
   /*! This is either read from file, or constructed by construct_target_ptr(). 
       In the latter case, its values are set to 0 or 1, depending on the value
@@ -250,9 +263,6 @@ protected:
   // KT 14/12/2001 remove =0 as it's not a pure virtual and the default implementation is usually fine.
   virtual void end_of_iteration_processing(TargetT &current_estimate);
 
-  //! used to randomly generate a subset sequence order for the current iteration
-  VectorWithOffset<int> randomly_permute_subset_order();
-
   shared_ptr<GeneralisedObjectiveFunction<TargetT > >
     objective_function_sptr;
 
@@ -313,6 +323,13 @@ protected:
   virtual void initialise_keymap();
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
+
+ private:
+  //! member storing the order in which the subsets will be traversed in this iteration
+  /*! Initialised and used by get_subset_num() */
+  VectorWithOffset<int> _current_subset_array;
+  //! used to randomly generate a subset sequence order for the current iteration
+  VectorWithOffset<int> randomly_permute_subset_order() const;
 
 
 };
