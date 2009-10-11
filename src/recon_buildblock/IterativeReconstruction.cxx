@@ -566,7 +566,7 @@ end_of_iteration_processing(TargetT &current_estimate)
 template <typename TargetT>
 VectorWithOffset<int> 
 IterativeReconstruction<TargetT>::
-randomly_permute_subset_order()
+randomly_permute_subset_order() const
 {
 
   VectorWithOffset<int> temp_array(this->num_subsets),final_array(this->num_subsets);
@@ -595,6 +595,21 @@ randomly_permute_subset_order()
 }
 
 
+template <typename TargetT>
+int
+IterativeReconstruction<TargetT>::
+get_subset_num()
+{
+  if(this->randomise_subset_order && (this->subiteration_num-1)%this->num_subsets==0)
+  {
+    this->_current_subset_array = this->randomly_permute_subset_order();    
+  };
+  
+  return
+    this->randomise_subset_order 
+    ? this->_current_subset_array[(this->subiteration_num-1)%this->num_subsets] 
+    : (this->subiteration_num+this->start_subset_num-1)%this->num_subsets;  
+}
 
 #  ifdef _MSC_VER
 // prevent warning message on reinstantiation, 

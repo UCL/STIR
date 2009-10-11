@@ -391,22 +391,7 @@ update_estimate(TargetT &current_image_estimate)
   auto_ptr< TargetT > multiplicative_update_image_ptr =
     auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
 
-  
-  //For ordered set processing
-  
-  static VectorWithOffset<int> subset_array(this->num_subsets);
-  
-  if(this->randomise_subset_order && (this->subiteration_num-1)%this->num_subsets==0)
-  {
-    subset_array = this->randomly_permute_subset_order();
-    
-    cerr<<endl<<"Content ver.:"<<endl;
-    
-    for(int i=subset_array.get_min_index();i<=subset_array.get_max_index();i++) cerr<<subset_array[i]<<" ";
-  };
-  
-  const int subset_num=this->randomise_subset_order ? subset_array[(this->subiteration_num-1)%this->num_subsets] : (this->subiteration_num+this->start_subset_num-1)%this->num_subsets;
-  
+  const int subset_num=this->get_subset_num();  
   cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
 
   this->objective_function().

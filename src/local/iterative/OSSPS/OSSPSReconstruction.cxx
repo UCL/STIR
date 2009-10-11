@@ -570,20 +570,7 @@ update_estimate(TargetT &current_image_estimate)
   timerSubset.Start();
 #endif // PARALLEL
   
-  //For ordered set processing  (TODO move somewhere else)
-  static VectorWithOffset<int> subset_array(this->num_subsets);  
-  if(this->randomise_subset_order && (this->subiteration_num-1)%this->num_subsets==0)
-    {
-      subset_array = this->randomly_permute_subset_order();    
-      cerr<<endl<<"current subset order:"<<endl;    
-      for(int i=subset_array.get_min_index();i<=subset_array.get_max_index();i++) 
-	cerr<<subset_array[i]<<" ";
-    };
-  
-  const int subset_num=this->randomise_subset_order 
-    ? subset_array[(this->subiteration_num-1)%this->num_subsets] 
-    : (this->subiteration_num+this->start_subset_num-1)%this->num_subsets;
-  
+  const int subset_num=this->get_subset_num();  
   cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
     
   // TODO make member or static parameter to avoid reallocation all the time
