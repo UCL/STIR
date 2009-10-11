@@ -4,7 +4,7 @@
 # see README.txt
 # Author: Kris Thielemans
 
-echo This script should work with STIR version 2.0. If you have
+echo This script should work with STIR version 2.1. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -13,7 +13,6 @@ echo
 # Options
 #
 NOINTBP=0
-DO_ECAT_TESTS=0
 
 
 #
@@ -28,13 +27,9 @@ do
   then
     NOINTBP=1
 
-  elif test "$1" = "--ecat"
-  then
-    DO_ECAT_TESTS=1;
-
   elif test "$1" = "--help"
   then
-    echo "Usage: run_tests.sh [--nointbp] [--ecat] [install_dir]"
+    echo "Usage: run_tests.sh [--nointbp] [install_dir]"
     echo "See README.txt for more info."
     exit 1
   else
@@ -58,15 +53,9 @@ else
   echo
 fi
 
-
-if test $DO_ECAT_TESTS -eq 1; then
-  echo Executing tests on ecat file format conversion
-  echo
-else
-  echo Not testing ecat file format conversion.
-  echo If this is not what you want, rerun this script with the option --ecat
-  echo
-fi
+echo Not testing ecat file format conversion.
+echo Run run_ecat_tests.sh separately for these tests.
+echo
 
 
 
@@ -78,63 +67,6 @@ rm -f my_*v my_*s
 INSTALL_DIR=$1
 
 ThereWereErrors=0
-
-if test $DO_ECAT_TESTS -eq 1; then
-
-echo ------------- Converting ECAT6 file to Interfile ------------- 
-echo Running ${INSTALL_DIR}convecat6_if
-${INSTALL_DIR}convecat6_if my_Utahscat600k_ca_seg4 Utahscat600k_ca.scn 1> convecat6_if.log 2> convecat6_if_stderr.log <  convecat6_if.inp
-echo '---- Comparing output of convecat6 (error should be 0)'
-echo Running ${INSTALL_DIR}compare_projdata
-if ${INSTALL_DIR}compare_projdata my_Utahscat600k_ca_seg4.hs Utahscat600k_ca_seg4.hs 2>compare_projdata_convecat6_if_stderr.log;
-then
-echo ---- This test seems to be ok !;
-else
-echo There were problems here!;
-ThereWereErrors=1;
-fi
-
-echo ------------- Converting Interfile to ECAT7 file ------------- 
-echo Running ${INSTALL_DIR}conv_to_ecat7
-${INSTALL_DIR}conv_to_ecat7 -s my_Utahscat600k_ca_seg4_ecat7.S Utahscat600k_ca_seg4.hs 1> conv_to_ecat7.log 2> conv_to_ecat7_stderr.log
-echo '---- Comparing output of conv_to_ecat7 (error should be 0)'
-echo Running ${INSTALL_DIR}compare_projdata
-if ${INSTALL_DIR}compare_projdata my_Utahscat600k_ca_seg4_ecat7.S Utahscat600k_ca_seg4.hs 2>compare_projdata_conv_to_ecat7_stderr.log;
-then
-echo ---- This test seems to be ok !;
-else
-echo There were problems here!;
-ThereWereErrors=1;
-fi
-
-
-echo ------------- Making Interfile headers for ECAT7 ------------- 
-echo Running ${INSTALL_DIR}ifheaders_for_ecat7
-${INSTALL_DIR}ifheaders_for_ecat7  my_Utahscat600k_ca_seg4_ecat7.S < /dev/null 1> ifheaders_for_ecat7.log 2> ifheaders_for_ecat7_stderr.log
-echo '---- Comparing output of ifheaders_for_ecat7 (error should be 0)'
-echo Running ${INSTALL_DIR}compare_projdata
-if ${INSTALL_DIR}compare_projdata my_Utahscat600k_ca_seg4_ecat7_S_f1g1d0b0.hs Utahscat600k_ca_seg4.hs 2>compare_projdata_ifheaders_for_ecat7_stderr.log;
-then
-echo ---- This test seems to be ok !;
-else
-echo There were problems here!;
-ThereWereErrors=1;
-fi
-
-
-echo ------------- Testing native reading of ECAT7 projdata ------------- 
-echo '---- Comparing compare_projdata directly on ECAT7 sinograms to test STIR IO (error should be 0)'
-echo Running ${INSTALL_DIR}compare_projdata
-if ${INSTALL_DIR}compare_projdata my_Utahscat600k_ca_seg4_ecat7.S Utahscat600k_ca_seg4.hs 2>compare_projdata__ecat7_stderr.log;
-then
-echo ---- This test seems to be ok !;
-else
-echo There were problems here!;
-ThereWereErrors=1;
-fi
-
-fi # end of ECAT7 tests
-
 
 if test $NOINTBP = 0; then
 echo
