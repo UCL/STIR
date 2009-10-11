@@ -42,15 +42,7 @@ $Revision$
 #include "stir/utilities.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 
-//not used anymore 
-#if 0
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
-#include "stir/ViewSegmentNumbers.h"
-#include "stir/DataSymmetriesForViewSegmentNumbers.h"
-#include "stir/RelatedViewgrams.h"
-#endif
 #include <iostream>
-
 #include <memory>
 #include <iostream>
 #include <algorithm>
@@ -230,7 +222,6 @@ precompute_denominator_of_conditioner_without_penalty()
   assert(*std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) == 0);
   assert(*std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) == 0);
 
-#if 1
   // TODO replace by boost::scoped_ptr
   std::auto_ptr<TargetT > data_full_of_ones_aptr =
 	std::auto_ptr<TargetT >
@@ -243,82 +234,6 @@ precompute_denominator_of_conditioner_without_penalty()
     add_multiplication_with_approximate_Hessian_without_penalty(
 								*precomputed_denominator_ptr, 
 								*data_full_of_ones_aptr);
-#else
-
-  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&
-    objective_function =
-    static_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>&>
-    (*this->objective_function_sptr);
-
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    objective_function.get_projector_pair().get_symmetries_used()->clone();
-
-  // TODO replace by boost::scoped_ptr
-  std::auto_ptr<TargetT > image_full_of_ones_aptr;
-  if (is_null_ptr(fwd_ones_sptr))
-    {
-      image_full_of_ones_aptr =
-	std::auto_ptr<TargetT >
-	( precomputed_denominator_ptr->clone());
-      image_full_of_ones_aptr->fill(1);
-    }
-
-  const double start_time =
-    objective_function.get_time_frame_definitions().get_start_time(objective_function.get_time_frame_num());
-  const double end_time =
-    objective_function.get_time_frame_definitions().get_end_time(objective_function.get_time_frame_num());
-
-  for (int segment_num = -objective_function.get_max_segment_num_to_process();
-       segment_num<= objective_function.get_max_segment_num_to_process();
-       ++segment_num) 
-    {      
-      for (int view = objective_function.get_proj_data().get_min_view_num(); 
-	   view <= objective_function.get_proj_data().get_max_view_num(); 
-	   ++view)
-	{
-	  const ViewSegmentNumbers view_segment_num(view, segment_num);
-	  
-	  if (!symmetries_sptr->is_basic(view_segment_num))
-	    continue;
-
-	  // first compute data-term: y*norm^2
-	  RelatedViewgrams<float> viewgrams =
-	    objective_function.get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
-	  // TODO add 1 for 1/(y+1) approximation
-
-	  objective_function.get_normalisation().apply(viewgrams, start_time, end_time);
-
-	  // smooth TODO
-
-	  objective_function.get_normalisation().apply(viewgrams, start_time, end_time);
-
-	  RelatedViewgrams<float> tmp_viewgrams;
-	  // set tmp_viewgrams to geometric forward projection of all ones
-	  if (is_null_ptr(fwd_ones_sptr))
-	    {
-	      tmp_viewgrams = objective_function.get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
-	      objective_function.get_projector_pair().get_forward_projector_sptr()->
-		forward_project(tmp_viewgrams, *image_full_of_ones_aptr);
-	    }
-	  else
-	    {
-	      tmp_viewgrams = fwd_ones_sptr->get_related_viewgrams(view_segment_num, symmetries_sptr);
-	    }
-	  
-	  // now divide by the data term
-	  {
-	    int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
-	    divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2);
-	  }
-
-	  // back-project
-	  objective_function.get_projector_pair().get_back_projector_sptr()->
-	    back_project(*precomputed_denominator_ptr, tmp_viewgrams);
-      }
-
-  } // end of loop over segments
-#endif
-
   timer.stop();
   cerr << "Precomputing denominator took " << timer.value() << " s CPU time\n";
   cerr << "min and max in precomputed denominator " 
@@ -817,17 +732,12 @@ END_NAMESPACE_STIR
 
 ///////// instantiations
 #include "stir/DiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 START_NAMESPACE_STIR
 
 template class OSSPSReconstruction<DiscretisedDensity<3,float> >;
+template class OSSPSReconstruction<ParametricVoxelsOnCartesianGrid >; 
 
 END_NAMESPACE_STIR
 
 
-#ifdef STIR_DEVEL
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/modelling/KineticParameters.h"
-namespace stir {
-  template class OSSPSReconstruction<ParametricVoxelsOnCartesianGrid >; 
-}
-#endif
