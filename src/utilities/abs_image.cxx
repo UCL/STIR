@@ -27,22 +27,21 @@
   $Date$
   $Revision$
 
-  \todo Potentially, in the future it should be included in the stir_math as an option.
+  \todo Potentially, in the future it should be included in stir_math as an option.
 
   \par Usage:
   \code
   abs_image [-p || -d] -o output_filename -i input_filename 
   \endcode
-  \param -p switch for parametric images.
-  \param -d switch for dynamic images.
+  Use <tt>-p</tt> switch for parametric images, or the <tt>-d</tt> switch for dynamic images.
 */
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include <algorithm>
-#include <unistd.h>
+#include <getopt.h>
 
 int main(int argc, char * argv[])
 {
