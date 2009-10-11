@@ -1,5 +1,5 @@
 $Id$
-README file for STIR recon_test_pack version 2.0 (and later versions?)
+README file for STIR recon_test_pack version 2.1 (and later versions?)
 ------------------------------------------------
 
 This test pack runs some simple tests to check if 
@@ -13,10 +13,10 @@ on your hardware of course).
 Tests are independent of each other, as each test uses the 'good' files
 as input.
 
-The file run_tests.sh is a (Bourne) shell script that runs all tests 
-automatically. run_tests.bat is the corresponding DOS batch file.
-Both  write some diagnostic output to stdout. Output of
-all programmes is redirected to log files. In case anything is wrong, these
+The file run_*tests.sh are (Bourne) shell scripts that runs all tests 
+automatically. run_*tests.bat is the corresponding DOS batch file.
+They write some diagnostic output to stdout. Output of
+all programs is redirected to log files. In case anything is wrong, these
 might contain something useful. If you cannot solve the problems, email to
 the user's mailing list (see http://stir.sourceforge.net for info), with all log 
 files attached to the email.
@@ -33,7 +33,9 @@ On Unix:
 --------
 (this also work on Windows if you installed CYGWIN)
 
-sh run_tests.sh [ --nointbp ] [--ecat]
+Testing main STIR utilities:
+............................
+sh run_tests.sh [ --nointbp ] 
 	(if all executables are in your path)
 
 sh run_tests.sh [ --nointbp ] my_install_dir/  
@@ -46,8 +48,18 @@ probably want to do this on Suns (and maybe HP stations ?), as that
 backprojector is known to have a problem on those processors
 in the centre of the image.
 
-Use the --ecat option if you have compiled STIR to use the LNN matrix
-library for ECAT support.
+Testing ECAT 6 and 7 utilities
+..............................
+If you have compiled STIR to use the LNN matrix library for ECAT support.
+
+sh run_ecat_tests.sh 
+	(if all executables are in your path)
+
+sh run_ecat_tests.sh my_install_dir/  
+	(if you copied the executables to one directory, 
+	 but it isn't in your path)
+
+
 
 On Windows:
 ----------
@@ -63,7 +75,10 @@ run_tests [ --nointbp ] g:\my_install_dir\
 	 but it isn't in your path)
 
 See above for the --nointbp option.
-Sorry. ecat tests have not been transported to the Windows batch file yet.
+
+Similarly, to execute tests for ECAT 6 and 7 routines, do
+
+run_ecat_tests [ install_dir ]
 
 
 Kris Thielemans
