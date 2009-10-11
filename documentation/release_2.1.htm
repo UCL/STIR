@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 2.1 alpha (dated October 2009)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 2.1 alpha (dated October 2009)</h1>
+
+<p>Most of the work in this update was by Kris Thielemans (Hammersmith Imanet Ltd)
+and Charalampos Tsoumpas (Imperial College and Hammersmith Imanet Ltd).
+Some older code by Sanida Mustafovic (Imperial College and Hammersmith Imanet Ltd) 
+has now finally been incorporated into STIR as well.
+Other contributions are mentioned explicitly below.<br />
+See also the new <tt>contrib</tt> sub-directory available in the documentation zip file.
+</p>
+<ul>
+<li>Single scatter estimation routines<br />
+Contributors: Charalampos Tsoumpas, Pablo Aguiar (Univ of Barcelona, when working on this topic), 
+Nikolaos Dikaios (National Technical University of Athens, when working on this topic) 
+and Kris Thielemans.
+</li>
+<li>Parametric image estimation routines.<br />
+Contributors: Charalampos Tsoumpas and Kris Thielemans
+</li>
+
+<li>B-spline interpolation functions and a few numerical algorithms.<br />
+Contributors: Charalampos Tsoumpas, 
+Nikolaos Dikaios (National Technical University of Athens, when working on this topic) 
+and Kris Thielemans.
+</li>
+</ul>
+
+<h2> Summary for endusers (also to be read by developers)</h2>
+
+<h3>Known problems</h3>
+<ul>
+<li>ECAT6 routines seem to have problems since STIR 2.0</li>
+<li>Some new utilities might not compile under windows with Visual Studio
+as this doesn't have the <code>getopt</code> function.</li>
+</ul>
+
+<h3>New utilities</h3>
+<ul>
+<li><tt>abs_image</tt>, <tt>find_fwhm_in_image</tt></li>
+<li>Utilities in <tt>modelling_utilities</tt>.
+<li>Parametric OSMAPOSL (<tt>POSMAPOSL</tt>). Currently for Patlak only, but extension
+to other linear models is easy.</li>
+</ul>
+
+
+<h3>New functionality of existing utilities</h3>
+<ul>
+<li>Added data for the <strong>GE Discovery 600</strong>.</li>
+<li><tt>stir_math</tt> has 2 new options <tt>--parametric</tt> or <tt>--dynamic</tt>.</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>updated doxygen</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li>Moved the tests for the ecat routines to a separate file <tt>run_ecat_tests.sh</tt><li>
+<li>Updated Windows batch files. They were broken in STIR 2.0</li>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>New functionality</h3>
+<ul>
+<li><code>ArrayFilter2DUsingConvolution</code> and <code>ArrayFilter3DUsingConvolution</code>.</li>
+<li>Preliminary classes for dynamic and gated data</li>
+</ul>
+
+<h3>Other code changes</h3>
+<ul>
+<li>Most of the .cxx files in the <tt>recon_buildblock</tt> had to be updated to
+add instantiations for parametric images. This is unfortunate and another
+mechanism would be nicer.
+</li>
+<li>moved code that finds subset-num in terms of subiteration-num to 
+<code>IterativeReconstruction::get_subset_num()</code>. If you have your own 
+reconstruction classes, you should use this member. 
+<code>IterativeReconstruction::randomly_permute_subset_order()</code> is now private.</li>
+</ul>
+
+</body>
+
+</html>
+
