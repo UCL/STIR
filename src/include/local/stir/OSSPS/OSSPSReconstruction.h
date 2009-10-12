@@ -43,7 +43,9 @@ START_NAMESPACE_STIR
   \brief Implementation of the  relaxed Ordered Subsets Separable
   Paraboloidal Surrogate ( OSSPS)
   
-  See Ahn&Fessler, TMI. This is a relaxed preconditioned sub-gradient descent algorithm:
+  See Erdogan and Fessler, and Ahn and Fessler, TMI. 
+  
+  OSSPS is a relaxed preconditioned sub-gradient descent algorithm:
 
   \f[ \lambda^\mathrm{new} = \lambda + \zeta D \nabla \Psi \f]
 
@@ -110,34 +112,10 @@ public:
   //! Precompute the data-dependent part of the denominator for the preconditioner
 /*!
     This function precomputes the denominator for the SPS 
-    (separable paraboloidal surrogates)  in emission tomography.
-
-    The denominator is given by a penalty term + a data-dependent term. The latter
-    is given by :  
-    \f[ d_j = -\sum_i P_{ij} \gamma_i h_i^{''}(y_i) \f]
-    where
-    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) ~= -1/y_i; \f]
-    \f[ \gamma_i = \sum_k P_{ik}\f]
-    and \f$P_{ij} \f$ is the probability matrix. 
-    Hence
-    \f[ d_j = \sum_i P_{ij}(1/y_i) \sum_k P_{ik} \f]
-
-    In the above, we've used the plug-in approximation by replacing 
-    forward projection of the true image by the measured data. However, the
-    later are noisy and this can create problems. Two work-arounds are
-    listed below, but they are currently not implemented.
-
-    The circumvent that, one could smooth the data before 
-    performing the quotient. This should be done after normalisation to avoid 
-    problems with the high-frequency components in the normalisation factors.
-    So, the \f$d_j\f$ is computed as
-    \f[ d_j = \sum_i G_{ij}{1 \over n_i \mathrm{smooth}( n_i y_i)} \sum_k G_{ik} \f]
-    where the probability matrix is factorised in a detection efficiency part (i.e. the
-    normalisation factors \f$n_i\f$) times a geometric part:
-    \f[ P_{ij} = {1 \over n_i } G_{ij}\f]
-
-    It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson.
-   
+    (separable paraboloidal surrogates) algorithm. It calls
+    GeneralisedObjectiveFunction::add_multiplication_with_approximate_Hessian_without_penalty
+    on a vector filled with ones. For emission and transmission tomography,
+    this corresponds to Erdogan and Fessler's approximations.
 */
   Succeeded 
     precompute_denominator_of_conditioner_without_penalty();
