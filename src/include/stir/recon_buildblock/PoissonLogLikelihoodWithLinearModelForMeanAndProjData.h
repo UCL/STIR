@@ -223,6 +223,32 @@ public:
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
 						      const int subset_num);
 
+  /*!
+    The Hessian (without penalty) is approximatelly given by:
+    \f[ H_{jk} = - \sum_i P_{ij} h_i^{''}(y_i) P_{ik} \f]
+    where
+    \f[ h_i(l) = y_i log (l) - l; h_i^{''}(y_i) ~= -1/y_i; \f]
+    and \f$P_{ij} \f$ is the probability matrix. 
+    Hence
+    \f[ H_{jk} =  \sum_i P_{ij}(1/y_i) P_{ik} \f]
+
+    In the above, we've used the plug-in approximation by replacing 
+    forward projection of the true image by the measured data. However, the
+    later are noisy and this can create problems. 
+
+    \todo Two work-arounds for the noisy estimate of the Hessian are listed below, 
+    but they are currently not implemented.
+
+    One could smooth the data before performing the quotient. This should be done 
+    after normalisation to avoid problems with the high-frequency components in 
+    the normalisation factors:
+    \f[ H_{jk} =  \sum_i G_{ij}{1 \over n_i \mathrm{smooth}( n_i y_i)} G_{ik} \f]
+    where the probability matrix is factorised in a detection efficiency part (i.e. the
+    normalisation factors \f$n_i\f$) times a geometric part:
+    \f[ P_{ij} = {1 \over n_i } G_{ij}\f]
+
+    It has also been suggested to use \f$1 \over y_i+1 \f$ (at least if the data are still Poisson.
+  */
   virtual Succeeded 
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 									     const TargetT& input,
