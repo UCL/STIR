@@ -268,6 +268,27 @@ compute_sensitivities()
   // if (!this->get_use_subset_sensitivities()) *sensitivity_sptr[0]/=num_subsets
 }
 
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+fill_nonidentifiable_target_parameters(TargetT& target, const float value) const
+{
+  typename TargetT::full_iterator target_iter = target.begin_all();
+  typename TargetT::full_iterator target_end_iter = target.end_all();
+  // TODO really should use total sensitivity, not subset
+  typename TargetT::const_full_iterator sens_iter = 
+    this->get_sensitivity(0).begin_all_const();
+  
+  for (;
+       target_iter != target_end_iter;
+       ++target_iter, ++sens_iter)
+    {
+      if (*sens_iter == 0)
+        *target_iter = value;
+    }
+}
+
 #  ifdef _MSC_VER
 // prevent warning message on instantiation of abstract class 
 #  pragma warning(disable:4661)
