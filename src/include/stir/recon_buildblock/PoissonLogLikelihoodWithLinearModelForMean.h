@@ -187,6 +187,15 @@ public  GeneralisedObjectiveFunction<TargetT>
 
   void set_use_subset_sensitivities(const bool);
   //@}
+
+  /*! The implementation checks if the sensitivity of a voxel is zero. If so,
+   it will the target voxel will be assigned the desired value.
+
+   \todo The current implementation uses only get_sensitivity(0);
+  */
+  void 
+    fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const;
+
 protected:
 
   std::string sensitivity_filename;

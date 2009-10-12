@@ -177,6 +177,24 @@ public:
   double
     compute_objective_function(const TargetT& current_estimate);
 
+  //! Fill any elements that we cannot estimate with a fixed value
+  /*! In many cases, it is easier to use a larger target than what we can
+    actually estimate. For instance, using a rectangular image while we estimate
+    only a circular region.
+
+    For some algorithms, it is important that the parameters that cannot be
+    estimate are set to 0 (or some other value). For example, if the outer voxels
+    contribute to the forward projection of an image, but not to a backprojection.
+
+    This function allows you to do that. Its default implementation is to do nothing.
+    It is up to the derived class to implement this sensible.
+
+    \todo The type of the value should really be derived from e.g. TargetT::full_iterator.
+  */
+  virtual void 
+    fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const
+  {}
+
   //! \name multiplication with (sub)Hessian
   /*! \brief Functions that multiply the (sub)Hessian with a \'vector\'.
       
