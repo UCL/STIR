@@ -125,8 +125,8 @@ public:
   //! determines whether non-positive values in the initial image will be set to small positive ones
   int enforce_initial_positivity;
 
-  //! restrict values to maximum value
-  double upper bound;
+  //! restrict values to maximum
+  double upper_bound;
   
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
