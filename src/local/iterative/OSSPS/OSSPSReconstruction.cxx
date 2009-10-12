@@ -74,8 +74,7 @@ set_defaults()
 {
   base_type::set_defaults();
   enforce_initial_positivity = 0;
-  maximum_relative_change = NumericInfo<float>().max_value();
-  minimum_relative_change = 0;
+  upper_bound = NumericInfo<float>().max_value();
   write_update_image = 0;
   precomputed_denominator_filename = "";
 
@@ -97,8 +96,7 @@ initialise_keymap()
   
   this->parser.add_key("enforce initial positivity condition",&enforce_initial_positivity);
   //this->parser.add_key("MAP_model", &MAP_model);
-  this->parser.add_key("maximum relative change", &maximum_relative_change);
-  this->parser.add_key("minimum relative change",&minimum_relative_change);
+  this->parser.add_key("upper bound", &upper_bound);
   this->parser.add_key("write update image",&write_update_image);   
   this->parser.add_key("precomputed denominator", &precomputed_denominator_filename);
 
@@ -143,10 +141,8 @@ ask_parameters()
   
   // KT 17/08/2000 3 new parameters
   const double max_in_double = static_cast<double>(NumericInfo<float>().max_value());
-  maximum_relative_change = ask_num("maximum relative change",
+  upper_bound = ask_num("upper bound",
     1.,max_in_double,max_in_double);
-  minimum_relative_change = ask_num("minimum relative change",
-    0.,1.,0.);
   
   write_update_image = ask_num("write update image", 0,1,0);
 
@@ -691,7 +687,7 @@ update_estimate(TargetT &current_image_estimate)
 			current_image_estimate.end_all()); 
     const float new_min = 0.F;
     const float new_max = 
-      static_cast<float>(maximum_relative_change);
+      static_cast<float>(upper_bound);
     cerr << "current image old min,max: " 
 	 << current_min
 	 << ", " 

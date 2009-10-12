@@ -147,11 +147,8 @@ public:
   //! determines whether non-positive values in the initial image will be set to small positive ones
   int enforce_initial_positivity;
 
-  //! restrict updates (larger relative updates will be thresholded)
-  double maximum_relative_change;
-
-  //! restrict updates (smaller relative updates will be thresholded)
-  double minimum_relative_change;
+  //! restrict values to maximum value
+  double upper bound;
   
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
