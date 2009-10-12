@@ -518,37 +518,18 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
 
 /*! \brief OSSPS additive update at every subiteration
   \warning This modifies *precomputed_denominator_ptr. So, you <strong>have to</strong>
-  call recon_set_up() before running a new reconstruction.
+  call set_up() before running a new reconstruction.
   */
 template <class TargetT>
 void 
 OSSPSReconstruction<TargetT>::
 update_estimate(TargetT &current_image_estimate)
 {
-  static int count=0;
-  // every time it's called, counter is incremented
-  count++;
-
-  if (count==1)
+  if (this->get_subiteration_num() == this->get_start_subiteration_num())
     {
-      // set all voxels to 0 for which the sensitivity is 0. These cannot be estimated.
-      PoissonLogLikelihoodWithLinearModelForMean<TargetT> * const
-	Poisson_objective_function_ptr =
-	dynamic_cast<PoissonLogLikelihoodWithLinearModelForMean<TargetT> *const>
-	(this->objective_function_sptr.get());
-      if (Poisson_objective_function_ptr != 0)
-	{
-	  typename TargetT::full_iterator image_iter = current_image_estimate.begin_all();
-	  // TODO really should use total sensitivity, not subset
-	  typename TargetT::const_full_iterator sens_iter = 
-	    Poisson_objective_function_ptr->get_sensitivity(0).begin_all_const();
-       
-	  for (;
-	       image_iter != current_image_estimate.end_all();
-	       ++image_iter, ++sens_iter)
-	    if (*sens_iter == 0)
-	      *image_iter = 0;
-	}
+      // set all voxels to 0 that cannot be estimated.
+      this->objective_function_sptr->
+        fill_nonidentifiable_target_parameters(current_image_estimate, 0);
     }
   // Check if we need to recompute the penalty term in the denominator during iterations .
   // For the quadratic prior, this is independent of the image (only on kappa's)
@@ -588,7 +569,8 @@ update_estimate(TargetT &current_image_estimate)
 
   // now divide by denominator
 
-  if (recompute_penalty_term_in_denominator || count==1)
+  if (recompute_penalty_term_in_denominator || 
+      (this->get_subiteration_num() == this->get_start_subiteration_num()))
     {
       auto_ptr< TargetT > work_image_ptr = 
 	auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
@@ -609,8 +591,7 @@ update_estimate(TargetT &current_image_estimate)
 	*work_image_ptr = *precomputed_denominator_ptr ;
     
       // KT 09/12/2002 new
-      // avoid division by 0 by thresholding the denominator to be strictly positive
-      // note that zeroes should really only occur where the sensitivity is 0
+      // avoid division by 0 by thresholding the denominator to be strictly positive      
       threshold_min_to_small_positive_value(work_image_ptr->begin_all(),
 					    work_image_ptr->end_all(),
 					    10.E-6F);
