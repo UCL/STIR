@@ -5,18 +5,11 @@
 dir := local/buildblock
 $(dir)_LIB_SOURCES:= \
 	fft.cxx \
-	ArrayFilter3DUsingConvolution.cxx \
-	ArrayFilter2DUsingConvolution.cxx \
 	ML_norm.cxx \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
 	interpolate_projdata.cxx \
-  	find_fwhm_in_image.cxx \
-	DynamicDiscretisedDensity.cxx \
-	MultipleProjData.cxx \
-	DynamicProjData.cxx \
-	GatedProjData.cxx \
         AbsTimeIntervalWithParsing.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
