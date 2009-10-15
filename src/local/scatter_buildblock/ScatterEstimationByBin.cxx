@@ -35,6 +35,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
 #include "stir/Bin.h"
+#include "stir/ViewSegmentNumbers.h"
 #include "stir/CPUTimer.h"
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
@@ -50,8 +51,6 @@ set_defaults()
   this->attenuation_threshold =  0.01 ;
   this->random = true;
   this->use_cache = true;
-  this->use_polarization = false;
-  this->scatter_level = 10 ;
   this->energy_resolution = .22 ;
   this->reference_energy = 511.F;
   this->lower_energy_threshold = 350 ;
@@ -61,10 +60,6 @@ set_defaults()
   this->density_image_for_scatter_points_filename = "";
   this->template_proj_data_filename = "";
   this->output_proj_data_filename = "";
-
-  this->write_scatter_orders_in_separate_files = true;
-
-  this->use_solid_angle_for_points = false;
 }
 
 void
@@ -77,8 +72,6 @@ initialise_keymap()
   this->parser.add_key("random", &this->random);
 
   this->parser.add_key("use_cache", &this->use_cache);
-  this->parser.add_key("use_polarization", &this->use_polarization);
-  this->parser.add_key("scatter_level", &this->scatter_level);
   this->parser.add_key("energy_resolution", &this->energy_resolution);
   this->parser.add_key("lower_energy_threshold", &this->lower_energy_threshold);
   this->parser.add_key("upper_energy_threshold", &this->upper_energy_threshold);
@@ -88,10 +81,6 @@ initialise_keymap()
   this->parser.add_key("density_image_for_scatter_points_filename", &this->density_image_for_scatter_points_filename);
   this->parser.add_key("template_proj_data_filename", &this->template_proj_data_filename);
   this->parser.add_key("output_filename_prefix", &this->output_proj_data_filename);
-  
-  this->parser.add_key("write_scatter_orders_in_separate_files", &this->write_scatter_orders_in_separate_files);
-
-  this->parser.add_key("use_solid_angle_for_points",&this->use_solid_angle_for_points);
 }
 
 bool
@@ -147,32 +136,38 @@ post_processing()
   output_proj_data_sptr = 
     new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename);
 
-  output_proj_data_00_sptr = 0;
-  output_proj_data_01_sptr = 0;
-  output_proj_data_11_sptr = 0;
-  output_proj_data_02_sptr = 0;
 
-  if (write_scatter_orders_in_separate_files)
-    {
-      if (this->scatter_level%10 == 0)
-	{	  
-	  output_proj_data_00_sptr = 
-	    new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename + "_0_0");
-	}
-      if(scatter_level==1||scatter_level==12||scatter_level==10||scatter_level==120)
-	{	  
-	  output_proj_data_01_sptr = 
-	    new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename + "_0_1");
-	}
-      if(scatter_level==2||scatter_level==12||scatter_level==120)
-	{	  
-	  output_proj_data_11_sptr = 
-	    new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename + "_1_1");
-	  output_proj_data_02_sptr = 
-	    new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename + "_0_2");
-	}
-    }
 
+  // XXX should go to set_up
+  {
+  this->proj_data_info_ptr = 
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *> 
+    (this->output_proj_data_sptr->get_proj_data_info_ptr());
+
+  this->sample_scatter_points();
+
+  
+  // find final size of detection_points_vector
+  this->total_detectors = 
+    this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
+    this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+  // reserve space to avoid reallocation, but the actual size will grow dynamically
+  detection_points_vector.reserve(total_detectors);
+
+  this->initialise_cache_for_scattpoint_det();
+
+#if 0
+  {
+    std::ofstream scatter_points_file("scatter_points.txt"); 
+    if(!scatter_points_file)    
+      warning("Cannot open scatter_points file.\n") ;	              
+    else
+      scatter_points_file << scatt_points_vector;
+    std::cerr << scatt_points_vector.size() << " scatter points selected!" << std::endl;				
+  }
+#endif
+
+  }
   return false;
 }
 
@@ -224,34 +219,7 @@ Succeeded
 ScatterEstimationByBin::
 process_data()
 {		
-  this->proj_data_info_ptr = 
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *> 
-    (this->output_proj_data_sptr->get_proj_data_info_ptr());
-
-  this->sample_scatter_points();
-
-  
-  // find final size of detection_points_vector
-  total_detectors = 
-    this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
-    this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
-  // reserve space to avoid reallocation, but the actual size will grow dynamically
-  detection_points_vector.reserve(total_detectors);
-
-  initialise_cache_for_scattpoint_det();
-  initialise_cache_for_scattpoints();
-
-#if 0
-  {
-    std::ofstream scatter_points_file("scatter_points.txt"); 
-    if(!scatter_points_file)    
-      warning("Cannot open scatter_points file.\n") ;	              
-    else
-      scatter_points_file << scatt_points_vector;
-    std::cerr << scatt_points_vector.size() << " scatter points selected!" << std::endl;				
-  }
-#endif
-  Bin bin;
+  ViewSegmentNumbers vs_num;
 	
   /* ////////////////// SCATTER ESTIMATION TIME ////////////////
    */
@@ -259,10 +227,10 @@ process_data()
   int bin_counter = 0;
   bin_timer.start();
   int axial_bins = 0 ;
-  for (bin.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
-       bin.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
-       ++bin.segment_num())	
-    axial_bins += this->proj_data_info_ptr->get_num_axial_poss(bin.segment_num());
+  for (vs_num.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
+       vs_num.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
+       ++vs_num.segment_num())	
+    axial_bins += this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num());
   const int total_bins = 
     this->proj_data_info_ptr->get_num_views() * axial_bins *
     this->proj_data_info_ptr->get_num_tangential_poss();
@@ -298,87 +266,19 @@ process_data()
 
   float total_scatter = 0 ;
 
-  for (bin.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
-       bin.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
-       ++bin.segment_num())
+  for (vs_num.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
+       vs_num.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
+       ++vs_num.segment_num())
     {
-      for (bin.view_num()=this->proj_data_info_ptr->get_min_view_num();
-	   bin.view_num()<=this->proj_data_info_ptr->get_max_view_num();
-	   ++bin.view_num())
+      for (vs_num.view_num()=this->proj_data_info_ptr->get_min_view_num();
+	   vs_num.view_num()<=this->proj_data_info_ptr->get_max_view_num();
+	   ++vs_num.view_num())
 	{
-	  Viewgram<float> viewgram_00 =
-	    this->output_proj_data_sptr->get_empty_viewgram(bin.view_num(), bin.segment_num());
-	  Viewgram<float> viewgram_01 = viewgram_00;
-	  Viewgram<float> viewgram_11 = viewgram_00;
-	  Viewgram<float> viewgram_02 = viewgram_00;
-	  Viewgram<float> viewgram_total_scatter = viewgram_00;
-	      
-			
-	  for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
-	       bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
-	       ++bin.axial_pos_num())
-	    {
-	      for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
-		   bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
-		   ++bin.tangential_pos_num())
-		{  
+	  total_scatter += this->process_data_for_view_segment_num(vs_num);
+	  bin_counter +=  
+	    this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num()) *
+	    this->proj_data_info_ptr->get_num_tangential_poss();
 
-		  unsigned det_num_A = 0; // initialise to avoid compiler warnings
-		  unsigned det_num_B = 0;
-		  this->find_detectors(det_num_A, det_num_B, bin);
-
-		  double no_scatter = 0;
-		  double scatter_ratio_01 = 0;
-		  double scatter_ratio_11 = 0;
-		  double scatter_ratio_02 = 0;
-				
-		  if(this->scatter_level%10==0)
-		    {
-		      no_scatter = 
-			scatter_estimate_for_none_scatter_point
-			(det_num_A, det_num_B
-			 );
-		    }
-		  if(this->scatter_level!= 0)
-		    {
-		      scatter_estimate_for_all_scatter_points
-			(
-			 scatter_ratio_01,
-			 scatter_ratio_11,
-			 scatter_ratio_02,
-			 det_num_A, 
-			 det_num_B
-			 );
-		    }
-		  
-		  viewgram_00[bin.axial_pos_num()][bin.tangential_pos_num()] =
-		    static_cast<float>(no_scatter);
-		  viewgram_01[bin.axial_pos_num()][bin.tangential_pos_num()] =
-		    static_cast<float>(scatter_ratio_01);
-		  viewgram_11[bin.axial_pos_num()][bin.tangential_pos_num()] =
-		    static_cast<float>(scatter_ratio_11);		      
-		  viewgram_02[bin.axial_pos_num()][bin.tangential_pos_num()] =
-		    static_cast<float>(scatter_ratio_02);
-		  const double total_scatter_this_bin = 
-		    scatter_ratio_01 + scatter_ratio_11 + scatter_ratio_02;
-		  viewgram_total_scatter[bin.axial_pos_num()][bin.tangential_pos_num()] =
-		    static_cast<float>(total_scatter_this_bin);
-
-		  total_scatter += total_scatter_this_bin;
-
-		  ++bin_counter;
-		}
-	    } // end loop over axial_pos
-
-	  this->output_proj_data_sptr->set_viewgram(viewgram_total_scatter);
-	  if (!is_null_ptr(this->output_proj_data_00_sptr))
-	    this->output_proj_data_00_sptr->set_viewgram(viewgram_00);
-	  if (!is_null_ptr(this->output_proj_data_01_sptr))
-	    this->output_proj_data_01_sptr->set_viewgram(viewgram_01);
-	  if (!is_null_ptr(this->output_proj_data_11_sptr))
-	    this->output_proj_data_11_sptr->set_viewgram(viewgram_11);
-	  if (!is_null_ptr(this->output_proj_data_02_sptr))
-	    this->output_proj_data_02_sptr->set_viewgram(viewgram_02);
 	  /* ////////////////// SCATTER ESTIMATION TIME ////////////////
 	   */
 	  {
@@ -411,6 +311,45 @@ process_data()
 
   return Succeeded::yes;
 }
+
+//xxx double
+double
+ScatterEstimationByBin::
+process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
+{
+  Bin bin(vs_num.segment_num(), vs_num.view_num(), 0,0);
+  double total_scatter = 0;
+  Viewgram<float> viewgram =
+    this->output_proj_data_sptr->get_empty_viewgram(bin.view_num(), bin.segment_num());	      
+
+		
+  for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
+       bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
+       ++bin.axial_pos_num())
+    {
+      for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
+	   bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
+	   ++bin.tangential_pos_num())
+	{  
+
+	  unsigned det_num_A = 0; // initialise to avoid compiler warnings
+	  unsigned det_num_B = 0;
+	  this->find_detectors(det_num_A, det_num_B, bin);
+
+	  const double scatter_ratio =
+	    scatter_estimate(det_num_A, det_num_B);
+		  
+	  viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
+	    static_cast<float>(scatter_ratio);
+
+	  total_scatter += scatter_ratio;
+
+	}
+    } // end loop over axial_pos
+
+  this->output_proj_data_sptr->set_viewgram(viewgram);
+}
+
 
 void
 ScatterEstimationByBin::

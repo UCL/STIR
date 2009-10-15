@@ -33,68 +33,6 @@ START_NAMESPACE_STIR
 
 float
 ScatterEstimationByBin::
-compute_emis_to_scatter_points_solid_angle_factor_doubles11(const CartesianCoordinate3D<float>& scatter_point_1,
-								      const CartesianCoordinate3D<float>& scatter_point_2,
-								      const CartesianCoordinate3D<float>& emis_point)
-
-{
-#if 1
-  const CartesianCoordinate3D<float> dist_vector = scatter_point_2 - scatter_point_1 ;
-
-  const float dist_sp1_sp2_squared = norm_squared(dist_vector);
-
-  // attempt to avoid overflow by saying that the maximum
-  // solid angle is about 4Pi/9
-  // However, this doesn't work very well yet as the 1/d^2
-  // would need to be multiplied with the area of the voxel
-  // to have a solid angle
-  return
-    std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_sp2_squared);
- 
-#else
-const CartesianCoordinate3D<float> dist_vector_1 = scatter_point_1 - emis_point ; 
-   
-  const CartesianCoordinate3D<float> dist_vector_2 = scatter_point_2 - emis_point ; 
-
-  const float dist_emis_sp1_squared = norm_squared(dist_vector_1);
-      
-  const float dist_emis_sp2_squared = norm_squared(dist_vector_2);
-      
-  const float emis_to_scatter_point_1_solid_angle_factor = 1.F / dist_emis_sp1_squared ;
-
-   const float emis_to_scatter_point_2_solid_angle_factor = 1.F / dist_emis_sp2_squared ; 
-   
-   return
-     std::min(std::min(emis_to_scatter_point_1_solid_angle_factor,
-		       emis_to_scatter_point_2_solid_angle_factor),
-	      static_cast<float>(_PI/2.F));
-#endif
-}
-
-float
-ScatterEstimationByBin::
-compute_sc1_to_sc2_solid_angle_factor_doubles20(const CartesianCoordinate3D<float>& scatter_point_1,
-						const CartesianCoordinate3D<float>& scatter_point_2)
-  
-{
-
-  const CartesianCoordinate3D<float> dist_vector = scatter_point_2 - scatter_point_1 ;
-
-  const float dist_sp1_sp2_squared = norm_squared(dist_vector);
-
-  // attempt to avoid overflow by saying that the maximum
-  // solid angle is about 4Pi/9
-  // However, this doesn't work very well yet as the 1/d^2
-  // would need to be multiplied with the area of the voxel
-  // to have a solid angle
-  const float scatter_points_solid_angle_factor = 
-    std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_sp2_squared);
- 
-  return scatter_points_solid_angle_factor ;
-} 
-
-float
-ScatterEstimationByBin::
 compute_emis_to_det_points_solid_angle_factor(
 					      const CartesianCoordinate3D<float>& emis_point,
 					      const CartesianCoordinate3D<float>& detector_coord)
@@ -118,23 +56,6 @@ dif_cross_section(const float cos_theta, float energy)
   const float sin_theta_2= 1-cos_theta*cos_theta ;
   const float P= 1/(1+(energy/511.0)*(1-cos_theta)); 
   return( (Re*Re/2) * P * (1 - P * sin_theta_2 + P * P));
-}
-
-float
-ScatterEstimationByBin::
-dif_polarized_cross_section(const float cos_theta1, const float cos_theta2, const float cos_phi, float energy1, float energy2)
-{ 
-  const float sin_theta1_2= 1-cos_theta1*cos_theta1 ;
-  const float sin_theta2_2= 1-cos_theta2*cos_theta2 ;
-  const float sin_phi_2= 1-cos_phi * cos_phi;
-  const float P1= 1/(1+(energy1/511.0)*(1-cos_theta1));
-  const float P2= 1/(1+(energy2/511.0)*(1-cos_theta2));
-  const float gamma1=P1+1/P1;
-  const float gamma2=P2+1/P2;
-  static const float prefactor_2 =square(9/(2*_PI*(40 - 27*log(3.))))*1E-30;
-   
-
-  return  prefactor_2*P1*P1*P2*P2* (gamma1*gamma2-gamma1*sin_theta2_2-gamma2*sin_theta1_2+2*sin_theta2_2*sin_theta1_2*sin_phi_2)*_PI ;
 }
 
 float
@@ -178,7 +99,7 @@ total_cross_section_relative_to_511keV(const float energy)
 
 float
 ScatterEstimationByBin::
-detection_efficiency(const float energy)
+detection_efficiency(const float energy) const
 {
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
@@ -195,20 +116,20 @@ detection_efficiency(const float energy)
 
 float
 ScatterEstimationByBin::
-max_cos_angle(const float low, const float approx, const float resolution)
+max_cos_angle(const float low, const float approx, const float resolution_at_511keV)
 {
 	return
-	2. - (8176.*log(2.))/(square(approx*resolution)*(511. + (16.*low*log(2.))/square(approx*resolution) - 
-	sqrt(511.)*sqrt(511. + (32.*low*log(2.))/square(approx*resolution)))) ;
+	2. - (8176.*log(2.))/(square(approx*resolution_at_511keV)*(511. + (16.*low*log(2.))/square(approx*resolution_at_511keV) - 
+	sqrt(511.)*sqrt(511. + (32.*low*log(2.))/square(approx*resolution_at_511keV)))) ;
 }
 
 
 float
 ScatterEstimationByBin::
-energy_lower_limit(const float low, const float approx, const float resolution)
+energy_lower_limit(const float low, const float approx, const float resolution_at_511keV)
 {
   return
-  low + (approx*resolution)*(approx*resolution)*(46.0761 - 2.03829*sqrt(22.1807*low/square(approx*resolution)+511.));
+  low + (approx*resolution)*(approx*resolution)*(46.0761 - 2.03829*sqrt(22.1807*low/square(approx*resolution_at_511keV)+511.));
 }
 
 END_NAMESPACE_STIR

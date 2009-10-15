@@ -28,7 +28,7 @@ ScatterEstimationByBin::
 
 float
 ScatterEstimationByBin::
- scatter_estimate_for_one_scatter_point(
+ single_scatter_estimate_for_one_scatter_point(
 	  const std::size_t scatter_point_num, 
 	  const unsigned det_num_A, 
 	  const unsigned det_num_B)
