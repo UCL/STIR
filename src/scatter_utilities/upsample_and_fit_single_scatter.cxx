@@ -65,7 +65,7 @@ print_usage_and_exit(const char * const prog_name)
 	    << "correct_for_interleaving default to 1\n"
 	    << "attenuation_threshold defaults to 1.01\n" 
 	    << "estimate_scale_factor defaults to 1 for scaling per sinogram\n"
-	    << "0 for  no scaling, 2 for by viewgram\n"
+	    << "0 for  no scaling, 1 for by sinogram\n"
 	    << "If mask_radius_in_mm is not specified, will use all available data\n";
   exit(EXIT_FAILURE);
 }
@@ -177,38 +177,6 @@ int main(int argc, const char *argv[])
 	    std::cout << scale_factors;
 	    std::cout << "applying scale factors" << std::endl;
 	    scale_scatter_per_sinogram(scaled_scatter_proj_data, 
-				       interpolated_scatter,
-				       scale_factors) ;
-	  }
-	else if (est_scale_factor_per_sino == 2)
-	  {
-	    ProjDataInMemory interpolated_scatter(emission_proj_data_info_sptr);
-	    inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
-	    
-	    std::cout << "Finding scale factors by viewgram" << std::endl;
-	    Array<2,float> scale_factors =
-	    scale_factors_per_viewgram(
-				       *emission_proj_data_sptr, 
-				       interpolated_scatter,
-				       *attenuation_correct_factors_sptr,
-				       attenuation_threshold,
-#ifdef SCFOLD
-                                       mask_radius_in_mm
-#else
-				       -1.F // TODO back_off not implemented yet
-#endif
-);
-	    std::cout << scale_factors;
-	    threshold_lower(scale_factors.begin_all(), 
-			    scale_factors.end_all(),
-			    min_scale_factor);
-	    threshold_upper(scale_factors.begin_all(), 
-			    scale_factors.end_all(),
-			    max_scale_factor);
-	    std::cout << "After thresholding:\n";
-	    std::cout << scale_factors;
-	    std::cout << "applying scale factors" << std::endl;
-	    scale_scatter_per_viewgram(scaled_scatter_proj_data, 
 				       interpolated_scatter,
 				       scale_factors) ;
 	  }
