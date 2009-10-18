@@ -340,6 +340,16 @@ set_axial_sampling(const float samp_v, int segment_num)
 
 void
 ProjDataInfoCylindrical::
+set_num_views(const int new_num_views)
+{
+  const float old_azimuthal_angle_range = 
+    this->get_azimuthal_angle_sampling() * this->get_num_views();
+  base_type::set_num_views(new_num_views);
+  this->azimuthal_angle_sampling = old_azimuthal_angle_range/this->get_num_views();
+}
+
+void
+ProjDataInfoCylindrical::
 set_min_ring_difference( int min_ring_diff_v, int segment_num)
 {
   ring_diff_arrays_computed = false;
