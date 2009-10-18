@@ -40,15 +40,15 @@ START_NAMESPACE_STIR
 template <typename elemT>
 ArrayFilter1DUsingConvolution<elemT>::
 ArrayFilter1DUsingConvolution()
-: filter_coefficients()
+  : filter_coefficients(), _bc(BoundaryConditions::zero)
 {
   
 }
 
 template <typename elemT>
 ArrayFilter1DUsingConvolution<elemT>::
-ArrayFilter1DUsingConvolution(const VectorWithOffset<elemT> &filter_coefficients_v)
-: filter_coefficients(filter_coefficients_v)
+ArrayFilter1DUsingConvolution(const VectorWithOffset<elemT> &filter_coefficients_v, const BoundaryConditions::BC bc)
+  : filter_coefficients(filter_coefficients_v), _bc(bc)
 {
   // TODO: remove 0 elements at the outside
 }
@@ -106,20 +106,88 @@ do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
 
   if (is_trivial())
   {    
-    for (int i=out_min; i<=out_max; i++) 
+    int i=out_min;
+
+    switch (this->_bc)
+      {
+      case BoundaryConditions::zero:
+	{
+	  for (; i<=min(in_min-1,out_max); ++i) 
+	    out_array[i] = 0;
+	  break;
+	}
+      case BoundaryConditions::constant:
+	{
+	  for (; i<=min(in_min-1,out_max); ++i) 
+	    out_array[i] = in_array[in_min];
+	  break;
+	}
+      }
     {
-      out_array[i] = (i>=in_min && i <= in_max ? in_array[i] : 0);   
+      for (; i<=min(in_max,out_max); ++i) 
+	{
+	  out_array[i] = in_array[i];
+	}
     }
+    switch (this->_bc)
+      {
+      case BoundaryConditions::zero:
+	{
+	  for (; i<=out_max; ++i) 
+	    out_array[i] = 0;
+	  break;
+	}
+      case BoundaryConditions::constant:
+	{
+	  for (; i<=out_max; ++i) 
+	    out_array[i] = in_array[in_max];
+	  break;
+	}
+      }
     return;
   }
   const int j_min = filter_coefficients.get_min_index();
   const int j_max = filter_coefficients.get_max_index();
 
+
   for (int i=out_min; i<=out_max; i++) 
   {
     out_array[i] = 0;
-    for (int j=max(j_min, i-in_max); j<=min(j_max, i-in_min); j++) 
-      out_array[i] += filter_coefficients[j]*in_array[i-j];   
+    int j=j_min;
+    // first do right edge
+    switch (this->_bc)
+      {
+      case BoundaryConditions::zero:
+	{
+	  j=max(j_min, i-in_max);
+	  break;
+	}
+      case BoundaryConditions::constant:
+	{
+	  //i_in=i-j> in_max, hence j< i-in_max
+	  for (; j< min(j_max+1, i-in_max); ++j) 
+	    out_array[i] += filter_coefficients[j]*in_array[in_max /*i-j*/];
+	  break;
+	}
+      default:
+	error("ArrayFilter1DUsingConvolution: unsupported boundary condition");
+      }
+    // region unaffected by boundary
+    {
+      for (; j<=min(j_max, i-in_min); ++j) 
+	out_array[i] += filter_coefficients[j]*in_array[i-j];
+    }
+    // left edge
+    switch (this->_bc)
+      {
+      case BoundaryConditions::constant:
+	{
+	  //i_in=i-j< in_min, hence j> i-in_min
+	  for (; j<= j_max; ++j) 
+	    out_array[i] += filter_coefficients[j]*in_array[in_min /*i-j*/];
+	  break;
+	}
+      }
   }
 
 }

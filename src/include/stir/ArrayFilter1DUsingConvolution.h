@@ -35,6 +35,7 @@
 
 
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
+#include "stir/BoundaryConditions.h"
 
 START_NAMESPACE_STIR
 
@@ -83,13 +84,11 @@ class ArrayFilter1DUsingConvolution :
 {
 public:
 
-  //! Construct the filter given the kernel coefficients
-  /*! 
-    All the kernel coefficients has to be passed. 
-  */
+  //! Construct a trivial filter
   ArrayFilter1DUsingConvolution();
 
-  ArrayFilter1DUsingConvolution(const VectorWithOffset< elemT>& filter_kernel);
+  //! Construct the filter given the kernel coefficients
+  ArrayFilter1DUsingConvolution(const VectorWithOffset< elemT>& filter_kernel, const BoundaryConditions::BC bc= BoundaryConditions::zero);
   //! checks if the kernel corresponds to a trivial filter operation
   /*! 
     trivial means, either the kernel has 0 length, or length 1 and its only element is 1
@@ -105,6 +104,7 @@ public:
                            const IndexRange<1>& input_indices) const;
 
 private:
+  BoundaryConditions::BC _bc;
   VectorWithOffset< elemT> filter_coefficients;
   void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
 
