@@ -130,7 +130,7 @@ public:
 
     \warning the new range has to be 'smaller' than the old one. */
   virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
-  //! Set number of views 
+  //! Set number of views (min_view_num is set to 0).
   /*! This function is virtual in case a derived class needs to know the 
     number of views changed. */
   virtual void set_num_views(const int num_views);
