@@ -58,10 +58,12 @@ class ScatterEstimationByBin : public ParsingObject
    upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 				     const  ProjData& emission_proj_data,
 				     const ProjData& scatter_proj_data,
+				     const ProjData& weights_proj_data,
 				     const float min_scale_factor,
 				     const float max_scale_factor,
-				     const float half_filter_width,
-				     BSpline::BSplineType spline_type);
+				     const unsigned half_filter_width,
+				     BSpline::BSplineType spline_type,
+				     const bool remove_interleaving = true);
 
 
   //! Default constructor (calls set_defaults())
