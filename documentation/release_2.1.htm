@@ -79,6 +79,9 @@ from the above):</H2>
 
 <h3>Other code changes</h3>
 <ul>
+<li><code>ProjDataInfoCylindrical::set_num_views()</code> now  makes sure that we cover the
+      same range of angles as before (usually, but not necessarily, 180 degrees).
+</li>
 <li>Most of the .cxx files in the <tt>recon_buildblock</tt> had to be updated to
 add instantiations for parametric images. This is unfortunate and another
 mechanism would be nicer.
