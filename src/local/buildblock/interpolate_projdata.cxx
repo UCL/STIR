@@ -2,31 +2,31 @@
 // $Id$
 //
 /*
-Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
-This file is part of STIR.
+  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
   (at your option) any later version.
   
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 	
-	  See STIR/LICENSE.txt for details
+  See STIR/LICENSE.txt for details
 */
 /*!
 \file
 \ingroup projdata
-//! Perform B-Splines Interpolation
+\brief Perform B-Splines Interpolation of sinograms
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   
-	$Date$
-	$Revision$
+  $Date$
+  $Revision$
 */
 #include "stir/ProjData.h"
 //#include "stir/display.h"
@@ -49,20 +49,11 @@ using namespace BSpline;
 shared_ptr<ProjDataInfo>
 make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info)
 {
-  shared_ptr<Scanner> scanner_sptr =
-    new Scanner(*proj_data_info.get_scanner_ptr());
-
-  /*
-    const int new_num_detectors_per_ring =
-    scanner_sptr->get_num_detectors_per_ring()*2;
-  scanner_sptr->set_num_detectors_per_ring(new_num_detectors_per_ring);
-  */
-  return 
-    ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-				  /*span*/ 1,/* max_delta*/ 0,
-				  /* num_views */ proj_data_info.get_num_views()*2,
-				  /* num_tangential_poss */ proj_data_info.get_num_tangential_poss(),
-				  /* arc_corrected */ false);
+  shared_ptr<ProjDataInfo> new_proj_data_info_sptr = 
+    proj_data_info.clone();
+  new_proj_data_info_sptr->
+    set_num_views(proj_data_info.get_num_views()*2);
+  return new_proj_data_info_sptr;
 }
 
 void
@@ -151,11 +142,12 @@ make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info,
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
 		     const ProjData& proj_data_in, const BSplineType these_types,
-		     const bool remove_interleaving)
+		     const bool remove_interleaving,
+		     const bool use_view_offset)
 {
   BasicCoordinate<3, BSplineType> these_types_3; 
   these_types_3[1]=these_types_3[2]=these_types_3[3]=these_types;
-  interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving);
+  interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving, use_view_offset);
   return Succeeded::yes;
 }
 
@@ -163,8 +155,13 @@ Succeeded
 interpolate_projdata(ProjData& proj_data_out,
 		     const ProjData& proj_data_in,
 		     const BasicCoordinate<3, BSplineType> & these_types,
-		     const bool remove_interleaving)
+		     const bool remove_interleaving,
+		     const bool use_view_offset)
 {
+
+  if (use_view_offset)
+    warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
+
   const ProjDataInfo & proj_data_in_info =
     *proj_data_in.get_proj_data_info_ptr();
   const ProjDataInfo & proj_data_out_info =
@@ -190,9 +187,17 @@ interpolate_projdata(ProjData& proj_data_out,
 
   const float out_sampling_phi = 
     proj_data_out_info.get_phi(Bin(0,1,0,0)) - proj_data_out_info.get_phi(Bin(0,0,0,0));
-	
+
+  const float out_view_offset = 
+    use_view_offset
+    ? proj_data_out_info.get_scanner_ptr()->get_default_intrinsic_tilt()
+    : 0.F;
+  const float in_view_offset = 
+    use_view_offset
+    ? proj_data_in_info.get_scanner_ptr()->get_default_intrinsic_tilt()
+    : 0.F;
   offset[2] = 
-    (proj_data_in_info.get_phi(Bin(0,0,0,0)) - proj_data_out_info.get_phi(Bin(0,0,0,0))) / in_sampling_phi;
+    (proj_data_in_info.get_phi(Bin(0,0,0,0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0,0,0,0)) - out_view_offset) / in_sampling_phi;
   step[2] =
     out_sampling_phi/in_sampling_phi;
 	
