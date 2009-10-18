@@ -108,7 +108,15 @@ public:
   //void set_azimuthal_angle_sampling(const float angle);
  
   //void set_axial_sampling(const float samp, int segment_num);
-  
+
+  //! set new number of views, covering the same azimuthal angle range
+  /*! calls ProjDataInfo::set_num_views(), but makes sure that we cover the
+      same range of angles as before (usually, but not necessarily, 180 degrees)
+      by adjusting azimuthal_angle_sampling.
+  */
+  virtual void
+    set_num_views(const int new_num_views);
+
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;
   virtual inline float get_sampling_in_t(const Bin&) const;
