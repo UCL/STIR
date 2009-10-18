@@ -129,7 +129,7 @@ ScatterEstimationByBin::
 energy_lower_limit(const float low, const float approx, const float resolution_at_511keV)
 {
   return
-  low + (approx*resolution)*(approx*resolution)*(46.0761 - 2.03829*sqrt(22.1807*low/square(approx*resolution_at_511keV)+511.));
+  low + (approx*resolution_at_511keV)*(approx*resolution_at_511keV)*(46.0761 - 2.03829*sqrt(22.1807*low/square(approx*resolution_at_511keV)+511.));
 }
 
 END_NAMESPACE_STIR
