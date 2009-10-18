@@ -16,9 +16,8 @@ $(dir)_LIB_SOURCES:= \
 	scatter_estimate_for_two_scatter_points.cxx \
 	scatter_estimate_for_all_scatter_points.cxx \
 	scale_factors_per_sinogram.cxx \
-	scale_factors_per_viewgram.cxx \
 	scale_scatter_per_sinogram.cxx \
-	scale_scatter_per_viewgram.cxx \
+	upsample_and_fit_scatter_estimate.cxx \
 	ScatterEstimationByBin.cxx \
 	DoubleScatterEstimationByBin.cxx
 
