@@ -249,10 +249,84 @@ ArrayFilterTests::run_tests()
       // note: SymmetricConvolution cannot handle different input and output ranges
       compare_results_1arg(symconv_filter, conv_filter, test);
     }
+    std::cerr << "Testing boundary conditions\n";
+    {
+      Array<1,float> kernel(IndexRange<1>(-1,2));
+      kernel[-1] = 1;
+      kernel[0] = 2;
+      kernel[1] = 3;
+      kernel[2] = .5;
+      const ArrayFilter1DUsingConvolution<float> conv_filter_zero_BC(kernel);
+      const ArrayFilter1DUsingConvolution<float> conv_filter_cst_BC(kernel, BoundaryConditions::constant);
+      {      
+	Array<1,float> test(IndexRange<1>(101));
+	// initialise to some arbitrary values
+	for (int i=test.get_min_index(); i<=test.get_max_index(); ++i)
+	  test[i]=i*i*2-i-100.F;
+	set_tolerance(test.find_max()*kernel.sum()*1.E-6);
+      
+	Array<1,float> out_zero_BCs = test;
+	Array<1,float> out_cst_BCs = test;
+	conv_filter_zero_BC(out_zero_BCs);
+	conv_filter_cst_BC(out_cst_BCs);
+	// test if internal array elements are the same
+	{
+	  Array<1,float> out_zero_BCs_small=out_zero_BCs;
+	  out_zero_BCs_small.resize(out_zero_BCs.get_min_index() + kernel.get_max_index(),
+				    out_zero_BCs.get_max_index() + kernel.get_min_index());
+	  Array<1,float> out_cst_BCs_small=out_cst_BCs;
+	  out_cst_BCs_small.resize(out_cst_BCs.get_min_index() + kernel.get_max_index(),
+				   out_cst_BCs.get_max_index() + kernel.get_min_index());
+	  check_if_equal(out_cst_BCs_small, out_zero_BCs_small, "comparing 1D with different boundary conditions: internal values");
+	}
+	// edge
+	float left_boundary=test[0]*kernel[2] + test[0]*kernel[1] + test[0]*kernel[0] + test[1]*kernel[-1];
+	check_if_equal(out_cst_BCs[0], left_boundary, "1D with cst BC: left edge");
+	left_boundary=test[0]*kernel[0] + test[1]*kernel[-1];
+	check_if_equal(out_zero_BCs[0], left_boundary, "1D with zero BC: left edge");
+	float right_boundary=test[98]*kernel[2] + test[99]*kernel[1] + test[100]*kernel[0] + test[100]*kernel[-1];
+	check_if_equal(out_cst_BCs[100], right_boundary, "1D with cst BC: right edge");
+	right_boundary=test[98]*kernel[2] + test[99]*kernel[1] + test[100]*kernel[0];
+	check_if_equal(out_zero_BCs[100], right_boundary, "1D with zero BC: right edge");
+      }
+      {
+	Array<1,float> test(-2,5), test_out(-5,8);
+	test.fill(1.F);
+	set_tolerance(test.find_max()*kernel.sum()*1.E-6);
+	conv_filter_zero_BC(test_out, test);
+	check_if_equal(test_out[-5],0.F,"1D with zero BC: element -5");
+	check_if_equal(test_out[-4],0.F,"1D with zero BC: element -4");
+	check_if_equal(test_out[-3],kernel[-1],"1D with zero BC: element -3");
+	check_if_equal(test_out[-2],kernel[-1]+kernel[0],"1D with zero BC: element -2");
+	check_if_equal(test_out[-1],kernel[-1]+kernel[0]+kernel[1],"1D with zero BC: element -1");
+	check_if_equal(test_out[0],kernel[2]+kernel[1]+kernel[0]+kernel[-1],"1D with zero BC: element 0");
+	check_if_equal(test_out[4],kernel[2]+kernel[1]+kernel[0]+kernel[-1],"1D with zero BC: element 4");
+	check_if_equal(test_out[5],kernel[2]+kernel[1]+kernel[0],"1D with zero BC: element 5");
+	check_if_equal(test_out[6],kernel[2]+kernel[1],"1D with zero BC: element 6");	
+	check_if_equal(test_out[7],kernel[2],"1D with zero BC: element 7");
+	check_if_equal(test_out[8],0.F,"1D with zero BC: element 8");
+	conv_filter_cst_BC(test_out, test);
+	const float sum=kernel.sum();
+	check_if_equal(test_out[-5],sum,"1D with cst BC: element -5");
+	check_if_equal(test_out[-4],sum,"1D with cst BC: element -4");
+	check_if_equal(test_out[-3],sum,"1D with cst BC: element -3");
+	check_if_equal(test_out[-2],sum,"1D with cst BC: element -2");
+	check_if_equal(test_out[-1],sum,"1D with cst BC: element -1");
+	check_if_equal(test_out[0],sum,"1D with cst BC: element 0");
+	check_if_equal(test_out[4],sum,"1D with cst BC: element 4");
+	check_if_equal(test_out[5],sum,"1D with cst BC: element 5");
+	check_if_equal(test_out[6],sum,"1D with cst BC: element 6");
+	check_if_equal(test_out[7],sum,"1D with cst BC: element 7");
+	check_if_equal(test_out[8],sum,"1D with cst BC: element 8");
+      }
+    } // boundary conditions
+
+
   } // 1D
 
   std::cerr << "\nTesting 2D\n";
   {
+    set_tolerance(.001F);
     const int size1=6;const int size2=20;
     Array<2,float> test(IndexRange2D(size1,size2));
     Array<2,float> test_neg_offset(IndexRange2D(-5,size1-6,-10,size2-11));
@@ -309,6 +383,7 @@ ArrayFilterTests::run_tests()
   }
   std::cerr << "\nTesting 3D\n";
   {
+    set_tolerance(.001F);
     const int size1=5;const int size2=7; const int size3=6;
     Array<3,float> test(IndexRange3D(size1,size2,size3));
     Array<3,float> test_neg_offset(IndexRange3D(-5,size1-6,-10,size2-11,-4,size3-5));
