@@ -37,6 +37,7 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/ProjData.h"
 #include "stir/ParsingObject.h"
+#include "stir/numerics/BSplines.h"
 #include <vector>
 #include <cmath>
 #include "stir/CartesianCoordinate3D.h"
@@ -53,6 +54,16 @@ class ViewSegmentNumbers;
 class ScatterEstimationByBin : public ParsingObject
 {
  public:
+ static void
+   upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
+				     const  ProjData& emission_proj_data,
+				     const ProjData& scatter_proj_data,
+				     const float min_scale_factor,
+				     const float max_scale_factor,
+				     const float half_filter_width,
+				     BSpline::BSplineType spline_type);
+
+
   //! Default constructor (calls set_defaults())
   ScatterEstimationByBin();
   Succeeded process_data();
