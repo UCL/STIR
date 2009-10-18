@@ -65,10 +65,11 @@ run_$(dir)/test_VAXfloat:  $(DEST)$(dir)/test_VAXfloat PHONY_TARGET
 ##################################################
 # rules to ignore registries
 # note: have to be before include statement as that changes value of $(dir)
+
+ifeq ("$(FAST_test)","")
 ${DEST}$(dir)/test_ArrayFilter: ${DEST}$(dir)/test_ArrayFilter${O_SUFFIX} $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
-ifeq ("$(FAST_test)","")
 ${DEST}$(dir)/test_VectorWithOffset: ${DEST}$(dir)/test_VectorWithOffset${O_SUFFIX} $(STIR_LIB)
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
@@ -94,6 +95,27 @@ ${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} \
 	${DEST}buildblock/error${O_SUFFIX}  $(DEST)buildblock/IndexRange${O_SUFFIX} \
 	${DEST}buildblock/warning${O_SUFFIX} ${DEST}buildblock/ByteOrder${O_SUFFIX}  \
 	$(DEST)buildblock/utilities${O_SUFFIX} \
+	$(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_ArrayFilter: ${DEST}$(dir)/test_ArrayFilter${O_SUFFIX} \
+   ${DEST}buildblock/error${O_SUFFIX} ${DEST}buildblock/warning${O_SUFFIX} \
+   $(DEST)buildblock/IndexRange${O_SUFFIX} \
+   $(DEST)buildblock/ArrayFilter1DUsingConvolution${O_SUFFIX} \
+   $(DEST)buildblock/ArrayFilter2DUsingConvolution${O_SUFFIX} \
+   $(DEST)buildblock/ArrayFilter3DUsingConvolution${O_SUFFIX} \
+   $(DEST)buildblock/ArrayFilter1DUsingConvolutionSymmetricKernel${O_SUFFIX} \
+   $(DEST)buildblock/ArrayFilterUsingRealDFTWithPadding${O_SUFFIX}  \
+   $(DEST)numerics_buildblock/fourier${O_SUFFIX}
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< \
+	${DEST}buildblock/error${O_SUFFIX}  $(DEST)buildblock/IndexRange${O_SUFFIX} \
+	${DEST}buildblock/warning${O_SUFFIX}\
+        $(DEST)buildblock/IndexRange${O_SUFFIX} \
+	$(DEST)buildblock/ArrayFilter1DUsingConvolution${O_SUFFIX} \
+        $(DEST)buildblock/ArrayFilter2DUsingConvolution${O_SUFFIX} \
+        $(DEST)buildblock/ArrayFilter3DUsingConvolution${O_SUFFIX} \
+        $(DEST)buildblock/ArrayFilter1DUsingConvolutionSymmetricKernel${O_SUFFIX} \
+        $(DEST)buildblock/ArrayFilterUsingRealDFTWithPadding${O_SUFFIX} \
+        $(DEST)numerics_buildblock/fourier${O_SUFFIX} \
 	$(LINKFLAGS) $(SYS_LIBS)
 
 ${DEST}$(dir)/test_NestedIterator: ${DEST}$(dir)/test_NestedIterator${O_SUFFIX} ${DEST}buildblock/error${O_SUFFIX}  $(DEST)buildblock/IndexRange${O_SUFFIX}
