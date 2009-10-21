@@ -7,7 +7,6 @@ dir := local/scatter_buildblock
 $(dir)_LIB_SOURCES:= \
 	sample_scatter_points.cxx \
 	integral_scattpoint_det.cxx \
-	integral_over_activity_image_between_scattpoint_det.cxx \
 	integral_over_activity_image_between_scattpoints.cxx \
         cached_factors.cxx \
 	cached_factors_2.cxx \
