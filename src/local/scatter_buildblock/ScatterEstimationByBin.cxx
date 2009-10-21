@@ -30,7 +30,6 @@
   $Revision$
 */
 #include "local/stir/ScatterEstimationByBin.h"
-#include "local/stir/Scatter.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
