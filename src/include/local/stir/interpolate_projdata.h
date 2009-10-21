@@ -29,7 +29,6 @@
 */
 
 #include "stir/numerics/BSplines.h"
-//#include "stir/numerics/BSplinesRegularGrid.h"
 
 START_NAMESPACE_STIR
 
@@ -38,24 +37,6 @@ template <int num_dimensions, class T> class BasicCoordinate;
 template <class elemT> class Sinogram;
 template <class elemT> class SegmentBySinogram;
 
-shared_ptr<ProjDataInfo>
-make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info);
-
-void
-make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
-			      const Sinogram<float>& in_sinogram);
-
-Sinogram<float>
-make_non_interleaved_sinogram(const ProjDataInfo& non_interleaved_proj_data_info,
-			      const Sinogram<float>& in_sinogram);
-
-void
-make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
-			     const SegmentBySinogram<float>& in_segment);
-
-SegmentBySinogram<float>
-make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info,
-			     const SegmentBySinogram<float>& in_segment);
 
 //! \brief Perform B-Splines Interpolation
 /*! 
@@ -63,32 +44,32 @@ make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info,
   \param[out] proj_data_out Its projection_data_info is used to 
   determine output characteristics. Data will be 'put' in here using 
   ProjData::set_sinogram().
-  \param[in] proj_data_in input data
-
+  \param[in] proj_data_in input data 
+  \param[in] spline_type determines which type of BSpline will be used
+  \param[in] remove_interleaving 
   The STIR implementation of interpolating 3D (for the moment) projdata is a generalisation that applies 
   B-Splines Interpolation to projdata supposing that every dimension is a regular grid. For instance, for 
   a 3D dataset, interpolating can produce a new expanded 3D dataset based on the given information 
   (proj_data_out). This mostly is useful in the scatter sinogram expansion.
 
   See STIR documentation about B-Spline interpolation or scatter correction.     
+
+  \todo This currently only works for direct sinograms (i.e. segment 0).
+  \warning Because of the boundary conditions in the B-spline interpolation,
+  strange results can occur if the output sinogram has a larger range than 
+  the input sinogram.
 */  
 //@{
-/*!						  
-\ingroup projdata
-\brief Extension of the 2D sinograms in view direction.
-	Functions that interpolate the given input projection 3D data to the given output projection
-	3D template using B-Splines interpolators.
-*/
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
 		     const ProjData& proj_data_in, 
-		     const BSpline::BSplineType this_type,
+		     const BSpline::BSplineType spline_type,
 		     const bool remove_interleaving = false,
 		     const bool use_view_offset = false);
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
 		     const ProjData& proj_data_in,
-		     const BasicCoordinate<3, BSpline::BSplineType> & this_type,
+		     const BasicCoordinate<3, BSpline::BSplineType> & spline_type,
 		     const bool remove_interleaving = false,
 		     const bool use_view_offset = false);
 //@}
