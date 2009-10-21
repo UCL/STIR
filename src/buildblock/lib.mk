@@ -23,6 +23,7 @@ $(dir)_LIB_SOURCES := \
   Viewgram.cxx \
   Sinogram.cxx \
   RelatedViewgrams.cxx \
+  scale_sinograms.cxx \
   DiscretisedDensity.cxx \
   VoxelsOnCartesianGrid.cxx \
   utilities.cxx \
