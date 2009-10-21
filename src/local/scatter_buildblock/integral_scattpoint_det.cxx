@@ -4,9 +4,9 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementations of functions defined in Scatter.h
-  Function calculates the integral along LOR in an image (attenuation or emission). 
-  (From scatter point to detector coordinate)
+  \brief Implementations of integrating function in stir::ScatterEstimationByBin
+  Functions calculates the integral along LOR in an image (attenuation or emission). 
+  (from scatter point to detector coordinate)
   
   \author Pablo Aguiar
   \author Charalampos Tsoumpas
@@ -46,6 +46,28 @@ exp_integral_over_attenuation_image_between_scattpoint_det (const CartesianCoord
 				  scatter_point,
 				  detector_coord)
 	);
+}
+
+
+float
+ScatterEstimationByBin::
+integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
+						     const CartesianCoordinate3D<float>& detector_coord)
+{
+  {
+  const CartesianCoordinate3D<float> dist_vector = scatter_point - detector_coord ;
+
+  const float dist_sp1_det_squared = norm_squared(dist_vector);
+
+  const float solid_angle_factor = 
+    std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_det_squared) ;
+ 
+  return
+    solid_angle_factor *
+    integral_between_2_points(*activity_image_sptr,
+			      scatter_point,
+			      detector_coord);
+  }
 }
 
 float 
