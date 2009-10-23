@@ -1,9 +1,9 @@
 Forward Projector parameters:=
 ; example par file for specifying the forward projector for e.g. fwdtest
 type:=Matrix
-  Forward Projector Pair Using Matrix Parameters :=
+  Forward Projector Using Matrix Parameters :=
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
   End Ray tracing matrix parameters :=
-  End Forward Projector Pair Using Matrix Parameters :=
+  End Forward Projector Using Matrix Parameters :=
 end:=
