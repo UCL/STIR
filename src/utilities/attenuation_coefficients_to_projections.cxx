@@ -69,7 +69,7 @@ main (int argc, char * argv[])
   if (argc!=4)
     print_usage_and_exit();
 
-  bool doACF;
+  bool doACF=true;// initialise to avoid compiler warning
   if (strcmp(argv[1],"--ACF")==0)
     doACF=true;
   else if (strcmp(argv[1],"--AF")==0)
