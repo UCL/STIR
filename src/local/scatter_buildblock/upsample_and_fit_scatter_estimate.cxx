@@ -94,7 +94,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
       std::cout << scale_factors;
       VectorWithOffset<float> kernel(-half_filter_width,half_filter_width);
       kernel.fill(1.F/(2*half_filter_width+1));
-      ArrayFilter1DUsingConvolution<float> lowpass_filter(kernel);
+      ArrayFilter1DUsingConvolution<float> lowpass_filter(kernel, BoundaryConditions::constant);
       std::for_each(scale_factors.begin(), 
 		    scale_factors.end(),
 		    lowpass_filter);
