@@ -31,13 +31,15 @@ and Kris Thielemans.
 </li>
 </ul>
 
-<h2> Summary for endusers (also to be read by developers)</h2>
+<h2> Summary for end users (also to be read by developers)</h2>
 
 <h3>Known problems</h3>
 <ul>
 <li>ECAT6 routines seem to have problems since STIR 2.0</li>
 <li>Some new utilities might not compile under windows with Visual Studio
 as this doesn't have the <code>getopt</code> function.</li>
+<li>The interpolating back-projector can still give problems in the centre of the images
+on some architectures/compiler/optimisation settings.</li>
 </ul>
 
 <h3>New utilities</h3>
@@ -74,7 +76,10 @@ from the above):</H2>
 <li><code>ArrayFilter2DUsingConvolution</code> and <code>ArrayFilter3DUsingConvolution</code>.</li>
 <li>Preliminary classes for dynamic and gated data</li>
 <li>New member <code>fill_nonidentifiable_target_parameters</code> of the 
-<code>GeneralisedObjectiveFunction</code> hierarchy.
+<code>GeneralisedObjectiveFunction</code> hierarchy. This used by OSSPS to avoid problems
+when initialising with images that have for instance been reconstructed on a square grid.</li>
+<li>B-spline interpolation functions and a few numerical algorithms (IIR and FIR filters, 
+1d numerical integration).<br />
 </ul>
 
 <h3>Other code changes</h3>
