@@ -34,7 +34,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
-#include "local/stir/GatedProjData.h"
+#include "stir/GatedProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/DataProcessor.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
