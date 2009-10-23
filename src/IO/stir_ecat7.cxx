@@ -259,7 +259,7 @@ static long offset_in_ECAT_file (MatrixFile *mptr, int frame, int plane, int gat
   Norm_subheader normsub;
   Attn_subheader attnsub;
   Scan3D_subheader scan3dsub;
-  char *prog = "offset_in_ECAT_file";
+  const char * const prog = "offset_in_ECAT_file";
   /*
   set_debug (prog);
   */
