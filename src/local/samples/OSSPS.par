@@ -69,14 +69,14 @@ number of subsets:= 4
 ;start at subiteration number := 1
 number of subiterations:= 1000
 Save estimates at subiteration intervals:= 40
-;write update estimate := 0
+;write update image := 0
 
 ; if next is disabled, defaults to image full of 1s (but that's not good for OSSPS)
 ; in particular, make sure it has the correct scale
 initial estimate:= maybe_a_smoothed_fbp_image.hv
 enforce initial positivity condition := 0
 
-; additional regularisation 
+; additional regularisation. you would not normally use a prior and inter-iteration filtering
 
 ;inter-iteration filter subiteration interval:= 0
 ;inter-iteration filter type := none
@@ -95,6 +95,9 @@ enforce initial positivity condition := 0
 relaxation parameter := 1
 relaxation gamma:=.1
 
+; you can give an upper bound on the image values.
+; lower bound is always zero.
+;upper bound:= 1
 
 END :=
 
