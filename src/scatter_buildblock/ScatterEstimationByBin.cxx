@@ -1,7 +1,6 @@
 //
 // $Id$
 //
-
 /*
   Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
   This file is part of STIR.
@@ -21,7 +20,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementation of stir::ScatterEstimationByBin
+  \brief Implementation of most functions in stir::ScatterEstimationByBin
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
@@ -29,7 +28,7 @@
   $Date$
   $Revision$
 */
-#include "local/stir/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
@@ -96,32 +95,32 @@ post_processing()
   if (is_null_ptr(this->activity_image_sptr))
     {
       warning("Error reading activity image %s",
-	      this->activity_image_filename.c_str());
+              this->activity_image_filename.c_str());
       return true;
     }
   if (is_null_ptr(this->density_image_for_scatter_points_sptr))
     {
       warning("Error reading density image %s",
-	      this->density_image_filename.c_str());
+              this->density_image_filename.c_str());
       return true;
     }
   if (is_null_ptr(this->density_image_for_scatter_points_sptr))
     {
       warning("Error reading density_for_scatter_points image %s",
-	      this->density_image_for_scatter_points_filename.c_str());
+              this->density_image_for_scatter_points_filename.c_str());
       return true;
     }
-	
+        
   warning("\nWARNING: Attenuation image data are supposed to be in units cm^-1\n"
-	  "\tReference: water has mu .096 cm^-1\n" 
-	  "\tMax in attenuation image: %g\n" ,
-	  this->density_image_sptr->find_max());
+          "\tReference: water has mu .096 cm^-1\n" 
+          "\tMax in attenuation image: %g\n" ,
+          this->density_image_sptr->find_max());
   shared_ptr<ProjData> template_proj_data_sptr = 
     ProjData::read_from_file(this->template_proj_data_filename);  
   const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(
-							   template_proj_data_sptr->get_proj_data_info_ptr());
-	
+                                                           template_proj_data_sptr->get_proj_data_info_ptr());
+        
   if (is_null_ptr(proj_data_info_ptr))
     {     
       warning("ScatterEstimationByBin can only handle non-arccorrected data");
@@ -159,10 +158,10 @@ post_processing()
   {
     std::ofstream scatter_points_file("scatter_points.txt"); 
     if(!scatter_points_file)    
-      warning("Cannot open scatter_points file.\n") ;	              
+      warning("Cannot open scatter_points file.\n") ;                 
     else
       scatter_points_file << scatt_points_vector;
-    std::cerr << scatt_points_vector.size() << " scatter points selected!" << std::endl;				
+    std::cerr << scatt_points_vector.size() << " scatter points selected!" << std::endl;                                
   }
 #endif
 
@@ -176,50 +175,12 @@ ScatterEstimationByBin()
   this->set_defaults();
 }
 
-unsigned 
-ScatterEstimationByBin::
-find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
-{
-  std::vector<CartesianCoordinate3D<float> >::const_iterator iter=
-    std::find(detection_points_vector.begin(),
-	      detection_points_vector.end(),
-	      coord);
-  if (iter != detection_points_vector.end())
-    {
-      return iter-detection_points_vector.begin();
-    }
-  else
-    {
-      if (detection_points_vector.size()==static_cast<std::size_t>(total_detectors))
-	error("More detection points than we think there are!\n");
-
-      detection_points_vector.push_back(coord);
-      return detection_points_vector.size()-1;
-    }
-}
-
-void
-ScatterEstimationByBin::
-find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
-{
-  CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-  this->proj_data_info_ptr->
-    find_cartesian_coordinates_of_detection(
-					    detector_coord_A,detector_coord_B,bin);
-  det_num_A =
-    this->find_in_detection_points_vector(detector_coord_A + 
-					  this->shift_detector_coordinates_to_origin);
-  det_num_B =
-    this->find_in_detection_points_vector(detector_coord_B + 
-					  this->shift_detector_coordinates_to_origin);
-}
-
 Succeeded 
 ScatterEstimationByBin::
 process_data()
-{		
+{               
   ViewSegmentNumbers vs_num;
-	
+        
   /* ////////////////// SCATTER ESTIMATION TIME ////////////////
    */
   CPUTimer bin_timer;
@@ -228,7 +189,7 @@ process_data()
   int axial_bins = 0 ;
   for (vs_num.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
        vs_num.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
-       ++vs_num.segment_num())	
+       ++vs_num.segment_num())  
     axial_bins += this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num());
   const int total_bins = 
     this->proj_data_info_ptr->get_num_views() * axial_bins *
@@ -236,7 +197,7 @@ process_data()
 
   /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
    */
-	
+        
   /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
      coordinate in a coordinate system where z=0 in the first ring of the scanner.
      We want to shift this to a coordinate system where z=0 in the middle 
@@ -249,7 +210,7 @@ process_data()
     CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
     // check above statement
     this->proj_data_info_ptr->find_cartesian_coordinates_of_detection(
-								      detector_coord_A,detector_coord_B,Bin(0,0,0,0));
+                                                                      detector_coord_A,detector_coord_B,Bin(0,0,0,0));
     assert(detector_coord_A.z()==0);
     assert(detector_coord_B.z()==0);
     // check that get_m refers to the middle of the scanner
@@ -270,41 +231,41 @@ process_data()
        ++vs_num.segment_num())
     {
       for (vs_num.view_num()=this->proj_data_info_ptr->get_min_view_num();
-	   vs_num.view_num()<=this->proj_data_info_ptr->get_max_view_num();
-	   ++vs_num.view_num())
-	{
-	  total_scatter += this->process_data_for_view_segment_num(vs_num);
-	  bin_counter +=  
-	    this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num()) *
-	    this->proj_data_info_ptr->get_num_tangential_poss();
+           vs_num.view_num()<=this->proj_data_info_ptr->get_max_view_num();
+           ++vs_num.view_num())
+        {
+          total_scatter += this->process_data_for_view_segment_num(vs_num);
+          bin_counter +=  
+            this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num()) *
+            this->proj_data_info_ptr->get_num_tangential_poss();
 
-	  /* ////////////////// SCATTER ESTIMATION TIME ////////////////
-	   */
-	  {
-	    // TODO remove statics
-	    static double previous_timer = 0 ;		
-	    static int previous_bin_count = 0 ;
-	    std::cerr << bin_counter << " bins  Total time elapsed "
-		      << bin_timer.value() << " sec \tTime remaining about "
-		      << (bin_timer.value()-previous_timer)*
-	                 (total_bins-bin_counter)/
-         	         (bin_counter-previous_bin_count)/60
-		      << " minutes"
-		      << std::endl;				
-	    previous_timer = bin_timer.value() ;
-	    previous_bin_count = bin_counter ;
-	  }
-	  /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
-	   */
-	}
+          /* ////////////////// SCATTER ESTIMATION TIME ////////////////
+           */
+          {
+            // TODO remove statics
+            static double previous_timer = 0 ;          
+            static int previous_bin_count = 0 ;
+            std::cerr << bin_counter << " bins  Total time elapsed "
+                      << bin_timer.value() << " sec \tTime remaining about "
+                      << (bin_timer.value()-previous_timer)*
+                         (total_bins-bin_counter)/
+                         (bin_counter-previous_bin_count)/60
+                      << " minutes"
+                      << std::endl;                             
+            previous_timer = bin_timer.value() ;
+            previous_bin_count = bin_counter ;
+          }
+          /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
+           */
+        }
     }
-  bin_timer.stop();		
+  bin_timer.stop();             
   this->write_log(bin_timer.value(), total_scatter);
 
   if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
     {
       warning("Expected num detectors: %d, but found %d\n",
-	      total_detectors, detection_points_vector.size());
+              total_detectors, detection_points_vector.size());
       return Succeeded::no;
     }
 
@@ -319,42 +280,45 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
   Bin bin(vs_num.segment_num(), vs_num.view_num(), 0,0);
   double total_scatter = 0;
   Viewgram<float> viewgram =
-    this->output_proj_data_sptr->get_empty_viewgram(bin.view_num(), bin.segment_num());	      
+    this->output_proj_data_sptr->get_empty_viewgram(bin.view_num(), bin.segment_num());       
 
-		
+                
   for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
        bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
        ++bin.axial_pos_num())
     {
       for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
-	   bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
-	   ++bin.tangential_pos_num())
-	{  
+           bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
+           ++bin.tangential_pos_num())
+        {  
 
-	  unsigned det_num_A = 0; // initialise to avoid compiler warnings
-	  unsigned det_num_B = 0;
-	  this->find_detectors(det_num_A, det_num_B, bin);
+          unsigned det_num_A = 0; // initialise to avoid compiler warnings
+          unsigned det_num_B = 0;
+          this->find_detectors(det_num_A, det_num_B, bin);
 
-	  const double scatter_ratio =
-	    scatter_estimate(det_num_A, det_num_B);
-		  
-	  viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
-	    static_cast<float>(scatter_ratio);
+          const double scatter_ratio =
+            scatter_estimate(det_num_A, det_num_B);
+                  
+          viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
+            static_cast<float>(scatter_ratio);
 
-	  total_scatter += scatter_ratio;
+          total_scatter += scatter_ratio;
 
-	}
+        }
     } // end loop over axial_pos
 
-  this->output_proj_data_sptr->set_viewgram(viewgram);
+  if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
+    error("ScatterEstimationByBin: error writing viewgram");
+
+  return static_cast<double>(viewgram.sum());
 }
 
 
 void
 ScatterEstimationByBin::
 write_log(const double simulation_time, 
-	  const float total_scatter)
-{	
+          const float total_scatter)
+{       
 
   std::string log_filename = 
     this->output_proj_data_filename + ".log";
@@ -367,32 +331,32 @@ write_log(const double simulation_time,
   int axial_bins = 0 ;
   for (int segment_num=this->output_proj_data_sptr->get_min_segment_num();
        segment_num<=this->output_proj_data_sptr->get_max_segment_num();
-       ++segment_num)	
-    axial_bins += this->output_proj_data_sptr->get_num_axial_poss(segment_num);	
+       ++segment_num)   
+    axial_bins += this->output_proj_data_sptr->get_num_axial_poss(segment_num); 
   const int total_bins = 
     this->output_proj_data_sptr->get_num_views() * axial_bins *
-    this->output_proj_data_sptr->get_num_tangential_poss();	
+    this->output_proj_data_sptr->get_num_tangential_poss();     
 
   mystream << this->parameter_info()
-	   << "\nTotal simulation time elapsed: "				  
-	   <<   simulation_time/60 
-	   << "\nTotal Scatter Points : " << scatt_points_vector.size() 
-	   << "\nTotal Scatter Counts : " << total_scatter 
-	   << "\nActivity image SIZE: " 
-	   << (*this->activity_image_sptr).size() << " * " 
-	   << (*this->activity_image_sptr)[0].size() << " * "  // TODO relies on 0 index
-	   << (*this->activity_image_sptr)[0][0].size()
-	   << "\nAttenuation image SIZE: " 
-	   << (*this->density_image_sptr).size() << " * "
-	   << (*this->density_image_sptr)[0].size() << " * " 
-	   << (*this->density_image_sptr)[0][0].size()
-	   << "\nTotal bins : " << total_bins << " = " 
-	   << this->output_proj_data_sptr->get_num_views() 		 
-	   << " view_bins * " 
-	   << axial_bins << " axial_bins * "
-	   << this->output_proj_data_sptr->get_num_tangential_poss() 
-	   << " tangential_bins\n"; 
+           << "\nTotal simulation time elapsed: "                                 
+           <<   simulation_time/60 
+           << "\nTotal Scatter Points : " << scatt_points_vector.size() 
+           << "\nTotal Scatter Counts : " << total_scatter 
+           << "\nActivity image SIZE: " 
+           << (*this->activity_image_sptr).size() << " * " 
+           << (*this->activity_image_sptr)[0].size() << " * "  // TODO relies on 0 index
+           << (*this->activity_image_sptr)[0][0].size()
+           << "\nAttenuation image SIZE: " 
+           << (*this->density_image_sptr).size() << " * "
+           << (*this->density_image_sptr)[0].size() << " * " 
+           << (*this->density_image_sptr)[0][0].size()
+           << "\nTotal bins : " << total_bins << " = " 
+           << this->output_proj_data_sptr->get_num_views()               
+           << " view_bins * " 
+           << axial_bins << " axial_bins * "
+           << this->output_proj_data_sptr->get_num_tangential_poss() 
+           << " tangential_bins\n"; 
 }
 
 END_NAMESPACE_STIR
-		
+                

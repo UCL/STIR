@@ -39,9 +39,9 @@
 #include "stir/Succeeded.h"
 #include "stir/numerics/BSplines.h"
 #include "stir/numerics/BSplinesRegularGrid.h"
-#include "local/stir/interpolate_projdata.h"
-#include "local/stir/extend_projdata.h"
-#include "local/stir/sample_array.h"
+#include "stir/interpolate_projdata.h"
+#include "stir/extend_projdata.h"
+#include "stir/numerics/sampling_functions.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR
