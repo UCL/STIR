@@ -158,8 +158,26 @@ echo Running %INSTALL_DIR%compare_image
 %INSTALL_DIR%compare_image test_image_PM_QPweights_6.hv my_test_image_PM_QPweights_6.hv
 if ERRORLEVEL 1 goto OSEMQPweights_problem
 echo ---- This test seems to be ok !
-goto run_CORRECT_PROJDATA
+goto run_OSSPS_PM_QP
 :OSEMQPweights_problem
+echo There were problems here!
+set ThereWereErrors=1
+
+
+echo.
+echo ----------- Running OSSPS with Quadratic prior ------------- 
+
+echo Running %INSTALL_DIR%OSSPS 
+%INSTALL_DIR%OSSPS OSSPS_test_PM_QP.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stderr.log
+
+
+echo ---- Comparing output of OSSPS subiter 8 (should be identical up to tolerance)
+echo Running %INSTALL_DIR%compare_image 
+%INSTALL_DIR%compare_image test_image_PM_QP_8.hv my_test_image_PM_QP_8.hv
+if ERRORLEVEL 1 goto OSSPSQP_problem
+echo ---- This test seems to be ok !
+goto run_CORRECT_PROJDATA
+:OSSPSQP_problem
 echo There were problems here!
 set ThereWereErrors=1
 
