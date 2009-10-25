@@ -3,18 +3,31 @@
 //
 /*
   Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+  This file is part of STIR.
+
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details. 
+
   See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup utilities
-  \brief   
+  \ingroup scatter
+  \brief Estimates a coarse scatter sinogram
 
   \author Kris Thielemans
   
   $Date$
   $Revision$
-	
+        
   \par Usage:
   \code
   estimate_scatter parfile
@@ -23,7 +36,7 @@
   of the parameter file.
 */
 
-#include "local/stir/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/Succeeded.h"
 /***********************************************************/     
 
@@ -34,7 +47,7 @@ int main(int argc, const char *argv[])
   if (argc==2)
     {
       if (scatter_estimation.parse(argv[1]) == false)
-	return EXIT_FAILURE;
+        return EXIT_FAILURE;
     }
   else
     scatter_estimation.ask_parameters();
