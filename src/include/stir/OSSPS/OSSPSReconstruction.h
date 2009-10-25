@@ -57,12 +57,22 @@ START_NAMESPACE_STIR
   \f$D\f$ a dagional matrix (the preconditioner)
   and \f$\zeta\f$ an iteration-dependent number called the relaxation parameter (see below).
 
-  \f$D\f$ depends on \f$\Psi\f$. At present, we only implement this for the PET emission case.
+  \f$D\f$ depends on \f$\Psi\f$. The data-dependent term in the preconditioner 
+  suggested in Ahn and Fessler turns out to be equal to the product of the Hessian of 
+  \f$\Psi\f$ summed over all columns (while using the data plug-in approach for 
+  approximating the Hessian close to the solution). Therefore, this OSSPS 
+  implementation uses 
+  GeneralisedObjectiveFunction::add_multiplication_with_approximate_Hessian_without_penalty.
+  It is thus completely generic and can be applied to any objective function implemented
+  in STIR.  
+
+  Note that the exact paraboloidal surrogate algorithm by Erdogan and Fessler is currently
+  not implemented.
 
   When no prior info is specified, this should converge to the Maximum Likelihood solution 
   (but in a very different way from MLEM!).
   
-  Note that this implementation assumes 'balanced subsets', i.e. 
+  Note that this implementation probably assumes 'balanced subsets', i.e. 
   
     \f[\sum_{b \in \rm{subset}} P_{bv} = 
        \sum_b P_{bv} \over \rm{numsubsets} \f]
