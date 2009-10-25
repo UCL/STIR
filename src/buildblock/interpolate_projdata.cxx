@@ -119,6 +119,8 @@ namespace detail_interpolate_projdata
       }
   }
 
+#if 0
+  // not needed for now
   static Sinogram<float>
   make_non_interleaved_sinogram(const ProjDataInfo& non_interleaved_proj_data_info,
                                 const Sinogram<float>& in_sinogram)
@@ -130,7 +132,7 @@ namespace detail_interpolate_projdata
     make_non_interleaved_sinogram(out_sinogram, in_sinogram);
     return out_sinogram;
   }                                                   
-
+#endif
 
   static void
   make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
