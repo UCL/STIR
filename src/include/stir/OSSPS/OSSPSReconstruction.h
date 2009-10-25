@@ -43,7 +43,10 @@ START_NAMESPACE_STIR
   \brief Implementation of the  relaxed Ordered Subsets Separable
   Paraboloidal Surrogate ( OSSPS)
   
-  See Erdogan and Fessler, and Ahn and Fessler, TMI. 
+  See  
+  S. Ahn and J. A. Fessler, <i>Globally convergent image reconstruction for
+  emission tomography using relaxed ordered subsets algorithms,</i> IEEE
+  Trans. Med. Imag., vol. 22, no. 3, pp. 613-626, May 2003.
   
   OSSPS is a relaxed preconditioned sub-gradient descent algorithm:
 
