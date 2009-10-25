@@ -20,7 +20,7 @@
 
   \file
   \ingroup OSSPS
-  \brief main() for OSSPS
+  \brief main() for stir::OSSPSReconstruction
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -28,7 +28,7 @@
   $Date$
   $Revision$
 */
-#include "local/stir/OSSPS/OSSPSReconstruction.h"
+#include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 

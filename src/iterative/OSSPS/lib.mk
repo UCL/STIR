@@ -3,12 +3,12 @@
 #
 
 
-dir:=local/iterative/OSSPS
+dir:=iterative/OSSPS
 
 $(dir)_LIB_SOURCES:= \
 	OSSPSReconstruction.cxx
 
-#$(dir)_REGISTRY_SOURCES:= local_motion_registries.cxx
+#$(dir)_REGISTRY_SOURCES:= 
 
 include $(WORKSPACE)/lib.mk
 

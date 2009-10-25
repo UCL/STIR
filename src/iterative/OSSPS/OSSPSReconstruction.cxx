@@ -30,7 +30,7 @@ $Date$
 $Revision$
 */
 
-#include "local/stir/OSSPS/OSSPSReconstruction.h"
+#include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/min_positive_element.h"
 #include "stir/recon_array_functions.h"
 #include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
@@ -40,7 +40,6 @@ $Revision$
 #include "stir/is_null_ptr.h"
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 
 #include <iostream>
 #include <memory>

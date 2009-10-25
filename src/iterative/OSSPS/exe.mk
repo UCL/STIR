@@ -2,7 +2,7 @@
 # $Id$
 #
 
-dir:=local/iterative/OSSPS
+dir:=iterative/OSSPS
 
 $(dir)_SOURCES = \
 	OSSPS.cxx
