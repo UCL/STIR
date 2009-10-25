@@ -81,7 +81,7 @@ START_NAMESPACE_STIR
   
   The relaxation value for the additive update follows the suggestion from Ahn&Fessler:
 
-  \f[ \lambda= { \alpha \over 1+ \gamma n } \f ]
+  \f[ \zeta= { \alpha \over 1+ \gamma n } \f ]
 
   with \f$n\f$ the (full) iteration number. The parameter \f$\alpha\f$ corresponds to the
   class member <code>relaxation_parameter</code>, and \f$\fgamma\f$ to
