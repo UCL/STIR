@@ -63,7 +63,21 @@ number of subsets:= 12
 number of subiterations:= 24
 save estimates at subiteration intervals:= 12
 
-; use relaxation scheme alpha/(1 + gamma iteration_num)
-relaxation parameter:=1
+; here start OSSPS specific values
+
+; values to use for the 'precomputed denominator'
+  ; if you do not specify the following keyword, the 'precomputed denominator'
+  ; will be computed automatically (and saved)
+  ; use the following if you have it already (e.g. from previous run)
+  ; note: setting the value to 1 will use an images full of ones (which is not a good idea!)
+  ; precomputed denominator := my_precomputed_denominator.hv
+
+; specify relaxation scheme
+; lambda = relaxation_parameter/ (1+relaxation_gamma*(subiteration_num/num_subsets)
+relaxation parameter := 1
 relaxation gamma:=.1
+
+; you can give an upper bound on the image values.
+; lower bound is always zero.
+;upper bound:= 1
 END :=
