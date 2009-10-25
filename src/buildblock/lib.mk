@@ -24,6 +24,8 @@ $(dir)_LIB_SOURCES := \
   Sinogram.cxx \
   RelatedViewgrams.cxx \
   scale_sinograms.cxx \
+  interpolate_projdata.cxx \
+  extend_projdata.cxx \
   DiscretisedDensity.cxx \
   VoxelsOnCartesianGrid.cxx \
   utilities.cxx \

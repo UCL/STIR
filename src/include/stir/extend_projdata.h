@@ -40,18 +40,14 @@ tangential position, the values are extrapolated by nearest neighbour known valu
 
 This is probably only useful before calling interpolation routines, or for FORE.
 */
-inline
 Array<3,float>
 extend_segment_in_views(const SegmentBySinogram<float>& sino, 
 			const int min_view_extension, const int max_view_extension);
-inline
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
 			 const int min_view_extension, const int max_view_extension);
 //@}
 
 END_NAMESPACE_STIR
-
-#include "local/stir/extend_projdata.inl"
 
 

@@ -28,15 +28,18 @@
   $Revision$
 */
 
-#include <cmath>
+#include "stir/common.h"
 
 START_NAMESPACE_STIR
 
-/*!	\ingroup nummerics
+/*! \ingroup numerics
    \brief A collection of error functions. 
-    The erf() is a high precision implementation of the error function.
-	The erfc() is the complementary of the erf(), which should be equal to 1-erf().
-   */
+   The erf() is a high precision implementation of the error function.
+   The erfc() is the complementary of the erf(), which should be equal to 1-erf(), but with 
+   higher precision when erf is close to 1.
+
+   \todo replace with boost::erf
+*/
 //@{
 inline 
 double erf(double);
@@ -46,5 +49,5 @@ double erfc(double);
 
 END_NAMESPACE_STIR
 
-#include "local/stir/numerics/erf.inl"
+#include "stir/numerics/erf.inl"
 

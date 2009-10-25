@@ -9,7 +9,6 @@ $(dir)_LIB_SOURCES:= \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
-	interpolate_projdata.cxx \
         AbsTimeIntervalWithParsing.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
