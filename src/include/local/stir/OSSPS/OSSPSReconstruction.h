@@ -135,7 +135,9 @@ public:
   /*! If not specified, the corresponding object will be computed. */
   string precomputed_denominator_filename;
 
+#if 0
   bool do_line_search;
+#endif
 
   //! relaxation parameter used (should be around 1) (see class documentation)
   float relaxation_parameter;
@@ -167,8 +169,10 @@ private:
   GeneralisedPrior<TargetT> * get_prior_ptr()
     { return this->get_objective_function().get_prior_ptr(); }
 
+#if 0
   float
     line_search(const TargetT& current_estimate, const TargetT& additive_update);
+#endif
 
 };
 
