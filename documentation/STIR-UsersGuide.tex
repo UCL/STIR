@@ -32,7 +32,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 2.0}}
+ Version 2.1}}
 \end{center}
 
 \end{spacing}
@@ -1228,15 +1228,18 @@ Image reconstruction programs}
 
 
 \subsubsection{
-Maximum Likelihood Estimation algorithms}
+Maximum Likelihood Estimation (with optional penalty) algorithms}
 
-The Maximum Likelihood Estimation (MLE) type reconstruction algorithm 
-currently supported is called \textbf{OSMAPOSL}. It is an implementation 
+Two statistical reconstruction algorithms are currently supported:
+\begin{description}
+\item[OSMAPOSL] an implementation 
 of the OSEM-One Step Late algorithm with various additional refinements 
 and capabilities. See [Jac00] for a description of many details of the
-implementation.\\
-Note that additional reconstruction algorithms are being prepared. For instance, 
-OSMAPOSL on list mode data.
+implementation.
+\item[OSSPS] an implementation of the Ordered Subsets Paraboloidal
+Surrogate algorithm by Erdogan and Fessler, and Ahn and Fessler [Ahn2003]. 
+\end{description}
+
 
 { \subsubsubsection{Running OSMAPOSL}
 }
@@ -1754,6 +1757,64 @@ Gives some indication of how much time you save by calculating in parallel.
 \end{description}
 
 See [Bei08] for some info on performance.
+
+{ \subsubsubsection{OSSPS}
+}
+\label{sec:OSSPS}
+
+  { \subsubsubsubsection{Algorithm description}
+  }
+
+  OSSPS is a relaxed preconditioned sub-gradient descent algorithm:
+
+  \[ \lambda^\mathrm{new} = \lambda + \zeta D \nabla \Psi \]
+
+  with $\lambda$ the parameters to be estimated,
+  $\Psi$ the objective function,
+  $D$ a dagional matrix (the preconditioner)
+  and $\zeta$ an iteration-dependent number called the relaxation parameter (see below).
+
+  $D$ depends on $\Psi$. The data-dependent term in the preconditioner 
+  suggested in Ahn and Fessler turns out to be equal to the product of the Hessian of 
+  $\Psi$ summed over all columns (while using the data plug-in approach for 
+  approximating the Hessian close to the solution). Therefore, this OSSPS 
+  implementation uses this prescription in general and can be applied to any objective
+   function implemented in STIR.  
+
+  Note that the exact paraboloidal surrogate algorithm by Erdogan and Fessler is currently
+  not implemented.
+
+  The relaxation value for the additive update follows the suggestion from Ahn and Fessler:
+
+  \[ \zeta= { \alpha \over 1+ \gamma n } \]
+
+  Note that because of the nature of the preconditioner, the OSSPS algorithm does not
+  perform very well in our experience when there is no ``additive sinogram''.
+
+{ \subsubsubsubsection{Running OSSPS}
+}
+
+ Most of what has been described above for OSMAPOSL applies verbatim for OSSPS. The
+ following describes the parameters that are specific to OSSPS:
+
+ \begin{description}
+ \item[precomputed denominator]
+   if you do not specify this keyword, the data-dependent part of the
+   precomputed denominator will be computed automatically (and saved using
+   \texttt{output filename prefix}). You can use this parameter to
+   re-use the file from a previous run. \\
+   Note: setting the value to 1 will use an images full of ones (which is not a good idea!)
+
+ \item[relaxation parameter]
+   $\alpha$ in the formula above
+ \item[relaxation gamma]
+   $\gamma$ in the formula above
+
+ \item[upper bound]
+  you can give an upper bound on the image values (the lower bound is always zero). The upper
+  bound defaults to a very large value.
+\end{description}
+
 
 \subsubsection{
 Filtered back projection (FBP2D)}
@@ -3712,65 +3773,10 @@ LinkClose[link];
 \section{
 Directories in the STIR tree}
 STIR can roughly be split into a library applications and applications.
-\footnote{The distinction is is not complete as some applications are implemented
+\footnote{The distinction is not complete as some applications are implemented
 in terms of classes that actually end up in the library.}
-Below gives a rough overview of what is in which directory.
-\subsection{STIR library}
-\begin{description}
-\item[include]
-Files that declare classes and functions
-  \begin{description}
-  \item[include/boost] Files from the Boost project
-  \item[include/stir] Files from STIR
-  \end{description}
 
-\item[buildblock]
-  Basic building blocks such as arrays, images, projection data, filters etc.
-\item[data\_buildblock]
-  Building blocks for storing acquired data etc. Currently for instance
-  singles rates. Projection data might be moved here at some point.
-\item[display]
-  Functions for simple display of arrays and images  
-\item[eval\_buildblock]
-  Classes/functions for computing numbers on ROIs
-\item[IO]
-  Classes/functions for IO 
-\item[listmode\_buildblock]
-  Classes/functions for handling list mode data
-\item[numerics\_buildblock]
-  Classes/functions for numerical calculations
-\item[recon\_buildblock]
-  Building block classes/functions for reconstructions
-\item[Shape\_buildblock]
-  Classes/functions for 3D shapes
-\end{description}
-
-\subsection{applications}
-\begin{description}
-\item[analytic]
-  Analytic reconstruction algorithms
-\item[iterative]
-  Iterative reconstruction algorithms
-\item[utilities]
-  Utilities for image and data manipulations
-\item[listmode\_utilities]
-  Utilities for processing list mode data
-\item[recon\_test]
-  Applications that test reconstruction building blocks
-\end{description}
-
-\subsection{Remaining directories}
-\begin{description}
-\item[test]
-  Applications that test various parts of STIR
-\item[VC]
-  Workspaces for Visual Studio
-\item[examples]
-  Example programs to get you started in programming with STIR
-\item[samples]
-  Sample parameter files
-\end{description}
-
+See the doxygen documentation for an overview of the directory tree with brief descriptions.
 
 \section{
 Future developments and Support}
@@ -3784,16 +3790,12 @@ being discussed are:
 \item
 expanded library of polymorphic classes (e.g. image grids, and 
 ordered subsets)
-\item 
-scatter estimation for PET data
 \item
 additional scanners and modalities: HiDAC, DHCI, SPECT
 \item
 additional data formats support, without conversion to Interfile.
 \item
-Dynamic/gated scans support.
-\item
-listmode reconstruction algorithms
+Better dynamic/gated scans support.
 \end{itemize}
 
 
@@ -3807,7 +3809,7 @@ answered (if at all) when directed to the mailing list.
 
 
 
-Below, we list of some of the features planned for the next releases. 
+Below, we list of some of the features that might make it into the next releases. 
 However, which feature is actually finalised/implemented depends 
 on the needs of the developers. If you want one of these features 
 and are willing to help, let us know.
@@ -3815,14 +3817,14 @@ and are willing to help, let us know.
 \item
 More automatic testing programs
 \item
-More algorithms: OSSPS (potentially ART, FORE [Def95], 
-OSCB [Ben99b] )
+More algorithms: potentially ART, FORE [Def95], 
+OSCB [Ben99b] 
 \item
 More projectors
 \item
 More priors
 \item
-Parallelisation (using PVM or EPX)
+Extending the parallelisation of OSMAPOSL to OSSPS, FBP3DRP etc, or using OPEMMP
 \item
 Compatibility of the interpolating backprojector with SPARC and opteron 
 processors.
@@ -3834,6 +3836,10 @@ processors.
 
 \section{
 References}
+
+{[Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
+emission tomography using relaxed ordered subsets algorithms,} IEEE
+Trans. Med. Imag., vol. 22, no. 3, pp. 613-626, May 2003.
 
 {[}Ale97] Alenius S and Ruotsalainen U \textbf{(1997)} Bayesian image 
 reconstruction for emission tomography based on median root prior. \textit{European 
@@ -3966,7 +3972,7 @@ University of West London. Oct 1997}.
 {[}Mar99] Margalit T, Gordon E, Jacobson M, Ben-Tal A, Nemirovski 
 A, Levkovitz R \textbf{(1999)} The ordered sets mirror descent and 
 conjugate barrier optimization algorithms adapted to the 3D PET 
-reconstruction problem. Submitted to \textit{IEEE Trans. Med. Im}.
+reconstruction problem. Technion internal report and PhD thesis of T. Margalit
 
 {[}Mus01] Mustafovic S, Thielemans K, \textbf{(2001)} Additive and Multiplicative 
 versions of the Maximum A Posteriori Algorithm with the Median 
