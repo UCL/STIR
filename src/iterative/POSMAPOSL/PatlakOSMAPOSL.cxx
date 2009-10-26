@@ -21,7 +21,7 @@
 
   \file
   \ingroup main_programs
-  \brief main() for OSMAPOSLReconstruction
+  \brief main() for stir::OSMAPOSLReconstruction on parametric images
 
   \author Matthew Jacobson
   \author Kris Thielemans
@@ -32,24 +32,18 @@
 */
 #include "stir/Succeeded.h"
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 
 
 
 USING_NAMESPACE_STIR
 
-#ifdef PARALLEL
-int master_main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
 
   OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >
     reconstruction_object(argc>1?argv[1]:"");
   
-
   return reconstruction_object.reconstruct() == Succeeded::yes ?
            EXIT_SUCCESS : EXIT_FAILURE;
 
