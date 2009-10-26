@@ -173,7 +173,7 @@ echo Running %INSTALL_DIR%OSSPS
 
 echo ---- Comparing output of OSSPS subiter 8 (should be identical up to tolerance)
 echo Running %INSTALL_DIR%compare_image 
-%INSTALL_DIR%compare_image test_image_PM_QP_8.hv my_test_image_PM_QP_8.hv
+%INSTALL_DIR%compare_image test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_8.hv
 if ERRORLEVEL 1 goto OSSPSQP_problem
 echo ---- This test seems to be ok !
 goto run_CORRECT_PROJDATA
