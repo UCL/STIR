@@ -323,7 +323,7 @@ endif
 #******* GE IO
 # check if we find it by looking for niff.h
 ifneq ($(HAVE_GE_IO),0)
-  ifneq ("$(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h)"","")
+  ifneq ("$(wildcard $(INCLUDE_DIR)/local/stir/IO/GE/niff.h)","")
      HAVE_GE_IO=1
      CFLAGS+=-DSTIR_USE_GE_IO
   endif
@@ -332,7 +332,7 @@ endif
 #******* GE RDF library
 # check if we find it by looking for GErdfUtils.h
 ifneq ($(HAVE_RDF),0)
-  ifneq (""$(wildcard $(RDF_INCLUDE_DIR)/GErdfUtils.h)","")
+  ifneq ("$(wildcard $(RDF_INCLUDE_DIR)/GErdfUtils.h)","")
      RDF_LIB=${RDF_LIB_DIR}/$(LIB_PREFIX)GEio$(LIB_SUFFIX)
      ifeq ("$(wildcard $(RDF_LIB))","")
         $(error --- Found RDF include files, but no library at $(RDF_LIB). Please build this first, or set HAVE_RDF=0 )
