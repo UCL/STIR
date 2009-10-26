@@ -1256,8 +1256,11 @@ list mode data and parametric images from dynamic projection data
 
 Most parameters are shared between algorithms and objective functions. Therefore,
 once you understand how to run e.g. OSEM, it should be easy to understand OSSPS etc.
+This guide therefore describes the case of running OSMAPOSL on projection data in detail
+first. Other algorithms (and objective functions) are then described as variations on this
+case.
 
-{ \subsubsubsection{Running OSMAPOSL}
+{ \subsubsubsection{Running OSMAPOSL on static projection data}
 }
 \label{sec:OSMAPOSL}
 
@@ -1345,7 +1348,8 @@ additive sinogram := 0
  ; normalisation and attenuation info
  ; Bin Normalisation type:= None
  
- ; optional filename to store/read the sensitivity image (if use subset sensitivity is off)
+ ; optional filename to store/read the sensitivity image 
+ ; (if use subset sensitivity is off)
  ;sensitivity filename:=
  recompute sensitivity := 1
  use subset sensitivities:=1
@@ -1427,86 +1431,15 @@ specify allowable numeric ranges. Values of \textit{\ensuremath{\infty}} indicat
 that the largest value possible for the numeric type of the parameter 
 value is allowed.
 
+{ \subsubsubsubsection{Objective function related parameters (Poisson statistics)}
+}
+\label{sec:PoissonProjectionDataObjectiveFunction}
+
 \begin{description}
+
 \item[input file]
 The name of the file for the measured projection data (e.g. .hs 
 for Interfile,.scn for GE Advance). 
-
-
-\item[output filename prefix]
- The output filename prefix. When image iterates are saved, subiteration 
-numbers are appended to this prefix after an underscore.
-
-
-\item[zoom]
-The zoom factor. Defaults to 1 which gives x,y voxel size equal 
-to the bin size of the projection data\footnote{{\small This is different 
-from the CTI convention which involves some factors like the 
-number of elements and 128.}}. Larger than 1 means smaller voxel 
-size. This parameter is ignored when an \textit{initial estimate} is specified.
-
-
-\item[XY output image size (in pixels)]
-Number of pixels to use in x,y direction. Default (-1) covers 
-the whole FOV as determined from the projection data and gives 
-an odd number of pixels. This parameter is ignored when an \textit{initial 
-image} is specified.
-
-
-\item[output file format]
-Set output file format, if omitted a default value will be used. 
-Subsequent parameters will depend on the type of output file 
-format. See section \ref{sec:outputfileformats}..
-
-
-\item[maximum absolute segment number to process]
-Denoting the input value by \textit{num\_segments}, this indicates 
-that the reconstruction will be carried out using segment numbers 
---\textit{num\_segments} through +\textit{num\_segments} of the measured 
-projection data. Defaults to use all segments in the input data.
-
-
-\item[initial estimate]
-The name of the image file with which the algorithm is initialised. 
-The default is an image which is uniformly 1 over all voxels. 
-The default can be specified by giving the parameter an input 
-of 1. Using an input of 0 will use a uniformly 0 image, but this 
-is inappropriate for OSMAPOSL.
-
-
-\item[enforce initial positivity condition]
-If this parameter is not set to 0, the program will set all non-positive 
-voxel values in the initial estimate to small positive ones.
-
-
-\item[number of subsets] [1, num\_views, 1 {]}
-The number of subsets. For symmetric balancing among subsets, 
-it is advisable to select a number which divides evenly into \textit{num\_views},
-or even \textit{num\_views/4}, depending on the symmetries used by the projector.
-
-
-\item[uniformly randomise subset order]
-When set to 1, the order of the subsets for each full iteration 
-is randomly permuted (uniformly).
-
-
-\item[start at subset] [0, num\_subsets-1, 0{]}
-Specifies with which subset in the ordered subset sequence to 
-start, where the subsets are enumerated from \textit{0} to \textit{num\_subsets-1}. 
-
-\item[number of subiterations] [1,\ensuremath{\infty}, 1{]}
-The number of subiterations to run.
-
-
-\item[start at subiteration number] [1,\ensuremath{\infty}, 1 {]}
-Initializes the subiteration counter to the input value. Useful 
-for resuming reconstructions (for example, the continuity of 
-output image file numbering may be preserved).
-
-
-\item[save estimates at subiteration intervals] [1, num\_subiterations,0{]} 
-Specifies at what intervals (in subiterations) the iterates of 
-the algorithm are saved. The final iteration is always saved.
 
 
 \item[zero end planes of segment 0]
@@ -1515,21 +1448,6 @@ data measured in the extreme-most rings of the scanner (the end
 planes of segment 0) are zero. See also the discussion in Section 
 \ref{sec:OSMAPOSLtechnotes}.
 
-
-\item[inter-iteration filter subiteration interval] [0, num\_subiterations, 0{]}
-Specifies at what intervals (in subiterations) inter-iteration 
-filtering is carried out. A value of 0 disables inter-iteration 
-filtering.
-
-
-\item[inter-iteration filter type]
-The type name of the inter-iteration filter. See Section \ref{sec:filters}
-for the list of possible values.
-
-
-\item[post-filter type]
-The type name of the post filter. See Section \ref{sec:filters} for the list 
-of possible values.
 
 \item[time frame definition filename]
 See \textit{Bin Normalisation type}
@@ -1581,16 +1499,6 @@ only. This only appropriate when reconstructing
 from pre-corrected projection data.
 
 
-\item[inter-update filter subiteration interval] [0, num\_subiterations, 0{]}
-Specifies at what intervals (in subiterations) inter-update filtering 
-is carried out. A value of 0 disables inter-update filtering.
-
-
-\item[inter-update filter type]
-The type name of the inter-update filter. See Section \ref{sec:filters} for 
-the list of possible values.
-
-
 
 \item[Projector pair type]
 Specifies the back/forward projector pair to be used in the reconstruction. 
@@ -1611,17 +1519,127 @@ corrected randoms sinogram would have to be passed as 'additive
 sinogram'. By suitably adding a term to the input projection 
 data, the Shifted Poisson version of OSL can be run as well.
 
+
+\item[maximum absolute segment number to process]
+Denoting the input value by \textit{num\_segments}, this indicates 
+that the reconstruction will be carried out using segment numbers 
+--\textit{num\_segments} through +\textit{num\_segments} of the measured 
+projection data. Defaults to use all segments in the input data.
+
+
 \item[prior type]
 The type of prior information. See Section \ref{sec:priors} for the list 
 of possible values.
+
+\item[zoom]
+The zoom factor. Defaults to 1 which gives x,y voxel size equal 
+to the bin size of the projection data\footnote{{\small This is different 
+from the CTI convention which involves some factors like the 
+number of elements and 128.}}. Larger than 1 means smaller voxel 
+size. This parameter is ignored when an \textit{initial estimate} is specified.
+\textit{This parameter will be removed in a future version.}
+
+\item[XY output image size (in pixels)]
+Number of pixels to use in x,y direction. Default (-1) covers 
+the whole FOV as determined from the projection data and gives 
+an odd number of pixels. This parameter is ignored when an \textit{initial 
+image} is specified. \\
+\textit{This parameter will be removed in a future version.}
+
+\end{description}
+
+
+{ \subsubsubsubsection{Algorithm settings}
+}
+\label{sec:IterativeReconSettings}
+\begin{description}
+
+\item[output filename prefix]
+ The output filename prefix. When image iterates are saved, subiteration 
+numbers are appended to this prefix after an underscore.
+
+\item[output file format]
+Set output file format, if omitted a default value will be used. 
+Subsequent parameters will depend on the type of output file 
+format. See section \ref{sec:outputfileformats}..
+
+
+\item[initial estimate]
+The name of the image file with which the algorithm is initialised. 
+The default is an image which is uniformly 1 over all voxels. 
+The default can be specified by giving the parameter an input 
+of 1. Using an input of 0 will use a uniformly 0 image, but this 
+is inappropriate for OSMAPOSL.
+
+
+\item[enforce initial positivity condition]
+If this parameter is not set to 0, the program will set all non-positive 
+voxel values in the initial estimate to small positive ones.
+
+
+\item[number of subsets] [1, num\_views, 1 {]}
+The number of subsets. For symmetric balancing among subsets, 
+it is advisable to select a number which divides evenly into \textit{num\_views},
+or even \textit{num\_views/4}, depending on the symmetries used by the projector.
+
+
+\item[uniformly randomise subset order]
+When set to 1, the order of the subsets for each full iteration 
+is randomly permuted (uniformly).
+
+
+\item[start at subset] [0, num\_subsets-1, 0{]}
+Specifies with which subset in the ordered subset sequence to 
+start, where the subsets are enumerated from \textit{0} to \textit{num\_subsets-1}. 
+
+\item[number of subiterations] [1,\ensuremath{\infty}, 1{]}
+The number of subiterations to run.
+
+
+\item[start at subiteration number] [1,\ensuremath{\infty}, 1 {]}
+Initializes the subiteration counter to the input value. Useful 
+for resuming reconstructions (for example, the continuity of 
+output image file numbering may be preserved).
+
+
+\item[save estimates at subiteration intervals] [1, num\_subiterations,0{]} 
+Specifies at what intervals (in subiterations) the iterates of 
+the algorithm are saved. The final iteration is always saved.
+
+
+
+\item[inter-iteration filter subiteration interval] [0, num\_subiterations, 0{]}
+Specifies at what intervals (in subiterations) inter-iteration 
+filtering is carried out. A value of 0 disables inter-iteration 
+filtering.
+
+
+\item[inter-iteration filter type]
+The type name of the inter-iteration filter. See Section \ref{sec:filters}
+for the list of possible values.
+
+\item[post-filter type]
+The type name of the post filter. See Section \ref{sec:filters} for the list 
+of possible values.
+
+
+\item[inter-update filter subiteration interval] [0, num\_subiterations, 0{]}
+Specifies at what intervals (in subiterations) inter-update filtering 
+is carried out (see [Jac00]). A value of 0 disables inter-update filtering.\\
+\textit{(OSMAPOSL specific)}
+
+\item[inter-update filter type]
+The type name of the inter-update filter. See Section \ref{sec:filters} for 
+the list of possible values.\\
+\textit{(OSMAPOSL specific)}
 
 
 \item[map model : additive{\textbar}multiplicative]
 The default choice \textit{additive} applies the prior on the image 
 as is, the other choice \textit{multiplicative} applies it essentially 
 on the image times the sensitivity image. See [Mus01] for more 
-details.
-
+details.\\
+\textit{(OSMAPOSL specific)}
 
 \item[maximum relative change] [0, 3.40282e+38, 3.40282e+38{]}
 The multiplicative update image will be thresholded from above 
@@ -1629,17 +1647,20 @@ with this value (at every subiteration except the first) \textit{i.e.},
 before multiplying it with the old image to get the new one. 
 The default value does not impose any thresholding (as in strict 
 OSMAPOSL). However, we find that when subsets are used, a value 
-of about 10 is beneficial.
+of about 10 is beneficial.\\
+\textit{(OSMAPOSL specific)}
 
 
 \item[minimum relative change] [0, 3.40282e+38, 0{]}
 The multiplicative update image will be thresholded from below 
-with this value (at every subiteration except the first).
+with this value (at every subiteration except the first).\\
+\textit{(OSMAPOSL specific)}
 
 
 \item[write update image] [0, 1, 0{]}
 When this is set to 1, OSMAPOSL will write the multiplicative 
-update images every sub-iteration.
+update images every sub-iteration.\\
+\textit{(OSMAPOSL specific)}
 
 \end{description}
 
@@ -1832,7 +1853,7 @@ See [Bei08] for some info on performance.
 }
 
  Most of what has been described above for OSMAPOSL applies verbatim for OSSPS. 
- See \textbf{STIR/samples/} for example parameter files. The
+ See \textbf{STIR/samples/} for example parameter file(s). The
  following describes the parameters that are specific to OSSPS:
 
  \begin{description}
@@ -1853,6 +1874,46 @@ See [Bei08] for some info on performance.
   bound defaults to a very large value.
 \end{description}
 
+{ \subsubsubsection{Parametric image estimation algorithms}
+}
+\label{sec:ParametricImageIterativeAlgorithms}
+Both OSMAPOSL and OSSPS work have implementations to estimate parametric images from
+dynamic data, called \textbf{POSMAPOSL} and \textbf{POSSPS} respoectively. 
+Their parameters are identical to the static versions of the algorithms, except that
+they need a different type of objective function. Currently, the only defined version is
+where the input is dynamic projection data and the Patlak linear model is used to go from
+dynamic images to parametric images. See section {sec:KineticModels} for more information.
+
+Currently, the input and output has to be in ECAT7 format. 
+
+Below is an excerpt of a possible parameter for file POSMAPOSL. A complete parameter file
+can be found in \textbf{STIR/samples/}. The only change is the fact that dynamic data
+form the input, and that a (linear) kinetic model has to be specified.
+
+\begin{verbatim}
+OSMAPOSLParameters :=
+  objective function type:=\
+     PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
+  PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
+
+  ; input dynamic projection data with emission
+  input file := SOME_DYNAMIC_PROJDATA.S
+  ; specify additive (dynamic) projection data to handle randoms or so
+  additive sinograms := SCATTER_AND_RANDOMS_ADDED_ECAT7.S
+
+  ; kinetic model specification
+  Kinetic Model type := Patlak Plot
+    Patlak Plot Parameters :=
+    ;; see the Patlak model description elsewhere
+    end Patlak Plot Parameters :=
+
+  ;; other parameters such as projectors and sensitivity 
+  ;; identical to the static case
+  end PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:=
+
+  ; normal OSMAPOSL algorithm parameters 
+End:=
+\end{verbatim}
 
 \subsubsection{
 Filtered back projection (FBP2D)}
@@ -1929,6 +1990,10 @@ directory. See separate documentation on FBP3DRP, the doxygen documentation
 the default backprojector used by FBP3DRP, has a central artefact 
 on some systems (including Sparc and Opterons).
 
+\subsection{
+Kinetic modelling}
+\ref{sec:KineticModels}
+Some text here.
 
 \subsection{
 Utilities}
@@ -2076,6 +2141,9 @@ of sinograms (one for each axial position). (See the STIR glossary).
 This is a command line utility for adding or multiplying data 
 and other numerical operations, with a somewhat awkward syntax. 
 Just execute \texttt{stir\_math} for a usage message.
+
+Since STIR 2.1, this utility also supports parametric or dynamic data using
+the command line switches \texttt{--parametric} and \texttt{--dynamic}.
 
 \textit{Examples}
 \begin{itemize}
