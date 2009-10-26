@@ -213,7 +213,7 @@ ${INSTALL_DIR}OSSPS OSSPS_test_PM_QP.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stder
 
 echo '---- Comparing output of OSSPS subiter 8 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
-if ${INSTALL_DIR}compare_image test_image_PM_QP_8.hv my_test_image_PM_QP_8.hv;
+if ${INSTALL_DIR}compare_image test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_8.hv;
 then
 echo ---- This test seems to be ok !;
 else
