@@ -10,16 +10,20 @@ LIBDIRS += buildblock recon_buildblock display IO \
 	eval_buildblock Shape_buildblock \
 	listmode_buildblock \
 	modelling_buildblock \
+	scatter_buildblock \
 	iterative/OSMAPOSL \
+	iterative/OSSPS \
 	analytic/FBP2D \
 	analytic/FBP3DRP
 
 EXEDIRS += utilities recon_test \
 	listmode_utilities \
 	modelling_utilities \
+	scatter_utilities \
 	utilities/ecat \
 	iterative/OSMAPOSL \
 	iterative/POSMAPOSL \
+	iterative/OSSPS \
 	analytic/FBP2D \
 	analytic/FBP3DRP \
 	SimSET
