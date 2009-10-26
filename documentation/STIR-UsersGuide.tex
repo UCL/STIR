@@ -1228,9 +1228,9 @@ Image reconstruction programs}
 
 
 \subsubsection{
-Maximum Likelihood Estimation (with optional penalty) algorithms}
+Iterative algorithms}
 
-Two statistical reconstruction algorithms are currently supported:
+Two statistical reconstruction algorithms are currently implemented:
 \begin{description}
 \item[OSMAPOSL] an implementation 
 of the OSEM-One Step Late algorithm with various additional refinements 
@@ -1240,6 +1240,22 @@ implementation.
 Surrogate algorithm by Erdogan and Fessler, and Ahn and Fessler [Ahn2003]. 
 \end{description}
 
+Since STIR 2.0, all iterative algorithms use a \textit{generalised objective 
+function}\footnote{We call them \textit{generalised} because they do not
+necessarily have to correspond to a function. Most algorithms only require
+that we can compute some kind of gradient. As an example, the update
+of OSEM with the Median Root Prior (MRP) does not correspond to the
+gradient of a function.} which the algorithm tries to maximise. The result
+of the algorithm will obviously depends very much on the objective function
+used.
+
+Currently, only Poisson-based objective functions are implemented in STIR. We
+have an objective function for static projection data (\textit{aka} sinograms),
+list mode data and parametric images from dynamic projection data 
+(currently only using the Patlak model).
+
+Most parameters are shared between algorithms and objective functions. Therefore,
+once you understand how to run e.g. OSEM, it should be easy to understand OSSPS etc.
 
 { \subsubsubsection{Running OSMAPOSL}
 }
@@ -1250,10 +1266,14 @@ This is a generalisation of the One Step Late algorithm [Gre90]. In
 particular, the prior can be set to the Median Root Prior [Ale97]. \textbf{OSMAPOSL} 
 allows \\
 -\tab 
-the use of subsets, similar to the OSEM algorithm [Hud94]. However, 
-this implementation \textit{assumes} balanced subsets. That is, for 
-every subset it assumes that the subsensitivity image is proportional 
-to the total sensitivity image.\\
+the use of subsets, similar to the OSEM algorithm [Hud94]. OSMAPOSL
+will only work when the subsets are approximatelly balanced (i.e.
+the number of subsets has to be a divisor of the number of views).
+In fact, by default this implementation\footnote{In fact, this assumption
+is part of the \texttt{PoissonLogLikelihoodWithLinearModel} class, which is
+the base class of the objective function that OSMAPOSL uses.} assumes that the 
+subsensitivity image is proportional to the total sensitivity image,
+but this can be switched off .\\
 -\tab 
 inter-update filtering (applying a filter to the image before 
 it is multiplied with the update image) [Jac00]\\
@@ -1318,16 +1338,23 @@ Projector pair type := Matrix
 additive sinogram := 0
 
 ; sensitivity related keywords
-time frame definition filename:=
-time frame number:= 1
-Bin Normalisation type:= None
-sensitivity filename:=
-recompute sensitivity := 0
+ ; time frame info used for dead-time calculation when using ECAT7
+ ;time frame definition filename:=
+ ;time frame number:= 1
+
+ ; normalisation and attenuation info
+ ; Bin Normalisation type:= None
+ 
+ ; optional filename to store/read the sensitivity image (if use subset sensitivity is off)
+ ;sensitivity filename:=
+ recompute sensitivity := 1
+ use subset sensitivities:=1
 
 ; keywords for specifying the prior information
 prior type := None
 
 ; next keywords can be used to specify image size, but will be removed
+; they are ignored when using an initial image
 zoom := 1
 ; use --1 for default sizes that cover the whole field of view
 XY output image size (in pixels) := -1
@@ -1508,7 +1535,8 @@ of possible values.
 See \textit{Bin Normalisation type}
 
 \item[time frame number]
-Defaults to 1. See \textit{Bin Normalisation type}.
+Defaults to 1. Currently only used for finding the frame number and hence dead-time (in ECAT7).
+See \textit{Bin Normalisation type}.
 
 \item[Bin Normalisation type]
 This keyword is used to set both normalisation factors and attenuation
@@ -1519,8 +1547,15 @@ Defaults to 0. If \textit{sensitivity filename} is specified and
 recomputation is switched off, it will be read, and the 
 \textit{Bin Normalisation type} keyword will be effectively ignored.
 However, if the filename is set and recomputation is switched on, the
-sensitivity will be written to that filename. This might be useful
+sensitivity will be written to that filename. This parameter might be useful
 to avoid recomputing the sensitivity if it does not change.
+
+\item[use subset sensitivities]
+Defaults to 0. Currently, changing it to 1 needs \textit{recompute sensitivity} to be 1 as well.
+By default, it is assumed that all subset sensitivities are equal, and therefore proportional 
+to the total sensitivity. We can then save some memory by internally storing only the total sensitivity. 
+However, if you have non-uniform attenuation, this assumption will generate some artefacts in the image.
+We therefore recommend to set this parameter to 1.
 
 \item[sensitivity filename]
 The sensitivity image is an important ingredient of 
@@ -1718,7 +1753,7 @@ projectors yield a relatively poor model of the detection probabilities
 associated with the end planes of such scanners. Excluding the 
 end detector pairs from the computation degrades the model still 
 further. Consequently, some of the voxel values in the end planes 
-may blow up with increasing iterations. For such scanners, we 
+may get very large (i.e. noisy) with increasing iterations. For such scanners, we 
 advise that users forego the ``zero end planes of segment 0'' 
 option. Doing so still yields very reasonable results in the 
 interior part of the reconstructed image. Moreover, future development 
@@ -1786,7 +1821,9 @@ See [Bei08] for some info on performance.
 
   The relaxation value for the additive update follows the suggestion from Ahn and Fessler:
 
-  \[ \zeta= { \alpha \over 1+ \gamma n } \]
+ \begin{equation}
+  \zeta= { \alpha \over 1+ \gamma n } \label{eq:OSSPSrelaxation}
+ \end{equation} 
 
   Note that because of the nature of the preconditioner, the OSSPS algorithm does not
   perform very well in our experience when there is no ``additive sinogram''.
@@ -1794,7 +1831,8 @@ See [Bei08] for some info on performance.
 { \subsubsubsubsection{Running OSSPS}
 }
 
- Most of what has been described above for OSMAPOSL applies verbatim for OSSPS. The
+ Most of what has been described above for OSMAPOSL applies verbatim for OSSPS. 
+ See \textbf{STIR/samples/} for example parameter files. The
  following describes the parameters that are specific to OSSPS:
 
  \begin{description}
@@ -1806,9 +1844,9 @@ See [Bei08] for some info on performance.
    Note: setting the value to 1 will use an images full of ones (which is not a good idea!)
 
  \item[relaxation parameter]
-   $\alpha$ in the formula above
+   $\alpha$ in the formula \ref{eq:OSSPSrelaxation} above
  \item[relaxation gamma]
-   $\gamma$ in the formula above
+   $\gamma$ in the formula \ref{eq:OSSPSrelaxation} above
 
  \item[upper bound]
   you can give an upper bound on the image values (the lower bound is always zero). The upper
@@ -3634,6 +3672,8 @@ Bin Normalisation From ECAT7:=
   End Singles Rates From ECAT7:=
 End Bin Normalisation From ECAT7:=
 \end{verbatim}
+
+In addition, you currently have to set the time frame information in the .par file.
 
 See also online documentation for class BinNormalisationFromECAT7.
 
