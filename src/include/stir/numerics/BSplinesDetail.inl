@@ -38,79 +38,79 @@ namespace BSpline {
   namespace detail {
     static inline void 
     set_BSpline_values(double& z1, double& z2, double& lambda,
-		       const BSplineType spline_type)
+                       const BSplineType spline_type)
     {
       switch(spline_type)
-	{
-	case near_n:
-	  z1=0.;
-	  z2=0.;
-	  break;
-	case linear:
-	  z1=0.;
-	  z2=0.;
-	  break;
-	case quadratic:
-	  z1 = sqrt(8.)-3.;
-	  z2=0.;
-	  break;
-	case cubic:
-	  z1 = sqrt(3.)-2.;
-	  z2=0.;
-	  break;
-	case quartic:
-	  z1 = sqrt(664.-sqrt(438976.))+sqrt(304.)-19.;
-	  z2 = sqrt(664.-sqrt(438976.))-sqrt(304.)-19.;
-	  break;
-	case quintic:
-	  z1 = 0.5*(sqrt(270.-sqrt(70980.))+sqrt(105.)-13.);
-	  z2 = 0.5*(sqrt(270.-sqrt(70980.))-sqrt(105.)-13.);
-	  break;
-	case oMoms:
-	  z1 = (sqrt(105.)-13.)/8.;	
-	  z2 = 0.;		
-	  break;
-	}
+        {
+        case near_n:
+          z1=0.;
+          z2=0.;
+          break;
+        case linear:
+          z1=0.;
+          z2=0.;
+          break;
+        case quadratic:
+          z1 = sqrt(8.)-3.;
+          z2=0.;
+          break;
+        case cubic:
+          z1 = sqrt(3.)-2.;
+          z2=0.;
+          break;
+        case quartic:
+          z1 = sqrt(664.-sqrt(438976.))+sqrt(304.)-19.;
+          z2 = sqrt(664.-sqrt(438976.))-sqrt(304.)-19.;
+          break;
+        case quintic:
+          z1 = 0.5*(sqrt(270.-sqrt(70980.))+sqrt(105.)-13.);
+          z2 = 0.5*(sqrt(270.-sqrt(70980.))-sqrt(105.)-13.);
+          break;
+        case oMoms:
+          z1 = (sqrt(105.)-13.)/8.;     
+          z2 = 0.;              
+          break;
+        }
       lambda = (1.-z1)*(1. - (1./z1));
       if (z2!=0.)
-	lambda *= (1.-z2)*(1. - (1./z2));
+        lambda *= (1.-z2)*(1. - (1./z2));
     }
-	
-		
+        
+                
   // 1d specialisation
   template <typename out_elemT, typename in_elemT>
   void 
   set_coef(Array<1, out_elemT>& coeffs, const Array<1, in_elemT>& input,
-	   const BasicCoordinate<1,double>& z1s,
-	   const BasicCoordinate<1,double>& z2s,
-	   const BasicCoordinate<1,double>& lambdas)
-  {				
+           const BasicCoordinate<1,double>& z1s,
+           const BasicCoordinate<1,double>& z2s,
+           const BasicCoordinate<1,double>& lambdas)
+  {                             
     BSplines_coef(coeffs.begin(), coeffs.end(), 
-		  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
+                  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
   }
 
   template <int num_dimensions, typename out_elemT, typename in_elemT>
   void
   set_coef(Array<num_dimensions, out_elemT>& coeffs, 
-	   const Array<num_dimensions, in_elemT>& input,
-	   const BasicCoordinate<num_dimensions,double>& z1s,
-	   const BasicCoordinate<num_dimensions,double>& z2s,
-	   const BasicCoordinate<num_dimensions,double>& lambdas)
-  {		
-    Array<num_dimensions,out_elemT> temp ( input.get_index_range());			
+           const Array<num_dimensions, in_elemT>& input,
+           const BasicCoordinate<num_dimensions,double>& z1s,
+           const BasicCoordinate<num_dimensions,double>& z2s,
+           const BasicCoordinate<num_dimensions,double>& lambdas)
+  {             
+    Array<num_dimensions,out_elemT> temp ( input.get_index_range());                    
     BSplines_coef(temp.begin(),temp.end(), 
-		  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
-			
+                  input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
+                        
     for (int i=coeffs.get_min_index(); i<=coeffs.get_max_index(); ++i)
       {
-	set_coef(coeffs[i],
-		 temp[i], 
-		 cut_first_dimension(z1s), 
-		 cut_first_dimension(z2s), 
-		 cut_first_dimension(lambdas));
+        set_coef(coeffs[i],
+                 temp[i], 
+                 cut_first_dimension(z1s), 
+                 cut_first_dimension(z2s), 
+                 cut_first_dimension(lambdas));
       }
-  }			
-		
+  }                     
+                
 #if 0
   template <typename pos_type>
   struct BW
@@ -162,10 +162,10 @@ namespace BSpline {
   inline 
   typename SplineFunctionT::result_type
   spline_convolution(const Array<num_dimensions, T>& coeffs,
-		     const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
-		     const BasicCoordinate<num_dimensions2,BSplineType>& spline_types,
-		     FunctionT f,
-		     SplineFunctionT g)
+                     const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
+                     const BasicCoordinate<num_dimensions2,BSplineType>& spline_types,
+                     FunctionT f,
+                     SplineFunctionT g)
   {
     const int current_dimension = num_dimensions2 - num_dimensions + 1;
     const PieceWiseFunction<pos_type>& bspline =
@@ -188,19 +188,20 @@ namespace BSpline {
 #define DECR_P
 #endif
     for (; k<=kmax; ++k, --current_pos DECR_P)
-      {	
-	int index;
-	if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
-	else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
-	else index = k;
-	assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
-	value += 
-	  g(coeffs[index], relative_positions, spline_types) *
+      { 
+        int index;
+        if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
+        else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
+        else index = k;
+        assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
+        value += static_cast<SplineFunctionT::result_type>(
+          g(coeffs[index], relative_positions, spline_types) *
 #ifdef NNN
-	  f(current_pos, p, bspline);
+          f(current_pos, p, bspline)
 #else
-	f(current_pos, spline_types[current_dimension]);
+        f(current_pos, spline_types[current_dimension])
 #endif
+        );
       }
     return value ;
   }
@@ -209,15 +210,15 @@ namespace BSpline {
   inline 
   T
   spline_convolution(const Array<1, T>& coeffs,
-		     const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
-		     const BasicCoordinate<num_dimensions2,BSplineType>& spline_types,
-		     FunctionT f)
+                     const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
+                     const BasicCoordinate<num_dimensions2,BSplineType>& spline_types,
+                     FunctionT f)
   {
     const int current_dimension = num_dimensions2;
     const PieceWiseFunction<pos_type>& bspline =
       bspline_function(spline_types[current_dimension]);
     T value;
-    assign(value,0);		
+    assign(value,0);            
     //x-1.5<k<x+1.5
     const int kmin= static_cast<int>(std::ceil(relative_positions[current_dimension]-bspline.kernel_length_right()));
     const int kmax=kmin+bspline.kernel_total_length()-1;
@@ -233,20 +234,22 @@ namespace BSpline {
 #define DECR_P
 #endif
     for (; k<=kmax; ++k, --current_pos DECR_P)
-      {	
-	int index;
-	if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
-	else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
-	else index = k;
-	assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
-	value += 
-	  coeffs[index] *
+      { 
+        int index;
+        if (k<coeffs.get_min_index()) index=2*coeffs.get_min_index()-k;
+        else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
+        else index = k;
+        assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
+        value += 
+          static_cast<T>(
+                  coeffs[index] *
 #ifdef NNN
-	  f(current_pos, p, bspline);
-	//	  bspline.function_piece(current_pos, p);
+          f(current_pos, p, bspline)
+        //        bspline.function_piece(current_pos, p)
 #else
-	  f(current_pos, spline_types[current_dimension]);
+          f(current_pos, spline_types[current_dimension])
 #endif
+                  );
       }
     return value ;
   }
@@ -257,14 +260,14 @@ namespace BSpline {
   {
     typedef T result_type;
     T operator()(const Array<num_dimensions, T>& coeffs,
-		 const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
-		 const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
+                 const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
+                 const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
     {
       return
-	spline_convolution(coeffs, relative_positions, spline_types,
-			   BW<pos_type>(),
-			   //BSplineFunction<quadratic,pos_type>(),
-			   compute_BSplines_value<num_dimensions-1,num_dimensions2,T>());
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           BW<pos_type>(),
+                           //BSplineFunction<quadratic,pos_type>(),
+                           compute_BSplines_value<num_dimensions-1,num_dimensions2,T>());
     }
   };
 
@@ -279,19 +282,19 @@ namespace BSpline {
   {
     typedef T result_type;
     T operator()(const Array<1, T>& coeffs,
-		 const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
-		 const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
+                 const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
+                 const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
     {
       return
-	spline_convolution(coeffs, relative_positions, spline_types,
-			   BW<pos_type>()
-			   //BSplineFunction<quadratic,pos_type>()
-			   );
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           BW<pos_type>()
+                           //BSplineFunction<quadratic,pos_type>()
+                           );
     }
   };
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
 #undef T
-#endif			
+#endif                  
 
   template <int num_dimensions, int num_dimensions2, typename T>
   struct 
@@ -301,19 +304,19 @@ namespace BSpline {
 
     BasicCoordinate<num_dimensions,T>
     operator()(const Array<num_dimensions, T>& coeffs,
-	       const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
-	       const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
+               const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
+               const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
     {
       const T first_value =
-	spline_convolution(coeffs, relative_positions, spline_types,
-			   Bder<pos_type>(),
-			   //BSplineFunction<quadratic,pos_type>(),
-			   compute_BSplines_value<num_dimensions-1,num_dimensions2,T>());
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           Bder<pos_type>(),
+                           //BSplineFunction<quadratic,pos_type>(),
+                           compute_BSplines_value<num_dimensions-1,num_dimensions2,T>());
       const BasicCoordinate<num_dimensions-1,T> rest_value = 
-	spline_convolution(coeffs, relative_positions, spline_types,
-			   BW<pos_type>(),
-			   //BSplineFunction<quadratic,pos_type>(),
-			   compute_BSplines_gradient<num_dimensions-1,num_dimensions2,T>());
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           BW<pos_type>(),
+                           //BSplineFunction<quadratic,pos_type>(),
+                           compute_BSplines_gradient<num_dimensions-1,num_dimensions2,T>());
       return join(first_value, rest_value);
     }
   };
@@ -331,25 +334,25 @@ namespace BSpline {
 
     BasicCoordinate<1,T>
     operator()(const Array<1, T>& coeffs,
-	       const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
-	       const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
+               const BasicCoordinate<num_dimensions2,pos_type>& relative_positions,
+               const BasicCoordinate<num_dimensions2,BSplineType>& spline_types) const
     {
       BasicCoordinate<1,T> result;
       result[1] = 
-	spline_convolution(coeffs, relative_positions, spline_types,
-			   Bder<pos_type>()
-			   //BSplineFunction<quadratic,pos_type>()
-			   );
+        spline_convolution(coeffs, relative_positions, spline_types,
+                           Bder<pos_type>()
+                           //BSplineFunction<quadratic,pos_type>()
+                           );
       return result;
     }
   };
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
 #undef T
-#endif			
+#endif                  
 
 
 
-} // end of namespace detail	
+} // end of namespace detail    
 } // end of namespace BSpline
 
 END_NAMESPACE_STIR
