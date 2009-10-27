@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="test_VAXfloat"
 	ProjectGUID="{CFE5EE65-8136-4DE5-9A31-207DFCCAB316}"
+	RootNamespace="test_VAXfloat"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -44,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -137,7 +138,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="0"
