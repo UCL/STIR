@@ -10,7 +10,8 @@ $(dir)_TEST_SOURCES := \
 	test_IR_filters.cxx \
 	test_BSplines.cxx \
 	test_BSplinesRegularGrid1D.cxx \
-	test_BSplinesRegularGrid.cxx 
+	test_BSplinesRegularGrid.cxx \
+	test_erf.cxx
 
 
 
