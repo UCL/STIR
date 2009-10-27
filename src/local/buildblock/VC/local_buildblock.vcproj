@@ -169,52 +169,6 @@
 			Filter="*.cxx"
 			>
 			<File
-				RelativePath="..\ArrayFilter2DUsingConvolution.cxx"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\ArrayFilter3DUsingConvolution.cxx"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\cleanup966ImageProcessor.cxx"
 				>
 				<FileConfiguration
@@ -380,14 +334,6 @@
 			Name="Header Files"
 			Filter="*.h"
 			>
-			<File
-				RelativePath="..\..\..\include\local\stir\ArrayFilter2DUsingConvolution.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\include\local\stir\ArrayFilter3DUsingConvolution.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\..\include\local\stir\cleanup966ImageProcessor.h"
 				>
