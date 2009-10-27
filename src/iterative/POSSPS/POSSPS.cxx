@@ -20,7 +20,7 @@
 
   \file
   \ingroup OSSPS
-  \brief main() for OSSPS
+  \brief main() for stir::OSSPS for parametric images
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -29,27 +29,19 @@
   $Date$
   $Revision$
 */
-#include "local/stir/OSSPS/OSSPSReconstruction.h"
-#include "local/stir/recon_buildblock/PatlakObjectiveFunctionFromDynamicProjectionData.h"
-#include "local/stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/OSSPS/OSSPSReconstruction.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/Succeeded.h"
 
 
 USING_NAMESPACE_STIR
 
-#ifdef PARALLEL
-int master_main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
 
-  OSSPSReconstruction<ParametricVoxelsOnCartesianGrid > reconstruction_object(argc>1?argv[1]:"");
-  
+  OSSPSReconstruction<ParametricVoxelsOnCartesianGrid > reconstruction_object(argc>1?argv[1]:"");  
 
   return reconstruction_object.reconstruct() == Succeeded::yes ?
            EXIT_SUCCESS : EXIT_FAILURE;
-
-
 }
 

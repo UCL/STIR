@@ -1,10 +1,10 @@
 #
 # $Id$
 #
-dir := local/iterative/POSSPS
+dir := iterative/POSSPS
 
 $(dir)_SOURCES :=  \
-	PatlakOSSPS.cxx
+	POSSPS.cxx
 
 include $(WORKSPACE)/exe.mk
 
