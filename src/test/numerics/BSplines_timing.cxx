@@ -19,7 +19,7 @@
 */
 /*!
 \file 
-\ingroup test
+\ingroup numerics_test
 \brief Allows executing timing tests for the stir::BSpline::BSplinesRegularGrid class
 
 \author Tim Borgeaud
