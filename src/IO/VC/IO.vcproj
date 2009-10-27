@@ -216,6 +216,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\ECAT7DynamicDiscretisedDensityOutputFileFormat.cxx"
+				>
+			</File>
+			<File
 				RelativePath="..\ECAT7OutputFileFormat.cxx"
 				>
 				<FileConfiguration
@@ -237,6 +241,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\ECAT7ParametricDensityOutputFileFormat.cxx"
+				>
 			</File>
 			<File
 				RelativePath="..\InputFileFormatRegistry.cxx"
@@ -310,6 +318,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\IO_registries.cxx"
+				>
 			</File>
 			<File
 				RelativePath="..\OutputFileFormat.cxx"
@@ -430,6 +442,14 @@
 			</File>
 			<File
 				RelativePath="..\..\include\stir\IO\ECAT7OutputFileFormat.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stir\IO\InputFileFormatRegistry.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\stir\IO\InputFileFormatRegistry.txx"
 				>
 			</File>
 			<File

@@ -18,10 +18,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics_buildblock", "..\numerics_buildblock\VC\numerics_buildblock.vcproj", "{895E2605-CA36-48E4-AC0D-205458877393}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_Array", "..\test\VC\test_Array\test_Array.vcproj", "{96884BDF-3D78-4EBD-B8CA-42B43422207B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C677E362-506B-4381-8545-3CF711CBBEB4} = {C677E362-506B-4381-8545-3CF711CBBEB4}
-		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_ArrayFilter", "..\test\VC\test_ArrayFilter\test_ArrayFilter.vcproj", "{3E80EAAE-6BDF-4E6A-8102-0588CC39F074}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -39,16 +35,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_IndexRange", "..\test\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_OutputFileFormat", "..\test\VC\test_OutputFileFormat\test_OutputFileFormat.vcproj", "{5230E4DA-1D76-41DF-AA93-0E3DE82D2DC7}"
 	ProjectSection(ProjectDependencies) = postProject
-		{895E2605-CA36-48E4-AC0D-205458877393} = {895E2605-CA36-48E4-AC0D-205458877393}
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
+		{3E1020F6-3DEA-495F-8197-02ABEF79CE72} = {3E1020F6-3DEA-495F-8197-02ABEF79CE72}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_ROIs", "..\test\VC\test_ROIs\test_ROIs.vcproj", "{F3044115-6169-411E-820C-FE6162913703}"
 	ProjectSection(ProjectDependencies) = postProject
 		{895E2605-CA36-48E4-AC0D-205458877393} = {895E2605-CA36-48E4-AC0D-205458877393}
-		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{A8BD5D4B-42E6-4750-A939-CB4DE14715FB} = {A8BD5D4B-42E6-4750-A939-CB4DE14715FB}
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
 		{D4DA14A4-B19C-4A8D-9B70-222581A2F743} = {D4DA14A4-B19C-4A8D-9B70-222581A2F743}
@@ -67,6 +62,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_VAXfloat", "..\test\VC
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_VectorWithOffset", "..\test\VC\test_VectorWithOffset\test_VectorWithOffset.vcproj", "{6D096A4F-D26B-4D70-960D-A7F377C6B876}"
 	ProjectSection(ProjectDependencies) = postProject
+		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
 	EndProjectSection
 EndProject
@@ -118,21 +114,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_stir_math", "..\test\V
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "data_buildblock", "..\data_buildblock\VC\data_buildblock.vcproj", "{C677E362-506B-4381-8545-3CF711CBBEB4}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_ArcCorrection", "..\test\VC\test_ArcCorrection\test_ArcCorrection.vcproj", "{D99F2630-9DB3-4FDA-AF1D-9C28A2A48F7E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_zoom_image", "..\test\VC\test_zoom_image\test_zoom_image.vcproj", "{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_recon_buildblock", "..\local\recon_buildblock\VC\local_recon_buildblock.vcproj", "{8BAC9DA2-6F2C-4345-A407-ED9930F21360}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recon_buildblock", "..\recon_buildblock\VC\recon_buildblock.vcproj", "{2454F179-57F5-44C2-8C08-B97B829C9CC4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelling_buildblock", "..\modelling_buildblock\VC\modelling_buildblock.vcproj", "{3E1020F6-3DEA-495F-8197-02ABEF79CE72}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -244,26 +226,10 @@ Global
 		{FAFB481E-11F4-4A83-80F2-52D783F3816B}.Debug|Win32.Build.0 = Debug|Win32
 		{FAFB481E-11F4-4A83-80F2-52D783F3816B}.Release|Win32.ActiveCfg = Release|Win32
 		{FAFB481E-11F4-4A83-80F2-52D783F3816B}.Release|Win32.Build.0 = Release|Win32
-		{C677E362-506B-4381-8545-3CF711CBBEB4}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C677E362-506B-4381-8545-3CF711CBBEB4}.Debug|Win32.Build.0 = Debug|Win32
-		{C677E362-506B-4381-8545-3CF711CBBEB4}.Release|Win32.ActiveCfg = Release|Win32
-		{C677E362-506B-4381-8545-3CF711CBBEB4}.Release|Win32.Build.0 = Release|Win32
-		{D99F2630-9DB3-4FDA-AF1D-9C28A2A48F7E}.Debug|Win32.ActiveCfg = Debug|Win32
-		{D99F2630-9DB3-4FDA-AF1D-9C28A2A48F7E}.Debug|Win32.Build.0 = Debug|Win32
-		{D99F2630-9DB3-4FDA-AF1D-9C28A2A48F7E}.Release|Win32.ActiveCfg = Release|Win32
-		{D99F2630-9DB3-4FDA-AF1D-9C28A2A48F7E}.Release|Win32.Build.0 = Release|Win32
-		{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}.Debug|Win32.Build.0 = Debug|Win32
-		{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}.Release|Win32.ActiveCfg = Release|Win32
-		{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}.Release|Win32.Build.0 = Release|Win32
-		{8BAC9DA2-6F2C-4345-A407-ED9930F21360}.Debug|Win32.ActiveCfg = Debug|Win32
-		{8BAC9DA2-6F2C-4345-A407-ED9930F21360}.Debug|Win32.Build.0 = Debug|Win32
-		{8BAC9DA2-6F2C-4345-A407-ED9930F21360}.Release|Win32.ActiveCfg = Release|Win32
-		{8BAC9DA2-6F2C-4345-A407-ED9930F21360}.Release|Win32.Build.0 = Release|Win32
-		{2454F179-57F5-44C2-8C08-B97B829C9CC4}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2454F179-57F5-44C2-8C08-B97B829C9CC4}.Debug|Win32.Build.0 = Debug|Win32
-		{2454F179-57F5-44C2-8C08-B97B829C9CC4}.Release|Win32.ActiveCfg = Release|Win32
-		{2454F179-57F5-44C2-8C08-B97B829C9CC4}.Release|Win32.Build.0 = Release|Win32
+		{3E1020F6-3DEA-495F-8197-02ABEF79CE72}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3E1020F6-3DEA-495F-8197-02ABEF79CE72}.Debug|Win32.Build.0 = Debug|Win32
+		{3E1020F6-3DEA-495F-8197-02ABEF79CE72}.Release|Win32.ActiveCfg = Release|Win32
+		{3E1020F6-3DEA-495F-8197-02ABEF79CE72}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -238,6 +238,14 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath="..\ArrayFilter2DUsingConvolution.cxx"
+			>
+		</File>
+		<File
+			RelativePath="..\ArrayFilter3DUsingConvolution.cxx"
+			>
+		</File>
+		<File
 			RelativePath="..\ArrayFilterUsingRealDFTWithPadding.cxx"
 			>
 			<FileConfiguration
@@ -380,6 +388,14 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath="..\DynamicDiscretisedDensity.cxx"
+			>
+		</File>
+		<File
+			RelativePath="..\DynamicProjData.cxx"
+			>
+		</File>
+		<File
 			RelativePath="..\error.cxx"
 			>
 			<FileConfiguration
@@ -401,6 +417,18 @@
 					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\extend_projdata.cxx"
+			>
+		</File>
+		<File
+			RelativePath="..\find_fwhm_in_image.cxx"
+			>
+		</File>
+		<File
+			RelativePath="..\GatedProjData.cxx"
+			>
 		</File>
 		<File
 			RelativePath="..\..\include\stir\config\gcc.h"
@@ -451,6 +479,10 @@
 					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\interpolate_projdata.cxx"
+			>
 		</File>
 		<File
 			RelativePath="..\inverse_SSRB.cxx"
@@ -577,6 +609,10 @@
 		</File>
 		<File
 			RelativePath="..\MinimalImageFilter3D.cxx"
+			>
+		</File>
+		<File
+			RelativePath="..\MultipleProjData.cxx"
 			>
 		</File>
 		<File
@@ -904,6 +940,10 @@
 					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\scale_sinograms.cxx"
+			>
 		</File>
 		<File
 			RelativePath="..\Scanner.cxx"
