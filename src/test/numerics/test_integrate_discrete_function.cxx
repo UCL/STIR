@@ -3,8 +3,8 @@
 //
 /*!
   \file
-  \ingroup test
-  \brief Test integrate_discrete_function
+  \ingroup numerics_test
+  \brief Test stir::integrate_discrete_function
   \author Charalampos Tsoumpas
   $Date$
   $Revision$
@@ -27,8 +27,8 @@
 */
 /*!
  \file 
- \ingroup test
- \brief tests the line_integral function 
+ \ingroup numerics_test
+ \brief tests the integrate_discrete_function function 
 */
 
 #include "stir/RunTests.h"
