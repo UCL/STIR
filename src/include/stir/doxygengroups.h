@@ -286,6 +286,17 @@ Implementation of the 3D Reprojection Filtered Back Projection algorithm
 */
 
 /*!
+\defgroup modelling Kinetic modelling building blocks
+\ingroup STIR_library
+building blocks for kinetic modelling
+*/
+/*!
+\defgroup scatter Scatter estimation building blocks
+\ingroup STIR_library
+building blocks for scatter estimation
+*/
+
+/*!
 \defgroup display Display functions
 \ingroup STIR_library
 Library for displaying of images
@@ -305,6 +316,10 @@ Library for displaying of images
 */
 /*!
 \defgroup recontest Tests of reconstruction building blocks
+\ingroup alltest
+*/
+/*!
+\defgroup numerics_test Tests of numeric building blocks
 \ingroup alltest
 */
 
