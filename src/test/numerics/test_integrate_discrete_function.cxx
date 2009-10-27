@@ -38,7 +38,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup test
+  \ingroup numerics_test
   \brief A simple class to test the integrate_discrete_function function.
 */
 class integrate_discrete_functionTests : public RunTests
