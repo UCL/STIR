@@ -468,7 +468,7 @@ namespace BSpline
       case oMoms:
         return oMoms_weight(relative_position); 
       default:
-        cerr << "Not implemented b-spline type" << endl;
+        error("Not implemented b-spline type");
         return -1000000;
       }
   }
