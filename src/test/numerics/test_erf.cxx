@@ -35,7 +35,7 @@
 START_NAMESPACE_STIR
 
 /*!
-  \ingroup test
+  \ingroup numerics_test
   \brief A simple class to test the erf and erfc functions.
 */
 class erfTests : public RunTests
