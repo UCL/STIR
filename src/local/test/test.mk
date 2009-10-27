@@ -5,8 +5,7 @@ dir := local/test
 
 $(dir)_TEST_SOURCES :=  \
 	test_Quaternion.cxx \
-	test_proj_data_info_LOR.cxx \
-	test_erf.cxx 
+	test_proj_data_info_LOR.cxx 
 
 ifeq ($(STIR_DEVEL_MOTION),1)
 $(dir)_TEST_SOURCES +=  \
