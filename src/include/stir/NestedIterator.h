@@ -117,7 +117,7 @@ class ConstBeginEndAllFunction
   int's in the above example).
 
   The template argument \c GetRestRangeFunctionT should be a function object
-  that, given atop-level iterator, finds the first and last
+  that, given a top-level iterator, finds the first and last
   iterators for the sub-sequence. It defaults to just using
   \code
   current_rest_iter = top_level_iter->begin();
@@ -149,11 +149,10 @@ class ConstBeginEndAllFunction
   The 2nd template argument would really be better implemented
   as a template template. However, some compilers still don't support this.
 
-  \todo At present, the \c value_type and \c difference_type typedef's
-  are not defined. The first would normally be \c std::forward_iterator_tag,
-  unless \c topleveliterT or \c restiterT is only an input or
-  output iterator. Note that this means that at present
-  a NestedIterator does not strictly satisfy the ForwardIterator concept.
+  \bug At present, \c iterator_category typedef is hard-wired to be 
+  \c std::forward_iterator_tag. This would be incorrect if
+  \c topleveliterT or \c restiterT is only an input or
+  output iterator. 
 */
 template <typename topleveliterT,
           class GetRestRangeFunctionT=BeginEndFunction<topleveliterT> >
@@ -161,8 +160,8 @@ class NestedIterator
 {
 public:
   typedef typename GetRestRangeFunctionT::return_type restiterT;
-  //typedef std::forward_iterator_tag iterator_category;
-  //typedef typename boost::iterator_difference<restiterT>::type difference_type;
+  typedef std::forward_iterator_tag iterator_category;
+  typedef typename boost::iterator_difference<restiterT>::type difference_type;
   typedef typename boost::iterator_value<restiterT>::type value_type;
   typedef typename boost::iterator_reference<restiterT>::type reference;
   typedef typename boost::iterator_pointer<restiterT>::type pointer;  
@@ -173,7 +172,7 @@ public:
 
   //! constructor to initialise the members
   inline NestedIterator(const topleveliterT& top_level_iter, 
-			const topleveliterT& end_top_level_iter);
+                        const topleveliterT& end_top_level_iter);
 
   //inline NestedIterator& operator=(const NestedIterator&);
   
