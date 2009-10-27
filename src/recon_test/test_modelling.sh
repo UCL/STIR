@@ -96,7 +96,7 @@ conv_to_ecat7 -s fwd_dyn_from_p0005-p5.S $tmpvar
 for direct in OSMAPOSL ; do 
 cp ${INPUTDIR}P${direct}.par .
 echo "Test the direct P${direct} Patlak Plot reconstruction"
-rm -f P${direct}.txt; Patlak${direct} P${direct}.par > P${direct}.txt
+rm -f P${direct}.txt; P${direct} P${direct}.par > P${direct}.txt
 echo "Multiply the parametri8c images with the model matrix to get the correspoding dynamic images."
 get_dynamic_images_from_parametric_images dyn_from_recon_p0005-p5.img P${direct}_${ITER}.img  ${INPUTDIR}PatlakPlot.par
 get_dynamic_images_from_parametric_images dyn_sens.img sens.img ${INPUTDIR}PatlakPlot.par
