@@ -30,19 +30,7 @@
 */
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.h" 
-#include "stir/recon_buildblock/ProjectorByBinPair.h" 
-#ifndef USE_PMRT 
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h" 
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h" 
-#else 
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h" 
-#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h" 
-//#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h" 
-#endif 
-#include "stir/ProjData.h"
-#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h" 
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h" 
-#include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -162,25 +150,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 
    if (this->max_ring_difference_num_to_process == -1)
       {
-      warning(" You have to specify max ring differerence to process "); return true;}
+        scanner_sptr->get_num_rings()-1;
+      }
 
-	VectorWithOffset<int> max_ring_diff(-this->max_ring_difference_num_to_process,this->max_ring_difference_num_to_process);
-	VectorWithOffset<int> min_ring_diff(-this->max_ring_difference_num_to_process,this->max_ring_difference_num_to_process);
-	// TODO change such that max segment number can be given 
-	VectorWithOffset<int> num_axial_poss(-this->max_ring_difference_num_to_process,this->max_ring_difference_num_to_process);
-
-	int num_rings = scanner_sptr->get_num_rings();    
-	for (int index= 0; index <=this->max_ring_difference_num_to_process; index++)
-	  {
-	    num_axial_poss[index]= num_rings-index;
-	    num_axial_poss[-index] =num_axial_poss[index];
-	  }
-
-	for ( int index =-this->max_ring_difference_num_to_process; index <=this->max_ring_difference_num_to_process ; index++)
-	  {
-	    max_ring_diff[index] =index;
-	    min_ring_diff[index] =index;
-	  }   
      
    if (this->additive_projection_data_filename != "0") 
   { 
@@ -193,28 +165,13 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
   } 
   
 
-#if 0
-   // TODO why not the following?
-  proj_data_info_cyl_uncompressed_ptr =
+  this->proj_data_info_cyl_uncompressed_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
     ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                   1, this->max_ring_difference_num_to_process,
                   scanner_sptr->get_num_detectors_per_ring()/2,
                   scanner_sptr->get_default_num_arccorrected_bins(), 
                   false));
-#else
-
-  this->proj_data_info_cyl_uncompressed_ptr= 
-    new ProjDataInfoCylindricalNoArcCorr(scanner_sptr,
-					 num_axial_poss,
-					 min_ring_diff,
-					 max_ring_diff,
-					 scanner_sptr->get_num_detectors_per_ring()/2,
-					 scanner_sptr->get_default_num_arccorrected_bins());
-
-
-
-#endif
    return false; 
 
 } 
