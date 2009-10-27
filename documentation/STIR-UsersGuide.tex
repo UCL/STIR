@@ -2042,8 +2042,46 @@ on some systems (including Sparc and Opterons).
 
 \subsection{
 Kinetic modelling}
-\ref{sec:KineticModels}
-Some text here.
+\label{sec:KineticModels}
+A parametric image class (ParametricDiscretisedDensity) has been implemented that at 
+the moment can hold two parameters, but it could be extended 
+to account for more cases. In this release Patlak plot [Pat83, Pat85], i.e. a 
+linear kinetic model for tracers with irreversible kinetic behavior has been implemented. 
+Moreover, a direct version of Patlak plot has been also implemented and evaluated [Tso08]. 
+
+Sample parameter file:
+\begin{verbatim}
+Patlak Plot Parameters:=
+
+time frame definition filename := 
+starting frame := UNSIGNEDINT
+calibration factor := FLOAT
+scale factor := FLOAT
+blood data filename :=  
+; In seconds
+Time Shift := 0
+In total counts := 1
+In correct scale := 1
+
+end Patlak Plot Parameters:=
+\end{verbatim}
+\begin{description}
+\item[blood data filename] 
+        File of input function (e.g. plasma activity or reference tissue activity values)
+\item[Calibration Factor] scale factor that sets the projection data to the same units with the input function
+\item[Starting frame] from where the Patlak Plot is valid
+\item[time shift]
+        Delay between input function and PET measurement 
+\item[In total counts]
+        is 0 or 1 depending if the counts are total or mean over each frame 
+\item[In correct scale] 
+        should be set to 1 if STIR has already scaled correctly the images according to x voxel size
+\end{description}
+
+Current assumptions are that a tracer is used with the F-18 isotope and that the input
+function is not decay corrected. 
+
+
 
 \subsection{
 Utilities}
@@ -3929,6 +3967,23 @@ LinkClose[link];
 \end{verbatim}
 
 
+\section{B-spline interpolation in STIR}
+
+\label{sec:BSplines}
+Special classes to interpolate data using B-Splines [Uns99] have been implemented in STIR. 
+The B-Splines coefficients are estimated with a fast method that incorporates FIR and IIR 
+filters [Uns93]. The level of B-splines that are currently available are 0, 1 (linear), 
+2 (quadratic), 3 (cubic), 4 (quartic) and 5 (quintic). Moreover, a synthetic spline has also been 
+implemented based on B-splines for maximum order interpolation but minimal support, i.e. MOMS 
+splines [Blu01]. In all cases no regularization has been incorporated during the interpolation 
+procedures, therefore special care should be taken when higher than the first order B-splines 
+are used, as noise may be enhanced at the interpolated data. Interpolation can be also performed 
+in sinogram space. However this space is regular only in axial, and not in radial, angular and 
+azimuthal directions. Therefore, the current interpolation can be cubic only in axial direction 
+while for the rest directions a choice of linear interpolator is safer. In future with some 
+additional classes, reconstruction could be performed to obtain B-spline coefficients directly 
+from the projection sinograms, which can be useful for better noise properties [Nic02].
+
 \section{
 Directories in the STIR tree}
 \textit{STIR} can roughly be split into a library applications and applications.
@@ -4180,6 +4235,16 @@ Roy. Stat. Soc}., 52: 271-324.
 {[}Thi06{]} Kris Thielemans, Sanida Mustafovic, Charalampos Tsoumpas \textbf{(2006)},
 STIR: Software for Tomographic Image
 Reconstruction Release 2, 
-<i>Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.</i>
-\end{document}
+\textit{Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.}
 
+{[}Blu01] Blu T, Thcvenaz P, Unser M \textbf{(2001)}. MOMS: maximal-order interpolation of minimal support.  \textit{IEEE Trans Image Processing} 10(7): 1069-1080.
+{[}Nic02] Nichols, T. E., J. Qi, E. Asma and R. M. Leahy \textbf{(2002)}. Spatiotemporal reconstruction of list-mode PET data.  \textit{IEEE Trans Med Imaging} 21(4): 396-404.
+{[}Uns93] Unser M, Aldroubi A, Eden M \textbf{(1993)}. B-Spline Signal Proccessing: Part II - Efficient Design and Applications.  \textit{IEEE Trans Signal Processing} 41(2): 834-848.
+{[}Uns99] Unser M. \textbf{(1999)}. Splines: A Perfect Fit for Signal and Image Processing. \textit{IEEE Signal Processing Magazine}: 22-38.
+
+
+{[}Tso07{]} Tsoumpas C, Turkheimer F, Thielemans K  \textbf{(2007)}, Convergence properties of algorithms for direct parametric estimation of linear models in dynamic PET. \textit{IEEE Nucl Sci Symp Med Imaging Conf} 3034-3037.
+{[}Tso08{]} Tsoumpas C, Turkheimer F E, Thielemans K \textbf{(2008)}, Study of direct and indirect parametric estimation methods of linear models in dynamic positron emission tomography. \textit{Med. Phys.} 35(4): p. 1299-1309.
+{[}Pat83] Patlak C S, Blasberg R G, Fenstermacher J D \textbf{(1985)}  Graphical evaluation of blood-to-brain transfer constants from multiple-time uptake data. \textit{J Cereb Blood Flow Metab} 3(1): p. 1-7.
+{[}Pat85] Patlak C S, Blasberg R G \textbf{(1985)}  Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data: Generalizations. \textit{J Cereb Blood Flow Metab} 5: p. 584-90. 
+\end{document}
