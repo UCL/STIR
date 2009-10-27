@@ -44,7 +44,7 @@ run_$(dir)/test_OutputFileFormat: $(DEST)$(dir)/test_OutputFileFormat PHONY_TARG
 	$< test/input/test_InterfileOutputFileFormat.in 
 	$< test/input/test_InterfileOutputFileFormat_short.in 
 ifeq ($(HAVE_LLN_MATRIX),1)
-	$< test/input/test_ECAT6OutputFileFormat.in
+	echo WARNING: ECAT6 tests currently disabled
 	$< test/input/test_ECAT7OutputFileFormat.in
 else
 	@echo No ECAT6/7 support compiled, so no tests for this file format
