@@ -49,8 +49,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_defaults() 
 { 
   base_type::set_defaults(); 
-  this->list_mode_filename ="1"; 
-  this->frame_defs_filename ="1";
+  this->list_mode_filename =""; 
+  this->frame_defs_filename ="";
   this->list_mode_data_sptr = NULL; 
   this->current_frame_num =0; 
  
@@ -60,7 +60,6 @@ set_defaults()
   this->Xoffset=0.F; 
   this->Yoffset=0.F; 
   this->Zoffset=0.F; 
-  this->current_frame_num =1;
  
 } 
 
@@ -77,10 +76,10 @@ initialise_keymap()
   //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces 
   //parser.add_key("Y offset (in mm)", &Yoffset); 
    
-  this->parser.add_key("Z offset (in mm)", &Zoffset); 
-  this->parser.add_key("frame definitions filename", &this->frame_defs_filename);
+  //this->parser.add_key("Z offset (in mm)", &Zoffset); 
+  this->parser.add_key("time frame definition filename", &this->frame_defs_filename);
   // SM TODO -- later do not parse
-  this->parser.add_key("current time frame", &this->current_frame_num);
+  this->parser.add_key("time frame number", &this->current_frame_num);
      
 } 
 
