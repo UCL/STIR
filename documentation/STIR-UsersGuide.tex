@@ -72,7 +72,7 @@ that comes with the distribution.
 
 
 Pending a publication on the current library, please put references 
-to {[}Thi06{]} in your own publications (for STIR 1.x, use [Lab99a], [Lab99b]).
+to {[}Thi06{]} in your own publications (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
 
 
 
@@ -132,14 +132,14 @@ Note that you can put the distribution in any location (it does
 not have to be your home directory).
 
 
-The result is a STIR directory and subdirectories, described 
+The result is a \textbf{STIR} directory and subdirectories, described 
 in the annex section.
 
 \subsection{Download/install boost}
-STIR uses the well-respected \textit{boost} library. This library
+\textit{STIR} uses the well-respected \textit{boost} library. This library
 is currently installed in many systems (especially on Linux). If it
 is not, you can download it from 
-\R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently STIR only
+\R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently \textit{STIR} only
 uses the include files from \textit{boost} (so you do not need to build
 the boost libraries). However, you will need to tell your compiler
 where to find the \texttt{boost/} directory with all the include files.
@@ -149,13 +149,13 @@ See the Compilation section for some info (use \textit{make} variable
 \subsection{
 C++ Compiler and make}
 
-In order to compile and run the STIR programs, we currently recommend 
+In order to compile and run the \textit{STIR} programs, we currently recommend 
 using a recent version of the GNU gcc compiler, at least version 
-3.0.1. The final release of STIR 2.0 should work with gcc 4.1.
+3.0.1. The final release of \textit{STIR} 2.0 should work with gcc 4.1.
 Check the mailing lists for more info.
 \footnote{{\small A few years ago, some work-arounds were put in place to 
-keep STIR compatible with gcc version 2.95.2, but this version is unlikely to
-to be usable for recent versions of STIR. It is known that with this
+keep \textit{STIR} compatible with gcc version 2.95.2, but this version is unlikely to
+to be usable for recent versions of \textit{STIR}. It is known that with this
 old version, some functionality is not supported. Specifically, 
 some programs that take a parameter file as input also list the 
 actual parameters used on stdout. This is especially useful if 
@@ -169,7 +169,7 @@ registries (pretty much everything in section
 \textbf{Warning} Please note that many Linux distributions come with 
 prerelease versions of gcc. These versions are sometimes not as stable
 as the normal gcc releases, especially for C++ code.
-We discourage using such versions for STIR (check with gcc -v).
+We discourage using such versions for \textit{STIR} (check with gcc -v).
 
 
 
@@ -260,7 +260,7 @@ found by the Makefile
 \cmdline{make print-make-vars}
 
 
-One should normally not see warnings when compiling STIR
+One should normally not see warnings when compiling \textit{STIR}
 except possibly 'variable not used' type of warnings (although when using
 optimization of at least level 2, gcc 3.4 
 generates warnings about uninitialised variables in the system library).
@@ -308,7 +308,7 @@ of the \textit{BUILD} make variable (with trailing slash appended).} \\
 \textit{Use not recommended} \linebreak
 Can be used to tell \textit{make} where the \textit{STIR} subdirectory is, 
 but it should find out by itself. The path given should include 
-STIR as well.} \\
+\textit{STIR} as well.} \\
 \hline
 % ROW 4
 
@@ -444,7 +444,7 @@ GENERATION=1}} &
 By default, the makefile is set-up to generate dependencies 
 on the include files. This means that if an include file is changed, 
 the relevant .cxx files will be recompiled. This feature is really 
-only necessary when you are modifying the STIR source files, 
+only necessary when you are modifying the \textit{STIR} source files, 
 so you could switch it off to saved a little bit of time.} \\
 \hline
 \end{longtable}
@@ -481,7 +481,7 @@ See also section \ref{sec:display}..
 \subsubsection{
 Additional options available for parallel code}
 
-STIR 2.0 contains somewhat preliminary code for running \texttt{OSMAPOSL} in parallel-mode
+\textit{STIR} 2.0 contains somewhat preliminary code for running \texttt{OSMAPOSL} in parallel-mode
 (contribution by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
 and compiler to get this to work. Normal build process would be something like
 
@@ -504,13 +504,13 @@ Additional make variables for the parallel version:
 {\raggedright \textit{STIR\_MPI=1}} & 
 {\raggedright
 Can be used to force compilation for MPI if the CXX compiler is not recognized (see 
-\texttt{STIR/config.mk}).
+\textbf{STIR/config.mk}).
 } \\
 \hline
 {\raggedright \textit{STIR\_MPI\_TIMINGS=1}} & 
 {\raggedright
 Can be used to enable additional timings for all send/receive pairs 
-(see \texttt{distributed\_functions.h} in \texttt{include/stir/recon\_buildblock}. 
+(see \textbf{distributed\_functions.h} in \textbf{include/stir/recon\_buildblock}. 
 This should only be used for testing purposes as it can slow down
 the program dramatically.
 } \\
@@ -529,7 +529,7 @@ Can be used to change the default MPI compilation flags which currently includes
 \subsubsection{
 Additional options available for threaded code}
 
-STIR 2.0 contains preliminary code for running \texttt{FBP2D} in threaded mode
+\textit{STIR} 2.0 contains preliminary code for running \texttt{FBP2D} in threaded mode
 (contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
 supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
 in a decent speed-up of \texttt{FBP2D}. Normal build process would be something like
@@ -566,7 +566,7 @@ Usage of STIR/local/config.mk}
 \label{sec:local_config.mk}
 
 Having to type in the above options at every make is quite painful. 
-Luckily, the file STIR/local/config.mk comes to your rescue. 
+Luckily, the file \textbf{STIR/local/config.mk} comes to your rescue. 
 This file is imported (if it exists) by every make (after reading 
 STIR/config.mk), and hence can be used to override the defaults 
 of all of the above make flags, \textit{except} the \textit{WORKSPACE} flag. 
@@ -578,12 +578,12 @@ it to \textbf{STIR/local/}.
 Enabling ECAT 6 or 7 support}
 \label{sec:ECAT67support}
 Older CTI (Siemens) scanners use a file format called ECAT.
-At present, STIR uses parts of the Louvain la Neuve ecat library (called LLN in
+At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (called LLN in
 the rest of this document).\footnote{\textit{STIR} versions 1.? came with
 specific files for ECAT6 support without the need for the LLN library. 
 However, due to license restrictions this is now no longer the case.} 
 Unfortunately, this library is no longer
-available via the Louvain la Neuve website. Please check the STIR
+available via the Louvain la Neuve website. Please check the \textit{STIR}
 mailing lists for more information.
 
 You have to download that library and issue 'make --f Makefile.unix' 
@@ -591,7 +591,7 @@ You have to download that library and issue 'make --f Makefile.unix'
 in the new ecat directory first. Please get a recent version 
 of this library (dated 20 July 2004 or later) as Merence Sibomana 
 has introduced various bug fixes, some of which solve problems 
-that you would otherwise experience when using STIR and ECAT7 
+that you would otherwise experience when using \textit{STIR} and ECAT7 
 files.
 
 
@@ -633,7 +633,7 @@ If you have the \textit{AVW}\texttrademark{}  library
 \footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.
 } installed on your system, the make process should automatically built
-some STIR routines to be to use it for IO (see \ref{sec:convAVW}).
+some \textit{STIR} routines to be to use it for IO (see \ref{sec:convAVW}).
 
 To compile and link \textit{AVW} support, \textit{STIR} needs to know the location 
 of the \textit{AVW} files. 
@@ -692,7 +692,7 @@ are somewhat fiddly. Before we go there, we have to got a problem out-of-the-way
 
 { \subsubsubsection{CPUTimer problems}
 }
-At present, STIR uses some files available in the Windows API for 
+At present, \textit{STIR} uses some files available in the Windows API for 
 getting accurate CPU time estimates. If you do not have the Windows API
 installed, you will get compilation errors mentioning that 
 the file \texttt{windows.h} cannot be found. A work-around is to
@@ -764,9 +764,9 @@ See the mailing lists.
 In addition to the source files, you will need to download VCprojects.zip. 
 Extract it in the same place as you extracted the source files. 
 
-Note that since STIR 1.3, the Visual Studio projects might be 
+Note that since \textit{STIR} 1.3, the Visual Studio projects might be 
 out of date. You essentially have to add all source files in the
-STIR sub-directories to a relevant project (e.g., add 
+\textit{STIR} sub-directories to a relevant project (e.g., add 
 all .cxx files in \texttt{buildblock} directory to the \texttt{buildblock}
 project.
 
@@ -789,7 +789,7 @@ files and projects called \texttt{local*}. You will probably have to delete thos
 maually from the projects.
 
 
-At present, STIR uses parts of the Louvain la Neuve ecat library, see \ref{sec:ECAT67support}. 
+At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library, see \ref{sec:ECAT67support}. 
 The following are instructions specific to using VC projects.
 
 Extract 
@@ -1085,7 +1085,7 @@ format).
 
 The most comprehensively supported file format in the library 
 is a newly proposed version of interfile. More details about 
-this type can be found in the ''Other info'' section of the STIR website.
+this type can be found in the ''Other info'' section of the \textit{STIR} website.
 
 It is currently the only format supported for writing projection 
 data (except by the \textit{conv\_to\_ecat?} utilities\textit{)}. Projection 
@@ -1105,7 +1105,7 @@ difference 11 and contain 281 bins * 256 segments * 336 views.
 We do have software that read VOLPET headers for all GE scanners, but can currently
 not distribute it due to licensing restrictions. If you have the
 GE Research Tools package you can ask Kris Thielemans for VOLPET
-support in STIR.
+support in \textit{STIR}.
 
 \subsubsection{ECAT6 and ECAT7 data} 
 See section \ref{sec:ECAT67support} for enabling support for ECAT data.
@@ -1134,7 +1134,7 @@ These should be used for dynamic
 or gated scans.
 
 \subsubsection{SimSET files}
-There are some preliminary files for make it easier to use SimSET and STIR together in the
+There are some preliminary files for make it easier to use SimSET and \textit{STIR} together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
 
 \subsection{
@@ -1142,18 +1142,19 @@ List mode processing}
 
 Some scanners produce list mode data, which is essentially a 
 list of events. Although it is possible to reconstruct this data 
-directly, this is currently not supported by STIR. 
+directly, this is currently not supported by \textit{STIR}. 
 
 Currently supported list mode formats are specific to the ECAT 
-HR+ and ECAT EXACT 3D scanners. The OpenGATE project distributes files
-to enable STIR to read \textit{LMF} format files.
+HR+ and ECAT EXACT 3D scanners. There are some unfinished classes
+available on the \textit{STIR} web-site to read \textit{LMF} format files,
+in conjunction with the \textit{LMF} library.
 
 \subsubsection{
 lm\_to\_projdata}
 
 This utility can be used to bin (or sort) the list mode data 
 into 'projection data' (also known as \textbf{3D sinograms}. 
-This can then be processed further by other STIR utilities. It 
+This can then be processed further by other \textit{STIR} utilities. It 
 needs to be run as follows:
 \cmdline{lm\_to\_projdata par\_filename}
 
@@ -1169,7 +1170,7 @@ Rebinning algorithms}
 In 3D PET, the name \textit{rebinning} is used for the 
 process of manipulating the 3D projection data set to the equivalent 
 of 2D projection data. This reduces the number of segments (see 
-STIR Glossary) to 1. Popular rebinning algorithms are SSRB, FORE 
+\textit{STIR} Glossary) to 1. Popular rebinning algorithms are SSRB, FORE 
 and variations such as FOREX, and FOREJ. Rebinning is often used 
 before reconstruction to decrease total reconstruction time.
 
@@ -1184,13 +1185,13 @@ position in segment 0 such that z-resolution on the axis of the
 scanner is preserved.
 
 
-The STIR implementation of SSRB is a generalisation that applies 
+The \textit{STIR} implementation of SSRB is a generalisation that applies 
 the same idea while still allowing preserving some of the obliqueness. 
 For instance, for a dataset with 9 segments, \textbf{SSRB} can produce 
 a new dataset with only 3 segments. This essentially increases 
 the axial compression (or \textit{span} in CTI terminology), see the 
-STIR Glossary on axial compression. In addition, \textbf{SSRB} can 
-introduce extra \textit{mashing} (see the STIR Glossary) of the data, 
+\textit{STIR} Glossary on axial compression. In addition, \textbf{SSRB} can 
+introduce extra \textit{mashing} (see the \textit{STIR} Glossary) of the data, 
 i.e. add views together.
 
 
@@ -1240,7 +1241,7 @@ implementation.
 Surrogate algorithm by Erdogan and Fessler, and Ahn and Fessler [Ahn2003]. 
 \end{description}
 
-Since STIR 2.0, all iterative algorithms use a \textit{generalised objective 
+Since \textit{STIR} 2.0, all iterative algorithms use a \textit{generalised objective 
 function}\footnote{We call them \textit{generalised} because they do not
 necessarily have to correspond to a function. Most algorithms only require
 that we can compute some kind of gradient. As an example, the update
@@ -1249,7 +1250,7 @@ gradient of a function.} which the algorithm tries to maximise. The result
 of the algorithm will obviously depends very much on the objective function
 used.
 
-Currently, only Poisson-based objective functions are implemented in STIR. We
+Currently, only Poisson-based objective functions are implemented in \textit{STIR}. We
 have an objective function for static projection data (\textit{aka} sinograms),
 list mode data and parametric images from dynamic projection data 
 (currently only using the Patlak model).
@@ -1478,7 +1479,7 @@ We therefore recommend to set this parameter to 1.
 \item[sensitivity filename]
 The sensitivity image is an important ingredient of 
 likelihood-based reconstruction algorithms of PET or SPET emission data
-\footnote{In STIR 2.0, this is generalised to the sensitivity for
+\footnote{In \textit{STIR} 2.0, this is generalised to the sensitivity for
 any problem with Poisson statistics where the data are linear
 combinations of the variables of interest.}
 For each voxel, it represents the total probability of detection of an 
@@ -1835,7 +1836,7 @@ See [Bei08] for some info on performance.
   $\Psi$ summed over all columns (while using the data plug-in approach for 
   approximating the Hessian close to the solution). Therefore, this OSSPS 
   implementation uses this prescription in general and can be applied to any objective
-   function implemented in STIR.  
+   function implemented in \textit{STIR}.  
 
   Note that the exact paraboloidal surrogate algorithm by Erdogan and Fessler is currently
   not implemented.
@@ -1874,11 +1875,58 @@ See [Bei08] for some info on performance.
   bound defaults to a very large value.
 \end{description}
 
+{ \subsubsubsection{Using list mode data as input}
+}
+\label{sec:ListmodeIterativeAlgorithms}
+Since \textit{STIR} 2.0, you can specify an objective function that takes list mode data as input
+and uses a projection matrix. This can be used to do a static image reconstruction
+without any resolution loss etc. 
+
+\textbf{WARNING: The current implementation has not been thoroughly tested.} Please use
+the mailing lists for questions and results.
+
+The following gives the main parameters to use for OSMAPOSL.
+\begin{verbatim}
+OSMAPOSLParameters :=
+  objective function type:=\
+     PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:=
+    list mode filename:= listmodefile.lm
+    time frame definition filename:= timeframes.fdef
+    ; time frame to use data for the reconstruction
+    time frame number:=1
+    ; maximum ring difference (defaults to all ring differences)
+    ;max ring difference num to process:=
+    ; matrix to use for forward and back projection (defaults to ray tracing)
+    ;Matrix type:= using ray tracing
+    ; background term
+    additive sinogram:=
+    sensitivity filename:=filename
+
+    ; other usual objective function parameters 
+
+  End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:=
+
+  ; normal OSMAPOSL algorithm parameters 
+
+End:=
+\end{verbatim}
+
+Currently, the sensitivity filename needs to be specified as the code to compute it using
+a bin normalisation type has not yet been copied to the 
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
+class. You could run OSMAPOSL first with projection data without axial compression (and view
+``mashing'') to create the sensitivity filename. Similarly, if you want to use OSSPS,
+you will need to run the projection data version first to get the ``precomputed denominator''.
+
+The additive sinogram is as discussed in \ref{sec:PoissonProjectionDataObjectiveFunction}, 
+but needs to be without axial compression (and view ``mashing'').
+
 { \subsubsubsection{Parametric image estimation algorithms}
 }
 \label{sec:ParametricImageIterativeAlgorithms}
 Both OSMAPOSL and OSSPS work have implementations to estimate parametric images from
-dynamic data, called \textbf{POSMAPOSL} and \textbf{POSSPS} respoectively. 
+dynamic data, called \textbf{POSMAPOSL} and \textbf{POSSPS} respectively. 
 Their parameters are identical to the static versions of the algorithms, except that
 they need a different type of objective function. Currently, the only defined version is
 where the input is dynamic projection data and the Patlak linear model is used to go from
@@ -1907,11 +1955,13 @@ OSMAPOSLParameters :=
     ;; see the Patlak model description elsewhere
     end Patlak Plot Parameters :=
 
-  ;; other parameters such as projectors and sensitivity 
-  ;; identical to the static case
+  ; other parameters such as projectors and sensitivity 
+  ; identical to the static case
+
   end PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:=
 
   ; normal OSMAPOSL algorithm parameters 
+
 End:=
 \end{verbatim}
 
@@ -2023,14 +2073,14 @@ See also section \ref{sec:SSRB} for the use of \textbf{SSRB} to manipulate proje
 data.
 
 
-The program \textbf{get\_time\_frame\_info} is STIR's first (small!) 
+The program \textbf{get\_time\_frame\_info} is \textit{STIR}'s first (small!) 
 step into supporting dynamic data.
 
 
 \textbf{Note}: The displaying functionality is \textit{really} basic, and 
 only intended for a quick check how your data looks like. For 
 any serious work, use a decent viewer. For example, \textit{AMIDE} 
-is a free viewer that can read STIR data
+is a free viewer that can read \textit{STIR} data
 \footnote{\R2Lurl{http://amide.sourceforge.net }{http://amide.sourceforge.net}}. Alternatively, 
 convert your \textit{STIR} data to another format using (X)medcon
 \footnote{\R2Lurl{http://xmedcon.sourceforge.net }{http://xmedcon.sourceforge.net}}.
@@ -2105,14 +2155,14 @@ segment number (ring difference).
 }
 
 A utility that lists size info of the projection data on stdout. 
-Use this if you think there is something wrong with how STIR 
+Use this if you think there is something wrong with how \textit{STIR} 
 reads your projection data.
 
 { \subsubsubsection{create\_projdata\_template}
 }
 
 This utility is mainly useful to create a template that can then 
-be used for other STIR utilities (such as fwdtest, lm\_to\_projdata 
+be used for other \textit{STIR} utilities (such as fwdtest, lm\_to\_projdata 
 etc.).
 \cmdline{create\_projdata\_template output\_filename}
 
@@ -2132,7 +2182,7 @@ external image display/manipulation programs which do not understand
 The user will be asked if the images should correspond to SegmentByView 
 or SegmentBySinogram data. In the first, data are stored as a 
 stack of viewgrams (one for each view), in the second as a stack 
-of sinograms (one for each axial position). (See the STIR glossary).
+of sinograms (one for each axial position). (See the \textit{STIR} glossary).
 
 { \subsubsubsection{stir\_math}
 }
@@ -2142,7 +2192,7 @@ This is a command line utility for adding or multiplying data
 and other numerical operations, with a somewhat awkward syntax. 
 Just execute \texttt{stir\_math} for a usage message.
 
-Since STIR 2.1, this utility also supports parametric or dynamic data using
+Since \textit{STIR} 2.1, this utility also supports parametric or dynamic data using
 the command line switches \texttt{--parametric} and \texttt{--dynamic}.
 
 \textit{Examples}
@@ -2209,7 +2259,7 @@ numbers is probably system-dependent.
 { \subsubsubsection{generate\_image}
 }
 
-This is a test-release of a program that can be used to generate 
+This program can be used to generate 
 images containing geometric shapes such as cylinders, spheres 
 etc. See the online documentation generated by doxygen for more 
 info.
@@ -2217,7 +2267,7 @@ info.
 { \subsubsubsection{zoom\_image}
 }
 
-This is a test-release of a program that can be used to reinterpolate 
+This can be used to reinterpolate 
 images to different voxel sizes and/or dimensions. See the online 
 documentation generated by doxygen for more info.
 
@@ -2405,7 +2455,7 @@ are subheaders 'in' the datasets.\\
 3D projection data into account, see section \ref{sec:ecat_swap_corners}.\\
 Note that you do not have to use this utility if you want to 
 read only ``frame 1, gate 1, data 0, bed 0''. In this case, you 
-can pass the ECAT7 file directly to any STIR program.
+can pass the ECAT7 file directly to any \textit{STIR} program.
 \\
 \textbf{Warning} The calibration factor field in the main header of ECAT7 images
 is currently ignored.
@@ -2506,10 +2556,10 @@ If you have the \textit{AVW}\texttrademark  library
 } installed on your system, the make process should have built \texttt{utilities/conv\_AVW}.
 See also \ref{sec:AVWsupport}.
 This utility allows to use the \textit{AVW} library to read an image, and then write it out
-using STIR as Interfile.\\
+using \textit{STIR} as Interfile.\\
 \textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
 on the file format. For instance, it reads \textit{ECAT7} files using a z-flip compared
-to STIR.
+to \textit{STIR}.
 
 It normally should be run as follows:
 \cmdline{conv\_AVW [ --flip\_z ] imagefile}
@@ -2954,7 +3004,7 @@ and only signed short data are supported.
 Available filters or data processors}
 \label{sec:filters}
 Reconstruction algorithms and some utilities use filters, or in 
-general data processing algorithm. In STIR 1.x the data-type was restricted
+general data processing algorithm. In \textit{STIR} 1.x the data-type was restricted
 to images, but now other data-types can in principle be used. Some
 of the available data processors can work on any data type, but most
 only work on images.
@@ -3507,12 +3557,13 @@ See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keywo
 }
 
 This back projector uses incremental (piecewise)-linear interpolation 
-to compute its result. It can \textit{only} handle arc-corrected data.
+to compute its result. See [Egg98] for details. It can \textit{only} handle arc-corrected data.
 
 
 \textbf{Warning:} The current implementation has problems (noticeable 
-at 45 and 135 degrees and at the centre of the image) on Sun 
-Sparc, HP and Opteron processors (when compiled using gcc).
+sometimes at 45 and 135 degrees but mostly at the centre of the image) on Sun 
+Sparc, HP and some Opteron processors (for certain optimisation settings
+of the C++ compiler).
 
 { \subsubsubsubsection{Parameters}
 }
@@ -3727,7 +3778,7 @@ the normalisation data in a files normally ending on
 supported, although awkwardly. To get dead-time correction
 to work, you need to specify the singles rates for the 
 scan\footnote{In future, hopefully this will not be necessary.
-This work-around is needed because STIR currently does not
+This work-around is needed because \textit{STIR} currently does not
 directly read any of the meta-data in the headers of sinograms etc.}
 { \subsubsubsubsection{Parameters}
 }
@@ -3880,7 +3931,7 @@ LinkClose[link];
 
 \section{
 Directories in the STIR tree}
-STIR can roughly be split into a library applications and applications.
+\textit{STIR} can roughly be split into a library applications and applications.
 \footnote{The distinction is not complete as some applications are implemented
 in terms of classes that actually end up in the library.}
 
@@ -3909,7 +3960,7 @@ Better dynamic/gated scans support.
 
 While support for the library is on a voluntary basis, users 
 of the library are encouraged to subscribe to relevant \textit{STIR} 
-mailing lists (see the `Mailing Lists' section of the STIR website 
+mailing lists (see the `Mailing Lists' section of the \textit{STIR} website 
 \R2Lurl{http://stir.sourceforge.net/ }{http://stir.sourceforge.net}) 
 where they can follow developments of the software and obtain 
 helpful information from other users. Questions will ONLY be 
