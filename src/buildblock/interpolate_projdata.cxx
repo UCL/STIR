@@ -45,17 +45,16 @@
 #include <typeinfo>
 
 START_NAMESPACE_STIR
-using namespace BSpline;
 
 namespace detail_interpolate_projdata
 {
   /* Collection of functions to remove interleaving in non-arccorrected data.
 
-     It does this by doubling the number of views, and filling in the new
-     tangential positions by averaging the 4 neighbouring bins.
+  It does this by doubling the number of views, and filling in the new
+  tangential positions by averaging the 4 neighbouring bins.
 
-     WARNING: most of STIR will get confused by the resulting sinograms,
-     so only use them here for the interpolate_projdata implementation.
+  WARNING: most of STIR will get confused by the resulting sinograms,
+  so only use them here for the interpolate_projdata implementation.
   */
      
   static shared_ptr<ProjDataInfo>
@@ -170,11 +169,11 @@ using namespace detail_interpolate_projdata;
   
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
-                     const ProjData& proj_data_in, const BSplineType these_types,
+                     const ProjData& proj_data_in, const BSpline::BSplineType these_types,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
-  BasicCoordinate<3, BSplineType> these_types_3; 
+  BasicCoordinate<3, BSpline::BSplineType> these_types_3; 
   these_types_3[1]=these_types_3[2]=these_types_3[3]=these_types;
   interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving, use_view_offset);
   return Succeeded::yes;
@@ -183,7 +182,7 @@ interpolate_projdata(ProjData& proj_data_out,
 Succeeded 
 interpolate_projdata(ProjData& proj_data_out,
                      const ProjData& proj_data_in,
-                     const BasicCoordinate<3, BSplineType> & these_types,
+                     const BasicCoordinate<3, BSpline::BSplineType> & these_types,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
