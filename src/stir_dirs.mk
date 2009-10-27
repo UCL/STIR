@@ -24,6 +24,7 @@ EXEDIRS += utilities recon_test \
 	iterative/OSMAPOSL \
 	iterative/POSMAPOSL \
 	iterative/OSSPS \
+	iterative/POSSPS \
 	analytic/FBP2D \
 	analytic/FBP3DRP \
 	SimSET
