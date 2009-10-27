@@ -194,7 +194,7 @@ namespace BSpline {
         else if (k>coeffs.get_max_index()) index=2*coeffs.get_max_index()-k;
         else index = k;
         assert(coeffs.get_min_index()<=index && index<=coeffs.get_max_index());
-        value += static_cast<SplineFunctionT::result_type>(
+        value += static_cast<typename SplineFunctionT::result_type>(
           g(coeffs[index], relative_positions, spline_types) *
 #ifdef NNN
           f(current_pos, p, bspline)
