@@ -19,7 +19,7 @@
 */
 /*!
   \file 
-  \ingroup test
+  \ingroup numerics_test
   \brief tests the BSplines 
 
   \author Charalampos Tsoumpas
