@@ -1,10 +1,26 @@
 //
 // $Id$
 //
+/*
+    Copyright (C) 2004- $Date$, Hammersmith Imanet
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup utilities
-  \brief List of FWHM and its location in the image
+  \brief List of FWHM and location of maximum in the image
   
 
   \author Charalampos Tsoumpas
@@ -21,9 +37,9 @@
    \param num_maxima defaults to 1
    \param level defaults to 2 (half maximum)  
    \param dimension:
-   \for point sources (default) set to 0
-   \for line source along z, y, x -axis,
-   \set to: 1, 2, 3 respectively
+   for point sources (default) set to 0
+   for line source along z, y, x -axis,
+   set to: 1, 2, 3 respectively
    \param NEMA defaults to 1 
    
   
@@ -36,10 +52,6 @@
   slices of the wanted dimension. The [nema] parameter enables the oportunity of using the NEMA Standards 
   Publication NU 2-2001. If it is set to 0 the function estimates the FWHM using 3D interpolation, for 
   closer approximation. 
-*/
-/*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet
-    See STIR/LICENSE.txt for details
 */
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"

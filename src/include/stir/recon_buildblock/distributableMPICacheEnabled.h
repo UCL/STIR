@@ -65,13 +65,13 @@ class DistributedCachingInformation;
     will not be used. 
 */
 typedef  void RPC_process_related_viewgrams_type (
-						  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-						  const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-						  DiscretisedDensity<3,float>* output_image_ptr, 
-						  const DiscretisedDensity<3,float>* input_image_ptr, 
-						  RelatedViewgrams<float>* measured_viewgrams_ptr,
-						  int& count, int& count2, double* log_likelihood_ptr,
-						  const RelatedViewgrams<float>* additive_binwise_correction_ptr);
+                                                  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                                  const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                                  DiscretisedDensity<3,float>* output_image_ptr, 
+                                                  const DiscretisedDensity<3,float>* input_image_ptr, 
+                                                  RelatedViewgrams<float>* measured_viewgrams_ptr,
+                                                  int& count, int& count2, double* log_likelihood_ptr,
+                                                  const RelatedViewgrams<float>* additive_binwise_correction_ptr);
 
 /*!
   \brief This function essentially implements a loop over segments and all views in the current subset.
@@ -93,7 +93,7 @@ typedef  void RPC_process_related_viewgrams_type (
 
   \param output_image_ptr will store the output image if non-zero.
   \param input_image_ptr input when non-zero.
-  \param proj_data_ptr input projection data
+  \param proj_data_sptr input projection data
   \param read_from_proj_data if true, the \a measured_viewgrams_ptr argument of the call_back function 
          will be constructed using ProjData::get_related_viewgrams, otherwise 
          ProjData::get_empty_related_viewgrams is used.
@@ -119,21 +119,21 @@ typedef  void RPC_process_related_viewgrams_type (
 
  */
 void distributable_computation_cache_enabled(
-			       const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
-			       const shared_ptr<BackProjectorByBin>& back_projector_ptr,
-			       const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
-			       DiscretisedDensity<3,float>* output_image_ptr,
-				    const DiscretisedDensity<3,float>* input_image_ptr,
-				    const shared_ptr<ProjData>& proj_dat_ptr, 
-                                    const bool read_from_proj_dat,
-				    int subset_num, int num_subsets,
-				    int min_segment_num, int max_segment_num,
-				    bool zero_seg0_end_planes,
-                                    double*  double_out_ptr,
-				    const shared_ptr<ProjData>& binwise_correction,
-                    RPC_process_related_viewgrams_type * RPC_process_related_viewgrams, 
-                    DistributedCachingInformation* caching_info_ptr
-                    );
+                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
+                                             const shared_ptr<BackProjectorByBin>& back_projector_ptr,
+                                             const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
+                                             DiscretisedDensity<3,float>* output_image_ptr,
+                                             const DiscretisedDensity<3,float>* input_image_ptr,
+                                             const shared_ptr<ProjData>& proj_data_sptr, 
+                                             const bool read_from_proj_data,
+                                             int subset_num, int num_subsets,
+                                             int min_segment_num, int max_segment_num,
+                                             bool zero_seg0_end_planes,
+                                             double*  double_out_ptr,
+                                             const shared_ptr<ProjData>& additive_binwise_correction,
+                                             RPC_process_related_viewgrams_type * RPC_process_related_viewgrams, 
+                                             DistributedCachingInformation* caching_info_ptr
+                                             );
 
 
 void test_image_estimate(shared_ptr<stir::DiscretisedDensity<3, float> > input_image_ptr);

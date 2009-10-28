@@ -43,7 +43,17 @@ START_NAMESPACE_STIR
 //!
 /*!
   \ingroup modelling
-  \brief Implementation of functions of class stir::PatlakPlot
+  \brief Patlak kinetic model
+
+  Model suitable for irreversible tracers such as FDG and FLT. See
+ 
+  - Patlak C S, Blasberg R G, Fenstermacher J D (1985)  
+      <i>Graphical evaluation of blood-to-brain transfer constants from multiple-time uptake data,</i> {J Cereb Blood Flow Metab 3(1): p. 1-7.
+
+  - Patlak C S, Blasberg R G (1985)
+    <i>Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data: Generalizations,</i>
+    J Cereb Blood Flow Metab 5: p. 584-90. 
+
 
   \par Example .par file
   \verbatim
@@ -77,7 +87,8 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
 
    PatlakPlot();   //!< Default constructor (calls set_defaults())
    ~PatlakPlot();   //!< default destructor
-   //! \name Functions to get parameters @{
+   /*! \name Functions to get parameters */
+   //@{
     //! Simply gets model matrix, if it has been already stored.
     ModelMatrix<2> get_model_matrix() const;
     //! Creates model matrix from plasma data (Must be already sorted in appropriate frames).
@@ -91,8 +102,10 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
     TimeFrameDefinitions 
       get_time_frame_definitions() const ;
     //!@}
-    //! \name Functions to set parameters
+    /*! \name Functions to set parameters*/
+    //@{  
     void set_model_matrix(ModelMatrix<2> model_matrix) ;     //!< Simply set model matrix 
+    //@}
 
     /*! Multiplies the dynamic image with the model gradient. \n
       For a linear model the model gradient is the transpose of the model matrix. \n
@@ -113,7 +126,7 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
 
     void set_defaults();
 
-    Succeeded set_up(); // Could be in the post_processing() as well.
+    Succeeded set_up(); 
 
   bool _if_cardiac;   //!< Switches between cardiac and brain data
   unsigned int _starting_frame;   //!< Starting frame to apply the model

@@ -21,7 +21,7 @@
   \file
   \ingroup modelling
 
-  \brief This is a preliminary version of the abstract class stir::KineticModel<num_param> which should be as generic as possible to accommodate all the Kinetic Models. 
+  \brief Definition of class stir::KineticModel
 
   \author Charalampos Tsoumpas
  
@@ -34,11 +34,15 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/RegisteredParsingObject.h"
-//#include "stir/modelling/ModelMatrix.h"
 
 START_NAMESPACE_STIR
 
-//template <int num_param>
+/*! 
+  \brief base class for all kinetic models
+  \ingroup modelling
+
+  At present very basic. It just provides the parsing mechanism.
+*/
 class KineticModel: public RegisteredObject<KineticModel> 
 { 
 
@@ -53,11 +57,11 @@ public:
   //  virtual float get_compartmental_activity_at_time(const int param_num, const int sample_num) const;
   //  virtual float get_total_activity_at_time(const int sample_num) const;
 
+  virtual Succeeded set_up() = 0;
+
   // protected:
   //  void initialise_keymap();
 
-  // private:
-  //  ModelMatrix<2> _model_matrix; // But it may not be as simple as in the case of linear models.
 };
 
 END_NAMESPACE_STIR

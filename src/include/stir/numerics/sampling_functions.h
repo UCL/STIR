@@ -17,7 +17,7 @@
 
     See STIR/LICENSE.txt for details
 */
-/*
+/*!
   \file 
   \ingroup numerics
   \brief Sampling functions (currently only stir::sample_function_on_regular_grid)
@@ -45,7 +45,7 @@ START_NAMESPACE_STIR
   out(index) = func(index * step - offset)
  \endcode 
 
- \param requirement for type  FunctionType
+ \par requirement for type  FunctionType
  Due to the calling sequence above, the following has to be defined
  \code
    elemT FunctionType::operator(const BasicCoordinate<3, positionT>&)

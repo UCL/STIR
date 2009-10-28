@@ -5,7 +5,7 @@
 
   \file
   \ingroup buildblock  
-  \brief Definition of STIRByteOrderIsBigEndian
+  \brief Definition of STIRIsNativeByteOrderBigEndian and STIRIsNativeByteOrderLittleEndian preprocessor symbols
     
   \author Kris Thielemans
       
@@ -32,6 +32,15 @@
 #include "stir/common.h"
 
 START_NAMESPACE_STIR
+
+// currently checked by asserts()
+#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__)&& !defined(__i886__) && !defined(__k6__) && !defined(__athlon__) && !defined(__x86_64__) && !defined(__k6__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
+#define STIRIsNativeByteOrderBigEndian 1
+#define STIRIsNativeByteOrderLittleEndian 0
+#else
+#define STIRIsNativeByteOrderBigEndian 0
+#define STIRIsNativeByteOrderLittleEndian 1
+#endif
 
 /*!
   \def  STIRIsNativeByteOrderBigEndian
@@ -79,13 +88,6 @@ START_NAMESPACE_STIR
   \see STIRIsNativeByteOrderBigEndian for details.
 */
 
-// currently checked by asserts()
-#if !defined(__alpha) && (!defined(_WIN32) || defined(_M_PPC) || defined(_M_MPPC)) && !defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__) && !defined(__i786__)&& !defined(__i886__) && !defined(__k6__) && !defined(__athlon__) && !defined(__x86_64__) && !defined(__k6__) || (defined(__MSL__) && !defined(__LITTLE_ENDIAN))
-#define STIRIsNativeByteOrderBigEndian 1
-#define STIRIsNativeByteOrderLittleEndian 0
-#else
-#define STIRIsNativeByteOrderBigEndian 0
-#define STIRIsNativeByteOrderLittleEndian 1
-#endif
+
 END_NAMESPACE_STIR
 

@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 
   with \f$\lambda\f$ the parameters to be estimated,
   \f$\Psi\f$ the objective function (see class GeneralisedObjectiveFunction)
-  \f$D\f$ a dagional matrix (the preconditioner)
+  \f$D\f$ a diagonal matrix (the preconditioner)
   and \f$\zeta\f$ an iteration-dependent number called the relaxation parameter (see below).
 
   \f$D\f$ depends on \f$\Psi\f$. The data-dependent term in the preconditioner 
@@ -74,18 +74,18 @@ START_NAMESPACE_STIR
   
   Note that this implementation probably assumes 'balanced subsets', i.e. 
   
-    \f[\sum_{b \in \rm{subset}} P_{bv} = 
-       \sum_b P_{bv} \over \rm{numsubsets} \f]
+    \f[\sum_{b \in \mathrm{subset}} P_{bv} = 
+       \sum_b P_{bv} \over \mathrm{numsubsets} \f]
 
   \par Relaxation scheme
   
-  The relaxation value for the additive update follows the suggestion from Ahn&Fessler:
+  The relaxation value for the additive update follows the suggestion from Ahn and Fessler:
 
-  \f[ \zeta= { \alpha \over 1+ \gamma n } \f ]
+  \f[ \zeta= { \alpha \over 1+ \gamma n } \f]
 
   with \f$n\f$ the (full) iteration number. The parameter \f$\alpha\f$ corresponds to the
-  class member <code>relaxation_parameter</code>, and \f$\fgamma\f$ to
-  <code>relaxation_gamma</code>. Ahn&Fessler recommend to set \f$\alpha \approx 1\f$ and
+  class member <code>relaxation_parameter</code>, and \f$\gamma\f$ to
+  <code>relaxation_gamma</code>. Ahn and Fessler recommend to set \f$\alpha \approx 1\f$ and
   \f$\gamma\f$ small (e.g. 0.1).
 
   \warning This class should be the last in the Reconstruction hierarchy.

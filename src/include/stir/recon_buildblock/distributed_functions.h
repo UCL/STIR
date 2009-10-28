@@ -132,7 +132,7 @@ namespace distributed
    * \param destination the process id where to send the interger value. If set to -1 a Broadcast will be done
    * 
    * This function is currently only used to determine the objective function using an idertifier.
-   * It should be replaced by the more general function \csend_int_values()
+   * It should be replaced by the more general function \c send_int_values()
    */
   void send_int_value(int value, int destination);
 	
@@ -190,7 +190,6 @@ namespace distributed
 	
   /*! \brief sends or broadcasts the values of a DiscretisedDensity object
    * \param input_image_ptr the image_ptr to be sent
-   * \param tag identifier to associate messages
    * \param destination the process id where to send the image values. If set to -1 a Broadcast will be done
    * 
    * This function sends the values of an image. The values are serialized to a one-dimensional array
@@ -219,7 +218,7 @@ namespace distributed
    * \param viewgrams the viewgrams to be sent
    * \param destination the process id where to send the related viewgrams
    * 
-   * This function iterates through the relatedviewgrams object and calls \csend_viewgram() 
+   * This function iterates through the relatedviewgrams object and calls \c send_viewgram() 
    * for each comprised viewgram. 
    * The only value sent is the count of viewgrams contained within the related_viewgrams object
    * to make sure that the worker knows how many viewgrams he has to receive.
@@ -347,6 +346,7 @@ namespace distributed
   	
   	
   /*! \brief receives and constructs a RelatedViegrams object
+   * \param viewgrams object that will be filled with the data
    * \param proj_data_info_ptr the ProjDataInfo pointer describing the data
    * \param symmetries_sptr the symmetries pointer constructed when setting up the projectors
    * \param source the process id from which to receive the ProjDataInfo
@@ -355,7 +355,7 @@ namespace distributed
    * a new RelatedViegrams object, the symmetries_ptr must be available. That would mean, 
    * that the slave has to call \c receive_and_initialize_projectors() to set up the symmetries_ptr
    * before the related_vewgrams can be received. 
-   * Additionaly the  ProjDataInfo-pointer must be available for receiving a single viewgrams.
+   * Additionally the  ProjDataInfo-pointer must be available for receiving a single viewgrams.
    * That implies calling \c receive_and_construct_proj_data_info_ptr() before. 
    * To make this function independent, both of these objects have to be sent here. On the other hand 
    * that would lead to the overhead of sending it everytime a related_viewgram is sent, 
