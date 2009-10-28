@@ -42,15 +42,12 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 
-/*! \class 
+/*! \ingroup buildblock
   \brief Class of multiple image frames.
 */
-
-
 class DynamicDiscretisedDensity
 {
 public:
-  //! \warning the image is read in respect to its center as origin!!!
   static
   DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
@@ -86,6 +83,10 @@ public:
   DynamicDiscretisedDensity&
     operator=(const DynamicDiscretisedDensity& argument);
 
+  /*! \name get/set the densities
+    \warning The frame_num starts from 1
+  */
+  //@{
   /*!
     \warning This function is likely to disappear later, and is dangerous to use.
  */
@@ -95,9 +96,6 @@ public:
   /*
   DynamicDiscretisedDensity(  TimeFrameDefinitions time_frame_defintions,shared_ptr<Scanner>,
 		 std::vector<shared_ptr<DiscretiseDensity<3,float> > _densities);
-  */
-  /*!
-    \warning The frame_num starts from 1
   */
 
   const std::vector<shared_ptr<DiscretisedDensity<3,float> > > &
@@ -109,15 +107,14 @@ public:
   const DiscretisedDensity<3,float> & 
     operator[](const unsigned int frame_num) const 
     { return this->get_density(frame_num); }
-  /*!
-    \warning The frame_num starts from 1
-  */
+
  DiscretisedDensity<3,float> & 
     get_density(const unsigned int frame_num);
 
   DiscretisedDensity<3,float> & 
     operator[](const unsigned int frame_num)  
     { return this->get_density(frame_num); }
+  //@}
 
   const float get_isotope_halflife() const;
 
@@ -136,8 +133,9 @@ public:
       return this->get_time_frame_definitions().get_num_time_frames();
     }
 
- /*
-   \Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
+ /*! \brief write data to file
+   Currently only in ECAT7 format.
+   \warning write_time_frame_definitions() is not yet implemented, so time information is missing.
  */
   Succeeded   
  write_to_ecat7(const std::string& filename) const;

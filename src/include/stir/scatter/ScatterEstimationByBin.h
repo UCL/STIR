@@ -92,7 +92,7 @@ class ViewSegmentNumbers;
      proc. 5th ESBME, Patras, Greece.
   </li>
   <li>P. Aguiar, Ch. Tsoumpas, C. Crespo, J. Pavía, C. Falcón, A. Cot, K. Thielemans and D. Ros, 
-     <i>Assessment of scattered photons in the quantification of the small animal PET studies,</a> 
+     <i>Assessment of scattered photons in the quantification of the small animal PET studies,</i> 
      Eur J Nucl Med Mol I 33:S315-S315 Sep 2006, Proc. EANM 2006, Athens, Greece.
   </li>
   </ol>
@@ -100,6 +100,7 @@ class ViewSegmentNumbers;
 class ScatterEstimationByBin : public ParsingObject
 {
  public:
+  //! upsample coarse scatter estimate and fit it to tails of the emission data
  static void
    upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 				     const  ProjData& emission_proj_data,

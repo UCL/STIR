@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
    \ingroup buildblock 
    This function computes the factor eneded to convert <i>average number of counts per second</i> to
    <i>activity at time 0</i>, i.e. it returns
-   \f[ \frac{(t2-t1)}{ \int_t1^t2 \! (2^{-t/\mathrm{halflife}} \, dt} \f]
+   \f[ \frac{(t_2-t_1)}{ \int_{t_1}^{t_2} \! 2^{-t/\mathrm{halflife}} \, dt} \f]
  */
 inline double
 decay_correction_factor(const double isotope_halflife, const double start_time, const double end_time)  
@@ -59,7 +59,7 @@ decay_correction_factor(const double isotope_halflife, const double start_time, 
 //! Computes the decay-correction factor for activity at a given time point
 /*! \ingroup buildblock
   This function computes the correction factor to convert activity at t0 + \a rel_time to activity at t0, i.e.
-  \f[ 2^(\mathrm{rel\_time} / \mathrm{halflife}) \f]
+  \f[ 2^{(\mathrm{rel\_time} / \mathrm{halflife})} \f]
 */
 inline double decay_correction_factor(const double isotope_halflife, const double rel_time)
 { 

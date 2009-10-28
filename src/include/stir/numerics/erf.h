@@ -33,7 +33,7 @@
 START_NAMESPACE_STIR
 
 /*! \ingroup numerics
-   \brief A collection of error functions. 
+   \name A collection of error functions. 
    The erf() is a high precision implementation of the error function.
    The erfc() is the complementary of the erf(), which should be equal to 1-erf(), but with 
    higher precision when erf is close to 1.
