@@ -30,6 +30,10 @@
   impossible (except if that library uses the same namespace...).
  */
 
+/*! \namespace stir::BSpline
+  \brief Namespace for functions and classes for B-Spline interpolation in the STIR library
+ */
+
 /*! \namespace stir::detail
   \brief Namespace for the implementation details of the STIR library
 
