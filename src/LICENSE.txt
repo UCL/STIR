@@ -1,4 +1,4 @@
-Licensing information for STIR 2.0
+Licensing information for STIR 2.1alpha
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -35,7 +35,6 @@ Explicit list of files that carry the PARAPET license
 ./analytic/FBP3DRP/FBP3DRP.cxx
 ./analytic/FBP3DRP/FBP3DRPReconstruction.cxx
 ./buildblock/Array.cxx
-./buildblock/Array1d.cxx
 ./buildblock/ByteOrder.cxx
 ./buildblock/DataSymmetriesForViewSegmentNumbers.cxx
 ./buildblock/DiscretisedDensity.cxx
@@ -177,6 +176,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h
 ./include/stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.inl
 ./include/stir/recon_buildblock/distributable.h
+./include/stir/recon_buildblock/distributableMPICacheEnabled.h
 ./include/stir/recon_buildblock/ForwardProjectorByBin.h
 ./include/stir/recon_buildblock/ForwardProjectorByBin.inl
 ./include/stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h
@@ -240,6 +240,7 @@ Explicit list of files that carry the PARAPET license
 ./IO/stir_ecat_common.cxx
 ./iterative/OSMAPOSL/OSMAPOSL.cxx
 ./iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
+./iterative/POSMAPOSL/POSMAPOSL.cxx
 ./recon_buildblock/AnalyticReconstruction.cxx
 ./recon_buildblock/BackProjectorByBin.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation.cxx
