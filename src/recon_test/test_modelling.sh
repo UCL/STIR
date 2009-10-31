@@ -20,7 +20,7 @@ export ITER
 export MAXSEG
 export SAVITER
 
-PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/iterative/POSMAPOSL:$PATH
+PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
 
 mkdir -p test_modelling_output
 cd test_modelling_output
@@ -93,7 +93,7 @@ conv_to_ecat7 -s fwd_dyn_from_p0005-p5.S $tmpvar
 
 #copy_frame_info.sh --frame-info-only  time.fdef fwd_dyn_from_p0005-p5.S
 #copy_frame_info.sh --frame-info-only time.fdef dyn_from_p0005-p5.img
-for direct in OSMAPOSL ; do 
+for direct in OSMAPOSL OSSPS ; do 
 cp ${INPUTDIR}P${direct}.par .
 echo "Test the direct P${direct} Patlak Plot reconstruction"
 rm -f P${direct}.txt; P${direct} P${direct}.par > P${direct}.txt
