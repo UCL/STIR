@@ -78,6 +78,17 @@ public:
   inline Succeeded  
     set_up(const DataT& data);
 
+  //! Makes sure we will ignore any previous call to set-up()
+  /*! If you change any internal variables of the data-processor, or are calling
+      it on data if different size or so, you first have to call reset() such that
+      the data-processor will call set_up() when necessary.
+
+      A derived class could overload reset() to re-initialise any internal variables, 
+      but this is not required.
+  */
+  inline virtual void 
+    reset();
+
   //! Calls set_up() (if not already done before) and process \a data in-place
   /*! If set_up() returns Succeeded::false, a warning message is written, 
       and the \a data is not changed.
@@ -99,6 +110,17 @@ public:
   inline Succeeded apply
     (DataT& out_data,
      const DataT& in_data);
+
+  /*! \name parsing functions
+
+      parse() returns false if there is some error, true otherwise.
+
+      These call reset() first, and then ParsingObject::parse
+  */
+  //@{
+  inline bool parse(istream& f);
+  bool parse(const char * const filename);
+  //@}
 
   // Check if filtering images with this dimensions, sampling_distances etc actually makes sense
   //virtual inline Succeeded consistency_check( const DataT& image ) const;  

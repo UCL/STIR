@@ -50,6 +50,33 @@ set_up(const DataT& image)
   return result;
 }
 
+template <typename DataT>
+void
+DataProcessor<DataT>::
+reset()
+{
+  this->is_set_up_already = false;
+}
+
+template <typename DataT>
+bool
+DataProcessor<DataT>::
+parse(istream& f)
+{
+  this->reset();
+  return ParsingObject::parse(f);
+}
+
+template <typename DataT>
+bool
+DataProcessor<DataT>::
+parse(const char * const filename)
+{
+  this->reset();
+  return ParsingObject::parse(filename);
+}
+
+
 
 template <typename DataT>
 Succeeded
