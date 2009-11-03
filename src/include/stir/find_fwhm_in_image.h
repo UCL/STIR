@@ -149,7 +149,7 @@ find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
    sets all values for indices between \a mask_location - \a half_size and \a mask_location + \a half_size to \a value,
    taking care of staing inside the index-range of the array.
 */
-template <class elemT>   
+template <int num_dimensions, class elemT>   
 void 
 assign_to_subregion(Array<num_dimensions,elemT>& input_array, 
                     const BasicCoordinate<num_dimensions,int>& mask_location,
