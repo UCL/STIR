@@ -43,7 +43,7 @@ $(dir)_EXES_without_DEST:= \
 
 $(dir):  $($(dir)_EXES)
 
-# trick (from the GNU make manual) to a target for every file which just
+# trick (from the GNU make manual) to define a target for every file which just
 # depends on $(DEST)/file. The advantage for the user is that she doesn't
 # have to type $(DEST) explictly anymore
 
