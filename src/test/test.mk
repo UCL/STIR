@@ -21,7 +21,8 @@ $(dir)_TEST_SOURCES := test_Array.cxx test_NestedIterator.cxx \
 	test_Scanner.cxx \
 	test_ROIs.cxx \
 	test_ArcCorrection.cxx \
-	test_DynamicDiscretisedDensity.cxx 
+	test_DynamicDiscretisedDensity.cxx   \
+	test_find_fwhm_in_image.cxx
 
 
 ifeq ($(HAVE_LLN_MATRIX),1)
@@ -77,6 +78,9 @@ ${DEST}$(dir)/test_Array: ${DEST}$(dir)/test_Array${O_SUFFIX} $(STIR_LIB)
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 ${DEST}$(dir)/test_convert_array: ${DEST}$(dir)/test_convert_array${O_SUFFIX} $(STIR_LIB) 
+	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
+
+${DEST}$(dir)/test_find_fwhm_in_image: ${DEST}$(dir)/test_find_fwhm_in_image$(O_SUFFIX) $(STIR_LIB) 
 	$(LINK) $(EXE_OUTFLAG)$(@)$(EXE_SUFFIX) $< $(STIR_LIB)  $(LINKFLAGS) $(SYS_LIBS)
 
 
