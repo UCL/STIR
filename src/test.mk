@@ -29,7 +29,9 @@
 # Result:
 # targets   build_tests_$(dir), clean_tests_$(dir)
 #           run_tests_$(dir), run_interactive_tests_$(dir)
-#	    run_$(dir)/test_exe for any file in $(dir)_TEST_SOURCES
+#	    run_$(dir)/file for any file in $(dir)_TEST_SOURCES
+#           $(dir)/file for any file in $(dir)_TEST_SOURCES (which depends on $(DEST)$(dir)/file)
+#           (see below)
 # some variables (but you shouldn't count on those remaining the same)
 # 
 #
@@ -38,6 +40,8 @@
 # make build_tests_SUBDIR will compile and link all executables
 # make clean_tests_SUBDIR will remove all generated files
 # make run_tests_SUBDIR will run tests for all (non-interactive) executables
+# make run_SUBDIR/somefile will run a single test
+# make SUBDIR/somefile will build a single test
 
 #$(warning including test.mk from $(dir))
 
@@ -78,7 +82,11 @@ $(dir)_TEST_OBJS:= \
 	$(patsubst %.c, $(DEST)%$(O_SUFFIX), $(filter %.c, $($(dir)_ALL_TEST_SOURCES)))
 $(dir)_TEST_EXES:= \
 	$(patsubst %$(O_SUFFIX), %,  $($(dir)_TEST_OBJS))
-
+$(dir)_TEST_OBJS_without_DEST:= \
+	$(patsubst %.cxx, %$(O_SUFFIX), $(filter %.cxx, $($(dir)_ALL_TEST_SOURCES))) \
+	$(patsubst %.c, %$(O_SUFFIX), $(filter %.c, $($(dir)_ALL_TEST_SOURCES)))
+$(dir)_TEST_EXES_without_DEST:= \
+	$(patsubst %$(O_SUFFIX), %,  $($(dir)_TEST_OBJS_without_DEST))
 
 $(dir)_TEST_EXE_FILENAMES := $(addsuffix $(EXE_SUFFIX), $($(dir)_TEST_EXES))
 
@@ -88,6 +96,18 @@ $(dir)_TEST_EXE_FILENAMES := $(addsuffix $(EXE_SUFFIX), $($(dir)_TEST_EXES))
 # make sure 'make' keeps the .o files
 # otherwise they will be deleted
 .PRECIOUS: $($(dir)_ALL_TEST_OBJS)) 
+
+# trick (from the GNU make manual) to define a target for every file which just
+# depends on $(DEST)/file. The advantage for the user is that she doesn't
+# have to type $(DEST) explictly anymore
+
+define PROGRAM_template
+$(1): $(DEST)$(1)
+
+.PHONY: $(1) 
+endef
+
+$(foreach prog,$($(dir)_TEST_EXES_without_DEST),$(eval $(call PROGRAM_template,$(prog))))
 
 build_tests_$(dir):  $($(dir)_TEST_EXES)
 
