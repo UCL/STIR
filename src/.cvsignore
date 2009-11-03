@@ -1,9 +1,5 @@
-STIRtmp.ahv
-STIRtmp.hv
-STIRtmp.img
-STIRtmp.v
-debug
-opt
-opt64
+STIRtmp*
+debug*
+opt*
 VCdebug
 VCopt
