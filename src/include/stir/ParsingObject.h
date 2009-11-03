@@ -61,11 +61,15 @@ public:
    ParsingObject& operator=(const ParsingObject&) ;
   virtual ~ParsingObject() {}
   
-  // sm made functions return bool
+  /*! \name parsing functions
+
+      parse() returns false if there is some error, true otherwise.
+  */
+  //@{
    bool parse(istream& f);
-  //! parse() returns false if there is some error, true otherwise
    bool parse(const char * const filename);
-  
+   //@}
+
    void ask_parameters();
 
    string parameter_info();  
