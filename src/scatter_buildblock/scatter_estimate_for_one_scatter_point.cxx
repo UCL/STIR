@@ -101,19 +101,8 @@ ScatterEstimationByBin::
   const float scatter_point_mu=
     scatt_points_vector[scatter_point_num].mu_value;
 
-#ifndef NDEBUG          
-  const DiscretisedDensityOnCartesianGrid<3,float>& image =
-    dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>&>
-    (*density_image_sptr);
-  const CartesianCoordinate3D<float> voxel_size = image.get_grid_spacing();
-  CartesianCoordinate3D<float>  origin = 
-    image.get_origin();
-  origin.z() -= 
-    (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
-
   assert(scatter_point_mu==
-         image[round((scatter_point-origin)/voxel_size)]);
-#endif            
+         (*density_image_sptr)[density_image_sptr->get_indices_closest_to_physical_coordinates(scatter_point)]);
 
   float scatter_ratio=0 ;
 
