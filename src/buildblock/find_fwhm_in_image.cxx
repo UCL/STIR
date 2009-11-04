@@ -41,7 +41,7 @@ using namespace std;
 START_NAMESPACE_STIR
 
 /*
-   2 functions that calculatee the maximum point (x0,y0) of a parabola that passes through 3 points.
+   2 functions that calculate the maximum point (x0,y0) of a parabola that passes through 3 points.
 
    As input it takes the Begin and End Iterators of a sequence of numbers (e.g. vector). 
    The three points are the maximum (x2,y2) of this sequence and the two neighbour points 
@@ -134,23 +134,24 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
   RandomAccessIterType current_iter = current_max_iterator;
   while(current_iter!= end_iterator && *current_iter > level_height)   ++current_iter;
   if (current_iter==end_iterator)  
-    warning("\n WARNING: A point source is near the borders.\n\
-                  Cannot find the real FWHM of this point source!\n\n");    
-  if (*current_iter < 0)  
-    warning("\n WARNING: A point source is overlapping with another one.\n\
-                  Cannot find the real FWHM of this point source!\n\n");
-  
+    {
+      warning("find_level_width: level extends beyond border."
+              "Cannot find the real level-width of this point source!");
+      // go 1 back to remain inside the range
+      --current_iter;
+    }
+
+  // do linear interpolation to find position of level_height  
   float right_level_max = (*current_iter - level_height)/(*current_iter-*(current_iter-1));
   right_level_max = float(current_iter-(begin_iterator+max_position)) - right_level_max ;
   
   current_iter = current_max_iterator;
-  while(current_iter!=begin_iterator-1 && *current_iter > level_height) --current_iter;
-  if (current_iter == begin_iterator-1) 
-    warning("\n WARNING: A point source is near the borders.\n\
-                 Cannot find the real FWHM of this point source!\n\n"); 
-  if (*current_iter < 0)  
-    warning("\n WARNING: A point source is overlapping with another one.\
-                 Cannot find the real FWHM of this point source! \n\n");            
+  while(current_iter!=begin_iterator && *current_iter > level_height) --current_iter;
+  if (current_iter == begin_iterator && *current_iter > level_height) 
+    {
+      warning("find_level_width: level extends beyond border."
+              "Cannot find the real level-width of this point source!");
+    }
         
   float left_level_max = (*current_iter - level_height)/(*current_iter-*(current_iter+1));
   left_level_max += float(current_iter-(begin_iterator+max_position));
