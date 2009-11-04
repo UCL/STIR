@@ -40,27 +40,45 @@ START_NAMESPACE_STIR
                           
 /*!
    \ingroup resolution
-   \brief 
-   takes as input the Begin, the End and the Max_Element Iterators of a sequence of 
-   numbers (e.g. vector) and the level of the maximum you want to have (e.g. maximum/2 or maximum/10). 
-   It gives as output resolution in pixel size.   
+   \brief find width at a level
+   \param[in] begin_iterator start of sequence to check
+   \param[in] max_iterator location from where the search will start, should be close 
+      to the location of the (local) maximum you want to investigate
+   \param[in] end_iterator end of sequence to check
+   \param[in] level_height intensity level at which to find the width
+   \return width of the level set (in pixel units)
+
+   The implementation assumes uniform spacing between the samples. 
+
+   We use linear interpolation between samples to estimate where the function value
+   reaches the \a level_height value.
+
+   If the search runs to the end/start of the sequence, a warning is issued, and the width
+   is estimated using linear extrapolation.
 */
 template <class RandomAccessIterType>
 float find_level_width(const RandomAccessIterType& begin_iterator,
-                       const RandomAccessIterType& current_max_iterator,
+                       const RandomAccessIterType& max_iterator,
                        const RandomAccessIterType& end_iterator,
                        const float level_height)  ;  
 /*!
    \ingroup resolution
    \brief find width at a level
-   takes as input the Begin and the End Iterators of a sequence 
-   of numbers (e.g. vector) and the level you want to have (e.g. maximum/2 or maximum/10). 
-   It gives as output resolution in pixel size.   
+   \param[in] begin_iterator start of sequence to check
+   \param[in] end_iterator end of sequence to check
+   \param[in] level_height intensity level at which to find the width
+   \return width of the level set (in pixel units)
+
+   This function finds the maximum in the sequence and calls 
+   find_level_width(const RandomAccessIterType& begin_iterator,
+                       const RandomAccessIterType& max_iterator,
+                       const RandomAccessIterType& end_iterator,
+                       const float level_height)
 */
 template <class RandomAccessIterType>
 float find_level_width(const RandomAccessIterType& begin_iterator,
                        const RandomAccessIterType& end_iterator,
-                       const float level_height)  ;  
+                       const float level_height);  
 /*!
    \ingroup resolution
    \brief 
@@ -147,7 +165,7 @@ find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
    \brief assign a value to a sub-region of an array
 
    sets all values for indices between \a mask_location - \a half_size and \a mask_location + \a half_size to \a value,
-   taking care of staing inside the index-range of the array.
+   taking care of staying inside the index-range of the array.
 */
 template <int num_dimensions, class elemT>   
 void 
