@@ -132,6 +132,10 @@ Classes for LORs.
 Basic support for image (or discretised density) data. 
 */
 /*!
+\defgroup resolution Items related to finding image resolution based on point or line sources
+\ingroup densitydata
+*/
+/*!
 \defgroup DataProcessor Data processors
 \ingroup buildblock
 A hierarchy of classes for performing data processing. Mechanisms
