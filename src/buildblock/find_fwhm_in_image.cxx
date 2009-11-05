@@ -19,7 +19,7 @@
 */
 /*!
   \file
-  \ingroup buildblock
+  \ingroup resolution
   \brief Implementations of functions defined in find_fwhm_in_image.h
 
   \author Charalampos Tsoumpas
@@ -33,6 +33,8 @@
 #include "stir/find_fwhm_in_image.h"
 #include "stir/index_at_maximum.h"
 #include "stir/round.h"
+#include "stir/assign_to_subregion.h"
+#include "stir/extract_line.h"
 #include <algorithm>  
 #include <list>
 
@@ -66,9 +68,9 @@ static float find_NEMA_level(const Array<1,elemT>& column, const float level)
   return find_level_width(column.begin(),column.end(),real_maximum_value/level) ;      
 }
 
-template <int num_dimensions, class elemT>
-std::list<ResolutionIndex<num_dimensions,float> > 
-find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image, 
+template <class elemT>
+std::list<ResolutionIndex<3,float> > 
+find_fwhm_in_image(DiscretisedDensity<3,elemT> & input_image, 
                    const unsigned int num_maxima, 
                    const float level, 
                    const int dimension,
@@ -114,7 +116,7 @@ find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
         res_index.resolution[i] = grid_spacing[i]*
           (do_direction[i] ? (nema?find_NEMA_level(extract_line(input_image,max_location,
                                                                 i), level) : 
-                              find_NEMA_level(interpolated_line(input_image,max_location,
+                              find_NEMA_level(interpolate_line(input_image,max_location,
                                                                 do_direction,
                                                                 i), level)): 0); 
       list_res_index.push_back(res_index);
@@ -170,9 +172,9 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
                           level_height); 
 }
 
-template<int num_dimensions,class elemT>                         
-BasicCoordinate<num_dimensions,int>
-maximum_location_per_slice(const Array<num_dimensions,elemT>& input_array,
+template<class elemT>                         
+BasicCoordinate<3,int>
+maximum_location_per_slice(const Array<3,elemT>& input_array,
                            const int slice, const int dimension)
 {
   BasicCoordinate<3,int> min_index, max_index;
@@ -192,32 +194,12 @@ maximum_location_per_slice(const Array<num_dimensions,elemT>& input_array,
   return indices_at_maximum(slice_array);       
 }       
                        
-template <int num_dimensions, class elemT>
+template <class elemT>
 Array<1,elemT>
-extract_line(const Array<num_dimensions,elemT>& input_array,    
-             BasicCoordinate<num_dimensions,int> voxel_location, 
-             const int dimension)   
-{ 
-  BasicCoordinate<3,int> min_index,max_index;
-  int &counter = voxel_location[dimension];  
-  min_index[1] = input_array.get_min_index();
-  max_index[1] = input_array.get_max_index();
-  min_index[2] = input_array[voxel_location[1]].get_min_index();
-  max_index[2] = input_array[voxel_location[1]].get_max_index();
-  min_index[3] = input_array[voxel_location[1]][voxel_location[2]].get_min_index();
-  max_index[3] = input_array[voxel_location[1]][voxel_location[2]].get_max_index();       
-  Array<1,elemT> line(min_index[dimension],max_index[dimension]);    
-  for (counter=min_index[dimension]; counter<= max_index[dimension] ; ++counter)
-    line[counter]= input_array[voxel_location[1]][voxel_location[2]][voxel_location[3]];                    
-  return line ;
-}  
-
-template <int num_dimensions, class elemT>
-Array<1,elemT>
-interpolated_line(const Array<num_dimensions,elemT>& input_array,    
-                  const BasicCoordinate<num_dimensions,int>& max_location, 
-                  const BasicCoordinate<num_dimensions,bool>& do_direction,
-                  const int dimension)  
+interpolate_line(const Array<3,elemT>& input_array,    
+                 const BasicCoordinate<3,int>& max_location, 
+                 const BasicCoordinate<3,bool>& do_direction,
+                 const int dimension)  
 /*
   This function interpolates a column from the given array, that includes the particular voxel and returns 
   a column in Array<1,elemT> type, at the wanted dimension (z=1, y=2, x=3).
@@ -226,7 +208,7 @@ interpolated_line(const Array<num_dimensions,elemT>& input_array,
 {
   BasicCoordinate<3,int> min_index, max_index;
   if (!input_array.get_regular_range(min_index, max_index))
-    error("interpolated_line works only on regular ranges\n");
+    error("interpolate_line works only on regular ranges\n");
   Array<1,elemT> line(min_index[dimension],max_index[dimension]);
   {
     Array<1,elemT> line_z(min_index[1],max_index[1]),
@@ -247,7 +229,7 @@ interpolated_line(const Array<num_dimensions,elemT>& input_array,
     float y0=do_direction[2] ? parabolic_3points_fit_x0(line_y.begin(),line_y.end()) : 0;       
     float x0=do_direction[3] ? parabolic_3points_fit_x0(line_x.begin(),line_x.end()) : 0;       
 
-    BasicCoordinate<num_dimensions,int> location_000,location_001,location_010,location_100,
+    BasicCoordinate<3,int> location_000,location_001,location_010,location_100,
       location_011,location_101,location_110,location_111;
     location_000 = max_location;                
                 
@@ -301,29 +283,7 @@ interpolated_line(const Array<num_dimensions,elemT>& input_array,
   }
   return line ;
 }          
-template <int num_dimensions, class elemT>   
-void 
-assign_to_subregion(Array<num_dimensions,elemT>& input_array, 
-                    const BasicCoordinate<num_dimensions,int>& mask_location,
-                    const BasicCoordinate<num_dimensions,int>& half_mask_size,
-                    const elemT& value)
-{
-  const int min_k_index = input_array.get_min_index();
-  const int max_k_index = input_array.get_max_index();
-  for ( int k = max(mask_location[1]-half_mask_size[1],min_k_index); k<= min(mask_location[1]+half_mask_size[1],max_k_index); ++k)
-    {
-      const int min_j_index = input_array[k].get_min_index();
-      const int max_j_index = input_array[k].get_max_index();
-      for ( int j = max(mask_location[2]-half_mask_size[2],min_j_index); j<= min(mask_location[2]+half_mask_size[2],max_j_index); ++j)
-        {
-          const int min_i_index = input_array[k][j].get_min_index();
-          const int max_i_index = input_array[k][j].get_max_index();
-          for ( int i = max(mask_location[3]-half_mask_size[3],min_i_index); i<= min(mask_location[3]+half_mask_size[3],max_i_index); ++i)
-            input_array[k][j][i] = value;
-        }
-    } 
-}        
-    
+
 template <class RandomAccessIterType>
 float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
                                    const RandomAccessIterType& end_iter)    

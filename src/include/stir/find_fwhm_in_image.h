@@ -34,8 +34,6 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include <list>
 
-using namespace std;
-
 START_NAMESPACE_STIR
                           
 /*!
@@ -86,36 +84,24 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
    dimension (z=1, y=2, x=3), and returns its location as a vector in BasicCoordinate Field 
    (only 3D implementation).
 */            
-template<int num_dimensions,class elemT>
-BasicCoordinate<num_dimensions,int>
-maximum_location_per_slice(const Array<num_dimensions,elemT>& input_array,
+template<class elemT>
+BasicCoordinate<3,int>
+maximum_location_per_slice(const Array<3,elemT>& input_array,
                            const int slice, const int dimension);
-/*!
-   \ingroup resolution
-   \brief
-  extracts a line from the given array (that includes the particular index)
-  in the direction of the specified dimension.
-*/ 
-template <int num_dimensions, class elemT>
-Array<1,elemT>
-extract_line(const Array<num_dimensions,elemT> &,   
-             BasicCoordinate<num_dimensions,int>, 
-             const int dimension); 
-/*!
-   \ingroup resolution
-   \brief
-  interpolates a column from the given array, that includes the particular voxel and returns 
-  a column in Array<1,elemT> type, at the wanted dimension (z=1, y=2, x=3). 
 
-  It finds the real maximum location, using the 3 points parabolic fit. Then, linear interpolation is used  
+/*!
+   \ingroup resolution
+   \brief extract a line from the given array after determining its locatin with a parabolic fit
+
+  It finds the real maximum location, using the 3 points parabolic fit. Then, tri-linear interpolation is used  
   to find the whole line at the given dimension (z:1,y:2,x:3) taking into account the voxels that
-  intersects the interpolated voxel which has in its center the point with the real_maximum_value.
+  intersects the voxel which has in its center the point with the real maximum_value.
 */ 
-template <int num_dimensions, class elemT>
+template <class elemT>
 Array<1,elemT>
-interpolated_line(const Array<num_dimensions,elemT>& input_array,    
-                  const BasicCoordinate<num_dimensions,int>& max_location,
-                  const BasicCoordinate<num_dimensions,bool>& do_direction, 
+interpolate_line(const Array<3,elemT>& input_array,    
+                  const BasicCoordinate<3,int>& max_location,
+                  const BasicCoordinate<3,bool>& do_direction, 
                   const int dimension);     
 
 /*!
@@ -152,27 +138,12 @@ struct ResolutionIndex
    The value of the maximum is computed using a parabolic fit through the 3 points around the maximum as specified
    in NEMA 2001. 
 
-   If nema=false, the interpolated_line() function is used to find a line, otherwise we use  extract_line().
+   If nema=false, the interpolate_line() function is used to find a line, otherwise we use  extract_line().
 */
 
-template <int num_dimensions, class elemT>           
-std::list<ResolutionIndex<num_dimensions,float> > 
-find_fwhm_in_image(DiscretisedDensity<num_dimensions,elemT> & input_image,
+template <class elemT>           
+std::list<ResolutionIndex<3,float> > 
+find_fwhm_in_image(DiscretisedDensity<3,elemT> & input_image,
                    const unsigned int num_maxima, const float level, 
                    const int dimension, const bool nema);
-/*!  
-   \ingroup resolution
-   \brief assign a value to a sub-region of an array
-
-   sets all values for indices between \a mask_location - \a half_size and \a mask_location + \a half_size to \a value,
-   taking care of staying inside the index-range of the array.
-*/
-template <int num_dimensions, class elemT>   
-void 
-assign_to_subregion(Array<num_dimensions,elemT>& input_array, 
-                    const BasicCoordinate<num_dimensions,int>& mask_location,
-                    const BasicCoordinate<num_dimensions,int>& half_size,
-                    const elemT& value);
-
-
 END_NAMESPACE_STIR
