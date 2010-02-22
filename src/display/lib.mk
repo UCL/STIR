@@ -18,7 +18,9 @@ CURSES=curses
 endif
 endif
 GRAPHOPT = -DSTIR_SIMPLE_BITMAPS -DSC_XWINDOWS
-GRAPH_LIBS = -l$(CURSES) -lX11 -L/usr/X11/lib -L/usr/X11R6/lib
+# last 2 directories seem to be needed for Ubuntu
+GRAPH_LIBS = -l$(CURSES) -lX11 -L/usr/X11/lib -L/usr/X11R6/lib  -L/etc/X11/ -L/usr/X11R6/bin
+
 $(dir)_LIB_SOURCES := display_array.cxx gen.c screengen.c screen.c
 
 else
