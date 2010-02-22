@@ -14,7 +14,7 @@ do_website_final_version=0
 do_website_sync=0
 
 set -e
-VERSION=2.0
+VERSION=2.1alpha
 
 # for cvs2cl.pl
 BRANCH=trunk
@@ -33,7 +33,6 @@ destination=$WORKSPACE/../../STIR-website/
 RSYNC_OPTS=
 
 DISTRIB=`pwd`/distrib
-LLN=${DISTRIB}/../lln
 WORKSPACE=${DISTRIB}/parapet/PPhead 
 
 # disable warnings as we currently get rid of any existing zip files
