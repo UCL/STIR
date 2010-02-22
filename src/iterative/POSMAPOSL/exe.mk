@@ -4,7 +4,7 @@
 dir := iterative/POSMAPOSL
 
 $(dir)_SOURCES :=  \
-	PatlakOSMAPOSL.cxx
+	POSMAPOSL.cxx
 
 include $(WORKSPACE)/exe.mk
 
