@@ -170,6 +170,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
 	      warning("recompute_sensitivity is set to false, but sensitivity pointer is empty "
 		      "and sensitivity filename is not set. I will compute the sensitivity anyway.");
 	      this->recompute_sensitivity = true;
+	      // initialisation of pointers will be done below
 	    }
 	}
       else if(this->sensitivity_filename=="1")
@@ -192,7 +193,11 @@ set_up(shared_ptr<TargetT> const& target_sptr)
 	    }
 	}
     } // end of !recompute_sensitivity case
-  else 
+
+  // handle recompute_sensitivity==true case
+  // note: repeat if (as opposed to using "else") such that we get here if 
+  // recompute_sensitivity was set above
+  if(this->recompute_sensitivity)
     {
       if (this->use_subset_sensitivities == false)
 	this->sensitivity_sptrs.resize(1);
