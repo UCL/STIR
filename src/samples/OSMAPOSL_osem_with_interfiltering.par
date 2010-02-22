@@ -60,7 +60,7 @@ additive sinogram := 0
 ; warning: will likely disappear. Use "initial estimate" instead
 
 ; choose size of pixels
-; x,y pixel size = zoom * bin_size
+; x,y pixel size = bin_size/zoom
 zoom := 1
 ; number of x,y pixels (-1 takes default value to cover the FOV)
 xy output image size (in pixels) := -1
