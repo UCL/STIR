@@ -41,6 +41,7 @@
 #include "stir/Scanner.h"
 #include "stir/Bin.h"
 #include "stir/IO/read_data.h"
+#include "stir/info.h"
 #include <fstream>
 #include <algorithm>
 #include <math.h>
@@ -118,7 +119,7 @@ static void find_sampling_and_z_size(
       }
     else
       {
-	warning("Determined voxel size by dividing default_bin_size (%g) by zoom",
+       info("Determined voxel size by dividing default_bin_size (%g) by zoom",
 		s_sampling);
       }
 
