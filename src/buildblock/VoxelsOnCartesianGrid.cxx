@@ -50,23 +50,24 @@
 using std::ifstream;
 using std::max;
 #endif
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
 // a local help function to find appropriate sizes etc.
 
 static void find_sampling_and_z_size(
-				 float& z_sampling,
-				 float& s_sampling,
-				 int& z_size,
-				 const ProjDataInfo* proj_data_info_ptr)
+                                 float& z_sampling,
+                                 float& s_sampling,
+                                 int& z_size,
+                                 const ProjDataInfo* proj_data_info_ptr)
 {
 
   // first z- things
 
   if (const ProjDataInfoCylindrical*
         proj_data_info_cyl_ptr = 
-	dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr))
+        dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr))
 
    {
     // the case of cylindrical data
@@ -110,17 +111,17 @@ static void find_sampling_and_z_size(
       proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size();
     if (s_sampling ==0)
       {
-	// TODO make this independent on segment etc.
-	s_sampling = 
-	  proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
-	warning("Determining voxel size from default_bin_size failed.\n"
-		"Using sampling_in_s for central bin %g.",
-		s_sampling);
+        // TODO make this independent on segment etc.
+        s_sampling = 
+          proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+        info(boost::format("Determining voxel size from default_bin_size failed.\n"
+                           "Using sampling_in_s for central bin %.") %
+             s_sampling);
       }
     else
       {
-       info("Determined voxel size by dividing default_bin_size (%g) by zoom",
-		s_sampling);
+        info(boost::format("Determined voxel size by dividing default_bin_size (%) by zoom") %
+             s_sampling);
       }
 
   }
@@ -135,11 +136,11 @@ VoxelsOnCartesianGrid<elemT> ::VoxelsOnCartesianGrid()
 
 template<class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
-		      (const Array<3,elemT>& v,
-		       const CartesianCoordinate3D<float>& origin,
-		       const BasicCoordinate<3,float>& grid_spacing)
-		       :DiscretisedDensityOnCartesianGrid<3,elemT>
-		       (v.get_index_range(),origin,grid_spacing)
+                      (const Array<3,elemT>& v,
+                       const CartesianCoordinate3D<float>& origin,
+                       const BasicCoordinate<3,float>& grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                       (v.get_index_range(),origin,grid_spacing)
 {
   Array<3,elemT>::operator=(v);
 }
@@ -147,20 +148,20 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
 
 template<class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
-		      (const IndexRange<3>& range, 
-		       const CartesianCoordinate3D<float>& origin,
-		       const BasicCoordinate<3,float>& grid_spacing)
-		       :DiscretisedDensityOnCartesianGrid<3,elemT>
-		       (range,origin,grid_spacing)
+                      (const IndexRange<3>& range, 
+                       const CartesianCoordinate3D<float>& origin,
+                       const BasicCoordinate<3,float>& grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                       (range,origin,grid_spacing)
 {}
 
 // KT 10/12/2001 use new format of args for the constructor, and remove the make_xy_size_odd constructor
-template<class elemT>   		            		      
+template<class elemT>                                                 
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info,
-						    const float zoom, 
-						    const CartesianCoordinate3D<float>& origin,
+                                                    const float zoom, 
+                                                    const CartesianCoordinate3D<float>& origin,
                                                     const CartesianCoordinate3D<int>& sizes)
-						    
+                                                    
 {
   this->set_origin(origin);
 
@@ -181,8 +182,8 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
     {
       // default it to cover full FOV by taking image_size>=2*FOVradius_in_pixs+1
       const float FOVradius_in_mm = 
-	max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
-	    -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
+        max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
+            -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
       if (sizes.x()==-1)
         x_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().x())) + 1;
       if (sizes.y()==-1)
@@ -190,18 +191,18 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
     }
   if (x_size_used<0)
     error("VoxelsOnCartesianGrid: attempt to construct image with negative x_size %d\n", 
-	  x_size_used);
+          x_size_used);
   if (x_size_used==0)
     warning("VoxelsOnCartesianGrid: constructed image with x_size 0\n");
   if (y_size_used<0)
     error("VoxelsOnCartesianGrid: attempt to construct image with negative y_size %d\n", 
-	  y_size_used);
+          y_size_used);
   if (y_size_used==0)
     warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
 
   IndexRange3D range (0, z_size-1, 
-		      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
-		      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
+                      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
+                      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
 
 
   this->grow(range);
@@ -218,8 +219,8 @@ VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 {
   return new VoxelsOnCartesianGrid(this->get_index_range(),
-		                   this->get_origin(), 
-		                   this->get_grid_spacing());
+                                   this->get_origin(), 
+                                   this->get_grid_spacing());
 }
 
 
@@ -253,20 +254,20 @@ VoxelsOnCartesianGrid<elemT>::set_voxel_size(const BasicCoordinate<3,float>& c)
 }
 
 template<class elemT>  
-PixelsOnCartesianGrid<elemT>  		            		      
+PixelsOnCartesianGrid<elemT>                                          
 VoxelsOnCartesianGrid<elemT>::get_plane(const int z) const
 {
   PixelsOnCartesianGrid<elemT> 
     plane(this->operator[](z),
           this->get_origin(),
-	  Coordinate2D<float>(get_voxel_size().y(), get_voxel_size().x())
-	  );
+          Coordinate2D<float>(get_voxel_size().y(), get_voxel_size().x())
+          );
   return plane;
 }
 
 /*! This function requires that the dimensions, origin and grid_spacings match. */
 template<class elemT>   
-void		            		      
+void                                          
 VoxelsOnCartesianGrid<elemT>::set_plane(const PixelsOnCartesianGrid<elemT>& plane, const int z)
 {
   assert(this->get_min_x() == plane.get_min_x());
@@ -277,11 +278,11 @@ VoxelsOnCartesianGrid<elemT>::set_plane(const PixelsOnCartesianGrid<elemT>& plan
   assert(this->get_voxel_size().x() == plane.get_pixel_size().x());
   assert(this->get_voxel_size().y() == plane.get_pixel_size().y());
   
-  this->operator[](z) = plane;	  
+  this->operator[](z) = plane;    
 }
 
 template<class elemT>   
-void		            		      
+void                                          
 VoxelsOnCartesianGrid<elemT>::grow_z_range(const int min_z, const int max_z)
 {
   /* This is somewhat complicated as Array is not very good with regular ranges.
@@ -360,14 +361,14 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
     switch (data_type_sel)
       { 
       case 0:
-	data_type = NumericType::SHORT;
-	break;
+        data_type = NumericType::SHORT;
+        break;
       case 1:
-	data_type = NumericType::USHORT;
-	break;
+        data_type = NumericType::USHORT;
+        break;
       case 2:
-	data_type = NumericType::FLOAT;
-	break;
+        data_type = NumericType::FLOAT;
+        break;
       }
   }
 
@@ -379,7 +380,7 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
     unsigned long file_size = find_remaining_size(input);
 
     unsigned long offset_in_file = ask_num("Offset in file (in bytes)", 
-			     0UL,file_size, 0UL);
+                             0UL,file_size, 0UL);
     input.seekg(offset_in_file, ios::beg);
   }
 
@@ -400,11 +401,11 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
 
   VoxelsOnCartesianGrid<elemT> 
     input_image(IndexRange3D(
-				0, 2*num_rings_from_scanner-2,
-				(-num_bins_from_scanner/2), max_bin,
-				(-num_bins_from_scanner/2), max_bin),
-		origin,
-		voxel_size);
+                                0, 2*num_rings_from_scanner-2,
+                                (-num_bins_from_scanner/2), max_bin,
+                                (-num_bins_from_scanner/2), max_bin),
+                origin,
+                voxel_size);
 
 
   // TODO handle scale factor in case of not reading float
