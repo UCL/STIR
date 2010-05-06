@@ -47,7 +47,7 @@
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/numerics/BSplines.h"
-#include "local/stir/interpolate_projdata.h"
+#include "stir/interpolate_projdata.h"
 
 using namespace stir;
 using namespace stir::BSpline;
