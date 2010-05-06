@@ -111,38 +111,46 @@ do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
     switch (this->_bc)
       {
       case BoundaryConditions::zero:
-	{
-	  for (; i<=min(in_min-1,out_max); ++i) 
-	    out_array[i] = 0;
-	  break;
-	}
+        {
+          for (; i<=min(in_min-1,out_max); ++i) 
+            out_array[i] = 0;
+          break;
+        }
       case BoundaryConditions::constant:
-	{
-	  for (; i<=min(in_min-1,out_max); ++i) 
-	    out_array[i] = in_array[in_min];
-	  break;
-	}
+        {
+          for (; i<=min(in_min-1,out_max); ++i) 
+            out_array[i] = in_array[in_min];
+          break;
+        }
+      default:
+        {
+          error("ArrayFilter1DUsingConvolution: cannot handle this boundary condition yet. sorry");
+        }
       }
     {
       for (; i<=min(in_max,out_max); ++i) 
-	{
-	  out_array[i] = in_array[i];
-	}
+        {
+          out_array[i] = in_array[i];
+        }
     }
     switch (this->_bc)
       {
       case BoundaryConditions::zero:
-	{
-	  for (; i<=out_max; ++i) 
-	    out_array[i] = 0;
-	  break;
-	}
+        {
+          for (; i<=out_max; ++i) 
+            out_array[i] = 0;
+          break;
+        }
       case BoundaryConditions::constant:
-	{
-	  for (; i<=out_max; ++i) 
-	    out_array[i] = in_array[in_max];
-	  break;
-	}
+        {
+          for (; i<=out_max; ++i) 
+            out_array[i] = in_array[in_max];
+          break;
+        }
+      default:
+        {
+        // should never get here, but without default: the compiler might issue a warning
+        }
       }
     return;
   }
@@ -158,35 +166,44 @@ do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const
     switch (this->_bc)
       {
       case BoundaryConditions::zero:
-	{
-	  j=max(j_min, i-in_max);
-	  break;
-	}
+        {
+          j=max(j_min, i-in_max);
+          break;
+        }
       case BoundaryConditions::constant:
-	{
-	  //i_in=i-j> in_max, hence j< i-in_max
-	  for (; j< min(j_max+1, i-in_max); ++j) 
-	    out_array[i] += filter_coefficients[j]*in_array[in_max /*i-j*/];
-	  break;
-	}
+        {
+          //i_in=i-j> in_max, hence j< i-in_max
+          for (; j< min(j_max+1, i-in_max); ++j) 
+            out_array[i] += filter_coefficients[j]*in_array[in_max /*i-j*/];
+          break;
+        }
       default:
-	error("ArrayFilter1DUsingConvolution: unsupported boundary condition");
+        error("ArrayFilter1DUsingConvolution: unsupported boundary condition");
       }
     // region unaffected by boundary
     {
       for (; j<=min(j_max, i-in_min); ++j) 
-	out_array[i] += filter_coefficients[j]*in_array[i-j];
+        out_array[i] += filter_coefficients[j]*in_array[i-j];
     }
     // left edge
     switch (this->_bc)
       {
-      case BoundaryConditions::constant:
+      case BoundaryConditions::zero:
 	{
-	  //i_in=i-j< in_min, hence j> i-in_min
-	  for (; j<= j_max; ++j) 
-	    out_array[i] += filter_coefficients[j]*in_array[in_min /*i-j*/];
+	  // nothing to do
 	  break;
 	}
+      case BoundaryConditions::constant:
+        {
+          //i_in=i-j< in_min, hence j> i-in_min
+          for (; j<= j_max; ++j) 
+            out_array[i] += filter_coefficients[j]*in_array[in_min /*i-j*/];
+          break;
+        }
+      default:
+        {
+        // should never get here, but without default: the compiler might issue a warning
+        }
       }
   }
 
