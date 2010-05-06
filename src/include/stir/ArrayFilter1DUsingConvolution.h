@@ -50,11 +50,15 @@ template <typename elemT> class VectorWithOffset;
 
   \f[ out_i = \sum_j kernel_j in_{i-j} \f] 
 
-  Elements of the input array that are outside its
-  index range are considered to be 0.   
-
   Note that for most kernels, the above convention means that the zero-
   index of the kernel corresponds to the peak in the kernel. 
+
+  By default, zero boundary conditions are used, i.e. elements of the input array 
+  that are outside its index range are considered to be 0.   
+
+  Currently, "constant" boundary conditions are also implemented, i.e. elements of the input array 
+  that are outside its index range are considered to the same as the nearest element in the array
+  (i.e. first element on the "left" and last element on the "right").
 
   \par Example 1
   A straightforward low-pass filter, with a symmetric kernel
@@ -77,6 +81,8 @@ template <typename elemT> class VectorWithOffset;
   \see ArrayFilter1DUsingSymmetricConvolution for an implementation
   when the kernel is symmetric. (Note: it's not clear if that implementation
   results in faster execution).
+
+  \todo implement other boundary conditions
   */
 template <typename elemT>
 class ArrayFilter1DUsingConvolution : 
@@ -88,6 +94,9 @@ public:
   ArrayFilter1DUsingConvolution();
 
   //! Construct the filter given the kernel coefficients
+  /*! Currently \a bc has to be BoundaryConditions::zero or 
+      BoundaryConditions::constant
+  */
   ArrayFilter1DUsingConvolution(const VectorWithOffset< elemT>& filter_kernel, const BoundaryConditions::BC bc= BoundaryConditions::zero);
   //! checks if the kernel corresponds to a trivial filter operation
   /*! 
@@ -104,8 +113,8 @@ public:
                            const IndexRange<1>& input_indices) const;
 
 private:
-  BoundaryConditions::BC _bc;
   VectorWithOffset< elemT> filter_coefficients;
+  BoundaryConditions::BC _bc;
   void do_it(Array<1,elemT>& out_array, const Array<1,elemT>& in_array) const;
 
 };
