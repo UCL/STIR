@@ -37,10 +37,15 @@
   $Date$
   $Revision$
 	
-  \par Usage:
-  see .cxx file  
-  						              
-  \param ACF_threshold defaults to 1.01 (should be larger than 1)	  
+  \par Usage:   
+  
+  \verbatim
+   create_tail_mask_from_ACFs --ACF-filename <filename> \\
+	    --output-filename <filename> \\
+	    [--ACF-threshold <float>] \\
+	    [--safety-margin <integer>]
+  \endverbatim
+  ACF-threshold defaults to 1.1 (should be larger than 1), safety-margin to 4
 */
 
 #include <iostream>
@@ -63,9 +68,9 @@ print_usage_and_exit(const char * const prog_name)
   std::cerr << "\nUsage:\n" << prog_name << "\n"
 	    << "\t--ACF-filename <filename>\n"
 	    << "\t--output-filename <filename>\n"
-	    << "\t[--ACF_threshold <float>]\n"
+	    << "\t[--ACF-threshold <float>]\n"
 	    << "\t[--safety-margin <integer>]\n"
-	    << "ACF_threshold defaults to 1.1, safety-margin to 4\n";
+	    << "ACF-threshold defaults to 1.1, safety-margin to 4\n";
   exit(EXIT_FAILURE);
 }
 
