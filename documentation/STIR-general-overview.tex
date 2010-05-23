@@ -51,6 +51,11 @@ General Overview}}\\
 
 
 \section{
+Disclaimer}
+Many names used below are trademarks owned by various companies. They are
+is fully acknowledged, but not explicitly stated.
+
+\section{
 Overview}
 
 STIR (\textit{Software for Tomographic Image Reconstruction}) is Open 
@@ -91,7 +96,9 @@ for their own work, extending it and making their work available
 as well.} Please subscribe to some of our mailing 
 lists if you are interested. \\
 In its current status, the software is mainly a research tool. 
-It is probably not yet friendly enough to use in a clinical setting.
+It is probably not friendly enough to use in a clinical setting. In any 
+case, \textbf{STIR should not be used to generate images for diagnostic
+purposes}, as there is no warranty, and most definitely no FDA approval
 
 
 
@@ -133,9 +140,7 @@ computation and pre-stored;
 data;
 \item classes for iterative reconstruction algorithms;
 \item stream-based classes for message passing between different 
-processes, built on top of PVM (Parallel Virtual Machine) or 
-EPX (the native library provided with Parsytec CC systems) [\textit{not 
-released yet]}
+processes, built on top of MPI
 \end{itemize}
 
 Examples of hierarchies are given in the following figures:
@@ -173,17 +178,11 @@ independence of the computer platform on which the software runs.
 \section{
 Reconstruction algorithms currently distributed}
 
-We have an implementation of FORE  [Def97] working which will 
-be released in the near future (pending final legal issues). Implementation of 
-OSSPS [Ahn03] will be included in version 2.1. PARAPET code for OSCB [Mar99] exists but needs
-a bit of work to convert to STIR. Please let us know if you 
-want to help.
-
 \subsection{FBP}
 Optionally with SSRB first.
 
 \subsection{3DRP}
-The 3DRP [Kin89] algorithm is the often considered the 'reference' 
+The 3DRP [Kin89] algorithm is often considered the 'reference' 
 algorithm for 3D PET. It is a 3D FBP algorithm which uses reprojection 
 to fill in the missing data.
 
@@ -210,7 +209,8 @@ iterations (e.g. [Sil90]) and Bayesian methods which incorporate
 prior information about the smoothness of the object to be reconstructed 
 (e.g. [Gem84], [Heb89]).
 
-
+OSMAPOSL is currently the only algorithm for which an MPI version is 
+available, such that it can be run on clusters or multi-core systems.
 
 \begin{spacing}{1.5}
 \textit{Filtering}
@@ -223,8 +223,11 @@ in STIR). Post-filtering is the most common choice. Inter-iteration
 filtering filters the image after every (sub)iteration, or at 
 a lower frequency. It probably was poineered in [Sil90] for EMML 
 where it was called Expectation Maximisation Smoothing (EMS). 
-Inter-update filtering is similar but smooths the image before 
-forward projection only, for further details see [Jac99].\\
+Inter-update filtering is similar. Forward
+projection of the current image iterate is done first in order to
+compute the usual ML-EM image of multiplicative weights. These weights are
+then applied to a filtered version of this image to generate the next
+iterate, for further details see [Jac99].\\
 See [Sli98] for a comparison between post- and inter-iteration 
 filtering, where it is claimed that both give similar results. 
 [Mus01a],[Mus01b] discusses resolution properties of EMS and 
@@ -260,14 +263,15 @@ of noise versus edges in the reconstructed image estimates. Their
 derivative will act as a penalty term that enforces conditions 
 required by the prior.
 
-Currently, the only MAP algorithm implemented in the software 
-library uses the One Step Late [Gre90] modification of MLEM obtained 
+The STIR executable OSMAPOSL allows to run a MAP algorithm 
+known as the One Step Late [Gre90] modification of MLEM obtained 
 by multiplying the ML-EM equation by a factor that uses the derivative 
 of an \textit{energy function}. This algorithm works fine 
 for small weights of the prior term, however becomes unstable 
 for larger values. 
 
-As prior we currently only distribute a generalisation of the 
+As prior we currently only distribute the ``quadratic penalty'', i.e. a
+Gibbs prior with a qudratic potential function, and a generalisation of the 
 Median Root prior (MRP) [Ale97]. In the MRP case, the assumption 
 is that the desired image is locally monotonic, and that the 
 most probable value of the pixel is close to the local median. 
@@ -275,12 +279,29 @@ MRP has shown very interesting properties in terms of noise reduction,
 quantitative accuracy, and convergence, see [Bett01]. Our (obvious) 
 generalisation consists in allowing to use other filters than 
 the Median. Other priors can easily be added with some coding. 
-We have implementations of quadratic priors and Green's prior, 
-but we do not release them yet as we are not happy with the level 
-of coding standards. If you are interested in these priors, let 
-us know, and you can help to clean it up!
 
 
+\subsection{OSSPS}
+An implementation of OSSPS [Ahn03] is included since STIR version 2.1. 
+This algorithm is designed for penalised reconstruction (MAP). When used
+with a decreasing relaxation constant, it is theoretically convergent [Ahn03].
+In practice, it works best when initialised fairly close to the final solution,
+and when a non-zero background term (e.g. randoms or scatter) is present.
+
+As OSSPS is implemented using the same framework as OSMAPOSL, it is possible
+to use inter-iteration filtering for OSSPS. Interestingly, 
+[Mus01a],[Mus01b] showed that when used with spatially uniform filtering,
+this algorithm has nearly object-independent
+resolution properties, in contrast to EMS.
+
+\subsection{Other}
+
+We have an implementation of FORE  [Def97] working which will 
+be released in the near future (pending final legal issues). PARAPET code for 
+Ordered Subsets Conjugate Barrier (OSCB) [Mar99] exists but needs
+a bit of work to convert to STIR. Please let us know if you 
+want to help.
+ 
 
 \section{
 Optimisation}
@@ -335,9 +356,7 @@ Currently supported systems}
 
 These are the systems we tested our software on. We think that 
 it will work in other cases as well with minor tuning. Experience 
-will tell\dots \\
-Note that we will be testing Linux systems for the parallel version 
-soon.
+will tell\dots 
 
 
 
@@ -347,16 +366,24 @@ Computing platforms}
 
 \subsubsection{
 Serial versions of algorithms}
+A lot of STIR was developed roughly 10 years ago. Therefore, the code
+contains in various places work-arounds for deficient C++ compilers
+(e.g. GNU g++ 2.95.2 or Microsoft Visual C++ 6.0 service pack 3). 
+However, we are no longer
+testing STIR on such older systems. It might be possible to revive this,
+but we strongly recommend that you get a recent compiler instead.
 \begin{itemize}
 \item 
-PowerPC systems using AIX 
+Intel based PCs using Windows XP or higher (NT probably still works if you
+find a compiler for it). These were tested with Microsoft Visual C++ 2003 and 2005
+and various GNU g++ versions via CYGWIN (http://cygwin.com).
 \item 
-Intel based PCs using Windows 95 or higher (NT or higher prefered) 
-\item 
-Linux (tested on x86 processors and Athlon)
-\item 
-SunSparc based systems using Solaris 
+Linux (tested on x86 processors and Athlon) using GNU g++ (from 3.5 to 4.3)
+At some point, Intel's C++ compiler worked fine, except for some problems with Fourier transforms.
 \end{itemize}
+However, people run STIR on various other systems, including MacOSX. Please
+check the mailing lists.
+
 We currently have a problem 
 in the incremental backprojection routines due to different rounding 
 of floating point calculations on Sparc, HP and Opteron processors. 
@@ -374,29 +401,14 @@ Parallel versions of algorithms}
 \end{itemize}
 
 
-\subsection{
-Compilers}
-\begin{itemize}
-\item 
-The original STIR version compiled with gcc 2.95.2. It is unlikely that this still works
-though. gcc 3.0.1 or higher is highly recommended. STIR compiles fine with gcc 3.4 up to 4.1,
-and should work with more recent versions.
-(Do not use non-official gcc releases often distributed with 
-Linux systems such as Red Hat's 2.96. It's buggy!)
-\item Intel's C++ compiler works fine, except for some problems with Fourier transforms.
-\item 
-on Windows, Visual C++ 6.0 Service Pack 3 was originally supported, but might have problems
-with more recent STIR versions. VC 2003 works fine. We have 
-no reports on VC 7.0. 
-
-\end{itemize}
 
 
 \subsection{
 PET scanners}
 \begin{itemize}
 \item 
-GE Advance, Discovery LS, Discovery ST, Discvoery STE, Discovery RX 
+GE Advance, Discovery LS, Discovery ST, Discvoery STE, Discovery RX,
+Discovery 600 
 \item 
 PRT-1 
 \item 
@@ -409,26 +421,34 @@ HRRT apparently works as well
 Other cylindrical PET scanners can easily be added.
 
 
-
 \subsection{
 File formats}
 \begin{itemize}
 \item 
 An extension of the Interfile standard (see the ''Other info'' section of the STIR website.)
 \item 
+The commercial AnalyzeAVW library from the BIR, Mayo University, can be used
+to read images via a conversion utility.
+\item 
 GE Advance VOLPET sinogram format, but for reading only (with 
 very limited support for the header). If you have a research contract with GE,
 you might be able to get a STIR extension to read Discovery ST, STE and RX data in both 
 VOLPET and RDF format.
 \item 
-ECAT 6 matrix format by using conversion utilities to and from 
-Interfile. Single frame/gate/bed images can be directly read 
-or written.
-\item 
 ECAT 7 matrix format for reading only (currently, an Interfile 
 header has to be created using a utility we provide). Single 
 frame/gate/bed images can be directly read or written. Single 
 frame/gate/bed sinograms can be directly read.
+However, this file format needs the ECAT Matrix library (developed 
+previously by M. Sibomana and C. Michel at Louvan la Neuve, Belgium).
+This library is no longer maintained however.
+\item 
+ECAT 6 matrix format was supported in previous version of STIR, but
+is currently broken on some systems (probably due to a bug in the ECAT 
+MATRIX library for ECAT 6). ECAT6 was supported by using conversion 
+utilities to and from 
+Interfile. Single frame/gate/bed images could be directly read 
+or written.
 \end{itemize}
 
 See the User's Guide for more detail on the supported file formats.\\
@@ -436,9 +456,7 @@ In addition, a separate set of classes is avalailable
 to read list-mode 
 data. Only a few scanners are currently supported (such as the 
 ECAT HR+ and HR++), although it should not be too difficult to 
-add your own (if you know the list-mode file format!). In particular, 
-an interface will be provided by the OpenGate collaboration for 
-reading output of their Monte Carlo simulator.
+add your own (if you know the list-mode file format!). 
 
 
 
