@@ -30,10 +30,10 @@
 
     See STIR/LICENSE.txt for details
 */
-#include "stir/common.h"
+#include "stir/error.h"
 
 #include <cstdarg>
-#include <stdlib.h>
+#include <string>
 #include <iostream>
 /* Warning: vsnprintf is only ISO C99. So your compiler might not have it.
    Visual Studio can be accomodated with the following work-around
@@ -60,6 +60,7 @@ void error(const char *const s, ...)
 	std::cerr << "\nWARNING: previous error message truncated as it exceeds "
 		  << size << "bytes" << std::endl;
     }
-  exit(EXIT_FAILURE);
+  std::string msg = tmp;
+  throw msg;
 }
 END_NAMESPACE_STIR
