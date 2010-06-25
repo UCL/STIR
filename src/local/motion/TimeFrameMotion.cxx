@@ -67,7 +67,7 @@ post_processing()
   if (_scan_start_time_secs_since_1970_UTC==-1)
     {
       warning("scan_start_time_secs_since_1970_UTC not set.\n"
-	      "Will use relative time (to RigidObjectMotion object, which for Polaris means relative to the list mode data).");
+	      "Frame definitions will be assumed to use the same reference point as the tracker (which for Polaris means the start of the list mode data).");
       _scan_start_time = 0;
     }
   else 
@@ -78,7 +78,7 @@ post_processing()
 	  return true;
 	}
       {
-	// convert to time_in_secs since midnight
+	// save _scan_start_time as rel_time as reported by ro3d
 	time_t sec_time = _scan_start_time_secs_since_1970_UTC;
 	
 	_scan_start_time = 
