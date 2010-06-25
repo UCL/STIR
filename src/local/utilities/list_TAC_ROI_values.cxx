@@ -70,7 +70,7 @@
 #include "stir/evaluation/compute_ROI_values.h"
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include "stir/DataProcessor.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
