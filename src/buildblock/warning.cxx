@@ -31,10 +31,9 @@
 
     See STIR/LICENSE.txt for details
 */
-#include "stir/common.h"
+#include "stir/warning.h"
 
 #include <cstdarg>
-#include <stdlib.h>
 #include <iostream>
 
 /* Warning: vsnprintf is only ISO C99. So your compiler might not have it.

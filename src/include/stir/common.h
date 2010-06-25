@@ -90,17 +90,17 @@
 <H3> stir namespace members declared here</H3>
   
  <UL>
- <LI> <tt>const double _PI</tt>
- 
- <LI> <tt>error(const char * const format_string, ...)</tt>
-   writes error information a la printf and aborts.
+ <LI> <tt>const double _PI</tt></li>
 
- <LI> <tt>warning(const char * const format_string, ...)</tt>
-   writes warning information a la printf.
-
- <LI> <tt>inline template  &lt;class NUMBER&gt; NUMBER square(const NUMBER &x) </tt>
+ <LI> <tt>inline template  &lt;class NUMBER&gt; NUMBER square(const NUMBER &x) </tt></li>
 
  </UL>
+
+<h3> stir include files included here</H3>
+  <UL>
+  <li> <tt>stir/error.h</tt> definiong stir::error</li>
+  <li> <tt>stir/warning.h</tt> definiong stir::warning</li>
+  </UL>
 */
 #if defined(_MSC_VER)
 #include "stir/config/visualc.h"
@@ -319,14 +319,6 @@ START_NAMESPACE_STIR
 /*! \ingroup buildblock */
 const double _PI = 3.14159265358979323846264338327950288419716939937510;
 
-//! Print error with format string a la \c printf and abort
-/*! \ingroup buildblock */
-void error(const char *const s, ...);
-
-//! Print warning with format string a la \c printf
-/*! \ingroup buildblock */
-void warning(const char *const s, ...);
-
 //! returns the square of a number, templated.
 /*! \ingroup buildblock */
 template <class NUMBER> 
@@ -334,6 +326,10 @@ inline NUMBER square(const NUMBER &x) { return x*x; }
 
 
 END_NAMESPACE_STIR
+
+// include these such that we don't have to include them all over the place
+#include "stir/error.h"
+#include "stir/warning.h"
 
 
 #endif 
