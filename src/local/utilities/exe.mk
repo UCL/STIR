@@ -28,7 +28,6 @@ $(dir)_SOURCES = \
 	line_profiles_through_projdata.cxx \
 	interpolate_projdata.cxx \
 	make_grid_image.cxx \
-	make_binary_image.cxx \
 	list_TAC_ROI_values.cxx \
 	Bland_Altman_plot.cxx \
 	get_total_counts.cxx \
