@@ -17,6 +17,7 @@ $(dir)_SOURCES = \
 	find_motion_corrected_norm_factors.cxx \
 	match_tracker_and_scanner.cxx \
 	simulate_scatter_with_motion.cxx \
-	list_deformation_vectors.cxx
+	list_deformation_vectors.cxx \
+	report_movement.cxx
 
 include $(WORKSPACE)/exe.mk
