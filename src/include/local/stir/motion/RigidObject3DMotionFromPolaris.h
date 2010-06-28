@@ -20,6 +20,7 @@
 
 #include "local/stir/motion/RigidObject3DMotion.h"
 #include "local/stir/motion/Polaris_MT_File.h"
+#include "stir/listmode/CListModeData.h"
 #include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
@@ -84,7 +85,7 @@ public:
   void set_mask_for_tags(const unsigned int mask_for_tags);
 
   //! Synchronise motion tracking file and listmode file
-  virtual Succeeded synchronise(CListModeData& listmode_data);
+  virtual Succeeded synchronise();
   virtual double secs_since_1970_to_rel_time(std::time_t) const;
 
   virtual const RigidObject3DTransformation& 
@@ -93,6 +94,7 @@ public:
     get_transformation_from_scanner_coords() const;
 
   Succeeded set_mt_file(const string& mt_filename);
+  Succeeded set_list_mode_data_file(const string& lm_filename);
 
   virtual void set_defaults();
   virtual void initialise_keymap();
@@ -127,6 +129,8 @@ private:
 
   shared_ptr<Polaris_MT_File> mt_file_ptr;
   string mt_filename;  
+  string list_mode_filename;
+
  
 
  private:

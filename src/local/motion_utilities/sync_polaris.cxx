@@ -83,15 +83,16 @@ int main(int argc, char * argv[])
   if (polaris_motion.set_mt_file(polaris_filename) == Succeeded::no)
     return EXIT_FAILURE;
 
-  shared_ptr<CListModeData> lm_data_ptr =
-    CListModeData::read_from_file(list_mode_filename);
+
+  if (polaris_motion.set_list_mode_data_file(list_mode_filename) == Succeeded::no)
+    return EXIT_FAILURE;
 
   if (max_time_offset_deviation!=initial_max_time_offset_deviation)
     polaris_motion.set_max_time_offset_deviation(max_time_offset_deviation);
 
   polaris_motion.set_mask_for_tags(mask_for_tags);
 
-  if (polaris_motion.synchronise(*lm_data_ptr) == Succeeded::no)
+  if (polaris_motion.synchronise() == Succeeded::no)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;

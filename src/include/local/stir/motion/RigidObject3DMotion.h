@@ -19,7 +19,6 @@
 */
 
 #include "local/stir/motion/RigidObject3DTransformation.h"
-#include "stir/listmode/CListModeData.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
 #include <vector>
@@ -38,10 +37,12 @@ class AbsTimeInterval;
   Preliminary. Things that need to be worked out:
 
   - time issues. Relative time is supposed to be relative to the scan start, but 
-    absolute times are currently depending on the derived class. It would be far 
-    better to stick to secs_since_1970.
+    this is really dependent on the derived class. It would be far 
+    better to stick to secs_since_1970 in the class hierarchy, and use have a "set_reference_time" 
+    member here or so.
 
-  - synchronisation: currently uses a list mode file. This needs to be moved out.
+  - synchronisation: this is supposed to synchornise the tracker clock to a master clock. Again, that behaviour 
+    is completely dependent on what the derived class does.
     
 */
 class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>,
@@ -91,10 +92,10 @@ public:
   virtual std::vector<double>
     get_rel_time_of_samples(const double start_time, const double end_time)const = 0;
 
-  //! Has to be called and will be used to synchronise listmode time and motion tracking time
-  /*! This should make sure that a 'rel_time' of 0 corresponds to the start of the list mode data
+  //! Has to be called and will be used to synchronise the target-systeme time and motion tracking time
+  /*! In practice, this should make sure that a 'rel_time' of 0 corresponds to the start of the scan
    */
-  virtual Succeeded synchronise(CListModeData&) =0;
+  virtual Succeeded synchronise() =0;
 
 
   virtual double secs_since_1970_to_rel_time(std::time_t) const = 0;
@@ -121,9 +122,6 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-
-  // next member is protected in case it's needed by synchronise()
-  string list_mode_filename;
 
 };
 
