@@ -217,13 +217,13 @@ read_NDI_Toolviewer_mt_file(const std::string& mt_filename, std::istream& mt_str
 	  // truncation of the floats etc.)
 	  record.quat.normalise();
 	  vector_of_records.push_back(record);
-	  // vector_of_tags.push_back(record);
+	  vector_of_tags.push_back(record);
 	}
       else if (sscanf( DataStr, "%u,    MISSING",
 		       &record.frame_num
 		       ) ==1)
 	{
-	  // just ignore these
+	  vector_of_tags.push_back(record);
 	}
       else
 	{
