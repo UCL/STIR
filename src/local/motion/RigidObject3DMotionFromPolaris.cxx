@@ -58,7 +58,7 @@ push_back(VectorWithOffset<T>& v, const T& elem)
 
 
 static const double time_not_yet_determined=-1234567.8;
-
+static const CartesianCoordinate3D<float> invalid_translation(1.E9F,2.E9F,3.E9F);
 /*! Convert from Polaris transformation to STIR conventions
 
    The Polaris records info as q0 qx qy qz tx ty tz, where the
@@ -156,6 +156,14 @@ const RigidObject3DTransformation&
 RigidObject3DMotionFromPolaris::
 get_transformation_from_scanner_coords() const
 { return move_from_scanner_coords; }
+
+void 
+RigidObject3DMotionFromPolaris::
+set_transformation_from_scanner_coords(const RigidObject3DTransformation& new_move_from_scanner_coords)
+{
+  this->move_from_scanner_coords = new_move_from_scanner_coords;
+  this->move_to_scanner_coords = this->move_from_scanner_coords.inverse();
+}
 
 
 double 
@@ -779,12 +787,17 @@ void
 RigidObject3DMotionFromPolaris::set_defaults()
 {
   RigidObject3DMotion::set_defaults();
-  list_mode_filename="";
-  mt_filename = "";
-  transformation_from_scanner_coordinates_filename = "";
-  time_offset = time_not_yet_determined;
-  max_time_drift_deviation = .01;
-  max_time_offset_deviation = 3.;
+  this->list_mode_filename="";
+  this->mt_filename = "";
+  this->transformation_from_scanner_coordinates_filename = "";
+  // set to some invalid transformation such that we can detect this later
+  // note: cannot initialise with an invalid quaternion as the RigidObject3DTransformation constructor has an assert
+  this->move_from_scanner_coords=
+    RigidObject3DTransformation(Quaternion<float>(1.F,0.F,0.F,0.F),invalid_translation);
+
+  this->time_offset = time_not_yet_determined;
+  this->max_time_drift_deviation = .01;
+  this->max_time_offset_deviation = 3.;
   this->_mask_for_tags= 0xffffffff;
 }
 
@@ -815,6 +828,8 @@ bool RigidObject3DMotionFromPolaris::post_processing()
       warning("Error initialising mt file \n");
       return true;
     }
+
+  if (this->transformation_from_scanner_coordinates_filename.size()>0)
   {
 #if 0
     std::ifstream move_from_scanner_file(transformation_from_scanner_coordinates_filename.c_str());
@@ -894,9 +909,14 @@ bool RigidObject3DMotionFromPolaris::post_processing()
 #endif
     cerr << "'Move_from_scanner' quaternion  " << move_from_scanner_coords.get_quaternion()<<endl;
     cerr << "'Move_from_Scanner' translation  " << move_from_scanner_coords.get_translation()<<endl;
-    move_to_scanner_coords = move_from_scanner_coords.inverse();
+    this->set_transformation_from_scanner_coords(move_from_scanner_coords);
   }
 
+  if (norm(this->move_from_scanner_coords.get_translation() - invalid_translation)<1)
+    {
+      warning("transformation from scanner coordinates invalid. \"transformation_from_scanner_coordinates_filename\" keyword not set?");
+      return true;
+    }
 
   if (max_time_drift_deviation<0 || max_time_drift_deviation>.9)
     {

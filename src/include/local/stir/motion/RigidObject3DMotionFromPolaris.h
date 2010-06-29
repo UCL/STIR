@@ -92,7 +92,8 @@ public:
     get_transformation_to_scanner_coords() const;
   virtual const RigidObject3DTransformation& 
     get_transformation_from_scanner_coords() const;
-
+  virtual void  
+    set_transformation_from_scanner_coords(const RigidObject3DTransformation&);
   Succeeded set_mt_file(const string& mt_filename);
   Succeeded set_list_mode_data_file(const string& lm_filename);
 

@@ -92,7 +92,7 @@ public:
   virtual std::vector<double>
     get_rel_time_of_samples(const double start_time, const double end_time)const = 0;
 
-  //! Has to be called and will be used to synchronise the target-systeme time and motion tracking time
+  //! Has to be called and will be used to synchronise the target-system time and motion tracking time
   /*! In practice, this should make sure that a 'rel_time' of 0 corresponds to the start of the scan
    */
   virtual Succeeded synchronise() =0;
@@ -117,6 +117,9 @@ public:
     get_transformation_to_scanner_coords() const = 0;
   virtual const RigidObject3DTransformation& 
     get_transformation_from_scanner_coords() const = 0;
+
+  virtual void  
+    set_transformation_from_scanner_coords(const RigidObject3DTransformation&) = 0;
 
 protected:
   virtual void set_defaults();
