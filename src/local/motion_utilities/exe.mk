@@ -14,6 +14,7 @@ $(dir)_SOURCES = \
 	fwd_image_and_fill_missing_data.cxx \
 	add_planes_to_image.cxx \
 	sync_polaris.cxx \
+	list_polaris_info.cxx \
 	find_motion_corrected_norm_factors.cxx \
 	match_tracker_and_scanner.cxx \
 	simulate_scatter_with_motion.cxx \
