@@ -154,8 +154,6 @@ set_frame_num_to_process(const int value)
     this->get_frame_start_time(_frame_num_to_process);
   const double end_time = 
     this->get_frame_end_time(_frame_num_to_process);
-  cerr << "\nDoing frame " << _frame_num_to_process
-       << ": from " << start_time << " to " << end_time << endl;
   
   _current_rigid_object_transformation =
     compose(_transformation_to_reference_position,
