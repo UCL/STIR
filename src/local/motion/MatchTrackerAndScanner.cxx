@@ -75,8 +75,8 @@ post_processing()
 
   if (scan_start_time_secs_since_1970_UTC==-1)
     {
-      warning("scan_start_time_secs_since_1970_UTC not set."
-	      "Will use relative time (to RigidObjectMotion object, which for Polaris means relative to the list mode data).");
+      warning("scan_start_time_secs_since_1970_UTC not set.\n"
+	      "Will use relative time (to RigidObjectMotion object, which for Polaris means relative to the start of the scan data you use for synchronisation).");
       scan_start_time = 0;
     }
   else 
