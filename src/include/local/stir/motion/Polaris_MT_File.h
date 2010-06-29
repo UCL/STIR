@@ -72,11 +72,13 @@ public:
   struct Record
   {
    double sample_time;
+   unsigned int frame_num;
    unsigned int rand_num;
    char total_num;
    Quaternion<float> quat;
    CartesianCoordinate3D<float> trans;
    float rms ;
+   unsigned int out_of_FOV;
    };
 
   typedef std::vector<Record>::const_iterator const_iterator;
@@ -106,6 +108,9 @@ private:
    std::vector<Record> vector_of_records;
    // this contains all tags and times (even those with 'missing data')
    std::vector<Record> vector_of_tags;
+
+   void read_Peter_Bloomfield_mt_file(const std::string& mt_filename, std::istream& mt_stream, const char * const first_line);
+   void read_NDI_Toolviewer_mt_file(const std::string& mt_filename, std::istream& mt_stream, const char * const first_line);
 };
 
 END_NAMESPACE_STIR
