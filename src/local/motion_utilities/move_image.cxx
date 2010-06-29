@@ -34,6 +34,8 @@
 #include "local/stir/motion/TimeFrameMotion.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
+#include "boost/format.hpp"
 
 START_NAMESPACE_STIR
 
@@ -163,6 +165,11 @@ process_data()
        current_frame_num<=max_frame_num;
        ++current_frame_num)
     {
+      const double start_time = 
+	this->get_time_frame_defs().get_start_time(current_frame_num);
+      const double end_time = 
+	this->get_time_frame_defs().get_end_time(current_frame_num);
+      info(boost::format("Doing frame %1% (from %2% to %3% secs)") % current_frame_num % start_time % end_time);
       set_frame_num_to_process(current_frame_num);
 
       out_density_sptr->fill(0);
