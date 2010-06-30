@@ -22,6 +22,7 @@
 #include "stir/RegisteredObject.h"
 #include "stir/ParsingObject.h"
 #include <vector>
+#include <ctime>
 
 START_NAMESPACE_STIR
 
