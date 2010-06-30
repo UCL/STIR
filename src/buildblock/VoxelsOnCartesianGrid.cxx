@@ -120,7 +120,7 @@ static void find_sampling_and_z_size(
       }
     else
       {
-        info(boost::format("Determined voxel size by dividing default_bin_size (%) by zoom") %
+        info(boost::format("Determined voxel size by dividing default_bin_size (%1%) by zoom") %
              s_sampling);
       }
 
