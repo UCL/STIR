@@ -316,7 +316,7 @@ get_capacity_min_index() const
 {
   // the behaviour for length==0 depends on num==begin_allocated_memory
   assert(length>0 || num==begin_allocated_memory);
-  return begin_allocated_memory - num;
+  return static_cast<int>(begin_allocated_memory - num);
 }
 
 template <class T>
@@ -326,7 +326,7 @@ get_capacity_max_index() const
 {
   // the behaviour for length==0 depends on num==begin_allocated_memory
   assert(length>0 || num==begin_allocated_memory);
-  return end_allocated_memory - num - 1;
+  return static_cast<int>(end_allocated_memory - num - 1);
 }
 
 //the new members will be initialised with the default constructor for T
