@@ -431,10 +431,6 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\include\stir\config\gcc.h"
-			>
-		</File>
-		<File
 			RelativePath="..\IndexRange.cxx"
 			>
 			<FileConfiguration
@@ -919,6 +915,10 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath="..\RegisteredObject.cxx"
+			>
+		</File>
+		<File
 			RelativePath="..\RelatedViewgrams.cxx"
 			>
 			<FileConfiguration
@@ -1251,10 +1251,6 @@
 					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\..\include\stir\config\visualc.h"
-			>
 		</File>
 		<File
 			RelativePath="..\VoxelsOnCartesianGrid.cxx"
