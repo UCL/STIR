@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ecat_swap_corners"
-	ProjectGUID="{1158EA32-9329-4794-B94D-4158C9D3EDBA}"
+	Name="ifheaders_for_ecat7"
+	ProjectGUID="{F075937B-387A-45F2-A274-FB63984127E2}"
+	RootNamespace="ifheaders_for_ecat7"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -38,22 +39,23 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/ecat_swap_corners.tlb"
+				TypeLibraryName=".\Debug/ifheaders_for_ecat7.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
-				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;HAVE_LLN_MATRIX"
+				AdditionalIncludeDirectories="..\..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;HAVE_LLN_MATRIX;WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Debug/ecat_swap_corners.pch"
+				PrecompiledHeaderFile=".\Debug/ifheaders_for_ecat7.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
+				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -72,11 +74,14 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile=".\Debug/ecat_swap_corners.exe"
+				OutputFile=".\Debug/ifheaders_for_ecat7.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="libc.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/ecat_swap_corners.pdb"
+				ProgramDatabaseFile=".\Debug/ifheaders_for_ecat7.pdb"
+				GenerateMapFile="true"
+				MapFileName=".\Debug/ifheaders_for_ecat7.map"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -94,7 +99,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/ecat_swap_corners.bsc"
+				OutputFile=".\Debug/ifheaders_for_ecat7.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -130,20 +135,20 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/ecat_swap_corners.tlb"
+				TypeLibraryName=".\Release/ifheaders_for_ecat7.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
-				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;HAVE_LLN_MATRIX"
+				AdditionalIncludeDirectories="..\..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;HAVE_LLN_MATRIX;WIN32"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Release/ecat_swap_corners.pch"
+				PrecompiledHeaderFile=".\Release/ifheaders_for_ecat7.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -164,10 +169,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile=".\Release/ecat_swap_corners.exe"
+				OutputFile=".\Release/ifheaders_for_ecat7.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/ecat_swap_corners.pdb"
+				ProgramDatabaseFile=".\Release/ifheaders_for_ecat7.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -185,7 +190,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/ecat_swap_corners.bsc"
+				OutputFile=".\Release/ifheaders_for_ecat7.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -206,7 +211,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\ecat_swap_corners.cxx"
+				RelativePath="..\..\ifheaders_for_ecat7.cxx"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -227,6 +232,11 @@
 					/>
 				</FileConfiguration>
 			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl"
+			>
 		</Filter>
 	</Files>
 	<Globals>

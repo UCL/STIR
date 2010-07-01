@@ -2,9 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="convecat6_if"
-	ProjectGUID="{8F87973D-50C5-4096-A74B-265B5D720D6A}"
-	RootNamespace="convecat6_if"
+	Name="ecat_swap_corners"
+	ProjectGUID="{1158EA32-9329-4794-B94D-4158C9D3EDBA}"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -39,22 +38,22 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/convecat6_if.tlb"
+				TypeLibraryName=".\Debug/ecat_swap_corners.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
+				AdditionalIncludeDirectories="..\..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
 				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;HAVE_LLN_MATRIX"
 				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Debug/convecat6_if.pch"
+				PrecompiledHeaderFile=".\Debug/ecat_swap_corners.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
-				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -73,11 +72,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile=".\Debug/convecat6_if.exe"
+				OutputFile=".\Debug/ecat_swap_corners.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/convecat6_if.pdb"
+				ProgramDatabaseFile=".\Debug/ecat_swap_corners.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -95,7 +94,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/convecat6_if.bsc"
+				OutputFile=".\Debug/ecat_swap_corners.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -131,24 +130,23 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/convecat6_if.tlb"
+				TypeLibraryName=".\Release/ecat_swap_corners.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
+				AdditionalIncludeDirectories="..\..\..\..\include,$(HOMEDRIVE)$(HOMEPATH)\lln\ecat"
 				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;HAVE_LLN_MATRIX"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Release/convecat6_if.pch"
+				PrecompiledHeaderFile=".\Release/ecat_swap_corners.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
-				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -166,10 +164,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile=".\Release/convecat6_if.exe"
+				OutputFile=".\Release/ecat_swap_corners.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/convecat6_if.pdb"
+				ProgramDatabaseFile=".\Release/ecat_swap_corners.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -187,7 +185,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/convecat6_if.bsc"
+				OutputFile=".\Release/ecat_swap_corners.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -203,32 +201,33 @@
 	<References>
 	</References>
 	<Files>
-		<File
-			RelativePath="..\..\convecat6_if.cxx"
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<FileConfiguration
-				Name="Debug|Win32"
+			<File
+				RelativePath="..\..\ecat_swap_corners.cxx"
 				>
-				<Tool
-					Name="VCCLCompilerTool"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\..\..\IO\IO_registries.cxx"
-			>
-		</File>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
