@@ -27,7 +27,7 @@ VC\test_NestedIterator\%1\test_NestedIterator
 VC\test_filename_functions\%1\test_filename_functions
 @pause 
 VC\test_linear_regression\%1\test_linear_regression  input\test_linear_regression.in
-rem net test is interactive
+rem next test is interactive and disabled
 rem @pause 
 rem VC\test_interpolate\%1\test_interpolate
 @pause 
@@ -52,7 +52,8 @@ VC\test_ROIs\%1\test_ROIs
 @pause
 VC\test_Scanner\%1\test_Scanner
 @pause
-VC\test_VAXfloat\%1\test_VAXfloat --read input\test_VAXfloat.in
+rem next test disabled
+rem VC\test_VAXfloat\%1\test_VAXfloat --read input\test_VAXfloat.in
 @pause 
 @echo Executing test_stir_math 
 @echo This relies on having stir_math compiled (in the utilities workspace).
