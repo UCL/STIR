@@ -242,10 +242,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PatlakObjectiveFunctionFromDynamicProjectionData.cxx"
-				>
-			</File>
-			<File
 				RelativePath="..\PoissonLogLikelihoodWithLinearModelForMeanAndDynamicProjData.cxx"
 				>
 			</File>
@@ -319,53 +315,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\ProjMatrixByBinFromFile.cxx"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\ProjMatrixByBinSinglePhoton.cxx"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\ProjMatrixByBinUsingInterpolation.cxx"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
