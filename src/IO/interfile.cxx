@@ -427,7 +427,7 @@ write_basic_interfile(const string& filename,
 		      const ByteOrder byte_order)
 {
   CartesianCoordinate3D<float> origin;
-  origin.fill(InterfileHeader::double_value_not_set);
+  origin.fill(static_cast<float>(InterfileHeader::double_value_not_set));
   return
     write_basic_interfile(filename, 
 			  image, 
