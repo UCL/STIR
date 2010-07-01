@@ -317,7 +317,7 @@ Array<1, elemT>::resize(const int min_index, const int max_index)
 {   
   this->check_state();
   const int oldstart = this->get_min_index();
-  const unsigned int oldlength = this->size();
+  const size_type oldlength = this->size();
   
   base_type::resize(min_index, max_index);
   if (oldlength == 0)
