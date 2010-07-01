@@ -51,11 +51,6 @@ only work on systems where this library works properly.
 
 #ifdef HAVE_LLN_MATRIX
 
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include <stdarg.h>
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
@@ -65,6 +60,12 @@ only work on systems where this library works properly.
 #include <iostream>
 #include <fstream>
 #include <string>
+
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <stdarg.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
