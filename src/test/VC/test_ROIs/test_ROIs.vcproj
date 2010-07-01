@@ -163,7 +163,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib"
 				OutputFile=".\Debug/test_ROIs.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
