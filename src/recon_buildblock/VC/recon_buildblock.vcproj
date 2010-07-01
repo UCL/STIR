@@ -680,6 +680,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx"
+				>
+			</File>
+			<File
 				RelativePath="..\PoissonLogLikelihoodWithLinearModelForMean.cxx"
 				>
 				<FileConfiguration
