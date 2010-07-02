@@ -22,6 +22,9 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/index_at_maximum.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/centre_of_gravity.h"
+#include "stir/thresholding.h"
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -36,8 +39,9 @@ START_NAMESPACE_STIR
 void 
 MatchTrackerAndScanner::set_defaults()
 {
-  _ro3d_sptr = 0;
-  scan_start_time_secs_since_1970_UTC=-1;
+  this->_ro3d_sptr = 0;
+  this->scan_start_time_secs_since_1970_UTC=-1;
+  this->relative_threshold = .1F;
 }
 
 void 
@@ -46,10 +50,11 @@ MatchTrackerAndScanner::initialise_keymap()
 
   parser.add_start_key("Match Tracker and Scanner Parameters");
   parser.add_key("scan_start_time_secs_since_1970_UTC", 
-		 &scan_start_time_secs_since_1970_UTC);
-  parser.add_key("time frame definition filename",&frame_definition_filename);
-  parser.add_parsing_key("Rigid Object 3D Motion Type", &_ro3d_sptr); 
-  parser.add_key("image_filename_prefix", &_image_filename_prefix);
+		 &this->scan_start_time_secs_since_1970_UTC);
+  parser.add_key("time frame definition filename",&this->frame_definition_filename);
+  parser.add_parsing_key("Rigid Object 3D Motion Type", &this->_ro3d_sptr); 
+  parser.add_key("image_filename_prefix", &this->_image_filename_prefix);
+  parser.add_key("relative_threshold", &this->relative_threshold);
 
   parser.add_stop_key("END");
 }
@@ -118,6 +123,11 @@ post_processing()
     return true;
   }
 
+  if (this->relative_threshold<0.F || this->relative_threshold>1.F)
+  {
+    warning("this->relative_threshold has to be between 0 and 1");
+    return true;
+  }
   return false;
 
 }
@@ -155,6 +165,9 @@ run()
 	shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr = 
 	  DiscretisedDensity<3,float>::read_from_file(input_filename);
 
+
+#if 0
+        // old code that used the location of the maximum
 	const DiscretisedDensityOnCartesianGrid <3,float>*  input_image_cartesian_ptr = 
 	  dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (input_image_sptr.get());
 
@@ -163,7 +176,6 @@ run()
 	    error("Image '%s' should be on a cartesian grid",
 		  input_filename.c_str());
 	  }
-
 	const CartesianCoordinate3D<float> grid_spacing = 
 	  input_image_cartesian_ptr->get_grid_spacing();
 
@@ -172,6 +184,24 @@ run()
 
 	location_of_image_max_in_mm =
 	  grid_spacing * BasicCoordinate<3,float>(max_index);
+#else
+        // new code that uses centre of gravity
+	const VoxelsOnCartesianGrid <float>*  input_image_cartesian_ptr = 
+	  dynamic_cast< VoxelsOnCartesianGrid<float>*  > (input_image_sptr.get());
+
+	if (input_image_cartesian_ptr== 0)
+	  {
+	    error("Image '%s' should be voxels on a cartesian grid",
+		  input_filename.c_str());
+	  }
+        const float threshold = 
+          input_image_sptr->find_max() * this->relative_threshold;
+        threshold_lower(input_image_sptr->begin_all(), input_image_sptr->end_all(), 
+                        threshold);
+        (*input_image_sptr) -= threshold;
+        location_of_image_max_in_mm = 
+          find_centre_of_gravity_in_mm(*input_image_cartesian_ptr);
+#endif
       }
 
       // now go through tracker data for this frame

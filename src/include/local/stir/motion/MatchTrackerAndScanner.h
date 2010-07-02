@@ -45,7 +45,8 @@ START_NAMESPACE_STIR
   \par What does it do?
 
   This implements Horn's method, as discussed in detail in Roger Fulton's thesis. Briefly:
-  - for each time frame, we find the maximum in the image as the location of the point source.
+  - for each time frame, we find the centre of gravity (after applying
+    a threshold) in the image as the location of the point source.
   - for each tracker-sample in the time frame, we find where the tracker says that the
     0 marker moved to.
   - All the data for all time frames is then put through 
@@ -72,6 +73,11 @@ START_NAMESPACE_STIR
   ; specify motion, see stir::RigidObject3DMotion
   Rigid Object 3D Motion Type := type
 
+  ; optional field to determine relative threshold to apply to 
+  ; the image before taking the centre of gravity
+  ; it is relative to the maximum in each image (i.e. .5 would be at half the maximum)
+  ; default is .1
+  relative threshold := .2
   ; prefix for finding the images
   ; filenames will be constructed by appending _f#g1d0b0 (and the extension .hv)
   image_filename_prefix :=
@@ -131,6 +137,7 @@ protected:
 
   string _image_filename_prefix;
 
+  float relative_threshold;
 private:
   shared_ptr<RigidObject3DMotion> _ro3d_sptr;
 
