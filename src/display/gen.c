@@ -3,7 +3,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -70,8 +70,8 @@ size_t fread_check(char *str, void *buffer, size_t size, FILE *infile)
 
   ret = fread(buffer,sizeof(char),size,infile);
   if (ferror(infile))
-  { sprintf(tmp,"\n%s: error reading for %u bytes, %u read\nreason",
-                str,size,ret);
+  { sprintf(tmp,"\n%s: error reading for %lu bytes, %lu read\nreason",
+	    str,(unsigned long)size,(unsigned long)ret);
     perror(tmp);
     error("");
   }
@@ -84,8 +84,8 @@ size_t fwrite_check(char *str, void *buffer, size_t size, FILE *outfile)
 
   ret = fwrite(buffer,1,size,outfile);
   if (ret < size || ferror(outfile))
-  { sprintf(tmp,"\n%s: error writing for %u bytes, %u written\nreason",
-                str,size,ret);
+  { sprintf(tmp,"\n%s: error writing for %lu bytes, %lu written\nreason",
+                str,(unsigned long)size,(unsigned long)ret);
     if (ferror(outfile))
       perror(tmp);
     error("");
