@@ -93,7 +93,12 @@ private:
  
 public:
   //@{
-  //! typedef such that we do not need to have \a typename wherever we use iterators 
+  //! typedefs such that we do not need to have \c typename wherever we use these types defined in the base class
+  typedef typename base_type::value_type value_type;
+  typedef typename base_type::reference reference;
+  typedef typename base_type::const_reference const_reference;
+  typedef typename base_type::difference_type difference_type;
+  typedef typename base_type::size_type size_type;
   typedef typename base_type::iterator iterator;
   typedef typename base_type::const_iterator const_iterator;
   //@}
@@ -242,9 +247,16 @@ private:
 
 
 public:
-  //! typedefs such that we do not need to have \a typename wherever we use iterators 
+  //! typedefs such that we do not need to have \c typename wherever we use these types defined in the base class
+  //@{
+  typedef typename base_type::value_type value_type;
+  typedef typename base_type::reference reference;
+  typedef typename base_type::const_reference const_reference;
+  typedef typename base_type::difference_type difference_type;
+  typedef typename base_type::size_type size_type;
   typedef typename base_type::iterator iterator;
   typedef typename base_type::const_iterator const_iterator;
+  //@}
 
   /*! \brief Iterator type for going through all elements
 
