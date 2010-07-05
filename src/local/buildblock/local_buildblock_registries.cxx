@@ -20,6 +20,7 @@
 #ifdef HAVE_LLN_MATRIX
 #include "local/stir/AbsTimeIntervalFromECAT7ACF.h"
 #endif
+#include "local/stir/AbsTimeIntervalFromDynamicData.h"
 
 START_NAMESPACE_STIR
 #ifdef SANIDA
@@ -40,6 +41,7 @@ static AbsTimeIntervalWithParsing::RegisterIt dummy200;
 #ifdef HAVE_LLN_MATRIX
 static AbsTimeIntervalFromECAT7ACF::RegisterIt dummy201;
 #endif
+static AbsTimeIntervalFromDynamicData::RegisterIt dummy202;
 
 END_NAMESPACE_STIR
 

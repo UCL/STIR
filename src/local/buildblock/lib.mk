@@ -9,7 +9,8 @@ $(dir)_LIB_SOURCES:= \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \
-        AbsTimeIntervalWithParsing.cxx
+        AbsTimeIntervalWithParsing.cxx \
+        AbsTimeIntervalFromDynamicData.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
 $(dir)_LIB_SOURCES += \
