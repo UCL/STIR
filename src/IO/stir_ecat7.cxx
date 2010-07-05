@@ -1341,11 +1341,14 @@ get_ECAT7_image_info(CartesianCoordinate3D<int>& dimensions,
 				 matrix->y_size * 10,
 				 matrix->pixel_size * 10); // convert to mm
 
+  // TODO: next line assumes that the index-range for the image is contracted in a particular way. We'd really need to check that.
+  // At present, it will only be detected by test_OutputFileFormat
   origin =
-    Coordinate3D<float>(matrix->z_origin * 10,
-			matrix->y_origin * 10,
-			matrix->x_origin * 10); // convert to mm
-      
+    Coordinate3D<float>(matrix->z_origin,
+			matrix->y_origin,
+			matrix->x_origin) * 10; // convert to mm
+  
+    
   scale_factor = matrix->scale_factor;
       
   find_type_from_ECAT_data_type(type_of_numbers, byte_order, matrix->data_type);
@@ -1671,23 +1674,14 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
   ihead.z_pixel_size= voxel_size_z;
   
   ihead.num_dimensions= 3;
-  // STIR origin depends on the index range, but the index range is lost
-  // after writing to file.
-  // ECAT7 origin is somewhere in the middle of the image
-  // WARNING this has to be consistent with reading
-  if (image[0][0].get_min_index() != -(x_size/2) ||
-      image[0][0].get_max_index() != -(x_size/2) + x_size - 1 ||
-      image[0].get_min_index() != -(y_size/2) ||
-      image[0].get_max_index() != -(y_size/2) + y_size - 1 ||
-      image.get_min_index() != 0)
-    {
-      warning("DiscretisedDensity_to_ECAT7 is currently limited to input images in the standard STIR index range.\n"
-	      "Data not written.");
-      return Succeeded::no;
-    }
-  ihead.x_offset= image.get_origin().x()/10;
-  ihead.y_offset= image.get_origin().y()/10;
-  ihead.z_offset= image.get_origin().z()/10;
+  // ECAT7 origin is somewhere in the middle of the image. 
+  // It seems at present consistent with the STIR origin.
+  // WARNING this has to be consistent with reading (get_ECAT7_image_info)
+  const CartesianCoordinate3D<float> ecat_origin = 
+    image.get_physical_coordinates_for_indices(make_coordinate(0.F,0.F,0.F));
+  ihead.x_offset= ecat_origin.x()/10;
+  ihead.y_offset= ecat_origin.y()/10;
+  ihead.z_offset= ecat_origin.z()/10;
   shared_ptr<Scanner> scanner_ptr;
   find_scanner(scanner_ptr, mhead);
 
