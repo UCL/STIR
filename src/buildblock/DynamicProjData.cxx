@@ -60,9 +60,6 @@ read_from_file(const string& filename) // The written projection data is read in
     signature[max_length-1]='\0';
   }
 
-    DynamicProjData * dynamic_proj_data_ptr =
-      new DynamicProjData;
-
 #ifdef HAVE_LLN_MATRIX
   if (strncmp(signature, "MATRIX", 6) == 0)
   {
@@ -80,6 +77,7 @@ read_from_file(const string& filename) // The written projection data is read in
           warning("DynamicProjData::read_from_file cannot read %s as ECAT7\n", filename.c_str());
           return 0;
         }
+      DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData;
       dynamic_proj_data_ptr->_time_frame_definitions =
         TimeFrameDefinitions(filename);      
 
@@ -107,17 +105,16 @@ read_from_file(const string& filename) // The written projection data is read in
     else
     {
       if (is_ECAT7_file(filename))
-        warning("DynamicProjData::read_from_file ECAT7 file %s should be an projection data\n", filename.c_str());
+        warning("DynamicProjData::read_from_file ECAT7 file %s should be projection data.\n", filename.c_str());
     }
   }
   else 
-    error("DynamicProjData::read_from_file %s seems to correspond to ECAT6 projection data\n");
+    warning("DynamicProjData::read_from_file %s seems to correspond to ECAT6 projection data. I cannot read this\n");
 #endif // end of HAVE_LLN_MATRIX
     // }    
   
-  if (is_null_ptr(dynamic_proj_data_ptr))   
-  error("DynamicProjData::read_from_file %s pointer is NULL\n");
-  return dynamic_proj_data_ptr;
+  // return a zero pointer if we get here
+  return 0;
 }
 
 Succeeded 
