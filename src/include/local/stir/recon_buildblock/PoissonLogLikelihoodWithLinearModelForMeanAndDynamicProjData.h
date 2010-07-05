@@ -34,8 +34,8 @@
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/VectorWithOffset.h"
-#include "local/stir/DynamicProjData.h"
-#include "local/stir/DynamicDiscretisedDensity.h"
+#include "stir/DynamicProjData.h"
+#include "stir/DynamicDiscretisedDensity.h"
 
 START_NAMESPACE_STIR
 // ChT::ToDo: If this class appears to be useful I have to define some of the functions that are not specifically defined, yet. 
