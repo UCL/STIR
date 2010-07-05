@@ -76,6 +76,8 @@ install_exes_$(dir): $(dir)
 uninstall_exes_$(dir):
 	$(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_EXE_FILENAMES)))
 
+install_$(dir): install_exes_$(dir)
+
 ifneq ($(MAKECMDGOALS:clean%=clean),clean)
   -include \
 	$(patsubst %.cxx, $(DEST)%.P, $(filter %.cxx, $($(dir)_SOURCES))) \
