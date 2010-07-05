@@ -183,10 +183,10 @@ post_processing()
   if (this->_additive_dyn_proj_data_filename != "0")
     {
       cerr << "\nReading additive projdata data "
-	   << this->_additive_dyn_proj_data_filename 
-	   << endl;
+           << this->_additive_dyn_proj_data_filename 
+           << endl;
       this->_additive_dyn_proj_data_sptr = 
-	DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
+        DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
     }
   return false;
 }
@@ -205,14 +205,14 @@ construct_target_ptr() const
 {  
   return
     new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
-										*(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
-										static_cast<float>(this->_zoom),
-										CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
-													     static_cast<float>(this->_Yoffset),
-													     static_cast<float>(this->_Xoffset)),
-										CartesianCoordinate3D<int>(this->_output_image_size_z,
-													   this->_output_image_size_xy,
-													   this->_output_image_size_xy)));
+                                                                                *(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
+                                                                                static_cast<float>(this->_zoom),
+                                                                                CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
+                                                                                                             static_cast<float>(this->_Yoffset),
+                                                                                                             static_cast<float>(this->_Xoffset)),
+                                                                                CartesianCoordinate3D<int>(this->_output_image_size_z,
+                                                                                                           this->_output_image_size_xy,
+                                                                                                           this->_output_image_size_xy)));
 }
 /***************************************************************
   subset balancing
@@ -225,17 +225,17 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 {  // call actual_subsets_are_approximately_balanced( for first single_frame_obj_func
   if (this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames() == 0 || this->_single_frame_obj_funcs.size() == 0)
     error("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
-	  "actual_subsets_are_approximately_balanced called but not frames yet.\n");
+          "actual_subsets_are_approximately_balanced called but not frames yet.\n");
   else if(this->_single_frame_obj_funcs.size() != 0)
     {
       bool frames_are_balanced=true;
       for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
-	frames_are_balanced &= this->_single_frame_obj_funcs[frame_num].subsets_are_approximately_balanced(warning_message);
+        frames_are_balanced &= this->_single_frame_obj_funcs[frame_num].subsets_are_approximately_balanced(warning_message);
       return frames_are_balanced;
     }
   else 
     warning("Something stange happened in PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
-	    "actual_subsets_are_approximately_balanced \n");
+            "actual_subsets_are_approximately_balanced \n");
   return 
     false;    
 }
@@ -315,8 +315,8 @@ set_num_subsets(const int num_subsets)
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     {
       if(this->_single_frame_obj_funcs.size() != 0)
-	if(this->_single_frame_obj_funcs[frame_num].set_num_subsets(num_subsets) != num_subsets)
-	  error("set_num_subsets didn't work");
+        if(this->_single_frame_obj_funcs[frame_num].set_num_subsets(num_subsets) != num_subsets)
+          error("set_num_subsets didn't work");
     }
   this->num_subsets=num_subsets;
   return this->num_subsets;
@@ -340,7 +340,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   if (this->_max_segment_num_to_process > (this->_dyn_proj_data_sptr)->get_proj_data_sptr(1)->get_max_segment_num()) 
     { 
       warning("_max_segment_num_to_process (%d) is too large",
-	      this->_max_segment_num_to_process); 
+              this->_max_segment_num_to_process); 
       return Succeeded::no;
     }
 
@@ -348,7 +348,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
     (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone();
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
-			 +this->_max_segment_num_to_process);
+                         +this->_max_segment_num_to_process);
   
   if (is_null_ptr(this->_projector_pair_ptr))
     { warning("You need to specify a projector pair"); return Succeeded::no; }
@@ -356,7 +356,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   if (this->num_subsets <= 0)
     {
       warning("Number of subsets %d should be larger than 0.",
-	      this->num_subsets);
+              this->num_subsets);
       return Succeeded::no;
     }
 
@@ -380,27 +380,31 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   {
     const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr = (target_sptr->construct_single_density(1)).get_empty_copy();
     const shared_ptr<Scanner> scanner_sptr = new Scanner(*proj_data_info_sptr->get_scanner_ptr());
-    this->_dyn_image_template=DynamicDiscretisedDensity(this->_patlak_plot_sptr->get_time_frame_definitions(), scanner_sptr , density_template_sptr);
+    this->_dyn_image_template=
+      DynamicDiscretisedDensity(this->_patlak_plot_sptr->get_time_frame_definitions(), 
+                                this->_dyn_proj_data_sptr->get_start_time_in_secs_since_1970(),
+                                scanner_sptr,
+                                density_template_sptr);
 
     // construct _single_frame_obj_funcs
     this->_single_frame_obj_funcs.resize(this->_patlak_plot_sptr->get_starting_frame(),this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
    
     for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
       {
-	this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pair_ptr);
-	this->_single_frame_obj_funcs[frame_num].set_proj_data_sptr(this->_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
-	this->_single_frame_obj_funcs[frame_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);
-	this->_single_frame_obj_funcs[frame_num].set_zero_seg0_end_planes(this->_zero_seg0_end_planes!=0);
-	if(this->_additive_dyn_proj_data_sptr!=NULL)
-	  this->_single_frame_obj_funcs[frame_num].set_additive_proj_data_sptr(this->_additive_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
-	this->_single_frame_obj_funcs[frame_num].set_num_subsets(this->num_subsets);
-	this->_single_frame_obj_funcs[frame_num].set_frame_num(frame_num);
-	this->_single_frame_obj_funcs[frame_num].set_frame_definitions(this->_patlak_plot_sptr->get_time_frame_definitions());
-	this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisation_sptr);
-	this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->recompute_sensitivity);
-	this->_single_frame_obj_funcs[frame_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
-	if(this->_single_frame_obj_funcs[frame_num].set_up(density_template_sptr) != Succeeded::yes)
-	  error("Single frame objective functions is not set correctly!");
+        this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pair_ptr);
+        this->_single_frame_obj_funcs[frame_num].set_proj_data_sptr(this->_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
+        this->_single_frame_obj_funcs[frame_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);
+        this->_single_frame_obj_funcs[frame_num].set_zero_seg0_end_planes(this->_zero_seg0_end_planes!=0);
+        if(this->_additive_dyn_proj_data_sptr!=NULL)
+          this->_single_frame_obj_funcs[frame_num].set_additive_proj_data_sptr(this->_additive_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
+        this->_single_frame_obj_funcs[frame_num].set_num_subsets(this->num_subsets);
+        this->_single_frame_obj_funcs[frame_num].set_frame_num(frame_num);
+        this->_single_frame_obj_funcs[frame_num].set_frame_definitions(this->_patlak_plot_sptr->get_time_frame_definitions());
+        this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisation_sptr);
+        this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->recompute_sensitivity);
+        this->_single_frame_obj_funcs[frame_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
+        if(this->_single_frame_obj_funcs[frame_num].set_up(density_template_sptr) != Succeeded::yes)
+          error("Single frame objective functions is not set correctly!");
       }
   }//_single_frame_obj_funcs[frame_num]
 
@@ -410,12 +414,12 @@ set_up(shared_ptr<TargetT > const& target_sptr)
       this->compute_sensitivities();
       std::cerr << "Done computing sensitivity" << std::endl;
       if (this->sensitivity_filename.size()!=0)
-	{
-	  // TODO writes only first if use_subset_sensitivities
-	  OutputFileFormat<TargetT>::default_sptr()->
-	    write_to_file(this->sensitivity_filename,
-			  this->get_sensitivity(0));
-	}
+        {
+          // TODO writes only first if use_subset_sensitivities
+          OutputFileFormat<TargetT>::default_sptr()->
+            write_to_file(this->sensitivity_filename,
+                          this->get_sensitivity(0));
+        }
     }
   return Succeeded::yes;
 }
@@ -428,8 +432,8 @@ template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-						      const TargetT &current_estimate, 
-						      const int subset_num)
+                                                      const TargetT &current_estimate, 
+                                                      const int subset_num)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -439,8 +443,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(),
-	      dyn_image_estimate[frame_num].end_all(),
-	      1.F);
+              dyn_image_estimate[frame_num].end_all(),
+              1.F);
 
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
  
@@ -448,25 +452,25 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     {
       std::fill(dyn_gradient[frame_num].begin_all(),
-		dyn_gradient[frame_num].end_all(),
-		1.F);
+                dyn_gradient[frame_num].end_all(),
+                1.F);
 
 
       this->_single_frame_obj_funcs[frame_num].
-	compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
-							      dyn_image_estimate[frame_num], 
-							      subset_num);
+        compute_sub_gradient_without_penalty_plus_sensitivity(dyn_gradient[frame_num], 
+                                                              dyn_image_estimate[frame_num], 
+                                                              subset_num);
     }
 
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(gradient,
-								     dyn_gradient) ; 
+                                                                     dyn_gradient) ; 
 }
 
 template<typename TargetT>
 double
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						  const int subset_num)
+                                                  const int subset_num)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
@@ -477,8 +481,8 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
   // TODO why fill with 1?
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     std::fill(dyn_image_estimate[frame_num].begin_all(),
-	      dyn_image_estimate[frame_num].end_all(),
-	      1.F);
+              dyn_image_estimate[frame_num].end_all(),
+              1.F);
   this->_patlak_plot_sptr->get_dynamic_image_from_parametric_image(dyn_image_estimate,current_estimate) ; 
  
   // loop over single_frame
@@ -487,9 +491,9 @@ actual_compute_objective_function_without_penalty(const TargetT& current_estimat
       ++frame_num)
     {
       result +=
-	this->_single_frame_obj_funcs[frame_num].
-	compute_objective_function_without_penalty(dyn_image_estimate[frame_num], 
-						   subset_num);
+        this->_single_frame_obj_funcs[frame_num].
+        compute_objective_function_without_penalty(dyn_image_estimate[frame_num], 
+                                                   subset_num);
     }
   return result;
 }
@@ -506,38 +510,38 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     {
       std::fill(dyn_sensitivity[frame_num].begin_all(),
-		dyn_sensitivity[frame_num].end_all(),
-		0.F);
+                dyn_sensitivity[frame_num].end_all(),
+                0.F);
       dyn_sensitivity[frame_num]=this->_single_frame_obj_funcs[frame_num].get_sensitivity(subset_num);
       //  add_subset_sensitivity(dyn_sensitivity[frame_num],subset_num);
     }
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(sensitivity,
-								      dyn_sensitivity) ;
+                                                                      dyn_sensitivity) ;
 }
 
 template<typename TargetT>
 Succeeded
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-								       const TargetT& input,
-								       const int subset_num) const
+                                                                       const TargetT& input,
+                                                                       const int subset_num) const
 {
   {
     string explanation;
     if (!input.has_same_characteristics(*this->sensitivity_sptrs[0],  /////////////////////1
-					explanation))
+                                        explanation))
       {
-	warning("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
-		"sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
-		"should have the same characteristics.\n%s",
-		explanation.c_str());
-	return Succeeded::no;
+        warning("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
+                "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+                "should have the same characteristics.\n%s",
+                explanation.c_str());
+        return Succeeded::no;
       }
   }   
 #ifndef NDEBUG
   std::cerr << "INPUT max: (" << input.construct_single_density(1).find_max()
-	    << " , " << input.construct_single_density(2).find_max()
-	    << ")\n";
+            << " , " << input.construct_single_density(2).find_max()
+            << ")\n";
 #endif //NDEBUG
   DynamicDiscretisedDensity dyn_input=this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_output=this->_dyn_image_template;
@@ -550,9 +554,9 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     {
       assert(dyn_input[frame_num].find_max()==dyn_input[frame_num].find_min());
       if (dyn_input[frame_num].find_max()==dyn_input[frame_num].find_min() && dyn_input[frame_num].find_min()>0.F)
-	scale_factor[frame_num]=dyn_input[frame_num].find_max();
+        scale_factor[frame_num]=dyn_input[frame_num].find_max();
       else
-	error("The input image should be uniform even after multiplying with the Patlak Plot.\n");
+        error("The input image should be uniform even after multiplying with the Patlak Plot.\n");
 
 /*! /note This is used to avoid higher values than these set in the precompute_denominator_of_conditioner_without_penalty() function. 
 /sa for more information see the recon_array_functions.cxx and the value of the max_quotient (originaly set to 10000.F)
@@ -561,32 +565,32 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 #ifndef NDEBUG
       std::cerr << "scale factor[" << frame_num << "] " << scale_factor[frame_num] << "\n";
       std::cerr << "dyn_input[" << frame_num << "] max after scale: " 
-		<< dyn_input[frame_num].find_max() << "\n";
+                << dyn_input[frame_num].find_max() << "\n";
 #endif //NDEBUG
       this->_single_frame_obj_funcs[frame_num].
-	add_multiplication_with_approximate_sub_Hessian_without_penalty(dyn_output[frame_num],
-									dyn_input[frame_num],
-									subset_num);      
+        add_multiplication_with_approximate_sub_Hessian_without_penalty(dyn_output[frame_num],
+                                                                        dyn_input[frame_num],
+                                                                        subset_num);      
 #ifndef NDEBUG
       std::cerr << "dyn_output[" << frame_num << "] max before scale: (" 
-		<< dyn_output[frame_num].find_max() << "\n";
+                << dyn_output[frame_num].find_max() << "\n";
 #endif //NDEBUG
       dyn_output[frame_num]*=scale_factor[frame_num];
 #ifndef NDEBUG
       std::cerr << "dyn_output[" << frame_num << "] max after scale: (" 
-		<< dyn_output[frame_num].find_max() << "\n";
+                << dyn_output[frame_num].find_max() << "\n";
 #endif //NDEBUG
     } // end of loop over frames
   shared_ptr<TargetT> unnormalised_temp = output.get_empty_copy();
   shared_ptr<TargetT> temp = output.get_empty_copy();
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(*unnormalised_temp,
-								      dyn_output) ;
+                                                                      dyn_output) ;
   // Trick to use a better step size for the two parameters. 
   (this->_patlak_plot_sptr->get_model_matrix()).normalise_parametric_image_with_model_sum(*temp,*unnormalised_temp) ;
 #ifndef NDEBUG
   std::cerr << "TEMP max: (" << temp->construct_single_density(1).find_max()
-	    << " , " << temp->construct_single_density(2).find_max()
-	    << ")\n";
+            << " , " << temp->construct_single_density(2).find_max()
+            << ")\n";
   // Writing images
   OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file("all_params_one_input.img", input);
   OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file("temp_denominator.img", *temp);
@@ -611,8 +615,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     }
 #ifndef NDEBUG
   std::cerr << "OUTPUT max: (" << output.construct_single_density(1).find_max()
-	    << " , " << output.construct_single_density(2).find_max()
-	    << ")\n";
+            << " , " << output.construct_single_density(2).find_max()
+            << ")\n";
 #endif // NDEBUG
 
   

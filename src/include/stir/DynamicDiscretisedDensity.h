@@ -56,22 +56,26 @@ public:
 
   DynamicDiscretisedDensity(const DynamicDiscretisedDensity&argument);
 
-  DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
+  DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions, 
+			    const double scan_start_time_in_secs_since_1970,
 			    const shared_ptr<Scanner>& scanner_sptr)
   {
     _densities.resize(time_frame_definitions.get_num_frames());
     _time_frame_definitions=time_frame_definitions;
+    _start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
     _calibration_factor=-1.F;
     _isotope_halflife=-1.F;
     _scanner_sptr=scanner_sptr;
   }
   //!  Construct an empty DynamicDiscretisedDensity based on a shared_ptr<DiscretisedDensity<3,float> >
   DynamicDiscretisedDensity(const TimeFrameDefinitions& time_frame_definitions,
+			    const double scan_start_time_in_secs_since_1970,
 			    const shared_ptr<Scanner>& scanner_sptr,
 			    const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     {  
     _densities.resize(time_frame_definitions.get_num_frames());
     _time_frame_definitions=time_frame_definitions;
+    _start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
     _calibration_factor=-1.F;
     _isotope_halflife=-1.F;
     _scanner_sptr=scanner_sptr;
@@ -120,6 +124,18 @@ public:
 
   const float get_calibration_factor() const;
 
+  //! Return time of start of scan
+  /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
+        of your local time zone.
+
+      Note that the return type is a \c double. This has allows for enough accuracy
+      for a long time to come. It also means that the start time can have fractional 
+      seconds.
+
+      The time frame definitions should be relative to this time.
+  */
+  const double get_start_time_in_secs_since_1970() const;
+
   const float get_scanner_default_bin_size() const;
 
   void set_time_frame_definitions(TimeFrameDefinitions time_frame_definitions) 
@@ -156,6 +172,7 @@ private:
   float _calibration_factor;
   float _isotope_halflife;
   bool _is_decay_corrected; 
+  double _start_time_in_secs_since_1970;
 };
 
 END_NAMESPACE_STIR

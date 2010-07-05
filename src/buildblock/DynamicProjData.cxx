@@ -34,10 +34,15 @@
 #include <iostream>
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/round.h"
 #include <fstream>
 
 START_NAMESPACE_STIR
 
+const double
+DynamicProjData::
+get_start_time_in_secs_since_1970() const
+{ return this->_start_time_in_secs_since_1970; }
 
 DynamicProjData*
 DynamicProjData::
@@ -71,35 +76,38 @@ read_from_file(const string& filename) // The written projection data is read in
     {
       Main_header mhead;
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
-	{
-	  warning("DynamicProjData::read_from_file cannot read %s as ECAT7\n", filename.c_str());
-	  return 0;
-	}
+        {
+          warning("DynamicProjData::read_from_file cannot read %s as ECAT7\n", filename.c_str());
+          return 0;
+        }
       dynamic_proj_data_ptr->_time_frame_definitions =
         TimeFrameDefinitions(filename);      
 
       dynamic_proj_data_ptr->_scanner_sptr =
-	find_scanner_from_ECAT_system_type(mhead.system_type);
+        find_scanner_from_ECAT_system_type(mhead.system_type);
+
+      dynamic_proj_data_ptr->_start_time_in_secs_since_1970 =
+        static_cast<double>(mhead.scan_start_time);
 
       const unsigned int num_frames =
-	static_cast<unsigned int>(mhead.num_frames);
+        static_cast<unsigned int>(mhead.num_frames);
       dynamic_proj_data_ptr->_proj_datas.resize(num_frames); 
 
       for (unsigned int frame_num=1; frame_num <= num_frames; ++ frame_num)
-	{
-	  dynamic_proj_data_ptr->_proj_datas[frame_num-1] =
-	    ECAT7_to_PDFS(filename,
-			  frame_num, 
-			  /*gate*/1,
-			  /*  data_num, bed_num, */ 0,0);
-	}
+        {
+          dynamic_proj_data_ptr->_proj_datas[frame_num-1] =
+            ECAT7_to_PDFS(filename,
+                          frame_num, 
+                          /*gate*/1,
+                          /*  data_num, bed_num, */ 0,0);
+        }
       if (is_null_ptr(dynamic_proj_data_ptr->_proj_datas[0]))
-	      error("DynamicProjData: No frame available\n");
+              error("DynamicProjData: No frame available\n");
     }
     else
     {
       if (is_ECAT7_file(filename))
-	warning("DynamicProjData::read_from_file ECAT7 file %s should be an projection data\n", filename.c_str());
+        warning("DynamicProjData::read_from_file ECAT7 file %s should be an projection data\n", filename.c_str());
     }
   }
   else 
@@ -122,11 +130,13 @@ write_to_ecat7(const string& filename) const
 
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, filename, 
-				      *get_proj_data(1).get_proj_data_info_ptr() );
+                                      *get_proj_data(1).get_proj_data_info_ptr() );
   mhead.num_frames = this->get_num_frames();
   mhead.acquisition_type =
     mhead.num_frames>1 ? DynamicEmission : StaticEmission;
 
+  round_to(mhead.scan_start_time, floor(this->get_start_time_in_secs_since_1970()));
+    
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
     {
@@ -136,9 +146,9 @@ write_to_ecat7(const string& filename) const
   for (  unsigned int frame_num = 1 ; frame_num<=this->get_num_frames() ;  ++frame_num ) 
     {
       if (ecat::ecat7::ProjData_to_ECAT7(mptr,
-					 get_proj_data(frame_num),
-					 frame_num)
-	  == Succeeded::no)
+                                         get_proj_data(frame_num),
+                                         frame_num)
+          == Succeeded::no)
       {
         matrix_close(mptr);
         return Succeeded::no;

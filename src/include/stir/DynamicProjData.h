@@ -37,7 +37,10 @@
 START_NAMESPACE_STIR
 
 class Succeeded;
-
+//! Dynamic projection data
+/*! \ingroup buildblock
+  Somewhat preliminary
+*/
 class DynamicProjData :
  public MultipleProjData
 {
@@ -48,6 +51,18 @@ public:
 
   //  DynamicProjData() {};
 
+  //! Return time of start of scan
+  /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
+        of your local time zone.
+
+      Note that the return type is a \c double. This has allows for enough accuracy
+      for a long time to come. It also means that the start time can have fractional 
+      seconds.
+
+      The time frame definitions should be relative to this time.
+  */
+  const double get_start_time_in_secs_since_1970() const;
+
   unsigned int get_num_frames() const
   {
     return this->get_num_proj_data();
@@ -56,6 +71,17 @@ public:
   Succeeded   
     write_to_ecat7(const std::string& filename) const;
 
+
+  //! Return time of start of scan
+  /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
+    of your local time zone.
+
+    Note that the return type is a \c double. This has allows for enough accuracy
+    for a long time to come. It also means that the start time can have fractional 
+    seconds.
+
+    The time frame definitions should be relative to this time.
+  */
 
  void set_time_frame_definitions(TimeFrameDefinitions time_frame_definitions) 
    { this->_time_frame_definitions=time_frame_definitions; }
@@ -103,6 +129,7 @@ public:
     }
  private:
   TimeFrameDefinitions _time_frame_definitions;
+  double _start_time_in_secs_since_1970;
 };
 
 END_NAMESPACE_STIR
