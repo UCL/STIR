@@ -19,7 +19,6 @@
 
 #include "local/stir/AbsTimeIntervalFromECAT7ACF.h"
 #include "stir/IO/stir_ecat7.h"
-#include "stir/round.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -63,7 +62,7 @@ set_times()
 
   _start_time_in_secs_since_1970 = attn_file->mhptr->scan_start_time;
   _end_time_in_secs_since_1970 = 
-    _start_time_in_secs_since_1970 + round(floor(_transmission_duration));
+    _start_time_in_secs_since_1970 + _transmission_duration;
 
   matrix_close(attn_file);
 

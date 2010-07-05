@@ -20,8 +20,6 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "local/stir/AbsTimeInterval.h"
-#include "boost/static_assert.hpp"
-#include <string>
 
 START_NAMESPACE_STIR
 class Succeeded;
@@ -56,10 +54,6 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  // currently necessary as KeyParser does not have std::time_t
-  unsigned long _start_time_in_secs_since_1970_for_parsing;
-  unsigned long _end_time_in_secs_since_1970_for_parsing;
-  BOOST_STATIC_ASSERT(sizeof(unsigned long)>=4);
 };
 
 END_NAMESPACE_STIR
