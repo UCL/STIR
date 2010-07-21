@@ -308,7 +308,7 @@ float parabolic_3points_fit(const RandomAccessIterType& begin_iter,
        y(x)=((x - x2)*(x - x3)*y1/a1)+ ((x - x1)*(x - x3)*y2/a2) + ((x - x1)*(x - x2)*y3/a3)
        y'(x0) = 0 =>  x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))/(y1*a2*a3+y2*a1*a3+y3*a1*a2)    
     */                 
-    const float x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))
+    const float x0 = 0.5F*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))
       /(y1*a2*a3+y2*a1*a3+y3*a1*a2) ; 
     real_max_value = ((x0 - x2)*(x0 - x3)*y1/a1) + 
       ((x0 - x1)*(x0 - x3)*y2/a2) + 
@@ -343,7 +343,7 @@ float parabolic_3points_fit_x0(const RandomAccessIterType& begin_iter,
      y(x)=((x - x2)*(x - x3)*y1/a1)+ ((x - x1)*(x - x3)*y2/a2) + ((x - x1)*(x - x2)*y3/a3)
      y'(x0) = 0 =>  x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))/(y1*a2*a3+y2*a1*a3+y3*a1*a2)    
   */                 
-  float x0 = 0.5*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))
+  const float x0 = 0.5F*(x1*a1*(y2*a3+y3*a2)+x2*a2*(y1*a3+y3*a1)+x3*a3*(y1*a2+y2*a1))
     /(y1*a2*a3+y2*a1*a3+y3*a1*a2) ; 
   return x0 ;     
 }                          
