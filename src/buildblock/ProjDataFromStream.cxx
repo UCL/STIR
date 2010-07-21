@@ -72,39 +72,39 @@ START_NAMESPACE_STIR
 //---------------------------------------------------------
 
 ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, 
-				       shared_ptr<iostream> const& s, const streamoff offs, 
-				       const vector<int>& segment_sequence_in_stream_v,
-				       StorageOrder o,		      
-				       NumericType data_type,
-				       ByteOrder byte_order,  
-				       float scale_factor)
-				       
-				       :
+                                       shared_ptr<iostream> const& s, const streamoff offs, 
+                                       const vector<int>& segment_sequence_in_stream_v,
+                                       StorageOrder o,                
+                                       NumericType data_type,
+                                       ByteOrder byte_order,  
+                                       float scale_factor)
+                                       
+                                       :
                                        ProjData(proj_data_info_ptr),
-				       sino_stream(s), offset(offs),
-				       segment_sequence(segment_sequence_in_stream_v),
-				       storage_order(o),
-				       on_disk_data_type(data_type),
-				       on_disk_byte_order(byte_order),
-				       scale_factor(scale_factor)
+                                       sino_stream(s), offset(offs),
+                                       segment_sequence(segment_sequence_in_stream_v),
+                                       storage_order(o),
+                                       on_disk_data_type(data_type),
+                                       on_disk_byte_order(byte_order),
+                                       scale_factor(scale_factor)
 {
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 }
 
 ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, 
-				       shared_ptr<iostream> const& s, const streamoff offs, 
-				       StorageOrder o,		      
-				       NumericType data_type,
-				       ByteOrder byte_order,  
-				       float scale_factor)				       
-				       :
+                                       shared_ptr<iostream> const& s, const streamoff offs, 
+                                       StorageOrder o,                
+                                       NumericType data_type,
+                                       ByteOrder byte_order,  
+                                       float scale_factor)                                     
+                                       :
                                        ProjData(proj_data_info_ptr),
-				       sino_stream(s), offset(offs),
-				       storage_order(o),
-				       on_disk_data_type(data_type),
-				       on_disk_byte_order(byte_order),
-				       scale_factor(scale_factor)
+                                       sino_stream(s), offset(offs),
+                                       storage_order(o),
+                                       on_disk_data_type(data_type),
+                                       on_disk_byte_order(byte_order),
+                                       scale_factor(scale_factor)
 {
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
@@ -122,7 +122,7 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data
 
 Viewgram<float> 
 ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
-				 const bool make_num_tangential_poss_odd) const
+                                 const bool make_num_tangential_poss_odd) const
 {
   if (sino_stream == 0)
   {
@@ -162,7 +162,7 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
         error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
       // seek to next line unless it was the last we need to read
       if(ax_pos_num != get_max_axial_pos_num(segment_num))
-	 sino_stream->seekg(intra_views_offset, ios::cur);
+         sino_stream->seekg(intra_views_offset, ios::cur);
     }
   }
   
@@ -183,11 +183,11 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
     const int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
 
     viewgram.grow(
-		  IndexRange2D(get_min_axial_pos_num(segment_num),
-			       get_max_axial_pos_num(segment_num),
-			       
-			       get_min_tangential_pos_num(),
-			       new_max_tangential_pos));   
+                  IndexRange2D(get_min_axial_pos_num(segment_num),
+                               get_max_axial_pos_num(segment_num),
+                               
+                               get_min_tangential_pos_num(),
+                               new_max_tangential_pos));   
   }  
 
   return viewgram;    
@@ -226,8 +226,8 @@ ProjDataFromStream::get_offsets(const int view_num, const int segment_num) const
     offset + 
     static_cast<streamoff>(num_axial_pos_offset*
                            get_num_tangential_poss() *
-			   get_num_views() *
-			   on_disk_data_type.size_in_bytes());
+                           get_num_views() *
+                           on_disk_data_type.size_in_bytes());
   
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   {
@@ -281,8 +281,8 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
   if (on_disk_data_type.id != NumericType::FLOAT)
   {
     warning("ProjDataFromStream::set_viewgram: non-float output uses original "
-	    "scale factor %g which might not be appropriate for the current data\n",
-	    scale_factor); 
+            "scale factor %g which might not be appropriate for the current data\n",
+            scale_factor); 
   }
 
    if (get_num_tangential_poss() != v.get_proj_data_info_ptr()->get_num_tangential_poss())
@@ -302,11 +302,11 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
   if (*get_proj_data_info_ptr() != *(v.get_proj_data_info_ptr()))
   {
     warning("ProjDataFromStream::set_viewgram: viewgram has incompatible ProjDataInfo member\n"
-	    "Original ProjDataInfo: %s\n"
-	    "ProjDataInfo From viewgram: %s",
-	    this->get_proj_data_info_ptr()->parameter_info().c_str(),
-	    v.get_proj_data_info_ptr()->parameter_info().c_str()
-	    );
+            "Original ProjDataInfo: %s\n"
+            "ProjDataInfo From viewgram: %s",
+            this->get_proj_data_info_ptr()->parameter_info().c_str(),
+            v.get_proj_data_info_ptr()->parameter_info().c_str()
+            );
 
    return Succeeded::no;
   }
@@ -337,15 +337,15 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
       if (write_data(*sino_stream, v[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order) 
            == Succeeded::no
           || scale != scale_factor)
-	{
-	  warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-		  " corrupted due to problems with writing or the scale factor \n",
-		  view_num, segment_num);
-	  return Succeeded::no;
-	}
+        {
+          warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+                  " corrupted due to problems with writing or the scale factor \n",
+                  view_num, segment_num);
+          return Succeeded::no;
+        }
       // seek to next line unless it was the last we need to read
       if(ax_pos_num != get_max_axial_pos_num(segment_num))
-	sino_stream->seekp(intra_views_offset, ios::cur);
+        sino_stream->seekp(intra_views_offset, ios::cur);
     }
     return Succeeded::yes;
   }
@@ -355,10 +355,10 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
         == Succeeded::no
           || scale != scale_factor)
       {
-	warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
-		" corrupted due to problems with writing or the scale factor \n",
-		view_num, segment_num);
-	return Succeeded::no;
+        warning("ProjDataFromStream::set_viewgram: viewgram (view=%d, segment=%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                view_num, segment_num);
+        return Succeeded::no;
       }
     return Succeeded::yes;
   }
@@ -399,8 +399,8 @@ ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num
     offset + 
     static_cast<streamoff>(num_axial_pos_offset*
                            get_num_tangential_poss() *
-			   get_num_views() *
-			   on_disk_data_type.size_in_bytes());
+                           get_num_views() *
+                           on_disk_data_type.size_in_bytes());
   
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   {
@@ -440,7 +440,7 @@ ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num
 
 Sinogram<float>
 ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
-				 const bool make_num_tangential_poss_odd) const
+                                 const bool make_num_tangential_poss_odd) const
 {
   if (sino_stream == 0)
   {
@@ -491,7 +491,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
       // seek to next line unless it was the last we need to read
       if(view != get_max_view_num())
-	sino_stream->seekg(intra_ax_pos_offset, ios::cur);
+        sino_stream->seekg(intra_ax_pos_offset, ios::cur);
    }    
   }
   sinogram *= scale_factor;
@@ -501,9 +501,9 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
     int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
 
     sinogram.grow(IndexRange2D(get_min_view_num(),
-	get_max_view_num(),
-	get_min_tangential_pos_num(),
-	new_max_tangential_pos));    
+        get_max_view_num(),
+        get_min_tangential_pos_num(),
+        new_max_tangential_pos));    
   }
   
   return sinogram;
@@ -528,18 +528,18 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   if (on_disk_data_type.id != NumericType::FLOAT)
   {
     warning("ProjDataFromStream::set_viewgram: non-float output uses original "
-	    "scale factor %g which might not be appropriate for the current data\n",
-	    scale_factor); 
+            "scale factor %g which might not be appropriate for the current data\n",
+            scale_factor); 
   }
   
   if (*get_proj_data_info_ptr() != *(s.get_proj_data_info_ptr()))
   {
     warning("ProjDataFromStream::set_sinogram: Sinogram<float> has incompatible ProjDataInfo member.\n"
-	    "Original ProjDataInfo: %s\n"
-	    "ProjDataInfo From sinogram: %s",
-	    this->get_proj_data_info_ptr()->parameter_info().c_str(),
-	    s.get_proj_data_info_ptr()->parameter_info().c_str()
-	    );
+            "Original ProjDataInfo: %s\n"
+            "ProjDataInfo From sinogram: %s",
+            this->get_proj_data_info_ptr()->parameter_info().c_str(),
+            s.get_proj_data_info_ptr()->parameter_info().c_str()
+            );
 
     return Succeeded::no;
   }
@@ -569,11 +569,11 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
       if (write_data(*sino_stream, s, on_disk_data_type, scale, on_disk_byte_order)
           == Succeeded::no
           || scale != scale_factor)
-	{
-	  warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
-		  " corrupted due to problems with writing or the scale factor \n",
-		  ax_pos_num, segment_num);
-	  return Succeeded::no;
+        {
+          warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
+                  " corrupted due to problems with writing or the scale factor \n",
+                  ax_pos_num, segment_num);
+          return Succeeded::no;
     }
 
       return Succeeded::yes;
@@ -583,18 +583,18 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
     {
       for (int view = get_min_view_num();view <= get_max_view_num(); view++)
       {
-	if (write_data(*sino_stream, s[view], on_disk_data_type, scale, on_disk_byte_order)
+        if (write_data(*sino_stream, s[view], on_disk_data_type, scale, on_disk_byte_order)
             == Succeeded::no
           || scale != scale_factor)
-	  {
-	    warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
-		    " corrupted due to problems with writing or the scale factor \n",
-		    ax_pos_num, segment_num);
-	    return Succeeded::no;
-	  }
+          {
+            warning("ProjDataFromStream::set_sinogram: sinogram (ax_pos=%d, segment=%d)"
+                    " corrupted due to problems with writing or the scale factor \n",
+                    ax_pos_num, segment_num);
+            return Succeeded::no;
+          }
         // seek to next line unless it was the last we need to read
-	if(view != get_max_view_num())
-	  sino_stream->seekp(intra_ax_pos_offset, ios::cur);
+        if(view != get_max_view_num())
+          sino_stream->seekp(intra_ax_pos_offset, ios::cur);
       }
       return Succeeded::yes;
     }
@@ -612,8 +612,8 @@ ProjDataFromStream::get_offset_segment(const int segment_num) const
   segment_num <=  get_max_segment_num());
   { 
       const int index = 
-	FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
-	segment_sequence.begin();
+        FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
+        segment_sequence.begin();
 
       streamoff num_axial_pos_offset = 0;
       for (int i=0; i<index; i++)
@@ -621,11 +621,11 @@ ProjDataFromStream::get_offset_segment(const int segment_num) const
       get_num_axial_poss(segment_sequence[i]);
   
       const streamoff segment_offset = 
-	offset + 
-	num_axial_pos_offset *
-	get_num_tangential_poss() *
-	get_num_views()*
-	on_disk_data_type.size_in_bytes();
+        offset + 
+        num_axial_pos_offset *
+        get_num_tangential_poss() *
+        get_num_views()*
+        on_disk_data_type.size_in_bytes();
        return segment_offset;
   }
      
@@ -763,19 +763,19 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
     // KT 03/07/2001 handle scale_factor appropriately
     if (on_disk_data_type.id != NumericType::FLOAT)
       {
-	warning("ProjDataFromStream::set_segment: non-float output uses original "
-		"scale factor %g which might not be appropriate for the current data\n",
-		scale_factor); 
+        warning("ProjDataFromStream::set_segment: non-float output uses original "
+                "scale factor %g which might not be appropriate for the current data\n",
+                scale_factor); 
       }
     float scale = scale_factor;
     if (write_data(*sino_stream, segmentbysinogram_v, on_disk_data_type, scale, on_disk_byte_order)
         == Succeeded::no
           || scale != scale_factor)
       {
-	warning("ProjDataFromStream::set_segment: segment (%d)"
-		" corrupted due to problems with writing or the scale factor \n",
-	        segment_num);
-	return Succeeded::no;
+        warning("ProjDataFromStream::set_segment: segment (%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                segment_num);
+        return Succeeded::no;
       }
 
     return Succeeded::yes;
@@ -823,7 +823,7 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
   
   if (! *sino_stream)
   {
-    warning("ProjDataFromStream::set_segment: error after seekp\n");
+    warning("ProjDataFromStream::set_segment: error after seekp");
     return Succeeded::no;
   }    
   
@@ -832,19 +832,19 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
     // KT 03/07/2001 handle scale_factor appropriately
     if (on_disk_data_type.id != NumericType::FLOAT)
       {
-	warning("ProjDataFromStream::set_segment: non-float output uses original "
-		"scale factor %g which might not be appropriate for the current data\n",
-		scale_factor); 
+        warning("ProjDataFromStream::set_segment: non-float output uses original "
+                "scale factor %g which might not be appropriate for the current data\n",
+                scale_factor); 
       }
     float scale = scale_factor;
     if (write_data(*sino_stream, segmentbyview_v, on_disk_data_type, scale, on_disk_byte_order)
         == Succeeded::no
           || scale != scale_factor)
       {
-	warning("ProjDataFromStream::set_segment: segment (%d)"
-		" corrupted due to problems with writing or the scale factor \n",
-	        segment_num);
-	return Succeeded::no;
+        warning("ProjDataFromStream::set_segment: segment (%d)"
+                " corrupted due to problems with writing or the scale factor \n",
+                segment_num);
+        return Succeeded::no;
       }
 
     return Succeeded::yes;
@@ -893,19 +893,19 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
        p_in_stream = new fstream (filename, open_mode | ios::binary);
        if (!p_in_stream->good())
        {
-	 error("ProjDataFromStream::ask_parameters: error opening file %s\n",filename);
+         error("ProjDataFromStream::ask_parameters: error opening file %s\n",filename);
        }
       //open_read_binary(*p_fstream, filename);
       //p_in_stream = p_fstream;
     }
     else
     {  
-      unsigned long file_size = 0;
+      streamsize file_size = 0;
       char *memory = 0;
       { 
-	fstream input;
-	open_read_binary(input, filename);
-	memory = (char *)read_stream_in_memory(input, file_size);
+        fstream input;
+        open_read_binary(input, filename);
+        memory = (char *)read_stream_in_memory(input, file_size);
       }
       
 #ifdef BOOST_NO_STRINGSTREAM
@@ -920,10 +920,10 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       p_in_stream = new iostream(buffer);
 #else
       // TODO this does allocate and copy 2 times
-
-      p_in_stream = new std::stringstream (string(memory, file_size), 
- 	                                   open_mode | ios::binary);
-	
+          // TODO file_size could be longer than what size_t allows, but string doesn't take anything longer
+      p_in_stream = new std::stringstream (string(memory, std::size_t(file_size)), 
+                                           open_mode | ios::binary);
+        
       delete[] memory;
 #endif
       
@@ -936,7 +936,7 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     {
     int data_org = ask_num("Type of data organisation:\n\
       0: Segment_AxialPos_View_TangPos, 1: Segment_View_AxialPos_TangPos", 
-			   0,
+                           0,
                            1,0);
     
     switch (data_org)
@@ -972,20 +972,22 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     ByteOrder byte_order;
     { 
       byte_order = 
-	ask("Little endian byte order ?",
-	ByteOrder::get_native_order() == ByteOrder::little_endian) ?
-	ByteOrder::little_endian :
+        ask("Little endian byte order ?",
+        ByteOrder::get_native_order() == ByteOrder::little_endian) ?
+        ByteOrder::little_endian :
       ByteOrder::big_endian;
     }
     
-    long offset_in_file ;
+    std::streamoff offset_in_file ;
     {
       // find file size
-      p_in_stream->seekg(0L, ios::beg);   
-      unsigned long file_size = find_remaining_size(*p_in_stream);
+      p_in_stream->seekg(static_cast<std::streamoff>(0), ios::beg);   
+      streamsize file_size = find_remaining_size(*p_in_stream);
       
       offset_in_file = ask_num("Offset in file (in bytes)", 
-			     0UL,file_size, 0UL);
+                               static_cast<std::streamoff>(0),
+                               static_cast<std::streamoff>(file_size), 
+                               static_cast<std::streamoff>(0));
     }
     float scale_factor =1;
     
@@ -1013,10 +1015,10 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     ProjDataFromStream* proj_data_ptr =
       new 
       ProjDataFromStream (data_info_ptr,
-			  p_in_stream, offset_in_file, 
-			  segment_sequence_in_stream,
-			  storage_order,data_type,byte_order,  
-			  scale_factor);
+                          p_in_stream, offset_in_file, 
+                          segment_sequence_in_stream,
+                          storage_order,data_type,byte_order,  
+                          scale_factor);
 
     cerr << "writing Interfile header for "<< filename << endl;
     write_basic_interfile_PDFS_header(filename, *proj_data_ptr);
