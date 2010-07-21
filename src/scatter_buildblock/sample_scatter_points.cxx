@@ -32,6 +32,8 @@
 
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include <time.h>
+
 using namespace std;
 START_NAMESPACE_STIR
 
