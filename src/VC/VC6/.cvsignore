@@ -1,0 +1,7 @@
+*.ncb
+*.vc*proj.*user
+Debug
+Release
+*.suo
+*.sdf
+*.opensdf
