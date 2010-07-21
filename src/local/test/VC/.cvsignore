@@ -1,4 +1,5 @@
+*.ncb
+*.vc*proj.*user
 Debug
 Release
-*.vcproj.*
-*.ncb
+*.suo
