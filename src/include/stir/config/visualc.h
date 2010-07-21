@@ -48,7 +48,7 @@
 #define STIR_ENABLE_FOR_SCOPE_WORKAROUND
 #endif
 
-#if _MSC_VER<=1500
+#if defined(_MSC_VER)
 // set _SCL_SECURE_NO_WARNINGS
 // otherwise we get a load of messages that std::copy and std::equal are unsafe 
 // in VectorWithOffset and IndexRange etc because they use C-style arrays internally
