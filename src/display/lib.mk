@@ -13,13 +13,14 @@ CURSES=ncurses
 else
 ifeq ($(SYSTEM),CYGWIN)
 CURSES=curses
+EXTRA_CFLAGS+= -I/usr/include/ncurses
 else
 CURSES=curses
 endif
 endif
 GRAPHOPT = -DSTIR_SIMPLE_BITMAPS -DSC_XWINDOWS
 # last 2 directories seem to be needed for Ubuntu
-GRAPH_LIBS = -l$(CURSES) -lX11 -L/usr/X11/lib -L/usr/X11R6/lib  -L/etc/X11/ -L/usr/X11R6/bin
+GRAPH_LIBS += -l$(CURSES) -lX11 -L/usr/X11/lib -L/usr/X11R6/lib  -L/etc/X11/ -L/usr/X11R6/bin
 
 $(dir)_LIB_SOURCES := display_array.cxx gen.c screengen.c screen.c
 
