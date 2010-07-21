@@ -36,9 +36,6 @@ and Kris Thielemans.
 <h3>Known problems</h3>
 <ul>
 <li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
-<li>Some new utilities might not compile under windows with Visual Studio
-as this doesn't have the <code>getopt</code> function.</li>
-<li>Visual Studio 2008 has a linking problem related to the new Input file IO factories.</li>
 <li>The interpolating back-projector can still give problems in the centre of the images
 on some architectures/compiler/optimisation settings.</li>
 </ul>
@@ -56,6 +53,7 @@ to other linear models is easy.</li>
 <h3>New functionality of existing utilities</h3>
 <ul>
 <li>Added data for the <strong>GE Discovery 600</strong>.</li>
+<li>Added data for the <strong>Biograph 16</strong> (by Robert Barnett, Westmead Hospital, Sydney).</li>
 <li><tt>stir_math</tt> has 2 new options <tt>--parametric</tt> or <tt>--dynamic</tt>.</li>
 </ul>
 
@@ -66,7 +64,7 @@ to other linear models is easy.</li>
 
 <h3>recon_test_pack changes</h3>
 <ul>
-<li>Moved the tests for the ecat routines to a separate file <tt>run_ecat_tests.sh</tt><li>
+<li>Moved the tests for the ecat routines to a separate file <tt>run_ecat_tests.sh</tt></li>
 <li>Updated Windows batch files. They were broken in STIR 2.0</li>
 </ul>
 
@@ -87,7 +85,11 @@ when initialising with images that have for instance been reconstructed on a squ
 <h3>Other code changes</h3>
 <ul>
 <li><code>error()</code> now throws an exception as opposed to calling exit, such that we can catch 
-the exception in a calling routine. This would be essential for building GUIs etc.</li>
+the exception in a calling routine. This would be essential for building GUIs etc. Unfortunately,
+for the user this has the potential to generate some confusion as the error message
+when a STIR program calss <code>error()</code> now talks about unhandled exception.
+The best way to solve this would be to catch all exceptions in each <code>main()</code>, but
+that is a lot of work...</li>
 <li><code>ProjDataInfoCylindrical::set_num_views()</code> now  makes sure that we cover the
       same range of angles as before (usually, but not necessarily, 180 degrees).
 </li>
@@ -99,6 +101,11 @@ mechanism would be nicer.
 <code>IterativeReconstruction::get_subset_num()</code>. If you have your own 
 reconstruction classes, you should use this member. 
 <code>IterativeReconstruction::randomly_permute_subset_order()</code> is now private.</li>
+<li><code>read_stream_in_memory</code> (in <tt>utilities.h</tt>) now takes a <code>file_size</code> 
+argument of type <code>std::streamsize</code> as opposed to <code>unsigned long</code>. As
+this parameter is passed as a reference, this change is <strong>not backwards compatible</strong>
+(at least on systems where these 2 types are not equal).</li>
+<li>Various small fixes for more recent compilers such as gcc 4.3 and Visual Studio Express 2010.</li>
 </ul>
 
 </body>
