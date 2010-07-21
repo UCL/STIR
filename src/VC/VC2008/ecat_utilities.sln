@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IO", "..\IO\VC\IO.vcproj", "{A91E422B-1728-4CF7-9A20-01871F43BE6F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IO", "..\..\IO\VC\IO.vcproj", "{A91E422B-1728-4CF7-9A20-01871F43BE6F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "buildblock", "..\buildblock\VC\buildblock.vcproj", "{35DE8EA0-694C-4867-9D8A-3A044F5B74C4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "buildblock", "..\..\buildblock\VC\buildblock.vcproj", "{35DE8EA0-694C-4867-9D8A-3A044F5B74C4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat", "..\..\..\lln\ecat\VC\ecat.vcproj", "{B0A7848A-BD1F-4F3D-9038-B110C6B549F7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat", "..\..\..\..\lln\ecat\VC\ecat.vcproj", "{B0A7848A-BD1F-4F3D-9038-B110C6B549F7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelling_buildblock", "..\modelling_buildblock\VC\modelling_buildblock.vcproj", "{3E1020F6-3DEA-495F-8197-02ABEF79CE72}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelling_buildblock", "..\..\modelling_buildblock\VC\modelling_buildblock.vcproj", "{3E1020F6-3DEA-495F-8197-02ABEF79CE72}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ifheaders_for_ecat7", "..\utilities\ecat\VC\ifheaders_for_ecat7\ifheaders_for_ecat7.vcproj", "{F075937B-387A-45F2-A274-FB63984127E2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ifheaders_for_ecat7", "..\..\utilities\ecat\VC\ifheaders_for_ecat7\ifheaders_for_ecat7.vcproj", "{F075937B-387A-45F2-A274-FB63984127E2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}
@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ifheaders_for_ecat7", "..\u
 		{3E1020F6-3DEA-495F-8197-02ABEF79CE72} = {3E1020F6-3DEA-495F-8197-02ABEF79CE72}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat_swap_corners", "..\utilities\ecat\VC\ecat_swap_corners\ecat_swap_corners.vcproj", "{1158EA32-9329-4794-B94D-4158C9D3EDBA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat_swap_corners", "..\..\utilities\ecat\VC\ecat_swap_corners\ecat_swap_corners.vcproj", "{1158EA32-9329-4794-B94D-4158C9D3EDBA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}
@@ -25,7 +25,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat_swap_corners", "..\uti
 		{3E1020F6-3DEA-495F-8197-02ABEF79CE72} = {3E1020F6-3DEA-495F-8197-02ABEF79CE72}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convecat6_if", "..\utilities\ecat\VC\convecat6_if\convecat6_if.vcproj", "{8F87973D-50C5-4096-A74B-265B5D720D6A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convecat6_if", "..\..\utilities\ecat\VC\convecat6_if\convecat6_if.vcproj", "{8F87973D-50C5-4096-A74B-265B5D720D6A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}
@@ -33,7 +33,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convecat6_if", "..\utilitie
 		{3E1020F6-3DEA-495F-8197-02ABEF79CE72} = {3E1020F6-3DEA-495F-8197-02ABEF79CE72}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conv_to_ecat7", "..\utilities\ecat\VC\conv_to_ecat7\conv_to_ecat7.vcproj", "{563EB13C-13AA-43F6-AB59-76D03F2C8F4C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conv_to_ecat7", "..\..\utilities\ecat\VC\conv_to_ecat7\conv_to_ecat7.vcproj", "{563EB13C-13AA-43F6-AB59-76D03F2C8F4C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}
@@ -41,7 +41,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conv_to_ecat7", "..\utiliti
 		{3E1020F6-3DEA-495F-8197-02ABEF79CE72} = {3E1020F6-3DEA-495F-8197-02ABEF79CE72}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conv_to_ecat6", "..\utilities\ecat\VC\conv_to_ecat6\conv_to_ecat6.vcproj", "{98E67799-4711-4287-9D4A-C4941C548321}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conv_to_ecat6", "..\..\utilities\ecat\VC\conv_to_ecat6\conv_to_ecat6.vcproj", "{98E67799-4711-4287-9D4A-C4941C548321}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
 		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}

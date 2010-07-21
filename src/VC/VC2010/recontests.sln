@@ -1,27 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IO", "..\IO\VC\IO.vcxproj", "{A91E422B-1728-4CF7-9A20-01871F43BE6F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IO", "..\..\IO\VC\IO.vcxproj", "{A91E422B-1728-4CF7-9A20-01871F43BE6F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bcktest", "..\recon_test\VC\bcktest\bcktest.vcxproj", "{D7F34550-0DCB-4999-B938-BC6CA86D0B86}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bcktest", "..\..\recon_test\VC\bcktest\bcktest.vcxproj", "{D7F34550-0DCB-4999-B938-BC6CA86D0B86}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "buildblock", "..\buildblock\VC\buildblock.vcxproj", "{35DE8EA0-694C-4867-9D8A-3A044F5B74C4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "buildblock", "..\..\buildblock\VC\buildblock.vcxproj", "{35DE8EA0-694C-4867-9D8A-3A044F5B74C4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "display", "..\display\VC\display.vcxproj", "{F0523425-F3BE-4D3A-8B18-4243536D1BE3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "display", "..\..\display\VC\display.vcxproj", "{F0523425-F3BE-4D3A-8B18-4243536D1BE3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat", "..\..\..\lln\ecat\VC\ecat.vcxproj", "{B0A7848A-BD1F-4F3D-9038-B110C6B549F7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ecat", "..\..\..\..\lln\ecat\VC\ecat.vcxproj", "{B0A7848A-BD1F-4F3D-9038-B110C6B549F7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fwdtest", "..\recon_test\VC\fwdtest\fwdtest.vcxproj", "{651F0B22-53FD-4F43-93D2-4FCBAF74C472}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fwdtest", "..\..\recon_test\VC\fwdtest\fwdtest.vcxproj", "{651F0B22-53FD-4F43-93D2-4FCBAF74C472}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_recon_buildblock", "..\local\recon_buildblock\VC\local_recon_buildblock.vcxproj", "{8BAC9DA2-6F2C-4345-A407-ED9930F21360}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_recon_buildblock", "..\..\local\recon_buildblock\VC\local_recon_buildblock.vcxproj", "{8BAC9DA2-6F2C-4345-A407-ED9930F21360}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recon_buildblock", "..\recon_buildblock\VC\recon_buildblock.vcxproj", "{2454F179-57F5-44C2-8C08-B97B829C9CC4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recon_buildblock", "..\..\recon_buildblock\VC\recon_buildblock.vcxproj", "{2454F179-57F5-44C2-8C08-B97B829C9CC4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DataSymmetriesForBins_PET_CartesianGrid", "..\recon_test\VC\test_DataSymmetriesForBins_PET_CartesianGrid\test_DataSymmetriesForBins_PET_CartesianGrid.vcxproj", "{DB30368E-3E3F-458E-AF2C-151EDA2B6257}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DataSymmetriesForBins_PET_CartesianGrid", "..\..\recon_test\VC\test_DataSymmetriesForBins_PET_CartesianGrid\test_DataSymmetriesForBins_PET_CartesianGrid.vcxproj", "{DB30368E-3E3F-458E-AF2C-151EDA2B6257}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "listmode_buildblock", "..\listmode_buildblock\VC\listmode_buildblock.vcxproj", "{15552E6C-3D8C-443E-92E0-A3ABC2E32F01}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "listmode_buildblock", "..\..\listmode_buildblock\VC\listmode_buildblock.vcxproj", "{15552E6C-3D8C-443E-92E0-A3ABC2E32F01}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelling_buildblock", "..\modelling_buildblock\VC\modelling_buildblock.vcxproj", "{3E1020F6-3DEA-495F-8197-02ABEF79CE72}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelling_buildblock", "..\..\modelling_buildblock\VC\modelling_buildblock.vcxproj", "{3E1020F6-3DEA-495F-8197-02ABEF79CE72}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
