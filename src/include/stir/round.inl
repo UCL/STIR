@@ -53,6 +53,19 @@ round_to(integerT& result, const double x)
     result = -static_cast<integerT>(-x+0.5);
 }
 
+/* next 2 are just to avoid compiler warnings about using - on an unsigned type */
+inline void
+round_to(unsigned& result, const double x)
+{
+  result = static_cast<unsigned>(x+0.5);
+}
+
+inline void
+round_to(unsigned long& result, const double x)
+{
+  result = static_cast<unsigned long>(x+0.5);
+}
+
 /* could be implemented in terms of the above */
 int round(const float x)
 {
