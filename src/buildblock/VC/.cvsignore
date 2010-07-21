@@ -1,5 +1,5 @@
 *.ncb
-*.vcproj.*
+*.vc*proj.*user
 Debug
 Release
-buildblock.suo
+*.suo
