@@ -445,7 +445,7 @@ streamsize find_remaining_size (istream& input)
    return file_end - file_current_pos;
 }
 
-void * read_stream_in_memory(istream& input, unsigned long& file_size)
+void * read_stream_in_memory(istream& input, streamsize& file_size)
 {
   if (file_size == 0)
     file_size = find_remaining_size(input);
@@ -453,18 +453,19 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
   cerr << "Reading " << file_size << " bytes from file." <<endl;
 
   // allocate memory
-  char *memory = new char[file_size];
+  // TODO file_size could be longer than what size_t allows, but arrays cannot be longer
+  char *memory = new char[static_cast<std::size_t>(file_size)];
   if (memory == 0)
     { error("Not enough memory\n");  }
 
   {
-    const unsigned long chunk_size = 1024*64;
-    unsigned long to_read = file_size;
+    const streamsize chunk_size = 1024*64;
+    streamsize to_read = file_size;
     char *current_location = memory;
 
     while( to_read != 0)
       {
-	const unsigned long this_read_size = 
+	const streamsize this_read_size = 
 #ifndef STIR_NO_NAMESPACES
 	  std::min(to_read, chunk_size);
 #else
@@ -472,7 +473,7 @@ void * read_stream_in_memory(istream& input, unsigned long& file_size)
 #endif
 	input.read(current_location, this_read_size);
 	if (!input)
-	{ error("Error after reading from stream\n");  }
+	{ error("Error after reading from stream");  }
 
 	to_read -= this_read_size;
 	current_location += this_read_size;
