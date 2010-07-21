@@ -58,26 +58,32 @@ class Succeeded;
   \warning Currently really only appropriate for cylindrical PET scanners
 
   \par information on blocks, buckets etc
-   At present, these functions follow CTI terminology, but the concepts
+  This class gives some informations on crystals, blocks etc. However, this
+  is currently (i.e. at least up to STIR 2.1) used in very few places.
+  For ECAT scanners, this information is used to read the normalisation .n 
+  files and computed dead-time correction etc. For all other scanners, STIR
+  currently ignores this info. This might change in the future of course.
+  
+  At present, these functions follow CTI terminology, but the concepts
       are similar for other scanners.
    
       \li \c crystal the smallest detection unit
       \li \c block several crystals are grouped in a block, this can be in
           3 dimensions (see layer). This information could be useful for finding the
-	  geometry of the scanner, but we would plenty more
-	  size info presumably.
+          geometry of the scanner, but we would plenty more
+          size info presumably.
       \li \c layer Some scanners have multiple layers of detectors to give
           Depth Of Interaction information
       \li \c bucket several \c blocks send detected events to one \c bucket.
           This has consequences for the dead-time modelling. For instance,
-	  one bucket could have much more singles than another, and hence
-	  presumably higher singles-dead-time.
+          one bucket could have much more singles than another, and hence
+          presumably higher singles-dead-time.
       \li \c singles_unit (non-standard terminology)
           Most scanners report the singles detected during the acquisition.
           Some scanners (such as GE scanners) report singles for every crystal,
-	  while others (such as CTI scanners) give only singles for a 
-	  collection of blocks. A \c singles_unit is then a set of crystals
-	  for which we can get singles rates.
+          while others (such as CTI scanners) give only singles for a 
+          collection of blocks. A \c singles_unit is then a set of crystals
+          for which we can get singles rates.
 
       \warning This information is only sensible for discrete detector-based scanners.
       \todo Some scanners do not have all info filled in at present. Values are then
@@ -110,11 +116,11 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966,RPT,HiDAC,
-	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
-	     HZLR, RATPET,HRRT, Allegro,
-	     User_defined_scanner,
-	     Unknown_scanner};
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966,E1080,RPT,HiDAC,
+             Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
+             HZLR, RATPET,HRRT, Allegro,
+             User_defined_scanner,
+             Unknown_scanner};
   
   
   //! constructor that takes scanner type as an input argument
@@ -127,16 +133,16 @@ class Scanner
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const list<string>& list_of_names_v,
-	  int num_detectors_per_ring_v, int num_rings_v, 
-	  int max_num_non_arccorrected_bins_v,
-	  int default_num_arccorrected_bins_v,
+          int num_detectors_per_ring_v, int num_rings_v, 
+          int max_num_non_arccorrected_bins_v,
+          int default_num_arccorrected_bins_v,
           float inner_ring_radius_v, float average_depth_of_interaction_v, 
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-	  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-	  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+          int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
-	  int num_detector_layers_v);
+          int num_detector_layers_v);
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -144,16 +150,16 @@ class Scanner
       \warning calls error() when block/bucket info are inconsistent
    */
   Scanner(Type type_v, const string& name,
-	  int num_detectors_per_ring_v, int num_rings_v, 
-	  int max_num_non_arccorrected_bins_v,
-	  int default_num_arccorrected_bins_v,
+          int num_detectors_per_ring_v, int num_rings_v, 
+          int max_num_non_arccorrected_bins_v,
+          int default_num_arccorrected_bins_v,
           float inner_ring_radius_v, float average_depth_of_interaction_v, 
           float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-	  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-	  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+          int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
-	  int num_detector_layers_v);
+          int num_detector_layers_v);
 
 
 
@@ -229,9 +235,9 @@ class Scanner
   //! get number of transaxial blocks per bucket
   inline int get_num_transaxial_blocks_per_bucket() const;
   //! get number of axial blocks per bucket
-  inline int get_num_axial_blocks_per_bucket() const;	
+  inline int get_num_axial_blocks_per_bucket() const;   
   //! get number of crystals in the axial direction
-  inline int get_num_axial_crystals_per_block() const;	
+  inline int get_num_axial_crystals_per_block() const;  
   //! get number of transaxial crystals 
   inline int get_num_transaxial_crystals_per_block() const;
   //! get crystals in a bucket
@@ -239,15 +245,15 @@ class Scanner
   //! get crystals in a bucket
   inline int get_num_axial_crystals_per_bucket() const;
   //! get number of crystal layers (for DOI)
-  inline int get_num_detector_layers() const;	
+  inline int get_num_detector_layers() const;   
   //! get number of axial blocks
-  inline int get_num_axial_blocks() const;	
+  inline int get_num_axial_blocks() const;      
   //! get number of axial blocks
-  inline int get_num_transaxial_blocks() const;	
+  inline int get_num_transaxial_blocks() const; 
   //! get number of axial buckets
-  inline int get_num_axial_buckets() const;	
+  inline int get_num_axial_buckets() const;     
   //! get number of axial buckets
-  inline int get_num_transaxial_buckets() const;	
+  inline int get_num_transaxial_buckets() const;        
 
   //! get number of axial crystals per singles unit
   inline int get_num_axial_crystals_per_singles_unit() const;
@@ -296,15 +302,15 @@ class Scanner
   //! set number of transaxial blocks per bucket
   inline void set_num_transaxial_blocks_per_bucket(const int & new_num);
   //! set number of axial blocks per bucket
-  inline void set_num_axial_blocks_per_bucket(const int & new_num);	
+  inline void set_num_axial_blocks_per_bucket(const int & new_num);     
   //! set number of crystals in the axial direction
-  inline void set_num_axial_crystals_per_block(const int & new_num);	
+  inline void set_num_axial_crystals_per_block(const int & new_num);    
   //! set number of transaxial crystals 
   inline void set_num_transaxial_crystals_per_block(const int & new_num);
   //! set number of crystal layers (for DOI)
-  inline void set_num_detector_layers(const int& new_num);	
+  inline void set_num_detector_layers(const int& new_num);      
   //! set number of axial crystals per singles unit
-  inline void set_num_axial_crystals_per_singles_unit(const int & new_num);	
+  inline void set_num_axial_crystals_per_singles_unit(const int & new_num);     
   //! set number of transaxial crystals per singles unit
   inline void set_num_transaxial_crystals_per_singles_unit(const int & new_num);
   // TODO accomodate more complex geometries of singles units.
@@ -331,20 +337,20 @@ class Scanner
 private:
   Type type;
   list<string> list_of_names;
-  int num_rings;		/* number of direct planes */
+  int num_rings;                /* number of direct planes */
   int max_num_non_arccorrected_bins; 
   int default_num_arccorrected_bins; /* default number of bins */
-  int num_detectors_per_ring;	
+  int num_detectors_per_ring;   
 
-  float inner_ring_radius;	/*! detector inner radius in mm*/
+  float inner_ring_radius;      /*! detector inner radius in mm*/
   float average_depth_of_interaction; /*! Average interaction depth in detector crystal */
-  float ring_spacing;	/*! ring separation in mm*/
-  float bin_size;		/*! arc-corrected bin size in mm (spacing of transaxial elements) */
-  float intrinsic_tilt;		/*! intrinsic tilt in radians*/
+  float ring_spacing;   /*! ring separation in mm*/
+  float bin_size;               /*! arc-corrected bin size in mm (spacing of transaxial elements) */
+  float intrinsic_tilt;         /*! intrinsic tilt in radians*/
 
-  int num_transaxial_blocks_per_bucket;	/* transaxial blocks per bucket */
-  int num_axial_blocks_per_bucket;	/* axial blocks per bucket */
-  int num_axial_crystals_per_block;	/* number of crystals in the axial direction */
+  int num_transaxial_blocks_per_bucket; /* transaxial blocks per bucket */
+  int num_axial_blocks_per_bucket;      /* axial blocks per bucket */
+  int num_axial_crystals_per_block;     /* number of crystals in the axial direction */
   int num_transaxial_crystals_per_block;/* number of transaxial crystals */
   int num_detector_layers;
 
@@ -355,33 +361,33 @@ private:
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const list<string>& list_of_names_v,
                   int num_rings_v, 
-		  int max_num_non_arccorrected_bins_v,
-		  int num_detectors_per_ring_v,
+                  int max_num_non_arccorrected_bins_v,
+                  int num_detectors_per_ring_v,
                   float inner_ring_radius_v,
                   float average_depth_of_interaction_v,
-		  float ring_spacing_v,
-		  float bin_size_v, float intrinsic_tilt_v,
-		  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
-		  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  float ring_spacing_v,
+                  float bin_size_v, float intrinsic_tilt_v,
+                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-		  int num_detector_layers_v);
+                  int num_detector_layers_v);
 
   // ! set all parameters
   void set_params(Type type_v, const list<string>& list_of_names_v,
                   int num_rings_v, 
-		  int max_num_non_arccorrected_bins_v,
+                  int max_num_non_arccorrected_bins_v,
                   int default_num_arccorrected_bins_v,
-		  int num_detectors_per_ring_v,
+                  int num_detectors_per_ring_v,
                   float inner_ring_radius_v,
                   float average_depth_of_interaction_v,
-		  float ring_spacing_v,
-		  float bin_size_v, float intrinsic_tilt_v,
-		  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
-		  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                  float ring_spacing_v,
+                  float bin_size_v, float intrinsic_tilt_v,
+                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-		  int num_detector_layers_v);
+                  int num_detector_layers_v);
 
 
 };
