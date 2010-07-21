@@ -75,7 +75,7 @@
 
 
 USING_NAMESPACE_STIR
-USING_NAMESPACE_STD
+//USING_NAMESPACE_STD
 
 
 /******************* Declarations local functions *******************/
