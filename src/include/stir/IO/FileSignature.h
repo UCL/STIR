@@ -75,7 +75,7 @@ class FileSignature
     {
       input.read(this->_signature, this->_max_signature_size);
       this->_signature[this->_max_signature_size-1]='\0';
-      this->_size = input.gcount();
+      this->_size = static_cast<std::size_t>(input.gcount());
     }
 };
 
