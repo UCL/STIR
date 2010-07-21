@@ -66,6 +66,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_VoxelsOnCartesianGrid"
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_zoom_image", "..\..\test\VC\test_zoom_image\test_zoom_image.vcxproj", "{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_convert_array", "..\..\test\VC\test_convert_array\test_convert_array.vcproj", "{8862CC9A-B774-4411-8267-06A07DE3E9A2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
