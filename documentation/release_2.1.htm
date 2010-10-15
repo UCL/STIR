@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.1 alpha (dated October 2009)</title>
+    <title>Summary of changes in STIR release 2.1 beta (dated October 2010)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.1 alpha (dated October 2009)</h1>
+    <h1>Summary of changes in STIR release 2.1 beta (dated October 2010)</h1>
 
 <p>Most of the work in this update was by Kris Thielemans (Hammersmith Imanet Ltd)
 and Charalampos Tsoumpas (Imperial College and Hammersmith Imanet Ltd).
@@ -70,6 +70,14 @@ to other linear models is easy.</li>
 
 <H2>What's new for developers (aside from what should be obvious
 from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<ul>
+<li> <code>ProjData::set_segment</code> was always writing the same data 
+(namely the one where view_num=segment_num). This bug existed since the
+very first version of STIR. Nobody seems to have been using
+this function, as the result was obviously wrong.</li>
+</ul>
 
 <h3>New functionality</h3>
 <ul>
