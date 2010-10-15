@@ -64,6 +64,8 @@ sample_scatter_points()
   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
   CartesianCoordinate3D<float>  origin = image.get_origin();
   // shift origin such that we refer to the middle of the scanner
+  // TODO why not use this->shift_detector_coordinates_to_origin
+  // formula below seems unsafe
   const float z_to_middle =
     (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
