@@ -63,7 +63,8 @@ int main(int argc, char *argv[])
        ++segment_num)
     {
       SegmentByView<float> segment = in_projdata_ptr->get_segment_by_view(segment_num);
-      out_projdata_ptr->set_segment(segment);
+      if (out_projdata_ptr->set_segment(segment) == Succeeded::no)
+        return EXIT_FAILURE;
       
     }
   return EXIT_SUCCESS;
