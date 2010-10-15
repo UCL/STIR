@@ -135,7 +135,7 @@ read_from_file(const string& filename,
 		filename.c_str());
 #endif
 	delete input;// TODO no longer use pointer after getting rid of ProjDataGEAdvance
-	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename) );
+	return shared_ptr<ProjData>( new GE_IO::ProjDataVOLPET(filename, openmode) );
       }
 #endif // STIR_USE_GE_IO to differentiate between Advance and VOLPET code
   }
@@ -335,7 +335,7 @@ ProjData::set_segment(const SegmentBySinogram<float>& segment)
 {
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
   {
-    if(set_viewgram(segment.get_viewgram(segment.get_segment_num()))
+    if(set_viewgram(segment.get_viewgram(view_num))
         == Succeeded::no)
 	return Succeeded::no;
   }
@@ -347,7 +347,7 @@ ProjData::set_segment(const SegmentByView<float>& segment)
 {
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
   {
-    if(set_viewgram(segment.get_viewgram(segment.get_segment_num()))
+    if(set_viewgram(segment.get_viewgram(view_num))
         == Succeeded::no)
 	return Succeeded::no;
   }
