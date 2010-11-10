@@ -205,6 +205,6 @@ fi
 
 if [ $do_website_sync = 1 ]; then
     cd $destination
-    rsync  --exclude previous -auCzv ./ krthie,stir@web.sf.net:htdocs/ --del
+    rsync  --exclude previous --exclude \*.lnk -auCzv ./ krthie,stir@web.sf.net:htdocs/ --del
 fi
 
