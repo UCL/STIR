@@ -70,6 +70,13 @@ set_up(shared_ptr<TargetT> const& target_data_ptr)
       this->prior_sptr->set_up(target_data_ptr) == Succeeded::no)
     return Succeeded::no;
 
+  if (this->num_subsets <= 0)
+    {
+      warning("Number of subsets %d should be larger than 0.",
+	      this->num_subsets);
+      return Succeeded::no;
+    }
+
   return Succeeded::yes;  
 }
 
