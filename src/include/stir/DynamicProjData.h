@@ -117,12 +117,11 @@ public:
 	  {   
 	    SegmentByView<float> segment_by_view = 
 	      (*(this->_proj_datas[frame_num-1])).get_segment_by_view(segment_num);
-	    segment_by_view /= this->_time_frame_definitions.get_duration(frame_num);
+	    segment_by_view /= static_cast<float>(this->_time_frame_definitions.get_duration(frame_num));
             if ((*(this->_proj_datas[frame_num-1])).set_segment(segment_by_view) 
                 ==Succeeded::no) 
               { 
-                error("DynamicProjData:calibrate_frames failed because set_segment_by_view failed")\
-		  ; 
+                error("DynamicProjData:calibrate_frames failed because set_segment_by_view failed"); 
               } 
 
 	}
