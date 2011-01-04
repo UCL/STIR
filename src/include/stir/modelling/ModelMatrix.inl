@@ -220,7 +220,7 @@ convert_to_total_frame_counts(const TimeFrameDefinitions& time_frame_definitions
 	error("Model array has not regular range");
       for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
 	for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
-	  this->_model_array[param_num][frame_num]*=time_frame_definitions.get_duration(frame_num);
+	  this->_model_array[param_num][frame_num]*= static_cast<float>(time_frame_definitions.get_duration(frame_num));
       
       this->_is_converted_to_total_counts=true;
     }
