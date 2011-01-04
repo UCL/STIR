@@ -47,34 +47,37 @@ public:
     \param plasma_sample_counts is the activity of plasma at the sample_time (assumed to be in \a kBq/ml)
     \param blood_sample_counts is the activity of blood at the sample_time (assumed to be in \a kBq/ml)    
   */ 
-  inline PlasmaSample( const float sample_time, const float plasma_sample_counts, const float blood_sample_counts);
+  inline PlasmaSample( const double sample_time, const float plasma_sample_counts, const float blood_sample_counts);
 
   //! default destructor
   inline ~PlasmaSample();
 
-  //! \name Functions to get parameters @{
- //! get the time of the sample
-  inline float get_time_in_s() const; 
- //! get the blood counts of the sample
+  //! \name Functions to get parameters 
+  //@{
+  //! get the time of the sample
+  inline double get_time_in_s() const; 
+  //! get the blood counts of the sample
   inline float get_blood_counts_in_kBq() const; 
- //! get the plasma counts of the sample @}
+  //! get the plasma counts of the sample 
   inline float get_plasma_counts_in_kBq() const; 
+  //@}
 
-  //! \name Functions to set parameters @{
+  //! \name Functions to set parameters 
+  //@{
   //! set the time of the sample
-  inline void set_time_in_s( const float time );
+  inline void set_time_in_s( const double time );
   //! set the blood counts of the sample
   inline void set_blood_counts_in_kBq( const float blood_counts );
-  //! set the plasma counts of the sample @}
+  //! set the plasma counts of the sample
   inline void set_plasma_counts_in_kBq( const float plasma_counts ); 
-
+  //@}
 
 
   
 private : 
   float _blood_counts;
   float _plasma_counts;
-  float _time;
+  double _time;
 };
 
 END_NAMESPACE_STIR

@@ -34,7 +34,8 @@ START_NAMESPACE_STIR
 PlasmaSample::PlasmaSample()
 { }
   //! constructor, time in s
-PlasmaSample::PlasmaSample(const float sample_time, const float plasma_sample_counts, const float blood_sample_counts)
+PlasmaSample::
+PlasmaSample(const double sample_time, const float plasma_sample_counts, const float blood_sample_counts)
 {
   PlasmaSample::set_time_in_s( sample_time );
   PlasmaSample::set_blood_counts_in_kBq( blood_sample_counts );  
@@ -46,11 +47,11 @@ PlasmaSample::~PlasmaSample()
 { }
   
   //! set the time of the sample
-void PlasmaSample::set_time_in_s( const float time )
+void PlasmaSample::set_time_in_s( const double time )
 { PlasmaSample::_time=time ; }
 
   //! get the time of the sample
-float PlasmaSample::get_time_in_s() const
+double PlasmaSample::get_time_in_s() const
 {  return PlasmaSample::_time ; }
 
   //! set the blood counts of the sample 
