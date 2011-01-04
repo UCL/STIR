@@ -38,12 +38,13 @@ PlasmaData::PlasmaData()
   this->set_if_decay_corrected(false);
 } 
 
-//! constructor giving a vector //ChT::ToDO: Better to use iterators
+//! constructor giving a vector 
+//ChT::ToDO: Better to use iterators
 PlasmaData::PlasmaData(const std::vector<PlasmaSample> & plasma_blood_plot)
 {
   this->_plasma_blood_plot=plasma_blood_plot;  
   this->set_if_decay_corrected(false); 
-  this->_isotope_halflife=-1.F;
+  this->_isotope_halflife=-1.;
 }
 
 //! default destructor
@@ -92,7 +93,7 @@ void PlasmaData::set_plot(const std::vector<PlasmaSample> & plasma_blood_plot)
 {  this->_plasma_blood_plot = plasma_blood_plot; }
 
 //!Function to shift the time data
-void PlasmaData::shift_time(const float time_shift)
+void PlasmaData::shift_time(const double time_shift)
 {       
   _time_shift=time_shift;
   for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
@@ -101,16 +102,16 @@ void PlasmaData::shift_time(const float time_shift)
 }
 
 //!Function to get the time shift
-float PlasmaData::get_time_shift()
+double PlasmaData::get_time_shift()
 {  return PlasmaData::_time_shift ; }
 
 //!Function to get the isotope halflife
-float
+double
 PlasmaData::get_isotope_halflife() const
 { return this->_isotope_halflife; }
 
 //!Function to set the isotope halflife
-void  PlasmaData::set_isotope_halflife(const float isotope_halflife) 
+void  PlasmaData::set_isotope_halflife(const double isotope_halflife) 
 { this->_isotope_halflife=isotope_halflife; }
 
 void  PlasmaData::
@@ -122,7 +123,7 @@ get_time_frame_definitions() const
 {  return this->_plasma_fdef; }
 
 void 
- PlasmaData::
+PlasmaData::
 set_if_decay_corrected(const bool is_decay_corrected) 
 {  this->_is_decay_corrected=is_decay_corrected; }
 
@@ -144,8 +145,8 @@ decay_correct_PlasmaData()
       for(std::vector<PlasmaSample>::iterator cur_iter=this->_plasma_blood_plot.begin() ;
           cur_iter!=this->_plasma_blood_plot.end() ; ++cur_iter)
         {
-          cur_iter->set_plasma_counts_in_kBq(cur_iter->get_plasma_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s()));
-          cur_iter->set_blood_counts_in_kBq(cur_iter->get_blood_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s()));  
+          cur_iter->set_plasma_counts_in_kBq( static_cast<float>(cur_iter->get_plasma_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s())));
+          cur_iter->set_blood_counts_in_kBq( static_cast<float>(cur_iter->get_blood_counts_in_kBq()*decay_correction_factor(_isotope_halflife,cur_iter->get_time_in_s())));  
         }       
       PlasmaData::set_if_decay_corrected(true);
     }
@@ -171,19 +172,19 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
   // Estimate the plasma_frame_vector and the plasma_frame_sum_vector using the integrate_discrete_function() implementation
   for (unsigned int frame_num=1; frame_num<=num_frames && frame_iter!=samples_in_frames_vector.end() ; ++frame_num, ++frame_iter )
     {     
-      std::vector<float> time_frame_vector ; 
-      std::vector<float> plasma_frame_vector ;
-      std::vector<float> blood_frame_vector ;
-      const float frame_start_time=time_frame_def.get_start_time(frame_num);//t1
-      const float frame_end_time=time_frame_def.get_end_time(frame_num);//t2
+      std::vector<double> time_frame_vector ; 
+      std::vector<double> plasma_frame_vector ;
+      std::vector<double> blood_frame_vector ;
+      const double frame_start_time=time_frame_def.get_start_time(frame_num);//t1
+      const double frame_end_time=time_frame_def.get_end_time(frame_num);//t2
 
       for(cur_iter=(this->_plasma_blood_plot).begin() ; cur_iter!=(this->_plasma_blood_plot).end() ; ++cur_iter)
         {
-          const float cur_time=(*cur_iter).get_time_in_s() ;
+          const double cur_time=(*cur_iter).get_time_in_s() ;
           if (cur_time<frame_start_time)
             continue;
-          const float cur_plasma_cnt=(*cur_iter).get_plasma_counts_in_kBq();
-          const float cur_blood_cnt=(*cur_iter).get_blood_counts_in_kBq();
+          const double cur_plasma_cnt=(*cur_iter).get_plasma_counts_in_kBq();
+          const double cur_blood_cnt=(*cur_iter).get_blood_counts_in_kBq();
           if (cur_time<frame_end_time) 
             {
               plasma_frame_vector.push_back(cur_plasma_cnt);
@@ -194,9 +195,9 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
             {
               if(plasma_frame_vector.size()<1) /* In case of no plasma data inside a frame, e.g. when there is large time_shift. */
                 {
-                  plasma_frame_vector.push_back(0.F);
-                  blood_frame_vector.push_back(0.F);
-                  time_frame_vector.push_back((frame_start_time+frame_end_time)*.5F);
+                  plasma_frame_vector.push_back(0.);
+                  blood_frame_vector.push_back(0.);
+                  time_frame_vector.push_back((frame_start_time+frame_end_time)*.5);
                 }
               else
                 {
@@ -209,18 +210,20 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
         }
       if(time_frame_vector.size()!=1)
         {
-          frame_iter->set_blood_counts_in_kBq(integrate_discrete_function(time_frame_vector,blood_frame_vector)/
-                                              (time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0])) ;
-          frame_iter->set_plasma_counts_in_kBq(integrate_discrete_function(time_frame_vector,plasma_frame_vector)/
-                                               (time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0]));
+          frame_iter->set_blood_counts_in_kBq(
+			  static_cast<float>(integrate_discrete_function(time_frame_vector,blood_frame_vector)/
+      		                     (time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0]))) ;
+          frame_iter->set_plasma_counts_in_kBq(
+             static_cast<float>(integrate_discrete_function(time_frame_vector,plasma_frame_vector)/
+                                (time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0])));
           frame_iter->set_time_in_s(0.5*(time_frame_vector[time_frame_vector.size()-1]+time_frame_vector[0]));
           start_times_vector.push_back(time_frame_vector[0]); 
           durations_vector.push_back(time_frame_vector[time_frame_vector.size()-1]-time_frame_vector[0]) ;
         }
       else if(time_frame_vector.size()==1)
         {
-          frame_iter->set_plasma_counts_in_kBq(plasma_frame_vector[0]);
-          frame_iter->set_blood_counts_in_kBq(blood_frame_vector[0]);
+          frame_iter->set_plasma_counts_in_kBq( static_cast<float>(plasma_frame_vector[0]));
+          frame_iter->set_blood_counts_in_kBq( static_cast<float>(blood_frame_vector[0]));
           frame_iter->set_time_in_s(time_frame_vector[0]);
           start_times_vector.push_back(frame_start_time);
           durations_vector.push_back(frame_end_time-frame_start_time) ;
