@@ -53,7 +53,7 @@ PatlakPlot::registered_name = "Patlak Plot";
 //! default constructor
 PatlakPlot::PatlakPlot()
 { 
-  _matrix_is_stored=false; 
+  this->_matrix_is_stored=false; 
   this->set_defaults();
 }
 
@@ -97,7 +97,7 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
       VectorWithOffset<float> time_vector(min_range[2],max_range[2]);
       PlasmaData::const_iterator cur_iter=plasma_data.begin();
 
-      float sum_value=0.F;
+      double sum_value=0.;
       unsigned int sample_num;
       //      std::cerr << "\n" << cur_iter->get_plasma_counts_in_kBq() << " " << cur_iter->get_time_in_s() << "\n";
       //      std::cerr << "\nFrame-PlasmaStart-TimeFrameFileStart-PlasmaDuration-TimeFrameFileDuration-PlasmaEnd-TimeFrameFileEnd\n" ;
@@ -111,16 +111,16 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
       for(sample_num=starting_frame ; cur_iter!=plasma_data.end() ; ++sample_num, ++cur_iter )
 	{
 	 sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
-	  patlak_array[1][sample_num]=sum_value;
+	  patlak_array[1][sample_num]= static_cast<float>(sum_value);
 	  patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
 	  if(plasma_data.get_if_decay_corrected())
 	    {
 	      const float dec_fact=
-		decay_correction_factor(plasma_data.get_isotope_halflife(),plasma_data.get_time_frame_definitions().get_start_time(sample_num),
-					plasma_data.get_time_frame_definitions().get_end_time(sample_num));
+		 static_cast<float>(decay_correction_factor(plasma_data.get_isotope_halflife(),plasma_data.get_time_frame_definitions().get_start_time(sample_num),
+					plasma_data.get_time_frame_definitions().get_end_time(sample_num)));
 	      patlak_array[1][sample_num]/=dec_fact;
 	      patlak_array[2][sample_num]/=dec_fact;							
-	      time_vector[sample_num]=0.5*(time_frame_definitions.get_end_time(sample_num)+time_frame_definitions.get_start_time(sample_num)) ;
+	      time_vector[sample_num]= static_cast<float>(0.5*(time_frame_definitions.get_end_time(sample_num)+time_frame_definitions.get_start_time(sample_num)));
 	    }
 	}
       if(plasma_data.get_if_decay_corrected())
@@ -154,7 +154,7 @@ create_model_matrix()
       VectorWithOffset<float> time_vector(min_range[2],max_range[2]);
       PlasmaData::const_iterator cur_iter=this->_plasma_frame_data.begin();
 
-      float sum_value=0.F;
+      double sum_value=0.;
       unsigned int sample_num;
 
       for(sample_num=1 ; sample_num<this->_starting_frame; ++sample_num, ++cur_iter )
@@ -165,17 +165,17 @@ create_model_matrix()
       for(sample_num=this->_starting_frame ; cur_iter!=this->_plasma_frame_data.end() ; ++sample_num, ++cur_iter )
 	{
 	 sum_value+=cur_iter->get_plasma_counts_in_kBq()*this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
-	 patlak_array[1][sample_num]=sum_value;
+	 patlak_array[1][sample_num]= static_cast<float>(sum_value);
 	 patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
 
       if(this->_plasma_frame_data.get_if_decay_corrected())
 	{
 	  const float dec_fact=
-	    decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
-				    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num));
+	     static_cast<float>(decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
+				    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num)));
 	  patlak_array[1][sample_num]/=dec_fact;
 	  patlak_array[2][sample_num]/=dec_fact;							
-	  time_vector[sample_num]=0.5*(this->_frame_defs.get_end_time(sample_num)+this->_frame_defs.get_start_time(sample_num)) ;
+	  time_vector[sample_num]= static_cast<float>(0.5*(this->_frame_defs.get_end_time(sample_num)+this->_frame_defs.get_start_time(sample_num)));
 	}
     }
   if(this->_plasma_frame_data.get_if_decay_corrected())
