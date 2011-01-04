@@ -87,22 +87,23 @@ class PlasmaData
     \note This cannot be estimated in the current implementation of the direct reconstructions. Thus, it is given externally. */
 
    //! \name Functions to get parameters @{
-  inline float get_time_shift();
+  inline double get_time_shift();
   inline bool get_if_decay_corrected() const ;
-  inline float get_isotope_halflife() const;  
+  inline double get_isotope_halflife() const;  
   inline TimeFrameDefinitions get_time_frame_definitions() const;  //!@}
   //! \name Functions to set parameters 
   //!@{
   inline void set_time_frame_definitions(const TimeFrameDefinitions & plasma_fdef);   //!<\note The set_time_frame_definitions() is prefered than giving directly the Scan TimeFrameDefinitions since the sample may not be measured for all the frames \n For example at the beginning or at the end of the scan.
   inline void set_if_decay_corrected(const bool is_decay_corrected);
-  inline void set_isotope_halflife(const float isotope_halflife);  
-  inline void shift_time(const float time_shift);
+  inline void set_isotope_halflife(const double isotope_halflife);  
+  inline void shift_time(const double time_shift);
   //!@}
 
   //!Function to decay correct the data
   inline void decay_correct_PlasmaData();
 
-  //!  begin() and end() iterators for the plasma curve and the size() function ;   @{
+  //!  begin() and end() iterators for the plasma curve and the size() function 
+  //@{
   inline const_iterator begin() const ;
   inline const_iterator end() const ;
   inline unsigned int size() const ;
@@ -120,9 +121,9 @@ class PlasmaData
   bool _is_decay_corrected ;
   std::vector<PlasmaSample> _plasma_blood_plot ;
   TimeFrameDefinitions _plasma_fdef;
-  float _isotope_halflife;
+  double _isotope_halflife;
   int _sample_size;
-  float _time_shift ;
+  double _time_shift ;
 };
 
 END_NAMESPACE_STIR
