@@ -55,7 +55,10 @@ read_from_file(const string& filename) // The written projection data is read in
   {
     std::fstream input(filename.c_str(), std::ios::in | std::ios::binary);
     if (!input)
-      error("DynamicProjData::read_from_file: error opening file %s\n", filename.c_str());
+      {
+        warning("DynamicProjData::read_from_file: error opening file '%s'. Does it exist?", filename.c_str());
+        return 0;
+      }
     input.read(signature, max_length);
     signature[max_length-1]='\0';
   }
@@ -64,7 +67,7 @@ read_from_file(const string& filename) // The written projection data is read in
   if (strncmp(signature, "MATRIX", 6) == 0)
   {
 #ifndef NDEBUG
-    warning("DynamicProjData::read_from_file trying to read %s as ECAT7\n", filename.c_str());
+    warning("DynamicProjData::read_from_file trying to read '%s' as ECAT7", filename.c_str());
 #endif
     USING_NAMESPACE_ECAT
     USING_NAMESPACE_ECAT7
@@ -74,7 +77,7 @@ read_from_file(const string& filename) // The written projection data is read in
       Main_header mhead;
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
         {
-          warning("DynamicProjData::read_from_file cannot read %s as ECAT7\n", filename.c_str());
+          warning("DynamicProjData::read_from_file cannot read '%s' as ECAT7", filename.c_str());
           return 0;
         }
       DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData;
@@ -101,19 +104,27 @@ read_from_file(const string& filename) // The written projection data is read in
         }
       if (is_null_ptr(dynamic_proj_data_ptr->_proj_datas[0]))
               error("DynamicProjData: No frame available\n");
+      return dynamic_proj_data_ptr;
     }
     else
     {
       if (is_ECAT7_file(filename))
-        warning("DynamicProjData::read_from_file ECAT7 file %s should be projection data.\n", filename.c_str());
+        {
+          warning("DynamicProjData::read_from_file ECAT7 file '%s' should be projection data.", filename.c_str());
+          return 0;
+        }
     }
   }
   else 
-    warning("DynamicProjData::read_from_file %s seems to correspond to ECAT6 projection data. I cannot read this\n");
+    {
+      warning("DynamicProjData::read_from_file '%s' seems to correspond to ECAT projection data, but not ECAT7. I cannot read this.", filename.c_str());
+      return 0;
+    }
 #endif // end of HAVE_LLN_MATRIX
-    // }    
+
   
   // return a zero pointer if we get here
+  warning("DynamicProjData::read_from_file cannot read '%s'. Unsupported file format?", filename.c_str());
   return 0;
 }
 
