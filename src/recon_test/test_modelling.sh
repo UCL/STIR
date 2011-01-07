@@ -20,7 +20,7 @@ export ITER
 export MAXSEG
 export SAVITER
 
-PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
+PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/modelling_utilities:$WORKSPACE/$DEST/recon_test:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
 
 mkdir -p test_modelling_output
 cd test_modelling_output
@@ -111,8 +111,11 @@ ifheaders_for_ecat7 dyn_sens.img  < /dev/null
 echo "Compare the parametric images"
 for par in 1 2
 do 
+    echo "indirect to original"
     compare_image -t .01 indirect_Patlak_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
+    echo "direct to original"
     compare_image -t .01 P${direct}_${ITER}_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
+    echo "direct to indirect"
     compare_image -t .01 P${direct}_${ITER}_img_f${par}g1d0b0.hv indirect_Patlak_img_f${par}g1d0b0.hv  
 done
 echo "Comparison is OK"
@@ -137,7 +140,7 @@ echo " "
 echo "Min Counts for Par 1 "
 
 value_1=`manip_image test_mult_dyn_with_model_img_f1g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $6}' `
-is_differ=`echo ${value_1} | nawk ' { print ($1>.0001) } '` 
+is_differ=`echo ${value_1} | awk ' { print ($1>.0001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate min_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
     exit 1
@@ -147,7 +150,7 @@ fi
 
 echo "Min Counts for Par 2 "
 value_2=`manip_image test_mult_dyn_with_model_img_f2g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $6}' `
-is_differ=`echo ${value_2} | nawk ' { print ($1>.0001) } '` 
+is_differ=`echo ${value_2} | awk ' { print ($1>.0001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate min_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
     exit 1
@@ -158,7 +161,7 @@ fi
 echo "Max Counts for Par 1 "
 value_3=`manip_image test_mult_dyn_with_model_img_f1g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $7}' `
 # 6.391818 is the scale due to the zoom factor.
-is_differ=`echo ${value_3} | nawk ' { print (($1-1619.32*6.391818*6.391818)*($1-1619.32*6.391818*6.391818)>.5*6.391818*6.391818*6.391818*6.391818*.5) } '` 
+is_differ=`echo ${value_3} | awk ' { print (($1-1619.32*6.391818*6.391818)*($1-1619.32*6.391818*6.391818)>.5*6.391818*6.391818*6.391818*6.391818*.5) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate max_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
     exit 1
@@ -168,7 +171,7 @@ fi
 
 echo "Max Counts for Par 2 "
 value_4=`manip_image test_mult_dyn_with_model_img_f2g1d0b0.hv <manip_image_counts.inp 2>&1 |  grep "Max" |awk '{print $7}' `
-is_differ=`echo ${value_4} | nawk ' { print (($1-0.356552*6.391818*6.391818)*($1-0.356552*6.391818*6.391818)>.001*6.391818*6.391818*.001) } '` 
+is_differ=`echo ${value_4} | awk ' { print (($1-0.356552*6.391818*6.391818)*($1-0.356552*6.391818*6.391818)>.001*6.391818*6.391818*.001) } '` 
 if [  ${is_differ} -eq 1 ]; then   
     echo "When estimate max_counts_in_images values do not match. Check mult_model_with_dyn_images.cxx"
     exit 1
