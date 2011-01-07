@@ -64,7 +64,7 @@ echo "Test the 'get_dynamic_images_from_parametric_images'"
 
 # Create the appropriate files
 ifheaders_for_ecat7 dyn_from_p0005-p5.img  < /dev/null
-if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
+# if [ ! -r fwd_dyn_from_p0005-p5.S ]; then
 rm -f fwd.par
 cat <<EOF > fwd.par
 Forward Projector parameters:=
@@ -77,7 +77,7 @@ EOF
 for fr in `count 23 28`; do
     fwdtest fwd_dyn_from_p0005-p5_f${fr}g1d0b0 ${INPUTDIR}ECAT_931_projdata_template.hs dyn_from_p0005-p5_img_f${fr}g1d0b0.hv fwd.par < /dev/null
 done
-fi
+#fi
 
 tmpvar="" ;
 for fr in `count 1 23 `; do
@@ -132,9 +132,9 @@ echo "Comparison is OK"
 
 echo "Test the utility: 'mult_model_with_dyn_images'"
 echo "Multiply the  dynamic images with the model matrix to get images in the parametric space."
-if [ ! -r test_mult_dyn_with_model.img ]; then
+#if [ ! -r test_mult_dyn_with_model.img ]; then
     cp indirect_Patlak.img test_mult_dyn_with_model.img
-fi
+#fi
 mult_model_with_dyn_images test_mult_dyn_with_model.img dyn_from_p0005-p5.img ${INPUTDIR}PatlakPlot.par
 ifheaders_for_ecat7 test_mult_dyn_with_model.img < /dev/null
 
