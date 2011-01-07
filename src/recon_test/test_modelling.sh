@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # $Id$
 # A script to check for any changes in the code which didn't cause any changes in the results.
 # Author: Charalampos Tsoumpas
@@ -20,7 +20,7 @@ export ITER
 export MAXSEG
 export SAVITER
 
-PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/modelling_utilities:$WORKSPACE/$DEST/recon_test:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
+PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/utilities/ecat:$WORKSPACE/scripts/:$WORKSPACE/$DEST/modelling_utilities:$WORKSPACE/$DEST/recon_test:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
 
 mkdir -p test_modelling_output
 cd test_modelling_output
@@ -109,13 +109,16 @@ ifheaders_for_ecat7 dyn_from_recon_p0005-p5.img < /dev/null
 ifheaders_for_ecat7 dyn_sens.img  < /dev/null
 
 echo "Compare the parametric images"
-for par in 1 2
-do 
-    echo "indirect to original"
+echo "indirect to original"
+for par in 1 2; do
     compare_image -t .01 indirect_Patlak_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
-    echo "direct to original"
+done
+echo "direct to original"
+for par in 1 2; do
     compare_image -t .01 P${direct}_${ITER}_img_f${par}g1d0b0.hv p0005-p5_img_f${par}g1d0b0.hv  
-    echo "direct to indirect"
+done
+echo "direct to indirect"
+for par in 1 2; do
     compare_image -t .01 P${direct}_${ITER}_img_f${par}g1d0b0.hv indirect_Patlak_img_f${par}g1d0b0.hv  
 done
 echo "Comparison is OK"
