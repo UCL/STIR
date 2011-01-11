@@ -31,6 +31,7 @@
 #include "stir/Array.h"
 #include "stir/numerics/determinant.h"
 #include <complex>
+#include "stir/Array_complex_numbers.h"
 
 START_NAMESPACE_STIR
 
@@ -86,7 +87,7 @@ determinant(const Array<2,elemT>& m)
   if (m.size() == 3)
     return detail::determinant_size3(m);
   error("determinant called for size larger than 3. Code in file %s needs work",
-	__FILE__);
+        __FILE__);
   // return to avoid compiler warning
   return 0;
 }
