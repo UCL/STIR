@@ -21,7 +21,7 @@
 /*!
   \file 
   \ingroup Array 
-  \brief inline implementations for the Array class 
+  \brief inline implementations for the stir::Array class 
 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
