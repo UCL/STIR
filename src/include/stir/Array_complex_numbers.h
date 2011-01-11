@@ -79,8 +79,21 @@ operator -= (Array<num_dimensions, std::complex<elemT> >& lhs, const elemT& rhs)
     *iter1++ -= rhs;
   return lhs;
 }
-//@}
 
+
+// a few common cases given explictly here such that we don't get conversion warnings all the time.
+inline 
+void assign(std::complex<double>& x, const int y)
+{
+  x=static_cast<std::complex<double> >(y);
+}
+
+inline 
+void assign(std::complex<float>& x, const int y)
+{
+  x=static_cast<float>(y);
+}
+//@}
 END_NAMESPACE_STIR
 
 #endif
