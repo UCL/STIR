@@ -96,6 +96,10 @@ template <class T>
 class shared_ptr 
 {
 public:    
+  typedef T element_type;
+  typedef T value_type;
+  typedef T * pointer;
+
   inline shared_ptr(T * t = NULL);
   
   inline ~shared_ptr();
