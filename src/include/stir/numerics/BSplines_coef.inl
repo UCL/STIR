@@ -33,7 +33,12 @@
 #include "stir/assign.h"
 #include "stir/numerics/IR_filters.h"
 START_NAMESPACE_STIR
-namespace BSpline {
+#ifdef _MSC_VER
+  // disable warning about conversion frm double to float with possible loss of data
+  #pragma warning(disable:4244)
+#endif
+
+  namespace BSpline {
 
   namespace detail 
   {
@@ -144,5 +149,10 @@ namespace BSpline {
   }
 
 } // end BSpline namespace
+
+#ifdef _MSC_VER
+  // reinstate warning about conversion
+  #pragma warning(default:4244)
+#endif
 
 END_NAMESPACE_STIR

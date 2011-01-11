@@ -66,7 +66,15 @@ template <typename T>
 inline void inverse_fourier(T& c, const int sign=1)
 {
   fourier(c,-sign);
+#ifdef _MSC_VER
+  // disable warning about conversion
+  #pragma warning(disable:4244)
+#endif
   c /= c.size_all();
+#ifdef _MSC_VER
+  // disable warning about conversion
+  #pragma warning(default:4244)
+#endif
 }
 
 /*! \ingroup DFT
@@ -112,7 +120,14 @@ template <typename T>
 inline void inverse_fourier_1d(T& c, const int sign=1)
 {
   fourier_1d(c,-sign);
+#ifdef _MSC_VER
+  // disable warning about conversion
+  #pragma warning(disable:4244)
+#endif
   c /= c.size();
+#ifdef _MSC_VER
+  #pragma warning(default:4244)
+#endif
 }
 
 /*! \ingroup DFT
