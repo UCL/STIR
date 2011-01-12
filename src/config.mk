@@ -131,17 +131,22 @@ IE_INCLUDE_DIR=${IE_BASE_DIR}
 
 #******* compiler and linker options
 
-ifeq ($(SYSTEM),LINUX)
-# note for gcc 2.95.2:
-# do not use -malign-double as it crashes in iostream stuff
-OPTIM_CFLAGS=-O3  -ffast-math -DNDEBUG
+IS_GCC:=$(shell $(CXX) -v 2>&1 |grep "gcc")
+ifneq ("$(IS_GCC)","")
+  FAST_CFLAG=-ffast-math
 else
-ifeq ($(SYSTEM),CYGWIN)
-OPTIM_CFLAGS=-O3  -ffast-math -malign-double -DNDEBUG
-EXTRA_LINKFLAGS+=-Xlinker --enable-auto-import
-else
-OPTIM_CFLAGS=-O3 -DNDEBUG
+  ifeq ($(CC),icc)
+    FAST_CFLAG=-fast
+  endif
 endif
+
+# note for gcc 2.95.2:xxxx
+# do not use -malign-double as it crashes in iostream stuff
+OPTIM_CFLAGS=-O3 -DNDEBUG $(FAST_CFLAG)
+
+ifeq ($(SYSTEM),CYGWIN)
+OPTIM_CFLAGS+= -malign-double
+EXTRA_LINKFLAGS+=-Xlinker --enable-auto-import
 endif
 
 NONOPTIM_CFLAGS=-g
@@ -192,6 +197,12 @@ SYS_LIBS = -lm
  
 # add any others specific to your system using the SYSTEM macros
 
+#******** system functions
+# try to find if the system has its own getopt function
+# Our current attempt is very feeble, but works on Linux and CYGWIN
+ifneq ($(wildcard /usr/include/getopt.h),"")
+  CFLAGS+=-DHAVE_SYSTEM_GETOPT
+endif
 
 #********* macros for compiler options
 # see below why we need them
