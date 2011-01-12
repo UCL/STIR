@@ -3,7 +3,7 @@
 //
 /*!
   \file
-  \ingroup buildblock
+  \ingroup densitydata
   \brief Implementation of class stir::DynamicDiscretisedDensity
   \author Kris Thielemans
   \author Charalampos Tsoumpas
@@ -275,7 +275,8 @@ set_isotope_halflife(const float isotope_halflife)
     {
       for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
         { 
-          *(_densities[frame_num-1])*=decay_correction_factor(_isotope_halflife,_time_frame_definitions.get_start_time(frame_num),_time_frame_definitions.get_end_time(frame_num));     
+          *(_densities[frame_num-1])*=
+            static_cast<float>(decay_correction_factor(_isotope_halflife,_time_frame_definitions.get_start_time(frame_num),_time_frame_definitions.get_end_time(frame_num)));
         }
       _is_decay_corrected=true;
     }
