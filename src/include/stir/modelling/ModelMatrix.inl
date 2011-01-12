@@ -20,7 +20,7 @@
   \file
   \ingroup modelling
 
-  \brief Implementations of inline functions of class stir::ModelMatrix<num_param,num_samples>
+  \brief Implementations of inline functions of class stir::ModelMatrix
 
   \author Charalampos Tsoumpas
 
@@ -28,10 +28,10 @@
   $Revision$
 */
 
-
+#include <algorithm>
 START_NAMESPACE_STIR
 
-  //! default constructor
+//! default constructor
 template <int num_param> 
 ModelMatrix<num_param>::ModelMatrix()
 {
@@ -42,7 +42,7 @@ ModelMatrix<num_param>::ModelMatrix()
   this->_is_converted_to_total_counts=false;
 }
 
-  //! default destructor
+//! default destructor
 template <int num_param> 
 ModelMatrix<num_param>::~ModelMatrix()
 { }
@@ -70,10 +70,10 @@ void ModelMatrix<num_param>::read_from_file(const std::string input_string)
   while(true)
     {
       for(unsigned int frame_num=starting_frame; frame_num<=last_frame; ++frame_num)
-	for(int param_num=1;param_num<=num_param;++param_num)
-	  data_stream >> input_array[param_num][frame_num] ;
+        for(int param_num=1;param_num<=num_param;++param_num)
+          data_stream >> input_array[param_num][frame_num] ;
       if(!data_stream) 
-	break;	     	     
+        break;               
     }
   this->_model_array=input_array;  // I do not pass info if it is calibrated and if it includes time frame_duration, yet.
 }     
@@ -106,7 +106,7 @@ Succeeded ModelMatrix<num_param>::write_to_file(const std::string output_string)
     {
       data_stream << "\n";
       for(int param_num=1;param_num<=num_param;++param_num)
-	data_stream << this->_model_array[param_num][frame_num] << " ";
+        data_stream << this->_model_array[param_num][frame_num] << " ";
     }
   data_stream.close();
   return Succeeded::yes;
@@ -137,7 +137,7 @@ get_model_array_sum() const
     {
       sum[param_num]=0.F;
       for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
-	sum[param_num] += this->_model_array[param_num][frame_num] ; 
+        sum[param_num] += this->_model_array[param_num][frame_num] ; 
     }
   return 
       sum;
@@ -154,7 +154,7 @@ threshold_model_array(const float threshold_value)
   for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
     for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
       if(this->_model_array[param_num][frame_num]<=0)
-	this->_model_array[param_num][frame_num]=threshold_value;
+        this->_model_array[param_num][frame_num]=threshold_value;
 
 }
 
@@ -171,18 +171,18 @@ set_if_in_correct_scale(const bool in_correct_scale)
 template <int num_param> 
 void ModelMatrix<num_param>::
 uncalibrate(const float cal_factor)
-{	    
+{           
   if(this->_is_uncalibrated)
     warning("ModelMatrix is already uncalibrated, so it will be not re-uncalibrated.");
   else
     {
       BasicCoordinate<2,int> model_array_min, model_array_max;
       if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
-	error("Model array has not regular range");
+        error("Model array has not regular range");
 
       for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
-	for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
-	  this->_model_array[param_num][frame_num]/=cal_factor;
+        for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
+          this->_model_array[param_num][frame_num]/=cal_factor;
   
       ModelMatrix<num_param>::set_if_uncalibrated(true);
     }  
@@ -198,10 +198,10 @@ scale_model_matrix(const float scale_factor)
     {
       BasicCoordinate<2,int> model_array_min, model_array_max;
       if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
-	error("Model array has not regular range");
+        error("Model array has not regular range");
       for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
-	for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
-	  this->_model_array[param_num][frame_num]*= scale_factor;
+        for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
+          this->_model_array[param_num][frame_num]*= scale_factor;
       
       this->_in_correct_scale=true;
     } 
@@ -217,10 +217,10 @@ convert_to_total_frame_counts(const TimeFrameDefinitions& time_frame_definitions
     {
       BasicCoordinate<2,int> model_array_min, model_array_max;
       if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
-	error("Model array has not regular range");
+        error("Model array has not regular range");
       for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
-	for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
-	  this->_model_array[param_num][frame_num]*= static_cast<float>(time_frame_definitions.get_duration(frame_num));
+        for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
+          this->_model_array[param_num][frame_num]*= static_cast<float>(time_frame_definitions.get_duration(frame_num));
       
       this->_is_converted_to_total_counts=true;
     }
@@ -240,8 +240,8 @@ get_time_vector() const
 template<int num_param>
 void 
 ModelMatrix<num_param>::
-multiply_dynamic_image_with_model(ParametricVoxelsOnCartesianGrid & parametric_image,
-				  const DynamicDiscretisedDensity & dynamic_image ) const
+multiply_dynamic_image_with_model_and_add_to_input(ParametricVoxelsOnCartesianGrid & parametric_image,
+                                                   const DynamicDiscretisedDensity & dynamic_image ) const
 {
   BasicCoordinate<2,int> model_array_min, model_array_max;
   if(!this->_model_array.get_regular_range(model_array_min,model_array_max))
@@ -249,7 +249,7 @@ multiply_dynamic_image_with_model(ParametricVoxelsOnCartesianGrid & parametric_i
 
   // Assert that the sizes of the one frame of the dynamic image is equal with the parametric image size.
   // ChT::ToDo::Might be better to assert that each of the dimensions sizes with their voxle sizes are equal.
-  // Maybe this will be easier if I clone the single images for the two and then compare them.
+  // Could probably use has_same_characteristics()?
   assert(dynamic_image[1].size_all()==parametric_image.size_all());
   assert(dynamic_image.get_time_frame_definitions().get_num_frames()==static_cast<unsigned int> (model_array_max[2]));
   assert(model_array_max[1]-model_array_min[1]+1==num_param);
@@ -261,30 +261,40 @@ multiply_dynamic_image_with_model(ParametricVoxelsOnCartesianGrid & parametric_i
       const int min_j_index = dynamic_image[1][k].get_min_index(); 
       const int max_j_index = dynamic_image[1][k].get_max_index();
       for ( int j = min_j_index; j<= max_j_index; ++j)
-	{
-	  const int min_i_index = dynamic_image[1][k][j].get_min_index(); 
-	  const int max_i_index = dynamic_image[1][k][j].get_max_index();
-	  for ( int i = min_i_index; i<= max_i_index; ++i)
-	    for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
-	      {
-		float sum_over_frames=0.F;
-		for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
-		  sum_over_frames+=this->_model_array[param_num][frame_num]*dynamic_image[frame_num][k][j][i]; 
-		parametric_image[k][j][i][param_num]=sum_over_frames;
-	      }
-	}
+        {
+          const int min_i_index = dynamic_image[1][k][j].get_min_index(); 
+          const int max_i_index = dynamic_image[1][k][j].get_max_index();
+          for ( int i = min_i_index; i<= max_i_index; ++i)
+            for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
+              {
+                float sum_over_frames=0.F;
+                for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)
+                  sum_over_frames+=this->_model_array[param_num][frame_num]*dynamic_image[frame_num][k][j][i]; 
+                parametric_image[k][j][i][param_num]+=sum_over_frames;
+              }
+        }
     }
 }
 
 template<int num_param>
 void 
 ModelMatrix<num_param>::
-multiply_parametric_image_with_model(DynamicDiscretisedDensity & dynamic_image,  
-				     const ParametricVoxelsOnCartesianGrid & parametric_image ) const
+multiply_dynamic_image_with_model(ParametricVoxelsOnCartesianGrid & parametric_image,
+                                  const DynamicDiscretisedDensity & dynamic_image ) const
+{
+  std::fill(parametric_image.begin_all(), parametric_image.end_all(), 0.F);
+  this->multiply_dynamic_image_with_model_and_add_to_input(parametric_image,dynamic_image );
+}
+
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+multiply_parametric_image_with_model_and_add_to_input(DynamicDiscretisedDensity & dynamic_image,  
+                                                      const ParametricVoxelsOnCartesianGrid & parametric_image ) const
 {
   BasicCoordinate<2,int> model_array_min, model_array_max;
   if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
-    error("Model array has not regular range");
+    error("Model array does not have a regular range");
 
   // Assert that the sizes of the one frame of the dynamic image is equal with the parametric image size.
   // ChT::ToDo::Might be better to assert that each of the dimensions sizes with their voxle sizes are equal.
@@ -300,27 +310,36 @@ multiply_parametric_image_with_model(DynamicDiscretisedDensity & dynamic_image,
       const int min_j_index = dynamic_image[1][k].get_min_index(); 
       const int max_j_index = dynamic_image[1][k].get_max_index();
       for ( int j = min_j_index; j<= max_j_index; ++j)
-	{
-	  const int min_i_index = dynamic_image[1][k][j].get_min_index(); 
-	  const int max_i_index = dynamic_image[1][k][j].get_max_index();
-	  for ( int i = min_i_index; i<= max_i_index; ++i)
-	    for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)	 
-	  {
-	    float sum_over_param=0.F;
-	    for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
-	      sum_over_param+=parametric_image[k][j][i][param_num]*this->_model_array[param_num][frame_num]; 
-	    dynamic_image[frame_num][k][j][i]=sum_over_param;
-	  }
-	}
+        {
+          const int min_i_index = dynamic_image[1][k][j].get_min_index(); 
+          const int max_i_index = dynamic_image[1][k][j].get_max_index();
+          for ( int i = min_i_index; i<= max_i_index; ++i)
+            for(int frame_num = model_array_min[2];frame_num<=model_array_max[2] ; ++frame_num)  
+          {
+            float sum_over_param=0.F;
+            for(int param_num = model_array_min[1];param_num<=model_array_max[1] ; ++param_num)
+              sum_over_param+=parametric_image[k][j][i][param_num]*this->_model_array[param_num][frame_num]; 
+            dynamic_image[frame_num][k][j][i]=sum_over_param;
+          }
+        }
     }
 }
 
+template<int num_param>
+void 
+ModelMatrix<num_param>::
+multiply_parametric_image_with_model(DynamicDiscretisedDensity & dynamic_image,  
+                                     const ParametricVoxelsOnCartesianGrid & parametric_image ) const
+{
+  std::fill(dynamic_image.begin_all(), dynamic_image.end_all(), 0.F);
+  this->multiply_parametric_image_with_model_and_add_to_input(dynamic_image, parametric_image);
+}
 
 template<int num_param>
 void 
 ModelMatrix<num_param>::
 normalise_parametric_image_with_model_sum( ParametricVoxelsOnCartesianGrid & parametric_image_out,
-				     const ParametricVoxelsOnCartesianGrid & parametric_image ) const
+                                     const ParametricVoxelsOnCartesianGrid & parametric_image ) const
 {
   BasicCoordinate<2,int> model_array_min, model_array_max;
   if(!(this->_model_array).get_regular_range(model_array_min,model_array_max))
@@ -336,15 +355,15 @@ normalise_parametric_image_with_model_sum( ParametricVoxelsOnCartesianGrid & par
       const int min_j_index = (parametric_image.construct_single_density(num_param))[k].get_min_index(); 
       const int max_j_index = (parametric_image.construct_single_density(num_param))[k].get_max_index();
       for ( int j = min_j_index; j<= max_j_index; ++j)
-	{
-	  const int min_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_min_index(); 
-	  const int max_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_max_index();
-	  for ( int i = min_i_index; i<= max_i_index; ++i)
-	    {
-	      parametric_image_out[k][j][i][1]=parametric_image[k][j][i][1]/((this->get_model_array_sum())[2]);  
-	      parametric_image_out[k][j][i][2]=parametric_image[k][j][i][2]/((this->get_model_array_sum())[1]);
-	    }
-	}
+        {
+          const int min_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_min_index(); 
+          const int max_i_index = (parametric_image.construct_single_density(num_param))[k][j].get_max_index();
+          for ( int i = min_i_index; i<= max_i_index; ++i)
+            {
+              parametric_image_out[k][j][i][1]=parametric_image[k][j][i][1]/((this->get_model_array_sum())[2]);  
+              parametric_image_out[k][j][i][2]=parametric_image[k][j][i][2]/((this->get_model_array_sum())[1]);
+            }
+        }
     }
 }
  

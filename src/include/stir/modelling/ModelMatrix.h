@@ -93,16 +93,32 @@ public:
      /todo Maybe it will be better to lie in a linear models class.
    */
    //@{
+   //! multiply (transpose) model-matrix with dynamic image and add result to original \c parametric_image
+   inline void 
+    multiply_dynamic_image_with_model_and_add_to_input(ParametricVoxelsOnCartesianGrid & parametric_image,
+                                                       const DynamicDiscretisedDensity & dynamic_image) const ;
+   //! multiply (transpose) model-matrix with dynamic image (overwriting original content of \c parametric_image)
+   /*! \todo current implementation first fills first argument with 0 and then calls 
+    multiply_dynamic_image_with_model_and_add_to_input(). This is somewhat inefficient.
+   */
    inline void 
     multiply_dynamic_image_with_model(ParametricVoxelsOnCartesianGrid & parametric_image,
-				      const DynamicDiscretisedDensity & dynamic_image) const ;
+                                      const DynamicDiscretisedDensity & dynamic_image) const ;
+   //! multiply model-matrix with parametric image and add result to original \c dynamic_image
+   inline void
+     multiply_parametric_image_with_model_and_add_to_input(DynamicDiscretisedDensity & dynamic_image,
+                                                          const ParametricVoxelsOnCartesianGrid & parametric_image ) const ; 
+   //! multiply model-matrix with parametric image (overwriting original content of \c dynamic_image)
+   /*! \todo current implementation first fills first argument with 0 and then calls 
+    multiply_dynamic_image_with_model_and_add_to_input(). This is somewhat inefficient.
+   */
    inline void
     multiply_parametric_image_with_model(DynamicDiscretisedDensity & dynamic_image,
-					 const ParametricVoxelsOnCartesianGrid & parametric_image ) const ; 
+                                         const ParametricVoxelsOnCartesianGrid & parametric_image ) const ; 
 
    inline void 
      normalise_parametric_image_with_model_sum( ParametricVoxelsOnCartesianGrid & parametric_image_out,
-					   const ParametricVoxelsOnCartesianGrid & parametric_image ) const ; 
+                                           const ParametricVoxelsOnCartesianGrid & parametric_image ) const ; 
   //@}
 private:
 
