@@ -41,7 +41,7 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include <algorithm>
-#include <getopt.h>
+#include "stir/getopt.h"
 
 int main(int argc, char * argv[])
 {
