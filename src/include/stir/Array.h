@@ -37,7 +37,7 @@
   $Revision$
 
   Not all compilers support the full iterators, so you could disabled them by editing 
-  the file and removing the #define ARRAY_FULL. Lots of other things in the library 
+  the file and removing the define ARRAY_FULL. Lots of other things in the library 
   won't work then.
 */
 #include "stir/NumericVectorWithOffset.h"
