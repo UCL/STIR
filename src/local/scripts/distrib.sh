@@ -126,7 +126,7 @@ if [ $do_doc = 1 ]; then
   cd $WORKSPACE
   # make doxygen
   if [ $do_doxygen = 1 ]; then
-    PATH=$PATH:/cygdrive/c/Program\ Files/GPLGS:/cygdrive/c/Program\ Files/Graphviz2.22/bin
+    PATH=$PATH:/cygdrive/c/Program\ Files/GPLGS:/cygdrive/d/Program\ Files/Graphviz2.26.3/bin
     doxygen
   fi
   cd ../documentation
