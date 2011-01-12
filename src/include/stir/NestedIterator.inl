@@ -39,6 +39,15 @@ NestedIterator<topleveliterT, GetRestRangeFunctionT>::
 NestedIterator()
 {}
 
+#if defined __GNUC__
+// Attempt to switch off warning about unitialised _current_rest_iter
+// as this is only initialised/used if the top_level_iter specifies a valid range
+// Unfortunately, the relevant pragma only exists from gcc 4.6
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
+#endif
 template <class topleveliterT, class GetRestRangeFunctionT>
 void 
 NestedIterator<topleveliterT, GetRestRangeFunctionT>::
@@ -52,6 +61,12 @@ _set_rest_iters_for_current_top_level_iter()
 	GetRestRangeFunctionT().end(this->_current_top_level_iter);
     }
 }
+#if defined __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic pop
+#endif
+#endif
+
 template <class topleveliterT, class GetRestRangeFunctionT>
 NestedIterator<topleveliterT, GetRestRangeFunctionT>::
 NestedIterator(const topleveliterT& top_level_iter,
