@@ -102,31 +102,31 @@ get_model_matrix(const PlasmaData& plasma_data,const TimeFrameDefinitions& time_
       //      std::cerr << "\n" << cur_iter->get_plasma_counts_in_kBq() << " " << cur_iter->get_time_in_s() << "\n";
       //      std::cerr << "\nFrame-PlasmaStart-TimeFrameFileStart-PlasmaDuration-TimeFrameFileDuration-PlasmaEnd-TimeFrameFileEnd\n" ;
       for(sample_num=1 ; sample_num<starting_frame; ++sample_num, ++cur_iter )
-	{
-	  sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
-	}
+        {
+          sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
+        }
       
       assert(cur_iter==plasma_data.begin()+starting_frame-1);
 
       for(sample_num=starting_frame ; cur_iter!=plasma_data.end() ; ++sample_num, ++cur_iter )
-	{
-	 sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
-	  patlak_array[1][sample_num]= static_cast<float>(sum_value);
-	  patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
-	  if(plasma_data.get_if_decay_corrected())
-	    {
-	      const float dec_fact=
-		 static_cast<float>(decay_correction_factor(plasma_data.get_isotope_halflife(),plasma_data.get_time_frame_definitions().get_start_time(sample_num),
-					plasma_data.get_time_frame_definitions().get_end_time(sample_num)));
-	      patlak_array[1][sample_num]/=dec_fact;
-	      patlak_array[2][sample_num]/=dec_fact;							
-	      time_vector[sample_num]= static_cast<float>(0.5*(time_frame_definitions.get_end_time(sample_num)+time_frame_definitions.get_start_time(sample_num)));
-	    }
-	}
+        {
+         sum_value+=cur_iter->get_plasma_counts_in_kBq()*plasma_data.get_time_frame_definitions().get_duration(sample_num);
+          patlak_array[1][sample_num]= static_cast<float>(sum_value);
+          patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
+          if(plasma_data.get_if_decay_corrected())
+            {
+              const float dec_fact=
+                 static_cast<float>(decay_correction_factor(plasma_data.get_isotope_halflife(),plasma_data.get_time_frame_definitions().get_start_time(sample_num),
+                                        plasma_data.get_time_frame_definitions().get_end_time(sample_num)));
+              patlak_array[1][sample_num]/=dec_fact;
+              patlak_array[2][sample_num]/=dec_fact;                                                    
+              time_vector[sample_num]= static_cast<float>(0.5*(time_frame_definitions.get_end_time(sample_num)+time_frame_definitions.get_start_time(sample_num)));
+            }
+        }
       if(plasma_data.get_if_decay_corrected())
-	warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
+        warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
       else if(!plasma_data.get_if_decay_corrected())
-	warning("plasma_data have not been corrected during the process, which might create wrong results!!!");
+        warning("plasma_data have not been corrected during the process, which might create wrong results!!!");
 
       assert(sample_num-1==plasma_data.size());
       this->_model_matrix.set_model_array(patlak_array);
@@ -158,25 +158,25 @@ create_model_matrix()
       unsigned int sample_num;
 
       for(sample_num=1 ; sample_num<this->_starting_frame; ++sample_num, ++cur_iter )
-	sum_value+=cur_iter->get_plasma_counts_in_kBq()*this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+        sum_value+=cur_iter->get_plasma_counts_in_kBq()*this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
       
       assert(cur_iter==this->_plasma_frame_data.begin()+this->_starting_frame-1);
 
       for(sample_num=this->_starting_frame ; cur_iter!=this->_plasma_frame_data.end() ; ++sample_num, ++cur_iter )
-	{
-	 sum_value+=cur_iter->get_plasma_counts_in_kBq()*this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
-	 patlak_array[1][sample_num]= static_cast<float>(sum_value);
-	 patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
+        {
+         sum_value+=cur_iter->get_plasma_counts_in_kBq()*this->_plasma_frame_data.get_time_frame_definitions().get_duration(sample_num);
+         patlak_array[1][sample_num]= static_cast<float>(sum_value);
+         patlak_array[2][sample_num]=cur_iter->get_plasma_counts_in_kBq();
 
       if(this->_plasma_frame_data.get_if_decay_corrected())
-	{
-	  const float dec_fact=
-	     static_cast<float>(decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
-				    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num)));
-	  patlak_array[1][sample_num]/=dec_fact;
-	  patlak_array[2][sample_num]/=dec_fact;							
-	  time_vector[sample_num]= static_cast<float>(0.5*(this->_frame_defs.get_end_time(sample_num)+this->_frame_defs.get_start_time(sample_num)));
-	}
+        {
+          const float dec_fact=
+             static_cast<float>(decay_correction_factor(this->_plasma_frame_data.get_isotope_halflife(),this->_plasma_frame_data.get_time_frame_definitions().get_start_time(sample_num),
+                                    this->_plasma_frame_data.get_time_frame_definitions().get_end_time(sample_num)));
+          patlak_array[1][sample_num]/=dec_fact;
+          patlak_array[2][sample_num]/=dec_fact;                                                        
+          time_vector[sample_num]= static_cast<float>(0.5*(this->_frame_defs.get_end_time(sample_num)+this->_frame_defs.get_start_time(sample_num)));
+        }
     }
   if(this->_plasma_frame_data.get_if_decay_corrected())
     warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
@@ -190,7 +190,7 @@ create_model_matrix()
       // Supposes the images are not calibrated.
       this->_model_matrix.uncalibrate(this->_cal_factor);      
       if(this->_in_total_cnt)
-	this->_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
+        this->_model_matrix.convert_to_total_frame_counts(this->_frame_defs);
       this->_model_matrix.set_if_in_correct_scale(this->_in_correct_scale);
       this->_model_matrix.threshold_model_array(.000000001F);
       this->_matrix_is_stored=true;
@@ -213,7 +213,7 @@ PatlakPlot::set_up()
 }
 
 void 
-PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image)
+PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -221,7 +221,7 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
       this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
 #endif //NDEBUG
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
-	dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
+        dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
@@ -240,8 +240,8 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
       frame_num<=num_frames ; ++frame_num )
     {      
       patlak_x[frame_num-1]=brain_patlak_model_array[1][frame_num]/brain_patlak_model_array[2][frame_num];
-      weights[frame_num-1]=1;			 
-    }	
+      weights[frame_num-1]=1;                    
+    }   
   {  // Do linear_regression for each voxel // for k j i 
     float slope=0.F;
     float y_intersection=0.F;
@@ -254,36 +254,36 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image,
     const int max_k_index = dyn_image[1].get_max_index();
     for ( int k = min_k_index; k<= max_k_index; ++k)
       {
-	const int min_j_index = dyn_image[1][k].get_min_index(); 
-	const int max_j_index = dyn_image[1][k].get_max_index();
-	for ( int j = min_j_index; j<= max_j_index; ++j)
-	  {
-	    const int min_i_index = dyn_image[1][k][j].get_min_index(); 
-	    const int max_i_index = dyn_image[1][k][j].get_max_index();
-	    for ( int i = min_i_index; i<= max_i_index; ++i)
-	      {	
-		for ( frame_num = starting_frame; 
-		      frame_num<=num_frames ; ++frame_num )
-		  patlak_y[frame_num-1]=dyn_image[frame_num][k][j][i]/brain_patlak_model_array[2][frame_num];
-		linear_regression(y_intersection, slope,
-				  chi_square,
-				  variance_of_y_intersection,
-				  variance_of_slope,
-				  covariance_of_y_intersection_with_slope,
-				  patlak_y,
-				  patlak_x,		      
-				  weights);	
-		par_image[k][j][i][2]=y_intersection;
-		par_image[k][j][i][1]=slope;
-	      }
-	  }
+        const int min_j_index = dyn_image[1][k].get_min_index(); 
+        const int max_j_index = dyn_image[1][k].get_max_index();
+        for ( int j = min_j_index; j<= max_j_index; ++j)
+          {
+            const int min_i_index = dyn_image[1][k][j].get_min_index(); 
+            const int max_i_index = dyn_image[1][k][j].get_max_index();
+            for ( int i = min_i_index; i<= max_i_index; ++i)
+              { 
+                for ( frame_num = starting_frame; 
+                      frame_num<=num_frames ; ++frame_num )
+                  patlak_y[frame_num-1]=dyn_image[frame_num][k][j][i]/brain_patlak_model_array[2][frame_num];
+                linear_regression(y_intersection, slope,
+                                  chi_square,
+                                  variance_of_y_intersection,
+                                  variance_of_slope,
+                                  covariance_of_y_intersection_with_slope,
+                                  patlak_y,
+                                  patlak_x,                   
+                                  weights);     
+                par_image[k][j][i][2]=y_intersection;
+                par_image[k][j][i][1]=slope;
+              }
+          }
       }    
   }
 }
-// Should be a virtual function declared in the KineticModels or better to the LinearModels
+
 void
 PatlakPlot::multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesianGrid & par_image,
-						       const DynamicDiscretisedDensity & dyn_image)
+                                                       const DynamicDiscretisedDensity & dyn_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -291,7 +291,7 @@ PatlakPlot::multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesi
       this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
 #endif //NDEBUG
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
-	dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
+        dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
@@ -300,10 +300,10 @@ PatlakPlot::multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesi
     }
   this->_model_matrix.multiply_dynamic_image_with_model(par_image,dyn_image);
 }
-// Should be a virtual function declared in the KineticModels or better to the LinearModels
+
 void
-PatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
-						    const ParametricVoxelsOnCartesianGrid & par_image)
+PatlakPlot::multiply_dynamic_image_with_model_gradient_and_add_to_input(ParametricVoxelsOnCartesianGrid & par_image,
+                                                                        const DynamicDiscretisedDensity & dyn_image) const
 {
   if (!this->_in_correct_scale)
     {
@@ -311,7 +311,27 @@ PatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & 
       this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
 #endif //NDEBUG
       const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
-	dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
+        dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
+      const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
+#endif //NDEBUG
+    }
+  this->_model_matrix.multiply_dynamic_image_with_model_and_add_to_input(par_image,dyn_image);
+}
+// Should be a virtual function declared in the KineticModels or better to the LinearModels
+void
+PatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
+                                                    const ParametricVoxelsOnCartesianGrid & par_image) const
+{
+  if (!this->_in_correct_scale)
+    {
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
+#endif //NDEBUG
+      const DiscretisedDensityOnCartesianGrid <3,float>*  image_cartesian_ptr = 
+        dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*  > (((dyn_image.get_densities())[0]).get());
       const BasicCoordinate<3,float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
       this->_model_matrix.scale_model_matrix(this_grid_spacing[2]/dyn_image.get_scanner_default_bin_size());
 #ifndef NDEBUG
@@ -359,11 +379,11 @@ post_processing()
 
   // read time frame def    
     if (this->_time_frame_definition_filename.size()!=0)
-	this->_frame_defs=TimeFrameDefinitions(this->_time_frame_definition_filename);
+        this->_frame_defs=TimeFrameDefinitions(this->_time_frame_definition_filename);
     else
       {
-	error("No Time Frames Definitions available!!!\n ");
-	return true;
+        error("No Time Frames Definitions available!!!\n ");
+        return true;
       }
   // Reading the input function
   if(this->_blood_data_filename=="0")
@@ -407,30 +427,30 @@ get_model_matrix(const BloodFrameData& blood_frame_data, const unsigned int star
       unsigned int sample_num;
 
       for(sample_num=1 ; sample_num<starting_frame; ++sample_num, ++cur_iter )
-	{
-	  const float blood=cur_iter->get_blood_counts_in_kBq();
-	  const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
-	  sum_value+=blood*durat
-	  *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
-				cur_iter->get_frame_start_time_in_s(),
-				cur_iter->get_frame_end_time_in_s()) ;
-	}
+        {
+          const float blood=cur_iter->get_blood_counts_in_kBq();
+          const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
+          sum_value+=blood*durat
+          *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
+                                cur_iter->get_frame_start_time_in_s(),
+                                cur_iter->get_frame_end_time_in_s()) ;
+        }
       assert(cur_iter==blood_frame_data.begin()+starting_frame-1);
       for(sample_num=starting_frame ; cur_iter!=blood_frame_data.end(); ++sample_num, ++cur_iter )
-	{
-	  const float blood=cur_iter->get_blood_counts_in_kBq();
-	  const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
-	  sum_value+=blood*durat
-	    *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
-				cur_iter->get_frame_start_time_in_s(),
-				cur_iter->get_frame_end_time_in_s()) ;
-	  // Normalize with the decay correct factor now.
-	  patlak_array[1][sample_num]=sum_value/decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
-	    						     cur_iter->get_frame_start_time_in_s(),
-	    						     cur_iter->get_frame_end_time_in_s()) ;
-	  patlak_array[2][sample_num]=blood;
-	  time_vector[sample_num]=0.5*(cur_iter->get_frame_start_time_in_s()+cur_iter->get_frame_end_time_in_s()) ;
-	}      
+        {
+          const float blood=cur_iter->get_blood_counts_in_kBq();
+          const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
+          sum_value+=blood*durat
+            *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
+                                cur_iter->get_frame_start_time_in_s(),
+                                cur_iter->get_frame_end_time_in_s()) ;
+          // Normalize with the decay correct factor now.
+          patlak_array[1][sample_num]=sum_value/decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
+                                                             cur_iter->get_frame_start_time_in_s(),
+                                                             cur_iter->get_frame_end_time_in_s()) ;
+          patlak_array[2][sample_num]=blood;
+          time_vector[sample_num]=0.5*(cur_iter->get_frame_start_time_in_s()+cur_iter->get_frame_end_time_in_s()) ;
+        }      
       assert(sample_num-1==blood_frame_data.size());  
 
       this->_model_matrix.set_model_array(patlak_array);
