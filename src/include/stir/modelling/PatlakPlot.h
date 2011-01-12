@@ -107,22 +107,32 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
     void set_model_matrix(ModelMatrix<2> model_matrix) ;     //!< Simply set model matrix 
     //@}
 
-    /*! Multiplies the dynamic image with the model gradient. \n
-      For a linear model the model gradient is the transpose of the model matrix. \n
+    //! Multiplies the dynamic image with the model gradient. 
+    /*!  For a linear model the model gradient is the transpose of the model matrix. 
       So, the dynamic image is "projected" from time domain to the parameter domain.
+
+      \todo Should be a virtual function declared in the KineticModel class.
     */  
-    void
+    virtual void
       multiply_dynamic_image_with_model_gradient(ParametricVoxelsOnCartesianGrid & parametric_image,
-						 const DynamicDiscretisedDensity & dyn_image);
+						 const DynamicDiscretisedDensity & dyn_image) const;
+    //! Multiplies the dynamic image with the model gradient and add to original \c parametric_image 
+    /*! \todo Should be a virtual function declared in the KineticModel class.
+    */
+    virtual void
+      multiply_dynamic_image_with_model_gradient_and_add_to_input(ParametricVoxelsOnCartesianGrid & parametric_image,
+						 const DynamicDiscretisedDensity & dyn_image) const;
 
     //! Multiplies the parametric image with the model matrix to get the corresponding dynamic image.
-    void
+    /*! \todo Should be a virtual function declared in the KineticModel class.
+    */
+    virtual void
       get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity & dyn_image,
-					      const ParametricVoxelsOnCartesianGrid & par_image);
+					      const ParametricVoxelsOnCartesianGrid & par_image) const;
 
     //! This is the common method used to estimate the parametric images from the dynamic images. 
     void 
-      apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image);
+      apply_linear_regression(ParametricVoxelsOnCartesianGrid & par_image, const DynamicDiscretisedDensity & dyn_image) const;
 
     void set_defaults();
 
@@ -143,7 +153,7 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
   void create_model_matrix();  //!< Creates model matrix from private members
   void initialise_keymap();
   bool post_processing();
-  ModelMatrix<2> _model_matrix;
+  mutable ModelMatrix<2> _model_matrix;
   bool _matrix_is_stored;
   typedef RegisteredParsingObject<PatlakPlot,KineticModel> base_type;
 };
