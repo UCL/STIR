@@ -94,8 +94,8 @@ private:
     typename Array<num_dimensions, elemT>::const_full_iterator iter = test.begin_all();
     do
       {
-	check(*iter == test[index], "test on next(): element out of sequence?");
-	++iter;
+        check(*iter == test[index], "test on next(): element out of sequence?");
+        ++iter;
       }
     while (next(index, test) && (iter != test.end_all()));
     check (iter == test.end_all(), "test on next() : did we cover all elements?");
@@ -173,90 +173,90 @@ private:
   void run_IO_tests_mixed(OFSTREAM& os, IFSTREAM& is, const Array<num_dimensions, float>&floats, NumericInfo<output_type> output_type_info)
     {
       {
-	open_write_binary(os, "output.flt");
-	float scale = 1;
-	check(write_data(os, floats, NumericInfo<float>(), scale)==Succeeded::yes, "write_data could not write float array");
+        open_write_binary(os, "output.flt");
+        float scale = 1;
+        check(write_data(os, floats, NumericInfo<float>(), scale)==Succeeded::yes, "write_data could not write float array");
         close_file(os);
-	check_if_equal(scale ,1., "test out/in: floats written as floats" );
+        check_if_equal(scale ,1., "test out/in: floats written as floats" );
       }
       float scale = 1;
       bool write_data_ok;
       {
-	ofstream os;
-	open_write_binary(os, "output.other");
-	write_data_ok=check(write_data(os,floats, output_type_info, scale)==Succeeded::yes, "write_data could not write float array as other_type");
+        ofstream os;
+        open_write_binary(os, "output.other");
+        write_data_ok=check(write_data(os,floats, output_type_info, scale)==Succeeded::yes, "write_data could not write float array as other_type");
         close_file(os);
       }
 
       if (write_data_ok)
-	{ 
-	  // only do reading test if data was written
-	  Array<num_dimensions,output_type> data_read_back(floats.get_index_range());
-	  {
-	    open_read_binary(is, "output.other");
-	    check(read_data(is, data_read_back)==Succeeded::yes, "read_data could not read from output.other");
-	    close_file(is);        
-	  }
+        { 
+          // only do reading test if data was written
+          Array<num_dimensions,output_type> data_read_back(floats.get_index_range());
+          {
+            open_read_binary(is, "output.other");
+            check(read_data(is, data_read_back)==Succeeded::yes, "read_data could not read from output.other");
+            close_file(is);        
+          }
 
-	  // compare write_data of floats as other_type with convert()
-	  {
-	    float newscale = scale;
-	    Array<num_dimensions,output_type> floatsconverted = 
-	      convert_array(newscale, floats, NumericInfo<output_type>());
-	    check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
-	    check_if_equal(floatsconverted ,data_read_back, "test read_data <-> convert : data");
-	  }
+          // compare write_data of floats as other_type with convert()
+          {
+            float newscale = scale;
+            Array<num_dimensions,output_type> floatsconverted = 
+              convert_array(newscale, floats, NumericInfo<output_type>());
+            check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");
+            check_if_equal(floatsconverted ,data_read_back, "test read_data <-> convert : data");
+          }
 
-	  // compare floats with data_read_back*scale
-	  {
-	    Array<num_dimensions,float> diff = floats;
-	    diff /= scale;
-	    {
-	      typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
-	      typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back.begin_all_const();
-	      while(diff_iter!=diff.end_all())
-		{
-		  *diff_iter++ -= *data_read_back_iter++;
-		}
-	    }
-	 
-	    // difference should be maximum .5
-	    // the next test relies on how check_if_zero works
-	    diff *= float(2*get_tolerance());
-	    check_if_zero(diff, "test out/in: floats written as other_type" );
-	  }
+          // compare floats with data_read_back*scale
+          {
+            Array<num_dimensions,float> diff = floats;
+            diff /= scale;
+            {
+              typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
+              typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back.begin_all_const();
+              while(diff_iter!=diff.end_all())
+                {
+                  *diff_iter++ -= *data_read_back_iter++;
+                }
+            }
+         
+            // difference should be maximum .5
+            // the next test relies on how check_if_zero works
+            diff *= float(2*get_tolerance());
+            check_if_zero(diff, "test out/in: floats written as other_type" );
+          }
 
 
-	  // compare read_data of floats as other_type with above
-	  {
-	    Array<num_dimensions,output_type> data_read_back2(floats.get_index_range());
-	
-	    ifstream is;
-	    open_read_binary(is, "output.flt");
-	
-	    float in_scale = 0;
-	    check(read_data(is, data_read_back2, NumericType::FLOAT, in_scale)==Succeeded::yes, "read_data could not read from output.other");
-	    // compare floats with data_read_back2*scale
-	    {
-	      Array<num_dimensions,float> diff = floats;
-	      diff /= in_scale;
-	      {
-		typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
-		typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back2.begin_all_const();
-		while(diff_iter!=diff.end_all())
-		  {
-		    *diff_iter++ -= *data_read_back_iter++;
-		  }
-	      }
-	 
-	      // difference should be maximum .5
-	      // the next test relies on how check_if_zero works
-	      diff *= float(2*get_tolerance());
-	      check_if_zero(diff, "test out/in: floats written as other_type" );
-	    }
-	  }
-	  remove("output.other");
-	} // end of if(write_data_ok)
+          // compare read_data of floats as other_type with above
+          {
+            Array<num_dimensions,output_type> data_read_back2(floats.get_index_range());
+        
+            ifstream is;
+            open_read_binary(is, "output.flt");
+        
+            float in_scale = 0;
+            check(read_data(is, data_read_back2, NumericType::FLOAT, in_scale)==Succeeded::yes, "read_data could not read from output.other");
+            // compare floats with data_read_back2*scale
+            {
+              Array<num_dimensions,float> diff = floats;
+              diff /= in_scale;
+              {
+                typename Array<num_dimensions,float>::full_iterator diff_iter = diff.begin_all();
+                typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back2.begin_all_const();
+                while(diff_iter!=diff.end_all())
+                  {
+                    *diff_iter++ -= *data_read_back_iter++;
+                  }
+              }
+         
+              // difference should be maximum .5
+              // the next test relies on how check_if_zero works
+              diff *= float(2*get_tolerance());
+              check_if_zero(diff, "test out/in: floats written as other_type" );
+            }
+          }
+          remove("output.other");
+        } // end of if(write_data_ok)
       remove("output.flt");
     }
 
@@ -274,7 +274,7 @@ ArrayTests::run_tests()
     cerr << "Testing 1D stuff" << endl;
 
     {
-	
+        
       Array<1,int> testint(IndexRange<1>(5));
       testint[0] = 2;
       check_if_equal(testint.size(), size_t(5), "test size()");
@@ -294,40 +294,40 @@ ArrayTests::run_tests()
       check_if_zero( test - test, "test operator-(Array1D)");
 
       BasicCoordinate<1,int> c;
-      c[1]=0;	    
+      c[1]=0;       
       check_if_equal(test[c] , 11.5 , "test operator[](BasicCoordinate)");   
       test[c] = 12.5;
       check_if_equal(test[c] , 12.5 , "test operator[](BasicCoordinate)");  
 
       {
-	Array<1,float> ref(-1,2); 
-	ref[-1]=1.F;ref[0]=3.F;ref[1]=3.14F;
-	Array<1,float> test = ref;
+        Array<1,float> ref(-1,2); 
+        ref[-1]=1.F;ref[0]=3.F;ref[1]=3.14F;
+        Array<1,float> test = ref;
 
-	test += 1;
-	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
-	  check_if_equal( test[i] , ref[i]+1, "test operator+=(float)");
-	test = ref; test -= 4;
-	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
-	  check_if_equal( test[i] , ref[i]-4, "test operator-=(float)");
-	test = ref; test *= 3;
-	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
-	  check_if_equal( test[i] , ref[i]*3, "test operator*=(float)");
-	test = ref; test /= 3;
-	for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
-	  check_if_equal( test[i] , ref[i]/3, "test operator/=(float)");
+        test += 1;
+        for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+          check_if_equal( test[i] , ref[i]+1, "test operator+=(float)");
+        test = ref; test -= 4;
+        for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+          check_if_equal( test[i] , ref[i]-4, "test operator-=(float)");
+        test = ref; test *= 3;
+        for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+          check_if_equal( test[i] , ref[i]*3, "test operator*=(float)");
+        test = ref; test /= 3;
+        for (int i=ref.get_min_index(); i<= ref.get_max_index(); ++i)
+          check_if_equal( test[i] , ref[i]/3, "test operator/=(float)");
       }
       {
-	Array<1,float> test2;
-	test2 = test * 2;
-	check_if_equal( 2*test[0] , test2[0], "test operator*(float)");
+        Array<1,float> test2;
+        test2 = test * 2;
+        check_if_equal( 2*test[0] , test2[0], "test operator*(float)");
       }
 
       {
-	Array<1,float> test2 = test;
-	test.grow(-2,test.get_max_index());
-	Array<1,float> test3 = test2 + test;
-	check_if_zero(test3[-2], "test growing during operator+");
+        Array<1,float> test2 = test;
+        test.grow(-2,test.get_max_index());
+        Array<1,float> test3 = test2 + test;
+        check_if_zero(test3[-2], "test growing during operator+");
       }
 
     }
@@ -338,12 +338,12 @@ ArrayTests::run_tests()
       test.fill(1.F);
       in_place_log(test);
       {
-	Array<1,float> testeq(-3,10);
-	check_if_equal(test  , testeq, "test in_place_log of Array1D");
+        Array<1,float> testeq(-3,10);
+        check_if_equal(test  , testeq, "test in_place_log of Array1D");
       }
       {
-	for (int i=test.get_min_index(); i<= test.get_max_index(); i++)
-	  test[i] = 3.5F*i + 100;
+        for (int i=test.get_min_index(); i<= test.get_max_index(); i++)
+          test[i] = 3.5F*i + 100;
       }
       Array<1,float> test_copy = test;
 
@@ -395,11 +395,11 @@ ArrayTests::run_tests()
       check_if_equal(t2  , t2fp, "test comparing Array2D+= and +" );
 
       {     
-	BasicCoordinate<2,int> c;
-	c[1]=3; c[2]=2; 
-	check_if_equal(t2[c], 5.5, "test on operator[](BasicCoordinate)");   
-	t2[c] = 6.;
-	check_if_equal(t2[c], 6., "test on operator[](BasicCoordinate)");   
+        BasicCoordinate<2,int> c;
+        c[1]=3; c[2]=2; 
+        check_if_equal(t2[c], 5.5, "test on operator[](BasicCoordinate)");   
+        t2[c] = 6.;
+        check_if_equal(t2[c], 6., "test on operator[](BasicCoordinate)");   
       }
 
       // assert should break on next line if uncommented
@@ -416,18 +416,18 @@ ArrayTests::run_tests()
       check_if_equal(t2  , t2fp, "test operator=(Array2D)" );
 
       {
-	Array<2,float> tmp;
-	tmp = t2 / 2;
-	check_if_equal( t2.sum()/2 , tmp.sum(), "test operator/(float)");
+        Array<2,float> tmp;
+        tmp = t2 / 2;
+        check_if_equal( t2.sum()/2 , tmp.sum(), "test operator/(float)");
       }
 
       {
-	// copy constructor;
-	Array<2,float> t21(t2);
-	check_if_equal(t21  , t2, "test Array2D copy constructor" );
-	// 'assignment constructor' (this simply calls copy constructor)
-	Array<2,float> t22 = t2;
-	check_if_equal(t22  , t2, "test Array2D copy constructor" );
+        // copy constructor;
+        Array<2,float> t21(t2);
+        check_if_equal(t21  , t2, "test Array2D copy constructor" );
+        // 'assignment constructor' (this simply calls copy constructor)
+        Array<2,float> t22 = t2;
+        check_if_equal(t22  , t2, "test Array2D copy constructor" );
       }
     }
     // size_all with irregular range
@@ -447,22 +447,22 @@ ArrayTests::run_tests()
       IndexRange<2> range(Coordinate2D<int>(0,0),Coordinate2D<int>(2,2));
       Array<2,float> test2(range);
       {
-	float value = 1.2F;
-	for (Array<2,float>::full_iterator iter = test2.begin_all();
-	     iter != test2.end_all(); 
-	     )
-	  *iter++ = value++;
+        float value = 1.2F;
+        for (Array<2,float>::full_iterator iter = test2.begin_all();
+             iter != test2.end_all(); 
+             )
+          *iter++ = value++;
       }
       {
-	float value = 1.2F;
-	Array<2,float>::const_full_iterator iter = test2.begin_all_const();
-	for (int i=test2.get_min_index(); i<= test2.get_max_index(); ++i)
-	  for (int j=test2[i].get_min_index(); j<= test2[i].get_max_index(); ++j)
-	    {
-	      check(iter != test2.end_all_const(), "test on 2D full iterator");
-	      check_if_equal(*iter++, test2[i][j], "test on 2D full iterator vs. index");
-	      check_if_equal(test2[i][j], value++, "test on 2D full iterator value");
-	    }
+        float value = 1.2F;
+        Array<2,float>::const_full_iterator iter = test2.begin_all_const();
+        for (int i=test2.get_min_index(); i<= test2.get_max_index(); ++i)
+          for (int j=test2[i].get_min_index(); j<= test2[i].get_max_index(); ++j)
+            {
+              check(iter != test2.end_all_const(), "test on 2D full iterator");
+              check_if_equal(*iter++, test2[i][j], "test on 2D full iterator vs. index");
+              check_if_equal(test2[i][j], value++, "test on 2D full iterator value");
+            }
       }
 
       const Array<2,float> empty;
@@ -474,11 +474,11 @@ ArrayTests::run_tests()
       Array<2,int> test(range);
       // fill array with numbers in sequence
       {
-	Array<2,int>::full_iterator iter = test.begin_all();
-	for (int i=0; iter!= test.end_all(); ++iter, ++i)
-	  {
-	    *iter = i;
-	  }
+        Array<2,int>::full_iterator iter = test.begin_all();
+        for (int i=0; iter!= test.end_all(); ++iter, ++i)
+          {
+            *iter = i;
+          }
       }
       std::cerr << "\tTest on next() with regular array\n";
       this->run_tests_on_next(test);
@@ -552,7 +552,7 @@ ArrayTests::run_tests()
     in_place_apply_function(test3ter, bind2nd(plus<float>(), 4.F));
     test3quat += 4.F;
     check_if_equal(test3quat  , test3ter, 
-		  "test in_place_apply_function and operator+=(NUMBER)");
+                  "test in_place_apply_function and operator+=(NUMBER)");
 #endif
     // size_all with irregular range
     {
@@ -571,27 +571,34 @@ ArrayTests::run_tests()
       IndexRange<3> range(Coordinate3D<int>(0,0,1),Coordinate3D<int>(2,2,3));
       Array<3,float> test(range);
       {
-	float value = 1.2F;
-	for (Array<3,float>::full_iterator iter = test.begin_all();
-	     iter != test.end_all(); 
-	     )
-	  *iter++ = value++;
+        float value = 1.2F;
+        for (Array<3,float>::full_iterator iter = test.begin_all();
+             iter != test.end_all(); 
+             )
+          *iter++ = value++;
       }
       {
-	float value = 1.2F;
-	Array<3,float>::const_full_iterator iter = test.begin_all_const();
-	for (int i=test.get_min_index(); i<= test.get_max_index(); ++i)
-	  for (int j=test[i].get_min_index(); j<= test[i].get_max_index(); ++j)
-	    for (int k=test[i][j].get_min_index(); k<= test[i][j].get_max_index(); ++k)
-	    {
-	      check(iter != test.end_all_const(), "test on 3D full iterator");
-	      check_if_equal(*iter++, test[i][j][k], "test on 3D full iterator vs. index");
-	      check_if_equal(test[i][j][k], value++, "test on 3D full iterator value");
-	    }
+        float value = 1.2F;
+        Array<3,float>::const_full_iterator iter = test.begin_all_const();
+        for (int i=test.get_min_index(); i<= test.get_max_index(); ++i)
+          for (int j=test[i].get_min_index(); j<= test[i].get_max_index(); ++j)
+            for (int k=test[i][j].get_min_index(); k<= test[i][j].get_max_index(); ++k)
+            {
+              check(iter != test.end_all_const(), "test on 3D full iterator");
+              check_if_equal(*iter++, test[i][j][k], "test on 3D full iterator vs. index");
+              check_if_equal(test[i][j][k], value++, "test on 3D full iterator value");
+            }
       }
-
-      const Array<3,float> empty;
-      check(empty.begin_all() == empty.end_all(), "test on 3D full iterator for empty range");
+      // test empty container
+      {
+        const Array<3,float> empty;
+        check(empty.begin_all() == empty.end_all(), "test on 3D full iterator for empty range");
+      }
+      // test conversion from full_iterator to const_full_iterator
+      {
+        Array<3,float>::full_iterator titer= test.begin_all();
+        Array<3,float>::const_full_iterator ctiter= titer; // this should compile
+      }
     }
   }
 
@@ -663,8 +670,8 @@ ArrayTests::run_tests()
     {
       Array<4,float> test4bis(range);
       {
-	for (int i=test4bis.get_min_index(); i<= test4bis.get_max_index(); i++)
-	  test4bis[i].fill(i+10.F);
+        for (int i=test4bis.get_min_index(); i<= test4bis.get_max_index(); i++)
+          test4bis[i].fill(i+10.F);
       }
       // save for comparison later on
       Array<4,float> test4ter = test4bis;
@@ -679,9 +686,9 @@ ArrayTests::run_tests()
       // compute the new sum. 
       {
         float sum_check = 0;      
-	for (int i=test4.get_min_index(); i<= -2; i++)
-	  sum_check += test4[i].sum()*(i+10.F);
-	check_if_equal(test4bis.sum() ,sum_check, "test operator *=(Array4D)");
+        for (int i=test4.get_min_index(); i<= -2; i++)
+          sum_check += test4[i].sum()*(i+10.F);
+        check_if_equal(test4bis.sum() ,sum_check, "test operator *=(Array4D)");
       }
       // divide test4, but add a tiny number to avoid division by zero
       const Array<4,float> test4quat = test4bis / (test4+.00001F);
@@ -698,7 +705,7 @@ ArrayTests::run_tests()
       
       // KT 20/12/2001 made check_if_zero compare relative to 1 by dividing
       check_if_zero( (test4.sum() + 2*tmp2.sum() - tmp.sum())/test4.sum(), 
-		     "test operator+(float)");
+                     "test operator+(float)");
     }
   }
 
@@ -716,7 +723,7 @@ ArrayTests::run_tests()
     Array<2,float> t1(range);
     for (int i=-1; i<=10; i++)
       for (int j=11; j<=20; j++)
-	t1[i][j] = static_cast<float>(sin(i*j* _PI/ 15.));
+        t1[i][j] = static_cast<float>(sin(i*j* _PI/ 15.));
     run_IO_tests(t1);
   }
   {
@@ -728,8 +735,8 @@ ArrayTests::run_tests()
     Array<3,float> t1(range);
     for (int i=-1; i<=10; i++)
       for (int j=11; j<=20; j++)
-	for (int k=21; k<=30; k++)
-	  t1[i][j][k] = static_cast<float>(20000.*k*sin(i*j*k* _PI/ 3000.));
+        for (int k=21; k<=30; k++)
+          t1[i][j][k] = static_cast<float>(20000.*k*sin(i*j*k* _PI/ 3000.));
     run_IO_tests(t1);
   }
 #endif
