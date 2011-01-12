@@ -24,7 +24,8 @@
 /*!
   \file 
  
-  \brief This file declares the stir::NestedIterator class and supporting function objects..
+  \brief This file declares the stir::NestedIterator class and supporting function objects.
+  \ingroup buildblock
 
   \author Kris Thielemans
   \author Alexey Zverovich
@@ -34,82 +35,15 @@
   $Revision$
 */
 
-#include "stir/common.h"
-//#include <iterator>
+#include "stir/NestedIteratorHelpers.h"
 #include "boost/iterator/iterator_traits.hpp"
 
-#ifndef STIR_NO_NAMESPACES
-using std::size_t;
-//using std::ptrdiff_t;
-//using std::forward_iterator_tag;
-#endif
-
 START_NAMESPACE_STIR
-
-/*! \name
-  \ingroup buildblock
-  \brief Function objects that can be used for NestedIterator.
-*/
-//@{
-
-template <class iterT>
-class BeginEndFunction
-{
- public:
-  typedef typename boost::iterator_value<iterT>::type iter_value_type;
-  typedef typename iter_value_type::iterator return_type;
-
-  return_type begin(const iterT& iter) const
-  {  return iter->begin(); }
-  return_type end(const iterT& iter) const
-  {  return iter->end(); }
-};
-
-template <class iterT>
-class ConstBeginEndFunction
-{
- public:
-  typedef typename boost::iterator_value<iterT>::type iter_value_type;
-  typedef typename iter_value_type::const_iterator return_type;
-
-  return_type begin(const iterT& iter) const
-  {  return iter->begin(); }
-  return_type end(const iterT& iter) const
-  {  return iter->end(); }
-};
-
-template <class iterT>
-class BeginEndAllFunction
-{
- public:
-  typedef typename boost::iterator_value<iterT>::type iter_value_type;
-  typedef typename iter_value_type::full_iterator return_type;
-
-  return_type begin(const iterT& iter) const
-  {  return iter->begin_all(); }
-  return_type end(const iterT& iter) const
-  {  return iter->end_all(); }
-};
-
-template <class iterT>
-class ConstBeginEndAllFunction
-{
- public:
-  typedef typename boost::iterator_value<iterT>::type iter_value_type;
-  typedef typename iter_value_type::const_full_iterator return_type;
-
-  return_type begin(const iterT& iter) const
-  {  return iter->begin_all_const(); }
-  return_type end(const iterT& iter) const
-  {  return iter->end_all_const(); }
-};
-
-//@}
 
 /*!
   \ingroup buildblock
   \brief Class NestedIterator implements a (forward) iterator using 
-  a set of 'nested' iterators.
+  a pair of 'nested' iterators.
 
   Suppose you have a container where each element is a container, e.g. 
   <code>std::vector\<std::list\<int\> \> </code>. Using NestedIterator,
@@ -123,15 +57,15 @@ class ConstBeginEndAllFunction
   current_rest_iter = top_level_iter->begin();
   end_rest_iter = top_level_iter->end();
   \endcode
-  \see BeginEndFunction, ConstBeginEndFunction, BeginEndAllFunction, ConstBeginEndAllFunction.
+  \see BeginEndFunction, PtrBeginEndFunction, ConstBeginEndFunction, ConstPtrBeginEndFunction,
+  BeginEndAllFunction, PtrBeginEndAllFunction, ConstBeginEndAllFunction, ConstPtrBeginEndAllFunction
 
   Syntax is somewhat awkward for technical reasons (see the source for
   operator==). You have to give
   the \c begin and \c end of the top-level iterators at construction time.
   (This would be far more natural when using boost::range).
-
+  
   \par examples
-  This class is used for the implementation of Array::full_iterator.
   Here is an example using a vector of lists of integers.
   \code
     typedef std::list<int> C2;
@@ -143,7 +77,19 @@ class ConstBeginEndAllFunction
     while (fiter != fiter_end)
     { ... }
   \endcode
-
+  Here is an example using a vector of (smart) pointers to 2D arrays, where we want to
+  iterate over all elements of all 2D arrays.
+  \code
+    typedef Array<2,int> C2;
+    typedef std::vector<shared_ptr<C2> > C1;
+    C1 c;
+    typedef NestedIterator<C1::iterator, PtrBeginEndAllFunction<C1::iterator> > FullIter;
+    FullIter fiter(c.begin(),c.end());
+    const FullIter fiter_end(c.end(),c.end());
+    while (fiter != fiter_end)
+    { ... }
+  \endcode
+    
   \par Implementation note
 
   The 2nd template argument would really be better implemented
@@ -151,20 +97,21 @@ class ConstBeginEndAllFunction
 
   \bug At present, \c iterator_category typedef is hard-wired to be 
   \c std::forward_iterator_tag. This would be incorrect if
-  \c topleveliterT or \c restiterT is only an input or
+  \c topleveliterT or \c rest_iter_type is only an input or
   output iterator. 
 */
 template <typename topleveliterT,
           class GetRestRangeFunctionT=BeginEndFunction<topleveliterT> >
 class NestedIterator
 {
+private:
+  typedef typename GetRestRangeFunctionT::rest_iter_type rest_iter_type;
 public:
-  typedef typename GetRestRangeFunctionT::return_type restiterT;
   typedef std::forward_iterator_tag iterator_category;
-  typedef typename boost::iterator_difference<restiterT>::type difference_type;
-  typedef typename boost::iterator_value<restiterT>::type value_type;
-  typedef typename boost::iterator_reference<restiterT>::type reference;
-  typedef typename boost::iterator_pointer<restiterT>::type pointer;  
+  typedef typename boost::iterator_difference<rest_iter_type>::type difference_type;
+  typedef typename boost::iterator_value<rest_iter_type>::type value_type;
+  typedef typename boost::iterator_reference<rest_iter_type>::type reference;
+  typedef typename boost::iterator_pointer<rest_iter_type>::type pointer;  
 
 public:
   //! default constructor
@@ -173,6 +120,21 @@ public:
   //! constructor to initialise the members
   inline NestedIterator(const topleveliterT& top_level_iter, 
                         const topleveliterT& end_top_level_iter);
+
+  //! constructor to convert between nested iterators using convertible top and next level iterators
+  /*! Ignore the 2nd and 3rd argument. They are there to let the compiler check if the types are 
+      convertible (using the SFINAE principle).
+      */
+  template <typename othertopleveliterT, typename otherGetRestRangeFunctionT>
+  inline NestedIterator(
+			  NestedIterator<othertopleveliterT, otherGetRestRangeFunctionT> other,
+			  typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = 0,
+			  typename boost::enable_if_convertible<typename otherGetRestRangeFunctionT::rest_iter_type, rest_iter_type>::type* = 0)
+    : _current_top_level_iter(other._current_top_level_iter), 
+      _end_top_level_iter(other._end_top_level_iter), 
+      _current_rest_iter(other._current_rest_iter), 
+      _end_rest_iter(other._end_rest_iter) 
+    {}
 
   //inline NestedIterator& operator=(const NestedIterator&);
   
@@ -193,7 +155,13 @@ public:
   //! member-selection operator 
   inline pointer operator->() const;
 
+#ifdef BOOST_NO_MEMBER_TEMPLATE_FRIENDS
+public:
+#else
 private:   
+  // needed for conversion constructor
+  template <class,class> friend class NestedIterator;
+#endif 
 
   //! the \c topleveliterT iterator pointing to the current \a row
   topleveliterT _current_top_level_iter;
@@ -201,12 +169,12 @@ private:
   //! a \c topleveliterT iterator marking the end of the \a column
   topleveliterT _end_top_level_iter;
 
-  //! a \c restiterT iterator pointing to the current \a element in the \a row
-  restiterT _current_rest_iter;
+  //! a \c rest_iter_type iterator pointing to the current \a element in the \a row
+  rest_iter_type _current_rest_iter;
 
-  //! a \c restiterT iterator pointing to the end of the current \a row
-  restiterT _end_rest_iter;
-
+  //! a \c rest_iter_type iterator pointing to the end of the current \a row
+  rest_iter_type _end_rest_iter;
+private:
   //! set the rest_iters to the range corresponding to a new \a top_level_iter
   void _set_rest_iters_for_current_top_level_iter();
 };
