@@ -40,7 +40,9 @@
 #include <iostream>
 
 START_NAMESPACE_STIR
-
+//! A helper class to store the model matrix for a linear kinetic model
+/*! \ingroup modelling
+ */
 template <int num_param>
 class ModelMatrix
 { 
