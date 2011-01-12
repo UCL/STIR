@@ -66,7 +66,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_VoxelsOnCartesianGrid"
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_zoom_image", "..\..\test\VC\test_zoom_image\test_zoom_image.vcxproj", "{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_zoom_image", "..\..\test\VC\test_zoom_image\test_zoom_image.vcproj", "{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
 	EndProjectSection
@@ -118,6 +118,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelling_buildblock", "..\..\modelling_buildblock\VC\modelling_buildblock.vcproj", "{3E1020F6-3DEA-495F-8197-02ABEF79CE72}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_NestedIterator", "..\..\test\VC\test_NestedIterator\test_NestedIterator.vcproj", "{6F5D0D87-272A-4AEA-B48C-500606393E5A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DynamicDiscretisedDensity", "..\..\test\VC\test_DynamicDiscretisedDensity\test_DynamicDiscretisedDensity.vcproj", "{5572914E-FA11-4CFF-9212-3F5959D7AC2E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A91E422B-1728-4CF7-9A20-01871F43BE6F} = {A91E422B-1728-4CF7-9A20-01871F43BE6F}
+		{B0A7848A-BD1F-4F3D-9038-B110C6B549F7} = {B0A7848A-BD1F-4F3D-9038-B110C6B549F7}
+		{35DE8EA0-694C-4867-9D8A-3A044F5B74C4} = {35DE8EA0-694C-4867-9D8A-3A044F5B74C4}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -193,6 +200,8 @@ Global
 		{E4217000-F000-4CB2-A291-1F308678971A}.Debug|Win32.Build.0 = Debug|Win32
 		{E4217000-F000-4CB2-A291-1F308678971A}.Release|Win32.ActiveCfg = Release|Win32
 		{E4217000-F000-4CB2-A291-1F308678971A}.Release|Win32.Build.0 = Release|Win32
+		{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EBD10DCA-6F3F-40ED-B9FB-9DD576B27DEB}.Release|Win32.ActiveCfg = Release|Win32
 		{8862CC9A-B774-4411-8267-06A07DE3E9A2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8862CC9A-B774-4411-8267-06A07DE3E9A2}.Debug|Win32.Build.0 = Debug|Win32
 		{8862CC9A-B774-4411-8267-06A07DE3E9A2}.Release|Win32.ActiveCfg = Release|Win32
@@ -233,6 +242,10 @@ Global
 		{6F5D0D87-272A-4AEA-B48C-500606393E5A}.Debug|Win32.Build.0 = Debug|Win32
 		{6F5D0D87-272A-4AEA-B48C-500606393E5A}.Release|Win32.ActiveCfg = Release|Win32
 		{6F5D0D87-272A-4AEA-B48C-500606393E5A}.Release|Win32.Build.0 = Release|Win32
+		{5572914E-FA11-4CFF-9212-3F5959D7AC2E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5572914E-FA11-4CFF-9212-3F5959D7AC2E}.Debug|Win32.Build.0 = Debug|Win32
+		{5572914E-FA11-4CFF-9212-3F5959D7AC2E}.Release|Win32.ActiveCfg = Release|Win32
+		{5572914E-FA11-4CFF-9212-3F5959D7AC2E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
