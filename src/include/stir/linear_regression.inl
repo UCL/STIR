@@ -5,7 +5,7 @@
   \file
   \ingroup buildblock
 
-  \brief Implementation of inline functions for linear_regression()
+  \brief Implementation of inline functions for stir::linear_regression()
 
   \author Kris Thielemans
   \author Charalampos Tsoumpas 
@@ -31,7 +31,7 @@
 
     See STIR/LICENSE.txt for details
 */
-
+#include <cstddef> // for size_t
 START_NAMESPACE_STIR
 
 namespace detail
@@ -85,7 +85,7 @@ linear_regression_compute_fit_from_S(Value& constant, Value& scale,
 				     const double Syy,
 				     const double Stt,
 				     const double Sty,
-				     const unsigned data_size,
+             const std::size_t data_size,
 				     const bool use_estimated_variance
 				     );
 
@@ -158,7 +158,7 @@ linear_regression(Value& constant, Value& scale,
 					       variance_of_scale,
 					       covariance_of_constant_with_scale,
 					       S,Sx,Sy, Syy, Stt, Sty,
-					       data_end - data_begin,
+					       static_cast<std::size_t>(data_end - data_begin),
 					       use_estimated_variance);
 				      
 }
