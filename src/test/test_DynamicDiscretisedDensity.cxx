@@ -28,9 +28,6 @@
   $Revision$
 */
 
-
-#include <iostream>
-
 #include "stir/RunTests.h"
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
@@ -45,7 +42,7 @@
 #include <utility>
 #include <vector>
 #include <string>
-
+#include <iostream>
 #include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
@@ -207,6 +204,31 @@ START_NAMESPACE_STIR
   dynamic_image.set_density_sptr(frame1_3_sptr, 1);
   dynamic_image.set_density_sptr(frame2_3_sptr, 2);
   dynamic_image.set_density_sptr(frame3_3_sptr, 3);
+
+  // testing full iterators
+  {
+    DiscretisedDensity<3,float>::const_full_iterator dens_iter;
+    DynamicDiscretisedDensity::const_full_iterator dyn_dens_iter = dynamic_image.begin_all_const();
+    bool ok_upto_now = true;
+    // check frame 1
+    dens_iter = frame1_3_sptr->begin_all_const(); 
+    while (ok_upto_now && dens_iter != frame1_3_sptr->end_all_const())
+      {
+        ok_upto_now = check_if_equal(*dyn_dens_iter++, *dens_iter++, "check full-iterator: frame 1");
+      }
+    // check frame 2
+    dens_iter = frame2_3_sptr->begin_all_const(); 
+    while (ok_upto_now && dens_iter != frame2_3_sptr->end_all_const())
+      {
+        ok_upto_now = check_if_equal(*dyn_dens_iter++, *dens_iter++, "check full-iterator: frame 1");
+      }
+    // check frame 3
+    dens_iter = frame3_3_sptr->begin_all_const(); 
+    while (ok_upto_now && dens_iter != frame3_3_sptr->end_all_const())
+      {
+        ok_upto_now = check_if_equal(*dyn_dens_iter++, *dens_iter++, "check full-iterator: frame 1");
+      }    
+  }
 #ifndef HAVE_LLN_MATRIX
   warning("write_to_ecat7 not tested as LLN library not present");
 #else
