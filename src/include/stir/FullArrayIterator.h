@@ -52,6 +52,8 @@ START_NAMESPACE_STIR
   \warning This class should never be used explicitly, but only through
   the typedefs Array::full_iterator et al.
 
+  \warning This class is effectively superseded by NestedIterator, although Array still uses FullArrayIterator.
+
   This implementation assumes that \a restiterT has begin_all() and end_all() members.
   Moreover, for the usual \c for loops to work, there is a requirement on how the 
   class that uses FullArrayIterator implements end_all(). See the implementation of
@@ -76,11 +78,28 @@ public:
 
   //! copy constructor
   inline FullArrayIterator(const FullArrayIterator&);
+
   //! constructor to initialise the members
   inline FullArrayIterator(const topleveliterT& top_level_iter, 
                            const topleveliterT& last_top_level_iter,
                            const restiterT& rest_iter,
                            const restiterT& last_rest_iter);
+
+  //! some magic trickery to be able to assign iterators to const iterators etc, but not to incompatible types
+  /*! Ignore the 2nd and 3rd argument. They are there to let the compiler check if the types are 
+      convertible (using the SFINAE principle).
+  */
+  template <typename othertopleveliterT, typename otherrestiterT, typename _otherRef, typename _otherPtr>
+    FullArrayIterator(
+                          FullArrayIterator<othertopleveliterT, otherrestiterT, elemT,  _otherRef, _otherPtr> const& other,
+                          typename boost::enable_if_convertible<othertopleveliterT, topleveliterT>::type* = 0,
+                          typename boost::enable_if_convertible<otherrestiterT, restiterT>::type* = 0)
+    : current_top_level_iter(other.current_top_level_iter), 
+      last_top_level_iter(other.last_top_level_iter), 
+      current_rest_iter(other.current_rest_iter), 
+      last_rest_iter(other.last_rest_iter) 
+    {}
+
 
   //! constructor with 0 (only 0, not another number)
   /*! This is necessary to be able to set \a current_rest_iter in the case of 
@@ -116,7 +135,13 @@ public:
   //! member-selection operator 
   inline pointer operator->() const;
 
+# ifdef BOOST_NO_MEMBER_TEMPLATE_FRIENDS
+public:
+#else
 private:   
+  // needed for conversion constructor
+  template <class,class,class,class,class> friend class FullArrayIterator;
+#endif
 
   //! the \c topleveliterT iterator pointing to the current \a row
   topleveliterT current_top_level_iter;
