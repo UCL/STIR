@@ -61,8 +61,8 @@ ParamDiscDensity::
 ParametricDiscretisedDensity(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > &  densities)
   // TODO this will only work for VoxelsOnCartesianGrid
   :    base_type(densities[1]->get_index_range(),
-		 densities[1]->get_origin(), 
-		 densities[1]->get_grid_spacing())
+                 densities[1]->get_origin(), 
+                 densities[1]->get_grid_spacing())
 {
 
   assert(densities.size()==this->get_num_params()); 
@@ -82,18 +82,18 @@ ParametricDiscretisedDensity(const VectorWithOffset<shared_ptr<SingleDiscretised
 #else
       // alternative (untested)
       const SingleDiscretisedDensityType& current_density =
-	dynamic_cast<SingleDiscretisedDensityType const&>(*densities[f]);
+        dynamic_cast<SingleDiscretisedDensityType const&>(*densities[f]);
       typename SingleDiscretisedDensityType::const_full_iterator single_density_iter =
-	current_density.begin_all();
+        current_density.begin_all();
       const typename SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
-	current_density.end_all();
+        current_density.end_all();
       typename ParamDiscDensity::full_densel_iterator parametric_density_iter =
-	this->begin_all_densel();
+        this->begin_all_densel();
 
       while (single_density_iter!=end_single_density_iter)
-	{	  (*parametric_density_iter)[f] = *single_density_iter;
-	  ++single_density_iter; ++parametric_density_iter;
-	}
+        {         (*parametric_density_iter)[f] = *single_density_iter;
+          ++single_density_iter; ++parametric_density_iter;
+        }
 #endif
     } 
 }
@@ -137,9 +137,9 @@ update_parametric_image(const SingleDiscretisedDensityType &  single_density, co
   typename ParamDiscDensity::full_densel_iterator parametric_density_iter =
     this->begin_all_densel();
   while (single_density_iter!=end_single_density_iter)
-    {	  
+    {     
       if (parametric_density_iter == this->end_all_densel())
-	error("update ITER");
+        error("update ITER");
       //(*parametric_density_iter)[f] = *single_density_iter;
       const float tmp = *single_density_iter;
       (*parametric_density_iter)[f] = tmp;
@@ -170,7 +170,7 @@ read_from_file(const std::string& filename)
 
     if (num_pars != multi_sptr->get_num_time_frames())
       error("I expect %d 'time frames' when reading %s. Exiting",
-	    num_pars, filename.c_str());
+            num_pars, filename.c_str());
   }
 
   if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(&(*multi_sptr)[1])==0)
@@ -181,25 +181,25 @@ read_from_file(const std::string& filename)
   // TODO this will only work for VoxelsOnCartesianGrid
   ParamDiscDensity * parametric_density_ptr =
     new ParamDiscDensity(DiscDensityT((*multi_sptr)[1].get_index_range(),
-				      (*multi_sptr)[1].get_origin(), 
-				      grid_spacing));
+                                      (*multi_sptr)[1].get_origin(), 
+                                      grid_spacing));
   
   for (unsigned f=1; f<= multi_sptr->get_num_time_frames(); ++f)
     {
       const SingleDiscretisedDensityType& current_density =
-	dynamic_cast<SingleDiscretisedDensityType const&>((*multi_sptr)[f]);
+        dynamic_cast<SingleDiscretisedDensityType const&>((*multi_sptr)[f]);
       typename SingleDiscretisedDensityType::const_full_iterator single_density_iter =
-	current_density.begin_all();
+        current_density.begin_all();
       const typename SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
-	current_density.end_all();
+        current_density.end_all();
       typename ParamDiscDensity::full_densel_iterator parametric_density_iter =
-	parametric_density_ptr->begin_all_densel();
+        parametric_density_ptr->begin_all_densel();
 
       while (single_density_iter!=end_single_density_iter)
-	{
-	  (*parametric_density_iter)[f] = *single_density_iter;
-	  ++single_density_iter; ++parametric_density_iter;
-	}
+        {
+          (*parametric_density_iter)[f] = *single_density_iter;
+          ++single_density_iter; ++parametric_density_iter;
+        }
     }
   return parametric_density_ptr;
 }
@@ -211,9 +211,13 @@ ParamDiscDensity::
 get_empty_copy() const
 {
   // TODO maybe this can be done smarter by using base_type::get_empty_copy. Doesn't matter too much though.
-  ParamDiscDensity * res =
-    this->clone();
-  std::fill(res->begin_all(), res->end_all(), 0);
+  ParamDiscDensity * res = this->clone();
+  typename ParamDiscDensity::iterator parametric_density_iter =
+    res->begin();
+  while (parametric_density_iter!=res->end())
+    {
+      assign(*parametric_density_iter++, 0);
+    }
   return res;
 }
 
@@ -232,11 +236,11 @@ ParamDiscDensity::
 construct_single_density_using_function(typename ParamDiscDensity::SingleDiscretisedDensityType& density, KPFunctionObject f) const
 {
   std::transform(this->begin_all_densel(),
-		 this->end_all_densel(),
-		 density.begin_all(),
-		 f);
+                 this->end_all_densel(),
+                 density.begin_all(),
+                 f);
 }
-		 
+                 
 
 TEMPLATE
 template <class KPFunctionObject>
@@ -247,8 +251,8 @@ construct_single_density_using_function(KPFunctionObject f) const
   // TODO this will only work for VoxelsOnCartesianGrid
   SingleDiscretisedDensityType
     density(this->get_index_range(),
-	    this->get_origin(), 
-	    this->get_grid_spacing());
+            this->get_origin(), 
+            this->get_grid_spacing());
   this->construct_single_density_using_function(density, f);
   return density;
 }
@@ -263,7 +267,7 @@ construct_single_density(typename ParamDiscDensity::SingleDiscretisedDensityType
   // TODO this will only work for elemT==float
   this->construct_single_density_using_function(density, ret<float>(_1[index]));
 }
-		 
+                 
 
 TEMPLATE
 const typename ParamDiscDensity::SingleDiscretisedDensityType
@@ -284,11 +288,11 @@ ParamDiscDensity::
 construct_single_density_using_function(typename ParamDiscDensity::SingleDiscretisedDensityType& density, KPFunctionObject f) 
 {
   std::transform(this->begin_all_densel(),
-		 this->end_all_densel(),
-		 density.begin_all(),
-		 f);
+                 this->end_all_densel(),
+                 density.begin_all(),
+                 f);
 }
-		 
+                 
 
 TEMPLATE
 template <class KPFunctionObject>
@@ -299,8 +303,8 @@ construct_single_density_using_function(KPFunctionObject f)
   // TODO this will only work for VoxelsOnCartesianGrid
   SingleDiscretisedDensityType
     density(this->get_index_range(),
-	    this->get_origin(), 
-	    this->get_grid_spacing());
+            this->get_origin(), 
+            this->get_grid_spacing());
   this->construct_single_density_using_function(density, f);
   return density;
 }
