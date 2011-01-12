@@ -202,7 +202,9 @@ for fr in `count 24 28`; do
     stir_math -s --including-first --accumulate sum_frame_sinograms.hs fwd_dyn_from_p0005-p5_f${fr}g1d0b0.hs
 done
 done # POSMAPOSL POSSPS#
-cd .. ;  rm -fr test_modelling_output
+cd .. ;  
+# rm -fr test_modelling_output
 
 echo " " 
 echo "The Direct Reconstructions tests are OK. "
+echo "You can remove all output with \"rm -fr test_modelling_output\""
