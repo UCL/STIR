@@ -54,7 +54,14 @@ struct Parametric2Single<VoxelsOnCartesianGrid<KineticParameters<num_parameters,
   typedef VoxelsOnCartesianGrid<elemT> type;
 };
 
-// should be used as ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<..> >
+//! Class to store parametric images
+/*! \ingroup modelling
+  \param DiscDensT should be a class for storing an image, e.g. VoxelsOnCartesianGrid<KineticParameters<..> 
+
+  This class stores parametric images as an image of parameters (as opposed to a sequence of images, one
+  for each parameter). However, it provides various functions to get single images out, e.g. corresponding
+  to a single parameter, or by applying a function on all parameters.
+*/
 template <typename DiscDensT>
 class ParametricDiscretisedDensity:
 public DiscDensT
@@ -168,23 +175,14 @@ public DiscDensT
    //@}
 };
 
-#define NUM_PARAMS 2
-/*! 
-  \var typedef VoxelsOnCartesianGrid<KineticParameters<NUM_PARAMS,float> > ParametricVoxelsOnCartesianGridBaseType
-  \warning At the moment only Cartesian Voxelised Parametric Images, with just two paramaters have been implemented.
-  \todo Make a more general ParametricImages class. 
-@{
-*/
-
-typedef VoxelsOnCartesianGrid<KineticParameters<NUM_PARAMS,float> >
+//! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just two parameters 
+typedef VoxelsOnCartesianGrid<KineticParameters<2,float> >
            ParametricVoxelsOnCartesianGridBaseType;
 
-//!@}
 
-//!\var typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType> ParametricVoxelsOnCartesianGrid
+//! Convenience typedef for Cartesian Voxelised Parametric Images with just two parameters 
 typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>
    ParametricVoxelsOnCartesianGrid;
-#undef NUM_PARAMS
 
 
 END_NAMESPACE_STIR
