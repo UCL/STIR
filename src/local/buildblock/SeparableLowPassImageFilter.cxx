@@ -117,7 +117,7 @@ SeparableLowPassImageFilter<elemT>::
 post_processing()
 {
   const unsigned int size = filter_coefficients_for_parsing.size();
-  const int min_index = -(size/2);
+  const int min_index = -static_cast<int>(size/2);
   filter_coefficients.grow(min_index, min_index + size - 1);
   for (int i = min_index; i<= filter_coefficients.get_max_index(); ++i)
     filter_coefficients[i] = 
