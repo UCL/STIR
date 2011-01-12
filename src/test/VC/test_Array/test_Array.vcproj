@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\newinclude,..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;_CONSOLE;WIN32;FULL;CONST_IT"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -58,7 +58,6 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				UndefinePreprocessorDefinitions="FULL,CONST_IT"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -139,7 +138,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\newinclude,..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="NDEBUG;_CONSOLE;WIN32;FULL;CONST_IT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -150,7 +149,6 @@
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				UndefinePreprocessorDefinitions="FULL,CONST_IT"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
