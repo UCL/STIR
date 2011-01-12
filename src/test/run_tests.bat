@@ -33,6 +33,8 @@ rem VC\test_interpolate\%1\test_interpolate
 @pause 
 VC\test_VoxelsOnCartesianGrid\%1\test_VoxelsOnCartesianGrid
 @pause 
+VC\test_DynamicDiscretisedDensity\%1\test_DynamicDiscretisedDensity
+@pause 
 VC\test_zoom_image\%1\test_zoom_image
 @pause 
 VC\test_proj_data_info\%1\test_proj_data_info
