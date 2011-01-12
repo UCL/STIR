@@ -166,6 +166,10 @@ print-make-vars:
 	@echo LINKFLAGS: $(LINKFLAGS)
 	@echo SYS_LIBS: $(SYS_LIBS)
 	@echo DEST: $(DEST)
+	@echo INSTALL_EXE_DIR: $(INSTALL_EXE_DIR)
+	@echo INSTALL_LIB_DIR: $(INSTALL_LIB_DIR)
+	@echo INSTALL_INCLUDE_DIR: $(INSTALL_INCLUDE_DIR)
+
 
 #********* default rules
 
