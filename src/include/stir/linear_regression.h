@@ -6,7 +6,7 @@
   \file
   \ingroup buildblock
 
-  \brief Declaration of linear_regression()
+  \brief Declaration of stir::linear_regression()
 
   \author Kris Thielemans
   \author PARAPET project
