@@ -43,18 +43,18 @@ namespace detail {
 
 template <class Value>
 void linear_regression_compute_fit_from_S(Value& constant, Value& scale,
-					  Value& chi_square,
-					  Value& variance_of_constant,
-					  Value& variance_of_scale,
-					  Value& covariance_of_constant_with_scale,
-					  const double S,
-					  const double Sx,  
-					  const double Sy,
-					  const double Syy,
-					  const double Stt,
-					  const double Sty,
-					  const unsigned data_size,
-					  const bool use_estimated_variance
+                                          Value& chi_square,
+                                          Value& variance_of_constant,
+                                          Value& variance_of_scale,
+                                          Value& covariance_of_constant_with_scale,
+                                          const double S,
+                                          const double Sx,  
+                                          const double Sy,
+                                          const double Syy,
+                                          const double Stt,
+                                          const double Sty,
+                                          const std::size_t data_size,
+                                          const bool use_estimated_variance
                        )
 {
 
@@ -78,10 +78,10 @@ void linear_regression_compute_fit_from_S(Value& constant, Value& scale,
   if (chi_square<0)
     {
       warning("linear_regression found negative chi_square %g.\n"
-	      "This is probably just because of rounding errors and indicates "
-	      "a small error compared to the data. I will set it to 0 to avoid "
-	      "problems with sqrt(chi_square).",
-	      chi_square);
+              "This is probably just because of rounding errors and indicates "
+              "a small error compared to the data. I will set it to 0 to avoid "
+              "problems with sqrt(chi_square).",
+              chi_square);
       chi_square=0;
     }
   if (use_estimated_variance==true)
@@ -97,35 +97,35 @@ void linear_regression_compute_fit_from_S(Value& constant, Value& scale,
 // instantiations
 template void 
 linear_regression_compute_fit_from_S<>(float& constant, float& scale,
-				       float& chi_square,
-				       float& variance_of_constant,
-				       float& variance_of_scale,
-				       float& covariance_of_constant_with_scale,
-				       const double S,
-				       const double Sx,  
-				       const double Sy,
-				       const double Syy,
-				       const double Stt,
-				       const double Sty,
-				       const unsigned data_size,
-				       const bool use_estimated_variance
-				       );
+                                       float& chi_square,
+                                       float& variance_of_constant,
+                                       float& variance_of_scale,
+                                       float& covariance_of_constant_with_scale,
+                                       const double S,
+                                       const double Sx,  
+                                       const double Sy,
+                                       const double Syy,
+                                       const double Stt,
+                                       const double Sty,
+                                       const std::size_t data_size,
+                                       const bool use_estimated_variance
+                                       );
 
 template void 
 linear_regression_compute_fit_from_S<>(double& constant, double& scale,
-				       double& chi_square,
-				       double& variance_of_constant,
-				       double& variance_of_scale,
-				       double& covariance_of_constant_with_scale,
-				       const double S,
-				       const double Sx,  
-				       const double Sy,
-				       const double Syy,
-				       const double Stt,
-				       const double Sty,
-				       const unsigned data_size,
-				       const bool use_estimated_variance
-				       );
+                                       double& chi_square,
+                                       double& variance_of_constant,
+                                       double& variance_of_scale,
+                                       double& covariance_of_constant_with_scale,
+                                       const double S,
+                                       const double Sx,  
+                                       const double Sy,
+                                       const double Syy,
+                                       const double Stt,
+                                       const double Sty,
+                                       const std::size_t data_size,
+                                       const bool use_estimated_variance
+                                       );
 
 } // end namespace detail
 
