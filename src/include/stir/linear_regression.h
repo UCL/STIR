@@ -82,15 +82,15 @@ START_NAMESPACE_STIR
 template <class Value, class DataType, class CoordinatesType>
 inline void 
 linear_regression(Value& constant, Value& scale,
-		  Value& chi_square,
-		  Value& variance_of_constant,
-		  Value& variance_of_scale,
-		  Value& covariance_of_constant_with_scale,
-		  const VectorWithOffset<DataType>& measured_data,
-		  const VectorWithOffset<CoordinatesType>& coordinates,
-		  const VectorWithOffset<float>& weights,
-		  const bool use_estimated_variance = true
-		  );
+                  Value& chi_square,
+                  Value& variance_of_constant,
+                  Value& variance_of_scale,
+                  Value& covariance_of_constant_with_scale,
+                  const VectorWithOffset<DataType>& measured_data,
+                  const VectorWithOffset<CoordinatesType>& coordinates,
+                  const VectorWithOffset<float>& weights,
+                  const bool use_estimated_variance = true
+                  );
 
 /*!
   \ingroup buildblock
@@ -102,36 +102,36 @@ linear_regression(Value& constant, Value& scale,
   run over the same range.
 
   \see linear_regression(Value& , Value&,
-		  Value& ,
-		  Value& ,
-		  Value& ,
-		  Value& ,
-		  const VectorWithOffset<DataType>& ,
-		  const VectorWithOffset<CoordinatesType>& ,
-		  const VectorWithOffset<float>& ,
-		  const bool
-		  )
+                  Value& ,
+                  Value& ,
+                  Value& ,
+                  Value& ,
+                  const VectorWithOffset<DataType>& ,
+                  const VectorWithOffset<CoordinatesType>& ,
+                  const VectorWithOffset<float>& ,
+                  const bool
+                  )
 */
 
 template <class Value, class DataIter, class CoordinatesIter, class WeightsIter>
 inline void 
 linear_regression(Value& constant, Value& scale,
-		  Value& chi_square,
-		  Value& variance_of_constant,
-		  Value& variance_of_scale,
-		  Value& covariance_of_constant_with_scale,
-		  DataIter measured_data_begin, DataIter measured_data_end,
-		  CoordinatesIter coords_begin, 
-		  WeightsIter weights_begin,
-		  const bool use_estimated_variance = true);
+                  Value& chi_square,
+                  Value& variance_of_constant,
+                  Value& variance_of_scale,
+                  Value& covariance_of_constant_with_scale,
+                  DataIter measured_data_begin, DataIter measured_data_end,
+                  CoordinatesIter coords_begin, 
+                  WeightsIter weights_begin,
+                  const bool use_estimated_variance = true);
 
 template <class ValueIter, class DataIter, class CoordinatesIter, class WeightsIter>
 inline void 
 linear_regression(ValueIter regression_values_begin,
-		  DataIter data_begin, DataIter data_end,
-		  CoordinatesIter coords_begin, 
-		  WeightsIter weights_begin,
-		  const bool use_estimated_variance = true);
+                  DataIter data_begin, DataIter data_end,
+                  CoordinatesIter coords_begin, 
+                  WeightsIter weights_begin,
+                  const bool use_estimated_variance = true);
 
 END_NAMESPACE_STIR
 
