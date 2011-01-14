@@ -95,10 +95,6 @@ public:
   //@}
 
   virtual
-  Succeeded
-    set_up(shared_ptr<TargetT > const& target_sptr);
-
-  virtual
   TargetT *
     construct_target_ptr() const; 
 
@@ -107,10 +103,15 @@ public:
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 							  const TargetT& target, 
 							  int subset_num);
+protected:
+
+  virtual
+  Succeeded
+    set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr);
+
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
-protected:
   //! Filename with input projection data
   std::string _input_filename;
 

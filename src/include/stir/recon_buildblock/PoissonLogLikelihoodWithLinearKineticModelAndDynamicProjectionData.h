@@ -55,13 +55,13 @@ START_NAMESPACE_STIR
 template <typename TargetT>
 class PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData: 
 public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
+                                GeneralisedObjectiveFunction<TargetT>,
+                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
 {
  private:
   typedef  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
+                                GeneralisedObjectiveFunction<TargetT>,
+                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> > base_type;
   typedef PoissonLogLikelihoodWithLinearModelForMeanAndProjData<DiscretisedDensity<3, float> > SingleFrameObjFunc ;
   VectorWithOffset<SingleFrameObjFunc> _single_frame_obj_funcs;
  public:
@@ -77,27 +77,29 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   */
   virtual TargetT *
     construct_target_ptr() const; 
-
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-							  const TargetT &current_estimate, 
-							  const int subset_num); 
+                                                          const TargetT &current_estimate, 
+                                                          const int subset_num); 
 
+ protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						      const int subset_num);
+                                                      const int subset_num);
 
-  virtual Succeeded set_up(shared_ptr <TargetT> const& target_sptr);
+  virtual Succeeded set_up_before_sensitivity(shared_ptr <TargetT> const& target_sptr);
 
   //! Add subset sensitivity to existing data
+  /*! \todo Current implementation does NOT add to the subset sensitivity, but overwrites
+   */
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
 
   virtual Succeeded 
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-									     const TargetT& input,
-									     const int subset_num) const;
-
+                                                                             const TargetT& input,
+                                                                             const int subset_num) const;
+ public:
   /*! \name Functions to get parameters
    \warning Be careful with changing shared pointers. If you modify the objects in 
    one place, all objects that use the shared pointer will be affected.

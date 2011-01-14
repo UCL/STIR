@@ -167,45 +167,45 @@ initialise_keymap()
 
 
   this->parser.add_parsing_key("transformation type for gate 1", 
-			       &this->_forward_transformations[1]);
+                               &this->_forward_transformations[1]);
   this->parser.add_parsing_key("transformation type for gate 2", 
-			       &this->_forward_transformations[2]);
+                               &this->_forward_transformations[2]);
   this->parser.add_parsing_key("transformation type for gate 3", 
-			       &this->_forward_transformations[3]);
+                               &this->_forward_transformations[3]);
   this->parser.add_parsing_key("transformation type for gate 4", 
-			       &this->_forward_transformations[4]);
+                               &this->_forward_transformations[4]);
   this->parser.add_parsing_key("transformation type for gate 5", 
-			       &this->_forward_transformations[5]);
+                               &this->_forward_transformations[5]);
   this->parser.add_parsing_key("transformation type for gate 6", 
-			       &this->_forward_transformations[6]);
+                               &this->_forward_transformations[6]);
   this->parser.add_parsing_key("transformation type for gate 7", 
-			       &this->_forward_transformations[7]);
+                               &this->_forward_transformations[7]);
   this->parser.add_parsing_key("transformation type for gate 8", 
-			       &this->_forward_transformations[8]);
+                               &this->_forward_transformations[8]);
   this->parser.add_parsing_key("transformation type for gate 9", 
-			       &this->_forward_transformations[9]);
+                               &this->_forward_transformations[9]);
   this->parser.add_parsing_key("transformation type for gate 10", 
-			       &this->_forward_transformations[10]);
+                               &this->_forward_transformations[10]);
   this->parser.add_parsing_key("transformation type for gate 11", 
-			       &this->_forward_transformations[11]);
+                               &this->_forward_transformations[11]);
   this->parser.add_parsing_key("transformation type for gate 12", 
-			       &this->_forward_transformations[12]);
+                               &this->_forward_transformations[12]);
   this->parser.add_parsing_key("transformation type for gate 13", 
-			       &this->_forward_transformations[13]);
+                               &this->_forward_transformations[13]);
   this->parser.add_parsing_key("transformation type for gate 14", 
-			       &this->_forward_transformations[14]);
+                               &this->_forward_transformations[14]);
   this->parser.add_parsing_key("transformation type for gate 15", 
-			       &this->_forward_transformations[15]);
+                               &this->_forward_transformations[15]);
   this->parser.add_parsing_key("transformation type for gate 16", 
-			       &this->_forward_transformations[16]);
+                               &this->_forward_transformations[16]);
   this->parser.add_parsing_key("transformation type for gate 17", 
-			       &this->_forward_transformations[17]);
+                               &this->_forward_transformations[17]);
   this->parser.add_parsing_key("transformation type for gate 18", 
-			       &this->_forward_transformations[18]);
+                               &this->_forward_transformations[18]);
   this->parser.add_parsing_key("transformation type for gate 19", 
-			       &this->_forward_transformations[19]);
+                               &this->_forward_transformations[19]);
   this->parser.add_parsing_key("transformation type for gate 20", 
-			       &this->_forward_transformations[20]);
+                               &this->_forward_transformations[20]);
 
 
 }
@@ -267,11 +267,11 @@ construct_target_ptr() const
 {
   return
       new VoxelsOnCartesianGrid<float> (*this->_gated_proj_data_sptr->get_proj_data_info_ptr(),
-					static_cast<float>(this->zoom),
-					CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
-								     static_cast<float>(this->Yoffset),
-								     static_cast<float>(this->Xoffset)),
-					CartesianCoordinate3D<int>(this->output_image_size_z,
+                                        static_cast<float>(this->zoom),
+                                        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
+                                                                     static_cast<float>(this->Yoffset),
+                                                                     static_cast<float>(this->Xoffset)),
+                                        CartesianCoordinate3D<int>(this->output_image_size_z,
                                                                    this->output_image_size_xy,
                                                                    this->output_image_size_xy)
                                        );
@@ -346,7 +346,7 @@ set_frame_definitions(const TimeFrameDefinitions& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
   shared_ptr<ProjDataInfo> proj_data_info_sptr =
     this->_gated_proj_data_sptr->get_proj_data_info_ptr()->clone();
@@ -358,13 +358,13 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   if (this->max_segment_num_to_process > proj_data_info_sptr->get_max_segment_num()) 
     { 
       warning("max_segment_num_to_process (%d) is too large",
-	      this->max_segment_num_to_process); 
+              this->max_segment_num_to_process); 
       return Succeeded::no;
     }
 
   proj_data_info_sptr->
     reduce_segment_range(-this->max_segment_num_to_process,
-			 +this->max_segment_num_to_process);
+                         +this->max_segment_num_to_process);
   
   if (is_null_ptr(this->projector_pair_ptr))
     { warning("You need to specify a projector pair"); return Succeeded::no; }
@@ -372,7 +372,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   // set projectors to be used for the calculations
   
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
-				   target_sptr);
+                                   target_sptr);
 
   // initialise the objective functions for each gate
   {
@@ -382,115 +382,104 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 
     this->_functions.resize(this->_gated_proj_data_sptr->get_num_gates());
     for (unsigned int gate_num=1; 
-	 gate_num<=this->_gated_proj_data_sptr->get_num_gates(); 
-	 ++gate_num)
+         gate_num<=this->_gated_proj_data_sptr->get_num_gates(); 
+         ++gate_num)
       {
       
-	PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>
-	  objective_function;
+        PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>
+          objective_function;
 
-	objective_function.
-	  set_proj_data_sptr(this->_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
-	objective_function.
-	  set_max_segment_num_to_process(this->max_segment_num_to_process);
-	objective_function.
-	  set_zero_seg0_end_planes(this->zero_seg0_end_planes);
+        objective_function.
+          set_proj_data_sptr(this->_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
+        objective_function.
+          set_max_segment_num_to_process(this->max_segment_num_to_process);
+        objective_function.
+          set_zero_seg0_end_planes(this->zero_seg0_end_planes);
 
-	{
-	  shared_ptr<ProjectorByBinPair> projector_pair_sptr_this_gate;
+        {
+          shared_ptr<ProjectorByBinPair> projector_pair_sptr_this_gate;
 
-	  if (is_null_ptr(this->_forward_transformations[gate_num]))
-	    {
-	      projector_pair_sptr_this_gate =
-		this->projector_pair_ptr;
-	    }
-	  else
-	    {
-	      Transform3DObjectImageProcessor<float> const * forward_transformer_ptr =
-		dynamic_cast<Transform3DObjectImageProcessor<float> const *>
-		(this->_forward_transformations[gate_num].get());
-	      if (forward_transformer_ptr==0)
-		{
-		  warning("transformation type has to be Transform3DObjectImageProcessor");
-		  return Succeeded::no;
-		}
-	      shared_ptr<ForwardProjectorByBin> forward_projector_sptr_this_gate =
-		new PresmoothingForwardProjectorByBin(this->projector_pair_ptr->
-						      get_forward_projector_sptr(),
-						      this->_forward_transformations[gate_num]);
+          if (is_null_ptr(this->_forward_transformations[gate_num]))
+            {
+              projector_pair_sptr_this_gate =
+                this->projector_pair_ptr;
+            }
+          else
+            {
+              Transform3DObjectImageProcessor<float> const * forward_transformer_ptr =
+                dynamic_cast<Transform3DObjectImageProcessor<float> const *>
+                (this->_forward_transformations[gate_num].get());
+              if (forward_transformer_ptr==0)
+                {
+                  warning("transformation type has to be Transform3DObjectImageProcessor");
+                  return Succeeded::no;
+                }
+              shared_ptr<ForwardProjectorByBin> forward_projector_sptr_this_gate =
+                new PresmoothingForwardProjectorByBin(this->projector_pair_ptr->
+                                                      get_forward_projector_sptr(),
+                                                      this->_forward_transformations[gate_num]);
 
-	      shared_ptr<DataProcessor<TargetT> > transpose_transformer_sptr =
-		//forward_transformer_ptr->clone();
-		new Transform3DObjectImageProcessor<float>(*forward_transformer_ptr);
-	      // TODO get rid if dynamic cast when using boost::shared_ptr
-	      Transform3DObjectImageProcessor<float> & transpose_transformer =
-		dynamic_cast<Transform3DObjectImageProcessor<float> &>(*transpose_transformer_sptr);
-	      transpose_transformer.
-		set_do_transpose(!forward_transformer_ptr->get_do_transpose());
-	      shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate =
-		new PostsmoothingBackProjectorByBin(this->projector_pair_ptr->
-						      get_back_projector_sptr(),
-						      transpose_transformer_sptr);
-	      projector_pair_sptr_this_gate =
-		new ProjectorByBinPairUsingSeparateProjectors
-		(forward_projector_sptr_this_gate,
-		 back_projector_sptr_this_gate);
-	    }
-	  objective_function.
-	    set_projector_pair_sptr(projector_pair_sptr_this_gate);
-	}
-	if (is_null_ptr(this->_gated_additive_proj_data_sptr))
-	   {
-	     objective_function. 
-	       set_additive_proj_data_sptr(0);
-	   }
-	else
-	  {
-	    objective_function.
-	      set_additive_proj_data_sptr(this->_gated_additive_proj_data_sptr->get_proj_data_sptr(gate_num));
-	  }
-	objective_function.
-	  set_frame_num(this->frame_num);
-	objective_function.
-	  set_frame_definitions(this->frame_defs);
-	objective_function.
-	  set_normalisation_sptr(this->_normalisation_sptrs[gate_num]);
+              shared_ptr<DataProcessor<TargetT> > transpose_transformer_sptr =
+                //forward_transformer_ptr->clone();
+                new Transform3DObjectImageProcessor<float>(*forward_transformer_ptr);
+              // TODO get rid if dynamic cast when using boost::shared_ptr
+              Transform3DObjectImageProcessor<float> & transpose_transformer =
+                dynamic_cast<Transform3DObjectImageProcessor<float> &>(*transpose_transformer_sptr);
+              transpose_transformer.
+                set_do_transpose(!forward_transformer_ptr->get_do_transpose());
+              shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate =
+                new PostsmoothingBackProjectorByBin(this->projector_pair_ptr->
+                                                      get_back_projector_sptr(),
+                                                      transpose_transformer_sptr);
+              projector_pair_sptr_this_gate =
+                new ProjectorByBinPairUsingSeparateProjectors
+                (forward_projector_sptr_this_gate,
+                 back_projector_sptr_this_gate);
+            }
+          objective_function.
+            set_projector_pair_sptr(projector_pair_sptr_this_gate);
+        }
+        if (is_null_ptr(this->_gated_additive_proj_data_sptr))
+           {
+             objective_function. 
+               set_additive_proj_data_sptr(0);
+           }
+        else
+          {
+            objective_function.
+              set_additive_proj_data_sptr(this->_gated_additive_proj_data_sptr->get_proj_data_sptr(gate_num));
+          }
+        objective_function.
+          set_frame_num(this->frame_num);
+        objective_function.
+          set_frame_definitions(this->frame_defs);
+        objective_function.
+          set_normalisation_sptr(this->_normalisation_sptrs[gate_num]);
+        objective_function.
+          set_num_subsets(this->num_subsets);
 
-	// we need to prevent computation of the subsensitivities at present
-	// we set them to an empty image.
-	// WARNING this will create serious problems if we call the actual gradient
-	// of this objective_function
-	  {
-	    objective_function.
-	      set_recompute_sensitivity(false);
-	    objective_function.set_use_subset_sensitivities(false);
-	    objective_function.
-	      set_sensitivity_sptr(empty_target_sptr, 0);
-	  }
-	  
-	  // TODO dangerous for -1
-	  this->_functions[gate_num-1] = objective_function;
+#if 0
+        // we need to prevent computation of the subsensitivities at present
+        // we set them to an empty image.
+        // WARNING this will create serious problems if we call the actual gradient
+        // of this objective_function
+          {
+            objective_function.
+              set_recompute_sensitivity(false);
+            objective_function.set_use_subset_sensitivities(false);
+            objective_function.
+              set_sensitivity_sptr(empty_target_sptr, 0);
+          }
+#endif    
+          // TODO dangerous for -1
+          this->_functions[gate_num-1] = objective_function;
 
       }
   }
+#if 0
   if (base_type::set_up(target_sptr) != Succeeded::yes)
     return Succeeded::no;
-
-  this-> set_num_subsets(this->num_subsets);
-  
-  if(this->recompute_sensitivity)
-    {
-      std::cerr << "Computing sensitivity" << std::endl;
-      this->compute_sensitivities();
-      std::cerr << "Done computing sensitivity" << std::endl;
-      if (this->sensitivity_filename.size()!=0)
-	{
-	  // TODO
-	  OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-	    write_to_file(this->sensitivity_filename,
-			  this->get_sensitivity(0));
-	}
-    }
+#endif
 
   return Succeeded::yes;
 }
@@ -503,16 +492,16 @@ template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-						      const TargetT &current_estimate, 
-						      const int subset_num)
+                                                      const TargetT &current_estimate, 
+                                                      const int subset_num)
 {
   typename base_type::_functions_iterator_type iter = this->_functions.begin();
   typename base_type::_functions_iterator_type end_iter = this->_functions.end();
   if (iter != end_iter)
     {
       iter->compute_sub_gradient_without_penalty_plus_sensitivity(gradient, 
-								  current_estimate, 
-								  subset_num);
+                                                                  current_estimate, 
+                                                                  subset_num);
     }
   ++iter;
   if (iter == end_iter)
@@ -524,19 +513,19 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   while (iter != end_iter)
     {
       iter->compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_this_function_sptr, 
-								  current_estimate, 
-								  subset_num);
+                                                                  current_estimate, 
+                                                                  subset_num);
       // now add it to the total gradient
       typename TargetT::full_iterator gradient_iter = 
-	gradient.begin_all();
+        gradient.begin_all();
       typename TargetT::full_iterator gradient_end = 
-	gradient.end_all();
+        gradient.end_all();
       typename TargetT::const_full_iterator gradient_this_function_iter =
-	gradient_this_function_sptr ->begin_all_const();
+        gradient_this_function_sptr ->begin_all_const();
       while (gradient_iter != gradient_end)
-	{
-	  *gradient_iter++ += *gradient_this_function_iter++;
-	}
+        {
+          *gradient_iter++ += *gradient_this_function_iter++;
+        }
       ++iter;
     }
   
@@ -554,7 +543,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   while (iter != end_iter)
     {
       iter->add_subset_sensitivity(sensitivity,
-				   subset_num);
+                                   subset_num);
 
       ++iter;
     }

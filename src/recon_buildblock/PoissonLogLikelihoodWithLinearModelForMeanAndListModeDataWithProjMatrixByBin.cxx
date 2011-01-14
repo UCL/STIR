@@ -106,7 +106,8 @@ actual_subsets_are_approximately_balanced(string&) const
 
 template <typename TargetT>  
 Succeeded 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::set_up(shared_ptr <TargetT > const& target_sptr) 
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr) 
 { 
 #ifdef STIR_MPI
         //broadcast objective_function (100=PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)
@@ -114,13 +115,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #endif
         
  
-  if (base_type::set_up(target_sptr) != Succeeded::yes) 
-    return Succeeded::no; 
-
   // set projector to be used for the calculations    
   this->PM_sptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->clone(),target_sptr); 
-
-  return Succeeded::yes; 
+  return Succeeded::yes;
 } 
  
  

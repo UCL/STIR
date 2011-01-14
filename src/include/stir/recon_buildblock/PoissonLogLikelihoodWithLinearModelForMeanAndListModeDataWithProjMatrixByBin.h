@@ -55,14 +55,14 @@ START_NAMESPACE_STIR
 template <typename TargetT>
 class PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: 
 public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> >
+                                GeneralisedObjectiveFunction<TargetT>,
+                                PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> >
 
 {
 
 private:
 typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
+                                GeneralisedObjectiveFunction<TargetT>,
                                 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> > 
         base_type;
 
@@ -76,31 +76,30 @@ public:
   //! This should compute the gradient of the objective function at the  current_image_estimate
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
-	    				 const TargetT &current_estimate,  
-					 const int subset_num);  
+                                         const TargetT &current_estimate,  
+                                         const int subset_num);  
+  virtual TargetT * construct_target_ptr() const;  
+
+  int set_num_subsets(const int new_num_subsets);
+
+protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						      const int subset_num)
+                                                      const int subset_num)
   { // TODO 
     error("compute_objective_function_without_penalty Not implemented yet");
     return 0; 
   }
 
   virtual Succeeded 
-    set_up(shared_ptr <TargetT > const& target_sptr); 
+    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr); 
  
-  virtual TargetT * construct_target_ptr() const;  
-
-  int set_num_subsets(const int new_num_subsets);
-
   // TODO
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   {
     error("add_subset_sensitivity not implemented yet");
   }
-
-protected:
   
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
