@@ -60,7 +60,6 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
-#include "stir/IO/OutputFileFormat.h"
 
 
 #include "stir/Viewgram.h"
@@ -76,6 +75,8 @@
 #define ARBITRARY_TAG 8
 #endif
 #include "stir/CPUTimer.h"
+#include "stir/info.h"
+#include "boost/format.hpp"
 
 #ifndef STIR_NO_NAMESPACES
 using std::ends;
@@ -227,8 +228,8 @@ post_processing()
   if (this->additive_projection_data_filename != "0")
   {
     cerr << "\nReading additive projdata data "
-	 << this->additive_projection_data_filename 
-	 << endl;
+         << this->additive_projection_data_filename 
+         << endl;
     this->additive_proj_data_sptr = 
       ProjData::read_from_file(this->additive_projection_data_filename);
   };
@@ -292,7 +293,7 @@ post_processing()
      {
        cerr<<"\nWill print run-times of processing RPC_process_related_viewgrams_gradient for every slave! This will give an idea of the parallelization effect!"<<endl;
        distributed::rpc_time=true;
-     }  	
+     }          
    
 #endif
 
@@ -313,11 +314,11 @@ construct_target_ptr() const
 {
   return
       new VoxelsOnCartesianGrid<float> (*this->proj_data_sptr->get_proj_data_info_ptr(),
-					static_cast<float>(this->zoom),
-					CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
-								     static_cast<float>(this->Yoffset),
-								     static_cast<float>(this->Xoffset)),
-					CartesianCoordinate3D<int>(this->output_image_size_z,
+                                        static_cast<float>(this->zoom),
+                                        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
+                                                                     static_cast<float>(this->Yoffset),
+                                                                     static_cast<float>(this->Xoffset)),
+                                        CartesianCoordinate3D<int>(this->output_image_size_z,
                                                                    this->output_image_size_xy,
                                                                    this->output_image_size_xy)
                                        );
@@ -497,38 +498,38 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
   for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
     {
       for (int segment_num = -this->max_segment_num_to_process; 
-	   segment_num <= this->max_segment_num_to_process; 
-	   ++segment_num)
-	for (int view_num = this->proj_data_sptr->get_min_view_num() + subset_num; 
-	     view_num <= this->proj_data_sptr->get_max_view_num(); 
-	     view_num += this->num_subsets)
-	  {
-	    const ViewSegmentNumbers view_segment_num(view_num, segment_num);
-	    if (!symmetries.is_basic(view_segment_num))
-	      continue;
-	    num_vs_in_subset[subset_num] +=
-	      symmetries.num_related_view_segment_numbers(view_segment_num);
-	  }
+           segment_num <= this->max_segment_num_to_process; 
+           ++segment_num)
+        for (int view_num = this->proj_data_sptr->get_min_view_num() + subset_num; 
+             view_num <= this->proj_data_sptr->get_max_view_num(); 
+             view_num += this->num_subsets)
+          {
+            const ViewSegmentNumbers view_segment_num(view_num, segment_num);
+            if (!symmetries.is_basic(view_segment_num))
+              continue;
+            num_vs_in_subset[subset_num] +=
+              symmetries.num_related_view_segment_numbers(view_segment_num);
+          }
     }
   for (int subset_num=1; subset_num<this->num_subsets; ++subset_num)
     {
       if(num_vs_in_subset[subset_num] != num_vs_in_subset[0])
-	{ 
-	  std::stringstream str(warning_message);
-	  str <<"Number of subsets is such that subsets will be very unbalanced.\n"
-	      << "Number of viewgrams in each subset would be:\n"
-	      << num_vs_in_subset
-	      << "which should be "
-	      << num_vs_in_subset.sum()/float(this->num_subsets)
-	      << "\nEither reduce the number of symmetries used by the projector, or\n"
-	    "change the number of subsets. It usually should be a divisor of\n"
-	      << this->proj_data_sptr->get_num_views()
-	      << "/4 (or if that's not an integer, a divisor of "
-	      << this->proj_data_sptr->get_num_views()
-	      << "/2).\n";
-	  str >> warning_message;
-	  return false;
-	}
+        { 
+          std::stringstream str(warning_message);
+          str <<"Number of subsets is such that subsets will be very unbalanced.\n"
+              << "Number of viewgrams in each subset would be:\n"
+              << num_vs_in_subset
+              << "which should be "
+              << num_vs_in_subset.sum()/float(this->num_subsets)
+              << "\nEither reduce the number of symmetries used by the projector, or\n"
+            "change the number of subsets. It usually should be a divisor of\n"
+              << this->proj_data_sptr->get_num_views()
+              << "/4 (or if that's not an integer, a divisor of "
+              << this->proj_data_sptr->get_num_views()
+              << "/2).\n";
+          str >> warning_message;
+          return false;
+        }
     }
   return true;
 }
@@ -539,11 +540,8 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_up(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
-  if (base_type::set_up(target_sptr) != Succeeded::yes)
-    return Succeeded::no;
-
   if (this->max_segment_num_to_process==-1)
     this->max_segment_num_to_process =
       this->proj_data_sptr->get_max_segment_num();
@@ -551,7 +549,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   if (this->max_segment_num_to_process > this->proj_data_sptr->get_max_segment_num()) 
     { 
       warning("max_segment_num_to_process (%d) is too large",
-	      this->max_segment_num_to_process); 
+              this->max_segment_num_to_process); 
       return Succeeded::no;
     }
 
@@ -560,7 +558,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
 
   proj_data_info_sptr->
     reduce_segment_range(-this->max_segment_num_to_process,
-			 +this->max_segment_num_to_process);
+                         +this->max_segment_num_to_process);
   
   if (is_null_ptr(this->projector_pair_ptr))
     { warning("You need to specify a projector pair"); return Succeeded::no; }
@@ -568,84 +566,67 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   // set projectors to be used for the calculations
 
 #ifdef STIR_MPI
-	//broadcast objective_function (200=PoissonLogLikelihoodWithLinearModelForMeanAndProjData)
-	distributed::send_int_value(200, -1);
+        //broadcast objective_function (200=PoissonLogLikelihoodWithLinearModelForMeanAndProjData)
+        distributed::send_int_value(200, -1);
 
-	//broadcast zero_seg0_end_planes
-	distributed::send_bool_value(zero_seg0_end_planes, -1, -1);
-	
-	//broadcast target_sptr
-	distributed::send_image_parameters(target_sptr.get(), -1, -1);
-	distributed::send_image_estimate(target_sptr.get(), -1);
-	
-	//sending Projection_Data_info
-	distributed::send_proj_data_info(const_cast<ProjDataInfo*>(this->proj_data_sptr->get_proj_data_info_ptr()->clone()), -1);
-	
-	//TODO: use shared_ptr instead
-	//set up distributed caching object
-	if (distributed_cache_enabled) 
-	{
-		DistributedCachingInformation* caching_info_ptr_temp = new DistributedCachingInformation(proj_data_sptr->get_num_segments(), proj_data_sptr->get_num_views(), this->num_subsets);
-		caching_info_ptr = caching_info_ptr_temp;
-	}
-	else caching_info_ptr = NULL;
+        //broadcast zero_seg0_end_planes
+        distributed::send_bool_value(zero_seg0_end_planes, -1, -1);
+        
+        //broadcast target_sptr
+        distributed::send_image_parameters(target_sptr.get(), -1, -1);
+        distributed::send_image_estimate(target_sptr.get(), -1);
+        
+        //sending Projection_Data_info
+        distributed::send_proj_data_info(const_cast<ProjDataInfo*>(this->proj_data_sptr->get_proj_data_info_ptr()->clone()), -1);
+        
+        //TODO: use shared_ptr instead
+        //set up distributed caching object
+        if (distributed_cache_enabled) 
+        {
+                DistributedCachingInformation* caching_info_ptr_temp = new DistributedCachingInformation(proj_data_sptr->get_num_segments(), proj_data_sptr->get_num_views(), this->num_subsets);
+                caching_info_ptr = caching_info_ptr_temp;
+        }
+        else caching_info_ptr = NULL;
 #else 
-	//non parallel version
-	caching_info_ptr = NULL;
+        //non parallel version
+        caching_info_ptr = NULL;
 #endif 
 
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
-				   target_sptr);
+                                   target_sptr);
 
 #ifdef STIR_MPI
-	//send configuration values for distributed computation
-	int * configurations = new int[4];
-	configurations[0]=distributed::test?1:0;
-	configurations[1]=distributed::test_send_receive_times?1:0;
-	configurations[2]=distributed::rpc_time?1:0;
-	configurations[3]=distributed_cache_enabled?1:0;
-	distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
-	
-	double * threshold= new double[1];
-	threshold[0]=distributed::min_threshold;
-	distributed::send_double_values(threshold, 1, ARBITRARY_TAG, -1);
-		
-	//send registered name of projector pair
-	distributed::send_string(get_projector_pair_sptr()->get_registered_name(), REGISTERED_NAME_TAG, -1);
-	
-	//send parameter info of projector pair
-	distributed::send_string(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, -1);
+        //send configuration values for distributed computation
+        int * configurations = new int[4];
+        configurations[0]=distributed::test?1:0;
+        configurations[1]=distributed::test_send_receive_times?1:0;
+        configurations[2]=distributed::rpc_time?1:0;
+        configurations[3]=distributed_cache_enabled?1:0;
+        distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
+        
+        double * threshold= new double[1];
+        threshold[0]=distributed::min_threshold;
+        distributed::send_double_values(threshold, 1, ARBITRARY_TAG, -1);
+                
+        //send registered name of projector pair
+        distributed::send_string(get_projector_pair_sptr()->get_registered_name(), REGISTERED_NAME_TAG, -1);
+        
+        //send parameter info of projector pair
+        distributed::send_string(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, -1);
 
 #ifndef NDEBUG
-	//test sending parameter_info
-	if (distributed::test) 
-		distributed::test_parameter_info_master(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), 1, "projector_pair_ptr");
+        //test sending parameter_info
+        if (distributed::test) 
+                distributed::test_parameter_info_master(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), 1, "projector_pair_ptr");
 #endif
 
-	delete configurations;
-	delete threshold;
+        delete configurations;
+        delete threshold;
 #endif
-				   
+                                   
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr =
      this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone();
-
-  if (this->num_subsets <= 0)
-    {
-      warning("Number of subsets %d should be larger than 0.",
-	      this->num_subsets);
-      return Succeeded::no;
-    }
-  /* TODO
-     current implementation of compute_sub_gradient does not use subsensitivity
-  */
-  if(!this->subsets_are_approximately_balanced())
-  {
-      warning("Number of subsets %d is such that subsets will be very unbalanced.\n"
-	      "Current implementation of PoissonLogLikelihoodWithLinearModelForMean cannot handle this.",
-	      this->num_subsets);
-      return Succeeded::no;
-  }
 
   if (is_null_ptr(this->normalisation_sptr))
   {
@@ -665,22 +646,8 @@ set_up(shared_ptr<TargetT > const& target_sptr)
   if (static_cast<unsigned>(frame_num)> frame_defs.get_num_frames())
     {
       warning("frame_num is %d, but should be less than the number of frames %d.",
-	      frame_num, frame_defs.get_num_frames());
+              frame_num, frame_defs.get_num_frames());
       return Succeeded::no;
-    }
-
-  if(this->recompute_sensitivity)
-    {
-      std::cerr << "Computing sensitivity" << std::endl;      
-      this->compute_sensitivities();
-      std::cerr << "Done computing sensitivity" << std::endl;
-      if (this->sensitivity_filename.size()!=0)
-	{
-	  // TODO writes only first if use_subset_sensitivities
-	  OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-	    write_to_file(this->sensitivity_filename,
-			  this->get_sensitivity(0));
-	}
     }
 
   return Succeeded::yes;
@@ -694,26 +661,26 @@ template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-						      const TargetT &current_estimate, 
-						      const int subset_num)
+                                                      const TargetT &current_estimate, 
+                                                      const int subset_num)
 {
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
   distributable_compute_gradient(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                  this->projector_pair_ptr->get_back_projector_sptr(), 
-				 this->symmetries_sptr,
-				 gradient,
-				 current_estimate, 
-				 this->proj_data_sptr, 
-				 subset_num, 
-				 this->num_subsets, 
-				 -this->max_segment_num_to_process,
-				 this->max_segment_num_to_process, 
-				 this->zero_seg0_end_planes!=0, 
-				 NULL, 
-				 this->additive_proj_data_sptr 
-				 , caching_info_ptr
-				 );
+                                 this->symmetries_sptr,
+                                 gradient,
+                                 current_estimate, 
+                                 this->proj_data_sptr, 
+                                 subset_num, 
+                                 this->num_subsets, 
+                                 -this->max_segment_num_to_process,
+                                 this->max_segment_num_to_process, 
+                                 this->zero_seg0_end_planes!=0, 
+                                 NULL, 
+                                 this->additive_proj_data_sptr 
+                                 , caching_info_ptr
+                                 );
   
 
 }
@@ -723,23 +690,23 @@ template<typename TargetT>
 double 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						  const int subset_num)
+                                                  const int subset_num)
 {
   double accum=0.;  
   
   distributable_accumulate_loglikelihood(this->projector_pair_ptr->get_forward_projector_sptr(), 
-					 this->projector_pair_ptr->get_back_projector_sptr(), 
-					 this->symmetries_sptr,
-					 current_estimate,
+                                         this->projector_pair_ptr->get_back_projector_sptr(), 
+                                         this->symmetries_sptr,
+                                         current_estimate,
                                          this->proj_data_sptr,
-					 subset_num, this->get_num_subsets(),
-					 -this->max_segment_num_to_process, 
-					 this->max_segment_num_to_process, 
-					 this->zero_seg0_end_planes != 0, &accum,
-					 this->additive_proj_data_sptr
-					 , caching_info_ptr
-					 );
-		
+                                         subset_num, this->get_num_subsets(),
+                                         -this->max_segment_num_to_process, 
+                                         this->max_segment_num_to_process, 
+                                         this->zero_seg0_end_planes != 0, &accum,
+                                         this->additive_proj_data_sptr
+                                         , caching_info_ptr
+                                         );
+                
     
   return accum;
 }
@@ -795,9 +762,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   // warning: has to be same as subset scheme used as in distributable_computation
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
   {
-  	//CPUTimer timer;
-	//timer.start();
-	
+        //CPUTimer timer;
+        //timer.start();
+        
     for (int view = this->proj_data_sptr->get_min_view_num() + subset_num; 
         view <= this->proj_data_sptr->get_max_view_num(); 
         view += this->num_subsets)
@@ -820,7 +787,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
 {
   RelatedViewgrams<float> viewgrams = 
     this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
-						      this->symmetries_sptr);
+                                                      this->symmetries_sptr);
   viewgrams.fill(1.F);
   // find efficiencies
   {      
@@ -840,7 +807,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
 
     this->projector_pair_ptr->get_back_projector_sptr()->
       back_project(sensitivity, viewgrams,
-		   min_ax_pos_num, max_ax_pos_num);
+                   min_ax_pos_num, max_ax_pos_num);
   }
   
 }
@@ -850,19 +817,19 @@ template<typename TargetT>
 Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-								       const TargetT& input,
-								       const int subset_num) const
+                                                                       const TargetT& input,
+                                                                       const int subset_num) const
 {
   {
     string explanation;
-    if (!input.has_same_characteristics(*this->sensitivity_sptrs[0], 
-					explanation))
+    if (!input.has_same_characteristics(this->get_sensitivity(), 
+                                        explanation))
       {
-	warning("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
-		"sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
-		"should have the same characteristics.\n%s",
-		explanation.c_str());
-	return Succeeded::no;
+        warning("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+                "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
+                "should have the same characteristics.\n%s",
+                explanation.c_str());
+        return Succeeded::no;
       }
   }     
 
@@ -879,42 +846,42 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
        ++segment_num) 
     {      
       for (int view = this->get_proj_data().get_min_view_num() + subset_num; 
-	   view <= this->get_proj_data().get_max_view_num(); 
-	   view += this->num_subsets)
-	{
-	  const ViewSegmentNumbers view_segment_num(view, segment_num);
-	  
-	  if (!symmetries_sptr->is_basic(view_segment_num))
-	    continue;
+           view <= this->get_proj_data().get_max_view_num(); 
+           view += this->num_subsets)
+        {
+          const ViewSegmentNumbers view_segment_num(view, segment_num);
+          
+          if (!symmetries_sptr->is_basic(view_segment_num))
+            continue;
 
-	  // first compute data-term: y*norm^2
-	  RelatedViewgrams<float> viewgrams =
-	    this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
-	  // TODO add 1 for 1/(y+1) approximation
+          // first compute data-term: y*norm^2
+          RelatedViewgrams<float> viewgrams =
+            this->get_proj_data().get_related_viewgrams(view_segment_num, symmetries_sptr);
+          // TODO add 1 for 1/(y+1) approximation
 
-	  this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams, start_time, end_time);
 
-	  // smooth TODO
+          // smooth TODO
 
-	  this->get_normalisation().apply(viewgrams, start_time, end_time);
+          this->get_normalisation().apply(viewgrams, start_time, end_time);
 
-	  RelatedViewgrams<float> tmp_viewgrams;
-	  // set tmp_viewgrams to geometric forward projection of input
-	  {
-	    tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
-	    this->get_projector_pair().get_forward_projector_sptr()->
-	      forward_project(tmp_viewgrams, input);
-	  }
-	  
-	  // now divide by the data term
-	  {
-	    int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
-	    divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2);
-	  }
+          RelatedViewgrams<float> tmp_viewgrams;
+          // set tmp_viewgrams to geometric forward projection of input
+          {
+            tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
+            this->get_projector_pair().get_forward_projector_sptr()->
+              forward_project(tmp_viewgrams, input);
+          }
+          
+          // now divide by the data term
+          {
+            int tmp1=0, tmp2=0;// ignore counters returned by divide_and_truncate
+            divide_and_truncate(tmp_viewgrams, viewgrams, 0, tmp1, tmp2);
+          }
 
-	  // back-project
-	  this->get_projector_pair().get_back_projector_sptr()->
-	    back_project(output, tmp_viewgrams);
+          // back-project
+          this->get_projector_pair().get_back_projector_sptr()->
+            back_project(output, tmp_viewgrams);
       }
 
   } // end of loop over segments
@@ -940,26 +907,26 @@ static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumula
 #endif
 
 void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-				    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-				    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
-				    DiscretisedDensity<3,float>& output_image,
-				    const DiscretisedDensity<3,float>& input_image,
-				    const shared_ptr<ProjData>& proj_dat,
-				    int subset_num, int num_subsets,
-				    int min_segment, int max_segment,
-				    bool zero_seg0_end_planes,
-				    double* log_likelihood_ptr,
-				    shared_ptr<ProjData> const& additive_binwise_correction
-				    ,DistributedCachingInformation* caching_info_ptr
-				    )
+                                    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
+                                    DiscretisedDensity<3,float>& output_image,
+                                    const DiscretisedDensity<3,float>& input_image,
+                                    const shared_ptr<ProjData>& proj_dat,
+                                    int subset_num, int num_subsets,
+                                    int min_segment, int max_segment,
+                                    bool zero_seg0_end_planes,
+                                    double* log_likelihood_ptr,
+                                    shared_ptr<ProjData> const& additive_binwise_correction
+                                    ,DistributedCachingInformation* caching_info_ptr
+                                    )
 {
-	
+        
   //switch between caching enabled and caching disabled version
   if (caching_info_ptr == NULL)
-  		 distributable_computation(forward_projector_sptr,
-			    back_projector_sptr,
-			    symmetries_sptr,
-			    &output_image, &input_image,
+                 distributable_computation(forward_projector_sptr,
+                            back_projector_sptr,
+                            symmetries_sptr,
+                            &output_image, &input_image,
                             proj_dat, true, //i.e. do read projection data
                             subset_num, num_subsets,
                             min_segment, max_segment,
@@ -970,9 +937,9 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                             );
 #ifdef STIR_MPI                            
    else distributable_computation_cache_enabled(forward_projector_sptr,
-			    back_projector_sptr,
-			    symmetries_sptr,
-			    &output_image, &input_image,
+                            back_projector_sptr,
+                            symmetries_sptr,
+                            &output_image, &input_image,
                             proj_dat, true, //i.e. do read projection data
                             subset_num, num_subsets,
                             min_segment, max_segment,
@@ -987,26 +954,26 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
 
 
 void distributable_accumulate_loglikelihood(
-					    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-					    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-					    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
-					    const DiscretisedDensity<3,float>& input_image,
-					    const shared_ptr<ProjData>& proj_dat,
-					    int subset_num, int num_subsets,
-					    int min_segment, int max_segment,
-					    bool zero_seg0_end_planes,
-					    double* log_likelihood_ptr,
-					    shared_ptr<ProjData> const& additive_binwise_correction,
-					    DistributedCachingInformation* caching_info_ptr
-					    )
-					    
+                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                            const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
+                                            const DiscretisedDensity<3,float>& input_image,
+                                            const shared_ptr<ProjData>& proj_dat,
+                                            int subset_num, int num_subsets,
+                                            int min_segment, int max_segment,
+                                            bool zero_seg0_end_planes,
+                                            double* log_likelihood_ptr,
+                                            shared_ptr<ProjData> const& additive_binwise_correction,
+                                            DistributedCachingInformation* caching_info_ptr
+                                            )
+                                            
 {
-	//switch between caching enabled and caching disabled version
-  	if (caching_info_ptr == NULL)
-  			distributable_computation(forward_projector_sptr,
-						   back_projector_sptr,
-						    symmetries_sptr,
-						    NULL, &input_image, 
+        //switch between caching enabled and caching disabled version
+        if (caching_info_ptr == NULL)
+                        distributable_computation(forward_projector_sptr,
+                                                   back_projector_sptr,
+                                                    symmetries_sptr,
+                                                    NULL, &input_image, 
                             proj_dat, true, //i.e. do read projection data
                             subset_num, num_subsets,
                             min_segment, max_segment,
@@ -1017,9 +984,9 @@ void distributable_accumulate_loglikelihood(
                             );
 #ifdef STIR_MPI                            
     else distributable_computation_cache_enabled(forward_projector_sptr,
-						    back_projector_sptr,
-						    symmetries_sptr,
-						    NULL, &input_image, 
+                                                    back_projector_sptr,
+                                                    symmetries_sptr,
+                                                    NULL, &input_image, 
                             proj_dat, true, //i.e. do read projection data
                             subset_num, num_subsets,
                             min_segment, max_segment,
@@ -1036,14 +1003,14 @@ void distributable_accumulate_loglikelihood(
 
 
 void RPC_process_related_viewgrams_gradient(
-					    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-					    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-					    DiscretisedDensity<3,float>* output_image_ptr, 
+                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                            DiscretisedDensity<3,float>* output_image_ptr, 
                                             const DiscretisedDensity<3,float>* input_image_ptr, 
                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                             int& count, int& count2, double* log_likelihood_ptr /* = NULL */,
                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr)
-{	
+{       
   assert(output_image_ptr != NULL);
   assert(input_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
@@ -1052,40 +1019,40 @@ void RPC_process_related_viewgrams_gradient(
   
   /*if (distributed::first_iteration) 
     {
-    	stir::RelatedViewgrams<float>::iterator viewgrams_iter = measured_viewgrams_ptr->begin();
-		stir::RelatedViewgrams<float>::iterator viewgrams_end = measured_viewgrams_ptr->end();
-		while (viewgrams_iter!= viewgrams_end)
-		{
-			printf("\nSLAVE VIEWGRAM\n");
-			int pos=0;
-			for ( int tang_pos = -144 ;tang_pos  <= 143 ;++tang_pos)  
-		    	for ( int ax_pos = 0; ax_pos <= 62 ;++ax_pos)
-		    	{ 
-					if (pos>3616 && pos <3632) printf("%f, ",(*viewgrams_iter)[ax_pos][tang_pos]);
-					pos++;
-		    	}
-			viewgrams_iter++;
-		}
+        stir::RelatedViewgrams<float>::iterator viewgrams_iter = measured_viewgrams_ptr->begin();
+                stir::RelatedViewgrams<float>::iterator viewgrams_end = measured_viewgrams_ptr->end();
+                while (viewgrams_iter!= viewgrams_end)
+                {
+                        printf("\nSLAVE VIEWGRAM\n");
+                        int pos=0;
+                        for ( int tang_pos = -144 ;tang_pos  <= 143 ;++tang_pos)  
+                        for ( int ax_pos = 0; ax_pos <= 62 ;++ax_pos)
+                        { 
+                                        if (pos>3616 && pos <3632) printf("%f, ",(*viewgrams_iter)[ax_pos][tang_pos]);
+                                        pos++;
+                        }
+                        viewgrams_iter++;
+                }
     }
 */
-	stir::DiscretisedDensity<3,float>::full_iterator density_iter = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).begin_all();
-	stir::DiscretisedDensity<3,float>::full_iterator density_end = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).end_all();
-	 
-	/*if (distributed::first_iteration) 
-	{
-		int pos=0;
-		while (density_iter!= density_end)
-		{
-			if (pos>433422 && pos <433632) printf("Bild %f, ",*density_iter);
-			pos++;
-			density_iter++;
-		}
-	}*/
+        stir::DiscretisedDensity<3,float>::full_iterator density_iter = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).begin_all();
+        stir::DiscretisedDensity<3,float>::full_iterator density_end = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).end_all();
+         
+        /*if (distributed::first_iteration) 
+        {
+                int pos=0;
+                while (density_iter!= density_end)
+                {
+                        if (pos>433422 && pos <433632) printf("Bild %f, ",*density_iter);
+                        pos++;
+                        density_iter++;
+                }
+        }*/
 
   forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
-  	
-  	
-	
+        
+        
+        
   if (additive_binwise_correction_ptr != NULL)
   {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
@@ -1105,9 +1072,9 @@ void RPC_process_related_viewgrams_gradient(
 
 
 void RPC_process_related_viewgrams_accumulate_loglikelihood(
-							    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-							    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-							    DiscretisedDensity<3,float>* output_image_ptr,
+                                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                                            DiscretisedDensity<3,float>* output_image_ptr,
                                                             const DiscretisedDensity<3,float>* input_image_ptr, 
                                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                             int& count, int& count2, double* log_likelihood_ptr,
@@ -1129,9 +1096,9 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
   };
   
   RelatedViewgrams<float>::iterator meas_viewgrams_iter = 
-	  measured_viewgrams_ptr->begin();
+          measured_viewgrams_ptr->begin();
   RelatedViewgrams<float>::const_iterator est_viewgrams_iter = 
-	  estimated_viewgrams.begin();
+          estimated_viewgrams.begin();
   // call function that does the actual work, it sits in recon_array_funtions.cxx (TODO)
   for (;
        meas_viewgrams_iter != measured_viewgrams_ptr->end();

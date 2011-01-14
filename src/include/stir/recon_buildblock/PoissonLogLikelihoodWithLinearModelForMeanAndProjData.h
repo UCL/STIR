@@ -130,13 +130,13 @@ class DistributedCachingInformation;
 template <typename TargetT>
 class PoissonLogLikelihoodWithLinearModelForMeanAndProjData: 
 public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
+                                GeneralisedObjectiveFunction<TargetT>,
+                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
 {
  private:
   typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>,
-				GeneralisedObjectiveFunction<TargetT>,
-				PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
+                                GeneralisedObjectiveFunction<TargetT>,
+                                PoissonLogLikelihoodWithLinearModelForMean<TargetT> >
     base_type;
 
 public:
@@ -211,17 +211,25 @@ public:
   void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
   //@}
   
-  virtual Succeeded 
-    set_up(shared_ptr <TargetT > const& target_sptr);
-
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-							  const TargetT &current_estimate, 
-							  const int subset_num); 
+                                                          const TargetT &current_estimate, 
+                                                          const int subset_num); 
+
+#if 0
+  // currently not used
+  float sum_projection_data() const;
+#endif
+  virtual void
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+
+ protected:
+  virtual Succeeded 
+    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr);
 
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
-						      const int subset_num);
+                                                      const int subset_num);
 
   /*!
     The Hessian (without penalty) is approximatelly given by:
@@ -251,15 +259,8 @@ public:
   */
   virtual Succeeded 
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
-									     const TargetT& input,
-									     const int subset_num) const;
-
-#if 0
-  // currently not used
-  float sum_projection_data() const;
-#endif
-  virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
+                                                                             const TargetT& input,
+                                                                             const int subset_num) const;
 
 protected:
   //! Filename with input projection data
@@ -357,9 +358,9 @@ protected:
 #ifdef STIR_MPI
 //made available to be called from DistributedWorker object
 void RPC_process_related_viewgrams_gradient(
-					    const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-					    const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-					    DiscretisedDensity<3,float>* output_image_ptr, 
+                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                            DiscretisedDensity<3,float>* output_image_ptr, 
                                             const DiscretisedDensity<3,float>* input_image_ptr, 
                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                             int& count, int& count2, float* log_likelihood_ptr /* = NULL */,

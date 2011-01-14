@@ -169,7 +169,8 @@ post_processing()
 #endif
  
   this->_dyn_proj_data_sptr=DynamicProjData::read_from_file(_input_filename);
-
+  if (is_null_ptr(this->_dyn_proj_data_sptr))
+    { warning("Error reading input file %s", _input_filename.c_str()); return true; }
   // image stuff
   if (this->_zoom <= 0)
     { warning("zoom should be positive"); return true; }
@@ -328,11 +329,8 @@ set_num_subsets(const int num_subsets)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-set_up(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
-  if (base_type::set_up(target_sptr) != Succeeded::yes)
-    return Succeeded::no;
-
   if (this->_max_segment_num_to_process==-1)
     this->_max_segment_num_to_process =
       (this->_dyn_proj_data_sptr)->get_proj_data_sptr(1)->get_max_segment_num();
@@ -401,26 +399,13 @@ set_up(shared_ptr<TargetT > const& target_sptr)
         this->_single_frame_obj_funcs[frame_num].set_frame_num(frame_num);
         this->_single_frame_obj_funcs[frame_num].set_frame_definitions(this->_patlak_plot_sptr->get_time_frame_definitions());
         this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisation_sptr);
-        this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->recompute_sensitivity);
+        this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->get_recompute_sensitivity());
         this->_single_frame_obj_funcs[frame_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
         if(this->_single_frame_obj_funcs[frame_num].set_up(density_template_sptr) != Succeeded::yes)
           error("Single frame objective functions is not set correctly!");
       }
   }//_single_frame_obj_funcs[frame_num]
 
-  if(this->recompute_sensitivity)
-    {
-      std::cerr << "Computing sensitivity" << std::endl;
-      this->compute_sensitivities();
-      std::cerr << "Done computing sensitivity" << std::endl;
-      if (this->sensitivity_filename.size()!=0)
-        {
-          // TODO writes only first if use_subset_sensitivities
-          OutputFileFormat<TargetT>::default_sptr()->
-            write_to_file(this->sensitivity_filename,
-                          this->get_sensitivity(0));
-        }
-    }
   return Succeeded::yes;
 }
 
@@ -503,20 +488,17 @@ void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
-  // TODO this will NOT add to the subset sensitivity, but overwrite
   DynamicDiscretisedDensity dyn_sensitivity=this->_dyn_image_template;
 
   // loop over single_frame and use model_matrix
   for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
     {
-      std::fill(dyn_sensitivity[frame_num].begin_all(),
-                dyn_sensitivity[frame_num].end_all(),
-                0.F);
-      dyn_sensitivity[frame_num]=this->_single_frame_obj_funcs[frame_num].get_sensitivity(subset_num);
+      dyn_sensitivity[frame_num]=this->_single_frame_obj_funcs[frame_num].get_subset_sensitivity(subset_num);
       //  add_subset_sensitivity(dyn_sensitivity[frame_num],subset_num);
     }
-  this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(sensitivity,
-                                                                      dyn_sensitivity) ;
+
+  this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient_and_add_to_input(sensitivity,
+                                                                                       dyn_sensitivity) ;
 }
 
 template<typename TargetT>
@@ -528,7 +510,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 {
   {
     string explanation;
-    if (!input.has_same_characteristics(*this->sensitivity_sptrs[0],  /////////////////////1
+    if (!input.has_same_characteristics(this->get_sensitivity(), 
                                         explanation))
       {
         warning("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
