@@ -21,11 +21,11 @@
 # 
 
 if [ $# -eq 1 ]; then
-  echo "Prepending $1 to your PATH"
+  echo "Prepending $1 to your PATH for the duration of this script."
   PATH=$1:$PATH
 fi
 
-echo "=== make emission image"
+echo "===  make emission image"
 generate_image  generate_uniform_cylinder.par
 echo "===  use that as template for attenuation"
 stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
@@ -60,7 +60,9 @@ list_ROI_values ${input_image}.roistats ${input_image} ${ROI} 0 >& /dev/null
 input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 
 # loop over reconstruction algorithms
-# warning: currently the OSSPS par file uses an OSMAPOSL result as initial image
+# warning: currently OSMAPOSL needs to be run before OSSPS as 
+# the OSSPS par file uses an OSMAPOSL result as initial image
+# and reuses its subset sensitivities
 for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
   for parfile in ${recon}_test_sim*.par; do
     echo "============================================="
@@ -71,18 +73,18 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
       echo "Running precorrection"
       correct_projdata correct_projdata_simulation.par >& correct_projdata_simulation.log
       if [ $? -ne 0 ]; then
-          echo "Error running precorrection. CHECK correct_projdata_simulation.log"
-          error_log_files="${error_log_files} correct_projdata_simulation.log"
-          break
+        echo "Error running precorrection. CHECK correct_projdata_simulation.log"
+        error_log_files="${error_log_files} correct_projdata_simulation.log"
+        break
       fi
     fi
 
     # run actual reconstruction
     echo "Running ${recon} ${parfile}"
-    ${recon} ${parfile} >& ${parfile}.log
+    ${recon} ${parfile} >& my_${parfile}.log
     if [ $? -ne 0 ]; then
-       echo "Error running reconstruction. CHECK RECONSTRUCTION LOG ${parfile}.log"
-        error_log_files="${error_log_files} ${parfile}.log"
+       echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_${parfile}.log"
+       error_log_files="${error_log_files} my_${parfile}.log"
        break
     fi
 
@@ -110,10 +112,10 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
     echo "Output ROI mean: $output_ROI_mean"
     error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
     if [ ${error_bigger_than_1percent} -eq 1 ]; then
-        echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG ${parfile}.log"
-        error_log_files="${error_log_files} ${parfile}.log"
+      echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG ${parfile}.log"
+      error_log_files="${error_log_files} ${parfile}.log"
     else
-        echo "This seems fine."
+      echo "This seems fine."
     fi
 
     echo "============================================="
