@@ -66,20 +66,20 @@ $(dir)_EXE_FILENAMES := $(addsuffix $(EXE_SUFFIX), $($(dir)_EXES))
 # note: see lib.mk for explanation for the $(@:...) trick
 # it really is just a way to get $(dir) at build-time
 clean_exes_$(dir):
-        rm -f $($(@:clean_exes_%=%)_EXE_FILENAMES)
-        rm -f $(DEST)$(@:clean_exes_%=%)/*.[P]
-        rm -f $(DEST)$(@:clean_exes_%=%)/*$(O_SUFFIX)
+	rm -f $($(@:clean_exes_%=%)_EXE_FILENAMES)
+	rm -f $(DEST)$(@:clean_exes_%=%)/*.[P]
+	rm -f $(DEST)$(@:clean_exes_%=%)/*$(O_SUFFIX)
 
 
 
 install_exes_$(dir): $(dir)
-        mkdir -p $(INSTALL_EXE_DIR)
-        if [ ! -z "$($(@:install_exes_%=%)_EXE_FILENAMES)" ]; then $(INSTALL) $($(@:install_exes_%=%)_EXE_FILENAMES) $(INSTALL_EXE_DIR); fi
-        if [ ! -z "$($(@:install_exes_%=%)_SCRIPTS)" ]; then $(INSTALL) $($(@:install_exes_%=%)_SCRIPTS) $(INSTALL_EXE_DIR); fi
+	mkdir -p $(INSTALL_EXE_DIR)
+	if [ ! -z "$($(@:install_exes_%=%)_EXE_FILENAMES)" ]; then $(INSTALL) $($(@:install_exes_%=%)_EXE_FILENAMES) $(INSTALL_EXE_DIR); fi
+	if [ ! -z "$($(@:install_exes_%=%)_SCRIPTS)" ]; then $(INSTALL) $($(@:install_exes_%=%)_SCRIPTS) $(INSTALL_EXE_DIR); fi
 
 uninstall_exes_$(dir):
-        if [ ! -z "$($(@:install_exes_%=%)_EXE_FILENAMES)" ]; then $(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_EXE_FILENAMES))); fi
-        if [ ! -z "$($(@:install_exes_%=%)_SCRIPTS)" ]; then $(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_SCRIPTS))); fi
+	if [ ! -z "$($(@:install_exes_%=%)_EXE_FILENAMES)" ]; then $(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_EXE_FILENAMES))); fi
+	if [ ! -z "$($(@:install_exes_%=%)_SCRIPTS)" ]; then $(RM) $(addprefix $(INSTALL_EXE_DIR)/, $(notdir $($(@:uninstall_exes_%=%)_SCRIPTS))); fi
 
 install_$(dir): install_exes_$(dir)
 
