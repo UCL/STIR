@@ -140,7 +140,7 @@ ask_parameters()
 
   inter_update_filter_interval=
     ask_num("Do inter-update filtering at sub-iteration intervals of: ",
-	    0, this->num_subiterations, 0);
+            0, this->num_subiterations, 0);
      
   if(inter_update_filter_interval>0)
   {       
@@ -186,7 +186,7 @@ post_processing()
     if (MAP_model != "additive" && MAP_model != "multiplicative")
     {
       warning("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'",
-	MAP_model.c_str());
+        MAP_model.c_str());
       return true;
     }
   }
@@ -302,7 +302,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
     return Succeeded::no;
 
   if (is_null_ptr(dynamic_cast<PoissonLogLikelihoodWithLinearModelForMean<TargetT > const *>
-		  (this->objective_function_sptr.get())))
+                  (this->objective_function_sptr.get())))
     { warning("OSMAPOSL can only work with an objective function of type PoissonLogLikelihoodWithLinearModelForMean"); return Succeeded::no; }
 
   // check subset balancing
@@ -310,17 +310,17 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
     std::string warning_message = "OSMAPOSL\n";
     if (!this->objective_function().subsets_are_approximately_balanced(warning_message))
       {
-	warning("%s\nOSMAPOSL cannot handle this.",
-		warning_message.c_str());
-	return Succeeded::no;
+        warning("%s\nOSMAPOSL cannot handle this.",
+                warning_message.c_str());
+        return Succeeded::no;
       }
   } // end check balancing
 
 
   if(this->enforce_initial_positivity) 
     threshold_min_to_small_positive_value(target_image_ptr->begin_all(), 
-					  target_image_ptr->end_all(), 
-					  small_num);
+                                          target_image_ptr->end_all(), 
+                                          small_num);
 
   if (this->inter_update_filter_interval<0)
     { warning("Range error in inter-update filter interval"); return Succeeded::no; }
@@ -330,19 +330,19 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
     {
       // ensure that the result image of the filter is positive
       this->inter_update_filter_ptr =
-	new ChainedDataProcessor<TargetT >(
-				  this->inter_update_filter_ptr,
-				  new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >);
+        new ChainedDataProcessor<TargetT >(
+                                  this->inter_update_filter_ptr,
+                                  new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >);
       // KT 04/06/2003 moved set_up after chaining the filter. Otherwise it would be 
       // called again later on anyway.
       // Note however that at present, 
       cerr<<endl<<"Building inter-update filter kernel"<<endl;
       if (this->inter_update_filter_ptr->set_up(*target_image_ptr)
           == Succeeded::no)
-	{
-	  warning("Error building inter-update filter");
-	  return Succeeded::no;
-	}
+        {
+          warning("Error building inter-update filter");
+          return Succeeded::no;
+        }
 
     }
   if (this->inter_iteration_filter_interval>0 && 
@@ -350,18 +350,18 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
     {
       // ensure that the result image of the filter is positive
       this->inter_iteration_filter_ptr =
-	new ChainedDataProcessor<TargetT >(
-					   this->inter_iteration_filter_ptr,
-					   new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >
+        new ChainedDataProcessor<TargetT >(
+                                           this->inter_iteration_filter_ptr,
+                                           new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >
 );
       // KT 04/06/2003 moved set_up after chaining the filter (and removed it from IterativeReconstruction)
       cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
       if (this->inter_iteration_filter_ptr->set_up(*target_image_ptr)
           == Succeeded::no)
-	{
-	  warning("Error building inter iteration filter");
-	  return Succeeded::no;
-	}
+        {
+          warning("Error building inter iteration filter");
+          return Succeeded::no;
+        }
 
     }
   return Succeeded::yes;
@@ -396,13 +396,13 @@ update_estimate(TargetT &current_image_estimate)
 
   this->objective_function().
     compute_sub_gradient_without_penalty_plus_sensitivity(*multiplicative_update_image_ptr,
-							  current_image_estimate,
-							  subset_num); 
+                                                          current_image_estimate,
+                                                          subset_num); 
   
-  // divide by sensitivity  
+  // divide by subset sensitivity  
   {
     const TargetT& sensitivity =
-      this->objective_function().get_sensitivity(subset_num);
+      this->objective_function().get_subset_sensitivity(subset_num);
 
 
     int count = 0;
@@ -412,22 +412,19 @@ update_estimate(TargetT &current_image_estimate)
   if (this->objective_function_sptr->prior_is_zero())
     {
       divide(multiplicative_update_image_ptr->begin_all(),
-	     multiplicative_update_image_ptr->end_all(), 
-	     sensitivity.begin_all(),
-	     small_num);
-	
+             multiplicative_update_image_ptr->end_all(), 
+             sensitivity.begin_all(),
+             small_num);
+        
     }
     else
     {
-      if (this->objective_function().get_use_subset_sensitivities())
-	error("OSMAPOSL prior code needs adjusting when this->use_subset_sensitivities == true");
-
       auto_ptr< TargetT > denominator_ptr = 
         auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
       
       
       this->objective_function_sptr->
-	get_prior_ptr()->compute_gradient(*denominator_ptr, current_image_estimate); 
+        get_prior_ptr()->compute_gradient(*denominator_ptr, current_image_estimate); 
       
       typename TargetT::full_iterator denominator_iter = denominator_ptr->begin_all();
       const typename TargetT::full_iterator denominator_end = denominator_ptr->end_all();
@@ -435,70 +432,53 @@ update_estimate(TargetT &current_image_estimate)
 
       if(this->MAP_model =="additive" )
       {
-        // lambda_new = lambda / ((p_v + beta*prior_gradient)/ num_subsets) *
-	//                   sum_subset backproj(measured/forwproj(lambda))
-	// with p_v = sum_b p_bv
-	// actually, we restrict 1 + beta*prior_gradient/p_v between .1 and 10
-	while (denominator_iter != denominator_end)
-	  {
-	    *denominator_iter += (*sensitivity_iter);
-	    // bound denominator between (*sensitivity_iter)/10 and (*sensitivity_iter)*10
-	    *denominator_iter =
-		std::max(std::min(*denominator_iter, (*sensitivity_iter)*10),(*sensitivity_iter)/10);
-	    ++denominator_iter;
-	    ++sensitivity_iter;
-	  }
+        // lambda_new = lambda / (p_v + beta*prior_gradient/ num_subsets) *
+        //                   sum_subset backproj(measured/forwproj(lambda))
+        // with p_v = sum_{b in subset} p_bv
+        // actually, we restrict 1 + beta*prior_gradient/num_subsets/p_v between .1 and 10
+        while (denominator_iter != denominator_end)
+          {
+            *denominator_iter = *denominator_iter/this->get_num_subsets() + (*sensitivity_iter);
+            // bound denominator between (*sensitivity_iter)/10 and (*sensitivity_iter)*10
+            *denominator_iter =
+                std::max(std::min(*denominator_iter, (*sensitivity_iter)*10),(*sensitivity_iter)/10);
+            ++denominator_iter;
+            ++sensitivity_iter;
+          }
       }
       else
       {
-	if(this->MAP_model =="multiplicative" )
-	{
-	  // multiplicative form
-	  // lambda_new = lambda / (p_v*(1 + beta*prior_gradient)/ num_subsets) *
-	  //                   sum_subset backproj(measured/forwproj(lambda))
-	  // with p_v = sum_b p_bv
-	  // actually, we restrict 1 + beta*prior_gradient between .1 and 10
-	while (denominator_iter != denominator_end)
-	  {
-	    *denominator_iter += 1;
-	    // bound denominator between 1/10 and 1*10
-	    // TODO code will fail if *denominator_iter is not a float
-	    *denominator_iter =
-		std::max(std::min(*denominator_iter, 10.F),1/10.F);
-	    *denominator_iter *= (*sensitivity_iter);
-	    ++denominator_iter;
-	    ++sensitivity_iter;
-	  }
-	}
-      }		
+        if(this->MAP_model =="multiplicative" )
+        {
+          // multiplicative form
+          // lambda_new = lambda / (p_v*(1 + beta*prior_gradient)) *
+          //                   sum_subset backproj(measured/forwproj(lambda))
+          // with p_v = sum_{b in subset} p_bv
+          // actually, we restrict 1 + beta*prior_gradient between .1 and 10
+        while (denominator_iter != denominator_end)
+          {
+            *denominator_iter += 1;
+            // bound denominator between 1/10 and 1*10
+            // TODO code will fail if *denominator_iter is not a float
+            *denominator_iter =
+                std::max(std::min(*denominator_iter, 10.F),1/10.F);
+            *denominator_iter *= (*sensitivity_iter);
+            ++denominator_iter;
+            ++sensitivity_iter;
+          }
+        }
+      }         
       divide(multiplicative_update_image_ptr->begin_all(),
-	     multiplicative_update_image_ptr->end_all(), 
-	     denominator_ptr->begin_all(),
-	     small_num);
+             multiplicative_update_image_ptr->end_all(), 
+             denominator_ptr->begin_all(),
+             small_num);
     }
     
     cerr<<"Number of (cancelled) singularities in Sensitivity division: "
       <<count<<endl;
   }
   
-  
-  //MJ 05/03/2000 moved this inside the update function
-
-  // *multiplicative_update_image_ptr*=  static_cast<float>(this->num_subsets);
-  if (this->objective_function().get_use_subset_sensitivities() == false)
-  {  
-    typename TargetT::full_iterator multiplicative_update_image_iter =
-      multiplicative_update_image_ptr->begin_all();
-    const typename TargetT::full_iterator multiplicative_update_image_end = 
-      multiplicative_update_image_ptr->end_all();
-    while (multiplicative_update_image_iter != multiplicative_update_image_end)
-      {
-	*multiplicative_update_image_iter *=
-	  static_cast<float>(this->num_subsets);
-	++multiplicative_update_image_iter;
-      }
-  }
-  
+    
   if(this->inter_update_filter_interval>0 &&
      !is_null_ptr(this->inter_update_filter_ptr) &&
      !(this->subiteration_num%this->inter_update_filter_interval))
@@ -527,26 +507,26 @@ update_estimate(TargetT &current_image_estimate)
   if (this->subiteration_num != 1)
     {
       const float current_min =
-	*std::min_element(multiplicative_update_image_ptr->begin_all(),
-			  multiplicative_update_image_ptr->end_all()); 
+        *std::min_element(multiplicative_update_image_ptr->begin_all(),
+                          multiplicative_update_image_ptr->end_all()); 
       const float current_max = 
-	*std::max_element(multiplicative_update_image_ptr->begin_all(),
-			  multiplicative_update_image_ptr->end_all()); 
+        *std::max_element(multiplicative_update_image_ptr->begin_all(),
+                          multiplicative_update_image_ptr->end_all()); 
       const float new_min = 
-	static_cast<float>(this->minimum_relative_change);
+        static_cast<float>(this->minimum_relative_change);
       const float new_max = 
-	static_cast<float>(this->maximum_relative_change);
+        static_cast<float>(this->maximum_relative_change);
       cerr << "Update image old min,max: " 
-	   << current_min
-	   << ", " 
-	   << current_max
-	   << ", new min,max " 
-	   << max(current_min, new_min) << ", " << min(current_max, new_max)
-	   << endl;
+           << current_min
+           << ", " 
+           << current_max
+           << ", new min,max " 
+           << max(current_min, new_min) << ", " << min(current_max, new_max)
+           << endl;
 
       threshold_upper_lower(multiplicative_update_image_ptr->begin_all(),
-			    multiplicative_update_image_ptr->end_all(), 
-			    new_min, new_max);      
+                            multiplicative_update_image_ptr->end_all(), 
+                            new_min, new_max);      
     }  
 
   //current_image_estimate *= *multiplicative_update_image_ptr; 
@@ -556,8 +536,8 @@ update_estimate(TargetT &current_image_estimate)
     typename TargetT::full_iterator current_image_estimate_iter = current_image_estimate.begin_all(); 
     while (multiplicative_update_image_iter!=end_multiplicative_update_image_iter) 
       { 
-	*current_image_estimate_iter *= (*multiplicative_update_image_iter); 
-	++current_image_estimate_iter; ++multiplicative_update_image_iter; 
+        *current_image_estimate_iter *= (*multiplicative_update_image_iter); 
+        ++current_image_estimate_iter; ++multiplicative_update_image_iter; 
       } 
   }
   
