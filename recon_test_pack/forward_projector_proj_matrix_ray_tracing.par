@@ -1,0 +1,10 @@
+Forward Projector parameters:=
+; example par file for specifying the forward projector for e.g. fwdtest
+type:=Matrix
+  Forward Projector Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   number of rays in tangential direction to trace for each bin := 10
+  End Ray tracing matrix parameters :=
+  End Forward Projector Using Matrix Parameters :=
+end:=

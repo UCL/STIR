@@ -1,0 +1,19 @@
+correct_projdata Parameters := 
+
+  input file := my_line_integrals.hs
+  output filename := my_prompts.hs
+  ; use data (1) or set to one (0) := 
+  apply (1) or undo (0) correction := 0
+  randoms projdata filename := my_randoms.hs
+  
+  Bin Normalisation type := from projdata
+    Bin Normalisation From ProjData :=
+    ; only attenuation here for this simulation
+    normalisation projdata filename:= my_acfs.hs
+    End Bin Normalisation From ProjData:=
+
+  ; scatter term to be subtracted AFTER norm+atten correction
+  ; defaults to 0
+  ;scatter projdata filename := scatter.hs
+
+END:= 
