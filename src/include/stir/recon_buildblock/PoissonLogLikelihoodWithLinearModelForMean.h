@@ -100,12 +100,21 @@ START_NAMESPACE_STIR
   \f$y=\bar y\f$.
 
   \par Parameters for parsing
-
+  Defaults are indicate below
   \verbatim
+  ; specifies if we keep separate sensitivity images (which is more accurate and is 
+  ; recommended) or if we assume the subsets are exactly balanced (this uses more memory).
+  use_subset_sensitivities := 0
   ; for recomputing sensitivity, even if a filename is specified
   recompute sensitivity:= 0
   ; filename for reading the sensitivity, or writing if it is recomputed
+  ; if use_subset_sensitivities=0
   sensitivity filename:=
+  ; pattern for filename for reading the subset sensitivities, or writing if recomputed
+  ; if use_subset_sensitivities=1
+  ; e.g. subsens_%d.hv
+  ; boost::format is used with the pattern (which means you can use it like sprintf)
+  subset sensitivity filenames:=
   \endverbatim
 
 
@@ -122,19 +131,21 @@ public  GeneralisedObjectiveFunction<TargetT>
   //PoissonLogLikelihoodWithLinearModelForMean(); 
 
   //! Implementation in terms of compute_sub_gradient_without_penalty_plus_sensitivity()
-  /*! \warning At present, we do not keep separate subsensitivities for
-    each subset, but just subtract the total sensitivity divided by the
-    number of subsets.
+  /*! \warning If separate subsensitivities are not used, we just subtract the total 
+    sensitivity divided by the number of subsets.
     This is fine for some algorithms as the sum over all the subsets is 
     equal to gradient of the objective function (without prior). 
     Other algorithms do not behave very stable under this approximation
-    however. So, currently we call error() if
-    <code>!subsets_are_approximately_balanced()</code>.
+    however. So, currently setup() will return an error if
+    <code>!subsets_are_approximately_balanced()</code> and subset sensitivities
+    are not used.
+
+    \see get_use_subset_sensitivities()
   */
   virtual void 
     compute_sub_gradient_without_penalty(TargetT& gradient, 
-					 const TargetT &current_estimate, 
-					 const int subset_num); 
+                                         const TargetT &current_estimate, 
+                                         const int subset_num); 
 
   //! This should compute the gradient of the (unregularised) objective function plus the (sub)sensitivity
   /*! 
@@ -149,31 +160,42 @@ public  GeneralisedObjectiveFunction<TargetT>
    */
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
-							  const TargetT &current_estimate, 
-							  const int subset_num) =0; 
+                                                          const TargetT &current_estimate, 
+                                                          const int subset_num) =0; 
 
-  //! set-up sensitivity if possible
+  //! set-up sensitivity etc if possible
   /*! If \c recompute_sensitivity is \c false, we will try to
-      read it from \c sensitivity_filename, unless this is equal
-      to <code>&quot;1&quot;</code> in which case all data are
+      read it from either \c subset_sensitivity_filenames or \c sensitivity_filename, 
+      depending on the setting of get_use_subset_sensitivities().
+
+      If \c sensitivity_filename is equal
+      to <code>&quot;1&quot;</code>, all data are
       set to \c 1.
 
       \warning The special handling of the string \c might be removed later.
-      \warning This function does not set \c sensitivity_sptr even if
-      recomputation is forced. The reason for this is that the derived
-      class probably needs to set-up some variables before
-      add_subset_sensitivity() can work. 
+
+      Calls set_up_before_sensitivity().
   */
   virtual Succeeded set_up(shared_ptr <TargetT> const& target_sptr);
 
-  //! Get a const reference to the sensitivity
-  const TargetT& get_sensitivity(const int subset_num) const;
+  //! Get a const reference to the total sensitivity
+  const TargetT& get_sensitivity() const;
+  //! Get a const reference to the sensitivity for a subset
+  const TargetT& get_subset_sensitivity(const int subset_num) const;
 
   //! Add subset sensitivity to existing data
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const = 0;
 
+  //! find out if subset_sensitivities are used
+  /*! If \c true, the sub_gradient and subset_sensitivity functions use the sensitivity
+      for the given subset, otherwise, we use the total sensitivity divided by the number 
+      of subsets. The latter uses less memory, but is less stable for most (all?) algorithms.
+  */
   bool get_use_subset_sensitivities() const;
+
+  //! find current value of recompute_sensitivity
+  bool get_recompute_sensitivity() const;
 
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -183,36 +205,55 @@ public  GeneralisedObjectiveFunction<TargetT>
   */
   //@{
   void set_recompute_sensitivity(const bool);
-  void set_sensitivity_sptr(const shared_ptr<TargetT>&, const int subset_num);
+  void set_subset_sensitivity_sptr(const shared_ptr<TargetT>&, const int subset_num);
 
   void set_use_subset_sensitivities(const bool);
   //@}
 
   /*! The implementation checks if the sensitivity of a voxel is zero. If so,
    it will the target voxel will be assigned the desired value.
-
-   \todo The current implementation uses only get_sensitivity(0);
   */
   void 
     fill_nonidentifiable_target_parameters(TargetT& target, const float value ) const;
 
-protected:
+ private:
 
   std::string sensitivity_filename;
+  std::string subsensitivity_filenames;
   bool recompute_sensitivity;
   bool use_subset_sensitivities;
 
-  VectorWithOffset<shared_ptr<TargetT> > sensitivity_sptrs;
+  VectorWithOffset<shared_ptr<TargetT> > subsensitivity_sptrs;
+  shared_ptr<TargetT> sensitivity_sptr;
 
   //! Get the subset sensitivity sptr
   shared_ptr<TargetT> 
     get_subset_sensitivity_sptr(const int subset_num) const;
+  //! compute total from subsensitivity or vice versa
+  /*! This function will be called by set_up() after reading new images, and/or 
+      by compute_sensitivities().
 
+      if get_use_subset_sensitivities() is true, the total sensitivity is computed
+      by adding the subset sensitivities, otherwise, the subset sensitivities are
+      computed by dividng the total sensitivity by \c num_subsets.
+  */
+  void set_total_or_subset_sensitivities();
+
+protected:
+  //! set-up specifics for the derived class 
+  virtual Succeeded 
+    set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr) = 0;
+
+  //! compute subset and total sensitivity
+  /*! This function fills in the sensitivity data by calling add_subset_sensitivity()
+      for all subsets. It assumes that the subsensitivity for the 1st subset has been 
+      allocated already (and is the correct size).
+  */
   void compute_sensitivities();
 
   //! Sets defaults for parsing 
-  /*! Resets \c sensitivity_filename and \c sensitivity_sptr and
-     \c recompute_sensitivity to \c false.
+  /*! Resets \c sensitivity_filename, \c subset_sensitivity_filenames to empty,
+     \c recompute_sensitivity to \c false, and \c use_subset_sensitivities to false.
   */
   virtual void set_defaults();
   virtual void initialise_keymap();
