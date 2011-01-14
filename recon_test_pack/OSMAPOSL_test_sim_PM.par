@@ -1,0 +1,45 @@
+OSMAPOSLParameters :=
+; $Id$
+; test file for OSMAPOSL with a quadratic prior (and ray tracing projection matrix)
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+input file := my_prompts.hs
+zero end planes of segment 0:= 0 ; segment 0 is has direct and indirect planes
+; if disabled, defaults to maximum segment number in the file
+;maximum absolute segment number to process := 3
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   number of rays in tangential direction to trace for each bin := 10
+;   do symmetry 90degrees min phi := 0
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+  Bin Normalisation type := from projdata
+    Bin Normalisation From ProjData :=
+    normalisation projdata filename:= my_acfs.hs
+    End Bin Normalisation From ProjData:=
+
+additive sinogram := my_additive_sinogram.hs
+
+xy output image size (in pixels) := 91
+zoom := .5
+
+use subset sensitivities:=1
+subset sensitivity filenames:= my_DSTE_sens_2D_PM_s14_%d.hv
+recompute_sensitivity:=1
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+output filename prefix := my_test_sim_image_OSMAPOSL_PM
+number of subsets:= 14
+start at subset:= 0
+number of subiterations:= 28
+save estimates at subiteration intervals:= 7
+
+;report objective function values interval := 1
+
+END :=
