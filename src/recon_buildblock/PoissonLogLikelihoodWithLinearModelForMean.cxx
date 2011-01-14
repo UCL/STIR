@@ -28,14 +28,17 @@
   $Date$
   $Revision$
 */
-
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/Succeeded.h"
 #include <algorithm>
+#include <exception>
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
+#include "stir/info.h"
+#include "boost/format.hpp"
 
 START_NAMESPACE_STIR
 
@@ -47,11 +50,10 @@ set_defaults()
   base_type::set_defaults();
 
   this->sensitivity_filename = "";  
+  this->subsensitivity_filenames = "";  
   this->recompute_sensitivity = false;
   this->use_subset_sensitivities = false;
-  this->sensitivity_sptrs.resize(1);
-  this->sensitivity_sptrs[0] = 0;
-
+  this->subsensitivity_sptrs.resize(0);
 }
 
 template<typename TargetT>
@@ -62,6 +64,7 @@ initialise_keymap()
   base_type::initialise_keymap();
 
   this->parser.add_key("sensitivity filename", &this->sensitivity_filename);
+  this->parser.add_key("subset sensitivity filenames", &this->subsensitivity_filenames);
   this->parser.add_key("recompute sensitivity", &this->recompute_sensitivity);
   this->parser.add_key("use_subset_sensitivities", &this->use_subset_sensitivities);
 
@@ -83,21 +86,32 @@ shared_ptr<TargetT>
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 get_subset_sensitivity_sptr(const int subset_num) const
 {
-  const int actual_subset_num =
-    this->get_use_subset_sensitivities()
-    ? subset_num
-    : 0;
-  return this->sensitivity_sptrs[actual_subset_num];
+  return this->subsensitivity_sptrs[subset_num];
 }
 
 template<typename TargetT>
 const TargetT&
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-get_sensitivity(const int subset_num) const
+get_subset_sensitivity(const int subset_num) const
 {
   return *get_subset_sensitivity_sptr(subset_num);
 }
 
+template<typename TargetT>
+const TargetT&
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+get_sensitivity() const
+{
+  return *this->sensitivity_sptr;
+}
+
+template<typename TargetT>
+bool
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+get_recompute_sensitivity() const
+{
+  return this->recompute_sensitivity;
+}
 
 template<typename TargetT>
 void
@@ -127,9 +141,9 @@ set_use_subset_sensitivities(const bool arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
-set_sensitivity_sptr(const shared_ptr<TargetT>& arg, const int subset_num)
+set_subset_sensitivity_sptr(const shared_ptr<TargetT>& arg, const int subset_num)
 {
-  this->sensitivity_sptrs[subset_num] = arg;
+  this->subsensitivity_sptrs[subset_num] = arg;
 }
 
 template<typename TargetT>
@@ -140,77 +154,145 @@ set_up(shared_ptr<TargetT> const& target_sptr)
   if (base_type::set_up(target_sptr) != Succeeded::yes)
     return Succeeded::no;
 
-#if 0
-  // TODO cannot call this yet as projectors are not yet set-up
-  // check subset balancing
-  if (this->use_subset_sensitivities == false)
-  {
-    std::string warning_message = "PoissonLogLikelihoodWithLinearModelForMean:\n";
-    if (!this->subsets_are_approximately_balanced(warning_message))
-      {
-	warning("%s\n . you need to set use_subset_sensitivities to true",
-		warning_message.c_str());
-	return Succeeded::no;
-      }
-  } // end check balancing
-#endif
+  this->subsensitivity_sptrs.resize(this->num_subsets);
+
   if(!this->recompute_sensitivity)
-    {
-      if (this->get_use_subset_sensitivities())
-	{
-	  warning("PoissonLogLikelihoodWithLinearModelForMean limitation:\n"
-		  "currently can only use subset_sensitivities if recompute_sensitivity==true");
-	  return Succeeded::no;
-	}
-      
+    {      
       if(this->sensitivity_filename=="")
-	{
-	  if (is_null_ptr(this->sensitivity_sptrs[0]))
-	    {
-	      warning("recompute_sensitivity is set to false, but sensitivity pointer is empty "
-		      "and sensitivity filename is not set. I will compute the sensitivity anyway.");
-	      this->recompute_sensitivity = true;
-	      // initialisation of pointers will be done below
-	    }
-	}
+        {
+          if (is_null_ptr(this->subsensitivity_sptrs[0]))
+            {
+              warning("recompute_sensitivity is set to false, but sensitivity pointer is empty "
+                      "and sensitivity filename is not set. I will compute the sensitivity anyway.");
+              this->recompute_sensitivity = true;
+              // initialisation of pointers will be done below
+            }
+        }
       else if(this->sensitivity_filename=="1")
-	{
-	  this->sensitivity_sptrs[0]=target_sptr->get_empty_copy();
-	  std::fill(this->sensitivity_sptrs[0]->begin_all(), this->sensitivity_sptrs[0]->end_all(), 1);  
-	}
+        {
+          if (this->get_use_subset_sensitivities())
+            {
+              warning("PoissonLogLikelihoodWithLinearModelForMean limitation:\n"
+                      "currently cannot use subset_sensitivities if sensitivity is forced to 1");
+              return Succeeded::no;
+            }
+          this->sensitivity_sptr=target_sptr->get_empty_copy();
+          std::fill(this->sensitivity_sptr->begin_all(), this->sensitivity_sptr->end_all(), 1);  
+        }
       else
-	{       
-	  
-	  this->sensitivity_sptrs[0] = 
-	    TargetT::read_from_file(this->sensitivity_filename);   
-	  string explanation;
-	  if (!target_sptr->has_same_characteristics(*this->sensitivity_sptrs[0], 
-						     explanation))
-	    {
-	      warning("sensitivity and target should have the same characteristics.\n%s",
-		      explanation.c_str());
-	      return Succeeded::no;
-	    }
-	}
+        {
+          // read from file
+          try 
+            {
+              if (this->get_use_subset_sensitivities())
+                {
+                  // read subsensitivies
+                  for (int subset=0; subset<this->get_num_subsets(); ++subset)
+                    {
+                      const std::string current_sensitivity_filename =
+                        boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                      info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
+
+                      this->subsensitivity_sptrs[subset] = 
+                        TargetT::read_from_file(current_sensitivity_filename);   
+                      string explanation;
+                      if (!target_sptr->has_same_characteristics(*this->subsensitivity_sptrs[subset], 
+                                                                 explanation))
+                        {
+                          warning("sensitivity and target should have the same characteristics.\n%s",
+                                  explanation.c_str());
+                          return Succeeded::no;
+                        }
+                    }
+                }
+              else
+                {
+                  // reading single sensitivity
+                  const std::string current_sensitivity_filename =
+                    this->sensitivity_filename;
+                  info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
+
+                  this->sensitivity_sptr = 
+                    TargetT::read_from_file(current_sensitivity_filename);   
+                  string explanation;
+                  if (!target_sptr->has_same_characteristics(*this->sensitivity_sptr, 
+                                                             explanation))
+                    {
+                      warning("sensitivity and target should have the same characteristics.\n%s",
+                              explanation.c_str());
+                      return Succeeded::no;
+                    }
+                }
+            }
+          catch (std::exception& e)
+            {
+              warning("Error reading sensitivity from file:\n%s", e.what());
+              return Succeeded::no;
+            }
+          // compute total from subsensitivity or vice versa
+          this->set_total_or_subset_sensitivities();
+        }
     } // end of !recompute_sensitivity case
 
-  // handle recompute_sensitivity==true case
-  // note: repeat if (as opposed to using "else") such that we get here if 
-  // recompute_sensitivity was set above
-  if(this->recompute_sensitivity)
+  if (this->set_up_before_sensitivity(target_sptr) == Succeeded::no)
     {
-      if (this->use_subset_sensitivities == false)
-	this->sensitivity_sptrs.resize(1);
-      else
-	this->sensitivity_sptrs.resize(this->num_subsets);
-
-      for (int subset_num=0; subset_num < static_cast<int>(this->sensitivity_sptrs.size()); ++ subset_num)
-	this->sensitivity_sptrs[subset_num]=target_sptr->get_empty_copy();
-
-      // note: at this point, the projectors are not yet set-up, so we cannot
-      // call compute_sensitivities here.
+      return Succeeded::no;
     }
 
+  if(!this->subsets_are_approximately_balanced() && !this->get_use_subset_sensitivities())
+    {
+      warning("Number of subsets %d is such that subsets will be very unbalanced.\n"
+              "You need to set 'use_subset_sensitivities' to true to handle this.",
+              this->num_subsets);
+      return Succeeded::no;
+    }
+
+  if(this->recompute_sensitivity)
+    {
+      info("Computing sensitivity");      
+      // preallocate one such that compute_sensitivities knows the size
+      this->subsensitivity_sptrs[0]=target_sptr->get_empty_copy();
+      this->compute_sensitivities();
+      info("Done computing sensitivity");
+
+      // write to file
+      try
+        {
+          if (this->get_use_subset_sensitivities())
+            {
+              if (this->subsensitivity_filenames.size()!=0)
+                {
+                  for (int subset=0; subset<this->get_num_subsets(); ++subset)
+                    {
+                      const std::string current_sensitivity_filename =
+                        boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                      info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
+                      OutputFileFormat<TargetT>::default_sptr()->
+                        write_to_file(current_sensitivity_filename,
+                                      this->get_subset_sensitivity(subset));
+                    }
+                }
+            }
+          else
+            {
+              if (this->sensitivity_filename.size()!=0)
+                {            
+                  const std::string current_sensitivity_filename =
+                    this->sensitivity_filename;
+                  info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
+                  OutputFileFormat<TargetT>::default_sptr()->
+                    write_to_file(current_sensitivity_filename,
+                                  this->get_sensitivity());
+                }
+            }
+        }
+      catch (std::exception& e)
+        {
+          warning("Error writing sensitivity to file:\n%s", e.what());
+          return Succeeded::no;
+        }
+    }
+      
   return Succeeded::yes;
 }
 
@@ -218,13 +300,13 @@ template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 compute_sub_gradient_without_penalty(TargetT& gradient, 
-				     const TargetT &current_estimate, 
-				     const int subset_num)
+                                     const TargetT &current_estimate, 
+                                     const int subset_num)
 {
   this->
     compute_sub_gradient_without_penalty_plus_sensitivity(gradient, 
-							  current_estimate,
-							  subset_num);
+                                                          current_estimate,
+                                                          subset_num);
   // compute gradient -= sub_sensitivity
   {
     typename TargetT::full_iterator gradient_iter =
@@ -232,12 +314,11 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
     const typename TargetT::full_iterator gradient_end = 
       gradient.end_all();
     typename TargetT::const_full_iterator sensitivity_iter =
-      this->get_sensitivity(subset_num).begin_all_const();
+      this->get_subset_sensitivity(subset_num).begin_all_const();
     while (gradient_iter != gradient_end)
       {
-	*gradient_iter -= (*sensitivity_iter)/
-	  (this->get_use_subset_sensitivities() == false ? this->num_subsets : 1);
-	++gradient_iter; ++sensitivity_iter;
+        *gradient_iter -= (*sensitivity_iter);
+        ++gradient_iter; ++sensitivity_iter;
       }
   }
 }
@@ -254,23 +335,83 @@ compute_sensitivities()
     std::string warning_message = "PoissonLogLikelihoodWithLinearModelForMean:\n";
     if (!this->subsets_are_approximately_balanced(warning_message))
       {
-	error("%s\n . you need to set use_subset_sensitivities to true",
-		warning_message.c_str());
+        error("%s\n . you need to set use_subset_sensitivities to true",
+                warning_message.c_str());
       }
   } // end check balancing
 
+  // compute subset sensitivities
   for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
     {
-      if (this->get_use_subset_sensitivities() || subset_num == 0)
-	{
-	  std::fill(this->sensitivity_sptrs[subset_num]->begin_all(), 
-		    this->sensitivity_sptrs[subset_num]->end_all(), 
-		    0);
-	}
+      if (subset_num == 0)
+        {
+          std::fill(this->subsensitivity_sptrs[subset_num]->begin_all(), 
+                    this->subsensitivity_sptrs[subset_num]->end_all(), 
+                    0);
+        }
+      else
+        {
+          if (this->get_use_subset_sensitivities())
+            {
+              this->subsensitivity_sptrs[subset_num]=this->subsensitivity_sptrs[0]->get_empty_copy();
+            }
+          else
+            {
+              // copy subsensitivity[0] pointer to current subset.
+              // do this as pointer such that we don't use more memory.
+              // This also means that we just accumulate in subsensitivity[0] for the moment.
+              // we will correct that below.
+              this->subsensitivity_sptrs[subset_num] = this->subsensitivity_sptrs[0];
+            }
+        }
       this->add_subset_sensitivity(*this->get_subset_sensitivity_sptr(subset_num), subset_num);
     }
-  // TODO (but needs change in various bits and pieces)
-  // if (!this->get_use_subset_sensitivities()) *sensitivity_sptr[0]/=num_subsets
+  if (!this->get_use_subset_sensitivities())
+    {
+      // copy full sensitivity (currently stored in subsensitivity[0]) 
+      this->sensitivity_sptr = this->subsensitivity_sptrs[0];
+      this->subsensitivity_sptrs[0] = 0;
+    }
+  // compute total from subsensitivity or vice versa
+  this->set_total_or_subset_sensitivities();
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+set_total_or_subset_sensitivities()
+{
+  if (this->get_use_subset_sensitivities())
+    {
+      // add subset sensitivities, just in case we need the total somewhere
+      this->sensitivity_sptr = this->subsensitivity_sptrs[0]->clone();
+      for (int subset_num=1; subset_num<this->num_subsets; ++subset_num)
+        {
+          typename TargetT::full_iterator sens_iter = this->sensitivity_sptr->begin_all();
+          typename TargetT::full_iterator subsens_iter = this->subsensitivity_sptrs[subset_num]->begin_all();
+          while (sens_iter != this->sensitivity_sptr->end_all())
+            {
+              *sens_iter += *subsens_iter;
+              ++sens_iter; ++ subsens_iter;
+            }
+        }
+    }
+  else
+    {
+      // copy full sensitivity
+      this->subsensitivity_sptrs[0] = this->sensitivity_sptr->clone();
+      // divide subsensitivity[0] by num_subsets
+      for (typename TargetT::full_iterator subsens_iter = this->subsensitivity_sptrs[0]->begin_all();
+           subsens_iter != this->subsensitivity_sptrs[0]->end_all();
+           ++subsens_iter)
+        {
+          *subsens_iter /= this->num_subsets;
+        }
+      // set all other pointers the same
+      for (int subset_num=1; subset_num<this->num_subsets; ++subset_num)
+        this->subsensitivity_sptrs[subset_num] = this->subsensitivity_sptrs[0];
+    }
+
 }
 
 
@@ -281,9 +422,8 @@ fill_nonidentifiable_target_parameters(TargetT& target, const float value) const
 {
   typename TargetT::full_iterator target_iter = target.begin_all();
   typename TargetT::full_iterator target_end_iter = target.end_all();
-  // TODO really should use total sensitivity, not subset
   typename TargetT::const_full_iterator sens_iter = 
-    this->get_sensitivity(0).begin_all_const();
+    this->get_sensitivity().begin_all_const();
   
   for (;
        target_iter != target_end_iter;
