@@ -27,6 +27,7 @@ EXEDIRS += utilities recon_test \
 	iterative/POSSPS \
 	analytic/FBP2D \
 	analytic/FBP3DRP \
-	SimSET
+	SimSET \
+	scripts
 
 TESTDIRS += test recon_test test/numerics test/modelling
