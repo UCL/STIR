@@ -81,7 +81,7 @@ class DistributedWorker : public TimedObject, public ParsingObject
  private:	
   MPI_Status status;
 				
-  float* log_likelihood_ptr;
+  double* log_likelihood_ptr;
   bool zero_seg0_end_planes;
 		
   int image_buffer_size; //to save the image_size
