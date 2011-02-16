@@ -68,8 +68,6 @@ ProjectorByBinPairUsingProjMatrixByBin::post_processing()
     return true;
   if (is_null_ptr(proj_matrix_sptr))
     { warning("No valid projection matrix is defined\n"); return true; }
-  forward_projector_sptr = new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr);
-  back_projector_sptr = new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr);
   return false;
 }
 
@@ -85,24 +83,24 @@ ProjectorByBinPairUsingProjMatrixByBin(
     : proj_matrix_sptr(proj_matrix_sptr)
 {}
 
-#if 0
-// not needed as the projection matrix will be set_up indirectly by
-// the forward_projector->set_up (which is calle in the base class)
 Succeeded
 ProjectorByBinPairUsingProjMatrixByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_sptr)
 {    	 
 
-  // TODO use return value
-  proj_matrix_sptr->set_up(proj_data_info_sptr, image_info_sptr);
+  this->forward_projector_sptr = new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr);
+  this->back_projector_sptr = new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr);
 
-  if (base_type::set_up(target_sptr) != Succeeded::yes)
+  // proj_matrix_sptr->set_up()  not needed as the projection matrix will be set_up indirectly by
+  // the forward_projector->set_up (which is called in the base class)
+  // proj_matrix_sptr->set_up(proj_data_info_sptr, image_info_sptr);
+
+  if (base_type::set_up(proj_data_info_sptr, image_info_sptr) != Succeeded::yes)
     return Succeeded::no;
 
   return Succeeded::yes;
 }
-#endif
 
 ProjMatrixByBin const * 
 ProjectorByBinPairUsingProjMatrixByBin::
