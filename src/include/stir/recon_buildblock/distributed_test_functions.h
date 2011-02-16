@@ -85,9 +85,9 @@ namespace distributed
 				    const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr
 				    );
 	
-  void test_parameter_info_master(string str, int slave, char * text);
+  void test_parameter_info_master(const string str, int slave, char const * const text);
 	
-  void test_parameter_info_slave(string str);
+  void test_parameter_info_slave(const string str);
 	
   void test_bool_value_master(bool value, int slave);
 	
