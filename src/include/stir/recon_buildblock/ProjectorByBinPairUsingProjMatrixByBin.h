@@ -37,7 +37,7 @@
 
 START_NAMESPACE_STIR
 
-
+class Succeeded;
 /*!
   \ingroup projection
   \brief A projector pair based on a single matrix
@@ -60,15 +60,15 @@ public:
   //! Default constructor 
   ProjectorByBinPairUsingProjMatrixByBin();
 
-  //! Constructor that sets the pair
+  //! Constructor that sets the projection matrix
   ProjectorByBinPairUsingProjMatrixByBin(const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr);
-#if 0
+
   //! Stores all necessary geometric info
-  virtual Succceeded set_up(		 
+  /*! First constructs forward and back projectors and then calls base_type::setup */
+  virtual Succeeded set_up(		 
     const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     );
-#endif
 
   ProjMatrixByBin const * 
     get_proj_matrix_ptr() const;
