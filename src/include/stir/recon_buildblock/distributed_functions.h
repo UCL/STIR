@@ -211,7 +211,7 @@ namespace distributed
    * for a InterfilePDFSHeader object. The sent char-array is used as stream-
    * input to the parse() function of InterfilePDFSHeader. 
    */
-  void send_proj_data_info(stir::ProjDataInfo* data, int destination);
+  void send_proj_data_info(stir::ProjDataInfo const * const data, int destination);
 	
 	
   /*! \brief sends a RelatedViegrams object
