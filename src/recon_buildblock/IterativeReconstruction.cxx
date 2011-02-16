@@ -178,6 +178,12 @@ get_objective_function() const
 { return *this->objective_function_sptr; }
 
 template <typename TargetT>
+shared_ptr<GeneralisedObjectiveFunction<TargetT> > 
+IterativeReconstruction<TargetT>::
+get_objective_function_sptr() const
+{ return this->objective_function_sptr; }
+
+template <typename TargetT>
 const int
 IterativeReconstruction<TargetT>::
 get_max_num_full_iterations() const
