@@ -49,15 +49,16 @@ public:
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
-  virtual void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
-  virtual void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
+  virtual inline void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
+  virtual inline void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
   
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
-  
+  virtual inline float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
+
+  virtual inline bool is_trivial() const { return true;}  
 
 private:
-  virtual void set_defaults() {}
-  virtual void initialise_keymap() {}
+  virtual inline void set_defaults() {}
+  virtual inline void initialise_keymap() {}
   
 };
 
