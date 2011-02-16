@@ -577,7 +577,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
         distributed::send_image_estimate(target_sptr.get(), -1);
         
         //sending Projection_Data_info
-        distributed::send_proj_data_info(const_cast<ProjDataInfo*>(this->proj_data_sptr->get_proj_data_info_ptr()->clone()), -1);
+        distributed::send_proj_data_info(this->proj_data_sptr->get_proj_data_info_ptr(), -1);
         
         //TODO: use shared_ptr instead
         //set up distributed caching object
@@ -597,16 +597,15 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
 #ifdef STIR_MPI
         //send configuration values for distributed computation
-        int * configurations = new int[4];
+        int configurations[4];
         configurations[0]=distributed::test?1:0;
         configurations[1]=distributed::test_send_receive_times?1:0;
         configurations[2]=distributed::rpc_time?1:0;
         configurations[3]=distributed_cache_enabled?1:0;
         distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
         
-        double * threshold= new double[1];
-        threshold[0]=distributed::min_threshold;
-        distributed::send_double_values(threshold, 1, ARBITRARY_TAG, -1);
+        double threshold =distributed::min_threshold;
+        distributed::send_double_values(&threshold, 1, ARBITRARY_TAG, -1);
                 
         //send registered name of projector pair
         distributed::send_string(get_projector_pair_sptr()->get_registered_name(), REGISTERED_NAME_TAG, -1);
@@ -619,9 +618,6 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
         if (distributed::test) 
                 distributed::test_parameter_info_master(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), 1, "projector_pair_ptr");
 #endif
-
-        delete configurations;
-        delete threshold;
 #endif
                                    
   // TODO check compatibility between symmetries for forward and backprojector
@@ -1035,20 +1031,6 @@ void RPC_process_related_viewgrams_gradient(
                 }
     }
 */
-        stir::DiscretisedDensity<3,float>::full_iterator density_iter = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).begin_all();
-        stir::DiscretisedDensity<3,float>::full_iterator density_end = (*(const_cast<DiscretisedDensity<3,float>* >(input_image_ptr))).end_all();
-         
-        /*if (distributed::first_iteration) 
-        {
-                int pos=0;
-                while (density_iter!= density_end)
-                {
-                        if (pos>433422 && pos <433632) printf("Bild %f, ",*density_iter);
-                        pos++;
-                        density_iter++;
-                }
-        }*/
-
   forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
         
         
