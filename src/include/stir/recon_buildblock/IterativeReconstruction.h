@@ -84,6 +84,7 @@ START_NAMESPACE_STIR
   \endverbatim
 
   \todo move subset things somewhere else
+  \todo all the <code>compute</code> functions should be <code>const</code>.
  */
 
 template <class TargetT>
@@ -163,6 +164,9 @@ public:
   //@{
   GeneralisedObjectiveFunction<TargetT> const&
     get_objective_function() const;
+
+  shared_ptr<GeneralisedObjectiveFunction<TargetT> >
+    get_objective_function_sptr() const;
 
   //! the maximum allowed number of full iterations
   const int get_max_num_full_iterations() const;
