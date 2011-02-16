@@ -81,15 +81,7 @@ endif
 
 #** PARALLEL FLAGS***
 
-ifeq ($(CXX),mpicxx)
-STIR_MPI=1
-endif
-
-ifeq ($(CXX),mpic++)
-STIR_MPI=1
-endif
-
-ifeq ($(CXX),mpiCC)
+ifeq ($(findstring mpi,$(CXX)),mpi)
 STIR_MPI=1
 endif
 
