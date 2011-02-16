@@ -71,7 +71,6 @@ namespace distributed
     assert(vg->get_segment_num()==viewgram.get_segment_num());
     if (vg->get_segment_num()!=viewgram.get_segment_num()) printf("-----Test sending viewgram failed!!!!-------------\n");
 		
-    vg=NULL;
     delete vg;
     printf("\n-----Test sending viewgram done-----------\n");
   }
@@ -93,8 +92,8 @@ namespace distributed
     assert(target_image_sptr->has_same_characteristics(*input_image_ptr));
     assert(*input_image_ptr==*target_image_sptr);
 
-    stir::DiscretisedDensity<3,float>::full_iterator density_iter = (const_cast<stir::DiscretisedDensity<3,float>* >(input_image_ptr))->begin_all();
-    stir::DiscretisedDensity<3,float>::full_iterator density_end = (const_cast<stir::DiscretisedDensity<3,float>* >(input_image_ptr))->end_all();
+    stir::DiscretisedDensity<3,float>::const_full_iterator density_iter = input_image_ptr->begin_all();
+    stir::DiscretisedDensity<3,float>::const_full_iterator density_end = input_image_ptr->end_all();
 		
     stir::DiscretisedDensity<3,float>::full_iterator target_density_iter = target_image_sptr->begin_all();
 			
@@ -105,41 +104,7 @@ namespace distributed
 	density_iter++;
 	target_density_iter++;
       }
-		
-    //get origin of input_image_ptr
-    stir::CartesianCoordinate3D<float> sent_origin = input_image_ptr->get_origin();
-    stir::CartesianCoordinate3D<float> received_origin = target_image_sptr->get_origin();
-		
-    assert(received_origin.x()>=0.0);
-    assert(received_origin.y()>=0.0);
-    assert(received_origin.z()>=0.0);
-    assert(sent_origin.x()==received_origin.x());
-    assert(sent_origin.y()==received_origin.y());
-    assert(sent_origin.z()==received_origin.z());
-		
-    const stir::VoxelsOnCartesianGrid<float>* input_image =
-      dynamic_cast<const stir::VoxelsOnCartesianGrid<float>* >(input_image_ptr);
-    const stir::VoxelsOnCartesianGrid<float>* image =
-      dynamic_cast<const stir::VoxelsOnCartesianGrid<float>* >(target_image_sptr.get());
-		
 				
-    stir::CartesianCoordinate3D<float> send_grid_spacing = input_image->get_grid_spacing();
-    stir::CartesianCoordinate3D<float> received_grid_spacing = image->get_grid_spacing();
-		
-    assert(received_grid_spacing.x()>0.0);
-    assert(received_grid_spacing.y()>0.0);
-    assert(received_grid_spacing.z()>0.0);
-    assert(send_grid_spacing.x()==received_grid_spacing.x());
-    assert(send_grid_spacing.y()==received_grid_spacing.y());
-    assert(send_grid_spacing.z()==received_grid_spacing.z());
-	
-    assert(image->get_x_size()>0);
-    assert(image->get_y_size()>0);
-    assert(image->get_z_size()>0);
-    assert(input_image->get_x_size()==image->get_x_size());
-    assert(input_image->get_y_size()==image->get_y_size());
-    assert(input_image->get_z_size()==image->get_z_size());
-		
     printf("\n-----Test sending image estimate done-----\n");
   }
 	
@@ -217,7 +182,7 @@ namespace distributed
     delete received_viewgrams;	
   }
 	
-  void test_parameter_info_master(string str, int slave, char * text)
+  void test_parameter_info_master(const string str, int slave, char const * const text)
   {
     printf("\n-----Running Test for sending %s-----\n", text);
 		
@@ -233,7 +198,7 @@ namespace distributed
     printf("\n-----Test sending %s done-----\n", text);
   }
 	
-  void test_parameter_info_slave(string str)
+  void test_parameter_info_slave(const string str)
   {
     printf("\n-----Slave startet Test for sending parameter_info or string-----\n");
     send_string(str, 88, 0);
