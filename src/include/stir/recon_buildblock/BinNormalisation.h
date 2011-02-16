@@ -59,6 +59,13 @@ class BinNormalisation : public RegisteredObject<BinNormalisation>
 public:
   virtual ~BinNormalisation();
 
+  //! check if we would be multiplying with 1 (i.e. do nothing)
+  /*! This function can be used to check if the operations are guaranteed to do nothing
+      (while potentially taking time and effort). The base-class sets this to always
+      return false. It is up to the derived class to change this.
+  */
+  virtual inline bool is_trivial() const { return false;}
+
   //! initialises the object and checks if it can handle such projection data
   /*! Default version does nothing. */
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);

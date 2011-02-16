@@ -80,6 +80,12 @@ public:
   /*! The projdata object pointed to will \c not be modified. */
   BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr);
 
+  //! check if we would be multiplying with 1 (i.e. do nothing)
+  /*! Checks if all data is equal to 1 (up to a tolerance of 1e-4). To do this, it uses ProjData::get_viewgram()
+      and loops over all viewgrams.
+  */
+  virtual bool is_trivial() const;
+
   //! Checks if we can handle certain projection data.
   /*! Compares the  ProjDataInfo from the ProjData object containing the normalisation factors 
       with the ProjDataInfo supplied. */
