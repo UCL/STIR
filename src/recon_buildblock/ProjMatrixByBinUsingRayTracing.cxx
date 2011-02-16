@@ -138,7 +138,7 @@ static bool is_multiple(const float a, const float b)
 
 void
 ProjMatrixByBinUsingRayTracing::
-set_up(		 
+set_up(          
     const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
@@ -159,9 +159,9 @@ set_up(
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
-						do_symmetry_swap_segment,
-						do_symmetry_swap_s,
-						do_symmetry_shift_z);
+                                                do_symmetry_swap_segment,
+                                                do_symmetry_swap_s,
+                                                do_symmetry_shift_z);
   const float sampling_distance_of_adjacent_LORs_xy =
     proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
   
@@ -179,34 +179,34 @@ set_up(
   if (use_actual_detector_boundaries)
     {
       const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_ptr =
-	dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
+        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
       if (proj_data_info_cyl_ptr== 0)
-	{
-	  warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-		  " is reset to false as the projection data should be non-arccorected.\n");
-	  use_actual_detector_boundaries = false;
-	}
+        {
+          warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+                  " is reset to false as the projection data should be non-arccorected.\n");
+          use_actual_detector_boundaries = false;
+        }
       else 
-	{
-	  bool nocompression = 
-	    proj_data_info_cyl_ptr->get_view_mashing_factor()==1;
-	  for (int segment_num=proj_data_info_cyl_ptr->get_min_segment_num();
-	       nocompression && segment_num <= proj_data_info_cyl_ptr->get_max_segment_num();
-	       ++segment_num)
-	    nocompression= 
-	      proj_data_info_cyl_ptr->get_min_ring_difference(segment_num) ==
-	      proj_data_info_cyl_ptr->get_max_ring_difference(segment_num);
-	
-	  if (!nocompression)
-	    {
-	      warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-		      " is reset to false as the projection data as either mashed or uses axial compression\n");
-	      use_actual_detector_boundaries = false;
-	    }
-	}
+        {
+          bool nocompression = 
+            proj_data_info_cyl_ptr->get_view_mashing_factor()==1;
+          for (int segment_num=proj_data_info_cyl_ptr->get_min_segment_num();
+               nocompression && segment_num <= proj_data_info_cyl_ptr->get_max_segment_num();
+               ++segment_num)
+            nocompression= 
+              proj_data_info_cyl_ptr->get_min_ring_difference(segment_num) ==
+              proj_data_info_cyl_ptr->get_max_ring_difference(segment_num);
+        
+          if (!nocompression)
+            {
+              warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+                      " is reset to false as the projection data as either mashed or uses axial compression\n");
+              use_actual_detector_boundaries = false;
+            }
+        }
 
       if (use_actual_detector_boundaries)
-	warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
+        warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
 
     }  
 
@@ -218,10 +218,10 @@ set_up(
       +(max_index.z()+min_index.z())/2.F;
     if (fabs(z_shift - round(z_shift)) > .01)
       error("ProjMatrixByBinUsingRayTracing can currently not handle this image.\n"
-	    "Make sure you either have \n"
-	    "- an odd number of planes and z_origin=n* z_voxel_size\n"
-	    "- or an even number of planes and z_origin=(n+1/2)*z_voxel_size\n"
-	    "(for some integer n).\n");
+            "Make sure you either have \n"
+            "- an odd number of planes and z_origin=n* z_voxel_size\n"
+            "- or an even number of planes and z_origin=(n+1/2)*z_voxel_size\n"
+            "(for some integer n).\n");
   }
 #endif
 };
@@ -232,8 +232,8 @@ set_up(
   */
 static void 
 add_adjacent_z(ProjMatrixElemsForOneBin& lor, 
-	       const float z_of_first_voxel, 
-	       const float right_edge_of_TOR);
+               const float z_of_first_voxel, 
+               const float right_edge_of_TOR);
 
 #if 0
 /* Complicated business to add the same values at z+1
@@ -280,10 +280,17 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     
     if (restrict_to_cylindrical_FOV)
     {
-      if (fabs(s_in_mm) >= fovrad_in_mm) return;
+      if (fabs(s_in_mm) > fovrad_in_mm) return;
       // a has to be such that X^2+Y^2 == fovrad^2      
-      max_a = sqrt(square(fovrad_in_mm) - square(s_in_mm));
-      min_a = -max_a;
+      if (fabs(s_in_mm) == fovrad_in_mm) 
+        {
+          max_a = min_a = 0;
+        }
+      else
+        {
+          max_a = sqrt(square(fovrad_in_mm) - square(s_in_mm));
+          min_a = -max_a;
+        }
     } // restrict_to_cylindrical_FOV
     else
     {
@@ -326,21 +333,21 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     // check we're not exactly at the border of 2 planes in the 2D case
     if (tantheta==0)
       {
-	assert(stop_point.z()==start_point.z());
-	if (fabs(modulo(stop_point.z(),1.F)-.5)<.001)
-	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two z-planes\n");
+        assert(stop_point.z()==start_point.z());
+        if (fabs(modulo(stop_point.z(),1.F)-.5)<.001)
+          error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two z-planes\n");
       }
     if (cphi==0)
       {
-	assert(stop_point.y()==start_point.y());
-	if (fabs(modulo(stop_point.y(),1.F)-.5)<.001)
-	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
+        assert(stop_point.y()==start_point.y());
+        if (fabs(modulo(stop_point.y(),1.F)-.5)<.001)
+          error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
       }
     if (sphi==0)
       {
-	assert(stop_point.x()==start_point.x());
-	if (fabs(modulo(stop_point.x(),1.F)-.5)<.001)
-	  error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
+        assert(stop_point.x()==start_point.x());
+        if (fabs(modulo(stop_point.x(),1.F)-.5)<.001)
+          error("ProjMatrixByBinUsingRayTracing: ray tracing at the border between two y-planes\n");
       }
 #endif
 
@@ -351,19 +358,19 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
       start_point.z() < stop_point.z() ||
       (start_point.z() == stop_point.z() &&
        (start_point.y() < stop_point.y() ||
-	(start_point.y() == stop_point.y() &&
-	 (start_point.x() <= stop_point.x()))));
+        (start_point.y() == stop_point.y() &&
+         (start_point.x() <= stop_point.x()))));
 
     // do actual ray tracing for this LOR
     
     RayTraceVoxelsOnCartesianGrid(lor, 
-				  from_start_to_stop? start_point : stop_point,
-				  !from_start_to_stop? start_point : stop_point,
-				  voxel_size,
+                                  from_start_to_stop? start_point : stop_point,
+                                  !from_start_to_stop? start_point : stop_point,
+                                  voxel_size,
 #ifdef NEWSCALE
-				  1.F/num_LORs // normalise to mm
+                                  1.F/num_LORs // normalise to mm
 #else
-				  1/voxel_size.x()/num_LORs // normalise to some kind of 'pixel units'
+                                  1/voxel_size.x()/num_LORs // normalise to some kind of 'pixel units'
 #endif
            );
 
@@ -425,9 +432,9 @@ calculate_proj_matrix_elems_for_one_bin(
     int det_num1=0, det_num2=0;
     proj_data_info_noarccor.
       get_det_num_pair_for_view_tangential_pos_num(det_num1,
-						 det_num2,
-						 bin.view_num(),
-						 bin.tangential_pos_num());
+                                                 det_num2,
+                                                 bin.view_num(),
+                                                 bin.tangential_pos_num());
     phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
     const float old_phi=proj_data_info_ptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
@@ -517,8 +524,8 @@ calculate_proj_matrix_elems_for_one_bin(
   // use FOV which is slightly 'inside' the image to avoid
   // index out of range
   const float fovrad_in_mm = 
-    min((min(max_index.x(), -min_index.x()))*voxel_size.x(),
-        (min(max_index.y(), -min_index.y()))*voxel_size.y()); 
+    min((min(max_index.x(), -min_index.x())+.45F)*voxel_size.x(),
+        (min(max_index.y(), -min_index.y())+.45F)*voxel_size.y()); 
 
   if (num_tangential_LORs == 1)
   {
@@ -559,54 +566,54 @@ calculate_proj_matrix_elems_for_one_bin(
   {          
     if (tantheta==0 ) 
       { 
-	const float z_of_first_voxel=
-	  lor.begin()->coord1() +
-	  origin.z()/voxel_size.z() -
-	  (max_index.z() + min_index.z())/2.F;
-	const float left_edge_of_TOR =
-	  (t_in_mm - sampling_distance_of_adjacent_LORs_z/2
-	   )/voxel_size.z();
-	const float right_edge_of_TOR =
-	  (t_in_mm + sampling_distance_of_adjacent_LORs_z/2
-	   )/voxel_size.z();
+        const float z_of_first_voxel=
+          lor.begin()->coord1() +
+          origin.z()/voxel_size.z() -
+          (max_index.z() + min_index.z())/2.F;
+        const float left_edge_of_TOR =
+          (t_in_mm - sampling_distance_of_adjacent_LORs_z/2
+           )/voxel_size.z();
+        const float right_edge_of_TOR =
+          (t_in_mm + sampling_distance_of_adjacent_LORs_z/2
+           )/voxel_size.z();
 
-	add_adjacent_z(lor, z_of_first_voxel - left_edge_of_TOR, right_edge_of_TOR -left_edge_of_TOR);
+        add_adjacent_z(lor, z_of_first_voxel - left_edge_of_TOR, right_edge_of_TOR -left_edge_of_TOR);
       }
     else if (num_lors_per_axial_pos>1)
       {
 #if 0
-	if (num_lors_per_axial_pos==2)
-	  {	    
-	    merge_zplus1(lor);
-	  }
-	else
+        if (num_lors_per_axial_pos==2)
+          {         
+            merge_zplus1(lor);
+          }
+        else
 #endif
-	  { 
-	    // make copy of LOR that will be used to add adjacent z
-	    ProjMatrixElemsForOneBin lor_with_next_z = lor;
-	    // reserve enough memory to avoid reallocations
-	    lor.reserve(lor.size()*num_lors_per_axial_pos);
-	    // now add adjacent z
-	    for (int z_index=1; z_index<num_lors_per_axial_pos; ++z_index)
-	      {
-		// add 1 to each z in the LOR
-		ProjMatrixElemsForOneBin::iterator element_ptr = lor_with_next_z.begin();
-		const ProjMatrixElemsForOneBin::iterator element_end = lor_with_next_z.end();
-		while (element_ptr != element_end)
-		  {
-		    *element_ptr = 
-		      ProjMatrixElemsForOneBin::
-		      value_type(
-				 Coordinate3D<int>(element_ptr->coord1()+1,
-						   element_ptr->coord2(),
-						   element_ptr->coord3()),
-				 element_ptr->get_value());
-		    ++element_ptr;
-		  }
-		// now merge it into the original
-		lor.merge(lor_with_next_z);
-	      }
-	  }
+          { 
+            // make copy of LOR that will be used to add adjacent z
+            ProjMatrixElemsForOneBin lor_with_next_z = lor;
+            // reserve enough memory to avoid reallocations
+            lor.reserve(lor.size()*num_lors_per_axial_pos);
+            // now add adjacent z
+            for (int z_index=1; z_index<num_lors_per_axial_pos; ++z_index)
+              {
+                // add 1 to each z in the LOR
+                ProjMatrixElemsForOneBin::iterator element_ptr = lor_with_next_z.begin();
+                const ProjMatrixElemsForOneBin::iterator element_end = lor_with_next_z.end();
+                while (element_ptr != element_end)
+                  {
+                    *element_ptr = 
+                      ProjMatrixElemsForOneBin::
+                      value_type(
+                                 Coordinate3D<int>(element_ptr->coord1()+1,
+                                                   element_ptr->coord2(),
+                                                   element_ptr->coord3()),
+                                 element_ptr->get_value());
+                    ++element_ptr;
+                  }
+                // now merge it into the original
+                lor.merge(lor_with_next_z);
+              }
+          }
       } // if( tantheta!=0 && num_lors_per_axial_pos>1)
   } //if (lor.size()!=0)
   
@@ -614,8 +621,8 @@ calculate_proj_matrix_elems_for_one_bin(
 
 static void 
 add_adjacent_z(ProjMatrixElemsForOneBin& lor, 
-	       const float z_of_first_voxel, 
-	       const float right_edge_of_TOR)
+               const float z_of_first_voxel, 
+               const float right_edge_of_TOR)
 {
   assert(lor.size()>0);
   assert(z_of_first_voxel+.5>=0);
@@ -632,49 +639,49 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
   for (int z_index= 1; /* no end condition here */; ++z_index)
     {
       const float overlap_of_voxel_with_TOR =
-	std::min(right_edge_of_TOR, z_of_first_voxel + z_index + .5F) -
-	std::max(0.F, z_of_first_voxel + z_index - .5F);
+        std::min(right_edge_of_TOR, z_of_first_voxel + z_index + .5F) -
+        std::max(0.F, z_of_first_voxel + z_index - .5F);
       if (overlap_of_voxel_with_TOR<=0.0001) // check if beyond TOR or overlap too small to bother
-	{
-	  assert(num_overlapping_voxels>=z_index);
-	  break;
-	}
+        {
+          assert(num_overlapping_voxels>=z_index);
+          break;
+        }
       assert(overlap_of_voxel_with_TOR < 1.0001);
       const int new_z = lor.begin()->coord1()+z_index;
       if (overlap_of_voxel_with_TOR>.9999) // test if it is 1
-	{
-	  // just copy the value
-	  for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
-		 element_ptr != element_end;
-		 ++element_ptr)
-	    {      
-	      assert(new_z == element_ptr->coord1()+z_index);
-	      lor.push_back(
-			    ProjMatrixElemsForOneBin::
-			    value_type(
-				       Coordinate3D<int>(new_z,
-							 element_ptr->coord2(),
-							 element_ptr->coord3()),
-				       element_ptr->get_value()));
-	    }
-	}
+        {
+          // just copy the value
+          for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+                 element_ptr != element_end;
+                 ++element_ptr)
+            {      
+              assert(new_z == element_ptr->coord1()+z_index);
+              lor.push_back(
+                            ProjMatrixElemsForOneBin::
+                            value_type(
+                                       Coordinate3D<int>(new_z,
+                                                         element_ptr->coord2(),
+                                                         element_ptr->coord3()),
+                                       element_ptr->get_value()));
+            }
+        }
       else
-	{
-	  // multiply the value with the overlap
-	  for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
-		 element_ptr != element_end;
-		 ++element_ptr)
-	    {      
-	      assert(new_z == element_ptr->coord1()+z_index);
-	      lor.push_back(
-			    ProjMatrixElemsForOneBin::
-			    value_type(
-				       Coordinate3D<int>(new_z,
-							 element_ptr->coord2(),
-							 element_ptr->coord3()),
-				       element_ptr->get_value()*overlap_of_voxel_with_TOR));
-	    }
-	}
+        {
+          // multiply the value with the overlap
+          for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+                 element_ptr != element_end;
+                 ++element_ptr)
+            {      
+              assert(new_z == element_ptr->coord1()+z_index);
+              lor.push_back(
+                            ProjMatrixElemsForOneBin::
+                            value_type(
+                                       Coordinate3D<int>(new_z,
+                                                         element_ptr->coord2(),
+                                                         element_ptr->coord3()),
+                                       element_ptr->get_value()*overlap_of_voxel_with_TOR));
+            }
+        }
     } // loop over z_index
 
   // now check original z
@@ -686,11 +693,11 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
     assert(overlap_of_voxel_with_TOR < 1.0001);
     if (overlap_of_voxel_with_TOR<.9999) // test if it is 1
       {
-	// multiply the value with the overlap
-	for (  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
-	       element_ptr != element_end;
-	       ++element_ptr)
-	    *element_ptr *= overlap_of_voxel_with_TOR;
+        // multiply the value with the overlap
+        for (  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
+               element_ptr != element_end;
+               ++element_ptr)
+            *element_ptr *= overlap_of_voxel_with_TOR;
       }
   }
 #ifndef NDEBUG
@@ -732,12 +739,12 @@ static void merge_zplus1(ProjMatrixElemsForOneBin& lor)
 #if 0
       ProjMatrixElemsForOneBin::const_iterator iter = lor.begin();
       while (iter!= lor.end())
-	{
-	  std::cerr << iter->get_coords() 
-		    << ':' << iter->get_value()
-		    << '\n';
-	  ++iter;
-	}
+        {
+          std::cerr << iter->get_coords() 
+                    << ':' << iter->get_value()
+                    << '\n';
+          ++iter;
+        }
 #endif
 
 
