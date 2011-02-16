@@ -157,17 +157,19 @@ namespace stir
     distributed::receive_and_set_image_parameters(input_image_ptr, image_buffer_size, -1, 0);
   			   	   	
     //array to receive count and vs_num values
-    int * int_values = new int[2];
+    int int_values[2];
     int v_num, s_num;
    		 
     int count, count2;
     HighResWallClockTimer t;
    		
+    //allocate new output_image
+    output_image_ptr=input_image_ptr->get_empty_copy();
     //loop over the iterations until received END_RECONSTRUCTION_TAG
     while (true)
       {
-	//allocate new output_image
-	output_image_ptr=input_image_ptr->get_empty_copy();
+	// set output_image to zero
+	output_image_ptr->fill(0.F);
    		
 	//Receive input_image values 
 	MPI_Status status = distributed::receive_image_values_and_fill_image_ptr(input_image_ptr, image_buffer_size, 0);
@@ -193,11 +195,10 @@ namespace stir
 	     */ 	
 	    if (status.MPI_TAG==REUSE_VIEWGRAM_TAG) //use a viewgram already available
 	      {
-		ViewSegmentNumbers * vs = new ViewSegmentNumbers(v_num, s_num);
+		ViewSegmentNumbers vs(v_num, s_num);
 	    		
-		viewgrams = new RelatedViewgrams<float>(proj_data_ptr->get_related_viewgrams(*vs, symmetries_sptr));
-		additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(*vs, symmetries_sptr));
-		delete vs;
+		viewgrams = new RelatedViewgrams<float>(proj_data_ptr->get_related_viewgrams(vs, symmetries_sptr));
+                                                        additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(vs, symmetries_sptr));
 	      }	
 	    else if (status.MPI_TAG==NEW_VIEWGRAM_TAG) //receive a message with a new viewgram
 	      {
@@ -230,10 +231,9 @@ namespace stir
     	  			
 		if(distributed::rpc_time)
 		  {
-		    double * send = new double[1];
-		    send[0]=distributed::total_rpc_time;
-		    double * receive = new double[1];
-		    MPI_Reduce(send, receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		    double send = distributed::total_rpc_time;
+		    double receive;
+		    MPI_Reduce(&send, &receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		    distributed::total_rpc_time = 0.0;
 		  }
 	      }
@@ -273,7 +273,6 @@ namespace stir
 	if (distributed::rpc_time)
 	  cerr << "Slave "<<my_rank<<" used "<<distributed::total_rpc_time_2<<" seconds for PRC-processing."<<endl;
       }     	
-    delete int_values;
   }
   
   template <typename TargetT>
