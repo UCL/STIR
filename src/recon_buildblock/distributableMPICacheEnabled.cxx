@@ -92,15 +92,12 @@ void distributable_computation_cache_enabled(
       distributed::test_int_value_master(444, 1);
       distributed::test_int_values_master(1);
 		
-      Viewgram<float>* viewgram = new Viewgram<float>(const_cast<ProjDataInfo*>(proj_dat_ptr->get_proj_data_info_ptr()), 44, 0);
-      for ( int tang_pos = viewgram->get_min_tangential_pos_num(); tang_pos  <= viewgram->get_max_tangential_pos_num() ;++tang_pos)  
-	for ( int ax_pos = viewgram->get_min_axial_pos_num(); ax_pos <= viewgram->get_max_axial_pos_num() ;++ax_pos)
-	  (*viewgram)[ax_pos][tang_pos]= rand();
+      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->clone(), 44, 0);
+      for ( int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos  <= viewgram.get_max_tangential_pos_num() ;++tang_pos)  
+	for ( int ax_pos = viewgram.get_min_axial_pos_num(); ax_pos <= viewgram.get_max_axial_pos_num() ;++ax_pos)
+	  viewgram[ax_pos][tang_pos]= rand();
 				
-      distributed::test_viewgram_master(*viewgram, const_cast<ProjDataInfo*>(proj_dat_ptr->get_proj_data_info_ptr()));
-		
-      viewgram=NULL;		
-      delete viewgram;
+      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->clone());
     }
 #endif
 	
@@ -211,6 +208,7 @@ void distributable_computation_cache_enabled(
       if (!symmetries_ptr->is_basic(view_segment_num))
 	continue;
   		
+      cerr << "Sending view " << view << " to slave " << next_receiver << std::endl;
       //the slave has not yet processed this vs_num, so the viewgrams have to be sent			
       if (new_viewgrams==true)
 	{	
@@ -300,7 +298,7 @@ void distributable_computation_cache_enabled(
 #ifndef NDEBUG
 	  //test sending related viegrams
 	  if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
-	    distributed::test_related_viewgrams_master(const_cast<stir::ProjDataInfo*>(y->get_proj_data_info_ptr()), symmetries_ptr, y, next_receiver);
+	    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->clone(), symmetries_ptr, y, next_receiver);
 #endif		
 	  //TODO: this could also be done by using MPI_Probe at the slave to find out what to recieve next
 	  if (additive_binwise_correction_viewgrams == NULL)
@@ -354,9 +352,14 @@ void distributable_computation_cache_enabled(
 	  working_slaves_count++;
 	  sent_count++;
 			
-	  if (sent_count <distributed::num_processors-1) next_receiver++; 
+	  if (sent_count <distributed::num_processors-1) 
+            {
+              // we have a slave free, so we will send it some work
+              next_receiver++; 
+            }
 	  else 
-	    {	
+	    {
+              // do a (blocking) receive that will wait for the 1st free slave
 	      status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
 	      next_receiver=status.MPI_SOURCE;
 	      working_slaves_count--;
@@ -403,13 +406,13 @@ void distributable_computation_cache_enabled(
   if(distributed::rpc_time)
     {
       printf("Master: Reducing timer value\n");
-      double * send = new double[1];
-      double * receive = new double[1];
-      MPI_Reduce(send, receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      distributed::total_rpc_time+=(receive[0]/(distributed::num_processors-1));
+      double send = 0;
+      double receive;
+      MPI_Reduce(&send, &receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+      distributed::total_rpc_time+=(receive/(distributed::num_processors-1));
 	
       printf("Average time used by slaves for RPC processing: %f secs\n", distributed::total_rpc_time);
-      distributed::total_rpc_time_slaves+=receive[0];
+      distributed::total_rpc_time_slaves+=receive;
     }
 	
 }
