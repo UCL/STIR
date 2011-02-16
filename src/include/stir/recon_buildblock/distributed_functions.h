@@ -40,7 +40,7 @@
   needed for distributed computation with MPI. They all come in a separate 
   namespace "distributed". There was no need to have an object providing this
   functionality as that would have been more costly.
-	
+        
   Note that every send function has a corresponding receive function.
 
   \see STIR_MPI
@@ -69,7 +69,7 @@
   rearrangements would lead to faster computation. 
   To enable these timings, compile the MPI-Version with the preprocessor variable
   STIR_MPI_TIMINGS defined.
-	
+        
   If compiled with STIR_MPI_TIMINGS defined, you still have the possibility to enable/disable the timings by
   using the parsing parameter 
   \verbatim
@@ -104,29 +104,29 @@ namespace distributed
 {
   //!the number of processes used for distributed computation 
   extern int num_processors;
-	
+        
   //!some stuff in distributable_computation needs to be done only in the first iteration
   extern bool first_iteration;
-	
+        
   //!needed in cache enabled case to check whether the viewgrams have to be distributed 
   //or if the computation is already progressed enough to use cached values
   extern int iteration_counter;
-	
+        
   //!enable/disable tests
-  extern bool test; 					
-	
+  extern bool test;                                     
+        
   //for timings
-  extern bool rpc_time; 		//!enable timings for PRC_process_related_viewgrams_gradient() computation	
-  extern bool test_send_receive_times;	//!enable timings for every single send/receive operation 
-	
-  extern double total_rpc_time;		//!adding up the time used for PRC_process_related_viewgrams_gradient() computation at all slaves
-  extern double total_rpc_time_2;	//!adding up the time used for PRC_process_related_viewgrams_gradient() computation at a single slave
-  extern double total_rpc_time_slaves;	//!value to reduce the total_rpc_time values
-  extern double min_threshold;		//!threshold for displaying send/receive times, initially set to 0.1 seconds
-	
-	
+  extern bool rpc_time;                 //!enable timings for PRC_process_related_viewgrams_gradient() computation      
+  extern bool test_send_receive_times;  //!enable timings for every single send/receive operation 
+        
+  extern double total_rpc_time;         //!adding up the time used for PRC_process_related_viewgrams_gradient() computation at all slaves
+  extern double total_rpc_time_2;       //!adding up the time used for PRC_process_related_viewgrams_gradient() computation at a single slave
+  extern double total_rpc_time_slaves;  //!value to reduce the total_rpc_time values
+  extern double min_threshold;          //!threshold for displaying send/receive times, initially set to 0.1 seconds
+        
+        
   //----------------------Send operations----------------------------------
-	
+        
   /*! \brief sends or broadcasts an integer value
    * \param value the int value to be sent
    * \param destination the process id where to send the interger value. If set to -1 a Broadcast will be done
@@ -135,16 +135,16 @@ namespace distributed
    * It should be replaced by the more general function \c send_int_values()
    */
   void send_int_value(int value, int destination);
-	
-	
+        
+        
   /*! \brief sends or broadcasts a string
    * \param str the string to be sent
    * \param tag identifier to associate messages
    * \param destination the process id where to send the string. If set to -1 a Broadcast will be done
    */
   void send_string(const string& str, int tag, int destination);
-	
-	
+        
+        
   /*! \brief send or broadcast a bool value
    * \param value the bool value to be sent
    * \param tag identifier to associate messages. If the tag is -1 a Broadcast will be done
@@ -153,8 +153,8 @@ namespace distributed
    * This function actually sends an integer value (0 or 1) as there is no bool datatype in MPI
    */
   void send_bool_value(bool value, int tag, int destination);
-	
-	
+        
+        
   /*! \brief sends or broadcasts some integer values
    * \param values pointer to integer values to be sent
    * \param count the count of integer values to be sent
@@ -162,8 +162,8 @@ namespace distributed
    * \param destination the process id where to send the int values. If set to -1 a Broadcast will be done
    */
   void send_int_values(int * values, int count, int tag, int destination);
-	
-	
+        
+        
   /*! \brief send or broadcast double values
    * \param values pointer to the double values to be sent
    * \param count the count of double values to be sent
@@ -171,8 +171,8 @@ namespace distributed
    * \param destination the process id where to send the double values. If set to -1 a Broadcast will be done
    */
   void send_double_values(double * values, int count, int tag, int destination);
-	
-	
+        
+        
   /*! \brief sends or broadcasts the parameters of a DiscretisedDensity object
    * \param input_image_ptr the image_ptr to be sent
    * \param tag identifier to associate messages
@@ -186,8 +186,8 @@ namespace distributed
    * The actual parameters sent are the image dimensions, the origin and the grid_spacing 
    */
   void send_image_parameters(const stir::DiscretisedDensity<3,float>* input_image_ptr, int tag, int destination);
-	
-	
+        
+        
   /*! \brief sends or broadcasts the values of a DiscretisedDensity object
    * \param input_image_ptr the image_ptr to be sent
    * \param destination the process id where to send the image values. If set to -1 a Broadcast will be done
@@ -196,8 +196,8 @@ namespace distributed
    * as MPI only sends that kind of data structures.
    */
   void send_image_estimate(const stir::DiscretisedDensity<3,float>* input_image_ptr, int destination);
-	
-	
+        
+        
   /*! \brief sends or broadcasts the parameter_info() of the ProjDataInfo pointer
    * \param data the ProjDataInfo pointer to be sent
    * \param destination the process id where to send the image values. If set to -1 a Broadcast will be done
@@ -212,8 +212,8 @@ namespace distributed
    * input to the parse() function of InterfilePDFSHeader. 
    */
   void send_proj_data_info(stir::ProjDataInfo const * const data, int destination);
-	
-	
+        
+        
   /*! \brief sends a RelatedViegrams object
    * \param viewgrams the viewgrams to be sent
    * \param destination the process id where to send the related viewgrams
@@ -224,8 +224,8 @@ namespace distributed
    * to make sure that the worker knows how many viewgrams he has to receive.
    */
   void send_related_viewgrams(stir::RelatedViewgrams<float>* viewgrams, int destination);
-	
-	
+        
+        
   /*! \brief sends a Viewgram object
    * \param viewgram the viewgrams to be sent
    * \param destination the process id where to send the viewgram
@@ -236,18 +236,18 @@ namespace distributed
    * 2. The values detwermined by iterating through the viewgram and serializing it to a one-dimensional array
    */
   void send_viewgram(const stir::Viewgram<float>& viewgram, int destination);
-	
-	
+        
+        
   //----------------------Receive operations----------------------------------
-	
-	
+        
+        
   /*! \brief receives a single integer value
    * \param source the process id from which to receive the interger value. If set to -1 the receive will be done from broadcast
    * \returns the received int value
    */
   int receive_int_value(int source);
-	
-	
+        
+        
   /*! \brief receives a string
    * \param tag unique identifier to associate messages
    * \param source the process id from which to receive the string
@@ -269,8 +269,8 @@ namespace distributed
    * using the received parameters.  
    */
   void receive_and_initialize_projectors(stir::shared_ptr<stir::ProjectorByBinPair> &projector_pair_ptr, int source);
-	
-	
+        
+        
   /*! \brief receives a bool value
    * \param tag unique identifier to associate messages
    * \param source the process id from which to receive the bool value
@@ -280,8 +280,8 @@ namespace distributed
    * as there is no bool datatype in MPI, but it will return a bool value
    */
   bool receive_bool_value(int tag, int source);
-	
-	
+        
+        
   /*! \brief receives some integer values
    * \param values pointer to the receive buffer
    * \param count the count of integer values to be received
@@ -291,8 +291,8 @@ namespace distributed
    * The tag needs to be set to ARBITRARY_TAG (=8) if MPI_ANY_TAG shall be used
    */
   MPI_Status receive_int_values(int * values, int count, int tag);
-	
-	
+        
+        
   /*! \brief receives some double values
    * \param values pointer to the receive buffer
    * \param count the count of double values to be received
@@ -302,8 +302,8 @@ namespace distributed
    * The tag needs to be set to ARBITRARY_TAG (=8) if MPI_ANY_TAG shall be used
    */
   MPI_Status receive_double_values(double* values, int count, int tag);
-	
-	
+        
+        
   /*! \brief receives the parameters of a DiscretisedDensity object
    * \param image_ptr address pointer of the new DiscretisedDensity 
    * \param buffer saves the image buffer size to be reused when receiving the image values
@@ -318,8 +318,8 @@ namespace distributed
    * The function currently only supports VoxelsOnCartesianGrid 
    */
   void receive_and_set_image_parameters(stir::shared_ptr<stir::DiscretisedDensity<3, float> > &image_ptr, int &buffer, int tag, int source);
-	
-	
+        
+        
   /*! \brief receives the values of a DiscretisedDensity object
    * \param image_ptr the image_ptr to be sent
    * \param buffer_size gives the needed size of the receive buffer
@@ -332,8 +332,8 @@ namespace distributed
    * The buffer_size is used again to reduce the image values
    */
   MPI_Status receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensity<3,float> > &image_ptr, int buffer_size, int source);
-  	
-  	
+        
+        
   /*! \brief receives the parameter_info() of the ProjDataInfo pointer and constructs a new ProjDataInfo object from it
    * \param proj_data_info_sptr the new ProjDataInfo pointer to be set up
    * \param source the process id from which to receive the ProjDataInfo
@@ -343,8 +343,8 @@ namespace distributed
    * char-array as stream-input to the parse() function of InterfilePDFSHeader. 
    */
   void receive_and_construct_proj_data_info_ptr(stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr, int source);
-  	
-  	
+        
+        
   /*! \brief receives and constructs a RelatedViegrams object
    * \param viewgrams object that will be filled with the data
    * \param proj_data_info_ptr the ProjDataInfo pointer describing the data
@@ -367,10 +367,10 @@ namespace distributed
    * a RelatedViewgrams object.  
    */
   void receive_and_construct_related_viewgrams(stir::RelatedViewgrams<float>*& viewgrams, 
-					       const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr, 
-					       const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr,
-					       int source);
-	
+                                               const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr, 
+                                               const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr,
+                                               int source);
+        
   /*! \brief receives a Viewgram object
    * \param viewgram the viewgrams to be constructed
    * \param proj_data_info_ptr the ProjDataInfo pointer describing the data
@@ -385,17 +385,17 @@ namespace distributed
    * The viewgram is filled by iterating througn it and copying the values of the received values.
    */
   void receive_and_construct_viewgram(stir::Viewgram<float>*& viewgram, 
-				      const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr, 
-				      int source); 
-	
+                                      const stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_ptr, 
+                                      int source); 
+        
   //-----------------------reduce operations-------------------------------------
-	
+        
   /*! \brief the function called by the master to reduce the output image
    * \param output_image_ptr the image pointer where the reduced image is saved 
    * \param destination the process id where the output_image is reduced 
    */
   void reduce_received_output_image(stir::DiscretisedDensity<3,float>* output_image_ptr, int destination);
-	
+        
   /*! \brief the function called by the slaves to reduce the output image
    * \param output_image_ptr the image pointer where the reduced image is saved
    * \param image_buffer_size the buffer size needed for the image 
@@ -414,6 +414,7 @@ namespace distributed
 #define END_NOTIFICATION_TAG 5
 
 #define BINWISE_CORRECTION_TAG 6
+#define BINWISE_MULT_TAG 66
 #define INT_TAG 7
 #define ARBITRARY_TAG 8
 
