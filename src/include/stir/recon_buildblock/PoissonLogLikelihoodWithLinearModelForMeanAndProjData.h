@@ -38,6 +38,9 @@
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/TimeFrameDefinitions.h"
+#ifdef STIR_MPI
+#include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
+#endif
 
 START_NAMESPACE_STIR
 
@@ -357,14 +360,7 @@ protected:
 
 #ifdef STIR_MPI
 //made available to be called from DistributedWorker object
-void RPC_process_related_viewgrams_gradient(
-                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                            DiscretisedDensity<3,float>* output_image_ptr, 
-                                            const DiscretisedDensity<3,float>* input_image_ptr, 
-                                            RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                            int& count, int& count2, float* log_likelihood_ptr /* = NULL */,
-                                            const RelatedViewgrams<float>* additive_binwise_correction_ptr);
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 #endif
 
 END_NAMESPACE_STIR
