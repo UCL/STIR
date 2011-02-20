@@ -198,7 +198,10 @@ void divide_and_truncate(Viewgram<float>& numerator,
   const float small_value= 
     max(numerator.find_max()*SMALL_NUM, 0.F);
   
+  double result=0; // use this for total result for this viewgram, reducing numerical error
   for(int r=rs;r<=re;r++)
+  {
+    double sub_result=0; // use this for total result for this r, reducing numerical error
     for(int b=bs;b<=be;b++){      
  
       // KT&SM&MJ 21/05/2001 changed truncation strategy
@@ -217,7 +220,7 @@ void divide_and_truncate(Viewgram<float>& numerator,
       else {
 	//MJ 28/10/99 corrected - moved above the sinogram division
 	if (log_likelihood_ptr != NULL) {
-	      *log_likelihood_ptr -= numerator[r][b]*log(denominator[r][b]);
+	      sub_result -= numerator[r][b]*log(denominator[r][b]);
 	};
 	numerator[r][b]/=denominator[r][b];
       };
@@ -231,7 +234,7 @@ void divide_and_truncate(Viewgram<float>& numerator,
       else
 	{
 	  float& num = numerator[r][b];
-	  if (num<small_value)
+	  if (num<=small_value) // KT Feb2011 was "num<small_value", resulting in a BUG if the whole numerator viewgram was zero
 	    { 
 	      // we think num was really 0 
 	      // (we compare with small_value due to rounding errors)
@@ -254,19 +257,24 @@ void divide_and_truncate(Viewgram<float>& numerator,
 		  // cancel singularity
 		  count++;
 		  if (log_likelihood_ptr != NULL) 
-		    *log_likelihood_ptr -= double(num*log(num/max_quotient));
+		    sub_result -= double(num*log(num/max_quotient));
 		  num = max_quotient;
 		}
 	      else
 		{
 		  if (log_likelihood_ptr != NULL) 
-		    *log_likelihood_ptr -= double(num*log(denom));
+		    sub_result -= double(num*log(denom));
 		  num = num/denom;
 		}
 	    }
 	}
 #endif
     }
+    if (log_likelihood_ptr != NULL) 
+      result += sub_result;
+  }
+  if (log_likelihood_ptr != NULL) 
+    *log_likelihood_ptr += result;
 
 }
 
@@ -359,27 +367,33 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
      each with about the same contribution. After about 1e6 bins, the value of
      accum would be no longer change because of the finite precision.
   */
-  float result = 0;
+  double result = 0;
   const float small_value= 
     max(projection_data.find_max()*SMALL_NUM, 0.F);
   const float max_quotient = 10000.F;
 
   for(int r=rs;r<=re;r++)
+  {
+    double sub_result=0; // use this for total result for this r, reducing numerical error
     for(int b=bs;b<=be;b++)  
       if(!(
 	   b<bs+rim_truncation_sino ||
 	   b>be-rim_truncation_sino ))
 	{
+          if (estimated_projections[r][b] == 0)
+            std::cerr << "Zero at " << r << ", " << b <<'\n';
 	  const float new_estimate =
 	    max(estimated_projections[r][b], 
 		projection_data[r][b]/max_quotient);
 	  if (projection_data[r][b]<=small_value)
-	    result += - new_estimate;
+	    sub_result += - double(new_estimate);
 	  else
-	    result += projection_data[r][b]*log(new_estimate) - new_estimate;
+	    sub_result += double(projection_data[r][b]*log(new_estimate) - new_estimate);
 	}
+    result += sub_result;
+  }
 
-  *accum += double(result);
+  *accum += result;
 }
 
 
