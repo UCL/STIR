@@ -43,12 +43,13 @@ START_NAMESPACE_STIR
 template <typename T> class shared_ptr;
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
+class BinNormalisation;
 class ProjData;
 class ProjDataInfo;
 class DataSymmetriesForViewSegmentNumbers;
 class ForwardProjectorByBin;
 class BackProjectorByBin;
-
+class DistributedCachingInformation;
 //!@{
 //! \ingroup distributable
 
@@ -62,13 +63,14 @@ class BackProjectorByBin;
     will not be used. 
 */
 typedef  void RPC_process_related_viewgrams_type (
-						  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-						  const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-						  DiscretisedDensity<3,float>* output_image_ptr, 
-						  const DiscretisedDensity<3,float>* input_image_ptr, 
-						  RelatedViewgrams<float>* measured_viewgrams_ptr,
-						  int& count, int& count2, double* log_likelihood_ptr,
-						  const RelatedViewgrams<float>* additive_binwise_correction_ptr);
+                                                  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                                  const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                                  DiscretisedDensity<3,float>* output_image_ptr, 
+                                                  const DiscretisedDensity<3,float>* input_image_ptr, 
+                                                  RelatedViewgrams<float>* measured_viewgrams_ptr,
+                                                  int& count, int& count2, double* log_likelihood_ptr,
+                                                  const RelatedViewgrams<float>* additive_binwise_correction_ptr,
+                                                  const RelatedViewgrams<float>* mult_viewgrams_ptr);
 
 /*!
   \brief This function essentially implements a loop over segments and all views in the current subset.
@@ -102,8 +104,13 @@ typedef  void RPC_process_related_viewgrams_type (
          (and additive_binwise_correction_ptr when applicable) will be set to 0.
   \param double_out_ptr a potential double output parameter for the call back function (which needs to be accumulated).
   \param additive_binwise_correction Additional input projection data (when the shared_ptr is not 0).
+  \param normalise_sptr normalisation pointer that, if non-zero, will be used to construct the "multiplicative" viewgrams
+         (by using normalise_sptr->undo() on viewgrams filled with 1) that are then passed to RPC_process_related_viewgrams.
+         This is useful for e.g. log-likelihood computations.
+  \param start_time_of_frame is passed to normalise_sptr
+  \param end_time_of_frame is passed to normalise_sptr
   \param RPC_process_related_viewgrams function that does the actual work.
-  
+  \param caching_info_ptr ignored unless STIR_MPI=1, in which case it enables caching of viewgrams at the slave side  
   \warning There is NO check that the resulting subsets are balanced.
 
   \warning The function assumes that \a min_segment_num, \a max_segment_num are such that
@@ -115,19 +122,23 @@ typedef  void RPC_process_related_viewgrams_type (
 
  */
 void distributable_computation(
-			       const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-			       const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-			       const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
-			       DiscretisedDensity<3,float>* output_image_ptr,
-				    const DiscretisedDensity<3,float>* input_image_ptr,
-				    const shared_ptr<ProjData>& proj_data_ptr,
-                                    const bool read_from_proj_data,
-				    int subset_num, int num_subsets,
-				    int min_segment_num, int max_segment_num,
-				    bool zero_seg0_end_planes,
-				    double* double_out_ptr,
-				    const shared_ptr<ProjData>& additive_binwise_correction,
-                                    RPC_process_related_viewgrams_type * RPC_process_related_viewgrams);
+                               const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                               const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                               const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
+                               DiscretisedDensity<3,float>* output_image_ptr,
+                               const DiscretisedDensity<3,float>* input_image_ptr,
+                               const shared_ptr<ProjData>& proj_data_ptr,
+                               const bool read_from_proj_data,
+                               int subset_num, int num_subsets,
+                               int min_segment_num, int max_segment_num,
+                               bool zero_seg0_end_planes,
+                               double* double_out_ptr,
+                               const shared_ptr<ProjData>& additive_binwise_correction,
+                               const shared_ptr<BinNormalisation> normalise_sptr,
+                               const double start_time_of_frame,
+                               const double end_time_of_frame,
+                               RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
+                               DistributedCachingInformation* caching_info_ptr);
 
 
 //!@}
