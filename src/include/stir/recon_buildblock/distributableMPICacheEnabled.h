@@ -37,85 +37,24 @@
    $Date$
    $Revision$
 */
-#include "stir/common.h"
+#include "stir/recon_buildblock/distributable.h"
 
 START_NAMESPACE_STIR
 
-template <typename T> class shared_ptr;
-template <typename elemT> class RelatedViewgrams;
-template <int num_dimensions, typename elemT> class DiscretisedDensity;
-class ProjData;
-class ProjDataInfo;
-class DataSymmetriesForViewSegmentNumbers;
-class ForwardProjectorByBin;
-class BackProjectorByBin;
 class DistributedCachingInformation;
 
 
 //!@{
 //! \ingroup distributable
 
-//! typedef for callback functions for distributable_computation()
-/*! Pointers will be NULL when they are not to be used by the callback function.
-
-    \a count and \a count2 are normally incremental counters that accumulate over the loop
-    in distributable_computation().
-
-    \warning The data in *measured_viewgrams_ptr are allowed to be overwritten, but the new data 
-    will not be used. 
-*/
-typedef  void RPC_process_related_viewgrams_type (
-                                                  const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
-                                                  const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                                  DiscretisedDensity<3,float>* output_image_ptr, 
-                                                  const DiscretisedDensity<3,float>* input_image_ptr, 
-                                                  RelatedViewgrams<float>* measured_viewgrams_ptr,
-                                                  int& count, int& count2, double* log_likelihood_ptr,
-                                                  const RelatedViewgrams<float>* additive_binwise_correction_ptr);
 
 /*!
-  \brief This function essentially implements a loop over segments and all views in the current subset.
-  
-  Output is in output_image_ptr and in float_out_ptr (but only if they are not NULL).
-  What the output is, is really determined by the call-back function
-  RPC_process_related_viewgrams.
+  \brief This function essentially implements a loop over segments and all views in the current subset in the parallel case
 
-  A parallel version of this function exists which distributes the computation over the slaves.
+  This provides the same functionality as distributable_computation(), but enables caching of
+  RelatedViewgrams such that they don't need to be sent multiple times.
 
-  Subsets are currently defined on views. A particular \a subset_num contains all views
-  which are symmetry related to 
-  \code 
-  proj_data_ptr->min_view_num()+subset_num + n*num_subsets
-  \endcode
-  for n=0,1,,.. \c and for which the above view_num is 'basic' (for some segment_num in the range).
-
-  Symmetries are determined by using the 3rd argument to set_projectors_and_symmetries().
-
-  \param output_image_ptr will store the output image if non-zero.
-  \param input_image_ptr input when non-zero.
-  \param proj_data_sptr input projection data
-  \param read_from_proj_data if true, the \a measured_viewgrams_ptr argument of the call_back function 
-         will be constructed using ProjData::get_related_viewgrams, otherwise 
-         ProjData::get_empty_related_viewgrams is used.
-  \param subset_num the number of the current subset (see above). Should be between 0 and num_subsets-1.
-  \param num_subsets the number of subsets to consider. 1 will process all data.
-  \param min_segment_num Minimum segment_num to process.
-  \param max_segment_num Maximum segment_num to process.
-  \param zero_seg0_end_planes if true, the end planes for segment_num=0 in measured_viewgrams_ptr
-         (and additive_binwise_correction_ptr when applicable) will be set to 0.
-  \param double_out_ptr a potential double output parameter for the call back function.
-  \param additive_binwise_correction Additional input projection data (when the shared_ptr is not 0).
-  \param RPC_process_related_viewgrams function that does the actual work.
-  \param caching_info_ptr the object to store all information about cached data
-  
-  \warning There is NO check that the resulting subsets are balanced.
-
-  \warning The function assumes that \a min_segment_num, \a max_segment_num are such that
-  symmetries map this range onto itself (i.e. no segment_num is obtained outside the range). 
-  This usually means that \a min_segment_num = -\a max_segment_num. This assumption is checked with 
-  assert().
-
-  \todo The subset-scheme should be moved somewhere else (a Subset class?).
+  \todo Merge this functionality into distributable_computation()
 
  */
 void distributable_computation_cache_enabled(
@@ -131,6 +70,9 @@ void distributable_computation_cache_enabled(
                                              bool zero_seg0_end_planes,
                                              double*  double_out_ptr,
                                              const shared_ptr<ProjData>& additive_binwise_correction,
+                                             const shared_ptr<BinNormalisation> normalise_sptr,
+                                             const double start_time_of_frame,
+                                             const double end_time_of_frame,
                                              RPC_process_related_viewgrams_type * RPC_process_related_viewgrams, 
                                              DistributedCachingInformation* caching_info_ptr
                                              );
