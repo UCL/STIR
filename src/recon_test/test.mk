@@ -3,7 +3,8 @@
 # 
 dir := recon_test
 
-$(dir)_TEST_SOURCES := test_DataSymmetriesForBins_PET_CartesianGrid.cxx
+$(dir)_TEST_SOURCES := test_DataSymmetriesForBins_PET_CartesianGrid.cxx \
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx
 
 
 # rules that do not link with all registries to save time during linking
