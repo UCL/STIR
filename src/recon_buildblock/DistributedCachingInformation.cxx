@@ -75,8 +75,13 @@ void DistributedCachingInformation::initialize()
 	 
   remaining_viewgrams = new int[num_workers*num_subsets];
   processed_count = new int[num_workers*num_subsets];
-	 
+  for (int i=0; i<num_workers*num_subsets; i++) 
+    {
+      remaining_viewgrams[i]=0;
+      processed_count[i]=0;
+    }			 
   processed = new int[num_vs_numbers];
+  this->set_all_vs_num_unprocessed();
 }
 
 void DistributedCachingInformation::initialize_new_iteration()
@@ -174,7 +179,6 @@ void DistributedCachingInformation::add_vs_num_to_proc(int proc, ViewSegmentNumb
   //printf("For Proc %i Add (%i,%i) to Position [%i][%i]\n", proc, view, segment, index1 ,index2);
   proc_vs_nums[index1]->at(index2) = vs_num;
 	
-  ViewSegmentNumbers vs = proc_vs_nums[index1]->at(index2);
   //	fprintf(stderr, "Added vs_num to proc %i at address %p and %p", proc, &proc_vs_nums[index1], &proc_vs_nums[index1]->at(index2));
 
   proc_vs_nums_sizes[index1] = proc_vs_nums_sizes[index1] + 1;
