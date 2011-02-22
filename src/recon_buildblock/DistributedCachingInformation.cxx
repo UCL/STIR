@@ -25,7 +25,7 @@
   \brief Implementation of stir::DistributedCachingInformation()
 
   \author Tobias Beisel  
-
+  \author Kris Thielemans
   $Date$
 */
 
@@ -35,273 +35,145 @@
 
 START_NAMESPACE_STIR
 
-DistributedCachingInformation::DistributedCachingInformation(int num_segm, int num_vws, int num_subs)
-{	
-  num_subsets = num_subs;
-  num_segments = num_segm;
-	
-  //TODO: restrict to basic view_nums 
-  num_views = num_vws;
-  num_vs_numbers= num_segments * num_views; 
-  initialize();
-}
-
-DistributedCachingInformation::DistributedCachingInformation()
+DistributedCachingInformation::DistributedCachingInformation(const int num_workers_v)
+  : num_workers(num_workers_v)
 {
+  initialise();
 }
 
 
 DistributedCachingInformation::~DistributedCachingInformation()
-{	
+{       
 }
 
-void DistributedCachingInformation::initialize()
-{
-  num_workers= distributed::num_processors-1;
-	 
+void DistributedCachingInformation::initialise()
+{        
   //initialize vector sizes
-  proc_vs_nums.resize(num_workers*num_subsets);
-  vs_num_procs.resize(num_vs_numbers);
-	 
-  for (int i=0; i<num_workers*num_subsets; i++) proc_vs_nums[i] = new vector<ViewSegmentNumbers>(num_vs_numbers);
-  for (int i=0; i<num_vs_numbers; i++) vs_num_procs[i]= new vector<int>(num_workers*num_subsets);
-	 
-  proc_vs_nums_sizes = new int[num_workers*num_subsets];
-  vs_num_procs_sizes = new int[num_vs_numbers];
-	 
-  //initialize sizes
-  for (int i=0; i<num_workers*num_subsets;i++) proc_vs_nums_sizes[i]=0;
-  for (int i=0; i<num_vs_numbers;i++) vs_num_procs_sizes[i]=0;
-	 
-  remaining_viewgrams = new int[num_workers*num_subsets];
-  processed_count = new int[num_workers*num_subsets];
-  for (int i=0; i<num_workers*num_subsets; i++) 
-    {
-      remaining_viewgrams[i]=0;
-      processed_count[i]=0;
-    }			 
-  processed = new int[num_vs_numbers];
+  this->proc_vs_nums.resize(this->num_workers);
+  for (int i=0; i<this->num_workers; i++) 
+    this->proc_vs_nums[i].resize(0);
+         
+  this->vs_nums_to_process.resize(0);
+  this->initialise_new_subiteration(this->vs_nums_to_process);
+}
+
+void DistributedCachingInformation::initialise_new_subiteration(const std::vector<ViewSegmentNumbers>& vs_nums_to_process_v)
+{
+  this->vs_nums_to_process= vs_nums_to_process_v;
   this->set_all_vs_num_unprocessed();
 }
 
-void DistributedCachingInformation::initialize_new_iteration()
-{
-  set_all_vs_num_unprocessed();
-  initialize_counts();
-  //	printf("numviews=%i\t num_segments=%i\t num_vs_nums=%i\t", num_views, num_segments, num_vs_numbers);
-  //	printf("num_subsets=%i", num_subsets);
-}
-
-int DistributedCachingInformation::get_remaining_vs_nums(int proc, int subset_num)
-{
-  return remaining_viewgrams[(proc-1)+subset_num*num_workers];
-}
-
-void DistributedCachingInformation::decrease_remaining_vs_nums(int proc, int subset_num)
-{
-  remaining_viewgrams[(proc-1)+subset_num*num_workers] = remaining_viewgrams[(proc-1)+subset_num*num_workers]-1;
-}
-
-void DistributedCachingInformation::initialize_counts()
-{
-  //	printf("Initialized remaining viewgrams:\n");
-  for (int i=0; i<num_workers*num_subsets; i++) 
-    {
-      remaining_viewgrams[i]=proc_vs_nums_sizes[i];
-      //			printf("Pos %i: %i\n", i, proc_vs_nums_sizes[i]);
-    }		
-  for (int i=0; i<num_workers*num_subsets; i++) processed_count[i]=0;
-}
-
-int DistributedCachingInformation::get_processed_count(int proc, int subset_num)
-{
-  return processed_count[(proc-1)+subset_num*num_workers];
-}
-
-
-void DistributedCachingInformation::increase_processed_count(int proc, int subset_num)
-{
-  processed_count[(proc-1)+subset_num*num_workers] = processed_count[(proc-1)+subset_num*num_workers]+1;
-}
-
-
-void DistributedCachingInformation::set_processed(ViewSegmentNumbers vs_num)
-{
-  int position = vs_num.segment_num()*num_views+vs_num.view_num();
-  processed[position]=1;
-}
-
-
 void DistributedCachingInformation::set_all_vs_num_unprocessed()
 {
-  for (int i=0; i<num_vs_numbers;i++)
-    processed[i]=0;
+  this->still_to_process.resize(this->vs_nums_to_process.size());
+  std::fill(this->still_to_process.begin(), this->still_to_process.end(), true);
 }
 
-bool DistributedCachingInformation::is_processed(ViewSegmentNumbers vs_num)
+int DistributedCachingInformation::find_vs_num_position_in_list_to_process(const ViewSegmentNumbers& vs_num) const
 {
-  int position = vs_num.segment_num()*num_views+vs_num.view_num();
-  if (processed[position] == 1) return true;
-  else return false;
+  std::vector<ViewSegmentNumbers>::const_iterator iter = 
+    std::find(this->vs_nums_to_process.begin(), this->vs_nums_to_process.end(), vs_num);
+  if (iter== this->vs_nums_to_process.end())
+    error("Internal error: asked for vs_num that is not in the list");
+  return iter - this->vs_nums_to_process.begin();
 }
 
-
-void DistributedCachingInformation::add_proc_to_vs_num(ViewSegmentNumbers vs_num, int proc)
+int DistributedCachingInformation::find_position_of_first_unprocessed() const
 {
-  //printf("\n\n\n");
-	
-  const int index1 = vs_num.segment_num()*num_views+vs_num.view_num();
-  const int index2 = vs_num_procs_sizes[index1];
-	
-  //const int view = vs_num.view_num();
-  //const int segment = vs_num.segment_num();
-	
-  //printf("Adding processor %i to (%i,%i) in vs_num_procs at position [%i][%i]\n", proc, view ,segment , index1,  index2);
-	
-  vs_num_procs[index1]->at(index2) = proc;
-	
-  vs_num_procs_sizes[index1] += 1; //vs_num_procs_sizes[vs_num.segment_num()*num_views+vs_num.view_num()] + 1;
+  std::vector<bool>::const_iterator iter = 
+    std::find(this->still_to_process.begin(), this->still_to_process.end(), true);
+  if (iter== this->still_to_process.end())
+    error("Internal error: asked for unprocessed, but all done");
+  return iter - this->still_to_process.begin();
 }
 
-vector<int>* DistributedCachingInformation::get_procs_from_vs_num(ViewSegmentNumbers vs_num)
+void DistributedCachingInformation::set_processed(const ViewSegmentNumbers& vs_num)
 {
-	return vs_num_procs[vs_num.segment_num()*num_views+vs_num.view_num()];
+  this->still_to_process[this->find_vs_num_position_in_list_to_process(vs_num)]=false;
 }
 
-void DistributedCachingInformation::add_vs_num_to_proc(int proc, ViewSegmentNumbers vs_num, int subset_num)
+bool DistributedCachingInformation::is_processed(const ViewSegmentNumbers& vs_num) const
 {
-  const int index1 = proc-1+(subset_num*num_workers);
-  const int index2 = proc_vs_nums_sizes[index1];
-	
-  //const int view = vs_num.view_num();
-  //const int segment = vs_num.segment_num();
-	
-  //printf("For Proc %i Add (%i,%i) to Position [%i][%i]\n", proc, view, segment, index1 ,index2);
-  proc_vs_nums[index1]->at(index2) = vs_num;
-	
-  //	fprintf(stderr, "Added vs_num to proc %i at address %p and %p", proc, &proc_vs_nums[index1], &proc_vs_nums[index1]->at(index2));
-
-  proc_vs_nums_sizes[index1] = proc_vs_nums_sizes[index1] + 1;
+  return this->still_to_process[this->find_vs_num_position_in_list_to_process(vs_num)]==false;
 }
 
-void DistributedCachingInformation::adjust_counters_for_all_proc(ViewSegmentNumbers vs_num, int proc, int subset_num)
+void DistributedCachingInformation::add_vs_num_to_proc(int proc, const ViewSegmentNumbers& vs_num)
+{       
+  this->proc_vs_nums[proc].push_back(vs_num);
+  this->set_processed(vs_num);
+}
+
+int DistributedCachingInformation::get_num_remaining_cached_data_to_process(int proc) const
 {
-  const int index1 = vs_num.segment_num()*num_views+vs_num.view_num();
-  const int index2 = vs_num_procs_sizes[index1];
-	
-  //const int view = vs_num.view_num();
-  //const int segment = vs_num.segment_num();
-	
-  vector<int>* procs = get_procs_from_vs_num(vs_num);
-  //	printf("proc %i called adjust counters\n",  proc);
-	
-  //	printf("vs_num_proc_sizes[%i](%i,%i) = %i\n", index1, view, segment, index2);
-  for (int i=0; i<index2;i++)
-    { 
-      if (procs->at(i)==proc) continue;
-      //		printf("decreasing remaining viewgrams of proc %i and subset %i\n",  procs->at(i), subset_num);
-      decrease_remaining_vs_nums(procs->at(i), subset_num);
+  int cnt = 0;
+  for (std::vector<ViewSegmentNumbers>::const_iterator iter=this->proc_vs_nums[proc].begin();
+       iter!=this->proc_vs_nums[proc].end(); ++ iter)
+    {
+      if (this->is_processed(*iter)==false) 
+        cnt++;
     }
+  return cnt;
 }
 
-
-ViewSegmentNumbers DistributedCachingInformation::get_oldest_unprocessed_vs_num(int proc, int subset_num)
+bool DistributedCachingInformation::get_oldest_unprocessed_vs_num(ViewSegmentNumbers& vs, int proc) const
 {
-  bool found = false;
-  ViewSegmentNumbers vs;
-	
-  const int index1 = proc-1+(subset_num*num_workers);
-  int index2 = 0;
-	
   //find unprocessed vs_num
-  while (found == false)
-    {	
-      vs = proc_vs_nums[index1]->at(index2);
-      //		fprintf(stderr, "Processor read from other processor %i at address: %p %p", proc, &proc_vs_nums[index1], &proc_vs_nums[index1]->at(index2));
-		
-      //		printf("For Proc %i Read (%i,%i) from Position [%i][%i]\n", proc, vs.view_num(), vs.segment_num(), index1 ,index2);
-      if (is_processed(vs)==false) found = true;
-      else index2++;
+  for (std::vector<ViewSegmentNumbers>::const_iterator iter=this->proc_vs_nums[proc].begin();
+       iter!=this->proc_vs_nums[proc].end(); ++ iter)
+    {   
+      if (this->is_processed(*iter)==false) 
+        {
+          vs=*iter;
+          return true;
+        }
     }
-	 
-  return vs;	
+         
+  return false; 
 }
 
-ViewSegmentNumbers DistributedCachingInformation::get_unprocessed_vs_num(int proc, int subset_num)
+bool DistributedCachingInformation::get_unprocessed_vs_num(ViewSegmentNumbers& vs, int proc)
 {
-  //get work from worker with most work left if processor has no own cached work left 
-  if (get_remaining_vs_nums(proc, subset_num)==0) return get_vs_num_of_proc_with_most_work_left(proc, subset_num);
-
-  ViewSegmentNumbers vs;
-	
-  bool found = false;
-	
-  const int index1 = proc-1+(subset_num*num_workers);
-	
-  while (found == false)
-    {		
-      const int processed= get_processed_count(proc, subset_num);
-		
-      int index2 = proc_vs_nums_sizes[index1] -1 - processed;
-		
-      vs = proc_vs_nums[index1]->at(index2);
-      //		fprintf(stderr, "Processor %i read from address: %p %p\n", proc, &proc_vs_nums[index1], &proc_vs_nums[index1]->at(index2));
-      //		printf("For Proc %i Read (%i,%i) from Position [%i][%i]\n", proc, vs.view_num(), vs.segment_num(), index1 ,index2);
-		
-      increase_processed_count(proc, subset_num);
-		
-      if (is_processed(vs)==false) found = true;
+  const bool in_cache = this->get_oldest_unprocessed_vs_num(vs, proc);
+  if (!in_cache)
+    {
+      // no cached unprocessed data found
+      // get work from worker with most work left
+      vs = this->get_vs_num_of_proc_with_most_work_left(proc);
     }
-	
-  decrease_remaining_vs_nums(proc, subset_num);
-	
-  set_processed(vs);
-	
-  //check whether other processors have this vs_num and adjust counters
-  adjust_counters_for_all_proc(vs, proc, subset_num);
-	
-  return vs;	
+        
+  this->add_vs_num_to_proc(proc, vs);
+  return !in_cache;     
 }
 
-ViewSegmentNumbers DistributedCachingInformation::get_vs_num_of_proc_with_most_work_left(int proc, int subset_num)
-{		 
+ViewSegmentNumbers DistributedCachingInformation::get_vs_num_of_proc_with_most_work_left(int proc) const
+{                
   int proc_with_max_work=0;
   int max_work=0;
-	
+
   //find processor with most work left
-  for (int i=1; i<=num_workers;i++)
+  for (int i=0; i<this->num_workers;i++)
     {
       if (i==proc) continue;
-      if (get_remaining_vs_nums(i, subset_num)>max_work)
-	{
-	  max_work=get_remaining_vs_nums(i, subset_num);
-	  proc_with_max_work = i;
-	} 
+      const int cnt = this->get_num_remaining_cached_data_to_process(i);
+      if (cnt>max_work)
+        {
+          max_work=cnt;
+          proc_with_max_work = i;
+        } 
     }
-	
-  ViewSegmentNumbers vs;
 
+  ViewSegmentNumbers vs;
   //get vs_number of the processor with most work left
-  if (max_work>0) vs = get_oldest_unprocessed_vs_num(proc_with_max_work, subset_num);
-  else //all work completed for this iteration 
+  if (max_work>0) 
     {
-      //TODO: make sure there never can be a vs_num with values (-1,-1)
-      ViewSegmentNumbers vs(-1, -1);
-      return vs;
+      this->get_oldest_unprocessed_vs_num(vs, proc_with_max_work);
     }
-	
-  // add the vs_num to own list of vs_nums
-  add_vs_num_to_proc(proc, vs, subset_num);
-  add_proc_to_vs_num(vs, proc);
-	
-  increase_processed_count(proc, subset_num);
-		
-  //decrease_remaining_vs_nums(proc, subset_num);
-  set_processed(vs);
-	
-  //check whether other processors have this vs_num and adjust counters
-  adjust_counters_for_all_proc(vs, proc, subset_num);
-	
+  else
+    {
+      // just return first unprocessed 
+      vs = this->vs_nums_to_process[this->find_position_of_first_unprocessed()];
+    }
+        
   return vs;
 }
 

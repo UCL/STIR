@@ -24,15 +24,17 @@
 /*!
   \ingroup distributable
   
-  \brief Declaration of stir::DistributedCachingInformation()
+  \brief Declaration of class stir::DistributedCachingInformation
 
   \author Tobias Beisel
+  \author Kris Thielemans
 
   $Date$
 */
 
 #include "stir/ViewSegmentNumbers.h"
 #include <vector>
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -40,26 +42,24 @@ START_NAMESPACE_STIR
   \ingroup distributable
   \brief This class implements the logic needed to support caching in a distributed manner.
 
-  To enable distributed caching, the master needs to store, how the view segment numbers or the 
+  To enable distributed caching, the master needs to store how the view segment numbers or the 
   related viewgrams respectively were distributed between the workers. Doing that, the master 
   is able to send those viegrams to a slave requesting for work, which that specific slave already 
-  handled before and potentially still has cached locally. 
+  handled before and still has cached locally. 
   Additionally it is possible to only send the view segment number instead of the whole projection
   data, if the the worker stores the recieved related viewgrams.
   
   This class stores all needed information to determine a not yet processed view segment number
-  that will be sent to the requesting slave in that way, that the belonging data most likely 
+  that will be sent to the requesting slave in such a way that the belonging data most likely 
   is stored in the slaves cache. 
   
   The function \c get_unprocessed_vs_num() can be called by the master, passing the requesting worker
   and the current subset to determine the next processed view segment number
   
   The logic is a bit sophisticated, as it has to make sure, that every vs_num is 
-  only processed once and that load balancing is forced. That is, why a lot of data storage has
-  to be done as a trade-off to enable fast computation.
+  only processed once and that load balancing is forced. T
   
-  The subset number is generally used as a multiplier to determine array- or vector positions
-  
+  Process numbers are expected to be between 0 and \c num_workers
   
   Whether to use the cache enabled function or not can be set by the parsing parameter
 \verbatim
@@ -71,177 +71,99 @@ START_NAMESPACE_STIR
   */
 class DistributedCachingInformation
 {
- public:
-
-  //general values needed
-  int num_workers;
-  int num_vs_numbers;
-  int num_views;
-  int num_segments;
-  int num_subsets;
-	
-  //standard constructor
-  DistributedCachingInformation();
-	
-  //constructor to initialize the number of segments, views and subsets
-  DistributedCachingInformation(int num_segments, int num_views, int num_subs);
+public:	
+  //! constructor, calls initialise()
+  explicit DistributedCachingInformation(const int num_processors);
+  
+  //! destructor to clean up data structures
   virtual ~DistributedCachingInformation();
 
-  /*! \brief to be called at the beginning of each iteration to initialize the data structures
-   * calls set_all_vs_num_unprocessed() and initialize_counts()
+  /*! \brief initialise all data structures
+   * called by the constructor, but should be called before processing a new set of data.
+   * calls initialise_new_subiteration() with an empty vector
+   */
+  void initialise();
+  /*! \brief to be called at the beginning of the processing of a set of data
+   * The caching data is kept, such that the cache will be re-used over multiple runs.
    */ 
-  void initialize_new_iteration();
+  void initialise_new_subiteration(const std::vector<ViewSegmentNumbers>& vs_nums_to_process);
 	
-  /*! \brief main function of the class, to be called by distributable_computation to get next vs_number
-   * \warning this must only be called if there for sure is an unprocessed vs_num left, otherwise it might cause an error
-   * \param proc the processor for which the View-Segment-Numbers are calculated
-   * \param subset_num the current subset
+  /*! \brief get the next work-package for a given processor
+   * \warning this must only be called if there for sure is an unprocessed vs_num left, 
+   * otherwise it will call stir::error().
+   * \param[out] vs_num will be set accordingly
+   * \param[in] proc the processor for which the View-Segment-Numbers are calculated
+   * \return \c true if the vs_num was not in the cache of the processor
+   * This function updates internal cache values etc. The user can just repeatedly call
+   * the function without worrying about the caching algorithm.
    */ 
-  ViewSegmentNumbers get_unprocessed_vs_num(int proc, int subset_num);
+  bool get_unprocessed_vs_num(ViewSegmentNumbers& vs_num, int proc);
+	
+private:
 
-  /*! \brief gets the count of unprocessed View-Segment-Numbers assigned to a processor
-   * \param proc the processor for which the View-Segment-Numbers are retured
-   * \param subset_num the current subset
-   */
-  int get_remaining_vs_nums(int proc, int subset_num);
+  //! Number of processors available
+  int num_workers;
+
+  //! stores which data that have to be processed in this subiteration
+  std::vector<ViewSegmentNumbers> vs_nums_to_process;	
+
+  //!stores the vs_nums in the cache of every processor
+  std::vector<std::vector<ViewSegmentNumbers> > proc_vs_nums;
 	
-  /*! \brief adds a process
-   * \param proc the processor to be added to the processor list
-   * \param vs_num the ViewSegmentNumbers to which the processor is added
-   * the list is needed to find other processiors which have this vs_num in cache to adjust 
-   * their remaining-wor-counters in adjust_counters_for_all_proc
-   */
-  void add_proc_to_vs_num(ViewSegmentNumbers vs_num, int proc);
+  //! marks the vs_num that still need to be processed
+  /*! Has the same length as vs_nums_to_process */
+  std::vector<bool> still_to_process;
+
+  //! \brief find where \a vs_num is in vs_nums_to_process
+  int find_vs_num_position_in_list_to_process(const ViewSegmentNumbers& vs_num) const;
+
+  //! \brief find the first vs_num which has not be processed at all
+  int find_position_of_first_unprocessed() const;
 	
-  /*! \brief
+  //! count how many data-sets that are cached remain to be processed by processor \a proc
+  int get_num_remaining_cached_data_to_process(int proc) const;
+
+  /*! \brief store the work-package in the cache-list of the processor
    * \param proc the processor to whose list the View-Segment-Numbers is saved
    * \param vs_num the vs_number to be saved to the processors list of cached numbers
-   * \param subset_num the current subset
-   * this list is needed to send vs_nums to the slaves, which they already processed before
+   * Calls set_processed() to make sure we do not process it again.
    */
-  void add_vs_num_to_proc(int proc, ViewSegmentNumbers vs_num, int subset_num);
-	
-
- private:
-  //std::vector<ViewSegmentNumbers> vs_vector(num_vs_numbers);
-  //std::vector<std::vector<ViewSegmentNumbers> > proc_vs_nums(num_workers*num_subsets, vs_vector);
-	
-  //stores the vs_nums for every processor/subset combination
-  std::vector<std::vector<ViewSegmentNumbers>* > proc_vs_nums;
-	
-  /*saves the size of each vs_num-vector
-   *This is needed to determine the number of vs_nums handeled by a specific slave 
-   * to enable fast access */
-  int * proc_vs_nums_sizes;						 
-	
-  //stores the processor numbers for every vs_num
-  //needed to adjust counters of other processors if the vs_num is processed 
-  std::vector<std::vector<int>* > vs_num_procs; 	
-  //saves the size of each processor-vector
-  int * vs_num_procs_sizes;						
-	
-  //counts the remaining (already cached) work to do for every processor
-  int * remaining_viewgrams; 						
-	
-  //counts the already done work for every processor
-  int * processed_count; 							
-	
-  //marks the vs_num already processed
-  int * processed; 								
-	
-  /*! \brief called by the constructor to initialize the data structures
-   */
-  void initialize();
-	
-  /*! \brief initializes the processed_count and the remaining_viewgrams in each iteration
-   */
-  void initialize_counts();
-
-	
-  /*! \brief gets the count of View-Segment-Numbers processed processed by a processor
-   * \param proc the processor for which the View-Segment-Numbers are calculated
-   * \param subset_num the currently processed subset number
-   */
-  int get_processed_count(int proc, int subset_num);	
-
-	 
-  /*! \brief gets a vector of processor-ids for a specific View-Segment-Numbers
-   * \param proc the processor for which the View-Segment-Numbers are returned 
-   * 
-   * The resulting vector contains all processor which processed the specific vs_num at least once 	 
-   */
-  std::vector<int>* get_procs_from_vs_num(ViewSegmentNumbers vs_num);
-
+  void add_vs_num_to_proc(int proc, const ViewSegmentNumbers& vs_num);
 
   /*! \brief gets the vs_num which is (most likely) the oldest in cache of the specific processor
-   * \param proc the processor for which the View-Segment-Numbers are calculated
-   * \param subset_num the currently processed subset number 
-   * 
-   * This is called by \cget_vs_num_of_proc_with_most_work_left() if there is any unprocessed vs_num
+   * \param[out] vs_num will be set accordingly
+   * \param[in] proc the processor for which the View-Segment-Numbers are calculated
+   * \return \c true if there was an unprocessed data-set in the cache of processor \a proc
+   * This is called by get_unprocessed_vs_num
    */
-  ViewSegmentNumbers get_oldest_unprocessed_vs_num(int proc, int subset_num);
+  bool get_oldest_unprocessed_vs_num(ViewSegmentNumbers& vs_num, int proc) const;
 
 	
   /*! \brief gets a vs_num of the processor, which has the most work left
-   * \param proc the processor for which the View-Segment-Numbers are calculated
-   * \param subset_num the currently processed subset number
+   * \param proc processor that will not be checked (i.e. the one for which 
+   *      we are trying to find some work)
    * 	 
    * this function is called if a processor requests work and already accomplished 
-   * all of his own work. Getting a viewgram from the slave with most work left
+   * everything in its cache. Allocating work from the slave with most work left
    * encourages load balancing without having a lot of extra communicatrions.
    * That way the probability of requesting already cached work is kept high.  
    */
-  ViewSegmentNumbers get_vs_num_of_proc_with_most_work_left(int proc, int subset_num);
-	
-	
-  /*! \brief to decrease the remaining vs_num counter for a specific processor
-   * \param proc the processor for which the remaining_vs_nums are decreased
-   * \param subset_num the currently processed subset number
-   * 
-   * this function is always called if one of the remaining vs_nums of a processor is 
-   * chosen to be sent to a slave. It's also called for processors, from which other 
-   * processors inherited work from.  
-   */
-  void decrease_remaining_vs_nums(int proc, int subset_num);
-	
-	
-  /*! \brief to increase the processed vs_num counter for a specific processor
-   * \param proc the processor for which the View-Segment-Numbers are calculated
-   * \param subset_num the currently processed subset number
-   * 
-   * this increases the counter of work done for each processor to know where to access 
-   * the array of saved vs_nums
-   */
-  void increase_processed_count(int proc, int subset_num);
-	
-  /*! \brief to set a ViewSegmentNumbers as already processed
+  ViewSegmentNumbers get_vs_num_of_proc_with_most_work_left(int proc) const;
+		
+  /*! \brief set a ViewSegmentNumbers as already processed
    * \param vs_num the vs_num to be set processed
-   * 
-   * accesses the processed-array, in which every vs_num is assigned
-   * a 0 (not processed) or 1 (processed)
    */
-  void set_processed(ViewSegmentNumbers vs_num);
+  void set_processed(const ViewSegmentNumbers& vs_num);
 	
-  /*! \brief to initialize the processed array
-   * this function sets all ViewSegmentNumbers as unprocessed
+  /*! \brief reset all data to unprocessed
    */
   void set_all_vs_num_unprocessed();
 	
   /*! \brief check if a vs_num is already processed
    * \param vs_num the view segment number to be checked
-   * 
-   * This function checks whether a view segment number is already processed or not
    */
-  bool is_processed(ViewSegmentNumbers vs_num);
+  bool is_processed(const ViewSegmentNumbers& vs_num) const;
 
-  /*! \brief 
-   * \param vs_num the processed view segment number
-   * \param subset_num the currently processed subset number
-   * 
-   * This function decreases the remaining_viewgram_counts of all processors which have 
-   * the vs_num on their remaining work list.
-   */
-  void adjust_counters_for_all_proc(ViewSegmentNumbers vs_num, int proc, int subset_num);
 };
 
 END_NAMESPACE_STIR
