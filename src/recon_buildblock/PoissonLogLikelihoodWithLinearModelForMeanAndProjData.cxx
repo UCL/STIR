@@ -570,6 +570,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
   // set projectors to be used for the calculations
 
 #ifdef STIR_MPI
+        distributed::first_iteration = true;
+ 	 
         //broadcast objective_function (200=PoissonLogLikelihoodWithLinearModelForMeanAndProjData)
         distributed::send_int_value(200, -1);
 
@@ -587,8 +589,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
         //set up distributed caching object
         if (distributed_cache_enabled) 
         {
-          DistributedCachingInformation* caching_info_ptr_temp = new DistributedCachingInformation(proj_data_sptr->get_num_segments(), proj_data_sptr->get_num_views(), this->num_subsets);
-                caching_info_ptr = caching_info_ptr_temp;
+          this->caching_info_ptr = new DistributedCachingInformation(distributed::num_processors);
         }
         else caching_info_ptr = NULL;
 #else 
