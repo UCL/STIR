@@ -40,8 +40,11 @@
    
    TB 30/06/2007
    added MPI support
+   KT 2011
+   some corrections to TB's work
    */
 #include "stir/shared_ptr.h"
+#include "stir/is_null_ptr.h"
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjData.h"
@@ -50,7 +53,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-
+#include "stir/recon_buildblock/BinNormalisation.h"
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
@@ -83,13 +86,13 @@ zero_end_sinograms(ViewgramsPtr viewgrams_ptr)
     }
 }
 
-static std::vector<ViewSegmentNumber> 
-find_vs_nums_in_subset(const ProjDataInfo& proj_data_info_ptr,
+static std::vector<ViewSegmentNumbers> 
+find_vs_nums_in_subset(const ProjDataInfo& proj_data_info,
                        const DataSymmetriesForViewSegmentNumbers& symmetries, 
                        const int min_segment_num, const int max_segment_num,
                        const int subset_num, const int num_subsets)
 {
-  std::vector<ViewSegmentNumber> vs_nums_to_process;
+  std::vector<ViewSegmentNumbers> vs_nums_to_process;
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
   {
     for (int view = proj_data_info.get_min_view_num() + subset_num; 
@@ -98,8 +101,10 @@ find_vs_nums_in_subset(const ProjDataInfo& proj_data_info_ptr,
     {
       const ViewSegmentNumbers view_segment_num(view, segment_num);
         
-      if (symmetries.is_basic(view_segment_num))
-        vs_nums_to_process.push_back(view_segment_num);
+      if (!symmetries.is_basic(view_segment_num))
+        continue;
+
+      vs_nums_to_process.push_back(view_segment_num);
 
 #ifndef NDEBUG
       // test if symmetries didn't take us out of the segment range
@@ -107,12 +112,13 @@ find_vs_nums_in_subset(const ProjDataInfo& proj_data_info_ptr,
       symmetries.get_related_view_segment_numbers(rel_vs, view_segment_num);
       for (std::vector<ViewSegmentNumbers>::const_iterator iter = rel_vs.begin(); iter!= rel_vs.end(); ++iter)
         {
-          assert(iter->segment() >= min_segment_num);
-          assert(iter->segment() <= max_segment_num);
+          assert(iter->segment_num() >= min_segment_num);
+          assert(iter->segment_num() <= max_segment_num);
         }
 #endif
     }
   }
+  return vs_nums_to_process;
 }
 
 static
@@ -178,18 +184,18 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
     }
 }
 
-void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
+static void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
                     const shared_ptr<RelatedViewgrams<float> >& additive_binwise_correction_viewgrams,
                     const shared_ptr<RelatedViewgrams<float> >& mult_viewgrams_sptr,
                     const int next_receiver)
 {
-  distributed::send_view_segment_numbers( view_segment_num, NEW_VIEWGRAM_TAG, next_receiver);
+  distributed::send_view_segment_numbers( y->get_basic_view_segment_num(), NEW_VIEWGRAM_TAG, next_receiver);
 
 #ifndef NDEBUG
   //test sending related viegrams
   if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
     distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->clone(), 
-                                               y->get_symmetries_ptr(), y, next_receiver);
+                                               y->get_symmetries_ptr()->clone(), y.get(), next_receiver);
 #endif
 
   //TODO: this could also be done by using MPI_Probe at the slave to find out what to recieve next
@@ -215,7 +221,7 @@ void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
       distributed::send_related_viewgrams(mult_viewgrams_sptr.get(), next_receiver);
     }
   // send y
-  distributed::send_related_viewgrams(y, next_receiver);
+  distributed::send_related_viewgrams(y.get(), next_receiver);
 }
 
 void distributable_computation_cache_enabled(
@@ -278,14 +284,13 @@ void distributable_computation_cache_enabled(
   // needed for several send/receive operations
   int int_values[2];
         
-  int sent_count=0;                     //counts the work packages sent
   int working_slaves_count=0; //counts the number of slaves which are currently working
   int next_receiver=1;          //always stores the next slave to be provided with work
         
   int count=0, count2=0;
         
-  const std::vector<ViewSegmentNumber> vs_nums_to_process = 
-    find_vs_nums_in_subset(*proj_dat_ptr.get_proj_data_info_ptr(), *symmetries_ptr,
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    find_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
                            min_segment_num, max_segment_num,
                            subset_num, num_subsets);
   
@@ -295,34 +300,24 @@ void distributable_computation_cache_enabled(
   iteration_timer.start();
    
   //initialize the caching values for the new iteration
-  if (distributed::first_iteration==false) caching_info_ptr->initialize_new_iteration();
+  caching_info_ptr->initialise_new_subiteration(vs_nums_to_process);
   distributed::iteration_counter++;
     
   //while not all vs_nums are processed repeat
-  for (std::size_t processed_count = 0; processed_count < num_vs; ++processed_count)
+  for (std::size_t processed_count = 1; processed_count <= num_vs; ++processed_count)
     {           
       ViewSegmentNumbers view_segment_num;
                 
       //check whether the slave will receive a new or an already cached viewgram
-      const bool new_viewgrams = (caching_info_ptr->get_remaining_vs_nums(next_receiver, subset_num)==0);
-
-      if (new_viewgrams==false)
-        {
-          //use stored caching information to get the next unprocessed vs_num for the slave
-          view_segment_num = caching_info_ptr->get_unprocessed_vs_num(next_receiver, subset_num);
-        }
-      else 
-        {
-          view_segment_num = vs_nums_to_process(processed_count);
-                
-          caching_info_ptr->add_proc_to_vs_num(view_segment_num, next_receiver);
-          caching_info_ptr->add_vs_num_to_proc(next_receiver, view_segment_num, subset_num);
-        }       
+      const bool new_viewgrams = 
+         caching_info_ptr->get_unprocessed_vs_num(view_segment_num, next_receiver);
+      // view_segment_num = vs_nums_to_process[processed_count-1];
                                 
       //the slave has not yet processed this vs_num, so the viewgrams have to be sent                   
       if (new_viewgrams==true)
         {       
-          cerr << "Sending view " << view_segment_num.view() << " to slave " << next_receiver << std::endl;
+          cerr << "Sending segment " << view_segment_num.segment_num() 
+               << ", view " << view_segment_num.view_num() << " to slave " << next_receiver << std::endl;
 
           shared_ptr<RelatedViewgrams<float> > y = 0;                                         
           shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams = 0;
@@ -341,15 +336,19 @@ void distributable_computation_cache_enabled(
         } // if(new_viewgram)
       else
         {
+          cerr << "Re-using  segment " << view_segment_num.segment_num() 
+               << ", view " << view_segment_num.view_num() << " at slave " << next_receiver << std::endl;
           //send vs_num with reuse-tag, the slave will immediatelly start calculation
           distributed::send_view_segment_numbers( view_segment_num, REUSE_VIEWGRAM_TAG, next_receiver);
         }
 
       working_slaves_count++;
-      sent_count++;
                       
-      //give every slave some work before waiting for requests 
-      if (sent_count <distributed::num_processors) next_receiver++; 
+      if (int(processed_count) <distributed::num_processors-1) // note: -1 as master doesn't get any viewgrams
+        {
+          //give every slave some work before waiting for requests 
+          next_receiver++; 
+        }
       else 
         {       
           const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
