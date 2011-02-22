@@ -32,7 +32,7 @@
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #include "stir/HighResWallClockTimer.h"
-
+#include "stir/is_null_ptr.h"
   
 namespace stir 
 {
@@ -115,12 +115,9 @@ namespace stir
                         
         //set up ProjData- and binwise_correction objects
         proj_data_ptr = new ProjDataInMemory(proj_data_info_sptr);
-        binwise_correction = new ProjDataInMemory(proj_data_info_sptr);
-                        
-        //TODO parallel sensitivity computation
-        //Receive normalization_ptr
-        //distributed_compute_sensitivity(objective_function_ptr);
-                        
+        binwise_correction = 0; // will be initialised if we need it
+        mult_proj_data_sptr = 0; // will be initialised if we need it
+
         distributed_compute_sub_gradient(objective_function_ptr, proj_data_info_sptr, symmetries_sptr);
       }
     else if (obj_fct==100)//objective_function is PoissonLogLikelihoodWithLinearModelForMeanAndListModeData
@@ -174,6 +171,7 @@ namespace stir
             // TODO, get rid of pointers somehow
             RelatedViewgrams<float>* viewgrams = NULL;
             RelatedViewgrams<float>* additive_binwise_correction_viewgrams = NULL;
+            RelatedViewgrams<float>* mult_viewgrams_ptr = NULL;
             count = 0;
             count2 = 0;
                                 
@@ -189,8 +187,12 @@ namespace stir
             if (status.MPI_TAG==REUSE_VIEWGRAM_TAG) //use a viewgram already available
               {                        
                 viewgrams = new RelatedViewgrams<float>(proj_data_ptr->get_related_viewgrams(vs, symmetries_sptr));
-                additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(vs, symmetries_sptr));
-                // TODOO XXXX MULT
+                if (!is_null_ptr(binwise_correction))
+                  additive_binwise_correction_viewgrams = 
+                    new RelatedViewgrams<float>(binwise_correction->get_related_viewgrams(vs, symmetries_sptr));
+                if (!is_null_ptr(mult_proj_data_sptr))
+                  mult_viewgrams_ptr = 
+                    new RelatedViewgrams<float>(mult_proj_data_sptr->get_related_viewgrams(vs, symmetries_sptr));
               } 
             else if (status.MPI_TAG==NEW_VIEWGRAM_TAG) //receive a message with a new viewgram
               {
@@ -200,12 +202,17 @@ namespace stir
 #endif          
                 //receive info if additive_binwise_correction_viewgrams are NULL        
                 const bool add_bin_corr_viewgrams=distributed::receive_bool_value(BINWISE_CORRECTION_TAG, 0);
-                
-                if (add_bin_corr_viewgrams) distributed::receive_and_construct_related_viewgrams(additive_binwise_correction_viewgrams, proj_data_info_sptr, symmetries_sptr, 0);
+                if (add_bin_corr_viewgrams) 
+                  {
+                    distributed::receive_and_construct_related_viewgrams(additive_binwise_correction_viewgrams, proj_data_info_sptr, symmetries_sptr, 0);
+                  }
 
                 //receive info if mult_viewgrams_ptr are NULL   
                 const bool mult_viewgrams=distributed::receive_bool_value(BINWISE_MULT_TAG, 0);         
-                if (mult_viewgrams) distributed::receive_and_construct_related_viewgrams(mult_viewgrams_ptr, proj_data_info_sptr, symmetries_sptr, 0);
+                if (mult_viewgrams) 
+                  {
+                    distributed::receive_and_construct_related_viewgrams(mult_viewgrams_ptr, proj_data_info_sptr, symmetries_sptr, 0);
+                  }
 
                 // measured viewgrams
                 distributed::receive_and_construct_related_viewgrams(viewgrams, proj_data_info_sptr, symmetries_sptr, 0); 
@@ -217,12 +224,22 @@ namespace stir
                       error("Slave %i: Storing viewgrams failed!\n", my_rank);
                                 
                     if (add_bin_corr_viewgrams) 
-                      if (binwise_correction->set_related_viewgrams(*additive_binwise_correction_viewgrams)==Succeeded::no)
-                        error("Slave %i: Storing additive_binwise_correction_viewgrams failed!\n", my_rank);
+                      {
+                        if (is_null_ptr(binwise_correction))
+                          binwise_correction = new ProjDataInMemory(proj_data_info_sptr);
+                        
+                        if (binwise_correction->set_related_viewgrams(*additive_binwise_correction_viewgrams)==Succeeded::no)
+                          error("Slave %i: Storing additive_binwise_correction_viewgrams failed!\n", my_rank);
+                      }
 
                     if (mult_viewgrams) 
-                      if (mult_proj_data_sptr->set_related_viewgrams(*mult_viewgrams_ptr)==Succeeded::no)
-                        error("Slave %i: Storing mult_viewgrams_ptr failed!\n", my_rank);
+                      {
+                        if (is_null_ptr(mult_proj_data_sptr))
+                          mult_proj_data_sptr = new ProjDataInMemory(proj_data_info_sptr);
+
+                        if (mult_proj_data_sptr->set_related_viewgrams(*mult_viewgrams_ptr)==Succeeded::no)
+                          error("Slave %i: Storing mult_viewgrams_ptr failed!\n", my_rank);
+                      }
                   }
               }
             else  //the iteration or reconstruction is completed --> send results
@@ -272,7 +289,8 @@ namespace stir
             distributed::send_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG, 0);
                         
             if (viewgrams!=NULL) delete viewgrams;
-            if (additive_binwise_correction_viewgrams!=NULL) delete additive_binwise_correction_viewgrams;              
+            if (additive_binwise_correction_viewgrams!=NULL) delete additive_binwise_correction_viewgrams;
+            if (mult_viewgrams_ptr!=NULL) delete mult_viewgrams_ptr;
           }
         if (distributed::rpc_time)
           cerr << "Slave "<<my_rank<<" used "<<distributed::total_rpc_time_2<<" seconds for PRC-processing."<<endl;
