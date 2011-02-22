@@ -88,6 +88,7 @@ class DistributedWorker : public TimedObject, public ParsingObject
 		
   shared_ptr<ProjData> proj_data_ptr; 	
   shared_ptr<ProjData> binwise_correction;
+  shared_ptr<ProjData> mult_proj_data_sptr;
 		
   int my_rank; //rank of the worker
 		
