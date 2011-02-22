@@ -525,8 +525,8 @@ namespace distributed
   {
     int int_values[2];
     const MPI_Status status = distributed::receive_int_values(int_values, 2, tag);
-    vs_num.view() = int_values[0];
-    vs_num.segment() = int_values[1];
+    vs_num.view_num() = int_values[0];
+    vs_num.segment_num() = int_values[1];
     return status;
   }
         
@@ -734,7 +734,7 @@ namespace distributed
     std::copy(output_buf, output_buf+image_buffer_size, output_image_ptr->begin_all());
     delete[] output_buf;
 #ifdef STIR_MPI_TIMINGS
-    if (test_send_receive_times) fulltimer.stop();
+    fulltimer.stop();
     if (test_send_receive_times /*&& fulltimer.value()>min_threshold*/) cout << "Master: reduced output_image total after " << fulltimer.value() << " seconds" << endl;
 #endif
   }

@@ -160,13 +160,13 @@ void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
                     const shared_ptr<RelatedViewgrams<float> >& mult_viewgrams_sptr,
                     const int next_receiver)
 {
-  distributed::send_view_segment_numbers( view_segment_num, NEW_VIEWGRAM_TAG, next_receiver);
+  distributed::send_view_segment_numbers( y->get_basic_view_segment_num(), NEW_VIEWGRAM_TAG, next_receiver);
 
 #ifndef NDEBUG
   //test sending related viegrams
   if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
     distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->clone(), 
-                                               y->get_symmetries_ptr(), y, next_receiver);
+                                               y->get_symmetries_ptr()->clone(), y.get(), next_receiver);
 #endif
 
   //TODO: this could also be done by using MPI_Probe at the slave to find out what to recieve next
@@ -192,7 +192,7 @@ void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
       distributed::send_related_viewgrams(mult_viewgrams_sptr.get(), next_receiver);
     }
   // send y
-  distributed::send_related_viewgrams(y, next_receiver);
+  distributed::send_related_viewgrams(y.get(), next_receiver);
 }
 #endif
 
@@ -336,11 +336,12 @@ void distributable_computation(
           sent_count++;
     
           //give every slave some work before waiting for requests 
-          if (sent_count < distributed::num_processors) 
+          if (sent_count < distributed::num_processors-1) // note: -1 as master doesn't get any viewgrams
             next_receiver++;
           else 
             {
               //wait for available notification
+              int int_values[2];
               const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
               next_receiver=status.MPI_SOURCE;
               working_slaves_count--;
