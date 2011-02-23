@@ -264,7 +264,6 @@ void distributable_computation_cache_enabled(
 #endif
         
   //send the current image estimate
-  if (distributed::first_iteration == true) distributed::send_image_parameters(input_image_ptr, -1, -1);
   distributed::send_image_estimate(input_image_ptr, -1);
   
   assert(min_segment_num <= max_segment_num);
