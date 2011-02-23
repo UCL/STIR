@@ -581,6 +581,8 @@ namespace distributed
   {
     //buffer for input_image
     float * buffer = new float[buffer_size]; 
+    if (buffer == 0)
+      stir::error("Ran out of memory");
 
 #ifdef STIR_MPI_TIMINGS                 
     if (test_send_receive_times) {t.reset(); t.start();} 
