@@ -28,25 +28,17 @@
  
   \brief declares the stir::DistributedWorker class
 
-
   \author Tobias Beisel
-
+  \author Kris Thielemans
   $Date$
 */
-//class PoissonLogLikelihoodWithLinearModelForMeanAndProjData;
 
-#include "mpi.h"
-#include "stir/Viewgram.h"
 #include "stir/shared_ptr.h"
 #include "stir/TimedObject.h"
-#include "stir/ParsingObject.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/DataSymmetriesForViewSegmentNumbers.h"
-#include "stir/ProjDataInMemory.h"
-#include "stir/IO/InterfileHeader.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
-#include "stir/recon_buildblock/IterativeReconstruction.h"
+//#include "stir/ParsingObject.h"
+#include "stir/ProjData.h"
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/distributable.h"
 #include <string>
 #include <vector>
 
@@ -54,102 +46,89 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup distributable
-  \brief This implements the Worker for the distributed reconstruction.
+  \brief This implements the Worker for the stir::distributable_computation() function.
 
-  It first initializes all objects needed for the reconstruction within the \c start() method,
-  before running into two nested infinite loops to receive work packages.
+  The start() method is an infinite loop waiting for a task from the master. Very few tasks
+  are implemented at the moment: set_up, compute, stop.
   
-  The loops are running within the \c distributed_compute_sub_gradient() fuinction 
-  which does the actual work. The outer loop represents the loop over the iterations and receives 
-  the values of the current image estimate at the beginning of each iteration.
-  
-  The inner loop receives the related viegrams and computes the RPC_process_related_viewgrams_gradient() 
-  function with the received values. When an end_iteration_notification is received calls the 
+  The \c distributable_computation() function does the actual work. It is the slave-part
+  of stir::distributable_computation() which runs on the master.  It is a loop receiving the related 
+  viewgrams and calling an RPC_process_related_viewgrams_type function 
+  with the received values. When an end_iteration_notification is received, it calls the 
   reduction of the output_image.
   
   In each inner loop the worker first receives the vs_num and the information whether this is a 
-  new viewgram or a previously received viewgram. The latter case only emerges if distribute caching is 
+  new viewgram or a previously received viewgram. The latter case only emerges if distributed caching is 
   enabled.  If so, the worker does not have to receive the related viewgrams, but just gets it from 
   its saved viewgrams.
-  
-  \c distributed_compute_sensitivity() is intended to compute the sensitivity in a 
-  distributed manner within the set_up() method. This has to be done.
-  */
+
+  \todo The log_likelihood_ptr argument to the RPC function is currently always NULL.
+  \todo Currently the only computation that is supported corresponds to the gradient computation.
+  It would be trivial to add others.
+*/
 template <class TargetT>
-class DistributedWorker : public TimedObject, public ParsingObject
-{	
- private:	
-  MPI_Status status;
-				
+class DistributedWorker : public TimedObject //, public ParsingObject
+{       
+ private:       
+                                
   double* log_likelihood_ptr;
   bool zero_seg0_end_planes;
-		
+  shared_ptr<ProjectorByBinPair> proj_pair_sptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<TargetT> target_sptr;
+                
   int image_buffer_size; //to save the image_size
-		
-  shared_ptr<ProjData> proj_data_ptr; 	
+
+  // cache variables
+  bool cache_enabled;
+  shared_ptr<ProjData> proj_data_ptr;   
   shared_ptr<ProjData> binwise_correction;
   shared_ptr<ProjData> mult_proj_data_sptr;
-		
-  int my_rank; //rank of the worker
-		
-  bool cache_enabled;
 
-		
+  int my_rank; //rank of the worker
+
+                
  public:
-	
+        
   //Default constructor
   DistributedWorker();
-   	
+        
   //Default destructor
   ~DistributedWorker() ;
       
   /*!
-    \ingroup distributable
-    \brief 
-		  
-    This function in used to start the slave. It sets up all needed object communicating with the 
-    master. It differs between the objective_functions, where the list-mode case is not yet implemented.
-    The objective_functions are differed with the value sent. PoissonLogLikelihoodWithLinearModelForMeanAndListModeData
-    is 100, while PoissonLogLikelihoodWithLinearModelForProjData is 200.
-		  
+    \brief Infinite loop waiting for tasks from the master
+  */
+  void start();
+                        
+ protected:
+        
+  /*!
+    \brief sets defaults for this object 
+  */
+  void set_defaults();
+
+  /*!
+    \brief Get basic information from the master.
+                  
+    It sets up all needed objects by communicating with the 
+    master. 
+                  
     The following objects are set up:
     - bool zero_seg0_end_planes
     - target_image_sptr
     - ProjDataInfo pointer
     - ProjectorByBinPair pointer
-    - PoissonLogLikelihoodWithLinearModelForMeanAndProjData object
     - ProjDataInMemory to save the received related viewgrams
-		  
-    Setting uo the ProjectorByBinPair pointer includes setting up the DataSymmetriesForViewSegmentNumbers
-    pointer and the ProjMatrix Pointer.
-    Additionaly some values for testing are set up. 
-		  
+                  
+    Additionally some values for testing are set up. 
+                  
   */
-  void start(int my_rank);
-			
- protected:
-	
+  void setup_distributable_computation();
   /*!
-    \ingroup distributable
-    \brief sets defaults for this object 
+    \brief this does the actual computation corresponding to distributable_computation()
   */
-  void set_defaults();
-   		
-   		
-  /*!
-    \ingroup distributable
-    \brief not yet implemented parallel version of the sensitivity computation 
-  */
-  void distributed_compute_sensitivity(shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > > &objective_function_ptr);
-   		
-   		
-  /*!
-    \ingroup distributable
-    \brief this does the actual reconstruction of the received related viewgrams
-  */
-  void distributed_compute_sub_gradient(shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > > &objective_function_ptr, 
-					const shared_ptr<ProjDataInfo> proj_data_info_sptr, 
-					const shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr);
+  void distributable_computation(RPC_process_related_viewgrams_type * RPC_process_related_viewgrams);
 };
 
 
