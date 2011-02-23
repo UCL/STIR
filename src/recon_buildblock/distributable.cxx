@@ -72,6 +72,70 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
+/* WARNING: the sequence of steps here has to match what is on the receiving end 
+   in DistributedWorker */
+void setup_distributable_computation(
+                                     const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
+                                     const ProjDataInfo * const proj_data_info_ptr,
+                                     const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
+                                     const bool zero_seg0_end_planes,
+                                     const bool distributed_cache_enabled)
+{
+#ifdef STIR_MPI
+  distributed::first_iteration = true;
+         
+  //broadcast type of computation (currently only 1 available)
+  distributed::send_int_value(task_setup_distributable_computation, -1);
+
+  //broadcast zero_seg0_end_planes
+  distributed::send_bool_value(zero_seg0_end_planes, -1, -1);
+        
+  //broadcast target_sptr
+  distributed::send_image_parameters(target_sptr.get(), -1, -1);
+  distributed::send_image_estimate(target_sptr.get(), -1);
+        
+  //sending Projection_Data_info
+  distributed::send_proj_data_info(proj_data_info_ptr, -1);
+        
+  //send configuration values for distributed computation
+  int configurations[4];
+  configurations[0]=distributed::test?1:0;
+  configurations[1]=distributed::test_send_receive_times?1:0;
+  configurations[2]=distributed::rpc_time?1:0;
+  configurations[3]=distributed_cache_enabled?1:0;
+  distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
+        
+  distributed::send_double_values(&distributed::min_threshold, 1, ARBITRARY_TAG, -1);
+                
+  //send registered name of projector pair
+  distributed::send_string(proj_pair_sptr->get_registered_name(), REGISTERED_NAME_TAG, -1);
+        
+  //send parameter info of projector pair
+  distributed::send_string(proj_pair_sptr->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, -1);
+
+#ifndef NDEBUG
+  //test sending parameter_info
+  if (distributed::test) 
+    distributed::test_parameter_info_master(proj_pair_sptr->stir::ParsingObject::parameter_info(), 1, "projector_pair_ptr");
+#endif
+
+#endif // STIR_MPI
+}
+
+void end_distributable_computation()
+{
+#ifdef STIR_MPI
+  int my_rank;  
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank) ; /*Gets the rank of the Processor*/   
+  if (my_rank==0)
+    {
+      //broadcast end of processing notification
+      distributed::send_int_value(task_stop_processing, -1);
+    }
+#endif
+
+}
+
 template <class ViewgramsPtr>
 static void
 zero_end_sinograms(ViewgramsPtr viewgrams_ptr)
@@ -217,6 +281,9 @@ void distributable_computation(
 
 {
 #ifdef STIR_MPI 
+  // TODO need to differentiate depending on RPC_process_related_viewgrams
+  distributed::send_int_value(task_do_distributable_gradient_computation, -1);
+
   if (caching_info_ptr != NULL)
     {
       distributable_computation_cache_enabled(
@@ -262,7 +329,6 @@ void distributable_computation(
 #endif
         
   //send the current image estimate
-  if (distributed::first_iteration == true) distributed::send_image_parameters(input_image_ptr, -1, -1);
   distributed::send_image_estimate(input_image_ptr, -1);
         
 #endif
