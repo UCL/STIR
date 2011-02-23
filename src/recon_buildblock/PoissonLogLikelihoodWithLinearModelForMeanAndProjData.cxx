@@ -45,7 +45,6 @@
 #include "stir/DiscretisedDensity.h"
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/DistributedCachingInformation.h"
-#include "stir/recon_buildblock/distributableMPICacheEnabled.h"  
 #endif
 #include "stir/recon_buildblock/distributable.h"
 // for get_symmetries_ptr()
@@ -69,10 +68,6 @@
 #include <sstream>
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
-#include "stir/recon_buildblock/distributed_test_functions.h"
-#define PARAMETER_INFO_TAG 21
-#define REGISTERED_NAME_TAG 25
-#define ARBITRARY_TAG 8
 #endif
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
@@ -309,6 +304,13 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData()
 {
   this->set_defaults();
+}
+
+template <typename TargetT>
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+~PoissonLogLikelihoodWithLinearModelForMeanAndProjData()
+{
+  end_distributable_computation();
 }
 
 template <typename TargetT>
@@ -569,61 +571,26 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   // set projectors to be used for the calculations
 
+  setup_distributable_computation(this->projector_pair_ptr,
+                                  this->proj_data_sptr->get_proj_data_info_ptr(),
+                                  target_sptr,
+                                  zero_seg0_end_planes,
+                                  distributed_cache_enabled);
+        
 #ifdef STIR_MPI
-        distributed::first_iteration = true;
- 	 
-        //broadcast objective_function (200=PoissonLogLikelihoodWithLinearModelForMeanAndProjData)
-        distributed::send_int_value(200, -1);
-
-        //broadcast zero_seg0_end_planes
-        distributed::send_bool_value(zero_seg0_end_planes, -1, -1);
-        
-        //broadcast target_sptr
-        distributed::send_image_parameters(target_sptr.get(), -1, -1);
-        distributed::send_image_estimate(target_sptr.get(), -1);
-        
-        //sending Projection_Data_info
-        distributed::send_proj_data_info(this->proj_data_sptr->get_proj_data_info_ptr(), -1);
-        
-        //TODO: use shared_ptr instead
-        //set up distributed caching object
-        if (distributed_cache_enabled) 
-        {
-          this->caching_info_ptr = new DistributedCachingInformation(distributed::num_processors);
-        }
-        else caching_info_ptr = NULL;
+  //set up distributed caching object
+  if (distributed_cache_enabled) 
+    {
+      this->caching_info_ptr = new DistributedCachingInformation(distributed::num_processors);
+    }
+  else caching_info_ptr = NULL;
 #else 
-        //non parallel version
-        caching_info_ptr = NULL;
+  //non parallel version
+  caching_info_ptr = NULL;
 #endif 
 
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
                                    target_sptr);
-
-#ifdef STIR_MPI
-        //send configuration values for distributed computation
-        int configurations[4];
-        configurations[0]=distributed::test?1:0;
-        configurations[1]=distributed::test_send_receive_times?1:0;
-        configurations[2]=distributed::rpc_time?1:0;
-        configurations[3]=distributed_cache_enabled?1:0;
-        distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
-        
-        double threshold =distributed::min_threshold;
-        distributed::send_double_values(&threshold, 1, ARBITRARY_TAG, -1);
-                
-        //send registered name of projector pair
-        distributed::send_string(get_projector_pair_sptr()->get_registered_name(), REGISTERED_NAME_TAG, -1);
-        
-        //send parameter info of projector pair
-        distributed::send_string(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, -1);
-
-#ifndef NDEBUG
-        //test sending parameter_info
-        if (distributed::test) 
-                distributed::test_parameter_info_master(get_projector_pair_sptr()->stir::ParsingObject::parameter_info(), 1, "projector_pair_ptr");
-#endif
-#endif
                                    
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr =
@@ -897,6 +864,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 // TODO all this stuff is specific to DiscretisedDensity, so wouldn't work for TargetT
 
 #ifdef STIR_MPI
+// make call-backs public for the moment
+
 //! Call-back function for compute_gradient
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
