@@ -170,6 +170,11 @@ public:
   //! Default constructor calls set_defaults()
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
 
+  //! Destructor
+  /*! Calls end_distributable_computation()
+   */
+  ~PoissonLogLikelihoodWithLinearModelForMeanAndProjData();
+
   //! Returns a pointer to a newly allocated target object (with 0 data).
   /*! Dimensions etc are set from the \a proj_data_sptr and other information set by parsing,
     such as \c zoom, \c output_image_size_z etc.
