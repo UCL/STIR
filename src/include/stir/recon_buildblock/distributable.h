@@ -49,9 +49,34 @@ class ProjDataInfo;
 class DataSymmetriesForViewSegmentNumbers;
 class ForwardProjectorByBin;
 class BackProjectorByBin;
+class ProjectorByBinPair;
 class DistributedCachingInformation;
 //!@{
 //! \ingroup distributable
+
+const int task_stop_processing=0;
+const int task_setup_distributable_computation=200;
+const int task_do_distributable_gradient_computation=42;
+
+//! set-up parameters for a distributable_computation
+/*! Empty unless STIR_MPI is defined, in which case it sends parameters to the 
+    slaves (see stir::DistributedWorker).
+
+    \todo currently uses some global variables for configuration in the distributed
+    namespace. This needs to be converted to a class, e.g. \c DistributedMaster
+*/
+void setup_distributable_computation(
+                                     const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
+                                     const ProjDataInfo * const proj_data_info_ptr,
+                                     const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
+                                     const bool zero_seg0_end_planes,
+                                     const bool distributed_cache_enabled);
+
+//! clean-up after a sequence of computations
+/*!  Empty unless STIR_MPI is defined, in which case it sends the "stop" task to 
+     the slaves (see stir::DistributedWorker)
+*/
+void end_distributable_computation();
 
 //! typedef for callback functions for distributable_computation()
 /*! Pointers will be NULL when they are not to be used by the callback function.
