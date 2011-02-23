@@ -25,14 +25,24 @@
   \brief Implementation of stir::DistributedWorker()
 
   \author Tobias Beisel  
-
+  \author Kris Thielemans
   $Date$
 */
 #include "stir/recon_buildblock/DistributedWorker.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
+#include "stir/Viewgram.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+
+#include "stir/ProjDataInMemory.h"
+#include "stir/IO/InterfileHeader.h"
+#include "stir/DiscretisedDensity.h"
 #include "stir/HighResWallClockTimer.h"
 #include "stir/is_null_ptr.h"
+#include "stir/Succeeded.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
+
   
 namespace stir 
 {
@@ -40,7 +50,8 @@ namespace stir
   template <typename TargetT>
   DistributedWorker<TargetT>::DistributedWorker() 
   {
-    set_defaults();
+    this->set_defaults();
+    MPI_Comm_rank(MPI_COMM_WORLD, &this->my_rank) ; /*Gets the rank of the Processor*/   
   }
   
   template <typename TargetT>
@@ -57,86 +68,102 @@ namespace stir
   }   
    
   template <typename TargetT>
-  void DistributedWorker<TargetT>::start(int rank)
+  void DistributedWorker<TargetT>::start()
   {
-    my_rank=rank;
-                
-    //Receive objective function broadcasted by Master
-    int obj_fct = distributed::receive_int_value(-1);
    
-    if(obj_fct==200) //objective_function is PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    // keep-on waiting for new tasks
+    while (true)
       {
-        //Receive zero_seg_end_planes
-        bool zero_seg0_end_planes = distributed::receive_bool_value(-1,-1);
-                                        
-        //receive target image pointer
-        shared_ptr<TargetT > target_image_sptr;
-        distributed::receive_and_set_image_parameters(target_image_sptr, image_buffer_size, -1, 0);
-                        
-        //Receive input_image values
-        MPI_Status status;
-        status = distributed::receive_image_values_and_fill_image_ptr(target_image_sptr, image_buffer_size, 0);
-          
-        //construct projection_data_info_ptr
-        shared_ptr<ProjDataInfo> proj_data_info_sptr;
-        distributed::receive_and_construct_proj_data_info_ptr(proj_data_info_sptr, 0);
-                
-        //initialize projectors and call set_up
-        shared_ptr<ProjectorByBinPair> proj_pair_sptr;
-        distributed::receive_and_initialize_projectors(proj_pair_sptr, 0);
-                
-        proj_pair_sptr->set_up(proj_data_info_sptr, target_image_sptr);
-                
-        //some values to configure tests
-        int configurations[4];
-        status=distributed::receive_int_values(configurations, 4, ARBITRARY_TAG);
-        
-        status=distributed::receive_double_values(&distributed::min_threshold, 1, ARBITRARY_TAG);
-                                        
-        (configurations[0]==1)?distributed::test=true:distributed::test=false;
-        (configurations[1]==1)?distributed::test_send_receive_times=true:distributed::test_send_receive_times=false;
-        (configurations[2]==1)?distributed::rpc_time=true:distributed::rpc_time=false;
-        (configurations[3]==1)?cache_enabled=true:cache_enabled=false;
-                        
-#ifndef NDEBUG
-        if (distributed::test && my_rank==1) distributed::test_parameter_info_slave(proj_pair_sptr->stir::ParsingObject::parameter_info());
-#endif                  
-        //create new Object of objective_function
-        PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > *objective_function = new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >();
-        shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > > objective_function_ptr(objective_function);
-                        
-        //get symmetries pointer
-        shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr = 
-          proj_pair_sptr->get_symmetries_used()->clone();
-                        
-        //set values in objective_function
-        objective_function_ptr->set_zero_seg0_end_planes(zero_seg0_end_planes);
-        objective_function_ptr->set_projector_pair_sptr(proj_pair_sptr);
-                        
-        //set up ProjData- and binwise_correction objects
-        proj_data_ptr = new ProjDataInMemory(proj_data_info_sptr);
-        binwise_correction = 0; // will be initialised if we need it
-        mult_proj_data_sptr = 0; // will be initialised if we need it
+        //Receive task broadcasted by Master
+        const int task_id = distributed::receive_int_value(-1);
+   
+        switch(task_id)
+          {
+          case task_stop_processing: // done with processing
+            {
+              return;
+            }
 
-        distributed_compute_sub_gradient(objective_function_ptr, proj_data_info_sptr, symmetries_sptr);
-      }
-    else if (obj_fct==100)//objective_function is PoissonLogLikelihoodWithLinearModelForMeanAndListModeData
-      {
-        error("Parallel List-Mode-Case is not yet implemented. Please use the sequential version!");
-      } 
-    else warning("Objective function not supported!");           
+          case task_setup_distributable_computation:
+            {
+              this->setup_distributable_computation();
+              break;
+            } 
+
+          case task_do_distributable_gradient_computation:
+            {
+              this->distributable_computation(RPC_process_related_viewgrams_gradient);
+              break;
+            }
+          default:
+            {
+              error("Internal error: Slave %d received unknown task-id %d", this->my_rank, task_id);
+            } 
+          } // end switch task_id
+      } // infinite loop
   }
    
   template <typename TargetT>
-  void DistributedWorker<TargetT>::distributed_compute_sub_gradient(shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > > &objective_function_sptr, 
-                                                                    const shared_ptr<ProjDataInfo> proj_data_info_sptr, 
-                                                                    const shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr)
-  {     
-    //input- und output-image pointers
-    shared_ptr<TargetT> input_image_ptr;
-    shared_ptr<TargetT> output_image_ptr;
+  void DistributedWorker<TargetT>::setup_distributable_computation()
+  {
+    //Receive zero_seg_end_planes
+    this->zero_seg0_end_planes = distributed::receive_bool_value(-1,-1);
+                                        
+    //receive target image pointer
+    distributed::receive_and_set_image_parameters(this->target_sptr, image_buffer_size, -1, 0);
+                        
+    //Receive input_image values
+    MPI_Status status;
+    status = distributed::receive_image_values_and_fill_image_ptr(this->target_sptr, this->image_buffer_size, 0);
+          
+    //construct projection_data_info_ptr
+    distributed::receive_and_construct_proj_data_info_ptr(this->proj_data_info_sptr, 0);
                 
-    int image_buffer_size;
+    //initialize projectors and call set_up
+    distributed::receive_and_initialize_projectors(this->proj_pair_sptr, 0);
+                
+    proj_pair_sptr->set_up(this->proj_data_info_sptr, this->target_sptr);
+                
+    //some values to configure tests
+    int configurations[4];
+    status=distributed::receive_int_values(configurations, 4, ARBITRARY_TAG);
+        
+    status=distributed::receive_double_values(&distributed::min_threshold, 1, ARBITRARY_TAG);
+                                        
+    (configurations[0]==1)?distributed::test=true:distributed::test=false;
+    (configurations[1]==1)?distributed::test_send_receive_times=true:distributed::test_send_receive_times=false;
+    (configurations[2]==1)?distributed::rpc_time=true:distributed::rpc_time=false;
+    (configurations[3]==1)?cache_enabled=true:cache_enabled=false;
+                        
+#ifndef NDEBUG
+    if (distributed::test && my_rank==1) distributed::test_parameter_info_slave(proj_pair_sptr->stir::ParsingObject::parameter_info());
+#endif
+
+#if 0
+    //create new Object of objective_function (but no longer used, so commented out)
+    shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > > objective_function_ptr =
+      new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >();
+                       
+    //set values in objective_function
+    objective_function_ptr->set_zero_seg0_end_planes(zero_seg0_end_planes);
+    objective_function_ptr->set_projector_pair_sptr(proj_pair_sptr);
+#endif
+                        
+    // reset cache-stores, they will be initialised if we need them
+    this->proj_data_ptr = 0;
+    this->binwise_correction = 0; 
+    this->mult_proj_data_sptr = 0; 
+  } // set_up
+
+  template <typename TargetT>
+  void DistributedWorker<TargetT>::
+  distributable_computation(RPC_process_related_viewgrams_type * RPC_process_related_viewgrams)
+  {     
+    shared_ptr<TargetT> input_image_ptr = this->target_sptr; // use the target_sptr member as we don't need its values anyway
+    shared_ptr<TargetT> output_image_ptr = this->target_sptr->get_empty_copy();
+                
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr = 
+      this->proj_pair_sptr->get_symmetries_used()->clone();
                 
 #ifndef NDEBUG
     if (distributed::test && my_rank==1) 
@@ -148,22 +175,16 @@ namespace stir
         distributed::test_int_values_slave();
         distributed::test_viewgram_slave(proj_data_info_sptr);
       }
-#endif          
-    distributed::receive_and_set_image_parameters(input_image_ptr, image_buffer_size, -1, 0);
+#endif    
                  
-    int count, count2;
     HighResWallClockTimer t;
                 
-    //allocate new output_image
-    output_image_ptr=input_image_ptr->get_empty_copy();
-    //loop over the iterations until received END_RECONSTRUCTION_TAG
-    while (true)
       {
         // set output_image to zero
         output_image_ptr->fill(0.F);
                 
         //Receive input_image values 
-        MPI_Status status = distributed::receive_image_values_and_fill_image_ptr(input_image_ptr, image_buffer_size, 0);
+        MPI_Status status = distributed::receive_image_values_and_fill_image_ptr(input_image_ptr, this->image_buffer_size, 0);
                    
         //loop to receive viewgrams until received END_ITERATION_TAG
         while (true)
@@ -172,8 +193,7 @@ namespace stir
             RelatedViewgrams<float>* viewgrams = NULL;
             RelatedViewgrams<float>* additive_binwise_correction_viewgrams = NULL;
             RelatedViewgrams<float>* mult_viewgrams_ptr = NULL;
-            count = 0;
-            count2 = 0;
+            int count=0, count2=0;
                                 
             //receive vs_num values     
             ViewSegmentNumbers vs;
@@ -220,13 +240,16 @@ namespace stir
                 //save Viewgrams to ProjDataInMemory object
                 if(cache_enabled)
                   {
+                    if (is_null_ptr(this->proj_data_ptr))
+                      this->proj_data_ptr = new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false);
+
                     if (proj_data_ptr->set_related_viewgrams(*viewgrams)==Succeeded::no)
                       error("Slave %i: Storing viewgrams failed!\n", my_rank);
                                 
                     if (add_bin_corr_viewgrams) 
                       {
                         if (is_null_ptr(binwise_correction))
-                          binwise_correction = new ProjDataInMemory(proj_data_info_sptr);
+                          binwise_correction = new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false);
                         
                         if (binwise_correction->set_related_viewgrams(*additive_binwise_correction_viewgrams)==Succeeded::no)
                           error("Slave %i: Storing additive_binwise_correction_viewgrams failed!\n", my_rank);
@@ -235,14 +258,14 @@ namespace stir
                     if (mult_viewgrams) 
                       {
                         if (is_null_ptr(mult_proj_data_sptr))
-                          mult_proj_data_sptr = new ProjDataInMemory(proj_data_info_sptr);
+                          mult_proj_data_sptr = new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false);
 
                         if (mult_proj_data_sptr->set_related_viewgrams(*mult_viewgrams_ptr)==Succeeded::no)
                           error("Slave %i: Storing mult_viewgrams_ptr failed!\n", my_rank);
                       }
                   }
               }
-            else  //the iteration or reconstruction is completed --> send results
+            else if (status.MPI_TAG==END_ITERATION_TAG)  //the iteration is completed --> send results
               { 
                 //make reduction over computed output_images
                 distributed::first_iteration=false;
@@ -255,24 +278,23 @@ namespace stir
                     MPI_Reduce(&send, &receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
                     distributed::total_rpc_time = 0.0;
                   }
+                break;
               }
-                        
-            //TODO: END_RECONSTRUCTION_TAG is never sent (not necessarily needed)
-            if (status.MPI_TAG==END_ITERATION_TAG) break;
-            else if (status.MPI_TAG==END_RECONSTRUCTION_TAG) return;
+            else 
+              error("Slave received unknown tag");
             
             //measure time used for parallelized part
             if (distributed::rpc_time) {t.reset(); t.start();}
                         
-            //call the actual Reconstruction
-            RPC_process_related_viewgrams_gradient(
-                                                   objective_function_sptr->get_projector_pair_sptr()->get_forward_projector_sptr(),
-                                                   objective_function_sptr->get_projector_pair_sptr()->get_back_projector_sptr(),
-                                                   output_image_ptr.get(), input_image_ptr.get(), viewgrams, 
-                                                   count, count2,
-                                                   log_likelihood_ptr,
-                                                   additive_binwise_correction_viewgrams,
-                                                   mult_viewgrams_ptr);
+            //call the actual calculation
+            RPC_process_related_viewgrams(
+                                          this->proj_pair_sptr->get_forward_projector_sptr(),
+                                          this->proj_pair_sptr->get_back_projector_sptr(),
+                                          output_image_ptr.get(), input_image_ptr.get(), viewgrams, 
+                                          count, count2,
+                                          log_likelihood_ptr,
+                                          additive_binwise_correction_viewgrams,
+                                          mult_viewgrams_ptr);
                                 
             if (distributed::rpc_time)
               {
@@ -284,7 +306,6 @@ namespace stir
             int int_values[2];
             int_values[0]=count;
             int_values[1]=count2;
-                                                                                                                        
             //send count,count2 and ask for new work
             distributed::send_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG, 0);
                         
@@ -296,13 +317,8 @@ namespace stir
           cerr << "Slave "<<my_rank<<" used "<<distributed::total_rpc_time_2<<" seconds for PRC-processing."<<endl;
       }         
   }
-  
-  template <typename TargetT>
-  void DistributedWorker<TargetT>::distributed_compute_sensitivity(shared_ptr<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT > > &objective_function_ptr)
-  {
-    //TODO implement parallel version of sensitivity computation
-  }
-   
+
+  // instantiation
   template class DistributedWorker<DiscretisedDensity<3,float> >;  
    
 } // namespace stir
