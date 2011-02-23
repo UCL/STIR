@@ -67,7 +67,7 @@ ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool 
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
-  buffer = new char[buffer_size];
+  buffer.reset(new char[buffer_size]);
   sino_stream = new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary);
 #else
   // it would be advantageous to preallocate memory as well
@@ -97,7 +97,7 @@ ProjDataInMemory(const ProjData& proj_data)
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
-  buffer = new char[buffer_size];
+  buffer.reset(new char[buffer_size]);
   sino_stream = new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary);
 #else
   // it would be advantageous to preallocate memory as well

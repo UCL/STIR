@@ -32,7 +32,7 @@
 #define __stir_ProjDataInMemory_H__
 
 #include "stir/ProjDataFromStream.h" 
-#include "stir/shared_ptr.h"
+#include "boost/shared_array.hpp"
 #include <string>
 
 #ifndef STIR_NO_NAMESPACES
@@ -101,10 +101,10 @@ public:
     
 private:
 #ifdef STIR_USE_OLD_STRSTREAM
-  // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_ptr
+  // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_array
   // note however that the buffer is not shared. we just use it such that its memory gets 
   // deallocated automatically.
-  shared_ptr<char> buffer;
+  boost::shared_array<char> buffer;
 #else
 #endif
   
