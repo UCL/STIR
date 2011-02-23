@@ -159,10 +159,11 @@ private:
    */
   void set_all_vs_num_unprocessed();
 	
-  /*! \brief check if a vs_num is already processed
+  /*! \brief check if a vs_num is still to be processed or not
    * \param vs_num the view segment number to be checked
+   * Also returns false if the \a vs_num is not in the list to process at all.
    */
-  bool is_processed(const ViewSegmentNumbers& vs_num) const;
+  bool is_still_to_be_processed(const ViewSegmentNumbers& vs_num) const;
 
 };
 

@@ -22,7 +22,7 @@
   \file
   \ingroup recon_buildblock
 
-  \brief Implementation of stir::DistributedCachingInformation()
+  \brief Implementation of class stir::DistributedCachingInformation
 
   \author Tobias Beisel  
   \author Kris Thielemans
@@ -92,9 +92,14 @@ void DistributedCachingInformation::set_processed(const ViewSegmentNumbers& vs_n
   this->still_to_process[this->find_vs_num_position_in_list_to_process(vs_num)]=false;
 }
 
-bool DistributedCachingInformation::is_processed(const ViewSegmentNumbers& vs_num) const
+bool DistributedCachingInformation::is_still_to_be_processed(const ViewSegmentNumbers& vs_num) const
 {
-  return this->still_to_process[this->find_vs_num_position_in_list_to_process(vs_num)]==false;
+  std::vector<ViewSegmentNumbers>::const_iterator iter = 
+    std::find(this->vs_nums_to_process.begin(), this->vs_nums_to_process.end(), vs_num);
+  if (iter== this->vs_nums_to_process.end())
+    return false;
+  else
+    return this->still_to_process[iter - this->vs_nums_to_process.begin()];
 }
 
 void DistributedCachingInformation::add_vs_num_to_proc(int proc, const ViewSegmentNumbers& vs_num)
@@ -109,7 +114,7 @@ int DistributedCachingInformation::get_num_remaining_cached_data_to_process(int 
   for (std::vector<ViewSegmentNumbers>::const_iterator iter=this->proc_vs_nums[proc].begin();
        iter!=this->proc_vs_nums[proc].end(); ++ iter)
     {
-      if (this->is_processed(*iter)==false) 
+      if (this->is_still_to_be_processed(*iter)) 
         cnt++;
     }
   return cnt;
@@ -121,7 +126,7 @@ bool DistributedCachingInformation::get_oldest_unprocessed_vs_num(ViewSegmentNum
   for (std::vector<ViewSegmentNumbers>::const_iterator iter=this->proc_vs_nums[proc].begin();
        iter!=this->proc_vs_nums[proc].end(); ++ iter)
     {   
-      if (this->is_processed(*iter)==false) 
+      if (this->is_still_to_be_processed(*iter)) 
         {
           vs=*iter;
           return true;
