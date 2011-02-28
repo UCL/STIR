@@ -14,7 +14,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU Lesser General Public License for more details.
-	
+        
   See STIR/LICENSE.txt for details
 */
 /*!
@@ -34,6 +34,7 @@ $Revision$
 #include "stir/ProjDataInfo.h"
 #include "stir/IndexRange.h"
 #include "stir/Bin.h"
+#include "stir/round.h"
 
 START_NAMESPACE_STIR
 
@@ -67,14 +68,14 @@ namespace detail
 
     const float sampling_phi = 
       proj_data_info.get_phi(Bin(0,1,0,0)) - min_phi;
-    const int num_views_for_180 = max_in[1]+1; // but max_is_extended?
+    const int num_views_for_180 = round(_PI/sampling_phi);
 
-    if (fabs(min_phi)< .0001)
+    if (fabs(min_phi)< .01)
       {
         min_in[1]-=min_view_extension; 
         min_is_extended=true;                                   
       }
-    if (fabs(max_phi-(_PI-sampling_phi))<.001) 
+    if (fabs(max_phi-(_PI-sampling_phi))<.01) 
       {         
         max_in[1]+=max_view_extension;
         max_is_extended=true;           
@@ -87,7 +88,7 @@ namespace detail
     if (!min_is_extended)
       warning("Minimum view of the original projdata is not 0");
     if (!max_is_extended)
-      warning("Maximum view of the original projdata is not 180-phi");
+      warning("Maximum view of the original projdata is not 180-sampling_phi");
 
     for (int view_num=min_in[1]; view_num<=max_in[1]; ++view_num)
       {
@@ -135,7 +136,7 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
     error("extend_segment with single segment works only for segment 0");
 
   BasicCoordinate<3,int> min, max;
-		
+                
   min[1]=sino.get_min_axial_pos_num();
   max[1]=sino.get_max_axial_pos_num();
   min[2]=sino.get_min_view_num();
@@ -150,7 +151,7 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
         detail::
         extend_sinogram_in_views(sino[ax_pos_num],sino[ax_pos_num], 
                                  *(sino.get_proj_data_info_ptr()),
-				 min_view_extension, max_view_extension);
+                                 min_view_extension, max_view_extension);
     }
   return out;
 }
