@@ -26,6 +26,8 @@
 
   \author Tobias Beisel  
   \author Kris Thielemans
+  \author Alexey Zverovich (idea of using main() function)
+  \author PARAPET project (idea of using main() function)
   $Date$
 */
 #include "stir/recon_buildblock/DistributedWorker.h"
@@ -42,6 +44,68 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
+#include <exception>
+
+#include "stir/recon_buildblock/distributable_main.h"
+
+int main(int argc, char **argv)
+{
+  int return_value = EXIT_FAILURE;
+  try
+    {
+#ifndef STIR_MPI 
+      return stir::distributable_main(argc, argv);
+#else
+
+      //processor-id within parallel Communicator
+      int my_rank;  
+        
+      //saves the name of a processor
+      char processor_name[MPI_MAX_PROCESSOR_NAME];           
+      //length of the processor-name
+      int namelength;       
+         
+      MPI_Init(&argc, &argv) ; /*Initializes the start up for MPI*/
+      MPI_Comm_rank(MPI_COMM_WORLD, &my_rank) ; /*Gets the rank of the Processor*/   
+      MPI_Comm_size(MPI_COMM_WORLD, &distributed::num_processors) ; /*Finds the number of processes being used*/     
+      MPI_Get_processor_name(processor_name, &namelength);
+      
+      fprintf(stderr, "Process %d on %s\n", my_rank, processor_name);
+         
+      //master
+      if (my_rank==0)
+        {
+          return_value=stir::distributable_main(argc, argv);
+          if (distributed::total_rpc_time_slaves!=0) cout << "Total time used for RPC-processing: "<< distributed::total_rpc_time_slaves << endl;
+        }
+      else //slaves
+        {           
+          //create Slave Object
+          stir::DistributedWorker<stir::DiscretisedDensity<3,float> > worker;
+                
+          //start Slave Process:
+          worker.start();
+          return_value = EXIT_SUCCESS;
+        }   
+#endif
+
+    }
+  catch (string& error_string)
+    {
+      // don't print yet, as error() already does that at the moment
+      // std::cerr << error_string << std::endl;
+      return_value = EXIT_FAILURE;
+    }
+  catch (std::exception& e)
+    {
+      std::cerr << e.what() << std::endl;
+      return_value = EXIT_FAILURE;
+    }
+#ifdef STIR_MPI
+  MPI_Finalize();
+#endif
+  return return_value;
+}
 
   
 namespace stir 
@@ -126,9 +190,9 @@ namespace stir
                 
     //some values to configure tests
     int configurations[4];
-    status=distributed::receive_int_values(configurations, 4, ARBITRARY_TAG);
+    status=distributed::receive_int_values(configurations, 4, distributed::STIR_MPI_CONF_TAG);
         
-    status=distributed::receive_double_values(&distributed::min_threshold, 1, ARBITRARY_TAG);
+    status=distributed::receive_double_values(&distributed::min_threshold, 1, distributed::STIR_MPI_CONF_TAG);
                                         
     (configurations[0]==1)?distributed::test=true:distributed::test=false;
     (configurations[1]==1)?distributed::test_send_receive_times=true:distributed::test_send_receive_times=false;
@@ -197,7 +261,7 @@ namespace stir
                                 
             //receive vs_num values     
             ViewSegmentNumbers vs;
-            status = distributed::receive_view_segment_numbers(vs, ARBITRARY_TAG);
+            status = distributed::receive_view_segment_numbers(vs, MPI_ANY_TAG);
                         
             /*check whether to
              *  - use a viewgram already received in previous iteration
