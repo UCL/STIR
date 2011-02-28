@@ -26,7 +26,7 @@
   \file
   \ingroup distributable
 
-  \brief Declaration of the main function that performs parallel processing
+  \brief Declaration of the main functions that perform parallel processing
 
   \author Alexey Zverovich
   \author Kris Thielemans
@@ -58,7 +58,7 @@ const int task_stop_processing=0;
 const int task_setup_distributable_computation=200;
 const int task_do_distributable_gradient_computation=42;
 
-//! set-up parameters for a distributable_computation
+//! set-up parameters before calling distributable_computation()
 /*! Empty unless STIR_MPI is defined, in which case it sends parameters to the 
     slaves (see stir::DistributedWorker).
 
@@ -104,16 +104,23 @@ typedef  void RPC_process_related_viewgrams_type (
   What the output is, is really determined by the call-back function
   RPC_process_related_viewgrams.
 
-  A parallel version of this function exists which distributes the computation over the slaves.
+  If STIR_MPI is defined, this function distributes the computation over the slaves.
 
-  Subsets are currently defined on views. A particular \a subset_num contains all views
-  which are symmetry related to 
+  Subsets are currently defined on views. A particular \a subset_num contains all views  which are symmetry related to 
   \code 
   proj_data_ptr->min_view_num()+subset_num + n*num_subsets
   \endcode
   for n=0,1,,.. \c and for which the above view_num is 'basic' (for some segment_num in the range).
 
   Symmetries are determined by using the 3rd argument to set_projectors_and_symmetries().
+
+  \par Usage
+
+  You first need to call setup_distributable_computation(), then you can do multiple calls
+  to distributable_computation() with different images (but the same projection data, as
+  this is potentially cached). If you want to change the image characteristics (e.g. 
+  size, or origin so), you have to call setup_distributable_computation() again. Finally,
+  end the sequence of computations by a call to end_distributable_computation().
 
   \param output_image_ptr will store the output image if non-zero.
   \param input_image_ptr input when non-zero.
@@ -145,6 +152,10 @@ typedef  void RPC_process_related_viewgrams_type (
 
   \todo The subset-scheme should be moved somewhere else (a Subset class?).
 
+  \warning If STIR_MPI is defined, there can only be one set_up active, as the 
+  slaves use only one set of variabiles to store projectors etc.
+
+  \see DistributedWorker for how the slaves perform the computation if STIR_MPI is defined.
  */
 void distributable_computation(
                                const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
