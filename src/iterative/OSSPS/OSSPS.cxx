@@ -31,12 +31,12 @@
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
-
+#include "stir/recon_buildblock/distributable_main.h"
 
 USING_NAMESPACE_STIR
 
-#ifdef PARALLEL
-int master_main(int argc, char **argv)
+#ifdef STIR_MPI
+int stir::distributable_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
