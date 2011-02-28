@@ -24,6 +24,7 @@
   \ingroup distributable
 
   \brief Implementation of stir::distributable_computation_cache_enabled()
+  \todo merge with distributable.cxx
 
   \author Kris Thielemans  
   \author Alexey Zverovich 
@@ -67,6 +68,8 @@ using std::endl;
 
 
 START_NAMESPACE_STIR
+// TODO all these functions are the same as in distributable.cxx
+// we really just need to move a few things from this file to distributable.cxx, and then get rid of this one
 
 template <class ViewgramsPtr>
 static void
