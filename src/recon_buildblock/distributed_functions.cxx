@@ -30,7 +30,11 @@
 */
 
 #include "stir/recon_buildblock/distributed_functions.h"
+#include "stir/HighResWallClockTimer.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/InterfileHeader.h"
+#include "stir/ProjDataInterfile.h"
+#include <fstream>
 #include "stir/Succeeded.h"
 #include "stir/error.h"
 
@@ -374,6 +378,16 @@ namespace distributed
                 
     delete[] viewgram_buf;
   }
+
+  void send_projectors(const stir::shared_ptr<stir::ProjectorByBinPair> &proj_pair_sptr, int destination)
+  {
+    //send registered name of projector pair
+    distributed::send_string(proj_pair_sptr->get_registered_name(), REGISTERED_NAME_TAG, destination);
+        
+    //send parameter info of projector pair
+    distributed::send_string(proj_pair_sptr->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, destination);
+
+  }
         
   //--------------------------------------Receive Operations-------------------------------------
         
@@ -397,7 +411,6 @@ namespace distributed
         
   string receive_string(int tag, int source)
   {             
-    //Receive projector-pair registered_keyword
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
@@ -596,16 +609,9 @@ namespace distributed
     if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received image values after " << t.value() << " seconds" << endl;
 #endif
                 
-    if (status.MPI_TAG==END_RECONSTRUCTION_TAG) 
-      {
-        delete[] buffer;
-        return status;
-      }
-    else 
-      {
-        std::copy(buffer, buffer + buffer_size, image_ptr->begin_all());
-        delete[] buffer;
-      }
+    std::copy(buffer, buffer + buffer_size, image_ptr->begin_all());
+    delete[] buffer;
+
     return status;                      
   }
         
