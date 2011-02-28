@@ -47,7 +47,7 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx \
-	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx	
+	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx
 
 #InputFileFormatRegistry_recon_buildblock.cxx
 
@@ -62,7 +62,7 @@ $(dir)_LIB_SOURCES += \
 	distributed_functions.cxx \
 	DistributedWorker.cxx \
 	DistributedCachingInformation.cxx \
-	distributed_test_functions.cxx
+	distributed_test_functions.cxx	
 endif
 
 
