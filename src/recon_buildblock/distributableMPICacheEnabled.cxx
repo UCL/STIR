@@ -300,7 +300,6 @@ void distributable_computation_cache_enabled(
    
   //initialize the caching values for the new iteration
   caching_info_ptr->initialise_new_subiteration(vs_nums_to_process);
-  distributed::iteration_counter++;
     
   //while not all vs_nums are processed repeat
   for (std::size_t processed_count = 1; processed_count <= num_vs; ++processed_count)
