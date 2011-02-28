@@ -55,12 +55,11 @@
 #endif
 /*!
   \def STIR_MPI
-  \brief Precompiler-define that needs to be set to enable the parallel version of OSMAPOSL.
-*/
+  \brief Precompiler-define that needs to be set to enable the parallel version of stir::distributable_computation */
 
 /*!
   \def STIR_MPI_TIMINGS
-  \brief Precompiler-define that needs to be set to enable timings in the parallel version of OSMAPOSL.
+  \brief Precompiler-define that needs to be set to enable timings in the parallel version of stir::distributable_computation.
 
   The functions in the distributable namespace can include run-time
   measurements included which print times from start to end of a single
@@ -71,7 +70,7 @@
   STIR_MPI_TIMINGS defined.
         
   If compiled with STIR_MPI_TIMINGS defined, you still have the possibility to enable/disable the timings by
-  using the parsing parameter 
+  using the parsing parameter (for stir::stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData).
   \verbatim
   enable message timings := 1
   \endverbatim
@@ -83,34 +82,23 @@
 
 #include "mpi.h"
 #include "stir/shared_ptr.h"
-#include "stir/ParsingObject.h"
-#include "stir/DataSymmetriesForViewSegmentNumbers.h"
-#include "stir/ProjDataInMemory.h"
-#include "stir/IO/InterfileHeader.h"
-#include "stir/ProjDataInterfile.h"
-#include "stir/recon_buildblock/DistributedCachingInformation.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/Viewgram.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include "stir/HighResWallClockTimer.h"
 
 namespace distributed
 {
+  /*! \name Global variables used for STIR_MPI
+   */
+  //@{
   //!the number of processes used for distributed computation 
   extern int num_processors;
         
   //!some stuff in distributable_computation needs to be done only in the first iteration
   extern bool first_iteration;
-        
-  //!needed in cache enabled case to check whether the viewgrams have to be distributed 
-  //or if the computation is already progressed enough to use cached values
-  extern int iteration_counter;
         
   //!enable/disable tests
   extern bool test;                                     
@@ -130,9 +118,6 @@ namespace distributed
   /*! \brief sends or broadcasts an integer value
    * \param value the int value to be sent
    * \param destination the process id where to send the interger value. If set to -1 a Broadcast will be done
-   * 
-   * This function is currently only used to determine the objective function using an idertifier.
-   * It should be replaced by the more general function \c send_int_values()
    */
   void send_int_value(int value, int destination);
         
@@ -179,6 +164,15 @@ namespace distributed
    */
   void send_view_segment_numbers(const stir::ViewSegmentNumbers& vs_num, int tag, int destination);
         
+  /*! \brief send or broadcast a projector-pair object
+   * \param proj_pair_sptr value to be sent
+   * \param destination the process id where to send the double values. If set to -1 a Broadcast will be done
+   *
+   * \warning This function works by sending the parameter_info. Therefore, if file-names are used (e.g. for
+   * a projection matrix on disk) this will only work on systems with shared file systems.
+   */
+  void send_projectors(const stir::shared_ptr<stir::ProjectorByBinPair> &proj_pair_sptr, int destination);
+
   /*! \brief sends or broadcasts the parameters of a DiscretisedDensity object
    * \param input_image_ptr the image_ptr to be sent
    * \param tag identifier to associate messages
@@ -421,31 +415,21 @@ namespace distributed
    */
   void reduce_output_image(stir::shared_ptr<stir::DiscretisedDensity<3,float> > &output_image_ptr, int image_buffer_size, int my_rank, int destination);
 
-  /* Tag-names currently used */
-#define AVAILABLE_NOTIFICATION_TAG 2
-#define END_ITERATION_TAG 3
-#define END_RECONSTRUCTION_TAG 4
-#define END_NOTIFICATION_TAG 5
-
-#define BINWISE_CORRECTION_TAG 6
-#define BINWISE_MULT_TAG 66
-#define INT_TAG 7
-#define ARBITRARY_TAG 8
-
-#define REUSE_VIEWGRAM_TAG 10
-#define NEW_VIEWGRAM_TAG 11
-
-#define PARAMETER_INFO_TAG 21
-#define IMAGE_ESTIMATE_TAG 23
-#define IMAGE_PARAMETER_TAG 24
-#define REGISTERED_NAME_TAG 25
-
-#define VIEWGRAM_DIMENSIONS_TAG 27
-#define VIEWGRAM_TAG 28
-#define VIEWGRAM_COUNT_TAG 29
-
-#define PROJECTION_DATA_INFO_TAG 30
-
+  /*! \name Tag-names currently used by functions in the distributed namespace
+   */
+  //!@{
+  const int INT_TAG=7;
+  const int ARBITRARY_TAG=8; //! special tag, equivalent to MPI_ANY_TAG in some functions
+  const int STIR_MPI_CONF_TAG=9;
+  const int IMAGE_ESTIMATE_TAG=23;
+  const int IMAGE_PARAMETER_TAG=24;
+  const int VIEWGRAM_DIMENSIONS_TAG=27;
+  const int VIEWGRAM_TAG=28;
+  const int VIEWGRAM_COUNT_TAG=29;
+  const int PROJECTION_DATA_INFO_TAG=30;
+  const int PARAMETER_INFO_TAG=21;
+  const int REGISTERED_NAME_TAG=25;
+  //!@}
 }
 
 #endif
