@@ -21,9 +21,9 @@
 /*!
 
   \file
-  \ingroup recon_buildblock
+  \ingroup distributable
 
-  \brief Implementation of stir::distributable_computation()
+  \brief Implementation of stir::distributable_computation() and related functions
 
   \author Kris Thielemans  
   \author Alexey Zverovich 
@@ -69,7 +69,6 @@ using std::cerr;
 using std::endl;
 #endif
 
-
 START_NAMESPACE_STIR
 
 /* WARNING: the sequence of steps here has to match what is on the receiving end 
@@ -96,6 +95,9 @@ void setup_distributable_computation(
         
   //sending Projection_Data_info
   distributed::send_proj_data_info(proj_data_info_ptr, -1);
+
+  //send projector pair
+  distributed::send_projectors(proj_pair_sptr, -1);
         
   //send configuration values for distributed computation
   int configurations[4];
@@ -103,16 +105,10 @@ void setup_distributable_computation(
   configurations[1]=distributed::test_send_receive_times?1:0;
   configurations[2]=distributed::rpc_time?1:0;
   configurations[3]=distributed_cache_enabled?1:0;
-  distributed::send_int_values(configurations, 4, ARBITRARY_TAG, -1);
+  distributed::send_int_values(configurations, 4, distributed::STIR_MPI_CONF_TAG, -1);
         
-  distributed::send_double_values(&distributed::min_threshold, 1, ARBITRARY_TAG, -1);
+  distributed::send_double_values(&distributed::min_threshold, 1, distributed::STIR_MPI_CONF_TAG, -1);
                 
-  //send registered name of projector pair
-  distributed::send_string(proj_pair_sptr->get_registered_name(), REGISTERED_NAME_TAG, -1);
-        
-  //send parameter info of projector pair
-  distributed::send_string(proj_pair_sptr->stir::ParsingObject::parameter_info(), PARAMETER_INFO_TAG, -1);
-
 #ifndef NDEBUG
   //test sending parameter_info
   if (distributed::test) 
