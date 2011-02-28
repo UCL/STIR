@@ -34,18 +34,17 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include "stir/CPUTimer.h"
-#ifdef STIR_MPI
-#include "stir/recon_buildblock/DistributedWorker.h"
-#include "stir/recon_buildblock/distributed_functions.h"
-#endif
 #include "stir/HighResWallClockTimer.h"
+#include "stir/recon_buildblock/distributable_main.h"
 
-
+START_NAMESPACE_STIR
+int master_main(int argc, char **argv);
+END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-#ifdef PARALLEL
-int master_main(int argc, char **argv)
+#ifdef STIR_MPI
+int stir::distributable_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
@@ -54,27 +53,6 @@ int main(int argc, char **argv)
   t.reset();
   t.start();
    
-#ifdef STIR_MPI 
-  //processor-id within parallel Communicator
-  int my_rank;  
-        
-  //saves the name of a processor
-  char processor_name[MPI_MAX_PROCESSOR_NAME];           
-  //length of the processor-name
-  int namelength;       
-         
-  MPI_Init(&argc, &argv) ; /*Initializes the start up for MPI*/
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank) ; /*Gets the rank of the Processor*/   
-  MPI_Comm_size(MPI_COMM_WORLD, &distributed::num_processors) ; /*Finds the number of processes being used*/     
-  MPI_Get_processor_name(processor_name, &namelength);
-         
-  fprintf(stderr, "Process %d on %s\n", my_rank, processor_name);
-         
-  //master
-  if (my_rank==0)
-    {
-#endif 
-
       OSMAPOSLReconstruction<DiscretisedDensity<3,float> >
         reconstruction_object(argc>1?argv[1]:"");
 
@@ -84,28 +62,13 @@ int main(int argc, char **argv)
       if (reconstruction_object.reconstruct() == Succeeded::yes) 
         {       
           t.stop();
-#ifdef STIR_MPI 
-          if (distributed::total_rpc_time_slaves!=0) cout << "Total time used for RPC-processing: "<< distributed::total_rpc_time_slaves << endl;
-#endif
           cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
           return EXIT_SUCCESS;
         }
       else      
         {
+          t.stop();
           return EXIT_FAILURE;
         }
             
-#ifdef STIR_MPI
-    }
-  else //slaves
-    {           
-      //create Slave Object
-      DistributedWorker<DiscretisedDensity<3,float> > worker;
-                
-      //start Slave Process:
-      worker.start(my_rank);
-    }   
-  MPI_Finalize();       
-#endif
 }
-
