@@ -54,9 +54,12 @@ class DistributedCachingInformation;
 //!@{
 //! \ingroup distributable
 
+//! \name Task-ids current understood by STIR_MPI
+//@{
 const int task_stop_processing=0;
 const int task_setup_distributable_computation=200;
 const int task_do_distributable_gradient_computation=42;
+//@}
 
 //! set-up parameters before calling distributable_computation()
 /*! Empty unless STIR_MPI is defined, in which case it sends parameters to the 
@@ -176,6 +179,19 @@ void distributable_computation(
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
                                DistributedCachingInformation* caching_info_ptr);
 
+
+  /*! \name Tag-names currently used by stir::distributable_computation and related functions
+   */
+  //!@{
+  const int AVAILABLE_NOTIFICATION_TAG=2;
+  const int END_ITERATION_TAG=3;
+  const int END_RECONSTRUCTION_TAG=4;
+  const int END_NOTIFICATION_TAG=5;
+  const int BINWISE_CORRECTION_TAG=6;
+  const int BINWISE_MULT_TAG=66;
+  const int REUSE_VIEWGRAM_TAG=10;
+  const int NEW_VIEWGRAM_TAG=11;
+  //!@}
 
 //!@}
 
