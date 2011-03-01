@@ -1,7 +1,8 @@
 *.ncb
+*.opensdf
+*.sdf
+*.suo
 *.vc*proj.*user
 Debug
 Release
-*.suo
-*.sdf
-*.opensdf
+ipch
