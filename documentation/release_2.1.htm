@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.1 beta (dated October 2010)</title>
+    <title>Summary of changes in STIR release 2.1 beta (dated March 2011)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.1 beta (dated October 2010)</h1>
+    <h1>Summary of changes in STIR release 2.1 beta (dated March 2011)</h1>
 
 <p>Most of the work in this update was by Kris Thielemans (Hammersmith Imanet Ltd)
 and Charalampos Tsoumpas (Imperial College and Hammersmith Imanet Ltd).
@@ -33,6 +33,17 @@ and Kris Thielemans.
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
+<h3>Important bug fixes</h3>
+<ul>
+<li>fixed a problem in the computation for the gradient of the Poisson log-likelihood that occured
+if a viewgram of the measured data was zero (which should occur only a dramatically noisy situations).</li>
+<li>fixed a problem in the computation of the Poisson log-likelihood that the multiplicative term of the 
+model was ignored. Objective function values prior to this fix were therefore incorrect (except for the 
+case where there was no multiplicative term). However, this bug did not affect actual reconstructed images.<br />
+(In addition, the computation of the objective function now has increased numerical accuracy.)</li>
+<li>the MPI support for OSMAPOSL introduced in STIR 2.0 was broken (it did not compile, and after 
+easy fixes did not give the correct result).</li>
+</ul>
 <h3>Known problems</h3>
 <ul>
 <li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
@@ -47,6 +58,8 @@ on some architectures/compiler/optimisation settings.</li>
 <li>Parametric image reconstruction algorithms <tt>POSMAPOSL</tt> and <tt>POSSPS</tt>. 
 Currently we have only an objective function for Patlak, but extension
 to other linear models is easy.</li>
+<li>A few scripts are now also copied with <tt>make install</tt>, including the
+new <tt>stir_print_voxel_sizes.sh</tt>
 </ul>
 
 
@@ -55,16 +68,41 @@ to other linear models is easy.</li>
 <li>Added data for the <strong>GE Discovery 600</strong>.</li>
 <li>Added data for the <strong>Biograph 16</strong> (by Robert Barnett, Westmead Hospital, Sydney).</li>
 <li><tt>stir_math</tt> has 2 new options <tt>--parametric</tt> or <tt>--dynamic</tt>.</li>
+<li><tt>OSMAPOSL</tt> and <tt>OSSPS</tt> have a new "subset sensitivity filenames" which can be set to 
+e.g. <tt>subsens_%d.hv</tt>. This is useful when <tt>use_subset_sensitivities</tt> is set (which is now
+<strong>recommended</strong>).</li>
+<li> <tt>OSMAPOSL</tt> now accepts a prior even if <tt>use_subset_sensitivities</tt> is set.</li>
+<li>In addition to <tt>OSMAPOSL</tt>, <tt>OSSPS</tt> is now also parallelised when using <i>MPI</i>.
+</ul>
+
+<h3>Functionality changes</h3>
+<ul>
+<li>The ray tracing projection matrix now uses a circular FOV that goes to the edge of the image (i.e. approx one pixel larger than what it used to be).
+</li>
+<li>Most utilities will now display a somewhat involved message when an error occured. Exact format
+will be system/compiler dependent, but could be something like
+<pre>
+ERROR: Error opening file test.hv
+
+terminate called after throwing an instance of 'std::string'
+Aborted (core dumped)
+</pre>
+The useful bit is after the <tt>ERROR</tt> string. Ignore the rest (see <a href="#errorThrowsException">
+here why this happens</a>).
+</li>
 </ul>
 
 <h3>Documentation changes</h3>
 <ul>
-<li>updated doxygen</li>
+<li>updated doxygen and User's Guide</li>
  </ul>
 
 <h3>recon_test_pack changes</h3>
 <ul>
 <li>Moved the tests for the ecat routines to a separate file <tt>run_ecat_tests.sh</tt></li>
+<li>Created a new script <tt>run_test_simulate_and_recon.sh</tt> that performs a 
+simple analytic simulation of a uniform cylinder,
+reconstructs it with all STIR reconstruction algorithms and checks ROI values.</li>
 <li>Updated Windows batch files. They were broken in STIR 2.0</li>
 </ul>
 
@@ -87,20 +125,32 @@ this function, as the result was obviously wrong.</li>
 <code>GeneralisedObjectiveFunction</code> hierarchy. This used by OSSPS to avoid problems
 when initialising with images that have for instance been reconstructed on a square grid.</li>
 <li>B-spline interpolation functions and a few numerical algorithms (IIR and FIR filters, 
-1d numerical integration).<br />
+1d numerical integration).</li>
 </ul>
 
 <h3>Other code changes</h3>
 <ul>
-<li><code>error()</code> now throws an exception as opposed to calling exit, such that we can catch 
+<li><a name="errorThrowsException"><code>error()</code> now throws an exception as opposed to calling exit</a>, 
+such that we can catch 
 the exception in a calling routine. This would be essential for building GUIs etc. Unfortunately,
 for the user this has the potential to generate some confusion as the error message
-when a STIR program calss <code>error()</code> now talks about unhandled exception.
+when a STIR program calls <code>error()</code> now talks about unhandled exception.
 The best way to solve this would be to catch all exceptions in each <code>main()</code>, but
 that is a lot of work...</li>
 <li><code>ProjDataInfoCylindrical::set_num_views()</code> now  makes sure that we cover the
       same range of angles as before (usually, but not necessarily, 180 degrees).
 </li>
+<li><tt>PoissonLogLikelihoodWithLinearModelForMean</tt> has been changed to be more consistent
+in the subset sensitivity interface:
+- The parser has a new keyword "subset sensitivity filenames" which can be set to e.g. subsens_%d.hv
+- Derived classes have to define a virtual function set_up_before_sensitivity() (essentially
+replacing what they used to have in setup() before, except for the call to base_type::setup()).
+- setup() now class set_up_before_sensitivity(), computes (subset)sensitivities, and if required,
+writes them to disk.
+- get_sensitivity(subset_num) is replaced by get_sensitivity() and get_subset_sensitivity(subset_num)
+- set_sensitivity_sptr is now called set_subset_sensitivity_sptr
+- fill_nonidentifiable_target_parameters uses get_sensitivity() and hence no longer only checks the first subset.
+
 <li>Most of the .cxx files in the <tt>recon_buildblock</tt> had to be updated to
 add instantiations for parametric images. This is unfortunate and another
 mechanism would be nicer.
@@ -113,7 +163,15 @@ reconstruction classes, you should use this member.
 argument of type <code>std::streamsize</code> as opposed to <code>unsigned long</code>. As
 this parameter is passed as a reference, this change is <strong>not backwards compatible</strong>
 (at least on systems where these 2 types are not equal).</li>
+<li>FullArrayIterator and NestedIterator now have extra constructors to be able to convert
+compatible iterators (e.g. full_iterator to const_full_iterator).</li>
+<li>NestedIterator has more help classes for cases where the top-level iterator refers to 
+a pointer to the 2nd level iterator.</li>
 <li>Various small fixes for more recent compilers such as gcc 4.3 and Visual Studio Express 2010.</li>
+<li>Initial release of files for an alternative cross-platform build system 
+<a href="http://www.cmake.org">CMake</a>, based on example files provided by 
+Robert Barnett (Westmead Hospital, Sydney). This is much better for configuration and finding system dependencies.
+However, tests are not yet included in the CMakeFiles.</li>
 </ul>
 
 </body>
